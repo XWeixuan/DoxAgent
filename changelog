@@ -28,3 +28,9 @@
 - Implemented Phase 7 in-memory audit query APIs for Commit Log records, stable field traceability, unresolved objection reports, and blocking delegation reports.
 - Added Phase 7 run debug reports and workflow contract failure semantics for failed agent results, missing Blackboard patches, missing evidence, dependency violations, and blocked checkpoint recovery.
 - Added `dev_plan/PHASE7_STABILITY_AUDIT_RECOVERY.md`, README notes, and Phase 7 tests covering audit traceability, non-mutating failure behavior, partial retry without duplicate commits, and business-audit versus tracing boundaries.
+- Implemented Phase 8's first Vibe-Trading adapters with DoxAgent-owned specs for `macro_rates_fx_desk` and `fundamental_research_team`, deterministic DAG execution, `MacroContextAgentModule`, and `FundamentalBriefAgentModule`.
+- Added Phase 8 structured result schemas, AgentResult wrapping, agent-output evidence refs, adapter boundary tests, and documentation for the read-only external reference migration strategy.
+- Implemented the Phase 8 financial-services Market Researcher adapter as `IndustryResearchAgentModule`, with a DoxAgent-owned industry research workflow, mock data provider, source refs, confidence, unknowns, and downstream handoff hints.
+- Added financial-services industry research schemas, AgentResult wrapping, evidence refs, adapter boundary tests, and documentation for future DoxAtlas/CapIQ/FactSet provider replacement.
+- Implemented the Phase 8 native O4 market trace agent with quote, OHLCV, multi-quote provider contracts, deterministic fixture data, Yahoo chart parsing, relative performance, volume analysis, technical signals, valuation context, source refs, and unknown handling.
+- Updated the O4 registry output schema to `MarketTraceResult` and added O4 market trace tests plus documentation while keeping Hermes runtime, trading execution, monitoring, and Blackboard writes out of scope.

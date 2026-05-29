@@ -129,6 +129,87 @@ The Phase 7 audit layer is in-memory and read-only. It does not replace
 Blackboard Commit Log, does not persist runs to disk or a database, and does not
 turn LangSmith/model traces into business audit records.
 
+## Phase 8 Vibe-Trading Adapters
+
+Vibe-Trading adapter modules live under `src/doxagent/adapters/vibe_trading`.
+Phase 8 starts with two read-only reference migrations:
+`MacroContextAgentModule` wraps `macro_rates_fx_desk`, and
+`FundamentalBriefAgentModule` wraps `fundamental_research_team`.
+
+Both modules preserve the original multi-agent role split, task dependencies,
+tool/skill metadata, and synthesis shape, then return standard `AgentResult`
+objects with dedicated structured payload schemas and short Markdown summaries.
+They do not import the Vibe-Trading runtime, read ignored reference sources at
+runtime, execute Vibe tools, call real model/data services, or write Blackboard
+state directly.
+
+Example:
+
+```python
+from doxagent.adapters import FundamentalBriefAgentModule, MacroContextAgentModule
+
+macro = MacroContextAgentModule().run(
+    goal="US equity allocation",
+    timeframe="tactical 1-3 months",
+)
+fundamental = FundamentalBriefAgentModule().run(
+    target="AAPL",
+    market="US equities",
+)
+```
+
+Financial-services adapter modules live under
+`src/doxagent/adapters/financial_services`. `IndustryResearchAgentModule`
+adapts the `anthropics/financial-services` Market Researcher into a DoxAgent
+industry research capability. It preserves the source workflow shape: scope,
+sector overview, competitive analysis, comps analysis, idea generation, and
+note synthesis.
+
+The Phase 8 industry module uses a DoxAgent-owned mock data provider. It returns
+JSON plus concise Markdown, with source refs, confidence, and unknowns preserved
+for market-size, growth, peer comps, idea shortlist, risks, catalysts, and
+downstream hints. It does not run Anthropic Managed Agent, Claude plugin,
+CapIQ/FactSet MCP, real DoxAtlas, real market data, or Blackboard writes.
+
+Example:
+
+```python
+from doxagent.adapters import IndustryResearchAgentModule
+
+industry = IndustryResearchAgentModule().run(
+    sector_or_theme="US data-center power",
+    angle="supply gap",
+    universe=["VST", "CEG", "ETR", "NRG"],
+)
+```
+
+## Phase 8 O4 Market Trace
+
+The native O4 market trace module lives under `src/doxagent/agents/market_trace`.
+`MarketTraceAgentModule` adapts the useful OHLCV and quote orchestration ideas
+from `hermes-finance` without importing Hermes runtime, LlamaIndex tools, or
+Hermes cache/rate limiter code.
+
+The module returns a standard `AgentResult` for `O4` with a `MarketTraceResult`
+payload covering quote context, OHLCV summary, benchmark/peer relative
+performance, volume analysis, technical signals, valuation context, data
+quality, source refs, unknowns, and concise Markdown. It does not write
+Blackboard state, execute trades, start monitoring, or provide trading advice.
+
+Example:
+
+```python
+from doxagent.agents import MarketTraceAgentModule
+
+trace = MarketTraceAgentModule().run(
+    ticker="AAPL",
+    period="1y",
+    interval="1d",
+    benchmarks=["SPY"],
+    peers=["MSFT", "GOOGL"],
+)
+```
+
 ## Project Layout
 
 ```text

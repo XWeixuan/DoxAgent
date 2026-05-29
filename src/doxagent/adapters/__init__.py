@@ -1,4 +1,21 @@
-"""External capability adapters.
+"""External capability adapters."""
 
-Phase 0 intentionally keeps this package empty of adapter implementations.
-"""
+from doxagent.adapters.financial_services import (
+    IndustryResearchAgentModule,
+    IndustryResearchResult,
+)
+from doxagent.adapters.vibe_trading import (
+    FundamentalBriefAgentModule,
+    FundamentalBriefResult,
+    MacroContextAgentModule,
+    MacroContextResult,
+)
+
+__all__ = [
+    "FundamentalBriefAgentModule",
+    "FundamentalBriefResult",
+    "IndustryResearchAgentModule",
+    "IndustryResearchResult",
+    "MacroContextAgentModule",
+    "MacroContextResult",
+]
