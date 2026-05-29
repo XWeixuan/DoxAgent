@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# uv / virtualenv
+.venv/
+.uv-cache/
+
+# Local environment
+.env
+.env.*
+!.env.example
+
+# Build outputs
+build/
+dist/
+*.egg-info/
+
+# External reference sources
+# Read-only upstream projects used for architecture/capability reference only.
+# Keep local copies out of DoxAgent commits.
+references/external_agent_sources/
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

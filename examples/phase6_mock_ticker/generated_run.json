@@ -1,0 +1,1161 @@
+{
+  "sample": {
+    "name": "phase6_mock_ticker",
+    "mock": true,
+    "warning": "Fixture-only review artifact. It is not investment research, trading advice, or a live external-service result."
+  },
+  "fixture": {
+    "ticker": "NVDA",
+    "fixture_name": "phase6_mock_ticker",
+    "mock": true,
+    "doxatlas": {
+      "reports": [
+        {
+          "source_id": "doxatlas:nvda:ai-demand:001",
+          "title": "AI server demand narrative cluster",
+          "summary": "Mock DoxAtlas report says AI server demand remains the dominant market debate."
+        },
+        {
+          "source_id": "doxatlas:nvda:pricing:002",
+          "title": "Pricing debate narrative cluster",
+          "summary": "Mock DoxAtlas report flags pricing power as a disputed expectation variable."
+        }
+      ],
+      "source_ids": [
+        "doxatlas:nvda:ai-demand:001",
+        "doxatlas:nvda:pricing:002"
+      ]
+    },
+    "market_data": {
+      "ohlcv_summary": "Mock OHLCV shows a +3% gap-up pattern after the known event.",
+      "price_reaction_source_id": "market:nvda:mock-gap-up"
+    },
+    "research_inputs": {
+      "fundamental_report": "Mock fundamentals emphasize data-center demand resilience.",
+      "macro_report": "Mock macro backdrop is neutral with rate-sensitivity risk.",
+      "industry_report": "Mock industry view highlights accelerator supply constraints."
+    },
+    "fact_check": {
+      "source_id": "factcheck:nvda:mock-realized-fact",
+      "summary": "Mock A2 fact-check confirms the realized fact used by the expectation unit."
+    }
+  },
+  "workflow": {
+    "status": "completed",
+    "run_id": "run_793912db2c524fdd86c410ff0377a870",
+    "ticker": "NVDA",
+    "completed_nodes": [
+      "StartTickerInitialization",
+      "BuildGlobalResearch",
+      "ReviewGlobalResearch",
+      "GenerateExpectationUnits",
+      "ReviewExpectationFields",
+      "ResolveObjectionsAndDelegations",
+      "PromoteExpectationToBeliefState",
+      "GenerateKnownEvents",
+      "GenerateMonitoringConfig",
+      "GenerateMonitoringPolicy",
+      "FinalizeInitialization"
+    ],
+    "next_node": null,
+    "stable_document_types": [
+      "global_research",
+      "expectation_unit",
+      "known_events",
+      "monitoring_config",
+      "monitoring_policy"
+    ],
+    "summary": {
+      "run_id": "run_793912db2c524fdd86c410ff0377a870",
+      "ticker": "NVDA",
+      "completed_nodes": [
+        "StartTickerInitialization",
+        "BuildGlobalResearch",
+        "ReviewGlobalResearch",
+        "GenerateExpectationUnits",
+        "ReviewExpectationFields",
+        "ResolveObjectionsAndDelegations",
+        "PromoteExpectationToBeliefState",
+        "GenerateKnownEvents",
+        "GenerateMonitoringConfig",
+        "GenerateMonitoringPolicy",
+        "FinalizeInitialization"
+      ],
+      "stable_document_types": [
+        "global_research",
+        "expectation_unit",
+        "known_events",
+        "monitoring_config",
+        "monitoring_policy"
+      ],
+      "commit_count": 5,
+      "working_memory_count": 6,
+      "unresolved_objection_count": 0,
+      "blocking_delegation_count": 0,
+      "notes": [
+        "Initialization workflow completed."
+      ]
+    }
+  },
+  "documents": {
+    "global_research": {
+      "doc_7c792ce859d24f8bbfcafe47f75eb263": {
+        "document": {
+          "document_id": "doc_7c792ce859d24f8bbfcafe47f75eb263",
+          "document_type": "global_research",
+          "ticker": "NVDA",
+          "created_at": "2026-05-29T12:03:58.357749Z",
+          "updated_at": null,
+          "fundamental_report": {
+            "text": "NVDA mock fundamental research text.",
+            "summary": "NVDA mock fundamental summary.",
+            "evidence_refs": [
+              {
+                "evidence_id": "evidence_e8417fcbd57347c596a04b10d3a12727",
+                "source_type": "external_report",
+                "source_id": "external_report:mock",
+                "title": "Mock initialization evidence",
+                "summary": "Deterministic Phase 5 workflow fixture evidence.",
+                "retrieval_metadata": {
+                  "fixture": "phase5"
+                },
+                "confidence": 0.8,
+                "citation_scope": "initialization_workflow"
+              }
+            ],
+            "author_agent": "C1",
+            "reviewer_agents": [
+              "O1"
+            ]
+          },
+          "macro_report": {
+            "text": "NVDA mock macro research text.",
+            "summary": "NVDA mock macro summary.",
+            "evidence_refs": [
+              {
+                "evidence_id": "evidence_f3b9f14a0e944ae0a70250ea8339d525",
+                "source_type": "external_report",
+                "source_id": "external_report:mock",
+                "title": "Mock initialization evidence",
+                "summary": "Deterministic Phase 5 workflow fixture evidence.",
+                "retrieval_metadata": {
+                  "fixture": "phase5"
+                },
+                "confidence": 0.8,
+                "citation_scope": "initialization_workflow"
+              }
+            ],
+            "author_agent": "C2",
+            "reviewer_agents": [
+              "O1"
+            ]
+          },
+          "industry_report": {
+            "text": "NVDA mock industry research text.",
+            "summary": "NVDA mock industry summary.",
+            "evidence_refs": [
+              {
+                "evidence_id": "evidence_d8c7e19bb5664ae88078d1ba7bcf5e7e",
+                "source_type": "external_report",
+                "source_id": "external_report:mock",
+                "title": "Mock initialization evidence",
+                "summary": "Deterministic Phase 5 workflow fixture evidence.",
+                "retrieval_metadata": {
+                  "fixture": "phase5"
+                },
+                "confidence": 0.8,
+                "citation_scope": "initialization_workflow"
+              }
+            ],
+            "author_agent": "C3",
+            "reviewer_agents": [
+              "O1"
+            ]
+          },
+          "market_narrative_report": {
+            "text": "NVDA mock market narrative research text.",
+            "summary": "NVDA mock market narrative summary.",
+            "evidence_refs": [
+              {
+                "evidence_id": "evidence_a34de350d03a421abf1fd9f5c07dd30e",
+                "source_type": "external_report",
+                "source_id": "external_report:mock",
+                "title": "Mock initialization evidence",
+                "summary": "Deterministic Phase 5 workflow fixture evidence.",
+                "retrieval_metadata": {
+                  "fixture": "phase5"
+                },
+                "confidence": 0.8,
+                "citation_scope": "initialization_workflow"
+              }
+            ],
+            "author_agent": "O1",
+            "reviewer_agents": [
+              "O1"
+            ]
+          },
+          "market_trace_report": {
+            "text": "NVDA mock market trace research text.",
+            "summary": "NVDA mock market trace summary.",
+            "evidence_refs": [
+              {
+                "evidence_id": "evidence_c0f2540bd9e44edca269fc0f1b5bb443",
+                "source_type": "external_report",
+                "source_id": "external_report:mock",
+                "title": "Mock initialization evidence",
+                "summary": "Deterministic Phase 5 workflow fixture evidence.",
+                "retrieval_metadata": {
+                  "fixture": "phase5"
+                },
+                "confidence": 0.8,
+                "citation_scope": "initialization_workflow"
+              }
+            ],
+            "author_agent": "O4",
+            "reviewer_agents": [
+              "O1"
+            ]
+          }
+        }
+      }
+    },
+    "expectation_unit": {
+      "exp_mock_core": {
+        "document": {
+          "document_id": "doc_00090548e1304006af09cb4d2a8fcda2",
+          "document_type": "expectation_unit",
+          "ticker": "NVDA",
+          "created_at": "2026-05-29T12:03:58.358748Z",
+          "updated_at": null,
+          "expectation_id": "exp_mock_core",
+          "expectation_name": "NVDA mock core expectation",
+          "direction": "bullish",
+          "why_it_matters": "It anchors the initialization workflow fixture.",
+          "market_view": {
+            "text": "NVDA mock market view research text.",
+            "summary": "NVDA mock market view summary.",
+            "evidence_refs": [
+              {
+                "evidence_id": "evidence_3d84948408344e9f9e3de44ac9dbc23b",
+                "source_type": "external_report",
+                "source_id": "external_report:mock",
+                "title": "Mock initialization evidence",
+                "summary": "Deterministic Phase 5 workflow fixture evidence.",
+                "retrieval_metadata": {
+                  "fixture": "phase5"
+                },
+                "confidence": 0.8,
+                "citation_scope": "initialization_workflow"
+              }
+            ],
+            "author_agent": "O1",
+            "reviewer_agents": [
+              "O1"
+            ]
+          },
+          "realized_facts": [
+            {
+              "event_id": "event_d365b0a8632f4d858eb1ad036f46e405",
+              "description": "Mock realized fact for initialization.",
+              "price_reaction": {
+                "price_change": "+3%",
+                "price_pattern": "mock gap up",
+                "interpretation": "Mock market has partially priced the event.",
+                "evidence_refs": [
+                  {
+                    "evidence_id": "evidence_ccda3e8ee94743db9649e5e5d5611f1d",
+                    "source_type": "market_data",
+                    "source_id": "market_data:mock",
+                    "title": "Mock initialization evidence",
+                    "summary": "Deterministic Phase 5 workflow fixture evidence.",
+                    "retrieval_metadata": {
+                      "fixture": "phase5"
+                    },
+                    "confidence": 0.8,
+                    "citation_scope": "initialization_workflow"
+                  }
+                ]
+              },
+              "evidence_refs": [
+                {
+                  "evidence_id": "evidence_6767a3cf57c142679957255fbdb6da72",
+                  "source_type": "fact_check",
+                  "source_id": "fact_check:mock",
+                  "title": "Mock initialization evidence",
+                  "summary": "Deterministic Phase 5 workflow fixture evidence.",
+                  "retrieval_metadata": {
+                    "fixture": "phase5"
+                  },
+                  "confidence": 0.8,
+                  "citation_scope": "initialization_workflow"
+                }
+              ]
+            }
+          ],
+          "realized_facts_summary": "Mock realized fact is available.",
+          "key_variables": [
+            {
+              "variable_id": "variable_bbbf0222fead435ab54299d876d33fea",
+              "name": "Mock demand variable",
+              "current_status": "stable",
+              "certainty": "medium",
+              "evidence_refs": [
+                {
+                  "evidence_id": "evidence_fc2693bcecbd495595d44a39b1169b47",
+                  "source_type": "external_report",
+                  "source_id": "external_report:mock",
+                  "title": "Mock initialization evidence",
+                  "summary": "Deterministic Phase 5 workflow fixture evidence.",
+                  "retrieval_metadata": {
+                    "fixture": "phase5"
+                  },
+                  "confidence": 0.8,
+                  "citation_scope": "initialization_workflow"
+                }
+              ]
+            }
+          ],
+          "event_monitoring_direction": {
+            "known_event_notice": "Monitor mock event follow-through.",
+            "positive_events": [
+              "mock positive confirmation"
+            ],
+            "negative_events": [
+              "mock negative revision"
+            ]
+          }
+        }
+      }
+    },
+    "known_events": {
+      "doc_53e26e2fcad04560b3d08c39b92d7442": {
+        "document": {
+          "document_id": "doc_53e26e2fcad04560b3d08c39b92d7442",
+          "document_type": "known_events",
+          "ticker": "NVDA",
+          "created_at": "2026-05-29T12:03:58.362748Z",
+          "updated_at": null,
+          "events": [
+            {
+              "event_id": "event_a386d71a8ad442efb9dc530cba95c0eb",
+              "event_time": "2026-05-29T12:03:58.362748Z",
+              "description": "Mock known event.",
+              "source": {
+                "evidence_id": "evidence_96628852d86e4bd8b9d056ad0ef54300",
+                "source_type": "doxatlas_source",
+                "source_id": "doxatlas_source:mock",
+                "title": "Mock initialization evidence",
+                "summary": "Deterministic Phase 5 workflow fixture evidence.",
+                "retrieval_metadata": {
+                  "fixture": "phase5"
+                },
+                "confidence": 0.8,
+                "citation_scope": "initialization_workflow"
+              },
+              "expectation_id": "exp_mock_core",
+              "discussed_by_market": true,
+              "has_price_reaction": true,
+              "is_known_old_news": false
+            }
+          ]
+        }
+      }
+    },
+    "monitoring_config": {
+      "doc_10852126db2b41ab93890a7490a4a6c7": {
+        "document": {
+          "document_id": "doc_10852126db2b41ab93890a7490a4a6c7",
+          "document_type": "monitoring_config",
+          "ticker": "NVDA",
+          "created_at": "2026-05-29T12:03:58.364747Z",
+          "updated_at": null,
+          "monitoring_items": [
+            {
+              "item_id": "monitor_b79e1ae1bec74a19ac81224b72fc1109",
+              "base_keywords": [
+                "NVDA"
+              ],
+              "extra_objects": [
+                "mock core expectation"
+              ],
+              "extra_keywords": [
+                "mock confirmation"
+              ],
+              "related_entities": [],
+              "expectation_id": "exp_mock_core",
+              "priority": "high",
+              "trigger_condition": "mock signal changes the expectation"
+            }
+          ]
+        }
+      }
+    },
+    "monitoring_policy": {
+      "doc_c92bd6a990b94977bfe5d5149d8ea434": {
+        "document": {
+          "document_id": "doc_c92bd6a990b94977bfe5d5149d8ea434",
+          "document_type": "monitoring_policy",
+          "ticker": "NVDA",
+          "created_at": "2026-05-29T12:03:58.366754Z",
+          "updated_at": null,
+          "direct_trade_rules": [
+            {
+              "rule_id": "rule_b7f3bda19aea483c9cc9849cf2bfc1fc",
+              "action_type": "direct_trade",
+              "trigger_condition": "mock high-confidence positive signal",
+              "expectation_id": "exp_mock_core",
+              "action": "mark for human review",
+              "strategy_note": "No broker action is triggered in Phase 5."
+            }
+          ],
+          "push_to_agent_rules": [
+            {
+              "rule_id": "rule_1a7a517430074377a5096410bc873a34",
+              "action_type": "push_to_agent",
+              "trigger_condition": "mock ambiguous signal",
+              "expectation_id": "exp_mock_core",
+              "action": "send to O1",
+              "strategy_note": "Requires expectation-owner review."
+            }
+          ],
+          "cache_rules": [
+            {
+              "rule_id": "rule_ab7d6bb7acfa428eb8739d681b6d9fb0",
+              "action_type": "cache",
+              "trigger_condition": "mock duplicate old event",
+              "expectation_id": "exp_mock_core",
+              "action": "cache for batch review",
+              "strategy_note": "No immediate action."
+            }
+          ]
+        }
+      }
+    }
+  },
+  "evidence_refs": [
+    {
+      "evidence_id": "evidence_13b09efdbdcf4eaa813e84b499bf6794",
+      "source_type": "agent_output",
+      "source_id": "agent_output:mock",
+      "title": "Mock initialization evidence",
+      "summary": "Deterministic Phase 5 workflow fixture evidence.",
+      "retrieval_metadata": {
+        "fixture": "phase5"
+      },
+      "confidence": 0.8,
+      "citation_scope": "initialization_workflow"
+    },
+    {
+      "evidence_id": "evidence_5c3e9dc3c9fc4fe8971952d409e434f1",
+      "source_type": "agent_output",
+      "source_id": "agent_output:mock",
+      "title": "Mock initialization evidence",
+      "summary": "Deterministic Phase 5 workflow fixture evidence.",
+      "retrieval_metadata": {
+        "fixture": "phase5"
+      },
+      "confidence": 0.8,
+      "citation_scope": "initialization_workflow"
+    },
+    {
+      "evidence_id": "evidence_5e35493864a44776b8674fd47cf1f218",
+      "source_type": "agent_output",
+      "source_id": "agent_output:mock",
+      "title": "Mock initialization evidence",
+      "summary": "Deterministic Phase 5 workflow fixture evidence.",
+      "retrieval_metadata": {
+        "fixture": "phase5"
+      },
+      "confidence": 0.8,
+      "citation_scope": "initialization_workflow"
+    },
+    {
+      "evidence_id": "evidence_67388f8619b64f9dbd13a2a5a7c719aa",
+      "source_type": "agent_output",
+      "source_id": "agent_output:mock",
+      "title": "Mock initialization evidence",
+      "summary": "Deterministic Phase 5 workflow fixture evidence.",
+      "retrieval_metadata": {
+        "fixture": "phase5"
+      },
+      "confidence": 0.8,
+      "citation_scope": "initialization_workflow"
+    },
+    {
+      "evidence_id": "evidence_7d214ec8b5c147a9a63ed73d5727c298",
+      "source_type": "agent_output",
+      "source_id": "agent_output:mock",
+      "title": "Mock initialization evidence",
+      "summary": "Deterministic Phase 5 workflow fixture evidence.",
+      "retrieval_metadata": {
+        "fixture": "phase5"
+      },
+      "confidence": 0.8,
+      "citation_scope": "initialization_workflow"
+    },
+    {
+      "evidence_id": "evidence_86dea3a8a49b411f8cdc8503a4f7556f",
+      "source_type": "doxatlas_source",
+      "source_id": "doxatlas_source:mock",
+      "title": "Mock initialization evidence",
+      "summary": "Deterministic Phase 5 workflow fixture evidence.",
+      "retrieval_metadata": {
+        "fixture": "phase5"
+      },
+      "confidence": 0.8,
+      "citation_scope": "initialization_workflow"
+    },
+    {
+      "evidence_id": "evidence_9ca570ec25a14a4790837b69e5c26235",
+      "source_type": "agent_output",
+      "source_id": "agent_output:mock",
+      "title": "Mock initialization evidence",
+      "summary": "Deterministic Phase 5 workflow fixture evidence.",
+      "retrieval_metadata": {
+        "fixture": "phase5"
+      },
+      "confidence": 0.8,
+      "citation_scope": "initialization_workflow"
+    },
+    {
+      "evidence_id": "evidence_a0de267745554510b90a6de4a5018f41",
+      "source_type": "agent_output",
+      "source_id": "agent_output:mock",
+      "title": "Mock initialization evidence",
+      "summary": "Deterministic Phase 5 workflow fixture evidence.",
+      "retrieval_metadata": {
+        "fixture": "phase5"
+      },
+      "confidence": 0.8,
+      "citation_scope": "initialization_workflow"
+    },
+    {
+      "evidence_id": "evidence_a42ab90c37e94e3296513bdc1c34fd77",
+      "source_type": "agent_output",
+      "source_id": "agent_output:mock",
+      "title": "Mock initialization evidence",
+      "summary": "Deterministic Phase 5 workflow fixture evidence.",
+      "retrieval_metadata": {
+        "fixture": "phase5"
+      },
+      "confidence": 0.8,
+      "citation_scope": "initialization_workflow"
+    },
+    {
+      "evidence_id": "evidence_c3d5a512431f4282bc8fd542b639cad7",
+      "source_type": "agent_output",
+      "source_id": "agent_output:mock",
+      "title": "Mock initialization evidence",
+      "summary": "Deterministic Phase 5 workflow fixture evidence.",
+      "retrieval_metadata": {
+        "fixture": "phase5"
+      },
+      "confidence": 0.8,
+      "citation_scope": "initialization_workflow"
+    },
+    {
+      "evidence_id": "evidence_c3f65415a65a4d27b7210963911167a1",
+      "source_type": "agent_output",
+      "source_id": "agent_output:mock",
+      "title": "Mock initialization evidence",
+      "summary": "Deterministic Phase 5 workflow fixture evidence.",
+      "retrieval_metadata": {
+        "fixture": "phase5"
+      },
+      "confidence": 0.8,
+      "citation_scope": "initialization_workflow"
+    },
+    {
+      "evidence_id": "evidence_d0f327ae8e9c4ed8aef08cf845be06ba",
+      "source_type": "agent_output",
+      "source_id": "agent_output:mock",
+      "title": "Mock initialization evidence",
+      "summary": "Deterministic Phase 5 workflow fixture evidence.",
+      "retrieval_metadata": {
+        "fixture": "phase5"
+      },
+      "confidence": 0.8,
+      "citation_scope": "initialization_workflow"
+    }
+  ],
+  "working_memory": [
+    {
+      "entry_id": "wm_9a758c02799e4c0684f1442ca0376a94",
+      "author_agent": "C1",
+      "content_type": "agent_result",
+      "payload": {
+        "status": "succeeded",
+        "payload": {
+          "document_type": "global_research"
+        },
+        "patch_ids": [
+          "patch_2c71ab4896b54314af164ae4c5610d98"
+        ],
+        "objection_ids": [],
+        "delegation_ids": []
+      },
+      "evidence_ids": [
+        "evidence_13b09efdbdcf4eaa813e84b499bf6794"
+      ],
+      "created_at": "2026-05-29T12:03:58.357749+00:00"
+    },
+    {
+      "entry_id": "wm_0b2bd8d27fff41eda897034365c96ac2",
+      "author_agent": "O1",
+      "content_type": "agent_result",
+      "payload": {
+        "status": "succeeded",
+        "payload": {
+          "expectation_count": 1
+        },
+        "patch_ids": [
+          "patch_5b0cabb910a54afab775b03afe93d803"
+        ],
+        "objection_ids": [],
+        "delegation_ids": []
+      },
+      "evidence_ids": [
+        "evidence_a0de267745554510b90a6de4a5018f41"
+      ],
+      "created_at": "2026-05-29T12:03:58.358748+00:00"
+    },
+    {
+      "entry_id": "wm_750a870cc6004448bd77b045252e889c",
+      "author_agent": "A1",
+      "content_type": "agent_review",
+      "payload": {
+        "status": "succeeded",
+        "payload": {
+          "review": "blocking_items_created"
+        },
+        "patch_ids": [],
+        "objection_ids": [
+          "objection_843314451fd2454eb3716163ff822f37"
+        ],
+        "delegation_ids": [
+          "delegation_b0914f7270c4441a9a10373398478df9"
+        ]
+      },
+      "evidence_ids": [
+        "evidence_a42ab90c37e94e3296513bdc1c34fd77"
+      ],
+      "created_at": "2026-05-29T12:03:58.359748+00:00"
+    },
+    {
+      "entry_id": "wm_14f78926548243bdb6dc19c9ac1e57b7",
+      "author_agent": "O1",
+      "content_type": "agent_result",
+      "payload": {
+        "status": "succeeded",
+        "payload": {
+          "document_type": "known_events"
+        },
+        "patch_ids": [
+          "patch_3fc72315255240a0a12a84b27748d9fd"
+        ],
+        "objection_ids": [],
+        "delegation_ids": []
+      },
+      "evidence_ids": [
+        "evidence_9ca570ec25a14a4790837b69e5c26235"
+      ],
+      "created_at": "2026-05-29T12:03:58.363749+00:00"
+    },
+    {
+      "entry_id": "wm_2725eaab09e540e1991cba9d583fb54f",
+      "author_agent": "O2",
+      "content_type": "agent_result",
+      "payload": {
+        "status": "succeeded",
+        "payload": {
+          "document_type": "monitoring_config"
+        },
+        "patch_ids": [
+          "patch_5c56e08713864988abcd4b982f158bc1"
+        ],
+        "objection_ids": [],
+        "delegation_ids": []
+      },
+      "evidence_ids": [
+        "evidence_5e35493864a44776b8674fd47cf1f218"
+      ],
+      "created_at": "2026-05-29T12:03:58.364747+00:00"
+    },
+    {
+      "entry_id": "wm_612bcf7cb39547808eb5878ecdf1ef5a",
+      "author_agent": "O2",
+      "content_type": "agent_result",
+      "payload": {
+        "status": "succeeded",
+        "payload": {
+          "document_type": "monitoring_policy"
+        },
+        "patch_ids": [
+          "patch_f732587a3e2743cdbb71554757d47d4e"
+        ],
+        "objection_ids": [],
+        "delegation_ids": []
+      },
+      "evidence_ids": [
+        "evidence_d0f327ae8e9c4ed8aef08cf845be06ba"
+      ],
+      "created_at": "2026-05-29T12:03:58.366754+00:00"
+    }
+  ],
+  "commit_log": [
+    {
+      "commit_id": "commit_0d4bc8390fca434d8a2bdf743080ea12",
+      "author_agent": "C1",
+      "triggered_by": "C1",
+      "trigger_reason": "BuildGlobalResearch produced stable document.",
+      "document_type": "global_research",
+      "field_path": "document",
+      "document_id": "doc_7c792ce859d24f8bbfcafe47f75eb263",
+      "expectation_id": null,
+      "patch_id": "patch_2c71ab4896b54314af164ae4c5610d98",
+      "before": null,
+      "after": {
+        "document_id": "doc_7c792ce859d24f8bbfcafe47f75eb263",
+        "document_type": "global_research",
+        "ticker": "NVDA",
+        "created_at": "2026-05-29T12:03:58.357749Z",
+        "updated_at": null,
+        "fundamental_report": {
+          "text": "NVDA mock fundamental research text.",
+          "summary": "NVDA mock fundamental summary.",
+          "evidence_refs": [
+            {
+              "evidence_id": "evidence_e8417fcbd57347c596a04b10d3a12727",
+              "source_type": "external_report",
+              "source_id": "external_report:mock",
+              "title": "Mock initialization evidence",
+              "summary": "Deterministic Phase 5 workflow fixture evidence.",
+              "retrieval_metadata": {
+                "fixture": "phase5"
+              },
+              "confidence": 0.8,
+              "citation_scope": "initialization_workflow"
+            }
+          ],
+          "author_agent": "C1",
+          "reviewer_agents": [
+            "O1"
+          ]
+        },
+        "macro_report": {
+          "text": "NVDA mock macro research text.",
+          "summary": "NVDA mock macro summary.",
+          "evidence_refs": [
+            {
+              "evidence_id": "evidence_f3b9f14a0e944ae0a70250ea8339d525",
+              "source_type": "external_report",
+              "source_id": "external_report:mock",
+              "title": "Mock initialization evidence",
+              "summary": "Deterministic Phase 5 workflow fixture evidence.",
+              "retrieval_metadata": {
+                "fixture": "phase5"
+              },
+              "confidence": 0.8,
+              "citation_scope": "initialization_workflow"
+            }
+          ],
+          "author_agent": "C2",
+          "reviewer_agents": [
+            "O1"
+          ]
+        },
+        "industry_report": {
+          "text": "NVDA mock industry research text.",
+          "summary": "NVDA mock industry summary.",
+          "evidence_refs": [
+            {
+              "evidence_id": "evidence_d8c7e19bb5664ae88078d1ba7bcf5e7e",
+              "source_type": "external_report",
+              "source_id": "external_report:mock",
+              "title": "Mock initialization evidence",
+              "summary": "Deterministic Phase 5 workflow fixture evidence.",
+              "retrieval_metadata": {
+                "fixture": "phase5"
+              },
+              "confidence": 0.8,
+              "citation_scope": "initialization_workflow"
+            }
+          ],
+          "author_agent": "C3",
+          "reviewer_agents": [
+            "O1"
+          ]
+        },
+        "market_narrative_report": {
+          "text": "NVDA mock market narrative research text.",
+          "summary": "NVDA mock market narrative summary.",
+          "evidence_refs": [
+            {
+              "evidence_id": "evidence_a34de350d03a421abf1fd9f5c07dd30e",
+              "source_type": "external_report",
+              "source_id": "external_report:mock",
+              "title": "Mock initialization evidence",
+              "summary": "Deterministic Phase 5 workflow fixture evidence.",
+              "retrieval_metadata": {
+                "fixture": "phase5"
+              },
+              "confidence": 0.8,
+              "citation_scope": "initialization_workflow"
+            }
+          ],
+          "author_agent": "O1",
+          "reviewer_agents": [
+            "O1"
+          ]
+        },
+        "market_trace_report": {
+          "text": "NVDA mock market trace research text.",
+          "summary": "NVDA mock market trace summary.",
+          "evidence_refs": [
+            {
+              "evidence_id": "evidence_c0f2540bd9e44edca269fc0f1b5bb443",
+              "source_type": "external_report",
+              "source_id": "external_report:mock",
+              "title": "Mock initialization evidence",
+              "summary": "Deterministic Phase 5 workflow fixture evidence.",
+              "retrieval_metadata": {
+                "fixture": "phase5"
+              },
+              "confidence": 0.8,
+              "citation_scope": "initialization_workflow"
+            }
+          ],
+          "author_agent": "O4",
+          "reviewer_agents": [
+            "O1"
+          ]
+        }
+      },
+      "evidence_ids": [
+        "evidence_67388f8619b64f9dbd13a2a5a7c719aa"
+      ],
+      "resolved_objection_ids": [],
+      "residual_disputes": [],
+      "created_at": "2026-05-29T12:03:58.357749+00:00"
+    },
+    {
+      "commit_id": "commit_32640399d06f4e7eb436d8312d3db9b2",
+      "author_agent": "O1",
+      "triggered_by": "O1",
+      "trigger_reason": "Promote reviewed expectation unit.",
+      "document_type": "expectation_unit",
+      "field_path": "document",
+      "document_id": null,
+      "expectation_id": "exp_mock_core",
+      "patch_id": "patch_5b0cabb910a54afab775b03afe93d803",
+      "before": null,
+      "after": {
+        "document_id": "doc_00090548e1304006af09cb4d2a8fcda2",
+        "document_type": "expectation_unit",
+        "ticker": "NVDA",
+        "created_at": "2026-05-29T12:03:58.358748Z",
+        "updated_at": null,
+        "expectation_id": "exp_mock_core",
+        "expectation_name": "NVDA mock core expectation",
+        "direction": "bullish",
+        "why_it_matters": "It anchors the initialization workflow fixture.",
+        "market_view": {
+          "text": "NVDA mock market view research text.",
+          "summary": "NVDA mock market view summary.",
+          "evidence_refs": [
+            {
+              "evidence_id": "evidence_3d84948408344e9f9e3de44ac9dbc23b",
+              "source_type": "external_report",
+              "source_id": "external_report:mock",
+              "title": "Mock initialization evidence",
+              "summary": "Deterministic Phase 5 workflow fixture evidence.",
+              "retrieval_metadata": {
+                "fixture": "phase5"
+              },
+              "confidence": 0.8,
+              "citation_scope": "initialization_workflow"
+            }
+          ],
+          "author_agent": "O1",
+          "reviewer_agents": [
+            "O1"
+          ]
+        },
+        "realized_facts": [
+          {
+            "event_id": "event_d365b0a8632f4d858eb1ad036f46e405",
+            "description": "Mock realized fact for initialization.",
+            "price_reaction": {
+              "price_change": "+3%",
+              "price_pattern": "mock gap up",
+              "interpretation": "Mock market has partially priced the event.",
+              "evidence_refs": [
+                {
+                  "evidence_id": "evidence_ccda3e8ee94743db9649e5e5d5611f1d",
+                  "source_type": "market_data",
+                  "source_id": "market_data:mock",
+                  "title": "Mock initialization evidence",
+                  "summary": "Deterministic Phase 5 workflow fixture evidence.",
+                  "retrieval_metadata": {
+                    "fixture": "phase5"
+                  },
+                  "confidence": 0.8,
+                  "citation_scope": "initialization_workflow"
+                }
+              ]
+            },
+            "evidence_refs": [
+              {
+                "evidence_id": "evidence_6767a3cf57c142679957255fbdb6da72",
+                "source_type": "fact_check",
+                "source_id": "fact_check:mock",
+                "title": "Mock initialization evidence",
+                "summary": "Deterministic Phase 5 workflow fixture evidence.",
+                "retrieval_metadata": {
+                  "fixture": "phase5"
+                },
+                "confidence": 0.8,
+                "citation_scope": "initialization_workflow"
+              }
+            ]
+          }
+        ],
+        "realized_facts_summary": "Mock realized fact is available.",
+        "key_variables": [
+          {
+            "variable_id": "variable_bbbf0222fead435ab54299d876d33fea",
+            "name": "Mock demand variable",
+            "current_status": "stable",
+            "certainty": "medium",
+            "evidence_refs": [
+              {
+                "evidence_id": "evidence_fc2693bcecbd495595d44a39b1169b47",
+                "source_type": "external_report",
+                "source_id": "external_report:mock",
+                "title": "Mock initialization evidence",
+                "summary": "Deterministic Phase 5 workflow fixture evidence.",
+                "retrieval_metadata": {
+                  "fixture": "phase5"
+                },
+                "confidence": 0.8,
+                "citation_scope": "initialization_workflow"
+              }
+            ]
+          }
+        ],
+        "event_monitoring_direction": {
+          "known_event_notice": "Monitor mock event follow-through.",
+          "positive_events": [
+            "mock positive confirmation"
+          ],
+          "negative_events": [
+            "mock negative revision"
+          ]
+        }
+      },
+      "evidence_ids": [
+        "evidence_7d214ec8b5c147a9a63ed73d5727c298"
+      ],
+      "resolved_objection_ids": [
+        "objection_843314451fd2454eb3716163ff822f37"
+      ],
+      "residual_disputes": [],
+      "created_at": "2026-05-29T12:03:58.362748+00:00"
+    },
+    {
+      "commit_id": "commit_c9e922938cbc4a35a4a5e620087fddb4",
+      "author_agent": "O1",
+      "triggered_by": "O1",
+      "trigger_reason": "GenerateKnownEvents produced stable document.",
+      "document_type": "known_events",
+      "field_path": "document",
+      "document_id": "doc_53e26e2fcad04560b3d08c39b92d7442",
+      "expectation_id": null,
+      "patch_id": "patch_3fc72315255240a0a12a84b27748d9fd",
+      "before": null,
+      "after": {
+        "document_id": "doc_53e26e2fcad04560b3d08c39b92d7442",
+        "document_type": "known_events",
+        "ticker": "NVDA",
+        "created_at": "2026-05-29T12:03:58.362748Z",
+        "updated_at": null,
+        "events": [
+          {
+            "event_id": "event_a386d71a8ad442efb9dc530cba95c0eb",
+            "event_time": "2026-05-29T12:03:58.362748Z",
+            "description": "Mock known event.",
+            "source": {
+              "evidence_id": "evidence_96628852d86e4bd8b9d056ad0ef54300",
+              "source_type": "doxatlas_source",
+              "source_id": "doxatlas_source:mock",
+              "title": "Mock initialization evidence",
+              "summary": "Deterministic Phase 5 workflow fixture evidence.",
+              "retrieval_metadata": {
+                "fixture": "phase5"
+              },
+              "confidence": 0.8,
+              "citation_scope": "initialization_workflow"
+            },
+            "expectation_id": "exp_mock_core",
+            "discussed_by_market": true,
+            "has_price_reaction": true,
+            "is_known_old_news": false
+          }
+        ]
+      },
+      "evidence_ids": [
+        "evidence_c3f65415a65a4d27b7210963911167a1"
+      ],
+      "resolved_objection_ids": [
+        "objection_843314451fd2454eb3716163ff822f37"
+      ],
+      "residual_disputes": [],
+      "created_at": "2026-05-29T12:03:58.363749+00:00"
+    },
+    {
+      "commit_id": "commit_7ef2ace116704abdb86b540bd2179472",
+      "author_agent": "O2",
+      "triggered_by": "O2",
+      "trigger_reason": "GenerateMonitoringConfig produced stable document.",
+      "document_type": "monitoring_config",
+      "field_path": "document",
+      "document_id": "doc_10852126db2b41ab93890a7490a4a6c7",
+      "expectation_id": null,
+      "patch_id": "patch_5c56e08713864988abcd4b982f158bc1",
+      "before": null,
+      "after": {
+        "document_id": "doc_10852126db2b41ab93890a7490a4a6c7",
+        "document_type": "monitoring_config",
+        "ticker": "NVDA",
+        "created_at": "2026-05-29T12:03:58.364747Z",
+        "updated_at": null,
+        "monitoring_items": [
+          {
+            "item_id": "monitor_b79e1ae1bec74a19ac81224b72fc1109",
+            "base_keywords": [
+              "NVDA"
+            ],
+            "extra_objects": [
+              "mock core expectation"
+            ],
+            "extra_keywords": [
+              "mock confirmation"
+            ],
+            "related_entities": [],
+            "expectation_id": "exp_mock_core",
+            "priority": "high",
+            "trigger_condition": "mock signal changes the expectation"
+          }
+        ]
+      },
+      "evidence_ids": [
+        "evidence_c3d5a512431f4282bc8fd542b639cad7"
+      ],
+      "resolved_objection_ids": [
+        "objection_843314451fd2454eb3716163ff822f37"
+      ],
+      "residual_disputes": [],
+      "created_at": "2026-05-29T12:03:58.365746+00:00"
+    },
+    {
+      "commit_id": "commit_c130f0d53d1e4561aab4b7a9dcd6d2ee",
+      "author_agent": "O2",
+      "triggered_by": "O2",
+      "trigger_reason": "GenerateMonitoringPolicy produced stable document.",
+      "document_type": "monitoring_policy",
+      "field_path": "document",
+      "document_id": "doc_c92bd6a990b94977bfe5d5149d8ea434",
+      "expectation_id": null,
+      "patch_id": "patch_f732587a3e2743cdbb71554757d47d4e",
+      "before": null,
+      "after": {
+        "document_id": "doc_c92bd6a990b94977bfe5d5149d8ea434",
+        "document_type": "monitoring_policy",
+        "ticker": "NVDA",
+        "created_at": "2026-05-29T12:03:58.366754Z",
+        "updated_at": null,
+        "direct_trade_rules": [
+          {
+            "rule_id": "rule_b7f3bda19aea483c9cc9849cf2bfc1fc",
+            "action_type": "direct_trade",
+            "trigger_condition": "mock high-confidence positive signal",
+            "expectation_id": "exp_mock_core",
+            "action": "mark for human review",
+            "strategy_note": "No broker action is triggered in Phase 5."
+          }
+        ],
+        "push_to_agent_rules": [
+          {
+            "rule_id": "rule_1a7a517430074377a5096410bc873a34",
+            "action_type": "push_to_agent",
+            "trigger_condition": "mock ambiguous signal",
+            "expectation_id": "exp_mock_core",
+            "action": "send to O1",
+            "strategy_note": "Requires expectation-owner review."
+          }
+        ],
+        "cache_rules": [
+          {
+            "rule_id": "rule_ab7d6bb7acfa428eb8739d681b6d9fb0",
+            "action_type": "cache",
+            "trigger_condition": "mock duplicate old event",
+            "expectation_id": "exp_mock_core",
+            "action": "cache for batch review",
+            "strategy_note": "No immediate action."
+          }
+        ]
+      },
+      "evidence_ids": [
+        "evidence_5c3e9dc3c9fc4fe8971952d409e434f1"
+      ],
+      "resolved_objection_ids": [
+        "objection_843314451fd2454eb3716163ff822f37"
+      ],
+      "residual_disputes": [],
+      "created_at": "2026-05-29T12:03:58.367746+00:00"
+    }
+  ],
+  "objections": [
+    {
+      "objection_id": "objection_843314451fd2454eb3716163ff822f37",
+      "source_agent": "A1",
+      "status": "resolved",
+      "severity": "blocking",
+      "target": {
+        "document_type": "expectation_unit",
+        "field_path": "document",
+        "ticker": "NVDA",
+        "document_id": null,
+        "expectation_id": "exp_mock_core"
+      },
+      "reason": "Mock review requires DoxAtlas source support before promotion.",
+      "resolution_note": "Mock O1 revision resolved the objection.",
+      "evidence_ids": [
+        "evidence_86dea3a8a49b411f8cdc8503a4f7556f"
+      ]
+    }
+  ],
+  "delegations": [
+    {
+      "delegation_id": "delegation_b0914f7270c4441a9a10373398478df9",
+      "requester_agent": "O1",
+      "target_agent": "A2",
+      "status": "completed",
+      "question": "Confirm the mock realized fact before promotion.",
+      "blocking_scope": {
+        "document_type": "expectation_unit",
+        "field_path": "document",
+        "ticker": "NVDA",
+        "document_id": null,
+        "expectation_id": "exp_mock_core"
+      },
+      "required_evidence": [
+        "fact_check"
+      ],
+      "result_summary": "Mock A2 fact-check completed."
+    }
+  ],
+  "residual_risks": [
+    "mock_fixture_only_no_real_external_services"
+  ]
+}

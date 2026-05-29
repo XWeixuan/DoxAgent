@@ -1,0 +1,36 @@
+{
+  "ticker": "NVDA",
+  "fixture_name": "phase6_mock_ticker",
+  "mock": true,
+  "doxatlas": {
+    "reports": [
+      {
+        "source_id": "doxatlas:nvda:ai-demand:001",
+        "title": "AI server demand narrative cluster",
+        "summary": "Mock DoxAtlas report says AI server demand remains the dominant market debate."
+      },
+      {
+        "source_id": "doxatlas:nvda:pricing:002",
+        "title": "Pricing debate narrative cluster",
+        "summary": "Mock DoxAtlas report flags pricing power as a disputed expectation variable."
+      }
+    ],
+    "source_ids": [
+      "doxatlas:nvda:ai-demand:001",
+      "doxatlas:nvda:pricing:002"
+    ]
+  },
+  "market_data": {
+    "ohlcv_summary": "Mock OHLCV shows a +3% gap-up pattern after the known event.",
+    "price_reaction_source_id": "market:nvda:mock-gap-up"
+  },
+  "research_inputs": {
+    "fundamental_report": "Mock fundamentals emphasize data-center demand resilience.",
+    "macro_report": "Mock macro backdrop is neutral with rate-sensitivity risk.",
+    "industry_report": "Mock industry view highlights accelerator supply constraints."
+  },
+  "fact_check": {
+    "source_id": "factcheck:nvda:mock-realized-fact",
+    "summary": "Mock A2 fact-check confirms the realized fact used by the expectation unit."
+  }
+}

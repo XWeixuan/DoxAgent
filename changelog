@@ -1,0 +1,30 @@
+# changelog
+
+## 2026-05-29
+
+- Added `dev_plan/DEVELOPMENT_PLAN.md` with a phased development plan based on `dev_plan/PRD.md`, including architecture boundaries, MVP order, core module rollout, stabilization, and final external-agent adapter integration strategy.
+- Created `dev_plan/DEVELOPMENT_PLAN.md` in the workspace with a detailed phased plan from PRD requirements; noted that external GitHub agent analysis and adapter work must happen only after the core DoxAgent contracts, Blackboard service, workflow, and validation layers are stable.
+- Implemented the Phase 0 project baseline: Python 3.11 `uv` configuration, `src/doxagent` package skeleton, baseline tests, local environment template, README setup instructions, Phase 0 boundary document, and mock-first external capability policy.
+- Narrowed the Phase 0 Microsoft Agent Framework dependency to `agent-framework-core>=1.6,<2` after the all-in-one `agent-framework` meta package pulled optional Azure integrations that failed dependency resolution and exceeded the minimal-runtime scope.
+- Added explicit Ruff exclusions for `.uv-cache`, `.venv`, and external reference sources so workspace-wide linting checks only DoxAgent-owned code and tests.
+- Implemented Phase 1 domain contracts with Pydantic models for AgentTask, AgentResult, BlackboardPatch, EvidenceRef, Objection, Delegation, Commit Log entries, Working Memory entries, Belief State snapshots, and the five PRD work document schemas.
+- Added Phase 1 stateless promotion-blocking helpers plus contract fixtures and tests covering required fields, JSON round trips, evidence source types, and objection/delegation blocking behavior.
+- Added `dev_plan/PHASE1_CONTRACTS.md` and README notes documenting the schema boundary, ID strategy, structured document field strategy, and Phase 1 non-goals.
+- Implemented Phase 2 Model Gateway contracts and async client boundary, including standard request/response models, normalized gateway errors, usage and audit summaries, mock client, OpenAI and Anthropic SDK adapters, JSON response normalization, retry/fallback orchestration, and centralized LangSmith provider wrapping.
+- Added offline Phase 2 gateway tests with fake provider SDK clients covering mock responses, fallback behavior, non-retryable failures, JSON parsing errors, provider request mapping, and tracing metadata extraction.
+- Added `dev_plan/PHASE2_GATEWAY.md` and README notes documenting the Model Gateway boundary, mock-first provider strategy, fallback/error handling, and audit-vs-Commit-Log separation.
+- Implemented Phase 3 in-memory Blackboard Service with run initialization, Working Memory writes, Belief State patch submission, permission/evidence/ticker/blocker validation, dot-path patch application, Commit Log creation, and objection/delegation lifecycle helpers.
+- Added Phase 3 state transition tests covering Working Memory versus Belief State separation, patch validation failures, Commit Log behavior, unresolved objection blocking, active delegation blocking, and lifecycle unblock/retry behavior.
+- Added `dev_plan/PHASE3_BLACKBOARD_SERVICE.md` and README notes documenting the in-memory repository boundary, patch submission rules, dot-path behavior, lifecycle semantics, and Phase 3 non-goals.
+- Implemented Phase 4 agent runtime boundaries with default agent definitions, registry lookup, mock runner, and a MAF adapter placeholder that preserves the DoxAgent `AgentTask -> AgentResult` contract.
+- Added Phase 4 Context Builder snapshots and mock tool registry contracts, including permission-bounded context summaries, allowed-tool enforcement, and `ToolResult` to `EvidenceRef` conversion.
+- Added `dev_plan/PHASE4_AGENT_RUNTIME.md`, README notes, and Phase 4 tests covering registry behavior, runner boundaries, context scoping, tool permissions, evidence conversion, and Blackboard non-mutation.
+- Implemented Phase 5 Blackboard initialization workflow MVP with fixed node ordering, in-memory checkpoint/resume, deterministic mock agent outputs, Working Memory writes, Belief State promotion through Blackboard patches, and run summaries.
+- Added Phase 5 document dependency checks and blocker handling so unresolved objections or active delegations stop expectation promotion until the Blackboard lifecycle is resolved.
+- Added `dev_plan/PHASE5_INITIALIZATION_WORKFLOW.md`, README notes, and Phase 5 tests covering full mock ticker completion, dependency ordering, checkpoint JSON round-trip, blocked resume, and O2 monitoring policy write permissions.
+- Implemented Phase 6 mock ticker vertical slice with fixture input data, a `python -m doxagent.examples.phase6_mock_run` entrypoint, and a review-oriented exporter for workflow and Blackboard state.
+- Added `examples/phase6_mock_ticker/generated_run.json` showing five document outputs, evidence refs, Working Memory summaries, Commit Log entries, objection/delegation lifecycle summaries, and residual risk notes.
+- Added `dev_plan/PHASE6_E2E_SAMPLE.md`, README sample-run instructions, and Phase 6 tests covering module output, review JSON shape, audit visibility, and no broker/trade execution fields.
+- Implemented Phase 7 in-memory audit query APIs for Commit Log records, stable field traceability, unresolved objection reports, and blocking delegation reports.
+- Added Phase 7 run debug reports and workflow contract failure semantics for failed agent results, missing Blackboard patches, missing evidence, dependency violations, and blocked checkpoint recovery.
+- Added `dev_plan/PHASE7_STABILITY_AUDIT_RECOVERY.md`, README notes, and Phase 7 tests covering audit traceability, non-mutating failure behavior, partial retry without duplicate commits, and business-audit versus tracing boundaries.

@@ -1,0 +1,63 @@
+"""Agent-visible context snapshot models."""
+
+from typing import Any
+
+from pydantic import BaseModel, ConfigDict, Field
+
+from doxagent.models import (
+    AgentName,
+    DelegationStatus,
+    DocumentType,
+    EvidenceRef,
+    ObjectionSeverity,
+    ObjectionStatus,
+    TaskType,
+)
+
+
+class ContextModel(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+
+class WorkingMemorySummary(ContextModel):
+    entry_id: str
+    author_agent: AgentName
+    content_type: str
+    payload: dict[str, Any] = Field(default_factory=dict)
+    evidence_refs: list[EvidenceRef] = Field(default_factory=list)
+
+
+class ObjectionSummary(ContextModel):
+    objection_id: str
+    source_agent: AgentName
+    severity: ObjectionSeverity
+    status: ObjectionStatus
+    target_document_type: DocumentType
+    target_field_path: str
+    reason: str
+    evidence_refs: list[EvidenceRef] = Field(default_factory=list)
+
+
+class BlockingDelegationSummary(ContextModel):
+    delegation_id: str
+    requester_agent: AgentName
+    target_agent: AgentName
+    status: DelegationStatus
+    target_document_type: DocumentType
+    target_field_path: str
+    question: str
+
+
+class AgentContextSnapshot(ContextModel):
+    run_id: str
+    ticker: str
+    agent_name: AgentName
+    task_type: TaskType
+    workflow_state: str
+    task_input: dict[str, Any] = Field(default_factory=dict)
+    readable_scopes: list[str] = Field(default_factory=list)
+    belief_state_summary: dict[str, dict[str, Any]] = Field(default_factory=dict)
+    working_memory_summary: list[WorkingMemorySummary] = Field(default_factory=list)
+    evidence_refs: list[EvidenceRef] = Field(default_factory=list)
+    unresolved_objections: list[ObjectionSummary] = Field(default_factory=list)
+    blocking_delegations: list[BlockingDelegationSummary] = Field(default_factory=list)
