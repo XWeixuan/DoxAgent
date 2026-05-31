@@ -66,6 +66,7 @@ class ContextBuilder:
             workflow_state=run.workflow_state.value,
             task_input=task.input_context,
             readable_scopes=list(task.permissions.readable_context_scopes),
+            skill_summaries=task.skill_bundle.skills if task.skill_bundle is not None else [],
             belief_state_summary=belief_state_summary,
             working_memory_summary=working_memory_summary,
             evidence_refs=self._collect_evidence(

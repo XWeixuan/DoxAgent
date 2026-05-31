@@ -27,6 +27,15 @@ from doxagent.models import (
     ResultStatus,
     new_id,
 )
+from doxagent.skills import default_skill_registry
+
+MARKET_TRACE_SKILL_IDS = [
+    "ohlcv-orchestration",
+    "quote-context",
+    "relative-performance",
+    "technical-signal-analysis",
+    "market-data-quality",
+]
 
 
 class MarketTraceAgentModule:
@@ -130,7 +139,11 @@ class MarketTraceAgentModule:
                 "module": "market_trace",
                 "structured": structured.model_dump(mode="json"),
                 "markdown_summary": structured.markdown_summary,
-                "metadata": request.metadata,
+                "metadata": request.metadata
+                | {
+                    "skill_ids": MARKET_TRACE_SKILL_IDS,
+                    "skill_versions": _skill_versions(MARKET_TRACE_SKILL_IDS),
+                },
             },
             evidence_refs=_evidence_refs(source_refs),
         )
@@ -159,6 +172,7 @@ def _evidence_refs(source_refs: list[MarketDataSourceRef]) -> list[EvidenceRef]:
                 **source.retrieval_metadata,
                 "agent": "O4",
                 "module": "market_trace",
+                "skill_versions": _skill_versions(MARKET_TRACE_SKILL_IDS),
             },
             confidence=source.confidence,
             citation_scope=source.citation_scope,
@@ -185,3 +199,8 @@ def _markdown_summary(
 
 def _assert_no_any(_: Any) -> None:
     """Keep module imports explicit under strict type checking."""
+
+
+def _skill_versions(skill_ids: list[str]) -> dict[str, str]:
+    registry = default_skill_registry()
+    return {skill_id: registry.get(skill_id).version for skill_id in skill_ids}

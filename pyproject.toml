@@ -17,7 +17,10 @@ dependencies = [
     "openai>=2,<3",
     "pydantic>=2,<3",
     "pydantic-settings>=2,<3",
+    "psycopg[binary]>=3.2,<4",
     "python-dotenv>=1.2,<2",
+    "websockets>=15,<16",
+    "yfinance>=0.2,<0.3",
 ]
 
 [dependency-groups]
@@ -35,6 +38,9 @@ packages = ["src/doxagent"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+markers = [
+    "real_api: tests that call real external free-tier APIs and consume quota",
+]
 
 [tool.ruff]
 target-version = "py311"

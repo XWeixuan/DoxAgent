@@ -55,6 +55,7 @@ from doxagent.models.validation import (
     has_unresolved_objections,
     same_target,
 )
+from doxagent.skills.schema import SkillBundle, SkillSummary
 
 __all__ = [
     "AgentError",
@@ -93,6 +94,8 @@ __all__ = [
     "ResearchSection",
     "ResultStatus",
     "RunMetadata",
+    "SkillBundle",
+    "SkillSummary",
     "TaskType",
     "ToolCallSummary",
     "ValidationStatus",

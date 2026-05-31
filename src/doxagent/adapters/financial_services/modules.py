@@ -32,6 +32,7 @@ from doxagent.models import (
     ResultStatus,
     new_id,
 )
+from doxagent.skills import default_skill_registry
 
 
 class IndustryResearchAgentModule:
@@ -334,6 +335,7 @@ def _agent_output(
         prompt_template=task.prompt_template,
         tools=agent.tools,
         skills=agent.skills,
+        skill_versions=_skill_versions([task.skill_name, *agent.skills]),
         upstream_task_ids=list(upstream),
         structured=structured,
         source_refs=source_refs,
@@ -444,6 +446,7 @@ def _evidence_refs(
                 "agent_id": output.agent_id,
                 "task_id": output.task_id,
                 "skill_name": output.skill_name,
+                "skill_versions": output.skill_versions,
                 "mock_fixture": True,
             },
             confidence=output.confidence,
@@ -467,3 +470,9 @@ def _markdown_summary(request: IndustryResearchRequest, note: dict[str, Any]) ->
         f"{request.market}: fixture primer with sourced claims, unknowns, and "
         f"{hint_count} downstream handoff hints."
     )
+
+
+def _skill_versions(skill_ids: list[str]) -> dict[str, str]:
+    registry = default_skill_registry()
+    unique = sorted(set(skill_ids))
+    return {skill_id: registry.get(skill_id).version for skill_id in unique}

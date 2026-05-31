@@ -1,5 +1,11 @@
 """Workflow runners and initialization contracts."""
 
+from doxagent.workflows.checkpoint_repository import (
+    InMemoryWorkflowCheckpointRepository,
+    PostgresWorkflowCheckpointRepository,
+    WorkflowCheckpointRecord,
+    WorkflowCheckpointRepository,
+)
 from doxagent.workflows.errors import WorkflowContractError, WorkflowDependencyError, WorkflowError
 from doxagent.workflows.initialization import (
     INITIALIZATION_NODES,
@@ -18,8 +24,12 @@ from doxagent.workflows.schema import (
 __all__ = [
     "INITIALIZATION_NODES",
     "BlackboardInitializationWorkflow",
+    "InMemoryWorkflowCheckpointRepository",
     "InitializationMockResultFactory",
+    "PostgresWorkflowCheckpointRepository",
     "WorkflowCheckpoint",
+    "WorkflowCheckpointRecord",
+    "WorkflowCheckpointRepository",
     "WorkflowContractError",
     "WorkflowDependencyError",
     "WorkflowError",

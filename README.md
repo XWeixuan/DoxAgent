@@ -210,6 +210,42 @@ trace = MarketTraceAgentModule().run(
 )
 ```
 
+## Post-MVP 3.1 Persistence
+
+Blackboard persistence adds a Supabase/Postgres path while keeping the default
+local mode in memory. Business state and workflow recovery state are stored
+separately: `BlackboardService` owns runs, Working Memory, Belief State,
+Commit Log, objections, delegations, and evidence, while workflow checkpoint
+repositories own checkpoint history and latest-resume state.
+
+The migration is available at
+`supabase/migrations/202605300001_blackboard_workflow_persistence.sql`. It
+creates a dedicated `doxagent` schema and does not include Supabase project
+URLs, passwords, keys, or access tokens.
+
+Configuration stays environment-only:
+
+```powershell
+$env:DOXAGENT_STORAGE_MODE = "postgres"
+$env:DOXAGENT_DATABASE_URL = "postgresql://..."
+```
+
+Use URL encoding for special characters in database passwords. Tests do not
+connect to Supabase unless a future explicit integration-test flag is provided.
+
+## Post-MVP 3.3 Skills
+
+Skill management lives under `src/doxagent/skills`. The code-first
+`SkillRegistry` registers DoxAgent-owned and migrated external skills, including
+Vibe-Trading macro/fundamental skills, financial-services Market Researcher
+skills, and Hermes/O4 market trace skills. `SkillInjector` attaches a
+versioned `SkillBundle` to `AgentTask` without mutating Blackboard state.
+
+Current skill injection is a contract boundary for future real AgentRunner work:
+it does not run external runtimes, read ignored reference repositories, persist
+skills to Supabase, or call real LLM providers. Adapter outputs now include
+skill version metadata while preserving their existing `skills` fields.
+
 ## Project Layout
 
 ```text
@@ -222,6 +258,7 @@ src/doxagent/
   core/
   gateway/
   models/
+  skills/
   tools/
   workflows/
 tests/

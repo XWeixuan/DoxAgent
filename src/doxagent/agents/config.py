@@ -21,6 +21,7 @@ class AgentRuntimeModel(BaseModel):
 
 class AgentRuntimeConfig(AgentRuntimeModel):
     role_instruction: NonEmptyStr
+    default_skill_ids: list[NonEmptyStr] = Field(default_factory=list)
     readable_context_scopes: list[NonEmptyStr] = Field(default_factory=list)
     writable_targets: list[NonEmptyStr] = Field(default_factory=list)
     allowed_tools: list[NonEmptyStr] = Field(default_factory=list)
@@ -80,6 +81,7 @@ def default_agent_definitions() -> list[AgentDefinition]:
             ],
             runtime=AgentRuntimeConfig(
                 role_instruction="Own expectation-unit synthesis and field-level promotion.",
+                default_skill_ids=["doxagent-source-discipline"],
                 readable_context_scopes=[
                     DocumentType.GLOBAL_RESEARCH.value,
                     DocumentType.EXPECTATION_UNIT.value,
@@ -94,8 +96,13 @@ def default_agent_definitions() -> list[AgentDefinition]:
                 ],
                 allowed_tools=[
                     "doxatlas.query",
+                    "doxa_get_narrative_report",
+                    "doxa_query_propositions",
                     "market_data.snapshot",
+                    "alpha.daily_ohlcv",
                     "fact_check.search",
+                    "tavily.search",
+                    "tavily.extract",
                     "external_research.mock",
                 ],
                 output_schema="ExpectationUnitDocument",
@@ -113,6 +120,7 @@ def default_agent_definitions() -> list[AgentDefinition]:
             ],
             runtime=AgentRuntimeConfig(
                 role_instruction="Translate accepted expectations into monitoring items.",
+                default_skill_ids=["doxagent-source-discipline"],
                 readable_context_scopes=[
                     DocumentType.EXPECTATION_UNIT.value,
                     DocumentType.KNOWN_EVENTS.value,
@@ -123,7 +131,12 @@ def default_agent_definitions() -> list[AgentDefinition]:
                     DocumentType.MONITORING_CONFIG.value,
                     DocumentType.MONITORING_POLICY.value,
                 ],
-                allowed_tools=["doxatlas.query", "fact_check.search"],
+                allowed_tools=[
+                    "doxatlas.query",
+                    "doxa_get_narrative_report",
+                    "fact_check.search",
+                    "tavily.search",
+                ],
                 output_schema="MonitoringConfigDocument|MonitoringPolicyDocument",
                 can_delegate=True,
                 can_propose_patch=True,
@@ -135,6 +148,14 @@ def default_agent_definitions() -> list[AgentDefinition]:
             task_types=[TaskType.GENERATE_GLOBAL_RESEARCH],
             runtime=AgentRuntimeConfig(
                 role_instruction="Explain price action and market narrative causality.",
+                default_skill_ids=[
+                    "doxagent-source-discipline",
+                    "ohlcv-orchestration",
+                    "quote-context",
+                    "relative-performance",
+                    "technical-signal-analysis",
+                    "market-data-quality",
+                ],
                 readable_context_scopes=[
                     DocumentType.GLOBAL_RESEARCH.value,
                     "working_memory",
@@ -146,6 +167,8 @@ def default_agent_definitions() -> list[AgentDefinition]:
                     "market_data.quote",
                     "market_data.ohlcv",
                     "market_data.multiple_quotes",
+                    "alpha.daily_ohlcv",
+                    "finnhub.trade_stream",
                     "doxatlas.query",
                 ],
                 output_schema="MarketTraceResult",
@@ -159,13 +182,20 @@ def default_agent_definitions() -> list[AgentDefinition]:
             task_types=[TaskType.REVIEW_EXPECTATION_FIELD],
             runtime=AgentRuntimeConfig(
                 role_instruction="Audit whether claims are grounded in DoxAtlas evidence.",
+                default_skill_ids=["doxagent-source-discipline"],
                 readable_context_scopes=[
                     DocumentType.EXPECTATION_UNIT.value,
                     "working_memory",
                     "objections",
                 ],
                 writable_targets=[],
-                allowed_tools=["doxatlas.query", "doxatlas.source_lookup"],
+                allowed_tools=[
+                    "doxatlas.query",
+                    "doxatlas.source_lookup",
+                    "doxa_get_narrative_report",
+                    "doxa_query_propositions",
+                    "doxa_get_event_source",
+                ],
                 output_schema="AuditFinding",
                 can_raise_objection=True,
             ),
@@ -176,13 +206,20 @@ def default_agent_definitions() -> list[AgentDefinition]:
             task_types=[TaskType.FACT_CHECK, TaskType.REVIEW_EXPECTATION_FIELD],
             runtime=AgentRuntimeConfig(
                 role_instruction="Check factual claims and report support or uncertainty.",
+                default_skill_ids=["doxagent-source-discipline"],
                 readable_context_scopes=[
                     DocumentType.EXPECTATION_UNIT.value,
                     DocumentType.KNOWN_EVENTS.value,
                     "delegations",
                 ],
                 writable_targets=[],
-                allowed_tools=["fact_check.search", "external_research.mock"],
+                allowed_tools=[
+                    "fact_check.search",
+                    "tavily.search",
+                    "tavily.extract",
+                    "sec.filing_sections",
+                    "external_research.mock",
+                ],
                 output_schema="FactCheckFinding",
                 can_raise_objection=True,
             ),
@@ -193,9 +230,30 @@ def default_agent_definitions() -> list[AgentDefinition]:
             task_types=[TaskType.GENERATE_GLOBAL_RESEARCH],
             runtime=AgentRuntimeConfig(
                 role_instruction="Draft fundamental research sections for the global document.",
+                default_skill_ids=[
+                    "doxagent-source-discipline",
+                    "financial-statement",
+                    "fundamental-filter",
+                    "valuation-model",
+                    "earnings-forecast",
+                    "web-reader",
+                    "report-generate",
+                ],
                 readable_context_scopes=["working_memory"],
                 writable_targets=[DocumentType.GLOBAL_RESEARCH.value],
-                allowed_tools=["external_research.mock", "fact_check.search"],
+                allowed_tools=[
+                    "sec.company_facts_and_filings",
+                    "sec.filing_sections",
+                    "alpha.company_overview",
+                    "alpha.financial_statements",
+                    "alpha.shares_outstanding",
+                    "alpha.earnings_events",
+                    "fmp.press_releases",
+                    "yfinance.hk_basic_snapshot",
+                    "external_research.mock",
+                    "fact_check.search",
+                    "tavily.search",
+                ],
                 output_schema="ResearchSection",
                 can_delegate=True,
                 can_propose_patch=True,
@@ -207,9 +265,30 @@ def default_agent_definitions() -> list[AgentDefinition]:
             task_types=[TaskType.GENERATE_GLOBAL_RESEARCH],
             runtime=AgentRuntimeConfig(
                 role_instruction="Draft macro research sections for the global document.",
+                default_skill_ids=[
+                    "doxagent-source-discipline",
+                    "macro-analysis",
+                    "global-macro",
+                    "credit-analysis",
+                    "yfinance",
+                    "commodity-analysis",
+                    "seasonal",
+                    "asset-allocation",
+                    "risk-analysis",
+                    "hedging-strategy",
+                    "strategy-generate",
+                ],
                 readable_context_scopes=["working_memory"],
                 writable_targets=[DocumentType.GLOBAL_RESEARCH.value],
-                allowed_tools=["external_research.mock"],
+                allowed_tools=[
+                    "fred.series_observations",
+                    "bls.timeseries",
+                    "bea.nipa_data",
+                    "fed.fomc_calendar_materials",
+                    "polymarket.market_probability",
+                    "alpha.daily_ohlcv",
+                    "external_research.mock",
+                ],
                 output_schema="ResearchSection",
                 can_delegate=True,
                 can_propose_patch=True,
@@ -221,9 +300,26 @@ def default_agent_definitions() -> list[AgentDefinition]:
             task_types=[TaskType.GENERATE_GLOBAL_RESEARCH],
             runtime=AgentRuntimeConfig(
                 role_instruction="Draft industry research sections for the global document.",
+                default_skill_ids=[
+                    "doxagent-source-discipline",
+                    "market-researcher",
+                    "sector-overview",
+                    "competitive-analysis",
+                    "comps-analysis",
+                    "idea-generation",
+                    "note-writer",
+                ],
                 readable_context_scopes=["working_memory"],
                 writable_targets=[DocumentType.GLOBAL_RESEARCH.value],
-                allowed_tools=["external_research.mock", "doxatlas.query"],
+                allowed_tools=[
+                    "finnhub.company_peers",
+                    "sec.company_facts_and_filings",
+                    "fmp.sector_performance",
+                    "tavily.search",
+                    "tavily.extract",
+                    "external_research.mock",
+                    "doxatlas.query",
+                ],
                 output_schema="ResearchSection",
                 can_delegate=True,
                 can_propose_patch=True,

@@ -13,6 +13,7 @@ from doxagent.models import (
     ObjectionStatus,
     TaskType,
 )
+from doxagent.skills import SkillSummary
 
 
 class ContextModel(BaseModel):
@@ -56,6 +57,7 @@ class AgentContextSnapshot(ContextModel):
     workflow_state: str
     task_input: dict[str, Any] = Field(default_factory=dict)
     readable_scopes: list[str] = Field(default_factory=list)
+    skill_summaries: list[SkillSummary] = Field(default_factory=list)
     belief_state_summary: dict[str, dict[str, Any]] = Field(default_factory=dict)
     working_memory_summary: list[WorkingMemorySummary] = Field(default_factory=list)
     evidence_refs: list[EvidenceRef] = Field(default_factory=list)

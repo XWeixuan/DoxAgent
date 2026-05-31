@@ -1,5 +1,13 @@
 # changelog
 
+## 2026-05-31
+
+- Implemented Post-MVP 3.2 real ToolRegistry integration with explicit real-tool registry construction, provider settings, normalized tool errors, in-memory TTL caching, DoxAtlas HTTP tool clients, SEC/FRED/BLS/BEA/Fed/Polymarket/Alpha/FMP/Finnhub/Tavily/yfinance tool clients, and agent permission updates while preserving mock-first defaults.
+- Added Phase 3.2 real-tool contract tests and marked free-tier smoke tests behind `DOXAGENT_RUN_REAL_API_TESTS=1` so normal test runs remain offline and quota-safe.
+- Added real provider environment placeholders plus `yfinance` and `websockets` dependencies for HK-only yfinance snapshots and bounded Finnhub trade-stream capture.
+- Split the Phase 3.2 real tool implementation into `tools/factory.py` and per-provider modules under `tools/providers/`, while keeping `tools/real.py` as a compatibility export layer for existing imports.
+- Tightened DoxAtlas real tool configuration against `DOXATLAS_TOOL_SCHEMAS.md`, including per-endpoint payload validation, DoxAtlas error-envelope mapping, alias endpoint checks, and read-only default agent authorization for run tools.
+
 ## 2026-05-29
 
 - Added `dev_plan/DEVELOPMENT_PLAN.md` with a phased development plan based on `dev_plan/PRD.md`, including architecture boundaries, MVP order, core module rollout, stabilization, and final external-agent adapter integration strategy.
@@ -34,3 +42,9 @@
 - Added financial-services industry research schemas, AgentResult wrapping, evidence refs, adapter boundary tests, and documentation for future DoxAtlas/CapIQ/FactSet provider replacement.
 - Implemented the Phase 8 native O4 market trace agent with quote, OHLCV, multi-quote provider contracts, deterministic fixture data, Yahoo chart parsing, relative performance, volume analysis, technical signals, valuation context, source refs, and unknown handling.
 - Updated the O4 registry output schema to `MarketTraceResult` and added O4 market trace tests plus documentation while keeping Hermes runtime, trading execution, monitoring, and Blackboard writes out of scope.
+- Implemented Post-MVP 3.1 persistence foundations with environment-backed storage settings, a Blackboard repository protocol, a transaction-oriented Postgres/Supabase repository, and retained the in-memory repository for local tests.
+- Added separate workflow checkpoint repositories for in-memory and Postgres persistence, wired checkpoint history/latest saving into the initialization workflow, and added `resume_latest` support.
+- Added the Supabase/Postgres migration for the dedicated `doxagent` schema, split Blackboard business state from workflow checkpoints, and added persistence boundary tests without embedding real Supabase credentials.
+- Implemented Post-MVP 3.3 Skill Registry and injection boundaries with versioned skill definitions, default agent skill ids, `AgentTask` skill bundles, MockRunner skill visibility, and Context Builder skill summaries.
+- Registered migrated Vibe-Trading, financial-services, and Hermes/O4 skills in the DoxAgent-owned static registry, while keeping external source trees out of runtime.
+- Added skill version metadata to Vibe, financial-services, and O4 adapter outputs plus tests and documentation for skill registry, injection, and adapter compatibility.

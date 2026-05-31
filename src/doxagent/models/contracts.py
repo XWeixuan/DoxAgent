@@ -8,6 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from doxagent.models.blackboard import BlackboardPatch, Delegation, EvidenceRef, Objection
 from doxagent.models.common import AgentName, ResultStatus, TaskType
 from doxagent.models.ids import NonEmptyStr
+from doxagent.skills.schema import SkillBundle
 
 
 class ContractModel(BaseModel):
@@ -42,6 +43,7 @@ class AgentTask(ContractModel):
     required_output_schema: NonEmptyStr
     permissions: AgentPermissions
     run_metadata: RunMetadata
+    skill_bundle: SkillBundle | None = None
 
 
 class ToolCallSummary(ContractModel):

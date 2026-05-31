@@ -34,6 +34,7 @@ class VibeAgentOutput(VibeResultModel):
     prompt_template: NonEmptyStr
     tools: list[NonEmptyStr]
     skills: list[NonEmptyStr]
+    skill_versions: dict[NonEmptyStr, NonEmptyStr] = Field(default_factory=dict)
     upstream_task_ids: list[NonEmptyStr] = Field(default_factory=list)
     structured: dict[str, Any]
     markdown: NonEmptyStr

@@ -149,7 +149,9 @@ def test_market_trace_agent_returns_o4_agent_result() -> None:
     assert result.objections == []
     assert result.delegations == []
     assert result.payload["module"] == "market_trace"
-    assert result.payload["metadata"] == {"caller": "test"}
+    assert result.payload["metadata"]["caller"] == "test"
+    assert "ohlcv-orchestration" in result.payload["metadata"]["skill_ids"]
+    assert result.payload["metadata"]["skill_versions"]["quote-context"]
 
     parsed = MarketTraceResult.model_validate(result.payload["structured"])
     assert parsed.ticker == "AAPL"

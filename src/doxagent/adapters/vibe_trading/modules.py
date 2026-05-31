@@ -22,6 +22,7 @@ from doxagent.models import (
     ResultStatus,
     new_id,
 )
+from doxagent.skills import default_skill_registry
 
 
 class MacroContextAgentModule:
@@ -364,6 +365,7 @@ def _agent_output(
         prompt_template=task.prompt_template.format(**variables),
         tools=agent.tools,
         skills=agent.skills,
+        skill_versions=_skill_versions(agent.skills),
         upstream_task_ids=list(upstream),
         structured=structured,
         markdown=markdown,
@@ -407,6 +409,7 @@ def _evidence_refs(source_preset: str, outputs: list[VibeAgentOutput]) -> list[E
                 "source_preset": source_preset,
                 "agent_id": output.agent_id,
                 "task_id": output.task_id,
+                "skill_versions": output.skill_versions,
                 "mock_fixture": True,
             },
             confidence=0.65,
@@ -438,3 +441,8 @@ def _fundamental_markdown_summary(
         f"Fundamental brief for {target} in {market}: {rating}. "
         "Financial quality, valuation, and moat outputs are preserved as separate inputs."
     )
+
+
+def _skill_versions(skill_ids: list[str]) -> dict[str, str]:
+    registry = default_skill_registry()
+    return {skill_id: registry.get(skill_id).version for skill_id in skill_ids}

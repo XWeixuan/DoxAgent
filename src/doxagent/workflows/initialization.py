@@ -41,6 +41,10 @@ from doxagent.models import (
     VariableStatus,
     new_id,
 )
+from doxagent.workflows.checkpoint_repository import (
+    InMemoryWorkflowCheckpointRepository,
+    WorkflowCheckpointRepository,
+)
 from doxagent.workflows.errors import WorkflowContractError, WorkflowDependencyError
 from doxagent.workflows.schema import (
     WorkflowCheckpoint,
@@ -370,11 +374,13 @@ class BlackboardInitializationWorkflow:
         *,
         blackboard: BlackboardService | None = None,
         runner: AgentRunner | None = None,
+        checkpoint_repository: WorkflowCheckpointRepository | None = None,
         auto_resolve_blockers: bool = True,
     ) -> None:
         self.blackboard = blackboard or BlackboardService()
         self.registry = default_agent_registry()
         self.auto_resolve_blockers = auto_resolve_blockers
+        self.checkpoint_repository = checkpoint_repository or InMemoryWorkflowCheckpointRepository()
         self.runner = runner or MockAgentRunner(
             self.registry,
             result_factory=InitializationMockResultFactory(include_blockers=True),
@@ -392,6 +398,7 @@ class BlackboardInitializationWorkflow:
             ticker=ticker,
             next_node=WorkflowNode.START_TICKER_INITIALIZATION,
         )
+        self.checkpoint_repository.save_checkpoint(checkpoint)
         return self._execute(checkpoint, stop_after=stop_after)
 
     def resume(
@@ -405,6 +412,14 @@ class BlackboardInitializationWorkflow:
             resumed = checkpoint.model_copy(update={"status": WorkflowRunStatus.RUNNING}, deep=True)
         return self._execute(resumed, stop_after=stop_after)
 
+    def resume_latest(
+        self,
+        run_id: str,
+        *,
+        stop_after: WorkflowNode | None = None,
+    ) -> WorkflowExecutionResult:
+        return self.resume(self.checkpoint_repository.get_latest(run_id), stop_after=stop_after)
+
     def _execute(
         self,
         checkpoint: WorkflowCheckpoint,
@@ -416,9 +431,11 @@ class BlackboardInitializationWorkflow:
             while current.next_node is not None:
                 node = current.next_node
                 current = self._execute_node(current, node)
+                self.checkpoint_repository.save_checkpoint(current)
                 if current.status is not WorkflowRunStatus.RUNNING or node == stop_after:
                     return self._result(current)
             current = self._complete(current)
+            self.checkpoint_repository.save_checkpoint(current)
             return self._result(current)
         except (PatchValidationError, WorkflowContractError, WorkflowDependencyError) as exc:
             blocked_node = current.next_node or WorkflowNode.FINALIZE_INITIALIZATION
@@ -431,6 +448,7 @@ class BlackboardInitializationWorkflow:
                 },
                 deep=True,
             )
+            self.checkpoint_repository.save_checkpoint(blocked)
             return self._result(blocked, error=str(exc))
 
     def _execute_node(
