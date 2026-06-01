@@ -1,10 +1,11 @@
 """Agent runner boundary for DoxAgent-owned contracts."""
 
 from collections.abc import Callable
-from typing import Protocol
+from typing import Any, Protocol
 
 from doxagent.agents.config import AgentRegistry, default_agent_registry
-from doxagent.models import AgentError, AgentResult, AgentTask, ResultStatus
+from doxagent.agents.runtime.runner import ModelGatewayAgentRunner
+from doxagent.models import AgentResult, AgentTask, ResultStatus
 from doxagent.skills.injection import SkillInjector
 
 
@@ -48,16 +49,12 @@ class MockAgentRunner:
 
 
 class MafAgentAdapter:
-    """Placeholder adapter boundary for a future real MAF-backed runner."""
+    """Compatibility wrapper for the ModelGateway-backed MAF runner."""
+
+    def __init__(self, runner: ModelGatewayAgentRunner | None = None, **kwargs: Any) -> None:
+        if runner is not None and kwargs:
+            raise ValueError("Pass either runner or runner configuration kwargs, not both.")
+        self.runner = runner or ModelGatewayAgentRunner(**kwargs)
 
     def run(self, task: AgentTask) -> AgentResult:
-        return AgentResult(
-            task_id=task.task_id,
-            agent_name=task.agent_name,
-            status=ResultStatus.FAILED,
-            error=AgentError(
-                code="maf_adapter_not_configured",
-                message="Real Microsoft Agent Framework execution is not configured in Phase 4.",
-                retryable=False,
-            ),
-        )
+        return self.runner.run(task)

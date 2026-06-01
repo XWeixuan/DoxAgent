@@ -80,8 +80,14 @@ def default_agent_definitions() -> list[AgentDefinition]:
                 TaskType.GENERATE_KNOWN_EVENTS,
             ],
             runtime=AgentRuntimeConfig(
-                role_instruction="Own expectation-unit synthesis and field-level promotion.",
-                default_skill_ids=["doxagent-source-discipline"],
+                role_instruction=(
+                    "Construct sourced expectation units, known events, and revisions; delegate "
+                    "uncertain external facts to A2 instead of treating them as confirmed."
+                ),
+                default_skill_ids=[
+                    "doxagent-source-discipline",
+                    "expectation-construction",
+                ],
                 readable_context_scopes=[
                     DocumentType.GLOBAL_RESEARCH.value,
                     DocumentType.EXPECTATION_UNIT.value,
@@ -100,12 +106,8 @@ def default_agent_definitions() -> list[AgentDefinition]:
                     "doxa_query_propositions",
                     "market_data.snapshot",
                     "alpha.daily_ohlcv",
-                    "fact_check.search",
-                    "tavily.search",
-                    "tavily.extract",
-                    "external_research.mock",
                 ],
-                output_schema="ExpectationUnitDocument",
+                output_schema="ExpectationConstructionResult|KnownEventsDocument",
                 can_raise_objection=True,
                 can_delegate=True,
                 can_propose_patch=True,
@@ -134,8 +136,6 @@ def default_agent_definitions() -> list[AgentDefinition]:
                 allowed_tools=[
                     "doxatlas.query",
                     "doxa_get_narrative_report",
-                    "fact_check.search",
-                    "tavily.search",
                 ],
                 output_schema="MonitoringConfigDocument|MonitoringPolicyDocument",
                 can_delegate=True,
@@ -181,8 +181,14 @@ def default_agent_definitions() -> list[AgentDefinition]:
             role=AgentRole.AUDIT,
             task_types=[TaskType.REVIEW_EXPECTATION_FIELD],
             runtime=AgentRuntimeConfig(
-                role_instruction="Audit whether claims are grounded in DoxAtlas evidence.",
-                default_skill_ids=["doxagent-source-discipline"],
+                role_instruction=(
+                    "Audit whether O1 expectation fields are grounded in DoxAtlas evidence; "
+                    "raise field-level objections or delegate external-source gaps to A2."
+                ),
+                default_skill_ids=[
+                    "doxagent-source-discipline",
+                    "doxatlas-audit",
+                ],
                 readable_context_scopes=[
                     DocumentType.EXPECTATION_UNIT.value,
                     "working_memory",
@@ -196,17 +202,29 @@ def default_agent_definitions() -> list[AgentDefinition]:
                     "doxa_query_propositions",
                     "doxa_get_event_source",
                 ],
-                output_schema="AuditFinding",
+                output_schema="DoxAtlasAuditResult",
                 can_raise_objection=True,
+                can_delegate=True,
             ),
         ),
         AgentDefinition(
             agent_name=AgentName.A2_FACT_CHECK,
             role=AgentRole.AUDIT,
-            task_types=[TaskType.FACT_CHECK, TaskType.REVIEW_EXPECTATION_FIELD],
+            task_types=[
+                TaskType.FACT_CHECK,
+                TaskType.DELEGATED_RETRIEVAL,
+                TaskType.REVIEW_EXPECTATION_FIELD,
+            ],
             runtime=AgentRuntimeConfig(
-                role_instruction="Check factual claims and report support or uncertainty.",
-                default_skill_ids=["doxagent-source-discipline"],
+                role_instruction=(
+                    "Use Tavily search/extract only to answer fact-check or delegated "
+                    "information-retrieval tasks; return sourced evidence, confidence, and "
+                    "unknowns without writing Blackboard state."
+                ),
+                default_skill_ids=[
+                    "doxagent-source-discipline",
+                    "tavily-retrieval-fact-check",
+                ],
                 readable_context_scopes=[
                     DocumentType.EXPECTATION_UNIT.value,
                     DocumentType.KNOWN_EVENTS.value,
@@ -214,13 +232,10 @@ def default_agent_definitions() -> list[AgentDefinition]:
                 ],
                 writable_targets=[],
                 allowed_tools=[
-                    "fact_check.search",
                     "tavily.search",
                     "tavily.extract",
-                    "sec.filing_sections",
-                    "external_research.mock",
                 ],
-                output_schema="FactCheckFinding",
+                output_schema="DelegatedRetrievalResult|FactCheckFinding",
                 can_raise_objection=True,
             ),
         ),

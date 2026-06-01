@@ -42,7 +42,7 @@ def test_default_registry_contains_phase4_agent_set() -> None:
     }
 
     definition = registry.get(AgentName.O1_EXPECTATION_OWNER)
-    assert definition.runtime.output_schema == "ExpectationUnitDocument"
+    assert definition.runtime.output_schema == "ExpectationConstructionResult|KnownEventsDocument"
     assert "doxatlas.query" in definition.runtime.allowed_tools
     assert DocumentType.EXPECTATION_UNIT.value in definition.runtime.writable_targets
     assert definition.runtime.to_permissions().can_propose_patch is True
@@ -79,14 +79,13 @@ def test_mock_runner_returns_agent_result_without_blackboard_mutation() -> None:
     assert service.get_run(run.run_id).commit_log == []
 
 
-def test_maf_adapter_placeholder_keeps_doxagent_result_contract() -> None:
+def test_maf_adapter_delegates_to_real_runner_contract() -> None:
     task = agent_task()
 
     result = MafAgentAdapter().run(task)
 
-    assert result.status is ResultStatus.FAILED
-    assert result.error is not None
-    assert result.error.code == "maf_adapter_not_configured"
+    assert result.status is ResultStatus.SUCCEEDED
+    assert result.payload["runtime"] == "maf"
 
 
 def context_task(run_id: str) -> AgentTask:

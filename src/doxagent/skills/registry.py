@@ -83,6 +83,9 @@ def _skill(
 
 
 def _default_skill_definitions() -> list[SkillDefinition]:
+    o1 = [AgentName.O1_EXPECTATION_OWNER]
+    a1 = [AgentName.A1_DOXATLAS_AUDIT]
+    a2 = [AgentName.A2_FACT_CHECK]
     c1 = [AgentName.C1_FUNDAMENTAL_RESEARCH]
     c2 = [AgentName.C2_MACRO_RESEARCH]
     c3 = [AgentName.C3_INDUSTRY_RESEARCH]
@@ -109,10 +112,115 @@ def _default_skill_definitions() -> list[SkillDefinition]:
             analysis_framework="Every stable conclusion must trace to evidence or remain pending.",
             output_requirements=["source_refs", "confidence", "unknowns"],
         ),
+        *_operator_audit_skills(o1, a1, a2),
         *_vibe_macro_skills(c2, global_research),
         *_vibe_fundamental_skills(c1, global_research),
         *_financial_services_skills(c3, global_research),
         *_hermes_market_trace_skills(o4, global_research),
+    ]
+
+
+def _operator_audit_skills(
+    o1: list[AgentName],
+    a1: list[AgentName],
+    a2: list[AgentName],
+) -> list[SkillDefinition]:
+    return [
+        _skill(
+            "expectation-construction",
+            name="Expectation Construction",
+            source_project="doxagent",
+            source_kind=SkillSource.DOXAGENT,
+            applicable_agents=o1,
+            applicable_task_types=[
+                TaskType.GENERATE_EXPECTATION_UNIT,
+                TaskType.GENERATE_KNOWN_EVENTS,
+            ],
+            prompt_fragment=(
+                "Build fewer than four core expectations from stable research, price context, "
+                "known events, and unresolved unknowns."
+            ),
+            analysis_framework=(
+                "Separate market view, realized facts, key variables, event monitoring "
+                "direction, and explicit A2 delegations for uncertain external facts."
+            ),
+            output_requirements=[
+                "ExpectationConstructionResult",
+                "evidence_refs",
+                "delegations",
+                "unknowns",
+            ],
+            allowed_tools=["doxatlas.query", "doxa_get_narrative_report"],
+            guardrails=[
+                "Do not promote unsupported facts.",
+                "Delegate uncertain external facts to A2.",
+                "Keep expectation count below four.",
+            ],
+        ),
+        _skill(
+            "doxatlas-audit",
+            name="DoxAtlas Expectation Audit",
+            source_project="doxagent",
+            source_kind=SkillSource.DOXAGENT,
+            applicable_agents=a1,
+            applicable_task_types=[TaskType.REVIEW_EXPECTATION_FIELD],
+            prompt_fragment="Audit O1 expectation fields against DoxAtlas source support.",
+            analysis_framework=(
+                "Use DoxAtlas narrative and source lookup results to classify each reviewed "
+                "field as supported, unsupported, needs_more_evidence, or contradicted."
+            ),
+            output_requirements=[
+                "DoxAtlasAuditResult",
+                "field-level findings",
+                "blocking objections",
+                "A2 delegations for external-source gaps",
+            ],
+            allowed_tools=[
+                "doxatlas.query",
+                "doxatlas.source_lookup",
+                "doxa_get_narrative_report",
+                "doxa_query_propositions",
+                "doxa_get_event_source",
+            ],
+            guardrails=[
+                "Do not call Tavily from A1.",
+                "Do not write Blackboard state directly.",
+                "Raise blocking objections for unsupported stable fields.",
+            ],
+        ),
+        _skill(
+            "tavily-retrieval-fact-check",
+            name="Tavily Retrieval And Fact Check",
+            source_project="doxagent",
+            source_kind=SkillSource.DOXAGENT,
+            applicable_agents=a2,
+            applicable_task_types=[
+                TaskType.FACT_CHECK,
+                TaskType.DELEGATED_RETRIEVAL,
+                TaskType.REVIEW_EXPECTATION_FIELD,
+            ],
+            prompt_fragment=(
+                "Use Tavily search/extract only to answer fact-check and delegated "
+                "information-retrieval questions."
+            ),
+            analysis_framework=(
+                "Search, optionally extract accepted URLs, cite sources, return confidence, "
+                "and keep unsupported information in unknowns."
+            ),
+            output_requirements=[
+                "DelegatedRetrievalResult",
+                "source_refs",
+                "confidence",
+                "unknowns",
+                "query_log",
+            ],
+            allowed_tools=["tavily.search", "tavily.extract"],
+            guardrails=[
+                "Do not call SEC, issuer-material, DoxAtlas, or fact_check.search tools.",
+                "Do not treat missing Tavily evidence as a confirmed fact.",
+                "Do not write Blackboard state directly.",
+            ],
+        ),
     ]
 
 

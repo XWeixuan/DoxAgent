@@ -36,6 +36,7 @@ class TaskType(StrEnum):
     GENERATE_EXPECTATION_UNIT = "generate_expectation_unit"
     REVIEW_EXPECTATION_FIELD = "review_expectation_field"
     FACT_CHECK = "fact_check"
+    DELEGATED_RETRIEVAL = "delegated_retrieval"
     GENERATE_KNOWN_EVENTS = "generate_known_events"
     GENERATE_MONITORING_CONFIG = "generate_monitoring_config"
     GENERATE_MONITORING_POLICY = "generate_monitoring_policy"

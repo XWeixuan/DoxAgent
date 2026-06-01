@@ -1,5 +1,13 @@
 """Phase 1 domain contract models."""
 
+from doxagent.models.agent_outputs import (
+    DelegatedRetrievalRequest,
+    DelegatedRetrievalResult,
+    DoxAtlasAuditFinding,
+    DoxAtlasAuditResult,
+    ExpectationConstructionResult,
+    create_a2_retrieval_delegation,
+)
 from doxagent.models.blackboard import (
     BeliefStateSnapshot,
     BlackboardPatch,
@@ -70,11 +78,16 @@ __all__ = [
     "CommitLogEntry",
     "Delegation",
     "DelegationStatus",
+    "DelegatedRetrievalRequest",
+    "DelegatedRetrievalResult",
     "DocumentType",
+    "DoxAtlasAuditFinding",
+    "DoxAtlasAuditResult",
     "EventMonitoringDirection",
     "EvidenceRef",
     "EvidenceSourceType",
     "ExpectationDirection",
+    "ExpectationConstructionResult",
     "ExpectationUnitDocument",
     "GlobalResearchDocument",
     "KnownEvent",
@@ -102,6 +115,7 @@ __all__ = [
     "VariableStatus",
     "WorkingMemoryEntry",
     "can_promote_target",
+    "create_a2_retrieval_delegation",
     "has_blocking_delegations",
     "has_unresolved_objections",
     "new_id",

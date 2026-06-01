@@ -1,9 +1,14 @@
 """Deterministic Blackboard initialization workflow."""
 
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, Literal
 
-from doxagent.agents import AgentRunner, MockAgentRunner, default_agent_registry
+from doxagent.agents import (
+    AgentRunner,
+    MockAgentRunner,
+    ModelGatewayAgentRunner,
+    default_agent_registry,
+)
 from doxagent.blackboard import BlackboardService, PatchValidationError
 from doxagent.models import (
     AgentName,
@@ -11,6 +16,7 @@ from doxagent.models import (
     AgentTask,
     BlackboardPatch,
     BlackboardTarget,
+    DelegatedRetrievalResult,
     Delegation,
     DelegationStatus,
     DocumentType,
@@ -46,6 +52,12 @@ from doxagent.workflows.checkpoint_repository import (
     WorkflowCheckpointRepository,
 )
 from doxagent.workflows.errors import WorkflowContractError, WorkflowDependencyError
+from doxagent.workflows.global_research import (
+    GlobalResearchAssembler,
+    GlobalResearchInputs,
+    GlobalResearchModuleRunner,
+)
+from doxagent.workflows.normalizer import WorkflowAgentResultNormalizer
 from doxagent.workflows.schema import (
     WorkflowCheckpoint,
     WorkflowExecutionResult,
@@ -70,6 +82,7 @@ INITIALIZATION_NODES: tuple[WorkflowNode, ...] = (
 )
 
 _UNSET_NEXT_NODE = object()
+WorkflowExecutionMode = Literal["mock", "agent_runner"]
 
 
 class InitializationMockResultFactory:
@@ -78,6 +91,26 @@ class InitializationMockResultFactory:
 
     def __call__(self, task: AgentTask) -> AgentResult:
         node = task.run_metadata.workflow_node
+        if (
+            node == WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS.value
+            and task.agent_name == AgentName.A2_FACT_CHECK
+        ):
+            evidence = self._evidence(EvidenceSourceType.EXTERNAL_REPORT)
+            return self._result(
+                task,
+                payload={
+                    "answer": "Mock Tavily retrieval supports the delegated information request.",
+                    "claim_verdict": "supported",
+                    "retrieval_summary": "Mock Tavily retrieval completed.",
+                    "evidence_refs": [evidence.model_dump(mode="json")],
+                    "source_refs": [evidence.model_dump(mode="json")],
+                    "confidence": 0.72,
+                    "unknowns": [],
+                    "query_log": ["mock Tavily query"],
+                    "can_complete_delegation": True,
+                },
+                evidence_refs=[evidence],
+            )
         if node == WorkflowNode.BUILD_GLOBAL_RESEARCH.value:
             patch = self._document_patch(
                 self._global_research(task.ticker),
@@ -159,6 +192,7 @@ class InitializationMockResultFactory:
         patches: list[BlackboardPatch] | None = None,
         objections: list[Objection] | None = None,
         delegations: list[Delegation] | None = None,
+        evidence_refs: list[EvidenceRef] | None = None,
     ) -> AgentResult:
         return AgentResult(
             task_id=task.task_id,
@@ -166,7 +200,7 @@ class InitializationMockResultFactory:
             status=ResultStatus.SUCCEEDED,
             payload=payload,
             proposed_patches=patches or [],
-            evidence_refs=[self._evidence(EvidenceSourceType.AGENT_OUTPUT)],
+            evidence_refs=evidence_refs or [self._evidence(EvidenceSourceType.AGENT_OUTPUT)],
             objections=objections or [],
             delegations=delegations or [],
         )
@@ -376,12 +410,29 @@ class BlackboardInitializationWorkflow:
         runner: AgentRunner | None = None,
         checkpoint_repository: WorkflowCheckpointRepository | None = None,
         auto_resolve_blockers: bool = True,
+        execution_mode: WorkflowExecutionMode = "mock",
+        allow_mock_fallback: bool = False,
+        result_normalizer: WorkflowAgentResultNormalizer | None = None,
+        global_research_runner: GlobalResearchModuleRunner | None = None,
+        global_research_assembler: GlobalResearchAssembler | None = None,
     ) -> None:
+        if execution_mode not in {"mock", "agent_runner"}:
+            raise ValueError("execution_mode must be 'mock' or 'agent_runner'.")
         self.blackboard = blackboard or BlackboardService()
         self.registry = default_agent_registry()
         self.auto_resolve_blockers = auto_resolve_blockers
+        self.execution_mode = execution_mode
+        self.allow_mock_fallback = allow_mock_fallback
+        self.result_normalizer = result_normalizer or WorkflowAgentResultNormalizer()
+        self.global_research_runner = global_research_runner or GlobalResearchModuleRunner()
+        self.global_research_assembler = global_research_assembler or GlobalResearchAssembler()
         self.checkpoint_repository = checkpoint_repository or InMemoryWorkflowCheckpointRepository()
-        self.runner = runner or MockAgentRunner(
+        self.runner = runner or self._default_runner()
+
+    def _default_runner(self) -> AgentRunner:
+        if self.execution_mode == "agent_runner":
+            return ModelGatewayAgentRunner(registry=self.registry)
+        return MockAgentRunner(
             self.registry,
             result_factory=InitializationMockResultFactory(include_blockers=True),
         )
@@ -390,13 +441,16 @@ class BlackboardInitializationWorkflow:
         self,
         ticker: str,
         *,
+        research_inputs: GlobalResearchInputs | dict[str, Any] | None = None,
         stop_after: WorkflowNode | None = None,
     ) -> WorkflowExecutionResult:
         run = self.blackboard.start_run(ticker, AgentName.SYSTEM)
+        resolved_inputs = self._resolve_research_inputs(ticker, research_inputs)
         checkpoint = WorkflowCheckpoint(
             run_id=run.run_id,
             ticker=ticker,
             next_node=WorkflowNode.START_TICKER_INITIALIZATION,
+            metadata=self._base_metadata(resolved_inputs),
         )
         self.checkpoint_repository.save_checkpoint(checkpoint)
         return self._execute(checkpoint, stop_after=stop_after)
@@ -444,6 +498,11 @@ class BlackboardInitializationWorkflow:
                     "status": WorkflowRunStatus.BLOCKED,
                     "node_statuses": current.node_statuses
                     | {blocked_node: WorkflowNodeStatus.BLOCKED},
+                    "metadata": current.metadata
+                    | {
+                        "last_error_code": exc.__class__.__name__,
+                        "last_error_message": str(exc),
+                    },
                     "summary": self._summary(current, notes=[str(exc)]),
                 },
                 deep=True,
@@ -459,6 +518,8 @@ class BlackboardInitializationWorkflow:
         if node == WorkflowNode.START_TICKER_INITIALIZATION:
             return self._mark_completed(checkpoint, node, metadata={"ticker_loaded": True})
         if node == WorkflowNode.BUILD_GLOBAL_RESEARCH:
+            if self.execution_mode == "agent_runner":
+                return self._build_global_research_with_agent_runner(checkpoint, node)
             result = self._run_agent(
                 checkpoint,
                 node,
@@ -478,10 +539,15 @@ class BlackboardInitializationWorkflow:
                 "ExpectationUnitDocument",
             )
             self._write_working_memory(checkpoint, result, "agent_result")
+            self._validate_agent_success(result, node, require_patches=False)
+            self._validate_expectation_patch_count(result)
+            for patch in result.proposed_patches:
+                self._validate_patch_contract(patch, node)
             return self._mark_completed(
                 checkpoint,
                 node,
                 pending_patches=checkpoint.pending_patches + result.proposed_patches,
+                metadata=self._agent_metadata(node, [result]),
             )
         if node == WorkflowNode.REVIEW_EXPECTATION_FIELDS:
             result = self._run_agent(
@@ -492,14 +558,23 @@ class BlackboardInitializationWorkflow:
                 "AuditFinding",
             )
             self._write_working_memory(checkpoint, result, "agent_review")
+            self._validate_agent_success(result, node)
             for objection in result.objections:
                 self.blackboard.create_objection(checkpoint.run_id, objection)
             for delegation in result.delegations:
                 self.blackboard.create_delegation(checkpoint.run_id, delegation)
-            return self._mark_completed(checkpoint, node)
+            return self._mark_completed(
+                checkpoint,
+                node,
+                metadata=self._agent_metadata(node, [result]),
+            )
         if node == WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS:
-            self._resolve_blockers(checkpoint)
-            return self._mark_completed(checkpoint, node)
+            results = self._resolve_blockers(checkpoint, node)
+            return self._mark_completed(
+                checkpoint,
+                node,
+                metadata=self._agent_metadata(node, results) if results else None,
+            )
         if node == WorkflowNode.PROMOTE_EXPECTATION_TO_BELIEF_STATE:
             return self._promote_pending_patches(checkpoint, node)
         if node == WorkflowNode.GENERATE_KNOWN_EVENTS:
@@ -561,14 +636,19 @@ class BlackboardInitializationWorkflow:
         agent_name: AgentName,
         task_type: TaskType,
         output_schema: str,
+        *,
+        extra_context: dict[str, Any] | None = None,
     ) -> AgentResult:
         definition = self.registry.get(agent_name)
+        input_context = self._task_input_context(checkpoint, node, agent_name)
+        if extra_context:
+            input_context = input_context | extra_context
         task = AgentTask(
             task_id=new_id("task"),
             ticker=checkpoint.ticker,
             agent_name=agent_name,
             task_type=task_type,
-            input_context={"completed_nodes": [item.value for item in checkpoint.completed_nodes]},
+            input_context=input_context,
             required_output_schema=output_schema,
             permissions=definition.runtime.to_permissions(),
             run_metadata=RunMetadata(
@@ -578,7 +658,66 @@ class BlackboardInitializationWorkflow:
                 created_at=datetime.now(UTC),
             ),
         )
-        return self.runner.run(task)
+        return self.result_normalizer.normalize(self.runner.run(task))
+
+    def _build_global_research_with_agent_runner(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        node: WorkflowNode,
+    ) -> WorkflowCheckpoint:
+        inputs = self._research_inputs_from_checkpoint(checkpoint)
+        results = self.global_research_runner.run(checkpoint.ticker, inputs)
+        for result in results:
+            self._write_working_memory(checkpoint, result, "global_research_module_result")
+            self._validate_agent_success(result, node, require_patches=False)
+        document = self.global_research_assembler.assemble(checkpoint.ticker, inputs, results)
+        patch = self._global_research_patch(document, results)
+        self._validate_patch_contract(patch, node)
+        self._submit_patch(
+            checkpoint.run_id,
+            patch,
+            f"{node.value} assembled GlobalResearchDocument from C1/C2/C3/O4.",
+        )
+        stable_documents = list(checkpoint.stable_document_types)
+        if DocumentType.GLOBAL_RESEARCH not in stable_documents:
+            stable_documents.append(DocumentType.GLOBAL_RESEARCH)
+        return self._mark_completed(
+            checkpoint,
+            node,
+            stable_document_types=stable_documents,
+            metadata=self._agent_metadata(node, results)
+            | {
+                "global_research_downstream_context": (
+                    self.global_research_assembler.downstream_context(results)
+                ),
+                "global_research_patch_id": patch.patch_id,
+            },
+        )
+
+    def _global_research_patch(
+        self,
+        document: GlobalResearchDocument,
+        results: list[AgentResult],
+    ) -> BlackboardPatch:
+        evidence_refs = [evidence for result in results for evidence in result.evidence_refs]
+        if not evidence_refs:
+            raise WorkflowContractError("Global Research module outputs produced no evidence refs.")
+        return BlackboardPatch(
+            patch_id=new_id("patch"),
+            target=BlackboardTarget(
+                document_type=DocumentType.GLOBAL_RESEARCH,
+                ticker=document.ticker,
+                document_id=document.document_id,
+                field_path="document",
+            ),
+            operation=PatchOperation.CREATE,
+            before=None,
+            after=document.model_dump(mode="json"),
+            rationale="Assemble GlobalResearchDocument from C1/C2/C3/O4 module outputs.",
+            evidence_refs=evidence_refs,
+            author_agent=AgentName.C1_FUNDAMENTAL_RESEARCH,
+            validation_status=ValidationStatus.VALID,
+        )
 
     def _submit_result_patches(
         self,
@@ -593,7 +732,12 @@ class BlackboardInitializationWorkflow:
             self._validate_patch_contract(patch, node)
             self._submit_patch(checkpoint.run_id, patch, f"{node.value} produced stable document.")
             stable_documents.append(patch.target.document_type)
-        return self._mark_completed(checkpoint, node, stable_document_types=stable_documents)
+        return self._mark_completed(
+            checkpoint,
+            node,
+            stable_document_types=stable_documents,
+            metadata=self._agent_metadata(node, [result]),
+        )
 
     def _promote_pending_patches(
         self,
@@ -612,7 +756,13 @@ class BlackboardInitializationWorkflow:
             pending_patches=[],
         )
 
-    def _validate_agent_success(self, result: AgentResult, node: WorkflowNode) -> None:
+    def _validate_agent_success(
+        self,
+        result: AgentResult,
+        node: WorkflowNode,
+        *,
+        require_patches: bool = True,
+    ) -> None:
         if result.status is not ResultStatus.SUCCEEDED:
             error_message = result.error.message if result.error is not None else "unknown error"
             raise WorkflowContractError(f"{node.value} agent result failed: {error_message}")
@@ -622,12 +772,21 @@ class BlackboardInitializationWorkflow:
             WorkflowNode.GENERATE_MONITORING_CONFIG,
             WorkflowNode.GENERATE_MONITORING_POLICY,
         }
-        if node in document_nodes and not result.proposed_patches:
+        if require_patches and node in document_nodes and not result.proposed_patches:
             raise WorkflowContractError(f"{node.value} produced no Blackboard patches.")
 
     def _validate_patch_contract(self, patch: BlackboardPatch, node: WorkflowNode) -> None:
         if not patch.evidence_refs:
             raise WorkflowContractError(f"{node.value} produced a patch without evidence.")
+
+    def _validate_expectation_patch_count(self, result: AgentResult) -> None:
+        expectation_patches = [
+            patch
+            for patch in result.proposed_patches
+            if patch.target.document_type == DocumentType.EXPECTATION_UNIT
+        ]
+        if len(expectation_patches) >= 4:
+            raise WorkflowContractError("GenerateExpectationUnits produced too many expectations.")
 
     def _submit_patch(self, run_id: str, patch: BlackboardPatch, trigger_reason: str) -> None:
         permissions = self.registry.get(patch.author_agent).runtime.to_permissions()
@@ -654,11 +813,114 @@ class BlackboardInitializationWorkflow:
                 "patch_ids": [patch.patch_id for patch in result.proposed_patches],
                 "objection_ids": [item.objection_id for item in result.objections],
                 "delegation_ids": [item.delegation_id for item in result.delegations],
+                "tool_calls": [item.model_dump(mode="json") for item in result.tool_calls],
+                "skill_versions": result.payload.get("skill_versions", {}),
+                "model_audit": result.payload.get("model_audit"),
             },
             evidence_refs=result.evidence_refs,
         )
 
-    def _resolve_blockers(self, checkpoint: WorkflowCheckpoint) -> None:
+    def _agent_metadata(
+        self,
+        node: WorkflowNode,
+        results: list[AgentResult],
+    ) -> dict[str, Any]:
+        return {
+            "last_agent_results": {
+                node.value: [self._agent_result_summary(result) for result in results],
+            },
+            "last_error_code": next(
+                (
+                    result.error.code
+                    for result in results
+                    if result.error is not None
+                ),
+                None,
+            ),
+        }
+
+    def _agent_result_summary(self, result: AgentResult) -> dict[str, Any]:
+        return {
+            "agent_name": result.agent_name.value,
+            "status": result.status.value,
+            "error_code": result.error.code if result.error is not None else None,
+            "patch_ids": [patch.patch_id for patch in result.proposed_patches],
+            "evidence_ids": [evidence.evidence_id for evidence in result.evidence_refs],
+            "tool_calls": [tool_call.model_dump(mode="json") for tool_call in result.tool_calls],
+            "skill_versions": result.payload.get("skill_versions", {}),
+            "runtime": result.payload.get("runtime"),
+        }
+
+    def _resolve_blockers(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        node: WorkflowNode,
+    ) -> list[AgentResult]:
+        if self.execution_mode != "agent_runner":
+            self._mock_resolve_blockers(checkpoint)
+            return []
+
+        results: list[AgentResult] = []
+        run = self.blackboard.get_run(checkpoint.run_id)
+        for delegation in run.delegations:
+            if not delegation.is_blocking or delegation.target_agent is not AgentName.A2_FACT_CHECK:
+                continue
+            if delegation.status is DelegationStatus.OPEN:
+                self.blackboard.assign_delegation(checkpoint.run_id, delegation.delegation_id)
+            result = self._run_agent(
+                checkpoint,
+                node,
+                AgentName.A2_FACT_CHECK,
+                TaskType.DELEGATED_RETRIEVAL,
+                "DelegatedRetrievalResult",
+                extra_context=self._a2_delegation_context(delegation),
+            )
+            self._write_working_memory(checkpoint, result, "delegated_retrieval_result")
+            self._validate_agent_success(result, node, require_patches=False)
+            if not self._can_complete_a2_delegation(result):
+                raise WorkflowContractError(
+                    f"A2 did not return sufficient Tavily evidence for {delegation.delegation_id}."
+                )
+            self.blackboard.complete_delegation(
+                checkpoint.run_id,
+                delegation.delegation_id,
+                self._delegation_completion_summary(result),
+            )
+            results.append(result)
+
+        run = self.blackboard.get_run(checkpoint.run_id)
+        if any(objection.is_unresolved for objection in run.objections):
+            result = self._run_agent(
+                checkpoint,
+                node,
+                AgentName.O1_EXPECTATION_OWNER,
+                TaskType.REVIEW_EXPECTATION_FIELD,
+                "ExpectationConstructionResult",
+                extra_context={
+                    "resolution_request": "Resolve or revise A1 objections after A2 retrieval.",
+                    "unresolved_objections": [
+                        objection.model_dump(mode="json")
+                        for objection in run.objections
+                        if objection.is_unresolved
+                    ],
+                },
+            )
+            self._write_working_memory(checkpoint, result, "objection_resolution_result")
+            self._validate_agent_success(result, node, require_patches=False)
+            self._apply_o1_objection_resolutions(checkpoint, result)
+            results.append(result)
+
+        if self.auto_resolve_blockers:
+            self._mock_resolve_blockers(checkpoint)
+
+        run = self.blackboard.get_run(checkpoint.run_id)
+        if any(objection.is_unresolved for objection in run.objections) or any(
+            delegation.is_blocking for delegation in run.delegations
+        ):
+            raise WorkflowContractError("ResolveObjectionsAndDelegations left blockers unresolved.")
+        return results
+
+    def _mock_resolve_blockers(self, checkpoint: WorkflowCheckpoint) -> None:
         if not self.auto_resolve_blockers:
             return
         run = self.blackboard.get_run(checkpoint.run_id)
@@ -676,6 +938,71 @@ class BlackboardInitializationWorkflow:
                     delegation.delegation_id,
                     "Mock A2 fact-check completed.",
                 )
+
+    def _a2_delegation_context(self, delegation: Delegation) -> dict[str, Any]:
+        return {
+            "delegation": delegation.model_dump(mode="json"),
+            "tool_requests": [
+                {
+                    "tool_name": "tavily.search",
+                    "input": {
+                        "query": delegation.question,
+                        "topic": "finance",
+                        "search_depth": "basic",
+                        "max_results": 5,
+                    },
+                }
+            ],
+            "required_tool_names": ["tavily.search"],
+        }
+
+    def _can_complete_a2_delegation(self, result: AgentResult) -> bool:
+        if result.status is not ResultStatus.SUCCEEDED:
+            return False
+        structured = result.payload.get("structured")
+        candidate = structured if isinstance(structured, dict) else result.payload
+        try:
+            retrieval = DelegatedRetrievalResult.model_validate(candidate)
+        except ValueError:
+            return bool(result.evidence_refs)
+        return bool(
+            retrieval.can_complete_delegation
+            and (retrieval.evidence_refs or retrieval.source_refs or result.evidence_refs)
+        )
+
+    def _delegation_completion_summary(self, result: AgentResult) -> str:
+        structured = result.payload.get("structured")
+        candidate = structured if isinstance(structured, dict) else result.payload
+        summary = candidate.get("retrieval_summary") if isinstance(candidate, dict) else None
+        if isinstance(summary, str) and summary:
+            return summary
+        return "A2 Tavily retrieval returned sufficient evidence."
+
+    def _apply_o1_objection_resolutions(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        result: AgentResult,
+    ) -> None:
+        payload = result.payload.get("structured")
+        if not isinstance(payload, dict):
+            payload = result.payload
+        transitions = [
+            ("resolved_objection_ids", self.blackboard.resolve_objection, "O1 resolved objection."),
+            ("accepted_objection_ids", self.blackboard.accept_objection, "O1 accepted objection."),
+            (
+                "partially_accepted_objection_ids",
+                self.blackboard.partially_accept_objection,
+                "O1 partially accepted objection.",
+            ),
+            ("rejected_objection_ids", self.blackboard.reject_objection, "O1 rebutted objection."),
+        ]
+        for key, transition, note in transitions:
+            raw_ids = payload.get(key, []) if isinstance(payload, dict) else []
+            if not isinstance(raw_ids, list):
+                continue
+            for objection_id in raw_ids:
+                if isinstance(objection_id, str):
+                    transition(checkpoint.run_id, objection_id, note)
 
     def _require_documents(
         self,
@@ -735,6 +1062,80 @@ class BlackboardInitializationWorkflow:
             },
             deep=True,
         )
+
+    def _base_metadata(self, research_inputs: GlobalResearchInputs) -> dict[str, Any]:
+        return {
+            "execution_mode": self.execution_mode,
+            "mock_fallback_used": False,
+            "agent_runtime": "maf" if self.execution_mode == "agent_runner" else "mock",
+            "tool_mode": getattr(self.runner, "tool_mode", "unknown"),
+            "research_inputs": research_inputs.model_dump(mode="json"),
+        }
+
+    def _resolve_research_inputs(
+        self,
+        ticker: str,
+        research_inputs: GlobalResearchInputs | dict[str, Any] | None,
+    ) -> GlobalResearchInputs:
+        if research_inputs is None:
+            return GlobalResearchInputs().resolved(ticker)
+        if isinstance(research_inputs, GlobalResearchInputs):
+            return research_inputs.resolved(ticker)
+        return GlobalResearchInputs.model_validate(research_inputs).resolved(ticker)
+
+    def _research_inputs_from_checkpoint(
+        self,
+        checkpoint: WorkflowCheckpoint,
+    ) -> GlobalResearchInputs:
+        raw = checkpoint.metadata.get("research_inputs")
+        if isinstance(raw, dict):
+            return GlobalResearchInputs.model_validate(raw).resolved(checkpoint.ticker)
+        return GlobalResearchInputs().resolved(checkpoint.ticker)
+
+    def _task_input_context(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        node: WorkflowNode,
+        agent_name: AgentName,
+    ) -> dict[str, Any]:
+        run = self.blackboard.get_run(checkpoint.run_id)
+        return {
+            "ticker": checkpoint.ticker,
+            "workflow_node": node.value,
+            "agent_name": agent_name.value,
+            "completed_nodes": [item.value for item in checkpoint.completed_nodes],
+            "stable_document_types": [item.value for item in checkpoint.stable_document_types],
+            "belief_state_summary": {
+                key.value: list(value.keys())
+                for key, value in run.belief_state.documents.items()
+            },
+            "working_memory_summary": [
+                {
+                    "entry_id": entry.entry_id,
+                    "author_agent": entry.author_agent.value,
+                    "content_type": entry.content_type,
+                }
+                for entry in run.working_memory
+            ],
+            "pending_patch_ids": [patch.patch_id for patch in checkpoint.pending_patches],
+            "pending_patches": [
+                patch.model_dump(mode="json") for patch in checkpoint.pending_patches
+            ],
+            "unresolved_objections": [
+                objection.model_dump(mode="json")
+                for objection in run.objections
+                if objection.is_unresolved
+            ],
+            "blocking_delegations": [
+                delegation.model_dump(mode="json")
+                for delegation in run.delegations
+                if delegation.is_blocking
+            ],
+            "tool_request_hints": self._tool_request_hints(agent_name),
+        }
+
+    def _tool_request_hints(self, agent_name: AgentName) -> list[str]:
+        return list(self.registry.get(agent_name).runtime.allowed_tools)
 
     def _next_node(self, completed_nodes: list[WorkflowNode]) -> WorkflowNode | None:
         for node in INITIALIZATION_NODES:

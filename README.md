@@ -246,6 +246,79 @@ it does not run external runtimes, read ignored reference repositories, persist
 skills to Supabase, or call real LLM providers. Adapter outputs now include
 skill version metadata while preserving their existing `skills` fields.
 
+## Post-MVP 3.4 MAF Agent Runtime
+
+The first real Agent Runtime lives under `src/doxagent/agents/runtime`.
+`ModelGatewayAgentRunner` uses Microsoft Agent Framework as the execution shell
+while keeping DoxAgent boundaries intact: tasks enter as `AgentTask`, model calls
+go through `ModelGateway`, skills are injected by `SkillInjector`, tools go
+through `ToolRegistry`, and output returns as `AgentResult`.
+
+`MafAgentAdapter` now delegates to the real runner instead of returning a
+placeholder error. Runtime tool mode can be `disabled`, `mock`, or `real`.
+Because the Phase 3.2 real tools are still under debugging, normal tests use
+fake gateway responses and mock tools while preserving the same tool names,
+permissions, and `ToolResult` contract expected by the real tool layer.
+
+The runtime does not replace workflow orchestration, call model providers
+directly, write Blackboard state, stream responses, execute trades, or treat
+LangSmith/model tracing as Commit Log audit.
+
+## Post-MVP 3.5 Real Workflow Execution
+
+Initialization workflow real-execution support lives in
+`src/doxagent/workflows`. `BlackboardInitializationWorkflow` now supports
+`execution_mode="mock"` for existing deterministic tests and
+`execution_mode="agent_runner"` for the real `AgentTask -> AgentResult`
+boundary. The workflow runner remains DoxAgent-owned; MAF is only used through
+the 3.4 agent runner.
+
+In `agent_runner` mode, workflow nodes build richer task context, normalize
+structured runner output through `WorkflowAgentResultNormalizer`, write agent
+results to Working Memory, submit valid patches through `BlackboardService`,
+and save checkpoint metadata for runtime/tool mode, agent result summaries, and
+blocking errors.
+
+This phase does not call real providers by default, does not replace the
+workflow with MAF workflow runtime, and does not implement O3.
+
+## Post-MVP 3.6 Global Research Integration
+
+Global Research module integration lives in `src/doxagent/workflows`.
+`GlobalResearchModuleRunner` calls the migrated Phase 8 C1/C2/C3 modules and
+native O4 market trace module. `GlobalResearchAssembler` maps those outputs into
+the five-section `GlobalResearchDocument` used by the Blackboard.
+
+`BlackboardInitializationWorkflow.run()` accepts optional `research_inputs` for
+market, geography, timeframe, industry scope, universe, benchmark/peer, and O4
+market trace settings. In `execution_mode="agent_runner"`, the
+`BuildGlobalResearch` node now stores C1/C2/C3/O4 raw outputs in Working Memory,
+assembles a stable Global Research patch, and submits it through
+`BlackboardService`.
+
+The `market_narrative_report` section is deliberately marked as pending
+O1/DoxAtlas narrative integration in this phase. It is not a completed narrative
+conclusion. C3 downstream hints, C2 monitoring dashboard, C1 risks/catalysts,
+and O4 price/technical context are preserved for later O1/O2 work.
+
+## Post-MVP 3.7/3.8 O1/A1/A2 Realization
+
+O1/A1/A2 realization adds structured contracts for expectation construction,
+DoxAtlas audit, and delegated retrieval. O1 now owns sourced expectation-unit
+and known-event outputs, A1 audits expectation fields against DoxAtlas evidence,
+and A2 has been repositioned as a Tavily-only retrieval and fact-check delegate.
+
+A2 keeps the internal `A2` agent id for compatibility, but its default tool
+permissions are limited to `tavily.search` and `tavily.extract`. Other agents
+route external information gaps to A2 through `DelegatedRetrievalRequest` and
+`create_a2_retrieval_delegation(...)`; A2 never writes Blackboard state
+directly. `ResolveObjectionsAndDelegations` can now call A2 in
+`agent_runner` mode, complete delegations when Tavily evidence is sufficient,
+and leave the workflow blocked when evidence is missing.
+
+Normal tests still use fake gateway/mock tools and do not call real Tavily,
+DoxAtlas, LLM providers, Supabase, or broker services.
+
 ## Project Layout
 
 ```text

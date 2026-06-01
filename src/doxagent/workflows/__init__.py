@@ -7,11 +7,17 @@ from doxagent.workflows.checkpoint_repository import (
     WorkflowCheckpointRepository,
 )
 from doxagent.workflows.errors import WorkflowContractError, WorkflowDependencyError, WorkflowError
+from doxagent.workflows.global_research import (
+    GlobalResearchAssembler,
+    GlobalResearchInputs,
+    GlobalResearchModuleRunner,
+)
 from doxagent.workflows.initialization import (
     INITIALIZATION_NODES,
     BlackboardInitializationWorkflow,
     InitializationMockResultFactory,
 )
+from doxagent.workflows.normalizer import WorkflowAgentResultNormalizer
 from doxagent.workflows.schema import (
     WorkflowCheckpoint,
     WorkflowExecutionResult,
@@ -24,6 +30,9 @@ from doxagent.workflows.schema import (
 __all__ = [
     "INITIALIZATION_NODES",
     "BlackboardInitializationWorkflow",
+    "GlobalResearchAssembler",
+    "GlobalResearchInputs",
+    "GlobalResearchModuleRunner",
     "InMemoryWorkflowCheckpointRepository",
     "InitializationMockResultFactory",
     "PostgresWorkflowCheckpointRepository",
@@ -33,6 +42,7 @@ __all__ = [
     "WorkflowContractError",
     "WorkflowDependencyError",
     "WorkflowError",
+    "WorkflowAgentResultNormalizer",
     "WorkflowExecutionResult",
     "WorkflowNode",
     "WorkflowNodeStatus",

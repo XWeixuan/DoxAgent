@@ -83,6 +83,22 @@ def default_tool_registry() -> ToolRegistry:
         ),
     )
     registry.register(
+        "tavily.search",
+        MockToolClient(
+            tool_name="tavily.search",
+            output_summary="Mock Tavily search result.",
+            source_type=EvidenceSourceType.EXTERNAL_REPORT,
+        ),
+    )
+    registry.register(
+        "tavily.extract",
+        MockToolClient(
+            tool_name="tavily.extract",
+            output_summary="Mock Tavily extract result.",
+            source_type=EvidenceSourceType.EXTERNAL_REPORT,
+        ),
+    )
+    registry.register(
         "external_research.mock",
         MockToolClient(
             tool_name="external_research.mock",

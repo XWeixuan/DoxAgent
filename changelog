@@ -1,5 +1,13 @@
 # changelog
 
+## 2026-06-01
+
+- Implemented Post-MVP 3.7/3.8 O1/A1/A2 realization contracts with `TaskType.DELEGATED_RETRIEVAL`, `ExpectationConstructionResult`, `DoxAtlasAuditResult`, `DelegatedRetrievalResult`, `DelegatedRetrievalRequest`, and `create_a2_retrieval_delegation(...)`.
+- Repositioned A2 as a Tavily-only delegated retrieval and fact-check agent, limiting its default tool permissions to `tavily.search` and `tavily.extract` while preserving the internal `A2` agent id.
+- Added O1 expectation-construction, A1 DoxAtlas-audit, and A2 Tavily retrieval skills plus mock Tavily tools for offline default tests.
+- Wired `ResolveObjectionsAndDelegations` in `agent_runner` mode to call A2 for blocking delegations, write retrieval results to Working Memory, complete delegations only with sufficient evidence, and route remaining objections back to O1 resolution.
+- Added tests covering A2 Tavily-only permissions, delegation helper exposure, mock Tavily evidence conversion, A2 blocker recovery, and insufficient-evidence blocking behavior, plus documentation in `dev_plan/PHASE_3_7_3_8_O1_A1_A2_REALIZATION.md`.
+
 ## 2026-05-31
 
 - Implemented Post-MVP 3.2 real ToolRegistry integration with explicit real-tool registry construction, provider settings, normalized tool errors, in-memory TTL caching, DoxAtlas HTTP tool clients, SEC/FRED/BLS/BEA/Fed/Polymarket/Alpha/FMP/Finnhub/Tavily/yfinance tool clients, and agent permission updates while preserving mock-first defaults.
@@ -48,3 +56,12 @@
 - Implemented Post-MVP 3.3 Skill Registry and injection boundaries with versioned skill definitions, default agent skill ids, `AgentTask` skill bundles, MockRunner skill visibility, and Context Builder skill summaries.
 - Registered migrated Vibe-Trading, financial-services, and Hermes/O4 skills in the DoxAgent-owned static registry, while keeping external source trees out of runtime.
 - Added skill version metadata to Vibe, financial-services, and O4 adapter outputs plus tests and documentation for skill registry, injection, and adapter compatibility.
+- Implemented Post-MVP 3.4 MAF Agent Runtime integration with `ModelGatewayChatClient`, `MafAgentFactory`, `ModelGatewayAgentRunner`, and a real `MafAgentAdapter` wrapper while preserving the `AgentTask -> AgentResult` contract.
+- Added skill injection, bounded context consumption, mock/real/disabled tool-mode compatibility, normalized gateway/MAF/tool failure handling, runtime audit payload metadata, and tests for fake-gateway and mock-tool execution.
+- Added `dev_plan/PHASE_3_4_AGENT_RUNTIME_MAF.md` and README notes documenting the MAF shell boundary, Phase 3.2 tool compatibility strategy, and non-goals around Blackboard writes, workflow replacement, and real-provider smoke tests.
+- Implemented Post-MVP 3.5 workflow real-execution mode with `execution_mode="agent_runner"`, richer workflow task context, structured `AgentResult` normalization, and C1/C2/C3/O4 calls for `BuildGlobalResearch`.
+- Added checkpoint metadata and Working Memory audit summaries for agent runtime, tool mode, skill versions, model audit data, tool calls, node errors, and last agent results while preserving Blackboard-only stable state writes.
+- Added Phase 3.5 workflow tests for structured runner output, safe blocking on invalid schema and required tool failure, manual blocker recovery via `resume_latest`, partial retry without duplicate commits, plus documentation in `dev_plan/PHASE_3_5_REAL_WORKFLOW.md`.
+- Implemented Post-MVP 3.6 Global Research module integration with `GlobalResearchInputs`, `GlobalResearchModuleRunner`, and `GlobalResearchAssembler` for C1/C2/C3/O4 Phase 8 outputs.
+- Wired `BuildGlobalResearch` in `agent_runner` mode to run migrated modules, write raw module outputs to Working Memory, assemble a `GlobalResearchDocument`, submit the stable patch through Blackboard Service, and preserve downstream hints for later O1/O2 stages.
+- Added Phase 3.6 tests for module execution, document assembly, evidence requirements, workflow submission, research input round trips, and resume behavior, plus documentation in `dev_plan/PHASE_3_6_GLOBAL_RESEARCH_MODULE_INTEGRATION.md`.
