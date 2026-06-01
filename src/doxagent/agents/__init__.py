@@ -14,7 +14,12 @@ from doxagent.agents.market_trace import (
     MockMarketDataProvider,
     YahooChartMarketDataProvider,
 )
-from doxagent.agents.runner import AgentRunner, MafAgentAdapter, MockAgentRunner
+from doxagent.agents.runner import (
+    AgentRunner,
+    MafAgentAdapter,
+    MockAgentRunner,
+    default_real_agent_runner,
+)
 from doxagent.agents.runtime import (
     MafAgentFactory,
     ModelGatewayAgentRunner,
@@ -43,4 +48,5 @@ __all__ = [
     "YahooChartMarketDataProvider",
     "default_agent_definitions",
     "default_agent_registry",
+    "default_real_agent_runner",
 ]

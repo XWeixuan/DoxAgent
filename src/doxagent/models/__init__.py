@@ -6,6 +6,8 @@ from doxagent.models.agent_outputs import (
     DoxAtlasAuditFinding,
     DoxAtlasAuditResult,
     ExpectationConstructionResult,
+    ExpectationFieldReviewFinding,
+    ExpectationFieldReviewResult,
     create_a2_retrieval_delegation,
 )
 from doxagent.models.blackboard import (
@@ -63,6 +65,7 @@ from doxagent.models.validation import (
     has_unresolved_objections,
     same_target,
 )
+from doxagent.prompts.schema import PromptBundle
 from doxagent.skills.schema import SkillBundle, SkillSummary
 
 __all__ = [
@@ -88,6 +91,8 @@ __all__ = [
     "EvidenceSourceType",
     "ExpectationDirection",
     "ExpectationConstructionResult",
+    "ExpectationFieldReviewFinding",
+    "ExpectationFieldReviewResult",
     "ExpectationUnitDocument",
     "GlobalResearchDocument",
     "KnownEvent",
@@ -103,6 +108,7 @@ __all__ = [
     "PatchOperation",
     "PolicyActionType",
     "PriceReaction",
+    "PromptBundle",
     "RealizedFact",
     "ResearchSection",
     "ResultStatus",

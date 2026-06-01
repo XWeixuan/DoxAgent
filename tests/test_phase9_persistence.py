@@ -75,7 +75,10 @@ def test_in_memory_repository_contract_lists_runs_by_ticker_and_mutates_atomical
 
 def test_workflow_checkpoints_are_persisted_as_history_with_latest_marker() -> None:
     checkpoint_repository = InMemoryWorkflowCheckpointRepository()
-    workflow = BlackboardInitializationWorkflow(checkpoint_repository=checkpoint_repository)
+    workflow = BlackboardInitializationWorkflow(
+        checkpoint_repository=checkpoint_repository,
+        execution_mode="mock",
+    )
 
     result = workflow.run("NVDA", stop_after=WorkflowNode.GENERATE_EXPECTATION_UNITS)
 
@@ -89,7 +92,10 @@ def test_workflow_checkpoints_are_persisted_as_history_with_latest_marker() -> N
 
 def test_resume_latest_uses_checkpoint_repository_without_duplicate_completed_commits() -> None:
     checkpoint_repository = InMemoryWorkflowCheckpointRepository()
-    workflow = BlackboardInitializationWorkflow(checkpoint_repository=checkpoint_repository)
+    workflow = BlackboardInitializationWorkflow(
+        checkpoint_repository=checkpoint_repository,
+        execution_mode="mock",
+    )
     partial = workflow.run("NVDA", stop_after=WorkflowNode.BUILD_GLOBAL_RESEARCH)
     before = workflow.blackboard.get_run(partial.checkpoint.run_id)
     assert len(before.commit_log) == 1

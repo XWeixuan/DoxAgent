@@ -24,6 +24,10 @@ class ExpectationConstructionResult(ContractModel):
     delegations: list[Delegation] = Field(default_factory=list)
     unknowns: list[NonEmptyStr] = Field(default_factory=list)
     rationale: NonEmptyStr
+    resolved_objection_ids: list[NonEmptyStr] = Field(default_factory=list)
+    accepted_objection_ids: list[NonEmptyStr] = Field(default_factory=list)
+    partially_accepted_objection_ids: list[NonEmptyStr] = Field(default_factory=list)
+    rejected_objection_ids: list[NonEmptyStr] = Field(default_factory=list)
 
 
 class DoxAtlasAuditFinding(ContractModel):
@@ -37,6 +41,26 @@ class DoxAtlasAuditResult(ContractModel):
     """A1 output for field-level DoxAtlas audit."""
 
     findings: list[DoxAtlasAuditFinding] = Field(default_factory=list)
+    evidence_refs: list[EvidenceRef] = Field(default_factory=list)
+    objections: list[Objection] = Field(default_factory=list)
+    delegations: list[Delegation] = Field(default_factory=list)
+    unknowns: list[NonEmptyStr] = Field(default_factory=list)
+    rationale: NonEmptyStr
+
+
+class ExpectationFieldReviewFinding(ContractModel):
+    """Field-level review finding from C1/C3/O4 expectation reviewers."""
+
+    field_path: NonEmptyStr
+    status: Literal["supported", "unsupported", "needs_more_evidence", "contradicted"]
+    rationale: NonEmptyStr
+    evidence_refs: list[EvidenceRef] = Field(default_factory=list)
+
+
+class ExpectationFieldReviewResult(ContractModel):
+    """Generic non-DoxAtlas expectation-field review output."""
+
+    findings: list[ExpectationFieldReviewFinding] = Field(default_factory=list)
     evidence_refs: list[EvidenceRef] = Field(default_factory=list)
     objections: list[Objection] = Field(default_factory=list)
     delegations: list[Delegation] = Field(default_factory=list)

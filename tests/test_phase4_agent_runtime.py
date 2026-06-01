@@ -3,11 +3,13 @@ import pytest
 from doxagent.agents import (
     MafAgentAdapter,
     MockAgentRunner,
+    ModelGatewayAgentRunner,
     UnknownAgentError,
     default_agent_registry,
 )
 from doxagent.blackboard import BlackboardService
 from doxagent.context import ContextBuilder
+from doxagent.gateway import MockModelClient, ModelGateway
 from doxagent.models import (
     AgentName,
     AgentPermissions,
@@ -43,7 +45,7 @@ def test_default_registry_contains_phase4_agent_set() -> None:
 
     definition = registry.get(AgentName.O1_EXPECTATION_OWNER)
     assert definition.runtime.output_schema == "ExpectationConstructionResult|KnownEventsDocument"
-    assert "doxatlas.query" in definition.runtime.allowed_tools
+    assert definition.runtime.allowed_tools == ["doxa_get_narrative_report"]
     assert DocumentType.EXPECTATION_UNIT.value in definition.runtime.writable_targets
     assert definition.runtime.to_permissions().can_propose_patch is True
     assert definition.model_dump(mode="json")["agent_name"] == "O1"
@@ -79,13 +81,21 @@ def test_mock_runner_returns_agent_result_without_blackboard_mutation() -> None:
     assert service.get_run(run.run_id).commit_log == []
 
 
-def test_maf_adapter_delegates_to_real_runner_contract() -> None:
-    task = agent_task()
+def test_maf_adapter_accepts_explicit_runner_contract() -> None:
+    task = agent_task().model_copy(
+        update={"input_context": {"execution_mode": "single_shot"}},
+        deep=True,
+    )
+    runner = ModelGatewayAgentRunner(
+        model_gateway=ModelGateway(MockModelClient(text='{"summary":"bad schema"}')),
+        tool_mode="disabled",
+    )
 
-    result = MafAgentAdapter().run(task)
+    result = MafAgentAdapter(runner=runner).run(task)
 
     assert result.status is ResultStatus.SUCCEEDED
-    assert result.payload["runtime"] == "maf"
+    assert result.error is None
+    assert result.payload["structured"] == {"summary": "bad schema"}
 
 
 def context_task(run_id: str) -> AgentTask:

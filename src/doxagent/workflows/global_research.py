@@ -105,7 +105,7 @@ class GlobalResearchModuleRunner:
 
 
 class GlobalResearchAssembler:
-    """Assemble C1/C2/C3/O4 module outputs into one GlobalResearchDocument."""
+    """Assemble Global Research sections into one GlobalResearchDocument."""
 
     def assemble(
         self,
@@ -154,6 +154,37 @@ class GlobalResearchAssembler:
                 AgentName.O4_MARKET_TRACE,
                 "market_trace",
             ),
+        )
+
+    def assemble_from_sections(
+        self,
+        ticker: str,
+        *,
+        fundamental_report: ResearchSection,
+        macro_report: ResearchSection,
+        industry_report: ResearchSection,
+        market_narrative_report: ResearchSection,
+        market_trace_report: ResearchSection,
+    ) -> GlobalResearchDocument:
+        for label, section in {
+            "fundamental_report": fundamental_report,
+            "macro_report": macro_report,
+            "industry_report": industry_report,
+            "market_narrative_report": market_narrative_report,
+            "market_trace_report": market_trace_report,
+        }.items():
+            marker = "Pending O1/DoxAtlas"
+            if marker in section.summary or marker in section.text:
+                raise WorkflowContractError(f"{label} still contains placeholder text.")
+        return GlobalResearchDocument(
+            document_id=new_id("doc"),
+            ticker=ticker,
+            created_at=datetime.now(UTC),
+            fundamental_report=fundamental_report,
+            macro_report=macro_report,
+            industry_report=industry_report,
+            market_narrative_report=market_narrative_report,
+            market_trace_report=market_trace_report,
         )
 
     def downstream_context(self, results: list[AgentResult]) -> dict[str, Any]:

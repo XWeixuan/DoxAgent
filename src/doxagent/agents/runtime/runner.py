@@ -4,9 +4,10 @@ import asyncio
 import json
 from typing import Any
 
-from doxagent.agents.config import AgentRegistry, default_agent_registry
+from doxagent.agents.config import AgentDefinition, AgentRegistry, default_agent_registry
 from doxagent.agents.runtime.chat_client import ModelGatewayChatClient
 from doxagent.agents.runtime.factory import MafAgentFactory
+from doxagent.agents.runtime.react import ReActAgentHarness, ReActHarnessConfig
 from doxagent.agents.runtime.tools import (
     ToolMode,
     ToolRegistryFunctionAdapter,
@@ -17,7 +18,17 @@ from doxagent.agents.runtime.tools import (
 )
 from doxagent.context import ContextBuilder
 from doxagent.gateway import MockModelClient, ModelGateway, ProviderName, ResponseFormat
-from doxagent.models import AgentError, AgentResult, AgentTask, ResultStatus
+from doxagent.models import (
+    AgentError,
+    AgentName,
+    AgentResult,
+    AgentTask,
+    ResultStatus,
+    TaskType,
+    new_id,
+)
+from doxagent.prompts import PromptAssembler, PromptInjector
+from doxagent.prompts.schema import AssembledPrompt
 from doxagent.skills.injection import SkillInjector
 from doxagent.tools import ToolRegistry, ToolResult
 
@@ -29,6 +40,8 @@ class ModelGatewayAgentRunner:
         self,
         *,
         registry: AgentRegistry | None = None,
+        prompt_injector: PromptInjector | None = None,
+        prompt_assembler: PromptAssembler | None = None,
         skill_injector: SkillInjector | None = None,
         model_gateway: ModelGateway | None = None,
         context_builder: ContextBuilder | None = None,
@@ -37,8 +50,12 @@ class ModelGatewayAgentRunner:
         default_model: str = "mock-model",
         tool_mode: ToolMode = "mock",
         agent_factory: MafAgentFactory | None = None,
+        react_config: ReActHarnessConfig | None = None,
+        max_delegation_depth: int = 1,
     ) -> None:
         self.registry = registry or default_agent_registry()
+        self.prompt_injector = prompt_injector or PromptInjector()
+        self.prompt_assembler = prompt_assembler or PromptAssembler()
         self.skill_injector = skill_injector or SkillInjector()
         self.model_gateway = model_gateway or ModelGateway(MockModelClient(structured={}))
         self.context_builder = context_builder
@@ -47,6 +64,8 @@ class ModelGatewayAgentRunner:
         self.default_model = default_model
         self.tool_mode = tool_mode
         self.agent_factory = agent_factory or MafAgentFactory()
+        self.react_config = react_config or ReActHarnessConfig()
+        self.max_delegation_depth = max_delegation_depth
 
     def run(self, task: AgentTask) -> AgentResult:
         try:
@@ -67,14 +86,86 @@ class ModelGatewayAgentRunner:
         definition = self.registry.get(task.agent_name)
         if definition.task_types and task.task_type not in definition.task_types:
             return self._failed(task, "task_type_not_allowed", "Agent cannot run this task type.")
+        task = self.prompt_injector.inject(task, definition)
         task = self.skill_injector.inject(task, definition)
         context_snapshot = (
             self.context_builder.build(task, task.run_metadata.run_id)
             if self.context_builder is not None
             else None
         )
-        tool_results = self._run_requested_tools(task)
+        if task.prompt_bundle is None:
+            return self._failed(
+                task,
+                "missing_prompt_bundle",
+                "Prompt injection produced no bundle.",
+            )
+
+        assembled_prompt = self.prompt_assembler.assemble(
+            task,
+            definition,
+            task.prompt_bundle,
+            context_snapshot,
+            [],
+        )
+        mode = self._execution_mode(task, definition)
+        if mode == "react":
+            harness = ReActAgentHarness(
+                model_gateway=self.model_gateway,
+                tool_registry=self.tool_registry,
+                provider=self.default_provider,
+                model=self.default_model,
+                tool_mode=self.tool_mode,
+                config=self.react_config,
+            )
+            return await harness.run(
+                task=task,
+                definition=definition,
+                assembled_prompt=assembled_prompt,
+                context_snapshot=context_snapshot,
+                metadata=self._metadata(task),
+                delegate=lambda payload: self._run_delegation(task, payload),
+            )
+        if mode == "single_shot":
+            return await self._async_run_model_once(
+                task,
+                definition,
+                context_snapshot,
+                assembled_prompt,
+                run_requested_tools=False,
+            )
+        if mode == "caller_planned_tools":
+            return await self._async_run_model_once(
+                task,
+                definition,
+                context_snapshot,
+                assembled_prompt,
+                run_requested_tools=True,
+            )
+        return self._failed(
+            task,
+            "invalid_execution_mode",
+            f"Unsupported agent execution mode: {mode}",
+        )
+
+    async def _async_run_model_once(
+        self,
+        task: AgentTask,
+        definition: AgentDefinition,
+        context_snapshot: Any | None,
+        assembled_prompt: AssembledPrompt,
+        *,
+        run_requested_tools: bool,
+    ) -> AgentResult:
+        tool_results = self._run_requested_tools(task) if run_requested_tools else []
         tool_calls = [tool_result_to_summary(result) for result in tool_results]
+        if run_requested_tools and task.prompt_bundle is not None:
+            assembled_prompt = self.prompt_assembler.assemble(
+                task,
+                definition,
+                task.prompt_bundle,
+                context_snapshot,
+                tool_results,
+            )
         if has_required_tool_failure(task, tool_results):
             return self._failed(
                 task,
@@ -95,11 +186,15 @@ class ModelGatewayAgentRunner:
             response_format=ResponseFormat.JSON,
             metadata_builder=lambda _: self._metadata(task),
         )
-        agent = self.agent_factory.create(definition, chat_client, tools=[])
-        prompt = self._prompt(task, context_snapshot, tool_results)
+        agent = self.agent_factory.create(
+            definition,
+            chat_client,
+            instructions=assembled_prompt.instructions,
+            tools=[],
+        )
         try:
             response = await agent.run(
-                prompt,
+                assembled_prompt.user_prompt,
                 options={
                     "model": self.default_model,
                     "temperature": 0.2,
@@ -141,11 +236,25 @@ class ModelGatewayAgentRunner:
             status=ResultStatus.SUCCEEDED,
             payload={
                 "runtime": "maf",
+                "execution_mode": "caller_planned_tools"
+                if run_requested_tools
+                else "single_shot",
                 "structured": structured,
                 "text": str(response),
                 "model_audit": model_response.audit.model_dump(mode="json"),
                 "skill_ids": task.skill_bundle.skill_ids if task.skill_bundle else [],
                 "skill_versions": task.skill_bundle.skill_versions if task.skill_bundle else {},
+                "prompt_block_ids": (
+                    task.prompt_bundle.prompt_block_ids if task.prompt_bundle else []
+                ),
+                "internal_task_skill_ids": (
+                    task.prompt_bundle.internal_task_skill_ids if task.prompt_bundle else []
+                ),
+                "external_skill_package_ids": (
+                    task.prompt_bundle.external_skill_package_ids if task.prompt_bundle else []
+                ),
+                "prompt_versions": task.prompt_bundle.versions if task.prompt_bundle else {},
+                "assembled_prompt_metadata": assembled_prompt.metadata,
                 "tool_mode": self.tool_mode,
                 "agent_definition": {
                     "agent_name": definition.agent_name.value,
@@ -163,6 +272,65 @@ class ModelGatewayAgentRunner:
             ],
             tool_calls=tool_calls,
         )
+
+    async def _run_delegation(self, parent_task: AgentTask, payload: dict[str, Any]) -> AgentResult:
+        if not parent_task.permissions.can_delegate:
+            return self._failed(
+                parent_task,
+                "delegation_not_allowed",
+                "Agent permissions do not allow delegation.",
+            )
+        current_depth = int(parent_task.input_context.get("_react_delegation_depth") or 0)
+        if current_depth >= self.max_delegation_depth:
+            return self._failed(
+                parent_task,
+                "delegation_depth_exceeded",
+                "ReAct delegation depth limit was reached.",
+            )
+        try:
+            target_agent = AgentName(str(payload["target_agent"]))
+            definition = self.registry.get(target_agent)
+        except Exception as exc:
+            return self._failed(
+                parent_task,
+                "invalid_delegation_target",
+                str(exc),
+            )
+        task_type = parent_task.task_type
+        if payload.get("task_type"):
+            try:
+                task_type = TaskType(str(payload["task_type"]))
+            except ValueError:
+                return self._failed(
+                    parent_task,
+                    "invalid_delegation_task_type",
+                    f"Unknown delegated task type: {payload['task_type']}",
+                )
+        child_task = AgentTask(
+            task_id=new_id("task"),
+            ticker=parent_task.ticker,
+            agent_name=target_agent,
+            task_type=task_type,
+            input_context={
+                "delegated_question": str(payload.get("question") or ""),
+                "delegation_context": str(payload.get("context_summary") or ""),
+                "parent_task_id": parent_task.task_id,
+                "_react_delegation_depth": current_depth + 1,
+            },
+            required_output_schema=str(
+                payload.get("required_output_schema") or definition.runtime.output_schema
+            ),
+            permissions=definition.runtime.to_permissions(),
+            run_metadata=parent_task.run_metadata.model_copy(
+                update={"parent_task_id": parent_task.task_id},
+                deep=True,
+            ),
+        )
+        return await self.async_run(child_task)
+
+    def _execution_mode(self, task: AgentTask, definition: AgentDefinition) -> str:
+        raw_mode = task.input_context.get("execution_mode", definition.runtime.execution_mode)
+        return str(raw_mode)
 
     def _run_requested_tools(self, task: AgentTask) -> list[ToolResult]:
         if self.tool_registry is None:
@@ -211,6 +379,10 @@ class ModelGatewayAgentRunner:
             "workflow_node": task.run_metadata.workflow_node or "",
             "skill_versions": json.dumps(
                 task.skill_bundle.skill_versions if task.skill_bundle else {},
+                ensure_ascii=True,
+            ),
+            "prompt_versions": json.dumps(
+                task.prompt_bundle.versions if task.prompt_bundle else {},
                 ensure_ascii=True,
             ),
         }

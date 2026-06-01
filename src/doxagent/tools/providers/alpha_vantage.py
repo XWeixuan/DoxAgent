@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import time
 from io import StringIO
 
 import httpx
@@ -17,6 +18,8 @@ from doxagent.tools.providers.base import (
     _require,
 )
 from doxagent.tools.schema import ToolRequest, ToolResult
+
+ALPHA_FREE_TIER_REQUEST_INTERVAL_SECONDS = 1.3
 
 
 class AlphaVantageClient(BaseRealToolClient):
@@ -81,7 +84,9 @@ class AlphaVantageFinancialStatementsClient(BaseRealToolClient):
             api_key = _require(self.settings.alpha_vantage_api_key, "ALPHA_VANTAGE_API_KEY")
             symbol = _input_str(request, "symbol", request.ticker).upper()
             data: JsonObject = {}
-            for function_name in self.FUNCTIONS:
+            for index, function_name in enumerate(self.FUNCTIONS):
+                if index:
+                    time.sleep(ALPHA_FREE_TIER_REQUEST_INTERVAL_SECONDS)
                 data[function_name] = self._get_json(
                     self.settings.alpha_vantage_base_url,
                     params={"function": function_name, "symbol": symbol, "apikey": api_key},
@@ -109,12 +114,15 @@ class AlphaVantageEarningsClient(BaseRealToolClient):
             api_key = _require(self.settings.alpha_vantage_api_key, "ALPHA_VANTAGE_API_KEY")
             symbol = _input_str(request, "symbol", request.ticker).upper()
             data: JsonObject = {}
-            for function_name in ("EARNINGS", "EARNINGS_ESTIMATES"):
+            for index, function_name in enumerate(("EARNINGS", "EARNINGS_ESTIMATES")):
+                if index:
+                    time.sleep(ALPHA_FREE_TIER_REQUEST_INTERVAL_SECONDS)
                 data[function_name] = self._get_json(
                     self.settings.alpha_vantage_base_url,
                     params={"function": function_name, "symbol": symbol, "apikey": api_key},
                     cache_ttl=self.settings.alpha_cache_ttl_seconds,
                 )
+            time.sleep(ALPHA_FREE_TIER_REQUEST_INTERVAL_SECONDS)
             csv_text = self._get_text(
                 self.settings.alpha_vantage_base_url,
                 params={"function": "EARNINGS_CALENDAR", "symbol": symbol, "apikey": api_key},

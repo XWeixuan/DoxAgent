@@ -4,6 +4,7 @@ import pytest
 
 from doxagent.gateway import (
     AnthropicModelClient,
+    BailianResponsesModelClient,
     GatewayError,
     MessageRole,
     MockModelClient,
@@ -125,6 +126,13 @@ async def test_gateway_parses_json_text_and_rejects_invalid_json() -> None:
     response = await gateway.complete(request(ResponseFormat.JSON))
     assert response.structured == {"key": "value"}
 
+    fenced_gateway = ModelGateway(
+        MockModelClient(text='Here is the JSON:\n```json\n{"key": "fenced"}\n```')
+    )
+    fenced_response = await fenced_gateway.complete(request(ResponseFormat.JSON))
+    assert fenced_response.error is None
+    assert fenced_response.structured == {"key": "fenced"}
+
     bad_gateway = ModelGateway(MockModelClient(text="not-json"))
     bad_response = await bad_gateway.complete(request(ResponseFormat.JSON))
     assert bad_response.error is not None
@@ -169,6 +177,45 @@ async def test_openai_adapter_maps_request_to_responses_create() -> None:
     assert fake_client.responses.kwargs["model"] == "mock-model"
     assert fake_client.responses.kwargs["input"][0]["role"] == "system"
     assert fake_client.responses.kwargs["max_output_tokens"] == 256
+
+
+class FakeBailianResponse:
+    output_text = ""
+
+    def model_dump(self) -> dict[str, Any]:
+        return {
+            "output": [
+                {"type": "reasoning", "summary": [{"text": "reasoning summary"}]},
+                {"type": "message", "content": [{"type": "output_text", "text": "bailian text"}]},
+            ],
+            "usage": {"input_tokens": 5, "output_tokens": 6, "total_tokens": 11},
+        }
+
+
+class FakeBailianResponses(FakeResponses):
+    async def create(self, **kwargs: Any) -> FakeBailianResponse:
+        self.kwargs = kwargs
+        return FakeBailianResponse()
+
+
+class FakeBailianClient:
+    def __init__(self) -> None:
+        self.responses = FakeBailianResponses()
+
+
+@pytest.mark.asyncio
+async def test_bailian_adapter_uses_responses_api_with_thinking_enabled() -> None:
+    fake_client = FakeBailianClient()
+    adapter = BailianResponsesModelClient(fake_client, enable_thinking=True)
+
+    response = await adapter.complete(request(ResponseFormat.JSON))
+
+    assert response.text == "bailian text"
+    assert response.audit.provider is ProviderName.BAILIAN
+    assert response.raw["reasoning_summary"] == ["reasoning summary"]
+    assert fake_client.responses.kwargs is not None
+    assert fake_client.responses.kwargs["model"] == "mock-model"
+    assert fake_client.responses.kwargs["extra_body"] == {"enable_thinking": True}
 
 
 class FakeAnthropicResponse:
@@ -219,8 +266,37 @@ def test_tracing_wrapper_can_be_disabled() -> None:
     )
 
 
+def test_bailian_uses_openai_langsmith_wrapper(monkeypatch: pytest.MonkeyPatch) -> None:
+    client = object()
+    calls: list[object] = []
+
+    def fake_wrap_openai(value: object, *, tracing_extra: object | None = None) -> object:
+        calls.append(tracing_extra)
+        return {"wrapped": value}
+
+    monkeypatch.setattr("langsmith.wrappers.wrap_openai", fake_wrap_openai)
+
+    wrapped = wrap_provider_client(
+        ProviderName.BAILIAN,
+        client,
+        tracing_enabled=True,
+        tracing_extra={"metadata": {"provider": "bailian"}},
+    )
+
+    assert wrapped == {"wrapped": client}
+    assert calls == [{"metadata": {"provider": "bailian"}}]
+
+
 def test_tracing_metadata_uses_expected_keys() -> None:
-    extra = tracing_extra_from_metadata(request().metadata | {"ignored": "value"})
+    extra = tracing_extra_from_metadata(
+        request().metadata
+        | {
+            "react_step": "1",
+            "provider": "bailian",
+            "model": "qwen3.6-flash",
+            "ignored": "value",
+        }
+    )
 
     assert extra == {
         "metadata": {
@@ -229,5 +305,8 @@ def test_tracing_metadata_uses_expected_keys() -> None:
             "run_id": "run_001",
             "task_type": "generate_expectation_unit",
             "workflow_node": "GenerateExpectationUnits",
+            "react_step": "1",
+            "provider": "bailian",
+            "model": "qwen3.6-flash",
         },
     }

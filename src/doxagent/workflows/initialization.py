@@ -6,8 +6,8 @@ from typing import Any, Literal
 from doxagent.agents import (
     AgentRunner,
     MockAgentRunner,
-    ModelGatewayAgentRunner,
     default_agent_registry,
+    default_real_agent_runner,
 )
 from doxagent.blackboard import BlackboardService, PatchValidationError
 from doxagent.models import (
@@ -47,6 +47,7 @@ from doxagent.models import (
     VariableStatus,
     new_id,
 )
+from doxagent.settings import DoxAgentSettings
 from doxagent.workflows.checkpoint_repository import (
     InMemoryWorkflowCheckpointRepository,
     WorkflowCheckpointRepository,
@@ -58,6 +59,7 @@ from doxagent.workflows.global_research import (
     GlobalResearchModuleRunner,
 )
 from doxagent.workflows.normalizer import WorkflowAgentResultNormalizer
+from doxagent.workflows.output_validation import AgentOutputSchemaValidator
 from doxagent.workflows.schema import (
     WorkflowCheckpoint,
     WorkflowExecutionResult,
@@ -127,7 +129,11 @@ class InitializationMockResultFactory:
                 expectation_id=document.expectation_id,
             )
             return self._result(task, payload={"expectation_count": 1}, patches=[patch])
-        if node == WorkflowNode.REVIEW_EXPECTATION_FIELDS.value and self.include_blockers:
+        if (
+            node == WorkflowNode.REVIEW_EXPECTATION_FIELDS.value
+            and task.agent_name == AgentName.A1_DOXATLAS_AUDIT
+            and self.include_blockers
+        ):
             target = self._expectation_target(task.ticker)
             objection = Objection(
                 objection_id=new_id("objection"),
@@ -410,11 +416,13 @@ class BlackboardInitializationWorkflow:
         runner: AgentRunner | None = None,
         checkpoint_repository: WorkflowCheckpointRepository | None = None,
         auto_resolve_blockers: bool = True,
-        execution_mode: WorkflowExecutionMode = "mock",
+        execution_mode: WorkflowExecutionMode = "agent_runner",
         allow_mock_fallback: bool = False,
         result_normalizer: WorkflowAgentResultNormalizer | None = None,
         global_research_runner: GlobalResearchModuleRunner | None = None,
         global_research_assembler: GlobalResearchAssembler | None = None,
+        settings: DoxAgentSettings | None = None,
+        output_validator: AgentOutputSchemaValidator | None = None,
     ) -> None:
         if execution_mode not in {"mock", "agent_runner"}:
             raise ValueError("execution_mode must be 'mock' or 'agent_runner'.")
@@ -426,12 +434,17 @@ class BlackboardInitializationWorkflow:
         self.result_normalizer = result_normalizer or WorkflowAgentResultNormalizer()
         self.global_research_runner = global_research_runner or GlobalResearchModuleRunner()
         self.global_research_assembler = global_research_assembler or GlobalResearchAssembler()
+        self.settings = settings or DoxAgentSettings()
+        self.output_validator = output_validator or AgentOutputSchemaValidator()
         self.checkpoint_repository = checkpoint_repository or InMemoryWorkflowCheckpointRepository()
         self.runner = runner or self._default_runner()
 
     def _default_runner(self) -> AgentRunner:
         if self.execution_mode == "agent_runner":
-            return ModelGatewayAgentRunner(registry=self.registry)
+            return default_real_agent_runner(
+                registry=self.registry,
+                settings=self.settings,
+            )
         return MockAgentRunner(
             self.registry,
             result_factory=InitializationMockResultFactory(include_blockers=True),
@@ -536,11 +549,11 @@ class BlackboardInitializationWorkflow:
                 node,
                 AgentName.O1_EXPECTATION_OWNER,
                 TaskType.GENERATE_EXPECTATION_UNIT,
-                "ExpectationUnitDocument",
+                "ExpectationConstructionResult",
             )
             self._write_working_memory(checkpoint, result, "agent_result")
             self._validate_agent_success(result, node, require_patches=False)
-            self._validate_expectation_patch_count(result)
+            self._validate_expectation_patches(checkpoint.ticker, result)
             for patch in result.proposed_patches:
                 self._validate_patch_contract(patch, node)
             return self._mark_completed(
@@ -550,24 +563,7 @@ class BlackboardInitializationWorkflow:
                 metadata=self._agent_metadata(node, [result]),
             )
         if node == WorkflowNode.REVIEW_EXPECTATION_FIELDS:
-            result = self._run_agent(
-                checkpoint,
-                node,
-                AgentName.A1_DOXATLAS_AUDIT,
-                TaskType.REVIEW_EXPECTATION_FIELD,
-                "AuditFinding",
-            )
-            self._write_working_memory(checkpoint, result, "agent_review")
-            self._validate_agent_success(result, node)
-            for objection in result.objections:
-                self.blackboard.create_objection(checkpoint.run_id, objection)
-            for delegation in result.delegations:
-                self.blackboard.create_delegation(checkpoint.run_id, delegation)
-            return self._mark_completed(
-                checkpoint,
-                node,
-                metadata=self._agent_metadata(node, [result]),
-            )
+            return self._review_expectation_fields(checkpoint, node)
         if node == WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS:
             results = self._resolve_blockers(checkpoint, node)
             return self._mark_completed(
@@ -658,7 +654,10 @@ class BlackboardInitializationWorkflow:
                 created_at=datetime.now(UTC),
             ),
         )
-        return self.result_normalizer.normalize(self.runner.run(task))
+        result = self.result_normalizer.normalize(self.runner.run(task))
+        if self.execution_mode == "agent_runner" and result.status is ResultStatus.SUCCEEDED:
+            self.output_validator.validate(result.payload, output_schema)
+        return result
 
     def _build_global_research_with_agent_runner(
         self,
@@ -666,17 +665,88 @@ class BlackboardInitializationWorkflow:
         node: WorkflowNode,
     ) -> WorkflowCheckpoint:
         inputs = self._research_inputs_from_checkpoint(checkpoint)
-        results = self.global_research_runner.run(checkpoint.ticker, inputs)
-        for result in results:
-            self._write_working_memory(checkpoint, result, "global_research_module_result")
+        specs = [
+            (
+                AgentName.C1_FUNDAMENTAL_RESEARCH,
+                "fundamental_report",
+                "Generate a sourced ResearchSection covering company fundamentals.",
+            ),
+            (
+                AgentName.C2_MACRO_RESEARCH,
+                "macro_report",
+                "Generate a sourced ResearchSection covering macro and market regime.",
+            ),
+            (
+                AgentName.C3_INDUSTRY_RESEARCH,
+                "industry_report",
+                "Generate a sourced ResearchSection covering industry and competitive context.",
+            ),
+            (
+                AgentName.O4_MARKET_TRACE,
+                "market_trace_report",
+                "Generate a sourced ResearchSection covering recent price and flow trace.",
+            ),
+        ]
+        results: list[AgentResult] = []
+        sections: dict[str, ResearchSection] = {}
+        for agent_name, section_key, instruction in specs:
+            result = self._run_agent(
+                checkpoint,
+                node,
+                agent_name,
+                TaskType.GENERATE_GLOBAL_RESEARCH,
+                "ResearchSection",
+                extra_context=self._global_research_agent_context(
+                    inputs,
+                    section_key=section_key,
+                    instruction=instruction,
+                ),
+            )
+            results.append(result)
+            self._write_working_memory(checkpoint, result, "global_research_agent_result")
             self._validate_agent_success(result, node, require_patches=False)
-        document = self.global_research_assembler.assemble(checkpoint.ticker, inputs, results)
+            sections[section_key] = self._research_section_from_result(result, "ResearchSection")
+
+        o1_result = self._run_agent(
+            checkpoint,
+            node,
+            AgentName.O1_EXPECTATION_OWNER,
+            TaskType.GENERATE_GLOBAL_RESEARCH,
+            "ResearchSection",
+            extra_context=self._global_research_agent_context(
+                inputs,
+                section_key="market_narrative_report",
+                instruction=(
+                    "Use only doxa_get_narrative_report to generate a sourced market narrative "
+                    "ResearchSection. Convert missing narrative coverage into unknowns."
+                ),
+                required_tool_names=["doxa_get_narrative_report"],
+                prior_sections={
+                    key: section.model_dump(mode="json") for key, section in sections.items()
+                },
+            ),
+        )
+        results.append(o1_result)
+        self._write_working_memory(checkpoint, o1_result, "global_research_agent_result")
+        self._validate_agent_success(o1_result, node, require_patches=False)
+        sections["market_narrative_report"] = self._research_section_from_result(
+            o1_result,
+            "ResearchSection",
+        )
+        document = self.global_research_assembler.assemble_from_sections(
+            checkpoint.ticker,
+            fundamental_report=sections["fundamental_report"],
+            macro_report=sections["macro_report"],
+            industry_report=sections["industry_report"],
+            market_narrative_report=sections["market_narrative_report"],
+            market_trace_report=sections["market_trace_report"],
+        )
         patch = self._global_research_patch(document, results)
         self._validate_patch_contract(patch, node)
         self._submit_patch(
             checkpoint.run_id,
             patch,
-            f"{node.value} assembled GlobalResearchDocument from C1/C2/C3/O4.",
+            f"{node.value} assembled GlobalResearchDocument from C1/C2/C3/O4/O1.",
         )
         stable_documents = list(checkpoint.stable_document_types)
         if DocumentType.GLOBAL_RESEARCH not in stable_documents:
@@ -692,6 +762,161 @@ class BlackboardInitializationWorkflow:
                 ),
                 "global_research_patch_id": patch.patch_id,
             },
+        )
+
+    def _global_research_agent_context(
+        self,
+        inputs: GlobalResearchInputs,
+        *,
+        section_key: str,
+        instruction: str,
+        required_tool_names: list[str] | None = None,
+        prior_sections: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        tool_requirements = [
+            {
+                "tool_name": tool_name,
+                "required": True,
+                "purpose": f"Required for {section_key}.",
+            }
+            for tool_name in (required_tool_names or [])
+        ]
+        return {
+            "global_research_inputs": inputs.model_dump(mode="json"),
+            "required_section_key": section_key,
+            "section_instruction": instruction,
+            "required_tool_names": required_tool_names or [],
+            "tool_requirements": tool_requirements,
+            "prior_sections": prior_sections or {},
+        }
+
+    def _research_section_from_result(
+        self,
+        result: AgentResult,
+        expected_schema: str,
+    ) -> ResearchSection:
+        model = self.output_validator.validate(result.payload, expected_schema)
+        section = (
+            model
+            if isinstance(model, ResearchSection)
+            else ResearchSection.model_validate(model)
+        )
+        return section
+
+    def _review_expectation_fields(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        node: WorkflowNode,
+    ) -> WorkflowCheckpoint:
+        if not checkpoint.pending_patches:
+            raise WorkflowContractError(
+                "ReviewExpectationFields requires pending expectation patches."
+            )
+        specs: list[dict[str, Any]] = [
+            {
+                "agent_name": AgentName.A1_DOXATLAS_AUDIT,
+                "schema": "DoxAtlasAuditResult",
+                "content_type": "a1_doxatlas_audit",
+                "review_scope": [
+                    "expectation_name",
+                    "direction",
+                    "market_view",
+                    "realized_facts",
+                ],
+                "instruction": (
+                    "Audit expectation name, direction, market view, and realized facts using "
+                    "only bottom-up DoxAtlas read tools. Do not call doxa_get_narrative_report "
+                    "or run tools."
+                ),
+                "tool_requirements": [
+                    {
+                        "tool_name": tool_name,
+                        "required": False,
+                        "purpose": "Optional low-level DoxAtlas evidence for A1 audit.",
+                    }
+                    for tool_name in self._tool_request_hints(AgentName.A1_DOXATLAS_AUDIT)
+                ],
+            },
+            {
+                "agent_name": AgentName.C1_FUNDAMENTAL_RESEARCH,
+                "schema": "ExpectationFieldReviewResult",
+                "content_type": "c1_fundamental_review",
+                "review_scope": [
+                    "realized_facts",
+                    "key_variables.current_state",
+                    "event_monitoring_direction",
+                ],
+                "instruction": (
+                    "Review realized facts, key variables and current state, and event "
+                    "prediction or monitoring direction against company fundamentals, filings, "
+                    "financial statements, and press-release evidence."
+                ),
+            },
+            {
+                "agent_name": AgentName.C3_INDUSTRY_RESEARCH,
+                "schema": "ExpectationFieldReviewResult",
+                "content_type": "c3_industry_review",
+                "review_scope": [
+                    "key_variables.current_state",
+                    "event_monitoring_direction",
+                ],
+                "instruction": (
+                    "Review key variables and current state plus event prediction or monitoring "
+                    "direction against industry, peer, sector, and policy evidence."
+                ),
+            },
+            {
+                "agent_name": AgentName.O4_MARKET_TRACE,
+                "schema": "ExpectationFieldReviewResult",
+                "content_type": "o4_market_trace_review",
+                "review_scope": [
+                    "realized_facts.price_reaction",
+                    "market_view.price_reflection",
+                    "market_evidence",
+                ],
+                "instruction": (
+                    "Review whether realized facts involving price reaction, price-reflection "
+                    "claims, and market evidence are supported by OHLCV or trade-stream data."
+                ),
+            },
+        ]
+
+        results: list[AgentResult] = []
+        for spec in specs:
+            agent_name = spec["agent_name"]
+            extra_context = {
+                "review_scope": spec["review_scope"],
+                "review_instruction": spec["instruction"],
+                "pending_expectation_patches": [
+                    patch.model_dump(mode="json") for patch in checkpoint.pending_patches
+                ],
+                "tool_requirements": spec.get("tool_requirements", []),
+                "required_tool_names": [
+                    item["tool_name"]
+                    for item in spec.get("tool_requirements", [])
+                    if item.get("required") is True
+                ],
+            }
+            result = self._run_agent(
+                checkpoint,
+                node,
+                agent_name,
+                TaskType.REVIEW_EXPECTATION_FIELD,
+                spec["schema"],
+                extra_context=extra_context,
+            )
+            self._write_working_memory(checkpoint, result, spec["content_type"])
+            self._validate_agent_success(result, node, require_patches=False)
+            for objection in result.objections:
+                self.blackboard.create_objection(checkpoint.run_id, objection)
+            for delegation in result.delegations:
+                self.blackboard.create_delegation(checkpoint.run_id, delegation)
+            results.append(result)
+
+        return self._mark_completed(
+            checkpoint,
+            node,
+            metadata=self._agent_metadata(node, results),
         )
 
     def _global_research_patch(
@@ -713,7 +938,7 @@ class BlackboardInitializationWorkflow:
             operation=PatchOperation.CREATE,
             before=None,
             after=document.model_dump(mode="json"),
-            rationale="Assemble GlobalResearchDocument from C1/C2/C3/O4 module outputs.",
+            rationale="Assemble GlobalResearchDocument from C1/C2/C3/O4/O1 agent outputs.",
             evidence_refs=evidence_refs,
             author_agent=AgentName.C1_FUNDAMENTAL_RESEARCH,
             validation_status=ValidationStatus.VALID,
@@ -779,12 +1004,54 @@ class BlackboardInitializationWorkflow:
         if not patch.evidence_refs:
             raise WorkflowContractError(f"{node.value} produced a patch without evidence.")
 
+    def _validate_expectation_patches(self, ticker: str, result: AgentResult) -> None:
+        expectation_patches = [
+            patch
+            for patch in result.proposed_patches
+            if patch.target.document_type == DocumentType.EXPECTATION_UNIT
+        ]
+        if not expectation_patches:
+            raise WorkflowContractError(
+                "GenerateExpectationUnits produced no expectation patches."
+            )
+        if len(expectation_patches) >= 4:
+            raise WorkflowContractError("GenerateExpectationUnits produced too many expectations.")
+        for patch in expectation_patches:
+            if patch.target.ticker != ticker:
+                raise WorkflowContractError(
+                    "GenerateExpectationUnits produced an expectation for the wrong ticker."
+                )
+            if not patch.evidence_refs:
+                raise WorkflowContractError(
+                    "GenerateExpectationUnits produced an expectation patch without evidence."
+                )
+            if not isinstance(patch.after, dict):
+                raise WorkflowContractError(
+                    "GenerateExpectationUnits expectation patch must include document content."
+                )
+            document = ExpectationUnitDocument.model_validate(patch.after)
+            if document.ticker != ticker:
+                raise WorkflowContractError(
+                    "GenerateExpectationUnits expectation document has the wrong ticker."
+                )
+            if (
+                patch.target.expectation_id
+                and patch.target.expectation_id != document.expectation_id
+            ):
+                raise WorkflowContractError(
+                    "GenerateExpectationUnits expectation target does not match document."
+                )
+
     def _validate_expectation_patch_count(self, result: AgentResult) -> None:
         expectation_patches = [
             patch
             for patch in result.proposed_patches
             if patch.target.document_type == DocumentType.EXPECTATION_UNIT
         ]
+        if not expectation_patches:
+            raise WorkflowContractError(
+                "GenerateExpectationUnits produced no expectation patches."
+            )
         if len(expectation_patches) >= 4:
             raise WorkflowContractError("GenerateExpectationUnits produced too many expectations.")
 
@@ -908,10 +1175,11 @@ class BlackboardInitializationWorkflow:
             self._write_working_memory(checkpoint, result, "objection_resolution_result")
             self._validate_agent_success(result, node, require_patches=False)
             self._apply_o1_objection_resolutions(checkpoint, result)
+            checkpoint.pending_patches = self._replace_pending_expectation_patches(
+                checkpoint,
+                result,
+            )
             results.append(result)
-
-        if self.auto_resolve_blockers:
-            self._mock_resolve_blockers(checkpoint)
 
         run = self.blackboard.get_run(checkpoint.run_id)
         if any(objection.is_unresolved for objection in run.objections) or any(
@@ -921,6 +1189,8 @@ class BlackboardInitializationWorkflow:
         return results
 
     def _mock_resolve_blockers(self, checkpoint: WorkflowCheckpoint) -> None:
+        if self.execution_mode == "agent_runner":
+            raise WorkflowContractError("_mock_resolve_blockers is disabled in agent_runner mode.")
         if not self.auto_resolve_blockers:
             return
         run = self.blackboard.get_run(checkpoint.run_id)
@@ -942,10 +1212,11 @@ class BlackboardInitializationWorkflow:
     def _a2_delegation_context(self, delegation: Delegation) -> dict[str, Any]:
         return {
             "delegation": delegation.model_dump(mode="json"),
-            "tool_requests": [
+            "tool_requirements": [
                 {
                     "tool_name": "tavily.search",
-                    "input": {
+                    "required": True,
+                    "input_hint": {
                         "query": delegation.question,
                         "topic": "finance",
                         "search_depth": "basic",
@@ -986,6 +1257,23 @@ class BlackboardInitializationWorkflow:
         payload = result.payload.get("structured")
         if not isinstance(payload, dict):
             payload = result.payload
+        accepted_ids = self._payload_string_list(payload, "accepted_objection_ids")
+        partially_accepted_ids = self._payload_string_list(
+            payload,
+            "partially_accepted_objection_ids",
+        )
+        rejected_ids = self._payload_string_list(payload, "rejected_objection_ids")
+        if accepted_ids or partially_accepted_ids:
+            revised_patches = self._expectation_revisions(result)
+            if not revised_patches:
+                raise WorkflowContractError(
+                    "O1 accepted an objection without returning a revised expectation patch."
+                )
+            self._validate_expectation_patches(checkpoint.ticker, result)
+        if rejected_ids and not self._has_rejection_support(payload, result):
+            raise WorkflowContractError(
+                "O1 rejected an objection without evidence and rationale."
+            )
         transitions = [
             ("resolved_objection_ids", self.blackboard.resolve_objection, "O1 resolved objection."),
             ("accepted_objection_ids", self.blackboard.accept_objection, "O1 accepted objection."),
@@ -997,12 +1285,54 @@ class BlackboardInitializationWorkflow:
             ("rejected_objection_ids", self.blackboard.reject_objection, "O1 rebutted objection."),
         ]
         for key, transition, note in transitions:
-            raw_ids = payload.get(key, []) if isinstance(payload, dict) else []
-            if not isinstance(raw_ids, list):
-                continue
-            for objection_id in raw_ids:
-                if isinstance(objection_id, str):
-                    transition(checkpoint.run_id, objection_id, note)
+            for objection_id in self._payload_string_list(payload, key):
+                transition(checkpoint.run_id, objection_id, note)
+
+    def _replace_pending_expectation_patches(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        result: AgentResult,
+    ) -> list[BlackboardPatch]:
+        revisions = self._expectation_revisions(result)
+        if not revisions:
+            return list(checkpoint.pending_patches)
+        pending = list(checkpoint.pending_patches)
+        index_by_expectation_id = {
+            patch.target.expectation_id: index
+            for index, patch in enumerate(pending)
+            if patch.target.document_type is DocumentType.EXPECTATION_UNIT
+            and patch.target.expectation_id is not None
+        }
+        for revision in revisions:
+            expectation_id = revision.target.expectation_id
+            if expectation_id is None or expectation_id not in index_by_expectation_id:
+                raise WorkflowContractError(
+                    "O1 revised an expectation patch that is not pending review."
+                )
+            pending[index_by_expectation_id[expectation_id]] = revision
+        return pending
+
+    def _expectation_revisions(self, result: AgentResult) -> list[BlackboardPatch]:
+        return [
+            patch
+            for patch in result.proposed_patches
+            if patch.target.document_type is DocumentType.EXPECTATION_UNIT
+        ]
+
+    def _payload_string_list(self, payload: dict[str, Any], key: str) -> list[str]:
+        raw = payload.get(key, [])
+        if not isinstance(raw, list):
+            return []
+        return [item for item in raw if isinstance(item, str)]
+
+    def _has_rejection_support(self, payload: dict[str, Any], result: AgentResult) -> bool:
+        rationale = payload.get("rationale")
+        raw_evidence = payload.get("evidence_refs", [])
+        return bool(
+            isinstance(rationale, str)
+            and rationale.strip()
+            and (result.evidence_refs or (isinstance(raw_evidence, list) and raw_evidence))
+        )
 
     def _require_documents(
         self,

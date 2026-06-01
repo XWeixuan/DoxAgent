@@ -319,9 +319,29 @@ and leave the workflow blocked when evidence is missing.
 Normal tests still use fake gateway/mock tools and do not call real Tavily,
 DoxAtlas, LLM providers, Supabase, or broker services.
 
+## Prompt And Skill Separation
+
+Prompt resources live under `prompts/` as Markdown files with TOML front matter.
+They are split into three categories so users can review and edit behavior
+without touching Python code:
+
+- `prompts/system`, `prompts/agents`, and `prompts/workflows` contain system,
+  role, and workflow prompt blocks.
+- `prompts/internal_task_skills` contains DoxAgent-owned SOPs such as O1
+  expectation construction, A1 DoxAtlas audit, and A2 Tavily retrieval.
+- `prompts/external_skill_packages` contains optional migrated packages from
+  Vibe-Trading, financial-services, and Hermes/O4.
+
+`PromptRegistry` and `PromptInjector` select these resources into
+`AgentTask.prompt_bundle`. `PromptAssembler` builds the final runtime prompt.
+The legacy `SkillRegistry` now acts as a compatibility layer for external skill
+packages only, so system prompts and internal SOPs are no longer mixed with
+external skills.
+
 ## Project Layout
 
 ```text
+prompts/
 src/doxagent/
   adapters/
   audit/

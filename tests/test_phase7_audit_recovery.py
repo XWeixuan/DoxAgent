@@ -20,7 +20,7 @@ from tests.fixtures.phase1_contracts import patch
 
 
 def completed_workflow() -> BlackboardInitializationWorkflow:
-    workflow = BlackboardInitializationWorkflow()
+    workflow = BlackboardInitializationWorkflow(execution_mode="mock")
     workflow.run("NVDA")
     return workflow
 
@@ -54,7 +54,7 @@ def test_commit_log_query_and_field_trace_link_patch_agent_evidence_and_commit()
 
 
 def test_audit_reports_only_unresolved_objections_and_blocking_delegations() -> None:
-    workflow = BlackboardInitializationWorkflow(auto_resolve_blockers=False)
+    workflow = BlackboardInitializationWorkflow(execution_mode="mock", auto_resolve_blockers=False)
     result = workflow.run("NVDA")
     run = workflow.blackboard.get_run(result.checkpoint.run_id)
     audit = AuditQueryService.for_run(run)
@@ -84,7 +84,7 @@ def test_audit_reports_only_unresolved_objections_and_blocking_delegations() -> 
 
 
 def test_run_debug_report_summarizes_business_audit_boundary_and_blockers() -> None:
-    workflow = BlackboardInitializationWorkflow(auto_resolve_blockers=False)
+    workflow = BlackboardInitializationWorkflow(execution_mode="mock", auto_resolve_blockers=False)
     result = workflow.run("NVDA")
     run = workflow.blackboard.get_run(result.checkpoint.run_id)
 
@@ -137,7 +137,7 @@ def test_bad_agent_result_enters_blocked_state_without_polluting_stable_state() 
         )
 
     runner = MockAgentRunner(default_agent_registry(), result_factory=bad_result)
-    workflow = BlackboardInitializationWorkflow(runner=runner)
+    workflow = BlackboardInitializationWorkflow(runner=runner, execution_mode="mock")
 
     result = workflow.run("NVDA")
 
@@ -161,7 +161,7 @@ def test_patch_without_evidence_enters_blocked_state_without_extra_commit() -> N
         return result.model_copy(update={"proposed_patches": stripped_patches}, deep=True)
 
     runner = MockAgentRunner(default_agent_registry(), result_factory=no_evidence_result)
-    workflow = BlackboardInitializationWorkflow(runner=runner)
+    workflow = BlackboardInitializationWorkflow(runner=runner, execution_mode="mock")
 
     result = workflow.run("NVDA")
 
@@ -174,7 +174,7 @@ def test_patch_without_evidence_enters_blocked_state_without_extra_commit() -> N
 
 
 def test_partial_retry_from_checkpoint_does_not_duplicate_completed_commits() -> None:
-    workflow = BlackboardInitializationWorkflow()
+    workflow = BlackboardInitializationWorkflow(execution_mode="mock")
     partial = workflow.run("NVDA", stop_after=WorkflowNode.BUILD_GLOBAL_RESEARCH)
     before = workflow.blackboard.get_run(partial.checkpoint.run_id)
     assert len(before.commit_log) == 1
@@ -190,7 +190,7 @@ def test_partial_retry_from_checkpoint_does_not_duplicate_completed_commits() ->
 
 
 def test_dependency_violation_has_debug_report_and_preserves_existing_state() -> None:
-    workflow = BlackboardInitializationWorkflow()
+    workflow = BlackboardInitializationWorkflow(execution_mode="mock")
     partial = workflow.run("NVDA", stop_after=WorkflowNode.START_TICKER_INITIALIZATION)
     bad_checkpoint = partial.checkpoint.model_copy(
         update={"next_node": WorkflowNode.GENERATE_MONITORING_CONFIG},

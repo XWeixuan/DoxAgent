@@ -17,7 +17,7 @@ class SkillInjectionPolicy:
     ) -> SkillBundle:
         selected: dict[str, SkillDefinition] = {}
 
-        for skill_id in agent_definition.runtime.default_skill_ids:
+        for skill_id in agent_definition.runtime.default_external_skill_package_ids:
             selected[skill_id] = registry.get(skill_id)
 
         for definition in registry.find_for_agent(task.agent_name, task.task_type):
@@ -26,18 +26,21 @@ class SkillInjectionPolicy:
             if task.task_type in definition.applicable_task_types:
                 selected[definition.skill_id] = definition
 
-        for skill_id in self._requested_skill_ids(task.input_context):
+        for skill_id in self._requested_skill_ids(task.input_context, "external_skill_package_ids"):
+            selected[skill_id] = registry.get(skill_id)
+
+        for skill_id in self._requested_skill_ids(task.input_context, "skill_ids"):
             selected[skill_id] = registry.get(skill_id)
 
         ordered = [selected[skill_id] for skill_id in sorted(selected)]
         return SkillBundle(skills=[summarize_skill(definition) for definition in ordered])
 
-    def _requested_skill_ids(self, input_context: dict[str, Any]) -> list[str]:
-        raw = input_context.get("skill_ids", [])
+    def _requested_skill_ids(self, input_context: dict[str, Any], key: str) -> list[str]:
+        raw = input_context.get(key, [])
         if raw is None:
             return []
         if not isinstance(raw, list) or not all(isinstance(item, str) for item in raw):
-            raise ValueError("input_context['skill_ids'] must be a list of skill id strings.")
+            raise ValueError(f"input_context['{key}'] must be a list of skill id strings.")
         return raw
 
 

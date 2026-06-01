@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
+
 from doxagent.models import EvidenceSourceType
 from doxagent.tools.providers.base import BaseRealToolClient, _input_str, _require
 from doxagent.tools.schema import ToolRequest, ToolResult
@@ -43,7 +45,14 @@ class FmpSectorPerformanceClient(BaseRealToolClient):
             api_key = _require(self.settings.fmp_api_key, "FMP_API_KEY")
             raw = self._get_json(
                 self.settings.fmp_base_url.rstrip("/") + "/stable/sector-performance-snapshot",
-                params={"apikey": api_key},
+                params={
+                    "date": _input_str(
+                        request,
+                        "date",
+                        datetime.now(UTC).date().isoformat(),
+                    ),
+                    "apikey": api_key,
+                },
                 cache_ttl=self.settings.fmp_cache_ttl_seconds,
             )
             return self._success(

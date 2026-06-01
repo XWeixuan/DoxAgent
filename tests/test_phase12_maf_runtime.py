@@ -22,7 +22,10 @@ def runner_with_mock_response(
 
 
 def test_maf_runner_returns_succeeded_agent_result_from_fake_gateway() -> None:
-    task = agent_task()
+    task = agent_task().model_copy(
+        update={"input_context": {"execution_mode": "single_shot"}},
+        deep=True,
+    )
     runner = runner_with_mock_response(structured={"summary": "ok"})
 
     result = runner.run(task)
@@ -31,10 +34,10 @@ def test_maf_runner_returns_succeeded_agent_result_from_fake_gateway() -> None:
     assert result.agent_name is AgentName.O1_EXPECTATION_OWNER
     assert result.payload["runtime"] == "maf"
     assert result.payload["structured"] == {"summary": "ok"}
-    assert result.payload["skill_ids"] == [
-        "doxagent-source-discipline",
-        "expectation-construction",
-    ]
+    assert result.payload["skill_ids"] == []
+    assert "agent.o1" in result.payload["prompt_block_ids"]
+    assert "expectation-construction" in result.payload["internal_task_skill_ids"]
+    assert result.payload["external_skill_package_ids"] == []
     assert result.payload["tool_mode"] == "disabled"
     assert result.proposed_patches == []
     assert result.objections == []
@@ -42,7 +45,11 @@ def test_maf_runner_returns_succeeded_agent_result_from_fake_gateway() -> None:
 
 
 def test_maf_runner_rejects_non_object_structured_output() -> None:
-    result = runner_with_mock_response(text='["not-an-object"]').run(agent_task())
+    task = agent_task().model_copy(
+        update={"input_context": {"execution_mode": "single_shot"}},
+        deep=True,
+    )
+    result = runner_with_mock_response(text='["not-an-object"]').run(task)
 
     assert result.status is ResultStatus.FAILED
     assert result.error is not None
@@ -50,6 +57,10 @@ def test_maf_runner_rejects_non_object_structured_output() -> None:
 
 
 def test_maf_runner_maps_gateway_error_to_agent_error() -> None:
+    task = agent_task().model_copy(
+        update={"input_context": {"execution_mode": "single_shot"}},
+        deep=True,
+    )
     result = runner_with_mock_response(
         failures=[
             GatewayError(
@@ -59,7 +70,7 @@ def test_maf_runner_maps_gateway_error_to_agent_error() -> None:
                 provider=ProviderName.MOCK,
             ),
         ],
-    ).run(agent_task())
+    ).run(task)
 
     assert result.status is ResultStatus.FAILED
     assert result.error is not None
@@ -68,9 +79,13 @@ def test_maf_runner_maps_gateway_error_to_agent_error() -> None:
 
 
 def test_maf_agent_adapter_no_longer_returns_placeholder_error() -> None:
+    task = agent_task().model_copy(
+        update={"input_context": {"execution_mode": "single_shot"}},
+        deep=True,
+    )
     result = MafAgentAdapter(
         runner=runner_with_mock_response(structured={"summary": "adapter-ok"}),
-    ).run(agent_task())
+    ).run(task)
 
     assert result.status is ResultStatus.SUCCEEDED
     assert result.error is None
@@ -83,6 +98,10 @@ def test_maf_runner_can_use_bounded_context_snapshot() -> None:
     base_task = agent_task()
     task = base_task.model_copy(
         update={
+            "input_context": {
+                **base_task.input_context,
+                "execution_mode": "single_shot",
+            },
             "run_metadata": base_task.run_metadata.model_copy(update={"run_id": run.run_id}),
         },
         deep=True,
@@ -116,6 +135,7 @@ def test_maf_runner_records_mock_tool_success_without_blackboard_write() -> None
         update={
             "input_context": {
                 **base_task.input_context,
+                "execution_mode": "caller_planned_tools",
                 "tool_requests": [{"tool_name": "doxatlas.query", "input": {"query": "AI"}}],
             },
             "run_metadata": base_task.run_metadata.model_copy(update={"run_id": run.run_id}),
@@ -143,6 +163,7 @@ def test_maf_runner_required_tool_failure_returns_failed_result() -> None:
         update={
             "input_context": {
                 **base_task.input_context,
+                "execution_mode": "caller_planned_tools",
                 "tool_requests": [{"tool_name": "market_data.snapshot"}],
                 "required_tool_names": ["market_data.snapshot"],
             },

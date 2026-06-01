@@ -14,7 +14,7 @@ DEFAULT_FIXTURE_PATH = Path("examples/phase6_mock_ticker/fixture.json")
 def run_sample(fixture_path: Path = DEFAULT_FIXTURE_PATH) -> dict[str, Any]:
     fixture = json.loads(fixture_path.read_text(encoding="utf-8"))
     ticker = str(fixture["ticker"])
-    workflow = BlackboardInitializationWorkflow()
+    workflow = BlackboardInitializationWorkflow(execution_mode="mock")
     result = workflow.run(ticker)
     blackboard_run = workflow.blackboard.get_run(result.checkpoint.run_id)
     return export_phase6_run(

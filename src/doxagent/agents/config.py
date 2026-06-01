@@ -1,6 +1,7 @@
 """Agent runtime configuration and registry."""
 
 from collections.abc import Iterable
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -19,9 +20,14 @@ class AgentRuntimeModel(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
 
+AgentExecutionMode = Literal["react", "single_shot", "caller_planned_tools"]
+
+
 class AgentRuntimeConfig(AgentRuntimeModel):
-    role_instruction: NonEmptyStr
-    default_skill_ids: list[NonEmptyStr] = Field(default_factory=list)
+    execution_mode: AgentExecutionMode = "react"
+    prompt_block_ids: list[NonEmptyStr] = Field(default_factory=list)
+    default_internal_task_skill_ids: list[NonEmptyStr] = Field(default_factory=list)
+    default_external_skill_package_ids: list[NonEmptyStr] = Field(default_factory=list)
     readable_context_scopes: list[NonEmptyStr] = Field(default_factory=list)
     writable_targets: list[NonEmptyStr] = Field(default_factory=list)
     allowed_tools: list[NonEmptyStr] = Field(default_factory=list)
@@ -75,16 +81,14 @@ def default_agent_definitions() -> list[AgentDefinition]:
             agent_name=AgentName.O1_EXPECTATION_OWNER,
             role=AgentRole.OPERATOR,
             task_types=[
+                TaskType.GENERATE_GLOBAL_RESEARCH,
                 TaskType.GENERATE_EXPECTATION_UNIT,
                 TaskType.REVIEW_EXPECTATION_FIELD,
                 TaskType.GENERATE_KNOWN_EVENTS,
             ],
             runtime=AgentRuntimeConfig(
-                role_instruction=(
-                    "Construct sourced expectation units, known events, and revisions; delegate "
-                    "uncertain external facts to A2 instead of treating them as confirmed."
-                ),
-                default_skill_ids=[
+                prompt_block_ids=["agent.o1"],
+                default_internal_task_skill_ids=[
                     "doxagent-source-discipline",
                     "expectation-construction",
                 ],
@@ -101,11 +105,7 @@ def default_agent_definitions() -> list[AgentDefinition]:
                     DocumentType.KNOWN_EVENTS.value,
                 ],
                 allowed_tools=[
-                    "doxatlas.query",
                     "doxa_get_narrative_report",
-                    "doxa_query_propositions",
-                    "market_data.snapshot",
-                    "alpha.daily_ohlcv",
                 ],
                 output_schema="ExpectationConstructionResult|KnownEventsDocument",
                 can_raise_objection=True,
@@ -121,8 +121,8 @@ def default_agent_definitions() -> list[AgentDefinition]:
                 TaskType.GENERATE_MONITORING_POLICY,
             ],
             runtime=AgentRuntimeConfig(
-                role_instruction="Translate accepted expectations into monitoring items.",
-                default_skill_ids=["doxagent-source-discipline"],
+                prompt_block_ids=["agent.o2"],
+                default_internal_task_skill_ids=["doxagent-source-discipline"],
                 readable_context_scopes=[
                     DocumentType.EXPECTATION_UNIT.value,
                     DocumentType.KNOWN_EVENTS.value,
@@ -133,10 +133,7 @@ def default_agent_definitions() -> list[AgentDefinition]:
                     DocumentType.MONITORING_CONFIG.value,
                     DocumentType.MONITORING_POLICY.value,
                 ],
-                allowed_tools=[
-                    "doxatlas.query",
-                    "doxa_get_narrative_report",
-                ],
+                allowed_tools=[],
                 output_schema="MonitoringConfigDocument|MonitoringPolicyDocument",
                 can_delegate=True,
                 can_propose_patch=True,
@@ -145,11 +142,14 @@ def default_agent_definitions() -> list[AgentDefinition]:
         AgentDefinition(
             agent_name=AgentName.O4_MARKET_TRACE,
             role=AgentRole.OPERATOR,
-            task_types=[TaskType.GENERATE_GLOBAL_RESEARCH],
+            task_types=[
+                TaskType.GENERATE_GLOBAL_RESEARCH,
+                TaskType.REVIEW_EXPECTATION_FIELD,
+            ],
             runtime=AgentRuntimeConfig(
-                role_instruction="Explain price action and market narrative causality.",
-                default_skill_ids=[
-                    "doxagent-source-discipline",
+                prompt_block_ids=["agent.o4"],
+                default_internal_task_skill_ids=["doxagent-source-discipline"],
+                default_external_skill_package_ids=[
                     "ohlcv-orchestration",
                     "quote-context",
                     "relative-performance",
@@ -163,15 +163,10 @@ def default_agent_definitions() -> list[AgentDefinition]:
                 ],
                 writable_targets=[DocumentType.GLOBAL_RESEARCH.value],
                 allowed_tools=[
-                    "market_data.snapshot",
-                    "market_data.quote",
-                    "market_data.ohlcv",
-                    "market_data.multiple_quotes",
                     "alpha.daily_ohlcv",
                     "finnhub.trade_stream",
-                    "doxatlas.query",
                 ],
-                output_schema="MarketTraceResult",
+                output_schema="ResearchSection",
                 can_raise_objection=True,
                 can_propose_patch=True,
             ),
@@ -181,11 +176,8 @@ def default_agent_definitions() -> list[AgentDefinition]:
             role=AgentRole.AUDIT,
             task_types=[TaskType.REVIEW_EXPECTATION_FIELD],
             runtime=AgentRuntimeConfig(
-                role_instruction=(
-                    "Audit whether O1 expectation fields are grounded in DoxAtlas evidence; "
-                    "raise field-level objections or delegate external-source gaps to A2."
-                ),
-                default_skill_ids=[
+                prompt_block_ids=["agent.a1"],
+                default_internal_task_skill_ids=[
                     "doxagent-source-discipline",
                     "doxatlas-audit",
                 ],
@@ -196,11 +188,12 @@ def default_agent_definitions() -> list[AgentDefinition]:
                 ],
                 writable_targets=[],
                 allowed_tools=[
-                    "doxatlas.query",
-                    "doxatlas.source_lookup",
-                    "doxa_get_narrative_report",
                     "doxa_query_propositions",
                     "doxa_get_event_source",
+                    "doxa_get_social_result",
+                    "doxa_get_media_result",
+                    "doxa_get_ignored_propositions",
+                    "doxa_get_analysis",
                 ],
                 output_schema="DoxAtlasAuditResult",
                 can_raise_objection=True,
@@ -216,12 +209,8 @@ def default_agent_definitions() -> list[AgentDefinition]:
                 TaskType.REVIEW_EXPECTATION_FIELD,
             ],
             runtime=AgentRuntimeConfig(
-                role_instruction=(
-                    "Use Tavily search/extract only to answer fact-check or delegated "
-                    "information-retrieval tasks; return sourced evidence, confidence, and "
-                    "unknowns without writing Blackboard state."
-                ),
-                default_skill_ids=[
+                prompt_block_ids=["agent.a2"],
+                default_internal_task_skill_ids=[
                     "doxagent-source-discipline",
                     "tavily-retrieval-fact-check",
                 ],
@@ -242,11 +231,14 @@ def default_agent_definitions() -> list[AgentDefinition]:
         AgentDefinition(
             agent_name=AgentName.C1_FUNDAMENTAL_RESEARCH,
             role=AgentRole.CONSULTANT,
-            task_types=[TaskType.GENERATE_GLOBAL_RESEARCH],
+            task_types=[
+                TaskType.GENERATE_GLOBAL_RESEARCH,
+                TaskType.REVIEW_EXPECTATION_FIELD,
+            ],
             runtime=AgentRuntimeConfig(
-                role_instruction="Draft fundamental research sections for the global document.",
-                default_skill_ids=[
-                    "doxagent-source-discipline",
+                prompt_block_ids=["agent.c1"],
+                default_internal_task_skill_ids=["doxagent-source-discipline"],
+                default_external_skill_package_ids=[
                     "financial-statement",
                     "fundamental-filter",
                     "valuation-model",
@@ -265,11 +257,10 @@ def default_agent_definitions() -> list[AgentDefinition]:
                     "alpha.earnings_events",
                     "fmp.press_releases",
                     "yfinance.hk_basic_snapshot",
-                    "external_research.mock",
-                    "fact_check.search",
                     "tavily.search",
                 ],
                 output_schema="ResearchSection",
+                can_raise_objection=True,
                 can_delegate=True,
                 can_propose_patch=True,
             ),
@@ -279,9 +270,9 @@ def default_agent_definitions() -> list[AgentDefinition]:
             role=AgentRole.CONSULTANT,
             task_types=[TaskType.GENERATE_GLOBAL_RESEARCH],
             runtime=AgentRuntimeConfig(
-                role_instruction="Draft macro research sections for the global document.",
-                default_skill_ids=[
-                    "doxagent-source-discipline",
+                prompt_block_ids=["agent.c2"],
+                default_internal_task_skill_ids=["doxagent-source-discipline"],
+                default_external_skill_package_ids=[
                     "macro-analysis",
                     "global-macro",
                     "credit-analysis",
@@ -302,7 +293,6 @@ def default_agent_definitions() -> list[AgentDefinition]:
                     "fed.fomc_calendar_materials",
                     "polymarket.market_probability",
                     "alpha.daily_ohlcv",
-                    "external_research.mock",
                 ],
                 output_schema="ResearchSection",
                 can_delegate=True,
@@ -312,11 +302,14 @@ def default_agent_definitions() -> list[AgentDefinition]:
         AgentDefinition(
             agent_name=AgentName.C3_INDUSTRY_RESEARCH,
             role=AgentRole.CONSULTANT,
-            task_types=[TaskType.GENERATE_GLOBAL_RESEARCH],
+            task_types=[
+                TaskType.GENERATE_GLOBAL_RESEARCH,
+                TaskType.REVIEW_EXPECTATION_FIELD,
+            ],
             runtime=AgentRuntimeConfig(
-                role_instruction="Draft industry research sections for the global document.",
-                default_skill_ids=[
-                    "doxagent-source-discipline",
+                prompt_block_ids=["agent.c3"],
+                default_internal_task_skill_ids=["doxagent-source-discipline"],
+                default_external_skill_package_ids=[
                     "market-researcher",
                     "sector-overview",
                     "competitive-analysis",
@@ -332,10 +325,9 @@ def default_agent_definitions() -> list[AgentDefinition]:
                     "fmp.sector_performance",
                     "tavily.search",
                     "tavily.extract",
-                    "external_research.mock",
-                    "doxatlas.query",
                 ],
                 output_schema="ResearchSection",
+                can_raise_objection=True,
                 can_delegate=True,
                 can_propose_patch=True,
             ),

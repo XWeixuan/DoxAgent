@@ -1,17 +1,16 @@
 import pytest
 
-from doxagent.agents import MockAgentRunner, default_agent_registry
-from doxagent.models import AgentName, DocumentType, ResultStatus
+from doxagent.models import AgentName, DocumentType, ResearchSection, ResultStatus
 from doxagent.workflows import (
     BlackboardInitializationWorkflow,
     GlobalResearchAssembler,
     GlobalResearchInputs,
     GlobalResearchModuleRunner,
-    InitializationMockResultFactory,
     WorkflowNode,
     WorkflowRunStatus,
 )
 from doxagent.workflows.errors import WorkflowContractError
+from tests.test_phase13_real_workflow import StructuredInitializationRunner
 
 
 def test_global_research_module_runner_calls_phase8_modules() -> None:
@@ -92,13 +91,32 @@ def test_global_research_assembler_requires_evidence() -> None:
         GlobalResearchAssembler().assemble("NVDA", inputs, [stripped, *results[1:]])
 
 
+def test_global_research_assembler_allows_agent_sections_without_evidence_refs() -> None:
+    section = ResearchSection(
+        text="Provider unavailable; data gap captured in unknowns.",
+        summary="Provider unavailable.",
+        evidence_refs=[],
+        author_agent=AgentName.C1_FUNDAMENTAL_RESEARCH,
+    )
+
+    document = GlobalResearchAssembler().assemble_from_sections(
+        "NVDA",
+        fundamental_report=section,
+        macro_report=section.model_copy(update={"author_agent": AgentName.C2_MACRO_RESEARCH}),
+        industry_report=section.model_copy(update={"author_agent": AgentName.C3_INDUSTRY_RESEARCH}),
+        market_narrative_report=section.model_copy(
+            update={"author_agent": AgentName.O1_EXPECTATION_OWNER}
+        ),
+        market_trace_report=section.model_copy(update={"author_agent": AgentName.O4_MARKET_TRACE}),
+    )
+
+    assert document.fundamental_report.evidence_refs == []
+
+
 def test_initialization_workflow_builds_global_research_from_phase8_modules() -> None:
     workflow = BlackboardInitializationWorkflow(
         execution_mode="agent_runner",
-        runner=MockAgentRunner(
-            default_agent_registry(),
-            result_factory=InitializationMockResultFactory(include_blockers=True),
-        ),
+        runner=StructuredInitializationRunner(include_blockers=False),
     )
     inputs = GlobalResearchInputs(
         sector_or_theme="AI accelerators",
@@ -117,14 +135,12 @@ def test_initialization_workflow_builds_global_research_from_phase8_modules() ->
     assert result.summary.stable_document_types == [DocumentType.GLOBAL_RESEARCH]
     assert result.summary.commit_count == 1
     assert result.checkpoint.metadata["research_inputs"]["sector_or_theme"] == "AI accelerators"
-    assert result.checkpoint.metadata["global_research_downstream_context"]["industry"][
-        "downstream_hints"
-    ]
+    assert "industry" in result.checkpoint.metadata["global_research_downstream_context"]
 
     run = workflow.blackboard.get_run(result.checkpoint.run_id)
-    assert len(run.working_memory) == 4
+    assert len(run.working_memory) == 5
     assert {entry.content_type for entry in run.working_memory} == {
-        "global_research_module_result",
+        "global_research_agent_result",
     }
     global_objects = run.belief_state.documents[DocumentType.GLOBAL_RESEARCH]
     document = next(iter(global_objects.values()))["document"]
@@ -132,7 +148,7 @@ def test_initialization_workflow_builds_global_research_from_phase8_modules() ->
     assert "macro_report" in document
     assert "industry_report" in document
     assert "market_trace_report" in document
-    assert "Pending O1/DoxAtlas" in document["market_narrative_report"]["summary"]
+    assert "Pending O1/DoxAtlas" not in document["market_narrative_report"]["summary"]
 
 
 def test_global_research_inputs_round_trip_for_resume() -> None:
@@ -146,10 +162,7 @@ def test_global_research_inputs_round_trip_for_resume() -> None:
     restored = GlobalResearchInputs.model_validate_json(inputs.model_dump_json())
     workflow = BlackboardInitializationWorkflow(
         execution_mode="agent_runner",
-        runner=MockAgentRunner(
-            default_agent_registry(),
-            result_factory=InitializationMockResultFactory(include_blockers=True),
-        ),
+        runner=StructuredInitializationRunner(include_blockers=False),
     )
 
     result = workflow.run(

@@ -11,7 +11,7 @@ from doxagent.workflows import (
 
 
 def test_initialization_workflow_runs_mock_ticker_to_completion() -> None:
-    workflow = BlackboardInitializationWorkflow()
+    workflow = BlackboardInitializationWorkflow(execution_mode="mock")
 
     result = workflow.run("NVDA")
 
@@ -42,7 +42,7 @@ def test_initialization_workflow_runs_mock_ticker_to_completion() -> None:
 
 
 def test_initialization_workflow_enforces_document_order() -> None:
-    workflow = BlackboardInitializationWorkflow()
+    workflow = BlackboardInitializationWorkflow(execution_mode="mock")
     partial = workflow.run("NVDA", stop_after=WorkflowNode.START_TICKER_INITIALIZATION)
     bad_checkpoint = partial.checkpoint.model_copy(
         update={"next_node": WorkflowNode.GENERATE_KNOWN_EVENTS},
@@ -66,7 +66,7 @@ def test_o2_registry_permissions_cover_config_and_policy_documents() -> None:
 
 
 def test_blockers_stop_expectation_promotion_without_commit() -> None:
-    workflow = BlackboardInitializationWorkflow(auto_resolve_blockers=False)
+    workflow = BlackboardInitializationWorkflow(execution_mode="mock", auto_resolve_blockers=False)
 
     result = workflow.run("NVDA")
 
@@ -83,7 +83,7 @@ def test_blockers_stop_expectation_promotion_without_commit() -> None:
 
 
 def test_blocked_checkpoint_can_resume_after_manual_resolution() -> None:
-    workflow = BlackboardInitializationWorkflow(auto_resolve_blockers=False)
+    workflow = BlackboardInitializationWorkflow(execution_mode="mock", auto_resolve_blockers=False)
     blocked = workflow.run("NVDA")
     run = workflow.blackboard.get_run(blocked.checkpoint.run_id)
 
@@ -107,7 +107,7 @@ def test_blocked_checkpoint_can_resume_after_manual_resolution() -> None:
 
 
 def test_checkpoint_round_trips_and_resumes_in_same_process() -> None:
-    workflow = BlackboardInitializationWorkflow()
+    workflow = BlackboardInitializationWorkflow(execution_mode="mock")
     partial = workflow.run("NVDA", stop_after=WorkflowNode.GENERATE_EXPECTATION_UNITS)
 
     restored = WorkflowCheckpoint.model_validate_json(partial.checkpoint.model_dump_json())
@@ -123,7 +123,7 @@ def test_mock_agent_runner_factory_mode_preserves_result_contract() -> None:
         default_agent_registry(),
         result_factory=InitializationMockResultFactory(include_blockers=False),
     )
-    workflow = BlackboardInitializationWorkflow(runner=runner)
+    workflow = BlackboardInitializationWorkflow(runner=runner, execution_mode="mock")
 
     result = workflow.run("NVDA", stop_after=WorkflowNode.BUILD_GLOBAL_RESEARCH)
 

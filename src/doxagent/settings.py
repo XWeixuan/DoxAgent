@@ -1,5 +1,6 @@
 """Runtime settings for DoxAgent."""
 
+import os
 from typing import Literal
 
 from pydantic import Field
@@ -20,6 +21,22 @@ class DoxAgentSettings(BaseSettings):
         validation_alias="DOXAGENT_STORAGE_MODE",
     )
     database_url: str | None = Field(default=None, validation_alias="DOXAGENT_DATABASE_URL")
+
+    dashscope_api_key: str | None = Field(default=None, validation_alias="DASHSCOPE_API_KEY")
+    dashscope_base_url: str = Field(
+        default="https://dashscope.aliyuncs.com/api/v2/apps/protocols/compatible-mode/v1",
+        validation_alias="DASHSCOPE_BASE_URL",
+    )
+    dashscope_model: str = Field(default="qwen3.6-flash", validation_alias="DASHSCOPE_MODEL")
+    dashscope_enable_thinking: bool = Field(
+        default=True,
+        validation_alias="DASHSCOPE_ENABLE_THINKING",
+    )
+
+    langsmith_tracing: bool = Field(default=False, validation_alias="LANGSMITH_TRACING")
+    langsmith_endpoint: str | None = Field(default=None, validation_alias="LANGSMITH_ENDPOINT")
+    langsmith_api_key: str | None = Field(default=None, validation_alias="LANGSMITH_API_KEY")
+    langsmith_project: str | None = Field(default=None, validation_alias="LANGSMITH_PROJECT")
 
     tool_http_timeout_seconds: float = Field(
         default=15.0,
@@ -117,3 +134,25 @@ class DoxAgentSettings(BaseSettings):
         if not self.database_url:
             raise ValueError("DOXAGENT_DATABASE_URL is required when storage mode is postgres.")
         return self.database_url
+
+    def require_dashscope_api_key(self) -> str:
+        if not self.dashscope_api_key:
+            raise ValueError("DASHSCOPE_API_KEY is required for agent_runner execution.")
+        return self.dashscope_api_key
+
+    @property
+    def langsmith_enabled(self) -> bool:
+        return bool(self.langsmith_tracing and self.langsmith_api_key)
+
+    def apply_langsmith_environment(self) -> None:
+        """Expose .env-backed LangSmith settings to the SDK wrappers."""
+
+        os.environ["LANGSMITH_TRACING"] = "true" if self.langsmith_tracing else "false"
+        optional_values = {
+            "LANGSMITH_ENDPOINT": self.langsmith_endpoint,
+            "LANGSMITH_API_KEY": self.langsmith_api_key,
+            "LANGSMITH_PROJECT": self.langsmith_project,
+        }
+        for key, value in optional_values.items():
+            if value:
+                os.environ[key] = value

@@ -2,11 +2,24 @@
 
 ## 2026-06-01
 
+- Separated prompt and skill injection into file-backed system/agent/workflow prompt blocks, DoxAgent-owned internal task skills, and migrated external skill packages under `prompts/`.
+- Added `doxagent.prompts` with `PromptRegistry`, `PromptInjectionPolicy`, `PromptInjector`, `PromptAssembler`, `PromptBundle`, and assembled prompt metadata for runtime audit visibility.
+- Updated `AgentRuntimeConfig` and agent runners to use prompt block ids, internal task skill ids, external skill package ids, and `AgentTask.prompt_bundle` while keeping `skill_bundle` for external-package compatibility.
+- Narrowed `SkillRegistry` and `SkillInjector` to external skill packages so internal SOPs and system prompts are no longer managed as skills.
+- Added documentation in `dev_plan/PROMPT_SKILL_SEPARATION_PLAN.md` and README explaining the three prompt/skill categories and non-code prompt editing workflow.
 - Implemented Post-MVP 3.7/3.8 O1/A1/A2 realization contracts with `TaskType.DELEGATED_RETRIEVAL`, `ExpectationConstructionResult`, `DoxAtlasAuditResult`, `DelegatedRetrievalResult`, `DelegatedRetrievalRequest`, and `create_a2_retrieval_delegation(...)`.
 - Repositioned A2 as a Tavily-only delegated retrieval and fact-check agent, limiting its default tool permissions to `tavily.search` and `tavily.extract` while preserving the internal `A2` agent id.
 - Added O1 expectation-construction, A1 DoxAtlas-audit, and A2 Tavily retrieval skills plus mock Tavily tools for offline default tests.
 - Wired `ResolveObjectionsAndDelegations` in `agent_runner` mode to call A2 for blocking delegations, write retrieval results to Working Memory, complete delegations only with sufficient evidence, and route remaining objections back to O1 resolution.
 - Added tests covering A2 Tavily-only permissions, delegation helper exposure, mock Tavily evidence conversion, A2 blocker recovery, and insufficient-evidence blocking behavior, plus documentation in `dev_plan/PHASE_3_7_3_8_O1_A1_A2_REALIZATION.md`.
+- Added the default ReAct agent harness for autonomous in-agent tool/delegation loops, including max-step enforcement, Scratchpad audit, per-tool call limits, similar-query warnings, concurrent-safe tool execution, bounded context compaction, and compatibility switches for single-shot and caller-planned tool execution.
+- Added ToolRegistry descriptors for model-facing allowed-tool metadata and tests covering ReAct default behavior, legacy execution modes, tool limits, similarity warnings, permission failures, delegation guards, compaction, and concurrent tool execution.
+- Switched initialization `agent_runner` defaults to the DashScope Bailian Responses API (`qwen3.6-flash`) with real tool registry construction, local DashScope settings, and reasoning-summary audit capture.
+- Reworked `BuildGlobalResearch` in `agent_runner` mode to call C1/C2/C3/O4/O1 through the agent runner, require O1 to use only `doxa_get_narrative_report`, and assemble document 1 without the previous pending market-narrative placeholder.
+- Added ReAct/workflow final-payload validation for `ResearchSection`, `ExpectationConstructionResult`, `DoxAtlasAuditResult`, and `DelegatedRetrievalResult`, plus stricter document 2 expectation-patch validation requiring 1-3 valid evidenced `ExpectationUnitDocument` patches.
+- Disabled mock blocker auto-resolution in `agent_runner` mode, moved A2 retrieval hints to ReAct tool requirements, and added gated Phase 17 real initialization smoke tests for document 1/document 2.
+- Tightened the P1 real-tool/review path: production defaults now use Bailian plus the real registry, all real tools expose stronger descriptors, A1 uses only low-level DoxAtlas read tools, ReviewExpectationFields runs A1/C1/C3/O4, O1 objection resolution requires revised patches or rejection evidence, and the mock blocker backdoor is disabled in `agent_runner`.
+- Completed LangSmith tracing wiring for the default Bailian path by loading `.env` LangSmith settings into the SDK environment, wrapping Bailian's OpenAI-compatible client, attaching task/ReAct metadata through tracing context, and normalizing local `.env` / `.env.example` LangSmith entries.
 
 ## 2026-05-31
 
@@ -15,6 +28,7 @@
 - Added real provider environment placeholders plus `yfinance` and `websockets` dependencies for HK-only yfinance snapshots and bounded Finnhub trade-stream capture.
 - Split the Phase 3.2 real tool implementation into `tools/factory.py` and per-provider modules under `tools/providers/`, while keeping `tools/real.py` as a compatibility export layer for existing imports.
 - Tightened DoxAtlas real tool configuration against `DOXATLAS_TOOL_SCHEMAS.md`, including per-endpoint payload validation, DoxAtlas error-envelope mapping, alias endpoint checks, and read-only default agent authorization for run tools.
+- Expanded Phase 3.2 real API smoke coverage to exercise every non-DoxAtlas provider/tool individually with content-level availability assertions, and added Alpha Vantage request spacing for free-tier multi-call tools.
 
 ## 2026-05-29
 
@@ -65,3 +79,5 @@
 - Implemented Post-MVP 3.6 Global Research module integration with `GlobalResearchInputs`, `GlobalResearchModuleRunner`, and `GlobalResearchAssembler` for C1/C2/C3/O4 Phase 8 outputs.
 - Wired `BuildGlobalResearch` in `agent_runner` mode to run migrated modules, write raw module outputs to Working Memory, assemble a `GlobalResearchDocument`, submit the stable patch through Blackboard Service, and preserve downstream hints for later O1/O2 stages.
 - Added Phase 3.6 tests for module execution, document assembly, evidence requirements, workflow submission, research input round trips, and resume behavior, plus documentation in `dev_plan/PHASE_3_6_GLOBAL_RESEARCH_MODULE_INTEGRATION.md`.
+- Hardened the real ReAct initialization path against live-model/provider drift by extracting fenced JSON, unwrapping nested `react_protocol` actions, retrying non-JSON/no-progress ReAct turns within budget, normalizing report-like `ResearchSection` payloads, treating required-tool gaps as audited warnings, and allowing Global Research sections to carry provider gaps without blocking document assembly.
+- Added O1 expectation-construction normalization for draft expectation payloads and extra model fields, including conversion to `BlackboardPatch`/`ExpectationUnitDocument`-shaped data with audited provenance when external evidence is unavailable.

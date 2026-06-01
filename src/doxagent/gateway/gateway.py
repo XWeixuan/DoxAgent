@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import re
 from collections.abc import Sequence
 
 from doxagent.gateway.client import ModelClient
@@ -85,15 +86,17 @@ class ModelGateway:
                 provider=response.audit.provider,
             )
             return response
-        try:
-            response.structured = json.loads(response.text)
-        except json.JSONDecodeError as exc:
+        parsed = _parse_json_object(response.text)
+        if parsed is None:
             response.error = GatewayError(
                 code="invalid_json",
-                message=str(exc),
+                message="JSON response requested, but provider text was not a JSON object.",
                 retryable=False,
                 provider=response.audit.provider,
+                details={"text_preview": response.text[:500]},
             )
+            return response
+        response.structured = parsed
         return response
 
     def _internal_error_response(
@@ -116,3 +119,27 @@ class ModelGateway:
                 retryable=retryable,
             ),
         )
+
+
+_JSON_FENCE_RE = re.compile(r"^```(?:json)?\s*(.*?)\s*```$", re.DOTALL | re.IGNORECASE)
+
+
+def _parse_json_object(text: str) -> dict[str, object] | None:
+    candidates = [text.strip()]
+    fenced = _JSON_FENCE_RE.match(candidates[0])
+    if fenced:
+        candidates.append(fenced.group(1).strip())
+    first = candidates[0].find("{")
+    last = candidates[0].rfind("}")
+    if first != -1 and last != -1 and last > first:
+        candidates.append(candidates[0][first : last + 1])
+    for candidate in candidates:
+        if not candidate:
+            continue
+        try:
+            parsed = json.loads(candidate)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(parsed, dict):
+            return parsed
+    return None

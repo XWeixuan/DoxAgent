@@ -23,9 +23,13 @@ class MockModelClient:
         raw: Any | None = None,
         usage: ModelUsage | None = None,
         failures: list[GatewayError] | None = None,
+        structured_sequence: list[Any] | None = None,
+        text_sequence: list[str] | None = None,
     ) -> None:
         self.text = text
         self.structured = structured
+        self.structured_sequence = deque(structured_sequence or [])
+        self.text_sequence = deque(text_sequence or [])
         self.raw = raw if raw is not None else {"provider": ProviderName.MOCK}
         self.usage = usage
         self.failures = deque(failures or [])
@@ -47,8 +51,10 @@ class MockModelClient:
             return ModelResponse(raw=self.raw, usage=self.usage, audit=audit, error=error)
 
         return ModelResponse(
-            text=self.text,
-            structured=self.structured,
+            text=self.text_sequence.popleft() if self.text_sequence else self.text,
+            structured=self.structured_sequence.popleft()
+            if self.structured_sequence
+            else self.structured,
             raw=self.raw,
             usage=self.usage,
             audit=audit,

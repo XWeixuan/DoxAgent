@@ -92,6 +92,23 @@ def test_real_registry_registers_phase_3_2_tools() -> None:
     assert "doxatlas.source_lookup" in names
 
 
+def test_real_registry_exposes_strong_tool_descriptors() -> None:
+    registry = default_real_tool_registry(_settings())
+
+    for name in registry.names():
+        descriptor = registry.describe(name)
+        assert descriptor is not None
+        assert descriptor.description != f"{name} tool."
+        assert descriptor.input_fields
+        assert descriptor.business_purpose
+
+    assert registry.describe("finnhub.trade_stream").concurrent_safe is False
+    assert registry.describe("doxa_run_narrative_research").concurrent_safe is False
+    assert registry.describe("doxa_run_narrative_research").compactable is False
+    assert registry.describe("doxa_run_analysis").concurrent_safe is False
+    assert registry.describe("doxa_run_analysis").compactable is False
+
+
 def test_real_module_keeps_compatibility_exports() -> None:
     assert CompatAlphaVantageClient is AlphaVantageClient
 
@@ -249,6 +266,21 @@ def test_doxatlas_run_tools_are_registered_but_not_default_authorized() -> None:
     }
 
     assert allowed_tools == set()
+
+
+def test_a1_uses_low_level_doxatlas_read_tools_only() -> None:
+    definition = default_agent_registry().get(AgentName.A1_DOXATLAS_AUDIT)
+
+    assert set(definition.runtime.allowed_tools) == {
+        "doxa_query_propositions",
+        "doxa_get_event_source",
+        "doxa_get_social_result",
+        "doxa_get_media_result",
+        "doxa_get_ignored_propositions",
+        "doxa_get_analysis",
+    }
+    assert "doxa_get_narrative_report" not in definition.runtime.allowed_tools
+    assert all(not tool.startswith("doxa_run_") for tool in definition.runtime.allowed_tools)
 
 
 def test_sec_section_parser_extracts_known_item_text() -> None:

@@ -14,6 +14,7 @@ class GatewayModel(BaseModel):
 
 class ProviderName(StrEnum):
     MOCK = "mock"
+    BAILIAN = "bailian"
     OPENAI = "openai"
     ANTHROPIC = "anthropic"
 

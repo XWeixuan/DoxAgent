@@ -3,6 +3,8 @@
 from collections.abc import Iterable
 
 from doxagent.models.common import AgentName, TaskType
+from doxagent.prompts.registry import default_prompt_registry
+from doxagent.prompts.schema import ExternalSkillPackageDefinition
 from doxagent.skills.errors import UnknownSkillError
 from doxagent.skills.schema import SkillContent, SkillDefinition, SkillSource
 
@@ -42,7 +44,33 @@ class SkillRegistry:
 
 
 def default_skill_registry() -> SkillRegistry:
-    return SkillRegistry(_default_skill_definitions())
+    return SkillRegistry(_external_skill_definitions())
+
+
+def _external_skill_definitions() -> list[SkillDefinition]:
+    return [
+        _skill_from_external_package(definition)
+        for definition in default_prompt_registry().external_packages()
+    ]
+
+
+def _skill_from_external_package(definition: ExternalSkillPackageDefinition) -> SkillDefinition:
+    return SkillDefinition(
+        skill_id=definition.resource_id,
+        name=definition.name,
+        version=definition.version,
+        source_project=definition.source_project,
+        source_kind=SkillSource(definition.source_kind.value),
+        applicable_agents=list(definition.applicable_agents),
+        applicable_task_types=list(definition.applicable_task_types),
+        allowed_tools=list(definition.allowed_tools),
+        content=SkillContent(
+            prompt_fragment=definition.body,
+            analysis_framework=definition.body,
+            output_requirements=list(definition.output_requirements),
+            guardrails=list(definition.guardrails),
+        ),
+    )
 
 
 def _skill(
@@ -138,11 +166,12 @@ def _operator_audit_skills(
             ],
             prompt_fragment=(
                 "Build fewer than four core expectations from stable research, price context, "
-                "known events, and unresolved unknowns."
+                "DoxAtlas narrative reports, known events, and unresolved unknowns."
             ),
             analysis_framework=(
                 "Separate market view, realized facts, key variables, event monitoring "
-                "direction, and explicit A2 delegations for uncertain external facts."
+                "direction, objection resolution, and explicit A2 delegations for uncertain "
+                "external facts."
             ),
             output_requirements=[
                 "ExpectationConstructionResult",
@@ -150,10 +179,11 @@ def _operator_audit_skills(
                 "delegations",
                 "unknowns",
             ],
-            allowed_tools=["doxatlas.query", "doxa_get_narrative_report"],
+            allowed_tools=["doxa_get_narrative_report"],
             guardrails=[
                 "Do not promote unsupported facts.",
                 "Delegate uncertain external facts to A2.",
+                "When accepting an objection, return a revised expectation patch.",
                 "Keep expectation count below four.",
             ],
         ),
@@ -164,10 +194,14 @@ def _operator_audit_skills(
             source_kind=SkillSource.DOXAGENT,
             applicable_agents=a1,
             applicable_task_types=[TaskType.REVIEW_EXPECTATION_FIELD],
-            prompt_fragment="Audit O1 expectation fields against DoxAtlas source support.",
+            prompt_fragment=(
+                "Audit O1 expectation fields against low-level DoxAtlas proposition, source, "
+                "social, media, ignored-proposition, and analysis evidence."
+            ),
             analysis_framework=(
-                "Use DoxAtlas narrative and source lookup results to classify each reviewed "
-                "field as supported, unsupported, needs_more_evidence, or contradicted."
+                "Do not use the narrative report. Classify expectation name, direction, "
+                "market view, and realized facts as supported, unsupported, "
+                "needs_more_evidence, or contradicted from bottom-up DoxAtlas evidence."
             ),
             output_requirements=[
                 "DoxAtlasAuditResult",
@@ -176,14 +210,16 @@ def _operator_audit_skills(
                 "A2 delegations for external-source gaps",
             ],
             allowed_tools=[
-                "doxatlas.query",
-                "doxatlas.source_lookup",
-                "doxa_get_narrative_report",
                 "doxa_query_propositions",
                 "doxa_get_event_source",
+                "doxa_get_social_result",
+                "doxa_get_media_result",
+                "doxa_get_ignored_propositions",
+                "doxa_get_analysis",
             ],
             guardrails=[
                 "Do not call Tavily from A1.",
+                "Do not call doxa_get_narrative_report or doxa_run_* tools.",
                 "Do not write Blackboard state directly.",
                 "Raise blocking objections for unsupported stable fields.",
             ],
@@ -239,7 +275,14 @@ def _vibe_macro_skills(
             prompt_fragment="Assess policy, rates, liquidity, and cross-asset macro regime.",
             analysis_framework="Fed path, yield curve, credit spreads, liquidity, and risk regime.",
             output_requirements=["macro regime", "risk scenarios", "monitoring indicators"],
-            allowed_tools=["external_research.mock"],
+            allowed_tools=[
+                "fred.series_observations",
+                "bls.timeseries",
+                "bea.nipa_data",
+                "fed.fomc_calendar_materials",
+                "polymarket.market_probability",
+                "alpha.daily_ohlcv",
+            ],
         ),
         _skill(
             "global-macro",
@@ -444,7 +487,13 @@ def _financial_services_skills(
                 "Market Researcher DAG: scope, overview, landscape, comps, ideas, note."
             ),
             output_requirements=["source_refs", "confidence", "unknowns", "downstream_hints"],
-            allowed_tools=["external_research.mock", "doxatlas.query"],
+            allowed_tools=[
+                "finnhub.company_peers",
+                "sec.company_facts_and_filings",
+                "fmp.sector_performance",
+                "tavily.search",
+                "tavily.extract",
+            ],
         )
         for skill_id, fragment in names
     ]
@@ -477,7 +526,7 @@ def _hermes_market_trace_skills(
                 "Native DoxAgent O4 quote, OHLCV, relative performance, and data caveat flow."
             ),
             output_requirements=["source_refs", "unknowns", "data_quality", "no trading advice"],
-            allowed_tools=["market_data.quote", "market_data.ohlcv", "market_data.multiple_quotes"],
+            allowed_tools=["alpha.daily_ohlcv", "finnhub.trade_stream"],
             guardrails=[
                 "Do not output trade recommendations.",
                 "Do not treat delayed/free-feed quotes as official execution data.",

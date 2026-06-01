@@ -18,6 +18,7 @@ from doxagent.gateway.schema import (
     ProviderName,
     ResponseFormat,
 )
+from doxagent.gateway.tracing import langsmith_tracing_context
 
 
 def _usage_from_mapping(value: Mapping[str, Any] | None) -> ModelUsage | None:
@@ -51,6 +52,63 @@ def _normalize_exception(provider: ProviderName, exc: Exception) -> GatewayError
     )
 
 
+def _output_items(raw: Any) -> list[Any]:
+    if isinstance(raw, dict):
+        output = raw.get("output")
+        return output if isinstance(output, list) else []
+    return []
+
+
+def _mapping_get(value: Any, key: str, default: Any = None) -> Any:
+    if isinstance(value, Mapping):
+        return value.get(key, default)
+    return getattr(value, key, default)
+
+
+def _extract_responses_message_text(response: Any, raw: Any) -> str | None:
+    output_text = getattr(response, "output_text", None)
+    if isinstance(output_text, str) and output_text:
+        return output_text
+    chunks: list[str] = []
+    for item in _output_items(raw):
+        if _mapping_get(item, "type") != "message":
+            continue
+        content = _mapping_get(item, "content", [])
+        if not isinstance(content, list):
+            continue
+        for block in content:
+            text = _mapping_get(block, "text")
+            if isinstance(text, str):
+                chunks.append(text)
+    return "".join(chunks) if chunks else None
+
+
+def _extract_reasoning_summary(raw: Any) -> list[str]:
+    summaries: list[str] = []
+    for item in _output_items(raw):
+        if _mapping_get(item, "type") != "reasoning":
+            continue
+        summary = _mapping_get(item, "summary", [])
+        if not isinstance(summary, list):
+            continue
+        for block in summary:
+            text = _mapping_get(block, "text")
+            if isinstance(text, str) and text:
+                summaries.append(text)
+    return summaries
+
+
+def _raw_with_reasoning_summary(raw: Any) -> Any:
+    summaries = _extract_reasoning_summary(raw)
+    if not summaries:
+        return raw
+    if isinstance(raw, dict):
+        enriched = dict(raw)
+        enriched["reasoning_summary"] = summaries
+        return enriched
+    return {"raw": raw, "reasoning_summary": summaries}
+
+
 class OpenAIModelClient:
     def __init__(self, client: AsyncOpenAI | Any) -> None:
         self.client = client
@@ -58,7 +116,8 @@ class OpenAIModelClient:
     async def complete(self, request: ModelRequest) -> ModelResponse:
         started_at = perf_counter()
         try:
-            response = await self.client.responses.create(**self._request_kwargs(request))
+            with langsmith_tracing_context(request.metadata):
+                response = await self.client.responses.create(**self._request_kwargs(request))
             raw = _model_dump_or_raw(response)
             usage = _usage_from_mapping(raw.get("usage") if isinstance(raw, dict) else None)
             audit = ModelAuditSummary(
@@ -111,6 +170,49 @@ class OpenAIModelClient:
         ]
 
 
+class BailianResponsesModelClient(OpenAIModelClient):
+    """DashScope Bailian Responses API adapter using OpenAI-compatible SDK calls."""
+
+    def __init__(self, client: AsyncOpenAI | Any, *, enable_thinking: bool = True) -> None:
+        super().__init__(client)
+        self.enable_thinking = enable_thinking
+
+    async def complete(self, request: ModelRequest) -> ModelResponse:
+        started_at = perf_counter()
+        try:
+            with langsmith_tracing_context(request.metadata):
+                response = await self.client.responses.create(**self._request_kwargs(request))
+            raw = _model_dump_or_raw(response)
+            raw = _raw_with_reasoning_summary(raw)
+            usage = _usage_from_mapping(raw.get("usage") if isinstance(raw, dict) else None)
+            audit = ModelAuditSummary(
+                provider=ProviderName.BAILIAN,
+                model=request.model,
+                latency_seconds=perf_counter() - started_at,
+                metadata=request.metadata,
+                usage=usage,
+            )
+            return ModelResponse(
+                text=_extract_responses_message_text(response, raw),
+                raw=raw,
+                usage=usage,
+                audit=audit,
+            )
+        except Exception as exc:
+            audit = ModelAuditSummary(
+                provider=ProviderName.BAILIAN,
+                model=request.model,
+                latency_seconds=perf_counter() - started_at,
+                metadata=request.metadata,
+            )
+            return ModelResponse(audit=audit, error=_normalize_exception(ProviderName.BAILIAN, exc))
+
+    def _request_kwargs(self, request: ModelRequest) -> dict[str, Any]:
+        kwargs = super()._request_kwargs(request)
+        kwargs["extra_body"] = {"enable_thinking": self.enable_thinking}
+        return kwargs
+
+
 class AnthropicModelClient:
     def __init__(self, client: AsyncAnthropic | Any) -> None:
         self.client = client
@@ -118,7 +220,8 @@ class AnthropicModelClient:
     async def complete(self, request: ModelRequest) -> ModelResponse:
         started_at = perf_counter()
         try:
-            response = await self.client.messages.create(**self._request_kwargs(request))
+            with langsmith_tracing_context(request.metadata):
+                response = await self.client.messages.create(**self._request_kwargs(request))
             raw = _model_dump_or_raw(response)
             usage = _usage_from_mapping(raw.get("usage") if isinstance(raw, dict) else None)
             audit = ModelAuditSummary(
