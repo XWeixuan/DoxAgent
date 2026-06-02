@@ -8,6 +8,14 @@ from doxagent.models import AgentTask
 from doxagent.prompts.schema import AssembledPrompt, PromptBundle
 from doxagent.tools import ToolResult
 
+CHINESE_OUTPUT_RULES = [
+    "所有人类可读文本内容必须使用简体中文。",
+    (
+        "JSON key、schema name、enum value、tool name、agent id、document type "
+        "必须保持英文 contract 原值。"
+    ),
+]
+
 
 class PromptAssembler:
     def assemble(
@@ -51,12 +59,19 @@ class PromptAssembler:
                     "Return a JSON object.",
                     "Do not write Blackboard state directly.",
                     "Put proposed stable changes in AgentResult-compatible structures only.",
+                    *CHINESE_OUTPUT_RULES,
                 ],
             },
             ensure_ascii=True,
         )
         return AssembledPrompt(
-            instructions=instructions or "Follow DoxAgent prompt resources.",
+            instructions="\n\n".join(
+                [
+                    instructions or "Follow DoxAgent prompt resources.",
+                    "## Output Language Rules",
+                    *CHINESE_OUTPUT_RULES,
+                ]
+            ),
             user_prompt=user_prompt,
             metadata={
                 "agent_name": definition.agent_name.value,

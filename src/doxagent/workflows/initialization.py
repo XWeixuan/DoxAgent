@@ -48,10 +48,7 @@ from doxagent.models import (
     new_id,
 )
 from doxagent.settings import DoxAgentSettings
-from doxagent.workflows.checkpoint_repository import (
-    InMemoryWorkflowCheckpointRepository,
-    WorkflowCheckpointRepository,
-)
+from doxagent.workflows.checkpoint_repository import WorkflowCheckpointRepository
 from doxagent.workflows.errors import WorkflowContractError, WorkflowDependencyError
 from doxagent.workflows.global_research import (
     GlobalResearchAssembler,
@@ -68,6 +65,7 @@ from doxagent.workflows.schema import (
     WorkflowRunStatus,
     WorkflowRunSummary,
 )
+from doxagent.workflows.storage import default_workflow_storage
 
 INITIALIZATION_NODES: tuple[WorkflowNode, ...] = (
     WorkflowNode.START_TICKER_INITIALIZATION,
@@ -426,7 +424,14 @@ class BlackboardInitializationWorkflow:
     ) -> None:
         if execution_mode not in {"mock", "agent_runner"}:
             raise ValueError("execution_mode must be 'mock' or 'agent_runner'.")
-        self.blackboard = blackboard or BlackboardService()
+        self.settings = settings or DoxAgentSettings()
+        if blackboard is None or checkpoint_repository is None:
+            storage = default_workflow_storage(self.settings)
+            self.blackboard = blackboard or storage.blackboard
+            self.checkpoint_repository = checkpoint_repository or storage.checkpoint_repository
+        else:
+            self.blackboard = blackboard
+            self.checkpoint_repository = checkpoint_repository
         self.registry = default_agent_registry()
         self.auto_resolve_blockers = auto_resolve_blockers
         self.execution_mode = execution_mode
@@ -434,9 +439,7 @@ class BlackboardInitializationWorkflow:
         self.result_normalizer = result_normalizer or WorkflowAgentResultNormalizer()
         self.global_research_runner = global_research_runner or GlobalResearchModuleRunner()
         self.global_research_assembler = global_research_assembler or GlobalResearchAssembler()
-        self.settings = settings or DoxAgentSettings()
         self.output_validator = output_validator or AgentOutputSchemaValidator()
-        self.checkpoint_repository = checkpoint_repository or InMemoryWorkflowCheckpointRepository()
         self.runner = runner or self._default_runner()
 
     def _default_runner(self) -> AgentRunner:
@@ -1461,7 +1464,41 @@ class BlackboardInitializationWorkflow:
                 for delegation in run.delegations
                 if delegation.is_blocking
             ],
+            "global_research_context": self._global_research_context_from_belief_state(run),
             "tool_request_hints": self._tool_request_hints(agent_name),
+        }
+
+    def _global_research_context_from_belief_state(self, run: Any) -> dict[str, Any] | None:
+        bucket = run.belief_state.documents.get(DocumentType.GLOBAL_RESEARCH, {})
+        if not bucket:
+            return None
+        latest = next(reversed(bucket.values()))
+        if not isinstance(latest, dict):
+            return None
+        document = latest.get("document")
+        if not isinstance(document, dict):
+            return None
+        sections: dict[str, Any] = {}
+        for key in (
+            "fundamental_report",
+            "macro_report",
+            "industry_report",
+            "market_narrative_report",
+            "market_trace_report",
+        ):
+            raw_section = document.get(key)
+            if not isinstance(raw_section, dict):
+                continue
+            sections[key] = {
+                "summary": raw_section.get("summary"),
+                "text": raw_section.get("text"),
+                "author_agent": raw_section.get("author_agent"),
+                "evidence_count": len(raw_section.get("evidence_refs") or []),
+            }
+        return {
+            "document_id": document.get("document_id"),
+            "ticker": document.get("ticker") or run.ticker,
+            "sections": sections,
         }
 
     def _tool_request_hints(self, agent_name: AgentName) -> list[str]:

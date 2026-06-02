@@ -4,6 +4,16 @@ DoxAgent is a message-side equity research agent system. The first development
 phase builds only the project baseline and the scaffolding needed for the later
 Blackboard initialization workflow.
 
+启动测试用blackboard初始化结果展示的命令：
+uv run python -m doxagent.debug_viewer --host 127.0.0.1 --port 8765
+网页：
+http://127.0.0.1:8765
+http://127.0.0.1:8765/langsmith-renderer.html
+
+启动测试：
+$env:DOXAGENT_RUN_REAL_API_TESTS="1"
+uv run pytest -m real_api tests/test_phase17_real_initialization_smoke.py
+
 ## Phase 0 Scope
 
 Phase 0 establishes the Python project structure, dependency configuration,
@@ -232,6 +242,32 @@ $env:DOXAGENT_DATABASE_URL = "postgresql://..."
 
 Use URL encoding for special characters in database passwords. Tests do not
 connect to Supabase unless a future explicit integration-test flag is provided.
+
+## Local Debug Viewer And LangSmith Rendering
+
+The local debug viewer serves read-only review pages for persisted Blackboard
+runs and a LangSmith custom output renderer:
+
+```powershell
+uv run python -m doxagent.debug_viewer --host 127.0.0.1 --port 8765
+```
+
+Open `http://127.0.0.1:8765` to inspect Brief State documents and agent metrics.
+Keep that local process running while viewing LangSmith. In LangSmith, configure
+Custom Output Rendering on the `DoxAgent` tracing project with:
+
+```text
+http://127.0.0.1:8765/langsmith-renderer.html
+```
+
+If the renderer does not appear, open the renderer URL directly in the same
+browser first. Chrome may also require allowing local network access for
+`https://smith.langchain.com`; Safari and Brave can block plain HTTP localhost
+iframes, in which case expose the local viewer through an HTTPS tunnel and use
+that tunnel URL in LangSmith.
+
+The renderer only formats LangSmith's posted `outputs` and `metadata.inputs`
+for display. The original raw JSON panels remain available in LangSmith.
 
 ## Post-MVP 3.3 Skills
 

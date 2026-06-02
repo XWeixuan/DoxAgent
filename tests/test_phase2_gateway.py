@@ -15,6 +15,8 @@ from doxagent.gateway import (
     OpenAIModelClient,
     ProviderName,
     ResponseFormat,
+    mark_langsmith_wrapped,
+    run_name_from_metadata,
     tracing_extra_from_metadata,
     wrap_provider_client,
 )
@@ -177,6 +179,25 @@ async def test_openai_adapter_maps_request_to_responses_create() -> None:
     assert fake_client.responses.kwargs["model"] == "mock-model"
     assert fake_client.responses.kwargs["input"][0]["role"] == "system"
     assert fake_client.responses.kwargs["max_output_tokens"] == 256
+    assert "langsmith_extra" not in fake_client.responses.kwargs
+
+
+@pytest.mark.asyncio
+async def test_openai_adapter_adds_dynamic_langsmith_run_name_only_when_wrapped() -> None:
+    fake_client = FakeOpenAIClient()
+    mark_langsmith_wrapped(fake_client)
+    adapter = OpenAIModelClient(fake_client)
+
+    await adapter.complete(
+        request(ResponseFormat.JSON).model_copy(
+            update={"metadata": request().metadata | {"react_step": "2"}},
+        )
+    )
+
+    assert fake_client.responses.kwargs is not None
+    assert fake_client.responses.kwargs["langsmith_extra"] == {
+        "name": "O1.GenerateExpectationUnits.LOOP2"
+    }
 
 
 class FakeBailianResponse:
@@ -310,3 +331,27 @@ def test_tracing_metadata_uses_expected_keys() -> None:
             "model": "qwen3.6-flash",
         },
     }
+
+
+def test_run_name_from_metadata_uses_node_task_fallback_and_loop_default() -> None:
+    assert (
+        run_name_from_metadata(
+            {
+                "agent_name": "O1",
+                "workflow_node": "GenerateExpectationUnits",
+                "task_type": "generate_expectation_unit",
+                "react_step": "2",
+            }
+        )
+        == "O1.GenerateExpectationUnits.LOOP2"
+    )
+    assert (
+        run_name_from_metadata(
+            {
+                "agent_name": "C1",
+                "workflow_node": "",
+                "task_type": "generate_global_research",
+            }
+        )
+        == "C1.generate_global_research.LOOP1"
+    )

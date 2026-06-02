@@ -1,5 +1,14 @@
 # changelog
 
+## 2026-06-03
+
+- Added a local read-only Brief State debug viewer with a stdlib HTTP server, Supabase/Postgres run querying, document 1/document 2 review pages, and per-agent ReAct loop/tool/delegation/objection metrics.
+- Added debug viewer view-model tests covering global research, expectation units, ReAct audit aggregation, missing audit handling, and secret redaction for rendered API payloads.
+- Improved LangSmith trace readability with dynamic per-call run names, a local Custom Output Rendering page, and unified Simplified Chinese human-readable LLM output rules while preserving structured JSON contracts.
+- Hardened the local LangSmith renderer endpoint for browser iframe loading with no-store responses, CORS/private-network preflight headers, and README troubleshooting notes for localhost and HTTPS tunnel usage.
+- Suppressed expected local debug viewer client-disconnect noise, so browser refreshes, iframe reloads, and aborted JSON responses no longer print WinError 10053 tracebacks.
+- Reworked the LangSmith Custom Renderer into a raw-first recursive JSON viewer that always displays metadata, metadata.inputs, outputs/data, and complete postMessage payloads before adding optional DoxAgent AgentResult/provider-response summaries.
+
 ## 2026-06-01
 
 - Separated prompt and skill injection into file-backed system/agent/workflow prompt blocks, DoxAgent-owned internal task skills, and migrated external skill packages under `prompts/`.
@@ -81,3 +90,5 @@
 - Added Phase 3.6 tests for module execution, document assembly, evidence requirements, workflow submission, research input round trips, and resume behavior, plus documentation in `dev_plan/PHASE_3_6_GLOBAL_RESEARCH_MODULE_INTEGRATION.md`.
 - Hardened the real ReAct initialization path against live-model/provider drift by extracting fenced JSON, unwrapping nested `react_protocol` actions, retrying non-JSON/no-progress ReAct turns within budget, normalizing report-like `ResearchSection` payloads, treating required-tool gaps as audited warnings, and allowing Global Research sections to carry provider gaps without blocking document assembly.
 - Added O1 expectation-construction normalization for draft expectation payloads and extra model fields, including conversion to `BlackboardPatch`/`ExpectationUnitDocument`-shaped data with audited provenance when external evidence is unavailable.
+- Fixed ASTS real initialization by switching smoke tests to an ASTS research context, injecting compact GlobalResearchDocument context into downstream O1 tasks, adding explicit `ExpectationConstructionResult.proposed_patches` output-contract guidance, normalizing O1 patch targets/delegations/key variables/realized facts, and validating document 1 plus document 2 real smoke completion.
+- Wired initialization workflow storage defaults to `DoxAgentSettings`, so postgres mode now automatically uses Postgres-backed Blackboard and checkpoint repositories while explicit test injections still override storage selection; added Supabase persistence smoke coverage gated by `DOXAGENT_RUN_REAL_DB_TESTS`.

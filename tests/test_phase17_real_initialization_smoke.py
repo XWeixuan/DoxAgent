@@ -19,13 +19,13 @@ def test_real_initialization_build_global_research_smoke() -> None:
     workflow = BlackboardInitializationWorkflow(execution_mode="agent_runner")
 
     result = workflow.run(
-        "AAPL",
+        "ASTS",
         research_inputs=GlobalResearchInputs(
-            sector_or_theme="consumer technology",
-            industry_angle="AI device cycle",
-            universe=["AAPL"],
+            sector_or_theme="satellite direct-to-device communications",
+            industry_angle="commercialization milestones and network deployment",
+            universe=["ASTS"],
             benchmarks=["SPY"],
-            peers=["MSFT"],
+            peers=["RKLB"],
         ),
         stop_after=WorkflowNode.BUILD_GLOBAL_RESEARCH,
     )
@@ -39,13 +39,13 @@ def test_real_initialization_expectation_units_smoke() -> None:
     workflow = BlackboardInitializationWorkflow(execution_mode="agent_runner")
 
     result = workflow.run(
-        "AAPL",
+        "ASTS",
         research_inputs=GlobalResearchInputs(
-            sector_or_theme="consumer technology",
-            industry_angle="AI device cycle",
-            universe=["AAPL"],
+            sector_or_theme="satellite direct-to-device communications",
+            industry_angle="commercialization milestones and network deployment",
+            universe=["ASTS"],
             benchmarks=["SPY"],
-            peers=["MSFT"],
+            peers=["RKLB"],
         ),
         stop_after=WorkflowNode.GENERATE_EXPECTATION_UNITS,
     )

@@ -31,9 +31,11 @@ class StructuredInitializationRunner(AgentRunner):
     def __init__(self, *, include_blockers: bool = True) -> None:
         self.factory = InitializationMockResultFactory(include_blockers=include_blockers)
         self.calls: list[tuple[AgentName, str | None]] = []
+        self.tasks: list[AgentTask] = []
 
     def run(self, task: AgentTask) -> AgentResult:
         self.calls.append((task.agent_name, task.run_metadata.workflow_node))
+        self.tasks.append(task)
         node = task.run_metadata.workflow_node
         if node == WorkflowNode.BUILD_GLOBAL_RESEARCH.value:
             return self._research_section(task)

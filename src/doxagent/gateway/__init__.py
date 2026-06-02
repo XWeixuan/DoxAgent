@@ -21,7 +21,11 @@ from doxagent.gateway.schema import (
 )
 from doxagent.gateway.tracing import (
     TRACE_METADATA_KEYS,
+    is_langsmith_wrapped,
+    langsmith_extra_from_metadata,
     langsmith_tracing_context,
+    mark_langsmith_wrapped,
+    run_name_from_metadata,
     tracing_extra_from_metadata,
     wrap_provider_client,
 )
@@ -43,7 +47,11 @@ __all__ = [
     "ProviderName",
     "ResponseFormat",
     "TRACE_METADATA_KEYS",
+    "is_langsmith_wrapped",
+    "langsmith_extra_from_metadata",
     "langsmith_tracing_context",
+    "mark_langsmith_wrapped",
+    "run_name_from_metadata",
     "tracing_extra_from_metadata",
     "wrap_provider_client",
 ]

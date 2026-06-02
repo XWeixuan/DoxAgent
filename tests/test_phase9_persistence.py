@@ -1,10 +1,18 @@
 from pathlib import Path
 
-from doxagent.blackboard import BlackboardService, InMemoryBlackboardRepository
+import pytest
+
+from doxagent.blackboard import (
+    BlackboardService,
+    InMemoryBlackboardRepository,
+    PostgresBlackboardRepository,
+)
 from doxagent.models import AgentName
+from doxagent.settings import DoxAgentSettings
 from doxagent.workflows import (
     BlackboardInitializationWorkflow,
     InMemoryWorkflowCheckpointRepository,
+    PostgresWorkflowCheckpointRepository,
     WorkflowNode,
     WorkflowRunStatus,
 )
@@ -106,3 +114,49 @@ def test_resume_latest_uses_checkpoint_repository_without_duplicate_completed_co
     assert resumed.status is WorkflowRunStatus.COMPLETED
     assert len(after.commit_log) == 5
     assert after.commit_log[0].patch.target.document_type.value == "global_research"
+
+
+def test_workflow_default_storage_uses_memory_mode() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        execution_mode="mock",
+        settings=DoxAgentSettings(storage_mode="memory"),
+    )
+
+    assert isinstance(workflow.blackboard.repository, InMemoryBlackboardRepository)
+    assert isinstance(workflow.checkpoint_repository, InMemoryWorkflowCheckpointRepository)
+
+
+def test_workflow_default_storage_uses_postgres_mode_without_connecting() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        execution_mode="mock",
+        settings=DoxAgentSettings(
+            storage_mode="postgres",
+            database_url="postgresql://postgres:secret@example.com:5432/postgres",
+        ),
+    )
+
+    assert isinstance(workflow.blackboard.repository, PostgresBlackboardRepository)
+    assert isinstance(workflow.checkpoint_repository, PostgresWorkflowCheckpointRepository)
+
+
+def test_workflow_manual_storage_injection_overrides_postgres_settings() -> None:
+    blackboard = BlackboardService(InMemoryBlackboardRepository())
+    checkpoint_repository = InMemoryWorkflowCheckpointRepository()
+
+    workflow = BlackboardInitializationWorkflow(
+        execution_mode="mock",
+        settings=DoxAgentSettings(storage_mode="postgres"),
+        blackboard=blackboard,
+        checkpoint_repository=checkpoint_repository,
+    )
+
+    assert workflow.blackboard is blackboard
+    assert workflow.checkpoint_repository is checkpoint_repository
+
+
+def test_workflow_postgres_mode_requires_database_url() -> None:
+    with pytest.raises(ValueError, match="DOXAGENT_DATABASE_URL is required"):
+        BlackboardInitializationWorkflow(
+            execution_mode="mock",
+            settings=DoxAgentSettings(storage_mode="postgres", database_url=""),
+        )

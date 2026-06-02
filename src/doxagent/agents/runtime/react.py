@@ -27,6 +27,7 @@ from doxagent.gateway import (
 )
 from doxagent.models import (
     AgentError,
+    AgentName,
     AgentResult,
     AgentTask,
     DelegatedRetrievalResult,
@@ -42,6 +43,7 @@ from doxagent.models import (
     ValidationStatus,
     new_id,
 )
+from doxagent.prompts.assembler import CHINESE_OUTPUT_RULES
 from doxagent.prompts.schema import AssembledPrompt
 from doxagent.tools import ToolError, ToolRegistry, ToolRequest, ToolResult
 
@@ -595,7 +597,10 @@ class ReActAgentHarness:
                         role=MessageRole.SYSTEM,
                         content=(
                             "Summarize tool and delegation observations into JSON. "
-                            "Do not call tools. Do not include hidden chain-of-thought."
+                            "Do not call tools. Do not include hidden chain-of-thought. "
+                            "Use Simplified Chinese for human-readable text while preserving "
+                            "JSON keys, schema names, enum values, tool names, agent ids, "
+                            "and document types in English."
                         ),
                     ),
                     ModelMessage(
@@ -612,6 +617,7 @@ class ReActAgentHarness:
                                     "current_work_state",
                                     "recommended_next_steps",
                                 ],
+                                "language_rules": CHINESE_OUTPUT_RULES,
                             },
                             ensure_ascii=True,
                             default=str,
@@ -730,6 +736,7 @@ def _react_system_prompt(base_instructions: str) -> str:
             ),
             "Do not write Blackboard state directly.",
             "Do not expose hidden chain-of-thought; use concise reasoning_summary only.",
+            *CHINESE_OUTPUT_RULES,
             (
                 "Return one JSON object matching the ReAct action protocol. "
                 "Put plan_update, is_complete, tool_calls, delegations, and final_payload "
@@ -796,6 +803,7 @@ def _react_user_prompt(
                 "required_tool_names": _strings(task.input_context.get("required_tool_names")),
                 "tool_requirements": task.input_context.get("tool_requirements", []),
             },
+            "output_contract": _output_contract(task.required_output_schema),
             "assembled_task_prompt": assembled_prompt.user_prompt,
             "context_snapshot": _dump_context(context_snapshot),
             "available_tools": available_tools,
@@ -807,6 +815,7 @@ def _react_user_prompt(
             "rules": [
                 "Call only tools listed in available_tools.",
                 "If no tool is needed, return is_complete=true and final_payload.",
+                *CHINESE_OUTPUT_RULES,
                 (
                     "If more evidence is needed, return tool_calls or delegations "
                     "and no final_payload."
@@ -946,6 +955,84 @@ def _schema_names(required_output_schema: str) -> list[str]:
     return [item.strip() for item in required_output_schema.split("|") if item.strip()]
 
 
+def _output_contract(required_output_schema: str) -> JsonDict:
+    contracts: JsonDict = {}
+    for schema_name in _schema_names(required_output_schema):
+        if schema_name == "ExpectationConstructionResult":
+            contracts[schema_name] = {
+                "final_payload": {
+                    "proposed_patches": [
+                        {
+                            "patch_id": "patch_<id>",
+                            "target": {
+                                "document_type": "expectation_unit",
+                                "ticker": "<ticker>",
+                                "expectation_id": "expectation_<id>",
+                                "field_path": "document",
+                            },
+                            "operation": "create",
+                            "before": None,
+                            "after": {
+                                "document_id": "doc_<id>",
+                                "document_type": "expectation_unit",
+                                "ticker": "<ticker>",
+                                "created_at": "ISO-8601 timestamp",
+                                "expectation_id": "same as target.expectation_id",
+                                "expectation_name": "short expectation name",
+                                "direction": "bullish | bearish | neutral",
+                                "why_it_matters": "why this expectation matters",
+                                "market_view": {
+                                    "text": "market narrative and thesis",
+                                    "summary": "one sentence summary",
+                                    "evidence_refs": [],
+                                    "author_agent": "O1",
+                                    "reviewer_agents": [],
+                                },
+                                "realized_facts": [],
+                                "realized_facts_summary": "known facts or explicit unknowns",
+                                "key_variables": [],
+                                "event_monitoring_direction": {
+                                    "known_event_notice": "what is already known",
+                                    "positive_events": [],
+                                    "negative_events": [],
+                                },
+                            },
+                            "rationale": "why this patch is proposed",
+                            "evidence_refs": [],
+                            "author_agent": "O1",
+                            "validation_status": "pending",
+                        }
+                    ],
+                    "evidence_refs": [],
+                    "delegations": [],
+                    "unknowns": [],
+                    "rationale": "construction rationale",
+                    "resolved_objection_ids": [],
+                    "accepted_objection_ids": [],
+                    "partially_accepted_objection_ids": [],
+                    "rejected_objection_ids": [],
+                },
+                "rules": [
+                    "Use proposed_patches, not expectations or expectation_units.",
+                    "Generate 1 to 3 expectation_unit create patches for GenerateExpectationUnits.",
+                    "Each patch.after must be a complete ExpectationUnitDocument.",
+                    "target.expectation_id must exactly equal after.expectation_id.",
+                    "If evidence is partial, still produce the patch and list gaps in unknowns.",
+                ],
+            }
+        elif schema_name == "ResearchSection":
+            contracts[schema_name] = {
+                "final_payload": {
+                    "text": "section body",
+                    "summary": "short summary",
+                    "evidence_refs": [],
+                    "author_agent": "<current agent enum>",
+                    "reviewer_agents": [],
+                }
+            }
+    return contracts
+
+
 def _recoverable_json_response_error(error: GatewayError) -> bool:
     return error.code in {"invalid_json", "missing_json_text"}
 
@@ -971,8 +1058,8 @@ def _normalize_final_payload(
     summary = str(payload.get("summary") or payload.get("section_summary") or "")
     if not summary:
         summary = text[:500] if text else f"{task.ticker} {task.agent_name.value} research."
-    evidence_refs = payload.get("evidence_refs")
-    if not isinstance(evidence_refs, list) or not evidence_refs:
+    evidence_refs = _valid_evidence_ref_payloads(payload.get("evidence_refs"))
+    if not evidence_refs:
         evidence_refs = [
             item.model_dump(mode="json")
             for item in _evidence_refs(tool_results, delegation_results)
@@ -982,7 +1069,7 @@ def _normalize_final_payload(
         "summary": summary,
         "evidence_refs": evidence_refs,
         "author_agent": task.agent_name.value,
-        "reviewer_agents": _strings(payload.get("reviewer_agents")),
+        "reviewer_agents": _valid_agent_names(payload.get("reviewer_agents")),
     }
 
 
@@ -993,8 +1080,8 @@ def _normalize_expectation_construction_payload(
     tool_results: list[ToolResult],
     delegation_results: list[AgentResult],
 ) -> JsonDict:
-    evidence_refs = payload.get("evidence_refs")
-    if not isinstance(evidence_refs, list) or not evidence_refs:
+    evidence_refs = _valid_evidence_ref_payloads(payload.get("evidence_refs"))
+    if not evidence_refs:
         evidence_refs = [
             item.model_dump(mode="json")
             for item in _evidence_refs(tool_results, delegation_results)
@@ -1006,6 +1093,10 @@ def _normalize_expectation_construction_payload(
     if not isinstance(proposed_patches, list):
         proposed_patches = payload.get("patches")
     if not isinstance(proposed_patches, list):
+        proposed_patches = payload.get("expectation_patches")
+    if not isinstance(proposed_patches, list):
+        proposed_patches = payload.get("expectation_unit_patches")
+    if not isinstance(proposed_patches, list):
         proposed_patches = []
     normalized_patches = [
         _normalize_blackboard_patch_payload(item, task=task, fallback_evidence=evidence_refs)
@@ -1013,17 +1104,32 @@ def _normalize_expectation_construction_payload(
         if isinstance(item, dict)
     ]
     expectation_items = payload.get("expectations")
+    if not isinstance(expectation_items, list):
+        expectation_items = payload.get("expectation_units")
+    if not isinstance(expectation_items, list):
+        singular = payload.get("expectation_unit") or payload.get("expectation")
+        expectation_items = [singular] if isinstance(singular, dict) else []
     if not normalized_patches and isinstance(expectation_items, list):
         normalized_patches = [
             _patch_from_expectation_payload(item, task=task, fallback_evidence=evidence_refs)
             for item in expectation_items
             if isinstance(item, dict)
         ]
+    if not normalized_patches:
+        fallback = _fallback_expectation_from_global_research(task, payload)
+        if fallback is not None:
+            normalized_patches = [
+                _patch_from_expectation_payload(
+                    fallback,
+                    task=task,
+                    fallback_evidence=evidence_refs,
+                )
+            ]
 
     return {
         "proposed_patches": normalized_patches,
         "evidence_refs": evidence_refs,
-        "delegations": _dicts(payload.get("delegations")),
+        "delegations": _normalize_output_delegations(payload.get("delegations"), task=task),
         "unknowns": _strings(payload.get("unknowns")),
         "rationale": str(payload.get("rationale") or payload.get("summary") or "O1 construction."),
         "resolved_objection_ids": _strings(payload.get("resolved_objection_ids")),
@@ -1035,6 +1141,117 @@ def _normalize_expectation_construction_payload(
     }
 
 
+def _fallback_expectation_from_global_research(
+    task: AgentTask,
+    payload: JsonDict,
+) -> JsonDict | None:
+    context = task.input_context.get("global_research_context")
+    if not isinstance(context, dict):
+        return None
+    sections = context.get("sections")
+    if not isinstance(sections, dict) or not sections:
+        return None
+    summary = _global_research_summary_text(sections)
+    if not summary:
+        return None
+    return {
+        "expectation_id": new_id("expectation"),
+        "expectation_name": f"{task.ticker} commercialization milestone execution",
+        "direction": "neutral",
+        "why_it_matters": (
+            str(payload.get("rationale") or payload.get("summary") or "")
+            or "Global research identifies milestone execution as the primary expectation axis."
+        ),
+        "description": summary,
+        "realized_facts_summary": "Realized facts require downstream review.",
+        "key_variables": [],
+        "positive_events": ["Confirmed deployment, partner, or commercialization milestones."],
+        "negative_events": [
+            "Deployment delays, financing pressure, or weak commercialization evidence."
+        ],
+    }
+
+
+def _global_research_summary_text(sections: dict[str, Any]) -> str:
+    chunks: list[str] = []
+    for key in (
+        "market_narrative_report",
+        "fundamental_report",
+        "industry_report",
+        "market_trace_report",
+        "macro_report",
+    ):
+        section = sections.get(key)
+        if not isinstance(section, dict):
+            continue
+        summary = section.get("summary")
+        text = section.get("text")
+        if isinstance(summary, str) and summary.strip():
+            chunks.append(f"{key}: {summary.strip()}")
+        elif isinstance(text, str) and text.strip():
+            chunks.append(f"{key}: {text.strip()[:800]}")
+    return "\n".join(chunks)
+
+
+def _normalize_output_delegations(value: Any, *, task: AgentTask) -> list[JsonDict]:
+    delegations: list[JsonDict] = []
+    for item in _dicts(value):
+        question = str(item.get("question") or item.get("task") or "").strip()
+        if not question:
+            continue
+        target_agent = _normalize_agent_name(
+            item.get("target_agent"),
+            default=AgentName.A2_FACT_CHECK,
+        )
+        delegations.append(
+            {
+                "delegation_id": str(item.get("delegation_id") or new_id("delegation")),
+                "requester_agent": str(item.get("requester_agent") or task.agent_name.value),
+                "target_agent": target_agent,
+                "question": question,
+                "required_evidence": _normalize_required_evidence(
+                    item.get("required_evidence"),
+                    question=question,
+                ),
+                "blocking_scope": _normalize_delegation_scope(item.get("blocking_scope"), task),
+                "status": str(item.get("status") or "open"),
+                "result_summary": item.get("result_summary"),
+            }
+        )
+    return delegations
+
+
+def _normalize_agent_name(value: Any, *, default: AgentName) -> str:
+    raw = str(value or default.value)
+    try:
+        return AgentName(raw).value
+    except ValueError:
+        return default.value
+
+
+def _normalize_required_evidence(value: Any, *, question: str) -> list[str]:
+    allowed = {item.value for item in EvidenceSourceType}
+    if isinstance(value, list):
+        normalized = [str(item) for item in value if str(item) in allowed]
+        if normalized:
+            return normalized
+    lowered = question.lower()
+    if any(token in lowered for token in ("ohlcv", "price", "market", "volume")):
+        return [EvidenceSourceType.MARKET_DATA.value]
+    return [EvidenceSourceType.EXTERNAL_REPORT.value]
+
+
+def _normalize_delegation_scope(value: Any, task: AgentTask) -> JsonDict:
+    raw = _json_dict(value)
+    return {
+        "document_type": str(raw.get("document_type") or DocumentType.EXPECTATION_UNIT.value),
+        "field_path": str(raw.get("field_path") or "document"),
+        "ticker": str(raw.get("ticker") or task.ticker),
+        "document_id": raw.get("document_id"),
+        "expectation_id": raw.get("expectation_id"),
+    }
+
+
 def _normalize_blackboard_patch_payload(
     payload: JsonDict,
     *,
@@ -1042,7 +1259,8 @@ def _normalize_blackboard_patch_payload(
     fallback_evidence: list[JsonDict],
 ) -> JsonDict:
     evidence_refs = payload.get("evidence_refs")
-    if not isinstance(evidence_refs, list) or not evidence_refs:
+    evidence_refs = _valid_evidence_ref_payloads(evidence_refs)
+    if not evidence_refs:
         evidence_refs = fallback_evidence
     target = _normalize_blackboard_target_payload(
         _json_dict(payload.get("target")),
@@ -1058,6 +1276,7 @@ def _normalize_blackboard_patch_payload(
             fallback_expectation_id=target.get("expectation_id"),
         )
         target["expectation_id"] = after["expectation_id"]
+        target["ticker"] = after["ticker"]
     return {
         "patch_id": str(payload.get("patch_id") or new_id("patch")),
         "target": target,
@@ -1148,9 +1367,8 @@ def _normalize_expectation_document_payload(
         market_view = {
             "text": str(market_view.get("text") or market_view.get("description") or description),
             "summary": str(market_view.get("summary") or name),
-            "evidence_refs": market_view.get("evidence_refs")
-            if isinstance(market_view.get("evidence_refs"), list)
-            else fallback_evidence,
+            "evidence_refs": _valid_evidence_ref_payloads(market_view.get("evidence_refs"))
+            or fallback_evidence,
             "author_agent": str(market_view.get("author_agent") or task.agent_name.value),
             "reviewer_agents": _strings(market_view.get("reviewer_agents")),
         }
@@ -1165,15 +1383,83 @@ def _normalize_expectation_document_payload(
         "direction": _normalize_expectation_direction(payload.get("direction") or description),
         "why_it_matters": description,
         "market_view": market_view,
-        "realized_facts": payload.get("realized_facts")
-        if isinstance(payload.get("realized_facts"), list)
-        else [],
+        "realized_facts": _normalize_realized_facts(payload.get("realized_facts")),
         "realized_facts_summary": realized_summary,
-        "key_variables": payload.get("key_variables")
-        if isinstance(payload.get("key_variables"), list)
-        else [],
+        "key_variables": _normalize_variable_statuses(payload.get("key_variables")),
         "event_monitoring_direction": _normalize_event_monitoring_direction(payload),
     }
+
+
+def _normalize_realized_facts(value: Any) -> list[JsonDict]:
+    facts: list[JsonDict] = []
+    for item in value if isinstance(value, list) else []:
+        if isinstance(item, dict):
+            facts.append(
+                {
+                    "event_id": str(item.get("event_id") or item.get("id") or new_id("event")),
+                    "description": str(item.get("description") or item.get("text") or item),
+                    "price_reaction": _normalize_price_reaction(item.get("price_reaction")),
+                    "evidence_refs": _valid_evidence_ref_payloads(item.get("evidence_refs")),
+                }
+            )
+        elif str(item).strip():
+            facts.append(
+                {
+                    "event_id": new_id("event"),
+                    "description": str(item),
+                    "price_reaction": _normalize_price_reaction(None),
+                    "evidence_refs": [],
+                }
+            )
+    return facts
+
+
+def _normalize_price_reaction(value: Any) -> JsonDict:
+    if isinstance(value, dict):
+        return {
+            "price_change": str(value.get("price_change") or "unknown"),
+            "price_pattern": str(value.get("price_pattern") or "unknown"),
+            "interpretation": str(value.get("interpretation") or "Price reaction not established."),
+            "evidence_refs": _valid_evidence_ref_payloads(value.get("evidence_refs")),
+        }
+    return {
+        "price_change": "unknown",
+        "price_pattern": "unknown",
+        "interpretation": "Price reaction not established.",
+        "evidence_refs": [],
+    }
+
+
+def _normalize_variable_statuses(value: Any) -> list[JsonDict]:
+    variables: list[JsonDict] = []
+    for item in value if isinstance(value, list) else []:
+        if isinstance(item, dict):
+            name = str(item.get("name") or item.get("variable") or item.get("id") or "variable")
+            variables.append(
+                {
+                    "variable_id": str(item.get("variable_id") or item.get("id") or new_id("var")),
+                    "name": name,
+                    "current_status": str(
+                        item.get("current_status")
+                        or item.get("status")
+                        or item.get("description")
+                        or "unknown"
+                    ),
+                    "certainty": str(item.get("certainty") or item.get("confidence") or "unknown"),
+                    "evidence_refs": _valid_evidence_ref_payloads(item.get("evidence_refs")),
+                }
+            )
+        elif str(item).strip():
+            variables.append(
+                {
+                    "variable_id": new_id("var"),
+                    "name": str(item),
+                    "current_status": "unknown",
+                    "certainty": "unknown",
+                    "evidence_refs": [],
+                }
+            )
+    return variables
 
 
 def _normalize_expectation_direction(value: Any) -> str:
@@ -1284,6 +1570,20 @@ def _render_payload_fragment(value: Any) -> str:
     return str(value)
 
 
+def _valid_evidence_ref_payloads(value: Any) -> list[JsonDict]:
+    if not isinstance(value, list):
+        return []
+    refs: list[JsonDict] = []
+    for item in value:
+        if not isinstance(item, dict):
+            continue
+        try:
+            refs.append(EvidenceRef.model_validate(item).model_dump(mode="json"))
+        except ValidationError:
+            continue
+    return refs
+
+
 def _tool_call_inputs(value: Any) -> list[JsonDict]:
     return [
         item
@@ -1327,6 +1627,11 @@ def _strings(value: Any) -> list[str]:
     if not isinstance(value, list):
         return []
     return [str(item) for item in value if str(item).strip()]
+
+
+def _valid_agent_names(value: Any) -> list[str]:
+    valid = {item.value for item in AgentName}
+    return [item for item in _strings(value) if item in valid]
 
 
 def _query_text(input_payload: JsonDict) -> str:

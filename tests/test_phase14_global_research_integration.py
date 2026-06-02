@@ -151,6 +151,29 @@ def test_initialization_workflow_builds_global_research_from_phase8_modules() ->
     assert "Pending O1/DoxAtlas" not in document["market_narrative_report"]["summary"]
 
 
+def test_expectation_generation_receives_global_research_context() -> None:
+    runner = StructuredInitializationRunner(include_blockers=False)
+    workflow = BlackboardInitializationWorkflow(
+        execution_mode="agent_runner",
+        runner=runner,
+    )
+
+    result = workflow.run("NVDA", stop_after=WorkflowNode.GENERATE_EXPECTATION_UNITS)
+
+    assert result.status is WorkflowRunStatus.RUNNING
+    o1_tasks = [
+        task
+        for task in runner.tasks
+        if task.agent_name is AgentName.O1_EXPECTATION_OWNER
+        and task.run_metadata.workflow_node == WorkflowNode.GENERATE_EXPECTATION_UNITS.value
+    ]
+    assert o1_tasks
+    context = o1_tasks[0].input_context["global_research_context"]
+    assert context["ticker"] == "NVDA"
+    assert "fundamental_report" in context["sections"]
+    assert context["sections"]["market_narrative_report"]["text"]
+
+
 def test_global_research_inputs_round_trip_for_resume() -> None:
     inputs = GlobalResearchInputs(
         sector_or_theme="US data-center power",

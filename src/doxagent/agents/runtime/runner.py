@@ -299,7 +299,10 @@ class ModelGatewayAgentRunner:
         task_type = parent_task.task_type
         if payload.get("task_type"):
             try:
-                task_type = TaskType(str(payload["task_type"]))
+                normalized_task_type = self._normalize_delegation_task_type(
+                    str(payload["task_type"])
+                )
+                task_type = TaskType(normalized_task_type)
             except ValueError:
                 return self._failed(
                     parent_task,
@@ -331,6 +334,11 @@ class ModelGatewayAgentRunner:
     def _execution_mode(self, task: AgentTask, definition: AgentDefinition) -> str:
         raw_mode = task.input_context.get("execution_mode", definition.runtime.execution_mode)
         return str(raw_mode)
+
+    def _normalize_delegation_task_type(self, value: str) -> str:
+        if value in {"data_retrieval", "market_data", "retrieval"}:
+            return TaskType.DELEGATED_RETRIEVAL.value
+        return value
 
     def _run_requested_tools(self, task: AgentTask) -> list[ToolResult]:
         if self.tool_registry is None:

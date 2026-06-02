@@ -40,6 +40,7 @@ testpaths = ["tests"]
 asyncio_mode = "auto"
 markers = [
     "real_api: tests that call real external free-tier APIs and consume quota",
+    "real_db: tests that connect to real Supabase/Postgres persistence",
 ]
 
 [tool.ruff]

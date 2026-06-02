@@ -18,7 +18,11 @@ from doxagent.gateway.schema import (
     ProviderName,
     ResponseFormat,
 )
-from doxagent.gateway.tracing import langsmith_tracing_context
+from doxagent.gateway.tracing import (
+    is_langsmith_wrapped,
+    langsmith_extra_from_metadata,
+    langsmith_tracing_context,
+)
 
 
 def _usage_from_mapping(value: Mapping[str, Any] | None) -> ModelUsage | None:
@@ -159,6 +163,8 @@ class OpenAIModelClient:
             kwargs["timeout"] = request.timeout_seconds
         if request.response_format is ResponseFormat.JSON:
             kwargs["text"] = {"format": {"type": "json_object"}}
+        if is_langsmith_wrapped(self.client):
+            kwargs["langsmith_extra"] = langsmith_extra_from_metadata(request.metadata)
         return kwargs
 
     def _messages_with_system(self, request: ModelRequest) -> list[ModelMessage]:

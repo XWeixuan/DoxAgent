@@ -26,6 +26,7 @@ from doxagent.workflows.schema import (
     WorkflowRunStatus,
     WorkflowRunSummary,
 )
+from doxagent.workflows.storage import WorkflowStorage, default_workflow_storage
 
 __all__ = [
     "INITIALIZATION_NODES",
@@ -48,4 +49,6 @@ __all__ = [
     "WorkflowNodeStatus",
     "WorkflowRunStatus",
     "WorkflowRunSummary",
+    "WorkflowStorage",
+    "default_workflow_storage",
 ]

@@ -53,7 +53,8 @@ def test_maf_runner_rejects_non_object_structured_output() -> None:
 
     assert result.status is ResultStatus.FAILED
     assert result.error is not None
-    assert result.error.code == "invalid_structured_output"
+    assert result.error.code == "model_gateway_error"
+    assert result.error.details["gateway_error"]["code"] == "invalid_json"
 
 
 def test_maf_runner_maps_gateway_error_to_agent_error() -> None:
