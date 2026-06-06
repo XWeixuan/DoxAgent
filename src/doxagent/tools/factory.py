@@ -13,12 +13,16 @@ from doxagent.tools.providers.bls import BlsTimeseriesClient
 from doxagent.tools.providers.doxatlas import DOXATLAS_TOOL_SPECS, DoxAtlasToolClient
 from doxagent.tools.providers.fed import FedFomcCalendarMaterialsClient
 from doxagent.tools.providers.finnhub import FinnhubPeersClient, FinnhubTradeStreamClient
-from doxagent.tools.providers.fmp import FmpPressReleasesClient, FmpSectorPerformanceClient
+from doxagent.tools.providers.fmp import FmpSectorPerformanceClient
 from doxagent.tools.providers.fred import FredSeriesObservationsClient
 from doxagent.tools.providers.polymarket import PolymarketMarketProbabilityClient
 from doxagent.tools.providers.sec import SecCompanyFactsAndFilingsClient, SecFilingSectionsClient
 from doxagent.tools.providers.tavily import TavilyExtractClient, TavilySearchClient
-from doxagent.tools.providers.yfinance import YFinanceHkBasicSnapshotClient
+from doxagent.tools.providers.twelvedata import TwelveDataDailyOhlcvClient
+from doxagent.tools.providers.yfinance import (
+    YFinanceDailyOhlcvClient,
+    YFinanceHkBasicSnapshotClient,
+)
 from doxagent.tools.registry import ToolDescriptor, ToolRegistry
 
 
@@ -163,10 +167,10 @@ _DESCRIPTORS: dict[str, ToolDescriptor] = {
         input_fields=["ticker", "event_type"],
         business_purpose="Support earnings-cycle and forecast-sensitive expectation review.",
     ),
-    "alpha.daily_ohlcv": _descriptor(
-        "alpha.daily_ohlcv",
-        description="Read recent daily OHLCV for a ticker or ETF proxy; free-tier quota is tight.",
-        input_fields=["ticker", "outputsize"],
+    "twelvedata.daily_ohlcv": _descriptor(
+        "twelvedata.daily_ohlcv",
+        description="Read recent daily OHLCV from Twelve Data using 1day time_series.",
+        input_fields=["ticker", "symbol", "outputsize", "start_date", "end_date"],
         business_purpose="Support C2 market proxies and O4 price-action review.",
     ),
     "fred.series_observations": _descriptor(
@@ -203,16 +207,12 @@ _DESCRIPTORS: dict[str, ToolDescriptor] = {
         input_fields=["query", "market_id", "slug"],
         business_purpose="Estimate market-implied probabilities without trading endpoints.",
     ),
-    "fmp.press_releases": _descriptor(
-        "fmp.press_releases",
-        description="Read FMP issuer press releases.",
-        input_fields=["ticker", "limit"],
-        business_purpose="Ground company-event and management-communication evidence.",
-    ),
     "fmp.sector_performance": _descriptor(
         "fmp.sector_performance",
-        description="Read FMP sector market performance.",
-        input_fields=["date"],
+        description=(
+            "Read FMP sector market performance within free-tier date/exchange constraints."
+        ),
+        input_fields=["date", "exchange"],
         business_purpose="Ground C3 sector and relative-performance context.",
     ),
     "finnhub.company_peers": _descriptor(
@@ -246,6 +246,12 @@ _DESCRIPTORS: dict[str, ToolDescriptor] = {
         description="Read yfinance basic snapshot metrics for HK tickers only.",
         input_fields=["ticker"],
         business_purpose="Provide HK ticker valuation snapshot when primary APIs are insufficient.",
+    ),
+    "yfinance.daily_ohlcv": _descriptor(
+        "yfinance.daily_ohlcv",
+        description="Read yfinance daily OHLCV as an unofficial fallback for Twelve Data.",
+        input_fields=["ticker", "symbol", "outputsize"],
+        business_purpose="Fallback market-data evidence when Twelve Data is unavailable.",
     ),
 }
 
@@ -281,10 +287,7 @@ def default_real_tool_registry(settings: DoxAgentSettings | None = None) -> Tool
         AlphaVantageClient(resolved, cache, "SHARES_OUTSTANDING"),
     )
     register("alpha.earnings_events", AlphaVantageEarningsClient(resolved, cache))
-    register(
-        "alpha.daily_ohlcv",
-        AlphaVantageClient(resolved, cache, "TIME_SERIES_DAILY"),
-    )
+    register("twelvedata.daily_ohlcv", TwelveDataDailyOhlcvClient(resolved, cache))
     register("fred.series_observations", FredSeriesObservationsClient(resolved, cache))
     register("bls.timeseries", BlsTimeseriesClient(resolved, cache))
     register("bea.nipa_data", BeaNipaDataClient(resolved, cache))
@@ -296,11 +299,11 @@ def default_real_tool_registry(settings: DoxAgentSettings | None = None) -> Tool
         "polymarket.market_probability",
         PolymarketMarketProbabilityClient(resolved, cache),
     )
-    register("fmp.press_releases", FmpPressReleasesClient(resolved, cache))
     register("fmp.sector_performance", FmpSectorPerformanceClient(resolved, cache))
     register("finnhub.company_peers", FinnhubPeersClient(resolved, cache))
     register("finnhub.trade_stream", FinnhubTradeStreamClient(resolved))
     register("tavily.search", TavilySearchClient(resolved, cache))
     register("tavily.extract", TavilyExtractClient(resolved, cache))
     register("yfinance.hk_basic_snapshot", YFinanceHkBasicSnapshotClient())
+    register("yfinance.daily_ohlcv", YFinanceDailyOhlcvClient())
     return registry

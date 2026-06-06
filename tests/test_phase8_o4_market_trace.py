@@ -186,7 +186,11 @@ def test_market_trace_agent_registry_exposes_market_trace_schema() -> None:
     definition = default_agent_registry().get(AgentName.O4_MARKET_TRACE)
 
     assert definition.runtime.output_schema == "ResearchSection"
-    assert definition.runtime.allowed_tools == ["alpha.daily_ohlcv", "finnhub.trade_stream"]
+    assert definition.runtime.allowed_tools == [
+        "twelvedata.daily_ohlcv",
+        "yfinance.daily_ohlcv",
+        "finnhub.trade_stream",
+    ]
 
 
 def test_market_trace_boundary_does_not_use_hermes_runtime_or_blackboard() -> None:

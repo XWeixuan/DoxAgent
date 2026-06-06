@@ -1,3 +1,4 @@
+import json
 import threading
 from typing import Any
 
@@ -12,7 +13,7 @@ from doxagent.gateway import (
     ModelResponse,
     ProviderName,
 )
-from doxagent.models import AgentPermissions, ResultStatus
+from doxagent.models import AgentName, AgentPermissions, ResultStatus, TaskType
 from doxagent.prompts import PromptAssembler, PromptInjector
 from doxagent.prompts.assembler import CHINESE_OUTPUT_RULES
 from doxagent.tools import ToolClient, ToolDescriptor, ToolRegistry, ToolRequest, ToolResult
@@ -137,9 +138,18 @@ def test_react_requests_include_chinese_output_rules_and_step_metadata() -> None
     assert result.status is ResultStatus.SUCCEEDED
     assert [request.metadata["react_step"] for request in client.requests] == ["1", "2"]
     first_request_text = "\n".join(message.content for message in client.requests[0].messages)
-    assert "所有人类可读文本内容必须使用简体中文" in first_request_text
     assert CHINESE_OUTPUT_RULES[0] in first_request_text
     assert "JSON key" in first_request_text
+    user_payload = json.loads(client.requests[0].messages[-1].content)
+    assert "assembled_task_prompt" not in user_payload
+    assert "task_spec" not in user_payload
+    assert "rules" not in user_payload
+    assert "runtime_output_schema" not in user_payload["task"]
+    assert user_payload["task"]["input_context"] == {"document_ids": ["global-research-001"]}
+    assert "available_tools" in user_payload
+    assert "available_skills" in user_payload
+    assert user_payload["loaded_skills"] == []
+    assert user_payload["tool_call_policy"]["required_tool_names"] == []
 
 
 def test_prompt_assembler_adds_chinese_output_rules_for_single_shot_paths() -> None:
@@ -156,9 +166,165 @@ def test_prompt_assembler_adds_chinese_output_rules_for_single_shot_paths() -> N
         tool_results=[],
     )
 
-    assert "所有人类可读文本内容必须使用简体中文" in assembled.instructions
     assert CHINESE_OUTPUT_RULES[0] in assembled.instructions
-    assert "JSON key" in assembled.user_prompt
+    assert "JSON key" not in assembled.user_prompt
+    user_payload = json.loads(assembled.user_prompt)
+    assert "rules" not in user_payload
+    assert user_payload["task_summary"]["input_context"] == {
+        "document_ids": ["global-research-001"]
+    }
+
+
+def test_react_loads_external_skill_on_demand() -> None:
+    client = RecordingModelClient(
+        [
+            {
+                "is_complete": False,
+                "skill_calls": [
+                    {
+                        "skill_id": "financial-statement",
+                        "reason": "Need financial statement analysis standards.",
+                    }
+                ],
+            },
+            {
+                "is_complete": True,
+                "completion_reason": "done",
+                "final_payload": {
+                    "text": "Financial quality reviewed.",
+                    "summary": "Financial quality reviewed.",
+                    "evidence_refs": [],
+                    "author_agent": "C1",
+                    "reviewer_agents": [],
+                },
+            },
+        ]
+    )
+    definition = default_agent_registry().get(AgentName.C1_FUNDAMENTAL_RESEARCH)
+    task = agent_task().model_copy(
+        update={
+            "agent_name": AgentName.C1_FUNDAMENTAL_RESEARCH,
+            "task_type": TaskType.GENERATE_GLOBAL_RESEARCH,
+            "required_output_schema": "ResearchSection",
+            "permissions": definition.runtime.to_permissions(),
+            "run_metadata": agent_task().run_metadata.model_copy(
+                update={"workflow_node": "BuildGlobalResearch"}
+            ),
+        },
+        deep=True,
+    )
+    runner = ModelGatewayAgentRunner(
+        model_gateway=ModelGateway(client),
+        tool_registry=default_tool_registry(),
+        tool_mode="mock",
+    )
+
+    result = runner.run(task)
+
+    assert result.status is ResultStatus.SUCCEEDED
+    first_payload = json.loads(client.requests[0].messages[-1].content)
+    second_payload = json.loads(client.requests[1].messages[-1].content)
+    assert [item["skill_id"] for item in first_payload["available_skills"]] == [
+        "financial-statement",
+        "valuation-model",
+    ]
+    assert "Financial Statement Analysis" not in json.dumps(
+        first_payload["loaded_skills"],
+        ensure_ascii=True,
+    )
+    assert second_payload["loaded_skills"][0]["skill_id"] == "financial-statement"
+    assert "instructions" in second_payload["loaded_skills"][0]
+    assert result.payload["skill_ids"] == ["financial-statement"]
+    assert result.payload["external_skill_package_ids"] == ["financial-statement"]
+    assert any(
+        entry["kind"] == "skill_result" and entry["status"] == "loaded"
+        for entry in result.payload["react_audit"]["entries"]
+    )
+
+
+def test_react_does_not_load_same_skill_twice() -> None:
+    definition = default_agent_registry().get(AgentName.C1_FUNDAMENTAL_RESEARCH)
+    task = agent_task().model_copy(
+        update={
+            "agent_name": AgentName.C1_FUNDAMENTAL_RESEARCH,
+            "task_type": TaskType.GENERATE_GLOBAL_RESEARCH,
+            "required_output_schema": "ResearchSection",
+            "permissions": definition.runtime.to_permissions(),
+            "run_metadata": agent_task().run_metadata.model_copy(
+                update={"workflow_node": "BuildGlobalResearch"}
+            ),
+        },
+        deep=True,
+    )
+    runner = runner_with_sequence(
+        [
+            {"is_complete": False, "skill_calls": [{"skill_id": "financial-statement"}]},
+            {"is_complete": False, "skill_calls": [{"skill_id": "financial-statement"}]},
+            {
+                "is_complete": True,
+                "completion_reason": "done",
+                "final_payload": {
+                    "text": "Done.",
+                    "summary": "Done.",
+                    "evidence_refs": [],
+                    "author_agent": "C1",
+                    "reviewer_agents": [],
+                },
+            },
+        ]
+    )
+
+    result = runner.run(task)
+
+    assert result.status is ResultStatus.SUCCEEDED
+    assert result.payload["skill_ids"] == ["financial-statement"]
+    duplicate_entries = [
+        entry
+        for entry in result.payload["react_audit"]["entries"]
+        if entry["kind"] == "skill_result" and entry["status"] == "duplicate"
+    ]
+    assert duplicate_entries
+
+
+def test_react_rejects_unexposed_skill_call() -> None:
+    definition = default_agent_registry().get(AgentName.C1_FUNDAMENTAL_RESEARCH)
+    task = agent_task().model_copy(
+        update={
+            "agent_name": AgentName.C1_FUNDAMENTAL_RESEARCH,
+            "task_type": TaskType.GENERATE_GLOBAL_RESEARCH,
+            "required_output_schema": "ResearchSection",
+            "permissions": definition.runtime.to_permissions(),
+            "run_metadata": agent_task().run_metadata.model_copy(
+                update={"workflow_node": "BuildGlobalResearch"}
+            ),
+        },
+        deep=True,
+    )
+    runner = runner_with_sequence(
+        [
+            {"is_complete": False, "skill_calls": [{"skill_id": "macro-analysis"}]},
+            {
+                "is_complete": True,
+                "completion_reason": "done",
+                "final_payload": {
+                    "text": "Done.",
+                    "summary": "Done.",
+                    "evidence_refs": [],
+                    "author_agent": "C1",
+                    "reviewer_agents": [],
+                },
+            },
+        ]
+    )
+
+    result = runner.run(task)
+
+    assert result.status is ResultStatus.SUCCEEDED
+    assert result.payload["skill_ids"] == []
+    assert any(
+        entry["kind"] == "skill_result" and entry["status"] == "rejected"
+        for entry in result.payload["react_audit"]["entries"]
+    )
 
 
 def test_react_retries_after_no_progress_action() -> None:

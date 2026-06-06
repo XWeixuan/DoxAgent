@@ -129,6 +129,23 @@ class DoxAgentSettings(BaseSettings):
         default="DoxAgent/0.1 contact@example.com", validation_alias="SEC_USER_AGENT"
     )
     sec_cache_ttl_seconds: int = Field(default=86_400, validation_alias="SEC_CACHE_TTL_SECONDS")
+    sec_min_request_interval_seconds: float = Field(
+        default=0.12,
+        validation_alias="SEC_MIN_REQUEST_INTERVAL_SECONDS",
+    )
+    fred_min_request_interval_seconds: float = Field(
+        default=0.55,
+        validation_alias="FRED_MIN_REQUEST_INTERVAL_SECONDS",
+    )
+    twelvedata_api_key: str | None = Field(default=None, validation_alias="TWELVEDATA_API_KEY")
+    twelvedata_base_url: str = Field(
+        default="https://api.twelvedata.com",
+        validation_alias="TWELVEDATA_BASE_URL",
+    )
+    twelvedata_cache_ttl_seconds: int = Field(
+        default=86_400,
+        validation_alias="TWELVEDATA_CACHE_TTL_SECONDS",
+    )
 
     def require_database_url(self) -> str:
         if not self.database_url:

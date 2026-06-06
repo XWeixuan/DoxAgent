@@ -22,7 +22,7 @@ from doxagent.tools.providers.doxatlas import (
 )
 from doxagent.tools.providers.fed import FedFomcCalendarMaterialsClient, parse_fomc_calendar
 from doxagent.tools.providers.finnhub import FinnhubPeersClient, FinnhubTradeStreamClient
-from doxagent.tools.providers.fmp import FmpPressReleasesClient, FmpSectorPerformanceClient
+from doxagent.tools.providers.fmp import FmpSectorPerformanceClient
 from doxagent.tools.providers.fred import FredSeriesObservationsClient
 from doxagent.tools.providers.polymarket import PolymarketMarketProbabilityClient
 from doxagent.tools.providers.sec import (
@@ -31,7 +31,11 @@ from doxagent.tools.providers.sec import (
     parse_sec_sections,
 )
 from doxagent.tools.providers.tavily import TavilyExtractClient, TavilySearchClient
-from doxagent.tools.providers.yfinance import YFinanceHkBasicSnapshotClient
+from doxagent.tools.providers.twelvedata import TwelveDataDailyOhlcvClient
+from doxagent.tools.providers.yfinance import (
+    YFinanceDailyOhlcvClient,
+    YFinanceHkBasicSnapshotClient,
+)
 
 __all__ = [
     "AlphaVantageClient",
@@ -48,7 +52,6 @@ __all__ = [
     "FedFomcCalendarMaterialsClient",
     "FinnhubPeersClient",
     "FinnhubTradeStreamClient",
-    "FmpPressReleasesClient",
     "FmpSectorPerformanceClient",
     "FredSeriesObservationsClient",
     "PolymarketMarketProbabilityClient",
@@ -58,6 +61,8 @@ __all__ = [
     "TTLCache",
     "TavilyExtractClient",
     "TavilySearchClient",
+    "TwelveDataDailyOhlcvClient",
+    "YFinanceDailyOhlcvClient",
     "YFinanceHkBasicSnapshotClient",
     "default_real_tool_registry",
     "parse_fomc_calendar",

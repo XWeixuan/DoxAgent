@@ -103,7 +103,9 @@ def test_global_research_assembler_allows_agent_sections_without_evidence_refs()
         "NVDA",
         fundamental_report=section,
         macro_report=section.model_copy(update={"author_agent": AgentName.C2_MACRO_RESEARCH}),
-        industry_report=section.model_copy(update={"author_agent": AgentName.C3_INDUSTRY_RESEARCH}),
+        industry_report=section.model_copy(
+            update={"author_agent": AgentName.C3_INDUSTRY_RESEARCH}
+        ),
         market_narrative_report=section.model_copy(
             update={"author_agent": AgentName.O1_EXPECTATION_OWNER}
         ),
@@ -171,7 +173,87 @@ def test_expectation_generation_receives_global_research_context() -> None:
     context = o1_tasks[0].input_context["global_research_context"]
     assert context["ticker"] == "NVDA"
     assert "fundamental_report" in context["sections"]
-    assert context["sections"]["market_narrative_report"]["text"]
+    assert "macro_report" in context["sections"]
+    assert "industry_report" in context["sections"]
+    assert "market_trace_report" in context["sections"]
+    assert "market_narrative_report" not in context["sections"]
+    assert o1_tasks[0].permissions.writable_targets == [DocumentType.EXPECTATION_UNIT.value]
+    assert o1_tasks[0].input_context["required_tool_names"] == ["doxa_get_narrative_report"]
+
+
+def test_build_global_research_tasks_use_draft_permissions_and_no_prior_sections() -> None:
+    runner = StructuredInitializationRunner(include_blockers=False)
+    workflow = BlackboardInitializationWorkflow(
+        execution_mode="agent_runner",
+        runner=runner,
+    )
+
+    result = workflow.run("NVDA", stop_after=WorkflowNode.BUILD_GLOBAL_RESEARCH)
+
+    assert result.status is WorkflowRunStatus.RUNNING
+    build_tasks = [
+        task
+        for task in runner.tasks
+        if task.run_metadata.workflow_node == WorkflowNode.BUILD_GLOBAL_RESEARCH.value
+    ]
+    assert build_tasks
+    assert all(task.permissions.can_raise_objection is False for task in build_tasks)
+    assert all(
+        task.permissions.writable_targets == [DocumentType.GLOBAL_RESEARCH.value]
+        for task in build_tasks
+    )
+    o1_tasks = [task for task in build_tasks if task.agent_name is AgentName.O1_EXPECTATION_OWNER]
+    assert o1_tasks
+    assert "prior_sections" not in o1_tasks[0].input_context
+
+
+def test_known_events_task_only_allows_known_events_writes() -> None:
+    runner = StructuredInitializationRunner(include_blockers=False)
+    workflow = BlackboardInitializationWorkflow(
+        execution_mode="agent_runner",
+        runner=runner,
+    )
+
+    result = workflow.run("NVDA", stop_after=WorkflowNode.GENERATE_KNOWN_EVENTS)
+
+    assert result.status is WorkflowRunStatus.RUNNING
+    known_event_tasks = [
+        task
+        for task in runner.tasks
+        if task.run_metadata.workflow_node == WorkflowNode.GENERATE_KNOWN_EVENTS.value
+    ]
+    assert known_event_tasks
+    assert known_event_tasks[0].permissions.writable_targets == [DocumentType.KNOWN_EVENTS.value]
+
+
+def test_o2_monitoring_tasks_use_node_specific_write_targets() -> None:
+    runner = StructuredInitializationRunner(include_blockers=False)
+    workflow = BlackboardInitializationWorkflow(
+        execution_mode="agent_runner",
+        runner=runner,
+    )
+
+    result = workflow.run("NVDA")
+
+    assert result.status is WorkflowRunStatus.COMPLETED
+    config_tasks = [
+        task
+        for task in runner.tasks
+        if task.run_metadata.workflow_node == WorkflowNode.GENERATE_MONITORING_CONFIG.value
+    ]
+    policy_tasks = [
+        task
+        for task in runner.tasks
+        if task.run_metadata.workflow_node == WorkflowNode.GENERATE_MONITORING_POLICY.value
+    ]
+    assert config_tasks
+    assert policy_tasks
+    assert config_tasks[0].permissions.writable_targets == [
+        DocumentType.MONITORING_CONFIG.value
+    ]
+    assert policy_tasks[0].permissions.writable_targets == [
+        DocumentType.MONITORING_POLICY.value
+    ]
 
 
 def test_global_research_inputs_round_trip_for_resume() -> None:

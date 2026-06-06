@@ -20,27 +20,10 @@ def test_default_skill_registry_contains_migrated_external_skills() -> None:
     registry = default_skill_registry()
     expected = {
         "macro-analysis",
-        "global-macro",
-        "credit-analysis",
-        "yfinance",
-        "commodity-analysis",
-        "seasonal",
-        "asset-allocation",
-        "risk-analysis",
-        "hedging-strategy",
-        "strategy-generate",
         "financial-statement",
-        "fundamental-filter",
         "valuation-model",
-        "earnings-forecast",
-        "web-reader",
-        "report-generate",
-        "market-researcher",
         "sector-overview",
         "competitive-analysis",
-        "comps-analysis",
-        "idea-generation",
-        "note-writer",
         "ohlcv-orchestration",
         "quote-context",
         "relative-performance",
@@ -48,51 +31,33 @@ def test_default_skill_registry_contains_migrated_external_skills() -> None:
         "market-data-quality",
     }
 
-    assert expected.issubset(set(registry.ids()))
+    assert set(registry.ids()) == expected
     assert "doxagent-source-discipline" not in registry.ids()
     skill = registry.get("sector-overview")
     restored = skill.model_validate_json(skill.model_dump_json())
     assert restored.skill_id == "sector-overview"
     assert restored.source_kind.value == "financial_services"
+    assert restored.allowed_tools == []
+    assert restored.content.output_requirements == []
 
 
-def test_skill_allowed_tools_are_runtime_subsets_and_not_legacy_mock_tools() -> None:
+def test_external_skills_are_plain_text_without_runtime_constraints() -> None:
     skill_registry = default_skill_registry()
-    agent_registry = default_agent_registry()
-    legacy_tools = {
-        "external_research.mock",
-        "market_data.quote",
-        "market_data.ohlcv",
-        "market_data.multiple_quotes",
-        "doxatlas.query",
-        "doxatlas.source_lookup",
-    }
 
     for skill_id in skill_registry.ids():
         skill = skill_registry.get(skill_id)
-        assert legacy_tools.isdisjoint(skill.allowed_tools)
-        for agent_name in skill.applicable_agents:
-            allowed = set(agent_registry.get(agent_name).runtime.allowed_tools)
-            assert set(skill.allowed_tools).issubset(allowed)
+        assert skill.allowed_tools == []
+        assert skill.content.output_requirements == []
+        assert skill.content.guardrails == []
+        assert skill.content.prompt_fragment
 
 
-def test_prompt_external_package_allowed_tools_are_runtime_subsets() -> None:
+def test_prompt_external_package_legacy_metadata_is_loader_only() -> None:
     prompt_registry = default_prompt_registry()
-    agent_registry = default_agent_registry()
-    legacy_tools = {
-        "external_research.mock",
-        "market_data.quote",
-        "market_data.ohlcv",
-        "market_data.multiple_quotes",
-        "doxatlas.query",
-        "doxatlas.source_lookup",
-    }
 
     for package in prompt_registry.external_packages():
-        assert legacy_tools.isdisjoint(package.allowed_tools)
-        for agent_name in package.applicable_agents:
-            allowed = set(agent_registry.get(agent_name).runtime.allowed_tools)
-            assert set(package.allowed_tools).issubset(allowed)
+        assert package.body
+        assert package.kind.value == "external_skill_package"
 
 
 def test_skill_registry_unknown_and_deep_copy_behavior() -> None:
@@ -107,7 +72,7 @@ def test_skill_registry_unknown_and_deep_copy_behavior() -> None:
     assert "local mutation" not in registry.get("macro-analysis").content.output_requirements
 
 
-def test_skill_injector_selects_agent_defaults_and_explicit_registered_skills() -> None:
+def test_skill_injector_selects_only_runtime_loaded_skills() -> None:
     registry = default_skill_registry()
     agent_registry = default_agent_registry()
     definition = agent_registry.get(AgentName.C2_MACRO_RESEARCH)
@@ -115,7 +80,7 @@ def test_skill_injector_selects_agent_defaults_and_explicit_registered_skills() 
         update={
             "agent_name": AgentName.C2_MACRO_RESEARCH,
             "task_type": TaskType.GENERATE_GLOBAL_RESEARCH,
-            "input_context": {"external_skill_package_ids": ["risk-analysis"]},
+            "input_context": {"loaded_skill_ids": ["macro-analysis"]},
             "required_output_schema": "ResearchSection",
             "permissions": definition.runtime.to_permissions(),
         },
@@ -126,10 +91,7 @@ def test_skill_injector_selects_agent_defaults_and_explicit_registered_skills() 
 
     assert task.skill_bundle is None
     assert injected.skill_bundle is not None
-    assert "macro-analysis" in injected.skill_bundle.skill_ids
-    assert "asset-allocation" in injected.skill_bundle.skill_ids
-    assert "doxagent-source-discipline" not in injected.skill_bundle.skill_ids
-    assert len(injected.skill_bundle.skill_ids) < len(registry.ids())
+    assert injected.skill_bundle.skill_ids == ["macro-analysis"]
 
 
 def test_unknown_explicit_skill_request_fails() -> None:
@@ -138,7 +100,7 @@ def test_unknown_explicit_skill_request_fails() -> None:
         update={
             "agent_name": AgentName.C1_FUNDAMENTAL_RESEARCH,
             "task_type": TaskType.GENERATE_GLOBAL_RESEARCH,
-            "input_context": {"skill_ids": ["not-registered"]},
+            "input_context": {"loaded_skill_ids": ["not-registered"]},
             "required_output_schema": "ResearchSection",
             "permissions": definition.runtime.to_permissions(),
         },
@@ -165,8 +127,8 @@ def test_mock_runner_and_context_expose_injected_skill_summary() -> None:
 
     result = MockAgentRunner(registry).run(task)
 
-    assert "ohlcv-orchestration" in result.payload["skill_ids"]
-    assert result.payload["skill_versions"]["quote-context"]
+    assert result.payload["skill_ids"] == []
+    assert result.payload["skill_versions"] == {}
     assert "agent.o4" in result.payload["prompt_block_ids"]
     assert "doxagent-source-discipline" in result.payload["internal_task_skill_ids"]
 
@@ -181,7 +143,8 @@ def test_mock_runner_and_context_expose_injected_skill_summary() -> None:
     )
     snapshot = ContextBuilder(service).build(injected_task, run.run_id)
     snapshot_skill_ids = [skill.skill_id for skill in snapshot.skill_summaries]
-    assert snapshot_skill_ids == injected_task.skill_bundle.skill_ids
+    assert snapshot_skill_ids == []
+    assert injected_task.skill_bundle.skill_ids == []
 
 
 def test_prompt_registry_distinguishes_prompt_internal_and_external_resources() -> None:
@@ -195,6 +158,22 @@ def test_prompt_registry_distinguishes_prompt_internal_and_external_resources() 
     assert internal.kind.value == "internal_task_skill"
     assert external.kind.value == "external_skill_package"
     assert registry.get("agent.o1").model_validate_json(registry.get("agent.o1").model_dump_json())
+
+
+def test_c1_c3_task_text_moved_to_internal_task_skills() -> None:
+    registry = default_prompt_registry()
+
+    c1_prompt = registry.get("agent.c1")
+    c3_prompt = registry.get("agent.c3")
+    fundamental = registry.get("fundamental-research")
+    industry = registry.get("industry-research")
+
+    assert "## Task" not in c1_prompt.body
+    assert "## Task" not in c3_prompt.body
+    assert "Use load_skill(\"financial-statement\")" in fundamental.body
+    assert "Use load_skill(\"valuation-model\")" in fundamental.body
+    assert "Invoke `sector-overview` skill" in industry.body
+    assert "Invoke `competitive-analysis` skill" in industry.body
 
 
 def test_prompt_injector_selects_o1_internal_sop_without_external_packages() -> None:
@@ -218,13 +197,56 @@ def test_prompt_injector_selects_o1_internal_sop_without_external_packages() -> 
     assert "macro-analysis" not in injected.prompt_bundle.external_skill_package_ids
 
 
-def test_prompt_injector_rejects_unknown_explicit_external_package() -> None:
+def test_prompt_injector_selects_global_research_internal_skills_for_c1_c3() -> None:
+    agent_registry = default_agent_registry()
+
+    c1_definition = agent_registry.get(AgentName.C1_FUNDAMENTAL_RESEARCH)
+    c1_task = agent_task().model_copy(
+        update={
+            "agent_name": AgentName.C1_FUNDAMENTAL_RESEARCH,
+            "task_type": TaskType.GENERATE_GLOBAL_RESEARCH,
+            "required_output_schema": "ResearchSection",
+            "permissions": c1_definition.runtime.to_permissions(),
+            "run_metadata": agent_task().run_metadata.model_copy(
+                update={"workflow_node": "BuildGlobalResearch"}
+            ),
+        },
+        deep=True,
+    )
+    c1_injected = PromptInjector().inject(c1_task, c1_definition)
+
+    assert "fundamental-research" in c1_injected.prompt_bundle.internal_task_skill_ids
+    assert c1_injected.prompt_bundle.external_skill_package_ids == []
+
+    c3_definition = agent_registry.get(AgentName.C3_INDUSTRY_RESEARCH)
+    c3_task = c1_task.model_copy(
+        update={
+            "agent_name": AgentName.C3_INDUSTRY_RESEARCH,
+            "permissions": c3_definition.runtime.to_permissions(),
+        },
+        deep=True,
+    )
+    c3_injected = PromptInjector().inject(c3_task, c3_definition)
+
+    assert "industry-research" in c3_injected.prompt_bundle.internal_task_skill_ids
+    assert c3_injected.prompt_bundle.external_skill_package_ids == []
+
+
+def test_c2_exposes_macro_analysis_not_global_macro() -> None:
+    definition = default_agent_registry().get(AgentName.C2_MACRO_RESEARCH)
+
+    assert definition.runtime.default_external_skill_package_ids == ["macro-analysis"]
+    assert "global-macro" not in default_skill_registry().ids()
+    assert "load_skill(\"macro-analysis\")" in default_prompt_registry().get("agent.c2").body
+
+
+def test_prompt_injector_rejects_unknown_loaded_external_package() -> None:
     definition = default_agent_registry().get(AgentName.C2_MACRO_RESEARCH)
     task = agent_task().model_copy(
         update={
             "agent_name": AgentName.C2_MACRO_RESEARCH,
             "task_type": TaskType.GENERATE_GLOBAL_RESEARCH,
-            "input_context": {"external_skill_package_ids": ["not-registered"]},
+            "input_context": {"loaded_external_skill_package_ids": ["not-registered"]},
             "permissions": definition.runtime.to_permissions(),
         },
         deep=True,
@@ -255,7 +277,7 @@ def test_prompt_assembler_does_not_embed_full_agent_task_dump() -> None:
     )
 
     assert "System / Agent Prompt Blocks" in assembled.instructions
-    assert "External Skill Packages" in assembled.instructions
+    assert "External Skill Packages" not in assembled.instructions
     assert '"task_summary"' in assembled.user_prompt
     assert '"skill_bundle"' not in assembled.user_prompt
 
@@ -276,7 +298,7 @@ def test_external_adapter_outputs_include_skill_versions() -> None:
         universe=["VST", "CEG"],
     )
     industry_output = industry.payload["structured"]["agent_outputs"][0]
-    assert industry_output["skill_versions"]["market-researcher"]
+    assert industry_output["skill_versions"]["sector-overview"]
 
     trace = MarketTraceAgentModule().run(ticker="AAPL")
     assert "ohlcv-orchestration" in trace.payload["metadata"]["skill_ids"]

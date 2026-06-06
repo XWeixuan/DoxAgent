@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+import threading
 import time
 from collections.abc import Callable, Mapping
 from typing import Any, cast
@@ -40,6 +41,9 @@ class TTLCache:
         self._items[key] = (time.time() + ttl_seconds, value)
 
 class BaseRealToolClient:
+    _rate_limit_lock = threading.Lock()
+    _rate_limit_last_request_at: dict[str, float] = {}
+
     def __init__(
         self,
         settings: DoxAgentSettings,
@@ -58,14 +62,21 @@ class BaseRealToolClient:
         params: Mapping[str, object] | None = None,
         headers: Mapping[str, str] | None = None,
         cache_ttl: int | None = None,
+        rate_limit_key: str | None = None,
+        min_interval_seconds: float | None = None,
+        max_rate_limit_retries: int = 0,
     ) -> JsonObject:
         cache_key = _cache_key("GET", url, params or {}, {})
         if cache_ttl:
             cached = self.cache.get(cache_key)
             if cached is not None:
                 return cast(JsonObject, cached)
-        response = self.client.get(url, params=_to_httpx_params(params), headers=headers)
-        _raise_for_status(response)
+        response = self._send_with_rate_limit(
+            lambda: self.client.get(url, params=_to_httpx_params(params), headers=headers),
+            rate_limit_key=rate_limit_key,
+            min_interval_seconds=min_interval_seconds,
+            max_rate_limit_retries=max_rate_limit_retries,
+        )
         data = _json_object(response.json())
         if cache_ttl:
             self.cache.set(cache_key, data, cache_ttl)
@@ -79,19 +90,26 @@ class BaseRealToolClient:
         params: Mapping[str, object] | None = None,
         headers: Mapping[str, str] | None = None,
         cache_ttl: int | None = None,
+        rate_limit_key: str | None = None,
+        min_interval_seconds: float | None = None,
+        max_rate_limit_retries: int = 0,
     ) -> JsonObject:
         cache_key = _cache_key("POST", url, params or {}, json_body)
         if cache_ttl:
             cached = self.cache.get(cache_key)
             if cached is not None:
                 return cast(JsonObject, cached)
-        response = self.client.post(
-            url,
-            params=_to_httpx_params(params),
-            json=json_body,
-            headers=headers,
+        response = self._send_with_rate_limit(
+            lambda: self.client.post(
+                url,
+                params=_to_httpx_params(params),
+                json=json_body,
+                headers=headers,
+            ),
+            rate_limit_key=rate_limit_key,
+            min_interval_seconds=min_interval_seconds,
+            max_rate_limit_retries=max_rate_limit_retries,
         )
-        _raise_for_status(response)
         data = _json_object(response.json())
         if cache_ttl:
             self.cache.set(cache_key, data, cache_ttl)
@@ -104,14 +122,21 @@ class BaseRealToolClient:
         params: Mapping[str, object] | None = None,
         headers: Mapping[str, str] | None = None,
         cache_ttl: int | None = None,
+        rate_limit_key: str | None = None,
+        min_interval_seconds: float | None = None,
+        max_rate_limit_retries: int = 0,
     ) -> str:
         cache_key = _cache_key("GET_TEXT", url, params or {}, {})
         if cache_ttl:
             cached = self.cache.get(cache_key)
             if cached is not None:
                 return cast(str, cached)
-        response = self.client.get(url, params=_to_httpx_params(params), headers=headers)
-        _raise_for_status(response)
+        response = self._send_with_rate_limit(
+            lambda: self.client.get(url, params=_to_httpx_params(params), headers=headers),
+            rate_limit_key=rate_limit_key,
+            min_interval_seconds=min_interval_seconds,
+            max_rate_limit_retries=max_rate_limit_retries,
+        )
         text = response.text
         if cache_ttl:
             self.cache.set(cache_key, text, cache_ttl)
@@ -206,6 +231,41 @@ class BaseRealToolClient:
             details={"provider_error": type(exc).__name__},
         )
 
+    def _send_with_rate_limit(
+        self,
+        send: Callable[[], httpx.Response],
+        *,
+        rate_limit_key: str | None,
+        min_interval_seconds: float | None,
+        max_rate_limit_retries: int,
+    ) -> httpx.Response:
+        attempts = max(0, max_rate_limit_retries) + 1
+        for attempt in range(attempts):
+            if rate_limit_key and min_interval_seconds and min_interval_seconds > 0:
+                self._wait_for_rate_limit(rate_limit_key, min_interval_seconds)
+            response = send()
+            try:
+                _raise_for_status(response)
+                return response
+            except ProviderHttpError as exc:
+                if exc.code != "rate_limited" or attempt >= attempts - 1:
+                    raise
+                retry_after = _retry_after_seconds(exc.details.get("retry_after"))
+                time.sleep(retry_after or max(min_interval_seconds or 0.5, 0.5))
+        raise AssertionError("unreachable rate-limit retry loop")
+
+    @classmethod
+    def _wait_for_rate_limit(cls, key: str, min_interval_seconds: float) -> None:
+        with cls._rate_limit_lock:
+            now = time.monotonic()
+            last = cls._rate_limit_last_request_at.get(key)
+            if last is not None:
+                wait_seconds = min_interval_seconds - (now - last)
+                if wait_seconds > 0:
+                    time.sleep(wait_seconds)
+                    now = time.monotonic()
+            cls._rate_limit_last_request_at[key] = now
+
 
 class BoundToolClient:
     def __init__(self, call_func: Callable[[ToolRequest], ToolResult]) -> None:
@@ -248,6 +308,16 @@ def _raise_for_status(response: httpx.Response) -> None:
             "body_preview": response.text[:500],
         },
     )
+
+
+def _retry_after_seconds(value: object) -> float | None:
+    if value is None:
+        return None
+    try:
+        parsed = float(str(value))
+    except ValueError:
+        return None
+    return parsed if parsed > 0 else None
 
 
 def _json_object(value: object) -> JsonObject:

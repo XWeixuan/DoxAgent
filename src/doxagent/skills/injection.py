@@ -17,19 +17,13 @@ class SkillInjectionPolicy:
     ) -> SkillBundle:
         selected: dict[str, SkillDefinition] = {}
 
-        for skill_id in agent_definition.runtime.default_external_skill_package_ids:
+        for skill_id in self._requested_skill_ids(task.input_context, "loaded_skill_ids"):
             selected[skill_id] = registry.get(skill_id)
 
-        for definition in registry.find_for_agent(task.agent_name, task.task_type):
-            if definition.skill_id in selected:
-                continue
-            if task.task_type in definition.applicable_task_types:
-                selected[definition.skill_id] = definition
-
-        for skill_id in self._requested_skill_ids(task.input_context, "external_skill_package_ids"):
-            selected[skill_id] = registry.get(skill_id)
-
-        for skill_id in self._requested_skill_ids(task.input_context, "skill_ids"):
+        for skill_id in self._requested_skill_ids(
+            task.input_context,
+            "loaded_external_skill_package_ids",
+        ):
             selected[skill_id] = registry.get(skill_id)
 
         ordered = [selected[skill_id] for skill_id in sorted(selected)]

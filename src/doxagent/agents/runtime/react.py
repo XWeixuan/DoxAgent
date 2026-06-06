@@ -43,8 +43,15 @@ from doxagent.models import (
     ValidationStatus,
     new_id,
 )
-from doxagent.prompts.assembler import CHINESE_OUTPUT_RULES
+from doxagent.prompts.assembler import (
+    CHINESE_OUTPUT_RULES,
+    agent_visible_context_snapshot,
+    agent_visible_input_context,
+)
 from doxagent.prompts.schema import AssembledPrompt
+from doxagent.skills import UnknownSkillError
+from doxagent.skills.registry import SkillRegistry, default_skill_registry
+from doxagent.skills.schema import SkillDefinition
 from doxagent.tools import ToolError, ToolRegistry, ToolRequest, ToolResult
 
 JsonDict = dict[str, Any]
@@ -80,6 +87,7 @@ class Scratchpad:
     task_ledger: list[JsonDict] = field(default_factory=list)
     entries: list[JsonDict] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
+    loaded_skills: dict[str, JsonDict] = field(default_factory=dict)
     compacted_summaries: list[str] = field(default_factory=list)
     compaction_failures: int = 0
 
@@ -94,6 +102,7 @@ class Scratchpad:
                 "completion_reason": str(action.get("completion_reason") or ""),
                 "reasoning_summary": str(action.get("reasoning_summary") or ""),
                 "tool_calls": _public_tool_calls(action.get("tool_calls")),
+                "skill_calls": _public_skill_calls(action.get("skill_calls")),
                 "delegations": _public_delegations(action.get("delegations")),
             }
         )
@@ -130,6 +139,33 @@ class Scratchpad:
                 "output": result.output,
             }
         )
+
+    def record_skill_result(
+        self,
+        *,
+        step: int,
+        skill_id: str,
+        status: str,
+        reason: str,
+        message: str,
+        skill: SkillDefinition | None = None,
+    ) -> None:
+        entry: JsonDict = {
+            "kind": "skill_result",
+            "step": step,
+            "skill_id": skill_id,
+            "status": status,
+            "reason": reason,
+            "message": message,
+        }
+        if skill is not None and status == "loaded":
+            self.loaded_skills[skill.skill_id] = _loaded_skill_payload(skill)
+            entry["version"] = skill.version
+            entry["source_project"] = skill.source_project
+            entry["source_kind"] = skill.source_kind.value
+        if status != "loaded":
+            self.warnings.append(message)
+        self.entries.append(entry)
 
     def record_delegation(
         self,
@@ -240,6 +276,7 @@ class Scratchpad:
         return {
             "max_tool_calls_per_name": MAX_TOOL_CALLS_PER_NAME,
             "tool_counts": dict(self.tool_counts),
+            "loaded_skill_ids": sorted(self.loaded_skills),
             "plan": list(self.plan),
             "task_ledger": list(self.task_ledger),
             "warnings": list(self.warnings),
@@ -272,10 +309,12 @@ class ReActAgentHarness:
         provider: ProviderName,
         model: str,
         tool_mode: str,
+        skill_registry: SkillRegistry | None = None,
         config: ReActHarnessConfig | None = None,
     ) -> None:
         self.model_gateway = model_gateway
         self.tool_registry = tool_registry
+        self.skill_registry = skill_registry or default_skill_registry()
         self.provider = provider
         self.model = model
         self.tool_mode = tool_mode
@@ -295,6 +334,15 @@ class ReActAgentHarness:
         tool_results: list[ToolResult] = []
         delegation_results: list[AgentResult] = []
         model_audits: list[JsonDict] = []
+        try:
+            _available_skill_definitions(task, definition, self.skill_registry)
+        except UnknownSkillError as exc:
+            return _failed(
+                task,
+                "invalid_skill_catalog",
+                str(exc),
+                scratchpad=scratchpad,
+            )
 
         for step in range(1, self.config.max_steps + 1):
             scratchpad.microcompact(self.config.recent_step_window)
@@ -341,10 +389,16 @@ class ReActAgentHarness:
             scratchpad.record_action(step, action)
 
             tool_call_inputs = _tool_call_inputs(action.get("tool_calls"))
+            skill_call_inputs = _skill_call_inputs(action.get("skill_calls"))
             delegation_inputs = _dicts(action.get("delegations"))
             final_payload = action.get("final_payload")
             is_complete = bool(action.get("is_complete", False))
-            if is_complete and isinstance(final_payload, dict) and not tool_call_inputs:
+            if (
+                is_complete
+                and isinstance(final_payload, dict)
+                and not tool_call_inputs
+                and not skill_call_inputs
+            ):
                 if not delegation_inputs:
                     return self._succeeded(
                         task=task,
@@ -360,6 +414,15 @@ class ReActAgentHarness:
                         completion_reason=str(action.get("completion_reason") or "complete"),
                     )
 
+            if skill_call_inputs:
+                self._load_skill_calls(
+                    step=step,
+                    task=task,
+                    definition=definition,
+                    calls=skill_call_inputs,
+                    scratchpad=scratchpad,
+                )
+
             if tool_call_inputs:
                 step_results = await self._execute_tool_calls(
                     step=step,
@@ -374,7 +437,7 @@ class ReActAgentHarness:
                 scratchpad.record_delegation(step=step, request=delegation, result=result)
                 delegation_results.append(result)
 
-            if not tool_call_inputs and not delegation_inputs:
+            if not tool_call_inputs and not skill_call_inputs and not delegation_inputs:
                 if isinstance(final_payload, dict):
                     return self._succeeded(
                         task=task,
@@ -409,6 +472,59 @@ class ReActAgentHarness:
             delegation_results=delegation_results,
             scratchpad=scratchpad,
         )
+
+    def _load_skill_calls(
+        self,
+        *,
+        step: int,
+        task: AgentTask,
+        definition: AgentDefinition,
+        calls: list[JsonDict],
+        scratchpad: Scratchpad,
+    ) -> None:
+        available = {
+            skill.skill_id: skill
+            for skill in _available_skill_definitions(task, definition, self.skill_registry)
+        }
+        for call in calls:
+            skill_id = str(call.get("skill_id") or call.get("name") or "").strip()
+            reason = str(call.get("reason") or "")
+            if not skill_id:
+                scratchpad.record_skill_result(
+                    step=step,
+                    skill_id="",
+                    status="failed",
+                    reason=reason,
+                    message="Skill call is missing skill_id.",
+                )
+                continue
+            if skill_id in scratchpad.loaded_skills:
+                scratchpad.record_skill_result(
+                    step=step,
+                    skill_id=skill_id,
+                    status="duplicate",
+                    reason=reason,
+                    message=f"Skill {skill_id} was already loaded in this task.",
+                )
+                continue
+            skill = available.get(skill_id)
+            if skill is None:
+                scratchpad.record_skill_result(
+                    step=step,
+                    skill_id=skill_id,
+                    status="rejected",
+                    reason=reason,
+                    message=f"Skill {skill_id} is not exposed for this agent task.",
+                )
+                continue
+            scratchpad.record_skill_result(
+                step=step,
+                skill_id=skill_id,
+                status="loaded",
+                reason=reason,
+                message=f"Skill {skill_id} loaded.",
+                skill=skill,
+            )
 
     async def _execute_tool_calls(
         self,
@@ -558,6 +674,7 @@ class ReActAgentHarness:
                             context_snapshot=context_snapshot,
                             scratchpad=scratchpad,
                             tool_registry=self.tool_registry,
+                            skill_registry=self.skill_registry,
                             config=self.config,
                         ),
                     ),
@@ -699,8 +816,11 @@ class ReActAgentHarness:
                 "completion_reason": completion_reason,
                 "model_audits": model_audits,
                 "react_audit": scratchpad.audit(),
-                "skill_ids": task.skill_bundle.skill_ids if task.skill_bundle else [],
-                "skill_versions": task.skill_bundle.skill_versions if task.skill_bundle else {},
+                "skill_ids": sorted(scratchpad.loaded_skills),
+                "skill_versions": {
+                    skill_id: str(skill["version"])
+                    for skill_id, skill in scratchpad.loaded_skills.items()
+                },
                 "prompt_block_ids": (
                     task.prompt_bundle.prompt_block_ids if task.prompt_bundle else []
                 ),
@@ -708,7 +828,7 @@ class ReActAgentHarness:
                     task.prompt_bundle.internal_task_skill_ids if task.prompt_bundle else []
                 ),
                 "external_skill_package_ids": (
-                    task.prompt_bundle.external_skill_package_ids if task.prompt_bundle else []
+                    sorted(scratchpad.loaded_skills)
                 ),
                 "prompt_versions": task.prompt_bundle.versions if task.prompt_bundle else {},
                 "assembled_prompt_metadata": assembled_prompt.metadata,
@@ -736,7 +856,6 @@ def _react_system_prompt(base_instructions: str) -> str:
             ),
             "Do not write Blackboard state directly.",
             "Do not expose hidden chain-of-thought; use concise reasoning_summary only.",
-            *CHINESE_OUTPUT_RULES,
             (
                 "Return one JSON object matching the ReAct action protocol. "
                 "Put plan_update, is_complete, tool_calls, delegations, and final_payload "
@@ -754,6 +873,7 @@ def _react_user_prompt(
     context_snapshot: Any | None,
     scratchpad: Scratchpad,
     tool_registry: ToolRegistry | None,
+    skill_registry: SkillRegistry,
     config: ReActHarnessConfig,
 ) -> str:
     available_tools = (
@@ -764,6 +884,18 @@ def _react_user_prompt(
         if tool_registry is not None
         else []
     )
+    tool_call_policy = {
+        "required_tool_names": _strings(task.input_context.get("required_tool_names")),
+        "tool_requirements": task.input_context.get("tool_requirements", []),
+        "available_tools_are_authoritative": True,
+        "required_tool_gap_policy": (
+            "If a required tool cannot be satisfied, return final_payload with explicit unknowns."
+        ),
+    }
+    available_skills = [
+        _available_skill_catalog_item(skill)
+        for skill in _available_skill_definitions(task, definition, skill_registry)
+    ]
     return json.dumps(
         {
             "react_protocol": {
@@ -778,6 +910,9 @@ def _react_user_prompt(
                     "tool_calls": [
                         {"tool_name": "registered tool name", "input": {"key": "value"}}
                     ],
+                    "skill_calls": [
+                        {"skill_id": "available skill id", "reason": "why this step needs it"}
+                    ],
                     "delegations": [
                         {
                             "target_agent": "agent enum value",
@@ -790,45 +925,75 @@ def _react_user_prompt(
                     "final_payload": "AgentResult-compatible structured payload when complete",
                 },
             },
-            "task_spec": {
+            "task": {
                 "task_id": task.task_id,
                 "ticker": task.ticker,
                 "agent_name": task.agent_name.value,
                 "task_type": task.task_type.value,
                 "workflow_node": task.run_metadata.workflow_node,
                 "required_output_schema": task.required_output_schema,
-                "runtime_output_schema": definition.runtime.output_schema,
                 "permissions": task.permissions.model_dump(mode="json"),
-                "input_context": task.input_context,
-                "required_tool_names": _strings(task.input_context.get("required_tool_names")),
-                "tool_requirements": task.input_context.get("tool_requirements", []),
+                "input_context": agent_visible_input_context(task.input_context),
             },
+            "tool_call_policy": tool_call_policy,
             "output_contract": _output_contract(task.required_output_schema),
-            "assembled_task_prompt": assembled_prompt.user_prompt,
-            "context_snapshot": _dump_context(context_snapshot),
+            "context_snapshot": agent_visible_context_snapshot(context_snapshot),
             "available_tools": available_tools,
+            "available_skills": available_skills,
+            "loaded_skills": list(scratchpad.loaded_skills.values()),
             "plan": scratchpad.plan,
             "task_ledger": scratchpad.task_ledger,
             "compacted_evidence_summary": scratchpad.compacted_summaries,
             "recent_trajectory": scratchpad.recent_entries(config.recent_step_window),
             "scratchpad_warnings": scratchpad.warnings[-5:],
-            "rules": [
-                "Call only tools listed in available_tools.",
-                "If no tool is needed, return is_complete=true and final_payload.",
-                *CHINESE_OUTPUT_RULES,
-                (
-                    "If more evidence is needed, return tool_calls or delegations "
-                    "and no final_payload."
-                ),
-                (
-                    "If a required tool cannot be satisfied, return a final_payload "
-                    "with explicit unknowns."
-                ),
-            ],
         },
         ensure_ascii=True,
         default=str,
     )
+
+
+def _available_skill_definitions(
+    task: AgentTask,
+    definition: AgentDefinition,
+    registry: SkillRegistry,
+) -> list[SkillDefinition]:
+    selected: dict[str, SkillDefinition] = {}
+    for skill_id in definition.runtime.default_external_skill_package_ids:
+        skill = registry.get(skill_id)
+        if not _skill_matches_task(skill, task):
+            continue
+        selected[skill.skill_id] = skill
+    return [selected[skill_id] for skill_id in sorted(selected)]
+
+
+def _skill_matches_task(skill: SkillDefinition, task: AgentTask) -> bool:
+    if skill.applicable_agents and task.agent_name not in skill.applicable_agents:
+        return False
+    if skill.applicable_task_types and task.task_type not in skill.applicable_task_types:
+        return False
+    return True
+
+
+def _available_skill_catalog_item(skill: SkillDefinition) -> JsonDict:
+    return {
+        "skill_id": skill.skill_id,
+        "name": skill.name,
+        "version": skill.version,
+        "source_project": skill.source_project,
+        "source_kind": skill.source_kind.value,
+        "call_format": {"skill_id": skill.skill_id, "reason": "why this step needs it"},
+    }
+
+
+def _loaded_skill_payload(skill: SkillDefinition) -> JsonDict:
+    return {
+        "skill_id": skill.skill_id,
+        "name": skill.name,
+        "version": skill.version,
+        "source_project": skill.source_project,
+        "source_kind": skill.source_kind.value,
+        "instructions": skill.content.prompt_fragment,
+    }
 
 
 def _parse_action(response: ModelResponse) -> JsonDict | None:
@@ -847,6 +1012,7 @@ def _parse_action(response: ModelResponse) -> JsonDict | None:
         "is_complete",
         "completion_reason",
         "tool_calls",
+        "skill_calls",
         "delegations",
         "final_payload",
     }
@@ -856,6 +1022,7 @@ def _parse_action(response: ModelResponse) -> JsonDict | None:
             "completion_reason": "model returned direct structured payload",
             "final_payload": payload,
             "tool_calls": [],
+            "skill_calls": [],
             "delegations": [],
         }
     return cast(JsonDict, payload)
@@ -868,6 +1035,7 @@ def _unwrap_action_payload(payload: JsonDict) -> JsonDict:
         "is_complete",
         "completion_reason",
         "tool_calls",
+        "skill_calls",
         "delegations",
         "final_payload",
     }
@@ -1592,11 +1760,29 @@ def _tool_call_inputs(value: Any) -> list[JsonDict]:
     ]
 
 
+def _skill_call_inputs(value: Any) -> list[JsonDict]:
+    return [
+        item
+        for item in _dicts(value)
+        if str(item.get("skill_id") or item.get("name") or "").strip()
+    ]
+
+
 def _public_tool_calls(value: Any) -> list[JsonDict]:
     return [
         {
             "tool_name": str(item.get("tool_name") or item.get("name") or ""),
             "input": item.get("input", {}),
+        }
+        for item in _dicts(value)
+    ]
+
+
+def _public_skill_calls(value: Any) -> list[JsonDict]:
+    return [
+        {
+            "skill_id": str(item.get("skill_id") or item.get("name") or ""),
+            "reason": str(item.get("reason") or ""),
         }
         for item in _dicts(value)
     ]

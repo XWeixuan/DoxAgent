@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "langsmith-hosted": {
+      "url": "https://langsmith-mcp-server.onrender.com/mcp",
+      "headers": {
+        "LANGSMITH-API-KEY": "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"
+      }
+    },
+    "langsmith-local": {
+      "command": "uvx",
+      "args": [
+        "langsmith-mcp-server"
+      ],
+      "env": {
+        "LANGSMITH_API_KEY": "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",
+        "LANGSMITH_PROJECT": "DoxAgent"
+      }
+    }
+  }
+}

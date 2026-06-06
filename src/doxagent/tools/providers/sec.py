@@ -31,6 +31,9 @@ class SecCompanyFactsAndFilingsClient(BaseRealToolClient):
                 f"{self.settings.sec_data_base_url.rstrip('/')}/submissions/CIK{cik}.json",
                 headers=headers,
                 cache_ttl=self.settings.sec_cache_ttl_seconds,
+                rate_limit_key="sec",
+                min_interval_seconds=self.settings.sec_min_request_interval_seconds,
+                max_rate_limit_retries=1,
             )
             include_facts = bool(request.input.get("include_facts", True))
             companyfacts: JsonObject | None = None
@@ -39,6 +42,9 @@ class SecCompanyFactsAndFilingsClient(BaseRealToolClient):
                     f"{self.settings.sec_data_base_url.rstrip('/')}/api/xbrl/companyfacts/CIK{cik}.json",
                     headers=headers,
                     cache_ttl=self.settings.sec_cache_ttl_seconds,
+                    rate_limit_key="sec",
+                    min_interval_seconds=self.settings.sec_min_request_interval_seconds,
+                    max_rate_limit_retries=1,
                 )
             output = {
                 "provider": "sec",
@@ -70,6 +76,9 @@ class SecCompanyFactsAndFilingsClient(BaseRealToolClient):
             SEC_TICKER_CIK_URL,
             headers={"User-Agent": self.settings.sec_user_agent or DEFAULT_USER_AGENT},
             cache_ttl=self.settings.sec_cache_ttl_seconds,
+            rate_limit_key="sec",
+            min_interval_seconds=self.settings.sec_min_request_interval_seconds,
+            max_rate_limit_retries=1,
         )
         for entry in mapping.values():
             if isinstance(entry, Mapping) and str(entry.get("ticker", "")).upper() == ticker:
@@ -96,6 +105,9 @@ class SecFilingSectionsClient(SecCompanyFactsAndFilingsClient):
                 archive_url,
                 headers={"User-Agent": self.settings.sec_user_agent or DEFAULT_USER_AGENT},
                 cache_ttl=self.settings.sec_cache_ttl_seconds,
+                rate_limit_key="sec",
+                min_interval_seconds=self.settings.sec_min_request_interval_seconds,
+                max_rate_limit_retries=1,
             )
             sections = _input_list(request, "sections") or [
                 "Item 1",
@@ -143,6 +155,9 @@ class SecFilingSectionsClient(SecCompanyFactsAndFilingsClient):
             f"{self.settings.sec_data_base_url.rstrip('/')}/submissions/CIK{cik}.json",
             headers={"User-Agent": self.settings.sec_user_agent or DEFAULT_USER_AGENT},
             cache_ttl=self.settings.sec_cache_ttl_seconds,
+            rate_limit_key="sec",
+            min_interval_seconds=self.settings.sec_min_request_interval_seconds,
+            max_rate_limit_retries=1,
         )
         recent = _json_object(_json_object(submissions.get("filings", {})).get("recent", {}))
         forms = _object_list(recent.get("form"))

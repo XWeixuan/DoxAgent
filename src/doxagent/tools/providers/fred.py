@@ -37,6 +37,9 @@ class FredSeriesObservationsClient(BaseRealToolClient):
                         "frequency": _input_str(request, "frequency", ""),
                     },
                     cache_ttl=self.settings.macro_cache_ttl_seconds,
+                    rate_limit_key="fred",
+                    min_interval_seconds=self.settings.fred_min_request_interval_seconds,
+                    max_rate_limit_retries=1,
                 )
             return self._success(
                 request,

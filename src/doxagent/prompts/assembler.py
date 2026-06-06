@@ -16,6 +16,15 @@ CHINESE_OUTPUT_RULES = [
     ),
 ]
 
+_HIDDEN_INPUT_CONTEXT_KEYS = {
+    "ticker",
+    "agent_name",
+    "workflow_node",
+    "required_tool_names",
+    "tool_requirements",
+    "tool_request_hints",
+}
+
 
 class PromptAssembler:
     def assemble(
@@ -49,18 +58,10 @@ class PromptAssembler:
                     "workflow_node": task.run_metadata.workflow_node,
                     "required_output_schema": task.required_output_schema,
                     "permissions": task.permissions.model_dump(mode="json"),
-                    "input_context": task.input_context,
+                    "input_context": agent_visible_input_context(task.input_context),
                 },
-                "context_snapshot": context_snapshot.model_dump(mode="json")
-                if context_snapshot is not None
-                else None,
+                "context_snapshot": agent_visible_context_snapshot(context_snapshot),
                 "tool_results": [result.model_dump(mode="json") for result in tool_results],
-                "rules": [
-                    "Return a JSON object.",
-                    "Do not write Blackboard state directly.",
-                    "Put proposed stable changes in AgentResult-compatible structures only.",
-                    *CHINESE_OUTPUT_RULES,
-                ],
             },
             ensure_ascii=True,
         )
@@ -70,6 +71,10 @@ class PromptAssembler:
                     instructions or "Follow DoxAgent prompt resources.",
                     "## Output Language Rules",
                     *CHINESE_OUTPUT_RULES,
+                    "## Runtime Output Rules",
+                    "Return one JSON object.",
+                    "Do not write Blackboard state directly.",
+                    "Put proposed stable changes in AgentResult-compatible structures only.",
                 ]
             ),
             user_prompt=user_prompt,
@@ -87,6 +92,33 @@ class PromptAssembler:
                 "prompt_versions": json.dumps(prompt_bundle.versions, ensure_ascii=True),
             },
         )
+
+
+def agent_visible_input_context(input_context: dict[str, Any]) -> dict[str, Any]:
+    """Return useful model context without duplicated task-envelope fields."""
+
+    return {
+        key: value
+        for key, value in input_context.items()
+        if key not in _HIDDEN_INPUT_CONTEXT_KEYS
+    }
+
+
+def agent_visible_context_snapshot(context_snapshot: Any | None) -> dict[str, Any] | None:
+    """Strip prompt/task metadata from context snapshots before sending them to models."""
+
+    if context_snapshot is None:
+        return None
+    if hasattr(context_snapshot, "model_dump"):
+        dumped = context_snapshot.model_dump(mode="json")
+        payload = dumped if isinstance(dumped, dict) else {"value": dumped}
+    elif isinstance(context_snapshot, dict):
+        payload = dict(context_snapshot)
+    else:
+        return {"value": str(context_snapshot)}
+    for key in ("task_input", "prompt_summaries", "skill_summaries"):
+        payload.pop(key, None)
+    return payload
 
 
 def _bodies(items: list[Any]) -> list[str]:

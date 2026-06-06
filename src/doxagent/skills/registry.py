@@ -63,12 +63,12 @@ def _skill_from_external_package(definition: ExternalSkillPackageDefinition) -> 
         source_kind=SkillSource(definition.source_kind.value),
         applicable_agents=list(definition.applicable_agents),
         applicable_task_types=list(definition.applicable_task_types),
-        allowed_tools=list(definition.allowed_tools),
+        allowed_tools=[],
         content=SkillContent(
             prompt_fragment=definition.body,
             analysis_framework=definition.body,
-            output_requirements=list(definition.output_requirements),
-            guardrails=list(definition.guardrails),
+            output_requirements=[],
+            guardrails=[],
         ),
     )
 
@@ -281,7 +281,8 @@ def _vibe_macro_skills(
                 "bea.nipa_data",
                 "fed.fomc_calendar_materials",
                 "polymarket.market_probability",
-                "alpha.daily_ohlcv",
+                "twelvedata.daily_ohlcv",
+                "yfinance.daily_ohlcv",
             ],
         ),
         _skill(
@@ -526,7 +527,11 @@ def _hermes_market_trace_skills(
                 "Native DoxAgent O4 quote, OHLCV, relative performance, and data caveat flow."
             ),
             output_requirements=["source_refs", "unknowns", "data_quality", "no trading advice"],
-            allowed_tools=["alpha.daily_ohlcv", "finnhub.trade_stream"],
+            allowed_tools=[
+                "twelvedata.daily_ohlcv",
+                "yfinance.daily_ohlcv",
+                "finnhub.trade_stream",
+            ],
             guardrails=[
                 "Do not output trade recommendations.",
                 "Do not treat delayed/free-feed quotes as official execution data.",

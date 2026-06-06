@@ -17,6 +17,7 @@ TRACE_METADATA_KEYS = (
     "workflow_node",
     "skill_versions",
     "prompt_versions",
+    "langsmith_loop_index",
     "react_step",
     "react_compaction",
     "runtime",
@@ -35,7 +36,7 @@ def run_name_from_metadata(metadata: dict[str, str]) -> str:
         metadata.get("workflow_node") or metadata.get("task_type"),
         fallback="task",
     )
-    loop_index = _loop_index(metadata.get("react_step"))
+    loop_index = _loop_index(metadata.get("langsmith_loop_index") or metadata.get("react_step"))
     return f"{agent_name}.{workflow_node}.LOOP{loop_index}"
 
 

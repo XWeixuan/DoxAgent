@@ -29,7 +29,7 @@ class PromptInjectionPolicy:
             registry,
             workflow_node,
         )
-        external_packages = self._select_external_packages(task, agent_definition, registry)
+        external_packages = self._select_external_packages(task, registry)
         return PromptBundle(
             prompt_blocks=[definition.summarize() for definition in prompt_blocks],
             internal_task_skills=[definition.summarize() for definition in internal_skills],
@@ -65,7 +65,9 @@ class PromptInjectionPolicy:
     ) -> list[InternalTaskSkillDefinition]:
         selected: dict[str, InternalTaskSkillDefinition] = {}
         for resource_id in agent_definition.runtime.default_internal_task_skill_ids:
-            selected[resource_id] = _expect_internal_skill(registry.get(resource_id))
+            definition = _expect_internal_skill(registry.get(resource_id))
+            if _definition_matches_task(definition, task, workflow_node):
+                selected[resource_id] = definition
         for definition in registry.find_internal_task_skills(
             task.agent_name,
             task.task_type,
@@ -79,17 +81,20 @@ class PromptInjectionPolicy:
     def _select_external_packages(
         self,
         task: AgentTask,
-        agent_definition: AgentDefinition,
         registry: PromptRegistry,
     ) -> list[ExternalSkillPackageDefinition]:
+        """Select only skill packages explicitly loaded by runtime.
+
+        Agent startup receives an external skill catalog, not the package bodies.
+        Bodies are loaded on demand by the ReAct harness and, for compatibility
+        paths, may be passed through loaded_external_skill_package_ids.
+        """
+
         selected: dict[str, ExternalSkillPackageDefinition] = {}
-        for resource_id in agent_definition.runtime.default_external_skill_package_ids:
-            selected[resource_id] = _expect_external_package(registry.get(resource_id))
-        for definition in registry.find_external_skill_packages(task.agent_name, task.task_type):
-            selected.setdefault(definition.resource_id, definition)
-        for resource_id in self._requested_ids(task.input_context, "external_skill_package_ids"):
-            selected[resource_id] = _expect_external_package(registry.get(resource_id))
-        for resource_id in self._requested_ids(task.input_context, "skill_ids"):
+        for resource_id in self._requested_ids(
+            task.input_context,
+            "loaded_external_skill_package_ids",
+        ):
             selected[resource_id] = _expect_external_package(registry.get(resource_id))
         return [selected[resource_id] for resource_id in sorted(selected)]
 
@@ -141,3 +146,17 @@ def _prompt_block_sort_key(item: PromptBlockDefinition) -> tuple[int, str]:
         PromptBlockType.WORKFLOW: 2,
     }
     return (order[item.block_type], item.resource_id)
+
+
+def _definition_matches_task(
+    definition: InternalTaskSkillDefinition,
+    task: AgentTask,
+    workflow_node: str | None,
+) -> bool:
+    if definition.applicable_agents and task.agent_name not in definition.applicable_agents:
+        return False
+    if definition.applicable_task_types and task.task_type not in definition.applicable_task_types:
+        return False
+    if workflow_node is not None and definition.workflow_nodes:
+        return workflow_node in definition.workflow_nodes
+    return True

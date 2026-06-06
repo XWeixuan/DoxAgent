@@ -22,7 +22,7 @@ from doxagent.models import (
     ResultStatus,
     new_id,
 )
-from doxagent.skills import default_skill_registry
+from doxagent.skills import UnknownSkillError, default_skill_registry
 
 
 class MacroContextAgentModule:
@@ -445,4 +445,10 @@ def _fundamental_markdown_summary(
 
 def _skill_versions(skill_ids: list[str]) -> dict[str, str]:
     registry = default_skill_registry()
-    return {skill_id: registry.get(skill_id).version for skill_id in skill_ids}
+    versions: dict[str, str] = {}
+    for skill_id in skill_ids:
+        try:
+            versions[skill_id] = registry.get(skill_id).version
+        except UnknownSkillError:
+            continue
+    return versions

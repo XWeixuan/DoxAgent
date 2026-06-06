@@ -32,7 +32,7 @@ from doxagent.models import (
     ResultStatus,
     new_id,
 )
-from doxagent.skills import default_skill_registry
+from doxagent.skills import UnknownSkillError, default_skill_registry
 
 
 class IndustryResearchAgentModule:
@@ -475,4 +475,10 @@ def _markdown_summary(request: IndustryResearchRequest, note: dict[str, Any]) ->
 def _skill_versions(skill_ids: list[str]) -> dict[str, str]:
     registry = default_skill_registry()
     unique = sorted(set(skill_ids))
-    return {skill_id: registry.get(skill_id).version for skill_id in unique}
+    versions: dict[str, str] = {}
+    for skill_id in unique:
+        try:
+            versions[skill_id] = registry.get(skill_id).version
+        except UnknownSkillError:
+            continue
+    return versions

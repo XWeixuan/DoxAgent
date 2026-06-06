@@ -3,6 +3,7 @@
 import asyncio
 import json
 import re
+from collections import defaultdict
 from collections.abc import Sequence
 
 from doxagent.gateway.client import ModelClient
@@ -29,6 +30,7 @@ class ModelGateway:
         self.primary = primary
         self.fallbacks = list(fallbacks or [])
         self.max_retries = max_retries
+        self._langsmith_loop_counters: defaultdict[tuple[str, str, str], int] = defaultdict(int)
 
     async def complete(self, request: ModelRequest) -> ModelResponse:
         clients = [self.primary, *self.fallbacks]
@@ -38,10 +40,11 @@ class ModelGateway:
         for client_index, client in enumerate(clients):
             attempts = self.max_retries + 1 if client_index == 0 else 1
             for _ in range(attempts):
-                response = await self._complete_once(client, request)
+                sequenced_request = self._with_langsmith_loop_index(request)
+                response = await self._complete_once(client, sequenced_request)
                 response.audit.retry_count = retry_count
                 response.audit.fallback_used = client_index > 0
-                response = self._normalize_structured_response(request, response)
+                response = self._normalize_structured_response(sequenced_request, response)
                 last_response = response
 
                 if response.error is None:
@@ -55,7 +58,10 @@ class ModelGateway:
 
         if last_response is not None:
             return last_response
-        return self._internal_error_response(request, "No model clients were configured.")
+        return self._internal_error_response(
+            self._with_langsmith_loop_index(request),
+            "No model clients were configured.",
+        )
 
     async def _complete_once(self, client: ModelClient, request: ModelRequest) -> ModelResponse:
         if request.timeout_seconds is None:
@@ -68,6 +74,23 @@ class ModelGateway:
                 "Model request timed out.",
                 retryable=True,
             )
+
+    def _with_langsmith_loop_index(self, request: ModelRequest) -> ModelRequest:
+        metadata = request.metadata
+        counter_key = (
+            metadata.get("run_id", ""),
+            metadata.get("agent_name", ""),
+            metadata.get("workflow_node") or metadata.get("task_type", ""),
+        )
+        self._langsmith_loop_counters[counter_key] += 1
+        return request.model_copy(
+            update={
+                "metadata": {
+                    **metadata,
+                    "langsmith_loop_index": str(self._langsmith_loop_counters[counter_key]),
+                }
+            }
+        )
 
     def _normalize_structured_response(
         self,

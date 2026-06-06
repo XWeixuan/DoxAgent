@@ -78,6 +78,32 @@ async def test_gateway_primary_success_does_not_trigger_fallback() -> None:
 
 
 @pytest.mark.asyncio
+async def test_gateway_assigns_monotonic_langsmith_loop_index_per_agent_node() -> None:
+    primary = MockModelClient(text="ok")
+    gateway = ModelGateway(primary)
+
+    first = await gateway.complete(
+        request().model_copy(update={"metadata": request().metadata | {"react_step": "1"}})
+    )
+    second = await gateway.complete(
+        request().model_copy(update={"metadata": request().metadata | {"react_step": "1"}})
+    )
+    other_node = await gateway.complete(
+        request().model_copy(
+            update={
+                "metadata": request().metadata
+                | {"workflow_node": "ReviewExpectationFields", "react_step": "1"}
+            }
+        )
+    )
+
+    assert first.audit.metadata["langsmith_loop_index"] == "1"
+    assert second.audit.metadata["langsmith_loop_index"] == "2"
+    assert other_node.audit.metadata["langsmith_loop_index"] == "1"
+    assert run_name_from_metadata(second.audit.metadata) == "O1.GenerateExpectationUnits.LOOP2"
+
+
+@pytest.mark.asyncio
 async def test_gateway_retryable_failure_falls_back() -> None:
     primary = MockModelClient(
         failures=[
@@ -354,4 +380,15 @@ def test_run_name_from_metadata_uses_node_task_fallback_and_loop_default() -> No
             }
         )
         == "C1.generate_global_research.LOOP1"
+    )
+    assert (
+        run_name_from_metadata(
+            {
+                "agent_name": "C1",
+                "workflow_node": "BuildGlobalResearch",
+                "react_step": "1",
+                "langsmith_loop_index": "3",
+            }
+        )
+        == "C1.BuildGlobalResearch.LOOP3"
     )

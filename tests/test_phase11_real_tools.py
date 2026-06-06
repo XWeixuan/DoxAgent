@@ -15,11 +15,12 @@ from doxagent.tools.providers.bls import BlsTimeseriesClient
 from doxagent.tools.providers.doxatlas import DoxAtlasToolClient
 from doxagent.tools.providers.fed import FedFomcCalendarMaterialsClient, parse_fomc_calendar
 from doxagent.tools.providers.finnhub import FinnhubPeersClient
-from doxagent.tools.providers.fmp import FmpPressReleasesClient
+from doxagent.tools.providers.fmp import FmpSectorPerformanceClient
 from doxagent.tools.providers.fred import FredSeriesObservationsClient
 from doxagent.tools.providers.polymarket import PolymarketMarketProbabilityClient
 from doxagent.tools.providers.sec import SecFilingSectionsClient, parse_sec_sections
 from doxagent.tools.providers.tavily import TavilySearchClient
+from doxagent.tools.providers.twelvedata import TwelveDataDailyOhlcvClient
 from doxagent.tools.providers.yfinance import YFinanceHkBasicSnapshotClient
 from doxagent.tools.real import AlphaVantageClient as CompatAlphaVantageClient
 
@@ -39,6 +40,7 @@ def _settings(**overrides: object) -> DoxAgentSettings:
         "bls_api_key": "bls-key",
         "bea_api_key": "bea-key",
         "alpha_vantage_api_key": "alpha-key",
+        "twelvedata_api_key": "twelve-key",
         "fmp_api_key": "fmp-key",
         "finnhub_api_key": "finnhub-key",
         "tavily_api_key": "tavily-key",
@@ -79,6 +81,10 @@ def test_real_registry_registers_phase_3_2_tools() -> None:
     assert "fred.series_observations" in names
     assert "fed.fomc_calendar_materials" in names
     assert "finnhub.trade_stream" in names
+    assert "twelvedata.daily_ohlcv" in names
+    assert "yfinance.daily_ohlcv" in names
+    assert "alpha.daily_ohlcv" not in names
+    assert "fmp.press_releases" not in names
     assert "doxa_get_narrative_report" in names
     assert "doxa_run_narrative_research" in names
     assert "doxa_run_analysis" in names
@@ -358,11 +364,10 @@ def test_macro_and_market_provider_clients_parse_fixture_payloads() -> None:
     bea = BeaNipaDataClient(
         _settings(), TTLCache(), client=_json_client({"BEAAPI": {"Results": {}}})
     )
-    alpha = AlphaVantageClient(
+    twelvedata = TwelveDataDailyOhlcvClient(
         _settings(),
         TTLCache(),
-        "TIME_SERIES_DAILY",
-        client=_json_client({"Time Series (Daily)": {}}),
+        client=_json_client({"status": "ok", "values": [{"datetime": "2026-06-01"}]}),
     )
 
     assert (
@@ -375,26 +380,38 @@ def test_macro_and_market_provider_clients_parse_fixture_payloads() -> None:
     )
     assert bea.call(_request("bea.nipa_data")).status is ResultStatus.SUCCEEDED
     assert (
-        alpha.call(_request("alpha.daily_ohlcv")).evidence_refs[0].source_type.value
+        twelvedata.call(_request("twelvedata.daily_ohlcv")).evidence_refs[0].source_type.value
         == "market_data"
     )
 
 
 def test_fmp_finnhub_tavily_polymarket_clients_parse_fixture_payloads() -> None:
     settings = _settings()
-    fmp = FmpPressReleasesClient(settings, TTLCache(), client=_json_client([{"symbol": "AAPL"}]))
+    tavily_requests: list[httpx.Request] = []
+    fmp = FmpSectorPerformanceClient(
+        settings,
+        TTLCache(),
+        client=_json_client([{"sector": "Technology"}]),
+    )
     finnhub = FinnhubPeersClient(settings, TTLCache(), client=_json_client(["MSFT", "GOOGL"]))
-    tavily = TavilySearchClient(settings, TTLCache(), client=_json_client({"results": []}))
+    tavily = TavilySearchClient(
+        settings,
+        TTLCache(),
+        client=_json_client({"results": []}, requests=tavily_requests),
+    )
     polymarket = PolymarketMarketProbabilityClient(
         settings, TTLCache(), client=_json_client({"markets": []})
     )
 
-    assert fmp.call(_request("fmp.press_releases")).status is ResultStatus.SUCCEEDED
+    assert fmp.call(_request("fmp.sector_performance")).status is ResultStatus.SUCCEEDED
     assert finnhub.call(_request("finnhub.company_peers")).status is ResultStatus.SUCCEEDED
     assert (
-        tavily.call(_request("tavily.search", {"query": "AI semiconductors"})).status
+        tavily.call(
+            _request("tavily.search", {"query": "AI semiconductors", "search_depth": "medium"})
+        ).status
         is ResultStatus.SUCCEEDED
     )
+    assert json.loads(tavily_requests[0].content)["search_depth"] == "basic"
     assert (
         polymarket.call(_request("polymarket.market_probability")).status is ResultStatus.SUCCEEDED
     )

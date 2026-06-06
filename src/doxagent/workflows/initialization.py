@@ -12,6 +12,7 @@ from doxagent.agents import (
 from doxagent.blackboard import BlackboardService, PatchValidationError
 from doxagent.models import (
     AgentName,
+    AgentPermissions,
     AgentResult,
     AgentTask,
     BlackboardPatch,
@@ -553,9 +554,11 @@ class BlackboardInitializationWorkflow:
                 AgentName.O1_EXPECTATION_OWNER,
                 TaskType.GENERATE_EXPECTATION_UNIT,
                 "ExpectationConstructionResult",
+                extra_context=self._o1_expectation_generation_context(),
             )
             self._write_working_memory(checkpoint, result, "agent_result")
             self._validate_agent_success(result, node, require_patches=False)
+            self._validate_o1_narrative_tool_gap(result, node)
             self._validate_expectation_patches(checkpoint.ticker, result)
             for patch in result.proposed_patches:
                 self._validate_patch_contract(patch, node)
@@ -639,7 +642,18 @@ class BlackboardInitializationWorkflow:
         extra_context: dict[str, Any] | None = None,
     ) -> AgentResult:
         definition = self.registry.get(agent_name)
-        input_context = self._task_input_context(checkpoint, node, agent_name)
+        permissions = self._effective_permissions(
+            definition.runtime.to_permissions(),
+            node,
+            task_type,
+        )
+        input_context = self._task_input_context(
+            checkpoint,
+            node,
+            agent_name,
+            task_type,
+            permissions,
+        )
         if extra_context:
             input_context = input_context | extra_context
         task = AgentTask(
@@ -649,7 +663,7 @@ class BlackboardInitializationWorkflow:
             task_type=task_type,
             input_context=input_context,
             required_output_schema=output_schema,
-            permissions=definition.runtime.to_permissions(),
+            permissions=permissions,
             run_metadata=RunMetadata(
                 run_id=checkpoint.run_id,
                 ticker=checkpoint.ticker,
@@ -661,6 +675,31 @@ class BlackboardInitializationWorkflow:
         if self.execution_mode == "agent_runner" and result.status is ResultStatus.SUCCEEDED:
             self.output_validator.validate(result.payload, output_schema)
         return result
+
+    def _effective_permissions(
+        self,
+        permissions: AgentPermissions,
+        node: WorkflowNode,
+        task_type: TaskType,
+    ) -> AgentPermissions:
+        updates: dict[str, Any] = {}
+        if node is WorkflowNode.BUILD_GLOBAL_RESEARCH:
+            updates["can_raise_objection"] = False
+            updates["writable_targets"] = [DocumentType.GLOBAL_RESEARCH.value]
+        if task_type is TaskType.GENERATE_EXPECTATION_UNIT:
+            updates["writable_targets"] = [DocumentType.EXPECTATION_UNIT.value]
+        elif task_type is TaskType.GENERATE_KNOWN_EVENTS:
+            updates["writable_targets"] = [DocumentType.KNOWN_EVENTS.value]
+        elif task_type is TaskType.GENERATE_MONITORING_CONFIG:
+            updates["writable_targets"] = [DocumentType.MONITORING_CONFIG.value]
+        elif task_type is TaskType.GENERATE_MONITORING_POLICY:
+            updates["writable_targets"] = [DocumentType.MONITORING_POLICY.value]
+        elif (
+            node is WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS
+            and task_type is TaskType.REVIEW_EXPECTATION_FIELD
+        ):
+            updates["writable_targets"] = [DocumentType.EXPECTATION_UNIT.value]
+        return permissions.model_copy(update=updates, deep=True) if updates else permissions
 
     def _build_global_research_with_agent_runner(
         self,
@@ -724,9 +763,6 @@ class BlackboardInitializationWorkflow:
                     "ResearchSection. Convert missing narrative coverage into unknowns."
                 ),
                 required_tool_names=["doxa_get_narrative_report"],
-                prior_sections={
-                    key: section.model_dump(mode="json") for key, section in sections.items()
-                },
             ),
         )
         results.append(o1_result)
@@ -776,21 +812,41 @@ class BlackboardInitializationWorkflow:
         required_tool_names: list[str] | None = None,
         prior_sections: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
-        tool_requirements = [
-            {
-                "tool_name": tool_name,
-                "required": True,
-                "purpose": f"Required for {section_key}.",
-            }
-            for tool_name in (required_tool_names or [])
-        ]
-        return {
+        context: dict[str, Any] = {
             "global_research_inputs": inputs.model_dump(mode="json"),
             "required_section_key": section_key,
             "section_instruction": instruction,
-            "required_tool_names": required_tool_names or [],
-            "tool_requirements": tool_requirements,
-            "prior_sections": prior_sections or {},
+        }
+        if required_tool_names:
+            context["required_tool_names"] = required_tool_names
+            context["tool_requirements"] = [
+                {
+                    "tool_name": tool_name,
+                    "required": True,
+                    "purpose": f"Required for {section_key}.",
+                }
+                for tool_name in required_tool_names
+            ]
+        if prior_sections is not None:
+            context["prior_sections"] = prior_sections
+        return context
+
+    def _o1_expectation_generation_context(self) -> dict[str, Any]:
+        return {
+            "required_tool_names": ["doxa_get_narrative_report"],
+            "tool_requirements": [
+                {
+                    "tool_name": "doxa_get_narrative_report",
+                    "required": True,
+                    "purpose": (
+                        "Required DoxAtlas narrative evidence for expectation-unit construction."
+                    ),
+                    "gap_policy": (
+                        "If unavailable, continue with patches but state the DoxAtlas "
+                        "narrative evidence gap in unknowns or rationale."
+                    ),
+                }
+            ],
         }
 
     def _research_section_from_result(
@@ -837,7 +893,9 @@ class BlackboardInitializationWorkflow:
                         "required": False,
                         "purpose": "Optional low-level DoxAtlas evidence for A1 audit.",
                     }
-                    for tool_name in self._tool_request_hints(AgentName.A1_DOXATLAS_AUDIT)
+                    for tool_name in self.registry.get(
+                        AgentName.A1_DOXATLAS_AUDIT
+                    ).runtime.allowed_tools
                 ],
             },
             {
@@ -1006,6 +1064,55 @@ class BlackboardInitializationWorkflow:
     def _validate_patch_contract(self, patch: BlackboardPatch, node: WorkflowNode) -> None:
         if not patch.evidence_refs:
             raise WorkflowContractError(f"{node.value} produced a patch without evidence.")
+
+    def _validate_o1_narrative_tool_gap(
+        self,
+        result: AgentResult,
+        node: WorkflowNode,
+    ) -> None:
+        if result.payload.get("runtime") != "react":
+            return
+        if self._has_successful_tool_call(result, "doxa_get_narrative_report"):
+            return
+        if self._payload_mentions_narrative_gap(result):
+            return
+        raise WorkflowContractError(
+            f"{node.value} missed required doxa_get_narrative_report evidence without "
+            "recording the DoxAtlas narrative gap in unknowns or rationale."
+        )
+
+    def _has_successful_tool_call(self, result: AgentResult, tool_name: str) -> bool:
+        return any(
+            tool_call.tool_name == tool_name and tool_call.status is ResultStatus.SUCCEEDED
+            for tool_call in result.tool_calls
+        )
+
+    def _payload_mentions_narrative_gap(self, result: AgentResult) -> bool:
+        payload = result.payload.get("structured")
+        if not isinstance(payload, dict):
+            payload = result.payload
+        unknowns = payload.get("unknowns", [])
+        rationale = payload.get("rationale", "")
+        text = " ".join(
+            [
+                *(item for item in unknowns if isinstance(item, str)),
+                rationale if isinstance(rationale, str) else "",
+            ]
+        ).lower()
+        return bool(
+            ("doxatlas" in text or "narrative" in text)
+            and any(
+                marker in text
+                for marker in (
+                    "missing",
+                    "failed",
+                    "gap",
+                    "unavailable",
+                    "缺失",
+                    "失败",
+                )
+            )
+        )
 
     def _validate_expectation_patches(self, ticker: str, result: AgentResult) -> None:
         expectation_patches = [
@@ -1430,12 +1537,11 @@ class BlackboardInitializationWorkflow:
         checkpoint: WorkflowCheckpoint,
         node: WorkflowNode,
         agent_name: AgentName,
+        task_type: TaskType,
+        permissions: AgentPermissions,
     ) -> dict[str, Any]:
         run = self.blackboard.get_run(checkpoint.run_id)
-        return {
-            "ticker": checkpoint.ticker,
-            "workflow_node": node.value,
-            "agent_name": agent_name.value,
+        context: dict[str, Any] = {
             "completed_nodes": [item.value for item in checkpoint.completed_nodes],
             "stable_document_types": [item.value for item in checkpoint.stable_document_types],
             "belief_state_summary": {
@@ -1464,11 +1570,29 @@ class BlackboardInitializationWorkflow:
                 for delegation in run.delegations
                 if delegation.is_blocking
             ],
-            "global_research_context": self._global_research_context_from_belief_state(run),
-            "tool_request_hints": self._tool_request_hints(agent_name),
         }
+        global_research_context = self._global_research_context_from_belief_state(
+            run,
+            node=node,
+            agent_name=agent_name,
+            task_type=task_type,
+            permissions=permissions,
+        )
+        if global_research_context is not None:
+            context["global_research_context"] = global_research_context
+        return context
 
-    def _global_research_context_from_belief_state(self, run: Any) -> dict[str, Any] | None:
+    def _global_research_context_from_belief_state(
+        self,
+        run: Any,
+        *,
+        node: WorkflowNode,
+        agent_name: AgentName,
+        task_type: TaskType,
+        permissions: AgentPermissions,
+    ) -> dict[str, Any] | None:
+        if not self._can_read_global_research(permissions):
+            return None
         bucket = run.belief_state.documents.get(DocumentType.GLOBAL_RESEARCH, {})
         if not bucket:
             return None
@@ -1489,6 +1613,14 @@ class BlackboardInitializationWorkflow:
             raw_section = document.get(key)
             if not isinstance(raw_section, dict):
                 continue
+            if not self._include_global_research_section(
+                key,
+                raw_section,
+                node=node,
+                agent_name=agent_name,
+                task_type=task_type,
+            ):
+                continue
             sections[key] = {
                 "summary": raw_section.get("summary"),
                 "text": raw_section.get("text"),
@@ -1501,8 +1633,33 @@ class BlackboardInitializationWorkflow:
             "sections": sections,
         }
 
-    def _tool_request_hints(self, agent_name: AgentName) -> list[str]:
-        return list(self.registry.get(agent_name).runtime.allowed_tools)
+    def _can_read_global_research(self, permissions: AgentPermissions) -> bool:
+        scopes = set(permissions.readable_context_scopes)
+        return bool(
+            DocumentType.GLOBAL_RESEARCH.value in scopes
+            or "belief_state" in scopes
+            or "all" in scopes
+        )
+
+    def _include_global_research_section(
+        self,
+        section_key: str,
+        raw_section: dict[str, Any],
+        *,
+        node: WorkflowNode,
+        agent_name: AgentName,
+        task_type: TaskType,
+    ) -> bool:
+        if (
+            node is WorkflowNode.GENERATE_EXPECTATION_UNITS
+            and agent_name is AgentName.O1_EXPECTATION_OWNER
+            and section_key == "market_narrative_report"
+        ):
+            return False
+        author = raw_section.get("author_agent")
+        if isinstance(author, str) and author == agent_name.value:
+            return False
+        return task_type is not TaskType.GENERATE_GLOBAL_RESEARCH
 
     def _next_node(self, completed_nodes: list[WorkflowNode]) -> WorkflowNode | None:
         for node in INITIALIZATION_NODES:

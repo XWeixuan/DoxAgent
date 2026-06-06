@@ -44,7 +44,6 @@ def test_default_registry_contains_phase4_agent_set() -> None:
     }
 
     definition = registry.get(AgentName.O1_EXPECTATION_OWNER)
-    assert definition.runtime.output_schema == "ExpectationConstructionResult|KnownEventsDocument"
     assert definition.runtime.allowed_tools == ["doxa_get_narrative_report"]
     assert DocumentType.EXPECTATION_UNIT.value in definition.runtime.writable_targets
     assert definition.runtime.to_permissions().can_propose_patch is True

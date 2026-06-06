@@ -18,6 +18,7 @@ _SETTINGS_ENV = {
     "BLS_API_KEY": "bls_api_key",
     "BEA_API_KEY": "bea_api_key",
     "ALPHA_VANTAGE_API_KEY": "alpha_vantage_api_key",
+    "TWELVEDATA_API_KEY": "twelvedata_api_key",
     "FMP_API_KEY": "fmp_api_key",
     "FINNHUB_API_KEY": "finnhub_api_key",
     "TAVILY_API_KEY": "tavily_api_key",
@@ -279,31 +280,28 @@ def test_real_api_alpha_earnings_events_availability() -> None:
 
 
 @pytest.mark.real_api
-def test_real_api_alpha_daily_ohlcv_availability() -> None:
-    _env_required("ALPHA_VANTAGE_API_KEY")
-    _alpha_cooldown()
+def test_real_api_twelvedata_daily_ohlcv_availability() -> None:
+    _env_required("TWELVEDATA_API_KEY")
 
-    result = _call("alpha.daily_ohlcv", "AAPL", {"symbol": "AAPL", "outputsize": "compact"})
+    result = _call("twelvedata.daily_ohlcv", "AAPL", {"symbol": "AAPL", "outputsize": 5})
 
-    data = _as_mapping(result.output["data"], "Alpha daily OHLCV")
-    _assert_alpha_payload(data)
-    assert _as_mapping(data.get("Time Series (Daily)"), "Alpha daily time series")
+    assert _items(result.output["ohlcv"], "Twelve Data daily OHLCV")
 
 
 @pytest.mark.real_api
-def test_real_api_fmp_press_releases_availability() -> None:
-    _env_required("FMP_API_KEY")
+def test_real_api_yfinance_daily_ohlcv_fallback_availability() -> None:
+    _real_api_enabled()
 
-    result = _call("fmp.press_releases", "AAPL", {"symbol": "AAPL", "limit": 5})
+    result = _call("yfinance.daily_ohlcv", "AAPL", {"symbol": "AAPL", "outputsize": 5})
 
-    assert _items(result.output["press_releases"], "FMP press releases")
+    assert _items(result.output["ohlcv"], "yfinance daily OHLCV fallback")
 
 
 @pytest.mark.real_api
 def test_real_api_fmp_sector_performance_availability() -> None:
     _env_required("FMP_API_KEY")
 
-    result = _call("fmp.sector_performance", "AAPL", {"date": "2024-02-01"})
+    result = _call("fmp.sector_performance", "AAPL", {"exchange": "NASDAQ"})
 
     assert _items(result.output["sector_performance"], "FMP sector performance")
 

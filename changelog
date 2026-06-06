@@ -1,5 +1,9 @@
 # changelog
 
+## 2026-06-07
+
+- Configured LangSmith MCP server in `.mcp.json` with both `langsmith-hosted` (via Render endpoint with `LANGSMITH-API-KEY` header) and `langsmith-local` (via `uvx langsmith-mcp-server` command with local environment variables).
+
 ## 2026-06-03
 
 - Added a local read-only Brief State debug viewer with a stdlib HTTP server, Supabase/Postgres run querying, document 1/document 2 review pages, and per-agent ReAct loop/tool/delegation/objection metrics.
@@ -8,6 +12,8 @@
 - Hardened the local LangSmith renderer endpoint for browser iframe loading with no-store responses, CORS/private-network preflight headers, and README troubleshooting notes for localhost and HTTPS tunnel usage.
 - Suppressed expected local debug viewer client-disconnect noise, so browser refreshes, iframe reloads, and aborted JSON responses no longer print WinError 10053 tracebacks.
 - Reworked the LangSmith Custom Renderer into a raw-first recursive JSON viewer that always displays metadata, metadata.inputs, outputs/data, and complete postMessage payloads before adding optional DoxAgent AgentResult/provider-response summaries.
+- Made LangSmith run names monotonic per blackboard run/agent/workflow node by assigning a gateway-level `langsmith_loop_index`, and stopped real API smoke tests from forcing memory storage so Supabase-backed runs can appear in the Brief State Viewer.
+- Reworked free-tier market-data tools by removing Alpha Vantage daily OHLCV and FMP press releases, adding Twelve Data daily OHLCV plus yfinance daily fallback, normalizing Tavily search depth, constraining FMP sector-performance parameters, and adding light SEC/FRED rate limiting with real smoke coverage.
 
 ## 2026-06-01
 
@@ -92,3 +98,6 @@
 - Added O1 expectation-construction normalization for draft expectation payloads and extra model fields, including conversion to `BlackboardPatch`/`ExpectationUnitDocument`-shaped data with audited provenance when external evidence is unavailable.
 - Fixed ASTS real initialization by switching smoke tests to an ASTS research context, injecting compact GlobalResearchDocument context into downstream O1 tasks, adding explicit `ExpectationConstructionResult.proposed_patches` output-contract guidance, normalizing O1 patch targets/delegations/key variables/realized facts, and validating document 1 plus document 2 real smoke completion.
 - Wired initialization workflow storage defaults to `DoxAgentSettings`, so postgres mode now automatically uses Postgres-backed Blackboard and checkpoint repositories while explicit test injections still override storage selection; added Supabase persistence smoke coverage gated by `DOXAGENT_RUN_REAL_DB_TESTS`.
+- Configured local LangSmith tracing environment values for the `DoxAgent` project and added a project-level LangSmith Remote MCP entry without committing API-key headers.
+- Trimmed ReAct/PromptAssembler agent-visible inputs, added node-specific initialization permissions and GlobalResearchContext filtering, and required O1 expectation construction to account for missing DoxAtlas narrative tool evidence.
+- Moved C1/C3 global-research task instructions into internal task skills and changed external skill packages to on-demand ReAct text loading without runtime tool/output constraints.
