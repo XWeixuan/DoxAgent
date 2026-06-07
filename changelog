@@ -101,3 +101,4 @@
 - Configured local LangSmith tracing environment values for the `DoxAgent` project and added a project-level LangSmith Remote MCP entry without committing API-key headers.
 - Trimmed ReAct/PromptAssembler agent-visible inputs, added node-specific initialization permissions and GlobalResearchContext filtering, and required O1 expectation construction to account for missing DoxAtlas narrative tool evidence.
 - Moved C1/C3 global-research task instructions into internal task skills and changed external skill packages to on-demand ReAct text loading without runtime tool/output constraints.
+- Required Phase 17 real initialization smoke tests to use postgres persistence when enabled, and added debug-viewer visibility assertions so real smoke runs are queryable from the local Brief State Viewer instead of silently using memory storage.
