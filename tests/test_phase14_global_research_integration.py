@@ -1,6 +1,14 @@
 import pytest
 
-from doxagent.models import AgentName, DocumentType, ResearchSection, ResultStatus
+from doxagent.models import (
+    AgentError,
+    AgentName,
+    AgentResult,
+    AgentTask,
+    DocumentType,
+    ResearchSection,
+    ResultStatus,
+)
 from doxagent.workflows import (
     BlackboardInitializationWorkflow,
     GlobalResearchAssembler,
@@ -11,6 +19,53 @@ from doxagent.workflows import (
 )
 from doxagent.workflows.errors import WorkflowContractError
 from tests.test_phase13_real_workflow import StructuredInitializationRunner
+
+
+class FailingOnceGlobalResearchRunner(StructuredInitializationRunner):
+    def __init__(self, *, failed_agent: AgentName = AgentName.C3_INDUSTRY_RESEARCH) -> None:
+        super().__init__(include_blockers=False)
+        self.failed_agent = failed_agent
+        self.has_failed = False
+
+    def run(self, task: AgentTask) -> AgentResult:
+        self.calls.append((task.agent_name, task.run_metadata.workflow_node))
+        self.tasks.append(task)
+        if (
+            task.run_metadata.workflow_node == WorkflowNode.BUILD_GLOBAL_RESEARCH.value
+            and task.agent_name is self.failed_agent
+            and not self.has_failed
+        ):
+            self.has_failed = True
+            return AgentResult(
+                task_id=task.task_id,
+                agent_name=task.agent_name,
+                status=ResultStatus.FAILED,
+                error=AgentError(
+                    code="temporary_failure",
+                    message="temporary C3 failure",
+                    retryable=True,
+                ),
+            )
+        if task.run_metadata.workflow_node in {
+            WorkflowNode.BUILD_GLOBAL_RESEARCH.value,
+            WorkflowNode.GENERATE_GLOBAL_NARRATIVE_REPORT.value,
+        }:
+            return self._research_section(task)
+        return self._structured(task, self.factory(task))
+
+
+class MalformedGlobalResearchRunner(StructuredInitializationRunner):
+    def run(self, task: AgentTask) -> AgentResult:
+        self.calls.append((task.agent_name, task.run_metadata.workflow_node))
+        self.tasks.append(task)
+        if task.run_metadata.workflow_node == WorkflowNode.BUILD_GLOBAL_RESEARCH.value:
+            return AgentResult(
+                task_id=task.task_id,
+                agent_name=task.agent_name,
+                status=ResultStatus.SUCCEEDED,
+                payload={"structured": {"summary": "missing required section text"}},
+            )
+        return self._structured(task, self.factory(task))
 
 
 def test_global_research_module_runner_calls_phase8_modules() -> None:
@@ -52,8 +107,7 @@ def test_global_research_assembler_builds_document_from_module_results() -> None
     assert document.macro_report.author_agent is AgentName.C2_MACRO_RESEARCH
     assert document.industry_report.author_agent is AgentName.C3_INDUSTRY_RESEARCH
     assert document.market_trace_report.author_agent is AgentName.O4_MARKET_TRACE
-    assert document.market_narrative_report.author_agent is AgentName.O1_EXPECTATION_OWNER
-    assert "Pending O1/DoxAtlas" in document.market_narrative_report.summary
+    assert document.market_narrative_report is None
     assert document.fundamental_report.evidence_refs
     assert document.macro_report.evidence_refs
     assert document.industry_report.evidence_refs
@@ -140,7 +194,7 @@ def test_initialization_workflow_builds_global_research_from_phase8_modules() ->
     assert "industry" in result.checkpoint.metadata["global_research_downstream_context"]
 
     run = workflow.blackboard.get_run(result.checkpoint.run_id)
-    assert len(run.working_memory) == 5
+    assert len(run.working_memory) == 4
     assert {entry.content_type for entry in run.working_memory} == {
         "global_research_agent_result",
     }
@@ -150,24 +204,24 @@ def test_initialization_workflow_builds_global_research_from_phase8_modules() ->
     assert "macro_report" in document
     assert "industry_report" in document
     assert "market_trace_report" in document
-    assert "Pending O1/DoxAtlas" not in document["market_narrative_report"]["summary"]
+    assert document["market_narrative_report"] is None
 
 
-def test_expectation_generation_receives_global_research_context() -> None:
+def test_expectation_construction_receives_global_research_context() -> None:
     runner = StructuredInitializationRunner(include_blockers=False)
     workflow = BlackboardInitializationWorkflow(
         execution_mode="agent_runner",
         runner=runner,
     )
 
-    result = workflow.run("NVDA", stop_after=WorkflowNode.GENERATE_EXPECTATION_UNITS)
+    result = workflow.run("NVDA", stop_after=WorkflowNode.GENERATE_EXPECTATION_CONSTRUCTION)
 
     assert result.status is WorkflowRunStatus.RUNNING
     o1_tasks = [
         task
         for task in runner.tasks
         if task.agent_name is AgentName.O1_EXPECTATION_OWNER
-        and task.run_metadata.workflow_node == WorkflowNode.GENERATE_EXPECTATION_UNITS.value
+        and task.run_metadata.workflow_node == WorkflowNode.GENERATE_EXPECTATION_CONSTRUCTION.value
     ]
     assert o1_tasks
     context = o1_tasks[0].input_context["global_research_context"]
@@ -177,7 +231,7 @@ def test_expectation_generation_receives_global_research_context() -> None:
     assert "industry_report" in context["sections"]
     assert "market_trace_report" in context["sections"]
     assert "market_narrative_report" not in context["sections"]
-    assert o1_tasks[0].permissions.writable_targets == [DocumentType.EXPECTATION_UNIT.value]
+    assert o1_tasks[0].permissions.writable_targets == []
     assert o1_tasks[0].input_context["required_tool_names"] == ["doxa_get_narrative_report"]
 
 
@@ -202,9 +256,90 @@ def test_build_global_research_tasks_use_draft_permissions_and_no_prior_sections
         task.permissions.writable_targets == [DocumentType.GLOBAL_RESEARCH.value]
         for task in build_tasks
     )
-    o1_tasks = [task for task in build_tasks if task.agent_name is AgentName.O1_EXPECTATION_OWNER]
-    assert o1_tasks
-    assert "prior_sections" not in o1_tasks[0].input_context
+    assert not [task for task in build_tasks if task.agent_name is AgentName.O1_EXPECTATION_OWNER]
+    o4_tasks = [task for task in build_tasks if task.agent_name is AgentName.O4_MARKET_TRACE]
+    assert o4_tasks
+    assert set(o4_tasks[0].permissions.allowed_tools) == {
+        "twelvedata.daily_ohlcv",
+        "yfinance.daily_ohlcv",
+        "finnhub.trade_stream",
+    }
+
+
+def test_global_research_resume_reuses_completed_agent_sections_after_failure() -> None:
+    runner = FailingOnceGlobalResearchRunner()
+    workflow = BlackboardInitializationWorkflow(
+        execution_mode="agent_runner",
+        runner=runner,
+    )
+
+    failed = workflow.run("NVDA", stop_after=WorkflowNode.BUILD_GLOBAL_RESEARCH)
+
+    assert failed.status is WorkflowRunStatus.BLOCKED
+    build_calls = [
+        agent
+        for agent, node in runner.calls
+        if node == WorkflowNode.BUILD_GLOBAL_RESEARCH.value
+    ]
+    assert build_calls == [
+        AgentName.C1_FUNDAMENTAL_RESEARCH,
+        AgentName.C2_MACRO_RESEARCH,
+        AgentName.C3_INDUSTRY_RESEARCH,
+    ]
+    cached = failed.checkpoint.metadata["global_research_agent_results"]
+    c1_key = (
+        f"{WorkflowNode.BUILD_GLOBAL_RESEARCH.value}:"
+        f"{AgentName.C1_FUNDAMENTAL_RESEARCH.value}"
+    )
+    c2_key = (
+        f"{WorkflowNode.BUILD_GLOBAL_RESEARCH.value}:"
+        f"{AgentName.C2_MACRO_RESEARCH.value}"
+    )
+    assert c1_key in cached
+    assert c2_key in cached
+
+    resumed = workflow.resume_latest(
+        failed.checkpoint.run_id,
+        stop_after=WorkflowNode.BUILD_GLOBAL_RESEARCH,
+    )
+
+    assert resumed.status is WorkflowRunStatus.RUNNING
+    build_calls = [
+        agent
+        for agent, node in runner.calls
+        if node == WorkflowNode.BUILD_GLOBAL_RESEARCH.value
+    ]
+    assert build_calls == [
+        AgentName.C1_FUNDAMENTAL_RESEARCH,
+        AgentName.C2_MACRO_RESEARCH,
+        AgentName.C3_INDUSTRY_RESEARCH,
+        AgentName.C3_INDUSTRY_RESEARCH,
+        AgentName.O4_MARKET_TRACE,
+    ]
+    run = workflow.blackboard.get_run(failed.checkpoint.run_id)
+    assert len(run.commit_log) == 1
+
+
+def test_schema_failed_agent_result_acceptance_is_written_to_working_memory() -> None:
+    runner = MalformedGlobalResearchRunner(include_blockers=False)
+    workflow = BlackboardInitializationWorkflow(
+        execution_mode="agent_runner",
+        runner=runner,
+    )
+
+    result = workflow.run("NVDA", stop_after=WorkflowNode.BUILD_GLOBAL_RESEARCH)
+
+    assert result.status is WorkflowRunStatus.BLOCKED
+    run = workflow.blackboard.get_run(result.checkpoint.run_id)
+    failure_entries = [
+        entry
+        for entry in run.working_memory
+        if entry.content_type == "agent_result_schema_failed"
+    ]
+    assert failure_entries
+    assert failure_entries[0].payload["event_code"] == "schema_failed"
+    assert failure_entries[0].payload["workflow_node"] == WorkflowNode.BUILD_GLOBAL_RESEARCH.value
+    assert failure_entries[0].payload["expected_schema"] == "ResearchSection"
 
 
 def test_known_events_task_only_allows_known_events_writes() -> None:
@@ -281,4 +416,4 @@ def test_global_research_inputs_round_trip_for_resume() -> None:
     assert resumed.status is WorkflowRunStatus.COMPLETED
     assert [
         commit.patch.target.document_type for commit in run.commit_log
-    ].count(DocumentType.GLOBAL_RESEARCH) == 1
+    ].count(DocumentType.GLOBAL_RESEARCH) == 2

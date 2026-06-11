@@ -6,8 +6,6 @@ version = "2026.06.07"
 applicable_agents = ["C1"]
 applicable_task_types = ["generate_global_research"]
 workflow_nodes = ["BuildGlobalResearch"]
-output_requirements = ["ResearchSection", "source_refs", "unknowns"]
-guardrails = ["Use external skills only through load_skill routing when the current step needs that methodology.", "Keep unsupported financial or valuation claims in unknowns."]
 +++
 ## Task
 

@@ -22,6 +22,7 @@ _SETTINGS_ENV = {
     "FMP_API_KEY": "fmp_api_key",
     "FINNHUB_API_KEY": "finnhub_api_key",
     "TAVILY_API_KEY": "tavily_api_key",
+    "ANYSEARCH_API_KEY": "anysearch_api_key",
 }
 
 _ = default_agent_registry
@@ -363,6 +364,28 @@ def test_real_api_tavily_extract_availability() -> None:
 
     payload = _as_mapping(result.output["extract"], "Tavily extract")
     assert payload.get("results") or payload.get("failed_results") == []
+
+
+@pytest.mark.real_api
+def test_real_api_anysearch_search_availability() -> None:
+    _env_required("ANYSEARCH_API_KEY")
+
+    result = _call(
+        "anysearch.search",
+        "AAPL",
+        {
+            "query": "Apple investor relations quarterly results",
+            "max_results": 2,
+            "domain": "finance",
+            "content_types": ["web", "news"],
+            "zone": "intl",
+        },
+        agent_name=AgentName.A2_FACT_CHECK,
+    )
+
+    payload = _as_mapping(result.output["search"], "AnySearch search")
+    data = _as_mapping(payload.get("data"), "AnySearch data")
+    assert _as_list(data.get("results"), "AnySearch results")
 
 
 @pytest.mark.real_api

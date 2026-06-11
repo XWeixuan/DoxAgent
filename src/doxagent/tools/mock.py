@@ -59,6 +59,14 @@ def default_tool_registry() -> ToolRegistry:
         ),
     )
     registry.register(
+        "doxa_get_narrative_report",
+        MockToolClient(
+            tool_name="doxa_get_narrative_report",
+            output_summary="Mock DoxAtlas narrative report result.",
+            source_type=EvidenceSourceType.DOXATLAS_SOURCE,
+        ),
+    )
+    registry.register(
         "doxatlas.source_lookup",
         MockToolClient(
             tool_name="doxatlas.source_lookup",
@@ -95,6 +103,14 @@ def default_tool_registry() -> ToolRegistry:
         MockToolClient(
             tool_name="tavily.extract",
             output_summary="Mock Tavily extract result.",
+            source_type=EvidenceSourceType.EXTERNAL_REPORT,
+        ),
+    )
+    registry.register(
+        "anysearch.search",
+        MockToolClient(
+            tool_name="anysearch.search",
+            output_summary="Mock AnySearch search result.",
             source_type=EvidenceSourceType.EXTERNAL_REPORT,
         ),
     )

@@ -15,6 +15,7 @@ from doxagent.models import (
     EvidenceSourceType,
     ExpectationConstructionResult,
     ExpectationFieldReviewResult,
+    ExpectationShellConstructionResult,
     Objection,
     ObjectionSeverity,
     ObjectionStatus,
@@ -83,7 +84,13 @@ def _structured(
             "runtime": "maf",
             "structured": payload
             if task.required_output_schema
-            in {"ExpectationConstructionResult", "DoxAtlasAuditResult", "DelegatedRetrievalResult"}
+            in {
+                "ExpectationShellConstructionResult",
+                "ExpectationConstructionResult",
+                "ExpectationDetailResult",
+                "DoxAtlasAuditResult",
+                "DelegatedRetrievalResult",
+            }
             else {
                 "payload": payload or direct.payload,
                 "proposed_patches": [
@@ -108,12 +115,17 @@ class RealizedO1A1A2Runner(AgentRunner):
         self.factory = InitializationMockResultFactory(include_blockers=False)
         self.a2_has_evidence = a2_has_evidence
         self.calls: list[tuple[AgentName, TaskType, str | None]] = []
+        self.tasks: list[AgentTask] = []
         self.objection_id: str | None = None
 
     def run(self, task: AgentTask) -> AgentResult:
         self.calls.append((task.agent_name, task.task_type, task.run_metadata.workflow_node))
+        self.tasks.append(task)
         node = task.run_metadata.workflow_node
-        if node == WorkflowNode.GENERATE_EXPECTATION_UNITS.value:
+        if node == WorkflowNode.GENERATE_EXPECTATION_CONSTRUCTION.value:
+            direct = self.factory(task)
+            return _structured(task, direct, dict(direct.payload))
+        if node == WorkflowNode.GENERATE_EXPECTATION_DETAILS.value:
             direct = self.factory(task)
             return _structured(
                 task,
@@ -121,8 +133,25 @@ class RealizedO1A1A2Runner(AgentRunner):
                 ExpectationConstructionResult(
                     proposed_patches=direct.proposed_patches,
                     evidence_refs=direct.evidence_refs,
-                    rationale="O1 built a sourced core expectation.",
+                    rationale="O1 completed a sourced core expectation.",
                 ).model_dump(mode="json"),
+            )
+        if node == WorkflowNode.REVIEW_EXPECTATION_CONSTRUCTION.value:
+            evidence = _evidence(EvidenceSourceType.DOXATLAS_SOURCE)
+            audit = DoxAtlasAuditResult(
+                findings=[],
+                evidence_refs=[evidence],
+                objections=[],
+                delegations=[],
+                unknowns=[],
+                rationale="A1 approved construction shells.",
+            )
+            return AgentResult(
+                task_id=task.task_id,
+                agent_name=task.agent_name,
+                status=ResultStatus.SUCCEEDED,
+                payload={"structured": audit.model_dump(mode="json")},
+                evidence_refs=[evidence],
             )
         if node == WorkflowNode.REVIEW_EXPECTATION_FIELDS.value:
             if task.agent_name is not AgentName.A1_DOXATLAS_AUDIT:
@@ -196,14 +225,14 @@ class RealizedO1A1A2Runner(AgentRunner):
                     if self.a2_has_evidence
                     else "No sufficient support found.",
                     claim_verdict="supported" if self.a2_has_evidence else "unknown",
-                    retrieval_summary="Tavily retrieval completed."
+                    retrieval_summary="Search verification completed."
                     if self.a2_has_evidence
-                    else "Tavily retrieval found no sufficient source.",
+                    else "Search verification found no sufficient source.",
                     evidence_refs=evidence_refs,
                     source_refs=evidence_refs,
                     confidence=0.74 if self.a2_has_evidence else 0.2,
                     unknowns=[] if self.a2_has_evidence else ["No reliable source found."],
-                    query_log=["tavily.search: realized fact"],
+                    query_log=["anysearch.search: realized fact"],
                     can_complete_delegation=self.a2_has_evidence,
                 )
                 return AgentResult(
@@ -268,6 +297,174 @@ class C1BlockingReviewRunner(RealizedO1A1A2Runner):
         return super().run(task)
 
 
+class ConstructionObjectionRunner(RealizedO1A1A2Runner):
+    def __init__(self) -> None:
+        super().__init__(a2_has_evidence=True)
+        self.construction_objection_id: str | None = None
+
+    def run(self, task: AgentTask) -> AgentResult:
+        node = task.run_metadata.workflow_node
+        if (
+            node == WorkflowNode.REVIEW_EXPECTATION_CONSTRUCTION.value
+            and task.agent_name is AgentName.A1_DOXATLAS_AUDIT
+        ):
+            self.calls.append((task.agent_name, task.task_type, task.run_metadata.workflow_node))
+            self.tasks.append(task)
+            evidence = _evidence(EvidenceSourceType.DOXATLAS_SOURCE)
+            self.construction_objection_id = new_id("objection")
+            objection = Objection(
+                objection_id=self.construction_objection_id,
+                source_agent=AgentName.A1_DOXATLAS_AUDIT,
+                target=_target(task.ticker),
+                severity=ObjectionSeverity.BLOCKING,
+                reason="A1 requires shell market_view to cite proposition-level evidence.",
+                evidence_refs=[evidence],
+                status=ObjectionStatus.OPEN,
+            )
+            audit = DoxAtlasAuditResult(
+                verdict="needs_revision",
+                revision_required=True,
+                findings=[
+                    {
+                        "field_path": "market_view",
+                        "status": "needs_more_evidence",
+                        "rationale": "The shell needs tighter DoxAtlas evidence mapping.",
+                        "evidence_refs": [evidence],
+                    }
+                ],
+                evidence_refs=[evidence],
+                objections=[objection],
+                delegations=[],
+                unknowns=[],
+                rationale="A1 blocked construction shells for revision.",
+            )
+            return AgentResult(
+                task_id=task.task_id,
+                agent_name=task.agent_name,
+                status=ResultStatus.SUCCEEDED,
+                payload={"structured": audit.model_dump(mode="json")},
+                evidence_refs=[evidence],
+            )
+        if (
+            node == WorkflowNode.RESOLVE_EXPECTATION_CONSTRUCTION.value
+            and task.agent_name is AgentName.O1_EXPECTATION_OWNER
+        ):
+            self.calls.append((task.agent_name, task.task_type, task.run_metadata.workflow_node))
+            self.tasks.append(task)
+            evidence = _evidence(EvidenceSourceType.DOXATLAS_SOURCE)
+            shell = self.factory._expectation_shell(task.ticker).model_copy(
+                update={
+                    "why_it_matters": "Revised shell now cites the specific DoxAtlas support gap.",
+                    "evidence_refs": [evidence],
+                    "rationale": "Revised after A1 construction review.",
+                },
+                deep=True,
+            )
+            construction = ExpectationShellConstructionResult(
+                shells=[shell],
+                evidence_refs=[evidence],
+                delegations=[],
+                unknowns=[],
+                rationale="O1 revised shell construction without creating full patches.",
+            )
+            return AgentResult(
+                task_id=task.task_id,
+                agent_name=task.agent_name,
+                status=ResultStatus.SUCCEEDED,
+                payload={"structured": construction.model_dump(mode="json")},
+                evidence_refs=[evidence],
+            )
+        return super().run(task)
+
+
+class DetailMissingNarrativeToolRunner(RealizedO1A1A2Runner):
+    def __init__(self) -> None:
+        super().__init__(a2_has_evidence=True)
+        self.tool_registry = default_tool_registry()
+
+    def run(self, task: AgentTask) -> AgentResult:
+        result = super().run(task)
+        if (
+            task.run_metadata.workflow_node == WorkflowNode.GENERATE_EXPECTATION_DETAILS.value
+            and task.agent_name is AgentName.O1_EXPECTATION_OWNER
+        ):
+            result = result.model_copy(
+                update={"payload": dict(result.payload) | {"runtime": "react"}},
+                deep=True,
+            )
+        return result
+
+
+class DirectDocumentOutputRunner(RealizedO1A1A2Runner):
+    def run(self, task: AgentTask) -> AgentResult:
+        node = task.run_metadata.workflow_node
+        if node == WorkflowNode.GENERATE_KNOWN_EVENTS.value:
+            return AgentResult(
+                task_id=task.task_id,
+                agent_name=task.agent_name,
+                status=ResultStatus.SUCCEEDED,
+                payload={
+                    "structured": {
+                        "document_type": "known_events",
+                        "ticker": task.ticker,
+                        "events": [
+                            {
+                                "event_id": "evt_direct",
+                                "date": "2026-Q4",
+                                "description": "Direct known event output.",
+                                "source": "global_research",
+                            }
+                        ],
+                    }
+                },
+                evidence_refs=[_evidence()],
+            )
+        if node == WorkflowNode.GENERATE_MONITORING_CONFIG.value:
+            return AgentResult(
+                task_id=task.task_id,
+                agent_name=task.agent_name,
+                status=ResultStatus.SUCCEEDED,
+                payload={
+                    "structured": {
+                        "document_type": "monitoring_config",
+                        "ticker": task.ticker,
+                        "monitoring_items": [
+                            {
+                                "item_id": "monitor_direct",
+                                "base_keywords": [task.ticker, "launch"],
+                                "priority": "high",
+                                "trigger_condition": "Launch cadence changes materially.",
+                            }
+                        ],
+                    }
+                },
+                evidence_refs=[_evidence()],
+            )
+        if node == WorkflowNode.GENERATE_MONITORING_POLICY.value:
+            return AgentResult(
+                task_id=task.task_id,
+                agent_name=task.agent_name,
+                status=ResultStatus.SUCCEEDED,
+                payload={
+                    "structured": {
+                        "document_type": "monitoring_policy",
+                        "ticker": task.ticker,
+                        "cache_rules": [
+                            {
+                                "rule_id": "rule_direct",
+                                "action_type": "cache",
+                                "trigger_condition": "Low-confidence launch chatter appears.",
+                                "action": "cache for review",
+                                "strategy_note": "Direct policy output.",
+                            }
+                        ],
+                    }
+                },
+                evidence_refs=[_evidence()],
+            )
+        return super().run(task)
+
+
 class AcceptedObjectionRunner(RealizedO1A1A2Runner):
     def __init__(self, *, include_revision: bool) -> None:
         super().__init__(a2_has_evidence=True)
@@ -314,14 +511,18 @@ class AcceptedObjectionRunner(RealizedO1A1A2Runner):
         return super().run(task)
 
 
-def test_a2_registry_is_tavily_only_and_supports_delegated_retrieval() -> None:
+def test_a2_registry_is_search_only_and_supports_delegated_retrieval() -> None:
     definition = default_agent_registry().get(AgentName.A2_FACT_CHECK)
 
     assert TaskType.DELEGATED_RETRIEVAL in definition.task_types
-    assert set(definition.runtime.allowed_tools) == {"tavily.search", "tavily.extract"}
+    assert set(definition.runtime.allowed_tools) == {
+        "anysearch.search",
+        "tavily.search",
+        "tavily.extract",
+    }
     assert definition.runtime.prompt_block_ids == ["agent.a2"]
-    assert "tavily-retrieval-fact-check" in definition.runtime.default_internal_task_skill_ids
-    assert definition.runtime.output_schema == "DelegatedRetrievalResult|FactCheckFinding"
+    assert definition.runtime.default_internal_task_skill_ids == []
+    assert definition.runtime.output_schema == "DelegatedRetrievalResult"
 
 
 def test_a2_delegation_helper_exposes_standard_blocking_request() -> None:
@@ -340,12 +541,20 @@ def test_a2_delegation_helper_exposes_standard_blocking_request() -> None:
     assert delegation.is_blocking
 
 
-def test_mock_tool_registry_supports_a2_tavily_and_denies_old_fact_check_permission() -> None:
+def test_mock_tool_registry_supports_a2_search_and_denies_old_fact_check_permission() -> None:
     registry = default_tool_registry()
     permissions = default_agent_registry().get(AgentName.A2_FACT_CHECK).runtime.to_permissions()
 
     tavily = registry.call(
         ToolRequest(tool_name="tavily.search", ticker="NVDA", agent_name=AgentName.A2_FACT_CHECK),
+        permissions,
+    )
+    anysearch = registry.call(
+        ToolRequest(
+            tool_name="anysearch.search",
+            ticker="NVDA",
+            agent_name=AgentName.A2_FACT_CHECK,
+        ),
         permissions,
     )
     old_fact_check = registry.call(
@@ -359,6 +568,8 @@ def test_mock_tool_registry_supports_a2_tavily_and_denies_old_fact_check_permiss
 
     assert tavily.status is ResultStatus.SUCCEEDED
     assert tavily.evidence_refs[0].source_type is EvidenceSourceType.EXTERNAL_REPORT
+    assert anysearch.status is ResultStatus.SUCCEEDED
+    assert anysearch.evidence_refs[0].source_type is EvidenceSourceType.EXTERNAL_REPORT
     assert old_fact_check.status is ResultStatus.FAILED
     assert old_fact_check.error is not None
     assert old_fact_check.error.code == "tool_not_allowed"
@@ -402,7 +613,127 @@ def test_workflow_uses_a2_retrieval_to_complete_delegation_and_o1_resolves_objec
     }.issubset(review_content_types)
 
 
-def test_workflow_blocks_when_a2_tavily_retrieval_has_no_sufficient_evidence() -> None:
+def test_construction_objection_resolution_revises_shells_without_pending_patches() -> None:
+    runner = ConstructionObjectionRunner()
+    workflow = BlackboardInitializationWorkflow(
+        runner=runner,
+        execution_mode="agent_runner",
+        auto_resolve_blockers=False,
+    )
+
+    result = workflow.run("NVDA", stop_after=WorkflowNode.GENERATE_EXPECTATION_DETAILS)
+    run = workflow.blackboard.get_run(result.checkpoint.run_id)
+    resolve_tasks = [
+        task
+        for task in runner.tasks
+        if task.run_metadata.workflow_node == WorkflowNode.RESOLVE_EXPECTATION_CONSTRUCTION.value
+        and task.agent_name is AgentName.O1_EXPECTATION_OWNER
+    ]
+
+    assert result.status is WorkflowRunStatus.RUNNING
+    assert resolve_tasks
+    assert resolve_tasks[0].required_output_schema == "ExpectationShellConstructionResult"
+    assert resolve_tasks[0].input_context["internal_task_skill_ids"] == [
+        "expectation-construction"
+    ]
+    assert resolve_tasks[0].input_context["expectation_shells"]
+    assert resolve_tasks[0].input_context["unresolved_objections"]
+    assert result.checkpoint.pending_patches
+    assert all(
+        not objection.is_unresolved
+        for objection in run.objections
+        if objection.objection_id == runner.construction_objection_id
+    )
+    assert result.checkpoint.metadata["expectation_shells"][0]["why_it_matters"].startswith(
+        "Revised shell"
+    )
+
+
+def test_workflow_prefetches_missing_o1_detail_narrative_tool_evidence() -> None:
+    runner = DetailMissingNarrativeToolRunner()
+    workflow = BlackboardInitializationWorkflow(
+        runner=runner,
+        execution_mode="agent_runner",
+        auto_resolve_blockers=False,
+    )
+
+    result = workflow.run("NVDA", stop_after=WorkflowNode.GENERATE_EXPECTATION_DETAILS)
+    run = workflow.blackboard.get_run(result.checkpoint.run_id)
+    detail_entries = [
+        entry for entry in run.working_memory if entry.content_type == "expectation_detail_result"
+    ]
+
+    assert result.status is WorkflowRunStatus.RUNNING
+    assert detail_entries
+    assert detail_entries[0].payload["tool_calls"][0]["tool_name"] == (
+        "doxa_get_narrative_report"
+    )
+    assert detail_entries[0].payload["tool_calls"][0]["status"] == "succeeded"
+    assert detail_entries[0].evidence_refs
+
+
+def test_workflow_converts_direct_document_outputs_to_blackboard_patches() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        runner=DirectDocumentOutputRunner(a2_has_evidence=True),
+        execution_mode="agent_runner",
+        auto_resolve_blockers=False,
+    )
+
+    result = workflow.run("NVDA")
+    run = workflow.blackboard.get_run(result.checkpoint.run_id)
+
+    assert result.status is WorkflowRunStatus.COMPLETED
+    assert DocumentType.KNOWN_EVENTS in run.belief_state.documents
+    assert DocumentType.MONITORING_CONFIG in run.belief_state.documents
+    assert DocumentType.MONITORING_POLICY in run.belief_state.documents
+    assert any(
+        entry.patch.target.document_type is DocumentType.KNOWN_EVENTS
+        for entry in run.commit_log
+    )
+
+
+def test_a1_workflow_nodes_receive_minimal_doxatlas_tool_sets() -> None:
+    runner = RealizedO1A1A2Runner(a2_has_evidence=True)
+    workflow = BlackboardInitializationWorkflow(
+        runner=runner,
+        execution_mode="agent_runner",
+        auto_resolve_blockers=False,
+    )
+
+    result = workflow.run("NVDA", stop_after=WorkflowNode.REVIEW_EXPECTATION_FIELDS)
+
+    assert result.status is WorkflowRunStatus.RUNNING
+    a1_tasks = [
+        task
+        for task in runner.tasks
+        if task.agent_name is AgentName.A1_DOXATLAS_AUDIT
+    ]
+    tools_by_node = {
+        task.run_metadata.workflow_node: set(task.permissions.allowed_tools)
+        for task in a1_tasks
+    }
+    assert tools_by_node[WorkflowNode.REVIEW_EXPECTATION_CONSTRUCTION.value] == {
+        "doxa_get_analysis",
+        "doxa_query_propositions",
+        "doxa_get_ignored_propositions",
+        "doxa_get_event_source",
+    }
+    assert tools_by_node[WorkflowNode.REVIEW_EXPECTATION_FIELDS.value] == {
+        "doxa_get_analysis",
+        "doxa_query_propositions",
+        "doxa_get_event_source",
+        "doxa_get_media_result",
+        "doxa_get_social_result",
+        "doxa_get_ignored_propositions",
+    }
+    assert all("doxa_get_narrative_report" not in tools for tools in tools_by_node.values())
+    assert all(
+        not any(tool.startswith("doxa_run_") for tool in tools)
+        for tools in tools_by_node.values()
+    )
+
+
+def test_workflow_blocks_when_a2_search_retrieval_has_no_sufficient_evidence() -> None:
     workflow = BlackboardInitializationWorkflow(
         runner=RealizedO1A1A2Runner(a2_has_evidence=False),
         execution_mode="agent_runner",
@@ -414,7 +745,7 @@ def test_workflow_blocks_when_a2_tavily_retrieval_has_no_sufficient_evidence() -
 
     assert result.status is WorkflowRunStatus.BLOCKED
     assert result.error is not None
-    assert "A2 did not return sufficient Tavily evidence" in result.error
+    assert "A2 did not return sufficient search evidence" in result.error
     assert DocumentType.EXPECTATION_UNIT not in run.belief_state.documents
     assert len(run.commit_log) == 1
 
@@ -482,8 +813,12 @@ def test_a2_delegation_context_uses_react_requirements_not_legacy_tool_requests(
     context = workflow._a2_delegation_context(delegation)
 
     assert "tool_requests" not in context
-    assert context["required_tool_names"] == ["tavily.search"]
-    assert context["tool_requirements"][0]["tool_name"] == "tavily.search"
+    assert context["required_tool_names"] == []
+    assert [item["tool_name"] for item in context["tool_requirements"]] == [
+        "anysearch.search",
+        "tavily.search",
+        "tavily.extract",
+    ]
 
 
 def test_agent_runner_cannot_use_mock_blocker_auto_resolve_backdoor() -> None:

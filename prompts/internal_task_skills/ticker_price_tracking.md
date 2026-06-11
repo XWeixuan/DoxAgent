@@ -4,20 +4,24 @@ id = "ticker_price_tracking"
 name = "Ticker Price Tracking"
 version = "2026.06.01"
 applicable_agents = ["O4"]
+applicable_task_types = ["generate_global_research"]
+workflow_nodes = ["BuildGlobalResearch"]
 +++
 # Ticker Price Tracking
 
-This skill writes Ticker Price Tracking report.
+Write the IV. Market Trace section for the ticker.
+
+Use the runtime-provided `global_research_inputs.market_trace_period`, `global_research_inputs.market_trace_interval`, `benchmarks`, and `peers`. Do not assume a fixed lookback window if runtime inputs specify a different period.
 
 ## Task
 
-Analyze the ticker’s price action over the past 1 month and compare it with the broader market, relevant sector, and close peers.
+Analyze the ticker's price action and compare it with the broader market, relevant sector, and close peers.
 
 ## How to analyze
 
 Start with the ticker itself:
 
-* 1-month return direction and magnitude;
+* return direction and magnitude over the configured period;
 * major up/down days or sharp intraday moves;
 * volatility level and whether it is expanding or compressing;
 * volume changes, especially abnormal volume around large moves;
@@ -26,7 +30,7 @@ Start with the ticker itself:
 
 Then compare with market context:
 
-* compare against major indices such as SPY, QQQ, or relevant benchmark;
+* compare against configured benchmarks such as SPY, QQQ, or a relevant benchmark;
 * compare against the sector ETF if available;
 * compare against close peers if available;
 * judge whether the ticker is outperforming, underperforming, or moving with the market.

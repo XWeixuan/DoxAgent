@@ -34,8 +34,8 @@ class GlobalResearchDocument(DocumentBase):
     fundamental_report: ResearchSection
     macro_report: ResearchSection
     industry_report: ResearchSection
-    market_narrative_report: ResearchSection
     market_trace_report: ResearchSection
+    market_narrative_report: ResearchSection | None = None
 
 
 class PriceReaction(ContractModel):

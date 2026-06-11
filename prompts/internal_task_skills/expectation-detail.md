@@ -5,8 +5,8 @@ name = "Expectation Detail"
 version = "2026.06.01"
 applicable_agents = ["O1"]
 applicable_task_types = ["generate_expectation_detail"]
-output_requirements = ["ExpectationDetailResult"]
-+++ 
+workflow_nodes = ["GenerateExpectationDetails"]
++++
 # Expectation Detail
 
 You are working on one expectation unit only. Treat the existing expectation name, direction, and market view as the scope. Complete these sections:

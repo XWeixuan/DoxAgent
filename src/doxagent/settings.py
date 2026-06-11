@@ -113,6 +113,14 @@ class DoxAgentSettings(BaseSettings):
         default=21_600, validation_alias="TAVILY_CACHE_TTL_SECONDS"
     )
 
+    anysearch_api_key: str | None = Field(default=None, validation_alias="ANYSEARCH_API_KEY")
+    anysearch_base_url: str = Field(
+        default="https://api.anysearch.com", validation_alias="ANYSEARCH_BASE_URL"
+    )
+    anysearch_cache_ttl_seconds: int = Field(
+        default=21_600, validation_alias="ANYSEARCH_CACHE_TTL_SECONDS"
+    )
+
     polymarket_gamma_base_url: str = Field(
         default="https://gamma-api.polymarket.com",
         validation_alias="POLYMARKET_GAMMA_BASE_URL",

@@ -24,7 +24,7 @@ def test_initialization_workflow_runs_mock_ticker_to_completion() -> None:
         DocumentType.MONITORING_CONFIG,
         DocumentType.MONITORING_POLICY,
     ]
-    assert result.summary.commit_count == 5
+    assert result.summary.commit_count == 6
     assert result.summary.working_memory_count >= 5
 
     run = workflow.blackboard.get_run(result.checkpoint.run_id)
@@ -35,7 +35,7 @@ def test_initialization_workflow_runs_mock_ticker_to_completion() -> None:
         DocumentType.MONITORING_CONFIG,
         DocumentType.MONITORING_POLICY,
     }
-    assert len(run.commit_log) == 5
+    assert len(run.commit_log) == 6
     assert run.working_memory
     assert run.objections[0].is_unresolved is False
     assert run.delegations[0].is_blocking is False
@@ -108,14 +108,14 @@ def test_blocked_checkpoint_can_resume_after_manual_resolution() -> None:
 
 def test_checkpoint_round_trips_and_resumes_in_same_process() -> None:
     workflow = BlackboardInitializationWorkflow(execution_mode="mock")
-    partial = workflow.run("NVDA", stop_after=WorkflowNode.GENERATE_EXPECTATION_UNITS)
+    partial = workflow.run("NVDA", stop_after=WorkflowNode.GENERATE_EXPECTATION_DETAILS)
 
     restored = WorkflowCheckpoint.model_validate_json(partial.checkpoint.model_dump_json())
     resumed = workflow.resume(restored)
 
     assert resumed.status is WorkflowRunStatus.COMPLETED
     assert resumed.checkpoint.completed_nodes == list(INITIALIZATION_NODES)
-    assert resumed.summary.commit_count == 5
+    assert resumed.summary.commit_count == 6
 
 
 def test_mock_agent_runner_factory_mode_preserves_result_contract() -> None:

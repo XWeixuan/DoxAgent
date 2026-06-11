@@ -7,8 +7,6 @@ source_project = "HKUDS/Vibe-Trading"
 source_kind = "vibe_trading"
 applicable_agents = ["C2"]
 applicable_task_types = ["generate_global_research"]
-allowed_tools = ["fred.series_observations", "bls.timeseries", "bea.nipa_data", "fed.fomc_calendar_materials", "polymarket.market_probability", "twelvedata.daily_ohlcv", "yfinance.daily_ohlcv"]
-output_requirements = ["macro regime", "risk scenarios", "monitoring indicators"]
 +++
 ---
 name: global-macro
@@ -115,4 +113,3 @@ macro_factors = {
 * Federal Reserve policy judgment should be based on official statements and meeting minutes. Do not over-interpret unofficial messages
 * Geopolitical shocks are usually short-lived (1-4 weeks) unless they change fundamentals (such as long-term sanctions or trade wars)
 * This framework is not investment advice and is for research backtesting only
-

@@ -33,7 +33,9 @@ class DocumentType(StrEnum):
 
 class TaskType(StrEnum):
     GENERATE_GLOBAL_RESEARCH = "generate_global_research"
+    GENERATE_GLOBAL_NARRATIVE_REPORT = "generate_global_narrative_report"
     GENERATE_EXPECTATION_UNIT = "generate_expectation_unit"
+    GENERATE_EXPECTATION_DETAIL = "generate_expectation_detail"
     REVIEW_EXPECTATION_FIELD = "review_expectation_field"
     FACT_CHECK = "fact_check"
     DELEGATED_RETRIEVAL = "delegated_retrieval"

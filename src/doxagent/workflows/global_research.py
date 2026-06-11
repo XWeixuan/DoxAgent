@@ -148,7 +148,6 @@ class GlobalResearchAssembler:
                 AgentName.C3_INDUSTRY_RESEARCH,
                 "industry",
             ),
-            market_narrative_report=self._pending_market_narrative_section(ticker, inputs),
             market_trace_report=self._section(
                 by_agent[AgentName.O4_MARKET_TRACE],
                 AgentName.O4_MARKET_TRACE,
@@ -163,15 +162,15 @@ class GlobalResearchAssembler:
         fundamental_report: ResearchSection,
         macro_report: ResearchSection,
         industry_report: ResearchSection,
-        market_narrative_report: ResearchSection,
         market_trace_report: ResearchSection,
+        market_narrative_report: ResearchSection | None = None,
     ) -> GlobalResearchDocument:
         for label, section in {
             "fundamental_report": fundamental_report,
             "macro_report": macro_report,
             "industry_report": industry_report,
-            "market_narrative_report": market_narrative_report,
             "market_trace_report": market_trace_report,
+            **({"market_narrative_report": market_narrative_report} if market_narrative_report else {}),
         }.items():
             marker = "Pending O1/DoxAtlas"
             if marker in section.summary or marker in section.text:
@@ -183,8 +182,8 @@ class GlobalResearchAssembler:
             fundamental_report=fundamental_report,
             macro_report=macro_report,
             industry_report=industry_report,
-            market_narrative_report=market_narrative_report,
             market_trace_report=market_trace_report,
+            market_narrative_report=market_narrative_report,
         )
 
     def downstream_context(self, results: list[AgentResult]) -> dict[str, Any]:

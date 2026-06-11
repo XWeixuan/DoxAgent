@@ -4,14 +4,18 @@ id = "global_narrative_report"
 name = "Global Narrative Report"
 version = "2026.06.01"
 applicable_agents = ["O1"]
+applicable_task_types = ["generate_global_narrative_report"]
+workflow_nodes = ["GenerateGlobalNarrativeReport"]
 +++
 # Global Narrative Report
 
-Write a global narrative report. This report explains the overall narrative structure around the ticker. Treat each finalized expectation unit as a structured narrative. The goal is to show how these narratives relate to each other and how they shape the market’s understanding of the ticker.
+Write the final Market Narrative Analysis section after all expectation units have been completed, reviewed, and promoted into belief state.
+
+This report explains the overall narrative structure around the ticker. Treat each finalized expectation unit as a structured narrative. The goal is to show how these narratives relate to each other and how they shape the market's current understanding of the ticker.
 
 ## Task
 
-Build a concise narrative framework for downstream agents. Use the finalized expectation units as the main reference. Use DoxAtlas narrative evidence and Document 1 only to clarify the origin, strength, and relationship of each narrative.
+Build a concise narrative framework for downstream persistent runs. Use the finalized expectation units as the main reference. Use DoxAtlas narrative evidence and Document 1 only to clarify the origin, strength, and relationship of each narrative.
 
 ## What to explain
 
@@ -55,4 +59,4 @@ Briefly explain how the final framework was formed:
 
 ## Standard
 
-Keep the report synthetic and concise. It should help later agents quickly understand the ticker’s overall narrative logic and the relationship between its core expectation units.
+Keep the report synthetic and concise. It should help later agents quickly understand the ticker's overall narrative logic and the relationship between its core expectation units.

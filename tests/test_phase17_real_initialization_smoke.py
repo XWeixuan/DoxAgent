@@ -75,11 +75,11 @@ def test_real_initialization_expectation_units_smoke() -> None:
             benchmarks=["SPY"],
             peers=["RKLB"],
         ),
-        stop_after=WorkflowNode.GENERATE_EXPECTATION_UNITS,
+        stop_after=WorkflowNode.GENERATE_EXPECTATION_DETAILS,
     )
 
     assert result.error is None
-    assert WorkflowNode.GENERATE_EXPECTATION_UNITS in result.checkpoint.completed_nodes
+    assert WorkflowNode.GENERATE_EXPECTATION_DETAILS in result.checkpoint.completed_nodes
     assert len(result.checkpoint.pending_patches) in {1, 2, 3}
     brief_state = _assert_run_visible_to_debug_viewer(settings, result.checkpoint.run_id)
     latest_checkpoint = brief_state["latest_checkpoint"]

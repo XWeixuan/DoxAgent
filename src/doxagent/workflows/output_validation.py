@@ -8,7 +8,9 @@ from doxagent.models import (
     DelegatedRetrievalResult,
     DoxAtlasAuditResult,
     ExpectationConstructionResult,
+    ExpectationDetailResult,
     ExpectationFieldReviewResult,
+    ExpectationShellConstructionResult,
     ResearchSection,
 )
 from doxagent.workflows.errors import WorkflowContractError
@@ -21,7 +23,9 @@ class AgentOutputSchemaValidator:
         "DelegatedRetrievalResult": DelegatedRetrievalResult,
         "DoxAtlasAuditResult": DoxAtlasAuditResult,
         "ExpectationConstructionResult": ExpectationConstructionResult,
+        "ExpectationDetailResult": ExpectationDetailResult,
         "ExpectationFieldReviewResult": ExpectationFieldReviewResult,
+        "ExpectationShellConstructionResult": ExpectationShellConstructionResult,
         "ResearchSection": ResearchSection,
     }
 

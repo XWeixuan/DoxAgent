@@ -36,7 +36,11 @@ from doxagent.models import (
     EvidenceRef,
     EvidenceSourceType,
     ExpectationConstructionResult,
+    ExpectationDetailResult,
     ExpectationFieldReviewResult,
+    ExpectationShellConstructionResult,
+    ObjectionSeverity,
+    ObjectionStatus,
     PatchOperation,
     ResearchSection,
     ResultStatus,
@@ -64,7 +68,9 @@ _FINAL_PAYLOAD_SCHEMAS: dict[str, type[BaseModel]] = {
     "DelegatedRetrievalResult": DelegatedRetrievalResult,
     "DoxAtlasAuditResult": DoxAtlasAuditResult,
     "ExpectationConstructionResult": ExpectationConstructionResult,
+    "ExpectationDetailResult": ExpectationDetailResult,
     "ExpectationFieldReviewResult": ExpectationFieldReviewResult,
+    "ExpectationShellConstructionResult": ExpectationShellConstructionResult,
     "ResearchSection": ResearchSection,
 }
 
@@ -386,6 +392,7 @@ class ReActAgentHarness:
                     scratchpad=scratchpad,
                     details={"text": response.text},
                 )
+            action = _coerce_direct_final_action(action, task.required_output_schema)
             scratchpad.record_action(step, action)
 
             tool_call_inputs = _tool_call_inputs(action.get("tool_calls"))
@@ -422,6 +429,25 @@ class ReActAgentHarness:
                     calls=skill_call_inputs,
                     scratchpad=scratchpad,
                 )
+                if (
+                    is_complete
+                    and isinstance(final_payload, dict)
+                    and not tool_call_inputs
+                    and not delegation_inputs
+                ):
+                    return self._succeeded(
+                        task=task,
+                        definition=definition,
+                        assembled_prompt=assembled_prompt,
+                        context_snapshot=context_snapshot,
+                        structured=final_payload,
+                        text=response.text or json.dumps(final_payload, ensure_ascii=True),
+                        model_audits=model_audits,
+                        tool_results=tool_results,
+                        delegation_results=delegation_results,
+                        scratchpad=scratchpad,
+                        completion_reason=str(action.get("completion_reason") or "complete"),
+                    )
 
             if tool_call_inputs:
                 step_results = await self._execute_tool_calls(
@@ -1028,6 +1054,85 @@ def _parse_action(response: ModelResponse) -> JsonDict | None:
     return cast(JsonDict, payload)
 
 
+def _coerce_direct_final_action(action: JsonDict, required_output_schema: str) -> JsonDict:
+    control_keys = {
+        "plan_update",
+        "task_ledger_updates",
+        "is_complete",
+        "completion_reason",
+        "final_payload",
+        "skill_calls",
+    }
+    if any(key in action for key in control_keys):
+        return action
+    if not _looks_like_direct_final_payload(action, required_output_schema):
+        return action
+    return {
+        "is_complete": True,
+        "completion_reason": "model returned direct structured payload",
+        "final_payload": action,
+        "tool_calls": [],
+        "skill_calls": [],
+        "delegations": [],
+    }
+
+
+def _looks_like_direct_final_payload(payload: JsonDict, required_output_schema: str) -> bool:
+    schema_keys = {
+        "ResearchSection": {
+            "text",
+            "summary",
+            "report",
+            "analysis",
+            "section_text",
+        },
+        "ExpectationFieldReviewResult": {
+            "findings",
+            "rationale",
+            "overall_assessment",
+            "patches_reviewed",
+            "review_findings",
+        },
+        "DoxAtlasAuditResult": {
+            "findings",
+            "verdict",
+            "revision_required",
+            "overall_status",
+            "audit_findings",
+        },
+        "DelegatedRetrievalResult": {
+            "answer",
+            "claim_verdict",
+            "retrieval_summary",
+            "source_refs",
+            "query_log",
+        },
+        "ExpectationShellConstructionResult": {
+            "shells",
+            "expectation_shells",
+            "expectations",
+        },
+        "ExpectationConstructionResult": {
+            "proposed_patches",
+            "patches",
+            "expectation_patches",
+            "expectation_units",
+        },
+        "ExpectationDetailResult": {
+            "proposed_patches",
+            "patches",
+            "realized_facts",
+            "key_variables",
+            "event_monitoring_direction",
+        },
+    }
+    keys = set(payload)
+    return any(
+        bool(keys & schema_keys.get(schema_name, set()))
+        for schema_name in _schema_names(required_output_schema)
+    )
+
+
 def _unwrap_action_payload(payload: JsonDict) -> JsonDict:
     action_keys = {
         "plan_update",
@@ -1126,7 +1231,77 @@ def _schema_names(required_output_schema: str) -> list[str]:
 def _output_contract(required_output_schema: str) -> JsonDict:
     contracts: JsonDict = {}
     for schema_name in _schema_names(required_output_schema):
-        if schema_name == "ExpectationConstructionResult":
+        if schema_name == "ExpectationShellConstructionResult":
+            contracts[schema_name] = {
+                "final_payload": {
+                    "shells": [
+                        {
+                            "expectation_id": "expectation_<id>",
+                            "expectation_name": "short driver-based expectation name",
+                            "direction": "bullish | bearish | neutral",
+                            "why_it_matters": "why this expectation belongs in the Blackboard",
+                            "market_view": {
+                                "text": "market narrative and thesis only",
+                                "summary": "one sentence market view",
+                                "evidence_refs": [],
+                                "author_agent": "O1",
+                                "reviewer_agents": ["A1"],
+                            },
+                            "evidence_refs": [],
+                            "unknowns": [],
+                            "rationale": "why this shell is proposed",
+                        }
+                    ],
+                    "evidence_refs": [],
+                    "delegations": [],
+                    "unknowns": [],
+                    "rationale": "construction rationale",
+                },
+                "rules": [
+                    "Generate 1 to 3 expectation shells.",
+                    "Do not include realized_facts, key_variables, or event_monitoring_direction.",
+                    "Do not create Blackboard patches in this phase.",
+                ],
+            }
+        elif schema_name == "ExpectationDetailResult":
+            contracts[schema_name] = {
+                "final_payload": {
+                    "proposed_patches": [
+                        {
+                            "patch_id": "patch_<id>",
+                            "target": {
+                                "document_type": "expectation_unit",
+                                "ticker": "<ticker>",
+                                "expectation_id": "same as expectation_shell.expectation_id",
+                                "field_path": "document",
+                            },
+                            "operation": "create",
+                            "before": None,
+                            "after": "complete ExpectationUnitDocument preserving shell I/II",
+                            "rationale": "why this completed document is proposed",
+                            "evidence_refs": [],
+                            "author_agent": "O1",
+                            "validation_status": "pending",
+                        }
+                    ],
+                    "evidence_refs": [],
+                    "delegations": [],
+                    "unknowns": [],
+                    "rationale": "detail completion rationale",
+                },
+                "rules": [
+                    "Return exactly one expectation_unit create patch.",
+                    (
+                        "Preserve expectation_id, expectation_name, direction, "
+                        "why_it_matters, and market_view from expectation_shell."
+                    ),
+                    (
+                        "Complete realized_facts, realized_facts_summary, key_variables, "
+                        "and event_monitoring_direction."
+                    ),
+                ],
+            }
+        elif schema_name == "ExpectationConstructionResult":
             contracts[schema_name] = {
                 "final_payload": {
                     "proposed_patches": [
@@ -1188,6 +1363,99 @@ def _output_contract(required_output_schema: str) -> JsonDict:
                     "If evidence is partial, still produce the patch and list gaps in unknowns.",
                 ],
             }
+        elif schema_name == "DoxAtlasAuditResult":
+            contracts[schema_name] = {
+                "final_payload": {
+                    "verdict": "pass | pass_with_warnings | needs_revision | blocked",
+                    "revision_required": False,
+                    "findings": [
+                        {
+                            "field_path": (
+                                "expectation_name | direction | market_view | realized_facts"
+                            ),
+                            "status": (
+                                "supported | unsupported | needs_more_evidence | "
+                                "contradicted | not_checked"
+                            ),
+                            "rationale": "short field-level audit rationale",
+                            "evidence_refs": [],
+                        }
+                    ],
+                    "evidence_refs": [],
+                    "objections": [],
+                    "delegations": [],
+                    "unknowns": [],
+                    "rationale": "one short audit rationale",
+                },
+                "rules": [
+                    (
+                        "Do not return ResearchSection fields such as text, summary, "
+                        "author_agent, or reviewer_agents."
+                    ),
+                    "Use findings for field-level audit results; keep rationale concise.",
+                    "Use objections only for issues requiring O1 revision before promotion.",
+                    "Use delegations only when A2 external retrieval is required.",
+                ],
+            }
+        elif schema_name == "ExpectationFieldReviewResult":
+            contracts[schema_name] = {
+                "final_payload": {
+                    "findings": [
+                        {
+                            "field_path": (
+                                "realized_facts | key_variables.current_state | "
+                                "event_monitoring_direction | market_evidence"
+                            ),
+                            "status": (
+                                "supported | unsupported | needs_more_evidence | contradicted"
+                            ),
+                            "rationale": "short field-level review rationale",
+                            "evidence_refs": [],
+                        }
+                    ],
+                    "evidence_refs": [],
+                    "objections": [],
+                    "delegations": [],
+                    "unknowns": [],
+                    "rationale": "one short review rationale",
+                },
+                "rules": [
+                    (
+                        "Do not return ticker, review_timestamp, overall_assessment, "
+                        "or patches_reviewed."
+                    ),
+                    "Use findings for field-level reviewer output.",
+                    "Use objections only for issues that must block promotion.",
+                ],
+            }
+        elif schema_name == "DelegatedRetrievalResult":
+            contracts[schema_name] = {
+                "final_payload": {
+                    "answer": "concise human-readable conclusion for the requester",
+                    "claim_verdict": (
+                        "supported | unsupported | partially_supported | "
+                        "inconclusive | unknown | not_applicable"
+                    ),
+                    "retrieval_summary": "short basis, key sources, and remaining caveats",
+                    "evidence_refs": [],
+                    "source_refs": [],
+                    "confidence": 0.0,
+                    "unknowns": [],
+                    "query_log": ["meaningful query used"],
+                    "tool_calls": [],
+                    "delegation_id": None,
+                    "can_complete_delegation": False,
+                },
+                "rules": [
+                    "Return a compact search or verification conclusion, not raw result dumps.",
+                    "Use claim_verdict=not_applicable for open-ended search tasks.",
+                    (
+                        "Use claim_verdict=inconclusive or unknown when public evidence is "
+                        "insufficient."
+                    ),
+                    "Set can_complete_delegation=true only with enough public-source support.",
+                ],
+            }
         elif schema_name == "ResearchSection":
             contracts[schema_name] = {
                 "final_payload": {
@@ -1214,8 +1482,43 @@ def _normalize_final_payload(
     delegation_results: list[AgentResult],
 ) -> JsonDict:
     if "ResearchSection" not in _schema_names(required_output_schema):
+        if "ExpectationShellConstructionResult" in _schema_names(required_output_schema):
+            return _normalize_expectation_shell_construction_payload(
+                payload,
+                task=task,
+                tool_results=tool_results,
+                delegation_results=delegation_results,
+            )
+        if "ExpectationDetailResult" in _schema_names(required_output_schema):
+            return _normalize_expectation_detail_payload(
+                payload,
+                task=task,
+                tool_results=tool_results,
+                delegation_results=delegation_results,
+            )
         if "ExpectationConstructionResult" in _schema_names(required_output_schema):
             return _normalize_expectation_construction_payload(
+                payload,
+                task=task,
+                tool_results=tool_results,
+                delegation_results=delegation_results,
+            )
+        if "DoxAtlasAuditResult" in _schema_names(required_output_schema):
+            return _normalize_doxatlas_audit_payload(
+                payload,
+                task=task,
+                tool_results=tool_results,
+                delegation_results=delegation_results,
+            )
+        if "ExpectationFieldReviewResult" in _schema_names(required_output_schema):
+            return _normalize_expectation_field_review_payload(
+                payload,
+                task=task,
+                tool_results=tool_results,
+                delegation_results=delegation_results,
+            )
+        if "DelegatedRetrievalResult" in _schema_names(required_output_schema):
+            return _normalize_delegated_retrieval_payload(
                 payload,
                 task=task,
                 tool_results=tool_results,
@@ -1239,6 +1542,654 @@ def _normalize_final_payload(
         "author_agent": task.agent_name.value,
         "reviewer_agents": _valid_agent_names(payload.get("reviewer_agents")),
     }
+
+
+def _normalize_delegated_retrieval_payload(
+    payload: JsonDict,
+    *,
+    task: AgentTask,
+    tool_results: list[ToolResult],
+    delegation_results: list[AgentResult],
+) -> JsonDict:
+    evidence_refs = _valid_evidence_ref_payloads(payload.get("evidence_refs"))
+    if not evidence_refs:
+        evidence_refs = [
+            item.model_dump(mode="json")
+            for item in _evidence_refs(tool_results, delegation_results)
+        ]
+    source_refs = (
+        _valid_evidence_ref_payloads(payload.get("source_refs"))
+        or _valid_evidence_ref_payloads(payload.get("sources"))
+        or _valid_evidence_ref_payloads(payload.get("key_sources"))
+        or evidence_refs
+    )
+    answer = _first_text(
+        payload,
+        "answer",
+        "conclusion",
+        "final_answer",
+        "verification_result",
+        "result",
+        "text",
+        "summary",
+    )
+    verdict = _normalize_retrieval_verdict(payload, answer, bool(source_refs))
+    if not answer:
+        if verdict in {"unknown", "inconclusive"}:
+            answer = "无法确认：公开搜索结果不足以支持或否定该委托事实。"
+        else:
+            answer = "A2 completed public-source search for the delegated request."
+    retrieval_summary = _first_text(
+        payload,
+        "retrieval_summary",
+        "basis",
+        "rationale",
+        "source_summary",
+        "summary",
+    )
+    if not retrieval_summary:
+        retrieval_summary = answer
+    unknowns = _strings(
+        payload.get("unknowns")
+        or payload.get("uncertainties")
+        or payload.get("limitations")
+        or payload.get("gaps")
+    )
+    if not source_refs and not unknowns:
+        unknowns = ["No reliable public-source evidence was retrieved."]
+    query_log = _strings(payload.get("query_log") or payload.get("queries"))
+    if not query_log:
+        query_log = _query_log_from_tool_results(tool_results)
+    confidence = _normalize_retrieval_confidence(payload.get("confidence"), source_refs, verdict)
+    tool_calls = _valid_tool_call_payloads(payload.get("tool_calls"))
+    if not tool_calls:
+        tool_calls = _tool_call_payloads_from_results(tool_results)
+    can_complete = _retrieval_can_complete(payload, source_refs, verdict)
+    return {
+        "answer": answer,
+        "claim_verdict": verdict,
+        "retrieval_summary": retrieval_summary,
+        "evidence_refs": evidence_refs,
+        "source_refs": source_refs,
+        "confidence": confidence,
+        "unknowns": unknowns,
+        "query_log": query_log,
+        "tool_calls": tool_calls,
+        "delegation_id": payload.get("delegation_id") or _delegation_id_from_task(task),
+        "can_complete_delegation": can_complete,
+    }
+
+
+def _normalize_retrieval_verdict(payload: JsonDict, answer: str, has_sources: bool) -> str:
+    raw = str(
+        payload.get("claim_verdict")
+        or payload.get("verification_status")
+        or payload.get("verdict")
+        or payload.get("status")
+        or ""
+    ).lower()
+    if raw in {"supported", "support", "confirmed", "true", "yes", "verified"}:
+        return "supported"
+    if raw in {"unsupported", "not_supported", "denied", "false", "contradicted", "refuted"}:
+        return "unsupported"
+    if raw in {"partially_supported", "partial", "mixed"}:
+        return "partially_supported"
+    if raw in {"inconclusive", "cannot_confirm", "unable_to_confirm"}:
+        return "inconclusive"
+    if raw in {"unknown", "unclear", "insufficient_evidence"}:
+        return "unknown"
+    if raw in {"not_applicable", "na", "n/a", "search"}:
+        return "not_applicable"
+    lowered = answer.lower()
+    if any(token in lowered for token in ("inconclusive", "无法确认", "cannot confirm")):
+        return "inconclusive"
+    if any(token in lowered for token in ("not supported", "unsupported", "否定")):
+        return "unsupported"
+    if any(token in lowered for token in ("partially", "mixed", "部分")):
+        return "partially_supported"
+    if any(token in lowered for token in ("supported", "confirmed", "支持")):
+        return "supported"
+    return "not_applicable" if has_sources else "inconclusive"
+
+
+def _normalize_retrieval_confidence(
+    value: Any,
+    source_refs: list[JsonDict],
+    verdict: str,
+) -> float:
+    try:
+        parsed = float(str(value))
+    except (TypeError, ValueError):
+        confidences = [
+            float(item["confidence"])
+            for item in source_refs
+            if isinstance(item.get("confidence"), int | float)
+        ]
+        if confidences:
+            parsed = max(confidences)
+        elif verdict in {"unknown", "inconclusive"}:
+            parsed = 0.25
+        elif source_refs:
+            parsed = 0.6
+        else:
+            parsed = 0.0
+    return max(0.0, min(1.0, parsed))
+
+
+def _retrieval_can_complete(payload: JsonDict, source_refs: list[JsonDict], verdict: str) -> bool:
+    raw = payload.get("can_complete_delegation")
+    if isinstance(raw, bool):
+        return raw
+    return bool(source_refs and verdict not in {"unknown", "inconclusive"})
+
+
+def _delegation_id_from_task(task: AgentTask) -> str | None:
+    delegation = task.input_context.get("delegation")
+    if isinstance(delegation, dict):
+        value = delegation.get("delegation_id")
+        if isinstance(value, str) and value.strip():
+            return value
+    return None
+
+
+def _query_log_from_tool_results(tool_results: list[ToolResult]) -> list[str]:
+    queries: list[str] = []
+    for result in tool_results:
+        for evidence_ref in result.evidence_refs:
+            metadata = evidence_ref.retrieval_metadata
+            query = metadata.get("query")
+            if isinstance(query, str) and query.strip():
+                queries.append(f"{result.tool_name}: {query.strip()}")
+                continue
+            urls = metadata.get("urls")
+            if isinstance(urls, list) and urls:
+                queries.append(f"{result.tool_name}: {len(urls)} URL(s)")
+    return queries
+
+
+def _valid_tool_call_payloads(value: Any) -> list[JsonDict]:
+    tool_calls: list[JsonDict] = []
+    for item in _dicts(value):
+        try:
+            tool_calls.append(
+                {
+                    "tool_name": str(item.get("tool_name") or item.get("name")),
+                    "status": str(item.get("status") or ResultStatus.SUCCEEDED.value),
+                    "input_summary": str(
+                        item.get("input_summary")
+                        or item.get("input")
+                        or "Tool input was summarized by A2."
+                    ),
+                    "output_summary": item.get("output_summary"),
+                    "evidence_refs": _valid_evidence_ref_payloads(item.get("evidence_refs")),
+                }
+            )
+        except (TypeError, ValueError):
+            continue
+    return tool_calls
+
+
+def _tool_call_payloads_from_results(tool_results: list[ToolResult]) -> list[JsonDict]:
+    return [
+        {
+            "tool_name": result.tool_name,
+            "status": result.status.value,
+            "input_summary": "Tool call executed during A2 search.",
+            "output_summary": result.output_summary,
+            "evidence_refs": [
+                evidence_ref.model_dump(mode="json") for evidence_ref in result.evidence_refs
+            ],
+        }
+        for result in tool_results
+    ]
+
+
+def _normalize_expectation_field_review_payload(
+    payload: JsonDict,
+    *,
+    task: AgentTask,
+    tool_results: list[ToolResult],
+    delegation_results: list[AgentResult],
+) -> JsonDict:
+    evidence_refs = _valid_evidence_ref_payloads(payload.get("evidence_refs"))
+    if not evidence_refs:
+        evidence_refs = [
+            item.model_dump(mode="json")
+            for item in _evidence_refs(tool_results, delegation_results)
+        ]
+    if not evidence_refs:
+        evidence_refs = [_agent_output_evidence_ref(task)]
+    findings = _normalize_expectation_field_review_findings(
+        payload.get("findings")
+        or payload.get("issues")
+        or payload.get("review_findings")
+        or payload.get("field_findings"),
+        fallback_evidence=evidence_refs,
+    )
+    if not findings:
+        findings = _field_review_findings_from_patches(
+            payload.get("patches_reviewed"),
+            fallback_evidence=evidence_refs,
+        )
+    rationale = _first_text(
+        payload,
+        "rationale",
+        "overall_assessment",
+        "assessment",
+        "summary",
+        "reasoning_summary",
+        "text",
+    )
+    if not findings and rationale:
+        findings = [
+            {
+                "field_path": "document",
+                "status": _normalize_field_review_status(payload.get("status") or rationale),
+                "rationale": rationale,
+                "evidence_refs": evidence_refs,
+            }
+        ]
+    if not rationale:
+        rationale = (
+            str(findings[0]["rationale"])
+            if findings
+            else f"{task.agent_name.value} completed expectation-field review."
+        )
+    return {
+        "findings": findings,
+        "evidence_refs": evidence_refs,
+        "objections": _normalize_output_objections(
+            payload.get("objections") or payload.get("blocking_objections"),
+            task=task,
+            fallback_evidence=evidence_refs,
+        ),
+        "delegations": _normalize_output_delegations(payload.get("delegations"), task=task),
+        "unknowns": _strings(
+            payload.get("unknowns")
+            or payload.get("gaps")
+            or payload.get("uncertainties")
+            or payload.get("open_questions")
+        ),
+        "rationale": rationale,
+    }
+
+
+def _field_review_findings_from_patches(
+    value: Any,
+    *,
+    fallback_evidence: list[JsonDict],
+) -> list[JsonDict]:
+    findings: list[JsonDict] = []
+    for item in _dicts(value):
+        default_field = str(
+            item.get("field_path")
+            or item.get("expectation_id")
+            or item.get("patch_id")
+            or "document"
+        )
+        nested = (
+            item.get("findings")
+            or item.get("issues")
+            or item.get("concerns")
+            or item.get("review_findings")
+            or item.get("recommendations")
+        )
+        nested_findings = _normalize_expectation_field_review_findings(
+            nested,
+            fallback_evidence=fallback_evidence,
+            default_field_path=default_field,
+        )
+        if nested_findings:
+            findings.extend(nested_findings)
+            continue
+        findings.extend(
+            _normalize_expectation_field_review_findings(
+                item,
+                fallback_evidence=fallback_evidence,
+                default_field_path=default_field,
+            )
+        )
+    return findings
+
+
+def _normalize_expectation_field_review_findings(
+    value: Any,
+    *,
+    fallback_evidence: list[JsonDict],
+    default_field_path: str = "document",
+) -> list[JsonDict]:
+    if isinstance(value, list):
+        raw_items = value
+    elif value is None:
+        raw_items = []
+    else:
+        raw_items = [value]
+    findings: list[JsonDict] = []
+    for item in raw_items:
+        if isinstance(item, dict):
+            rationale = _first_text(
+                item,
+                "rationale",
+                "reason",
+                "assessment",
+                "overall_assessment",
+                "issue",
+                "finding",
+                "recommendation",
+                "summary",
+                "description",
+            )
+            if not rationale:
+                rationale = _render_payload_fragment(item)
+            if not rationale:
+                continue
+            findings.append(
+                {
+                    "field_path": str(
+                        item.get("field_path")
+                        or item.get("field")
+                        or item.get("path")
+                        or default_field_path
+                    ),
+                    "status": _normalize_field_review_status(
+                        item.get("status")
+                        or item.get("verdict")
+                        or item.get("review_status")
+                        or rationale
+                    ),
+                    "rationale": rationale,
+                    "evidence_refs": _valid_evidence_ref_payloads(item.get("evidence_refs"))
+                    or fallback_evidence,
+                }
+            )
+        elif str(item).strip():
+            text = str(item)
+            findings.append(
+                {
+                    "field_path": default_field_path,
+                    "status": _normalize_field_review_status(text),
+                    "rationale": text,
+                    "evidence_refs": fallback_evidence,
+                }
+            )
+    return findings
+
+
+def _normalize_field_review_status(value: Any) -> str:
+    text = str(value or "").lower()
+    if any(token in text for token in ("contradict", "conflict", "inconsistent")):
+        return "contradicted"
+    if any(token in text for token in ("unsupported", "not supported", "false")):
+        return "unsupported"
+    if any(
+        token in text
+        for token in (
+            "needs_more",
+            "more evidence",
+            "insufficient",
+            "missing",
+            "lack",
+            "gap",
+            "unclear",
+        )
+    ):
+        return "needs_more_evidence"
+    return "supported"
+
+
+def _normalize_doxatlas_audit_payload(
+    payload: JsonDict,
+    *,
+    task: AgentTask,
+    tool_results: list[ToolResult],
+    delegation_results: list[AgentResult],
+) -> JsonDict:
+    evidence_refs = _valid_evidence_ref_payloads(payload.get("evidence_refs"))
+    if not evidence_refs:
+        evidence_refs = [
+            item.model_dump(mode="json")
+            for item in _evidence_refs(tool_results, delegation_results)
+        ]
+    findings = _normalize_doxatlas_audit_findings(
+        payload.get("findings")
+        or payload.get("issues")
+        or payload.get("audit_findings")
+        or payload.get("field_findings"),
+        fallback_evidence=evidence_refs,
+    )
+    if not findings:
+        finding = _audit_finding_from_payload(payload, fallback_evidence=evidence_refs)
+        if finding is not None:
+            findings = [finding]
+    objections = _normalize_output_objections(
+        payload.get("objections"),
+        task=task,
+        fallback_evidence=evidence_refs,
+    )
+    delegations = _normalize_output_delegations(payload.get("delegations"), task=task)
+    verdict = _normalize_audit_verdict(payload, findings, objections, delegations)
+    revision_required = _audit_revision_required(payload, verdict, findings, objections)
+    rationale = str(
+        payload.get("rationale")
+        or payload.get("audit_rationale")
+        or payload.get("reason")
+        or payload.get("summary")
+        or "A1 completed DoxAtlas audit."
+    )
+    return {
+        "verdict": verdict,
+        "revision_required": revision_required,
+        "findings": findings,
+        "evidence_refs": evidence_refs,
+        "objections": objections,
+        "delegations": delegations,
+        "unknowns": _strings(payload.get("unknowns") or payload.get("gaps")),
+        "rationale": rationale,
+    }
+
+
+def _normalize_doxatlas_audit_findings(
+    value: Any,
+    *,
+    fallback_evidence: list[JsonDict],
+) -> list[JsonDict]:
+    raw_items: list[Any]
+    if isinstance(value, list):
+        raw_items = value
+    elif value is None:
+        raw_items = []
+    else:
+        raw_items = [value]
+    findings: list[JsonDict] = []
+    for item in raw_items:
+        if isinstance(item, dict):
+            rationale = str(
+                item.get("rationale")
+                or item.get("reason")
+                or item.get("description")
+                or item.get("issue")
+                or item.get("finding")
+                or "A1 audit finding."
+            )
+            findings.append(
+                {
+                    "field_path": str(
+                        item.get("field_path")
+                        or item.get("field")
+                        or item.get("path")
+                        or "document"
+                    ),
+                    "status": _normalize_audit_finding_status(
+                        item.get("status") or item.get("verdict") or rationale
+                    ),
+                    "rationale": rationale,
+                    "evidence_refs": _valid_evidence_ref_payloads(item.get("evidence_refs"))
+                    or fallback_evidence,
+                }
+            )
+        elif str(item).strip():
+            findings.append(
+                {
+                    "field_path": "document",
+                    "status": _normalize_audit_finding_status(item),
+                    "rationale": str(item),
+                    "evidence_refs": fallback_evidence,
+                }
+            )
+    return findings
+
+
+def _audit_finding_from_payload(
+    payload: JsonDict,
+    *,
+    fallback_evidence: list[JsonDict],
+) -> JsonDict | None:
+    text = _first_text(
+        payload,
+        "finding",
+        "issue",
+        "audit_result",
+        "decision",
+        "rationale",
+        "summary",
+        "text",
+    )
+    if not text:
+        return None
+    return {
+        "field_path": str(payload.get("field_path") or payload.get("field") or "document"),
+        "status": _normalize_audit_finding_status(payload.get("status") or text),
+        "rationale": text,
+        "evidence_refs": fallback_evidence,
+    }
+
+
+def _normalize_audit_verdict(
+    payload: JsonDict,
+    findings: list[JsonDict],
+    objections: list[JsonDict],
+    delegations: list[JsonDict],
+) -> str:
+    raw = str(
+        payload.get("verdict")
+        or payload.get("overall_status")
+        or payload.get("audit_status")
+        or payload.get("status")
+        or ""
+    ).lower()
+    if raw in {"pass", "passed", "approved", "supported", "ok"}:
+        return "pass"
+    if raw in {"pass_with_warnings", "warning", "warnings", "needs_more_evidence"}:
+        return "pass_with_warnings"
+    if raw in {"needs_revision", "revise", "revision_required", "unsupported"}:
+        return "needs_revision"
+    if raw in {"blocked", "block", "contradicted", "failed", "reject"}:
+        return "blocked"
+    statuses = {str(item.get("status")) for item in findings}
+    if objections or delegations or "contradicted" in statuses:
+        return "blocked"
+    if "unsupported" in statuses:
+        return "needs_revision"
+    if "needs_more_evidence" in statuses or "not_checked" in statuses:
+        return "pass_with_warnings"
+    return "pass"
+
+
+def _audit_revision_required(
+    payload: JsonDict,
+    verdict: str,
+    findings: list[JsonDict],
+    objections: list[JsonDict],
+) -> bool:
+    raw = payload.get("revision_required")
+    if isinstance(raw, bool):
+        return raw
+    statuses = {str(item.get("status")) for item in findings}
+    return bool(
+        verdict in {"needs_revision", "blocked"}
+        or objections
+        or statuses.intersection({"unsupported", "contradicted"})
+    )
+
+
+def _normalize_audit_finding_status(value: Any) -> str:
+    text = str(value or "").lower()
+    if any(token in text for token in ("contradict", "conflict")):
+        return "contradicted"
+    if any(token in text for token in ("unsupported", "not support", "missing support")):
+        return "unsupported"
+    if any(token in text for token in ("needs_more", "more evidence", "insufficient", "unclear")):
+        return "needs_more_evidence"
+    if any(token in text for token in ("not_checked", "not checked", "not applicable")):
+        return "not_checked"
+    return "supported"
+
+
+def _normalize_output_objections(
+    value: Any,
+    *,
+    task: AgentTask,
+    fallback_evidence: list[JsonDict],
+) -> list[JsonDict]:
+    objections: list[JsonDict] = []
+    raw_items: list[Any] = value if isinstance(value, list) else []
+    for item in raw_items:
+        if isinstance(item, dict):
+            reason = str(
+                item.get("reason")
+                or item.get("rationale")
+                or item.get("description")
+                or item.get("issue")
+                or ""
+            ).strip()
+            if not reason:
+                continue
+            target = _normalize_delegation_scope(item.get("target"), task)
+            objections.append(
+                {
+                    "objection_id": str(item.get("objection_id") or new_id("objection")),
+                    "source_agent": str(item.get("source_agent") or task.agent_name.value),
+                    "target": target,
+                    "severity": str(
+                        item.get("severity") or _audit_objection_severity(reason)
+                    ),
+                    "reason": reason,
+                    "evidence_refs": _valid_evidence_ref_payloads(item.get("evidence_refs"))
+                    or fallback_evidence,
+                    "status": str(item.get("status") or ObjectionStatus.OPEN.value),
+                    "resolution_note": item.get("resolution_note"),
+                }
+            )
+        elif str(item).strip():
+            reason = str(item)
+            objections.append(
+                {
+                    "objection_id": new_id("objection"),
+                    "source_agent": task.agent_name.value,
+                    "target": _normalize_delegation_scope(None, task),
+                    "severity": _audit_objection_severity(reason),
+                    "reason": reason,
+                    "evidence_refs": fallback_evidence,
+                    "status": ObjectionStatus.OPEN.value,
+                    "resolution_note": None,
+                }
+            )
+    return objections
+
+
+def _audit_objection_severity(reason: str) -> str:
+    lowered = reason.lower()
+    if any(token in lowered for token in ("contradict", "false", "material", "blocking")):
+        return ObjectionSeverity.BLOCKING.value
+    return ObjectionSeverity.MEDIUM.value
+
+
+def _first_text(payload: JsonDict, *keys: str) -> str:
+    for key in keys:
+        value = payload.get(key)
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    return ""
 
 
 def _normalize_expectation_construction_payload(
@@ -1307,6 +2258,154 @@ def _normalize_expectation_construction_payload(
         ),
         "rejected_objection_ids": _strings(payload.get("rejected_objection_ids")),
     }
+
+
+def _normalize_expectation_shell_construction_payload(
+    payload: JsonDict,
+    *,
+    task: AgentTask,
+    tool_results: list[ToolResult],
+    delegation_results: list[AgentResult],
+) -> JsonDict:
+    evidence_refs = _valid_evidence_ref_payloads(payload.get("evidence_refs"))
+    if not evidence_refs:
+        evidence_refs = [
+            item.model_dump(mode="json")
+            for item in _evidence_refs(tool_results, delegation_results)
+        ]
+    if not evidence_refs:
+        evidence_refs = [_agent_output_evidence_ref(task)]
+    shell_items = payload.get("shells")
+    if not isinstance(shell_items, list):
+        shell_items = payload.get("expectation_shells")
+    if not isinstance(shell_items, list):
+        shell_items = payload.get("expectations")
+    if not isinstance(shell_items, list):
+        proposed_patches = payload.get("proposed_patches")
+        if not isinstance(proposed_patches, list):
+            proposed_patches = payload.get("patches")
+        if isinstance(proposed_patches, list):
+            shell_items = [
+                item.get("after")
+                for item in proposed_patches
+                if isinstance(item, dict) and isinstance(item.get("after"), dict)
+            ]
+    if not isinstance(shell_items, list):
+        singular = payload.get("expectation_shell") or payload.get("expectation")
+        shell_items = [singular] if isinstance(singular, dict) else []
+    shells = [
+        _normalize_expectation_shell_payload(item, task=task, fallback_evidence=evidence_refs)
+        for item in shell_items
+        if isinstance(item, dict)
+    ]
+    if not shells:
+        fallback = _fallback_expectation_from_global_research(task, payload)
+        if fallback is not None:
+            shells = [
+                _normalize_expectation_shell_payload(
+                    fallback,
+                    task=task,
+                    fallback_evidence=evidence_refs,
+                )
+            ]
+    return {
+        "shells": shells,
+        "evidence_refs": evidence_refs,
+        "delegations": _normalize_output_delegations(payload.get("delegations"), task=task),
+        "unknowns": _strings(payload.get("unknowns")),
+        "rationale": str(payload.get("rationale") or payload.get("summary") or "O1 construction."),
+    }
+
+
+def _normalize_expectation_shell_payload(
+    payload: JsonDict,
+    *,
+    task: AgentTask,
+    fallback_evidence: list[JsonDict],
+) -> JsonDict:
+    expectation_id = str(
+        payload.get("expectation_id")
+        or payload.get("id")
+        or new_id("expectation")
+    )
+    name = str(
+        payload.get("expectation_name")
+        or payload.get("name")
+        or payload.get("title")
+        or expectation_id
+    )
+    why_it_matters = str(
+        payload.get("why_it_matters")
+        or payload.get("description")
+        or payload.get("thesis")
+        or name
+    )
+    market_view = payload.get("market_view")
+    if not isinstance(market_view, dict):
+        market_view = {
+            "text": str(payload.get("market_view") or payload.get("description") or why_it_matters),
+            "summary": name,
+            "evidence_refs": fallback_evidence,
+            "author_agent": task.agent_name.value,
+            "reviewer_agents": [AgentName.A1_DOXATLAS_AUDIT.value],
+        }
+    else:
+        market_view = {
+            "text": str(
+                market_view.get("text")
+                or market_view.get("description")
+                or why_it_matters
+            ),
+            "summary": str(market_view.get("summary") or name),
+            "evidence_refs": _valid_evidence_ref_payloads(market_view.get("evidence_refs"))
+            or fallback_evidence,
+            "author_agent": str(market_view.get("author_agent") or task.agent_name.value),
+            "reviewer_agents": _valid_agent_names(market_view.get("reviewer_agents"))
+            or [AgentName.A1_DOXATLAS_AUDIT.value],
+        }
+    return {
+        "expectation_id": expectation_id,
+        "expectation_name": name,
+        "direction": _normalize_expectation_direction(payload.get("direction") or why_it_matters),
+        "why_it_matters": why_it_matters,
+        "market_view": market_view,
+        "evidence_refs": _valid_evidence_ref_payloads(payload.get("evidence_refs"))
+        or fallback_evidence,
+        "unknowns": _strings(payload.get("unknowns")),
+        "rationale": str(payload.get("rationale") or why_it_matters),
+    }
+
+
+def _normalize_expectation_detail_payload(
+    payload: JsonDict,
+    *,
+    task: AgentTask,
+    tool_results: list[ToolResult],
+    delegation_results: list[AgentResult],
+) -> JsonDict:
+    normalized = _normalize_expectation_construction_payload(
+        payload,
+        task=task,
+        tool_results=tool_results,
+        delegation_results=delegation_results,
+    )
+    if not normalized["proposed_patches"]:
+        shell = task.input_context.get("expectation_shell")
+        if isinstance(shell, dict):
+            expectation = dict(payload.get("expectation_unit") or payload)
+            expectation.setdefault("expectation_id", shell.get("expectation_id"))
+            expectation.setdefault("expectation_name", shell.get("expectation_name"))
+            expectation.setdefault("direction", shell.get("direction"))
+            expectation.setdefault("why_it_matters", shell.get("why_it_matters"))
+            expectation.setdefault("market_view", shell.get("market_view"))
+            normalized["proposed_patches"] = [
+                _patch_from_expectation_payload(
+                    expectation,
+                    task=task,
+                    fallback_evidence=normalized["evidence_refs"],
+                )
+            ]
+    return normalized
 
 
 def _fallback_expectation_from_global_research(

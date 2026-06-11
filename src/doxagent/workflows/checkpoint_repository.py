@@ -12,6 +12,7 @@ from typing import Any, Protocol
 from pydantic import BaseModel, ConfigDict
 
 from doxagent.models import NonEmptyStr, new_id
+from doxagent.postgres import connect_postgres
 from doxagent.settings import DoxAgentSettings
 from doxagent.workflows.schema import WorkflowCheckpoint, WorkflowNode, WorkflowRunStatus
 
@@ -194,7 +195,7 @@ class PostgresWorkflowCheckpointRepository:
     @contextmanager
     def _connection(self) -> Iterator[Any]:
         psycopg = self._psycopg()
-        with psycopg.connect(self.database_url) as conn:
+        with connect_postgres(psycopg, self.database_url) as conn:
             yield conn
 
     def _jsonb(self, value: Any) -> Any:

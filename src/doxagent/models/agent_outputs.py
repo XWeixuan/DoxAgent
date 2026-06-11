@@ -13,11 +13,35 @@ from doxagent.models.blackboard import (
 )
 from doxagent.models.common import AgentName, EvidenceSourceType
 from doxagent.models.contracts import ContractModel, ToolCallSummary
+from doxagent.models.documents import ResearchSection
 from doxagent.models.ids import NonEmptyStr, new_id
 
 
+class ExpectationShell(ContractModel):
+    """Partial expectation draft produced before detail completion."""
+
+    expectation_id: NonEmptyStr
+    expectation_name: NonEmptyStr
+    direction: Literal["bullish", "bearish", "neutral", "risk"]
+    why_it_matters: NonEmptyStr
+    market_view: ResearchSection
+    evidence_refs: list[EvidenceRef] = Field(default_factory=list)
+    unknowns: list[NonEmptyStr] = Field(default_factory=list)
+    rationale: NonEmptyStr
+
+
+class ExpectationShellConstructionResult(ContractModel):
+    """O1 output for the construction phase: I/II only, no stable patches."""
+
+    shells: list[ExpectationShell] = Field(default_factory=list)
+    evidence_refs: list[EvidenceRef] = Field(default_factory=list)
+    delegations: list[Delegation] = Field(default_factory=list)
+    unknowns: list[NonEmptyStr] = Field(default_factory=list)
+    rationale: NonEmptyStr
+
+
 class ExpectationConstructionResult(ContractModel):
-    """O1 output for expectation and known-event construction."""
+    """O1 output for full expectation patches and objection revisions."""
 
     proposed_patches: list[BlackboardPatch] = Field(default_factory=list)
     evidence_refs: list[EvidenceRef] = Field(default_factory=list)
@@ -30,9 +54,19 @@ class ExpectationConstructionResult(ContractModel):
     rejected_objection_ids: list[NonEmptyStr] = Field(default_factory=list)
 
 
+class ExpectationDetailResult(ExpectationConstructionResult):
+    """O1 output for one completed expectation-unit patch."""
+
+
 class DoxAtlasAuditFinding(ContractModel):
     field_path: NonEmptyStr
-    status: Literal["supported", "unsupported", "needs_more_evidence", "contradicted"]
+    status: Literal[
+        "supported",
+        "unsupported",
+        "needs_more_evidence",
+        "contradicted",
+        "not_checked",
+    ]
     rationale: NonEmptyStr
     evidence_refs: list[EvidenceRef] = Field(default_factory=list)
 
@@ -40,6 +74,8 @@ class DoxAtlasAuditFinding(ContractModel):
 class DoxAtlasAuditResult(ContractModel):
     """A1 output for field-level DoxAtlas audit."""
 
+    verdict: Literal["pass", "pass_with_warnings", "needs_revision", "blocked"] = "pass"
+    revision_required: bool = False
     findings: list[DoxAtlasAuditFinding] = Field(default_factory=list)
     evidence_refs: list[EvidenceRef] = Field(default_factory=list)
     objections: list[Objection] = Field(default_factory=list)
@@ -79,19 +115,20 @@ class DelegatedRetrievalRequest(ContractModel):
         default_factory=lambda: [EvidenceSourceType.EXTERNAL_REPORT]
     )
     completion_criteria: NonEmptyStr = (
-        "Return sourced Tavily evidence or record the gap as unknown."
+        "Return a concise public-search answer or record the gap as inconclusive."
     )
     query_hints: list[NonEmptyStr] = Field(default_factory=list)
 
 
 class DelegatedRetrievalResult(ContractModel):
-    """A2 output for Tavily-only fact-check and delegated retrieval tasks."""
+    """A2 output for concise public-search and verification tasks."""
 
     answer: NonEmptyStr
     claim_verdict: Literal[
         "supported",
         "unsupported",
         "partially_supported",
+        "inconclusive",
         "unknown",
         "not_applicable",
     ] = "not_applicable"
@@ -111,7 +148,7 @@ def create_a2_retrieval_delegation(
     *,
     delegation_id: str | None = None,
 ) -> Delegation:
-    """Create a standard blocking delegation to A2's Tavily retrieval path."""
+    """Create a standard blocking delegation to A2's search verification path."""
 
     return Delegation(
         delegation_id=delegation_id or new_id("delegation"),

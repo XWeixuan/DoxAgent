@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 
 from doxagent.adapters import (
@@ -14,6 +16,8 @@ from doxagent.prompts.registry import default_prompt_registry
 from doxagent.skills import UnknownSkillError, default_skill_registry
 from doxagent.skills.injection import SkillInjector
 from tests.fixtures.phase1_contracts import agent_task
+
+PROMPT_ROOT = Path(__file__).resolve().parents[1] / "prompts"
 
 
 def test_default_skill_registry_contains_migrated_external_skills() -> None:
@@ -58,6 +62,16 @@ def test_prompt_external_package_legacy_metadata_is_loader_only() -> None:
     for package in prompt_registry.external_packages():
         assert package.body
         assert package.kind.value == "external_skill_package"
+
+
+def test_skill_front_matter_does_not_carry_runtime_constraints() -> None:
+    forbidden = ("allowed_tools", "output_requirements", "guardrails")
+    for directory in ("internal_task_skills", "external_skill_packages"):
+        for path in (PROMPT_ROOT / directory).glob("*.md"):
+            raw = path.read_text(encoding="utf-8")
+            front_matter = raw.split("+++\n", 2)[1]
+            for key in forbidden:
+                assert f"{key} =" not in front_matter
 
 
 def test_skill_registry_unknown_and_deep_copy_behavior() -> None:
@@ -183,8 +197,11 @@ def test_prompt_injector_selects_o1_internal_sop_without_external_packages() -> 
         update={
             "agent_name": AgentName.O1_EXPECTATION_OWNER,
             "task_type": TaskType.GENERATE_EXPECTATION_UNIT,
-            "required_output_schema": "ExpectationConstructionResult",
+            "required_output_schema": "ExpectationShellConstructionResult",
             "permissions": definition.runtime.to_permissions(),
+            "run_metadata": agent_task().run_metadata.model_copy(
+                update={"workflow_node": "GenerateExpectationConstruction"}
+            ),
         },
         deep=True,
     )
@@ -195,6 +212,116 @@ def test_prompt_injector_selects_o1_internal_sop_without_external_packages() -> 
     assert "agent.o1" in injected.prompt_bundle.prompt_block_ids
     assert "expectation-construction" in injected.prompt_bundle.internal_task_skill_ids
     assert "macro-analysis" not in injected.prompt_bundle.external_skill_package_ids
+
+    detail_task = task.model_copy(
+        update={
+            "task_type": TaskType.GENERATE_EXPECTATION_DETAIL,
+            "required_output_schema": "ExpectationDetailResult",
+            "run_metadata": task.run_metadata.model_copy(
+                update={"workflow_node": "GenerateExpectationDetails"}
+            ),
+        },
+        deep=True,
+    )
+    detail_injected = PromptInjector().inject(detail_task, definition)
+    assert "expectation-detail" in detail_injected.prompt_bundle.internal_task_skill_ids
+    assert "expectation-construction" not in detail_injected.prompt_bundle.internal_task_skill_ids
+
+    resolve_task = task.model_copy(
+        update={
+            "run_metadata": task.run_metadata.model_copy(
+                update={"workflow_node": "ResolveExpectationConstruction"}
+            )
+        },
+        deep=True,
+    )
+    resolve_injected = PromptInjector().inject(resolve_task, definition)
+    assert "expectation-construction" in resolve_injected.prompt_bundle.internal_task_skill_ids
+
+    narrative_task = task.model_copy(
+        update={
+            "task_type": TaskType.GENERATE_GLOBAL_NARRATIVE_REPORT,
+            "required_output_schema": "ResearchSection",
+            "run_metadata": task.run_metadata.model_copy(
+                update={"workflow_node": "GenerateGlobalNarrativeReport"}
+            ),
+        },
+        deep=True,
+    )
+    narrative_injected = PromptInjector().inject(narrative_task, definition)
+    assert "global_narrative_report" in narrative_injected.prompt_bundle.internal_task_skill_ids
+
+
+def test_prompt_injector_selects_a1_node_specific_internal_skills() -> None:
+    definition = default_agent_registry().get(AgentName.A1_DOXATLAS_AUDIT)
+    base_task = agent_task().model_copy(
+        update={
+            "agent_name": AgentName.A1_DOXATLAS_AUDIT,
+            "task_type": TaskType.REVIEW_EXPECTATION_FIELD,
+            "required_output_schema": "DoxAtlasAuditResult",
+            "permissions": definition.runtime.to_permissions(),
+        },
+        deep=True,
+    )
+
+    construction_task = base_task.model_copy(
+        update={
+            "run_metadata": base_task.run_metadata.model_copy(
+                update={"workflow_node": "ReviewExpectationConstruction"}
+            )
+        },
+        deep=True,
+    )
+    construction_injected = PromptInjector().inject(construction_task, definition)
+
+    field_task = base_task.model_copy(
+        update={
+            "run_metadata": base_task.run_metadata.model_copy(
+                update={"workflow_node": "ReviewExpectationFields"}
+            )
+        },
+        deep=True,
+    )
+    field_injected = PromptInjector().inject(field_task, definition)
+
+    prompt_registry = default_prompt_registry()
+    assert "doxatlas-audit" not in prompt_registry.ids()
+    assert "a1-expectation-construction-audit" in (
+        construction_injected.prompt_bundle.internal_task_skill_ids
+    )
+    assert "a1-expectation-field-audit" not in (
+        construction_injected.prompt_bundle.internal_task_skill_ids
+    )
+    assert "a1-expectation-field-audit" in field_injected.prompt_bundle.internal_task_skill_ids
+    assert "a1-expectation-construction-audit" not in (
+        field_injected.prompt_bundle.internal_task_skill_ids
+    )
+
+
+def test_prompt_injector_keeps_a2_method_in_agent_prompt_without_internal_skill() -> None:
+    definition = default_agent_registry().get(AgentName.A2_FACT_CHECK)
+    task = agent_task().model_copy(
+        update={
+            "agent_name": AgentName.A2_FACT_CHECK,
+            "task_type": TaskType.DELEGATED_RETRIEVAL,
+            "required_output_schema": "DelegatedRetrievalResult",
+            "permissions": definition.runtime.to_permissions(),
+            "run_metadata": agent_task().run_metadata.model_copy(
+                update={"workflow_node": "ResolveObjectionsAndDelegations"}
+            ),
+        },
+        deep=True,
+    )
+
+    injected = PromptInjector().inject(task, definition)
+    prompt_registry = default_prompt_registry()
+    a2_prompt = prompt_registry.get("agent.a2")
+
+    assert "tavily-retrieval-fact-check" not in prompt_registry.ids()
+    assert "agent.a2" in injected.prompt_bundle.prompt_block_ids
+    assert injected.prompt_bundle.internal_task_skill_ids == []
+    assert "anysearch.search" in a2_prompt.body
+    assert "Do not dump the whole delegated prompt into a search box." in a2_prompt.body
 
 
 def test_prompt_injector_selects_global_research_internal_skills_for_c1_c3() -> None:
@@ -230,6 +357,17 @@ def test_prompt_injector_selects_global_research_internal_skills_for_c1_c3() -> 
 
     assert "industry-research" in c3_injected.prompt_bundle.internal_task_skill_ids
     assert c3_injected.prompt_bundle.external_skill_package_ids == []
+
+    o4_definition = agent_registry.get(AgentName.O4_MARKET_TRACE)
+    o4_task = c1_task.model_copy(
+        update={
+            "agent_name": AgentName.O4_MARKET_TRACE,
+            "permissions": o4_definition.runtime.to_permissions(),
+        },
+        deep=True,
+    )
+    o4_injected = PromptInjector().inject(o4_task, o4_definition)
+    assert "ticker_price_tracking" in o4_injected.prompt_bundle.internal_task_skill_ids
 
 
 def test_c2_exposes_macro_analysis_not_global_macro() -> None:

@@ -7,6 +7,7 @@ from doxagent.tools.providers.alpha_vantage import (
     AlphaVantageEarningsClient,
     AlphaVantageFinancialStatementsClient,
 )
+from doxagent.tools.providers.anysearch import AnySearchSearchClient
 from doxagent.tools.providers.base import TTLCache
 from doxagent.tools.providers.bea import BeaNipaDataClient
 from doxagent.tools.providers.bls import BlsTimeseriesClient
@@ -241,6 +242,21 @@ _DESCRIPTORS: dict[str, ToolDescriptor] = {
         input_fields=["urls", "extract_depth"],
         business_purpose="Turn search results into cited external evidence snippets.",
     ),
+    "anysearch.search": _descriptor(
+        "anysearch.search",
+        description="Run an AnySearch unified web/news/code/domain search for external evidence.",
+        input_fields=[
+            "query",
+            "max_results",
+            "domain",
+            "tag",
+            "content_types",
+            "zone",
+            "language",
+            "params",
+        ],
+        business_purpose="Support A2 delegated public-source search and verification.",
+    ),
     "yfinance.hk_basic_snapshot": _descriptor(
         "yfinance.hk_basic_snapshot",
         description="Read yfinance basic snapshot metrics for HK tickers only.",
@@ -304,6 +320,7 @@ def default_real_tool_registry(settings: DoxAgentSettings | None = None) -> Tool
     register("finnhub.trade_stream", FinnhubTradeStreamClient(resolved))
     register("tavily.search", TavilySearchClient(resolved, cache))
     register("tavily.extract", TavilyExtractClient(resolved, cache))
+    register("anysearch.search", AnySearchSearchClient(resolved, cache))
     register("yfinance.hk_basic_snapshot", YFinanceHkBasicSnapshotClient())
     register("yfinance.daily_ohlcv", YFinanceDailyOhlcvClient())
     return registry

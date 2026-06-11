@@ -37,7 +37,10 @@ class StructuredInitializationRunner(AgentRunner):
         self.calls.append((task.agent_name, task.run_metadata.workflow_node))
         self.tasks.append(task)
         node = task.run_metadata.workflow_node
-        if node == WorkflowNode.BUILD_GLOBAL_RESEARCH.value:
+        if node in {
+            WorkflowNode.BUILD_GLOBAL_RESEARCH.value,
+            WorkflowNode.GENERATE_GLOBAL_NARRATIVE_REPORT.value,
+        }:
             return self._research_section(task)
         return self._structured(task, self.factory(task))
 
@@ -67,7 +70,12 @@ class StructuredInitializationRunner(AgentRunner):
         )
 
     def _structured(self, task: AgentTask, direct: AgentResult) -> AgentResult:
-        if task.required_output_schema == "ExpectationConstructionResult":
+        if task.required_output_schema == "ExpectationShellConstructionResult":
+            structured = dict(direct.payload)
+        elif task.required_output_schema in {
+            "ExpectationConstructionResult",
+            "ExpectationDetailResult",
+        }:
             structured = {
                 "proposed_patches": [
                     patch.model_dump(mode="json") for patch in direct.proposed_patches
@@ -222,16 +230,16 @@ def test_expectation_patch_count_requires_one_to_three() -> None:
             "task_id": "task_count",
             "ticker": "NVDA",
             "agent_name": AgentName.O1_EXPECTATION_OWNER,
-            "task_type": "generate_expectation_unit",
+            "task_type": "generate_expectation_detail",
             "input_context": {},
-            "required_output_schema": "ExpectationConstructionResult",
+            "required_output_schema": "ExpectationDetailResult",
             "permissions": default_agent_registry()
             .get(AgentName.O1_EXPECTATION_OWNER)
             .runtime.to_permissions(),
             "run_metadata": {
                 "run_id": "run_count",
                 "ticker": "NVDA",
-                "workflow_node": "GenerateExpectationUnits",
+                "workflow_node": "GenerateExpectationDetails",
                 "created_at": "2026-06-01T00:00:00Z",
             },
         }

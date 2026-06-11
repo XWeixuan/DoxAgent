@@ -7,7 +7,6 @@ source_project = "HKUDS/Vibe-Trading"
 source_kind = "vibe_trading"
 applicable_agents = ["C1"]
 applicable_task_types = ["generate_global_research"]
-output_requirements = ["financial health", "cash flow quality", "risk warnings"]
 +++
 ---
 name: financial-statement
@@ -262,4 +261,3 @@ ROE = 税务负担 × 利息负担 × 营业利润率 × 资产周转率 × 权�
 ### 结论
 ...
 ```
-

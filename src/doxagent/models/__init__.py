@@ -6,8 +6,11 @@ from doxagent.models.agent_outputs import (
     DoxAtlasAuditFinding,
     DoxAtlasAuditResult,
     ExpectationConstructionResult,
+    ExpectationDetailResult,
     ExpectationFieldReviewFinding,
     ExpectationFieldReviewResult,
+    ExpectationShell,
+    ExpectationShellConstructionResult,
     create_a2_retrieval_delegation,
 )
 from doxagent.models.blackboard import (
@@ -91,8 +94,11 @@ __all__ = [
     "EvidenceSourceType",
     "ExpectationDirection",
     "ExpectationConstructionResult",
+    "ExpectationDetailResult",
     "ExpectationFieldReviewFinding",
     "ExpectationFieldReviewResult",
+    "ExpectationShell",
+    "ExpectationShellConstructionResult",
     "ExpectationUnitDocument",
     "GlobalResearchDocument",
     "KnownEvent",

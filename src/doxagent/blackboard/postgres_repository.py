@@ -19,6 +19,7 @@ from doxagent.models import (
     Objection,
     WorkingMemoryEntry,
 )
+from doxagent.postgres import connect_postgres
 from doxagent.settings import DoxAgentSettings
 
 
@@ -81,7 +82,7 @@ class PostgresBlackboardRepository:
     @contextmanager
     def _connection(self) -> Iterator[Any]:
         psycopg = self._psycopg()
-        with psycopg.connect(self.database_url) as conn:
+        with connect_postgres(psycopg, self.database_url) as conn:
             yield conn
 
     def _insert_run(self, conn: Any, run: BlackboardRun) -> None:

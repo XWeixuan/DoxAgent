@@ -128,7 +128,7 @@ def agent_task() -> AgentTask:
         run_metadata=RunMetadata(
             run_id=new_id("run"),
             ticker=TICKER,
-            workflow_node="GenerateExpectationUnits",
+            workflow_node="GenerateExpectationConstruction",
             created_at=NOW,
         ),
     )

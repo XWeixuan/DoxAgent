@@ -7,6 +7,7 @@ from typing import Any
 import pytest
 from psycopg import OperationalError
 
+from doxagent.postgres import connect_postgres
 from doxagent.settings import DoxAgentSettings
 from doxagent.workflows import BlackboardInitializationWorkflow, WorkflowNode
 
@@ -26,11 +27,11 @@ def test_supabase_persistence_smoke_records_workflow_state() -> None:
     _assert_schema_exists(database_url)
 
     workflow = BlackboardInitializationWorkflow(execution_mode="mock", settings=settings)
-    result = workflow.run("ASTS", stop_after=WorkflowNode.GENERATE_EXPECTATION_UNITS)
+    result = workflow.run("ASTS", stop_after=WorkflowNode.GENERATE_EXPECTATION_DETAILS)
     run_id = result.checkpoint.run_id
 
     assert result.error is None
-    assert WorkflowNode.GENERATE_EXPECTATION_UNITS in result.checkpoint.completed_nodes
+    assert WorkflowNode.GENERATE_EXPECTATION_DETAILS in result.checkpoint.completed_nodes
 
     counts = _run_counts(database_url, run_id)
     assert counts["blackboard_runs"] == 1
@@ -44,7 +45,7 @@ def _assert_schema_exists(database_url: str) -> None:
     psycopg = import_module("psycopg")
     connection_error: str | None = None
     try:
-        conn = psycopg.connect(database_url)
+        conn = connect_postgres(psycopg, database_url)
     except OperationalError as exc:
         connection_error = _safe_error(exc)
     if connection_error is not None:
@@ -67,7 +68,7 @@ def _run_counts(database_url: str, run_id: str) -> dict[str, int]:
     counts: dict[str, int] = {}
     connection_error: str | None = None
     try:
-        conn = psycopg.connect(database_url)
+        conn = connect_postgres(psycopg, database_url)
     except OperationalError as exc:
         connection_error = _safe_error(exc)
     if connection_error is not None:

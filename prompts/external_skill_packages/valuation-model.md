@@ -7,7 +7,6 @@ source_project = "HKUDS/Vibe-Trading"
 source_kind = "vibe_trading"
 applicable_agents = ["C1"]
 applicable_task_types = ["generate_global_research"]
-output_requirements = ["valuation range", "assumptions", "caveats"]
 +++
 ---
 name: valuation-model

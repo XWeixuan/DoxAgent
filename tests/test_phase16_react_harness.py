@@ -90,6 +90,66 @@ def test_react_unwraps_nested_react_protocol_action() -> None:
     assert result.payload["react_audit"]["entries"][0]["completion_reason"] == "done"
 
 
+def test_react_unwraps_fenced_nested_react_protocol_text() -> None:
+    task = agent_task()
+    runner = ModelGatewayAgentRunner(
+        model_gateway=ModelGateway(
+            MockModelClient(
+                text=(
+                    "```json\n"
+                    '{"react_protocol":{"is_complete":true,"completion_reason":"done",'
+                    '"final_payload":{"summary":"ok"},"tool_calls":[],"delegations":[]}}\n'
+                    "```"
+                )
+            )
+        ),
+        tool_registry=default_tool_registry(),
+        tool_mode="mock",
+    )
+
+    result = runner.run(task)
+
+    assert result.status is ResultStatus.SUCCEEDED
+    assert result.payload["structured"] == {"summary": "ok"}
+
+
+def test_react_accepts_complete_final_payload_with_skill_call_metadata() -> None:
+    task = agent_task().model_copy(
+        update={
+            "agent_name": AgentName.C1_FUNDAMENTAL_RESEARCH,
+            "task_type": TaskType.GENERATE_GLOBAL_RESEARCH,
+            "required_output_schema": "ResearchSection",
+            "permissions": default_agent_registry()
+            .get(AgentName.C1_FUNDAMENTAL_RESEARCH)
+            .runtime.to_permissions(),
+        },
+        deep=True,
+    )
+    runner = runner_with_sequence(
+        [
+            {
+                "is_complete": True,
+                "completion_reason": "final with loaded skill reference",
+                "skill_calls": [{"skill_id": "financial-statement", "reason": "already used"}],
+                "final_payload": {
+                    "text": "完整研究正文。",
+                    "summary": "完整研究摘要。",
+                    "evidence_refs": [],
+                    "author_agent": "C1",
+                    "reviewer_agents": [],
+                },
+            }
+        ],
+        react_config=ReActHarnessConfig(max_steps=1),
+    )
+
+    result = runner.run(task)
+
+    assert result.status is ResultStatus.SUCCEEDED
+    assert result.payload["structured"]["summary"] == "完整研究摘要。"
+    assert "financial-statement" in result.payload["react_audit"]["loaded_skill_ids"]
+
+
 def test_react_retries_once_after_non_json_model_text() -> None:
     task = agent_task()
     runner = ModelGatewayAgentRunner(
@@ -434,6 +494,91 @@ def test_react_normalizes_expectation_construction_payload_extras() -> None:
     assert "notes" not in structured
 
 
+def test_react_normalizes_expectation_shell_construction_without_patches() -> None:
+    task = agent_task().model_copy(
+        update={"required_output_schema": "ExpectationShellConstructionResult"},
+        deep=True,
+    )
+    runner = runner_with_sequence(
+        [
+            {
+                "is_complete": True,
+                "completion_reason": "drafted",
+                "final_payload": {
+                    "expectations": [
+                        {
+                            "expectation_id": "exp_1",
+                            "name": "Commercial milestone execution",
+                            "direction": "bullish",
+                            "market_view": "Market focuses on execution milestones.",
+                        }
+                    ],
+                    "rationale": "Built from DoxAtlas narrative evidence.",
+                },
+            }
+        ]
+    )
+
+    result = runner.run(task)
+
+    assert result.status is ResultStatus.SUCCEEDED
+    structured = result.payload["structured"]
+    assert structured["shells"][0]["expectation_id"] == "exp_1"
+    assert "proposed_patches" not in structured
+
+
+def test_react_normalizes_expectation_detail_to_single_patch() -> None:
+    base_task = agent_task()
+    task = base_task.model_copy(
+        update={
+            "required_output_schema": "ExpectationDetailResult",
+            "input_context": {
+                **base_task.input_context,
+                "expectation_shell": {
+                    "expectation_id": "exp_1",
+                    "expectation_name": "Commercial milestone execution",
+                    "direction": "bullish",
+                    "why_it_matters": "It drives valuation.",
+                    "market_view": {
+                        "text": "Market focuses on execution milestones.",
+                        "summary": "Execution milestones drive the view.",
+                        "evidence_refs": [],
+                        "author_agent": "O1",
+                        "reviewer_agents": ["A1"],
+                    },
+                    "evidence_refs": [],
+                    "unknowns": [],
+                    "rationale": "Shell rationale.",
+                },
+            },
+        },
+        deep=True,
+    )
+    runner = runner_with_sequence(
+        [
+            {
+                "is_complete": True,
+                "completion_reason": "detailed",
+                "final_payload": {
+                    "realized_facts_summary": "Known facts are partially priced.",
+                    "key_variables": ["Deployment cadence"],
+                    "positive_events": ["Deployment milestone confirmed"],
+                    "negative_events": ["Deployment delay"],
+                    "rationale": "Detail completed.",
+                },
+            }
+        ]
+    )
+
+    result = runner.run(task)
+
+    assert result.status is ResultStatus.SUCCEEDED
+    patch = result.payload["structured"]["proposed_patches"][0]
+    assert patch["target"]["expectation_id"] == "exp_1"
+    assert patch["after"]["expectation_name"] == "Commercial milestone execution"
+    assert patch["after"]["key_variables"][0]["name"] == "Deployment cadence"
+
+
 def test_react_synthesizes_expectation_patch_from_global_research_context() -> None:
     base_task = agent_task()
     task = base_task.model_copy(
@@ -550,6 +695,207 @@ def test_react_normalizes_output_delegations_for_expectation_construction() -> N
     assert delegation["target_agent"] == "A2"
     assert delegation["required_evidence"] == ["market_data"]
     assert delegation["blocking_scope"]["ticker"] == task.ticker
+
+
+def test_react_normalizes_doxatlas_audit_payload_to_strict_schema() -> None:
+    task = agent_task().model_copy(
+        update={
+            "agent_name": AgentName.A1_DOXATLAS_AUDIT,
+            "task_type": TaskType.REVIEW_EXPECTATION_FIELD,
+            "required_output_schema": "DoxAtlasAuditResult",
+        },
+        deep=True,
+    )
+    runner = runner_with_sequence(
+        [
+            {
+                "is_complete": True,
+                "completion_reason": "audited",
+                "final_payload": {
+                    "overall_status": "revise",
+                    "summary": "期望壳缺少 proposition 证据，需要 O1 修订。",
+                    "findings": [
+                        "market_view is not supported by source ids",
+                        {
+                            "field": "direction",
+                            "status": "needs_more_evidence",
+                            "reason": "Direction is plausible but not directly traced.",
+                        },
+                    ],
+                    "text": "This report-like field must not survive normalization.",
+                    "author_agent": "A1",
+                },
+            }
+        ]
+    )
+
+    result = runner.run(task)
+
+    assert result.status is ResultStatus.SUCCEEDED
+    structured = result.payload["structured"]
+    assert structured["verdict"] == "needs_revision"
+    assert structured["revision_required"] is True
+    assert structured["findings"][0]["field_path"] == "document"
+    assert structured["findings"][0]["status"] == "unsupported"
+    assert structured["findings"][1]["field_path"] == "direction"
+    assert "text" not in structured
+    assert "summary" not in structured
+
+
+def test_react_normalizes_expectation_field_review_report_payload_to_schema() -> None:
+    task = agent_task().model_copy(
+        update={
+            "agent_name": AgentName.C1_FUNDAMENTAL_RESEARCH,
+            "task_type": TaskType.REVIEW_EXPECTATION_FIELD,
+            "required_output_schema": "ExpectationFieldReviewResult",
+        },
+        deep=True,
+    )
+    runner = runner_with_sequence(
+        [
+            {
+                "is_complete": True,
+                "completion_reason": "reviewed",
+                "final_payload": {
+                    "ticker": "ASTS",
+                    "review_timestamp": "2026-06-12T10:00:00Z",
+                    "overall_assessment": (
+                        "Realized facts are plausible, but several fields need direct "
+                        "filing or company-source citations before promotion."
+                    ),
+                    "patches_reviewed": [
+                        {
+                            "patch_id": "patch_1",
+                            "expectation_id": "expectation_1",
+                            "issues": [
+                                "realized_facts lack direct SEC citation",
+                                {
+                                    "field_path": "key_variables.current_state",
+                                    "status": "needs_more_evidence",
+                                    "recommendation": "Replace placeholder variable names.",
+                                },
+                            ],
+                        }
+                    ],
+                },
+            }
+        ]
+    )
+
+    result = runner.run(task)
+
+    assert result.status is ResultStatus.SUCCEEDED
+    structured = result.payload["structured"]
+    assert structured["rationale"].startswith("Realized facts are plausible")
+    assert structured["findings"][0]["field_path"] == "expectation_1"
+    assert structured["findings"][0]["status"] == "needs_more_evidence"
+    assert structured["findings"][1]["field_path"] == "key_variables.current_state"
+    assert "ticker" not in structured
+    assert "patches_reviewed" not in structured
+
+
+def test_react_accepts_direct_expectation_field_review_payload_with_delegations_key() -> None:
+    task = agent_task().model_copy(
+        update={
+            "agent_name": AgentName.C3_INDUSTRY_RESEARCH,
+            "task_type": TaskType.REVIEW_EXPECTATION_FIELD,
+            "required_output_schema": "ExpectationFieldReviewResult",
+        },
+        deep=True,
+    )
+    runner = runner_with_sequence(
+        [
+            {
+                "ticker": "ASTS",
+                "task_type": "ExpectationFieldReviewResult",
+                "findings": [
+                    {
+                        "field_path": "key_variables.current_state",
+                        "status": "needs_more_evidence",
+                        "rationale": "Industry validation source is missing.",
+                        "evidence_refs": [],
+                    }
+                ],
+                "objections": [],
+                "delegations": [],
+                "unknowns": ["Need third-party launch cadence source."],
+                "rationale": "C3 completed the field review.",
+            }
+        ]
+    )
+
+    result = runner.run(task)
+
+    assert result.status is ResultStatus.SUCCEEDED
+    assert result.payload["structured"]["findings"][0]["field_path"] == (
+        "key_variables.current_state"
+    )
+    assert result.payload["react_audit"]["entries"][0]["completion_reason"] == (
+        "model returned direct structured payload"
+    )
+
+
+def test_react_normalizes_a2_search_payload_to_delegated_retrieval_result() -> None:
+    task = agent_task().model_copy(
+        update={
+            "agent_name": AgentName.A2_FACT_CHECK,
+            "task_type": TaskType.DELEGATED_RETRIEVAL,
+            "required_output_schema": "DelegatedRetrievalResult",
+            "permissions": AgentPermissions(
+                readable_context_scopes=["delegations"],
+                writable_targets=[],
+                allowed_tools=["anysearch.search"],
+            ),
+            "input_context": {
+                "delegation": {
+                    "delegation_id": "delegation_test",
+                    "question": "Verify whether Apple published quarterly results.",
+                }
+            },
+        },
+        deep=True,
+    )
+    runner = runner_with_sequence(
+        [
+            {
+                "is_complete": False,
+                "tool_calls": [
+                    {
+                        "tool_name": "anysearch.search",
+                        "input": {
+                            "query": "Apple investor relations quarterly results",
+                            "max_results": 3,
+                            "domain": "finance",
+                        },
+                    }
+                ],
+            },
+            {
+                "is_complete": True,
+                "completion_reason": "verified",
+                "final_payload": {
+                    "conclusion": "Public company sources support the delegated fact.",
+                    "verdict": "confirmed",
+                    "basis": "Search found relevant investor-relations evidence.",
+                    "queries": ["Apple investor relations quarterly results"],
+                    "uncertainties": ["Exact filing detail was not extracted."],
+                    "text": "This free-text alias should be normalized, not preserved.",
+                },
+            },
+        ]
+    )
+
+    result = runner.run(task)
+
+    assert result.status is ResultStatus.SUCCEEDED
+    structured = result.payload["structured"]
+    assert structured["answer"] == "Public company sources support the delegated fact."
+    assert structured["claim_verdict"] == "supported"
+    assert structured["delegation_id"] == "delegation_test"
+    assert structured["can_complete_delegation"] is True
+    assert structured["source_refs"]
+    assert structured["query_log"] == ["Apple investor relations quarterly results"]
+    assert "text" not in structured
 
 
 def test_can_switch_to_single_shot_maf_path() -> None:

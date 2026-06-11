@@ -9,6 +9,7 @@ from doxagent.models import AgentName, AgentPermissions, ResultStatus
 from doxagent.settings import DoxAgentSettings
 from doxagent.tools import ToolRequest, default_real_tool_registry
 from doxagent.tools.providers.alpha_vantage import AlphaVantageClient
+from doxagent.tools.providers.anysearch import AnySearchSearchClient
 from doxagent.tools.providers.base import TTLCache
 from doxagent.tools.providers.bea import BeaNipaDataClient
 from doxagent.tools.providers.bls import BlsTimeseriesClient
@@ -44,6 +45,7 @@ def _settings(**overrides: object) -> DoxAgentSettings:
         "fmp_api_key": "fmp-key",
         "finnhub_api_key": "finnhub-key",
         "tavily_api_key": "tavily-key",
+        "anysearch_api_key": "anysearch-key",
         "doxatlas_tool_base_url": "https://doxatlas.example/api/doxa-tools",
         "doxatlas_tool_server_token": "token",
     }
@@ -96,6 +98,7 @@ def test_real_registry_registers_phase_3_2_tools() -> None:
     assert "doxa_get_event_source" in names
     assert "doxatlas.query" in names
     assert "doxatlas.source_lookup" in names
+    assert "anysearch.search" in names
 
 
 def test_real_registry_exposes_strong_tool_descriptors() -> None:
@@ -415,6 +418,50 @@ def test_fmp_finnhub_tavily_polymarket_clients_parse_fixture_payloads() -> None:
     assert (
         polymarket.call(_request("polymarket.market_probability")).status is ResultStatus.SUCCEEDED
     )
+
+
+def test_anysearch_client_uses_official_search_endpoint_and_env_key() -> None:
+    requests: list[httpx.Request] = []
+    client = AnySearchSearchClient(
+        _settings(),
+        TTLCache(),
+        client=_json_client(
+            {
+                "code": 0,
+                "message": "success",
+                "data": {
+                    "results": [],
+                    "metadata": {"request_id": "req_test", "total_results": 0},
+                },
+            },
+            requests=requests,
+        ),
+    )
+
+    result = client.call(
+        _request(
+            "anysearch.search",
+            {
+                "query": "Apple investor relations quarterly results",
+                "max_results": 200,
+                "domain": "finance",
+                "content_types": ["web", "news"],
+                "zone": "intl",
+                "language": "en",
+                "params": {"ticker": "AAPL"},
+            },
+        )
+    )
+
+    assert result.status is ResultStatus.SUCCEEDED
+    assert result.output["provider"] == "anysearch"
+    assert str(requests[0].url) == "https://api.anysearch.com/v1/search"
+    assert requests[0].headers["authorization"] == "Bearer anysearch-key"
+    body = json.loads(requests[0].content)
+    assert body["max_results"] == 100
+    assert body["domain"] == "finance"
+    assert body["zone"] == "intl"
+    assert body["params"] == {"ticker": "AAPL"}
 
 
 def test_yfinance_tool_is_hk_only_for_us_tickers() -> None:

@@ -12,6 +12,7 @@ from datetime import date, datetime
 from importlib import import_module
 from typing import Any, cast
 
+from doxagent.postgres import connect_postgres
 from doxagent.settings import DoxAgentSettings
 
 JsonDict = dict[str, Any]
@@ -260,7 +261,7 @@ class DebugRunQueryService:
         conn: Any | None = None
         for attempt in range(3):
             try:
-                conn = psycopg.connect(database_url, connect_timeout=15)
+                conn = connect_postgres(psycopg, database_url, connect_timeout=15)
                 break
             except Exception as exc:  # pragma: no cover - depends on local network/pooler state
                 last_error = exc
@@ -441,8 +442,8 @@ def _global_research_view(
         ("fundamental_report", "Fundamental"),
         ("macro_report", "Macro"),
         ("industry_report", "Industry"),
-        ("market_narrative_report", "Market Narrative"),
         ("market_trace_report", "Market Trace"),
+        ("market_narrative_report", "Market Narrative"),
     ]
     sections = []
     for field_name, label in section_fields:

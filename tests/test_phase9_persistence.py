@@ -8,6 +8,7 @@ from doxagent.blackboard import (
     PostgresBlackboardRepository,
 )
 from doxagent.models import AgentName
+from doxagent.postgres import connect_postgres
 from doxagent.settings import DoxAgentSettings
 from doxagent.workflows import (
     BlackboardInitializationWorkflow,
@@ -88,7 +89,7 @@ def test_workflow_checkpoints_are_persisted_as_history_with_latest_marker() -> N
         execution_mode="mock",
     )
 
-    result = workflow.run("NVDA", stop_after=WorkflowNode.GENERATE_EXPECTATION_UNITS)
+    result = workflow.run("NVDA", stop_after=WorkflowNode.GENERATE_EXPECTATION_DETAILS)
 
     records = checkpoint_repository.list_checkpoints(result.checkpoint.run_id)
     assert len(records) >= 4
@@ -112,8 +113,18 @@ def test_resume_latest_uses_checkpoint_repository_without_duplicate_completed_co
 
     after = workflow.blackboard.get_run(partial.checkpoint.run_id)
     assert resumed.status is WorkflowRunStatus.COMPLETED
-    assert len(after.commit_log) == 5
-    assert after.commit_log[0].patch.target.document_type.value == "global_research"
+    committed_targets = [
+        (entry.patch.target.document_type.value, entry.patch.target.field_path)
+        for entry in after.commit_log
+    ]
+    assert committed_targets == [
+        ("global_research", "document"),
+        ("expectation_unit", "document"),
+        ("global_research", "document.market_narrative_report"),
+        ("known_events", "document"),
+        ("monitoring_config", "document"),
+        ("monitoring_policy", "document"),
+    ]
 
 
 def test_workflow_default_storage_uses_memory_mode() -> None:
@@ -160,3 +171,91 @@ def test_workflow_postgres_mode_requires_database_url() -> None:
             execution_mode="mock",
             settings=DoxAgentSettings(storage_mode="postgres", database_url=""),
         )
+
+
+class _FakeConnection:
+    def __enter__(self) -> "_FakeConnection":
+        return self
+
+    def __exit__(self, *args: object) -> None:
+        return None
+
+
+class _FakePsycopg:
+    class OperationalError(Exception):
+        pass
+
+    def __init__(self) -> None:
+        self.connect_kwargs: dict[str, object] | None = None
+
+    def connect(self, database_url: str, **kwargs: object) -> _FakeConnection:
+        self.connect_kwargs = {"database_url": database_url, **kwargs}
+        return _FakeConnection()
+
+
+def test_postgres_connect_disables_prepared_statements_for_pooler() -> None:
+    psycopg = _FakePsycopg()
+
+    with connect_postgres(psycopg, "postgresql://postgres:secret@example.com/postgres"):
+        pass
+
+    assert psycopg.connect_kwargs == {
+        "database_url": "postgresql://postgres:secret@example.com/postgres",
+        "prepare_threshold": None,
+    }
+
+
+def test_postgres_connect_retries_transient_operational_errors(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    psycopg = _FakePsycopg()
+    attempts = 0
+    sleeps: list[float] = []
+
+    def connect(database_url: str, **kwargs: object) -> _FakeConnection:
+        nonlocal attempts
+        attempts += 1
+        psycopg.connect_kwargs = {"database_url": database_url, **kwargs}
+        if attempts < 3:
+            raise _FakePsycopg.OperationalError("pooler closed connection")
+        return _FakeConnection()
+
+    psycopg.connect = connect  # type: ignore[method-assign]
+    monkeypatch.setattr("doxagent.postgres.time.sleep", sleeps.append)
+
+    with connect_postgres(
+        psycopg,
+        "postgresql://postgres:secret@example.com/postgres",
+        retry_delay_seconds=0.1,
+    ):
+        pass
+
+    assert attempts == 3
+    assert sleeps == [0.1, 0.2]
+    assert psycopg.connect_kwargs is not None
+    assert psycopg.connect_kwargs["prepare_threshold"] is None
+
+
+def test_postgres_repositories_use_pooler_safe_connections() -> None:
+    blackboard_psycopg = _FakePsycopg()
+    blackboard = PostgresBlackboardRepository(
+        "postgresql://postgres:secret@example.com/postgres"
+    )
+    blackboard._psycopg = lambda: blackboard_psycopg  # type: ignore[method-assign]
+
+    with blackboard._connection():
+        pass
+
+    checkpoint_psycopg = _FakePsycopg()
+    checkpoint = PostgresWorkflowCheckpointRepository(
+        "postgresql://postgres:secret@example.com/postgres"
+    )
+    checkpoint._psycopg = lambda: checkpoint_psycopg  # type: ignore[method-assign]
+
+    with checkpoint._connection():
+        pass
+
+    assert blackboard_psycopg.connect_kwargs is not None
+    assert blackboard_psycopg.connect_kwargs["prepare_threshold"] is None
+    assert checkpoint_psycopg.connect_kwargs is not None
+    assert checkpoint_psycopg.connect_kwargs["prepare_threshold"] is None

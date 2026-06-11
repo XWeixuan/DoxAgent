@@ -82,7 +82,9 @@ def default_agent_definitions() -> list[AgentDefinition]:
             role=AgentRole.OPERATOR,
             task_types=[
                 TaskType.GENERATE_GLOBAL_RESEARCH,
+                TaskType.GENERATE_GLOBAL_NARRATIVE_REPORT,
                 TaskType.GENERATE_EXPECTATION_UNIT,
+                TaskType.GENERATE_EXPECTATION_DETAIL,
                 TaskType.REVIEW_EXPECTATION_FIELD,
                 TaskType.GENERATE_KNOWN_EVENTS,
             ],
@@ -90,7 +92,6 @@ def default_agent_definitions() -> list[AgentDefinition]:
                 prompt_block_ids=["agent.o1"],
                 default_internal_task_skill_ids=[
                     "doxagent-source-discipline",
-                    "expectation-construction",
                 ],
                 readable_context_scopes=[
                     DocumentType.GLOBAL_RESEARCH.value,
@@ -107,7 +108,10 @@ def default_agent_definitions() -> list[AgentDefinition]:
                 allowed_tools=[
                     "doxa_get_narrative_report",
                 ],
-                output_schema="ExpectationConstructionResult|KnownEventsDocument",
+                output_schema=(
+                    "ExpectationShellConstructionResult|ExpectationDetailResult|"
+                    "ExpectationConstructionResult|KnownEventsDocument|ResearchSection"
+                ),
                 can_raise_objection=True,
                 can_delegate=True,
                 can_propose_patch=True,
@@ -148,7 +152,10 @@ def default_agent_definitions() -> list[AgentDefinition]:
             ],
             runtime=AgentRuntimeConfig(
                 prompt_block_ids=["agent.o4"],
-                default_internal_task_skill_ids=["doxagent-source-discipline"],
+                default_internal_task_skill_ids=[
+                    "doxagent-source-discipline",
+                    "ticker_price_tracking",
+                ],
                 default_external_skill_package_ids=[
                     "ohlcv-orchestration",
                     "quote-context",
@@ -180,7 +187,6 @@ def default_agent_definitions() -> list[AgentDefinition]:
                 prompt_block_ids=["agent.a1"],
                 default_internal_task_skill_ids=[
                     "doxagent-source-discipline",
-                    "doxatlas-audit",
                 ],
                 readable_context_scopes=[
                     DocumentType.EXPECTATION_UNIT.value,
@@ -211,10 +217,7 @@ def default_agent_definitions() -> list[AgentDefinition]:
             ],
             runtime=AgentRuntimeConfig(
                 prompt_block_ids=["agent.a2"],
-                default_internal_task_skill_ids=[
-                    "doxagent-source-discipline",
-                    "tavily-retrieval-fact-check",
-                ],
+                default_internal_task_skill_ids=[],
                 readable_context_scopes=[
                     DocumentType.EXPECTATION_UNIT.value,
                     DocumentType.KNOWN_EVENTS.value,
@@ -222,10 +225,11 @@ def default_agent_definitions() -> list[AgentDefinition]:
                 ],
                 writable_targets=[],
                 allowed_tools=[
+                    "anysearch.search",
                     "tavily.search",
                     "tavily.extract",
                 ],
-                output_schema="DelegatedRetrievalResult|FactCheckFinding",
+                output_schema="DelegatedRetrievalResult",
                 can_raise_objection=True,
             ),
         ),

@@ -6,6 +6,7 @@ from doxagent.tools.providers.alpha_vantage import (
     AlphaVantageEarningsClient,
     AlphaVantageFinancialStatementsClient,
 )
+from doxagent.tools.providers.anysearch import AnySearchSearchClient
 from doxagent.tools.providers.base import (
     BaseRealToolClient,
     BoundToolClient,
@@ -41,6 +42,7 @@ __all__ = [
     "AlphaVantageClient",
     "AlphaVantageEarningsClient",
     "AlphaVantageFinancialStatementsClient",
+    "AnySearchSearchClient",
     "BaseRealToolClient",
     "BeaNipaDataClient",
     "BlsTimeseriesClient",

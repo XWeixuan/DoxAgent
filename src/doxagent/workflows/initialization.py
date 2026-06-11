@@ -11,6 +11,7 @@ from doxagent.agents import (
 )
 from doxagent.blackboard import BlackboardService, PatchValidationError
 from doxagent.models import (
+    AgentError,
     AgentName,
     AgentPermissions,
     AgentResult,
@@ -25,6 +26,8 @@ from doxagent.models import (
     EvidenceRef,
     EvidenceSourceType,
     ExpectationDirection,
+    ExpectationShell,
+    ExpectationShellConstructionResult,
     ExpectationUnitDocument,
     GlobalResearchDocument,
     KnownEvent,
@@ -44,11 +47,13 @@ from doxagent.models import (
     ResultStatus,
     RunMetadata,
     TaskType,
+    ToolCallSummary,
     ValidationStatus,
     VariableStatus,
     new_id,
 )
 from doxagent.settings import DoxAgentSettings
+from doxagent.tools import ToolRequest, ToolResult
 from doxagent.workflows.checkpoint_repository import WorkflowCheckpointRepository
 from doxagent.workflows.errors import WorkflowContractError, WorkflowDependencyError
 from doxagent.workflows.global_research import (
@@ -72,10 +77,14 @@ INITIALIZATION_NODES: tuple[WorkflowNode, ...] = (
     WorkflowNode.START_TICKER_INITIALIZATION,
     WorkflowNode.BUILD_GLOBAL_RESEARCH,
     WorkflowNode.REVIEW_GLOBAL_RESEARCH,
-    WorkflowNode.GENERATE_EXPECTATION_UNITS,
+    WorkflowNode.GENERATE_EXPECTATION_CONSTRUCTION,
+    WorkflowNode.REVIEW_EXPECTATION_CONSTRUCTION,
+    WorkflowNode.RESOLVE_EXPECTATION_CONSTRUCTION,
+    WorkflowNode.GENERATE_EXPECTATION_DETAILS,
     WorkflowNode.REVIEW_EXPECTATION_FIELDS,
     WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS,
     WorkflowNode.PROMOTE_EXPECTATION_TO_BELIEF_STATE,
+    WorkflowNode.GENERATE_GLOBAL_NARRATIVE_REPORT,
     WorkflowNode.GENERATE_KNOWN_EVENTS,
     WorkflowNode.GENERATE_MONITORING_CONFIG,
     WorkflowNode.GENERATE_MONITORING_POLICY,
@@ -83,6 +92,8 @@ INITIALIZATION_NODES: tuple[WorkflowNode, ...] = (
 )
 
 _UNSET_NEXT_NODE = object()
+_GLOBAL_RESEARCH_AGENT_RESULTS_KEY = "global_research_agent_results"
+_WORKFLOW_AGENT_IDEMPOTENCY_KEY = "workflow_agent_idempotency"
 WorkflowExecutionMode = Literal["mock", "agent_runner"]
 
 
@@ -100,14 +111,16 @@ class InitializationMockResultFactory:
             return self._result(
                 task,
                 payload={
-                    "answer": "Mock Tavily retrieval supports the delegated information request.",
+                    "answer": (
+                        "Mock search verification supports the delegated information request."
+                    ),
                     "claim_verdict": "supported",
-                    "retrieval_summary": "Mock Tavily retrieval completed.",
+                    "retrieval_summary": "Mock search verification completed.",
                     "evidence_refs": [evidence.model_dump(mode="json")],
                     "source_refs": [evidence.model_dump(mode="json")],
                     "confidence": 0.72,
                     "unknowns": [],
-                    "query_log": ["mock Tavily query"],
+                    "query_log": ["mock public-source query"],
                     "can_complete_delegation": True,
                 },
                 evidence_refs=[evidence],
@@ -119,15 +132,61 @@ class InitializationMockResultFactory:
                 AgentName.C1_FUNDAMENTAL_RESEARCH,
             )
             return self._result(task, payload={"document_type": "global_research"}, patches=[patch])
-        if node == WorkflowNode.GENERATE_EXPECTATION_UNITS.value:
+        if node == WorkflowNode.GENERATE_EXPECTATION_CONSTRUCTION.value:
+            shell = self._expectation_shell(task.ticker)
+            return self._result(
+                task,
+                payload={
+                    "shells": [shell.model_dump(mode="json")],
+                    "evidence_refs": [
+                        evidence.model_dump(mode="json") for evidence in shell.evidence_refs
+                    ],
+                    "delegations": [],
+                    "unknowns": [],
+                    "rationale": "Mock O1 constructed expectation shell.",
+                },
+                evidence_refs=shell.evidence_refs,
+            )
+        if node == WorkflowNode.GENERATE_EXPECTATION_DETAILS.value:
             document = self._expectation_unit(task.ticker)
+            shell = task.input_context.get("expectation_shell")
+            if isinstance(shell, dict):
+                document = document.model_copy(
+                    update={
+                        "expectation_id": shell.get("expectation_id")
+                        or document.expectation_id,
+                        "expectation_name": shell.get("expectation_name")
+                        or document.expectation_name,
+                        "direction": ExpectationDirection(shell["direction"])
+                        if isinstance(shell.get("direction"), str)
+                        else document.direction,
+                        "why_it_matters": shell.get("why_it_matters")
+                        or document.why_it_matters,
+                        "market_view": ResearchSection.model_validate(shell["market_view"])
+                        if isinstance(shell.get("market_view"), dict)
+                        else document.market_view,
+                    },
+                    deep=True,
+                )
             patch = self._document_patch(
                 document,
                 DocumentType.EXPECTATION_UNIT,
                 AgentName.O1_EXPECTATION_OWNER,
                 expectation_id=document.expectation_id,
             )
-            return self._result(task, payload={"expectation_count": 1}, patches=[patch])
+            return self._result(
+                task,
+                payload={
+                    "proposed_patches": [patch.model_dump(mode="json")],
+                    "evidence_refs": [
+                        evidence.model_dump(mode="json") for evidence in patch.evidence_refs
+                    ],
+                    "delegations": [],
+                    "unknowns": [],
+                    "rationale": "Mock O1 completed expectation detail.",
+                },
+                patches=[patch],
+            )
         if (
             node == WorkflowNode.REVIEW_EXPECTATION_FIELDS.value
             and task.agent_name == AgentName.A1_DOXATLAS_AUDIT
@@ -165,6 +224,15 @@ class InitializationMockResultFactory:
                 AgentName.O1_EXPECTATION_OWNER,
             )
             return self._result(task, payload={"document_type": "known_events"}, patches=[patch])
+        if node == WorkflowNode.GENERATE_GLOBAL_NARRATIVE_REPORT.value:
+            return self._result(
+                task,
+                payload=self._section(
+                    task.ticker,
+                    AgentName.O1_EXPECTATION_OWNER,
+                    "market narrative",
+                ).model_dump(mode="json"),
+            )
         if node == WorkflowNode.GENERATE_MONITORING_CONFIG.value:
             patch = self._document_patch(
                 self._monitoring_config(task.ticker),
@@ -274,12 +342,26 @@ class InitializationMockResultFactory:
             ),
             macro_report=self._section(ticker, AgentName.C2_MACRO_RESEARCH, "macro"),
             industry_report=self._section(ticker, AgentName.C3_INDUSTRY_RESEARCH, "industry"),
-            market_narrative_report=self._section(
-                ticker,
-                AgentName.O1_EXPECTATION_OWNER,
-                "market narrative",
-            ),
             market_trace_report=self._section(ticker, AgentName.O4_MARKET_TRACE, "market trace"),
+        )
+
+    def _expectation_shell(self, ticker: str) -> ExpectationShell:
+        evidence = self._evidence(EvidenceSourceType.DOXATLAS_SOURCE)
+        return ExpectationShell(
+            expectation_id="exp_mock_core",
+            expectation_name=f"{ticker} mock core expectation",
+            direction=ExpectationDirection.BULLISH.value,
+            why_it_matters="It anchors the initialization workflow fixture.",
+            market_view=ResearchSection(
+                text=f"{ticker} mock market view text.",
+                summary=f"{ticker} mock market view summary.",
+                evidence_refs=[evidence],
+                author_agent=AgentName.O1_EXPECTATION_OWNER,
+                reviewer_agents=[AgentName.A1_DOXATLAS_AUDIT],
+            ),
+            evidence_refs=[evidence],
+            unknowns=[],
+            rationale="Mock construction shell.",
         )
 
     def _expectation_unit(self, ticker: str) -> ExpectationUnitDocument:
@@ -509,23 +591,40 @@ class BlackboardInitializationWorkflow:
             self.checkpoint_repository.save_checkpoint(current)
             return self._result(current)
         except (PatchValidationError, WorkflowContractError, WorkflowDependencyError) as exc:
-            blocked_node = current.next_node or WorkflowNode.FINALIZE_INITIALIZATION
-            blocked = current.model_copy(
+            failed_current = self._latest_checkpoint_or_current(current)
+            blocked_node = failed_current.next_node or WorkflowNode.FINALIZE_INITIALIZATION
+            blocked = failed_current.model_copy(
                 update={
                     "status": WorkflowRunStatus.BLOCKED,
-                    "node_statuses": current.node_statuses
+                    "node_statuses": failed_current.node_statuses
                     | {blocked_node: WorkflowNodeStatus.BLOCKED},
-                    "metadata": current.metadata
+                    "metadata": failed_current.metadata
                     | {
                         "last_error_code": exc.__class__.__name__,
                         "last_error_message": str(exc),
                     },
-                    "summary": self._summary(current, notes=[str(exc)]),
+                    "summary": self._summary(failed_current, notes=[str(exc)]),
                 },
                 deep=True,
             )
             self.checkpoint_repository.save_checkpoint(blocked)
             return self._result(blocked, error=str(exc))
+
+    def _latest_checkpoint_or_current(
+        self,
+        current: WorkflowCheckpoint,
+    ) -> WorkflowCheckpoint:
+        try:
+            latest = self.checkpoint_repository.get_latest(current.run_id)
+        except KeyError:
+            return current
+        if latest.status is not WorkflowRunStatus.RUNNING:
+            return current
+        if current.next_node is not WorkflowNode.BUILD_GLOBAL_RESEARCH:
+            return current
+        if _WORKFLOW_AGENT_IDEMPOTENCY_KEY not in latest.metadata:
+            return current
+        return latest
 
     def _execute_node(
         self,
@@ -547,27 +646,44 @@ class BlackboardInitializationWorkflow:
             return self._submit_result_patches(checkpoint, node, result)
         if node == WorkflowNode.REVIEW_GLOBAL_RESEARCH:
             return self._mark_completed(checkpoint, node)
-        if node == WorkflowNode.GENERATE_EXPECTATION_UNITS:
+        if node == WorkflowNode.GENERATE_EXPECTATION_CONSTRUCTION:
             result = self._run_agent(
                 checkpoint,
                 node,
                 AgentName.O1_EXPECTATION_OWNER,
                 TaskType.GENERATE_EXPECTATION_UNIT,
-                "ExpectationConstructionResult",
+                "ExpectationShellConstructionResult",
                 extra_context=self._o1_expectation_generation_context(),
             )
-            self._write_working_memory(checkpoint, result, "agent_result")
             self._validate_agent_success(result, node, require_patches=False)
+            result = self._ensure_o1_narrative_tool_evidence(checkpoint, result, node)
+            self._write_working_memory(checkpoint, result, "agent_result")
             self._validate_o1_narrative_tool_gap(result, node)
-            self._validate_expectation_patches(checkpoint.ticker, result)
-            for patch in result.proposed_patches:
-                self._validate_patch_contract(patch, node)
+            construction = self._validate_expectation_shells(checkpoint.ticker, result)
             return self._mark_completed(
                 checkpoint,
                 node,
-                pending_patches=checkpoint.pending_patches + result.proposed_patches,
-                metadata=self._agent_metadata(node, [result]),
+                metadata=self._agent_metadata(node, [result])
+                | {
+                    "expectation_shells": [
+                        shell.model_dump(mode="json") for shell in construction.shells
+                    ],
+                },
             )
+        if node == WorkflowNode.GENERATE_EXPECTATION_UNITS:
+            return self._execute_node(
+                checkpoint.model_copy(
+                    update={"next_node": WorkflowNode.GENERATE_EXPECTATION_CONSTRUCTION},
+                    deep=True,
+                ),
+                WorkflowNode.GENERATE_EXPECTATION_CONSTRUCTION,
+            )
+        if node == WorkflowNode.REVIEW_EXPECTATION_CONSTRUCTION:
+            return self._review_expectation_construction(checkpoint, node)
+        if node == WorkflowNode.RESOLVE_EXPECTATION_CONSTRUCTION:
+            return self._resolve_expectation_construction(checkpoint, node)
+        if node == WorkflowNode.GENERATE_EXPECTATION_DETAILS:
+            return self._generate_expectation_details(checkpoint, node)
         if node == WorkflowNode.REVIEW_EXPECTATION_FIELDS:
             return self._review_expectation_fields(checkpoint, node)
         if node == WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS:
@@ -579,6 +695,34 @@ class BlackboardInitializationWorkflow:
             )
         if node == WorkflowNode.PROMOTE_EXPECTATION_TO_BELIEF_STATE:
             return self._promote_pending_patches(checkpoint, node)
+        if node == WorkflowNode.GENERATE_GLOBAL_NARRATIVE_REPORT:
+            self._require_documents(
+                checkpoint,
+                [DocumentType.GLOBAL_RESEARCH, DocumentType.EXPECTATION_UNIT],
+            )
+            result = self._run_agent(
+                checkpoint,
+                node,
+                AgentName.O1_EXPECTATION_OWNER,
+                TaskType.GENERATE_GLOBAL_NARRATIVE_REPORT,
+                "ResearchSection",
+                extra_context={
+                    "section_instruction": (
+                        "Summarize the overall market narrative structure after all "
+                        "expectation units have been promoted into belief state."
+                    ),
+                    "required_section_key": "market_narrative_report",
+                    "required_tool_names": ["doxa_get_narrative_report"],
+                    "tool_requirements": [
+                        {
+                            "tool_name": "doxa_get_narrative_report",
+                            "required": True,
+                            "purpose": "Refresh DoxAtlas narrative evidence for final synthesis.",
+                        }
+                    ],
+                },
+            )
+            return self._submit_global_narrative_report(checkpoint, node, result)
         if node == WorkflowNode.GENERATE_KNOWN_EVENTS:
             self._require_documents(
                 checkpoint,
@@ -646,6 +790,7 @@ class BlackboardInitializationWorkflow:
             definition.runtime.to_permissions(),
             node,
             task_type,
+            agent_name,
         )
         input_context = self._task_input_context(
             checkpoint,
@@ -671,9 +816,43 @@ class BlackboardInitializationWorkflow:
                 created_at=datetime.now(UTC),
             ),
         )
-        result = self.result_normalizer.normalize(self.runner.run(task))
+        result = self.runner.run(task)
+        try:
+            result = self.result_normalizer.normalize(result)
+        except WorkflowContractError as exc:
+            self._write_agent_acceptance_failure(
+                checkpoint,
+                task,
+                result,
+                event_code="schema_failed",
+                message=str(exc),
+                expected_schema=output_schema,
+            )
+            raise
         if self.execution_mode == "agent_runner" and result.status is ResultStatus.SUCCEEDED:
-            self.output_validator.validate(result.payload, output_schema)
+            try:
+                self.output_validator.validate(result.payload, output_schema)
+            except WorkflowContractError as exc:
+                self._write_agent_acceptance_failure(
+                    checkpoint,
+                    task,
+                    result,
+                    event_code="schema_failed",
+                    message=str(exc),
+                    expected_schema=output_schema,
+                )
+                raise
+        if result.status is ResultStatus.FAILED:
+            event_code = self._agent_failure_event_code(result)
+            if event_code in {"parse_failed", "schema_failed"}:
+                self._write_agent_acceptance_failure(
+                    checkpoint,
+                    task,
+                    result,
+                    event_code=event_code,
+                    message=result.error.message if result.error is not None else "Agent failed.",
+                    expected_schema=output_schema,
+                )
         return result
 
     def _effective_permissions(
@@ -681,12 +860,35 @@ class BlackboardInitializationWorkflow:
         permissions: AgentPermissions,
         node: WorkflowNode,
         task_type: TaskType,
+        agent_name: AgentName,
     ) -> AgentPermissions:
         updates: dict[str, Any] = {}
         if node is WorkflowNode.BUILD_GLOBAL_RESEARCH:
             updates["can_raise_objection"] = False
             updates["writable_targets"] = [DocumentType.GLOBAL_RESEARCH.value]
+            if (
+                permissions.allowed_tools
+                and task_type is TaskType.GENERATE_GLOBAL_RESEARCH
+            ):
+                market_tools = {
+                    "twelvedata.daily_ohlcv",
+                    "yfinance.daily_ohlcv",
+                    "finnhub.trade_stream",
+                }
+                if set(permissions.allowed_tools).issubset(market_tools):
+                    updates["allowed_tools"] = [
+                        "twelvedata.daily_ohlcv",
+                        "yfinance.daily_ohlcv",
+                        "finnhub.trade_stream",
+                    ]
+        if node is WorkflowNode.GENERATE_GLOBAL_NARRATIVE_REPORT:
+            updates["writable_targets"] = [DocumentType.GLOBAL_RESEARCH.value]
+            updates["allowed_tools"] = ["doxa_get_narrative_report"]
+        if agent_name is AgentName.A1_DOXATLAS_AUDIT:
+            updates["allowed_tools"] = self._a1_allowed_tools_for_node(node)
         if task_type is TaskType.GENERATE_EXPECTATION_UNIT:
+            updates["writable_targets"] = []
+        elif task_type is TaskType.GENERATE_EXPECTATION_DETAIL:
             updates["writable_targets"] = [DocumentType.EXPECTATION_UNIT.value]
         elif task_type is TaskType.GENERATE_KNOWN_EVENTS:
             updates["writable_targets"] = [DocumentType.KNOWN_EVENTS.value]
@@ -695,11 +897,49 @@ class BlackboardInitializationWorkflow:
         elif task_type is TaskType.GENERATE_MONITORING_POLICY:
             updates["writable_targets"] = [DocumentType.MONITORING_POLICY.value]
         elif (
-            node is WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS
+            node
+            in {
+                WorkflowNode.RESOLVE_EXPECTATION_CONSTRUCTION,
+                WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS,
+            }
             and task_type is TaskType.REVIEW_EXPECTATION_FIELD
         ):
             updates["writable_targets"] = [DocumentType.EXPECTATION_UNIT.value]
         return permissions.model_copy(update=updates, deep=True) if updates else permissions
+
+    def _a1_allowed_tools_for_node(self, node: WorkflowNode) -> list[str]:
+        if node is WorkflowNode.REVIEW_EXPECTATION_CONSTRUCTION:
+            return [
+                "doxa_get_analysis",
+                "doxa_query_propositions",
+                "doxa_get_ignored_propositions",
+                "doxa_get_event_source",
+            ]
+        if node is WorkflowNode.REVIEW_EXPECTATION_FIELDS:
+            return [
+                "doxa_get_analysis",
+                "doxa_query_propositions",
+                "doxa_get_event_source",
+                "doxa_get_media_result",
+                "doxa_get_social_result",
+                "doxa_get_ignored_propositions",
+            ]
+        return []
+
+    def _a1_tool_purpose(self, tool_name: str, node: WorkflowNode) -> str:
+        if tool_name == "doxa_get_analysis":
+            return "Read DoxAtlas analysis/topic context for the ticker without starting new runs."
+        if tool_name == "doxa_query_propositions":
+            return "Check proposition-level support or contradiction for the reviewed field."
+        if tool_name == "doxa_get_ignored_propositions":
+            return "Find ignored or weak propositions that may undermine the reviewed claim."
+        if tool_name == "doxa_get_event_source":
+            return "Inspect source material bound to a narrative event or source id."
+        if tool_name == "doxa_get_media_result":
+            return "Check media event capsules for completed expectation facts."
+        if tool_name == "doxa_get_social_result":
+            return "Check high-conviction social evidence for completed expectation facts."
+        return f"Optional DoxAtlas read evidence for {node.value}."
 
     def _build_global_research_with_agent_runner(
         self,
@@ -731,67 +971,93 @@ class BlackboardInitializationWorkflow:
         ]
         results: list[AgentResult] = []
         sections: dict[str, ResearchSection] = {}
+        current = checkpoint
         for agent_name, section_key, instruction in specs:
-            result = self._run_agent(
-                checkpoint,
-                node,
-                agent_name,
-                TaskType.GENERATE_GLOBAL_RESEARCH,
-                "ResearchSection",
-                extra_context=self._global_research_agent_context(
-                    inputs,
+            cached = self._cached_global_research_agent_result(current, node, agent_name)
+            if cached is not None:
+                result = cached
+            else:
+                current = self._mark_agent_dispatch(
+                    current,
+                    node,
+                    agent_name,
+                    status="running",
                     section_key=section_key,
-                    instruction=instruction,
-                ),
-            )
+                )
+                self.checkpoint_repository.save_checkpoint(current)
+                try:
+                    result = self._run_agent(
+                        current,
+                        node,
+                        agent_name,
+                        TaskType.GENERATE_GLOBAL_RESEARCH,
+                        "ResearchSection",
+                        extra_context=self._global_research_agent_context(
+                            inputs,
+                            section_key=section_key,
+                            instruction=instruction,
+                        ),
+                    )
+                except WorkflowContractError as exc:
+                    current = self._mark_agent_dispatch(
+                        current,
+                        node,
+                        agent_name,
+                        status="failed",
+                        section_key=section_key,
+                        error_message=str(exc),
+                    )
+                    self.checkpoint_repository.save_checkpoint(current)
+                    raise
             results.append(result)
-            self._write_working_memory(checkpoint, result, "global_research_agent_result")
-            self._validate_agent_success(result, node, require_patches=False)
-            sections[section_key] = self._research_section_from_result(result, "ResearchSection")
+            try:
+                if cached is None:
+                    self._write_working_memory(current, result, "global_research_agent_result")
+                self._validate_agent_success(result, node, require_patches=False)
+                sections[section_key] = self._research_section_from_result(
+                    result,
+                    "ResearchSection",
+                )
+            except WorkflowContractError as exc:
+                current = self._mark_agent_dispatch(
+                    current,
+                    node,
+                    agent_name,
+                    status="failed",
+                    section_key=section_key,
+                    error_message=str(exc),
+                )
+                self.checkpoint_repository.save_checkpoint(current)
+                raise
+            if cached is None:
+                current = self._store_global_research_agent_result(
+                    current,
+                    node,
+                    agent_name,
+                    section_key,
+                    result,
+                )
+                self.checkpoint_repository.save_checkpoint(current)
 
-        o1_result = self._run_agent(
-            checkpoint,
-            node,
-            AgentName.O1_EXPECTATION_OWNER,
-            TaskType.GENERATE_GLOBAL_RESEARCH,
-            "ResearchSection",
-            extra_context=self._global_research_agent_context(
-                inputs,
-                section_key="market_narrative_report",
-                instruction=(
-                    "Use only doxa_get_narrative_report to generate a sourced market narrative "
-                    "ResearchSection. Convert missing narrative coverage into unknowns."
-                ),
-                required_tool_names=["doxa_get_narrative_report"],
-            ),
-        )
-        results.append(o1_result)
-        self._write_working_memory(checkpoint, o1_result, "global_research_agent_result")
-        self._validate_agent_success(o1_result, node, require_patches=False)
-        sections["market_narrative_report"] = self._research_section_from_result(
-            o1_result,
-            "ResearchSection",
-        )
         document = self.global_research_assembler.assemble_from_sections(
-            checkpoint.ticker,
+            current.ticker,
             fundamental_report=sections["fundamental_report"],
             macro_report=sections["macro_report"],
             industry_report=sections["industry_report"],
-            market_narrative_report=sections["market_narrative_report"],
             market_trace_report=sections["market_trace_report"],
         )
         patch = self._global_research_patch(document, results)
         self._validate_patch_contract(patch, node)
         self._submit_patch(
-            checkpoint.run_id,
+            current.run_id,
             patch,
-            f"{node.value} assembled GlobalResearchDocument from C1/C2/C3/O4/O1.",
+            f"{node.value} assembled GlobalResearchDocument from C1/C2/C3/O4.",
         )
-        stable_documents = list(checkpoint.stable_document_types)
+        stable_documents = list(current.stable_document_types)
         if DocumentType.GLOBAL_RESEARCH not in stable_documents:
             stable_documents.append(DocumentType.GLOBAL_RESEARCH)
         return self._mark_completed(
-            checkpoint,
+            current,
             node,
             stable_document_types=stable_documents,
             metadata=self._agent_metadata(node, results)
@@ -802,6 +1068,135 @@ class BlackboardInitializationWorkflow:
                 "global_research_patch_id": patch.patch_id,
             },
         )
+
+    def _cached_global_research_agent_result(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        node: WorkflowNode,
+        agent_name: AgentName,
+    ) -> AgentResult | None:
+        key = self._agent_idempotency_key(node, agent_name)
+        idempotency = self._agent_idempotency(checkpoint)
+        state = idempotency.get(key, {})
+        if state.get("status") == "running":
+            raise WorkflowContractError(
+                f"duplicate_agent_running: {node.value}/{agent_name.value} is already running."
+            )
+        if state.get("status") != "completed":
+            return None
+
+        cached_results = self._global_research_agent_results(checkpoint)
+        cached = cached_results.get(key)
+        if not isinstance(cached, dict):
+            raise WorkflowContractError(
+                f"schema_failed: cached AgentResult missing for {node.value}/{agent_name.value}."
+            )
+        raw_result = cached.get("result")
+        if not isinstance(raw_result, dict):
+            raise WorkflowContractError(
+                f"schema_failed: cached AgentResult malformed for {node.value}/{agent_name.value}."
+            )
+        try:
+            return AgentResult.model_validate(raw_result)
+        except Exception as exc:
+            raise WorkflowContractError(
+                f"schema_failed: cached AgentResult could not be restored for "
+                f"{node.value}/{agent_name.value}: {exc}"
+            ) from exc
+
+    def _mark_agent_dispatch(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        node: WorkflowNode,
+        agent_name: AgentName,
+        *,
+        status: Literal["running", "failed"],
+        section_key: str,
+        error_message: str | None = None,
+    ) -> WorkflowCheckpoint:
+        key = self._agent_idempotency_key(node, agent_name)
+        state = {
+            "run_id": checkpoint.run_id,
+            "workflow_node": node.value,
+            "agent_name": agent_name.value,
+            "section_key": section_key,
+            "status": status,
+            "updated_at": datetime.now(UTC).isoformat(),
+        }
+        if error_message is not None:
+            state["error_message"] = error_message
+        idempotency = self._agent_idempotency(checkpoint) | {key: state}
+        return checkpoint.model_copy(
+            update={
+                "metadata": checkpoint.metadata
+                | {_WORKFLOW_AGENT_IDEMPOTENCY_KEY: idempotency}
+            },
+            deep=True,
+        )
+
+    def _store_global_research_agent_result(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        node: WorkflowNode,
+        agent_name: AgentName,
+        section_key: str,
+        result: AgentResult,
+    ) -> WorkflowCheckpoint:
+        key = self._agent_idempotency_key(node, agent_name)
+        cached_results = self._global_research_agent_results(checkpoint)
+        cached_results[key] = {
+            "run_id": checkpoint.run_id,
+            "workflow_node": node.value,
+            "agent_name": agent_name.value,
+            "section_key": section_key,
+            "status": "completed",
+            "result": result.model_dump(mode="json"),
+            "updated_at": datetime.now(UTC).isoformat(),
+        }
+        idempotency = self._agent_idempotency(checkpoint)
+        idempotency[key] = {
+            "run_id": checkpoint.run_id,
+            "workflow_node": node.value,
+            "agent_name": agent_name.value,
+            "section_key": section_key,
+            "status": "completed",
+            "updated_at": datetime.now(UTC).isoformat(),
+        }
+        return checkpoint.model_copy(
+            update={
+                "metadata": checkpoint.metadata
+                | {
+                    _GLOBAL_RESEARCH_AGENT_RESULTS_KEY: cached_results,
+                    _WORKFLOW_AGENT_IDEMPOTENCY_KEY: idempotency,
+                }
+            },
+            deep=True,
+        )
+
+    def _agent_idempotency(
+        self,
+        checkpoint: WorkflowCheckpoint,
+    ) -> dict[str, dict[str, Any]]:
+        raw = checkpoint.metadata.get(_WORKFLOW_AGENT_IDEMPOTENCY_KEY)
+        if not isinstance(raw, dict):
+            return {}
+        return {str(key): value for key, value in raw.items() if isinstance(value, dict)}
+
+    def _global_research_agent_results(
+        self,
+        checkpoint: WorkflowCheckpoint,
+    ) -> dict[str, dict[str, Any]]:
+        raw = checkpoint.metadata.get(_GLOBAL_RESEARCH_AGENT_RESULTS_KEY)
+        if not isinstance(raw, dict):
+            return {}
+        return {str(key): value for key, value in raw.items() if isinstance(value, dict)}
+
+    def _agent_idempotency_key(
+        self,
+        node: WorkflowNode,
+        agent_name: AgentName,
+    ) -> str:
+        return f"{node.value}:{agent_name.value}"
 
     def _global_research_agent_context(
         self,
@@ -861,6 +1256,288 @@ class BlackboardInitializationWorkflow:
             else ResearchSection.model_validate(model)
         )
         return section
+
+    def _review_expectation_construction(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        node: WorkflowNode,
+    ) -> WorkflowCheckpoint:
+        shells = self._expectation_shells_from_checkpoint(checkpoint)
+        if not shells:
+            raise WorkflowContractError(
+                "ReviewExpectationConstruction requires expectation shells."
+            )
+        allowed_tools = self._a1_allowed_tools_for_node(node)
+        result = self._run_agent(
+            checkpoint,
+            node,
+            AgentName.A1_DOXATLAS_AUDIT,
+            TaskType.REVIEW_EXPECTATION_FIELD,
+            "DoxAtlasAuditResult",
+            extra_context={
+                "review_scope": ["expectation_name", "direction", "market_view"],
+                "review_instruction": (
+                    "Audit construction-phase expectation shells only. Check that "
+                    "expectation name, direction, and market view are supported by "
+                    "DoxAtlas evidence. Do not review detail fields in this node."
+                ),
+                "expectation_shells": [shell.model_dump(mode="json") for shell in shells],
+                "tool_requirements": [
+                    {
+                        "tool_name": tool_name,
+                        "required": False,
+                        "purpose": self._a1_tool_purpose(tool_name, node),
+                    }
+                    for tool_name in allowed_tools
+                ],
+                "required_tool_names": [],
+            },
+        )
+        self._write_working_memory(checkpoint, result, "a1_expectation_construction_review")
+        self._validate_agent_success(result, node, require_patches=False)
+        for objection in result.objections:
+            self.blackboard.create_objection(checkpoint.run_id, objection)
+        for delegation in result.delegations:
+            self.blackboard.create_delegation(checkpoint.run_id, delegation)
+        return self._mark_completed(
+            checkpoint,
+            node,
+            metadata=self._agent_metadata(node, [result]),
+        )
+
+    def _resolve_expectation_construction(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        node: WorkflowNode,
+    ) -> WorkflowCheckpoint:
+        results: list[AgentResult] = []
+        run = self.blackboard.get_run(checkpoint.run_id)
+        for delegation in run.delegations:
+            if not delegation.is_blocking or delegation.target_agent is not AgentName.A2_FACT_CHECK:
+                continue
+            if delegation.status is DelegationStatus.OPEN:
+                self.blackboard.assign_delegation(checkpoint.run_id, delegation.delegation_id)
+            result = self._run_agent(
+                checkpoint,
+                node,
+                AgentName.A2_FACT_CHECK,
+                TaskType.DELEGATED_RETRIEVAL,
+                "DelegatedRetrievalResult",
+                extra_context=self._a2_delegation_context(delegation),
+            )
+            self._write_working_memory(checkpoint, result, "delegated_retrieval_result")
+            self._validate_agent_success(result, node, require_patches=False)
+            if not self._can_complete_a2_delegation(result):
+                raise WorkflowContractError(
+                    f"A2 did not return sufficient search evidence for {delegation.delegation_id}."
+                )
+            self.blackboard.complete_delegation(
+                checkpoint.run_id,
+                delegation.delegation_id,
+                self._delegation_completion_summary(result),
+            )
+            results.append(result)
+
+        run = self.blackboard.get_run(checkpoint.run_id)
+        unresolved = [objection for objection in run.objections if objection.is_unresolved]
+        if not unresolved:
+            return self._mark_completed(
+                checkpoint,
+                node,
+                metadata=self._agent_metadata(node, results) if results else None,
+            )
+        shells = self._expectation_shells_from_checkpoint(checkpoint)
+        if not shells:
+            raise WorkflowContractError(
+                "ResolveExpectationConstruction requires expectation shells."
+            )
+        result = self._run_agent(
+            checkpoint,
+            node,
+            AgentName.O1_EXPECTATION_OWNER,
+            TaskType.GENERATE_EXPECTATION_UNIT,
+            "ExpectationShellConstructionResult",
+            extra_context={
+                "resolution_request": (
+                    "Resolve A1 construction-review objections by revising expectation "
+                    "shells only. Return ExpectationShellConstructionResult. Do not "
+                    "return BlackboardPatch, proposed_patches, full expectation_unit "
+                    "documents, realized_facts, key_variables, or event monitoring fields."
+                ),
+                "internal_task_skill_ids": ["expectation-construction"],
+                "expectation_shells": [shell.model_dump(mode="json") for shell in shells],
+                "unresolved_objections": [
+                    objection.model_dump(mode="json") for objection in unresolved
+                ],
+                "required_tool_names": ["doxa_get_narrative_report"],
+                "tool_requirements": [
+                    {
+                        "tool_name": "doxa_get_narrative_report",
+                        "required": True,
+                        "purpose": "Re-check narrative evidence before revising shells.",
+                        "gap_policy": (
+                            "If unavailable, revise shells using current context and list "
+                            "the missing DoxAtlas narrative evidence in unknowns."
+                        ),
+                    }
+                ],
+            },
+        )
+        self._validate_agent_success(result, node, require_patches=False)
+        result = self._ensure_o1_narrative_tool_evidence(checkpoint, result, node)
+        self._write_working_memory(checkpoint, result, "expectation_construction_resolution")
+        self._validate_o1_narrative_tool_gap(result, node)
+        revised = self._validate_expectation_shells(checkpoint.ticker, result)
+        for objection in unresolved:
+            self.blackboard.resolve_objection(
+                checkpoint.run_id,
+                objection.objection_id,
+                "O1 revised construction-phase expectation shells.",
+            )
+        results.append(result)
+        return self._mark_completed(
+            checkpoint,
+            node,
+            metadata=self._agent_metadata(node, results)
+            | {
+                "expectation_shells": [
+                    shell.model_dump(mode="json") for shell in revised.shells
+                ],
+            },
+        )
+
+    def _generate_expectation_details(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        node: WorkflowNode,
+    ) -> WorkflowCheckpoint:
+        shells = self._expectation_shells_from_checkpoint(checkpoint)
+        if not shells:
+            raise WorkflowContractError("GenerateExpectationDetails requires expectation shells.")
+        results: list[AgentResult] = []
+        patches: list[BlackboardPatch] = []
+        for shell in shells:
+            result = self._run_agent(
+                checkpoint,
+                node,
+                AgentName.O1_EXPECTATION_OWNER,
+                TaskType.GENERATE_EXPECTATION_DETAIL,
+                "ExpectationDetailResult",
+                extra_context={
+                    "expectation_shell": shell.model_dump(mode="json"),
+                    "detail_instruction": (
+                        "Complete exactly one expectation unit from this shell. Preserve "
+                        "I/II fields and fill realized facts, key variables/current status, "
+                        "and event prediction or monitoring direction."
+                    ),
+                    "required_tool_names": ["doxa_get_narrative_report"],
+                    "tool_requirements": [
+                        {
+                            "tool_name": "doxa_get_narrative_report",
+                            "required": True,
+                            "purpose": "Narrative evidence for expectation detail completion.",
+                        }
+                    ],
+                },
+            )
+            self._validate_agent_success(result, node, require_patches=False)
+            result = self._ensure_o1_narrative_tool_evidence(checkpoint, result, node)
+            self._write_working_memory(checkpoint, result, "expectation_detail_result")
+            self._validate_o1_narrative_tool_gap(result, node)
+            self._validate_expectation_detail_result(checkpoint.ticker, shell, result)
+            patches.extend(result.proposed_patches)
+            results.append(result)
+        return self._mark_completed(
+            checkpoint,
+            node,
+            pending_patches=checkpoint.pending_patches + patches,
+            metadata=self._agent_metadata(node, results),
+        )
+
+    def _expectation_shells_from_checkpoint(
+        self,
+        checkpoint: WorkflowCheckpoint,
+    ) -> list[ExpectationShell]:
+        raw = checkpoint.metadata.get("expectation_shells", [])
+        if not isinstance(raw, list):
+            return []
+        shells: list[ExpectationShell] = []
+        for item in raw:
+            if isinstance(item, dict):
+                shells.append(ExpectationShell.model_validate(item))
+        return shells
+
+    def _validate_expectation_shells(
+        self,
+        ticker: str,
+        result: AgentResult,
+    ) -> ExpectationShellConstructionResult:
+        construction = self.output_validator.validate(
+            result.payload,
+            "ExpectationShellConstructionResult",
+        )
+        if not isinstance(construction, ExpectationShellConstructionResult):
+            construction = ExpectationShellConstructionResult.model_validate(construction)
+        if not construction.shells:
+            raise WorkflowContractError(
+                "GenerateExpectationConstruction produced no expectation shells."
+            )
+        if len(construction.shells) >= 4:
+            raise WorkflowContractError(
+                "GenerateExpectationConstruction produced too many expectations."
+            )
+        for shell in construction.shells:
+            if shell.market_view.author_agent is not AgentName.O1_EXPECTATION_OWNER:
+                raise WorkflowContractError(
+                    "GenerateExpectationConstruction shell market_view must be authored by O1."
+                )
+            if not (shell.evidence_refs or shell.market_view.evidence_refs):
+                raise WorkflowContractError(
+                    "GenerateExpectationConstruction shell has no evidence."
+                )
+            if ticker and not shell.expectation_id:
+                raise WorkflowContractError(
+                    "GenerateExpectationConstruction shell missing expectation_id."
+                )
+        return construction
+
+    def _validate_expectation_detail_result(
+        self,
+        ticker: str,
+        shell: ExpectationShell,
+        result: AgentResult,
+    ) -> None:
+        self.output_validator.validate(result.payload, "ExpectationDetailResult")
+        expectation_patches = [
+            patch
+            for patch in result.proposed_patches
+            if patch.target.document_type == DocumentType.EXPECTATION_UNIT
+        ]
+        if len(expectation_patches) != 1:
+            raise WorkflowContractError(
+                "GenerateExpectationDetails must produce exactly one expectation patch per shell."
+            )
+        patch = expectation_patches[0]
+        self._validate_patch_contract(patch, WorkflowNode.GENERATE_EXPECTATION_DETAILS)
+        document = ExpectationUnitDocument.model_validate(patch.after)
+        if document.ticker != ticker:
+            raise WorkflowContractError("GenerateExpectationDetails produced wrong ticker.")
+        if document.expectation_id != shell.expectation_id:
+            raise WorkflowContractError(
+                "GenerateExpectationDetails changed the construction expectation_id."
+            )
+        if document.expectation_name != shell.expectation_name:
+            raise WorkflowContractError(
+                "GenerateExpectationDetails changed the construction expectation_name."
+            )
+        if document.direction.value != shell.direction:
+            raise WorkflowContractError(
+                "GenerateExpectationDetails changed the construction direction."
+            )
+        if patch.target.expectation_id != document.expectation_id:
+            raise WorkflowContractError(
+                "GenerateExpectationDetails target does not match document."
+            )
 
     def _review_expectation_fields(
         self,
@@ -945,16 +1622,26 @@ class BlackboardInitializationWorkflow:
         results: list[AgentResult] = []
         for spec in specs:
             agent_name = spec["agent_name"]
+            tool_requirements = spec.get("tool_requirements", [])
+            if agent_name is AgentName.A1_DOXATLAS_AUDIT:
+                tool_requirements = [
+                    {
+                        "tool_name": tool_name,
+                        "required": False,
+                        "purpose": self._a1_tool_purpose(tool_name, node),
+                    }
+                    for tool_name in self._a1_allowed_tools_for_node(node)
+                ]
             extra_context = {
                 "review_scope": spec["review_scope"],
                 "review_instruction": spec["instruction"],
                 "pending_expectation_patches": [
                     patch.model_dump(mode="json") for patch in checkpoint.pending_patches
                 ],
-                "tool_requirements": spec.get("tool_requirements", []),
+                "tool_requirements": tool_requirements,
                 "required_tool_names": [
                     item["tool_name"]
-                    for item in spec.get("tool_requirements", [])
+                    for item in tool_requirements
                     if item.get("required") is True
                 ],
             }
@@ -999,11 +1686,72 @@ class BlackboardInitializationWorkflow:
             operation=PatchOperation.CREATE,
             before=None,
             after=document.model_dump(mode="json"),
-            rationale="Assemble GlobalResearchDocument from C1/C2/C3/O4/O1 agent outputs.",
+            rationale="Assemble GlobalResearchDocument from C1/C2/C3/O4 agent outputs.",
             evidence_refs=evidence_refs,
             author_agent=AgentName.C1_FUNDAMENTAL_RESEARCH,
             validation_status=ValidationStatus.VALID,
         )
+
+    def _submit_global_narrative_report(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        node: WorkflowNode,
+        result: AgentResult,
+    ) -> WorkflowCheckpoint:
+        self._write_working_memory(checkpoint, result, "global_narrative_report")
+        self._validate_agent_success(result, node, require_patches=False)
+        section = self._research_section_from_result(result, "ResearchSection")
+        document_id = self._latest_global_research_document_id(checkpoint)
+        patch = BlackboardPatch(
+            patch_id=new_id("patch"),
+            target=BlackboardTarget(
+                document_type=DocumentType.GLOBAL_RESEARCH,
+                ticker=checkpoint.ticker,
+                document_id=document_id,
+                field_path="document.market_narrative_report",
+            ),
+            operation=PatchOperation.UPDATE,
+            before=None,
+            after=section.model_dump(mode="json"),
+            rationale="Update GlobalResearchDocument with post-expectation market narrative.",
+            evidence_refs=section.evidence_refs or result.evidence_refs,
+            author_agent=AgentName.O1_EXPECTATION_OWNER,
+            validation_status=ValidationStatus.VALID,
+        )
+        self._validate_patch_contract(patch, node)
+        self._submit_patch(
+            checkpoint.run_id,
+            patch,
+            "GenerateGlobalNarrativeReport updated GlobalResearchDocument market narrative.",
+            permissions=self._effective_permissions(
+                self.registry.get(AgentName.O1_EXPECTATION_OWNER).runtime.to_permissions(),
+                node,
+                TaskType.GENERATE_GLOBAL_NARRATIVE_REPORT,
+                AgentName.O1_EXPECTATION_OWNER,
+            ),
+        )
+        return self._mark_completed(
+            checkpoint,
+            node,
+            metadata=self._agent_metadata(node, [result])
+            | {"global_narrative_patch_id": patch.patch_id},
+        )
+
+    def _latest_global_research_document_id(self, checkpoint: WorkflowCheckpoint) -> str:
+        run = self.blackboard.get_run(checkpoint.run_id)
+        bucket = run.belief_state.documents.get(DocumentType.GLOBAL_RESEARCH, {})
+        if not bucket:
+            raise WorkflowDependencyError("Missing global_research document.")
+        latest = next(reversed(bucket.values()))
+        if not isinstance(latest, dict):
+            raise WorkflowDependencyError("Global research document is malformed.")
+        document = latest.get("document")
+        if not isinstance(document, dict):
+            raise WorkflowDependencyError("Global research document payload is malformed.")
+        document_id = document.get("document_id")
+        if not isinstance(document_id, str) or not document_id:
+            raise WorkflowDependencyError("Global research document_id is missing.")
+        return document_id
 
     def _submit_result_patches(
         self,
@@ -1011,6 +1759,7 @@ class BlackboardInitializationWorkflow:
         node: WorkflowNode,
         result: AgentResult,
     ) -> WorkflowCheckpoint:
+        result = self._ensure_document_patch_result(checkpoint, node, result)
         self._write_working_memory(checkpoint, result, "agent_result")
         self._validate_agent_success(result, node)
         stable_documents = list(checkpoint.stable_document_types)
@@ -1023,6 +1772,289 @@ class BlackboardInitializationWorkflow:
             node,
             stable_document_types=stable_documents,
             metadata=self._agent_metadata(node, [result]),
+        )
+
+    def _ensure_document_patch_result(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        node: WorkflowNode,
+        result: AgentResult,
+    ) -> AgentResult:
+        if result.proposed_patches:
+            return result
+        document = self._direct_document_from_result(checkpoint, node, result)
+        if document is None:
+            return result
+        document_type = document.document_type
+        evidence_refs = result.evidence_refs or [self._agent_output_evidence(result)]
+        patch = BlackboardPatch(
+            patch_id=new_id("patch"),
+            target=BlackboardTarget(
+                document_type=document_type,
+                ticker=checkpoint.ticker,
+                document_id=document.document_id,
+                field_path="document",
+            ),
+            operation=PatchOperation.CREATE,
+            before=None,
+            after=document.model_dump(mode="json"),
+            rationale=f"{node.value} direct document output converted to Blackboard patch.",
+            evidence_refs=evidence_refs,
+            author_agent=result.agent_name,
+            validation_status=ValidationStatus.PENDING,
+        )
+        return result.model_copy(
+            update={
+                "proposed_patches": [patch],
+                "evidence_refs": evidence_refs,
+            },
+            deep=True,
+        )
+
+    def _direct_document_from_result(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        node: WorkflowNode,
+        result: AgentResult,
+    ) -> (
+        KnownEventsDocument
+        | MonitoringConfigDocument
+        | MonitoringPolicyDocument
+        | None
+    ):
+        structured = result.payload.get("structured")
+        if not isinstance(structured, dict):
+            return None
+        if node is WorkflowNode.GENERATE_KNOWN_EVENTS:
+            return self._normalize_known_events_document(checkpoint.ticker, structured, result)
+        if node is WorkflowNode.GENERATE_MONITORING_CONFIG:
+            return self._normalize_monitoring_config_document(checkpoint.ticker, structured)
+        if node is WorkflowNode.GENERATE_MONITORING_POLICY:
+            return self._normalize_monitoring_policy_document(checkpoint.ticker, structured)
+        return None
+
+    def _normalize_known_events_document(
+        self,
+        ticker: str,
+        payload: dict[str, Any],
+        result: AgentResult,
+    ) -> KnownEventsDocument:
+        fallback_evidence = (result.evidence_refs or [self._agent_output_evidence(result)])[0]
+        events: list[KnownEvent] = []
+        raw_events = payload.get("events")
+        for item in raw_events if isinstance(raw_events, list) else []:
+            if not isinstance(item, dict):
+                continue
+            source = item.get("source")
+            if isinstance(source, dict):
+                try:
+                    event_source = EvidenceRef.model_validate(source)
+                except Exception:
+                    event_source = fallback_evidence
+            else:
+                event_source = fallback_evidence
+            event_time = self._coerce_event_time(item.get("event_time") or item.get("date"))
+            date_hint = item.get("date")
+            description = str(item.get("description") or item.get("event") or item)
+            if isinstance(date_hint, str) and date_hint and date_hint not in description:
+                description = f"{date_hint}: {description}"
+            events.append(
+                KnownEvent(
+                    event_id=str(item.get("event_id") or item.get("id") or new_id("event")),
+                    event_time=event_time,
+                    description=description,
+                    source=event_source,
+                    expectation_id=item.get("expectation_id"),
+                    discussed_by_market=bool(item.get("discussed_by_market", True)),
+                    has_price_reaction=bool(item.get("has_price_reaction", False)),
+                    is_known_old_news=bool(item.get("is_known_old_news", False)),
+                )
+            )
+        if not events:
+            events.append(
+                KnownEvent(
+                    event_id=new_id("event"),
+                    event_time=datetime.now(UTC),
+                    description="Known event details were not provided by the agent.",
+                    source=fallback_evidence,
+                    discussed_by_market=False,
+                    has_price_reaction=False,
+                    is_known_old_news=False,
+                )
+            )
+        return KnownEventsDocument(
+            document_id=str(payload.get("document_id") or new_id("doc")),
+            ticker=ticker,
+            created_at=self._coerce_event_time(payload.get("created_at")),
+            events=events,
+        )
+
+    def _normalize_monitoring_config_document(
+        self,
+        ticker: str,
+        payload: dict[str, Any],
+    ) -> MonitoringConfigDocument:
+        raw_items = payload.get("monitoring_items") or payload.get("items") or []
+        items: list[MonitoringItem] = []
+        for item in raw_items if isinstance(raw_items, list) else []:
+            if isinstance(item, dict):
+                name = str(item.get("name") or item.get("trigger_condition") or "monitor")
+                items.append(
+                    MonitoringItem(
+                        item_id=str(item.get("item_id") or item.get("id") or new_id("monitor")),
+                        base_keywords=self._string_list(item.get("base_keywords"), fallback=name),
+                        extra_objects=self._string_list(item.get("extra_objects")),
+                        extra_keywords=self._string_list(item.get("extra_keywords")),
+                        related_entities=self._string_list(item.get("related_entities")),
+                        expectation_id=item.get("expectation_id"),
+                        priority=str(item.get("priority") or "medium"),
+                        trigger_condition=str(
+                            item.get("trigger_condition")
+                            or item.get("condition")
+                            or item.get("description")
+                            or name
+                        ),
+                    )
+                )
+            elif str(item).strip():
+                text = str(item)
+                items.append(
+                    MonitoringItem(
+                        item_id=new_id("monitor"),
+                        base_keywords=[ticker],
+                        priority="medium",
+                        trigger_condition=text,
+                    )
+                )
+        if not items:
+            items.append(
+                MonitoringItem(
+                    item_id=new_id("monitor"),
+                    base_keywords=[ticker],
+                    priority="medium",
+                    trigger_condition="Monitor new ticker-relevant events.",
+                )
+            )
+        return MonitoringConfigDocument(
+            document_id=str(payload.get("document_id") or new_id("doc")),
+            ticker=ticker,
+            created_at=self._coerce_event_time(payload.get("created_at")),
+            monitoring_items=items,
+        )
+
+    def _normalize_monitoring_policy_document(
+        self,
+        ticker: str,
+        payload: dict[str, Any],
+    ) -> MonitoringPolicyDocument:
+        direct = self._normalize_policy_rules(
+            payload.get("direct_trade_rules"),
+            default_action_type=PolicyActionType.DIRECT_TRADE,
+        )
+        push = self._normalize_policy_rules(
+            payload.get("push_to_agent_rules") or payload.get("rules"),
+            default_action_type=PolicyActionType.PUSH_TO_AGENT,
+        )
+        cache = self._normalize_policy_rules(
+            payload.get("cache_rules"),
+            default_action_type=PolicyActionType.CACHE,
+        )
+        if not direct and not push and not cache:
+            cache = [
+                MonitoringPolicyRule(
+                    rule_id=new_id("rule"),
+                    action_type=PolicyActionType.CACHE,
+                    trigger_condition="Monitor ticker-relevant signals.",
+                    action="cache for review",
+                    strategy_note="Agent output did not provide explicit monitoring policy rules.",
+                )
+            ]
+        return MonitoringPolicyDocument(
+            document_id=str(payload.get("document_id") or new_id("doc")),
+            ticker=ticker,
+            created_at=self._coerce_event_time(payload.get("created_at")),
+            direct_trade_rules=direct,
+            push_to_agent_rules=push,
+            cache_rules=cache,
+        )
+
+    def _normalize_policy_rules(
+        self,
+        value: Any,
+        *,
+        default_action_type: PolicyActionType,
+    ) -> list[MonitoringPolicyRule]:
+        rules: list[MonitoringPolicyRule] = []
+        for item in value if isinstance(value, list) else []:
+            if not isinstance(item, dict):
+                continue
+            raw_action_type = item.get("action_type") or default_action_type.value
+            try:
+                action_type = PolicyActionType(str(raw_action_type))
+            except ValueError:
+                action_type = default_action_type
+            rules.append(
+                MonitoringPolicyRule(
+                    rule_id=str(item.get("rule_id") or item.get("id") or new_id("rule")),
+                    action_type=action_type,
+                    trigger_condition=str(
+                        item.get("trigger_condition")
+                        or item.get("condition")
+                        or item.get("description")
+                        or "Monitor ticker-relevant signals."
+                    ),
+                    expectation_id=item.get("expectation_id"),
+                    action=str(item.get("action") or "mark for review"),
+                    strategy_note=str(
+                        item.get("strategy_note")
+                        or item.get("rationale")
+                        or item.get("note")
+                        or "Generated from direct monitoring policy output."
+                    ),
+                )
+            )
+        return rules
+
+    def _coerce_event_time(self, value: Any) -> datetime:
+        if isinstance(value, datetime):
+            return value
+        if isinstance(value, str) and value.strip():
+            text = value.strip()
+            try:
+                return datetime.fromisoformat(text.replace("Z", "+00:00"))
+            except ValueError:
+                pass
+            if "-Q" in text:
+                year_text, quarter_text = text.split("-Q", 1)
+                try:
+                    month = (int(quarter_text[:1]) - 1) * 3 + 1
+                    return datetime(int(year_text), month, 1, tzinfo=UTC)
+                except ValueError:
+                    pass
+            try:
+                return datetime(int(text[:4]), 1, 1, tzinfo=UTC)
+            except ValueError:
+                pass
+        return datetime.now(UTC)
+
+    def _string_list(self, value: Any, *, fallback: str | None = None) -> list[str]:
+        if isinstance(value, list):
+            items = [str(item) for item in value if str(item).strip()]
+            if items:
+                return items
+        if isinstance(value, str) and value.strip():
+            return [value]
+        return [fallback] if fallback else []
+
+    def _agent_output_evidence(self, result: AgentResult) -> EvidenceRef:
+        return EvidenceRef(
+            evidence_id=new_id("evidence"),
+            source_type=EvidenceSourceType.AGENT_OUTPUT,
+            source_id=f"agent_result:{result.task_id}",
+            title=f"{result.agent_name.value} agent output",
+            summary="Agent direct document output was converted to a Blackboard patch.",
+            confidence=0.5,
+            citation_scope="workflow_document_patch",
         )
 
     def _promote_pending_patches(
@@ -1079,6 +2111,86 @@ class BlackboardInitializationWorkflow:
         raise WorkflowContractError(
             f"{node.value} missed required doxa_get_narrative_report evidence without "
             "recording the DoxAtlas narrative gap in unknowns or rationale."
+        )
+
+    def _ensure_o1_narrative_tool_evidence(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        result: AgentResult,
+        node: WorkflowNode,
+    ) -> AgentResult:
+        if result.payload.get("runtime") != "react":
+            return result
+        tool_name = "doxa_get_narrative_report"
+        if self._has_successful_tool_call(result, tool_name):
+            return result
+        tool_registry = self._runner_tool_registry()
+        if tool_registry is None:
+            raise WorkflowContractError(
+                f"tool_prefetch_failed: {node.value} requires {tool_name}, "
+                "but the active runner has no tool registry."
+            )
+        prefetch = tool_registry.call(
+            ToolRequest(
+                tool_name=tool_name,
+                ticker=checkpoint.ticker,
+                agent_name=result.agent_name,
+                input={"ticker": checkpoint.ticker},
+                metadata={
+                    "run_id": checkpoint.run_id,
+                    "workflow_node": node.value,
+                    "prefetch": True,
+                },
+            ),
+            AgentPermissions(allowed_tools=[tool_name]),
+        )
+        merged = self._merge_prefetched_tool_result(result, prefetch)
+        if prefetch.succeeded:
+            return merged
+        message = prefetch.error.message if prefetch.error is not None else "unknown error"
+        self._write_working_memory(checkpoint, merged, "tool_prefetch_failed")
+        raise WorkflowContractError(
+            f"tool_prefetch_failed: {node.value} required {tool_name}, but prefetch failed: "
+            f"{message}"
+        )
+
+    def _runner_tool_registry(self) -> Any | None:
+        tool_registry = getattr(self.runner, "tool_registry", None)
+        if tool_registry is not None:
+            return tool_registry
+        nested_runner = getattr(self.runner, "runner", None)
+        return getattr(nested_runner, "tool_registry", None)
+
+    def _merge_prefetched_tool_result(
+        self,
+        result: AgentResult,
+        tool_result: ToolResult,
+    ) -> AgentResult:
+        summary = ToolCallSummary(
+            tool_name=tool_result.tool_name,
+            status=tool_result.status,
+            input_summary="workflow prefetch request",
+            output_summary=tool_result.output_summary,
+            evidence_refs=tool_result.evidence_refs,
+        )
+        payload = dict(result.payload)
+        structured = payload.get("structured")
+        if isinstance(structured, dict):
+            updated_structured = dict(structured)
+            evidence_refs = updated_structured.get("evidence_refs", [])
+            if not isinstance(evidence_refs, list):
+                evidence_refs = []
+            updated_structured["evidence_refs"] = evidence_refs + [
+                item.model_dump(mode="json") for item in tool_result.evidence_refs
+            ]
+            payload["structured"] = updated_structured
+        return result.model_copy(
+            update={
+                "payload": payload,
+                "evidence_refs": result.evidence_refs + tool_result.evidence_refs,
+                "tool_calls": result.tool_calls + [summary],
+            },
+            deep=True,
         )
 
     def _has_successful_tool_call(self, result: AgentResult, tool_name: str) -> bool:
@@ -1165,8 +2277,15 @@ class BlackboardInitializationWorkflow:
         if len(expectation_patches) >= 4:
             raise WorkflowContractError("GenerateExpectationUnits produced too many expectations.")
 
-    def _submit_patch(self, run_id: str, patch: BlackboardPatch, trigger_reason: str) -> None:
-        permissions = self.registry.get(patch.author_agent).runtime.to_permissions()
+    def _submit_patch(
+        self,
+        run_id: str,
+        patch: BlackboardPatch,
+        trigger_reason: str,
+        *,
+        permissions: AgentPermissions | None = None,
+    ) -> None:
+        permissions = permissions or self.registry.get(patch.author_agent).runtime.to_permissions()
         self.blackboard.submit_patch(
             run_id,
             patch,
@@ -1180,22 +2299,97 @@ class BlackboardInitializationWorkflow:
         result: AgentResult,
         content_type: str,
     ) -> None:
-        self.blackboard.add_working_memory_entry(
-            checkpoint.run_id,
-            author_agent=result.agent_name,
-            content_type=content_type,
-            payload={
-                "status": result.status.value,
-                "payload": result.payload,
-                "patch_ids": [patch.patch_id for patch in result.proposed_patches],
-                "objection_ids": [item.objection_id for item in result.objections],
-                "delegation_ids": [item.delegation_id for item in result.delegations],
-                "tool_calls": [item.model_dump(mode="json") for item in result.tool_calls],
-                "skill_versions": result.payload.get("skill_versions", {}),
-                "model_audit": result.payload.get("model_audit"),
-            },
-            evidence_refs=result.evidence_refs,
-        )
+        try:
+            self.blackboard.add_working_memory_entry(
+                checkpoint.run_id,
+                author_agent=result.agent_name,
+                content_type=content_type,
+                payload={
+                    "status": result.status.value,
+                    "payload": result.payload,
+                    "patch_ids": [patch.patch_id for patch in result.proposed_patches],
+                    "objection_ids": [item.objection_id for item in result.objections],
+                    "delegation_ids": [item.delegation_id for item in result.delegations],
+                    "tool_calls": [item.model_dump(mode="json") for item in result.tool_calls],
+                    "skill_versions": result.payload.get("skill_versions", {}),
+                    "model_audit": result.payload.get("model_audit"),
+                },
+                evidence_refs=result.evidence_refs,
+            )
+        except Exception as exc:
+            raise WorkflowContractError(
+                f"write_failed: could not write working memory entry for "
+                f"{checkpoint.next_node.value if checkpoint.next_node else 'unknown'} "
+                f"{result.agent_name.value}: {exc}"
+            ) from exc
+
+    def _write_agent_acceptance_failure(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        task: AgentTask,
+        result: AgentResult,
+        *,
+        event_code: Literal["parse_failed", "schema_failed"],
+        message: str,
+        expected_schema: str,
+    ) -> None:
+        failed = result
+        if result.status is not ResultStatus.FAILED:
+            failed = result.model_copy(
+                update={
+                    "status": ResultStatus.FAILED,
+                    "error": AgentError(
+                        code=event_code,
+                        message=message,
+                        retryable=False,
+                        details={
+                            "expected_schema": expected_schema,
+                            "workflow_node": task.run_metadata.workflow_node,
+                        },
+                    ),
+                },
+                deep=True,
+            )
+        try:
+            self.blackboard.add_working_memory_entry(
+                checkpoint.run_id,
+                author_agent=task.agent_name,
+                content_type=f"agent_result_{event_code}",
+                payload={
+                    "event_code": event_code,
+                    "status": "failed",
+                    "message": message,
+                    "expected_schema": expected_schema,
+                    "run_id": checkpoint.run_id,
+                    "workflow_node": task.run_metadata.workflow_node,
+                    "agent_name": task.agent_name.value,
+                    "task_id": task.task_id,
+                    "agent_result": self._agent_result_summary(failed),
+                    "payload": result.payload,
+                    "error": result.error.model_dump(mode="json") if result.error else None,
+                },
+                evidence_refs=result.evidence_refs,
+            )
+        except Exception as exc:
+            raise WorkflowContractError(
+                f"write_failed: could not write {event_code} for "
+                f"{task.run_metadata.workflow_node}/{task.agent_name.value}: {exc}"
+            ) from exc
+
+    def _agent_failure_event_code(self, result: AgentResult) -> str:
+        if result.error is None:
+            return "agent_failed"
+        code = result.error.code
+        if code in {
+            "invalid_json",
+            "missing_json_text",
+            "invalid_react_action",
+            "invalid_structured_output",
+        }:
+            return "parse_failed"
+        if code in {"invalid_final_payload", "schema_invalid"} or "schema" in code:
+            return "schema_failed"
+        return "agent_failed"
 
     def _agent_metadata(
         self,
@@ -1256,7 +2450,7 @@ class BlackboardInitializationWorkflow:
             self._validate_agent_success(result, node, require_patches=False)
             if not self._can_complete_a2_delegation(result):
                 raise WorkflowContractError(
-                    f"A2 did not return sufficient Tavily evidence for {delegation.delegation_id}."
+                    f"A2 did not return sufficient search evidence for {delegation.delegation_id}."
                 )
             self.blackboard.complete_delegation(
                 checkpoint.run_id,
@@ -1320,21 +2514,41 @@ class BlackboardInitializationWorkflow:
                 )
 
     def _a2_delegation_context(self, delegation: Delegation) -> dict[str, Any]:
+        query_hint = delegation.question
         return {
             "delegation": delegation.model_dump(mode="json"),
             "tool_requirements": [
                 {
-                    "tool_name": "tavily.search",
-                    "required": True,
+                    "tool_name": "anysearch.search",
+                    "required": False,
                     "input_hint": {
-                        "query": delegation.question,
+                        "query": query_hint,
+                        "domain": "finance",
+                        "content_types": ["web", "news"],
+                        "zone": "intl",
+                        "max_results": 5,
+                    },
+                },
+                {
+                    "tool_name": "tavily.search",
+                    "required": False,
+                    "input_hint": {
+                        "query": query_hint,
                         "topic": "finance",
                         "search_depth": "basic",
                         "max_results": 5,
                     },
-                }
+                },
+                {
+                    "tool_name": "tavily.extract",
+                    "required": False,
+                    "input_hint": {
+                        "urls": ["<url selected from search results>"],
+                        "extract_depth": "basic",
+                    },
+                },
             ],
-            "required_tool_names": ["tavily.search"],
+            "required_tool_names": [],
         }
 
     def _can_complete_a2_delegation(self, result: AgentResult) -> bool:
@@ -1357,7 +2571,7 @@ class BlackboardInitializationWorkflow:
         summary = candidate.get("retrieval_summary") if isinstance(candidate, dict) else None
         if isinstance(summary, str) and summary:
             return summary
-        return "A2 Tavily retrieval returned sufficient evidence."
+        return "A2 search verification returned sufficient evidence."
 
     def _apply_o1_objection_resolutions(
         self,
@@ -1651,7 +2865,12 @@ class BlackboardInitializationWorkflow:
         task_type: TaskType,
     ) -> bool:
         if (
-            node is WorkflowNode.GENERATE_EXPECTATION_UNITS
+            node
+            in {
+                WorkflowNode.GENERATE_EXPECTATION_CONSTRUCTION,
+                WorkflowNode.GENERATE_EXPECTATION_DETAILS,
+                WorkflowNode.GENERATE_EXPECTATION_UNITS,
+            }
             and agent_name is AgentName.O1_EXPECTATION_OWNER
             and section_key == "market_narrative_report"
         ):
