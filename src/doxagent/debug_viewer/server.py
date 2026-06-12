@@ -252,7 +252,8 @@ INDEX_HTML = r"""<!doctype html>
       text-transform: uppercase;
     }
     .status.missing, .status.failed { background: #fce8e6; color: var(--bad); }
-    .status.warn { background: #fff4df; color: var(--warn); }
+    .status.warn, .status.warning { background: #fff4df; color: var(--warn); }
+    .status.passed { background: #e6f4ea; color: var(--ok); }
     .kv {
       display: grid;
       grid-template-columns: 130px minmax(0, 1fr);
@@ -354,7 +355,14 @@ INDEX_HTML = r"""<!doctype html>
     }
     function status(value) {
       const text = String(value || "unknown");
-      const klass = ["missing", "failed"].includes(text) ? " missing" : "";
+      const lowered = text.toLowerCase();
+      const klass = ["missing", "failed", "error"].includes(lowered)
+        ? " missing"
+        : ["warn", "warning"].includes(lowered)
+          ? " warning"
+          : ["passed", "completed", "clear", "success", "succeeded"].includes(lowered)
+            ? " passed"
+            : "";
       return `<span class="status${klass}">${esc(text)}</span>`;
     }
     function details(label, value) {
@@ -420,6 +428,30 @@ INDEX_HTML = r"""<!doctype html>
         </div>
       </div>`;
     }
+    function renderValidators(payload) {
+      const hard = payload.hard_validators || {};
+      const validators = hard.validators || [];
+      return `<div class="panel span-12">
+        <h2>Hard Validators ${status(hard.status)}</h2>
+        <div class="kv">
+          <div class="muted">Validators</div><div>${esc(hard.summary?.validator_count || 0)}</div>
+          <div class="muted">Failed</div><div>${esc(hard.summary?.failed_count || 0)}</div>
+          <div class="muted">Warnings</div><div>${esc(hard.summary?.warning_count || 0)}</div>
+          <div class="muted">Findings</div><div>${esc(hard.summary?.finding_count || 0)}</div>
+        </div>
+        ${validators.map(item => `<div class="section">
+          <h3>${esc(item.title || item.validator_id)} ${status(item.status)}</h3>
+          <div class="kv">
+            <div class="muted">Checked Items</div><div>${esc(item.checked_items || 0)}</div>
+            <div class="muted">Errors</div><div>${esc(item.summary?.error_count || 0)}</div>
+            <div class="muted">Warnings</div><div>${esc(item.summary?.warning_count || 0)}</div>
+            <div class="muted">Scope</div><div>${esc(item.scope || "")}</div>
+          </div>
+          ${details(`Findings (${(item.findings || []).length})`, item.findings || [])}
+          ${Object.keys(item.metadata || {}).length ? details("Metadata", item.metadata || {}) : ""}
+        </div>`).join("") || `<div class="empty">No hard validator results available.</div>`}
+      </div>`;
+    }
     function renderBrief(payload) {
       const global = payload.global_research || {};
       const expectations = payload.expectation_units || [];
@@ -427,6 +459,7 @@ INDEX_HTML = r"""<!doctype html>
       els.metrics.hidden = true;
       els.brief.innerHTML = `<div class="grid">
         ${runPanel(payload)}
+        ${renderValidators(payload)}
         <div class="panel span-12">
           <h2>Document 1: Global Research ${status(global.status)}</h2>
           ${(global.sections || []).map(section => `<div class="section">

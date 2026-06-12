@@ -117,9 +117,17 @@ class AuditQueryService:
             document_type=target.document_type,
             object_id=_object_id(target),
             field_path=target.field_path,
+            taxonomy=objection.taxonomy,
+            dedupe_hash=objection.dedupe_hash,
+            target_path=objection.target_path,
+            merged_objection_ids=list(objection.merged_objection_ids),
             reason=objection.reason,
             evidence_ids=[evidence.evidence_id for evidence in objection.evidence_refs],
             resolution_note=objection.resolution_note,
+            resolution_changed_paths=list(objection.resolution_changed_paths),
+            resolution_evidence_ids=[
+                evidence.evidence_id for evidence in objection.resolution_evidence_refs
+            ],
         )
 
     def _delegation_record(self, delegation: Delegation) -> DelegationAuditRecord:

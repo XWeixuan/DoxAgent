@@ -40,6 +40,16 @@ class ExpectationShellConstructionResult(ContractModel):
     rationale: NonEmptyStr
 
 
+class ObjectionResolutionDecision(ContractModel):
+    """Structured O1 decision for closing or rebutting one objection."""
+
+    objection_id: NonEmptyStr
+    decision: Literal["resolved", "accepted", "partially_accepted", "rejected"]
+    resolution_note: NonEmptyStr
+    changed_paths: list[NonEmptyStr] = Field(default_factory=list)
+    evidence_refs: list[EvidenceRef] = Field(default_factory=list)
+
+
 class ExpectationConstructionResult(ContractModel):
     """O1 output for full expectation patches and objection revisions."""
 
@@ -52,6 +62,7 @@ class ExpectationConstructionResult(ContractModel):
     accepted_objection_ids: list[NonEmptyStr] = Field(default_factory=list)
     partially_accepted_objection_ids: list[NonEmptyStr] = Field(default_factory=list)
     rejected_objection_ids: list[NonEmptyStr] = Field(default_factory=list)
+    objection_resolutions: list[ObjectionResolutionDecision] = Field(default_factory=list)
 
 
 class ExpectationDetailResult(ExpectationConstructionResult):

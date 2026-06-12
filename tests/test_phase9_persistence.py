@@ -21,6 +21,9 @@ from tests.fixtures.phase1_contracts import evidence_ref, patch
 from tests.test_phase3_blackboard_service import write_permissions
 
 MIGRATION = Path("supabase/migrations/202605300001_blackboard_workflow_persistence.sql")
+OBJECTION_DEDUPE_MIGRATION = Path(
+    "supabase/migrations/202606120001_objection_dedupe_metadata.sql"
+)
 
 
 def test_migration_separates_blackboard_and_workflow_checkpoint_tables() -> None:
@@ -36,6 +39,21 @@ def test_migration_separates_blackboard_and_workflow_checkpoint_tables() -> None
     assert "doxagent.evidence_refs" in sql
     assert "doxagent.workflow_checkpoints" in sql
     assert "workflow_checkpoints_one_latest_per_run" in sql
+    assert "taxonomy text" in sql
+    assert "dedupe_hash text" in sql
+    assert "target_path text" in sql
+    assert "merged_objection_ids jsonb" in sql
+    assert "objections_dedupe_lookup_idx" in sql
+
+
+def test_objection_dedupe_migration_adds_queryable_metadata_columns() -> None:
+    sql = OBJECTION_DEDUPE_MIGRATION.read_text(encoding="utf-8")
+
+    assert "add column if not exists taxonomy" in sql
+    assert "add column if not exists dedupe_hash" in sql
+    assert "add column if not exists target_path" in sql
+    assert "add column if not exists merged_objection_ids" in sql
+    assert "objections_dedupe_lookup_idx" in sql
 
 
 def test_migration_does_not_embed_supabase_credentials() -> None:

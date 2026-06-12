@@ -4,6 +4,11 @@ from doxagent.debug_viewer.query import (
     build_brief_state_view,
 )
 from doxagent.debug_viewer.server import LANGSMITH_RENDERER_HTML, _write_json
+from doxagent.debug_viewer.validators import (
+    validate_commit_log_state_mutation_consistency,
+    validate_evidence_reference_integrity,
+    validate_langsmith_trajectory_tool_boundary,
+)
 
 
 def test_debug_viewer_builds_brief_state_for_documents_one_and_two() -> None:
@@ -21,6 +26,7 @@ def test_debug_viewer_builds_brief_state_for_documents_one_and_two() -> None:
     assert expectation["expectation_name"] == "ASTS commercialization"
     assert expectation["commit_trace"][0]["rationale"] == "Promote expectation."
     assert expectation["blockers"]["is_blocked"] is True
+    assert view["hard_validators"]["summary"]["validator_count"] == 3
 
 
 def test_debug_viewer_agent_metrics_derive_react_counts() -> None:
@@ -67,6 +73,66 @@ def test_debug_viewer_handles_missing_react_audit() -> None:
     metrics = {item["agent"]: item for item in view["agents"]}
     assert metrics["C1"]["audit_status"] == "missing"
     assert metrics["C1"]["agent_loops"] == 0
+
+
+def test_evidence_reference_integrity_validator_flags_missing_and_broken_refs() -> None:
+    bundle = _sample_bundle()
+    bundle.evidence_refs = []
+
+    result = validate_evidence_reference_integrity(bundle)
+
+    assert result["status"] == "failed"
+    codes = {item["code"] for item in result["findings"]}
+    assert "evidence_ref_not_hydrated" in codes
+    assert "missing_evidence_refs" in codes
+
+
+def test_trajectory_tool_boundary_validator_flags_forbidden_tools() -> None:
+    bundle = _sample_bundle()
+    bundle.working_memory.append(
+        {
+            "entry_id": "wm-A2",
+            "author_agent": "A2",
+            "content_type": "delegated_retrieval_result",
+            "payload": {
+                "status": "succeeded",
+                "payload": {
+                    "runtime": "react",
+                    "react_audit": {
+                        "tool_counts": {"doxa_get_analysis": 1},
+                        "warnings": [],
+                        "entries": [{"kind": "action", "step": 1}],
+                    },
+                },
+                "tool_calls": [
+                    {
+                        "tool_name": "doxa_get_analysis",
+                        "status": "succeeded",
+                        "output_summary": "not allowed for A2",
+                    }
+                ],
+            },
+            "created_at": "2026-06-03T00:00:11Z",
+        }
+    )
+
+    result = validate_langsmith_trajectory_tool_boundary(bundle)
+
+    assert result["status"] == "failed"
+    assert any(item["code"] == "tool_not_allowed_for_agent" for item in result["findings"])
+
+
+def test_commit_log_state_mutation_validator_flags_orphan_stable_documents() -> None:
+    bundle = _sample_bundle()
+
+    result = validate_commit_log_state_mutation_consistency(bundle)
+
+    assert result["status"] == "failed"
+    assert any(
+        item["code"] == "stable_document_without_commit_trace"
+        and "global_research" in item["location"]
+        for item in result["findings"]
+    )
 
 
 def test_langsmith_renderer_is_raw_first_and_has_enhanced_sections() -> None:

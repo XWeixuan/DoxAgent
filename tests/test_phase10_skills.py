@@ -11,7 +11,12 @@ from doxagent.agents import MarketTraceAgentModule, MockAgentRunner, default_age
 from doxagent.blackboard import BlackboardService
 from doxagent.context import ContextBuilder
 from doxagent.models import AgentName, TaskType
-from doxagent.prompts import PromptAssembler, PromptInjector, UnknownPromptResourceError
+from doxagent.prompts import (
+    PromptAssembler,
+    PromptInjector,
+    UnknownPromptResourceError,
+    lint_prompt_resources,
+)
 from doxagent.prompts.registry import default_prompt_registry
 from doxagent.skills import UnknownSkillError, default_skill_registry
 from doxagent.skills.injection import SkillInjector
@@ -72,6 +77,12 @@ def test_skill_front_matter_does_not_carry_runtime_constraints() -> None:
             front_matter = raw.split("+++\n", 2)[1]
             for key in forbidden:
                 assert f"{key} =" not in front_matter
+
+
+def test_prompt_resource_lint_passes_for_repo_prompts() -> None:
+    issues = lint_prompt_resources(PROMPT_ROOT)
+
+    assert issues == []
 
 
 def test_skill_registry_unknown_and_deep_copy_behavior() -> None:

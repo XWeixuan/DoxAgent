@@ -220,8 +220,9 @@ class PostgresBlackboardRepository:
                     """
                     insert into doxagent.objections
                         (objection_id, run_id, source_agent, status, severity,
+                         taxonomy, dedupe_hash, target_path, merged_objection_ids,
                          document_type, object_id, field_path, target_json, objection_json)
-                    values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     """,
                     (
                         objection.objection_id,
@@ -229,6 +230,10 @@ class PostgresBlackboardRepository:
                         objection.source_agent.value,
                         objection.status.value,
                         objection.severity.value,
+                        objection.taxonomy,
+                        objection.dedupe_hash,
+                        objection.target_path,
+                        self._jsonb(dumped["merged_objection_ids"]),
                         objection.target.document_type.value,
                         objection.target.document_id or objection.target.expectation_id,
                         objection.target.field_path,

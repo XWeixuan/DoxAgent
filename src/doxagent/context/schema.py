@@ -36,6 +36,10 @@ class ObjectionSummary(ContextModel):
     status: ObjectionStatus
     target_document_type: DocumentType
     target_field_path: str
+    taxonomy: str = "general"
+    dedupe_hash: str | None = None
+    target_path: str | None = None
+    merged_objection_ids: list[str] = Field(default_factory=list)
     reason: str
     evidence_refs: list[EvidenceRef] = Field(default_factory=list)
 

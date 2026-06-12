@@ -39,6 +39,10 @@ class ContextBuilder:
                 status=objection.status,
                 target_document_type=objection.target.document_type,
                 target_field_path=objection.target.field_path,
+                taxonomy=objection.taxonomy,
+                dedupe_hash=objection.dedupe_hash,
+                target_path=objection.target_path,
+                merged_objection_ids=list(objection.merged_objection_ids),
                 reason=objection.reason,
                 evidence_refs=objection.evidence_refs,
             )

@@ -11,6 +11,7 @@ from doxagent.models.agent_outputs import (
     ExpectationFieldReviewResult,
     ExpectationShell,
     ExpectationShellConstructionResult,
+    ObjectionResolutionDecision,
     create_a2_retrieval_delegation,
 )
 from doxagent.models.blackboard import (
@@ -109,6 +110,7 @@ __all__ = [
     "MonitoringPolicyRule",
     "NonEmptyStr",
     "Objection",
+    "ObjectionResolutionDecision",
     "ObjectionSeverity",
     "ObjectionStatus",
     "PatchOperation",

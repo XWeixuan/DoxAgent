@@ -6,6 +6,7 @@ from doxagent.models import (
     AgentPermissions,
     BlackboardPatch,
     DelegationStatus,
+    ObjectionSeverity,
     ObjectionStatus,
 )
 from tests.fixtures.phase1_contracts import (
@@ -131,6 +132,59 @@ def test_resolved_objection_and_completed_delegation_unblock_patch() -> None:
 
     assert commit.resolved_objection_ids == [created_objection.objection_id]
     assert commit.residual_disputes == []
+
+
+def test_duplicate_objections_merge_by_target_taxonomy_and_hash() -> None:
+    service = BlackboardService()
+    run = service.start_run("NVDA", AgentName.SYSTEM)
+    first = objection().model_copy(
+        update={
+            "taxonomy": "evidence_gap",
+            "dedupe_hash": "same-gap",
+            "severity": ObjectionSeverity.MEDIUM,
+            "evidence_refs": [evidence_ref()],
+        },
+        deep=True,
+    )
+    second = objection().model_copy(
+        update={
+            "taxonomy": "evidence_gap",
+            "dedupe_hash": "same-gap",
+            "severity": ObjectionSeverity.BLOCKING,
+            "reason": "Same support gap restated after resume.",
+            "evidence_refs": [evidence_ref()],
+        },
+        deep=True,
+    )
+
+    created = service.create_objection(run.run_id, first)
+    merged = service.create_objection(run.run_id, second)
+    objections = service.get_run(run.run_id).objections
+
+    assert len(objections) == 1
+    assert merged.objection_id == created.objection_id
+    assert merged.severity is ObjectionSeverity.BLOCKING
+    assert second.objection_id in merged.merged_objection_ids
+    assert len(merged.evidence_refs) == 2
+    assert merged.target_path
+
+
+def test_objection_resolution_records_changed_paths_and_evidence() -> None:
+    service = BlackboardService()
+    run = service.start_run("NVDA", AgentName.SYSTEM)
+    created = service.create_objection(run.run_id, objection())
+    evidence = evidence_ref()
+
+    resolved = service.resolve_objection(
+        run.run_id,
+        created.objection_id,
+        "O1 revised the field with evidence.",
+        changed_paths=["document.realized_facts"],
+        evidence_refs=[evidence],
+    )
+
+    assert resolved.resolution_changed_paths == ["document.realized_facts"]
+    assert resolved.resolution_evidence_refs == [evidence]
 
 
 def test_patch_validation_rejects_missing_evidence_permissions_and_ticker_mismatch() -> None:

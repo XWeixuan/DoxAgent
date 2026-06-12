@@ -156,7 +156,7 @@ def test_agent_runner_default_uses_bailian_and_real_tools() -> None:
     )
 
     assert workflow.runner.default_provider is ProviderName.BAILIAN
-    assert workflow.runner.default_model == "qwen3.6-flash"
+    assert workflow.runner.default_model == "qwen3.7-plus"
     assert workflow.runner.tool_mode == "real"
     assert "doxa_get_narrative_report" in workflow.runner.tool_registry.names()
 
@@ -204,7 +204,7 @@ def test_default_real_runner_applies_langsmith_env_and_wraps_bailian(
         "metadata": {
             "runtime": "doxagent",
             "provider": "bailian",
-            "model": "qwen3.6-flash",
+            "model": "qwen3.7-plus",
         }
     }
 
@@ -277,16 +277,14 @@ def test_agent_runner_workflow_uses_module_integration_for_global_research() -> 
         (AgentName.C2_MACRO_RESEARCH, WorkflowNode.BUILD_GLOBAL_RESEARCH.value),
         (AgentName.C3_INDUSTRY_RESEARCH, WorkflowNode.BUILD_GLOBAL_RESEARCH.value),
         (AgentName.O4_MARKET_TRACE, WorkflowNode.BUILD_GLOBAL_RESEARCH.value),
-        (AgentName.O1_EXPECTATION_OWNER, WorkflowNode.BUILD_GLOBAL_RESEARCH.value),
     ]
     run = workflow.blackboard.get_run(result.checkpoint.run_id)
-    assert len(run.working_memory) == 5
+    assert len(run.working_memory) == 4
     assert {entry.author_agent for entry in run.working_memory} == {
         AgentName.C1_FUNDAMENTAL_RESEARCH,
         AgentName.C2_MACRO_RESEARCH,
         AgentName.C3_INDUSTRY_RESEARCH,
         AgentName.O4_MARKET_TRACE,
-        AgentName.O1_EXPECTATION_OWNER,
     }
 
 
@@ -306,9 +304,14 @@ def test_agent_runner_workflow_completes_with_structured_agent_result_json() -> 
         DocumentType.MONITORING_CONFIG,
         DocumentType.MONITORING_POLICY,
     ]
-    assert result.summary.commit_count == 5
+    assert result.summary.commit_count == 6
     assert result.checkpoint.metadata["execution_mode"] == "agent_runner"
     run = workflow.blackboard.get_run(result.checkpoint.run_id)
+    assert [
+        commit.patch.target.field_path
+        for commit in run.commit_log
+        if commit.patch.target.document_type is DocumentType.GLOBAL_RESEARCH
+    ] == ["document", "document.market_narrative_report"]
     assert set(run.belief_state.documents) == {
         DocumentType.GLOBAL_RESEARCH,
         DocumentType.EXPECTATION_UNIT,
@@ -404,7 +407,7 @@ def test_agent_runner_resume_latest_after_manual_blocker_resolution() -> None:
     resumed = workflow.resume_latest(blocked.checkpoint.run_id)
 
     assert resumed.status is WorkflowRunStatus.COMPLETED
-    assert resumed.summary.commit_count == 5
+    assert resumed.summary.commit_count == 6
     assert resumed.summary.unresolved_objection_count == 0
     assert resumed.summary.blocking_delegation_count == 0
 
@@ -420,7 +423,9 @@ def test_agent_runner_partial_retry_does_not_duplicate_completed_global_commit()
     run = workflow.blackboard.get_run(partial.checkpoint.run_id)
 
     assert resumed.status is WorkflowRunStatus.COMPLETED
-    assert len(run.commit_log) == 5
+    assert len(run.commit_log) == 6
     assert [
-        commit.patch.target.document_type for commit in run.commit_log
-    ].count(DocumentType.GLOBAL_RESEARCH) == 1
+        commit.patch.target.field_path
+        for commit in run.commit_log
+        if commit.patch.target.document_type is DocumentType.GLOBAL_RESEARCH
+    ] == ["document", "document.market_narrative_report"]

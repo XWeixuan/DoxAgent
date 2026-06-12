@@ -47,6 +47,7 @@ from doxagent.models import (
     ValidationStatus,
     new_id,
 )
+from doxagent.models.output_schemas import REQUIRED_OUTPUT_SCHEMA_MODELS, schema_names
 from doxagent.prompts.assembler import (
     CHINESE_OUTPUT_RULES,
     agent_visible_context_snapshot,
@@ -64,15 +65,7 @@ DelegationHandler = Callable[[JsonDict], Awaitable[AgentResult]]
 MAX_TOOL_CALLS_PER_NAME = 3
 SIMILARITY_WARNING_THRESHOLD = 0.72
 MICROCOMPACT_MARKER = "[old observation compacted]"
-_FINAL_PAYLOAD_SCHEMAS: dict[str, type[BaseModel]] = {
-    "DelegatedRetrievalResult": DelegatedRetrievalResult,
-    "DoxAtlasAuditResult": DoxAtlasAuditResult,
-    "ExpectationConstructionResult": ExpectationConstructionResult,
-    "ExpectationDetailResult": ExpectationDetailResult,
-    "ExpectationFieldReviewResult": ExpectationFieldReviewResult,
-    "ExpectationShellConstructionResult": ExpectationShellConstructionResult,
-    "ResearchSection": ResearchSection,
-}
+_FINAL_PAYLOAD_SCHEMAS: dict[str, type[BaseModel]] = REQUIRED_OUTPUT_SCHEMA_MODELS
 
 
 @dataclass(frozen=True)
@@ -1225,7 +1218,7 @@ def _final_payload_schema_error(payload: JsonDict, required_output_schema: str) 
 
 
 def _schema_names(required_output_schema: str) -> list[str]:
-    return [item.strip() for item in required_output_schema.split("|") if item.strip()]
+    return schema_names(required_output_schema)
 
 
 def _output_contract(required_output_schema: str) -> JsonDict:
@@ -1354,6 +1347,17 @@ def _output_contract(required_output_schema: str) -> JsonDict:
                     "accepted_objection_ids": [],
                     "partially_accepted_objection_ids": [],
                     "rejected_objection_ids": [],
+                    "objection_resolutions": [
+                        {
+                            "objection_id": "objection_<id>",
+                            "decision": (
+                                "resolved | accepted | partially_accepted | rejected"
+                            ),
+                            "resolution_note": "specific reason and evidence for the decision",
+                            "changed_paths": [],
+                            "evidence_refs": [],
+                        }
+                    ],
                 },
                 "rules": [
                     "Use proposed_patches, not expectations or expectation_units.",
@@ -1361,6 +1365,11 @@ def _output_contract(required_output_schema: str) -> JsonDict:
                     "Each patch.after must be a complete ExpectationUnitDocument.",
                     "target.expectation_id must exactly equal after.expectation_id.",
                     "If evidence is partial, still produce the patch and list gaps in unknowns.",
+                    (
+                        "When closing objections, every objection id must also appear in "
+                        "objection_resolutions with a decision, note, and supporting evidence "
+                        "or changed path."
+                    ),
                 ],
             }
         elif schema_name == "DoxAtlasAuditResult":
@@ -1456,6 +1465,78 @@ def _output_contract(required_output_schema: str) -> JsonDict:
                     "Set can_complete_delegation=true only with enough public-source support.",
                 ],
             }
+        elif schema_name == "KnownEventsDocument":
+            contracts[schema_name] = {
+                "final_payload": {
+                    "document_id": "doc_<id>",
+                    "document_type": "known_events",
+                    "ticker": "<ticker>",
+                    "created_at": "ISO-8601 timestamp",
+                    "events": [],
+                },
+                "rules": [
+                    "Return stable known events only; uncertain facts should remain unknowns.",
+                    "Each material event must have a source evidence ref.",
+                ],
+            }
+        elif schema_name == "MonitoringConfigDocument":
+            contracts[schema_name] = {
+                "final_payload": {
+                    "document_id": "doc_<id>",
+                    "document_type": "monitoring_config",
+                    "ticker": "<ticker>",
+                    "created_at": "ISO-8601 timestamp",
+                    "monitoring_items": [
+                        {
+                            "item_id": "monitor_<id>",
+                            "base_keywords": [],
+                            "extra_objects": [],
+                            "extra_keywords": [],
+                            "related_entities": [],
+                            "expectation_id": "expectation_<id>",
+                            "priority": "high | medium | low",
+                            "trigger_condition": "specific monitorable condition",
+                        }
+                    ],
+                },
+                "rules": [
+                    "Every item must map to an expectation_id when it monitors one.",
+                    "Use trigger_condition for observable news, filing, market, or data changes.",
+                ],
+            }
+        elif schema_name == "MonitoringPolicyDocument":
+            contracts[schema_name] = {
+                "final_payload": {
+                    "document_id": "doc_<id>",
+                    "document_type": "monitoring_policy",
+                    "ticker": "<ticker>",
+                    "created_at": "ISO-8601 timestamp",
+                    "direct_trade_rules": [
+                        {
+                            "rule_id": "rule_<id>",
+                            "action_type": "direct_trade",
+                            "trigger_condition": "high-confidence trigger",
+                            "expectation_id": "expectation_<id>",
+                            "action": "mark as direct-trade candidate for human/O3 review",
+                            "strategy_note": "why this could change investment stance",
+                            "evidence_fields": [],
+                            "escalation_path": "human_review | O3_future_review",
+                        }
+                    ],
+                    "push_to_agent_rules": [],
+                    "cache_rules": [],
+                    "no_action_rationale": None,
+                },
+                "rules": [
+                    "direct_trade means candidate routing only; never execute broker orders.",
+                    "Cover direct_trade_rules, push_to_agent_rules, and cache_rules.",
+                    (
+                        "If any action path is intentionally omitted, provide "
+                        "no_action_rationale explaining why."
+                    ),
+                    "Each rule needs expectation_id, trigger_condition, evidence_fields, and escalation_path.",
+                ],
+            }
         elif schema_name == "ResearchSection":
             contracts[schema_name] = {
                 "final_payload": {
@@ -1524,6 +1605,17 @@ def _normalize_final_payload(
                 tool_results=tool_results,
                 delegation_results=delegation_results,
             )
+        if "KnownEventsDocument" in _schema_names(required_output_schema):
+            return _normalize_known_events_document_payload(
+                payload,
+                task=task,
+                tool_results=tool_results,
+                delegation_results=delegation_results,
+            )
+        if "MonitoringConfigDocument" in _schema_names(required_output_schema):
+            return _normalize_monitoring_config_document_payload(payload, task=task)
+        if "MonitoringPolicyDocument" in _schema_names(required_output_schema):
+            return _normalize_monitoring_policy_document_payload(payload, task=task)
         return payload
     text = _research_section_text(payload)
     summary = str(payload.get("summary") or payload.get("section_summary") or "")
@@ -1542,6 +1634,161 @@ def _normalize_final_payload(
         "author_agent": task.agent_name.value,
         "reviewer_agents": _valid_agent_names(payload.get("reviewer_agents")),
     }
+
+
+def _normalize_known_events_document_payload(
+    payload: JsonDict,
+    *,
+    task: AgentTask,
+    tool_results: list[ToolResult],
+    delegation_results: list[AgentResult],
+) -> JsonDict:
+    fallback_evidence = _valid_evidence_ref_payloads(payload.get("evidence_refs"))
+    if not fallback_evidence:
+        fallback_evidence = [
+            item.model_dump(mode="json")
+            for item in _evidence_refs(tool_results, delegation_results)
+        ] or [_agent_output_evidence_ref(task)]
+    events: list[JsonDict] = []
+    raw_events = payload.get("events") or payload.get("known_events") or []
+    for item in raw_events if isinstance(raw_events, list) else []:
+        if not isinstance(item, dict):
+            continue
+        source = item.get("source")
+        source_ref = (
+            _valid_evidence_ref_payloads([source])[0]
+            if isinstance(source, dict) and _valid_evidence_ref_payloads([source])
+            else fallback_evidence[0]
+        )
+        events.append(
+            {
+                "event_id": str(item.get("event_id") or item.get("id") or new_id("event")),
+                "event_time": _event_time(item.get("event_time") or item.get("date")),
+                "description": str(
+                    item.get("description") or item.get("summary") or "Known market event."
+                ),
+                "source": source_ref,
+                "expectation_id": item.get("expectation_id"),
+                "discussed_by_market": bool(item.get("discussed_by_market", True)),
+                "has_price_reaction": bool(item.get("has_price_reaction", False)),
+                "is_known_old_news": bool(item.get("is_known_old_news", False)),
+            }
+        )
+    return {
+        "document_id": str(payload.get("document_id") or new_id("doc")),
+        "document_type": "known_events",
+        "ticker": str(payload.get("ticker") or task.ticker),
+        "created_at": _event_time(payload.get("created_at")),
+        "events": events,
+    }
+
+
+def _normalize_monitoring_config_document_payload(
+    payload: JsonDict,
+    *,
+    task: AgentTask,
+) -> JsonDict:
+    raw_items = payload.get("monitoring_items") or payload.get("items") or []
+    items: list[JsonDict] = []
+    for item in raw_items if isinstance(raw_items, list) else []:
+        if not isinstance(item, dict):
+            continue
+        items.append(
+            {
+                "item_id": str(item.get("item_id") or item.get("id") or new_id("monitor")),
+                "base_keywords": _strings(item.get("base_keywords")),
+                "extra_objects": _strings(item.get("extra_objects") or item.get("objects")),
+                "extra_keywords": _strings(item.get("extra_keywords") or item.get("keywords")),
+                "related_entities": _strings(item.get("related_entities")),
+                "expectation_id": item.get("expectation_id"),
+                "priority": str(item.get("priority") or "medium"),
+                "trigger_condition": str(
+                    item.get("trigger_condition")
+                    or item.get("condition")
+                    or item.get("description")
+                    or "Monitor ticker-relevant signal changes."
+                ),
+            }
+        )
+    return {
+        "document_id": str(payload.get("document_id") or new_id("doc")),
+        "document_type": "monitoring_config",
+        "ticker": str(payload.get("ticker") or task.ticker),
+        "created_at": _event_time(payload.get("created_at")),
+        "monitoring_items": items,
+    }
+
+
+def _normalize_monitoring_policy_document_payload(
+    payload: JsonDict,
+    *,
+    task: AgentTask,
+) -> JsonDict:
+    return {
+        "document_id": str(payload.get("document_id") or new_id("doc")),
+        "document_type": "monitoring_policy",
+        "ticker": str(payload.get("ticker") or task.ticker),
+        "created_at": _event_time(payload.get("created_at")),
+        "direct_trade_rules": _normalize_policy_rule_payloads(
+            payload.get("direct_trade_rules"),
+            default_action_type="direct_trade",
+        ),
+        "push_to_agent_rules": _normalize_policy_rule_payloads(
+            payload.get("push_to_agent_rules") or payload.get("rules"),
+            default_action_type="push_to_agent",
+        ),
+        "cache_rules": _normalize_policy_rule_payloads(
+            payload.get("cache_rules"),
+            default_action_type="cache",
+        ),
+        "no_action_rationale": payload.get("no_action_rationale")
+        or payload.get("omission_rationale"),
+    }
+
+
+def _normalize_policy_rule_payloads(value: Any, *, default_action_type: str) -> list[JsonDict]:
+    rules: list[JsonDict] = []
+    for item in value if isinstance(value, list) else []:
+        if not isinstance(item, dict):
+            continue
+        rules.append(
+            {
+                "rule_id": str(item.get("rule_id") or item.get("id") or new_id("rule")),
+                "action_type": str(item.get("action_type") or default_action_type),
+                "trigger_condition": str(
+                    item.get("trigger_condition")
+                    or item.get("condition")
+                    or item.get("description")
+                    or "Monitor ticker-relevant signals."
+                ),
+                "expectation_id": item.get("expectation_id"),
+                "action": str(item.get("action") or "mark for review"),
+                "strategy_note": str(
+                    item.get("strategy_note")
+                    or item.get("rationale")
+                    or item.get("note")
+                    or "Generated from monitoring policy output."
+                ),
+                "evidence_fields": _strings(
+                    item.get("evidence_fields") or item.get("required_evidence_fields")
+                ),
+                "escalation_path": item.get("escalation_path") or item.get("route"),
+            }
+        )
+    return rules
+
+
+def _event_time(value: Any) -> str:
+    if isinstance(value, datetime):
+        return value.isoformat()
+    if isinstance(value, str) and value.strip():
+        text = value.strip()
+        try:
+            datetime.fromisoformat(text.replace("Z", "+00:00"))
+        except ValueError:
+            return datetime.now(UTC).isoformat()
+        return text
+    return datetime.now(UTC).isoformat()
 
 
 def _normalize_delegated_retrieval_payload(
@@ -2145,6 +2392,8 @@ def _normalize_output_objections(
             if not reason:
                 continue
             target = _normalize_delegation_scope(item.get("target"), task)
+            target_path = item.get("target_path") or _target_path_from_payload(target)
+            taxonomy = str(item.get("taxonomy") or item.get("category") or "general")
             objections.append(
                 {
                     "objection_id": str(item.get("objection_id") or new_id("objection")),
@@ -2156,25 +2405,44 @@ def _normalize_output_objections(
                     "reason": reason,
                     "evidence_refs": _valid_evidence_ref_payloads(item.get("evidence_refs"))
                     or fallback_evidence,
+                    "taxonomy": taxonomy,
+                    "dedupe_hash": item.get("dedupe_hash")
+                    or item.get("hash")
+                    or f"{target_path}|{taxonomy.lower()}|{' '.join(reason.lower().split())[:120]}",
+                    "target_path": target_path,
+                    "merged_objection_ids": _strings(item.get("merged_objection_ids")),
                     "status": str(item.get("status") or ObjectionStatus.OPEN.value),
                     "resolution_note": item.get("resolution_note"),
                 }
             )
         elif str(item).strip():
             reason = str(item)
+            target = _normalize_delegation_scope(None, task)
+            target_path = _target_path_from_payload(target)
             objections.append(
                 {
                     "objection_id": new_id("objection"),
                     "source_agent": task.agent_name.value,
-                    "target": _normalize_delegation_scope(None, task),
+                    "target": target,
                     "severity": _audit_objection_severity(reason),
                     "reason": reason,
                     "evidence_refs": fallback_evidence,
+                    "taxonomy": "general",
+                    "dedupe_hash": (
+                        f"{target_path}|general|{' '.join(reason.lower().split())[:120]}"
+                    ),
+                    "target_path": target_path,
+                    "merged_objection_ids": [],
                     "status": ObjectionStatus.OPEN.value,
                     "resolution_note": None,
                 }
             )
     return objections
+
+
+def _target_path_from_payload(target: JsonDict) -> str:
+    object_id = target.get("document_id") or target.get("expectation_id") or "default"
+    return f"{target.get('document_type')}:{object_id}:{target.get('field_path')}"
 
 
 def _audit_objection_severity(reason: str) -> str:
@@ -2257,7 +2525,45 @@ def _normalize_expectation_construction_payload(
             payload.get("partially_accepted_objection_ids")
         ),
         "rejected_objection_ids": _strings(payload.get("rejected_objection_ids")),
+        "objection_resolutions": _normalize_objection_resolutions(
+            payload.get("objection_resolutions") or payload.get("resolution_decisions"),
+            fallback_evidence=evidence_refs,
+        ),
     }
+
+
+def _normalize_objection_resolutions(
+    value: Any,
+    *,
+    fallback_evidence: list[JsonDict],
+) -> list[JsonDict]:
+    decisions: list[JsonDict] = []
+    for item in value if isinstance(value, list) else []:
+        if not isinstance(item, dict):
+            continue
+        objection_id = item.get("objection_id")
+        if not isinstance(objection_id, str) or not objection_id.strip():
+            continue
+        decision = str(item.get("decision") or item.get("status") or "resolved")
+        if decision not in {"resolved", "accepted", "partially_accepted", "rejected"}:
+            decision = "resolved"
+        note = str(
+            item.get("resolution_note")
+            or item.get("note")
+            or item.get("rationale")
+            or "O1 provided a structured objection resolution."
+        )
+        decisions.append(
+            {
+                "objection_id": objection_id,
+                "decision": decision,
+                "resolution_note": note,
+                "changed_paths": _strings(item.get("changed_paths")),
+                "evidence_refs": _valid_evidence_ref_payloads(item.get("evidence_refs"))
+                or fallback_evidence,
+            }
+        )
+    return decisions
 
 
 def _normalize_expectation_shell_construction_payload(

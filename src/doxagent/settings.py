@@ -27,7 +27,7 @@ class DoxAgentSettings(BaseSettings):
         default="https://dashscope.aliyuncs.com/api/v2/apps/protocols/compatible-mode/v1",
         validation_alias="DASHSCOPE_BASE_URL",
     )
-    dashscope_model: str = Field(default="qwen3.6-flash", validation_alias="DASHSCOPE_MODEL")
+    dashscope_model: str = Field(default="qwen3.7-plus", validation_alias="DASHSCOPE_MODEL")
     dashscope_enable_thinking: bool = Field(
         default=True,
         validation_alias="DASHSCOPE_ENABLE_THINKING",

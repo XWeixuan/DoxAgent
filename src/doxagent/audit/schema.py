@@ -46,9 +46,15 @@ class ObjectionAuditRecord(AuditModel):
     document_type: DocumentType
     object_id: str
     field_path: str
+    taxonomy: str = "general"
+    dedupe_hash: str | None = None
+    target_path: str | None = None
+    merged_objection_ids: list[str] = Field(default_factory=list)
     reason: str
     evidence_ids: list[str] = Field(default_factory=list)
     resolution_note: str | None = None
+    resolution_changed_paths: list[str] = Field(default_factory=list)
+    resolution_evidence_ids: list[str] = Field(default_factory=list)
 
 
 class DelegationAuditRecord(AuditModel):

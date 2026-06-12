@@ -118,6 +118,8 @@ class MonitoringPolicyRule(ContractModel):
     expectation_id: NonEmptyStr | None = None
     action: NonEmptyStr
     strategy_note: NonEmptyStr
+    evidence_fields: list[NonEmptyStr] = Field(default_factory=list)
+    escalation_path: NonEmptyStr | None = None
 
 
 class MonitoringPolicyDocument(DocumentBase):
@@ -125,3 +127,4 @@ class MonitoringPolicyDocument(DocumentBase):
     direct_trade_rules: list[MonitoringPolicyRule] = Field(default_factory=list)
     push_to_agent_rules: list[MonitoringPolicyRule] = Field(default_factory=list)
     cache_rules: list[MonitoringPolicyRule] = Field(default_factory=list)
+    no_action_rationale: NonEmptyStr | None = None

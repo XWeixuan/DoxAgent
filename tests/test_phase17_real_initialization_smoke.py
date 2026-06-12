@@ -10,6 +10,18 @@ from doxagent.workflows import BlackboardInitializationWorkflow, GlobalResearchI
 
 pytestmark = pytest.mark.real_api
 
+_EVAL_TICKER = "MU"
+_EVAL_RESEARCH_INPUTS = GlobalResearchInputs(
+    sector_or_theme="memory and storage semiconductors",
+    industry_angle=(
+        "DRAM and NAND pricing cycle, HBM demand, "
+        "AI server memory mix, and capex discipline"
+    ),
+    universe=["MU"],
+    benchmarks=["SOXX", "QQQ"],
+    peers=["WDC", "STX", "SNDK"],
+)
+
 
 def _real_initialization_enabled() -> None:
     if os.getenv("DOXAGENT_RUN_REAL_API_TESTS") != "1":
@@ -33,7 +45,7 @@ def _assert_run_visible_to_debug_viewer(
     run_id: str,
 ) -> dict[str, object]:
     service = DebugRunQueryService(settings)
-    runs = service.list_runs(ticker="ASTS", limit=25)
+    runs = service.list_runs(ticker=_EVAL_TICKER, limit=25)
     assert any(item.get("run_id") == run_id for item in runs)
     brief_state = service.brief_state(run_id)
     assert brief_state["run"]["run_id"] == run_id
@@ -45,14 +57,8 @@ def test_real_initialization_build_global_research_smoke() -> None:
     workflow = BlackboardInitializationWorkflow(execution_mode="agent_runner", settings=settings)
 
     result = workflow.run(
-        "ASTS",
-        research_inputs=GlobalResearchInputs(
-            sector_or_theme="satellite direct-to-device communications",
-            industry_angle="commercialization milestones and network deployment",
-            universe=["ASTS"],
-            benchmarks=["SPY"],
-            peers=["RKLB"],
-        ),
+        _EVAL_TICKER,
+        research_inputs=_EVAL_RESEARCH_INPUTS,
         stop_after=WorkflowNode.BUILD_GLOBAL_RESEARCH,
     )
 
@@ -67,14 +73,8 @@ def test_real_initialization_expectation_units_smoke() -> None:
     workflow = BlackboardInitializationWorkflow(execution_mode="agent_runner", settings=settings)
 
     result = workflow.run(
-        "ASTS",
-        research_inputs=GlobalResearchInputs(
-            sector_or_theme="satellite direct-to-device communications",
-            industry_angle="commercialization milestones and network deployment",
-            universe=["ASTS"],
-            benchmarks=["SPY"],
-            peers=["RKLB"],
-        ),
+        _EVAL_TICKER,
+        research_inputs=_EVAL_RESEARCH_INPUTS,
         stop_after=WorkflowNode.GENERATE_EXPECTATION_DETAILS,
     )
 

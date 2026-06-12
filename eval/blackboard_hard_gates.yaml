@@ -1,0 +1,255 @@
+schema_version: 1
+contract_name: blackboard_initialization_hard_gates
+scope: >
+  Mandatory gates for DoxAgent ticker-level Blackboard initialization runs.
+  A run that fails any gate is not eligible for soft rubric claims or
+  optimization success claims.
+inputs_required:
+  brief_state_json: >
+    JSON exported by eval/export_brief_state.py for the evaluated run_id.
+  langsmith_trace: >
+    LangSmith run/child-run trajectory filtered by the same run_id, including
+    loop outputs, tool calls, agent metadata, and final AgentResult payloads.
+  repository_context: >
+    The exact git commit and eval contract version used for baseline and retest.
+decision_rule:
+  pass_condition: all hard gates must pass
+  failure_handling: >
+    Stop soft-score aggregation claims when a hard gate fails. Judges may still
+    fill rubrics for diagnosis, but must mark the run as hard-gate failed.
+
+gates:
+  - id: HG01
+    title: Workflow reaches final initialization state
+    check_goal: >
+      Confirm the workflow completed the full initialization DAG, not only an
+      intermediate smoke stop.
+    failure_conditions:
+      - latest checkpoint status is not completed.
+      - FinalizeInitialization is absent from completed_nodes.
+      - next_node is not null/empty after completion.
+      - workflow result or checkpoint metadata contains an unhandled error.
+    evidence_required:
+      - brief_state.run.workflow_state
+      - brief_state.latest_checkpoint.status
+      - brief_state.latest_checkpoint.completed_nodes
+      - LangSmith trace for the final workflow step
+
+  - id: HG02
+    title: Stable Blackboard document inventory is complete
+    check_goal: >
+      Confirm the belief state contains the expected stable initialization
+      documents, not only transient Working Memory entries.
+    failure_conditions:
+      - global_research document is missing.
+      - fewer than two expectation_unit documents are present.
+      - known_events document is missing.
+      - monitoring_config document is missing.
+      - monitoring_policy document is missing.
+    evidence_required:
+      - brief_state.belief_state.document_types
+      - brief_state.stable_documents
+      - commit_log entries targeting each document type
+
+  - id: HG03
+    title: Global Research has all required sections
+    check_goal: >
+      Confirm document 1 covers the research lenses required by the current
+      workflow: fundamental, macro, industry, market trace, and market narrative.
+    failure_conditions:
+      - any required section is missing or empty.
+      - any section lacks summary, text, author_agent, or evidence_refs.
+      - market_narrative_report is missing after GenerateGlobalNarrativeReport
+        on a completed run.
+      - a section is present only as an agent scratchpad and not in stable
+        global_research.
+    evidence_required:
+      - brief_state.global_research.sections
+      - brief_state.stable_documents.global_research
+      - Working Memory entries for C1/C2/C3/O4/O1 narrative outputs
+
+  - id: HG04
+    title: Expectation units are structurally actionable
+    check_goal: >
+      Confirm every stable expectation unit can drive downstream monitoring and
+      review.
+    failure_conditions:
+      - any expectation lacks expectation_id, expectation_name, direction,
+        why_it_matters, or market_view.
+      - any expectation has fewer than two realized_facts.
+      - any expectation has fewer than three key_variables.
+      - realized_facts_summary or event_monitoring_direction is missing.
+      - expectation direction is not one of bullish, bearish, neutral, or risk.
+    evidence_required:
+      - brief_state.expectation_units
+      - stable expectation_unit documents
+
+  - id: HG05
+    title: Evidence coverage is present and hydrated
+    check_goal: >
+      Confirm stable claims can be traced to source objects, not only naked text.
+    failure_conditions:
+      - a Global Research section has no hydrated evidence_refs.
+      - an expectation market_view has no evidence_refs.
+      - a realized fact has no evidence_refs or its price_reaction has no
+        evidence_refs.
+      - a key variable has no evidence_refs.
+      - evidence_refs lack source_id, source_type, title, summary, confidence,
+        or citation_scope.
+    evidence_required:
+      - brief_state.evidence_refs
+      - hydrated evidence inside global_research and expectation_units
+      - LangSmith tool-call outputs that produced or supported evidence_refs
+
+  - id: HG06
+    title: Price-in and not-priced-in reasoning is explicit
+    check_goal: >
+      Confirm expectation units distinguish known facts, old news, market price
+      reaction, and unresolved forward-looking variables.
+    failure_conditions:
+      - realized facts do not include price_reaction interpretation.
+      - expectation market_view does not explain whether the thesis is already
+        priced, partially priced, disputed, or not yet priced.
+      - known_events lack discussed_by_market, has_price_reaction, or
+        is_known_old_news flags.
+      - old news is reused as an unqualified future catalyst.
+    evidence_required:
+      - brief_state.expectation_units.realized_facts
+      - brief_state.stable_documents.known_events
+      - commit_log rationale for expectation patches
+
+  - id: HG07
+    title: Review and objection lifecycle is closed
+    check_goal: >
+      Confirm required review agents ran and blocking concerns were resolved,
+      accepted, rejected with rationale, or explicitly carried as residual risk.
+    failure_conditions:
+      - ReviewExpectationConstruction did not run.
+      - ReviewExpectationFields did not run for promoted expectation patches.
+      - any blocker.open_objections remains open/unresolved at finalization.
+      - any objection resolution lacks resolution_note or resolved patch trace.
+      - repeated duplicate objections are present without merge or dedupe
+        rationale.
+    evidence_required:
+      - brief_state.blockers
+      - brief_state.working_memory content types for A1/C1/C3/O4 reviews
+      - brief_state.commit_log resolved_objection_ids
+      - LangSmith review and resolution trajectories
+
+  - id: HG08
+    title: Delegation and A2 retrieval lifecycle is closed
+    check_goal: >
+      Confirm delegated retrieval/fact-check requests do not disappear and are
+      reflected in final reasoning.
+    failure_conditions:
+      - any blocking_delegation remains open or assigned at finalization.
+      - an A2 result lacks answer, claim_verdict, confidence, evidence_refs or
+        source_refs, and can_complete_delegation.
+      - inconclusive A2 results are treated as supported facts.
+      - requester agent ignores a completed or inconclusive delegation in its
+        revision rationale.
+    evidence_required:
+      - brief_state.blockers.blocking_delegations
+      - Working Memory delegated_retrieval_result entries
+      - LangSmith A2 search/tool trajectory
+
+  - id: HG09
+    title: Working Memory and Commit Log are mutually traceable
+    check_goal: >
+      Confirm stable documents are backed by auditable Working Memory and patch
+      commits.
+    failure_conditions:
+      - a stable document was written without a commit_log entry.
+      - a commit target does not match the stable document or expectation_id.
+      - a commit lacks author_agent, trigger_reason, rationale, or evidence_refs
+        when the patch changes a research conclusion.
+      - Working Memory lacks final AgentResult entries for core generation and
+        review nodes.
+    evidence_required:
+      - brief_state.working_memory
+      - brief_state.commit_log
+      - brief_state.expectation_units.commit_trace
+
+  - id: HG10
+    title: LangSmith process trace is usable for judging
+    check_goal: >
+      Confirm process quality can be judged from trace metadata, not only from
+      final JSON.
+    failure_conditions:
+      - LangSmith trace cannot be found for the evaluated run_id.
+      - child runs do not expose agent_name and workflow_node metadata.
+      - ReAct loop outputs or tool calls are unavailable for key nodes.
+      - trace run_id does not match the Brief State run_id.
+    evidence_required:
+      - LangSmith MCP query results filtered by run_id
+      - trace metadata: run_id, agent_name, workflow_node, task_type, loop index
+
+  - id: HG11
+    title: Tool-call and evidence claims are consistent
+    check_goal: >
+      Confirm agents do not claim unavailable, forbidden, or unexecuted tools as
+      evidence support.
+    failure_conditions:
+      - an agent cites a tool/source in final_payload that is absent from
+        LangSmith tool calls or Working Memory tool summaries.
+      - A2 uses non-search tools.
+      - A1 uses non-DoxAtlas/non-source-audit tools.
+      - C/O agents rely on fabricated source ids or unsupported citations.
+    evidence_required:
+      - agent registry tool allowlists
+      - LangSmith tool-call events
+      - final AgentResult tool_calls and evidence_refs
+
+  - id: HG12
+    title: Monitoring outputs are operationally usable
+    check_goal: >
+      Confirm the final Blackboard includes a monitoring plan that can support
+      later automated checks and routing.
+    failure_conditions:
+      - monitoring_items do not map to expectation_id or relevant entities.
+      - monitoring_items lack base_keywords/extra_keywords/related_entities or
+        trigger_condition.
+      - monitoring_policy has no direct_trade_rules or push_to_agent_rules and
+        also lacks an explicit no-action rationale explaining why only cache
+        rules are appropriate.
+      - policy rules lack action_type, trigger_condition, action, or
+        strategy_note.
+    evidence_required:
+      - brief_state.stable_documents.monitoring_config
+      - brief_state.stable_documents.monitoring_policy
+      - O2 LangSmith trajectory and final payload
+
+  - id: HG13
+    title: Idempotency prevents duplicate completed work
+    check_goal: >
+      Confirm retry/resume behavior does not duplicate completed nodes or produce
+      conflicting stable state for the same run_id, workflow_node, and agent.
+    failure_conditions:
+      - same run_id + workflow_node + agent_name has multiple completed
+        final AgentResults without an explicit retry reason.
+      - duplicate completed C1/C2/C3/O4 sections are dispatched after a later
+        node blocks.
+      - repeated identical stable patches are committed for the same document
+        target.
+    evidence_required:
+      - latest checkpoint metadata
+      - working_memory content_type and author_agent
+      - commit_log patch targets
+      - LangSmith child run list
+
+  - id: HG14
+    title: Business failures are explicit, not silent
+    check_goal: >
+      Confirm parse, schema, validation, tool prefetch, and Working Memory write
+      failures are visible as business audit facts.
+    failure_conditions:
+      - workflow terminates after an LLM response without parse_failed,
+        schema_failed, validation_failed, tool_prefetch_failed, or write_failed
+        metadata/Working Memory.
+      - failure category is only visible as an exception stack trace and not in
+        run/checkpoint/Working Memory state.
+      - failed AgentResult is retried or skipped without an audit note.
+    evidence_required:
+      - latest checkpoint metadata
+      - working_memory failure entries
+      - LangSmith final loop output and workflow exception boundary

@@ -273,6 +273,8 @@ def monitoring_policy_document() -> MonitoringPolicyDocument:
                 expectation_id="exp_ai_demand",
                 action="mark as direct-trade candidate",
                 strategy_note="Policy only describes handling; no broker action occurs.",
+                evidence_fields=["source_id", "event_time", "price_reaction"],
+                escalation_path="human_review",
             ),
         ],
         push_to_agent_rules=[
@@ -283,6 +285,8 @@ def monitoring_policy_document() -> MonitoringPolicyDocument:
                 expectation_id="exp_ai_demand",
                 action="send to O1 and O4",
                 strategy_note="Needs narrative and price-reaction review.",
+                evidence_fields=["source_id", "claim", "price_reaction"],
+                escalation_path="O1,O4",
             ),
         ],
         cache_rules=[
@@ -293,6 +297,8 @@ def monitoring_policy_document() -> MonitoringPolicyDocument:
                 expectation_id="exp_ai_demand",
                 action="cache for batch review",
                 strategy_note="No immediate action.",
+                evidence_fields=["source_id", "duplicate_marker"],
+                escalation_path="batch_review",
             ),
         ],
     )

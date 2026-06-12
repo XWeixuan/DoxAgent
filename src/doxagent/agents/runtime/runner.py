@@ -385,6 +385,11 @@ class ModelGatewayAgentRunner:
             "run_id": task.run_metadata.run_id,
             "task_type": task.task_type.value,
             "workflow_node": task.run_metadata.workflow_node or "",
+            "output_schema": task.required_output_schema,
+            "parse_status": "pending",
+            "schema_status": "pending",
+            "write_status": "pending",
+            "blackboard_target": ",".join(task.permissions.writable_targets),
             "skill_versions": json.dumps(
                 task.skill_bundle.skill_versions if task.skill_bundle else {},
                 ensure_ascii=True,

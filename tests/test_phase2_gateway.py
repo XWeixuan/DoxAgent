@@ -340,7 +340,12 @@ def test_tracing_metadata_uses_expected_keys() -> None:
         | {
             "react_step": "1",
             "provider": "bailian",
-            "model": "qwen3.6-flash",
+            "model": "qwen3.7-plus",
+            "output_schema": "MonitoringPolicyDocument",
+            "parse_status": "ok",
+            "schema_status": "failed",
+            "write_status": "pending",
+            "blackboard_target": "monitoring_policy",
             "ignored": "value",
         }
     )
@@ -354,7 +359,12 @@ def test_tracing_metadata_uses_expected_keys() -> None:
             "workflow_node": "GenerateExpectationUnits",
             "react_step": "1",
             "provider": "bailian",
-            "model": "qwen3.6-flash",
+            "model": "qwen3.7-plus",
+            "output_schema": "MonitoringPolicyDocument",
+            "parse_status": "ok",
+            "schema_status": "failed",
+            "write_status": "pending",
+            "blackboard_target": "monitoring_policy",
         },
     }
 

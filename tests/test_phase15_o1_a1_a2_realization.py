@@ -253,6 +253,15 @@ class RealizedO1A1A2Runner(AgentRunner):
                         "unknowns": [],
                         "rationale": "O1 resolved the A1 objection.",
                         "resolved_objection_ids": [self.objection_id],
+                        "objection_resolutions": [
+                            {
+                                "objection_id": self.objection_id,
+                                "decision": "resolved",
+                                "resolution_note": "A2 evidence resolved the A1 objection.",
+                                "changed_paths": ["document.realized_facts"],
+                                "evidence_refs": [_evidence().model_dump(mode="json")],
+                            }
+                        ],
                     }
                 },
             )
@@ -399,25 +408,31 @@ class DirectDocumentOutputRunner(RealizedO1A1A2Runner):
     def run(self, task: AgentTask) -> AgentResult:
         node = task.run_metadata.workflow_node
         if node == WorkflowNode.GENERATE_KNOWN_EVENTS.value:
+            evidence = _evidence()
             return AgentResult(
                 task_id=task.task_id,
                 agent_name=task.agent_name,
                 status=ResultStatus.SUCCEEDED,
                 payload={
                     "structured": {
+                        "document_id": "doc_known_events_direct",
                         "document_type": "known_events",
                         "ticker": task.ticker,
+                        "created_at": "2026-06-12T00:00:00Z",
                         "events": [
                             {
                                 "event_id": "evt_direct",
-                                "date": "2026-Q4",
+                                "event_time": "2026-06-12T00:00:00Z",
                                 "description": "Direct known event output.",
-                                "source": "global_research",
+                                "source": evidence.model_dump(mode="json"),
+                                "discussed_by_market": True,
+                                "has_price_reaction": False,
+                                "is_known_old_news": False,
                             }
                         ],
                     }
                 },
-                evidence_refs=[_evidence()],
+                evidence_refs=[evidence],
             )
         if node == WorkflowNode.GENERATE_MONITORING_CONFIG.value:
             return AgentResult(
@@ -426,12 +441,18 @@ class DirectDocumentOutputRunner(RealizedO1A1A2Runner):
                 status=ResultStatus.SUCCEEDED,
                 payload={
                     "structured": {
+                        "document_id": "doc_monitoring_config_direct",
                         "document_type": "monitoring_config",
                         "ticker": task.ticker,
+                        "created_at": "2026-06-12T00:00:00Z",
                         "monitoring_items": [
                             {
                                 "item_id": "monitor_direct",
                                 "base_keywords": [task.ticker, "launch"],
+                                "extra_objects": ["launch milestone"],
+                                "extra_keywords": ["delay", "acceleration"],
+                                "related_entities": ["launch provider"],
+                                "expectation_id": "exp_mock_core",
                                 "priority": "high",
                                 "trigger_condition": "Launch cadence changes materially.",
                             }
@@ -447,15 +468,48 @@ class DirectDocumentOutputRunner(RealizedO1A1A2Runner):
                 status=ResultStatus.SUCCEEDED,
                 payload={
                     "structured": {
+                        "document_id": "doc_monitoring_policy_direct",
                         "document_type": "monitoring_policy",
                         "ticker": task.ticker,
+                        "created_at": "2026-06-12T00:00:00Z",
+                        "direct_trade_rules": [
+                            {
+                                "rule_id": "rule_direct_trade",
+                                "action_type": "direct_trade",
+                                "trigger_condition": "Confirmed launch milestone beats expectation.",
+                                "expectation_id": "exp_mock_core",
+                                "action": "mark as direct-trade candidate for human review",
+                                "strategy_note": "No broker action is triggered.",
+                                "evidence_fields": [
+                                    "source_id",
+                                    "event_time",
+                                    "price_reaction",
+                                ],
+                                "escalation_path": "human_review",
+                            }
+                        ],
+                        "push_to_agent_rules": [
+                            {
+                                "rule_id": "rule_push_agent",
+                                "action_type": "push_to_agent",
+                                "trigger_condition": "Ambiguous launch timing update appears.",
+                                "expectation_id": "exp_mock_core",
+                                "action": "send to O1 and O4",
+                                "strategy_note": "Needs narrative and market-reaction review.",
+                                "evidence_fields": ["source_id", "claim", "price_reaction"],
+                                "escalation_path": "O1,O4",
+                            }
+                        ],
                         "cache_rules": [
                             {
                                 "rule_id": "rule_direct",
                                 "action_type": "cache",
                                 "trigger_condition": "Low-confidence launch chatter appears.",
+                                "expectation_id": "exp_mock_core",
                                 "action": "cache for review",
                                 "strategy_note": "Direct policy output.",
+                                "evidence_fields": ["source_id", "duplicate_marker"],
+                                "escalation_path": "batch_review",
                             }
                         ],
                     }
@@ -486,6 +540,15 @@ class AcceptedObjectionRunner(RealizedO1A1A2Runner):
                 if self.include_revision
                 else "O1 accepted the objection but omitted the required revision.",
                 "accepted_objection_ids": [self.objection_id],
+                "objection_resolutions": [
+                    {
+                        "objection_id": self.objection_id,
+                        "decision": "accepted",
+                        "resolution_note": "O1 accepted reviewer evidence.",
+                        "changed_paths": ["document.realized_facts_summary"],
+                        "evidence_refs": [evidence.model_dump(mode="json")],
+                    }
+                ],
             }
             if self.include_revision:
                 pending = task.input_context["pending_patches"][0]
@@ -731,6 +794,44 @@ def test_a1_workflow_nodes_receive_minimal_doxatlas_tool_sets() -> None:
         not any(tool.startswith("doxa_run_") for tool in tools)
         for tools in tools_by_node.values()
     )
+
+
+def test_reviewer_nodes_receive_role_specific_tool_sets() -> None:
+    runner = RealizedO1A1A2Runner(a2_has_evidence=True)
+    workflow = BlackboardInitializationWorkflow(
+        runner=runner,
+        execution_mode="agent_runner",
+        auto_resolve_blockers=False,
+    )
+
+    result = workflow.run("NVDA", stop_after=WorkflowNode.REVIEW_EXPECTATION_FIELDS)
+
+    assert result.status is WorkflowRunStatus.RUNNING
+    review_tools = {
+        task.agent_name: set(task.permissions.allowed_tools)
+        for task in runner.tasks
+        if task.run_metadata.workflow_node == WorkflowNode.REVIEW_EXPECTATION_FIELDS.value
+    }
+    assert review_tools[AgentName.C1_FUNDAMENTAL_RESEARCH] == {
+        "sec.company_facts_and_filings",
+        "sec.filing_sections",
+        "alpha.company_overview",
+        "alpha.financial_statements",
+        "alpha.earnings_events",
+        "tavily.search",
+    }
+    assert review_tools[AgentName.C3_INDUSTRY_RESEARCH] == {
+        "finnhub.company_peers",
+        "sec.company_facts_and_filings",
+        "fmp.sector_performance",
+        "tavily.search",
+        "tavily.extract",
+    }
+    assert review_tools[AgentName.O4_MARKET_TRACE] == {
+        "twelvedata.daily_ohlcv",
+        "yfinance.daily_ohlcv",
+        "finnhub.trade_stream",
+    }
 
 
 def test_workflow_blocks_when_a2_search_retrieval_has_no_sufficient_evidence() -> None:

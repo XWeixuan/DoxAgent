@@ -12,6 +12,7 @@ from datetime import date, datetime
 from importlib import import_module
 from typing import Any, cast
 
+from doxagent.debug_viewer.validators import build_hard_validator_view
 from doxagent.postgres import connect_postgres
 from doxagent.settings import DoxAgentSettings
 
@@ -320,6 +321,7 @@ def build_brief_state_view(
         "working_memory": bundle.working_memory,
         "commit_log": bundle.commit_log,
         "evidence_refs": bundle.evidence_refs,
+        "hard_validators": build_hard_validator_view(bundle),
     }
     return cast(JsonDict, sanitize(view))
 
@@ -364,6 +366,16 @@ def build_agent_metrics_view(
             metric["tool_call_summaries"].append(tool_call)
             if tool_name not in metric["tool_counts"]:
                 metric["tool_counts"][tool_name] += 1
+        tool_usage_audit = _ensure_dict(payload.get("tool_usage_audit"))
+        unexecuted = [
+            str(item)
+            for item in _list_or_empty(tool_usage_audit.get("unexecuted_declared_tool_names"))
+        ]
+        if unexecuted:
+            metric["tool_usage_warnings"].extend(unexecuted)
+            metric["warnings"].append(
+                "Declared tool evidence without actual call: " + ", ".join(unexecuted)
+            )
         metric["proposed_patches"] += len(_list_or_empty(payload.get("patch_ids")))
         metric["proposed_delegations"] += len(_list_or_empty(payload.get("delegation_ids")))
         metric["proposed_objections"] += len(_list_or_empty(payload.get("objection_ids")))
@@ -613,6 +625,7 @@ def _empty_agent_metrics() -> JsonDict:
         "blackboard_objections": 0,
         "proposed_patches": 0,
         "failed_results": 0,
+        "tool_usage_warnings": [],
         "warnings": [],
         "trajectory": [],
         "delegations": [],

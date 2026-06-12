@@ -1,5 +1,9 @@
 # changelog
 
+## 2026-06-12
+
+- Hardened initialization quality contracts with structured MonitoringPolicy coverage gates, objection dedupe/resolution metadata, centralized required-output schema registration, node-specific tool allowlists with invented-tool evidence audit, A2 retrieval quality checks, LangSmith/business acceptance audit metadata, and prompt resource hygiene linting.
+
 ## 2026-06-07
 
 - Configured LangSmith MCP server in `.mcp.json` with both `langsmith-hosted` (via Render endpoint with `LANGSMITH-API-KEY` header) and `langsmith-local` (via `uvx langsmith-mcp-server` command with local environment variables).
@@ -110,3 +114,7 @@
 - Reworked A1 DoxAtlas audit into node-specific prompts, internal task skills, minimal per-node DoxAtlas tool permissions, and a stricter audit-shaped output contract with ReAct normalization for schema-stable `DoxAtlasAuditResult` payloads.
 - Reworked A2 into a single-prompt lightweight public search and verification agent, removed its A2-specific internal skill path, added `anysearch.search` via the official AnySearch `/v1/search` API with environment-backed credentials, narrowed A2 to search-class tools, and stabilized `DelegatedRetrievalResult` normalization.
 - Hardened real initialization recovery by routing O1 construction objections back through shell construction, prefetching missing narrative tool evidence before Working Memory writes, accepting strict field-review payloads, and converting direct known-events/monitoring documents into Blackboard patches.
+- Added a local Blackboard eval contract under `eval/` with hard gates, LLM-as-judge rubrics, baseline/retest SOP, append-only eval records, and a run_id-based Brief State JSON exporter for future optimization loops.
+- Added three local hard validators for Brief State review and eval export: evidence reference integrity, trajectory/tool-boundary compliance, and commit-log/state-mutation consistency.
+- Switched the Phase 17 real initialization smoke/eval case from ASTS to MU with Micron-specific memory semiconductor research inputs while keeping real test execution opt-in.
+- Updated the DashScope model configuration from `qwen3.6-flash` to `qwen3.7-plus` while keeping the provider and all other generation settings unchanged.

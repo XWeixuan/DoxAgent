@@ -37,6 +37,7 @@ from doxagent.models import (
     MonitoringPolicyDocument,
     MonitoringPolicyRule,
     Objection,
+    ObjectionResolutionDecision,
     ObjectionSeverity,
     ObjectionStatus,
     PatchOperation,
@@ -95,6 +96,68 @@ _UNSET_NEXT_NODE = object()
 _GLOBAL_RESEARCH_AGENT_RESULTS_KEY = "global_research_agent_results"
 _WORKFLOW_AGENT_IDEMPOTENCY_KEY = "workflow_agent_idempotency"
 WorkflowExecutionMode = Literal["mock", "agent_runner"]
+
+NODE_AGENT_ALLOWED_TOOL_OVERRIDES: dict[tuple[WorkflowNode, AgentName], list[str]] = {
+    (
+        WorkflowNode.GENERATE_GLOBAL_NARRATIVE_REPORT,
+        AgentName.O1_EXPECTATION_OWNER,
+    ): ["doxa_get_narrative_report"],
+    (
+        WorkflowNode.REVIEW_EXPECTATION_CONSTRUCTION,
+        AgentName.A1_DOXATLAS_AUDIT,
+    ): [
+        "doxa_get_analysis",
+        "doxa_query_propositions",
+        "doxa_get_ignored_propositions",
+        "doxa_get_event_source",
+    ],
+    (
+        WorkflowNode.REVIEW_EXPECTATION_FIELDS,
+        AgentName.A1_DOXATLAS_AUDIT,
+    ): [
+        "doxa_get_analysis",
+        "doxa_query_propositions",
+        "doxa_get_event_source",
+        "doxa_get_media_result",
+        "doxa_get_social_result",
+        "doxa_get_ignored_propositions",
+    ],
+    (
+        WorkflowNode.REVIEW_EXPECTATION_FIELDS,
+        AgentName.C1_FUNDAMENTAL_RESEARCH,
+    ): [
+        "sec.company_facts_and_filings",
+        "sec.filing_sections",
+        "alpha.company_overview",
+        "alpha.financial_statements",
+        "alpha.earnings_events",
+        "tavily.search",
+    ],
+    (
+        WorkflowNode.REVIEW_EXPECTATION_FIELDS,
+        AgentName.C3_INDUSTRY_RESEARCH,
+    ): [
+        "finnhub.company_peers",
+        "sec.company_facts_and_filings",
+        "fmp.sector_performance",
+        "tavily.search",
+        "tavily.extract",
+    ],
+    (
+        WorkflowNode.REVIEW_EXPECTATION_FIELDS,
+        AgentName.O4_MARKET_TRACE,
+    ): [
+        "twelvedata.daily_ohlcv",
+        "yfinance.daily_ohlcv",
+        "finnhub.trade_stream",
+    ],
+}
+
+BUILD_GLOBAL_RESEARCH_MARKET_TOOLS = [
+    "twelvedata.daily_ohlcv",
+    "yfinance.daily_ohlcv",
+    "finnhub.trade_stream",
+]
 
 
 class InitializationMockResultFactory:
@@ -454,8 +517,10 @@ class InitializationMockResultFactory:
                     action_type=PolicyActionType.DIRECT_TRADE,
                     trigger_condition="mock high-confidence positive signal",
                     expectation_id="exp_mock_core",
-                    action="mark for human review",
+                    action="mark as direct-trade candidate for human or future O3 review",
                     strategy_note="No broker action is triggered in Phase 5.",
+                    evidence_fields=["source_id", "event_time", "price_reaction"],
+                    escalation_path="human_review",
                 ),
             ],
             push_to_agent_rules=[
@@ -466,6 +531,8 @@ class InitializationMockResultFactory:
                     expectation_id="exp_mock_core",
                     action="send to O1",
                     strategy_note="Requires expectation-owner review.",
+                    evidence_fields=["source_id", "claim", "uncertainty_reason"],
+                    escalation_path="O1",
                 ),
             ],
             cache_rules=[
@@ -476,6 +543,8 @@ class InitializationMockResultFactory:
                     expectation_id="exp_mock_core",
                     action="cache for batch review",
                     strategy_note="No immediate action.",
+                    evidence_fields=["source_id", "duplicate_marker"],
+                    escalation_path="batch_review",
                 ),
             ],
         )
@@ -853,7 +922,7 @@ class BlackboardInitializationWorkflow:
                     message=result.error.message if result.error is not None else "Agent failed.",
                     expected_schema=output_schema,
                 )
-        return result
+        return self._with_tool_usage_audit(result)
 
     def _effective_permissions(
         self,
@@ -869,23 +938,14 @@ class BlackboardInitializationWorkflow:
             if (
                 permissions.allowed_tools
                 and task_type is TaskType.GENERATE_GLOBAL_RESEARCH
+                and agent_name is AgentName.O4_MARKET_TRACE
             ):
-                market_tools = {
-                    "twelvedata.daily_ohlcv",
-                    "yfinance.daily_ohlcv",
-                    "finnhub.trade_stream",
-                }
-                if set(permissions.allowed_tools).issubset(market_tools):
-                    updates["allowed_tools"] = [
-                        "twelvedata.daily_ohlcv",
-                        "yfinance.daily_ohlcv",
-                        "finnhub.trade_stream",
-                    ]
+                updates["allowed_tools"] = BUILD_GLOBAL_RESEARCH_MARKET_TOOLS
+        node_agent_tools = NODE_AGENT_ALLOWED_TOOL_OVERRIDES.get((node, agent_name))
+        if node_agent_tools is not None:
+            updates["allowed_tools"] = node_agent_tools
         if node is WorkflowNode.GENERATE_GLOBAL_NARRATIVE_REPORT:
             updates["writable_targets"] = [DocumentType.GLOBAL_RESEARCH.value]
-            updates["allowed_tools"] = ["doxa_get_narrative_report"]
-        if agent_name is AgentName.A1_DOXATLAS_AUDIT:
-            updates["allowed_tools"] = self._a1_allowed_tools_for_node(node)
         if task_type is TaskType.GENERATE_EXPECTATION_UNIT:
             updates["writable_targets"] = []
         elif task_type is TaskType.GENERATE_EXPECTATION_DETAIL:
@@ -908,23 +968,10 @@ class BlackboardInitializationWorkflow:
         return permissions.model_copy(update=updates, deep=True) if updates else permissions
 
     def _a1_allowed_tools_for_node(self, node: WorkflowNode) -> list[str]:
-        if node is WorkflowNode.REVIEW_EXPECTATION_CONSTRUCTION:
-            return [
-                "doxa_get_analysis",
-                "doxa_query_propositions",
-                "doxa_get_ignored_propositions",
-                "doxa_get_event_source",
-            ]
-        if node is WorkflowNode.REVIEW_EXPECTATION_FIELDS:
-            return [
-                "doxa_get_analysis",
-                "doxa_query_propositions",
-                "doxa_get_event_source",
-                "doxa_get_media_result",
-                "doxa_get_social_result",
-                "doxa_get_ignored_propositions",
-            ]
-        return []
+        return NODE_AGENT_ALLOWED_TOOL_OVERRIDES.get(
+            (node, AgentName.A1_DOXATLAS_AUDIT),
+            [],
+        )
 
     def _a1_tool_purpose(self, tool_name: str, node: WorkflowNode) -> str:
         if tool_name == "doxa_get_analysis":
@@ -1959,16 +2006,6 @@ class BlackboardInitializationWorkflow:
             payload.get("cache_rules"),
             default_action_type=PolicyActionType.CACHE,
         )
-        if not direct and not push and not cache:
-            cache = [
-                MonitoringPolicyRule(
-                    rule_id=new_id("rule"),
-                    action_type=PolicyActionType.CACHE,
-                    trigger_condition="Monitor ticker-relevant signals.",
-                    action="cache for review",
-                    strategy_note="Agent output did not provide explicit monitoring policy rules.",
-                )
-            ]
         return MonitoringPolicyDocument(
             document_id=str(payload.get("document_id") or new_id("doc")),
             ticker=ticker,
@@ -1976,6 +2013,9 @@ class BlackboardInitializationWorkflow:
             direct_trade_rules=direct,
             push_to_agent_rules=push,
             cache_rules=cache,
+            no_action_rationale=(
+                payload.get("no_action_rationale") or payload.get("omission_rationale")
+            ),
         )
 
     def _normalize_policy_rules(
@@ -2011,6 +2051,12 @@ class BlackboardInitializationWorkflow:
                         or item.get("note")
                         or "Generated from direct monitoring policy output."
                     ),
+                    evidence_fields=self._payload_string_list(
+                        item,
+                        "evidence_fields",
+                    )
+                    or self._payload_string_list(item, "required_evidence_fields"),
+                    escalation_path=item.get("escalation_path") or item.get("route"),
                 )
             )
         return rules
@@ -2096,6 +2142,57 @@ class BlackboardInitializationWorkflow:
     def _validate_patch_contract(self, patch: BlackboardPatch, node: WorkflowNode) -> None:
         if not patch.evidence_refs:
             raise WorkflowContractError(f"{node.value} produced a patch without evidence.")
+        if patch.target.document_type is DocumentType.MONITORING_POLICY:
+            if not isinstance(patch.after, dict):
+                raise WorkflowContractError("GenerateMonitoringPolicy patch must contain document.")
+            self._validate_monitoring_policy_quality(
+                MonitoringPolicyDocument.model_validate(patch.after)
+            )
+
+    def _validate_monitoring_policy_quality(self, document: MonitoringPolicyDocument) -> None:
+        buckets = {
+            PolicyActionType.DIRECT_TRADE: document.direct_trade_rules,
+            PolicyActionType.PUSH_TO_AGENT: document.push_to_agent_rules,
+            PolicyActionType.CACHE: document.cache_rules,
+        }
+        missing = [action_type.value for action_type, rules in buckets.items() if not rules]
+        if missing and not document.no_action_rationale:
+            raise WorkflowContractError(
+                "GenerateMonitoringPolicy omitted action paths without no_action_rationale: "
+                + ", ".join(missing)
+            )
+        if not any(buckets.values()):
+            raise WorkflowContractError("GenerateMonitoringPolicy produced no policy rules.")
+        for expected_action_type, rules in buckets.items():
+            for rule in rules:
+                if rule.action_type is not expected_action_type:
+                    raise WorkflowContractError(
+                        "GenerateMonitoringPolicy placed a rule in the wrong action bucket."
+                    )
+                if not rule.expectation_id:
+                    raise WorkflowContractError(
+                        "GenerateMonitoringPolicy rule is missing expectation_id."
+                    )
+                if _is_generic_monitoring_trigger(rule.trigger_condition):
+                    raise WorkflowContractError(
+                        "GenerateMonitoringPolicy rule has a generic trigger_condition."
+                    )
+                if not rule.evidence_fields:
+                    raise WorkflowContractError(
+                        "GenerateMonitoringPolicy rule is missing evidence_fields."
+                    )
+                if not rule.escalation_path:
+                    raise WorkflowContractError(
+                        "GenerateMonitoringPolicy rule is missing escalation_path."
+                    )
+                if expected_action_type is PolicyActionType.DIRECT_TRADE:
+                    lower_action = f"{rule.action} {rule.strategy_note}".lower()
+                    forbidden = ("broker_api", "order_id", "executed_trade", "place order")
+                    if any(token in lower_action for token in forbidden):
+                        raise WorkflowContractError(
+                            "GenerateMonitoringPolicy direct_trade_rules must be routing "
+                            "candidates only, not broker execution instructions."
+                        )
 
     def _validate_o1_narrative_tool_gap(
         self,
@@ -2311,6 +2408,14 @@ class BlackboardInitializationWorkflow:
                     "objection_ids": [item.objection_id for item in result.objections],
                     "delegation_ids": [item.delegation_id for item in result.delegations],
                     "tool_calls": [item.model_dump(mode="json") for item in result.tool_calls],
+                    "tool_usage_audit": result.payload.get("tool_usage_audit", {}),
+                    "acceptance_audit": self._acceptance_audit(
+                        checkpoint,
+                        result,
+                        parse_status="ok",
+                        schema_status="ok",
+                        write_status="ok",
+                    ),
                     "skill_versions": result.payload.get("skill_versions", {}),
                     "model_audit": result.payload.get("model_audit"),
                 },
@@ -2367,6 +2472,13 @@ class BlackboardInitializationWorkflow:
                     "agent_result": self._agent_result_summary(failed),
                     "payload": result.payload,
                     "error": result.error.model_dump(mode="json") if result.error else None,
+                    "acceptance_audit": self._acceptance_audit(
+                        checkpoint,
+                        failed,
+                        parse_status="failed" if event_code == "parse_failed" else "ok",
+                        schema_status="failed" if event_code == "schema_failed" else "ok",
+                        write_status="ok",
+                    ),
                 },
                 evidence_refs=result.evidence_refs,
             )
@@ -2418,9 +2530,65 @@ class BlackboardInitializationWorkflow:
             "patch_ids": [patch.patch_id for patch in result.proposed_patches],
             "evidence_ids": [evidence.evidence_id for evidence in result.evidence_refs],
             "tool_calls": [tool_call.model_dump(mode="json") for tool_call in result.tool_calls],
+            "tool_usage_audit": result.payload.get("tool_usage_audit", {}),
+            "acceptance_audit": result.payload.get("acceptance_audit", {}),
             "skill_versions": result.payload.get("skill_versions", {}),
             "runtime": result.payload.get("runtime"),
         }
+
+    def _acceptance_audit(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        result: AgentResult,
+        *,
+        parse_status: str,
+        schema_status: str,
+        write_status: str,
+    ) -> dict[str, Any]:
+        targets = [
+            {
+                "document_type": patch.target.document_type.value,
+                "object_id": patch.target.document_id or patch.target.expectation_id,
+                "field_path": patch.target.field_path,
+            }
+            for patch in result.proposed_patches
+        ]
+        output_schema = result.payload.get("agent_definition", {}).get("output_schema")
+        if output_schema is None and result.error is not None:
+            output_schema = result.error.details.get("expected_schema")
+        return {
+            "run_id": checkpoint.run_id,
+            "agent_name": result.agent_name.value,
+            "workflow_node": checkpoint.next_node.value if checkpoint.next_node else None,
+            "output_schema": output_schema,
+            "parse_status": parse_status,
+            "schema_status": schema_status,
+            "write_status": write_status,
+            "blackboard_target": targets,
+        }
+
+    def _with_tool_usage_audit(self, result: AgentResult) -> AgentResult:
+        payload = dict(result.payload)
+        structured = payload.get("structured")
+        declared_tools = _declared_tool_names(structured if isinstance(structured, dict) else {})
+        audit = payload.get("react_audit")
+        actual_tools = set()
+        if isinstance(audit, dict) and isinstance(audit.get("tool_counts"), dict):
+            actual_tools = {str(tool_name) for tool_name in audit["tool_counts"]}
+        else:
+            actual_tools = {
+                tool_call.tool_name
+                for tool_call in result.tool_calls
+                if tool_call.status is ResultStatus.SUCCEEDED
+            }
+        unexecuted = sorted(declared_tools.difference(actual_tools))
+        payload["tool_usage_audit"] = {
+            "declared_tool_names": sorted(declared_tools),
+            "actual_tool_names": sorted(actual_tools),
+            "unexecuted_declared_tool_names": unexecuted,
+            "status": "warning" if unexecuted else "ok",
+        }
+        return result.model_copy(update={"payload": payload}, deep=True)
 
     def _resolve_blockers(
         self,
@@ -2559,11 +2727,41 @@ class BlackboardInitializationWorkflow:
         try:
             retrieval = DelegatedRetrievalResult.model_validate(candidate)
         except ValueError:
-            return bool(result.evidence_refs)
-        return bool(
-            retrieval.can_complete_delegation
-            and (retrieval.evidence_refs or retrieval.source_refs or result.evidence_refs)
-        )
+            return False
+        return self._validate_a2_retrieval_quality(retrieval, result)
+
+    def _validate_a2_retrieval_quality(
+        self,
+        retrieval: DelegatedRetrievalResult,
+        result: AgentResult,
+    ) -> bool:
+        if not retrieval.can_complete_delegation:
+            return False
+        if retrieval.claim_verdict in {"inconclusive", "unknown", "not_applicable"}:
+            return False
+        if not retrieval.query_log:
+            return False
+        if retrieval.confidence < 0.35:
+            return False
+        if not (retrieval.evidence_refs or retrieval.source_refs or result.evidence_refs):
+            return False
+        if _looks_like_raw_search_dump(retrieval.answer) or _looks_like_raw_search_dump(
+            retrieval.retrieval_summary
+        ):
+            return False
+        declared_tools = {
+            str(ref.retrieval_metadata.get("tool_name"))
+            for ref in [*retrieval.evidence_refs, *retrieval.source_refs]
+            if isinstance(ref.retrieval_metadata.get("tool_name"), str)
+        }
+        declared_tools.update({item.tool_name for item in retrieval.tool_calls})
+        actual_tools = {
+            item.tool_name for item in [*result.tool_calls, *retrieval.tool_calls]
+            if item.status is ResultStatus.SUCCEEDED
+        }
+        if declared_tools and not declared_tools.issubset(actual_tools):
+            return False
+        return True
 
     def _delegation_completion_summary(self, result: AgentResult) -> str:
         structured = result.payload.get("structured")
@@ -2581,12 +2779,55 @@ class BlackboardInitializationWorkflow:
         payload = result.payload.get("structured")
         if not isinstance(payload, dict):
             payload = result.payload
-        accepted_ids = self._payload_string_list(payload, "accepted_objection_ids")
+        decisions = self._objection_resolution_decisions(payload)
+        decision_ids = {
+            "resolved_objection_ids": [
+                item.objection_id for item in decisions if item.decision == "resolved"
+            ],
+            "accepted_objection_ids": [
+                item.objection_id for item in decisions if item.decision == "accepted"
+            ],
+            "partially_accepted_objection_ids": [
+                item.objection_id
+                for item in decisions
+                if item.decision == "partially_accepted"
+            ],
+            "rejected_objection_ids": [
+                item.objection_id for item in decisions if item.decision == "rejected"
+            ],
+        }
+        resolved_ids = self._payload_string_list(payload, "resolved_objection_ids") or decision_ids[
+            "resolved_objection_ids"
+        ]
+        accepted_ids = self._payload_string_list(payload, "accepted_objection_ids") or decision_ids[
+            "accepted_objection_ids"
+        ]
         partially_accepted_ids = self._payload_string_list(
             payload,
             "partially_accepted_objection_ids",
-        )
-        rejected_ids = self._payload_string_list(payload, "rejected_objection_ids")
+        ) or decision_ids["partially_accepted_objection_ids"]
+        rejected_ids = self._payload_string_list(payload, "rejected_objection_ids") or decision_ids[
+            "rejected_objection_ids"
+        ]
+        transitioned_ids = {
+            *resolved_ids,
+            *accepted_ids,
+            *partially_accepted_ids,
+            *rejected_ids,
+        }
+        decisions_by_id = {item.objection_id: item for item in decisions}
+        if transitioned_ids and set(decisions_by_id) != transitioned_ids:
+            missing = sorted(transitioned_ids.difference(decisions_by_id))
+            extra = sorted(set(decisions_by_id).difference(transitioned_ids))
+            raise WorkflowContractError(
+                "O1 objection transitions require matching objection_resolutions. "
+                f"missing={missing}; extra={extra}"
+            )
+        for decision in decisions_by_id.values():
+            if not decision.changed_paths and not decision.evidence_refs:
+                raise WorkflowContractError(
+                    "O1 objection resolution must include changed_paths or evidence_refs."
+                )
         if accepted_ids or partially_accepted_ids:
             revised_patches = self._expectation_revisions(result)
             if not revised_patches:
@@ -2594,23 +2835,49 @@ class BlackboardInitializationWorkflow:
                     "O1 accepted an objection without returning a revised expectation patch."
                 )
             self._validate_expectation_patches(checkpoint.ticker, result)
-        if rejected_ids and not self._has_rejection_support(payload, result):
+        if rejected_ids and not (
+            self._has_rejection_support(payload, result)
+            or any(decisions_by_id[objection_id].evidence_refs for objection_id in rejected_ids)
+        ):
             raise WorkflowContractError(
                 "O1 rejected an objection without evidence and rationale."
             )
         transitions = [
-            ("resolved_objection_ids", self.blackboard.resolve_objection, "O1 resolved objection."),
-            ("accepted_objection_ids", self.blackboard.accept_objection, "O1 accepted objection."),
+            (resolved_ids, self.blackboard.resolve_objection, "O1 resolved objection."),
+            (accepted_ids, self.blackboard.accept_objection, "O1 accepted objection."),
             (
-                "partially_accepted_objection_ids",
+                partially_accepted_ids,
                 self.blackboard.partially_accept_objection,
                 "O1 partially accepted objection.",
             ),
-            ("rejected_objection_ids", self.blackboard.reject_objection, "O1 rebutted objection."),
+            (rejected_ids, self.blackboard.reject_objection, "O1 rebutted objection."),
         ]
-        for key, transition, note in transitions:
-            for objection_id in self._payload_string_list(payload, key):
-                transition(checkpoint.run_id, objection_id, note)
+        for ids, transition, note in transitions:
+            for objection_id in ids:
+                decision = decisions_by_id[objection_id]
+                transition(
+                    checkpoint.run_id,
+                    objection_id,
+                    decision.resolution_note or note,
+                    changed_paths=list(decision.changed_paths),
+                    evidence_refs=list(decision.evidence_refs),
+                )
+
+    def _objection_resolution_decisions(
+        self,
+        payload: dict[str, Any],
+    ) -> list[ObjectionResolutionDecision]:
+        raw = payload.get("objection_resolutions")
+        if raw is None:
+            return []
+        if not isinstance(raw, list):
+            raise WorkflowContractError("O1 objection_resolutions must be a list.")
+        try:
+            return [ObjectionResolutionDecision.model_validate(item) for item in raw]
+        except ValueError as exc:
+            raise WorkflowContractError(
+                f"O1 objection_resolutions failed schema validation: {exc}"
+            ) from exc
 
     def _replace_pending_expectation_patches(
         self,
@@ -2932,3 +3199,40 @@ class BlackboardInitializationWorkflow:
             summary=summary,
             error=error,
         )
+
+
+def _is_generic_monitoring_trigger(value: str) -> bool:
+    normalized = " ".join(value.lower().split())
+    return normalized in {
+        "monitor ticker-relevant signals.",
+        "monitor ticker-relevant signals",
+        "monitor ticker-relevant signal changes.",
+        "monitor ticker-relevant signal changes",
+    }
+
+
+def _declared_tool_names(payload: dict[str, Any]) -> set[str]:
+    names: set[str] = set()
+    for key in ("tool_calls",):
+        raw = payload.get(key)
+        if isinstance(raw, list):
+            for item in raw:
+                if isinstance(item, dict) and isinstance(item.get("tool_name"), str):
+                    names.add(item["tool_name"])
+    for key in ("evidence_refs", "source_refs", "key_sources"):
+        raw_refs = payload.get(key)
+        if not isinstance(raw_refs, list):
+            continue
+        for ref in raw_refs:
+            if not isinstance(ref, dict):
+                continue
+            metadata = ref.get("retrieval_metadata")
+            if isinstance(metadata, dict) and isinstance(metadata.get("tool_name"), str):
+                names.add(metadata["tool_name"])
+    return names
+
+
+def _looks_like_raw_search_dump(value: str) -> bool:
+    lowered = value.lower()
+    raw_markers = ("result 1", "result #1", "title:", "url:", "snippet:")
+    return sum(marker in lowered for marker in raw_markers) >= 2

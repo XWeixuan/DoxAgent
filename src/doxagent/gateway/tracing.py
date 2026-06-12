@@ -23,6 +23,11 @@ TRACE_METADATA_KEYS = (
     "runtime",
     "provider",
     "model",
+    "output_schema",
+    "parse_status",
+    "schema_status",
+    "write_status",
+    "blackboard_target",
 )
 
 

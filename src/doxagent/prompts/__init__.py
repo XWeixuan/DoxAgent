@@ -18,6 +18,7 @@ from doxagent.prompts.schema import (
 if TYPE_CHECKING:
     from doxagent.prompts.assembler import PromptAssembler
     from doxagent.prompts.injection import PromptInjectionPolicy, PromptInjector
+    from doxagent.prompts.lint import PromptLintIssue, lint_prompt_resources
     from doxagent.prompts.registry import PromptRegistry, default_prompt_registry
 
 __all__ = [
@@ -31,12 +32,14 @@ __all__ = [
     "PromptBundle",
     "PromptError",
     "PromptInjectionPolicy",
+    "PromptLintIssue",
     "PromptInjector",
     "PromptRegistry",
     "PromptResourceKind",
     "PromptResourceSummary",
     "UnknownPromptResourceError",
     "default_prompt_registry",
+    "lint_prompt_resources",
 ]
 
 
@@ -58,5 +61,12 @@ def __getattr__(name: str) -> object:
         return {
             "PromptRegistry": PromptRegistry,
             "default_prompt_registry": default_prompt_registry,
+        }[name]
+    if name in {"PromptLintIssue", "lint_prompt_resources"}:
+        from doxagent.prompts.lint import PromptLintIssue, lint_prompt_resources
+
+        return {
+            "PromptLintIssue": PromptLintIssue,
+            "lint_prompt_resources": lint_prompt_resources,
         }[name]
     raise AttributeError(name)

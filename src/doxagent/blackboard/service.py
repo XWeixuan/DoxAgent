@@ -17,6 +17,7 @@ from doxagent.models import (
     DelegationStatus,
     EvidenceRef,
     Objection,
+    ObjectionSeverity,
     ObjectionStatus,
     WorkingMemoryEntry,
     can_promote_target,
@@ -107,13 +108,28 @@ class BlackboardService:
         return commit
 
     def create_objection(self, run_id: str, objection: Objection) -> Objection:
+        updated: Objection | None = None
+
         def mutate(run: BlackboardRun) -> BlackboardRun:
+            nonlocal updated
             self._validate_target_matches_run(run, objection.target)
-            run.objections.append(objection)
+            enriched = _enrich_objection(objection)
+            for index, existing in enumerate(run.objections):
+                if not existing.is_unresolved:
+                    continue
+                if _objection_dedupe_key(existing) != _objection_dedupe_key(enriched):
+                    continue
+                updated = _merge_objections(existing, enriched)
+                run.objections[index] = updated
+                return run
+            run.objections.append(enriched)
+            updated = enriched
             return run
 
         self.repository.mutate(run_id, mutate)
-        return objection
+        if updated is None:
+            raise StateTransitionError("Objection was not created or merged.")
+        return updated
 
     def create_delegation(self, run_id: str, delegation: Delegation) -> Delegation:
         def mutate(run: BlackboardRun) -> BlackboardRun:
@@ -124,22 +140,77 @@ class BlackboardService:
         self.repository.mutate(run_id, mutate)
         return delegation
 
-    def resolve_objection(self, run_id: str, objection_id: str, note: str) -> Objection:
-        return self._set_objection_status(run_id, objection_id, ObjectionStatus.RESOLVED, note)
+    def resolve_objection(
+        self,
+        run_id: str,
+        objection_id: str,
+        note: str,
+        *,
+        changed_paths: list[str] | None = None,
+        evidence_refs: list[EvidenceRef] | None = None,
+    ) -> Objection:
+        return self._set_objection_status(
+            run_id,
+            objection_id,
+            ObjectionStatus.RESOLVED,
+            note,
+            changed_paths=changed_paths,
+            evidence_refs=evidence_refs,
+        )
 
-    def accept_objection(self, run_id: str, objection_id: str, note: str) -> Objection:
-        return self._set_objection_status(run_id, objection_id, ObjectionStatus.ACCEPTED, note)
+    def accept_objection(
+        self,
+        run_id: str,
+        objection_id: str,
+        note: str,
+        *,
+        changed_paths: list[str] | None = None,
+        evidence_refs: list[EvidenceRef] | None = None,
+    ) -> Objection:
+        return self._set_objection_status(
+            run_id,
+            objection_id,
+            ObjectionStatus.ACCEPTED,
+            note,
+            changed_paths=changed_paths,
+            evidence_refs=evidence_refs,
+        )
 
-    def partially_accept_objection(self, run_id: str, objection_id: str, note: str) -> Objection:
+    def partially_accept_objection(
+        self,
+        run_id: str,
+        objection_id: str,
+        note: str,
+        *,
+        changed_paths: list[str] | None = None,
+        evidence_refs: list[EvidenceRef] | None = None,
+    ) -> Objection:
         return self._set_objection_status(
             run_id,
             objection_id,
             ObjectionStatus.PARTIALLY_ACCEPTED,
             note,
+            changed_paths=changed_paths,
+            evidence_refs=evidence_refs,
         )
 
-    def reject_objection(self, run_id: str, objection_id: str, note: str) -> Objection:
-        return self._set_objection_status(run_id, objection_id, ObjectionStatus.REJECTED, note)
+    def reject_objection(
+        self,
+        run_id: str,
+        objection_id: str,
+        note: str,
+        *,
+        changed_paths: list[str] | None = None,
+        evidence_refs: list[EvidenceRef] | None = None,
+    ) -> Objection:
+        return self._set_objection_status(
+            run_id,
+            objection_id,
+            ObjectionStatus.REJECTED,
+            note,
+            changed_paths=changed_paths,
+            evidence_refs=evidence_refs,
+        )
 
     def mark_objection_unresolved(self, run_id: str, objection_id: str, note: str) -> Objection:
         return self._set_objection_status(run_id, objection_id, ObjectionStatus.UNRESOLVED, note)
@@ -244,6 +315,9 @@ class BlackboardService:
         objection_id: str,
         status: ObjectionStatus,
         note: str,
+        *,
+        changed_paths: list[str] | None = None,
+        evidence_refs: list[EvidenceRef] | None = None,
     ) -> Objection:
         updated: Objection | None = None
 
@@ -252,7 +326,16 @@ class BlackboardService:
             for index, objection in enumerate(run.objections):
                 if objection.objection_id == objection_id:
                     updated = objection.model_copy(
-                        update={"status": status, "resolution_note": note},
+                        update={
+                            "status": status,
+                            "resolution_note": note,
+                            "resolution_changed_paths": changed_paths
+                            if changed_paths is not None
+                            else objection.resolution_changed_paths,
+                            "resolution_evidence_refs": evidence_refs
+                            if evidence_refs is not None
+                            else objection.resolution_evidence_refs,
+                        },
                         deep=True,
                     )
                     run.objections[index] = updated
@@ -289,3 +372,76 @@ class BlackboardService:
         if updated is None:
             raise StateTransitionError(f"Delegation not found: {delegation_id}")
         return updated
+
+
+_SEVERITY_RANK: dict[ObjectionSeverity, int] = {
+    ObjectionSeverity.LOW: 1,
+    ObjectionSeverity.MEDIUM: 2,
+    ObjectionSeverity.HIGH: 3,
+    ObjectionSeverity.BLOCKING: 4,
+}
+
+
+def _enrich_objection(objection: Objection) -> Objection:
+    target_path = objection.target_path or _target_path(objection.target)
+    dedupe_hash = objection.dedupe_hash or _default_objection_hash(
+        target_path,
+        objection.taxonomy,
+        objection.reason,
+    )
+    return objection.model_copy(
+        update={
+            "target_path": target_path,
+            "dedupe_hash": dedupe_hash,
+        },
+        deep=True,
+    )
+
+
+def _target_path(target: BlackboardTarget) -> str:
+    object_id = target.document_id or target.expectation_id or "default"
+    return f"{target.document_type.value}:{object_id}:{target.field_path}"
+
+
+def _default_objection_hash(target_path: str, taxonomy: str, reason: str) -> str:
+    reason_key = " ".join(reason.lower().split())[:120]
+    return f"{target_path}|{taxonomy.lower()}|{reason_key}"
+
+
+def _objection_dedupe_key(objection: Objection) -> tuple[str, str, str]:
+    target_path = objection.target_path or _target_path(objection.target)
+    dedupe_hash = objection.dedupe_hash or _default_objection_hash(
+        target_path,
+        objection.taxonomy,
+        objection.reason,
+    )
+    return (target_path, objection.taxonomy.lower(), dedupe_hash)
+
+
+def _merge_objections(existing: Objection, incoming: Objection) -> Objection:
+    evidence_by_id = {item.evidence_id: item for item in existing.evidence_refs}
+    evidence_by_id.update({item.evidence_id: item for item in incoming.evidence_refs})
+    merged_ids = [
+        *existing.merged_objection_ids,
+        incoming.objection_id,
+        *incoming.merged_objection_ids,
+    ]
+    severity = (
+        incoming.severity
+        if _SEVERITY_RANK[incoming.severity] > _SEVERITY_RANK[existing.severity]
+        else existing.severity
+    )
+    reason = existing.reason
+    if incoming.reason != existing.reason:
+        reason = f"{existing.reason} | duplicate: {incoming.reason}"
+    return existing.model_copy(
+        update={
+            "severity": severity,
+            "reason": reason,
+            "evidence_refs": list(evidence_by_id.values()),
+            "merged_objection_ids": list(dict.fromkeys(merged_ids)),
+            "target_path": existing.target_path or incoming.target_path,
+            "dedupe_hash": existing.dedupe_hash or incoming.dedupe_hash,
+        },
+        deep=True,
+    )

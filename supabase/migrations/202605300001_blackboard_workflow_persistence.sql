@@ -94,6 +94,10 @@ create table if not exists doxagent.objections (
     source_agent text not null,
     status text not null,
     severity text not null,
+    taxonomy text not null default 'general',
+    dedupe_hash text,
+    target_path text,
+    merged_objection_ids jsonb not null default '[]'::jsonb,
     document_type text not null,
     object_id text,
     field_path text not null,
@@ -146,6 +150,9 @@ on doxagent.commit_log_entries (run_id, document_type, object_id, field_path);
 
 create index if not exists objections_blocking_lookup_idx
 on doxagent.objections (run_id, status, document_type, object_id, field_path);
+
+create index if not exists objections_dedupe_lookup_idx
+on doxagent.objections (run_id, status, target_path, taxonomy, dedupe_hash);
 
 create index if not exists delegations_blocking_lookup_idx
 on doxagent.delegations (run_id, status, document_type, object_id, field_path);

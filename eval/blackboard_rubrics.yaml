@@ -1,0 +1,377 @@
+schema_version: 1
+contract_name: blackboard_initialization_rubrics
+score_scale:
+  min: 1
+  max: 5
+  meaning: >
+    1 is unusable or actively misleading. 3 is minimally usable with material
+    caveats. 5 is strong, reviewable, and ready to support downstream monitoring
+    or optimization decisions.
+judge_inputs:
+  - Brief State JSON exported by eval/export_brief_state.py.
+  - LangSmith trace for the same run_id, including agent loops and tool calls.
+  - The fixed hard gates and rubric files from the same git baseline.
+scoring_rules:
+  - Do not award a 4 or 5 from final Brief State text alone; process evidence
+    from LangSmith must support the score.
+  - Do not treat schema validity as content quality.
+  - Do not change these rubrics between a baseline and its retest.
+  - If a hard gate fails, still score rubrics for diagnosis, but mark the run as
+    not accepted.
+
+rubrics:
+  - id: R01
+    name: Global Research investment coverage
+    evaluates: >
+      Whether the Global Research document gives a balanced, decision-useful view
+      across fundamental, macro, industry, market trace, and market narrative
+      sections.
+    judge_must_check:
+      - All five required sections in stable global_research.
+      - Whether each section has a distinct research angle rather than repeating
+        generic ticker facts.
+      - Whether sections connect their facts to the ticker's expectation setup.
+      - LangSmith C1/C2/C3/O4/O1 narrative loops for actual reasoning and source
+        use.
+    score_1: >
+      Missing major sections, mostly generic text, or claims that contradict
+      available evidence.
+    score_2: >
+      Sections exist but are shallow, repetitive, or mostly descriptive with weak
+      connection to later expectation construction.
+    score_3: >
+      Adequate baseline coverage with some ticker-specific facts, but important
+      drivers or conflicts remain thin.
+    score_4: >
+      Strong and differentiated coverage across sections, with clear links from
+      research evidence to likely expectation themes.
+    score_5: >
+      Institutional-quality coverage that surfaces non-obvious drivers,
+      counterarguments, market context, and explicit implications for expectation
+      units.
+
+  - id: R02
+    name: Evidence discipline and source traceability
+    evaluates: >
+      Whether claims are supported by concrete source refs and whether evidence
+      is used in the right scope.
+    judge_must_check:
+      - Hydrated evidence_refs in Brief State for sections, facts, variables, and
+        policies.
+      - Source ids, titles, summaries, confidence, and citation_scope.
+      - LangSmith tool calls that produced or justified cited evidence.
+      - Absence of fabricated, stale, or mismatched sources.
+    score_1: >
+      Evidence is absent, fabricated, or unrelated to the claims it supports.
+    score_2: >
+      Evidence exists but is sparse, generic, poorly scoped, or frequently not
+      traceable to actual tool calls.
+    score_3: >
+      Most major claims have sources, but some important claims are undersourced
+      or evidence is not specific enough.
+    score_4: >
+      Claims are generally well-supported, with source scope and confidence used
+      consistently.
+    score_5: >
+      Evidence is comprehensive, source-specific, hydrated, tool-traceable, and
+      clearly separates confirmed facts from inference.
+
+  - id: R03
+    name: Expectation thesis quality
+    evaluates: >
+      Whether expectation units are investable hypotheses rather than loose topic
+      summaries.
+    judge_must_check:
+      - expectation_name, direction, why_it_matters, and market_view.
+      - Whether each unit has a clear causal thesis and differentiated driver.
+      - Whether bullish/bearish/neutral/risk direction is justified.
+      - Whether O1 construction/detail loops show synthesis rather than copying
+        Global Research.
+    score_1: >
+      Expectations are missing, incoherent, duplicate each other, or not tied to
+      the ticker.
+    score_2: >
+      Expectations are recognizable themes but vague, overlapping, or weakly
+      directional.
+    score_3: >
+      Expectations are usable hypotheses with some causal logic, but lack depth
+      or clear prioritization.
+    score_4: >
+      Expectations are differentiated, directional, and tied to evidence and
+      market-relevant mechanisms.
+    score_5: >
+      Expectations are concise, high-signal investment hypotheses with strong
+      causal logic, explicit uncertainty, and clear downstream monitoring hooks.
+
+  - id: R04
+    name: Price-in and not-priced-in reasoning
+    evaluates: >
+      Whether the Blackboard distinguishes what the market already knows from
+      what may still move price.
+    judge_must_check:
+      - realized_facts_summary and realized_facts price_reaction interpretation.
+      - known_events flags for discussed_by_market, has_price_reaction, and
+        is_known_old_news.
+      - market_view language about priced, partially priced, disputed, or
+        unresolved drivers.
+      - O4 market trace and review loops for price/volume evidence.
+    score_1: >
+      Treats old known facts as fresh catalysts or lacks price reaction analysis.
+    score_2: >
+      Mentions market reaction superficially but does not separate known facts
+      from unpriced variables.
+    score_3: >
+      Provides basic price-in reasoning for the main expectations but misses
+      nuance or some facts.
+    score_4: >
+      Clearly separates priced facts, disputed interpretation, and open catalysts
+      for most expectation units.
+    score_5: >
+      Gives sophisticated price-in analysis with time context, market reaction,
+      uncertainty, and implications for monitoring and action.
+
+  - id: R05
+    name: Realized facts and price reactions
+    evaluates: >
+      Whether realized facts are concrete, dated, source-backed, and interpreted
+      through market reaction rather than merely listed.
+    judge_must_check:
+      - Number and specificity of realized_facts per expectation.
+      - Presence and quality of price_reaction.price_change, price_pattern, and
+        interpretation.
+      - Evidence refs attached to both facts and price reaction.
+      - Consistency with KnownEvents where relevant.
+    score_1: >
+      Facts are absent, vague, unsupported, or materially wrong.
+    score_2: >
+      Facts exist but are generic, weakly dated, or price reaction is mostly
+      decorative.
+    score_3: >
+      Facts are mostly concrete and sourced, with basic reaction interpretation.
+    score_4: >
+      Facts are well-selected, source-backed, and explain how the market
+      processed them.
+    score_5: >
+      Facts form a compelling evidence chain that explains realized market
+      learning and remaining expectation gaps.
+
+  - id: R06
+    name: Key variables and monitorability
+    evaluates: >
+      Whether each expectation is decomposed into variables that can be watched
+      and updated.
+    judge_must_check:
+      - key_variables names, current_status, certainty, and evidence_refs.
+      - Whether variables map to the expectation's causal thesis.
+      - Whether variables can drive later MonitoringConfig and policy rules.
+      - Whether unknowns are explicit where data is incomplete.
+    score_1: >
+      Variables are missing, generic, or impossible to monitor.
+    score_2: >
+      Variables exist but are poorly tied to the thesis or lack observable
+      status.
+    score_3: >
+      Variables are usable but uneven in specificity, evidence, or monitoring
+      relevance.
+    score_4: >
+      Variables are specific, evidence-backed, and mostly actionable for
+      monitoring.
+    score_5: >
+      Variables provide a high-quality monitoring map with status, confidence,
+      catalysts, risks, and update implications.
+
+  - id: R07
+    name: Known events linkage and old-news filtering
+    evaluates: >
+      Whether KnownEvents separates old, already-discussed facts from relevant
+      catalysts and links events to expectations.
+    judge_must_check:
+      - stable known_events document and event count.
+      - event_time, description, source, expectation_id, discussed_by_market,
+        has_price_reaction, and is_known_old_news.
+      - Consistency between known events and realized facts.
+      - LangSmith O1 known-events generation loop for selection rationale.
+    score_1: >
+      KnownEvents is missing or confuses old news with new catalysts.
+    score_2: >
+      Events are present but weakly sourced, poorly linked, or missing market
+      digestion flags.
+    score_3: >
+      Events are generally usable but have gaps in linkage, timestamps, or old
+      news discipline.
+    score_4: >
+      Events are well-linked to expectations and mostly clear about market
+      awareness and price reaction.
+    score_5: >
+      KnownEvents acts as a clean audit layer separating realized history,
+      priced-in information, and watchable future developments.
+
+  - id: R08
+    name: Monitoring config and policy actionability
+    evaluates: >
+      Whether the final monitoring artifacts can operationalize the Blackboard
+      after initialization.
+    judge_must_check:
+      - monitoring_items coverage across expectation units.
+      - base_keywords, extra_objects, extra_keywords, related_entities,
+        priority, and trigger_condition.
+      - monitoring_policy rules across direct_trade, push_to_agent, and cache
+        actions, or explicit rationale for intentionally omitting an action path.
+      - Alignment between variables, known events, and monitoring rules.
+    score_1: >
+      Monitoring artifacts are missing or unusable for automated follow-up.
+    score_2: >
+      Monitoring exists but is thin, generic, or only cache-oriented without
+      rationale.
+    score_3: >
+      Basic monitoring is usable but lacks coverage, routing detail, or action
+      specificity.
+    score_4: >
+      Monitoring config and policy are mostly actionable and tied to expectation
+      drivers.
+    score_5: >
+      Monitoring artifacts form a clear operating plan with triggers, routing,
+      priorities, and action notes grounded in the Blackboard.
+
+  - id: R09
+    name: Agent collaboration and division of labor
+    evaluates: >
+      Whether the workflow uses agents according to their intended roles instead
+      of relying on one agent to do everything.
+    judge_must_check:
+      - C1/C2/C3/O4 contributions to Global Research.
+      - O1 construction/detail/narrative work.
+      - A1 audit and C/O field-review participation.
+      - A2 only for delegated search/verification.
+      - LangSmith trajectory showing role-appropriate loops.
+    score_1: >
+      Agent roles are missing, bypassed, or materially misused.
+    score_2: >
+      Multiple agents run but responsibilities blur or key reviews are skipped.
+    score_3: >
+      Roles mostly align, with some weak review coverage or duplicated work.
+    score_4: >
+      Agents collaborate coherently with clear handoffs and role-appropriate
+      outputs.
+    score_5: >
+      Workflow shows strong expert division of labor, concise handoffs, and
+      meaningful review pressure before promotion.
+
+  - id: R10
+    name: Objection and delegation handling quality
+    evaluates: >
+      Whether objections and delegations improve the Blackboard rather than
+      becoming noisy bookkeeping.
+    judge_must_check:
+      - Objection severity, target paths, rationale, and evidence.
+      - Whether O1 accepts, partially accepts, rejects, or resolves objections
+        with specific changes.
+      - Whether A2 delegated retrieval results are incorporated or marked
+        inconclusive.
+      - Duplicate objection patterns and resolution quality.
+    score_1: >
+      Objections/delegations are ignored, silently dropped, or block finalization
+      without useful diagnosis.
+    score_2: >
+      They are processed mechanically but do not clearly improve outputs.
+    score_3: >
+      Basic lifecycle works, though resolution quality or dedupe is uneven.
+    score_4: >
+      Objections and delegations materially improve final documents and are
+      traceable.
+    score_5: >
+      Review loops produce precise, evidence-backed improvements with clean
+      resolution notes and minimal noise.
+
+  - id: R11
+    name: Tool-use appropriateness and efficiency
+    evaluates: >
+      Whether agents use the right tools, avoid forbidden tools, and avoid noisy
+      or redundant tool loops.
+    judge_must_check:
+      - Agent-specific allowed tools.
+      - LangSmith tool calls and final tool summaries.
+      - Whether required source data was actually retrieved.
+      - Whether repeated calls added value or only burned context.
+    score_1: >
+      Tool use is missing where required, forbidden, fabricated, or repeatedly
+      fails without audit.
+    score_2: >
+      Tools are used but poorly targeted, redundant, or weakly connected to final
+      claims.
+    score_3: >
+      Tool use is adequate, with some inefficiency or shallow follow-up.
+    score_4: >
+      Tool calls are mostly well-targeted, role-appropriate, and reflected in
+      evidence.
+    score_5: >
+      Tool trajectory is lean, high-signal, and clearly converts external data
+      into auditable Blackboard claims.
+
+  - id: R12
+    name: Traceability and reproducibility
+    evaluates: >
+      Whether a future Codex run can reconstruct what happened, why it happened,
+      and whether a modification improved it.
+    judge_must_check:
+      - Brief State export path and git commit recorded.
+      - run_id consistency between DB, Brief State, LangSmith, and eval record.
+      - Commit Log and Working Memory coverage.
+      - AgentResult parse/schema/write failure visibility if applicable.
+    score_1: >
+      Run cannot be reliably reconstructed or linked to traces and records.
+    score_2: >
+      Some artifacts exist but important links or failure reasons are missing.
+    score_3: >
+      Reconstruction is possible with manual effort and minor gaps.
+    score_4: >
+      Artifacts are well-linked and sufficient for repeatable comparison.
+    score_5: >
+      Baseline, trace, Brief State, scores, hypotheses, changes, and retest are
+      fully connected and audit-ready.
+
+  - id: R13
+    name: Uncertainty and inconclusive evidence discipline
+    evaluates: >
+      Whether the Blackboard honestly marks uncertainty instead of forcing weak
+      evidence into confident conclusions.
+    judge_must_check:
+      - unknowns in O1/A1/A2 outputs and expectation units.
+      - A2 claim_verdict and confidence for delegated checks.
+      - Whether inconclusive evidence changes final wording or monitoring.
+      - Whether unsupported projections are labeled as assumptions.
+    score_1: >
+      Unsupported or inconclusive claims are presented as facts.
+    score_2: >
+      Some uncertainty is mentioned but not tied to decisions or evidence.
+    score_3: >
+      Main uncertainties are visible, though confidence and implications are
+      uneven.
+    score_4: >
+      Uncertainty is mostly explicit and reflected in expectation wording and
+      monitoring.
+    score_5: >
+      The Blackboard cleanly separates fact, inference, uncertainty, and
+      follow-up evidence needs.
+
+  - id: R14
+    name: Optimization readiness
+    evaluates: >
+      Whether failures and weaknesses can be turned into concrete prompt, skill,
+      schema, or workflow hypotheses for the next iteration.
+    judge_must_check:
+      - Failure categories in eval records.
+      - Whether each low score has a specific cause and proposed change.
+      - Whether proposed changes are testable without changing rubrics mid-cycle.
+      - Whether retest comparison can attribute improvement or regression.
+    score_1: >
+      Problems are vague and cannot guide a safe modification.
+    score_2: >
+      Some problems are identified but hypotheses are broad or not testable.
+    score_3: >
+      Most issues have plausible hypotheses, though prioritization is weak.
+    score_4: >
+      Issues are well-categorized with concrete, testable modification plans.
+    score_5: >
+      Eval output is immediately usable for autonomous Codex baseline, commit,
+      modify, retest, compare, and accept/reject loops.

@@ -64,8 +64,14 @@ class Objection(ContractModel):
     severity: ObjectionSeverity
     reason: NonEmptyStr
     evidence_refs: list[EvidenceRef] = Field(default_factory=list)
+    taxonomy: NonEmptyStr = "general"
+    dedupe_hash: NonEmptyStr | None = None
+    target_path: NonEmptyStr | None = None
+    merged_objection_ids: list[NonEmptyStr] = Field(default_factory=list)
     status: ObjectionStatus = ObjectionStatus.OPEN
     resolution_note: NonEmptyStr | None = None
+    resolution_changed_paths: list[NonEmptyStr] = Field(default_factory=list)
+    resolution_evidence_refs: list[EvidenceRef] = Field(default_factory=list)
 
     @property
     def is_unresolved(self) -> bool:
