@@ -118,3 +118,4 @@
 - Added three local hard validators for Brief State review and eval export: evidence reference integrity, trajectory/tool-boundary compliance, and commit-log/state-mutation consistency.
 - Switched the Phase 17 real initialization smoke/eval case from ASTS to MU with Micron-specific memory semiconductor research inputs while keeping real test execution opt-in.
 - Updated the DashScope model configuration from `qwen3.6-flash` to `qwen3.7-plus` while keeping the provider and all other generation settings unchanged.
+- Added Docker deployment support for DoxAgent with a Debug Viewer service bound to `127.0.0.1:8765`, isolated compose project naming, cache/tmp volumes, and a healthcheck suitable for the Tencent Cloud host; operational SSH/deployment notes live in `docs/server-ssh-deployment.md`.

@@ -1,0 +1,36 @@
+name: doxagent
+
+services:
+  debug-viewer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: doxagent:latest
+    container_name: doxagent-debug-viewer
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      PYTHONPATH: /app
+      DOXAGENT_STORAGE_MODE: ${DOXAGENT_STORAGE_MODE:-memory}
+    ports:
+      - "127.0.0.1:8765:8765"
+    volumes:
+      - doxagent-cache:/root/.cache
+      - doxagent-tmp:/app/.tmp
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8765/api/config', timeout=5).read()",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+volumes:
+  doxagent-cache:
+  doxagent-tmp:
