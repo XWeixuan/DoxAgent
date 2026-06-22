@@ -4818,6 +4818,8 @@ class BlackboardInitializationWorkflow:
             )
             results.append(result)
 
+        self._apply_deterministic_objection_normalizations(checkpoint)
+
         run = self.blackboard.get_run(checkpoint.run_id)
         unresolved_objections = [
             objection for objection in run.objections if objection.is_unresolved
@@ -4877,6 +4879,173 @@ class BlackboardInitializationWorkflow:
         ):
             raise WorkflowContractError("ResolveObjectionsAndDelegations left blockers unresolved.")
         return results
+
+    def _apply_deterministic_objection_normalizations(
+        self,
+        checkpoint: WorkflowCheckpoint,
+    ) -> None:
+        run = self.blackboard.get_run(checkpoint.run_id)
+        unresolved = [objection for objection in run.objections if objection.is_unresolved]
+        if not unresolved:
+            return
+
+        numeric_objections = [
+            objection
+            for objection in unresolved
+            if objection.taxonomy.startswith("numeric_sanity_")
+            and objection.target.expectation_id is not None
+        ]
+        price_objections = [
+            objection
+            for objection in unresolved
+            if self._is_deterministic_price_reaction_objection(objection)
+        ]
+        if not numeric_objections and not price_objections:
+            return
+
+        numeric_targets = {
+            objection.target.expectation_id
+            for objection in numeric_objections
+            if objection.target.expectation_id is not None
+        }
+        price_targets = {
+            objection.target.expectation_id
+            for objection in price_objections
+            if objection.target.expectation_id is not None
+        }
+        if price_objections and not price_targets:
+            price_targets = {
+                patch.target.expectation_id
+                for patch in checkpoint.pending_patches
+                if patch.target.document_type is DocumentType.EXPECTATION_UNIT
+                and patch.target.expectation_id is not None
+            }
+
+        updated_patches: list[BlackboardPatch] = []
+        changed_expectation_ids: set[str] = set()
+        price_changed_expectation_ids: set[str] = set()
+        changed_patch_ids: list[str] = []
+        changed_evidence_refs: list[EvidenceRef] = []
+        for patch in checkpoint.pending_patches:
+            expectation_id = patch.target.expectation_id
+            next_patch = patch
+            if expectation_id in numeric_targets:
+                next_patch = self._sanitize_numeric_sanity_revision(checkpoint, next_patch)
+            if expectation_id in price_targets:
+                before_price_normalization = next_patch
+                next_patch = self._normalize_expectation_price_reaction_patch(
+                    checkpoint,
+                    next_patch,
+                )
+                if (
+                    expectation_id is not None
+                    and self._patch_changed(before_price_normalization, next_patch)
+                ):
+                    price_changed_expectation_ids.add(expectation_id)
+            if self._patch_changed(patch, next_patch):
+                if expectation_id is not None:
+                    changed_expectation_ids.add(expectation_id)
+                changed_patch_ids.append(next_patch.patch_id)
+                changed_evidence_refs.extend(next_patch.evidence_refs)
+            updated_patches.append(next_patch)
+
+        if not changed_patch_ids:
+            return
+
+        checkpoint.pending_patches = updated_patches
+        remaining_numeric_ids = {
+            objection.objection_id
+            for patch in checkpoint.pending_patches
+            for objection in self._numeric_sanity_objections_for_patch(checkpoint.ticker, patch)
+        }
+        resolved_ids: list[str] = []
+        evidence_refs = self._dedupe_evidence_refs(changed_evidence_refs)
+        normalization_types: list[str] = []
+        if numeric_objections:
+            normalization_types.append("numeric_sanity")
+        if price_objections:
+            normalization_types.append("price_reaction_contradiction")
+        for objection in numeric_objections:
+            if objection.objection_id in remaining_numeric_ids:
+                continue
+            self.blackboard.resolve_objection(
+                checkpoint.run_id,
+                objection.objection_id,
+                (
+                    "Workflow deterministic numeric-sanity normalization removed "
+                    "unsupported precise numeric claims; deterministic revalidation no "
+                    "longer reproduces this blocker."
+                ),
+                changed_paths=[
+                    "realized_facts",
+                    "realized_facts.price_reaction",
+                    "realized_facts_summary",
+                ],
+                evidence_refs=evidence_refs,
+            )
+            resolved_ids.append(objection.objection_id)
+
+        for objection in price_objections:
+            target_id = objection.target.expectation_id
+            if target_id is not None and target_id not in price_changed_expectation_ids:
+                continue
+            if target_id is None and not price_changed_expectation_ids:
+                continue
+            self.blackboard.resolve_objection(
+                checkpoint.run_id,
+                objection.objection_id,
+                (
+                    "Workflow deterministic price-reaction normalization removed "
+                    "contradicted quantified price claims and downgraded the field to "
+                    "market-data verification required."
+                ),
+                changed_paths=["realized_facts.price_reaction"],
+                evidence_refs=evidence_refs,
+            )
+            resolved_ids.append(objection.objection_id)
+
+        self.blackboard.add_working_memory_entry(
+            checkpoint.run_id,
+            author_agent=AgentName.SYSTEM,
+            content_type="deterministic_objection_normalization",
+            payload={
+                "status": "succeeded",
+                "handled_objection_ids": resolved_ids,
+                "changed_expectation_ids": sorted(changed_expectation_ids),
+                "changed_patch_ids": changed_patch_ids,
+                "residual_numeric_objection_ids": sorted(remaining_numeric_ids),
+                "normalization_types": normalization_types,
+            },
+            evidence_refs=evidence_refs,
+        )
+
+    def _is_deterministic_price_reaction_objection(self, objection: Objection) -> bool:
+        text = " ".join(
+            [
+                objection.objection_id,
+                objection.taxonomy,
+                objection.target_path or "",
+                objection.target.field_path or "",
+                objection.reason,
+            ]
+        ).lower()
+        mentions_price_reaction = (
+            "price_reaction" in text
+            or "ohlcv" in text
+            or "price reaction" in text
+            or "价格反应" in objection.reason
+            or "股价" in objection.reason
+        )
+        mentions_contradiction = (
+            "contradiction" in text
+            or "contradict" in text
+            or "矛盾" in objection.reason
+            or "错误" in objection.reason
+        )
+        return mentions_price_reaction and mentions_contradiction
+
+    def _patch_changed(self, before: BlackboardPatch, after: BlackboardPatch) -> bool:
+        return before.model_dump(mode="json") != after.model_dump(mode="json")
 
     def _mock_resolve_blockers(self, checkpoint: WorkflowCheckpoint) -> None:
         if self.execution_mode == "agent_runner":
@@ -5684,10 +5853,7 @@ class BlackboardInitializationWorkflow:
         if not changed:
             return patch
         summary = document.realized_facts_summary
-        if (
-            self._contains_market_numeric_claim(summary)
-            or self._contains_fundamental_numeric_claim(summary)
-        ):
+        if self._contains_numeric_value(summary):
             summary = (
                 "已兑现事实在移除无充分证据的精确数字后仅作定性保留；恢复量化表述前"
                 "必须补充 source-appropriate market 或 fundamental evidence。"

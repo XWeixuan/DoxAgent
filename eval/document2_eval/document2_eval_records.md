@@ -637,3 +637,142 @@
   - Continue objection resolution across remaining unresolved batches when one processed batch stalls after revalidation.
   - Add deterministic numeric-sanity fallback sanitization for accepted or partially accepted O1 revisions that still contain unsupported precise numeric claims.
   - Keep numeric-sanity revalidation after sanitization so remaining unsafe claims still reopen blockers.
+
+## 2026-06-22 20:44 - MU - Document 2 loop 1 retest4 blocked - ResolveObjectionsAndDelegations model timeout
+
+### Test Info
+- Git state: cloud deployed commit `ddc351f13c7b1581d7385293989f894269895bd5` (`fix: sanitize document2 numeric revisions`).
+- Source run_id: `run_58f5afce8b9441ca804a2cde1ad9aec8`
+- Source state: Document 1-only source; stable `global_research` only, no stable `expectation_unit`, no source pending patches, no source blockers.
+- Execution mode: `clone`
+- Command: `docker compose run --rm -e DOXAGENT_RUN_REAL_API_TESTS=1 -e DOXAGENT_STORAGE_MODE=postgres debug-viewer python eval/run_document2_expectation_units_smoke.py run_58f5afce8b9441ca804a2cde1ad9aec8 --mode clone --stop-after PromoteExpectationToBeliefState --export-brief-state`
+- Environment: cloud server `doxagent-hk`, `/root/doxagent`, Docker image built from `ddc351f`.
+- Execution run_id: `run_aeff7a2c363341aa9074ea097c7921ca`
+- Stop after: `PromoteExpectationToBeliefState`
+- Brief State JSON: remote API visible; remote file export path was reported as `eval/brief_state_exports/run_aeff7a2c363341aa9074ea097c7921ca.json` but file was not present when checked immediately after completion.
+- Remote log: `/root/doxagent/.eval_runs/document2-loop1-retest4-20260622T195152+0800.log`
+- LangSmith MCP query: project `DoxAgent`; field-review traces visible for A1/C1/C3/O4. No successful `ResolveObjectionsAndDelegations` trace was found; Working Memory contains failed O1 `objection_resolution_result` with no ReAct action entries.
+- Built-in hard validators: overall `failed`; `evidence_reference_integrity=passed`, `langsmith_trajectory_tool_boundary=failed` with `workflow_trace_not_completed` and `no_action_loop_entries`, `commit_log_state_mutation_consistency=passed`.
+- Evaluator: Codex, strict diagnostic retest4.
+
+### Optimization Hypothesis
+- Previous blocker movement: retest4 reached the same resolver node but produced more diagnostic pressure than retest3. Field review now adds a fifth, concrete O4 objection (`obj_price_reaction_contradictions`) describing price-reaction contradictions against OHLCV data.
+- The previous deterministic fallback did not execute because O1 resolver timed out before returning an accepted or partially accepted revision. Therefore the new sanitizer was correct in placement for bad returned revisions, but insufficient for model-timeout cases.
+- New blocker: `ResolveObjectionsAndDelegations` failed with `模型请求超过 300.0 秒未返回`. Working Memory records O1 `objection_resolution_result` as failed with zero ReAct entries, so the resolver did not get far enough to emit decisions.
+- Root hypothesis 1: numeric_sanity objections and price-reaction contradiction objections are deterministic quality gates, not open-ended investment judgment. Sending them into O1 as full-text objection-resolution tasks wastes the model budget and invites timeout.
+- Root hypothesis 2: the field-review context remains too large. LangSmith shows ReviewExpectationFields inputs around 34k-46k tokens for A1/C1/C3, and an earlier O4 review input around 134k chars. The resolver then inherits large pending patch summaries plus five blockers.
+- Root hypothesis 3: O4's objection is actionable without model deliberation: if price-reaction claims contradict structured OHLCV data, the safe workflow action is to remove quantified price claims and downgrade the field to "market-data verification required", then revalidate.
+- Expected hard-gate movement: next retest should close or reduce the deterministic numeric/price-reaction blockers before O1 is called, so O1 only handles residual non-deterministic objections. `D2-HG08`, `D2-HG09`, and built-in trajectory validator should improve.
+- Expected rubric movement: `D2-R04`, `D2-R07`, `D2-R09`, and `D2-R10` should improve if contradicted price-reaction text is removed and resolver avoids timeout. Content specificity may drop, but evidence discipline should improve.
+- Risk: deterministic normalization must not silently promote weak content. It should write Working Memory audit evidence, mark only the directly handled objections with changed paths, and still run numeric-sanity revalidation after patch changes.
+
+### Proposed Modification Plan
+- Change 1: Add a deterministic objection-normalization phase at the start of `_resolve_blockers`, before calling O1. It should inspect unresolved objections and pending expectation patches.
+- Change 2: For `numeric_sanity_*` objections, apply the existing numeric-sanity sanitizer directly to the affected expectation patch, then resolve only the numeric objections whose deterministic revalidation no longer reproduces them.
+- Change 3: For O4 price-reaction contradiction objections (`price_reaction_contradictions` or objections whose reason/target clearly references OHLCV and `price_reaction`), apply the existing promotion price-reaction normalization to affected patches, downgrading contradicted quantified price claims to "requires OHLCV/market-data verification" text.
+- Change 4: Write a `deterministic_objection_normalization` Working Memory entry that lists handled objection ids, changed expectation ids, changed paths, and residual blockers.
+- Change 5: Keep O1 resolver for remaining unresolved blockers. If deterministic normalization does not remove the issue, the blocker must stay open and continue to block promotion.
+- Files to touch: `src/doxagent/workflows/initialization.py`, `tests/test_phase5_initialization_workflow.py`, `changelog`, `eval/document2_eval/document2_eval_records.md`.
+- Retest requirement: commit/push, cloud `git pull --ff-only`, rebuild `debug-viewer`, rerun the same source and same `--stop-after PromoteExpectationToBeliefState` in cloud-only mode.
+
+### Scope Decision
+- Eval mode: `promote`
+- Can judge stable expectation_unit: no
+- Can judge improvement: yes, for field-review diagnostic quality and detection of O4 price contradictions.
+- Cannot claim: stable `expectation_unit`, resolved blockers, promotion readiness, or overall quality-target success.
+
+### Hard Gates
+| Gate | Result | Evidence | Notes |
+| --- | --- | --- | --- |
+| D2-HG01 | pass | Same verified Document 1-only source run. | Valid seed retained. |
+| D2-HG02 | fail | Latest checkpoint `status=blocked`, `next_node=ResolveObjectionsAndDelegations`; target `PromoteExpectationToBeliefState` not reached. | Resolver timeout. |
+| D2-HG03 | pass | Construction, A1 review, and construction resolver completed. | Shell path remains valid. |
+| D2-HG04 | pass | `GenerateExpectationDetails` completed and produced 2 pending expectation patches. | Detail generation is now reliable enough to review. |
+| D2-HG05 | fail | Evidence refs hydrate, but numeric and price-reaction claims still mismatch evidence class and structured OHLCV findings. | Ref existence is not sufficient. |
+| D2-HG06 | fail | Four numeric_sanity blockers plus O4 price-reaction contradiction blocker remain open. | Price-in reasoning is unsafe. |
+| D2-HG07 | pass | A1/C1/C3/O4 field review ran and produced actionable objections. | O4 review improved pressure. |
+| D2-HG08 | fail | Resolver produced no successful decision; O1 model request timed out after 300 seconds. | Objections not handled. |
+| D2-HG09 | fail | Stable `expectation_unit` count is 0; 2 pending patches remain blocked. | No promotion. |
+| D2-HG10 | fail | LangSmith traces exist for earlier nodes, but no successful resolver trace was found; local validator reports no action entries for O1 objection resolution. | Critical node trajectory missing. |
+| D2-HG11 | pass | Remote log, checkpoint metadata, Working Memory, and hard validators record the timeout. | Failure is auditable. |
+| D2-HG12 | fail | Field-review inputs are large, and resolver timed out before output. | Context control remains a blocker. |
+| D2-HG13 | fail | Numeric/price blockers survive into resolver; no revised patch continuity to promotion. | Memory/revision continuity not proven. |
+
+### Built-in Hard Validators
+| Validator | Result | Evidence | Notes |
+| --- | --- | --- | --- |
+| evidence_reference_integrity | pass | Cloud DebugRunQueryService hard validator. | Ref existence and hydration pass. |
+| langsmith_trajectory_tool_boundary | fail | Findings: `workflow_trace_not_completed`, `no_action_loop_entries` for O1 `objection_resolution_result`. | Correctly blocks acceptance. |
+| commit_log_state_mutation_consistency | pass | Cloud DebugRunQueryService hard validator. | Stable state mutations are explained by commit log. |
+
+### Rubrics
+| Rubric | Score | Reason |
+| --- | ---: | --- |
+| D2-R01 | 3 | Source handoff remains valid, but no stable Document 2 artifact exists. |
+| D2-R02 | 3 | Two theses are differentiated and reviewable, but content remains blocked by evidence and price-reaction defects. |
+| D2-R03 | 2 | Realized facts are specific, but many precise numbers and price reactions are contradicted or unsupported. |
+| D2-R04 | 1 | Price-in reasoning is not reliable; O4 found direct OHLCV contradictions and resolver timed out. |
+| D2-R05 | 3 | Key variables exist and C3 review adds useful calibration, but they are not promotable. |
+| D2-R06 | 3 | Event monitoring direction exists, but still depends on unsupported quantified facts. |
+| D2-R07 | 3 | Evidence is traceable, yet source class and contradiction handling remain insufficient. |
+| D2-R08 | 4 | Field review pressure is strong enough to catch numeric and OHLCV contradictions. |
+| D2-R09 | 1 | Objection handling failed at the resolver model request; no decisions or patch revisions. |
+| D2-R10 | 1 | No stable `expectation_unit`; blockers prevent promotion. |
+| D2-R11 | 3 | Tool use is mostly auditable and role-appropriate before resolver, but resolver trajectory is absent. |
+| D2-R12 | 2 | The workflow detects uncertainty and contradiction, but generated patches still overstate precise facts. |
+| D2-R13 | 4 | DB, remote log, Working Memory, hard validators, and LangSmith reproduce the failure chain. |
+| D2-R14 | 4 | Failure category and next modification are concrete, enforcement-layer-based, and retestable. |
+
+### Score Summary
+- Core Blackboard quality rubrics average (`D2-R01`-`D2-R10`): 2.4
+- Other rubrics with score <= 2: `D2-R12`
+- Quality target met: no
+- Accept modification so far: no, must modify and retest.
+
+### Document 2 State Summary
+- Pending expectation patches: 2
+- Stable expectation_unit count: 0
+- Open/unresolved objections: 5
+- Blocking delegations: 0
+- Latest checkpoint: `blocked`, `next_node=ResolveObjectionsAndDelegations`
+- Open blockers:
+  - `obj_numeric_sanity_expectation_mu_001_fundamental_data`
+  - `obj_numeric_sanity_expectation_mu_001_market_data`
+  - `obj_numeric_sanity_expectation_mu_002_fundamental_data`
+  - `obj_numeric_sanity_expectation_mu_002_market_data`
+  - `obj_price_reaction_contradictions`
+- Working Memory entries of interest: O1 detail results for two expectation patches, A1/C1/C3/O4 field reviews, and failed O1 `objection_resolution_result`.
+- Script error: `ResolveObjectionsAndDelegations agent result failed: 模型请求超过 300.0 秒未返回。`
+
+### Failure Categories
+- category: `objection_resolution`
+  - issue: O1 resolver timed out before returning objection decisions.
+  - evidence: remote log final error, checkpoint `last_error_message`, Working Memory failed `objection_resolution_result` with zero ReAct entries.
+  - severity: high/blocking
+  - suspected root cause: deterministic numeric/price contradictions are still sent into an open-ended O1 task.
+- category: `price_in_reasoning`
+  - issue: O4 found concrete OHLCV contradictions in price-reaction claims.
+  - evidence: `obj_price_reaction_contradictions` reason lists wrong starting price, wrong gain, wrong benchmark gain, wrong event-day reaction, and unsupported high-price wording.
+  - severity: high
+  - suspected root cause: detail generation writes quantified market reactions before structured market evidence is attached or normalized.
+- category: `evidence_integrity`
+  - issue: precise market and fundamental claims remain supported by insufficient or mismatched evidence.
+  - evidence: four deterministic numeric_sanity blockers remain open.
+  - severity: high
+  - suspected root cause: source-class revalidation is only post-review and currently waits for model resolution.
+- category: `context_management`
+  - issue: field-review and resolver contexts remain large and timeout-prone.
+  - evidence: LangSmith field-review token counts around 34k-46k input tokens and resolver model timeout.
+  - severity: high
+  - suspected root cause: resolver receives bulky pending patch text plus deterministic blockers that can be handled without LLM deliberation.
+- category: `promotion_blocker`
+  - issue: no stable expectation_unit can be promoted while five blockers remain.
+  - evidence: stable expectation count 0, pending patch count 2, open objection count 5.
+  - severity: high
+  - suspected root cause: deterministic blocker handling is too late in the lifecycle.
+
+### Actual Modification
+- Implemented after this evaluation entry:
+  - Add deterministic pre-O1 objection normalization for numeric_sanity and price-reaction contradiction blockers.
+  - Write an auditable Working Memory entry for deterministic normalization and leave residual blockers open for O1.
+  - Retain numeric-sanity revalidation after patch normalization.

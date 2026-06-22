@@ -1149,6 +1149,99 @@ def test_numeric_sanity_revision_fallback_removes_unsupported_false_precision() 
     )
 
 
+def test_deterministic_objection_normalization_handles_numeric_and_price_blockers() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        runner=ParallelStructuredInitializationRunner(),
+        execution_mode="agent_runner",
+    )
+    factory = InitializationMockResultFactory()
+    narrative_evidence = factory._evidence(EvidenceSourceType.DOXATLAS_SOURCE)
+    document = factory._expectation_unit("NVDA")
+    fact = document.realized_facts[0]
+    reaction = fact.price_reaction.model_copy(
+        update={
+            "price_change": "NVDA stock price is $1,020, YTD +244%, market cap 1.15 trillion.",
+            "price_pattern": "contradicted OHLCV price reaction",
+            "interpretation": "OHLCV contradiction is still written as quantified price-in.",
+            "evidence_refs": [narrative_evidence],
+        },
+        deep=True,
+    )
+    document = document.model_copy(
+        update={
+            "realized_facts": [
+                fact.model_copy(
+                    update={
+                        "description": (
+                            "NVDA revenue grew 196% while stock price reached $1,020, "
+                            "based only on a narrative source."
+                        ),
+                        "price_reaction": reaction,
+                        "evidence_refs": [narrative_evidence],
+                    },
+                    deep=True,
+                )
+            ],
+            "realized_facts_summary": "Revenue +196% and stock price $1,020 are precise.",
+        },
+        deep=True,
+    )
+    patch = factory._document_patch(
+        document,
+        DocumentType.EXPECTATION_UNIT,
+        AgentName.O1_EXPECTATION_OWNER,
+        expectation_id=document.expectation_id,
+    )
+    run = workflow.blackboard.start_run("NVDA", AgentName.SYSTEM)
+    checkpoint = WorkflowCheckpoint(run_id=run.run_id, ticker="NVDA", pending_patches=[patch])
+    numeric_objections = workflow._numeric_sanity_objections_for_patch("NVDA", patch)
+    for objection in numeric_objections:
+        workflow.blackboard.create_objection(run.run_id, objection)
+    price_objection = Objection(
+        objection_id="obj_price_reaction_contradictions",
+        source_agent=AgentName.O4_MARKET_TRACE,
+        target=BlackboardTarget(
+            document_type=DocumentType.EXPECTATION_UNIT,
+            ticker="NVDA",
+            field_path="document",
+        ),
+        severity=ObjectionSeverity.BLOCKING,
+        reason=(
+            "realized_facts.price_reaction contains OHLCV contradictions and wrong "
+            "stock price reaction claims."
+        ),
+        evidence_refs=[narrative_evidence],
+        taxonomy="general",
+        target_path="expectation_unit:default:document",
+    )
+    workflow.blackboard.create_objection(run.run_id, price_objection)
+
+    workflow._apply_deterministic_objection_normalizations(checkpoint)
+
+    assert (
+        workflow._numeric_sanity_objections_for_patch("NVDA", checkpoint.pending_patches[0])
+        == []
+    )
+    run_after = workflow.blackboard.get_run(run.run_id)
+    objections_by_id = {item.objection_id: item for item in run_after.objections}
+    assert all(
+        objections_by_id[item.objection_id].status is ObjectionStatus.RESOLVED
+        for item in numeric_objections
+    )
+    assert (
+        objections_by_id["obj_price_reaction_contradictions"].status
+        is ObjectionStatus.RESOLVED
+    )
+    assert run_after.working_memory[-1].content_type == "deterministic_objection_normalization"
+    assert run_after.working_memory[-1].payload["changed_expectation_ids"] == [
+        document.expectation_id
+    ]
+    sanitized_text = str(checkpoint.pending_patches[0].after)
+    assert "$1,020" not in sanitized_text
+    assert "+244%" not in sanitized_text
+    assert "196%" not in sanitized_text
+
+
 class StalledFirstObjectionBatchRunner:
     def __init__(self) -> None:
         self.batches: list[list[str]] = []
