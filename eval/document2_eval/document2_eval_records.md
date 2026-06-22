@@ -917,3 +917,150 @@
   - Make `langsmith_trajectory_tool_boundary` accept only explicit completed Document2 smoke stop-after checkpoints while preserving failure for ordinary unclosed runs.
   - Extend deterministic numeric-sanity cleanup to market_view, key_variables, and event_monitoring_direction.
   - Add regression tests for all three changes.
+
+## 2026-06-22 23:20 - MU - Document 2 loop 1 retest6 blocked - field-review numeric objections still time out O1 resolver
+
+### Test Info
+- Git state: cloud deployed commit `d0391ef` (`fix: close document2 smoke audit gaps`).
+- Source run_id: `run_58f5afce8b9441ca804a2cde1ad9aec8`
+- Source state: Document 1-only source; stable `global_research`; no stable `expectation_unit`; no source pending patches or blockers.
+- Execution mode: `clone`
+- Command: `docker compose run --rm -e DOXAGENT_RUN_REAL_API_TESTS=1 -e DOXAGENT_STORAGE_MODE=postgres debug-viewer python eval/run_document2_expectation_units_smoke.py run_58f5afce8b9441ca804a2cde1ad9aec8 --mode clone --stop-after PromoteExpectationToBeliefState --export-brief-state`
+- Environment: cloud server `doxagent-hk`, `/root/doxagent`, Docker image built from `d0391ef`.
+- Execution run_id: `run_80a2f4a08fed47f5b49d83ae156aecdf`
+- Stop after: `PromoteExpectationToBeliefState`
+- Remote log: `/root/doxagent/.eval_runs/document2-loop1-retest6-20260622T221155+0800.log`
+- Script output: `status=blocked`; `next_node=ResolveObjectionsAndDelegations`; completed nodes stop at `ReviewExpectationFields`; `stable_document_types=["global_research"]`; `pending_patch_count=3`; `expectation_unit_count=0`; `unresolved_objection_count=5`; `blocking_delegation_count=0`.
+- Error: `ResolveObjectionsAndDelegations agent result failed: 模型请求超过 300.0 秒未返回。`
+- Brief State API: `/api/runs/run_80a2f4a08fed47f5b49d83ae156aecdf/brief-state` confirms `latest_checkpoint.status=blocked`, `next_node=ResolveObjectionsAndDelegations`, `last_error_code=WorkflowContractError`.
+- Direct cloud validator query from `DebugRunQueryService().brief_state(...).hard_validators`: overall `failed`; `evidence_reference_integrity=passed`, `langsmith_trajectory_tool_boundary=failed`, `commit_log_state_mutation_consistency=passed`.
+- LangSmith MCP query: project `DoxAgent`; same execution run has high-token `ReviewExpectationFields` traces, including `C1.ReviewExpectationFields.LOOP4` and `A1.ReviewExpectationFields.LOOP7`; no `ResolveObjectionsAndDelegations` root trace found by run_id/node search.
+- Evaluator: Codex, strict diagnostic retest6.
+
+### Optimization Hypothesis
+- The previous `d0391ef` changes fixed the retest5 smoke-audit gaps, but retest6 exposed a new blocker before promotion: field review generated five unresolved, mostly mechanical numeric objections after the three detail patches were produced.
+- The remaining blockers are not open-ended investment judgments. They are deterministic quality failures:
+  - three price benchmark / return-calculation objections (`obj_price_mu_01`, `obj_price_mu_02`, `obj_price_mu_03`);
+  - two duplicate Q3 FY2026 revenue-guidance objections saying patches used `$36B` where authoritative sources indicate `$33.5B`.
+- Because these blockers were passed into O1 as large pending-patch context, the resolver had to process three long expectation patches plus duplicate objections. The resulting O1 call timed out twice and produced no action loop entries, leaving the workflow blocked.
+- Expected next movement: if field-review price/guidance corrections are normalized deterministically before O1, and the resolver only receives relevant compact pending patches for residual non-deterministic objections, the next retest should move past `ResolveObjectionsAndDelegations`, preserve a Working Memory audit of the deterministic correction, and either promote clean expectation units or expose a smaller content-quality blocker.
+- Risk: deterministic correction can over-sanitize useful specificity. This is acceptable only for values explicitly flagged as wrong or unsupported by field review; qualitative thesis, evidence refs, variable identity, and monitoring intent must be preserved.
+
+### Proposed Modification Plan
+- Change 1: Extend `_apply_deterministic_objection_normalizations` so field-review numeric blockers can be handled before calling O1, alongside existing numeric_sanity and price-reaction contradiction normalization.
+- Change 2: Add targeted detection for price benchmark / return-calculation objections and Q3 FY2026 revenue-guidance objections. Include objection-id inference such as `obj_price_mu_02 -> expectation_mu_02` so broad field-review objections can be mapped to the intended pending patch.
+- Change 3: For affected patches, remove or downgrade only field-review-flagged price/guidance precision across `market_view`, `realized_facts`, `realized_facts.price_reaction`, `realized_facts_summary`, `key_variables.current_status`, and `event_monitoring_direction`.
+- Change 4: When price-reaction values are disputed, replace quantified price changes with explicit "OHLCV/market_trace recalculation required" wording rather than leaving wrong numbers or silently deleting the reasoning field.
+- Change 5: Write an auditable `deterministic_objection_normalization` Working Memory entry with `field_review_numeric_correction`, handled objection ids, changed patches, and residual numeric blockers.
+- Change 6: Shrink O1 resolver context by including only relevant compact pending patches for the current objection batch, while retaining summaries and an omitted-patch count for auditability.
+- Change 7: Add regression tests for field-review numeric normalization, expectation-id inference from objection ids, and compact relevant-patch resolver context.
+- Retest requirement: commit/push, cloud `git pull --ff-only`, rebuild `debug-viewer`, rerun the same source run and same `--stop-after PromoteExpectationToBeliefState` in cloud-only mode.
+
+### Scope Decision
+- Eval mode: `promote`
+- Can judge stable expectation_unit: no, because promotion was not reached.
+- Can judge workflow improvement: yes, as a blocker diagnosis and optimization target, but not as acceptance.
+- Cannot claim: quality target success, because one built-in hard validator failed, `D2-HG08`/`D2-HG09` failed, and no stable `expectation_unit` exists.
+
+### Hard Gates
+| Gate | Result | Evidence | Notes |
+| --- | --- | --- | --- |
+| D2-HG01 | pass | Same Document 1-only source `run_58f5afce8b9441ca804a2cde1ad9aec8`; clone mode. | Seed remains valid. |
+| D2-HG02 | fail | Target stop-after `PromoteExpectationToBeliefState` not reached; final node is `ResolveObjectionsAndDelegations`. | This is the primary workflow blocker. |
+| D2-HG03 | pass | Construction, construction review, and construction resolution completed; three shells exist. | Shell quality is not the blocking issue in this run. |
+| D2-HG04 | pass | `GenerateExpectationDetails` completed with three pending expectation patches. | Field-level patches exist and are reviewable. |
+| D2-HG05 | fail | Pending patches still include narrative-level precise numbers and field-review objections for false guidance/price values. | Ref existence validator passes, but semantic evidence sufficiency fails. |
+| D2-HG06 | fail | O4/field review identified wrong price benchmark and return calculations for all three patches. | Price-in reasoning cannot be accepted. |
+| D2-HG07 | pass | `ReviewExpectationFields` completed; A1/C1/C3/O4 review traces and objections are visible. | Review pressure is strong and useful. |
+| D2-HG08 | fail | Five unresolved objections remain because O1 resolver timed out. | Blockers were neither resolved nor explicitly residualized. |
+| D2-HG09 | fail | `stable expectation_unit count=0`; `pending_patch_count=3`; `unresolved_objection_count=5`. | Promotion did not occur. |
+| D2-HG10 | fail | LangSmith has field-review traces, but no resolver root trace found; hard validator reports `no_action_loop_entries` and `workflow_trace_not_completed`. | Process trace cannot support acceptance. |
+| D2-HG11 | pass | Remote log, Brief State, Working Memory, hard validators, and LangSmith field-review traces reproduce the blocker. | Failure is auditable. |
+| D2-HG12 | fail | Review contexts reached roughly 43k-46k input tokens; resolver was still fed bulky patch context before timing out. | Context value/length needs another cut. |
+| D2-HG13 | fail | Accepted/revised field-review decisions never reached stable or revised patches because resolver failed. | Multi-step revision continuity breaks at O1 resolver. |
+
+### Built-in Hard Validators
+| Validator | Result | Evidence | Notes |
+| --- | --- | --- | --- |
+| evidence_reference_integrity | pass | Cloud `DebugRunQueryService` hard validator; checked 17 items. | Ref existence and hydration pass, but this does not judge source sufficiency. |
+| langsmith_trajectory_tool_boundary | fail | Findings: `no_action_loop_entries` for O1 `objection_resolution_result`; `workflow_trace_not_completed` with `status=blocked`, `next_node=ResolveObjectionsAndDelegations`. | Correctly blocks acceptance. |
+| commit_log_state_mutation_consistency | pass | Cloud `DebugRunQueryService` hard validator; checked 4 items. | Stable state mutation consistency is clean because only global_research is stable. |
+
+### Rubrics
+| Rubric | Score | Reason |
+| --- | ---: | --- |
+| D2-R01 | 4 | Document 1 handoff remains valid and construction uses the upstream research, but no stable Document 2 artifact is produced. |
+| D2-R02 | 3 | Three differentiated theses exist as pending patches, but they are not reliable enough to promote because key numeric claims were challenged. |
+| D2-R03 | 1 | Realized facts and price reactions cannot be trusted while field review found false revenue guidance and wrong price/return calculations. |
+| D2-R04 | 1 | Price-in reasoning is directly contradicted by O4/field-review objections and never repaired. |
+| D2-R05 | 2 | Key variables exist in pending patches, but their current-status precision remains contaminated by disputed figures. |
+| D2-R06 | 2 | Event monitoring direction exists, but threshold/value quality is not stable enough for downstream monitoring. |
+| D2-R07 | 2 | Evidence refs are locatable, yet source discipline is insufficient for the precise disputed claims. |
+| D2-R08 | 4 | Field review pressure is strong: it caught concrete price benchmark, return-calculation, and revenue-guidance errors. |
+| D2-R09 | 1 | Objection handling fails because the resolver times out and leaves all five blockers unresolved. |
+| D2-R10 | 1 | Promotion readiness is absent: no stable `expectation_unit`, three pending patches, five unresolved objections. |
+| D2-R11 | 3 | Tool and field-review traces are visible and mostly role-appropriate, but the resolver path is missing/failed. |
+| D2-R12 | 2 | The system detects uncertainty/contradiction, but the pending patches still overstate disputed values until the blocker is fixed. |
+| D2-R13 | 4 | Remote log, Brief State, hard validators, Working Memory, and LangSmith field-review traces reproduce the failure chain. |
+| D2-R14 | 4 | The failure category and next modifications are concrete, workflow-layer based, and directly retestable. |
+
+### Score Summary
+- Core Blackboard quality rubrics average (`D2-R01`-`D2-R10`): 2.1
+- Other rubrics with score <= 2: `D2-R12`
+- Quality target met: no
+- Accept modification so far: no, must modify and retest.
+
+### Document 2 State Summary
+- Pending expectation patches: 3
+- Stable expectation_unit count: 0
+- Open/unresolved objections: 5
+- Blocking delegations: 0
+- Latest checkpoint: `blocked`, `next_node=ResolveObjectionsAndDelegations`
+- Completed Document2 nodes through field review: yes
+- Pending patch ids:
+  - `patch_expectation_mu_01_detail`
+  - `patch_expectation_mu_02_detail`
+  - `patch_expectation_mu_03_detail`
+- Open blockers:
+  - `obj_price_mu_01`: price benchmark / return calculation error.
+  - `obj_price_mu_02`: single-day return calculation error.
+  - `obj_price_mu_03`: SOXX benchmark and return calculation error.
+  - two duplicate Q3 FY2026 revenue-guidance objections: patch says `$36B`, authoritative evidence indicates `$33.5B`.
+- Working Memory entries of interest:
+  - A1/C1/C3/O4 field-review results succeeded.
+  - O1 `objection_resolution_result` failed after retry audit with model request timeout and no action loop entries.
+
+### Failure Categories
+- category: `objection_resolution`
+  - issue: O1 resolver times out on five field-review numeric blockers.
+  - evidence: remote log final error, hard validator `no_action_loop_entries`, Working Memory failed `objection_resolution_result`.
+  - severity: high/blocking
+  - suspected root cause: deterministic numeric corrections are still delegated to an open-ended O1 task.
+- category: `context_management`
+  - issue: resolver receives large pending patches even when objections target only specific expectation ids or mechanical numeric errors.
+  - evidence: field-review traces show 43k-46k input-token contexts; resolver timed out before action loop.
+  - severity: high
+  - suspected root cause: resolver context is not filtered to the active objection batch and still includes too much patch text.
+- category: `price_in_reasoning`
+  - issue: price benchmark and return calculations are wrong across all pending patches.
+  - evidence: `obj_price_mu_01`, `obj_price_mu_02`, `obj_price_mu_03`.
+  - severity: high
+  - suspected root cause: price-reaction normalization does not yet catch field-review-specific price objections.
+- category: `evidence_integrity`
+  - issue: Q3 FY2026 guidance precision is false in pending patches.
+  - evidence: two field-review objections compare `$36B` patch claims with `$33.5B` authoritative guidance.
+  - severity: high
+  - suspected root cause: deterministic cleanup does not yet target field-review guidance objections.
+- category: `promotion_blocker`
+  - issue: no stable Document 2 artifact can be promoted.
+  - evidence: stable expectation count 0, pending patch count 3, unresolved objection count 5.
+  - severity: high
+  - suspected root cause: blockers stay open after resolver timeout.
+
+### Actual Modification
+- Implemented after this evaluation entry:
+  - Added deterministic field-review numeric correction before O1 resolver for price benchmark / return-calculation and Q3 FY2026 revenue-guidance blockers.
+  - Added expectation-id inference from objection ids such as `obj_price_mu_02`.
+  - Sanitized disputed price/guidance values across thesis, facts, price reaction, summary, variables, and monitoring fields while preserving qualitative thesis intent.
+  - Compact O1 resolver context to relevant pending patches for the active objection batch and record the omitted-patch count.
+  - Added regression tests for deterministic field-review normalization and relevant-patch resolver context.

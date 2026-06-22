@@ -1369,6 +1369,170 @@ def test_deterministic_objection_normalization_handles_numeric_and_price_blocker
     assert "196%" not in sanitized_text
 
 
+def test_deterministic_field_review_normalization_handles_price_and_guidance_blockers() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        runner=ParallelStructuredInitializationRunner(),
+        execution_mode="agent_runner",
+    )
+    factory = InitializationMockResultFactory()
+    evidence = factory._evidence(EvidenceSourceType.MARKET_DATA)
+    patches = []
+    for suffix in ("01", "02", "03"):
+        document = factory._expectation_unit("MU")
+        fact = document.realized_facts[0]
+        reaction = fact.price_reaction.model_copy(
+            update={
+                "price_change": (
+                    "MU stock price reached $1,020, gained +90%, and Q3 FY2026 "
+                    "revenue guidance is $36B."
+                ),
+                "price_pattern": "wrong benchmark and return calculation",
+                "interpretation": "The patch treats the wrong price reaction as priced-in.",
+                "evidence_refs": [evidence],
+            },
+            deep=True,
+        )
+        document = document.model_copy(
+            update={
+                "expectation_id": f"expectation_mu_{suffix}",
+                "expectation_name": f"MU expectation {suffix}",
+                "market_view": document.market_view.model_copy(
+                    update={
+                        "text": (
+                            "Q3 FY2026 revenue guidance is $36B and stock price "
+                            "outperformance reached +90% versus SOXX."
+                        ),
+                        "summary": "Q3 FY2026 revenue guidance $36B with +90% price gain.",
+                        "evidence_refs": [evidence],
+                    },
+                    deep=True,
+                ),
+                "realized_facts": [
+                    fact.model_copy(
+                        update={
+                            "description": (
+                                "Q3 FY2026 revenue guidance is $36B and MU stock price "
+                                "reached $1,020."
+                            ),
+                            "price_reaction": reaction,
+                            "evidence_refs": [evidence],
+                        },
+                        deep=True,
+                    )
+                ],
+                "realized_facts_summary": (
+                    "Q3 FY2026 revenue guidance $36B and MU stock price $1,020 are precise."
+                ),
+            },
+            deep=True,
+        )
+        patch = factory._document_patch(
+            document,
+            DocumentType.EXPECTATION_UNIT,
+            AgentName.O1_EXPECTATION_OWNER,
+            expectation_id=document.expectation_id,
+        ).model_copy(update={"patch_id": f"patch_expectation_mu_{suffix}_detail"})
+        patches.append(patch)
+
+    run = workflow.blackboard.start_run("MU", AgentName.SYSTEM)
+    checkpoint = WorkflowCheckpoint(run_id=run.run_id, ticker="MU", pending_patches=patches)
+    price_objection = Objection(
+        objection_id="obj_price_mu_01",
+        source_agent=AgentName.O4_MARKET_TRACE,
+        target=BlackboardTarget(
+            document_type=DocumentType.EXPECTATION_UNIT,
+            ticker="MU",
+            field_path="document",
+        ),
+        severity=ObjectionSeverity.HIGH,
+        reason="价格基准与涨幅计算错误",
+        evidence_refs=[evidence],
+    )
+    guidance_objection = Objection(
+        objection_id="objection_guidance",
+        source_agent=AgentName.C1_FUNDAMENTAL_RESEARCH,
+        target=BlackboardTarget(
+            document_type=DocumentType.EXPECTATION_UNIT,
+            ticker="MU",
+            field_path="document",
+        ),
+        severity=ObjectionSeverity.MEDIUM,
+        reason=(
+            "Q3 FY2026营收指引数据存在严重事实错误。Patch中声称Q3营收指引为$36B，"
+            "官方为$33.5B。"
+        ),
+        evidence_refs=[evidence],
+    )
+    workflow.blackboard.create_objection(run.run_id, price_objection)
+    workflow.blackboard.create_objection(run.run_id, guidance_objection)
+
+    workflow._apply_deterministic_objection_normalizations(checkpoint)
+
+    run_after = workflow.blackboard.get_run(run.run_id)
+    objections_by_id = {item.objection_id: item for item in run_after.objections}
+    assert objections_by_id["obj_price_mu_01"].status is ObjectionStatus.RESOLVED
+    assert objections_by_id["objection_guidance"].status is ObjectionStatus.RESOLVED
+    combined = " ".join(str(patch.after) for patch in checkpoint.pending_patches)
+    assert "$36B" not in combined
+    assert "36B" not in combined
+    assert "$1,020" not in str(checkpoint.pending_patches[0].after)
+    assert "+90%" not in str(checkpoint.pending_patches[0].after)
+    assert (
+        "field_review_numeric_correction"
+        in run_after.working_memory[-1].payload["normalization_types"]
+    )
+
+
+def test_objection_resolution_context_only_includes_relevant_pending_patch() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        runner=ParallelStructuredInitializationRunner(),
+        execution_mode="agent_runner",
+    )
+    factory = InitializationMockResultFactory()
+    patches = []
+    for suffix in ("01", "02", "03"):
+        document = factory._expectation_unit("MU").model_copy(
+            update={
+                "expectation_id": f"expectation_mu_{suffix}",
+                "expectation_name": f"MU expectation {suffix}",
+            },
+            deep=True,
+        )
+        patches.append(
+            factory._document_patch(
+                document,
+                DocumentType.EXPECTATION_UNIT,
+                AgentName.O1_EXPECTATION_OWNER,
+                expectation_id=document.expectation_id,
+            ).model_copy(update={"patch_id": f"patch_expectation_mu_{suffix}_detail"})
+        )
+    checkpoint = WorkflowCheckpoint(run_id="run_context", ticker="MU", pending_patches=patches)
+    objection = Objection(
+        objection_id="obj_price_mu_02",
+        source_agent=AgentName.O4_MARKET_TRACE,
+        target=BlackboardTarget(
+            document_type=DocumentType.EXPECTATION_UNIT,
+            ticker="MU",
+            field_path="document",
+        ),
+        severity=ObjectionSeverity.HIGH,
+        reason="价格基准与涨幅计算错误",
+    )
+
+    context = workflow._objection_resolution_context(
+        checkpoint,
+        [objection],
+        batch_index=1,
+        total_unresolved=1,
+    )
+
+    assert [item["patch_id"] for item in context["pending_patches"]] == [
+        "patch_expectation_mu_02_detail"
+    ]
+    assert context["omitted_pending_patch_count"] == 2
+    assert len(str(context)) < 15000
+
+
 class StalledFirstObjectionBatchRunner:
     def __init__(self) -> None:
         self.batches: list[list[str]] = []

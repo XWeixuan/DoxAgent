@@ -4952,7 +4952,12 @@ class BlackboardInitializationWorkflow:
             for objection in unresolved
             if self._is_deterministic_price_reaction_objection(objection)
         ]
-        if not numeric_objections and not price_objections:
+        field_review_objections = [
+            objection
+            for objection in unresolved
+            if self._is_deterministic_field_review_numeric_objection(objection)
+        ]
+        if not numeric_objections and not price_objections and not field_review_objections:
             return
 
         numeric_targets = {
@@ -4973,6 +4978,10 @@ class BlackboardInitializationWorkflow:
                 and patch.target.expectation_id is not None
             }
 
+        field_review_targets_by_id = {
+            objection.objection_id: self._objection_target_expectation_ids(objection)
+            for objection in field_review_objections
+        }
         updated_patches: list[BlackboardPatch] = []
         changed_expectation_ids: set[str] = set()
         price_changed_expectation_ids: set[str] = set()
@@ -4994,6 +5003,21 @@ class BlackboardInitializationWorkflow:
                     and self._patch_changed(before_price_normalization, next_patch)
                 ):
                     price_changed_expectation_ids.add(expectation_id)
+            field_review_for_patch = [
+                objection
+                for objection in field_review_objections
+                if not field_review_targets_by_id[objection.objection_id]
+                or (
+                    expectation_id is not None
+                    and expectation_id in field_review_targets_by_id[objection.objection_id]
+                )
+            ]
+            if field_review_for_patch:
+                next_patch = self._sanitize_field_review_numeric_correction_patch(
+                    checkpoint,
+                    next_patch,
+                    field_review_for_patch,
+                )
             if self._patch_changed(patch, next_patch):
                 if expectation_id is not None:
                     changed_expectation_ids.add(expectation_id)
@@ -5017,6 +5041,8 @@ class BlackboardInitializationWorkflow:
             normalization_types.append("numeric_sanity")
         if price_objections:
             normalization_types.append("price_reaction_contradiction")
+        if field_review_objections:
+            normalization_types.append("field_review_numeric_correction")
         for objection in numeric_objections:
             if objection.objection_id in remaining_numeric_ids:
                 continue
@@ -5056,6 +5082,33 @@ class BlackboardInitializationWorkflow:
             )
             resolved_ids.append(objection.objection_id)
 
+        field_review_resolved_ids: list[str] = []
+        for objection in field_review_objections:
+            target_ids = self._objection_target_expectation_ids(objection)
+            if target_ids and not target_ids.intersection(changed_expectation_ids):
+                continue
+            self.blackboard.resolve_objection(
+                checkpoint.run_id,
+                objection.objection_id,
+                (
+                    "Workflow deterministic field-review numeric correction removed or "
+                    "downgraded price/guidance values that field review identified as "
+                    "incorrect; residual quantified claims require source-verified "
+                    "market/fundamental evidence before promotion."
+                ),
+                changed_paths=[
+                    "market_view",
+                    "realized_facts",
+                    "realized_facts.price_reaction",
+                    "realized_facts_summary",
+                    "key_variables",
+                    "event_monitoring_direction",
+                ],
+                evidence_refs=evidence_refs or objection.evidence_refs,
+            )
+            resolved_ids.append(objection.objection_id)
+            field_review_resolved_ids.append(objection.objection_id)
+
         self.blackboard.add_working_memory_entry(
             checkpoint.run_id,
             author_agent=AgentName.SYSTEM,
@@ -5067,6 +5120,7 @@ class BlackboardInitializationWorkflow:
                 "changed_patch_ids": changed_patch_ids,
                 "residual_numeric_objection_ids": sorted(remaining_numeric_ids),
                 "normalization_types": normalization_types,
+                "field_review_resolved_objection_ids": field_review_resolved_ids,
             },
             evidence_refs=evidence_refs,
         )
@@ -5095,6 +5149,476 @@ class BlackboardInitializationWorkflow:
             or "错误" in objection.reason
         )
         return mentions_price_reaction and mentions_contradiction
+
+    def _is_deterministic_field_review_numeric_objection(
+        self,
+        objection: Objection,
+    ) -> bool:
+        text = " ".join(
+            [
+                objection.objection_id,
+                objection.taxonomy,
+                objection.target_path or "",
+                objection.target.field_path or "",
+                objection.reason,
+            ]
+        ).lower()
+        if not self._contains_numeric_value(text):
+            return any(
+                marker in text
+                for marker in (
+                    "price_mu_",
+                    "price benchmark",
+                    "return calculation",
+                    "gain calculation",
+                    "价格基准",
+                    "涨幅计算",
+                    "单日涨幅",
+                )
+            )
+        return any(
+            marker in text
+            for marker in (
+                "price benchmark",
+                "return calculation",
+                "gain calculation",
+                "q3 fy2026",
+                "revenue guidance",
+                "guidance",
+                "$36b",
+                "$33.5b",
+                "价格基准",
+                "涨幅计算",
+                "单日涨幅",
+                "营收指引",
+                "事实错误",
+            )
+        )
+
+    def _sanitize_field_review_numeric_correction_patch(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        patch: BlackboardPatch,
+        objections: list[Objection],
+    ) -> BlackboardPatch:
+        if patch.target.document_type is not DocumentType.EXPECTATION_UNIT:
+            return patch
+        if not isinstance(patch.after, dict):
+            return patch
+        document = ExpectationUnitDocument.model_validate(patch.after)
+        objection_text = " ".join(objection.reason for objection in objections)
+        force_price_cleanup = self._field_review_has_price_issue(objection_text)
+        force_guidance_cleanup = self._field_review_has_guidance_issue(objection_text)
+        if not force_price_cleanup and not force_guidance_cleanup:
+            return patch
+
+        evidence_refs = self._dedupe_evidence_refs(
+            [
+                *patch.evidence_refs,
+                *[
+                    ref
+                    for objection in objections
+                    for ref in objection.evidence_refs
+                ],
+            ]
+        )
+        changed = False
+
+        market_view, market_changed = self._sanitize_field_review_market_view(
+            document,
+            evidence_refs,
+            force_price_cleanup=force_price_cleanup,
+            force_guidance_cleanup=force_guidance_cleanup,
+        )
+        changed = changed or market_changed
+
+        realized_facts: list[RealizedFact] = []
+        for fact in document.realized_facts:
+            next_fact, fact_changed = self._sanitize_field_review_realized_fact(
+                fact,
+                evidence_refs,
+                force_price_cleanup=force_price_cleanup,
+                force_guidance_cleanup=force_guidance_cleanup,
+            )
+            realized_facts.append(next_fact)
+            changed = changed or fact_changed
+
+        key_variables: list[VariableStatus] = []
+        for variable in document.key_variables:
+            next_variable, variable_changed = self._sanitize_field_review_variable(
+                variable,
+                force_price_cleanup=force_price_cleanup,
+                force_guidance_cleanup=force_guidance_cleanup,
+            )
+            key_variables.append(next_variable)
+            changed = changed or variable_changed
+
+        monitoring, monitoring_changed = self._sanitize_field_review_monitoring(
+            document.event_monitoring_direction,
+            force_price_cleanup=force_price_cleanup,
+            force_guidance_cleanup=force_guidance_cleanup,
+        )
+        changed = changed or monitoring_changed
+
+        summary = self._field_review_clean_text(
+            document.realized_facts_summary,
+            fallback=(
+                "Field review identified incorrect price or guidance precision; "
+                "realized facts are retained qualitatively pending source-verified "
+                "market/fundamental recalculation."
+            ),
+            force_price_cleanup=force_price_cleanup,
+            force_guidance_cleanup=force_guidance_cleanup,
+        )
+        if summary != document.realized_facts_summary:
+            changed = True
+
+        if not changed:
+            return patch
+
+        document = document.model_copy(
+            update={
+                "market_view": market_view,
+                "realized_facts": realized_facts,
+                "realized_facts_summary": summary,
+                "key_variables": key_variables,
+                "event_monitoring_direction": monitoring,
+            },
+            deep=True,
+        )
+        after = document.model_dump(mode="json")
+        patch_refs = self._dedupe_evidence_refs(
+            [
+                *patch.evidence_refs,
+                *evidence_refs,
+                *self._payload_evidence_refs(after),
+            ]
+        )
+        rationale = str(patch.rationale or "").strip()
+        fallback_note = (
+            "Deterministic field-review correction removed price/guidance values "
+            "flagged as incorrect before O1 resolver promotion."
+        )
+        if fallback_note not in rationale:
+            rationale = f"{rationale} {fallback_note}".strip()
+        return patch.model_copy(
+            update={"after": after, "evidence_refs": patch_refs, "rationale": rationale},
+            deep=True,
+        )
+
+    def _sanitize_field_review_market_view(
+        self,
+        document: ExpectationUnitDocument,
+        evidence_refs: list[EvidenceRef],
+        *,
+        force_price_cleanup: bool,
+        force_guidance_cleanup: bool,
+    ) -> tuple[ResearchSection, bool]:
+        market_view = document.market_view
+        text = self._field_review_clean_text(
+            market_view.text,
+            fallback=(
+                f"{document.expectation_name}: qualitative market thesis retained. "
+                "Field-review-flagged price/guidance precision was removed pending "
+                "source-verified recalculation."
+            ),
+            force_price_cleanup=force_price_cleanup,
+            force_guidance_cleanup=force_guidance_cleanup,
+        )
+        summary = self._field_review_clean_text(
+            market_view.summary,
+            fallback=(
+                f"{document.expectation_name}: qualitative thesis retained; disputed "
+                "numeric guidance or return claims require source-verified evidence."
+            ),
+            force_price_cleanup=force_price_cleanup,
+            force_guidance_cleanup=force_guidance_cleanup,
+        )
+        changed = text != market_view.text or summary != market_view.summary
+        if not changed:
+            return market_view, False
+        return (
+            market_view.model_copy(
+                update={
+                    "text": text,
+                    "summary": summary,
+                    "evidence_refs": evidence_refs or market_view.evidence_refs,
+                },
+                deep=True,
+            ),
+            True,
+        )
+
+    def _sanitize_field_review_realized_fact(
+        self,
+        fact: RealizedFact,
+        evidence_refs: list[EvidenceRef],
+        *,
+        force_price_cleanup: bool,
+        force_guidance_cleanup: bool,
+    ) -> tuple[RealizedFact, bool]:
+        changed = False
+        description = self._field_review_clean_text(
+            fact.description,
+            fallback=(
+                "Field review flagged the precise price/guidance values in this "
+                "realized fact; retain only qualitative evidence pending recalculation."
+            ),
+            force_price_cleanup=force_price_cleanup,
+            force_guidance_cleanup=force_guidance_cleanup,
+        )
+        if description != fact.description:
+            changed = True
+        reaction = fact.price_reaction
+        if force_price_cleanup:
+            reaction = PriceReaction(
+                price_change=(
+                    "Field review found price benchmark or return-calculation error; "
+                    "quantified price reaction removed pending OHLCV/market_trace "
+                    "recalculation."
+                ),
+                price_pattern=(
+                    "Quantified price reaction withheld until source-verified market "
+                    "trace recalculation."
+                ),
+                interpretation=(
+                    "Do not treat this event as quantitatively priced-in until the "
+                    "reviewed benchmark and return calculations are rebuilt from "
+                    "structured market evidence."
+                ),
+                evidence_refs=evidence_refs or reaction.evidence_refs,
+            )
+            changed = True
+        elif force_guidance_cleanup:
+            price_change = self._field_review_clean_text(
+                reaction.price_change,
+                fallback=(
+                    "Quantified price reaction withheld because field review found "
+                    "incorrect guidance precision in the supporting fact."
+                ),
+                force_price_cleanup=force_price_cleanup,
+                force_guidance_cleanup=force_guidance_cleanup,
+            )
+            if price_change != reaction.price_change:
+                reaction = reaction.model_copy(
+                    update={
+                        "price_change": price_change,
+                        "evidence_refs": evidence_refs or reaction.evidence_refs,
+                    },
+                    deep=True,
+                )
+                changed = True
+        if not changed:
+            return fact, False
+        return (
+            fact.model_copy(
+                update={"description": description, "price_reaction": reaction},
+                deep=True,
+            ),
+            True,
+        )
+
+    def _sanitize_field_review_variable(
+        self,
+        variable: VariableStatus,
+        *,
+        force_price_cleanup: bool,
+        force_guidance_cleanup: bool,
+    ) -> tuple[VariableStatus, bool]:
+        current_status = self._field_review_clean_text(
+            variable.current_status,
+            fallback=(
+                f"{variable.name}: status retained qualitatively; field-review-flagged "
+                "numeric precision requires source-verified recalculation."
+            ),
+            force_price_cleanup=force_price_cleanup,
+            force_guidance_cleanup=force_guidance_cleanup,
+        )
+        if current_status == variable.current_status:
+            return variable, False
+        return variable.model_copy(update={"current_status": current_status}, deep=True), True
+
+    def _sanitize_field_review_monitoring(
+        self,
+        monitoring: EventMonitoringDirection,
+        *,
+        force_price_cleanup: bool,
+        force_guidance_cleanup: bool,
+    ) -> tuple[EventMonitoringDirection, bool]:
+        positive_events = [
+            self._field_review_clean_text(
+                item,
+                fallback=(
+                    "Monitor this catalyst qualitatively until disputed price/guidance "
+                    "thresholds are source-verified."
+                ),
+                force_price_cleanup=force_price_cleanup,
+                force_guidance_cleanup=force_guidance_cleanup,
+            )
+            for item in monitoring.positive_events
+        ]
+        negative_events = [
+            self._field_review_clean_text(
+                item,
+                fallback=(
+                    "Monitor this risk qualitatively until disputed price/guidance "
+                    "thresholds are source-verified."
+                ),
+                force_price_cleanup=force_price_cleanup,
+                force_guidance_cleanup=force_guidance_cleanup,
+            )
+            for item in monitoring.negative_events
+        ]
+        known_event_notice = self._field_review_clean_text(
+            monitoring.known_event_notice,
+            fallback=(
+                "Known event monitoring should avoid disputed price/guidance thresholds "
+                "until source-verified."
+            ),
+            force_price_cleanup=force_price_cleanup,
+            force_guidance_cleanup=force_guidance_cleanup,
+        )
+        changed = (
+            positive_events != list(monitoring.positive_events)
+            or negative_events != list(monitoring.negative_events)
+            or known_event_notice != monitoring.known_event_notice
+        )
+        if not changed:
+            return monitoring, False
+        return (
+            monitoring.model_copy(
+                update={
+                    "positive_events": positive_events,
+                    "negative_events": negative_events,
+                    "known_event_notice": known_event_notice,
+                },
+                deep=True,
+            ),
+            True,
+        )
+
+    def _field_review_clean_text(
+        self,
+        value: str,
+        *,
+        fallback: str,
+        force_price_cleanup: bool,
+        force_guidance_cleanup: bool,
+    ) -> str:
+        if not self._field_review_text_needs_numeric_cleanup(
+            value,
+            force_price_cleanup=force_price_cleanup,
+            force_guidance_cleanup=force_guidance_cleanup,
+        ):
+            return value
+        cleaned = self._strip_unsupported_numeric_precision(value).strip()
+        if (
+            not cleaned
+            or cleaned == str(value).strip()
+            or self._field_review_text_needs_numeric_cleanup(
+                cleaned,
+                force_price_cleanup=force_price_cleanup,
+                force_guidance_cleanup=force_guidance_cleanup,
+            )
+        ):
+            return fallback
+        return cleaned
+
+    def _field_review_text_needs_numeric_cleanup(
+        self,
+        value: str,
+        *,
+        force_price_cleanup: bool,
+        force_guidance_cleanup: bool,
+    ) -> bool:
+        text = str(value or "")
+        if not text or not self._contains_numeric_value(text):
+            return False
+        lowered = text.lower()
+        if force_price_cleanup and any(
+            marker in lowered
+            for marker in (
+                "price",
+                "stock",
+                "market cap",
+                "return",
+                "gain",
+                "ytd",
+                "soxx",
+                "qqq",
+                "p/e",
+                "股价",
+                "价格",
+                "涨幅",
+                "市值",
+                "单日",
+                "基准",
+            )
+        ):
+            return True
+        if force_guidance_cleanup and any(
+            marker in lowered
+            for marker in (
+                "q3",
+                "fy2026",
+                "revenue",
+                "guidance",
+                "gross margin",
+                "营收",
+                "指引",
+                "毛利率",
+            )
+        ):
+            return True
+        return False
+
+    def _field_review_has_price_issue(self, text: str) -> bool:
+        lowered = text.lower()
+        return any(
+            marker in lowered
+            for marker in (
+                "price_mu_",
+                "price benchmark",
+                "return calculation",
+                "gain calculation",
+                "价格基准",
+                "涨幅计算",
+                "单日涨幅",
+            )
+        )
+
+    def _field_review_has_guidance_issue(self, text: str) -> bool:
+        lowered = text.lower()
+        return any(
+            marker in lowered
+            for marker in (
+                "q3 fy2026",
+                "revenue guidance",
+                "$36b",
+                "$33.5b",
+                "营收指引",
+                "事实错误",
+            )
+        )
+
+    def _objection_target_expectation_ids(self, objection: Objection) -> set[str]:
+        ids: set[str] = set()
+        if objection.target.expectation_id:
+            ids.add(objection.target.expectation_id)
+        text = " ".join(
+            [
+                objection.objection_id,
+                objection.target_path or "",
+                objection.target.field_path or "",
+                objection.reason,
+            ]
+        )
+        for match in re.findall(r"expectation_[a-z]+_\d+", text, flags=re.IGNORECASE):
+            ids.add(match.lower())
+        for match in re.findall(r"mu_\d{2}", text, flags=re.IGNORECASE):
+            if match.lower().startswith("mu_"):
+                ids.add(f"expectation_{match.lower()}")
+        return ids
 
     def _patch_changed(self, before: BlackboardPatch, after: BlackboardPatch) -> bool:
         return before.model_dump(mode="json") != after.model_dump(mode="json")
@@ -5166,6 +5690,10 @@ class BlackboardInitializationWorkflow:
         batch_index: int = 1,
         total_unresolved: int | None = None,
     ) -> dict[str, Any]:
+        relevant_patches = self._objection_resolution_relevant_patches(
+            checkpoint.pending_patches,
+            unresolved_objections,
+        )
         return {
             "resolution_request": (
                 "Resolve field-review objections using the compact expectation summaries "
@@ -5194,14 +5722,24 @@ class BlackboardInitializationWorkflow:
             },
             "pending_patches": [
                 self._compact_pending_expectation_patch(patch)
-                for patch in checkpoint.pending_patches
-                if patch.target.document_type is DocumentType.EXPECTATION_UNIT
+                for patch in relevant_patches
             ],
             "pending_expectation_patch_summaries": [
                 self._pending_expectation_patch_summary(patch)
                 for patch in checkpoint.pending_patches
                 if patch.target.document_type is DocumentType.EXPECTATION_UNIT
             ],
+            "omitted_pending_patch_count": max(
+                0,
+                len(
+                    [
+                        patch
+                        for patch in checkpoint.pending_patches
+                        if patch.target.document_type is DocumentType.EXPECTATION_UNIT
+                    ]
+                )
+                - len(relevant_patches),
+            ),
             "unresolved_objections": [
                 self._objection_resolution_objection_summary(objection)
                 for objection in unresolved_objections
@@ -5243,6 +5781,28 @@ class BlackboardInitializationWorkflow:
                 unresolved_objections
             ),
         }
+
+    def _objection_resolution_relevant_patches(
+        self,
+        patches: list[BlackboardPatch],
+        unresolved_objections: list[Objection],
+    ) -> list[BlackboardPatch]:
+        expectation_patches = [
+            patch
+            for patch in patches
+            if patch.target.document_type is DocumentType.EXPECTATION_UNIT
+        ]
+        target_ids: set[str] = set()
+        for objection in unresolved_objections:
+            target_ids.update(self._objection_target_expectation_ids(objection))
+        if not target_ids:
+            return expectation_patches
+        relevant = [
+            patch
+            for patch in expectation_patches
+            if patch.target.expectation_id in target_ids
+        ]
+        return relevant or expectation_patches
 
     def _reopen_numeric_sanity_objections_after_o1_revision(
         self,
@@ -5390,56 +5950,63 @@ class BlackboardInitializationWorkflow:
         }
 
     def _compact_pending_expectation_patch(self, patch: BlackboardPatch) -> dict[str, Any]:
-        raw = patch.model_dump(mode="json")
-        after = self._dict_from_model(raw.get("after"))
+        after = self._dict_from_model(patch.after)
         market_view = self._dict_from_model(after.get("market_view"))
         monitoring = self._dict_from_model(after.get("event_monitoring_direction"))
-        after["why_it_matters"] = self._compact_context_text(
-            after.get("why_it_matters"),
-            limit=500,
-        )
-        after["market_view"] = {
-            "text": self._compact_context_text(market_view.get("text"), limit=900),
-            "summary": self._compact_context_text(market_view.get("summary"), limit=400),
+        return {
+            "patch_id": patch.patch_id,
+            "target": patch.target.model_dump(mode="json"),
+            "operation": patch.operation.value,
+            "rationale": self._compact_context_text(patch.rationale, limit=260),
+            "expectation_id": after.get("expectation_id") or patch.target.expectation_id,
+            "expectation_name": self._compact_context_text(
+                after.get("expectation_name"),
+                limit=160,
+            ),
+            "direction": after.get("direction"),
+            "why_it_matters": self._compact_context_text(
+                after.get("why_it_matters"),
+                limit=260,
+            ),
+            "market_view": {
+                "text": self._compact_context_text(market_view.get("text"), limit=360),
+                "summary": self._compact_context_text(market_view.get("summary"), limit=220),
+                "evidence_refs": [
+                    self._evidence_context_summary(ref)
+                    for ref in self._list_from_model(market_view.get("evidence_refs"))[:4]
+                ],
+            },
+            "realized_facts_summary": self._compact_context_text(
+                after.get("realized_facts_summary"),
+                limit=260,
+            ),
+            "realized_facts": [
+                self._realized_fact_context_summary(item)
+                for item in self._list_from_model(after.get("realized_facts"))[:4]
+            ],
+            "key_variables": [
+                self._variable_context_summary(item)
+                for item in self._list_from_model(after.get("key_variables"))[:5]
+            ],
+            "event_monitoring_direction": {
+                "known_event_notice": self._compact_context_text(
+                    monitoring.get("known_event_notice"),
+                    limit=220,
+                ),
+                "positive_events": [
+                    self._compact_context_text(item, limit=160)
+                    for item in self._list_from_model(monitoring.get("positive_events"))[:4]
+                ],
+                "negative_events": [
+                    self._compact_context_text(item, limit=160)
+                    for item in self._list_from_model(monitoring.get("negative_events"))[:4]
+                ],
+            },
             "evidence_refs": [
                 self._evidence_context_summary(ref)
-                for ref in self._list_from_model(market_view.get("evidence_refs"))[:8]
-            ],
-            "author_agent": market_view.get("author_agent") or AgentName.O1_EXPECTATION_OWNER.value,
-            "reviewer_agents": self._list_from_model(market_view.get("reviewer_agents"))[:8],
-        }
-        after["realized_facts_summary"] = self._compact_context_text(
-            after.get("realized_facts_summary"),
-            limit=700,
-        )
-        after["realized_facts"] = [
-            self._realized_fact_context_summary(item)
-            for item in self._list_from_model(after.get("realized_facts"))[:8]
-        ]
-        after["key_variables"] = [
-            self._variable_context_summary(item)
-            for item in self._list_from_model(after.get("key_variables"))[:10]
-        ]
-        after["event_monitoring_direction"] = {
-            "known_event_notice": self._compact_context_text(
-                monitoring.get("known_event_notice"),
-                limit=400,
-            ),
-            "positive_events": [
-                self._compact_context_text(item, limit=260)
-                for item in self._list_from_model(monitoring.get("positive_events"))[:8]
-            ],
-            "negative_events": [
-                self._compact_context_text(item, limit=260)
-                for item in self._list_from_model(monitoring.get("negative_events"))[:8]
+                for ref in patch.evidence_refs[:4]
             ],
         }
-        raw["after"] = after
-        raw["evidence_refs"] = [
-            self._evidence_context_summary(ref)
-            for ref in self._list_from_model(raw.get("evidence_refs"))[:8]
-        ]
-        return raw
 
     def _objection_resolution_objection_summary(self, objection: Objection) -> dict[str, Any]:
         return {
