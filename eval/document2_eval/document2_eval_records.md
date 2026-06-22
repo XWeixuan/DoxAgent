@@ -1064,3 +1064,142 @@
   - Sanitized disputed price/guidance values across thesis, facts, price reaction, summary, variables, and monitoring fields while preserving qualitative thesis intent.
   - Compact O1 resolver context to relevant pending patches for the active objection batch and record the omitted-patch count.
   - Added regression tests for deterministic field-review normalization and relevant-patch resolver context.
+
+## 2026-06-23 00:05 - MU - Document 2 loop 1 retest7 promoted but quality rejected - over-sanitized stable expectation units
+
+### Test Info
+- Git state: cloud deployed commit `d536016` (`fix: shrink document2 resolver blockers`).
+- Source run_id: `run_58f5afce8b9441ca804a2cde1ad9aec8`
+- Source state: Document 1-only source; stable `global_research`; no stable `expectation_unit`; no source pending patches or blockers.
+- Execution mode: `clone`
+- Command: `docker compose run --rm -e DOXAGENT_RUN_REAL_API_TESTS=1 -e DOXAGENT_STORAGE_MODE=postgres debug-viewer python eval/run_document2_expectation_units_smoke.py run_58f5afce8b9441ca804a2cde1ad9aec8 --mode clone --stop-after PromoteExpectationToBeliefState --export-brief-state`
+- Environment: cloud server `doxagent-hk`, `/root/doxagent`, Docker image built from `d536016`.
+- Execution run_id: `run_d314bf47f3294d008014f202cccb274f`
+- Stop after: `PromoteExpectationToBeliefState`
+- Remote log: `/root/doxagent/.eval_runs/document2-loop1-retest7-20260622T232325+0800.log`
+- Script output: `error=null`; completed nodes include `ResolveObjectionsAndDelegations` and `PromoteExpectationToBeliefState`; `stable_document_types=["global_research","expectation_unit"]`; `expectation_unit_count=3`; `pending_patch_count=0`; `unresolved_objection_count=0`; `blocking_delegation_count=0`.
+- Brief State JSON export: `eval/brief_state_exports/run_d314bf47f3294d008014f202cccb274f.json`
+- Built-in hard validators: overall `passed`; `evidence_reference_integrity=passed` (79 checked), `langsmith_trajectory_tool_boundary=passed` (52 checked), `commit_log_state_mutation_consistency=passed` (16 checked).
+- LangSmith MCP query: construction/detail/field-review traces are visible for the same run. Keyword search for `objection_resolution` / `ResolveObjectionsAndDelegations` returned no remote root trace, but local hard validator passed using the persisted ReAct audit mirror and Working Memory has successful O1 `objection_resolution_result`.
+- Evaluator: Codex, strict diagnostic retest7.
+
+### Optimization Hypothesis
+- Improvement confirmed: the retest6 resolver timeout blocker is fixed. Deterministic objection normalization ran before O1, resolved numeric_sanity / price-reaction / field-review numeric blockers, and O1 resolver successfully closed the three remaining valuation/return objections. Promotion produced three stable `expectation_unit` documents.
+- New quality blocker 1: deterministic cleanup is too destructive. Many stable `realized_facts.description` fields became generic "qualitative evidence retained" placeholders, losing event identity and making realized facts weak for downstream monitoring.
+- New quality blocker 2: `event_monitoring_direction` contains many generic "Monitor this catalyst qualitatively" items and literal `source-verified numeric threshold` placeholders. This passes schema and ref validators but fails the practical monitoring-readiness bar.
+- New quality blocker 3: price-in reasoning is safe but under-informative. Most `price_reaction` fields say quantified reaction is withheld pending OHLCV/market_trace review, even though O4 supplied market-data evidence during field review.
+- New quality blocker 4: stable market/variable fields still contain degraded placeholder wording, so uncertainty discipline is visible but not useful enough for a ≥4.2 core-quality target.
+- Expected next movement: preserve event and monitoring semantics when removing unsupported numbers. The sanitizer should delete or neutralize only the disputed numeric precision while retaining the original qualitative event trigger, and it must not turn non-numeric monitoring events into generic fallback text.
+- Risk: preserving too much original text may reintroduce unsupported precision. The regression tests must assert no false `$`, `%`, P/E, revenue guidance, or market-cap precision survives without source-appropriate evidence.
+
+### Proposed Modification Plan
+- Change 1: Update numeric-sanity cleanup so `realized_facts.description` is locally cleaned instead of replaced wholesale. Keep the event subject, causal clause, and source caveat when possible.
+- Change 2: Update price-reaction escalation text to avoid numeric-looking agent tokens such as `O4` that can trigger false numeric_sanity revalidation.
+- Change 3: Update monitoring cleanup so non-numeric monitoring events are preserved verbatim. Only monitoring strings containing numeric precision should be locally cleaned or fallbacked.
+- Change 4: Replace `source-verified numeric threshold` with a less misleading source-gap phrase and polish common concatenation artifacts after numeric removal.
+- Change 5: Add regression tests proving that unsupported precision is removed while meaningful non-numeric monitoring events and fact semantics survive.
+- Retest requirement: commit/push, cloud `git pull --ff-only`, rebuild `debug-viewer`, rerun the same source run and same `--stop-after PromoteExpectationToBeliefState` in cloud-only mode.
+
+### Scope Decision
+- Eval mode: `promote`
+- Can judge stable expectation_unit: yes.
+- Can judge workflow improvement: yes, blocker closure and hard-validator pass improved materially.
+- Cannot claim: quality target success, because core content rubrics remain below target and `D2-R12` is still 2.
+
+### Hard Gates
+| Gate | Result | Evidence | Notes |
+| --- | --- | --- | --- |
+| D2-HG01 | pass | Same Document 1-only source `run_58f5afce8b9441ca804a2cde1ad9aec8`; clone mode. | Valid seed retained. |
+| D2-HG02 | pass | Script reached `PromoteExpectationToBeliefState` with `error=null`; stop-after metadata present. | Full workflow remains `running` at next node by stop-after design. |
+| D2-HG03 | pass | Three construction shells formed and survived construction review/resolution. | Bullish, bearish, and neutral theses are differentiated. |
+| D2-HG04 | pass | Three stable expectation units have required fields. | Field presence is acceptable, quality is not. |
+| D2-HG05 | pass | Built-in evidence ref validator passed; stable docs include DoxAtlas, market-data, and Alpha Vantage refs. | Source sufficiency remains uneven but no missing refs. |
+| D2-HG06 | fail | Most `price_reaction` fields are downgraded to "withheld pending market-trace evidence"; price-in interpretation is not operational. | Safe but not useful enough. |
+| D2-HG07 | pass | A1/C1/C3/O4 field reviews ran and produced concrete objections. | Review pressure is strong. |
+| D2-HG08 | pass | Deterministic normalization and O1 resolver closed all objections; no blockers remain. | Retest6 blocker fixed. |
+| D2-HG09 | pass | Stable `expectation_unit` count is 3; pending patches 0; commit count 4. | Promotion state is clean. |
+| D2-HG10 | pass | Local hard validator passed; LangSmith traces visible for construction/detail/review. | Remote resolver keyword search still sparse; record keeps this caveat. |
+| D2-HG11 | pass | Remote log, Brief State, Working Memory, hard validators, commit log, and LangSmith traces reproduce the run. | Auditable. |
+| D2-HG12 | fail | Cleanup leaves many generic placeholders and low-value monitoring text. | Context/control layer now works, content value is degraded. |
+| D2-HG13 | pass | Deterministic normalization, resolver, and promotion decisions are visible in Working Memory and Commit Log. | Revision continuity is materially improved. |
+
+### Built-in Hard Validators
+| Validator | Result | Evidence | Notes |
+| --- | --- | --- | --- |
+| evidence_reference_integrity | pass | Cloud `DebugRunQueryService`; 79 checked items, 0 findings. | Ref existence and hydration pass. |
+| langsmith_trajectory_tool_boundary | pass | Cloud `DebugRunQueryService`; 52 checked items, 0 findings. | Stop-after metadata and local ReAct audit mirror satisfy the hard validator. |
+| commit_log_state_mutation_consistency | pass | Cloud `DebugRunQueryService`; 16 checked items, 0 findings. | Stable state mutations are explained by commit log. |
+
+### Rubrics
+| Rubric | Score | Reason |
+| --- | ---: | --- |
+| D2-R01 | 4 | Document 1 handoff is valid and produces differentiated expectations. |
+| D2-R02 | 3 | Theses are differentiated, but over-sanitized market/fact text weakens investable specificity. |
+| D2-R03 | 2 | Realized facts exist but many descriptions are generic placeholders, and price reactions are mostly withheld. |
+| D2-R04 | 2 | Price-in reasoning is safer than retest6 but too under-informative for monitoring or optimization. |
+| D2-R05 | 3 | Key variables remain relevant, but several statuses contain placeholder threshold wording. |
+| D2-R06 | 2 | Monitoring directions are numerous but many are generic fallback text or placeholder thresholds. |
+| D2-R07 | 3 | Evidence refs hydrate and include market/fundamental sources, yet final claim scope is often weakened by cleanup. |
+| D2-R08 | 4 | Field review pressure is strong and caught real numeric, valuation, and price-reaction defects. |
+| D2-R09 | 4 | Deterministic normalization plus O1 resolver closed all blockers without timeout. |
+| D2-R10 | 4 | Promotion is clean: three stable units, no open blockers, no pending patches. |
+| D2-R11 | 3 | Tool/review traces are mostly auditable, but remote resolver keyword search is still not straightforward. |
+| D2-R12 | 2 | Uncertainty discipline is visible, but placeholder wording replaces too much useful content. |
+| D2-R13 | 4 | Artifacts are reproducible across remote log, DB, hard validators, Working Memory, and commit log. |
+| D2-R14 | 4 | Failure categories and next code changes are concrete, enforcement-layer-based, and retestable. |
+
+### Score Summary
+- Core Blackboard quality rubrics average (`D2-R01`-`D2-R10`): 3.1
+- Other rubrics with score <= 2: `D2-R12`
+- Quality target met: no
+- Accept modification so far: no, must modify and retest.
+
+### Document 2 State Summary
+- Pending expectation patches: 0
+- Stable expectation_unit count: 3
+- Open/unresolved objections: 0
+- Blocking delegations: 0
+- Latest checkpoint: `running`, `next_node=GenerateGlobalNarrativeReport` after Document2 stop-after.
+- Stable expectation ids:
+  - `expectation_mu_001`
+  - `expectation_mu_002`
+  - `expectation_mu_003`
+- Working Memory entries of interest:
+  - `deterministic_objection_normalization` succeeded with `normalization_types=["numeric_sanity","price_reaction_contradiction","field_review_numeric_correction"]`.
+  - O1 `objection_resolution_result` succeeded and closed the three residual valuation/return objections.
+  - A1/C1/C3/O4 field reviews all succeeded.
+- Residual issues:
+  - Generic realized-fact descriptions.
+  - Generic monitoring events.
+  - Literal source-gap placeholder phrases in stable docs.
+  - Price-in reasoning mostly withheld rather than recalculated.
+
+### Failure Categories
+- category: `content_over_sanitization`
+  - issue: deterministic cleanup removes false precision but also destroys event/fact specificity.
+  - evidence: stable facts use generic qualitative-retained text across multiple units.
+  - severity: high/quality
+  - suspected root cause: sanitizer replaces full fields instead of cleaning only numeric spans.
+- category: `monitoring_specificity`
+  - issue: monitoring events contain generic fallback text and source-gap placeholders.
+  - evidence: `event_monitoring_direction` lists repeated "Monitor this catalyst qualitatively" items.
+  - severity: high/quality
+  - suspected root cause: monitoring sanitizer cleans all events rather than only numeric events.
+- category: `price_in_reasoning`
+  - issue: quantified price reactions are withheld instead of transformed into usable qualitative market-learning statements.
+  - evidence: stable `price_reaction.price_change` says market-trace verification required for most facts.
+  - severity: medium/high
+  - suspected root cause: fallback prioritizes safety but does not preserve enough O4-reviewed semantics.
+- category: `uncertainty_discipline`
+  - issue: uncertainty is acknowledged, but placeholder text is too mechanical for downstream policy generation.
+  - evidence: `source-verified numeric threshold` appears in variables and monitoring.
+  - severity: medium/high
+  - suspected root cause: numeric replacement phrase is leaked into final stable docs.
+
+### Actual Modification
+- Implemented after this evaluation entry:
+  - Preserve cleaned realized-fact descriptions instead of replacing them wholesale with generic fallback.
+  - Preserve non-numeric monitoring events verbatim and only clean monitoring strings that contain numeric precision.
+  - Replace price-reaction escalation text with non-numeric, non-agent-token wording to avoid false numeric_sanity revalidation.
+  - Replace `source-verified numeric threshold` with `source-verified value` and polish common concatenation artifacts.
+  - Add regression coverage for preserving fact semantics and non-numeric monitoring events while removing unsupported precision.

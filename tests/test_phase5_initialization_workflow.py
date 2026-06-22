@@ -983,7 +983,7 @@ def test_price_reaction_promotion_requires_structured_market_snapshot() -> None:
 
     normalized_reaction = normalized.after["realized_facts"][0]["price_reaction"]
     assert normalized_reaction["price_change"] != original_price_change
-    assert "OHLCV/market_trace" in normalized_reaction["price_change"]
+    assert "OHLCV or market-trace" in normalized_reaction["price_change"]
     assert normalized_reaction["evidence_refs"][0]["source_type"] == "doxatlas_source"
 
 
@@ -1183,8 +1183,14 @@ def test_numeric_sanity_revision_fallback_removes_unsupported_false_precision() 
             ],
             "event_monitoring_direction": document.event_monitoring_direction.model_copy(
                 update={
-                    "positive_events": ["Target price rises above $1,020 and margin reaches 81%."],
-                    "negative_events": ["Revenue falls 30% and market cap drops 50%."],
+                    "positive_events": [
+                        "Customer design wins confirm HBM demand without numeric threshold",
+                        "Target price rises above $1,020 and margin reaches 81%.",
+                    ],
+                    "negative_events": [
+                        "Customer cancellations pressure HBM orders",
+                        "Revenue falls 30% and market cap drops 50%.",
+                    ],
                     "known_event_notice": "Monitor Q3 FY26 without unsupported $33.5B thresholds.",
                 },
                 deep=True,
@@ -1266,11 +1272,23 @@ def test_numeric_sanity_revision_fallback_removes_unsupported_false_precision() 
     assert "8.1x" not in combined
     assert "74.9%" not in combined
     assert "$33.5B" not in combined
-    assert "仅保留定性市场反应" in sanitized_reaction["price_change"]
+    assert "NVDA revenue grew" in sanitized_fact["description"]
+    assert "stock price reached" in sanitized_fact["description"]
+    assert "Quantified price reaction withheld" in sanitized_reaction["price_change"]
+    assert (
+        "Customer design wins confirm HBM demand without numeric threshold"
+        in sanitized.after["event_monitoring_direction"]["positive_events"]
+    )
+    assert (
+        "Customer cancellations pressure HBM orders"
+        in sanitized.after["event_monitoring_direction"]["negative_events"]
+    )
+    assert "source-verified value" in combined
+    assert "该已兑现事实仅保留为定性证据" not in combined
     assert "source-appropriate market or fundamental evidence" in (
         sanitized.after["market_view"]["text"]
     )
-    assert "source-verified numeric threshold" in combined
+    assert "source-verified value" in combined
     assert "Numeric sanity fallback removed unsupported precise numeric claims" in (
         sanitized.rationale
     )

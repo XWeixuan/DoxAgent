@@ -4124,13 +4124,16 @@ class BlackboardInitializationWorkflow:
             if self._price_reaction_needs_escalation(reaction) or not structured_market_refs:
                 reaction = PriceReaction(
                     price_change=(
-                        "尚未获得可量化价格变动；已升级为需 O4 基于 OHLCV/market_trace "
-                        "复核的待确认项。"
+                        "Quantified price reaction withheld pending source-appropriate "
+                        "OHLCV or market-trace evidence."
                     ),
-                    price_pattern="价格反应证据不足，需结合 OHLCV 与 market_trace 继续复核。",
+                    price_pattern=(
+                        "Qualitative market reaction retained; structured market-trace "
+                        "verification is still required."
+                    ),
                     interpretation=(
-                        "不得将该事实视为已被市场充分定价；promotion 前保留为价格反应"
-                        "待确认，并在后续监控中优先补充市场轨迹证据。"
+                        "Do not treat this event as quantitatively priced-in until "
+                        "source-appropriate market evidence is attached."
                     ),
                     evidence_refs=structured_market_refs or refs,
                 )
@@ -6447,25 +6450,44 @@ class BlackboardInitializationWorkflow:
                 )
             )
             if unsupported_market:
+                withheld_price_change = (
+                    "Quantified price reaction withheld pending source-appropriate "
+                    "OHLCV or market-data verification."
+                )
+                price_change = self._numeric_sanity_clean_text(
+                    reaction.price_change,
+                    fallback=withheld_price_change,
+                )
+                if "source-verified value" in price_change:
+                    price_change = withheld_price_change
+                price_pattern = self._numeric_sanity_clean_text(
+                    reaction.price_pattern,
+                    fallback="Qualitative market reaction retained pending OHLCV verification.",
+                )
+                interpretation = self._numeric_sanity_clean_text(
+                    reaction.interpretation,
+                    fallback=(
+                        "Do not treat this event as quantitatively priced-in until "
+                        "source-appropriate market evidence is attached."
+                    ),
+                )
                 reaction = PriceReaction(
-                    price_change=(
-                        "仅保留定性市场反应；缺少市场数据验证前，精确股价、市值、"
-                        "成交量和涨跌幅数字已移除。"
-                    ),
-                    price_pattern="定性市场反应，等待市场数据复核",
-                    interpretation=(
-                        "在附加 OHLCV、quote 或 vendor market data 前，不得将该字段"
-                        "作为量化 price-in 证据。"
-                    ),
+                    price_change=price_change,
+                    price_pattern=price_pattern,
+                    interpretation=interpretation,
                     evidence_refs=refs or reaction.evidence_refs,
                 )
             if unsupported_market or unsupported_fundamental:
+                description = self._numeric_sanity_clean_text(
+                    fact.description,
+                    fallback=(
+                        "Qualitative realized fact retained; precise market or "
+                        "fundamental values require source-appropriate evidence."
+                    ),
+                )
                 fact = fact.model_copy(
                     update={
-                        "description": (
-                            "该已兑现事实仅保留为定性证据；缺少 source-appropriate "
-                            "evidence 的精确市场或基本面数字已移除，等待复核。"
-                        ),
+                        "description": description,
                         "price_reaction": reaction,
                     },
                     deep=True,
@@ -6496,9 +6518,12 @@ class BlackboardInitializationWorkflow:
             return patch
         summary = document.realized_facts_summary
         if self._contains_numeric_value(summary):
-            summary = (
-                "已兑现事实在移除无充分证据的精确数字后仅作定性保留；恢复量化表述前"
-                "必须补充 source-appropriate market 或 fundamental evidence。"
+            summary = self._numeric_sanity_clean_text(
+                summary,
+                fallback=(
+                    "Realized facts retained qualitatively; precise market or "
+                    "fundamental values require source-appropriate evidence."
+                ),
             )
         document = document.model_copy(
             update={
@@ -6652,16 +6677,20 @@ class BlackboardInitializationWorkflow:
         )
 
     def _numeric_sanity_clean_monitoring_event(self, value: str) -> str:
+        if not self._contains_numeric_value(value):
+            return value
         return self._numeric_sanity_clean_text(
             value,
             fallback=(
-                "Monitor this catalyst qualitatively; precise numeric threshold "
-                "requires source-appropriate evidence."
+                "Monitor this event qualitatively; precise threshold requires "
+                "source-appropriate evidence."
             ),
         )
 
     def _numeric_sanity_clean_text(self, value: str, *, fallback: str) -> str:
-        cleaned = self._strip_unsupported_numeric_precision(value).strip()
+        cleaned = self._polish_numeric_sanity_text(
+            self._strip_unsupported_numeric_precision(value)
+        )
         if cleaned == str(value).strip():
             return fallback
         if not cleaned:
@@ -6685,10 +6714,23 @@ class BlackboardInitializationWorkflow:
         )
         return re.sub(
             precision_pattern,
-            "source-verified numeric threshold",
+            "source-verified value",
             str(value),
             flags=re.IGNORECASE,
         )
+
+    def _polish_numeric_sanity_text(self, value: str) -> str:
+        text = re.sub(r"\s+", " ", str(value)).strip()
+        text = re.sub(r"\s+([,.;:!?])", r"\1", text)
+        text = text.replace("source-verified valueased", "source-verified value based")
+        text = text.replace("source-verified valueare", "source-verified value are")
+        text = text.replace("source-verified valueYTD", "source-verified value, YTD")
+        text = text.replace("source-verified valuerillion", "source-verified value")
+        text = text.replace("source-verified value以上", "above a source-verified threshold")
+        text = text.replace("source-verified value以下", "below a source-verified threshold")
+        text = text.replace("至source-verified value", "to a source-verified threshold")
+        text = text.replace("达source-verified value", "reaches a source-verified threshold")
+        return text.strip()
 
     def _payload_string_list(self, payload: dict[str, Any], key: str) -> list[str]:
         raw = payload.get(key, [])

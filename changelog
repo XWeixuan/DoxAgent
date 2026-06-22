@@ -203,3 +203,4 @@
 - Documented Document2 loop 1 retest4 failure and added pre-O1 deterministic objection normalization for numeric-sanity and price-reaction contradiction blockers, with Working Memory audit output and residual-blocker revalidation.
 - Documented Document2 loop 1 retest5 promotion-quality failure, added Document2 stop-after validator handling, scrubbed stale clone error metadata, and extended deterministic numeric cleanup to market-view, variable, and monitoring fields.
 - Documented Document2 loop 1 retest6 resolver timeout blocker and added deterministic field-review numeric correction plus tighter O1 resolver context.
+- Documented Document2 loop 1 retest7 promotion-quality rejection and refined numeric cleanup to preserve fact and monitoring semantics while removing unsupported precision.
