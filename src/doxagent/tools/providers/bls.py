@@ -15,7 +15,7 @@ class BlsTimeseriesClient(BaseRealToolClient):
             api_key = _require(self.settings.bls_api_key, "BLS_API_KEY")
             series_ids = _input_list(request, "series_ids")
             if not series_ids:
-                raise ValueError("series_ids is required.")
+                raise ValueError("series_ids 为必填项。")
             body: dict[str, object] = {
                 "seriesid": series_ids,
                 "registrationkey": api_key,
@@ -34,8 +34,8 @@ class BlsTimeseriesClient(BaseRealToolClient):
                 raw=raw,
                 source_type=EvidenceSourceType.EXTERNAL_REPORT,
                 source_id=f"bls:{','.join(series_ids)}",
-                title="BLS timeseries",
-                summary="BLS inflation/labor/wage series were retrieved.",
+                title="BLS 时间序列",
+                summary="已检索 BLS 通胀、就业与薪资序列。",
                 citation_scope="bls_timeseries",
                 confidence=0.88,
                 metadata={"series_ids": series_ids},

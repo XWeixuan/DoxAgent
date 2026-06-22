@@ -29,7 +29,7 @@ _REQUIRED_EVIDENCE_FIELDS = (
     "citation_scope",
 )
 _UNSUCCESSFUL_TOOL_STATUSES = {"failed", "error", "blocked", "timeout"}
-_SUCCESS_STATUSES = {"succeeded", "success", "completed", "complete"}
+_SUCCESS_STATUSES = {"succeeded", "success", "completed", "complete", "partial"}
 
 
 def build_hard_validator_view(bundle: DebugRunBundle) -> JsonDict:
@@ -161,6 +161,19 @@ def validate_evidence_reference_integrity(bundle: DebugRunBundle) -> JsonDict:
                 evidence_index=ctx.evidence_index,
             )
 
+    if checked_items == 0:
+        findings.append(
+            _finding(
+                "error",
+                "no_evidence_scoped_items",
+                (
+                    "No stable documents, objections, or state-changing commits were available "
+                    "for evidence reference validation."
+                ),
+                "stable_documents",
+            )
+        )
+
     return _result(
         "evidence_reference_integrity",
         "Evidence Reference Integrity Validator",
@@ -181,6 +194,9 @@ def validate_langsmith_trajectory_tool_boundary(bundle: DebugRunBundle) -> JsonD
     findings: list[JsonDict] = []
     checked_items = 0
     author_entries: dict[str, int] = {}
+    successful_tools_in_run: set[str] = set()
+    for entry in bundle.working_memory:
+        successful_tools_in_run.update(_successful_tool_names_from_entry(entry))
 
     for entry in bundle.working_memory:
         agent = _str(entry.get("author_agent"), default="unknown")
@@ -225,7 +241,7 @@ def validate_langsmith_trajectory_tool_boundary(bundle: DebugRunBundle) -> JsonD
 
         for tool_name in _tool_names_from_entry(entry):
             checked_items += 1
-            allowed = allowed_tools.get(agent)
+            allowed = _allowed_tools_for_entry(agent, entry, allowed_tools)
             if allowed is not None and tool_name not in allowed:
                 findings.append(
                     _finding(
@@ -244,9 +260,20 @@ def validate_langsmith_trajectory_tool_boundary(bundle: DebugRunBundle) -> JsonD
                     )
                 )
 
-        for idx, tool_call in enumerate(_dicts(payload.get("tool_calls"))):
+        tool_calls = _dicts(payload.get("tool_calls"))
+        recovered_tools = {
+            _str(tool_call.get("tool_name"))
+            for tool_call in tool_calls
+            if _str(tool_call.get("status")).lower() in _SUCCESS_STATUSES
+        }
+        for idx, tool_call in enumerate(tool_calls):
             call_status = _str(tool_call.get("status")).lower()
-            if call_status in _UNSUCCESSFUL_TOOL_STATUSES and status in _SUCCESS_STATUSES:
+            tool_name = _str(tool_call.get("tool_name"))
+            if (
+                call_status in _UNSUCCESSFUL_TOOL_STATUSES
+                and status in _SUCCESS_STATUSES
+                and tool_name not in recovered_tools
+            ):
                 findings.append(
                     _finding(
                         "error",
@@ -264,6 +291,8 @@ def validate_langsmith_trajectory_tool_boundary(bundle: DebugRunBundle) -> JsonD
             _deep_get(payload, ("tool_usage_audit", "unexecuted_declared_tool_names"))
         )
         for idx, tool_name in enumerate(unexecuted):
+            if str(tool_name) in successful_tools_in_run:
+                continue
             findings.append(
                 _finding(
                     "error",
@@ -294,7 +323,51 @@ def validate_langsmith_trajectory_tool_boundary(bundle: DebugRunBundle) -> JsonD
                         f"latest_checkpoint.completed_nodes.{node}",
                         details={"workflow_node": node, "agent": agent},
                     )
+            )
+
+    latest_checkpoint = _latest_checkpoint(bundle)
+    latest_status = _str(latest_checkpoint.get("status")).lower()
+    if latest_checkpoint and latest_status != "completed":
+        findings.append(
+            _finding(
+                "error",
+                "workflow_trace_not_completed",
+                (
+                    "Latest workflow checkpoint is not completed, so local trajectory review "
+                    "cannot represent a closed initialization run."
+                ),
+                "latest_checkpoint.status",
+                details={
+                    "status": latest_checkpoint.get("status"),
+                    "next_node": latest_checkpoint.get("next_node"),
+                },
+            )
+        )
+
+    checkpoint_payload = _dict(latest_checkpoint.get("checkpoint"))
+    idempotency = _dict(_deep_get(checkpoint_payload, ("metadata", "workflow_agent_idempotency")))
+    for key, state in idempotency.items():
+        if _str(_dict(state).get("status")).lower() == "running":
+            checked_items += 1
+            findings.append(
+                _finding(
+                    "error",
+                    "open_agent_dispatch",
+                    f"Agent dispatch {key} is still marked running in latest checkpoint metadata.",
+                    f"latest_checkpoint.checkpoint.metadata.workflow_agent_idempotency.{key}",
+                    details={"dispatch": state},
                 )
+            )
+
+    if checked_items == 0:
+        findings.append(
+            _finding(
+                "error",
+                "no_local_trajectory_entries",
+                "No Working Memory or completed-node trajectory entries were available to validate.",
+                "working_memory",
+            )
+        )
 
     return _result(
         "langsmith_trajectory_tool_boundary",
@@ -491,6 +564,19 @@ def validate_commit_log_state_mutation_consistency(bundle: DebugRunBundle) -> Js
                 )
             )
 
+    if checked_items == 0:
+        findings.append(
+            _finding(
+                "error",
+                "no_state_mutations_to_validate",
+                (
+                    "No stable documents, belief commit ids, or commit_log entries were available "
+                    "for commit/state consistency validation."
+                ),
+                "commit_log",
+            )
+        )
+
     return _result(
         "commit_log_state_mutation_consistency",
         "Commit Log / State Mutation Consistency Validator",
@@ -655,6 +741,41 @@ def _allowed_tools_by_agent() -> dict[str, set[str]]:
     }
 
 
+def _allowed_tools_for_entry(
+    agent: str,
+    entry: JsonDict,
+    defaults: Mapping[str, set[str]],
+) -> set[str] | None:
+    workflow_node = _workflow_node_from_entry(entry)
+    if workflow_node:
+        node_allowed = _node_agent_allowed_tools().get((workflow_node, agent))
+        if node_allowed is not None:
+            return node_allowed
+    return defaults.get(agent)
+
+
+def _node_agent_allowed_tools() -> dict[tuple[str, str], set[str]]:
+    from doxagent.workflows.initialization import NODE_AGENT_ALLOWED_TOOL_OVERRIDES
+
+    return {
+        (node.value, agent.value): set(tools)
+        for (node, agent), tools in NODE_AGENT_ALLOWED_TOOL_OVERRIDES.items()
+    }
+
+
+def _workflow_node_from_entry(entry: JsonDict) -> str:
+    payload = _dict(entry.get("payload"))
+    direct = _str(_deep_get(payload, ("acceptance_audit", "workflow_node")))
+    if direct:
+        return direct
+    result_payload = _dict(payload.get("payload"))
+    for audit in _dicts(result_payload.get("model_audits")):
+        node = _str(_deep_get(audit, ("metadata", "workflow_node")))
+        if node:
+            return node
+    return ""
+
+
 def _tool_names_from_entry(entry: JsonDict) -> set[str]:
     payload = _dict(entry.get("payload"))
     result_payload = _dict(payload.get("payload"))
@@ -668,11 +789,31 @@ def _tool_names_from_entry(entry: JsonDict) -> set[str]:
     return {name for name in names if name}
 
 
+def _successful_tool_names_from_entry(entry: JsonDict) -> set[str]:
+    payload = _dict(entry.get("payload"))
+    result_payload = _dict(payload.get("payload"))
+    audit = _dict(result_payload.get("react_audit"))
+    names = {
+        _str(tool.get("tool_name"))
+        for tool in _dicts(payload.get("tool_calls"))
+        if tool.get("tool_name") and _str(tool.get("status")).lower() in _SUCCESS_STATUSES
+    }
+    names.update(str(name) for name in _dict(audit.get("tool_counts")) if name)
+    return {name for name in names if name}
+
+
 def _latest_completed_nodes(bundle: DebugRunBundle) -> set[str]:
-    if not bundle.checkpoints:
+    latest = _latest_checkpoint(bundle)
+    if not latest:
         return set()
-    latest = bundle.checkpoints[0]
     return {_str(item) for item in _list(latest.get("completed_nodes")) if _str(item)}
+
+
+def _latest_checkpoint(bundle: DebugRunBundle) -> JsonDict:
+    if not bundle.checkpoints:
+        return {}
+    latest = bundle.checkpoints[0]
+    return _dict(latest)
 
 
 def _required_agents_for_completed_nodes(completed_nodes: set[str]) -> dict[str, set[str]]:

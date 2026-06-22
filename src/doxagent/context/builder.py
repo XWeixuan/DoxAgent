@@ -25,7 +25,7 @@ class ContextBuilder:
                 entry_id=entry.entry_id,
                 author_agent=entry.author_agent,
                 content_type=entry.content_type,
-                payload=entry.payload,
+                payload=_agent_visible_working_memory_payload(entry.payload),
                 evidence_refs=entry.evidence_refs,
             )
             for entry in run.working_memory
@@ -114,3 +114,162 @@ class ContextBuilder:
             for evidence in objection.evidence_refs:
                 evidence_by_id[evidence.evidence_id] = evidence
         return list(evidence_by_id.values())
+
+
+def _agent_visible_working_memory_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    if not _looks_like_agent_result_memory(payload):
+        return _compact_payload_value(payload, depth=3)
+
+    visible: dict[str, Any] = {}
+    for key in (
+        "status",
+        "patch_ids",
+        "objection_ids",
+        "delegation_ids",
+        "tool_calls",
+        "tool_usage_audit",
+        "acceptance_audit",
+        "skill_versions",
+    ):
+        if key in payload:
+            visible[key] = _compact_payload_value(payload[key], depth=3)
+
+    inner = payload.get("payload")
+    if isinstance(inner, dict):
+        visible["payload"] = _compact_agent_result_payload(inner)
+        snapshot = inner.get("market_evidence_snapshot")
+        if isinstance(snapshot, dict):
+            visible["market_evidence_snapshot"] = snapshot
+    snapshot = payload.get("market_evidence_snapshot")
+    if isinstance(snapshot, dict):
+        visible["market_evidence_snapshot"] = snapshot
+    return visible
+
+
+def _looks_like_agent_result_memory(payload: dict[str, Any]) -> bool:
+    inner = payload.get("payload")
+    return isinstance(inner, dict) and (
+        "status" in payload
+        or "tool_calls" in payload
+        or "patch_ids" in payload
+        or "react_audit" in inner
+    )
+
+
+def _compact_agent_result_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    compact: dict[str, Any] = {}
+    for key in (
+        "runtime",
+        "completion_reason",
+        "tool_mode",
+        "market_evidence_snapshot",
+        "skill_ids",
+        "skill_versions",
+        "prompt_versions",
+    ):
+        if key in payload:
+            compact[key] = _compact_payload_value(payload[key], depth=3)
+    if isinstance(payload.get("structured"), dict):
+        compact["structured"] = _compact_structured_payload(payload["structured"])
+    if isinstance(payload.get("react_audit"), dict):
+        compact["react_audit_summary"] = _compact_react_audit(payload["react_audit"])
+    if "text" in payload:
+        compact["text_preview"] = _compact_text(payload.get("text"), limit=1_200)
+    if isinstance(payload.get("model_audits"), list):
+        compact["model_audit_summary"] = {"request_count": len(payload["model_audits"])}
+    return compact
+
+
+def _compact_structured_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    if {"text", "summary", "author_agent"} & set(payload):
+        compact: dict[str, Any] = {}
+        for key in ("summary", "author_agent", "reviewer_agents"):
+            if key in payload:
+                compact[key] = _compact_payload_value(payload[key], depth=2)
+        if "text" in payload:
+            compact["text_preview"] = _compact_text(payload.get("text"), limit=1_500)
+        evidence_refs = payload.get("evidence_refs")
+        if isinstance(evidence_refs, list):
+            compact["evidence_count"] = len(evidence_refs)
+        return compact
+    patches = payload.get("proposed_patches")
+    if isinstance(patches, list):
+        return {
+            "proposed_patch_count": len(patches),
+            "proposed_patch_summaries": [
+                _compact_patch_summary(item)
+                for item in patches
+                if isinstance(item, dict)
+            ][:8],
+            "unknowns": _compact_payload_value(payload.get("unknowns", []), depth=2),
+            "rationale_preview": _compact_text(payload.get("rationale"), limit=800),
+        }
+    return _compact_payload_value(payload, depth=3)
+
+
+def _compact_patch_summary(patch: dict[str, Any]) -> dict[str, Any]:
+    target = patch.get("target")
+    after = patch.get("after")
+    summary: dict[str, Any] = {
+        "patch_id": patch.get("patch_id"),
+        "operation": patch.get("operation"),
+        "target": _compact_payload_value(target, depth=2),
+    }
+    if isinstance(after, dict):
+        summary["after_summary"] = {
+            key: after.get(key)
+            for key in (
+                "document_type",
+                "ticker",
+                "expectation_id",
+                "expectation_name",
+                "direction",
+            )
+            if key in after
+        }
+    return summary
+
+
+def _compact_react_audit(audit: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "max_tool_calls_per_name": audit.get("max_tool_calls_per_name"),
+        "tool_counts": audit.get("tool_counts", {}),
+        "loaded_skill_ids": audit.get("loaded_skill_ids", []),
+        "warnings": _compact_payload_value(audit.get("warnings", [])[-5:], depth=2)
+        if isinstance(audit.get("warnings"), list)
+        else [],
+        "compacted_summaries": [
+            _compact_text(item, limit=1_000)
+            for item in audit.get("compacted_summaries", [])[-2:]
+            if isinstance(item, str)
+        ],
+        "market_evidence_snapshot": audit.get("market_evidence_snapshot", {}),
+    }
+
+
+def _compact_payload_value(value: Any, *, depth: int) -> Any:
+    if depth <= 0:
+        return _compact_text(value, limit=300)
+    if isinstance(value, str):
+        return _compact_text(value, limit=1_000)
+    if isinstance(value, list):
+        items = [_compact_payload_value(item, depth=depth - 1) for item in value[:12]]
+        if len(value) > 12:
+            items.append({"omitted_items": len(value) - 12})
+        return items
+    if isinstance(value, dict):
+        compact: dict[str, Any] = {}
+        for index, (key, item) in enumerate(value.items()):
+            if index >= 24:
+                compact["omitted_keys"] = len(value) - 24
+                break
+            compact[str(key)] = _compact_payload_value(item, depth=depth - 1)
+        return compact
+    return value
+
+
+def _compact_text(value: Any, *, limit: int) -> str:
+    text = "" if value is None else str(value)
+    if len(text) <= limit:
+        return text
+    return text[:limit] + f"...[truncated {len(text) - limit} chars]"

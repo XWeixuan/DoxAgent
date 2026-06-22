@@ -9,7 +9,15 @@ from doxagent.prompts.schema import AssembledPrompt, PromptBundle
 from doxagent.tools import ToolResult
 
 CHINESE_OUTPUT_RULES = [
-    "所有人类可读文本内容必须使用简体中文。",
+    (
+        "所有面向用户或用于评估的自然语言内容必须使用简体中文，包括 summary、"
+        "text、analysis、rationale、assumption、objection、uncertainty、unknowns、"
+        "notes、monitoring action、completion_reason 和 reasoning_summary。"
+    ),
+    (
+        "仅在引用原始证据、保留专有名词、ticker、代码、标识符、source id、"
+        "tool id 或外部数据源原文时允许保留非中文内容。"
+    ),
     (
         "JSON key、schema name、enum value、tool name、agent id、document type "
         "必须保持英文 contract 原值。"

@@ -14,6 +14,8 @@ Use this package only when O4 explicitly loads it for market-trace work.
 
 Coordinate historical daily OHLCV collection for the ticker, configured benchmarks, and close peers. Prefer runtime-provided lookback, interval, benchmark, and peer inputs over fixed assumptions.
 
+For DoxAgent Document 1, use the requested window as the data sample but summarize recent reaction first. Longer samples are useful for baseline ranges, volatility, and relative context, not for a generic chart recap.
+
 ## Analysis Focus
 
 - Confirm which symbols were requested and which symbols returned usable bars.

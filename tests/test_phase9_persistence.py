@@ -1,4 +1,5 @@
 from pathlib import Path
+from contextlib import contextmanager
 
 import pytest
 
@@ -8,7 +9,7 @@ from doxagent.blackboard import (
     PostgresBlackboardRepository,
 )
 from doxagent.models import AgentName
-from doxagent.postgres import connect_postgres
+from doxagent.postgres import connect_postgres, retry_postgres_operation
 from doxagent.settings import DoxAgentSettings
 from doxagent.workflows import (
     BlackboardInitializationWorkflow,
@@ -23,6 +24,9 @@ from tests.test_phase3_blackboard_service import write_permissions
 MIGRATION = Path("supabase/migrations/202605300001_blackboard_workflow_persistence.sql")
 OBJECTION_DEDUPE_MIGRATION = Path(
     "supabase/migrations/202606120001_objection_dedupe_metadata.sql"
+)
+OBJECTION_RUN_SCOPED_KEY_MIGRATION = Path(
+    "supabase/migrations/202606160001_objections_run_scoped_primary_key.sql"
 )
 
 
@@ -54,6 +58,14 @@ def test_objection_dedupe_migration_adds_queryable_metadata_columns() -> None:
     assert "add column if not exists target_path" in sql
     assert "add column if not exists merged_objection_ids" in sql
     assert "objections_dedupe_lookup_idx" in sql
+
+
+def test_objection_primary_key_is_run_scoped_for_model_generated_ids() -> None:
+    sql = OBJECTION_RUN_SCOPED_KEY_MIGRATION.read_text(encoding="utf-8")
+
+    assert "drop constraint if exists objections_pkey" in sql
+    assert "primary key (run_id, objection_id)" in sql
+    assert "objections_objection_id_idx" in sql
 
 
 def test_migration_does_not_embed_supabase_credentials() -> None:
@@ -137,6 +149,7 @@ def test_resume_latest_uses_checkpoint_repository_without_duplicate_completed_co
     ]
     assert committed_targets == [
         ("global_research", "document"),
+        ("expectation_unit", "document"),
         ("expectation_unit", "document"),
         ("global_research", "document.market_narrative_report"),
         ("known_events", "document"),
@@ -252,6 +265,63 @@ def test_postgres_connect_retries_transient_operational_errors(
     assert sleeps == [0.1, 0.2]
     assert psycopg.connect_kwargs is not None
     assert psycopg.connect_kwargs["prepare_threshold"] is None
+
+
+def test_retry_postgres_operation_retries_mid_query_operational_errors(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    psycopg = _FakePsycopg()
+    attempts = 0
+    sleeps: list[float] = []
+
+    def operation() -> str:
+        nonlocal attempts
+        attempts += 1
+        if attempts < 3:
+            raise _FakePsycopg.OperationalError("SSL error: unexpected eof while reading")
+        return "ok"
+
+    monkeypatch.setattr("doxagent.postgres.time.sleep", sleeps.append)
+
+    result = retry_postgres_operation(psycopg, operation, retry_delay_seconds=0.1)
+
+    assert result == "ok"
+    assert attempts == 3
+    assert sleeps == [0.1, 0.2]
+
+
+def test_postgres_blackboard_get_retries_mid_query_operational_error(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    psycopg = _FakePsycopg()
+    repository = PostgresBlackboardRepository(
+        "postgresql://postgres:secret@example.com/postgres"
+    )
+    repository._psycopg = lambda: psycopg  # type: ignore[method-assign]
+    attempts = 0
+    sleeps: list[float] = []
+    expected = object()
+
+    @contextmanager
+    def fake_connection() -> object:
+        yield object()
+
+    def get_run(conn: object, run_id: str, *, lock: bool) -> object:
+        nonlocal attempts
+        attempts += 1
+        assert run_id == "run_retry"
+        assert lock is False
+        if attempts == 1:
+            raise _FakePsycopg.OperationalError("SSL error: unexpected eof while reading")
+        return expected
+
+    repository._connection = fake_connection  # type: ignore[method-assign]
+    repository._get_run = get_run  # type: ignore[method-assign]
+    monkeypatch.setattr("doxagent.postgres.time.sleep", sleeps.append)
+
+    assert repository.get("run_retry") is expected
+    assert attempts == 2
+    assert sleeps == [0.8]
 
 
 def test_postgres_repositories_use_pooler_safe_connections() -> None:

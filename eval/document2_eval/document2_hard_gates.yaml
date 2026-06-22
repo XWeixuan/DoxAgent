@@ -1,0 +1,307 @@
+schema_version: 1
+contract_name: document2_expectation_unit_hard_gates
+scope: >
+  用于 DoxAgent Blackboard 初始化拆分测试中 Document 2 预期单元 eval 的必过门槛。
+  本文件只评估 expectation_unit 生成、复核、修复和 promotion，不替代完整初始化 hard gates。
+inputs_required:
+  source_state: >
+    Document 1-only source run 的 checkpoint、Brief State 和 stable global_research 状态。
+  execution_state: >
+    Document 2 execution run 的脚本输出、checkpoint、Brief State JSON 和 pending/stable 文档状态。
+  langsmith_trace: >
+    同一 execution run_id 的 LangSmith 轨迹，包括节点 metadata、loop 输出、工具调用和最终 AgentResult。
+  repository_context: >
+    baseline 和 retest 使用的 git 状态、命令、环境变量、hard gates 与 rubrics 版本。
+decision_rule:
+  pass_condition: >
+    与本轮 stop_after 相适配的 hard gates 必须全部通过，才能宣称本轮 Document 2 优化成功。
+  failure_handling: >
+    hard gate 失败时停止接受优化声明；仍可填写 rubrics 作为诊断，但必须标注 hard-gate failed。
+
+evaluation_modes:
+  - id: detail_only
+    stop_after: GenerateExpectationDetails
+    rule: >
+      只判断 pending detail patches 是否生成且结构可复核；不要求 stable expectation_unit。
+  - id: field_review
+    stop_after: ReviewExpectationFields
+    rule: >
+      判断字段复核是否覆盖关键风险；不要求 objections 已关闭。
+  - id: resolve
+    stop_after: ResolveObjectionsAndDelegations
+    rule: >
+      判断 resolver 是否处理 blockers 和 revised patches；不要求已 promotion。
+  - id: promote
+    stop_after: PromoteExpectationToBeliefState
+    rule: >
+      判断 Document 2 是否稳定写入 belief state；这是 Document 2 接受级评估。
+
+gates:
+  - id: D2-HG01
+    title: Source run 必须是 Document 1-only 状态
+    applies_to:
+      - detail_only
+      - field_review
+      - resolve
+      - promote
+    check_goal: >
+      确认 Document 2 从干净的 Document 1 Global Research 状态开始，而不是从已有 expectation 或半残留 patch 继续。
+    failure_conditions:
+      - source run_id 与 source checkpoint run_id 不一致。
+      - source checkpoint status 不是 running 或可继续的中间态。
+      - completed_nodes 不是 StartTickerInitialization+BuildGlobalResearch，或再加 ReviewGlobalResearch。
+      - next_node 不是 ReviewGlobalResearch 或 GenerateExpectationConstruction。
+      - stable_document_types 不包含 global_research。
+      - source run 已有 stable expectation_unit。
+      - source checkpoint 已有 pending_patches。
+      - source run 存在 unresolved objections 或 blocking delegations。
+    evidence_required:
+      - source checkpoint completed_nodes 和 next_node
+      - source Brief State stable document inventory
+      - source blockers 摘要
+
+  - id: D2-HG02
+    title: Document 2 路径必须到达目标停止点
+    applies_to:
+      - detail_only
+      - field_review
+      - resolve
+      - promote
+    check_goal: >
+      确认 execution run 真实运行了正常 workflow 的 Document 2 节点，并按本轮 stop_after 停止。
+    failure_conditions:
+      - execution result error 非空且没有被记录为预期诊断失败。
+      - 目标 stop_after 节点不在 completed_nodes 中。
+      - checkpoint metadata 或脚本输出中的 execution_run_id 与 Brief State run_id 不一致。
+      - workflow 通过直接 helper 或手工写 DB 产生结果，而不是通过正常 resume 路径。
+    evidence_required:
+      - run_document2_expectation_units_smoke.py 输出
+      - execution checkpoint completed_nodes
+      - Brief State workflow_state
+      - LangSmith workflow_node metadata
+
+  - id: D2-HG03
+    title: Expectation construction 形成可细化的 shell
+    applies_to:
+      - detail_only
+      - field_review
+      - resolve
+      - promote
+    check_goal: >
+      确认 O1 生成的 expectation shells 是可细化的投资假设，而不是松散主题或重复摘要。
+    failure_conditions:
+      - 少于两个可识别 expectation shells，且没有明确 no-op 理由。
+      - shell 缺少 expectation_id、expectation_name、direction、why_it_matters 或 market_view 方向。
+      - 多个 shell 主题高度重复，无法形成不同监控对象。
+      - shell 与 ticker 或 stable global_research 关键事实脱节。
+      - construction review 产生 blocking objections 后没有进入 resolver 或留下可审计 blocker。
+    evidence_required:
+      - Working Memory construction result
+      - ReviewExpectationConstruction 输出
+      - ResolveExpectationConstruction 输出
+      - LangSmith O1/A1 construction loops
+
+  - id: D2-HG04
+    title: Detail patches 具备字段级可复核性
+    applies_to:
+      - detail_only
+      - field_review
+      - resolve
+      - promote
+    check_goal: >
+      确认每个待评估 expectation detail patch 都包含足以进入字段复核或 promotion 的核心字段。
+    failure_conditions:
+      - stop_after 为 GenerateExpectationDetails 时没有 pending expectation patches。
+      - 任一 detail patch 缺少 expectation_id、expectation_name、direction、why_it_matters 或 market_view。
+      - 任一 detail patch 的 realized_facts 为空。
+      - 任一 detail patch 的 key_variables 为空。
+      - realized_facts_summary 缺失或只是泛化摘要。
+      - event_monitoring_direction 缺失、为空，或只有通用 placeholder。
+      - direction 不是 bullish、bearish、neutral、risk 之一。
+    evidence_required:
+      - checkpoint pending_patches
+      - Working Memory expectation_detail_result
+      - Brief State pending patch 摘要
+
+  - id: D2-HG05
+    title: Evidence refs 必须存在且可追踪
+    applies_to:
+      - detail_only
+      - field_review
+      - resolve
+      - promote
+    check_goal: >
+      确认预期单元中的关键主张有 source 对象支持，而不是只有裸文本或 narrative-level 泛化引用。
+    failure_conditions:
+      - market_view 没有 evidence_refs。
+      - realized fact 没有 evidence_refs。
+      - price_reaction 没有 evidence_refs。
+      - key variable 没有 evidence_refs。
+      - evidence_refs 缺少 source_id、source_type、title、summary、confidence 或 citation_scope。
+      - final payload 引用的 source 或 tool 在 LangSmith 和 Working Memory 中找不到。
+    evidence_required:
+      - pending patches 或 stable expectation_unit evidence_refs
+      - Brief State hydrated evidence_refs
+      - LangSmith tool calls 和 AgentResult tool summaries
+
+  - id: D2-HG06
+    title: Price-in 推理必须显式
+    applies_to:
+      - detail_only
+      - field_review
+      - resolve
+      - promote
+    check_goal: >
+      确认 expectation units 区分已兑现事实、旧新闻、市场已反应内容和仍未定价的变量。
+    failure_conditions:
+      - realized facts 没有 price_reaction 解释。
+      - market_view 没有说明 priced、partially priced、disputed、not priced 或 unresolved。
+      - 把旧的已知事实当作未经限定的未来催化剂。
+      - 具体价格、相对跑赢、成交量或事件窗口反应只由 DoxAtlas narrative report 支撑，没有 O4 market evidence 或直接市场数据证据。
+    evidence_required:
+      - realized_facts.price_reaction
+      - market_view
+      - O4 BuildGlobalResearch 或 ReviewExpectationFields 轨迹
+      - market-data evidence refs
+
+  - id: D2-HG07
+    title: 字段复核生命周期必须可审计
+    applies_to:
+      - field_review
+      - resolve
+      - promote
+    check_goal: >
+      确认 A1/C1/C3/O4 字段复核按角色覆盖 provenance、基本面、行业和市场反应问题。
+    failure_conditions:
+      - ReviewExpectationFields 未运行，但本轮 stop_after 要求到达 review 或之后。
+      - promoted 或待 promoted 的 patches 没有字段复核记录。
+      - review agent 只给泛化意见，没有 field_path、rationale、severity 或 evidence。
+      - 明显空字段、placeholder、source 粒度过粗或价格反应缺证据未被复核指出，且没有合理解释。
+    evidence_required:
+      - Working Memory field review entries
+      - objections 列表
+      - LangSmith A1/C1/C3/O4 review loops
+
+  - id: D2-HG08
+    title: Objection 和 delegation 必须被处理或显式保留
+    applies_to:
+      - resolve
+      - promote
+    check_goal: >
+      确认 resolver 没有静默丢弃 blockers，并把接受、部分接受、拒绝或 residual risk 写清楚。
+    failure_conditions:
+      - ResolveObjectionsAndDelegations 未运行，但本轮 stop_after 要求到达 resolve 或之后。
+      - blocking objections 在 resolver 后仍 open，且没有 residual risk 或 follow-up 说明。
+      - blocking delegations 在 resolver 后仍 assigned/open，且没有无法完成的明确理由。
+      - accepted 或 partially accepted objection 没有 revised patch 或 resolution_note。
+      - 重复 objections 未 dedupe 或 merge，导致同一 blocker 反复阻塞。
+    evidence_required:
+      - blockers.open_objections
+      - blockers.blocking_delegations
+      - objection_resolution_result
+      - commit_log resolved_objection_ids
+      - LangSmith resolver loops
+
+  - id: D2-HG09
+    title: Promotion 只能认可稳定 expectation_unit
+    applies_to:
+      - promote
+    check_goal: >
+      确认 Document 2 最终进入 stable belief state，而不是停留在 pending patches 或 Working Memory。
+    failure_conditions:
+      - stop_after 为 PromoteExpectationToBeliefState 时 stable expectation_unit 少于两个。
+      - pending expectation patches 仍未处理，且没有明确 blocker。
+      - any blocker.open_objections 或 blocking_delegations 阻止 promotion。
+      - Commit Log 没有对应 expectation_unit patch 或 target 不一致。
+      - 同一 expectation_id 被重复 promotion，且没有 retry 或 replacement rationale。
+    evidence_required:
+      - stable_documents.expectation_unit
+      - checkpoint pending_patches
+      - commit_log target 和 patch
+      - can_promote_target 或 promotion blocker 记录
+
+  - id: D2-HG10
+    title: LangSmith 过程轨迹必须可用于评判
+    applies_to:
+      - detail_only
+      - field_review
+      - resolve
+      - promote
+    check_goal: >
+      确认评估者能从 LangSmith 还原关键 agent loops，而不是只看最终 JSON。
+    failure_conditions:
+      - 找不到 execution run_id 对应的 LangSmith trace。
+      - child runs 缺少 run_id、agent_name、workflow_node 或 task_type metadata。
+      - 关键节点的 ReAct loop 输出、tool history 或 final AgentResult 缺失。
+      - LangSmith trace run_id 与 Brief State run_id 不一致。
+      - pending 或 error loop 被当作成功 loop 使用。
+    evidence_required:
+      - LangSmith MCP 查询结果
+      - child run metadata
+      - loop output 和 tool history
+
+  - id: D2-HG11
+    title: 失败必须成为业务审计事实
+    applies_to:
+      - detail_only
+      - field_review
+      - resolve
+      - promote
+    check_goal: >
+      确认解析、schema、validation、tool、write、timeout 等失败在 checkpoint 或 Working Memory 中可见。
+    failure_conditions:
+      - workflow 因模型或工具失败停止，但 Brief State 只显示静默缺失。
+      - AgentResult 失败被 retry 或跳过，却没有 audit payload。
+      - schema/validation 失败只出现在异常栈，不在业务状态中可查。
+      - provider timeout、CancelledError 或 tool prefetch failure 被当作成功输入继续使用。
+    evidence_required:
+      - latest checkpoint metadata
+      - Working Memory failure entries
+      - AgentResult audit payload
+      - LangSmith failed 或 pending loops
+
+  - id: D2-HG12
+    title: 上下文长度和内容价值必须受控
+    applies_to:
+      - detail_only
+      - field_review
+      - resolve
+      - promote
+    check_goal: >
+      用较宽松标准确认 Document 2 各 agent 的输入上下文不会明显爆炸，且没有大段重复、低价值、
+      与当前节点无关的内容挤占关键证据、patch、objection 和工具轨迹。
+    failure_conditions:
+      - LangSmith input 或本地 ReAct audit 显示关键节点输入接近或超过模型上下文限制，且没有压缩、摘要或截断策略说明。
+      - `GenerateExpectationDetails`、`ReviewExpectationFields` 或 `ResolveObjectionsAndDelegations` 的 input 中重复注入完整 Global Research、完整 pending patches、完整 tool history 或无关历史记录。
+      - resolver input 同时携带全量长文本和可等价替代的 compact patch summaries，导致明显重复。
+      - 低价值上下文挤占了 expectation_id、source ids、price_reaction、key_variables、open objections 或 revised patch 所需信息。
+      - 因上下文冗余导致 timeout、CancelledError、summary-only 输出、遗漏字段、忽略 objections 或重复生成同一 patch。
+    evidence_required:
+      - LangSmith child run input token/char metadata
+      - ReAct audit 中的 task input、compaction 或 prompt assembly 摘要
+      - Working Memory 中的 compact context 或 omission marker
+      - timeout、summary-only、ignored-objection 等下游失败证据
+
+  - id: D2-HG13
+    title: 多轮 loop 必须保持关键记忆连续
+    applies_to:
+      - detail_only
+      - field_review
+      - resolve
+      - promote
+    check_goal: >
+      确认 agent 在多轮 ReAct loop、复核、resolver 和 promotion 过程中没有丢失关键事实、来源、
+      objection 决策、delegation 结果或 patch revision 状态。
+    failure_conditions:
+      - 后续 loop 忘记前一轮已经取得的关键 source_id、market evidence、DoxAtlas provenance、price window 或财务口径。
+      - O1 detail 或 resolver 在后续 loop 中改写 expectation_id、变量状态、realized fact 或 market_view，却没有解释为什么替换。
+      - accepted 或 partially accepted objection 的 revised patch 在后续 pending patches 或 stable documents 中丢失。
+      - 已完成 delegation 或 inconclusive A2 结果没有进入 resolver rationale、unknowns 或 monitoring direction。
+      - review agent 已提出的高严重度 blocker 在 promotion 前消失，且 Commit Log、Working Memory 或 resolution_note 无法解释。
+      - 同一 agent 多轮输出互相矛盾，例如先承认证据不足，后又把同一 claim 写成确定事实。
+    evidence_required:
+      - LangSmith 多轮 loop output 和 tool history
+      - Working Memory expectation_detail_result、field review、objection_resolution_result
+      - checkpoint pending_patches 的 revision history
+      - Commit Log resolved_objection_ids、residual_disputes 和 patch before/after
+      - Brief State stable expectation_unit 与 blockers 对照

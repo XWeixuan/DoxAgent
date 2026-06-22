@@ -51,6 +51,7 @@ class ModelGatewayAgentRunner:
         tool_mode: ToolMode = "mock",
         agent_factory: MafAgentFactory | None = None,
         react_config: ReActHarnessConfig | None = None,
+        model_timeout_seconds: float | None = None,
         max_delegation_depth: int = 1,
     ) -> None:
         self.registry = registry or default_agent_registry()
@@ -65,6 +66,7 @@ class ModelGatewayAgentRunner:
         self.tool_mode = tool_mode
         self.agent_factory = agent_factory or MafAgentFactory()
         self.react_config = react_config or ReActHarnessConfig()
+        self.model_timeout_seconds = model_timeout_seconds
         self.max_delegation_depth = max_delegation_depth
 
     def run(self, task: AgentTask) -> AgentResult:
@@ -193,12 +195,15 @@ class ModelGatewayAgentRunner:
             tools=[],
         )
         try:
+            options: dict[str, Any] = {
+                "model": self.default_model,
+                "temperature": 0.2,
+            }
+            if self.model_timeout_seconds is not None:
+                options["timeout_seconds"] = self.model_timeout_seconds
             response = await agent.run(
                 assembled_prompt.user_prompt,
-                options={
-                    "model": self.default_model,
-                    "temperature": 0.2,
-                },
+                options=options,
             )
         except Exception as exc:
             return self._failed(
@@ -210,7 +215,7 @@ class ModelGatewayAgentRunner:
 
         model_response = chat_client.last_model_response
         if model_response is None:
-            return self._failed(task, "missing_model_response", "MAF returned no model response.")
+            return self._failed(task, "missing_model_response", "MAF 未返回模型响应。")
         if model_response.error is not None:
             return self._failed(
                 task,

@@ -36,8 +36,8 @@ class FinnhubPeersClient(BaseRealToolClient):
                 raw=raw,
                 source_type=EvidenceSourceType.EXTERNAL_REPORT,
                 source_id=f"finnhub:peers:{symbol}",
-                title=f"Finnhub peers for {symbol}",
-                summary="Finnhub company peers were retrieved.",
+                title=f"Finnhub 同业列表 - {symbol}",
+                summary="已检索 Finnhub 公司同业列表。",
                 citation_scope="finnhub_company_peers",
                 confidence=0.7,
                 metadata={"symbol": symbol, "grouping": grouping},
@@ -80,13 +80,13 @@ class FinnhubTradeStreamClient:
                 tool_name=request.tool_name,
                 status=ResultStatus.SUCCEEDED,
                 output={"provider": "finnhub", "symbols": symbols, "events": events},
-                output_summary="Finnhub bounded trade stream was captured.",
+                output_summary="已捕获 Finnhub 有界交易流。",
                 raw=events,
             )
             evidence = result.to_evidence_ref(
                 source_type=EvidenceSourceType.MARKET_DATA,
                 source_id=f"finnhub:trade_stream:{','.join(symbols)}",
-                title="Finnhub trade stream",
+                title="Finnhub 交易流",
                 citation_scope="finnhub_trade_stream",
                 confidence=0.65,
             ).model_copy(
@@ -107,16 +107,34 @@ class FinnhubTradeStreamClient:
             if isinstance(exc, TimeoutError):
                 code = "stream_timeout"
                 retryable = True
+            message = _trade_stream_error_message(exc)
             return ToolResult(
                 tool_name=request.tool_name,
                 status=ResultStatus.FAILED,
+                output_summary=f"{code}: {message}",
                 error=ToolError(
                     code=code,
-                    message=str(exc),
+                    message=message,
                     retryable=retryable,
-                    details={"provider": "finnhub"},
+                    details={
+                        "provider": "finnhub",
+                        "provider_error": type(exc).__name__,
+                        "provider_error_repr": repr(exc),
+                        "symbols": symbols if "symbols" in locals() else [],
+                        "duration_seconds": duration if "duration" in locals() else None,
+                        "max_events": max_events if "max_events" in locals() else None,
+                    },
                 ),
             )
+
+
+def _trade_stream_error_message(exc: Exception) -> str:
+    message = str(exc).strip()
+    if message:
+        return message
+    return f"Finnhub trade stream failed with {type(exc).__name__}: {repr(exc)}"
+
+
 async def _capture_finnhub_trades(
     *,
     token: str,

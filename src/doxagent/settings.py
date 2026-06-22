@@ -23,6 +23,10 @@ class DoxAgentSettings(BaseSettings):
     database_url: str | None = Field(default=None, validation_alias="DOXAGENT_DATABASE_URL")
 
     dashscope_api_key: str | None = Field(default=None, validation_alias="DASHSCOPE_API_KEY")
+    dashscope_fallback_api_key: str | None = Field(
+        default=None,
+        validation_alias="DASHSCOPE_FALLBACK_API_KEY",
+    )
     dashscope_base_url: str = Field(
         default="https://dashscope.aliyuncs.com/api/v2/apps/protocols/compatible-mode/v1",
         validation_alias="DASHSCOPE_BASE_URL",
@@ -41,6 +45,21 @@ class DoxAgentSettings(BaseSettings):
     tool_http_timeout_seconds: float = Field(
         default=15.0,
         validation_alias="DOXAGENT_TOOL_HTTP_TIMEOUT_SECONDS",
+    )
+    model_request_timeout_seconds: float = Field(
+        default=300.0,
+        gt=0,
+        validation_alias="DOXAGENT_MODEL_REQUEST_TIMEOUT_SECONDS",
+    )
+    react_tool_call_timeout_seconds: float = Field(
+        default=180.0,
+        gt=0,
+        validation_alias="DOXAGENT_REACT_TOOL_CALL_TIMEOUT_SECONDS",
+    )
+    workflow_agent_stale_after_seconds: int = Field(
+        default=1_800,
+        ge=1,
+        validation_alias="DOXAGENT_WORKFLOW_AGENT_STALE_AFTER_SECONDS",
     )
 
     doxatlas_tool_base_url: str | None = Field(

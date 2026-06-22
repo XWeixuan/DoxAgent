@@ -13,6 +13,8 @@ The shell contains only the candidate expectation identity and thesis frame: `ex
 
 Use DoxAtlas evidence narrowly:
 - Prefer proposition, analysis, ignored-proposition, and event-source evidence that directly supports or contradicts the shell's market thesis.
+- Use `doxa_query_analysis` before `doxa_get_analysis` when you need an analysis `task_code`.
+- Use event scope from DoxAtlas (`run_id+narrative_code+event_code` or equivalent), not DoxAgent internal `event_id`.
 - Check whether the proposed direction follows from the cited narrative evidence rather than from generic bullish or bearish language.
 - Treat missing source ids or missing proposition support as a material issue only when the shell makes a specific market claim that cannot be traced.
 - If DoxAtlas has a relevant ignored or contradicted proposition, flag it even when the shell sounds plausible.

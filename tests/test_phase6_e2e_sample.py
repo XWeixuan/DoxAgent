@@ -17,7 +17,7 @@ def test_phase6_sample_export_contains_full_audit_surface() -> None:
     assert exported["workflow"]["status"] == "completed"
     assert exported["workflow"]["ticker"] == "NVDA"
     assert list(exported["documents"]) == DOCUMENT_ORDER
-    assert len(exported["commit_log"]) == 5
+    assert len(exported["commit_log"]) == 7
     assert len(exported["working_memory"]) >= 5
     assert exported["evidence_refs"]
     assert exported["objections"][0]["status"] == "resolved"
@@ -35,11 +35,11 @@ def test_phase6_sample_documents_include_monitoring_outputs_without_trading_exec
 
     assert monitoring_config
     assert monitoring_policy
-    policy_json = json.dumps(monitoring_policy)
+    policy_json = json.dumps(monitoring_policy, ensure_ascii=False)
     assert "broker_api" not in policy_json
     assert "order_id" not in policy_json
     assert "executed_trade" not in policy_json
-    assert "No broker action is triggered" in policy_json
+    assert "不触发券商下单" in policy_json
 
 
 def test_phase6_commit_log_links_patches_authors_reasons_and_evidence() -> None:

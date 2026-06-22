@@ -355,6 +355,9 @@ def test_prompt_injector_selects_global_research_internal_skills_for_c1_c3() -> 
 
     assert "fundamental-research" in c1_injected.prompt_bundle.internal_task_skill_ids
     assert c1_injected.prompt_bundle.external_skill_package_ids == []
+    c1_skill = default_prompt_registry().get("fundamental-research")
+    assert "Document 1" in c1_skill.body
+    assert "current market attention" in c1_skill.body
 
     c3_definition = agent_registry.get(AgentName.C3_INDUSTRY_RESEARCH)
     c3_task = c1_task.model_copy(
@@ -379,6 +382,8 @@ def test_prompt_injector_selects_global_research_internal_skills_for_c1_c3() -> 
     )
     o4_injected = PromptInjector().inject(o4_task, o4_definition)
     assert "ticker_price_tracking" in o4_injected.prompt_bundle.internal_task_skill_ids
+    o4_skill = default_prompt_registry().get("ticker_price_tracking")
+    assert "recent price and flow reaction first" in o4_skill.body
 
 
 def test_c2_exposes_macro_analysis_not_global_macro() -> None:
@@ -387,6 +392,7 @@ def test_c2_exposes_macro_analysis_not_global_macro() -> None:
     assert definition.runtime.default_external_skill_package_ids == ["macro-analysis"]
     assert "global-macro" not in default_skill_registry().ids()
     assert "load_skill(\"macro-analysis\")" in default_prompt_registry().get("agent.c2").body
+    assert "recent macro developments" in default_prompt_registry().get("agent.c2").body
 
 
 def test_prompt_injector_rejects_unknown_loaded_external_package() -> None:

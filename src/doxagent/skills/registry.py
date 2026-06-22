@@ -206,10 +206,10 @@ def _operator_audit_skills(
                 "field-level findings for shell fields",
             ],
             allowed_tools=[
+                "doxa_query_analysis",
                 "doxa_get_analysis",
                 "doxa_query_propositions",
                 "doxa_get_ignored_propositions",
-                "doxa_get_event_source",
             ],
             guardrails=[
                 "Do not call Tavily from A1.",
@@ -239,11 +239,14 @@ def _operator_audit_skills(
                 "field-level findings for completed expectation fields",
             ],
             allowed_tools=[
+                "doxa_query_analysis",
                 "doxa_get_analysis",
                 "doxa_query_propositions",
                 "doxa_get_event_source",
                 "doxa_get_media_result",
+                "doxa_get_media_result_detail",
                 "doxa_get_social_result",
+                "doxa_get_social_result_detail",
                 "doxa_get_ignored_propositions",
             ],
             guardrails=[

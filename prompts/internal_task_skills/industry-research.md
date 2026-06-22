@@ -17,6 +17,8 @@ Given a sector or theme and a one-line angle, you deliver:
 4. **Ideas shortlist** - three to five names that best express the theme, each with a one-line thesis hook.
 5. **Research report** - the above as a structured report.
 
+For BuildGlobalResearch / Document 1, prioritize what has changed recently and why it matters now. Use market size, value chain, and industry structure as context for those changes rather than as a standalone sector primer.
+
 ## Workflow
 
 1. **Scope the ask.** Confirm sector or theme, angle, and the universe boundary. Identify the 8-15 names that define the space.

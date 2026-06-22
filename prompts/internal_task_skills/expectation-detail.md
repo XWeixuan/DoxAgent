@@ -58,7 +58,17 @@ Keep the section focused on this expectation unit. Do not write general company 
 
 Translate the expectation into future monitoring logic.
 
-Cover three types of events:
+Return `event_monitoring_direction` exactly as:
+
+```json
+{
+  "known_event_notice": "short note about known upcoming dates or no fixed date",
+  "positive_events": ["specific monitorable event that strengthens this expectation"],
+  "negative_events": ["specific monitorable event that weakens this expectation"]
+}
+```
+
+Cover three types of events in that shape:
 
 1. Known upcoming events
    Events already visible on the calendar or likely to occur. Explain the possible positive and negative interpretations.
@@ -70,6 +80,8 @@ Cover three types of events:
    Events that would weaken, delay, or overturn the expectation if they occur.
 
 Events should be monitorable through news, filings, earnings, guidance, orders, product progress, regulatory updates, industry data, macro data, or market discussion.
+
+Do not use generic placeholders such as "confirmed deployments, partnerships, or commercialization milestones" or "deployment delays, financing pressure, or insufficient commercialization evidence." Do not put objects or dictionaries inside `positive_events` or `negative_events`; each item must be a concise string trigger with enough detail to monitor.
 
 ## Evidence standard
 

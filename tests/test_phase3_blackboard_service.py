@@ -169,6 +169,36 @@ def test_duplicate_objections_merge_by_target_taxonomy_and_hash() -> None:
     assert merged.target_path
 
 
+def test_duplicate_objection_id_is_idempotent_on_retry() -> None:
+    service = BlackboardService()
+    run = service.start_run("NVDA", AgentName.SYSTEM)
+    first = objection().model_copy(
+        update={
+            "objection_id": "obj_retry",
+            "severity": ObjectionSeverity.MEDIUM,
+            "evidence_refs": [evidence_ref()],
+        },
+        deep=True,
+    )
+    second = first.model_copy(
+        update={
+            "severity": ObjectionSeverity.BLOCKING,
+            "reason": "Retry restated the same objection id with higher severity.",
+            "evidence_refs": [evidence_ref()],
+        },
+        deep=True,
+    )
+
+    service.create_objection(run.run_id, first)
+    merged = service.create_objection(run.run_id, second)
+    objections = service.get_run(run.run_id).objections
+
+    assert len(objections) == 1
+    assert merged.objection_id == "obj_retry"
+    assert merged.severity is ObjectionSeverity.BLOCKING
+    assert len(merged.evidence_refs) == 2
+
+
 def test_objection_resolution_records_changed_paths_and_evidence() -> None:
     service = BlackboardService()
     run = service.start_run("NVDA", AgentName.SYSTEM)

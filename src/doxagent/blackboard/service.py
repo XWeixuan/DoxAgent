@@ -51,15 +51,18 @@ class BlackboardService:
 
         def mutate(run: BlackboardRun) -> BlackboardRun:
             nonlocal entry
-            entry = WorkingMemoryEntry(
-                entry_id=new_id("wm"),
-                ticker=run.ticker,
-                author_agent=author_agent,
-                content_type=content_type,
-                payload=payload,
-                evidence_refs=evidence_refs or [],
-                created_at=datetime.now(UTC),
-            )
+            if entry is None:
+                entry = WorkingMemoryEntry(
+                    entry_id=new_id("wm"),
+                    ticker=run.ticker,
+                    author_agent=author_agent,
+                    content_type=content_type,
+                    payload=payload,
+                    evidence_refs=evidence_refs or [],
+                    created_at=datetime.now(UTC),
+                )
+            if any(existing.entry_id == entry.entry_id for existing in run.working_memory):
+                return run
             run.working_memory.append(entry)
             return run
 
@@ -83,21 +86,26 @@ class BlackboardService:
 
         def mutate(run: BlackboardRun) -> BlackboardRun:
             nonlocal commit
+            if commit is not None and any(
+                existing.commit_id == commit.commit_id for existing in run.commit_log
+            ):
+                return run
             self._validate_patch(run, patch, permissions)
             self._apply_patch(run.belief_state, patch)
-            commit = CommitLogEntry(
-                commit_id=new_id("commit"),
-                patch=patch,
-                triggered_by=patch.author_agent,
-                trigger_reason=trigger_reason,
-                resolved_objection_ids=[
-                    item.objection_id for item in run.objections if not item.is_unresolved
-                ],
-                residual_disputes=[
-                    item.objection_id for item in run.objections if item.is_unresolved
-                ],
-                created_at=datetime.now(UTC),
-            )
+            if commit is None:
+                commit = CommitLogEntry(
+                    commit_id=new_id("commit"),
+                    patch=patch,
+                    triggered_by=patch.author_agent,
+                    trigger_reason=trigger_reason,
+                    resolved_objection_ids=[
+                        item.objection_id for item in run.objections if not item.is_unresolved
+                    ],
+                    residual_disputes=[
+                        item.objection_id for item in run.objections if item.is_unresolved
+                    ],
+                    created_at=datetime.now(UTC),
+                )
             run.commit_log.append(commit)
             run.belief_state.commit_ids.append(commit.commit_id)
             return run
@@ -114,6 +122,11 @@ class BlackboardService:
             nonlocal updated
             self._validate_target_matches_run(run, objection.target)
             enriched = _enrich_objection(objection)
+            for index, existing in enumerate(run.objections):
+                if existing.objection_id == enriched.objection_id:
+                    updated = _merge_objections(existing, enriched)
+                    run.objections[index] = updated
+                    return run
             for index, existing in enumerate(run.objections):
                 if not existing.is_unresolved:
                     continue
@@ -134,6 +147,8 @@ class BlackboardService:
     def create_delegation(self, run_id: str, delegation: Delegation) -> Delegation:
         def mutate(run: BlackboardRun) -> BlackboardRun:
             self._validate_target_matches_run(run, delegation.blocking_scope)
+            if any(existing.delegation_id == delegation.delegation_id for existing in run.delegations):
+                return run
             run.delegations.append(delegation)
             return run
 

@@ -13,6 +13,8 @@ Conduct comprehensive financial statement analysis of `{target}` (`{market}` mar
 
 Use load_skill("financial-statement") for financial analysis standards.
 
+For BuildGlobalResearch / Document 1, do not write a full long-horizon initiation report. Use financial statements, valuation, moat, and multi-year trends to explain recent fundamental developments, current market attention, and what the market may be reassessing now.
+
 ## Analysis Framework
 
 ### I. Income Statement Analysis
@@ -66,6 +68,8 @@ You are a senior valuation analyst at a top-tier investment bank, proficient in 
 Conduct comprehensive valuation analysis of `{target}` (`{market}` market), using multiple methods to cross-validate whether current valuation is justified.
 
 Use load_skill("valuation-model") for valuation modeling standards.
+
+In Document 1, valuation work is an anchor for interpreting current pricing and re-rating risk. Do not make the 12-month target price or full DCF model the main point unless recent evidence makes valuation repricing the active debate.
 
 ## Valuation Method Matrix
 
@@ -126,6 +130,8 @@ You are a senior quality analyst at a top-tier value investment fund, focused on
 ## Task
 
 Conduct comprehensive business quality assessment of `{target}` (`{market}` market), determining whether the company has long-term investment merit.
+
+In Document 1, business quality and moat analysis should explain why recent developments matter now; keep durable advantages as context rather than the center of the section.
 
 ## Quality Analysis Framework
 

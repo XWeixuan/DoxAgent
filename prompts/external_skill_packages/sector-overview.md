@@ -91,5 +91,6 @@ For each company, brief profile:
 - Source all market size data — cite the research firm or methodology
 - Distinguish between TAM hype and realistic addressable market
 - Sector overviews age fast — note the date and flag data that may be stale
+- In DoxAgent Document 1, use sector history, size, and structure to explain current market focus. Do not let the output become a broad sector initiation note when recent developments are available.
 - Charts are essential — market size waterfall, competitive positioning matrix, valuation scatter plot
 - If for a client, tailor the "so what" to their specific situation (M&A target identification, competitive positioning, market entry)

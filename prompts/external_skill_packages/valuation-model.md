@@ -20,6 +20,8 @@ category: analysis
 
 Systematic corporate valuation framework covering absolute valuation (`DCF / DDM / SOTP`) and relative valuation (`PE / PB / EV-EBITDA`), including sensitivity-analysis methods and a checklist for identifying valuation traps.
 
+In DoxAgent Document 1, use valuation as context for current pricing, market attention, and re-rating risk. Historical percentiles, DCF, and target-price work are anchors, not fresh catalysts by themselves.
+
 ## Absolute Valuation Methods
 
 ### 1. DCF (Discounted Cash Flow)

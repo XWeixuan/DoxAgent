@@ -54,7 +54,7 @@ def default_tool_registry() -> ToolRegistry:
         "doxatlas.query",
         MockToolClient(
             tool_name="doxatlas.query",
-            output_summary="Mock DoxAtlas narrative results.",
+            output_summary="Mock DoxAtlas 叙事结果。",
             source_type=EvidenceSourceType.DOXATLAS_SOURCE,
         ),
     )
@@ -62,7 +62,7 @@ def default_tool_registry() -> ToolRegistry:
         "doxa_get_narrative_report",
         MockToolClient(
             tool_name="doxa_get_narrative_report",
-            output_summary="Mock DoxAtlas narrative report result.",
+            output_summary="Mock DoxAtlas 叙事报告结果。",
             source_type=EvidenceSourceType.DOXATLAS_SOURCE,
         ),
     )
@@ -70,7 +70,7 @@ def default_tool_registry() -> ToolRegistry:
         "doxatlas.source_lookup",
         MockToolClient(
             tool_name="doxatlas.source_lookup",
-            output_summary="Mock DoxAtlas source lookup result.",
+            output_summary="Mock DoxAtlas source lookup 结果。",
             source_type=EvidenceSourceType.DOXATLAS_SOURCE,
         ),
     )

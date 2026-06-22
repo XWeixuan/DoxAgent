@@ -339,6 +339,14 @@ def _input_str(request: ToolRequest, key: str, default: str) -> str:
     return str(value)
 
 
+def _input_str_any(request: ToolRequest, keys: tuple[str, ...], default: str) -> str:
+    for key in keys:
+        value = request.input.get(key)
+        if value is not None and str(value).strip():
+            return str(value)
+    return default
+
+
 def _input_list(request: ToolRequest, key: str) -> list[str]:
     value = request.input.get(key)
     if isinstance(value, list):

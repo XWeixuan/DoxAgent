@@ -161,6 +161,15 @@ async def test_gateway_parses_json_text_and_rejects_invalid_json() -> None:
     assert fenced_response.error is None
     assert fenced_response.structured == {"key": "fenced"}
 
+    mixed_gateway = ModelGateway(
+        MockModelClient(
+            text='reasoning {"summary": "ignore"}\nassistant output:\n{"key": "mixed"}'
+        )
+    )
+    mixed_response = await mixed_gateway.complete(request(ResponseFormat.JSON))
+    assert mixed_response.error is None
+    assert mixed_response.structured == {"key": "mixed"}
+
     bad_gateway = ModelGateway(MockModelClient(text="not-json"))
     bad_response = await bad_gateway.complete(request(ResponseFormat.JSON))
     assert bad_response.error is not None

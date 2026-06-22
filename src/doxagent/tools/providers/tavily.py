@@ -44,8 +44,8 @@ class TavilySearchClient(BaseRealToolClient):
                 raw=raw,
                 source_type=EvidenceSourceType.EXTERNAL_REPORT,
                 source_id=f"tavily:search:{body['query']}",
-                title="Tavily search",
-                summary="Tavily search results were retrieved.",
+                title="Tavily 搜索结果",
+                summary="已检索 Tavily 搜索结果。",
                 citation_scope="tavily_search",
                 confidence=0.6,
                 metadata=body,
@@ -60,7 +60,7 @@ class TavilyExtractClient(BaseRealToolClient):
             api_key = _require(self.settings.tavily_api_key, "TAVILY_API_KEY")
             urls = _input_list(request, "urls")
             if not urls:
-                raise ValueError("urls is required.")
+                raise ValueError("urls 为必填项。")
             body = {
                 "urls": urls,
                 "extract_depth": _input_str(request, "extract_depth", "basic"),
@@ -78,8 +78,8 @@ class TavilyExtractClient(BaseRealToolClient):
                 raw=raw,
                 source_type=EvidenceSourceType.EXTERNAL_REPORT,
                 source_id=f"tavily:extract:{len(urls)}",
-                title="Tavily extract",
-                summary="Tavily URL extraction results were retrieved.",
+                title="Tavily URL 抽取结果",
+                summary="已检索 Tavily URL 抽取结果。",
                 citation_scope="tavily_extract",
                 confidence=0.62,
                 metadata={"urls": urls, "format": body["format"]},

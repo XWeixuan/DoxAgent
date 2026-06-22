@@ -11,11 +11,16 @@ from doxagent.tools.providers.base import (
     BoundToolClient,
     JsonObject,
     _strip_none,
-    _validate_single_scope_id,
 )
 from doxagent.tools.schema import ToolRequest, ToolResult
 
-_SCOPE_ID_FIELDS = frozenset({"narrative_event_id", "narrative_id", "proposition_id"})
+_EVENT_SCOPE_FIELDS = frozenset(
+    {"run_id", "narrative_code", "event_code", "narrative_id", "narrative_event_id"}
+)
+_RUN_NARRATIVE_EVENT_SCOPE_FIELDS = frozenset(
+    {"run_id", "narrative_code", "event_code", "narrative_id", "narrative_event_id"}
+)
+_CONTENT_MODES = frozenset({"preview", "full", "none"})
 
 
 @dataclass(frozen=True)
@@ -29,8 +34,11 @@ class EndpointSpec:
     required_fields: frozenset[str] = frozenset()
     requires_ticker: bool = False
     single_scope_id: bool = False
+    scope_kind: str | None = None
     cacheable: bool = True
     numeric_ranges: dict[str, tuple[int, int]] | None = None
+    default_fields: dict[str, Any] | None = None
+    content_mode_field: str | None = None
 
 
 DOXATLAS_TOOL_SPECS: dict[str, EndpointSpec] = {
@@ -38,8 +46,8 @@ DOXATLAS_TOOL_SPECS: dict[str, EndpointSpec] = {
         "run-narrative-research",
         EvidenceSourceType.DOXATLAS_SOURCE,
         "doxatlas_run",
-        "DoxAtlas Narrative Research run",
-        "DoxAtlas Narrative Research run was requested.",
+        "DoxAtlas Narrative Research 运行",
+        "已请求 DoxAtlas Narrative Research 运行。",
         frozenset({"ticker", "language", "force"}),
         required_fields=frozenset({"ticker"}),
         requires_ticker=True,
@@ -49,8 +57,8 @@ DOXATLAS_TOOL_SPECS: dict[str, EndpointSpec] = {
         "run-analysis",
         EvidenceSourceType.DOXATLAS_SOURCE,
         "doxatlas_run",
-        "DoxAtlas analysis task",
-        "DoxAtlas single-ticker analysis task was requested.",
+        "DoxAtlas 单标的分析任务",
+        "已请求 DoxAtlas 单标的分析任务。",
         frozenset({"ticker", "language", "reuse_recent"}),
         required_fields=frozenset({"ticker"}),
         requires_ticker=True,
@@ -60,19 +68,31 @@ DOXATLAS_TOOL_SPECS: dict[str, EndpointSpec] = {
         "get-narrative-report",
         EvidenceSourceType.DOXATLAS_SOURCE,
         "doxatlas_narrative_report",
-        "DoxAtlas narrative report",
-        "DoxAtlas narrative report was retrieved.",
-        frozenset({"ticker", "run_id"}),
+        "DoxAtlas 叙事报告",
+        "已检索 DoxAtlas 叙事报告。",
+        frozenset({"ticker", "run_id", "view", "include_reasoning", "include_source_propositions"}),
         required_fields=frozenset({"ticker"}),
         requires_ticker=True,
+        default_fields={"view": "agent_provenance"},
+    ),
+    "doxa_query_analysis": EndpointSpec(
+        "query-analysis",
+        EvidenceSourceType.DOXATLAS_SOURCE,
+        "doxatlas_analysis_tasks",
+        "DoxAtlas analysis task 列表",
+        "已检索 DoxAtlas analysis task 短代码列表。",
+        frozenset({"ticker", "limit"}),
+        required_fields=frozenset({"ticker"}),
+        requires_ticker=True,
+        numeric_ranges={"limit": (1, 50)},
     ),
     "doxa_get_analysis": EndpointSpec(
         "get-analysis",
         EvidenceSourceType.DOXATLAS_SOURCE,
         "doxatlas_analysis",
-        "DoxAtlas analysis",
-        "DoxAtlas single-ticker analysis was retrieved.",
-        frozenset({"ticker", "task_id", "capsule_limit"}),
+        "DoxAtlas 单标的分析",
+        "已检索 DoxAtlas 单标的分析。",
+        frozenset({"ticker", "task_code", "task_id", "capsule_limit"}),
         required_fields=frozenset({"ticker"}),
         requires_ticker=True,
         numeric_ranges={"capsule_limit": (1, 20)},
@@ -82,46 +102,72 @@ DOXATLAS_TOOL_SPECS: dict[str, EndpointSpec] = {
         EvidenceSourceType.DOXATLAS_SOURCE,
         "doxatlas_propositions",
         "DoxAtlas propositions",
-        "DoxAtlas propositions were retrieved.",
-        _SCOPE_ID_FIELDS,
-        single_scope_id=True,
+        "已检索 DoxAtlas propositions。",
+        _EVENT_SCOPE_FIELDS | frozenset({"proposition_id", "proposition_codes", "limit"}),
+        scope_kind="event_or_proposition",
+        numeric_ranges={"limit": (1, 50)},
     ),
     "doxa_get_ignored_propositions": EndpointSpec(
         "get-ignored-propositions",
         EvidenceSourceType.DOXATLAS_SOURCE,
         "doxatlas_ignored_propositions",
         "DoxAtlas ignored propositions",
-        "DoxAtlas ignored propositions were retrieved.",
-        frozenset({"narrative_id"}),
-        required_fields=frozenset({"narrative_id"}),
+        "已检索 DoxAtlas ignored propositions。",
+        _RUN_NARRATIVE_EVENT_SCOPE_FIELDS,
+        scope_kind="run_narrative_event",
     ),
     "doxa_get_social_result": EndpointSpec(
         "get-social-result",
         EvidenceSourceType.DOXATLAS_SOURCE,
         "doxatlas_social_result",
         "DoxAtlas social result",
-        "DoxAtlas social result was retrieved.",
-        _SCOPE_ID_FIELDS,
-        single_scope_id=True,
+        "已检索 DoxAtlas social result。",
+        _EVENT_SCOPE_FIELDS | frozenset({"proposition_codes", "limit"}),
+        scope_kind="event",
+        numeric_ranges={"limit": (1, 50)},
+    ),
+    "doxa_get_social_result_detail": EndpointSpec(
+        "get-social-result-detail",
+        EvidenceSourceType.DOXATLAS_SOURCE,
+        "doxatlas_social_result_detail",
+        "DoxAtlas social result detail",
+        "已检索 DoxAtlas social result detail。",
+        _EVENT_SCOPE_FIELDS | frozenset({"social_codes", "content_mode", "preview_chars"}),
+        scope_kind="event",
+        numeric_ranges={"preview_chars": (100, 8000)},
+        content_mode_field="content_mode",
     ),
     "doxa_get_media_result": EndpointSpec(
         "get-media-result",
         EvidenceSourceType.DOXATLAS_SOURCE,
         "doxatlas_media_result",
         "DoxAtlas media result",
-        "DoxAtlas media result was retrieved.",
-        _SCOPE_ID_FIELDS,
-        single_scope_id=True,
+        "已检索 DoxAtlas media result。",
+        _EVENT_SCOPE_FIELDS | frozenset({"proposition_codes", "limit"}),
+        scope_kind="event",
+        numeric_ranges={"limit": (1, 50)},
+    ),
+    "doxa_get_media_result_detail": EndpointSpec(
+        "get-media-result-detail",
+        EvidenceSourceType.DOXATLAS_SOURCE,
+        "doxatlas_media_result_detail",
+        "DoxAtlas media result detail",
+        "已检索 DoxAtlas media result detail。",
+        _EVENT_SCOPE_FIELDS | frozenset({"media_codes", "content_mode", "preview_chars"}),
+        scope_kind="event",
+        numeric_ranges={"preview_chars": (100, 8000)},
+        content_mode_field="content_mode",
     ),
     "doxa_get_event_source": EndpointSpec(
         "get-event-source",
         EvidenceSourceType.DOXATLAS_SOURCE,
         "doxatlas_event_source",
         "DoxAtlas event source",
-        "DoxAtlas event source was retrieved.",
-        frozenset({"narrative_event_id", "limit"}),
-        required_fields=frozenset({"narrative_event_id"}),
-        numeric_ranges={"limit": (1, 20)},
+        "已检索 DoxAtlas event source。",
+        _EVENT_SCOPE_FIELDS | frozenset({"source_codes", "limit", "content_mode", "preview_chars"}),
+        scope_kind="event",
+        numeric_ranges={"limit": (1, 20), "preview_chars": (100, 8000)},
+        content_mode_field="content_mode",
     ),
 }
 
@@ -129,6 +175,84 @@ DOXATLAS_ALIASES = {
     "doxatlas.query": "doxa_get_narrative_report",
     "doxatlas.source_lookup": "doxa_get_event_source",
 }
+
+
+def _validate_doxatlas_scope(payload: JsonObject, scope_kind: str) -> None:
+    if _looks_like_doxagent_event_id(payload.get("narrative_event_id")):
+        raise ValueError(
+            "narrative_event_id must be a DoxAtlas event UUID, not a DoxAgent internal event_id."
+        )
+    if _looks_like_doxagent_event_id(payload.get("event_code")):
+        raise ValueError("event_code must be a DoxAtlas short code such as E01.")
+
+    if scope_kind == "event":
+        if not _has_event_scope(payload):
+            raise ValueError(
+                "DoxAtlas event scope requires narrative_event_id, narrative_id+event_code, "
+                "or run_id+narrative_code+event_code."
+            )
+        return
+    if scope_kind == "event_or_proposition":
+        has_proposition_id = bool(payload.get("proposition_id"))
+        has_event_scope = _has_event_scope(payload)
+        if has_proposition_id and (
+            has_event_scope or payload.get("proposition_codes") is not None
+        ):
+            raise ValueError("proposition_id cannot be combined with event scope or proposition_codes.")
+        if has_proposition_id or has_event_scope:
+            return
+        if payload.get("narrative_id") and not payload.get("event_code"):
+            raise ValueError("doxa_query_propositions no longer accepts bare narrative_id.")
+        raise ValueError(
+            "doxa_query_propositions requires event scope or a single proposition_id."
+        )
+    if scope_kind == "run_narrative_event":
+        if _has_event_scope(payload):
+            return
+        if payload.get("run_id") and not payload.get("event_code"):
+            if payload.get("narrative_code") or not payload.get("event_code"):
+                return
+        if payload.get("narrative_id") and not payload.get("event_code"):
+            return
+        raise ValueError(
+            "DoxAtlas ignored-proposition scope requires run_id, run_id+narrative_code, "
+            "run_id+narrative_code+event_code, narrative_id, or narrative_event_id."
+        )
+    raise ValueError(f"Unsupported DoxAtlas scope kind: {scope_kind}.")
+
+
+def _has_event_scope(payload: JsonObject) -> bool:
+    if payload.get("narrative_event_id"):
+        return True
+    if payload.get("narrative_id") and payload.get("event_code"):
+        return True
+    return bool(payload.get("run_id") and payload.get("narrative_code") and payload.get("event_code"))
+
+
+def _looks_like_doxagent_event_id(value: object) -> bool:
+    return isinstance(value, str) and value.startswith("event_")
+
+
+def _validate_content_mode(value: object) -> None:
+    if value not in _CONTENT_MODES:
+        allowed = ", ".join(sorted(_CONTENT_MODES))
+        raise ValueError(f"content_mode must be one of: {allowed}.")
+
+
+def _validate_doxatlas_code_arrays(payload: JsonObject, endpoint: str) -> None:
+    list_fields = ("proposition_codes", "media_codes", "social_codes", "source_codes")
+    for field in list_fields:
+        if field not in payload:
+            continue
+        value = payload[field]
+        if value is None:
+            continue
+        if not isinstance(value, list) or not all(isinstance(item, str) and item for item in value):
+            raise ValueError(f"{field} must be a list of non-empty short-code strings.")
+    if endpoint == "get-media-result-detail" and not payload.get("media_codes"):
+        raise ValueError("media_codes is required for doxa_get_media_result_detail.")
+    if endpoint == "get-social-result-detail" and not payload.get("social_codes"):
+        raise ValueError("social_codes is required for doxa_get_social_result_detail.")
 
 
 class DoxAtlasToolClient(BaseRealToolClient):
@@ -187,10 +311,16 @@ class DoxAtlasToolClient(BaseRealToolClient):
             raise ValueError(f"Unsupported DoxAtlas tool input field(s): {fields}.")
 
         payload = _strip_none(request.input)
+        for field, value in (spec.default_fields or {}).items():
+            payload.setdefault(field, value)
         if spec.requires_ticker and "ticker" not in payload:
             payload["ticker"] = request.ticker
         if spec.single_scope_id:
-            _validate_single_scope_id(payload)
+            raise ValueError("single_scope_id is no longer supported for DoxAtlas scoped tools.")
+        if spec.scope_kind:
+            _validate_doxatlas_scope(payload, spec.scope_kind)
+        if spec.content_mode_field and spec.content_mode_field in payload:
+            _validate_content_mode(payload[spec.content_mode_field])
 
         missing_fields = [field for field in spec.required_fields if not payload.get(field)]
         if missing_fields:
@@ -206,6 +336,7 @@ class DoxAtlasToolClient(BaseRealToolClient):
             minimum, maximum = bounds
             if value < minimum or value > maximum:
                 raise ValueError(f"{field} must be between {minimum} and {maximum}.")
+        _validate_doxatlas_code_arrays(payload, spec.endpoint)
         return payload
 
     def _post_doxatlas_json(

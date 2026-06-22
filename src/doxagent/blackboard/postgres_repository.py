@@ -19,7 +19,7 @@ from doxagent.models import (
     Objection,
     WorkingMemoryEntry,
 )
-from doxagent.postgres import connect_postgres
+from doxagent.postgres import connect_postgres, retry_postgres_operation
 from doxagent.settings import DoxAgentSettings
 
 
@@ -47,36 +47,48 @@ class PostgresBlackboardRepository:
         return self.get(run.run_id)
 
     def get(self, run_id: str) -> BlackboardRun:
-        with self._connection() as conn:
-            return self._get_run(conn, run_id, lock=False)
+        def operation() -> BlackboardRun:
+            with self._connection() as conn:
+                return self._get_run(conn, run_id, lock=False)
+
+        return self._retry(operation)
 
     def save(self, run: BlackboardRun) -> BlackboardRun:
-        with self._connection() as conn:
-            self._ensure_run_exists(conn, run.run_id)
-            self._replace_run(conn, run, bump_version=True)
+        def operation() -> None:
+            with self._connection() as conn:
+                self._ensure_run_exists(conn, run.run_id)
+                self._replace_run(conn, run, bump_version=True)
+
+        self._retry(operation)
         return self.get(run.run_id)
 
     def list_by_ticker(self, ticker: str, *, limit: int = 20) -> list[BlackboardRun]:
-        with self._connection() as conn:
-            with conn.cursor() as cursor:
-                cursor.execute(
-                    """
-                    select run_id
-                    from doxagent.blackboard_runs
-                    where ticker = %s
-                    order by created_at desc
-                    limit %s
-                    """,
-                    (ticker, limit),
-                )
-                run_ids = [row[0] for row in cursor.fetchall()]
-            return [self._get_run(conn, run_id, lock=False) for run_id in run_ids]
+        def operation() -> list[BlackboardRun]:
+            with self._connection() as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute(
+                        """
+                        select run_id
+                        from doxagent.blackboard_runs
+                        where ticker = %s
+                        order by created_at desc
+                        limit %s
+                        """,
+                        (ticker, limit),
+                    )
+                    run_ids = [row[0] for row in cursor.fetchall()]
+                return [self._get_run(conn, run_id, lock=False) for run_id in run_ids]
+
+        return self._retry(operation)
 
     def mutate(self, run_id: str, mutator: RunMutator) -> BlackboardRun:
-        with self._connection() as conn:
-            run = self._get_run(conn, run_id, lock=True)
-            updated = mutator(run)
-            self._replace_run(conn, updated, bump_version=True)
+        def operation() -> None:
+            with self._connection() as conn:
+                run = self._get_run(conn, run_id, lock=True)
+                updated = mutator(run)
+                self._replace_run(conn, updated, bump_version=True)
+
+        self._retry(operation)
         return self.get(run_id)
 
     @contextmanager
@@ -84,6 +96,9 @@ class PostgresBlackboardRepository:
         psycopg = self._psycopg()
         with connect_postgres(psycopg, self.database_url) as conn:
             yield conn
+
+    def _retry(self, operation: Any) -> Any:
+        return retry_postgres_operation(self._psycopg(), operation)
 
     def _insert_run(self, conn: Any, run: BlackboardRun) -> None:
         with conn.cursor() as cursor:

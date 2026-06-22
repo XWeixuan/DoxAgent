@@ -6,6 +6,7 @@ from typing import Any, Protocol
 from openai import AsyncOpenAI
 
 from doxagent.agents.config import AgentRegistry, default_agent_registry
+from doxagent.agents.runtime.react import ReActHarnessConfig
 from doxagent.agents.runtime.runner import ModelGatewayAgentRunner
 from doxagent.gateway import (
     BailianResponsesModelClient,
@@ -99,20 +100,32 @@ def default_real_agent_runner(
 
     resolved_settings = settings or DoxAgentSettings()
     resolved_settings.apply_langsmith_environment()
-    client = AsyncOpenAI(
+    client = _build_bailian_sdk_client(
         api_key=resolved_settings.require_dashscope_api_key(),
-        base_url=resolved_settings.dashscope_base_url,
+        settings=resolved_settings,
     )
-    client = wrap_provider_client(
-        ProviderName.BAILIAN,
-        client,
-        tracing_enabled=resolved_settings.langsmith_enabled,
-        tracing_extra=tracing_extra_from_metadata(
-            {
-                "runtime": "doxagent",
-                "provider": ProviderName.BAILIAN.value,
-                "model": resolved_settings.dashscope_model,
-            }
+    fallback_clients = []
+    if (
+        resolved_settings.dashscope_fallback_api_key
+        and resolved_settings.dashscope_fallback_api_key
+        != resolved_settings.dashscope_api_key
+    ):
+        fallback_clients.append(
+            BailianResponsesModelClient(
+                _build_bailian_sdk_client(
+                    api_key=resolved_settings.dashscope_fallback_api_key,
+                    settings=resolved_settings,
+                ),
+                enable_thinking=resolved_settings.dashscope_enable_thinking,
+            )
+        )
+    runner_kwargs = dict(kwargs)
+    runner_kwargs.setdefault("model_timeout_seconds", resolved_settings.model_request_timeout_seconds)
+    runner_kwargs.setdefault(
+        "react_config",
+        ReActHarnessConfig(
+            model_request_timeout_seconds=resolved_settings.model_request_timeout_seconds,
+            tool_call_timeout_seconds=resolved_settings.react_tool_call_timeout_seconds,
         ),
     )
     return ModelGatewayAgentRunner(
@@ -121,11 +134,35 @@ def default_real_agent_runner(
             BailianResponsesModelClient(
                 client,
                 enable_thinking=resolved_settings.dashscope_enable_thinking,
-            )
+            ),
+            fallbacks=fallback_clients,
         ),
         tool_registry=default_real_tool_registry(resolved_settings),
         default_provider=ProviderName.BAILIAN,
         default_model=resolved_settings.dashscope_model,
         tool_mode="real",
-        **kwargs,
+        **runner_kwargs,
+    )
+
+
+def _build_bailian_sdk_client(
+    *,
+    api_key: str,
+    settings: DoxAgentSettings,
+) -> object:
+    client = AsyncOpenAI(
+        api_key=api_key,
+        base_url=settings.dashscope_base_url,
+    )
+    return wrap_provider_client(
+        ProviderName.BAILIAN,
+        client,
+        tracing_enabled=settings.langsmith_enabled,
+        tracing_extra=tracing_extra_from_metadata(
+            {
+                "runtime": "doxagent",
+                "provider": ProviderName.BAILIAN.value,
+                "model": settings.dashscope_model,
+            }
+        ),
     )

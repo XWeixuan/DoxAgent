@@ -14,6 +14,8 @@ Use this package only when O4 explicitly loads it for market-trace work.
 
 Compare the ticker against the configured benchmarks, sector proxy, and close peers over the same date window. The goal is to decide whether the move appears stock-specific, sector-linked, broad-market-linked, or mixed.
 
+For DoxAgent Document 1, prioritize the most recent divergence or convergence that changes market interpretation. Use full-window returns only as context.
+
 ## Analysis Focus
 
 - Calculate or describe relative return versus benchmarks and peers.

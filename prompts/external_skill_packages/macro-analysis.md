@@ -110,6 +110,7 @@ macro_factors = {
 ## Notes
 
 * Macro analysis provides directional guidance, not precise timing. Leave timing to skills such as `technical-basic` or `volatility`
+* In DoxAgent Document 1, lead with recent macro releases, policy changes, rate moves, liquidity shifts, or cross-asset repricing. Use slower macro series and cycle labels as context for current pricing, not as a generic macro overview.
 * Federal Reserve policy judgment should be based on official statements and meeting minutes. Do not over-interpret unofficial messages
 * Geopolitical shocks are usually short-lived (1-4 weeks) unless they change fundamentals (such as long-term sanctions or trade wars)
 * This framework is not investment advice and is for research backtesting only

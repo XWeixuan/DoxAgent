@@ -5,7 +5,12 @@ phase builds only the project baseline and the scaffolding needed for the later
 Blackboard initialization workflow.
 
 启动测试用blackboard初始化结果展示的命令：
-uv run python -m doxagent.debug_viewer --host 127.0.0.1 --port 8765
+.\scripts\debug-viewer.cmd 8765
+If 8765 is busy, open the URL printed by the launcher.
+Remote tunnel only; do not keep this running while testing the local viewer on 8765:
+ssh -N -L 8765:127.0.0.1:8765 doxagent-hk
+.\scripts\debug-viewer.cmd
+
 网页：
 http://127.0.0.1:8765
 http://127.0.0.1:8765/langsmith-renderer.html
@@ -213,7 +218,7 @@ from doxagent.agents import MarketTraceAgentModule
 
 trace = MarketTraceAgentModule().run(
     ticker="AAPL",
-    period="1y",
+    period="3mo",
     interval="1d",
     benchmarks=["SPY"],
     peers=["MSFT", "GOOGL"],
@@ -249,10 +254,20 @@ The local debug viewer serves read-only review pages for persisted Blackboard
 runs and a LangSmith custom output renderer:
 
 ```powershell
-uv run python -m doxagent.debug_viewer --host 127.0.0.1 --port 8765
+.\scripts\debug-viewer.cmd 8765
 ```
 
 Open `http://127.0.0.1:8765` to inspect Brief State documents and agent metrics.
+If port `8765` is already occupied, the launcher automatically uses the next
+free port and prints the URL to open.
+The script defaults to `DOXAGENT_STORAGE_MODE=postgres` and repo-local `.tmp-uv`
+cache/temp directories. If PowerShell script execution is enabled, the equivalent
+entrypoint is:
+
+```powershell
+.\scripts\debug-viewer.ps1 -Port 8765
+```
+
 Keep that local process running while viewing LangSmith. In LangSmith, configure
 Custom Output Rendering on the `DoxAgent` tracing project with:
 

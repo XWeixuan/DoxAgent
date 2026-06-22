@@ -16,6 +16,7 @@ class ToolDescriptor(BaseModel):
     description: str
     input_fields: list[str] = Field(default_factory=list)
     business_purpose: str | None = None
+    contract_brief: str | None = None
     concurrent_safe: bool = True
     compactable: bool = True
 
@@ -60,7 +61,7 @@ class ToolRegistry:
                 status=ResultStatus.FAILED,
                 error=ToolError(
                     code="tool_not_allowed",
-                    message=f"Agent is not allowed to call tool: {request.tool_name}",
+                    message=f"当前 agent 不允许调用工具：{request.tool_name}",
                     retryable=False,
                 ),
             )
@@ -71,7 +72,7 @@ class ToolRegistry:
                 status=ResultStatus.FAILED,
                 error=ToolError(
                     code="tool_not_registered",
-                    message=f"Tool is not registered: {request.tool_name}",
+                    message=f"工具未注册：{request.tool_name}",
                     retryable=False,
                 ),
             )

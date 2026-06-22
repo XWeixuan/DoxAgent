@@ -8,13 +8,14 @@ from pathlib import Path
 from typing import Any, cast
 
 from doxagent.models import EvidenceSourceType, ResultStatus
-from doxagent.tools.providers.base import _input_str
+from doxagent.tools.market_evidence import daily_ohlcv_output_with_snapshot
+from doxagent.tools.providers.base import _input_str, _input_str_any
 from doxagent.tools.schema import ToolError, ToolRequest, ToolResult
 
 
 class YFinanceHkBasicSnapshotClient:
     def call(self, request: ToolRequest) -> ToolResult:
-        symbol = _input_str(request, "symbol", request.ticker).upper()
+        symbol = _input_str_any(request, ("symbol", "ticker"), request.ticker).upper()
         market = _input_str(request, "market", "")
         if market.upper() != "HK" and not symbol.endswith(".HK"):
             return ToolResult(
@@ -23,8 +24,7 @@ class YFinanceHkBasicSnapshotClient:
                 error=ToolError(
                     code="market_not_allowed",
                     message=(
-                        "yfinance.hk_basic_snapshot is HK-only and must not be used "
-                        "for US tickers."
+                        "yfinance.hk_basic_snapshot 仅允许用于港股标的，不应用于美股标的。"
                     ),
                     retryable=False,
                     details={"symbol": symbol, "market": market},
@@ -51,13 +51,13 @@ class YFinanceHkBasicSnapshotClient:
                 tool_name=request.tool_name,
                 status=ResultStatus.SUCCEEDED,
                 output=output,
-                output_summary="HK basic snapshot was retrieved from yfinance.",
+                output_summary="已从 yfinance 检索港股基础快照。",
                 raw={"info_keys": sorted(str(key) for key in info.keys())},
             )
             evidence = result.to_evidence_ref(
                 source_type=EvidenceSourceType.MARKET_DATA,
                 source_id=f"yfinance:hk_basic_snapshot:{symbol}",
-                title=f"yfinance HK basic snapshot for {symbol}",
+                title=f"yfinance 港股基础快照 - {symbol}",
                 citation_scope="yfinance_hk_basic_snapshot",
                 confidence=0.45,
             ).model_copy(
@@ -86,7 +86,7 @@ class YFinanceHkBasicSnapshotClient:
 
 class YFinanceDailyOhlcvClient:
     def call(self, request: ToolRequest) -> ToolResult:
-        symbol = _input_str(request, "symbol", request.ticker).upper()
+        symbol = _input_str_any(request, ("symbol", "ticker"), request.ticker).upper()
         outputsize = _bounded_int(request.input.get("outputsize", 30), 1, 250)
         try:
             import importlib
@@ -118,25 +118,28 @@ class YFinanceDailyOhlcvClient:
                         "volume": _json_number(_row_value(row, "Volume")),
                     }
                 )
-            output = {
-                "provider": "yfinance",
-                "symbol": symbol,
-                "unofficial_source": True,
-                "fallback_for": "twelvedata.daily_ohlcv",
-                "interval": "1day",
-                "ohlcv": rows,
-            }
+            output = daily_ohlcv_output_with_snapshot(
+                {
+                    "provider": "yfinance",
+                    "symbol": symbol,
+                    "unofficial_source": True,
+                    "fallback_for": "twelvedata.daily_ohlcv",
+                    "interval": "1day",
+                    "ohlcv": rows,
+                },
+                tool_name=request.tool_name,
+            )
             result = ToolResult(
                 tool_name=request.tool_name,
                 status=ResultStatus.SUCCEEDED,
                 output=output,
-                output_summary="Daily OHLCV fallback was retrieved from yfinance.",
+                output_summary="已从 yfinance 检索日线 OHLCV 备用数据。",
                 raw={"row_count": len(rows), "unofficial_source": True},
             )
             evidence = result.to_evidence_ref(
                 source_type=EvidenceSourceType.MARKET_DATA,
                 source_id=f"yfinance:daily_ohlcv:{symbol}",
-                title=f"yfinance daily OHLCV fallback for {symbol}",
+                title=f"yfinance 日线 OHLCV 备用数据 - {symbol}",
                 citation_scope="yfinance_daily_ohlcv",
                 confidence=0.48,
             ).model_copy(
@@ -146,6 +149,7 @@ class YFinanceDailyOhlcvClient:
                         "symbol": symbol,
                         "unofficial_source": True,
                         "fallback_for": "twelvedata.daily_ohlcv",
+                        "market_evidence_snapshot": output.get("market_evidence_snapshot"),
                     }
                 }
             )

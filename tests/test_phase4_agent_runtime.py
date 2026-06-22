@@ -6,6 +6,7 @@ from doxagent.agents import (
     ModelGatewayAgentRunner,
     UnknownAgentError,
     default_agent_registry,
+    default_real_agent_runner,
 )
 from doxagent.blackboard import BlackboardService
 from doxagent.context import ContextBuilder
@@ -17,6 +18,7 @@ from doxagent.models import (
     DocumentType,
     ResultStatus,
 )
+from doxagent.settings import DoxAgentSettings
 from doxagent.tools import ToolRequest, default_tool_registry
 from tests.fixtures.phase1_contracts import (
     NOW,
@@ -95,6 +97,20 @@ def test_maf_adapter_accepts_explicit_runner_contract() -> None:
     assert result.status is ResultStatus.SUCCEEDED
     assert result.error is None
     assert result.payload["structured"] == {"summary": "bad schema"}
+
+
+def test_default_real_runner_applies_model_request_timeout_from_settings() -> None:
+    runner = default_real_agent_runner(
+        settings=DoxAgentSettings(
+            dashscope_api_key="test-key",
+            model_request_timeout_seconds=42.0,
+            react_tool_call_timeout_seconds=7.5,
+        )
+    )
+
+    assert runner.model_timeout_seconds == 42.0
+    assert runner.react_config.model_request_timeout_seconds == 42.0
+    assert runner.react_config.tool_call_timeout_seconds == 7.5
 
 
 def context_task(run_id: str) -> AgentTask:
@@ -176,6 +192,68 @@ def test_context_builder_hides_working_memory_without_scope() -> None:
     snapshot = ContextBuilder(service).build(task, run.run_id)
 
     assert snapshot.working_memory_summary == []
+
+
+def test_context_builder_compacts_agent_result_working_memory_payload() -> None:
+    service = BlackboardService()
+    run = service.start_run(TICKER, AgentName.SYSTEM)
+    service.add_working_memory_entry(
+        run.run_id,
+        author_agent=AgentName.O4_MARKET_TRACE,
+        content_type="agent_result",
+        payload={
+            "status": "succeeded",
+            "payload": {
+                "runtime": "react",
+                "structured": {
+                    "text": "x" * 5_000,
+                    "summary": "trace summary",
+                    "evidence_refs": [],
+                    "author_agent": AgentName.O4_MARKET_TRACE.value,
+                },
+                "text": "y" * 5_000,
+                "react_audit": {
+                    "tool_counts": {"twelvedata.daily_ohlcv": 1},
+                    "entries": [{"output": {"blob": "z" * 50_000}}],
+                    "compacted_summaries": ["summary"],
+                    "market_evidence_snapshot": {
+                        "daily_ohlcv": [
+                            {
+                                "kind": "daily_ohlcv_snapshot",
+                                "symbol": "NVDA",
+                                "bar_count": 60,
+                            }
+                        ]
+                    },
+                },
+                "model_audits": [{"request": "large"}],
+                "context_snapshot": {"large": "w" * 50_000},
+                "market_evidence_snapshot": {
+                    "daily_ohlcv": [
+                        {
+                            "kind": "daily_ohlcv_snapshot",
+                            "symbol": "NVDA",
+                            "bar_count": 60,
+                        }
+                    ]
+                },
+            },
+            "tool_calls": [],
+        },
+    )
+
+    snapshot = ContextBuilder(service).build(context_task(run.run_id), run.run_id)
+
+    payload = snapshot.working_memory_summary[0].payload
+    inner = payload["payload"]
+    assert "react_audit" not in inner
+    assert "context_snapshot" not in inner
+    assert "model_audits" not in inner
+    assert inner["react_audit_summary"]["tool_counts"]["twelvedata.daily_ohlcv"] == 1
+    assert inner["structured"]["summary"] == "trace summary"
+    assert len(inner["structured"]["text_preview"]) < 1_600
+    assert payload["market_evidence_snapshot"]["daily_ohlcv"][0]["symbol"] == "NVDA"
+    assert "z" * 100 not in str(payload)
 
 
 def test_tool_registry_allows_registered_tool_and_converts_to_evidence() -> None:

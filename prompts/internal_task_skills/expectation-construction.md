@@ -9,7 +9,8 @@ workflow_nodes = ["GenerateExpectationConstruction", "ResolveExpectationConstruc
 +++
 # O1 Expectation Construction
 
-Use `doxa_get_narrative_report` to retrieve the DoxAtlas narrative research for the ticker.
+Use `doxa_get_narrative_report` with `view="agent_provenance"` to retrieve the DoxAtlas narrative research for the ticker.
+Preserve the returned `run_id`, `narrative_code`, and `event_code` references for later A1 audit; do not invent or reuse DoxAgent internal event ids as DoxAtlas ids.
 
 This task constructs fewer than 4 core expectation shells. The DoxAtlas narrative report is the primary source. Document 1 may be used only as supporting context for fundamentals, macro, industry, or price background.
 

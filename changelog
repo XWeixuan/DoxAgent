@@ -1,5 +1,40 @@
 # changelog
 
+## 2026-06-21
+
+- Added deterministic daily OHLCV market-evidence snapshots to Twelve Data/yfinance results, ReAct scratchpad/final payloads, working memory, and global-research context so price/volume facts survive context compaction.
+- Hardened ReAct compaction for daily OHLCV outputs with tool-aware summaries and tightened price-reaction promotion so narrative-only evidence cannot support market reaction claims without structured market-data snapshots.
+- Reduced agent-visible working-memory payloads by summarizing prior ReAct/model/context audit data while preserving patch ids, tool usage, acceptance audit, structured summaries, and market-evidence snapshots.
+
+## 2026-06-19
+
+- Improved the Brief State Viewer's Document 2 expectation-unit display by rendering realized facts, key variables, and event monitoring direction as readable cards/lists while keeping evidence and raw JSON in collapsed details.
+- Split labeled realized-fact description strings such as `fact`, `when`, `why_it_matters`, and `pricing_status` into separate readable fields in the Brief State Viewer instead of showing them as one merged paragraph.
+- Added short Windows debug-viewer launchers under `scripts/` so the Brief State Viewer can be started with `scripts\debug-viewer.cmd 8765` or `.\scripts\debug-viewer.ps1 -Port 8765` while using repo-local uv cache/temp directories.
+- Made the debug-viewer launchers auto-select the next free port when the requested port is already occupied, preventing stale SSH tunnels or old viewer processes from masking the current local UI.
+
+## 2026-06-17
+
+- Recorded MU Blackboard eval loop 4/5 (`run_dfd3a7c3eb8f481680be892871c509f6`) as a diagnostic incomplete run: numeric sanity blockers were correctly raised, but the run stopped during `ResolveObjectionsAndDelegations` after a Postgres disconnect and did not reach finalization.
+- Added post-O1 numeric sanity revalidation so revised expectation patches are rescanned after objection resolution; same-id `numeric_sanity_*` objections are reopened when O1 keeps precise unsupported numbers under narrative-only, unverified, approximate, or uncertain labels.
+- Strengthened O1 resolver guidance and deterministic numeric sanity objection reasons to require source-appropriate evidence, removal of false precision, or non-numeric uncertainty for precise market/fundamental claims.
+- Added regression coverage for reopening a partially accepted numeric sanity objection when false precision remains after O1 revision, while preserving the existing source-appropriate market-data pass path.
+
+## 2026-06-14
+
+- Retested the MU Blackboard initialization follow-up optimization with a fresh real PostgreSQL-backed run (`run_a3f1618b088c4693875b87b735b4ea6f`), recorded hard-gate/rubric results, and identified remaining KnownEvents timestamp/flag quality gaps plus an O2 remote LangSmith trace visibility gap.
+- Tightened KnownEvents normalization so run-timestamp-like event times are replaced by event-text/date hints, common quarter/FQ/year/date patterns are parsed, and `has_price_reaction` / `is_known_old_news` are inferred from explicit market/date signals.
+- Cleaned ReAct realized-fact normalization so dict-shaped fact descriptions render as stable reviewable text instead of Python dict strings, with focused regression coverage for KnownEvents timestamp/flag inference and realized-fact description rendering.
+- Fixed a real-eval BuildGlobalResearch blocking failure by adding configurable model request timeouts (`DOXAGENT_MODEL_REQUEST_TIMEOUT_SECONDS`) to the production runner, ReAct step/compaction requests, and MAF single-shot calls; recorded the blocked `run_c5a1b185a08a4f7ea639388081e23fb2` attempt and timeout verification tests.
+
+## 2026-06-13
+
+- Hardened the Blackboard initialization real-eval loop with stale-agent checkpoint recovery, workflow exception audit entries, non-vacuous hard validators, node-aware tool-boundary validation, global-research fallback content, evidence hydration for nested document refs, and direct-document Blackboard patch conversion.
+- Localized eval-visible provider/runtime natural-language output to Chinese across DoxAtlas, SEC, Twelve Data, yfinance, Alpha Vantage, Tavily, FRED/Fed/BLS/BEA, Finnhub/FMP/Polymarket/AnySearch, tool registry errors, ReAct warnings, and direct document patch rationales while preserving tool names, tickers, schema keys, and raw source excerpts.
+- Improved real-run robustness with SEC upstream-unavailable partial results, ticker/symbol alias handling for market-data tools, large ReAct observation compaction, expectation shell/detail normalization, objection resolution hardening, O1/A1 tool-boundary fixes, and multi-object JSON extraction in the gateway.
+- Added run helpers and eval records for the MU Blackboard eval/debug loop, including hard-validator results, rubrics scoring, failure categories, optimization hypotheses, and retest records for `run_c3c4bab327ef49b8871fd59e57bfd593`, `run_acf56dd5e8a8490d83c0f85a207dfe18`, and `run_87d637922abe4672892bdf702d77e8bf`.
+- Implemented the follow-up MU eval optimization plan's first two items only: expectation promotion now escalates unresolved `price_reaction` fields with O4/OHLCV market-trace evidence context, and KnownEvents normalization now infers expectation linkage, event-date hints, and source-specific evidence before falling back to agent-output provenance.
+
 ## 2026-06-12
 
 - Hardened initialization quality contracts with structured MonitoringPolicy coverage gates, objection dedupe/resolution metadata, centralized required-output schema registration, node-specific tool allowlists with invented-tool evidence audit, A2 retrieval quality checks, LangSmith/business acceptance audit metadata, and prompt resource hygiene linting.
@@ -118,4 +153,41 @@
 - Added three local hard validators for Brief State review and eval export: evidence reference integrity, trajectory/tool-boundary compliance, and commit-log/state-mutation consistency.
 - Switched the Phase 17 real initialization smoke/eval case from ASTS to MU with Micron-specific memory semiconductor research inputs while keeping real test execution opt-in.
 - Updated the DashScope model configuration from `qwen3.6-flash` to `qwen3.7-plus` while keeping the provider and all other generation settings unchanged.
+- Added `DASHSCOPE_FALLBACK_API_KEY` support so the DashScope primary key can be rotated while preserving the previous key as a same-provider fallback with the existing model and generation settings.
+- Implemented P0 safe intra-node initialization parallelism: C1/C2/C3/O4 Global Research, per-shell O1 expectation details, and A1/C1/C3/O4 field reviews now fan out concurrently while Blackboard/checkpoint writes remain serialized and deterministic.
+- Added parallel agent isolation, per-shell expectation-detail idempotency/cache recovery, main-thread schema failure auditing for parallel jobs, and regression coverage for concurrency, ordered merges, and failed-shell resume behavior.
+- Filtered failed ReAct tool attempts out of successful AgentResult top-level `tool_calls` while retaining them in `react_audit`, and added ExpectationDetailResult text-array salvage for recoverable `realized_facts` / `key_variables` arrays with alias-aware fact, price-reaction, and variable normalization.
+- Compacted O1 `ResolveObjectionsAndDelegations` resolver context by omitting full GlobalResearch replay and replacing full-size expectation context with schema-compatible compact pending patches plus lightweight patch indexes, preserving accepted-objection revision support while reducing resolver input size.
+- Added task-aware ReAct output-contract guidance for field-review objection resolution so O1 resolver prompts request one decision per objection and avoid the normal expectation-construction instruction to generate 2-3 full patches unless a concrete accepted/partially accepted revision is required.
+- Persisted parallel workflow agent outcomes as each future completes during BuildGlobalResearch so completed C1/C2/C3/O4 results are cached before aggregate completion, improving stale-dispatch recovery after a sibling job or parent process blocks.
+- Increased pooled Postgres connection retry tolerance and made BuildGlobalResearch per-future checkpoint caching best-effort so transient pooler disconnects during auxiliary cache writes do not abort the whole workflow.
+- Added operation-level Postgres retry handling for safe Blackboard reads/replacements and checkpoint reads/saves, with idempotent checkpoint upserts, so mid-query pooler SSL EOFs do not prevent real eval runs from starting or persisting checkpoints.
+- Fixed ReAct parsing of Responses API payloads that wrap a JSON action inside `structured.text`, stopped accepting `is_complete=false` final payloads as successful results, and added a two-axis expectation-shell fallback for O1 construction recovery.
+- Added bounded ReAct tool-call timeout handling with daemon-thread execution and settings-backed configuration so a stuck provider/tool call is recorded as a retryable failed ToolResult instead of blocking the agent future indefinitely.
+- Added harness-level `asyncio.wait_for` enforcement around ReAct model and compaction requests so provider/SDK calls that ignore request timeout settings return retryable `model_request_timeout` errors instead of leaving workflow agent futures running.
+- Added workflow-level wall-clock timeout handling for parallel initialization agent jobs so a stuck C1/C2/C3/O4 worker is recorded as `parallel_agent_timeout` instead of blocking `BuildGlobalResearch` indefinitely.
+- Normalized KnownEvents real-agent outputs that use `event_date` and `event_text`, preventing stringified event dictionaries from entering stable event descriptions and preserving explicit no-price-reaction flags.
+- Batched O1 objection resolution in `ResolveObjectionsAndDelegations` so high-review-pressure runs resolve small groups of objections instead of sending all unresolved blockers in one timeout-prone model request.
+- Added workflow-side objection evidence fallback so review objections that omit local evidence refs inherit parent AgentResult/tool evidence before entering Blackboard validation.
+- Wrapped Postgres-backed Blackboard mutations in operation-level retry and made Working Memory, commit, and delegation appends idempotent across transient pooler/SSL EOF retries.
+- Tightened KnownEvents normalization for generic ISO event times and weak expectation links, preserving quarter/month hints and routing risk/oversupply events to the risk expectation when evidence text clearly supports the override.
+- Added a Postgres migration to scope Blackboard objection primary keys by run_id so model-generated objection IDs can repeat across real eval runs without blocking resume/replay.
+- Added expectation-detail quality gates for non-empty facts, variables, sourced price reactions, and concrete monitoring events, and disabled O1 tools during field-review objection resolution to reduce resolver timeouts.
+- Tightened the expectation-detail prompt and ReAct contract so event monitoring outputs use concrete string triggers instead of generic placeholders or stringified event objects.
+- Hardened ReAct expectation-detail normalization so prompt-echo responses are retried, summary-only detail payloads fail schema validation, and construction-only global-research fallback no longer creates empty realized-fact detail patches.
+- Added one bounded same-node retry for retryable parallel expectation-detail agent failures so transient model timeouts can recover without discarding successfully cached sibling shells.
+- Generalized the bounded retry to all parallel workflow agent jobs, covering BuildGlobalResearch fan-out timeouts as well as expectation-detail retries.
+- Added one bounded retry and explicit failure/retry audit payloads for retryable single-agent workflow calls, covering ResolveObjectionsAndDelegations O1 timeout recovery without relaxing validators.
+- Batched O1 field-review objection resolution into small duplicate-aware groups and exposed objection taxonomy/dedupe metadata so repeated blockers can be closed consistently with fewer timeout-prone resolver calls.
+- Added a deterministic numeric/source-class sanity review after expectation field review so precise market and fundamental claims backed only by narrative evidence become blocking objections before promotion.
 - Added Docker deployment support for DoxAgent with a Debug Viewer service bound to `127.0.0.1:8765`, isolated compose project naming, cache/tmp volumes, and a healthcheck suitable for the Tencent Cloud host; operational SSH/deployment notes live in `docs/server-ssh-deployment.md`.
+- Added `docs/langsmith-initialization-loop-audit-2026-06-19.md` with a detailed Chinese audit of 10 LangSmith initialization runs, covering loop coverage, tool failure concentration, agent/node blockers, and follow-up recommendations.
+- Added a Document 2 expectation-unit smoke launcher that can clone a Document 1-only Global Research run into a new Postgres-visible execution run, then resume the unchanged initialization workflow from that state for focused expectation-unit debugging.
+- Refocused Document 1 Global Research prompts and task context toward recent developments and market reactions while preserving longer-cycle company, macro, industry, and valuation evidence as explanatory context instead of adding hard date-window validation.
+- Updated ReAct tool-call throttling to allow repeated same-tool calls within a single loop while blocking the fourth consecutive same-tool loop in one task node, hardened Finnhub trade-stream error messages, and added FRED series allowlisting with per-series isolation for partial retry behavior.
+- Added `docs/doxatlas-tools-agent-contract-remediation-plan-2026-06-20.md` with a server-backed DoxAtlas tool contract audit and remediation plan for agent-facing provenance, ID resolution, typed errors, schema visibility, and large-payload reduction.
+- Added Chinese Document 2 eval-loop specifications under `eval/document2_eval/`, covering focused contract scope, hard gates, rubrics, and append-only record templates for expectation-unit baseline/retest cycles.
+- Revised `docs/doxatlas-tools-agent-contract-remediation-plan-2026-06-20.md` with scoped short-id mapping, event-level proposition querying, level-aware ignored propositions, time-range analysis lookup, and two-step media/social detail endpoints.
+- Refined the DoxAtlas tool remediation plan to use compact parent-scope short-code output, simpler ticker-only analysis task discovery, preserved narrative semantic blocks, narrative-flow rank summaries, and non-authoritative schema sketches.
+- Updated DoxAgent's DoxAtlas integration for the new short-code tool schema, adding query/detail endpoints, scoped input validation, compact contract briefs in ReAct prompts, and revised A1/O1 tool permissions.
+- Refined the Chinese Document 2 eval-loop contract to center quality improvement, require cloud-server SSH/Docker smoke execution, and add hard gates for context management and multi-loop memory continuity.

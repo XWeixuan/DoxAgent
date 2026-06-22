@@ -1,0 +1,305 @@
+schema_version: 1
+contract_name: document2_expectation_unit_rubrics
+score_scale:
+  min: 1
+  max: 5
+  meaning: >
+    1 表示不可用或会误导后续监控，3 表示可作为最小可用诊断样本但仍有明显 caveats，
+    5 表示强、可审计、可稳定化，并足以支撑后续 KnownEvents 与 Monitoring 文档。
+judge_inputs:
+  - Document 2 execution run 的 Brief State JSON。
+  - 同一 run_id 的 LangSmith trace，包括 agent loops、tool calls 和 final AgentResult。
+  - source Document 1 run 的 Brief State 摘要。
+  - 固定版本的 document2_hard_gates.yaml 和 document2_rubrics.yaml。
+scoring_rules:
+  - 硬门槛失败时仍可打诊断分，但不能接受优化成功声明。
+  - 不能从最终 Brief State 文本单独给 4 或 5 分，必须有 LangSmith 过程证据支持。
+  - 不能把 schema 合法性当作内容质量。
+  - baseline 和 retest 之间不能修改评分标准。
+  - pending patch 与 stable expectation_unit 必须分开计分和描述。
+
+rubrics:
+  - id: D2-R01
+    name: Document 1 handoff 适配度
+    evaluates: >
+      Document 2 是否正确利用 stable Global Research，而不是重复 Document 1 或脱离上游证据。
+    judge_must_check:
+      - source run 是否为 Document 1-only。
+      - O1 是否引用 fundamental、macro、industry、market trace 和 narrative 上游线索。
+      - expectation shell 是否从 Document 1 形成投资假设，而不是复制段落。
+      - 上游 unknowns 是否进入 Document 2 的不确定性或监控变量。
+    score_1: >
+      Document 2 与 source Global Research 脱节，或 source 状态无效。
+    score_2: >
+      只机械复述 Document 1，缺少预期构造。
+    score_3: >
+      基本利用 Document 1，但上游冲突、unknowns 或市场反应承接不足。
+    score_4: >
+      能把 Document 1 的不同研究视角转成清晰预期假设。
+    score_5: >
+      高质量承接上游事实、冲突、价格反应和 unknowns，形成强 Document 2 输入。
+
+  - id: D2-R02
+    name: Expectation thesis 质量
+    evaluates: >
+      预期单元是否是可投资假设，而不是宽泛主题列表。
+    judge_must_check:
+      - expectation_name、direction、why_it_matters、market_view。
+      - 每个 unit 是否有明确因果链和差异化驱动。
+      - bullish、bearish、neutral 或 risk 方向是否被证据和逻辑支撑。
+      - O1 construction/detail loops 是否体现综合，而不是复制 narrative。
+    score_1: >
+      预期缺失、重复、方向混乱或与 ticker 无关。
+    score_2: >
+      能识别主题，但假设宽泛、重叠或方向感弱。
+    score_3: >
+      有最小可用假设和部分因果逻辑，但深度或优先级不足。
+    score_4: >
+      假设差异化、方向明确，并与证据和市场机制相连。
+    score_5: >
+      预期单元简洁高信号，具有强因果链、明确不确定性和可监控 hook。
+
+  - id: D2-R03
+    name: Realized facts 与价格反应
+    evaluates: >
+      已兑现事实是否具体、带时间、带来源，并解释市场如何吸收这些事实。
+    judge_must_check:
+      - 每个 expectation 的 realized_facts 数量和具体性。
+      - price_reaction.price_change、price_pattern、interpretation 的质量。
+      - fact 和 price reaction 是否都有 evidence refs。
+      - 是否避免把未验证叙事事实当成已兑现事实。
+    score_1: >
+      facts 缺失、空数组、泛化、无来源或 materially wrong。
+    score_2: >
+      facts 存在但日期、数值、事件或价格反应很薄。
+    score_3: >
+      facts 大体具体且有来源，价格反应有基础解释。
+    score_4: >
+      facts 选择合理，能解释市场已学习了什么。
+    score_5: >
+      facts 形成清晰证据链，解释已兑现历史、市场反应和剩余预期缺口。
+
+  - id: D2-R04
+    name: Price-in 与 not-priced-in 推理
+    evaluates: >
+      Blackboard 是否区分市场已知内容、旧新闻、分歧解释和仍未定价变量。
+    judge_must_check:
+      - realized_facts_summary 和 price_reaction interpretation。
+      - market_view 是否说明 priced、partially priced、disputed、not priced 或 unresolved。
+      - 旧新闻是否被限定为背景，而不是新催化剂。
+      - O4 market trace 或字段复核是否支持价格反应。
+    score_1: >
+      把旧事实当新催化剂，或缺少价格反应分析。
+    score_2: >
+      表面提到市场反应，但没有区分 known facts 与 open variables。
+    score_3: >
+      主要预期有基础 price-in 推理，但细节或事实覆盖不均。
+    score_4: >
+      大多数预期能清楚区分已定价事实、分歧解释和开放催化剂。
+    score_5: >
+      price-in 分析成熟，包含时间窗口、市场反应、不确定性和监控含义。
+
+  - id: D2-R05
+    name: Key variables 与可监控性
+    evaluates: >
+      每个预期是否被拆成可以后续观察和更新的关键变量。
+    judge_must_check:
+      - key_variables 的 name、current_status、certainty、why_it_matters 和 evidence_refs。
+      - variables 是否对应 expectation 的因果链。
+      - variables 是否能驱动后续 MonitoringConfig 和 policy rules。
+      - 数据不足时是否明确 unknowns。
+    score_1: >
+      variables 缺失、为空、泛化或无法监控。
+    score_2: >
+      variables 存在但与 thesis 连接弱，或缺少可观察状态。
+    score_3: >
+      variables 基本可用，但具体性、证据或监控相关性不均。
+    score_4: >
+      variables 具体、有来源，并大多可转成监控项。
+    score_5: >
+      variables 构成高质量监控地图，包含状态、置信度、催化剂、风险和更新含义。
+
+  - id: D2-R06
+    name: Event monitoring direction 具体性
+    evaluates: >
+      预期单元是否给出具体正负事件、已知 upcoming events 和可执行监控线索。
+    judge_must_check:
+      - known_upcoming_events、positive_events、negative_events 是否具体。
+      - 是否避免 placeholder 或空结构。
+      - 正负方向是否与 thesis 一致，没有方向倒置。
+      - event monitoring 是否可被后续 monitoring_config 消费。
+    score_1: >
+      event_monitoring_direction 缺失、为空或只有占位符。
+    score_2: >
+      有事件列表但泛化、方向混乱或难以自动监控。
+    score_3: >
+      事件方向基本可用，但触发条件和解释仍偏粗。
+    score_4: >
+      事件具体，正负解释清晰，并能映射到关键变量。
+    score_5: >
+      事件监控方向完整、可路由、可行动，并自然支撑后置监控文档。
+
+  - id: D2-R07
+    name: Evidence discipline 与 source traceability
+    evaluates: >
+      关键 claim 是否由合适粒度的 source refs 支撑，并能追溯到真实工具调用。
+    judge_must_check:
+      - facts、price reactions、market_view、variables 和 objections 的 hydrated evidence_refs。
+      - source_id、source_type、title、summary、confidence、citation_scope。
+      - LangSmith tool calls 是否产生或支撑这些 evidence refs。
+      - 是否存在 fabricated、stale、mismatched 或 narrative-only 过度支撑。
+    score_1: >
+      evidence 缺失、虚构或与 claim 不相关。
+    score_2: >
+      evidence 存在但稀薄、粒度过粗或难以追到工具调用。
+    score_3: >
+      主要 claim 大多有来源，但部分重要字段 undersourced。
+    score_4: >
+      证据使用基本匹配 claim scope，source 和 confidence 一致。
+    score_5: >
+      证据全面、粒度合适、可水合、可追工具，并清楚区分事实与推断。
+
+  - id: D2-R08
+    name: 字段复核压力
+    evaluates: >
+      A1/C1/C3/O4 是否按角色对预期字段施加有效复核压力。
+    judge_must_check:
+      - A1 是否检查 DoxAtlas provenance 和 ignored/contradictory evidence。
+      - C1 是否检查基本面数字、口径、财报和估值支撑。
+      - C3 是否检查行业状态、竞争、capex 和供应链事实。
+      - O4 是否检查价格反应、相对表现、成交量和事件窗口。
+      - review findings 是否有 field_path、rationale、severity 和 evidence。
+    score_1: >
+      review 缺失或角色明显误用。
+    score_2: >
+      review 有运行但泛化，未抓住关键字段风险。
+    score_3: >
+      review 基本覆盖主要风险，但深度、证据或 blocker 质量不均。
+    score_4: >
+      review 能明确指出关键事实、证据和价格反应问题。
+    score_5: >
+      review 压力强、角色清晰、证据具体，并显著提升最终 expectation quality。
+
+  - id: D2-R09
+    name: Objection 与 delegation 处理质量
+    evaluates: >
+      objections 和 delegations 是否改善 Document 2，而不是成为噪音或死锁。
+    judge_must_check:
+      - objection severity、target_path、taxonomy、dedupe_hash、rationale 和 evidence。
+      - resolver 是否逐项 accept、partially_accept、reject 或 residualize。
+      - revised patches 是否实际替换 pending patches。
+      - A2 delegated retrieval 结果是否被引用或标记 inconclusive。
+      - 重复 objections 是否被合并或一致处理。
+    score_1: >
+      objections/delegations 被忽略、静默丢弃或造成不可诊断阻塞。
+    score_2: >
+      生命周期机械存在，但没有明显改善输出。
+    score_3: >
+      基本处理有效，但 resolution note、dedupe 或 patch 落地不均。
+    score_4: >
+      objections 和 delegations 明显改善 patches，且可追踪。
+    score_5: >
+      review loop 产生精准、证据支持的修订，resolution 干净且噪音少。
+
+  - id: D2-R10
+    name: Promotion readiness
+    evaluates: >
+      pending patches 是否具备通过 `can_promote_target` 并成为 stable expectation_unit 的条件。
+    judge_must_check:
+      - pending patches 是否已关闭 blockers。
+      - Commit Log 是否能解释 stable expectation_unit。
+      - promoted documents 是否至少两个且字段完整。
+      - 是否存在重复 promotion、冲突 expectation_id 或残留 pending patch。
+      - 若未 promotion，是否准确说明 blocker。
+    score_1: >
+      无 stable expectations，且 blocker 原因不清。
+    score_2: >
+      有 pending patches，但明显不具备 promotion 条件。
+    score_3: >
+      patches 接近可 promotion，但仍有部分 blocker 或 traceability gap。
+    score_4: >
+      stable expectations 形成，字段和 commit trace 基本可靠。
+    score_5: >
+      promotion 干净、可复原、无重复或隐性 blocker，稳定文档质量高。
+
+  - id: D2-R11
+    name: Tool-use 合规与效率
+    evaluates: >
+      Document 2 各 agent 是否使用合适工具，避免越权、虚构和低价值重复调用。
+    judge_must_check:
+      - agent-specific tool allowlists。
+      - LangSmith tool calls 和 final tool summaries。
+      - 被引用 source 是否真实检索。
+      - repeated calls 是否带来新证据。
+      - failed、partial 或 unusable tool results 是否被正确降级。
+    score_1: >
+      工具缺失、越权、虚构或失败后仍被当作证据。
+    score_2: >
+      工具使用存在但目标不准、重复或与最终 claim 连接弱。
+    score_3: >
+      工具使用基本够用，但有低效或降级记录不足。
+    score_4: >
+      工具调用大多角色合适，且反映到 evidence 和 objections。
+    score_5: >
+      工具轨迹精炼、高信号，并清楚把外部数据转成可审计预期字段。
+
+  - id: D2-R12
+    name: Uncertainty 与 inconclusive evidence 纪律
+    evaluates: >
+      Document 2 是否诚实标注不确定性，而不是把弱证据写成确定事实。
+    judge_must_check:
+      - expectation unknowns 和 variable certainty。
+      - A2 claim_verdict、confidence 和 inconclusive 结果。
+      - O1 是否根据不确定证据调整 market_view 或 monitoring。
+      - unsupported projections 是否标注为 assumption。
+    score_1: >
+      unsupported 或 inconclusive claim 被写成事实。
+    score_2: >
+      提到 uncertainty，但没有连接到证据、变量或监控动作。
+    score_3: >
+      主要 unknowns 可见，但置信度和影响解释不均。
+    score_4: >
+      uncertainty 基本清晰，并影响 expectation wording 和 monitoring。
+    score_5: >
+      干净区分事实、推断、不确定性和后续证据需求。
+
+  - id: D2-R13
+    name: Traceability 与 reproducibility
+    evaluates: >
+      后续 Codex 是否能复原 Document 2 eval 发生了什么、为什么失败或改善。
+    judge_must_check:
+      - source run、execution run、Brief State JSON 和 LangSmith 查询是否记录。
+      - run_id 在 DB、Brief State、LangSmith 和 records 中是否一致。
+      - Working Memory、Commit Log、objections、delegations 是否覆盖关键状态变化。
+      - parse/schema/write/tool/timeout 失败是否可见。
+    score_1: >
+      本轮无法复原或无法链接 trace。
+    score_2: >
+      有部分 artifacts，但关键链接或失败原因缺失。
+    score_3: >
+      可人工复原，但仍有少量缺口。
+    score_4: >
+      artifacts 链接良好，足以比较 baseline 和 retest。
+    score_5: >
+      baseline、trace、Brief State、scores、hypothesis、changes 和 retest 完全连接，可审计。
+
+  - id: D2-R14
+    name: Optimization readiness
+    evaluates: >
+      本轮评分是否能转化为具体 prompt、schema、workflow、validator 或 tool 调整假设。
+    judge_must_check:
+      - failure categories 是否具体。
+      - 每个低分是否有证据和 root cause。
+      - proposed change 是否可测试，且不需要修改 rubrics。
+      - retest 是否能归因 improvement 或 regression。
+    score_1: >
+      问题描述模糊，不能指导安全修改。
+    score_2: >
+      有部分问题，但 hypothesis 太宽或不可测。
+    score_3: >
+      多数问题有合理 hypothesis，但优先级不清。
+    score_4: >
+      问题分类清楚，修改计划具体且可复测。
+    score_5: >
+      eval 输出可直接支持 baseline、commit、modify、retest、compare、accept/reject 循环。
+

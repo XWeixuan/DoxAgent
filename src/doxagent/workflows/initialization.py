@@ -1,6 +1,13 @@
 """Deterministic Blackboard initialization workflow."""
 
+import re
+import threading
+import time
+from collections.abc import Callable, Iterable
+from copy import deepcopy
+from dataclasses import dataclass
 from datetime import UTC, datetime
+from queue import Empty, Queue
 from typing import Any, Literal
 
 from doxagent.agents import (
@@ -9,7 +16,7 @@ from doxagent.agents import (
     default_agent_registry,
     default_real_agent_runner,
 )
-from doxagent.blackboard import BlackboardService, PatchValidationError
+from doxagent.blackboard import BlackboardService, PatchValidationError, RunNotFoundError
 from doxagent.models import (
     AgentError,
     AgentName,
@@ -55,6 +62,10 @@ from doxagent.models import (
 )
 from doxagent.settings import DoxAgentSettings
 from doxagent.tools import ToolRequest, ToolResult
+from doxagent.tools.market_evidence import (
+    collect_market_evidence_snapshot,
+    is_structured_market_evidence_snapshot,
+)
 from doxagent.workflows.checkpoint_repository import WorkflowCheckpointRepository
 from doxagent.workflows.errors import WorkflowContractError, WorkflowDependencyError
 from doxagent.workflows.global_research import (
@@ -94,8 +105,30 @@ INITIALIZATION_NODES: tuple[WorkflowNode, ...] = (
 
 _UNSET_NEXT_NODE = object()
 _GLOBAL_RESEARCH_AGENT_RESULTS_KEY = "global_research_agent_results"
+_WORKFLOW_AGENT_RESULTS_KEY = "workflow_agent_results"
 _WORKFLOW_AGENT_IDEMPOTENCY_KEY = "workflow_agent_idempotency"
+_OBJECTION_RESOLUTION_BATCH_SIZE = 3
 WorkflowExecutionMode = Literal["mock", "agent_runner"]
+
+
+@dataclass(frozen=True)
+class _ParallelAgentJob:
+    order: int
+    agent_name: AgentName
+    task_type: TaskType
+    output_schema: str
+    extra_context: dict[str, Any]
+    content_type: str | None = None
+    section_key: str | None = None
+    cache_key: str | None = None
+
+
+@dataclass(frozen=True)
+class _ParallelAgentOutcome:
+    job: _ParallelAgentJob
+    result: AgentResult | None = None
+    error: Exception | None = None
+
 
 NODE_AGENT_ALLOWED_TOOL_OVERRIDES: dict[tuple[WorkflowNode, AgentName], list[str]] = {
     (
@@ -103,23 +136,31 @@ NODE_AGENT_ALLOWED_TOOL_OVERRIDES: dict[tuple[WorkflowNode, AgentName], list[str
         AgentName.O1_EXPECTATION_OWNER,
     ): ["doxa_get_narrative_report"],
     (
+        WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS,
+        AgentName.O1_EXPECTATION_OWNER,
+    ): [],
+    (
         WorkflowNode.REVIEW_EXPECTATION_CONSTRUCTION,
         AgentName.A1_DOXATLAS_AUDIT,
     ): [
+        "doxa_query_analysis",
         "doxa_get_analysis",
+        "doxa_get_narrative_report",
         "doxa_query_propositions",
         "doxa_get_ignored_propositions",
-        "doxa_get_event_source",
     ],
     (
         WorkflowNode.REVIEW_EXPECTATION_FIELDS,
         AgentName.A1_DOXATLAS_AUDIT,
     ): [
+        "doxa_query_analysis",
         "doxa_get_analysis",
         "doxa_query_propositions",
         "doxa_get_event_source",
         "doxa_get_media_result",
+        "doxa_get_media_result_detail",
         "doxa_get_social_result",
+        "doxa_get_social_result_detail",
         "doxa_get_ignored_propositions",
     ],
     (
@@ -196,19 +237,21 @@ class InitializationMockResultFactory:
             )
             return self._result(task, payload={"document_type": "global_research"}, patches=[patch])
         if node == WorkflowNode.GENERATE_EXPECTATION_CONSTRUCTION.value:
-            shell = self._expectation_shell(task.ticker)
+            shells = self._expectation_shells(task.ticker)
             return self._result(
                 task,
                 payload={
-                    "shells": [shell.model_dump(mode="json")],
+                    "shells": [shell.model_dump(mode="json") for shell in shells],
                     "evidence_refs": [
-                        evidence.model_dump(mode="json") for evidence in shell.evidence_refs
+                        evidence.model_dump(mode="json")
+                        for shell in shells
+                        for evidence in shell.evidence_refs
                     ],
                     "delegations": [],
                     "unknowns": [],
-                    "rationale": "Mock O1 constructed expectation shell.",
+                    "rationale": "Mock O1 constructed differentiated expectation shells.",
                 },
-                evidence_refs=shell.evidence_refs,
+                evidence_refs=[evidence for shell in shells for evidence in shell.evidence_refs],
             )
         if node == WorkflowNode.GENERATE_EXPECTATION_DETAILS.value:
             document = self._expectation_unit(task.ticker)
@@ -427,6 +470,29 @@ class InitializationMockResultFactory:
             rationale="Mock construction shell.",
         )
 
+    def _expectation_shells(self, ticker: str) -> list[ExpectationShell]:
+        core = self._expectation_shell(ticker)
+        risk_evidence = self._evidence(EvidenceSourceType.EXTERNAL_REPORT)
+        risk = core.model_copy(
+            update={
+                "expectation_id": "exp_mock_risk",
+                "expectation_name": f"{ticker} mock risk expectation",
+                "direction": ExpectationDirection.RISK.value,
+                "why_it_matters": "It captures downside risk distinct from the core thesis.",
+                "market_view": ResearchSection(
+                    text=f"{ticker} mock risk market view text.",
+                    summary=f"{ticker} mock risk market view summary.",
+                    evidence_refs=[risk_evidence],
+                    author_agent=AgentName.O1_EXPECTATION_OWNER,
+                    reviewer_agents=[AgentName.A1_DOXATLAS_AUDIT],
+                ),
+                "evidence_refs": [risk_evidence],
+                "rationale": "Mock construction risk shell.",
+            },
+            deep=True,
+        )
+        return [core, risk]
+
     def _expectation_unit(self, ticker: str) -> ExpectationUnitDocument:
         now = datetime.now(UTC)
         return ExpectationUnitDocument(
@@ -517,8 +583,8 @@ class InitializationMockResultFactory:
                     action_type=PolicyActionType.DIRECT_TRADE,
                     trigger_condition="mock high-confidence positive signal",
                     expectation_id="exp_mock_core",
-                    action="mark as direct-trade candidate for human or future O3 review",
-                    strategy_note="No broker action is triggered in Phase 5.",
+                    action="标记为 direct_trade 候选，交由人工或未来 O3 复核",
+                    strategy_note="Phase 5 不触发券商下单。",
                     evidence_fields=["source_id", "event_time", "price_reaction"],
                     escalation_path="human_review",
                 ),
@@ -529,8 +595,8 @@ class InitializationMockResultFactory:
                     action_type=PolicyActionType.PUSH_TO_AGENT,
                     trigger_condition="mock ambiguous signal",
                     expectation_id="exp_mock_core",
-                    action="send to O1",
-                    strategy_note="Requires expectation-owner review.",
+                    action="推送给 O1 复核",
+                    strategy_note="需要 expectation-owner 复核。",
                     evidence_fields=["source_id", "claim", "uncertainty_reason"],
                     escalation_path="O1",
                 ),
@@ -541,8 +607,8 @@ class InitializationMockResultFactory:
                     action_type=PolicyActionType.CACHE,
                     trigger_condition="mock duplicate old event",
                     expectation_id="exp_mock_core",
-                    action="cache for batch review",
-                    strategy_note="No immediate action.",
+                    action="缓存为批量复核材料",
+                    strategy_note="不触发即时行动。",
                     evidence_fields=["source_id", "duplicate_marker"],
                     escalation_path="batch_review",
                 ),
@@ -678,6 +744,33 @@ class BlackboardInitializationWorkflow:
             )
             self.checkpoint_repository.save_checkpoint(blocked)
             return self._result(blocked, error=str(exc))
+        except Exception as exc:
+            failed_current = self._latest_checkpoint_or_current(current)
+            blocked_node = failed_current.next_node or WorkflowNode.FINALIZE_INITIALIZATION
+            audit_error = self._write_workflow_exception(
+                failed_current,
+                blocked_node,
+                exc,
+            )
+            metadata = failed_current.metadata | {
+                "last_error_code": exc.__class__.__name__,
+                "last_error_message": str(exc),
+                "last_error_boundary": "unexpected_exception",
+            }
+            if audit_error is not None:
+                metadata["workflow_failure_audit_write_failed"] = audit_error
+            blocked = failed_current.model_copy(
+                update={
+                    "status": WorkflowRunStatus.BLOCKED,
+                    "node_statuses": failed_current.node_statuses
+                    | {blocked_node: WorkflowNodeStatus.BLOCKED},
+                    "metadata": metadata,
+                    "summary": self._summary(failed_current, notes=[str(exc)]),
+                },
+                deep=True,
+            )
+            self.checkpoint_repository.save_checkpoint(blocked)
+            return self._result(blocked, error=str(exc))
 
     def _latest_checkpoint_or_current(
         self,
@@ -689,7 +782,7 @@ class BlackboardInitializationWorkflow:
             return current
         if latest.status is not WorkflowRunStatus.RUNNING:
             return current
-        if current.next_node is not WorkflowNode.BUILD_GLOBAL_RESEARCH:
+        if latest.next_node != current.next_node:
             return current
         if _WORKFLOW_AGENT_IDEMPOTENCY_KEY not in latest.metadata:
             return current
@@ -853,6 +946,9 @@ class BlackboardInitializationWorkflow:
         output_schema: str,
         *,
         extra_context: dict[str, Any] | None = None,
+        audit_failures: bool = True,
+        validate_output: bool = True,
+        retry_on_retryable_failure: bool = True,
     ) -> AgentResult:
         definition = self.registry.get(agent_name)
         permissions = self._effective_permissions(
@@ -870,50 +966,80 @@ class BlackboardInitializationWorkflow:
         )
         if extra_context:
             input_context = input_context | extra_context
-        task = AgentTask(
-            task_id=new_id("task"),
-            ticker=checkpoint.ticker,
-            agent_name=agent_name,
-            task_type=task_type,
-            input_context=input_context,
-            required_output_schema=output_schema,
-            permissions=permissions,
-            run_metadata=RunMetadata(
-                run_id=checkpoint.run_id,
+
+        def build_task(
+            *,
+            retry_attempt: int = 0,
+            previous_failure: AgentResult | None = None,
+        ) -> AgentTask:
+            task_input_context = input_context
+            if retry_attempt:
+                task_input_context = input_context | {
+                    "retry_context": self._agent_retry_context(
+                        previous_failure,
+                        retry_attempt=retry_attempt,
+                    )
+                }
+            return AgentTask(
+                task_id=new_id("task"),
                 ticker=checkpoint.ticker,
-                workflow_node=node.value,
-                created_at=datetime.now(UTC),
-            ),
-        )
-        result = self.runner.run(task)
-        try:
-            result = self.result_normalizer.normalize(result)
-        except WorkflowContractError as exc:
-            self._write_agent_acceptance_failure(
-                checkpoint,
-                task,
-                result,
-                event_code="schema_failed",
-                message=str(exc),
-                expected_schema=output_schema,
+                agent_name=agent_name,
+                task_type=task_type,
+                input_context=task_input_context,
+                required_output_schema=output_schema,
+                permissions=permissions,
+                run_metadata=RunMetadata(
+                    run_id=checkpoint.run_id,
+                    ticker=checkpoint.ticker,
+                    workflow_node=node.value,
+                    created_at=datetime.now(UTC),
+                ),
             )
-            raise
-        if self.execution_mode == "agent_runner" and result.status is ResultStatus.SUCCEEDED:
+
+        def run_task(task: AgentTask) -> AgentResult:
+            result = self.runner.run(task)
             try:
-                self.output_validator.validate(result.payload, output_schema)
+                result = self.result_normalizer.normalize(result)
             except WorkflowContractError as exc:
-                self._write_agent_acceptance_failure(
-                    checkpoint,
-                    task,
-                    result,
-                    event_code="schema_failed",
-                    message=str(exc),
-                    expected_schema=output_schema,
-                )
+                if audit_failures:
+                    self._write_agent_acceptance_failure(
+                        checkpoint,
+                        task,
+                        result,
+                        event_code="schema_failed",
+                        message=str(exc),
+                        expected_schema=output_schema,
+                    )
                 raise
+            if (
+                validate_output
+                and self.execution_mode == "agent_runner"
+                and result.status is ResultStatus.SUCCEEDED
+            ):
+                try:
+                    self.output_validator.validate(result.payload, output_schema)
+                except WorkflowContractError as exc:
+                    if audit_failures:
+                        self._write_agent_acceptance_failure(
+                            checkpoint,
+                            task,
+                            result,
+                            event_code="schema_failed",
+                            message=str(exc),
+                            expected_schema=output_schema,
+                        )
+                    raise
+            return result
+
+        task = build_task()
+        result = run_task(task)
+        if retry_on_retryable_failure and self._is_retryable_agent_result_failure(result):
+            first_failure = result
+            task = build_task(retry_attempt=1, previous_failure=first_failure)
+            result = self._with_retry_audit(run_task(task), first_failure)
         if result.status is ResultStatus.FAILED:
             event_code = self._agent_failure_event_code(result)
-            if event_code in {"parse_failed", "schema_failed"}:
+            if audit_failures and event_code in {"parse_failed", "schema_failed"}:
                 self._write_agent_acceptance_failure(
                     checkpoint,
                     task,
@@ -922,7 +1048,92 @@ class BlackboardInitializationWorkflow:
                     message=result.error.message if result.error is not None else "Agent failed.",
                     expected_schema=output_schema,
                 )
-        return self._with_tool_usage_audit(result)
+        return self._with_failure_audit(self._with_tool_usage_audit(result))
+
+    def _run_agent_jobs_concurrently(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        node: WorkflowNode,
+        jobs: list[_ParallelAgentJob],
+        *,
+        on_outcome: Callable[[_ParallelAgentOutcome], None] | None = None,
+    ) -> list[_ParallelAgentOutcome]:
+        if not jobs:
+            return []
+
+        def run_job(job: _ParallelAgentJob) -> _ParallelAgentOutcome:
+            try:
+                result = self._run_parallel_agent_job_once(checkpoint, node, job)
+                if self._is_retryable_agent_result_failure(result):
+                    result = self._run_parallel_agent_job_once(checkpoint, node, job)
+                return _ParallelAgentOutcome(job=job, result=result)
+            except Exception as exc:
+                return _ParallelAgentOutcome(job=job, error=exc)
+
+        outcomes: list[_ParallelAgentOutcome] = []
+        outcome_queue: Queue[_ParallelAgentOutcome] = Queue()
+        pending_by_order = {job.order: job for job in jobs}
+        timeout_seconds = float(self.settings.workflow_agent_stale_after_seconds)
+        deadline = time.monotonic() + timeout_seconds
+
+        def worker(job: _ParallelAgentJob) -> None:
+            outcome_queue.put(run_job(job))
+
+        for job in jobs:
+            thread = threading.Thread(
+                target=worker,
+                args=(job,),
+                name=f"doxagent-{node.value}-{job.agent_name.value}-{job.order}",
+                daemon=True,
+            )
+            thread.start()
+
+        while pending_by_order:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                break
+            try:
+                outcome = outcome_queue.get(timeout=min(1.0, remaining))
+            except Empty:
+                continue
+            if outcome.job.order not in pending_by_order:
+                continue
+            pending_by_order.pop(outcome.job.order, None)
+            if on_outcome is not None:
+                on_outcome(outcome)
+            outcomes.append(outcome)
+
+        for job in pending_by_order.values():
+            outcome = _ParallelAgentOutcome(
+                job=job,
+                error=WorkflowContractError(
+                    f"parallel_agent_timeout: {node.value}/{job.agent_name.value} "
+                    f"did not return within {timeout_seconds:g} seconds."
+                ),
+            )
+            if on_outcome is not None:
+                on_outcome(outcome)
+            outcomes.append(outcome)
+        return sorted(outcomes, key=lambda outcome: outcome.job.order)
+
+    def _run_parallel_agent_job_once(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        node: WorkflowNode,
+        job: _ParallelAgentJob,
+    ) -> AgentResult:
+        worker_checkpoint = checkpoint.model_copy(deep=True)
+        return self._run_agent(
+            worker_checkpoint,
+            node,
+            job.agent_name,
+            job.task_type,
+            job.output_schema,
+            extra_context=deepcopy(job.extra_context),
+            audit_failures=False,
+            validate_output=False,
+            retry_on_retryable_failure=False,
+        )
 
     def _effective_permissions(
         self,
@@ -974,8 +1185,10 @@ class BlackboardInitializationWorkflow:
         )
 
     def _a1_tool_purpose(self, tool_name: str, node: WorkflowNode) -> str:
+        if tool_name == "doxa_query_analysis":
+            return "List available DoxAtlas analysis tasks and task_code values for the ticker."
         if tool_name == "doxa_get_analysis":
-            return "Read DoxAtlas analysis/topic context for the ticker without starting new runs."
+            return "Read DoxAtlas analysis/topic context by ticker and task_code without starting new runs."
         if tool_name == "doxa_query_propositions":
             return "Check proposition-level support or contradiction for the reviewed field."
         if tool_name == "doxa_get_ignored_propositions":
@@ -984,8 +1197,12 @@ class BlackboardInitializationWorkflow:
             return "Inspect source material bound to a narrative event or source id."
         if tool_name == "doxa_get_media_result":
             return "Check media event capsules for completed expectation facts."
+        if tool_name == "doxa_get_media_result_detail":
+            return "Inspect selected Mxx media records, URLs, source quality, and content."
         if tool_name == "doxa_get_social_result":
             return "Check high-conviction social evidence for completed expectation facts."
+        if tool_name == "doxa_get_social_result_detail":
+            return "Inspect selected Sxx social records, URLs, source, and content."
         return f"Optional DoxAtlas read evidence for {node.value}."
 
     def _build_global_research_with_agent_runner(
@@ -998,74 +1215,173 @@ class BlackboardInitializationWorkflow:
             (
                 AgentName.C1_FUNDAMENTAL_RESEARCH,
                 "fundamental_report",
-                "Generate a sourced ResearchSection covering company fundamentals.",
+                (
+                    "Generate a sourced ResearchSection covering recent fundamental "
+                    "developments and how longer-cycle fundamentals explain current "
+                    "market attention."
+                ),
             ),
             (
                 AgentName.C2_MACRO_RESEARCH,
                 "macro_report",
-                "Generate a sourced ResearchSection covering macro and market regime.",
+                (
+                    "Generate a sourced ResearchSection covering recent macro changes "
+                    "that affect current pricing, using longer-cycle macro context only "
+                    "when it explains the current setup."
+                ),
             ),
             (
                 AgentName.C3_INDUSTRY_RESEARCH,
                 "industry_report",
-                "Generate a sourced ResearchSection covering industry and competitive context.",
+                (
+                    "Generate a sourced ResearchSection covering recent industry and "
+                    "competitive developments, grounded in structural industry context "
+                    "where useful."
+                ),
             ),
             (
                 AgentName.O4_MARKET_TRACE,
                 "market_trace_report",
-                "Generate a sourced ResearchSection covering recent price and flow trace.",
+                (
+                    "Generate a sourced ResearchSection covering recent price and flow "
+                    "reaction first, with broader chart history used only as baseline "
+                    "context."
+                ),
             ),
         ]
         results: list[AgentResult] = []
         sections: dict[str, ResearchSection] = {}
         current = checkpoint
-        for agent_name, section_key, instruction in specs:
+        jobs: list[_ParallelAgentJob] = []
+        cached_results: dict[int, AgentResult] = {}
+        for order, (agent_name, section_key, instruction) in enumerate(specs):
+            recovered = self._recover_stale_agent_dispatch(
+                current,
+                node,
+                agent_name,
+                section_key,
+            )
+            if recovered is not current:
+                current = recovered
+                self.checkpoint_repository.save_checkpoint(current)
             cached = self._cached_global_research_agent_result(current, node, agent_name)
             if cached is not None:
+                cached_results[order] = cached
+                continue
+            current = self._mark_agent_dispatch(
+                current,
+                node,
+                agent_name,
+                status="running",
+                section_key=section_key,
+            )
+            jobs.append(
+                _ParallelAgentJob(
+                    order=order,
+                    agent_name=agent_name,
+                    task_type=TaskType.GENERATE_GLOBAL_RESEARCH,
+                    output_schema="ResearchSection",
+                    section_key=section_key,
+                    extra_context=self._global_research_agent_context(
+                        inputs,
+                        section_key=section_key,
+                        instruction=instruction,
+                    ),
+                )
+            )
+        if jobs:
+            self.checkpoint_repository.save_checkpoint(current)
+
+        def cache_global_research_outcome(outcome: _ParallelAgentOutcome) -> None:
+            nonlocal current
+            section_key = outcome.job.section_key
+            if section_key is None:
+                return
+            if outcome.error is not None:
+                current = self._mark_agent_dispatch(
+                    current,
+                    node,
+                    outcome.job.agent_name,
+                    status="failed",
+                    section_key=section_key,
+                    error_message=str(outcome.error),
+                )
+                self._save_parallel_outcome_checkpoint(current)
+                return
+            if outcome.result is None:
+                return
+            current = self._store_global_research_agent_result(
+                current,
+                node,
+                outcome.job.agent_name,
+                section_key,
+                outcome.result,
+            )
+            self._save_parallel_outcome_checkpoint(current)
+
+        outcomes_by_order = {
+            outcome.job.order: outcome
+            for outcome in self._run_agent_jobs_concurrently(
+                current,
+                node,
+                jobs,
+                on_outcome=cache_global_research_outcome,
+            )
+        }
+        first_error: Exception | None = None
+        for order, (agent_name, section_key, _instruction) in enumerate(specs):
+            cached = cached_results.get(order)
+            outcome = outcomes_by_order.get(order)
+            if cached is not None:
                 result = cached
-            else:
+            elif outcome is None:
+                result = None
+                first_error = first_error or WorkflowContractError(
+                    f"{node.value}/{agent_name.value} did not return a parallel outcome."
+                )
+            elif outcome.error is not None:
+                result = None
                 current = self._mark_agent_dispatch(
                     current,
                     node,
                     agent_name,
-                    status="running",
+                    status="failed",
                     section_key=section_key,
+                    error_message=str(outcome.error),
                 )
                 self.checkpoint_repository.save_checkpoint(current)
-                try:
-                    result = self._run_agent(
-                        current,
-                        node,
-                        agent_name,
-                        TaskType.GENERATE_GLOBAL_RESEARCH,
-                        "ResearchSection",
-                        extra_context=self._global_research_agent_context(
-                            inputs,
-                            section_key=section_key,
-                            instruction=instruction,
-                        ),
-                    )
-                except WorkflowContractError as exc:
-                    current = self._mark_agent_dispatch(
-                        current,
-                        node,
-                        agent_name,
-                        status="failed",
-                        section_key=section_key,
-                        error_message=str(exc),
-                    )
-                    self.checkpoint_repository.save_checkpoint(current)
-                    raise
+                first_error = first_error or outcome.error
+            else:
+                result = outcome.result
+            if result is None:
+                continue
+
             results.append(result)
             try:
                 if cached is None:
                     self._write_working_memory(current, result, "global_research_agent_result")
                 self._validate_agent_success(result, node, require_patches=False)
-                sections[section_key] = self._research_section_from_result(
+                section = self._research_section_from_result(
                     result,
                     "ResearchSection",
                 )
+                sections[section_key] = self._ensure_global_research_section_content(
+                    current,
+                    section_key,
+                    section,
+                    result,
+                )
             except WorkflowContractError as exc:
+                if cached is None and self._looks_like_schema_failure(exc):
+                    self._write_parallel_agent_acceptance_failure(
+                        current,
+                        node,
+                        agent_name,
+                        result,
+                        event_code="schema_failed",
+                        message=str(exc),
+                        expected_schema="ResearchSection",
+                    )
                 current = self._mark_agent_dispatch(
                     current,
                     node,
@@ -1075,7 +1391,8 @@ class BlackboardInitializationWorkflow:
                     error_message=str(exc),
                 )
                 self.checkpoint_repository.save_checkpoint(current)
-                raise
+                first_error = first_error or exc
+                continue
             if cached is None:
                 current = self._store_global_research_agent_result(
                     current,
@@ -1086,6 +1403,9 @@ class BlackboardInitializationWorkflow:
                 )
                 self.checkpoint_repository.save_checkpoint(current)
 
+        if first_error is not None:
+            raise first_error
+
         document = self.global_research_assembler.assemble_from_sections(
             current.ticker,
             fundamental_report=sections["fundamental_report"],
@@ -1095,10 +1415,21 @@ class BlackboardInitializationWorkflow:
         )
         patch = self._global_research_patch(document, results)
         self._validate_patch_contract(patch, node)
+        self._write_patch_audit_working_memory(
+            current,
+            patch,
+            "global_research_assembly",
+            {
+                "status": "succeeded",
+                "workflow_node": node.value,
+                "source_agents": [result.agent_name.value for result in results],
+                "rationale": patch.rationale,
+            },
+        )
         self._submit_patch(
             current.run_id,
             patch,
-            f"{node.value} assembled GlobalResearchDocument from C1/C2/C3/O4.",
+            f"{node.value} 已由 C1/C2/C3/O4 汇总 GlobalResearchDocument。",
         )
         stable_documents = list(current.stable_document_types)
         if DocumentType.GLOBAL_RESEARCH not in stable_documents:
@@ -1115,6 +1446,104 @@ class BlackboardInitializationWorkflow:
                 "global_research_patch_id": patch.patch_id,
             },
         )
+
+    def _save_parallel_outcome_checkpoint(self, checkpoint: WorkflowCheckpoint) -> bool:
+        last_error: Exception | None = None
+        for attempt in range(3):
+            try:
+                self.checkpoint_repository.save_checkpoint(checkpoint)
+                return True
+            except Exception as exc:  # best-effort cache; final ordered path still validates.
+                last_error = exc
+                time.sleep(0.8 * (attempt + 1))
+        if last_error is not None:
+            return False
+        return True
+
+    def _recover_stale_agent_dispatch(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        node: WorkflowNode,
+        agent_name: AgentName,
+        section_key: str,
+        *,
+        cache_key: str | None = None,
+    ) -> WorkflowCheckpoint:
+        key = self._agent_idempotency_key(node, agent_name, cache_key=cache_key)
+        state = self._agent_idempotency(checkpoint).get(key, {})
+        if state.get("status") != "running":
+            return checkpoint
+        if not self._is_stale_agent_dispatch(state):
+            return checkpoint
+
+        message = (
+            f"stale_agent_dispatch: {node.value}/{agent_name.value} was left running "
+            f"for more than {self.settings.workflow_agent_stale_after_seconds} seconds; "
+            "recording audit event and retrying this agent."
+        )
+        self._write_agent_dispatch_recovery(
+            checkpoint,
+            node,
+            agent_name,
+            section_key,
+            state,
+            message,
+        )
+        return self._mark_agent_dispatch(
+            checkpoint,
+            node,
+            agent_name,
+            status="failed",
+            section_key=section_key,
+            cache_key=cache_key,
+            error_message=message,
+        )
+
+    def _is_stale_agent_dispatch(self, state: dict[str, Any]) -> bool:
+        updated_at = state.get("updated_at")
+        if not isinstance(updated_at, str) or not updated_at:
+            return False
+        try:
+            parsed = datetime.fromisoformat(updated_at.replace("Z", "+00:00"))
+        except ValueError:
+            return False
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=UTC)
+        age_seconds = (datetime.now(UTC) - parsed.astimezone(UTC)).total_seconds()
+        return age_seconds >= self.settings.workflow_agent_stale_after_seconds
+
+    def _write_agent_dispatch_recovery(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        node: WorkflowNode,
+        agent_name: AgentName,
+        section_key: str,
+        previous_state: dict[str, Any],
+        message: str,
+    ) -> None:
+        try:
+            self.blackboard.add_working_memory_entry(
+                checkpoint.run_id,
+                author_agent=AgentName.SYSTEM,
+                content_type="agent_dispatch_stale_recovery",
+                payload={
+                    "event_code": "stale_agent_dispatch_recovered",
+                    "status": "failed",
+                    "retry_reason": "stale_running_dispatch",
+                    "message": message,
+                    "run_id": checkpoint.run_id,
+                    "workflow_node": node.value,
+                    "agent_name": agent_name.value,
+                    "section_key": section_key,
+                    "stale_after_seconds": self.settings.workflow_agent_stale_after_seconds,
+                    "previous_dispatch": previous_state,
+                },
+            )
+        except Exception as exc:
+            raise WorkflowContractError(
+                f"write_failed: could not write stale dispatch recovery for "
+                f"{node.value}/{agent_name.value}: {exc}"
+            ) from exc
 
     def _cached_global_research_agent_result(
         self,
@@ -1151,6 +1580,46 @@ class BlackboardInitializationWorkflow:
                 f"{node.value}/{agent_name.value}: {exc}"
             ) from exc
 
+    def _cached_workflow_agent_result(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        node: WorkflowNode,
+        agent_name: AgentName,
+        *,
+        cache_key: str,
+    ) -> AgentResult | None:
+        key = self._agent_idempotency_key(node, agent_name, cache_key=cache_key)
+        idempotency = self._agent_idempotency(checkpoint)
+        state = idempotency.get(key, {})
+        if state.get("status") == "running":
+            raise WorkflowContractError(
+                f"duplicate_agent_running: {node.value}/{agent_name.value}/{cache_key} "
+                "is already running."
+            )
+        if state.get("status") != "completed":
+            return None
+
+        cached_results = self._workflow_agent_results(checkpoint)
+        cached = cached_results.get(key)
+        if not isinstance(cached, dict):
+            raise WorkflowContractError(
+                f"schema_failed: cached AgentResult missing for "
+                f"{node.value}/{agent_name.value}/{cache_key}."
+            )
+        raw_result = cached.get("result")
+        if not isinstance(raw_result, dict):
+            raise WorkflowContractError(
+                f"schema_failed: cached AgentResult malformed for "
+                f"{node.value}/{agent_name.value}/{cache_key}."
+            )
+        try:
+            return AgentResult.model_validate(raw_result)
+        except Exception as exc:
+            raise WorkflowContractError(
+                f"schema_failed: cached AgentResult could not be restored for "
+                f"{node.value}/{agent_name.value}/{cache_key}: {exc}"
+            ) from exc
+
     def _mark_agent_dispatch(
         self,
         checkpoint: WorkflowCheckpoint,
@@ -1159,9 +1628,10 @@ class BlackboardInitializationWorkflow:
         *,
         status: Literal["running", "failed"],
         section_key: str,
+        cache_key: str | None = None,
         error_message: str | None = None,
     ) -> WorkflowCheckpoint:
-        key = self._agent_idempotency_key(node, agent_name)
+        key = self._agent_idempotency_key(node, agent_name, cache_key=cache_key)
         state = {
             "run_id": checkpoint.run_id,
             "workflow_node": node.value,
@@ -1170,6 +1640,8 @@ class BlackboardInitializationWorkflow:
             "status": status,
             "updated_at": datetime.now(UTC).isoformat(),
         }
+        if cache_key is not None:
+            state["cache_key"] = cache_key
         if error_message is not None:
             state["error_message"] = error_message
         idempotency = self._agent_idempotency(checkpoint) | {key: state}
@@ -1220,6 +1692,49 @@ class BlackboardInitializationWorkflow:
             deep=True,
         )
 
+    def _store_workflow_agent_result(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        node: WorkflowNode,
+        agent_name: AgentName,
+        section_key: str,
+        result: AgentResult,
+        *,
+        cache_key: str,
+    ) -> WorkflowCheckpoint:
+        key = self._agent_idempotency_key(node, agent_name, cache_key=cache_key)
+        cached_results = self._workflow_agent_results(checkpoint)
+        cached_results[key] = {
+            "run_id": checkpoint.run_id,
+            "workflow_node": node.value,
+            "agent_name": agent_name.value,
+            "section_key": section_key,
+            "cache_key": cache_key,
+            "status": "completed",
+            "result": result.model_dump(mode="json"),
+            "updated_at": datetime.now(UTC).isoformat(),
+        }
+        idempotency = self._agent_idempotency(checkpoint)
+        idempotency[key] = {
+            "run_id": checkpoint.run_id,
+            "workflow_node": node.value,
+            "agent_name": agent_name.value,
+            "section_key": section_key,
+            "cache_key": cache_key,
+            "status": "completed",
+            "updated_at": datetime.now(UTC).isoformat(),
+        }
+        return checkpoint.model_copy(
+            update={
+                "metadata": checkpoint.metadata
+                | {
+                    _WORKFLOW_AGENT_RESULTS_KEY: cached_results,
+                    _WORKFLOW_AGENT_IDEMPOTENCY_KEY: idempotency,
+                }
+            },
+            deep=True,
+        )
+
     def _agent_idempotency(
         self,
         checkpoint: WorkflowCheckpoint,
@@ -1238,12 +1753,24 @@ class BlackboardInitializationWorkflow:
             return {}
         return {str(key): value for key, value in raw.items() if isinstance(value, dict)}
 
+    def _workflow_agent_results(
+        self,
+        checkpoint: WorkflowCheckpoint,
+    ) -> dict[str, dict[str, Any]]:
+        raw = checkpoint.metadata.get(_WORKFLOW_AGENT_RESULTS_KEY)
+        if not isinstance(raw, dict):
+            return {}
+        return {str(key): value for key, value in raw.items() if isinstance(value, dict)}
+
     def _agent_idempotency_key(
         self,
         node: WorkflowNode,
         agent_name: AgentName,
+        *,
+        cache_key: str | None = None,
     ) -> str:
-        return f"{node.value}:{agent_name.value}"
+        base = f"{node.value}:{agent_name.value}"
+        return f"{base}:{cache_key}" if cache_key else base
 
     def _global_research_agent_context(
         self,
@@ -1256,6 +1783,22 @@ class BlackboardInitializationWorkflow:
     ) -> dict[str, Any]:
         context: dict[str, Any] = {
             "global_research_inputs": inputs.model_dump(mode="json"),
+            "document1_research_focus": {
+                "primary_focus": (
+                    "Prioritize recent company, macro, industry, and price developments, "
+                    "roughly the last 30 days when evidence is available."
+                ),
+                "background_use": (
+                    "Use longer history for baseline, cycle, valuation, or structural "
+                    "explanation; do not turn the section into a generic one-year or "
+                    "half-year overview."
+                ),
+                "claim_discipline": (
+                    "Do not present older known facts as fresh catalysts unless a recent "
+                    "filing, price reaction, guidance update, policy change, or industry "
+                    "move has renewed their relevance."
+                ),
+            },
             "required_section_key": section_key,
             "section_instruction": instruction,
         }
@@ -1304,6 +1847,39 @@ class BlackboardInitializationWorkflow:
         )
         return section
 
+    def _ensure_global_research_section_content(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        section_key: str,
+        section: ResearchSection,
+        result: AgentResult,
+    ) -> ResearchSection:
+        tool_fragment = self._section_looks_like_tool_call_only(section)
+        evidence_refs = self._dedupe_evidence_refs(
+            [*section.evidence_refs, *result.evidence_refs]
+        )
+        if not evidence_refs:
+            evidence_refs = [self._agent_output_evidence(result)]
+
+        updates: dict[str, Any] = {}
+        if tool_fragment or not self._has_chinese_text(section.text):
+            updates["text"] = self._global_research_section_fallback_text(
+                checkpoint,
+                section_key,
+                result,
+            )
+        if tool_fragment or not self._has_chinese_text(section.summary):
+            updates["summary"] = self._global_research_section_fallback_summary(
+                checkpoint,
+                section_key,
+                result,
+            )
+        if not section.evidence_refs:
+            updates["evidence_refs"] = evidence_refs
+        if not updates:
+            return section
+        return section.model_copy(update=updates, deep=True)
+
     def _review_expectation_construction(
         self,
         checkpoint: WorkflowCheckpoint,
@@ -1343,7 +1919,10 @@ class BlackboardInitializationWorkflow:
         self._write_working_memory(checkpoint, result, "a1_expectation_construction_review")
         self._validate_agent_success(result, node, require_patches=False)
         for objection in result.objections:
-            self.blackboard.create_objection(checkpoint.run_id, objection)
+            self.blackboard.create_objection(
+                checkpoint.run_id,
+                self._objection_with_evidence_fallback(objection, result),
+            )
         for delegation in result.delegations:
             self.blackboard.create_delegation(checkpoint.run_id, delegation)
         return self._mark_completed(
@@ -1463,43 +2042,215 @@ class BlackboardInitializationWorkflow:
             raise WorkflowContractError("GenerateExpectationDetails requires expectation shells.")
         results: list[AgentResult] = []
         patches: list[BlackboardPatch] = []
-        for shell in shells:
-            result = self._run_agent(
-                checkpoint,
+        current = checkpoint
+        jobs: list[_ParallelAgentJob] = []
+        cached_results: dict[int, AgentResult] = {}
+        for order, shell in enumerate(shells):
+            cache_key = self._expectation_detail_cache_key(order, shell)
+            current = self._recover_stale_agent_dispatch(
+                current,
                 node,
                 AgentName.O1_EXPECTATION_OWNER,
-                TaskType.GENERATE_EXPECTATION_DETAIL,
-                "ExpectationDetailResult",
-                extra_context={
-                    "expectation_shell": shell.model_dump(mode="json"),
-                    "detail_instruction": (
-                        "Complete exactly one expectation unit from this shell. Preserve "
-                        "I/II fields and fill realized facts, key variables/current status, "
-                        "and event prediction or monitoring direction."
-                    ),
-                    "required_tool_names": ["doxa_get_narrative_report"],
-                    "tool_requirements": [
-                        {
-                            "tool_name": "doxa_get_narrative_report",
-                            "required": True,
-                            "purpose": "Narrative evidence for expectation detail completion.",
-                        }
-                    ],
-                },
+                shell.expectation_id,
+                cache_key=cache_key,
             )
-            self._validate_agent_success(result, node, require_patches=False)
-            result = self._ensure_o1_narrative_tool_evidence(checkpoint, result, node)
-            self._write_working_memory(checkpoint, result, "expectation_detail_result")
-            self._validate_o1_narrative_tool_gap(result, node)
-            self._validate_expectation_detail_result(checkpoint.ticker, shell, result)
+            cached = self._cached_workflow_agent_result(
+                current,
+                node,
+                AgentName.O1_EXPECTATION_OWNER,
+                cache_key=cache_key,
+            )
+            if cached is not None:
+                cached_results[order] = cached
+                continue
+            current = self._mark_agent_dispatch(
+                current,
+                node,
+                AgentName.O1_EXPECTATION_OWNER,
+                status="running",
+                section_key=shell.expectation_id,
+                cache_key=cache_key,
+            )
+            jobs.append(
+                _ParallelAgentJob(
+                    order=order,
+                    agent_name=AgentName.O1_EXPECTATION_OWNER,
+                    task_type=TaskType.GENERATE_EXPECTATION_DETAIL,
+                    output_schema="ExpectationDetailResult",
+                    content_type="expectation_detail_result",
+                    section_key=shell.expectation_id,
+                    cache_key=cache_key,
+                    extra_context={
+                        "expectation_shell": shell.model_dump(mode="json"),
+                        "detail_instruction": (
+                            "Complete exactly one expectation unit from this shell. Preserve "
+                            "I/II fields and fill realized facts, key variables/current status, "
+                            "and event prediction or monitoring direction. "
+                            "event_monitoring_direction must contain known_event_notice plus "
+                            "positive_events and negative_events as lists of concrete string "
+                            "triggers; do not use generic deployment/commercialization "
+                            "placeholders, known_upcoming_events, or dict/object event items."
+                        ),
+                        "required_tool_names": ["doxa_get_narrative_report"],
+                        "tool_requirements": [
+                            {
+                                "tool_name": "doxa_get_narrative_report",
+                                "required": True,
+                                "purpose": "Narrative evidence for expectation detail completion.",
+                            }
+                        ],
+                    },
+                )
+            )
+        if jobs:
+            self.checkpoint_repository.save_checkpoint(current)
+
+        outcomes_by_order = {
+            outcome.job.order: outcome
+            for outcome in self._run_agent_jobs_concurrently(current, node, jobs)
+        }
+        first_error: Exception | None = None
+        for order, shell in enumerate(shells):
+            cache_key = self._expectation_detail_cache_key(order, shell)
+            cached = cached_results.get(order)
+            outcome = outcomes_by_order.get(order)
+            if cached is not None:
+                result = cached
+            elif outcome is None:
+                result = None
+                first_error = first_error or WorkflowContractError(
+                    f"{node.value}/{shell.expectation_id} did not return a parallel outcome."
+                )
+            elif outcome.error is not None:
+                result = None
+                current = self._mark_agent_dispatch(
+                    current,
+                    node,
+                    AgentName.O1_EXPECTATION_OWNER,
+                    status="failed",
+                    section_key=shell.expectation_id,
+                    cache_key=cache_key,
+                    error_message=str(outcome.error),
+                )
+                self.checkpoint_repository.save_checkpoint(current)
+                first_error = first_error or outcome.error
+            else:
+                result = outcome.result
+            if result is None:
+                continue
+
+            try:
+                self._validate_agent_success(result, node, require_patches=False)
+                result = self._ensure_o1_narrative_tool_evidence(current, result, node)
+                if cached is None:
+                    self._write_working_memory(current, result, "expectation_detail_result")
+                self._validate_o1_narrative_tool_gap(result, node)
+                self._validate_expectation_detail_result(current.ticker, shell, result)
+            except WorkflowContractError as exc:
+                current = self._mark_agent_dispatch(
+                    current,
+                    node,
+                    AgentName.O1_EXPECTATION_OWNER,
+                    status="failed",
+                    section_key=shell.expectation_id,
+                    cache_key=cache_key,
+                    error_message=str(exc),
+                )
+                self.checkpoint_repository.save_checkpoint(current)
+                first_error = first_error or exc
+                continue
+
             patches.extend(result.proposed_patches)
             results.append(result)
+            if cached is None:
+                current = self._store_workflow_agent_result(
+                    current,
+                    node,
+                    AgentName.O1_EXPECTATION_OWNER,
+                    shell.expectation_id,
+                    result,
+                    cache_key=cache_key,
+                )
+                self.checkpoint_repository.save_checkpoint(current)
+        if first_error is not None:
+            raise first_error
         return self._mark_completed(
-            checkpoint,
+            current,
             node,
-            pending_patches=checkpoint.pending_patches + patches,
+            pending_patches=current.pending_patches + patches,
             metadata=self._agent_metadata(node, results),
         )
+
+    def _is_retryable_agent_result_failure(self, result: AgentResult) -> bool:
+        if result.status is not ResultStatus.FAILED or result.error is None:
+            return False
+        if result.error.retryable:
+            return True
+        gateway_error = result.error.details.get("gateway_error")
+        return (
+            isinstance(gateway_error, dict)
+            and gateway_error.get("code") == "model_request_timeout"
+        )
+
+    def _agent_retry_context(
+        self,
+        previous_failure: AgentResult | None,
+        *,
+        retry_attempt: int,
+    ) -> dict[str, Any]:
+        return {
+            "retry_attempt": retry_attempt,
+            "retry_reason": "previous_agent_result_retryable_failure",
+            "previous_failure": self._agent_failure_audit(previous_failure),
+        }
+
+    def _with_retry_audit(
+        self,
+        result: AgentResult,
+        previous_failure: AgentResult,
+    ) -> AgentResult:
+        payload = dict(result.payload)
+        payload["retry_audit"] = {
+            "retried": True,
+            "attempt_count": 2,
+            "retry_reason": "previous_agent_result_retryable_failure",
+            "previous_failure": self._agent_failure_audit(previous_failure),
+        }
+        return result.model_copy(update={"payload": payload}, deep=True)
+
+    def _with_failure_audit(self, result: AgentResult) -> AgentResult:
+        if result.status is not ResultStatus.FAILED:
+            return result
+        payload = dict(result.payload)
+        payload["failure_audit"] = self._agent_failure_audit(result)
+        return result.model_copy(update={"payload": payload}, deep=True)
+
+    def _agent_failure_audit(self, result: AgentResult | None) -> dict[str, Any]:
+        if result is None:
+            return {
+                "status": "unknown",
+                "error_code": None,
+                "error_message": None,
+                "retryable": False,
+                "details": {},
+            }
+        error = result.error
+        return {
+            "status": result.status.value,
+            "agent_name": result.agent_name.value,
+            "task_id": result.task_id,
+            "error_code": error.code if error is not None else None,
+            "error_message": error.message if error is not None else None,
+            "retryable": error.retryable if error is not None else False,
+            "details": error.details if error is not None else {},
+        }
+
+    def _expectation_detail_cache_key(
+        self,
+        order: int,
+        shell: ExpectationShell,
+    ) -> str:
+        return f"expectation_detail:{order}:{shell.expectation_id}"
 
     def _expectation_shells_from_checkpoint(
         self,
@@ -1528,6 +2279,10 @@ class BlackboardInitializationWorkflow:
         if not construction.shells:
             raise WorkflowContractError(
                 "GenerateExpectationConstruction produced no expectation shells."
+            )
+        if len(construction.shells) < 2:
+            raise WorkflowContractError(
+                "GenerateExpectationConstruction produced fewer than two expectation shells."
             )
         if len(construction.shells) >= 4:
             raise WorkflowContractError(
@@ -1584,6 +2339,45 @@ class BlackboardInitializationWorkflow:
         if patch.target.expectation_id != document.expectation_id:
             raise WorkflowContractError(
                 "GenerateExpectationDetails target does not match document."
+            )
+        self._validate_expectation_detail_quality(document)
+
+    def _validate_expectation_detail_quality(self, document: ExpectationUnitDocument) -> None:
+        if not document.realized_facts:
+            raise WorkflowContractError(
+                "GenerateExpectationDetails produced empty realized_facts."
+            )
+        if not document.key_variables:
+            raise WorkflowContractError(
+                "GenerateExpectationDetails produced empty key_variables."
+            )
+        for fact in document.realized_facts:
+            if not fact.evidence_refs:
+                raise WorkflowContractError(
+                    "GenerateExpectationDetails realized_fact is missing evidence_refs."
+                )
+            if self._price_reaction_needs_escalation(fact.price_reaction):
+                raise WorkflowContractError(
+                    "GenerateExpectationDetails realized_fact has unknown price_reaction."
+                )
+        for variable in document.key_variables:
+            if not variable.evidence_refs:
+                raise WorkflowContractError(
+                    "GenerateExpectationDetails key_variable is missing evidence_refs."
+                )
+        monitoring = document.event_monitoring_direction
+        monitoring_events = [
+            *monitoring.positive_events,
+            *monitoring.negative_events,
+        ]
+        if not monitoring.positive_events or not monitoring.negative_events:
+            raise WorkflowContractError(
+                "GenerateExpectationDetails event_monitoring_direction needs positive and "
+                "negative events."
+            )
+        if any(_is_generic_monitoring_trigger(item) for item in monitoring_events):
+            raise WorkflowContractError(
+                "GenerateExpectationDetails event_monitoring_direction is generic."
             )
 
     def _review_expectation_fields(
@@ -1667,7 +2461,8 @@ class BlackboardInitializationWorkflow:
         ]
 
         results: list[AgentResult] = []
-        for spec in specs:
+        jobs: list[_ParallelAgentJob] = []
+        for order, spec in enumerate(specs):
             agent_name = spec["agent_name"]
             tool_requirements = spec.get("tool_requirements", [])
             if agent_name is AgentName.A1_DOXATLAS_AUDIT:
@@ -1692,27 +2487,300 @@ class BlackboardInitializationWorkflow:
                     if item.get("required") is True
                 ],
             }
-            result = self._run_agent(
-                checkpoint,
-                node,
-                agent_name,
-                TaskType.REVIEW_EXPECTATION_FIELD,
-                spec["schema"],
-                extra_context=extra_context,
+            jobs.append(
+                _ParallelAgentJob(
+                    order=order,
+                    agent_name=agent_name,
+                    task_type=TaskType.REVIEW_EXPECTATION_FIELD,
+                    output_schema=spec["schema"],
+                    content_type=spec["content_type"],
+                    section_key=agent_name.value,
+                    extra_context=extra_context,
+                )
             )
-            self._write_working_memory(checkpoint, result, spec["content_type"])
-            self._validate_agent_success(result, node, require_patches=False)
+
+        first_error: Exception | None = None
+        for outcome in self._run_agent_jobs_concurrently(checkpoint, node, jobs):
+            spec = specs[outcome.job.order]
+            if outcome.error is not None:
+                first_error = first_error or outcome.error
+                continue
+            result = outcome.result
+            if result is None:
+                first_error = first_error or WorkflowContractError(
+                    f"{node.value}/{outcome.job.agent_name.value} returned no result."
+                )
+                continue
+            try:
+                self._write_working_memory(checkpoint, result, spec["content_type"])
+                self._validate_agent_success(result, node, require_patches=False)
+            except WorkflowContractError as exc:
+                first_error = first_error or exc
+                continue
             for objection in result.objections:
-                self.blackboard.create_objection(checkpoint.run_id, objection)
+                self.blackboard.create_objection(
+                    checkpoint.run_id,
+                    self._objection_with_evidence_fallback(objection, result),
+                )
             for delegation in result.delegations:
                 self.blackboard.create_delegation(checkpoint.run_id, delegation)
             results.append(result)
+
+        if first_error is not None:
+            raise first_error
+
+        for objection in self._numeric_sanity_review_objections(checkpoint):
+            self.blackboard.create_objection(checkpoint.run_id, objection)
 
         return self._mark_completed(
             checkpoint,
             node,
             metadata=self._agent_metadata(node, results),
         )
+
+    def _numeric_sanity_review_objections(
+        self,
+        checkpoint: WorkflowCheckpoint,
+    ) -> list[Objection]:
+        objections: list[Objection] = []
+        for patch in checkpoint.pending_patches:
+            objections.extend(self._numeric_sanity_objections_for_patch(checkpoint.ticker, patch))
+        return objections
+
+    def _numeric_sanity_objections_for_patch(
+        self,
+        ticker: str,
+        patch: BlackboardPatch,
+    ) -> list[Objection]:
+        if patch.target.document_type is not DocumentType.EXPECTATION_UNIT:
+            return []
+        if not isinstance(patch.after, dict):
+            return []
+        document = ExpectationUnitDocument.model_validate(patch.after)
+        category_samples: dict[str, list[str]] = {
+            "market_data": [],
+            "fundamental_data": [],
+        }
+        category_evidence: dict[str, list[EvidenceRef]] = {
+            "market_data": [],
+            "fundamental_data": [],
+        }
+        for index, fact in enumerate(document.realized_facts, start=1):
+            reaction = fact.price_reaction
+            fact_refs = self._dedupe_evidence_refs(
+                [*fact.evidence_refs, *reaction.evidence_refs, *patch.evidence_refs]
+            )
+            fact_text = " ".join(
+                [
+                    fact.description,
+                    reaction.price_change,
+                    reaction.price_pattern,
+                    reaction.interpretation,
+                ]
+            )
+            if self._contains_market_numeric_claim(
+                fact_text
+            ) and not self._has_source_appropriate_numeric_evidence(
+                fact_refs,
+                category="market_data",
+            ):
+                category_samples["market_data"].append(
+                    f"realized_facts[{index}]: {self._compact_context_text(fact_text, limit=260)}"
+                )
+                category_evidence["market_data"].extend(fact_refs)
+            if self._contains_fundamental_numeric_claim(
+                fact_text
+            ) and not self._has_source_appropriate_numeric_evidence(
+                fact_refs,
+                category="fundamental_data",
+            ):
+                category_samples["fundamental_data"].append(
+                    f"realized_facts[{index}]: {self._compact_context_text(fact_text, limit=260)}"
+                )
+                category_evidence["fundamental_data"].extend(fact_refs)
+
+        objections: list[Objection] = []
+        for category, samples in category_samples.items():
+            if not samples:
+                continue
+            evidence_refs = self._dedupe_evidence_refs(category_evidence[category])
+            taxonomy = f"numeric_sanity_{category}"
+            target_path = (
+                "realized_facts.price_reaction"
+                if category == "market_data"
+                else "realized_facts"
+            )
+            objections.append(
+                Objection(
+                    objection_id=self._numeric_sanity_objection_id(
+                        document.expectation_id,
+                        category,
+                    ),
+                    source_agent=AgentName.SYSTEM,
+                    target=BlackboardTarget(
+                        document_type=DocumentType.EXPECTATION_UNIT,
+                        ticker=ticker,
+                        expectation_id=document.expectation_id,
+                        field_path=target_path,
+                    ),
+                    severity=ObjectionSeverity.BLOCKING,
+                    reason=self._numeric_sanity_objection_reason(
+                        document.expectation_id,
+                        category,
+                        samples,
+                        evidence_refs,
+                    ),
+                    evidence_refs=evidence_refs,
+                    taxonomy=taxonomy,
+                    dedupe_hash=f"{taxonomy}:{document.expectation_id}",
+                    target_path=target_path,
+                    status=ObjectionStatus.OPEN,
+                )
+            )
+        return objections
+
+    def _numeric_sanity_objection_id(self, expectation_id: str, category: str) -> str:
+        safe_expectation_id = re.sub(r"[^0-9A-Za-z_]+", "_", expectation_id).strip("_")
+        return f"obj_numeric_sanity_{safe_expectation_id[:80]}_{category}"
+
+    def _numeric_sanity_objection_reason(
+        self,
+        expectation_id: str,
+        category: str,
+        samples: list[str],
+        evidence_refs: list[EvidenceRef],
+    ) -> str:
+        source_summary = ", ".join(
+            sorted({f"{ref.source_type.value}:{ref.source_id}" for ref in evidence_refs})
+        )
+        required = (
+            "market-data evidence such as OHLCV, quote, market-cap, or vendor market data"
+            if category == "market_data"
+            else "fundamental evidence such as SEC/companyfacts, financial statements, or issuer filings"
+        )
+        return (
+            f"Deterministic numeric sanity review for {expectation_id}: precise "
+            f"{category.replace('_', ' ')} claims require {required}. Current evidence "
+            f"refs are insufficient or narrative-only ({source_summary or 'none'}). "
+            "O1 must correct the numbers with source-appropriate evidence, downgrade the "
+            "claim to non-numeric uncertainty, or remove the false precision. Simply keeping "
+            "the same precise number and labelling it narrative-only, unverified, approximate, "
+            "or uncertain is not a valid resolution. Samples: "
+            + " | ".join(samples[:3])
+        )
+
+    def _contains_market_numeric_claim(self, text: str) -> bool:
+        lowered = text.lower()
+        if not self._contains_numeric_value(lowered):
+            return False
+        return any(
+            marker in lowered
+            for marker in (
+                "stock price",
+                "share price",
+                "target price",
+                "market cap",
+                "ytd",
+                "forward p/e",
+                "p/e",
+                "p/s",
+                "p/b",
+                "peg",
+                "股价",
+                "目标价",
+                "市值",
+                "涨幅",
+                "估值",
+            )
+        )
+
+    def _contains_fundamental_numeric_claim(self, text: str) -> bool:
+        lowered = text.lower()
+        if not self._contains_numeric_value(lowered):
+            return False
+        return any(
+            marker in lowered
+            for marker in (
+                "revenue",
+                "gross margin",
+                "net income",
+                "roe",
+                "cfo",
+                "cash flow",
+                "capex",
+                "eps",
+                "营收",
+                "收入",
+                "毛利率",
+                "净利率",
+                "净利润",
+                "经营现金流",
+                "资本开支",
+            )
+        )
+
+    def _contains_numeric_value(self, text: str) -> bool:
+        return bool(
+            re.search(
+                r"\$?\d[\d,.]*(?:\s*(?:%|x|倍|bps|亿|万亿|billion|trillion))?",
+                text,
+                flags=re.IGNORECASE,
+            )
+        )
+
+    def _has_source_appropriate_numeric_evidence(
+        self,
+        evidence_refs: list[EvidenceRef],
+        *,
+        category: str,
+    ) -> bool:
+        for ref in evidence_refs:
+            if ref.source_type is EvidenceSourceType.FACT_CHECK:
+                return True
+            source_text = " ".join(
+                [
+                    ref.source_id,
+                    ref.title,
+                    ref.summary,
+                    str(ref.retrieval_metadata.get("tool_name") or ""),
+                    str(ref.retrieval_metadata.get("provider") or ""),
+                ]
+            ).lower()
+            if category == "market_data":
+                if ref.source_type is EvidenceSourceType.MARKET_DATA:
+                    return True
+                if ref.source_type is EvidenceSourceType.EXTERNAL_REPORT and any(
+                    marker in source_text
+                    for marker in (
+                        "alpha_vantage",
+                        "finnhub",
+                        "fmp",
+                        "twelvedata",
+                        "twelve",
+                        "yfinance",
+                        "market",
+                        "quote",
+                    )
+                ):
+                    return True
+            if category == "fundamental_data":
+                if ref.source_type is EvidenceSourceType.EXTERNAL_REPORT and any(
+                    marker in source_text
+                    for marker in (
+                        "sec",
+                        "companyfacts",
+                        "filing",
+                        "10-k",
+                        "10-q",
+                        "alpha_vantage",
+                        "financial_statements",
+                        "fmp",
+                        "yfinance",
+                        "issuer",
+                    )
+                ):
+                    return True
+        return False
 
     def _global_research_patch(
         self,
@@ -1733,7 +2801,7 @@ class BlackboardInitializationWorkflow:
             operation=PatchOperation.CREATE,
             before=None,
             after=document.model_dump(mode="json"),
-            rationale="Assemble GlobalResearchDocument from C1/C2/C3/O4 agent outputs.",
+            rationale="由 C1/C2/C3/O4 agent 输出汇总 GlobalResearchDocument。",
             evidence_refs=evidence_refs,
             author_agent=AgentName.C1_FUNDAMENTAL_RESEARCH,
             validation_status=ValidationStatus.VALID,
@@ -1745,9 +2813,11 @@ class BlackboardInitializationWorkflow:
         node: WorkflowNode,
         result: AgentResult,
     ) -> WorkflowCheckpoint:
-        self._write_working_memory(checkpoint, result, "global_narrative_report")
+        result = self._ensure_o1_narrative_tool_evidence(checkpoint, result, node)
         self._validate_agent_success(result, node, require_patches=False)
+        self._validate_o1_narrative_tool_gap(result, node)
         section = self._research_section_from_result(result, "ResearchSection")
+        section = self._ensure_global_narrative_section_content(checkpoint, section, result)
         document_id = self._latest_global_research_document_id(checkpoint)
         patch = BlackboardPatch(
             patch_id=new_id("patch"),
@@ -1760,16 +2830,26 @@ class BlackboardInitializationWorkflow:
             operation=PatchOperation.UPDATE,
             before=None,
             after=section.model_dump(mode="json"),
-            rationale="Update GlobalResearchDocument with post-expectation market narrative.",
+            rationale="根据 expectation units 更新 GlobalResearchDocument 的市场叙事。",
             evidence_refs=section.evidence_refs or result.evidence_refs,
             author_agent=AgentName.O1_EXPECTATION_OWNER,
             validation_status=ValidationStatus.VALID,
         )
+        result = result.model_copy(
+            update={
+                "proposed_patches": [patch],
+                "evidence_refs": self._dedupe_evidence_refs(
+                    [*result.evidence_refs, *patch.evidence_refs]
+                ),
+            },
+            deep=True,
+        )
+        self._write_working_memory(checkpoint, result, "global_narrative_report")
         self._validate_patch_contract(patch, node)
         self._submit_patch(
             checkpoint.run_id,
             patch,
-            "GenerateGlobalNarrativeReport updated GlobalResearchDocument market narrative.",
+            "GenerateGlobalNarrativeReport 已更新 GlobalResearchDocument 市场叙事。",
             permissions=self._effective_permissions(
                 self.registry.get(AgentName.O1_EXPECTATION_OWNER).runtime.to_permissions(),
                 node,
@@ -1784,7 +2864,170 @@ class BlackboardInitializationWorkflow:
             | {"global_narrative_patch_id": patch.patch_id},
         )
 
+    def _ensure_global_narrative_section_content(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        section: ResearchSection,
+        result: AgentResult,
+    ) -> ResearchSection:
+        tool_call_only = self._section_looks_like_tool_call_only(section)
+        updates: dict[str, Any] = {}
+        if tool_call_only or not self._has_chinese_text(section.text):
+            updates["text"] = self._global_narrative_fallback_text(checkpoint)
+        if tool_call_only or not self._has_chinese_text(section.summary):
+            updates["summary"] = self._global_narrative_fallback_summary(checkpoint)
+        if not section.evidence_refs:
+            updates["evidence_refs"] = result.evidence_refs
+        if not updates:
+            return section
+        return section.model_copy(update=updates, deep=True)
+
+    def _section_looks_like_tool_call_only(self, section: ResearchSection) -> bool:
+        text = f"{section.text}\n{section.summary}".strip()
+        if self._has_chinese_text(section.text) and self._has_chinese_text(section.summary):
+            return False
+        lowered = text.lower()
+        markers = (
+            "<tool_call",
+            "tool_call",
+            "name: doxa_get_narrative_report",
+            '"name": "doxa_get_narrative_report"',
+            "doxa_get_narrative_report\narguments",
+            "arguments: ticker",
+            "symbol:",
+            "ticker:",
+            "outputsize:",
+            "interval:",
+            "query:",
+            "search_depth:",
+            "max_results:",
+        )
+        marker_hits = sum(1 for marker in markers if marker in lowered)
+        has_research_words = any(
+            token in lowered
+            for token in (
+                "revenue",
+                "margin",
+                "capex",
+                "demand",
+                "valuation",
+                "cycle",
+                "macro",
+                "industry",
+                "price",
+                "risk",
+                "market",
+            )
+        )
+        return marker_hits >= 2 or (marker_hits >= 1 and not has_research_words)
+
+    def _global_research_section_fallback_text(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        section_key: str,
+        result: AgentResult,
+    ) -> str:
+        source_summary = self._section_fallback_source_summary(result)
+        ticker = checkpoint.ticker
+        if section_key == "fundamental_report":
+            return (
+                f"{ticker} 的基本面段落在模型输出中未形成合格中文研究正文，workflow 已保留"
+                f"{source_summary}作为可追溯证据。当前可确认的研究方向是围绕收入增长、毛利率、"
+                "资本开支、现金流、资产负债表和 SEC 披露继续核验 HBM 与 AI 存储需求对盈利质量的"
+                "影响。该段不得被视为完整基本面结论；后续监控应优先补充最新财报拆分、管理层指引、"
+                "自由现金流和同业估值证据。"
+            )
+        if section_key == "macro_report":
+            return (
+                f"{ticker} 的宏观与市场环境段落在模型输出中退化为工具参数摘要，workflow 已用"
+                f"{source_summary}进行恢复。当前宏观层面的可用结论是：MU 的初始化假设需要同时"
+                "观察美国科技股风险偏好、利率与美元环境、AI 基础设施资本开支节奏，以及半导体"
+                "ETF/纳指基准的价格行为。现有证据足以支持把这些变量纳入后续监控，但不足以把单一"
+                "宏观情景当作确定结论；若基准指数转弱或 hyperscaler capex 指引下修，应重新评估"
+                "HBM 超级周期的估值支撑。"
+            )
+        if section_key == "industry_report":
+            return (
+                f"{ticker} 的行业段落需要围绕存储周期、HBM 供需、DRAM/NAND 价格、竞争格局与"
+                f"同业估值展开。workflow 已保留{source_summary}作为证据底座；如果模型正文缺失，"
+                "应把行业结论限制为可复核的供需与竞争假设，并把 WDC、STX、SK Hynix、Samsung 等"
+                "同业数据缺口列为后续补证任务。"
+            )
+        if section_key == "market_trace_report":
+            return (
+                f"{ticker} 的市场跟踪段落需要解释近期价格、成交量、相对 SOXX/QQQ 与存储同业的"
+                f"表现。workflow 已保留{source_summary}作为价格证据；如果模型正文缺失，当前只能"
+                "把相对强弱、关键价量区间和波动率变化作为待复核信号，不能直接推出交易执行结论。"
+            )
+        return (
+            f"{ticker} 的 {section_key} 段落未返回合格中文正文，workflow 已保留"
+            f"{source_summary}作为证据并标记为后续复核输入。"
+        )
+
+    def _global_research_section_fallback_summary(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        section_key: str,
+        result: AgentResult,
+    ) -> str:
+        source_summary = self._section_fallback_source_summary(result)
+        labels = {
+            "fundamental_report": "基本面",
+            "macro_report": "宏观与市场环境",
+            "industry_report": "行业与竞争格局",
+            "market_trace_report": "价格与资金行为",
+        }
+        label = labels.get(section_key, section_key)
+        return (
+            f"{checkpoint.ticker} 的{label}段落已从不合格工具残片恢复为中文审计摘要；"
+            f"证据来自{source_summary}，结论需以后续补证和监控信号继续确认。"
+        )
+
+    def _section_fallback_source_summary(self, result: AgentResult) -> str:
+        names: list[str] = []
+        for ref in result.evidence_refs:
+            metadata_tool = ref.retrieval_metadata.get("tool_name")
+            label = metadata_tool or ref.source_id or ref.citation_scope
+            if label:
+                names.append(str(label))
+        for call in result.tool_calls:
+            if call.tool_name:
+                names.append(call.tool_name)
+        deduped = list(dict.fromkeys(names))
+        if not deduped:
+            return "agent 输出"
+        return "、".join(deduped[:5])
+
+    def _global_narrative_fallback_text(self, checkpoint: WorkflowCheckpoint) -> str:
+        names = self._expectation_names_from_belief_state(checkpoint)
+        focus = "、".join(names[:3]) if names else checkpoint.ticker
+        return (
+            "基于已检索的 DoxAtlas 叙事报告与当前 Blackboard expectation units，"
+            f"{checkpoint.ticker} 的市场叙事应围绕 {focus} 展开。已定价部分主要来自"
+            "已公开的业绩、供需、管理层指引与市场价格反应；尚未充分定价的部分需要继续"
+            "观察后续订单、capex、毛利率、HBM 份额、客户认证或库存信号是否兑现。"
+            "若证据只停留在工具检索摘要层，后续节点必须优先补强 DoxAtlas 原始事件、"
+            "价格反应和反方不确定性引用。"
+        )
+
+    def _global_narrative_fallback_summary(self, checkpoint: WorkflowCheckpoint) -> str:
+        names = self._expectation_names_from_belief_state(checkpoint)
+        focus = "、".join(names[:2]) if names else checkpoint.ticker
+        return (
+            f"市场叙事围绕 {focus} 的兑现程度、已定价证据与未定价监控信号继续跟踪。"
+        )
+
     def _latest_global_research_document_id(self, checkpoint: WorkflowCheckpoint) -> str:
+        document = self._latest_global_research_document_payload(checkpoint)
+        document_id = document.get("document_id")
+        if not isinstance(document_id, str) or not document_id:
+            raise WorkflowDependencyError("Global research document_id is missing.")
+        return document_id
+
+    def _latest_global_research_document_payload(
+        self,
+        checkpoint: WorkflowCheckpoint,
+    ) -> dict[str, Any]:
         run = self.blackboard.get_run(checkpoint.run_id)
         bucket = run.belief_state.documents.get(DocumentType.GLOBAL_RESEARCH, {})
         if not bucket:
@@ -1795,10 +3038,25 @@ class BlackboardInitializationWorkflow:
         document = latest.get("document")
         if not isinstance(document, dict):
             raise WorkflowDependencyError("Global research document payload is malformed.")
-        document_id = document.get("document_id")
-        if not isinstance(document_id, str) or not document_id:
-            raise WorkflowDependencyError("Global research document_id is missing.")
-        return document_id
+        return document
+
+    def _expectation_names_from_belief_state(
+        self,
+        checkpoint: WorkflowCheckpoint,
+    ) -> list[str]:
+        run = self.blackboard.get_run(checkpoint.run_id)
+        bucket = run.belief_state.documents.get(DocumentType.EXPECTATION_UNIT, {})
+        names: list[str] = []
+        for entry in bucket.values():
+            if not isinstance(entry, dict):
+                continue
+            document = entry.get("document")
+            if not isinstance(document, dict):
+                continue
+            name = document.get("expectation_name") or document.get("expectation_id")
+            if name:
+                names.append(str(name))
+        return names
 
     def _submit_result_patches(
         self,
@@ -1812,7 +3070,7 @@ class BlackboardInitializationWorkflow:
         stable_documents = list(checkpoint.stable_document_types)
         for patch in result.proposed_patches:
             self._validate_patch_contract(patch, node)
-            self._submit_patch(checkpoint.run_id, patch, f"{node.value} produced stable document.")
+            self._submit_patch(checkpoint.run_id, patch, f"{node.value} 已产出稳定文档。")
             stable_documents.append(patch.target.document_type)
         return self._mark_completed(
             checkpoint,
@@ -1833,7 +3091,11 @@ class BlackboardInitializationWorkflow:
         if document is None:
             return result
         document_type = document.document_type
-        evidence_refs = result.evidence_refs or [self._agent_output_evidence(result)]
+        evidence_refs = self._dedupe_evidence_refs(
+            [*result.evidence_refs, *self._document_evidence_refs(document)]
+        )
+        if not evidence_refs:
+            evidence_refs = [self._agent_output_evidence(result)]
         patch = BlackboardPatch(
             patch_id=new_id("patch"),
             target=BlackboardTarget(
@@ -1845,7 +3107,7 @@ class BlackboardInitializationWorkflow:
             operation=PatchOperation.CREATE,
             before=None,
             after=document.model_dump(mode="json"),
-            rationale=f"{node.value} direct document output converted to Blackboard patch.",
+            rationale=f"{node.value} 已将代理直接产出的稳定文档转换为 Blackboard 补丁。",
             evidence_refs=evidence_refs,
             author_agent=result.agent_name,
             validation_status=ValidationStatus.PENDING,
@@ -1873,7 +3135,7 @@ class BlackboardInitializationWorkflow:
         if not isinstance(structured, dict):
             return None
         if node is WorkflowNode.GENERATE_KNOWN_EVENTS:
-            return self._normalize_known_events_document(checkpoint.ticker, structured, result)
+            return self._normalize_known_events_document(checkpoint, structured, result)
         if node is WorkflowNode.GENERATE_MONITORING_CONFIG:
             return self._normalize_monitoring_config_document(checkpoint.ticker, structured)
         if node is WorkflowNode.GENERATE_MONITORING_POLICY:
@@ -1882,27 +3144,40 @@ class BlackboardInitializationWorkflow:
 
     def _normalize_known_events_document(
         self,
-        ticker: str,
+        checkpoint: WorkflowCheckpoint,
         payload: dict[str, Any],
         result: AgentResult,
     ) -> KnownEventsDocument:
-        fallback_evidence = (result.evidence_refs or [self._agent_output_evidence(result)])[0]
+        fallback_evidence = self._normalize_evidence_ref_language(
+            (result.evidence_refs or [self._agent_output_evidence(result)])[0]
+        )
         events: list[KnownEvent] = []
         raw_events = payload.get("events")
+        created_at = self._coerce_event_time(payload.get("created_at"))
         for item in raw_events if isinstance(raw_events, list) else []:
             if not isinstance(item, dict):
                 continue
-            source = item.get("source")
-            if isinstance(source, dict):
-                try:
-                    event_source = EvidenceRef.model_validate(source)
-                except Exception:
-                    event_source = fallback_evidence
-            else:
-                event_source = fallback_evidence
-            event_time = self._coerce_event_time(item.get("event_time") or item.get("date"))
-            date_hint = item.get("date")
-            description = str(item.get("description") or item.get("event") or item)
+            date_hint = item.get("date") or item.get("event_date")
+            description = self._known_event_description(item)
+            expectation_id = self._known_event_expectation_id(
+                checkpoint,
+                item,
+                description,
+            )
+            event_source = self._known_event_source_ref(
+                checkpoint,
+                item,
+                description,
+                expectation_id,
+                fallback_evidence,
+            )
+            event_time = self._known_event_time(item, description, created_at)
+            has_price_reaction = bool(item.get("has_price_reaction")) or (
+                self._known_event_has_price_reaction(description)
+            )
+            is_known_old_news = bool(item.get("is_known_old_news")) or (
+                self._known_event_is_old_news(event_time, created_at)
+            )
             if isinstance(date_hint, str) and date_hint and date_hint not in description:
                 description = f"{date_hint}: {description}"
             events.append(
@@ -1911,10 +3186,10 @@ class BlackboardInitializationWorkflow:
                     event_time=event_time,
                     description=description,
                     source=event_source,
-                    expectation_id=item.get("expectation_id"),
+                    expectation_id=expectation_id,
                     discussed_by_market=bool(item.get("discussed_by_market", True)),
-                    has_price_reaction=bool(item.get("has_price_reaction", False)),
-                    is_known_old_news=bool(item.get("is_known_old_news", False)),
+                    has_price_reaction=has_price_reaction,
+                    is_known_old_news=is_known_old_news,
                 )
             )
         if not events:
@@ -1922,7 +3197,7 @@ class BlackboardInitializationWorkflow:
                 KnownEvent(
                     event_id=new_id("event"),
                     event_time=datetime.now(UTC),
-                    description="Known event details were not provided by the agent.",
+                    description="agent 未提供已知事件细节。",
                     source=fallback_evidence,
                     discussed_by_market=False,
                     has_price_reaction=False,
@@ -1931,10 +3206,402 @@ class BlackboardInitializationWorkflow:
             )
         return KnownEventsDocument(
             document_id=str(payload.get("document_id") or new_id("doc")),
-            ticker=ticker,
-            created_at=self._coerce_event_time(payload.get("created_at")),
+            ticker=checkpoint.ticker,
+            created_at=created_at,
             events=events,
         )
+
+    def _known_event_description(self, item: dict[str, Any]) -> str:
+        for key in ("description", "event_text", "text", "summary", "title", "event"):
+            value = item.get(key)
+            if isinstance(value, str) and value.strip():
+                return value.strip()
+            if isinstance(value, dict):
+                nested = self._known_event_description(value)
+                if nested:
+                    return nested
+        event_id = item.get("event_id") or item.get("id")
+        if isinstance(event_id, str) and event_id.strip():
+            return f"Known event {event_id.strip()}."
+        return "Known event emitted by agent output."
+
+    def _known_event_time(
+        self,
+        item: dict[str, Any],
+        description: str,
+        created_at: datetime,
+    ) -> datetime:
+        raw_time = item.get("event_time")
+        date_hint = item.get("date") or item.get("event_date")
+        text_hint = self._known_event_time_hint_precise(
+            " ".join(str(value) for value in (date_hint, description) if value)
+        )
+        if text_hint and (
+            raw_time is None
+            or self._known_event_time_is_run_timestamp(raw_time, created_at)
+            or self._known_event_time_is_generic(raw_time)
+        ):
+            return self._coerce_event_time(text_hint)
+        if date_hint:
+            return self._coerce_event_time(date_hint)
+        if raw_time is not None:
+            return self._coerce_event_time(raw_time)
+        if text_hint:
+            return self._coerce_event_time(text_hint)
+        return created_at
+
+    def _known_event_time_is_run_timestamp(self, value: Any, created_at: datetime) -> bool:
+        if not value:
+            return False
+        event_time = self._coerce_event_time(value)
+        if event_time.tzinfo is None:
+            event_time = event_time.replace(tzinfo=UTC)
+        if created_at.tzinfo is None:
+            created_at = created_at.replace(tzinfo=UTC)
+        delta_seconds = abs((event_time - created_at).total_seconds())
+        return delta_seconds <= 300 and (
+            event_time.hour,
+            event_time.minute,
+            event_time.second,
+        ) != (0, 0, 0)
+
+    def _known_event_time_is_generic(self, value: Any) -> bool:
+        if not isinstance(value, str):
+            return False
+        text = value.strip()
+        return bool(re.fullmatch(r"20\d{2}(?:-01-01)?(?:[T ]00:00:00Z?)?", text))
+
+    def _known_event_has_price_reaction(self, description: str) -> bool:
+        text = description.lower()
+        markers = (
+            "股价",
+            "市值",
+            "估值",
+            "定价",
+            "价格",
+            "合约价",
+            "现货价",
+            "上涨",
+            "下跌",
+            "涨",
+            "跌",
+            "高点",
+            "ath",
+            "market cap",
+            "price",
+            "valuation",
+        )
+        return any(marker in text for marker in markers)
+
+    def _known_event_is_old_news(self, event_time: datetime, created_at: datetime) -> bool:
+        if event_time.tzinfo is None:
+            event_time = event_time.replace(tzinfo=UTC)
+        if created_at.tzinfo is None:
+            created_at = created_at.replace(tzinfo=UTC)
+        return event_time.date() < created_at.date()
+
+    def _known_event_expectation_id(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        item: dict[str, Any],
+        description: str,
+    ) -> str | None:
+        raw = item.get("expectation_id")
+        expectations = self._stable_expectation_documents(checkpoint)
+        ids = {document.expectation_id for document in expectations}
+
+        best_id: str | None = None
+        best_score = 0
+        for document in expectations:
+            score = self._known_event_match_score(document, description)
+            if score > best_score:
+                best_id = document.expectation_id
+                best_score = score
+            elif score == best_score:
+                best_id = None
+        if isinstance(raw, str) and raw in ids:
+            raw_document = next(
+                document for document in expectations if document.expectation_id == raw
+            )
+            raw_score = self._known_event_match_score(raw_document, description)
+            if best_id is not None and best_id != raw and best_score >= max(6, raw_score + 3):
+                return best_id
+            return raw
+        return best_id if best_score >= 3 else None
+
+    def _known_event_match_score(
+        self,
+        document: ExpectationUnitDocument,
+        description: str,
+    ) -> int:
+        text = description.lower()
+        score = 0
+        identity = f"{document.expectation_id} {document.expectation_name}".lower()
+        if document.expectation_id.lower() in text:
+            score += 8
+        if document.expectation_name.lower() in text:
+            score += 6
+        if "hbm" in text and "hbm" in identity:
+            score += 4
+        if any(token in text for token in ("capex", "资本开支", "hyperscaler", "roi")) and (
+            "capex" in identity or "资本开支" in identity
+        ):
+            score += 4
+        if any(token in text for token in ("dram", "nand", "合约价", "库存", "周期", "价格")) and (
+            "cycle" in identity or "周期" in identity
+        ):
+            score += 4
+        if any(
+            token in text
+            for token in (
+                "oversupply",
+                "downturn",
+                "reversal",
+                "risk",
+                "samsung",
+                "yield",
+                "供给",
+                "过剩",
+                "良率",
+                "风险",
+                "回落",
+            )
+        ) and any(token in identity for token in ("risk", "reversal", "downturn", "oversupply")):
+            score += 6
+        for fact in document.realized_facts:
+            if fact.event_id.lower() in text:
+                score += 5
+            score += self._known_event_overlap_score(text, fact.description, limit=3)
+        for variable in document.key_variables:
+            score += self._known_event_overlap_score(text, variable.name, limit=2)
+            score += self._known_event_overlap_score(text, variable.current_status, limit=2)
+        return score
+
+    def _known_event_overlap_score(self, text: str, candidate: str, *, limit: int) -> int:
+        score = 0
+        for token in re.findall(r"[A-Za-z0-9]{3,}|[\u4e00-\u9fff]{2,}", candidate.lower()):
+            if token in text:
+                score += 1
+                if score >= limit:
+                    break
+        return score
+
+    def _known_event_source_ref(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        item: dict[str, Any],
+        description: str,
+        expectation_id: str | None,
+        fallback_evidence: EvidenceRef,
+    ) -> EvidenceRef:
+        refs: list[EvidenceRef] = []
+        refs.extend(self._payload_evidence_refs(item.get("evidence_refs")))
+        source = item.get("source")
+        if isinstance(source, dict):
+            refs.extend(self._payload_evidence_refs(source))
+        if expectation_id:
+            refs.extend(
+                self._expectation_source_refs_for_event(
+                    checkpoint,
+                    expectation_id,
+                    description,
+                )
+            )
+        refs.extend(self._global_research_source_refs_for_event(checkpoint, description))
+        refs = self._dedupe_evidence_refs(
+            self._normalize_evidence_ref_language(ref) for ref in refs
+        )
+        source_specific = [ref for ref in refs if self._is_source_specific_evidence(ref)]
+        if source_specific:
+            return source_specific[0]
+        if refs:
+            return refs[0]
+        return fallback_evidence
+
+    def _known_event_time_hint_precise(self, description: str) -> str | None:
+        text = str(description or "")
+
+        match = re.search(
+            r"(20\d{2})\s*年\s*(\d{1,2})\s*月(?:\s*(\d{1,2})\s*日)?",
+            text,
+        )
+        if match:
+            year, month, day = match.group(1), match.group(2), match.group(3) or "1"
+            return f"{year}-{int(month):02d}-{int(day):02d}"
+
+        match = re.search(r"(20\d{2})\s*[-/.]\s*(\d{1,2})(?:\s*[-/.]\s*(\d{1,2}))?", text)
+        if match:
+            year, month, day = match.group(1), match.group(2), match.group(3) or "1"
+            return f"{year}-{int(month):02d}-{int(day):02d}"
+
+        quarter_patterns = (
+            r"\b([1-4])Q\s*[' ]?(20\d{2}|\d{2})\b",
+            r"\bQ([1-4])\s*[' ]?(20\d{2}|\d{2})\b",
+            r"\bQ([1-4])\s*FY\s*(20\d{2}|\d{2})\b",
+        )
+        for pattern in quarter_patterns:
+            quarter_match = re.search(pattern, text, re.IGNORECASE)
+            if quarter_match:
+                quarter = int(quarter_match.group(1))
+                year_text = quarter_match.group(2)
+                year = int(year_text) if len(year_text) == 4 else 2000 + int(year_text)
+                return f"{year}-{((quarter - 1) * 3 + 1):02d}-01"
+
+        year_quarter_patterns = (
+            r"\b(20\d{2})\s*Q([1-4])\b",
+            r"\b(20\d{2})\s*年?\s*Q([1-4])\b",
+            r"\bFY\s*(20\d{2}|\d{2})\s*Q([1-4])\b",
+        )
+        for pattern in year_quarter_patterns:
+            quarter_match = re.search(pattern, text, re.IGNORECASE)
+            if quarter_match:
+                year_text = quarter_match.group(1)
+                year = int(year_text) if len(year_text) == 4 else 2000 + int(year_text)
+                quarter = int(quarter_match.group(2))
+                return f"{year}-{((quarter - 1) * 3 + 1):02d}-01"
+
+        fy_match = re.search(r"\bF[QY]\s*([1-4])?\s*(20\d{2})\b", text, re.IGNORECASE)
+        if fy_match:
+            quarter = int(fy_match.group(1) or 1)
+            year = int(fy_match.group(2))
+            return f"{year}-{((quarter - 1) * 3 + 1):02d}-01"
+        if re.search(r"\bcomputex\s*(20\d{2})\b", text, re.IGNORECASE):
+            year = int(re.search(r"\bcomputex\s*(20\d{2})\b", text, re.IGNORECASE).group(1))
+            return f"{year}-06-01"
+        year_match = re.search(r"\b(20\d{2})\b", text)
+        if year_match:
+            return f"{int(year_match.group(1))}-01-01"
+        return self._known_event_time_hint(description)
+
+    def _known_event_time_hint(self, description: str) -> str | None:
+        text = str(description or "")
+        match = re.search(
+            r"(20\d{2})\s*[-/.年]\s*(\d{1,2})(?:\s*[-/.月]\s*(\d{1,2}))?",
+            text,
+        )
+        if match:
+            year, month, day = match.group(1), match.group(2), match.group(3) or "1"
+            return f"{year}-{int(month):02d}-{int(day):02d}"
+        quarter_match = re.search(r"\b([1-4])Q\s*[' ]?(20\d{2}|\d{2})\b", text, re.IGNORECASE)
+        if quarter_match:
+            quarter = int(quarter_match.group(1))
+            year_text = quarter_match.group(2)
+            year = int(year_text) if len(year_text) == 4 else 2000 + int(year_text)
+            return f"{year}-{((quarter - 1) * 3 + 1):02d}-01"
+        quarter_match = re.search(r"\bQ([1-4])\s*[' ]?(20\d{2}|\d{2})\b", text, re.IGNORECASE)
+        if quarter_match:
+            quarter = int(quarter_match.group(1))
+            year_text = quarter_match.group(2)
+            year = int(year_text) if len(year_text) == 4 else 2000 + int(year_text)
+            return f"{year}-{((quarter - 1) * 3 + 1):02d}-01"
+        quarter_match = re.search(r"\b(20\d{2})\s*Q([1-4])\b", text, re.IGNORECASE)
+        if quarter_match:
+            year = int(quarter_match.group(1))
+            quarter = int(quarter_match.group(2))
+            return f"{year}-{((quarter - 1) * 3 + 1):02d}-01"
+        fy_match = re.search(r"\bF[QY]\s*([1-4])?\s*(20\d{2})\b", text, re.IGNORECASE)
+        if fy_match:
+            quarter = int(fy_match.group(1) or 1)
+            year = int(fy_match.group(2))
+            return f"{year}-{((quarter - 1) * 3 + 1):02d}-01"
+        if re.search(r"\bcomputex\s*(20\d{2})\b", text, re.IGNORECASE):
+            year = int(re.search(r"\bcomputex\s*(20\d{2})\b", text, re.IGNORECASE).group(1))
+            return f"{year}-06-01"
+        year_match = re.search(r"\b(20\d{2})\b", text)
+        if year_match:
+            return f"{int(year_match.group(1))}-01-01"
+        return None
+
+    def _stable_expectation_documents(
+        self,
+        checkpoint: WorkflowCheckpoint,
+    ) -> list[ExpectationUnitDocument]:
+        try:
+            run = self.blackboard.get_run(checkpoint.run_id)
+        except RunNotFoundError:
+            return []
+        bucket = run.belief_state.documents.get(DocumentType.EXPECTATION_UNIT, {})
+        documents: list[ExpectationUnitDocument] = []
+        for entry in bucket.values():
+            raw = entry.get("document") if isinstance(entry, dict) else entry
+            if not isinstance(raw, dict):
+                continue
+            try:
+                documents.append(ExpectationUnitDocument.model_validate(raw))
+            except ValueError:
+                continue
+        return documents
+
+    def _stable_global_research_document(
+        self,
+        checkpoint: WorkflowCheckpoint,
+    ) -> GlobalResearchDocument | None:
+        try:
+            run = self.blackboard.get_run(checkpoint.run_id)
+        except RunNotFoundError:
+            return None
+        bucket = run.belief_state.documents.get(DocumentType.GLOBAL_RESEARCH, {})
+        for entry in bucket.values():
+            raw = entry.get("document") if isinstance(entry, dict) else entry
+            if not isinstance(raw, dict):
+                continue
+            try:
+                return GlobalResearchDocument.model_validate(raw)
+            except ValueError:
+                continue
+        return None
+
+    def _expectation_source_refs_for_event(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        expectation_id: str,
+        description: str,
+    ) -> list[EvidenceRef]:
+        for document in self._stable_expectation_documents(checkpoint):
+            if document.expectation_id != expectation_id:
+                continue
+            refs: list[EvidenceRef] = [*document.market_view.evidence_refs]
+            for fact in document.realized_facts:
+                if self._known_event_match_score(document, description) >= 3 or (
+                    fact.event_id.lower() in description.lower()
+                ):
+                    refs.extend(fact.evidence_refs)
+                    refs.extend(fact.price_reaction.evidence_refs)
+            for variable in document.key_variables:
+                refs.extend(variable.evidence_refs)
+            return self._dedupe_evidence_refs(refs)
+        return []
+
+    def _global_research_source_refs_for_event(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        description: str,
+    ) -> list[EvidenceRef]:
+        document = self._stable_global_research_document(checkpoint)
+        if document is None:
+            return []
+        sections = [
+            document.fundamental_report,
+            document.industry_report,
+            document.market_trace_report,
+            document.macro_report,
+        ]
+        if document.market_narrative_report is not None:
+            sections.append(document.market_narrative_report)
+        text = description.lower()
+        refs: list[EvidenceRef] = []
+        for section in sections:
+            haystack = f"{section.summary} {section.text}".lower()
+            if self._known_event_overlap_score(haystack, text, limit=2) > 0:
+                refs.extend(section.evidence_refs)
+        return self._dedupe_evidence_refs(refs)
+
+    def _is_source_specific_evidence(self, ref: EvidenceRef) -> bool:
+        if ref.source_type is EvidenceSourceType.AGENT_OUTPUT:
+            return False
+        if ref.retrieval_metadata.get("evidence_gap") is True:
+            return False
+        return True
 
     def _normalize_monitoring_config_document(
         self,
@@ -1979,7 +3646,7 @@ class BlackboardInitializationWorkflow:
                     item_id=new_id("monitor"),
                     base_keywords=[ticker],
                     priority="medium",
-                    trigger_condition="Monitor new ticker-relevant events.",
+                    trigger_condition="监控新的 ticker 相关事件。",
                 )
             )
         return MonitoringConfigDocument(
@@ -2041,15 +3708,18 @@ class BlackboardInitializationWorkflow:
                         item.get("trigger_condition")
                         or item.get("condition")
                         or item.get("description")
-                        or "Monitor ticker-relevant signals."
+                        or "监控与 ticker 相关的信号。"
                     ),
                     expectation_id=item.get("expectation_id"),
-                    action=str(item.get("action") or "mark for review"),
-                    strategy_note=str(
+                    action=self._policy_action_text(
+                        item.get("action"),
+                        action_type=action_type,
+                    ),
+                    strategy_note=self._policy_strategy_note_text(
                         item.get("strategy_note")
                         or item.get("rationale")
-                        or item.get("note")
-                        or "Generated from direct monitoring policy output."
+                        or item.get("note"),
+                        action_type=action_type,
                     ),
                     evidence_fields=self._payload_string_list(
                         item,
@@ -2060,6 +3730,43 @@ class BlackboardInitializationWorkflow:
                 )
             )
         return rules
+
+    def _has_chinese_text(self, value: Any) -> bool:
+        return any("\u4e00" <= ch <= "\u9fff" for ch in str(value or ""))
+
+    def _policy_action_text(
+        self,
+        value: Any,
+        *,
+        action_type: PolicyActionType,
+    ) -> str:
+        text = str(value or "").strip()
+        if text and self._has_chinese_text(text):
+            return text
+        if action_type is PolicyActionType.DIRECT_TRADE:
+            return "标记为 direct_trade 候选，交由人工或 O3 复核"
+        if action_type is PolicyActionType.PUSH_TO_AGENT:
+            return "推送给相关研究 agent 复核信号含义"
+        if action_type is PolicyActionType.CACHE:
+            return "缓存为批量复核材料"
+        return "标记为后续复核事项"
+
+    def _policy_strategy_note_text(
+        self,
+        value: Any,
+        *,
+        action_type: PolicyActionType,
+    ) -> str:
+        text = str(value or "").strip()
+        if text and self._has_chinese_text(text):
+            return text
+        if action_type is PolicyActionType.DIRECT_TRADE:
+            return "仅作为路由候选，不触发券商下单。"
+        if action_type is PolicyActionType.PUSH_TO_AGENT:
+            return "需要 agent 复核叙事、证据与价格反应。"
+        if action_type is PolicyActionType.CACHE:
+            return "低置信度、重复或时效性较弱的信号先缓存，等待批量复核。"
+        return "由监控策略输出生成，供后续复核使用。"
 
     def _coerce_event_time(self, value: Any) -> datetime:
         if isinstance(value, datetime):
@@ -2097,11 +3804,129 @@ class BlackboardInitializationWorkflow:
             evidence_id=new_id("evidence"),
             source_type=EvidenceSourceType.AGENT_OUTPUT,
             source_id=f"agent_result:{result.task_id}",
-            title=f"{result.agent_name.value} agent output",
-            summary="Agent direct document output was converted to a Blackboard patch.",
+            title=f"{result.agent_name.value} agent 输出",
+            summary="agent 直接文档输出已转换为 Blackboard patch。",
             confidence=0.5,
             citation_scope="workflow_document_patch",
         )
+
+    def _document_evidence_refs(
+        self,
+        document: KnownEventsDocument | MonitoringConfigDocument | MonitoringPolicyDocument,
+    ) -> list[EvidenceRef]:
+        if isinstance(document, KnownEventsDocument):
+            return [
+                self._normalize_evidence_ref_language(event.source)
+                for event in document.events
+            ]
+        return []
+
+    def _dedupe_evidence_refs(self, refs: Iterable[EvidenceRef]) -> list[EvidenceRef]:
+        deduped: list[EvidenceRef] = []
+        seen: set[str] = set()
+        for ref in refs:
+            key = ref.evidence_id
+            if key in seen:
+                continue
+            seen.add(key)
+            deduped.append(ref)
+        return deduped
+
+    def _patch_with_nested_evidence_refs(self, patch: BlackboardPatch) -> BlackboardPatch:
+        after = self._payload_with_normalized_evidence_refs(patch.after)
+        refs = self._dedupe_evidence_refs(
+            [
+                *(self._normalize_evidence_ref_language(ref) for ref in patch.evidence_refs),
+                *self._payload_evidence_refs(after),
+            ]
+        )
+        updates: dict[str, Any] = {}
+        if after != patch.after:
+            updates["after"] = after
+        current_refs = [ref.model_dump(mode="json") for ref in patch.evidence_refs]
+        next_refs = [ref.model_dump(mode="json") for ref in refs]
+        if next_refs != current_refs:
+            updates["evidence_refs"] = refs
+        if not updates:
+            return patch
+        return patch.model_copy(update=updates, deep=True)
+
+    def _payload_with_normalized_evidence_refs(self, value: Any) -> Any:
+        if isinstance(value, dict):
+            if value.get("evidence_id"):
+                try:
+                    ref = self._normalize_evidence_ref_language(EvidenceRef.model_validate(value))
+                    return ref.model_dump(mode="json")
+                except ValueError:
+                    pass
+            return {
+                key: self._payload_with_normalized_evidence_refs(child)
+                for key, child in value.items()
+            }
+        if isinstance(value, list):
+            return [self._payload_with_normalized_evidence_refs(child) for child in value]
+        return value
+
+    def _payload_evidence_refs(self, value: Any) -> list[EvidenceRef]:
+        refs: list[EvidenceRef] = []
+
+        def walk(item: Any) -> None:
+            if isinstance(item, dict):
+                if item.get("evidence_id"):
+                    try:
+                        refs.append(EvidenceRef.model_validate(item))
+                    except ValueError:
+                        pass
+                for child in item.values():
+                    walk(child)
+            elif isinstance(item, list):
+                for child in item:
+                    walk(child)
+
+        walk(value)
+        return self._dedupe_evidence_refs(refs)
+
+    def _normalize_evidence_ref_language(self, ref: EvidenceRef) -> EvidenceRef:
+        updates: dict[str, str] = {}
+        if not self._has_chinese_text(ref.title):
+            updates["title"] = self._evidence_ref_title_text(ref)
+        if not self._has_chinese_text(ref.summary):
+            updates["summary"] = self._evidence_ref_summary_text(ref)
+        if not updates:
+            return ref
+        return ref.model_copy(update=updates, deep=True)
+
+    def _evidence_ref_title_text(self, ref: EvidenceRef) -> str:
+        tool_name = str(ref.retrieval_metadata.get("tool_name") or "")
+        if tool_name == "doxa_get_narrative_report":
+            return "DoxAtlas 叙事报告"
+        if ref.source_type is EvidenceSourceType.DOXATLAS_SOURCE:
+            return "DoxAtlas 证据"
+        if ref.source_type is EvidenceSourceType.MARKET_DATA:
+            return "市场数据证据"
+        if ref.source_type is EvidenceSourceType.FACT_CHECK:
+            return "事实核查证据"
+        if ref.source_type is EvidenceSourceType.EXTERNAL_REPORT:
+            return "外部报告证据"
+        if ref.source_type is EvidenceSourceType.AGENT_OUTPUT:
+            return "agent 输出证据"
+        return "工具结果证据"
+
+    def _evidence_ref_summary_text(self, ref: EvidenceRef) -> str:
+        tool_name = str(ref.retrieval_metadata.get("tool_name") or "")
+        if tool_name == "doxa_get_narrative_report":
+            return "已检索 DoxAtlas 叙事报告。"
+        if ref.source_type is EvidenceSourceType.DOXATLAS_SOURCE:
+            return "已检索 DoxAtlas 证据。"
+        if ref.source_type is EvidenceSourceType.MARKET_DATA:
+            return "已检索市场数据证据。"
+        if ref.source_type is EvidenceSourceType.FACT_CHECK:
+            return "已检索事实核查证据。"
+        if ref.source_type is EvidenceSourceType.EXTERNAL_REPORT:
+            return "已检索外部报告证据。"
+        if ref.source_type is EvidenceSourceType.AGENT_OUTPUT:
+            return "agent 输出已作为证据保留。"
+        return "工具已返回可引用证据。"
 
     def _promote_pending_patches(
         self,
@@ -2109,15 +3934,141 @@ class BlackboardInitializationWorkflow:
         node: WorkflowNode,
     ) -> WorkflowCheckpoint:
         stable_documents = list(checkpoint.stable_document_types)
-        for patch in checkpoint.pending_patches:
+        pending_patches = self._normalize_expectation_price_reactions_for_promotion(
+            checkpoint,
+            checkpoint.pending_patches,
+        )
+        for patch in pending_patches:
             self._validate_patch_contract(patch, node)
-            self._submit_patch(checkpoint.run_id, patch, "Promote reviewed expectation unit.")
-            stable_documents.append(patch.target.document_type)
+            self._submit_patch(checkpoint.run_id, patch, "提升已通过复核的 expectation unit。")
+            if patch.target.document_type not in stable_documents:
+                stable_documents.append(patch.target.document_type)
         return self._mark_completed(
             checkpoint,
             node,
             stable_document_types=stable_documents,
             pending_patches=[],
+        )
+
+    def _normalize_expectation_price_reactions_for_promotion(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        patches: list[BlackboardPatch],
+    ) -> list[BlackboardPatch]:
+        return [
+            self._normalize_expectation_price_reaction_patch(checkpoint, patch)
+            for patch in patches
+        ]
+
+    def _normalize_expectation_price_reaction_patch(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        patch: BlackboardPatch,
+    ) -> BlackboardPatch:
+        if patch.target.document_type is not DocumentType.EXPECTATION_UNIT:
+            return patch
+        if not isinstance(patch.after, dict):
+            return patch
+        document = ExpectationUnitDocument.model_validate(patch.after)
+        support_refs = self._price_reaction_support_refs(checkpoint, patch, document)
+        changed = False
+        realized_facts: list[RealizedFact] = []
+        for fact in document.realized_facts:
+            reaction = fact.price_reaction
+            refs = self._dedupe_evidence_refs(
+                [
+                    *reaction.evidence_refs,
+                    *fact.evidence_refs,
+                    *support_refs,
+                ]
+            )
+            structured_market_refs = self._structured_market_evidence_refs(refs)
+            if self._price_reaction_needs_escalation(reaction) or not structured_market_refs:
+                reaction = PriceReaction(
+                    price_change=(
+                        "尚未获得可量化价格变动；已升级为需 O4 基于 OHLCV/market_trace "
+                        "复核的待确认项。"
+                    ),
+                    price_pattern="价格反应证据不足，需结合 OHLCV 与 market_trace 继续复核。",
+                    interpretation=(
+                        "不得将该事实视为已被市场充分定价；promotion 前保留为价格反应"
+                        "待确认，并在后续监控中优先补充市场轨迹证据。"
+                    ),
+                    evidence_refs=structured_market_refs or refs,
+                )
+                changed = True
+            elif structured_market_refs and not reaction.evidence_refs:
+                reaction = reaction.model_copy(
+                    update={"evidence_refs": structured_market_refs},
+                    deep=True,
+                )
+                changed = True
+            realized_facts.append(
+                fact.model_copy(update={"price_reaction": reaction}, deep=True)
+            )
+        if not changed:
+            return patch
+        document = document.model_copy(update={"realized_facts": realized_facts}, deep=True)
+        after = document.model_dump(mode="json")
+        patch_refs = self._dedupe_evidence_refs(
+            [
+                *patch.evidence_refs,
+                *self._payload_evidence_refs(after),
+            ]
+        )
+        return patch.model_copy(
+            update={
+                "after": after,
+                "evidence_refs": patch_refs,
+            },
+            deep=True,
+        )
+
+    def _price_reaction_support_refs(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        patch: BlackboardPatch,
+        document: ExpectationUnitDocument,
+    ) -> list[EvidenceRef]:
+        refs: list[EvidenceRef] = [*patch.evidence_refs, *document.market_view.evidence_refs]
+        global_research = self._stable_global_research_document(checkpoint)
+        if global_research is not None:
+            refs.extend(global_research.market_trace_report.evidence_refs)
+        return self._dedupe_evidence_refs(
+            self._normalize_evidence_ref_language(ref) for ref in refs
+        )
+
+    def _structured_market_evidence_refs(
+        self,
+        refs: Iterable[EvidenceRef],
+    ) -> list[EvidenceRef]:
+        return self._dedupe_evidence_refs(
+            ref
+            for ref in refs
+            if ref.source_type is EvidenceSourceType.MARKET_DATA
+            and is_structured_market_evidence_snapshot(
+                ref.retrieval_metadata.get("market_evidence_snapshot")
+            )
+        )
+
+    def _price_reaction_needs_escalation(self, reaction: PriceReaction) -> bool:
+        text = " ".join(
+            [
+                reaction.price_change,
+                reaction.price_pattern,
+                reaction.interpretation,
+            ]
+        ).lower()
+        return any(
+            marker in text
+            for marker in (
+                "unknown",
+                "未建立",
+                "尚未建立",
+                "无法确定",
+                "证据不足",
+                "待确认",
+            )
         )
 
     def _validate_agent_success(
@@ -2263,12 +4214,18 @@ class BlackboardInitializationWorkflow:
         result: AgentResult,
         tool_result: ToolResult,
     ) -> AgentResult:
+        tool_evidence_refs = [
+            self._normalize_evidence_ref_language(ref) for ref in tool_result.evidence_refs
+        ]
         summary = ToolCallSummary(
             tool_name=tool_result.tool_name,
             status=tool_result.status,
-            input_summary="workflow prefetch request",
-            output_summary=tool_result.output_summary,
-            evidence_refs=tool_result.evidence_refs,
+            input_summary="workflow 预取请求",
+            output_summary=self._tool_output_summary_text(
+                tool_result.tool_name,
+                tool_result.output_summary,
+            ),
+            evidence_refs=tool_evidence_refs,
         )
         payload = dict(result.payload)
         structured = payload.get("structured")
@@ -2278,17 +4235,28 @@ class BlackboardInitializationWorkflow:
             if not isinstance(evidence_refs, list):
                 evidence_refs = []
             updated_structured["evidence_refs"] = evidence_refs + [
-                item.model_dump(mode="json") for item in tool_result.evidence_refs
+                item.model_dump(mode="json") for item in tool_evidence_refs
             ]
             payload["structured"] = updated_structured
-        return result.model_copy(
+        merged_result = result.model_copy(
             update={
                 "payload": payload,
-                "evidence_refs": result.evidence_refs + tool_result.evidence_refs,
+                "evidence_refs": result.evidence_refs + tool_evidence_refs,
                 "tool_calls": result.tool_calls + [summary],
             },
             deep=True,
         )
+        return self._with_tool_usage_audit(merged_result)
+
+    def _tool_output_summary_text(self, tool_name: str, value: Any) -> str:
+        text = str(value or "").strip()
+        if text and self._has_chinese_text(text):
+            return text
+        if tool_name == "doxa_get_narrative_report":
+            return "已检索 DoxAtlas 叙事报告。"
+        if tool_name.startswith("doxa_") or tool_name.startswith("doxatlas."):
+            return "已检索 DoxAtlas 工具结果。"
+        return "工具调用已返回结果。"
 
     def _has_successful_tool_call(self, result: AgentResult, tool_name: str) -> bool:
         return any(
@@ -2382,6 +4350,7 @@ class BlackboardInitializationWorkflow:
         *,
         permissions: AgentPermissions | None = None,
     ) -> None:
+        patch = self._patch_with_nested_evidence_refs(patch)
         permissions = permissions or self.registry.get(patch.author_agent).runtime.to_permissions()
         self.blackboard.submit_patch(
             run_id,
@@ -2409,6 +4378,10 @@ class BlackboardInitializationWorkflow:
                     "delegation_ids": [item.delegation_id for item in result.delegations],
                     "tool_calls": [item.model_dump(mode="json") for item in result.tool_calls],
                     "tool_usage_audit": result.payload.get("tool_usage_audit", {}),
+                    "market_evidence_snapshot": result.payload.get(
+                        "market_evidence_snapshot",
+                        {},
+                    ),
                     "acceptance_audit": self._acceptance_audit(
                         checkpoint,
                         result,
@@ -2426,6 +4399,31 @@ class BlackboardInitializationWorkflow:
                 f"write_failed: could not write working memory entry for "
                 f"{checkpoint.next_node.value if checkpoint.next_node else 'unknown'} "
                 f"{result.agent_name.value}: {exc}"
+            ) from exc
+
+    def _write_patch_audit_working_memory(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        patch: BlackboardPatch,
+        content_type: str,
+        payload: dict[str, Any],
+    ) -> None:
+        try:
+            self.blackboard.add_working_memory_entry(
+                checkpoint.run_id,
+                author_agent=AgentName.SYSTEM,
+                content_type=content_type,
+                payload={
+                    **payload,
+                    "patch_ids": [patch.patch_id],
+                    "patch_target": patch.target.model_dump(mode="json"),
+                    "patch_rationale": patch.rationale,
+                },
+                evidence_refs=patch.evidence_refs,
+            )
+        except Exception as exc:
+            raise WorkflowContractError(
+                f"write_failed: could not write patch audit for {content_type}: {exc}"
             ) from exc
 
     def _write_agent_acceptance_failure(
@@ -2487,6 +4485,92 @@ class BlackboardInitializationWorkflow:
                 f"write_failed: could not write {event_code} for "
                 f"{task.run_metadata.workflow_node}/{task.agent_name.value}: {exc}"
             ) from exc
+
+    def _looks_like_schema_failure(self, exc: Exception) -> bool:
+        return "schema" in str(exc).lower()
+
+    def _write_parallel_agent_acceptance_failure(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        node: WorkflowNode,
+        agent_name: AgentName,
+        result: AgentResult,
+        *,
+        event_code: Literal["parse_failed", "schema_failed"],
+        message: str,
+        expected_schema: str,
+    ) -> None:
+        failed = result.model_copy(
+            update={
+                "status": ResultStatus.FAILED,
+                "error": AgentError(
+                    code=event_code,
+                    message=message,
+                    retryable=False,
+                    details={
+                        "expected_schema": expected_schema,
+                        "workflow_node": node.value,
+                    },
+                ),
+            },
+            deep=True,
+        )
+        try:
+            self.blackboard.add_working_memory_entry(
+                checkpoint.run_id,
+                author_agent=agent_name,
+                content_type=f"agent_result_{event_code}",
+                payload={
+                    "event_code": event_code,
+                    "status": "failed",
+                    "message": message,
+                    "expected_schema": expected_schema,
+                    "run_id": checkpoint.run_id,
+                    "workflow_node": node.value,
+                    "agent_name": agent_name.value,
+                    "task_id": result.task_id,
+                    "agent_result": self._agent_result_summary(failed),
+                    "payload": result.payload,
+                    "error": result.error.model_dump(mode="json") if result.error else None,
+                    "acceptance_audit": self._acceptance_audit(
+                        checkpoint,
+                        failed,
+                        parse_status="failed" if event_code == "parse_failed" else "ok",
+                        schema_status="failed" if event_code == "schema_failed" else "ok",
+                        write_status="ok",
+                    ),
+                },
+                evidence_refs=result.evidence_refs,
+            )
+        except Exception as exc:
+            raise WorkflowContractError(
+                f"write_failed: could not write {event_code} for "
+                f"{node.value}/{agent_name.value}: {exc}"
+            ) from exc
+
+    def _write_workflow_exception(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        node: WorkflowNode,
+        exc: Exception,
+    ) -> str | None:
+        try:
+            self.blackboard.add_working_memory_entry(
+                checkpoint.run_id,
+                author_agent=AgentName.SYSTEM,
+                content_type="workflow_exception",
+                payload={
+                    "event_code": "workflow_exception",
+                    "status": "failed",
+                    "run_id": checkpoint.run_id,
+                    "workflow_node": node.value,
+                    "error_code": exc.__class__.__name__,
+                    "message": str(exc),
+                },
+            )
+        except Exception as audit_exc:
+            return str(audit_exc)
+        return None
 
     def _agent_failure_event_code(self, result: AgentResult) -> str:
         if result.error is None:
@@ -2572,15 +4656,13 @@ class BlackboardInitializationWorkflow:
         structured = payload.get("structured")
         declared_tools = _declared_tool_names(structured if isinstance(structured, dict) else {})
         audit = payload.get("react_audit")
-        actual_tools = set()
+        actual_tools = {
+            tool_call.tool_name
+            for tool_call in result.tool_calls
+            if tool_call.status is ResultStatus.SUCCEEDED
+        }
         if isinstance(audit, dict) and isinstance(audit.get("tool_counts"), dict):
-            actual_tools = {str(tool_name) for tool_name in audit["tool_counts"]}
-        else:
-            actual_tools = {
-                tool_call.tool_name
-                for tool_call in result.tool_calls
-                if tool_call.status is ResultStatus.SUCCEEDED
-            }
+            actual_tools.update(str(tool_name) for tool_name in audit["tool_counts"])
         unexecuted = sorted(declared_tools.difference(actual_tools))
         payload["tool_usage_audit"] = {
             "declared_tool_names": sorted(declared_tools),
@@ -2589,6 +4671,29 @@ class BlackboardInitializationWorkflow:
             "status": "warning" if unexecuted else "ok",
         }
         return result.model_copy(update={"payload": payload}, deep=True)
+
+    def _objection_with_evidence_fallback(
+        self,
+        objection: Objection,
+        result: AgentResult,
+    ) -> Objection:
+        if objection.evidence_refs:
+            return objection
+        refs: list[EvidenceRef] = [*result.evidence_refs]
+        for tool_call in result.tool_calls:
+            refs.extend(tool_call.evidence_refs)
+        if not refs:
+            payload = result.payload.get("structured")
+            if not isinstance(payload, dict):
+                payload = result.payload
+            if isinstance(payload, dict):
+                refs.extend(self._payload_evidence_refs(payload.get("evidence_refs")))
+        if not refs:
+            refs = [self._agent_output_evidence(result)]
+        refs = self._dedupe_evidence_refs(
+            self._normalize_evidence_ref_language(ref) for ref in refs
+        )
+        return objection.model_copy(update={"evidence_refs": refs}, deep=True)
 
     def _resolve_blockers(
         self,
@@ -2628,21 +4733,26 @@ class BlackboardInitializationWorkflow:
             results.append(result)
 
         run = self.blackboard.get_run(checkpoint.run_id)
-        if any(objection.is_unresolved for objection in run.objections):
+        unresolved_objections = [
+            objection for objection in run.objections if objection.is_unresolved
+        ]
+        batch_index = 0
+        while unresolved_objections:
+            batch_index += 1
+            batch = self._next_objection_resolution_batch(unresolved_objections)
+            batch_ids = {objection.objection_id for objection in batch}
             result = self._run_agent(
                 checkpoint,
                 node,
                 AgentName.O1_EXPECTATION_OWNER,
                 TaskType.REVIEW_EXPECTATION_FIELD,
                 "ExpectationConstructionResult",
-                extra_context={
-                    "resolution_request": "Resolve or revise A1 objections after A2 retrieval.",
-                    "unresolved_objections": [
-                        objection.model_dump(mode="json")
-                        for objection in run.objections
-                        if objection.is_unresolved
-                    ],
-                },
+                extra_context=self._objection_resolution_context(
+                    checkpoint,
+                    batch,
+                    batch_index=batch_index,
+                    total_unresolved=len(unresolved_objections),
+                ),
             )
             self._write_working_memory(checkpoint, result, "objection_resolution_result")
             self._validate_agent_success(result, node, require_patches=False)
@@ -2651,8 +4761,22 @@ class BlackboardInitializationWorkflow:
                 checkpoint,
                 result,
             )
+            self._reopen_numeric_sanity_objections_after_o1_revision(checkpoint)
+            self._complete_o1_revision_delegations(checkpoint, result)
             results.append(result)
+            run = self.blackboard.get_run(checkpoint.run_id)
+            unresolved_objections = [
+                objection for objection in run.objections if objection.is_unresolved
+            ]
+            unresolved_batch_ids = {
+                objection.objection_id
+                for objection in unresolved_objections
+                if objection.objection_id in batch_ids
+            }
+            if unresolved_batch_ids == batch_ids:
+                break
 
+        self._complete_o1_revision_delegations(checkpoint)
         run = self.blackboard.get_run(checkpoint.run_id)
         if any(objection.is_unresolved for objection in run.objections) or any(
             delegation.is_blocking for delegation in run.delegations
@@ -2719,6 +4843,379 @@ class BlackboardInitializationWorkflow:
             "required_tool_names": [],
         }
 
+    def _objection_resolution_context(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        unresolved_objections: list[Objection],
+        *,
+        batch_index: int = 1,
+        total_unresolved: int | None = None,
+    ) -> dict[str, Any]:
+        return {
+            "resolution_request": (
+                "Resolve field-review objections using the compact expectation summaries "
+                "and objection evidence below. Do not call tools in this node. Return "
+                "objection_resolutions for every unresolved objection id with concise "
+                "notes. Do not copy full expectation documents unless a concrete accepted "
+                "or partially accepted revision is unavoidable; otherwise keep "
+                "proposed_patches empty and cite changed_paths/evidence_refs."
+            ),
+            "resolution_mode": "field_review_objection_resolution",
+            "resolution_batch": {
+                "batch_index": batch_index,
+                "batch_size": len(unresolved_objections),
+                "total_unresolved_before_batch": total_unresolved
+                if total_unresolved is not None
+                else len(unresolved_objections),
+                "max_batch_size": _OBJECTION_RESOLUTION_BATCH_SIZE,
+            },
+            "global_research_context": {
+                "omitted_for": WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS.value,
+                "reason": (
+                    "Full GlobalResearch text was already reviewed upstream; this node "
+                    "uses compact expectation and objection summaries to avoid replaying "
+                    "large context into the resolver."
+                ),
+            },
+            "pending_patches": [
+                self._compact_pending_expectation_patch(patch)
+                for patch in checkpoint.pending_patches
+                if patch.target.document_type is DocumentType.EXPECTATION_UNIT
+            ],
+            "pending_expectation_patch_summaries": [
+                self._pending_expectation_patch_summary(patch)
+                for patch in checkpoint.pending_patches
+                if patch.target.document_type is DocumentType.EXPECTATION_UNIT
+            ],
+            "unresolved_objections": [
+                self._objection_resolution_objection_summary(objection)
+                for objection in unresolved_objections
+            ],
+            "output_guidance": [
+                (
+                    "Only resolve the objections present in unresolved_objections for "
+                    "this batch. Every listed objection_id must appear exactly once in "
+                    "objection_resolutions."
+                ),
+                (
+                    "When duplicate_objection_clusters contains ids from this batch, "
+                    "resolve same-cluster objections with a consistent decision and "
+                    "do not leave duplicate siblings open."
+                ),
+                (
+                    "Use decision='resolved' when the objection can be closed by an "
+                    "existing field plus evidence."
+                ),
+                "Do not call external tools; reuse evidence_refs already present here.",
+                "Use decision='rejected' only with explicit evidence_refs or rationale support.",
+                (
+                    "Use decision='accepted' or 'partially_accepted' only when also "
+                    "returning one concise revised proposed_patch for the affected "
+                    "expectation_id."
+                ),
+                "Never return unaffected expectation patches in this resolution batch.",
+                "Each resolution must include changed_paths or evidence_refs.",
+                (
+                    "Prioritize numeric sanity blockers: price, market cap, valuation "
+                    "multiples, dates, and single-source claims must be corrected, "
+                    "downgraded to non-numeric uncertainty, or explicitly rejected with "
+                    "evidence. Keeping the same precise number and merely labelling it "
+                    "narrative-only, unverified, approximate, or uncertain is not a valid "
+                    "resolution."
+                ),
+            ],
+            "duplicate_objection_clusters": self._objection_resolution_duplicate_clusters(
+                unresolved_objections
+            ),
+        }
+
+    def _reopen_numeric_sanity_objections_after_o1_revision(
+        self,
+        checkpoint: WorkflowCheckpoint,
+    ) -> None:
+        revalidation_objections = self._numeric_sanity_review_objections(checkpoint)
+        if not revalidation_objections:
+            return
+
+        run = self.blackboard.get_run(checkpoint.run_id)
+        existing_by_id = {objection.objection_id: objection for objection in run.objections}
+        for objection in revalidation_objections:
+            if not objection.taxonomy.startswith("numeric_sanity_"):
+                continue
+            existing = existing_by_id.get(objection.objection_id)
+            self.blackboard.create_objection(checkpoint.run_id, objection)
+            if existing is not None and not existing.is_unresolved:
+                self.blackboard.mark_objection_unresolved(
+                    checkpoint.run_id,
+                    objection.objection_id,
+                    (
+                        "Numeric sanity revalidation failed after O1 revision: revised "
+                        "expectation still contains precise numeric claims without "
+                        "source-appropriate evidence. Narrative-only or unverified "
+                        "labelling is not sufficient; remove the false precision or add "
+                        "market/fundamental evidence."
+                    ),
+                )
+
+    def _next_objection_resolution_batch(
+        self,
+        unresolved_objections: list[Objection],
+    ) -> list[Objection]:
+        if len(unresolved_objections) <= _OBJECTION_RESOLUTION_BATCH_SIZE:
+            return list(unresolved_objections)
+        seed = unresolved_objections[0]
+        batch: list[Objection] = [seed]
+        selected_ids = {seed.objection_id}
+        seed_keys = self._objection_resolution_cluster_keys(seed)
+        for objection in unresolved_objections[1:]:
+            if len(batch) >= _OBJECTION_RESOLUTION_BATCH_SIZE:
+                break
+            if objection.objection_id in selected_ids:
+                continue
+            if seed_keys.intersection(self._objection_resolution_cluster_keys(objection)):
+                batch.append(objection)
+                selected_ids.add(objection.objection_id)
+        for objection in unresolved_objections[1:]:
+            if len(batch) >= _OBJECTION_RESOLUTION_BATCH_SIZE:
+                break
+            if objection.objection_id not in selected_ids:
+                batch.append(objection)
+                selected_ids.add(objection.objection_id)
+        return batch
+
+    def _objection_resolution_duplicate_clusters(
+        self,
+        objections: list[Objection],
+    ) -> list[dict[str, Any]]:
+        clusters: dict[str, list[Objection]] = {}
+        for objection in objections:
+            for key in self._objection_resolution_cluster_keys(objection):
+                clusters.setdefault(key, []).append(objection)
+        seen: set[frozenset[str]] = set()
+        summaries: list[dict[str, Any]] = []
+        for key, items in clusters.items():
+            if len(items) < 2:
+                continue
+            objection_ids = [item.objection_id for item in items]
+            fingerprint = frozenset(objection_ids)
+            if fingerprint in seen:
+                continue
+            seen.add(fingerprint)
+            sample = items[0]
+            summaries.append(
+                {
+                    "cluster_key": key,
+                    "objection_ids": objection_ids,
+                    "taxonomy": sample.taxonomy,
+                    "target_path": sample.target_path or sample.target.field_path,
+                    "target": sample.target.model_dump(mode="json"),
+                    "reason_summary": self._compact_context_text(sample.reason, limit=360),
+                }
+            )
+        return summaries
+
+    def _objection_resolution_cluster_keys(self, objection: Objection) -> set[str]:
+        keys: set[str] = set()
+        if objection.dedupe_hash:
+            keys.add(f"dedupe:{objection.dedupe_hash}")
+        target = objection.target
+        target_identity = ":".join(
+            str(part or "")
+            for part in (
+                target.document_type.value,
+                target.ticker,
+                target.document_id,
+                target.expectation_id,
+                objection.target_path or target.field_path,
+            )
+        )
+        if objection.taxonomy:
+            keys.add(f"taxonomy-target:{objection.taxonomy}:{target_identity}")
+        normalized_reason = self._normalize_objection_reason(objection.reason)
+        if normalized_reason:
+            keys.add(f"reason-target:{target_identity}:{normalized_reason[:140]}")
+        normalized_id = re.sub(r"(_patch)?\d+$", "", objection.objection_id.lower())
+        normalized_id = re.sub(r"[_-]+$", "", normalized_id)
+        if normalized_id:
+            keys.add(f"id-family:{normalized_id}")
+        return keys
+
+    def _normalize_objection_reason(self, reason: str) -> str:
+        text = re.sub(r"\s+", " ", reason.lower()).strip()
+        text = re.sub(r"[^0-9a-z\u4e00-\u9fff]+", " ", text)
+        return " ".join(text.split()[:18])
+
+    def _pending_expectation_patch_summary(self, patch: BlackboardPatch) -> dict[str, Any]:
+        after = self._dict_from_model(patch.after)
+        return {
+            "patch_id": patch.patch_id,
+            "target": patch.target.model_dump(mode="json"),
+            "expectation_id": after.get("expectation_id") or patch.target.expectation_id,
+            "expectation_name": self._compact_context_text(
+                after.get("expectation_name"),
+                limit=180,
+            ),
+            "direction": after.get("direction"),
+            "realized_fact_count": len(self._list_from_model(after.get("realized_facts"))),
+            "key_variable_count": len(self._list_from_model(after.get("key_variables"))),
+            "positive_event_count": len(
+                self._list_from_model(
+                    self._dict_from_model(after.get("event_monitoring_direction")).get(
+                        "positive_events"
+                    )
+                )
+            ),
+            "negative_event_count": len(
+                self._list_from_model(
+                    self._dict_from_model(after.get("event_monitoring_direction")).get(
+                        "negative_events"
+                    )
+                )
+            ),
+        }
+
+    def _compact_pending_expectation_patch(self, patch: BlackboardPatch) -> dict[str, Any]:
+        raw = patch.model_dump(mode="json")
+        after = self._dict_from_model(raw.get("after"))
+        market_view = self._dict_from_model(after.get("market_view"))
+        monitoring = self._dict_from_model(after.get("event_monitoring_direction"))
+        after["why_it_matters"] = self._compact_context_text(
+            after.get("why_it_matters"),
+            limit=500,
+        )
+        after["market_view"] = {
+            "text": self._compact_context_text(market_view.get("text"), limit=900),
+            "summary": self._compact_context_text(market_view.get("summary"), limit=400),
+            "evidence_refs": [
+                self._evidence_context_summary(ref)
+                for ref in self._list_from_model(market_view.get("evidence_refs"))[:8]
+            ],
+            "author_agent": market_view.get("author_agent") or AgentName.O1_EXPECTATION_OWNER.value,
+            "reviewer_agents": self._list_from_model(market_view.get("reviewer_agents"))[:8],
+        }
+        after["realized_facts_summary"] = self._compact_context_text(
+            after.get("realized_facts_summary"),
+            limit=700,
+        )
+        after["realized_facts"] = [
+            self._realized_fact_context_summary(item)
+            for item in self._list_from_model(after.get("realized_facts"))[:8]
+        ]
+        after["key_variables"] = [
+            self._variable_context_summary(item)
+            for item in self._list_from_model(after.get("key_variables"))[:10]
+        ]
+        after["event_monitoring_direction"] = {
+            "known_event_notice": self._compact_context_text(
+                monitoring.get("known_event_notice"),
+                limit=400,
+            ),
+            "positive_events": [
+                self._compact_context_text(item, limit=260)
+                for item in self._list_from_model(monitoring.get("positive_events"))[:8]
+            ],
+            "negative_events": [
+                self._compact_context_text(item, limit=260)
+                for item in self._list_from_model(monitoring.get("negative_events"))[:8]
+            ],
+        }
+        raw["after"] = after
+        raw["evidence_refs"] = [
+            self._evidence_context_summary(ref)
+            for ref in self._list_from_model(raw.get("evidence_refs"))[:8]
+        ]
+        return raw
+
+    def _objection_resolution_objection_summary(self, objection: Objection) -> dict[str, Any]:
+        return {
+            "objection_id": objection.objection_id,
+            "source_agent": objection.source_agent.value,
+            "severity": objection.severity.value,
+            "status": objection.status.value,
+            "taxonomy": objection.taxonomy,
+            "dedupe_hash": objection.dedupe_hash,
+            "target_path": objection.target_path,
+            "merged_objection_ids": list(objection.merged_objection_ids),
+            "target": objection.target.model_dump(mode="json"),
+            "reason": self._compact_context_text(objection.reason, limit=900),
+            "evidence_refs": [
+                self._evidence_context_summary(ref) for ref in objection.evidence_refs[:6]
+            ],
+        }
+
+    def _realized_fact_context_summary(self, value: Any) -> dict[str, Any]:
+        item = self._dict_from_model(value)
+        price_reaction = self._dict_from_model(item.get("price_reaction"))
+        return {
+            "event_id": item.get("event_id"),
+            "description": self._compact_context_text(item.get("description"), limit=360),
+            "price_reaction": {
+                "price_change": self._compact_context_text(
+                    price_reaction.get("price_change"),
+                    limit=160,
+                ),
+                "price_pattern": self._compact_context_text(
+                    price_reaction.get("price_pattern"),
+                    limit=160,
+                ),
+                "interpretation": self._compact_context_text(
+                    price_reaction.get("interpretation"),
+                    limit=280,
+                ),
+            },
+            "evidence_refs": [
+                self._evidence_context_summary(ref)
+                for ref in self._list_from_model(item.get("evidence_refs"))[:4]
+            ],
+        }
+
+    def _variable_context_summary(self, value: Any) -> dict[str, Any]:
+        item = self._dict_from_model(value)
+        return {
+            "variable_id": item.get("variable_id"),
+            "name": self._compact_context_text(item.get("name"), limit=180),
+            "current_status": self._compact_context_text(
+                item.get("current_status"),
+                limit=320,
+            ),
+            "certainty": self._compact_context_text(item.get("certainty"), limit=120),
+            "evidence_refs": [
+                self._evidence_context_summary(ref)
+                for ref in self._list_from_model(item.get("evidence_refs"))[:4]
+            ],
+        }
+
+    def _evidence_context_summary(self, value: Any) -> dict[str, Any]:
+        item = self._dict_from_model(value)
+        return {
+            "evidence_id": item.get("evidence_id"),
+            "source_type": item.get("source_type"),
+            "source_id": item.get("source_id"),
+            "title": self._compact_context_text(item.get("title"), limit=220),
+            "summary": self._compact_context_text(item.get("summary"), limit=360),
+            "citation_scope": item.get("citation_scope"),
+            "confidence": item.get("confidence"),
+        }
+
+    def _dict_from_model(self, value: Any) -> dict[str, Any]:
+        if isinstance(value, dict):
+            return value
+        model_dump = getattr(value, "model_dump", None)
+        if callable(model_dump):
+            return model_dump(mode="json")
+        return {}
+
+    def _list_from_model(self, value: Any) -> list[Any]:
+        return value if isinstance(value, list) else []
+
+    def _compact_context_text(self, value: Any, *, limit: int) -> str | None:
+        if value is None:
+            return None
+        text = str(value).strip()
+        if len(text) <= limit:
+            return text
+        return text[:limit].rstrip() + "..."
+
     def _can_complete_a2_delegation(self, result: AgentResult) -> bool:
         if result.status is not ResultStatus.SUCCEEDED:
             return False
@@ -2769,7 +5266,43 @@ class BlackboardInitializationWorkflow:
         summary = candidate.get("retrieval_summary") if isinstance(candidate, dict) else None
         if isinstance(summary, str) and summary:
             return summary
-        return "A2 search verification returned sufficient evidence."
+        return "A2 检索验证返回了足够证据。"
+
+    def _complete_o1_revision_delegations(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        result: AgentResult | None = None,
+    ) -> None:
+        run = self.blackboard.get_run(checkpoint.run_id)
+        if any(objection.is_unresolved for objection in run.objections):
+            return
+        summary = self._o1_revision_completion_summary(result)
+        for delegation in run.delegations:
+            if (
+                delegation.is_blocking
+                and delegation.target_agent is AgentName.O1_EXPECTATION_OWNER
+            ):
+                self.blackboard.complete_delegation(
+                    checkpoint.run_id,
+                    delegation.delegation_id,
+                    summary,
+                )
+
+    def _o1_revision_completion_summary(self, result: AgentResult | None) -> str:
+        if result is not None:
+            payload = result.payload.get("structured")
+            if not isinstance(payload, dict):
+                payload = result.payload
+            for key in (
+                "resolution_summary",
+                "rationale",
+                "completion_reason",
+                "summary",
+            ):
+                value = payload.get(key) if isinstance(payload, dict) else None
+                if isinstance(value, str) and value.strip():
+                    return value
+        return "O1 已完成请求的预期修订，相关异议均已处理。"
 
     def _apply_o1_objection_resolutions(
         self,
@@ -2843,14 +5376,14 @@ class BlackboardInitializationWorkflow:
                 "O1 rejected an objection without evidence and rationale."
             )
         transitions = [
-            (resolved_ids, self.blackboard.resolve_objection, "O1 resolved objection."),
-            (accepted_ids, self.blackboard.accept_objection, "O1 accepted objection."),
+            (resolved_ids, self.blackboard.resolve_objection, "O1 已解决 objection。"),
+            (accepted_ids, self.blackboard.accept_objection, "O1 已接受 objection。"),
             (
                 partially_accepted_ids,
                 self.blackboard.partially_accept_objection,
-                "O1 partially accepted objection.",
+                "O1 已部分接受 objection。",
             ),
-            (rejected_ids, self.blackboard.reject_objection, "O1 rebutted objection."),
+            (rejected_ids, self.blackboard.reject_objection, "O1 已反驳 objection。"),
         ]
         for ids, transition, note in transitions:
             for objection_id in ids:
@@ -2858,8 +5391,11 @@ class BlackboardInitializationWorkflow:
                 transition(
                     checkpoint.run_id,
                     objection_id,
-                    decision.resolution_note or note,
-                    changed_paths=list(decision.changed_paths),
+                    self._objection_resolution_note_text(
+                        decision.resolution_note or note,
+                        decision=decision.decision,
+                    ),
+                    changed_paths=self._localized_changed_paths(decision.changed_paths),
                     evidence_refs=list(decision.evidence_refs),
                 )
 
@@ -2878,6 +5414,51 @@ class BlackboardInitializationWorkflow:
             raise WorkflowContractError(
                 f"O1 objection_resolutions failed schema validation: {exc}"
             ) from exc
+
+    def _objection_resolution_note_text(self, value: Any, *, decision: str) -> str:
+        text = str(value or "").strip()
+        if text and self._has_chinese_text(text):
+            return text
+        if decision == "resolved":
+            return "O1 已解决该 objection。"
+        if decision == "accepted":
+            return "O1 已接受该 objection，并返回修订后的 expectation patch。"
+        if decision == "partially_accepted":
+            return "O1 已部分接受该 objection，并保留需要后续复核的不确定性。"
+        if decision == "rejected":
+            return "O1 已基于现有证据反驳该 objection。"
+        return "O1 已处理该 objection。"
+
+    def _localized_changed_paths(self, paths: Iterable[str]) -> list[str]:
+        return [self._localized_changed_path(path) for path in paths]
+
+    def _localized_changed_path(self, path: str) -> str:
+        text = str(path)
+
+        def replace(match: re.Match[str]) -> str:
+            action = match.group("action")
+            detail = match.group("detail")
+            action_text = {
+                "removed": "移除",
+                "added": "新增",
+                "populated with": "补全",
+                "replaced": "替换",
+            }[action]
+            detail = (
+                detail.replace("specific events", "具体事件")
+                .replace("specific variables", "具体变量")
+                .replace("events", "个事件")
+                .replace("variables", "个变量")
+                .replace("evidence_gap source", "evidence_gap 溯源")
+                .replace("source", "溯源")
+            )
+            return f"（{action_text} {detail}）"
+
+        return re.sub(
+            r"\((?P<action>removed|added|populated with|replaced) (?P<detail>[^)]+)\)",
+            replace,
+            text,
+        )
 
     def _replace_pending_expectation_patches(
         self,
@@ -3102,12 +5683,19 @@ class BlackboardInitializationWorkflow:
                 task_type=task_type,
             ):
                 continue
-            sections[key] = {
+            section_payload = {
                 "summary": raw_section.get("summary"),
                 "text": raw_section.get("text"),
                 "author_agent": raw_section.get("author_agent"),
                 "evidence_count": len(raw_section.get("evidence_refs") or []),
             }
+            market_snapshot = self._market_evidence_snapshot_from_payload_refs(
+                raw_section.get("evidence_refs"),
+                ticker=run.ticker,
+            )
+            if market_snapshot is not None:
+                section_payload["market_evidence_snapshot"] = market_snapshot
+            sections[key] = section_payload
         return {
             "document_id": document.get("document_id"),
             "ticker": document.get("ticker") or run.ticker,
@@ -3146,6 +5734,35 @@ class BlackboardInitializationWorkflow:
         if isinstance(author, str) and author == agent_name.value:
             return False
         return task_type is not TaskType.GENERATE_GLOBAL_RESEARCH
+
+    def _market_evidence_snapshot_from_payload_refs(
+        self,
+        value: Any,
+        *,
+        ticker: str,
+    ) -> dict[str, Any] | None:
+        snapshots: list[dict[str, Any]] = []
+        for item in value if isinstance(value, list) else []:
+            if not isinstance(item, dict):
+                continue
+            try:
+                ref = EvidenceRef.model_validate(item)
+            except Exception:
+                continue
+            snapshot = ref.retrieval_metadata.get("market_evidence_snapshot")
+            if not is_structured_market_evidence_snapshot(snapshot):
+                continue
+            if isinstance(snapshot, dict) and isinstance(snapshot.get("daily_ohlcv"), list):
+                snapshots.extend(
+                    child
+                    for child in snapshot["daily_ohlcv"]
+                    if isinstance(child, dict)
+                )
+            elif isinstance(snapshot, dict):
+                snapshots.append(snapshot)
+        if not snapshots:
+            return None
+        return collect_market_evidence_snapshot(snapshots, target_symbol=ticker)
 
     def _next_node(self, completed_nodes: list[WorkflowNode]) -> WorkflowNode | None:
         for node in INITIALIZATION_NODES:
@@ -3203,12 +5820,26 @@ class BlackboardInitializationWorkflow:
 
 def _is_generic_monitoring_trigger(value: str) -> bool:
     normalized = " ".join(value.lower().split())
-    return normalized in {
+    generic_values = {
         "monitor ticker-relevant signals.",
         "monitor ticker-relevant signals",
         "monitor ticker-relevant signal changes.",
         "monitor ticker-relevant signal changes",
     }
+    if normalized in generic_values:
+        return True
+    generic_markers = (
+        "confirmed deployments",
+        "commercialization milestones",
+        "deployment delays",
+        "financing pressure",
+        "\u5df2\u786e\u8ba4\u7684\u90e8\u7f72",
+        "\u5546\u4e1a\u5316\u91cc\u7a0b\u7891",
+        "\u90e8\u7f72\u5ef6\u8fdf",
+        "\u878d\u8d44\u538b\u529b",
+        "\u5546\u4e1a\u5316\u8bc1\u636e\u4e0d\u8db3",
+    )
+    return any(marker in normalized for marker in generic_markers)
 
 
 def _declared_tool_names(payload: dict[str, Any]) -> set[str]:

@@ -165,4 +165,13 @@ def _parse_json_object(text: str) -> dict[str, object] | None:
             continue
         if isinstance(parsed, dict):
             return parsed
-    return None
+    decoder = json.JSONDecoder()
+    scanned: list[dict[str, object]] = []
+    for match in re.finditer(r"{", candidates[0]):
+        try:
+            parsed, _ = decoder.raw_decode(candidates[0][match.start() :])
+        except json.JSONDecodeError:
+            continue
+        if isinstance(parsed, dict):
+            scanned.append(parsed)
+    return scanned[-1] if scanned else None

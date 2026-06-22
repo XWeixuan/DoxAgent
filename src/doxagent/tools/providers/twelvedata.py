@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 from doxagent.models import EvidenceSourceType
+from doxagent.tools.market_evidence import daily_ohlcv_output_with_snapshot
 from doxagent.tools.providers.base import (
     BaseRealToolClient,
     JsonObject,
     ProviderHttpError,
     _input_str,
+    _input_str_any,
     _require,
 )
 from doxagent.tools.schema import ToolRequest, ToolResult
@@ -17,7 +19,7 @@ class TwelveDataDailyOhlcvClient(BaseRealToolClient):
     def call(self, request: ToolRequest) -> ToolResult:
         try:
             api_key = _require(self.settings.twelvedata_api_key, "TWELVEDATA_API_KEY")
-            symbol = _input_str(request, "symbol", request.ticker).upper()
+            symbol = _input_str_any(request, ("symbol", "ticker"), request.ticker).upper()
             outputsize = _bounded_int(request.input.get("outputsize", 30), 1, 500)
             params: dict[str, object] = {
                 "symbol": symbol,
@@ -40,9 +42,8 @@ class TwelveDataDailyOhlcvClient(BaseRealToolClient):
             values = raw.get("values")
             if not isinstance(values, list):
                 values = []
-            return self._success(
-                request,
-                output={
+            output = daily_ohlcv_output_with_snapshot(
+                {
                     "provider": "twelvedata",
                     "symbol": symbol,
                     "interval": "1day",
@@ -50,11 +51,16 @@ class TwelveDataDailyOhlcvClient(BaseRealToolClient):
                     "meta": raw.get("meta", {}),
                     "fallback_tool": "yfinance.daily_ohlcv",
                 },
+                tool_name=request.tool_name,
+            )
+            return self._success(
+                request,
+                output=output,
                 raw=raw,
                 source_type=EvidenceSourceType.MARKET_DATA,
                 source_id=f"twelvedata:daily_ohlcv:{symbol}",
-                title=f"Twelve Data daily OHLCV for {symbol}",
-                summary="Twelve Data daily OHLCV was retrieved.",
+                title=f"Twelve Data 日线 OHLCV - {symbol}",
+                summary="已检索 Twelve Data 日线 OHLCV 数据。",
                 citation_scope="twelvedata_daily_ohlcv",
                 confidence=0.76,
                 metadata={
@@ -63,6 +69,7 @@ class TwelveDataDailyOhlcvClient(BaseRealToolClient):
                     "outputsize": outputsize,
                     "start_date": start_date or None,
                     "end_date": end_date or None,
+                    "market_evidence_snapshot": output.get("market_evidence_snapshot"),
                 },
             )
         except Exception as exc:

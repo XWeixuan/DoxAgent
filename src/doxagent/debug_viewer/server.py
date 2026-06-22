@@ -308,9 +308,37 @@ INDEX_HTML = r"""<!doctype html>
     }
     .pill-list { display: flex; flex-wrap: wrap; gap: 6px; }
     .pill { border: 1px solid var(--line); border-radius: 999px; padding: 2px 8px; color: var(--muted); }
+    .readable-list { display: grid; gap: 10px; margin-top: 8px; }
+    .readable-card {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 10px;
+      background: #fff;
+      min-width: 0;
+    }
+    .readable-card h4 { margin: 0 0 6px; font-size: 14px; }
+    .readable-card .text { margin: 0 0 8px; }
+    .mini-kv { grid-template-columns: 120px minmax(0, 1fr); font-size: 13px; }
+    .event-columns {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .event-column {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 10px;
+      background: #fff;
+      min-width: 0;
+    }
+    .event-column h4 { margin: 0 0 6px; font-size: 14px; }
+    .event-column ul { margin: 0; padding-left: 18px; }
+    .event-column li { margin: 4px 0; overflow-wrap: anywhere; }
     @media (max-width: 900px) {
       .controls { grid-template-columns: 1fr; }
       .span-8, .span-6, .span-4 { grid-column: span 12; }
+      .event-columns { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -367,6 +395,149 @@ INDEX_HTML = r"""<!doctype html>
     }
     function details(label, value) {
       return `<details><summary>${esc(label)}</summary>${jsonBlock(value)}</details>`;
+    }
+    function isObject(value) {
+      return value && typeof value === "object" && !Array.isArray(value);
+    }
+    function hasValue(value) {
+      if (value === null || value === undefined) return false;
+      if (Array.isArray(value)) return value.length > 0;
+      if (isObject(value)) return Object.keys(value).length > 0;
+      return String(value).trim().length > 0;
+    }
+    function asList(value) {
+      if (Array.isArray(value)) return value;
+      return hasValue(value) ? [value] : [];
+    }
+    function pickText(value, keys) {
+      if (!isObject(value)) return "";
+      for (const key of keys) {
+        if (hasValue(value[key])) return humanText(value[key]);
+      }
+      return "";
+    }
+    function humanText(value) {
+      if (value === null || value === undefined) return "";
+      if (Array.isArray(value)) return value.map(item => humanText(item)).filter(Boolean).join("; ");
+      if (isObject(value)) {
+        return pickText(value, ["description", "summary", "text", "name", "title", "value"])
+          || JSON.stringify(value);
+      }
+      return String(value);
+    }
+    function kvField(label, value) {
+      const text = humanText(value).trim();
+      return text ? `<div class="muted">${esc(label)}</div><div>${esc(text)}</div>` : "";
+    }
+    function parseLabeledFactText(value) {
+      const text = humanText(value).trim();
+      const matches = [...text.matchAll(/(?:^\s*|[;；]\s*)(fact|when|why_it_matters|pricing_status)\s*[:：]\s*/gi)];
+      if (!matches.length || matches[0].index !== 0) return {};
+      const result = {};
+      matches.forEach((match, index) => {
+        const key = match[1].toLowerCase();
+        const start = match.index + match[0].length;
+        const end = index + 1 < matches.length ? matches[index + 1].index : text.length;
+        const fieldText = text.slice(start, end).replace(/^[;；]\s*|\s*[;；]\s*$/g, "").trim();
+        if (fieldText) result[key] = fieldText;
+      });
+      return result;
+    }
+    function factDescriptionFields(value) {
+      if (isObject(value)) {
+        return {
+          fact: humanText(value.fact || value.description || value.summary || ""),
+          when: humanText(value.when || value.date || value.time || ""),
+          why_it_matters: humanText(value.why_it_matters || value.why || value.importance || ""),
+          pricing_status: humanText(value.pricing_status || value.market_pricing || ""),
+        };
+      }
+      return parseLabeledFactText(value);
+    }
+    function renderEvidence(refs) {
+      const items = asList(refs);
+      return items.length ? details(`Evidence (${items.length})`, items) : "";
+    }
+    function renderRealizedFacts(items) {
+      const facts = asList(items);
+      return `<div class="section">
+        <h3>Realized Facts (${facts.length})</h3>
+        ${facts.length ? `<div class="readable-list">${facts.map((item, index) => {
+          const fact = isObject(item) ? item : { description: item };
+          const price = isObject(fact.price_reaction) ? fact.price_reaction : {};
+          const descriptionValue = fact.description || fact.summary || fact.fact || fact.event;
+          const descriptionFields = factDescriptionFields(descriptionValue);
+          const hasDescriptionFields = Object.values(descriptionFields).some(hasValue);
+          const description = hasDescriptionFields ? "" : humanText(descriptionValue);
+          const eventId = pickText(fact, ["event_id", "id"]);
+          const rows = [
+            kvField("Fact", descriptionFields.fact),
+            kvField("When", descriptionFields.when),
+            kvField("Why It Matters", descriptionFields.why_it_matters),
+            kvField("Pricing Status", descriptionFields.pricing_status),
+            kvField("Event ID", eventId),
+            kvField("Price Change", pickText(price, ["price_change", "change"])),
+            kvField("Price Pattern", pickText(price, ["price_pattern", "pattern"])),
+            kvField("Interpretation", pickText(price, ["interpretation", "summary", "text"])),
+            !isObject(fact.price_reaction) ? kvField("Price Reaction", fact.price_reaction) : "",
+          ].join("");
+          return `<div class="readable-card">
+            <h4>Fact ${index + 1}${eventId ? ` <span class="pill">${esc(eventId)}</span>` : ""}</h4>
+            ${description ? `<p class="text">${esc(description)}</p>` : ""}
+            ${rows ? `<div class="kv mini-kv">${rows}</div>` : ""}
+            ${renderEvidence(fact.evidence_refs)}
+            ${isObject(price) ? renderEvidence(price.evidence_refs) : ""}
+            ${details("Raw fact JSON", fact)}
+          </div>`;
+        }).join("")}</div>` : `<div class="empty">No realized facts available.</div>`}
+      </div>`;
+    }
+    function renderKeyVariables(items) {
+      const variables = asList(items);
+      return `<div class="section">
+        <h3>Key Variables (${variables.length})</h3>
+        ${variables.length ? `<div class="readable-list">${variables.map((item, index) => {
+          const variable = isObject(item) ? item : { name: item };
+          const name = pickText(variable, ["name", "variable", "variable_name"]) || `Variable ${index + 1}`;
+          const rows = [
+            kvField("Variable ID", pickText(variable, ["variable_id", "id"])),
+            kvField("Current Status", pickText(variable, ["current_status", "current_state", "status"])),
+            kvField("Certainty", pickText(variable, ["certainty", "confidence"])),
+            kvField("Unresolved", pickText(variable, ["unresolved", "unknowns", "open_questions"])),
+          ].join("");
+          return `<div class="readable-card">
+            <h4>${esc(name)}</h4>
+            ${rows ? `<div class="kv mini-kv">${rows}</div>` : ""}
+            ${renderEvidence(variable.evidence_refs)}
+            ${details("Raw variable JSON", variable)}
+          </div>`;
+        }).join("")}</div>` : `<div class="empty">No key variables available.</div>`}
+      </div>`;
+    }
+    function renderEventItems(items, emptyText) {
+      const events = asList(items);
+      return events.length
+        ? `<ul>${events.map(item => `<li>${esc(humanText(item))}</li>`).join("")}</ul>`
+        : `<div class="muted">${esc(emptyText)}</div>`;
+    }
+    function renderEventMonitoringDirection(value) {
+      const monitoring = isObject(value) ? value : {};
+      const knownNotice = pickText(monitoring, ["known_event_notice", "notice", "summary", "text"]);
+      return `<div class="section">
+        <h3>Event Monitoring Direction</h3>
+        ${knownNotice ? `<p class="text">${esc(knownNotice)}</p>` : `<div class="empty">No event monitoring direction available.</div>`}
+        <div class="event-columns">
+          <div class="event-column">
+            <h4>Positive Events</h4>
+            ${renderEventItems(monitoring.positive_events, "No positive event triggers listed.")}
+          </div>
+          <div class="event-column">
+            <h4>Negative Events</h4>
+            ${renderEventItems(monitoring.negative_events, "No negative event triggers listed.")}
+          </div>
+        </div>
+        ${details("Raw Event Monitoring JSON", value || {})}
+      </div>`;
     }
     async function getJson(url) {
       const response = await fetch(url);
@@ -484,9 +655,9 @@ INDEX_HTML = r"""<!doctype html>
               <div class="muted">Realized Facts</div><div>${esc(exp.realized_facts_summary || "")}</div>
             </div>
             <div class="section"><h3>Market View</h3><p class="text">${esc(exp.market_view?.text || "")}</p></div>
-            ${details(`Realized Facts (${(exp.realized_facts || []).length})`, exp.realized_facts || [])}
-            ${details(`Key Variables (${(exp.key_variables || []).length})`, exp.key_variables || [])}
-            ${details("Event Monitoring Direction", exp.event_monitoring_direction || {})}
+            ${renderRealizedFacts(exp.realized_facts)}
+            ${renderKeyVariables(exp.key_variables)}
+            ${renderEventMonitoringDirection(exp.event_monitoring_direction)}
             ${details(`Commit Trace (${(exp.commit_trace || []).length})`, exp.commit_trace || [])}
             ${details("Blockers", exp.blockers || {})}
           </div>`).join("") : `<div class="empty">expectation_unit is missing, blocked, or not yet promoted.</div>`}

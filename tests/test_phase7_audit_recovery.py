@@ -33,11 +33,11 @@ def test_commit_log_query_and_field_trace_link_patch_agent_evidence_and_commit()
 
     commits = audit.list_commit_log(document_type=DocumentType.EXPECTATION_UNIT)
 
-    assert len(commits) == 1
-    commit = commits[0]
+    assert len(commits) == 2
+    commit = next(item for item in commits if item.object_id == "exp_mock_core")
     assert commit.patch_id
     assert commit.author_agent is AgentName.O1_EXPECTATION_OWNER
-    assert commit.trigger_reason == "Promote reviewed expectation unit."
+    assert commit.trigger_reason == "提升已通过复核的 expectation unit。"
     assert commit.evidence_ids
 
     trace = audit.trace_field(
@@ -183,10 +183,12 @@ def test_partial_retry_from_checkpoint_does_not_duplicate_completed_commits() ->
 
     after = workflow.blackboard.get_run(partial.checkpoint.run_id)
     assert resumed.status is WorkflowRunStatus.COMPLETED
-    assert len(after.commit_log) == 5
+    assert len(after.commit_log) == 7
     assert [
-        commit.patch.target.document_type for commit in after.commit_log
-    ].count(DocumentType.GLOBAL_RESEARCH) == 1
+        commit.patch.target.field_path
+        for commit in after.commit_log
+        if commit.patch.target.document_type is DocumentType.GLOBAL_RESEARCH
+    ] == ["document", "document.market_narrative_report"]
 
 
 def test_dependency_violation_has_debug_report_and_preserves_existing_state() -> None:

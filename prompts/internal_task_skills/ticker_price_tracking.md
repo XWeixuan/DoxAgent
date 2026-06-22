@@ -13,6 +13,8 @@ Write the IV. Market Trace section for the ticker.
 
 Use the runtime-provided `global_research_inputs.market_trace_period`, `global_research_inputs.market_trace_interval`, `benchmarks`, and `peers`. Do not assume a fixed lookback window if runtime inputs specify a different period.
 
+For Document 1, treat the configured period as the data sample, but write the section around recent price and flow reaction first. Use the broader sample only as baseline context for ranges, volatility, and relative performance.
+
 ## Task
 
 Analyze the ticker's price action and compare it with the broader market, relevant sector, and close peers.

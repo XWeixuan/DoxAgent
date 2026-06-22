@@ -12,7 +12,7 @@ from typing import Any, Protocol
 from pydantic import BaseModel, ConfigDict
 
 from doxagent.models import NonEmptyStr, new_id
-from doxagent.postgres import connect_postgres
+from doxagent.postgres import connect_postgres, retry_postgres_operation
 from doxagent.settings import DoxAgentSettings
 from doxagent.workflows.schema import WorkflowCheckpoint, WorkflowNode, WorkflowRunStatus
 
@@ -114,36 +114,48 @@ class PostgresWorkflowCheckpointRepository:
         )
         dumped = record.model_dump(mode="json")
         checkpoint_dump = checkpoint.model_dump(mode="json")
-        with self._connection() as conn:
-            with conn.cursor() as cursor:
-                if is_latest:
+        def operation() -> None:
+            with self._connection() as conn:
+                with conn.cursor() as cursor:
+                    if is_latest:
+                        cursor.execute(
+                            """
+                            update doxagent.workflow_checkpoints
+                            set is_latest = false
+                            where run_id = %s
+                              and checkpoint_id <> %s
+                            """,
+                            (checkpoint.run_id, record.checkpoint_id),
+                        )
                     cursor.execute(
                         """
-                        update doxagent.workflow_checkpoints
-                        set is_latest = false
-                        where run_id = %s
+                        insert into doxagent.workflow_checkpoints
+                            (checkpoint_id, run_id, ticker, status, next_node,
+                             completed_nodes, checkpoint_json, is_latest, created_at)
+                        values (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        on conflict (checkpoint_id) do update set
+                            ticker = excluded.ticker,
+                            status = excluded.status,
+                            next_node = excluded.next_node,
+                            completed_nodes = excluded.completed_nodes,
+                            checkpoint_json = excluded.checkpoint_json,
+                            is_latest = excluded.is_latest,
+                            created_at = excluded.created_at
                         """,
-                        (checkpoint.run_id,),
+                        (
+                            record.checkpoint_id,
+                            checkpoint.run_id,
+                            checkpoint.ticker,
+                            checkpoint.status.value,
+                            checkpoint.next_node.value if checkpoint.next_node is not None else None,
+                            self._jsonb(dumped["completed_nodes"]),
+                            self._jsonb(checkpoint_dump),
+                            is_latest,
+                            record.created_at,
+                        ),
                     )
-                cursor.execute(
-                    """
-                    insert into doxagent.workflow_checkpoints
-                        (checkpoint_id, run_id, ticker, status, next_node, completed_nodes,
-                         checkpoint_json, is_latest, created_at)
-                    values (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    """,
-                    (
-                        record.checkpoint_id,
-                        checkpoint.run_id,
-                        checkpoint.ticker,
-                        checkpoint.status.value,
-                        checkpoint.next_node.value if checkpoint.next_node is not None else None,
-                        self._jsonb(dumped["completed_nodes"]),
-                        self._jsonb(checkpoint_dump),
-                        is_latest,
-                        record.created_at,
-                    ),
-                )
+
+        self._retry(operation)
         return record
 
     def get_latest(self, run_id: str) -> WorkflowCheckpoint:
@@ -162,21 +174,24 @@ class PostgresWorkflowCheckpointRepository:
         latest_only: bool,
     ) -> list[WorkflowCheckpointRecord]:
         where_latest = "and is_latest = true" if latest_only else ""
-        with self._connection() as conn:
-            with conn.cursor() as cursor:
-                cursor.execute(
-                    f"""
-                    select checkpoint_id, run_id, ticker, status, next_node, completed_nodes,
-                           checkpoint_json, is_latest, created_at
-                    from doxagent.workflow_checkpoints
-                    where run_id = %s
-                    {where_latest}
-                    order by created_at desc
-                    """,
-                    (run_id,),
-                )
-                rows = cursor.fetchall()
-        return [self._record_from_row(row) for row in rows]
+        def operation() -> list[WorkflowCheckpointRecord]:
+            with self._connection() as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute(
+                        f"""
+                        select checkpoint_id, run_id, ticker, status, next_node, completed_nodes,
+                               checkpoint_json, is_latest, created_at
+                        from doxagent.workflow_checkpoints
+                        where run_id = %s
+                        {where_latest}
+                        order by created_at desc
+                        """,
+                        (run_id,),
+                    )
+                    rows = cursor.fetchall()
+            return [self._record_from_row(row) for row in rows]
+
+        return self._retry(operation)
 
     def _record_from_row(self, row: Any) -> WorkflowCheckpointRecord:
         checkpoint = WorkflowCheckpoint.model_validate(self._coerce_json(row[6]))
@@ -197,6 +212,9 @@ class PostgresWorkflowCheckpointRepository:
         psycopg = self._psycopg()
         with connect_postgres(psycopg, self.database_url) as conn:
             yield conn
+
+    def _retry(self, operation: Any) -> Any:
+        return retry_postgres_operation(self._psycopg(), operation)
 
     def _jsonb(self, value: Any) -> Any:
         return self._jsonb_type()(value)

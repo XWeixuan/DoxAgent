@@ -32,8 +32,8 @@ class FmpSectorPerformanceClient(BaseRealToolClient):
                 raw=raw,
                 source_type=EvidenceSourceType.MARKET_DATA,
                 source_id="fmp:sector_performance",
-                title="FMP sector performance snapshot",
-                summary="FMP sector performance snapshot was retrieved.",
+                title="FMP 行业表现快照",
+                summary="已检索 FMP 行业表现快照。",
                 citation_scope="fmp_sector_performance",
                 confidence=0.7,
                 metadata={

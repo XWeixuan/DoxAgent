@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import re
+import threading
 from collections import Counter
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
@@ -18,6 +19,7 @@ from doxagent.agents.runtime.tools import ToolRegistryFunctionAdapter, tool_resu
 from doxagent.gateway import (
     GatewayError,
     MessageRole,
+    ModelAuditSummary,
     ModelGateway,
     ModelMessage,
     ModelRequest,
@@ -57,7 +59,11 @@ from doxagent.prompts.schema import AssembledPrompt
 from doxagent.skills import UnknownSkillError
 from doxagent.skills.registry import SkillRegistry, default_skill_registry
 from doxagent.skills.schema import SkillDefinition
-from doxagent.tools import ToolError, ToolRegistry, ToolRequest, ToolResult
+from doxagent.tools import ToolDescriptor, ToolError, ToolRegistry, ToolRequest, ToolResult
+from doxagent.tools.market_evidence import (
+    build_daily_ohlcv_snapshot,
+    collect_market_evidence_snapshot,
+)
 
 JsonDict = dict[str, Any]
 DelegationHandler = Callable[[JsonDict], Awaitable[AgentResult]]
@@ -65,7 +71,9 @@ DelegationHandler = Callable[[JsonDict], Awaitable[AgentResult]]
 MAX_TOOL_CALLS_PER_NAME = 3
 SIMILARITY_WARNING_THRESHOLD = 0.72
 MICROCOMPACT_MARKER = "[old observation compacted]"
+MAX_TOOL_OBSERVATION_CHARS = 24_000
 _FINAL_PAYLOAD_SCHEMAS: dict[str, type[BaseModel]] = REQUIRED_OUTPUT_SCHEMA_MODELS
+_JSON_FENCE_RE = re.compile(r"^```(?:json)?\s*(.*?)\s*```$", re.DOTALL | re.IGNORECASE)
 
 
 @dataclass(frozen=True)
@@ -75,12 +83,15 @@ class ReActHarnessConfig:
     recent_step_window: int = 2
     compaction_token_threshold: int = 12_000
     max_consecutive_compaction_failures: int = 3
+    model_request_timeout_seconds: float | None = None
+    tool_call_timeout_seconds: float | None = 180.0
 
 
 @dataclass
 class Scratchpad:
     task: AgentTask
     tool_counts: Counter[str] = field(default_factory=Counter)
+    consecutive_tool_loop_counts: Counter[str] = field(default_factory=Counter)
     query_history: list[tuple[str, str]] = field(default_factory=list)
     plan: list[str] = field(default_factory=list)
     task_ledger: list[JsonDict] = field(default_factory=list)
@@ -88,6 +99,7 @@ class Scratchpad:
     warnings: list[str] = field(default_factory=list)
     loaded_skills: dict[str, JsonDict] = field(default_factory=dict)
     compacted_summaries: list[str] = field(default_factory=list)
+    market_evidence_snapshots: list[JsonDict] = field(default_factory=list)
     compaction_failures: int = 0
 
     def record_action(self, step: int, action: JsonDict) -> None:
@@ -106,8 +118,15 @@ class Scratchpad:
             }
         )
 
-    def can_call_tool(self, tool_name: str, limit: int) -> bool:
-        return self.tool_counts[tool_name] < limit
+    def record_tool_call_loop(self, tool_names: set[str]) -> None:
+        for previous_tool_name in list(self.consecutive_tool_loop_counts):
+            if previous_tool_name not in tool_names:
+                self.consecutive_tool_loop_counts.pop(previous_tool_name, None)
+        for tool_name in tool_names:
+            self.consecutive_tool_loop_counts[tool_name] += 1
+
+    def can_call_tool(self, tool_name: str, max_consecutive_loops: int) -> bool:
+        return self.consecutive_tool_loop_counts[tool_name] <= max_consecutive_loops
 
     def record_tool_attempt(self, tool_name: str, input_payload: JsonDict) -> list[str]:
         self.tool_counts[tool_name] += 1
@@ -124,6 +143,17 @@ class Scratchpad:
         input_payload: JsonDict,
         warnings: list[str],
     ) -> None:
+        market_evidence_snapshot = build_daily_ohlcv_snapshot(
+            result.output,
+            tool_name=result.tool_name,
+        )
+        if market_evidence_snapshot is not None:
+            self._append_market_evidence_snapshot(market_evidence_snapshot)
+        output, output_compacted = _compact_tool_observation(
+            result.output,
+            tool_name=result.tool_name,
+            market_evidence_snapshot=market_evidence_snapshot,
+        )
         self.entries.append(
             {
                 "kind": "tool_result",
@@ -135,7 +165,9 @@ class Scratchpad:
                 "error": result.error.model_dump(mode="json") if result.error else None,
                 "warnings": warnings,
                 "evidence_count": len(result.evidence_refs),
-                "output": result.output,
+                "market_evidence_snapshot": market_evidence_snapshot,
+                "output": output,
+                "output_compacted": output_compacted,
             }
         )
 
@@ -232,8 +264,8 @@ class Scratchpad:
 
     def record_model_format_error(self, *, step: int, error: GatewayError) -> None:
         warning = (
-            "Model returned non-JSON text for a JSON ReAct action; retrying with "
-            "the same task context."
+            "模型为 JSON ReAct action 返回了非 JSON 文本；将带着 "
+            "相同任务上下文重试。"
         )
         self.warnings.append(warning)
         self.entries.append(
@@ -247,8 +279,8 @@ class Scratchpad:
 
     def record_no_progress(self, *, step: int) -> None:
         warning = (
-            "Model returned no final payload, tool calls, or delegations; retrying with "
-            "the same task context."
+            "模型未返回 final payload、工具调用或委托；将带着 "
+            "相同任务上下文重试。"
         )
         self.warnings.append(warning)
         self.entries.append(
@@ -275,13 +307,44 @@ class Scratchpad:
         return {
             "max_tool_calls_per_name": MAX_TOOL_CALLS_PER_NAME,
             "tool_counts": dict(self.tool_counts),
+            "consecutive_tool_loop_counts": dict(self.consecutive_tool_loop_counts),
             "loaded_skill_ids": sorted(self.loaded_skills),
             "plan": list(self.plan),
             "task_ledger": list(self.task_ledger),
             "warnings": list(self.warnings),
             "compacted_summaries": list(self.compacted_summaries),
+            "market_evidence_snapshot": self.market_evidence_snapshot(),
             "entries": list(self.entries),
         }
+
+    def market_evidence_snapshot(self) -> JsonDict:
+        return collect_market_evidence_snapshot(
+            list(self.market_evidence_snapshots),
+            target_symbol=self.task.ticker,
+        )
+
+    def _append_market_evidence_snapshot(self, snapshot: JsonDict) -> None:
+        key = (
+            snapshot.get("kind"),
+            snapshot.get("tool_name"),
+            snapshot.get("provider"),
+            str(snapshot.get("symbol") or "").upper(),
+            snapshot.get("start_date"),
+            snapshot.get("end_date"),
+        )
+        for index, existing in enumerate(self.market_evidence_snapshots):
+            existing_key = (
+                existing.get("kind"),
+                existing.get("tool_name"),
+                existing.get("provider"),
+                str(existing.get("symbol") or "").upper(),
+                existing.get("start_date"),
+                existing.get("end_date"),
+            )
+            if existing_key == key:
+                self.market_evidence_snapshots[index] = snapshot
+                return
+        self.market_evidence_snapshots.append(snapshot)
 
     def _similar_query_warnings(self, tool_name: str, input_payload: JsonDict) -> list[str]:
         query_text = _query_text(input_payload)
@@ -294,7 +357,7 @@ class Scratchpad:
             similarity = _jaccard_similarity(query_text, previous_query)
             if similarity >= SIMILARITY_WARNING_THRESHOLD:
                 warnings.append(
-                    f"Similar query detected for {tool_name}; similarity={similarity:.2f}."
+                    f"检测到 {tool_name} 的相似查询；similarity={similarity:.2f}。"
                 )
         return warnings
 
@@ -389,6 +452,13 @@ class ReActAgentHarness:
             scratchpad.record_action(step, action)
 
             tool_call_inputs = _tool_call_inputs(action.get("tool_calls"))
+            scratchpad.record_tool_call_loop(
+                {
+                    str(call.get("tool_name") or call.get("name") or "")
+                    for call in tool_call_inputs
+                    if str(call.get("tool_name") or call.get("name") or "").strip()
+                }
+            )
             skill_call_inputs = _skill_call_inputs(action.get("skill_calls"))
             delegation_inputs = _dicts(action.get("delegations"))
             final_payload = action.get("final_payload")
@@ -406,7 +476,7 @@ class ReActAgentHarness:
                         assembled_prompt=assembled_prompt,
                         context_snapshot=context_snapshot,
                         structured=final_payload,
-                        text=response.text or json.dumps(final_payload, ensure_ascii=True),
+                        text=response.text or json.dumps(final_payload, ensure_ascii=False),
                         model_audits=model_audits,
                         tool_results=tool_results,
                         delegation_results=delegation_results,
@@ -434,7 +504,7 @@ class ReActAgentHarness:
                         assembled_prompt=assembled_prompt,
                         context_snapshot=context_snapshot,
                         structured=final_payload,
-                        text=response.text or json.dumps(final_payload, ensure_ascii=True),
+                        text=response.text or json.dumps(final_payload, ensure_ascii=False),
                         model_audits=model_audits,
                         tool_results=tool_results,
                         delegation_results=delegation_results,
@@ -458,18 +528,32 @@ class ReActAgentHarness:
 
             if not tool_call_inputs and not skill_call_inputs and not delegation_inputs:
                 if isinstance(final_payload, dict):
-                    return self._succeeded(
-                        task=task,
-                        definition=definition,
-                        assembled_prompt=assembled_prompt,
-                        context_snapshot=context_snapshot,
-                        structured=final_payload,
-                        text=response.text or json.dumps(final_payload, ensure_ascii=True),
-                        model_audits=model_audits,
+                    if is_complete:
+                        return self._succeeded(
+                            task=task,
+                            definition=definition,
+                            assembled_prompt=assembled_prompt,
+                            context_snapshot=context_snapshot,
+                            structured=final_payload,
+                            text=response.text or json.dumps(final_payload, ensure_ascii=False),
+                            model_audits=model_audits,
+                            tool_results=tool_results,
+                            delegation_results=delegation_results,
+                            scratchpad=scratchpad,
+                            completion_reason=str(
+                                action.get("completion_reason") or "final_payload"
+                            ),
+                        )
+                    if step < self.config.max_steps:
+                        scratchpad.record_no_progress(step=step)
+                        continue
+                    return _failed(
+                        task,
+                        "react_incomplete_final_payload",
+                        "ReAct step returned final_payload with is_complete=false.",
                         tool_results=tool_results,
                         delegation_results=delegation_results,
                         scratchpad=scratchpad,
-                        completion_reason=str(action.get("completion_reason") or "final_payload"),
                     )
                 if step < self.config.max_steps:
                     scratchpad.record_no_progress(step=step)
@@ -477,11 +561,48 @@ class ReActAgentHarness:
                 return _failed(
                     task,
                     "react_no_progress",
-                    "ReAct step returned no final payload, tool calls, or delegations.",
+                    "ReAct step 未返回 final payload、工具调用或委托。",
                     tool_results=tool_results,
                     delegation_results=delegation_results,
                     scratchpad=scratchpad,
                 )
+
+        recovered_research = _max_steps_research_section_fallback(
+            task,
+            tool_results=tool_results,
+            delegation_results=delegation_results,
+            scratchpad=scratchpad,
+        )
+        if recovered_research is not None:
+            structured, text = recovered_research
+            scratchpad.warnings.append(
+                "ResearchSection reached max_steps; recovered from successful tool evidence."
+            )
+            scratchpad.entries.append(
+                {
+                    "kind": "max_steps_recovered",
+                    "status": "warning",
+                    "schema": "ResearchSection",
+                    "successful_tool_count": sum(
+                        1 for result in tool_results if result.status is ResultStatus.SUCCEEDED
+                    ),
+                }
+            )
+            return self._succeeded(
+                task=task,
+                definition=definition,
+                assembled_prompt=assembled_prompt,
+                context_snapshot=context_snapshot,
+                structured=structured,
+                text=text,
+                model_audits=model_audits,
+                tool_results=tool_results,
+                delegation_results=delegation_results,
+                scratchpad=scratchpad,
+                completion_reason=(
+                    "达到 ReAct max_steps，已基于成功工具证据生成保守 ResearchSection。"
+                ),
+            )
 
         return _failed(
             task,
@@ -514,7 +635,7 @@ class ReActAgentHarness:
                     skill_id="",
                     status="failed",
                     reason=reason,
-                    message="Skill call is missing skill_id.",
+                    message="技能调用缺少 skill_id。",
                 )
                 continue
             if skill_id in scratchpad.loaded_skills:
@@ -523,7 +644,7 @@ class ReActAgentHarness:
                     skill_id=skill_id,
                     status="duplicate",
                     reason=reason,
-                    message=f"Skill {skill_id} was already loaded in this task.",
+                    message=f"技能 {skill_id} 在本任务中已加载。",
                 )
                 continue
             skill = available.get(skill_id)
@@ -533,7 +654,7 @@ class ReActAgentHarness:
                     skill_id=skill_id,
                     status="rejected",
                     reason=reason,
-                    message=f"Skill {skill_id} is not exposed for this agent task.",
+                    message=f"技能 {skill_id} 未暴露给当前 agent task。",
                 )
                 continue
             scratchpad.record_skill_result(
@@ -541,7 +662,7 @@ class ReActAgentHarness:
                 skill_id=skill_id,
                 status="loaded",
                 reason=reason,
-                message=f"Skill {skill_id} loaded.",
+                message=f"技能 {skill_id} 已加载。",
                 skill=skill,
             )
 
@@ -559,7 +680,7 @@ class ReActAgentHarness:
                     task,
                     call,
                     code="tool_registry_disabled",
-                    message="No tool registry is configured for this runner.",
+                    message="当前 runner 未配置 tool registry。",
                 )
                 for call in calls
             ]
@@ -576,7 +697,7 @@ class ReActAgentHarness:
                     task,
                     call,
                     code="invalid_tool_call",
-                    message="Tool call is missing tool_name.",
+                    message="工具调用缺少 tool_name。",
                 )
                 continue
             if not scratchpad.can_call_tool(tool_name, self.config.max_tool_calls_per_name):
@@ -585,8 +706,9 @@ class ReActAgentHarness:
                     call,
                     code="tool_call_limit_exceeded",
                     message=(
-                        f"Tool {tool_name} exceeded the per-run limit of "
-                        f"{self.config.max_tool_calls_per_name} calls."
+                        f"工具 {tool_name} 已经在同一任务节点内连续 "
+                        f"{self.config.max_tool_calls_per_name} 轮 loop 被调用；"
+                        "请先产出结论、换用其他证据路径，或在后续非连续 loop 中重试。"
                     ),
                 )
                 results[index] = blocked_result
@@ -642,12 +764,48 @@ class ReActAgentHarness:
         task: AgentTask,
         input_payload: JsonDict,
     ) -> ToolResult:
-        return await asyncio.to_thread(
-            adapter.call_tool,
-            tool_name=tool_name,
-            task=task,
-            input_payload=input_payload,
+        loop = asyncio.get_running_loop()
+        future: asyncio.Future[ToolResult] = loop.create_future()
+
+        def publish(result: ToolResult) -> None:
+            if not future.done():
+                future.set_result(result)
+
+        def target() -> None:
+            try:
+                result = adapter.call_tool(
+                    tool_name=tool_name,
+                    task=task,
+                    input_payload=input_payload,
+                )
+            except Exception as exc:
+                result = self._blocked_tool_result(
+                    task,
+                    {"tool_name": tool_name, "input": input_payload},
+                    code="tool_call_exception",
+                    message=str(exc),
+                )
+            loop.call_soon_threadsafe(publish, result)
+
+        thread = threading.Thread(
+            target=target,
+            name=f"doxagent-tool-{tool_name}",
+            daemon=True,
         )
+        thread.start()
+        timeout = self.config.tool_call_timeout_seconds
+        if timeout is None:
+            return await future
+        try:
+            return await asyncio.wait_for(future, timeout=max(0.001, timeout))
+        except TimeoutError:
+            return self._blocked_tool_result(
+                task,
+                {"tool_name": tool_name, "input": input_payload},
+                code="tool_call_timeout",
+                message=f"工具 {tool_name} 超过 {timeout} 秒未返回。",
+                retryable=True,
+            )
 
     def _blocked_tool_result(
         self,
@@ -656,12 +814,13 @@ class ReActAgentHarness:
         *,
         code: str,
         message: str,
+        retryable: bool = False,
     ) -> ToolResult:
         return ToolResult(
             tool_name=str(call.get("tool_name") or call.get("name") or "unknown_tool"),
             status=ResultStatus.FAILED,
             output_summary=f"{code}: {message}",
-            error=ToolError(code=code, message=message, retryable=False),
+            error=ToolError(code=code, message=message, retryable=retryable),
             output={"ticker": task.ticker, "agent_name": task.agent_name.value},
         )
 
@@ -675,34 +834,75 @@ class ReActAgentHarness:
         scratchpad: Scratchpad,
         metadata: dict[str, str],
     ) -> ModelResponse:
-        return await self.model_gateway.complete(
+        return await self._complete_model_request(
             ModelRequest(
-                provider=self.provider,
-                model=self.model,
-                messages=[
-                    ModelMessage(
-                        role=MessageRole.SYSTEM,
-                        content=_react_system_prompt(assembled_prompt.instructions),
-                    ),
-                    ModelMessage(
-                        role=MessageRole.USER,
-                        content=_react_user_prompt(
-                            task=task,
-                            definition=definition,
-                            assembled_prompt=assembled_prompt,
-                            context_snapshot=context_snapshot,
-                            scratchpad=scratchpad,
-                            tool_registry=self.tool_registry,
-                            skill_registry=self.skill_registry,
-                            config=self.config,
+                    provider=self.provider,
+                    model=self.model,
+                    messages=[
+                        ModelMessage(
+                            role=MessageRole.SYSTEM,
+                            content=_react_system_prompt(assembled_prompt.instructions),
                         ),
-                    ),
-                ],
-                temperature=0.2,
-                response_format=ResponseFormat.JSON,
-                metadata=metadata,
+                        ModelMessage(
+                            role=MessageRole.USER,
+                            content=_react_user_prompt(
+                                task=task,
+                                definition=definition,
+                                assembled_prompt=assembled_prompt,
+                                context_snapshot=context_snapshot,
+                                scratchpad=scratchpad,
+                                tool_registry=self.tool_registry,
+                                skill_registry=self.skill_registry,
+                                config=self.config,
+                            ),
+                        ),
+                    ],
+                    temperature=0.2,
+                    timeout_seconds=self.config.model_request_timeout_seconds,
+                    response_format=ResponseFormat.JSON,
+                    metadata=metadata,
+                )
             )
-        )
+
+    async def _complete_model_request(self, request: ModelRequest) -> ModelResponse:
+        loop = asyncio.get_running_loop()
+        started = loop.time()
+        timeout = request.timeout_seconds
+        try:
+            completion = self.model_gateway.complete(request)
+            if timeout is None:
+                return await completion
+            return await asyncio.wait_for(completion, timeout=max(0.001, timeout))
+        except TimeoutError:
+            return ModelResponse(
+                audit=ModelAuditSummary(
+                    provider=request.provider,
+                    model=request.model,
+                    latency_seconds=max(0.0, loop.time() - started),
+                    metadata=request.metadata,
+                ),
+                error=GatewayError(
+                    code="model_request_timeout",
+                    message=f"模型请求超过 {timeout} 秒未返回。",
+                    retryable=True,
+                    provider=request.provider,
+                ),
+            )
+        except Exception as exc:
+            return ModelResponse(
+                audit=ModelAuditSummary(
+                    provider=request.provider,
+                    model=request.model,
+                    latency_seconds=max(0.0, loop.time() - started),
+                    metadata=request.metadata,
+                ),
+                error=GatewayError(
+                    code="model_gateway_exception",
+                    message=str(exc),
+                    retryable=False,
+                    provider=request.provider,
+                ),
+            )
 
     async def _compact_if_needed(
         self,
@@ -724,7 +924,7 @@ class ReActAgentHarness:
         }
         if _estimated_tokens(context_payload) < self.config.compaction_token_threshold:
             return
-        response = await self.model_gateway.complete(
+        response = await self._complete_model_request(
             ModelRequest(
                 provider=self.provider,
                 model=self.model,
@@ -745,6 +945,17 @@ class ReActAgentHarness:
                             {
                                 "task": task.model_dump(mode="json"),
                                 "tool_and_delegation_history": scratchpad.entries,
+                                "market_evidence_snapshot": (
+                                    scratchpad.market_evidence_snapshot()
+                                ),
+                                "tool_specific_summary_requirements": [
+                                    (
+                                        "For daily_ohlcv tool results, preserve the "
+                                        "market_evidence_snapshot exactly. Do not replace "
+                                        "OHLCV-derived returns, dates, closes, highs, lows, "
+                                        "or volume metrics with generic prose."
+                                    )
+                                ],
                                 "required_summary_fields": [
                                     "data_retrieved",
                                     "errors",
@@ -755,12 +966,13 @@ class ReActAgentHarness:
                                 ],
                                 "language_rules": CHINESE_OUTPUT_RULES,
                             },
-                            ensure_ascii=True,
+                            ensure_ascii=False,
                             default=str,
                         ),
                     ),
                 ],
                 temperature=0,
+                timeout_seconds=self.config.model_request_timeout_seconds,
                 response_format=ResponseFormat.JSON,
                 metadata={**metadata, "react_compaction": "true"},
             )
@@ -770,7 +982,7 @@ class ReActAgentHarness:
             return
         summary = response.structured if isinstance(response.structured, dict) else response.text
         if summary:
-            scratchpad.append_compaction_summary(json.dumps(summary, ensure_ascii=True))
+            scratchpad.append_compaction_summary(json.dumps(summary, ensure_ascii=False))
         else:
             scratchpad.record_compaction_failure("Compaction returned an empty summary.")
 
@@ -796,6 +1008,11 @@ class ReActAgentHarness:
             tool_results=tool_results,
             delegation_results=delegation_results,
         )
+        if "ExpectationDetailResult" in _schema_names(task.required_output_schema):
+            structured = _recover_expectation_detail_arrays_from_text(
+                structured,
+                text=text,
+            )
         schema_error = _final_payload_schema_error(structured, task.required_output_schema)
         if schema_error is not None:
             return _failed(
@@ -811,8 +1028,8 @@ class ReActAgentHarness:
         failed_required = _failed_required_tools(required_tool_names, tool_results)
         if failed_required:
             warning = (
-                "Required ReAct tool call was missing or failed; continuing with "
-                f"unknowns/data gaps: {', '.join(failed_required)}."
+                "必需的 ReAct 工具调用缺失或失败；将以 unknowns/data gaps 继续："
+                f"{', '.join(failed_required)}。"
             )
             scratchpad.warnings.append(warning)
             scratchpad.entries.append(
@@ -823,7 +1040,11 @@ class ReActAgentHarness:
                     "status": "warning",
                 }
             )
-        evidence_refs = _evidence_refs(tool_results, delegation_results)
+        successful_tool_results = [
+            result for result in tool_results if result.status is ResultStatus.SUCCEEDED
+        ]
+        evidence_refs = _evidence_refs(successful_tool_results, delegation_results)
+        market_evidence_snapshot = scratchpad.market_evidence_snapshot()
         return AgentResult(
             task_id=task.task_id,
             agent_name=task.agent_name,
@@ -835,6 +1056,7 @@ class ReActAgentHarness:
                 "completion_reason": completion_reason,
                 "model_audits": model_audits,
                 "react_audit": scratchpad.audit(),
+                "market_evidence_snapshot": market_evidence_snapshot,
                 "skill_ids": sorted(scratchpad.loaded_skills),
                 "skill_versions": {
                     skill_id: str(skill["version"])
@@ -860,8 +1082,100 @@ class ReActAgentHarness:
                 "context_snapshot": _dump_context(context_snapshot),
             },
             evidence_refs=evidence_refs,
-            tool_calls=[tool_result_to_summary(result) for result in tool_results],
+            tool_calls=[tool_result_to_summary(result) for result in successful_tool_results],
         )
+
+
+def _max_steps_research_section_fallback(
+    task: AgentTask,
+    *,
+    tool_results: list[ToolResult],
+    delegation_results: list[AgentResult],
+    scratchpad: Scratchpad,
+) -> tuple[JsonDict, str] | None:
+    if "ResearchSection" not in _schema_names(task.required_output_schema):
+        return None
+    successful = [
+        result
+        for result in tool_results
+        if result.status is ResultStatus.SUCCEEDED and result.evidence_refs
+    ]
+    if not successful:
+        return None
+
+    evidence_refs = [
+        item.model_dump(mode="json") for item in _evidence_refs(tool_results, delegation_results)
+    ]
+    section_key = str(task.input_context.get("required_section_key") or "research_section")
+    labels = {
+        "fundamental_report": "基本面研究",
+        "macro_report": "宏观与市场环境研究",
+        "industry_report": "行业与竞争研究",
+        "market_trace_report": "价格与市场行为研究",
+        "market_narrative_report": "市场叙事研究",
+    }
+    label = labels.get(section_key, section_key)
+    success_tools = _unique_tool_names(successful)
+    failed_tools = _unique_tool_names(
+        result for result in tool_results if result.status is not ResultStatus.SUCCEEDED
+    )
+    source_note = _tool_result_source_note(successful)
+    gap_note = (
+        f"同时存在未完成或失败的工具调用：{'、'.join(failed_tools)}；这些失败已作为数据缺口处理。"
+        if failed_tools
+        else "未记录阻断性的工具失败。"
+    )
+    compacted_note = (
+        f"最近一次压缩摘要：{scratchpad.compacted_summaries[-1][:500]}"
+        if scratchpad.compacted_summaries
+        else ""
+    )
+    text = (
+        f"{task.ticker} 的{label}在 ReAct 达到 max_steps 前未收到模型的完整 final_payload，"
+        "workflow 因此基于已经成功返回的工具证据生成保守恢复段落。"
+        f"已成功使用的工具包括：{'、'.join(success_tools)}。{source_note}"
+        f"{gap_note}"
+        "该段只能支持后续 Blackboard 初始化继续推进和人工/LLM 复核，不能被解释为无保留的"
+        "最终投资结论。后续监控应优先复核缺失基准、同业或异常数据，并把价格反应、相对表现、"
+        "成交量和波动率变化与 expectation units 中的已定价/未定价假设连接起来。"
+        f"{compacted_note}"
+    )
+    summary = (
+        f"{task.ticker} 的{label}由 ReAct max_steps 恢复逻辑生成；"
+        f"证据来自 {'、'.join(success_tools)}，失败或异常工具已作为不确定性保留。"
+    )
+    structured = {
+        "text": text,
+        "summary": summary,
+        "evidence_refs": evidence_refs,
+        "author_agent": task.agent_name.value,
+        "reviewer_agents": [],
+    }
+    return structured, text
+
+
+def _unique_tool_names(results: Any) -> list[str]:
+    names: list[str] = []
+    for result in results:
+        name = getattr(result, "tool_name", "")
+        if name:
+            names.append(str(name))
+    return list(dict.fromkeys(names))
+
+
+def _tool_result_source_note(results: list[ToolResult]) -> str:
+    snippets: list[str] = []
+    for result in results:
+        if result.output_summary:
+            snippets.append(str(result.output_summary))
+            continue
+        for ref in result.evidence_refs:
+            if ref.summary:
+                snippets.append(str(ref.summary))
+                break
+    if not snippets:
+        return ""
+    return "已取得的证据摘要：" + "；".join(snippets[:4]) + "。"
 
 
 def _react_system_prompt(base_instructions: str) -> str:
@@ -874,7 +1188,13 @@ def _react_system_prompt(base_instructions: str) -> str:
                 "Decide whether tools or delegation are needed before returning final output."
             ),
             "Do not write Blackboard state directly.",
-            "Do not expose hidden chain-of-thought; use concise reasoning_summary only.",
+            (
+                "Do not expose hidden chain-of-thought; use concise reasoning_summary only. "
+                "All human-readable natural-language values in plan_update, "
+                "task_ledger_updates.item, reasoning_summary, completion_reason, "
+                "delegation questions/context, and final_payload must be Simplified Chinese "
+                "unless quoting source text, identifiers, tickers, tool names, or enum values."
+            ),
             (
                 "Return one JSON object matching the ReAct action protocol. "
                 "Put plan_update, is_complete, tool_calls, delegations, and final_payload "
@@ -895,22 +1215,24 @@ def _react_user_prompt(
     skill_registry: SkillRegistry,
     config: ReActHarnessConfig,
 ) -> str:
+    tool_descriptors = (
+        tool_registry.describe_allowed(task.permissions) if tool_registry is not None else []
+    )
     available_tools = (
-        [
-            descriptor.model_dump(mode="json")
-            for descriptor in tool_registry.describe_allowed(task.permissions)
-        ]
-        if tool_registry is not None
-        else []
+        [_agent_visible_tool_descriptor(descriptor) for descriptor in tool_descriptors]
     )
     tool_call_policy = {
-        "required_tool_names": _strings(task.input_context.get("required_tool_names")),
-        "tool_requirements": task.input_context.get("tool_requirements", []),
-        "available_tools_are_authoritative": True,
-        "required_tool_gap_policy": (
-            "If a required tool cannot be satisfied, return final_payload with explicit unknowns."
-        ),
-    }
+                "required_tool_names": _strings(task.input_context.get("required_tool_names")),
+                "tool_requirements": task.input_context.get("tool_requirements", []),
+                "available_tools_are_authoritative": True,
+                "required_tool_gap_policy": (
+                    "如果 required tool 无法满足，在 final_payload 中用中文明确写入 unknowns，"
+                    "不得假装已取得证据。"
+                ),
+            }
+    doxatlas_contract_brief = _doxatlas_contract_brief(tool_descriptors)
+    if doxatlas_contract_brief:
+        tool_call_policy["doxatlas_contract_brief"] = doxatlas_contract_brief
     available_skills = [
         _available_skill_catalog_item(skill)
         for skill in _available_skill_definitions(task, definition, skill_registry)
@@ -920,28 +1242,39 @@ def _react_user_prompt(
             "react_protocol": {
                 "max_steps": config.max_steps,
                 "max_tool_calls_per_name": config.max_tool_calls_per_name,
+                "tool_call_limit_scope": (
+                    "The limit applies to consecutive ReAct loops for the same tool name "
+                    "inside this task node, not to the number of same-name calls inside "
+                    "one loop. Multiple same-name calls in one loop are allowed."
+                ),
                 "response_schema": {
-                    "plan_update": ["short public plan updates"],
-                    "task_ledger_updates": [{"item": "string", "status": "todo|done|blocked"}],
-                    "reasoning_summary": "brief public rationale, not hidden chain-of-thought",
+                    "language_rule": (
+                        "所有面向用户或评估的自然语言值必须使用简体中文；"
+                        "仅专有名词、ticker、工具名、enum、source 原文可保留英文。"
+                    ),
+                    "plan_update": ["简短中文公开进度；不要使用英文句子"],
+                    "task_ledger_updates": [
+                        {"item": "中文任务项", "status": "todo|done|blocked"}
+                    ],
+                    "reasoning_summary": "中文公开理由摘要，不要包含隐藏 chain-of-thought",
                     "is_complete": "boolean",
-                    "completion_reason": "string",
+                    "completion_reason": "中文完成原因",
                     "tool_calls": [
                         {"tool_name": "registered tool name", "input": {"key": "value"}}
                     ],
                     "skill_calls": [
-                        {"skill_id": "available skill id", "reason": "why this step needs it"}
+                        {"skill_id": "available skill id", "reason": "中文说明为何需要该技能"}
                     ],
                     "delegations": [
                         {
                             "target_agent": "agent enum value",
                             "task_type": "optional task type",
-                            "question": "delegated task",
-                            "context_summary": "bounded context",
+                            "question": "中文委托问题",
+                            "context_summary": "中文边界上下文",
                             "required_output_schema": "optional schema",
                         }
                     ],
-                    "final_payload": "AgentResult-compatible structured payload when complete",
+                    "final_payload": "完成时返回 AgentResult-compatible 结构化 payload，内部自然语言必须中文",
                 },
             },
             "task": {
@@ -955,7 +1288,7 @@ def _react_user_prompt(
                 "input_context": agent_visible_input_context(task.input_context),
             },
             "tool_call_policy": tool_call_policy,
-            "output_contract": _output_contract(task.required_output_schema),
+            "output_contract": _output_contract(task.required_output_schema, task=task),
             "context_snapshot": agent_visible_context_snapshot(context_snapshot),
             "available_tools": available_tools,
             "available_skills": available_skills,
@@ -963,11 +1296,32 @@ def _react_user_prompt(
             "plan": scratchpad.plan,
             "task_ledger": scratchpad.task_ledger,
             "compacted_evidence_summary": scratchpad.compacted_summaries,
+            "market_evidence_snapshot": scratchpad.market_evidence_snapshot(),
             "recent_trajectory": scratchpad.recent_entries(config.recent_step_window),
             "scratchpad_warnings": scratchpad.warnings[-5:],
         },
-        ensure_ascii=True,
+        ensure_ascii=False,
         default=str,
+    )
+
+
+def _agent_visible_tool_descriptor(descriptor: ToolDescriptor) -> dict[str, Any]:
+    data = descriptor.model_dump(mode="json", exclude_none=True)
+    data.pop("concurrent_safe", None)
+    data.pop("compactable", None)
+    return data
+
+
+def _doxatlas_contract_brief(descriptors: list[ToolDescriptor]) -> str | None:
+    if not any(
+        descriptor.name.startswith("doxa_") or descriptor.name.startswith("doxatlas.")
+        for descriptor in descriptors
+    ):
+        return None
+    return (
+        "DoxAtlas uses scoped short ids: parent scope appears once, child lists use "
+        "R/T/N/E/P/M/S/D/I codes. Prefer event scope run_id+narrative_code+event_code. "
+        "Do not pass user_id or DoxAgent internal event_id. Use compact list tools before detail/source."
     )
 
 
@@ -1018,12 +1372,12 @@ def _loaded_skill_payload(skill: SkillDefinition) -> JsonDict:
 def _parse_action(response: ModelResponse) -> JsonDict | None:
     payload: Any = response.structured
     if payload is None and response.text is not None:
-        try:
-            payload = json.loads(response.text)
-        except json.JSONDecodeError:
+        payload = _parse_json_object_from_text(response.text)
+        if payload is None:
             return None
     if not isinstance(payload, dict):
         return None
+    payload = _unwrap_text_encoded_action_payload(payload)
     payload = _unwrap_action_payload(payload)
     action_keys = {
         "plan_update",
@@ -1035,16 +1389,48 @@ def _parse_action(response: ModelResponse) -> JsonDict | None:
         "delegations",
         "final_payload",
     }
-    if not any(key in payload for key in action_keys):
-        return {
-            "is_complete": True,
-            "completion_reason": "model returned direct structured payload",
-            "final_payload": payload,
-            "tool_calls": [],
-            "skill_calls": [],
-            "delegations": [],
-        }
     return cast(JsonDict, payload)
+
+
+def _unwrap_text_encoded_action_payload(payload: JsonDict) -> JsonDict:
+    for key in ("text", "output_text", "content"):
+        value = payload.get(key)
+        if not isinstance(value, str):
+            continue
+        parsed = _parse_json_object_from_text(value)
+        if isinstance(parsed, dict):
+            return parsed
+    return payload
+
+
+def _parse_json_object_from_text(text: str) -> JsonDict | None:
+    stripped = text.strip()
+    candidates = [stripped]
+    fenced = _JSON_FENCE_RE.match(stripped)
+    if fenced:
+        candidates.append(fenced.group(1).strip())
+    first = stripped.find("{")
+    last = stripped.rfind("}")
+    if first != -1 and last != -1 and last > first:
+        candidates.append(stripped[first : last + 1])
+    for candidate in candidates:
+        if not candidate:
+            continue
+        try:
+            parsed = json.loads(candidate)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(parsed, dict):
+            return cast(JsonDict, parsed)
+    decoder = json.JSONDecoder()
+    for match in reversed(list(re.finditer(r"{", stripped))):
+        try:
+            parsed, _ = decoder.raw_decode(stripped[match.start() :])
+        except json.JSONDecodeError:
+            continue
+        if isinstance(parsed, dict):
+            return cast(JsonDict, parsed)
+    return None
 
 
 def _coerce_direct_final_action(action: JsonDict, required_output_schema: str) -> JsonDict:
@@ -1058,7 +1444,12 @@ def _coerce_direct_final_action(action: JsonDict, required_output_schema: str) -
     }
     if any(key in action for key in control_keys):
         return action
-    if not _looks_like_direct_final_payload(action, required_output_schema):
+    if _looks_like_react_prompt_echo(action):
+        return action
+    if not _looks_like_direct_final_payload(
+        action,
+        required_output_schema,
+    ) and _has_final_payload_schema(required_output_schema):
         return action
     return {
         "is_complete": True,
@@ -1068,6 +1459,25 @@ def _coerce_direct_final_action(action: JsonDict, required_output_schema: str) -
         "skill_calls": [],
         "delegations": [],
     }
+
+
+def _has_final_payload_schema(required_output_schema: str) -> bool:
+    return any(
+        schema_name in _FINAL_PAYLOAD_SCHEMAS
+        for schema_name in _schema_names(required_output_schema)
+    )
+
+
+def _looks_like_react_prompt_echo(payload: JsonDict) -> bool:
+    return (
+        isinstance(payload.get("react_protocol"), dict)
+        and isinstance(payload.get("task"), dict)
+        and (
+            "output_contract" in payload
+            or "tool_call_policy" in payload
+            or "context_snapshot" in payload
+        )
+    )
 
 
 def _looks_like_direct_final_payload(payload: JsonDict, required_output_schema: str) -> bool:
@@ -1118,6 +1528,12 @@ def _looks_like_direct_final_payload(payload: JsonDict, required_output_schema: 
             "key_variables",
             "event_monitoring_direction",
         },
+        "KnownEventsDocument": {
+            "document_id",
+            "document_type",
+            "events",
+            "known_events",
+        },
     }
     keys = set(payload)
     return any(
@@ -1164,7 +1580,13 @@ def _failed(
         task_id=task.task_id,
         agent_name=task.agent_name,
         status=ResultStatus.FAILED,
-        payload={"runtime": "react", "react_audit": scratchpad.audit() if scratchpad else {}},
+        payload={
+            "runtime": "react",
+            "react_audit": scratchpad.audit() if scratchpad else {},
+            "market_evidence_snapshot": (
+                scratchpad.market_evidence_snapshot() if scratchpad else {}
+            ),
+        },
         evidence_refs=evidence_refs,
         tool_calls=[tool_result_to_summary(result) for result in tool_results],
         error=AgentError(code=code, message=message, retryable=retryable, details=details or {}),
@@ -1200,6 +1622,10 @@ def _failed_required_tools(
 def _final_payload_schema_error(payload: JsonDict, required_output_schema: str) -> str | None:
     if not payload:
         return "ReAct final_payload must be a non-empty JSON object."
+    if "ExpectationDetailResult" in _schema_names(required_output_schema):
+        patches = payload.get("proposed_patches")
+        if not isinstance(patches, list) or len(patches) != 1:
+            return "ExpectationDetailResult requires exactly one proposed_patches item."
     errors: list[str] = []
     schema_checked = False
     for schema_name in _schema_names(required_output_schema):
@@ -1221,7 +1647,7 @@ def _schema_names(required_output_schema: str) -> list[str]:
     return schema_names(required_output_schema)
 
 
-def _output_contract(required_output_schema: str) -> JsonDict:
+def _output_contract(required_output_schema: str, *, task: AgentTask | None = None) -> JsonDict:
     contracts: JsonDict = {}
     for schema_name in _schema_names(required_output_schema):
         if schema_name == "ExpectationShellConstructionResult":
@@ -1231,7 +1657,7 @@ def _output_contract(required_output_schema: str) -> JsonDict:
                         {
                             "expectation_id": "expectation_<id>",
                             "expectation_name": "short driver-based expectation name",
-                            "direction": "bullish | bearish | neutral",
+                            "direction": "bullish | bearish | neutral | risk",
                             "why_it_matters": "why this expectation belongs in the Blackboard",
                             "market_view": {
                                 "text": "market narrative and thesis only",
@@ -1251,7 +1677,7 @@ def _output_contract(required_output_schema: str) -> JsonDict:
                     "rationale": "construction rationale",
                 },
                 "rules": [
-                    "Generate 1 to 3 expectation shells.",
+                    "Generate 2 to 3 differentiated expectation shells.",
                     "Do not include realized_facts, key_variables, or event_monitoring_direction.",
                     "Do not create Blackboard patches in this phase.",
                 ],
@@ -1292,9 +1718,91 @@ def _output_contract(required_output_schema: str) -> JsonDict:
                         "Complete realized_facts, realized_facts_summary, key_variables, "
                         "and event_monitoring_direction."
                     ),
+                    (
+                        "event_monitoring_direction must be an object with "
+                        "known_event_notice string, positive_events list[str], and "
+                        "negative_events list[str]. Do not return known_upcoming_events."
+                    ),
+                    (
+                        "positive_events and negative_events must be specific monitorable "
+                        "event triggers, not generic deployment/commercialization "
+                        "placeholders and not objects."
+                    ),
+                    (
+                        "Every realized_fact and key_variable must include evidence_refs; "
+                        "price_reaction must be concrete, not unknown."
+                    ),
                 ],
             }
         elif schema_name == "ExpectationConstructionResult":
+            if (
+                task is not None
+                and task.input_context.get("resolution_mode")
+                == "field_review_objection_resolution"
+            ):
+                contracts[schema_name] = {
+                    "final_payload": {
+                        "proposed_patches": (
+                            "[] unless an accepted or partially_accepted objection "
+                            "requires a concrete revised expectation_unit patch"
+                        ),
+                        "evidence_refs": [],
+                        "delegations": [],
+                        "unknowns": [],
+                        "rationale": "short Chinese summary of the resolution decisions",
+                        "resolved_objection_ids": [],
+                        "accepted_objection_ids": [],
+                        "partially_accepted_objection_ids": [],
+                        "rejected_objection_ids": [],
+                        "objection_resolutions": [
+                            {
+                                "objection_id": "must match one unresolved objection id",
+                                "decision": (
+                                    "resolved | accepted | partially_accepted | rejected"
+                                ),
+                                "resolution_note": (
+                                    "concise Chinese reason, citing compact patch fields "
+                                    "or reviewer evidence"
+                                ),
+                                "changed_paths": [
+                                    "document.<field_path> touched or confirmed"
+                                ],
+                                "evidence_refs": [],
+                            }
+                        ],
+                    },
+                    "rules": [
+                        (
+                            "This is an objection-resolution task, not a fresh expectation "
+                            "construction task."
+                        ),
+                        "Do not call tools in this task; reuse input_context evidence_refs.",
+                        (
+                            "Return exactly one objection_resolutions item for each "
+                            "input_context.unresolved_objections item."
+                        ),
+                        (
+                            "Do not generate 2 to 3 expectation patches. Keep "
+                            "proposed_patches empty unless an objection is accepted or "
+                            "partially_accepted and a concrete revision is required."
+                        ),
+                        (
+                            "If decision is accepted or partially_accepted, include a revised "
+                            "proposed_patch only for the affected expectation_id, using the "
+                            "compact pending_patches as the revision source."
+                        ),
+                        "Never return unaffected expectation patches in this resolution batch.",
+                        (
+                            "If decision is resolved or rejected, do not return a full patch; "
+                            "use changed_paths and evidence_refs to make the closure auditable."
+                        ),
+                        (
+                            "Each resolution must include changed_paths or evidence_refs; "
+                            "do not silently close objections."
+                        ),
+                    ],
+                }
+                continue
             contracts[schema_name] = {
                 "final_payload": {
                     "proposed_patches": [
@@ -1315,7 +1823,7 @@ def _output_contract(required_output_schema: str) -> JsonDict:
                                 "created_at": "ISO-8601 timestamp",
                                 "expectation_id": "same as target.expectation_id",
                                 "expectation_name": "short expectation name",
-                                "direction": "bullish | bearish | neutral",
+                                "direction": "bullish | bearish | neutral | risk",
                                 "why_it_matters": "why this expectation matters",
                                 "market_view": {
                                     "text": "market narrative and thesis",
@@ -1361,7 +1869,7 @@ def _output_contract(required_output_schema: str) -> JsonDict:
                 },
                 "rules": [
                     "Use proposed_patches, not expectations or expectation_units.",
-                    "Generate 1 to 3 expectation_unit create patches for GenerateExpectationUnits.",
+                    "Generate 2 to 3 expectation_unit create patches for GenerateExpectationUnits.",
                     "Each patch.after must be a complete ExpectationUnitDocument.",
                     "target.expectation_id must exactly equal after.expectation_id.",
                     "If evidence is partial, still produce the patch and list gaps in unknowns.",
@@ -1467,16 +1975,36 @@ def _output_contract(required_output_schema: str) -> JsonDict:
             }
         elif schema_name == "KnownEventsDocument":
             contracts[schema_name] = {
-                "final_payload": {
-                    "document_id": "doc_<id>",
-                    "document_type": "known_events",
-                    "ticker": "<ticker>",
-                    "created_at": "ISO-8601 timestamp",
+        "final_payload": {
+            "document_id": "doc_<id>",
+            "document_type": "known_events",
+            "ticker": "<ticker>",
+            "created_at": "ISO-8601 timestamp",
                     "events": [],
                 },
                 "rules": [
                     "Return stable known events only; uncertain facts should remain unknowns.",
                     "Each material event must have a source evidence ref.",
+                    (
+                        "When an event maps to an expectation unit, set expectation_id to the "
+                        "matching expectation_id instead of null."
+                    ),
+                    (
+                        "Use the actual event date when it is available from evidence or event "
+                        "text; do not use the run timestamp as a substitute for historical events."
+                    ),
+                    (
+                        "Prefer source-specific evidence refs over agent-output fallback refs; "
+                        "use agent-output evidence only when no provider/source evidence exists."
+                    ),
+                    (
+                        "Set has_price_reaction=true for events about stock moves, valuation, "
+                        "market cap, ATH, contract prices, spot prices, or explicit market pricing."
+                    ),
+                    (
+                        "Set is_known_old_news=true when the event date is before the run date "
+                        "and the market has already discussed it."
+                    ),
                 ],
             }
         elif schema_name == "MonitoringConfigDocument":
@@ -1495,13 +2023,13 @@ def _output_contract(required_output_schema: str) -> JsonDict:
                             "related_entities": [],
                             "expectation_id": "expectation_<id>",
                             "priority": "high | medium | low",
-                            "trigger_condition": "specific monitorable condition",
+                            "trigger_condition": "具体、可观察的监控条件",
                         }
                     ],
                 },
                 "rules": [
-                    "Every item must map to an expectation_id when it monitors one.",
-                    "Use trigger_condition for observable news, filing, market, or data changes.",
+                    "每个监控项如对应某个 expectation，必须填写 expectation_id。",
+                    "trigger_condition 必须描述可观察的新闻、公告、市场或数据变化。",
                 ],
             }
         elif schema_name == "MonitoringPolicyDocument":
@@ -1515,10 +2043,10 @@ def _output_contract(required_output_schema: str) -> JsonDict:
                         {
                             "rule_id": "rule_<id>",
                             "action_type": "direct_trade",
-                            "trigger_condition": "high-confidence trigger",
+                            "trigger_condition": "高置信度触发条件",
                             "expectation_id": "expectation_<id>",
-                            "action": "mark as direct-trade candidate for human/O3 review",
-                            "strategy_note": "why this could change investment stance",
+                            "action": "标记为 direct_trade 候选，交由人工或 O3 复核",
+                            "strategy_note": "说明该信号为何可能改变投资立场",
                             "evidence_fields": [],
                             "escalation_path": "human_review | O3_future_review",
                         }
@@ -1528,13 +2056,13 @@ def _output_contract(required_output_schema: str) -> JsonDict:
                     "no_action_rationale": None,
                 },
                 "rules": [
-                    "direct_trade means candidate routing only; never execute broker orders.",
-                    "Cover direct_trade_rules, push_to_agent_rules, and cache_rules.",
+                    "direct_trade 仅表示候选路由，不得执行券商下单。",
+                    "必须覆盖 direct_trade_rules、push_to_agent_rules、cache_rules。",
                     (
-                        "If any action path is intentionally omitted, provide "
-                        "no_action_rationale explaining why."
+                        "如有任一 action path 被有意省略，必须用 "
+                        "no_action_rationale 解释原因。"
                     ),
-                    "Each rule needs expectation_id, trigger_condition, evidence_fields, and escalation_path.",
+                    "每条规则都需要 expectation_id、trigger_condition、evidence_fields、escalation_path。",
                 ],
             }
         elif schema_name == "ResearchSection":
@@ -1660,18 +2188,22 @@ def _normalize_known_events_document_payload(
             if isinstance(source, dict) and _valid_evidence_ref_payloads([source])
             else fallback_evidence[0]
         )
+        description = _realized_fact_description(
+            item.get("description") or item.get("summary") or item
+        )
+        event_time = _known_event_time(item, description)
         events.append(
             {
                 "event_id": str(item.get("event_id") or item.get("id") or new_id("event")),
-                "event_time": _event_time(item.get("event_time") or item.get("date")),
-                "description": str(
-                    item.get("description") or item.get("summary") or "Known market event."
-                ),
+                "event_time": event_time,
+                "description": description,
                 "source": source_ref,
                 "expectation_id": item.get("expectation_id"),
                 "discussed_by_market": bool(item.get("discussed_by_market", True)),
-                "has_price_reaction": bool(item.get("has_price_reaction", False)),
-                "is_known_old_news": bool(item.get("is_known_old_news", False)),
+                "has_price_reaction": bool(item.get("has_price_reaction"))
+                or _known_event_has_price_reaction(description),
+                "is_known_old_news": bool(item.get("is_known_old_news"))
+                or _known_event_is_old_news(event_time),
             }
         )
     return {
@@ -1706,7 +2238,7 @@ def _normalize_monitoring_config_document_payload(
                     item.get("trigger_condition")
                     or item.get("condition")
                     or item.get("description")
-                    or "Monitor ticker-relevant signal changes."
+                    or "监控与 ticker 相关的信号变化。"
                 ),
             }
         )
@@ -1751,23 +2283,27 @@ def _normalize_policy_rule_payloads(value: Any, *, default_action_type: str) -> 
     for item in value if isinstance(value, list) else []:
         if not isinstance(item, dict):
             continue
+        action_type = str(item.get("action_type") or default_action_type)
         rules.append(
             {
                 "rule_id": str(item.get("rule_id") or item.get("id") or new_id("rule")),
-                "action_type": str(item.get("action_type") or default_action_type),
+                "action_type": action_type,
                 "trigger_condition": str(
                     item.get("trigger_condition")
                     or item.get("condition")
                     or item.get("description")
-                    or "Monitor ticker-relevant signals."
+                    or "监控与 ticker 相关的信号。"
                 ),
                 "expectation_id": item.get("expectation_id"),
-                "action": str(item.get("action") or "mark for review"),
-                "strategy_note": str(
+                "action": _chinese_policy_action(
+                    item.get("action"),
+                    action_type=action_type,
+                ),
+                "strategy_note": _chinese_policy_strategy_note(
                     item.get("strategy_note")
                     or item.get("rationale")
-                    or item.get("note")
-                    or "Generated from monitoring policy output."
+                    or item.get("note"),
+                    action_type=action_type,
                 ),
                 "evidence_fields": _strings(
                     item.get("evidence_fields") or item.get("required_evidence_fields")
@@ -1776,6 +2312,36 @@ def _normalize_policy_rule_payloads(value: Any, *, default_action_type: str) -> 
             }
         )
     return rules
+
+
+def _has_chinese(value: Any) -> bool:
+    return any("\u4e00" <= ch <= "\u9fff" for ch in str(value or ""))
+
+
+def _chinese_policy_action(value: Any, *, action_type: str) -> str:
+    text = str(value or "").strip()
+    if text and _has_chinese(text):
+        return text
+    if action_type == "direct_trade":
+        return "标记为 direct_trade 候选，交由人工或 O3 复核"
+    if action_type == "push_to_agent":
+        return "推送给相关研究 agent 复核信号含义"
+    if action_type == "cache":
+        return "缓存为批量复核材料"
+    return "标记为后续复核事项"
+
+
+def _chinese_policy_strategy_note(value: Any, *, action_type: str) -> str:
+    text = str(value or "").strip()
+    if text and _has_chinese(text):
+        return text
+    if action_type == "direct_trade":
+        return "仅作为路由候选，不触发券商下单。"
+    if action_type == "push_to_agent":
+        return "需要 agent 复核叙事、证据与价格反应。"
+    if action_type == "cache":
+        return "低置信度、重复或时效性较弱的信号先缓存，等待批量复核。"
+    return "由监控策略输出生成，供后续复核使用。"
 
 
 def _event_time(value: Any) -> str:
@@ -1789,6 +2355,100 @@ def _event_time(value: Any) -> str:
             return datetime.now(UTC).isoformat()
         return text
     return datetime.now(UTC).isoformat()
+
+
+def _event_time_hint(description: str) -> str | None:
+    text = str(description or "")
+    match = re.search(
+        r"(20\d{2})\s*[-/.年]\s*(\d{1,2})(?:\s*[-/.月]\s*(\d{1,2}))?",
+        text,
+    )
+    if match:
+        year, month, day = match.group(1), match.group(2), match.group(3) or "1"
+        return f"{year}-{int(month):02d}-{int(day):02d}"
+    quarter_match = re.search(r"\b([1-4])Q\s*[' ]?(20\d{2}|\d{2})\b", text, re.IGNORECASE)
+    if quarter_match:
+        quarter = int(quarter_match.group(1))
+        year_text = quarter_match.group(2)
+        year = int(year_text) if len(year_text) == 4 else 2000 + int(year_text)
+        return f"{year}-{((quarter - 1) * 3 + 1):02d}-01"
+    quarter_match = re.search(r"\bQ([1-4])\s*[' ]?(20\d{2}|\d{2})\b", text, re.IGNORECASE)
+    if quarter_match:
+        quarter = int(quarter_match.group(1))
+        year_text = quarter_match.group(2)
+        year = int(year_text) if len(year_text) == 4 else 2000 + int(year_text)
+        return f"{year}-{((quarter - 1) * 3 + 1):02d}-01"
+    quarter_match = re.search(r"\b(20\d{2})\s*Q([1-4])\b", text, re.IGNORECASE)
+    if quarter_match:
+        year = int(quarter_match.group(1))
+        quarter = int(quarter_match.group(2))
+        return f"{year}-{((quarter - 1) * 3 + 1):02d}-01"
+    fy_match = re.search(r"\bF[QY]\s*([1-4])?\s*(20\d{2})\b", text, re.IGNORECASE)
+    if fy_match:
+        quarter = int(fy_match.group(1) or 1)
+        year = int(fy_match.group(2))
+        return f"{year}-{((quarter - 1) * 3 + 1):02d}-01"
+    computex_match = re.search(r"\bcomputex\s*(20\d{2})\b", text, re.IGNORECASE)
+    if computex_match:
+        return f"{int(computex_match.group(1))}-06-01"
+    year_match = re.search(r"\b(20\d{2})\b", text)
+    if year_match:
+        return f"{int(year_match.group(1))}-01-01"
+    return None
+
+
+def _known_event_time(item: JsonDict, description: str) -> str:
+    raw_time = item.get("event_time")
+    date_hint = item.get("date")
+    text_hint = _event_time_hint(
+        " ".join(str(value) for value in (date_hint, description) if value)
+    )
+    if text_hint and (raw_time is None or _event_time_is_generic(raw_time)):
+        return _event_time(text_hint)
+    if date_hint:
+        return _event_time(date_hint)
+    if raw_time is not None:
+        return _event_time(raw_time)
+    if text_hint:
+        return _event_time(text_hint)
+    return _event_time(None)
+
+
+def _event_time_is_generic(value: Any) -> bool:
+    if not isinstance(value, str):
+        return False
+    return bool(re.fullmatch(r"20\d{2}(-01-01)?", value.strip()))
+
+
+def _known_event_has_price_reaction(description: str) -> bool:
+    text = description.lower()
+    markers = (
+        "股价",
+        "市值",
+        "估值",
+        "定价",
+        "价格",
+        "合约价",
+        "现货价",
+        "上涨",
+        "下跌",
+        "涨",
+        "跌",
+        "高点",
+        "ath",
+        "market cap",
+        "price",
+        "valuation",
+    )
+    return any(marker in text for marker in markers)
+
+
+def _known_event_is_old_news(event_time: str) -> bool:
+    try:
+        parsed = datetime.fromisoformat(event_time.replace("Z", "+00:00"))
+    except ValueError:
+        return False
+    return parsed.date() < datetime.now(UTC).date()
 
 
 def _normalize_delegated_retrieval_payload(
@@ -1843,7 +2503,7 @@ def _normalize_delegated_retrieval_payload(
         or payload.get("gaps")
     )
     if not source_refs and not unknowns:
-        unknowns = ["No reliable public-source evidence was retrieved."]
+        unknowns = ["未检索到可靠的公开来源证据。"]
     query_log = _strings(payload.get("query_log") or payload.get("queries"))
     if not query_log:
         query_log = _query_log_from_tool_results(tool_results)
@@ -2399,9 +3059,7 @@ def _normalize_output_objections(
                     "objection_id": str(item.get("objection_id") or new_id("objection")),
                     "source_agent": str(item.get("source_agent") or task.agent_name.value),
                     "target": target,
-                    "severity": str(
-                        item.get("severity") or _audit_objection_severity(reason)
-                    ),
+                    "severity": _normalize_objection_severity(item.get("severity"), reason),
                     "reason": reason,
                     "evidence_refs": _valid_evidence_ref_payloads(item.get("evidence_refs"))
                     or fallback_evidence,
@@ -2440,6 +3098,21 @@ def _normalize_output_objections(
     return objections
 
 
+def _normalize_objection_severity(value: Any, reason: str) -> str:
+    raw = str(value or "").strip().lower()
+    if raw in {item.value for item in ObjectionSeverity}:
+        return raw
+    if raw in {"blocker", "blocking", "critical", "severe", "serious", "major", "material"}:
+        return ObjectionSeverity.BLOCKING.value
+    if raw in {"medium", "moderate", "materiality"}:
+        return ObjectionSeverity.MEDIUM.value
+    if raw in {"minor", "low", "small"}:
+        return ObjectionSeverity.LOW.value
+    if raw in {"high"}:
+        return ObjectionSeverity.HIGH.value
+    return _audit_objection_severity(reason)
+
+
 def _target_path_from_payload(target: JsonDict) -> str:
     object_id = target.get("document_id") or target.get("expectation_id") or "default"
     return f"{target.get('document_type')}:{object_id}:{target.get('field_path')}"
@@ -2466,6 +3139,7 @@ def _normalize_expectation_construction_payload(
     task: AgentTask,
     tool_results: list[ToolResult],
     delegation_results: list[AgentResult],
+    allow_global_research_fallback: bool = True,
 ) -> JsonDict:
     evidence_refs = _valid_evidence_ref_payloads(payload.get("evidence_refs"))
     if not evidence_refs:
@@ -2502,7 +3176,7 @@ def _normalize_expectation_construction_payload(
             for item in expectation_items
             if isinstance(item, dict)
         ]
-    if not normalized_patches:
+    if allow_global_research_fallback and not normalized_patches:
         fallback = _fallback_expectation_from_global_research(task, payload)
         if fallback is not None:
             normalized_patches = [
@@ -2604,16 +3278,23 @@ def _normalize_expectation_shell_construction_payload(
         for item in shell_items
         if isinstance(item, dict)
     ]
-    if not shells:
-        fallback = _fallback_expectation_from_global_research(task, payload)
-        if fallback is not None:
-            shells = [
-                _normalize_expectation_shell_payload(
-                    fallback,
-                    task=task,
-                    fallback_evidence=evidence_refs,
-                )
-            ]
+    if len(shells) < 2:
+        seen_names = {str(item.get("expectation_name") or "").strip().lower() for item in shells}
+        for fallback in _fallback_expectation_shells_from_global_research(task, payload):
+            normalized = _normalize_expectation_shell_payload(
+                fallback,
+                task=task,
+                fallback_evidence=evidence_refs,
+            )
+            name_key = str(normalized.get("expectation_name") or "").strip().lower()
+            if name_key and name_key in seen_names:
+                continue
+            shells.append(normalized)
+            seen_names.add(name_key)
+            if len(shells) >= 2:
+                break
+    if len(shells) > 3:
+        shells = shells[:3]
     return {
         "shells": shells,
         "evidence_refs": evidence_refs,
@@ -2694,10 +3375,11 @@ def _normalize_expectation_detail_payload(
         task=task,
         tool_results=tool_results,
         delegation_results=delegation_results,
+        allow_global_research_fallback=False,
     )
     if not normalized["proposed_patches"]:
         shell = task.input_context.get("expectation_shell")
-        if isinstance(shell, dict):
+        if isinstance(shell, dict) and _payload_has_expectation_detail_fields(payload):
             expectation = dict(payload.get("expectation_unit") or payload)
             expectation.setdefault("expectation_id", shell.get("expectation_id"))
             expectation.setdefault("expectation_name", shell.get("expectation_name"))
@@ -2711,7 +3393,200 @@ def _normalize_expectation_detail_payload(
                     fallback_evidence=normalized["evidence_refs"],
                 )
             ]
-    return normalized
+    return _force_expectation_detail_shell_identity(normalized, task=task)
+
+
+def _payload_has_expectation_detail_fields(payload: JsonDict) -> bool:
+    detail_keys = {
+        "expectation_unit",
+        "realized_facts",
+        "realized_facts_summary",
+        "known_facts_summary",
+        "key_variables",
+        "event_monitoring_direction",
+        "positive_events",
+        "negative_events",
+        "price_reaction",
+        "market_reaction",
+        "pricing_assessment",
+        "pricing_status",
+    }
+    return bool(detail_keys & set(payload))
+
+
+def _force_expectation_detail_shell_identity(payload: JsonDict, *, task: AgentTask) -> JsonDict:
+    shell = task.input_context.get("expectation_shell")
+    if not isinstance(shell, dict):
+        return payload
+    shell_id = shell.get("expectation_id")
+    if not shell_id:
+        return payload
+    shell_fields = {
+        "expectation_id": shell_id,
+        "expectation_name": shell.get("expectation_name"),
+        "direction": shell.get("direction"),
+        "why_it_matters": shell.get("why_it_matters"),
+        "market_view": shell.get("market_view"),
+    }
+    patches = payload.get("proposed_patches")
+    if not isinstance(patches, list):
+        return payload
+    for patch in patches:
+        if not isinstance(patch, dict):
+            continue
+        target = patch.get("target")
+        after = patch.get("after")
+        if not isinstance(target, dict) or not isinstance(after, dict):
+            continue
+        if target.get("document_type") != DocumentType.EXPECTATION_UNIT.value:
+            continue
+        target["expectation_id"] = str(shell_id)
+        target["ticker"] = task.ticker
+        target["document_id"] = None
+        for key, value in shell_fields.items():
+            if value is not None:
+                after[key] = value
+        after["ticker"] = task.ticker
+    return payload
+
+
+def _recover_expectation_detail_arrays_from_text(payload: JsonDict, *, text: str) -> JsonDict:
+    patches = payload.get("proposed_patches")
+    if not isinstance(patches, list) or not text:
+        return payload
+
+    recovered_facts = _extract_json_array_after_key(text, "realized_facts")
+    recovered_variables = _extract_json_array_after_key(text, "key_variables")
+    recovered_summary = _extract_json_string_after_key(text, "realized_facts_summary")
+    if recovered_facts is None and recovered_variables is None and not recovered_summary:
+        return payload
+
+    for patch in patches:
+        if not isinstance(patch, dict):
+            continue
+        after = patch.get("after")
+        if not isinstance(after, dict):
+            continue
+        market_view = after.get("market_view")
+        market_evidence = (
+            market_view.get("evidence_refs") if isinstance(market_view, dict) else None
+        )
+        fallback_evidence = _merge_evidence_ref_payloads(
+            payload.get("evidence_refs"),
+            patch.get("evidence_refs"),
+            after.get("evidence_refs"),
+            market_evidence,
+        )
+        had_facts = _has_nonempty_list(after.get("realized_facts"))
+        if not had_facts and recovered_facts:
+            normalized_facts = _normalize_realized_facts(
+                recovered_facts,
+                fallback_evidence_refs=fallback_evidence,
+            )
+            if normalized_facts:
+                after["realized_facts"] = normalized_facts
+        if not _has_nonempty_list(after.get("key_variables")) and recovered_variables:
+            normalized_variables = _normalize_variable_statuses(
+                recovered_variables,
+                fallback_evidence_refs=fallback_evidence,
+            )
+            if normalized_variables:
+                after["key_variables"] = normalized_variables
+        if recovered_summary and (
+            not had_facts or _is_placeholder_realized_summary(after.get("realized_facts_summary"))
+        ):
+            after["realized_facts_summary"] = recovered_summary
+    return payload
+
+
+def _extract_json_array_after_key(text: str, key: str) -> list[Any] | None:
+    for start in _json_value_starts_after_key(text, key):
+        if start >= len(text) or text[start] != "[":
+            continue
+        value = _load_balanced_json_value(text, start, "[", "]")
+        if isinstance(value, list):
+            return value
+    return None
+
+
+def _extract_json_string_after_key(text: str, key: str) -> str | None:
+    decoder = json.JSONDecoder()
+    for start in _json_value_starts_after_key(text, key):
+        if start >= len(text) or text[start] != '"':
+            continue
+        try:
+            value, _ = decoder.raw_decode(text[start:])
+        except json.JSONDecodeError:
+            continue
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    return None
+
+
+def _json_value_starts_after_key(text: str, key: str) -> list[int]:
+    pattern = re.compile(
+        rf'(?<![A-Za-z0-9_])["\']?{re.escape(key)}["\']?\s*:',
+        re.IGNORECASE,
+    )
+    starts: list[int] = []
+    for match in pattern.finditer(text):
+        index = match.end()
+        while index < len(text) and text[index].isspace():
+            index += 1
+        starts.append(index)
+    return starts
+
+
+def _load_balanced_json_value(
+    text: str,
+    start: int,
+    open_char: str,
+    close_char: str,
+) -> Any | None:
+    depth = 0
+    in_string = False
+    escaped = False
+    for index in range(start, len(text)):
+        char = text[index]
+        if in_string:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == '"':
+                in_string = False
+            continue
+        if char == '"':
+            in_string = True
+        elif char == open_char:
+            depth += 1
+        elif char == close_char:
+            depth -= 1
+            if depth == 0:
+                try:
+                    return json.loads(text[start : index + 1])
+                except json.JSONDecodeError:
+                    return None
+    return None
+
+
+def _has_nonempty_list(value: Any) -> bool:
+    return isinstance(value, list) and bool(value)
+
+
+def _is_placeholder_realized_summary(value: Any) -> bool:
+    text = str(value or "").strip().lower()
+    if not text:
+        return True
+    placeholder_tokens = (
+        "no realized facts",
+        "no known facts",
+        "needs downstream review",
+        "downstream review",
+        "needs monitoring",
+        "unknown",
+    )
+    return any(token in text for token in placeholder_tokens)
 
 
 def _fallback_expectation_from_global_research(
@@ -2733,16 +3608,71 @@ def _fallback_expectation_from_global_research(
         "direction": "neutral",
         "why_it_matters": (
             str(payload.get("rationale") or payload.get("summary") or "")
-            or "Global research identifies milestone execution as the primary expectation axis."
+            or "全局研究将里程碑执行识别为主要预期轴。"
         ),
         "description": summary,
-        "realized_facts_summary": "Realized facts require downstream review.",
+        "realized_facts_summary": "已兑现事实需要在下游复核中补全。",
         "key_variables": [],
-        "positive_events": ["Confirmed deployment, partner, or commercialization milestones."],
-        "negative_events": [
-            "Deployment delays, financing pressure, or weak commercialization evidence."
-        ],
+        "positive_events": ["已确认的部署、合作伙伴或商业化里程碑。"],
+        "negative_events": ["部署延迟、融资压力或商业化证据不足。"],
     }
+
+
+def _fallback_expectation_shells_from_global_research(
+    task: AgentTask,
+    payload: JsonDict,
+) -> list[JsonDict]:
+    context = task.input_context.get("global_research_context")
+    if not isinstance(context, dict):
+        return []
+    sections = context.get("sections")
+    if not isinstance(sections, dict) or not sections:
+        return []
+    summary = _global_research_summary_text(sections)
+    if not summary:
+        return []
+    rationale = str(payload.get("rationale") or payload.get("summary") or "").strip()
+    base_reason = rationale or "全局研究提供了可拆分为独立预期轴的市场叙事。"
+    return [
+        {
+            "expectation_id": new_id("expectation"),
+            "expectation_name": f"{task.ticker} AI/HBM demand durability",
+            "direction": "bullish",
+            "why_it_matters": (
+                "AI 服务器和 HBM 需求是否持续，是市场对存储上行周期、收入增速和估值重估"
+                f"最核心的正向预期轴。{base_reason}"
+            ),
+            "description": (
+                "市场正在定价 MU 受益于 AI/HBM 需求扩张、DRAM/NAND 价格改善和高毛利"
+                "产品占比提升；该预期需要在后续 detail 阶段用 DoxAtlas 叙事、财务和价格"
+                f"证据拆解已定价与未定价部分。\n{summary}"
+            ),
+            "realized_facts_summary": "已兑现事实需要在下游复核中补全。",
+            "key_variables": [],
+            "positive_events": ["HBM 订单、AI 服务器需求、毛利率指引或高端存储价格继续改善。"],
+            "negative_events": ["HBM 认证、客户拉货或 AI 基建需求低于市场预期。"],
+            "unknowns": ["HBM 需求持续性和客户集中度需要 detail 阶段证据化。"],
+        },
+        {
+            "expectation_id": new_id("expectation"),
+            "expectation_name": f"{task.ticker} memory cycle and margin risk",
+            "direction": "bearish",
+            "why_it_matters": (
+                "存储行业周期、供给扩张和高资本开支可能改变市场对 MU 毛利率、自由现金流"
+                "和估值倍数的容忍度，是与正向 AI/HBM 叙事相互独立的风险预期轴。"
+            ),
+            "description": (
+                "市场需要区分 AI/HBM 结构性需求与传统 DRAM/NAND 周期风险：若供给扩张、"
+                "价格见顶、资本开支压力或宏观需求走弱，当前乐观预期可能被重新定价。"
+                f"\n{summary}"
+            ),
+            "realized_facts_summary": "已兑现事实需要在下游复核中补全。",
+            "key_variables": [],
+            "positive_events": ["库存纪律、供给受限、价格续涨或自由现金流改善。"],
+            "negative_events": ["DRAM/NAND 价格回落、capex 上修、库存累积或毛利率指引下修。"],
+            "unknowns": ["传统存储周期与 HBM 结构性需求的分离程度需要 detail 阶段证据化。"],
+        },
+    ]
 
 
 def _global_research_summary_text(sections: dict[str, Any]) -> str:
@@ -2945,6 +3875,11 @@ def _normalize_expectation_document_payload(
             "author_agent": str(market_view.get("author_agent") or task.agent_name.value),
             "reviewer_agents": _strings(market_view.get("reviewer_agents")),
         }
+    variable_evidence_refs = _valid_evidence_ref_payloads(market_view.get("evidence_refs"))
+    document_evidence_refs = _merge_evidence_ref_payloads(
+        fallback_evidence,
+        variable_evidence_refs,
+    )
     return {
         "document_id": str(payload.get("document_id") or new_id("doc")),
         "document_type": DocumentType.EXPECTATION_UNIT.value,
@@ -2956,55 +3891,168 @@ def _normalize_expectation_document_payload(
         "direction": _normalize_expectation_direction(payload.get("direction") or description),
         "why_it_matters": description,
         "market_view": market_view,
-        "realized_facts": _normalize_realized_facts(payload.get("realized_facts")),
+        "realized_facts": _normalize_realized_facts(
+            payload.get("realized_facts"),
+            fallback_evidence_refs=document_evidence_refs,
+        ),
         "realized_facts_summary": realized_summary,
-        "key_variables": _normalize_variable_statuses(payload.get("key_variables")),
+        "key_variables": _normalize_variable_statuses(
+            payload.get("key_variables"),
+            fallback_evidence_refs=variable_evidence_refs,
+        ),
         "event_monitoring_direction": _normalize_event_monitoring_direction(payload),
     }
 
 
-def _normalize_realized_facts(value: Any) -> list[JsonDict]:
+def _normalize_realized_facts(
+    value: Any,
+    *,
+    fallback_evidence_refs: list[JsonDict] | None = None,
+) -> list[JsonDict]:
     facts: list[JsonDict] = []
+    fallback = list(fallback_evidence_refs or [])
     for item in value if isinstance(value, list) else []:
         if isinstance(item, dict):
+            evidence_refs = _merge_evidence_ref_payloads(item.get("evidence_refs"), fallback)
+            description_value = item.get("description")
+            if isinstance(description_value, dict):
+                description_source: Any = description_value
+            elif any(
+                item.get(key) not in (None, "")
+                for key in (
+                    "fact",
+                    "when",
+                    "why_it_matters",
+                    "pricing_status",
+                    "pricing_assessment",
+                )
+            ):
+                description_source = item
+            else:
+                description_source = description_value or item.get("text") or item
+            price_reaction = (
+                item.get("price_reaction")
+                or item.get("market_reaction")
+                or item.get("pricing_assessment")
+                or item.get("pricing_status")
+            )
             facts.append(
                 {
                     "event_id": str(item.get("event_id") or item.get("id") or new_id("event")),
-                    "description": str(item.get("description") or item.get("text") or item),
-                    "price_reaction": _normalize_price_reaction(item.get("price_reaction")),
-                    "evidence_refs": _valid_evidence_ref_payloads(item.get("evidence_refs")),
+                    "description": _realized_fact_description(description_source),
+                    "price_reaction": _normalize_price_reaction(
+                        price_reaction,
+                        fallback_evidence_refs=evidence_refs,
+                    ),
+                    "evidence_refs": evidence_refs,
                 }
             )
         elif str(item).strip():
+            evidence_refs = list(fallback)
             facts.append(
                 {
                     "event_id": new_id("event"),
                     "description": str(item),
-                    "price_reaction": _normalize_price_reaction(None),
-                    "evidence_refs": [],
+                    "price_reaction": _normalize_price_reaction(
+                        None,
+                        fallback_evidence_refs=evidence_refs,
+                    ),
+                    "evidence_refs": evidence_refs,
                 }
             )
     return facts
 
 
-def _normalize_price_reaction(value: Any) -> JsonDict:
+def _realized_fact_description(value: Any) -> str:
     if isinstance(value, dict):
+        preferred_keys = (
+            "fact",
+            "description",
+            "when",
+            "why_it_matters",
+            "pricing_status",
+            "pricing_assessment",
+        )
+        parts = [
+            f"{key}: {value[key]}"
+            for key in preferred_keys
+            if value.get(key) not in (None, "")
+        ]
+        if parts:
+            return "; ".join(parts)
+    text = str(value or "").strip()
+    return text or "已确认的市场事件。"
+
+
+def _normalize_price_reaction(
+    value: Any,
+    *,
+    fallback_evidence_refs: list[JsonDict] | None = None,
+) -> JsonDict:
+    fallback = list(fallback_evidence_refs or [])
+    if isinstance(value, dict):
+        evidence_refs = _valid_evidence_ref_payloads(value.get("evidence_refs")) or fallback
         return {
-            "price_change": str(value.get("price_change") or "unknown"),
-            "price_pattern": str(value.get("price_pattern") or "unknown"),
-            "interpretation": str(value.get("interpretation") or "Price reaction not established."),
-            "evidence_refs": _valid_evidence_ref_payloads(value.get("evidence_refs")),
+            "price_change": str(
+                value.get("price_change")
+                or value.get("move")
+                or value.get("reaction")
+                or "unknown"
+            ),
+            "price_pattern": str(
+                value.get("price_pattern")
+                or value.get("pattern")
+                or value.get("pricing_status")
+                or "unknown"
+            ),
+            "interpretation": str(
+                value.get("interpretation")
+                or value.get("rationale")
+                or value.get("description")
+                or value.get("pricing_assessment")
+                or "价格反应尚未建立。"
+            ),
+            "evidence_refs": evidence_refs,
+        }
+    text = str(value or "").strip()
+    if text:
+        return {
+            "price_change": text,
+            "price_pattern": "described",
+            "interpretation": text,
+            "evidence_refs": fallback,
         }
     return {
         "price_change": "unknown",
         "price_pattern": "unknown",
-        "interpretation": "Price reaction not established.",
-        "evidence_refs": [],
+        "interpretation": "价格反应尚未建立。",
+        "evidence_refs": fallback,
     }
 
 
-def _normalize_variable_statuses(value: Any) -> list[JsonDict]:
+def _merge_evidence_ref_payloads(*groups: Any) -> list[JsonDict]:
+    refs: list[JsonDict] = []
+    seen: set[str] = set()
+    for group in groups:
+        for ref in _valid_evidence_ref_payloads(group):
+            key = str(
+                ref.get("evidence_id")
+                or f"{ref.get('source_type')}:{ref.get('source_id')}:{ref.get('title')}"
+            )
+            if key in seen:
+                continue
+            seen.add(key)
+            refs.append(ref)
+    return refs
+
+
+def _normalize_variable_statuses(
+    value: Any,
+    *,
+    fallback_evidence_refs: list[JsonDict] | None = None,
+) -> list[JsonDict]:
     variables: list[JsonDict] = []
+    fallback = list(fallback_evidence_refs or [])
     for item in value if isinstance(value, list) else []:
         if isinstance(item, dict):
             name = str(item.get("name") or item.get("variable") or item.get("id") or "variable")
@@ -3016,10 +4064,13 @@ def _normalize_variable_statuses(value: Any) -> list[JsonDict]:
                         item.get("current_status")
                         or item.get("status")
                         or item.get("description")
+                        or item.get("relevance")
+                        or item.get("unresolved")
                         or "unknown"
                     ),
                     "certainty": str(item.get("certainty") or item.get("confidence") or "unknown"),
-                    "evidence_refs": _valid_evidence_ref_payloads(item.get("evidence_refs")),
+                    "evidence_refs": _valid_evidence_ref_payloads(item.get("evidence_refs"))
+                    or fallback,
                 }
             )
         elif str(item).strip():
@@ -3051,15 +4102,15 @@ def _normalize_event_monitoring_direction(payload: JsonDict) -> JsonDict:
     if isinstance(value, dict):
         return {
             "known_event_notice": str(
-                value.get("known_event_notice") or "Monitor for new confirmed events."
+                value.get("known_event_notice") or "监控新的已确认事件。"
             ),
-            "positive_events": _strings(value.get("positive_events")),
-            "negative_events": _strings(value.get("negative_events")),
+            "positive_events": _event_strings(value.get("positive_events")),
+            "negative_events": _event_strings(value.get("negative_events")),
         }
     return {
-        "known_event_notice": "Monitor for new confirmed events.",
-        "positive_events": _strings(payload.get("positive_events")),
-        "negative_events": _strings(payload.get("negative_events")),
+        "known_event_notice": "监控新的已确认事件。",
+        "positive_events": _event_strings(payload.get("positive_events")),
+        "negative_events": _event_strings(payload.get("negative_events")),
     }
 
 
@@ -3085,7 +4136,7 @@ def _agent_output_evidence_ref(task: AgentTask) -> JsonDict:
         "source_type": EvidenceSourceType.AGENT_OUTPUT.value,
         "source_id": f"react:{task.task_id}",
         "title": f"{task.agent_name.value} ReAct output provenance",
-        "summary": "Provider evidence was unavailable; retained model output provenance.",
+        "summary": "供应商证据不可用，已保留模型输出溯源。",
         "retrieval_metadata": {
             "agent_name": task.agent_name.value,
             "task_id": task.task_id,
@@ -3220,6 +4271,26 @@ def _strings(value: Any) -> list[str]:
     return [str(item) for item in value if str(item).strip()]
 
 
+def _event_strings(value: Any) -> list[str]:
+    if not isinstance(value, list):
+        return []
+    normalized: list[str] = []
+    for item in value:
+        if isinstance(item, dict):
+            parts = [
+                item.get("event") or item.get("trigger") or item.get("name"),
+                item.get("monitoring_signal") or item.get("monitoring"),
+                item.get("impact"),
+            ]
+            text = "; ".join(str(part).strip() for part in parts if str(part or "").strip())
+        else:
+            text = str(item)
+        text = " ".join(text.split())
+        if text:
+            normalized.append(text[:600])
+    return normalized
+
+
 def _valid_agent_names(value: Any) -> list[str]:
     valid = {item.value for item in AgentName}
     return [item for item in _strings(value) if item in valid]
@@ -3244,6 +4315,54 @@ def _jaccard_similarity(left: str, right: str) -> float:
 def _estimated_tokens(value: Any) -> int:
     text = json.dumps(value, ensure_ascii=True, default=str)
     return max(1, len(text) // 4)
+
+
+def _compact_tool_observation(
+    value: JsonDict,
+    *,
+    tool_name: str | None = None,
+    market_evidence_snapshot: JsonDict | None = None,
+) -> tuple[JsonDict, bool]:
+    rendered = json.dumps(value, ensure_ascii=False, sort_keys=True, default=str)
+    if len(rendered) <= MAX_TOOL_OBSERVATION_CHARS:
+        return value, False
+    market_evidence_snapshot = market_evidence_snapshot or build_daily_ohlcv_snapshot(
+        value,
+        tool_name=tool_name,
+    )
+    if market_evidence_snapshot is not None:
+        compacted: JsonDict = {
+            "compacted": True,
+            "tool_aware_compaction": "daily_ohlcv",
+            "original_chars": len(rendered),
+            "omitted_fields": ["ohlcv"],
+            "provider": value.get("provider"),
+            "symbol": value.get("symbol"),
+            "interval": value.get("interval"),
+            "market_evidence_snapshot": market_evidence_snapshot,
+        }
+        sample_rows = _ohlcv_compaction_sample(value.get("ohlcv"))
+        if sample_rows:
+            compacted["ohlcv_sample_rows"] = sample_rows
+        return compacted, True
+    return (
+        {
+            "compacted": True,
+            "original_chars": len(rendered),
+            "preview_chars": MAX_TOOL_OBSERVATION_CHARS,
+            "preview": rendered[:MAX_TOOL_OBSERVATION_CHARS],
+        },
+        True,
+    )
+
+
+def _ohlcv_compaction_sample(value: Any) -> list[JsonDict]:
+    if not isinstance(value, list):
+        return []
+    rows = [item for item in value if isinstance(item, dict)]
+    if len(rows) <= 8:
+        return rows
+    return [*rows[:3], {"omitted_rows": len(rows) - 8}, *rows[-5:]]
 
 
 def _dump_context(context_snapshot: Any | None) -> JsonDict | None:

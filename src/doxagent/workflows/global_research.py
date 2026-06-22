@@ -32,13 +32,13 @@ class GlobalResearchInputs(BaseModel):
 
     market: str = "US equities"
     geography: str = "US"
-    timeframe: str = "initialization 3-12 months"
+    timeframe: str = "recent developments with longer-cycle context"
     sector_or_theme: str | None = None
     industry_angle: str = "initialization"
     universe: list[str] = Field(default_factory=list)
     benchmarks: list[str] = Field(default_factory=lambda: ["SPY"])
     peers: list[str] = Field(default_factory=list)
-    market_trace_period: str = "1y"
+    market_trace_period: str = "3mo"
     market_trace_interval: str = "1d"
 
     def resolved(self, ticker: str) -> "GlobalResearchInputs":

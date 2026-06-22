@@ -7,6 +7,7 @@ from doxagent.models import (
     AgentTask,
     BlackboardPatch,
     BlackboardTarget,
+    Delegation,
     DelegatedRetrievalRequest,
     DelegatedRetrievalResult,
     DocumentType,
@@ -29,6 +30,7 @@ from doxagent.tools import ToolRequest, default_tool_registry
 from doxagent.workflows import (
     BlackboardInitializationWorkflow,
     InitializationMockResultFactory,
+    WorkflowCheckpoint,
     WorkflowNode,
     WorkflowRunStatus,
 )
@@ -306,6 +308,113 @@ class C1BlockingReviewRunner(RealizedO1A1A2Runner):
         return super().run(task)
 
 
+class O1RevisionDelegationRunner(RealizedO1A1A2Runner):
+    def __init__(self) -> None:
+        super().__init__(a2_has_evidence=True)
+        self.revision_objection_id: str | None = None
+        self.revision_delegation_id: str | None = None
+
+    def run(self, task: AgentTask) -> AgentResult:
+        node = task.run_metadata.workflow_node
+        if node == WorkflowNode.REVIEW_EXPECTATION_FIELDS.value:
+            self.calls.append((task.agent_name, task.task_type, task.run_metadata.workflow_node))
+            self.tasks.append(task)
+            evidence = _evidence()
+            if task.agent_name is not AgentName.C1_FUNDAMENTAL_RESEARCH:
+                review = ExpectationFieldReviewResult(
+                    findings=[
+                        {
+                            "field_path": "review_scope",
+                            "status": "supported",
+                            "rationale": f"{task.agent_name.value} review found no blocker.",
+                            "evidence_refs": [evidence],
+                        }
+                    ],
+                    evidence_refs=[evidence],
+                    rationale=f"{task.agent_name.value} completed expectation-field review.",
+                )
+                return AgentResult(
+                    task_id=task.task_id,
+                    agent_name=task.agent_name,
+                    status=ResultStatus.SUCCEEDED,
+                    payload={"structured": review.model_dump(mode="json")},
+                    evidence_refs=[evidence],
+                )
+            self.revision_objection_id = new_id("objection")
+            self.revision_delegation_id = new_id("delegation")
+            objection = Objection(
+                objection_id=self.revision_objection_id,
+                source_agent=AgentName.C1_FUNDAMENTAL_RESEARCH,
+                target=_target(task.ticker),
+                severity=ObjectionSeverity.BLOCKING,
+                reason="C1 requires O1 to revise the expectation patch.",
+                evidence_refs=[evidence],
+                status=ObjectionStatus.OPEN,
+            )
+            delegation = Delegation(
+                delegation_id=self.revision_delegation_id,
+                requester_agent=AgentName.C1_FUNDAMENTAL_RESEARCH,
+                target_agent=AgentName.O1_EXPECTATION_OWNER,
+                question="Revise the expectation patch to address the C1 objection.",
+                required_evidence=[EvidenceSourceType.MARKET_DATA],
+                blocking_scope=_target(task.ticker),
+            )
+            review = ExpectationFieldReviewResult(
+                findings=[
+                        {
+                            "field_path": "realized_facts",
+                            "status": "needs_more_evidence",
+                            "rationale": "O1 must revise the patch before promotion.",
+                            "evidence_refs": [evidence],
+                        }
+                ],
+                evidence_refs=[evidence],
+                objections=[objection],
+                delegations=[delegation],
+                rationale="C1 delegated the revision back to O1.",
+            )
+            return AgentResult(
+                task_id=task.task_id,
+                agent_name=task.agent_name,
+                status=ResultStatus.SUCCEEDED,
+                payload={"structured": review.model_dump(mode="json")},
+                evidence_refs=[evidence],
+            )
+        if (
+            node == WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS.value
+            and task.agent_name is AgentName.O1_EXPECTATION_OWNER
+        ):
+            self.calls.append((task.agent_name, task.task_type, task.run_metadata.workflow_node))
+            self.tasks.append(task)
+            evidence = _evidence()
+            return AgentResult(
+                task_id=task.task_id,
+                agent_name=task.agent_name,
+                status=ResultStatus.SUCCEEDED,
+                payload={
+                    "structured": {
+                        "proposed_patches": [],
+                        "evidence_refs": [evidence.model_dump(mode="json")],
+                        "delegations": [],
+                        "unknowns": [],
+                        "rationale": "O1 已完成 C1 要求的预期修订。",
+                        "resolved_objection_ids": [self.revision_objection_id],
+                        "objection_resolutions": [
+                            {
+                                "objection_id": self.revision_objection_id,
+                                "decision": "resolved",
+                                "resolution_note": "O1 已按 C1 要求修订预期补丁。",
+                                "changed_paths": ["document.realized_facts"],
+                                "evidence_refs": [evidence.model_dump(mode="json")],
+                            }
+                        ],
+                    }
+                },
+                evidence_refs=[evidence],
+            )
+        return super().run(task)
+
+
 class ConstructionObjectionRunner(RealizedO1A1A2Runner):
     def __init__(self) -> None:
         super().__init__(a2_has_evidence=True)
@@ -361,7 +470,8 @@ class ConstructionObjectionRunner(RealizedO1A1A2Runner):
             self.calls.append((task.agent_name, task.task_type, task.run_metadata.workflow_node))
             self.tasks.append(task)
             evidence = _evidence(EvidenceSourceType.DOXATLAS_SOURCE)
-            shell = self.factory._expectation_shell(task.ticker).model_copy(
+            shells = self.factory._expectation_shells(task.ticker)
+            shells[0] = shells[0].model_copy(
                 update={
                     "why_it_matters": "Revised shell now cites the specific DoxAtlas support gap.",
                     "evidence_refs": [evidence],
@@ -370,7 +480,7 @@ class ConstructionObjectionRunner(RealizedO1A1A2Runner):
                 deep=True,
             )
             construction = ExpectationShellConstructionResult(
-                shells=[shell],
+                shells=shells,
                 evidence_refs=[evidence],
                 delegations=[],
                 unknowns=[],
@@ -674,6 +784,44 @@ def test_workflow_uses_a2_retrieval_to_complete_delegation_and_o1_resolves_objec
         "c3_industry_review",
         "o4_market_trace_review",
     }.issubset(review_content_types)
+    o1_resolution_tasks = [
+        task
+        for task in runner.tasks
+        if task.run_metadata.workflow_node == WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS.value
+        and task.agent_name is AgentName.O1_EXPECTATION_OWNER
+    ]
+    assert o1_resolution_tasks
+    resolution_context = o1_resolution_tasks[0].input_context
+    assert resolution_context["resolution_mode"] == "field_review_objection_resolution"
+    assert resolution_context["pending_patches"]
+    assert resolution_context["pending_expectation_patch_summaries"]
+    assert resolution_context["global_research_context"]["omitted_for"] == (
+        WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS.value
+    )
+    assert resolution_context["unresolved_objections"][0]["objection_id"] == runner.objection_id
+
+
+def test_o1_revision_delegation_completes_after_o1_resolves_review_objection() -> None:
+    runner = O1RevisionDelegationRunner()
+    workflow = BlackboardInitializationWorkflow(
+        runner=runner,
+        execution_mode="agent_runner",
+        auto_resolve_blockers=False,
+    )
+
+    result = workflow.run("NVDA")
+    run = workflow.blackboard.get_run(result.checkpoint.run_id)
+
+    assert result.status is WorkflowRunStatus.COMPLETED
+    assert result.summary.unresolved_objection_count == 0
+    assert result.summary.blocking_delegation_count == 0
+    delegation = next(
+        item
+        for item in run.delegations
+        if item.delegation_id == runner.revision_delegation_id
+    )
+    assert not delegation.is_blocking
+    assert delegation.result_summary == "O1 已完成 C1 要求的预期修订。"
 
 
 def test_construction_objection_resolution_revises_shells_without_pending_patches() -> None:
@@ -710,6 +858,120 @@ def test_construction_objection_resolution_revises_shells_without_pending_patche
     assert result.checkpoint.metadata["expectation_shells"][0]["why_it_matters"].startswith(
         "Revised shell"
     )
+
+
+def test_objection_resolution_batches_large_unresolved_sets() -> None:
+    class BatchResolvingRunner(AgentRunner):
+        def __init__(self) -> None:
+            self.batches: list[list[str]] = []
+            self.contexts: list[dict[str, object]] = []
+
+        def run(self, task: AgentTask) -> AgentResult:
+            context = task.input_context
+            ids = [
+                item["objection_id"]
+                for item in context.get("unresolved_objections", [])
+                if isinstance(item, dict)
+            ]
+            self.batches.append(list(ids))
+            self.contexts.append(dict(context))
+            payload = ExpectationConstructionResult(
+                objection_resolutions=[
+                    {
+                        "objection_id": objection_id,
+                        "decision": "resolved",
+                        "resolution_note": f"Resolved {objection_id}.",
+                        "changed_paths": ["document"],
+                        "evidence_refs": [],
+                    }
+                    for objection_id in ids
+                ],
+                rationale="Resolved current objection batch.",
+            ).model_dump(mode="json")
+            return AgentResult(
+                task_id=task.task_id,
+                agent_name=task.agent_name,
+                status=ResultStatus.SUCCEEDED,
+                payload={"structured": payload},
+            )
+
+    runner = BatchResolvingRunner()
+    workflow = BlackboardInitializationWorkflow(
+        runner=runner,
+        execution_mode="agent_runner",
+        auto_resolve_blockers=False,
+    )
+    run = workflow.blackboard.start_run("NVDA", AgentName.SYSTEM)
+    checkpoint = WorkflowCheckpoint(
+        run_id=run.run_id,
+        ticker="NVDA",
+        next_node=WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS,
+    )
+    for index in range(5):
+        workflow.blackboard.create_objection(
+            run.run_id,
+            Objection(
+                objection_id=f"obj_batch_{index}",
+                source_agent=AgentName.A1_DOXATLAS_AUDIT,
+                target=_target("NVDA"),
+                severity=ObjectionSeverity.BLOCKING,
+                reason=f"Batch objection {index}.",
+                evidence_refs=[_evidence()],
+                status=ObjectionStatus.OPEN,
+            ),
+        )
+
+    results = workflow._resolve_blockers(
+        checkpoint,
+        WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS,
+    )
+    updated = workflow.blackboard.get_run(run.run_id)
+
+    assert len(results) == 5
+    assert [len(batch) for batch in runner.batches] == [1, 1, 1, 1, 1]
+    assert runner.contexts[0]["resolution_batch"]["batch_index"] == 1
+    assert runner.contexts[0]["resolution_batch"]["total_unresolved_before_batch"] == 5
+    assert runner.contexts[1]["resolution_batch"]["batch_index"] == 2
+    assert runner.contexts[1]["resolution_batch"]["total_unresolved_before_batch"] == 4
+    assert runner.contexts[2]["resolution_batch"]["batch_index"] == 3
+    assert runner.contexts[2]["resolution_batch"]["total_unresolved_before_batch"] == 3
+    assert runner.contexts[4]["resolution_batch"]["batch_index"] == 5
+    assert runner.contexts[4]["resolution_batch"]["total_unresolved_before_batch"] == 1
+    assert all(not objection.is_unresolved for objection in updated.objections)
+    assert [
+        entry.content_type for entry in updated.working_memory
+    ] == [
+        "objection_resolution_result",
+        "objection_resolution_result",
+        "objection_resolution_result",
+        "objection_resolution_result",
+        "objection_resolution_result",
+    ]
+
+
+def test_review_objection_inherits_result_evidence_when_missing() -> None:
+    workflow = BlackboardInitializationWorkflow(execution_mode="mock")
+    evidence = _evidence(EvidenceSourceType.DOXATLAS_SOURCE)
+    objection = Objection(
+        objection_id="obj_missing_evidence",
+        source_agent=AgentName.A1_DOXATLAS_AUDIT,
+        target=_target("NVDA"),
+        severity=ObjectionSeverity.BLOCKING,
+        reason="A1 objection omitted local evidence refs.",
+        evidence_refs=[],
+        status=ObjectionStatus.OPEN,
+    )
+    result = AgentResult(
+        task_id="task_review",
+        agent_name=AgentName.A1_DOXATLAS_AUDIT,
+        status=ResultStatus.SUCCEEDED,
+        payload={"structured": {"evidence_refs": []}},
+        evidence_refs=[evidence],
+    )
+
+    hydrated = workflow._objection_with_evidence_fallback(objection, result)
+
+    assert [ref.evidence_id for ref in hydrated.evidence_refs] == [evidence.evidence_id]
 
 
 def test_workflow_prefetches_missing_o1_detail_narrative_tool_evidence() -> None:
@@ -776,20 +1038,26 @@ def test_a1_workflow_nodes_receive_minimal_doxatlas_tool_sets() -> None:
         for task in a1_tasks
     }
     assert tools_by_node[WorkflowNode.REVIEW_EXPECTATION_CONSTRUCTION.value] == {
+        "doxa_query_analysis",
         "doxa_get_analysis",
+        "doxa_get_narrative_report",
         "doxa_query_propositions",
         "doxa_get_ignored_propositions",
-        "doxa_get_event_source",
     }
     assert tools_by_node[WorkflowNode.REVIEW_EXPECTATION_FIELDS.value] == {
+        "doxa_query_analysis",
         "doxa_get_analysis",
         "doxa_query_propositions",
         "doxa_get_event_source",
         "doxa_get_media_result",
+        "doxa_get_media_result_detail",
         "doxa_get_social_result",
+        "doxa_get_social_result_detail",
         "doxa_get_ignored_propositions",
     }
-    assert all("doxa_get_narrative_report" not in tools for tools in tools_by_node.values())
+    assert "doxa_get_narrative_report" not in tools_by_node[
+        WorkflowNode.REVIEW_EXPECTATION_FIELDS.value
+    ]
     assert all(
         not any(tool.startswith("doxa_run_") for tool in tools)
         for tools in tools_by_node.values()

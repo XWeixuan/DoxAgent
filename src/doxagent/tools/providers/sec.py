@@ -7,11 +7,14 @@ import re
 from collections.abc import Iterable, Mapping
 from typing import Any
 
-from doxagent.models import EvidenceSourceType
+import httpx
+
+from doxagent.models import EvidenceSourceType, ResultStatus
 from doxagent.tools.providers.base import (
     DEFAULT_USER_AGENT,
     BaseRealToolClient,
     JsonObject,
+    ProviderHttpError,
     _input_list,
     _input_str,
     _json_object,
@@ -58,13 +61,15 @@ class SecCompanyFactsAndFilingsClient(BaseRealToolClient):
                 raw={"submissions": submissions, "companyfacts": companyfacts},
                 source_type=EvidenceSourceType.EXTERNAL_REPORT,
                 source_id=f"sec:company:{cik}",
-                title=f"SEC filings and companyfacts for {request.ticker}",
-                summary="SEC submissions and XBRL company facts were retrieved.",
+                title=f"SEC filings 与 companyfacts - {request.ticker}",
+                summary="已检索 SEC submissions 与 XBRL companyfacts 数据。",
                 citation_scope="sec_company_facts_and_filings",
                 confidence=0.9,
                 metadata={"cik": cik, "include_facts": include_facts},
             )
         except Exception as exc:
+            if _is_sec_upstream_unavailable(exc):
+                return _sec_company_unavailable_result(request, exc)
             return self._handle_exception(request, exc)
 
     def _resolve_cik(self, request: ToolRequest) -> str:
@@ -134,8 +139,8 @@ class SecFilingSectionsClient(SecCompanyFactsAndFilingsClient):
                 raw=None,
                 source_type=EvidenceSourceType.EXTERNAL_REPORT,
                 source_id=f"sec:filing:{cik}:{accession}",
-                title=f"SEC filing sections for {request.ticker}",
-                summary="SEC filing text sections were parsed deterministically.",
+                title=f"SEC filing sections - {request.ticker}",
+                summary="已确定性解析 SEC filing 原文段落。",
                 citation_scope="sec_filing_sections",
                 confidence=0.82 if parsed["sections"] else 0.35,
                 metadata={
@@ -147,6 +152,8 @@ class SecFilingSectionsClient(SecCompanyFactsAndFilingsClient):
                 },
             )
         except Exception as exc:
+            if _is_sec_upstream_unavailable(exc):
+                return _sec_filing_sections_unavailable_result(request, exc)
             return self._handle_exception(request, exc)
 
     def _latest_accession_for_form(self, request: ToolRequest, cik: str) -> str:
@@ -227,4 +234,157 @@ def _summarize_sec_submissions(submissions: Mapping[str, Any]) -> JsonObject:
         "sic": submissions.get("sic"),
         "sic_description": submissions.get("sicDescription"),
         "recent_filings": recent_items,
+    }
+
+
+def _is_sec_upstream_unavailable(exc: Exception) -> bool:
+    return isinstance(exc, ProviderHttpError | httpx.RequestError)
+
+
+def _sec_company_unavailable_result(request: ToolRequest, exc: Exception) -> ToolResult:
+    ticker = _input_str(request, "ticker", request.ticker).upper()
+    raw_cik = request.input.get("cik")
+    cik = _normalize_cik(str(raw_cik)) if isinstance(raw_cik, str) and raw_cik.strip() else ""
+    error = _sec_error_payload(exc)
+    output = {
+        "provider": "sec",
+        "provider_status": "unavailable",
+        "ticker": ticker,
+        "cik": cik or None,
+        "submissions": {},
+        "companyfacts": {},
+        "unknowns": [
+            {
+                "field": "sec.submissions",
+                "reason": "SEC EDGAR 上游接口本次未返回可用 submissions 数据。",
+            },
+            {
+                "field": "sec.companyfacts",
+                "reason": "SEC EDGAR 上游接口本次未返回可用 XBRL companyfacts 数据。",
+            },
+        ],
+        "warnings": [
+            "SEC EDGAR 暂时不可用；不得把本结果解释为已取得 SEC filings 或 companyfacts。"
+        ],
+        "error": error,
+    }
+    summary = "SEC EDGAR 暂时不可用，未检索到 submissions/companyfacts；已作为数据缺口记录。"
+    return _partial_sec_result(
+        request,
+        output=output,
+        source_id=f"sec:company:{cik or ticker}:unavailable",
+        title=f"SEC EDGAR 数据缺口 - {ticker}",
+        summary=summary,
+        citation_scope="sec_company_facts_and_filings_unavailable",
+        metadata={
+            "ticker": ticker,
+            "cik": cik,
+            "provider_status": "unavailable",
+            "error_code": error["code"],
+            "retryable": error["retryable"],
+        },
+    )
+
+
+def _sec_filing_sections_unavailable_result(request: ToolRequest, exc: Exception) -> ToolResult:
+    ticker = _input_str(request, "ticker", request.ticker).upper()
+    accession = _input_str(request, "accession", "")
+    form = _input_str(request, "form", "10-K")
+    error = _sec_error_payload(exc)
+    output = {
+        "provider": "sec",
+        "provider_status": "unavailable",
+        "ticker": ticker,
+        "accession": accession or None,
+        "form": form,
+        "sections": [],
+        "unknowns": [
+            {
+                "field": "sec.filing_sections",
+                "reason": "SEC EDGAR 上游接口本次未返回可解析 filing sections。",
+            }
+        ],
+        "warnings": ["SEC EDGAR 暂时不可用；不得把本结果解释为已解析 SEC filing 原文。"],
+        "error": error,
+    }
+    summary = "SEC EDGAR 暂时不可用，未解析 filing sections；已作为数据缺口记录。"
+    return _partial_sec_result(
+        request,
+        output=output,
+        source_id=f"sec:filing:{ticker}:{accession or form}:unavailable",
+        title=f"SEC filing sections 数据缺口 - {ticker}",
+        summary=summary,
+        citation_scope="sec_filing_sections_unavailable",
+        metadata={
+            "ticker": ticker,
+            "accession": accession,
+            "form": form,
+            "provider_status": "unavailable",
+            "error_code": error["code"],
+            "retryable": error["retryable"],
+        },
+    )
+
+
+def _partial_sec_result(
+    request: ToolRequest,
+    *,
+    output: JsonObject,
+    source_id: str,
+    title: str,
+    summary: str,
+    citation_scope: str,
+    metadata: Mapping[str, object],
+) -> ToolResult:
+    result = ToolResult(
+        tool_name=request.tool_name,
+        status=ResultStatus.PARTIAL,
+        output=output,
+        output_summary=summary,
+        raw=None,
+    )
+    return result.model_copy(
+        update={
+            "evidence_refs": [
+                result.to_evidence_ref(
+                    source_type=EvidenceSourceType.EXTERNAL_REPORT,
+                    source_id=source_id,
+                    title=title,
+                    citation_scope=citation_scope,
+                    confidence=0.2,
+                ).model_copy(
+                    update={
+                        "retrieval_metadata": {
+                            "tool_name": request.tool_name,
+                            "provider": "sec",
+                            **dict(metadata),
+                        }
+                    }
+                )
+            ]
+        },
+        deep=True,
+    )
+
+
+def _sec_error_payload(exc: Exception) -> JsonObject:
+    if isinstance(exc, ProviderHttpError):
+        return {
+            "code": exc.code,
+            "message": exc.message,
+            "retryable": exc.retryable,
+            "details": exc.details,
+        }
+    if isinstance(exc, httpx.RequestError):
+        return {
+            "code": "upstream_unavailable",
+            "message": str(exc),
+            "retryable": True,
+            "details": {"provider_error": type(exc).__name__},
+        }
+    return {
+        "code": "tool_execution_failed",
+        "message": str(exc),
+        "retryable": False,
+        "details": {"provider_error": type(exc).__name__},
     }

@@ -1,3 +1,4 @@
+import asyncio
 import json
 import threading
 from typing import Any
@@ -16,7 +17,7 @@ from doxagent.gateway import (
 from doxagent.models import AgentName, AgentPermissions, ResultStatus, TaskType
 from doxagent.prompts import PromptAssembler, PromptInjector
 from doxagent.prompts.assembler import CHINESE_OUTPUT_RULES
-from doxagent.tools import ToolClient, ToolDescriptor, ToolRegistry, ToolRequest, ToolResult
+from doxagent.tools import ToolClient, ToolDescriptor, ToolError, ToolRegistry, ToolRequest, ToolResult
 from doxagent.tools.mock import default_tool_registry
 from tests.fixtures.phase1_contracts import agent_task
 
@@ -35,6 +36,44 @@ class RecordingModelClient:
                 provider=ProviderName.MOCK,
                 model=request.model,
                 latency_seconds=0,
+                metadata=request.metadata,
+            ),
+        )
+
+
+class TextAndStructuredModelClient:
+    def __init__(self, responses: list[tuple[dict[str, Any], str]]) -> None:
+        self.responses = list(responses)
+        self.requests: list[ModelRequest] = []
+
+    async def complete(self, request: ModelRequest) -> ModelResponse:
+        self.requests.append(request)
+        structured, text = self.responses.pop(0)
+        return ModelResponse(
+            structured=structured,
+            text=text,
+            audit=ModelAuditSummary(
+                provider=ProviderName.MOCK,
+                model=request.model,
+                latency_seconds=0,
+                metadata=request.metadata,
+            ),
+        )
+
+
+class SlowModelClient:
+    def __init__(self) -> None:
+        self.requests: list[ModelRequest] = []
+
+    async def complete(self, request: ModelRequest) -> ModelResponse:
+        self.requests.append(request)
+        await asyncio.sleep(1.0)
+        return ModelResponse(
+            structured={"summary": "late"},
+            audit=ModelAuditSummary(
+                provider=ProviderName.MOCK,
+                model=request.model,
+                latency_seconds=1.0,
                 metadata=request.metadata,
             ),
         )
@@ -65,6 +104,71 @@ def test_react_is_default_and_accepts_direct_structured_payload() -> None:
     assert result.payload["runtime"] == "react"
     assert result.payload["structured"] == {"summary": "ok"}
     assert result.payload["react_audit"]["entries"][0]["completion_reason"]
+
+
+def test_react_model_requests_carry_configured_timeout() -> None:
+    task = agent_task()
+    client = RecordingModelClient([{"summary": "ok"}])
+    runner = ModelGatewayAgentRunner(
+        model_gateway=ModelGateway(client),
+        tool_registry=default_tool_registry(),
+        react_config=ReActHarnessConfig(model_request_timeout_seconds=12.5),
+        tool_mode="mock",
+    )
+
+    result = runner.run(task)
+
+    assert result.status is ResultStatus.SUCCEEDED
+    assert client.requests[0].timeout_seconds == 12.5
+
+
+def test_react_enforces_outer_model_request_timeout() -> None:
+    client = SlowModelClient()
+    runner = ModelGatewayAgentRunner(
+        model_gateway=ModelGateway(client),
+        tool_registry=default_tool_registry(),
+        react_config=ReActHarnessConfig(model_request_timeout_seconds=0.01),
+        tool_mode="mock",
+    )
+
+    result = runner.run(agent_task())
+
+    assert result.status is ResultStatus.FAILED
+    assert result.error is not None
+    assert result.error.code == "model_gateway_error"
+    assert result.error.retryable is True
+    assert result.error.details["gateway_error"]["code"] == "model_request_timeout"
+
+
+def test_react_known_events_agent_output_fallback_summary_is_chinese() -> None:
+    task = agent_task().model_copy(
+        update={
+            "task_type": TaskType.GENERATE_KNOWN_EVENTS,
+            "required_output_schema": "KnownEventsDocument",
+        },
+        deep=True,
+    )
+    runner = runner_with_sequence(
+        [
+            {
+                "document_id": "doc_known_events",
+                "document_type": "known_events",
+                "ticker": task.ticker,
+                "events": [
+                    {
+                        "event_id": "event_1",
+                        "description": "已确认的供应链事件。",
+                        "expectation_id": "expectation_mu_001",
+                    }
+                ],
+            }
+        ]
+    )
+
+    result = runner.run(task)
+
+    source = result.payload["structured"]["events"][0]["source"]
+    assert source["summary"] == "供应商证据不可用，已保留模型输出溯源。"
 
 
 def test_react_unwraps_nested_react_protocol_action() -> None:
@@ -111,6 +215,75 @@ def test_react_unwraps_fenced_nested_react_protocol_text() -> None:
 
     assert result.status is ResultStatus.SUCCEEDED
     assert result.payload["structured"] == {"summary": "ok"}
+
+
+def test_react_unwraps_structured_text_nested_react_protocol_action() -> None:
+    task = agent_task()
+    client = RecordingModelClient(
+        [
+            {
+                "text": json.dumps(
+                    {
+                        "react_protocol": {
+                            "is_complete": False,
+                            "tool_calls": [
+                                {
+                                    "tool_name": "doxatlas.query",
+                                    "input": {"query": "AI demand narrative"},
+                                }
+                            ],
+                            "delegations": [],
+                        }
+                    }
+                )
+            },
+            {
+                "is_complete": True,
+                "completion_reason": "done after tool",
+                "final_payload": {"summary": "ok"},
+            },
+        ]
+    )
+    runner = ModelGatewayAgentRunner(
+        model_gateway=ModelGateway(client),
+        tool_registry=default_tool_registry(),
+        tool_mode="mock",
+    )
+
+    result = runner.run(task)
+
+    assert result.status is ResultStatus.SUCCEEDED
+    assert len(client.requests) == 2
+    assert result.payload["structured"] == {"summary": "ok"}
+    assert result.tool_calls[0].tool_name == "doxatlas.query"
+
+
+def test_react_does_not_accept_incomplete_final_payload() -> None:
+    task = agent_task()
+    runner = runner_with_sequence(
+        [
+            {
+                "is_complete": False,
+                "final_payload": {"summary": "premature"},
+                "tool_calls": [],
+                "delegations": [],
+            },
+            {
+                "is_complete": True,
+                "completion_reason": "fixed",
+                "final_payload": {"summary": "ok"},
+            },
+        ]
+    )
+
+    result = runner.run(task)
+
+    assert result.status is ResultStatus.SUCCEEDED
+    assert result.payload["structured"] == {"summary": "ok"}
+    assert any(
+        entry["kind"] == "react_no_progress"
+        for entry in result.payload["react_audit"]["entries"]
+    )
 
 
 def test_react_accepts_complete_final_payload_with_skill_call_metadata() -> None:
@@ -210,6 +383,48 @@ def test_react_requests_include_chinese_output_rules_and_step_metadata() -> None
     assert "available_skills" in user_payload
     assert user_payload["loaded_skills"] == []
     assert user_payload["tool_call_policy"]["required_tool_names"] == []
+
+
+def test_react_prompt_includes_compact_doxatlas_contract_briefs() -> None:
+    class NoopToolClient(ToolClient):
+        def call(self, request: ToolRequest) -> ToolResult:
+            return ToolResult(tool_name=request.tool_name, status=ResultStatus.SUCCEEDED)
+
+    registry = ToolRegistry()
+    registry.register(
+        "doxa_query_propositions",
+        NoopToolClient(),
+        descriptor=ToolDescriptor(
+            name="doxa_query_propositions",
+            description="Read compact DoxAtlas propositions.",
+            input_fields=["run_id", "narrative_code", "event_code"],
+            business_purpose="Audit DoxAtlas proposition support.",
+            contract_brief="Use event scope run_id+Nxx+Exx. Returns compact Pxx propositions.",
+            concurrent_safe=True,
+            compactable=True,
+        ),
+    )
+    task = agent_task().model_copy(
+        update={"permissions": AgentPermissions(allowed_tools=["doxa_query_propositions"])},
+        deep=True,
+    )
+    client = RecordingModelClient([{"summary": "ok"}])
+    runner = ModelGatewayAgentRunner(
+        model_gateway=ModelGateway(client),
+        tool_registry=registry,
+        tool_mode="mock",
+    )
+
+    result = runner.run(task)
+
+    assert result.status is ResultStatus.SUCCEEDED
+    user_payload = json.loads(client.requests[0].messages[-1].content)
+    tool = user_payload["available_tools"][0]
+    assert tool["contract_brief"] == "Use event scope run_id+Nxx+Exx. Returns compact Pxx propositions."
+    assert "concurrent_safe" not in tool
+    assert "compactable" not in tool
+    assert "DoxAtlas uses scoped short ids" in user_payload["tool_call_policy"]["doxatlas_contract_brief"]
+    assert "run_id+narrative_code+event_code" in user_payload["tool_call_policy"]["doxatlas_contract_brief"]
 
 
 def test_prompt_assembler_adds_chinese_output_rules_for_single_shot_paths() -> None:
@@ -494,6 +709,69 @@ def test_react_normalizes_expectation_construction_payload_extras() -> None:
     assert "notes" not in structured
 
 
+def test_react_uses_lightweight_contract_for_field_objection_resolution() -> None:
+    base_task = agent_task()
+    task = base_task.model_copy(
+        update={
+            "required_output_schema": "ExpectationConstructionResult",
+            "input_context": {
+                **base_task.input_context,
+                "resolution_mode": "field_review_objection_resolution",
+                "unresolved_objections": [
+                    {
+                        "objection_id": "obj_1",
+                        "reason": "Reviewer raised a field concern.",
+                    }
+                ],
+                "pending_patches": [],
+            },
+        },
+        deep=True,
+    )
+    client = RecordingModelClient(
+        [
+            {
+                "is_complete": True,
+                "completion_reason": "resolved",
+                "final_payload": {
+                    "proposed_patches": [],
+                    "evidence_refs": [],
+                    "delegations": [],
+                    "unknowns": [],
+                    "rationale": "Resolved objection.",
+                    "resolved_objection_ids": ["obj_1"],
+                    "objection_resolutions": [
+                        {
+                            "objection_id": "obj_1",
+                            "decision": "resolved",
+                            "resolution_note": "Existing field is supported.",
+                            "changed_paths": ["document.realized_facts"],
+                            "evidence_refs": [],
+                        }
+                    ],
+                },
+            }
+        ]
+    )
+    runner = ModelGatewayAgentRunner(
+        model_gateway=ModelGateway(client),
+        tool_registry=default_tool_registry(),
+        tool_mode="mock",
+    )
+
+    result = runner.run(task)
+
+    prompt = json.loads(client.requests[0].messages[1].content)
+    contract = prompt["output_contract"]["ExpectationConstructionResult"]
+    contract_text = json.dumps(contract, ensure_ascii=False)
+    assert result.status is ResultStatus.SUCCEEDED
+    assert "objection-resolution task" in contract_text
+    assert "Do not call tools" in contract_text
+    assert "Do not generate 2 to 3 expectation patches" in contract_text
+    assert "Never return unaffected expectation patches" in contract_text
+    assert contract["final_payload"]["objection_resolutions"][0]["objection_id"]
+
+
 def test_react_normalizes_expectation_shell_construction_without_patches() -> None:
     task = agent_task().model_copy(
         update={"required_output_schema": "ExpectationShellConstructionResult"},
@@ -525,6 +803,44 @@ def test_react_normalizes_expectation_shell_construction_without_patches() -> No
     structured = result.payload["structured"]
     assert structured["shells"][0]["expectation_id"] == "exp_1"
     assert "proposed_patches" not in structured
+
+
+def test_react_expectation_shell_fallback_produces_two_axes() -> None:
+    task = agent_task().model_copy(
+        update={
+            "required_output_schema": "ExpectationShellConstructionResult",
+            "input_context": {
+                "global_research_context": {
+                    "sections": {
+                        "fundamental_report": {
+                            "summary": "MU revenue and gross margin improved with HBM mix."
+                        },
+                        "industry_report": {
+                            "summary": "AI servers drive HBM demand while memory supply remains cyclical."
+                        },
+                    }
+                }
+            },
+        },
+        deep=True,
+    )
+    runner = runner_with_sequence(
+        [
+            {
+                "is_complete": True,
+                "completion_reason": "fallback",
+                "final_payload": {"rationale": "Use global research."},
+            }
+        ]
+    )
+
+    result = runner.run(task)
+
+    assert result.status is ResultStatus.SUCCEEDED
+    shells = result.payload["structured"]["shells"]
+    assert len(shells) == 2
+    assert {shell["direction"] for shell in shells} == {"bullish", "bearish"}
+    assert len({shell["expectation_name"] for shell in shells}) == 2
 
 
 def test_react_normalizes_expectation_detail_to_single_patch() -> None:
@@ -577,6 +893,527 @@ def test_react_normalizes_expectation_detail_to_single_patch() -> None:
     assert patch["target"]["expectation_id"] == "exp_1"
     assert patch["after"]["expectation_name"] == "Commercial milestone execution"
     assert patch["after"]["key_variables"][0]["name"] == "Deployment cadence"
+
+
+def test_react_normalizes_event_monitoring_dict_items_to_strings() -> None:
+    base_task = agent_task()
+    task = base_task.model_copy(
+        update={
+            "required_output_schema": "ExpectationDetailResult",
+            "input_context": {
+                **base_task.input_context,
+                "expectation_shell": {
+                    "expectation_id": "exp_1",
+                    "expectation_name": "Commercial milestone execution",
+                    "direction": "bullish",
+                    "why_it_matters": "It drives valuation.",
+                    "market_view": {
+                        "text": "Market focuses on execution milestones.",
+                        "summary": "Execution milestones drive the view.",
+                        "evidence_refs": [],
+                        "author_agent": "O1",
+                        "reviewer_agents": ["A1"],
+                    },
+                    "evidence_refs": [],
+                    "unknowns": [],
+                    "rationale": "Shell rationale.",
+                },
+            },
+        },
+        deep=True,
+    )
+    runner = runner_with_sequence(
+        [
+            {
+                "is_complete": True,
+                "completion_reason": "detailed",
+                "final_payload": {
+                    "realized_facts_summary": "Known facts are partially priced.",
+                    "key_variables": ["Deployment cadence"],
+                    "event_monitoring_direction": {
+                        "known_event_notice": "Watch quarterly updates.",
+                        "positive_events": [
+                            {
+                                "event": "HBM order accelerates",
+                                "monitoring_signal": "customer order disclosure",
+                                "impact": "supports demand durability",
+                            }
+                        ],
+                        "negative_events": [
+                            {
+                                "event": "Deployment delayed",
+                                "monitoring": "earnings call guidance",
+                                "impact": "weakens execution thesis",
+                            }
+                        ],
+                    },
+                    "rationale": "Detail completed.",
+                },
+            }
+        ]
+    )
+
+    result = runner.run(task)
+
+    monitoring = result.payload["structured"]["proposed_patches"][0]["after"][
+        "event_monitoring_direction"
+    ]
+    assert monitoring["positive_events"][0] == (
+        "HBM order accelerates; customer order disclosure; supports demand durability"
+    )
+    assert not monitoring["negative_events"][0].startswith("{")
+
+
+def test_react_retries_prompt_echo_instead_of_accepting_it_as_detail() -> None:
+    base_task = agent_task()
+    task = base_task.model_copy(
+        update={
+            "required_output_schema": "ExpectationDetailResult",
+            "input_context": {
+                **base_task.input_context,
+                "expectation_shell": {
+                    "expectation_id": "exp_echo",
+                    "expectation_name": "Prompt echo recovery",
+                    "direction": "bullish",
+                    "why_it_matters": "It protects the detail boundary.",
+                    "market_view": {
+                        "text": "Market view.",
+                        "summary": "Market view summary.",
+                        "evidence_refs": [],
+                        "author_agent": "O1",
+                        "reviewer_agents": ["A1"],
+                    },
+                    "evidence_refs": [],
+                    "unknowns": [],
+                    "rationale": "Shell rationale.",
+                },
+            },
+        },
+        deep=True,
+    )
+    prompt_echo = {
+        "react_protocol": {"max_steps": 5},
+        "task": {"required_output_schema": "ExpectationDetailResult"},
+        "tool_call_policy": {"available_tools_are_authoritative": True},
+        "output_contract": {"ExpectationDetailResult": {"rules": []}},
+    }
+    valid_detail = {
+        "realized_facts_summary": "Customer qualification is partly priced.",
+        "realized_facts": ["Customer qualification was announced."],
+        "key_variables": ["Deployment cadence"],
+        "event_monitoring_direction": {
+            "known_event_notice": "Watch customer disclosures.",
+            "positive_events": ["Customer order conversion accelerates"],
+            "negative_events": ["Customer deployment timeline slips"],
+        },
+        "rationale": "Detail completed.",
+    }
+    client = RecordingModelClient([prompt_echo, valid_detail])
+    runner = ModelGatewayAgentRunner(
+        model_gateway=ModelGateway(client),
+        tool_registry=default_tool_registry(),
+        react_config=ReActHarnessConfig(max_steps=2),
+        tool_mode="mock",
+    )
+
+    result = runner.run(task)
+
+    assert result.status is ResultStatus.SUCCEEDED
+    assert len(client.requests) == 2
+    patch = result.payload["structured"]["proposed_patches"][0]
+    assert patch["target"]["expectation_id"] == "exp_echo"
+
+
+def test_react_expectation_detail_rejects_summary_payload_without_detail_fields() -> None:
+    base_task = agent_task()
+    task = base_task.model_copy(
+        update={
+            "required_output_schema": "ExpectationDetailResult",
+            "input_context": {
+                **base_task.input_context,
+                "global_research_context": {
+                    "ticker": "ASTS",
+                    "sections": {
+                        "market_narrative_report": {
+                            "summary": "Global research is available."
+                        }
+                    },
+                },
+                "expectation_shell": {
+                    "expectation_id": "exp_summary_only",
+                    "expectation_name": "Summary-only payload",
+                    "direction": "bullish",
+                    "why_it_matters": "It should not be synthesized from global fallback.",
+                    "market_view": {
+                        "text": "Market view.",
+                        "summary": "Market view summary.",
+                        "evidence_refs": [],
+                        "author_agent": "O1",
+                        "reviewer_agents": ["A1"],
+                    },
+                    "evidence_refs": [],
+                    "unknowns": [],
+                    "rationale": "Shell rationale.",
+                },
+            },
+        },
+        deep=True,
+    )
+    runner = runner_with_sequence(
+        [
+            {
+                "is_complete": True,
+                "completion_reason": "Only summarized retrieved data.",
+                "final_payload": {
+                    "data_retrieved": "Narrative report was retrieved.",
+                    "current_work_state": "Need to generate ExpectationDetailResult next.",
+                    "recommended_next_steps": ["Build realized_facts and key_variables."],
+                },
+            }
+        ]
+    )
+
+    result = runner.run(task)
+
+    assert result.status is ResultStatus.FAILED
+    assert result.error is not None
+    assert result.error.code == "invalid_final_payload"
+    assert "requires exactly one proposed_patches item" in result.error.message
+
+
+def test_react_expectation_detail_patch_preserves_shell_identity() -> None:
+    base_task = agent_task()
+    task = base_task.model_copy(
+        update={
+            "required_output_schema": "ExpectationDetailResult",
+            "input_context": {
+                **base_task.input_context,
+                "expectation_shell": {
+                    "expectation_id": "exp_shell",
+                    "expectation_name": "Shell thesis",
+                    "direction": "bullish",
+                    "why_it_matters": "Shell reason.",
+                    "market_view": {
+                        "text": "Shell market view.",
+                        "summary": "Shell summary.",
+                        "evidence_refs": [],
+                        "author_agent": "O1",
+                        "reviewer_agents": ["A1"],
+                    },
+                    "evidence_refs": [],
+                    "unknowns": [],
+                    "rationale": "Shell rationale.",
+                },
+            },
+        },
+        deep=True,
+    )
+    runner = runner_with_sequence(
+        [
+            {
+                "is_complete": True,
+                "completion_reason": "detailed",
+                "final_payload": {
+                    "proposed_patches": [
+                        {
+                            "target": {
+                                "document_type": "expectation_unit",
+                                "expectation_id": "wrong_id",
+                                "field_path": "document",
+                            },
+                            "operation": "create",
+                            "after": {
+                                "expectation_id": "wrong_id",
+                                "expectation_name": "Wrong thesis",
+                                "direction": "bearish",
+                                "why_it_matters": "Wrong reason.",
+                                "realized_facts_summary": "Known facts are partially priced.",
+                                "key_variables": ["Deployment cadence"],
+                                "realized_facts": ["Customer qualification"],
+                            },
+                            "rationale": "Detail completed.",
+                        }
+                    ],
+                    "rationale": "Detail completed.",
+                },
+            }
+        ]
+    )
+
+    result = runner.run(task)
+
+    patch = result.payload["structured"]["proposed_patches"][0]
+    assert patch["target"]["expectation_id"] == "exp_shell"
+    assert patch["target"]["document_id"] is None
+    assert patch["after"]["expectation_id"] == "exp_shell"
+    assert patch["after"]["expectation_name"] == "Shell thesis"
+    assert patch["after"]["direction"] == "bullish"
+    assert patch["after"]["why_it_matters"] == "Shell reason."
+    assert patch["after"]["market_view"]["summary"] == "Shell summary."
+
+
+def test_react_expectation_detail_carries_evidence_into_price_reaction_and_variables() -> None:
+    evidence = {
+        "evidence_id": "evidence_detail",
+        "source_type": "external_report",
+        "source_id": "source_detail",
+        "title": "Detail evidence",
+        "summary": "Evidence supporting the expectation detail.",
+        "confidence": 0.8,
+        "citation_scope": "expectation_detail",
+    }
+    base_task = agent_task()
+    task = base_task.model_copy(
+        update={
+            "required_output_schema": "ExpectationDetailResult",
+            "input_context": {
+                **base_task.input_context,
+                "expectation_shell": {
+                    "expectation_id": "exp_evidence",
+                    "expectation_name": "Evidence-backed thesis",
+                    "direction": "bullish",
+                    "why_it_matters": "It drives valuation.",
+                    "market_view": {
+                        "text": "Market view.",
+                        "summary": "Market view summary.",
+                        "evidence_refs": [evidence],
+                        "author_agent": "O1",
+                        "reviewer_agents": ["A1"],
+                    },
+                    "evidence_refs": [evidence],
+                    "unknowns": [],
+                    "rationale": "Shell rationale.",
+                },
+            },
+        },
+        deep=True,
+    )
+    runner = runner_with_sequence(
+        [
+            {
+                "is_complete": True,
+                "completion_reason": "detailed",
+                "final_payload": {
+                    "evidence_refs": [evidence],
+                    "proposed_patches": [
+                        {
+                            "target": {
+                                "document_type": "expectation_unit",
+                                "expectation_id": "exp_evidence",
+                                "field_path": "document",
+                            },
+                            "operation": "create",
+                            "after": {
+                                "expectation_id": "exp_evidence",
+                                "expectation_name": "Evidence-backed thesis",
+                                "direction": "bullish",
+                                "why_it_matters": "It drives valuation.",
+                                "market_view": {
+                                    "text": "Market view.",
+                                    "summary": "Market view summary.",
+                                    "evidence_refs": [evidence],
+                                    "author_agent": "O1",
+                                    "reviewer_agents": ["A1"],
+                                },
+                                "realized_facts_summary": "Known facts are partially priced.",
+                                "realized_facts": [
+                                    {
+                                        "event_id": "event_1",
+                                        "description": {
+                                            "fact": "Customer qualification",
+                                            "when": "2026 Q1",
+                                            "why_it_matters": "Confirms HBM demand.",
+                                            "pricing_status": "partially priced",
+                                        },
+                                        "evidence_refs": [evidence],
+                                        "price_reaction": {
+                                            "price_change": "+2%",
+                                            "price_pattern": "positive",
+                                            "interpretation": "市场正面消化。",
+                                        },
+                                    },
+                                    {
+                                        "event_id": "event_2",
+                                        "description": "Management guidepost is already public.",
+                                        "price_reaction": {
+                                            "price_change": "unknown",
+                                            "price_pattern": "unknown",
+                                            "interpretation": "Needs monitoring.",
+                                        },
+                                    },
+                                ],
+                                "key_variables": [
+                                    {
+                                        "variable_id": "var_1",
+                                        "name": "Customer order cadence",
+                                        "current_status": "需要继续跟踪",
+                                        "certainty": "medium",
+                                    }
+                                ],
+                            },
+                            "rationale": "Detail completed.",
+                        }
+                    ],
+                    "rationale": "Detail completed.",
+                },
+            }
+        ]
+    )
+
+    result = runner.run(task)
+
+    patch = result.payload["structured"]["proposed_patches"][0]
+    fact = patch["after"]["realized_facts"][0]
+    fallback_fact = patch["after"]["realized_facts"][1]
+    variable = patch["after"]["key_variables"][0]
+    assert fact["description"].startswith("fact: Customer qualification")
+    assert "why_it_matters: Confirms HBM demand." in fact["description"]
+    assert fact["evidence_refs"][0]["evidence_id"] == "evidence_detail"
+    assert fact["price_reaction"]["evidence_refs"][0]["evidence_id"] == "evidence_detail"
+    assert fallback_fact["evidence_refs"][0]["evidence_id"] == "evidence_detail"
+    assert fallback_fact["price_reaction"]["evidence_refs"][0]["evidence_id"] == (
+        "evidence_detail"
+    )
+    assert variable["evidence_refs"][0]["evidence_id"] == "evidence_detail"
+
+
+def test_react_expectation_detail_recovers_arrays_from_invalid_text() -> None:
+    evidence = {
+        "evidence_id": "evidence_salvage",
+        "source_type": "external_report",
+        "source_id": "source_salvage",
+        "title": "Salvage evidence",
+        "summary": "Evidence embedded in the model response text.",
+        "confidence": 0.8,
+        "citation_scope": "expectation_detail",
+    }
+    base_task = agent_task()
+    task = base_task.model_copy(
+        update={
+            "required_output_schema": "ExpectationDetailResult",
+            "input_context": {
+                **base_task.input_context,
+                "expectation_shell": {
+                    "expectation_id": "exp_salvage",
+                    "expectation_name": "HBM supply conversion",
+                    "direction": "bullish",
+                    "why_it_matters": "It drives margin conversion.",
+                    "market_view": {
+                        "text": "Market view.",
+                        "summary": "Market view summary.",
+                        "evidence_refs": [evidence],
+                        "author_agent": "O1",
+                        "reviewer_agents": ["A1"],
+                    },
+                    "evidence_refs": [evidence],
+                    "unknowns": [],
+                    "rationale": "Shell rationale.",
+                },
+            },
+        },
+        deep=True,
+    )
+    structured = {
+        "is_complete": True,
+        "completion_reason": "detailed",
+        "final_payload": {
+            "evidence_refs": [evidence],
+            "proposed_patches": [
+                {
+                    "target": {
+                        "document_type": "expectation_unit",
+                        "expectation_id": "exp_salvage",
+                        "field_path": "document",
+                    },
+                    "operation": "create",
+                    "after": {
+                        "expectation_id": "exp_salvage",
+                        "expectation_name": "HBM supply conversion",
+                        "direction": "bullish",
+                        "why_it_matters": "It drives margin conversion.",
+                        "market_view": {
+                            "text": "Market view.",
+                            "summary": "Market view summary.",
+                            "evidence_refs": [evidence],
+                            "author_agent": "O1",
+                            "reviewer_agents": ["A1"],
+                        },
+                        "realized_facts_summary": "No realized facts were available.",
+                        "realized_facts": [],
+                        "key_variables": [],
+                    },
+                    "rationale": "Detail completed.",
+                    "evidence_refs": [evidence],
+                }
+            ],
+            "rationale": "Detail completed.",
+        },
+    }
+    text = """
+    {
+      "final_payload": {
+        "realized_facts_summary": "Customer qualification is public, but conversion is not fully priced.",
+        "realized_facts": [
+          {
+            "event_id": "event_customer",
+            "fact": "Customer qualification was announced",
+            "when": "2026 Q1",
+            "why_it_matters": "Confirms HBM demand.",
+            "pricing_assessment": "partially priced after the earnings call",
+            "evidence_refs": [
+              {
+                "evidence_id": "evidence_salvage",
+                "source_type": "external_report",
+                "source_id": "source_salvage",
+                "title": "Salvage evidence",
+                "summary": "Evidence embedded in the model response text.",
+                "confidence": 0.8,
+                "citation_scope": "expectation_detail"
+              }
+            ]
+          }
+        ],
+        "key_variables": [
+          {
+            "variable": "Customer order cadence",
+            "relevance": "Monitor whether follow-on orders convert into revenue.",
+            "certainty": "medium",
+            "evidence_refs": [
+              {
+                "evidence_id": "evidence_salvage",
+                "source_type": "external_report",
+                "source_id": "source_salvage",
+                "title": "Salvage evidence",
+                "summary": "Evidence embedded in the model response text.",
+                "confidence": 0.8,
+                "citation_scope": "expectation_detail"
+              }
+            ]
+          }
+        ]
+      trailing comma breaks the outer JSON
+    """
+    client = TextAndStructuredModelClient([(structured, text)])
+    runner = ModelGatewayAgentRunner(
+        model_gateway=ModelGateway(client),
+        tool_registry=default_tool_registry(),
+        tool_mode="mock",
+    )
+
+    result = runner.run(task)
+
+    patch = result.payload["structured"]["proposed_patches"][0]
+    fact = patch["after"]["realized_facts"][0]
+    variable = patch["after"]["key_variables"][0]
+    assert result.status is ResultStatus.SUCCEEDED
+    assert patch["after"]["realized_facts_summary"].startswith("Customer qualification")
+    assert fact["description"].startswith("fact: Customer qualification")
+    assert "pricing_assessment: partially priced" in fact["description"]
+    assert fact["price_reaction"]["price_pattern"] == "described"
+    assert fact["price_reaction"]["evidence_refs"][0]["evidence_id"] == "evidence_salvage"
+    assert variable["name"] == "Customer order cadence"
+    assert "follow-on orders" in variable["current_status"]
+    assert variable["evidence_refs"][0]["evidence_id"] == "evidence_salvage"
 
 
 def test_react_synthesizes_expectation_patch_from_global_research_context() -> None:
@@ -722,6 +1559,12 @@ def test_react_normalizes_doxatlas_audit_payload_to_strict_schema() -> None:
                             "reason": "Direction is plausible but not directly traced.",
                         },
                     ],
+                    "objections": [
+                        {
+                            "severity": "material",
+                            "reason": "Missing proposition support should block promotion.",
+                        }
+                    ],
                     "text": "This report-like field must not survive normalization.",
                     "author_agent": "A1",
                 },
@@ -738,6 +1581,7 @@ def test_react_normalizes_doxatlas_audit_payload_to_strict_schema() -> None:
     assert structured["findings"][0]["field_path"] == "document"
     assert structured["findings"][0]["status"] == "unsupported"
     assert structured["findings"][1]["field_path"] == "direction"
+    assert structured["objections"][0]["severity"] == "blocking"
     assert "text" not in structured
     assert "summary" not in structured
 
@@ -942,7 +1786,161 @@ def test_caller_planned_tool_execution_remains_available() -> None:
     assert result.tool_calls[0].tool_name == "doxatlas.query"
 
 
-def test_react_blocks_fourth_call_to_same_tool() -> None:
+class FailingToolClient(ToolClient):
+    def call(self, request: ToolRequest) -> ToolResult:
+        return ToolResult(
+            tool_name=request.tool_name,
+            status=ResultStatus.FAILED,
+            output_summary="provider_error: upstream failed",
+            error=ToolError(
+                code="provider_error",
+                message="upstream failed",
+                retryable=False,
+            ),
+        )
+
+
+class SlowToolClient(ToolClient):
+    def __init__(self) -> None:
+        self.started = threading.Event()
+
+    def call(self, request: ToolRequest) -> ToolResult:
+        self.started.set()
+        threading.Event().wait(1.0)
+        return ToolResult(
+            tool_name=request.tool_name,
+            status=ResultStatus.SUCCEEDED,
+            output_summary="late success",
+        )
+
+
+def test_react_success_filters_failed_tool_calls_to_audit_only() -> None:
+    registry = ToolRegistry()
+    registry.register(
+        "failing.lookup",
+        FailingToolClient(),
+        descriptor=ToolDescriptor(name="failing.lookup", description="Always fails."),
+    )
+    base_task = agent_task()
+    task = base_task.model_copy(
+        update={
+            "permissions": base_task.permissions.model_copy(
+                update={"allowed_tools": ["failing.lookup"]}
+            )
+        },
+        deep=True,
+    )
+    runner = runner_with_sequence(
+        [
+            {
+                "is_complete": False,
+                "tool_calls": [{"tool_name": "failing.lookup", "input": {"query": "x"}}],
+            },
+            {
+                "is_complete": True,
+                "completion_reason": "done",
+                "final_payload": {"summary": "done"},
+            },
+        ],
+        tool_registry=registry,
+    )
+
+    result = runner.run(task)
+
+    tool_entries = [
+        entry
+        for entry in result.payload["react_audit"]["entries"]
+        if entry.get("kind") == "tool_result"
+    ]
+    assert result.status is ResultStatus.SUCCEEDED
+    assert result.tool_calls == []
+    assert tool_entries[0]["tool_name"] == "failing.lookup"
+    assert tool_entries[0]["status"] == ResultStatus.FAILED.value
+    assert tool_entries[0]["error"]["code"] == "provider_error"
+
+
+def test_react_tool_call_timeout_returns_failed_tool_result() -> None:
+    client = SlowToolClient()
+    registry = ToolRegistry()
+    registry.register(
+        "slow.lookup",
+        client,
+        descriptor=ToolDescriptor(
+            name="slow.lookup",
+            description="Slow lookup.",
+            concurrent_safe=False,
+        ),
+    )
+    base_task = agent_task()
+    task = base_task.model_copy(
+        update={
+            "permissions": base_task.permissions.model_copy(
+                update={"allowed_tools": ["slow.lookup"]}
+            )
+        },
+        deep=True,
+    )
+    runner = runner_with_sequence(
+        [
+            {
+                "is_complete": False,
+                "tool_calls": [{"tool_name": "slow.lookup", "input": {"query": "x"}}],
+            },
+            {
+                "is_complete": True,
+                "completion_reason": "done",
+                "final_payload": {"summary": "done despite timeout"},
+            },
+        ],
+        tool_registry=registry,
+        react_config=ReActHarnessConfig(tool_call_timeout_seconds=0.01),
+    )
+
+    result = runner.run(task)
+
+    tool_entries = [
+        entry
+        for entry in result.payload["react_audit"]["entries"]
+        if entry.get("kind") == "tool_result"
+    ]
+    assert result.status is ResultStatus.SUCCEEDED
+    assert client.started.is_set()
+    assert result.tool_calls == []
+    assert tool_entries[0]["tool_name"] == "slow.lookup"
+    assert tool_entries[0]["status"] == ResultStatus.FAILED.value
+    assert tool_entries[0]["error"]["code"] == "tool_call_timeout"
+    assert tool_entries[0]["error"]["retryable"] is True
+
+
+def test_react_allows_multiple_same_tool_calls_in_one_loop() -> None:
+    task = agent_task()
+    runner = runner_with_sequence(
+        [
+            {
+                "is_complete": False,
+                "tool_calls": [
+                    {"tool_name": "doxatlas.query", "input": {"query": f"AI demand {index}"}}
+                    for index in range(4)
+                ],
+            },
+            {
+                "is_complete": True,
+                "completion_reason": "enough",
+                "final_payload": {"summary": "done"},
+            },
+        ]
+    )
+
+    result = runner.run(task)
+
+    assert result.status is ResultStatus.SUCCEEDED
+    assert len(result.tool_calls) == 4
+    assert all(call.status is ResultStatus.SUCCEEDED for call in result.tool_calls)
+    assert result.payload["react_audit"]["tool_counts"]["doxatlas.query"] == 4
+    assert "doxatlas.query" not in result.payload["react_audit"]["consecutive_tool_loop_counts"]
+
+
+def test_react_blocks_fourth_consecutive_loop_to_same_tool() -> None:
     task = agent_task()
     tool_action = {
         "is_complete": False,
@@ -965,10 +1963,54 @@ def test_react_blocks_fourth_call_to_same_tool() -> None:
     result = runner.run(task)
 
     assert result.status is ResultStatus.SUCCEEDED
-    assert result.tool_calls[-1].status is ResultStatus.FAILED
-    assert result.tool_calls[-1].output_summary is not None
-    assert "tool_call_limit_exceeded" in result.tool_calls[-1].output_summary
+    assert all(call.status is ResultStatus.SUCCEEDED for call in result.tool_calls)
+    failed_tool_entries = [
+        entry
+        for entry in result.payload["react_audit"]["entries"]
+        if entry.get("kind") == "tool_result" and entry.get("status") == ResultStatus.FAILED.value
+    ]
+    assert failed_tool_entries
+    assert "tool_call_limit_exceeded" in failed_tool_entries[-1]["output_summary"]
     assert result.payload["react_audit"]["tool_counts"]["doxatlas.query"] == 3
+    assert "doxatlas.query" not in result.payload["react_audit"]["consecutive_tool_loop_counts"]
+
+
+def test_react_resets_same_tool_consecutive_loop_limit_after_non_tool_loop() -> None:
+    task = agent_task()
+    tool_action = {
+        "is_complete": False,
+        "tool_calls": [{"tool_name": "doxatlas.query", "input": {"query": "AI demand"}}],
+    }
+    runner = runner_with_sequence(
+        [
+            tool_action,
+            tool_action,
+            {
+                "is_complete": False,
+                "reasoning_summary": "pause tool use",
+                "task_ledger_updates": [{"item": "review evidence", "status": "todo"}],
+            },
+            tool_action,
+            tool_action,
+            {
+                "is_complete": True,
+                "completion_reason": "enough",
+                "final_payload": {"summary": "done"},
+            },
+        ],
+        react_config=ReActHarnessConfig(max_steps=6),
+    )
+
+    result = runner.run(task)
+
+    failed_tool_entries = [
+        entry
+        for entry in result.payload["react_audit"]["entries"]
+        if entry.get("kind") == "tool_result" and entry.get("status") == ResultStatus.FAILED.value
+    ]
+    assert result.status is ResultStatus.SUCCEEDED
+    assert not failed_tool_entries
+    assert result.payload["react_audit"]["tool_counts"]["doxatlas.query"] == 4
 
 
 def test_react_warns_on_similar_tool_query() -> None:
@@ -1016,8 +2058,49 @@ def test_react_permission_denial_is_a_tool_result_not_exception() -> None:
     result = runner.run(task)
 
     assert result.status is ResultStatus.SUCCEEDED
-    assert result.tool_calls[0].tool_name == "market_data.snapshot"
-    assert result.tool_calls[0].status is ResultStatus.FAILED
+    assert result.tool_calls == []
+    failed_tool_entries = [
+        entry
+        for entry in result.payload["react_audit"]["entries"]
+        if entry.get("kind") == "tool_result" and entry.get("status") == ResultStatus.FAILED.value
+    ]
+    assert failed_tool_entries[0]["tool_name"] == "market_data.snapshot"
+    assert failed_tool_entries[0]["error"]["code"] == "tool_not_allowed"
+
+
+def test_react_recovers_research_section_from_max_steps_with_tool_evidence() -> None:
+    base_task = agent_task()
+    task = base_task.model_copy(
+        update={
+            "agent_name": AgentName.C1_FUNDAMENTAL_RESEARCH,
+            "task_type": TaskType.GENERATE_GLOBAL_RESEARCH,
+            "required_output_schema": "ResearchSection",
+            "input_context": {"required_section_key": "market_trace_report"},
+            "run_metadata": base_task.run_metadata.model_copy(
+                update={"workflow_node": "BuildGlobalResearch"}
+            ),
+        },
+        deep=True,
+    )
+    runner = runner_with_sequence(
+        [
+            {
+                "is_complete": False,
+                "tool_calls": [{"tool_name": "doxatlas.query", "input": {"query": "price"}}],
+            }
+        ],
+        react_config=ReActHarnessConfig(max_steps=1),
+    )
+
+    result = runner.run(task)
+
+    assert result.status is ResultStatus.SUCCEEDED
+    assert "保守恢复段落" in result.payload["structured"]["text"]
+    assert result.payload["structured"]["evidence_refs"]
+    assert any(
+        entry["kind"] == "max_steps_recovered"
+        for entry in result.payload["react_audit"]["entries"]
+    )
 
 
 def test_react_required_tool_gap_is_audited_without_blocking_final_payload() -> None:
@@ -1048,10 +2131,174 @@ def test_react_required_tool_gap_is_audited_without_blocking_final_payload() -> 
     result = runner.run(task)
 
     assert result.status is ResultStatus.SUCCEEDED
-    assert result.tool_calls[0].status is ResultStatus.FAILED
+    assert result.tool_calls == []
+    assert any(
+        entry.get("kind") == "tool_result"
+        and entry.get("tool_name") == "market_data.snapshot"
+        and entry.get("status") == ResultStatus.FAILED.value
+        for entry in result.payload["react_audit"]["entries"]
+    )
     assert any(
         entry["kind"] == "required_tool_gap"
         for entry in result.payload["react_audit"]["entries"]
+    )
+
+
+class HugeOutputToolClient(ToolClient):
+    def call(self, request: ToolRequest) -> ToolResult:
+        return ToolResult(
+            tool_name=request.tool_name,
+            status=ResultStatus.SUCCEEDED,
+            output={"blob": "x" * 200_000},
+            output_summary="huge output returned",
+        )
+
+
+class HugeOhlcvToolClient(ToolClient):
+    def call(self, request: ToolRequest) -> ToolResult:
+        rows = [
+            {
+                "datetime": f"2026-01-{(index % 28) + 1:02d}",
+                "open": 100 + index,
+                "high": 101 + index,
+                "low": 99 + index,
+                "close": 100 + index,
+                "volume": 1_000_000 + index,
+            }
+            for index in range(500)
+        ]
+        return ToolResult(
+            tool_name=request.tool_name,
+            status=ResultStatus.SUCCEEDED,
+            output={
+                "provider": "twelvedata",
+                "symbol": "NVDA",
+                "interval": "1day",
+                "ohlcv": rows,
+            },
+            output_summary="daily OHLCV returned",
+        )
+
+
+def test_react_compacts_large_tool_observation_before_next_model_request() -> None:
+    client = RecordingModelClient(
+        [
+            {
+                "is_complete": False,
+                "tool_calls": [{"tool_name": "huge.context", "input": {"query": "large"}}],
+            },
+            {
+                "is_complete": True,
+                "completion_reason": "done",
+                "final_payload": {"summary": "done"},
+            },
+        ]
+    )
+    registry = ToolRegistry()
+    registry.register(
+        "huge.context",
+        HugeOutputToolClient(),
+        descriptor=ToolDescriptor(name="huge.context", description="huge context"),
+    )
+    task = agent_task().model_copy(
+        update={
+            "permissions": AgentPermissions(
+                readable_context_scopes=["global_research"],
+                writable_targets=["expectation_unit"],
+                allowed_tools=["huge.context"],
+            )
+        },
+        deep=True,
+    )
+    runner = ModelGatewayAgentRunner(
+        model_gateway=ModelGateway(client),
+        tool_registry=registry,
+        react_config=ReActHarnessConfig(max_steps=2, compaction_token_threshold=10_000_000),
+        tool_mode="mock",
+    )
+
+    result = runner.run(task)
+
+    assert result.status is ResultStatus.SUCCEEDED
+    second_payload = json.loads(client.requests[1].messages[-1].content)
+    tool_entries = [
+        entry
+        for entry in second_payload["recent_trajectory"]
+        if entry.get("kind") == "tool_result"
+    ]
+    assert tool_entries[0]["output"]["compacted"] is True
+    assert tool_entries[0]["output"]["original_chars"] > 200_000
+    assert "x" * 50_000 not in client.requests[1].messages[-1].content
+    audit_tool_entries = [
+        entry
+        for entry in result.payload["react_audit"]["entries"]
+        if entry.get("kind") == "tool_result"
+    ]
+    assert audit_tool_entries[0]["output_compacted"] is True
+
+
+def test_react_preserves_daily_ohlcv_market_snapshot_across_compaction() -> None:
+    client = RecordingModelClient(
+        [
+            {
+                "is_complete": False,
+                "tool_calls": [
+                    {"tool_name": "twelvedata.daily_ohlcv", "input": {"symbol": "NVDA"}}
+                ],
+            },
+            {
+                "is_complete": True,
+                "completion_reason": "done",
+                "final_payload": {"summary": "done"},
+            },
+        ]
+    )
+    registry = ToolRegistry()
+    registry.register(
+        "twelvedata.daily_ohlcv",
+        HugeOhlcvToolClient(),
+        descriptor=ToolDescriptor(
+            name="twelvedata.daily_ohlcv",
+            description="daily OHLCV",
+        ),
+    )
+    task = agent_task().model_copy(
+        update={
+            "permissions": AgentPermissions(
+                readable_context_scopes=["global_research"],
+                writable_targets=["expectation_unit"],
+                allowed_tools=["twelvedata.daily_ohlcv"],
+            )
+        },
+        deep=True,
+    )
+    runner = ModelGatewayAgentRunner(
+        model_gateway=ModelGateway(client),
+        tool_registry=registry,
+        react_config=ReActHarnessConfig(max_steps=2, compaction_token_threshold=10_000_000),
+        tool_mode="mock",
+    )
+
+    result = runner.run(task)
+
+    assert result.status is ResultStatus.SUCCEEDED
+    second_payload = json.loads(client.requests[1].messages[-1].content)
+    snapshot = second_payload["market_evidence_snapshot"]["daily_ohlcv"][0]
+    assert snapshot["symbol"] == "NVDA"
+    assert snapshot["start_close"] == 100
+    assert snapshot["end_close"] == 599
+    tool_entries = [
+        entry
+        for entry in second_payload["recent_trajectory"]
+        if entry.get("kind") == "tool_result"
+    ]
+    assert tool_entries[0]["output"]["tool_aware_compaction"] == "daily_ohlcv"
+    assert tool_entries[0]["output"]["market_evidence_snapshot"]["symbol"] == "NVDA"
+    assert len(tool_entries[0]["output"]["ohlcv_sample_rows"]) < 20
+    assert result.payload["market_evidence_snapshot"]["daily_ohlcv"][0]["symbol"] == "NVDA"
+    assert (
+        result.payload["react_audit"]["market_evidence_snapshot"]["daily_ohlcv"][0]["symbol"]
+        == "NVDA"
     )
 
 

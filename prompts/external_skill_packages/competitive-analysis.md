@@ -49,7 +49,7 @@ When the task specifies something, that's a requirement, not a suggestion:
 4. Market data / financial data tools
 5. Sell-side research
 6. Industry reports
-7. News, for recent developments only
+7. News, for recent developments only; prioritize items that changed market expectations, customer demand, supply, pricing, regulation, or peer positioning.
 
 ### Data comparability
 
@@ -179,7 +179,7 @@ Use concise interpretation after the table. Focus on what matters for competitiv
 
 ### Step 8 — Strategic context
 
-M&A transactions, partnership trends, capital raising patterns, regulatory developments, product launches, capacity expansion, pricing changes, and major customer wins/losses.
+M&A transactions, partnership trends, capital raising patterns, regulatory developments, product launches, capacity expansion, pricing changes, and major customer wins/losses. In DoxAgent Document 1, lead with recent strategic changes before broader competitive background.
 
 Use this section only when it is relevant and data is available.
 

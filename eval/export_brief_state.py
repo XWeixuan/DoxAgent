@@ -180,7 +180,8 @@ def _first_document(stable_documents: JsonDict, document_type: str) -> JsonDict:
     records = _dict(stable_documents.get(document_type))
     for value in records.values():
         if isinstance(value, dict):
-            return value
+            document = value.get("document")
+            return document if isinstance(document, dict) else value
     return {}
 
 

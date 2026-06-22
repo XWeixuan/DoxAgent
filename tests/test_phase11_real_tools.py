@@ -3,7 +3,9 @@ from __future__ import annotations
 import json
 
 import httpx
+import pytest
 
+import doxagent.tools.providers.finnhub as finnhub_provider
 from doxagent.agents import default_agent_registry
 from doxagent.models import AgentName, AgentPermissions, ResultStatus
 from doxagent.settings import DoxAgentSettings
@@ -15,14 +17,21 @@ from doxagent.tools.providers.bea import BeaNipaDataClient
 from doxagent.tools.providers.bls import BlsTimeseriesClient
 from doxagent.tools.providers.doxatlas import DoxAtlasToolClient
 from doxagent.tools.providers.fed import FedFomcCalendarMaterialsClient, parse_fomc_calendar
-from doxagent.tools.providers.finnhub import FinnhubPeersClient
+from doxagent.tools.providers.finnhub import FinnhubPeersClient, FinnhubTradeStreamClient
 from doxagent.tools.providers.fmp import FmpSectorPerformanceClient
 from doxagent.tools.providers.fred import FredSeriesObservationsClient
 from doxagent.tools.providers.polymarket import PolymarketMarketProbabilityClient
-from doxagent.tools.providers.sec import SecFilingSectionsClient, parse_sec_sections
+from doxagent.tools.providers.sec import (
+    SecCompanyFactsAndFilingsClient,
+    SecFilingSectionsClient,
+    parse_sec_sections,
+)
 from doxagent.tools.providers.tavily import TavilySearchClient
 from doxagent.tools.providers.twelvedata import TwelveDataDailyOhlcvClient
-from doxagent.tools.providers.yfinance import YFinanceHkBasicSnapshotClient
+from doxagent.tools.providers.yfinance import (
+    YFinanceDailyOhlcvClient,
+    YFinanceHkBasicSnapshotClient,
+)
 from doxagent.tools.real import AlphaVantageClient as CompatAlphaVantageClient
 
 
@@ -90,11 +99,14 @@ def test_real_registry_registers_phase_3_2_tools() -> None:
     assert "doxa_get_narrative_report" in names
     assert "doxa_run_narrative_research" in names
     assert "doxa_run_analysis" in names
+    assert "doxa_query_analysis" in names
     assert "doxa_get_analysis" in names
     assert "doxa_query_propositions" in names
     assert "doxa_get_ignored_propositions" in names
     assert "doxa_get_social_result" in names
+    assert "doxa_get_social_result_detail" in names
     assert "doxa_get_media_result" in names
+    assert "doxa_get_media_result_detail" in names
     assert "doxa_get_event_source" in names
     assert "doxatlas.query" in names
     assert "doxatlas.source_lookup" in names
@@ -110,6 +122,8 @@ def test_real_registry_exposes_strong_tool_descriptors() -> None:
         assert descriptor.description != f"{name} tool."
         assert descriptor.input_fields
         assert descriptor.business_purpose
+        if name.startswith("doxa_") or name.startswith("doxatlas."):
+            assert descriptor.contract_brief
 
     assert registry.describe("finnhub.trade_stream").concurrent_safe is False
     assert registry.describe("doxa_run_narrative_research").concurrent_safe is False
@@ -133,6 +147,21 @@ def test_tool_registry_permission_denial_still_applies_to_real_tools() -> None:
     assert result.status is ResultStatus.FAILED
     assert result.error is not None
     assert result.error.code == "tool_not_allowed"
+
+
+def test_sec_company_facts_returns_partial_when_upstream_unavailable() -> None:
+    client = SecCompanyFactsAndFilingsClient(_settings(), client=_json_client({}, status_code=404))
+
+    result = client.call(_request("sec.company_facts_and_filings", {"ticker": "MU", "cik": "723312"}))
+
+    assert result.status is ResultStatus.PARTIAL
+    assert result.error is None
+    assert result.output["provider_status"] == "unavailable"
+    assert result.output["companyfacts"] == {}
+    assert result.output["unknowns"]
+    assert "SEC EDGAR 暂时不可用" in result.output_summary
+    assert result.evidence_refs
+    assert result.evidence_refs[0].confidence == 0.2
 
 
 def test_agent_permissions_include_real_tools_without_duplicate_commodity_tool() -> None:
@@ -166,20 +195,25 @@ def test_doxatlas_id_scope_validation_and_success() -> None:
     client = DoxAtlasToolClient(
         settings=_settings(),
         cache=TTLCache(),
-        client=_json_client({"scope": "narrative_id", "items": []}),
+        client=_json_client({"scope": {"event_code": "E01"}, "items": []}),
     )
 
     bad = client.for_tool("doxa_query_propositions").call(
         _request(
             "doxa_query_propositions",
-            {"narrative_id": "n1", "proposition_id": "p1"},
+            {"narrative_id": "n1"},
         )
     )
     good = client.for_tool("doxa_query_propositions").call(
-        _request("doxa_query_propositions", {"narrative_id": "n1"})
+        _request(
+            "doxa_query_propositions",
+            {"run_id": "run-1", "narrative_code": "N01", "event_code": "E01"},
+        )
     )
 
     assert bad.status is ResultStatus.FAILED
+    assert bad.error is not None
+    assert "bare narrative_id" in bad.error.message
     assert good.status is ResultStatus.SUCCEEDED
     assert good.evidence_refs[0].source_type.value == "doxatlas_source"
 
@@ -212,6 +246,54 @@ def test_doxatlas_payload_schema_and_alias_endpoint_are_enforced() -> None:
     assert json.loads(requests[0].read()) == {"narrative_event_id": "event-1", "limit": 5}
     assert result.evidence_refs[0].retrieval_metadata["endpoint"] == "get-event-source"
     assert result.evidence_refs[0].retrieval_metadata["http_method"] == "POST"
+
+
+def test_doxatlas_narrative_report_defaults_to_agent_provenance_view() -> None:
+    requests: list[httpx.Request] = []
+    client = DoxAtlasToolClient(
+        settings=_settings(),
+        cache=TTLCache(),
+        client=_json_client({"status": "ok"}, requests=requests),
+    )
+
+    result = client.for_tool("doxa_get_narrative_report").call(
+        _request("doxa_get_narrative_report")
+    )
+
+    assert result.status is ResultStatus.SUCCEEDED
+    assert json.loads(requests[0].read()) == {"ticker": "AAPL", "view": "agent_provenance"}
+
+
+def test_doxatlas_detail_tools_require_short_code_arrays() -> None:
+    requests: list[httpx.Request] = []
+    client = DoxAtlasToolClient(
+        settings=_settings(),
+        cache=TTLCache(),
+        client=_json_client({"status": "ok", "items": []}, requests=requests),
+    )
+
+    missing_codes = client.for_tool("doxa_get_media_result_detail").call(
+        _request(
+            "doxa_get_media_result_detail",
+            {"run_id": "run-1", "narrative_code": "N01", "event_code": "E01"},
+        )
+    )
+    good = client.for_tool("doxa_get_media_result_detail").call(
+        _request(
+            "doxa_get_media_result_detail",
+            {
+                "run_id": "run-1",
+                "narrative_code": "N01",
+                "event_code": "E01",
+                "media_codes": ["M01"],
+                "content_mode": "full",
+            },
+        )
+    )
+
+    assert missing_codes.status is ResultStatus.FAILED
+    assert good.status is ResultStatus.SUCCEEDED
+    assert requests[0].url.path == "/api/doxa-tools/get-media-result-detail"
 
 
 def test_doxatlas_rejects_user_id_and_limit_bounds_without_request() -> None:
@@ -281,12 +363,15 @@ def test_a1_uses_low_level_doxatlas_read_tools_only() -> None:
     definition = default_agent_registry().get(AgentName.A1_DOXATLAS_AUDIT)
 
     assert set(definition.runtime.allowed_tools) == {
+        "doxa_query_analysis",
+        "doxa_get_analysis",
         "doxa_query_propositions",
         "doxa_get_event_source",
         "doxa_get_social_result",
+        "doxa_get_social_result_detail",
         "doxa_get_media_result",
+        "doxa_get_media_result_detail",
         "doxa_get_ignored_propositions",
-        "doxa_get_analysis",
     }
     assert "doxa_get_narrative_report" not in definition.runtime.allowed_tools
     assert all(not tool.startswith("doxa_run_") for tool in definition.runtime.allowed_tools)
@@ -385,6 +470,191 @@ def test_macro_and_market_provider_clients_parse_fixture_payloads() -> None:
     assert (
         twelvedata.call(_request("twelvedata.daily_ohlcv")).evidence_refs[0].source_type.value
         == "market_data"
+    )
+
+
+def test_fred_filters_unallowlisted_series_without_failing_allowed_series() -> None:
+    requests: list[httpx.Request] = []
+    fred = FredSeriesObservationsClient(
+        _settings(),
+        TTLCache(),
+        client=_json_client(
+            {"observations": [{"date": "2026-01-01", "value": "5000"}]},
+            requests=requests,
+        ),
+    )
+
+    result = fred.call(
+        _request(
+            "fred.series_observations",
+            {
+                "series_ids": ["SP500", "SOX"],
+                "start_date": "2026-01-01",
+                "end_date": "2026-06-01",
+            },
+        )
+    )
+
+    assert result.status is ResultStatus.PARTIAL
+    assert sorted(result.output["series"]) == ["SP500"]
+    assert result.output["unsupported_series"] == ["SOX"]
+    assert len(requests) == 1
+    assert requests[0].url.params["series_id"] == "SP500"
+    assert requests[0].url.params["observation_start"] == "2026-01-01"
+
+
+def test_fred_isolates_http_400_series_and_returns_partial_success() -> None:
+    requests: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        if request.url.params["series_id"] == "GDP":
+            return httpx.Response(400, json={"error": "Bad Request"})
+        return httpx.Response(
+            200,
+            json={"observations": [{"date": "2026-01-01", "value": "4.00"}]},
+        )
+
+    fred = FredSeriesObservationsClient(
+        _settings(),
+        TTLCache(),
+        client=httpx.Client(transport=httpx.MockTransport(handler)),
+    )
+
+    result = fred.call(
+        _request("fred.series_observations", {"series_ids": ["GDP", "DGS10"]})
+    )
+
+    assert result.status is ResultStatus.PARTIAL
+    assert sorted(result.output["series"]) == ["DGS10"]
+    assert result.output["failed_series"][0]["series_id"] == "GDP"
+    assert result.output["failed_series"][0]["code"] == "upstream_http_error"
+    assert [request.url.params["series_id"] for request in requests] == ["GDP", "DGS10"]
+
+
+def test_finnhub_trade_stream_error_message_is_never_empty(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fail_capture(**_: object) -> list[dict[str, object]]:
+        raise TimeoutError()
+
+    monkeypatch.setattr(finnhub_provider, "_capture_finnhub_trades", fail_capture)
+    client = FinnhubTradeStreamClient(_settings(finnhub_max_stream_seconds=30))
+
+    result = client.call(
+        _request(
+            "finnhub.trade_stream",
+            {"symbol": "MU", "duration_seconds": 1, "max_events": 1},
+        )
+    )
+
+    assert result.status is ResultStatus.FAILED
+    assert result.error is not None
+    assert result.error.code == "stream_timeout"
+    assert result.error.message
+    assert result.error.details["provider_error"] == "TimeoutError"
+    assert "TimeoutError" in result.error.details["provider_error_repr"]
+    assert result.output_summary is not None
+
+
+def test_twelvedata_daily_ohlcv_accepts_ticker_alias_for_symbol() -> None:
+    requests: list[httpx.Request] = []
+    twelvedata = TwelveDataDailyOhlcvClient(
+        _settings(),
+        TTLCache(),
+        client=_json_client(
+            {"status": "ok", "values": [{"datetime": "2026-06-01"}]},
+            requests=requests,
+        ),
+    )
+
+    result = twelvedata.call(
+        _request("twelvedata.daily_ohlcv", {"ticker": "WDC", "outputsize": 5})
+    )
+
+    assert result.status is ResultStatus.SUCCEEDED
+    assert result.output["symbol"] == "WDC"
+    assert result.output["market_evidence_snapshot"]["symbol"] == "WDC"
+    assert result.output["market_evidence_snapshot"]["kind"] == "daily_ohlcv_snapshot"
+    assert result.evidence_refs[0].source_id == "twelvedata:daily_ohlcv:WDC"
+    assert result.evidence_refs[0].retrieval_metadata["symbol"] == "WDC"
+    assert (
+        result.evidence_refs[0].retrieval_metadata["market_evidence_snapshot"]["symbol"]
+        == "WDC"
+    )
+    assert "symbol=WDC" in str(requests[0].url)
+
+
+def test_yfinance_daily_ohlcv_accepts_ticker_alias_for_symbol(monkeypatch) -> None:
+    class FakeIndex:
+        def date(self) -> str:
+            return "2026-06-01"
+
+    class FakeRow:
+        values = {
+            "Open": 1.0,
+            "High": 2.0,
+            "Low": 0.5,
+            "Close": 1.5,
+            "Volume": 1000,
+        }
+
+        def get(self, key: str) -> object:
+            return self.values.get(key)
+
+        def items(self):
+            return self.values.items()
+
+    class FakeFrame:
+        empty = False
+
+        def tail(self, outputsize: int):
+            return self
+
+        def iterrows(self):
+            yield FakeIndex(), FakeRow()
+
+    class FakeTicker:
+        def __init__(self, symbol: str) -> None:
+            self.symbol = symbol
+
+        def history(self, *, period: str, interval: str):
+            return FakeFrame()
+
+    class FakeYFinance:
+        @staticmethod
+        def set_tz_cache_location(path: str) -> None:
+            return None
+
+        @staticmethod
+        def Ticker(symbol: str) -> FakeTicker:
+            return FakeTicker(symbol)
+
+        @staticmethod
+        def download(*args, **kwargs):
+            return FakeFrame()
+
+    def fake_import_module(name: str):
+        if name == "yfinance":
+            return FakeYFinance
+        raise AssertionError(name)
+
+    import importlib
+
+    monkeypatch.setattr(importlib, "import_module", fake_import_module)
+    client = YFinanceDailyOhlcvClient()
+
+    result = client.call(_request("yfinance.daily_ohlcv", {"ticker": "STX", "outputsize": 5}))
+
+    assert result.status is ResultStatus.SUCCEEDED
+    assert result.output["symbol"] == "STX"
+    assert result.output["market_evidence_snapshot"]["symbol"] == "STX"
+    assert result.output["market_evidence_snapshot"]["end_close"] == 1.5
+    assert result.evidence_refs[0].source_id == "yfinance:daily_ohlcv:STX"
+    assert result.evidence_refs[0].retrieval_metadata["symbol"] == "STX"
+    assert (
+        result.evidence_refs[0].retrieval_metadata["market_evidence_snapshot"]["symbol"]
+        == "STX"
     )
 
 

@@ -100,6 +100,9 @@ def test_global_research_assembler_builds_document_from_module_results() -> None
     inputs = GlobalResearchInputs().resolved("NVDA")
     results = GlobalResearchModuleRunner().run("NVDA", inputs)
 
+    assert inputs.timeframe == "recent developments with longer-cycle context"
+    assert inputs.market_trace_period == "3mo"
+
     document = GlobalResearchAssembler().assemble("NVDA", inputs, results)
 
     assert document.document_type is DocumentType.GLOBAL_RESEARCH
@@ -191,13 +194,21 @@ def test_initialization_workflow_builds_global_research_from_phase8_modules() ->
     assert result.summary.stable_document_types == [DocumentType.GLOBAL_RESEARCH]
     assert result.summary.commit_count == 1
     assert result.checkpoint.metadata["research_inputs"]["sector_or_theme"] == "AI accelerators"
+    assert (
+        result.checkpoint.metadata["research_inputs"]["timeframe"]
+        == "recent developments with longer-cycle context"
+    )
+    assert result.checkpoint.metadata["research_inputs"]["market_trace_period"] == "3mo"
     assert "industry" in result.checkpoint.metadata["global_research_downstream_context"]
 
     run = workflow.blackboard.get_run(result.checkpoint.run_id)
-    assert len(run.working_memory) == 4
-    assert {entry.content_type for entry in run.working_memory} == {
-        "global_research_agent_result",
-    }
+    agent_entries = [
+        entry
+        for entry in run.working_memory
+        if entry.content_type == "global_research_agent_result"
+    ]
+    assert len(agent_entries) == 4
+    assert {entry.content_type for entry in agent_entries} == {"global_research_agent_result"}
     global_objects = run.belief_state.documents[DocumentType.GLOBAL_RESEARCH]
     document = next(iter(global_objects.values()))["document"]
     assert "fundamental_report" in document
@@ -257,8 +268,17 @@ def test_build_global_research_tasks_use_draft_permissions_and_no_prior_sections
         for task in build_tasks
     )
     assert not [task for task in build_tasks if task.agent_name is AgentName.O1_EXPECTATION_OWNER]
+    for task in build_tasks:
+        focus = task.input_context["document1_research_focus"]
+        assert "recent" in focus["primary_focus"]
+        assert "longer history" in focus["background_use"]
+        assert "generic one-year" in focus["background_use"]
+    c1_tasks = [task for task in build_tasks if task.agent_name is AgentName.C1_FUNDAMENTAL_RESEARCH]
+    assert c1_tasks
+    assert "recent fundamental developments" in c1_tasks[0].input_context["section_instruction"]
     o4_tasks = [task for task in build_tasks if task.agent_name is AgentName.O4_MARKET_TRACE]
     assert o4_tasks
+    assert o4_tasks[0].input_context["global_research_inputs"]["market_trace_period"] == "3mo"
     assert set(o4_tasks[0].permissions.allowed_tools) == {
         "twelvedata.daily_ohlcv",
         "yfinance.daily_ohlcv",
@@ -285,6 +305,7 @@ def test_global_research_resume_reuses_completed_agent_sections_after_failure() 
         AgentName.C1_FUNDAMENTAL_RESEARCH,
         AgentName.C2_MACRO_RESEARCH,
         AgentName.C3_INDUSTRY_RESEARCH,
+        AgentName.O4_MARKET_TRACE,
     ]
     cached = failed.checkpoint.metadata["global_research_agent_results"]
     c1_key = (
@@ -297,6 +318,11 @@ def test_global_research_resume_reuses_completed_agent_sections_after_failure() 
     )
     assert c1_key in cached
     assert c2_key in cached
+    o4_key = (
+        f"{WorkflowNode.BUILD_GLOBAL_RESEARCH.value}:"
+        f"{AgentName.O4_MARKET_TRACE.value}"
+    )
+    assert o4_key in cached
 
     resumed = workflow.resume_latest(
         failed.checkpoint.run_id,
@@ -313,8 +339,8 @@ def test_global_research_resume_reuses_completed_agent_sections_after_failure() 
         AgentName.C1_FUNDAMENTAL_RESEARCH,
         AgentName.C2_MACRO_RESEARCH,
         AgentName.C3_INDUSTRY_RESEARCH,
-        AgentName.C3_INDUSTRY_RESEARCH,
         AgentName.O4_MARKET_TRACE,
+        AgentName.C3_INDUSTRY_RESEARCH,
     ]
     run = workflow.blackboard.get_run(failed.checkpoint.run_id)
     assert len(run.commit_log) == 1
