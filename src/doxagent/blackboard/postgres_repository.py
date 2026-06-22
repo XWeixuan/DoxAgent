@@ -12,6 +12,7 @@ from doxagent.blackboard.errors import RunNotFoundError
 from doxagent.blackboard.repository import RunMutator
 from doxagent.blackboard.state import BlackboardRun, WorkflowState
 from doxagent.models import (
+    AgentName,
     BeliefStateSnapshot,
     CommitLogEntry,
     Delegation,
@@ -78,6 +79,85 @@ class PostgresBlackboardRepository:
                     )
                     run_ids = [row[0] for row in cursor.fetchall()]
                 return [self._get_run(conn, run_id, lock=False) for run_id in run_ids]
+
+        return self._retry(operation)
+
+    def list_unresolved_objections(self, run_id: str) -> list[Objection]:
+        def operation() -> list[Objection]:
+            with self._connection() as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute(
+                        """
+                        select objection_json
+                        from doxagent.objections
+                        where run_id = %s
+                          and status in ('open', 'unresolved')
+                        order by created_at asc, objection_id asc
+                        """,
+                        (run_id,),
+                    )
+                    rows = cursor.fetchall()
+            return [Objection.model_validate(self._coerce_json(row[0])) for row in rows]
+
+        return self._retry(operation)
+
+    def list_blocking_delegations(
+        self,
+        run_id: str,
+        *,
+        target_agent: AgentName | None = None,
+    ) -> list[Delegation]:
+        def operation() -> list[Delegation]:
+            params: tuple[Any, ...]
+            target_clause = ""
+            if target_agent is None:
+                params = (run_id,)
+            else:
+                target_clause = "and target_agent = %s"
+                params = (run_id, target_agent.value)
+            with self._connection() as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute(
+                        f"""
+                        select delegation_json
+                        from doxagent.delegations
+                        where run_id = %s
+                          and status in ('open', 'assigned')
+                          {target_clause}
+                        order by created_at asc, delegation_id asc
+                        """,
+                        params,
+                    )
+                    rows = cursor.fetchall()
+            return [Delegation.model_validate(self._coerce_json(row[0])) for row in rows]
+
+        return self._retry(operation)
+
+    def summary_counts(self, run_id: str) -> dict[str, int]:
+        def operation() -> dict[str, int]:
+            with self._connection() as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute(
+                        """
+                        select
+                            (select count(*) from doxagent.commit_log_entries where run_id = %s),
+                            (select count(*)
+                             from doxagent.working_memory_entries
+                             where run_id = %s),
+                            (select count(*) from doxagent.objections
+                             where run_id = %s and status in ('open', 'unresolved')),
+                            (select count(*) from doxagent.delegations
+                             where run_id = %s and status in ('open', 'assigned'))
+                        """,
+                        (run_id, run_id, run_id, run_id),
+                    )
+                    row = cursor.fetchone()
+            return {
+                "commit_count": int(row[0]),
+                "working_memory_count": int(row[1]),
+                "unresolved_objection_count": int(row[2]),
+                "blocking_delegation_count": int(row[3]),
+            }
 
         return self._retry(operation)
 

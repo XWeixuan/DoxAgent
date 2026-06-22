@@ -1,5 +1,9 @@
 # changelog
 
+## 2026-06-22
+
+- Fixed a Document 2 real-eval workflow stall where `ResolveExpectationConstruction` no-op completion still full-loaded oversized Blackboard run state for summary counts; Postgres now uses lightweight objection/delegation/count queries before continuing to detail generation.
+
 ## 2026-06-21
 
 - Added deterministic daily OHLCV market-evidence snapshots to Twelve Data/yfinance results, ReAct scratchpad/final payloads, working memory, and global-research context so price/volume facts survive context compaction.

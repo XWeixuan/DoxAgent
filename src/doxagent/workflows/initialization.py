@@ -1188,7 +1188,10 @@ class BlackboardInitializationWorkflow:
         if tool_name == "doxa_query_analysis":
             return "List available DoxAtlas analysis tasks and task_code values for the ticker."
         if tool_name == "doxa_get_analysis":
-            return "Read DoxAtlas analysis/topic context by ticker and task_code without starting new runs."
+            return (
+                "Read DoxAtlas analysis/topic context by ticker and task_code without "
+                "starting new runs."
+            )
         if tool_name == "doxa_query_propositions":
             return "Check proposition-level support or contradiction for the reviewed field."
         if tool_name == "doxa_get_ignored_propositions":
@@ -1937,10 +1940,10 @@ class BlackboardInitializationWorkflow:
         node: WorkflowNode,
     ) -> WorkflowCheckpoint:
         results: list[AgentResult] = []
-        run = self.blackboard.get_run(checkpoint.run_id)
-        for delegation in run.delegations:
-            if not delegation.is_blocking or delegation.target_agent is not AgentName.A2_FACT_CHECK:
-                continue
+        for delegation in self.blackboard.list_blocking_delegations(
+            checkpoint.run_id,
+            target_agent=AgentName.A2_FACT_CHECK,
+        ):
             if delegation.status is DelegationStatus.OPEN:
                 self.blackboard.assign_delegation(checkpoint.run_id, delegation.delegation_id)
             result = self._run_agent(
@@ -1964,8 +1967,7 @@ class BlackboardInitializationWorkflow:
             )
             results.append(result)
 
-        run = self.blackboard.get_run(checkpoint.run_id)
-        unresolved = [objection for objection in run.objections if objection.is_unresolved]
+        unresolved = self.blackboard.list_unresolved_objections(checkpoint.run_id)
         if not unresolved:
             return self._mark_completed(
                 checkpoint,
@@ -2656,7 +2658,10 @@ class BlackboardInitializationWorkflow:
         required = (
             "market-data evidence such as OHLCV, quote, market-cap, or vendor market data"
             if category == "market_data"
-            else "fundamental evidence such as SEC/companyfacts, financial statements, or issuer filings"
+            else (
+                "fundamental evidence such as SEC/companyfacts, financial statements, "
+                "or issuer filings"
+            )
         )
         return (
             f"Deterministic numeric sanity review for {expectation_id}: precise "
@@ -5786,20 +5791,16 @@ class BlackboardInitializationWorkflow:
         *,
         notes: list[str] | None = None,
     ) -> WorkflowRunSummary:
-        run = self.blackboard.get_run(checkpoint.run_id)
+        counts = self.blackboard.summary_counts(checkpoint.run_id)
         return WorkflowRunSummary(
             run_id=checkpoint.run_id,
             ticker=checkpoint.ticker,
             completed_nodes=list(checkpoint.completed_nodes),
             stable_document_types=list(checkpoint.stable_document_types),
-            commit_count=len(run.commit_log),
-            working_memory_count=len(run.working_memory),
-            unresolved_objection_count=sum(
-                1 for objection in run.objections if objection.is_unresolved
-            ),
-            blocking_delegation_count=sum(
-                1 for delegation in run.delegations if delegation.is_blocking
-            ),
+            commit_count=counts["commit_count"],
+            working_memory_count=counts["working_memory_count"],
+            unresolved_objection_count=counts["unresolved_objection_count"],
+            blocking_delegation_count=counts["blocking_delegation_count"],
             notes=notes or [],
         )
 

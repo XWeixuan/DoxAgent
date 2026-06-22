@@ -1,6 +1,7 @@
 import threading
 
 from doxagent.agents import MockAgentRunner, default_agent_registry
+from doxagent.blackboard.state import BlackboardRun
 from doxagent.models import (
     AgentError,
     AgentName,
@@ -25,6 +26,42 @@ from doxagent.workflows import (
     WorkflowNode,
     WorkflowRunStatus,
 )
+
+
+class NoFullLoadRepository:
+    def __init__(self, inner: object) -> None:
+        self.inner = inner
+        self.full_get_called = False
+
+    def add(self, run: BlackboardRun) -> BlackboardRun:
+        return self.inner.add(run)
+
+    def get(self, run_id: str) -> BlackboardRun:
+        self.full_get_called = True
+        raise AssertionError("no-op construction resolver must not full-load BlackboardRun")
+
+    def save(self, run: BlackboardRun) -> BlackboardRun:
+        return self.inner.save(run)
+
+    def list_by_ticker(self, ticker: str, *, limit: int = 20) -> list[BlackboardRun]:
+        return self.inner.list_by_ticker(ticker, limit=limit)
+
+    def mutate(self, run_id: str, mutator: object) -> BlackboardRun:
+        return self.inner.mutate(run_id, mutator)
+
+    def list_unresolved_objections(self, run_id: str) -> list[Objection]:
+        return self.inner.list_unresolved_objections(run_id)
+
+    def list_blocking_delegations(
+        self,
+        run_id: str,
+        *,
+        target_agent: AgentName | None = None,
+    ) -> list[object]:
+        return self.inner.list_blocking_delegations(run_id, target_agent=target_agent)
+
+    def summary_counts(self, run_id: str) -> dict[str, int]:
+        return self.inner.summary_counts(run_id)
 
 
 class ParallelStructuredInitializationRunner:
@@ -242,7 +279,9 @@ class ParallelStructuredInitializationRunner:
                 {
                     "objection_id": objection_id,
                     "decision": "resolved",
-                    "resolution_note": "Mock O1 retry resolved this objection with supporting evidence.",
+                    "resolution_note": (
+                        "Mock O1 retry resolved this objection with supporting evidence."
+                    ),
                     "changed_paths": ["expectation_unit.document"],
                     "evidence_refs": [evidence.model_dump(mode="json")],
                 }
@@ -375,6 +414,22 @@ def test_checkpoint_round_trips_and_resumes_in_same_process() -> None:
     assert resumed.status is WorkflowRunStatus.COMPLETED
     assert resumed.checkpoint.completed_nodes == list(INITIALIZATION_NODES)
     assert resumed.summary.commit_count == 7
+
+
+def test_construction_resolver_noop_avoids_full_blackboard_load() -> None:
+    workflow = BlackboardInitializationWorkflow(execution_mode="mock")
+    partial = workflow.run("NVDA", stop_after=WorkflowNode.REVIEW_EXPECTATION_CONSTRUCTION)
+    repository = NoFullLoadRepository(workflow.blackboard.repository)
+    workflow.blackboard.repository = repository
+
+    resolved = workflow._resolve_expectation_construction(
+        partial.checkpoint,
+        WorkflowNode.RESOLVE_EXPECTATION_CONSTRUCTION,
+    )
+
+    assert WorkflowNode.RESOLVE_EXPECTATION_CONSTRUCTION in resolved.completed_nodes
+    assert resolved.next_node is WorkflowNode.GENERATE_EXPECTATION_DETAILS
+    assert repository.full_get_called is False
 
 
 def test_mock_agent_runner_factory_mode_preserves_result_contract() -> None:
@@ -662,7 +717,9 @@ def test_numeric_sanity_review_flags_doxatlas_only_market_precision() -> None:
             "realized_facts": [
                 fact.model_copy(
                     update={
-                        "description": "NVDA stock price reached $1,020 and market cap 1.15 trillion.",
+                        "description": (
+                            "NVDA stock price reached $1,020 and market cap 1.15 trillion."
+                        ),
                         "price_reaction": reaction,
                         "evidence_refs": [narrative_evidence],
                     },
@@ -711,7 +768,9 @@ def test_numeric_sanity_review_allows_market_precision_with_market_data() -> Non
             "realized_facts": [
                 fact.model_copy(
                     update={
-                        "description": "NVDA stock price reached $1,020 and market cap 1.15 trillion.",
+                        "description": (
+                            "NVDA stock price reached $1,020 and market cap 1.15 trillion."
+                        ),
                         "price_reaction": reaction,
                         "evidence_refs": [market_evidence],
                     },

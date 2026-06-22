@@ -74,6 +74,23 @@ class BlackboardService:
     def list_runs_by_ticker(self, ticker: str, *, limit: int = 20) -> list[BlackboardRun]:
         return self.repository.list_by_ticker(ticker, limit=limit)
 
+    def list_unresolved_objections(self, run_id: str) -> list[Objection]:
+        return self.repository.list_unresolved_objections(run_id)
+
+    def list_blocking_delegations(
+        self,
+        run_id: str,
+        *,
+        target_agent: AgentName | None = None,
+    ) -> list[Delegation]:
+        return self.repository.list_blocking_delegations(
+            run_id,
+            target_agent=target_agent,
+        )
+
+    def summary_counts(self, run_id: str) -> dict[str, int]:
+        return self.repository.summary_counts(run_id)
+
     def submit_patch(
         self,
         run_id: str,
@@ -147,7 +164,10 @@ class BlackboardService:
     def create_delegation(self, run_id: str, delegation: Delegation) -> Delegation:
         def mutate(run: BlackboardRun) -> BlackboardRun:
             self._validate_target_matches_run(run, delegation.blocking_scope)
-            if any(existing.delegation_id == delegation.delegation_id for existing in run.delegations):
+            if any(
+                existing.delegation_id == delegation.delegation_id
+                for existing in run.delegations
+            ):
                 return run
             run.delegations.append(delegation)
             return run

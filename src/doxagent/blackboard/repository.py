@@ -6,6 +6,7 @@ from typing import Protocol
 
 from doxagent.blackboard.errors import RunNotFoundError
 from doxagent.blackboard.state import BlackboardRun
+from doxagent.models import AgentName, Delegation, Objection
 
 RunMutator = Callable[[BlackboardRun], BlackboardRun]
 
@@ -20,6 +21,17 @@ class BlackboardRepository(Protocol):
     def list_by_ticker(self, ticker: str, *, limit: int = 20) -> list[BlackboardRun]: ...
 
     def mutate(self, run_id: str, mutator: RunMutator) -> BlackboardRun: ...
+
+    def list_unresolved_objections(self, run_id: str) -> list[Objection]: ...
+
+    def list_blocking_delegations(
+        self,
+        run_id: str,
+        *,
+        target_agent: AgentName | None = None,
+    ) -> list[Delegation]: ...
+
+    def summary_counts(self, run_id: str) -> dict[str, int]: ...
 
 
 class InMemoryBlackboardRepository:
@@ -51,6 +63,34 @@ class InMemoryBlackboardRepository:
         run = self.get(run_id)
         updated = mutator(run)
         return self.save(updated)
+
+    def list_unresolved_objections(self, run_id: str) -> list[Objection]:
+        return [item for item in self.get(run_id).objections if item.is_unresolved]
+
+    def list_blocking_delegations(
+        self,
+        run_id: str,
+        *,
+        target_agent: AgentName | None = None,
+    ) -> list[Delegation]:
+        return [
+            item
+            for item in self.get(run_id).delegations
+            if item.is_blocking and (target_agent is None or item.target_agent is target_agent)
+        ]
+
+    def summary_counts(self, run_id: str) -> dict[str, int]:
+        run = self.get(run_id)
+        return {
+            "commit_count": len(run.commit_log),
+            "working_memory_count": len(run.working_memory),
+            "unresolved_objection_count": sum(
+                1 for objection in run.objections if objection.is_unresolved
+            ),
+            "blocking_delegation_count": sum(
+                1 for delegation in run.delegations if delegation.is_blocking
+            ),
+        }
 
     def unsafe_get_mutable(self, run_id: str) -> BlackboardRun:
         try:
