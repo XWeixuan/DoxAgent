@@ -390,6 +390,32 @@ def test_hard_validators_fail_empty_or_unclosed_runs_instead_of_vacuous_pass() -
     assert {item["code"] for item in commit["findings"]} == {"no_state_mutations_to_validate"}
 
 
+def test_trajectory_validator_accepts_completed_document2_smoke_stop_after() -> None:
+    bundle = _sample_bundle()
+    bundle.checkpoints = [
+        {
+            "checkpoint_id": "checkpoint-document2",
+            "status": "running",
+            "next_node": "GenerateGlobalNarrativeReport",
+            "completed_nodes": ["PromoteExpectationToBeliefState"],
+            "checkpoint": {
+                "metadata": {
+                    "document2_smoke_source_run_id": "run-source",
+                    "document2_smoke_stop_after": "PromoteExpectationToBeliefState",
+                }
+            },
+            "is_latest": True,
+            "created_at": "2026-06-12T00:01:00Z",
+        }
+    ]
+
+    trajectory = validate_langsmith_trajectory_tool_boundary(bundle)
+
+    assert "workflow_trace_not_completed" not in {
+        item["code"] for item in trajectory["findings"]
+    }
+
+
 def test_langsmith_renderer_is_raw_first_and_has_enhanced_sections() -> None:
     assert "Raw-first renderer" in LANGSMITH_RENDERER_HTML
     assert "metadata.inputs" in LANGSMITH_RENDERER_HTML

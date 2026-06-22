@@ -327,7 +327,11 @@ def validate_langsmith_trajectory_tool_boundary(bundle: DebugRunBundle) -> JsonD
 
     latest_checkpoint = _latest_checkpoint(bundle)
     latest_status = _str(latest_checkpoint.get("status")).lower()
-    if latest_checkpoint and latest_status != "completed":
+    if (
+        latest_checkpoint
+        and latest_status != "completed"
+        and not _is_completed_document2_smoke_checkpoint(latest_checkpoint)
+    ):
         findings.append(
             _finding(
                 "error",
@@ -364,7 +368,10 @@ def validate_langsmith_trajectory_tool_boundary(bundle: DebugRunBundle) -> JsonD
             _finding(
                 "error",
                 "no_local_trajectory_entries",
-                "No Working Memory or completed-node trajectory entries were available to validate.",
+                (
+                    "No Working Memory or completed-node trajectory entries were "
+                    "available to validate."
+                ),
                 "working_memory",
             )
         )
@@ -386,6 +393,23 @@ def validate_langsmith_trajectory_tool_boundary(bundle: DebugRunBundle) -> JsonD
             ),
         },
     )
+
+
+def _is_completed_document2_smoke_checkpoint(latest_checkpoint: Mapping[str, Any]) -> bool:
+    checkpoint_payload = _dict(latest_checkpoint.get("checkpoint"))
+    metadata = _dict(checkpoint_payload.get("metadata"))
+    stop_after = _str(
+        metadata.get("document2_smoke_stop_after")
+        or metadata.get("document2_smoke_target_node")
+    )
+    if not stop_after:
+        return False
+    completed_nodes = {
+        _str(item)
+        for item in _list(latest_checkpoint.get("completed_nodes"))
+        if _str(item)
+    }
+    return stop_after in completed_nodes
 
 
 def validate_commit_log_state_mutation_consistency(bundle: DebugRunBundle) -> JsonDict:

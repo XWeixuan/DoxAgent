@@ -2648,6 +2648,32 @@ class BlackboardInitializationWorkflow:
             "market_data": [],
             "fundamental_data": [],
         }
+
+        def add_unsupported_numeric_samples(
+            label: str,
+            text: str,
+            refs: list[EvidenceRef],
+        ) -> None:
+            compact_text = self._compact_context_text(text, limit=260)
+            if not compact_text:
+                return
+            if self._contains_market_numeric_claim(
+                text
+            ) and not self._has_source_appropriate_numeric_evidence(
+                refs,
+                category="market_data",
+            ):
+                category_samples["market_data"].append(f"{label}: {compact_text}")
+                category_evidence["market_data"].extend(refs)
+            if self._contains_fundamental_numeric_claim(
+                text
+            ) and not self._has_source_appropriate_numeric_evidence(
+                refs,
+                category="fundamental_data",
+            ):
+                category_samples["fundamental_data"].append(f"{label}: {compact_text}")
+                category_evidence["fundamental_data"].extend(refs)
+
         for index, fact in enumerate(document.realized_facts, start=1):
             reaction = fact.price_reaction
             fact_refs = self._dedupe_evidence_refs(
@@ -2661,26 +2687,52 @@ class BlackboardInitializationWorkflow:
                     reaction.interpretation,
                 ]
             )
-            if self._contains_market_numeric_claim(
-                fact_text
-            ) and not self._has_source_appropriate_numeric_evidence(
+            add_unsupported_numeric_samples(
+                f"realized_facts[{index}]",
+                fact_text,
                 fact_refs,
-                category="market_data",
-            ):
-                category_samples["market_data"].append(
-                    f"realized_facts[{index}]: {self._compact_context_text(fact_text, limit=260)}"
-                )
-                category_evidence["market_data"].extend(fact_refs)
-            if self._contains_fundamental_numeric_claim(
-                fact_text
-            ) and not self._has_source_appropriate_numeric_evidence(
-                fact_refs,
-                category="fundamental_data",
-            ):
-                category_samples["fundamental_data"].append(
-                    f"realized_facts[{index}]: {self._compact_context_text(fact_text, limit=260)}"
-                )
-                category_evidence["fundamental_data"].extend(fact_refs)
+            )
+
+        market_view_refs = self._dedupe_evidence_refs(
+            [*document.market_view.evidence_refs, *patch.evidence_refs]
+        )
+        add_unsupported_numeric_samples(
+            "market_view",
+            " ".join([document.market_view.text, document.market_view.summary]),
+            market_view_refs,
+        )
+        for index, variable in enumerate(document.key_variables, start=1):
+            variable_refs = self._dedupe_evidence_refs(
+                [*variable.evidence_refs, *patch.evidence_refs]
+            )
+            add_unsupported_numeric_samples(
+                f"key_variables[{index}]",
+                " ".join([variable.name, variable.current_status, variable.certainty]),
+                variable_refs,
+            )
+        for index, event in enumerate(
+            document.event_monitoring_direction.positive_events,
+            start=1,
+        ):
+            add_unsupported_numeric_samples(
+                f"event_monitoring_direction.positive_events[{index}]",
+                event,
+                patch.evidence_refs,
+            )
+        for index, event in enumerate(
+            document.event_monitoring_direction.negative_events,
+            start=1,
+        ):
+            add_unsupported_numeric_samples(
+                f"event_monitoring_direction.negative_events[{index}]",
+                event,
+                patch.evidence_refs,
+            )
+        add_unsupported_numeric_samples(
+            "event_monitoring_direction.known_event_notice",
+            document.event_monitoring_direction.known_event_notice,
+            patch.evidence_refs,
+        )
 
         objections: list[Objection] = []
         for category, samples in category_samples.items():
@@ -5796,6 +5848,9 @@ class BlackboardInitializationWorkflow:
             return patch
         document = ExpectationUnitDocument.model_validate(patch.after)
         changed = False
+        market_view = document.market_view
+        key_variables = list(document.key_variables)
+        monitoring = document.event_monitoring_direction
         realized_facts: list[RealizedFact] = []
         for fact in document.realized_facts:
             reaction = fact.price_reaction
@@ -5850,6 +5905,26 @@ class BlackboardInitializationWorkflow:
                 )
                 changed = True
             realized_facts.append(fact)
+        next_market_view, market_view_changed = self._sanitize_numeric_sanity_market_view(
+            document,
+            patch,
+        )
+        if market_view_changed:
+            market_view = next_market_view
+            changed = True
+        next_key_variables, variables_changed = self._sanitize_numeric_sanity_variables(
+            document,
+            patch,
+        )
+        if variables_changed:
+            key_variables = next_key_variables
+            changed = True
+        next_monitoring, monitoring_changed = self._sanitize_numeric_sanity_monitoring(
+            document.event_monitoring_direction
+        )
+        if monitoring_changed:
+            monitoring = next_monitoring
+            changed = True
         if not changed:
             return patch
         summary = document.realized_facts_summary
@@ -5860,8 +5935,11 @@ class BlackboardInitializationWorkflow:
             )
         document = document.model_copy(
             update={
+                "market_view": market_view,
                 "realized_facts": realized_facts,
                 "realized_facts_summary": summary,
+                "key_variables": key_variables,
+                "event_monitoring_direction": monitoring,
             },
             deep=True,
         )
@@ -5886,6 +5964,163 @@ class BlackboardInitializationWorkflow:
                 "rationale": rationale,
             },
             deep=True,
+        )
+
+    def _sanitize_numeric_sanity_market_view(
+        self,
+        document: ExpectationUnitDocument,
+        patch: BlackboardPatch,
+    ) -> tuple[ResearchSection, bool]:
+        market_view = document.market_view
+        refs = self._dedupe_evidence_refs([*market_view.evidence_refs, *patch.evidence_refs])
+        text = " ".join([market_view.text, market_view.summary])
+        if not self._has_unsupported_numeric_claim(text, refs):
+            return market_view, False
+        next_text = self._numeric_sanity_clean_text(
+            market_view.text,
+            fallback=(
+                f"{document.expectation_name}: qualitative market thesis retained. "
+                "Precise numeric market or fundamental claims were removed because "
+                "source-appropriate evidence was not attached."
+            ),
+        )
+        next_summary = self._numeric_sanity_clean_text(
+            market_view.summary,
+            fallback=(
+                f"{document.expectation_name}: qualitative thesis retained; precise "
+                "numeric claims require source-appropriate evidence."
+            ),
+        )
+        note = (
+            " Precise numeric thresholds require source-appropriate market or "
+            "fundamental evidence before promotion."
+        )
+        if note.strip() not in next_text:
+            next_text = f"{next_text.rstrip()}{note}"
+        return (
+            market_view.model_copy(
+                update={"text": next_text, "summary": next_summary},
+                deep=True,
+            ),
+            True,
+        )
+
+    def _sanitize_numeric_sanity_variables(
+        self,
+        document: ExpectationUnitDocument,
+        patch: BlackboardPatch,
+    ) -> tuple[list[VariableStatus], bool]:
+        changed = False
+        variables: list[VariableStatus] = []
+        for variable in document.key_variables:
+            refs = self._dedupe_evidence_refs([*variable.evidence_refs, *patch.evidence_refs])
+            text = " ".join([variable.name, variable.current_status, variable.certainty])
+            if not self._has_unsupported_numeric_claim(text, refs):
+                variables.append(variable)
+                continue
+            current_status = self._numeric_sanity_clean_text(
+                variable.current_status,
+                fallback=(
+                    f"{variable.name}: qualitative status retained. Precise numeric "
+                    "values require source-appropriate evidence before promotion."
+                ),
+            )
+            variables.append(
+                variable.model_copy(update={"current_status": current_status}, deep=True)
+            )
+            changed = True
+        return variables, changed
+
+    def _sanitize_numeric_sanity_monitoring(
+        self,
+        monitoring: EventMonitoringDirection,
+    ) -> tuple[EventMonitoringDirection, bool]:
+        positive_events = [
+            self._numeric_sanity_clean_monitoring_event(item)
+            for item in monitoring.positive_events
+        ]
+        negative_events = [
+            self._numeric_sanity_clean_monitoring_event(item)
+            for item in monitoring.negative_events
+        ]
+        known_event_notice = self._numeric_sanity_clean_monitoring_event(
+            monitoring.known_event_notice
+        )
+        changed = (
+            positive_events != list(monitoring.positive_events)
+            or negative_events != list(monitoring.negative_events)
+            or known_event_notice != monitoring.known_event_notice
+        )
+        if not changed:
+            return monitoring, False
+        return (
+            monitoring.model_copy(
+                update={
+                    "positive_events": positive_events,
+                    "negative_events": negative_events,
+                    "known_event_notice": known_event_notice,
+                },
+                deep=True,
+            ),
+            True,
+        )
+
+    def _has_unsupported_numeric_claim(
+        self,
+        text: str,
+        evidence_refs: list[EvidenceRef],
+    ) -> bool:
+        return (
+            self._contains_market_numeric_claim(text)
+            and not self._has_source_appropriate_numeric_evidence(
+                evidence_refs,
+                category="market_data",
+            )
+        ) or (
+            self._contains_fundamental_numeric_claim(text)
+            and not self._has_source_appropriate_numeric_evidence(
+                evidence_refs,
+                category="fundamental_data",
+            )
+        )
+
+    def _numeric_sanity_clean_monitoring_event(self, value: str) -> str:
+        return self._numeric_sanity_clean_text(
+            value,
+            fallback=(
+                "Monitor this catalyst qualitatively; precise numeric threshold "
+                "requires source-appropriate evidence."
+            ),
+        )
+
+    def _numeric_sanity_clean_text(self, value: str, *, fallback: str) -> str:
+        cleaned = self._strip_unsupported_numeric_precision(value).strip()
+        if cleaned == str(value).strip():
+            return fallback
+        if not cleaned:
+            return fallback
+        if self._contains_market_numeric_claim(
+            cleaned
+        ) or self._contains_fundamental_numeric_claim(cleaned):
+            return fallback
+        return cleaned
+
+    def _strip_unsupported_numeric_precision(self, value: str) -> str:
+        precision_pattern = (
+            r"(?:\$[-+]?\d[\d,.]*(?:\s*-\s*\$?[-+]?\d[\d,.]*)?(?:\+)?\s*"
+            r"(?:%|x|bps|k|m|b|t|bn|mn|million|billion|trillion|"
+            r"\u4e07\u4ebf\u7f8e\u5143|\u4e07\u4ebf|"
+            r"\u4ebf\u7f8e\u5143|\u4ebf|\u4e07|\u7f8e\u5143)?|"
+            r"[-+]?\$?\d[\d,.]*(?:\s*-\s*\$?[-+]?\d[\d,.]*)?(?:\+)?\s*"
+            r"(?:%|x|bps|k|m|b|t|bn|mn|million|billion|trillion|"
+            r"\u4e07\u4ebf\u7f8e\u5143|\u4e07\u4ebf|"
+            r"\u4ebf\u7f8e\u5143|\u4ebf|\u4e07|\u7f8e\u5143))"
+        )
+        return re.sub(
+            precision_pattern,
+            "source-verified numeric threshold",
+            str(value),
+            flags=re.IGNORECASE,
         )
 
     def _payload_string_list(self, payload: dict[str, Any], key: str) -> list[str]:

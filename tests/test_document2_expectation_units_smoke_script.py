@@ -14,7 +14,11 @@ def test_document2_smoke_clone_seeds_new_run_from_document1_state() -> None:
     source_checkpoint = source_result.checkpoint.model_copy(
         update={
             "metadata": source_result.checkpoint.metadata
-            | {"source_run_echo": source_result.checkpoint.run_id}
+            | {
+                "source_run_echo": source_result.checkpoint.run_id,
+                "last_error_code": "WorkflowDependencyError",
+                "last_error_message": "stale source error",
+            }
         },
         deep=True,
     )
@@ -35,6 +39,8 @@ def test_document2_smoke_clone_seeds_new_run_from_document1_state() -> None:
     assert latest.next_node is WorkflowNode.REVIEW_GLOBAL_RESEARCH
     assert latest.metadata["source_run_echo"] == seed.execution_run_id
     assert latest.metadata["document2_smoke_source_run_id"] == source_run.run_id
+    assert "last_error_code" not in latest.metadata
+    assert "last_error_message" not in latest.metadata
     assert cloned_run.belief_state.documents == source_run.belief_state.documents
     assert {entry.entry_id for entry in cloned_run.working_memory}.isdisjoint(
         {entry.entry_id for entry in source_run.working_memory}

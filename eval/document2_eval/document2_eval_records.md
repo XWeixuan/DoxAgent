@@ -776,3 +776,144 @@
   - Add deterministic pre-O1 objection normalization for numeric_sanity and price-reaction contradiction blockers.
   - Write an auditable Working Memory entry for deterministic normalization and leave residual blockers open for O1.
   - Retain numeric-sanity revalidation after patch normalization.
+
+## 2026-06-22 21:55 - MU - Document 2 loop 1 retest5 promoted but rejected - validator and content-quality gaps
+
+### Test Info
+- Git state: cloud deployed commit `bb3ea6e` (`fix: normalize document2 deterministic blockers`).
+- Source run_id: `run_58f5afce8b9441ca804a2cde1ad9aec8`
+- Source state: Document 1-only source; stable `global_research` only, no stable `expectation_unit`, no source pending patches, no source blockers.
+- Execution mode: `clone`
+- Command: `docker compose run --rm -e DOXAGENT_RUN_REAL_API_TESTS=1 -e DOXAGENT_STORAGE_MODE=postgres debug-viewer python eval/run_document2_expectation_units_smoke.py run_58f5afce8b9441ca804a2cde1ad9aec8 --mode clone --stop-after PromoteExpectationToBeliefState --export-brief-state`
+- Environment: cloud server `doxagent-hk`, `/root/doxagent`, Docker image built from `bb3ea6e`.
+- Execution run_id: `run_0b6c98e685cf4b4e872384015e35e8c8`
+- Stop after: `PromoteExpectationToBeliefState`
+- Remote log: `/root/doxagent/.eval_runs/document2-loop1-retest5-20260622T205038+0800.log`
+- Script output: `error=null`; completed nodes include `PromoteExpectationToBeliefState`; `stable_document_types=["global_research","expectation_unit"]`; `expectation_unit_count=2`; `pending_patch_count=0`; `unresolved_objection_count=0`; `blocking_delegation_count=0`.
+- Brief State JSON: remote API visible at `/api/runs/run_0b6c98e685cf4b4e872384015e35e8c8/brief-state`; reported export path `eval/brief_state_exports/run_0b6c98e685cf4b4e872384015e35e8c8.json` was not present on the host after the one-off container exited.
+- LangSmith MCP query: project `DoxAgent`; construction/detail/field-review traces visible. No resolver root trace was found for `ResolveObjectionsAndDelegations` or the 13:25 O1 `objection_resolution_result` despite Working Memory recording the resolver result.
+- Built-in hard validators: overall `failed`; `evidence_reference_integrity=passed`, `langsmith_trajectory_tool_boundary=failed` with `workflow_trace_not_completed`, `commit_log_state_mutation_consistency=passed`.
+- Evaluator: Codex, strict diagnostic retest5.
+
+### Optimization Hypothesis
+- Improvement confirmed: the deterministic pre-O1 normalization moved the run past the previous blocker. Retest5 closed the numeric_sanity and price-reaction contradiction objections, O1 handled the remaining C3 objections, and two stable `expectation_unit` documents were committed.
+- New acceptance blocker 1: the built-in `langsmith_trajectory_tool_boundary` validator still fails because Document2 smoke intentionally stops after `PromoteExpectationToBeliefState`, leaving the full initialization checkpoint as `status=running`, `next_node=GenerateGlobalNarrativeReport`. For a full initialization run this failure is correct, but for this Document2 promote stop-after it is a validator/eval-mode mismatch. The smoke checkpoint needs explicit stop-after metadata, and the validator should accept it only when that target node is present in `completed_nodes`.
+- New acceptance blocker 2: the clone checkpoint inherited stale source metadata: `last_error_message=parallel_agent_timeout: BuildGlobalResearch/C1 did not return within 1800 seconds.` This contaminates Brief State auditing even though retest5 itself had `error=null`. The clone path must scrub old `last_error_*` metadata while preserving source run and Global Research artifacts.
+- New quality blocker 3: deterministic numeric cleanup only sanitized `realized_facts` and `price_reaction`. Stable `market_view`, `key_variables.current_status`, and `event_monitoring_direction` still contain precise revenue, margin, market-cap, valuation, target-price, and percentage thresholds supported mainly by `doxatlas_source` narrative evidence.
+- New quality blocker 4: price-in reasoning is safer than retest4 but still weak. Most price reactions are downgraded to "requires OHLCV/market_trace verification", while market_view still states that some facts are fully priced. This is internally inconsistent and not ready for downstream monitoring.
+- New traceability blocker 5: resolver Working Memory exists, but no matching LangSmith root trace was found. This prevents a strict judge from reconstructing the O1 resolver process from remote LangSmith alone.
+- Expected next movement: after adding explicit Document2 smoke stop metadata, clone error scrubbing, and extended numeric cleanup, the next retest should have all three built-in hard validators pass, no stale source error in metadata, fewer narrative-only numeric claims in stable expectations, and a cleaner basis for `D2-R03`, `D2-R04`, `D2-R07`, `D2-R10`, `D2-R12`, and `D2-R13`.
+- Risk: extended deterministic cleanup can make fields less specific. This is acceptable only when the alternative is unsupported precision; fields should preserve qualitative thesis, variable names, and event intent while replacing unsupported numeric thresholds with evidence-gap wording.
+
+### Proposed Modification Plan
+- Change 1: Update the Document2 smoke entrypoint so every execution run checkpoint receives `document2_smoke_mode`, `document2_smoke_source_run_id`, and `document2_smoke_stop_after` metadata before resume.
+- Change 2: Scrub `last_error_code`, `last_error_message`, `last_error_boundary`, and `last_error_node` when cloning a Document 1-only source checkpoint into a Document2 execution run.
+- Change 3: Update `langsmith_trajectory_tool_boundary` to treat a non-completed checkpoint as closed only when it has explicit Document2 smoke stop-after metadata and that stop-after node appears in `completed_nodes`. Preserve failure behavior for ordinary unclosed runs and open dispatches.
+- Change 4: Extend deterministic numeric-sanity fallback beyond `realized_facts` and `price_reaction` to `market_view.text`, `market_view.summary`, `key_variables.current_status`, and event-monitoring strings. Remove unsupported precise numeric thresholds while preserving qualitative thesis and monitoring intent.
+- Change 5: Add regression tests for clone metadata scrubbing, Document2 stop-after validator behavior, and extended numeric cleanup.
+- Retest requirement: commit/push, cloud `git pull --ff-only`, rebuild `debug-viewer`, rerun the same source and same `--stop-after PromoteExpectationToBeliefState` in cloud-only mode.
+
+### Scope Decision
+- Eval mode: `promote`
+- Can judge stable expectation_unit: yes
+- Can judge improvement: yes, promotion and blocker closure improved materially.
+- Cannot claim: quality target success, because built-in hard validators failed and stable content still has evidence/price-in quality gaps.
+
+### Hard Gates
+| Gate | Result | Evidence | Notes |
+| --- | --- | --- | --- |
+| D2-HG01 | pass | Same verified Document 1-only source run. | Valid seed retained. |
+| D2-HG02 | pass | Script completed target stop-after with `error=null`; `PromoteExpectationToBeliefState` in completed nodes. | Full workflow status remains `running` by design after stop-after. |
+| D2-HG03 | pass | Construction and construction review completed; two differentiated shells formed. | Bullish N01 and bearish/risk N06 are distinct. |
+| D2-HG04 | pass | Detail generation produced complete fields and two stable expectations after promotion. | Field presence is acceptable. |
+| D2-HG05 | fail | Evidence refs hydrate, but final `market_view` and many key variables use narrative-level refs for precise financial/market numbers. | Ref existence is not sufficient. |
+| D2-HG06 | fail | Price reactions are mostly downgraded to "verification required", while market_view still claims fully priced/precise valuation facts. | Price-in reasoning is inconsistent. |
+| D2-HG07 | pass | A1/C1/C3/O4 field review ran and produced concrete findings and objections. | Review pressure improved. |
+| D2-HG08 | pass | All open objections closed; O1 resolver result and deterministic normalization are visible in Working Memory. | LangSmith resolver trace remains missing. |
+| D2-HG09 | pass | Stable `expectation_unit` count is 2; pending patches 0; commit log has two expectation_unit commits. | Promotion state is clean. |
+| D2-HG10 | fail | LangSmith traces are visible for construction/detail/review, but no resolver root trace found; built-in trajectory validator failed. | Critical process trace incomplete. |
+| D2-HG11 | pass | Remote log, DB checkpoint, Working Memory, objections, commit log, and validator output reproduce the run. | Missing export file noted. |
+| D2-HG12 | fail | Field-review contexts remain large, and checkpoint metadata carries bulky expectation_shells plus stale source error. | Context/metadata hygiene remains a quality risk. |
+| D2-HG13 | fail | Revised patches promoted, but construction-shell metadata and stable thesis fields still retain unsupported precision. | Memory/revision continuity is only partial. |
+
+### Built-in Hard Validators
+| Validator | Result | Evidence | Notes |
+| --- | --- | --- | --- |
+| evidence_reference_integrity | pass | Cloud DebugRunQueryService hard validator; checked 54 items. | Ref existence and hydration pass. |
+| langsmith_trajectory_tool_boundary | fail | Finding `workflow_trace_not_completed` at `latest_checkpoint.status`, details `status=running`, `next_node=GenerateGlobalNarrativeReport`. | Needs Document2 stop-after-aware closure metadata; not accepted in this run. |
+| commit_log_state_mutation_consistency | pass | Cloud DebugRunQueryService hard validator; checked 12 items. | Stable state mutations are explained by commit log. |
+
+### Rubrics
+| Rubric | Score | Reason |
+| --- | ---: | --- |
+| D2-R01 | 4 | Document 1 handoff is valid and produces differentiated expectations, but cloned metadata still carries stale source error. |
+| D2-R02 | 3 | The two theses are clear and differentiated, yet over-specific unsupported market/fundamental claims weaken investment reliability. |
+| D2-R03 | 2 | Realized facts are present, but most were downgraded to generic qualitative placeholders and price reactions are verification-required rather than informative. |
+| D2-R04 | 2 | Price-in reasoning is explicit in places, but internally inconsistent and still weakly tied to structured market evidence. |
+| D2-R05 | 3 | Key variables are numerous and mostly thesis-relevant, but several current-status values contain narrative-only numeric precision. |
+| D2-R06 | 3 | Event monitoring lists are concrete, but many thresholds are unsupported and the bearish unit's positive/negative event polarity is hard to audit. |
+| D2-R07 | 3 | Evidence refs are traceable, but source class is too weak for many precise claims. |
+| D2-R08 | 4 | A1/C1/C3/O4 review pressure is strong and caught real numeric, industry, and OHLCV issues. |
+| D2-R09 | 3 | Objections were closed and revisions landed, but resolver LangSmith trace is missing and quality improvements are uneven. |
+| D2-R10 | 4 | Promotion state is clean: two stable expectation_units, no pending patches, no open blockers, and commit trace exists. |
+| D2-R11 | 3 | Tool use is mostly role-appropriate and auditable, but resolver trace is not visible in LangSmith. |
+| D2-R12 | 2 | Uncertainty is now acknowledged, but unsupported projections and precise numbers still leak into stable thesis fields. |
+| D2-R13 | 3 | DB/Working Memory/commit log are reproducible, but the export file is missing and resolver LangSmith trace is absent. |
+| D2-R14 | 4 | Failure categories and proposed changes are concrete, enforcement-layer-oriented, and directly retestable. |
+
+### Score Summary
+- Core Blackboard quality rubrics average (`D2-R01`-`D2-R10`): 3.1
+- Other rubrics with score <= 2: `D2-R12`
+- Quality target met: no
+- Accept modification so far: no, must modify and retest.
+
+### Document 2 State Summary
+- Pending expectation patches: 0
+- Stable expectation_unit count: 2
+- Open/unresolved objections: 0
+- Blocking delegations: 0
+- Latest checkpoint: `running`, `next_node=GenerateGlobalNarrativeReport`
+- Completed Document2 nodes through promotion: yes
+- Stable expectation ids: `expectation_001`, `expectation_002`
+- Working Memory entries of interest:
+  - `deterministic_objection_normalization` handled numeric_sanity and price_reaction_contradiction blockers.
+  - O1 `objection_resolution_result` handled remaining C3 field-review objections.
+  - A1/C1/C3/O4 field reviews all succeeded.
+- Residual issues:
+  - `last_error_message` from source run remains in metadata.
+  - Stable market_view/key_variables/event_monitoring contain unsupported precise numeric claims.
+  - Resolver LangSmith trace missing.
+
+### Failure Categories
+- category: `traceability`
+  - issue: built-in trajectory validator fails because Document2 stop-after leaves full workflow status `running`; resolver LangSmith trace also missing.
+  - evidence: hard validator `workflow_trace_not_completed`; LangSmith searches found construction/detail/review traces but no resolver trace.
+  - severity: high
+  - suspected root cause: Document2 smoke lacks explicit stop-after completion metadata for validators; resolver result may not be emitted under a searchable workflow-node trace.
+- category: `evidence_integrity`
+  - issue: final stable fields retain precise numbers backed mainly by `doxatlas_source`.
+  - evidence: market_view and key variables contain revenue, margin, valuation, market-cap, and price thresholds with narrative refs.
+  - severity: high
+  - suspected root cause: deterministic numeric cleanup only covered realized facts and price_reaction.
+- category: `price_in_reasoning`
+  - issue: price reactions are downgraded to "verification required" but market_view still describes facts as fully priced.
+  - evidence: stable `realized_facts.price_reaction` generic verification text vs market_view fully priced wording.
+  - severity: high
+  - suspected root cause: price normalization does not rewrite thesis-level price-in statements.
+- category: `context_management`
+  - issue: cloned checkpoint metadata contains stale source error and bulky shell/result payloads.
+  - evidence: latest metadata includes old `parallel_agent_timeout` from source run and large `expectation_shells`.
+  - severity: medium
+  - suspected root cause: clone path rewrites ids but does not scrub status/error metadata for the new execution run.
+- category: `promotion_readiness`
+  - issue: state promotion succeeded but content quality remains below downstream monitoring readiness.
+  - evidence: stable expectation count 2 with clean commit state, but rubrics average only 3.1.
+  - severity: medium/high
+  - suspected root cause: promotion gate checks schema/blockers more strongly than source-appropriate thesis-field precision.
+
+### Actual Modification
+- Implemented after this evaluation entry:
+  - Add Document2 smoke stop-after metadata and stale error metadata scrubbing.
+  - Make `langsmith_trajectory_tool_boundary` accept only explicit completed Document2 smoke stop-after checkpoints while preserving failure for ordinary unclosed runs.
+  - Extend deterministic numeric-sanity cleanup to market_view, key_variables, and event_monitoring_direction.
+  - Add regression tests for all three changes.

@@ -106,6 +106,20 @@ def main() -> int:
             checkpoint=source_checkpoint,
         )
 
+    seed_checkpoint = _checkpoint_with_document2_smoke_metadata(
+        seed.checkpoint,
+        mode=seed.mode,
+        source_run_id=seed.source_run_id,
+        stop_after=stop_after,
+    )
+    workflow.checkpoint_repository.save_checkpoint(seed_checkpoint)
+    seed = Document2Seed(
+        source_run_id=seed.source_run_id,
+        execution_run_id=seed.execution_run_id,
+        mode=seed.mode,
+        checkpoint=seed_checkpoint,
+    )
+
     print(
         json.dumps(
             {
@@ -211,7 +225,9 @@ def clone_document1_state(
     )
     blackboard.repository.add(cloned_run)
 
-    cloned_metadata = _rewrite_json_ids(source_checkpoint.metadata, id_mapping) | {
+    cloned_metadata = _scrub_document2_clone_metadata(
+        _rewrite_json_ids(source_checkpoint.metadata, id_mapping)
+    ) | {
         "document2_smoke_source_run_id": source_run.run_id,
         "document2_smoke_cloned_at": now.isoformat(),
     }
@@ -235,6 +251,34 @@ def clone_document1_state(
         mode="clone",
         checkpoint=cloned_checkpoint,
     )
+
+
+def _checkpoint_with_document2_smoke_metadata(
+    checkpoint: WorkflowCheckpoint,
+    *,
+    mode: str,
+    source_run_id: str,
+    stop_after: WorkflowNode,
+) -> WorkflowCheckpoint:
+    metadata = _scrub_document2_clone_metadata(dict(checkpoint.metadata)) | {
+        "document2_smoke_mode": mode,
+        "document2_smoke_source_run_id": source_run_id,
+        "document2_smoke_stop_after": stop_after.value,
+        "document2_smoke_target_node": stop_after.value,
+    }
+    return checkpoint.model_copy(update={"metadata": metadata}, deep=True)
+
+
+def _scrub_document2_clone_metadata(metadata: JsonDict) -> JsonDict:
+    cloned = dict(metadata)
+    for key in (
+        "last_error_code",
+        "last_error_message",
+        "last_error_boundary",
+        "last_error_node",
+    ):
+        cloned.pop(key, None)
+    return cloned
 
 
 def validate_document1_source_state(

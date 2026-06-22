@@ -854,6 +854,89 @@ def test_numeric_sanity_review_allows_market_precision_with_market_data() -> Non
     assert workflow._numeric_sanity_objections_for_patch("NVDA", patch) == []
 
 
+def test_numeric_sanity_review_flags_thesis_field_false_precision() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        runner=ParallelStructuredInitializationRunner(),
+        execution_mode="agent_runner",
+    )
+    factory = InitializationMockResultFactory()
+    narrative_evidence = factory._evidence(EvidenceSourceType.DOXATLAS_SOURCE)
+    document = factory._expectation_unit("NVDA")
+    fact = document.realized_facts[0]
+    clean_reaction = fact.price_reaction.model_copy(
+        update={
+            "price_change": "Qualitative market reaction pending source verification.",
+            "price_pattern": "qualitative",
+            "interpretation": "No precise price, market-cap, or volume claim is attached.",
+            "evidence_refs": [narrative_evidence],
+        },
+        deep=True,
+    )
+    document = document.model_copy(
+        update={
+            "market_view": document.market_view.model_copy(
+                update={
+                    "text": (
+                        "Narrative-only thesis says stock price reached $1,020, "
+                        "revenue rose 196%, and forward P/E is 8.1x."
+                    ),
+                    "summary": "Narrative-only $1,020 target and 196% revenue precision.",
+                    "evidence_refs": [narrative_evidence],
+                },
+                deep=True,
+            ),
+            "realized_facts": [
+                fact.model_copy(
+                    update={
+                        "description": "Qualitative realized fact without precise numbers.",
+                        "price_reaction": clean_reaction,
+                        "evidence_refs": [narrative_evidence],
+                    },
+                    deep=True,
+                )
+            ],
+            "key_variables": [
+                document.key_variables[0].model_copy(
+                    update={
+                        "current_status": (
+                            "Target price $1,020 and gross margin 74.9% come only "
+                            "from narrative evidence."
+                        ),
+                        "evidence_refs": [narrative_evidence],
+                    },
+                    deep=True,
+                )
+            ],
+            "event_monitoring_direction": document.event_monitoring_direction.model_copy(
+                update={
+                    "positive_events": ["Watch target price above $1,020."],
+                    "negative_events": ["Watch revenue falling 30%."],
+                    "known_event_notice": "Do not use unsupported $33.5B thresholds.",
+                },
+                deep=True,
+            ),
+        },
+        deep=True,
+    )
+    patch = factory._document_patch(
+        document,
+        DocumentType.EXPECTATION_UNIT,
+        AgentName.O1_EXPECTATION_OWNER,
+        expectation_id=document.expectation_id,
+    )
+
+    objections = workflow._numeric_sanity_objections_for_patch("NVDA", patch)
+
+    assert {item.taxonomy for item in objections} == {
+        "numeric_sanity_market_data",
+        "numeric_sanity_fundamental_data",
+    }
+    combined_reasons = " ".join(item.reason for item in objections)
+    assert "market_view" in combined_reasons
+    assert "key_variables[1]" in combined_reasons
+    assert "event_monitoring_direction" in combined_reasons
+
+
 def test_price_reaction_promotion_requires_structured_market_snapshot() -> None:
     workflow = BlackboardInitializationWorkflow(
         runner=ParallelStructuredInitializationRunner(),
@@ -1059,6 +1142,17 @@ def test_numeric_sanity_revision_fallback_removes_unsupported_false_precision() 
     )
     document = document.model_copy(
         update={
+            "market_view": document.market_view.model_copy(
+                update={
+                    "text": (
+                        "The market view says revenue rose 196%, stock price is $1,020, "
+                        "and forward P/E is 8.1x based only on narrative evidence."
+                    ),
+                    "summary": "Narrative-only market view with $1,020 target precision.",
+                    "evidence_refs": [narrative_evidence],
+                },
+                deep=True,
+            ),
             "realized_facts": [
                 fact.model_copy(
                     update={
@@ -1074,6 +1168,26 @@ def test_numeric_sanity_revision_fallback_removes_unsupported_false_precision() 
             ],
             "realized_facts_summary": (
                 "Revenue +196% and stock price $1,020 are treated as precise realized facts."
+            ),
+            "key_variables": [
+                document.key_variables[0].model_copy(
+                    update={
+                        "current_status": (
+                            "Revenue +196%, target price $1,020, and gross margin 74.9% "
+                            "are kept from narrative evidence."
+                        ),
+                        "evidence_refs": [narrative_evidence],
+                    },
+                    deep=True,
+                )
+            ],
+            "event_monitoring_direction": document.event_monitoring_direction.model_copy(
+                update={
+                    "positive_events": ["Target price rises above $1,020 and margin reaches 81%."],
+                    "negative_events": ["Revenue falls 30% and market cap drops 50%."],
+                    "known_event_notice": "Monitor Q3 FY26 without unsupported $33.5B thresholds.",
+                },
+                deep=True,
             ),
         },
         deep=True,
@@ -1138,12 +1252,25 @@ def test_numeric_sanity_revision_fallback_removes_unsupported_false_precision() 
             sanitized_reaction["price_pattern"],
             sanitized_reaction["interpretation"],
             sanitized.after["realized_facts_summary"],
+            sanitized.after["market_view"]["text"],
+            sanitized.after["market_view"]["summary"],
+            sanitized.after["key_variables"][0]["current_status"],
+            " ".join(sanitized.after["event_monitoring_direction"]["positive_events"]),
+            " ".join(sanitized.after["event_monitoring_direction"]["negative_events"]),
+            sanitized.after["event_monitoring_direction"]["known_event_notice"],
         ]
     )
     assert "$1,020" not in combined
     assert "+244%" not in combined
     assert "196%" not in combined
+    assert "8.1x" not in combined
+    assert "74.9%" not in combined
+    assert "$33.5B" not in combined
     assert "仅保留定性市场反应" in sanitized_reaction["price_change"]
+    assert "source-appropriate market or fundamental evidence" in (
+        sanitized.after["market_view"]["text"]
+    )
+    assert "source-verified numeric threshold" in combined
     assert "Numeric sanity fallback removed unsupported precise numeric claims" in (
         sanitized.rationale
     )

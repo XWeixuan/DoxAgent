@@ -201,3 +201,4 @@
 - Documented Document2 loop 1 retest3 failure in `eval/document2_eval/document2_eval_records.md`, including numeric-sanity blocker clustering, strict rubric scoring, and an enforcement-layer optimization plan for resolver revisions.
 - Hardened `ResolveObjectionsAndDelegations` so stalled objection batches do not hide remaining blockers, and added deterministic numeric-sanity revision fallback to remove unsupported false precision from accepted O1 revisions before revalidation.
 - Documented Document2 loop 1 retest4 failure and added pre-O1 deterministic objection normalization for numeric-sanity and price-reaction contradiction blockers, with Working Memory audit output and residual-blocker revalidation.
+- Documented Document2 loop 1 retest5 promotion-quality failure, added Document2 stop-after validator handling, scrubbed stale clone error metadata, and extended deterministic numeric cleanup to market-view, variable, and monitoring fields.
