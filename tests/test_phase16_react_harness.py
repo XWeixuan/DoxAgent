@@ -17,7 +17,14 @@ from doxagent.gateway import (
 from doxagent.models import AgentName, AgentPermissions, ResultStatus, TaskType
 from doxagent.prompts import PromptAssembler, PromptInjector
 from doxagent.prompts.assembler import CHINESE_OUTPUT_RULES
-from doxagent.tools import ToolClient, ToolDescriptor, ToolError, ToolRegistry, ToolRequest, ToolResult
+from doxagent.tools import (
+    ToolClient,
+    ToolDescriptor,
+    ToolError,
+    ToolRegistry,
+    ToolRequest,
+    ToolResult,
+)
 from doxagent.tools.mock import default_tool_registry
 from tests.fixtures.phase1_contracts import agent_task
 
@@ -420,11 +427,16 @@ def test_react_prompt_includes_compact_doxatlas_contract_briefs() -> None:
     assert result.status is ResultStatus.SUCCEEDED
     user_payload = json.loads(client.requests[0].messages[-1].content)
     tool = user_payload["available_tools"][0]
-    assert tool["contract_brief"] == "Use event scope run_id+Nxx+Exx. Returns compact Pxx propositions."
+    assert tool["contract_brief"] == (
+        "Use event scope run_id+Nxx+Exx. Returns compact Pxx propositions."
+    )
     assert "concurrent_safe" not in tool
     assert "compactable" not in tool
-    assert "DoxAtlas uses scoped short ids" in user_payload["tool_call_policy"]["doxatlas_contract_brief"]
-    assert "run_id+narrative_code+event_code" in user_payload["tool_call_policy"]["doxatlas_contract_brief"]
+    policy = user_payload["tool_call_policy"]["doxatlas_contract_brief"]
+    assert "DoxAtlas uses scoped short ids" in policy
+    assert "run_id+narrative_code+event_code" in policy
+    assert "bare narrative_code" in policy
+    assert "finalize with a data gap" in policy
 
 
 def test_prompt_assembler_adds_chinese_output_rules_for_single_shot_paths() -> None:
@@ -816,7 +828,9 @@ def test_react_expectation_shell_fallback_produces_two_axes() -> None:
                             "summary": "MU revenue and gross margin improved with HBM mix."
                         },
                         "industry_report": {
-                            "summary": "AI servers drive HBM demand while memory supply remains cyclical."
+                            "summary": (
+                                "AI servers drive HBM demand while memory supply remains cyclical."
+                            )
                         },
                     }
                 }
@@ -1352,7 +1366,7 @@ def test_react_expectation_detail_recovers_arrays_from_invalid_text() -> None:
     text = """
     {
       "final_payload": {
-        "realized_facts_summary": "Customer qualification is public, but conversion is not fully priced.",
+        "realized_facts_summary": "Customer qualification is public; conversion is uncertain.",
         "realized_facts": [
           {
             "event_id": "event_customer",

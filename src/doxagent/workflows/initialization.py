@@ -1905,9 +1905,34 @@ class BlackboardInitializationWorkflow:
                 "review_instruction": (
                     "Audit construction-phase expectation shells only. Check that "
                     "expectation name, direction, and market view are supported by "
-                    "DoxAtlas evidence. Do not review detail fields in this node."
+                    "DoxAtlas evidence. Do not review detail fields in this node. "
+                    "For DoxAtlas proposition tools, never pass ticker or bare "
+                    "narrative_code; use DoxAtlas run_id+narrative_code+event_code, "
+                    "narrative_id+event_code, narrative_event_id, or proposition_id. "
+                    "For ignored propositions, bare narrative_code is also invalid; "
+                    "use run_id+narrative_code or a narrower event scope. If valid "
+                    "scope is unavailable but narrative evidence is sufficient for a "
+                    "construction-level audit, return DoxAtlasAuditResult with a "
+                    "warning instead of retrying invalid tool calls."
                 ),
                 "expectation_shells": [shell.model_dump(mode="json") for shell in shells],
+                "doxatlas_scope_guardrails": {
+                    "doxa_query_propositions": (
+                        "requires run_id+narrative_code+event_code, "
+                        "narrative_id+event_code, narrative_event_id, or proposition_id; "
+                        "ticker and bare narrative_code are invalid"
+                    ),
+                    "doxa_get_ignored_propositions": (
+                        "requires run_id, run_id+narrative_code, "
+                        "run_id+narrative_code+event_code, narrative_id, "
+                        "or narrative_event_id; ticker and bare narrative_code are invalid"
+                    ),
+                    "fallback_policy": (
+                        "after a non-retryable scope validation error, finalize from "
+                        "available narrative/analysis evidence with explicit data gaps "
+                        "instead of exhausting ReAct steps"
+                    ),
+                },
                 "tool_requirements": [
                     {
                         "tool_name": tool_name,

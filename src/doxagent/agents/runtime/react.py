@@ -32,19 +32,12 @@ from doxagent.models import (
     AgentName,
     AgentResult,
     AgentTask,
-    DelegatedRetrievalResult,
     DocumentType,
-    DoxAtlasAuditResult,
     EvidenceRef,
     EvidenceSourceType,
-    ExpectationConstructionResult,
-    ExpectationDetailResult,
-    ExpectationFieldReviewResult,
-    ExpectationShellConstructionResult,
     ObjectionSeverity,
     ObjectionStatus,
     PatchOperation,
-    ResearchSection,
     ResultStatus,
     ValidationStatus,
     new_id,
@@ -1274,7 +1267,10 @@ def _react_user_prompt(
                             "required_output_schema": "optional schema",
                         }
                     ],
-                    "final_payload": "完成时返回 AgentResult-compatible 结构化 payload，内部自然语言必须中文",
+                    "final_payload": (
+                        "完成时返回 AgentResult-compatible 结构化 payload，"
+                        "内部自然语言必须中文"
+                    ),
                 },
             },
             "task": {
@@ -1321,7 +1317,9 @@ def _doxatlas_contract_brief(descriptors: list[ToolDescriptor]) -> str | None:
     return (
         "DoxAtlas uses scoped short ids: parent scope appears once, child lists use "
         "R/T/N/E/P/M/S/D/I codes. Prefer event scope run_id+narrative_code+event_code. "
-        "Do not pass user_id or DoxAgent internal event_id. Use compact list tools before detail/source."
+        "Do not pass user_id, ticker to proposition/ignored-proposition tools, bare "
+        "narrative_code to scoped tools, or DoxAgent internal event_id. If scope is missing, "
+        "recover DoxAtlas run_id/event codes from a narrative report or finalize with a data gap."
     )
 
 
@@ -1379,16 +1377,6 @@ def _parse_action(response: ModelResponse) -> JsonDict | None:
         return None
     payload = _unwrap_text_encoded_action_payload(payload)
     payload = _unwrap_action_payload(payload)
-    action_keys = {
-        "plan_update",
-        "task_ledger_updates",
-        "is_complete",
-        "completion_reason",
-        "tool_calls",
-        "skill_calls",
-        "delegations",
-        "final_payload",
-    }
     return cast(JsonDict, payload)
 
 
@@ -2062,7 +2050,10 @@ def _output_contract(required_output_schema: str, *, task: AgentTask | None = No
                         "如有任一 action path 被有意省略，必须用 "
                         "no_action_rationale 解释原因。"
                     ),
-                    "每条规则都需要 expectation_id、trigger_condition、evidence_fields、escalation_path。",
+                    (
+                        "每条规则都需要 expectation_id、trigger_condition、"
+                        "evidence_fields、escalation_path。"
+                    ),
                 ],
             }
         elif schema_name == "ResearchSection":

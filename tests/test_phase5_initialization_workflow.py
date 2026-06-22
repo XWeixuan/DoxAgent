@@ -432,6 +432,57 @@ def test_construction_resolver_noop_avoids_full_blackboard_load() -> None:
     assert repository.full_get_called is False
 
 
+def test_construction_review_context_includes_doxatlas_scope_guardrails() -> None:
+    workflow = BlackboardInitializationWorkflow(execution_mode="mock")
+    factory = InitializationMockResultFactory()
+    run = workflow.blackboard.start_run("NVDA", AgentName.SYSTEM)
+    checkpoint = WorkflowCheckpoint(
+        run_id=run.run_id,
+        ticker="NVDA",
+        metadata={
+            "expectation_shells": [
+                shell.model_dump(mode="json") for shell in factory._expectation_shells("NVDA")
+            ]
+        },
+    )
+    captured_context: dict[str, object] = {}
+
+    def fake_run_agent(
+        checkpoint: WorkflowCheckpoint,
+        node: WorkflowNode,
+        agent_name: AgentName,
+        task_type: object,
+        output_schema: str,
+        *,
+        extra_context: dict[str, object] | None = None,
+        **_: object,
+    ) -> AgentResult:
+        captured_context.update(extra_context or {})
+        return AgentResult(
+            task_id="task_test",
+            agent_name=agent_name,
+            status=ResultStatus.SUCCEEDED,
+            payload={"structured": {"verdict": "pass", "findings": []}},
+        )
+
+    workflow._run_agent = fake_run_agent  # type: ignore[method-assign]
+
+    workflow._review_expectation_construction(
+        checkpoint,
+        WorkflowNode.REVIEW_EXPECTATION_CONSTRUCTION,
+    )
+
+    instruction = str(captured_context["review_instruction"])
+    guardrails = captured_context["doxatlas_scope_guardrails"]
+    assert "never pass ticker or bare narrative_code" in instruction
+    assert "return DoxAtlasAuditResult with a warning" in instruction
+    assert isinstance(guardrails, dict)
+    assert "ticker and bare narrative_code are invalid" in guardrails[
+        "doxa_query_propositions"
+    ]
+    assert "run_id+narrative_code" in guardrails["doxa_get_ignored_propositions"]
+
+
 def test_mock_agent_runner_factory_mode_preserves_result_contract() -> None:
     runner = MockAgentRunner(
         default_agent_registry(),

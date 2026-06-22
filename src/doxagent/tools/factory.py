@@ -54,7 +54,10 @@ _DOXATLAS_DESCRIPTORS: dict[str, ToolDescriptor] = {
         description="Start a DoxAtlas background narrative-research run for a ticker.",
         input_fields=["ticker", "language", "force"],
         business_purpose="Operational trigger for refreshing DoxAtlas narrative research.",
-        contract_brief="Input ticker/language/force; returns run_id/status. Operational only; review agents should not call run tools.",
+        contract_brief=(
+            "Input ticker/language/force; returns run_id/status. Operational only; "
+            "review agents should not call run tools."
+        ),
         concurrent_safe=False,
         compactable=False,
     ),
@@ -63,23 +66,38 @@ _DOXATLAS_DESCRIPTORS: dict[str, ToolDescriptor] = {
         description="Start a DoxAtlas background analysis run for a ticker.",
         input_fields=["ticker", "language", "reuse_recent"],
         business_purpose="Operational trigger for refreshing DoxAtlas analysis artifacts.",
-        contract_brief="Input ticker/language/reuse_recent; returns task_id/status. Operational only; review agents should not call run tools.",
+        contract_brief=(
+            "Input ticker/language/reuse_recent; returns task_id/status. Operational only; "
+            "review agents should not call run tools."
+        ),
         concurrent_safe=False,
         compactable=False,
     ),
     "doxa_get_narrative_report": _descriptor(
         "doxa_get_narrative_report",
         description="Read the DoxAtlas narrative report for a ticker or run id.",
-        input_fields=["ticker", "run_id", "view", "include_reasoning", "include_source_propositions"],
+        input_fields=[
+            "ticker",
+            "run_id",
+            "view",
+            "include_reasoning",
+            "include_source_propositions",
+        ],
         business_purpose="Provide O1 market narrative and expectation-construction evidence.",
-        contract_brief="Use ticker with view=agent_provenance. Returns run_ref, Nxx/Exx, narrative flow, explanation/expectations, next inputs.",
+        contract_brief=(
+            "Use ticker with view=agent_provenance. Returns run_ref, Nxx/Exx, "
+            "narrative flow, explanation/expectations, next inputs."
+        ),
     ),
     "doxa_query_analysis": _descriptor(
         "doxa_query_analysis",
         description="List DoxAtlas completed analysis tasks for a ticker.",
         input_fields=["ticker", "limit"],
         business_purpose="Find task_code values before reading DoxAtlas analysis payloads.",
-        contract_brief="Input ticker. Returns Txx task codes and time windows; use task_code for doxa_get_analysis.",
+        contract_brief=(
+            "Input ticker. Returns Txx task codes and time windows; use task_code "
+            "for doxa_get_analysis."
+        ),
     ),
     "doxa_get_analysis": _descriptor(
         "doxa_get_analysis",
@@ -88,7 +106,10 @@ _DOXATLAS_DESCRIPTORS: dict[str, ToolDescriptor] = {
         business_purpose=(
             "Support bottom-up audit of analysis claims without using narrative report."
         ),
-        contract_brief="Prefer ticker+task_code from doxa_query_analysis. Returns social/media dashboard payload for that analysis task.",
+        contract_brief=(
+            "Prefer ticker+task_code from doxa_query_analysis. Returns social/media "
+            "dashboard payload for that analysis task."
+        ),
     ),
     "doxa_query_propositions": _descriptor(
         "doxa_query_propositions",
@@ -106,14 +127,26 @@ _DOXATLAS_DESCRIPTORS: dict[str, ToolDescriptor] = {
             "limit",
         ],
         business_purpose="Audit expectation fields against DoxAtlas proposition evidence.",
-        contract_brief="Use event scope run_id+Nxx+Exx or narrative_id+Exx; returns compact Pxx propositions.",
+        contract_brief=(
+            "Use event scope run_id+Nxx+Exx, narrative_id+Exx, narrative_event_id, "
+            "or proposition_id. Never pass ticker or bare narrative_code."
+        ),
     ),
     "doxa_get_ignored_propositions": _descriptor(
         "doxa_get_ignored_propositions",
         description="Read ignored propositions for a DoxAtlas run, narrative, or event scope.",
-        input_fields=["run_id", "narrative_code", "event_code", "narrative_id", "narrative_event_id"],
+        input_fields=[
+            "run_id",
+            "narrative_code",
+            "event_code",
+            "narrative_id",
+            "narrative_event_id",
+        ],
         business_purpose="Check whether O1 relied on claims DoxAtlas intentionally ignored.",
-        contract_brief="Input run/narrative/event scope. Returns same-level Ixx ignored or contradictory evidence.",
+        contract_brief=(
+            "Use run_id, run_id+Nxx, run_id+Nxx+Exx, narrative_id, or narrative_event_id. "
+            "Never pass ticker or bare narrative_code."
+        ),
     ),
     "doxa_get_social_result": _descriptor(
         "doxa_get_social_result",
@@ -130,7 +163,10 @@ _DOXATLAS_DESCRIPTORS: dict[str, ToolDescriptor] = {
             "limit",
         ],
         business_purpose="Audit market-view support from DoxAtlas social evidence.",
-        contract_brief="Input event scope, optional Pxx list. Returns compact Sxx social summaries; call detail for source/content.",
+        contract_brief=(
+            "Input event scope, optional Pxx list. Returns compact Sxx social summaries; "
+            "call detail for source/content."
+        ),
     ),
     "doxa_get_social_result_detail": _descriptor(
         "doxa_get_social_result_detail",
@@ -146,7 +182,10 @@ _DOXATLAS_DESCRIPTORS: dict[str, ToolDescriptor] = {
             "preview_chars",
         ],
         business_purpose="Inspect source, URL, and content for selected DoxAtlas social records.",
-        contract_brief="Input same event scope plus social_codes. Returns URL/source/content for selected Sxx records.",
+        contract_brief=(
+            "Input same event scope plus social_codes. Returns URL/source/content "
+            "for selected Sxx records."
+        ),
     ),
     "doxa_get_media_result": _descriptor(
         "doxa_get_media_result",
@@ -163,7 +202,10 @@ _DOXATLAS_DESCRIPTORS: dict[str, ToolDescriptor] = {
             "limit",
         ],
         business_purpose="Audit realized facts and market views against DoxAtlas media evidence.",
-        contract_brief="Input event scope, optional Pxx list. Returns compact Mxx media events; call detail for URL/content.",
+        contract_brief=(
+            "Input event scope, optional Pxx list. Returns compact Mxx media events; "
+            "call detail for URL/content."
+        ),
     ),
     "doxa_get_media_result_detail": _descriptor(
         "doxa_get_media_result_detail",
@@ -178,8 +220,13 @@ _DOXATLAS_DESCRIPTORS: dict[str, ToolDescriptor] = {
             "content_mode",
             "preview_chars",
         ],
-        business_purpose="Inspect URL, source quality, and content for selected DoxAtlas media records.",
-        contract_brief="Input same event scope plus media_codes. Returns URL/source/content for selected Mxx records.",
+        business_purpose=(
+            "Inspect URL, source quality, and content for selected DoxAtlas media records."
+        ),
+        contract_brief=(
+            "Input same event scope plus media_codes. Returns URL/source/content "
+            "for selected Mxx records."
+        ),
     ),
     "doxa_get_event_source": _descriptor(
         "doxa_get_event_source",
@@ -196,14 +243,20 @@ _DOXATLAS_DESCRIPTORS: dict[str, ToolDescriptor] = {
             "preview_chars",
         ],
         business_purpose="Trace expectation facts to underlying DoxAtlas source records.",
-        contract_brief="Input event scope and optional Dxx source_codes. Returns event source docs, URL, and content.",
+        contract_brief=(
+            "Input event scope and optional Dxx source_codes. Returns event source docs, "
+            "URL, and content."
+        ),
     ),
     "doxatlas.query": _descriptor(
         "doxatlas.query",
         description="Compatibility alias for doxa_get_narrative_report.",
         input_fields=["ticker", "run_id", "view"],
         business_purpose="Legacy read-only DoxAtlas narrative lookup alias.",
-        contract_brief="Alias of doxa_get_narrative_report; prefer doxa_get_narrative_report with view=agent_provenance.",
+        contract_brief=(
+            "Alias of doxa_get_narrative_report; prefer doxa_get_narrative_report "
+            "with view=agent_provenance."
+        ),
     ),
     "doxatlas.source_lookup": _descriptor(
         "doxatlas.source_lookup",

@@ -14,7 +14,10 @@ The shell contains only the candidate expectation identity and thesis frame: `ex
 Use DoxAtlas evidence narrowly:
 - Prefer proposition, analysis, ignored-proposition, and event-source evidence that directly supports or contradicts the shell's market thesis.
 - Use `doxa_query_analysis` before `doxa_get_analysis` when you need an analysis `task_code`.
-- Use event scope from DoxAtlas (`run_id+narrative_code+event_code` or equivalent), not DoxAgent internal `event_id`.
+- Use `doxa_get_narrative_report` only to recover the DoxAtlas `run_id`, `narrative_code`, and event codes such as `E01`; do not treat the DoxAgent execution `run_id` as a DoxAtlas report id.
+- `doxa_query_propositions` must use `run_id+narrative_code+event_code`, `narrative_id+event_code`, `narrative_event_id`, or a single `proposition_id`. Never pass `ticker`, and never call it with only `narrative_code`.
+- `doxa_get_ignored_propositions` may use narrative scope, but narrative scope still requires `run_id+narrative_code`; never pass `ticker` or bare `narrative_code`.
+- If no valid event scope is available, finish the audit from the available narrative/analysis evidence with `pass_with_warnings` or `needs_revision`; do not spend the remaining ReAct steps retrying invalid scoped tools.
 - Check whether the proposed direction follows from the cited narrative evidence rather than from generic bullish or bearish language.
 - Treat missing source ids or missing proposition support as a material issue only when the shell makes a specific market claim that cannot be traced.
 - If DoxAtlas has a relevant ignored or contradicted proposition, flag it even when the shell sounds plausible.

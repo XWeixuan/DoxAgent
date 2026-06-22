@@ -262,3 +262,111 @@
 ### Baseline Commit Or Snapshot
 - Commit hash: `9d0ba29`
 - Dirty-tree notes: baseline execution started before the current lightweight-summary fix. Local worktree also had unrelated full-flow eval artifacts (`eval/blackboard_eval_records.md`, `eval/blackboard_rubrics.yaml`, brief_state exports) that were not part of this Document2 record.
+
+## 2026-06-22 17:36 - MU - Document 2 loop 1 retest blocked - ReviewExpectationConstruction
+
+### Test Info
+- Git state: cloud deployed commit `cd3428de5471a6ce8f2da06d70bfced94e497ada` (`fix: avoid full run loads in document2 resolver`).
+- Source run_id: `run_58f5afce8b9441ca804a2cde1ad9aec8`
+- Source state: same Document 1-only source as baseline; stable `global_research` only.
+- Execution mode: `clone`
+- Command: `docker compose run --rm -e DOXAGENT_RUN_REAL_API_TESTS=1 -e DOXAGENT_STORAGE_MODE=postgres debug-viewer python eval/run_document2_expectation_units_smoke.py run_58f5afce8b9441ca804a2cde1ad9aec8 --mode clone --stop-after PromoteExpectationToBeliefState --export-brief-state`
+- Environment: cloud server `doxagent-hk`, `/root/doxagent`, Docker image built from `cd3428d`, `debug-viewer` healthy.
+- Execution run_id: `run_7d1b438fde8048f5938723fd916d0880`
+- Stop after: `PromoteExpectationToBeliefState`
+- Brief State JSON: remote export path `eval/brief_state_exports/run_7d1b438fde8048f5938723fd916d0880.json`
+- Remote log: `/root/doxagent/.eval_runs/document2-loop1-retest-20260622T173057+0800.log`
+- LangSmith MCP query: project `DoxAgent`; visible A1 `ReviewExpectationConstruction` loops through LOOP5.
+- Evaluator: Codex, strict diagnostic retest.
+
+### Optimization Hypothesis
+- Previous blocker movement: the run no longer stalled silently at `ResolveExpectationConstruction`; the cloud script exited and persisted a blocked checkpoint. This partially validates the lightweight-summary fix.
+- New blocker: A1 construction review reached `max_steps` without a complete `DoxAtlasAuditResult`. The Working Memory `react_audit` shows two no-progress loops, then invalid scoped DoxAtlas calls:
+  - `doxa_query_propositions` called with `ticker+narrative_code`, rejected as unsupported `ticker`.
+  - retry with bare `narrative_code`, rejected because proposition lookup requires event scope or `proposition_id`.
+  - `doxa_get_ignored_propositions` called with `ticker+narrative_code`, then bare `narrative_code`, both rejected; narrative scope requires at least DoxAtlas `run_id+narrative_code`.
+- Root hypothesis: A1 construction-review prompt/tool contract is too weak about DoxAtlas scoped ids. The agent knows it wants proposition-level evidence but is not forced to extract DoxAtlas `run_id` and event codes from the narrative report, and it is not told to finalize with warnings when only narrative-level evidence is available.
+- Expected hard-gate movement: D2-HG02 should advance past `ReviewExpectationConstruction`; D2-HG10/D2-HG11 should remain auditable because failures are now captured in DB/log/Working Memory.
+- Expected rubric movement: D2-R11 and D2-R13 should improve through cleaner tool trajectory and traceability; content rubrics remain capped until details/promotion are reached.
+- Risk: over-tightening could cause A1 to skip useful proposition checks. The fix therefore preserves proposition tools but makes legal scope forms explicit and requires a final audit with data gaps when event scope is unavailable.
+
+### Proposed Modification Plan
+- Change 1: Update `a1-expectation-construction-audit` skill to state exact legal inputs for `doxa_query_propositions` and `doxa_get_ignored_propositions`, including negative examples (`ticker`, bare `narrative_code`).
+- Change 2: Update DoxAtlas tool descriptors so every ReAct step sees compact contract briefs: proposition lookup requires event/proposition scope; ignored propositions require run/narrative/event scope.
+- Change 3: Update global ReAct `doxatlas_contract_brief` to warn against `ticker` and bare `narrative_code` on scoped proposition tools and to finalize with data gaps when scope cannot be recovered.
+- Change 4: Inject construction-review-specific `doxatlas_scope_guardrails` into workflow task context, including a fallback policy after non-retryable scope validation errors.
+- Change 5: Add local regression tests proving the workflow context and ReAct policy expose these guardrails.
+- Files touched: `prompts/internal_task_skills/a1-expectation-construction-audit.md`, `src/doxagent/tools/factory.py`, `src/doxagent/agents/runtime/react.py`, `src/doxagent/workflows/initialization.py`, `tests/test_phase5_initialization_workflow.py`, `tests/test_phase16_react_harness.py`, `changelog`, `eval/document2_eval/document2_eval_records.md`.
+- Retest requirement: after commit/push/cloud build, rerun the same source and stop_after in cloud-only mode.
+
+### Scope Decision
+- Eval mode: `promote`
+- Can judge stable expectation_unit: no
+- Can judge improvement: yes, for the previous silent resolver stall only.
+- Cannot claim: stable `expectation_unit`, detail patch quality, field-review quality, resolver quality, promotion quality, or overall quality-target success.
+
+### Hard Gates
+| Gate | Result | Evidence | Notes |
+| --- | --- | --- | --- |
+| D2-HG01 | pass | Same verified Document 1-only source run. | Valid seed retained. |
+| D2-HG02 | fail | Latest checkpoint `status=blocked`, `next_node=ReviewExpectationConstruction`, target not reached. | New blocker. |
+| D2-HG03 | pass | Two MU expectation shells persisted in checkpoint metadata after construction. | Shell formation still works. |
+| D2-HG04 | fail | No detail pending patches; blocked before `GenerateExpectationDetails`. | Not evaluable. |
+| D2-HG05 | fail | Construction shell evidence exists, but detail-level claim evidence absent. | Not promotable. |
+| D2-HG06 | fail | No realized facts or price-reaction fields. | Blocked before details. |
+| D2-HG07 | fail | A1 construction review failed; field review did not run. | Review pressure not yet sufficient. |
+| D2-HG08 | fail | Resolver for field objections did not run. | Blocked earlier. |
+| D2-HG09 | fail | Stable `expectation_unit` count is 0. | No promotion. |
+| D2-HG10 | pass | LangSmith traces show A1 loops through LOOP5; DB Working Memory captures `a1_expectation_construction_review`. | Traceability improved versus baseline. |
+| D2-HG11 | pass | Failure is persisted as `WorkflowContractError` and `a1_expectation_construction_review` failed payload. | No silent stall. |
+| D2-HG12 | fail | Context/tool contract still caused invalid tool calls and step exhaustion. | Context management remains a blocker. |
+| D2-HG13 | fail | No downstream continuation after construction review. | Memory continuity beyond review cannot be proven. |
+
+### Rubrics
+| Rubric | Score | Reason |
+| --- | ---: | --- |
+| D2-R01 | 3 | Source handoff remains valid, but no usable Document 2 artifact emerged. |
+| D2-R02 | 3 | Shells are differentiated and directionally clear; score capped because A1 review failed before details. |
+| D2-R03 | 1 | No realized facts were generated. |
+| D2-R04 | 1 | No price-in/not-priced-in detail reasoning. |
+| D2-R05 | 1 | No key variables. |
+| D2-R06 | 1 | No event monitoring direction. |
+| D2-R07 | 2 | DoxAtlas narrative support is visible, but proposition-level traceability failed due invalid scope usage. |
+| D2-R08 | 1 | Field review did not run. |
+| D2-R09 | 1 | Detail objection lifecycle did not run. |
+| D2-R10 | 1 | No stable `expectation_unit`; promotion readiness absent. |
+| D2-R11 | 3 | Tool trajectory is auditable and failure modes are explicit, but the trajectory still wastes steps on invalid calls. |
+| D2-R12 | 2 | The system did not fabricate final support, but it also failed to provide a bounded audit conclusion. |
+| D2-R13 | 4 | DB, log, LangSmith, and Working Memory reproduce the exact failure chain. |
+| D2-R14 | 4 | Failure category and proposed fix are specific, testable, and scoped to prompt/tool-contract/workflow context. |
+
+### Document 2 State Summary
+- Pending expectation patches: 0
+- Stable expectation_unit count: 0
+- Open objections: 0
+- Blocking delegations: 0
+- Latest checkpoint: `blocked`, `next_node=ReviewExpectationConstruction`
+- Working Memory entries of interest: `agent_result` for O1 construction; failed `a1_expectation_construction_review` with invalid DoxAtlas scoped tool calls.
+- Script error: `ReviewExpectationConstruction agent result failed: ReAct loop reached max_steps without a complete final payload.`
+
+### Failure Categories
+- category: `workflow_completion`
+  - issue: target stop_after not reached; run blocked at construction review.
+  - evidence: checkpoint `checkpoint_fc3daeb8e1374ad4b3e61db6e1ea9056`, `status=blocked`.
+  - severity: high/blocking
+  - suspected root cause: A1 ReAct failed to produce final audit after invalid scoped tool calls.
+- category: `tool_trajectory`
+  - issue: A1 used invalid DoxAtlas proposition inputs (`ticker`, bare `narrative_code`) and exhausted steps.
+  - evidence: Working Memory `react_audit` tool errors for `doxa_query_propositions` and `doxa_get_ignored_propositions`.
+  - severity: high
+  - suspected root cause: scoped DoxAtlas contract not prominent enough in construction-review prompt/context.
+- category: `context_management`
+  - issue: A1 had enough narrative-level evidence to issue a bounded construction audit, but the prompt did not force finalization with data gaps when event scope was unavailable.
+  - evidence: compaction summary already identified N01/N06 support, yet subsequent loops retried invalid scoped tools.
+  - severity: medium/high
+  - suspected root cause: missing fallback/finalization policy after non-retryable tool validation errors.
+- category: `traceability`
+  - issue: improved from baseline; failure is now auditable rather than silent.
+  - evidence: remote log, checkpoint metadata, and Working Memory agree on the error.
+  - severity: low residual
+  - suspected root cause: previous lightweight summary fix working as intended for this segment.
