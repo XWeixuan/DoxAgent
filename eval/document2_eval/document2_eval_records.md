@@ -1203,3 +1203,126 @@
   - Replace price-reaction escalation text with non-numeric, non-agent-token wording to avoid false numeric_sanity revalidation.
   - Replace `source-verified numeric threshold` with `source-verified value` and polish common concatenation artifacts.
   - Add regression coverage for preserving fact semantics and non-numeric monitoring events while removing unsupported precision.
+
+## 2026-06-23 00:55 - MU - Document 2 loop 1 retest8 blocked - ReviewExpectationFields max_steps without final payload
+
+### Test Info
+- Git state: cloud deployed commit `b38e209` (`fix: preserve document2 sanitized semantics`).
+- Source run_id: `run_58f5afce8b9441ca804a2cde1ad9aec8`
+- Source state: Document 1-only source; stable `global_research`; no stable `expectation_unit`; no source pending patches or blockers.
+- Execution mode: `clone`
+- Command: `docker compose run --rm -e DOXAGENT_RUN_REAL_API_TESTS=1 -e DOXAGENT_STORAGE_MODE=postgres debug-viewer python eval/run_document2_expectation_units_smoke.py run_58f5afce8b9441ca804a2cde1ad9aec8 --mode clone --stop-after PromoteExpectationToBeliefState --export-brief-state`
+- Environment: cloud server `doxagent-hk`, `/root/doxagent`, Docker image built from `b38e209`.
+- Execution run_id: `run_5aabe95ba6d74fd59ef5a543be682752`
+- Remote log: `/root/doxagent/.eval_runs/document2-loop1-retest8-20260623T001621+0800.log`
+- Script output: `status=blocked`; `next_node=ReviewExpectationFields`; completed nodes through `GenerateExpectationDetails`; `stable_document_types=["global_research"]`; `expectation_unit_count=0`; `pending_patch_count=2`; `working_memory_count=13`; `commit_count=1`; `unresolved_objection_count=4`; `blocking_delegation_count=0`.
+- Error: `ReviewExpectationFields agent result failed: ReAct loop reached max_steps without a complete final payload.`
+- Brief State JSON export reported by cloud script: `eval/brief_state_exports/run_5aabe95ba6d74fd59ef5a543be682752.json`
+- Built-in hard validators: overall `failed`; `evidence_reference_integrity=passed` (9 checked), `langsmith_trajectory_tool_boundary=failed` (47 checked; `workflow_trace_not_completed`), `commit_log_state_mutation_consistency=passed` (4 checked).
+- LangSmith MCP query: latest successful traces include `A1.ReviewExpectationFields.LOOP5`, `A1.ReviewExpectationFields.LOOP7`, and `O4.ReviewExpectationFields.LOOP4`. `A1.ReviewExpectationFields.LOOP7` returned another `tool_calls` action instead of a final `DoxAtlasAuditResult`; the runtime then exhausted `max_steps` and returned failed `AgentResult`.
+- Evaluator: Codex, strict blocked-run diagnostic retest8.
+
+### Optimization Hypothesis
+- Retest7 over-sanitization fixes did not get a chance to prove quality improvement, because retest8 hit a blocking runtime failure before `ResolveObjectionsAndDelegations` and before promotion.
+- The immediate blocker is not a content-quality objection; it is a ReAct protocol failure in a review task. A1 had already performed DoxAtlas review work and LangSmith shows successful LLM calls, but the final A1 step emitted a new `tool_calls` plan rather than the required `DoxAtlasAuditResult.final_payload`.
+- Existing runtime recovery only covers `ResearchSection` max-step exhaustion. Review schemas (`DoxAtlasAuditResult`, `ExpectationFieldReviewResult`) have no conservative fallback, so a reviewer that keeps asking for optional tools can block the whole Document2 workflow even when other reviewers and partial audit evidence exist.
+- The correct optimization is not to count incomplete review as a pass. The runtime should convert review max-step exhaustion into a conservative, schema-valid review result with `needs_more_evidence` / `not_checked` findings, `unknowns`, and `revision_required=true` for A1, preserving auditability and allowing the workflow to continue to downstream objection/resolution and promotion gates.
+- This keeps LLM-as-judge strictness intact: the eval record and rubrics should penalize incomplete A1 review, but the workflow should not fail structurally when it can record the gap as Working Memory.
+
+### Proposed Modification Plan
+- Change 1: Add a ReAct max-steps fallback for review schemas only: `DoxAtlasAuditResult` and `ExpectationFieldReviewResult`.
+- Change 2: The fallback must return a schema-valid conservative review payload, not a synthetic content endorsement. For A1, use `verdict=needs_revision`, `revision_required=true`, a finding on `document`, and an unknown explaining max-step non-completion.
+- Change 3: Preserve successful tool evidence refs and successful tool-call audit data through the normal `_succeeded()` path so hard validators can still inspect the local ReAct audit mirror.
+- Change 4: Do not create content objections from a runtime formatting failure. Record the review coverage gap in findings/unknowns and let quality rubrics penalize it.
+- Change 5: Add a regression test that reproduces the retest8 shape: A1 `DoxAtlasAuditResult` task reaches `max_steps` after producing a tool-call action, and the runtime returns a conservative succeeded review result instead of `react_max_steps_exceeded`.
+- Retest requirement: commit/push, cloud `git pull --ff-only`, rebuild `debug-viewer`, rerun the same Document 1-only source and same `--stop-after PromoteExpectationToBeliefState` in cloud-only mode.
+
+### Scope Decision
+- Eval mode: `blocked`
+- Can judge stable expectation_unit: no, no stable `expectation_unit` documents were promoted.
+- Can judge workflow improvement: yes, retest8 exposes a new blocking runtime failure after retest7's sanitizer changes.
+- Cannot claim: content quality improvement, promotion quality, or target success.
+
+### Hard Gates
+| Gate | Result | Evidence | Notes |
+| --- | --- | --- | --- |
+| D2-HG01 | pass | Same Document 1-only source `run_58f5afce8b9441ca804a2cde1ad9aec8`; clone mode. | Valid seed retained. |
+| D2-HG02 | fail | Cloud log finished `status=blocked`; `next_node=ReviewExpectationFields`; error `react_max_steps_exceeded`. | Workflow did not reach stop-after node. |
+| D2-HG03 | pass | `GenerateExpectationConstruction` and construction review/resolution completed. | Shell stage continued to details. |
+| D2-HG04 | fail | `expectation_unit_count=0`; only stable `global_research`. | No stable Document2 output. |
+| D2-HG05 | pass | Built-in evidence reference validator passed with 9 checked items. | Limited to artifacts reached before blocker. |
+| D2-HG06 | fail | No stable expectation units or promoted price-reaction fields. | Cannot judge price-in reasoning. |
+| D2-HG07 | partial | Some `ReviewExpectationFields` traces ran, including A1 and O4, but A1 did not produce final payload. | Review pressure started but did not close. |
+| D2-HG08 | fail | `unresolved_objection_count=4`; blocked before resolver. | No complete objection resolution. |
+| D2-HG09 | fail | No stable expectation units; pending patches remained in the cloud log. | Promotion did not occur. |
+| D2-HG10 | fail | Built-in trajectory validator failed with `workflow_trace_not_completed`. | Correctly rejects blocked run. |
+| D2-HG11 | pass | Remote log, DB hard-validator output, and LangSmith traces reproduce the failure. | Auditable blocked run. |
+| D2-HG12 | fail | No promoted Blackboard content to use downstream. | Usability target unmet. |
+| D2-HG13 | fail | Review runtime failure prevents memory continuity into resolver/promotion. | Needs workflow fix. |
+
+### Built-in Hard Validators
+| Validator | Result | Evidence | Notes |
+| --- | --- | --- | --- |
+| evidence_reference_integrity | pass | Cloud `DebugRunQueryService`; 9 checked items, 0 findings. | No dangling refs in reached artifacts. |
+| langsmith_trajectory_tool_boundary | fail | Cloud `DebugRunQueryService`; 47 checked items, one `workflow_trace_not_completed` finding. | Latest checkpoint was `blocked`, `next_node=ReviewExpectationFields`. |
+| commit_log_state_mutation_consistency | pass | Cloud `DebugRunQueryService`; 4 checked items, 0 findings. | Limited commit/state reached before blocker is consistent. |
+
+### Rubrics
+| Rubric | Score | Reason |
+| --- | ---: | --- |
+| D2-R01 | 4 | Document 1-only source and handoff remain correct. |
+| D2-R02 | 2 | Expectation construction/details began, but no stable expectation unit is available for thesis quality review. |
+| D2-R03 | 1 | No stable realized facts exist after the blocked run. |
+| D2-R04 | 1 | No stable price-in reasoning exists after the blocked run. |
+| D2-R05 | 1 | No stable key variables exist after the blocked run. |
+| D2-R06 | 1 | No stable monitoring directions exist after the blocked run. |
+| D2-R07 | 2 | Early evidence refs are intact, but final Document2 evidence sufficiency cannot be assessed. |
+| D2-R08 | 2 | Review traces began and O4 completed, but A1 review exhausted max steps without final payload. |
+| D2-R09 | 1 | Resolver did not run; objections remained unresolved. |
+| D2-R10 | 1 | Promotion did not run; no stable expectation units. |
+| D2-R11 | 2 | Failure is auditable via log/DB/LangSmith, but the workflow trace is not closed. |
+| D2-R12 | 1 | No final uncertainty discipline is present in promoted Blackboard content. |
+| D2-R13 | 3 | Blocked-run artifacts are reproducible, but no completed Document2 output exists. |
+| D2-R14 | 4 | Failure category and code-level modification plan are specific and retestable. |
+
+### Score Summary
+- Core Blackboard quality rubrics average (`D2-R01`-`D2-R10`): 1.6
+- Other rubrics with score <= 2: `D2-R11`, `D2-R12`
+- Quality target met: no
+- Accept modification so far: no, must fix blocking runtime failure and retest.
+
+### Document 2 State Summary
+- Pending expectation patches: cloud log reported 2.
+- Stable expectation_unit count: 0.
+- Open/unresolved objections: cloud log reported 4.
+- Blocking delegations: 0.
+- Latest checkpoint: `blocked`, `next_node=ReviewExpectationFields`.
+- Working Memory count: 13.
+- Commit count: 1.
+- LangSmith evidence of root cause:
+  - `A1.ReviewExpectationFields.LOOP7` returned `tool_calls` rather than final `DoxAtlasAuditResult`.
+  - `O4.ReviewExpectationFields.LOOP4` completed and captured MU/QQQ OHLCV success with SOXX upstream/rate-limit gaps.
+
+### Failure Categories
+- category: `review_react_protocol_exhaustion`
+  - issue: A1 review kept planning tool calls and never produced final schema payload before max_steps.
+  - evidence: cloud error `ReAct loop reached max_steps without a complete final payload`; LangSmith A1 LOOP7 output is `tool_calls`.
+  - severity: blocking/runtime
+  - suspected root cause: review schemas lack max-step recovery, unlike `ResearchSection`.
+- category: `workflow_trace_not_completed`
+  - issue: hard validator correctly rejects blocked checkpoint.
+  - evidence: `langsmith_trajectory_tool_boundary=failed`, `workflow_trace_not_completed`.
+  - severity: blocking/eval-gate
+  - suspected root cause: failed AgentResult propagates as `WorkflowContractError` in `ReviewExpectationFields`.
+- category: `review_gap_preservation`
+  - issue: a runtime formatting failure must remain visible without stopping downstream deterministic review/resolution.
+  - evidence: A1 had partial tool/review traces, while O4 completed; killing the whole workflow loses useful reviewer work.
+  - severity: medium/high
+  - suspected root cause: no conservative schema-valid audit fallback for review tasks.
+
+### Actual Modification
+- Implemented after this evaluation entry:
+  - Added a ReAct max-steps fallback for `DoxAtlasAuditResult` and `ExpectationFieldReviewResult`.
+  - The fallback returns conservative review findings and unknowns through `_succeeded()`, preserving evidence refs, successful tool-call summaries, and `react_audit`.
+  - A1 fallback uses `verdict=needs_revision`, `revision_required=true`, and no content objections for the runtime-format gap.
+  - Added regression coverage for A1 `DoxAtlasAuditResult` max-step recovery.

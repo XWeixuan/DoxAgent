@@ -597,6 +597,43 @@ class ReActAgentHarness:
                 ),
             )
 
+        recovered_review = _max_steps_review_result_fallback(
+            task,
+            tool_results=tool_results,
+            delegation_results=delegation_results,
+            scratchpad=scratchpad,
+        )
+        if recovered_review is not None:
+            structured, text, schema_name = recovered_review
+            scratchpad.warnings.append(
+                f"{schema_name} reached max_steps; recovered as conservative review result."
+            )
+            scratchpad.entries.append(
+                {
+                    "kind": "max_steps_recovered",
+                    "status": "warning",
+                    "schema": schema_name,
+                    "successful_tool_count": sum(
+                        1 for result in tool_results if result.status is ResultStatus.SUCCEEDED
+                    ),
+                }
+            )
+            return self._succeeded(
+                task=task,
+                definition=definition,
+                assembled_prompt=assembled_prompt,
+                context_snapshot=context_snapshot,
+                structured=structured,
+                text=text,
+                model_audits=model_audits,
+                tool_results=tool_results,
+                delegation_results=delegation_results,
+                scratchpad=scratchpad,
+                completion_reason=(
+                    "Reached ReAct max_steps; recovered as conservative review result."
+                ),
+            )
+
         return _failed(
             task,
             "react_max_steps_exceeded",
@@ -1145,6 +1182,83 @@ def _max_steps_research_section_fallback(
         "reviewer_agents": [],
     }
     return structured, text
+
+
+def _max_steps_review_result_fallback(
+    task: AgentTask,
+    *,
+    tool_results: list[ToolResult],
+    delegation_results: list[AgentResult],
+    scratchpad: Scratchpad,
+) -> tuple[JsonDict, str, str] | None:
+    schemas = set(_schema_names(task.required_output_schema))
+    schema_name: str | None = None
+    if "DoxAtlasAuditResult" in schemas:
+        schema_name = "DoxAtlasAuditResult"
+    elif "ExpectationFieldReviewResult" in schemas:
+        schema_name = "ExpectationFieldReviewResult"
+    if schema_name is None:
+        return None
+    if not tool_results and not scratchpad.compacted_summaries:
+        return None
+
+    evidence_refs = [
+        item.model_dump(mode="json") for item in _evidence_refs(tool_results, delegation_results)
+    ]
+    if not evidence_refs:
+        evidence_refs = [_agent_output_evidence_ref(task)]
+    successful = [
+        result for result in tool_results if result.status is ResultStatus.SUCCEEDED
+    ]
+    failed = [
+        result for result in tool_results if result.status is not ResultStatus.SUCCEEDED
+    ]
+    successful_tools = _unique_tool_names(successful)
+    failed_tools = _unique_tool_names(failed)
+    review_scope = _strings(task.input_context.get("review_scope")) or ["document"]
+    scope_text = ", ".join(review_scope[:6])
+    success_text = ", ".join(successful_tools) if successful_tools else "none"
+    failed_text = ", ".join(failed_tools) if failed_tools else "none"
+    status = "needs_more_evidence" if successful else "not_checked"
+    rationale = (
+        f"{task.agent_name.value} reached ReAct max_steps before producing a complete "
+        f"{schema_name} final_payload for scope {scope_text}. Successful tools: "
+        f"{success_text}. Failed or unavailable tools: {failed_text}. Treat this as a "
+        "review coverage gap, not as field-level support."
+    )
+    finding = {
+        "field_path": "document",
+        "status": status,
+        "rationale": rationale,
+        "evidence_refs": evidence_refs,
+    }
+    unknowns = [
+        (
+            f"{schema_name} did not complete a final_payload before max_steps; "
+            "field-level support remains only partially reviewed."
+        )
+    ]
+    if schema_name == "DoxAtlasAuditResult":
+        structured = {
+            "verdict": "needs_revision",
+            "revision_required": True,
+            "findings": [finding],
+            "evidence_refs": evidence_refs,
+            "objections": [],
+            "delegations": [],
+            "unknowns": unknowns,
+            "rationale": rationale,
+        }
+    else:
+        structured = {
+            "findings": [finding],
+            "evidence_refs": evidence_refs,
+            "objections": [],
+            "delegations": [],
+            "unknowns": unknowns,
+            "rationale": rationale,
+        }
+    return structured, rationale, schema_name
 
 
 def _unique_tool_names(results: Any) -> list[str]:

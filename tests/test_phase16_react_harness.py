@@ -2117,6 +2117,51 @@ def test_react_recovers_research_section_from_max_steps_with_tool_evidence() -> 
     )
 
 
+def test_react_recovers_doxatlas_audit_from_max_steps_as_review_gap() -> None:
+    base_task = agent_task()
+    task = base_task.model_copy(
+        update={
+            "agent_name": AgentName.A1_DOXATLAS_AUDIT,
+            "task_type": TaskType.REVIEW_EXPECTATION_FIELD,
+            "required_output_schema": "DoxAtlasAuditResult",
+            "input_context": {
+                "review_scope": ["market_view", "realized_facts"],
+                "pending_expectation_patches": [{"patch_id": "patch-1"}],
+            },
+            "run_metadata": base_task.run_metadata.model_copy(
+                update={"workflow_node": "ReviewExpectationFields"}
+            ),
+        },
+        deep=True,
+    )
+    runner = runner_with_sequence(
+        [
+            {
+                "is_complete": False,
+                "tool_calls": [
+                    {"tool_name": "doxatlas.query", "input": {"query": "MU narrative"}}
+                ],
+            }
+        ],
+        react_config=ReActHarnessConfig(max_steps=1),
+    )
+
+    result = runner.run(task)
+
+    assert result.status is ResultStatus.SUCCEEDED
+    structured = result.payload["structured"]
+    assert structured["verdict"] == "needs_revision"
+    assert structured["revision_required"] is True
+    assert structured["findings"][0]["status"] == "needs_more_evidence"
+    assert "max_steps" in structured["unknowns"][0]
+    assert structured["objections"] == []
+    assert any(
+        entry["kind"] == "max_steps_recovered"
+        and entry["schema"] == "DoxAtlasAuditResult"
+        for entry in result.payload["react_audit"]["entries"]
+    )
+
+
 def test_react_required_tool_gap_is_audited_without_blocking_final_payload() -> None:
     base_task = agent_task()
     task = base_task.model_copy(
