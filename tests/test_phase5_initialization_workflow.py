@@ -620,6 +620,16 @@ def test_review_expectation_fields_runs_reviewers_concurrently_in_spec_order() -
         "c3_industry_review",
         "o4_market_trace_review",
     ]
+    a1_task = next(
+        task
+        for task in runner.tasks
+        if task.run_metadata.workflow_node == WorkflowNode.REVIEW_EXPECTATION_FIELDS.value
+        and task.agent_name is AgentName.A1_DOXATLAS_AUDIT
+    )
+    assert a1_task.permissions.allowed_tools == []
+    assert a1_task.input_context["tool_requirements"] == []
+    assert a1_task.input_context["required_tool_names"] == []
+    assert "Do not call tools" in a1_task.input_context["review_instruction"]
 
 
 def test_expectation_detail_resume_reuses_completed_parallel_shell_cache() -> None:

@@ -205,3 +205,4 @@
 - Documented Document2 loop 1 retest6 resolver timeout blocker and added deterministic field-review numeric correction plus tighter O1 resolver context.
 - Documented Document2 loop 1 retest7 promotion-quality rejection and refined numeric cleanup to preserve fact and monitoring semantics while removing unsupported precision.
 - Documented Document2 loop 1 retest8 ReviewExpectationFields max-step blocker and added conservative ReAct recovery for review-result schemas.
+- Documented Document2 loop 1 retest9 A1 field-review timeout and made A1 ReviewExpectationFields context-only with no tool permissions.

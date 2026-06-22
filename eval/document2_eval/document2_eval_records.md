@@ -1326,3 +1326,126 @@
   - The fallback returns conservative review findings and unknowns through `_succeeded()`, preserving evidence refs, successful tool-call summaries, and `react_audit`.
   - A1 fallback uses `verdict=needs_revision`, `revision_required=true`, and no content objections for the runtime-format gap.
   - Added regression coverage for A1 `DoxAtlasAuditResult` max-step recovery.
+
+## 2026-06-23 01:55 - MU - Document 2 loop 1 retest9 blocked - A1 field-review parallel timeout
+
+### Test Info
+- Git state: cloud deployed commit `6527556` (`fix: recover document2 review max steps`).
+- Source run_id: `run_58f5afce8b9441ca804a2cde1ad9aec8`
+- Source state: Document 1-only source; stable `global_research`; no stable `expectation_unit`.
+- Execution mode: `clone`
+- Command: `docker compose run --rm -e DOXAGENT_RUN_REAL_API_TESTS=1 -e DOXAGENT_STORAGE_MODE=postgres debug-viewer python eval/run_document2_expectation_units_smoke.py run_58f5afce8b9441ca804a2cde1ad9aec8 --mode clone --stop-after PromoteExpectationToBeliefState --export-brief-state`
+- Environment: cloud server `doxagent-hk`, `/root/doxagent`, Docker image built from `6527556`.
+- Execution run_id: `run_71a45a20bbb145588fb4eb0299dbecee`
+- Remote log: `/root/doxagent/.eval_runs/document2-loop1-retest9-20260623T010000+0800.log`
+- Script output: `status=blocked`; `next_node=ReviewExpectationFields`; completed nodes through `GenerateExpectationDetails`; `stable_document_types=["global_research"]`; `pending_patch_count=3`; `working_memory_count=14`; `commit_count=1`; `unresolved_objection_count=5`; `blocking_delegation_count=0`; `expectation_unit_count=0`.
+- Error: `parallel_agent_timeout: ReviewExpectationFields/A1 did not return within 1800 seconds.`
+- Brief State JSON export reported by cloud script: `eval/brief_state_exports/run_71a45a20bbb145588fb4eb0299dbecee.json`
+- Built-in hard validators: overall `failed`; `evidence_reference_integrity=passed` (11 checked), `langsmith_trajectory_tool_boundary=failed` (44 checked; `workflow_trace_not_completed`), `commit_log_state_mutation_consistency=passed` (4 checked).
+- LangSmith MCP query: C1/C3/O4 `ReviewExpectationFields` traces completed and Working Memory entries were written at `2026-06-22T17:51:44Z` through `17:52:06Z`. No A1 `ReviewExpectationFields` completion trace or Working Memory entry was present before the parallel timeout.
+- Evaluator: Codex, strict blocked-run diagnostic retest9.
+
+### Optimization Hypothesis
+- Retest8's max-step recovery fixed one failure class, but retest9 exposed a deeper A1 field-review blocker: the A1 field-review job never returned within the workflow-level 1800 second parallel-agent deadline.
+- Evidence points to an A1 ReviewExpectationFields tool-permission/prompt conflict. The node instruction says A1 should not call tools, but `NODE_AGENT_ALLOWED_TOOL_OVERRIDES` still grants A1 nine DoxAtlas read tools for `ReviewExpectationFields`. This lets A1 enter long optional-tool loops while the workflow waits for the parallel job.
+- C1/C3/O4 all completed and wrote Working Memory, so the blocker is isolated to A1. The workflow should preserve A1 review pressure, but the field-review stage should not permit A1 to perform fresh DoxAtlas retrieval when the task is specifically to audit pending expectation patches and attached evidence already present in context.
+- Expected improvement: make A1 `ReviewExpectationFields` truly context-only. A1 can still inspect pending patches, existing evidence refs, and context summaries, while bottom-up retrieval pressure remains available in earlier construction review and in O1/detail tool usage. This should prevent parallel timeout without relaxing validators or judge scoring.
+- Risk: A1 field review may become less evidence-rich. The rubrics should penalize A1 if it fails to identify DoxAtlas support gaps from context, but this is preferable to a structural workflow timeout.
+
+### Proposed Modification Plan
+- Change 1: Set `(WorkflowNode.REVIEW_EXPECTATION_FIELDS, AgentName.A1_DOXATLAS_AUDIT)` allowed tool override to `[]`.
+- Change 2: Rewrite A1 `ReviewExpectationFields` instruction to explicitly say it must use only existing pending patches, attached evidence refs, and task context; it must not call tools.
+- Change 3: Ensure the A1 field-review task receives `tool_requirements=[]` and `required_tool_names=[]`, so the prompt and permissions are aligned.
+- Change 4: Add a regression test in `tests/test_phase5_initialization_workflow.py` asserting A1 field-review `permissions.allowed_tools`, `tool_requirements`, and `required_tool_names` are empty.
+- Retest requirement: commit/push, cloud `git pull --ff-only`, rebuild `debug-viewer`, rerun same Document 1-only source and same `--stop-after PromoteExpectationToBeliefState` in cloud-only mode.
+
+### Scope Decision
+- Eval mode: `blocked`
+- Can judge stable expectation_unit: no, no stable `expectation_unit` documents were promoted.
+- Can judge workflow improvement: yes, retest9 isolates a new A1 parallel timeout after retest8's runtime max-step fallback.
+- Cannot claim: content quality improvement, promotion quality, or target success.
+
+### Hard Gates
+| Gate | Result | Evidence | Notes |
+| --- | --- | --- | --- |
+| D2-HG01 | pass | Same Document 1-only source `run_58f5afce8b9441ca804a2cde1ad9aec8`; clone mode. | Valid seed retained. |
+| D2-HG02 | fail | Cloud log finished `status=blocked`; `next_node=ReviewExpectationFields`; A1 parallel timeout. | Did not reach stop-after node. |
+| D2-HG03 | pass | Construction and construction-resolution nodes completed. | Shell/detail generation advanced farther than initial baseline. |
+| D2-HG04 | fail | `expectation_unit_count=0`; no stable Document2 output. | Field review did not close. |
+| D2-HG05 | pass | Built-in evidence reference validator passed with 11 checked items. | Limited to reached artifacts. |
+| D2-HG06 | fail | No stable price-reaction fields. | Cannot judge price-in reasoning. |
+| D2-HG07 | partial | C1/C3/O4 field reviews completed; A1 field review timed out. | Review pressure remains incomplete. |
+| D2-HG08 | fail | `unresolved_objection_count=5`; resolver did not run. | No closed objection cycle. |
+| D2-HG09 | fail | Pending patches remained; no promotion. | No stable expectation units. |
+| D2-HG10 | fail | Built-in trajectory validator failed with `workflow_trace_not_completed`. | Correct blocked-run rejection. |
+| D2-HG11 | pass | Remote log, DB hard-validator output, Working Memory, and LangSmith reproduce the failure. | Auditable. |
+| D2-HG12 | fail | No final downstream-usable Blackboard content. | Usability target unmet. |
+| D2-HG13 | fail | A1 timeout prevents continuity into resolver/promotion. | Needs workflow permission fix. |
+
+### Built-in Hard Validators
+| Validator | Result | Evidence | Notes |
+| --- | --- | --- | --- |
+| evidence_reference_integrity | pass | Cloud `DebugRunQueryService`; 11 checked items, 0 findings. | Reached artifacts have valid refs. |
+| langsmith_trajectory_tool_boundary | fail | Cloud `DebugRunQueryService`; `workflow_trace_not_completed`, status `blocked`, next node `ReviewExpectationFields`. | Expected hard-gate failure for blocked run. |
+| commit_log_state_mutation_consistency | pass | Cloud `DebugRunQueryService`; 4 checked items, 0 findings. | Limited reached state is consistent. |
+
+### Rubrics
+| Rubric | Score | Reason |
+| --- | ---: | --- |
+| D2-R01 | 4 | Document 1-only source and clone handoff remain correct. |
+| D2-R02 | 2 | Construction/details exist transiently, but no stable expectation unit is promoted. |
+| D2-R03 | 1 | No stable realized facts are available. |
+| D2-R04 | 1 | No stable price-in reasoning is available. |
+| D2-R05 | 1 | No stable key variables are available. |
+| D2-R06 | 1 | No stable monitoring directions are available. |
+| D2-R07 | 2 | Early refs pass integrity; final Document2 evidence sufficiency cannot be assessed. |
+| D2-R08 | 2 | C1/C3/O4 review pressure ran, but A1 field-review timeout leaves the review set incomplete. |
+| D2-R09 | 1 | Resolver did not run; objections remain unresolved. |
+| D2-R10 | 1 | Promotion did not run. |
+| D2-R11 | 2 | Failure is reproducible, but workflow trace is not closed. |
+| D2-R12 | 1 | No final uncertainty discipline exists in promoted Document2 content. |
+| D2-R13 | 3 | Blocked-run artifacts are reproducible across log/DB/LangSmith. |
+| D2-R14 | 4 | Root cause and permission-level modification plan are concrete and retestable. |
+
+### Score Summary
+- Core Blackboard quality rubrics average (`D2-R01`-`D2-R10`): 1.6
+- Other rubrics with score <= 2: `D2-R11`, `D2-R12`
+- Quality target met: no
+- Accept modification so far: no, must fix A1 timeout and retest.
+
+### Document 2 State Summary
+- Pending expectation patches: cloud log reported 3.
+- Stable expectation_unit count: 0.
+- Open/unresolved objections: cloud log reported 5.
+- Blocking delegations: 0.
+- Latest checkpoint: `blocked`, `next_node=ReviewExpectationFields`.
+- Working Memory count: 14.
+- Commit count: 1.
+- Working Memory field-review entries:
+  - `c1_fundamental_review` succeeded.
+  - `c3_industry_review` succeeded.
+  - `o4_market_trace_review` succeeded.
+  - `a1_doxatlas_audit` for field review is missing.
+
+### Failure Categories
+- category: `a1_field_review_parallel_timeout`
+  - issue: A1 field review did not return within 1800 seconds.
+  - evidence: cloud error `parallel_agent_timeout: ReviewExpectationFields/A1 did not return within 1800 seconds`.
+  - severity: blocking/runtime
+  - suspected root cause: A1 field-review task retained optional DoxAtlas tool permissions despite a no-tools instruction.
+- category: `prompt_permission_conflict`
+  - issue: prompt/context says do not run tools, while permissions expose DoxAtlas tools.
+  - evidence: `NODE_AGENT_ALLOWED_TOOL_OVERRIDES` grants A1 ReviewExpectationFields nine DoxAtlas tools.
+  - severity: high
+  - suspected root cause: construction-review A1 tool policy was copied into field review without respecting the field-review task's context-only intent.
+- category: `review_set_incomplete`
+  - issue: C1/C3/O4 field reviews completed, but A1's missing result blocks resolver/promotion.
+  - evidence: DB Working Memory has C1/C3/O4 review entries and no A1 field-review entry.
+  - severity: high
+  - suspected root cause: parallel node waits for all reviewers before proceeding.
+
+### Actual Modification
+- Implemented after this evaluation entry:
+  - Changed A1 `ReviewExpectationFields` allowed tool override to `[]`.
+  - Updated A1 field-review instruction to context-only review over pending patches, attached evidence refs, and existing task context.
+  - Added regression assertions that A1 field-review permissions and tool requirement lists are empty.

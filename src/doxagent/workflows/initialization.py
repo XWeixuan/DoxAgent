@@ -152,17 +152,7 @@ NODE_AGENT_ALLOWED_TOOL_OVERRIDES: dict[tuple[WorkflowNode, AgentName], list[str
     (
         WorkflowNode.REVIEW_EXPECTATION_FIELDS,
         AgentName.A1_DOXATLAS_AUDIT,
-    ): [
-        "doxa_query_analysis",
-        "doxa_get_analysis",
-        "doxa_query_propositions",
-        "doxa_get_event_source",
-        "doxa_get_media_result",
-        "doxa_get_media_result_detail",
-        "doxa_get_social_result",
-        "doxa_get_social_result_detail",
-        "doxa_get_ignored_propositions",
-    ],
+    ): [],
     (
         WorkflowNode.REVIEW_EXPECTATION_FIELDS,
         AgentName.C1_FUNDAMENTAL_RESEARCH,
@@ -2485,8 +2475,8 @@ class BlackboardInitializationWorkflow:
                 ],
                 "instruction": (
                     "Audit expectation name, direction, market view, and realized facts using "
-                    "only bottom-up DoxAtlas read tools. Do not call doxa_get_narrative_report "
-                    "or run tools."
+                    "only the existing pending patches, attached evidence refs, and context "
+                    "already present in the task. Do not call tools."
                 ),
                 "tool_requirements": [
                     {
