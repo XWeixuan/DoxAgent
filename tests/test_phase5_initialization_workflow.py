@@ -550,6 +550,18 @@ def test_generate_expectation_details_runs_o1_shells_concurrently_and_merges_ord
         for task in detail_tasks
     } == {"exp_mock_core", "exp_mock_risk"}
     assert all("expectation_shells" not in task.input_context for task in detail_tasks)
+    assert all(
+        task.input_context["detail_completion_budget"][
+            "max_successful_doxa_get_narrative_report_calls"
+        ]
+        == 1
+        for task in detail_tasks
+    )
+    assert all(
+        "Use at most one doxa_get_narrative_report call"
+        in task.input_context["detail_instruction"]
+        for task in detail_tasks
+    )
     assert [patch.target.expectation_id for patch in result.checkpoint.pending_patches] == [
         "exp_mock_core",
         "exp_mock_risk",

@@ -2113,11 +2113,23 @@ class BlackboardInitializationWorkflow:
                             "Complete exactly one expectation unit from this shell. Preserve "
                             "I/II fields and fill realized facts, key variables/current status, "
                             "and event prediction or monitoring direction. "
+                            "Use at most one doxa_get_narrative_report call for this shell; "
+                            "after the call succeeds, fails with a non-retryable validation error, "
+                            "or returns limited coverage, finish the ExpectationDetailResult from "
+                            "the shell plus compact upstream context and record any evidence gaps "
+                            "in unknowns or rationale. "
                             "event_monitoring_direction must contain known_event_notice plus "
                             "positive_events and negative_events as lists of concrete string "
                             "triggers; do not use generic deployment/commercialization "
                             "placeholders, known_upcoming_events, or dict/object event items."
                         ),
+                        "detail_completion_budget": {
+                            "max_successful_doxa_get_narrative_report_calls": 1,
+                            "fallback_after_tool_gap": (
+                                "Produce the best bounded expectation detail with explicit "
+                                "unknowns instead of repeating low-value tool calls."
+                            ),
+                        },
                         "required_tool_names": ["doxa_get_narrative_report"],
                         "tool_requirements": [
                             {
@@ -2132,44 +2144,22 @@ class BlackboardInitializationWorkflow:
         if jobs:
             self.checkpoint_repository.save_checkpoint(current)
 
-        outcomes_by_order = {
-            outcome.job.order: outcome
-            for outcome in self._run_agent_jobs_concurrently(current, node, jobs)
-        }
-        first_error: Exception | None = None
-        for order, shell in enumerate(shells):
-            cache_key = self._expectation_detail_cache_key(order, shell)
-            cached = cached_results.get(order)
-            outcome = outcomes_by_order.get(order)
-            if cached is not None:
-                result = cached
-            elif outcome is None:
-                result = None
-                first_error = first_error or WorkflowContractError(
-                    f"{node.value}/{shell.expectation_id} did not return a parallel outcome."
-                )
-            elif outcome.error is not None:
-                result = None
-                current = self._mark_agent_dispatch(
-                    current,
-                    node,
-                    AgentName.O1_EXPECTATION_OWNER,
-                    status="failed",
-                    section_key=shell.expectation_id,
-                    cache_key=cache_key,
-                    error_message=str(outcome.error),
-                )
-                self.checkpoint_repository.save_checkpoint(current)
-                first_error = first_error or outcome.error
-            else:
-                result = outcome.result
-            if result is None:
-                continue
+        accepted_results: dict[int, AgentResult] = {}
+        accepted_errors: dict[int, Exception] = {}
 
+        def accept_detail_result(
+            order: int,
+            shell: ExpectationShell,
+            result: AgentResult,
+            *,
+            cached: bool,
+        ) -> None:
+            nonlocal current
+            cache_key = self._expectation_detail_cache_key(order, shell)
             try:
                 self._validate_agent_success(result, node, require_patches=False)
                 result = self._ensure_o1_narrative_tool_evidence(current, result, node)
-                if cached is None:
+                if not cached:
                     self._write_working_memory(current, result, "expectation_detail_result")
                 self._validate_o1_narrative_tool_gap(result, node)
                 self._validate_expectation_detail_result(current.ticker, shell, result)
@@ -2183,13 +2173,11 @@ class BlackboardInitializationWorkflow:
                     cache_key=cache_key,
                     error_message=str(exc),
                 )
-                self.checkpoint_repository.save_checkpoint(current)
-                first_error = first_error or exc
-                continue
-
-            patches.extend(result.proposed_patches)
-            results.append(result)
-            if cached is None:
+                self._save_parallel_outcome_checkpoint(current)
+                accepted_errors[order] = exc
+                return
+            accepted_results[order] = result
+            if not cached:
                 current = self._store_workflow_agent_result(
                     current,
                     node,
@@ -2198,7 +2186,75 @@ class BlackboardInitializationWorkflow:
                     result,
                     cache_key=cache_key,
                 )
-                self.checkpoint_repository.save_checkpoint(current)
+                self._save_parallel_outcome_checkpoint(current)
+
+        def cache_expectation_detail_outcome(outcome: _ParallelAgentOutcome) -> None:
+            nonlocal current
+            order = outcome.job.order
+            if order < 0 or order >= len(shells):
+                return
+            shell = shells[order]
+            cache_key = self._expectation_detail_cache_key(order, shell)
+            if outcome.error is not None:
+                current = self._mark_agent_dispatch(
+                    current,
+                    node,
+                    AgentName.O1_EXPECTATION_OWNER,
+                    status="failed",
+                    section_key=shell.expectation_id,
+                    cache_key=cache_key,
+                    error_message=str(outcome.error),
+                )
+                self._save_parallel_outcome_checkpoint(current)
+                accepted_errors[order] = outcome.error
+                return
+            if outcome.result is None:
+                return
+            accept_detail_result(order, shell, outcome.result, cached=False)
+
+        outcomes_by_order = {
+            outcome.job.order: outcome
+            for outcome in self._run_agent_jobs_concurrently(
+                current,
+                node,
+                jobs,
+                on_outcome=cache_expectation_detail_outcome,
+            )
+        }
+        first_error: Exception | None = None
+        for order, shell in enumerate(shells):
+            cached = cached_results.get(order)
+            outcome = outcomes_by_order.get(order)
+            if cached is not None:
+                accept_detail_result(order, shell, cached, cached=True)
+                result = accepted_results.get(order)
+                if order in accepted_errors:
+                    first_error = first_error or accepted_errors[order]
+            elif outcome is None:
+                result = None
+                first_error = first_error or WorkflowContractError(
+                    f"{node.value}/{shell.expectation_id} did not return a parallel outcome."
+                )
+            elif order in accepted_errors:
+                result = None
+                first_error = first_error or accepted_errors[order]
+            elif order in accepted_results:
+                result = accepted_results[order]
+            elif outcome.error is not None:
+                result = None
+                first_error = first_error or outcome.error
+            else:
+                result = outcome.result
+                if result is not None:
+                    accept_detail_result(order, shell, result, cached=False)
+                    result = accepted_results.get(order)
+                    if order in accepted_errors:
+                        first_error = first_error or accepted_errors[order]
+            if result is None:
+                continue
+
+            patches.extend(result.proposed_patches)
+            results.append(result)
         if first_error is not None:
             raise first_error
         return self._mark_completed(
