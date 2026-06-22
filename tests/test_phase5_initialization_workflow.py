@@ -26,6 +26,7 @@ from doxagent.workflows import (
     WorkflowNode,
     WorkflowRunStatus,
 )
+from doxagent.workflows.errors import WorkflowContractError
 
 
 class NoFullLoadRepository:
@@ -1036,3 +1037,238 @@ def test_o1_revision_reopens_numeric_sanity_when_false_precision_remains() -> No
     assert "Narrative-only or unverified labelling is not sufficient" in (
         updated.resolution_note or ""
     )
+
+
+def test_numeric_sanity_revision_fallback_removes_unsupported_false_precision() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        runner=ParallelStructuredInitializationRunner(),
+        execution_mode="agent_runner",
+    )
+    factory = InitializationMockResultFactory()
+    narrative_evidence = factory._evidence(EvidenceSourceType.DOXATLAS_SOURCE)
+    document = factory._expectation_unit("NVDA")
+    fact = document.realized_facts[0]
+    reaction = fact.price_reaction.model_copy(
+        update={
+            "price_change": "NVDA stock price is $1,020, YTD +244%, market cap 1.15 trillion.",
+            "price_pattern": "narrative_only_market_rerating",
+            "interpretation": "The narrative says the precise market move is already priced.",
+            "evidence_refs": [narrative_evidence],
+        },
+        deep=True,
+    )
+    document = document.model_copy(
+        update={
+            "realized_facts": [
+                fact.model_copy(
+                    update={
+                        "description": (
+                            "NVDA revenue grew 196% while stock price reached $1,020, "
+                            "based only on a narrative source."
+                        ),
+                        "price_reaction": reaction,
+                        "evidence_refs": [narrative_evidence],
+                    },
+                    deep=True,
+                )
+            ],
+            "realized_facts_summary": (
+                "Revenue +196% and stock price $1,020 are treated as precise realized facts."
+            ),
+        },
+        deep=True,
+    )
+    patch = factory._document_patch(
+        document,
+        DocumentType.EXPECTATION_UNIT,
+        AgentName.O1_EXPECTATION_OWNER,
+        expectation_id=document.expectation_id,
+    )
+    run = workflow.blackboard.start_run("NVDA", AgentName.SYSTEM)
+    checkpoint = WorkflowCheckpoint(run_id=run.run_id, ticker="NVDA", pending_patches=[patch])
+    objections = workflow._numeric_sanity_objections_for_patch("NVDA", patch)
+    assert {item.taxonomy for item in objections} == {
+        "numeric_sanity_market_data",
+        "numeric_sanity_fundamental_data",
+    }
+    for objection in objections:
+        workflow.blackboard.create_objection(run.run_id, objection)
+
+    structured = {
+        "proposed_patches": [patch.model_dump(mode="json")],
+        "evidence_refs": [narrative_evidence.model_dump(mode="json")],
+        "delegations": [],
+        "unknowns": [],
+        "rationale": "O1 accepted the numeric sanity objections but left precision in place.",
+        "resolved_objection_ids": [],
+        "accepted_objection_ids": [item.objection_id for item in objections],
+        "partially_accepted_objection_ids": [],
+        "rejected_objection_ids": [],
+        "objection_resolutions": [
+            {
+                "objection_id": item.objection_id,
+                "decision": "accepted",
+                "resolution_note": "Accepted and revised the affected expectation.",
+                "changed_paths": ["realized_facts", "realized_facts.price_reaction"],
+                "evidence_refs": [narrative_evidence.model_dump(mode="json")],
+            }
+            for item in objections
+        ],
+    }
+    result = AgentResult(
+        task_id="task_numeric_revision",
+        agent_name=AgentName.O1_EXPECTATION_OWNER,
+        status=ResultStatus.SUCCEEDED,
+        payload={"runtime": "maf", "structured": structured},
+        proposed_patches=[patch],
+        evidence_refs=[narrative_evidence],
+    )
+
+    workflow._apply_o1_objection_resolutions(checkpoint, result)
+    replaced = workflow._replace_pending_expectation_patches(checkpoint, result)
+
+    sanitized = replaced[0]
+    assert workflow._numeric_sanity_objections_for_patch("NVDA", sanitized) == []
+    sanitized_fact = sanitized.after["realized_facts"][0]
+    sanitized_reaction = sanitized_fact["price_reaction"]
+    combined = " ".join(
+        [
+            sanitized_fact["description"],
+            sanitized_reaction["price_change"],
+            sanitized_reaction["price_pattern"],
+            sanitized_reaction["interpretation"],
+            sanitized.after["realized_facts_summary"],
+        ]
+    )
+    assert "$1,020" not in combined
+    assert "+244%" not in combined
+    assert "196%" not in combined
+    assert "仅保留定性市场反应" in sanitized_reaction["price_change"]
+    assert "Numeric sanity fallback removed unsupported precise numeric claims" in (
+        sanitized.rationale
+    )
+
+
+class StalledFirstObjectionBatchRunner:
+    def __init__(self) -> None:
+        self.batches: list[list[str]] = []
+
+    def run(self, task: AgentTask) -> AgentResult:
+        evidence = EvidenceRef(
+            evidence_id=new_id("evidence"),
+            source_type=EvidenceSourceType.AGENT_OUTPUT,
+            source_id="test:stalled-objection-batch",
+            title="Stalled objection batch evidence",
+            summary="Resolver batch test evidence.",
+            confidence=0.8,
+            citation_scope="test.objection_resolution",
+        )
+        raw_objections = task.input_context.get("unresolved_objections")
+        objection_ids = [
+            item["objection_id"]
+            for item in raw_objections
+            if isinstance(item, dict) and isinstance(item.get("objection_id"), str)
+        ] if isinstance(raw_objections, list) else []
+        self.batches.append(objection_ids)
+        if len(self.batches) == 1:
+            structured = {
+                "proposed_patches": [],
+                "evidence_refs": [evidence.model_dump(mode="json")],
+                "delegations": [],
+                "unknowns": [],
+                "rationale": "The first resolver batch made no transition.",
+                "resolved_objection_ids": [],
+                "accepted_objection_ids": [],
+                "partially_accepted_objection_ids": [],
+                "rejected_objection_ids": [],
+                "objection_resolutions": [],
+            }
+        else:
+            structured = {
+                "proposed_patches": [],
+                "evidence_refs": [evidence.model_dump(mode="json")],
+                "delegations": [],
+                "unknowns": [],
+                "rationale": "The next resolver batch resolved its objections.",
+                "resolved_objection_ids": objection_ids,
+                "accepted_objection_ids": [],
+                "partially_accepted_objection_ids": [],
+                "rejected_objection_ids": [],
+                "objection_resolutions": [
+                    {
+                        "objection_id": objection_id,
+                        "decision": "resolved",
+                        "resolution_note": "Resolved after stalled sibling batch.",
+                        "changed_paths": ["expectation_unit.document"],
+                        "evidence_refs": [evidence.model_dump(mode="json")],
+                    }
+                    for objection_id in objection_ids
+                ],
+            }
+        return AgentResult(
+            task_id=task.task_id,
+            agent_name=task.agent_name,
+            status=ResultStatus.SUCCEEDED,
+            payload={"runtime": "maf", "structured": structured},
+            evidence_refs=[evidence],
+        )
+
+
+def test_objection_resolver_continues_after_one_batch_stalls() -> None:
+    runner = StalledFirstObjectionBatchRunner()
+    workflow = BlackboardInitializationWorkflow(
+        runner=runner,
+        execution_mode="agent_runner",
+    )
+    run = workflow.blackboard.start_run("NVDA", AgentName.SYSTEM)
+    checkpoint = WorkflowCheckpoint(run_id=run.run_id, ticker="NVDA")
+    evidence = EvidenceRef(
+        evidence_id=new_id("evidence"),
+        source_type=EvidenceSourceType.AGENT_OUTPUT,
+        source_id="test:resolver-continues",
+        title="Resolver continue test evidence",
+        summary="Objection evidence for resolver continuation test.",
+        confidence=0.8,
+        citation_scope="test.objection_resolution",
+    )
+    target = BlackboardTarget(
+        document_type=DocumentType.EXPECTATION_UNIT,
+        ticker="NVDA",
+        expectation_id="exp_mock_core",
+        field_path="realized_facts",
+    )
+    for index in range(4):
+        workflow.blackboard.create_objection(
+            run.run_id,
+            Objection(
+                objection_id=f"obj_batch_{index}",
+                source_agent=AgentName.C1_FUNDAMENTAL_RESEARCH,
+                target=target,
+                severity=ObjectionSeverity.BLOCKING,
+                reason=f"Batch continuation objection {index}.",
+                evidence_refs=[evidence],
+                taxonomy=f"batch_continuation_{index}",
+                target_path="realized_facts",
+            ),
+        )
+
+    try:
+        workflow._resolve_blockers(
+            checkpoint,
+            WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS,
+        )
+    except WorkflowContractError as exc:
+        assert "left blockers unresolved" in str(exc)
+    else:
+        raise AssertionError("Expected unresolved stalled objections to keep blocking.")
+
+    assert runner.batches == [
+        ["obj_batch_0", "obj_batch_1", "obj_batch_2"],
+        ["obj_batch_3"],
+    ]
+    objections_by_id = {
+        objection.objection_id: objection
+        for objection in workflow.blackboard.get_run(run.run_id).objections
+    }
+    assert objections_by_id["obj_batch_3"].is_unresolved is False
+    assert objections_by_id["obj_batch_0"].is_unresolved is True

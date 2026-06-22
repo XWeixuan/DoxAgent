@@ -4823,9 +4823,17 @@ class BlackboardInitializationWorkflow:
             objection for objection in run.objections if objection.is_unresolved
         ]
         batch_index = 0
+        stalled_objection_ids: set[str] = set()
         while unresolved_objections:
+            pending_resolution_objections = [
+                objection
+                for objection in unresolved_objections
+                if objection.objection_id not in stalled_objection_ids
+            ]
+            if not pending_resolution_objections:
+                break
             batch_index += 1
-            batch = self._next_objection_resolution_batch(unresolved_objections)
+            batch = self._next_objection_resolution_batch(pending_resolution_objections)
             batch_ids = {objection.objection_id for objection in batch}
             result = self._run_agent(
                 checkpoint,
@@ -4860,7 +4868,7 @@ class BlackboardInitializationWorkflow:
                 if objection.objection_id in batch_ids
             }
             if unresolved_batch_ids == batch_ids:
-                break
+                stalled_objection_ids.update(batch_ids)
 
         self._complete_o1_revision_delegations(checkpoint)
         run = self.blackboard.get_run(checkpoint.run_id)
@@ -5567,6 +5575,8 @@ class BlackboardInitializationWorkflow:
                 raise WorkflowContractError(
                     "O1 revised an expectation patch that is not pending review."
                 )
+            if expectation_id in self._numeric_sanity_revision_targets(checkpoint, result):
+                revision = self._sanitize_numeric_sanity_revision(checkpoint, revision)
             pending[index_by_expectation_id[expectation_id]] = revision
         return pending
 
@@ -5576,6 +5586,141 @@ class BlackboardInitializationWorkflow:
             for patch in result.proposed_patches
             if patch.target.document_type is DocumentType.EXPECTATION_UNIT
         ]
+
+    def _numeric_sanity_revision_targets(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        result: AgentResult,
+    ) -> set[str]:
+        payload = result.payload.get("structured")
+        if not isinstance(payload, dict):
+            payload = result.payload
+        decisions = self._objection_resolution_decisions(payload)
+        accepted_ids = {
+            item.objection_id
+            for item in decisions
+            if item.decision in {"accepted", "partially_accepted"}
+        }
+        accepted_ids.update(self._payload_string_list(payload, "accepted_objection_ids"))
+        accepted_ids.update(
+            self._payload_string_list(payload, "partially_accepted_objection_ids")
+        )
+        if not accepted_ids:
+            return set()
+        run = self.blackboard.get_run(checkpoint.run_id)
+        return {
+            objection.target.expectation_id
+            for objection in run.objections
+            if objection.objection_id in accepted_ids
+            and objection.taxonomy.startswith("numeric_sanity_")
+            and objection.target.expectation_id is not None
+        }
+
+    def _sanitize_numeric_sanity_revision(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        patch: BlackboardPatch,
+    ) -> BlackboardPatch:
+        if patch.target.document_type is not DocumentType.EXPECTATION_UNIT:
+            return patch
+        if not isinstance(patch.after, dict):
+            return patch
+        document = ExpectationUnitDocument.model_validate(patch.after)
+        changed = False
+        realized_facts: list[RealizedFact] = []
+        for fact in document.realized_facts:
+            reaction = fact.price_reaction
+            refs = self._dedupe_evidence_refs(
+                [*fact.evidence_refs, *reaction.evidence_refs, *patch.evidence_refs]
+            )
+            fact_text = " ".join(
+                [
+                    fact.description,
+                    reaction.price_change,
+                    reaction.price_pattern,
+                    reaction.interpretation,
+                ]
+            )
+            unsupported_market = (
+                self._contains_market_numeric_claim(fact_text)
+                and not self._has_source_appropriate_numeric_evidence(
+                    refs,
+                    category="market_data",
+                )
+            )
+            unsupported_fundamental = (
+                self._contains_fundamental_numeric_claim(fact_text)
+                and not self._has_source_appropriate_numeric_evidence(
+                    refs,
+                    category="fundamental_data",
+                )
+            )
+            if unsupported_market:
+                reaction = PriceReaction(
+                    price_change=(
+                        "仅保留定性市场反应；缺少市场数据验证前，精确股价、市值、"
+                        "成交量和涨跌幅数字已移除。"
+                    ),
+                    price_pattern="定性市场反应，等待市场数据复核",
+                    interpretation=(
+                        "在附加 OHLCV、quote 或 vendor market data 前，不得将该字段"
+                        "作为量化 price-in 证据。"
+                    ),
+                    evidence_refs=refs or reaction.evidence_refs,
+                )
+            if unsupported_market or unsupported_fundamental:
+                fact = fact.model_copy(
+                    update={
+                        "description": (
+                            "该已兑现事实仅保留为定性证据；缺少 source-appropriate "
+                            "evidence 的精确市场或基本面数字已移除，等待复核。"
+                        ),
+                        "price_reaction": reaction,
+                    },
+                    deep=True,
+                )
+                changed = True
+            realized_facts.append(fact)
+        if not changed:
+            return patch
+        summary = document.realized_facts_summary
+        if (
+            self._contains_market_numeric_claim(summary)
+            or self._contains_fundamental_numeric_claim(summary)
+        ):
+            summary = (
+                "已兑现事实在移除无充分证据的精确数字后仅作定性保留；恢复量化表述前"
+                "必须补充 source-appropriate market 或 fundamental evidence。"
+            )
+        document = document.model_copy(
+            update={
+                "realized_facts": realized_facts,
+                "realized_facts_summary": summary,
+            },
+            deep=True,
+        )
+        after = document.model_dump(mode="json")
+        patch_refs = self._dedupe_evidence_refs(
+            [
+                *patch.evidence_refs,
+                *self._payload_evidence_refs(after),
+            ]
+        )
+        rationale = str(patch.rationale or "").strip()
+        fallback_note = (
+            "Numeric sanity fallback removed unsupported precise numeric claims from "
+            "accepted O1 revisions."
+        )
+        if fallback_note not in rationale:
+            rationale = f"{rationale} {fallback_note}".strip()
+        return patch.model_copy(
+            update={
+                "after": after,
+                "evidence_refs": patch_refs,
+                "rationale": rationale,
+            },
+            deep=True,
+        )
 
     def _payload_string_list(self, payload: dict[str, Any], key: str) -> list[str]:
         raw = payload.get(key, [])

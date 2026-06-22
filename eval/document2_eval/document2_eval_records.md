@@ -500,3 +500,140 @@
   - Added per-outcome expectation-detail acceptance/caching during parallel fan-out while preserving all-or-nothing final pending-patch merge.
   - Added O1 detail completion budget limiting `doxa_get_narrative_report` to one successful call per shell and requiring explicit unknowns on evidence gaps.
   - Added targeted regression assertions for the new detail budget and retained existing parallel detail merge/resume/retry tests.
+
+## 2026-06-22 19:42 - MU - Document 2 loop 1 retest3 blocked - ResolveObjectionsAndDelegations
+
+### Test Info
+- Git state: cloud deployed commit `1d0df444ba965502c23805fbc85e08072e3e5c58` (`fix: persist document2 detail fanout outcomes`).
+- Source run_id: `run_58f5afce8b9441ca804a2cde1ad9aec8`
+- Source state: Document 1-only source; stable `global_research` only, no stable `expectation_unit`, no source pending patches, no source blockers.
+- Execution mode: `clone`
+- Command: `docker compose run --rm -e DOXAGENT_RUN_REAL_API_TESTS=1 -e DOXAGENT_STORAGE_MODE=postgres debug-viewer python eval/run_document2_expectation_units_smoke.py run_58f5afce8b9441ca804a2cde1ad9aec8 --mode clone --stop-after PromoteExpectationToBeliefState --export-brief-state`
+- Environment: cloud server `doxagent-hk`, `/root/doxagent`, Docker image built from `1d0df44`.
+- Execution run_id: `run_0afa34a2e67d4997abddd2678583ec70`
+- Stop after: `PromoteExpectationToBeliefState`
+- Brief State JSON: remote export path `eval/brief_state_exports/run_0afa34a2e67d4997abddd2678583ec70.json`
+- Remote log: `/root/doxagent/.eval_runs/document2-loop1-retest3-20260622T184738+0800.log`
+- LangSmith MCP query: project `DoxAgent`; visible traces include `O1.GenerateExpectationDetails`, `A1/C1/C3/O4.ReviewExpectationFields`, and `O1.ResolveObjectionsAndDelegations.LOOP1`.
+- Built-in hard validators: overall `failed`; `evidence_reference_integrity=passed`, `langsmith_trajectory_tool_boundary=failed` with `workflow_trace_not_completed` at latest checkpoint, `commit_log_state_mutation_consistency=passed`.
+- Evaluator: Codex, strict diagnostic retest3.
+
+### Optimization Hypothesis
+- Previous blocker movement: the per-shell detail persistence fix worked. Retest3 passed `GenerateExpectationDetails`; completed detail outputs for `expectation_mu_001` and `expectation_mu_002` were persisted before the downstream block, and field review ran.
+- New blocker: `ResolveObjectionsAndDelegations` ran once and produced revised patches, but four blocking numeric sanity objections remained open or unresolved. The revised patches still contained precise fundamental and market numbers supported only by DoxAtlas narrative or other non-source-appropriate evidence.
+- Root hypothesis 1: O1 resolver understood the instruction at a policy level but failed to execute the field-level deletion. Its LangSmith output says it downgraded false precision, while the revised payload still kept exact revenue, margin, price, market-cap, percentage, and event-date claims.
+- Root hypothesis 2: the resolver batch loop stops after a fully stalled batch (`unresolved_batch_ids == batch_ids`). In this run the first batch had three objections and all remained unresolved after numeric-sanity revalidation, so the loop exited before processing the fourth blocker.
+- Root hypothesis 3: numeric sanity revalidation is correctly strict, but it currently only reopens blockers after accepting a bad revision. The workflow needs a deterministic safety layer that removes unsupported numeric precision from accepted or partially accepted numeric-sanity revisions before revalidation, without fabricating new evidence or weakening the validator.
+- Expected hard-gate movement: next retest should process all blocker batches and either close numeric_sanity blockers through truly non-numeric revisions or leave a fully audited residual risk. `D2-HG08`, `D2-HG09`, and built-in `langsmith_trajectory_tool_boundary` are the primary acceptance gates.
+- Expected rubric movement: `D2-R03`, `D2-R04`, `D2-R07`, `D2-R09`, and `D2-R10` should improve if unsupported precise numbers are removed and promotion can proceed with auditable qualitative facts.
+- Risk: deterministic sanitization can reduce investment specificity. This is acceptable only when the alternative is unsupported numeric precision; source-appropriate market/fundamental evidence must still preserve exact numbers.
+
+### Proposed Modification Plan
+- Change 1: Update `_resolve_blockers` so a stalled batch does not stop the whole resolver while there are unattempted unresolved objections. Keep the infinite-loop guard, but continue with unresolved objections outside the stalled batch.
+- Change 2: Add a deterministic numeric-sanity revision fallback for accepted or partially accepted numeric_sanity objections. If a revised expectation patch still has precise unsupported numeric market or fundamental claims, replace only the affected `realized_facts` and `price_reaction` wording with qualitative, evidence-gap-aware text.
+- Change 3: Preserve source-appropriate evidence behavior. If `MARKET_DATA`, `FACT_CHECK`, SEC/companyfacts/filing/financial-statement evidence exists, do not sanitize the precise claim.
+- Change 4: Keep revalidation active after sanitization. If unsupported precision remains, the objection must still reopen and block promotion.
+- Change 5: Add regression tests for the deterministic fallback and for continued processing after one stalled blocker batch.
+- Files to touch: `src/doxagent/workflows/initialization.py`, `tests/test_phase5_initialization_workflow.py`, `changelog`, `eval/document2_eval/document2_eval_records.md`.
+- Retest requirement: commit/push, cloud `git pull --ff-only`, rebuild `debug-viewer`, rerun the same source and same `--stop-after PromoteExpectationToBeliefState` in cloud-only mode.
+
+### Scope Decision
+- Eval mode: `promote`
+- Can judge stable expectation_unit: no
+- Can judge improvement: yes, for detail fan-out persistence and downstream field-review reach.
+- Cannot claim: stable `expectation_unit`, resolved blockers, promotion quality, or overall quality-target success.
+
+### Hard Gates
+| Gate | Result | Evidence | Notes |
+| --- | --- | --- | --- |
+| D2-HG01 | pass | Same verified Document 1-only source run. | Valid seed retained. |
+| D2-HG02 | fail | Latest checkpoint `status=blocked`, `next_node=ResolveObjectionsAndDelegations`; target `PromoteExpectationToBeliefState` not reached. | New blocker moved downstream. |
+| D2-HG03 | pass | Construction, A1 review, and construction resolver completed. | Shell path remains valid. |
+| D2-HG04 | pass | `GenerateExpectationDetails` completed and produced 2 pending expectation patches. | Detail completeness improved, but not yet stable. |
+| D2-HG05 | fail | Evidence refs are hydrated, but critical numeric claims are supported by narrative-level evidence rather than source-appropriate market or fundamental data. | Built-in evidence ref integrity passes, content evidence sufficiency fails. |
+| D2-HG06 | fail | Numeric sanity blockers cite unsupported precise price, market cap, revenue, margin, and date claims. | Price-in reasoning not acceptable. |
+| D2-HG07 | pass | A1/C1/C3/O4 field review ran and produced blocking findings. | Review pressure improved and caught real defects. |
+| D2-HG08 | fail | Resolver ran once but left four numeric_sanity blockers open or unresolved. | Accepted revisions did not actually fix claims. |
+| D2-HG09 | fail | Stable `expectation_unit` count is 0; 2 pending patches remain blocked. | No promotion. |
+| D2-HG10 | pass | LangSmith traces are available for detail, field-review, and resolver loops. | Remote process is auditable. |
+| D2-HG11 | pass | Remote log, checkpoint, Working Memory, and hard validators record the block. | Failure is a business-audit fact. |
+| D2-HG12 | fail | Field-review inputs were very large (`C1` about 51k tokens; `O4` about 74k tokens) and resolver output was large while still incomplete. | Context pressure remains material. |
+| D2-HG13 | fail | O1 claimed to remove false precision but revised patches retained it; one blocker batch also prevented the fourth objection from being processed. | Memory/revision continuity failed. |
+
+### Built-in Hard Validators
+| Validator | Result | Evidence | Notes |
+| --- | --- | --- | --- |
+| evidence_reference_integrity | pass | Cloud DebugRunQueryService hard validator. | Ref existence and hydration pass. |
+| langsmith_trajectory_tool_boundary | fail | Finding `workflow_trace_not_completed` at `latest_checkpoint.status`. | Correctly blocks acceptance because the workflow is still blocked. |
+| commit_log_state_mutation_consistency | pass | Cloud DebugRunQueryService hard validator. | Stable state mutations are explained by commit log. |
+
+### Rubrics
+| Rubric | Score | Reason |
+| --- | ---: | --- |
+| D2-R01 | 3 | Source handoff is valid and detail generation uses Document 1 context, but no stable Document 2 artifact exists. |
+| D2-R02 | 3 | Expectation theses reached detail and review, but unsupported numeric wording prevents reliable downstream use. |
+| D2-R03 | 3 | Realized facts exist and are specific, but specificity is partly unsafe because precise numeric claims lack proper evidence. |
+| D2-R04 | 2 | Price-in reasoning is visibly attempted, yet exact price/market-cap/return claims are narrative-only and therefore not acceptable. |
+| D2-R05 | 3 | Key variables are present, but their current-state precision is not yet proven stable or source-appropriate. |
+| D2-R06 | 3 | Event monitoring direction exists and is more complete than retest2, but it is not promotable. |
+| D2-R07 | 3 | Evidence refs are traceable, but evidence class does not match several numeric claims. |
+| D2-R08 | 4 | Field review meaningfully caught numeric-evidence risks across roles. Score 4 is justified by real blockers, not by final quality. |
+| D2-R09 | 2 | Resolver lifecycle exists, but accepted revisions failed revalidation and left blockers unresolved. |
+| D2-R10 | 1 | No stable `expectation_unit` and promotion remains blocked. |
+| D2-R11 | 3 | Tool trajectory is auditable and no scope-boundary regression is visible, but context/tool efficiency is still uneven. |
+| D2-R12 | 2 | The system detects unsupported precision, but O1 still rewrites weak evidence into over-specific claims. |
+| D2-R13 | 4 | DB, remote log, hard validators, Working Memory, and LangSmith reproduce the failure chain. |
+| D2-R14 | 4 | Failure category and modification plan are specific, enforcement-layer-oriented, and retestable. |
+
+### Score Summary
+- Core Blackboard quality rubrics average (`D2-R01`-`D2-R10`): 2.7
+- Other rubrics with score <= 2: `D2-R12`
+- Quality target met: no
+- Accept modification so far: no, must modify and retest.
+
+### Document 2 State Summary
+- Pending expectation patches: 2
+- Stable expectation_unit count: 0
+- Open/unresolved objections: 4
+- Blocking delegations: 0
+- Latest checkpoint: `blocked`, `next_node=ResolveObjectionsAndDelegations`
+- Open blockers:
+  - `obj_numeric_sanity_expectation_mu_001_fundamental_data`
+  - `obj_numeric_sanity_expectation_mu_001_market_data`
+  - `obj_numeric_sanity_expectation_mu_002_fundamental_data`
+  - `obj_numeric_sanity_expectation_mu_002_market_data`
+- Working Memory entries of interest: O1 detail results for two expectation patches, A1/C1/C3/O4 field reviews, and O1 `objection_resolution_result`.
+- Script error: `ResolveObjectionsAndDelegations left blockers unresolved.`
+
+### Failure Categories
+- category: `objection_resolution`
+  - issue: O1 accepted/partially accepted numeric_sanity blockers but revised patches still failed deterministic numeric revalidation.
+  - evidence: four unresolved/open numeric_sanity objections after resolver; LangSmith `O1.ResolveObjectionsAndDelegations.LOOP1` says it removed false precision but output retained precise numbers.
+  - severity: high/blocking
+  - suspected root cause: prompt-only resolver guidance is insufficient for field-level numeric deletion.
+- category: `price_in_reasoning`
+  - issue: price and market-cap claims are written with precision unsupported by market-data evidence.
+  - evidence: `numeric_sanity_market_data` blockers for `expectation_mu_001` and `expectation_mu_002`.
+  - severity: high
+  - suspected root cause: detail/revision paths allow narrative-level sources to back precise market reaction language.
+- category: `evidence_integrity`
+  - issue: refs exist and hydrate, but evidence class is too weak for fundamental/market numeric claims.
+  - evidence: built-in `evidence_reference_integrity=passed` while semantic numeric sanity fails.
+  - severity: high
+  - suspected root cause: hard validator covers ref existence, not source-appropriate sufficiency.
+- category: `context_management`
+  - issue: field-review and resolver contexts are large and produce high-token outputs; O1 processed only the first batch and still failed.
+  - evidence: LangSmith token metadata for C1/O4 reviews and O1 resolver.
+  - severity: medium/high
+  - suspected root cause: compact summaries still allow large rewritten patches and low-signal numeric repetition.
+- category: `promotion_blocker`
+  - issue: pending patches cannot pass `can_promote_target` while blockers remain.
+  - evidence: no stable expectation_unit, pending patch count 2, four blockers.
+  - severity: high
+  - suspected root cause: resolver/revalidation mismatch.
+
+### Actual Modification
+- Implemented after this evaluation entry:
+  - Continue objection resolution across remaining unresolved batches when one processed batch stalls after revalidation.
+  - Add deterministic numeric-sanity fallback sanitization for accepted or partially accepted O1 revisions that still contain unsupported precise numeric claims.
+  - Keep numeric-sanity revalidation after sanitization so remaining unsafe claims still reopen blockers.
