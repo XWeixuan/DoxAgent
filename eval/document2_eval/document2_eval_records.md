@@ -1449,3 +1449,121 @@
   - Changed A1 `ReviewExpectationFields` allowed tool override to `[]`.
   - Updated A1 field-review instruction to context-only review over pending patches, attached evidence refs, and existing task context.
   - Added regression assertions that A1 field-review permissions and tool requirement lists are empty.
+
+## 2026-06-23 - Loop 1 Retest10 Final Stop After A1 Context-Only Review Fix
+
+### Test Info
+- Git state: cloud deployed commit `a48d1ef` (`fix: make document2 a1 field review context only`).
+- Source run_id: `run_58f5afce8b9441ca804a2cde1ad9aec8`.
+- Source state: Document 1-only source; stable `global_research`; no stable `expectation_unit`.
+- Execution mode: `clone`.
+- Command: `docker compose run --rm -e DOXAGENT_RUN_REAL_API_TESTS=1 -e DOXAGENT_STORAGE_MODE=postgres debug-viewer python eval/run_document2_expectation_units_smoke.py run_58f5afce8b9441ca804a2cde1ad9aec8 --mode clone --stop-after PromoteExpectationToBeliefState --export-brief-state`.
+- Environment: cloud server `doxagent-hk`, `/root/doxagent`, Docker image built from `a48d1ef`.
+- Execution run_id: `run_54067415d54e42f5a75cb11d97cd5fbd`.
+- Remote log: `/root/doxagent/.eval_runs/document2-loop1-retest10-20260623T020224+0800.log`.
+- Script output: `status=blocked`; `next_node=GenerateExpectationDetails`; completed nodes through `ResolveExpectationConstruction`; `stable_document_types=["global_research"]`; `pending_patch_count=0`; `working_memory_count=9`; `commit_count=1`; `unresolved_objection_count=0`; `blocking_delegation_count=0`; `expectation_unit_count=0`.
+- Error: `parallel_agent_timeout: GenerateExpectationDetails/O1 did not return within 1800 seconds.`
+- Cloud Brief State export rerun in `debug-viewer` at `2026-06-22T18:51:02Z`: latest checkpoint `blocked`, `next_node=GenerateExpectationDetails`, `checkpoint_count=11`, `stable_document_types=["global_research"]`, `expectation_units=[]`, `working_memory_entries=9`, `commit_log_entries=1`, `objections=0`, `delegations=0`, `evidence_refs=57`.
+- Built-in hard validators: overall `failed`; `evidence_reference_integrity=passed`, `langsmith_trajectory_tool_boundary=failed` (`workflow_trace_not_completed`), `commit_log_state_mutation_consistency=passed`.
+- Evaluator: Codex, strict blocked-run diagnostic retest10.
+
+### Optimization Hypothesis
+- Retest9's A1 context-only field-review fix removed the previously identified prompt/permission conflict, but retest10 did not reach `ReviewExpectationFields`; it exposed a remaining earlier blocker in `GenerateExpectationDetails/O1`.
+- The run generated auditable construction shells and entered detail expansion, but one O1 detail worker did not return within the 1800 second parallel-agent deadline. Because detail generation is still a prerequisite for field review, resolver, and promotion, the workflow correctly stopped without promoting unstable Document2 content.
+- The likely quality issue is not a judge/rubric looseness problem; it is a runtime and workflow-shaping issue: detail generation still permits a long-tail O1 worker to hold the whole node hostage after sibling work has produced useful pending detail content.
+- Expected next improvement if work continued: add stronger per-expectation detail budgets or resumable/quorum-style detail checkpointing so completed detail shells are preserved while the stuck expectation is either retried narrowly or converted into an explicit blocking objection before field review.
+- User instruction supersedes further optimization in this turn: after Retest10, stop the loop and report the 10-run result summary. Therefore no new prompt/skill/workflow modification is applied after this record.
+
+### Proposed Modification Plan
+- Deferred Change 1: Add per-expectation identity and last-active audit fields to `GenerateExpectationDetails` parallel tasks so the exact stuck expectation shell is visible in DB and logs, not only as `GenerateExpectationDetails/O1`.
+- Deferred Change 2: Enforce a smaller O1 detail tool/model budget per expectation shell and convert budget exhaustion into a structured failed detail patch with evidence and reason, instead of waiting for the global 1800 second node timeout.
+- Deferred Change 3: Persist completed detail patches with explicit `detail_generation_status` and allow a same-node resume to retry only missing/failed expectation ids.
+- Deferred Change 4: Add a regression smoke assertion that a timed-out detail worker cannot erase or hide sibling detail-worker completion evidence.
+- Retest requirement if resumed later: commit/push, cloud `git pull --ff-only`, rebuild `debug-viewer`, rerun the same Document 1-only source and same `--stop-after PromoteExpectationToBeliefState`.
+
+### Scope Decision
+- Eval mode: `blocked`.
+- Can judge stable expectation_unit: no, no stable `expectation_unit` documents were promoted.
+- Can judge workflow improvement: partially; retest10 moved the observed blocker from A1 field review back to O1 detail generation, proving the retest exercised the cloud workflow and surfaced the next real bottleneck.
+- Cannot claim: quality target success, final Blackboard readiness, or stable downstream monitoring usability.
+- Stop condition used: explicit user instruction to finish Retest10 and end/report, not quality-target success.
+
+### Hard Gates
+| Gate | Result | Evidence | Notes |
+| --- | --- | --- | --- |
+| D2-HG01 | pass | Same Document 1-only source `run_58f5afce8b9441ca804a2cde1ad9aec8`; clone mode. | Valid seed retained. |
+| D2-HG02 | fail | Cloud log finished `status=blocked`; `next_node=GenerateExpectationDetails`; O1 parallel timeout. | Did not reach stop-after node. |
+| D2-HG03 | pass | Construction, construction review, and construction resolution completed. | Shell-level flow advanced before detail blocker. |
+| D2-HG04 | fail | `expectation_unit_count=0`; Brief State `expectation_units=[]`. | No stable Document2 output. |
+| D2-HG05 | pass | Built-in evidence reference validator passed. | Reached artifacts have valid refs. |
+| D2-HG06 | fail | No stable price-reaction fields. | Detail content did not reach stable review/promotion. |
+| D2-HG07 | fail | Field review never ran. | Blocked earlier at O1 detail generation. |
+| D2-HG08 | fail | Resolver for detail objections never ran. | No review/resolution cycle after details. |
+| D2-HG09 | fail | No promotion. | No stable expectation units. |
+| D2-HG10 | fail | Built-in trajectory validator failed with `workflow_trace_not_completed`. | Correct blocked-run rejection. |
+| D2-HG11 | pass | Remote log and cloud Brief State reproduce the same blocker. | Auditable. |
+| D2-HG12 | fail | No final downstream-usable Blackboard content. | Usability target unmet. |
+| D2-HG13 | fail | O1 detail timeout prevents continuity into field review/resolver/promotion. | Needs next-loop workflow hardening if resumed. |
+
+### Built-in Hard Validators
+| Validator | Result | Evidence | Notes |
+| --- | --- | --- | --- |
+| evidence_reference_integrity | pass | Cloud `DebugRunQueryService`; `status=passed`, 0 errors. | Reached refs are hydrated. |
+| langsmith_trajectory_tool_boundary | fail | Cloud `DebugRunQueryService`; `workflow_trace_not_completed`, status `blocked`, next node `GenerateExpectationDetails`. | Expected hard-gate failure for blocked run. |
+| commit_log_state_mutation_consistency | pass | Cloud `DebugRunQueryService`; `status=passed`, 0 errors. | Limited reached state is consistent. |
+
+### Rubrics
+| Rubric | Score | Reason |
+| --- | ---: | --- |
+| D2-R01 | 4 | Document 1-only source and clone handoff remain correct and auditable. |
+| D2-R02 | 2 | Expectation shells and partial detail work exist, but no stable expectation unit is promoted. |
+| D2-R03 | 2 | Realized-fact content appears in transient detail patches, but it is unreviewed and not stable. |
+| D2-R04 | 2 | Some price-in language appears in transient details, but no stable price reaction survives review/promotion. |
+| D2-R05 | 2 | Key variables appear in transient details, but no stable variable set is available. |
+| D2-R06 | 1 | No stable monitoring or downstream action policy exists. |
+| D2-R07 | 2 | Evidence refs pass integrity, but source sufficiency for final Document2 cannot be judged. |
+| D2-R08 | 1 | Field review did not run. |
+| D2-R09 | 1 | Detail-review objection resolution did not run. |
+| D2-R10 | 1 | Promotion did not run. |
+| D2-R11 | 2 | Failure is reproducible, but the workflow trace is not closed. |
+| D2-R12 | 1 | No stable uncertainty discipline exists in promoted Document2 content. |
+| D2-R13 | 3 | Blocked-run artifacts are reproducible across remote log and cloud Brief State. |
+| D2-R14 | 4 | The next optimization hypothesis is concrete and retestable, though not executed because of the stop instruction. |
+
+### Score Summary
+- Core Blackboard quality rubrics average (`D2-R01`-`D2-R10`): 1.8.
+- Other rubrics with score <= 2: `D2-R11`, `D2-R12`.
+- Quality target met: no.
+- Accept modification so far: no final quality acceptance; retest10 confirms the next blocker.
+
+### Document 2 State Summary
+- Stable expectation_unit count: 0.
+- Stable document types: `global_research` only.
+- Latest checkpoint: `blocked`, `next_node=GenerateExpectationDetails`.
+- Completed nodes: `StartTickerInitialization`, `BuildGlobalResearch`, `ReviewGlobalResearch`, `GenerateExpectationConstruction`, `ReviewExpectationConstruction`, `ResolveExpectationConstruction`.
+- Working Memory count: 9.
+- Commit count: 1.
+- Objections/delegations: 0/0 at latest checkpoint.
+- Evidence refs: 57.
+
+### Failure Categories
+- category: `o1_detail_parallel_timeout`
+  - issue: O1 detail generation did not return within the 1800 second parallel-agent deadline.
+  - evidence: cloud error `parallel_agent_timeout: GenerateExpectationDetails/O1 did not return within 1800 seconds`.
+  - severity: blocking/runtime.
+  - suspected root cause: one detail-generation worker can still monopolize the node after sibling detail work has produced useful partial content.
+- category: `no_stable_document2_output`
+  - issue: no stable `expectation_unit`, monitoring policy, or monitoring config was promoted.
+  - evidence: Brief State `expectation_units=[]`; stable docs only include `global_research`.
+  - severity: quality-blocking.
+  - suspected root cause: detail generation is a hard prerequisite for field review, resolver, and promotion.
+- category: `trajectory_hard_gate_failure`
+  - issue: built-in trajectory validator failed because the run ended blocked.
+  - evidence: hard validator `langsmith_trajectory_tool_boundary=failed` with `workflow_trace_not_completed`.
+  - severity: hard-gate.
+  - suspected root cause: expected consequence of the O1 detail timeout, not validator looseness.
+
+### Actual Modification
+- No code/prompt/workflow modification is applied after retest10.
+- Reason: user explicitly instructed to finish Retest10, end the eval loop, cancel the 15-minute automation, switch to scheduled wakeup, and report the 10-run results.
+- Retest10's proposed next modification plan is recorded above for future resumption, but intentionally deferred.
