@@ -221,3 +221,4 @@
 - Added the Document 3 review/resolve lifecycle so Monitoring Config is staged until C1/C3 review and O2 resolution, Monitoring Execution Policy is staged until O2 review and O4 resolution, and reviewed config application runs through workflow-owned Message Bus apply with runtime audit evidence.
 - Added a Document 3-only real smoke launcher that clones a historical Document 1/2 run, clears prior Document 3 artifacts, resumes at GenerateKnownEvents, and verifies final Known Events, Monitoring Config, Monitoring Policy, and applied_config_version output.
 - Fixed the Document 3 smoke launcher to read applied_config_version from Blackboard's stored `{document: ...}` belief-state wrapper when validating completed smoke runs.
+- Shortened Postgres Blackboard read/mutate transaction lifetimes so Document2 obstruction resolution cannot leave `working_memory_entries` reads idle in transaction while business logic continues.

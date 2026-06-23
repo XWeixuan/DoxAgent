@@ -1976,3 +1976,112 @@ Every failed or partial hard gate must be classified before writing the modifica
   - Added `test_promotion_rejects_numeric_sanity_placeholder_text` in `tests/test_phase5_initialization_workflow.py`.
   - Verified locally with `uv run pytest tests/test_phase5_initialization_workflow.py -q` and `uv run ruff check src/doxagent/workflows/initialization.py tests/test_phase5_initialization_workflow.py --select B,E,F,I`.
 - Next smoke test: not launched, per user instruction.
+
+## Loop 1 Retest14 - blocked: read transaction held during objection resolution
+
+### Run Metadata
+- Date: 2026-06-24.
+- Source run: `run_58f5afce8b9441ca804a2cde1ad9aec8` (Document 1-only source, unchanged).
+- Execution run: `run_47891dfef5d24a09b440a9b5d7e3aea8`.
+- Deployed commit: `28505b2`.
+- Remote cwd: `/root/doxagent`.
+- Remote log: `.eval_runs/document2-loop1-retest14-20260624T010619+0800.log`.
+- Cloud command: `docker compose -f docker-compose.yml run --rm -e DOXAGENT_RUN_REAL_API_TESTS=1 -e DOXAGENT_STORAGE_MODE=postgres debug-viewer python eval/run_document2_expectation_units_smoke.py run_58f5afce8b9441ca804a2cde1ad9aec8 --mode clone --stop-after PromoteExpectationToBeliefState --export-brief-state`.
+
+### Status
+- Result: `runtime_blocked`.
+- The run did not reach `PromoteExpectationToBeliefState`; no valid final Document2 Brief State was exported.
+- Latest checkpoint at blocker detection: `status=running`, `next_node=ResolveObjectionsAndDelegations`, `completed_count=8`, `completed_tail=[StartTickerInitialization, BuildGlobalResearch, ReviewGlobalResearch, GenerateExpectationConstruction, ReviewExpectationConstruction, ResolveExpectationConstruction, GenerateExpectationDetails, ReviewExpectationFields]`.
+- LangSmith evidence: `O1.ResolveObjectionsAndDelegations.LOOP1` and `LOOP2` both completed successfully for this run; no later root run appeared before the stall.
+- DB evidence: `pg_stat_activity` showed `idle in transaction` / `ClientRead` for about `810s` on `select entry_json from doxagent.working_memory_entries where run_id = $1 order by created_at asc, entry_json->>'entry_id' asc`.
+- Operational action: stopped stale one-off container `477a49beb952` to release the pooler transaction.
+
+### Built-in Hard Validators
+| Validator | Result | Evidence | Notes |
+| --- | --- | --- | --- |
+| evidence_reference_integrity | blocked | No terminal Brief State / promoted expectation units. | A blocked run cannot claim evidence integrity pass. |
+| langsmith_trajectory_tool_boundary | blocked | LangSmith exists through `ResolveObjectionsAndDelegations.LOOP2`, but the workflow did not checkpoint beyond the node. | Traceability is partial and useful for debugging, not a validator pass. |
+| commit_log_state_mutation_consistency | blocked | No terminal promotion/commit state after the resolver node. | Commit consistency cannot be asserted for the intended Document2 output. |
+
+### Hard Gate Failure Root Cause Matrix
+| Gate | Result | failure_kind | Failure point | Root cause / fix target |
+| --- | --- | --- | --- | --- |
+| D2-HG01 | pass | none | Source handoff | Run used Document 1-only source `run_58f5afce8b9441ca804a2cde1ad9aec8`. |
+| D2-HG02 | fail | runtime_blocker | Stop-after path | Workflow did not reach `PromoteExpectationToBeliefState`. |
+| D2-HG03 | fail | incomplete_lifecycle | Construction/promotion lifecycle | Construction and review completed, but resolver never checkpointed completion. |
+| D2-HG04 | fail | not_evaluable | Stable expectation detail fields | No final promoted expectation units to inspect. |
+| D2-HG05 | fail | not_evaluable | Evidence refs | No terminal promoted state for structural evidence validation. |
+| D2-HG06 | fail | not_evaluable | Price-in reasoning | No promoted price-in reasoning; resolver stalled before promotion. |
+| D2-HG07 | pass_with_caveat | partial_lifecycle | Field review lifecycle | `ReviewExpectationFields` completed and produced Working Memory pressure, but downstream resolver stalled. |
+| D2-HG08 | fail | direct | Resolver lifecycle | `ResolveObjectionsAndDelegations` LangSmith loops completed, but DB checkpoint stayed on the same node. |
+| D2-HG09 | fail | direct | Promotion lifecycle | No promotion, pending state not terminally cleared. |
+| D2-HG10 | pass_with_caveat | partial_trace | LangSmith/process trace | LangSmith is sufficient to locate the stall, but workflow did not close normally. |
+| D2-HG11 | fail | audit_gap | Final auditability | Debug evidence is strong, but final Blackboard output is absent. |
+| D2-HG12 | fail | context/runtime_pressure | Resolver state reload | The stall happened immediately after resolver LLM completion while reloading/mutating Blackboard state. |
+| D2-HG13 | fail | memory_continuity_blocked | Multi-loop memory continuity | Working Memory could be read structurally, but transaction lifecycle blocked continuation into promotion. |
+
+### Rubrics
+| Rubric | Score | Reason |
+| --- | ---: | --- |
+| D2-R01 | 4 | Source discipline is correct and auditable. |
+| D2-R02 | 1 | No promoted expectation set exists for stable thesis quality judgment. |
+| D2-R03 | 1 | No stable realized-facts output exists. |
+| D2-R04 | 1 | No stable price-in reasoning output exists. |
+| D2-R05 | 1 | No stable key-variable output exists. |
+| D2-R06 | 1 | No stable monitoring triggers exist. |
+| D2-R07 | 1 | Evidence structure cannot be judged on a terminal promoted state. |
+| D2-R08 | 3 | Review pressure was generated and visible, but the run failed before resolution/promotion. |
+| D2-R09 | 1 | Objection resolution did not checkpoint completion. |
+| D2-R10 | 1 | Promotion lifecycle did not complete. |
+| D2-R11 | 3 | LangSmith evidence is useful and points to the blocker, but the trace is not closed. |
+| D2-R12 | 2 | Uncertainty and residual state are not represented in a usable final Blackboard document. |
+| D2-R13 | 4 | Runtime failure is reproducible and backed by run id, cloud log, DB activity, checkpoint state, and LangSmith. |
+| D2-R14 | 5 | The fix target is narrow and testable: shorten Postgres read/mutate transaction lifetimes. |
+
+### Score Summary
+- Core Blackboard quality rubrics average (`D2-R01`-`D2-R10`): 1.5.
+- Other rubrics with score <= 2: `D2-R12`.
+- Quality target met: no.
+- Operational target met: no; the run stalled before promotion.
+
+### Failure Categories
+- category: `postgres_read_transaction_held_during_mutate`
+  - issue: a read of `working_memory_entries` remained `idle in transaction` after the resolver LLM loops completed.
+  - evidence: `pg_stat_activity` showed `ClientRead`, `xact_age_s=810`, last query reading `doxagent.working_memory_entries`.
+  - severity: blocking/workflow-runtime.
+  - suspected root cause: `PostgresBlackboardRepository.mutate()` loaded a full run and executed business mutators inside the same transaction; read-only run loads also opened normal transactions.
+- category: `resolver_completion_not_checkpointed`
+  - issue: O1 resolver loops completed in LangSmith but the workflow checkpoint did not advance beyond `ResolveObjectionsAndDelegations`.
+  - evidence: latest checkpoint stayed `running/ResolveObjectionsAndDelegations`; LangSmith `LOOP2` ended successfully.
+  - severity: hard-gate/direct.
+  - suspected root cause: post-LLM Blackboard reload/mutation held or waited on a transaction instead of closing quickly.
+- category: `quality_eval_blocked_by_runtime`
+  - issue: final Blackboard quality could not be judged because no stable Document2 output was produced.
+  - evidence: no `document2_smoke_finished` event and no terminal Brief State export.
+  - severity: eval-blocking.
+  - suspected root cause: persistence transaction lifecycle, not prompt/rubric looseness.
+
+### Optimization Hypothesis
+- If Postgres read-only Blackboard operations use `autocommit=True`, read queries cannot leave idle transactions open while Python logic continues.
+- If `mutate()` loads the run in a short read connection, closes it, executes the mutator outside any DB transaction, and then opens a short write transaction only for lock-and-replace, resolver completion should no longer stall on `working_memory_entries` reloads.
+- Expected measurable improvement in the next verification smoke:
+  - no `idle in transaction` row remains for the active Document2 run after resolver LLM completion;
+  - checkpoint advances beyond `ResolveObjectionsAndDelegations` or fails with a bounded explicit error;
+  - the smoke can reach `PromoteExpectationToBeliefState` or produce a terminal promotion-quality blocker.
+
+### Proposed Modification Plan
+- Change 1: Add `_read_connection()` for Postgres Blackboard reads and make it call `connect_postgres(..., autocommit=True)`.
+- Change 2: Move pure read operations (`get`, `list_by_ticker`, `list_unresolved_objections`, `list_blocking_delegations`, `summary_counts`) onto `_read_connection()`.
+- Change 3: Refactor `mutate()` so it reads the full run and executes the Python mutator outside the write transaction.
+- Change 4: Add a narrow `_lock_run()` helper so the write transaction still verifies and locks the parent run before replacing children.
+- Change 5: Add tests proving read connections use autocommit and `mutate()` does not hold a transaction while executing the mutator.
+- Retest requirement: push/deploy the fix, rebuild the cloud image, rerun the same Document 1-only smoke once to verify the blocker is gone; after this verification loop, do not launch another smoke test.
+
+### Actual Modification
+- Implemented in this eval loop:
+  - Updated `src/doxagent/blackboard/postgres_repository.py` to use autocommit read connections.
+  - Refactored `PostgresBlackboardRepository.mutate()` so mutators run outside the DB write transaction.
+  - Added `_lock_run()` for short write transaction parent-row locking.
+  - Added regression tests in `tests/test_phase9_persistence.py`.
+  - Added changelog entry for the Document2 Postgres transaction-lifetime fix.
+  - Verified locally with `uv run pytest tests/test_phase5_initialization_workflow.py tests/test_workflow_normalizer.py tests/test_phase9_persistence.py` and `uv run ruff check src/doxagent/blackboard/postgres_repository.py tests/test_phase9_persistence.py src/doxagent/workflows/initialization.py tests/test_phase5_initialization_workflow.py tests/test_workflow_normalizer.py --select B,E,F,I`.

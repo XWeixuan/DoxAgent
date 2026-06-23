@@ -49,7 +49,7 @@ class PostgresBlackboardRepository:
 
     def get(self, run_id: str) -> BlackboardRun:
         def operation() -> BlackboardRun:
-            with self._connection() as conn:
+            with self._read_connection() as conn:
                 return self._get_run(conn, run_id, lock=False)
 
         return self._retry(operation)
@@ -65,7 +65,7 @@ class PostgresBlackboardRepository:
 
     def list_by_ticker(self, ticker: str, *, limit: int = 20) -> list[BlackboardRun]:
         def operation() -> list[BlackboardRun]:
-            with self._connection() as conn:
+            with self._read_connection() as conn:
                 with conn.cursor() as cursor:
                     cursor.execute(
                         """
@@ -84,7 +84,7 @@ class PostgresBlackboardRepository:
 
     def list_unresolved_objections(self, run_id: str) -> list[Objection]:
         def operation() -> list[Objection]:
-            with self._connection() as conn:
+            with self._read_connection() as conn:
                 with conn.cursor() as cursor:
                     cursor.execute(
                         """
@@ -115,7 +115,7 @@ class PostgresBlackboardRepository:
             else:
                 target_clause = "and target_agent = %s"
                 params = (run_id, target_agent.value)
-            with self._connection() as conn:
+            with self._read_connection() as conn:
                 with conn.cursor() as cursor:
                     cursor.execute(
                         f"""
@@ -135,7 +135,7 @@ class PostgresBlackboardRepository:
 
     def summary_counts(self, run_id: str) -> dict[str, int]:
         def operation() -> dict[str, int]:
-            with self._connection() as conn:
+            with self._read_connection() as conn:
                 with conn.cursor() as cursor:
                     cursor.execute(
                         """
@@ -163,18 +163,26 @@ class PostgresBlackboardRepository:
 
     def mutate(self, run_id: str, mutator: RunMutator) -> BlackboardRun:
         def operation() -> None:
+            with self._read_connection() as conn:
+                run = self._get_run(conn, run_id, lock=False)
+            updated = mutator(run)
             with self._connection() as conn:
-                run = self._get_run(conn, run_id, lock=True)
-                updated = mutator(run)
+                self._lock_run(conn, run_id)
                 self._replace_run(conn, updated, bump_version=True)
 
         self._retry(operation)
         return self.get(run_id)
 
     @contextmanager
-    def _connection(self) -> Iterator[Any]:
+    def _connection(self, *, autocommit: bool = False) -> Iterator[Any]:
         psycopg = self._psycopg()
-        with connect_postgres(psycopg, self.database_url) as conn:
+        kwargs = {"autocommit": True} if autocommit else {}
+        with connect_postgres(psycopg, self.database_url, **kwargs) as conn:
+            yield conn
+
+    @contextmanager
+    def _read_connection(self) -> Iterator[Any]:
+        with self._connection(autocommit=True) as conn:
             yield conn
 
     def _retry(self, operation: Any) -> Any:
@@ -495,6 +503,16 @@ class PostgresBlackboardRepository:
         with conn.cursor() as cursor:
             cursor.execute(
                 "select 1 from doxagent.blackboard_runs where run_id = %s",
+                (run_id,),
+            )
+            exists = cursor.fetchone()
+        if exists is None:
+            raise RunNotFoundError(f"Blackboard run not found: {run_id}")
+
+    def _lock_run(self, conn: Any, run_id: str) -> None:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                "select 1 from doxagent.blackboard_runs where run_id = %s for update",
                 (run_id,),
             )
             exists = cursor.fetchone()

@@ -360,13 +360,94 @@ def test_postgres_blackboard_get_retries_mid_query_operational_error(
             raise _FakePsycopg.OperationalError("SSL error: unexpected eof while reading")
         return expected
 
-    repository._connection = fake_connection  # type: ignore[method-assign]
+    repository._read_connection = fake_connection  # type: ignore[method-assign]
     repository._get_run = get_run  # type: ignore[method-assign]
     monkeypatch.setattr("doxagent.postgres.time.sleep", sleeps.append)
 
     assert repository.get("run_retry") is expected
     assert attempts == 2
     assert sleeps == [0.8]
+
+
+def test_postgres_blackboard_read_connection_uses_autocommit() -> None:
+    psycopg = _FakePsycopg()
+    repository = PostgresBlackboardRepository(
+        "postgresql://postgres:secret@example.com/postgres"
+    )
+    repository._psycopg = lambda: psycopg  # type: ignore[method-assign]
+
+    with repository._read_connection():
+        pass
+
+    assert psycopg.connect_kwargs is not None
+    assert psycopg.connect_kwargs["autocommit"] is True
+    assert psycopg.connect_kwargs["prepare_threshold"] is None
+    assert "idle_in_transaction_session_timeout=120000" in str(
+        psycopg.connect_kwargs["options"]
+    )
+
+
+def test_postgres_blackboard_mutate_does_not_hold_transaction_during_mutator() -> None:
+    repository = PostgresBlackboardRepository(
+        "postgresql://postgres:secret@example.com/postgres"
+    )
+    events: list[str] = []
+    run = object()
+
+    @contextmanager
+    def read_connection() -> object:
+        events.append("read_open")
+        yield "read_conn"
+        events.append("read_close")
+
+    @contextmanager
+    def write_connection(*, autocommit: bool = False) -> object:
+        assert autocommit is False
+        events.append("write_open")
+        yield "write_conn"
+        events.append("write_close")
+
+    def get_run(conn: object, run_id: str, *, lock: bool) -> object:
+        assert conn == "read_conn"
+        assert run_id == "run_mutate"
+        assert lock is False
+        events.append("get_run")
+        return run
+
+    def mutator(current: object) -> object:
+        assert current is run
+        events.append("mutator")
+        return run
+
+    def lock_run(conn: object, run_id: str) -> None:
+        assert conn == "write_conn"
+        assert run_id == "run_mutate"
+        events.append("lock_run")
+
+    def replace_run(conn: object, updated: object, *, bump_version: bool) -> None:
+        assert conn == "write_conn"
+        assert updated is run
+        assert bump_version is True
+        events.append("replace_run")
+
+    repository._read_connection = read_connection  # type: ignore[method-assign]
+    repository._connection = write_connection  # type: ignore[method-assign]
+    repository._get_run = get_run  # type: ignore[method-assign]
+    repository._lock_run = lock_run  # type: ignore[method-assign]
+    repository._replace_run = replace_run  # type: ignore[method-assign]
+    repository.get = lambda run_id: run  # type: ignore[method-assign]
+
+    assert repository.mutate("run_mutate", mutator) is run
+    assert events == [
+        "read_open",
+        "get_run",
+        "read_close",
+        "mutator",
+        "write_open",
+        "lock_run",
+        "replace_run",
+        "write_close",
+    ]
 
 
 def test_postgres_repositories_use_pooler_safe_connections() -> None:
