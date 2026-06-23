@@ -226,3 +226,4 @@
 - Reconnected conservative ReAct review-result recovery to final-step no-progress/incomplete-payload exits so Document2 field review coverage gaps remain auditable instead of blocking the workflow at runtime.
 - Reworked Document2 deterministic numeric cleanup so unsupported thresholds are removed without generating generic event-monitoring or price-reaction placeholder text that blocks promotion.
 - Normalized partial flat Document2 resolver update patches into `patch.after` before merging with pending expectation documents, preserving strict create validation while preventing accepted O1 revisions from losing document content.
+- Compacted Document2 field-review inputs with reviewer-specific pending-patch and Global Research summaries, especially narrowing O4 review context to price-reaction and market-trace evidence to reduce model timeout risk without skipping review.

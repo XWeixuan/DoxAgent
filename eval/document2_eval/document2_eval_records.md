@@ -2580,3 +2580,134 @@ Every failed or partial hard gate must be classified before writing the modifica
   - Added changelog entry for the Document2 resolver partial-update normalization fix.
   - Verified locally with `uv run pytest tests/test_workflow_normalizer.py tests/test_phase5_initialization_workflow.py` and `uv run ruff check src/doxagent/workflows/normalizer.py tests/test_workflow_normalizer.py tests/test_phase5_initialization_workflow.py`.
 - Next smoke test: not launched, per user instruction to stop after this complete eval/optimization/modification loop.
+
+## Loop 1 Retest18 - field-review timeout under oversized review context
+
+### Run Metadata
+- Date: 2026-06-24.
+- Source run: `run_58f5afce8b9441ca804a2cde1ad9aec8` (Document 1-only source, unchanged).
+- Execution run: `run_35ea283f8abf4578a8330514f6e7eb54`.
+- Deployed commit: `d03b3a5`.
+- Remote cwd: `/root/doxagent`.
+- Remote log: `.eval_runs/document2-loop1-retest18-20260624T051626+0800.log`.
+- Brief State export path on cloud: `eval/brief_state_exports/run_35ea283f8abf4578a8330514f6e7eb54.json`.
+- Cloud command: `docker compose -f docker-compose.yml run --rm -e DOXAGENT_RUN_REAL_API_TESTS=1 -e DOXAGENT_STORAGE_MODE=postgres debug-viewer python eval/run_document2_expectation_units_smoke.py run_58f5afce8b9441ca804a2cde1ad9aec8 --mode clone --stop-after PromoteExpectationToBeliefState --export-brief-state`.
+- Polling discipline: no Codex automation was used; checks were separated by in-thread `Start-Sleep -Seconds 900`.
+
+### Status
+- Result: `blocked`.
+- Latest checkpoint: `status=blocked`, `next_node=ReviewExpectationFields`.
+- Completed nodes: `StartTickerInitialization`, `BuildGlobalResearch`, `ReviewGlobalResearch`, `GenerateExpectationConstruction`, `ReviewExpectationConstruction`, `ResolveExpectationConstruction`, `GenerateExpectationDetails`.
+- Terminal error: `ReviewExpectationFields agent result failed: 模型请求超过 300.0 秒未返回。`
+- Stable document types: `global_research` only.
+- Stable expectation_unit count: 0.
+- Pending patch count: 2.
+- Working Memory count: 13.
+- Commit count: 1.
+- Objections: 3 total, 3 open/unresolved.
+- Blocking delegations: 0.
+- Evidence refs in export: 65.
+- Direct process evidence:
+  - Brief State Working Memory contains a failed `c1_fundamental_review` AgentResult with `model_request_timeout`, `retryable=true`, empty ReAct entries, and no tool calls.
+  - LangSmith shows a large `O4.ReviewExpectationFields.LOOP5` input (`+117628 chars`) ending with `CancelledError`; Working Memory also contains a later successful O4 market review that raised price-reaction objections.
+  - LangSmith shows `C3.ReviewExpectationFields.LOOP4` succeeded with input around `+101777 chars`, proving field-review inputs were very large even when successful.
+- Process movement vs Retest17: the prior resolver flat partial patch blocker was not reached; Retest18 regressed earlier because field review timed out before resolver.
+
+### Built-in Hard Validators
+| Validator | Result | Evidence | Notes |
+| --- | --- | --- | --- |
+| evidence_reference_integrity | pass | `checked_items=8`, `finding_count=0`. | Reached refs are locatable; no stable expectation refs exist. |
+| langsmith_trajectory_tool_boundary | fail | `checked_items=45`; findings: `workflow_trace_not_completed` error and `no_action_loop_entries` warning for C1 review audit. | Correctly blocks acceptance because the workflow stopped at field review. |
+| commit_log_state_mutation_consistency | pass | `checked_items=4`, `finding_count=0`. | Stable state is only `global_research`, with consistent commit state. |
+
+### Hard Gate Failure Root Cause Matrix
+| Gate | Result | failure_kind | Failure point | Root cause / fix target |
+| --- | --- | --- | --- | --- |
+| D2-HG01 | pass | none | Source handoff | Source remains the required Document 1-only run `run_58f5afce8b9441ca804a2cde1ad9aec8`. |
+| D2-HG02 | fail | direct | Stop-after path | `PromoteExpectationToBeliefState` was not reached; run blocked at `ReviewExpectationFields`. |
+| D2-HG03 | pass | none | Construction lifecycle | Expectation construction and construction review completed; two detail patches were generated. |
+| D2-HG04 | pass_with_caveat | partial_state | Detail patches | Two pending patches contain document content, realized facts, key variables, and event monitoring fields, but they are not stable or fully reviewed. |
+| D2-HG05 | pass_with_caveat | partial_state | Evidence refs | Structural evidence refs pass, but C3 explicitly flagged single-source DoxAtlas dependence for important numbers. |
+| D2-HG06 | fail | quality_residual | Price-in reasoning | O4 found HBM4 certification price-reaction contradiction and QQQ return inaccuracy; these were not resolved before the node blocked. |
+| D2-HG07 | fail | direct | Field review lifecycle | C1 review timed out; O4 had an errored LangSmith loop and later useful Working Memory review, but the node did not complete cleanly. |
+| D2-HG08 | fail | direct | Resolver lifecycle | `ResolveObjectionsAndDelegations` did not run. |
+| D2-HG09 | fail | direct | Promotion lifecycle | Stable expectation_unit count stayed 0. |
+| D2-HG10 | fail | direct | Trace/process closure | Built-in trajectory validator failed; LangSmith/WM show timeout and unclosed workflow state. |
+| D2-HG11 | pass | none | Failure auditability | Timeout is visible in checkpoint, remote log, Brief State hard validators, Working Memory failure audit, and LangSmith. |
+| D2-HG12 | fail | direct | Context management | Review inputs were too large for reliable field review: O4 had `+117628 chars`, C3 had `+101777 chars`, and C1 timed out with no action entries. |
+| D2-HG13 | fail | memory_continuity_blocked | Review/resolution continuity | C3/O4 objections exist but could not progress into resolver decisions, revised patches, or stable memory continuity. |
+
+### Rubrics
+| Rubric | Score | Reason |
+| --- | ---: | --- |
+| D2-R01 | 4 | Source discipline and Document 1-only handoff remain correct. |
+| D2-R02 | 3 | Two pending theses are differentiated bullish/bearish hypotheses, but no stable expectation unit was promoted. |
+| D2-R03 | 2 | Realized facts exist, but key financial and price-reaction facts remain disputed or single-source. |
+| D2-R04 | 2 | Price-in reasoning is visibly flawed: O4 found HBM4 reaction contradiction and QQQ return inaccuracy. |
+| D2-R05 | 3 | Key variables are present and generally thesis-linked, but C3 flagged weak independent verification. |
+| D2-R06 | 3 | Monitoring directions are populated and not placeholder-only, but they remain pending and unreviewed to completion. |
+| D2-R07 | 2 | Evidence refs are structurally valid, but important claims still lean on aggregate DoxAtlas evidence and unresolved market/fundamental validation gaps. |
+| D2-R08 | 2 | Field-review pressure produced useful C3/O4 objections, but C1 timeout means the lifecycle did not complete. |
+| D2-R09 | 1 | Objection resolution did not run. |
+| D2-R10 | 1 | Promotion readiness failed: no stable expectation_unit and open objections remain. |
+| D2-R11 | 2 | Tool/use efficiency is poor in this run: oversized field-review inputs caused timeout/CancelledError and no clean C1 review. |
+| D2-R12 | 3 | Uncertainty is visible through C3/O4 objections and unknowns, but not converted into a stable Blackboard state. |
+| D2-R13 | 4 | Artifacts are reproducible across run id, remote log, DB checkpoint, Brief State export, Working Memory, hard validators, and LangSmith. |
+| D2-R14 | 5 | The optimization target is concrete and testable: compact role-specific field-review context while preserving review coverage. |
+
+### Score Summary
+- Core Blackboard quality rubrics average (`D2-R01`-`D2-R10`): 2.3.
+- Other rubrics with score <= 2: `D2-R11`.
+- Built-in hard validators all pass: no.
+- Quality target met: no.
+- Operational improvement accepted: no; Retest18 exposed a field-review runtime/context blocker.
+
+### Failure Categories
+- category: `field_review_model_request_timeout`
+  - issue: `ReviewExpectationFields` blocked because C1 review returned failed `model_request_timeout`.
+  - evidence: terminal error `ReviewExpectationFields agent result failed: 模型请求超过 300.0 秒未返回。`; Working Memory `c1_fundamental_review` has `failure_audit.gateway_error.code=model_request_timeout`.
+  - severity: hard-gate/direct.
+  - suspected root cause: review task input was too large and unfocused for reliable model completion.
+- category: `oversized_field_review_context`
+  - issue: field reviewers received full pending patches and full Global Research text even though each role only needed a subset.
+  - evidence: LangSmith shows `O4.ReviewExpectationFields.LOOP5` input `+117628 chars`; `C3.ReviewExpectationFields.LOOP4` input `+101777 chars`.
+  - severity: D2-HG12 direct failure.
+  - suspected root cause: `_task_input_context()` injects full `pending_patches` and full `global_research_context`; `_review_expectation_fields()` also injected full `pending_expectation_patches`.
+- category: `price_reaction_quality_residual`
+  - issue: O4 found major market-reaction contradictions, including HBM4 certification-day decline and QQQ return mismatch.
+  - evidence: open objections `objection_hbm4_price_reaction_contradiction` and `objection_qqq_return_inaccuracy`.
+  - severity: quality-blocking.
+  - suspected root cause: detail generation still over-trusts narrative-level price statements; field review caught the issue but could not finish lifecycle.
+- category: `promotion_not_reached`
+  - issue: no stable expectation units were promoted.
+  - evidence: `stable_document_types=["global_research"]`, `expectation_unit_count=0`.
+  - severity: acceptance-blocking.
+  - suspected root cause: field review did not complete and resolver never ran.
+
+### Optimization Hypothesis
+- If `ReviewExpectationFields` overrides the base full `pending_patches` and full `global_research_context` with reviewer-specific compact summaries, then each reviewer can focus on the fields it owns without processing duplicate full expectation documents and unrelated Global Research text.
+- For O4 specifically, if the task context contains only `market_view.price_reflection`, `realized_facts.price_reaction`, price-related evidence refs, and the market-trace section summary/snapshot, the model should still catch price-reaction contradictions while reducing timeout risk.
+- This is not a review weakening: A1/C1/C3/O4 still all run, schemas remain unchanged, failures remain audited, and the compact context explicitly records omitted fields so the eval can inspect context management.
+- Expected measurable improvement in the next cloud verification:
+  - Field-review LangSmith input sizes should drop materially from the 100k+ char range;
+  - Retest should no longer block at `ReviewExpectationFields agent result failed: 模型请求超过 300.0 秒未返回。`;
+  - O4 price objections should still appear when price-reaction contradictions exist;
+  - The workflow should advance to `ResolveObjectionsAndDelegations` or expose a more specific quality blocker.
+
+### Proposed Modification Plan
+- Change 1: In `ReviewExpectationFields`, replace inherited full `pending_patches` with role-scoped compact patch context for all reviewers.
+- Change 2: Add O4-specific pending patch context that keeps only market-view price reflection, realized-fact price reactions, price evidence refs, and compact fact descriptors.
+- Change 3: Replace inherited full `global_research_context` with role-scoped section summaries: A1 gets market narrative summary, C1 gets fundamental summary, C3 gets industry/macro summaries, O4 gets market-trace summary and market evidence snapshot.
+- Change 4: Add `review_context_compaction` metadata to task input so future eval can verify why full context was omitted.
+- Change 5: Add regression coverage asserting O4 field-review task input no longer contains full `after`, `key_variables`, or `event_monitoring_direction`, and no full section `text`.
+- Retest requirement: push/deploy the fix and run the same Document 1-only cloud smoke again with 900-second in-thread status checks.
+
+### Actual Modification
+- Implemented after this evaluation:
+  - Updated `src/doxagent/workflows/initialization.py` so field-review tasks receive reviewer-specific compact `pending_patches`, `pending_expectation_patches`, and `global_research_context`.
+  - Added O4 market-trace review context that narrows pending patches to price-reaction and market evidence fields.
+  - Added role-scoped Global Research summaries and omitted full section text from field-review context.
+  - Added `review_context_compaction` metadata for auditability.
+  - Updated `tests/test_phase5_initialization_workflow.py` to assert O4 review context is market-trace scoped and no longer includes full patch `after`, `key_variables`, `event_monitoring_direction`, or full section text.
+  - Added changelog entry for the Document2 field-review context compaction fix.
+  - Verified locally with `uv run pytest tests/test_phase5_initialization_workflow.py tests/test_workflow_normalizer.py` and `uv run ruff check src/doxagent/workflows/initialization.py src/doxagent/workflows/normalizer.py tests/test_phase5_initialization_workflow.py tests/test_workflow_normalizer.py`.

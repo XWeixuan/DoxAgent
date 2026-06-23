@@ -651,6 +651,28 @@ def test_review_expectation_fields_runs_reviewers_concurrently_in_spec_order() -
     assert a1_task.input_context["tool_requirements"] == []
     assert a1_task.input_context["required_tool_names"] == []
     assert "Do not call tools" in a1_task.input_context["review_instruction"]
+    o4_task = next(
+        task
+        for task in runner.tasks
+        if task.run_metadata.workflow_node == WorkflowNode.REVIEW_EXPECTATION_FIELDS.value
+        and task.agent_name is AgentName.O4_MARKET_TRACE
+    )
+    o4_patch = o4_task.input_context["pending_patches"][0]
+    assert o4_task.input_context["pending_expectation_patches"] == o4_task.input_context[
+        "pending_patches"
+    ]
+    assert o4_task.input_context["review_context_compaction"]["mode"] == (
+        "role_scoped_pending_patch_summary"
+    )
+    assert o4_patch["review_context_scope"] == "market_trace"
+    assert "after" not in o4_patch
+    assert "key_variables" not in o4_patch
+    assert "event_monitoring_direction" not in o4_patch
+    assert o4_patch["realized_facts_price_reactions"]
+    assert "market_trace_report" in o4_task.input_context["global_research_context"]["sections"]
+    assert "text" not in o4_task.input_context["global_research_context"]["sections"][
+        "market_trace_report"
+    ]
 
 
 def test_expectation_detail_resume_reuses_completed_parallel_shell_cache() -> None:

@@ -2922,12 +2922,27 @@ class BlackboardInitializationWorkflow:
                     }
                     for tool_name in self._a1_allowed_tools_for_node(node)
                 ]
+            pending_patch_context = self._field_review_pending_patch_context(
+                agent_name,
+                checkpoint.pending_patches,
+            )
             extra_context = {
                 "review_scope": spec["review_scope"],
                 "review_instruction": spec["instruction"],
-                "pending_expectation_patches": [
-                    patch.model_dump(mode="json") for patch in checkpoint.pending_patches
-                ],
+                "pending_patches": pending_patch_context,
+                "pending_expectation_patches": pending_patch_context,
+                "global_research_context": self._field_review_global_research_context(
+                    checkpoint,
+                    agent_name,
+                ),
+                "review_context_compaction": {
+                    "mode": "role_scoped_pending_patch_summary",
+                    "reason": (
+                        "ReviewExpectationFields uses compact role-specific patch and "
+                        "global-research context so reviewers focus on their field scope "
+                        "without replaying full expectation documents."
+                    ),
+                },
                 "tool_requirements": tool_requirements,
                 "required_tool_names": [
                     item["tool_name"]
@@ -7191,6 +7206,169 @@ class BlackboardInitializationWorkflow:
                 for ref in patch.evidence_refs[:4]
             ],
         }
+
+    def _field_review_pending_patch_context(
+        self,
+        agent_name: AgentName,
+        patches: list[BlackboardPatch],
+    ) -> list[dict[str, Any]]:
+        expectation_patches = [
+            patch
+            for patch in patches
+            if patch.target.document_type is DocumentType.EXPECTATION_UNIT
+        ]
+        if agent_name is AgentName.O4_MARKET_TRACE:
+            return [
+                self._market_trace_review_pending_patch_context(patch)
+                for patch in expectation_patches
+            ]
+        return [
+            self._compact_pending_expectation_patch(patch)
+            for patch in expectation_patches
+        ]
+
+    def _market_trace_review_pending_patch_context(
+        self,
+        patch: BlackboardPatch,
+    ) -> dict[str, Any]:
+        after = self._dict_from_model(patch.after)
+        market_view = self._dict_from_model(after.get("market_view"))
+        facts = self._list_from_model(after.get("realized_facts"))
+        return {
+            "review_context_scope": "market_trace",
+            "patch_id": patch.patch_id,
+            "target": patch.target.model_dump(mode="json"),
+            "operation": patch.operation.value,
+            "expectation_id": after.get("expectation_id") or patch.target.expectation_id,
+            "expectation_name": self._compact_context_text(
+                after.get("expectation_name"),
+                limit=160,
+            ),
+            "direction": after.get("direction"),
+            "market_view": {
+                "summary": self._compact_context_text(market_view.get("summary"), limit=260),
+                "price_reflection_text": self._compact_context_text(
+                    market_view.get("text"),
+                    limit=420,
+                ),
+                "evidence_refs": [
+                    self._evidence_context_summary(ref)
+                    for ref in self._list_from_model(market_view.get("evidence_refs"))[:4]
+                ],
+            },
+            "realized_facts_price_reactions": [
+                self._market_trace_fact_context_summary(item)
+                for item in facts[:6]
+            ],
+            "realized_facts_summary": self._compact_context_text(
+                after.get("realized_facts_summary"),
+                limit=260,
+            ),
+            "patch_evidence_refs": [
+                self._evidence_context_summary(ref)
+                for ref in patch.evidence_refs[:4]
+            ],
+            "omitted_fields": [
+                "key_variables",
+                "event_monitoring_direction",
+                "full_market_view_text",
+                "non-price realized fact prose beyond compact summaries",
+            ],
+        }
+
+    def _market_trace_fact_context_summary(self, value: Any) -> dict[str, Any]:
+        item = self._dict_from_model(value)
+        price_reaction = self._dict_from_model(item.get("price_reaction"))
+        refs = self._dedupe_evidence_refs(
+            [
+                *[
+                    EvidenceRef.model_validate(ref)
+                    for ref in self._list_from_model(item.get("evidence_refs"))
+                    if isinstance(ref, dict)
+                ],
+                *[
+                    EvidenceRef.model_validate(ref)
+                    for ref in self._list_from_model(price_reaction.get("evidence_refs"))
+                    if isinstance(ref, dict)
+                ],
+            ]
+        )
+        return {
+            "event_id": item.get("event_id"),
+            "description": self._compact_context_text(item.get("description"), limit=220),
+            "when": item.get("when"),
+            "pricing_status": item.get("pricing_status")
+            or item.get("pricing_assessment"),
+            "price_reaction": {
+                "price_change": self._compact_context_text(
+                    price_reaction.get("price_change"),
+                    limit=180,
+                ),
+                "price_pattern": self._compact_context_text(
+                    price_reaction.get("price_pattern"),
+                    limit=180,
+                ),
+                "interpretation": self._compact_context_text(
+                    price_reaction.get("interpretation"),
+                    limit=260,
+                ),
+            },
+            "evidence_refs": [
+                self._evidence_context_summary(ref)
+                for ref in refs[:4]
+            ],
+        }
+
+    def _field_review_global_research_context(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        agent_name: AgentName,
+    ) -> dict[str, Any]:
+        document = self._stable_global_research_document(checkpoint)
+        if document is None:
+            return {
+                "omitted_for": WorkflowNode.REVIEW_EXPECTATION_FIELDS.value,
+                "reason": "No stable GlobalResearchDocument is available.",
+            }
+        section_keys_by_agent = {
+            AgentName.A1_DOXATLAS_AUDIT: ("market_narrative_report",),
+            AgentName.C1_FUNDAMENTAL_RESEARCH: ("fundamental_report",),
+            AgentName.C3_INDUSTRY_RESEARCH: ("industry_report", "macro_report"),
+            AgentName.O4_MARKET_TRACE: ("market_trace_report",),
+        }
+        sections: dict[str, Any] = {}
+        for key in section_keys_by_agent.get(agent_name, ()):
+            section = getattr(document, key, None)
+            if isinstance(section, ResearchSection):
+                sections[key] = self._field_review_section_context(section, checkpoint.ticker)
+        return {
+            "document_id": document.document_id,
+            "ticker": document.ticker,
+            "sections": sections,
+            "compaction": {
+                "mode": "reviewer_role_scoped_global_research_summary",
+                "omitted_full_text": True,
+            },
+        }
+
+    def _field_review_section_context(
+        self,
+        section: ResearchSection,
+        ticker: str,
+    ) -> dict[str, Any]:
+        refs = list(section.evidence_refs)
+        payload: dict[str, Any] = {
+            "summary": self._compact_context_text(section.summary, limit=520),
+            "author_agent": section.author_agent.value,
+            "evidence_refs": [self._evidence_context_summary(ref) for ref in refs[:6]],
+        }
+        market_snapshot = self._market_evidence_snapshot_from_payload_refs(
+            [ref.model_dump(mode="json") for ref in refs],
+            ticker=ticker,
+        )
+        if market_snapshot is not None:
+            payload["market_evidence_snapshot"] = market_snapshot
+        return payload
 
     def _objection_resolution_objection_summary(self, objection: Objection) -> dict[str, Any]:
         return {
