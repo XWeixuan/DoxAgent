@@ -1410,6 +1410,70 @@ def test_numeric_sanity_revision_fallback_removes_unsupported_false_precision() 
     )
 
 
+def test_o1_partial_revision_merges_into_pending_expectation_document() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        runner=ParallelStructuredInitializationRunner(),
+        execution_mode="agent_runner",
+    )
+    factory = InitializationMockResultFactory()
+    evidence = factory._evidence(EvidenceSourceType.AGENT_OUTPUT)
+    document = factory._expectation_unit("MU").model_copy(
+        update={
+            "expectation_id": "expectation_mu_01",
+            "expectation_name": "MU expectation 01",
+            "realized_facts_summary": "Original summary with unsupported precision.",
+        },
+        deep=True,
+    )
+    pending_patch = factory._document_patch(
+        document,
+        DocumentType.EXPECTATION_UNIT,
+        AgentName.O1_EXPECTATION_OWNER,
+        expectation_id=document.expectation_id,
+    )
+    checkpoint = WorkflowCheckpoint(
+        run_id="run_partial_revision",
+        ticker="MU",
+        pending_patches=[pending_patch],
+    )
+    revision = pending_patch.model_copy(
+        update={
+            "patch_id": "patch_expectation_mu_01_revision",
+            "target": pending_patch.target.model_copy(
+                update={"field_path": "realized_facts_summary"},
+                deep=True,
+            ),
+            "after": "Revised summary with unsupported precision removed.",
+            "rationale": "O1 accepted numeric sanity objection and revised one field.",
+            "evidence_refs": [evidence],
+        },
+        deep=True,
+    )
+    result = AgentResult(
+        task_id="task_partial_revision",
+        agent_name=AgentName.O1_EXPECTATION_OWNER,
+        status=ResultStatus.SUCCEEDED,
+        payload={"runtime": "maf", "structured": {"proposed_patches": []}},
+        proposed_patches=[revision],
+        evidence_refs=[evidence],
+    )
+
+    normalized = workflow._normalized_expectation_revisions(checkpoint, result)
+
+    assert len(normalized) == 1
+    assert normalized[0].target.field_path == "document"
+    assert normalized[0].after["expectation_id"] == "expectation_mu_01"
+    assert (
+        normalized[0].after["realized_facts_summary"]
+        == "Revised summary with unsupported precision removed."
+    )
+    assert normalized[0].after["key_variables"]
+    assert "Merged partial O1 resolver revision" in normalized[0].rationale
+    workflow._validate_expectation_patch_list("MU", normalized)
+    replaced = workflow._replace_pending_expectation_patches(checkpoint, result)
+    assert replaced[0].after == normalized[0].after
+
+
 def test_deterministic_objection_normalization_handles_numeric_and_price_blockers() -> None:
     workflow = BlackboardInitializationWorkflow(
         runner=ParallelStructuredInitializationRunner(),

@@ -2085,3 +2085,120 @@ Every failed or partial hard gate must be classified before writing the modifica
   - Added regression tests in `tests/test_phase9_persistence.py`.
   - Added changelog entry for the Document2 Postgres transaction-lifetime fix.
   - Verified locally with `uv run pytest tests/test_phase5_initialization_workflow.py tests/test_workflow_normalizer.py tests/test_phase9_persistence.py` and `uv run ruff check src/doxagent/blackboard/postgres_repository.py tests/test_phase9_persistence.py src/doxagent/workflows/initialization.py tests/test_phase5_initialization_workflow.py tests/test_workflow_normalizer.py --select B,E,F,I`.
+
+## Loop 1 Retest14b - transaction blocker fixed; resolver partial patch contract blocked promotion
+
+### Run Metadata
+- Date: 2026-06-24.
+- Source run: `run_58f5afce8b9441ca804a2cde1ad9aec8` (Document 1-only source, unchanged).
+- Execution run: `run_6559a2d580424fd798b7d018b79d956f`.
+- Deployed commit: `211bf40`.
+- Remote cwd: `/root/doxagent`.
+- Remote log: `.eval_runs/document2-loop1-retest14b-20260624T014909+0800.log`.
+- Brief State export path on cloud: `eval/brief_state_exports/run_6559a2d580424fd798b7d018b79d956f.json`.
+- Cloud command: `docker compose -f docker-compose.yml run --rm -e DOXAGENT_RUN_REAL_API_TESTS=1 -e DOXAGENT_STORAGE_MODE=postgres debug-viewer python eval/run_document2_expectation_units_smoke.py run_58f5afce8b9441ca804a2cde1ad9aec8 --mode clone --stop-after PromoteExpectationToBeliefState --export-brief-state`.
+
+### Status
+- Result: `blocked`.
+- Transaction blocker fixed: yes. During the 15-minute checks, no `idle in transaction` rows remained for the run; the workflow advanced through `GenerateExpectationDetails`, `ReviewExpectationFields`, and into `ResolveObjectionsAndDelegations`.
+- New terminal blocker: `GenerateExpectationUnits expectation patch must include document content.`
+- Latest checkpoint: `status=blocked`, `next_node=ResolveObjectionsAndDelegations`, completed nodes through `ReviewExpectationFields`.
+- Stable document types: `global_research` only.
+- Stable expectation_unit count: 0.
+- Pending patch count: 3.
+- Working Memory count: 16.
+- Commit count: 1.
+- Unresolved objection count: 2.
+- Blocking delegation count: 0.
+- LangSmith evidence: `O1.ResolveObjectionsAndDelegations.LOOP1` completed successfully and returned an accepted numeric-sanity revision path, but the local workflow rejected the returned patch before replacement/promotion.
+
+### Built-in Hard Validators
+| Validator | Result | Evidence | Notes |
+| --- | --- | --- | --- |
+| evidence_reference_integrity | pass | `checked_items=11`, `finding_count=0`. | Reached stable refs are locatable; this does not validate unsupported numeric claims in pending revisions. |
+| langsmith_trajectory_tool_boundary | fail | `checked_items=55`; finding `workflow_trace_not_completed`, latest checkpoint `status=blocked`, `next_node=ResolveObjectionsAndDelegations`. | Correctly blocks acceptance because Document2 did not reach promotion. |
+| commit_log_state_mutation_consistency | pass | `checked_items=4`, `finding_count=0`. | Limited stable state (`global_research`) is commit-consistent. |
+
+### Hard Gate Failure Root Cause Matrix
+| Gate | Result | failure_kind | Failure point | Root cause / fix target |
+| --- | --- | --- | --- | --- |
+| D2-HG01 | pass | none | Source handoff | Source remains Document 1-only and unchanged. |
+| D2-HG02 | fail | direct | Stop-after path | Target stop node `PromoteExpectationToBeliefState` was not reached. |
+| D2-HG03 | pass_with_caveat | partial_lifecycle | Construction lifecycle | Three expectation detail patches existed, but resolver later failed before promotion. |
+| D2-HG04 | fail | direct | Resolver revision validation | O1 accepted an objection but returned a field-level/partial revision that was not normalized into full document content. |
+| D2-HG05 | pass_with_caveat | partial_state | Evidence refs | Built-in ref integrity passes for reached artifacts, but pending numeric claims still failed source-appropriateness objections. |
+| D2-HG06 | fail | quality_residual | Price-in reasoning | Numeric/market-data blockers for `expectation_mu_01` remained open. |
+| D2-HG07 | pass | none | Field review lifecycle | Review ran and produced substantive O4/C1 pressure. |
+| D2-HG08 | fail | direct | Resolver lifecycle | Resolver did not apply the accepted revision; two objections remained unresolved. |
+| D2-HG09 | fail | direct | Promotion lifecycle | No stable expectation_unit documents were promoted. |
+| D2-HG10 | fail | direct | LangSmith/process trace | Local trajectory validator failed because the workflow is terminally blocked, though LangSmith evidence is available. |
+| D2-HG11 | pass | none | Auditability | Remote log, Brief State, DB checkpoint, hard validators, Working Memory, and LangSmith reproduce the blocker. |
+| D2-HG12 | pass_with_caveat | context_pressure | Review/resolver inputs | The DB stall is gone, but O4 review input remains very large; watch for future context-pressure regressions. |
+| D2-HG13 | fail | memory_continuity_blocked | Revision continuity | Accepted O1 revision did not preserve a complete expectation document into pending patches. |
+
+### Rubrics
+| Rubric | Score | Reason |
+| --- | ---: | --- |
+| D2-R01 | 4 | Source discipline remains correct and auditable. |
+| D2-R02 | 3 | Expectation theses exist in pending patches, but no stable thesis set was promoted. |
+| D2-R03 | 2 | Detail content exists, but numeric-sanity objections show realized facts still include unsupported precision or unresolved revisions. |
+| D2-R04 | 2 | O4 found price-reaction errors; resolver failed before a corrected price-in state could land. |
+| D2-R05 | 3 | Key variables appear in pending documents, but blocked promotion prevents stable downstream use. |
+| D2-R06 | 3 | Monitoring directions exist in pending documents, but cannot be accepted while objections remain unresolved. |
+| D2-R07 | 2 | Structural refs pass, but source-appropriateness remains weak for numeric/market claims. |
+| D2-R08 | 4 | Field-review pressure improved: O4 generated concrete price/market objections and LangSmith evidence is available. |
+| D2-R09 | 1 | Objection handling failed at accepted revision application; blockers remained. |
+| D2-R10 | 1 | Promotion readiness failed: no stable expectation_unit and hard validator failed. |
+| D2-R11 | 3 | Tool/trace evidence is useful, but the local trajectory validator correctly fails the blocked run. |
+| D2-R12 | 2 | Uncertainty handling remains insufficient because unsupported numeric claims were not converted into a usable revised document. |
+| D2-R13 | 4 | The run is reproducible with source run, execution run, cloud log, Brief State export, validators, DB state, and LangSmith. |
+| D2-R14 | 5 | The next optimization target is narrow and directly testable: normalize partial resolver revisions into full pending documents. |
+
+### Score Summary
+- Core Blackboard quality rubrics average (`D2-R01`-`D2-R10`): 2.5.
+- Other rubrics with score <= 2: `D2-R12`.
+- Quality target met: no.
+- Operational improvement accepted: yes for the Postgres transaction stall.
+- Document2 quality improvement accepted: no, because resolver revision application still blocks promotion.
+
+### Failure Categories
+- category: `partial_resolver_patch_contract_gap`
+  - issue: O1 accepted numeric-sanity objections but returned a partial expectation revision that did not satisfy the full-document patch validator.
+  - evidence: terminal error `GenerateExpectationUnits expectation patch must include document content.`
+  - severity: hard-gate/direct.
+  - suspected root cause: resolver revisions were validated as if every expectation patch must already be a full document; workflow did not merge field-level revisions into the corresponding pending document before validation/replacement.
+- category: `numeric_sanity_residual_blockers`
+  - issue: two blocking objections remained open for `expectation_mu_01`.
+  - evidence: Brief State blockers `obj_numeric_sanity_expectation_mu_01_fundamental_data` and `obj_numeric_sanity_expectation_mu_01_market_data`.
+  - severity: quality-blocking.
+  - suspected root cause: source-appropriate market/fundamental evidence requirements are now enforced, but accepted revisions fail to land.
+- category: `promotion_not_reached`
+  - issue: stable `expectation_unit` count remained 0.
+  - evidence: cloud log final state `stable_document_types=["global_research"]`, `pending_patch_count=3`, `expectation_unit_count=0`.
+  - severity: acceptance-blocking.
+  - suspected root cause: resolver patch contract failure halted before promotion.
+
+### Optimization Hypothesis
+- If resolver-produced partial expectation revisions are completed by merging them into the corresponding pending full expectation document before validation and replacement, O1 can resolve field-level objections without losing the full document body required by promotion.
+- This should not loosen quality gates: the merged full document still passes through existing `ExpectationUnitDocument` validation, numeric-sanity revalidation, placeholder promotion checks, hard validators, and promotion logic.
+- Expected measurable improvement in a later verification:
+  - accepted field-level O1 revisions no longer fail with `expectation patch must include document content`;
+  - `ResolveObjectionsAndDelegations` can either close the numeric-sanity objections or leave a more specific residual blocker;
+  - no new smoke should be launched in this turn per user instruction.
+
+### Proposed Modification Plan
+- Change 1: Split expectation patch validation into a list-based helper so normalized revisions can be validated without mutating raw `AgentResult`.
+- Change 2: Add `_normalized_expectation_revisions()` to map O1 expectation revisions back to matching pending patches by `expectation_id`.
+- Change 3: For full-document revisions, preserve existing behavior.
+- Change 4: For field-level or partial dict revisions, merge the revision into the pending patch's full `after` document and restore the target to `field_path=document`.
+- Change 5: Keep evidence refs from both pending patch and revision, and append an audit rationale note.
+- Change 6: Add a regression test where O1 returns a partial `realized_facts_summary` revision and verify it becomes a complete valid expectation document.
+
+### Actual Modification
+- Implemented after this evaluation:
+  - Updated `src/doxagent/workflows/initialization.py` with normalized resolver revision merging.
+  - Added `_validate_expectation_patch_list`, `_normalized_expectation_revisions`, `_complete_expectation_revision_patch`, deep-merge, and field-path assignment helpers.
+  - Added `test_o1_partial_revision_merges_into_pending_expectation_document` in `tests/test_phase5_initialization_workflow.py`.
+  - Added changelog entry for the partial resolver revision normalization.
+  - Verified locally with `uv run pytest tests/test_phase5_initialization_workflow.py tests/test_workflow_normalizer.py tests/test_phase9_persistence.py` and `uv run ruff check src/doxagent/workflows/initialization.py tests/test_phase5_initialization_workflow.py src/doxagent/blackboard/postgres_repository.py tests/test_phase9_persistence.py tests/test_workflow_normalizer.py --select B,E,F,I`.
+- Next smoke test: not launched, per user instruction to stop after this complete eval/optimization/modification loop.

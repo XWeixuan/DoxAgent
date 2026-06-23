@@ -5610,9 +5610,16 @@ class BlackboardInitializationWorkflow:
         )
 
     def _validate_expectation_patches(self, ticker: str, result: AgentResult) -> None:
+        self._validate_expectation_patch_list(ticker, self._expectation_revisions(result))
+
+    def _validate_expectation_patch_list(
+        self,
+        ticker: str,
+        expectation_patches: list[BlackboardPatch],
+    ) -> None:
         expectation_patches = [
             patch
-            for patch in result.proposed_patches
+            for patch in expectation_patches
             if patch.target.document_type == DocumentType.EXPECTATION_UNIT
         ]
         if not expectation_patches:
@@ -7426,12 +7433,12 @@ class BlackboardInitializationWorkflow:
                     "O1 objection resolution must include changed_paths or evidence_refs."
                 )
         if accepted_ids or partially_accepted_ids:
-            revised_patches = self._expectation_revisions(result)
+            revised_patches = self._normalized_expectation_revisions(checkpoint, result)
             if not revised_patches:
                 raise WorkflowContractError(
                     "O1 accepted an objection without returning a revised expectation patch."
                 )
-            self._validate_expectation_patches(checkpoint.ticker, result)
+            self._validate_expectation_patch_list(checkpoint.ticker, revised_patches)
         if rejected_ids and not (
             self._has_rejection_support(payload, result)
             or any(decisions_by_id[objection_id].evidence_refs for objection_id in rejected_ids)
@@ -7529,7 +7536,7 @@ class BlackboardInitializationWorkflow:
         checkpoint: WorkflowCheckpoint,
         result: AgentResult,
     ) -> list[BlackboardPatch]:
-        revisions = self._expectation_revisions(result)
+        revisions = self._normalized_expectation_revisions(checkpoint, result)
         if not revisions:
             return list(checkpoint.pending_patches)
         pending = list(checkpoint.pending_patches)
@@ -7556,6 +7563,124 @@ class BlackboardInitializationWorkflow:
             for patch in result.proposed_patches
             if patch.target.document_type is DocumentType.EXPECTATION_UNIT
         ]
+
+    def _normalized_expectation_revisions(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        result: AgentResult,
+    ) -> list[BlackboardPatch]:
+        revisions = self._expectation_revisions(result)
+        if not revisions:
+            return []
+        pending_by_expectation_id = {
+            patch.target.expectation_id: patch
+            for patch in checkpoint.pending_patches
+            if patch.target.document_type is DocumentType.EXPECTATION_UNIT
+            and patch.target.expectation_id is not None
+        }
+        normalized: list[BlackboardPatch] = []
+        for revision in revisions:
+            expectation_id = revision.target.expectation_id
+            pending = pending_by_expectation_id.get(expectation_id)
+            if pending is None:
+                normalized.append(revision)
+                continue
+            normalized.append(self._complete_expectation_revision_patch(pending, revision))
+        return normalized
+
+    def _complete_expectation_revision_patch(
+        self,
+        pending_patch: BlackboardPatch,
+        revision: BlackboardPatch,
+    ) -> BlackboardPatch:
+        if revision.target.document_type is not DocumentType.EXPECTATION_UNIT:
+            return revision
+        if not isinstance(pending_patch.after, dict):
+            return revision
+        if isinstance(revision.after, dict):
+            try:
+                ExpectationUnitDocument.model_validate(revision.after)
+            except ValueError:
+                merged_after = self._merge_expectation_revision_after(
+                    pending_patch.after,
+                    revision.after,
+                    revision.target.field_path,
+                )
+            else:
+                return revision
+        elif revision.target.field_path and revision.target.field_path != "document":
+            merged_after = self._merge_expectation_revision_after(
+                pending_patch.after,
+                revision.after,
+                revision.target.field_path,
+            )
+        else:
+            return revision
+
+        evidence_refs = self._dedupe_evidence_refs(
+            [*pending_patch.evidence_refs, *revision.evidence_refs]
+        )
+        rationale = str(revision.rationale or pending_patch.rationale or "").strip()
+        normalization_note = (
+            "Merged partial O1 resolver revision into the pending expectation document."
+        )
+        if normalization_note not in rationale:
+            rationale = f"{rationale} {normalization_note}".strip()
+        return revision.model_copy(
+            update={
+                "target": pending_patch.target,
+                "operation": pending_patch.operation,
+                "before": pending_patch.before,
+                "after": merged_after,
+                "evidence_refs": evidence_refs,
+                "rationale": rationale,
+            },
+            deep=True,
+        )
+
+    def _merge_expectation_revision_after(
+        self,
+        base_after: dict[str, Any],
+        revision_after: Any,
+        field_path: str | None,
+    ) -> dict[str, Any]:
+        merged = deepcopy(base_after)
+        if field_path and field_path != "document":
+            self._set_mapping_path(merged, field_path, deepcopy(revision_after))
+            return merged
+        if isinstance(revision_after, dict):
+            return self._deep_merge_dicts(merged, deepcopy(revision_after))
+        return merged
+
+    def _deep_merge_dicts(
+        self,
+        base: dict[str, Any],
+        overlay: dict[str, Any],
+    ) -> dict[str, Any]:
+        for key, value in overlay.items():
+            if (
+                key in base
+                and isinstance(base[key], dict)
+                and isinstance(value, dict)
+            ):
+                base[key] = self._deep_merge_dicts(dict(base[key]), value)
+            else:
+                base[key] = value
+        return base
+
+    def _set_mapping_path(self, target: dict[str, Any], field_path: str, value: Any) -> None:
+        keys = [key for key in field_path.split(".") if key]
+        if not keys:
+            raise WorkflowContractError("O1 revised expectation patch with empty field_path.")
+        cursor = target
+        for key in keys[:-1]:
+            existing = cursor.setdefault(key, {})
+            if not isinstance(existing, dict):
+                raise WorkflowContractError(
+                    f"O1 revised expectation patch through non-object path: {field_path}"
+                )
+            cursor = existing
+        cursor[keys[-1]] = value
 
     def _numeric_sanity_revision_targets(
         self,
