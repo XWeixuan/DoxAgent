@@ -540,6 +540,19 @@ class ReActAgentHarness:
                     if step < self.config.max_steps:
                         scratchpad.record_no_progress(step=step)
                         continue
+                    scratchpad.record_no_progress(step=step)
+                    recovered_review = self._succeeded_with_review_max_steps_fallback(
+                        task=task,
+                        definition=definition,
+                        assembled_prompt=assembled_prompt,
+                        context_snapshot=context_snapshot,
+                        model_audits=model_audits,
+                        tool_results=tool_results,
+                        delegation_results=delegation_results,
+                        scratchpad=scratchpad,
+                    )
+                    if recovered_review is not None:
+                        return recovered_review
                     return _failed(
                         task,
                         "react_incomplete_final_payload",
@@ -551,6 +564,19 @@ class ReActAgentHarness:
                 if step < self.config.max_steps:
                     scratchpad.record_no_progress(step=step)
                     continue
+                scratchpad.record_no_progress(step=step)
+                recovered_review = self._succeeded_with_review_max_steps_fallback(
+                    task=task,
+                    definition=definition,
+                    assembled_prompt=assembled_prompt,
+                    context_snapshot=context_snapshot,
+                    model_audits=model_audits,
+                    tool_results=tool_results,
+                    delegation_results=delegation_results,
+                    scratchpad=scratchpad,
+                )
+                if recovered_review is not None:
+                    return recovered_review
                 return _failed(
                     task,
                     "react_no_progress",
@@ -604,34 +630,16 @@ class ReActAgentHarness:
             scratchpad=scratchpad,
         )
         if recovered_review is not None:
-            structured, text, schema_name = recovered_review
-            scratchpad.warnings.append(
-                f"{schema_name} reached max_steps; recovered as conservative review result."
-            )
-            scratchpad.entries.append(
-                {
-                    "kind": "max_steps_recovered",
-                    "status": "warning",
-                    "schema": schema_name,
-                    "successful_tool_count": sum(
-                        1 for result in tool_results if result.status is ResultStatus.SUCCEEDED
-                    ),
-                }
-            )
-            return self._succeeded(
+            return self._succeeded_with_review_max_steps_fallback(
                 task=task,
                 definition=definition,
                 assembled_prompt=assembled_prompt,
                 context_snapshot=context_snapshot,
-                structured=structured,
-                text=text,
                 model_audits=model_audits,
                 tool_results=tool_results,
                 delegation_results=delegation_results,
                 scratchpad=scratchpad,
-                completion_reason=(
-                    "Reached ReAct max_steps; recovered as conservative review result."
-                ),
+                recovered_review=recovered_review,
             )
 
         return _failed(
@@ -641,6 +649,57 @@ class ReActAgentHarness:
             tool_results=tool_results,
             delegation_results=delegation_results,
             scratchpad=scratchpad,
+        )
+
+    def _succeeded_with_review_max_steps_fallback(
+        self,
+        *,
+        task: AgentTask,
+        definition: AgentDefinition,
+        assembled_prompt: AssembledPrompt,
+        context_snapshot: Any | None,
+        model_audits: list[JsonDict],
+        tool_results: list[ToolResult],
+        delegation_results: list[AgentResult],
+        scratchpad: Scratchpad,
+        recovered_review: tuple[JsonDict, str, str] | None = None,
+    ) -> AgentResult | None:
+        recovered_review = recovered_review or _max_steps_review_result_fallback(
+            task,
+            tool_results=tool_results,
+            delegation_results=delegation_results,
+            scratchpad=scratchpad,
+        )
+        if recovered_review is None:
+            return None
+        structured, text, schema_name = recovered_review
+        scratchpad.warnings.append(
+            f"{schema_name} reached max_steps; recovered as conservative review result."
+        )
+        scratchpad.entries.append(
+            {
+                "kind": "max_steps_recovered",
+                "status": "warning",
+                "schema": schema_name,
+                "successful_tool_count": sum(
+                    1 for result in tool_results if result.status is ResultStatus.SUCCEEDED
+                ),
+            }
+        )
+        return self._succeeded(
+            task=task,
+            definition=definition,
+            assembled_prompt=assembled_prompt,
+            context_snapshot=context_snapshot,
+            structured=structured,
+            text=text,
+            model_audits=model_audits,
+            tool_results=tool_results,
+            delegation_results=delegation_results,
+            scratchpad=scratchpad,
+            completion_reason=(
+                "Reached ReAct max_steps; recovered as conservative review result."
+            ),
         )
 
     def _load_skill_calls(

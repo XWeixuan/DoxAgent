@@ -2202,3 +2202,131 @@ Every failed or partial hard gate must be classified before writing the modifica
   - Added changelog entry for the partial resolver revision normalization.
   - Verified locally with `uv run pytest tests/test_phase5_initialization_workflow.py tests/test_workflow_normalizer.py tests/test_phase9_persistence.py` and `uv run ruff check src/doxagent/workflows/initialization.py tests/test_phase5_initialization_workflow.py src/doxagent/blackboard/postgres_repository.py tests/test_phase9_persistence.py tests/test_workflow_normalizer.py --select B,E,F,I`.
 - Next smoke test: not launched, per user instruction to stop after this complete eval/optimization/modification loop.
+
+## Loop 1 Retest15b - review no-progress runtime blocker
+
+### Run Metadata
+- Date: 2026-06-24.
+- Source run: `run_58f5afce8b9441ca804a2cde1ad9aec8` (Document 1-only source, unchanged).
+- Execution run: `run_34346ef468e64d3bb574a9743b603605`.
+- Deployed commit: `9f39d9f`.
+- Remote cwd: `/root/doxagent`.
+- Remote log: `.eval_runs/document2-loop1-retest15b-20260624T024731+0800.log`.
+- Brief State export path on cloud: `eval/brief_state_exports/run_34346ef468e64d3bb574a9743b603605.json`.
+- Cloud command: `docker compose -f docker-compose.yml run --rm -e DOXAGENT_RUN_REAL_API_TESTS=1 -e DOXAGENT_STORAGE_MODE=postgres debug-viewer python eval/run_document2_expectation_units_smoke.py run_58f5afce8b9441ca804a2cde1ad9aec8 --mode clone --stop-after PromoteExpectationToBeliefState --export-brief-state`.
+- Polling discipline: no Codex automation was used; status was checked only on the 15-minute cadence requested by the user.
+
+### Status
+- Result: `blocked`.
+- Latest checkpoint: `status=blocked`, `next_node=ReviewExpectationFields`.
+- Terminal error: `ReviewExpectationFields agent result failed: ReAct step 未返回 final payload、工具调用或委托。`
+- Completed nodes: `StartTickerInitialization`, `BuildGlobalResearch`, `ReviewGlobalResearch`, `GenerateExpectationConstruction`, `ReviewExpectationConstruction`, `ResolveExpectationConstruction`, `GenerateExpectationDetails`.
+- Stable document types: `global_research` only.
+- Stable expectation_unit count: 0.
+- Pending patch count: 2.
+- Working Memory count: 13.
+- Commit count: 1.
+- Unresolved objection count: 2.
+- Blocking delegation count: 0.
+- Visible blockers in Brief State:
+  - `obj_bearish_label_swap`: `结构性逻辑错误，导致事件监控方向完全失效，无法用于风险管理。`
+  - `obj_q3_guidance_conflict`: `关键数据点冲突，直接影响市场定价分析和事件监控方向的准确性。`
+- LangSmith evidence: latest `C1.ReviewExpectationFields.LOOP8` returned progress/ledger-style text about evidence review and the Q3 FY26 guidance conflict, but did not return a complete ReAct final payload, tool call, or delegation.
+
+### Built-in Hard Validators
+| Validator | Result | Evidence | Notes |
+| --- | --- | --- | --- |
+| evidence_reference_integrity | pass | `checked_items=7`, `finding_count=0`. | Structural evidence refs in reached stable state remain locatable. This does not validate unpromoted expectation quality. |
+| langsmith_trajectory_tool_boundary | fail | `checked_items=47`; finding `workflow_trace_not_completed`, checkpoint `status=blocked`, `next_node=ReviewExpectationFields`. | Correctly fails because Document2 did not reach promotion and the run ended at a runtime boundary. |
+| commit_log_state_mutation_consistency | pass | `checked_items=4`, `finding_count=0`. | Limited stable state and commit log are consistent, but no expectation unit was promoted. |
+
+### Hard Gate Failure Root Cause Matrix
+| Gate | Result | failure_kind | Failure point | Root cause / fix target |
+| --- | --- | --- | --- | --- |
+| D2-HG01 | pass | none | Source handoff | Source remains Document 1-only: `run_58f5afce8b9441ca804a2cde1ad9aec8`. |
+| D2-HG02 | fail | direct | Stop-after path | Target node `PromoteExpectationToBeliefState` was not reached. |
+| D2-HG03 | pass_with_caveat | partial_lifecycle | Detail generation | `GenerateExpectationDetails` completed and produced pending patches, but the patches were never promoted. |
+| D2-HG04 | fail | direct | Field review runtime | `ReviewExpectationFields` blocked because C1 returned no final payload/tool/delegation on the final ReAct step. |
+| D2-HG05 | pass_with_caveat | partial_state | Evidence refs | Built-in evidence integrity passes for reached artifacts, but no stable expectation-unit evidence set exists. |
+| D2-HG06 | fail | quality_residual | Price-in reasoning | The Q3 FY26 guidance conflict and bearish-label direction issue remained unresolved before promotion. |
+| D2-HG07 | fail | direct | Review lifecycle | Review pressure was visible through C3 objections, but C1 review result failed at the ReAct boundary and blocked aggregation. |
+| D2-HG08 | fail | direct | Resolver lifecycle | Resolver could not run because the workflow stopped at field review. |
+| D2-HG09 | fail | direct | Promotion lifecycle | Stable expectation_unit count stayed 0. |
+| D2-HG10 | fail | direct | LangSmith/process trace | Built-in trajectory validator failed due terminal blocked checkpoint. |
+| D2-HG11 | pass | none | Auditability | Remote log, Brief State export, hard-validator output, DB checkpoint, and LangSmith runs reproduce the blocker. |
+| D2-HG12 | fail | runtime_recovery_gap | Context/recovery boundary | Existing conservative review-result max-step fallback was unreachable from the final-step no-progress branch. |
+| D2-HG13 | fail | memory_continuity_blocked | Loop continuity | No terminal Document2 state was produced for downstream memory continuity or monitor optimization. |
+
+### Rubrics
+| Rubric | Score | Reason |
+| --- | ---: | --- |
+| D2-R01 | 4 | Source discipline is correct and auditable. |
+| D2-R02 | 2 | Pending expectation patches exist, but no stable thesis set was promoted. |
+| D2-R03 | 2 | Realized-facts content exists only in pending state and was not reviewed/promoted. |
+| D2-R04 | 1 | Price-in reasoning cannot be accepted; the Q3 guidance conflict remained open and no stable output exists. |
+| D2-R05 | 2 | Key-variable content is present only in pending patches and did not survive review/promotion. |
+| D2-R06 | 2 | Monitoring directions exist only in pending state and include a direction-label blocker. |
+| D2-R07 | 2 | Evidence refs are structurally valid for reached state, but no stable expectation evidence set is usable downstream. |
+| D2-R08 | 3 | Review pressure improved and surfaced concrete blockers, but review aggregation failed on C1 no-progress output. |
+| D2-R09 | 1 | Objection resolution did not run after field review. |
+| D2-R10 | 1 | Promotion readiness failed: no stable expectation_unit and trajectory hard validator failed. |
+| D2-R11 | 3 | LangSmith/DB/log evidence is useful and points to the exact blocker, but the trace is not closed. |
+| D2-R12 | 2 | Uncertainty is visible as blockers but not represented in a usable terminal Blackboard document. |
+| D2-R13 | 4 | Reproducibility is strong: source run, execution run, cloud log, Brief State export, hard validators, and LangSmith all align. |
+| D2-R14 | 5 | Optimization target is narrow and directly testable: reconnect existing conservative review fallback to final-step runtime exits. |
+
+### Score Summary
+- Core Blackboard quality rubrics average (`D2-R01`-`D2-R10`): 2.0.
+- Other rubrics with score <= 2: `D2-R12`.
+- Quality target met: no.
+- Operational target met: no; the run stopped before `ResolveObjectionsAndDelegations` and promotion.
+
+### Failure Categories
+- category: `review_no_progress_terminal_failure`
+  - issue: C1 field review reached the final ReAct step with no complete `final_payload`, no tool call, and no delegation.
+  - evidence: terminal error `ReAct step 未返回 final payload、工具调用或委托。`; LangSmith `C1.ReviewExpectationFields.LOOP8` returned progress/ledger text instead of the action contract.
+  - severity: blocking/workflow-runtime.
+  - suspected root cause: the ReAct harness returned `react_no_progress` immediately on the final no-progress branch.
+- category: `review_max_steps_fallback_unreachable`
+  - issue: the runtime already had `_max_steps_review_result_fallback()`, but the final-step no-progress and incomplete-final-payload branches returned failure before the post-loop fallback could run.
+  - evidence: code path in `src/doxagent/agents/runtime/react.py` returned `_failed(..., "react_no_progress", ...)` inside the loop when `step == max_steps`.
+  - severity: hard-gate/direct.
+  - suspected root cause: fallback was implemented only after the loop, so it covered max-step tool-call exhaustion but not final-step no-progress action exhaustion.
+- category: `field_review_lifecycle_incomplete`
+  - issue: C3 generated concrete objections, but C1 failure prevented complete review aggregation and resolver handoff.
+  - evidence: Brief State open objections `obj_bearish_label_swap` and `obj_q3_guidance_conflict`; checkpoint blocked at `ReviewExpectationFields`.
+  - severity: quality-blocking.
+  - suspected root cause: runtime boundary failure, not lack of review pressure.
+- category: `promotion_not_reached`
+  - issue: no stable expectation units were promoted.
+  - evidence: `stable_document_types=["global_research"]`, `expectation_unit_count=0`.
+  - severity: acceptance-blocking.
+  - suspected root cause: field review runtime blocker.
+
+### Optimization Hypothesis
+- If final-step review no-progress and incomplete-final-payload exits invoke the existing conservative review-result recovery before failing, then a review agent that already produced tool evidence or compacted review context can return an auditable `needs_more_evidence` / `not_checked` coverage gap instead of blocking the whole workflow at the runtime boundary.
+- This should not relax quality acceptance because:
+  - the recovered payload still goes through `_normalize_final_payload()` and schema validation;
+  - the recovered finding is not marked `supported`;
+  - existing objections from other reviewers remain open and resolver/promotion gates still decide the final state;
+  - hard validators still fail any run that does not reach promotion.
+- Expected measurable improvement in the next cloud verification:
+  - Retest no longer terminates at `ReviewExpectationFields agent result failed: ReAct step 未返回 final payload、工具调用或委托。`;
+  - `ReviewExpectationFields` either completes with conservative review findings or exposes a more specific downstream quality blocker;
+  - the built-in trajectory validator only passes if the workflow actually reaches a terminal promoted state.
+
+### Proposed Modification Plan
+- Change 1: Add a reusable `_succeeded_with_review_max_steps_fallback()` helper in the ReAct harness to avoid duplicating the conservative review recovery success path.
+- Change 2: In the final-step `is_complete=false final_payload` branch, record a no-progress audit entry and call the review fallback before returning `react_incomplete_final_payload`.
+- Change 3: In the final-step no-final/no-tool/no-delegation branch, record a no-progress audit entry and call the review fallback before returning `react_no_progress`.
+- Change 4: Keep the existing post-loop max-steps fallback path but route it through the same helper for identical audit shape.
+- Change 5: Add regression coverage where an `ExpectationFieldReviewResult` task first obtains tool evidence, then returns only `plan_update`/ledger on the final step; expected result is conservative review recovery, not a failed AgentResult.
+- Retest requirement: push/deploy the fix, rebuild the cloud image, and run the same Document 1-only cloud smoke once. Use in-thread 15-minute `Start-Sleep 900` checks rather than Codex automation.
+
+### Actual Modification
+- Implemented after this evaluation:
+  - Updated `src/doxagent/agents/runtime/react.py` to call conservative review-result fallback from final-step no-progress and incomplete-final-payload exits.
+  - Added `_succeeded_with_review_max_steps_fallback()` so fallback audit entries and completion payloads are consistent across in-loop and post-loop recovery.
+  - Added `test_react_recovers_review_gap_when_final_step_has_no_progress` in `tests/test_phase16_react_harness.py`.
+  - Added changelog entry for the Document2 ReAct review recovery fix.
+  - Verified locally with `uv run pytest tests/test_phase16_react_harness.py -k "max_steps or final_step_has_no_progress"`, `uv run pytest tests/test_phase16_react_harness.py tests/test_phase5_initialization_workflow.py`, and `uv run ruff check src/doxagent/agents/runtime/react.py tests/test_phase16_react_harness.py`.

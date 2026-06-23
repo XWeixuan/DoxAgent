@@ -2162,6 +2162,59 @@ def test_react_recovers_doxatlas_audit_from_max_steps_as_review_gap() -> None:
     )
 
 
+def test_react_recovers_review_gap_when_final_step_has_no_progress() -> None:
+    base_task = agent_task()
+    task = base_task.model_copy(
+        update={
+            "agent_name": AgentName.C1_FUNDAMENTAL_RESEARCH,
+            "task_type": TaskType.REVIEW_EXPECTATION_FIELD,
+            "required_output_schema": "ExpectationFieldReviewResult",
+            "input_context": {
+                "review_scope": ["realized_facts", "event_monitoring_direction"],
+                "pending_expectation_patches": [{"patch_id": "patch-1"}],
+            },
+            "run_metadata": base_task.run_metadata.model_copy(
+                update={"workflow_node": "ReviewExpectationFields"}
+            ),
+        },
+        deep=True,
+    )
+    runner = runner_with_sequence(
+        [
+            {
+                "is_complete": False,
+                "tool_calls": [
+                    {"tool_name": "doxatlas.query", "input": {"query": "MU guidance"}}
+                ],
+            },
+            {
+                "plan_update": "已找到部分证据，但仍在整理字段级结论。",
+                "task_ledger_updates": [
+                    {"item": "整理 realized_facts 审查结论", "status": "blocked"}
+                ],
+            },
+        ],
+        react_config=ReActHarnessConfig(max_steps=2),
+    )
+
+    result = runner.run(task)
+
+    assert result.status is ResultStatus.SUCCEEDED
+    structured = result.payload["structured"]
+    assert structured["findings"][0]["status"] == "needs_more_evidence"
+    assert structured["objections"] == []
+    assert "max_steps" in structured["unknowns"][0]
+    assert any(
+        entry["kind"] == "react_no_progress"
+        for entry in result.payload["react_audit"]["entries"]
+    )
+    assert any(
+        entry["kind"] == "max_steps_recovered"
+        and entry["schema"] == "ExpectationFieldReviewResult"
+        for entry in result.payload["react_audit"]["entries"]
+    )
+
+
 def test_react_required_tool_gap_is_audited_without_blocking_final_payload() -> None:
     base_task = agent_task()
     task = base_task.model_copy(
