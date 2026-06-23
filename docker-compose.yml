@@ -31,6 +31,32 @@ services:
       retries: 3
       start_period: 20s
 
+  monitoring-poller:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: doxagent:latest
+    container_name: doxagent-monitoring-poller
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      PYTHONPATH: /app
+      DOXAGENT_STORAGE_MODE: ${DOXAGENT_STORAGE_MODE:-memory}
+      DOXAGENT_MONITORING_POLLER_SLEEP_SECONDS: ${DOXAGENT_MONITORING_POLLER_SLEEP_SECONDS:-15}
+    command:
+      [
+        "python",
+        "-m",
+        "doxagent.monitoring.cli",
+        "poll-forever",
+        "--sleep-seconds",
+        "${DOXAGENT_MONITORING_POLLER_SLEEP_SECONDS:-15}",
+      ]
+    volumes:
+      - doxagent-cache:/root/.cache
+      - doxagent-tmp:/app/.tmp
+
 volumes:
   doxagent-cache:
   doxagent-tmp:

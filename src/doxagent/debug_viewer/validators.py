@@ -857,7 +857,7 @@ def _required_agents_for_completed_nodes(completed_nodes: set[str]) -> dict[str,
     if "GenerateMonitoringConfig" in completed_nodes:
         required["GenerateMonitoringConfig"] = {"O2"}
     if "GenerateMonitoringPolicy" in completed_nodes:
-        required["GenerateMonitoringPolicy"] = {"O2"}
+        required["GenerateMonitoringPolicy"] = {"O4"}
     return required
 
 

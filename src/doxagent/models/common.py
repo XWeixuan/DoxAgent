@@ -41,7 +41,11 @@ class TaskType(StrEnum):
     DELEGATED_RETRIEVAL = "delegated_retrieval"
     GENERATE_KNOWN_EVENTS = "generate_known_events"
     GENERATE_MONITORING_CONFIG = "generate_monitoring_config"
+    REVIEW_MONITORING_CONFIG = "review_monitoring_config"
+    RESOLVE_MONITORING_CONFIG = "resolve_monitoring_config"
     GENERATE_MONITORING_POLICY = "generate_monitoring_policy"
+    REVIEW_MONITORING_POLICY = "review_monitoring_policy"
+    RESOLVE_MONITORING_POLICY = "resolve_monitoring_policy"
 
 
 class PatchOperation(StrEnum):

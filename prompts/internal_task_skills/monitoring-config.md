@@ -13,12 +13,12 @@ Convert stable expectation units and known events into monitorable inputs.
 
 For each monitoring item:
 
-1. Tie the item to `expectation_id` when it monitors a specific expectation.
-2. Include base keywords for the ticker and expectation.
-3. Include extra objects such as products, competitors, suppliers, regulators, data series, events, or people.
-4. Include extra keywords that express confirmation, weakening, delay, acceleration, cancellation, guidance, order, filing, regulatory, industry, macro, or sentiment signals.
-5. Include related entities when they materially affect the expectation.
-6. Set priority according to investment relevance and likelihood of changing the expectation.
-7. Write a concrete trigger condition that a downstream message classifier can evaluate.
+1. Return a `tool_input` object shaped for `monitoring.update_ticker_config`.
+2. Include `source_id`, `keywords`, `usernames`, `search_terms`, `rss_urls`, `source_filters`, `extra`, `reason`, `mode`, and `enabled` when relevant.
+3. Do not include `poll_interval_seconds`; cadence is user-owned and cannot be changed by agents.
+4. Tie the item to `expectation_id` in `tool_input.extra` when it monitors a specific expectation.
+5. Use source discovery to identify concrete accounts, pages, RSS URLs, entities, source identifiers, competitors, suppliers, regulators, data series, events, or people.
+6. Set priority in `tool_input.extra.priority` according to investment relevance and likelihood of changing the expectation.
+7. Write one concise `reasoning` sentence explaining why this monitoring item exists and which expectation or global variable it serves.
 
 Do not create policy actions in this node. Return only `MonitoringConfigDocument`.

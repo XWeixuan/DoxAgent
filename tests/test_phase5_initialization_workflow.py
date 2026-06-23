@@ -345,6 +345,14 @@ def test_initialization_workflow_runs_mock_ticker_to_completion() -> None:
     }
     assert len(run.commit_log) == 7
     assert run.working_memory
+    assert WorkflowNode.REVIEW_MONITORING_CONFIG in result.checkpoint.completed_nodes
+    assert WorkflowNode.RESOLVE_MONITORING_CONFIG in result.checkpoint.completed_nodes
+    assert WorkflowNode.REVIEW_MONITORING_POLICY in result.checkpoint.completed_nodes
+    assert WorkflowNode.RESOLVE_MONITORING_POLICY in result.checkpoint.completed_nodes
+    content_types = {entry.content_type for entry in run.working_memory}
+    assert "c1_monitoring_config_review" in content_types
+    assert "c3_monitoring_config_review" in content_types
+    assert "o2_monitoring_policy_review" in content_types
     assert run.objections[0].is_unresolved is False
     assert run.delegations[0].is_blocking is False
 
@@ -365,12 +373,14 @@ def test_initialization_workflow_enforces_document_order() -> None:
     assert workflow.blackboard.get_run(partial.checkpoint.run_id).commit_log == []
 
 
-def test_o2_registry_permissions_cover_config_and_policy_documents() -> None:
-    definition = default_agent_registry().get(AgentName.O2_MONITORING_CONFIG)
-    permissions = definition.runtime.to_permissions()
+def test_document3_registry_permissions_split_config_and_policy_documents() -> None:
+    registry = default_agent_registry()
+    o2_permissions = registry.get(AgentName.O2_MONITORING_CONFIG).runtime.to_permissions()
+    o4_permissions = registry.get(AgentName.O4_MARKET_TRACE).runtime.to_permissions()
 
-    assert DocumentType.MONITORING_CONFIG.value in permissions.writable_targets
-    assert DocumentType.MONITORING_POLICY.value in permissions.writable_targets
+    assert DocumentType.MONITORING_CONFIG.value in o2_permissions.writable_targets
+    assert DocumentType.MONITORING_POLICY.value not in o2_permissions.writable_targets
+    assert DocumentType.MONITORING_POLICY.value in o4_permissions.writable_targets
 
 
 def test_blockers_stop_expectation_promotion_without_commit() -> None:

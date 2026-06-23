@@ -27,7 +27,11 @@ class WorkflowNode(StrEnum):
     GENERATE_GLOBAL_NARRATIVE_REPORT = "GenerateGlobalNarrativeReport"
     GENERATE_KNOWN_EVENTS = "GenerateKnownEvents"
     GENERATE_MONITORING_CONFIG = "GenerateMonitoringConfig"
+    REVIEW_MONITORING_CONFIG = "ReviewMonitoringConfig"
+    RESOLVE_MONITORING_CONFIG = "ResolveMonitoringConfig"
     GENERATE_MONITORING_POLICY = "GenerateMonitoringPolicy"
+    REVIEW_MONITORING_POLICY = "ReviewMonitoringPolicy"
+    RESOLVE_MONITORING_POLICY = "ResolveMonitoringPolicy"
     FINALIZE_INITIALIZATION = "FinalizeInitialization"
 
 

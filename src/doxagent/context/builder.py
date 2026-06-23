@@ -1,6 +1,6 @@
 """Build bounded agent context from Blackboard state."""
 
-from typing import Any
+from typing import Any, cast
 
 from doxagent.blackboard import BlackboardService
 from doxagent.context.schema import (
@@ -9,7 +9,13 @@ from doxagent.context.schema import (
     ObjectionSummary,
     WorkingMemorySummary,
 )
-from doxagent.models import AgentTask, DocumentType, EvidenceRef
+from doxagent.models import (
+    AgentTask,
+    DocumentType,
+    EvidenceRef,
+    KnownEventsDocument,
+    MonitoringPolicyDocument,
+)
 
 
 class ContextBuilder:
@@ -88,6 +94,68 @@ class ContextBuilder:
             blocking_delegations=blocking_delegations,
         )
 
+    def build_document3_runtime_context(self, run_id: str) -> dict[str, Any]:
+        """Build the compact Document 3 view used by runtime low-parameter LLMs."""
+        run = self.blackboard.get_run(run_id)
+        known_events = self._latest_document(run.belief_state.documents, DocumentType.KNOWN_EVENTS)
+        monitoring_policy = self._latest_document(
+            run.belief_state.documents,
+            DocumentType.MONITORING_POLICY,
+        )
+        events: list[dict[str, Any]] = []
+        if known_events is not None:
+            known_events_document = KnownEventsDocument.model_validate(known_events)
+            events = [
+                {
+                    "event_id": event.event_id,
+                    "event_time": event.event_time.isoformat() if event.event_time else None,
+                    "event_window": event.event_window,
+                    "core_fact": event.core_fact,
+                    "duplicate_detection_keys": list(event.duplicate_detection_keys),
+                }
+                for event in known_events_document.events
+            ]
+        policies: list[dict[str, Any]] = []
+        if monitoring_policy is not None:
+            monitoring_policy_document = MonitoringPolicyDocument.model_validate(monitoring_policy)
+            policies = [
+                {
+                    "policy_id": policy.policy_id,
+                    "policy_type": policy.policy_type,
+                    "scope": policy.scope,
+                    "trigger": policy.trigger,
+                    "confirmation": policy.confirmation,
+                    "action": policy.action,
+                    "risk_guard": policy.risk_guard,
+                    "reasoning": policy.reasoning,
+                }
+                for policy in monitoring_policy_document.policies
+            ]
+        return {
+            "run_id": run.run_id,
+            "ticker": run.ticker,
+            "known_events": events,
+            "monitoring_policies": policies,
+            "source_confidence_policy": (
+                "Use source credibility from the runtime system prompt; policies do not carry "
+                "per-rule source_condition fields."
+            ),
+        }
+
+    def _latest_document(
+        self,
+        documents: dict[DocumentType, dict[str, Any]],
+        document_type: DocumentType,
+    ) -> dict[str, Any] | None:
+        bucket = documents.get(document_type, {})
+        if not bucket:
+            return None
+        latest = next(reversed(bucket.values()))
+        if not isinstance(latest, dict):
+            return None
+        document = latest.get("document")
+        return document if isinstance(document, dict) else None
+
     def _belief_state_summary(
         self,
         documents: dict[DocumentType, dict[str, Any]],
@@ -118,7 +186,7 @@ class ContextBuilder:
 
 def _agent_visible_working_memory_payload(payload: dict[str, Any]) -> dict[str, Any]:
     if not _looks_like_agent_result_memory(payload):
-        return _compact_payload_value(payload, depth=3)
+        return cast(dict[str, Any], _compact_payload_value(payload, depth=3))
 
     visible: dict[str, Any] = {}
     for key in (
@@ -204,7 +272,7 @@ def _compact_structured_payload(payload: dict[str, Any]) -> dict[str, Any]:
             "unknowns": _compact_payload_value(payload.get("unknowns", []), depth=2),
             "rationale_preview": _compact_text(payload.get("rationale"), limit=800),
         }
-    return _compact_payload_value(payload, depth=3)
+    return cast(dict[str, Any], _compact_payload_value(payload, depth=3))
 
 
 def _compact_patch_summary(patch: dict[str, Any]) -> dict[str, Any]:

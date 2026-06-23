@@ -16,6 +16,7 @@ from doxagent.tools.providers.fed import FedFomcCalendarMaterialsClient
 from doxagent.tools.providers.finnhub import FinnhubPeersClient, FinnhubTradeStreamClient
 from doxagent.tools.providers.fmp import FmpSectorPerformanceClient
 from doxagent.tools.providers.fred import FredSeriesObservationsClient
+from doxagent.tools.providers.monitoring import MONITORING_TOOL_NAMES, MonitoringToolClient
 from doxagent.tools.providers.polymarket import PolymarketMarketProbabilityClient
 from doxagent.tools.providers.sec import SecCompanyFactsAndFilingsClient, SecFilingSectionsClient
 from doxagent.tools.providers.tavily import TavilyExtractClient, TavilySearchClient
@@ -409,6 +410,60 @@ _DESCRIPTORS: dict[str, ToolDescriptor] = {
         input_fields=["ticker", "symbol", "outputsize"],
         business_purpose="Fallback market-data evidence when Twelve Data is unavailable.",
     ),
+    "monitoring.get_ticker_config": _descriptor(
+        "monitoring.get_ticker_config",
+        description="Read a ticker's full Monitoring Message Bus source configuration.",
+        input_fields=["ticker"],
+        business_purpose=(
+            "Let O2 inspect enabled by-ticker and by-parameter monitoring coverage."
+        ),
+        contract_brief=(
+            "Returns source dimensions, editable strategy fields, user-only poll intervals, "
+            "bindings, and recent poll state."
+        ),
+    ),
+    "monitoring.update_ticker_config": _descriptor(
+        "monitoring.update_ticker_config",
+        description="Update agent-owned monitoring parameters for one ticker/source binding.",
+        input_fields=[
+            "ticker",
+            "source_id",
+            "enabled",
+            "keywords",
+            "usernames",
+            "search_terms",
+            "rss_urls",
+            "source_filters",
+            "mode",
+            "reason",
+        ],
+        business_purpose=(
+            "Let O2 tune monitoring coverage without changing user-owned polling cadence."
+        ),
+        contract_brief=(
+            "Agent may edit ticker binding parameters and enabled state. "
+            "poll_interval_seconds is rejected because only users can change cadence."
+        ),
+        concurrent_safe=False,
+        compactable=False,
+    ),
+    "monitoring.list_status": _descriptor(
+        "monitoring.list_status",
+        description="Read source health, poll state, recent raw messages, and event-stream status.",
+        input_fields=["ticker", "limit"],
+        business_purpose="Give agents and users a compact observability snapshot of the bus.",
+        contract_brief=(
+            "Returns source configs, ticker bindings, recent errors, raw/standard/event counts, "
+            "and recent event-stream items."
+        ),
+    ),
+    "monitoring.recent_events": _descriptor(
+        "monitoring.recent_events",
+        description="Read recent persisted Monitoring Message Bus event-stream items.",
+        input_fields=["ticker", "limit"],
+        business_purpose="Provide future Trigger Engine and Agent Worker input preview.",
+        contract_brief="Read-only event-stream replay preview; does not call external APIs.",
+    ),
 }
 
 
@@ -427,6 +482,10 @@ def default_real_tool_registry(settings: DoxAgentSettings | None = None) -> Tool
         register(name, doxatlas.for_tool(name))
     register("doxatlas.query", doxatlas.for_tool("doxatlas.query"))
     register("doxatlas.source_lookup", doxatlas.for_tool("doxatlas.source_lookup"))
+
+    monitoring = MonitoringToolClient(settings=resolved)
+    for name in MONITORING_TOOL_NAMES:
+        register(name, monitoring.for_tool(name))
 
     register(
         "sec.company_facts_and_filings",

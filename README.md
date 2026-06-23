@@ -10,11 +10,14 @@ If 8765 is busy, open the URL printed by the launcher.
 Remote tunnel only; do not keep this running while testing the local viewer on 8765:
 ssh -N -L 8765:127.0.0.1:8765 doxagent-hk
 .\scripts\debug-viewer.cmd
-
 网页：
 http://127.0.0.1:8765
 http://127.0.0.1:8765/langsmith-renderer.html
-
+---
+监测管线
+.\scripts\monitoring-viewer.cmd 8766
+http://127.0.0.1:8766
+---
 启动测试：
 $env:DOXAGENT_RUN_REAL_API_TESTS="1"
 uv run pytest -m real_api tests/test_phase17_real_initialization_smoke.py

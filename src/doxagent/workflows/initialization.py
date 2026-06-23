@@ -8,7 +8,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from queue import Empty, Queue
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 from doxagent.agents import (
     AgentRunner,
@@ -99,7 +99,11 @@ INITIALIZATION_NODES: tuple[WorkflowNode, ...] = (
     WorkflowNode.GENERATE_GLOBAL_NARRATIVE_REPORT,
     WorkflowNode.GENERATE_KNOWN_EVENTS,
     WorkflowNode.GENERATE_MONITORING_CONFIG,
+    WorkflowNode.REVIEW_MONITORING_CONFIG,
+    WorkflowNode.RESOLVE_MONITORING_CONFIG,
     WorkflowNode.GENERATE_MONITORING_POLICY,
+    WorkflowNode.REVIEW_MONITORING_POLICY,
+    WorkflowNode.RESOLVE_MONITORING_POLICY,
     WorkflowNode.FINALIZE_INITIALIZATION,
 )
 
@@ -361,7 +365,7 @@ class InitializationMockResultFactory:
             patch = self._document_patch(
                 self._monitoring_policy(task.ticker),
                 DocumentType.MONITORING_POLICY,
-                AgentName.O2_MONITORING_CONFIG,
+                AgentName.O4_MARKET_TRACE,
             )
             return self._result(
                 task,
@@ -569,6 +573,8 @@ class InitializationMockResultFactory:
                     event_id=new_id("event"),
                     event_time=datetime.now(UTC),
                     description="Mock known event.",
+                    core_fact="Mock known event.",
+                    duplicate_detection_keys=[ticker, "mock known event"],
                     source=self._evidence(EvidenceSourceType.DOXATLAS_SOURCE),
                     expectation_id="exp_mock_core",
                     discussed_by_market=True,
@@ -586,6 +592,21 @@ class InitializationMockResultFactory:
             monitoring_items=[
                 MonitoringItem(
                     item_id=new_id("monitor"),
+                    tool_input={
+                        "ticker": ticker,
+                        "source_id": "stocktwits_messages",
+                        "keywords": [ticker, "mock confirmation"],
+                        "search_terms": ["mock core expectation"],
+                        "extra": {
+                            "expectation_id": "exp_mock_core",
+                            "priority": "high",
+                            "trigger_condition": "mock signal changes the expectation",
+                        },
+                        "reason": "Track mock expectation-changing signals.",
+                        "mode": "merge",
+                        "enabled": True,
+                    },
+                    reasoning="Track mock expectation-changing signals.",
                     base_keywords=[ticker],
                     extra_objects=["mock core expectation"],
                     extra_keywords=["mock confirmation"],
@@ -604,36 +625,69 @@ class InitializationMockResultFactory:
             created_at=datetime.now(UTC),
             direct_trade_rules=[
                 MonitoringPolicyRule(
+                    policy_id=new_id("policy"),
                     rule_id=new_id("rule"),
+                    policy_type="direct_trade",
                     action_type=PolicyActionType.DIRECT_TRADE,
+                    scope={"expectation_unit_id": "exp_mock_core"},
+                    trigger={"condition": "mock high-confidence positive signal"},
                     trigger_condition="mock high-confidence positive signal",
+                    confirmation={"market_confirmation": "price and source confirmation present"},
                     expectation_id="exp_mock_core",
-                    action="标记为 direct_trade 候选，交由人工或未来 O3 复核",
-                    strategy_note="Phase 5 不触发券商下单。",
+                    action={
+                        "side": "long",
+                        "conviction": "medium",
+                        "size_bucket": "normal",
+                        "note": "Create a trade intent candidate only.",
+                    },
+                    risk_guard={"guardrail": "Do not create broker orders."},
+                    reasoning="High-confidence signal can be routed as a trade intent candidate.",
+                    strategy_note="Phase 5 does not place broker orders.",
                     evidence_fields=["source_id", "event_time", "price_reaction"],
                     escalation_path="human_review",
                 ),
             ],
             push_to_agent_rules=[
                 MonitoringPolicyRule(
+                    policy_id=new_id("policy"),
                     rule_id=new_id("rule"),
+                    policy_type="escalate",
                     action_type=PolicyActionType.PUSH_TO_AGENT,
+                    scope={"expectation_unit_id": "exp_mock_core"},
+                    trigger={"condition": "mock ambiguous signal"},
                     trigger_condition="mock ambiguous signal",
+                    confirmation={"market_confirmation": "signal is ambiguous"},
                     expectation_id="exp_mock_core",
-                    action="推送给 O1 复核",
-                    strategy_note="需要 expectation-owner 复核。",
+                    action={
+                        "send_to": ["O1", "O4"],
+                        "question": "Review whether the signal changes the expectation.",
+                        "priority": "medium",
+                    },
+                    risk_guard={"guardrail": "Require agent review before action."},
+                    reasoning="Ambiguous signal needs expectation-owner review.",
+                    strategy_note="Needs expectation-owner review.",
                     evidence_fields=["source_id", "claim", "uncertainty_reason"],
                     escalation_path="O1",
                 ),
             ],
             cache_rules=[
                 MonitoringPolicyRule(
+                    policy_id=new_id("policy"),
                     rule_id=new_id("rule"),
+                    policy_type="cache",
                     action_type=PolicyActionType.CACHE,
+                    scope={"expectation_unit_id": "exp_mock_core"},
+                    trigger={"condition": "mock duplicate old event"},
                     trigger_condition="mock duplicate old event",
+                    confirmation={"market_confirmation": "duplicate old-event marker present"},
                     expectation_id="exp_mock_core",
-                    action="缓存为批量复核材料",
-                    strategy_note="不触发即时行动。",
+                    action={
+                        "cache_label": "background_only",
+                        "handling": "Cache for batch review.",
+                    },
+                    risk_guard={"guardrail": "No immediate action for duplicate signals."},
+                    reasoning="Duplicate old event should be cached for later review.",
+                    strategy_note="Does not trigger immediate action.",
                     evidence_fields=["source_id", "duplicate_marker"],
                     escalation_path="batch_review",
                 ),
@@ -940,6 +994,10 @@ class BlackboardInitializationWorkflow:
                 "MonitoringConfigDocument",
             )
             return self._submit_result_patches(checkpoint, node, result)
+        if node == WorkflowNode.REVIEW_MONITORING_CONFIG:
+            return self._review_monitoring_config(checkpoint, node)
+        if node == WorkflowNode.RESOLVE_MONITORING_CONFIG:
+            return self._resolve_monitoring_config(checkpoint, node)
         if node == WorkflowNode.GENERATE_MONITORING_POLICY:
             self._require_documents(
                 checkpoint,
@@ -953,11 +1011,15 @@ class BlackboardInitializationWorkflow:
             result = self._run_agent(
                 checkpoint,
                 node,
-                AgentName.O2_MONITORING_CONFIG,
+                AgentName.O4_MARKET_TRACE,
                 TaskType.GENERATE_MONITORING_POLICY,
                 "MonitoringPolicyDocument",
             )
             return self._submit_result_patches(checkpoint, node, result)
+        if node == WorkflowNode.REVIEW_MONITORING_POLICY:
+            return self._review_monitoring_policy(checkpoint, node)
+        if node == WorkflowNode.RESOLVE_MONITORING_POLICY:
+            return self._resolve_monitoring_policy(checkpoint, node)
         if node == WorkflowNode.FINALIZE_INITIALIZATION:
             return self._complete(self._mark_completed(checkpoint, node, next_node=None))
         raise WorkflowDependencyError(f"Unsupported workflow node: {node}")
@@ -1069,7 +1131,7 @@ class BlackboardInitializationWorkflow:
                     checkpoint,
                     task,
                     result,
-                    event_code=event_code,
+                    event_code=cast(Literal["parse_failed", "schema_failed"], event_code),
                     message=result.error.message if result.error is not None else "Agent failed.",
                     expected_schema=output_schema,
                 )
@@ -1205,8 +1267,18 @@ class BlackboardInitializationWorkflow:
             updates["writable_targets"] = [DocumentType.KNOWN_EVENTS.value]
         elif task_type is TaskType.GENERATE_MONITORING_CONFIG:
             updates["writable_targets"] = [DocumentType.MONITORING_CONFIG.value]
-        elif task_type is TaskType.GENERATE_MONITORING_POLICY:
+        elif task_type is TaskType.RESOLVE_MONITORING_CONFIG:
+            updates["writable_targets"] = [DocumentType.MONITORING_CONFIG.value]
+        elif task_type in {
+            TaskType.GENERATE_MONITORING_POLICY,
+            TaskType.RESOLVE_MONITORING_POLICY,
+        }:
             updates["writable_targets"] = [DocumentType.MONITORING_POLICY.value]
+        elif task_type in {
+            TaskType.REVIEW_MONITORING_CONFIG,
+            TaskType.REVIEW_MONITORING_POLICY,
+        }:
+            updates["writable_targets"] = []
         elif (
             node
             in {
@@ -3498,7 +3570,13 @@ class BlackboardInitializationWorkflow:
         result = self._ensure_document_patch_result(checkpoint, node, result)
         self._write_working_memory(checkpoint, result, "agent_result")
         self._validate_agent_success(result, node)
+        if node in {
+            WorkflowNode.GENERATE_MONITORING_CONFIG,
+            WorkflowNode.GENERATE_MONITORING_POLICY,
+        }:
+            return self._stage_document3_pending_patches(checkpoint, node, result)
         stable_documents = list(checkpoint.stable_document_types)
+        metadata = self._agent_metadata(node, [result])
         for patch in result.proposed_patches:
             self._validate_patch_contract(patch, node)
             if patch.target.document_type is DocumentType.EXPECTATION_UNIT:
@@ -3506,12 +3584,463 @@ class BlackboardInitializationWorkflow:
                 self._validate_expectation_promotion_quality(document)
             self._submit_patch(checkpoint.run_id, patch, f"{node.value} 已产出稳定文档。")
             stable_documents.append(patch.target.document_type)
+            if patch.target.document_type is DocumentType.MONITORING_CONFIG:
+                applied_patch, apply_audit = self._apply_monitoring_config_patch(checkpoint, patch)
+                if apply_audit:
+                    self._submit_patch(
+                        checkpoint.run_id,
+                        applied_patch,
+                        "Monitoring Config applied to Message Bus runtime state.",
+                    )
+                    metadata["monitoring_config_apply"] = apply_audit
         return self._mark_completed(
             checkpoint,
             node,
             stable_document_types=stable_documents,
-            metadata=self._agent_metadata(node, [result]),
+            metadata=metadata,
         )
+
+    def _stage_document3_pending_patches(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        node: WorkflowNode,
+        result: AgentResult,
+    ) -> WorkflowCheckpoint:
+        pending_patches: list[BlackboardPatch] = []
+        for patch in result.proposed_patches:
+            self._validate_patch_contract(patch, node)
+            if patch.target.document_type not in {
+                DocumentType.MONITORING_CONFIG,
+                DocumentType.MONITORING_POLICY,
+            }:
+                raise WorkflowContractError(
+                    f"{node.value} produced unexpected document type: "
+                    f"{patch.target.document_type.value}"
+                )
+            pending_patches.append(patch)
+        if not pending_patches:
+            raise WorkflowContractError(f"{node.value} produced no Document 3 pending patches.")
+        return self._mark_completed(
+            checkpoint,
+            node,
+            pending_patches=pending_patches,
+            metadata=self._agent_metadata(node, [result])
+            | {
+                "document3_lifecycle": {
+                    "document_type": pending_patches[0].target.document_type.value,
+                    "state": "proposed",
+                    "patch_ids": [patch.patch_id for patch in pending_patches],
+                }
+            },
+        )
+
+    def _apply_monitoring_config_patch(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        patch: BlackboardPatch,
+    ) -> tuple[BlackboardPatch, dict[str, Any]]:
+        if self.execution_mode == "mock":
+            return patch, {}
+        if not isinstance(patch.after, dict):
+            raise WorkflowContractError("GenerateMonitoringConfig patch must contain document.")
+        document = MonitoringConfigDocument.model_validate(patch.after)
+        tool_registry = self._runner_tool_registry()
+        if tool_registry is None:
+            raise WorkflowContractError(
+                "ResolveMonitoringConfig requires monitoring.update_ticker_config, "
+                "but the active runner has no tool registry."
+            )
+        permissions = self._effective_permissions(
+            self.registry.get(AgentName.O2_MONITORING_CONFIG).runtime.to_permissions(),
+            WorkflowNode.RESOLVE_MONITORING_CONFIG,
+            TaskType.RESOLVE_MONITORING_CONFIG,
+            AgentName.O2_MONITORING_CONFIG,
+        ).model_copy(update={"allowed_tools": ["monitoring.update_ticker_config"]}, deep=True)
+        applied_results: list[dict[str, Any]] = []
+        for item in document.monitoring_items:
+            tool_input = dict(item.tool_input)
+            tool_input["ticker"] = checkpoint.ticker
+            tool_input.pop("poll_interval_seconds", None)
+            request = ToolRequest(
+                tool_name="monitoring.update_ticker_config",
+                ticker=checkpoint.ticker,
+                agent_name=AgentName.O2_MONITORING_CONFIG,
+                input=tool_input,
+                metadata={
+                    "run_id": checkpoint.run_id,
+                    "workflow_node": WorkflowNode.RESOLVE_MONITORING_CONFIG.value,
+                    "document_id": document.document_id,
+                    "monitoring_item_id": item.item_id,
+                },
+            )
+            result = tool_registry.call(request, permissions)
+            if not result.succeeded:
+                message = result.error.message if result.error is not None else "unknown error"
+                raise WorkflowContractError(
+                    "monitoring.update_ticker_config failed for "
+                    f"{item.item_id}: {message}"
+                )
+            applied_results.append(
+                {
+                    "item_id": item.item_id,
+                    "tool_name": result.tool_name,
+                    "status": result.status.value,
+                    "output": result.output,
+                }
+            )
+        updated_after = dict(patch.after)
+        updated_after["applied_config_version"] = (
+            f"{document.document_id}:{len(applied_results)}:{int(time.time())}"
+        )
+        runtime_patch = patch.model_copy(
+            update={
+                "patch_id": new_id("patch"),
+                "operation": PatchOperation.UPDATE,
+                "before": patch.after,
+                "after": updated_after,
+                "rationale": "Monitoring Config applied to Message Bus runtime state.",
+                "author_agent": AgentName.O2_MONITORING_CONFIG,
+            },
+            deep=True,
+        )
+        return runtime_patch, {
+            "tool_name": "monitoring.update_ticker_config",
+            "applied_item_count": len(applied_results),
+            "applied_items": applied_results,
+            "applied_config_version": updated_after["applied_config_version"],
+        }
+
+    def _review_monitoring_config(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        node: WorkflowNode,
+    ) -> WorkflowCheckpoint:
+        patch = self._document3_pending_patch(checkpoint, DocumentType.MONITORING_CONFIG, node)
+        specs = [
+            {
+                "agent_name": AgentName.C1_FUNDAMENTAL_RESEARCH,
+                "task_type": TaskType.REVIEW_MONITORING_CONFIG,
+                "content_type": "c1_monitoring_config_review",
+                "review_scope": [
+                    "company fundamentals",
+                    "financial variables",
+                    "orders",
+                    "customers",
+                    "capacity",
+                ],
+                "instruction": (
+                    "Review whether Monitoring Config misses internal company variables, "
+                    "financial signals, order/customer/capacity sources, or uses overly broad "
+                    "low-signal monitoring terms. Raise blocking objections for material gaps."
+                ),
+            },
+            {
+                "agent_name": AgentName.C3_INDUSTRY_RESEARCH,
+                "task_type": TaskType.REVIEW_MONITORING_CONFIG,
+                "content_type": "c3_monitoring_config_review",
+                "review_scope": [
+                    "industry variables",
+                    "competitors",
+                    "supply chain",
+                    "regulation",
+                    "macro policy",
+                ],
+                "instruction": (
+                    "Review whether Monitoring Config misses industry, peer, supply-chain, "
+                    "regulatory, macro-policy, or source-scope variables. Raise blocking "
+                    "objections for material gaps or broad keyword waste."
+                ),
+            },
+        ]
+        return self._run_document3_review_jobs(
+            checkpoint,
+            node,
+            patch,
+            specs,
+            metadata_key="monitoring_config_review",
+        )
+
+    def _resolve_monitoring_config(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        node: WorkflowNode,
+    ) -> WorkflowCheckpoint:
+        patch = self._document3_pending_patch(checkpoint, DocumentType.MONITORING_CONFIG, node)
+        patch, results = self._resolve_document3_pending_patch(
+            checkpoint,
+            node,
+            patch,
+            resolver_agent=AgentName.O2_MONITORING_CONFIG,
+            resolver_task_type=TaskType.RESOLVE_MONITORING_CONFIG,
+            output_schema="MonitoringConfigDocument",
+            content_type="o2_monitoring_config_resolution",
+        )
+        stable_documents = self._submit_document3_brief_state_patch(
+            checkpoint,
+            patch,
+            trigger_reason="Monitoring Config reviewed and promoted to Document 3 Brief State.",
+        )
+        metadata = self._agent_metadata(node, results) if results else {}
+        applied_patch, apply_audit = self._apply_monitoring_config_patch(checkpoint, patch)
+        if apply_audit:
+            self._submit_patch(
+                checkpoint.run_id,
+                applied_patch,
+                "Monitoring Config applied to Message Bus runtime state.",
+            )
+            metadata["monitoring_config_apply"] = apply_audit
+        metadata["document3_lifecycle"] = {
+            "document_type": DocumentType.MONITORING_CONFIG.value,
+            "state": "applied_runtime_state" if apply_audit else "brief_state",
+            "patch_id": patch.patch_id,
+        }
+        return self._mark_completed(
+            checkpoint,
+            node,
+            stable_document_types=stable_documents,
+            pending_patches=[],
+            metadata=metadata,
+        )
+
+    def _review_monitoring_policy(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        node: WorkflowNode,
+    ) -> WorkflowCheckpoint:
+        patch = self._document3_pending_patch(checkpoint, DocumentType.MONITORING_POLICY, node)
+        specs = [
+            {
+                "agent_name": AgentName.O2_MONITORING_CONFIG,
+                "task_type": TaskType.REVIEW_MONITORING_POLICY,
+                "content_type": "o2_monitoring_policy_review",
+                "review_scope": [
+                    "Monitoring Config coverage",
+                    "policy trigger support",
+                    "direct_trade downgrade cases",
+                    "cache classification",
+                ],
+                "instruction": (
+                    "Review whether O4 Monitoring Execution Policy can actually be triggered "
+                    "by the promoted Monitoring Config, whether it misclassifies cache-only "
+                    "messages as direct_trade, and whether every policy has supportable scope, "
+                    "trigger, action, and risk_guard. Raise blocking objections for mismatches."
+                ),
+            }
+        ]
+        return self._run_document3_review_jobs(
+            checkpoint,
+            node,
+            patch,
+            specs,
+            metadata_key="monitoring_policy_review",
+        )
+
+    def _resolve_monitoring_policy(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        node: WorkflowNode,
+    ) -> WorkflowCheckpoint:
+        patch = self._document3_pending_patch(checkpoint, DocumentType.MONITORING_POLICY, node)
+        patch, results = self._resolve_document3_pending_patch(
+            checkpoint,
+            node,
+            patch,
+            resolver_agent=AgentName.O4_MARKET_TRACE,
+            resolver_task_type=TaskType.RESOLVE_MONITORING_POLICY,
+            output_schema="MonitoringPolicyDocument",
+            content_type="o4_monitoring_policy_resolution",
+        )
+        stable_documents = self._submit_document3_brief_state_patch(
+            checkpoint,
+            patch,
+            trigger_reason=(
+                "Monitoring Execution Policy reviewed and promoted to Document 3 Brief State."
+            ),
+        )
+        metadata = self._agent_metadata(node, results) if results else {}
+        metadata["document3_lifecycle"] = {
+            "document_type": DocumentType.MONITORING_POLICY.value,
+            "state": "brief_state",
+            "patch_id": patch.patch_id,
+        }
+        return self._mark_completed(
+            checkpoint,
+            node,
+            stable_document_types=stable_documents,
+            pending_patches=[],
+            metadata=metadata,
+        )
+
+    def _run_document3_review_jobs(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        node: WorkflowNode,
+        patch: BlackboardPatch,
+        specs: list[dict[str, Any]],
+        *,
+        metadata_key: str,
+    ) -> WorkflowCheckpoint:
+        jobs: list[_ParallelAgentJob] = []
+        for order, spec in enumerate(specs):
+            jobs.append(
+                _ParallelAgentJob(
+                    order=order,
+                    agent_name=spec["agent_name"],
+                    task_type=spec["task_type"],
+                    output_schema="ResearchSection",
+                    content_type=spec["content_type"],
+                    section_key=spec["agent_name"].value,
+                    extra_context={
+                        "review_scope": spec["review_scope"],
+                        "review_instruction": spec["instruction"],
+                        "document3_pending_patch": patch.model_dump(mode="json"),
+                    },
+                )
+            )
+        results: list[AgentResult] = []
+        first_error: Exception | None = None
+        for outcome in self._run_agent_jobs_concurrently(checkpoint, node, jobs):
+            spec = specs[outcome.job.order]
+            if outcome.error is not None:
+                first_error = first_error or outcome.error
+                continue
+            result = outcome.result
+            if result is None:
+                first_error = first_error or WorkflowContractError(
+                    f"{node.value}/{outcome.job.agent_name.value} returned no result."
+                )
+                continue
+            try:
+                self._write_working_memory(checkpoint, result, spec["content_type"])
+                self._validate_agent_success(result, node, require_patches=False)
+            except WorkflowContractError as exc:
+                first_error = first_error or exc
+                continue
+            for objection in result.objections:
+                self.blackboard.create_objection(
+                    checkpoint.run_id,
+                    self._objection_with_evidence_fallback(objection, result),
+                )
+            for delegation in result.delegations:
+                self.blackboard.create_delegation(checkpoint.run_id, delegation)
+            results.append(result)
+        if first_error is not None:
+            raise first_error
+        return self._mark_completed(
+            checkpoint,
+            node,
+            metadata=self._agent_metadata(node, results)
+            | {
+                metadata_key: {
+                    "reviewer_agents": [spec["agent_name"].value for spec in specs],
+                    "pending_patch_id": patch.patch_id,
+                }
+            },
+        )
+
+    def _resolve_document3_pending_patch(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        node: WorkflowNode,
+        patch: BlackboardPatch,
+        *,
+        resolver_agent: AgentName,
+        resolver_task_type: TaskType,
+        output_schema: str,
+        content_type: str,
+    ) -> tuple[BlackboardPatch, list[AgentResult]]:
+        relevant_objections = self._document3_unresolved_objections(checkpoint, patch)
+        if not relevant_objections:
+            return patch, []
+        if self.execution_mode != "agent_runner":
+            self._mock_resolve_blockers(checkpoint)
+            remaining = self._document3_unresolved_objections(checkpoint, patch)
+            if remaining:
+                raise WorkflowContractError(
+                    f"{node.value} has unresolved Document 3 objections: "
+                    + ", ".join(item.objection_id for item in remaining)
+                )
+            return patch, []
+        result = self._run_agent(
+            checkpoint,
+            node,
+            resolver_agent,
+            resolver_task_type,
+            output_schema,
+            extra_context={
+                "document3_pending_patch": patch.model_dump(mode="json"),
+                "document3_review_objections": [
+                    objection.model_dump(mode="json") for objection in relevant_objections
+                ],
+            },
+        )
+        result = self._ensure_document_patch_result(checkpoint, node, result)
+        self._write_working_memory(checkpoint, result, content_type)
+        self._validate_agent_success(result, node)
+        if len(result.proposed_patches) != 1:
+            raise WorkflowContractError(f"{node.value} expected one revised Document 3 patch.")
+        revised_patch = result.proposed_patches[0]
+        self._validate_patch_contract(revised_patch, node)
+        for objection in relevant_objections:
+            self.blackboard.resolve_objection(
+                checkpoint.run_id,
+                objection.objection_id,
+                f"{resolver_agent.value} revised Document 3 patch {revised_patch.patch_id}.",
+            )
+        return revised_patch, [result]
+
+    def _submit_document3_brief_state_patch(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        patch: BlackboardPatch,
+        *,
+        trigger_reason: str,
+    ) -> list[DocumentType]:
+        remaining = self._document3_unresolved_objections(checkpoint, patch)
+        if remaining:
+            raise WorkflowContractError(
+                "Document 3 cannot enter brief_state with unresolved objections: "
+                + ", ".join(item.objection_id for item in remaining)
+            )
+        self._submit_patch(checkpoint.run_id, patch, trigger_reason)
+        stable_documents = list(checkpoint.stable_document_types)
+        if patch.target.document_type not in stable_documents:
+            stable_documents.append(patch.target.document_type)
+        return stable_documents
+
+    def _document3_pending_patch(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        document_type: DocumentType,
+        node: WorkflowNode,
+    ) -> BlackboardPatch:
+        matches = [
+            patch
+            for patch in checkpoint.pending_patches
+            if patch.target.document_type is document_type
+        ]
+        if len(matches) != 1:
+            raise WorkflowContractError(
+                f"{node.value} requires exactly one pending {document_type.value} patch."
+            )
+        return matches[0]
+
+    def _document3_unresolved_objections(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        patch: BlackboardPatch,
+    ) -> list[Objection]:
+        run = self.blackboard.get_run(checkpoint.run_id)
+        return [
+            objection
+            for objection in run.objections
+            if objection.is_unresolved
+            and objection.target.document_type is patch.target.document_type
+            and (
+                objection.target.document_id in {None, patch.target.document_id}
+                or not objection.target.document_id
+            )
+        ]
 
     def _ensure_document_patch_result(
         self,
@@ -3570,9 +4099,15 @@ class BlackboardInitializationWorkflow:
             return None
         if node is WorkflowNode.GENERATE_KNOWN_EVENTS:
             return self._normalize_known_events_document(checkpoint, structured, result)
-        if node is WorkflowNode.GENERATE_MONITORING_CONFIG:
+        if node in {
+            WorkflowNode.GENERATE_MONITORING_CONFIG,
+            WorkflowNode.RESOLVE_MONITORING_CONFIG,
+        }:
             return self._normalize_monitoring_config_document(checkpoint.ticker, structured)
-        if node is WorkflowNode.GENERATE_MONITORING_POLICY:
+        if node in {
+            WorkflowNode.GENERATE_MONITORING_POLICY,
+            WorkflowNode.RESOLVE_MONITORING_POLICY,
+        }:
             return self._normalize_monitoring_policy_document(checkpoint.ticker, structured)
         return None
 
@@ -3618,7 +4153,20 @@ class BlackboardInitializationWorkflow:
                 KnownEvent(
                     event_id=str(item.get("event_id") or item.get("id") or new_id("event")),
                     event_time=event_time,
+                    event_window=str(
+                        item.get("event_window")
+                        or item.get("window")
+                        or item.get("time_window")
+                        or ""
+                    )
+                    or None,
+                    core_fact=str(item.get("core_fact") or description),
                     description=description,
+                    duplicate_detection_keys=self._duplicate_detection_keys(
+                        item,
+                        description,
+                        expectation_id,
+                    ),
                     source=event_source,
                     expectation_id=expectation_id,
                     discussed_by_market=bool(item.get("discussed_by_market", True)),
@@ -3631,7 +4179,13 @@ class BlackboardInitializationWorkflow:
                 KnownEvent(
                     event_id=new_id("event"),
                     event_time=datetime.now(UTC),
+                    event_window="fallback",
+                    core_fact="agent did not provide known event details",
                     description="agent 未提供已知事件细节。",
+                    duplicate_detection_keys=[
+                        checkpoint.ticker,
+                        "agent did not provide known event details",
+                    ],
                     source=fallback_evidence,
                     discussed_by_market=False,
                     has_price_reaction=False,
@@ -3644,6 +4198,30 @@ class BlackboardInitializationWorkflow:
             created_at=created_at,
             events=events,
         )
+
+    def _duplicate_detection_keys(
+        self,
+        item: dict[str, Any],
+        description: str,
+        expectation_id: str | None,
+    ) -> list[str]:
+        values = [
+            *self._string_list(item.get("duplicate_detection_keys")),
+            *self._string_list(item.get("duplicate_keys")),
+            *self._string_list(item.get("dedupe_keys")),
+        ]
+        event_id = str(item.get("event_id") or item.get("id") or "").strip()
+        if event_id:
+            values.append(event_id)
+        if expectation_id:
+            values.append(expectation_id)
+        values.extend(re.findall(r"\b[A-Z]{2,6}\b", description))
+        values.extend(re.findall(r"\b20\d{2}(?:[-/][0-1]?\d)?(?:[-/][0-3]?\d)?\b", description))
+        values.extend(re.findall(r"\bQ[1-4]\b", description.upper()))
+        compact_description = re.sub(r"\s+", " ", description).strip()
+        if compact_description:
+            values.append(compact_description[:160])
+        return self._dedupe_texts(values)
 
     def _known_event_description(self, item: dict[str, Any]) -> str:
         for key in ("description", "event_text", "text", "summary", "title", "event"):
@@ -3899,8 +4477,9 @@ class BlackboardInitializationWorkflow:
             quarter = int(fy_match.group(1) or 1)
             year = int(fy_match.group(2))
             return f"{year}-{((quarter - 1) * 3 + 1):02d}-01"
-        if re.search(r"\bcomputex\s*(20\d{2})\b", text, re.IGNORECASE):
-            year = int(re.search(r"\bcomputex\s*(20\d{2})\b", text, re.IGNORECASE).group(1))
+        computex_match = re.search(r"\bcomputex\s*(20\d{2})\b", text, re.IGNORECASE)
+        if computex_match:
+            year = int(computex_match.group(1))
             return f"{year}-06-01"
         year_match = re.search(r"\b(20\d{2})\b", text)
         if year_match:
@@ -3938,8 +4517,9 @@ class BlackboardInitializationWorkflow:
             quarter = int(fy_match.group(1) or 1)
             year = int(fy_match.group(2))
             return f"{year}-{((quarter - 1) * 3 + 1):02d}-01"
-        if re.search(r"\bcomputex\s*(20\d{2})\b", text, re.IGNORECASE):
-            year = int(re.search(r"\bcomputex\s*(20\d{2})\b", text, re.IGNORECASE).group(1))
+        computex_match = re.search(r"\bcomputex\s*(20\d{2})\b", text, re.IGNORECASE)
+        if computex_match:
+            year = int(computex_match.group(1))
             return f"{year}-06-01"
         year_match = re.search(r"\b(20\d{2})\b", text)
         if year_match:
@@ -4047,21 +4627,26 @@ class BlackboardInitializationWorkflow:
         for item in raw_items if isinstance(raw_items, list) else []:
             if isinstance(item, dict):
                 name = str(item.get("name") or item.get("trigger_condition") or "monitor")
+                trigger_condition = str(
+                    item.get("trigger_condition")
+                    or item.get("condition")
+                    or item.get("description")
+                    or name
+                )
+                tool_input = self._monitoring_tool_input(checkpoint_ticker=ticker, item=item)
+                tool_input.setdefault("reason", str(item.get("reasoning") or trigger_condition))
                 items.append(
                     MonitoringItem(
                         item_id=str(item.get("item_id") or item.get("id") or new_id("monitor")),
+                        tool_input=tool_input,
+                        reasoning=str(item.get("reasoning") or trigger_condition),
                         base_keywords=self._string_list(item.get("base_keywords"), fallback=name),
                         extra_objects=self._string_list(item.get("extra_objects")),
                         extra_keywords=self._string_list(item.get("extra_keywords")),
                         related_entities=self._string_list(item.get("related_entities")),
                         expectation_id=item.get("expectation_id"),
                         priority=str(item.get("priority") or "medium"),
-                        trigger_condition=str(
-                            item.get("trigger_condition")
-                            or item.get("condition")
-                            or item.get("description")
-                            or name
-                        ),
+                        trigger_condition=trigger_condition,
                     )
                 )
             elif str(item).strip():
@@ -4069,6 +4654,16 @@ class BlackboardInitializationWorkflow:
                 items.append(
                     MonitoringItem(
                         item_id=new_id("monitor"),
+                        tool_input={
+                            "ticker": ticker,
+                            "source_id": "stocktwits_messages",
+                            "keywords": [ticker],
+                            "extra": {"trigger_condition": text, "priority": "medium"},
+                            "reason": text,
+                            "mode": "merge",
+                            "enabled": True,
+                        },
+                        reasoning=text,
                         base_keywords=[ticker],
                         priority="medium",
                         trigger_condition=text,
@@ -4078,9 +4673,22 @@ class BlackboardInitializationWorkflow:
             items.append(
                 MonitoringItem(
                     item_id=new_id("monitor"),
+                    tool_input={
+                        "ticker": ticker,
+                        "source_id": "stocktwits_messages",
+                        "keywords": [ticker],
+                        "extra": {
+                            "trigger_condition": "Monitor new ticker-related events.",
+                            "priority": "medium",
+                        },
+                        "reason": "Monitor new ticker-related events.",
+                        "mode": "merge",
+                        "enabled": True,
+                    },
+                    reasoning="Monitor new ticker-related events.",
                     base_keywords=[ticker],
                     priority="medium",
-                    trigger_condition="监控新的 ticker 相关事件。",
+                    trigger_condition="Monitor new ticker-related events.",
                 )
             )
         return MonitoringConfigDocument(
@@ -4090,11 +4698,65 @@ class BlackboardInitializationWorkflow:
             monitoring_items=items,
         )
 
+    def _monitoring_tool_input(
+        self,
+        *,
+        checkpoint_ticker: str,
+        item: dict[str, Any],
+    ) -> dict[str, Any]:
+        tool_input = dict(item.get("tool_input") or {})
+        tool_input.pop("poll_interval_seconds", None)
+        tool_input.setdefault("ticker", checkpoint_ticker)
+        tool_input.setdefault("source_id", item.get("source_id") or "stocktwits_messages")
+        tool_input.setdefault("mode", item.get("mode") or "merge")
+        tool_input.setdefault("enabled", bool(item.get("enabled", True)))
+        keywords = self._dedupe_texts(
+            [
+                *self._string_list(tool_input.get("keywords")),
+                *self._string_list(item.get("base_keywords")),
+                *self._string_list(item.get("extra_keywords")),
+            ]
+        )
+        if keywords:
+            tool_input["keywords"] = keywords
+        search_terms = self._dedupe_texts(
+            [
+                *self._string_list(tool_input.get("search_terms")),
+                *self._string_list(item.get("extra_objects")),
+                *self._string_list(item.get("related_entities")),
+            ]
+        )
+        if search_terms:
+            tool_input["search_terms"] = search_terms
+        for field in ("usernames", "rss_urls", "source_filters"):
+            values = self._string_list(tool_input.get(field) or item.get(field))
+            if values:
+                tool_input[field] = values
+        extra = dict(tool_input.get("extra") or {})
+        if item.get("expectation_id"):
+            extra.setdefault("expectation_id", item.get("expectation_id"))
+        extra.setdefault("priority", str(item.get("priority") or "medium"))
+        extra.setdefault(
+            "trigger_condition",
+            str(
+                item.get("trigger_condition")
+                or item.get("condition")
+                or item.get("description")
+                or ""
+            ),
+        )
+        tool_input["extra"] = extra
+        return tool_input
+
     def _normalize_monitoring_policy_document(
         self,
         ticker: str,
         payload: dict[str, Any],
     ) -> MonitoringPolicyDocument:
+        policies = self._normalize_policy_rules(
+            payload.get("policies"),
+            default_action_type=PolicyActionType.CACHE,
+        )
         direct = self._normalize_policy_rules(
             payload.get("direct_trade_rules"),
             default_action_type=PolicyActionType.DIRECT_TRADE,
@@ -4107,10 +4769,23 @@ class BlackboardInitializationWorkflow:
             payload.get("cache_rules"),
             default_action_type=PolicyActionType.CACHE,
         )
+        if not policies:
+            policies = [*direct, *push, *cache]
+        if not direct:
+            direct = [
+                rule
+                for rule in policies
+                if rule.policy_type == PolicyActionType.DIRECT_TRADE.value
+            ]
+        if not push:
+            push = [rule for rule in policies if rule.policy_type == "escalate"]
+        if not cache:
+            cache = [rule for rule in policies if rule.policy_type == PolicyActionType.CACHE.value]
         return MonitoringPolicyDocument(
             document_id=str(payload.get("document_id") or new_id("doc")),
             ticker=ticker,
             created_at=self._coerce_event_time(payload.get("created_at")),
+            policies=policies,
             direct_trade_rules=direct,
             push_to_agent_rules=push,
             cache_rules=cache,
@@ -4134,26 +4809,76 @@ class BlackboardInitializationWorkflow:
                 action_type = PolicyActionType(str(raw_action_type))
             except ValueError:
                 action_type = default_action_type
+            policy_type = str(item.get("policy_type") or "")
+            if not policy_type:
+                policy_type = (
+                    "escalate"
+                    if action_type is PolicyActionType.PUSH_TO_AGENT
+                    else action_type.value
+                )
+            policy_id = str(
+                item.get("policy_id")
+                or item.get("rule_id")
+                or item.get("id")
+                or new_id("policy")
+            )
+            trigger_condition = str(
+                item.get("trigger_condition")
+                or item.get("condition")
+                or item.get("description")
+                or item.get("trigger")
+                or "Monitor ticker-related signals."
+            )
+            scope = dict(item.get("scope") or {})
+            if item.get("expectation_id"):
+                scope.setdefault("expectation_unit_id", item.get("expectation_id"))
+            trigger: dict[str, Any] = (
+                cast(dict[str, Any], item.get("trigger"))
+                if isinstance(item.get("trigger"), dict)
+                else {"condition": trigger_condition}
+            )
+            confirmation: dict[str, Any] = (
+                cast(dict[str, Any], item.get("confirmation"))
+                if isinstance(item.get("confirmation"), dict)
+                else {"market_confirmation": str(item.get("confirmation") or "")}
+            )
+            risk_guard: dict[str, Any] = (
+                cast(dict[str, Any], item.get("risk_guard"))
+                if isinstance(item.get("risk_guard"), dict)
+                else {"guardrail": str(item.get("risk_guard") or "Do not create broker orders.")}
+            )
             rules.append(
                 MonitoringPolicyRule(
+                    policy_id=policy_id,
                     rule_id=str(item.get("rule_id") or item.get("id") or new_id("rule")),
+                    policy_type=policy_type,
                     action_type=action_type,
+                    scope=scope,
+                    trigger=trigger,
                     trigger_condition=str(
                         item.get("trigger_condition")
                         or item.get("condition")
                         or item.get("description")
                         or "监控与 ticker 相关的信号。"
                     ),
+                    confirmation=confirmation,
                     expectation_id=item.get("expectation_id"),
-                    action=self._policy_action_text(
+                    action=self._policy_action_payload(
                         item.get("action"),
-                        action_type=action_type,
+                        policy_type=policy_type,
                     ),
+                    risk_guard=risk_guard,
                     strategy_note=self._policy_strategy_note_text(
                         item.get("strategy_note")
                         or item.get("rationale")
                         or item.get("note"),
                         action_type=action_type,
+                    ),
+                    reasoning=str(
+                        item.get("reasoning")
+                        or item.get("strategy_note")
+                        or item.get("rationale")
+                        or "Policy routes Document 3 runtime monitoring signals."
                     ),
                     evidence_fields=self._payload_string_list(
                         item,
@@ -4168,11 +4893,38 @@ class BlackboardInitializationWorkflow:
     def _has_chinese_text(self, value: Any) -> bool:
         return any("\u4e00" <= ch <= "\u9fff" for ch in str(value or ""))
 
+    def _policy_action_payload(
+        self,
+        value: Any,
+        *,
+        policy_type: str,
+    ) -> dict[str, Any]:
+        if isinstance(value, dict):
+            return value
+        text = str(value or "").strip()
+        if policy_type == "direct_trade":
+            return {
+                "side": "long",
+                "conviction": "medium",
+                "size_bucket": "normal",
+                "note": text or "Create a trade intent; do not create a broker order.",
+            }
+        if policy_type == "escalate":
+            return {
+                "send_to": ["O1", "O4"],
+                "question": text or "Review whether this signal changes existing expectations.",
+                "priority": "medium",
+            }
+        return {
+            "cache_label": "background_only",
+            "handling": text or "Cache for batch review.",
+        }
+
     def _policy_action_text(
         self,
         value: Any,
         *,
-        action_type: PolicyActionType,
+        action_type: PolicyActionType | str,
     ) -> str:
         text = str(value or "").strip()
         if text and self._has_chinese_text(text):
@@ -4189,7 +4941,7 @@ class BlackboardInitializationWorkflow:
         self,
         value: Any,
         *,
-        action_type: PolicyActionType,
+        action_type: PolicyActionType | str,
     ) -> str:
         text = str(value or "").strip()
         if text and self._has_chinese_text(text):
@@ -4232,6 +4984,20 @@ class BlackboardInitializationWorkflow:
         if isinstance(value, str) and value.strip():
             return [value]
         return [fallback] if fallback else []
+
+    def _dedupe_texts(self, values: Iterable[Any]) -> list[str]:
+        seen: set[str] = set()
+        deduped: list[str] = []
+        for value in values:
+            text = str(value or "").strip()
+            if not text:
+                continue
+            key = text.lower()
+            if key in seen:
+                continue
+            seen.add(key)
+            deduped.append(text)
+        return deduped
 
     def _agent_output_evidence(self, result: AgentResult) -> EvidenceRef:
         return EvidenceRef(
@@ -4538,7 +5304,9 @@ class BlackboardInitializationWorkflow:
             WorkflowNode.BUILD_GLOBAL_RESEARCH,
             WorkflowNode.GENERATE_KNOWN_EVENTS,
             WorkflowNode.GENERATE_MONITORING_CONFIG,
+            WorkflowNode.RESOLVE_MONITORING_CONFIG,
             WorkflowNode.GENERATE_MONITORING_POLICY,
+            WorkflowNode.RESOLVE_MONITORING_POLICY,
         }
         if require_patches and node in document_nodes and not result.proposed_patches:
             raise WorkflowContractError(f"{node.value} produced no Blackboard patches.")
@@ -4546,12 +5314,57 @@ class BlackboardInitializationWorkflow:
     def _validate_patch_contract(self, patch: BlackboardPatch, node: WorkflowNode) -> None:
         if not patch.evidence_refs:
             raise WorkflowContractError(f"{node.value} produced a patch without evidence.")
+        if patch.target.document_type is DocumentType.KNOWN_EVENTS:
+            if not isinstance(patch.after, dict):
+                raise WorkflowContractError("GenerateKnownEvents patch must contain document.")
+            self._validate_known_events_quality(KnownEventsDocument.model_validate(patch.after))
+        if patch.target.document_type is DocumentType.MONITORING_CONFIG:
+            if not isinstance(patch.after, dict):
+                raise WorkflowContractError("GenerateMonitoringConfig patch must contain document.")
+            self._validate_monitoring_config_quality(
+                MonitoringConfigDocument.model_validate(patch.after)
+            )
         if patch.target.document_type is DocumentType.MONITORING_POLICY:
             if not isinstance(patch.after, dict):
                 raise WorkflowContractError("GenerateMonitoringPolicy patch must contain document.")
             self._validate_monitoring_policy_quality(
                 MonitoringPolicyDocument.model_validate(patch.after)
             )
+
+    def _validate_known_events_quality(self, document: KnownEventsDocument) -> None:
+        if not document.events:
+            raise WorkflowContractError("GenerateKnownEvents produced no events.")
+        for event in document.events:
+            if not event.core_fact:
+                raise WorkflowContractError("GenerateKnownEvents event is missing core_fact.")
+            if not event.duplicate_detection_keys:
+                raise WorkflowContractError(
+                    "GenerateKnownEvents event is missing duplicate_detection_keys."
+                )
+
+    def _validate_monitoring_config_quality(self, document: MonitoringConfigDocument) -> None:
+        if not document.monitoring_items:
+            raise WorkflowContractError("GenerateMonitoringConfig produced no monitoring_items.")
+        for item in document.monitoring_items:
+            if not item.reasoning:
+                raise WorkflowContractError("GenerateMonitoringConfig item is missing reasoning.")
+            if not item.tool_input.get("source_id"):
+                raise WorkflowContractError(
+                    "GenerateMonitoringConfig item is missing tool_input.source_id."
+                )
+            if "poll_interval_seconds" in item.tool_input:
+                raise WorkflowContractError(
+                    "GenerateMonitoringConfig must not set poll_interval_seconds."
+                )
+            resource_terms = [
+                term
+                for field in ("keywords", "search_terms", "usernames", "rss_urls", "source_filters")
+                for term in self._string_list(item.tool_input.get(field))
+            ]
+            if len(resource_terms) > 60:
+                raise WorkflowContractError(
+                    "GenerateMonitoringConfig exceeds by-keyword/source resource budget."
+                )
 
     def _validate_monitoring_policy_quality(self, document: MonitoringPolicyDocument) -> None:
         buckets = {
@@ -4565,38 +5378,90 @@ class BlackboardInitializationWorkflow:
                 "GenerateMonitoringPolicy omitted action paths without no_action_rationale: "
                 + ", ".join(missing)
             )
-        if not any(buckets.values()):
+        if not document.policies:
             raise WorkflowContractError("GenerateMonitoringPolicy produced no policy rules.")
-        for expected_action_type, rules in buckets.items():
-            for rule in rules:
-                if rule.action_type is not expected_action_type:
-                    raise WorkflowContractError(
-                        "GenerateMonitoringPolicy placed a rule in the wrong action bucket."
-                    )
-                if not rule.expectation_id:
-                    raise WorkflowContractError(
-                        "GenerateMonitoringPolicy rule is missing expectation_id."
-                    )
-                if _is_generic_monitoring_trigger(rule.trigger_condition):
-                    raise WorkflowContractError(
-                        "GenerateMonitoringPolicy rule has a generic trigger_condition."
-                    )
-                if not rule.evidence_fields:
-                    raise WorkflowContractError(
-                        "GenerateMonitoringPolicy rule is missing evidence_fields."
-                    )
-                if not rule.escalation_path:
-                    raise WorkflowContractError(
-                        "GenerateMonitoringPolicy rule is missing escalation_path."
-                    )
-                if expected_action_type is PolicyActionType.DIRECT_TRADE:
-                    lower_action = f"{rule.action} {rule.strategy_note}".lower()
-                    forbidden = ("broker_api", "order_id", "executed_trade", "place order")
-                    if any(token in lower_action for token in forbidden):
-                        raise WorkflowContractError(
-                            "GenerateMonitoringPolicy direct_trade_rules must be routing "
-                            "candidates only, not broker execution instructions."
-                        )
+        rules_to_validate = [
+            *document.policies,
+            *document.direct_trade_rules,
+            *document.push_to_agent_rules,
+            *document.cache_rules,
+        ]
+        valid_policy_types = {"direct_trade", "escalate", "cache"}
+        for rule in rules_to_validate:
+            if rule.policy_type not in valid_policy_types:
+                raise WorkflowContractError(
+                    f"GenerateMonitoringPolicy has invalid policy_type: {rule.policy_type}"
+                )
+            if _is_generic_monitoring_trigger(rule.trigger_condition):
+                raise WorkflowContractError(
+                    "GenerateMonitoringPolicy rule has a generic trigger_condition."
+                )
+            self._validate_policy_forbidden_fields(rule)
+            self._validate_policy_action_shape(rule)
+
+    def _validate_policy_action_shape(self, rule: MonitoringPolicyRule) -> None:
+        action = rule.action
+        if not isinstance(action, dict):
+            raise WorkflowContractError(
+                f"GenerateMonitoringPolicy action for {rule.policy_type} must be structured."
+            )
+        if rule.policy_type == "direct_trade":
+            missing = [key for key in ("side", "conviction", "size_bucket") if not action.get(key)]
+        elif rule.policy_type == "escalate":
+            missing = [key for key in ("send_to", "question", "priority") if not action.get(key)]
+        else:
+            missing = [key for key in ("cache_label", "handling") if not action.get(key)]
+        if missing:
+            raise WorkflowContractError(
+                "GenerateMonitoringPolicy action is missing required fields for "
+                f"{rule.policy_type}: {', '.join(missing)}"
+            )
+
+    def _validate_policy_forbidden_fields(self, rule: MonitoringPolicyRule) -> None:
+        payload = rule.model_dump(mode="json")
+        forbidden_keys = {
+            "source_condition",
+            "order_id",
+            "broker_order",
+            "deadline",
+            "event_time",
+            "quantity",
+            "timestamp",
+            "time_condition",
+            "time_in_force",
+            "time_window",
+        }
+        forbidden_value_tokens = {
+            "broker_api",
+            "executed_trade",
+            "place order",
+        }
+
+        def walk(value: Any) -> str | None:
+            if isinstance(value, dict):
+                for key, child in value.items():
+                    if key in forbidden_keys:
+                        return str(key)
+                    found = walk(child)
+                    if found:
+                        return found
+            elif isinstance(value, list):
+                for child in value:
+                    found = walk(child)
+                    if found:
+                        return found
+            elif isinstance(value, str):
+                lowered = value.lower()
+                for token in forbidden_value_tokens:
+                    if token in lowered:
+                        return "broker execution language"
+            return None
+
+        found = walk(payload)
+        if found:
+            raise WorkflowContractError(
+                f"GenerateMonitoringPolicy contains forbidden policy field: {found}"
+            )
 
     def _validate_o1_narrative_tool_gap(
         self,
@@ -6399,7 +7264,9 @@ class BlackboardInitializationWorkflow:
             return value
         model_dump = getattr(value, "model_dump", None)
         if callable(model_dump):
-            return model_dump(mode="json")
+            dumped = model_dump(mode="json")
+            if isinstance(dumped, dict):
+                return cast(dict[str, Any], dumped)
         return {}
 
     def _list_from_model(self, value: Any) -> list[Any]:

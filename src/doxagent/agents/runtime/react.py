@@ -1636,6 +1636,20 @@ def _looks_like_direct_final_payload(payload: JsonDict, required_output_schema: 
             "events",
             "known_events",
         },
+        "MonitoringConfigDocument": {
+            "document_id",
+            "document_type",
+            "monitoring_items",
+            "tool_input",
+        },
+        "MonitoringPolicyDocument": {
+            "document_id",
+            "document_type",
+            "policies",
+            "direct_trade_rules",
+            "push_to_agent_rules",
+            "cache_rules",
+        },
     }
     keys = set(payload)
     return any(
@@ -2119,19 +2133,38 @@ def _output_contract(required_output_schema: str, *, task: AgentTask | None = No
                     "monitoring_items": [
                         {
                             "item_id": "monitor_<id>",
-                            "base_keywords": [],
-                            "extra_objects": [],
-                            "extra_keywords": [],
-                            "related_entities": [],
-                            "expectation_id": "expectation_<id>",
-                            "priority": "high | medium | low",
-                            "trigger_condition": "具体、可观察的监控条件",
+                            "tool_input": {
+                                "ticker": "<ticker>",
+                                "source_id": "registered monitoring source_id",
+                                "keywords": [],
+                                "usernames": [],
+                                "search_terms": [],
+                                "rss_urls": [],
+                                "source_filters": [],
+                                "extra": {
+                                    "expectation_id": "expectation_<id>",
+                                    "priority": "high | medium | low",
+                                    "trigger_condition": "具体、可观察的监控条件",
+                                },
+                                "reason": "一句话说明为什么配置这个监测项",
+                                "mode": "merge",
+                                "enabled": True,
+                            },
+                            "reasoning": "一句话说明该监测项服务的 expectation 或全局变量",
                         }
                     ],
                 },
                 "rules": [
-                    "每个监控项如对应某个 expectation，必须填写 expectation_id。",
-                    "trigger_condition 必须描述可观察的新闻、公告、市场或数据变化。",
+                    (
+                        "每个监控项必须优先输出 tool_input，"
+                        "形状与 monitoring.update_ticker_config 一致。"
+                    ),
+                    "不要输出 poll_interval_seconds；轮询频率只能由用户修改。",
+                    (
+                        "如对应某个 expectation，必须在 "
+                        "tool_input.extra.expectation_id 填写 expectation_id。"
+                    ),
+                    "reasoning 必须简短说明该项捕捉什么增量消息。",
                 ],
             }
         elif schema_name == "MonitoringPolicyDocument":
@@ -2141,32 +2174,54 @@ def _output_contract(required_output_schema: str, *, task: AgentTask | None = No
                     "document_type": "monitoring_policy",
                     "ticker": "<ticker>",
                     "created_at": "ISO-8601 timestamp",
-                    "direct_trade_rules": [
+                    "policies": [
                         {
-                            "rule_id": "rule_<id>",
-                            "action_type": "direct_trade",
-                            "trigger_condition": "高置信度触发条件",
-                            "expectation_id": "expectation_<id>",
-                            "action": "标记为 direct_trade 候选，交由人工或 O3 复核",
-                            "strategy_note": "说明该信号为何可能改变投资立场",
+                            "policy_id": "policy_<id>",
+                            "policy_type": "direct_trade | escalate | cache",
+                            "scope": {
+                                "expectation_unit_id": "expectation_<id>",
+                                "event_type": (
+                                    "earnings | order | regulatory | industry | "
+                                    "macro | competitor | supply_chain"
+                                ),
+                            },
+                            "trigger": {"condition": "高置信度、可观察的消息触发条件"},
+                            "confirmation": {
+                                "market_confirmation": "价格/成交量/技术面/行业或宏观确认条件"
+                            },
+                            "action": {
+                                "side": "long | short | exit",
+                                "conviction": "low | medium | high",
+                                "size_bucket": "small | normal | aggressive",
+                            },
+                            "risk_guard": {"guardrail": "不能生成 trade intent 或必须降级的条件"},
+                            "reasoning": "一句话说明该 policy 为什么存在",
                             "evidence_fields": [],
-                            "escalation_path": "human_review | O3_future_review",
                         }
                     ],
+                    "direct_trade_rules": [],
                     "push_to_agent_rules": [],
                     "cache_rules": [],
                     "no_action_rationale": None,
                 },
                 "rules": [
-                    "direct_trade 仅表示候选路由，不得执行券商下单。",
-                    "必须覆盖 direct_trade_rules、push_to_agent_rules、cache_rules。",
                     (
-                        "如有任一 action path 被有意省略，必须用 "
-                        "no_action_rationale 解释原因。"
+                        "MonitoringPolicyDocument 由 O4 生成；"
+                        "直接交易类只输出 trade intent，不得执行券商下单。"
+                    ),
+                    "policy_type 只能是 direct_trade、escalate、cache。",
+                    (
+                        "必须覆盖 direct_trade、escalate、cache 三类，"
+                        "或用 no_action_rationale 解释省略原因。"
                     ),
                     (
-                        "每条规则都需要 expectation_id、trigger_condition、"
-                        "evidence_fields、escalation_path。"
+                        "direct_trade.action 必须包含 side、conviction、size_bucket；"
+                        "escalate.action 必须包含 send_to、question、priority；"
+                        "cache.action 必须包含 cache_label、handling。"
+                    ),
+                    (
+                        "不要输出时间字段或 source_condition；"
+                        "source 可信度规则属于低参数 LLM system prompt。"
                     ),
                 ],
             }
@@ -2297,11 +2352,19 @@ def _normalize_known_events_document_payload(
             item.get("description") or item.get("summary") or item
         )
         event_time = _known_event_time(item, description)
+        duplicate_keys = _strings(
+            item.get("duplicate_detection_keys")
+            or item.get("duplicate_keys")
+            or item.get("keywords")
+        ) or [str(item.get("event_id") or item.get("id") or description[:80])]
         events.append(
             {
                 "event_id": str(item.get("event_id") or item.get("id") or new_id("event")),
                 "event_time": event_time,
+                "event_window": item.get("event_window"),
+                "core_fact": str(item.get("core_fact") or description),
                 "description": description,
+                "duplicate_detection_keys": duplicate_keys,
                 "source": source_ref,
                 "expectation_id": item.get("expectation_id"),
                 "discussed_by_market": bool(item.get("discussed_by_market", True)),
@@ -2330,21 +2393,61 @@ def _normalize_monitoring_config_document_payload(
     for item in raw_items if isinstance(raw_items, list) else []:
         if not isinstance(item, dict):
             continue
+        trigger_condition = str(
+            item.get("trigger_condition")
+            or item.get("condition")
+            or item.get("description")
+            or item.get("reasoning")
+            or "监控与 ticker 相关的信号变化。"
+        )
+        tool_input = dict(item.get("tool_input") or {})
+        tool_input.pop("poll_interval_seconds", None)
+        tool_input.setdefault("ticker", str(payload.get("ticker") or task.ticker))
+        tool_input.setdefault("source_id", item.get("source_id") or "stocktwits_messages")
+        tool_input.setdefault("mode", item.get("mode") or "merge")
+        tool_input.setdefault("enabled", bool(item.get("enabled", True)))
+        keywords = _dedupe_texts(
+            [
+                *_strings(tool_input.get("keywords")),
+                *_strings(item.get("base_keywords")),
+                *_strings(item.get("extra_keywords") or item.get("keywords")),
+            ]
+        )
+        if keywords:
+            tool_input["keywords"] = keywords
+        search_terms = _dedupe_texts(
+            [
+                *_strings(tool_input.get("search_terms")),
+                *_strings(item.get("extra_objects") or item.get("objects")),
+                *_strings(item.get("related_entities")),
+            ]
+        )
+        if search_terms:
+            tool_input["search_terms"] = search_terms
+        for tool_field in ("usernames", "rss_urls", "source_filters"):
+            values = _strings(tool_input.get(tool_field) or item.get(tool_field))
+            if values:
+                tool_input[tool_field] = values
+        extra = dict(tool_input.get("extra") or {})
+        if item.get("expectation_id"):
+            extra.setdefault("expectation_id", item.get("expectation_id"))
+        extra.setdefault("priority", str(item.get("priority") or "medium"))
+        extra.setdefault("trigger_condition", trigger_condition)
+        tool_input["extra"] = extra
+        reasoning = str(item.get("reasoning") or tool_input.get("reason") or trigger_condition)
+        tool_input.setdefault("reason", reasoning)
         items.append(
             {
                 "item_id": str(item.get("item_id") or item.get("id") or new_id("monitor")),
+                "tool_input": tool_input,
+                "reasoning": reasoning,
                 "base_keywords": _strings(item.get("base_keywords")),
                 "extra_objects": _strings(item.get("extra_objects") or item.get("objects")),
                 "extra_keywords": _strings(item.get("extra_keywords") or item.get("keywords")),
                 "related_entities": _strings(item.get("related_entities")),
                 "expectation_id": item.get("expectation_id"),
                 "priority": str(item.get("priority") or "medium"),
-                "trigger_condition": str(
-                    item.get("trigger_condition")
-                    or item.get("condition")
-                    or item.get("description")
-                    or "监控与 ticker 相关的信号变化。"
-                ),
+                "trigger_condition": trigger_condition,
             }
         )
     return {
@@ -2361,23 +2464,39 @@ def _normalize_monitoring_policy_document_payload(
     *,
     task: AgentTask,
 ) -> JsonDict:
+    policies = _normalize_policy_rule_payloads(
+        payload.get("policies"),
+        default_action_type="cache",
+    )
+    direct_rules = _normalize_policy_rule_payloads(
+        payload.get("direct_trade_rules"),
+        default_action_type="direct_trade",
+    )
+    push_rules = _normalize_policy_rule_payloads(
+        payload.get("push_to_agent_rules") or payload.get("escalate_rules") or payload.get("rules"),
+        default_action_type="push_to_agent",
+    )
+    cache_rules = _normalize_policy_rule_payloads(
+        payload.get("cache_rules"),
+        default_action_type="cache",
+    )
+    if not policies:
+        policies = [*direct_rules, *push_rules, *cache_rules]
+    if not direct_rules:
+        direct_rules = [item for item in policies if item.get("policy_type") == "direct_trade"]
+    if not push_rules:
+        push_rules = [item for item in policies if item.get("policy_type") == "escalate"]
+    if not cache_rules:
+        cache_rules = [item for item in policies if item.get("policy_type") == "cache"]
     return {
         "document_id": str(payload.get("document_id") or new_id("doc")),
         "document_type": "monitoring_policy",
         "ticker": str(payload.get("ticker") or task.ticker),
         "created_at": _event_time(payload.get("created_at")),
-        "direct_trade_rules": _normalize_policy_rule_payloads(
-            payload.get("direct_trade_rules"),
-            default_action_type="direct_trade",
-        ),
-        "push_to_agent_rules": _normalize_policy_rule_payloads(
-            payload.get("push_to_agent_rules") or payload.get("rules"),
-            default_action_type="push_to_agent",
-        ),
-        "cache_rules": _normalize_policy_rule_payloads(
-            payload.get("cache_rules"),
-            default_action_type="cache",
-        ),
+        "policies": policies,
+        "direct_trade_rules": direct_rules,
+        "push_to_agent_rules": push_rules,
+        "cache_rules": cache_rules,
         "no_action_rationale": payload.get("no_action_rationale")
         or payload.get("omission_rationale"),
     }
@@ -2389,26 +2508,60 @@ def _normalize_policy_rule_payloads(value: Any, *, default_action_type: str) -> 
         if not isinstance(item, dict):
             continue
         action_type = str(item.get("action_type") or default_action_type)
+        policy_type = str(item.get("policy_type") or "")
+        if not policy_type:
+            policy_type = "escalate" if action_type == "push_to_agent" else action_type
+        if not action_type:
+            action_type = "push_to_agent" if policy_type == "escalate" else policy_type
+        trigger_condition = str(
+            item.get("trigger_condition")
+            or item.get("condition")
+            or item.get("description")
+            or item.get("trigger")
+            or "监控与 ticker 相关的信号。"
+        )
+        policy_id = str(
+            item.get("policy_id")
+            or item.get("rule_id")
+            or item.get("id")
+            or new_id("policy")
+        )
+        scope = dict(item.get("scope") or {})
+        if item.get("expectation_id"):
+            scope.setdefault("expectation_unit_id", item.get("expectation_id"))
+        action = item.get("action")
+        if not isinstance(action, dict):
+            action = _policy_action_payload(action, policy_type=policy_type)
         rules.append(
             {
-                "rule_id": str(item.get("rule_id") or item.get("id") or new_id("rule")),
+                "policy_id": policy_id,
+                "rule_id": policy_id,
+                "policy_type": policy_type,
                 "action_type": action_type,
-                "trigger_condition": str(
-                    item.get("trigger_condition")
-                    or item.get("condition")
-                    or item.get("description")
-                    or "监控与 ticker 相关的信号。"
-                ),
+                "scope": scope,
+                "trigger": item.get("trigger")
+                if isinstance(item.get("trigger"), dict)
+                else {"condition": trigger_condition},
+                "trigger_condition": trigger_condition,
+                "confirmation": item.get("confirmation")
+                if isinstance(item.get("confirmation"), dict)
+                else {"market_confirmation": str(item.get("confirmation") or "")},
                 "expectation_id": item.get("expectation_id"),
-                "action": _chinese_policy_action(
-                    item.get("action"),
-                    action_type=action_type,
-                ),
+                "action": action,
+                "risk_guard": item.get("risk_guard")
+                if isinstance(item.get("risk_guard"), dict)
+                else {"guardrail": str(item.get("risk_guard") or "不生成真实 broker order。")},
                 "strategy_note": _chinese_policy_strategy_note(
                     item.get("strategy_note")
                     or item.get("rationale")
                     or item.get("note"),
                     action_type=action_type,
+                ),
+                "reasoning": str(
+                    item.get("reasoning")
+                    or item.get("strategy_note")
+                    or item.get("rationale")
+                    or "该 policy 服务于 Document 3 运行时动作路由。"
                 ),
                 "evidence_fields": _strings(
                     item.get("evidence_fields") or item.get("required_evidence_fields")
@@ -2447,6 +2600,29 @@ def _chinese_policy_strategy_note(value: Any, *, action_type: str) -> str:
     if action_type == "cache":
         return "低置信度、重复或时效性较弱的信号先缓存，等待批量复核。"
     return "由监控策略输出生成，供后续复核使用。"
+
+
+def _policy_action_payload(value: Any, *, policy_type: str) -> JsonDict:
+    if isinstance(value, dict):
+        return value
+    text = str(value or "").strip()
+    if policy_type == "direct_trade":
+        return {
+            "side": "long",
+            "conviction": "medium",
+            "size_bucket": "normal",
+            "note": text or "生成 trade intent，不生成真实订单。",
+        }
+    if policy_type == "escalate":
+        return {
+            "send_to": ["O1", "O4"],
+            "question": text or "请复核该消息是否改变现有 expectation unit。",
+            "priority": "medium",
+        }
+    return {
+        "cache_label": "background_only",
+        "handling": text or "进入缓存，等待批量复核。",
+    }
 
 
 def _event_time(value: Any) -> str:
@@ -4371,9 +4547,26 @@ def _dicts(value: Any) -> list[JsonDict]:
 
 
 def _strings(value: Any) -> list[str]:
+    if isinstance(value, str) and value.strip():
+        return [value.strip()]
     if not isinstance(value, list):
         return []
     return [str(item) for item in value if str(item).strip()]
+
+
+def _dedupe_texts(values: list[str]) -> list[str]:
+    deduped: list[str] = []
+    seen: set[str] = set()
+    for value in values:
+        cleaned = value.strip()
+        if not cleaned:
+            continue
+        key = cleaned.lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(cleaned)
+    return deduped
 
 
 def _event_strings(value: Any) -> list[str]:

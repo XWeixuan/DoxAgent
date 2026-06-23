@@ -122,12 +122,17 @@ def default_agent_definitions() -> list[AgentDefinition]:
             role=AgentRole.OPERATOR,
             task_types=[
                 TaskType.GENERATE_MONITORING_CONFIG,
-                TaskType.GENERATE_MONITORING_POLICY,
+                TaskType.REVIEW_MONITORING_POLICY,
+                TaskType.RESOLVE_MONITORING_CONFIG,
             ],
             runtime=AgentRuntimeConfig(
                 prompt_block_ids=["agent.o2"],
-                default_internal_task_skill_ids=["doxagent-source-discipline"],
+                default_internal_task_skill_ids=[
+                    "doxagent-source-discipline",
+                    "monitoring-config",
+                ],
                 readable_context_scopes=[
+                    DocumentType.GLOBAL_RESEARCH.value,
                     DocumentType.EXPECTATION_UNIT.value,
                     DocumentType.KNOWN_EVENTS.value,
                     "working_memory",
@@ -135,11 +140,17 @@ def default_agent_definitions() -> list[AgentDefinition]:
                 ],
                 writable_targets=[
                     DocumentType.MONITORING_CONFIG.value,
-                    DocumentType.MONITORING_POLICY.value,
                 ],
-                allowed_tools=[],
-                output_schema="MonitoringConfigDocument|MonitoringPolicyDocument",
+                allowed_tools=[
+                    "anysearch.search",
+                    "tavily.search",
+                    "monitoring.get_ticker_config",
+                    "monitoring.list_status",
+                    "monitoring.recent_events",
+                ],
+                output_schema="MonitoringConfigDocument",
                 can_delegate=True,
+                can_raise_objection=True,
                 can_propose_patch=True,
             ),
         ),
@@ -149,12 +160,15 @@ def default_agent_definitions() -> list[AgentDefinition]:
             task_types=[
                 TaskType.GENERATE_GLOBAL_RESEARCH,
                 TaskType.REVIEW_EXPECTATION_FIELD,
+                TaskType.GENERATE_MONITORING_POLICY,
+                TaskType.RESOLVE_MONITORING_POLICY,
             ],
             runtime=AgentRuntimeConfig(
                 prompt_block_ids=["agent.o4"],
                 default_internal_task_skill_ids=[
                     "doxagent-source-discipline",
                     "ticker_price_tracking",
+                    "monitoring-policy",
                 ],
                 default_external_skill_package_ids=[
                     "ohlcv-orchestration",
@@ -165,16 +179,22 @@ def default_agent_definitions() -> list[AgentDefinition]:
                 ],
                 readable_context_scopes=[
                     DocumentType.GLOBAL_RESEARCH.value,
+                    DocumentType.EXPECTATION_UNIT.value,
+                    DocumentType.KNOWN_EVENTS.value,
+                    DocumentType.MONITORING_CONFIG.value,
                     "working_memory",
                     "objections",
                 ],
-                writable_targets=[DocumentType.GLOBAL_RESEARCH.value],
+                writable_targets=[
+                    DocumentType.GLOBAL_RESEARCH.value,
+                    DocumentType.MONITORING_POLICY.value,
+                ],
                 allowed_tools=[
                     "twelvedata.daily_ohlcv",
                     "yfinance.daily_ohlcv",
                     "finnhub.trade_stream",
                 ],
-                output_schema="ResearchSection",
+                output_schema="ResearchSection|MonitoringPolicyDocument",
                 can_raise_objection=True,
                 can_propose_patch=True,
             ),
@@ -242,6 +262,7 @@ def default_agent_definitions() -> list[AgentDefinition]:
             task_types=[
                 TaskType.GENERATE_GLOBAL_RESEARCH,
                 TaskType.REVIEW_EXPECTATION_FIELD,
+                TaskType.REVIEW_MONITORING_CONFIG,
             ],
             runtime=AgentRuntimeConfig(
                 prompt_block_ids=["agent.c1"],
@@ -303,6 +324,7 @@ def default_agent_definitions() -> list[AgentDefinition]:
             task_types=[
                 TaskType.GENERATE_GLOBAL_RESEARCH,
                 TaskType.REVIEW_EXPECTATION_FIELD,
+                TaskType.REVIEW_MONITORING_CONFIG,
             ],
             runtime=AgentRuntimeConfig(
                 prompt_block_ids=["agent.c3"],

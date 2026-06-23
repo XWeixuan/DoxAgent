@@ -140,6 +140,68 @@ class DoxAgentSettings(BaseSettings):
         default=21_600, validation_alias="ANYSEARCH_CACHE_TTL_SECONDS"
     )
 
+    monitoring_storage_mode: Literal["memory", "sqlite"] = Field(
+        default="sqlite",
+        validation_alias="DOXAGENT_MONITORING_STORAGE_MODE",
+    )
+    monitoring_sqlite_path: str = Field(
+        default=".tmp/monitoring_message_bus.sqlite3",
+        validation_alias="DOXAGENT_MONITORING_SQLITE_PATH",
+    )
+    benzinga_api_key: str | None = Field(default=None, validation_alias="BENZINGA_API_KEY")
+    benzinga_news_base_url: str = Field(
+        default="https://api.benzinga.com",
+        validation_alias="BENZINGA_NEWS_BASE_URL",
+    )
+    stocktwits_rapidapi_key: str | None = Field(
+        default=None,
+        validation_alias="STOCKTWITS_RAPIDAPI_KEY",
+    )
+    stocktwits_rapidapi_base_url: str = Field(
+        default="https://stocktwits-sentiment-message-analytics-api.p.rapidapi.com",
+        validation_alias="STOCKTWITS_RAPIDAPI_BASE_URL",
+    )
+    stocktwits_rapidapi_host: str | None = Field(
+        default=None,
+        validation_alias="STOCKTWITS_RAPIDAPI_HOST",
+    )
+    stocktwits_public_base_url: str = Field(
+        default="https://api.stocktwits.com/api/2",
+        validation_alias="STOCKTWITS_PUBLIC_BASE_URL",
+    )
+    tikhub_api_key: str | None = Field(default=None, validation_alias="TIKHUB_API_KEY")
+    tikhub_base_url: str = Field(
+        default="https://api.tikhub.io",
+        validation_alias="TIKHUB_BASE_URL",
+    )
+    monitoring_rss_user_agent: str = Field(
+        default="DoxAgent/0.1 monitoring-message-bus",
+        validation_alias="DOXAGENT_MONITORING_RSS_USER_AGENT",
+    )
+    monitoring_viewer_refresh_seconds: int = Field(
+        default=5,
+        ge=1,
+        validation_alias="DOXAGENT_MONITORING_VIEWER_REFRESH_SECONDS",
+    )
+    monitoring_poller_sleep_seconds: int = Field(
+        default=15,
+        ge=1,
+        validation_alias="DOXAGENT_MONITORING_POLLER_SLEEP_SECONDS",
+    )
+    monitoring_remote_ssh_alias: str = Field(
+        default="doxagent-hk",
+        validation_alias="DOXAGENT_MONITORING_REMOTE_SSH_ALIAS",
+    )
+    monitoring_remote_path: str = Field(
+        default="/root/doxagent",
+        validation_alias="DOXAGENT_MONITORING_REMOTE_PATH",
+    )
+    monitoring_remote_timeout_seconds: int = Field(
+        default=45,
+        ge=1,
+        validation_alias="DOXAGENT_MONITORING_REMOTE_TIMEOUT_SECONDS",
+    )
+
     polymarket_gamma_base_url: str = Field(
         default="https://gamma-api.polymarket.com",
         validation_alias="POLYMARKET_GAMMA_BASE_URL",
