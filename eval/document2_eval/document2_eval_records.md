@@ -1729,3 +1729,117 @@ Every failed or partial hard gate must be classified before writing the modifica
   - Rejected invalid flat expectation patches with `WorkflowContractError` instead of allowing `after=null` to reach later nodes.
   - Updated normalized `payload["structured"]["proposed_patches"]` for audit/debug consistency.
   - Added regression coverage in `tests/test_workflow_normalizer.py`.
+
+## Loop 1 Retest12 - cloud blocker: ReviewExpectationFields state persistence stall
+
+### Run Metadata
+- Date: 2026-06-23.
+- Source run: `run_58f5afce8b9441ca804a2cde1ad9aec8` (Document 1-only source, unchanged).
+- Execution run: `run_6966f7a67c2a4652882c239c28ba01f6`.
+- Deployed commit: `0612c5a`.
+- Remote cwd: `/root/doxagent`.
+- Remote log: `.eval_runs/document2-loop1-retest12-20260623T172731+0800.log`.
+- Cloud command: `docker compose run --rm -e DOXAGENT_RUN_REAL_API_TESTS=1 -e DOXAGENT_STORAGE_MODE=postgres debug-viewer python eval/run_document2_expectation_units_smoke.py run_58f5afce8b9441ca804a2cde1ad9aec8 --mode clone --stop-after PromoteExpectationToBeliefState --export-brief-state`.
+
+### Status
+- Result: `blocked`.
+- The workflow process remained alive for more than two hours and the one-off Docker container was `unhealthy`.
+- The remote log still contained only `document2_smoke_started`; no normal `completed` or `blocked` script output was emitted.
+- Latest checkpoint remained `running`, `next_node=ReviewExpectationFields`, `created_at=2026-06-23T09:48:00.279992Z`.
+- Completed nodes in the latest checkpoint stopped at `GenerateExpectationDetails`; `ReviewExpectationFields` did not get marked completed.
+- Direct DB evidence shows all four field-review agents wrote Working Memory:
+  - `A1/a1_doxatlas_audit`: `succeeded`, `2026-06-23T10:00:08Z`.
+  - `C1/c1_fundamental_review`: `succeeded`, `2026-06-23T10:00:13Z`.
+  - `C3/c3_industry_review`: `succeeded`, `2026-06-23T10:00:43Z`.
+  - `O4/o4_market_trace_review`: `succeeded`, `2026-06-23T10:00:49Z`.
+- C1 created four open objections at `2026-06-23T10:00:48Z`: `obj_001_pe_ratio_discrepancy`, `obj_002_analyst_target_vs_current_price`, `obj_003_unverifiable_quarterly_figures`, `obj_004_market_cap_consistency`.
+- `pg_stat_activity` showed an `idle in transaction` connection waiting on `ClientRead` for about one hour on `select entry_json from doxagent.working_memory_entries ...`.
+
+### Built-in Hard Validators
+| Validator | Result | Evidence | Notes |
+| --- | --- | --- | --- |
+| evidence_reference_integrity | not_completed | No final smoke output and no exported validator bundle. | The run never reached a validator-ready terminal state. Treat as unavailable, not pass. |
+| langsmith_trajectory_tool_boundary | fail | Latest checkpoint stayed `running/ReviewExpectationFields`; process remained alive and unhealthy. | Direct blocker: workflow trace did not complete. |
+| commit_log_state_mutation_consistency | not_completed | Final consistency validator did not run. | State mutation may be internally consistent up to reached tables, but terminal validator evidence is absent. |
+
+### Hard Gate Failure Root Cause Matrix
+| Gate | Result | failure_kind | Failure point | Root cause / fix target |
+| --- | --- | --- | --- | --- |
+| D2-HG01 | pass | none | Source handoff | Document 1-only source `run_58f5afce8b9441ca804a2cde1ad9aec8` retained. |
+| D2-HG02 | fail | direct | `ReviewExpectationFields` never marked completed | Workflow did not reach stop-after target. |
+| D2-HG03 | pass | none | Construction lifecycle | Prior construction nodes completed before this blocker. |
+| D2-HG04 | pass | none | Detail generation | `GenerateExpectationDetails` completed before review. |
+| D2-HG05 | not_completed | blocked_validator | Evidence integrity validator did not run to final output. | Cannot claim pass without final validator evidence. |
+| D2-HG06 | fail | quality_residual | C1 field review created four open objections. | PE ratio, analyst target/current price, unverifiable quarterly figures, and market-cap consistency remain unresolved. |
+| D2-HG07 | fail | direct | Field review state transition | Review agents wrote outputs and objections, but the node was not checkpointed as completed. |
+| D2-HG08 | fail | derivative | Resolver not reached | Objection lifecycle cannot close when review node is stuck. |
+| D2-HG09 | fail | derivative | Promotion not reached | No stable expectation_unit documents promoted. |
+| D2-HG10 | fail | direct | Workflow trajectory | Trace/process is incomplete and cloud process is stuck. |
+| D2-HG11 | pass | none | Auditability | Remote log, DB checkpoint, Working Memory, objections, container status, and `pg_stat_activity` expose the blocker. |
+| D2-HG12 | fail | direct | Context/state persistence boundary | Postgres pooler connection had no hard statement/idle transaction bounds, allowing indefinite wait. |
+| D2-HG13 | fail | derivative | Multi-loop memory continuity | Review memory existed but was not advanced into resolver memory because node completion stalled. |
+
+### Rubrics
+| Rubric | Score | Reason |
+| --- | ---: | --- |
+| D2-R01 | 4 | Document 1-only source and clone handoff remain correct. |
+| D2-R02 | 3 | Detail content was generated before review, but no stable expectation unit was promoted. |
+| D2-R03 | 3 | Realized-fact detail generation likely exists in pending state, but terminal validator/export evidence is absent. |
+| D2-R04 | 2 | C1 found unresolved valuation and price-context contradictions. |
+| D2-R05 | 3 | Key-variable detail can be reviewed, but stable downstream state is absent. |
+| D2-R06 | 2 | Monitoring directions cannot be accepted while objections remain open and promotion is not reached. |
+| D2-R07 | 3 | Prior reached evidence behavior was reasonable, but Retest12 did not produce final evidence validator output. |
+| D2-R08 | 3 | Field reviewers produced substantive results, including concrete objections, but node state did not advance. |
+| D2-R09 | 1 | Objection lifecycle was blocked before resolver. |
+| D2-R10 | 1 | Promotion did not run. |
+| D2-R11 | 2 | The trace is auditable but operationally incomplete due to a stuck DB connection. |
+| D2-R12 | 2 | Contradictions were detected, but not resolved into stable content. |
+| D2-R13 | 4 | Failure is evidence-rich and reproducible from cloud process, DB, and log state. |
+| D2-R14 | 5 | The next modification is narrow, testable, and directly targets the indefinite-persistence stall. |
+
+### Score Summary
+- Core Blackboard quality rubrics average (`D2-R01`-`D2-R10`): 2.5.
+- Other rubrics with score <= 2: `D2-R11`, `D2-R12`.
+- Quality target met: no.
+
+### Failure Categories
+- category: `postgres_pooler_idle_transaction_stall`
+  - issue: workflow process stayed alive without emitting terminal output after review results were written.
+  - evidence: one cloud run container unhealthy for more than two hours; `pg_stat_activity` shows `idle in transaction` / `ClientRead` on `doxagent.working_memory_entries`.
+  - severity: blocking/workflow-runtime.
+  - suspected root cause: Postgres connections through the Supabase/PgBouncer pooler lacked session-level `statement_timeout`, `lock_timeout`, and `idle_in_transaction_session_timeout`.
+- category: `review_completion_not_checkpointed`
+  - issue: all review agents wrote Working Memory, and C1 objections were inserted, but checkpoint stayed `running/ReviewExpectationFields`.
+  - evidence: latest checkpoint completed nodes ended at `GenerateExpectationDetails`; review Working Memory entries exist at `10:00:08Z`-`10:00:49Z`.
+  - severity: hard-gate/direct.
+  - suspected root cause: state reload or mutation after review entered an unbounded DB wait.
+- category: `residual_c1_quality_objections`
+  - issue: four fundamental-review objections remain open.
+  - evidence: C1 objections on PE ratio, analyst target/current price, quarterly figures, and market cap.
+  - severity: quality-blocking after runtime blocker is fixed.
+  - suspected root cause: the resolver never ran, so valid C1 concerns were not reconciled into the expectation documents.
+
+### Optimization Hypothesis
+- If every Postgres connection used by Blackboard/checkpoint/debug operations carries bounded pooler guards, the workflow will fail fast or retry instead of hanging indefinitely after a successful review write.
+- The primary target is not to loosen validators or hide the C1 objections; it is to make the persistence layer bounded so the next retest can reach resolver/promotion or produce a terminal blocked result that validators and rubrics can judge.
+- Expected measurable improvement in the next retest:
+  - no one-off cloud container remains alive indefinitely on `ReviewExpectationFields`;
+  - latest checkpoint either advances to `ResolveObjectionsAndDelegations` or records a bounded DB failure;
+  - hard validators can run or fail with a terminal export instead of missing final evidence;
+  - residual C1 quality objections become actionable resolver inputs rather than being trapped behind state persistence.
+
+### Proposed Modification Plan
+- Change 1: Update shared `connect_postgres` so all psycopg connections default to `connect_timeout=15`.
+- Change 2: Add default pooler guard options: `statement_timeout=120000`, `lock_timeout=30000`, and `idle_in_transaction_session_timeout=120000`.
+- Change 3: Preserve caller-provided Postgres `options` and append only missing guard options.
+- Change 4: Keep the existing OperationalError retry behavior so bounded pooler failures can still recover where safe.
+- Change 5: Add focused persistence tests proving prepared statements remain disabled, timeout guards are injected, existing options are preserved, and retry calls carry the same guards.
+- Retest requirement: stop the stale Retest12 cloud container, push/deploy the guard change, rebuild `debug-viewer`, and rerun the same Document 1-only source through the cloud smoke path.
+
+### Actual Modification
+- Implemented after this evaluation entry:
+  - Added Postgres pooler timeout guards in `src/doxagent/postgres.py`.
+  - Added default `connect_timeout=15` for shared Postgres connections.
+  - Preserved existing `options` while appending missing pooler guard options.
+  - Added regression coverage in `tests/test_phase9_persistence.py`.
+  - Verified locally with `uv run pytest tests/test_phase9_persistence.py` and `uv run ruff check src/doxagent/postgres.py tests/test_phase9_persistence.py --select B,E,F,I`.

@@ -1,5 +1,5 @@
-from pathlib import Path
 from contextlib import contextmanager
+from pathlib import Path
 
 import pytest
 
@@ -232,8 +232,49 @@ def test_postgres_connect_disables_prepared_statements_for_pooler() -> None:
 
     assert psycopg.connect_kwargs == {
         "database_url": "postgresql://postgres:secret@example.com/postgres",
+        "connect_timeout": 15,
+        "options": (
+            "-c statement_timeout=120000 -c lock_timeout=30000 "
+            "-c idle_in_transaction_session_timeout=120000"
+        ),
         "prepare_threshold": None,
     }
+
+
+def test_postgres_connect_preserves_existing_pooler_options() -> None:
+    psycopg = _FakePsycopg()
+
+    with connect_postgres(
+        psycopg,
+        "postgresql://postgres:secret@example.com/postgres",
+        options="-c search_path=doxagent",
+    ):
+        pass
+
+    assert psycopg.connect_kwargs is not None
+    assert psycopg.connect_kwargs["options"] == (
+        "-c search_path=doxagent "
+        "-c statement_timeout=120000 -c lock_timeout=30000 "
+        "-c idle_in_transaction_session_timeout=120000"
+    )
+
+
+def test_postgres_connect_appends_only_missing_pooler_options() -> None:
+    psycopg = _FakePsycopg()
+
+    with connect_postgres(
+        psycopg,
+        "postgresql://postgres:secret@example.com/postgres",
+        options="-c statement_timeout=45000",
+    ):
+        pass
+
+    assert psycopg.connect_kwargs is not None
+    assert psycopg.connect_kwargs["options"] == (
+        "-c statement_timeout=45000 "
+        "-c lock_timeout=30000 "
+        "-c idle_in_transaction_session_timeout=120000"
+    )
 
 
 def test_postgres_connect_retries_transient_operational_errors(
@@ -265,6 +306,10 @@ def test_postgres_connect_retries_transient_operational_errors(
     assert sleeps == [0.1, 0.2]
     assert psycopg.connect_kwargs is not None
     assert psycopg.connect_kwargs["prepare_threshold"] is None
+    assert psycopg.connect_kwargs["connect_timeout"] == 15
+    assert "idle_in_transaction_session_timeout=120000" in str(
+        psycopg.connect_kwargs["options"]
+    )
 
 
 def test_retry_postgres_operation_retries_mid_query_operational_errors(

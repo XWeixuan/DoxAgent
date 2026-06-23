@@ -2,10 +2,16 @@
 
 import time
 from collections.abc import Callable
-from typing import Any
-from typing import TypeVar
+from typing import Any, TypeVar
 
 T = TypeVar("T")
+
+_POOLER_GUARD_OPTION_PARTS = (
+    "-c statement_timeout=120000",
+    "-c lock_timeout=30000",
+    "-c idle_in_transaction_session_timeout=120000",
+)
+_POOLER_GUARD_OPTIONS = " ".join(_POOLER_GUARD_OPTION_PARTS)
 
 
 def postgres_operational_error(psycopg: Any) -> type[BaseException]:
@@ -34,6 +40,8 @@ def connect_postgres(
     """
 
     kwargs.setdefault("prepare_threshold", None)
+    kwargs.setdefault("connect_timeout", 15)
+    kwargs["options"] = _postgres_options_with_pooler_guards(kwargs.get("options"))
     attempts = max(1, max_attempts)
     operational_error = postgres_operational_error(psycopg)
     last_error: Exception | None = None
@@ -48,6 +56,22 @@ def connect_postgres(
     if last_error is not None:
         raise last_error
     raise RuntimeError("Postgres connection failed without an error.")
+
+
+def _postgres_options_with_pooler_guards(options: Any) -> str:
+    if options is None:
+        return _POOLER_GUARD_OPTIONS
+    option_text = str(options).strip()
+    if not option_text:
+        return _POOLER_GUARD_OPTIONS
+    missing_guards = [
+        guard_option
+        for guard_option in _POOLER_GUARD_OPTION_PARTS
+        if guard_option.split("=", maxsplit=1)[0].removeprefix("-c ") not in option_text
+    ]
+    if not missing_guards:
+        return option_text
+    return f"{option_text} {' '.join(missing_guards)}"
 
 
 def retry_postgres_operation(

@@ -209,3 +209,4 @@
 - Documented Document2 loop 1 retest10 final blocked run at `GenerateExpectationDetails/O1` and stopped further eval-loop modification per user instruction.
 - Added Document2 detail-generation timeout recovery with per-shell status metadata, richer parallel timeout labels, and a recovery retry for timed-out expectation detail workers.
 - Normalized flat Document2 expectation-unit resolver patches into validated `patch.after` payloads so accepted objection revisions cannot lose document content at the workflow boundary.
+- Added bounded Postgres pooler guards for Document2 review-state persistence so stalled Blackboard reloads fail or retry instead of hanging indefinitely.
