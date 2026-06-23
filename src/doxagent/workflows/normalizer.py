@@ -95,20 +95,23 @@ class WorkflowAgentResultNormalizer:
             return item
 
         candidate = self._flat_expectation_unit_document_candidate(item)
+        normalized = {
+            key: value
+            for key, value in item.items()
+            if key not in ExpectationUnitDocument.model_fields
+        }
         try:
             document = ExpectationUnitDocument.model_validate(candidate)
         except ValidationError as exc:
+            if str(item.get("operation") or "") == PatchOperation.UPDATE.value:
+                normalized["after"] = candidate
+                return normalized
             message = (
                 "Flat expectation_unit patch document content failed schema validation: "
                 f"{exc}"
             )
             raise WorkflowContractError(message) from exc
 
-        normalized = {
-            key: value
-            for key, value in item.items()
-            if key not in ExpectationUnitDocument.model_fields
-        }
         normalized["after"] = document.model_dump(mode="json")
         return normalized
 

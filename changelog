@@ -225,3 +225,4 @@
 - Normalized partial O1 resolver expectation revisions by merging them into the pending Document2 expectation document before validation and replacement.
 - Reconnected conservative ReAct review-result recovery to final-step no-progress/incomplete-payload exits so Document2 field review coverage gaps remain auditable instead of blocking the workflow at runtime.
 - Reworked Document2 deterministic numeric cleanup so unsupported thresholds are removed without generating generic event-monitoring or price-reaction placeholder text that blocks promotion.
+- Normalized partial flat Document2 resolver update patches into `patch.after` before merging with pending expectation documents, preserving strict create validation while preventing accepted O1 revisions from losing document content.

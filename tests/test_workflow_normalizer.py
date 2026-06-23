@@ -55,6 +55,7 @@ def test_normalizer_lifts_flat_expectation_unit_patch_into_after() -> None:
 
 def test_normalizer_rejects_invalid_flat_expectation_unit_patch() -> None:
     patch = _flat_expectation_patch()
+    patch["operation"] = "create"
     patch.pop("realized_facts")
 
     with pytest.raises(
@@ -62,3 +63,40 @@ def test_normalizer_rejects_invalid_flat_expectation_unit_patch() -> None:
         match="Flat expectation_unit patch document content failed schema validation",
     ):
         WorkflowAgentResultNormalizer().normalize(_agent_result_with_patch(patch))
+
+
+def test_normalizer_lifts_partial_flat_expectation_update_into_after() -> None:
+    document = expectation_document()
+    patch = {
+        "patch_id": "patch_flat_partial_expectation_revision",
+        "target": {
+            "document_type": "expectation_unit",
+            "ticker": document["ticker"],
+            "document_id": document["document_id"],
+            "expectation_id": document["expectation_id"],
+            "field_path": "document",
+        },
+        "operation": "update",
+        "rationale": "Revise only the fields affected by accepted objections.",
+        "author_agent": "O1",
+        "validation_status": "pending",
+        "expectation_name": "Revised AI server demand expectation",
+        "direction": "bullish",
+        "key_variables": document["key_variables"][:1],
+    }
+
+    normalized = WorkflowAgentResultNormalizer().normalize(_agent_result_with_patch(patch))
+
+    normalized_patch = normalized.proposed_patches[0]
+    assert normalized_patch.after == {
+        "document_type": "expectation_unit",
+        "document_id": document["document_id"],
+        "expectation_id": document["expectation_id"],
+        "ticker": document["ticker"],
+        "expectation_name": "Revised AI server demand expectation",
+        "direction": "bullish",
+        "key_variables": document["key_variables"][:1],
+    }
+    structured_patch = normalized.payload["structured"]["proposed_patches"][0]
+    assert structured_patch["after"] == normalized_patch.after
+    assert "expectation_name" not in structured_patch

@@ -2456,3 +2456,127 @@ Every failed or partial hard gate must be classified before writing the modifica
   - Updated `tests/test_phase5_initialization_workflow.py` so numeric-sanity cleaned documents are validated through `_validate_expectation_promotion_quality()` and explicit placeholder text remains rejected.
   - Added changelog entry for the Document2 numeric-cleanup promotion-quality fix.
   - Verified locally with `uv run pytest tests/test_phase5_initialization_workflow.py` and `uv run ruff check src/doxagent/workflows/initialization.py tests/test_phase5_initialization_workflow.py`.
+
+## Loop 1 Retest17 - resolver flat partial patch lost document content
+
+### Run Metadata
+- Date: 2026-06-24.
+- Source run: `run_58f5afce8b9441ca804a2cde1ad9aec8` (Document 1-only source, unchanged).
+- Execution run: `run_30e5f3fd4337475987033429e4b8c6e7`.
+- Deployed commit: `05f772f`.
+- Remote cwd: `/root/doxagent`.
+- Remote log: `.eval_runs/document2-loop1-retest17-20260624T043253+0800.log`.
+- Brief State export path on cloud: `eval/brief_state_exports/run_30e5f3fd4337475987033429e4b8c6e7.json`.
+- Cloud command: `docker compose -f docker-compose.yml run --rm -e DOXAGENT_RUN_REAL_API_TESTS=1 -e DOXAGENT_STORAGE_MODE=postgres debug-viewer python eval/run_document2_expectation_units_smoke.py run_58f5afce8b9441ca804a2cde1ad9aec8 --mode clone --stop-after PromoteExpectationToBeliefState --export-brief-state`.
+- Polling discipline: no Codex automation was used. The run was started manually and checked via in-thread `Start-Sleep -Seconds 900` wakeups.
+
+### Status
+- Result: `blocked`.
+- Latest checkpoint: `status=blocked`, `next_node=ResolveObjectionsAndDelegations`.
+- Completed nodes: `StartTickerInitialization`, `BuildGlobalResearch`, `ReviewGlobalResearch`, `GenerateExpectationConstruction`, `ReviewExpectationConstruction`, `ResolveExpectationConstruction`, `GenerateExpectationDetails`, `ReviewExpectationFields`.
+- Terminal error: `GenerateExpectationUnits expectation patch must include document content.`
+- Stable document types: `global_research` only.
+- Stable expectation_unit count: 0.
+- Pending patch count: 3.
+- Working Memory count: 16.
+- Commit count: 1.
+- Objections: 10 total, 5 open/unresolved.
+- Blocking delegations: 0.
+- Evidence refs in export: 72.
+- Process movement vs Retest16: the previous promotion-time `event_monitoring_direction is generic` blocker did not recur before this run stopped. The run regressed earlier in the lifecycle because resolver validation rejected an accepted/partially accepted revised patch shape.
+- LangSmith evidence: `GenerateExpectationDetails` and `ReviewExpectationFields` LLM traces are visible for the same run id and show successful review loops; a direct LangSmith search for `ResolveObjectionsAndDelegations` returned no root trace. The resolver blocker is instead visible in the persisted Brief State Working Memory / local ReAct audit, including O1 raw JSON and normalized `structured.proposed_patches`.
+
+### Built-in Hard Validators
+| Validator | Result | Evidence | Notes |
+| --- | --- | --- | --- |
+| evidence_reference_integrity | pass | `checked_items=15`, `finding_count=0`. | Structural refs in reached artifacts are locatable. This does not validate unpromoted expectation quality. |
+| langsmith_trajectory_tool_boundary | fail | `checked_items=56`; finding `workflow_trace_not_completed`, latest checkpoint `status=blocked`, `next_node=ResolveObjectionsAndDelegations`. | Correct hard-validator failure because the workflow did not reach a closed Document2 promote stop. |
+| commit_log_state_mutation_consistency | pass | `checked_items=4`, `finding_count=0`. | Stable state remains limited to `global_research`, and that commit/state relation is consistent. |
+
+### Hard Gate Failure Root Cause Matrix
+| Gate | Result | failure_kind | Failure point | Root cause / fix target |
+| --- | --- | --- | --- | --- |
+| D2-HG01 | pass | none | Source handoff | Source remains the required Document 1-only run `run_58f5afce8b9441ca804a2cde1ad9aec8`. |
+| D2-HG02 | fail | direct | Stop-after path | `PromoteExpectationToBeliefState` was not reached; execution blocked in `ResolveObjectionsAndDelegations`. |
+| D2-HG03 | pass | none | Construction lifecycle | Three expectation shells/details were generated and reached field review. |
+| D2-HG04 | pass_with_caveat | partial_state | Detail patches | Three pending detail patches contain document content, facts, variables, and monitoring fields; however they are not stable and some numeric objections remain open. |
+| D2-HG05 | pass_with_caveat | partial_state | Evidence refs | Built-in ref integrity passes for reached artifacts, but stable expectation-unit evidence does not exist. |
+| D2-HG06 | fail | quality_residual | Price-in reasoning | O4 price-reaction contradiction was resolved by deterministic normalization, but remaining numeric/fundamental objections mean price-in quality is still not stable. |
+| D2-HG07 | pass | none | Field review lifecycle | A1/C1/C3/O4 field review completed and produced substantive objections, including numeric sanity and price-reaction blockers. |
+| D2-HG08 | fail | direct | Resolver patch validation | O1 partially accepted an objection and returned revised patches, but normalized `BlackboardPatch.after` was `null`, so accepted revisions could not be validated or merged. |
+| D2-HG09 | fail | direct | Promotion lifecycle | Stable expectation_unit count stayed 0. |
+| D2-HG10 | fail | direct | Trace/process closure | Built-in trajectory validator failed because latest checkpoint is blocked; remote LangSmith resolver root trace was not found by MCP keyword search. |
+| D2-HG11 | pass | none | Failure auditability | Remote log, DB checkpoint, Brief State export, Working Memory raw resolver output, hard validators, and LangSmith review traces reproduce the blocker. |
+| D2-HG12 | pass_with_caveat | context_pressure | Resolver input/output | Resolver completed an LLM response, but produced a schema-adjacent partial update shape. This is not a timeout, but context/task-contract pressure remains a contributing risk. |
+| D2-HG13 | fail | memory_continuity_blocked | Revision continuity | Accepted/partially accepted revision intent was visible in Working Memory but did not survive into a valid pending patch state. |
+
+### Rubrics
+| Rubric | Score | Reason |
+| --- | ---: | --- |
+| D2-R01 | 4 | Source discipline remains correct, and the generated expectations continue to use Document 1 inputs rather than an existing Document2 state. |
+| D2-R02 | 3 | Three differentiated pending theses exist, but no stable expectation_unit was promoted and two bullish theses still lean on broad HBM/valuation framing. |
+| D2-R03 | 2 | Realized facts exist, but many numeric/fundamental claims remain under objection or deterministic cleanup; stable fact quality cannot be accepted. |
+| D2-R04 | 2 | Price-in reasoning improved enough for O4 contradiction handling to proceed, but it is still not stable and remains mixed with unresolved numeric/fundamental concerns. |
+| D2-R05 | 3 | Key variables are present and mostly connected to the theses, but some resolver revisions would have replaced full variable sets with narrower partial lists if accepted. |
+| D2-R06 | 3 | Event monitoring fields are no longer blocked by generic placeholder language before resolver, but they remain pending and not proven stable. |
+| D2-R07 | 3 | Evidence refs are structurally valid and include DoxAtlas plus market-data evidence, but many important fundamental claims remain narrative-backed or unresolved. |
+| D2-R08 | 4 | Field-review pressure is strong: numeric sanity, market-data contradiction, and C1 quarter-label concerns are explicit and blocking. |
+| D2-R09 | 2 | Resolver lifecycle is the terminal failure: decisions and revision intent are visible, but patch content was lost at the normalized `BlackboardPatch.after` boundary. |
+| D2-R10 | 1 | Promotion readiness failed: no stable expectation_unit, open objections remain, and trajectory validator failed. |
+| D2-R11 | 3 | Tool/use traces are adequate through detail and field-review nodes, but the resolver root trace is not visible through LangSmith keyword search and must be judged from local ReAct audit. |
+| D2-R12 | 3 | Uncertainty and unresolved evidence are visible through objections/unknowns, but they did not become a usable terminal Blackboard state. |
+| D2-R13 | 4 | Reproducibility is strong: run id, cloud log, DB checkpoint, Brief State export, hard validators, Working Memory raw resolver output, and LangSmith review traces align. |
+| D2-R14 | 5 | The optimization target is narrow and testable: normalize partial flat resolver update patches into `after` so existing merge and validation can run. |
+
+### Score Summary
+- Core Blackboard quality rubrics average (`D2-R01`-`D2-R10`): 2.7.
+- Other rubrics with score <= 2: none.
+- Built-in hard validators all pass: no.
+- Quality target met: no.
+- Operational improvement accepted: no; Retest17 exposed a new resolver normalization blocker before promotion.
+
+### Failure Categories
+- category: `resolver_flat_partial_patch_content_loss`
+  - issue: O1 resolver returned `operation=update` patches with expectation document fields (`expectation_name`, `direction`, `key_variables`) at the patch top level, but normalized `BlackboardPatch.after` became `null`.
+  - evidence: Working Memory raw resolver text includes top-level expectation fields inside `final_payload.proposed_patches`; normalized `structured.proposed_patches` shows `after: null`; terminal error is `GenerateExpectationUnits expectation patch must include document content.`
+  - severity: hard-gate/direct.
+  - suspected root cause: flat expectation-unit normalizer only accepted full `ExpectationUnitDocument` content; partial update revisions were not preserved as partial `after` for downstream merge.
+- category: `accepted_revision_not_merged`
+  - issue: O1 partially accepted the quarter-label objection and intended to revise affected fields, but the revision could not be merged into pending patches.
+  - evidence: O1 `partially_accepted_objection_ids` includes `objection_7292d3934f804b0b9acf4c5f1ea19c64`; proposed revised patches target `expectation_mu_001` and `expectation_mu_002` but carry no `after`.
+  - severity: workflow-blocking.
+  - suspected root cause: schema normalization stripped or failed to preserve flat partial document fields before `_complete_expectation_revision_patch()`.
+- category: `remaining_numeric_fundamental_objections`
+  - issue: fundamental-data numeric sanity blockers for `expectation_mu_002` and `expectation_mu_003` remained open at the time of resolver failure.
+  - evidence: Brief State objections show open `obj_numeric_sanity_expectation_mu_002_fundamental_data` and `obj_numeric_sanity_expectation_mu_003_fundamental_data`.
+  - severity: quality-blocking after resolver fix.
+  - suspected root cause: O1 was trying to close them through partial revisions, but the patch boundary failure prevented lifecycle completion.
+- category: `promotion_not_reached`
+  - issue: no stable expectation units were promoted.
+  - evidence: `stable_document_types=["global_research"]`, `expectation_unit_count=0`.
+  - severity: acceptance-blocking.
+  - suspected root cause: resolver patch validation blocked before promotion.
+
+### Optimization Hypothesis
+- If the structured-output normalizer treats flat `operation=update` expectation-unit patches as partial document revisions when they fail full `ExpectationUnitDocument` validation, then O1's accepted/partially accepted resolver revisions can be preserved in `patch.after`.
+- Existing workflow merge logic can then deep-merge the partial `after` into the pending full expectation document, and the existing strict `_validate_expectation_patch_list()` / `ExpectationUnitDocument` validation will still reject incomplete or malformed final documents.
+- This should not relax initial detail quality because incomplete flat `operation=create` expectation patches still fail full document validation.
+- Expected measurable improvement in the next cloud verification, if the user authorizes another smoke: Retest should no longer stop with `GenerateExpectationUnits expectation patch must include document content`; it should either complete resolver and proceed to promotion, or expose the remaining numeric/fundamental quality blockers as explicit unresolved objections.
+
+### Proposed Modification Plan
+- Change 1: Update `WorkflowAgentResultNormalizer._normalize_patch_payload()` so full flat expectation documents still validate as full `ExpectationUnitDocument`.
+- Change 2: For flat `operation=update` expectation-unit patches that contain only partial document fields, move the recognized fields into `after` instead of raising or producing `after=null`.
+- Change 3: Keep incomplete flat `operation=create` patches strict so detail generation cannot create partial expectation documents.
+- Change 4: Add unit coverage for partial flat update normalization.
+- Change 5: Add workflow coverage proving the normalized partial `after` merges into a pending full expectation document and passes `_validate_expectation_patch_list()`.
+- Retest requirement: do not launch a new smoke test in this turn per user instruction; report the fix and leave cloud verification for explicit user approval.
+
+### Actual Modification
+- Implemented after this evaluation:
+  - Updated `src/doxagent/workflows/normalizer.py` so flat partial `operation=update` expectation-unit patches are preserved as partial `after` payloads.
+  - Preserved strict full-document validation for flat `operation=create` expectation-unit patches.
+  - Added `test_normalizer_lifts_partial_flat_expectation_update_into_after` in `tests/test_workflow_normalizer.py`.
+  - Added `test_o1_flat_partial_revision_merges_from_normalized_payload` in `tests/test_phase5_initialization_workflow.py`.
+  - Added changelog entry for the Document2 resolver partial-update normalization fix.
+  - Verified locally with `uv run pytest tests/test_workflow_normalizer.py tests/test_phase5_initialization_workflow.py` and `uv run ruff check src/doxagent/workflows/normalizer.py tests/test_workflow_normalizer.py tests/test_phase5_initialization_workflow.py`.
+- Next smoke test: not launched, per user instruction to stop after this complete eval/optimization/modification loop.

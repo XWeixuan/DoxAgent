@@ -25,6 +25,7 @@ from doxagent.workflows import (
     INITIALIZATION_NODES,
     BlackboardInitializationWorkflow,
     InitializationMockResultFactory,
+    WorkflowAgentResultNormalizer,
     WorkflowCheckpoint,
     WorkflowNode,
     WorkflowRunStatus,
@@ -1481,6 +1482,71 @@ def test_o1_partial_revision_merges_into_pending_expectation_document() -> None:
     workflow._validate_expectation_patch_list("MU", normalized)
     replaced = workflow._replace_pending_expectation_patches(checkpoint, result)
     assert replaced[0].after == normalized[0].after
+
+
+def test_o1_flat_partial_revision_merges_from_normalized_payload() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        runner=ParallelStructuredInitializationRunner(),
+        execution_mode="agent_runner",
+    )
+    factory = InitializationMockResultFactory()
+    evidence = factory._evidence(EvidenceSourceType.AGENT_OUTPUT)
+    document = factory._expectation_unit("MU").model_copy(
+        update={
+            "expectation_id": "expectation_mu_01",
+            "expectation_name": "Original MU expectation",
+        },
+        deep=True,
+    )
+    pending_patch = factory._document_patch(
+        document,
+        DocumentType.EXPECTATION_UNIT,
+        AgentName.O1_EXPECTATION_OWNER,
+        expectation_id=document.expectation_id,
+    )
+    checkpoint = WorkflowCheckpoint(
+        run_id="run_flat_partial_revision",
+        ticker="MU",
+        pending_patches=[pending_patch],
+    )
+    raw_revision = {
+        "patch_id": "patch_expectation_mu_01_revision",
+        "target": {
+            "document_type": "expectation_unit",
+            "field_path": "document",
+            "ticker": "MU",
+            "document_id": document.document_id,
+            "expectation_id": document.expectation_id,
+        },
+        "operation": "update",
+        "rationale": "O1 partially accepted the objection and revised affected fields.",
+        "author_agent": "O1",
+        "validation_status": "pending",
+        "expectation_name": "Revised MU expectation",
+        "direction": "bullish",
+        "key_variables": [document.key_variables[0].model_dump(mode="json")],
+        "evidence_refs": [evidence.model_dump(mode="json")],
+    }
+    result = AgentResult(
+        task_id="task_flat_partial_revision",
+        agent_name=AgentName.O1_EXPECTATION_OWNER,
+        status=ResultStatus.SUCCEEDED,
+        payload={"structured": {"proposed_patches": [raw_revision]}},
+    )
+    result = WorkflowAgentResultNormalizer().normalize(result)
+
+    normalized = workflow._normalized_expectation_revisions(checkpoint, result)
+
+    assert len(normalized) == 1
+    assert normalized[0].target.field_path == "document"
+    assert normalized[0].after["expectation_id"] == "expectation_mu_01"
+    assert normalized[0].after["expectation_name"] == "Revised MU expectation"
+    assert normalized[0].after["realized_facts"] == pending_patch.after["realized_facts"]
+    assert normalized[0].after["key_variables"] == [
+        document.key_variables[0].model_dump(mode="json")
+    ]
+    assert "Merged partial O1 resolver revision" in normalized[0].rationale
+    workflow._validate_expectation_patch_list("MU", normalized)
 
 
 def test_deterministic_objection_normalization_handles_numeric_and_price_blockers() -> None:
