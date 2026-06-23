@@ -2846,3 +2846,133 @@ Every failed or partial hard gate must be classified before writing the modifica
   - Added changelog entry for the Document2 resolver numeric-sanity closure guard.
   - Verified the focused numeric-sanity/resolver tests with `uv run pytest tests/test_phase5_initialization_workflow.py -k "numeric_sanity or objection_resolution_context or cannot_resolve_current_numeric"`.
 - Next smoke test: not launched, per user instruction to complete this eval loop and stop before starting another cloud smoke.
+
+## Loop 1 Retest20 - resolver revisions preserved intent but failed as multi-patch partial updates
+
+### Run Metadata
+- Date: 2026-06-24.
+- Source run: `run_58f5afce8b9441ca804a2cde1ad9aec8` (Document 1-only source, unchanged).
+- Execution run: `run_8f1515d23da549b8b76af2f8004d8b07`.
+- Deployed commit: `c2965e5`.
+- Remote cwd: `/root/doxagent`.
+- Remote log: `.eval_runs/document2-loop1-retest20-20260624T065902+0800.log`.
+- Log-reported Brief State export path: `eval/brief_state_exports/run_8f1515d23da549b8b76af2f8004d8b07.json`.
+- Actual export-file status: missing on remote filesystem at evaluation time; Brief State and hard validators were rebuilt from Postgres using `DebugRunQueryService.brief_state(run_id)`.
+- Cloud command: `docker compose -f docker-compose.yml run --rm -e DOXAGENT_RUN_REAL_API_TESTS=1 -e DOXAGENT_STORAGE_MODE=postgres debug-viewer python eval/run_document2_expectation_units_smoke.py run_58f5afce8b9441ca804a2cde1ad9aec8 --mode clone --stop-after PromoteExpectationToBeliefState --export-brief-state`.
+- Polling discipline: no Codex automation; status checks were separated by in-thread `Start-Sleep -Seconds 900`.
+
+### Status
+- Result: `blocked`.
+- Latest checkpoint: `status=blocked`, `next_node=ResolveObjectionsAndDelegations`.
+- Completed nodes: `StartTickerInitialization`, `BuildGlobalResearch`, `ReviewGlobalResearch`, `GenerateExpectationConstruction`, `ReviewExpectationConstruction`, `ResolveExpectationConstruction`, `GenerateExpectationDetails`, `ReviewExpectationFields`.
+- Terminal error: `GenerateExpectationUnits produced too many expectations.`
+- Stable document types: `global_research` only.
+- Stable expectation_unit count: 0.
+- Pending patch count: 3.
+- Working Memory count: 16.
+- Commit count: 1.
+- Open objections: 5.
+- Blocking delegations: 0.
+- Evidence refs in rebuilt Brief State: 74.
+- Improvement vs Retest19:
+  - The Retest19 failure mode, `resolved_objection_ids` with empty revised patches for a current numeric-sanity blocker, did not recur.
+  - O1 resolver returned concrete revised patch intent and LangSmith shows `O1.ResolveObjectionsAndDelegations.LOOP1` succeeded (`input_tokens=15736`, `output_tokens=8120`, `total_tokens=23856`).
+  - Field review continued to run, and C3 identified materially useful blockers around SEC fiscal-quarter timeline, evidence concentration, and event-direction semantics.
+- Remaining blockers:
+  - Five open objections remained after resolver attempt: event-direction semantics confusion, single-source evidence concentration, fiscal-quarter timeline hallucination, Q2/Q3 date contradiction, and Q3/Q4 date contradiction.
+  - O1 returned five partial update patches for three pending expectation units. These were revisions, not five new expectation units.
+  - The revisions used `changes: {"market_view.summary": ...}` path-map fields and no `after`. ReAct normalization dropped those path-map changes into `after=null`; workflow validation then hit the coarse `len(expectation_patches) >= 4` guard before it could report missing patch content.
+
+### Built-in Hard Validators
+| Validator | Result | Evidence | Notes |
+| --- | --- | --- | --- |
+| evidence_reference_integrity | pass | `checked_items=19`, `finding_count=0`. | Structural refs are locatable; this does not resolve evidence concentration or source sufficiency. |
+| langsmith_trajectory_tool_boundary | fail | `checked_items=57`; finding `workflow_trace_not_completed` at blocked checkpoint. | Correctly blocks acceptance because the run did not close. |
+| commit_log_state_mutation_consistency | pass | `checked_items=4`, `finding_count=0`. | Stable state remains limited to `global_research`. |
+
+### Hard Gate Failure Root Cause Matrix
+| Gate | Result | failure_kind | Failure point | Root cause / fix target |
+| --- | --- | --- | --- | --- |
+| D2-HG01 | pass | none | Source handoff | Source remains the required Document 1-only run. |
+| D2-HG02 | fail | direct | Stop-after path | `PromoteExpectationToBeliefState` was not reached; run blocked in resolver validation. |
+| D2-HG03 | pass | none | Construction lifecycle | Three expectation shells/details were generated and reviewed. |
+| D2-HG04 | pass_with_caveat | partial_state | Detail patches | Three pending detail patches exist with fields populated, but they remain unstable and contain timeline/evidence issues. |
+| D2-HG05 | fail | quality_residual | Evidence refs | Built-in ref integrity passes, but C3 raised a blocking single-source evidence concentration objection across the patches. |
+| D2-HG06 | fail | quality_residual | Price/fundamental timing | SEC evidence contradicted fiscal-quarter timing; price/fundamental reasoning still depends on corrected chronology. |
+| D2-HG07 | pass | none | Field review lifecycle | A1/C1/C3/O4 review completed and raised material blockers. |
+| D2-HG08 | fail | direct | Resolver revision handling | O1 returned five partial revisions for three expectation units; `changes` path-map content was not preserved as partial `after`, and revisions were not merged per expectation before validation. |
+| D2-HG09 | fail | direct | Promotion lifecycle | Stable expectation_unit count stayed 0. |
+| D2-HG10 | fail | direct | Trace/process closure | Built-in trajectory validator failed due unclosed checkpoint; LangSmith resolver trace is available by patch/objection search. |
+| D2-HG11 | pass_with_caveat | traceability_gap | Failure auditability | DB/WM/LangSmith evidence is strong, but the log-reported Brief State export file was missing. |
+| D2-HG12 | fail | context_value | Resolver output contract | Resolver got enough context to identify patches, but the output contract allowed path-map `changes` that the normalization layer did not preserve. |
+| D2-HG13 | fail | memory_continuity_blocked | Revision continuity | O1 revision intent did not survive into valid pending patch replacement, leaving blockers and no stable Document2 state. |
+
+### Rubrics
+| Rubric | Score | Reason |
+| --- | ---: | --- |
+| D2-R01 | 4 | Source handoff is still correct and Document2 starts from the required Document1-only source. |
+| D2-R02 | 3 | Three theses are differentiated, but one neutral risk unit plus one competition unit create possible overlap and none were promoted. |
+| D2-R03 | 2 | Realized facts remain materially flawed because fiscal-quarter timing is contradicted by SEC evidence. |
+| D2-R04 | 2 | Price-in logic cannot be accepted while the fiscal timing and source concentration blockers remain open. |
+| D2-R05 | 3 | Key variables are present but still require SEC/TrendForce/market-data cross-checking. |
+| D2-R06 | 2 | Event monitoring direction has semantic confusion for neutral/risk expectations, according to C3's blocking objection. |
+| D2-R07 | 2 | Evidence discipline is weak: structural refs pass, but important claims concentrate around one DoxAtlas narrative source. |
+| D2-R08 | 4 | Field-review pressure is strong and caught real defects, including SEC timeline contradiction. |
+| D2-R09 | 2 | Resolver produced useful revision intent, but lifecycle failed because revisions were not normalized/merged into valid patches. |
+| D2-R10 | 1 | Promotion readiness failed with zero stable expectation units and open blockers. |
+| D2-R11 | 3 | Tool/process behavior improved enough to reach resolver, but output normalization wasted the resolver work. |
+| D2-R12 | 2 | Uncertainty handling is insufficient because source limitations and quarter corrections did not reach final patch state. |
+| D2-R13 | 3 | DB, WM, log, and LangSmith allow reconstruction, but the missing export file weakens reproducibility. |
+| D2-R14 | 5 | The optimization is specific: preserve `changes` path-map revisions and merge multiple partial revisions per expectation before validation. |
+
+### Score Summary
+- Core Blackboard quality rubrics average (`D2-R01`-`D2-R10`): 2.5.
+- Other rubrics with score <= 2: `D2-R12`.
+- Built-in hard validators all pass: no.
+- Quality target met: no.
+- Operational improvement accepted: partial only. Retest20 improved past Retest19's false numeric closure, but exposed a new resolver revision-normalization blocker.
+
+### Failure Categories
+- category: `resolver_changes_path_map_content_loss`
+  - issue: O1 returned partial update patches using `changes: {"market_view.summary": ...}` and no `after`; normalized patch content did not preserve the path-map edits.
+  - evidence: Working Memory raw O1 resolver output includes five patch ids such as `patch_mu_001_quarter_correction`; extracted structured patches show `has_after=false`, `changes=null`.
+  - severity: hard-gate/direct.
+  - suspected root cause: ReAct patch normalization only preserves `after`, not `changes`, for BlackboardPatch payloads.
+- category: `multi_patch_revisions_not_merged_per_expectation`
+  - issue: O1 returned five partial revisions for three pending expectations, but `_validate_expectation_patch_list()` treated the revision list as a fresh expectation-generation batch and rejected `>=4` patches.
+  - evidence: terminal error `GenerateExpectationUnits produced too many expectations`; pending patches count is 3; O1 revision patch targets are expectation_mu_001, expectation_mu_002, expectation_mu_003, with duplicate revisions for 001 and 002.
+  - severity: hard-gate/direct.
+  - suspected root cause: `_normalized_expectation_revisions()` returns one completed revision per raw patch instead of folding multiple updates for the same expectation_id before validation/replacement.
+- category: `quarter_timeline_quality_blocker`
+  - issue: SEC filing evidence indicates Q2/Q3/Q4 fiscal-quarter labels in generated patches are inconsistent.
+  - evidence: C1/C3 objections cite MU FY2026 Q2 10-Q filed 2026-03-19 and argue June 2026 reporting corresponds to Q3/Q4 guidance, not Q2/Q3.
+  - severity: quality-blocking.
+  - suspected root cause: detail generation over-trusts DoxAtlas/narrative phrasing and does not reconcile issuer filing chronology before writing realized facts.
+- category: `brief_state_export_missing`
+  - issue: smoke log reported an export path, but no JSON file existed under `eval/brief_state_exports` for the Retest20 run id.
+  - evidence: remote `find eval/brief_state_exports -name "*run_8f1515d23da549b8b76af2f8004d8b07*"` returned no file.
+  - severity: traceability caveat.
+  - suspected root cause: smoke/export path handling may report intended path even after blocked run exits without writing the file.
+
+### Optimization Hypothesis
+- If ReAct patch normalization converts `changes` path-map updates into partial `after` payloads, then O1 resolver's path-level revision intent will survive into standard `BlackboardPatch` objects.
+- If `_normalized_expectation_revisions()` applies multiple partial revisions sequentially per `expectation_id` before calling `_validate_expectation_patch_list()`, then five raw partial patches for three expectations will become at most three completed pending-document replacements.
+- Existing strict final validation can then judge the merged full expectation documents instead of rejecting the raw count prematurely or losing content.
+- This should not allow extra expectation units: the final revision set remains bounded by the existing pending expectation ids, and `_replace_pending_expectation_patches()` still rejects revisions for non-pending expectation ids.
+
+### Proposed Modification Plan
+- Change 1: In ReAct `_normalize_blackboard_patch_payload()`, detect `changes` dictionaries and convert dotted paths such as `market_view.summary` or `document.realized_facts_summary` into a nested partial `after` object.
+- Change 2: Preserve `operation="update"` + `changes` payloads as partial updates; do not send them through complete `ExpectationUnitDocument` normalization before workflow merge.
+- Change 3: In `_normalized_expectation_revisions()`, sequentially merge multiple revisions for the same pending `expectation_id`, using the previously merged revision as the base for the next partial update.
+- Change 4: Keep validation strict by running `_validate_expectation_patch_list()` only after the per-expectation merge, so final merged documents must still be full valid `ExpectationUnitDocument`s.
+- Change 5: Add regression coverage for ReAct `changes` preservation and workflow multi-partial-revision merge.
+- Retest requirement: push/deploy and run another cloud smoke with the same Document 1-only source to verify Retest20's `too many expectations` blocker is gone.
+
+### Actual Modification
+- Implemented after this evaluation:
+  - Updated `src/doxagent/agents/runtime/react.py` to translate patch `changes` path maps into nested partial `after` payloads for update patches.
+  - Updated `src/doxagent/workflows/initialization.py` so `_normalized_expectation_revisions()` folds multiple partial revisions per `expectation_id` before validation.
+  - Added `test_react_preserves_objection_resolution_changes_as_partial_after` in `tests/test_phase16_react_harness.py`.
+  - Added `test_multiple_o1_partial_revisions_merge_per_expectation_before_validation` in `tests/test_phase5_initialization_workflow.py`.
+  - Added changelog entry for the Document2 resolver path-map revision merge.
+  - Verified focused tests with `uv run pytest tests/test_phase16_react_harness.py -k "changes_as_partial_after or field_objection_resolution"` and `uv run pytest tests/test_phase5_initialization_workflow.py -k "multiple_o1_partial_revisions or current_numeric or numeric_sanity or objection_resolution_context"`.

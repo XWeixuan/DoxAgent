@@ -1397,6 +1397,59 @@ def test_o1_cannot_resolve_current_numeric_sanity_without_revision_patch() -> No
         )
 
 
+def test_multiple_o1_partial_revisions_merge_per_expectation_before_validation() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        runner=ParallelStructuredInitializationRunner(),
+        execution_mode="agent_runner",
+    )
+    factory = InitializationMockResultFactory()
+    document = factory._expectation_unit("NVDA")
+    pending = factory._document_patch(
+        document,
+        DocumentType.EXPECTATION_UNIT,
+        AgentName.O1_EXPECTATION_OWNER,
+        expectation_id=document.expectation_id,
+    )
+    checkpoint = WorkflowCheckpoint(
+        run_id="run_merge_revisions",
+        ticker="NVDA",
+        pending_patches=[pending],
+    )
+    evidence = factory._evidence(EvidenceSourceType.AGENT_OUTPUT)
+    revision_one = pending.model_copy(
+        update={
+            "patch_id": "patch_market_summary_revision",
+            "after": {"market_view": {"summary": "SEC limitation added."}},
+            "evidence_refs": [evidence],
+        },
+        deep=True,
+    )
+    revision_two = pending.model_copy(
+        update={
+            "patch_id": "patch_fact_summary_revision",
+            "after": {"realized_facts_summary": "Quarter labels corrected."},
+            "evidence_refs": [evidence],
+        },
+        deep=True,
+    )
+    result = AgentResult(
+        task_id="task_merge_revisions",
+        agent_name=AgentName.O1_EXPECTATION_OWNER,
+        status=ResultStatus.SUCCEEDED,
+        payload={"runtime": "maf", "structured": {"objection_resolutions": []}},
+        proposed_patches=[revision_one, revision_two],
+        evidence_refs=[evidence],
+    )
+
+    normalized = workflow._normalized_expectation_revisions(checkpoint, result)
+
+    assert len(normalized) == 1
+    merged_after = normalized[0].after
+    assert merged_after["market_view"]["summary"] == "SEC limitation added."
+    assert merged_after["realized_facts_summary"] == "Quarter labels corrected."
+    workflow._validate_expectation_patch_list("NVDA", normalized)
+
+
 def test_numeric_sanity_revision_fallback_removes_unsupported_false_precision() -> None:
     workflow = BlackboardInitializationWorkflow(
         runner=ParallelStructuredInitializationRunner(),

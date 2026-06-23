@@ -4116,8 +4116,17 @@ def _normalize_blackboard_patch_payload(
         task=task,
         after=_json_dict(payload.get("after")),
     )
+    operation = str(payload.get("operation") or PatchOperation.CREATE.value)
     after = payload.get("after")
-    if isinstance(after, dict) and target["document_type"] == DocumentType.EXPECTATION_UNIT.value:
+    after_from_changes = False
+    if after is None and isinstance(payload.get("changes"), dict):
+        after = _after_from_patch_changes(payload["changes"])
+        after_from_changes = True
+    if (
+        isinstance(after, dict)
+        and target["document_type"] == DocumentType.EXPECTATION_UNIT.value
+        and not (operation == PatchOperation.UPDATE.value and after_from_changes)
+    ):
         after = _normalize_expectation_document_payload(
             after,
             task=task,
@@ -4129,7 +4138,7 @@ def _normalize_blackboard_patch_payload(
     return {
         "patch_id": str(payload.get("patch_id") or new_id("patch")),
         "target": target,
-        "operation": str(payload.get("operation") or PatchOperation.CREATE.value),
+        "operation": operation,
         "before": payload.get("before"),
         "after": after,
         "rationale": str(payload.get("rationale") or "O1 expectation construction."),
@@ -4139,6 +4148,26 @@ def _normalize_blackboard_patch_payload(
             payload.get("validation_status") or ValidationStatus.PENDING.value
         ),
     }
+
+
+def _after_from_patch_changes(changes: JsonDict) -> JsonDict:
+    after: JsonDict = {}
+    for raw_path, value in changes.items():
+        if not isinstance(raw_path, str):
+            continue
+        path = raw_path.removeprefix("document.").strip(".")
+        if not path:
+            continue
+        cursor = after
+        parts = [part for part in path.split(".") if part]
+        for part in parts[:-1]:
+            next_cursor = cursor.setdefault(part, {})
+            if not isinstance(next_cursor, dict):
+                next_cursor = {}
+                cursor[part] = next_cursor
+            cursor = next_cursor
+        cursor[parts[-1]] = value
+    return after
 
 
 def _patch_from_expectation_payload(

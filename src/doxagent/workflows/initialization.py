@@ -7865,15 +7865,30 @@ class BlackboardInitializationWorkflow:
             if patch.target.document_type is DocumentType.EXPECTATION_UNIT
             and patch.target.expectation_id is not None
         }
-        normalized: list[BlackboardPatch] = []
+        normalized_by_expectation_id: dict[str, BlackboardPatch] = {}
+        expectation_order: list[str] = []
+        other_revisions: list[BlackboardPatch] = []
         for revision in revisions:
             expectation_id = revision.target.expectation_id
-            pending = pending_by_expectation_id.get(expectation_id)
+            pending = (
+                normalized_by_expectation_id.get(expectation_id)
+                if expectation_id is not None
+                else None
+            ) or pending_by_expectation_id.get(expectation_id)
             if pending is None:
-                normalized.append(revision)
+                other_revisions.append(revision)
                 continue
-            normalized.append(self._complete_expectation_revision_patch(pending, revision))
-        return normalized
+            completed = self._complete_expectation_revision_patch(pending, revision)
+            if expectation_id is None:
+                other_revisions.append(completed)
+                continue
+            if expectation_id not in normalized_by_expectation_id:
+                expectation_order.append(expectation_id)
+            normalized_by_expectation_id[expectation_id] = completed
+        return [
+            normalized_by_expectation_id[expectation_id]
+            for expectation_id in expectation_order
+        ] + other_revisions
 
     def _complete_expectation_revision_patch(
         self,

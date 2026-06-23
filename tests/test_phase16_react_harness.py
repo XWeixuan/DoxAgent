@@ -784,6 +784,71 @@ def test_react_uses_lightweight_contract_for_field_objection_resolution() -> Non
     assert contract["final_payload"]["objection_resolutions"][0]["objection_id"]
 
 
+def test_react_preserves_objection_resolution_changes_as_partial_after() -> None:
+    base_task = agent_task()
+    task = base_task.model_copy(
+        update={
+            "required_output_schema": "ExpectationConstructionResult",
+            "input_context": {
+                **base_task.input_context,
+                "resolution_mode": "field_review_objection_resolution",
+                "unresolved_objections": [{"objection_id": "obj_1"}],
+            },
+        },
+        deep=True,
+    )
+    runner = runner_with_sequence(
+        [
+            {
+                "is_complete": True,
+                "completion_reason": "resolved",
+                "final_payload": {
+                    "proposed_patches": [
+                        {
+                            "patch_id": "patch_change_map",
+                            "target": {
+                                "document_type": "expectation_unit",
+                                "ticker": "NVDA",
+                                "expectation_id": "exp_1",
+                                "field_path": "document",
+                            },
+                            "operation": "update",
+                            "rationale": "Apply path-map corrections.",
+                            "changes": {
+                                "market_view.summary": "Source limitation noted.",
+                                "document.realized_facts_summary": "Quarter labels corrected.",
+                            },
+                        }
+                    ],
+                    "evidence_refs": [],
+                    "delegations": [],
+                    "unknowns": [],
+                    "rationale": "Accepted revision.",
+                    "accepted_objection_ids": ["obj_1"],
+                    "objection_resolutions": [
+                        {
+                            "objection_id": "obj_1",
+                            "decision": "accepted",
+                            "resolution_note": "Patch revised.",
+                            "changed_paths": ["market_view.summary"],
+                            "evidence_refs": [],
+                        }
+                    ],
+                },
+            }
+        ]
+    )
+
+    result = runner.run(task)
+
+    patch = result.payload["structured"]["proposed_patches"][0]
+    assert patch["operation"] == "update"
+    assert patch["after"] == {
+        "market_view": {"summary": "Source limitation noted."},
+        "realized_facts_summary": "Quarter labels corrected.",
+    }
+
+
 def test_react_normalizes_expectation_shell_construction_without_patches() -> None:
     task = agent_task().model_copy(
         update={"required_output_schema": "ExpectationShellConstructionResult"},
