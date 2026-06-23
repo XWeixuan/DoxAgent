@@ -136,6 +136,27 @@
 | D2-HG12 | | | | |
 | D2-HG13 | | | | |
 
+#### Hard Gate Failure Root Cause Matrix
+Every failed or partial hard gate must be classified before writing the modification plan.
+
+`failure_kind` values:
+- `direct`: this gate names the active blocker or quality defect being fixed in this loop.
+- `derivative`: this gate failed only because an upstream direct blocker prevented later nodes from running.
+- `quality_residual`: workflow reached the required node, but output quality or downstream usability still fails this gate.
+
+| Gate | Result | failure_kind | blocking_node | root cause | covered_by_modification | retest expectation |
+| --- | --- | --- | --- | --- | --- | --- |
+| D2-HG02 | | | | | | |
+| D2-HG04 | | | | | | |
+| D2-HG05 | | | | | | |
+| D2-HG06 | | | | | | |
+| D2-HG07 | | | | | | |
+| D2-HG08 | | | | | | |
+| D2-HG09 | | | | | | |
+| D2-HG10 | | | | | | |
+| D2-HG12 | | | | | | |
+| D2-HG13 | | | | | | |
+
 #### Rubric Delta
 | Rubric | Baseline | Retest | Delta | Notes |
 | --- | ---: | ---: | ---: | --- |

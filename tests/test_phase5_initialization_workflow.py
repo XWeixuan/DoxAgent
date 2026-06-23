@@ -1,4 +1,5 @@
 import threading
+import time
 
 from doxagent.agents import MockAgentRunner, default_agent_registry
 from doxagent.blackboard.state import BlackboardRun
@@ -18,6 +19,7 @@ from doxagent.models import (
     ResultStatus,
     new_id,
 )
+from doxagent.settings import DoxAgentSettings
 from doxagent.workflows import (
     INITIALIZATION_NODES,
     BlackboardInitializationWorkflow,
@@ -72,6 +74,7 @@ class ParallelStructuredInitializationRunner:
         *,
         fail_detail_ids: set[str] | None = None,
         fail_detail_once_ids: set[str] | None = None,
+        hang_detail_ids: set[str] | None = None,
         fail_research_once_agents: set[AgentName] | None = None,
         fail_resolve_o1_once: bool = False,
         include_blockers: bool = False,
@@ -83,6 +86,7 @@ class ParallelStructuredInitializationRunner:
         }
         self.fail_detail_ids = fail_detail_ids or set()
         self.fail_detail_once_ids = fail_detail_once_ids or set()
+        self.hang_detail_ids = hang_detail_ids or set()
         self.fail_research_once_agents = fail_research_once_agents or set()
         self.fail_resolve_o1_once = fail_resolve_o1_once
         self.tasks: list[AgentTask] = []
@@ -137,6 +141,11 @@ class ParallelStructuredInitializationRunner:
             if node == WorkflowNode.GENERATE_EXPECTATION_DETAILS.value and isinstance(shell, dict):
                 expectation_id = str(shell.get("expectation_id") or "")
                 self.detail_calls[expectation_id] = self.detail_calls.get(expectation_id, 0) + 1
+                if (
+                    expectation_id in self.hang_detail_ids
+                    and "detail_recovery_retry" not in task.input_context
+                ):
+                    time.sleep(60)
                 should_fail_once = (
                     expectation_id in self.fail_detail_once_ids
                     and self.detail_calls[expectation_id] == 1
@@ -667,6 +676,46 @@ def test_expectation_detail_retryable_failure_retries_once_in_same_node() -> Non
         "exp_mock_core",
         "exp_mock_risk",
     ]
+
+
+def test_expectation_detail_timeout_records_shell_and_retries_recovery_context() -> None:
+    runner = ParallelStructuredInitializationRunner(hang_detail_ids={"exp_mock_risk"})
+    workflow = BlackboardInitializationWorkflow(
+        runner=runner,
+        execution_mode="agent_runner",
+        settings=DoxAgentSettings(
+            dashscope_api_key="test-key",
+            storage_mode="memory",
+            workflow_agent_stale_after_seconds=1,
+            model_request_timeout_seconds=1,
+        ),
+    )
+
+    result = workflow.run("NVDA", stop_after=WorkflowNode.GENERATE_EXPECTATION_DETAILS)
+
+    assert result.status is WorkflowRunStatus.RUNNING
+    assert runner.detail_calls == {"exp_mock_core": 1, "exp_mock_risk": 2}
+    assert [patch.target.expectation_id for patch in result.checkpoint.pending_patches] == [
+        "exp_mock_core",
+        "exp_mock_risk",
+    ]
+    statuses = result.checkpoint.metadata["expectation_detail_generation_status"]
+    risk_status = statuses["exp_mock_risk"]
+    assert risk_status["status"] == "completed"
+    assert risk_status["retry_attempt"] == 1
+    assert risk_status["cache_key"] == "expectation_detail:1:exp_mock_risk"
+    history_statuses = [item["status"] for item in risk_status["history"]]
+    assert "timed_out" in history_statuses
+    assert "retrying" in history_statuses
+    retry_task = [
+        task
+        for task in runner.tasks
+        if task.run_metadata.workflow_node == WorkflowNode.GENERATE_EXPECTATION_DETAILS.value
+        and task.input_context["expectation_shell"]["expectation_id"] == "exp_mock_risk"
+        and "detail_recovery_retry" in task.input_context
+    ][0]
+    assert retry_task.input_context["detail_recovery_retry"]["previous_status"] == "timed_out"
+    assert "Recovery retry" in retry_task.input_context["detail_instruction"]
 
 
 def test_resolve_objections_retryable_o1_failure_retries_once() -> None:

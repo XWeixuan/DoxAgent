@@ -107,6 +107,7 @@ _UNSET_NEXT_NODE = object()
 _GLOBAL_RESEARCH_AGENT_RESULTS_KEY = "global_research_agent_results"
 _WORKFLOW_AGENT_RESULTS_KEY = "workflow_agent_results"
 _WORKFLOW_AGENT_IDEMPOTENCY_KEY = "workflow_agent_idempotency"
+_EXPECTATION_DETAIL_STATUS_KEY = "expectation_detail_generation_status"
 _OBJECTION_RESOLUTION_BATCH_SIZE = 3
 WorkflowExecutionMode = Literal["mock", "agent_runner"]
 
@@ -1047,6 +1048,7 @@ class BlackboardInitializationWorkflow:
         jobs: list[_ParallelAgentJob],
         *,
         on_outcome: Callable[[_ParallelAgentOutcome], None] | None = None,
+        timeout_seconds: float | None = None,
     ) -> list[_ParallelAgentOutcome]:
         if not jobs:
             return []
@@ -1063,7 +1065,11 @@ class BlackboardInitializationWorkflow:
         outcomes: list[_ParallelAgentOutcome] = []
         outcome_queue: Queue[_ParallelAgentOutcome] = Queue()
         pending_by_order = {job.order: job for job in jobs}
-        timeout_seconds = float(self.settings.workflow_agent_stale_after_seconds)
+        timeout_seconds = float(
+            timeout_seconds
+            if timeout_seconds is not None
+            else self.settings.workflow_agent_stale_after_seconds
+        )
         deadline = time.monotonic() + timeout_seconds
 
         def worker(job: _ParallelAgentJob) -> None:
@@ -1097,7 +1103,7 @@ class BlackboardInitializationWorkflow:
             outcome = _ParallelAgentOutcome(
                 job=job,
                 error=WorkflowContractError(
-                    f"parallel_agent_timeout: {node.value}/{job.agent_name.value} "
+                    f"parallel_agent_timeout: {self._parallel_job_label(node, job)} "
                     f"did not return within {timeout_seconds:g} seconds."
                 ),
             )
@@ -1105,6 +1111,16 @@ class BlackboardInitializationWorkflow:
                 on_outcome(outcome)
             outcomes.append(outcome)
         return sorted(outcomes, key=lambda outcome: outcome.job.order)
+
+    def _parallel_job_label(self, node: WorkflowNode, job: _ParallelAgentJob) -> str:
+        parts = [node.value, job.agent_name.value]
+        if job.section_key:
+            parts.append(job.section_key)
+        label = "/".join(parts)
+        metadata = [f"order={job.order}"]
+        if job.cache_key:
+            metadata.append(f"cache_key={job.cache_key}")
+        return f"{label} ({', '.join(metadata)})"
 
     def _run_parallel_agent_job_once(
         self,
@@ -2079,6 +2095,14 @@ class BlackboardInitializationWorkflow:
             )
             if cached is not None:
                 cached_results[order] = cached
+                current = self._record_expectation_detail_status(
+                    current,
+                    node,
+                    order,
+                    shell,
+                    cache_key=cache_key,
+                    status="cached_completed",
+                )
                 continue
             current = self._mark_agent_dispatch(
                 current,
@@ -2087,6 +2111,14 @@ class BlackboardInitializationWorkflow:
                 status="running",
                 section_key=shell.expectation_id,
                 cache_key=cache_key,
+            )
+            current = self._record_expectation_detail_status(
+                current,
+                node,
+                order,
+                shell,
+                cache_key=cache_key,
+                status="running",
             )
             jobs.append(
                 _ParallelAgentJob(
@@ -2097,38 +2129,7 @@ class BlackboardInitializationWorkflow:
                     content_type="expectation_detail_result",
                     section_key=shell.expectation_id,
                     cache_key=cache_key,
-                    extra_context={
-                        "expectation_shell": shell.model_dump(mode="json"),
-                        "detail_instruction": (
-                            "Complete exactly one expectation unit from this shell. Preserve "
-                            "I/II fields and fill realized facts, key variables/current status, "
-                            "and event prediction or monitoring direction. "
-                            "Use at most one doxa_get_narrative_report call for this shell; "
-                            "after the call succeeds, fails with a non-retryable validation error, "
-                            "or returns limited coverage, finish the ExpectationDetailResult from "
-                            "the shell plus compact upstream context and record any evidence gaps "
-                            "in unknowns or rationale. "
-                            "event_monitoring_direction must contain known_event_notice plus "
-                            "positive_events and negative_events as lists of concrete string "
-                            "triggers; do not use generic deployment/commercialization "
-                            "placeholders, known_upcoming_events, or dict/object event items."
-                        ),
-                        "detail_completion_budget": {
-                            "max_successful_doxa_get_narrative_report_calls": 1,
-                            "fallback_after_tool_gap": (
-                                "Produce the best bounded expectation detail with explicit "
-                                "unknowns instead of repeating low-value tool calls."
-                            ),
-                        },
-                        "required_tool_names": ["doxa_get_narrative_report"],
-                        "tool_requirements": [
-                            {
-                                "tool_name": "doxa_get_narrative_report",
-                                "required": True,
-                                "purpose": "Narrative evidence for expectation detail completion.",
-                            }
-                        ],
-                    },
+                    extra_context=self._expectation_detail_context(shell),
                 )
             )
         if jobs:
@@ -2143,6 +2144,7 @@ class BlackboardInitializationWorkflow:
             result: AgentResult,
             *,
             cached: bool,
+            retry_attempt: int = 0,
         ) -> None:
             nonlocal current
             cache_key = self._expectation_detail_cache_key(order, shell)
@@ -2163,10 +2165,31 @@ class BlackboardInitializationWorkflow:
                     cache_key=cache_key,
                     error_message=str(exc),
                 )
+                current = self._record_expectation_detail_status(
+                    current,
+                    node,
+                    order,
+                    shell,
+                    cache_key=cache_key,
+                    status="failed",
+                    error_message=str(exc),
+                )
                 self._save_parallel_outcome_checkpoint(current)
                 accepted_errors[order] = exc
                 return
             accepted_results[order] = result
+            accepted_errors.pop(order, None)
+            patch_ids = [patch.patch_id for patch in result.proposed_patches]
+            current = self._record_expectation_detail_status(
+                current,
+                node,
+                order,
+                shell,
+                cache_key=cache_key,
+                status="cached_completed" if cached else "completed",
+                retry_attempt=retry_attempt,
+                patch_ids=patch_ids,
+            )
             if not cached:
                 current = self._store_workflow_agent_result(
                     current,
@@ -2186,6 +2209,11 @@ class BlackboardInitializationWorkflow:
             shell = shells[order]
             cache_key = self._expectation_detail_cache_key(order, shell)
             if outcome.error is not None:
+                status = (
+                    "timed_out"
+                    if self._is_parallel_agent_timeout_error(outcome.error)
+                    else "failed"
+                )
                 current = self._mark_agent_dispatch(
                     current,
                     node,
@@ -2195,12 +2223,32 @@ class BlackboardInitializationWorkflow:
                     cache_key=cache_key,
                     error_message=str(outcome.error),
                 )
+                current = self._record_expectation_detail_status(
+                    current,
+                    node,
+                    order,
+                    shell,
+                    cache_key=cache_key,
+                    status=status,
+                    error_message=str(outcome.error),
+                )
                 self._save_parallel_outcome_checkpoint(current)
                 accepted_errors[order] = outcome.error
                 return
             if outcome.result is None:
                 return
-            accept_detail_result(order, shell, outcome.result, cached=False)
+            retry_attempt = (
+                1
+                if isinstance(outcome.job.extra_context.get("detail_recovery_retry"), dict)
+                else 0
+            )
+            accept_detail_result(
+                order,
+                shell,
+                outcome.result,
+                cached=False,
+                retry_attempt=retry_attempt,
+            )
 
         outcomes_by_order = {
             outcome.job.order: outcome
@@ -2211,36 +2259,59 @@ class BlackboardInitializationWorkflow:
                 on_outcome=cache_expectation_detail_outcome,
             )
         }
+        timed_out_orders: dict[int, Exception] = {}
         first_error: Exception | None = None
         for order, shell in enumerate(shells):
             cached = cached_results.get(order)
             outcome = outcomes_by_order.get(order)
             if cached is not None:
                 accept_detail_result(order, shell, cached, cached=True)
-                result = accepted_results.get(order)
-                if order in accepted_errors:
-                    first_error = first_error or accepted_errors[order]
             elif outcome is None:
-                result = None
-                first_error = first_error or WorkflowContractError(
+                accepted_errors[order] = WorkflowContractError(
                     f"{node.value}/{shell.expectation_id} did not return a parallel outcome."
                 )
-            elif order in accepted_errors:
-                result = None
-                first_error = first_error or accepted_errors[order]
-            elif order in accepted_results:
-                result = accepted_results[order]
             elif outcome.error is not None:
-                result = None
-                first_error = first_error or outcome.error
+                if self._is_parallel_agent_timeout_error(outcome.error):
+                    timed_out_orders[order] = outcome.error
+                elif order not in accepted_results:
+                    accepted_errors[order] = outcome.error
+            elif order in accepted_errors:
+                continue
+            elif order in accepted_results:
+                continue
             else:
-                result = outcome.result
-                if result is not None:
-                    accept_detail_result(order, shell, result, cached=False)
-                    result = accepted_results.get(order)
-                    if order in accepted_errors:
-                        first_error = first_error or accepted_errors[order]
+                if outcome.result is not None:
+                    accept_detail_result(order, shell, outcome.result, cached=False)
+                else:
+                    accepted_errors[order] = WorkflowContractError(
+                        f"{node.value}/{shell.expectation_id} returned no result."
+                    )
+
+        for order, timeout_error in timed_out_orders.items():
+            if order in accepted_results:
+                continue
+            current = self._prepare_expectation_detail_timeout_retry(
+                current,
+                node,
+                order,
+                shells[order],
+                timeout_error,
+            )
+            current = self._run_expectation_detail_recovery_retry(
+                current,
+                node,
+                order,
+                shells[order],
+                timeout_error,
+                on_outcome=cache_expectation_detail_outcome,
+            )
+            if order not in accepted_results and order not in accepted_errors:
+                accepted_errors[order] = timeout_error
+
+        for order, _shell in enumerate(shells):
+            result = accepted_results.get(order)
             if result is None:
+                first_error = first_error or accepted_errors.get(order)
                 continue
 
             patches.extend(result.proposed_patches)
@@ -2253,6 +2324,204 @@ class BlackboardInitializationWorkflow:
             pending_patches=current.pending_patches + patches,
             metadata=self._agent_metadata(node, results),
         )
+
+    def _expectation_detail_context(
+        self,
+        shell: ExpectationShell,
+        *,
+        recovery_error: str | None = None,
+    ) -> dict[str, Any]:
+        instruction = (
+            "Complete exactly one expectation unit from this shell. Preserve "
+            "I/II fields and fill realized facts, key variables/current status, "
+            "and event prediction or monitoring direction. "
+            "Use at most one doxa_get_narrative_report call for this shell; "
+            "after the call succeeds, fails with a non-retryable validation error, "
+            "or returns limited coverage, finish the ExpectationDetailResult from "
+            "the shell plus compact upstream context and record any evidence gaps "
+            "in unknowns or rationale. "
+            "event_monitoring_direction must contain known_event_notice plus "
+            "positive_events and negative_events as lists of concrete string "
+            "triggers; do not use generic deployment/commercialization "
+            "placeholders, known_upcoming_events, or dict/object event items."
+        )
+        budget: dict[str, Any] = {
+            "max_successful_doxa_get_narrative_report_calls": 1,
+            "fallback_after_tool_gap": (
+                "Produce the best bounded expectation detail with explicit "
+                "unknowns instead of repeating low-value tool calls."
+            ),
+        }
+        context: dict[str, Any] = {
+            "expectation_shell": shell.model_dump(mode="json"),
+            "detail_instruction": instruction,
+            "detail_completion_budget": budget,
+            "required_tool_names": ["doxa_get_narrative_report"],
+            "tool_requirements": [
+                {
+                    "tool_name": "doxa_get_narrative_report",
+                    "required": True,
+                    "purpose": "Narrative evidence for expectation detail completion.",
+                }
+            ],
+        }
+        if recovery_error:
+            context["detail_instruction"] = (
+                "Recovery retry after a timed-out expectation detail worker. "
+                "Use compact context only, avoid repeating low-value retrieval loops, "
+                "and finish one schema-valid ExpectationDetailResult for this exact "
+                "expectation shell. "
+                + instruction
+            )
+            context["detail_completion_budget"] = budget | {
+                "recovery_retry": True,
+                "previous_timeout": recovery_error,
+                "retry_policy": (
+                    "At most one narrative-report attempt; if unavailable or already "
+                    "insufficient, finish from shell/context with explicit unknowns."
+                ),
+            }
+            context["detail_recovery_retry"] = {
+                "retry_attempt": 1,
+                "previous_error": recovery_error,
+                "previous_status": "timed_out",
+            }
+        return context
+
+    def _prepare_expectation_detail_timeout_retry(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        node: WorkflowNode,
+        order: int,
+        shell: ExpectationShell,
+        timeout_error: Exception,
+    ) -> WorkflowCheckpoint:
+        cache_key = self._expectation_detail_cache_key(order, shell)
+        current = self._record_expectation_detail_status(
+            checkpoint,
+            node,
+            order,
+            shell,
+            cache_key=cache_key,
+            status="retrying",
+            error_message=str(timeout_error),
+            retry_attempt=1,
+        )
+        current = self._mark_agent_dispatch(
+            current,
+            node,
+            AgentName.O1_EXPECTATION_OWNER,
+            status="running",
+            section_key=shell.expectation_id,
+            cache_key=cache_key,
+            error_message="recovery retry after parallel timeout",
+        )
+        self._save_parallel_outcome_checkpoint(current)
+        return current
+
+    def _run_expectation_detail_recovery_retry(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        node: WorkflowNode,
+        order: int,
+        shell: ExpectationShell,
+        timeout_error: Exception,
+        *,
+        on_outcome: Callable[[_ParallelAgentOutcome], None],
+    ) -> WorkflowCheckpoint:
+        cache_key = self._expectation_detail_cache_key(order, shell)
+        retry_job = _ParallelAgentJob(
+            order=order,
+            agent_name=AgentName.O1_EXPECTATION_OWNER,
+            task_type=TaskType.GENERATE_EXPECTATION_DETAIL,
+            output_schema="ExpectationDetailResult",
+            content_type="expectation_detail_result",
+            section_key=shell.expectation_id,
+            cache_key=cache_key,
+            extra_context=self._expectation_detail_context(
+                shell,
+                recovery_error=str(timeout_error),
+            ),
+        )
+        outcomes = self._run_agent_jobs_concurrently(
+            checkpoint,
+            node,
+            [retry_job],
+            on_outcome=on_outcome,
+            timeout_seconds=self._expectation_detail_recovery_timeout_seconds(),
+        )
+        return checkpoint if not outcomes else self._latest_checkpoint_or(checkpoint)
+
+    def _latest_checkpoint_or(self, checkpoint: WorkflowCheckpoint) -> WorkflowCheckpoint:
+        try:
+            return self.checkpoint_repository.get_latest(checkpoint.run_id)
+        except Exception:
+            return checkpoint
+
+    def _expectation_detail_recovery_timeout_seconds(self) -> float:
+        return min(
+            float(self.settings.workflow_agent_stale_after_seconds),
+            max(5.0, float(self.settings.model_request_timeout_seconds) * 1.5),
+        )
+
+    def _record_expectation_detail_status(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        node: WorkflowNode,
+        order: int,
+        shell: ExpectationShell,
+        *,
+        cache_key: str,
+        status: str,
+        error_message: str | None = None,
+        retry_attempt: int = 0,
+        patch_ids: list[str] | None = None,
+    ) -> WorkflowCheckpoint:
+        raw_status = checkpoint.metadata.get(_EXPECTATION_DETAIL_STATUS_KEY)
+        statuses = dict(raw_status) if isinstance(raw_status, dict) else {}
+        previous = statuses.get(shell.expectation_id)
+        history: list[dict[str, Any]] = []
+        if isinstance(previous, dict):
+            history = [
+                item for item in previous.get("history", []) if isinstance(item, dict)
+            ][-5:]
+            history.append(
+                {
+                    "status": previous.get("status"),
+                    "updated_at": previous.get("updated_at"),
+                    "error_message": previous.get("error_message"),
+                    "retry_attempt": previous.get("retry_attempt", 0),
+                }
+            )
+        entry: dict[str, Any] = {
+            "run_id": checkpoint.run_id,
+            "workflow_node": node.value,
+            "agent_name": AgentName.O1_EXPECTATION_OWNER.value,
+            "order": order,
+            "expectation_id": shell.expectation_id,
+            "expectation_name": shell.expectation_name,
+            "cache_key": cache_key,
+            "status": status,
+            "retry_attempt": retry_attempt,
+            "updated_at": datetime.now(UTC).isoformat(),
+        }
+        if error_message:
+            entry["error_message"] = error_message
+        if patch_ids is not None:
+            entry["patch_ids"] = patch_ids
+        if history:
+            entry["history"] = history[-5:]
+        statuses[shell.expectation_id] = entry
+        return checkpoint.model_copy(
+            update={
+                "metadata": checkpoint.metadata
+                | {_EXPECTATION_DETAIL_STATUS_KEY: statuses}
+            },
+            deep=True,
+        )
+
+    def _is_parallel_agent_timeout_error(self, error: Exception) -> bool:
+        return "parallel_agent_timeout:" in str(error)
 
     def _is_retryable_agent_result_failure(self, result: AgentResult) -> bool:
         if result.status is not ResultStatus.FAILED or result.error is None:

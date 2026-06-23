@@ -932,6 +932,8 @@ def test_parallel_agent_jobs_timeout_hung_worker_without_blocking() -> None:
     ]
     assert outcomes[0].error is not None
     assert "parallel_agent_timeout" in str(outcomes[0].error)
+    assert "fundamental_report" in str(outcomes[0].error)
+    assert "order=0" in str(outcomes[0].error)
     assert outcomes[1].result is not None
     assert set(seen) == {
         AgentName.C1_FUNDAMENTAL_RESEARCH,
