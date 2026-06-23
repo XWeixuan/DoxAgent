@@ -208,3 +208,4 @@
 - Documented Document2 loop 1 retest9 A1 field-review timeout and made A1 ReviewExpectationFields context-only with no tool permissions.
 - Documented Document2 loop 1 retest10 final blocked run at `GenerateExpectationDetails/O1` and stopped further eval-loop modification per user instruction.
 - Added Document2 detail-generation timeout recovery with per-shell status metadata, richer parallel timeout labels, and a recovery retry for timed-out expectation detail workers.
+- Normalized flat Document2 expectation-unit resolver patches into validated `patch.after` payloads so accepted objection revisions cannot lose document content at the workflow boundary.

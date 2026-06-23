@@ -1588,3 +1588,144 @@ Every failed or partial hard gate must be classified before writing the modifica
 - No code/prompt/workflow modification is applied after retest10.
 - Reason: user explicitly instructed to finish Retest10, end the eval loop, cancel the 15-minute automation, switch to scheduled wakeup, and report the 10-run results.
 - Retest10's proposed next modification plan is recorded above for future resumption, but intentionally deferred.
+
+## 2026-06-23 - Loop 1 Retest11 After Detail Timeout Recovery
+
+### Test Info
+- Git state: cloud deployed commit `41b8416` (`fix: recover document2 detail timeouts`).
+- Source run_id: `run_58f5afce8b9441ca804a2cde1ad9aec8`.
+- Source state: Document 1-only source; stable `global_research`; no stable `expectation_unit`.
+- Execution mode: `clone`.
+- Command: `docker compose run --rm -e DOXAGENT_RUN_REAL_API_TESTS=1 -e DOXAGENT_STORAGE_MODE=postgres debug-viewer python eval/run_document2_expectation_units_smoke.py run_58f5afce8b9441ca804a2cde1ad9aec8 --mode clone --stop-after PromoteExpectationToBeliefState --export-brief-state`.
+- Environment: cloud server `doxagent-hk`, `/root/doxagent`, Docker image built from `41b8416`.
+- Execution run_id: `run_cbc6367287a3498092bde2c8e29ec6c0`.
+- Remote log: `/root/doxagent/.eval_runs/document2-loop1-retest11-20260623T164559+0800.log`.
+- Script output: `status=blocked`; `next_node=ResolveObjectionsAndDelegations`; completed nodes through `ReviewExpectationFields`; `stable_document_types=["global_research"]`; `pending_patch_count=2`; `working_memory_count=15`; `commit_count=1`; `unresolved_objection_count=2`; `blocking_delegation_count=0`; `expectation_unit_count=0`.
+- Error: `GenerateExpectationUnits expectation patch must include document content.`
+- `GenerateExpectationDetails` status metadata showed both detail shells completed: `expectation_mu_01` produced `patch_expectation_mu_01_detail`; `expectation_mu_02` produced `patch_expectation_mu_02_detail`.
+- Brief State export rerun in cloud: latest checkpoint `blocked`, `next_node=ResolveObjectionsAndDelegations`, `checkpoint_count=12`, stable docs only `global_research`, `expectation_units=[]`, `working_memory_entries=15`, `commit_log_entries=1`, `objections=10`, `open_or_unresolved_objections=2`, `delegations=0`, `evidence_refs=72`.
+- Built-in hard validators: overall `failed`; `evidence_reference_integrity=passed`, `langsmith_trajectory_tool_boundary=failed` (`workflow_trace_not_completed`), `commit_log_state_mutation_consistency=passed`.
+- Evaluator: Codex, strict blocked-run diagnostic retest11.
+
+### Optimization Hypothesis
+- The retest10 blocker was improved: `GenerateExpectationDetails` no longer timed out, both expectation detail workers completed, and the workflow advanced through `ReviewExpectationFields`.
+- The new direct blocker is a structured-output normalization gap in `ResolveObjectionsAndDelegations`: O1 returned a revised expectation patch whose `expectation_id`, `expectation_name`, `market_view`, `realized_facts`, `key_variables`, and `event_monitoring_direction` fields were present at the patch top level, while `after` was absent/null.
+- `BlackboardPatch.after` is optional at the generic contract layer, so the patch passed the generic model parse but then failed Document2 workflow validation with `GenerateExpectationUnits expectation patch must include document content`.
+- This is a memory-continuity and patch-contract issue, not a detail-generation issue: accepted/partially accepted review decisions produced document content, but the content was not preserved in the canonical `after` field used by downstream replacement/promotion logic.
+- Expected improvement: normalize flat `expectation_unit` patches into `patch.after` before they enter workflow state, while still validating the recovered content against `ExpectationUnitDocument` and rejecting incomplete flat patches.
+
+### Proposed Modification Plan
+- Change 1: Update `WorkflowAgentResultNormalizer` so `structured.proposed_patches` entries targeting `expectation_unit` with `operation=create|update` and missing `after` are inspected for flat `ExpectationUnitDocument` fields.
+- Change 2: If the flat document candidate validates as `ExpectationUnitDocument`, move the validated JSON document into `patch.after` and remove document fields from the top-level patch object before `BlackboardPatch` validation.
+- Change 3: If flat expectation document fields are present but incomplete or invalid, raise a `WorkflowContractError` immediately; do not let an `after=null` patch leak into later workflow nodes.
+- Change 4: Preserve auditability by also writing the normalized patch shape back into `payload["structured"]["proposed_patches"]`, so Working Memory/debug payloads match the actual patch consumed by the workflow.
+- Change 5: Add regression tests for the Retest11 flat-patch shape and the invalid-flat-patch failure path.
+- Retest requirement: commit/push, cloud `git pull --ff-only`, rebuild `debug-viewer`, rerun the same Document 1-only source and same `--stop-after PromoteExpectationToBeliefState`.
+
+### Scope Decision
+- Eval mode: `blocked`.
+- Can judge stable expectation_unit: no, no stable `expectation_unit` documents were promoted.
+- Can judge workflow improvement: yes, the prior detail-timeout blocker was bypassed and the workflow advanced to resolver.
+- Cannot claim: quality target success, final Blackboard readiness, or stable downstream monitoring usability.
+
+### Hard Gate Failure Root Cause Matrix
+| Gate | Result | failure_kind | Failure point | Root cause / fix target |
+| --- | --- | --- | --- | --- |
+| D2-HG01 | pass | none | Source handoff | Same Document 1-only source retained. |
+| D2-HG02 | fail | direct | `ResolveObjectionsAndDelegations` blocked before stop-after | Resolver emitted a revision patch with document fields outside `after`; normalize flat expectation patches. |
+| D2-HG03 | pass | none | Construction lifecycle | Shell construction, construction review, and construction resolution completed. |
+| D2-HG04 | pass | none | Detail patches | Both detail patches completed and remained pending/reviewable. |
+| D2-HG05 | pass | none | Evidence refs | Built-in evidence reference validator passed for reached artifacts. |
+| D2-HG06 | fail | quality_residual | Price-in contradiction remained under review | Stock-price objection indicates unsupported `>1000`/near-1000 wording still needed resolver revision. |
+| D2-HG07 | pass | none | Field review lifecycle | A1/C1/C3/O4 review completed; A1 timeout did not recur. |
+| D2-HG08 | fail | direct | Objection resolver | Accepted/partially accepted objection content did not become a valid revised patch because `after` was null. |
+| D2-HG09 | fail | derivative | Promotion | No stable expectation units because resolver replacement failed first. |
+| D2-HG10 | fail | derivative | Trajectory validator | Workflow trace was incomplete because the run ended blocked. |
+| D2-HG11 | pass | none | Failure auditability | Remote log, Brief State, Working Memory, and hard-validator output expose the blocker. |
+| D2-HG12 | fail | quality_residual | Downstream usability | No stable Document2 output; monitoring directions cannot be accepted downstream. |
+| D2-HG13 | fail | direct | Multi-loop memory continuity | Review/resolver revision content was present but lost across the patch contract boundary; normalize and validate before state mutation. |
+
+### Hard Gates
+| Gate | Result | Evidence | Notes |
+| --- | --- | --- | --- |
+| D2-HG01 | pass | Same Document 1-only source `run_58f5afce8b9441ca804a2cde1ad9aec8`; clone mode. | Valid seed retained. |
+| D2-HG02 | fail | Cloud log finished `status=blocked`; `next_node=ResolveObjectionsAndDelegations`. | Did not reach stop-after node. |
+| D2-HG03 | pass | Construction, construction review, and construction resolution completed. | Shell-level flow remains intact. |
+| D2-HG04 | pass | Detail status metadata shows `expectation_mu_01` and `expectation_mu_02` completed; `pending_patch_count=2`. | Retest10 detail-timeout blocker improved. |
+| D2-HG05 | pass | Built-in evidence reference validator passed. | Reached refs are valid. |
+| D2-HG06 | fail | Open stock-price objection remained unresolved. | Price-in wording still needs resolver correction. |
+| D2-HG07 | pass | Completed nodes include `ReviewExpectationFields`; Working Memory count increased to 15. | Field-review lifecycle ran. |
+| D2-HG08 | fail | `unresolved_objection_count=2`; resolver failed on invalid revision patch shape. | Direct target of next fix. |
+| D2-HG09 | fail | `expectation_unit_count=0`; stable docs only `global_research`. | No promotion. |
+| D2-HG10 | fail | Built-in trajectory validator failed with `workflow_trace_not_completed`. | Expected blocked-run rejection. |
+| D2-HG11 | pass | Failure is visible in cloud log and Brief State. | Auditable. |
+| D2-HG12 | fail | No final downstream-usable Blackboard content. | Usability target unmet. |
+| D2-HG13 | fail | Accepted revision content was not preserved as `patch.after`. | Patch-contract normalization required. |
+
+### Built-in Hard Validators
+| Validator | Result | Evidence | Notes |
+| --- | --- | --- | --- |
+| evidence_reference_integrity | pass | Cloud `DebugRunQueryService`; 0 blocking findings for reached refs. | Integrity is not the current blocker. |
+| langsmith_trajectory_tool_boundary | fail | `workflow_trace_not_completed`, status `blocked`, next node `ResolveObjectionsAndDelegations`. | Correct hard-gate failure. |
+| commit_log_state_mutation_consistency | pass | Cloud `DebugRunQueryService`; existing commit state remained consistent. | Limited reached state is consistent. |
+
+### Rubrics
+| Rubric | Score | Reason |
+| --- | ---: | --- |
+| D2-R01 | 4 | Document 1-only source and clone handoff remain correct and auditable. |
+| D2-R02 | 3 | Detail patches are generated, but no stable expectation unit is promoted. |
+| D2-R03 | 3 | Realized facts exist in pending patches, but remain unpromoted. |
+| D2-R04 | 2 | Price-in reasoning is still under objection and not stable. |
+| D2-R05 | 3 | Key variables exist in pending patches, but are not stable downstream state. |
+| D2-R06 | 2 | Monitoring directions exist but cannot be accepted without resolver/promotion. |
+| D2-R07 | 3 | Evidence refs pass integrity, but final evidence sufficiency remains unaccepted. |
+| D2-R08 | 3 | Field review ran and surfaced concrete blockers, but resolver failed to apply the revision. |
+| D2-R09 | 1 | Objection lifecycle failed at revision patch normalization. |
+| D2-R10 | 1 | Promotion did not run. |
+| D2-R11 | 3 | Tool-use trajectory is auditable, but the workflow trace is incomplete. |
+| D2-R12 | 2 | Uncertainty/contradiction handling is visible in objections, but not resolved into stable content. |
+| D2-R13 | 4 | Run artifacts, blocker, and modification hypothesis are reproducible. |
+| D2-R14 | 5 | The failure maps to a narrow, testable normalizer modification with clear retest criteria. |
+
+### Score Summary
+- Core Blackboard quality rubrics average (`D2-R01`-`D2-R10`): 2.5.
+- Other rubrics with score <= 2: `D2-R12`.
+- Quality target met: no.
+- Accept modification so far: no final quality acceptance; retest11 confirms next direct blocker.
+
+### Document 2 State Summary
+- Stable expectation_unit count: 0.
+- Pending expectation patches: 2.
+- Stable document types: `global_research` only.
+- Latest checkpoint: `blocked`, `next_node=ResolveObjectionsAndDelegations`.
+- Completed nodes: `StartTickerInitialization`, `BuildGlobalResearch`, `ReviewGlobalResearch`, `GenerateExpectationConstruction`, `ReviewExpectationConstruction`, `ResolveExpectationConstruction`, `GenerateExpectationDetails`, `ReviewExpectationFields`.
+- Working Memory count: 15.
+- Commit count: 1.
+- Open/unresolved objections: 2.
+- Blocking delegations: 0.
+- Evidence refs: 72.
+
+### Failure Categories
+- category: `flat_expectation_patch_after_missing`
+  - issue: resolver patch contained expectation-unit document fields at the patch top level while `after` was null.
+  - evidence: cloud error `GenerateExpectationUnits expectation patch must include document content`.
+  - severity: blocking/schema-boundary.
+  - suspected root cause: generic `BlackboardPatch.after` optionality allowed a model shape that was semantically invalid for Document2 expectation revisions.
+- category: `accepted_revision_not_preserved`
+  - issue: field-review/resolver memory did not carry accepted revision content into the canonical patch body.
+  - evidence: resolver output included document content but no valid `patch.after`; D2-HG13 failed.
+  - severity: hard-gate/memory-continuity.
+  - suspected root cause: missing workflow normalizer for flat expectation-unit patch outputs.
+- category: `residual_price_in_objection`
+  - issue: stock-price and HBM4-share objections remained unresolved at blocked checkpoint.
+  - evidence: Brief State reported 2 open/unresolved objections.
+  - severity: quality-blocking.
+  - suspected root cause: resolver could not apply revised patch before semantic objections were closed.
+
+### Actual Modification
+- Implemented after this evaluation entry:
+  - Added flat `expectation_unit` patch normalization in `WorkflowAgentResultNormalizer`.
+  - Recovered valid flat document fields into `patch.after` before `BlackboardPatch` validation.
+  - Rejected invalid flat expectation patches with `WorkflowContractError` instead of allowing `after=null` to reach later nodes.
+  - Updated normalized `payload["structured"]["proposed_patches"]` for audit/debug consistency.
+  - Added regression coverage in `tests/test_workflow_normalizer.py`.
