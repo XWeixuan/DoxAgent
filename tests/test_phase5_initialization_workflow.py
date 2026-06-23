@@ -1256,6 +1256,147 @@ def test_o1_revision_reopens_numeric_sanity_when_false_precision_remains() -> No
     )
 
 
+def test_objection_resolution_context_includes_current_numeric_sanity_violations() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        runner=ParallelStructuredInitializationRunner(),
+        execution_mode="agent_runner",
+    )
+    factory = InitializationMockResultFactory()
+    narrative_evidence = factory._evidence(EvidenceSourceType.DOXATLAS_SOURCE)
+    document = factory._expectation_unit("NVDA")
+    fact = document.realized_facts[0]
+    document = document.model_copy(
+        update={
+            "market_view": document.market_view.model_copy(
+                update={
+                    "text": "NVDA revenue grew 196% and stock price reached $1,020.",
+                    "summary": "Narrative-only numeric market view.",
+                    "evidence_refs": [narrative_evidence],
+                },
+                deep=True,
+            ),
+            "realized_facts": [
+                fact.model_copy(
+                    update={
+                        "description": "NVDA revenue grew 196% according to a narrative report.",
+                        "evidence_refs": [narrative_evidence],
+                    },
+                    deep=True,
+                )
+            ],
+        },
+        deep=True,
+    )
+    patch = factory._document_patch(
+        document,
+        DocumentType.EXPECTATION_UNIT,
+        AgentName.O1_EXPECTATION_OWNER,
+        expectation_id=document.expectation_id,
+    )
+    checkpoint = WorkflowCheckpoint(
+        run_id="run_numeric_context",
+        ticker="NVDA",
+        pending_patches=[patch],
+    )
+    objection = next(
+        item
+        for item in workflow._numeric_sanity_objections_for_patch("NVDA", patch)
+        if item.taxonomy == "numeric_sanity_fundamental_data"
+    )
+
+    context = workflow._objection_resolution_context(
+        checkpoint,
+        [objection],
+        batch_index=1,
+        total_unresolved=1,
+    )
+
+    violations = context["current_numeric_sanity_violations"]
+    assert len(violations) == 1
+    assert violations[0]["objection_id"] == objection.objection_id
+    assert violations[0]["requires_revised_patch"] is True
+    assert "NVDA revenue grew 196%" in violations[0]["current_reason"]
+    assert any(
+        "decision='resolved' with empty proposed_patches is invalid" in item
+        for item in context["output_guidance"]
+    )
+
+
+def test_o1_cannot_resolve_current_numeric_sanity_without_revision_patch() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        runner=ParallelStructuredInitializationRunner(),
+        execution_mode="agent_runner",
+    )
+    factory = InitializationMockResultFactory()
+    narrative_evidence = factory._evidence(EvidenceSourceType.DOXATLAS_SOURCE)
+    document = factory._expectation_unit("NVDA")
+    fact = document.realized_facts[0]
+    document = document.model_copy(
+        update={
+            "realized_facts": [
+                fact.model_copy(
+                    update={
+                        "description": "NVDA revenue grew 196% from narrative-only evidence.",
+                        "evidence_refs": [narrative_evidence],
+                    },
+                    deep=True,
+                )
+            ],
+        },
+        deep=True,
+    )
+    patch = factory._document_patch(
+        document,
+        DocumentType.EXPECTATION_UNIT,
+        AgentName.O1_EXPECTATION_OWNER,
+        expectation_id=document.expectation_id,
+    )
+    run = workflow.blackboard.start_run("NVDA", AgentName.SYSTEM)
+    checkpoint = WorkflowCheckpoint(run_id=run.run_id, ticker="NVDA", pending_patches=[patch])
+    objection = next(
+        item
+        for item in workflow._numeric_sanity_objections_for_patch("NVDA", patch)
+        if item.taxonomy == "numeric_sanity_fundamental_data"
+    )
+    workflow.blackboard.create_objection(run.run_id, objection)
+    structured = {
+        "proposed_patches": [],
+        "evidence_refs": [narrative_evidence.model_dump(mode="json")],
+        "delegations": [],
+        "unknowns": [],
+        "rationale": "O1 incorrectly claims the current patch already removed false precision.",
+        "resolved_objection_ids": [objection.objection_id],
+        "accepted_objection_ids": [],
+        "partially_accepted_objection_ids": [],
+        "rejected_objection_ids": [],
+        "objection_resolutions": [
+            {
+                "objection_id": objection.objection_id,
+                "decision": "resolved",
+                "resolution_note": "Resolved by existing fields.",
+                "changed_paths": ["realized_facts"],
+                "evidence_refs": [narrative_evidence.model_dump(mode="json")],
+            }
+        ],
+    }
+    result = AgentResult(
+        task_id="task_bad_numeric_resolution",
+        agent_name=AgentName.O1_EXPECTATION_OWNER,
+        status=ResultStatus.SUCCEEDED,
+        payload={"runtime": "maf", "structured": structured},
+        evidence_refs=[narrative_evidence],
+    )
+
+    try:
+        workflow._apply_o1_objection_resolutions(checkpoint, result)
+    except WorkflowContractError as exc:
+        assert "resolved numeric-sanity objections without revised expectation patches" in str(exc)
+    else:
+        raise AssertionError(
+            "Expected unresolved current numeric sanity to require a revision patch."
+        )
+
+
 def test_numeric_sanity_revision_fallback_removes_unsupported_false_precision() -> None:
     workflow = BlackboardInitializationWorkflow(
         runner=ParallelStructuredInitializationRunner(),

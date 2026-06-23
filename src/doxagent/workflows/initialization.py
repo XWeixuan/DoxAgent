@@ -6893,6 +6893,59 @@ class BlackboardInitializationWorkflow:
             checkpoint.pending_patches,
             unresolved_objections,
         )
+        current_numeric_violations = [
+            violation
+            for violation in (
+                self._current_numeric_sanity_violation_summary(
+                    checkpoint,
+                    objection,
+                )
+                for objection in unresolved_objections
+            )
+            if violation is not None
+        ]
+        output_guidance = [
+            (
+                "Only resolve the objections present in unresolved_objections for "
+                "this batch. Every listed objection_id must appear exactly once in "
+                "objection_resolutions."
+            ),
+            (
+                "When duplicate_objection_clusters contains ids from this batch, "
+                "resolve same-cluster objections with a consistent decision and "
+                "do not leave duplicate siblings open."
+            ),
+            (
+                "Use decision='resolved' when the objection can be closed by an "
+                "existing field plus evidence."
+            ),
+            "Do not call external tools; reuse evidence_refs already present here.",
+            "Use decision='rejected' only with explicit evidence_refs or rationale support.",
+            (
+                "Use decision='accepted' or 'partially_accepted' only when also "
+                "returning one concise revised proposed_patch for the affected "
+                "expectation_id."
+            ),
+            "Never return unaffected expectation patches in this resolution batch.",
+            "Each resolution must include changed_paths or evidence_refs.",
+            (
+                "Prioritize numeric sanity blockers: price, market cap, valuation "
+                "multiples, dates, and single-source claims must be corrected, "
+                "downgraded to non-numeric uncertainty, or explicitly rejected with "
+                "evidence. Keeping the same precise number and merely labelling it "
+                "narrative-only, unverified, approximate, or uncertain is not a valid "
+                "resolution."
+            ),
+        ]
+        if current_numeric_violations:
+            output_guidance.append(
+                "For every objection listed in current_numeric_sanity_violations, "
+                "decision='resolved' with empty proposed_patches is invalid because "
+                "the current pending patch still reproduces the blocker. Return "
+                "decision='accepted' or 'partially_accepted' with a revised patch "
+                "that removes the listed false precision or adds source-appropriate "
+                "evidence."
+            )
         return {
             "resolution_request": (
                 "Resolve field-review objections using the compact expectation summaries "
@@ -6943,39 +6996,8 @@ class BlackboardInitializationWorkflow:
                 self._objection_resolution_objection_summary(objection)
                 for objection in unresolved_objections
             ],
-            "output_guidance": [
-                (
-                    "Only resolve the objections present in unresolved_objections for "
-                    "this batch. Every listed objection_id must appear exactly once in "
-                    "objection_resolutions."
-                ),
-                (
-                    "When duplicate_objection_clusters contains ids from this batch, "
-                    "resolve same-cluster objections with a consistent decision and "
-                    "do not leave duplicate siblings open."
-                ),
-                (
-                    "Use decision='resolved' when the objection can be closed by an "
-                    "existing field plus evidence."
-                ),
-                "Do not call external tools; reuse evidence_refs already present here.",
-                "Use decision='rejected' only with explicit evidence_refs or rationale support.",
-                (
-                    "Use decision='accepted' or 'partially_accepted' only when also "
-                    "returning one concise revised proposed_patch for the affected "
-                    "expectation_id."
-                ),
-                "Never return unaffected expectation patches in this resolution batch.",
-                "Each resolution must include changed_paths or evidence_refs.",
-                (
-                    "Prioritize numeric sanity blockers: price, market cap, valuation "
-                    "multiples, dates, and single-source claims must be corrected, "
-                    "downgraded to non-numeric uncertainty, or explicitly rejected with "
-                    "evidence. Keeping the same precise number and merely labelling it "
-                    "narrative-only, unverified, approximate, or uncertain is not a valid "
-                    "resolution."
-                ),
-            ],
+            "current_numeric_sanity_violations": current_numeric_violations,
+            "output_guidance": output_guidance,
             "duplicate_objection_clusters": self._objection_resolution_duplicate_clusters(
                 unresolved_objections
             ),
@@ -7002,6 +7024,45 @@ class BlackboardInitializationWorkflow:
             if patch.target.expectation_id in target_ids
         ]
         return relevant or expectation_patches
+
+    def _current_numeric_sanity_violation_summary(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        objection: Objection,
+    ) -> dict[str, Any] | None:
+        if not objection.taxonomy.startswith("numeric_sanity_"):
+            return None
+        target_ids = self._objection_target_expectation_ids(objection)
+        for patch in checkpoint.pending_patches:
+            if patch.target.document_type is not DocumentType.EXPECTATION_UNIT:
+                continue
+            expectation_id = patch.target.expectation_id
+            if target_ids and expectation_id not in target_ids:
+                continue
+            for current in self._numeric_sanity_objections_for_patch(
+                checkpoint.ticker,
+                patch,
+            ):
+                if current.objection_id != objection.objection_id:
+                    continue
+                return {
+                    "objection_id": objection.objection_id,
+                    "taxonomy": current.taxonomy,
+                    "severity": current.severity.value,
+                    "target": current.target.model_dump(mode="json"),
+                    "patch_id": patch.patch_id,
+                    "expectation_id": expectation_id,
+                    "requires_revised_patch": True,
+                    "current_reason": self._compact_context_text(
+                        current.reason,
+                        limit=2200,
+                    ),
+                    "current_evidence_refs": [
+                        self._evidence_context_summary(ref)
+                        for ref in current.evidence_refs[:6]
+                    ],
+                }
+        return None
 
     def _reopen_numeric_sanity_objections_after_o1_revision(
         self,
@@ -7607,6 +7668,11 @@ class BlackboardInitializationWorkflow:
                 raise WorkflowContractError(
                     "O1 objection resolution must include changed_paths or evidence_refs."
                 )
+        self._validate_resolved_numeric_sanity_objections(
+            checkpoint,
+            result,
+            resolved_ids,
+        )
         if accepted_ids or partially_accepted_ids:
             revised_patches = self._normalized_expectation_revisions(checkpoint, result)
             if not revised_patches:
@@ -7644,6 +7710,52 @@ class BlackboardInitializationWorkflow:
                     changed_paths=self._localized_changed_paths(decision.changed_paths),
                     evidence_refs=list(decision.evidence_refs),
                 )
+
+    def _validate_resolved_numeric_sanity_objections(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        result: AgentResult,
+        resolved_ids: list[str],
+    ) -> None:
+        if not resolved_ids:
+            return
+        current_violations_by_id = {
+            objection.objection_id: objection
+            for patch in checkpoint.pending_patches
+            if patch.target.document_type is DocumentType.EXPECTATION_UNIT
+            for objection in self._numeric_sanity_objections_for_patch(
+                checkpoint.ticker,
+                patch,
+            )
+        }
+        unresolved_numeric_ids = [
+            objection_id
+            for objection_id in resolved_ids
+            if objection_id in current_violations_by_id
+        ]
+        if not unresolved_numeric_ids:
+            return
+        revised_patches = self._normalized_expectation_revisions(checkpoint, result)
+        revised_expectation_ids = {
+            patch.target.expectation_id
+            for patch in revised_patches
+            if patch.target.document_type is DocumentType.EXPECTATION_UNIT
+            and patch.target.expectation_id is not None
+        }
+        missing_revision_ids = [
+            objection_id
+            for objection_id in unresolved_numeric_ids
+            if current_violations_by_id[objection_id].target.expectation_id
+            not in revised_expectation_ids
+        ]
+        if not missing_revision_ids:
+            self._validate_expectation_patch_list(checkpoint.ticker, revised_patches)
+            return
+        raise WorkflowContractError(
+            "O1 resolved numeric-sanity objections without revised expectation "
+            "patches while current pending patches still violate numeric sanity: "
+            f"{sorted(missing_revision_ids)}."
+        )
 
     def _objection_resolution_decisions(
         self,

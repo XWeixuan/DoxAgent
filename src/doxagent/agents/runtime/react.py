@@ -1972,6 +1972,12 @@ def _output_contract(required_output_schema: str, *, task: AgentTask | None = No
                             "use changed_paths and evidence_refs to make the closure auditable."
                         ),
                         (
+                            "Exception: if input_context.current_numeric_sanity_violations "
+                            "lists the objection_id, decision='resolved' with empty "
+                            "proposed_patches is invalid. Use accepted or partially_accepted "
+                            "and include a revised patch for the affected expectation_id."
+                        ),
+                        (
                             "Each resolution must include changed_paths or evidence_refs; "
                             "do not silently close objections."
                         ),

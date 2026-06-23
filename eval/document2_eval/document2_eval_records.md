@@ -2711,3 +2711,138 @@ Every failed or partial hard gate must be classified before writing the modifica
   - Updated `tests/test_phase5_initialization_workflow.py` to assert O4 review context is market-trace scoped and no longer includes full patch `after`, `key_variables`, `event_monitoring_direction`, or full section text.
   - Added changelog entry for the Document2 field-review context compaction fix.
   - Verified locally with `uv run pytest tests/test_phase5_initialization_workflow.py tests/test_workflow_normalizer.py` and `uv run ruff check src/doxagent/workflows/initialization.py src/doxagent/workflows/normalizer.py tests/test_phase5_initialization_workflow.py tests/test_workflow_normalizer.py`.
+
+## Loop 1 Retest19 - resolver reached, but numeric-sanity blocker was falsely closed without patch revision
+
+### Run Metadata
+- Date: 2026-06-24.
+- Source run: `run_58f5afce8b9441ca804a2cde1ad9aec8` (Document 1-only source, unchanged).
+- Execution run: `run_6f01e1b08a764af7b8a4e293ea57c82c`.
+- Deployed commit: `2074f52`.
+- Remote cwd: `/root/doxagent`.
+- Remote log: `.eval_runs/document2-loop1-retest19-20260624T061106+0800.log`.
+- Brief State export path on cloud: `eval/brief_state_exports/run_6f01e1b08a764af7b8a4e293ea57c82c.json`.
+- Cloud command: `docker compose -f docker-compose.yml run --rm -e DOXAGENT_RUN_REAL_API_TESTS=1 -e DOXAGENT_STORAGE_MODE=postgres debug-viewer python eval/run_document2_expectation_units_smoke.py run_58f5afce8b9441ca804a2cde1ad9aec8 --mode clone --stop-after PromoteExpectationToBeliefState --export-brief-state`.
+- Polling discipline: Codex automation was not used for this evaluation; checks were performed in-thread at 900-second intervals when the cloud run was active.
+
+### Status
+- Result: `blocked`.
+- Latest checkpoint: `status=blocked`, `next_node=ResolveObjectionsAndDelegations`.
+- Completed nodes: `StartTickerInitialization`, `BuildGlobalResearch`, `ReviewGlobalResearch`, `GenerateExpectationConstruction`, `ReviewExpectationConstruction`, `ResolveExpectationConstruction`, `GenerateExpectationDetails`, `ReviewExpectationFields`.
+- Terminal error: `ResolveObjectionsAndDelegations left blockers unresolved.`
+- Stable document types: `global_research` only.
+- Stable expectation_unit count: 0.
+- Pending patch count: 2.
+- Working Memory count: 15.
+- Commit count: 1.
+- Objections: 4 total; 3 resolved, 1 unresolved.
+- Blocking delegations: 0.
+- Evidence refs in export: 63.
+- Improvement vs Retest18:
+  - `ReviewExpectationFields` completed; the previous `model_request_timeout` did not recur.
+  - LangSmith C1 field review succeeded with about `21145` input tokens instead of timing out.
+  - LangSmith O1 resolver ran successfully with about `6743` input tokens.
+- Remaining direct blocker:
+  - Open objection: `obj_numeric_sanity_expectation_mu_002_fundamental_data`, `severity=blocking`, `taxonomy=numeric_sanity_fundamental_data`, target `expectation_mu_002.realized_facts`.
+  - O1 resolver Working Memory says this objection was resolved and returned `resolved_objection_ids=["obj_numeric_sanity_expectation_mu_002_fundamental_data"]`, but `proposed_patches=[]`.
+  - The final pending patch for `expectation_mu_002` still contains unsupported precise numeric claims backed by DoxAtlas narrative refs, including examples such as `$600` to `$1,134`, `90%`, QQQ `21%`, FY2026 Q2 revenue, Q3 guide, GDP `0.5%`, and capex values.
+  - Numeric-sanity revalidation correctly re-opened the blocker because O1 did not provide a revised patch and current fields still reproduced the violation.
+
+### Built-in Hard Validators
+| Validator | Result | Evidence | Notes |
+| --- | --- | --- | --- |
+| evidence_reference_integrity | pass | `checked_items=9`, `finding_count=0`. | Reached refs are locatable; this does not prove source sufficiency for precise numeric claims. |
+| langsmith_trajectory_tool_boundary | fail | `checked_items=52`, finding `workflow_trace_not_completed` at `latest_checkpoint.status=blocked`, `next_node=ResolveObjectionsAndDelegations`. | Correctly blocks acceptance because the workflow did not close. |
+| commit_log_state_mutation_consistency | pass | `checked_items=4`, `finding_count=0`. | Stable state is still only `global_research`. |
+
+### Hard Gate Failure Root Cause Matrix
+| Gate | Result | failure_kind | Failure point | Root cause / fix target |
+| --- | --- | --- | --- | --- |
+| D2-HG01 | pass | none | Source handoff | Source remains the required Document 1-only run `run_58f5afce8b9441ca804a2cde1ad9aec8`. |
+| D2-HG02 | fail | direct | Stop-after path | `PromoteExpectationToBeliefState` was not reached; execution blocked in `ResolveObjectionsAndDelegations`. |
+| D2-HG03 | pass | none | Construction lifecycle | Expectation construction, construction review, construction resolver, detail generation, and field review all completed. |
+| D2-HG04 | pass_with_caveat | partial_state | Detail patches | Two pending detail patches have document content, realized facts, variables, and event monitoring fields, but one contains unresolved numeric-sanity quality defects. |
+| D2-HG05 | pass_with_caveat | partial_state | Evidence refs | Structural evidence-ref integrity passes, but important precise numeric claims are still backed only by narrative-level DoxAtlas refs. |
+| D2-HG06 | fail | quality_residual | Price/fundamental numeric reasoning | `expectation_mu_002` retains precise price, return, revenue, guide, GDP, and capex numbers without source-appropriate market/fundamental evidence. |
+| D2-HG07 | pass | none | Field review lifecycle | Field review completed and produced/reconciled substantive blockers; C1/C3/O4 pressure was visible. |
+| D2-HG08 | fail | direct | Resolver lifecycle | O1 marked the remaining numeric-sanity blocker resolved with no revised patch, while current patch fields still reproduced the violation; revalidation reopened it. |
+| D2-HG09 | fail | direct | Promotion lifecycle | Stable expectation_unit count stayed 0 because one blocking objection remained unresolved. |
+| D2-HG10 | fail | direct | Trace/process closure | Built-in trajectory validator failed because checkpoint is blocked; LangSmith resolver trace was found by objection id but not enough to represent a closed run. |
+| D2-HG11 | pass | none | Failure auditability | Remote log, DB checkpoint, Brief State export, hard validators, Working Memory, and LangSmith resolver trace reproduce the blocker. |
+| D2-HG12 | fail | context_value | Resolver context | Context length improved, but compact resolver context did not surface the current residual numeric violation strongly enough; O1 falsely believed the patch had already removed precise numbers. |
+| D2-HG13 | fail | memory_continuity_blocked | Objection-to-patch continuity | The residual numeric-sanity fact did not survive into a revised patch. O1's closure intent was rejected by deterministic revalidation, leaving no stable memory transition. |
+
+### Rubrics
+| Rubric | Score | Reason |
+| --- | ---: | --- |
+| D2-R01 | 4 | Source discipline remains correct and Document 2 continues from the required Document 1-only state. |
+| D2-R02 | 3 | Two pending theses are differentiated and investment-relevant, but no stable expectation_unit was promoted. |
+| D2-R03 | 2 | Realized facts exist, but `expectation_mu_002` retains unsupported precise financial/market claims. |
+| D2-R04 | 2 | Price-in reasoning remains unreliable because precise returns and price levels are still narrative-backed. |
+| D2-R05 | 3 | Key variables are present and mostly thesis-linked, but several statuses include unsupported numeric thresholds or capex/growth values. |
+| D2-R06 | 3 | Event monitoring is concrete, yet some triggers include precise thresholds not backed by source-appropriate evidence. |
+| D2-R07 | 2 | Evidence refs are traceable but insufficient for the precision of key fundamental and market claims. |
+| D2-R08 | 4 | Field-review pressure improved materially: the run completed review and narrowed blockers to one numeric-sanity issue. |
+| D2-R09 | 2 | Resolver lifecycle ran, but O1 attempted an invalid empty-patch closure for a still-current blocker; revalidation protected quality. |
+| D2-R10 | 1 | Promotion readiness failed: no stable expectation_unit exists and a blocking objection remains. |
+| D2-R11 | 3 | Tool/process efficiency improved versus Retest18, but resolver closure still depended on compact context and did not produce a valid patch revision. |
+| D2-R12 | 3 | Uncertainty is visible, but unsupported precise numbers were not consistently downgraded to non-numeric uncertainty in the actual pending patch. |
+| D2-R13 | 4 | The run is reproducible from remote log, Brief State, hard validators, Working Memory, and LangSmith evidence. |
+| D2-R14 | 5 | The next modification target is narrow and testable: expose current numeric-sanity violations to O1 and forbid empty-patch `resolved` closures for still-current blockers. |
+
+### Score Summary
+- Core Blackboard quality rubrics average (`D2-R01`-`D2-R10`): 2.6.
+- Other rubrics with score <= 2: none.
+- Built-in hard validators all pass: no.
+- Quality target met: no.
+- Operational improvement accepted: partial only. The field-review timeout regression was fixed, but Retest19 exposed a new resolver-quality/context defect before promotion.
+
+### Failure Categories
+- category: `resolver_empty_patch_numeric_sanity_false_closure`
+  - issue: O1 resolver claimed `obj_numeric_sanity_expectation_mu_002_fundamental_data` was resolved while returning no revised patch.
+  - evidence: Working Memory `objection_resolution_result` has `resolved_objection_ids=["obj_numeric_sanity_expectation_mu_002_fundamental_data"]`, `proposed_patch_count=0`, and rationale claiming numbers were removed.
+  - severity: hard-gate/direct.
+  - suspected root cause: compact resolver context did not expose current residual violation samples strongly enough; O1 inferred from summaries that the patch was already sanitized.
+- category: `residual_unsupported_numeric_precision`
+  - issue: The actual pending patch still contains DoxAtlas-only precise numeric claims in `expectation_mu_002`.
+  - evidence: Brief State checkpoint pending patch includes `$600` to `$1,134`, `90%`, QQQ `21%`, FY2026 Q2/Q3 numbers, GDP `0.5%`, and capex thresholds; open objection reason reproduces those samples.
+  - severity: quality-blocking.
+  - suspected root cause: deterministic numeric normalization did not fully sanitize all fundamental numeric fields, and O1 did not provide a revision.
+- category: `context_management_value_loss`
+  - issue: Field-review compaction solved timeout pressure, but resolver compaction lost the specific "current patch still violates" signal.
+  - evidence: O1 resolver input was compact (`~6743` input tokens) and succeeded, but its conclusion contradicted current pending patch fields.
+  - severity: D2-HG12 direct failure.
+  - suspected root cause: resolver context relied on compact summaries and the prior objection reason instead of a dedicated current-violation payload.
+- category: `promotion_not_reached`
+  - issue: no stable expectation units were promoted.
+  - evidence: `stable_document_types=["global_research"]`, `expectation_unit_count=0`.
+  - severity: acceptance-blocking.
+  - suspected root cause: unresolved numeric-sanity blocker after resolver revalidation.
+
+### Optimization Hypothesis
+- If `ResolveObjectionsAndDelegations` includes a dedicated `current_numeric_sanity_violations` payload generated from the current pending patches, then O1 will see the exact residual offending samples instead of inferring state from compact summaries.
+- If the ReAct output contract and workflow validator explicitly reject `decision="resolved"` with empty `proposed_patches` for numeric-sanity objections that still reproduce on current patches, then the system will no longer allow false closure of source-inappropriate precise numbers.
+- This does not weaken quality gates: deterministic revalidation remains in place, source-appropriate numeric evidence remains required, and unresolved blockers still prevent promotion.
+- Expected measurable improvement in the next cloud verification, when launched by the user:
+  - O1 should either return an accepted/partially accepted revised patch for `expectation_mu_002`, or fail with a direct contract error naming the unresolved numeric-sanity ids.
+  - It should not again produce a misleading `resolved_objection_ids` + `proposed_patches=[]` outcome for the same current numeric blocker.
+  - If a valid revised patch is returned, resolver should close the blocker and the workflow should proceed to `PromoteExpectationToBeliefState`, where remaining promotion quality can be evaluated.
+
+### Proposed Modification Plan
+- Change 1: Extend `_objection_resolution_context()` with `current_numeric_sanity_violations`, computed by re-running numeric-sanity checks against the current pending patches for each unresolved numeric objection.
+- Change 2: Include current violation reason, patch id, expectation id, taxonomy, severity, and evidence summaries so O1 sees exact residual samples.
+- Change 3: Add output guidance stating that objections listed in `current_numeric_sanity_violations` cannot be closed with `decision="resolved"` and empty `proposed_patches`; they require an accepted/partially accepted revised patch or source-appropriate evidence in the revision.
+- Change 4: Update the ReAct output contract for `field_review_objection_resolution` with the same exception.
+- Change 5: Add workflow validation that raises a clear `WorkflowContractError` if O1 resolves current numeric-sanity objections without revised patches while the current pending patches still reproduce the violation.
+- Change 6: Add unit coverage for resolver context visibility and invalid empty-patch numeric closure.
+- Retest requirement: do not launch the next cloud smoke in this turn, per user instruction; report this complete eval + modification result and wait for explicit go-ahead.
+
+### Actual Modification
+- Implemented after this evaluation:
+  - Updated `src/doxagent/workflows/initialization.py` so resolver context includes `current_numeric_sanity_violations` for still-current numeric blockers.
+  - Added workflow validation rejecting empty-patch `resolved` closures for numeric-sanity blockers that still reproduce on current pending patches.
+  - Updated `src/doxagent/agents/runtime/react.py` resolver contract text to align model output expectations with the workflow validator.
+  - Added `test_objection_resolution_context_includes_current_numeric_sanity_violations` and `test_o1_cannot_resolve_current_numeric_sanity_without_revision_patch` in `tests/test_phase5_initialization_workflow.py`.
+  - Added changelog entry for the Document2 resolver numeric-sanity closure guard.
+  - Verified the focused numeric-sanity/resolver tests with `uv run pytest tests/test_phase5_initialization_workflow.py -k "numeric_sanity or objection_resolution_context or cannot_resolve_current_numeric"`.
+- Next smoke test: not launched, per user instruction to complete this eval loop and stop before starting another cloud smoke.
