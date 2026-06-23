@@ -505,7 +505,8 @@ def _document3_summary(run: BlackboardRun) -> JsonDict:
     documents = run.belief_state.documents
     monitoring_configs = documents.get(DocumentType.MONITORING_CONFIG, {})
     applied_versions = []
-    for document in monitoring_configs.values():
+    for stored_document in monitoring_configs.values():
+        document = _stored_document_payload(stored_document)
         if isinstance(document, dict) and document.get("applied_config_version"):
             applied_versions.append(document["applied_config_version"])
     return {
@@ -514,6 +515,12 @@ def _document3_summary(run: BlackboardRun) -> JsonDict:
         "monitoring_policy_count": len(documents.get(DocumentType.MONITORING_POLICY, {})),
         "applied_config_versions": applied_versions,
     }
+
+
+def _stored_document_payload(value: Any) -> Any:
+    if isinstance(value, dict) and isinstance(value.get("document"), dict):
+        return value["document"]
+    return value
 
 
 def _is_successful_document3_smoke(
