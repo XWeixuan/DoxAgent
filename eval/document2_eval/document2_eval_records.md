@@ -1843,3 +1843,136 @@ Every failed or partial hard gate must be classified before writing the modifica
   - Preserved existing `options` while appending missing pooler guard options.
   - Added regression coverage in `tests/test_phase9_persistence.py`.
   - Verified locally with `uv run pytest tests/test_phase9_persistence.py` and `uv run ruff check src/doxagent/postgres.py tests/test_phase9_persistence.py --select B,E,F,I`.
+
+## Loop 1 Retest13 - promoted but quality rejected: deterministic placeholders entered stable expectation units
+
+### Run Metadata
+- Date: 2026-06-23.
+- Source run: `run_58f5afce8b9441ca804a2cde1ad9aec8` (Document 1-only source, unchanged).
+- Execution run: `run_502155269ad84283a62cfe144fdbf475`.
+- Deployed commit: `ee39fc6`.
+- Remote cwd: `/root/doxagent`.
+- Remote log: `.eval_runs/document2-loop1-retest13-20260623T190753+0800.log`.
+- Cloud command: `docker compose run --rm -e DOXAGENT_RUN_REAL_API_TESTS=1 -e DOXAGENT_STORAGE_MODE=postgres debug-viewer python eval/run_document2_expectation_units_smoke.py run_58f5afce8b9441ca804a2cde1ad9aec8 --mode clone --stop-after PromoteExpectationToBeliefState --export-brief-state`.
+
+### Status
+- Result: `quality_rejected`.
+- Operational blocker fixed: yes. Retest13 reached `PromoteExpectationToBeliefState`; no Retest12-style Postgres pooler stall recurred.
+- Smoke output: `document2_smoke_finished`, `status=running`, `next_node=GenerateGlobalNarrativeReport`, completed nodes include `PromoteExpectationToBeliefState`.
+- Stable documents: `global_research`, `expectation_unit`.
+- Stable expectation_unit count: 3.
+- Pending patch count: 0.
+- Working Memory count: 15.
+- Commit count: 4.
+- Objections: 8 total, all `resolved`.
+- Blocking delegations: 0.
+- Brief State export path on cloud: `eval/brief_state_exports/run_502155269ad84283a62cfe144fdbf475.json`.
+
+### Built-in Hard Validators
+| Validator | Result | Evidence | Notes |
+| --- | --- | --- | --- |
+| evidence_reference_integrity | pass | `checked_items=68`, `finding_count=0`. | Structural evidence refs are locatable, but this validator does not judge evidence sufficiency or content usefulness. |
+| langsmith_trajectory_tool_boundary | pass | `checked_items=57`, `finding_count=0`. | Local trajectory/tool mirror passed; remote LangSmith review still used for rubric judgment. |
+| commit_log_state_mutation_consistency | pass | `checked_items=16`, `finding_count=0`. | Stable documents and commits are consistent. |
+
+### Hard Gate Failure Root Cause Matrix
+| Gate | Result | failure_kind | Failure point | Root cause / fix target |
+| --- | --- | --- | --- | --- |
+| D2-HG01 | pass | none | Source handoff | Source remains Document 1-only: stable `global_research`, no source `expectation_unit`, no source pending patches or blockers. |
+| D2-HG02 | pass | none | Stop-after path | Cloud log and DB state show the run reached `PromoteExpectationToBeliefState`. |
+| D2-HG03 | pass | none | Construction lifecycle | Three differentiated expectation units were ultimately promoted. |
+| D2-HG04 | fail | quality_residual | Stable expectation detail fields | Final docs contain deterministic cleanup placeholders in market_view, realized_facts, price_reaction, variables, and monitoring fields. |
+| D2-HG05 | pass | none | Evidence refs | Built-in evidence reference validator passed; caveat: evidence is structurally present but often broad/repeated. |
+| D2-HG06 | fail | quality_residual | Price-in reasoning | `Quantified price reaction withheld...` appears 16 times; price-in state is not concretely reviewable. |
+| D2-HG07 | pass | none | Field review lifecycle | Review ran and produced pressure; 8 objections were created and tracked. |
+| D2-HG08 | pass | none | Resolver lifecycle | All 8 objections were resolved, with no blocking delegations left. |
+| D2-HG09 | pass | none | Promotion lifecycle | 3 stable `expectation_unit` documents were promoted, pending patches cleared, commit log consistent. |
+| D2-HG10 | pass | none | LangSmith/process trace | LangSmith runs for construction/detail/review were queryable and had run metadata. |
+| D2-HG11 | pass | none | Auditability | The quality failure is visible from stable docs, objections, commit log, hard validators, and LangSmith. |
+| D2-HG12 | pass_with_caveat | context_pressure | Review/detail inputs are large but completed | No timeout/stall occurred after pooler guard; still, C1 review inputs reached high token/char volume and should be watched. |
+| D2-HG13 | fail | direct | Memory/content continuity into stable docs | Accepted review/resolver content was preserved mechanically, but deterministic cleanup collapsed substantive claims into generic placeholders before promotion. |
+
+### Rubrics
+| Rubric | Score | Reason |
+| --- | ---: | --- |
+| D2-R01 | 4 | Document 1-only handoff and upstream evidence use are correct. |
+| D2-R02 | 3 | Three theses are differentiated, but final market views are weakened by `qualitative thesis retained` placeholders. |
+| D2-R03 | 2 | Realized facts exist, but most descriptions are generic fallback text and price reactions are withheld. |
+| D2-R04 | 2 | Price-in reasoning is mostly unavailable because quantified reactions were replaced by withholding text. |
+| D2-R05 | 3 | Key variables exist and are directionally relevant, but several statuses use `qualitative status retained` or `source-verified value` placeholders. |
+| D2-R06 | 2 | Event monitoring has many generic triggers: `Monitor this event qualitatively...` appears 26 times across final docs. |
+| D2-R07 | 3 | Evidence refs are present and validators pass, but refs are often broad/repeated rather than claim-specific. |
+| D2-R08 | 4 | A1/C1/C3/O4 review pressure is materially better; numeric and price-reaction objections were created and tracked. |
+| D2-R09 | 3 | Objection lifecycle completed, but resolutions relied too much on generic deterministic cleanup instead of concrete revised content. |
+| D2-R10 | 3 | Promotion is mechanically clean, but final content quality is not acceptable for downstream monitoring. |
+| D2-R11 | 4 | Tool/trajectory boundaries pass and LangSmith evidence is available. |
+| D2-R12 | 3 | Uncertainty is visible, but often as generic fallback text rather than precise unknowns tied to variables. |
+| D2-R13 | 4 | Retest13 is reproducible and auditable with source run, execution run, cloud log, DB state, validators, and LangSmith. |
+| D2-R14 | 5 | The failure maps to a narrow enforcement-layer fix: reject deterministic placeholder text before promotion. |
+
+### Score Summary
+- Core Blackboard quality rubrics average (`D2-R01`-`D2-R10`): 2.9.
+- Other rubrics with score <= 2: none.
+- Quality target met: no.
+- Operational improvement accepted: yes, Retest12 pooler stall was fixed.
+- Document2 quality improvement accepted: no, because promoted output contains deterministic placeholders and is not sufficiently usable downstream.
+
+### Document 2 State Summary
+- Stable expectation_unit count: 3.
+- Stable expectation names:
+  - `expectation_mu_001`: `AI/HBM需求超级周期持续性`, direction `bullish`.
+  - `expectation_mu_002`: `存储周期见顶与估值透支风险`, direction `bearish`.
+  - `expectation_mu_003`: `DRAM/NAND定价周期结构性分化`, direction `neutral`.
+- Combined placeholder counts in stable docs:
+  - `Monitor this event qualitatively`: 26.
+  - `source-appropriate evidence`: 54.
+  - `qualitative status retained`: 6.
+  - `qualitative thesis retained`: 3.
+  - `Quantified price reaction withheld`: 16.
+  - `market-trace verification is still required`: 16.
+  - `source-verified value`: 15.
+- Resolved objections include deterministic numeric sanity blockers and O4 price-reaction contradiction blockers.
+
+### Failure Categories
+- category: `placeholder_promotion_quality_gap`
+  - issue: stable expectation units include deterministic fallback text that should be considered unpromotable.
+  - evidence: final docs contain repeated `Monitor this event qualitatively`, `Quantified price reaction withheld`, and `source-verified value` markers.
+  - severity: quality-blocking.
+  - suspected root cause: promotion validates schema, evidence structure, objections, and commit consistency, but does not reject deterministic placeholder text created by cleanup.
+- category: `price_reaction_withheld_not_resolved`
+  - issue: O4 contradictions were resolved by withholding quantified reactions rather than replacing them with concrete, source-supported reactions.
+  - evidence: `Quantified price reaction withheld...` appears 16 times.
+  - severity: downstream-monitoring blocker.
+  - suspected root cause: deterministic price-reaction normalization is too permissive at promotion time.
+- category: `monitoring_trigger_generic_after_cleanup`
+  - issue: event monitoring directions include generic monitoring placeholders and `source-verified value` pseudo-thresholds.
+  - evidence: `Monitor this event qualitatively...` appears 26 times; several triggers contain `source-verified value`.
+  - severity: monitoring-usability blocker.
+  - suspected root cause: numeric cleanup sanitizes unsafe precision but does not require concrete replacement triggers.
+
+### Optimization Hypothesis
+- If promotion rejects deterministic cleanup placeholders in `expectation_unit` documents, low-quality generic revisions cannot enter stable belief state even when hard validators and objection lifecycle pass.
+- This does not solve all content generation quality by itself; it turns a silent quality regression into an explicit, auditable workflow blocker, forcing O1/resolver to provide concrete source-supported replacements.
+- Expected improvement in the next retest, if one is later launched:
+  - Retest13-style placeholder-heavy documents should block at `PromoteExpectationToBeliefState` instead of being promoted.
+  - Hard-gate failures should become direct and diagnosable (`promotion_quality_placeholder`) rather than hidden as low-quality stable docs.
+  - Downstream rubrics D2-R03/D2-R04/D2-R06 should improve only when the model produces concrete, evidenced replacements, not when cleanup masks precision.
+
+### Proposed Modification Plan
+- Change 1: Add a promotion quality validator for `expectation_unit` patches before `_submit_patch`.
+- Change 2: Reuse existing expectation detail quality checks at promotion time.
+- Change 3: Recursively reject deterministic placeholder markers such as `Monitor this event qualitatively`, `Quantified price reaction withheld`, `qualitative thesis retained`, `qualitative status retained`, and `source-verified value`.
+- Change 4: Extend generic monitoring trigger detection so placeholder monitoring events are also rejected earlier when generated directly.
+- Change 5: Update phase5 mock fixtures with structured market evidence snapshots so valid mock promotion remains representative of the intended path.
+- Change 6: Add regression coverage proving placeholder-heavy expectation patches are rejected at promotion.
+- Retest decision: per user instruction, do not launch the next smoke test after this modification; stop after local verification and report.
+
+### Actual Modification
+- Implemented after this evaluation entry:
+  - Added `_UNPROMOTABLE_EXPECTATION_TEXT_MARKERS` and recursive placeholder detection in `src/doxagent/workflows/initialization.py`.
+  - Added `_validate_expectation_promotion_quality` and invoked it before stable `expectation_unit` submission.
+  - Extended generic monitoring trigger detection to include deterministic placeholder markers.
+  - Added structured market evidence snapshots to the Phase 5 mock fixture so valid promotion remains possible.
+  - Added `test_promotion_rejects_numeric_sanity_placeholder_text` in `tests/test_phase5_initialization_workflow.py`.
+  - Verified locally with `uv run pytest tests/test_phase5_initialization_workflow.py -q` and `uv run ruff check src/doxagent/workflows/initialization.py tests/test_phase5_initialization_workflow.py --select B,E,F,I`.
+- Next smoke test: not launched, per user instruction.

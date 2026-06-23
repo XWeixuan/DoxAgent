@@ -1046,6 +1046,53 @@ def test_price_reaction_promotion_requires_structured_market_snapshot() -> None:
     assert normalized_reaction["evidence_refs"][0]["source_type"] == "doxatlas_source"
 
 
+def test_promotion_rejects_numeric_sanity_placeholder_text() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        runner=ParallelStructuredInitializationRunner(),
+        execution_mode="agent_runner",
+    )
+    factory = InitializationMockResultFactory()
+    narrative_evidence = factory._evidence(EvidenceSourceType.DOXATLAS_SOURCE)
+    document = factory._expectation_unit("NVDA")
+    fact = document.realized_facts[0]
+    document = document.model_copy(
+        update={
+            "realized_facts": [
+                fact.model_copy(
+                    update={
+                        "evidence_refs": [narrative_evidence],
+                        "price_reaction": fact.price_reaction.model_copy(
+                            update={"evidence_refs": [narrative_evidence]},
+                            deep=True,
+                        ),
+                    },
+                    deep=True,
+                )
+            ]
+        },
+        deep=True,
+    )
+    patch = factory._document_patch(
+        document,
+        DocumentType.EXPECTATION_UNIT,
+        AgentName.O1_EXPECTATION_OWNER,
+        expectation_id=document.expectation_id,
+    ).model_copy(update={"evidence_refs": [narrative_evidence]}, deep=True)
+    run = workflow.blackboard.start_run("NVDA", AgentName.SYSTEM)
+    checkpoint = WorkflowCheckpoint(run_id=run.run_id, ticker="NVDA", pending_patches=[patch])
+
+    try:
+        workflow._promote_pending_patches(
+            checkpoint,
+            WorkflowNode.PROMOTE_EXPECTATION_TO_BELIEF_STATE,
+        )
+    except WorkflowContractError as exc:
+        assert "deterministic placeholder text" in str(exc)
+        assert "quantified price reaction withheld" in str(exc).lower()
+    else:
+        raise AssertionError("promotion accepted deterministic placeholder text")
+
+
 def test_price_reaction_promotion_uses_structured_market_snapshot() -> None:
     workflow = BlackboardInitializationWorkflow(
         runner=ParallelStructuredInitializationRunner(),

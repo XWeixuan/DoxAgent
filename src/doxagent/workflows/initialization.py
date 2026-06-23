@@ -3,7 +3,7 @@
 import re
 import threading
 import time
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Mapping
 from copy import deepcopy
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -109,6 +109,22 @@ _WORKFLOW_AGENT_RESULTS_KEY = "workflow_agent_results"
 _WORKFLOW_AGENT_IDEMPOTENCY_KEY = "workflow_agent_idempotency"
 _EXPECTATION_DETAIL_STATUS_KEY = "expectation_detail_generation_status"
 _OBJECTION_RESOLUTION_BATCH_SIZE = 3
+_UNPROMOTABLE_EXPECTATION_TEXT_MARKERS = (
+    "monitor this event qualitatively",
+    "precise threshold requires source-appropriate evidence",
+    "thresholds are source-verified",
+    "source-verified value",
+    "source-verified threshold",
+    "qualitative realized fact retained",
+    "quantified price reaction withheld",
+    "structured market-trace verification is still required",
+    "qualitative thesis retained",
+    "qualitative status retained",
+    "source-appropriate evidence was not attached",
+    "precise numeric claims require source-appropriate evidence",
+    "precise market or fundamental values require source-appropriate evidence",
+    "pending source-verified",
+)
 WorkflowExecutionMode = Literal["mock", "agent_runner"]
 
 
@@ -406,13 +422,31 @@ class InitializationMockResultFactory:
         )
 
     def _evidence(self, source_type: EvidenceSourceType) -> EvidenceRef:
+        retrieval_metadata: dict[str, Any] = {"fixture": "phase5"}
+        source_id = f"{source_type.value}:mock"
+        if source_type is EvidenceSourceType.MARKET_DATA:
+            source_id = "twelvedata:daily_ohlcv:MOCK"
+            retrieval_metadata.update(
+                {
+                    "tool_name": "twelvedata.daily_ohlcv",
+                    "market_evidence_snapshot": {
+                        "kind": "daily_ohlcv_snapshot",
+                        "symbol": "MOCK",
+                        "bar_count": 60,
+                        "usable_bar_count": 60,
+                        "start_close": 100,
+                        "end_close": 103,
+                        "total_return_pct": 3,
+                    },
+                }
+            )
         return EvidenceRef(
             evidence_id=new_id("evidence"),
             source_type=source_type,
-            source_id=f"{source_type.value}:mock",
+            source_id=source_id,
             title="Mock initialization evidence",
             summary="Deterministic Phase 5 workflow fixture evidence.",
-            retrieval_metadata={"fixture": "phase5"},
+            retrieval_metadata=retrieval_metadata,
             confidence=0.8,
             citation_scope="initialization_workflow",
         )
@@ -3467,6 +3501,9 @@ class BlackboardInitializationWorkflow:
         stable_documents = list(checkpoint.stable_document_types)
         for patch in result.proposed_patches:
             self._validate_patch_contract(patch, node)
+            if patch.target.document_type is DocumentType.EXPECTATION_UNIT:
+                document = ExpectationUnitDocument.model_validate(patch.after)
+                self._validate_expectation_promotion_quality(document)
             self._submit_patch(checkpoint.run_id, patch, f"{node.value} 已产出稳定文档。")
             stable_documents.append(patch.target.document_type)
         return self._mark_completed(
@@ -4337,6 +4374,9 @@ class BlackboardInitializationWorkflow:
         )
         for patch in pending_patches:
             self._validate_patch_contract(patch, node)
+            if patch.target.document_type is DocumentType.EXPECTATION_UNIT:
+                document = ExpectationUnitDocument.model_validate(patch.after)
+                self._validate_expectation_promotion_quality(document)
             self._submit_patch(checkpoint.run_id, patch, "提升已通过复核的 expectation unit。")
             if patch.target.document_type not in stable_documents:
                 stable_documents.append(patch.target.document_type)
@@ -4423,6 +4463,19 @@ class BlackboardInitializationWorkflow:
             },
             deep=True,
         )
+
+    def _validate_expectation_promotion_quality(
+        self,
+        document: ExpectationUnitDocument,
+    ) -> None:
+        self._validate_expectation_detail_quality(document)
+        findings = _expectation_placeholder_findings(document.model_dump(mode="json"))
+        if findings:
+            preview = ", ".join(findings[:5])
+            raise WorkflowContractError(
+                "PromoteExpectationToBeliefState expectation_unit contains "
+                f"deterministic placeholder text: {preview}"
+            )
 
     def _price_reaction_support_refs(
         self,
@@ -7314,6 +7367,27 @@ class BlackboardInitializationWorkflow:
         )
 
 
+def _expectation_placeholder_findings(value: Any, *, path: str = "document") -> list[str]:
+    findings: list[str] = []
+    if isinstance(value, Mapping):
+        for key, nested in value.items():
+            findings.extend(
+                _expectation_placeholder_findings(nested, path=f"{path}.{key}")
+            )
+    elif isinstance(value, list):
+        for index, nested in enumerate(value):
+            findings.extend(
+                _expectation_placeholder_findings(nested, path=f"{path}[{index}]")
+            )
+    elif isinstance(value, str):
+        normalized = " ".join(value.lower().split())
+        for marker in _UNPROMOTABLE_EXPECTATION_TEXT_MARKERS:
+            if marker in normalized:
+                findings.append(f"{path} contains '{marker}'")
+                break
+    return findings
+
+
 def _is_generic_monitoring_trigger(value: str) -> bool:
     normalized = " ".join(value.lower().split())
     generic_values = {
@@ -7335,7 +7409,9 @@ def _is_generic_monitoring_trigger(value: str) -> bool:
         "\u878d\u8d44\u538b\u529b",
         "\u5546\u4e1a\u5316\u8bc1\u636e\u4e0d\u8db3",
     )
-    return any(marker in normalized for marker in generic_markers)
+    return any(marker in normalized for marker in generic_markers) or any(
+        marker in normalized for marker in _UNPROMOTABLE_EXPECTATION_TEXT_MARKERS
+    )
 
 
 def _declared_tool_names(payload: dict[str, Any]) -> set[str]:

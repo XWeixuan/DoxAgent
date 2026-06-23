@@ -210,3 +210,4 @@
 - Added Document2 detail-generation timeout recovery with per-shell status metadata, richer parallel timeout labels, and a recovery retry for timed-out expectation detail workers.
 - Normalized flat Document2 expectation-unit resolver patches into validated `patch.after` payloads so accepted objection revisions cannot lose document content at the workflow boundary.
 - Added bounded Postgres pooler guards for Document2 review-state persistence so stalled Blackboard reloads fail or retry instead of hanging indefinitely.
+- Added a Document2 promotion quality gate that rejects deterministic placeholder text before expectation units enter stable belief state.
