@@ -12,6 +12,7 @@ from doxagent.models import (
     DocumentType,
     EvidenceRef,
     EvidenceSourceType,
+    ExpectationUnitDocument,
     Objection,
     ObjectionSeverity,
     ObjectionStatus,
@@ -1072,7 +1073,13 @@ def test_promotion_rejects_numeric_sanity_placeholder_text() -> None:
                     update={
                         "evidence_refs": [narrative_evidence],
                         "price_reaction": fact.price_reaction.model_copy(
-                            update={"evidence_refs": [narrative_evidence]},
+                            update={
+                                "price_change": (
+                                    "Quantified price reaction withheld pending "
+                                    "source-appropriate OHLCV or market-data verification."
+                                ),
+                                "evidence_refs": [narrative_evidence],
+                            },
                             deep=True,
                         ),
                     },
@@ -1082,20 +1089,8 @@ def test_promotion_rejects_numeric_sanity_placeholder_text() -> None:
         },
         deep=True,
     )
-    patch = factory._document_patch(
-        document,
-        DocumentType.EXPECTATION_UNIT,
-        AgentName.O1_EXPECTATION_OWNER,
-        expectation_id=document.expectation_id,
-    ).model_copy(update={"evidence_refs": [narrative_evidence]}, deep=True)
-    run = workflow.blackboard.start_run("NVDA", AgentName.SYSTEM)
-    checkpoint = WorkflowCheckpoint(run_id=run.run_id, ticker="NVDA", pending_patches=[patch])
-
     try:
-        workflow._promote_pending_patches(
-            checkpoint,
-            WorkflowNode.PROMOTE_EXPECTATION_TO_BELIEF_STATE,
-        )
+        workflow._validate_expectation_promotion_quality(document)
     except WorkflowContractError as exc:
         assert "deterministic placeholder text" in str(exc)
         assert "quantified price reaction withheld" in str(exc).lower()
@@ -1390,7 +1385,7 @@ def test_numeric_sanity_revision_fallback_removes_unsupported_false_precision() 
     assert "$33.5B" not in combined
     assert "NVDA revenue grew" in sanitized_fact["description"]
     assert "stock price reached" in sanitized_fact["description"]
-    assert "Quantified price reaction withheld" in sanitized_reaction["price_change"]
+    assert "Exact price reaction removed" in sanitized_reaction["price_change"]
     assert (
         "Customer design wins confirm HBM demand without numeric threshold"
         in sanitized.after["event_monitoring_direction"]["positive_events"]
@@ -1399,12 +1394,26 @@ def test_numeric_sanity_revision_fallback_removes_unsupported_false_precision() 
         "Customer cancellations pressure HBM orders"
         in sanitized.after["event_monitoring_direction"]["negative_events"]
     )
-    assert "source-verified value" in combined
+    assert "source-backed level" in combined
     assert "该已兑现事实仅保留为定性证据" not in combined
-    assert "source-appropriate market or fundamental evidence" in (
+    assert "structured" in (
         sanitized.after["market_view"]["text"]
     )
-    assert "source-verified value" in combined
+    for marker in (
+        "monitor this event qualitatively",
+        "precise threshold requires source-appropriate evidence",
+        "thresholds are source-verified",
+        "source-verified value",
+        "source-verified threshold",
+        "quantified price reaction withheld",
+        "structured market-trace verification is still required",
+        "qualitative thesis retained",
+        "precise market or fundamental values require source-appropriate evidence",
+    ):
+        assert marker not in combined.lower()
+    workflow._validate_expectation_promotion_quality(
+        ExpectationUnitDocument.model_validate(sanitized.after)
+    )
     assert "Numeric sanity fallback removed unsupported precise numeric claims" in (
         sanitized.rationale
     )

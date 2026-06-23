@@ -224,3 +224,4 @@
 - Shortened Postgres Blackboard read/mutate transaction lifetimes so Document2 obstruction resolution cannot leave `working_memory_entries` reads idle in transaction while business logic continues.
 - Normalized partial O1 resolver expectation revisions by merging them into the pending Document2 expectation document before validation and replacement.
 - Reconnected conservative ReAct review-result recovery to final-step no-progress/incomplete-payload exits so Document2 field review coverage gaps remain auditable instead of blocking the workflow at runtime.
+- Reworked Document2 deterministic numeric cleanup so unsupported thresholds are removed without generating generic event-monitoring or price-reaction placeholder text that blocks promotion.

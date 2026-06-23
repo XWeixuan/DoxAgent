@@ -5189,16 +5189,15 @@ class BlackboardInitializationWorkflow:
             if self._price_reaction_needs_escalation(reaction) or not structured_market_refs:
                 reaction = PriceReaction(
                     price_change=(
-                        "Quantified price reaction withheld pending source-appropriate "
-                        "OHLCV or market-trace evidence."
+                        "Exact price reaction removed; rebuild the move from OHLCV or "
+                        "market-trace evidence before using it as a priced-in signal."
                     ),
                     price_pattern=(
-                        "Qualitative market reaction retained; structured market-trace "
-                        "verification is still required."
+                        "Directional market reaction retained without an exact threshold."
                     ),
                     interpretation=(
-                        "Do not treat this event as quantitatively priced-in until "
-                        "source-appropriate market evidence is attached."
+                        "Treat the pricing conclusion as provisional and route monitoring "
+                        "to price and volume confirmation."
                     ),
                     evidence_refs=structured_market_refs or refs,
                 )
@@ -6451,8 +6450,8 @@ class BlackboardInitializationWorkflow:
             document.realized_facts_summary,
             fallback=(
                 "Field review identified incorrect price or guidance precision; "
-                "realized facts are retained qualitatively pending source-verified "
-                "market/fundamental recalculation."
+                "realized facts retain event direction while market/fundamental levels "
+                "are rebuilt from structured evidence."
             ),
             force_price_cleanup=force_price_cleanup,
             force_guidance_cleanup=force_guidance_cleanup,
@@ -6506,8 +6505,8 @@ class BlackboardInitializationWorkflow:
             market_view.text,
             fallback=(
                 f"{document.expectation_name}: qualitative market thesis retained. "
-                "Field-review-flagged price/guidance precision was removed pending "
-                "source-verified recalculation."
+                "Field-review-flagged price/guidance precision was removed for "
+                "structured recalculation."
             ),
             force_price_cleanup=force_price_cleanup,
             force_guidance_cleanup=force_guidance_cleanup,
@@ -6515,8 +6514,8 @@ class BlackboardInitializationWorkflow:
         summary = self._field_review_clean_text(
             market_view.summary,
             fallback=(
-                f"{document.expectation_name}: qualitative thesis retained; disputed "
-                "numeric guidance or return claims require source-verified evidence."
+                f"{document.expectation_name}: thesis direction preserved; disputed "
+                "numeric guidance or return claims must be rebuilt from structured evidence."
             ),
             force_price_cleanup=force_price_cleanup,
             force_guidance_cleanup=force_guidance_cleanup,
@@ -6549,7 +6548,7 @@ class BlackboardInitializationWorkflow:
             fact.description,
             fallback=(
                 "Field review flagged the precise price/guidance values in this "
-                "realized fact; retain only qualitative evidence pending recalculation."
+                "realized fact; retain the event direction for recalculation."
             ),
             force_price_cleanup=force_price_cleanup,
             force_guidance_cleanup=force_guidance_cleanup,
@@ -6561,17 +6560,15 @@ class BlackboardInitializationWorkflow:
             reaction = PriceReaction(
                 price_change=(
                     "Field review found price benchmark or return-calculation error; "
-                    "quantified price reaction removed pending OHLCV/market_trace "
-                    "recalculation."
+                    "exact price reaction removed for OHLCV/market_trace recalculation."
                 ),
                 price_pattern=(
-                    "Quantified price reaction withheld until source-verified market "
-                    "trace recalculation."
+                    "Directional market pattern retained while the benchmark is rebuilt."
                 ),
                 interpretation=(
-                    "Do not treat this event as quantitatively priced-in until the "
-                    "reviewed benchmark and return calculations are rebuilt from "
-                    "structured market evidence."
+                    "Use this event as a monitoring cue; rebuild the benchmark and return "
+                    "calculation from structured market evidence before making a priced-in "
+                    "claim."
                 ),
                 evidence_refs=evidence_refs or reaction.evidence_refs,
             )
@@ -6580,8 +6577,8 @@ class BlackboardInitializationWorkflow:
             price_change = self._field_review_clean_text(
                 reaction.price_change,
                 fallback=(
-                    "Quantified price reaction withheld because field review found "
-                    "incorrect guidance precision in the supporting fact."
+                    "Exact price reaction removed because field review found incorrect "
+                    "guidance precision in the supporting fact."
                 ),
                 force_price_cleanup=force_price_cleanup,
                 force_guidance_cleanup=force_guidance_cleanup,
@@ -6616,7 +6613,7 @@ class BlackboardInitializationWorkflow:
             variable.current_status,
             fallback=(
                 f"{variable.name}: status retained qualitatively; field-review-flagged "
-                "numeric precision requires source-verified recalculation."
+                "numeric precision was removed for structured recalculation."
             ),
             force_price_cleanup=force_price_cleanup,
             force_guidance_cleanup=force_guidance_cleanup,
@@ -6636,8 +6633,8 @@ class BlackboardInitializationWorkflow:
             self._field_review_clean_text(
                 item,
                 fallback=(
-                    "Monitor this catalyst qualitatively until disputed price/guidance "
-                    "thresholds are source-verified."
+                    "Track this catalyst by the named business signal while disputed "
+                    "price/guidance thresholds are rebuilt."
                 ),
                 force_price_cleanup=force_price_cleanup,
                 force_guidance_cleanup=force_guidance_cleanup,
@@ -6648,8 +6645,8 @@ class BlackboardInitializationWorkflow:
             self._field_review_clean_text(
                 item,
                 fallback=(
-                    "Monitor this risk qualitatively until disputed price/guidance "
-                    "thresholds are source-verified."
+                    "Track this risk by the named business signal while disputed "
+                    "price/guidance thresholds are rebuilt."
                 ),
                 force_price_cleanup=force_price_cleanup,
                 force_guidance_cleanup=force_guidance_cleanup,
@@ -6660,7 +6657,7 @@ class BlackboardInitializationWorkflow:
             monitoring.known_event_notice,
             fallback=(
                 "Known event monitoring should avoid disputed price/guidance thresholds "
-                "until source-verified."
+                "until structured evidence rebuilds them."
             ),
             force_price_cleanup=force_price_cleanup,
             force_guidance_cleanup=force_guidance_cleanup,
@@ -7755,24 +7752,24 @@ class BlackboardInitializationWorkflow:
             )
             if unsupported_market:
                 withheld_price_change = (
-                    "Quantified price reaction withheld pending source-appropriate "
-                    "OHLCV or market-data verification."
+                    "Exact price reaction removed; rebuild it from OHLCV or market-data "
+                    "evidence before using it as priced-in support."
                 )
                 price_change = self._numeric_sanity_clean_text(
                     reaction.price_change,
                     fallback=withheld_price_change,
                 )
-                if "source-verified value" in price_change:
+                if "source-backed level" in price_change:
                     price_change = withheld_price_change
                 price_pattern = self._numeric_sanity_clean_text(
                     reaction.price_pattern,
-                    fallback="Qualitative market reaction retained pending OHLCV verification.",
+                    fallback="Directional market reaction retained for OHLCV verification.",
                 )
                 interpretation = self._numeric_sanity_clean_text(
                     reaction.interpretation,
                     fallback=(
-                        "Do not treat this event as quantitatively priced-in until "
-                        "source-appropriate market evidence is attached."
+                        "Use this event as a monitoring cue until structured market "
+                        "evidence rebuilds the priced-in conclusion."
                     ),
                 )
                 reaction = PriceReaction(
@@ -7785,8 +7782,8 @@ class BlackboardInitializationWorkflow:
                 description = self._numeric_sanity_clean_text(
                     fact.description,
                     fallback=(
-                        "Qualitative realized fact retained; precise market or "
-                        "fundamental values require source-appropriate evidence."
+                        "Realized fact retains its business event direction; exact market "
+                        "or fundamental levels were removed for structured recalculation."
                     ),
                 )
                 fact = fact.model_copy(
@@ -7825,8 +7822,8 @@ class BlackboardInitializationWorkflow:
             summary = self._numeric_sanity_clean_text(
                 summary,
                 fallback=(
-                    "Realized facts retained qualitatively; precise market or "
-                    "fundamental values require source-appropriate evidence."
+                    "Realized facts retain event direction while exact market or "
+                    "fundamental levels are rebuilt from structured evidence."
                 ),
             )
         document = document.model_copy(
@@ -7876,20 +7873,20 @@ class BlackboardInitializationWorkflow:
             market_view.text,
             fallback=(
                 f"{document.expectation_name}: qualitative market thesis retained. "
-                "Precise numeric market or fundamental claims were removed because "
-                "source-appropriate evidence was not attached."
+                "Exact market or fundamental levels were removed for structured "
+                "recalculation."
             ),
         )
         next_summary = self._numeric_sanity_clean_text(
             market_view.summary,
             fallback=(
-                f"{document.expectation_name}: qualitative thesis retained; precise "
-                "numeric claims require source-appropriate evidence."
+                f"{document.expectation_name}: thesis direction preserved; precise "
+                "numeric claims were removed for structured recalculation."
             ),
         )
         note = (
-            " Precise numeric thresholds require source-appropriate market or "
-            "fundamental evidence before promotion."
+            " Exact numeric thresholds were removed; rebuild them from structured "
+            "market or fundamental evidence before downstream use."
         )
         if note.strip() not in next_text:
             next_text = f"{next_text.rstrip()}{note}"
@@ -7917,8 +7914,8 @@ class BlackboardInitializationWorkflow:
             current_status = self._numeric_sanity_clean_text(
                 variable.current_status,
                 fallback=(
-                    f"{variable.name}: qualitative status retained. Precise numeric "
-                    "values require source-appropriate evidence before promotion."
+                    f"{variable.name}: directional status retained while exact numeric "
+                    "levels are rebuilt from structured evidence."
                 ),
             )
             variables.append(
@@ -7983,17 +7980,30 @@ class BlackboardInitializationWorkflow:
     def _numeric_sanity_clean_monitoring_event(self, value: str) -> str:
         if not self._contains_numeric_value(value):
             return value
-        return self._numeric_sanity_clean_text(
+        cleaned = self._numeric_sanity_clean_text(
             value,
             fallback=(
-                "Monitor this event qualitatively; precise threshold requires "
-                "source-appropriate evidence."
+                "Track the named catalyst or risk after rebuilding its threshold from "
+                "company or market data."
             ),
+            replacement="source-backed threshold",
         )
+        if _is_generic_monitoring_trigger(cleaned):
+            return (
+                "Track the named catalyst or risk after rebuilding its threshold from "
+                "company or market data."
+            )
+        return cleaned
 
-    def _numeric_sanity_clean_text(self, value: str, *, fallback: str) -> str:
+    def _numeric_sanity_clean_text(
+        self,
+        value: str,
+        *,
+        fallback: str,
+        replacement: str = "source-backed level",
+    ) -> str:
         cleaned = self._polish_numeric_sanity_text(
-            self._strip_unsupported_numeric_precision(value)
+            self._strip_unsupported_numeric_precision(value, replacement=replacement)
         )
         if cleaned == str(value).strip():
             return fallback
@@ -8005,20 +8015,27 @@ class BlackboardInitializationWorkflow:
             return fallback
         return cleaned
 
-    def _strip_unsupported_numeric_precision(self, value: str) -> str:
+    def _strip_unsupported_numeric_precision(
+        self,
+        value: str,
+        *,
+        replacement: str = "source-backed level",
+    ) -> str:
         precision_pattern = (
             r"(?:\$[-+]?\d[\d,.]*(?:\s*-\s*\$?[-+]?\d[\d,.]*)?(?:\+)?\s*"
             r"(?:%|x|bps|k|m|b|t|bn|mn|million|billion|trillion|"
+            r"quarters?|个季度|季度|"
             r"\u4e07\u4ebf\u7f8e\u5143|\u4e07\u4ebf|"
             r"\u4ebf\u7f8e\u5143|\u4ebf|\u4e07|\u7f8e\u5143)?|"
             r"[-+]?\$?\d[\d,.]*(?:\s*-\s*\$?[-+]?\d[\d,.]*)?(?:\+)?\s*"
             r"(?:%|x|bps|k|m|b|t|bn|mn|million|billion|trillion|"
+            r"quarters?|个季度|季度|"
             r"\u4e07\u4ebf\u7f8e\u5143|\u4e07\u4ebf|"
             r"\u4ebf\u7f8e\u5143|\u4ebf|\u4e07|\u7f8e\u5143))"
         )
         return re.sub(
             precision_pattern,
-            "source-verified value",
+            replacement,
             str(value),
             flags=re.IGNORECASE,
         )
