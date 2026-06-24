@@ -1076,8 +1076,16 @@ def test_price_reaction_promotion_requires_structured_market_snapshot() -> None:
 
     normalized_reaction = normalized.after["realized_facts"][0]["price_reaction"]
     assert normalized_reaction["price_change"] != original_price_change
-    assert "OHLCV or market-trace" in normalized_reaction["price_change"]
+    assert "requires structured OHLCV" in normalized_reaction["price_change"]
     assert normalized_reaction["evidence_refs"][0]["source_type"] == "doxatlas_source"
+    try:
+        workflow._validate_expectation_promotion_quality(
+            ExpectationUnitDocument.model_validate(normalized.after)
+        )
+    except WorkflowContractError as exc:
+        assert "deterministic placeholder text" in str(exc)
+    else:
+        raise AssertionError("promotion accepted narrative-only price reaction")
 
 
 def test_promotion_rejects_numeric_sanity_placeholder_text() -> None:
@@ -1184,6 +1192,92 @@ def test_price_reaction_promotion_uses_structured_market_snapshot() -> None:
     normalized_reaction = normalized.after["realized_facts"][0]["price_reaction"]
     assert normalized_reaction["price_change"] == original_price_change
     assert normalized_reaction["evidence_refs"][0]["source_id"] == "twelvedata:daily_ohlcv:NVDA"
+
+
+def test_price_reaction_placeholder_rebuilds_from_structured_market_snapshot() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        runner=ParallelStructuredInitializationRunner(),
+        execution_mode="agent_runner",
+    )
+    factory = InitializationMockResultFactory()
+    market_evidence = factory._evidence(EvidenceSourceType.MARKET_DATA).model_copy(
+        update={
+            "source_id": "twelvedata:daily_ohlcv:NVDA",
+            "retrieval_metadata": {
+                "tool_name": "twelvedata.daily_ohlcv",
+                "market_evidence_snapshot": {
+                    "kind": "daily_ohlcv_snapshot",
+                    "symbol": "NVDA",
+                    "bar_count": 60,
+                    "start_date": "2026-01-02",
+                    "end_date": "2026-06-23",
+                    "start_close": 100,
+                    "end_close": 112,
+                    "total_return_pct": 12,
+                },
+            },
+        },
+        deep=True,
+    )
+    document = factory._expectation_unit("NVDA")
+    fact = document.realized_facts[0]
+    reaction = fact.price_reaction.model_copy(
+        update={
+            "price_change": (
+                "Exact price reaction removed; rebuild the move from OHLCV or "
+                "market-trace evidence before using it as a priced-in signal."
+            ),
+            "price_pattern": "Directional market reaction retained without an exact threshold.",
+            "interpretation": "Treat the pricing conclusion as provisional.",
+            "evidence_refs": [market_evidence],
+        },
+        deep=True,
+    )
+    document = document.model_copy(
+        update={
+            "realized_facts": [
+                fact.model_copy(
+                    update={
+                        "price_reaction": reaction,
+                        "evidence_refs": [market_evidence],
+                    },
+                    deep=True,
+                )
+            ]
+        },
+        deep=True,
+    )
+    patch = factory._document_patch(
+        document,
+        DocumentType.EXPECTATION_UNIT,
+        AgentName.O1_EXPECTATION_OWNER,
+        expectation_id=document.expectation_id,
+    ).model_copy(update={"evidence_refs": [market_evidence]}, deep=True)
+    run = workflow.blackboard.start_run("NVDA", AgentName.SYSTEM)
+    checkpoint = WorkflowCheckpoint(run_id=run.run_id, ticker="NVDA", pending_patches=[patch])
+
+    normalized = workflow._normalize_expectation_price_reaction_patch(checkpoint, patch)
+
+    normalized_reaction = normalized.after["realized_facts"][0]["price_reaction"]
+    assert "NVDA OHLCV snapshot from 2026-01-02 to 2026-06-23" in normalized_reaction[
+        "price_change"
+    ]
+    assert "total_return_pct=12" in normalized_reaction["price_change"]
+    assert normalized_reaction["evidence_refs"][0]["source_id"] == "twelvedata:daily_ohlcv:NVDA"
+    workflow._validate_expectation_promotion_quality(
+        ExpectationUnitDocument.model_validate(normalized.after)
+    )
+
+
+def test_numeric_value_detection_ignores_fiscal_years_and_product_generations() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        runner=ParallelStructuredInitializationRunner(),
+        execution_mode="agent_runner",
+    )
+
+    assert not workflow._contains_numeric_value("Q3 FY2026 and HBM4 launch timing")
+    assert workflow._contains_numeric_value("revenue guidance is $36B")
+    assert workflow._contains_numeric_value("stock gained +90% versus SOXX")
 
 
 def test_o1_revision_reopens_numeric_sanity_when_false_precision_remains() -> None:
@@ -1680,9 +1774,8 @@ def test_numeric_sanity_revision_fallback_removes_unsupported_false_precision() 
     )
     assert "source-backed level" in combined
     assert "该已兑现事实仅保留为定性证据" not in combined
-    assert "structured" in (
-        sanitized.after["market_view"]["text"]
-    )
+    assert "source-backed level" in sanitized.after["market_view"]["text"]
+    assert "structured recalculation" not in combined
     for marker in (
         "monitor this event qualitatively",
         "precise threshold requires source-appropriate evidence",
@@ -1695,9 +1788,14 @@ def test_numeric_sanity_revision_fallback_removes_unsupported_false_precision() 
         "precise market or fundamental values require source-appropriate evidence",
     ):
         assert marker not in combined.lower()
-    workflow._validate_expectation_promotion_quality(
-        ExpectationUnitDocument.model_validate(sanitized.after)
-    )
+    try:
+        workflow._validate_expectation_promotion_quality(
+            ExpectationUnitDocument.model_validate(sanitized.after)
+        )
+    except WorkflowContractError as exc:
+        assert "unknown price_reaction" in str(exc)
+    else:
+        raise AssertionError("promotion accepted a narrative-only price reaction placeholder")
     assert "Numeric sanity fallback removed unsupported precise numeric claims" in (
         sanitized.rationale
     )

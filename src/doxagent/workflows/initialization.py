@@ -128,6 +128,20 @@ _UNPROMOTABLE_EXPECTATION_TEXT_MARKERS = (
     "precise numeric claims require source-appropriate evidence",
     "precise market or fundamental values require source-appropriate evidence",
     "pending source-verified",
+    "exact price reaction removed",
+    "rebuild the move from",
+    "directional market reaction retained",
+    "directional market pattern retained",
+    "structured recalculation",
+    "structured evidence before downstream use",
+    "exact numeric thresholds were removed",
+    "realized fact retains its business event direction",
+    "realized facts retain event direction",
+    "directional status retained",
+    "track the named catalyst or risk",
+    "field review found price benchmark",
+    "field-review-flagged price/guidance precision",
+    "price reaction requires structured",
 )
 WorkflowExecutionMode = Literal["mock", "agent_runner"]
 
@@ -3238,13 +3252,31 @@ class BlackboardInitializationWorkflow:
         )
 
     def _contains_numeric_value(self, text: str) -> bool:
-        return bool(
-            re.search(
-                r"\$?\d[\d,.]*(?:\s*(?:%|x|倍|bps|亿|万亿|billion|trillion))?",
-                text,
-                flags=re.IGNORECASE,
-            )
+        pattern = re.compile(
+            r"\$?\d[\d,.]*(?:\s*(?:%|x|\u500d|bps|\u4ebf|\u4e07\u4ebf|billion|trillion))?",
+            flags=re.IGNORECASE,
         )
+        return any(
+            not self._is_non_claim_numeric_token(text, match)
+            for match in pattern.finditer(text)
+        )
+
+    def _is_non_claim_numeric_token(self, text: str, match: re.Match[str]) -> bool:
+        token = match.group(0).strip()
+        lowered = token.lower()
+        if any(marker in lowered for marker in ("$", "%", "x", "bps", "billion", "trillion")):
+            return False
+        start, end = match.span()
+        previous_char = text[start - 1] if start > 0 else ""
+        next_char = text[end] if end < len(text) else ""
+        if previous_char.isalpha() or next_char.isalpha():
+            return True
+        numeric = token.replace(",", "")
+        if numeric.isdigit() and 1900 <= int(numeric) <= 2100:
+            return True
+        if len(numeric) <= 2 and previous_char.upper() == "Q":
+            return True
+        return False
 
     def _has_source_appropriate_numeric_evidence(
         self,
@@ -5201,18 +5233,25 @@ class BlackboardInitializationWorkflow:
                 ]
             )
             structured_market_refs = self._structured_market_evidence_refs(refs)
-            if self._price_reaction_needs_escalation(reaction) or not structured_market_refs:
+            if self._price_reaction_needs_escalation(reaction) and structured_market_refs:
+                reaction = self._price_reaction_from_market_snapshot(
+                    document.ticker,
+                    refs,
+                    structured_market_refs,
+                )
+                changed = True
+            elif self._price_reaction_needs_escalation(reaction) or not structured_market_refs:
                 reaction = PriceReaction(
                     price_change=(
-                        "Exact price reaction removed; rebuild the move from OHLCV or "
-                        "market-trace evidence before using it as a priced-in signal."
+                        "Price reaction requires structured OHLCV or market-data evidence "
+                        "before promotion."
                     ),
                     price_pattern=(
-                        "Directional market reaction retained without an exact threshold."
+                        "Narrative-only price reaction cannot be promoted as priced-in evidence."
                     ),
                     interpretation=(
-                        "Treat the pricing conclusion as provisional and route monitoring "
-                        "to price and volume confirmation."
+                        "Attach target-ticker market data or downgrade the priced-in claim "
+                        "before promoting this expectation unit."
                     ),
                     evidence_refs=structured_market_refs or refs,
                 )
@@ -5284,6 +5323,71 @@ class BlackboardInitializationWorkflow:
             )
         )
 
+    def _price_reaction_from_market_snapshot(
+        self,
+        ticker: str,
+        refs: list[EvidenceRef],
+        structured_market_refs: list[EvidenceRef],
+    ) -> PriceReaction:
+        snapshot = self._market_evidence_snapshot_from_payload_refs(
+            [ref.model_dump(mode="json") for ref in refs],
+            ticker=ticker,
+        )
+        target_symbol = ticker.upper()
+        target_snapshot: dict[str, Any] | None = None
+        benchmark_parts: list[str] = []
+        if isinstance(snapshot, dict):
+            for item in snapshot.get("daily_ohlcv", []):
+                if not isinstance(item, dict):
+                    continue
+                symbol = str(item.get("symbol") or "").upper()
+                if symbol == target_symbol and target_snapshot is None:
+                    target_snapshot = item
+                elif symbol in {"SOXX", "QQQ"} and item.get("total_return_pct") is not None:
+                    benchmark_parts.append(
+                        f"{symbol} total_return_pct={item.get('total_return_pct')}"
+                    )
+        if target_snapshot is None:
+            return PriceReaction(
+                price_change=(
+                    "Structured market evidence is attached, but the target ticker OHLCV "
+                    "snapshot is unavailable for deterministic price-reaction synthesis."
+                ),
+                price_pattern="Market reaction requires target-ticker OHLCV reconstruction.",
+                interpretation=(
+                    "Treat the pricing conclusion as unresolved until the target OHLCV "
+                    "snapshot is available in evidence metadata."
+                ),
+                evidence_refs=structured_market_refs,
+            )
+        start_date = target_snapshot.get("start_date") or "period start"
+        end_date = target_snapshot.get("end_date") or "period end"
+        start_close = target_snapshot.get("start_close")
+        end_close = target_snapshot.get("end_close")
+        total_return = target_snapshot.get("total_return_pct")
+        benchmark_text = (
+            "; benchmarks: " + ", ".join(benchmark_parts)
+            if benchmark_parts
+            else "; benchmark comparison unavailable"
+        )
+        return PriceReaction(
+            price_change=(
+                f"{target_symbol} OHLCV snapshot from {start_date} to {end_date}: "
+                f"close moved from {start_close} to {end_close}, "
+                f"total_return_pct={total_return}{benchmark_text}."
+            ),
+            price_pattern=(
+                "Structured OHLCV period-return evidence replaces narrative-only price "
+                "reaction claims."
+            ),
+            interpretation=(
+                "Use this market-data-backed move as the priced-in baseline, then monitor "
+                "subsequent earnings, HBM supply, and volume confirmation for re-rating "
+                "or reversal."
+            ),
+            evidence_refs=structured_market_refs,
+        )
+
     def _price_reaction_needs_escalation(self, reaction: PriceReaction) -> bool:
         text = " ".join(
             [
@@ -5292,6 +5396,16 @@ class BlackboardInitializationWorkflow:
                 reaction.interpretation,
             ]
         ).lower()
+        if any(
+            marker in text
+            for marker in (
+                "exact price reaction removed",
+                "rebuild the move from",
+                "directional market reaction retained",
+                "market reaction requires target-ticker ohlcv reconstruction",
+            )
+        ):
+            return True
         return any(
             marker in text
             for marker in (
@@ -6519,9 +6633,8 @@ class BlackboardInitializationWorkflow:
         text = self._field_review_clean_text(
             market_view.text,
             fallback=(
-                f"{document.expectation_name}: qualitative market thesis retained. "
-                "Field-review-flagged price/guidance precision was removed for "
-                "structured recalculation."
+                f"{document.expectation_name}: market thesis kept with unsupported "
+                "price/guidance precision removed for attached market or filing evidence."
             ),
             force_price_cleanup=force_price_cleanup,
             force_guidance_cleanup=force_guidance_cleanup,
@@ -6530,7 +6643,7 @@ class BlackboardInitializationWorkflow:
             market_view.summary,
             fallback=(
                 f"{document.expectation_name}: thesis direction preserved; disputed "
-                "numeric guidance or return claims must be rebuilt from structured evidence."
+                "numeric guidance or return claims must be checked against attached evidence."
             ),
             force_price_cleanup=force_price_cleanup,
             force_guidance_cleanup=force_guidance_cleanup,
@@ -6627,8 +6740,8 @@ class BlackboardInitializationWorkflow:
         current_status = self._field_review_clean_text(
             variable.current_status,
             fallback=(
-                f"{variable.name}: status retained qualitatively; field-review-flagged "
-                "numeric precision was removed for structured recalculation."
+                f"{variable.name}: current status kept with field-review-flagged "
+                "numeric precision was removed for attached market or filing evidence."
             ),
             force_price_cleanup=force_price_cleanup,
             force_guidance_cleanup=force_guidance_cleanup,
@@ -8108,7 +8221,7 @@ class BlackboardInitializationWorkflow:
                     price_change = withheld_price_change
                 price_pattern = self._numeric_sanity_clean_text(
                     reaction.price_pattern,
-                    fallback="Directional market reaction retained for OHLCV verification.",
+                    fallback="Market reaction pattern requires OHLCV verification.",
                 )
                 interpretation = self._numeric_sanity_clean_text(
                     reaction.interpretation,
@@ -8127,8 +8240,8 @@ class BlackboardInitializationWorkflow:
                 description = self._numeric_sanity_clean_text(
                     fact.description,
                     fallback=(
-                        "Realized fact retains its business event direction; exact market "
-                        "or fundamental levels were removed for structured recalculation."
+                        "Realized fact preserves the named business event while exact "
+                        "market or fundamental levels were removed for attached evidence review."
                     ),
                 )
                 fact = fact.model_copy(
@@ -8167,8 +8280,8 @@ class BlackboardInitializationWorkflow:
             summary = self._numeric_sanity_clean_text(
                 summary,
                 fallback=(
-                    "Realized facts retain event direction while exact market or "
-                    "fundamental levels are rebuilt from structured evidence."
+                    "Realized facts preserve named business events while exact market "
+                    "or fundamental levels are checked against attached evidence."
                 ),
             )
         document = document.model_copy(
@@ -8217,24 +8330,17 @@ class BlackboardInitializationWorkflow:
         next_text = self._numeric_sanity_clean_text(
             market_view.text,
             fallback=(
-                f"{document.expectation_name}: qualitative market thesis retained. "
-                "Exact market or fundamental levels were removed for structured "
-                "recalculation."
+                f"{document.expectation_name}: market thesis preserved while exact "
+                "market or fundamental levels were checked against attached evidence."
             ),
         )
         next_summary = self._numeric_sanity_clean_text(
             market_view.summary,
             fallback=(
                 f"{document.expectation_name}: thesis direction preserved; precise "
-                "numeric claims were removed for structured recalculation."
+                "numeric claims were removed pending attached evidence review."
             ),
         )
-        note = (
-            " Exact numeric thresholds were removed; rebuild them from structured "
-            "market or fundamental evidence before downstream use."
-        )
-        if note.strip() not in next_text:
-            next_text = f"{next_text.rstrip()}{note}"
         return (
             market_view.model_copy(
                 update={"text": next_text, "summary": next_summary},
@@ -8259,8 +8365,8 @@ class BlackboardInitializationWorkflow:
             current_status = self._numeric_sanity_clean_text(
                 variable.current_status,
                 fallback=(
-                    f"{variable.name}: directional status retained while exact numeric "
-                    "levels are rebuilt from structured evidence."
+                    f"{variable.name}: current status preserved while exact numeric "
+                    "levels are checked against attached evidence."
                 ),
             )
             variables.append(
