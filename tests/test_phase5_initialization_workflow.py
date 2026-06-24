@@ -1697,6 +1697,90 @@ def test_partial_revision_merges_realized_fact_by_event_id() -> None:
     workflow._validate_expectation_patch_list("NVDA", normalized)
 
 
+def test_partial_revision_merges_event_monitoring_lists_by_index() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        runner=ParallelStructuredInitializationRunner(),
+        execution_mode="agent_runner",
+    )
+    factory = InitializationMockResultFactory()
+    document = factory._expectation_unit("NVDA")
+    pending = factory._document_patch(
+        document,
+        DocumentType.EXPECTATION_UNIT,
+        AgentName.O1_EXPECTATION_OWNER,
+        expectation_id=document.expectation_id,
+    )
+    base_after = dict(pending.after)
+    pending = pending.model_copy(
+        update={
+            "after": {
+                **base_after,
+                "event_monitoring_direction": {
+                    **base_after["event_monitoring_direction"],
+                    "positive_events": [
+                        "Old positive trigger 0",
+                        "Old positive trigger 1",
+                        "Old positive trigger 2",
+                    ],
+                    "negative_events": [
+                        "Old negative trigger 0",
+                        "Old negative trigger 1",
+                        "Old negative trigger 2",
+                    ],
+                },
+            }
+        },
+        deep=True,
+    )
+    revision = pending.model_copy(
+        update={
+            "patch_id": "patch_monitoring_index_revision",
+            "after": {
+                "event_monitoring_direction": {
+                    "positive_events": [
+                        "Q3 revenue threshold corrected.",
+                        "HBM margin trigger corrected.",
+                    ],
+                    "negative_events": [
+                        "Revenue miss threshold corrected.",
+                        "Gross-margin downside trigger corrected.",
+                    ],
+                }
+            },
+        },
+        deep=True,
+    )
+    result = AgentResult(
+        task_id="task_merge_monitoring_revision",
+        agent_name=AgentName.O1_EXPECTATION_OWNER,
+        status=ResultStatus.SUCCEEDED,
+        payload={"runtime": "maf", "structured": {"objection_resolutions": []}},
+        proposed_patches=[revision],
+    )
+
+    normalized = workflow._normalized_expectation_revisions(
+        WorkflowCheckpoint(
+            run_id="run_merge_monitoring_revision",
+            ticker="NVDA",
+            pending_patches=[pending],
+        ),
+        result,
+    )
+
+    monitoring = normalized[0].after["event_monitoring_direction"]
+    assert monitoring["positive_events"] == [
+        "Q3 revenue threshold corrected.",
+        "HBM margin trigger corrected.",
+        "Old positive trigger 2",
+    ]
+    assert monitoring["negative_events"] == [
+        "Revenue miss threshold corrected.",
+        "Gross-margin downside trigger corrected.",
+        "Old negative trigger 2",
+    ]
+    workflow._validate_expectation_patch_list("NVDA", normalized)
+
+
 def test_numeric_sanity_revision_fallback_removes_unsupported_false_precision() -> None:
     workflow = BlackboardInitializationWorkflow(
         runner=ParallelStructuredInitializationRunner(),

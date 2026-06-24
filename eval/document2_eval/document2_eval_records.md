@@ -3373,3 +3373,124 @@ Every failed or partial hard gate must be classified before writing the modifica
   - Verified broader regression with `uv run pytest tests/test_phase5_initialization_workflow.py tests/test_phase16_react_harness.py tests/test_workflow_normalizer.py`.
   - Verified lint with `uv run ruff check src\doxagent\workflows\initialization.py tests\test_phase5_initialization_workflow.py`.
 - Next smoke test: not launched, per user instruction to stop after this complete eval/optimization/modification loop.
+
+## Loop 1 Retest24 - indexed resolver changes broke event monitoring patch normalization
+
+### Run Metadata
+- Date: 2026-06-24.
+- Source run: `run_58f5afce8b9441ca804a2cde1ad9aec8` (Document 1-only source, unchanged).
+- Execution run: `run_db3dbe57f1c04c3a81ed25f746e16bac`.
+- Deployed commit: `2b52990`.
+- Remote cwd: `/root/doxagent`.
+- Remote log: `.eval_runs/document2-loop1-retest24-20260624T100228+0800.log`.
+- Log-reported Brief State export path: `eval/brief_state_exports/run_db3dbe57f1c04c3a81ed25f746e16bac.json`.
+- Actual export-file status: missing on remote filesystem at evaluation time; Brief State was rebuilt through the debug-viewer read-only API.
+- Cloud command: `docker compose -f docker-compose.yml run --rm -e DOXAGENT_RUN_REAL_API_TESTS=1 -e DOXAGENT_STORAGE_MODE=postgres debug-viewer python eval/run_document2_expectation_units_smoke.py run_58f5afce8b9441ca804a2cde1ad9aec8 --mode clone --stop-after PromoteExpectationToBeliefState --export-brief-state`.
+- Polling discipline: no Codex automation; two 15-minute `Start-Sleep -Seconds 900` checks plus one LangSmith MCP check.
+
+### Status
+- Result: `blocked`.
+- Latest checkpoint: `status=blocked`, `next_node=ResolveObjectionsAndDelegations`.
+- Completed nodes: `StartTickerInitialization`, `BuildGlobalResearch`, `ReviewGlobalResearch`, `GenerateExpectationConstruction`, `ReviewExpectationConstruction`, `ResolveExpectationConstruction`, `GenerateExpectationDetails`, `ReviewExpectationFields`.
+- Stable document types: `global_research` only.
+- Stable expectation_unit count: 0.
+- Pending patch count: 2.
+- Working Memory count: 16.
+- Commit count: 1.
+- Open objections after the failed resolver attempt: 5.
+- Blocking delegations: 0.
+- Terminal error: `4 validation errors for ExpectationUnitDocument`, all under `event_monitoring_direction.positive_events[...]` / `negative_events[...]`, with `Extra inputs are not permitted`.
+- Improvement vs Retest23:
+  - Retest24 moved past Retest23's promotion placeholder blocker and reached field review/resolver again.
+  - Field review completed and produced substantive objections; LangSmith showed C3 success after Tavily 432 and Arrearage retries.
+- Remaining direct blocker:
+  - O1 resolver returned `changes` path-map entries like `document.event_monitoring_direction.positive_events[0]`.
+  - ReAct patch normalization treated bracket-index paths as literal object keys, so workflow merge produced invalid `EventMonitoringDirection` payloads and Pydantic rejected the revised expectation document.
+
+### Built-in Hard Validators
+| Validator | Result | Evidence | Notes |
+| --- | --- | --- | --- |
+| evidence_reference_integrity | pass | `checked_items=14`, `finding_count=0`. | Structural refs remain locatable for reached artifacts. |
+| langsmith_trajectory_tool_boundary | fail | `checked_items=54`; finding `workflow_trace_not_completed` at `latest_checkpoint.status=blocked`, `next_node=ResolveObjectionsAndDelegations`. | Correctly fails because resolver validation blocked the run. |
+| commit_log_state_mutation_consistency | pass | `checked_items=4`, `finding_count=0`. | Stable state remains only `global_research`. |
+
+### Hard Gate Failure Root Cause Matrix
+| Gate | Result | failure_kind | Failure point | Root cause / fix target |
+| --- | --- | --- | --- | --- |
+| D2-HG01 | pass | none | Source handoff | Source remains the required Document 1-only run. |
+| D2-HG02 | fail | direct | Stop-after path | `PromoteExpectationToBeliefState` was not reached; blocked in resolver validation. |
+| D2-HG03 | pass | none | Construction/detail/review lifecycle | Construction, detail generation, and field review completed. |
+| D2-HG04 | pass_with_caveat | partial_state | Detail patches | Two pending expectation patches exist, but no stable expectation units. |
+| D2-HG05 | pass_with_caveat | evidence_scope | Evidence refs | Structural refs pass; several review objections still cite fiscal-date and numeric-source issues. |
+| D2-HG06 | fail | quality_residual | Price/fundamental timing | Price reaction and fiscal-quarter quality could not be accepted before resolver revisions landed. |
+| D2-HG07 | pass | none | Field review lifecycle | A1/C1/C3/O4 review ran; C3 and O4 saw Tavily 432 and Arrearage retries but eventually produced review output. |
+| D2-HG08 | fail | direct | Resolver lifecycle | O1 produced useful indexed path-map revision intent, but normalization broke list paths before validation. |
+| D2-HG09 | fail | direct | Promotion lifecycle | Stable expectation_unit count stayed 0. |
+| D2-HG10 | fail | direct | Trace/process closure | Built-in trajectory validator failed because the workflow is blocked. |
+| D2-HG11 | pass_with_caveat | traceability_gap | Failure auditability | Remote log, Brief State API, Working Memory, hard validators, and LangSmith reproduce the failure; export file is missing. |
+| D2-HG12 | fail | context_contract | Resolver output contract / normalization | The system accepted path-map `changes` but did not support bracket-index list paths. |
+| D2-HG13 | fail | memory_continuity_blocked | Revision continuity | Accepted/revised monitoring changes did not survive into a valid pending expectation document. |
+
+### Rubrics
+| Rubric | Score | Reason |
+| --- | ---: | --- |
+| D2-R01 | 4 | Source discipline remains correct and auditable. |
+| D2-R02 | 3 | Two expectation units are differentiated, but neither reaches stable state. |
+| D2-R03 | 2 | Realized facts remain unaccepted because unresolved date/numeric objections and resolver failure block final quality. |
+| D2-R04 | 2 | Price-in reasoning is not accepted; Retest24 did not reach promotion-time OHLCV synthesis. |
+| D2-R05 | 3 | Variables exist but still carry fiscal/numeric evidence disputes. |
+| D2-R06 | 2 | Event monitoring is the direct failure surface: indexed monitoring revisions became invalid document structure. |
+| D2-R07 | 3 | Evidence refs are structurally sound, but source-specific fiscal/numeric support is still being resolved. |
+| D2-R08 | 4 | Review pressure is substantive and found real issues in dates, revenue guidance, P/E, and price reactions. |
+| D2-R09 | 2 | Resolver produced actionable intent but failed at normalization/validation. |
+| D2-R10 | 1 | Promotion readiness failed with zero stable expectation units. |
+| D2-R11 | 3 | Process advanced through review; retries and Tavily 432 remain tool/process caveats. |
+| D2-R12 | 2 | Uncertainty handling still degrades into resolver/schema failure rather than clean accepted residuals. |
+| D2-R13 | 3 | The failure is reproducible through DB/log/LangSmith, but missing export file remains a caveat. |
+| D2-R14 | 5 | The optimization target is narrow: parse bracket-index `changes` paths and merge short monitoring lists by index. |
+
+### Score Summary
+- Core Blackboard quality rubrics average (`D2-R01`-`D2-R10`): 2.6.
+- Other rubrics with score <= 2: `D2-R12`.
+- Built-in hard validators all pass: no.
+- Quality target met: no.
+- Operational improvement accepted: partial only. Retest24 exposed a schema-normalization blocker before Retest23's market-evidence routing could be verified at promotion.
+
+### Failure Categories
+- category: `indexed_changes_path_not_normalized`
+  - issue: O1 returned `changes` keys with bracket list indexes, e.g. `document.event_monitoring_direction.positive_events[0]`.
+  - evidence: Working Memory `objection_resolution_result` contains indexed path-map corrections; terminal Pydantic errors point to `positive_events[0]` and `negative_events[1]` extra inputs.
+  - severity: direct hard-gate failure.
+  - suspected root cause: ReAct `_after_from_patch_changes()` only split by `.`, treating `positive_events[0]` as a literal dict key.
+- category: `partial_monitoring_list_merge_by_index_missing`
+  - issue: Even after indexed paths are converted into partial lists, the workflow needs to merge them by position so unaffected monitoring triggers survive.
+  - evidence: O1 revised only the first two positive/negative events; replacing the whole list would discard the remaining monitoring triggers.
+  - severity: quality-preservation risk.
+  - suspected root cause: list merge logic only had identity-key handling for dict items, not positional partial updates for scalar monitoring lists.
+- category: `brief_state_export_missing`
+  - issue: smoke log reported an export path, but no JSON file existed under `eval/brief_state_exports` for the Retest24 run id.
+  - severity: traceability caveat.
+
+### Optimization Hypothesis
+- If ReAct patch normalization parses bracket-index paths into nested list payloads, then O1 resolver revisions like `positive_events[0]` will become schema-compatible partial `after` updates.
+- If workflow partial merge treats a shorter scalar list overlay as index-wise updates when the base list is longer, then resolver can correct disputed monitoring items without deleting unaffected triggers.
+- Keeping `ExpectationUnitDocument` strict is important: the fix should repair normalization, not relax the document schema.
+- Expected next movement: Retest25 should no longer block with `Extra inputs are not permitted` for `event_monitoring_direction.*[index]`; it should proceed either to promotion or to a more substantive remaining quality blocker.
+
+### Proposed Modification Plan
+- Change 1: Update `_after_from_patch_changes()` in `src/doxagent/agents/runtime/react.py` to parse `foo[0]` tokens and create nested list payloads.
+- Change 2: Add a ReAct harness regression for indexed `changes` path maps under `event_monitoring_direction`.
+- Change 3: Update workflow `_merge_list_items_by_identity()` so shorter scalar list overlays merge by index into the existing base list.
+- Change 4: Add a workflow regression ensuring indexed monitoring revisions replace the intended first items and preserve later events.
+- Change 5: Keep document validators unchanged and retest on cloud after commit/deploy.
+
+### Actual Modification
+- Implemented after this evaluation:
+  - Updated `src/doxagent/agents/runtime/react.py` with bracket-index path token parsing for patch `changes`.
+  - Updated `src/doxagent/workflows/initialization.py` so shorter scalar list overlays merge by index instead of replacing the whole list.
+  - Added `test_react_preserves_objection_resolution_indexed_changes_as_partial_after` in `tests/test_phase16_react_harness.py`.
+  - Added `test_partial_revision_merges_event_monitoring_lists_by_index` in `tests/test_phase5_initialization_workflow.py`.
+  - Verified focused tests for indexed changes and partial list merge.
+  - Verified broader regression with `uv run pytest tests/test_phase5_initialization_workflow.py tests/test_phase16_react_harness.py tests/test_workflow_normalizer.py`.
+  - Verified lint with `uv run ruff check src\doxagent\agents\runtime\react.py src\doxagent\workflows\initialization.py tests\test_phase16_react_harness.py tests\test_phase5_initialization_workflow.py`.
+- Next smoke test: required after commit/push/deploy because the quality target remains unmet.

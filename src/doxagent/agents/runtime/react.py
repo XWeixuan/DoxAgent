@@ -4193,16 +4193,66 @@ def _after_from_patch_changes(changes: JsonDict) -> JsonDict:
         path = raw_path.removeprefix("document.").strip(".")
         if not path:
             continue
-        cursor = after
-        parts = [part for part in path.split(".") if part]
-        for part in parts[:-1]:
-            next_cursor = cursor.setdefault(part, {})
-            if not isinstance(next_cursor, dict):
-                next_cursor = {}
-                cursor[part] = next_cursor
-            cursor = next_cursor
-        cursor[parts[-1]] = value
+        _assign_patch_change_path(after, _patch_change_path_tokens(path), value)
     return after
+
+
+def _patch_change_path_tokens(path: str) -> list[str | int]:
+    tokens: list[str | int] = []
+    for part in [item for item in path.split(".") if item]:
+        cursor = 0
+        while cursor < len(part):
+            bracket_index = part.find("[", cursor)
+            if bracket_index == -1:
+                key = part[cursor:]
+                if key:
+                    tokens.append(key)
+                break
+            key = part[cursor:bracket_index]
+            if key:
+                tokens.append(key)
+            end_index = part.find("]", bracket_index)
+            if end_index == -1:
+                tokens.append(part[bracket_index:])
+                break
+            raw_index = part[bracket_index + 1 : end_index].strip()
+            if raw_index.isdigit():
+                tokens.append(int(raw_index))
+            else:
+                tokens.append(raw_index)
+            cursor = end_index + 1
+    return tokens
+
+
+def _assign_patch_change_path(target: JsonDict, tokens: list[str | int], value: Any) -> None:
+    if not tokens:
+        return
+    cursor: Any = target
+    for index, token in enumerate(tokens):
+        is_last = index == len(tokens) - 1
+        next_token = None if is_last else tokens[index + 1]
+        if isinstance(token, int):
+            if not isinstance(cursor, list):
+                return
+            while len(cursor) <= token:
+                cursor.append(None)
+            if is_last:
+                cursor[token] = value
+                return
+            if not isinstance(cursor[token], (dict, list)):
+                cursor[token] = [] if isinstance(next_token, int) else {}
+            cursor = cursor[token]
+            continue
+        if not isinstance(cursor, dict):
+            return
+        if is_last:
+            cursor[token] = value
+            return
+        child = cursor.get(token)
+        if not isinstance(child, (dict, list)):
+            child = [] if isinstance(next_token, int) else {}
+            cursor[token] = child
+        cursor = child
 
 
 def _deep_merge_json_dicts(base: JsonDict, overlay: JsonDict) -> JsonDict:

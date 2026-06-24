@@ -850,6 +850,80 @@ def test_react_preserves_objection_resolution_changes_as_partial_after() -> None
     }
 
 
+def test_react_preserves_objection_resolution_indexed_changes_as_partial_after() -> None:
+    base_task = agent_task()
+    task = base_task.model_copy(
+        update={
+            "required_output_schema": "ExpectationConstructionResult",
+            "input_context": {
+                **base_task.input_context,
+                "resolution_mode": "field_review_objection_resolution",
+                "unresolved_objections": [{"objection_id": "obj_1"}],
+            },
+        },
+        deep=True,
+    )
+    runner = runner_with_sequence(
+        [
+            {
+                "is_complete": True,
+                "completion_reason": "resolved",
+                "final_payload": {
+                    "proposed_patches": [
+                        {
+                            "patch_id": "patch_indexed_changes",
+                            "target": {
+                                "document_type": "expectation_unit",
+                                "ticker": "NVDA",
+                                "expectation_id": "exp_1",
+                                "field_path": "document",
+                            },
+                            "operation": "update",
+                            "rationale": "Apply indexed monitoring corrections.",
+                            "changes": {
+                                "document.event_monitoring_direction.positive_events[0]": (
+                                    "Q3 revenue threshold corrected."
+                                ),
+                                "document.event_monitoring_direction.negative_events[1]": (
+                                    "Gross-margin downside threshold corrected."
+                                ),
+                            },
+                        }
+                    ],
+                    "evidence_refs": [],
+                    "delegations": [],
+                    "unknowns": [],
+                    "rationale": "Accepted revision.",
+                    "accepted_objection_ids": ["obj_1"],
+                    "objection_resolutions": [
+                        {
+                            "objection_id": "obj_1",
+                            "decision": "accepted",
+                            "resolution_note": "Patch revised.",
+                            "changed_paths": [
+                                "event_monitoring_direction.positive_events[0]",
+                                "event_monitoring_direction.negative_events[1]",
+                            ],
+                            "evidence_refs": [],
+                        }
+                    ],
+                },
+            }
+        ]
+    )
+
+    result = runner.run(task)
+
+    patch = result.payload["structured"]["proposed_patches"][0]
+    assert patch["operation"] == "update"
+    assert patch["after"] == {
+        "event_monitoring_direction": {
+            "positive_events": ["Q3 revenue threshold corrected."],
+            "negative_events": [None, "Gross-margin downside threshold corrected."],
+        }
+    }
+
+
 def test_react_preserves_objection_resolution_flat_partial_fields_as_after() -> None:
     base_task = agent_task()
     task = base_task.model_copy(

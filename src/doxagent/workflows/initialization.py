@@ -8140,6 +8140,12 @@ class BlackboardInitializationWorkflow:
     ) -> list[Any]:
         overlay_identities = [self._list_item_identity(item) for item in overlay]
         if not any(overlay_identities):
+            if len(overlay) < len(base):
+                merged_by_index = deepcopy(base)
+                for index, item in enumerate(overlay):
+                    if item is not None:
+                        merged_by_index[index] = deepcopy(item)
+                return merged_by_index
             return deepcopy(overlay)
         merged = deepcopy(base)
         index_by_identity = {
