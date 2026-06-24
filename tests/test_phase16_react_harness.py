@@ -1,6 +1,7 @@
 import asyncio
 import json
 import threading
+from datetime import date, timedelta
 from typing import Any
 
 from doxagent.agents import ModelGatewayAgentRunner
@@ -2491,7 +2492,7 @@ class HugeOhlcvToolClient(ToolClient):
     def call(self, request: ToolRequest) -> ToolResult:
         rows = [
             {
-                "datetime": f"2026-01-{(index % 28) + 1:02d}",
+                "datetime": (date(2026, 1, 1) + timedelta(days=index)).isoformat(),
                 "open": 100 + index,
                 "high": 101 + index,
                 "low": 99 + index,

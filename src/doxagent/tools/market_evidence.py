@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any
 
 JsonDict = dict[str, Any]
@@ -26,10 +27,10 @@ def build_daily_ohlcv_snapshot(
         return None
 
     symbol = str(output.get("symbol") or output.get("ticker") or "").upper()
-    close_points: list[tuple[int, float]] = []
+    close_points: list[tuple[tuple[int, int], int, float]] = []
     high_values: list[float] = []
     low_values: list[float] = []
-    volume_points: list[tuple[int, float]] = []
+    volume_points: list[tuple[tuple[int, int], int, float]] = []
     dates: list[str] = []
     missing_close_count = 0
 
@@ -39,11 +40,12 @@ def build_daily_ohlcv_snapshot(
         date = _string_value(row.get("datetime") or row.get("date") or row.get("time"))
         if date:
             dates.append(date)
+        sort_key = _row_sort_key(row, index)
         close = _number(row.get("close") or row.get("Close"))
         if close is None:
             missing_close_count += 1
         else:
-            close_points.append((index, close))
+            close_points.append((sort_key, index, close))
         high = _number(row.get("high") or row.get("High"))
         if high is not None:
             high_values.append(high)
@@ -52,7 +54,7 @@ def build_daily_ohlcv_snapshot(
             low_values.append(low)
         volume = _number(row.get("volume") or row.get("Volume"))
         if volume is not None:
-            volume_points.append((index, volume))
+            volume_points.append((sort_key, index, volume))
 
     if not close_points:
         return {
@@ -67,10 +69,10 @@ def build_daily_ohlcv_snapshot(
             "data_quality_flags": ["no_usable_close"],
         }
 
-    start_index, start_close = close_points[0]
-    end_index, end_close = close_points[-1]
-    latest_volume = volume_points[-1][1] if volume_points else None
-    average_volume = _average([item[1] for item in volume_points])
+    _, start_index, start_close = min(close_points, key=lambda item: item[0])
+    _, end_index, end_close = max(close_points, key=lambda item: item[0])
+    latest_volume = max(volume_points, key=lambda item: item[0])[2] if volume_points else None
+    average_volume = _average([item[2] for item in volume_points])
     snapshot: JsonDict = {
         "kind": DAILY_OHLCV_SNAPSHOT_KIND,
         "tool_name": tool_name,
@@ -175,6 +177,17 @@ def _row_date(rows: list[Any], index: int) -> str | None:
     if not isinstance(row, dict):
         return None
     return _string_value(row.get("datetime") or row.get("date") or row.get("time"))
+
+
+def _row_sort_key(row: dict[str, Any], index: int) -> tuple[int, int]:
+    raw_date = _string_value(row.get("datetime") or row.get("date") or row.get("time"))
+    if raw_date:
+        candidate = raw_date.strip().replace("Z", "+00:00")
+        try:
+            return (0, datetime.fromisoformat(candidate[:10]).date().toordinal())
+        except ValueError:
+            pass
+    return (1, index)
 
 
 def _string_value(value: Any) -> str | None:

@@ -1,6 +1,8 @@
 import threading
 import time
 
+import pytest
+
 from doxagent.agents import MockAgentRunner, default_agent_registry
 from doxagent.blackboard.state import BlackboardRun
 from doxagent.models import (
@@ -1083,7 +1085,7 @@ def test_price_reaction_promotion_requires_structured_market_snapshot() -> None:
             ExpectationUnitDocument.model_validate(normalized.after)
         )
     except WorkflowContractError as exc:
-        assert "deterministic placeholder text" in str(exc)
+        assert "unknown price_reaction" in str(exc)
     else:
         raise AssertionError("promotion accepted narrative-only price reaction")
 
@@ -1353,6 +1355,120 @@ def test_price_reaction_uses_run_market_snapshot_when_patch_refs_are_narrative()
     workflow._validate_expectation_promotion_quality(
         ExpectationUnitDocument.model_validate(normalized.after)
     )
+
+
+def test_price_reaction_corrects_reversed_market_snapshot_dates() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        runner=ParallelStructuredInitializationRunner(),
+        execution_mode="agent_runner",
+    )
+    factory = InitializationMockResultFactory()
+    market_evidence = factory._evidence(EvidenceSourceType.MARKET_DATA).model_copy(
+        update={
+            "source_id": "twelvedata:daily_ohlcv:MU",
+            "retrieval_metadata": {
+                "tool_name": "twelvedata.daily_ohlcv",
+                "market_evidence_snapshot": {
+                    "kind": "daily_ohlcv_snapshot",
+                    "symbol": "MU",
+                    "bar_count": 90,
+                    "start_date": "2026-06-23",
+                    "end_date": "2026-02-12",
+                    "start_close": 1051.77,
+                    "end_close": 413.97,
+                    "total_return_pct": -60.6426,
+                },
+            },
+        },
+        deep=True,
+    )
+    document = factory._expectation_unit("MU").model_copy(update={"ticker": "MU"}, deep=True)
+    fact = document.realized_facts[0]
+    reaction = fact.price_reaction.model_copy(
+        update={
+            "price_change": "Price reaction requires structured recalculation.",
+            "price_pattern": "Narrative-only market reaction retained.",
+            "interpretation": "Treat the market reaction as unresolved.",
+            "evidence_refs": [market_evidence],
+        },
+        deep=True,
+    )
+    document = document.model_copy(
+        update={
+            "realized_facts": [
+                fact.model_copy(
+                    update={
+                        "price_reaction": reaction,
+                        "evidence_refs": [market_evidence],
+                    },
+                    deep=True,
+                )
+            ]
+        },
+        deep=True,
+    )
+    patch = factory._document_patch(
+        document,
+        DocumentType.EXPECTATION_UNIT,
+        AgentName.O1_EXPECTATION_OWNER,
+        expectation_id=document.expectation_id,
+    ).model_copy(update={"evidence_refs": [market_evidence]}, deep=True)
+    run = workflow.blackboard.start_run("MU", AgentName.SYSTEM)
+    checkpoint = WorkflowCheckpoint(run_id=run.run_id, ticker="MU", pending_patches=[patch])
+
+    normalized = workflow._normalize_expectation_price_reaction_patch(checkpoint, patch)
+
+    normalized_reaction = normalized.after["realized_facts"][0]["price_reaction"]
+    assert "MU OHLCV snapshot from 2026-02-12 to 2026-06-23" in normalized_reaction[
+        "price_change"
+    ]
+    assert "close moved from 413.97 to 1051.77" in normalized_reaction["price_change"]
+    assert "total_return_pct=154.0691" in normalized_reaction["price_change"]
+    workflow._validate_expectation_promotion_quality(
+        ExpectationUnitDocument.model_validate(normalized.after)
+    )
+
+
+def test_numeric_sanity_template_fallbacks_are_unpromotable() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        runner=ParallelStructuredInitializationRunner(),
+        execution_mode="agent_runner",
+    )
+    factory = InitializationMockResultFactory()
+    narrative_evidence = factory._evidence(EvidenceSourceType.DOXATLAS_SOURCE)
+    document = factory._expectation_unit("NVDA")
+    fact = document.realized_facts[0].model_copy(
+        update={
+            "description": (
+                "Realized fact preserves the named business event while exact market "
+                "or fundamental levels were removed for attached evidence review."
+            )
+        },
+        deep=True,
+    )
+    variable = document.key_variables[0].model_copy(
+        update={
+            "name": "HBM4 supply validation",
+            "current_status": (
+                "HBM4 supply validation: monitor this named driver through attached "
+                "evidence."
+            ),
+            "evidence_refs": [narrative_evidence],
+        },
+        deep=True,
+    )
+    document = document.model_copy(
+        update={"realized_facts": [fact], "key_variables": [variable]},
+        deep=True,
+    )
+
+    with pytest.raises(WorkflowContractError, match="deterministic placeholder text"):
+        workflow._validate_expectation_promotion_quality(document)
+
+    fallback = workflow._variable_numeric_sanity_fallback(variable)
+    assert "HBM4 supply validation" in fallback
+    assert "Mock initialization evidence" in fallback
+    assert "monitor this named driver through attached evidence" not in fallback.lower()
 
 
 def test_numeric_value_detection_ignores_fiscal_years_and_product_generations() -> None:

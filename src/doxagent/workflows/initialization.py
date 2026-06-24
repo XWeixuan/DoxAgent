@@ -149,6 +149,9 @@ _UNPROMOTABLE_EXPECTATION_TEXT_MARKERS = (
     "field review found price benchmark",
     "field-review-flagged price/guidance precision",
     "price reaction requires structured",
+    "realized fact preserves the named business event",
+    "monitor this named driver through attached evidence",
+    "named realized facts remain tied to their cited events",
 )
 WorkflowExecutionMode = Literal["mock", "agent_runner"]
 
@@ -5395,6 +5398,7 @@ class BlackboardInitializationWorkflow:
             for item in snapshot.get("daily_ohlcv", []):
                 if not isinstance(item, dict):
                     continue
+                item = self._chronological_daily_ohlcv_snapshot(item)
                 symbol = str(item.get("symbol") or "").upper()
                 if symbol == target_symbol and target_snapshot is None:
                     target_snapshot = item
@@ -5443,6 +5447,57 @@ class BlackboardInitializationWorkflow:
             evidence_refs=structured_market_refs,
         )
 
+    def _chronological_daily_ohlcv_snapshot(
+        self,
+        item: dict[str, Any],
+    ) -> dict[str, Any]:
+        snapshot = dict(item)
+        start_ordinal = self._date_ordinal(snapshot.get("start_date"))
+        end_ordinal = self._date_ordinal(snapshot.get("end_date"))
+        if start_ordinal is None or end_ordinal is None or start_ordinal <= end_ordinal:
+            return snapshot
+
+        start_close = snapshot.get("start_close")
+        end_close = snapshot.get("end_close")
+        snapshot["start_date"], snapshot["end_date"] = (
+            snapshot.get("end_date"),
+            snapshot.get("start_date"),
+        )
+        snapshot["start_close"], snapshot["end_close"] = end_close, start_close
+        recomputed_return = self._market_return_pct(end_close, start_close)
+        if recomputed_return is not None:
+            snapshot["total_return_pct"] = recomputed_return
+        quality_flags = list(snapshot.get("data_quality_flags") or [])
+        if "chronology_corrected" not in quality_flags:
+            quality_flags.append("chronology_corrected")
+        snapshot["data_quality_flags"] = quality_flags
+        return snapshot
+
+    def _date_ordinal(self, value: Any) -> int | None:
+        text = str(value or "").strip()
+        if not text:
+            return None
+        try:
+            return datetime.fromisoformat(text.replace("Z", "+00:00")[:10]).date().toordinal()
+        except ValueError:
+            return None
+
+    def _market_return_pct(self, start: Any, end: Any) -> float | int | None:
+        start_number = self._number_or_none(start)
+        end_number = self._number_or_none(end)
+        if start_number is None or end_number is None or start_number == 0:
+            return None
+        rounded = round(((end_number - start_number) / start_number) * 100, 4)
+        return int(rounded) if rounded.is_integer() else rounded
+
+    def _number_or_none(self, value: Any) -> float | None:
+        if value is None or value == "":
+            return None
+        try:
+            return float(str(value).replace(",", ""))
+        except (TypeError, ValueError):
+            return None
+
     def _price_reaction_needs_escalation(self, reaction: PriceReaction) -> bool:
         text = " ".join(
             [
@@ -5457,6 +5512,10 @@ class BlackboardInitializationWorkflow:
                 "exact price reaction removed",
                 "rebuild the move from",
                 "directional market reaction retained",
+                "structured recalculation",
+                "price reaction requires structured",
+                "narrative-only market reaction retained",
+                "narrative-only price reaction cannot be promoted",
                 "market reaction requires target-ticker ohlcv reconstruction",
             )
         ):
@@ -8350,10 +8409,7 @@ class BlackboardInitializationWorkflow:
             if unsupported_market or unsupported_fundamental:
                 description = self._numeric_sanity_clean_text(
                     fact.description,
-                    fallback=(
-                        "Realized fact preserves the named business event while exact "
-                        "market or fundamental levels were removed for attached evidence review."
-                    ),
+                    fallback=self._realized_fact_numeric_sanity_fallback(fact),
                 )
                 fact = fact.model_copy(
                     update={
@@ -8490,7 +8546,25 @@ class BlackboardInitializationWorkflow:
         usable = [item for item in descriptions if item and not _is_generic_text(item)]
         if usable:
             return " / ".join(usable)
-        return "Named realized facts remain tied to their cited events."
+        event_ids = [str(fact.event_id).strip() for fact in realized_facts[:3]]
+        event_ids = [event_id for event_id in event_ids if event_id]
+        if event_ids:
+            return "Cited events requiring numeric revalidation: " + ", ".join(event_ids)
+        return "Realized facts require source-backed numeric revalidation."
+
+    def _realized_fact_numeric_sanity_fallback(self, fact: RealizedFact) -> str:
+        event_id = str(fact.event_id).strip()
+        evidence_titles = [
+            str(ref.title).strip()
+            for ref in fact.evidence_refs[:2]
+            if str(ref.title).strip()
+        ]
+        if evidence_titles:
+            return (
+                f"{event_id}: cited event requires numeric revalidation; "
+                f"primary evidence: {', '.join(evidence_titles)}."
+            )
+        return f"{event_id}: cited event requires numeric revalidation before downstream use."
 
     def _market_view_numeric_sanity_fallback(
         self,
@@ -8520,9 +8594,25 @@ class BlackboardInitializationWorkflow:
 
     def _variable_numeric_sanity_fallback(self, variable: VariableStatus) -> str:
         name = str(variable.name).strip()
+        evidence_titles = [
+            str(ref.title).strip()
+            for ref in variable.evidence_refs[:2]
+            if str(ref.title).strip()
+        ]
+        evidence_note = (
+            f"; primary evidence: {', '.join(evidence_titles)}"
+            if evidence_titles
+            else ""
+        )
         if name:
-            return f"{name}: monitor this named driver through attached evidence."
-        return "Monitor this named driver through attached evidence."
+            return (
+                f"{name}: current status is inconclusive after numeric cleanup"
+                f"{evidence_note}; monitor for directional confirmation."
+            )
+        return (
+            "Current status is inconclusive after numeric cleanup"
+            f"{evidence_note}; monitor for directional confirmation."
+        )
 
     def _sanitize_numeric_sanity_monitoring(
         self,
@@ -8677,6 +8767,11 @@ class BlackboardInitializationWorkflow:
                 "Track this catalyst by the named business signal while disputed "
                 "price/guidance thresholds are rebuilt."
             ),
+            (
+                "Realized fact preserves the named business event while exact market or "
+                "fundamental levels were removed for attached evidence review."
+            ),
+            "Monitor this named driver through attached evidence.",
         )
         for phrase in phrases:
             text = re.sub(re.escape(phrase), "", text, flags=re.IGNORECASE)

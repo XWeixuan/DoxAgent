@@ -10,6 +10,7 @@ from doxagent.agents import default_agent_registry
 from doxagent.models import AgentName, AgentPermissions, ResultStatus
 from doxagent.settings import DoxAgentSettings
 from doxagent.tools import ToolRequest, default_real_tool_registry
+from doxagent.tools.market_evidence import daily_ohlcv_output_with_snapshot
 from doxagent.tools.providers.alpha_vantage import AlphaVantageClient
 from doxagent.tools.providers.anysearch import AnySearchSearchClient
 from doxagent.tools.providers.base import TTLCache
@@ -152,7 +153,9 @@ def test_tool_registry_permission_denial_still_applies_to_real_tools() -> None:
 def test_sec_company_facts_returns_partial_when_upstream_unavailable() -> None:
     client = SecCompanyFactsAndFilingsClient(_settings(), client=_json_client({}, status_code=404))
 
-    result = client.call(_request("sec.company_facts_and_filings", {"ticker": "MU", "cik": "723312"}))
+    result = client.call(
+        _request("sec.company_facts_and_filings", {"ticker": "MU", "cik": "723312"})
+    )
 
     assert result.status is ResultStatus.PARTIAL
     assert result.error is None
@@ -583,6 +586,41 @@ def test_twelvedata_daily_ohlcv_accepts_ticker_alias_for_symbol() -> None:
         == "WDC"
     )
     assert "symbol=WDC" in str(requests[0].url)
+
+
+def test_daily_ohlcv_snapshot_orders_reverse_chronological_rows() -> None:
+    output = daily_ohlcv_output_with_snapshot(
+        {
+            "symbol": "MU",
+            "provider": "twelvedata",
+            "interval": "1day",
+            "ohlcv": [
+                {
+                    "datetime": "2026-06-23",
+                    "close": "1051.77",
+                    "high": "1060.00",
+                    "low": "1040.00",
+                    "volume": "30049200",
+                },
+                {
+                    "datetime": "2026-03-02",
+                    "close": "412.67",
+                    "high": "420.00",
+                    "low": "400.00",
+                    "volume": "49046839",
+                },
+            ],
+        },
+        tool_name="twelvedata.daily_ohlcv",
+    )
+
+    snapshot = output["market_evidence_snapshot"]
+    assert snapshot["start_date"] == "2026-03-02"
+    assert snapshot["end_date"] == "2026-06-23"
+    assert snapshot["start_close"] == 412.67
+    assert snapshot["end_close"] == 1051.77
+    assert snapshot["total_return_pct"] == 154.8695
+    assert snapshot["latest_volume"] == 30049200
 
 
 def test_yfinance_daily_ohlcv_accepts_ticker_alias_for_symbol(monkeypatch) -> None:

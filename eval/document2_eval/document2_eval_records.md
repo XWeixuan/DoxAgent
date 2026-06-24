@@ -3879,3 +3879,134 @@ Every failed or partial hard gate must be classified before writing the modifica
   - Verified broader regression with `uv run pytest tests/test_phase5_initialization_workflow.py tests/test_phase16_react_harness.py tests/test_workflow_normalizer.py -q` (`104 passed`).
   - Verified lint with `uv run ruff check src\doxagent\workflows\initialization.py tests\test_phase5_initialization_workflow.py`.
 - Next smoke test: required after commit/push/deploy because the quality target remains unmet.
+## Loop 1 Retest28 - promotion succeeded but strict rubrics exposed price-window and fallback quality residuals
+
+### Run Metadata
+- Date: 2026-06-24.
+- Source run: `run_58f5afce8b9441ca804a2cde1ad9aec8` (Document 1-only source, unchanged).
+- Execution run: `run_b5c08fdb466e4c85ae6217f6e014d855`.
+- Deployed commit for this run: `11d826a`.
+- Remote cwd: `/root/doxagent`.
+- Remote log: `.eval_runs/document2-loop1-retest28-20260624T133733+0800.log`.
+- Log-reported Brief State export path: `eval/brief_state_exports/run_b5c08fdb466e4c85ae6217f6e014d855.json`.
+- Cloud command: `docker compose -f docker-compose.yml run --rm -e DOXAGENT_RUN_REAL_API_TESTS=1 -e DOXAGENT_STORAGE_MODE=postgres debug-viewer python eval/run_document2_expectation_units_smoke.py run_58f5afce8b9441ca804a2cde1ad9aec8 --mode clone --stop-after PromoteExpectationToBeliefState --export-brief-state`.
+- Polling discipline: no Codex automation; current-thread 15-minute sleep/check cadence was used during this run. After this loop, no next smoke test is launched per user instruction.
+- LangSmith MCP notes: Retest28 ReviewExpectationFields traces are visible. C1/C3 had transient provider `Arrearage` retries and C3 reported Tavily quota errors, but the workflow continued through resolver and promotion.
+
+### Status
+- Result: `promoted_with_quality_residuals`.
+- Latest smoke log status: `status=running`, `next_node=GenerateGlobalNarrativeReport`; this is expected for the Document2 stop-after run because `PromoteExpectationToBeliefState` was completed and the full workflow was intentionally not continued.
+- Completed nodes: `StartTickerInitialization`, `BuildGlobalResearch`, `ReviewGlobalResearch`, `GenerateExpectationConstruction`, `ReviewExpectationConstruction`, `ResolveExpectationConstruction`, `GenerateExpectationDetails`, `ReviewExpectationFields`, `ResolveObjectionsAndDelegations`, `PromoteExpectationToBeliefState`.
+- Stable document types: `global_research`, `expectation_unit`.
+- Stable expectation_unit count: 2.
+- Pending patch count: 0.
+- Working Memory count: 14.
+- Commit count: 3.
+- Open objections after resolver: 0.
+- Blocking delegations: 0.
+- Terminal error: none.
+- Improvement vs Retest27:
+  - The direct promotion blocker was removed.
+  - Retest27 fallback markers (`market thesis preserved while exact`, `thesis direction preserved`, `current status preserved while exact numeric levels`) no longer block promotion.
+  - Two stable expectation units are now written to belief state.
+- Remaining strict-quality residuals:
+  - Stable price reactions include reversed OHLCV windows, for example `MU OHLCV snapshot from 2026-06-23 to 2026-03-02` with a misleading negative total return.
+  - Stable fields still include sanitizer fallback text, including `Realized fact preserves the named business event...` and `monitor this named driver through attached evidence`.
+  - Some key variables have empty `why_it_matters`, `certainty=unknown`, and only generic monitoring implications.
+
+### Built-in Hard Validators
+| Validator | Result | Evidence | Notes |
+| --- | --- | --- | --- |
+| evidence_reference_integrity | pass | `checked_items=51`, `finding_count=0`. | Stable expectation units have structurally hydrated refs. |
+| langsmith_trajectory_tool_boundary | pass | `checked_items=48`, `finding_count=0`. | Trace boundary accepts the Document2 stop-after promotion path. |
+| commit_log_state_mutation_consistency | pass | `checked_items=12`, `finding_count=0`. | Commit log and belief-state mutation are consistent. |
+
+### Hard Gate Root Cause Matrix
+| Gate | Result | failure_kind | Evidence / root cause |
+| --- | --- | --- | --- |
+| D2-HG01 | pass | none | Source remains the required Document 1-only run with stable `global_research` only. |
+| D2-HG02 | pass | none | Execution reached the requested stop-after node `PromoteExpectationToBeliefState`. |
+| D2-HG03 | pass | none | Construction produced differentiated bullish/bearish MU expectation shells. |
+| D2-HG04 | pass | none | Detail patches had required fields and were promoted. |
+| D2-HG05 | pass | none | Built-in evidence validator passed across stable refs. |
+| D2-HG06 | pass_with_quality_residual | quality_residual | Price-in fields exist but include a reversed OHLCV period and generic fallback text. |
+| D2-HG07 | pass | none | Field-review lifecycle completed and produced resolver-visible objections. |
+| D2-HG08 | pass | none | Resolver closed objections and left no blocking delegations. |
+| D2-HG09 | pass | none | Two stable `expectation_unit` documents were written; pending patches are zero. |
+| D2-HG10 | pass | none | LangSmith/DB/log evidence is sufficient for this stop-after run. |
+| D2-HG11 | pass_with_caveat | tool_caveat | Provider quota/arrearage retries are visible but did not become silent success. |
+| D2-HG12 | pass_with_quality_residual | context_quality | Context length no longer blocks, but fallback text still weakens content value. |
+| D2-HG13 | pass_with_quality_residual | memory_continuity | Retest26/27 fixes persisted, but old snapshot chronology and generic fallback residues survived. |
+
+### Rubrics
+| Rubric | Score | Reason |
+| --- | ---: | --- |
+| D2-R01 | 4 | Source handoff is correct and Document 1-only discipline is preserved. |
+| D2-R02 | 4 | The two stable units are directionally differentiated (`bullish` AI/HBM vs `bearish` priced-in/cyclical risk), but the second thesis remains verbose and uneven. |
+| D2-R03 | 3 | Realized facts exist and have refs, but one stable fact still uses generic sanitizer fallback text. |
+| D2-R04 | 2 | Price-in reasoning is materially weakened by reversed OHLCV windows (`2026-06-23` to `2026-03-02`) and misleading return direction. |
+| D2-R05 | 3 | Key variables exist and are tied to the theses, but at least one `current_status` contains `monitor this named driver through attached evidence`; `why_it_matters` is often empty. |
+| D2-R06 | 3 | Event monitoring lists are non-empty and mostly specific, but some event text remains broad and generated from fallback cleanup. |
+| D2-R07 | 3 | Evidence refs are structurally traceable, but several claims still rely on coarse DoxAtlas/narrative refs plus quota-limited tool traces. |
+| D2-R08 | 4 | Review pressure is real and auditable; C1/C3/O4 loops exposed tool failures and numeric sanity issues instead of silently passing. |
+| D2-R09 | 4 | Resolver handled objections and promotion consumed the revisions without leaving blockers. |
+| D2-R10 | 4 | Promotion readiness is structurally achieved with two stable units and zero pending patches, but content quality prevents a 5. |
+| D2-R11 | 3 | Tool use is visible and mostly bounded, but provider arrearage/quota failures cap confidence. |
+| D2-R12 | 2 | Uncertainty handling is not clean enough: generic fallback text and reversed market windows can turn weak evidence into misleading stable content. |
+| D2-R13 | 4 | DB, remote log, hard validators, and LangSmith evidence allow reproduction and comparison. |
+| D2-R14 | 5 | The next optimization target is concrete, testable, and does not require weakening rubrics. |
+
+### Score Summary
+- Core Blackboard quality rubrics average (`D2-R01`-`D2-R10`): 3.4.
+- Other rubrics with score <= 2: `D2-R12`.
+- Built-in hard validators all pass: yes.
+- Quality target met: no.
+- Optimization accepted as complete for this loop: yes, because targeted modifications were made and locally verified; not accepted as quality-complete until a future cloud retest proves the fixes.
+
+### Failure Categories
+- category: `price_in_reasoning.market_window_chronology`
+  - issue: Structured OHLCV snapshots can be consumed in provider row order rather than chronological order.
+  - evidence: stable price reactions say `from 2026-06-23 to 2026-03-02`, reversing the intended analysis period and total return direction.
+  - severity: high; this directly lowers D2-R04 and D2-R12.
+  - suspected root cause: `build_daily_ohlcv_snapshot()` used the first and last returned rows as start/end without sorting dated rows, and promotion-time synthesis did not defensively correct already-reversed snapshots.
+- category: `detail_contract.generic_sanitizer_fallback`
+  - issue: Numeric cleanup fallback strings reached stable documents.
+  - evidence: `Realized fact preserves the named business event...` and `monitor this named driver through attached evidence` appear in stable expectation units.
+  - severity: high; hard validators pass, but downstream monitoring would consume generic non-evidence text.
+  - suspected root cause: fallback builders emitted process-language placeholders and promotion-quality markers did not include these exact phrases.
+- category: `tool_trajectory.provider_quota_caveat`
+  - issue: LangSmith shows provider `Arrearage` retry and Tavily quota failure during review loops.
+  - severity: medium process caveat; not the direct quality blocker, but it limits evidence breadth.
+- category: `optimization_readiness.quality_not_target_met`
+  - issue: Retest28 proves structural promotion but not the requested rubric target.
+  - evidence: core average 3.4, D2-R04=2, D2-R12=2.
+
+### Optimization Hypothesis
+- If `build_daily_ohlcv_snapshot()` sorts dated OHLCV rows chronologically before computing start/end close and total return, then future market evidence snapshots will not invert price windows when a provider returns newest-first rows.
+- If promotion-time price-reaction synthesis defensively corrects already-reversed daily OHLCV snapshot metadata, then old or externally supplied snapshots cannot leak misleading `from later to earlier` price reactions into stable Document2.
+- If the newly observed sanitizer fallback phrases are added to `_UNPROMOTABLE_EXPECTATION_TEXT_MARKERS`, then hard-validator-passing promotion cannot hide generic process-language fields.
+- If realized-fact and variable fallbacks are rebuilt from `event_id`, variable name, and evidence titles, then numeric cleanup preserves audit anchors without inventing unsupported precise values.
+- Expected next verification: a future cloud Retest29 should show correctly ordered OHLCV windows, no `Realized fact preserves...` or `monitor this named driver...` fallback phrases, all three hard validators passing, and D2-R04/D2-R12 improving above 2.
+
+### Proposed Modification Plan
+- Change 1: Update `src/doxagent/tools/market_evidence.py` so daily OHLCV snapshots choose chronological start/end rows using row dates, not provider row order.
+- Change 2: Update `src/doxagent/workflows/initialization.py` so `_price_reaction_from_market_snapshot()` corrects reversed daily OHLCV snapshots at promotion time and recomputes `total_return_pct`.
+- Change 3: Extend price-reaction escalation markers to include `structured recalculation`, `price reaction requires structured`, and narrative-only market-reaction fallback text.
+- Change 4: Add `Realized fact preserves...`, `monitor this named driver through attached evidence`, and `Named realized facts remain tied...` to unpromotable expectation markers.
+- Change 5: Replace realized-fact and variable numeric fallback builders so they use event ids, variable names, and evidence titles rather than process-language placeholders.
+- Change 6: Add focused regression tests for reverse-chronological OHLCV rows, reversed snapshot correction during promotion, and unpromotable template fallback phrases.
+- Change 7: Keep hard validators and rubrics strict; do not change scoring criteria to make Retest28 look successful.
+
+### Actual Modification
+- Implemented after this evaluation:
+  - `src/doxagent/tools/market_evidence.py`: daily OHLCV snapshot construction now sorts by parsed row date when available; `latest_volume` also follows the latest dated row.
+  - `src/doxagent/workflows/initialization.py`: promotion-time price-reaction synthesis now normalizes reversed OHLCV snapshots, swaps start/end date and close, recomputes total return, and marks `chronology_corrected`.
+  - `src/doxagent/workflows/initialization.py`: added Retest28 fallback phrases to `_UNPROMOTABLE_EXPECTATION_TEXT_MARKERS` and `_strip_numeric_sanity_placeholder_text()`.
+  - `src/doxagent/workflows/initialization.py`: replaced generic realized-fact and variable fallback text with event-id / variable-name / evidence-title anchored uncertainty text.
+  - `tests/test_phase11_real_tools.py`: added reverse-chronological OHLCV snapshot regression.
+  - `tests/test_phase5_initialization_workflow.py`: added promotion-time reversed snapshot correction and fallback-marker rejection regressions.
+  - `tests/test_phase16_react_harness.py`: adjusted large OHLCV compaction fixture to use monotonic dates so it still validates snapshot preservation under chronological sorting.
+  - Verified focused regression: `5 passed` for the new/adjacent Document2 snapshot and fallback tests.
+  - Verified broader related regression: `uv run pytest tests/test_phase5_initialization_workflow.py tests/test_phase11_real_tools.py tests/test_phase16_react_harness.py tests/test_workflow_normalizer.py -q` -> `135 passed`.
+  - Verified lint: `uv run ruff check src/doxagent/workflows/initialization.py src/doxagent/tools/market_evidence.py tests/test_phase5_initialization_workflow.py tests/test_phase11_real_tools.py tests/test_phase16_react_harness.py` -> `All checks passed!`.
+- Next smoke test: intentionally not launched, per user instruction to stop after completing this eval loop and modifications.
