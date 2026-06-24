@@ -2106,6 +2106,10 @@ def test_numeric_sanity_revision_fallback_removes_unsupported_false_precision() 
         "structured market-trace verification is still required",
         "qualitative thesis retained",
         "precise market or fundamental values require source-appropriate evidence",
+        "market thesis preserved while exact",
+        "thesis direction preserved; precise numeric claims were removed",
+        "current status preserved while exact numeric levels",
+        "numeric monitoring threshold requires source evidence",
     ):
         assert marker not in combined.lower()
     try:

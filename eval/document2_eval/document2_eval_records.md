@@ -3755,3 +3755,127 @@ Every failed or partial hard gate must be classified before writing the modifica
   - Verified broader regression with `uv run pytest tests/test_phase5_initialization_workflow.py tests/test_phase16_react_harness.py tests/test_workflow_normalizer.py -q` (`104 passed`).
   - Verified lint with `uv run ruff check src\doxagent\workflows\initialization.py tests\test_phase5_initialization_workflow.py`.
 - Next smoke test: required after commit/push/deploy because the quality target remains unmet.
+
+## Loop 1 Retest27 - promotion gate exposed market-view and variable fallback placeholders
+
+### Run Metadata
+- Date: 2026-06-24.
+- Source run: `run_58f5afce8b9441ca804a2cde1ad9aec8` (Document 1-only source, unchanged).
+- Execution run: `run_6ead356084bc413585e802fa2e54274d`.
+- Deployed commit for this run: `56384f8`.
+- Remote cwd: `/root/doxagent`.
+- Remote log: `.eval_runs/document2-loop1-retest27-20260624T124338+0800.log`.
+- Log-reported Brief State export path: `eval/brief_state_exports/run_6ead356084bc413585e802fa2e54274d.json`.
+- Actual export-file status: not verified as present through filesystem; Brief State was rebuilt through the debug-viewer read-only API.
+- Cloud command: `docker compose -f docker-compose.yml run --rm -e DOXAGENT_RUN_REAL_API_TESTS=1 -e DOXAGENT_STORAGE_MODE=postgres debug-viewer python eval/run_document2_expectation_units_smoke.py run_58f5afce8b9441ca804a2cde1ad9aec8 --mode clone --stop-after PromoteExpectationToBeliefState --export-brief-state`.
+- Polling discipline: no Codex automation; current-thread `Start-Sleep -Seconds 900` checks plus concise LangSmith MCP review.
+- LangSmith MCP notes: construction/detail/field-review traces were visible. O1 and C3 calls had transient provider `Arrearage` retries; C3 also reported Tavily errors, but workflow still reached resolver and then promotion-quality blocking.
+
+### Status
+- Result: `blocked`.
+- Latest checkpoint: `status=blocked`, `next_node=PromoteExpectationToBeliefState`.
+- Completed nodes: `StartTickerInitialization`, `BuildGlobalResearch`, `ReviewGlobalResearch`, `GenerateExpectationConstruction`, `ReviewExpectationConstruction`, `ResolveExpectationConstruction`, `GenerateExpectationDetails`, `ReviewExpectationFields`, `ResolveObjectionsAndDelegations`.
+- Stable document types: `global_research` only.
+- Stable expectation_unit count: 0.
+- Pending patch count: 3.
+- Working Memory count: 17.
+- Commit count: 1.
+- Open objections after resolver: 0.
+- Blocking delegations: 0.
+- Terminal error: `PromoteExpectationToBeliefState expectation_unit contains deterministic placeholder text: document.market_view.text contains 'market thesis preserved while exact', document.market_view.summary contains 'thesis direction preserved; precise numeric claims were removed', document.key_variables[3].current_status contains 'current status preserved while exact numeric levels'`.
+- Improvement vs Retest26:
+  - Retest26's monitoring placeholders (`track the named catalyst`, `source-backed threshold`) no longer appear as the direct blocker.
+  - Resolver again completed with `unresolved_objection_count=0`.
+  - The quality gate exposed the next fallback layer: market-view and key-variable sanitizer fallbacks.
+- Remaining direct blocker:
+  - `_numeric_sanity_clean_text()` fallback strings for market view and variables were intentionally caught as unpromotable placeholders.
+  - These strings describe the cleanup process instead of creating usable market-view or variable-status content.
+
+### Built-in Hard Validators
+| Validator | Result | Evidence | Notes |
+| --- | --- | --- | --- |
+| evidence_reference_integrity | pass | `checked_items=14`, `finding_count=0`. | Structural refs remain locatable for reached artifacts. |
+| langsmith_trajectory_tool_boundary | fail | `checked_items=53`; finding `workflow_trace_not_completed` at `latest_checkpoint.status=blocked`, `next_node=PromoteExpectationToBeliefState`. | Correctly fails because promotion was blocked. |
+| commit_log_state_mutation_consistency | pass | `checked_items=4`, `finding_count=0`. | Stable state remains only `global_research`. |
+
+### Hard Gate Failure Root Cause Matrix
+| Gate | Result | failure_kind | Failure point | Root cause / fix target |
+| --- | --- | --- | --- | --- |
+| D2-HG01 | pass | none | Source handoff | Source remains the required Document 1-only run. |
+| D2-HG02 | fail | direct | Stop-after path | The workflow reached but did not complete promotion. |
+| D2-HG03 | pass | none | Construction/detail/review lifecycle | Construction, detail generation, field review, and resolver completed. |
+| D2-HG04 | pass_with_caveat | partial_state | Detail patches | Three pending expectation patches exist, but no stable expectation units. |
+| D2-HG05 | pass_with_caveat | evidence_scope | Evidence refs | Built-in structural evidence validator passed; stable content quality still failed. |
+| D2-HG06 | fail | quality_residual | Market view / variables | Market-view and variable fields still contain deterministic fallback placeholders. |
+| D2-HG07 | pass | none | Field review lifecycle | Review pressure completed and led to resolver action. |
+| D2-HG08 | pass | none | Resolver lifecycle | Resolver completed with `unresolved_objection_count=0`. |
+| D2-HG09 | fail | direct | Promotion lifecycle | Stable expectation_unit count stayed 0. |
+| D2-HG10 | fail | direct | Trace/process closure | Built-in trajectory validator failed because the run is blocked. |
+| D2-HG11 | pass_with_caveat | traceability_gap | Failure auditability | Remote log, Brief State API, hard validators, and LangSmith traces reproduce the issue; export file is still a caveat. |
+| D2-HG12 | fail | context_contract | Deterministic cleanup contract | Sanitizer fallback still surfaced implementation/process language instead of investable field content. |
+| D2-HG13 | pass_with_caveat | memory_continuity | Multi-loop fixes | Retest26 monitoring-placeholder fix held; deeper fallback placeholders are now exposed. |
+
+### Rubrics
+| Rubric | Score | Reason |
+| --- | ---: | --- |
+| D2-R01 | 4 | Source discipline remains correct and auditable. |
+| D2-R02 | 3 | Three differentiated pending expectation patches exist, but none is stable. |
+| D2-R03 | 3 | Realized facts are no longer the direct structural blocker, but final quality is unproven. |
+| D2-R04 | 3 | Price-reaction handling is not the direct blocker, but promotion did not complete. |
+| D2-R05 | 2 | Key-variable quality is now a direct blocker due fallback text in `current_status`. |
+| D2-R06 | 3 | Monitoring placeholder leakage improved compared with Retest26. |
+| D2-R07 | 3 | Structural evidence refs pass, but fallback text still weakens reviewability. |
+| D2-R08 | 4 | Review pressure and resolver lifecycle continue to surface real blockers. |
+| D2-R09 | 4 | Resolver completed and closed objections. |
+| D2-R10 | 1 | Promotion readiness failed with zero stable expectation units. |
+| D2-R11 | 3 | Process reached promotion with visible provider/tool caveats; final trace remains incomplete. |
+| D2-R12 | 2 | Numeric/uncertainty handling still emits fallback implementation language. |
+| D2-R13 | 3 | DB/log/LangSmith evidence supports root-cause analysis; export remains a caveat. |
+| D2-R14 | 5 | Optimization target is narrow and testable: replace market-view/variable generic fallbacks with content rebuilt from names, variables, and monitoring triggers. |
+
+### Score Summary
+- Core Blackboard quality rubrics average (`D2-R01`-`D2-R10`): 3.0.
+- Other rubrics with score <= 2: `D2-R12`.
+- Built-in hard validators all pass: no.
+- Quality target met: no.
+- Operational improvement accepted: partial. The run moved past monitoring placeholders and now exposes market/variable fallback placeholders.
+
+### Failure Categories
+- category: `market_view_fallback_placeholder`
+  - issue: `market_view.text` and `market_view.summary` contain fallback strings beginning with `market thesis preserved while exact` / `thesis direction preserved`.
+  - evidence: promotion gate error and pending patch samples for all three expectation patches.
+  - severity: direct promotion-quality failure.
+  - suspected root cause: market-view numeric sanitizer fallback describes cleanup state rather than reconstructing a usable qualitative thesis.
+- category: `variable_status_fallback_placeholder`
+  - issue: key variable `current_status` contains `current status preserved while exact numeric levels...`.
+  - evidence: promotion gate error names `document.key_variables[3].current_status`.
+  - severity: direct promotion-quality failure.
+  - suspected root cause: variable sanitizer fallback is generic and not tied to the variable name or monitoring evidence.
+- category: `provider_tool_caveats`
+  - issue: LangSmith shows repeated provider `Arrearage` retries and C3 Tavily tool errors.
+  - severity: process caveat, not this round's direct blocker.
+- category: `brief_state_export_missing_or_unverified`
+  - issue: log reports an export path, but file presence was not verified; debug-viewer API was used.
+
+### Optimization Hypothesis
+- If market-view fallback text is reconstructed from expectation name, key-variable names, and cleaned monitoring triggers, then unsupported numeric precision can be removed without producing implementation-language placeholders.
+- If variable fallback text uses the variable name as the monitoring subject, then `current_status` remains specific enough for downstream review even when exact numbers are removed.
+- If realized-facts summary fallback is rebuilt from cleaned realized-fact descriptions, then future fallback cases will avoid generic `preserve named business events` placeholders.
+- Expected next verification: Retest28 should no longer fail on `market thesis preserved while exact`, `thesis direction preserved`, or `current status preserved while exact numeric levels`; if it fails, the next blocker should be content-specific rather than sanitizer fallback language.
+
+### Proposed Modification Plan
+- Change 1: Replace market-view numeric fallback strings with `_market_view_numeric_sanity_fallback()` built from `expectation_name`, key-variable names, and monitoring triggers.
+- Change 2: Replace variable fallback strings with `_variable_numeric_sanity_fallback()` using the variable name as the driver anchor.
+- Change 3: Replace realized-facts summary fallback with `_realized_facts_summary_numeric_sanity_fallback()` built from cleaned fact descriptions.
+- Change 4: Add/extend tests to assert the Retest27 fallback markers never remain in sanitized output.
+- Change 5: Keep promotion-quality validators strict and do not whitelist those fallback strings.
+
+### Actual Modification
+- Implemented after this evaluation:
+  - Updated `src/doxagent/workflows/initialization.py` with `_market_view_numeric_sanity_fallback()`, `_variable_numeric_sanity_fallback()`, and `_realized_facts_summary_numeric_sanity_fallback()`.
+  - Added `_is_generic_text()` so fallback builders avoid reusing unpromotable marker strings.
+  - Extended `test_numeric_sanity_revision_fallback_removes_unsupported_false_precision` to reject `market thesis preserved while exact`, `thesis direction preserved; precise numeric claims were removed`, `current status preserved while exact numeric levels`, and numeric-monitoring fallback markers.
+  - Verified focused tests with `uv run pytest tests/test_phase5_initialization_workflow.py::test_numeric_sanity_revision_fallback_removes_unsupported_false_precision tests/test_phase5_initialization_workflow.py::test_numeric_sanity_monitoring_cleanup_removes_placeholder_triggers -q`.
+  - Verified broader regression with `uv run pytest tests/test_phase5_initialization_workflow.py tests/test_phase16_react_harness.py tests/test_workflow_normalizer.py -q` (`104 passed`).
+  - Verified lint with `uv run ruff check src\doxagent\workflows\initialization.py tests\test_phase5_initialization_workflow.py`.
+- Next smoke test: required after commit/push/deploy because the quality target remains unmet.

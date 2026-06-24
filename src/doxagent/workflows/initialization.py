@@ -8390,9 +8390,8 @@ class BlackboardInitializationWorkflow:
         if self._contains_numeric_value(summary):
             summary = self._numeric_sanity_clean_text(
                 summary,
-                fallback=(
-                    "Realized facts preserve named business events while exact market "
-                    "or fundamental levels are checked against attached evidence."
+                fallback=self._realized_facts_summary_numeric_sanity_fallback(
+                    realized_facts
                 ),
             )
         document = document.model_copy(
@@ -8440,17 +8439,11 @@ class BlackboardInitializationWorkflow:
             return market_view, False
         next_text = self._numeric_sanity_clean_text(
             market_view.text,
-            fallback=(
-                f"{document.expectation_name}: market thesis preserved while exact "
-                "market or fundamental levels were checked against attached evidence."
-            ),
+            fallback=self._market_view_numeric_sanity_fallback(document),
         )
         next_summary = self._numeric_sanity_clean_text(
             market_view.summary,
-            fallback=(
-                f"{document.expectation_name}: thesis direction preserved; precise "
-                "numeric claims were removed pending attached evidence review."
-            ),
+            fallback=self._market_view_numeric_sanity_fallback(document, summary=True),
         )
         return (
             market_view.model_copy(
@@ -8475,16 +8468,61 @@ class BlackboardInitializationWorkflow:
                 continue
             current_status = self._numeric_sanity_clean_text(
                 variable.current_status,
-                fallback=(
-                    f"{variable.name}: current status preserved while exact numeric "
-                    "levels are checked against attached evidence."
-                ),
+                fallback=self._variable_numeric_sanity_fallback(variable),
             )
             variables.append(
                 variable.model_copy(update={"current_status": current_status}, deep=True)
             )
             changed = True
         return variables, changed
+
+    def _realized_facts_summary_numeric_sanity_fallback(
+        self,
+        realized_facts: list[RealizedFact],
+    ) -> str:
+        descriptions = [
+            self._numeric_sanity_clean_text(
+                fact.description,
+                fallback=fact.event_id,
+            )
+            for fact in realized_facts[:3]
+        ]
+        usable = [item for item in descriptions if item and not _is_generic_text(item)]
+        if usable:
+            return " / ".join(usable)
+        return "Named realized facts remain tied to their cited events."
+
+    def _market_view_numeric_sanity_fallback(
+        self,
+        document: ExpectationUnitDocument,
+        *,
+        summary: bool = False,
+    ) -> str:
+        drivers = [
+            str(variable.name).strip()
+            for variable in document.key_variables
+            if str(variable.name).strip()
+        ][:4]
+        monitoring = [
+            event
+            for event in [
+                *document.event_monitoring_direction.positive_events,
+                *document.event_monitoring_direction.negative_events,
+            ]
+            if event.strip() and not _is_generic_monitoring_trigger(event)
+        ][:2]
+        pieces = [document.expectation_name]
+        if drivers:
+            pieces.append("drivers: " + ", ".join(drivers))
+        if monitoring and not summary:
+            pieces.append("monitor: " + "; ".join(monitoring))
+        return "; ".join(piece for piece in pieces if piece)
+
+    def _variable_numeric_sanity_fallback(self, variable: VariableStatus) -> str:
+        name = str(variable.name).strip()
+        if name:
+            return f"{name}: monitor this named driver through attached evidence."
+        return "Monitor this named driver through attached evidence."
 
     def _sanitize_numeric_sanity_monitoring(
         self,
@@ -9009,6 +9047,13 @@ def _expectation_placeholder_findings(value: Any, *, path: str = "document") -> 
                 findings.append(f"{path} contains '{marker}'")
                 break
     return findings
+
+
+def _is_generic_text(value: str) -> bool:
+    normalized = " ".join(str(value).lower().split())
+    return not normalized or any(
+        marker in normalized for marker in _UNPROMOTABLE_EXPECTATION_TEXT_MARKERS
+    )
 
 
 def _is_generic_monitoring_trigger(value: str) -> bool:
