@@ -2091,9 +2091,10 @@ def test_numeric_sanity_revision_fallback_removes_unsupported_false_precision() 
         "Customer cancellations pressure HBM orders"
         in sanitized.after["event_monitoring_direction"]["negative_events"]
     )
-    assert "source-backed level" in combined
+    assert "source-backed level" not in combined.lower()
+    assert "source-backed threshold" not in combined.lower()
+    assert "track the named catalyst or risk" not in combined.lower()
     assert "该已兑现事实仅保留为定性证据" not in combined
-    assert "source-backed level" in sanitized.after["market_view"]["text"]
     assert "structured recalculation" not in combined
     for marker in (
         "monitor this event qualitatively",
@@ -2118,6 +2119,51 @@ def test_numeric_sanity_revision_fallback_removes_unsupported_false_precision() 
     assert "Numeric sanity fallback removed unsupported precise numeric claims" in (
         sanitized.rationale
     )
+
+
+def test_numeric_sanity_monitoring_cleanup_removes_placeholder_triggers() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        runner=ParallelStructuredInitializationRunner(),
+        execution_mode="agent_runner",
+    )
+    factory = InitializationMockResultFactory()
+    document = factory._expectation_unit("NVDA")
+    monitoring = document.event_monitoring_direction.model_copy(
+        update={
+            "positive_events": [
+                "Q3 FY26 HBM capacity exceeds source-backed threshold",
+                (
+                    "Track this catalyst by the named business signal while disputed "
+                    "price/guidance thresholds are rebuilt."
+                ),
+            ],
+            "negative_events": [
+                "Revenue falls 30% and market cap drops 50%.",
+            ],
+            "known_event_notice": (
+                "Track the named catalyst or risk after rebuilding its threshold from "
+                "company or market data."
+            ),
+        },
+        deep=True,
+    )
+
+    cleaned, changed = workflow._sanitize_numeric_sanity_monitoring(monitoring)
+
+    assert changed is True
+    combined = " ".join(
+        [
+            cleaned.known_event_notice,
+            *cleaned.positive_events,
+            *cleaned.negative_events,
+        ]
+    ).lower()
+    assert "q3 fy26 hbm capacity exceeds" in cleaned.known_event_notice.lower()
+    assert "revenue falls and market cap drops" in combined
+    assert "source-backed threshold" not in combined
+    assert "track the named catalyst or risk" not in combined
+    assert "track this catalyst by the named business signal" not in combined
+    assert "numeric monitoring threshold requires source evidence" not in combined
 
 
 def test_o1_partial_revision_merges_into_pending_expectation_document() -> None:

@@ -3623,3 +3623,135 @@ Every failed or partial hard gate must be classified before writing the modifica
   - Verified broader regression with `uv run pytest tests/test_phase5_initialization_workflow.py tests/test_phase16_react_harness.py tests/test_workflow_normalizer.py -q` (`103 passed`).
   - Verified lint with `uv run ruff check src\doxagent\workflows\initialization.py tests\test_phase5_initialization_workflow.py`.
 - Next smoke test: not launched, per user instruction to stop after this complete eval/optimization/modification loop.
+
+## Loop 1 Retest26 - promotion gate blocked deterministic monitoring placeholders
+
+### Run Metadata
+- Date: 2026-06-24.
+- Source run: `run_58f5afce8b9441ca804a2cde1ad9aec8` (Document 1-only source, unchanged).
+- Execution run: `run_27065ef199814b03acb5691a6173e006`.
+- Deployed commit for this run: `1c5c1ca`.
+- Remote cwd: `/root/doxagent`.
+- Remote log: `.eval_runs/document2-loop1-retest26-20260624T114557+0800.log`.
+- Log-reported Brief State export path: `eval/brief_state_exports/run_27065ef199814b03acb5691a6173e006.json`.
+- Actual export-file status: missing on remote filesystem at evaluation time; Brief State was rebuilt through the debug-viewer read-only API.
+- Cloud command: `docker compose -f docker-compose.yml run --rm -e DOXAGENT_RUN_REAL_API_TESTS=1 -e DOXAGENT_STORAGE_MODE=postgres debug-viewer python eval/run_document2_expectation_units_smoke.py run_58f5afce8b9441ca804a2cde1ad9aec8 --mode clone --stop-after PromoteExpectationToBeliefState --export-brief-state`.
+- Polling discipline: no Codex automation; status was checked with current-thread `Start-Sleep -Seconds 900` intervals plus concise LangSmith MCP checks.
+- LangSmith MCP notes: construction/detail/field-review traces were visible. Several calls hit transient provider `Arrearage` errors and then retried successfully, including O1 construction/detail and C1 field review. No unresolved-objection runtime error was observed after resolver completion.
+
+### Status
+- Result: `blocked`.
+- Latest checkpoint: `status=blocked`, `next_node=PromoteExpectationToBeliefState`.
+- Completed nodes: `StartTickerInitialization`, `BuildGlobalResearch`, `ReviewGlobalResearch`, `GenerateExpectationConstruction`, `ReviewExpectationConstruction`, `ResolveExpectationConstruction`, `GenerateExpectationDetails`, `ReviewExpectationFields`, `ResolveObjectionsAndDelegations`.
+- Stable document types: `global_research` only.
+- Stable expectation_unit count: 0.
+- Pending patch count: 2.
+- Working Memory count: 15.
+- Commit count: 1.
+- Open objections after resolver: 0.
+- Blocking delegations: 0.
+- Terminal error: `PromoteExpectationToBeliefState expectation_unit contains deterministic placeholder text: document.event_monitoring_direction.known_event_notice contains 'track the named catalyst or risk'`.
+- Improvement vs Retest25:
+  - The indexed `realized_facts` wrapper failure is gone.
+  - Resolver completed and closed all objections (`unresolved_objection_count=0`).
+  - The next failure moved to promotion quality, where deterministic placeholder text was correctly blocked before stable belief-state write.
+- Remaining direct blocker:
+  - Numeric-sanity deterministic cleanup still generated or preserved monitoring placeholders such as `Track the named catalyst or risk...`, `Track this catalyst by the named business signal...`, and `source-backed threshold` / `source-backed level` strings.
+  - These phrases are not useful downstream monitoring content and should not become stable Document 2 output.
+
+### Built-in Hard Validators
+| Validator | Result | Evidence | Notes |
+| --- | --- | --- | --- |
+| evidence_reference_integrity | pass | `checked_items=15`, `finding_count=0`. | Structural refs remain locatable for reached artifacts. |
+| langsmith_trajectory_tool_boundary | fail | `checked_items=53`; finding `workflow_trace_not_completed` at `latest_checkpoint.status=blocked`, `next_node=PromoteExpectationToBeliefState`. | Correctly fails because promotion was blocked by the quality gate. |
+| commit_log_state_mutation_consistency | pass | `checked_items=4`, `finding_count=0`. | Stable state remains only `global_research`. |
+
+### Hard Gate Failure Root Cause Matrix
+| Gate | Result | failure_kind | Failure point | Root cause / fix target |
+| --- | --- | --- | --- | --- |
+| D2-HG01 | pass | none | Source handoff | Source remains the required Document 1-only run. |
+| D2-HG02 | fail | direct | Stop-after path | The workflow reached the promotion node but did not complete promotion. |
+| D2-HG03 | pass | none | Construction/detail/review lifecycle | Construction, detail generation, field review, and resolver all completed. |
+| D2-HG04 | pass_with_caveat | partial_state | Detail patches | Two pending expectation patches exist, but no stable expectation units. |
+| D2-HG05 | pass_with_caveat | evidence_scope | Evidence refs | Built-in structural evidence validator passed; promotion quality is still not acceptable. |
+| D2-HG06 | fail | quality_residual | Monitoring/numeric cleanup | Event monitoring and summaries still contain deterministic placeholder text. |
+| D2-HG07 | pass | none | Field review lifecycle | A1/C1/C3/O4 review completed and produced pressure that resolver handled. |
+| D2-HG08 | pass | none | Resolver lifecycle | Resolver completed with `unresolved_objection_count=0`. |
+| D2-HG09 | fail | direct | Promotion lifecycle | Stable expectation_unit count stayed 0 because promotion quality gate blocked. |
+| D2-HG10 | fail | direct | Trace/process closure | Built-in trajectory validator failed because the workflow is not completed. |
+| D2-HG11 | pass_with_caveat | traceability_gap | Failure auditability | Remote log, Brief State API, hard validators, and LangSmith traces reproduce the failure; export file is missing. |
+| D2-HG12 | fail | context_contract | Deterministic cleanup contract | Context/numeric cleanup converted unsupported precision into generic placeholders rather than evidence-reviewable monitoring content. |
+| D2-HG13 | pass_with_caveat | memory_continuity | Multi-loop fixes | Retest24/25 structural fixes survived into this run; no indexed path/list merge regression appeared, but final stable output is still absent. |
+
+### Rubrics
+| Rubric | Score | Reason |
+| --- | ---: | --- |
+| D2-R01 | 4 | Source discipline remains correct and auditable. |
+| D2-R02 | 3 | Two expectation patches remain differentiated, but neither becomes stable output. |
+| D2-R03 | 3 | Realized facts progressed past schema blockers, but stable facts are unproven because promotion failed. |
+| D2-R04 | 3 | Price-reaction handling is safer than earlier placeholder promotion, but the final result is still blocked. |
+| D2-R05 | 3 | Variables exist, but numeric cleanup quality remains insufficient for stable use. |
+| D2-R06 | 2 | Event monitoring is the direct blocker: placeholders such as `source-backed threshold` and `track the named catalyst` are not actionable monitoring content. |
+| D2-R07 | 3 | Evidence references are structurally valid, while evidence-sufficiency wording still leaks into user-facing fields. |
+| D2-R08 | 4 | Field review pressure is useful and led to resolver action instead of silent promotion. |
+| D2-R09 | 4 | Resolver lifecycle improved materially: objections were closed and patches survived schema validation. |
+| D2-R10 | 1 | Promotion readiness failed with zero stable expectation units. |
+| D2-R11 | 3 | Process advanced deep into promotion, with visible provider retries; completion still failed. |
+| D2-R12 | 2 | Uncertainty/numeric handling still produces generic placeholder language instead of clean, auditable residual uncertainty. |
+| D2-R13 | 3 | DB/log/LangSmith evidence is enough to root-cause the failure, but missing export JSON remains a reproducibility caveat. |
+| D2-R14 | 5 | Optimization target is narrow and testable: remove deterministic source-backed/track placeholders from numeric cleanup and monitoring lists. |
+
+### Score Summary
+- Core Blackboard quality rubrics average (`D2-R01`-`D2-R10`): 3.0.
+- Other rubrics with score <= 2: `D2-R12`.
+- Built-in hard validators all pass: no.
+- Quality target met: no.
+- Operational improvement accepted: yes as a structural improvement over Retest25; not accepted as quality-complete output because promotion still blocked.
+
+### Failure Categories
+- category: `promotion_quality_placeholder_block`
+  - issue: Promotion-quality gate rejected deterministic placeholder text in `event_monitoring_direction.known_event_notice`.
+  - evidence: terminal error names `track the named catalyst or risk`; pending patch sample shows that phrase in expectation `expectation_mu_01`.
+  - severity: direct hard-gate failure.
+  - suspected root cause: `_numeric_sanity_clean_monitoring_event()` used fallback text that describes a missing threshold instead of producing concrete monitoring content.
+- category: `source_backed_placeholder_leakage`
+  - issue: Numeric cleanup replaced unsupported precision with `source-backed threshold` / `source-backed level`, which is not evidence and not actionable.
+  - evidence: pending patch samples contain many `source-backed threshold` fragments across positive/negative events and realized-facts summary.
+  - severity: high quality residual.
+  - suspected root cause: `_strip_unsupported_numeric_precision()` default replacement was a placeholder token rather than deletion plus text cleanup.
+- category: `generic_monitoring_trigger_retained`
+  - issue: Event lists can retain generic `Track this catalyst...` entries even when other concrete monitoring events exist.
+  - severity: monitoring-readiness blocker.
+  - suspected root cause: monitoring list cleanup mapped each string independently and did not filter placeholder entries from the list.
+- category: `brief_state_export_missing`
+  - issue: smoke log reported an export path, but no JSON file existed under `eval/brief_state_exports` for the Retest26 run id.
+  - severity: traceability caveat.
+
+### Optimization Hypothesis
+- If numeric cleanup deletes unsupported precision rather than replacing it with `source-backed level/threshold`, then stable candidates will preserve concrete event semantics without leaking placeholder tokens.
+- If `known_event_notice` is rebuilt from cleaned positive/negative events whenever the original notice is generic, then monitoring context remains specific and reviewable.
+- If generic placeholder monitoring events are filtered from positive/negative event lists when concrete siblings exist, then event monitoring can remain actionable without relaxing promotion validators.
+- If `source-backed level`, `source-backed threshold`, and related fallback phrases are added to the unpromotable marker set, any remaining leakage will be caught before stable belief-state write.
+- Expected next verification: Retest27 should no longer fail on `track the named catalyst or risk` or `source-backed threshold`; if it still fails, the blocker should be a substantive quality issue rather than deterministic cleanup placeholder leakage.
+
+### Proposed Modification Plan
+- Change 1: Add `source-backed level`, `source-backed threshold`, `source-backed value`, and numeric-monitoring fallback phrases to `_UNPROMOTABLE_EXPECTATION_TEXT_MARKERS`.
+- Change 2: Change `_numeric_sanity_clean_text()` / `_strip_unsupported_numeric_precision()` default behavior from placeholder replacement to deletion plus polishing.
+- Change 3: Add `_strip_numeric_sanity_placeholder_text()` to remove placeholder phrases already produced by O1 or prior deterministic cleanup.
+- Change 4: Rebuild generic `known_event_notice` from cleaned concrete positive/negative monitoring events.
+- Change 5: Filter generic placeholder items out of monitoring event lists when concrete cleaned events are available.
+- Change 6: Keep strict promotion quality validation unchanged; do not whitelist placeholder strings.
+- Change 7: Add regression coverage for Retest26's monitoring placeholder shape.
+
+### Actual Modification
+- Implemented after this evaluation:
+  - Updated `src/doxagent/workflows/initialization.py` so numeric cleanup removes unsupported precision instead of inserting `source-backed level/threshold` placeholders.
+  - Added placeholder stripping for existing `source-backed level/threshold/value`, `Track the named catalyst...`, and `Track this catalyst...` strings.
+  - Added cleaned-event filtering and `known_event_notice` reconstruction from concrete monitoring events.
+  - Extended the unpromotable marker set so any remaining source-backed placeholder leakage blocks promotion.
+  - Added `test_numeric_sanity_monitoring_cleanup_removes_placeholder_triggers` in `tests/test_phase5_initialization_workflow.py`.
+  - Updated the numeric-sanity regression so `source-backed level/threshold` must not remain in sanitized output.
+  - Verified focused tests with `uv run pytest tests/test_phase5_initialization_workflow.py::test_numeric_sanity_revision_fallback_removes_unsupported_false_precision tests/test_phase5_initialization_workflow.py::test_numeric_sanity_monitoring_cleanup_removes_placeholder_triggers tests/test_phase5_initialization_workflow.py::test_promotion_rejects_numeric_sanity_placeholder_text tests/test_phase5_initialization_workflow.py::test_partial_revision_merges_realized_fact_index_after_wrappers -q`.
+  - Verified broader regression with `uv run pytest tests/test_phase5_initialization_workflow.py tests/test_phase16_react_harness.py tests/test_workflow_normalizer.py -q` (`104 passed`).
+  - Verified lint with `uv run ruff check src\doxagent\workflows\initialization.py tests\test_phase5_initialization_workflow.py`.
+- Next smoke test: required after commit/push/deploy because the quality target remains unmet.

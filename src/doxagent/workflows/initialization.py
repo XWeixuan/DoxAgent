@@ -139,6 +139,13 @@ _UNPROMOTABLE_EXPECTATION_TEXT_MARKERS = (
     "realized facts retain event direction",
     "directional status retained",
     "track the named catalyst or risk",
+    "source-backed level",
+    "source-backed threshold",
+    "source-backed value",
+    "numeric monitoring threshold requires source evidence",
+    "market thesis preserved while exact",
+    "thesis direction preserved; precise numeric claims were removed",
+    "current status preserved while exact numeric levels",
     "field review found price benchmark",
     "field-review-flagged price/guidance precision",
     "price reaction requires structured",
@@ -8323,12 +8330,6 @@ class BlackboardInitializationWorkflow:
                     "Exact price reaction removed; rebuild it from OHLCV or market-data "
                     "evidence before using it as priced-in support."
                 )
-                price_change = self._numeric_sanity_clean_text(
-                    reaction.price_change,
-                    fallback=withheld_price_change,
-                )
-                if "source-backed level" in price_change:
-                    price_change = withheld_price_change
                 price_pattern = self._numeric_sanity_clean_text(
                     reaction.price_pattern,
                     fallback="Market reaction pattern requires OHLCV verification.",
@@ -8341,7 +8342,7 @@ class BlackboardInitializationWorkflow:
                     ),
                 )
                 reaction = PriceReaction(
-                    price_change=price_change,
+                    price_change=withheld_price_change,
                     price_pattern=price_pattern,
                     interpretation=interpretation,
                     evidence_refs=refs or reaction.evidence_refs,
@@ -8489,17 +8490,20 @@ class BlackboardInitializationWorkflow:
         self,
         monitoring: EventMonitoringDirection,
     ) -> tuple[EventMonitoringDirection, bool]:
-        positive_events = [
-            self._numeric_sanity_clean_monitoring_event(item)
-            for item in monitoring.positive_events
-        ]
-        negative_events = [
-            self._numeric_sanity_clean_monitoring_event(item)
-            for item in monitoring.negative_events
-        ]
+        positive_events = self._clean_numeric_sanity_monitoring_events(
+            monitoring.positive_events
+        )
+        negative_events = self._clean_numeric_sanity_monitoring_events(
+            monitoring.negative_events
+        )
         known_event_notice = self._numeric_sanity_clean_monitoring_event(
             monitoring.known_event_notice
         )
+        if _is_generic_monitoring_trigger(known_event_notice):
+            known_event_notice = self._known_event_notice_from_monitoring_events(
+                positive_events,
+                negative_events,
+            )
         changed = (
             positive_events != list(monitoring.positive_events)
             or negative_events != list(monitoring.negative_events)
@@ -8518,6 +8522,29 @@ class BlackboardInitializationWorkflow:
             ),
             True,
         )
+
+    def _clean_numeric_sanity_monitoring_events(self, values: list[str]) -> list[str]:
+        cleaned = [self._numeric_sanity_clean_monitoring_event(item) for item in values]
+        filtered = [item for item in cleaned if not _is_generic_monitoring_trigger(item)]
+        if filtered:
+            return filtered
+        return cleaned or [
+            "Numeric monitoring threshold requires source evidence before promotion."
+        ]
+
+    def _known_event_notice_from_monitoring_events(
+        self,
+        positive_events: list[str],
+        negative_events: list[str],
+    ) -> str:
+        candidates = [
+            event
+            for event in [*positive_events, *negative_events]
+            if event.strip() and not _is_generic_monitoring_trigger(event)
+        ]
+        if not candidates:
+            return "Numeric monitoring threshold requires source evidence before promotion."
+        return "Monitor " + "; ".join(candidates[:3])
 
     def _has_unsupported_numeric_claim(
         self,
@@ -8539,21 +8566,17 @@ class BlackboardInitializationWorkflow:
         )
 
     def _numeric_sanity_clean_monitoring_event(self, value: str) -> str:
-        if not self._contains_numeric_value(value):
-            return value
+        cleaned_value = self._strip_numeric_sanity_placeholder_text(value)
+        if not self._contains_numeric_value(cleaned_value):
+            if cleaned_value and not _is_generic_monitoring_trigger(cleaned_value):
+                return cleaned_value
+            return "Numeric monitoring threshold requires source evidence before promotion."
         cleaned = self._numeric_sanity_clean_text(
-            value,
-            fallback=(
-                "Track the named catalyst or risk after rebuilding its threshold from "
-                "company or market data."
-            ),
-            replacement="source-backed threshold",
+            cleaned_value,
+            fallback="Numeric monitoring threshold requires source evidence before promotion.",
         )
         if _is_generic_monitoring_trigger(cleaned):
-            return (
-                "Track the named catalyst or risk after rebuilding its threshold from "
-                "company or market data."
-            )
+            return "Numeric monitoring threshold requires source evidence before promotion."
         return cleaned
 
     def _numeric_sanity_clean_text(
@@ -8561,10 +8584,11 @@ class BlackboardInitializationWorkflow:
         value: str,
         *,
         fallback: str,
-        replacement: str = "source-backed level",
+        replacement: str = "",
     ) -> str:
+        stripped = self._strip_numeric_sanity_placeholder_text(value)
         cleaned = self._polish_numeric_sanity_text(
-            self._strip_unsupported_numeric_precision(value, replacement=replacement)
+            self._strip_unsupported_numeric_precision(stripped, replacement=replacement)
         )
         if cleaned == str(value).strip():
             return fallback
@@ -8580,7 +8604,7 @@ class BlackboardInitializationWorkflow:
         self,
         value: str,
         *,
-        replacement: str = "source-backed level",
+        replacement: str = "",
     ) -> str:
         precision_pattern = (
             r"(?:\$[-+]?\d[\d,.]*(?:\s*-\s*\$?[-+]?\d[\d,.]*)?(?:\+)?\s*"
@@ -8601,9 +8625,38 @@ class BlackboardInitializationWorkflow:
             flags=re.IGNORECASE,
         )
 
+    def _strip_numeric_sanity_placeholder_text(self, value: str) -> str:
+        text = str(value)
+        phrases = (
+            "source-backed threshold",
+            "source-backed level",
+            "source-backed value",
+            (
+                "Track the named catalyst or risk after rebuilding its threshold from "
+                "company or market data."
+            ),
+            (
+                "Track this catalyst by the named business signal while disputed "
+                "price/guidance thresholds are rebuilt."
+            ),
+        )
+        for phrase in phrases:
+            text = re.sub(re.escape(phrase), "", text, flags=re.IGNORECASE)
+        return self._polish_numeric_sanity_text(text)
+
     def _polish_numeric_sanity_text(self, value: str) -> str:
         text = re.sub(r"\s+", " ", str(value)).strip()
         text = re.sub(r"\s+([,.;:!?])", r"\1", text)
+        text = re.sub(r"\s*/\s*/+\s*", "/", text)
+        text = re.sub(r"\(\s*\)", "", text)
+        text = re.sub(
+            r"\b(above|below|reaches|reached|falls|drops|rises)\s*([,.;]|$)",
+            r"\1\2",
+            text,
+        )
+        text = text.replace(" ased ", " based ")
+        text = text.replace("ased only", "based only")
+        text = text.replace("rillion", "")
         text = text.replace("source-verified valueased", "source-verified value based")
         text = text.replace("source-verified valueare", "source-verified value are")
         text = text.replace("source-verified valueYTD", "source-verified value, YTD")
