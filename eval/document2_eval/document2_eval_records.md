@@ -3248,3 +3248,128 @@ Every failed or partial hard gate must be classified before writing the modifica
   - Verified targeted tests with `uv run pytest tests/test_phase5_initialization_workflow.py -k "price_reaction_promotion or numeric_value_detection or numeric_sanity or deterministic_objection_normalization or deterministic_field_review" -q`.
   - Verified broader regression with `uv run pytest tests/test_phase5_initialization_workflow.py tests/test_phase16_react_harness.py tests/test_workflow_normalizer.py`.
 - Next smoke test: required after commit/push/deploy because the quality target remains unmet.
+
+## Loop 1 Retest23 - stricter promotion gate blocked placeholders but missed run-level OHLCV evidence
+
+### Run Metadata
+- Date: 2026-06-24.
+- Source run: `run_58f5afce8b9441ca804a2cde1ad9aec8` (Document 1-only source, unchanged).
+- Execution run: `run_46f0ba67663c4b9fa4154eca91b41898`.
+- Deployed commit: `416e203`.
+- Remote cwd: `/root/doxagent`.
+- Remote log: `.eval_runs/document2-loop1-retest23-20260624T091534+0800.log`.
+- Log-reported Brief State export path: `eval/brief_state_exports/run_46f0ba67663c4b9fa4154eca91b41898.json`.
+- Actual export-file status: missing on remote filesystem at evaluation time; Brief State was rebuilt through the debug-viewer read-only API.
+- Cloud command: `docker compose -f docker-compose.yml run --rm -e DOXAGENT_RUN_REAL_API_TESTS=1 -e DOXAGENT_STORAGE_MODE=postgres debug-viewer python eval/run_document2_expectation_units_smoke.py run_58f5afce8b9441ca804a2cde1ad9aec8 --mode clone --stop-after PromoteExpectationToBeliefState --export-brief-state`.
+- Polling discipline: no Codex automation or heartbeat automation; status checks used in-thread `Start-Sleep -Seconds 900`.
+
+### Status
+- Result: `blocked`.
+- Latest checkpoint: `status=blocked`, `next_node=PromoteExpectationToBeliefState`.
+- Completed nodes: `StartTickerInitialization`, `BuildGlobalResearch`, `ReviewGlobalResearch`, `GenerateExpectationConstruction`, `ReviewExpectationConstruction`, `ResolveExpectationConstruction`, `GenerateExpectationDetails`, `ReviewExpectationFields`, `ResolveObjectionsAndDelegations`.
+- Stable document types: `global_research` only.
+- Stable expectation_unit count: 0.
+- Pending patch count: 2.
+- Working Memory count: 14.
+- Commit count: 1.
+- Open objections: 0.
+- Blocking delegations: 0.
+- Terminal error: `PromoteExpectationToBeliefState expectation_unit contains deterministic placeholder text: ... price_reaction.price_change contains 'price reaction requires structured'`.
+- Improvement vs Retest22:
+  - Retest22's low-quality placeholder content no longer entered stable expectation units.
+  - The stricter promotion quality gate blocked exactly the unsafe fallback text it was designed to catch.
+- Remaining direct blocker:
+  - Promotion normalization could not synthesize OHLCV-backed price reactions because `_price_reaction_support_refs()` only looked at patch refs, market_view refs, and `global_research.market_trace_report.evidence_refs`.
+  - The run-level evidence store did contain structured `market_data` snapshots for `MU`, `SOXX`, and `QQQ`, but those refs were not included in price-reaction support refs.
+
+### Built-in Hard Validators
+| Validator | Result | Evidence | Notes |
+| --- | --- | --- | --- |
+| evidence_reference_integrity | pass | `checked_items=10`, `finding_count=0`. | Structural evidence refs remain locatable for reached artifacts. |
+| langsmith_trajectory_tool_boundary | fail | `checked_items=51`; finding `workflow_trace_not_completed` at `latest_checkpoint.status=blocked`, `next_node=PromoteExpectationToBeliefState`. | Correctly fails because promotion did not close. |
+| commit_log_state_mutation_consistency | pass | `checked_items=4`, `finding_count=0`. | Stable state remains only `global_research`. |
+
+### Hard Gate Failure Root Cause Matrix
+| Gate | Result | failure_kind | Failure point | Root cause / fix target |
+| --- | --- | --- | --- | --- |
+| D2-HG01 | pass | none | Source handoff | Source remains the required Document 1-only run `run_58f5afce8b9441ca804a2cde1ad9aec8`. |
+| D2-HG02 | fail | direct | Stop-after path | `PromoteExpectationToBeliefState` was entered but blocked before completion. |
+| D2-HG03 | pass | none | Construction/detail/review lifecycle | Construction, details, field review, and resolver completed. |
+| D2-HG04 | pass_with_caveat | partial_state | Detail patches | Two pending expectation patches have fields and facts, but they are not stable. |
+| D2-HG05 | pass_with_caveat | support_ref_gap | Evidence refs | Run-level market-data refs exist, but promotion normalization did not use them for price reactions. |
+| D2-HG06 | fail | quality_residual | Price-in reasoning | Multiple realized facts still have placeholder price reactions and no OHLCV-backed synthesized baseline. |
+| D2-HG07 | pass | none | Field review lifecycle | Review pressure ran and generated/closed objections before promotion. |
+| D2-HG08 | pass | none | Resolver lifecycle | No unresolved objections remained; the terminal block is promotion-quality validation. |
+| D2-HG09 | fail | direct | Promotion lifecycle | Stable expectation_unit count stayed 0 because the stricter gate rejected placeholders. |
+| D2-HG10 | fail | direct | Trace/process closure | Built-in trajectory validator failed because the checkpoint is blocked. |
+| D2-HG11 | pass_with_caveat | traceability_gap | Failure auditability | Remote log, debug-viewer Brief State, hard validators, and pending patch inspection reproduce the failure; export file is missing. |
+| D2-HG12 | pass_with_caveat | context_value | Context/evidence routing | Context is sufficient to reach promotion, but support-ref routing lost already available OHLCV evidence. |
+| D2-HG13 | pass_with_caveat | memory_continuity_partial | Multi-loop continuity | Retest22 fix successfully changed the failure mode from bad stable state to blocked promotion, but market-evidence continuity into promotion remains partial. |
+
+### Rubrics
+| Rubric | Score | Reason |
+| --- | ---: | --- |
+| D2-R01 | 4 | Source discipline remains correct and Document2 starts from the required Document1-only run. |
+| D2-R02 | 3 | Two expectations are present and thesis-oriented, but neither reaches stable state. |
+| D2-R03 | 2 | Realized facts are not acceptable because price-reaction fields remain placeholder-backed at the promotion boundary. |
+| D2-R04 | 1 | Price-in logic fails: `price reaction requires structured` placeholders block promotion. |
+| D2-R05 | 3 | Key variables exist, but the final expectation docs are not stable and price/fundamental support remains uneven. |
+| D2-R06 | 3 | Event monitoring content exists, but cannot be accepted while price-reaction baselines are missing. |
+| D2-R07 | 3 | Evidence store contains relevant OHLCV market data, but evidence routing into price-reaction normalization is incomplete. |
+| D2-R08 | 4 | Field-review pressure is still useful; it prevented silent acceptance and forced price benchmark cleanup. |
+| D2-R09 | 4 | Resolver lifecycle is structurally healthy: objections closed and the remaining failure is a deterministic promotion gate. |
+| D2-R10 | 2 | Promotion readiness is not met because no expectation units were promoted. |
+| D2-R11 | 3 | Process reaches promotion, but trace completion fails due the intended quality block. |
+| D2-R12 | 3 | Uncertainty handling improved by blocking placeholders instead of promoting them, but it still fails to convert available evidence into usable uncertainty/price baselines. |
+| D2-R13 | 3 | DB/API/log evidence is enough to reconstruct the issue; missing export file remains a reproducibility caveat. |
+| D2-R14 | 5 | The optimization target is narrow and testable: include run-level structured market evidence in price-reaction support refs. |
+
+### Score Summary
+- Core Blackboard quality rubrics average (`D2-R01`-`D2-R10`): 2.9.
+- Other rubrics with score <= 2: none.
+- Built-in hard validators all pass: no.
+- Quality target met: no.
+- Operational improvement accepted: yes as a safety improvement. The system now blocks unsafe placeholder promotion, but further evidence-routing optimization is required.
+
+### Failure Categories
+- category: `promotion_gate_successful_block`
+  - issue: The Retest22 fix prevented deterministic placeholders from becoming stable expectation units.
+  - evidence: terminal error lists placeholder `price_reaction.price_change` paths and stable expectation_unit count remains 0.
+  - severity: expected quality block, not a regression.
+  - suspected root cause: stricter marker gate is functioning as intended.
+- category: `run_level_market_evidence_not_routed_to_promotion`
+  - issue: Structured `market_data` OHLCV snapshots for `MU`, `SOXX`, and `QQQ` exist in run-level evidence refs, but `_price_reaction_support_refs()` did not include them.
+  - evidence: debug-viewer `evidence_refs` includes `twelvedata:daily_ohlcv:MU`, `SOXX`, and `QQQ` with `market_evidence_snapshot=true`; pending patch price-reaction refs are narrative-only DoxAtlas refs.
+  - severity: direct D2-HG06/D2-HG09 blocker.
+  - suspected root cause: price-reaction normalization only consumed local patch/document refs plus `global_research.market_trace_report.evidence_refs`.
+- category: `brief_state_export_missing`
+  - issue: smoke log reported an export path, but no JSON file existed under `eval/brief_state_exports` for the Retest23 run id.
+  - evidence: remote `ls`/`wc` returned no file; debug-viewer API was used instead.
+  - severity: traceability caveat.
+  - suspected root cause: smoke/export path handling still reports intended path even when blocked promotion exits without writing the file.
+
+### Optimization Hypothesis
+- If promotion price-reaction support refs include run-level structured market evidence from Working Memory, commit patches, and objection resolution refs, then existing OHLCV snapshots can be used to synthesize a target-ticker price-reaction baseline.
+- If this support-ref expansion is limited to `MARKET_DATA` refs whose `market_evidence_snapshot` mentions the target ticker or standard benchmarks (`SOXX`, `QQQ`), then the fix improves evidence continuity without flooding price reactions with unrelated peer data.
+- The promotion gate should remain strict: if no matching target-ticker snapshot exists, placeholders should still block stable promotion.
+- Expected measurable effect in the next verification, when explicitly launched later:
+  - Retest23's error `price reaction requires structured` should be replaced by concrete `MU OHLCV snapshot...total_return_pct=...` price reactions if the run-level snapshots are present.
+  - D2-HG06 and D2-HG09 should improve; if other quality defects remain, the new blocker should be more specific than generic placeholder text.
+
+### Proposed Modification Plan
+- Change 1: Extend `_price_reaction_support_refs()` to include a new helper that scans the current Blackboard run's Working Memory, Commit Log, and Objection refs for structured market evidence.
+- Change 2: Filter that run-level evidence to `MARKET_DATA` refs with `market_evidence_snapshot` symbols in `{target ticker, SOXX, QQQ}`.
+- Change 3: Keep `_validate_expectation_promotion_quality()` unchanged, so placeholders still fail if no usable target OHLCV exists.
+- Change 4: Add a regression test that reproduces Retest23: narrative-only patch refs plus run-level MU OHLCV Working Memory evidence must synthesize an OHLCV-backed price reaction.
+- Change 5: Do not launch the next cloud smoke after this modification, per user instruction; stop and report the result.
+
+### Actual Modification
+- Implemented after this evaluation:
+  - Updated `src/doxagent/workflows/initialization.py` so `_price_reaction_support_refs()` supplements patch/document/global refs with run-level structured market evidence.
+  - Added `_run_structured_market_evidence_refs()` to collect refs from Working Memory, Commit Log, and Objection resolution refs.
+  - Added `_market_snapshot_mentions_symbol()` to keep only target ticker, `SOXX`, and `QQQ` snapshots.
+  - Added `test_price_reaction_uses_run_market_snapshot_when_patch_refs_are_narrative` in `tests/test_phase5_initialization_workflow.py`.
+  - Verified focused price-reaction tests with `uv run pytest tests/test_phase5_initialization_workflow.py::test_price_reaction_uses_run_market_snapshot_when_patch_refs_are_narrative tests/test_phase5_initialization_workflow.py::test_price_reaction_placeholder_rebuilds_from_structured_market_snapshot tests/test_phase5_initialization_workflow.py::test_price_reaction_promotion_requires_structured_market_snapshot -q`.
+  - Verified broader regression with `uv run pytest tests/test_phase5_initialization_workflow.py tests/test_phase16_react_harness.py tests/test_workflow_normalizer.py`.
+  - Verified lint with `uv run ruff check src\doxagent\workflows\initialization.py tests\test_phase5_initialization_workflow.py`.
+- Next smoke test: not launched, per user instruction to stop after this complete eval/optimization/modification loop.

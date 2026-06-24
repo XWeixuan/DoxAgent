@@ -5306,9 +5306,57 @@ class BlackboardInitializationWorkflow:
         global_research = self._stable_global_research_document(checkpoint)
         if global_research is not None:
             refs.extend(global_research.market_trace_report.evidence_refs)
+        refs.extend(self._run_structured_market_evidence_refs(checkpoint, document.ticker))
         return self._dedupe_evidence_refs(
             self._normalize_evidence_ref_language(ref) for ref in refs
         )
+
+    def _run_structured_market_evidence_refs(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        ticker: str,
+    ) -> list[EvidenceRef]:
+        try:
+            run = self.blackboard.get_run(checkpoint.run_id)
+        except RunNotFoundError:
+            return []
+        refs: list[EvidenceRef] = []
+        for entry in run.working_memory:
+            refs.extend(entry.evidence_refs)
+            refs.extend(self._payload_evidence_refs(entry.payload))
+        for commit in run.commit_log:
+            refs.extend(commit.patch.evidence_refs)
+            refs.extend(self._payload_evidence_refs(commit.patch.after))
+        for objection in run.objections:
+            refs.extend(objection.evidence_refs)
+            refs.extend(objection.resolution_evidence_refs)
+        symbols = {ticker.upper(), "SOXX", "QQQ"}
+        return self._dedupe_evidence_refs(
+            self._normalize_evidence_ref_language(ref)
+            for ref in refs
+            if ref.source_type is EvidenceSourceType.MARKET_DATA
+            and self._market_snapshot_mentions_symbol(
+                ref.retrieval_metadata.get("market_evidence_snapshot"),
+                symbols,
+            )
+        )
+
+    def _market_snapshot_mentions_symbol(
+        self,
+        snapshot: Any,
+        symbols: set[str],
+    ) -> bool:
+        if not is_structured_market_evidence_snapshot(snapshot):
+            return False
+        if isinstance(snapshot, dict) and isinstance(snapshot.get("daily_ohlcv"), list):
+            return any(
+                str(item.get("symbol") or "").upper() in symbols
+                for item in snapshot["daily_ohlcv"]
+                if isinstance(item, dict)
+            )
+        if isinstance(snapshot, dict):
+            return str(snapshot.get("symbol") or "").upper() in symbols
+        return False
 
     def _structured_market_evidence_refs(
         self,

@@ -1269,6 +1269,92 @@ def test_price_reaction_placeholder_rebuilds_from_structured_market_snapshot() -
     )
 
 
+def test_price_reaction_uses_run_market_snapshot_when_patch_refs_are_narrative() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        runner=ParallelStructuredInitializationRunner(),
+        execution_mode="agent_runner",
+    )
+    factory = InitializationMockResultFactory()
+    narrative_evidence = factory._evidence(EvidenceSourceType.DOXATLAS_SOURCE)
+    market_evidence = factory._evidence(EvidenceSourceType.MARKET_DATA).model_copy(
+        update={
+            "source_id": "twelvedata:daily_ohlcv:MU",
+            "retrieval_metadata": {
+                "tool_name": "twelvedata.daily_ohlcv",
+                "market_evidence_snapshot": {
+                    "kind": "daily_ohlcv_snapshot",
+                    "symbol": "MU",
+                    "bar_count": 90,
+                    "start_date": "2026-02-12",
+                    "end_date": "2026-06-23",
+                    "start_close": 413.97,
+                    "end_close": 1051.77,
+                    "total_return_pct": 154.08,
+                },
+            },
+        },
+        deep=True,
+    )
+    document = factory._expectation_unit("MU").model_copy(
+        update={"ticker": "MU"},
+        deep=True,
+    )
+    fact = document.realized_facts[0]
+    reaction = fact.price_reaction.model_copy(
+        update={
+            "price_change": (
+                "Field review found price benchmark or return-calculation error; "
+                "exact price reaction removed for OHLCV/market_trace recalculation."
+            ),
+            "price_pattern": "Directional market pattern retained while the benchmark is rebuilt.",
+            "interpretation": "Treat the market reaction as unresolved.",
+            "evidence_refs": [narrative_evidence],
+        },
+        deep=True,
+    )
+    document = document.model_copy(
+        update={
+            "realized_facts": [
+                fact.model_copy(
+                    update={
+                        "price_reaction": reaction,
+                        "evidence_refs": [narrative_evidence],
+                    },
+                    deep=True,
+                )
+            ]
+        },
+        deep=True,
+    )
+    patch = factory._document_patch(
+        document,
+        DocumentType.EXPECTATION_UNIT,
+        AgentName.O1_EXPECTATION_OWNER,
+        expectation_id=document.expectation_id,
+    ).model_copy(update={"evidence_refs": [narrative_evidence]}, deep=True)
+    run = workflow.blackboard.start_run("MU", AgentName.SYSTEM)
+    workflow.blackboard.add_working_memory_entry(
+        run.run_id,
+        author_agent=AgentName.O4_MARKET_TRACE,
+        content_type="market_trace_agent_result",
+        payload={"evidence_refs": [market_evidence.model_dump(mode="json")]},
+        evidence_refs=[market_evidence],
+    )
+    checkpoint = WorkflowCheckpoint(run_id=run.run_id, ticker="MU", pending_patches=[patch])
+
+    normalized = workflow._normalize_expectation_price_reaction_patch(checkpoint, patch)
+
+    normalized_reaction = normalized.after["realized_facts"][0]["price_reaction"]
+    assert "MU OHLCV snapshot from 2026-02-12 to 2026-06-23" in normalized_reaction[
+        "price_change"
+    ]
+    assert "total_return_pct=154.08" in normalized_reaction["price_change"]
+    assert normalized_reaction["evidence_refs"][0]["source_id"] == "twelvedata:daily_ohlcv:MU"
+    workflow._validate_expectation_promotion_quality(
+        ExpectationUnitDocument.model_validate(normalized.after)
+    )
+
+
 def test_numeric_value_detection_ignores_fiscal_years_and_product_generations() -> None:
     workflow = BlackboardInitializationWorkflow(
         runner=ParallelStructuredInitializationRunner(),
