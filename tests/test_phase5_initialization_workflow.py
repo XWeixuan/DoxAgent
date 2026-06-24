@@ -1781,6 +1781,155 @@ def test_partial_revision_merges_event_monitoring_lists_by_index() -> None:
     workflow._validate_expectation_patch_list("NVDA", normalized)
 
 
+def test_partial_revision_merges_realized_fact_index_after_wrappers() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        runner=ParallelStructuredInitializationRunner(),
+        execution_mode="agent_runner",
+    )
+    factory = InitializationMockResultFactory()
+    document = factory._expectation_unit("NVDA")
+    pending = factory._document_patch(
+        document,
+        DocumentType.EXPECTATION_UNIT,
+        AgentName.O1_EXPECTATION_OWNER,
+        expectation_id=document.expectation_id,
+    )
+    base_after = dict(pending.after)
+    first_fact = dict(base_after["realized_facts"][0])
+    second_fact = {
+        **first_fact,
+        "event_id": "event_target_second",
+        "description": "Unsupported precise fundamental claim.",
+    }
+    third_fact = {
+        **first_fact,
+        "event_id": "event_target_third",
+        "description": "Unchanged third realized fact.",
+    }
+    pending = pending.model_copy(
+        update={
+            "after": {
+                **base_after,
+                "realized_facts": [first_fact, second_fact, third_fact],
+            }
+        },
+        deep=True,
+    )
+    revision = pending.model_copy(
+        update={
+            "patch_id": "patch_fact_index_after_revision",
+            "after": {
+                "realized_facts": [
+                    {
+                        "index": 1,
+                        "after": {
+                            "description": "Second realized fact removes unsupported precision.",
+                            "price_reaction": {
+                                "interpretation": "Narrative-only precision removed."
+                            },
+                        },
+                    }
+                ]
+            },
+        },
+        deep=True,
+    )
+    result = AgentResult(
+        task_id="task_merge_fact_index_after_revision",
+        agent_name=AgentName.O1_EXPECTATION_OWNER,
+        status=ResultStatus.SUCCEEDED,
+        payload={"runtime": "maf", "structured": {"objection_resolutions": []}},
+        proposed_patches=[revision],
+    )
+
+    normalized = workflow._normalized_expectation_revisions(
+        WorkflowCheckpoint(
+            run_id="run_merge_fact_index_after_revision",
+            ticker="NVDA",
+            pending_patches=[pending],
+        ),
+        result,
+    )
+
+    facts = normalized[0].after["realized_facts"]
+    assert len(facts) == 3
+    assert facts[0]["description"] == first_fact["description"]
+    assert facts[1]["event_id"] == "event_target_second"
+    assert facts[1]["description"] == "Second realized fact removes unsupported precision."
+    assert (
+        facts[1]["price_reaction"]["interpretation"]
+        == "Narrative-only precision removed."
+    )
+    assert facts[2]["description"] == "Unchanged third realized fact."
+    workflow._validate_expectation_patch_list("NVDA", normalized)
+
+
+def test_partial_revision_merges_sparse_realized_fact_lists_by_index() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        runner=ParallelStructuredInitializationRunner(),
+        execution_mode="agent_runner",
+    )
+    factory = InitializationMockResultFactory()
+    document = factory._expectation_unit("NVDA")
+    pending = factory._document_patch(
+        document,
+        DocumentType.EXPECTATION_UNIT,
+        AgentName.O1_EXPECTATION_OWNER,
+        expectation_id=document.expectation_id,
+    )
+    base_after = dict(pending.after)
+    first_fact = dict(base_after["realized_facts"][0])
+    second_fact = {
+        **first_fact,
+        "event_id": "event_sparse_second",
+        "description": "Original sparse target fact.",
+    }
+    pending = pending.model_copy(
+        update={
+            "after": {
+                **base_after,
+                "realized_facts": [first_fact, second_fact],
+            }
+        },
+        deep=True,
+    )
+    revision = pending.model_copy(
+        update={
+            "patch_id": "patch_fact_sparse_revision",
+            "after": {
+                "realized_facts": [
+                    None,
+                    {"description": "Sparse list revision preserved required fields."},
+                ]
+            },
+        },
+        deep=True,
+    )
+    result = AgentResult(
+        task_id="task_merge_fact_sparse_revision",
+        agent_name=AgentName.O1_EXPECTATION_OWNER,
+        status=ResultStatus.SUCCEEDED,
+        payload={"runtime": "maf", "structured": {"objection_resolutions": []}},
+        proposed_patches=[revision],
+    )
+
+    normalized = workflow._normalized_expectation_revisions(
+        WorkflowCheckpoint(
+            run_id="run_merge_fact_sparse_revision",
+            ticker="NVDA",
+            pending_patches=[pending],
+        ),
+        result,
+    )
+
+    facts = normalized[0].after["realized_facts"]
+    assert len(facts) == 2
+    assert facts[0]["description"] == first_fact["description"]
+    assert facts[1]["event_id"] == "event_sparse_second"
+    assert facts[1]["description"] == "Sparse list revision preserved required fields."
+    workflow._validate_expectation_patch_list("NVDA", normalized)
+
+
 def test_numeric_sanity_revision_fallback_removes_unsupported_false_precision() -> None:
     workflow = BlackboardInitializationWorkflow(
         runner=ParallelStructuredInitializationRunner(),

@@ -8138,13 +8138,21 @@ class BlackboardInitializationWorkflow:
         base: list[Any],
         overlay: list[Any],
     ) -> list[Any]:
+        indexed_overlay = self._merge_indexed_list_item_overlays(base, overlay)
+        if indexed_overlay is not None:
+            return indexed_overlay
         overlay_identities = [self._list_item_identity(item) for item in overlay]
         if not any(overlay_identities):
-            if len(overlay) < len(base):
+            if len(overlay) <= len(base) and (
+                len(overlay) < len(base) or any(item is None for item in overlay)
+            ):
                 merged_by_index = deepcopy(base)
                 for index, item in enumerate(overlay):
                     if item is not None:
-                        merged_by_index[index] = deepcopy(item)
+                        merged_by_index[index] = self._merge_list_item_revision(
+                            merged_by_index[index],
+                            item,
+                        )
                 return merged_by_index
             return deepcopy(overlay)
         merged = deepcopy(base)
@@ -8167,6 +8175,54 @@ class BlackboardInitializationWorkflow:
             else:
                 merged.append(deepcopy(item))
         return merged
+
+    def _merge_indexed_list_item_overlays(
+        self,
+        base: list[Any],
+        overlay: list[Any],
+    ) -> list[Any] | None:
+        if not overlay:
+            return None
+        indexed_items: list[tuple[int, Any]] = []
+        for item in overlay:
+            if (
+                not isinstance(item, dict)
+                or "index" not in item
+                or "after" not in item
+            ):
+                return None
+            target_index = self._coerce_existing_list_index(item.get("index"), len(base))
+            if target_index is None:
+                return None
+            indexed_items.append((target_index, item.get("after")))
+        merged = deepcopy(base)
+        for target_index, item_after in indexed_items:
+            merged[target_index] = self._merge_list_item_revision(
+                merged[target_index],
+                item_after,
+            )
+        return merged
+
+    def _coerce_existing_list_index(self, raw_index: Any, length: int) -> int | None:
+        if isinstance(raw_index, bool):
+            return None
+        if isinstance(raw_index, int):
+            index = raw_index
+        elif isinstance(raw_index, str) and raw_index.strip().isdigit():
+            index = int(raw_index.strip())
+        else:
+            return None
+        if 0 <= index < length:
+            return index
+        one_based = index - 1
+        if 0 <= one_based < length:
+            return one_based
+        return None
+
+    def _merge_list_item_revision(self, base_item: Any, overlay_item: Any) -> Any:
+        if isinstance(base_item, dict) and isinstance(overlay_item, dict):
+            return self._deep_merge_dicts(dict(base_item), deepcopy(overlay_item))
+        return deepcopy(overlay_item)
 
     def _list_item_identity(self, item: Any) -> str | None:
         if not isinstance(item, dict):

@@ -3494,3 +3494,132 @@ Every failed or partial hard gate must be classified before writing the modifica
   - Verified broader regression with `uv run pytest tests/test_phase5_initialization_workflow.py tests/test_phase16_react_harness.py tests/test_workflow_normalizer.py`.
   - Verified lint with `uv run ruff check src\doxagent\agents\runtime\react.py src\doxagent\workflows\initialization.py tests\test_phase16_react_harness.py tests\test_phase5_initialization_workflow.py`.
 - Next smoke test: required after commit/push/deploy because the quality target remains unmet.
+
+## Loop 1 Retest25 - indexed realized_fact resolver revisions were merged as invalid list items
+
+### Run Metadata
+- Date: 2026-06-24.
+- Source run: `run_58f5afce8b9441ca804a2cde1ad9aec8` (Document 1-only source, unchanged).
+- Execution run: `run_2fb09e23a527415eb7d5dec9d1dccb81`.
+- Deployed commit for this run: `e24262a`.
+- Remote cwd: `/root/doxagent`.
+- Remote log: `.eval_runs/document2-loop1-retest25-20260624T105810+0800.log`.
+- Log-reported Brief State export path: `eval/brief_state_exports/run_2fb09e23a527415eb7d5dec9d1dccb81.json`.
+- Actual export-file status: missing on remote filesystem at evaluation time; Brief State was rebuilt through the debug-viewer read-only API.
+- Cloud command: `docker compose -f docker-compose.yml run --rm -e DOXAGENT_RUN_REAL_API_TESTS=1 -e DOXAGENT_STORAGE_MODE=postgres debug-viewer python eval/run_document2_expectation_units_smoke.py run_58f5afce8b9441ca804a2cde1ad9aec8 --mode clone --stop-after PromoteExpectationToBeliefState --export-brief-state`.
+- Polling discipline: no Codex automation; one immediate status check and one 15-minute `Start-Sleep -Seconds 900` wakeup/check in the current thread.
+- LangSmith MCP notes: queried project `DoxAgent` for the execution run id. Review traces were visible; `C1.ReviewExpectationFields.LOOP3` and `LOOP9` hit transient `Arrearage` errors, followed by successful retry traces including `C1.ReviewExpectationFields.LOOP4` and `LOOP10`. A narrow query for `ResolveObjectionsAndDelegations` returned no run rows, so resolver failure evidence comes from Brief State/log/checkpoint validation rather than an LLM trace row.
+
+### Status
+- Result: `blocked`.
+- Latest checkpoint: `status=blocked`, `next_node=ResolveObjectionsAndDelegations`.
+- Completed nodes: `StartTickerInitialization`, `BuildGlobalResearch`, `ReviewGlobalResearch`, `GenerateExpectationConstruction`, `ReviewExpectationConstruction`, `ResolveExpectationConstruction`, `GenerateExpectationDetails`, `ReviewExpectationFields`.
+- Stable document types: `global_research` only.
+- Stable expectation_unit count: 0.
+- Pending patch count: 3.
+- Working Memory count: 17.
+- Commit count: 1.
+- Open objections after the failed resolver attempt: 9.
+- Blocking delegations: 0.
+- Terminal error: `10 validation errors for ExpectationUnitDocument`, all caused by `realized_facts` entries shaped as `{"index": 4, "after": {...}}` / `{"index": 5, "after": {...}}` being placed into the list as document facts instead of being applied to the target facts.
+- Improvement vs Retest24:
+  - Retest25 no longer fails on `event_monitoring_direction.positive_events[0]` / `negative_events[1]` bracket-path keys.
+  - The run reached the next resolver/list-merge failure surface, this time under `realized_facts` indexed item revisions.
+- Remaining direct blocker:
+  - O1 resolver used an indexed list-item patch wrapper to update realized facts affected by numeric-sanity objections.
+  - Workflow list merge treated those wrapper dicts as ordinary list elements and wrote them into `realized_facts[0]` and `realized_facts[1]`, breaking strict `ExpectationUnitDocument` validation.
+
+### Built-in Hard Validators
+| Validator | Result | Evidence | Notes |
+| --- | --- | --- | --- |
+| evidence_reference_integrity | pass | `checked_items=22`, `finding_count=0`. | Structural refs remain locatable for reached artifacts. |
+| langsmith_trajectory_tool_boundary | fail | `checked_items=52`; finding `workflow_trace_not_completed` at `latest_checkpoint.status=blocked`, `next_node=ResolveObjectionsAndDelegations`. | Correctly fails because resolver validation blocked the run. |
+| commit_log_state_mutation_consistency | pass | `checked_items=4`, `finding_count=0`. | Stable state remains only `global_research`. |
+
+### Hard Gate Failure Root Cause Matrix
+| Gate | Result | failure_kind | Failure point | Root cause / fix target |
+| --- | --- | --- | --- | --- |
+| D2-HG01 | pass | none | Source handoff | Source remains the required Document 1-only run. |
+| D2-HG02 | fail | direct | Stop-after path | `PromoteExpectationToBeliefState` was not reached; blocked in resolver validation. |
+| D2-HG03 | pass | none | Construction/detail/review lifecycle | Construction, detail generation, and field review completed. |
+| D2-HG04 | pass_with_caveat | partial_state | Detail patches | Three pending expectation patches exist, but no stable expectation units. |
+| D2-HG05 | pass_with_caveat | evidence_scope | Evidence refs | Built-in structural evidence validator passed; source sufficiency objections remain open. |
+| D2-HG06 | fail | quality_residual | Realized facts / numeric support | Numeric-sanity objections still target narrative-backed fundamental precision and resolver revisions could not land. |
+| D2-HG07 | pass | none | Field review lifecycle | A1/C1/C3/O4 review completed and produced blocking objections. |
+| D2-HG08 | fail | direct | Resolver lifecycle | O1 returned indexed realized-fact revisions, but workflow merge produced invalid document structure. |
+| D2-HG09 | fail | direct | Promotion lifecycle | Stable expectation_unit count stayed 0. |
+| D2-HG10 | fail | direct | Trace/process closure | Built-in trajectory validator failed because the workflow is blocked. |
+| D2-HG11 | pass_with_caveat | traceability_gap | Failure auditability | Remote log, Brief State API, hard validators, and LangSmith review traces reproduce the failure; export file is missing. |
+| D2-HG12 | fail | context_contract | Resolver output contract / normalization | Indexed list-item wrapper revisions were accepted into the patch channel but not normalized into target list-item updates. |
+| D2-HG13 | fail | memory_continuity_blocked | Revision continuity | Accepted realized-fact revisions did not survive into a valid pending expectation document. |
+
+### Rubrics
+| Rubric | Score | Reason |
+| --- | ---: | --- |
+| D2-R01 | 4 | Source discipline remains correct and auditable. |
+| D2-R02 | 3 | Three expectation patches exist, but none reaches stable state and open objections remain. |
+| D2-R03 | 2 | Realized facts are the direct invalid surface; unsupported numeric/fundamental claims are still not cleanly repaired. |
+| D2-R04 | 2 | Price-in and fundamental support cannot be accepted before resolver revisions land and promotion runs. |
+| D2-R05 | 3 | Key variables exist in pending patches, but final quality is unproven without stable expectation units. |
+| D2-R06 | 3 | Event monitoring no longer has Retest24's bracket-path failure, but stable monitoring content is still unaccepted. |
+| D2-R07 | 3 | Evidence references are structurally valid, while source-class sufficiency still triggers numeric objections. |
+| D2-R08 | 4 | Field review pressure is substantive: it produced nine open blockers rather than allowing silent promotion. |
+| D2-R09 | 2 | Resolver intent is actionable but implementation failed to land indexed realized-fact revisions. |
+| D2-R10 | 1 | Promotion readiness failed completely with zero stable expectation units. |
+| D2-R11 | 3 | Process advanced through review; transient provider Arrearage retries are visible but recovered in C1. |
+| D2-R12 | 2 | Uncertainty/numeric cleanup still degrades into resolver/schema failure instead of clean accepted residuals. |
+| D2-R13 | 3 | DB/log/LangSmith evidence is enough to root-cause the failure, but missing export JSON remains a reproducibility caveat. |
+| D2-R14 | 5 | Optimization target is narrow and testable: normalize indexed realized-fact list-item revisions and sparse list dict overlays. |
+
+### Score Summary
+- Core Blackboard quality rubrics average (`D2-R01`-`D2-R10`): 2.7.
+- Other rubrics with score <= 2: `D2-R12`.
+- Built-in hard validators all pass: no.
+- Quality target met: no.
+- Operational improvement accepted: partial only. Retest25 proves Retest24's monitoring-index fix worked, but exposes the next direct resolver/list merge bug for realized facts.
+
+### Failure Categories
+- category: `indexed_realized_fact_wrapper_not_merged`
+  - issue: O1 returned realized-fact revisions as list items with `index` and `after` keys.
+  - evidence: terminal validation error reports missing `event_id`, `description`, and `price_reaction`, plus forbidden `index` and `after`, at `realized_facts.0` and `realized_facts.1`.
+  - severity: direct hard-gate failure.
+  - suspected root cause: `_merge_list_items_by_identity()` only handled identity-key list merges and positional short-list overlays; it did not recognize `{"index": n, "after": {...}}` as a target-index patch.
+- category: `sparse_realized_fact_partial_merge_risk`
+  - issue: Path-map revisions such as `realized_facts[4].description` can become sparse lists with partial dicts; replacing the whole fact item would drop required fields.
+  - evidence: current list merge replaced non-identity list entries by position without deep-merging dict items into existing fact objects.
+  - severity: adjacent quality/regression risk.
+  - suspected root cause: positional merge worked for scalar monitoring strings but was unsafe for dict-based list items like realized facts.
+- category: `field_review_numeric_source_blockers_remaining`
+  - issue: Nine blockers remain around narrative-backed precise fundamental claims and date/fiscal timing.
+  - evidence: open objections include `numeric_sanity_fundamental_data` for `expectation_mu_001` and `expectation_mu_002`.
+  - severity: quality residual after the structural bug is fixed.
+- category: `brief_state_export_missing`
+  - issue: smoke log reported an export path, but no JSON file existed under `eval/brief_state_exports` for the Retest25 run id.
+  - severity: traceability caveat.
+
+### Optimization Hypothesis
+- If workflow list merging recognizes `{"index": n, "after": {...}}` as an indexed list-item revision, then O1's accepted realized-fact fixes will update the intended fact while preserving required fields from the pending expectation document.
+- If sparse positional dict overlays are deep-merged into the existing list item instead of replacing it, then path-map changes like `realized_facts[4].description` can remain schema-valid.
+- Strict `ExpectationUnitDocument` validation should remain unchanged: the fix belongs in patch normalization/merge, not in relaxing the schema.
+- Expected next verification, when explicitly launched later:
+  - The Retest25 error containing forbidden `realized_facts.*.index` and `realized_facts.*.after` should disappear.
+  - Remaining failures, if any, should move to substantive numeric/source quality blockers or promotion quality rather than invalid list-item structure.
+
+### Proposed Modification Plan
+- Change 1: Extend `_merge_list_items_by_identity()` in `src/doxagent/workflows/initialization.py` to detect overlay lists whose items all contain `index` and `after`, then apply each `after` to the target base-list index.
+- Change 2: Add conservative index coercion that accepts zero-based indexes first and falls back to one-based only when the raw index is otherwise out of range.
+- Change 3: For shorter or sparse non-identity overlays, deep-merge dict list items into the existing base item by position, while keeping scalar monitoring-list behavior unchanged.
+- Change 4: Add a regression for Retest25's `realized_facts: [{index, after}]` wrapper shape.
+- Change 5: Add a regression for sparse realized-fact list overlays so path-map revisions do not erase required fact fields.
+- Change 6: Do not launch another cloud smoke after this modification, per the user's current instruction.
+
+### Actual Modification
+- Implemented after this evaluation:
+  - Updated `src/doxagent/workflows/initialization.py` with `_merge_indexed_list_item_overlays()`, `_coerce_existing_list_index()`, and `_merge_list_item_revision()`.
+  - Updated `_merge_list_items_by_identity()` so indexed wrapper overlays and sparse/short dict overlays merge into existing list items instead of replacing required fact objects.
+  - Added `test_partial_revision_merges_realized_fact_index_after_wrappers` in `tests/test_phase5_initialization_workflow.py`.
+  - Added `test_partial_revision_merges_sparse_realized_fact_lists_by_index` in `tests/test_phase5_initialization_workflow.py`.
+  - Verified focused tests with `uv run pytest tests/test_phase5_initialization_workflow.py::test_partial_revision_merges_realized_fact_index_after_wrappers tests/test_phase5_initialization_workflow.py::test_partial_revision_merges_sparse_realized_fact_lists_by_index tests/test_phase5_initialization_workflow.py::test_partial_revision_merges_event_monitoring_lists_by_index -q`.
+  - Verified broader regression with `uv run pytest tests/test_phase5_initialization_workflow.py tests/test_phase16_react_harness.py tests/test_workflow_normalizer.py -q` (`103 passed`).
+  - Verified lint with `uv run ruff check src\doxagent\workflows\initialization.py tests\test_phase5_initialization_workflow.py`.
+- Next smoke test: not launched, per user instruction to stop after this complete eval/optimization/modification loop.
