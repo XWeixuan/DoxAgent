@@ -2976,3 +2976,142 @@ Every failed or partial hard gate must be classified before writing the modifica
   - Added `test_multiple_o1_partial_revisions_merge_per_expectation_before_validation` in `tests/test_phase5_initialization_workflow.py`.
   - Added changelog entry for the Document2 resolver path-map revision merge.
   - Verified focused tests with `uv run pytest tests/test_phase16_react_harness.py -k "changes_as_partial_after or field_objection_resolution"` and `uv run pytest tests/test_phase5_initialization_workflow.py -k "multiple_o1_partial_revisions or current_numeric or numeric_sanity or objection_resolution_context"`.
+
+## Loop 1 Retest21 - resolver top-level partial fields were lost before workflow merge
+
+### Run Metadata
+- Date: 2026-06-24.
+- Source run: `run_58f5afce8b9441ca804a2cde1ad9aec8` (Document 1-only source, unchanged).
+- Execution run: `run_f2c5e226ac904dde862fba667e0abeff`.
+- Deployed commit: `6456359`.
+- Remote cwd: `/root/doxagent`.
+- Remote log: `.eval_runs/document2-loop1-retest21-20260624T074347+0800.log`.
+- Log-reported Brief State export path: `eval/brief_state_exports/run_f2c5e226ac904dde862fba667e0abeff.json`.
+- Actual export-file status: missing on remote filesystem at evaluation time; Brief State and hard validators were rebuilt from Postgres using `DebugRunQueryService.brief_state(run_id)`.
+- Cloud command: `docker compose -f docker-compose.yml run --rm -e DOXAGENT_RUN_REAL_API_TESTS=1 -e DOXAGENT_STORAGE_MODE=postgres debug-viewer python eval/run_document2_expectation_units_smoke.py run_58f5afce8b9441ca804a2cde1ad9aec8 --mode clone --stop-after PromoteExpectationToBeliefState --export-brief-state`.
+- Polling discipline: no Codex automation or heartbeat automation; status checks used in-thread `Start-Sleep -Seconds 900`.
+
+### Status
+- Result: `blocked`.
+- Latest checkpoint: `status=blocked`, `next_node=ResolveObjectionsAndDelegations`.
+- Completed nodes: `StartTickerInitialization`, `BuildGlobalResearch`, `ReviewGlobalResearch`, `GenerateExpectationConstruction`, `ReviewExpectationConstruction`, `ResolveExpectationConstruction`, `GenerateExpectationDetails`, `ReviewExpectationFields`.
+- Terminal error: `GenerateExpectationUnits expectation patch must include document content.`
+- Stable document types: `global_research` only.
+- Stable expectation_unit count: 0.
+- Pending patch count: 2.
+- Working Memory count: 15.
+- Commit count: 1.
+- Open objections: 3, all timeline/fiscal-calendar blockers: `obj_001_fiscal_calendar_error`, `obj_timeline_conflict_001`, `obj_timeline_conflict_002`.
+- Blocking delegations: 0.
+- Evidence refs in rebuilt Brief State: 15 checked by built-in evidence validator.
+- Improvement vs Retest20:
+  - Retest20's `changes` path-map loss and raw multi-patch count failure did not recur.
+  - Field review completed and narrowed the failure to three coherent fiscal-calendar/timeline blockers.
+  - O1 resolver produced concrete revision intent for two affected expectation ids instead of returning no patch.
+  - LangSmith found `O1.ResolveObjectionsAndDelegations.LOOP2` by objection-id search: `input_tokens=12068`, `output_tokens=4834`, `total_tokens=16902`, `status=success`.
+- Remaining direct blocker:
+  - O1 resolver raw text put partial revision content at patch top level (`event_monitoring_direction` and `realized_facts`) while leaving `after=null` and no `changes`.
+  - ReAct normalization dropped those top-level partial fields when constructing `BlackboardPatch`, so the structured resolver output contained two revised patches with `after=null`.
+  - Workflow validation correctly rejected those revisions with `GenerateExpectationUnits expectation patch must include document content.`
+
+### Built-in Hard Validators
+| Validator | Result | Evidence | Notes |
+| --- | --- | --- | --- |
+| evidence_reference_integrity | pass | `checked_items=15`, `finding_count=0`. | Structural refs are locatable; this does not prove timeline correctness or source sufficiency. |
+| langsmith_trajectory_tool_boundary | fail | `checked_items=48`; finding `workflow_trace_not_completed` at `latest_checkpoint.status=blocked`, `next_node=ResolveObjectionsAndDelegations`. | Correctly blocks acceptance because the workflow did not close. |
+| commit_log_state_mutation_consistency | pass | `checked_items=4`, `finding_count=0`. | Stable state remains only `global_research`. |
+
+### Hard Gate Failure Root Cause Matrix
+| Gate | Result | failure_kind | Failure point | Root cause / fix target |
+| --- | --- | --- | --- | --- |
+| D2-HG01 | pass | none | Source handoff | Source remains the required Document 1-only run `run_58f5afce8b9441ca804a2cde1ad9aec8`. |
+| D2-HG02 | fail | direct | Stop-after path | `PromoteExpectationToBeliefState` was not reached; execution blocked in resolver validation. |
+| D2-HG03 | pass | none | Construction lifecycle | Construction, construction review/resolution, detail generation, and field review completed. |
+| D2-HG04 | pass_with_caveat | partial_state | Detail patches | Two pending detail patches contain document fields, but timeline corrections remain unapplied. |
+| D2-HG05 | pass_with_caveat | evidence_scope | Evidence refs | Structural evidence integrity passes, but timeline corrections rely on DoxAtlas/internal consistency and were not applied to pending patch content. |
+| D2-HG06 | fail | quality_residual | Realized-fact timing / price-in reasoning | Q2/Q3 fiscal-calendar errors remain in current pending documents because resolver revisions were lost before merge; price-in reasoning cannot be trusted while event chronology is wrong. |
+| D2-HG07 | pass | none | Field review lifecycle | C1/C3/O4 review pressure was substantive and produced coherent blockers; C1 and O1 both had one `Arrearage` retry before successful loops. |
+| D2-HG08 | fail | direct | Resolver lifecycle | Resolver accepted all three objections and provided revision intent, but the revisions had no normalized `after`/`changes` content. |
+| D2-HG09 | fail | direct | Promotion lifecycle | Stable expectation_unit count stayed 0; no promotion occurred. |
+| D2-HG10 | fail | direct | Trace/process closure | Built-in trajectory validator failed due blocked checkpoint; LangSmith resolver trace is available only by content/objection search, not by simple node-name search. |
+| D2-HG11 | pass_with_caveat | traceability_gap | Failure auditability | Remote log, DB checkpoint, rebuilt Brief State, Working Memory, and LangSmith reproduce the failure; the log-reported export file is missing. |
+| D2-HG12 | fail | context_contract | Resolver output contract / normalization | The prompt contract did not strongly require partial revision content under `after` or `changes`, and ReAct normalization did not preserve top-level partial expectation fields. |
+| D2-HG13 | fail | memory_continuity_blocked | Objection-to-patch continuity | Accepted fiscal-calendar objections did not survive into valid pending-patch replacements, so memory continuity broke before promotion. |
+
+### Rubrics
+| Rubric | Score | Reason |
+| --- | ---: | --- |
+| D2-R01 | 4 | Source discipline remains correct and Document2 starts from the required Document1-only state. |
+| D2-R02 | 3 | Two theses are differentiated and investment-relevant, but neither became stable expectation_unit. |
+| D2-R03 | 2 | Realized facts exist, but fiscal-quarter event timing remains materially wrong in current pending patches. |
+| D2-R04 | 2 | Price-in logic is not reliable while realized-event chronology and some price-reaction claims remain unresolved. |
+| D2-R05 | 3 | Key variables are present and mostly thesis-linked, but the forward/current event windows still inherit timeline ambiguity. |
+| D2-R06 | 2 | Event monitoring is concrete but currently wrong for the Q3/Q4 fiscal-calendar window because the resolver correction did not land. |
+| D2-R07 | 3 | Evidence refs are structurally traceable and O4 market evidence exists, but source granularity remains uneven for timeline and price-reaction claims. |
+| D2-R08 | 4 | Field-review pressure is strong: C1/C3/O4 identified fiscal-calendar and market-reaction issues with concrete objections. |
+| D2-R09 | 2 | Resolver lifecycle improved by accepting the right blockers and drafting revisions, but no revised patch content survived normalization. |
+| D2-R10 | 1 | Promotion readiness failed: no stable expectation units and the run ended blocked. |
+| D2-R11 | 3 | Tool/process behavior is usable with retries, but the first C1/O1 attempts hit `Arrearage` and the resolver output contract wasted a successful LLM loop. |
+| D2-R12 | 2 | Uncertainty discipline remains weak around current-vs-forward fiscal events and source-backed thresholds. |
+| D2-R13 | 3 | DB, Working Memory, remote log, hard validators, and LangSmith allow reconstruction, but the Brief State export file is missing. |
+| D2-R14 | 5 | The optimization target is narrow and directly testable: preserve top-level partial revision fields and merge list-item revisions by stable ids. |
+
+### Score Summary
+- Core Blackboard quality rubrics average (`D2-R01`-`D2-R10`): 2.6.
+- Other rubrics with score <= 2: `D2-R12`.
+- Built-in hard validators all pass: no.
+- Quality target met: no.
+- Operational improvement accepted: partial only. Retest21 proved Retest20's path-map/multi-revision fix worked, but exposed a new top-level partial-field normalization blocker before promotion.
+
+### Failure Categories
+- category: `resolver_top_level_partial_content_loss`
+  - issue: O1 resolver returned partial revision fields at patch top level instead of under `after` or `changes`; normalization dropped them.
+  - evidence: Working Memory `wm_296e45dd3d7540b488d7780f72efd495` raw text includes `event_monitoring_direction` and `realized_facts`, while normalized structured `proposed_patches` have `after=null`.
+  - severity: hard-gate/direct.
+  - suspected root cause: ReAct `_normalize_blackboard_patch_payload()` only preserved `after` and `changes`, not flat expectation-unit revision fields.
+- category: `partial_list_revision_overwrite_risk`
+  - issue: Even if top-level `realized_facts` were preserved as partial `after`, naive deep merge would replace the whole facts list with the single corrected event.
+  - evidence: Retest21 patch for `expectation_002` only supplied one corrected `realized_facts` item for `event_bc030fb319c2437b9278f33bf049ca9f`.
+  - severity: quality-blocking if unguarded.
+  - suspected root cause: `_deep_merge_dicts()` treated all lists as replace-only, with no id-based merge for `event_id`, `fact_id`, or `variable_id`.
+- category: `timeline_quality_blocker`
+  - issue: Current pending patches still contain Q2/Q3/Q4 fiscal-calendar confusion.
+  - evidence: open objections `obj_001_fiscal_calendar_error`, `obj_timeline_conflict_001`, and `obj_timeline_conflict_002`.
+  - severity: content-quality blocking.
+  - suspected root cause: detail generation over-trusts upstream narrative phrasing and field review corrections depend on resolver revisions landing correctly.
+- category: `brief_state_export_missing`
+  - issue: smoke log reported an export path, but no JSON file existed under `eval/brief_state_exports` for the Retest21 run id.
+  - evidence: remote rebuilt Brief State was required for hard validators.
+  - severity: traceability caveat.
+  - suspected root cause: smoke/export path handling may report intended path even after blocked run exits without writing the file.
+
+### Optimization Hypothesis
+- If ReAct normalization converts flat expectation-unit patch fields (`market_view`, `realized_facts`, `realized_facts_summary`, `key_variables`, `event_monitoring_direction`, etc.) into partial `after` payloads for `operation="update"`, then O1 resolver's concrete top-level revision intent will survive into `BlackboardPatch`.
+- If the resolver output contract explicitly instructs O1 to place revised content under `patch.after` or `patch.changes`, then future resolver outputs should become more schema-consistent and easier to audit.
+- If workflow partial merge updates lists of dicts by stable identity keys such as `event_id`, `fact_id`, and `variable_id`, then a one-item realized-fact correction will update that fact without deleting sibling facts from the same expectation unit.
+- Existing strict validation should remain unchanged: after the partial revision is merged into the pending full document, `_validate_expectation_patch_list()` still validates the completed expectation document before replacement or promotion.
+- Expected measurable improvement in the next cloud verification, when explicitly launched by the user:
+  - The Retest21 error `GenerateExpectationUnits expectation patch must include document content.` should not recur for top-level partial resolver fields.
+  - Accepted timeline objections should either become closed with revised pending patches or fail with a more specific content-quality blocker after the revisions are applied.
+  - Stable expectation promotion should be able to proceed to the next quality gate if no residual blockers remain.
+
+### Proposed Modification Plan
+- Change 1: Add a flat expectation-unit patch field set in `src/doxagent/agents/runtime/react.py` for fields that represent actual expectation document content.
+- Change 2: In `_normalize_blackboard_patch_payload()`, when `after` is absent, build a partial `after` object from both `changes` path maps and flat top-level expectation fields.
+- Change 3: Preserve `operation="update"` partial `after` payloads without running complete document normalization, so they can be merged against the pending full document by the workflow.
+- Change 4: Strengthen the field-review objection-resolution output contract so O1 is told to place revised fields under `patch.after` or `patch.changes`, not only as top-level keys.
+- Change 5: Update workflow partial merge so lists of dicts are merged by stable identity (`fact_id`, `event_id`, `variable_id`, `source_id`, `evidence_id`, `id`) when possible, and replaced only when no stable identity exists.
+- Change 6: Add regression tests for Retest21's top-level partial-field shape and for realized-fact list-item merge preserving sibling facts.
+- Retest requirement: do not launch Retest22 in this turn, per user instruction; report this completed eval + modification and wait for explicit approval before another cloud smoke.
+
+### Actual Modification
+- Implemented after this evaluation:
+  - Updated `src/doxagent/agents/runtime/react.py` so `operation="update"` patches with top-level expectation fields are normalized into partial `after` payloads.
+  - Updated the resolver output contract in `src/doxagent/agents/runtime/react.py` to require revised content under `patch.after` or `patch.changes`.
+  - Updated `src/doxagent/workflows/initialization.py` so partial list revisions merge by stable item identity instead of always replacing the whole list.
+  - Added `test_react_preserves_objection_resolution_flat_partial_fields_as_after` in `tests/test_phase16_react_harness.py`.
+  - Added `test_partial_revision_merges_realized_fact_by_event_id` in `tests/test_phase5_initialization_workflow.py`.
+  - Verified focused tests with:
+    - `uv run pytest tests/test_phase16_react_harness.py -k "changes_as_partial_after or flat_partial_fields or field_objection_resolution"`
+    - `uv run pytest tests/test_phase5_initialization_workflow.py -k "multiple_o1_partial_revisions or partial_revision_merges_realized_fact or current_numeric or numeric_sanity or objection_resolution_context"`
+- Next smoke test: not launched, per user instruction to complete this eval loop and stop before starting another cloud smoke.

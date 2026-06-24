@@ -67,6 +67,16 @@ MICROCOMPACT_MARKER = "[old observation compacted]"
 MAX_TOOL_OBSERVATION_CHARS = 24_000
 _FINAL_PAYLOAD_SCHEMAS: dict[str, type[BaseModel]] = REQUIRED_OUTPUT_SCHEMA_MODELS
 _JSON_FENCE_RE = re.compile(r"^```(?:json)?\s*(.*?)\s*```$", re.DOTALL | re.IGNORECASE)
+_EXPECTATION_UNIT_FLAT_PATCH_FIELDS = {
+    "expectation_name",
+    "direction",
+    "why_it_matters",
+    "market_view",
+    "realized_facts",
+    "realized_facts_summary",
+    "key_variables",
+    "event_monitoring_direction",
+}
 
 
 @dataclass(frozen=True)
@@ -1965,6 +1975,12 @@ def _output_contract(required_output_schema: str, *, task: AgentTask | None = No
                             "If decision is accepted or partially_accepted, include a revised "
                             "proposed_patch only for the affected expectation_id, using the "
                             "compact pending_patches as the revision source."
+                        ),
+                        (
+                            "A revised proposed_patch must put changed expectation fields under "
+                            "patch.after as a partial expectation_unit object, or under "
+                            "patch.changes as document path updates. Do not leave the revised "
+                            "field content only as patch top-level keys."
                         ),
                         "Never return unaffected expectation patches in this resolution batch.",
                         (
@@ -4118,14 +4134,25 @@ def _normalize_blackboard_patch_payload(
     )
     operation = str(payload.get("operation") or PatchOperation.CREATE.value)
     after = payload.get("after")
-    after_from_changes = False
-    if after is None and isinstance(payload.get("changes"), dict):
-        after = _after_from_patch_changes(payload["changes"])
-        after_from_changes = True
+    after_from_partial_update = False
+    if after is None:
+        partial_after: JsonDict = {}
+        if isinstance(payload.get("changes"), dict):
+            partial_after = _deep_merge_json_dicts(
+                partial_after,
+                _after_from_patch_changes(payload["changes"]),
+            )
+        partial_after = _deep_merge_json_dicts(
+            partial_after,
+            _after_from_flat_expectation_patch_fields(payload),
+        )
+        if partial_after:
+            after = partial_after
+            after_from_partial_update = True
     if (
         isinstance(after, dict)
         and target["document_type"] == DocumentType.EXPECTATION_UNIT.value
-        and not (operation == PatchOperation.UPDATE.value and after_from_changes)
+        and not (operation == PatchOperation.UPDATE.value and after_from_partial_update)
     ):
         after = _normalize_expectation_document_payload(
             after,
@@ -4150,6 +4177,14 @@ def _normalize_blackboard_patch_payload(
     }
 
 
+def _after_from_flat_expectation_patch_fields(payload: JsonDict) -> JsonDict:
+    return {
+        key: payload[key]
+        for key in _EXPECTATION_UNIT_FLAT_PATCH_FIELDS
+        if key in payload and payload[key] is not None
+    }
+
+
 def _after_from_patch_changes(changes: JsonDict) -> JsonDict:
     after: JsonDict = {}
     for raw_path, value in changes.items():
@@ -4168,6 +4203,16 @@ def _after_from_patch_changes(changes: JsonDict) -> JsonDict:
             cursor = next_cursor
         cursor[parts[-1]] = value
     return after
+
+
+def _deep_merge_json_dicts(base: JsonDict, overlay: JsonDict) -> JsonDict:
+    merged = dict(base)
+    for key, value in overlay.items():
+        if isinstance(value, dict) and isinstance(merged.get(key), dict):
+            merged[key] = _deep_merge_json_dicts(cast(JsonDict, merged[key]), value)
+        else:
+            merged[key] = value
+    return merged
 
 
 def _patch_from_expectation_payload(

@@ -7966,9 +7966,49 @@ class BlackboardInitializationWorkflow:
                 and isinstance(value, dict)
             ):
                 base[key] = self._deep_merge_dicts(dict(base[key]), value)
+            elif key in base and isinstance(base[key], list) and isinstance(value, list):
+                base[key] = self._merge_list_items_by_identity(base[key], value)
             else:
                 base[key] = value
         return base
+
+    def _merge_list_items_by_identity(
+        self,
+        base: list[Any],
+        overlay: list[Any],
+    ) -> list[Any]:
+        overlay_identities = [self._list_item_identity(item) for item in overlay]
+        if not any(overlay_identities):
+            return deepcopy(overlay)
+        merged = deepcopy(base)
+        index_by_identity = {
+            identity: index
+            for index, item in enumerate(merged)
+            if (identity := self._list_item_identity(item)) is not None
+        }
+        for item, identity in zip(overlay, overlay_identities, strict=True):
+            if (
+                identity is not None
+                and identity in index_by_identity
+                and isinstance(merged[index_by_identity[identity]], dict)
+                and isinstance(item, dict)
+            ):
+                merged[index_by_identity[identity]] = self._deep_merge_dicts(
+                    dict(merged[index_by_identity[identity]]),
+                    deepcopy(item),
+                )
+            else:
+                merged.append(deepcopy(item))
+        return merged
+
+    def _list_item_identity(self, item: Any) -> str | None:
+        if not isinstance(item, dict):
+            return None
+        for key in ("fact_id", "event_id", "variable_id", "source_id", "evidence_id", "id"):
+            value = item.get(key)
+            if value not in (None, ""):
+                return f"{key}:{value}"
+        return None
 
     def _set_mapping_path(self, target: dict[str, Any], field_path: str, value: Any) -> None:
         keys = [key for key in field_path.split(".") if key]

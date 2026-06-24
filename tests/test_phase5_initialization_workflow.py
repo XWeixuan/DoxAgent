@@ -1450,6 +1450,73 @@ def test_multiple_o1_partial_revisions_merge_per_expectation_before_validation()
     workflow._validate_expectation_patch_list("NVDA", normalized)
 
 
+def test_partial_revision_merges_realized_fact_by_event_id() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        runner=ParallelStructuredInitializationRunner(),
+        execution_mode="agent_runner",
+    )
+    factory = InitializationMockResultFactory()
+    document = factory._expectation_unit("NVDA")
+    pending = factory._document_patch(
+        document,
+        DocumentType.EXPECTATION_UNIT,
+        AgentName.O1_EXPECTATION_OWNER,
+        expectation_id=document.expectation_id,
+    )
+    base_after = dict(pending.after)
+    first_fact = dict(base_after["realized_facts"][0])
+    second_fact = {
+        **first_fact,
+        "event_id": "event_other",
+        "description": "Other realized fact should survive partial revisions.",
+    }
+    pending = pending.model_copy(
+        update={
+            "after": {
+                **base_after,
+                "realized_facts": [first_fact, second_fact],
+            }
+        },
+        deep=True,
+    )
+    revision = pending.model_copy(
+        update={
+            "patch_id": "patch_fact_date_revision",
+            "after": {
+                "realized_facts": [
+                    {
+                        "event_id": first_fact["event_id"],
+                        "description": "Q2 date corrected to March.",
+                    }
+                ]
+            },
+        },
+        deep=True,
+    )
+    result = AgentResult(
+        task_id="task_merge_fact_revision",
+        agent_name=AgentName.O1_EXPECTATION_OWNER,
+        status=ResultStatus.SUCCEEDED,
+        payload={"runtime": "maf", "structured": {"objection_resolutions": []}},
+        proposed_patches=[revision],
+    )
+
+    normalized = workflow._normalized_expectation_revisions(
+        WorkflowCheckpoint(
+            run_id="run_merge_fact_revision",
+            ticker="NVDA",
+            pending_patches=[pending],
+        ),
+        result,
+    )
+
+    facts = normalized[0].after["realized_facts"]
+    assert len(facts) == 2
+    assert facts[0]["description"] == "Q2 date corrected to March."
+    assert facts[1]["description"] == "Other realized fact should survive partial revisions."
+    workflow._validate_expectation_patch_list("NVDA", normalized)
+
+
 def test_numeric_sanity_revision_fallback_removes_unsupported_false_precision() -> None:
     workflow = BlackboardInitializationWorkflow(
         runner=ParallelStructuredInitializationRunner(),

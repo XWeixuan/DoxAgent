@@ -780,6 +780,7 @@ def test_react_uses_lightweight_contract_for_field_objection_resolution() -> Non
     assert "objection-resolution task" in contract_text
     assert "Do not call tools" in contract_text
     assert "Do not generate 2 to 3 expectation patches" in contract_text
+    assert "patch.after as a partial expectation_unit object" in contract_text
     assert "Never return unaffected expectation patches" in contract_text
     assert contract["final_payload"]["objection_resolutions"][0]["objection_id"]
 
@@ -846,6 +847,87 @@ def test_react_preserves_objection_resolution_changes_as_partial_after() -> None
     assert patch["after"] == {
         "market_view": {"summary": "Source limitation noted."},
         "realized_facts_summary": "Quarter labels corrected.",
+    }
+
+
+def test_react_preserves_objection_resolution_flat_partial_fields_as_after() -> None:
+    base_task = agent_task()
+    task = base_task.model_copy(
+        update={
+            "required_output_schema": "ExpectationConstructionResult",
+            "input_context": {
+                **base_task.input_context,
+                "resolution_mode": "field_review_objection_resolution",
+                "unresolved_objections": [{"objection_id": "obj_1"}],
+            },
+        },
+        deep=True,
+    )
+    runner = runner_with_sequence(
+        [
+            {
+                "is_complete": True,
+                "completion_reason": "resolved",
+                "final_payload": {
+                    "proposed_patches": [
+                        {
+                            "patch_id": "patch_flat_partial",
+                            "target": {
+                                "document_type": "expectation_unit",
+                                "ticker": "NVDA",
+                                "expectation_id": "exp_1",
+                                "field_path": "document",
+                            },
+                            "operation": "update",
+                            "rationale": "Apply flat field corrections.",
+                            "event_monitoring_direction": {
+                                "known_event_notice": "Q3 is current; Q4 is forward.",
+                                "positive_events": ["Q4 guide improves"],
+                                "negative_events": ["Q4 guide misses"],
+                            },
+                            "realized_facts": [
+                                {
+                                    "event_id": "event_1",
+                                    "description": "Q2 date corrected.",
+                                    "price_reaction": {
+                                        "price_change": "removed",
+                                        "price_pattern": "directional",
+                                        "interpretation": "requires OHLCV",
+                                    },
+                                    "evidence_refs": [],
+                                }
+                            ],
+                        }
+                    ],
+                    "evidence_refs": [],
+                    "delegations": [],
+                    "unknowns": [],
+                    "rationale": "Accepted revision.",
+                    "accepted_objection_ids": ["obj_1"],
+                    "objection_resolutions": [
+                        {
+                            "objection_id": "obj_1",
+                            "decision": "accepted",
+                            "resolution_note": "Patch revised.",
+                            "changed_paths": ["event_monitoring_direction"],
+                            "evidence_refs": [],
+                        }
+                    ],
+                },
+            }
+        ]
+    )
+
+    result = runner.run(task)
+
+    patch = result.payload["structured"]["proposed_patches"][0]
+    assert patch["operation"] == "update"
+    assert patch["after"]["event_monitoring_direction"]["known_event_notice"] == (
+        "Q3 is current; Q4 is forward."
+    )
+    assert patch["after"]["realized_facts"][0]["event_id"] == "event_1"
+    assert "event_monitoring_direction" not in {
+        key for key in patch if key != "after"
     }
 
 
