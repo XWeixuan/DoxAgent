@@ -1863,6 +1863,97 @@ def test_react_normalizes_expectation_detail_candidate_legacy_fields() -> None:
     assert candidate["key_variables"][0]["name"] == "HBM shipment cadence"
 
 
+def test_react_normalizes_document2_resolution_revised_candidate_shape() -> None:
+    evidence_ref = {
+        "evidence_id": "evidence_resolution",
+        "source_type": "agent_output",
+        "source_id": "react:resolution",
+        "title": "Resolution evidence",
+        "summary": "Review evidence for the accepted revision.",
+        "retrieval_metadata": {},
+        "confidence": 0.8,
+        "citation_scope": "expectation_unit",
+    }
+    task = agent_task().model_copy(
+        update={"required_output_schema": "Document2ResolutionPlan"},
+        deep=True,
+    )
+    runner = runner_with_sequence(
+        [
+            {
+                "is_complete": True,
+                "completion_reason": "resolved",
+                "final_payload": {
+                    "expectation_id": "exp_resolution",
+                    "decision": "accepted",
+                    "decisions": [
+                        {
+                            "objection_id": "obj_resolution",
+                            "finding_id": None,
+                            "decision": "accepted",
+                            "resolution_note": "Accepted reviewer finding with evidence.",
+                            "changed_paths": ["document.market_view"],
+                            "evidence_refs": [evidence_ref],
+                        }
+                    ],
+                    "revised_candidate": {
+                        "expectation_id": "exp_resolution",
+                        "expectation_name": "Revised HBM demand durability",
+                        "direction": "bullish",
+                        "why_it_matters": "HBM demand durability drives the setup.",
+                        "market_view": {
+                            "text": "Market now needs a narrower HBM demand claim.",
+                            "summary": "HBM demand claim narrowed.",
+                            "evidence_refs": [evidence_ref],
+                        },
+                        "realized_facts": [
+                            {
+                                "fact": "HBM qualification remains the known catalyst.",
+                                "price_reaction": "Shares reflect part of the catalyst.",
+                                "evidence_refs": [evidence_ref],
+                            }
+                        ],
+                        "realized_facts_summary": "Known HBM catalysts are partly priced.",
+                        "key_variables": [
+                            {
+                                "variable": "Customer ramp timing",
+                                "status": "Qualification known; ramp timing still key.",
+                                "evidence_refs": [evidence_ref],
+                            }
+                        ],
+                        "event_monitoring_direction": {
+                            "known_event_notice": "Qualification is already known.",
+                            "positive_events": ["Customer confirms faster ramp."],
+                            "negative_events": ["Customer delays ramp."],
+                        },
+                        "evidence_refs": [evidence_ref],
+                    },
+                    "evidence_refs": [evidence_ref],
+                    "evidence_requests": [],
+                    "unresolved_reason": None,
+                    "rationale": "Accepted revision plan.",
+                },
+            }
+        ]
+    )
+
+    result = runner.run(task)
+
+    assert result.status is ResultStatus.SUCCEEDED
+    structured = result.payload["structured"]
+    assert "evidence_refs" not in structured
+    candidate = structured["revised_candidate"]
+    assert candidate["document_id"]
+    assert candidate["ticker"] == task.ticker
+    assert candidate["created_at"]
+    assert candidate["expectation_id"] == "exp_resolution"
+    assert candidate["market_view"]["author_agent"] == task.agent_name.value
+    assert candidate["realized_facts"][0]["description"].startswith(
+        "fact: HBM qualification"
+    )
+    assert candidate["key_variables"][0]["name"] == "Customer ramp timing"
+
+
 def test_react_normalizes_output_delegations_for_expectation_construction() -> None:
     task = agent_task().model_copy(
         update={"required_output_schema": "ExpectationConstructionResult"},

@@ -2628,6 +2628,13 @@ def _normalize_final_payload(
                 tool_results=tool_results,
                 delegation_results=delegation_results,
             )
+        if "Document2ResolutionPlan" in _schema_names(required_output_schema):
+            return _normalize_document2_resolution_plan_payload(
+                payload,
+                task=task,
+                tool_results=tool_results,
+                delegation_results=delegation_results,
+            )
         if "ExpectationConstructionResult" in _schema_names(required_output_schema):
             return _normalize_expectation_construction_payload(
                 payload,
@@ -4131,6 +4138,42 @@ def _normalize_expectation_detail_candidate_payload(
             or "O1 expectation detail candidate."
         ),
     }
+
+
+def _normalize_document2_resolution_plan_payload(
+    payload: JsonDict,
+    *,
+    task: AgentTask,
+    tool_results: list[ToolResult],
+    delegation_results: list[AgentResult],
+) -> JsonDict:
+    normalized = dict(payload)
+    evidence_refs = _valid_evidence_ref_payloads(normalized.pop("evidence_refs", None))
+    if not evidence_refs:
+        evidence_refs = [
+            item.model_dump(mode="json")
+            for item in _evidence_refs(tool_results, delegation_results)
+        ]
+    revised_candidate = normalized.get("revised_candidate")
+    if isinstance(revised_candidate, dict):
+        candidate_evidence_refs = _valid_evidence_ref_payloads(
+            revised_candidate.get("evidence_refs")
+        )
+        document_payload = revised_candidate.get("document")
+        candidate = dict(document_payload) if isinstance(document_payload, dict) else dict(
+            revised_candidate
+        )
+        normalized["revised_candidate"] = _normalize_expectation_document_payload(
+            candidate,
+            task=task,
+            fallback_evidence=_merge_evidence_ref_payloads(
+                candidate_evidence_refs,
+                evidence_refs,
+            ),
+            fallback_expectation_id=str(normalized.get("expectation_id") or "")
+            or None,
+        )
+    return normalized
 
 
 def _expectation_detail_shell_id(task: AgentTask) -> str | None:
