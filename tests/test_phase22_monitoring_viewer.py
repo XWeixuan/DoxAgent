@@ -46,8 +46,7 @@ def test_local_viewer_bind_updates_user_configuration() -> None:
         {
             "ticker": "AAPL",
             "source_id": "tikhub_x_search",
-            "keywords": "AAPL earnings, Apple AI",
-            "search_terms": "Apple event",
+            "search_terms": "Apple event, Siri AI",
             "enabled": True,
             "replace": True,
             "poll_interval_seconds": 900,
@@ -61,9 +60,9 @@ def test_local_viewer_bind_updates_user_configuration() -> None:
     assert source is not None
     assert source.poll_interval_seconds == 900
     by_parameter = config["by_parameter_sources"]
-    assert by_parameter[0]["binding"]["parameters"]["keywords"] == [
-        "AAPL earnings",
-        "Apple AI",
+    assert by_parameter[0]["binding"]["parameters"]["search_terms"] == [
+        "Apple event",
+        "Siri AI",
     ]
 
 

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import importlib
 import json
 import re
 import threading
@@ -66,6 +67,9 @@ SIMILARITY_WARNING_THRESHOLD = 0.72
 MICROCOMPACT_MARKER = "[old observation compacted]"
 MAX_TOOL_OBSERVATION_CHARS = 24_000
 _FINAL_PAYLOAD_SCHEMAS: dict[str, type[BaseModel]] = REQUIRED_OUTPUT_SCHEMA_MODELS
+_RUNTIME_FINAL_PAYLOAD_SCHEMA_NAMES = frozenset(
+    {"W1Result", "W2Result", "A2Result", "O3Result"}
+)
 _JSON_FENCE_RE = re.compile(r"^```(?:json)?\s*(.*?)\s*```$", re.DOTALL | re.IGNORECASE)
 _EXPECTATION_UNIT_FLAT_PATCH_FIELDS = {
     "expectation_name",
@@ -83,6 +87,7 @@ _EXPECTATION_UNIT_FLAT_PATCH_FIELDS = {
 class ReActHarnessConfig:
     max_steps: int = 5
     max_tool_calls_per_name: int = MAX_TOOL_CALLS_PER_NAME
+    max_tool_call_batches: int | None = None
     recent_step_window: int = 2
     compaction_token_threshold: int = 12_000
     max_consecutive_compaction_failures: int = 3
@@ -95,6 +100,7 @@ class Scratchpad:
     task: AgentTask
     tool_counts: Counter[str] = field(default_factory=Counter)
     consecutive_tool_loop_counts: Counter[str] = field(default_factory=Counter)
+    tool_call_batches: int = 0
     query_history: list[tuple[str, str]] = field(default_factory=list)
     plan: list[str] = field(default_factory=list)
     task_ledger: list[JsonDict] = field(default_factory=list)
@@ -130,6 +136,12 @@ class Scratchpad:
 
     def can_call_tool(self, tool_name: str, max_consecutive_loops: int) -> bool:
         return self.consecutive_tool_loop_counts[tool_name] <= max_consecutive_loops
+
+    def can_start_tool_call_batch(self, max_tool_call_batches: int | None) -> bool:
+        return max_tool_call_batches is None or self.tool_call_batches < max_tool_call_batches
+
+    def record_tool_call_batch(self) -> None:
+        self.tool_call_batches += 1
 
     def record_tool_attempt(self, tool_name: str, input_payload: JsonDict) -> list[str]:
         self.tool_counts[tool_name] += 1
@@ -516,6 +528,23 @@ class ReActAgentHarness:
                     )
 
             if tool_call_inputs:
+                if not scratchpad.can_start_tool_call_batch(self.config.max_tool_call_batches):
+                    return _failed(
+                        task,
+                        "tool_call_batch_limit_exceeded",
+                        (
+                            "ReAct task exceeded the configured tool-call batch budget; "
+                            "produce a final payload from existing context."
+                        ),
+                        tool_results=tool_results,
+                        delegation_results=delegation_results,
+                        scratchpad=scratchpad,
+                        details={
+                            "max_tool_call_batches": self.config.max_tool_call_batches,
+                            "attempted_batch_step": step,
+                        },
+                    )
+                scratchpad.record_tool_call_batch()
                 step_results = await self._execute_tool_calls(
                     step=step,
                     task=task,
@@ -551,7 +580,7 @@ class ReActAgentHarness:
                         scratchpad.record_no_progress(step=step)
                         continue
                     scratchpad.record_no_progress(step=step)
-                    recovered_review = self._succeeded_with_review_max_steps_fallback(
+                    recovered_review_result = self._succeeded_with_review_max_steps_fallback(
                         task=task,
                         definition=definition,
                         assembled_prompt=assembled_prompt,
@@ -561,8 +590,8 @@ class ReActAgentHarness:
                         delegation_results=delegation_results,
                         scratchpad=scratchpad,
                     )
-                    if recovered_review is not None:
-                        return recovered_review
+                    if recovered_review_result is not None:
+                        return recovered_review_result
                     return _failed(
                         task,
                         "react_incomplete_final_payload",
@@ -575,7 +604,7 @@ class ReActAgentHarness:
                     scratchpad.record_no_progress(step=step)
                     continue
                 scratchpad.record_no_progress(step=step)
-                recovered_review = self._succeeded_with_review_max_steps_fallback(
+                recovered_review_result = self._succeeded_with_review_max_steps_fallback(
                     task=task,
                     definition=definition,
                     assembled_prompt=assembled_prompt,
@@ -585,8 +614,8 @@ class ReActAgentHarness:
                     delegation_results=delegation_results,
                     scratchpad=scratchpad,
                 )
-                if recovered_review is not None:
-                    return recovered_review
+                if recovered_review_result is not None:
+                    return recovered_review_result
                 return _failed(
                     task,
                     "react_no_progress",
@@ -633,14 +662,14 @@ class ReActAgentHarness:
                 ),
             )
 
-        recovered_review = _max_steps_review_result_fallback(
+        recovered_review_payload = _max_steps_review_result_fallback(
             task,
             tool_results=tool_results,
             delegation_results=delegation_results,
             scratchpad=scratchpad,
         )
-        if recovered_review is not None:
-            return self._succeeded_with_review_max_steps_fallback(
+        if recovered_review_payload is not None:
+            recovered_review_result = self._succeeded_with_review_max_steps_fallback(
                 task=task,
                 definition=definition,
                 assembled_prompt=assembled_prompt,
@@ -649,8 +678,10 @@ class ReActAgentHarness:
                 tool_results=tool_results,
                 delegation_results=delegation_results,
                 scratchpad=scratchpad,
-                recovered_review=recovered_review,
+                recovered_review=recovered_review_payload,
             )
+            if recovered_review_result is not None:
+                return recovered_review_result
 
         return _failed(
             task,
@@ -1418,6 +1449,7 @@ def _react_user_prompt(
             "react_protocol": {
                 "max_steps": config.max_steps,
                 "max_tool_calls_per_name": config.max_tool_calls_per_name,
+                "max_tool_call_batches": config.max_tool_call_batches,
                 "tool_call_limit_scope": (
                     "The limit applies to consecutive ReAct loops for the same tool name "
                     "inside this task node, not to the number of same-name calls inside "
@@ -1634,9 +1666,22 @@ def _coerce_direct_final_action(action: JsonDict, required_output_schema: str) -
 
 def _has_final_payload_schema(required_output_schema: str) -> bool:
     return any(
-        schema_name in _FINAL_PAYLOAD_SCHEMAS
+        _final_payload_schema_model(schema_name) is not None
         for schema_name in _schema_names(required_output_schema)
     )
+
+
+def _final_payload_schema_model(schema_name: str) -> type[BaseModel] | None:
+    model = _FINAL_PAYLOAD_SCHEMAS.get(schema_name)
+    if model is not None:
+        return model
+    if schema_name not in _RUNTIME_FINAL_PAYLOAD_SCHEMA_NAMES:
+        return None
+    module = importlib.import_module("doxagent.persistent_runtime.schema")
+    candidate = getattr(module, schema_name, None)
+    if isinstance(candidate, type) and issubclass(candidate, BaseModel):
+        return candidate
+    return None
 
 
 def _looks_like_react_prompt_echo(payload: JsonDict) -> bool:
@@ -1699,6 +1744,19 @@ def _looks_like_direct_final_payload(payload: JsonDict, required_output_schema: 
             "key_variables",
             "event_monitoring_direction",
         },
+        "ExpectationDetailCandidateResult": {
+            "candidate",
+            "expectation_unit",
+            "realized_facts",
+            "key_variables",
+            "event_monitoring_direction",
+        },
+        "Document2ResolutionPlan": {
+            "expectation_id",
+            "decisions",
+            "revised_candidate",
+            "unresolved_reason",
+        },
         "KnownEventsDocument": {
             "document_id",
             "document_type",
@@ -1718,6 +1776,33 @@ def _looks_like_direct_final_payload(payload: JsonDict, required_output_schema: 
             "direct_trade_rules",
             "push_to_agent_rules",
             "cache_rules",
+        },
+        "W1Result": {
+            "is_new",
+            "novelty_label",
+            "matched_known_event_ids",
+            "confidence",
+            "reasoning",
+        },
+        "W2Result": {
+            "matched_policy_code",
+            "type",
+            "reasoning",
+        },
+        "A2Result": {
+            "is_new",
+            "verification_status",
+            "reasoning",
+            "evidence_refs",
+        },
+        "O3Result": {
+            "primary_action",
+            "confidence",
+            "side_effects",
+            "trade_intent",
+            "known_events_patch",
+            "blackboard_target",
+            "reasoning",
         },
     }
     keys = set(payload)
@@ -1814,7 +1899,7 @@ def _final_payload_schema_error(payload: JsonDict, required_output_schema: str) 
     errors: list[str] = []
     schema_checked = False
     for schema_name in _schema_names(required_output_schema):
-        model = _FINAL_PAYLOAD_SCHEMAS.get(schema_name)
+        model = _final_payload_schema_model(schema_name)
         if model is None:
             continue
         schema_checked = True
@@ -1916,6 +2001,106 @@ def _output_contract(required_output_schema: str, *, task: AgentTask | None = No
                     (
                         "Every realized_fact and key_variable must include evidence_refs; "
                         "price_reaction must be concrete, not unknown."
+                    ),
+                ],
+            }
+        elif schema_name == "ExpectationDetailCandidateResult":
+            contracts[schema_name] = {
+                "final_payload": {
+                    "candidate": {
+                        "document_id": "doc_<id>",
+                        "document_type": "expectation_unit",
+                        "ticker": "<ticker>",
+                        "expectation_id": "same as expectation_shell.expectation_id",
+                        "expectation_name": "same as expectation_shell.expectation_name",
+                        "direction": "same as expectation_shell.direction",
+                        "why_it_matters": "same as expectation_shell.why_it_matters",
+                        "market_view": (
+                            "same complete ResearchSection as expectation_shell.market_view"
+                        ),
+                        "realized_facts": [],
+                        "realized_facts_summary": "summary of realized facts",
+                        "key_variables": [],
+                        "event_monitoring_direction": {
+                            "known_event_notice": "monitoring note",
+                            "positive_events": [],
+                            "negative_events": [],
+                        },
+                        "created_at": "ISO-8601 timestamp",
+                    },
+                    "evidence_refs": [],
+                    "delegations": [],
+                    "unknowns": [],
+                    "rationale": "detail completion rationale",
+                },
+                "rules": [
+                    "Return exactly one complete candidate document, not BlackboardPatch.",
+                    (
+                        "Preserve expectation_id, expectation_name, direction, "
+                        "why_it_matters, and market_view from expectation_shell."
+                    ),
+                    (
+                        "Complete realized_facts, realized_facts_summary, key_variables, "
+                        "and event_monitoring_direction."
+                    ),
+                    (
+                        "event_monitoring_direction must be an object with "
+                        "known_event_notice string, positive_events list[str], and "
+                        "negative_events list[str]. Do not return known_upcoming_events."
+                    ),
+                    (
+                        "Every realized_fact and key_variable must include evidence_refs; "
+                        "price_reaction must be concrete, not unknown."
+                    ),
+                ],
+            }
+        elif schema_name == "Document2ResolutionPlan":
+            contracts[schema_name] = {
+                "final_payload": {
+                    "expectation_id": "affected expectation id",
+                    "decision": "resolved | accepted | partially_accepted | rejected | deferred",
+                    "decisions": [
+                        {
+                            "objection_id": "must match one unresolved objection id",
+                            "finding_id": None,
+                            "decision": (
+                                "resolved | accepted | partially_accepted | rejected | deferred"
+                            ),
+                            "resolution_note": (
+                                "concise reason, citing compact patch fields or reviewer evidence"
+                            ),
+                            "changed_paths": [
+                                "document.<field_path> touched or confirmed"
+                            ],
+                            "evidence_refs": [],
+                        }
+                    ],
+                    "revised_candidate": (
+                        "complete ExpectationUnitDocument only when accepted or "
+                        "partially_accepted requires content revision; otherwise null"
+                    ),
+                    "evidence_requests": [],
+                    "unresolved_reason": None,
+                    "rationale": "short summary of the resolution plan",
+                },
+                "rules": [
+                    "This is a resolution-plan task, not a patch-submission task.",
+                    "Do not return proposed_patches or BlackboardPatch.",
+                    (
+                        "Return exactly one decisions item for each "
+                        "input_context.unresolved_objections item."
+                    ),
+                    (
+                        "If a revision is needed, return revised_candidate as a complete "
+                        "ExpectationUnitDocument preserving expectation identity."
+                    ),
+                    (
+                        "For resolved, rejected, accepted, or partially_accepted decisions, "
+                        "include changed_paths or evidence_refs; do not silently close blockers."
+                    ),
+                    (
+                        "O1's decision is advisory: transaction revalidation decides whether "
+                        "blockers close or remain open."
                     ),
                 ],
             }
@@ -2170,6 +2355,97 @@ def _output_contract(required_output_schema: str, *, task: AgentTask | None = No
                     "Set can_complete_delegation=true only with enough public-source support.",
                 ],
             }
+        elif schema_name == "W1Result":
+            contracts[schema_name] = {
+                "final_payload": {
+                    "is_new": True,
+                    "novelty_label": (
+                        "old_duplicate | known_event_recap | material_update | new_event"
+                    ),
+                    "matched_known_event_ids": [],
+                    "confidence": "high | medium | low",
+                    "reasoning": "one concise reason based on Known Events",
+                },
+                "rules": [
+                    "Use only is_new and confidence for downstream route decisions.",
+                    (
+                        "is_new must be true only for material_update or new_event; "
+                        "old_duplicate and known_event_recap must set is_new=false."
+                    ),
+                ],
+            }
+        elif schema_name == "W2Result":
+            contracts[schema_name] = {
+                "final_payload": {
+                    "matched_policy_code": "policy_<id> or null",
+                    "type": (
+                        "Direct Trade Candidate | Escalate to Background Agent | "
+                        "NULL | Irrelevant"
+                    ),
+                    "reasoning": "one concise policy-match reason",
+                },
+                "rules": [
+                    "Do not output confidence.",
+                    "DTC and EBA require matched_policy_code.",
+                    "NULL and Irrelevant must use matched_policy_code=null.",
+                    "NULL means relevant but no policy matched; it is not cache.",
+                    "Irrelevant means false recall, low relevance, or low quality.",
+                ],
+            }
+        elif schema_name == "A2Result":
+            contracts[schema_name] = {
+                "final_payload": {
+                    "is_new": True,
+                    "verification_status": (
+                        "verified | likely_true | unverified | likely_false | denied"
+                    ),
+                    "reasoning": "one concise verification reason",
+                    "evidence_refs": [],
+                },
+                "rules": [
+                    "Return a lightweight fact verification result.",
+                    "Do not create trading or archive side effects.",
+                ],
+            }
+        elif schema_name == "O3Result":
+            contracts[schema_name] = {
+                "final_payload": {
+                    "primary_action": (
+                        "trading_record | ingest_queue | archive | objection | "
+                        "objection_note"
+                    ),
+                    "confidence": "high | medium | low or null",
+                    "side_effects": [],
+                    "trade_intent": {
+                        "side": "long | short | exit",
+                        "conviction": "low | medium | high",
+                        "size_bucket": "small | normal | aggressive",
+                        "reasoning": "why this is only a trade intent",
+                    },
+                    "known_events_patch": {
+                        "event_id": "known_event_<id>",
+                        "event_time_or_window": "date/window or null",
+                        "core_fact": "short durable fact",
+                        "duplicate_detection_keys": [],
+                    },
+                    "blackboard_target": "document/field target for objection actions or null",
+                    "objection_type": "objection | objection_note or null",
+                    "reasoning": "one concise bounded-expert judgment",
+                    "evidence_refs": [],
+                },
+                "rules": [
+                    "O3 is a bounded expert: do not start an open-ended agent loop.",
+                    "Use at most two model calls and one parallel tool-call batch.",
+                    "Never call a broker or output a real order.",
+                    "trading_record requires trade_intent.",
+                    "objection and objection_note require blackboard_target.",
+                    (
+                        "If side_effects contains known_events_update, include "
+                        "known_events_patch."
+                    ),
+                    "Low-confidence non-urgent updates should be objection_note.",
+                ],
+            }
         elif schema_name == "KnownEventsDocument":
             contracts[schema_name] = {
         "final_payload": {
@@ -2258,7 +2534,7 @@ def _output_contract(required_output_schema: str, *, task: AgentTask | None = No
                     "policies": [
                         {
                             "policy_id": "policy_<id>",
-                            "policy_type": "direct_trade | escalate | cache",
+                            "policy_type": "direct_trade | escalate",
                             "scope": {
                                 "expectation_unit_id": "expectation_<id>",
                                 "event_type": (
@@ -2290,18 +2566,17 @@ def _output_contract(required_output_schema: str, *, task: AgentTask | None = No
                         "MonitoringPolicyDocument 由 O4 生成；"
                         "直接交易类只输出 trade intent，不得执行券商下单。"
                     ),
-                    "policy_type 只能是 direct_trade、escalate、cache。",
+                    "policy_type 只能是 direct_trade 或 escalate；不要输出 cache policy。",
                     (
-                        "必须覆盖 direct_trade、escalate、cache 三类，"
+                        "必须覆盖 direct_trade、escalate 两类，"
                         "或用 no_action_rationale 解释省略原因。"
                     ),
                     (
                         "direct_trade.action 必须包含 side、conviction、size_bucket；"
-                        "escalate.action 必须包含 send_to、question、priority；"
-                        "cache.action 必须包含 cache_label、handling。"
+                        "escalate.action 必须包含 send_to、question、priority。"
                     ),
                     (
-                        "不要输出时间字段或 source_condition；"
+                        "不要输出时间字段、source_condition、cache_label 或 handling；"
                         "source 可信度规则属于低参数 LLM system prompt。"
                     ),
                 ],
@@ -2385,6 +2660,8 @@ def _normalize_final_payload(
             return _normalize_monitoring_config_document_payload(payload, task=task)
         if "MonitoringPolicyDocument" in _schema_names(required_output_schema):
             return _normalize_monitoring_policy_document_payload(payload, task=task)
+        if "O3Result" in _schema_names(required_output_schema):
+            return _normalize_o3_result_payload(payload)
         return payload
     text = _research_section_text(payload)
     summary = str(payload.get("summary") or payload.get("section_summary") or "")
@@ -2462,6 +2739,54 @@ def _normalize_known_events_document_payload(
         "created_at": _event_time(payload.get("created_at")),
         "events": events,
     }
+
+
+def _normalize_o3_result_payload(payload: JsonDict) -> JsonDict:
+    normalized = dict(payload)
+    raw_side_effects = normalized.get("side_effects")
+    side_effects: list[str] = []
+    if isinstance(raw_side_effects, list):
+        for item in raw_side_effects:
+            if isinstance(item, str):
+                cleaned = item.strip()
+                if cleaned:
+                    side_effects.append(cleaned)
+                continue
+            if not isinstance(item, dict):
+                continue
+            effect_type = str(
+                item.get("type")
+                or item.get("side_effect")
+                or item.get("effect")
+                or item.get("action")
+                or ""
+            ).strip()
+            if "known_events" in effect_type or item.get("known_events_patch"):
+                effect_type = "known_events_update"
+                patch = (
+                    item.get("known_events_patch")
+                    or item.get("patch")
+                    or item.get("payload")
+                )
+                if isinstance(patch, dict) and not isinstance(
+                    normalized.get("known_events_patch"),
+                    dict,
+                ):
+                    normalized["known_events_patch"] = patch
+            if effect_type:
+                side_effects.append(effect_type)
+    elif isinstance(raw_side_effects, str) and raw_side_effects.strip():
+        side_effects.append(raw_side_effects.strip())
+    if side_effects or raw_side_effects is not None:
+        normalized["side_effects"] = side_effects
+    raw_evidence_refs = normalized.get("evidence_refs")
+    if isinstance(raw_evidence_refs, list):
+        normalized["evidence_refs"] = [
+            item if isinstance(item, dict) else {"ref": str(item)}
+            for item in raw_evidence_refs
+            if isinstance(item, dict) or str(item).strip()
+        ]
+    return normalized
 
 
 def _normalize_monitoring_config_document_payload(
@@ -2547,7 +2872,7 @@ def _normalize_monitoring_policy_document_payload(
 ) -> JsonDict:
     policies = _normalize_policy_rule_payloads(
         payload.get("policies"),
-        default_action_type="cache",
+        default_action_type="push_to_agent",
     )
     direct_rules = _normalize_policy_rule_payloads(
         payload.get("direct_trade_rules"),
@@ -2557,18 +2882,12 @@ def _normalize_monitoring_policy_document_payload(
         payload.get("push_to_agent_rules") or payload.get("escalate_rules") or payload.get("rules"),
         default_action_type="push_to_agent",
     )
-    cache_rules = _normalize_policy_rule_payloads(
-        payload.get("cache_rules"),
-        default_action_type="cache",
-    )
     if not policies:
-        policies = [*direct_rules, *push_rules, *cache_rules]
+        policies = [*direct_rules, *push_rules]
     if not direct_rules:
         direct_rules = [item for item in policies if item.get("policy_type") == "direct_trade"]
     if not push_rules:
         push_rules = [item for item in policies if item.get("policy_type") == "escalate"]
-    if not cache_rules:
-        cache_rules = [item for item in policies if item.get("policy_type") == "cache"]
     return {
         "document_id": str(payload.get("document_id") or new_id("doc")),
         "document_type": "monitoring_policy",
@@ -2577,7 +2896,7 @@ def _normalize_monitoring_policy_document_payload(
         "policies": policies,
         "direct_trade_rules": direct_rules,
         "push_to_agent_rules": push_rules,
-        "cache_rules": cache_rules,
+        "cache_rules": [],
         "no_action_rationale": payload.get("no_action_rationale")
         or payload.get("omission_rationale"),
     }
@@ -2588,10 +2907,11 @@ def _normalize_policy_rule_payloads(value: Any, *, default_action_type: str) -> 
     for item in value if isinstance(value, list) else []:
         if not isinstance(item, dict):
             continue
-        action_type = str(item.get("action_type") or default_action_type)
+        action_type = str(item.get("action_type") or "")
         policy_type = str(item.get("policy_type") or "")
         if not policy_type:
-            policy_type = "escalate" if action_type == "push_to_agent" else action_type
+            resolved_action = action_type or default_action_type
+            policy_type = "escalate" if resolved_action == "push_to_agent" else resolved_action
         if not action_type:
             action_type = "push_to_agent" if policy_type == "escalate" else policy_type
         trigger_condition = str(
@@ -2665,9 +2985,7 @@ def _chinese_policy_action(value: Any, *, action_type: str) -> str:
         return "标记为 direct_trade 候选，交由人工或 O3 复核"
     if action_type == "push_to_agent":
         return "推送给相关研究 agent 复核信号含义"
-    if action_type == "cache":
-        return "缓存为批量复核材料"
-    return "标记为后续复核事项"
+    return "推送给相关研究 agent 复核信号含义"
 
 
 def _chinese_policy_strategy_note(value: Any, *, action_type: str) -> str:
@@ -2678,9 +2996,7 @@ def _chinese_policy_strategy_note(value: Any, *, action_type: str) -> str:
         return "仅作为路由候选，不触发券商下单。"
     if action_type == "push_to_agent":
         return "需要 agent 复核叙事、证据与价格反应。"
-    if action_type == "cache":
-        return "低置信度、重复或时效性较弱的信号先缓存，等待批量复核。"
-    return "由监控策略输出生成，供后续复核使用。"
+    return "需要 agent 复核叙事、证据与价格反应。"
 
 
 def _policy_action_payload(value: Any, *, policy_type: str) -> JsonDict:
@@ -2701,8 +3017,9 @@ def _policy_action_payload(value: Any, *, policy_type: str) -> JsonDict:
             "priority": "medium",
         }
     return {
-        "cache_label": "background_only",
-        "handling": text or "进入缓存，等待批量复核。",
+        "send_to": ["O3"],
+        "question": text or "请复核运行时消息是否需要交易记录、归档或 blackboard 修正。",
+        "priority": "medium",
     }
 
 
@@ -4188,8 +4505,6 @@ def _after_from_flat_expectation_patch_fields(payload: JsonDict) -> JsonDict:
 def _after_from_patch_changes(changes: JsonDict) -> JsonDict:
     after: JsonDict = {}
     for raw_path, value in changes.items():
-        if not isinstance(raw_path, str):
-            continue
         path = raw_path.removeprefix("document.").strip(".")
         if not path:
             continue

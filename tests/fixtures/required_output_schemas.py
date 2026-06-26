@@ -3,15 +3,22 @@ from doxagent.models import (
     DelegatedRetrievalResult,
     DoxAtlasAuditResult,
     ExpectationConstructionResult,
+    ExpectationDetailCandidateResult,
     ExpectationFieldReviewResult,
     ExpectationShell,
     ExpectationShellConstructionResult,
+    ExpectationUnitDocument,
     ResearchSection,
     ResultStatus,
     ToolCallSummary,
 )
+from doxagent.workflows.document2 import (
+    Document2ResolutionDecisionRecord,
+    Document2ResolutionPlan,
+)
 from tests.fixtures.phase1_contracts import (
     evidence_ref,
+    expectation_document,
     known_events_document,
     monitoring_config_document,
     monitoring_policy_document,
@@ -60,6 +67,26 @@ def golden_required_output_payloads() -> dict[str, dict[str, object]]:
         ).model_dump(mode="json"),
         "ExpectationConstructionResult": expectation_result.model_dump(mode="json"),
         "ExpectationDetailResult": expectation_result.model_dump(mode="json"),
+        "ExpectationDetailCandidateResult": ExpectationDetailCandidateResult(
+            candidate=ExpectationUnitDocument.model_validate(expectation_document()),
+            evidence_refs=[evidence],
+            unknowns=[],
+            rationale="Valid expectation candidate.",
+        ).model_dump(mode="json"),
+        "Document2ResolutionPlan": Document2ResolutionPlan(
+            expectation_id="exp_ai_demand",
+            decision="resolved",
+            decisions=[
+                Document2ResolutionDecisionRecord(
+                    objection_id="obj_ai_demand",
+                    decision="resolved",
+                    resolution_note="The compact evidence resolves the review finding.",
+                    changed_paths=["document.market_view"],
+                    evidence_refs=[evidence],
+                )
+            ],
+            rationale="Valid resolution plan.",
+        ).model_dump(mode="json"),
         "DoxAtlasAuditResult": DoxAtlasAuditResult(
             verdict="pass",
             revision_required=False,

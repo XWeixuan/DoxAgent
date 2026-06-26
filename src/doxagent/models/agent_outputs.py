@@ -1,6 +1,6 @@
 """Structured outputs for real O1/A1/A2 workflow execution."""
 
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import Field
 
@@ -13,7 +13,7 @@ from doxagent.models.blackboard import (
 )
 from doxagent.models.common import AgentName, EvidenceSourceType
 from doxagent.models.contracts import ContractModel, ToolCallSummary
-from doxagent.models.documents import ResearchSection
+from doxagent.models.documents import ExpectationUnitDocument, ResearchSection
 from doxagent.models.ids import NonEmptyStr, new_id
 
 
@@ -67,6 +67,49 @@ class ExpectationConstructionResult(ContractModel):
 
 class ExpectationDetailResult(ExpectationConstructionResult):
     """O1 output for one completed expectation-unit patch."""
+
+
+class ExpectationDetailCandidateResult(ContractModel):
+    """O1 output for one complete expectation-unit candidate, without patches."""
+
+    candidate: ExpectationUnitDocument
+    evidence_refs: list[EvidenceRef] = Field(default_factory=list)
+    delegations: list[Delegation] = Field(default_factory=list)
+    unknowns: list[NonEmptyStr] = Field(default_factory=list)
+    rationale: NonEmptyStr
+
+
+class Document2ResolutionDecisionOutput(ContractModel):
+    """O1 resolver decision item before transaction-layer application."""
+
+    objection_id: NonEmptyStr | None = None
+    finding_id: NonEmptyStr | None = None
+    decision: Literal["resolved", "accepted", "partially_accepted", "rejected", "deferred"]
+    resolution_note: NonEmptyStr
+    changed_paths: list[NonEmptyStr] = Field(default_factory=list)
+    evidence_refs: list[EvidenceRef] = Field(default_factory=list)
+
+
+class Document2ResolutionPlanOutput(ContractModel):
+    """O1 resolver output: advisory plan only, never BlackboardPatch."""
+
+    plan_id: NonEmptyStr | None = None
+    expectation_id: NonEmptyStr
+    decision: Literal[
+        "resolved",
+        "accepted",
+        "partially_accepted",
+        "rejected",
+        "deferred",
+    ] = "deferred"
+    decisions: list[Document2ResolutionDecisionOutput] = Field(default_factory=list)
+    target_finding_ids: list[NonEmptyStr] = Field(default_factory=list)
+    proposed_revision: dict[str, Any] | None = None
+    revised_candidate: ExpectationUnitDocument | None = None
+    evidence_requests: list[NonEmptyStr] = Field(default_factory=list)
+    unresolved_finding_ids: list[NonEmptyStr] = Field(default_factory=list)
+    unresolved_reason: NonEmptyStr | None = None
+    rationale: NonEmptyStr
 
 
 class DoxAtlasAuditFinding(ContractModel):

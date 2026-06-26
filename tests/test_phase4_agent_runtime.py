@@ -35,8 +35,11 @@ def test_default_registry_contains_phase4_agent_set() -> None:
     registry = default_agent_registry()
 
     assert set(registry.names()) == {
+        AgentName.W1_RUNTIME_NOVELTY,
+        AgentName.W2_RUNTIME_POLICY,
         AgentName.O1_EXPECTATION_OWNER,
         AgentName.O2_MONITORING_CONFIG,
+        AgentName.O3_TRADING_STRATEGY,
         AgentName.O4_MARKET_TRACE,
         AgentName.A1_DOXATLAS_AUDIT,
         AgentName.A2_FACT_CHECK,
@@ -56,7 +59,7 @@ def test_registry_unknown_agent_raises() -> None:
     registry = default_agent_registry()
 
     with pytest.raises(UnknownAgentError):
-        registry.get(AgentName.O3_TRADING_STRATEGY)
+        registry.get("UNKNOWN")  # type: ignore[arg-type]
 
 
 def test_mock_runner_returns_agent_result_without_blackboard_mutation() -> None:

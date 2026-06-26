@@ -31,10 +31,19 @@ class DoxAgentSettings(BaseSettings):
         default="https://dashscope.aliyuncs.com/api/v2/apps/protocols/compatible-mode/v1",
         validation_alias="DASHSCOPE_BASE_URL",
     )
+    dashscope_chat_base_url: str = Field(
+        default="https://dashscope.aliyuncs.com/compatible-mode/v1",
+        validation_alias="DASHSCOPE_CHAT_BASE_URL",
+    )
     dashscope_model: str = Field(default="qwen3.7-plus", validation_alias="DASHSCOPE_MODEL")
     dashscope_enable_thinking: bool = Field(
         default=True,
         validation_alias="DASHSCOPE_ENABLE_THINKING",
+    )
+    dashscope_thinking_budget: int | None = Field(
+        default=None,
+        ge=1,
+        validation_alias="DASHSCOPE_THINKING_BUDGET",
     )
 
     langsmith_tracing: bool = Field(default=False, validation_alias="LANGSMITH_TRACING")
@@ -169,6 +178,73 @@ class DoxAgentSettings(BaseSettings):
         default="https://api.stocktwits.com/api/2",
         validation_alias="STOCKTWITS_PUBLIC_BASE_URL",
     )
+    stocktwits_public_path_template: str = Field(
+        default="/streams/symbol/{symbol}.json",
+        validation_alias="STOCKTWITS_PUBLIC_PATH_TEMPLATE",
+    )
+    stocktwits_storage_mode: Literal["memory", "postgres"] = Field(
+        default="postgres",
+        validation_alias="DOXAGENT_STOCKTWITS_STORAGE_MODE",
+    )
+    stocktwits_default_symbols: str = Field(
+        default="AAPL,MSFT,NVDA,TSLA,AMZN,META,GOOGL,AMD,PLTR,MU",
+        validation_alias="DOXAGENT_STOCKTWITS_SYMBOLS",
+    )
+    stocktwits_target_cadence_seconds: int = Field(
+        default=300,
+        ge=30,
+        validation_alias="DOXAGENT_STOCKTWITS_TARGET_CADENCE_SECONDS",
+    )
+    stocktwits_hot_cadence_seconds: int = Field(
+        default=90,
+        ge=30,
+        validation_alias="DOXAGENT_STOCKTWITS_HOT_CADENCE_SECONDS",
+    )
+    stocktwits_scheduler_tick_seconds: int = Field(
+        default=30,
+        ge=1,
+        validation_alias="DOXAGENT_STOCKTWITS_SCHEDULER_TICK_SECONDS",
+    )
+    stocktwits_page_size: int = Field(
+        default=30,
+        ge=1,
+        validation_alias="DOXAGENT_STOCKTWITS_PAGE_SIZE",
+    )
+    stocktwits_max_pages_per_crawl: int = Field(
+        default=10,
+        ge=1,
+        validation_alias="DOXAGENT_STOCKTWITS_MAX_PAGES_PER_CRAWL",
+    )
+    stocktwits_hot_message_threshold: int = Field(
+        default=80,
+        ge=1,
+        validation_alias="DOXAGENT_STOCKTWITS_HOT_MESSAGE_THRESHOLD",
+    )
+    stocktwits_hot_cooldown_successes: int = Field(
+        default=3,
+        ge=1,
+        validation_alias="DOXAGENT_STOCKTWITS_HOT_COOLDOWN_SUCCESSES",
+    )
+    stocktwits_min_request_interval_seconds: float = Field(
+        default=1.0,
+        ge=0,
+        validation_alias="DOXAGENT_STOCKTWITS_MIN_REQUEST_INTERVAL_SECONDS",
+    )
+    stocktwits_request_timeout_seconds: float = Field(
+        default=15.0,
+        gt=0,
+        validation_alias="DOXAGENT_STOCKTWITS_REQUEST_TIMEOUT_SECONDS",
+    )
+    stocktwits_max_retries: int = Field(
+        default=3,
+        ge=1,
+        validation_alias="DOXAGENT_STOCKTWITS_MAX_RETRIES",
+    )
+    stocktwits_retry_base_delay_seconds: float = Field(
+        default=1.0,
+        ge=0,
+        validation_alias="DOXAGENT_STOCKTWITS_RETRY_BASE_DELAY_SECONDS",
+    )
     tikhub_api_key: str | None = Field(default=None, validation_alias="TIKHUB_API_KEY")
     tikhub_base_url: str = Field(
         default="https://api.tikhub.io",
@@ -200,6 +276,14 @@ class DoxAgentSettings(BaseSettings):
         default=45,
         ge=1,
         validation_alias="DOXAGENT_MONITORING_REMOTE_TIMEOUT_SECONDS",
+    )
+    persistent_runtime_storage_mode: Literal["memory", "sqlite"] = Field(
+        default="sqlite",
+        validation_alias="DOXAGENT_PERSISTENT_RUNTIME_STORAGE_MODE",
+    )
+    persistent_runtime_sqlite_path: str = Field(
+        default=".tmp/persistent_runtime_execution.sqlite3",
+        validation_alias="DOXAGENT_PERSISTENT_RUNTIME_SQLITE_PATH",
     )
 
     polymarket_gamma_base_url: str = Field(

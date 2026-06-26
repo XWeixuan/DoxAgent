@@ -30,6 +30,8 @@ rubrics:
       - All five required sections in stable global_research.
       - Whether each section has a distinct research angle rather than repeating
         generic ticker facts.
+      - Whether Document 1 emphasizes recent developments and market reactions,
+        using longer-cycle evidence as context rather than as a generic overview.
       - Whether sections connect their facts to the ticker's expectation setup.
       - LangSmith C1/C2/C3/O4/O1 narrative loops for actual reasoning and source
         use.
@@ -41,10 +43,11 @@ rubrics:
       connection to later expectation construction.
     score_3: >
       Adequate baseline coverage with some ticker-specific facts, but important
-      drivers or conflicts remain thin.
+      recent drivers or conflicts remain thin.
     score_4: >
       Strong and differentiated coverage across sections, with clear links from
-      research evidence to likely expectation themes.
+      recent research evidence and longer-cycle context to likely expectation
+      themes.
     score_5: >
       Institutional-quality coverage that surfaces non-obvious drivers,
       counterarguments, market context, and explicit implications for expectation
@@ -116,7 +119,8 @@ rubrics:
         unresolved drivers.
       - O4 market trace and review loops for price/volume evidence.
     score_1: >
-      Treats old known facts as fresh catalysts or lacks price reaction analysis.
+      Treats old known facts as fresh catalysts, turns recent research into a
+      generic long-horizon overview, or lacks price reaction analysis.
     score_2: >
       Mentions market reaction superficially but does not separate known facts
       from unpriced variables.

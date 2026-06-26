@@ -1211,24 +1211,24 @@ INDEX_HTML = r"""<!doctype html>
 
     const $ = (id) => document.getElementById(id);
     const SOURCE_FIELDS = {
-      benzinga_news: [],
+      benzinga_news: ["search_terms"],
       finnhub_company_news: [],
       stocktwits_messages: [],
-      tikhub_x_search: ["keywords", "search_terms", "source_filters"],
+      tikhub_x_search: ["search_terms"],
       tikhub_x_user_posts: ["usernames"],
       newswire_rss: ["rss_urls"]
     };
     const FIELD_PLACEHOLDERS = {
-      benzinga_news: {},
+      benzinga_news: {
+        search_terms: "Micron, Apple earnings"
+      },
       finnhub_company_news: {},
       stocktwits_messages: {},
       tikhub_x_search: {
-        keywords: "MU earnings, HBM, AI memory",
-        search_terms: "MU HBM supply OR Micron earnings",
-        source_filters: "Official, semiconductor analysts, product launch"
+        search_terms: "$MU, Micron HBM"
       },
       tikhub_x_user_posts: {
-        usernames: "microntech, another_user"
+        usernames: "microntech"
       },
       newswire_rss: {
         rss_urls: "https://example.com/rss.xml"

@@ -61,7 +61,7 @@ def test_default_sources_preserve_source_and_interface_dimensions() -> None:
         sources["stocktwits_messages"].config["rapidapi_path"]
         == "/functions/v1/stocktwits-query"
     )
-    assert sources["stocktwits_messages"].config["force_refresh"] is True
+    assert sources["stocktwits_messages"].config["force_refresh"] is False
     assert sources["tikhub_x_search"].interface_type is InterfaceType.BY_PARAMETER
     assert sources["tikhub_x_user_posts"].interface_type is InterfaceType.BY_PARAMETER
     assert sources["newswire_rss"].source_type is SourceType.MEDIA
@@ -109,6 +109,46 @@ def test_ingest_persists_raw_standard_event_and_blocks_exact_duplicate() -> None
     assert len(repository.recent_events(ticker="AAPL")) == 1
     raw = repository.recent_raw_messages(ticker="AAPL")[0]
     assert raw.duplicate_seen_count == 1
+
+
+def test_benzinga_standard_body_is_plain_text_while_raw_keeps_html() -> None:
+    repository = InMemoryMonitoringRepository()
+    service = MonitoringBusService(repository)
+    binding = service.configure_ticker_source("MU", "benzinga_news")
+    source = repository.get_source("benzinga_news")
+    assert source is not None
+    html_body = (
+        "<p>Micron&#8217;s setup includes <strong>HBM demand</strong> "
+        '<a href="https://example.test">details</a>.</p><p>Second paragraph.</p>'
+    )
+    fetched = FetchedExternalMessage(
+        source_id=source.source_id,
+        binding_id=binding.binding_id,
+        ticker=binding.ticker,
+        source_type=source.source_type,
+        interface_type=source.interface_type,
+        provider_message_id="bz-html-1",
+        source_url="https://example.test/bz-html",
+        source_published_at=binding.updated_at + timedelta(seconds=1),
+        raw_payload={
+            "id": "bz-html-1",
+            "title": "Micron HTML article",
+            "body": html_body,
+            "url": "https://example.test/bz-html",
+            "stocks": [{"name": "MU"}],
+            "created": (binding.updated_at + timedelta(seconds=1)).isoformat(),
+        },
+    )
+
+    service.ingest_fetched(source=source, fetched=[fetched])
+
+    raw = repository.recent_raw_messages(ticker="MU")[0]
+    standard = repository.recent_standard_messages(ticker="MU")[0]
+    assert raw.raw_payload["body"] == html_body
+    assert "<p>" not in (standard.body or "")
+    assert "<strong>" not in (standard.body or "")
+    assert "Micron’s setup includes HBM demand details." in (standard.body or "")
+    assert "Second paragraph." in (standard.body or "")
 
 
 def test_deleted_binding_is_removed_from_live_stream_but_keeps_raw_audit() -> None:
@@ -250,6 +290,10 @@ def test_sqlite_repository_persists_replayable_event_stream(tmp_path: Path) -> N
     assert len(events) == 1
     assert events[0].stream_offset == 1
     assert events[0].payload["ticker"] == "MSFT"
+    marked = reopened.mark_event_consumed(events[0].event_id)
+    assert marked is not None
+    assert marked.consumed is True
+    assert reopened.recent_events(ticker="MSFT")[0].consumed is True
     assert reopened.recent_standard_messages(ticker="MSFT")[0].title == "Newswire item"
 
 
@@ -264,7 +308,7 @@ def test_sqlite_defaults_merge_new_source_config_without_resetting_user_cadence(
         "mode": "rapidapi_or_public",
         "path_template": "/streams/symbol/{symbol}.json",
         "limit": 199,
-        "force_refresh": False,
+        "force_refresh": True,
     }
     repository.upsert_source(
         source.model_copy(
@@ -284,7 +328,7 @@ def test_sqlite_defaults_merge_new_source_config_without_resetting_user_cadence(
     assert migrated.config["rapidapi_path"] == "/functions/v1/stocktwits-query"
     assert migrated.config["path_template"] == "/streams/symbol/{symbol}.json"
     assert migrated.config["limit"] == 100
-    assert migrated.config["force_refresh"] is True
+    assert migrated.config["force_refresh"] is False
     assert migrated.config["timeout_seconds"] == 45
 
 
@@ -297,7 +341,6 @@ def test_agent_tools_can_update_parameters_but_not_poll_interval() -> None:
             "monitoring.update_ticker_config",
             {
                 "source_id": "tikhub_x_search",
-                "keywords": ["AAPL earnings"],
                 "search_terms": ["Apple product event"],
                 "reason": "cover catalyst language",
             },
@@ -319,11 +362,39 @@ def test_agent_tools_can_update_parameters_but_not_poll_interval() -> None:
     assert denied.error.code == "monitoring_permission_denied"
     assert config.status is ResultStatus.SUCCEEDED
     by_parameter = config.output["by_parameter_sources"]
-    assert by_parameter[0]["binding"]["parameters"]["keywords"] == ["AAPL earnings"]
+    assert by_parameter[0]["binding"]["parameters"]["search_terms"] == [
+        "Apple product event"
+    ]
     assert by_parameter[0]["user_only_fields"] == [
         "poll_interval_seconds",
         "global_source_enabled",
     ]
+
+
+def test_source_specific_parameter_schema_rejects_unsupported_fields() -> None:
+    service = MonitoringBusService(InMemoryMonitoringRepository())
+
+    try:
+        service.configure_ticker_source(
+            "AAPL",
+            "finnhub_company_news",
+            parameters=MonitoringParameters(search_terms=["Apple earnings"]),
+        )
+    except ValueError as exc:
+        assert "ticker only" in str(exc)
+    else:
+        raise AssertionError("unsupported Finnhub parameters were accepted")
+
+    try:
+        service.configure_ticker_source(
+            "AAPL",
+            "tikhub_x_user_posts",
+            parameters=MonitoringParameters(usernames=["one", "two", "three"]),
+        )
+    except ValueError as exc:
+        assert "at most 2" in str(exc)
+    else:
+        raise AssertionError("too many TikHub usernames were accepted")
 
 
 def test_user_only_poll_interval_guard_applies_at_service_layer() -> None:
@@ -416,6 +487,48 @@ def test_benzinga_and_finnhub_collectors_build_documented_requests() -> None:
     assert requests[1].url.params["token"] == "finnhub-key"
 
 
+def test_benzinga_collector_can_fallback_to_documented_topics_query() -> None:
+    requests: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        if request.url.params.get("tickers") == "MU":
+            return httpx.Response(200, json=[])
+        if request.url.params.get("topics") == "Micron":
+            return httpx.Response(
+                200,
+                json=[
+                    {
+                        "id": 404,
+                        "title": "Micron earnings setup",
+                        "url": "https://example.test/bz-micron",
+                        "created": "Wed, 24 Jun 2026 09:30:00 -0400",
+                        "stocks": [],
+                    }
+                ],
+            )
+        return httpx.Response(404)
+
+    registry = MonitoringCollectorRegistry(
+        _settings(),
+        client=httpx.Client(transport=httpx.MockTransport(handler)),
+    )
+    service = MonitoringBusService(InMemoryMonitoringRepository(), collectors=registry)
+    binding = service.configure_ticker_source(
+        "MU",
+        "benzinga_news",
+        parameters=MonitoringParameters(search_terms=["Micron"]),
+    )
+    source = service.repository.get_source("benzinga_news")
+    assert source is not None
+
+    messages = registry.collector_for(source).collect(source=source, binding=binding)
+
+    assert messages[0].provider_message_id == "404"
+    assert requests[0].url.params["tickers"] == "MU"
+    assert requests[1].url.params["topics"] == "Micron"
+
+
 def test_stocktwits_rapidapi_collector_uses_query_endpoint() -> None:
     requests: list[httpx.Request] = []
 
@@ -452,6 +565,54 @@ def test_stocktwits_rapidapi_collector_uses_query_endpoint() -> None:
     assert requests[0].url.params["action"] == "messages"
     assert requests[0].url.params["symbol"] == "MU"
     assert requests[0].url.params["primaryOnly"] == "true"
+    assert requests[0].url.params["force_refresh"] == "false"
     assert requests[0].headers["x-rapidapi-host"] == (
         "stocktwits-sentiment-message-analytics-api.p.rapidapi.com"
     )
+
+
+def test_tikhub_search_collector_skips_failed_term_when_another_term_succeeds() -> None:
+    requests: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        if request.url.params.get("keyword") == "bad term":
+            return httpx.Response(400, json={"detail": {"message": "invalid query"}})
+        return httpx.Response(
+            200,
+            json={
+                "data": {
+                    "timeline": [
+                        {
+                            "tweet_id": "777",
+                            "created_at": "Fri Jun 26 12:00:00 +0000 2026",
+                            "text": "Micron update",
+                            "screen_name": "analyst",
+                        }
+                    ]
+                }
+            },
+        )
+
+    registry = MonitoringCollectorRegistry(
+        _settings(),
+        client=httpx.Client(transport=httpx.MockTransport(handler)),
+    )
+    service = MonitoringBusService(InMemoryMonitoringRepository(), collectors=registry)
+    binding = service.configure_ticker_source(
+        "MU",
+        "tikhub_x_search",
+        parameters=MonitoringParameters(search_terms=["bad term", "Micron"]),
+    )
+    source = service.repository.get_source("tikhub_x_search")
+    assert source is not None
+
+    messages = registry.collector_for(source).collect(source=source, binding=binding)
+
+    assert [request.url.params["keyword"] for request in requests] == [
+        "bad term",
+        "Micron",
+    ]
+    assert len(messages) == 1
+    assert messages[0].provider_message_id == "777"
+    assert messages[0].metadata["search_term"] == "Micron"

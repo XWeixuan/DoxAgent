@@ -9,7 +9,9 @@ from doxagent.agents.config import AgentRegistry, default_agent_registry
 from doxagent.agents.runtime.react import ReActHarnessConfig
 from doxagent.agents.runtime.runner import ModelGatewayAgentRunner
 from doxagent.gateway import (
+    BailianChatCompletionsModelClient,
     BailianResponsesModelClient,
+    ModelClient,
     ModelGateway,
     ProviderName,
     tracing_extra_from_metadata,
@@ -104,23 +106,26 @@ def default_real_agent_runner(
         api_key=resolved_settings.require_dashscope_api_key(),
         settings=resolved_settings,
     )
-    fallback_clients = []
+    fallback_clients: list[ModelClient] = []
     if (
         resolved_settings.dashscope_fallback_api_key
         and resolved_settings.dashscope_fallback_api_key
         != resolved_settings.dashscope_api_key
     ):
         fallback_clients.append(
-            BailianResponsesModelClient(
+            _build_bailian_model_client(
                 _build_bailian_sdk_client(
                     api_key=resolved_settings.dashscope_fallback_api_key,
                     settings=resolved_settings,
                 ),
-                enable_thinking=resolved_settings.dashscope_enable_thinking,
+                settings=resolved_settings,
             )
         )
     runner_kwargs = dict(kwargs)
-    runner_kwargs.setdefault("model_timeout_seconds", resolved_settings.model_request_timeout_seconds)
+    runner_kwargs.setdefault(
+        "model_timeout_seconds",
+        resolved_settings.model_request_timeout_seconds,
+    )
     runner_kwargs.setdefault(
         "react_config",
         ReActHarnessConfig(
@@ -131,10 +136,7 @@ def default_real_agent_runner(
     return ModelGatewayAgentRunner(
         registry=registry,
         model_gateway=ModelGateway(
-            BailianResponsesModelClient(
-                client,
-                enable_thinking=resolved_settings.dashscope_enable_thinking,
-            ),
+            _build_bailian_model_client(client, settings=resolved_settings),
             fallbacks=fallback_clients,
         ),
         tool_registry=default_real_tool_registry(resolved_settings),
@@ -150,9 +152,14 @@ def _build_bailian_sdk_client(
     api_key: str,
     settings: DoxAgentSettings,
 ) -> object:
+    base_url = (
+        settings.dashscope_chat_base_url
+        if _is_deepseek_model(settings.dashscope_model)
+        else settings.dashscope_base_url
+    )
     client = AsyncOpenAI(
         api_key=api_key,
-        base_url=settings.dashscope_base_url,
+        base_url=base_url,
     )
     return wrap_provider_client(
         ProviderName.BAILIAN,
@@ -166,3 +173,25 @@ def _build_bailian_sdk_client(
             }
         ),
     )
+
+
+def _build_bailian_model_client(
+    client: object,
+    *,
+    settings: DoxAgentSettings,
+) -> ModelClient:
+    if _is_deepseek_model(settings.dashscope_model):
+        return BailianChatCompletionsModelClient(
+            client,
+            enable_thinking=settings.dashscope_enable_thinking,
+            thinking_budget=settings.dashscope_thinking_budget,
+        )
+    return BailianResponsesModelClient(
+        client,
+        enable_thinking=settings.dashscope_enable_thinking,
+        thinking_budget=settings.dashscope_thinking_budget,
+    )
+
+
+def _is_deepseek_model(model: str) -> bool:
+    return model.lower().startswith("deepseek-")

@@ -249,7 +249,7 @@ class MonitoringPolicyRule(ContractModel):
                 else action_type
             )
         if not policy_type:
-            policy_type = PolicyActionType.CACHE.value
+            policy_type = "escalate"
         if not action_type:
             action_type = (
                 PolicyActionType.PUSH_TO_AGENT.value
@@ -437,6 +437,7 @@ def _default_policy_action_payload(value: Any, policy_type: str) -> JsonObject:
             "priority": "medium",
         }
     return {
-        "cache_label": "background_only",
-        "handling": text or "进入缓存，等待批量复核。",
+        "send_to": ["O3"],
+        "question": text or "请复核运行时消息是否需要交易记录、归档或 blackboard 修正。",
+        "priority": "medium",
     }

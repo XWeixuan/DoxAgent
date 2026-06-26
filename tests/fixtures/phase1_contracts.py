@@ -329,26 +329,5 @@ def monitoring_policy_document() -> MonitoringPolicyDocument:
                 escalation_path="O1,O4",
             ),
         ],
-        cache_rules=[
-            MonitoringPolicyRule(
-                policy_id=new_id("policy"),
-                rule_id=new_id("rule"),
-                policy_type="cache",
-                action_type=PolicyActionType.CACHE,
-                scope={"expectation_unit_id": "exp_ai_demand"},
-                trigger={"condition": "known old message repeated"},
-                trigger_condition="known old message repeated",
-                confirmation={"market_confirmation": "message matches known event memory"},
-                expectation_id="exp_ai_demand",
-                risk_guard={"guardrail": "No immediate action for repeated old messages."},
-                reasoning="Repeated known messages should not trigger action.",
-                action={
-                    "cache_label": "known_event_recap",
-                    "handling": "Cache for batch review.",
-                },
-                strategy_note="不触发即时行动。",
-                evidence_fields=["source_id", "duplicate_marker"],
-                escalation_path="batch_review",
-            ),
-        ],
+        cache_rules=[],
     )

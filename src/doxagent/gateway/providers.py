@@ -113,6 +113,54 @@ def _raw_with_reasoning_summary(raw: Any) -> Any:
     return {"raw": raw, "reasoning_summary": summaries}
 
 
+def _messages_with_system(request: ModelRequest) -> list[ModelMessage]:
+    if request.system_prompt is None:
+        return request.messages
+    return [
+        ModelMessage(role=MessageRole.SYSTEM, content=request.system_prompt),
+        *request.messages,
+    ]
+
+
+def _extract_chat_completion_text(raw: Any) -> str | None:
+    if not isinstance(raw, dict):
+        return None
+    choices = raw.get("choices")
+    if not isinstance(choices, list) or not choices:
+        return None
+    first = choices[0]
+    if not isinstance(first, Mapping):
+        return None
+    message = first.get("message")
+    if not isinstance(message, Mapping):
+        return None
+    content = message.get("content")
+    return content if isinstance(content, str) else None
+
+
+def _raw_with_chat_reasoning(raw: Any) -> Any:
+    if not isinstance(raw, dict):
+        return raw
+    choices = raw.get("choices")
+    if not isinstance(choices, list):
+        return raw
+    summaries: list[str] = []
+    for choice in choices:
+        if not isinstance(choice, Mapping):
+            continue
+        message = choice.get("message")
+        if not isinstance(message, Mapping):
+            continue
+        reasoning = message.get("reasoning_content")
+        if isinstance(reasoning, str) and reasoning:
+            summaries.append(reasoning)
+    if not summaries:
+        return raw
+    enriched = dict(raw)
+    enriched["reasoning_summary"] = summaries
+    return enriched
+
+
 class OpenAIModelClient:
     def __init__(self, client: AsyncOpenAI | Any) -> None:
         self.client = client
@@ -149,7 +197,7 @@ class OpenAIModelClient:
     def _request_kwargs(self, request: ModelRequest) -> dict[str, Any]:
         input_messages = [
             {"role": message.role.value, "content": message.content}
-            for message in self._messages_with_system(request)
+            for message in _messages_with_system(request)
         ]
         kwargs: dict[str, Any] = {
             "model": request.model,
@@ -161,27 +209,40 @@ class OpenAIModelClient:
             kwargs["max_output_tokens"] = request.max_tokens
         if request.timeout_seconds is not None:
             kwargs["timeout"] = request.timeout_seconds
-        if request.response_format is ResponseFormat.JSON:
+        if request.response_format is ResponseFormat.JSON and _supports_provider_json_mode(
+            request.model
+        ):
             kwargs["text"] = {"format": {"type": "json_object"}}
         if is_langsmith_wrapped(self.client):
             kwargs["langsmith_extra"] = langsmith_extra_from_metadata(request.metadata)
         return kwargs
 
-    def _messages_with_system(self, request: ModelRequest) -> list[ModelMessage]:
-        if request.system_prompt is None:
-            return request.messages
-        return [
-            ModelMessage(role=MessageRole.SYSTEM, content=request.system_prompt),
-            *request.messages,
-        ]
+def _supports_provider_json_mode(model: str) -> bool:
+    """Whether the provider should be asked to enforce JSON-mode output."""
+
+    return not model.lower().startswith("deepseek-")
+
+
+def _thinking_extra_body(*, enable_thinking: bool, thinking_budget: int | None) -> dict[str, Any]:
+    extra_body: dict[str, Any] = {"enable_thinking": enable_thinking}
+    if thinking_budget is not None:
+        extra_body["thinking_budget"] = thinking_budget
+    return extra_body
 
 
 class BailianResponsesModelClient(OpenAIModelClient):
     """DashScope Bailian Responses API adapter using OpenAI-compatible SDK calls."""
 
-    def __init__(self, client: AsyncOpenAI | Any, *, enable_thinking: bool = True) -> None:
+    def __init__(
+        self,
+        client: AsyncOpenAI | Any,
+        *,
+        enable_thinking: bool = True,
+        thinking_budget: int | None = None,
+    ) -> None:
         super().__init__(client)
         self.enable_thinking = enable_thinking
+        self.thinking_budget = thinking_budget
 
     async def complete(self, request: ModelRequest) -> ModelResponse:
         started_at = perf_counter()
@@ -215,7 +276,83 @@ class BailianResponsesModelClient(OpenAIModelClient):
 
     def _request_kwargs(self, request: ModelRequest) -> dict[str, Any]:
         kwargs = super()._request_kwargs(request)
-        kwargs["extra_body"] = {"enable_thinking": self.enable_thinking}
+        kwargs["extra_body"] = _thinking_extra_body(
+            enable_thinking=self.enable_thinking,
+            thinking_budget=self.thinking_budget,
+        )
+        return kwargs
+
+
+class BailianChatCompletionsModelClient:
+    """DashScope Chat Completions adapter for DeepSeek-style OpenAI-compatible models."""
+
+    def __init__(
+        self,
+        client: AsyncOpenAI | Any,
+        *,
+        enable_thinking: bool = True,
+        thinking_budget: int | None = None,
+    ) -> None:
+        self.client = client
+        self.enable_thinking = enable_thinking
+        self.thinking_budget = thinking_budget
+
+    async def complete(self, request: ModelRequest) -> ModelResponse:
+        started_at = perf_counter()
+        try:
+            with langsmith_tracing_context(request.metadata):
+                response = await self.client.chat.completions.create(
+                    **self._request_kwargs(request)
+                )
+            raw = _model_dump_or_raw(response)
+            raw = _raw_with_chat_reasoning(raw)
+            usage = _usage_from_mapping(raw.get("usage") if isinstance(raw, dict) else None)
+            audit = ModelAuditSummary(
+                provider=ProviderName.BAILIAN,
+                model=request.model,
+                latency_seconds=perf_counter() - started_at,
+                metadata=request.metadata,
+                usage=usage,
+            )
+            return ModelResponse(
+                text=_extract_chat_completion_text(raw),
+                raw=raw,
+                usage=usage,
+                audit=audit,
+            )
+        except Exception as exc:
+            audit = ModelAuditSummary(
+                provider=ProviderName.BAILIAN,
+                model=request.model,
+                latency_seconds=perf_counter() - started_at,
+                metadata=request.metadata,
+            )
+            return ModelResponse(audit=audit, error=_normalize_exception(ProviderName.BAILIAN, exc))
+
+    def _request_kwargs(self, request: ModelRequest) -> dict[str, Any]:
+        kwargs: dict[str, Any] = {
+            "model": request.model,
+            "messages": [
+                {"role": message.role.value, "content": message.content}
+                for message in _messages_with_system(request)
+            ],
+        }
+        if request.temperature is not None:
+            kwargs["temperature"] = request.temperature
+        if request.max_tokens is not None:
+            kwargs["max_tokens"] = request.max_tokens
+        if request.timeout_seconds is not None:
+            kwargs["timeout"] = request.timeout_seconds
+        if request.response_format is ResponseFormat.JSON and _supports_provider_json_mode(
+            request.model
+        ):
+            kwargs["response_format"] = {"type": "json_object"}
+        kwargs["extra_body"] = _thinking_extra_body(
+            enable_thinking=self.enable_thinking,
+            thinking_budget=self.thinking_budget,
+        )
+        if is_langsmith_wrapped(self.client):
+            kwargs["langsmith_extra"] = langsmith_extra_from_metadata(request.metadata)
         return kwargs
 
 

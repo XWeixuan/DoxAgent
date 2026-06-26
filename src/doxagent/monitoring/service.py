@@ -28,6 +28,7 @@ from doxagent.monitoring.schema import (
     UpdateActor,
     dedupe_key_for,
     new_monitoring_id,
+    parameter_schema_for_source,
     payload_hash,
 )
 from doxagent.settings import DoxAgentSettings
@@ -135,12 +136,7 @@ class MonitoringBusService:
                 "poll_state": poll_state.model_dump(mode="json") if poll_state else None,
                 "agent_mutable_fields": [
                     "enabled",
-                    "keywords",
-                    "usernames",
-                    "search_terms",
-                    "rss_urls",
-                    "source_filters",
-                    "extra",
+                    *parameter_schema_for_source(source.source_id).keys(),
                 ],
                 "user_only_fields": ["poll_interval_seconds", "global_source_enabled"],
             }
@@ -279,6 +275,9 @@ class MonitoringBusService:
 
     def recent_events(self, *, ticker: str | None = None, limit: int = 20) -> list[EventStreamItem]:
         return self.repository.recent_events(ticker=ticker, limit=limit)
+
+    def mark_event_consumed(self, event_id: str) -> EventStreamItem | None:
+        return self.repository.mark_event_consumed(event_id)
 
     def recent_messages(
         self,

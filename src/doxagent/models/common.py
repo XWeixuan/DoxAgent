@@ -11,6 +11,8 @@ class AgentRole(StrEnum):
 
 
 class AgentName(StrEnum):
+    W1_RUNTIME_NOVELTY = "W1"
+    W2_RUNTIME_POLICY = "W2"
     O1_EXPECTATION_OWNER = "O1"
     O2_MONITORING_CONFIG = "O2"
     O3_TRADING_STRATEGY = "O3"
@@ -46,6 +48,9 @@ class TaskType(StrEnum):
     GENERATE_MONITORING_POLICY = "generate_monitoring_policy"
     REVIEW_MONITORING_POLICY = "review_monitoring_policy"
     RESOLVE_MONITORING_POLICY = "resolve_monitoring_policy"
+    RUNTIME_W1_NOVELTY = "runtime_w1_novelty"
+    RUNTIME_W2_POLICY = "runtime_w2_policy"
+    RUNTIME_O3_JUDGMENT = "runtime_o3_judgment"
 
 
 class PatchOperation(StrEnum):

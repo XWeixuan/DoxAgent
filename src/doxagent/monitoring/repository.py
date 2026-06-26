@@ -30,6 +30,7 @@ from doxagent.monitoring.schema import (
     canonical_json,
     default_source_configs,
     new_monitoring_id,
+    validate_parameters_for_source,
 )
 
 
@@ -90,6 +91,9 @@ class MonitoringRepository(Protocol):
         ...
 
     def append_event(self, message: StandardMessage) -> EventStreamItem:
+        ...
+
+    def mark_event_consumed(self, event_id: str) -> EventStreamItem | None:
         ...
 
     def record_poll_attempt(self, *, binding_id: str, source_id: str, ticker: str) -> PollState:
@@ -204,6 +208,7 @@ class InMemoryMonitoringRepository:
         merge: bool = True,
     ) -> TickerSourceBinding:
         source = _require_source(self.get_source(source_id), source_id)
+        parameters = validate_parameters_for_source(source.source_id, parameters)
         binding_id = binding_id_for(ticker, source.source_id)
         existing = self._bindings.get(binding_id)
         now = datetime.now(UTC)
@@ -222,6 +227,10 @@ class InMemoryMonitoringRepository:
         else:
             resolved_parameters = (
                 existing.parameters.merged_with(parameters) if merge else parameters
+            )
+            resolved_parameters = validate_parameters_for_source(
+                source.source_id,
+                resolved_parameters,
             )
             binding = existing.model_copy(
                 update={
@@ -320,6 +329,15 @@ class InMemoryMonitoringRepository:
         )
         self._events.append(event)
         return event.model_copy(deep=True)
+
+    def mark_event_consumed(self, event_id: str) -> EventStreamItem | None:
+        for index, event in enumerate(self._events):
+            if event.event_id != event_id:
+                continue
+            updated = event.model_copy(update={"consumed": True}, deep=True)
+            self._events[index] = updated
+            return updated.model_copy(deep=True)
+        return None
 
     def record_poll_attempt(self, *, binding_id: str, source_id: str, ticker: str) -> PollState:
         existing = self._poll_states.get(binding_id)
@@ -561,12 +579,14 @@ class SQLiteMonitoringRepository:
         merge: bool = True,
     ) -> TickerSourceBinding:
         source = _require_source(self.get_source(source_id), source_id)
+        parameters = validate_parameters_for_source(source.source_id, parameters)
         normalized_ticker = ticker.strip().upper()
         binding_id = binding_id_for(normalized_ticker, source.source_id)
         now = datetime.now(UTC)
         existing = self.get_binding(normalized_ticker, source.source_id)
         if existing is not None and merge:
             parameters = existing.parameters.merged_with(parameters)
+        parameters = validate_parameters_for_source(source.source_id, parameters)
         created_at = existing.created_at if existing is not None else now
         binding = TickerSourceBinding(
             binding_id=binding_id,
@@ -760,6 +780,25 @@ class SQLiteMonitoringRepository:
             source_id=message.source_id,
             payload=payload,
         )
+
+    def mark_event_consumed(self, event_id: str) -> EventStreamItem | None:
+        normalized_event_id = event_id.strip()
+        with self._connect() as conn:
+            row = conn.execute(
+                "select * from monitoring_event_stream where event_id = ?",
+                (normalized_event_id,),
+            ).fetchone()
+            if row is None:
+                return None
+            conn.execute(
+                "update monitoring_event_stream set consumed = 1 where event_id = ?",
+                (normalized_event_id,),
+            )
+            updated = conn.execute(
+                "select * from monitoring_event_stream where event_id = ?",
+                (normalized_event_id,),
+            ).fetchone()
+        return _event_from_row(updated) if updated is not None else None
 
     def record_poll_attempt(self, *, binding_id: str, source_id: str, ticker: str) -> PollState:
         return self._upsert_poll_state(
@@ -1212,8 +1251,7 @@ def _merge_default_source(
     if existing.source_id == "stocktwits_messages":
         if existing.config.get("limit") == 199:
             config["limit"] = default.config.get("limit")
-        if existing.config.get("force_refresh") is False:
-            config["force_refresh"] = default.config.get("force_refresh")
+        config["force_refresh"] = default.config.get("force_refresh", False)
     return default.model_copy(
         update={
             "enabled": existing.enabled,

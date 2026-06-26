@@ -4,8 +4,10 @@ from pydantic import BaseModel
 
 from doxagent.models.agent_outputs import (
     DelegatedRetrievalResult,
+    Document2ResolutionPlanOutput,
     DoxAtlasAuditResult,
     ExpectationConstructionResult,
+    ExpectationDetailCandidateResult,
     ExpectationDetailResult,
     ExpectationFieldReviewResult,
     ExpectationShellConstructionResult,
@@ -20,7 +22,9 @@ from doxagent.models.documents import (
 REQUIRED_OUTPUT_SCHEMA_MODELS: dict[str, type[BaseModel]] = {
     "DelegatedRetrievalResult": DelegatedRetrievalResult,
     "DoxAtlasAuditResult": DoxAtlasAuditResult,
+    "Document2ResolutionPlan": Document2ResolutionPlanOutput,
     "ExpectationConstructionResult": ExpectationConstructionResult,
+    "ExpectationDetailCandidateResult": ExpectationDetailCandidateResult,
     "ExpectationDetailResult": ExpectationDetailResult,
     "ExpectationFieldReviewResult": ExpectationFieldReviewResult,
     "ExpectationShellConstructionResult": ExpectationShellConstructionResult,

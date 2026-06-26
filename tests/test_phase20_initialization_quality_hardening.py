@@ -126,18 +126,6 @@ def test_monitoring_policy_normalizer_builds_document3_action_payloads() -> None
                     "escalation_path": "O1",
                 }
             ],
-            "cache_rules": [
-                {
-                    "rule_id": "rule_cache",
-                    "action_type": "cache",
-                    "trigger_condition": "duplicate low-confidence chatter",
-                    "expectation_id": "expectation_mu_001",
-                    "action": "cache for batch review",
-                    "strategy_note": "No immediate action.",
-                    "evidence_fields": ["source_id"],
-                    "escalation_path": "batch_review",
-                }
-            ],
         },
     )
 
@@ -148,11 +136,7 @@ def test_monitoring_policy_normalizer_builds_document3_action_payloads() -> None
     assert document.push_to_agent_rules[0].policy_type == "escalate"
     assert document.push_to_agent_rules[0].action["send_to"] == ["O1", "O4"]
     assert document.push_to_agent_rules[0].action["priority"] == "medium"
-    assert document.cache_rules[0].policy_type == "cache"
-    assert document.cache_rules[0].action["cache_label"] == "background_only"
-    assert document.cache_rules[0].strategy_note == (
-        "低置信度、重复或时效性较弱的信号先缓存，等待批量复核。"
-    )
+    assert document.cache_rules == []
 
 
 def test_monitoring_config_apply_uses_message_bus_tool_and_records_version() -> None:
@@ -242,7 +226,6 @@ def test_document3_runtime_context_exposes_known_events_and_policy_actions() -> 
     assert {policy["policy_type"] for policy in context["monitoring_policies"]} == {
         "direct_trade",
         "escalate",
-        "cache",
     }
     assert "source_condition" not in str(context["monitoring_policies"])
 
@@ -296,7 +279,7 @@ def test_objection_changed_path_actions_are_localized() -> None:
     ]
 
 
-def test_monitoring_policy_quality_gate_rejects_cache_only_without_rationale() -> None:
+def test_monitoring_policy_quality_gate_rejects_cache_policy_type() -> None:
     workflow = BlackboardInitializationWorkflow(execution_mode="mock")
     policy = MonitoringPolicyDocument(
         document_id="doc_policy",
@@ -323,11 +306,11 @@ def test_monitoring_policy_quality_gate_rejects_cache_only_without_rationale() -
         ],
     )
 
-    with pytest.raises(WorkflowContractError, match="omitted action paths"):
+    with pytest.raises(WorkflowContractError, match="invalid policy_type"):
         workflow._validate_monitoring_policy_quality(policy)
 
 
-def test_monitoring_policy_quality_gate_allows_explicit_no_action_rationale() -> None:
+def test_monitoring_policy_quality_gate_rejects_cache_policy_even_with_rationale() -> None:
     workflow = BlackboardInitializationWorkflow(execution_mode="mock")
     policy = MonitoringPolicyDocument(
         document_id="doc_policy",
@@ -358,7 +341,8 @@ def test_monitoring_policy_quality_gate_allows_explicit_no_action_rationale() ->
         ),
     )
 
-    workflow._validate_monitoring_policy_quality(policy)
+    with pytest.raises(WorkflowContractError, match="invalid policy_type"):
+        workflow._validate_monitoring_policy_quality(policy)
 
 
 def test_monitoring_policy_quality_gate_rejects_execution_language() -> None:

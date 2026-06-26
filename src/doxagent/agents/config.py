@@ -78,6 +78,46 @@ class AgentRegistry:
 def default_agent_definitions() -> list[AgentDefinition]:
     return [
         AgentDefinition(
+            agent_name=AgentName.W1_RUNTIME_NOVELTY,
+            role=AgentRole.SYSTEM,
+            task_types=[TaskType.RUNTIME_W1_NOVELTY],
+            runtime=AgentRuntimeConfig(
+                execution_mode="single_shot",
+                prompt_block_ids=["runtime.w1"],
+                readable_context_scopes=[
+                    DocumentType.KNOWN_EVENTS.value,
+                    "runtime_source_message",
+                    "monitoring_event",
+                ],
+                writable_targets=[],
+                allowed_tools=[],
+                output_schema="W1Result",
+                can_raise_objection=False,
+                can_delegate=False,
+                can_propose_patch=False,
+            ),
+        ),
+        AgentDefinition(
+            agent_name=AgentName.W2_RUNTIME_POLICY,
+            role=AgentRole.SYSTEM,
+            task_types=[TaskType.RUNTIME_W2_POLICY],
+            runtime=AgentRuntimeConfig(
+                execution_mode="single_shot",
+                prompt_block_ids=["runtime.w2"],
+                readable_context_scopes=[
+                    DocumentType.MONITORING_POLICY.value,
+                    "runtime_source_message",
+                    "monitoring_event",
+                ],
+                writable_targets=[],
+                allowed_tools=[],
+                output_schema="W2Result",
+                can_raise_objection=False,
+                can_delegate=False,
+                can_propose_patch=False,
+            ),
+        ),
+        AgentDefinition(
             agent_name=AgentName.O1_EXPECTATION_OWNER,
             role=AgentRole.OPERATOR,
             task_types=[
@@ -109,8 +149,9 @@ def default_agent_definitions() -> list[AgentDefinition]:
                     "doxa_get_narrative_report",
                 ],
                 output_schema=(
-                    "ExpectationShellConstructionResult|ExpectationDetailResult|"
-                    "ExpectationConstructionResult|KnownEventsDocument|ResearchSection"
+                    "ExpectationShellConstructionResult|ExpectationDetailCandidateResult|"
+                    "ExpectationDetailResult|ExpectationConstructionResult|"
+                    "Document2ResolutionPlan|KnownEventsDocument|ResearchSection"
                 ),
                 can_raise_objection=True,
                 can_delegate=True,
@@ -151,6 +192,43 @@ def default_agent_definitions() -> list[AgentDefinition]:
                 output_schema="MonitoringConfigDocument",
                 can_delegate=True,
                 can_raise_objection=True,
+                can_propose_patch=True,
+            ),
+        ),
+        AgentDefinition(
+            agent_name=AgentName.O3_TRADING_STRATEGY,
+            role=AgentRole.OPERATOR,
+            task_types=[TaskType.RUNTIME_O3_JUDGMENT],
+            runtime=AgentRuntimeConfig(
+                prompt_block_ids=["agent.o3"],
+                default_internal_task_skill_ids=[
+                    "doxagent-source-discipline",
+                    "monitoring-policy",
+                ],
+                readable_context_scopes=[
+                    DocumentType.GLOBAL_RESEARCH.value,
+                    DocumentType.EXPECTATION_UNIT.value,
+                    DocumentType.KNOWN_EVENTS.value,
+                    DocumentType.MONITORING_CONFIG.value,
+                    DocumentType.MONITORING_POLICY.value,
+                    "working_memory",
+                    "objections",
+                ],
+                writable_targets=[
+                    DocumentType.KNOWN_EVENTS.value,
+                    DocumentType.MONITORING_CONFIG.value,
+                    DocumentType.MONITORING_POLICY.value,
+                ],
+                allowed_tools=[
+                    "anysearch.search",
+                    "tavily.search",
+                    "yfinance.daily_ohlcv",
+                    "twelvedata.daily_ohlcv",
+                    "monitoring.recent_events",
+                ],
+                output_schema="O3Result",
+                can_raise_objection=True,
+                can_delegate=False,
                 can_propose_patch=True,
             ),
         ),

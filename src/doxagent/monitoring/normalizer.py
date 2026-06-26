@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import re
 from datetime import UTC, datetime
 from email.utils import parsedate_to_datetime
+from html import unescape
+from html.parser import HTMLParser
 from typing import Any, cast
 
 from doxagent.monitoring.schema import (
@@ -75,7 +78,7 @@ def _normalize_benzinga(payload: JsonObject) -> JsonObject:
     tags = payload.get("tags")
     return {
         "title": payload.get("title"),
-        "body": payload.get("body") or payload.get("teaser"),
+        "body": _html_to_text(payload.get("body")) or _html_to_text(payload.get("teaser")),
         "url": payload.get("url"),
         "author": payload.get("author"),
         "symbols": [_named_item(item) for item in _objects(stocks)],
@@ -201,6 +204,85 @@ def _first_str(value: object) -> str | None:
         return None
     text = str(value).strip()
     return text or None
+
+
+class _HTMLTextExtractor(HTMLParser):
+    _block_tags = {
+        "address",
+        "article",
+        "aside",
+        "blockquote",
+        "br",
+        "dd",
+        "div",
+        "dl",
+        "dt",
+        "figcaption",
+        "figure",
+        "footer",
+        "h1",
+        "h2",
+        "h3",
+        "h4",
+        "h5",
+        "h6",
+        "header",
+        "hr",
+        "li",
+        "main",
+        "nav",
+        "ol",
+        "p",
+        "pre",
+        "section",
+        "table",
+        "tbody",
+        "td",
+        "tfoot",
+        "th",
+        "thead",
+        "tr",
+        "ul",
+    }
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.parts: list[str] = []
+        self._skip_depth = 0
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag in {"script", "style"}:
+            self._skip_depth += 1
+            return
+        if tag in self._block_tags:
+            self.parts.append("\n")
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag in {"script", "style"} and self._skip_depth:
+            self._skip_depth -= 1
+            return
+        if tag in self._block_tags:
+            self.parts.append("\n")
+
+    def handle_data(self, data: str) -> None:
+        if self._skip_depth:
+            return
+        self.parts.append(data)
+
+
+def _html_to_text(value: object) -> str | None:
+    text = _first_str(value)
+    if text is None:
+        return None
+    parser = _HTMLTextExtractor()
+    parser.feed(text)
+    parser.close()
+    parsed = unescape("".join(parser.parts))
+    parsed = re.sub(r"[ \t\r\f\v]+", " ", parsed)
+    parsed = re.sub(r" *\n+ *", "\n", parsed)
+    parsed = re.sub(r"\n{3,}", "\n\n", parsed)
+    parsed = parsed.strip()
+    return parsed or text
 
 
 def _first_datetime(value: object) -> datetime | None:

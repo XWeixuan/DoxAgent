@@ -14,7 +14,6 @@ from doxagent.models import (
     DocumentType,
     EvidenceRef,
     EvidenceSourceType,
-    ExpectationUnitDocument,
     Objection,
     ObjectionSeverity,
     ObjectionStatus,
@@ -27,7 +26,6 @@ from doxagent.workflows import (
     INITIALIZATION_NODES,
     BlackboardInitializationWorkflow,
     InitializationMockResultFactory,
-    WorkflowAgentResultNormalizer,
     WorkflowCheckpoint,
     WorkflowNode,
     WorkflowRunStatus,
@@ -206,6 +204,8 @@ class ParallelStructuredInitializationRunner:
     def _structured(self, task: AgentTask, direct: AgentResult) -> AgentResult:
         if task.required_output_schema == "ExpectationShellConstructionResult":
             structured = dict(direct.payload)
+        elif task.required_output_schema == "ExpectationDetailCandidateResult":
+            structured = dict(direct.payload)
         elif task.required_output_schema == "ExpectationDetailResult":
             structured = {
                 "proposed_patches": [
@@ -274,24 +274,24 @@ class ParallelStructuredInitializationRunner:
     def _objection_resolution(self, task: AgentTask) -> AgentResult:
         evidence = self._evidence(task)
         objections = task.input_context.get("unresolved_objections")
-        objection_ids = [
-            item["objection_id"]
+        objection_items = [
+            item
             for item in objections
             if isinstance(item, dict) and isinstance(item.get("objection_id"), str)
         ] if isinstance(objections, list) else []
+        objection_ids = [item["objection_id"] for item in objection_items]
+        expectation_id = "exp_mock_core"
+        if objection_items:
+            target = objection_items[0].get("target")
+            if isinstance(target, dict) and isinstance(target.get("expectation_id"), str):
+                expectation_id = target["expectation_id"]
         structured = {
-            "proposed_patches": [],
-            "evidence_refs": [evidence.model_dump(mode="json")],
-            "delegations": [],
-            "unknowns": [],
-            "rationale": "Mock O1 resolved field-review objections after retry.",
-            "resolved_objection_ids": objection_ids,
-            "accepted_objection_ids": [],
-            "partially_accepted_objection_ids": [],
-            "rejected_objection_ids": [],
-            "objection_resolutions": [
+            "expectation_id": expectation_id,
+            "decision": "resolved",
+            "decisions": [
                 {
                     "objection_id": objection_id,
+                    "finding_id": None,
                     "decision": "resolved",
                     "resolution_note": (
                         "Mock O1 retry resolved this objection with supporting evidence."
@@ -301,6 +301,12 @@ class ParallelStructuredInitializationRunner:
                 }
                 for objection_id in objection_ids
             ],
+            "target_finding_ids": [],
+            "revised_candidate": None,
+            "evidence_requests": [],
+            "unresolved_finding_ids": [],
+            "unresolved_reason": None,
+            "rationale": "Mock O1 resolved field-review objections after retry.",
         }
         return AgentResult(
             task_id=task.task_id,
@@ -1032,171 +1038,37 @@ def test_numeric_sanity_review_flags_thesis_field_false_precision() -> None:
     assert "event_monitoring_direction" in combined_reasons
 
 
-def test_price_reaction_promotion_requires_structured_market_snapshot() -> None:
+def test_promotion_commits_candidate_without_mutating_document_or_evidence_refs() -> None:
     workflow = BlackboardInitializationWorkflow(
         runner=ParallelStructuredInitializationRunner(),
         execution_mode="agent_runner",
     )
     factory = InitializationMockResultFactory()
-    narrative_evidence = factory._evidence(EvidenceSourceType.DOXATLAS_SOURCE)
     document = factory._expectation_unit("NVDA")
-    fact = document.realized_facts[0]
-    original_price_change = "NVDA stock price rose 12% after the event."
-    reaction = fact.price_reaction.model_copy(
-        update={
-            "price_change": original_price_change,
-            "price_pattern": "post-event rerating",
-            "interpretation": "Narrative says the market has priced it in.",
-            "evidence_refs": [narrative_evidence],
-        },
-        deep=True,
-    )
-    document = document.model_copy(
-        update={
-            "realized_facts": [
-                fact.model_copy(
-                    update={
-                        "price_reaction": reaction,
-                        "evidence_refs": [narrative_evidence],
-                    },
-                    deep=True,
-                )
-            ]
-        },
-        deep=True,
-    )
     patch = factory._document_patch(
         document,
         DocumentType.EXPECTATION_UNIT,
         AgentName.O1_EXPECTATION_OWNER,
         expectation_id=document.expectation_id,
     )
+    before_after = patch.after
+    before_refs = list(patch.evidence_refs)
     run = workflow.blackboard.start_run("NVDA", AgentName.SYSTEM)
     checkpoint = WorkflowCheckpoint(run_id=run.run_id, ticker="NVDA", pending_patches=[patch])
 
-    normalized = workflow._normalize_expectation_price_reaction_patch(checkpoint, patch)
-
-    normalized_reaction = normalized.after["realized_facts"][0]["price_reaction"]
-    assert normalized_reaction["price_change"] != original_price_change
-    assert "requires structured OHLCV" in normalized_reaction["price_change"]
-    assert normalized_reaction["evidence_refs"][0]["source_type"] == "doxatlas_source"
-    try:
-        workflow._validate_expectation_promotion_quality(
-            ExpectationUnitDocument.model_validate(normalized.after)
-        )
-    except WorkflowContractError as exc:
-        assert "unknown price_reaction" in str(exc)
-    else:
-        raise AssertionError("promotion accepted narrative-only price reaction")
-
-
-def test_promotion_rejects_numeric_sanity_placeholder_text() -> None:
-    workflow = BlackboardInitializationWorkflow(
-        runner=ParallelStructuredInitializationRunner(),
-        execution_mode="agent_runner",
+    next_checkpoint = workflow._promote_pending_patches(
+        checkpoint,
+        WorkflowNode.PROMOTE_EXPECTATION_TO_BELIEF_STATE,
     )
-    factory = InitializationMockResultFactory()
-    narrative_evidence = factory._evidence(EvidenceSourceType.DOXATLAS_SOURCE)
-    document = factory._expectation_unit("NVDA")
-    fact = document.realized_facts[0]
-    document = document.model_copy(
-        update={
-            "realized_facts": [
-                fact.model_copy(
-                    update={
-                        "evidence_refs": [narrative_evidence],
-                        "price_reaction": fact.price_reaction.model_copy(
-                            update={
-                                "price_change": (
-                                    "Quantified price reaction withheld pending "
-                                    "source-appropriate OHLCV or market-data verification."
-                                ),
-                                "evidence_refs": [narrative_evidence],
-                            },
-                            deep=True,
-                        ),
-                    },
-                    deep=True,
-                )
-            ]
-        },
-        deep=True,
-    )
-    try:
-        workflow._validate_expectation_promotion_quality(document)
-    except WorkflowContractError as exc:
-        assert "deterministic placeholder text" in str(exc)
-        assert "quantified price reaction withheld" in str(exc).lower()
-    else:
-        raise AssertionError("promotion accepted deterministic placeholder text")
+
+    committed = workflow.blackboard.get_run(run.run_id).commit_log[-1].patch
+    assert committed.after == before_after
+    assert committed.evidence_refs == before_refs
+    assert next_checkpoint.pending_patches == []
+    assert next_checkpoint.metadata["document2_promotion_audits"][0]["status"] == "accepted"
 
 
-def test_price_reaction_promotion_uses_structured_market_snapshot() -> None:
-    workflow = BlackboardInitializationWorkflow(
-        runner=ParallelStructuredInitializationRunner(),
-        execution_mode="agent_runner",
-    )
-    factory = InitializationMockResultFactory()
-    market_evidence = factory._evidence(EvidenceSourceType.MARKET_DATA).model_copy(
-        update={
-            "source_id": "twelvedata:daily_ohlcv:NVDA",
-            "retrieval_metadata": {
-                "tool_name": "twelvedata.daily_ohlcv",
-                "market_evidence_snapshot": {
-                    "kind": "daily_ohlcv_snapshot",
-                    "symbol": "NVDA",
-                    "bar_count": 60,
-                    "start_close": 100,
-                    "end_close": 112,
-                    "total_return_pct": 12,
-                },
-            },
-        },
-        deep=True,
-    )
-    document = factory._expectation_unit("NVDA")
-    fact = document.realized_facts[0]
-    original_price_change = "NVDA stock price rose 12% after the event."
-    reaction = fact.price_reaction.model_copy(
-        update={
-            "price_change": original_price_change,
-            "price_pattern": "post-event rerating",
-            "interpretation": "Daily OHLCV supports the market reaction.",
-            "evidence_refs": [],
-        },
-        deep=True,
-    )
-    document = document.model_copy(
-        update={
-            "realized_facts": [
-                fact.model_copy(
-                    update={
-                        "price_reaction": reaction,
-                        "evidence_refs": [market_evidence],
-                    },
-                    deep=True,
-                )
-            ]
-        },
-        deep=True,
-    )
-    patch = factory._document_patch(
-        document,
-        DocumentType.EXPECTATION_UNIT,
-        AgentName.O1_EXPECTATION_OWNER,
-        expectation_id=document.expectation_id,
-    ).model_copy(update={"evidence_refs": [market_evidence]}, deep=True)
-    run = workflow.blackboard.start_run("NVDA", AgentName.SYSTEM)
-    checkpoint = WorkflowCheckpoint(run_id=run.run_id, ticker="NVDA", pending_patches=[patch])
-
-    normalized = workflow._normalize_expectation_price_reaction_patch(checkpoint, patch)
-
-    normalized_reaction = normalized.after["realized_facts"][0]["price_reaction"]
-    assert normalized_reaction["price_change"] == original_price_change
-    assert normalized_reaction["evidence_refs"][0]["source_id"] == "twelvedata:daily_ohlcv:NVDA"
-
-
-def test_price_reaction_placeholder_rebuilds_from_structured_market_snapshot() -> None:
+def test_promotion_blocks_unresolved_price_reaction_without_rewrite() -> None:
     workflow = BlackboardInitializationWorkflow(
         runner=ParallelStructuredInitializationRunner(),
         execution_mode="agent_runner",
@@ -1225,12 +1097,9 @@ def test_price_reaction_placeholder_rebuilds_from_structured_market_snapshot() -
     fact = document.realized_facts[0]
     reaction = fact.price_reaction.model_copy(
         update={
-            "price_change": (
-                "Exact price reaction removed; rebuild the move from OHLCV or "
-                "market-trace evidence before using it as a priced-in signal."
-            ),
-            "price_pattern": "Directional market reaction retained without an exact threshold.",
-            "interpretation": "Treat the pricing conclusion as provisional.",
+            "price_change": "Unknown price reaction pending market-data evidence.",
+            "price_pattern": "unresolved market reaction",
+            "interpretation": "Treat the pricing conclusion as unresolved.",
             "evidence_refs": [market_evidence],
         },
         deep=True,
@@ -1255,220 +1124,26 @@ def test_price_reaction_placeholder_rebuilds_from_structured_market_snapshot() -
         AgentName.O1_EXPECTATION_OWNER,
         expectation_id=document.expectation_id,
     ).model_copy(update={"evidence_refs": [market_evidence]}, deep=True)
+    before_after = patch.after
     run = workflow.blackboard.start_run("NVDA", AgentName.SYSTEM)
     checkpoint = WorkflowCheckpoint(run_id=run.run_id, ticker="NVDA", pending_patches=[patch])
 
-    normalized = workflow._normalize_expectation_price_reaction_patch(checkpoint, patch)
+    with pytest.raises(WorkflowContractError, match="Document2 promotion blocked") as exc:
+        workflow._promote_pending_patches(
+            checkpoint,
+            WorkflowNode.PROMOTE_EXPECTATION_TO_BELIEF_STATE,
+        )
 
-    normalized_reaction = normalized.after["realized_facts"][0]["price_reaction"]
-    assert "NVDA OHLCV snapshot from 2026-01-02 to 2026-06-23" in normalized_reaction[
-        "price_change"
+    current_run = workflow.blackboard.get_run(run.run_id)
+    audits = [
+        entry
+        for entry in current_run.working_memory
+        if entry.content_type == "document2_promotion_audit"
     ]
-    assert "total_return_pct=12" in normalized_reaction["price_change"]
-    assert normalized_reaction["evidence_refs"][0]["source_id"] == "twelvedata:daily_ohlcv:NVDA"
-    workflow._validate_expectation_promotion_quality(
-        ExpectationUnitDocument.model_validate(normalized.after)
-    )
-
-
-def test_price_reaction_uses_run_market_snapshot_when_patch_refs_are_narrative() -> None:
-    workflow = BlackboardInitializationWorkflow(
-        runner=ParallelStructuredInitializationRunner(),
-        execution_mode="agent_runner",
-    )
-    factory = InitializationMockResultFactory()
-    narrative_evidence = factory._evidence(EvidenceSourceType.DOXATLAS_SOURCE)
-    market_evidence = factory._evidence(EvidenceSourceType.MARKET_DATA).model_copy(
-        update={
-            "source_id": "twelvedata:daily_ohlcv:MU",
-            "retrieval_metadata": {
-                "tool_name": "twelvedata.daily_ohlcv",
-                "market_evidence_snapshot": {
-                    "kind": "daily_ohlcv_snapshot",
-                    "symbol": "MU",
-                    "bar_count": 90,
-                    "start_date": "2026-02-12",
-                    "end_date": "2026-06-23",
-                    "start_close": 413.97,
-                    "end_close": 1051.77,
-                    "total_return_pct": 154.08,
-                },
-            },
-        },
-        deep=True,
-    )
-    document = factory._expectation_unit("MU").model_copy(
-        update={"ticker": "MU"},
-        deep=True,
-    )
-    fact = document.realized_facts[0]
-    reaction = fact.price_reaction.model_copy(
-        update={
-            "price_change": (
-                "Field review found price benchmark or return-calculation error; "
-                "exact price reaction removed for OHLCV/market_trace recalculation."
-            ),
-            "price_pattern": "Directional market pattern retained while the benchmark is rebuilt.",
-            "interpretation": "Treat the market reaction as unresolved.",
-            "evidence_refs": [narrative_evidence],
-        },
-        deep=True,
-    )
-    document = document.model_copy(
-        update={
-            "realized_facts": [
-                fact.model_copy(
-                    update={
-                        "price_reaction": reaction,
-                        "evidence_refs": [narrative_evidence],
-                    },
-                    deep=True,
-                )
-            ]
-        },
-        deep=True,
-    )
-    patch = factory._document_patch(
-        document,
-        DocumentType.EXPECTATION_UNIT,
-        AgentName.O1_EXPECTATION_OWNER,
-        expectation_id=document.expectation_id,
-    ).model_copy(update={"evidence_refs": [narrative_evidence]}, deep=True)
-    run = workflow.blackboard.start_run("MU", AgentName.SYSTEM)
-    workflow.blackboard.add_working_memory_entry(
-        run.run_id,
-        author_agent=AgentName.O4_MARKET_TRACE,
-        content_type="market_trace_agent_result",
-        payload={"evidence_refs": [market_evidence.model_dump(mode="json")]},
-        evidence_refs=[market_evidence],
-    )
-    checkpoint = WorkflowCheckpoint(run_id=run.run_id, ticker="MU", pending_patches=[patch])
-
-    normalized = workflow._normalize_expectation_price_reaction_patch(checkpoint, patch)
-
-    normalized_reaction = normalized.after["realized_facts"][0]["price_reaction"]
-    assert "MU OHLCV snapshot from 2026-02-12 to 2026-06-23" in normalized_reaction[
-        "price_change"
-    ]
-    assert "total_return_pct=154.08" in normalized_reaction["price_change"]
-    assert normalized_reaction["evidence_refs"][0]["source_id"] == "twelvedata:daily_ohlcv:MU"
-    workflow._validate_expectation_promotion_quality(
-        ExpectationUnitDocument.model_validate(normalized.after)
-    )
-
-
-def test_price_reaction_corrects_reversed_market_snapshot_dates() -> None:
-    workflow = BlackboardInitializationWorkflow(
-        runner=ParallelStructuredInitializationRunner(),
-        execution_mode="agent_runner",
-    )
-    factory = InitializationMockResultFactory()
-    market_evidence = factory._evidence(EvidenceSourceType.MARKET_DATA).model_copy(
-        update={
-            "source_id": "twelvedata:daily_ohlcv:MU",
-            "retrieval_metadata": {
-                "tool_name": "twelvedata.daily_ohlcv",
-                "market_evidence_snapshot": {
-                    "kind": "daily_ohlcv_snapshot",
-                    "symbol": "MU",
-                    "bar_count": 90,
-                    "start_date": "2026-06-23",
-                    "end_date": "2026-02-12",
-                    "start_close": 1051.77,
-                    "end_close": 413.97,
-                    "total_return_pct": -60.6426,
-                },
-            },
-        },
-        deep=True,
-    )
-    document = factory._expectation_unit("MU").model_copy(update={"ticker": "MU"}, deep=True)
-    fact = document.realized_facts[0]
-    reaction = fact.price_reaction.model_copy(
-        update={
-            "price_change": "Price reaction requires structured recalculation.",
-            "price_pattern": "Narrative-only market reaction retained.",
-            "interpretation": "Treat the market reaction as unresolved.",
-            "evidence_refs": [market_evidence],
-        },
-        deep=True,
-    )
-    document = document.model_copy(
-        update={
-            "realized_facts": [
-                fact.model_copy(
-                    update={
-                        "price_reaction": reaction,
-                        "evidence_refs": [market_evidence],
-                    },
-                    deep=True,
-                )
-            ]
-        },
-        deep=True,
-    )
-    patch = factory._document_patch(
-        document,
-        DocumentType.EXPECTATION_UNIT,
-        AgentName.O1_EXPECTATION_OWNER,
-        expectation_id=document.expectation_id,
-    ).model_copy(update={"evidence_refs": [market_evidence]}, deep=True)
-    run = workflow.blackboard.start_run("MU", AgentName.SYSTEM)
-    checkpoint = WorkflowCheckpoint(run_id=run.run_id, ticker="MU", pending_patches=[patch])
-
-    normalized = workflow._normalize_expectation_price_reaction_patch(checkpoint, patch)
-
-    normalized_reaction = normalized.after["realized_facts"][0]["price_reaction"]
-    assert "MU OHLCV snapshot from 2026-02-12 to 2026-06-23" in normalized_reaction[
-        "price_change"
-    ]
-    assert "close moved from 413.97 to 1051.77" in normalized_reaction["price_change"]
-    assert "total_return_pct=154.0691" in normalized_reaction["price_change"]
-    workflow._validate_expectation_promotion_quality(
-        ExpectationUnitDocument.model_validate(normalized.after)
-    )
-
-
-def test_numeric_sanity_template_fallbacks_are_unpromotable() -> None:
-    workflow = BlackboardInitializationWorkflow(
-        runner=ParallelStructuredInitializationRunner(),
-        execution_mode="agent_runner",
-    )
-    factory = InitializationMockResultFactory()
-    narrative_evidence = factory._evidence(EvidenceSourceType.DOXATLAS_SOURCE)
-    document = factory._expectation_unit("NVDA")
-    fact = document.realized_facts[0].model_copy(
-        update={
-            "description": (
-                "Realized fact preserves the named business event while exact market "
-                "or fundamental levels were removed for attached evidence review."
-            )
-        },
-        deep=True,
-    )
-    variable = document.key_variables[0].model_copy(
-        update={
-            "name": "HBM4 supply validation",
-            "current_status": (
-                "HBM4 supply validation: monitor this named driver through attached "
-                "evidence."
-            ),
-            "evidence_refs": [narrative_evidence],
-        },
-        deep=True,
-    )
-    document = document.model_copy(
-        update={"realized_facts": [fact], "key_variables": [variable]},
-        deep=True,
-    )
-
-    with pytest.raises(WorkflowContractError, match="deterministic placeholder text"):
-        workflow._validate_expectation_promotion_quality(document)
-
-    fallback = workflow._variable_numeric_sanity_fallback(variable)
-    assert "HBM4 supply validation" in fallback
-    assert "Mock initialization evidence" in fallback
-    assert "monitor this named driver through attached evidence" not in fallback.lower()
+    assert "schema_validation" in str(exc.value)
+    assert current_run.commit_log == []
+    assert checkpoint.pending_patches[0].after == before_after
+    assert audits[-1].payload["status"] == "rejected"
 
 
 def test_numeric_value_detection_ignores_fiscal_years_and_product_generations() -> None:
@@ -1613,1012 +1288,8 @@ def test_objection_resolution_context_includes_current_numeric_sanity_violations
     assert violations[0]["requires_revised_patch"] is True
     assert "NVDA revenue grew 196%" in violations[0]["current_reason"]
     assert any(
-        "decision='resolved' with empty proposed_patches is invalid" in item
+        "decision='resolved' with no revised_candidate is invalid" in item
         for item in context["output_guidance"]
-    )
-
-
-def test_o1_cannot_resolve_current_numeric_sanity_without_revision_patch() -> None:
-    workflow = BlackboardInitializationWorkflow(
-        runner=ParallelStructuredInitializationRunner(),
-        execution_mode="agent_runner",
-    )
-    factory = InitializationMockResultFactory()
-    narrative_evidence = factory._evidence(EvidenceSourceType.DOXATLAS_SOURCE)
-    document = factory._expectation_unit("NVDA")
-    fact = document.realized_facts[0]
-    document = document.model_copy(
-        update={
-            "realized_facts": [
-                fact.model_copy(
-                    update={
-                        "description": "NVDA revenue grew 196% from narrative-only evidence.",
-                        "evidence_refs": [narrative_evidence],
-                    },
-                    deep=True,
-                )
-            ],
-        },
-        deep=True,
-    )
-    patch = factory._document_patch(
-        document,
-        DocumentType.EXPECTATION_UNIT,
-        AgentName.O1_EXPECTATION_OWNER,
-        expectation_id=document.expectation_id,
-    )
-    run = workflow.blackboard.start_run("NVDA", AgentName.SYSTEM)
-    checkpoint = WorkflowCheckpoint(run_id=run.run_id, ticker="NVDA", pending_patches=[patch])
-    objection = next(
-        item
-        for item in workflow._numeric_sanity_objections_for_patch("NVDA", patch)
-        if item.taxonomy == "numeric_sanity_fundamental_data"
-    )
-    workflow.blackboard.create_objection(run.run_id, objection)
-    structured = {
-        "proposed_patches": [],
-        "evidence_refs": [narrative_evidence.model_dump(mode="json")],
-        "delegations": [],
-        "unknowns": [],
-        "rationale": "O1 incorrectly claims the current patch already removed false precision.",
-        "resolved_objection_ids": [objection.objection_id],
-        "accepted_objection_ids": [],
-        "partially_accepted_objection_ids": [],
-        "rejected_objection_ids": [],
-        "objection_resolutions": [
-            {
-                "objection_id": objection.objection_id,
-                "decision": "resolved",
-                "resolution_note": "Resolved by existing fields.",
-                "changed_paths": ["realized_facts"],
-                "evidence_refs": [narrative_evidence.model_dump(mode="json")],
-            }
-        ],
-    }
-    result = AgentResult(
-        task_id="task_bad_numeric_resolution",
-        agent_name=AgentName.O1_EXPECTATION_OWNER,
-        status=ResultStatus.SUCCEEDED,
-        payload={"runtime": "maf", "structured": structured},
-        evidence_refs=[narrative_evidence],
-    )
-
-    try:
-        workflow._apply_o1_objection_resolutions(checkpoint, result)
-    except WorkflowContractError as exc:
-        assert "resolved numeric-sanity objections without revised expectation patches" in str(exc)
-    else:
-        raise AssertionError(
-            "Expected unresolved current numeric sanity to require a revision patch."
-        )
-
-
-def test_multiple_o1_partial_revisions_merge_per_expectation_before_validation() -> None:
-    workflow = BlackboardInitializationWorkflow(
-        runner=ParallelStructuredInitializationRunner(),
-        execution_mode="agent_runner",
-    )
-    factory = InitializationMockResultFactory()
-    document = factory._expectation_unit("NVDA")
-    pending = factory._document_patch(
-        document,
-        DocumentType.EXPECTATION_UNIT,
-        AgentName.O1_EXPECTATION_OWNER,
-        expectation_id=document.expectation_id,
-    )
-    checkpoint = WorkflowCheckpoint(
-        run_id="run_merge_revisions",
-        ticker="NVDA",
-        pending_patches=[pending],
-    )
-    evidence = factory._evidence(EvidenceSourceType.AGENT_OUTPUT)
-    revision_one = pending.model_copy(
-        update={
-            "patch_id": "patch_market_summary_revision",
-            "after": {"market_view": {"summary": "SEC limitation added."}},
-            "evidence_refs": [evidence],
-        },
-        deep=True,
-    )
-    revision_two = pending.model_copy(
-        update={
-            "patch_id": "patch_fact_summary_revision",
-            "after": {"realized_facts_summary": "Quarter labels corrected."},
-            "evidence_refs": [evidence],
-        },
-        deep=True,
-    )
-    result = AgentResult(
-        task_id="task_merge_revisions",
-        agent_name=AgentName.O1_EXPECTATION_OWNER,
-        status=ResultStatus.SUCCEEDED,
-        payload={"runtime": "maf", "structured": {"objection_resolutions": []}},
-        proposed_patches=[revision_one, revision_two],
-        evidence_refs=[evidence],
-    )
-
-    normalized = workflow._normalized_expectation_revisions(checkpoint, result)
-
-    assert len(normalized) == 1
-    merged_after = normalized[0].after
-    assert merged_after["market_view"]["summary"] == "SEC limitation added."
-    assert merged_after["realized_facts_summary"] == "Quarter labels corrected."
-    workflow._validate_expectation_patch_list("NVDA", normalized)
-
-
-def test_partial_revision_merges_realized_fact_by_event_id() -> None:
-    workflow = BlackboardInitializationWorkflow(
-        runner=ParallelStructuredInitializationRunner(),
-        execution_mode="agent_runner",
-    )
-    factory = InitializationMockResultFactory()
-    document = factory._expectation_unit("NVDA")
-    pending = factory._document_patch(
-        document,
-        DocumentType.EXPECTATION_UNIT,
-        AgentName.O1_EXPECTATION_OWNER,
-        expectation_id=document.expectation_id,
-    )
-    base_after = dict(pending.after)
-    first_fact = dict(base_after["realized_facts"][0])
-    second_fact = {
-        **first_fact,
-        "event_id": "event_other",
-        "description": "Other realized fact should survive partial revisions.",
-    }
-    pending = pending.model_copy(
-        update={
-            "after": {
-                **base_after,
-                "realized_facts": [first_fact, second_fact],
-            }
-        },
-        deep=True,
-    )
-    revision = pending.model_copy(
-        update={
-            "patch_id": "patch_fact_date_revision",
-            "after": {
-                "realized_facts": [
-                    {
-                        "event_id": first_fact["event_id"],
-                        "description": "Q2 date corrected to March.",
-                    }
-                ]
-            },
-        },
-        deep=True,
-    )
-    result = AgentResult(
-        task_id="task_merge_fact_revision",
-        agent_name=AgentName.O1_EXPECTATION_OWNER,
-        status=ResultStatus.SUCCEEDED,
-        payload={"runtime": "maf", "structured": {"objection_resolutions": []}},
-        proposed_patches=[revision],
-    )
-
-    normalized = workflow._normalized_expectation_revisions(
-        WorkflowCheckpoint(
-            run_id="run_merge_fact_revision",
-            ticker="NVDA",
-            pending_patches=[pending],
-        ),
-        result,
-    )
-
-    facts = normalized[0].after["realized_facts"]
-    assert len(facts) == 2
-    assert facts[0]["description"] == "Q2 date corrected to March."
-    assert facts[1]["description"] == "Other realized fact should survive partial revisions."
-    workflow._validate_expectation_patch_list("NVDA", normalized)
-
-
-def test_partial_revision_merges_event_monitoring_lists_by_index() -> None:
-    workflow = BlackboardInitializationWorkflow(
-        runner=ParallelStructuredInitializationRunner(),
-        execution_mode="agent_runner",
-    )
-    factory = InitializationMockResultFactory()
-    document = factory._expectation_unit("NVDA")
-    pending = factory._document_patch(
-        document,
-        DocumentType.EXPECTATION_UNIT,
-        AgentName.O1_EXPECTATION_OWNER,
-        expectation_id=document.expectation_id,
-    )
-    base_after = dict(pending.after)
-    pending = pending.model_copy(
-        update={
-            "after": {
-                **base_after,
-                "event_monitoring_direction": {
-                    **base_after["event_monitoring_direction"],
-                    "positive_events": [
-                        "Old positive trigger 0",
-                        "Old positive trigger 1",
-                        "Old positive trigger 2",
-                    ],
-                    "negative_events": [
-                        "Old negative trigger 0",
-                        "Old negative trigger 1",
-                        "Old negative trigger 2",
-                    ],
-                },
-            }
-        },
-        deep=True,
-    )
-    revision = pending.model_copy(
-        update={
-            "patch_id": "patch_monitoring_index_revision",
-            "after": {
-                "event_monitoring_direction": {
-                    "positive_events": [
-                        "Q3 revenue threshold corrected.",
-                        "HBM margin trigger corrected.",
-                    ],
-                    "negative_events": [
-                        "Revenue miss threshold corrected.",
-                        "Gross-margin downside trigger corrected.",
-                    ],
-                }
-            },
-        },
-        deep=True,
-    )
-    result = AgentResult(
-        task_id="task_merge_monitoring_revision",
-        agent_name=AgentName.O1_EXPECTATION_OWNER,
-        status=ResultStatus.SUCCEEDED,
-        payload={"runtime": "maf", "structured": {"objection_resolutions": []}},
-        proposed_patches=[revision],
-    )
-
-    normalized = workflow._normalized_expectation_revisions(
-        WorkflowCheckpoint(
-            run_id="run_merge_monitoring_revision",
-            ticker="NVDA",
-            pending_patches=[pending],
-        ),
-        result,
-    )
-
-    monitoring = normalized[0].after["event_monitoring_direction"]
-    assert monitoring["positive_events"] == [
-        "Q3 revenue threshold corrected.",
-        "HBM margin trigger corrected.",
-        "Old positive trigger 2",
-    ]
-    assert monitoring["negative_events"] == [
-        "Revenue miss threshold corrected.",
-        "Gross-margin downside trigger corrected.",
-        "Old negative trigger 2",
-    ]
-    workflow._validate_expectation_patch_list("NVDA", normalized)
-
-
-def test_partial_revision_merges_realized_fact_index_after_wrappers() -> None:
-    workflow = BlackboardInitializationWorkflow(
-        runner=ParallelStructuredInitializationRunner(),
-        execution_mode="agent_runner",
-    )
-    factory = InitializationMockResultFactory()
-    document = factory._expectation_unit("NVDA")
-    pending = factory._document_patch(
-        document,
-        DocumentType.EXPECTATION_UNIT,
-        AgentName.O1_EXPECTATION_OWNER,
-        expectation_id=document.expectation_id,
-    )
-    base_after = dict(pending.after)
-    first_fact = dict(base_after["realized_facts"][0])
-    second_fact = {
-        **first_fact,
-        "event_id": "event_target_second",
-        "description": "Unsupported precise fundamental claim.",
-    }
-    third_fact = {
-        **first_fact,
-        "event_id": "event_target_third",
-        "description": "Unchanged third realized fact.",
-    }
-    pending = pending.model_copy(
-        update={
-            "after": {
-                **base_after,
-                "realized_facts": [first_fact, second_fact, third_fact],
-            }
-        },
-        deep=True,
-    )
-    revision = pending.model_copy(
-        update={
-            "patch_id": "patch_fact_index_after_revision",
-            "after": {
-                "realized_facts": [
-                    {
-                        "index": 1,
-                        "after": {
-                            "description": "Second realized fact removes unsupported precision.",
-                            "price_reaction": {
-                                "interpretation": "Narrative-only precision removed."
-                            },
-                        },
-                    }
-                ]
-            },
-        },
-        deep=True,
-    )
-    result = AgentResult(
-        task_id="task_merge_fact_index_after_revision",
-        agent_name=AgentName.O1_EXPECTATION_OWNER,
-        status=ResultStatus.SUCCEEDED,
-        payload={"runtime": "maf", "structured": {"objection_resolutions": []}},
-        proposed_patches=[revision],
-    )
-
-    normalized = workflow._normalized_expectation_revisions(
-        WorkflowCheckpoint(
-            run_id="run_merge_fact_index_after_revision",
-            ticker="NVDA",
-            pending_patches=[pending],
-        ),
-        result,
-    )
-
-    facts = normalized[0].after["realized_facts"]
-    assert len(facts) == 3
-    assert facts[0]["description"] == first_fact["description"]
-    assert facts[1]["event_id"] == "event_target_second"
-    assert facts[1]["description"] == "Second realized fact removes unsupported precision."
-    assert (
-        facts[1]["price_reaction"]["interpretation"]
-        == "Narrative-only precision removed."
-    )
-    assert facts[2]["description"] == "Unchanged third realized fact."
-    workflow._validate_expectation_patch_list("NVDA", normalized)
-
-
-def test_partial_revision_merges_sparse_realized_fact_lists_by_index() -> None:
-    workflow = BlackboardInitializationWorkflow(
-        runner=ParallelStructuredInitializationRunner(),
-        execution_mode="agent_runner",
-    )
-    factory = InitializationMockResultFactory()
-    document = factory._expectation_unit("NVDA")
-    pending = factory._document_patch(
-        document,
-        DocumentType.EXPECTATION_UNIT,
-        AgentName.O1_EXPECTATION_OWNER,
-        expectation_id=document.expectation_id,
-    )
-    base_after = dict(pending.after)
-    first_fact = dict(base_after["realized_facts"][0])
-    second_fact = {
-        **first_fact,
-        "event_id": "event_sparse_second",
-        "description": "Original sparse target fact.",
-    }
-    pending = pending.model_copy(
-        update={
-            "after": {
-                **base_after,
-                "realized_facts": [first_fact, second_fact],
-            }
-        },
-        deep=True,
-    )
-    revision = pending.model_copy(
-        update={
-            "patch_id": "patch_fact_sparse_revision",
-            "after": {
-                "realized_facts": [
-                    None,
-                    {"description": "Sparse list revision preserved required fields."},
-                ]
-            },
-        },
-        deep=True,
-    )
-    result = AgentResult(
-        task_id="task_merge_fact_sparse_revision",
-        agent_name=AgentName.O1_EXPECTATION_OWNER,
-        status=ResultStatus.SUCCEEDED,
-        payload={"runtime": "maf", "structured": {"objection_resolutions": []}},
-        proposed_patches=[revision],
-    )
-
-    normalized = workflow._normalized_expectation_revisions(
-        WorkflowCheckpoint(
-            run_id="run_merge_fact_sparse_revision",
-            ticker="NVDA",
-            pending_patches=[pending],
-        ),
-        result,
-    )
-
-    facts = normalized[0].after["realized_facts"]
-    assert len(facts) == 2
-    assert facts[0]["description"] == first_fact["description"]
-    assert facts[1]["event_id"] == "event_sparse_second"
-    assert facts[1]["description"] == "Sparse list revision preserved required fields."
-    workflow._validate_expectation_patch_list("NVDA", normalized)
-
-
-def test_numeric_sanity_revision_fallback_removes_unsupported_false_precision() -> None:
-    workflow = BlackboardInitializationWorkflow(
-        runner=ParallelStructuredInitializationRunner(),
-        execution_mode="agent_runner",
-    )
-    factory = InitializationMockResultFactory()
-    narrative_evidence = factory._evidence(EvidenceSourceType.DOXATLAS_SOURCE)
-    document = factory._expectation_unit("NVDA")
-    fact = document.realized_facts[0]
-    reaction = fact.price_reaction.model_copy(
-        update={
-            "price_change": "NVDA stock price is $1,020, YTD +244%, market cap 1.15 trillion.",
-            "price_pattern": "narrative_only_market_rerating",
-            "interpretation": "The narrative says the precise market move is already priced.",
-            "evidence_refs": [narrative_evidence],
-        },
-        deep=True,
-    )
-    document = document.model_copy(
-        update={
-            "market_view": document.market_view.model_copy(
-                update={
-                    "text": (
-                        "The market view says revenue rose 196%, stock price is $1,020, "
-                        "and forward P/E is 8.1x based only on narrative evidence."
-                    ),
-                    "summary": "Narrative-only market view with $1,020 target precision.",
-                    "evidence_refs": [narrative_evidence],
-                },
-                deep=True,
-            ),
-            "realized_facts": [
-                fact.model_copy(
-                    update={
-                        "description": (
-                            "NVDA revenue grew 196% while stock price reached $1,020, "
-                            "based only on a narrative source."
-                        ),
-                        "price_reaction": reaction,
-                        "evidence_refs": [narrative_evidence],
-                    },
-                    deep=True,
-                )
-            ],
-            "realized_facts_summary": (
-                "Revenue +196% and stock price $1,020 are treated as precise realized facts."
-            ),
-            "key_variables": [
-                document.key_variables[0].model_copy(
-                    update={
-                        "current_status": (
-                            "Revenue +196%, target price $1,020, and gross margin 74.9% "
-                            "are kept from narrative evidence."
-                        ),
-                        "evidence_refs": [narrative_evidence],
-                    },
-                    deep=True,
-                )
-            ],
-            "event_monitoring_direction": document.event_monitoring_direction.model_copy(
-                update={
-                    "positive_events": [
-                        "Customer design wins confirm HBM demand without numeric threshold",
-                        "Target price rises above $1,020 and margin reaches 81%.",
-                    ],
-                    "negative_events": [
-                        "Customer cancellations pressure HBM orders",
-                        "Revenue falls 30% and market cap drops 50%.",
-                    ],
-                    "known_event_notice": "Monitor Q3 FY26 without unsupported $33.5B thresholds.",
-                },
-                deep=True,
-            ),
-        },
-        deep=True,
-    )
-    patch = factory._document_patch(
-        document,
-        DocumentType.EXPECTATION_UNIT,
-        AgentName.O1_EXPECTATION_OWNER,
-        expectation_id=document.expectation_id,
-    )
-    run = workflow.blackboard.start_run("NVDA", AgentName.SYSTEM)
-    checkpoint = WorkflowCheckpoint(run_id=run.run_id, ticker="NVDA", pending_patches=[patch])
-    objections = workflow._numeric_sanity_objections_for_patch("NVDA", patch)
-    assert {item.taxonomy for item in objections} == {
-        "numeric_sanity_market_data",
-        "numeric_sanity_fundamental_data",
-    }
-    for objection in objections:
-        workflow.blackboard.create_objection(run.run_id, objection)
-
-    structured = {
-        "proposed_patches": [patch.model_dump(mode="json")],
-        "evidence_refs": [narrative_evidence.model_dump(mode="json")],
-        "delegations": [],
-        "unknowns": [],
-        "rationale": "O1 accepted the numeric sanity objections but left precision in place.",
-        "resolved_objection_ids": [],
-        "accepted_objection_ids": [item.objection_id for item in objections],
-        "partially_accepted_objection_ids": [],
-        "rejected_objection_ids": [],
-        "objection_resolutions": [
-            {
-                "objection_id": item.objection_id,
-                "decision": "accepted",
-                "resolution_note": "Accepted and revised the affected expectation.",
-                "changed_paths": ["realized_facts", "realized_facts.price_reaction"],
-                "evidence_refs": [narrative_evidence.model_dump(mode="json")],
-            }
-            for item in objections
-        ],
-    }
-    result = AgentResult(
-        task_id="task_numeric_revision",
-        agent_name=AgentName.O1_EXPECTATION_OWNER,
-        status=ResultStatus.SUCCEEDED,
-        payload={"runtime": "maf", "structured": structured},
-        proposed_patches=[patch],
-        evidence_refs=[narrative_evidence],
-    )
-
-    workflow._apply_o1_objection_resolutions(checkpoint, result)
-    replaced = workflow._replace_pending_expectation_patches(checkpoint, result)
-
-    sanitized = replaced[0]
-    assert workflow._numeric_sanity_objections_for_patch("NVDA", sanitized) == []
-    sanitized_fact = sanitized.after["realized_facts"][0]
-    sanitized_reaction = sanitized_fact["price_reaction"]
-    combined = " ".join(
-        [
-            sanitized_fact["description"],
-            sanitized_reaction["price_change"],
-            sanitized_reaction["price_pattern"],
-            sanitized_reaction["interpretation"],
-            sanitized.after["realized_facts_summary"],
-            sanitized.after["market_view"]["text"],
-            sanitized.after["market_view"]["summary"],
-            sanitized.after["key_variables"][0]["current_status"],
-            " ".join(sanitized.after["event_monitoring_direction"]["positive_events"]),
-            " ".join(sanitized.after["event_monitoring_direction"]["negative_events"]),
-            sanitized.after["event_monitoring_direction"]["known_event_notice"],
-        ]
-    )
-    assert "$1,020" not in combined
-    assert "+244%" not in combined
-    assert "196%" not in combined
-    assert "8.1x" not in combined
-    assert "74.9%" not in combined
-    assert "$33.5B" not in combined
-    assert "NVDA revenue grew" in sanitized_fact["description"]
-    assert "stock price reached" in sanitized_fact["description"]
-    assert "Exact price reaction removed" in sanitized_reaction["price_change"]
-    assert (
-        "Customer design wins confirm HBM demand without numeric threshold"
-        in sanitized.after["event_monitoring_direction"]["positive_events"]
-    )
-    assert (
-        "Customer cancellations pressure HBM orders"
-        in sanitized.after["event_monitoring_direction"]["negative_events"]
-    )
-    assert "source-backed level" not in combined.lower()
-    assert "source-backed threshold" not in combined.lower()
-    assert "track the named catalyst or risk" not in combined.lower()
-    assert "该已兑现事实仅保留为定性证据" not in combined
-    assert "structured recalculation" not in combined
-    for marker in (
-        "monitor this event qualitatively",
-        "precise threshold requires source-appropriate evidence",
-        "thresholds are source-verified",
-        "source-verified value",
-        "source-verified threshold",
-        "quantified price reaction withheld",
-        "structured market-trace verification is still required",
-        "qualitative thesis retained",
-        "precise market or fundamental values require source-appropriate evidence",
-        "market thesis preserved while exact",
-        "thesis direction preserved; precise numeric claims were removed",
-        "current status preserved while exact numeric levels",
-        "numeric monitoring threshold requires source evidence",
-    ):
-        assert marker not in combined.lower()
-    try:
-        workflow._validate_expectation_promotion_quality(
-            ExpectationUnitDocument.model_validate(sanitized.after)
-        )
-    except WorkflowContractError as exc:
-        assert "unknown price_reaction" in str(exc)
-    else:
-        raise AssertionError("promotion accepted a narrative-only price reaction placeholder")
-    assert "Numeric sanity fallback removed unsupported precise numeric claims" in (
-        sanitized.rationale
-    )
-
-
-def test_numeric_sanity_monitoring_cleanup_removes_placeholder_triggers() -> None:
-    workflow = BlackboardInitializationWorkflow(
-        runner=ParallelStructuredInitializationRunner(),
-        execution_mode="agent_runner",
-    )
-    factory = InitializationMockResultFactory()
-    document = factory._expectation_unit("NVDA")
-    monitoring = document.event_monitoring_direction.model_copy(
-        update={
-            "positive_events": [
-                "Q3 FY26 HBM capacity exceeds source-backed threshold",
-                (
-                    "Track this catalyst by the named business signal while disputed "
-                    "price/guidance thresholds are rebuilt."
-                ),
-            ],
-            "negative_events": [
-                "Revenue falls 30% and market cap drops 50%.",
-            ],
-            "known_event_notice": (
-                "Track the named catalyst or risk after rebuilding its threshold from "
-                "company or market data."
-            ),
-        },
-        deep=True,
-    )
-
-    cleaned, changed = workflow._sanitize_numeric_sanity_monitoring(monitoring)
-
-    assert changed is True
-    combined = " ".join(
-        [
-            cleaned.known_event_notice,
-            *cleaned.positive_events,
-            *cleaned.negative_events,
-        ]
-    ).lower()
-    assert "q3 fy26 hbm capacity exceeds" in cleaned.known_event_notice.lower()
-    assert "revenue falls and market cap drops" in combined
-    assert "source-backed threshold" not in combined
-    assert "track the named catalyst or risk" not in combined
-    assert "track this catalyst by the named business signal" not in combined
-    assert "numeric monitoring threshold requires source evidence" not in combined
-
-
-def test_o1_partial_revision_merges_into_pending_expectation_document() -> None:
-    workflow = BlackboardInitializationWorkflow(
-        runner=ParallelStructuredInitializationRunner(),
-        execution_mode="agent_runner",
-    )
-    factory = InitializationMockResultFactory()
-    evidence = factory._evidence(EvidenceSourceType.AGENT_OUTPUT)
-    document = factory._expectation_unit("MU").model_copy(
-        update={
-            "expectation_id": "expectation_mu_01",
-            "expectation_name": "MU expectation 01",
-            "realized_facts_summary": "Original summary with unsupported precision.",
-        },
-        deep=True,
-    )
-    pending_patch = factory._document_patch(
-        document,
-        DocumentType.EXPECTATION_UNIT,
-        AgentName.O1_EXPECTATION_OWNER,
-        expectation_id=document.expectation_id,
-    )
-    checkpoint = WorkflowCheckpoint(
-        run_id="run_partial_revision",
-        ticker="MU",
-        pending_patches=[pending_patch],
-    )
-    revision = pending_patch.model_copy(
-        update={
-            "patch_id": "patch_expectation_mu_01_revision",
-            "target": pending_patch.target.model_copy(
-                update={"field_path": "realized_facts_summary"},
-                deep=True,
-            ),
-            "after": "Revised summary with unsupported precision removed.",
-            "rationale": "O1 accepted numeric sanity objection and revised one field.",
-            "evidence_refs": [evidence],
-        },
-        deep=True,
-    )
-    result = AgentResult(
-        task_id="task_partial_revision",
-        agent_name=AgentName.O1_EXPECTATION_OWNER,
-        status=ResultStatus.SUCCEEDED,
-        payload={"runtime": "maf", "structured": {"proposed_patches": []}},
-        proposed_patches=[revision],
-        evidence_refs=[evidence],
-    )
-
-    normalized = workflow._normalized_expectation_revisions(checkpoint, result)
-
-    assert len(normalized) == 1
-    assert normalized[0].target.field_path == "document"
-    assert normalized[0].after["expectation_id"] == "expectation_mu_01"
-    assert (
-        normalized[0].after["realized_facts_summary"]
-        == "Revised summary with unsupported precision removed."
-    )
-    assert normalized[0].after["key_variables"]
-    assert "Merged partial O1 resolver revision" in normalized[0].rationale
-    workflow._validate_expectation_patch_list("MU", normalized)
-    replaced = workflow._replace_pending_expectation_patches(checkpoint, result)
-    assert replaced[0].after == normalized[0].after
-
-
-def test_o1_flat_partial_revision_merges_from_normalized_payload() -> None:
-    workflow = BlackboardInitializationWorkflow(
-        runner=ParallelStructuredInitializationRunner(),
-        execution_mode="agent_runner",
-    )
-    factory = InitializationMockResultFactory()
-    evidence = factory._evidence(EvidenceSourceType.AGENT_OUTPUT)
-    document = factory._expectation_unit("MU").model_copy(
-        update={
-            "expectation_id": "expectation_mu_01",
-            "expectation_name": "Original MU expectation",
-        },
-        deep=True,
-    )
-    pending_patch = factory._document_patch(
-        document,
-        DocumentType.EXPECTATION_UNIT,
-        AgentName.O1_EXPECTATION_OWNER,
-        expectation_id=document.expectation_id,
-    )
-    checkpoint = WorkflowCheckpoint(
-        run_id="run_flat_partial_revision",
-        ticker="MU",
-        pending_patches=[pending_patch],
-    )
-    raw_revision = {
-        "patch_id": "patch_expectation_mu_01_revision",
-        "target": {
-            "document_type": "expectation_unit",
-            "field_path": "document",
-            "ticker": "MU",
-            "document_id": document.document_id,
-            "expectation_id": document.expectation_id,
-        },
-        "operation": "update",
-        "rationale": "O1 partially accepted the objection and revised affected fields.",
-        "author_agent": "O1",
-        "validation_status": "pending",
-        "expectation_name": "Revised MU expectation",
-        "direction": "bullish",
-        "key_variables": [document.key_variables[0].model_dump(mode="json")],
-        "evidence_refs": [evidence.model_dump(mode="json")],
-    }
-    result = AgentResult(
-        task_id="task_flat_partial_revision",
-        agent_name=AgentName.O1_EXPECTATION_OWNER,
-        status=ResultStatus.SUCCEEDED,
-        payload={"structured": {"proposed_patches": [raw_revision]}},
-    )
-    result = WorkflowAgentResultNormalizer().normalize(result)
-
-    normalized = workflow._normalized_expectation_revisions(checkpoint, result)
-
-    assert len(normalized) == 1
-    assert normalized[0].target.field_path == "document"
-    assert normalized[0].after["expectation_id"] == "expectation_mu_01"
-    assert normalized[0].after["expectation_name"] == "Revised MU expectation"
-    assert normalized[0].after["realized_facts"] == pending_patch.after["realized_facts"]
-    assert normalized[0].after["key_variables"] == [
-        document.key_variables[0].model_dump(mode="json")
-    ]
-    assert "Merged partial O1 resolver revision" in normalized[0].rationale
-    workflow._validate_expectation_patch_list("MU", normalized)
-
-
-def test_deterministic_objection_normalization_handles_numeric_and_price_blockers() -> None:
-    workflow = BlackboardInitializationWorkflow(
-        runner=ParallelStructuredInitializationRunner(),
-        execution_mode="agent_runner",
-    )
-    factory = InitializationMockResultFactory()
-    narrative_evidence = factory._evidence(EvidenceSourceType.DOXATLAS_SOURCE)
-    document = factory._expectation_unit("NVDA")
-    fact = document.realized_facts[0]
-    reaction = fact.price_reaction.model_copy(
-        update={
-            "price_change": "NVDA stock price is $1,020, YTD +244%, market cap 1.15 trillion.",
-            "price_pattern": "contradicted OHLCV price reaction",
-            "interpretation": "OHLCV contradiction is still written as quantified price-in.",
-            "evidence_refs": [narrative_evidence],
-        },
-        deep=True,
-    )
-    document = document.model_copy(
-        update={
-            "realized_facts": [
-                fact.model_copy(
-                    update={
-                        "description": (
-                            "NVDA revenue grew 196% while stock price reached $1,020, "
-                            "based only on a narrative source."
-                        ),
-                        "price_reaction": reaction,
-                        "evidence_refs": [narrative_evidence],
-                    },
-                    deep=True,
-                )
-            ],
-            "realized_facts_summary": "Revenue +196% and stock price $1,020 are precise.",
-        },
-        deep=True,
-    )
-    patch = factory._document_patch(
-        document,
-        DocumentType.EXPECTATION_UNIT,
-        AgentName.O1_EXPECTATION_OWNER,
-        expectation_id=document.expectation_id,
-    )
-    run = workflow.blackboard.start_run("NVDA", AgentName.SYSTEM)
-    checkpoint = WorkflowCheckpoint(run_id=run.run_id, ticker="NVDA", pending_patches=[patch])
-    numeric_objections = workflow._numeric_sanity_objections_for_patch("NVDA", patch)
-    for objection in numeric_objections:
-        workflow.blackboard.create_objection(run.run_id, objection)
-    price_objection = Objection(
-        objection_id="obj_price_reaction_contradictions",
-        source_agent=AgentName.O4_MARKET_TRACE,
-        target=BlackboardTarget(
-            document_type=DocumentType.EXPECTATION_UNIT,
-            ticker="NVDA",
-            field_path="document",
-        ),
-        severity=ObjectionSeverity.BLOCKING,
-        reason=(
-            "realized_facts.price_reaction contains OHLCV contradictions and wrong "
-            "stock price reaction claims."
-        ),
-        evidence_refs=[narrative_evidence],
-        taxonomy="general",
-        target_path="expectation_unit:default:document",
-    )
-    workflow.blackboard.create_objection(run.run_id, price_objection)
-
-    workflow._apply_deterministic_objection_normalizations(checkpoint)
-
-    assert (
-        workflow._numeric_sanity_objections_for_patch("NVDA", checkpoint.pending_patches[0])
-        == []
-    )
-    run_after = workflow.blackboard.get_run(run.run_id)
-    objections_by_id = {item.objection_id: item for item in run_after.objections}
-    assert all(
-        objections_by_id[item.objection_id].status is ObjectionStatus.RESOLVED
-        for item in numeric_objections
-    )
-    assert (
-        objections_by_id["obj_price_reaction_contradictions"].status
-        is ObjectionStatus.RESOLVED
-    )
-    assert run_after.working_memory[-1].content_type == "deterministic_objection_normalization"
-    assert run_after.working_memory[-1].payload["changed_expectation_ids"] == [
-        document.expectation_id
-    ]
-    sanitized_text = str(checkpoint.pending_patches[0].after)
-    assert "$1,020" not in sanitized_text
-    assert "+244%" not in sanitized_text
-    assert "196%" not in sanitized_text
-
-
-def test_deterministic_field_review_normalization_handles_price_and_guidance_blockers() -> None:
-    workflow = BlackboardInitializationWorkflow(
-        runner=ParallelStructuredInitializationRunner(),
-        execution_mode="agent_runner",
-    )
-    factory = InitializationMockResultFactory()
-    evidence = factory._evidence(EvidenceSourceType.MARKET_DATA)
-    patches = []
-    for suffix in ("01", "02", "03"):
-        document = factory._expectation_unit("MU")
-        fact = document.realized_facts[0]
-        reaction = fact.price_reaction.model_copy(
-            update={
-                "price_change": (
-                    "MU stock price reached $1,020, gained +90%, and Q3 FY2026 "
-                    "revenue guidance is $36B."
-                ),
-                "price_pattern": "wrong benchmark and return calculation",
-                "interpretation": "The patch treats the wrong price reaction as priced-in.",
-                "evidence_refs": [evidence],
-            },
-            deep=True,
-        )
-        document = document.model_copy(
-            update={
-                "expectation_id": f"expectation_mu_{suffix}",
-                "expectation_name": f"MU expectation {suffix}",
-                "market_view": document.market_view.model_copy(
-                    update={
-                        "text": (
-                            "Q3 FY2026 revenue guidance is $36B and stock price "
-                            "outperformance reached +90% versus SOXX."
-                        ),
-                        "summary": "Q3 FY2026 revenue guidance $36B with +90% price gain.",
-                        "evidence_refs": [evidence],
-                    },
-                    deep=True,
-                ),
-                "realized_facts": [
-                    fact.model_copy(
-                        update={
-                            "description": (
-                                "Q3 FY2026 revenue guidance is $36B and MU stock price "
-                                "reached $1,020."
-                            ),
-                            "price_reaction": reaction,
-                            "evidence_refs": [evidence],
-                        },
-                        deep=True,
-                    )
-                ],
-                "realized_facts_summary": (
-                    "Q3 FY2026 revenue guidance $36B and MU stock price $1,020 are precise."
-                ),
-            },
-            deep=True,
-        )
-        patch = factory._document_patch(
-            document,
-            DocumentType.EXPECTATION_UNIT,
-            AgentName.O1_EXPECTATION_OWNER,
-            expectation_id=document.expectation_id,
-        ).model_copy(update={"patch_id": f"patch_expectation_mu_{suffix}_detail"})
-        patches.append(patch)
-
-    run = workflow.blackboard.start_run("MU", AgentName.SYSTEM)
-    checkpoint = WorkflowCheckpoint(run_id=run.run_id, ticker="MU", pending_patches=patches)
-    price_objection = Objection(
-        objection_id="obj_price_mu_01",
-        source_agent=AgentName.O4_MARKET_TRACE,
-        target=BlackboardTarget(
-            document_type=DocumentType.EXPECTATION_UNIT,
-            ticker="MU",
-            field_path="document",
-        ),
-        severity=ObjectionSeverity.HIGH,
-        reason="价格基准与涨幅计算错误",
-        evidence_refs=[evidence],
-    )
-    guidance_objection = Objection(
-        objection_id="objection_guidance",
-        source_agent=AgentName.C1_FUNDAMENTAL_RESEARCH,
-        target=BlackboardTarget(
-            document_type=DocumentType.EXPECTATION_UNIT,
-            ticker="MU",
-            field_path="document",
-        ),
-        severity=ObjectionSeverity.MEDIUM,
-        reason=(
-            "Q3 FY2026营收指引数据存在严重事实错误。Patch中声称Q3营收指引为$36B，"
-            "官方为$33.5B。"
-        ),
-        evidence_refs=[evidence],
-    )
-    workflow.blackboard.create_objection(run.run_id, price_objection)
-    workflow.blackboard.create_objection(run.run_id, guidance_objection)
-
-    workflow._apply_deterministic_objection_normalizations(checkpoint)
-
-    run_after = workflow.blackboard.get_run(run.run_id)
-    objections_by_id = {item.objection_id: item for item in run_after.objections}
-    assert objections_by_id["obj_price_mu_01"].status is ObjectionStatus.RESOLVED
-    assert objections_by_id["objection_guidance"].status is ObjectionStatus.RESOLVED
-    combined = " ".join(str(patch.after) for patch in checkpoint.pending_patches)
-    assert "$36B" not in combined
-    assert "36B" not in combined
-    assert "$1,020" not in str(checkpoint.pending_patches[0].after)
-    assert "+90%" not in str(checkpoint.pending_patches[0].after)
-    assert (
-        "field_review_numeric_correction"
-        in run_after.working_memory[-1].payload["normalization_types"]
     )
 
 
@@ -2692,34 +1363,37 @@ class StalledFirstObjectionBatchRunner:
             for item in raw_objections
             if isinstance(item, dict) and isinstance(item.get("objection_id"), str)
         ] if isinstance(raw_objections, list) else []
+        objection_items = [
+            item
+            for item in raw_objections
+            if isinstance(item, dict) and isinstance(item.get("objection_id"), str)
+        ] if isinstance(raw_objections, list) else []
+        expectation_id = "exp_mock_core"
+        if objection_items:
+            target = objection_items[0].get("target")
+            if isinstance(target, dict) and isinstance(target.get("expectation_id"), str):
+                expectation_id = target["expectation_id"]
         self.batches.append(objection_ids)
         if len(self.batches) == 1:
             structured = {
-                "proposed_patches": [],
-                "evidence_refs": [evidence.model_dump(mode="json")],
-                "delegations": [],
-                "unknowns": [],
+                "expectation_id": expectation_id,
+                "decision": "deferred",
+                "decisions": [],
+                "target_finding_ids": [],
+                "revised_candidate": None,
+                "evidence_requests": [],
+                "unresolved_finding_ids": [],
+                "unresolved_reason": "The first resolver batch made no transition.",
                 "rationale": "The first resolver batch made no transition.",
-                "resolved_objection_ids": [],
-                "accepted_objection_ids": [],
-                "partially_accepted_objection_ids": [],
-                "rejected_objection_ids": [],
-                "objection_resolutions": [],
             }
         else:
             structured = {
-                "proposed_patches": [],
-                "evidence_refs": [evidence.model_dump(mode="json")],
-                "delegations": [],
-                "unknowns": [],
-                "rationale": "The next resolver batch resolved its objections.",
-                "resolved_objection_ids": objection_ids,
-                "accepted_objection_ids": [],
-                "partially_accepted_objection_ids": [],
-                "rejected_objection_ids": [],
-                "objection_resolutions": [
+                "expectation_id": expectation_id,
+                "decision": "resolved",
+                "decisions": [
                     {
                         "objection_id": objection_id,
+                        "finding_id": None,
                         "decision": "resolved",
                         "resolution_note": "Resolved after stalled sibling batch.",
                         "changed_paths": ["expectation_unit.document"],
@@ -2727,6 +1401,12 @@ class StalledFirstObjectionBatchRunner:
                     }
                     for objection_id in objection_ids
                 ],
+                "target_finding_ids": [],
+                "revised_candidate": None,
+                "evidence_requests": [],
+                "unresolved_finding_ids": [],
+                "unresolved_reason": None,
+                "rationale": "The next resolver batch resolved its objections.",
             }
         return AgentResult(
             task_id=task.task_id,

@@ -4,6 +4,7 @@ import pytest
 
 from doxagent.gateway import (
     AnthropicModelClient,
+    BailianChatCompletionsModelClient,
     BailianResponsesModelClient,
     GatewayError,
     MessageRole,
@@ -272,6 +273,84 @@ async def test_bailian_adapter_uses_responses_api_with_thinking_enabled() -> Non
     assert fake_client.responses.kwargs is not None
     assert fake_client.responses.kwargs["model"] == "mock-model"
     assert fake_client.responses.kwargs["extra_body"] == {"enable_thinking": True}
+
+
+@pytest.mark.asyncio
+async def test_bailian_adapter_skips_provider_json_mode_for_deepseek() -> None:
+    fake_client = FakeBailianClient()
+    adapter = BailianResponsesModelClient(
+        fake_client,
+        enable_thinking=True,
+        thinking_budget=2000,
+    )
+    deepseek_request = request(ResponseFormat.JSON).model_copy(
+        update={"model": "deepseek-v4-flash"}
+    )
+
+    response = await adapter.complete(deepseek_request)
+
+    assert response.audit.provider is ProviderName.BAILIAN
+    assert fake_client.responses.kwargs is not None
+    assert fake_client.responses.kwargs["model"] == "deepseek-v4-flash"
+    assert "text" not in fake_client.responses.kwargs
+    assert fake_client.responses.kwargs["extra_body"] == {
+        "enable_thinking": True,
+        "thinking_budget": 2000,
+    }
+
+
+class FakeChatCompletions:
+    def __init__(self) -> None:
+        self.kwargs: dict[str, Any] | None = None
+
+    async def create(self, **kwargs: Any) -> Any:
+        self.kwargs = kwargs
+        return {
+            "choices": [
+                {
+                    "message": {
+                        "content": '{"answer": "ok"}',
+                        "reasoning_content": "reasoning",
+                    }
+                }
+            ],
+            "usage": {"prompt_tokens": 3, "completion_tokens": 4, "total_tokens": 7},
+        }
+
+
+class FakeChat:
+    def __init__(self) -> None:
+        self.completions = FakeChatCompletions()
+
+
+class FakeBailianChatClient:
+    def __init__(self) -> None:
+        self.chat = FakeChat()
+
+
+@pytest.mark.asyncio
+async def test_bailian_chat_adapter_supports_deepseek_text_json_parsing_path() -> None:
+    fake_client = FakeBailianChatClient()
+    adapter = BailianChatCompletionsModelClient(
+        fake_client,
+        enable_thinking=True,
+        thinking_budget=2000,
+    )
+    deepseek_request = request(ResponseFormat.JSON).model_copy(
+        update={"model": "deepseek-v4-flash"}
+    )
+
+    response = await adapter.complete(deepseek_request)
+
+    assert response.text == '{"answer": "ok"}'
+    assert response.raw["reasoning_summary"] == ["reasoning"]
+    assert fake_client.chat.completions.kwargs is not None
+    assert fake_client.chat.completions.kwargs["messages"][0]["role"] == "system"
+    assert "response_format" not in fake_client.chat.completions.kwargs
+    assert fake_client.chat.completions.kwargs["extra_body"] == {
+        "enable_thinking": True,
+        "thinking_budget": 2000,
+    }
 
 
 class FakeAnthropicResponse:

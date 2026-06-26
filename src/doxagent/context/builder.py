@@ -130,6 +130,7 @@ class ContextBuilder:
                     "reasoning": policy.reasoning,
                 }
                 for policy in monitoring_policy_document.policies
+                if policy.policy_type in {"direct_trade", "escalate"}
             ]
         return {
             "run_id": run.run_id,

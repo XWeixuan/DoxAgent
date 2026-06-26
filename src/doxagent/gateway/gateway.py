@@ -116,7 +116,7 @@ class ModelGateway:
                 message="JSON response requested, but provider text was not a JSON object.",
                 retryable=False,
                 provider=response.audit.provider,
-                details={"text_preview": response.text[:500]},
+                details={"text": response.text, "text_preview": response.text[:500]},
             )
             return response
         response.structured = parsed

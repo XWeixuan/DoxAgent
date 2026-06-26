@@ -81,6 +81,52 @@ class StructuredInitializationRunner(AgentRunner):
     def _structured(self, task: AgentTask, direct: AgentResult) -> AgentResult:
         if task.required_output_schema == "ExpectationShellConstructionResult":
             structured = dict(direct.payload)
+        elif task.required_output_schema == "ExpectationDetailCandidateResult":
+            structured = dict(direct.payload)
+        elif task.required_output_schema == "Document2ResolutionPlan":
+            evidence = EvidenceRef(
+                evidence_id=new_id("evidence"),
+                source_type=EvidenceSourceType.AGENT_OUTPUT,
+                source_id=f"test:{task.run_metadata.workflow_node}:O1",
+                title="O1 resolution evidence",
+                summary="Structured test resolution evidence.",
+                confidence=0.8,
+                citation_scope="test.resolution_plan",
+            )
+            objections = task.input_context.get("unresolved_objections")
+            objection_items = [
+                item
+                for item in objections
+                if isinstance(item, dict) and isinstance(item.get("objection_id"), str)
+            ] if isinstance(objections, list) else []
+            expectation_id = "exp_mock_core"
+            if objection_items:
+                target = objection_items[0].get("target")
+                if isinstance(target, dict) and isinstance(target.get("expectation_id"), str):
+                    expectation_id = target["expectation_id"]
+            structured = {
+                "expectation_id": expectation_id,
+                "decision": "resolved",
+                "decisions": [
+                    {
+                        "objection_id": item["objection_id"],
+                        "finding_id": None,
+                        "decision": "resolved",
+                        "resolution_note": (
+                            "Mock O1 resolved this objection with supporting evidence."
+                        ),
+                        "changed_paths": ["expectation_unit.document"],
+                        "evidence_refs": [evidence.model_dump(mode="json")],
+                    }
+                    for item in objection_items
+                ],
+                "target_finding_ids": [],
+                "revised_candidate": None,
+                "evidence_requests": [],
+                "unresolved_finding_ids": [],
+                "unresolved_reason": None,
+                "rationale": "Structured resolution-plan test output.",
+            }
         elif task.required_output_schema in {
             "ExpectationConstructionResult",
             "ExpectationDetailResult",
@@ -207,7 +253,9 @@ def test_direct_known_events_patch_hydrates_generated_event_source_evidence() ->
 
     patch = patched.proposed_patches[0]
     event_source = patch.after["events"][0]["source"]
-    assert patch.rationale == "GenerateKnownEvents 已将代理直接产出的稳定文档转换为 Blackboard 补丁。"
+    assert patch.rationale == (
+        "GenerateKnownEvents 已将代理直接产出的稳定文档转换为 Blackboard 补丁。"
+    )
     assert patched.evidence_refs
     assert patched.evidence_refs[0].evidence_id == event_source["evidence_id"]
     assert patch.evidence_refs[0].evidence_id == event_source["evidence_id"]
@@ -434,7 +482,10 @@ def test_known_event_expectation_id_can_override_weak_model_linkage() -> None:
     expectation_id = workflow._known_event_expectation_id(
         checkpoint,
         {"expectation_id": "expectation_mu_hbm_super_cycle"},
-        "Samsung HBM3E/HBM4 yield breakthrough creates cycle reversal risk and DRAM/NAND oversupply.",
+        (
+            "Samsung HBM3E/HBM4 yield breakthrough creates cycle reversal risk and "
+            "DRAM/NAND oversupply."
+        ),
     )
 
     assert expectation_id == "expectation_mu_cycle_reversal_risk"
@@ -660,6 +711,7 @@ def test_default_real_runner_configures_dashscope_fallback_key(
             dashscope_fallback_api_key="fallback-key",
             dashscope_base_url="https://dashscope.example.test/v1",
             dashscope_enable_thinking=True,
+            dashscope_thinking_budget=2000,
         )
     )
 
@@ -669,7 +721,44 @@ def test_default_real_runner_configures_dashscope_fallback_key(
     assert runner.default_provider is ProviderName.BAILIAN
     assert runner.default_model == "qwen3.7-plus"
     assert runner.model_gateway.primary.enable_thinking is True
+    assert runner.model_gateway.primary.thinking_budget == 2000
     assert runner.model_gateway.fallbacks[0].enable_thinking is True
+    assert runner.model_gateway.fallbacks[0].thinking_budget == 2000
+
+
+def test_default_real_runner_uses_dashscope_chat_endpoint_for_deepseek(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    sdk_clients: list[dict[str, str]] = []
+
+    class FakeAsyncOpenAI:
+        def __init__(self, *, api_key: str, base_url: str) -> None:
+            sdk_clients.append({"api_key": api_key, "base_url": base_url})
+
+    monkeypatch.setattr("doxagent.agents.runner.AsyncOpenAI", FakeAsyncOpenAI)
+    monkeypatch.setattr(
+        "doxagent.agents.runner.wrap_provider_client",
+        lambda _provider, client, **_kwargs: client,
+    )
+
+    runner = default_real_agent_runner(
+        settings=DoxAgentSettings(
+            dashscope_api_key="primary-key",
+            dashscope_fallback_api_key=None,
+            dashscope_base_url="https://responses.example.test/v1",
+            dashscope_chat_base_url="https://chat.example.test/v1",
+            dashscope_model="deepseek-v4-flash",
+            dashscope_enable_thinking=True,
+            dashscope_thinking_budget=2000,
+        )
+    )
+
+    assert sdk_clients == [
+        {"api_key": "primary-key", "base_url": "https://chat.example.test/v1"}
+    ]
+    assert runner.default_model == "deepseek-v4-flash"
+    assert runner.model_gateway.primary.enable_thinking is True
+    assert runner.model_gateway.primary.thinking_budget == 2000
 
 
 def test_default_agent_allowed_tools_exist_in_real_registry() -> None:
@@ -760,7 +849,11 @@ def test_expectation_detail_quality_rejects_empty_realized_facts() -> None:
 
 def test_resolver_o1_has_no_tools_in_effective_permissions() -> None:
     workflow = BlackboardInitializationWorkflow(execution_mode="mock")
-    permissions = default_agent_registry().get(AgentName.O1_EXPECTATION_OWNER).runtime.to_permissions()
+    permissions = (
+        default_agent_registry()
+        .get(AgentName.O1_EXPECTATION_OWNER)
+        .runtime.to_permissions()
+    )
 
     effective = workflow._effective_permissions(
         permissions,
@@ -819,7 +912,9 @@ def test_agent_runner_workflow_uses_module_integration_for_global_research() -> 
     run = workflow.blackboard.get_run(result.checkpoint.run_id)
     assert len(run.working_memory) == 5
     agent_entries = [
-        entry for entry in run.working_memory if entry.content_type == "global_research_agent_result"
+        entry
+        for entry in run.working_memory
+        if entry.content_type == "global_research_agent_result"
     ]
     assert {entry.author_agent for entry in agent_entries} == {
         AgentName.C1_FUNDAMENTAL_RESEARCH,
@@ -1039,7 +1134,10 @@ def test_agent_runner_workflow_completes_with_structured_agent_result_json() -> 
 def test_global_narrative_tool_call_fragment_is_replaced_with_chinese_fallback() -> None:
     class ToolCallNarrativeRunner(StructuredInitializationRunner):
         def _research_section(self, task: AgentTask) -> AgentResult:
-            if task.run_metadata.workflow_node == WorkflowNode.GENERATE_GLOBAL_NARRATIVE_REPORT.value:
+            if (
+                task.run_metadata.workflow_node
+                == WorkflowNode.GENERATE_GLOBAL_NARRATIVE_REPORT.value
+            ):
                 evidence = EvidenceRef(
                     evidence_id="evidence_narrative",
                     source_type=EvidenceSourceType.DOXATLAS_SOURCE,

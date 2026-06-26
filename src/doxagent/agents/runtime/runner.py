@@ -2,7 +2,8 @@
 
 import asyncio
 import json
-from typing import Any
+from dataclasses import replace
+from typing import Any, cast
 
 from doxagent.agents.config import AgentDefinition, AgentRegistry, default_agent_registry
 from doxagent.agents.runtime.chat_client import ModelGatewayChatClient
@@ -117,7 +118,7 @@ class ModelGatewayAgentRunner:
                 provider=self.default_provider,
                 model=self.default_model,
                 tool_mode=self.tool_mode,
-                config=self.react_config,
+                config=self._react_config_for_task(task),
             )
             return await harness.run(
                 task=task,
@@ -199,11 +200,21 @@ class ModelGatewayAgentRunner:
                 "model": self.default_model,
                 "temperature": 0.2,
             }
+            max_tokens = _single_shot_max_tokens(task)
+            if max_tokens is not None:
+                options["max_tokens"] = max_tokens
+            timeout_seconds = _single_shot_timeout_seconds(task)
             if self.model_timeout_seconds is not None:
-                options["timeout_seconds"] = self.model_timeout_seconds
+                timeout_seconds = (
+                    min(timeout_seconds, self.model_timeout_seconds)
+                    if timeout_seconds is not None
+                    else self.model_timeout_seconds
+                )
+            if timeout_seconds is not None:
+                options["timeout_seconds"] = timeout_seconds
             response = await agent.run(
                 assembled_prompt.user_prompt,
-                options=options,
+                options=cast(Any, options),
             )
         except Exception as exc:
             return self._failed(
@@ -340,6 +351,23 @@ class ModelGatewayAgentRunner:
         raw_mode = task.input_context.get("execution_mode", definition.runtime.execution_mode)
         return str(raw_mode)
 
+    def _react_config_for_task(self, task: AgentTask) -> ReActHarnessConfig:
+        budget = task.input_context.get("o3_runtime_budget")
+        if task.agent_name is not AgentName.O3_TRADING_STRATEGY or not isinstance(budget, dict):
+            return self.react_config
+        max_model_calls = _positive_int(budget.get("max_model_calls"))
+        max_tool_batches = _positive_int(budget.get("max_parallel_tool_call_batches"))
+        if max_model_calls is None and max_tool_batches is None:
+            return self.react_config
+        return replace(
+            self.react_config,
+            max_steps=max_model_calls or self.react_config.max_steps,
+            max_tool_calls_per_name=max_tool_batches
+            or self.react_config.max_tool_calls_per_name,
+            max_tool_call_batches=max_tool_batches
+            or self.react_config.max_tool_call_batches,
+        )
+
     def _normalize_delegation_task_type(self, value: str) -> str:
         if value in {"data_retrieval", "market_data", "retrieval"}:
             return TaskType.DELEGATED_RETRIEVAL.value
@@ -436,3 +464,28 @@ class ModelGatewayAgentRunner:
                 details=details or {},
             ),
         )
+
+
+def _positive_int(value: object) -> int | None:
+    try:
+        parsed = int(str(value))
+    except (TypeError, ValueError):
+        return None
+    return parsed if parsed > 0 else None
+
+
+def _single_shot_max_tokens(task: AgentTask) -> int | None:
+    if task.task_type is TaskType.RUNTIME_W1_NOVELTY:
+        return 384
+    if task.task_type is TaskType.RUNTIME_W2_POLICY:
+        return 512
+    return None
+
+
+def _single_shot_timeout_seconds(task: AgentTask) -> float | None:
+    if task.task_type in {
+        TaskType.RUNTIME_W1_NOVELTY,
+        TaskType.RUNTIME_W2_POLICY,
+    }:
+        return 60.0
+    return None

@@ -37,9 +37,10 @@ API references used for endpoint shape:
 - Stocktwits RapidAPI uses
   `GET https://stocktwits-sentiment-message-analytics-api.p.rapidapi.com/functions/v1/stocktwits-query`
   with dynamic `action=messages`, `symbol`, `start`, `end`, `primaryOnly`,
-  `limit`, and `force_refresh` parameters. The collector falls back to the
-  public Stocktwits symbol stream only when `STOCKTWITS_RAPIDAPI_KEY` is not
-  set.
+  `limit`, and `force_refresh=false` parameters. `force_refresh` is disabled by
+  default to avoid exhausting RapidAPI monthly request or upstream refresh
+  quotas during persistent monitoring. The collector falls back to the public
+  Stocktwits symbol stream only when `STOCKTWITS_RAPIDAPI_KEY` is not set.
 
 ## Persistence
 
@@ -170,11 +171,22 @@ Viewer pages:
 
 The configuration form is source-aware:
 
-- `benzinga_news`, `finnhub_company_news`, and `stocktwits_messages`: ticker
-  binding only.
-- `tikhub_x_search`: `keywords`, `search_terms`, and `source_filters`.
+- `benzinga_news`: ticker binding plus optional `search_terms` used as a small
+  Benzinga `topics` fallback when `tickers=<ticker>` returns no rows.
+- `finnhub_company_news`: ticker binding only.
+- `stocktwits_messages`: ticker binding only.
+- `tikhub_x_search`: `search_terms`.
 - `tikhub_x_user_posts`: `usernames`.
 - `newswire_rss`: `rss_urls`.
+
+Current parameter limits are intentionally tight to control paid API usage:
+
+- `benzinga_news.search_terms`: up to 3 items.
+- `tikhub_x_search.search_terms`: up to 3 items.
+- `tikhub_x_user_posts.usernames`: up to 2 items.
+- `newswire_rss.rss_urls`: up to 3 items.
+- `keywords`, `source_filters`, and `extra` are rejected by the current source
+  schemas.
 
 Source Health uses persisted poll-state fields:
 
@@ -327,12 +339,7 @@ Output:
       },
       "agent_mutable_fields": [
         "enabled",
-        "keywords",
-        "usernames",
-        "search_terms",
-        "rss_urls",
-        "source_filters",
-        "extra"
+        "source_schema_allowed_fields"
       ],
       "user_only_fields": [
         "poll_interval_seconds",
@@ -364,14 +371,7 @@ Input:
   "ticker": "AAPL",
   "source_id": "tikhub_x_search",
   "enabled": true,
-  "keywords": ["AAPL earnings", "Apple guidance"],
-  "usernames": [],
   "search_terms": ["AAPL OR Apple stock"],
-  "rss_urls": [],
-  "source_filters": ["lang:en"],
-  "extra": {
-    "coverage_note": "Track earnings and guidance discussion."
-  },
   "mode": "merge",
   "reason": "Expand social monitoring before earnings."
 }
@@ -382,12 +382,22 @@ Field rules:
 - `source_id` is required.
 - `ticker` is optional in `input` when the outer `ToolRequest.ticker` is set.
 - `enabled` defaults to `true`.
-- `mode` defaults to `merge`; use `replace` to replace the existing parameter
-  lists and `extra`.
+- `mode` defaults to `merge`; use `replace` to replace the existing
+  schema-allowed parameter lists.
 - `poll_interval_seconds` is rejected with
   `monitoring_permission_denied`.
 - Global source enable/disable is user-only and is not exposed through this
   tool.
+- Source-specific accepted parameter fields:
+  - `benzinga_news`: optional `search_terms`, sent as Benzinga `topics`
+    fallback only when ticker filtering returns no rows.
+  - `finnhub_company_news`: no monitoring parameters.
+  - `stocktwits_messages`: no monitoring parameters.
+  - `tikhub_x_search`: `search_terms`.
+  - `tikhub_x_user_posts`: `usernames`.
+  - `newswire_rss`: `rss_urls`.
+- `keywords`, `source_filters`, and `extra` are rejected to keep the stored
+  config API-shaped rather than narrative-shaped.
 
 Output:
 
@@ -399,14 +409,12 @@ Output:
     "source_id": "tikhub_x_search",
     "enabled": true,
     "parameters": {
-      "keywords": ["AAPL earnings", "Apple guidance"],
+      "keywords": [],
       "usernames": [],
       "search_terms": ["AAPL OR Apple stock"],
       "rss_urls": [],
-      "source_filters": ["lang:en"],
-      "extra": {
-        "coverage_note": "Track earnings and guidance discussion."
-      }
+      "source_filters": [],
+      "extra": {}
     },
     "created_at": "2026-06-23T00:00:00Z",
     "updated_at": "2026-06-23T00:00:00Z",
@@ -598,12 +606,13 @@ Output:
 Agent-mutable fields:
 
 - `enabled`
-- `keywords`
-- `usernames`
-- `search_terms`
-- `rss_urls`
-- `source_filters`
-- `extra`
+- plus the selected source's schema-allowed fields:
+  - `benzinga_news`: `search_terms`
+  - `finnhub_company_news`: none
+  - `stocktwits_messages`: none
+  - `tikhub_x_search`: `search_terms`
+  - `tikhub_x_user_posts`: `usernames`
+  - `newswire_rss`: `rss_urls`
 
 User-only fields:
 

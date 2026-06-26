@@ -5,6 +5,7 @@ from doxagent.gateway.gateway import ModelGateway
 from doxagent.gateway.mock import MockModelClient
 from doxagent.gateway.providers import (
     AnthropicModelClient,
+    BailianChatCompletionsModelClient,
     BailianResponsesModelClient,
     OpenAIModelClient,
 )
@@ -32,6 +33,7 @@ from doxagent.gateway.tracing import (
 
 __all__ = [
     "AnthropicModelClient",
+    "BailianChatCompletionsModelClient",
     "BailianResponsesModelClient",
     "GatewayError",
     "MessageRole",

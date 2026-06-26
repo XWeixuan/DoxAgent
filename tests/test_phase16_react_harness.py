@@ -15,7 +15,7 @@ from doxagent.gateway import (
     ModelResponse,
     ProviderName,
 )
-from doxagent.models import AgentName, AgentPermissions, ResultStatus, TaskType
+from doxagent.models import AgentName, AgentPermissions, AgentTask, ResultStatus, TaskType
 from doxagent.prompts import PromptAssembler, PromptInjector
 from doxagent.prompts.assembler import CHINESE_OUTPUT_RULES
 from doxagent.tools import (
@@ -98,6 +98,38 @@ def runner_with_sequence(
         tool_registry=tool_registry or default_tool_registry(),
         react_config=react_config,
         tool_mode="mock",
+    )
+
+
+def runtime_o3_task() -> AgentTask:
+    base_task = agent_task()
+    return base_task.model_copy(
+        update={
+            "agent_name": AgentName.O3_TRADING_STRATEGY,
+            "task_type": TaskType.RUNTIME_O3_JUDGMENT,
+            "input_context": {
+                "source_message": {
+                    "source_message_id": "msg_o3_schema",
+                    "ticker": "NVDA",
+                    "source_type": "media",
+                    "title": "Runtime O3 schema smoke",
+                },
+                "o3_runtime_budget": {
+                    "target_seconds": 120,
+                    "max_model_calls": 2,
+                    "max_parallel_tool_call_batches": 1,
+                },
+            },
+            "required_output_schema": "O3Result",
+            "permissions": AgentPermissions(
+                readable_context_scopes=["known_events", "monitoring_policy"],
+                writable_targets=["known_events", "monitoring_policy"],
+                allowed_tools=["tavily.search"],
+                can_delegate=False,
+                can_propose_patch=True,
+            ),
+        },
+        deep=True,
     )
 
 
@@ -445,6 +477,7 @@ def test_prompt_assembler_adds_chinese_output_rules_for_single_shot_paths() -> N
     task = agent_task()
     definition = registry.get(task.agent_name)
     injected = PromptInjector().inject(task, definition)
+    assert injected.prompt_bundle is not None
 
     assembled = PromptAssembler().assemble(
         injected,
@@ -2275,6 +2308,122 @@ def test_react_warns_on_similar_tool_query() -> None:
     assert result.payload["react_audit"]["warnings"]
 
 
+def test_react_enforces_global_tool_call_batch_budget() -> None:
+    task = agent_task()
+    runner = runner_with_sequence(
+        [
+            {
+                "is_complete": False,
+                "tool_calls": [{"tool_name": "doxatlas.query", "input": {"query": "AI demand"}}],
+            },
+            {
+                "is_complete": False,
+                "tool_calls": [{"tool_name": "doxatlas.query", "input": {"query": "AI demand 2"}}],
+            },
+        ],
+        react_config=ReActHarnessConfig(max_steps=3, max_tool_call_batches=1),
+    )
+
+    result = runner.run(task)
+
+    assert result.status is ResultStatus.FAILED
+    assert result.error is not None
+    assert result.error.code == "tool_call_batch_limit_exceeded"
+    assert result.error.details["max_tool_call_batches"] == 1
+
+
+def test_react_lazily_validates_runtime_o3_result_schema() -> None:
+    task = runtime_o3_task()
+    runner = runner_with_sequence(
+        [
+            {
+                "is_complete": True,
+                "completion_reason": "trade intent",
+                "final_payload": {
+                    "primary_action": "trading_record",
+                    "confidence": "high",
+                    "reasoning": "Missing trade_intent should fail runtime schema.",
+                },
+            }
+        ]
+    )
+
+    result = runner.run(task)
+
+    assert result.status is ResultStatus.FAILED
+    assert result.error is not None
+    assert result.error.code == "invalid_final_payload"
+    assert result.error.details["required_output_schema"] == "O3Result"
+    assert "O3Result" in result.error.message
+    assert "trade_intent" in result.error.message
+
+
+def test_react_normalizes_runtime_o3_object_side_effects() -> None:
+    task = runtime_o3_task()
+    runner = runner_with_sequence(
+        [
+            {
+                "is_complete": True,
+                "completion_reason": "known events update",
+                "final_payload": {
+                    "primary_action": "ingest_queue",
+                    "side_effects": [
+                        {
+                            "type": "known_events_update",
+                            "payload": {
+                                "event_id": "KE_MU_1",
+                                "core_fact": "Micron memory demand improved.",
+                                "duplicate_detection_keys": ["memory demand"],
+                            },
+                        }
+                    ],
+                    "evidence_refs": ["source_message_id: std_test"],
+                    "reasoning": "Preserve for later research and update Known Events.",
+                },
+            }
+        ]
+    )
+
+    result = runner.run(task)
+
+    assert result.status is ResultStatus.SUCCEEDED
+    assert result.payload["structured"]["side_effects"] == ["known_events_update"]
+    assert result.payload["structured"]["known_events_patch"]["event_id"] == "KE_MU_1"
+    assert result.payload["structured"]["evidence_refs"] == [{"ref": "source_message_id: std_test"}]
+
+
+def test_react_runtime_o3_prompt_includes_output_contract() -> None:
+    task = runtime_o3_task()
+    client = RecordingModelClient(
+        [
+            {
+                "is_complete": True,
+                "completion_reason": "queue",
+                "final_payload": {
+                    "primary_action": "ingest_queue",
+                    "reasoning": "Needs later research consumption.",
+                },
+            }
+        ]
+    )
+    runner = ModelGatewayAgentRunner(
+        model_gateway=ModelGateway(client),
+        tool_registry=default_tool_registry(),
+        tool_mode="mock",
+    )
+
+    result = runner.run(task)
+
+    prompt = json.loads(client.requests[0].messages[-1].content)
+    contract = prompt["output_contract"]["O3Result"]
+    contract_text = json.dumps(contract, ensure_ascii=False)
+    assert result.status is ResultStatus.SUCCEEDED
+    assert "primary_action" in contract["final_payload"]
+    assert "trading_record requires trade_intent" in contract_text
+    assert "one parallel tool-call batch" in contract_text
+    assert "Never call a broker" in contract_text
+
+
 def test_react_permission_denial_is_a_tool_result_not_exception() -> None:
     task = agent_task()
     runner = runner_with_sequence(
@@ -2775,4 +2924,4 @@ def test_react_executes_concurrent_safe_tools_in_parallel() -> None:
     result = runner.run(task)
 
     assert result.status is ResultStatus.SUCCEEDED
-    assert all("saw_peer=True" in call.output_summary for call in result.tool_calls)
+    assert all("saw_peer=True" in (call.output_summary or "") for call in result.tool_calls)

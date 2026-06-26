@@ -130,18 +130,33 @@ class BenzingaNewsCollector(BaseCollector):
     ) -> list[FetchedExternalMessage]:
         token = _require(self.settings.benzinga_api_key, "BENZINGA_API_KEY")
         page_size = int(source.config.get("page_size", 50))
+        url = self.settings.benzinga_news_base_url.rstrip("/") + "/api/v2/news"
+        base_params = {
+            "token": token,
+            "pageSize": min(page_size, 100),
+            "displayOutput": source.config.get("display_output", "full"),
+            "sort": source.config.get("sort", "created:desc"),
+        }
         data = self._get_json(
-            self.settings.benzinga_news_base_url.rstrip("/") + "/api/v2/news",
-            params={
-                "token": token,
-                "tickers": binding.ticker,
-                "pageSize": min(page_size, 100),
-                "displayOutput": source.config.get("display_output", "full"),
-                "sort": source.config.get("sort", "created:desc"),
-            },
+            url,
+            params={**base_params, "tickers": binding.ticker},
             headers={"accept": "application/json"},
         )
         rows = _object_list(data)
+        if not rows and binding.parameters.search_terms:
+            fallback_rows: list[JsonObject] = []
+            for topic in binding.parameters.search_terms:
+                topic_data = self._get_json(
+                    url,
+                    params={**base_params, "topics": topic},
+                    headers={"accept": "application/json"},
+                )
+                fallback_rows.extend(
+                    row
+                    for row in _object_list(topic_data)
+                    if _benzinga_row_matches(row, binding.ticker, topic)
+                )
+            rows = _dedupe_rows_by_provider_id(fallback_rows)
         return [
             self._fetched(
                 source=source,
@@ -150,7 +165,7 @@ class BenzingaNewsCollector(BaseCollector):
                 provider_message_id=_str_or_none(row.get("id")),
                 source_url=_str_or_none(row.get("url")),
                 source_published_at=_parse_datetime(row.get("created") or row.get("updated")),
-                metadata={"provider": "benzinga"},
+                metadata={"provider": "benzinga", "query_mode": "ticker_or_topics"},
             )
             for row in rows
         ]
@@ -211,7 +226,7 @@ class StocktwitsMessagesCollector(BaseCollector):
                 "end": today.isoformat(),
                 "primaryOnly": _bool_query(source.config.get("primary_only", True)),
                 "limit": min(max(1, int(source.config.get("limit", 199))), 500),
-                "force_refresh": _bool_query(source.config.get("force_refresh", True)),
+                "force_refresh": _bool_query(source.config.get("force_refresh", False)),
             }
         else:
             base_url = self.settings.stocktwits_public_base_url
@@ -266,17 +281,25 @@ class TikHubXSearchCollector(BaseCollector):
         token = _require(self.settings.tikhub_api_key, "TIKHUB_API_KEY")
         terms = binding.parameters.search_terms or binding.parameters.keywords
         fetched: list[FetchedExternalMessage] = []
+        term_errors: list[str] = []
         for term in terms:
-            data = self._get_json(
-                self.settings.tikhub_base_url.rstrip("/")
-                + "/api/v1/twitter/web/fetch_search_timeline",
-                params={
-                    "keyword": term,
-                    "search_type": source.config.get("search_type", "Latest"),
-                    "cursor": binding.parameters.extra.get("cursor"),
-                },
-                headers={"Authorization": f"Bearer {token}"},
-            )
+            try:
+                data = self._get_json(
+                    self.settings.tikhub_base_url.rstrip("/")
+                    + "/api/v1/twitter/web/fetch_search_timeline",
+                    params={
+                        "keyword": term,
+                        "search_type": source.config.get("search_type", "Latest"),
+                        "cursor": binding.parameters.extra.get("cursor"),
+                    },
+                    headers={"Authorization": f"Bearer {token}"},
+                )
+            except httpx.HTTPStatusError as exc:
+                body = exc.response.text.replace("\n", " ")[:500]
+                term_errors.append(
+                    f"{term}: HTTP {exc.response.status_code} {body}"
+                )
+                continue
             for row in _tikhub_rows(data):
                 fetched.append(
                     self._fetched(
@@ -291,6 +314,10 @@ class TikHubXSearchCollector(BaseCollector):
                         metadata={"provider": "tikhub", "search_term": term},
                     )
                 )
+        if term_errors and not fetched:
+            raise CollectorError(
+                "TikHub X search failed for all terms: " + " | ".join(term_errors)
+            )
         return fetched
 
 
@@ -382,6 +409,45 @@ def _object_list(value: object) -> list[JsonObject]:
                 return [dict(item) for item in child if isinstance(item, dict)]
         return [dict(value)]
     return []
+
+
+def _dedupe_rows_by_provider_id(rows: list[JsonObject]) -> list[JsonObject]:
+    deduped: list[JsonObject] = []
+    seen: set[str] = set()
+    for row in rows:
+        key = _str_or_none(row.get("id")) or _str_or_none(row.get("url")) or str(row)
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(row)
+    return deduped
+
+
+def _benzinga_row_matches(row: JsonObject, ticker: str, topic: str) -> bool:
+    normalized_ticker = ticker.strip().upper()
+    stocks = row.get("stocks")
+    if isinstance(stocks, list):
+        for stock in stocks:
+            if (
+                isinstance(stock, dict)
+                and str(stock.get("name") or "").upper() == normalized_ticker
+            ):
+                return True
+    needle = topic.strip().lower()
+    if not needle:
+        return False
+    text_parts: list[str] = []
+    for key in ("title", "teaser", "body"):
+        value = row.get(key)
+        if value:
+            text_parts.append(str(value))
+    for key in ("tags", "channels"):
+        values = row.get(key)
+        if isinstance(values, list):
+            for value in values:
+                if isinstance(value, dict) and value.get("name"):
+                    text_parts.append(str(value["name"]))
+    return needle in " ".join(text_parts).lower()
 
 
 def _stocktwits_rows(value: object) -> list[JsonObject]:

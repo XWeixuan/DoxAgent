@@ -12,6 +12,15 @@ from uuid import uuid4
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 JsonObject = dict[str, Any]
+PARAMETER_LIST_FIELDS = ("keywords", "usernames", "search_terms", "rss_urls", "source_filters")
+SOURCE_PARAMETER_SCHEMAS: dict[str, dict[str, int]] = {
+    "benzinga_news": {"search_terms": 3},
+    "finnhub_company_news": {},
+    "stocktwits_messages": {},
+    "tikhub_x_search": {"search_terms": 3},
+    "tikhub_x_user_posts": {"usernames": 2},
+    "newswire_rss": {"rss_urls": 3},
+}
 
 
 class MonitoringModel(BaseModel):
@@ -122,6 +131,12 @@ class MonitoringParameters(MonitoringModel):
             source_filters=merge(self.source_filters, patch.source_filters),
             extra={**self.extra, **patch.extra},
         )
+
+    def non_empty_fields(self) -> list[str]:
+        fields = [field for field in PARAMETER_LIST_FIELDS if getattr(self, field)]
+        if self.extra:
+            fields.append("extra")
+        return fields
 
 
 class TickerSourceBinding(MonitoringModel):
@@ -306,6 +321,37 @@ def dedupe_key_for(
     return f"{source_id}:payload:{payload_hash(raw_payload)}"
 
 
+def parameter_schema_for_source(source_id: str) -> dict[str, int]:
+    return SOURCE_PARAMETER_SCHEMAS.get(source_id.strip().lower(), {})
+
+
+def validate_parameters_for_source(
+    source_id: str,
+    parameters: MonitoringParameters,
+) -> MonitoringParameters:
+    normalized_source = source_id.strip().lower()
+    schema = parameter_schema_for_source(normalized_source)
+    unsupported = [
+        field
+        for field in parameters.non_empty_fields()
+        if field not in schema
+    ]
+    if unsupported:
+        allowed = ", ".join(schema) if schema else "ticker only"
+        raise ValueError(
+            f"{normalized_source} does not support parameter fields: "
+            f"{', '.join(unsupported)}. Allowed fields: {allowed}."
+        )
+    for field, max_items in schema.items():
+        values = getattr(parameters, field)
+        if len(values) > max_items:
+            raise ValueError(
+                f"{normalized_source}.{field} supports at most {max_items} "
+                f"item(s), got {len(values)}."
+            )
+    return parameters
+
+
 def default_source_configs() -> list[MonitoringSourceConfig]:
     now = datetime.now(UTC)
     return [
@@ -352,7 +398,7 @@ def default_source_configs() -> list[MonitoringSourceConfig]:
                 "lookback_days": 2,
                 "limit": 100,
                 "primary_only": True,
-                "force_refresh": True,
+                "force_refresh": False,
                 "timeout_seconds": 45,
             },
             created_at=now,

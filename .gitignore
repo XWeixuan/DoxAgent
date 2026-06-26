@@ -34,3 +34,4 @@ references/external_agent_sources/
 .vscode/
 .DS_Store
 Thumbs.db
+eval/brief_state_exports/*.json
