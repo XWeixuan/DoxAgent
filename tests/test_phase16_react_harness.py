@@ -1768,6 +1768,101 @@ def test_react_normalizes_expectation_patch_target_to_document_id() -> None:
     assert patch["after"]["realized_facts"][0]["description"] == "BlueBird launch announced"
 
 
+def test_react_normalizes_expectation_detail_candidate_legacy_fields() -> None:
+    evidence_ref = {
+        "evidence_id": "evidence_detail",
+        "source_type": "agent_output",
+        "source_id": "react:test",
+        "title": "Detail evidence",
+        "summary": "Model output evidence.",
+        "retrieval_metadata": {},
+        "confidence": 0.8,
+        "citation_scope": "expectation_unit",
+    }
+    shell = {
+        "expectation_id": "exp_shell",
+        "expectation_name": "Shell identity must be preserved",
+        "direction": "bearish",
+        "why_it_matters": "Shell why-it-matters must survive detail completion.",
+        "market_view": {
+            "text": "Shell market view.",
+            "summary": "Shell summary.",
+            "evidence_refs": [evidence_ref],
+            "author_agent": AgentName.O1_EXPECTATION_OWNER.value,
+            "reviewer_agents": ["A1"],
+        },
+    }
+    base_task = agent_task()
+    task = base_task.model_copy(
+        update={
+            "required_output_schema": "ExpectationDetailCandidateResult",
+            "input_context": {
+                **base_task.input_context,
+                "expectation_shell": shell,
+            },
+        },
+        deep=True,
+    )
+    runner = runner_with_sequence(
+        [
+            {
+                "is_complete": True,
+                "completion_reason": "completed",
+                "final_payload": {
+                    "candidate": {
+                        "document_id": "doc_candidate",
+                        "ticker": "WRONG",
+                        "expectation_id": "wrong_id",
+                        "expectation_name": "Wrong detail identity",
+                        "direction": "bullish",
+                        "realized_facts": [
+                            {
+                                "fact": "Customer qualification was announced.",
+                                "price_reaction": "Shares rallied after the announcement.",
+                                "evidence_refs": [evidence_ref],
+                            }
+                        ],
+                        "realized_facts_summary": "Qualification is already partly priced.",
+                        "key_variables": [
+                            {
+                                "variable": "HBM shipment cadence",
+                                "status": "Qualification is complete; ramp timing remains key.",
+                                "certainty": "medium",
+                                "evidence_refs": [evidence_ref],
+                            }
+                        ],
+                        "event_monitoring_direction": {
+                            "known_event_notice": "Qualification is already known.",
+                            "positive_events": ["Named customer confirms faster HBM ramp."],
+                            "negative_events": ["Named customer delays HBM ramp."],
+                        },
+                    },
+                    "evidence_refs": [evidence_ref],
+                    "delegations": [],
+                    "unknowns": [],
+                    "rationale": "Complete detail candidate.",
+                },
+            }
+        ]
+    )
+
+    result = runner.run(task)
+
+    assert result.status is ResultStatus.SUCCEEDED
+    candidate = result.payload["structured"]["candidate"]
+    assert candidate["ticker"] == task.ticker
+    assert candidate["expectation_id"] == "exp_shell"
+    assert candidate["expectation_name"] == "Shell identity must be preserved"
+    assert candidate["direction"] == "bearish"
+    assert candidate["created_at"]
+    assert candidate["market_view"]["summary"] == "Shell summary."
+    assert candidate["realized_facts"][0]["description"].startswith(
+        "fact: Customer qualification"
+    )
+    assert candidate["realized_facts"][0]["price_reaction"]["price_pattern"] == "described"
+    assert candidate["key_variables"][0]["name"] == "HBM shipment cadence"
+
+
 def test_react_normalizes_output_delegations_for_expectation_construction() -> None:
     task = agent_task().model_copy(
         update={"required_output_schema": "ExpectationConstructionResult"},

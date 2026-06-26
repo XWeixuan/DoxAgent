@@ -2621,6 +2621,13 @@ def _normalize_final_payload(
                 tool_results=tool_results,
                 delegation_results=delegation_results,
             )
+        if "ExpectationDetailCandidateResult" in _schema_names(required_output_schema):
+            return _normalize_expectation_detail_candidate_payload(
+                payload,
+                task=task,
+                tool_results=tool_results,
+                delegation_results=delegation_results,
+            )
         if "ExpectationConstructionResult" in _schema_names(required_output_schema):
             return _normalize_expectation_construction_payload(
                 payload,
@@ -4073,6 +4080,84 @@ def _normalize_expectation_detail_payload(
                 )
             ]
     return _force_expectation_detail_shell_identity(normalized, task=task)
+
+
+def _normalize_expectation_detail_candidate_payload(
+    payload: JsonDict,
+    *,
+    task: AgentTask,
+    tool_results: list[ToolResult],
+    delegation_results: list[AgentResult],
+) -> JsonDict:
+    evidence_refs = _valid_evidence_ref_payloads(payload.get("evidence_refs"))
+    if not evidence_refs:
+        evidence_refs = [
+            item.model_dump(mode="json")
+            for item in _evidence_refs(tool_results, delegation_results)
+        ]
+    candidate_payload = payload.get("candidate")
+    if isinstance(candidate_payload, dict):
+        candidate = dict(candidate_payload)
+    elif _payload_has_expectation_detail_fields(payload):
+        candidate = dict(payload.get("expectation_unit") or payload)
+    else:
+        candidate = {}
+
+    normalized_candidate: Any = candidate_payload
+    if candidate:
+        candidate = _apply_expectation_detail_shell_fields(candidate, task=task)
+        normalized_candidate = _normalize_expectation_document_payload(
+            candidate,
+            task=task,
+            fallback_evidence=evidence_refs,
+            fallback_expectation_id=_expectation_detail_shell_id(task),
+        )
+        normalized_candidate = _apply_expectation_detail_shell_fields(
+            normalized_candidate,
+            task=task,
+        )
+
+    return {
+        "candidate": normalized_candidate,
+        "evidence_refs": evidence_refs,
+        "delegations": _normalize_output_delegations(
+            payload.get("delegations"),
+            task=task,
+        ),
+        "unknowns": _strings(payload.get("unknowns")),
+        "rationale": str(
+            payload.get("rationale")
+            or (candidate.get("rationale") if candidate else None)
+            or "O1 expectation detail candidate."
+        ),
+    }
+
+
+def _expectation_detail_shell_id(task: AgentTask) -> str | None:
+    shell = task.input_context.get("expectation_shell")
+    if not isinstance(shell, dict):
+        return None
+    shell_id = shell.get("expectation_id")
+    return str(shell_id) if shell_id else None
+
+
+def _apply_expectation_detail_shell_fields(payload: JsonDict, *, task: AgentTask) -> JsonDict:
+    shell = task.input_context.get("expectation_shell")
+    if not isinstance(shell, dict):
+        return payload
+    normalized = dict(payload)
+    shell_fields = {
+        "expectation_id": shell.get("expectation_id"),
+        "expectation_name": shell.get("expectation_name"),
+        "direction": shell.get("direction"),
+        "why_it_matters": shell.get("why_it_matters"),
+        "market_view": shell.get("market_view"),
+    }
+    for key, value in shell_fields.items():
+        if value is not None:
+            normalized[key] = value
+    normalized["ticker"] = task.ticker
+    return normalized
 
 
 def _payload_has_expectation_detail_fields(payload: JsonDict) -> bool:
