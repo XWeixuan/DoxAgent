@@ -278,3 +278,4 @@
 - Fixed the first Document2-only remote smoke blocker by normalizing ReAct `ExpectationDetailCandidateResult` legacy field shapes into canonical candidate documents before schema validation while preserving construction shell identity.
 - Routed Document2 detail `model_request_timeout` agent results into the existing timed-out worker recovery retry path so smoke runs can retry compact detail generation without weakening candidate validation.
 - Normalized Document2 resolution-plan `revised_candidate` final payloads into complete expectation documents before schema validation while preserving transaction-layer blocker revalidation.
+- Accepted single-item Document2 resolution-plan `revised_candidate` arrays as one candidate document, leaving multi-candidate resolution outputs invalid.

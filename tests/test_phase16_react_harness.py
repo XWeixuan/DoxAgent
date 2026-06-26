@@ -1896,38 +1896,40 @@ def test_react_normalizes_document2_resolution_revised_candidate_shape() -> None
                             "evidence_refs": [evidence_ref],
                         }
                     ],
-                    "revised_candidate": {
-                        "expectation_id": "exp_resolution",
-                        "expectation_name": "Revised HBM demand durability",
-                        "direction": "bullish",
-                        "why_it_matters": "HBM demand durability drives the setup.",
-                        "market_view": {
-                            "text": "Market now needs a narrower HBM demand claim.",
-                            "summary": "HBM demand claim narrowed.",
+                    "revised_candidate": [
+                        {
+                            "expectation_id": "exp_resolution",
+                            "expectation_name": "Revised HBM demand durability",
+                            "direction": "bullish",
+                            "why_it_matters": "HBM demand durability drives the setup.",
+                            "market_view": {
+                                "text": "Market now needs a narrower HBM demand claim.",
+                                "summary": "HBM demand claim narrowed.",
+                                "evidence_refs": [evidence_ref],
+                            },
+                            "realized_facts": [
+                                {
+                                    "fact": "HBM qualification remains the known catalyst.",
+                                    "price_reaction": "Shares reflect part of the catalyst.",
+                                    "evidence_refs": [evidence_ref],
+                                }
+                            ],
+                            "realized_facts_summary": "Known HBM catalysts are partly priced.",
+                            "key_variables": [
+                                {
+                                    "variable": "Customer ramp timing",
+                                    "status": "Qualification known; ramp timing still key.",
+                                    "evidence_refs": [evidence_ref],
+                                }
+                            ],
+                            "event_monitoring_direction": {
+                                "known_event_notice": "Qualification is already known.",
+                                "positive_events": ["Customer confirms faster ramp."],
+                                "negative_events": ["Customer delays ramp."],
+                            },
                             "evidence_refs": [evidence_ref],
-                        },
-                        "realized_facts": [
-                            {
-                                "fact": "HBM qualification remains the known catalyst.",
-                                "price_reaction": "Shares reflect part of the catalyst.",
-                                "evidence_refs": [evidence_ref],
-                            }
-                        ],
-                        "realized_facts_summary": "Known HBM catalysts are partly priced.",
-                        "key_variables": [
-                            {
-                                "variable": "Customer ramp timing",
-                                "status": "Qualification known; ramp timing still key.",
-                                "evidence_refs": [evidence_ref],
-                            }
-                        ],
-                        "event_monitoring_direction": {
-                            "known_event_notice": "Qualification is already known.",
-                            "positive_events": ["Customer confirms faster ramp."],
-                            "negative_events": ["Customer delays ramp."],
-                        },
-                        "evidence_refs": [evidence_ref],
-                    },
+                        }
+                    ],
                     "evidence_refs": [evidence_ref],
                     "evidence_requests": [],
                     "unresolved_reason": None,

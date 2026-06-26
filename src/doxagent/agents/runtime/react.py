@@ -4155,6 +4155,11 @@ def _normalize_document2_resolution_plan_payload(
             for item in _evidence_refs(tool_results, delegation_results)
         ]
     revised_candidate = normalized.get("revised_candidate")
+    if isinstance(revised_candidate, list):
+        candidate_items = _dicts(revised_candidate)
+        if len(candidate_items) == 1:
+            revised_candidate = candidate_items[0]
+            normalized["revised_candidate"] = revised_candidate
     if isinstance(revised_candidate, dict):
         candidate_evidence_refs = _valid_evidence_ref_payloads(
             revised_candidate.get("evidence_refs")
