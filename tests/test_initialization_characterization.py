@@ -9,7 +9,11 @@ from doxagent.models import (
     DocumentType,
     EvidenceRef,
     EvidenceSourceType,
+    ExpectationShellConstructionResult,
     GlobalResearchDocument,
+    Objection,
+    ObjectionSeverity,
+    ObjectionStatus,
     PatchOperation,
     ResearchSection,
     ResultStatus,
@@ -20,6 +24,8 @@ from doxagent.workflows import (
     INITIALIZATION_NODES,
     BlackboardInitializationWorkflow,
     GlobalResearchInputs,
+    InitializationMockResultFactory,
+    WorkflowCheckpoint,
     WorkflowNode,
     WorkflowRunStatus,
 )
@@ -30,7 +36,9 @@ from doxagent.workflows.document2 import (
 )
 from doxagent.workflows.document2.resolver import DOCUMENT2_RESOLUTION_PLANS_KEY
 from doxagent.workflows.document2.review import DOCUMENT2_REVIEW_FINDINGS_KEY
-from doxagent.workflows.document2.transaction import DOCUMENT2_TRANSACTION_AUDITS_KEY
+from doxagent.workflows.document2.transaction import (
+    DOCUMENT2_TRANSACTION_AUDITS_KEY,
+)
 from tests.test_phase13_real_workflow import StructuredInitializationRunner
 
 
@@ -87,6 +95,160 @@ def test_generate_expectation_units_alias_forwards_to_construction() -> None:
     ]
     assert result.next_node is WorkflowNode.REVIEW_EXPECTATION_CONSTRUCTION
     assert result.metadata["expectation_shells"]
+
+
+def _construction_objection(ticker: str, expectation_id: str = "exp_mock_core") -> Objection:
+    return Objection(
+        objection_id="obj_construction_guard",
+        source_agent=AgentName.A1_DOXATLAS_AUDIT,
+        target=BlackboardTarget(
+            document_type=DocumentType.EXPECTATION_UNIT,
+            ticker=ticker,
+            expectation_id=expectation_id,
+            field_path="market_view",
+        ),
+        severity=ObjectionSeverity.BLOCKING,
+        reason="Construction shell market_view needs better DoxAtlas evidence mapping.",
+        status=ObjectionStatus.OPEN,
+    )
+
+
+def test_construction_resolution_transaction_closes_related_objection_with_audit() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        execution_mode="agent_runner",
+        runner=StructuredInitializationRunner(include_blockers=False),
+    )
+    factory = InitializationMockResultFactory(include_blockers=False)
+    run = workflow.blackboard.start_run("NVDA", AgentName.SYSTEM)
+    objection = _construction_objection("NVDA")
+    workflow.blackboard.create_objection(run.run_id, objection)
+    checkpoint = WorkflowCheckpoint(
+        run_id=run.run_id,
+        ticker="NVDA",
+        next_node=WorkflowNode.RESOLVE_EXPECTATION_CONSTRUCTION,
+    )
+    shells = factory._expectation_shells("NVDA")
+    revised_shells = [
+        shells[0].model_copy(
+            update={"why_it_matters": "Revised shell cites construction evidence."},
+            deep=True,
+        ),
+        shells[1],
+    ]
+    revised = ExpectationShellConstructionResult(
+        shells=revised_shells,
+        evidence_refs=list(revised_shells[0].evidence_refs),
+        delegations=[],
+        unknowns=[],
+        rationale="O1 revised construction shells.",
+    )
+
+    audit = workflow._apply_document2_construction_resolution_transaction(
+        checkpoint,
+        previous_shells=shells,
+        revised=revised,
+        unresolved_objections=[objection],
+    )
+
+    current_run = workflow.blackboard.get_run(run.run_id)
+    assert not current_run.objections[0].is_unresolved
+    assert current_run.objections[0].resolution_changed_paths == ["expectation_shells"]
+    assert audit.transaction_type == "construction_resolution"
+    assert audit.status == "accepted"
+    audits = [
+        entry
+        for entry in current_run.working_memory
+        if entry.content_type == "document2_construction_transaction_audit"
+    ]
+    assert audits[-1].payload["status"] == "accepted"
+
+
+def test_construction_resolution_transaction_rejects_empty_revision() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        execution_mode="agent_runner",
+        runner=StructuredInitializationRunner(include_blockers=False),
+    )
+    factory = InitializationMockResultFactory(include_blockers=False)
+    run = workflow.blackboard.start_run("NVDA", AgentName.SYSTEM)
+    objection = _construction_objection("NVDA")
+    workflow.blackboard.create_objection(run.run_id, objection)
+    checkpoint = WorkflowCheckpoint(
+        run_id=run.run_id,
+        ticker="NVDA",
+        next_node=WorkflowNode.RESOLVE_EXPECTATION_CONSTRUCTION,
+    )
+    shells = factory._expectation_shells("NVDA")
+    revised = ExpectationShellConstructionResult(
+        shells=shells,
+        evidence_refs=[],
+        delegations=[],
+        unknowns=[],
+        rationale="O1 attempted to close blockers without revising construction shells.",
+    )
+
+    try:
+        workflow._apply_document2_construction_resolution_transaction(
+            checkpoint,
+            previous_shells=shells,
+            revised=revised,
+            unresolved_objections=[objection],
+        )
+    except Exception as exc:
+        assert "empty revision" in str(exc)
+    else:
+        raise AssertionError("empty construction revision should not close blockers")
+
+    current_run = workflow.blackboard.get_run(run.run_id)
+    assert current_run.objections[0].is_unresolved
+    audits = [
+        entry
+        for entry in current_run.working_memory
+        if entry.content_type == "document2_construction_transaction_audit"
+    ]
+    assert audits[-1].payload["status"] == "rejected"
+
+
+def test_construction_resolution_transaction_rejects_identity_drift() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        execution_mode="agent_runner",
+        runner=StructuredInitializationRunner(include_blockers=False),
+    )
+    factory = InitializationMockResultFactory(include_blockers=False)
+    run = workflow.blackboard.start_run("NVDA", AgentName.SYSTEM)
+    objection = _construction_objection("NVDA")
+    workflow.blackboard.create_objection(run.run_id, objection)
+    checkpoint = WorkflowCheckpoint(
+        run_id=run.run_id,
+        ticker="NVDA",
+        next_node=WorkflowNode.RESOLVE_EXPECTATION_CONSTRUCTION,
+    )
+    shells = factory._expectation_shells("NVDA")
+    drifted = [
+        shells[0].model_copy(update={"expectation_id": "exp_identity_drift"}, deep=True),
+        shells[1],
+    ]
+    revised = ExpectationShellConstructionResult(
+        shells=drifted,
+        evidence_refs=[],
+        delegations=[],
+        unknowns=[],
+        rationale="O1 attempted identity drift during construction resolution.",
+    )
+
+    try:
+        workflow._apply_document2_construction_resolution_transaction(
+            checkpoint,
+            previous_shells=shells,
+            revised=revised,
+            unresolved_objections=[objection],
+        )
+    except Exception as exc:
+        assert "expectation_id set" in str(exc)
+    else:
+        raise AssertionError("identity drift should not close construction blockers")
+
+    current_run = workflow.blackboard.get_run(run.run_id)
+    assert current_run.objections[0].is_unresolved
 
 
 def test_document1_builder_freezes_global_research_document_and_task_contract() -> None:
@@ -439,6 +601,49 @@ def test_review_expectation_fields_records_typed_findings_without_candidate_muta
     ]
     assert review_entries
     assert all(entry.payload["patch_ids"] == [] for entry in review_entries)
+
+
+def test_review_expectation_fields_adds_placeholder_typed_findings_without_objection() -> None:
+    class PlaceholderDetailRunner(StructuredInitializationRunner):
+        def _structured(self, task: AgentTask, direct: AgentResult) -> AgentResult:
+            result = super()._structured(task, direct)
+            if task.required_output_schema != "ExpectationDetailCandidateResult":
+                return result
+            structured = dict(result.payload["structured"])
+            candidate = dict(structured["candidate"])
+            market_view = dict(candidate["market_view"])
+            market_view["text"] = "TBD placeholder"
+            candidate["market_view"] = market_view
+            structured["candidate"] = candidate
+            return result.model_copy(
+                update={"payload": result.payload | {"structured": structured}},
+                deep=True,
+            )
+
+    runner = PlaceholderDetailRunner(include_blockers=False)
+    workflow = BlackboardInitializationWorkflow(
+        execution_mode="agent_runner",
+        runner=runner,
+    )
+
+    result = workflow.run("NVDA", stop_after=WorkflowNode.REVIEW_EXPECTATION_FIELDS)
+
+    assert result.status is WorkflowRunStatus.RUNNING
+    findings = result.checkpoint.metadata[DOCUMENT2_REVIEW_FINDINGS_KEY]
+    placeholder_findings = [
+        finding
+        for finding in findings
+        if "deterministic_placeholder_detector" in finding["supplemental_context"][0]
+    ]
+    assert len(placeholder_findings) == 2
+    assert {finding["target_path"] for finding in placeholder_findings} == {
+        "market_view.text"
+    }
+    assert all(finding["blocks_promotion"] is True for finding in placeholder_findings)
+    assert result.checkpoint.metadata["document2_review_state"][
+        "placeholder_finding_count"
+    ] == 2
+    assert result.summary.unresolved_objection_count == 0
 
 
 def test_review_expectation_fields_rejects_reviewer_patch_output() -> None:

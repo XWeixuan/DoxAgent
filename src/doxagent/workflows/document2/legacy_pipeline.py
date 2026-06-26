@@ -4,15 +4,22 @@
 from doxagent.workflows.document2.contracts import (
     Document2ReviewFinding,
     Document2Revision,
+    Document2TransactionAudit,
     ExpectationUnitCandidate,
 )
 from doxagent.workflows.document2.numeric_sanity import (
     numeric_sanity_findings_from_objections,
 )
+from doxagent.workflows.document2.placeholders import placeholder_findings_from_patches
 from doxagent.workflows.document2.review import (
     DOCUMENT2_REVIEW_FINDINGS_KEY,
     document2_review_findings_from_agent_result,
     review_findings_json,
+)
+from doxagent.workflows.document2.transaction import (
+    DOCUMENT2_CONSTRUCTION_TRANSACTION_AUDITS_KEY,
+    document2_construction_transaction_audit,
+    validate_construction_resolution_transaction,
 )
 from doxagent.workflows.initialization.shared import *
 
@@ -197,12 +204,12 @@ class Document2LegacyPipelineMixin:
         self._write_working_memory(checkpoint, result, "expectation_construction_resolution")
         self._validate_o1_narrative_tool_gap(result, node)
         revised = self._validate_expectation_shells(checkpoint.ticker, result)
-        for objection in unresolved:
-            self.blackboard.resolve_objection(
-                checkpoint.run_id,
-                objection.objection_id,
-                "O1 revised construction-phase expectation shells.",
-            )
+        audit = self._apply_document2_construction_resolution_transaction(
+            checkpoint,
+            previous_shells=shells,
+            revised=revised,
+            unresolved_objections=unresolved,
+        )
         results.append(result)
         return self._mark_completed(
             checkpoint,
@@ -212,7 +219,73 @@ class Document2LegacyPipelineMixin:
                 "expectation_shells": [
                     shell.model_dump(mode="json") for shell in revised.shells
                 ],
+                DOCUMENT2_CONSTRUCTION_TRANSACTION_AUDITS_KEY: [
+                    audit.model_dump(mode="json")
+                ],
             },
+        )
+
+    def _apply_document2_construction_resolution_transaction(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        *,
+        previous_shells: list[ExpectationShell],
+        revised: ExpectationShellConstructionResult,
+        unresolved_objections: list[Objection],
+    ) -> Document2TransactionAudit:
+        try:
+            notes = validate_construction_resolution_transaction(
+                previous_shells=previous_shells,
+                revised=revised,
+                unresolved_objections=unresolved_objections,
+            )
+        except ValueError as exc:
+            audit = document2_construction_transaction_audit(
+                revised=revised,
+                status="rejected",
+                retained_objection_ids=[
+                    objection.objection_id for objection in unresolved_objections
+                ],
+                notes=[str(exc)],
+            )
+            self._record_document2_construction_transaction_audit(checkpoint, audit)
+            raise WorkflowContractError(
+                f"Document2 construction transaction rejected: {exc}"
+            ) from exc
+
+        closed_ids: list[str] = []
+        for objection in unresolved_objections:
+            self.blackboard.resolve_objection(
+                checkpoint.run_id,
+                objection.objection_id,
+                "Document2 construction transaction validated revised shells.",
+                changed_paths=["expectation_shells"],
+                evidence_refs=list(revised.evidence_refs),
+            )
+            closed_ids.append(objection.objection_id)
+        audit = document2_construction_transaction_audit(
+            revised=revised,
+            status="accepted",
+            closed_objection_ids=closed_ids,
+            notes=notes,
+        )
+        self._record_document2_construction_transaction_audit(checkpoint, audit)
+        return audit
+
+    def _record_document2_construction_transaction_audit(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        audit: Document2TransactionAudit,
+    ) -> None:
+        self.blackboard.add_working_memory_entry(
+            checkpoint.run_id,
+            author_agent=AgentName.SYSTEM,
+            content_type="document2_construction_transaction_audit",
+            payload={
+                "status": audit.status,
+                "audit": audit.model_dump(mode="json"),
+            },
+            evidence_refs=[],
         )
 
     def _generate_expectation_details(
@@ -1187,6 +1260,8 @@ class Document2LegacyPipelineMixin:
         if first_error is not None:
             raise first_error
 
+        placeholder_findings = placeholder_findings_from_patches(checkpoint.pending_patches)
+        review_findings.extend(placeholder_findings)
         numeric_sanity_objections = self._numeric_sanity_review_objections(checkpoint)
         review_findings.extend(
             numeric_sanity_findings_from_objections(numeric_sanity_objections)
@@ -1194,15 +1269,18 @@ class Document2LegacyPipelineMixin:
         for objection in numeric_sanity_objections:
             self.blackboard.create_objection(checkpoint.run_id, objection)
 
+        review_state: dict[str, Any] = {
+            "primary_state": DOCUMENT2_REVIEW_FINDINGS_KEY,
+            "finding_count": len(review_findings),
+            "legacy_objection_bridge_count": len(numeric_sanity_objections)
+            + sum(len(result.objections) for result in results),
+        }
+        if placeholder_findings:
+            review_state["placeholder_finding_count"] = len(placeholder_findings)
         metadata = self._agent_metadata(node, results)
         metadata |= {
             DOCUMENT2_REVIEW_FINDINGS_KEY: review_findings_json(review_findings),
-            _DOCUMENT2_REVIEW_STATE_KEY: {
-                "primary_state": DOCUMENT2_REVIEW_FINDINGS_KEY,
-                "finding_count": len(review_findings),
-                "legacy_objection_bridge_count": len(numeric_sanity_objections)
-                + sum(len(result.objections) for result in results),
-            },
+            _DOCUMENT2_REVIEW_STATE_KEY: review_state,
         }
         return self._mark_completed(
             checkpoint,

@@ -41,6 +41,7 @@ Document2RevisionSource = Literal[
 ]
 Document2TransactionType = Literal[
     "candidate_generation",
+    "construction_resolution",
     "review",
     "resolution",
     "promotion",

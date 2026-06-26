@@ -16,12 +16,14 @@ from doxagent.models import (
     new_id,
 )
 from doxagent.workflows.document2 import (
+    PLACEHOLDER_FINDING_SOURCE,
     Document2PromotionCandidate,
     Document2ResolutionDecisionRecord,
     Document2ResolutionPlan,
     Document2ReviewFinding,
     EvidenceAssessment,
     ExpectationUnitCandidate,
+    placeholder_findings_from_document,
 )
 from doxagent.workflows.document2.numeric_sanity import (
     numeric_sanity_findings_from_objections,
@@ -176,6 +178,69 @@ def test_price_reaction_evidence_assessment_requires_market_data_refs() -> None:
     assert market_assessment.blocks_promotion is False
     assert narrative_assessment.status == "insufficient"
     assert narrative_assessment.blocks_promotion is True
+
+
+def test_placeholder_findings_flag_generic_monitoring_trigger() -> None:
+    document = _expectation_document()
+    document = document.model_copy(
+        update={
+            "event_monitoring_direction": document.event_monitoring_direction.model_copy(
+                update={"positive_events": ["Monitor ticker-relevant signal changes."]},
+                deep=True,
+            )
+        },
+        deep=True,
+    )
+
+    findings = placeholder_findings_from_document(document)
+
+    assert len(findings) == 1
+    assert findings[0].expectation_id == document.expectation_id
+    assert findings[0].target_path == "event_monitoring_direction.positive_events[0]"
+    assert findings[0].severity == "blocking"
+    assert findings[0].blocks_promotion is True
+    assert f"finding_source: {PLACEHOLDER_FINDING_SOURCE}" in findings[0].supplemental_context
+
+
+def test_placeholder_findings_allow_specific_monitoring_event() -> None:
+    document = _expectation_document()
+    document = document.model_copy(
+        update={
+            "event_monitoring_direction": document.event_monitoring_direction.model_copy(
+                update={
+                    "positive_events": [
+                        "NVDA confirms Blackwell GB200 shipment acceleration at named hyperscaler."
+                    ]
+                },
+                deep=True,
+            )
+        },
+        deep=True,
+    )
+
+    assert placeholder_findings_from_document(document) == []
+
+
+def test_placeholder_finding_blocks_promotion_candidate() -> None:
+    document = _expectation_document()
+    document = document.model_copy(
+        update={
+            "event_monitoring_direction": document.event_monitoring_direction.model_copy(
+                update={"negative_events": ["Commercialization milestones slip."]},
+                deep=True,
+            )
+        },
+        deep=True,
+    )
+    findings = placeholder_findings_from_document(document)
+    patch = _expectation_patch(document.model_dump(mode="json"))
+
+    candidate = document2_promotion_candidate_from_patch(patch, review_findings=findings)
+
+    blockers = document2_promotion_blockers(candidate)
+    assert candidate.ready_for_promotion is False
+    assert blockers[0].blocker_type == "candidate_not_ready"
+    assert any(blocker.blocker_type == "blocking_finding" for blocker in blockers)
 
 
 def test_resolution_plan_requires_revision_for_accepted_decision() -> None:

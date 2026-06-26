@@ -15,7 +15,10 @@ from doxagent.models import (
     BlackboardTarget,
     DocumentType,
     EvidenceRef,
+    ExpectationShell,
+    ExpectationShellConstructionResult,
     ExpectationUnitDocument,
+    Objection,
     PatchOperation,
     ValidationStatus,
     new_id,
@@ -27,6 +30,9 @@ from doxagent.workflows.document2.contracts import (
 )
 
 DOCUMENT2_TRANSACTION_AUDITS_KEY = "document2_transaction_audits"
+DOCUMENT2_CONSTRUCTION_TRANSACTION_AUDITS_KEY = (
+    "document2_construction_transaction_audits"
+)
 
 
 def document2_revision_from_resolution_plan(
@@ -106,6 +112,88 @@ def transaction_audits_json(audits: list[Document2TransactionAudit]) -> list[dic
     return [audit.model_dump(mode="json") for audit in audits]
 
 
+def validate_construction_resolution_transaction(
+    *,
+    previous_shells: list[ExpectationShell],
+    revised: ExpectationShellConstructionResult,
+    unresolved_objections: list[Objection],
+) -> list[str]:
+    """Validate that construction objections may be closed by revised shells."""
+
+    notes: list[str] = []
+    previous_by_id = {shell.expectation_id: shell for shell in previous_shells}
+    revised_by_id = {shell.expectation_id: shell for shell in revised.shells}
+    if set(previous_by_id) != set(revised_by_id):
+        missing = sorted(set(previous_by_id) - set(revised_by_id))
+        added = sorted(set(revised_by_id) - set(previous_by_id))
+        raise ValueError(
+            "Construction resolution cannot change expectation_id set; "
+            f"missing={missing}, added={added}."
+        )
+
+    changed_shell_ids: list[str] = []
+    for expectation_id, previous in previous_by_id.items():
+        current = revised_by_id[expectation_id]
+        if current.expectation_name != previous.expectation_name:
+            raise ValueError(
+                "Construction resolution cannot change expectation_name for "
+                f"{expectation_id}."
+            )
+        if current.direction != previous.direction:
+            raise ValueError(
+                "Construction resolution cannot change direction for "
+                f"{expectation_id}."
+            )
+        if current.model_dump(mode="json") != previous.model_dump(mode="json"):
+            changed_shell_ids.append(expectation_id)
+
+    if unresolved_objections and not changed_shell_ids:
+        raise ValueError("Construction resolution cannot close blockers with an empty revision.")
+
+    unrelated = [
+        objection.objection_id
+        for objection in unresolved_objections
+        if not _construction_objection_targets_shell(objection, revised_by_id)
+    ]
+    if unrelated:
+        raise ValueError(
+            "Construction resolution cannot close unrelated objections: "
+            + ", ".join(unrelated)
+        )
+
+    notes.append(
+        "Construction resolution transaction validated revised shells before "
+        "closing construction objections."
+    )
+    notes.append("changed_shell_ids=" + ",".join(changed_shell_ids))
+    return notes
+
+
+def document2_construction_transaction_audit(
+    *,
+    revised: ExpectationShellConstructionResult,
+    status: str,
+    closed_objection_ids: list[str] | None = None,
+    retained_objection_ids: list[str] | None = None,
+    notes: list[str] | None = None,
+) -> Document2TransactionAudit:
+    return Document2TransactionAudit(
+        transaction_type="construction_resolution",
+        status=status,
+        input_summary={
+            "shell_count": len(revised.shells),
+            "revised_expectation_ids": [
+                shell.expectation_id for shell in revised.shells
+            ],
+        },
+        output_summary={
+            "closed_objection_ids": list(closed_objection_ids or []),
+            "retained_objection_ids": list(retained_objection_ids or []),
+        },
+        notes=list(notes or []),
+    )
+
+
 def validate_resolution_plan_for_transaction(plan: Document2ResolutionPlan) -> None:
     for decision in plan.decisions:
         if decision.decision == "deferred":
@@ -136,3 +224,32 @@ def _plan_changed_paths(plan: Document2ResolutionPlan) -> list[str]:
         for path in decision.changed_paths:
             paths.setdefault(path, None)
     return list(paths)
+
+
+def _construction_objection_targets_shell(
+    objection: Objection,
+    shells_by_id: dict[str, ExpectationShell],
+) -> bool:
+    target = objection.target
+    if target.document_type is not DocumentType.EXPECTATION_UNIT:
+        return False
+    if target.expectation_id is not None:
+        return target.expectation_id in shells_by_id
+    target_path = " ".join(
+        str(value or "")
+        for value in (
+            target.field_path,
+            objection.target_path,
+            objection.taxonomy,
+            objection.reason,
+        )
+    ).lower()
+    construction_markers = (
+        "construction",
+        "expectation_shell",
+        "expectation shell",
+        "market_view",
+        "expectation_name",
+        "direction",
+    )
+    return any(marker in target_path for marker in construction_markers)

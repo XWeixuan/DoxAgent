@@ -11,6 +11,12 @@ from doxagent.workflows.document2.contracts import (
     EvidenceAssessment,
     ExpectationUnitCandidate,
 )
+from doxagent.workflows.document2.placeholders import (
+    PLACEHOLDER_FINDING_SOURCE,
+    placeholder_findings_from_document,
+    placeholder_findings_from_patch,
+    placeholder_findings_from_patches,
+)
 from doxagent.workflows.document2.promotion import (
     DOCUMENT2_PROMOTION_AUDITS_KEY,
     Document2PromotionBlockedError,
@@ -30,9 +36,12 @@ from doxagent.workflows.document2.review import (
     document2_review_findings_from_agent_result,
 )
 from doxagent.workflows.document2.transaction import (
+    DOCUMENT2_CONSTRUCTION_TRANSACTION_AUDITS_KEY,
     DOCUMENT2_TRANSACTION_AUDITS_KEY,
+    document2_construction_transaction_audit,
     document2_revision_from_resolution_plan,
     document2_transaction_audit,
+    validate_construction_resolution_transaction,
 )
 
 __all__ = [
@@ -49,15 +58,22 @@ __all__ = [
     "DOCUMENT2_PROMOTION_AUDITS_KEY",
     "DOCUMENT2_RESOLUTION_PLANS_KEY",
     "DOCUMENT2_TRANSACTION_AUDITS_KEY",
+    "DOCUMENT2_CONSTRUCTION_TRANSACTION_AUDITS_KEY",
+    "PLACEHOLDER_FINDING_SOURCE",
     "document2_review_findings_from_agent_result",
     "Document2PromotionBlockedError",
     "blackboard_patch_from_document2_promotion_candidate",
+    "document2_construction_transaction_audit",
     "document2_promotion_audit",
     "document2_promotion_blockers",
     "document2_promotion_candidate_from_patch",
     "document2_resolution_plan_from_agent_result",
     "document2_revision_from_resolution_plan",
     "document2_transaction_audit",
+    "placeholder_findings_from_document",
+    "placeholder_findings_from_patch",
+    "placeholder_findings_from_patches",
     "promotion_audits_json",
+    "validate_construction_resolution_transaction",
     "validate_document2_promotion_candidate",
 ]
