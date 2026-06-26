@@ -77,6 +77,7 @@ class ParallelStructuredInitializationRunner:
         fail_detail_ids: set[str] | None = None,
         fail_detail_once_ids: set[str] | None = None,
         hang_detail_ids: set[str] | None = None,
+        timeout_detail_until_recovery_ids: set[str] | None = None,
         fail_research_once_agents: set[AgentName] | None = None,
         fail_resolve_o1_once: bool = False,
         include_blockers: bool = False,
@@ -89,6 +90,7 @@ class ParallelStructuredInitializationRunner:
         self.fail_detail_ids = fail_detail_ids or set()
         self.fail_detail_once_ids = fail_detail_once_ids or set()
         self.hang_detail_ids = hang_detail_ids or set()
+        self.timeout_detail_until_recovery_ids = timeout_detail_until_recovery_ids or set()
         self.fail_research_once_agents = fail_research_once_agents or set()
         self.fail_resolve_o1_once = fail_resolve_o1_once
         self.tasks: list[AgentTask] = []
@@ -148,6 +150,26 @@ class ParallelStructuredInitializationRunner:
                     and "detail_recovery_retry" not in task.input_context
                 ):
                     time.sleep(60)
+                if (
+                    expectation_id in self.timeout_detail_until_recovery_ids
+                    and "detail_recovery_retry" not in task.input_context
+                ):
+                    return AgentResult(
+                        task_id=task.task_id,
+                        agent_name=task.agent_name,
+                        status=ResultStatus.FAILED,
+                        error=AgentError(
+                            code="model_gateway_error",
+                            message=f"forced model timeout for {expectation_id}",
+                            retryable=True,
+                            details={
+                                "gateway_error": {
+                                    "code": "model_request_timeout",
+                                    "message": f"forced model timeout for {expectation_id}",
+                                }
+                            },
+                        ),
+                    )
                 should_fail_once = (
                     expectation_id in self.fail_detail_once_ids
                     and self.detail_calls[expectation_id] == 1
@@ -758,6 +780,40 @@ def test_expectation_detail_timeout_records_shell_and_retries_recovery_context()
     ][0]
     assert retry_task.input_context["detail_recovery_retry"]["previous_status"] == "timed_out"
     assert "Recovery retry" in retry_task.input_context["detail_instruction"]
+
+
+def test_expectation_detail_model_request_timeout_uses_recovery_context() -> None:
+    runner = ParallelStructuredInitializationRunner(
+        timeout_detail_until_recovery_ids={"exp_mock_risk"}
+    )
+    workflow = BlackboardInitializationWorkflow(runner=runner, execution_mode="agent_runner")
+
+    result = workflow.run("NVDA", stop_after=WorkflowNode.GENERATE_EXPECTATION_DETAILS)
+
+    assert result.status is WorkflowRunStatus.RUNNING
+    assert runner.detail_calls == {"exp_mock_core": 1, "exp_mock_risk": 3}
+    assert [patch.target.expectation_id for patch in result.checkpoint.pending_patches] == [
+        "exp_mock_core",
+        "exp_mock_risk",
+    ]
+    statuses = result.checkpoint.metadata["expectation_detail_generation_status"]
+    risk_status = statuses["exp_mock_risk"]
+    assert risk_status["status"] == "completed"
+    assert risk_status["retry_attempt"] == 1
+    history_statuses = [item["status"] for item in risk_status["history"]]
+    assert "timed_out" in history_statuses
+    assert "retrying" in history_statuses
+    retry_task = [
+        task
+        for task in runner.tasks
+        if task.run_metadata.workflow_node == WorkflowNode.GENERATE_EXPECTATION_DETAILS.value
+        and task.input_context["expectation_shell"]["expectation_id"] == "exp_mock_risk"
+        and "detail_recovery_retry" in task.input_context
+    ][0]
+    assert retry_task.input_context["detail_recovery_retry"]["previous_status"] == "timed_out"
+    assert "forced model timeout for exp_mock_risk" in retry_task.input_context[
+        "detail_recovery_retry"
+    ]["previous_error"]
 
 
 def test_resolve_objections_retryable_o1_failure_retries_once() -> None:

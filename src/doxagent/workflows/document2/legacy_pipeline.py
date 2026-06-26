@@ -360,6 +360,7 @@ class Document2LegacyPipelineMixin:
 
         accepted_results: dict[int, AgentResult] = {}
         accepted_errors: dict[int, Exception] = {}
+        timed_out_orders: dict[int, Exception] = {}
 
         def accept_detail_result(
             order: int,
@@ -501,6 +502,33 @@ class Document2LegacyPipelineMixin:
                 return
             if outcome.result is None:
                 return
+            if self._is_expectation_detail_model_timeout_result(outcome.result):
+                timeout_error = self._expectation_detail_model_timeout_error(
+                    node,
+                    outcome.result,
+                )
+                current = self._mark_agent_dispatch(
+                    current,
+                    node,
+                    AgentName.O1_EXPECTATION_OWNER,
+                    status="failed",
+                    section_key=shell.expectation_id,
+                    cache_key=cache_key,
+                    error_message=str(timeout_error),
+                )
+                current = self._record_expectation_detail_status(
+                    current,
+                    node,
+                    order,
+                    shell,
+                    cache_key=cache_key,
+                    status="timed_out",
+                    error_message=str(timeout_error),
+                )
+                self._save_parallel_outcome_checkpoint(current)
+                accepted_errors[order] = timeout_error
+                timed_out_orders[order] = timeout_error
+                return
             retry_attempt = (
                 1
                 if isinstance(outcome.job.extra_context.get("detail_recovery_retry"), dict)
@@ -523,7 +551,6 @@ class Document2LegacyPipelineMixin:
                 on_outcome=cache_expectation_detail_outcome,
             )
         }
-        timed_out_orders: dict[int, Exception] = {}
         first_error: Exception | None = None
         for order, shell in enumerate(shells):
             cached = cached_results.get(order)
@@ -539,6 +566,15 @@ class Document2LegacyPipelineMixin:
                     timed_out_orders[order] = outcome.error
                 elif order not in accepted_results:
                     accepted_errors[order] = outcome.error
+            elif outcome.result is not None and self._is_expectation_detail_model_timeout_result(
+                outcome.result
+            ):
+                timeout_error = self._expectation_detail_model_timeout_error(
+                    node,
+                    outcome.result,
+                )
+                timed_out_orders[order] = timeout_error
+                accepted_errors.setdefault(order, timeout_error)
             elif order in accepted_errors:
                 continue
             elif order in accepted_results:
@@ -551,7 +587,7 @@ class Document2LegacyPipelineMixin:
                         f"{node.value}/{shell.expectation_id} returned no result."
                     )
 
-        for order, timeout_error in timed_out_orders.items():
+        for order, timeout_error in list(timed_out_orders.items()):
             if order in accepted_results:
                 continue
             current = self._prepare_expectation_detail_timeout_retry(
@@ -663,6 +699,25 @@ class Document2LegacyPipelineMixin:
                 "previous_status": "timed_out",
             }
         return context
+
+    def _is_expectation_detail_model_timeout_result(self, result: AgentResult) -> bool:
+        if result.status is not ResultStatus.FAILED or result.error is None:
+            return False
+        if result.error.code == "model_request_timeout":
+            return True
+        gateway_error = result.error.details.get("gateway_error")
+        return (
+            isinstance(gateway_error, dict)
+            and gateway_error.get("code") == "model_request_timeout"
+        )
+
+    def _expectation_detail_model_timeout_error(
+        self,
+        node: WorkflowNode,
+        result: AgentResult,
+    ) -> WorkflowContractError:
+        message = result.error.message if result.error is not None else "model_request_timeout"
+        return WorkflowContractError(f"{node.value} agent result failed: {message}")
 
     def _prepare_expectation_detail_timeout_retry(
         self,
