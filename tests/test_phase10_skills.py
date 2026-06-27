@@ -249,6 +249,24 @@ def test_prompt_injector_selects_o1_internal_sop_without_external_packages() -> 
     resolve_injected = PromptInjector().inject(resolve_task, definition)
     assert "expectation-construction" in resolve_injected.prompt_bundle.internal_task_skill_ids
 
+    field_resolve_task = task.model_copy(
+        update={
+            "task_type": TaskType.REVIEW_EXPECTATION_FIELD,
+            "required_output_schema": "Document2ResolutionPlan",
+            "run_metadata": task.run_metadata.model_copy(
+                update={"workflow_node": "ResolveObjectionsAndDelegations"}
+            ),
+        },
+        deep=True,
+    )
+    field_resolve_injected = PromptInjector().inject(field_resolve_task, definition)
+    assert "document2-resolution-plan" in (
+        field_resolve_injected.prompt_bundle.internal_task_skill_ids
+    )
+    assert "expectation-construction" not in (
+        field_resolve_injected.prompt_bundle.internal_task_skill_ids
+    )
+
     narrative_task = task.model_copy(
         update={
             "task_type": TaskType.GENERATE_GLOBAL_NARRATIVE_REPORT,
@@ -261,6 +279,11 @@ def test_prompt_injector_selects_o1_internal_sop_without_external_packages() -> 
     )
     narrative_injected = PromptInjector().inject(narrative_task, definition)
     assert "global_narrative_report" in narrative_injected.prompt_bundle.internal_task_skill_ids
+
+    resolver_skill = default_prompt_registry().get("document2-resolution-plan")
+    assert "Document2ResolutionPlan" in resolver_skill.body
+    assert "proposed_patches" in resolver_skill.body
+    assert "list-wrapped" in resolver_skill.body
 
 
 def test_prompt_injector_selects_a1_node_specific_internal_skills() -> None:

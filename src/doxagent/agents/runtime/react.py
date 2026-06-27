@@ -2011,22 +2011,67 @@ def _output_contract(required_output_schema: str, *, task: AgentTask | None = No
                         "document_id": "doc_<id>",
                         "document_type": "expectation_unit",
                         "ticker": "<ticker>",
+                        "created_at": "ISO-8601 timestamp",
+                        "updated_at": None,
                         "expectation_id": "same as expectation_shell.expectation_id",
                         "expectation_name": "same as expectation_shell.expectation_name",
                         "direction": "same as expectation_shell.direction",
                         "why_it_matters": "same as expectation_shell.why_it_matters",
-                        "market_view": (
-                            "same complete ResearchSection as expectation_shell.market_view"
-                        ),
-                        "realized_facts": [],
-                        "realized_facts_summary": "summary of realized facts",
-                        "key_variables": [],
-                        "event_monitoring_direction": {
-                            "known_event_notice": "monitoring note",
-                            "positive_events": [],
-                            "negative_events": [],
+                        "market_view": {
+                            "text": (
+                                "preserve or faithfully extend "
+                                "expectation_shell.market_view.text"
+                            ),
+                            "summary": (
+                                "preserve or faithfully extend "
+                                "expectation_shell.market_view.summary"
+                            ),
+                            "evidence_refs": [],
+                            "author_agent": "O1",
+                            "reviewer_agents": [],
                         },
-                        "created_at": "ISO-8601 timestamp",
+                        "realized_facts": [
+                            {
+                                "event_id": "event_<id>",
+                                "event_time": "YYYY-MM-DD or null",
+                                "description": (
+                                    "specific realized fact tied to this expectation"
+                                ),
+                                "evidence_refs": [],
+                                "price_reaction": {
+                                    "price_change": (
+                                        "specific move or evidence gap statement"
+                                    ),
+                                    "price_pattern": (
+                                        "specific pattern or "
+                                        "unknown_due_to_missing_market_data"
+                                    ),
+                                    "interpretation": (
+                                        "priced in, partly priced in, or evidence gap"
+                                    ),
+                                    "evidence_refs": [],
+                                },
+                            }
+                        ],
+                        "realized_facts_summary": (
+                            "summary of known facts, priced-in evidence, and uncertainty"
+                        ),
+                        "key_variables": [
+                            {
+                                "variable_id": "variable_<id>",
+                                "name": "specific variable name",
+                                "current_status": "specific current status",
+                                "certainty": "high | medium | low | unknown",
+                                "evidence_refs": [],
+                            }
+                        ],
+                        "event_monitoring_direction": {
+                            "known_event_notice": (
+                                "known date/event note or no fixed known date"
+                            ),
+                            "positive_events": ["specific positive trigger"],
+                            "negative_events": ["specific negative trigger"],
+                        },
                     },
                     "evidence_refs": [],
                     "delegations": [],
@@ -2035,6 +2080,10 @@ def _output_contract(required_output_schema: str, *, task: AgentTask | None = No
                 },
                 "rules": [
                     "Return exactly one complete candidate document, not BlackboardPatch.",
+                    (
+                        "Do not return proposed_patches, patches, changes, path maps, "
+                        "partial updates, list-wrapped candidates, or multiple candidates."
+                    ),
                     (
                         "Preserve expectation_id, expectation_name, direction, "
                         "why_it_matters, and market_view from expectation_shell."
@@ -2051,6 +2100,10 @@ def _output_contract(required_output_schema: str, *, task: AgentTask | None = No
                     (
                         "Every realized_fact and key_variable must include evidence_refs; "
                         "price_reaction must be concrete, not unknown."
+                    ),
+                    (
+                        "If market price evidence is unavailable, state the uncertainty "
+                        "inside price_reaction; do not invent price numbers."
                     ),
                 ],
             }
@@ -2075,24 +2128,82 @@ def _output_contract(required_output_schema: str, *, task: AgentTask | None = No
                             "evidence_refs": [],
                         }
                     ],
-                    "revised_candidate": (
-                        "complete ExpectationUnitDocument only when accepted or "
-                        "partially_accepted requires content revision; otherwise null"
-                    ),
+                    "target_finding_ids": [],
+                    "revised_candidate": None,
                     "evidence_requests": [],
+                    "unresolved_finding_ids": [],
                     "unresolved_reason": None,
                     "rationale": "short summary of the resolution plan",
                 },
+                "revised_candidate_shape_when_needed": {
+                    "document_id": "existing or new doc id",
+                    "document_type": "expectation_unit",
+                    "ticker": "<ticker>",
+                    "created_at": "ISO-8601 timestamp",
+                    "updated_at": None,
+                    "expectation_id": "same affected expectation id",
+                    "expectation_name": "same expectation name unless explicitly changed",
+                    "direction": "bullish | bearish | neutral | risk",
+                    "why_it_matters": "complete why-it-matters",
+                    "market_view": {
+                        "text": "complete market view",
+                        "summary": "short summary",
+                        "evidence_refs": [],
+                        "author_agent": "O1",
+                        "reviewer_agents": [],
+                    },
+                    "realized_facts": [
+                        {
+                            "event_id": "event_<id>",
+                            "event_time": "YYYY-MM-DD or null",
+                            "description": "complete realized fact",
+                            "evidence_refs": [],
+                            "price_reaction": {
+                                "price_change": "specific move or evidence gap statement",
+                                "price_pattern": (
+                                    "specific pattern or "
+                                    "unknown_due_to_missing_market_data"
+                                ),
+                                "interpretation": "price reaction interpretation",
+                                "evidence_refs": [],
+                            },
+                        }
+                    ],
+                    "realized_facts_summary": "complete summary",
+                    "key_variables": [
+                        {
+                            "variable_id": "variable_<id>",
+                            "name": "variable name",
+                            "current_status": "current status",
+                            "certainty": "high | medium | low | unknown",
+                            "evidence_refs": [],
+                        }
+                    ],
+                    "event_monitoring_direction": {
+                        "known_event_notice": "known event note",
+                        "positive_events": ["specific positive trigger"],
+                        "negative_events": ["specific negative trigger"],
+                    },
+                },
                 "rules": [
                     "This is a resolution-plan task, not a patch-submission task.",
-                    "Do not return proposed_patches or BlackboardPatch.",
+                    (
+                        "Do not return BlackboardPatch, proposed_patches, patches, "
+                        "changes, path maps, partial updates, list-wrapped "
+                        "revised_candidate, or multiple revised candidates."
+                    ),
                     (
                         "Return exactly one decisions item for each "
                         "input_context.unresolved_objections item."
                     ),
                     (
                         "If a revision is needed, return revised_candidate as a complete "
-                        "ExpectationUnitDocument preserving expectation identity."
+                        "ExpectationUnitDocument preserving expectation identity; "
+                        "otherwise set revised_candidate to null."
+                    ),
+                    (
+                        "Only include revised_candidate when decision is accepted or "
+                        "partially_accepted and the blocker requires actual content revision."
                     ),
                     (
                         "For resolved, rejected, accepted, or partially_accepted decisions, "
@@ -2622,14 +2733,22 @@ def _normalize_final_payload(
                 delegation_results=delegation_results,
             )
         if "ExpectationDetailCandidateResult" in _schema_names(required_output_schema):
-            return _normalize_expectation_detail_candidate_payload(
+            from doxagent.workflows.document2.final_payload_adapter import (
+                adapt_expectation_detail_candidate_payload,
+            )
+
+            return adapt_expectation_detail_candidate_payload(
                 payload,
                 task=task,
                 tool_results=tool_results,
                 delegation_results=delegation_results,
             )
         if "Document2ResolutionPlan" in _schema_names(required_output_schema):
-            return _normalize_document2_resolution_plan_payload(
+            from doxagent.workflows.document2.final_payload_adapter import (
+                adapt_document2_resolution_plan_payload,
+            )
+
+            return adapt_document2_resolution_plan_payload(
                 payload,
                 task=task,
                 tool_results=tool_results,
@@ -4087,125 +4206,6 @@ def _normalize_expectation_detail_payload(
                 )
             ]
     return _force_expectation_detail_shell_identity(normalized, task=task)
-
-
-def _normalize_expectation_detail_candidate_payload(
-    payload: JsonDict,
-    *,
-    task: AgentTask,
-    tool_results: list[ToolResult],
-    delegation_results: list[AgentResult],
-) -> JsonDict:
-    evidence_refs = _valid_evidence_ref_payloads(payload.get("evidence_refs"))
-    if not evidence_refs:
-        evidence_refs = [
-            item.model_dump(mode="json")
-            for item in _evidence_refs(tool_results, delegation_results)
-        ]
-    candidate_payload = payload.get("candidate")
-    if isinstance(candidate_payload, dict):
-        candidate = dict(candidate_payload)
-    elif _payload_has_expectation_detail_fields(payload):
-        candidate = dict(payload.get("expectation_unit") or payload)
-    else:
-        candidate = {}
-
-    normalized_candidate: Any = candidate_payload
-    if candidate:
-        candidate = _apply_expectation_detail_shell_fields(candidate, task=task)
-        normalized_candidate = _normalize_expectation_document_payload(
-            candidate,
-            task=task,
-            fallback_evidence=evidence_refs,
-            fallback_expectation_id=_expectation_detail_shell_id(task),
-        )
-        normalized_candidate = _apply_expectation_detail_shell_fields(
-            normalized_candidate,
-            task=task,
-        )
-
-    return {
-        "candidate": normalized_candidate,
-        "evidence_refs": evidence_refs,
-        "delegations": _normalize_output_delegations(
-            payload.get("delegations"),
-            task=task,
-        ),
-        "unknowns": _strings(payload.get("unknowns")),
-        "rationale": str(
-            payload.get("rationale")
-            or (candidate.get("rationale") if candidate else None)
-            or "O1 expectation detail candidate."
-        ),
-    }
-
-
-def _normalize_document2_resolution_plan_payload(
-    payload: JsonDict,
-    *,
-    task: AgentTask,
-    tool_results: list[ToolResult],
-    delegation_results: list[AgentResult],
-) -> JsonDict:
-    normalized = dict(payload)
-    evidence_refs = _valid_evidence_ref_payloads(normalized.pop("evidence_refs", None))
-    if not evidence_refs:
-        evidence_refs = [
-            item.model_dump(mode="json")
-            for item in _evidence_refs(tool_results, delegation_results)
-        ]
-    revised_candidate = normalized.get("revised_candidate")
-    if isinstance(revised_candidate, list):
-        candidate_items = _dicts(revised_candidate)
-        if len(candidate_items) == 1:
-            revised_candidate = candidate_items[0]
-            normalized["revised_candidate"] = revised_candidate
-    if isinstance(revised_candidate, dict):
-        candidate_evidence_refs = _valid_evidence_ref_payloads(
-            revised_candidate.get("evidence_refs")
-        )
-        document_payload = revised_candidate.get("document")
-        candidate = dict(document_payload) if isinstance(document_payload, dict) else dict(
-            revised_candidate
-        )
-        normalized["revised_candidate"] = _normalize_expectation_document_payload(
-            candidate,
-            task=task,
-            fallback_evidence=_merge_evidence_ref_payloads(
-                candidate_evidence_refs,
-                evidence_refs,
-            ),
-            fallback_expectation_id=str(normalized.get("expectation_id") or "")
-            or None,
-        )
-    return normalized
-
-
-def _expectation_detail_shell_id(task: AgentTask) -> str | None:
-    shell = task.input_context.get("expectation_shell")
-    if not isinstance(shell, dict):
-        return None
-    shell_id = shell.get("expectation_id")
-    return str(shell_id) if shell_id else None
-
-
-def _apply_expectation_detail_shell_fields(payload: JsonDict, *, task: AgentTask) -> JsonDict:
-    shell = task.input_context.get("expectation_shell")
-    if not isinstance(shell, dict):
-        return payload
-    normalized = dict(payload)
-    shell_fields = {
-        "expectation_id": shell.get("expectation_id"),
-        "expectation_name": shell.get("expectation_name"),
-        "direction": shell.get("direction"),
-        "why_it_matters": shell.get("why_it_matters"),
-        "market_view": shell.get("market_view"),
-    }
-    for key, value in shell_fields.items():
-        if value is not None:
-            normalized[key] = value
-    normalized["ticker"] = task.ticker
-    return normalized
 
 
 def _payload_has_expectation_detail_fields(payload: JsonDict) -> bool:

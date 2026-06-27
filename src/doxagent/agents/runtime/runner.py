@@ -2,6 +2,8 @@
 
 import asyncio
 import json
+import platform
+from collections.abc import Coroutine
 from dataclasses import replace
 from typing import Any, cast
 
@@ -72,7 +74,7 @@ class ModelGatewayAgentRunner:
 
     def run(self, task: AgentTask) -> AgentResult:
         try:
-            return asyncio.run(self.async_run(task))
+            return _run_agent_coroutine(self.async_run(task))
         except RuntimeError as exc:
             return AgentResult(
                 task_id=task.task_id,
@@ -188,6 +190,7 @@ class ModelGatewayAgentRunner:
             model=self.default_model,
             response_format=ResponseFormat.JSON,
             metadata_builder=lambda _: self._metadata(task),
+            system_prompt=assembled_prompt.instructions,
         )
         agent = self.agent_factory.create(
             definition,
@@ -352,20 +355,52 @@ class ModelGatewayAgentRunner:
         return str(raw_mode)
 
     def _react_config_for_task(self, task: AgentTask) -> ReActHarnessConfig:
-        budget = task.input_context.get("o3_runtime_budget")
-        if task.agent_name is not AgentName.O3_TRADING_STRATEGY or not isinstance(budget, dict):
+        budget = task.input_context.get("react_runtime_budget")
+        if not isinstance(budget, dict):
+            budget = (
+                task.input_context.get("o3_runtime_budget")
+                if task.agent_name is AgentName.O3_TRADING_STRATEGY
+                else None
+            )
+        if not isinstance(budget, dict):
             return self.react_config
-        max_model_calls = _positive_int(budget.get("max_model_calls"))
-        max_tool_batches = _positive_int(budget.get("max_parallel_tool_call_batches"))
-        if max_model_calls is None and max_tool_batches is None:
+        max_steps = _positive_int(
+            _first_present(budget, "max_steps", "max_model_calls")
+        )
+        max_tool_calls_per_name = _positive_int(
+            _first_present(budget, "max_tool_calls_per_name")
+        )
+        max_tool_batches = _nonnegative_int(
+            _first_present(
+                budget,
+                "max_tool_call_batches",
+                "max_parallel_tool_call_batches",
+            )
+        )
+        model_timeout = _positive_float(
+            _first_present(budget, "model_request_timeout_seconds")
+        )
+        if (
+            max_steps is None
+            and max_tool_calls_per_name is None
+            and max_tool_batches is None
+            and model_timeout is None
+        ):
             return self.react_config
         return replace(
             self.react_config,
-            max_steps=max_model_calls or self.react_config.max_steps,
-            max_tool_calls_per_name=max_tool_batches
-            or self.react_config.max_tool_calls_per_name,
+            max_steps=max_steps
+            if max_steps is not None
+            else self.react_config.max_steps,
+            max_tool_calls_per_name=max_tool_calls_per_name
+            if max_tool_calls_per_name is not None
+            else self.react_config.max_tool_calls_per_name,
             max_tool_call_batches=max_tool_batches
-            or self.react_config.max_tool_call_batches,
+            if max_tool_batches is not None
+            else self.react_config.max_tool_call_batches,
+            model_request_timeout_seconds=model_timeout
+            if model_timeout is not None
+            else self.react_config.model_request_timeout_seconds,
         )
 
     def _normalize_delegation_task_type(self, value: str) -> str:
@@ -472,6 +507,39 @@ def _positive_int(value: object) -> int | None:
     except (TypeError, ValueError):
         return None
     return parsed if parsed > 0 else None
+
+
+def _nonnegative_int(value: object) -> int | None:
+    try:
+        parsed = int(str(value))
+    except (TypeError, ValueError):
+        return None
+    return parsed if parsed >= 0 else None
+
+
+def _positive_float(value: object) -> float | None:
+    try:
+        parsed = float(str(value))
+    except (TypeError, ValueError):
+        return None
+    return parsed if parsed > 0 else None
+
+
+def _first_present(payload: dict[str, Any], *keys: str) -> object:
+    for key in keys:
+        if key in payload:
+            return payload[key]
+    return None
+
+
+def _run_agent_coroutine(coro: Coroutine[Any, Any, AgentResult]) -> AgentResult:
+    if platform.system() == "Windows":
+        loop = asyncio.SelectorEventLoop()
+        try:
+            return loop.run_until_complete(coro)
+        finally:
+            loop.close()
+    return asyncio.run(coro)
 
 
 def _single_shot_max_tokens(task: AgentTask) -> int | None:

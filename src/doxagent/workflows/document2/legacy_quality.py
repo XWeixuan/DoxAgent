@@ -860,6 +860,8 @@ class Document2LegacyQualityMixin:
                 "returning one complete revised_candidate for the affected expectation_id."
             ),
             "Never return BlackboardPatch or proposed_patches in this resolution batch.",
+            "Never return patches, changes, path maps, partial updates, list-wrapped "
+            "revised_candidate, or multiple revised candidates.",
             "Each resolution must include changed_paths or evidence_refs.",
             (
                 "Prioritize numeric sanity blockers: price, market cap, valuation "
@@ -880,6 +882,15 @@ class Document2LegacyQualityMixin:
                 "evidence."
             )
         return {
+            "internal_task_skill_ids": ["document2-resolution-plan"],
+            "react_runtime_budget": {
+                "max_steps": 1,
+                "max_tool_call_batches": 0,
+                "model_request_timeout_seconds": min(
+                    120.0,
+                    float(self.settings.model_request_timeout_seconds),
+                ),
+            },
             "resolution_request": (
                 "Resolve field-review objections using the compact expectation summaries "
                 "and objection evidence below. Do not call tools in this node. Return "

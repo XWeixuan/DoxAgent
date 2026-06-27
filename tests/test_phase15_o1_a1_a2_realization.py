@@ -5,11 +5,10 @@ from doxagent.models import (
     AgentName,
     AgentResult,
     AgentTask,
-    BlackboardPatch,
     BlackboardTarget,
-    Delegation,
     DelegatedRetrievalRequest,
     DelegatedRetrievalResult,
+    Delegation,
     DocumentType,
     DoxAtlasAuditResult,
     EvidenceRef,
@@ -78,6 +77,38 @@ def _structured(
             payload={"structured": section.model_dump(mode="json")},
             evidence_refs=[evidence],
         )
+    if task.required_output_schema == "ExpectationDetailCandidateResult":
+        if isinstance(direct.payload, dict) and isinstance(direct.payload.get("candidate"), dict):
+            return AgentResult(
+                task_id=task.task_id,
+                agent_name=task.agent_name,
+                status=direct.status,
+                payload={"runtime": "maf", "structured": direct.payload},
+                evidence_refs=direct.evidence_refs,
+            )
+        patch = direct.proposed_patches[0]
+        evidence_refs = patch.evidence_refs or direct.evidence_refs
+        return AgentResult(
+            task_id=task.task_id,
+            agent_name=task.agent_name,
+            status=direct.status,
+            payload={
+                "runtime": "maf",
+                "structured": {
+                    "candidate": patch.after,
+                    "evidence_refs": [
+                        evidence.model_dump(mode="json") for evidence in evidence_refs
+                    ],
+                    "delegations": [
+                        delegation.model_dump(mode="json")
+                        for delegation in direct.delegations
+                    ],
+                    "unknowns": [],
+                    "rationale": "O1 completed a sourced detail candidate.",
+                },
+            },
+            evidence_refs=evidence_refs,
+        )
     return AgentResult(
         task_id=task.task_id,
         agent_name=task.agent_name,
@@ -129,15 +160,7 @@ class RealizedO1A1A2Runner(AgentRunner):
             return _structured(task, direct, dict(direct.payload))
         if node == WorkflowNode.GENERATE_EXPECTATION_DETAILS.value:
             direct = self.factory(task)
-            return _structured(
-                task,
-                direct,
-                ExpectationConstructionResult(
-                    proposed_patches=direct.proposed_patches,
-                    evidence_refs=direct.evidence_refs,
-                    rationale="O1 completed a sourced core expectation.",
-                ).model_dump(mode="json"),
-            )
+            return _structured(task, direct)
         if node == WorkflowNode.REVIEW_EXPECTATION_CONSTRUCTION.value:
             evidence = _evidence(EvidenceSourceType.DOXATLAS_SOURCE)
             audit = DoxAtlasAuditResult(
@@ -249,13 +272,9 @@ class RealizedO1A1A2Runner(AgentRunner):
                 status=ResultStatus.SUCCEEDED,
                 payload={
                     "structured": {
-                        "proposed_patches": [],
-                        "evidence_refs": [],
-                        "delegations": [],
-                        "unknowns": [],
-                        "rationale": "O1 resolved the A1 objection.",
-                        "resolved_objection_ids": [self.objection_id],
-                        "objection_resolutions": [
+                        "expectation_id": "exp_mock_core",
+                        "decision": "resolved",
+                        "decisions": [
                             {
                                 "objection_id": self.objection_id,
                                 "decision": "resolved",
@@ -264,6 +283,11 @@ class RealizedO1A1A2Runner(AgentRunner):
                                 "evidence_refs": [_evidence().model_dump(mode="json")],
                             }
                         ],
+                        "revised_candidate": None,
+                        "evidence_requests": [],
+                        "unresolved_finding_ids": [],
+                        "unresolved_reason": None,
+                        "rationale": "O1 resolved the A1 objection.",
                     }
                 },
             )
@@ -393,13 +417,9 @@ class O1RevisionDelegationRunner(RealizedO1A1A2Runner):
                 status=ResultStatus.SUCCEEDED,
                 payload={
                     "structured": {
-                        "proposed_patches": [],
-                        "evidence_refs": [evidence.model_dump(mode="json")],
-                        "delegations": [],
-                        "unknowns": [],
-                        "rationale": "O1 已完成 C1 要求的预期修订。",
-                        "resolved_objection_ids": [self.revision_objection_id],
-                        "objection_resolutions": [
+                        "expectation_id": "exp_mock_core",
+                        "decision": "resolved",
+                        "decisions": [
                             {
                                 "objection_id": self.revision_objection_id,
                                 "decision": "resolved",
@@ -408,6 +428,11 @@ class O1RevisionDelegationRunner(RealizedO1A1A2Runner):
                                 "evidence_refs": [evidence.model_dump(mode="json")],
                             }
                         ],
+                        "revised_candidate": None,
+                        "evidence_requests": [],
+                        "unresolved_finding_ids": [],
+                        "unresolved_reason": None,
+                        "rationale": "O1 已完成 C1 要求的预期修订。",
                     }
                 },
                 evidence_refs=[evidence],
@@ -586,7 +611,9 @@ class DirectDocumentOutputRunner(RealizedO1A1A2Runner):
                             {
                                 "rule_id": "rule_direct_trade",
                                 "action_type": "direct_trade",
-                                "trigger_condition": "Confirmed launch milestone beats expectation.",
+                    "trigger_condition": (
+                        "Confirmed launch milestone beats expectation."
+                    ),
                                 "expectation_id": "exp_mock_core",
                                 "action": "mark as direct-trade candidate for human review",
                                 "strategy_note": "No broker action is triggered.",
@@ -642,15 +669,9 @@ class AcceptedObjectionRunner(RealizedO1A1A2Runner):
         ):
             evidence = _evidence()
             structured: dict[str, object] = {
-                "proposed_patches": [],
-                "evidence_refs": [evidence.model_dump(mode="json")],
-                "delegations": [],
-                "unknowns": [],
-                "rationale": "O1 accepted and revised the expectation."
-                if self.include_revision
-                else "O1 accepted the objection but omitted the required revision.",
-                "accepted_objection_ids": [self.objection_id],
-                "objection_resolutions": [
+                "expectation_id": "exp_mock_core",
+                "decision": "accepted",
+                "decisions": [
                     {
                         "objection_id": self.objection_id,
                         "decision": "accepted",
@@ -659,22 +680,63 @@ class AcceptedObjectionRunner(RealizedO1A1A2Runner):
                         "evidence_refs": [evidence.model_dump(mode="json")],
                     }
                 ],
+                "revised_candidate": None,
+                "evidence_requests": [],
+                "unresolved_finding_ids": [],
+                "unresolved_reason": None,
+                "rationale": "O1 accepted and revised the expectation."
+                if self.include_revision
+                else "O1 accepted the objection but omitted the required revision.",
             }
             if self.include_revision:
                 pending = task.input_context["pending_patches"][0]
-                patch = BlackboardPatch.model_validate(pending)
-                revised_after = dict(patch.after)
-                revised_after["realized_facts_summary"] = "Revised after reviewer objection."
-                revised_patch = patch.model_copy(
-                    update={
-                        "patch_id": new_id("patch"),
-                        "after": revised_after,
-                        "rationale": "Revise expectation after accepted reviewer objection.",
-                        "evidence_refs": [evidence],
+                market_view = dict(pending.get("market_view") or {})
+                structured["revised_candidate"] = {
+                    "document_id": "doc_phase15_revised",
+                    "document_type": "expectation_unit",
+                    "ticker": task.ticker,
+                    "created_at": "2026-06-12T00:00:00Z",
+                    "updated_at": None,
+                    "expectation_id": pending["expectation_id"],
+                    "expectation_name": pending["expectation_name"],
+                    "direction": pending["direction"] or "neutral",
+                    "why_it_matters": pending["why_it_matters"],
+                    "market_view": {
+                        "text": market_view.get("text") or "Revised market view.",
+                        "summary": market_view.get("summary") or "Revised market view.",
+                        "evidence_refs": [evidence.model_dump(mode="json")],
+                        "author_agent": AgentName.O1_EXPECTATION_OWNER.value,
+                        "reviewer_agents": [],
                     },
-                    deep=True,
-                )
-                structured["proposed_patches"] = [revised_patch.model_dump(mode="json")]
+                    "realized_facts": [
+                        {
+                            "event_id": "event_phase15_revised",
+                            "description": "Reviewer objection was accepted and revised.",
+                            "price_reaction": {
+                                "price_change": "unknown",
+                                "price_pattern": "unknown",
+                                "interpretation": "Price reaction was not established.",
+                                "evidence_refs": [evidence.model_dump(mode="json")],
+                            },
+                            "evidence_refs": [evidence.model_dump(mode="json")],
+                        }
+                    ],
+                    "realized_facts_summary": "Revised after reviewer objection.",
+                    "key_variables": [
+                        {
+                            "variable_id": "var_phase15_revised",
+                            "name": "Reviewer evidence coverage",
+                            "current_status": "Revision incorporated reviewer evidence.",
+                            "certainty": "medium",
+                            "evidence_refs": [evidence.model_dump(mode="json")],
+                        }
+                    ],
+                    "event_monitoring_direction": {
+                        "known_event_notice": "No fixed known date.",
+                        "positive_events": ["Evidence coverage improves."],
+                        "negative_events": ["Evidence coverage remains weak."],
+                    },
+                }
             return AgentResult(
                 task_id=task.task_id,
                 agent_name=task.agent_name,
@@ -756,15 +818,17 @@ def test_workflow_uses_a2_retrieval_to_complete_delegation_and_o1_resolves_objec
         auto_resolve_blockers=False,
     )
 
-    result = workflow.run("NVDA")
+    result = workflow.run(
+        "NVDA",
+        stop_after=WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS,
+    )
     run = workflow.blackboard.get_run(result.checkpoint.run_id)
 
-    assert result.status is WorkflowRunStatus.COMPLETED
+    assert result.status is WorkflowRunStatus.RUNNING
     assert result.summary.unresolved_objection_count == 0
     assert result.summary.blocking_delegation_count == 0
     assert all(not objection.is_unresolved for objection in run.objections)
     assert all(not delegation.is_blocking for delegation in run.delegations)
-    assert DocumentType.EXPECTATION_UNIT in run.belief_state.documents
     assert any(entry.content_type == "delegated_retrieval_result" for entry in run.working_memory)
     review_agents = [
         agent
@@ -792,7 +856,10 @@ def test_workflow_uses_a2_retrieval_to_complete_delegation_and_o1_resolves_objec
     ]
     assert o1_resolution_tasks
     resolution_context = o1_resolution_tasks[0].input_context
-    assert resolution_context["resolution_mode"] == "field_review_objection_resolution"
+    assert resolution_context["resolution_mode"] == "document2_resolution_plan"
+    assert resolution_context["internal_task_skill_ids"] == ["document2-resolution-plan"]
+    assert resolution_context["react_runtime_budget"]["max_steps"] == 1
+    assert resolution_context["react_runtime_budget"]["max_tool_call_batches"] == 0
     assert resolution_context["pending_patches"]
     assert resolution_context["pending_expectation_patch_summaries"]
     assert resolution_context["global_research_context"]["omitted_for"] == (
@@ -844,6 +911,8 @@ def test_construction_objection_resolution_revises_shells_without_pending_patche
     assert result.status is WorkflowRunStatus.RUNNING
     assert resolve_tasks
     assert resolve_tasks[0].required_output_schema == "ExpectationShellConstructionResult"
+    assert resolve_tasks[0].permissions.writable_targets == []
+    assert resolve_tasks[0].permissions.can_propose_patch is False
     assert resolve_tasks[0].input_context["internal_task_skill_ids"] == [
         "expectation-construction"
     ]
@@ -876,7 +945,12 @@ def test_objection_resolution_batches_large_unresolved_sets() -> None:
             self.batches.append(list(ids))
             self.contexts.append(dict(context))
             payload = ExpectationConstructionResult(
-                objection_resolutions=[
+                rationale="Resolved current objection batch.",
+            ).model_dump(mode="json")
+            payload = {
+                "expectation_id": "exp_mock_core",
+                "decision": "resolved",
+                "decisions": [
                     {
                         "objection_id": objection_id,
                         "decision": "resolved",
@@ -886,8 +960,12 @@ def test_objection_resolution_batches_large_unresolved_sets() -> None:
                     }
                     for objection_id in ids
                 ],
-                rationale="Resolved current objection batch.",
-            ).model_dump(mode="json")
+                "revised_candidate": None,
+                "evidence_requests": [],
+                "unresolved_finding_ids": [],
+                "unresolved_reason": None,
+                "rationale": payload["rationale"],
+            }
             return AgentResult(
                 task_id=task.task_id,
                 agent_name=task.agent_name,
@@ -1150,23 +1228,27 @@ def test_o1_accepting_objection_requires_revised_expectation_patch() -> None:
 
     assert result.status is WorkflowRunStatus.BLOCKED
     assert result.error is not None
-    assert "accepted an objection without returning a revised expectation patch" in result.error
+    assert "accepted resolution decisions require a proposed_revision or revised_candidate" in (
+        result.error
+    )
 
 
-def test_o1_revised_patch_replaces_pending_expectation_patch() -> None:
+def test_o1_revised_candidate_replaces_pending_expectation_patch() -> None:
     workflow = BlackboardInitializationWorkflow(
         runner=AcceptedObjectionRunner(include_revision=True),
         execution_mode="agent_runner",
         auto_resolve_blockers=False,
     )
 
-    result = workflow.run("NVDA")
-    run = workflow.blackboard.get_run(result.checkpoint.run_id)
-    expectation_bucket = run.belief_state.documents[DocumentType.EXPECTATION_UNIT]
-    document = expectation_bucket["exp_mock_core"]["document"]
+    result = workflow.run(
+        "NVDA",
+        stop_after=WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS,
+    )
+    patch = result.checkpoint.pending_patches[0]
 
-    assert result.status is WorkflowRunStatus.COMPLETED
-    assert document["realized_facts_summary"] == "Revised after reviewer objection."
+    assert result.status is WorkflowRunStatus.RUNNING
+    assert patch.target.expectation_id == "exp_mock_core"
+    assert patch.after["realized_facts_summary"] == "Revised after reviewer objection."
 
 
 def test_a2_delegation_context_uses_react_requirements_not_legacy_tool_requests() -> None:

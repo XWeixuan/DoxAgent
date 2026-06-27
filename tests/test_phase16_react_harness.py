@@ -162,6 +162,38 @@ def test_react_model_requests_carry_configured_timeout() -> None:
     assert client.requests[0].timeout_seconds == 12.5
 
 
+def test_react_runtime_budget_in_task_context_overrides_steps_tools_and_timeout() -> None:
+    base_task = agent_task()
+    task = base_task.model_copy(
+        update={
+            "input_context": {
+                **base_task.input_context,
+                "react_runtime_budget": {
+                    "max_steps": 1,
+                    "max_tool_call_batches": 0,
+                    "model_request_timeout_seconds": 1.5,
+                },
+            }
+        },
+        deep=True,
+    )
+    client = RecordingModelClient([{"summary": "ok"}])
+    runner = ModelGatewayAgentRunner(
+        model_gateway=ModelGateway(client),
+        tool_registry=default_tool_registry(),
+        react_config=ReActHarnessConfig(max_steps=5, max_tool_call_batches=None),
+        tool_mode="mock",
+    )
+
+    result = runner.run(task)
+
+    assert result.status is ResultStatus.SUCCEEDED
+    assert client.requests[0].timeout_seconds == 1.5
+    prompt = json.loads(client.requests[0].messages[-1].content)
+    assert prompt["react_protocol"]["max_steps"] == 1
+    assert prompt["react_protocol"]["max_tool_call_batches"] == 0
+
+
 def test_react_enforces_outer_model_request_timeout() -> None:
     client = SlowModelClient()
     runner = ModelGatewayAgentRunner(
@@ -1863,6 +1895,92 @@ def test_react_normalizes_expectation_detail_candidate_legacy_fields() -> None:
     assert candidate["key_variables"][0]["name"] == "HBM shipment cadence"
 
 
+def test_react_expectation_detail_candidate_contract_is_complete_document_not_patch() -> None:
+    task = agent_task().model_copy(
+        update={"required_output_schema": "ExpectationDetailCandidateResult"},
+        deep=True,
+    )
+    client = RecordingModelClient(
+        [
+            {
+                "is_complete": True,
+                "completion_reason": "captured",
+                "final_payload": {
+                    "candidate": {
+                        "document_id": "doc_candidate",
+                        "document_type": "expectation_unit",
+                        "ticker": task.ticker,
+                        "created_at": "2026-06-12T00:00:00Z",
+                        "updated_at": None,
+                        "expectation_id": "exp_candidate",
+                        "expectation_name": "Candidate contract",
+                        "direction": "neutral",
+                        "why_it_matters": "Contract capture.",
+                        "market_view": {
+                            "text": "Market view.",
+                            "summary": "Market view.",
+                            "evidence_refs": [],
+                            "author_agent": "O1",
+                            "reviewer_agents": [],
+                        },
+                        "realized_facts": [
+                            {
+                                "event_id": "event_contract",
+                                "description": "Contract event.",
+                                "price_reaction": {
+                                    "price_change": "unknown",
+                                    "price_pattern": "unknown",
+                                    "interpretation": "No price evidence.",
+                                    "evidence_refs": [],
+                                },
+                                "evidence_refs": [],
+                            }
+                        ],
+                        "realized_facts_summary": "Contract summary.",
+                        "key_variables": [
+                            {
+                                "variable_id": "var_contract",
+                                "name": "Evidence coverage",
+                                "current_status": "Unknown",
+                                "certainty": "unknown",
+                                "evidence_refs": [],
+                            }
+                        ],
+                        "event_monitoring_direction": {
+                            "known_event_notice": "No fixed known date.",
+                            "positive_events": ["Positive trigger."],
+                            "negative_events": ["Negative trigger."],
+                        },
+                    },
+                    "evidence_refs": [],
+                    "delegations": [],
+                    "unknowns": [],
+                    "rationale": "Contract capture.",
+                },
+            }
+        ]
+    )
+    runner = ModelGatewayAgentRunner(
+        model_gateway=ModelGateway(client),
+        tool_registry=default_tool_registry(),
+        tool_mode="mock",
+    )
+
+    result = runner.run(task)
+
+    assert result.status is ResultStatus.SUCCEEDED
+    prompt = json.loads(client.requests[0].messages[-1].content)
+    contract = prompt["output_contract"]["ExpectationDetailCandidateResult"]
+    contract_json = json.dumps(contract, ensure_ascii=False)
+    assert "proposed_patches" not in contract["final_payload"]
+    assert "patches" not in contract["final_payload"]
+    assert "document_type" in contract["final_payload"]["candidate"]
+    assert "price_reaction" in contract_json
+    assert "variable_id" in contract_json
+    assert "event_monitoring_direction" in contract_json
+    assert "partial updates" in " ".join(contract["rules"])
+
+
 def test_react_normalizes_document2_resolution_revised_candidate_shape() -> None:
     evidence_ref = {
         "evidence_id": "evidence_resolution",
@@ -1954,6 +2072,63 @@ def test_react_normalizes_document2_resolution_revised_candidate_shape() -> None
         "fact: HBM qualification"
     )
     assert candidate["key_variables"][0]["name"] == "Customer ramp timing"
+
+
+def test_react_document2_resolution_contract_is_plan_with_complete_revision_shape() -> None:
+    task = agent_task().model_copy(
+        update={"required_output_schema": "Document2ResolutionPlan"},
+        deep=True,
+    )
+    client = RecordingModelClient(
+        [
+            {
+                "is_complete": True,
+                "completion_reason": "captured",
+                "final_payload": {
+                    "expectation_id": "exp_resolution",
+                    "decision": "resolved",
+                    "decisions": [
+                        {
+                            "objection_id": "obj_resolution",
+                            "finding_id": None,
+                            "decision": "resolved",
+                            "resolution_note": "Existing evidence resolves this objection.",
+                            "changed_paths": ["document.market_view"],
+                            "evidence_refs": [],
+                        }
+                    ],
+                    "target_finding_ids": [],
+                    "revised_candidate": None,
+                    "evidence_requests": [],
+                    "unresolved_finding_ids": [],
+                    "unresolved_reason": None,
+                    "rationale": "Resolution plan.",
+                },
+            }
+        ]
+    )
+    runner = ModelGatewayAgentRunner(
+        model_gateway=ModelGateway(client),
+        tool_registry=default_tool_registry(),
+        tool_mode="mock",
+    )
+
+    result = runner.run(task)
+
+    assert result.status is ResultStatus.SUCCEEDED
+    prompt = json.loads(client.requests[0].messages[-1].content)
+    contract = prompt["output_contract"]["Document2ResolutionPlan"]
+    contract_json = json.dumps(contract, ensure_ascii=False)
+    assert contract["final_payload"]["revised_candidate"] is None
+    assert "proposed_patches" not in contract["final_payload"]
+    assert "revised_candidate_shape_when_needed" in contract
+    assert "price_reaction" in contract_json
+    assert "variable_id" in contract_json
+    assert "event_monitoring_direction" in contract_json
+    rules = " ".join(contract["rules"])
+    assert "proposed_patches" in rules
+    assert "list-wrapped" in rules
+    assert "multiple revised candidates" in rules
 
 
 def test_react_normalizes_output_delegations_for_expectation_construction() -> None:

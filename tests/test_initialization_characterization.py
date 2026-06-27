@@ -1,5 +1,7 @@
+import time
 from importlib import import_module
 
+from doxagent.agents import AgentRunner
 from doxagent.models import (
     AgentName,
     AgentResult,
@@ -17,9 +19,11 @@ from doxagent.models import (
     PatchOperation,
     ResearchSection,
     ResultStatus,
+    TaskType,
     ToolCallSummary,
     ValidationStatus,
 )
+from doxagent.settings import DoxAgentSettings
 from doxagent.workflows import (
     INITIALIZATION_NODES,
     BlackboardInitializationWorkflow,
@@ -473,6 +477,7 @@ def test_generate_expectation_details_exports_candidate_revisions_not_o1_patches
         for task in detail_tasks
     )
     assert all(task.permissions.writable_targets == [] for task in detail_tasks)
+    assert all(task.permissions.can_propose_patch is False for task in detail_tasks)
 
     revision_entries = result.checkpoint.metadata["document2_pending_revisions"]
     assert len(revision_entries) == 2
@@ -707,6 +712,20 @@ def test_resolve_objections_uses_resolution_plan_and_transaction_audit() -> None
     ]
     assert resolver_tasks
     assert all(task.required_output_schema == "Document2ResolutionPlan" for task in resolver_tasks)
+    assert all(task.permissions.writable_targets == [] for task in resolver_tasks)
+    assert all(task.permissions.can_propose_patch is False for task in resolver_tasks)
+    assert all(
+        task.input_context["internal_task_skill_ids"] == ["document2-resolution-plan"]
+        for task in resolver_tasks
+    )
+    assert all(
+        task.input_context["react_runtime_budget"]["max_steps"] == 1
+        for task in resolver_tasks
+    )
+    assert all(
+        task.input_context["react_runtime_budget"]["max_tool_call_batches"] == 0
+        for task in resolver_tasks
+    )
     assert result.summary.unresolved_objection_count == 0
     assert result.summary.blocking_delegation_count == 0
 
@@ -731,6 +750,55 @@ def test_resolve_objections_uses_resolution_plan_and_transaction_audit() -> None
         for entry in run.working_memory
         if entry.content_type == "document2_transaction_audit"
     ]
+
+
+def test_serial_o1_resolver_timeout_writes_blocking_dispatch_checkpoint() -> None:
+    class SlowResolverRunner(AgentRunner):
+        def run(self, task: AgentTask) -> AgentResult:
+            time.sleep(0.05)
+            return AgentResult(
+                task_id=task.task_id,
+                agent_name=task.agent_name,
+                status=ResultStatus.SUCCEEDED,
+                payload={"structured": {"late": True}},
+            )
+
+    workflow = BlackboardInitializationWorkflow(
+        execution_mode="agent_runner",
+        runner=SlowResolverRunner(),
+        settings=DoxAgentSettings(model_request_timeout_seconds=0.01),
+    )
+    run = workflow.blackboard.start_run("NVDA", AgentName.SYSTEM)
+    checkpoint = WorkflowCheckpoint(run_id=run.run_id, ticker="NVDA")
+
+    result = workflow._run_agent(
+        checkpoint,
+        WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS,
+        AgentName.O1_EXPECTATION_OWNER,
+        TaskType.REVIEW_EXPECTATION_FIELD,
+        "Document2ResolutionPlan",
+    )
+
+    assert result.status is ResultStatus.FAILED
+    assert result.error is not None
+    assert result.error.code == "workflow_agent_timeout"
+    assert result.error.retryable is False
+    assert result.error.details == {
+        "workflow_node": WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS.value,
+        "agent_name": AgentName.O1_EXPECTATION_OWNER.value,
+        "task_type": TaskType.REVIEW_EXPECTATION_FIELD.value,
+        "required_output_schema": "Document2ResolutionPlan",
+        "timeout_seconds": 0.01,
+    }
+    saved = workflow.checkpoint_repository.get_latest(run.run_id)
+    dispatch = saved.metadata["serial_agent_dispatch"]
+    assert dispatch["status"] == "failed"
+    assert dispatch["workflow_node"] == WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS.value
+    assert dispatch["agent_name"] == AgentName.O1_EXPECTATION_OWNER.value
+    assert dispatch["task_type"] == TaskType.REVIEW_EXPECTATION_FIELD.value
+    assert dispatch["required_output_schema"] == "Document2ResolutionPlan"
+    assert dispatch["timeout_seconds"] == 0.01
+    assert dispatch["error_code"] == "workflow_agent_timeout"
 
 
 def test_resolution_transaction_retains_numeric_blocker_when_revalidation_fails() -> None:

@@ -3,6 +3,8 @@
 
 from doxagent.workflows.initialization.shared import *
 
+_SERIAL_AGENT_DISPATCH_KEY = "serial_agent_dispatch"
+
 
 class InitializationAgentDispatchMixin:
     def _run_agent(
@@ -17,6 +19,7 @@ class InitializationAgentDispatchMixin:
         audit_failures: bool = True,
         validate_output: bool = True,
         retry_on_retryable_failure: bool = True,
+        workflow_watchdog: bool = True,
     ) -> AgentResult:
         definition = self.registry.get(agent_name)
         permissions = self._effective_permissions(
@@ -100,11 +103,26 @@ class InitializationAgentDispatchMixin:
             return result
 
         task = build_task()
-        result = run_task(task)
+        result = self._run_serial_agent_task(
+            checkpoint,
+            node,
+            task,
+            run_task,
+            workflow_watchdog=workflow_watchdog,
+        )
         if retry_on_retryable_failure and self._is_retryable_agent_result_failure(result):
             first_failure = result
             task = build_task(retry_attempt=1, previous_failure=first_failure)
-            result = self._with_retry_audit(run_task(task), first_failure)
+            result = self._with_retry_audit(
+                self._run_serial_agent_task(
+                    checkpoint,
+                    node,
+                    task,
+                    run_task,
+                    workflow_watchdog=workflow_watchdog,
+                ),
+                first_failure,
+            )
         if result.status is ResultStatus.FAILED:
             event_code = self._agent_failure_event_code(result)
             if audit_failures and event_code in {"parse_failed", "schema_failed"}:
@@ -216,6 +234,136 @@ class InitializationAgentDispatchMixin:
             audit_failures=False,
             validate_output=False,
             retry_on_retryable_failure=False,
+            workflow_watchdog=False,
+        )
+
+    def _run_serial_agent_task(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        node: WorkflowNode,
+        task: AgentTask,
+        run_task: Callable[[AgentTask], AgentResult],
+        *,
+        workflow_watchdog: bool,
+    ) -> AgentResult:
+        if not workflow_watchdog:
+            return run_task(task)
+        timeout_seconds = self._serial_agent_timeout_seconds(node, task)
+        running = self._serial_agent_dispatch_checkpoint(
+            checkpoint,
+            node,
+            task,
+            status="running",
+            timeout_seconds=timeout_seconds,
+        )
+        self._save_parallel_outcome_checkpoint(running)
+        result = self._run_agent_task_with_workflow_timeout(
+            task,
+            run_task,
+            timeout_seconds=timeout_seconds,
+        )
+        if result.status is ResultStatus.FAILED and result.error is not None:
+            failed = self._serial_agent_dispatch_checkpoint(
+                running,
+                node,
+                task,
+                status="failed",
+                timeout_seconds=timeout_seconds,
+                error_code=result.error.code,
+                error_message=result.error.message,
+            )
+            self._save_parallel_outcome_checkpoint(failed)
+        return result
+
+    def _run_agent_task_with_workflow_timeout(
+        self,
+        task: AgentTask,
+        run_task: Callable[[AgentTask], AgentResult],
+        *,
+        timeout_seconds: float,
+    ) -> AgentResult:
+        outcome_queue: Queue[tuple[str, AgentResult | BaseException]] = Queue(maxsize=1)
+
+        def worker() -> None:
+            try:
+                outcome_queue.put(("result", run_task(task)))
+            except BaseException as exc:
+                outcome_queue.put(("error", exc))
+
+        thread = threading.Thread(
+            target=worker,
+            name=f"doxagent-serial-{task.run_metadata.workflow_node}-{task.agent_name.value}",
+            daemon=True,
+        )
+        thread.start()
+        try:
+            kind, value = outcome_queue.get(timeout=max(0.001, timeout_seconds))
+        except Empty:
+            return AgentResult(
+                task_id=task.task_id,
+                agent_name=task.agent_name,
+                status=ResultStatus.FAILED,
+                error=AgentError(
+                    code="workflow_agent_timeout",
+                    message=(
+                        f"{task.run_metadata.workflow_node}/{task.agent_name.value} "
+                        f"exceeded workflow timeout {timeout_seconds:g} seconds."
+                    ),
+                    retryable=False,
+                    details={
+                        "workflow_node": task.run_metadata.workflow_node,
+                        "agent_name": task.agent_name.value,
+                        "task_type": task.task_type.value,
+                        "required_output_schema": task.required_output_schema,
+                        "timeout_seconds": timeout_seconds,
+                    },
+                ),
+            )
+        if kind == "error":
+            raise cast(BaseException, value)
+        return cast(AgentResult, value)
+
+    def _serial_agent_timeout_seconds(
+        self,
+        node: WorkflowNode,
+        task: AgentTask,
+    ) -> float:
+        if (
+            node is WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS
+            and task.agent_name is AgentName.O1_EXPECTATION_OWNER
+        ):
+            return min(120.0, float(self.settings.model_request_timeout_seconds))
+        return float(self.settings.workflow_agent_stale_after_seconds)
+
+    def _serial_agent_dispatch_checkpoint(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        node: WorkflowNode,
+        task: AgentTask,
+        *,
+        status: Literal["running", "failed"],
+        timeout_seconds: float,
+        error_code: str | None = None,
+        error_message: str | None = None,
+    ) -> WorkflowCheckpoint:
+        dispatch = {
+            "run_id": checkpoint.run_id,
+            "workflow_node": node.value,
+            "agent_name": task.agent_name.value,
+            "task_id": task.task_id,
+            "task_type": task.task_type.value,
+            "required_output_schema": task.required_output_schema,
+            "timeout_seconds": timeout_seconds,
+            "status": status,
+            "updated_at": datetime.now(UTC).isoformat(),
+        }
+        if error_code is not None:
+            dispatch["error_code"] = error_code
+        if error_message is not None:
+            dispatch["error_message"] = error_message
+        return checkpoint.model_copy(
+            update={"metadata": checkpoint.metadata | {_SERIAL_AGENT_DISPATCH_KEY: dispatch}},
+            deep=True,
         )
 
     def _effective_permissions(
@@ -240,6 +388,17 @@ class InitializationAgentDispatchMixin:
             updates["allowed_tools"] = node_agent_tools
         if node is WorkflowNode.GENERATE_GLOBAL_NARRATIVE_REPORT:
             updates["writable_targets"] = [DocumentType.GLOBAL_RESEARCH.value]
+        if (
+            agent_name is AgentName.O1_EXPECTATION_OWNER
+            and node
+            in {
+                WorkflowNode.GENERATE_EXPECTATION_DETAILS,
+                WorkflowNode.RESOLVE_EXPECTATION_CONSTRUCTION,
+                WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS,
+            }
+        ):
+            updates["can_propose_patch"] = False
+            updates["writable_targets"] = []
         if task_type is TaskType.GENERATE_EXPECTATION_UNIT:
             updates["writable_targets"] = []
         elif task_type is TaskType.GENERATE_EXPECTATION_DETAIL:
@@ -269,6 +428,9 @@ class InitializationAgentDispatchMixin:
             and task_type is TaskType.REVIEW_EXPECTATION_FIELD
         ):
             updates["writable_targets"] = [DocumentType.EXPECTATION_UNIT.value]
+            if agent_name is AgentName.O1_EXPECTATION_OWNER:
+                updates["can_propose_patch"] = False
+                updates["writable_targets"] = []
         return permissions.model_copy(update=updates, deep=True) if updates else permissions
 
     def _a1_allowed_tools_for_node(self, node: WorkflowNode) -> list[str]:

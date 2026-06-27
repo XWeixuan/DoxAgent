@@ -9,81 +9,85 @@ workflow_nodes = ["GenerateExpectationDetails"]
 +++
 # Expectation Detail
 
-You are working on one expectation unit only. Treat the existing expectation name, direction, and market view as the scope. Complete these sections:
+You are completing exactly one expectation unit from one existing expectation shell.
 
-III. Fulfilled facts
-IV. Key variables and current status
-V. Event forecasts / monitoring direction
+The current required output schema is `ExpectationDetailCandidateResult`.
 
-Use the current expectation unit, DoxAtlas narrative evidence, Document 1, and available price context. DoxAtlas remains important for market-side interpretation; Document 1 is used to clarify fundamentals, macro, industry, and price background.
-
-## III. Fulfilled facts
-
-Identify important facts that the market already knows and may have priced into this expectation.
-
-For each fact, explain:
-
-* what happened;
-* when it happened, if known;
-* why it matters to this expectation;
-* how the stock reacted, if price context is available;
-* whether the reaction suggests the fact is already priced in, only partly priced in, or still has incremental room.
-
-Focus on facts that shaped the current expectation. Do not list every related news item.
-
-End this section with a short judgement:
-
-* what the market appears to have priced in;
-* what may already be fully reflected;
-* what still has room to change the expectation.
-
-If price reaction evidence is missing or unclear, state the uncertainty and leave room for O4 review.
-
-## IV. Key variables and current status
-
-Identify the variables that will determine whether this expectation is confirmed, weakened, or overturned.
-
-Cover:
-
-* important historical facts behind the expectation;
-* current real-world variables;
-* current status of each variable;
-* what is relatively certain;
-* what remains unresolved;
-* relevant fundamental or industry judgement from Document 1.
-
-Keep the section focused on this expectation unit. Do not write general company background.
-
-## V. Event forecasts / monitoring direction
-
-Translate the expectation into future monitoring logic.
-
-Return `event_monitoring_direction` exactly as:
+You must return one JSON final_payload shaped as:
 
 ```json
 {
-  "known_event_notice": "short note about known upcoming dates or no fixed date",
-  "positive_events": ["specific monitorable event that strengthens this expectation"],
-  "negative_events": ["specific monitorable event that weakens this expectation"]
+  "candidate": {
+    "document_id": "doc_<id>",
+    "document_type": "expectation_unit",
+    "ticker": "<ticker>",
+    "created_at": "ISO-8601 timestamp",
+    "updated_at": null,
+
+    "expectation_id": "exactly the same as expectation_shell.expectation_id",
+    "expectation_name": "exactly the same as expectation_shell.expectation_name",
+    "direction": "exactly the same as expectation_shell.direction",
+    "why_it_matters": "exactly the same as expectation_shell.why_it_matters",
+    "market_view": {
+      "text": "exactly preserve or faithfully extend expectation_shell.market_view.text",
+      "summary": "exactly preserve or faithfully extend expectation_shell.market_view.summary",
+      "evidence_refs": [],
+      "author_agent": "O1",
+      "reviewer_agents": []
+    },
+
+    "realized_facts": [
+      {
+        "event_id": "event_<id>",
+        "event_time": "YYYY-MM-DD or null",
+        "description": "具体已发生事实：发生了什么、为什么影响该 expectation",
+        "evidence_refs": [],
+        "price_reaction": {
+          "price_change": "具体价格变化；如果没有可靠市场数据，写明证据不足，不要编造数字",
+          "price_pattern": "具体走势模式或 unknown_due_to_missing_market_data",
+          "interpretation": "该反应说明市场已 price in、partly priced in，或证据不足",
+          "evidence_refs": []
+        }
+      }
+    ],
+
+    "realized_facts_summary": "简短总结哪些事实已被市场知道、哪些可能已 price in、哪些仍不确定",
+
+    "key_variables": [
+      {
+        "variable_id": "variable_<id>",
+        "name": "具体变量名",
+        "current_status": "当前状态，必须具体，不要泛泛写 commercialization / deployment / demand",
+        "certainty": "high | medium | low | unknown",
+        "evidence_refs": []
+      }
+    ],
+
+    "event_monitoring_direction": {
+      "known_event_notice": "已知后续日期/事件；如无固定日期，明确写 no fixed known date",
+      "positive_events": [
+        "具体、可监测、会强化该 expectation 的事件触发条件"
+      ],
+      "negative_events": [
+        "具体、可监测、会削弱或推翻该 expectation 的事件触发条件"
+      ]
+    }
+  },
+  "evidence_refs": [],
+  "delegations": [],
+  "unknowns": [],
+  "rationale": "简短说明如何从 shell、Document1 context、DoxAtlas evidence 和 price context 完成该 candidate"
 }
 ```
 
-Cover three types of events in that shape:
+## Rules
 
-1. Known upcoming events
-   Events already visible on the calendar or likely to occur. Explain the possible positive and negative interpretations.
-
-2. Positive events
-   Events that would strengthen the expectation if they occur.
-
-3. Negative events
-   Events that would weaken, delay, or overturn the expectation if they occur.
-
-Events should be monitorable through news, filings, earnings, guidance, orders, product progress, regulatory updates, industry data, macro data, or market discussion.
-
-Do not use generic placeholders such as "confirmed deployments, partnerships, or commercialization milestones" or "deployment delays, financing pressure, or insufficient commercialization evidence." Do not put objects or dictionaries inside `positive_events` or `negative_events`; each item must be a concise string trigger with enough detail to monitor.
-
-## Evidence standard
-
-Every major judgement should be grounded in available DoxAtlas evidence, Document 1, or price context.
-If evidence is insufficient, mark the point as uncertain instead of filling the gap with assumptions.
+1. Return exactly one `candidate`.
+2. Do not return `BlackboardPatch`, `proposed_patches`, `patches`, `changes`, `path_map`, partial update, or multiple candidates.
+3. Preserve `expectation_id`, `expectation_name`, `direction`, `why_it_matters`, and `market_view` from `expectation_shell`.
+4. `realized_facts` must not be empty. Each fact must include evidence_refs.
+5. `key_variables` must not be empty. Each variable must include evidence_refs.
+6. `event_monitoring_direction.positive_events` and `negative_events` must be lists of concrete strings, not objects and not generic placeholders.
+7. If market price evidence is unavailable, do not invent price numbers. State the uncertainty inside `price_reaction`.
+8. If evidence is weak, write the gap in `unknowns` and `rationale`; do not fill missing evidence with generic confidence.
+9. Do not add general company background that is not tied to this expectation.
