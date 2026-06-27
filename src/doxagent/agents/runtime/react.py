@@ -2033,7 +2033,6 @@ def _output_contract(required_output_schema: str, *, task: AgentTask | None = No
                         "realized_facts": [
                             {
                                 "event_id": "event_<id>",
-                                "event_time": "YYYY-MM-DD or null",
                                 "description": (
                                     "specific realized fact tied to this expectation"
                                 ),
@@ -2061,7 +2060,7 @@ def _output_contract(required_output_schema: str, *, task: AgentTask | None = No
                                 "variable_id": "variable_<id>",
                                 "name": "specific variable name",
                                 "current_status": "specific current status",
-                                "certainty": "high | medium | low | unknown",
+                                "certainty": "plain short certainty text",
                                 "evidence_refs": [],
                             }
                         ],
@@ -2155,7 +2154,6 @@ def _output_contract(required_output_schema: str, *, task: AgentTask | None = No
                     "realized_facts": [
                         {
                             "event_id": "event_<id>",
-                            "event_time": "YYYY-MM-DD or null",
                             "description": "complete realized fact",
                             "evidence_refs": [],
                             "price_reaction": {
@@ -2175,7 +2173,7 @@ def _output_contract(required_output_schema: str, *, task: AgentTask | None = No
                             "variable_id": "variable_<id>",
                             "name": "variable name",
                             "current_status": "current status",
-                            "certainty": "high | medium | low | unknown",
+                            "certainty": "plain short certainty text",
                             "evidence_refs": [],
                         }
                     ],

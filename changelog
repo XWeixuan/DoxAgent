@@ -280,3 +280,4 @@
 - Normalized Document2 resolution-plan `revised_candidate` final payloads into complete expectation documents before schema validation while preserving transaction-layer blocker revalidation.
 - Accepted single-item Document2 resolution-plan `revised_candidate` arrays as one candidate document, leaving multi-candidate resolution outputs invalid.
 - Tightened Document2 O1 runtime contracts for the remote smoke path by moving ReAct final-payload adapters out of the harness, making resolver/detail prompts emit complete canonical documents, disabling O1 patch write permissions in detail/resolver nodes, adding single-step resolver runtime budgets, and recording serial-agent timeout checkpoints.
+- Corrected Document2 prompt and ReAct output-contract examples so `ExpectationUnitDocument.realized_facts` strictly match the current `RealizedFact` Pydantic model, omitting unsupported `event_time` fields and treating `certainty` as plain short text.

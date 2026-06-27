@@ -75,7 +75,6 @@ When included, `revised_candidate` must be one complete `ExpectationUnitDocument
   "realized_facts": [
     {
       "event_id": "event_<id>",
-      "event_time": "YYYY-MM-DD or null",
       "description": "完整已发生事实",
       "evidence_refs": [],
       "price_reaction": {
@@ -93,7 +92,7 @@ When included, `revised_candidate` must be one complete `ExpectationUnitDocument
       "variable_id": "variable_<id>",
       "name": "变量名",
       "current_status": "当前状态",
-      "certainty": "high | medium | low | unknown",
+      "certainty": "普通短文本，说明确定性或证据缺口",
       "evidence_refs": []
     }
   ],

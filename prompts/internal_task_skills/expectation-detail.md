@@ -39,7 +39,6 @@ You must return one JSON final_payload shaped as:
     "realized_facts": [
       {
         "event_id": "event_<id>",
-        "event_time": "YYYY-MM-DD or null",
         "description": "具体已发生事实：发生了什么、为什么影响该 expectation",
         "evidence_refs": [],
         "price_reaction": {
@@ -58,7 +57,7 @@ You must return one JSON final_payload shaped as:
         "variable_id": "variable_<id>",
         "name": "具体变量名",
         "current_status": "当前状态，必须具体，不要泛泛写 commercialization / deployment / demand",
-        "certainty": "high | medium | low | unknown",
+        "certainty": "普通短文本，说明确定性或证据缺口",
         "evidence_refs": []
       }
     ],

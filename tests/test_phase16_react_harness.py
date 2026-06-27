@@ -1974,6 +1974,7 @@ def test_react_expectation_detail_candidate_contract_is_complete_document_not_pa
     contract_json = json.dumps(contract, ensure_ascii=False)
     assert "proposed_patches" not in contract["final_payload"]
     assert "patches" not in contract["final_payload"]
+    assert "event_time" not in contract_json
     assert "document_type" in contract["final_payload"]["candidate"]
     assert "price_reaction" in contract_json
     assert "variable_id" in contract_json
@@ -2121,6 +2122,7 @@ def test_react_document2_resolution_contract_is_plan_with_complete_revision_shap
     contract_json = json.dumps(contract, ensure_ascii=False)
     assert contract["final_payload"]["revised_candidate"] is None
     assert "proposed_patches" not in contract["final_payload"]
+    assert "event_time" not in contract_json
     assert "revised_candidate_shape_when_needed" in contract
     assert "price_reaction" in contract_json
     assert "variable_id" in contract_json
