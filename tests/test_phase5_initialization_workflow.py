@@ -1,8 +1,6 @@
 import threading
 import time
 
-import pytest
-
 from doxagent.agents import MockAgentRunner, default_agent_registry
 from doxagent.blackboard.state import BlackboardRun
 from doxagent.models import (
@@ -1124,7 +1122,7 @@ def test_promotion_commits_candidate_without_mutating_document_or_evidence_refs(
     assert next_checkpoint.metadata["document2_promotion_audits"][0]["status"] == "accepted"
 
 
-def test_promotion_blocks_unresolved_price_reaction_without_rewrite() -> None:
+def test_promotion_does_not_first_block_unreviewed_price_reaction_gap() -> None:
     workflow = BlackboardInitializationWorkflow(
         runner=ParallelStructuredInitializationRunner(),
         execution_mode="agent_runner",
@@ -1180,15 +1178,13 @@ def test_promotion_blocks_unresolved_price_reaction_without_rewrite() -> None:
         AgentName.O1_EXPECTATION_OWNER,
         expectation_id=document.expectation_id,
     ).model_copy(update={"evidence_refs": [market_evidence]}, deep=True)
-    before_after = patch.after
     run = workflow.blackboard.start_run("NVDA", AgentName.SYSTEM)
     checkpoint = WorkflowCheckpoint(run_id=run.run_id, ticker="NVDA", pending_patches=[patch])
 
-    with pytest.raises(WorkflowContractError, match="Document2 promotion blocked") as exc:
-        workflow._promote_pending_patches(
-            checkpoint,
-            WorkflowNode.PROMOTE_EXPECTATION_TO_BELIEF_STATE,
-        )
+    next_checkpoint = workflow._promote_pending_patches(
+        checkpoint,
+        WorkflowNode.PROMOTE_EXPECTATION_TO_BELIEF_STATE,
+    )
 
     current_run = workflow.blackboard.get_run(run.run_id)
     audits = [
@@ -1196,10 +1192,10 @@ def test_promotion_blocks_unresolved_price_reaction_without_rewrite() -> None:
         for entry in current_run.working_memory
         if entry.content_type == "document2_promotion_audit"
     ]
-    assert "schema_validation" in str(exc.value)
-    assert current_run.commit_log == []
-    assert checkpoint.pending_patches[0].after == before_after
-    assert audits[-1].payload["status"] == "rejected"
+    assert len(current_run.commit_log) == 1
+    assert current_run.commit_log[0].patch.after == patch.after
+    assert next_checkpoint.pending_patches == []
+    assert audits[-1].payload["status"] == "accepted"
 
 
 def test_numeric_value_detection_ignores_fiscal_years_and_product_generations() -> None:

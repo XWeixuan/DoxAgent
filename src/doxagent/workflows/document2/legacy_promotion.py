@@ -73,7 +73,7 @@ class Document2LegacyPromotionMixin:
         except ValueError as exc:
             raise WorkflowContractError(f"Document2 promotion candidate invalid: {exc}") from exc
 
-        blockers = self._document2_promotion_quality_blockers(candidate)
+        blockers = self._document2_promotion_runtime_blockers(checkpoint, candidate)
         try:
             validate_document2_promotion_candidate(candidate)
         except Document2PromotionBlockedError as exc:
@@ -145,21 +145,42 @@ class Document2LegacyPromotionMixin:
                 findings.append(finding)
         return findings
 
-    def _document2_promotion_quality_blockers(
+    def _document2_promotion_runtime_blockers(
         self,
-        candidate: Document2PromotionCandidate,
+        checkpoint: WorkflowCheckpoint,
+        _candidate: Document2PromotionCandidate,
     ) -> list[Document2PromotionBlocker]:
-        try:
-            self._validate_expectation_detail_quality(candidate.document)
-        except WorkflowContractError as exc:
-            return [
+        run = self.blackboard.get_run(checkpoint.run_id)
+        blockers: list[Document2PromotionBlocker] = []
+        unresolved_objections = [
+            objection for objection in run.objections if objection.is_unresolved
+        ]
+        if unresolved_objections:
+            blockers.append(
                 Document2PromotionBlocker(
-                    blocker_type="schema_validation",
+                    blocker_type="candidate_not_ready",
                     target_path="document",
-                    reason=str(exc),
+                    reason=(
+                        "Promotion requires all blocking objections to be resolved before "
+                        "the read-only gate."
+                    ),
                 )
-            ]
-        return []
+            )
+        blocking_delegations = [
+            delegation for delegation in run.delegations if delegation.is_blocking
+        ]
+        if blocking_delegations:
+            blockers.append(
+                Document2PromotionBlocker(
+                    blocker_type="candidate_not_ready",
+                    target_path="document",
+                    reason=(
+                        "Promotion requires all blocking delegations to be completed before "
+                        "the read-only gate."
+                    ),
+                )
+            )
+        return blockers
 
     def _submit_document2_promotion_patch(
         self,

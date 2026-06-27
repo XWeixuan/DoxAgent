@@ -11,6 +11,11 @@ from doxagent.workflows.document2.contracts import (
     EvidenceAssessment,
     ExpectationUnitCandidate,
 )
+from doxagent.workflows.document2.deterministic_findings import (
+    DETERMINISTIC_FINDING_SOURCE,
+    deterministic_findings_from_document,
+    deterministic_findings_from_patch,
+)
 from doxagent.workflows.document2.placeholders import (
     PLACEHOLDER_FINDING_SOURCE,
     placeholder_findings_from_document,
@@ -59,6 +64,7 @@ __all__ = [
     "DOCUMENT2_RESOLUTION_PLANS_KEY",
     "DOCUMENT2_TRANSACTION_AUDITS_KEY",
     "DOCUMENT2_CONSTRUCTION_TRANSACTION_AUDITS_KEY",
+    "DETERMINISTIC_FINDING_SOURCE",
     "PLACEHOLDER_FINDING_SOURCE",
     "document2_review_findings_from_agent_result",
     "Document2PromotionBlockedError",
@@ -70,6 +76,8 @@ __all__ = [
     "document2_resolution_plan_from_agent_result",
     "document2_revision_from_resolution_plan",
     "document2_transaction_audit",
+    "deterministic_findings_from_document",
+    "deterministic_findings_from_patch",
     "placeholder_findings_from_document",
     "placeholder_findings_from_patch",
     "placeholder_findings_from_patches",

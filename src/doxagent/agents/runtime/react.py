@@ -1947,7 +1947,7 @@ def _output_contract(required_output_schema: str, *, task: AgentTask | None = No
                     "rationale": "construction rationale",
                 },
                 "rules": [
-                    "Generate 2 to 3 differentiated expectation shells.",
+                    "Generate 1 to 3 differentiated expectation shells.",
                     "Do not include realized_facts, key_variables, or event_monitoring_direction.",
                     "Do not create Blackboard patches in this phase.",
                 ],
@@ -1999,8 +1999,9 @@ def _output_contract(required_output_schema: str, *, task: AgentTask | None = No
                         "placeholders and not objects."
                     ),
                     (
-                        "Every realized_fact and key_variable must include evidence_refs; "
-                        "price_reaction must be concrete, not unknown."
+                        "Every realized_fact and key_variable must include evidence_refs "
+                        "when available; if market price evidence is unavailable, state "
+                        "the uncertainty inside price_reaction and unknowns."
                     ),
                 ],
             }
@@ -2097,8 +2098,9 @@ def _output_contract(required_output_schema: str, *, task: AgentTask | None = No
                         "negative_events list[str]. Do not return known_upcoming_events."
                     ),
                     (
-                        "Every realized_fact and key_variable must include evidence_refs; "
-                        "price_reaction must be concrete, not unknown."
+                        "Every realized_fact and key_variable must include evidence_refs "
+                        "when available; if market price evidence is unavailable, state "
+                        "the uncertainty inside price_reaction and unknowns."
                     ),
                     (
                         "If market price evidence is unavailable, state the uncertainty "
@@ -4088,7 +4090,7 @@ def _normalize_expectation_shell_construction_payload(
         for item in shell_items
         if isinstance(item, dict)
     ]
-    if len(shells) < 2:
+    if not shells:
         seen_names = {str(item.get("expectation_name") or "").strip().lower() for item in shells}
         for fallback in _fallback_expectation_shells_from_global_research(task, payload):
             normalized = _normalize_expectation_shell_payload(
@@ -4101,7 +4103,7 @@ def _normalize_expectation_shell_construction_payload(
                 continue
             shells.append(normalized)
             seen_names.add(name_key)
-            if len(shells) >= 2:
+            if shells:
                 break
     if len(shells) > 3:
         shells = shells[:3]

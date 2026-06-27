@@ -7,10 +7,12 @@ from doxagent.workflows.document2.contracts import (
     Document2TransactionAudit,
     ExpectationUnitCandidate,
 )
+from doxagent.workflows.document2.deterministic_findings import (
+    deterministic_findings_from_patch,
+)
 from doxagent.workflows.document2.numeric_sanity import (
     numeric_sanity_findings_from_objections,
 )
-from doxagent.workflows.document2.placeholders import placeholder_findings_from_patches
 from doxagent.workflows.document2.review import (
     DOCUMENT2_REVIEW_FINDINGS_KEY,
     document2_review_findings_from_agent_result,
@@ -234,7 +236,7 @@ class Document2LegacyPipelineMixin:
         unresolved_objections: list[Objection],
     ) -> Document2TransactionAudit:
         try:
-            notes = validate_construction_resolution_transaction(
+            notes, changed_fields = validate_construction_resolution_transaction(
                 previous_shells=previous_shells,
                 revised=revised,
                 unresolved_objections=unresolved_objections,
@@ -267,6 +269,7 @@ class Document2LegacyPipelineMixin:
             revised=revised,
             status="accepted",
             closed_objection_ids=closed_ids,
+            changed_fields=changed_fields,
             notes=notes,
         )
         self._record_document2_construction_transaction_audit(checkpoint, audit)
@@ -889,10 +892,6 @@ class Document2LegacyPipelineMixin:
             raise WorkflowContractError(
                 "GenerateExpectationConstruction produced no expectation shells."
             )
-        if len(construction.shells) < 2:
-            raise WorkflowContractError(
-                "GenerateExpectationConstruction produced fewer than two expectation shells."
-            )
         if len(construction.shells) >= 4:
             raise WorkflowContractError(
                 "GenerateExpectationConstruction produced too many expectations."
@@ -928,7 +927,6 @@ class Document2LegacyPipelineMixin:
             )
         document = candidate_result.candidate
         self._validate_expectation_detail_candidate_identity(ticker, shell, document)
-        self._validate_expectation_detail_quality(document)
         return ExpectationUnitCandidate(
             document=document,
             source_agent=AgentName.O1_EXPECTATION_OWNER,
@@ -1094,7 +1092,7 @@ class Document2LegacyPipelineMixin:
             raise WorkflowContractError(
                 "GenerateExpectationDetails target does not match document."
             )
-        self._validate_expectation_detail_quality(document)
+        self._validate_expectation_detail_candidate_identity(ticker, shell, document)
 
     def _validate_expectation_detail_quality(self, document: ExpectationUnitDocument) -> None:
         if not document.realized_facts:
@@ -1315,20 +1313,42 @@ class Document2LegacyPipelineMixin:
         if first_error is not None:
             raise first_error
 
-        placeholder_findings = placeholder_findings_from_patches(checkpoint.pending_patches)
-        review_findings.extend(placeholder_findings)
+        deterministic_findings = [
+            finding
+            for patch in checkpoint.pending_patches
+            for finding in deterministic_findings_from_patch(patch)
+        ]
+        review_findings.extend(deterministic_findings)
+        placeholder_findings = [
+            finding
+            for finding in deterministic_findings
+            if any(
+                "deterministic_placeholder_detector" in item
+                for item in finding.supplemental_context
+            )
+        ]
         numeric_sanity_objections = self._numeric_sanity_review_objections(checkpoint)
         review_findings.extend(
             numeric_sanity_findings_from_objections(numeric_sanity_objections)
         )
         for objection in numeric_sanity_objections:
             self.blackboard.create_objection(checkpoint.run_id, objection)
+        source_less_blocking_finding_count = sum(
+            1
+            for finding in review_findings
+            if finding.blocks_promotion and finding.source_objection_id is None
+        )
+        review_findings = self._bridge_document2_blocking_findings_to_objections(
+            checkpoint,
+            review_findings,
+        )
 
         review_state: dict[str, Any] = {
             "primary_state": DOCUMENT2_REVIEW_FINDINGS_KEY,
             "finding_count": len(review_findings),
             "legacy_objection_bridge_count": len(numeric_sanity_objections)
-            + sum(len(result.objections) for result in results),
+            + sum(len(result.objections) for result in results)
+            + source_less_blocking_finding_count,
         }
         if placeholder_findings:
             review_state["placeholder_finding_count"] = len(placeholder_findings)

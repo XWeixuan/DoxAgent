@@ -117,7 +117,7 @@ def validate_construction_resolution_transaction(
     previous_shells: list[ExpectationShell],
     revised: ExpectationShellConstructionResult,
     unresolved_objections: list[Objection],
-) -> list[str]:
+) -> tuple[list[str], dict[str, list[str]]]:
     """Validate that construction objections may be closed by revised shells."""
 
     notes: list[str] = []
@@ -132,20 +132,29 @@ def validate_construction_resolution_transaction(
         )
 
     changed_shell_ids: list[str] = []
+    changed_fields: dict[str, list[str]] = {}
     for expectation_id, previous in previous_by_id.items():
         current = revised_by_id[expectation_id]
+        field_changes: list[str] = []
         if current.expectation_name != previous.expectation_name:
-            raise ValueError(
-                "Construction resolution cannot change expectation_name for "
-                f"{expectation_id}."
-            )
+            field_changes.append("expectation_name")
         if current.direction != previous.direction:
-            raise ValueError(
-                "Construction resolution cannot change direction for "
-                f"{expectation_id}."
-            )
+            field_changes.append("direction")
+        if current.why_it_matters != previous.why_it_matters:
+            field_changes.append("why_it_matters")
+        if current.market_view.model_dump(mode="json") != previous.market_view.model_dump(
+            mode="json"
+        ):
+            field_changes.append("market_view")
+        if current.evidence_refs != previous.evidence_refs:
+            field_changes.append("evidence_refs")
+        if current.unknowns != previous.unknowns:
+            field_changes.append("unknowns")
+        if current.rationale != previous.rationale:
+            field_changes.append("rationale")
         if current.model_dump(mode="json") != previous.model_dump(mode="json"):
             changed_shell_ids.append(expectation_id)
+            changed_fields[expectation_id] = field_changes or ["document"]
 
     if unresolved_objections and not changed_shell_ids:
         raise ValueError("Construction resolution cannot close blockers with an empty revision.")
@@ -166,7 +175,7 @@ def validate_construction_resolution_transaction(
         "closing construction objections."
     )
     notes.append("changed_shell_ids=" + ",".join(changed_shell_ids))
-    return notes
+    return notes, changed_fields
 
 
 def document2_construction_transaction_audit(
@@ -175,6 +184,7 @@ def document2_construction_transaction_audit(
     status: str,
     closed_objection_ids: list[str] | None = None,
     retained_objection_ids: list[str] | None = None,
+    changed_fields: dict[str, list[str]] | None = None,
     notes: list[str] | None = None,
 ) -> Document2TransactionAudit:
     return Document2TransactionAudit(
@@ -189,6 +199,7 @@ def document2_construction_transaction_audit(
         output_summary={
             "closed_objection_ids": list(closed_objection_ids or []),
             "retained_objection_ids": list(retained_objection_ids or []),
+            "changed_fields": changed_fields or {},
         },
         notes=list(notes or []),
     )

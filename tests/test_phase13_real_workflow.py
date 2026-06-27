@@ -1,10 +1,15 @@
 import os
 import time
+from typing import Any, cast
 
 import pytest
 
 from doxagent.agents import AgentRunner, default_agent_registry, default_real_agent_runner
-from doxagent.gateway import ProviderName
+from doxagent.gateway import (
+    BailianChatCompletionsModelClient,
+    BailianResponsesModelClient,
+    ProviderName,
+)
 from doxagent.models import (
     AgentError,
     AgentName,
@@ -450,7 +455,7 @@ def test_known_event_expectation_id_can_override_weak_model_linkage() -> None:
             },
         }
 
-    def mutate(state):
+    def mutate(state: Any) -> Any:
         bucket = state.belief_state.documents.setdefault(DocumentType.EXPECTATION_UNIT, {})
         bucket["expectation_mu_hbm_super_cycle"] = {
             "document": expectation_doc(
@@ -720,10 +725,12 @@ def test_default_real_runner_configures_dashscope_fallback_key(
     assert len(runner.model_gateway.fallbacks) == 1
     assert runner.default_provider is ProviderName.BAILIAN
     assert runner.default_model == "qwen3.7-plus"
-    assert runner.model_gateway.primary.enable_thinking is True
-    assert runner.model_gateway.primary.thinking_budget == 2000
-    assert runner.model_gateway.fallbacks[0].enable_thinking is True
-    assert runner.model_gateway.fallbacks[0].thinking_budget == 2000
+    primary = cast(BailianResponsesModelClient, runner.model_gateway.primary)
+    fallback = cast(BailianResponsesModelClient, runner.model_gateway.fallbacks[0])
+    assert primary.enable_thinking is True
+    assert primary.thinking_budget == 2000
+    assert fallback.enable_thinking is True
+    assert fallback.thinking_budget == 2000
 
 
 def test_default_real_runner_uses_dashscope_chat_endpoint_for_deepseek(
@@ -757,8 +764,9 @@ def test_default_real_runner_uses_dashscope_chat_endpoint_for_deepseek(
         {"api_key": "primary-key", "base_url": "https://chat.example.test/v1"}
     ]
     assert runner.default_model == "deepseek-v4-flash"
-    assert runner.model_gateway.primary.enable_thinking is True
-    assert runner.model_gateway.primary.thinking_budget == 2000
+    primary = cast(BailianChatCompletionsModelClient, runner.model_gateway.primary)
+    assert primary.enable_thinking is True
+    assert primary.thinking_budget == 2000
 
 
 def test_default_agent_allowed_tools_exist_in_real_registry() -> None:
@@ -775,16 +783,18 @@ def test_default_agent_allowed_tools_exist_in_real_registry() -> None:
     assert missing == set()
 
 
-def test_expectation_patch_count_requires_one_to_three() -> None:
+def test_expectation_detail_candidate_acceptance_rejects_identity_changes() -> None:
     workflow = BlackboardInitializationWorkflow(execution_mode="mock")
+    factory = InitializationMockResultFactory(include_blockers=False)
+    shell = factory._expectation_shell("NVDA")
     task = AgentTask.model_validate(
         {
             "task_id": "task_count",
             "ticker": "NVDA",
             "agent_name": AgentName.O1_EXPECTATION_OWNER,
             "task_type": "generate_expectation_detail",
-            "input_context": {},
-            "required_output_schema": "ExpectationDetailResult",
+            "input_context": {"expectation_shell": shell.model_dump(mode="json")},
+            "required_output_schema": "ExpectationDetailCandidateResult",
             "permissions": default_agent_registry()
             .get(AgentName.O1_EXPECTATION_OWNER)
             .runtime.to_permissions(),
@@ -796,23 +806,28 @@ def test_expectation_patch_count_requires_one_to_three() -> None:
             },
         }
     )
-    one_patch = InitializationMockResultFactory(include_blockers=False)(task)
+    result = factory(task)
+    candidate = workflow._expectation_unit_candidate_from_detail_result(
+        "NVDA",
+        shell,
+        result,
+    )
+    assert candidate.document.expectation_id == shell.expectation_id
 
-    workflow._validate_expectation_patches("NVDA", one_patch)
-
-    empty = one_patch.model_copy(update={"proposed_patches": []}, deep=True)
-    with pytest.raises(Exception, match="no expectation patches"):
-        workflow._validate_expectation_patches("NVDA", empty)
-
-    too_many = one_patch.model_copy(
-        update={"proposed_patches": one_patch.proposed_patches * 4},
+    bad_document = candidate.document.model_copy(
+        update={"expectation_id": "exp_changed"},
         deep=True,
     )
-    with pytest.raises(Exception, match="too many expectations"):
-        workflow._validate_expectation_patches("NVDA", too_many)
+    bad_payload = result.payload | {"candidate": bad_document.model_dump(mode="json")}
+    bad_result = result.model_copy(
+        update={"payload": bad_payload},
+        deep=True,
+    )
+    with pytest.raises(Exception, match="changed the construction expectation_id"):
+        workflow._expectation_unit_candidate_from_detail_result("NVDA", shell, bad_result)
 
 
-def test_expectation_detail_quality_rejects_empty_realized_facts() -> None:
+def test_expectation_detail_candidate_acceptance_defers_quality_findings() -> None:
     workflow = BlackboardInitializationWorkflow(execution_mode="mock")
     factory = InitializationMockResultFactory(include_blockers=False)
     shell = factory._expectation_shell("NVDA")
@@ -822,8 +837,8 @@ def test_expectation_detail_quality_rejects_empty_realized_facts() -> None:
             "ticker": "NVDA",
             "agent_name": AgentName.O1_EXPECTATION_OWNER,
             "task_type": "generate_expectation_detail",
-            "input_context": {},
-            "required_output_schema": "ExpectationDetailResult",
+            "input_context": {"expectation_shell": shell.model_dump(mode="json")},
+            "required_output_schema": "ExpectationDetailCandidateResult",
             "permissions": default_agent_registry()
             .get(AgentName.O1_EXPECTATION_OWNER)
             .runtime.to_permissions(),
@@ -836,15 +851,31 @@ def test_expectation_detail_quality_rejects_empty_realized_facts() -> None:
         }
     )
     result = factory(task)
-    patch = result.proposed_patches[0]
-    bad_patch = patch.model_copy(
-        update={"after": {**patch.after, "realized_facts": []}},
+    candidate = workflow._expectation_unit_candidate_from_detail_result(
+        "NVDA",
+        shell,
+        result,
+    )
+    quality_gap_document = candidate.document.model_copy(
+        update={"realized_facts": [], "key_variables": []},
         deep=True,
     )
-    bad_result = result.model_copy(update={"proposed_patches": [bad_patch]}, deep=True)
+    quality_gap_payload = result.payload | {
+        "candidate": quality_gap_document.model_dump(mode="json")
+    }
+    quality_gap_result = result.model_copy(
+        update={"payload": quality_gap_payload},
+        deep=True,
+    )
 
-    with pytest.raises(Exception, match="empty realized_facts"):
-        workflow._validate_expectation_detail_result("NVDA", shell, bad_result)
+    accepted = workflow._expectation_unit_candidate_from_detail_result(
+        "NVDA",
+        shell,
+        quality_gap_result,
+    )
+
+    assert accepted.document.realized_facts == []
+    assert accepted.document.key_variables == []
 
 
 def test_resolver_o1_has_no_tools_in_effective_permissions() -> None:
@@ -865,7 +896,7 @@ def test_resolver_o1_has_no_tools_in_effective_permissions() -> None:
     assert effective.allowed_tools == []
 
 
-def test_expectation_shell_construction_requires_two_to_three() -> None:
+def test_expectation_shell_construction_allows_one_to_three() -> None:
     workflow = BlackboardInitializationWorkflow(execution_mode="mock")
     factory = InitializationMockResultFactory(include_blockers=False)
     shell = factory._expectation_shell("NVDA")
@@ -887,8 +918,9 @@ def test_expectation_shell_construction_requires_two_to_three() -> None:
         evidence_refs=shell.evidence_refs,
     )
 
-    with pytest.raises(Exception, match="fewer than two expectation shells"):
-        workflow._validate_expectation_shells("NVDA", result)
+    construction = workflow._validate_expectation_shells("NVDA", result)
+
+    assert len(construction.shells) == 1
 
 
 def test_agent_runner_workflow_uses_module_integration_for_global_research() -> None:

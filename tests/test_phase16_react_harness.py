@@ -1104,7 +1104,7 @@ def test_react_normalizes_expectation_shell_construction_without_patches() -> No
     assert "proposed_patches" not in structured
 
 
-def test_react_expectation_shell_fallback_produces_two_axes() -> None:
+def test_react_expectation_shell_fallback_produces_allowed_shell_count() -> None:
     task = agent_task().model_copy(
         update={
             "required_output_schema": "ExpectationShellConstructionResult",
@@ -1139,9 +1139,9 @@ def test_react_expectation_shell_fallback_produces_two_axes() -> None:
 
     assert result.status is ResultStatus.SUCCEEDED
     shells = result.payload["structured"]["shells"]
-    assert len(shells) == 2
-    assert {shell["direction"] for shell in shells} == {"bullish", "bearish"}
-    assert len({shell["expectation_name"] for shell in shells}) == 2
+    assert 1 <= len(shells) <= 3
+    assert len({shell["expectation_name"] for shell in shells}) == len(shells)
+    assert all(shell["expectation_id"] for shell in shells)
 
 
 def test_react_normalizes_expectation_detail_to_single_patch() -> None:
@@ -1982,7 +1982,7 @@ def test_react_expectation_detail_candidate_contract_is_complete_document_not_pa
     assert "partial updates" in " ".join(contract["rules"])
 
 
-def test_react_normalizes_document2_resolution_revised_candidate_shape() -> None:
+def test_react_rejects_list_wrapped_document2_resolution_revised_candidate() -> None:
     evidence_ref = {
         "evidence_id": "evidence_resolution",
         "source_type": "agent_output",
@@ -2060,19 +2060,9 @@ def test_react_normalizes_document2_resolution_revised_candidate_shape() -> None
 
     result = runner.run(task)
 
-    assert result.status is ResultStatus.SUCCEEDED
-    structured = result.payload["structured"]
-    assert "evidence_refs" not in structured
-    candidate = structured["revised_candidate"]
-    assert candidate["document_id"]
-    assert candidate["ticker"] == task.ticker
-    assert candidate["created_at"]
-    assert candidate["expectation_id"] == "exp_resolution"
-    assert candidate["market_view"]["author_agent"] == task.agent_name.value
-    assert candidate["realized_facts"][0]["description"].startswith(
-        "fact: HBM qualification"
-    )
-    assert candidate["key_variables"][0]["name"] == "Customer ramp timing"
+    assert result.status is ResultStatus.FAILED
+    assert result.error is not None
+    assert "revised_candidate" in result.error.message
 
 
 def test_react_document2_resolution_contract_is_plan_with_complete_revision_shape() -> None:

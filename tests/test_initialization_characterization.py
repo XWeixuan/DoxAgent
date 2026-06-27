@@ -536,6 +536,40 @@ def test_generate_expectation_details_blocks_candidate_identity_change() -> None
     assert "changed the construction expectation_id" in result.error
 
 
+def test_generate_expectation_details_accepts_candidate_with_price_reaction_gap() -> None:
+    class PriceGapDetailRunner(StructuredInitializationRunner):
+        def _structured(self, task: AgentTask, direct: AgentResult) -> AgentResult:
+            result = super()._structured(task, direct)
+            if task.required_output_schema != "ExpectationDetailCandidateResult":
+                return result
+            structured = dict(result.payload["structured"])
+            candidate = dict(structured["candidate"])
+            facts = [dict(item) for item in candidate["realized_facts"]]
+            reaction = dict(facts[0]["price_reaction"])
+            reaction["price_change"] = "unknown_due_to_missing_market_data"
+            reaction["price_pattern"] = "unknown_due_to_missing_market_data"
+            reaction["interpretation"] = "Market-data evidence is not yet available."
+            facts[0]["price_reaction"] = reaction
+            candidate["realized_facts"] = facts
+            structured["candidate"] = candidate
+            structured["unknowns"] = ["Market price reaction evidence is unavailable."]
+            return result.model_copy(
+                update={"payload": result.payload | {"structured": structured}},
+                deep=True,
+            )
+
+    workflow = BlackboardInitializationWorkflow(
+        execution_mode="agent_runner",
+        runner=PriceGapDetailRunner(include_blockers=False),
+    )
+
+    result = workflow.run("NVDA", stop_after=WorkflowNode.GENERATE_EXPECTATION_DETAILS)
+
+    assert result.status is WorkflowRunStatus.RUNNING
+    assert result.error is None
+    assert result.checkpoint.metadata["document2_detail_state"]["revision_count"] == 2
+
+
 def test_review_expectation_fields_records_typed_findings_without_candidate_mutation() -> None:
     class FindingReviewRunner(StructuredInitializationRunner):
         def _structured(self, task: AgentTask, direct: AgentResult) -> AgentResult:
@@ -577,20 +611,30 @@ def test_review_expectation_fields_records_typed_findings_without_candidate_muta
     )
     assert all(entry["revision"]["review_finding_ids"] == [] for entry in revision_entries)
     findings = result.checkpoint.metadata[DOCUMENT2_REVIEW_FINDINGS_KEY]
-    assert {finding["expectation_id"] for finding in findings} == {
+    c1_findings = [
+        finding
+        for finding in findings
+        if finding["reason"] == "Fundamental evidence should be supplemented before promotion."
+    ]
+    assert {finding["expectation_id"] for finding in c1_findings} == {
         "exp_mock_core",
         "exp_mock_risk",
     }
-    assert all(finding["target_path"] == "market_view.text" for finding in findings)
+    assert all(finding["target_path"] == "market_view.text" for finding in c1_findings)
     assert all(
         finding["evidence_assessments"][0]["status"] == "insufficient"
-        for finding in findings
+        for finding in c1_findings
     )
-    assert result.checkpoint.metadata["document2_review_state"] == {
-        "primary_state": DOCUMENT2_REVIEW_FINDINGS_KEY,
-        "finding_count": 2,
-        "legacy_objection_bridge_count": 0,
-    }
+    assert all(
+        isinstance(finding["source_objection_id"], str)
+        for finding in c1_findings
+    )
+    assert result.checkpoint.metadata["document2_review_state"][
+        "primary_state"
+    ] == DOCUMENT2_REVIEW_FINDINGS_KEY
+    assert result.checkpoint.metadata["document2_review_state"][
+        "legacy_objection_bridge_count"
+    ] >= 2
 
     run = workflow.blackboard.get_run(result.checkpoint.run_id)
     review_entries = [
@@ -608,7 +652,7 @@ def test_review_expectation_fields_records_typed_findings_without_candidate_muta
     assert all(entry.payload["patch_ids"] == [] for entry in review_entries)
 
 
-def test_review_expectation_fields_adds_placeholder_typed_findings_without_objection() -> None:
+def test_review_expectation_fields_bridges_placeholder_findings_to_objections() -> None:
     class PlaceholderDetailRunner(StructuredInitializationRunner):
         def _structured(self, task: AgentTask, direct: AgentResult) -> AgentResult:
             result = super()._structured(task, direct)
@@ -645,10 +689,14 @@ def test_review_expectation_fields_adds_placeholder_typed_findings_without_objec
         "market_view.text"
     }
     assert all(finding["blocks_promotion"] is True for finding in placeholder_findings)
+    assert all(
+        isinstance(finding["source_objection_id"], str)
+        for finding in placeholder_findings
+    )
     assert result.checkpoint.metadata["document2_review_state"][
         "placeholder_finding_count"
     ] == 2
-    assert result.summary.unresolved_objection_count == 0
+    assert result.summary.unresolved_objection_count >= 2
 
 
 def test_review_expectation_fields_rejects_reviewer_patch_output() -> None:

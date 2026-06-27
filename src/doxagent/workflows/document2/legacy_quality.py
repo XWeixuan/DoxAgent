@@ -4,12 +4,25 @@
 from doxagent.workflows.document2.contracts import (
     Document2ResolutionDecisionRecord,
     Document2ResolutionPlan,
+    Document2ReviewFinding,
+    Document2Revision,
     Document2TransactionAudit,
+    ExpectationUnitCandidate,
+)
+from doxagent.workflows.document2.deterministic_findings import (
+    deterministic_findings_from_patch,
+)
+from doxagent.workflows.document2.numeric_sanity import (
+    numeric_sanity_findings_from_objections,
 )
 from doxagent.workflows.document2.resolver import (
     DOCUMENT2_RESOLUTION_PLANS_KEY,
     document2_resolution_plan_from_agent_result,
     resolution_plans_json,
+)
+from doxagent.workflows.document2.review import (
+    DOCUMENT2_REVIEW_FINDINGS_KEY,
+    review_findings_json,
 )
 from doxagent.workflows.document2.transaction import (
     DOCUMENT2_TRANSACTION_AUDITS_KEY,
@@ -20,6 +33,8 @@ from doxagent.workflows.document2.transaction import (
     validate_resolution_plan_for_transaction,
 )
 from doxagent.workflows.initialization.shared import *
+
+_DOCUMENT2_PENDING_REVISIONS_KEY = "document2_pending_revisions"
 
 
 class Document2LegacyQualityMixin:
@@ -628,7 +643,21 @@ class Document2LegacyQualityMixin:
                 checkpoint,
                 legacy_patch,
             )
+            self._record_document2_transaction_revision(
+                checkpoint,
+                revision,
+                legacy_patch,
+            )
             self._reopen_numeric_sanity_objections_after_o1_revision(checkpoint)
+            self._revalidate_document2_deterministic_findings_for_patch(
+                checkpoint,
+                legacy_patch,
+            )
+        elif before_patch is not None:
+            self._revalidate_document2_deterministic_findings_for_patch(
+                checkpoint,
+                before_patch,
+            )
 
         closed_ids: list[str] = []
         retained_ids: list[str] = []
@@ -694,6 +723,173 @@ class Document2LegacyQualityMixin:
                 return pending
         raise WorkflowContractError(
             "Document2 transaction revised an expectation that is not pending review."
+        )
+
+    def _record_document2_transaction_revision(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        revision: Document2Revision,
+        legacy_patch: BlackboardPatch,
+    ) -> None:
+        raw = checkpoint.metadata.get(_DOCUMENT2_PENDING_REVISIONS_KEY)
+        entries = [item for item in raw if isinstance(item, dict)] if isinstance(raw, list) else []
+        existing = next(
+            (
+                item
+                for item in entries
+                if item.get("expectation_id") == revision.expectation_id
+            ),
+            None,
+        )
+        order = int(existing.get("order", len(entries))) if existing is not None else len(entries)
+        candidate = ExpectationUnitCandidate(
+            document=revision.after,
+            source_agent=AgentName.SYSTEM,
+            evidence_refs=revision.evidence_refs,
+            unknowns=[],
+            rationale=revision.rationale,
+        )
+        entries = [
+            item
+            for item in entries
+            if item.get("expectation_id") != revision.expectation_id
+        ]
+        entries.append(
+            {
+                "workflow_node": WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS.value,
+                "order": order,
+                "expectation_id": revision.expectation_id,
+                "expectation_name": revision.after.expectation_name,
+                "candidate_id": candidate.candidate_id,
+                "candidate": candidate.model_dump(mode="json"),
+                "revision_id": revision.revision_id,
+                "revision": revision.model_dump(mode="json"),
+                "previous_revision_id": existing.get("revision_id")
+                if existing is not None
+                else None,
+                "legacy_patch_id": legacy_patch.patch_id,
+                "legacy_patch": legacy_patch.model_dump(mode="json"),
+                "primary_state": "document2_revision",
+                "legacy_pending_patch_derived": True,
+                "updated_by_transaction": True,
+                "updated_at": datetime.now(UTC).isoformat(),
+            }
+        )
+        entries.sort(key=lambda item: int(item.get("order", 0)))
+        checkpoint.metadata = checkpoint.metadata | {_DOCUMENT2_PENDING_REVISIONS_KEY: entries}
+
+    def _revalidate_document2_deterministic_findings_for_patch(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        patch: BlackboardPatch,
+    ) -> None:
+        numeric_objections = self._numeric_sanity_objections_for_patch(
+            checkpoint.ticker,
+            patch,
+        )
+        findings = [
+            *deterministic_findings_from_patch(patch),
+            *numeric_sanity_findings_from_objections(numeric_objections),
+        ]
+        if not findings:
+            return
+        for objection in numeric_objections:
+            self.blackboard.create_objection(checkpoint.run_id, objection)
+        findings = self._bridge_document2_blocking_findings_to_objections(
+            checkpoint,
+            findings,
+        )
+        self._merge_document2_review_findings_metadata(checkpoint, findings)
+
+    def _merge_document2_review_findings_metadata(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        findings: list[Document2ReviewFinding],
+    ) -> None:
+        if not findings:
+            return
+        raw = checkpoint.metadata.get(DOCUMENT2_REVIEW_FINDINGS_KEY, [])
+        current: list[Document2ReviewFinding] = []
+        if isinstance(raw, list):
+            for item in raw:
+                if not isinstance(item, dict):
+                    continue
+                try:
+                    current.append(Document2ReviewFinding.model_validate(item))
+                except ValueError:
+                    continue
+        by_key = {
+            self._document2_review_finding_key(finding): finding
+            for finding in current
+        }
+        for finding in findings:
+            by_key[self._document2_review_finding_key(finding)] = finding
+        checkpoint.metadata = checkpoint.metadata | {
+            DOCUMENT2_REVIEW_FINDINGS_KEY: review_findings_json(list(by_key.values()))
+        }
+
+    def _bridge_document2_blocking_findings_to_objections(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        findings: list[Document2ReviewFinding],
+    ) -> list[Document2ReviewFinding]:
+        bridged: list[Document2ReviewFinding] = []
+        for finding in findings:
+            if not finding.blocks_promotion or finding.source_objection_id is not None:
+                bridged.append(finding)
+                continue
+            objection = self.blackboard.create_objection(
+                checkpoint.run_id,
+                self._document2_objection_from_review_finding(checkpoint, finding),
+            )
+            bridged.append(
+                finding.model_copy(
+                    update={"source_objection_id": objection.objection_id},
+                    deep=True,
+                )
+            )
+        return bridged
+
+    def _document2_objection_from_review_finding(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        finding: Document2ReviewFinding,
+    ) -> Objection:
+        evidence_refs = self._dedupe_evidence_refs(
+            [
+                *finding.supplemental_evidence_refs,
+                *[
+                    ref
+                    for assessment in finding.evidence_assessments
+                    for ref in assessment.evidence_refs
+                ],
+            ]
+        )
+        return Objection(
+            objection_id=f"obj_d2finding_{finding.finding_id}",
+            source_agent=finding.reviewer_agent,
+            target=BlackboardTarget(
+                document_type=DocumentType.EXPECTATION_UNIT,
+                ticker=checkpoint.ticker,
+                expectation_id=finding.expectation_id,
+                field_path=finding.target_path,
+            ),
+            severity=ObjectionSeverity.BLOCKING,
+            reason=finding.reason,
+            evidence_refs=evidence_refs,
+            taxonomy="document2_review_finding",
+            dedupe_hash=self._document2_review_finding_key(finding),
+            target_path=finding.target_path,
+            status=ObjectionStatus.OPEN,
+        )
+
+    def _document2_review_finding_key(self, finding: Document2ReviewFinding) -> str:
+        return "|".join(
+            [
+                finding.expectation_id,
+                finding.target_path,
+                finding.reason[:180],
+            ]
         )
 
     def _document2_resolution_decision_retains_blocker(
