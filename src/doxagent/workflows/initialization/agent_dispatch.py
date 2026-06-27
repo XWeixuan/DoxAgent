@@ -1,6 +1,8 @@
 # ruff: noqa: F403,F405
 """Behavior-preserving mixin extracted from initialization.py."""
 
+import json
+
 from doxagent.workflows.initialization.shared import *
 
 _SERIAL_AGENT_DISPATCH_KEY = "serial_agent_dispatch"
@@ -332,7 +334,10 @@ class InitializationAgentDispatchMixin:
             node is WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS
             and task.agent_name is AgentName.O1_EXPECTATION_OWNER
         ):
-            return min(120.0, float(self.settings.model_request_timeout_seconds))
+            return min(
+                _O1_RESOLVER_TIMEOUT_SECONDS,
+                float(self.settings.model_request_timeout_seconds),
+            )
         return float(self.settings.workflow_agent_stale_after_seconds)
 
     def _serial_agent_dispatch_checkpoint(
@@ -356,6 +361,7 @@ class InitializationAgentDispatchMixin:
             "timeout_seconds": timeout_seconds,
             "status": status,
             "updated_at": datetime.now(UTC).isoformat(),
+            "input_context_stats": self._agent_task_input_context_stats(task),
         }
         if error_code is not None:
             dispatch["error_code"] = error_code
@@ -365,6 +371,18 @@ class InitializationAgentDispatchMixin:
             update={"metadata": checkpoint.metadata | {_SERIAL_AGENT_DISPATCH_KEY: dispatch}},
             deep=True,
         )
+
+    def _agent_task_input_context_stats(self, task: AgentTask) -> dict[str, int]:
+        rendered = json.dumps(
+            task.input_context,
+            ensure_ascii=True,
+            default=str,
+            separators=(",", ":"),
+        )
+        return {
+            "char_count": len(rendered),
+            "token_estimate": max(1, len(rendered) // 4),
+        }
 
     def _effective_permissions(
         self,

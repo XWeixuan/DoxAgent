@@ -1,5 +1,6 @@
 import threading
 import time
+from datetime import UTC, datetime
 
 from doxagent.agents import MockAgentRunner, default_agent_registry
 from doxagent.blackboard.state import BlackboardRun
@@ -17,6 +18,8 @@ from doxagent.models import (
     ObjectionStatus,
     ResearchSection,
     ResultStatus,
+    RunMetadata,
+    TaskType,
     new_id,
 )
 from doxagent.settings import DoxAgentSettings
@@ -912,6 +915,125 @@ def test_objection_resolution_batches_related_duplicates_with_cluster_context() 
         "obj_earnings_date_mismatch_patch2",
         "obj_earnings_date_mismatch_patch3",
     } in cluster_ids
+    assert context["root_cause_clusters"]
+    assert context["root_cause_clusters"][0]["root_cause_key"].startswith("root_cause:")
+    assert context["unresolved_objections"][0]["root_cause_key"].startswith("root_cause:")
+
+
+def test_objection_resolution_batches_semantic_root_causes() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        runner=ParallelStructuredInitializationRunner(),
+        execution_mode="agent_runner",
+    )
+    target = BlackboardTarget(
+        document_type=DocumentType.EXPECTATION_UNIT,
+        ticker="MU",
+        expectation_id="expectation_mu_001",
+        field_path="document",
+    )
+    evidence = EvidenceRef(
+        evidence_id="evidence_sec_quarter",
+        source_type=EvidenceSourceType.EXTERNAL_REPORT,
+        source_id="sec:company:MU",
+        title="SEC filing",
+        summary="FY2026 Q3 filing evidence.",
+        confidence=0.9,
+        citation_scope="sec_filing",
+    )
+
+    def objection(
+        objection_id: str,
+        *,
+        reason: str,
+        field_path: str = "realized_facts",
+    ) -> Objection:
+        return Objection(
+            objection_id=objection_id,
+            source_agent=AgentName.C3_INDUSTRY_RESEARCH,
+            target=target.model_copy(update={"field_path": field_path}),
+            severity=ObjectionSeverity.HIGH,
+            reason=reason,
+            evidence_refs=[evidence],
+            taxonomy="document2_review_finding",
+            target_path=field_path,
+        )
+
+    objections = [
+        objection(
+            "obj_temporal_001",
+            reason="当前日期为2026-06-28，6月24日财报已发布但仍被写成未来催化剂。",
+            field_path="event_monitoring_direction",
+        ),
+        objection(
+            "obj_fiscal_001",
+            reason="FY2026 Q2 label is wrong; the May quarter should be FY2026 Q3.",
+        ),
+        objection(
+            "obj_temporal_002",
+            reason="positive_events仍将已发生财报作为未来催化剂，需要改为已发布事实。",
+            field_path="event_monitoring_direction",
+        ),
+        objection(
+            "obj_other_001",
+            reason="The wording is too broad and needs a more concrete monitoring subject.",
+            field_path="market_view",
+        ),
+    ]
+
+    batch = workflow._next_objection_resolution_batch(objections)
+    context = workflow._objection_resolution_context(
+        WorkflowCheckpoint(run_id="run_semantic_batch", ticker="MU"),
+        batch,
+        total_unresolved=len(objections),
+    )
+
+    assert [item.objection_id for item in batch] == [
+        "obj_temporal_001",
+        "obj_temporal_002",
+    ]
+    assert {
+        item["root_cause_key"] for item in context["unresolved_objections"]
+    } == {"root_cause:temporal_event_state"}
+    assert context["root_cause_clusters"][0]["objection_count"] == 2
+
+
+def test_o1_resolution_context_uses_240_second_model_budget() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        runner=ParallelStructuredInitializationRunner(),
+        execution_mode="agent_runner",
+        settings=DoxAgentSettings(model_request_timeout_seconds=300),
+    )
+    context = workflow._objection_resolution_context(
+        WorkflowCheckpoint(run_id="run_resolver_budget", ticker="MU"),
+        [],
+        total_unresolved=0,
+    )
+
+    assert context["react_runtime_budget"]["model_request_timeout_seconds"] == 240.0
+    task = AgentTask(
+        task_id="task_resolver_budget",
+        ticker="MU",
+        agent_name=AgentName.O1_EXPECTATION_OWNER,
+        task_type=TaskType.REVIEW_EXPECTATION_FIELD,
+        input_context={},
+        required_output_schema="Document2ResolutionPlan",
+        permissions=workflow.registry.get(
+            AgentName.O1_EXPECTATION_OWNER
+        ).runtime.to_permissions(),
+        run_metadata=RunMetadata(
+            run_id="run_resolver_budget",
+            ticker="MU",
+            workflow_node=WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS.value,
+            created_at=datetime.now(UTC),
+        ),
+    )
+    assert (
+        workflow._serial_agent_timeout_seconds(
+            WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS,
+            task,
+        )
+        == 240.0
+    )
 
 
 def test_numeric_sanity_review_flags_doxatlas_only_market_precision() -> None:

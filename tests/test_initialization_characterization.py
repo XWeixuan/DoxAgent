@@ -847,6 +847,8 @@ def test_serial_o1_resolver_timeout_writes_blocking_dispatch_checkpoint() -> Non
     assert dispatch["required_output_schema"] == "Document2ResolutionPlan"
     assert dispatch["timeout_seconds"] == 0.01
     assert dispatch["error_code"] == "workflow_agent_timeout"
+    assert dispatch["input_context_stats"]["char_count"] > 0
+    assert dispatch["input_context_stats"]["token_estimate"] > 0
 
 
 def test_resolution_transaction_retains_numeric_blocker_when_revalidation_fails() -> None:

@@ -115,6 +115,7 @@ _WORKFLOW_AGENT_RESULTS_KEY = "workflow_agent_results"
 _WORKFLOW_AGENT_IDEMPOTENCY_KEY = "workflow_agent_idempotency"
 _EXPECTATION_DETAIL_STATUS_KEY = "expectation_detail_generation_status"
 _OBJECTION_RESOLUTION_BATCH_SIZE = 3
+_O1_RESOLVER_TIMEOUT_SECONDS = 240.0
 WorkflowExecutionMode = Literal["mock", "agent_runner"]
 
 
