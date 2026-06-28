@@ -2005,6 +2005,8 @@ class BlackboardInitializationWorkflow(
             return merged
         message = prefetch.error.message if prefetch.error is not None else "unknown error"
         self._write_working_memory(checkpoint, merged, "tool_prefetch_failed")
+        if self._payload_mentions_narrative_gap(result):
+            return result
         raise WorkflowContractError(
             f"tool_prefetch_failed: {node.value} required {tool_name}, but prefetch failed: "
             f"{message}"

@@ -25,7 +25,13 @@ from doxagent.models import (
     create_a2_retrieval_delegation,
     new_id,
 )
-from doxagent.tools import ToolRequest, default_tool_registry
+from doxagent.tools import (
+    ToolError,
+    ToolRegistry,
+    ToolRequest,
+    ToolResult,
+    default_tool_registry,
+)
 from doxagent.workflows import (
     BlackboardInitializationWorkflow,
     InitializationMockResultFactory,
@@ -536,6 +542,55 @@ class DetailMissingNarrativeToolRunner(RealizedO1A1A2Runner):
                 update={"payload": dict(result.payload) | {"runtime": "react"}},
                 deep=True,
             )
+        return result
+
+
+class FailingNarrativeReportClient:
+    def call(self, request: ToolRequest) -> ToolResult:
+        return ToolResult(
+            tool_name=request.tool_name,
+            status=ResultStatus.FAILED,
+            error=ToolError(
+                code="narrative_run_not_found",
+                message="Narrative research run not found",
+                retryable=False,
+            ),
+        )
+
+
+class ConstructionNarrativeGapRunner(RealizedO1A1A2Runner):
+    def __init__(self) -> None:
+        super().__init__(a2_has_evidence=True)
+        self.tool_registry = ToolRegistry()
+        self.tool_registry.register(
+            "doxa_get_narrative_report",
+            FailingNarrativeReportClient(),
+        )
+
+    def run(self, task: AgentTask) -> AgentResult:
+        result = super().run(task)
+        if (
+            task.run_metadata.workflow_node
+            == WorkflowNode.GENERATE_EXPECTATION_CONSTRUCTION.value
+            and task.agent_name is AgentName.O1_EXPECTATION_OWNER
+        ):
+            payload = dict(result.payload)
+            structured = dict(payload.get("structured") or {})
+            structured["unknowns"] = [
+                *[
+                    item
+                    for item in structured.get("unknowns", [])
+                    if isinstance(item, str)
+                ],
+                "DoxAtlas narrative report unavailable; narrative evidence gap recorded.",
+            ]
+            structured["rationale"] = (
+                "O1 generated construction shells while recording the DoxAtlas narrative "
+                "gap for later review."
+            )
+            payload["runtime"] = "react"
+            payload["structured"] = structured
+            return result.model_copy(update={"payload": payload}, deep=True)
         return result
 
 
@@ -1063,7 +1118,9 @@ def test_workflow_prefetches_missing_o1_detail_narrative_tool_evidence() -> None
     result = workflow.run("NVDA", stop_after=WorkflowNode.GENERATE_EXPECTATION_DETAILS)
     run = workflow.blackboard.get_run(result.checkpoint.run_id)
     detail_entries = [
-        entry for entry in run.working_memory if entry.content_type == "expectation_detail_result"
+        entry
+        for entry in run.working_memory
+        if entry.content_type == "expectation_detail_candidate_result"
     ]
 
     assert result.status is WorkflowRunStatus.RUNNING
@@ -1073,6 +1130,34 @@ def test_workflow_prefetches_missing_o1_detail_narrative_tool_evidence() -> None
     )
     assert detail_entries[0].payload["tool_calls"][0]["status"] == "succeeded"
     assert detail_entries[0].evidence_refs
+
+
+def test_workflow_allows_o1_construction_prefetch_gap_when_payload_records_gap() -> None:
+    runner = ConstructionNarrativeGapRunner()
+    workflow = BlackboardInitializationWorkflow(
+        runner=runner,
+        execution_mode="agent_runner",
+        auto_resolve_blockers=False,
+    )
+
+    result = workflow.run("SNDK", stop_after=WorkflowNode.GENERATE_EXPECTATION_CONSTRUCTION)
+    run = workflow.blackboard.get_run(result.checkpoint.run_id)
+    prefetch_failures = [
+        entry for entry in run.working_memory if entry.content_type == "tool_prefetch_failed"
+    ]
+    agent_results = [
+        entry for entry in run.working_memory if entry.content_type == "agent_result"
+    ]
+
+    assert result.status is WorkflowRunStatus.RUNNING
+    assert result.checkpoint.next_node is WorkflowNode.REVIEW_EXPECTATION_CONSTRUCTION
+    assert prefetch_failures
+    assert prefetch_failures[0].payload["tool_calls"][0]["status"] == "failed"
+    assert all(
+        tool_call.get("status") != "failed"
+        for entry in agent_results
+        for tool_call in entry.payload.get("tool_calls", [])
+    )
 
 
 def test_workflow_converts_direct_document_outputs_to_blackboard_patches() -> None:

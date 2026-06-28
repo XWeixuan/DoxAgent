@@ -30,7 +30,7 @@ docker compose run --rm -e DOXAGENT_RUN_REAL_API_TESTS=1 -e DOXAGENT_STORAGE_MOD
 
 | # | ticker | label | source_run_id | execution_run_id | status | reached node | expectation_unit_count | unresolved objections | blocking delegations | root cause / notes |
 |---|---|---|---|---|---|---|---:|---:|---:|---|
-| 1 | SNDK | pending |  |  |  |  |  |  |  |  |
+| 1 | SNDK | SNDK-1 | `run_d089267bf7f741ab8133255ac4904231` | `run_47204284a30e4f0eb293f707a0105a3d` | blocked | `GenerateExpectationConstruction` | 0 | 0 | 0 | Document1 completed and `document1_context_pack` was present. Document2 construction blocked before shells because `doxa_get_narrative_report` prefetch failed with `Narrative research run not found`. |
 | 2 | SNDK | pending |  |  |  |  |  |  |  |  |
 | 3 | SNDK | pending |  |  |  |  |  |  |  |  |
 | 4 | NVDA | pending |  |  |  |  |  |  |  |  |
@@ -48,11 +48,26 @@ docker compose run --rm -e DOXAGENT_RUN_REAL_API_TESTS=1 -e DOXAGENT_STORAGE_MOD
 - harness 合规性：收紧合同，不放宽 schema，不改 Document2，不改 promotion
 - targeted tests：`tests/test_document1_node_contract_matrix.py`、`tests/test_document2_node_contract_matrix.py`
 
+### Document2 narrative prefetch gap handling
+
+- blocker 所在节点：`GenerateExpectationConstruction`
+- 失败类型：tool/runtime prefetch 与 gap policy 冲突
+- root cause：Document2 O1 context 要求 `doxa_get_narrative_report`，同时声明 unavailable 时应记录 DoxAtlas narrative gap 后继续；orchestration 却在 prefetch 失败时无条件 hard fail，导致真实 ticker 没有 DoxAtlas narrative run 时无法进入 construction review / resolver。
+- 最小修复：失败预取写入 `tool_prefetch_failed` working memory；只有当 O1 payload 已在 `unknowns` 或 `rationale` 显式记录 DoxAtlas narrative gap 时才继续，否则仍按合同阻塞。
+- harness 合规性：不削弱 Pydantic schema validation，不新增 normalizer/adapter，不造 evidence，不放宽 promotion；该修复只让既有 gap policy 生效。
+- targeted tests：`tests/test_phase15_o1_a1_a2_realization.py -k "prefetch or construction_prefetch_gap"`、`tests/test_document1_node_contract_matrix.py`、`tests/test_document2_node_contract_matrix.py`、`tests/test_document2_expectation_units_smoke_script.py`
+
 ## 当前 targeted tests
 
 ```text
-tests/test_document1_node_contract_matrix.py tests/test_document2_node_contract_matrix.py tests/test_document2_expectation_units_smoke_script.py
-102 passed, 3 warnings in 11.62s
+uv run pytest -q tests/test_phase15_o1_a1_a2_realization.py -k "prefetch or construction_prefetch_gap"
+2 passed, 17 deselected, 3 warnings in 1.31s
+
+uv run pytest -p no:cacheprovider -q tests/test_document1_node_contract_matrix.py tests/test_document2_node_contract_matrix.py
+99 passed, 3 warnings in 11.11s
+
+uv run pytest -p no:cacheprovider -q tests/test_document2_expectation_units_smoke_script.py
+3 passed, 3 warnings in 1.27s
 ```
 
 ## 汇总
