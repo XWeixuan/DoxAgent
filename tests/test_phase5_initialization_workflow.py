@@ -31,6 +31,12 @@ from doxagent.workflows import (
     WorkflowNode,
     WorkflowRunStatus,
 )
+from doxagent.workflows.document2 import (
+    Document2FieldRepairResult,
+    Document2ResolutionDecisionRecord,
+    Document2ReviewFinding,
+)
+from doxagent.workflows.document2.review import DOCUMENT2_REVIEW_FINDINGS_KEY
 from doxagent.workflows.errors import WorkflowContractError
 
 
@@ -303,13 +309,57 @@ class ParallelStructuredInitializationRunner:
             if isinstance(item, dict) and isinstance(item.get("objection_id"), str)
         ] if isinstance(objections, list) else []
         objection_ids = [item["objection_id"] for item in objection_items]
+        repair_task = task.input_context.get("field_repair_task")
         expectation_id = "exp_mock_core"
+        task_id = "d2repair_mock"
+        field_family = "cross_field"
+        target_finding_ids: list[str] = []
+        if isinstance(repair_task, dict):
+            expectation_id = str(repair_task.get("expectation_id") or expectation_id)
+            task_id = str(repair_task.get("task_id") or task_id)
+            field_family = str(repair_task.get("field_family") or field_family)
+            raw_finding_ids = repair_task.get("finding_ids")
+            if isinstance(raw_finding_ids, list):
+                target_finding_ids = [str(item) for item in raw_finding_ids]
         if objection_items:
             target = objection_items[0].get("target")
             if isinstance(target, dict) and isinstance(target.get("expectation_id"), str):
                 expectation_id = target["expectation_id"]
+        if task.required_output_schema == "Document2ResolutionPlan":
+            structured = {
+                "expectation_id": expectation_id,
+                "decision": "resolved",
+                "decisions": [
+                    {
+                        "objection_id": objection_id,
+                        "finding_id": None,
+                        "decision": "resolved",
+                        "resolution_note": (
+                            "Mock O1 retry resolved this objection with supporting evidence."
+                        ),
+                        "changed_paths": ["expectation_unit.document"],
+                        "evidence_refs": [evidence.model_dump(mode="json")],
+                    }
+                    for objection_id in objection_ids
+                ],
+                "target_finding_ids": [],
+                "revised_candidate": None,
+                "evidence_requests": [],
+                "unresolved_finding_ids": [],
+                "unresolved_reason": None,
+                "rationale": "Mock O1 resolved field-review objections after retry.",
+            }
+            return AgentResult(
+                task_id=task.task_id,
+                agent_name=task.agent_name,
+                status=ResultStatus.SUCCEEDED,
+                payload={"runtime": "maf", "structured": structured},
+                evidence_refs=[evidence],
+            )
         structured = {
+            "task_id": task_id,
             "expectation_id": expectation_id,
+            "field_family": field_family,
             "decision": "resolved",
             "decisions": [
                 {
@@ -324,7 +374,11 @@ class ParallelStructuredInitializationRunner:
                 }
                 for objection_id in objection_ids
             ],
-            "target_finding_ids": [],
+            "target_finding_ids": target_finding_ids,
+            "realized_facts": None,
+            "key_variables": None,
+            "event_monitoring_direction": None,
+            "market_view": None,
             "revised_candidate": None,
             "evidence_requests": [],
             "unresolved_finding_ids": [],
@@ -349,6 +403,67 @@ class ParallelStructuredInitializationRunner:
             confidence=0.8,
             citation_scope="test.initialization.parallel",
         )
+
+
+def _document2_repair_checkpoint(
+    workflow: BlackboardInitializationWorkflow,
+    *,
+    ticker: str = "NVDA",
+) -> tuple[WorkflowCheckpoint, object, InitializationMockResultFactory]:
+    run = workflow.blackboard.start_run(ticker, AgentName.SYSTEM)
+    factory = InitializationMockResultFactory()
+    document = factory._expectation_unit(ticker)
+    patch = factory._document_patch(
+        document,
+        DocumentType.EXPECTATION_UNIT,
+        AgentName.O1_EXPECTATION_OWNER,
+        expectation_id=document.expectation_id,
+    )
+    checkpoint = WorkflowCheckpoint(
+        run_id=run.run_id,
+        ticker=ticker,
+        pending_patches=[patch],
+    )
+    return checkpoint, document, factory
+
+
+def _blocking_finding_with_objection(
+    workflow: BlackboardInitializationWorkflow,
+    checkpoint: WorkflowCheckpoint,
+    *,
+    expectation_id: str,
+    target_path: str,
+    reason: str,
+    target_paths: list[str] | None = None,
+) -> Document2ReviewFinding:
+    objection_id = new_id("obj")
+    finding = Document2ReviewFinding(
+        reviewer_agent=AgentName.C3_INDUSTRY_RESEARCH,
+        expectation_id=expectation_id,
+        target_path=target_path,
+        target_paths=target_paths or [target_path],
+        severity="blocking",
+        reason=reason,
+        source_objection_id=objection_id,
+    )
+    objection = Objection(
+        objection_id=objection_id,
+        source_agent=AgentName.C3_INDUSTRY_RESEARCH,
+        target=BlackboardTarget(
+            document_type=DocumentType.EXPECTATION_UNIT,
+            ticker=checkpoint.ticker,
+            expectation_id=expectation_id,
+            field_path=target_path,
+        ),
+        severity=ObjectionSeverity.BLOCKING,
+        reason=reason,
+        taxonomy="document2_review_finding",
+        target_path=target_path,
+        dedupe_hash=workflow._document2_review_finding_key(finding),
+        status=ObjectionStatus.OPEN,
+    )
+    workflow.blackboard.create_objection(checkpoint.run_id, objection)
+    return finding
 
 
 def test_initialization_workflow_runs_mock_ticker_to_completion() -> None:
@@ -388,6 +503,233 @@ def test_initialization_workflow_runs_mock_ticker_to_completion() -> None:
     assert "o2_monitoring_policy_review" in content_types
     assert run.objections[0].is_unresolved is False
     assert run.delegations[0].is_blocking is False
+
+
+def test_document2_field_repair_task_synthesis_preserves_single_field_findings() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        execution_mode="agent_runner",
+        runner=ParallelStructuredInitializationRunner(),
+    )
+    checkpoint, document, _ = _document2_repair_checkpoint(workflow)
+    findings = [
+        _blocking_finding_with_objection(
+            workflow,
+            checkpoint,
+            expectation_id=document.expectation_id,
+            target_path="key_variables[0].current_status",
+            reason="Current status needs stronger filing support.",
+        ),
+        _blocking_finding_with_objection(
+            workflow,
+            checkpoint,
+            expectation_id=document.expectation_id,
+            target_path="key_variables[0].certainty",
+            reason="Certainty overstates the evidence.",
+        ),
+    ]
+    checkpoint.metadata = {
+        DOCUMENT2_REVIEW_FINDINGS_KEY: [
+            finding.model_dump(mode="json") for finding in findings
+        ]
+    }
+    run = workflow.blackboard.get_run(checkpoint.run_id)
+
+    tasks = workflow._document2_field_repair_tasks(checkpoint, run.objections)
+
+    assert len(tasks) == 1
+    assert tasks[0].field_family == "key_variables"
+    assert tasks[0].finding_ids == [finding.finding_id for finding in findings]
+    assert [finding.reason for finding in tasks[0].findings] == [
+        finding.reason for finding in findings
+    ]
+    assert tasks[0].requires_full_candidate is False
+
+
+def test_document2_field_repair_task_synthesis_routes_multifield_to_cross_field() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        execution_mode="agent_runner",
+        runner=ParallelStructuredInitializationRunner(),
+    )
+    checkpoint, document, _ = _document2_repair_checkpoint(workflow)
+    finding = _blocking_finding_with_objection(
+        workflow,
+        checkpoint,
+        expectation_id=document.expectation_id,
+        target_path="document",
+        target_paths=["realized_facts", "event_monitoring_direction"],
+        reason="Realized facts and monitoring direction contradict each other.",
+    )
+    checkpoint.metadata = {
+        DOCUMENT2_REVIEW_FINDINGS_KEY: [finding.model_dump(mode="json")]
+    }
+    run = workflow.blackboard.get_run(checkpoint.run_id)
+
+    tasks = workflow._document2_field_repair_tasks(checkpoint, run.objections)
+
+    assert len(tasks) == 1
+    assert tasks[0].field_family == "cross_field"
+    assert tasks[0].requires_full_candidate is True
+    assert tasks[0].target_paths == [
+        "document",
+        "realized_facts",
+        "event_monitoring_direction",
+    ]
+
+
+def test_document2_field_repair_tasks_execute_cross_field_before_single_field() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        execution_mode="agent_runner",
+        runner=ParallelStructuredInitializationRunner(),
+    )
+    checkpoint, document, _ = _document2_repair_checkpoint(workflow)
+    cross_field = _blocking_finding_with_objection(
+        workflow,
+        checkpoint,
+        expectation_id=document.expectation_id,
+        target_path="document",
+        target_paths=["realized_facts", "event_monitoring_direction"],
+        reason="Cross-field consistency issue.",
+    )
+    single_field = _blocking_finding_with_objection(
+        workflow,
+        checkpoint,
+        expectation_id=document.expectation_id,
+        target_path="market_view.text",
+        reason="Market view lacks cited evidence.",
+    )
+    checkpoint.metadata = {
+        DOCUMENT2_REVIEW_FINDINGS_KEY: [
+            single_field.model_dump(mode="json"),
+            cross_field.model_dump(mode="json"),
+        ]
+    }
+    run = workflow.blackboard.get_run(checkpoint.run_id)
+
+    tasks = workflow._document2_field_repair_tasks(checkpoint, run.objections)
+
+    assert [task.field_family for task in tasks] == ["cross_field", "market_view"]
+
+
+def test_document2_field_repair_context_sets_family_specific_timeouts() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        execution_mode="agent_runner",
+        runner=ParallelStructuredInitializationRunner(),
+    )
+    checkpoint, document, _ = _document2_repair_checkpoint(workflow)
+    cross_field = _blocking_finding_with_objection(
+        workflow,
+        checkpoint,
+        expectation_id=document.expectation_id,
+        target_path="document",
+        target_paths=["realized_facts", "event_monitoring_direction"],
+        reason="Cross-field consistency issue.",
+    )
+    single_field = _blocking_finding_with_objection(
+        workflow,
+        checkpoint,
+        expectation_id=document.expectation_id,
+        target_path="market_view.text",
+        reason="Market view lacks cited evidence.",
+    )
+    checkpoint.metadata = {
+        DOCUMENT2_REVIEW_FINDINGS_KEY: [
+            single_field.model_dump(mode="json"),
+            cross_field.model_dump(mode="json"),
+        ]
+    }
+    run = workflow.blackboard.get_run(checkpoint.run_id)
+    tasks = workflow._document2_field_repair_tasks(checkpoint, run.objections)
+    cross_context = workflow._field_repair_context(checkpoint, tasks[0])
+    single_context = workflow._field_repair_context(checkpoint, tasks[1])
+
+    assert cross_context["react_runtime_budget"]["model_request_timeout_seconds"] == 480.0
+    assert single_context["react_runtime_budget"]["model_request_timeout_seconds"] == 240.0
+    task = AgentTask(
+        task_id="task_cross_field_budget",
+        ticker="NVDA",
+        agent_name=AgentName.O1_EXPECTATION_OWNER,
+        task_type=TaskType.REVIEW_EXPECTATION_FIELD,
+        input_context=cross_context,
+        required_output_schema="Document2FieldRepairResult",
+        permissions=workflow.registry.get(
+            AgentName.O1_EXPECTATION_OWNER
+        ).runtime.to_permissions(),
+        run_metadata=RunMetadata(
+            run_id=checkpoint.run_id,
+            ticker="NVDA",
+            workflow_node=WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS.value,
+            created_at=datetime.now(UTC),
+        ),
+    )
+    assert (
+        workflow._serial_agent_timeout_seconds(
+            WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS,
+            task,
+        )
+        == 480.0
+    )
+
+
+def test_document2_field_repair_transaction_revalidates_full_document_after_merge() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        execution_mode="agent_runner",
+        runner=ParallelStructuredInitializationRunner(),
+    )
+    checkpoint, document, factory = _document2_repair_checkpoint(workflow)
+    finding = _blocking_finding_with_objection(
+        workflow,
+        checkpoint,
+        expectation_id=document.expectation_id,
+        target_path="market_view.text",
+        reason="Market view needs stronger evidence linkage.",
+    )
+    evidence = factory._evidence(EvidenceSourceType.AGENT_OUTPUT)
+    revised_market_view = document.market_view.model_copy(
+        update={
+            "text": "Revised market view with clearer source linkage.",
+            "summary": "Revised market view.",
+            "evidence_refs": [evidence],
+        },
+        deep=True,
+    )
+    result = Document2FieldRepairResult(
+        task_id="d2repair_exp_mock_core_market_view",
+        expectation_id=document.expectation_id,
+        field_family="market_view",
+        decision="accepted",
+        decisions=[
+            Document2ResolutionDecisionRecord(
+                objection_id=finding.source_objection_id,
+                finding_id=finding.finding_id,
+                decision="accepted",
+                resolution_note="Updated market_view only.",
+                changed_paths=["document.market_view"],
+                evidence_refs=[evidence],
+            )
+        ],
+        target_finding_ids=[finding.finding_id],
+        market_view=revised_market_view,
+        rationale="Merge market_view field update.",
+    )
+    revalidated_documents: list[object] = []
+
+    def capture_revalidation(
+        _checkpoint: WorkflowCheckpoint,
+        patch: object,
+        *,
+        numeric_objections: list[Objection] | None = None,
+    ) -> list[Document2ReviewFinding]:
+        revalidated_documents.append(patch.after)
+        return []
+
+    workflow._document2_deterministic_findings_for_patch = capture_revalidation  # type: ignore[method-assign]
+
+    audit = workflow._apply_document2_field_repair_transaction(checkpoint, result)
+
+    assert audit.status == "accepted"
+    assert revalidated_documents
+    assert revalidated_documents[0]["market_view"]["text"] == revised_market_view.text
+    assert "realized_facts" in revalidated_documents[0]
 
 
 def test_initialization_workflow_enforces_document_order() -> None:
@@ -1547,13 +1889,29 @@ class StalledFirstObjectionBatchRunner:
             target = objection_items[0].get("target")
             if isinstance(target, dict) and isinstance(target.get("expectation_id"), str):
                 expectation_id = target["expectation_id"]
+        repair_task = task.input_context.get("field_repair_task")
+        task_id = "d2repair_mock"
+        field_family = "cross_field"
+        target_finding_ids: list[str] = []
+        if isinstance(repair_task, dict):
+            task_id = str(repair_task.get("task_id") or task_id)
+            field_family = str(repair_task.get("field_family") or field_family)
+            raw_finding_ids = repair_task.get("finding_ids")
+            if isinstance(raw_finding_ids, list):
+                target_finding_ids = [str(item) for item in raw_finding_ids]
         self.batches.append(objection_ids)
         if len(self.batches) == 1:
             structured = {
+                "task_id": task_id,
                 "expectation_id": expectation_id,
+                "field_family": field_family,
                 "decision": "deferred",
                 "decisions": [],
-                "target_finding_ids": [],
+                "target_finding_ids": target_finding_ids,
+                "realized_facts": None,
+                "key_variables": None,
+                "event_monitoring_direction": None,
+                "market_view": None,
                 "revised_candidate": None,
                 "evidence_requests": [],
                 "unresolved_finding_ids": [],
@@ -1562,7 +1920,9 @@ class StalledFirstObjectionBatchRunner:
             }
         else:
             structured = {
+                "task_id": task_id,
                 "expectation_id": expectation_id,
+                "field_family": field_family,
                 "decision": "resolved",
                 "decisions": [
                     {
@@ -1570,12 +1930,16 @@ class StalledFirstObjectionBatchRunner:
                         "finding_id": None,
                         "decision": "resolved",
                         "resolution_note": "Resolved after stalled sibling batch.",
-                        "changed_paths": ["expectation_unit.document"],
+                        "changed_paths": [f"document.{field_family}"],
                         "evidence_refs": [evidence.model_dump(mode="json")],
                     }
                     for objection_id in objection_ids
                 ],
-                "target_finding_ids": [],
+                "target_finding_ids": target_finding_ids,
+                "realized_facts": None,
+                "key_variables": None,
+                "event_monitoring_direction": None,
+                "market_view": None,
                 "revised_candidate": None,
                 "evidence_requests": [],
                 "unresolved_finding_ids": [],
@@ -1597,8 +1961,7 @@ def test_objection_resolver_continues_after_one_batch_stalls() -> None:
         runner=runner,
         execution_mode="agent_runner",
     )
-    run = workflow.blackboard.start_run("NVDA", AgentName.SYSTEM)
-    checkpoint = WorkflowCheckpoint(run_id=run.run_id, ticker="NVDA")
+    checkpoint, document, _ = _document2_repair_checkpoint(workflow)
     evidence = EvidenceRef(
         evidence_id=new_id("evidence"),
         source_type=EvidenceSourceType.AGENT_OUTPUT,
@@ -1608,15 +1971,16 @@ def test_objection_resolver_continues_after_one_batch_stalls() -> None:
         confidence=0.8,
         citation_scope="test.objection_resolution",
     )
-    target = BlackboardTarget(
-        document_type=DocumentType.EXPECTATION_UNIT,
-        ticker="NVDA",
-        expectation_id="exp_mock_core",
-        field_path="realized_facts",
-    )
-    for index in range(4):
+    field_paths = ["realized_facts", "market_view"]
+    for index, field_path in enumerate(field_paths):
+        target = BlackboardTarget(
+            document_type=DocumentType.EXPECTATION_UNIT,
+            ticker="NVDA",
+            expectation_id=document.expectation_id,
+            field_path=field_path,
+        )
         workflow.blackboard.create_objection(
-            run.run_id,
+            checkpoint.run_id,
             Objection(
                 objection_id=f"obj_batch_{index}",
                 source_agent=AgentName.C1_FUNDAMENTAL_RESEARCH,
@@ -1625,7 +1989,7 @@ def test_objection_resolver_continues_after_one_batch_stalls() -> None:
                 reason=f"Batch continuation objection {index}.",
                 evidence_refs=[evidence],
                 taxonomy=f"batch_continuation_{index}",
-                target_path="realized_facts",
+                target_path=field_path,
             ),
         )
 
@@ -1640,12 +2004,12 @@ def test_objection_resolver_continues_after_one_batch_stalls() -> None:
         raise AssertionError("Expected unresolved stalled objections to keep blocking.")
 
     assert runner.batches == [
-        ["obj_batch_0", "obj_batch_1", "obj_batch_2"],
-        ["obj_batch_3"],
+        ["obj_batch_0"],
+        ["obj_batch_1"],
     ]
     objections_by_id = {
         objection.objection_id: objection
-        for objection in workflow.blackboard.get_run(run.run_id).objections
+        for objection in workflow.blackboard.get_run(checkpoint.run_id).objections
     }
-    assert objections_by_id["obj_batch_3"].is_unresolved is False
+    assert objections_by_id["obj_batch_1"].is_unresolved is False
     assert objections_by_id["obj_batch_0"].is_unresolved is True

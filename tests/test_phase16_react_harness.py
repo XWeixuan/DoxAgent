@@ -2123,6 +2123,68 @@ def test_react_document2_resolution_contract_is_plan_with_complete_revision_shap
     assert "multiple revised candidates" in rules
 
 
+def test_react_document2_field_repair_contract_limits_single_field_output() -> None:
+    task = agent_task().model_copy(
+        update={
+            "agent_name": AgentName.O1_EXPECTATION_OWNER,
+            "task_type": TaskType.REVIEW_EXPECTATION_FIELD,
+            "required_output_schema": "Document2FieldRepairResult",
+            "input_context": {
+                "field_repair_task": {
+                    "task_id": "d2repair_exp_market_view",
+                    "expectation_id": "exp_ai_demand",
+                    "field_family": "market_view",
+                }
+            },
+        },
+        deep=True,
+    )
+    client = RecordingModelClient(
+        [
+            {
+                "is_complete": True,
+                "completion_reason": "field repaired",
+                "final_payload": {
+                    "task_id": "d2repair_exp_market_view",
+                    "expectation_id": "exp_ai_demand",
+                    "field_family": "market_view",
+                    "decision": "resolved",
+                    "decisions": [],
+                    "target_finding_ids": [],
+                    "realized_facts": None,
+                    "key_variables": None,
+                    "event_monitoring_direction": None,
+                    "market_view": None,
+                    "revised_candidate": None,
+                    "evidence_requests": [],
+                    "unresolved_finding_ids": [],
+                    "unresolved_reason": None,
+                    "rationale": "No content revision needed.",
+                },
+            }
+        ]
+    )
+    runner = ModelGatewayAgentRunner(
+        model_gateway=ModelGateway(client),
+        tool_registry=default_tool_registry(),
+        tool_mode="mock",
+    )
+
+    result = runner.run(task)
+
+    assert result.status is ResultStatus.SUCCEEDED
+    prompt = json.loads(client.requests[0].messages[-1].content)
+    contract = prompt["output_contract"]["Document2FieldRepairResult"]
+    examples_json = json.dumps(contract["typed_field_examples"], ensure_ascii=False)
+    assert contract["final_payload"]["revised_candidate"] is None
+    assert "event_time" not in examples_json
+    assert "price_reaction" in examples_json
+    rules = " ".join(contract["rules"])
+    assert "For field_family other than cross_field" in rules
+    assert "JSON Patch operations" in rules
+    assert "Do not include event_time" in rules
+
+
 def test_react_normalizes_output_delegations_for_expectation_construction() -> None:
     task = agent_task().model_copy(
         update={"required_output_schema": "ExpectationConstructionResult"},

@@ -6,6 +6,7 @@ from typing import Any
 
 from doxagent.models import AgentResult, Objection, ObjectionResolutionDecision
 from doxagent.workflows.document2.contracts import (
+    Document2FieldRepairResult,
     Document2ResolutionDecision,
     Document2ResolutionDecisionRecord,
     Document2ResolutionPlan,
@@ -27,6 +28,34 @@ def document2_resolution_plan_from_agent_result(
         payload,
         unresolved_objections=unresolved_objections,
     )
+
+
+def document2_field_repair_result_from_agent_result(
+    result: AgentResult,
+) -> Document2FieldRepairResult:
+    payload = _structured_payload(result)
+    forbidden = {
+        "patches",
+        "patch",
+        "proposed_patches",
+        "blackboard_patch",
+        "changes",
+        "path_map",
+        "json_patch",
+        "operations",
+    }
+    present = sorted(forbidden.intersection(payload))
+    if present:
+        raise WorkflowContractError(
+            "Document2 field repair output must be a typed field update, not "
+            f"arbitrary patch keys: {', '.join(present)}."
+        )
+    try:
+        return Document2FieldRepairResult.model_validate(payload)
+    except ValueError as exc:
+        raise WorkflowContractError(
+            f"Document2 field repair output failed schema validation: {exc}"
+        ) from exc
 
 
 def resolution_plans_json(plans: list[Document2ResolutionPlan]) -> list[dict[str, Any]]:

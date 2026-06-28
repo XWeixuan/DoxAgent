@@ -2,6 +2,8 @@
 """Behavior-preserving mixin extracted from initialization.py."""
 
 from doxagent.workflows.document2.contracts import (
+    Document2FieldRepairResult,
+    Document2FieldRepairTask,
     Document2ResolutionDecisionRecord,
     Document2ResolutionPlan,
     Document2ReviewFinding,
@@ -17,24 +19,29 @@ from doxagent.workflows.document2.numeric_sanity import (
 )
 from doxagent.workflows.document2.resolver import (
     DOCUMENT2_RESOLUTION_PLANS_KEY,
-    document2_resolution_plan_from_agent_result,
+    document2_field_repair_result_from_agent_result,
     resolution_plans_json,
 )
 from doxagent.workflows.document2.review import (
     DOCUMENT2_REVIEW_FINDINGS_KEY,
+    document2_review_finding_from_objection,
     review_findings_json,
 )
 from doxagent.workflows.document2.transaction import (
     DOCUMENT2_TRANSACTION_AUDITS_KEY,
+    document2_revision_from_field_repair_result,
     document2_revision_from_resolution_plan,
     document2_transaction_audit,
+    document2_transaction_audit_from_field_repair,
     legacy_patch_from_document2_revision,
     transaction_audits_json,
+    validate_field_repair_result_for_transaction,
     validate_resolution_plan_for_transaction,
 )
 from doxagent.workflows.initialization.shared import *
 
 _DOCUMENT2_PENDING_REVISIONS_KEY = "document2_pending_revisions"
+_DOCUMENT2_FIELD_REPAIR_RESULTS_KEY = "document2_field_repair_results"
 
 
 class Document2LegacyQualityMixin:
@@ -518,6 +525,7 @@ class Document2LegacyQualityMixin:
 
         results: list[AgentResult] = []
         resolution_plans: list[Document2ResolutionPlan] = []
+        field_repair_results: list[Document2FieldRepairResult] = []
         transaction_audits: list[Document2TransactionAudit] = []
         run = self.blackboard.get_run(checkpoint.run_id)
         for delegation in run.delegations:
@@ -550,71 +558,205 @@ class Document2LegacyQualityMixin:
         unresolved_objections = [
             objection for objection in run.objections if objection.is_unresolved
         ]
-        batch_index = 0
-        stalled_objection_ids: set[str] = set()
+        task_index = 0
+        stalled_task_ids: set[str] = set()
         while unresolved_objections:
-            pending_resolution_objections = [
-                objection
-                for objection in unresolved_objections
-                if objection.objection_id not in stalled_objection_ids
-            ]
-            if not pending_resolution_objections:
+            repair_tasks = self._document2_field_repair_tasks(
+                checkpoint,
+                unresolved_objections,
+                stalled_task_ids=stalled_task_ids,
+            )
+            if not repair_tasks:
                 break
-            batch_index += 1
-            batch = self._next_objection_resolution_batch(pending_resolution_objections)
-            batch_ids = {objection.objection_id for objection in batch}
+            task_index += 1
+            repair_task = repair_tasks[0]
+            task_objection_ids = set(repair_task.objection_ids)
             result = self._run_agent(
                 checkpoint,
                 node,
                 AgentName.O1_EXPECTATION_OWNER,
                 TaskType.REVIEW_EXPECTATION_FIELD,
-                "Document2ResolutionPlan",
-                extra_context=self._objection_resolution_context(
+                "Document2FieldRepairResult",
+                extra_context=self._field_repair_context(
                     checkpoint,
-                    batch,
-                    batch_index=batch_index,
+                    repair_task,
+                    task_index=task_index,
                     total_unresolved=len(unresolved_objections),
                 ),
             )
             self._write_working_memory(checkpoint, result, "objection_resolution_result")
             self._validate_agent_success(result, node, require_patches=False)
-            if result.proposed_patches:
-                raise WorkflowContractError(
-                    "O1 resolver must not return raw BlackboardPatch; return "
-                    "Document2ResolutionPlan with revised_candidate or proposed_revision."
-                )
-            plan = document2_resolution_plan_from_agent_result(
+            self._assert_no_proposed_patches(
                 result,
-                unresolved_objections=batch,
+                node,
+                "O1 resolver must return Document2FieldRepairResult with a typed field "
+                "update, or one complete revised_candidate only for cross_field tasks.",
             )
-            audit = self._apply_document2_resolution_transaction(checkpoint, plan)
-            resolution_plans.append(plan)
+            repair_result = document2_field_repair_result_from_agent_result(result)
+            self._validate_document2_field_repair_result_matches_task(
+                repair_result,
+                repair_task,
+            )
+            audit = self._apply_document2_field_repair_transaction(
+                checkpoint,
+                repair_result,
+            )
+            field_repair_results.append(repair_result)
             transaction_audits.append(audit)
+            self._sync_document2_resolver_metadata(
+                checkpoint,
+                resolution_plans=resolution_plans,
+                field_repair_results=field_repair_results,
+                transaction_audits=transaction_audits,
+            )
             self._complete_o1_revision_delegations(checkpoint, result)
             results.append(result)
             run = self.blackboard.get_run(checkpoint.run_id)
             unresolved_objections = [
                 objection for objection in run.objections if objection.is_unresolved
             ]
-            unresolved_batch_ids = {
+            unresolved_task_objection_ids = {
                 objection.objection_id
                 for objection in unresolved_objections
-                if objection.objection_id in batch_ids
+                if objection.objection_id in task_objection_ids
             }
-            if unresolved_batch_ids == batch_ids:
-                stalled_objection_ids.update(batch_ids)
+            if task_objection_ids and unresolved_task_objection_ids == task_objection_ids:
+                stalled_task_ids.add(repair_task.task_id)
 
         self._complete_o1_revision_delegations(checkpoint)
         run = self.blackboard.get_run(checkpoint.run_id)
-        checkpoint.metadata = checkpoint.metadata | {
-            DOCUMENT2_RESOLUTION_PLANS_KEY: resolution_plans_json(resolution_plans),
-            DOCUMENT2_TRANSACTION_AUDITS_KEY: transaction_audits_json(transaction_audits),
-        }
+        self._sync_document2_resolver_metadata(
+            checkpoint,
+            resolution_plans=resolution_plans,
+            field_repair_results=field_repair_results,
+            transaction_audits=transaction_audits,
+        )
         if any(objection.is_unresolved for objection in run.objections) or any(
             delegation.is_blocking for delegation in run.delegations
         ):
             raise WorkflowContractError("ResolveObjectionsAndDelegations left blockers unresolved.")
         return results
+
+    def _sync_document2_resolver_metadata(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        *,
+        resolution_plans: list[Document2ResolutionPlan],
+        field_repair_results: list[Document2FieldRepairResult],
+        transaction_audits: list[Document2TransactionAudit],
+    ) -> None:
+        checkpoint.metadata = checkpoint.metadata | {
+            DOCUMENT2_RESOLUTION_PLANS_KEY: resolution_plans_json(resolution_plans),
+            _DOCUMENT2_FIELD_REPAIR_RESULTS_KEY: [
+                item.model_dump(mode="json") for item in field_repair_results
+            ],
+            DOCUMENT2_TRANSACTION_AUDITS_KEY: transaction_audits_json(transaction_audits),
+        }
+
+    def _validate_document2_field_repair_result_matches_task(
+        self,
+        result: Document2FieldRepairResult,
+        task: Document2FieldRepairTask,
+    ) -> None:
+        if result.task_id != task.task_id:
+            raise WorkflowContractError(
+                "Document2 field repair result task_id does not match resolver task."
+            )
+        if result.expectation_id != task.expectation_id:
+            raise WorkflowContractError(
+                "Document2 field repair result expectation_id does not match resolver task."
+            )
+        if result.field_family != task.field_family:
+            raise WorkflowContractError(
+                "Document2 field repair result field_family does not match resolver task."
+            )
+        task_finding_ids = set(task.finding_ids)
+        if task_finding_ids and not set(result.target_finding_ids).issubset(task_finding_ids):
+            raise WorkflowContractError(
+                "Document2 field repair result references findings outside the task."
+            )
+
+    def _apply_document2_field_repair_transaction(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        result: Document2FieldRepairResult,
+    ) -> Document2TransactionAudit:
+        try:
+            validate_field_repair_result_for_transaction(result)
+        except ValueError as exc:
+            raise WorkflowContractError(str(exc)) from exc
+        before_patch = self._pending_expectation_patch_for_field_repair_result(
+            checkpoint,
+            result,
+        )
+        try:
+            revision = document2_revision_from_field_repair_result(
+                result,
+                before_patch=before_patch,
+            )
+        except ValueError as exc:
+            raise WorkflowContractError(str(exc)) from exc
+        revalidation_findings: list[Document2ReviewFinding] = []
+        if revision is not None:
+            legacy_patch = legacy_patch_from_document2_revision(
+                revision,
+                ticker=checkpoint.ticker,
+            )
+            self._validate_expectation_patch_list(checkpoint.ticker, [legacy_patch])
+            checkpoint.pending_patches = self._replace_pending_patch_from_transaction(
+                checkpoint,
+                legacy_patch,
+            )
+            self._record_document2_transaction_revision(
+                checkpoint,
+                revision,
+                legacy_patch,
+            )
+            self._reopen_numeric_sanity_objections_after_o1_revision(checkpoint)
+            revalidation_findings = self._revalidate_document2_deterministic_findings_for_patch(
+                checkpoint,
+                legacy_patch,
+            )
+        elif before_patch is not None:
+            revalidation_findings = self._revalidate_document2_deterministic_findings_for_patch(
+                checkpoint,
+                before_patch,
+            )
+
+        closed_ids: list[str] = []
+        retained_ids: list[str] = []
+        for decision in result.decisions:
+            objection_id = decision.objection_id
+            if objection_id is None:
+                continue
+            if self._document2_resolution_decision_retains_blocker(
+                checkpoint,
+                decision,
+                revalidation_findings=revalidation_findings,
+            ):
+                retained_ids.append(objection_id)
+                continue
+            self._apply_document2_objection_transition(
+                checkpoint,
+                decision,
+            )
+            closed_ids.append(objection_id)
+
+        status = "rejected" if retained_ids else "accepted"
+        audit = document2_transaction_audit_from_field_repair(
+            result,
+            status=status,
+            revision=revision,
+            closed_objection_ids=closed_ids,
+            retained_objection_ids=retained_ids,
+            notes=[
+                "O1 field repair output was merged through Document2 transaction layer.",
+                "O1 field repair decisions do not directly close Blackboard objections.",
+                "Deterministic full-document revalidation ran after the merge or review.",
+            ],
+        )
+        self._record_document2_transaction_audit(checkpoint, audit)
+        return audit
 
     def _apply_document2_resolution_transaction(
         self,
@@ -633,6 +775,7 @@ class Document2LegacyQualityMixin:
             plan,
             before_patch=before_patch,
         )
+        revalidation_findings: list[Document2ReviewFinding] = []
         if revision is not None:
             legacy_patch = legacy_patch_from_document2_revision(
                 revision,
@@ -649,12 +792,12 @@ class Document2LegacyQualityMixin:
                 legacy_patch,
             )
             self._reopen_numeric_sanity_objections_after_o1_revision(checkpoint)
-            self._revalidate_document2_deterministic_findings_for_patch(
+            revalidation_findings = self._revalidate_document2_deterministic_findings_for_patch(
                 checkpoint,
                 legacy_patch,
             )
         elif before_patch is not None:
-            self._revalidate_document2_deterministic_findings_for_patch(
+            revalidation_findings = self._revalidate_document2_deterministic_findings_for_patch(
                 checkpoint,
                 before_patch,
             )
@@ -668,6 +811,7 @@ class Document2LegacyQualityMixin:
             if self._document2_resolution_decision_retains_blocker(
                 checkpoint,
                 decision,
+                revalidation_findings=revalidation_findings,
             ):
                 retained_ids.append(objection_id)
                 continue
@@ -701,6 +845,19 @@ class Document2LegacyQualityMixin:
             if (
                 patch.target.document_type is DocumentType.EXPECTATION_UNIT
                 and patch.target.expectation_id == plan.expectation_id
+            ):
+                return patch
+        return None
+
+    def _pending_expectation_patch_for_field_repair_result(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        result: Document2FieldRepairResult,
+    ) -> BlackboardPatch | None:
+        for patch in checkpoint.pending_patches:
+            if (
+                patch.target.document_type is DocumentType.EXPECTATION_UNIT
+                and patch.target.expectation_id == result.expectation_id
             ):
                 return patch
         return None
@@ -782,17 +939,15 @@ class Document2LegacyQualityMixin:
         self,
         checkpoint: WorkflowCheckpoint,
         patch: BlackboardPatch,
-    ) -> None:
-        numeric_objections = self._numeric_sanity_objections_for_patch(
-            checkpoint.ticker,
+    ) -> list[Document2ReviewFinding]:
+        numeric_objections = self._numeric_sanity_objections_for_patch(checkpoint.ticker, patch)
+        findings = self._document2_deterministic_findings_for_patch(
+            checkpoint,
             patch,
+            numeric_objections=numeric_objections,
         )
-        findings = [
-            *deterministic_findings_from_patch(patch),
-            *numeric_sanity_findings_from_objections(numeric_objections),
-        ]
         if not findings:
-            return
+            return []
         for objection in numeric_objections:
             self.blackboard.create_objection(checkpoint.run_id, objection)
         findings = self._bridge_document2_blocking_findings_to_objections(
@@ -800,6 +955,24 @@ class Document2LegacyQualityMixin:
             findings,
         )
         self._merge_document2_review_findings_metadata(checkpoint, findings)
+        return findings
+
+    def _document2_deterministic_findings_for_patch(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        patch: BlackboardPatch,
+        *,
+        numeric_objections: list[Objection] | None = None,
+    ) -> list[Document2ReviewFinding]:
+        numeric = (
+            list(numeric_objections)
+            if numeric_objections is not None
+            else self._numeric_sanity_objections_for_patch(checkpoint.ticker, patch)
+        )
+        return [
+            *deterministic_findings_from_patch(patch),
+            *numeric_sanity_findings_from_objections(numeric),
+        ]
 
     def _merge_document2_review_findings_metadata(
         self,
@@ -884,10 +1057,12 @@ class Document2LegacyQualityMixin:
         )
 
     def _document2_review_finding_key(self, finding: Document2ReviewFinding) -> str:
+        target_paths = ",".join(self._document2_repair_target_paths(finding))
         return "|".join(
             [
                 finding.expectation_id,
                 finding.target_path,
+                target_paths,
                 finding.reason[:180],
             ]
         )
@@ -896,6 +1071,8 @@ class Document2LegacyQualityMixin:
         self,
         checkpoint: WorkflowCheckpoint,
         decision: Document2ResolutionDecisionRecord,
+        *,
+        revalidation_findings: list[Document2ReviewFinding] | None = None,
     ) -> bool:
         if decision.decision == "deferred":
             return True
@@ -909,7 +1086,25 @@ class Document2LegacyQualityMixin:
                 patch,
             )
         }
-        return decision.objection_id in current_numeric_objection_ids
+        if decision.objection_id in current_numeric_objection_ids:
+            return True
+        run = self.blackboard.get_run(checkpoint.run_id)
+        objection = next(
+            (
+                item
+                for item in run.objections
+                if item.objection_id == decision.objection_id
+            ),
+            None,
+        )
+        if objection is None or not objection.dedupe_hash:
+            return False
+        current_finding_keys = {
+            self._document2_review_finding_key(finding)
+            for finding in revalidation_findings or []
+            if finding.blocks_promotion
+        }
+        return objection.dedupe_hash in current_finding_keys
 
     def _apply_document2_objection_transition(
         self,
@@ -1009,6 +1204,344 @@ class Document2LegacyQualityMixin:
                 },
             ],
             "required_tool_names": [],
+        }
+
+    def _document2_field_repair_tasks(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        unresolved_objections: list[Objection],
+        *,
+        stalled_task_ids: set[str] | None = None,
+    ) -> list[Document2FieldRepairTask]:
+        stalled = stalled_task_ids or set()
+        findings, metadata_changed = self._active_document2_blocking_findings(
+            checkpoint,
+            unresolved_objections,
+        )
+        if metadata_changed:
+            self._merge_document2_review_findings_metadata(checkpoint, findings)
+        run = self.blackboard.get_run(checkpoint.run_id)
+        unresolved_objections = [
+            objection for objection in run.objections if objection.is_unresolved
+        ]
+        by_objection_id = {
+            finding.source_objection_id: finding
+            for finding in findings
+            if finding.source_objection_id
+        }
+        groups: dict[tuple[str, str], dict[str, Any]] = {}
+        unresolved_by_id = {
+            objection.objection_id: objection for objection in unresolved_objections
+        }
+        for objection in unresolved_objections:
+            finding = by_objection_id.get(objection.objection_id)
+            if finding is None:
+                finding = document2_review_finding_from_objection(objection)
+            expectation_id = finding.expectation_id
+            target_paths = self._document2_repair_target_paths(finding)
+            field_family = self._document2_field_family_for_paths(
+                target_paths,
+                primary_path=finding.target_path,
+            )
+            key = (expectation_id, field_family)
+            group = groups.setdefault(
+                key,
+                {
+                    "expectation_id": expectation_id,
+                    "field_family": field_family,
+                    "target_paths": [],
+                    "finding_ids": [],
+                    "objection_ids": [],
+                    "findings": [],
+                    "source_agents": [],
+                },
+            )
+            group["target_paths"].extend(target_paths)
+            group["finding_ids"].append(finding.finding_id)
+            group["objection_ids"].append(objection.objection_id)
+            group["findings"].append(finding)
+            group["source_agents"].append(finding.reviewer_agent)
+
+        tasks = [
+            self._document2_field_repair_task_from_group(checkpoint, group)
+            for group in groups.values()
+        ]
+        ordered_families = {
+            "cross_field": 0,
+            "realized_facts": 1,
+            "key_variables": 2,
+            "event_monitoring_direction": 3,
+            "market_view": 4,
+            "market_evidence": 5,
+        }
+        tasks.sort(
+            key=lambda task: (
+                ordered_families.get(task.field_family, 99),
+                task.expectation_id,
+                task.task_id,
+            )
+        )
+        return [
+            task
+            for task in tasks
+            if task.task_id not in stalled
+            and any(
+                objection_id in unresolved_by_id for objection_id in task.objection_ids
+            )
+        ]
+
+    def _active_document2_blocking_findings(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        unresolved_objections: list[Objection],
+    ) -> tuple[list[Document2ReviewFinding], bool]:
+        raw = checkpoint.metadata.get(DOCUMENT2_REVIEW_FINDINGS_KEY, [])
+        findings: list[Document2ReviewFinding] = []
+        if isinstance(raw, list):
+            for item in raw:
+                if not isinstance(item, dict):
+                    continue
+                try:
+                    findings.append(Document2ReviewFinding.model_validate(item))
+                except ValueError:
+                    continue
+        unresolved_ids = {objection.objection_id for objection in unresolved_objections}
+        bridged = self._bridge_document2_blocking_findings_to_objections(
+            checkpoint,
+            [
+                finding
+                for finding in findings
+                if finding.blocks_promotion
+                and (
+                    finding.source_objection_id is None
+                    or finding.source_objection_id in unresolved_ids
+                )
+            ],
+        )
+        before_by_id = {finding.finding_id: finding for finding in findings}
+        metadata_changed = any(
+            before_by_id.get(finding.finding_id) is None
+            or before_by_id[finding.finding_id].source_objection_id
+            != finding.source_objection_id
+            for finding in bridged
+        )
+        unresolved_ids.update(
+            finding.source_objection_id
+            for finding in bridged
+            if finding.source_objection_id
+        )
+        return [
+            finding
+            for finding in bridged
+            if finding.blocks_promotion
+            and (
+                finding.source_objection_id is None
+                or finding.source_objection_id in unresolved_ids
+            )
+        ], metadata_changed
+
+    def _document2_field_repair_task_from_group(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        group: dict[str, Any],
+    ) -> Document2FieldRepairTask:
+        expectation_id = str(group["expectation_id"])
+        field_family = str(group["field_family"])
+        return Document2FieldRepairTask(
+            task_id=self._document2_field_repair_task_id(expectation_id, field_family),
+            expectation_id=expectation_id,
+            field_family=field_family,
+            target_paths=self._dedupe_strings(group["target_paths"]),
+            finding_ids=self._dedupe_strings(group["finding_ids"]),
+            objection_ids=self._dedupe_strings(group["objection_ids"]),
+            findings=list(group["findings"]),
+            source_agents=list(dict.fromkeys(group["source_agents"])),
+            current_candidate=self._current_document2_candidate(checkpoint, expectation_id),
+            allowed_output_contract=self._allowed_output_contract_for_field_family(
+                field_family
+            ),
+        )
+
+    def _document2_field_repair_task_id(
+        self,
+        expectation_id: str,
+        field_family: str,
+    ) -> str:
+        safe = re.sub(r"[^0-9A-Za-z_]+", "_", f"{expectation_id}_{field_family}").strip("_")
+        return f"d2repair_{safe[:120]}"
+
+    def _current_document2_candidate(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        expectation_id: str,
+    ) -> ExpectationUnitDocument:
+        for patch in checkpoint.pending_patches:
+            if (
+                patch.target.document_type is DocumentType.EXPECTATION_UNIT
+                and patch.target.expectation_id == expectation_id
+                and isinstance(patch.after, dict)
+            ):
+                return ExpectationUnitDocument.model_validate(patch.after)
+        raise WorkflowContractError(
+            f"Document2 repair task cannot find current candidate for {expectation_id}."
+        )
+
+    def _document2_repair_target_paths(
+        self,
+        finding: Document2ReviewFinding,
+    ) -> list[str]:
+        paths = [str(path) for path in finding.target_paths if str(path or "").strip()]
+        if finding.target_path and finding.target_path not in paths:
+            paths.insert(0, finding.target_path)
+        return self._dedupe_strings(paths or ["document"])
+
+    def _dedupe_strings(self, values: Iterable[Any]) -> list[str]:
+        deduped: list[str] = []
+        seen: set[str] = set()
+        for value in values:
+            text = str(value or "").strip()
+            if not text or text in seen:
+                continue
+            seen.add(text)
+            deduped.append(text)
+        return deduped
+
+    def _document2_field_family_for_paths(
+        self,
+        target_paths: list[str],
+        *,
+        primary_path: str,
+    ) -> str:
+        paths = target_paths or [primary_path or "document"]
+        families = {self._document2_field_family_for_path(path) for path in paths}
+        if "cross_field" in families or len(families) != 1:
+            return "cross_field"
+        return next(iter(families))
+
+    def _document2_field_family_for_path(self, path: str) -> str:
+        normalized = str(path or "document").strip()
+        if not normalized or normalized == "document":
+            return "cross_field"
+        if normalized.startswith("document."):
+            normalized = normalized.removeprefix("document.")
+        root = re.split(r"[\.\[]", normalized, maxsplit=1)[0]
+        if root == "realized_facts":
+            return "realized_facts"
+        if root == "key_variables":
+            return "key_variables"
+        if root == "event_monitoring_direction":
+            return "event_monitoring_direction"
+        if root == "market_view":
+            return "market_view"
+        if root == "market_evidence":
+            return "market_evidence"
+        return "cross_field"
+
+    def _allowed_output_contract_for_field_family(
+        self,
+        field_family: str,
+    ) -> dict[str, Any]:
+        common_rules = [
+            "Return exactly one typed field update for this field_family.",
+            (
+                "Do not return patches, changes, path_map, JSON Patch operations, "
+                "or multiple candidates."
+            ),
+            (
+                "O1 may propose a repair; transaction and deterministic "
+                "revalidation decide blocker closure."
+            ),
+        ]
+        if field_family == "cross_field":
+            return {
+                "field_family": "cross_field",
+                "output_field": "revised_candidate",
+                "requires_full_candidate": True,
+                "rules": [
+                    "Return exactly one complete ExpectationUnitDocument as revised_candidate.",
+                    "Do not return typed partial field updates for cross_field tasks.",
+                    *common_rules[1:],
+                ],
+            }
+        output_field = "market_view" if field_family == "market_evidence" else field_family
+        return {
+            "field_family": field_family,
+            "output_field": output_field,
+            "requires_full_candidate": False,
+            "must_return_complete_replacement_value": True,
+            "rules": common_rules,
+            "schema_notes": {
+                "RealizedFact_fields": [
+                    "event_id",
+                    "description",
+                    "price_reaction",
+                    "evidence_refs",
+                ],
+                "certainty": "free text where the model allows certainty.",
+            },
+        }
+
+    def _field_repair_context(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        task: Document2FieldRepairTask,
+        *,
+        task_index: int = 1,
+        total_unresolved: int | None = None,
+    ) -> dict[str, Any]:
+        timeout_seconds = 480.0 if task.field_family == "cross_field" else 240.0
+        run = self.blackboard.get_run(checkpoint.run_id)
+        task_objections = [
+            objection
+            for objection in run.objections
+            if objection.objection_id in set(task.objection_ids)
+        ]
+        output_guidance = [
+            "You are resolving exactly one Document2 field repair task.",
+            "Do not choose a different field or repair findings outside this task.",
+            "Preserve every finding and objection as a separate decision record.",
+            "Do not merge conflicting reviewer opinions into one summary finding.",
+            "Do not call external tools; reuse evidence_refs already present here.",
+            "A blocker closes only after transaction acceptance and deterministic revalidation.",
+        ]
+        if task.field_family == "cross_field":
+            output_guidance.append(
+                "For field_family=cross_field, output exactly one complete revised_candidate."
+            )
+        else:
+            output_guidance.append(
+                "For single-field repair, do not output revised_candidate; "
+                "return only the typed field update."
+            )
+        return {
+            "internal_task_skill_ids": ["document2-field-repair"],
+            "react_runtime_budget": {
+                "max_steps": 1,
+                "max_tool_call_batches": 0,
+                "model_request_timeout_seconds": timeout_seconds,
+            },
+            "resolution_request": (
+                "Resolve this Document2 field repair task. The resolver selected the "
+                "field_family and target_paths; do not expand scope."
+            ),
+            "resolution_mode": "document2_field_repair",
+            "field_repair_batch": {
+                "task_index": task_index,
+                "total_unresolved_before_task": total_unresolved
+                if total_unresolved is not None
+                else len(task_objections),
+                "execution_order": "cross_field tasks first, then single-field tasks",
+            },
+            "field_repair_task": task.model_dump(mode="json"),
+            "current_candidate": task.current_candidate.model_dump(mode="json"),
+            "findings": [
+                finding.model_dump(mode="json") for finding in task.findings
+            ],
+            "unresolved_objections": [
+                objection.model_dump(mode="json") for objection in task_objections
+            ],
+            "allowed_output_contract": task.allowed_output_contract,
+            "output_guidance": output_guidance,
         }
 
     def _objection_resolution_context(

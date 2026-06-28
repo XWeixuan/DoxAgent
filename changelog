@@ -1,5 +1,15 @@
 # changelog
 
+## 2026-06-28
+
+- Hardened Document 2 runtime boundaries from the node contract matrix review: resolver deterministic revalidation now retains non-numeric blockers, promotion fail-closes with rejected audits for hidden deterministic issues, SYSTEM-authored Document2 promotion patches use a narrow submit permission, proposed_patches leaks and detail delegations are rejected, and final payload adaptation no longer invents semantic candidate fields.
+- Added a fast offline Document 2 fixture-driven node contract matrix covering construction, detail generation, field review, resolver, and promotion boundaries, plus a report of expected/questionable/bug/orchestration-error outcomes.
+- Expanded the Document 2 node contract matrix with mini-flow, deterministic revalidation, final-payload adapter, detail delegation, metadata sync, and finding-lifecycle fixture coverage; updated the matrix report with the new expected/questionable/bug/orchestration-error classifications.
+
+## 2026-06-27
+
+- Integrated the durable Stocktwits polling crawler with the Monitoring Message Bus, including per-ticker user-owned persistence settings, Stocktwits run metadata in poll state, due scheduling from Stocktwits checkpoints, CLI configuration, documentation, and focused bus/crawler regression tests.
+
 ## 2026-06-26
 
 - Added a standalone Stocktwits polling crawler MVP with staggered 10-ticker scheduling, per-ticker checkpoints, idempotent message persistence, crawl-run observability, gap detection, hot ticker mode, Supabase migration, CLI launchers, and focused regression tests.
@@ -264,6 +274,8 @@
 - Routed DeepSeek W1/W2 runtime calls through DashScope chat completions with fallback-key support, added bounded 60s single-shot worker timeouts, and normalized observed DeepSeek schema drift so smoke replays can continue with audited conservative fallbacks instead of blocking the runtime queue.
 - Normalized W1 short-form DeepSeek outputs that return a Known Event `event_id` plus rationale without the full W1 schema, mapping already-known/released-earlier messages to duplicate or recap labels before final `W1Result` validation.
 - Added runtime worker normalization for DeepSeek W1 `novelty_score` outputs and W2 `policy_triggered=false` outputs, preserving final schema validation while reducing audited fallback exceptions during real replay smokes.
+- Enabled DashScope Chat Completions JSON mode for DeepSeek runtime calls, refreshed W1/W2 prompt wording around provider JSON enforcement, and added W1/W2 service-level worker timeouts so a stuck worker future records an exception instead of blocking the runtime queue.
+- Fixed the DeepSeek JSON-mode root causes found during Persistent Runtime smoke testing by guaranteeing a JSON keyword in chat messages, passing assembled prompt instructions as the single-shot system prompt, and using a Windows SelectorEventLoop for synchronous AgentRunner calls to avoid Proactor close hangs in worker threads.
 - Added Document1ContextPack models and pack generation from GlobalResearchDocument, then routed Document2 construction/detail/review contexts to prefer the compact pack without changing GlobalResearchDocument storage or Document2 resolver behavior.
 - Added a Step 2 acceptance snapshot for Document1ContextPack as the Document2 input base, tightened pack prompt payloads, and introduced Step 3 Document2 canonical contracts plus a narrow legacy adapter that only accepts full ExpectationUnitDocument replacements.
 - Changed GenerateExpectationDetails to request ExpectationDetailCandidateResult, validate complete O1 candidates against shell identity and detail quality, generate Document2Revision records as the primary pending state, and derive legacy pending patches programmatically for downstream compatibility.
@@ -283,3 +295,7 @@
 - Corrected Document2 prompt and ReAct output-contract examples so `ExpectationUnitDocument.realized_facts` strictly match the current `RealizedFact` Pydantic model, omitting unsupported `event_time` fields and treating `certainty` as plain short text.
 - Aligned Document2 orchestration after the candidate-contract audit by limiting detail generation to candidate acceptance, bridging blocking review findings into resolver-visible objections, revalidating deterministic blockers after transactions, keeping promotion read-only, allowing one-to-three construction shells, and rejecting list-wrapped resolver candidates.
 - Raised the Document2 O1 resolver workflow timeout to 240 seconds, added resolver input-context size telemetry to serial dispatch checkpoints, and grouped objection-resolution batches by semantic root cause to reduce repeated blocker fan-in during smoke runs.
+- Injected a US Eastern runtime clock into runtime worker input contexts and updated W1/W2 prompts plus regression coverage so novelty and policy classifiers can judge freshness against the current ET time.
+- Simplified the runtime clock payload to the three prompt-facing ET fields `now_et`, `tz_abbrev`, and `utc_offset`.
+- Refactored Document2 resolver into field repair tasks: review findings now preserve `target_paths`, O1 resolves one field-family task at a time with typed field updates, transactions merge updates back into full `ExpectationUnitDocument` revisions with deterministic revalidation, cross-field tasks get a 480s budget, and promotion stays read-only without first-discovering quality blockers.
+- Changed the Stocktwits durable crawler HTTP client to use configurable browser-like public API headers and classify Cloudflare 403 blocks explicitly, with regression coverage so the MU durable bridge can fetch from the public JSON stream on cloud hosts.

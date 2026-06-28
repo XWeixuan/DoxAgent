@@ -27,3 +27,4 @@ Return `DoxAtlasAuditResult` only:
 - Use `needs_revision` when O1 should change a field but external retrieval is not required.
 - Use `blocked` when a blocking objection or A2 delegation is required before promotion.
 - Keep findings short and field-specific; put narrative prose in `rationale` only.
+- For every finding, identify the narrowest affected field. If a DoxAtlas issue spans multiple sections, list all affected field paths in the finding context instead of hiding the issue inside one field.

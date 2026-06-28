@@ -738,7 +738,7 @@ def test_review_expectation_fields_rejects_reviewer_patch_output() -> None:
     assert "ReviewExpectationFields reviewers must not propose patches" in result.error
 
 
-def test_resolve_objections_uses_resolution_plan_and_transaction_audit() -> None:
+def test_resolve_objections_uses_field_repair_task_and_transaction_audit() -> None:
     runner = StructuredInitializationRunner(include_blockers=True)
     workflow = BlackboardInitializationWorkflow(
         execution_mode="agent_runner",
@@ -759,11 +759,11 @@ def test_resolve_objections_uses_resolution_plan_and_transaction_audit() -> None
         and task.agent_name is AgentName.O1_EXPECTATION_OWNER
     ]
     assert resolver_tasks
-    assert all(task.required_output_schema == "Document2ResolutionPlan" for task in resolver_tasks)
+    assert all(task.required_output_schema == "Document2FieldRepairResult" for task in resolver_tasks)
     assert all(task.permissions.writable_targets == [] for task in resolver_tasks)
     assert all(task.permissions.can_propose_patch is False for task in resolver_tasks)
     assert all(
-        task.input_context["internal_task_skill_ids"] == ["document2-resolution-plan"]
+        task.input_context["internal_task_skill_ids"] == ["document2-field-repair"]
         for task in resolver_tasks
     )
     assert all(
@@ -777,10 +777,11 @@ def test_resolve_objections_uses_resolution_plan_and_transaction_audit() -> None
     assert result.summary.unresolved_objection_count == 0
     assert result.summary.blocking_delegation_count == 0
 
-    plans = result.checkpoint.metadata[DOCUMENT2_RESOLUTION_PLANS_KEY]
+    field_results = result.checkpoint.metadata["document2_field_repair_results"]
     audits = result.checkpoint.metadata[DOCUMENT2_TRANSACTION_AUDITS_KEY]
-    assert plans
-    assert plans[0]["decisions"][0]["decision"] == "resolved"
+    assert result.checkpoint.metadata[DOCUMENT2_RESOLUTION_PLANS_KEY] == []
+    assert field_results
+    assert field_results[0]["decisions"][0]["decision"] == "resolved"
     assert audits
     assert audits[-1]["transaction_type"] == "resolution"
     assert audits[-1]["status"] == "accepted"

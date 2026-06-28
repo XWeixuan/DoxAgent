@@ -13,6 +13,7 @@ from doxagent.models import (
     ToolCallSummary,
 )
 from doxagent.workflows.document2 import (
+    Document2FieldRepairResult,
     Document2ResolutionDecisionRecord,
     Document2ResolutionPlan,
 )
@@ -86,6 +87,25 @@ def golden_required_output_payloads() -> dict[str, dict[str, object]]:
                 )
             ],
             rationale="Valid resolution plan.",
+        ).model_dump(mode="json"),
+        "Document2FieldRepairResult": Document2FieldRepairResult(
+            task_id="d2repair_exp_ai_demand_market_view",
+            expectation_id="exp_ai_demand",
+            field_family="market_view",
+            decision="accepted",
+            decisions=[
+                Document2ResolutionDecisionRecord(
+                    objection_id="obj_ai_demand",
+                    finding_id="finding_ai_demand",
+                    decision="accepted",
+                    resolution_note="The field update addresses the review finding.",
+                    changed_paths=["document.market_view"],
+                    evidence_refs=[evidence],
+                )
+            ],
+            target_finding_ids=["finding_ai_demand"],
+            market_view=section,
+            rationale="Valid field repair result.",
         ).model_dump(mode="json"),
         "DoxAtlasAuditResult": DoxAtlasAuditResult(
             verdict="pass",

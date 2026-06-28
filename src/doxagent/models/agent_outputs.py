@@ -13,7 +13,13 @@ from doxagent.models.blackboard import (
 )
 from doxagent.models.common import AgentName, EvidenceSourceType
 from doxagent.models.contracts import ContractModel, ToolCallSummary
-from doxagent.models.documents import ExpectationUnitDocument, ResearchSection
+from doxagent.models.documents import (
+    EventMonitoringDirection,
+    ExpectationUnitDocument,
+    RealizedFact,
+    ResearchSection,
+    VariableStatus,
+)
 from doxagent.models.ids import NonEmptyStr, new_id
 
 
@@ -112,6 +118,39 @@ class Document2ResolutionPlanOutput(ContractModel):
     rationale: NonEmptyStr
 
 
+class Document2FieldRepairResultOutput(ContractModel):
+    """O1 resolver output for exactly one Document2 field repair task."""
+
+    task_id: NonEmptyStr
+    expectation_id: NonEmptyStr
+    field_family: Literal[
+        "realized_facts",
+        "key_variables",
+        "event_monitoring_direction",
+        "market_view",
+        "market_evidence",
+        "cross_field",
+    ]
+    decision: Literal[
+        "resolved",
+        "accepted",
+        "partially_accepted",
+        "rejected",
+        "deferred",
+    ] = "deferred"
+    decisions: list[Document2ResolutionDecisionOutput] = Field(default_factory=list)
+    target_finding_ids: list[NonEmptyStr] = Field(default_factory=list)
+    realized_facts: list[RealizedFact] | None = None
+    key_variables: list[VariableStatus] | None = None
+    event_monitoring_direction: EventMonitoringDirection | None = None
+    market_view: ResearchSection | None = None
+    revised_candidate: ExpectationUnitDocument | None = None
+    evidence_requests: list[NonEmptyStr] = Field(default_factory=list)
+    unresolved_finding_ids: list[NonEmptyStr] = Field(default_factory=list)
+    unresolved_reason: NonEmptyStr | None = None
+    rationale: NonEmptyStr
+
+
 class DoxAtlasAuditFinding(ContractModel):
     field_path: NonEmptyStr
     status: Literal[
@@ -142,6 +181,7 @@ class ExpectationFieldReviewFinding(ContractModel):
     """Field-level review finding from C1/C3/O4 expectation reviewers."""
 
     field_path: NonEmptyStr
+    target_paths: list[NonEmptyStr] = Field(default_factory=list)
     status: Literal["supported", "unsupported", "needs_more_evidence", "contradicted"]
     rationale: NonEmptyStr
     evidence_refs: list[EvidenceRef] = Field(default_factory=list)

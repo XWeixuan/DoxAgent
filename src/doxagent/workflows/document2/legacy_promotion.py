@@ -73,7 +73,7 @@ class Document2LegacyPromotionMixin:
         except ValueError as exc:
             raise WorkflowContractError(f"Document2 promotion candidate invalid: {exc}") from exc
 
-        blockers = self._document2_promotion_runtime_blockers(checkpoint, candidate)
+        blockers = self._document2_promotion_runtime_blockers(checkpoint, patch, candidate)
         try:
             validate_document2_promotion_candidate(candidate)
         except Document2PromotionBlockedError as exc:
@@ -125,8 +125,11 @@ class Document2LegacyPromotionMixin:
         if not isinstance(raw_findings, list):
             return []
         run = self.blackboard.get_run(checkpoint.run_id)
-        unresolved_objection_ids = {
-            objection.objection_id for objection in run.objections if objection.is_unresolved
+        objections_by_id = {objection.objection_id: objection for objection in run.objections}
+        current_deterministic_finding_keys = {
+            self._document2_review_finding_key(finding)
+            for finding in self._document2_deterministic_findings_for_patch(checkpoint, patch)
+            if finding.blocks_promotion
         }
         findings: list[Document2ReviewFinding] = []
         for raw_finding in raw_findings:
@@ -141,13 +144,21 @@ class Document2LegacyPromotionMixin:
             if finding.source_objection_id is None:
                 findings.append(finding)
                 continue
-            if finding.source_objection_id in unresolved_objection_ids:
+            objection = objections_by_id.get(finding.source_objection_id)
+            if objection is None:
+                findings.append(finding)
+                continue
+            if objection.is_unresolved:
+                findings.append(finding)
+                continue
+            if self._document2_review_finding_key(finding) in current_deterministic_finding_keys:
                 findings.append(finding)
         return findings
 
     def _document2_promotion_runtime_blockers(
         self,
         checkpoint: WorkflowCheckpoint,
+        patch: BlackboardPatch,
         _candidate: Document2PromotionCandidate,
     ) -> list[Document2PromotionBlocker]:
         run = self.blackboard.get_run(checkpoint.run_id)
@@ -188,7 +199,17 @@ class Document2LegacyPromotionMixin:
         patch: BlackboardPatch,
         trigger_reason: str,
     ) -> None:
-        permissions = self.registry.get(patch.author_agent).runtime.to_permissions()
+        if patch.author_agent is AgentName.SYSTEM:
+            if patch.target.document_type is not DocumentType.EXPECTATION_UNIT:
+                raise WorkflowContractError(
+                    "Document2 system promotion patches may only target expectation_unit."
+                )
+            permissions = AgentPermissions(
+                writable_targets=[DocumentType.EXPECTATION_UNIT.value],
+                can_propose_patch=True,
+            )
+        else:
+            permissions = self.registry.get(patch.author_agent).runtime.to_permissions()
         self.blackboard.submit_patch(
             checkpoint.run_id,
             patch,
@@ -201,6 +222,15 @@ class Document2LegacyPromotionMixin:
         checkpoint: WorkflowCheckpoint,
         audit: Document2TransactionAudit,
     ) -> None:
+        raw = checkpoint.metadata.get(DOCUMENT2_PROMOTION_AUDITS_KEY)
+        existing = [item for item in raw if isinstance(item, dict)] if isinstance(raw, list) else []
+        checkpoint.metadata = checkpoint.metadata | {
+            DOCUMENT2_PROMOTION_AUDITS_KEY: [
+                *existing,
+                audit.model_dump(mode="json"),
+            ]
+        }
+        self.checkpoint_repository.save_checkpoint(checkpoint)
         self.blackboard.add_working_memory_entry(
             checkpoint.run_id,
             author_agent=AgentName.SYSTEM,

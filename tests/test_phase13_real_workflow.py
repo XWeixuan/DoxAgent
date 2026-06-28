@@ -88,7 +88,10 @@ class StructuredInitializationRunner(AgentRunner):
             structured = dict(direct.payload)
         elif task.required_output_schema == "ExpectationDetailCandidateResult":
             structured = dict(direct.payload)
-        elif task.required_output_schema == "Document2ResolutionPlan":
+        elif task.required_output_schema in {
+            "Document2ResolutionPlan",
+            "Document2FieldRepairResult",
+        }:
             evidence = EvidenceRef(
                 evidence_id=new_id("evidence"),
                 source_type=EvidenceSourceType.AGENT_OUTPUT,
@@ -109,6 +112,58 @@ class StructuredInitializationRunner(AgentRunner):
                 target = objection_items[0].get("target")
                 if isinstance(target, dict) and isinstance(target.get("expectation_id"), str):
                     expectation_id = target["expectation_id"]
+            if task.required_output_schema == "Document2FieldRepairResult":
+                repair_task = task.input_context.get("field_repair_task")
+                task_id = "d2repair_mock"
+                field_family = "cross_field"
+                target_finding_ids: list[str] = []
+                if isinstance(repair_task, dict):
+                    expectation_id = str(repair_task.get("expectation_id") or expectation_id)
+                    task_id = str(repair_task.get("task_id") or task_id)
+                    field_family = str(repair_task.get("field_family") or field_family)
+                    raw_finding_ids = repair_task.get("finding_ids")
+                    if isinstance(raw_finding_ids, list):
+                        target_finding_ids = [str(item) for item in raw_finding_ids]
+                structured = {
+                    "task_id": task_id,
+                    "expectation_id": expectation_id,
+                    "field_family": field_family,
+                    "decision": "resolved",
+                    "decisions": [
+                        {
+                            "objection_id": item["objection_id"],
+                            "finding_id": None,
+                            "decision": "resolved",
+                            "resolution_note": (
+                                "Mock O1 resolved this objection with supporting evidence."
+                            ),
+                            "changed_paths": ["expectation_unit.document"],
+                            "evidence_refs": [evidence.model_dump(mode="json")],
+                        }
+                        for item in objection_items
+                    ],
+                    "target_finding_ids": target_finding_ids,
+                    "realized_facts": None,
+                    "key_variables": None,
+                    "event_monitoring_direction": None,
+                    "market_view": None,
+                    "revised_candidate": None,
+                    "evidence_requests": [],
+                    "unresolved_finding_ids": [],
+                    "unresolved_reason": None,
+                    "rationale": "Structured field-repair test output.",
+                }
+                return AgentResult(
+                    task_id=task.task_id,
+                    agent_name=task.agent_name,
+                    status=direct.status,
+                    payload={"structured": structured},
+                    evidence_refs=direct.evidence_refs,
+                    objections=direct.objections,
+                    delegations=direct.delegations,
+                    proposed_patches=direct.proposed_patches,
+                    tool_calls=direct.tool_calls,
+                )
             structured = {
                 "expectation_id": expectation_id,
                 "decision": "resolved",

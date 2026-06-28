@@ -1757,6 +1757,17 @@ def _looks_like_direct_final_payload(payload: JsonDict, required_output_schema: 
             "revised_candidate",
             "unresolved_reason",
         },
+        "Document2FieldRepairResult": {
+            "task_id",
+            "expectation_id",
+            "field_family",
+            "decisions",
+            "revised_candidate",
+            "realized_facts",
+            "key_variables",
+            "event_monitoring_direction",
+            "market_view",
+        },
         "KnownEventsDocument": {
             "document_id",
             "document_type",
@@ -2215,6 +2226,100 @@ def _output_contract(required_output_schema: str, *, task: AgentTask | None = No
                     ),
                 ],
             }
+        elif schema_name == "Document2FieldRepairResult":
+            contracts[schema_name] = {
+                "final_payload": {
+                    "task_id": "must match input_context.field_repair_task.task_id",
+                    "expectation_id": "must match input_context.field_repair_task.expectation_id",
+                    "field_family": (
+                        "realized_facts | key_variables | event_monitoring_direction | "
+                        "market_view | market_evidence | cross_field"
+                    ),
+                    "decision": "resolved | accepted | partially_accepted | rejected | deferred",
+                    "decisions": [
+                        {
+                            "objection_id": "must match one task objection id when present",
+                            "finding_id": "finding id being addressed, when applicable",
+                            "decision": (
+                                "resolved | accepted | partially_accepted | rejected | deferred"
+                            ),
+                            "resolution_note": "separate concise decision record",
+                            "changed_paths": ["document.<field_path>"],
+                            "evidence_refs": [],
+                        }
+                    ],
+                    "target_finding_ids": [],
+                    "realized_facts": None,
+                    "key_variables": None,
+                    "event_monitoring_direction": None,
+                    "market_view": None,
+                    "revised_candidate": None,
+                    "evidence_requests": [],
+                    "unresolved_finding_ids": [],
+                    "unresolved_reason": None,
+                    "rationale": "short rationale for this single repair task",
+                },
+                "typed_field_examples": {
+                    "realized_facts": [
+                        {
+                            "event_id": "event_<id>",
+                            "description": "complete realized fact",
+                            "price_reaction": {
+                                "price_change": "specific move or evidence gap statement",
+                            "price_pattern": (
+                                "specific pattern or "
+                                "unknown_due_to_missing_market_data"
+                            ),
+                                "interpretation": "price reaction interpretation",
+                                "evidence_refs": [],
+                            },
+                            "evidence_refs": [],
+                        }
+                    ],
+                    "key_variables": [
+                        {
+                            "variable_id": "variable_<id>",
+                            "name": "variable name",
+                            "current_status": "current status",
+                            "certainty": "plain short certainty text",
+                            "evidence_refs": [],
+                        }
+                    ],
+                    "event_monitoring_direction": {
+                        "known_event_notice": "known event note",
+                        "positive_events": ["specific positive trigger"],
+                        "negative_events": ["specific negative trigger"],
+                    },
+                    "market_view": {
+                        "text": "complete market view",
+                        "summary": "short summary",
+                        "evidence_refs": [],
+                        "author_agent": "O1",
+                        "reviewer_agents": [],
+                    },
+                },
+                "rules": [
+                    "Resolve exactly one input_context.field_repair_task.",
+                    (
+                        "For field_family other than cross_field, do not output "
+                        "revised_candidate; output only the complete replacement value "
+                        "for the allowed typed field."
+                    ),
+                    (
+                        "For field_family=cross_field, output exactly one complete "
+                        "ExpectationUnitDocument as revised_candidate and no typed field updates."
+                    ),
+                    (
+                        "Do not output patches, proposed_patches, changes, path_map, "
+                        "JSON Patch operations, partial document fragments, or multiple candidates."
+                    ),
+                    "Do not include event_time in RealizedFact.",
+                    (
+                        "O1 proposes a repair; transaction revalidation decides "
+                        "whether blockers close."
+                    ),
+                ],
+            }
         elif schema_name == "ExpectationConstructionResult":
             if (
                 task is not None
@@ -2416,6 +2521,9 @@ def _output_contract(required_output_schema: str, *, task: AgentTask | None = No
                                 "realized_facts | key_variables.current_state | "
                                 "event_monitoring_direction | market_evidence"
                             ),
+                            "target_paths": [
+                                "all affected field paths when this finding spans fields"
+                            ],
                             "status": (
                                 "supported | unsupported | needs_more_evidence | contradicted"
                             ),
@@ -2435,6 +2543,19 @@ def _output_contract(required_output_schema: str, *, task: AgentTask | None = No
                         "or patches_reviewed."
                     ),
                     "Use findings for field-level reviewer output.",
+                    (
+                        "For every finding, identify the narrowest affected field_path. "
+                        "If the issue spans multiple fields, set field_path to document "
+                        "or the primary field and list every affected path in target_paths."
+                    ),
+                    (
+                        "Use target_paths only for field addressing; do not use it to "
+                        "propose edits."
+                    ),
+                    (
+                        "Keep findings separate when they express distinct concerns, "
+                        "even if they point to the same field."
+                    ),
                     "Use objections only for issues that must block promotion.",
                 ],
             }
@@ -3503,6 +3624,7 @@ def _normalize_expectation_field_review_payload(
         findings = [
             {
                 "field_path": "document",
+                "target_paths": ["document"],
                 "status": _normalize_field_review_status(payload.get("status") or rationale),
                 "rationale": rationale,
                 "evidence_refs": evidence_refs,
@@ -3610,6 +3732,9 @@ def _normalize_expectation_field_review_findings(
                         or item.get("path")
                         or default_field_path
                     ),
+                    "target_paths": _strings(
+                        item.get("target_paths") or item.get("field_paths")
+                    ),
                     "status": _normalize_field_review_status(
                         item.get("status")
                         or item.get("verdict")
@@ -3626,6 +3751,7 @@ def _normalize_expectation_field_review_findings(
             findings.append(
                 {
                     "field_path": default_field_path,
+                    "target_paths": [default_field_path],
                     "status": _normalize_field_review_status(text),
                     "rationale": text,
                     "evidence_refs": fallback_evidence,

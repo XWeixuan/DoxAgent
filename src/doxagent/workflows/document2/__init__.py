@@ -3,6 +3,8 @@
 from doxagent.workflows.document2.contracts import (
     Document2PromotionBlocker,
     Document2PromotionCandidate,
+    Document2FieldRepairResult,
+    Document2FieldRepairTask,
     Document2ResolutionDecisionRecord,
     Document2ResolutionPlan,
     Document2ReviewFinding,
@@ -34,6 +36,7 @@ from doxagent.workflows.document2.promotion import (
 )
 from doxagent.workflows.document2.resolver import (
     DOCUMENT2_RESOLUTION_PLANS_KEY,
+    document2_field_repair_result_from_agent_result,
     document2_resolution_plan_from_agent_result,
 )
 from doxagent.workflows.document2.review import (
@@ -44,6 +47,7 @@ from doxagent.workflows.document2.transaction import (
     DOCUMENT2_CONSTRUCTION_TRANSACTION_AUDITS_KEY,
     DOCUMENT2_TRANSACTION_AUDITS_KEY,
     document2_construction_transaction_audit,
+    document2_revision_from_field_repair_result,
     document2_revision_from_resolution_plan,
     document2_transaction_audit,
     validate_construction_resolution_transaction,
@@ -52,6 +56,8 @@ from doxagent.workflows.document2.transaction import (
 __all__ = [
     "Document2PromotionCandidate",
     "Document2PromotionBlocker",
+    "Document2FieldRepairResult",
+    "Document2FieldRepairTask",
     "Document2ResolutionDecisionRecord",
     "Document2ResolutionPlan",
     "Document2Revision",
@@ -73,6 +79,8 @@ __all__ = [
     "document2_promotion_audit",
     "document2_promotion_blockers",
     "document2_promotion_candidate_from_patch",
+    "document2_field_repair_result_from_agent_result",
+    "document2_revision_from_field_repair_result",
     "document2_resolution_plan_from_agent_result",
     "document2_revision_from_resolution_plan",
     "document2_transaction_audit",

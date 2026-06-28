@@ -186,36 +186,7 @@ def _normalize_expectation_document_payload(
         or payload.get("thesis")
         or name
     )
-    realized_summary = str(
-        payload.get("realized_facts_summary")
-        or payload.get("known_facts_summary")
-        or payload.get("source")
-        or "No realized facts were available from configured tools."
-    )
-    market_view = payload.get("market_view")
-    if not isinstance(market_view, dict):
-        market_view = {
-            "text": description,
-            "summary": name,
-            "evidence_refs": fallback_evidence,
-            "author_agent": task.agent_name.value,
-            "reviewer_agents": [],
-        }
-    else:
-        market_view = {
-            "text": str(market_view.get("text") or market_view.get("description") or description),
-            "summary": str(market_view.get("summary") or name),
-            "evidence_refs": _valid_evidence_ref_payloads(market_view.get("evidence_refs"))
-            or fallback_evidence,
-            "author_agent": str(market_view.get("author_agent") or task.agent_name.value),
-            "reviewer_agents": _strings(market_view.get("reviewer_agents")),
-        }
-    variable_evidence_refs = _valid_evidence_ref_payloads(market_view.get("evidence_refs"))
-    document_evidence_refs = _merge_evidence_ref_payloads(
-        fallback_evidence,
-        variable_evidence_refs,
-    )
-    return {
+    normalized: JsonDict = {
         "document_id": str(payload.get("document_id") or new_id("doc")),
         "document_type": DocumentType.EXPECTATION_UNIT.value,
         "ticker": str(payload.get("ticker") or task.ticker),
@@ -225,18 +196,49 @@ def _normalize_expectation_document_payload(
         "expectation_name": name,
         "direction": _normalize_expectation_direction(payload.get("direction") or description),
         "why_it_matters": description,
-        "market_view": market_view,
-        "realized_facts": _normalize_realized_facts(
+    }
+    market_view = payload.get("market_view")
+    variable_evidence_refs: list[JsonDict] = []
+    document_evidence_refs = list(fallback_evidence)
+    if isinstance(market_view, dict):
+        normalized_market_view = {
+            "text": str(market_view.get("text") or market_view.get("description") or description),
+            "summary": str(market_view.get("summary") or name),
+            "evidence_refs": _valid_evidence_ref_payloads(market_view.get("evidence_refs"))
+            or fallback_evidence,
+            "author_agent": str(market_view.get("author_agent") or task.agent_name.value),
+            "reviewer_agents": _strings(market_view.get("reviewer_agents")),
+        }
+        normalized["market_view"] = normalized_market_view
+        variable_evidence_refs = _valid_evidence_ref_payloads(
+            normalized_market_view.get("evidence_refs")
+        )
+        document_evidence_refs = _merge_evidence_ref_payloads(
+            fallback_evidence,
+            variable_evidence_refs,
+        )
+    if "realized_facts" in payload:
+        normalized["realized_facts"] = _normalize_realized_facts(
             payload.get("realized_facts"),
             fallback_evidence_refs=document_evidence_refs,
-        ),
-        "realized_facts_summary": realized_summary,
-        "key_variables": _normalize_variable_statuses(
+        )
+    if "realized_facts_summary" in payload or "known_facts_summary" in payload:
+        normalized["realized_facts_summary"] = str(
+            payload.get("realized_facts_summary") or payload.get("known_facts_summary")
+        )
+    if "key_variables" in payload:
+        normalized["key_variables"] = _normalize_variable_statuses(
             payload.get("key_variables"),
             fallback_evidence_refs=variable_evidence_refs,
-        ),
-        "event_monitoring_direction": _normalize_event_monitoring_direction(payload),
-    }
+        )
+    if (
+        "event_monitoring_direction" in payload
+        or "known_event_notice" in payload
+        or "positive_events" in payload
+        or "negative_events" in payload
+    ):
+        normalized["event_monitoring_direction"] = _normalize_event_monitoring_direction(payload)
+    return normalized
 
 
 def _normalize_realized_facts(
@@ -271,28 +273,23 @@ def _normalize_realized_facts(
                 or item.get("pricing_assessment")
                 or item.get("pricing_status")
             )
-            facts.append(
-                {
-                    "event_id": str(item.get("event_id") or item.get("id") or new_id("event")),
-                    "description": _realized_fact_description(description_source),
-                    "price_reaction": _normalize_price_reaction(
-                        price_reaction,
-                        fallback_evidence_refs=evidence_refs,
-                    ),
-                    "evidence_refs": evidence_refs,
-                }
-            )
+            fact: JsonDict = {
+                "event_id": str(item.get("event_id") or item.get("id") or new_id("event")),
+                "description": _realized_fact_description(description_source),
+                "evidence_refs": evidence_refs,
+            }
+            if price_reaction is not None:
+                fact["price_reaction"] = _normalize_price_reaction(
+                    price_reaction,
+                    fallback_evidence_refs=evidence_refs,
+                )
+            facts.append(fact)
         elif str(item).strip():
-            evidence_refs = list(fallback)
             facts.append(
                 {
                     "event_id": new_id("event"),
                     "description": str(item),
-                    "price_reaction": _normalize_price_reaction(
-                        None,
-                        fallback_evidence_refs=evidence_refs,
-                    ),
-                    "evidence_refs": evidence_refs,
+                    "evidence_refs": list(fallback),
                 }
             )
     return facts
@@ -327,28 +324,22 @@ def _normalize_price_reaction(
     fallback = list(fallback_evidence_refs or [])
     if isinstance(value, dict):
         evidence_refs = _valid_evidence_ref_payloads(value.get("evidence_refs")) or fallback
-        return {
-            "price_change": str(
-                value.get("price_change")
-                or value.get("move")
-                or value.get("reaction")
-                or "unknown"
-            ),
-            "price_pattern": str(
-                value.get("price_pattern")
-                or value.get("pattern")
-                or value.get("pricing_status")
-                or "unknown"
-            ),
-            "interpretation": str(
-                value.get("interpretation")
-                or value.get("rationale")
-                or value.get("description")
-                or value.get("pricing_assessment")
-                or "Price reaction has not been established."
-            ),
-            "evidence_refs": evidence_refs,
-        }
+        normalized: JsonDict = {"evidence_refs": evidence_refs}
+        price_change = value.get("price_change") or value.get("move") or value.get("reaction")
+        price_pattern = value.get("price_pattern") or value.get("pattern")
+        interpretation = (
+            value.get("interpretation")
+            or value.get("rationale")
+            or value.get("description")
+            or value.get("pricing_assessment")
+        )
+        if price_change not in (None, ""):
+            normalized["price_change"] = str(price_change)
+        if price_pattern not in (None, ""):
+            normalized["price_pattern"] = str(price_pattern)
+        if interpretation not in (None, ""):
+            normalized["interpretation"] = str(interpretation)
+        return normalized
     text = str(value or "").strip()
     if text:
         return {
@@ -357,12 +348,7 @@ def _normalize_price_reaction(
             "interpretation": text,
             "evidence_refs": fallback,
         }
-    return {
-        "price_change": "unknown",
-        "price_pattern": "unknown",
-        "interpretation": "Price reaction has not been established.",
-        "evidence_refs": fallback,
-    }
+    return {"evidence_refs": fallback}
 
 
 def _normalize_variable_statuses(
@@ -375,30 +361,30 @@ def _normalize_variable_statuses(
     for item in value if isinstance(value, list) else []:
         if isinstance(item, dict):
             name = str(item.get("name") or item.get("variable") or item.get("id") or "variable")
-            variables.append(
-                {
-                    "variable_id": str(item.get("variable_id") or item.get("id") or new_id("var")),
-                    "name": name,
-                    "current_status": str(
-                        item.get("current_status")
-                        or item.get("status")
-                        or item.get("description")
-                        or item.get("relevance")
-                        or item.get("unresolved")
-                        or "unknown"
-                    ),
-                    "certainty": str(item.get("certainty") or item.get("confidence") or "unknown"),
-                    "evidence_refs": _valid_evidence_ref_payloads(item.get("evidence_refs"))
-                    or fallback,
-                }
+            variable: JsonDict = {
+                "variable_id": str(item.get("variable_id") or item.get("id") or new_id("var")),
+                "name": name,
+                "evidence_refs": _valid_evidence_ref_payloads(item.get("evidence_refs"))
+                or fallback,
+            }
+            current_status = (
+                item.get("current_status")
+                or item.get("status")
+                or item.get("description")
+                or item.get("relevance")
+                or item.get("unresolved")
             )
+            certainty = item.get("certainty") or item.get("confidence")
+            if current_status not in (None, ""):
+                variable["current_status"] = str(current_status)
+            if certainty not in (None, ""):
+                variable["certainty"] = str(certainty)
+            variables.append(variable)
         elif str(item).strip():
             variables.append(
                 {
                     "variable_id": new_id("var"),
                     "name": str(item),
-                    "current_status": "unknown",
-                    "certainty": "unknown",
                     "evidence_refs": [],
                 }
             )
@@ -416,21 +402,27 @@ def _normalize_expectation_direction(value: Any) -> str:
 def _normalize_event_monitoring_direction(payload: JsonDict) -> JsonDict:
     raw = payload.get("event_monitoring_direction")
     if isinstance(raw, dict):
-        return {
-            "known_event_notice": str(
-                raw.get("known_event_notice")
-                or raw.get("known_upcoming_events")
-                or raw.get("notice")
-                or "No fixed known date."
-            ),
-            "positive_events": _event_strings(raw.get("positive_events")),
-            "negative_events": _event_strings(raw.get("negative_events")),
-        }
-    return {
-        "known_event_notice": "No fixed known date.",
-        "positive_events": _event_strings(payload.get("positive_events")),
-        "negative_events": _event_strings(payload.get("negative_events")),
-    }
+        normalized: JsonDict = {}
+        known_event_notice = (
+            raw.get("known_event_notice")
+            or raw.get("known_upcoming_events")
+            or raw.get("notice")
+        )
+        if known_event_notice not in (None, ""):
+            normalized["known_event_notice"] = str(known_event_notice)
+        if "positive_events" in raw:
+            normalized["positive_events"] = _event_strings(raw.get("positive_events"))
+        if "negative_events" in raw:
+            normalized["negative_events"] = _event_strings(raw.get("negative_events"))
+        return normalized
+    normalized = {}
+    if payload.get("known_event_notice") not in (None, ""):
+        normalized["known_event_notice"] = str(payload.get("known_event_notice"))
+    if "positive_events" in payload:
+        normalized["positive_events"] = _event_strings(payload.get("positive_events"))
+    if "negative_events" in payload:
+        normalized["negative_events"] = _event_strings(payload.get("negative_events"))
+    return normalized
 
 
 def _normalize_output_delegations(value: Any, *, task: AgentTask) -> list[JsonDict]:

@@ -72,6 +72,7 @@ def document2_review_finding_from_objection(
         reviewer_agent=objection.source_agent,
         expectation_id=_objection_expectation_id(objection),
         target_path=target_path,
+        target_paths=[target_path],
         severity=_severity_from_objection(objection),
         reason=objection.reason,
         evidence_assessments=[assessment],
@@ -93,6 +94,7 @@ def _document2_review_findings_from_structured_finding(
     target_path = str(
         raw_finding.get("target_path") or raw_finding.get("field_path") or "document"
     )
+    target_paths = _target_paths_from_raw(raw_finding, primary=target_path)
     review_status = str(raw_finding.get("status") or "needs_more_evidence")
     reason = str(
         raw_finding.get("rationale")
@@ -111,6 +113,7 @@ def _document2_review_findings_from_structured_finding(
             reviewer_agent=result.agent_name,
             expectation_id=expectation_id,
             target_path=target_path,
+            target_paths=target_paths,
             severity=_severity_from_review_status(review_status),
             reason=reason,
             evidence_assessments=[assessment],
@@ -119,6 +122,18 @@ def _document2_review_findings_from_structured_finding(
         )
         for expectation_id in _expectation_ids_for_finding(raw_finding, pending_patches)
     ]
+
+
+def _target_paths_from_raw(raw_finding: dict[str, Any], *, primary: str) -> list[str]:
+    raw_paths = raw_finding.get("target_paths")
+    if raw_paths is None:
+        raw_paths = raw_finding.get("field_paths")
+    paths: list[str] = []
+    if isinstance(raw_paths, list):
+        paths.extend(str(path) for path in raw_paths if str(path or "").strip())
+    if primary and primary not in paths:
+        paths.insert(0, primary)
+    return list(dict.fromkeys(paths))
 
 
 def _expectation_ids_for_finding(

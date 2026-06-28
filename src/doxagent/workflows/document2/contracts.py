@@ -14,9 +14,13 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from doxagent.models import (
     AgentName,
+    EventMonitoringDirection,
     EvidenceRef,
     ExpectationUnitDocument,
     NonEmptyStr,
+    RealizedFact,
+    ResearchSection,
+    VariableStatus,
     new_id,
 )
 
@@ -47,6 +51,14 @@ Document2TransactionType = Literal[
     "promotion",
 ]
 Document2TransactionStatus = Literal["accepted", "rejected", "failed"]
+Document2FieldFamily = Literal[
+    "realized_facts",
+    "key_variables",
+    "event_monitoring_direction",
+    "market_view",
+    "market_evidence",
+    "cross_field",
+]
 Document2PromotionBlockerType = Literal[
     "candidate_not_ready",
     "blocking_finding",
@@ -102,6 +114,7 @@ class Document2ReviewFinding(Document2ContractModel):
     reviewer_agent: AgentName
     expectation_id: NonEmptyStr
     target_path: NonEmptyStr
+    target_paths: list[NonEmptyStr] = Field(default_factory=list)
     severity: Document2FindingSeverity
     reason: NonEmptyStr
     evidence_assessments: list[EvidenceAssessment] = Field(default_factory=list)
@@ -116,6 +129,88 @@ class Document2ReviewFinding(Document2ContractModel):
             assessment.blocks_promotion for assessment in self.evidence_assessments
         ):
             self.blocks_promotion = True
+        return self
+
+
+class Document2FieldRepairTask(Document2ContractModel):
+    task_id: NonEmptyStr = Field(default_factory=lambda: new_id("d2repair"))
+    expectation_id: NonEmptyStr
+    field_family: Document2FieldFamily
+    target_paths: list[NonEmptyStr]
+    finding_ids: list[NonEmptyStr] = Field(default_factory=list)
+    objection_ids: list[NonEmptyStr] = Field(default_factory=list)
+    findings: list[Document2ReviewFinding] = Field(default_factory=list)
+    source_agents: list[AgentName] = Field(default_factory=list)
+    current_candidate: ExpectationUnitDocument
+    allowed_output_contract: dict[str, Any]
+    requires_full_candidate: bool = False
+
+    @model_validator(mode="after")
+    def cross_field_controls_full_candidate(self) -> Document2FieldRepairTask:
+        self.requires_full_candidate = self.field_family == "cross_field"
+        return self
+
+
+class Document2ResolutionDecisionRecord(Document2ContractModel):
+    objection_id: NonEmptyStr | None = None
+    finding_id: NonEmptyStr | None = None
+    decision: Document2ResolutionDecision
+    resolution_note: NonEmptyStr
+    changed_paths: list[NonEmptyStr] = Field(default_factory=list)
+    evidence_refs: list[EvidenceRef] = Field(default_factory=list)
+
+
+class Document2FieldRepairResult(Document2ContractModel):
+    task_id: NonEmptyStr
+    expectation_id: NonEmptyStr
+    field_family: Document2FieldFamily
+    decision: Document2ResolutionDecision = "deferred"
+    decisions: list[Document2ResolutionDecisionRecord] = Field(default_factory=list)
+    target_finding_ids: list[NonEmptyStr] = Field(default_factory=list)
+    realized_facts: list[RealizedFact] | None = None
+    key_variables: list[VariableStatus] | None = None
+    event_monitoring_direction: EventMonitoringDirection | None = None
+    market_view: ResearchSection | None = None
+    revised_candidate: ExpectationUnitDocument | None = None
+    evidence_requests: list[NonEmptyStr] = Field(default_factory=list)
+    unresolved_finding_ids: list[NonEmptyStr] = Field(default_factory=list)
+    unresolved_reason: NonEmptyStr | None = None
+    rationale: NonEmptyStr
+
+    @model_validator(mode="after")
+    def field_family_controls_output_shape(self) -> Document2FieldRepairResult:
+        typed_outputs = [
+            self.realized_facts is not None,
+            self.key_variables is not None,
+            self.event_monitoring_direction is not None,
+            self.market_view is not None,
+        ]
+        accepted_decisions = {self.decision}
+        accepted_decisions.update(item.decision for item in self.decisions)
+        needs_revision = bool(
+            accepted_decisions.intersection({"accepted", "partially_accepted"})
+        )
+        if self.field_family == "cross_field":
+            if any(typed_outputs):
+                raise ValueError("cross_field repair must not return typed field updates")
+            if needs_revision and self.revised_candidate is None:
+                raise ValueError("cross_field accepted repair requires revised_candidate")
+            return self
+        if self.revised_candidate is not None:
+            raise ValueError("single-field repair must not return revised_candidate")
+        if needs_revision and not any(typed_outputs):
+            raise ValueError("single-field accepted repair requires one typed field update")
+        allowed = {
+            "realized_facts": self.realized_facts is not None,
+            "key_variables": self.key_variables is not None,
+            "event_monitoring_direction": self.event_monitoring_direction is not None,
+            "market_view": self.market_view is not None,
+            "market_evidence": self.market_view is not None,
+        }
+        if any(typed_outputs) and not allowed[self.field_family]:
+            raise ValueError("typed field update does not match field_family")
+        if sum(1 for present in typed_outputs if present) > 1:
+            raise ValueError("single-field repair must return exactly one typed field update")
         return self
 
 
@@ -140,15 +235,6 @@ class Document2Revision(Document2ContractModel):
         if not self.evidence_refs:
             self.evidence_refs = _dedupe_evidence_refs(self.after.market_view.evidence_refs)
         return self
-
-
-class Document2ResolutionDecisionRecord(Document2ContractModel):
-    objection_id: NonEmptyStr | None = None
-    finding_id: NonEmptyStr | None = None
-    decision: Document2ResolutionDecision
-    resolution_note: NonEmptyStr
-    changed_paths: list[NonEmptyStr] = Field(default_factory=list)
-    evidence_refs: list[EvidenceRef] = Field(default_factory=list)
 
 
 class Document2ResolutionPlan(Document2ContractModel):

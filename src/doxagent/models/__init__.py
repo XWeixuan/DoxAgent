@@ -3,6 +3,7 @@
 from doxagent.models.agent_outputs import (
     DelegatedRetrievalRequest,
     DelegatedRetrievalResult,
+    Document2FieldRepairResultOutput,
     Document2ResolutionDecisionOutput,
     Document2ResolutionPlanOutput,
     DoxAtlasAuditFinding,
@@ -90,6 +91,7 @@ __all__ = [
     "DelegationStatus",
     "DelegatedRetrievalRequest",
     "DelegatedRetrievalResult",
+    "Document2FieldRepairResultOutput",
     "Document2ResolutionDecisionOutput",
     "Document2ResolutionPlanOutput",
     "DocumentType",

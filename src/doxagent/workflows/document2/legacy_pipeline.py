@@ -30,6 +30,17 @@ _DOCUMENT2_REVIEW_STATE_KEY = "document2_review_state"
 
 
 class Document2LegacyPipelineMixin:
+    def _assert_no_proposed_patches(
+        self,
+        result: AgentResult,
+        node: WorkflowNode,
+        message: str,
+    ) -> None:
+        if result.proposed_patches:
+            raise WorkflowContractError(
+                f"{node.value} forbids proposed_patches: {message}"
+            )
+
     def _o1_expectation_generation_context(self) -> dict[str, Any]:
         return {
             "required_tool_names": ["doxa_get_narrative_report"],
@@ -111,6 +122,11 @@ class Document2LegacyPipelineMixin:
         )
         self._write_working_memory(checkpoint, result, "a1_expectation_construction_review")
         self._validate_agent_success(result, node, require_patches=False)
+        self._assert_no_proposed_patches(
+            result,
+            node,
+            "A1 construction review may raise objections or delegations only.",
+        )
         for objection in result.objections:
             self.blackboard.create_objection(
                 checkpoint.run_id,
@@ -202,6 +218,11 @@ class Document2LegacyPipelineMixin:
             },
         )
         self._validate_agent_success(result, node, require_patches=False)
+        self._assert_no_proposed_patches(
+            result,
+            node,
+            "O1 construction resolver must return revised shells, not BlackboardPatch.",
+        )
         result = self._ensure_o1_narrative_tool_evidence(checkpoint, result, node)
         self._write_working_memory(checkpoint, result, "expectation_construction_resolution")
         self._validate_o1_narrative_tool_gap(result, node)
@@ -377,6 +398,11 @@ class Document2LegacyPipelineMixin:
             cache_key = self._expectation_detail_cache_key(order, shell)
             try:
                 self._validate_agent_success(result, node, require_patches=False)
+                self._assert_no_proposed_patches(
+                    result,
+                    node,
+                    "O1 detail generation must return ExpectationDetailCandidateResult.",
+                )
                 result = self._ensure_o1_narrative_tool_evidence(current, result, node)
                 if not cached:
                     self._write_working_memory(
@@ -925,6 +951,11 @@ class Document2LegacyPipelineMixin:
             candidate_result = ExpectationDetailCandidateResult.model_validate(
                 candidate_result,
             )
+        if candidate_result.delegations:
+            raise WorkflowContractError(
+                "GenerateExpectationDetails detail candidates must not return delegations; "
+                "record evidence gaps in unknowns or rationale."
+            )
         document = candidate_result.candidate
         self._validate_expectation_detail_candidate_identity(ticker, shell, document)
         return ExpectationUnitCandidate(
@@ -1286,10 +1317,11 @@ class Document2LegacyPipelineMixin:
                 )
                 continue
             try:
-                if result.proposed_patches:
-                    raise WorkflowContractError(
-                        "ReviewExpectationFields reviewers must not propose patches."
-                    )
+                self._assert_no_proposed_patches(
+                    result,
+                    node,
+                    "ReviewExpectationFields reviewers must not propose patches.",
+                )
                 self._write_working_memory(checkpoint, result, spec["content_type"])
                 self._validate_agent_success(result, node, require_patches=False)
             except WorkflowContractError as exc:

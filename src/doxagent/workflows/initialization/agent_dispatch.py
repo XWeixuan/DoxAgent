@@ -334,11 +334,27 @@ class InitializationAgentDispatchMixin:
             node is WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS
             and task.agent_name is AgentName.O1_EXPECTATION_OWNER
         ):
+            task_timeout = self._task_model_request_timeout_seconds(task)
+            if task_timeout is not None:
+                return task_timeout
             return min(
                 _O1_RESOLVER_TIMEOUT_SECONDS,
                 float(self.settings.model_request_timeout_seconds),
             )
         return float(self.settings.workflow_agent_stale_after_seconds)
+
+    def _task_model_request_timeout_seconds(self, task: AgentTask) -> float | None:
+        budget = task.input_context.get("react_runtime_budget")
+        if not isinstance(budget, dict):
+            return None
+        raw_timeout = budget.get("model_request_timeout_seconds")
+        if raw_timeout is None:
+            return None
+        try:
+            timeout = float(raw_timeout)
+        except (TypeError, ValueError):
+            return None
+        return timeout if timeout > 0 else None
 
     def _serial_agent_dispatch_checkpoint(
         self,

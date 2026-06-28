@@ -24,6 +24,7 @@ from doxagent.models import (
     new_id,
 )
 from doxagent.workflows.document2.contracts import (
+    Document2FieldRepairResult,
     Document2ResolutionPlan,
     Document2Revision,
     Document2TransactionAudit,
@@ -57,6 +58,45 @@ def document2_revision_from_resolution_plan(
     )
 
 
+def document2_revision_from_field_repair_result(
+    result: Document2FieldRepairResult,
+    *,
+    before_patch: BlackboardPatch | None = None,
+) -> Document2Revision | None:
+    before = _document_from_patch(before_patch)
+    if result.field_family == "cross_field":
+        if result.revised_candidate is None:
+            return None
+        return Document2Revision(
+            expectation_id=result.expectation_id,
+            before=before,
+            after=result.revised_candidate,
+            source="resolution_plan",
+            rationale=result.rationale,
+            evidence_refs=_field_repair_evidence_refs(result),
+            changed_paths=_field_repair_changed_paths(result),
+            review_finding_ids=list(result.target_finding_ids),
+        )
+    if not _field_repair_has_typed_update(result):
+        return None
+    if before is None:
+        raise ValueError("single-field Document2 repair requires an existing candidate.")
+    payload = before.model_dump(mode="json")
+    changed_path = _field_repair_merge_path(result)
+    payload[changed_path] = _field_repair_update_payload(result)
+    after = ExpectationUnitDocument.model_validate(payload)
+    return Document2Revision(
+        expectation_id=result.expectation_id,
+        before=before,
+        after=after,
+        source="resolution_plan",
+        rationale=result.rationale,
+        evidence_refs=_field_repair_evidence_refs(result),
+        changed_paths=_field_repair_changed_paths(result) or [f"document.{changed_path}"],
+        review_finding_ids=list(result.target_finding_ids),
+    )
+
+
 def legacy_patch_from_document2_revision(
     revision: Document2Revision,
     *,
@@ -77,6 +117,35 @@ def legacy_patch_from_document2_revision(
         evidence_refs=list(revision.evidence_refs),
         author_agent=AgentName.SYSTEM,
         validation_status=ValidationStatus.VALID,
+    )
+
+
+def document2_transaction_audit_from_field_repair(
+    result: Document2FieldRepairResult,
+    *,
+    status: str,
+    revision: Document2Revision | None = None,
+    closed_objection_ids: list[str] | None = None,
+    retained_objection_ids: list[str] | None = None,
+    notes: list[str] | None = None,
+) -> Document2TransactionAudit:
+    return Document2TransactionAudit(
+        transaction_type="resolution",
+        status=status,
+        expectation_id=result.expectation_id,
+        input_summary={
+            "task_id": result.task_id,
+            "field_family": result.field_family,
+            "decision": result.decision,
+            "decision_count": len(result.decisions),
+            "target_finding_ids": list(result.target_finding_ids),
+        },
+        output_summary={
+            "revision_id": revision.revision_id if revision is not None else None,
+            "closed_objection_ids": list(closed_objection_ids or []),
+            "retained_objection_ids": list(retained_objection_ids or []),
+        },
+        notes=list(notes or []),
     )
 
 
@@ -215,10 +284,86 @@ def validate_resolution_plan_for_transaction(plan: Document2ResolutionPlan) -> N
             )
 
 
+def validate_field_repair_result_for_transaction(result: Document2FieldRepairResult) -> None:
+    for decision in result.decisions:
+        if decision.decision == "deferred":
+            continue
+        if not decision.changed_paths and not decision.evidence_refs:
+            raise ValueError(
+                "Document2 field repair decisions require changed_paths or evidence_refs."
+            )
+
+
 def _document_from_patch(patch: BlackboardPatch | None) -> ExpectationUnitDocument | None:
     if patch is None or not isinstance(patch.after, dict):
         return None
     return ExpectationUnitDocument.model_validate(patch.after)
+
+
+def _field_repair_has_typed_update(result: Document2FieldRepairResult) -> bool:
+    return any(
+        item is not None
+        for item in (
+            result.realized_facts,
+            result.key_variables,
+            result.event_monitoring_direction,
+            result.market_view,
+        )
+    )
+
+
+def _field_repair_merge_path(result: Document2FieldRepairResult) -> str:
+    if result.realized_facts is not None:
+        return "realized_facts"
+    if result.key_variables is not None:
+        return "key_variables"
+    if result.event_monitoring_direction is not None:
+        return "event_monitoring_direction"
+    if result.market_view is not None:
+        return "market_view"
+    raise ValueError("Document2 field repair result has no typed update.")
+
+
+def _field_repair_update_payload(result: Document2FieldRepairResult) -> Any:
+    if result.realized_facts is not None:
+        return [item.model_dump(mode="json") for item in result.realized_facts]
+    if result.key_variables is not None:
+        return [item.model_dump(mode="json") for item in result.key_variables]
+    if result.event_monitoring_direction is not None:
+        return result.event_monitoring_direction.model_dump(mode="json")
+    if result.market_view is not None:
+        return result.market_view.model_dump(mode="json")
+    raise ValueError("Document2 field repair result has no typed update.")
+
+
+def _field_repair_evidence_refs(result: Document2FieldRepairResult) -> list[EvidenceRef]:
+    refs: dict[str, EvidenceRef] = {}
+    for decision in result.decisions:
+        for ref in decision.evidence_refs:
+            refs.setdefault(ref.evidence_id, ref)
+    if result.market_view is not None:
+        for ref in result.market_view.evidence_refs:
+            refs.setdefault(ref.evidence_id, ref)
+    if result.realized_facts is not None:
+        for fact in result.realized_facts:
+            for ref in [*fact.evidence_refs, *fact.price_reaction.evidence_refs]:
+                refs.setdefault(ref.evidence_id, ref)
+    if result.key_variables is not None:
+        for variable in result.key_variables:
+            for ref in variable.evidence_refs:
+                refs.setdefault(ref.evidence_id, ref)
+    if result.revised_candidate is not None:
+        for ref in result.revised_candidate.market_view.evidence_refs:
+            refs.setdefault(ref.evidence_id, ref)
+    return list(refs.values())
+
+
+def _field_repair_changed_paths(result: Document2FieldRepairResult) -> list[str]:
+    paths: dict[str, None] = {}
+    for decision in result.decisions:
+        for path in decision.changed_paths:
+            paths.setdefault(path, None)
+    return list(paths)
 
 
 def _plan_evidence_refs(plan: Document2ResolutionPlan) -> list[EvidenceRef]:

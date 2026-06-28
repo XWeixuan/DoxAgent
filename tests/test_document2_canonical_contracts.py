@@ -3,6 +3,7 @@ from pydantic import ValidationError
 
 from doxagent.models import (
     AgentName,
+    AgentResult,
     BlackboardPatch,
     BlackboardTarget,
     DocumentType,
@@ -12,17 +13,20 @@ from doxagent.models import (
     ObjectionSeverity,
     ObjectionStatus,
     PatchOperation,
+    ResultStatus,
     ValidationStatus,
     new_id,
 )
 from doxagent.workflows.document2 import (
     PLACEHOLDER_FINDING_SOURCE,
+    Document2FieldRepairResult,
     Document2PromotionCandidate,
     Document2ResolutionDecisionRecord,
     Document2ResolutionPlan,
     Document2ReviewFinding,
     EvidenceAssessment,
     ExpectationUnitCandidate,
+    document2_field_repair_result_from_agent_result,
     placeholder_findings_from_document,
 )
 from doxagent.workflows.document2.numeric_sanity import (
@@ -36,11 +40,14 @@ from doxagent.workflows.document2.promotion import (
     document2_promotion_blockers,
     document2_promotion_candidate_from_patch,
 )
+from doxagent.workflows.document2.review import document2_review_findings_from_agent_result
 from doxagent.workflows.document2.transaction import (
+    document2_revision_from_field_repair_result,
     document2_revision_from_resolution_plan,
     document2_transaction_audit,
     legacy_patch_from_document2_revision,
 )
+from doxagent.workflows.errors import WorkflowContractError
 from tests.fixtures.phase1_contracts import TICKER, evidence_ref, expectation_document
 
 
@@ -301,3 +308,118 @@ def test_resolution_plan_transaction_projects_revision_to_legacy_patch_and_audit
     assert patch.after["why_it_matters"] == "Revised by transaction layer."
     assert audit.transaction_type == "resolution"
     assert audit.output_summary["closed_objection_ids"] == ["obj_accept_revision"]
+
+
+def test_review_finding_target_paths_are_preserved() -> None:
+    document = _expectation_document()
+    result = AgentResult(
+        task_id="task_review_target_paths",
+        agent_name=AgentName.C3_INDUSTRY_RESEARCH,
+        status=ResultStatus.SUCCEEDED,
+        payload={
+            "structured": {
+                "findings": [
+                    {
+                        "expectation_id": document.expectation_id,
+                        "field_path": "document",
+                        "target_paths": [
+                            "realized_facts",
+                            "event_monitoring_direction",
+                        ],
+                        "status": "needs_more_evidence",
+                        "rationale": "Realized facts and monitoring direction disagree.",
+                        "evidence_refs": [evidence_ref().model_dump(mode="json")],
+                    }
+                ],
+                "rationale": "Review complete.",
+            }
+        },
+    )
+
+    findings = document2_review_findings_from_agent_result(
+        result,
+        [_expectation_patch(document.model_dump(mode="json"))],
+    )
+
+    assert findings[0].target_path == "document"
+    assert findings[0].target_paths == [
+        "document",
+        "realized_facts",
+        "event_monitoring_direction",
+    ]
+
+
+def test_single_field_repair_rejects_arbitrary_patch_shapes() -> None:
+    result = AgentResult(
+        task_id="task_bad_field_repair",
+        agent_name=AgentName.O1_EXPECTATION_OWNER,
+        status=ResultStatus.SUCCEEDED,
+        payload={
+            "structured": {
+                "task_id": "d2repair_bad",
+                "expectation_id": "exp_ai_demand",
+                "field_family": "market_view",
+                "decision": "accepted",
+                "decisions": [],
+                "patches": [{"op": "replace", "path": "/market_view"}],
+                "path_map": {"market_view": "replacement"},
+                "rationale": "Invalid arbitrary patch output.",
+            }
+        },
+    )
+
+    with pytest.raises(WorkflowContractError, match="arbitrary patch keys"):
+        document2_field_repair_result_from_agent_result(result)
+
+
+def test_single_field_repair_merges_typed_section_into_full_revision() -> None:
+    before = _expectation_document()
+    before_patch = _expectation_patch(before.model_dump(mode="json"))
+    market_view = before.market_view.model_copy(
+        update={
+            "text": "Revised market view text with clearer evidence linkage.",
+            "summary": "Revised market view.",
+        },
+        deep=True,
+    )
+    result = Document2FieldRepairResult(
+        task_id="d2repair_exp_ai_demand_market_view",
+        expectation_id=before.expectation_id,
+        field_family="market_view",
+        decision="accepted",
+        decisions=[
+            Document2ResolutionDecisionRecord(
+                objection_id="obj_market_view",
+                finding_id="finding_market_view",
+                decision="accepted",
+                resolution_note="Updated market_view only.",
+                changed_paths=["document.market_view"],
+                evidence_refs=[evidence_ref()],
+            )
+        ],
+        target_finding_ids=["finding_market_view"],
+        market_view=market_view,
+        rationale="Merge market_view field update.",
+    )
+
+    revision = document2_revision_from_field_repair_result(
+        result,
+        before_patch=before_patch,
+    )
+
+    assert revision is not None
+    assert revision.after.expectation_id == before.expectation_id
+    assert revision.after.market_view.text == market_view.text
+    assert revision.after.realized_facts == before.realized_facts
+    assert revision.changed_paths == ["document.market_view"]
+
+
+def test_promotion_rejects_partial_field_update_patch() -> None:
+    document = _expectation_document()
+    partial_patch = _expectation_patch(
+        {"expectation_id": document.expectation_id, "market_view": {}},
+        field_path="market_view",
+    )
+
+    with pytest.raises(ValueError, match="promotion candidate schema validation failed"):
+        document2_promotion_candidate_from_patch(partial_patch)

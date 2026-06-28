@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 from doxagent.models.agent_outputs import (
     DelegatedRetrievalResult,
+    Document2FieldRepairResultOutput,
     Document2ResolutionPlanOutput,
     DoxAtlasAuditResult,
     ExpectationConstructionResult,
@@ -21,6 +22,7 @@ from doxagent.models.documents import (
 
 REQUIRED_OUTPUT_SCHEMA_MODELS: dict[str, type[BaseModel]] = {
     "DelegatedRetrievalResult": DelegatedRetrievalResult,
+    "Document2FieldRepairResult": Document2FieldRepairResultOutput,
     "DoxAtlasAuditResult": DoxAtlasAuditResult,
     "Document2ResolutionPlan": Document2ResolutionPlanOutput,
     "ExpectationConstructionResult": ExpectationConstructionResult,
