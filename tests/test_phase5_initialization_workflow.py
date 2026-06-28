@@ -427,6 +427,71 @@ def _document2_repair_checkpoint(
     return checkpoint, document, factory
 
 
+def _document2_repair_checkpoint_with_expectations(
+    workflow: BlackboardInitializationWorkflow,
+    expectation_ids: list[str],
+    *,
+    ticker: str = "MU",
+) -> tuple[WorkflowCheckpoint, list[object], InitializationMockResultFactory]:
+    run = workflow.blackboard.start_run(ticker, AgentName.SYSTEM)
+    factory = InitializationMockResultFactory()
+    documents = []
+    patches = []
+    for index, expectation_id in enumerate(expectation_ids):
+        document = factory._expectation_unit(ticker).model_copy(
+            update={
+                "document_id": new_id("doc"),
+                "expectation_id": expectation_id,
+                "expectation_name": f"{ticker} expectation {index + 1}",
+            },
+            deep=True,
+        )
+        documents.append(document)
+        patches.append(
+            factory._document_patch(
+                document,
+                DocumentType.EXPECTATION_UNIT,
+                AgentName.O1_EXPECTATION_OWNER,
+                expectation_id=document.expectation_id,
+            )
+        )
+    checkpoint = WorkflowCheckpoint(
+        run_id=run.run_id,
+        ticker=ticker,
+        pending_patches=patches,
+    )
+    return checkpoint, documents, factory
+
+
+def _create_document2_objection(
+    workflow: BlackboardInitializationWorkflow,
+    checkpoint: WorkflowCheckpoint,
+    *,
+    objection_id: str,
+    reason: str,
+    expectation_id: str | None = None,
+    document_id: str | None = None,
+    field_path: str = "document",
+) -> Objection:
+    objection = Objection(
+        objection_id=objection_id,
+        source_agent=AgentName.C1_FUNDAMENTAL_RESEARCH,
+        target=BlackboardTarget(
+            document_type=DocumentType.EXPECTATION_UNIT,
+            ticker=checkpoint.ticker,
+            expectation_id=expectation_id,
+            document_id=document_id,
+            field_path=field_path,
+        ),
+        severity=ObjectionSeverity.BLOCKING,
+        reason=reason,
+        taxonomy="document2_review_finding",
+        target_path=field_path,
+        status=ObjectionStatus.OPEN,
+    )
+    return workflow.blackboard.create_objection(checkpoint.run_id, objection)
+
+
 def _blocking_finding_with_objection(
     workflow: BlackboardInitializationWorkflow,
     checkpoint: WorkflowCheckpoint,
@@ -608,6 +673,172 @@ def test_document2_field_repair_tasks_execute_cross_field_before_single_field() 
     tasks = workflow._document2_field_repair_tasks(checkpoint, run.objections)
 
     assert [task.field_family for task in tasks] == ["cross_field", "market_view"]
+
+
+def test_document2_field_repair_tasks_attribute_target_expectation_id() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        execution_mode="agent_runner",
+        runner=ParallelStructuredInitializationRunner(),
+    )
+    checkpoint, documents, _ = _document2_repair_checkpoint_with_expectations(
+        workflow,
+        ["expectation_mu_001", "expectation_mu_002"],
+    )
+    _create_document2_objection(
+        workflow,
+        checkpoint,
+        objection_id="obj_target_expectation",
+        expectation_id=documents[0].expectation_id,
+        field_path="market_view.text",
+        reason="Market view needs more support.",
+    )
+    run = workflow.blackboard.get_run(checkpoint.run_id)
+
+    tasks = workflow._document2_field_repair_tasks(checkpoint, run.objections)
+
+    assert len(tasks) == 1
+    assert tasks[0].expectation_id == "expectation_mu_001"
+    assert tasks[0].field_family == "market_view"
+    assert tasks[0].current_candidate.expectation_id == "expectation_mu_001"
+
+
+def test_document2_field_repair_tasks_attribute_single_expectation_id_from_reason() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        execution_mode="agent_runner",
+        runner=ParallelStructuredInitializationRunner(),
+    )
+    checkpoint, _documents, _ = _document2_repair_checkpoint_with_expectations(
+        workflow,
+        ["expectation_mu_001", "expectation_mu_002"],
+    )
+    _create_document2_objection(
+        workflow,
+        checkpoint,
+        objection_id="obj_reason_single",
+        field_path="document",
+        reason="expectation_mu_001 still treats the Q3 result as a future event.",
+    )
+    run = workflow.blackboard.get_run(checkpoint.run_id)
+
+    tasks = workflow._document2_field_repair_tasks(checkpoint, run.objections)
+
+    assert [task.expectation_id for task in tasks] == ["expectation_mu_001"]
+    assert all(task.expectation_id != "unknown_expectation" for task in tasks)
+
+
+def test_document2_field_repair_tasks_fan_out_multi_expectation_reason() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        execution_mode="agent_runner",
+        runner=ParallelStructuredInitializationRunner(),
+    )
+    checkpoint, _documents, _ = _document2_repair_checkpoint_with_expectations(
+        workflow,
+        ["expectation_mu_001", "expectation_mu_002"],
+    )
+    _create_document2_objection(
+        workflow,
+        checkpoint,
+        objection_id="obj_reason_multi",
+        field_path="document",
+        reason=(
+            "The same stale Q3 actuals issue affects expectation_mu_001 and "
+            "expectation_mu_002."
+        ),
+    )
+    run = workflow.blackboard.get_run(checkpoint.run_id)
+
+    tasks = workflow._document2_field_repair_tasks(checkpoint, run.objections)
+    updated = workflow.blackboard.get_run(checkpoint.run_id)
+    original = next(
+        objection
+        for objection in updated.objections
+        if objection.objection_id == "obj_reason_multi"
+    )
+    child_ids = [
+        objection_id
+        for task in tasks
+        for objection_id in task.objection_ids
+    ]
+
+    assert [task.expectation_id for task in tasks] == [
+        "expectation_mu_001",
+        "expectation_mu_002",
+    ]
+    assert [task.field_family for task in tasks] == ["cross_field", "cross_field"]
+    assert original.status is ObjectionStatus.RESOLVED
+    assert all(objection_id != "obj_reason_multi" for objection_id in child_ids)
+    assert len(child_ids) == 2
+
+
+def test_document2_field_repair_tasks_fan_out_document_level_data_gap() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        execution_mode="agent_runner",
+        runner=ParallelStructuredInitializationRunner(),
+    )
+    checkpoint, _documents, _ = _document2_repair_checkpoint_with_expectations(
+        workflow,
+        ["expectation_mu_001", "expectation_mu_002"],
+    )
+    _create_document2_objection(
+        workflow,
+        checkpoint,
+        objection_id="obj_data_gap_all_candidates",
+        field_path="document",
+        reason="Q3 actuals data gap affects both pending candidates and 两份预期补丁.",
+    )
+    run = workflow.blackboard.get_run(checkpoint.run_id)
+
+    tasks = workflow._document2_field_repair_tasks(checkpoint, run.objections)
+    updated = workflow.blackboard.get_run(checkpoint.run_id)
+    original = next(
+        objection
+        for objection in updated.objections
+        if objection.objection_id == "obj_data_gap_all_candidates"
+    )
+
+    assert [task.expectation_id for task in tasks] == [
+        "expectation_mu_001",
+        "expectation_mu_002",
+    ]
+    assert all(task.task_id.startswith("d2repair_expectation_mu_") for task in tasks)
+    assert original.status is ObjectionStatus.RESOLVED
+    assert all(
+        "obj_data_gap_all_candidates" not in task.objection_ids
+        for task in tasks
+    )
+
+
+def test_document2_field_repair_tasks_create_routing_blocker_for_unroutable_multi_candidate(
+) -> None:
+    workflow = BlackboardInitializationWorkflow(
+        execution_mode="agent_runner",
+        runner=ParallelStructuredInitializationRunner(),
+    )
+    checkpoint, _documents, _ = _document2_repair_checkpoint_with_expectations(
+        workflow,
+        ["expectation_mu_001", "expectation_mu_002"],
+    )
+    _create_document2_objection(
+        workflow,
+        checkpoint,
+        objection_id="obj_unroutable_document_level",
+        field_path="document",
+        reason="A generic document-level issue needs review before promotion.",
+    )
+    run = workflow.blackboard.get_run(checkpoint.run_id)
+
+    tasks = workflow._document2_field_repair_tasks(checkpoint, run.objections)
+    updated = workflow.blackboard.get_run(checkpoint.run_id)
+    routing_blockers = [
+        objection
+        for objection in updated.objections
+        if objection.taxonomy == "unroutable_document_level_objection"
+    ]
+
+    assert tasks == []
+    assert len(routing_blockers) == 1
+    assert routing_blockers[0].is_unresolved is True
+    assert "obj_unroutable_document_level" in routing_blockers[0].reason
 
 
 def test_document2_field_repair_context_sets_family_specific_timeouts() -> None:

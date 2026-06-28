@@ -232,20 +232,47 @@ class Document2NodeMatrixRunner(StructuredInitializationRunner):
 
     def _mutate_review(self, task: AgentTask, result: AgentResult) -> AgentResult:
         if (
-            self.review_case == "structured_blocking_finding"
+            self.review_case
+            in {
+                "structured_blocking_finding",
+                "structured_blocking_finding_without_expectation_id",
+                "structured_blocking_finding_with_target_paths",
+                "structured_document_level_data_gap_without_expectation_id",
+            }
             and task.agent_name is AgentName.C1_FUNDAMENTAL_RESEARCH
         ):
             structured = self._structured_payload(result)
             evidence = self.factory._evidence(EvidenceSourceType.EXTERNAL_REPORT)
-            structured["findings"] = [
-                {
-                    "expectation_id": "exp_mock_core",
-                    "target_path": "key_variables[0].current_status",
-                    "status": "unsupported",
-                    "rationale": "Fixture reviewer found unsupported current-status evidence.",
-                    "evidence_refs": [evidence.model_dump(mode="json")],
-                }
-            ]
+            finding = {
+                "expectation_id": "exp_mock_core",
+                "target_path": "key_variables[0].current_status",
+                "status": "unsupported",
+                "rationale": "Fixture reviewer found unsupported current-status evidence.",
+                "evidence_refs": [evidence.model_dump(mode="json")],
+            }
+            if self.review_case == "structured_blocking_finding_without_expectation_id":
+                finding.pop("expectation_id", None)
+                finding["rationale"] = (
+                    "Fixture reviewer omitted expectation_id but the finding must be "
+                    "routed to pending expectation candidates, not unknown_expectation."
+                )
+            elif self.review_case == "structured_blocking_finding_with_target_paths":
+                finding["target_path"] = "document"
+                finding["target_paths"] = [
+                    "realized_facts",
+                    "event_monitoring_direction",
+                ]
+                finding["rationale"] = (
+                    "Fixture reviewer found a cross-field mismatch between facts and "
+                    "monitoring direction."
+                )
+            elif self.review_case == "structured_document_level_data_gap_without_expectation_id":
+                finding.pop("expectation_id", None)
+                finding["target_path"] = "document"
+                finding["rationale"] = (
+                    "Fixture document-level data gap affects both pending candidates."
+                )
+            structured["findings"] = [finding]
             return self._with_structured(result, structured)
         if (
             self.review_case == "reviewer_patch_leak"
@@ -846,6 +873,30 @@ def test_generate_expectation_details_node_matrix(
             id="ReviewExpectationFields__reviewer_structured_blocking_finding__bridged_objection",
         ),
         pytest.param(
+            None,
+            "structured_blocking_finding_without_expectation_id",
+            WorkflowRunStatus.RUNNING,
+            "",
+            id=(
+                "ReviewExpectationFields__reviewer_omits_expectation_id__"
+                "attributed_not_unknown"
+            ),
+        ),
+        pytest.param(
+            None,
+            "structured_blocking_finding_with_target_paths",
+            WorkflowRunStatus.RUNNING,
+            "",
+            id="ReviewExpectationFields__reviewer_target_paths__preserved_for_cross_field",
+        ),
+        pytest.param(
+            None,
+            "structured_document_level_data_gap_without_expectation_id",
+            WorkflowRunStatus.RUNNING,
+            "",
+            id="ReviewExpectationFields__document_level_data_gap__fanout_to_candidates",
+        ),
+        pytest.param(
             "placeholder_text",
             None,
             WorkflowRunStatus.RUNNING,
@@ -892,7 +943,13 @@ def test_review_expectation_fields_node_matrix(
     if expected_status is WorkflowRunStatus.RUNNING:
         _assert_running_to(result, WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS)
         findings = result.checkpoint.metadata.get(DOCUMENT2_REVIEW_FINDINGS_KEY, [])
-        if detail_case is not None or review_case == "structured_blocking_finding":
+        review_finding_cases = {
+            "structured_blocking_finding",
+            "structured_blocking_finding_without_expectation_id",
+            "structured_blocking_finding_with_target_paths",
+            "structured_document_level_data_gap_without_expectation_id",
+        }
+        if detail_case is not None or review_case in review_finding_cases:
             assert findings
             assert result.summary.unresolved_objection_count >= 1
             blocking = [
@@ -902,6 +959,22 @@ def test_review_expectation_fields_node_matrix(
             ]
             assert blocking
             assert all(finding["source_objection_id"] for finding in blocking)
+            assert all(
+                finding["expectation_id"] != "unknown_expectation"
+                for finding in blocking
+            )
+            if review_case == "structured_blocking_finding_with_target_paths":
+                assert any(
+                    finding["target_paths"]
+                    == ["document", "realized_facts", "event_monitoring_direction"]
+                    for finding in blocking
+                )
+            if review_case in {
+                "structured_blocking_finding_without_expectation_id",
+                "structured_document_level_data_gap_without_expectation_id",
+            }:
+                expectation_ids = {finding["expectation_id"] for finding in blocking}
+                assert {"exp_mock_core", "exp_mock_risk"}.issubset(expectation_ids)
         else:
             assert findings == []
     else:
@@ -918,6 +991,28 @@ def test_review_expectation_fields_node_matrix(
             WorkflowRunStatus.RUNNING,
             "",
             id="ResolveObjectionsAndDelegations__canonical_resolution__accepted",
+        ),
+        pytest.param(
+            None,
+            "structured_blocking_finding_without_expectation_id",
+            None,
+            WorkflowRunStatus.RUNNING,
+            "",
+            id=(
+                "ResolveObjectionsAndDelegations__reviewer_omits_expectation_id__"
+                "routed_to_candidates"
+            ),
+        ),
+        pytest.param(
+            None,
+            "structured_document_level_data_gap_without_expectation_id",
+            None,
+            WorkflowRunStatus.RUNNING,
+            "",
+            id=(
+                "ResolveObjectionsAndDelegations__document_level_data_gap__"
+                "fanout_tasks_resolved"
+            ),
         ),
         pytest.param(
             None,

@@ -42,6 +42,9 @@ from doxagent.workflows.initialization.shared import *
 
 _DOCUMENT2_PENDING_REVISIONS_KEY = "document2_pending_revisions"
 _DOCUMENT2_FIELD_REPAIR_RESULTS_KEY = "document2_field_repair_results"
+_DOCUMENT2_UNKNOWN_EXPECTATION_ID = "unknown_expectation"
+_DOCUMENT2_ROUTING_BLOCKER_TAXONOMY = "unroutable_document_level_objection"
+_DOCUMENT2_EXPECTATION_ID_PATTERN = re.compile(r"\b(?:expectation|exp)_[A-Za-z0-9_]+\b")
 
 
 class Document2LegacyQualityMixin:
@@ -1234,38 +1237,68 @@ class Document2LegacyQualityMixin:
             objection.objection_id: objection for objection in unresolved_objections
         }
         for objection in unresolved_objections:
+            if objection.taxonomy == _DOCUMENT2_ROUTING_BLOCKER_TAXONOMY:
+                continue
             finding = by_objection_id.get(objection.objection_id)
             if finding is None:
                 finding = document2_review_finding_from_objection(objection)
-            expectation_id = finding.expectation_id
-            target_paths = self._document2_repair_target_paths(finding)
-            field_family = self._document2_field_family_for_paths(
-                target_paths,
-                primary_path=finding.target_path,
-            )
-            key = (expectation_id, field_family)
-            group = groups.setdefault(
-                key,
-                {
-                    "expectation_id": expectation_id,
-                    "field_family": field_family,
-                    "target_paths": [],
-                    "finding_ids": [],
-                    "objection_ids": [],
-                    "findings": [],
-                    "source_agents": [],
-                },
-            )
-            group["target_paths"].extend(target_paths)
-            group["finding_ids"].append(finding.finding_id)
-            group["objection_ids"].append(objection.objection_id)
-            group["findings"].append(finding)
-            group["source_agents"].append(finding.reviewer_agent)
+            for routed_finding in self._routed_document2_repair_findings(
+                checkpoint,
+                objection,
+                finding,
+            ):
+                expectation_id = routed_finding.expectation_id
+                current_candidate = self._current_document2_candidate_or_none(
+                    checkpoint,
+                    expectation_id,
+                )
+                if (
+                    expectation_id == _DOCUMENT2_UNKNOWN_EXPECTATION_ID
+                    or current_candidate is None
+                ):
+                    self._ensure_document2_routing_blocker(
+                        checkpoint,
+                        objection,
+                        routed_finding,
+                    )
+                    continue
+                target_paths = self._document2_repair_target_paths(routed_finding)
+                field_family = self._document2_field_family_for_paths(
+                    target_paths,
+                    primary_path=routed_finding.target_path,
+                )
+                key = (expectation_id, field_family)
+                group = groups.setdefault(
+                    key,
+                    {
+                        "expectation_id": expectation_id,
+                        "field_family": field_family,
+                        "target_paths": [],
+                        "finding_ids": [],
+                        "objection_ids": [],
+                        "findings": [],
+                        "source_agents": [],
+                        "current_candidate": current_candidate,
+                    },
+                )
+                group["target_paths"].extend(target_paths)
+                group["finding_ids"].append(routed_finding.finding_id)
+                group["objection_ids"].append(
+                    routed_finding.source_objection_id or objection.objection_id
+                )
+                group["findings"].append(routed_finding)
+                group["source_agents"].append(routed_finding.reviewer_agent)
 
         tasks = [
             self._document2_field_repair_task_from_group(checkpoint, group)
             for group in groups.values()
         ]
+        refreshed_run = self.blackboard.get_run(checkpoint.run_id)
+        unresolved_by_id = {
+            objection.objection_id: objection
+            for objection in refreshed_run.objections
+            if objection.is_unresolved
+        }
         ordered_families = {
             "cross_field": 0,
             "realized_facts": 1,
@@ -1356,7 +1389,7 @@ class Document2LegacyQualityMixin:
             objection_ids=self._dedupe_strings(group["objection_ids"]),
             findings=list(group["findings"]),
             source_agents=list(dict.fromkeys(group["source_agents"])),
-            current_candidate=self._current_document2_candidate(checkpoint, expectation_id),
+            current_candidate=group["current_candidate"],
             allowed_output_contract=self._allowed_output_contract_for_field_family(
                 field_family
             ),
@@ -1375,6 +1408,18 @@ class Document2LegacyQualityMixin:
         checkpoint: WorkflowCheckpoint,
         expectation_id: str,
     ) -> ExpectationUnitDocument:
+        candidate = self._current_document2_candidate_or_none(checkpoint, expectation_id)
+        if candidate is not None:
+            return candidate
+        raise WorkflowContractError(
+            f"Document2 repair task cannot find current candidate for {expectation_id}."
+        )
+
+    def _current_document2_candidate_or_none(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        expectation_id: str,
+    ) -> ExpectationUnitDocument | None:
         for patch in checkpoint.pending_patches:
             if (
                 patch.target.document_type is DocumentType.EXPECTATION_UNIT
@@ -1382,8 +1427,295 @@ class Document2LegacyQualityMixin:
                 and isinstance(patch.after, dict)
             ):
                 return ExpectationUnitDocument.model_validate(patch.after)
-        raise WorkflowContractError(
-            f"Document2 repair task cannot find current candidate for {expectation_id}."
+        return None
+
+    def _routed_document2_repair_findings(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        objection: Objection,
+        finding: Document2ReviewFinding,
+    ) -> list[Document2ReviewFinding]:
+        expectation_ids = self._attributed_document2_expectation_ids(
+            checkpoint,
+            objection,
+            finding,
+        )
+        if not expectation_ids:
+            self._ensure_document2_routing_blocker(checkpoint, objection, finding)
+            return []
+        if len(expectation_ids) == 1:
+            return [
+                finding.model_copy(
+                    update={"expectation_id": expectation_ids[0]},
+                    deep=True,
+                )
+            ]
+        routed: list[Document2ReviewFinding] = []
+        child_objection_ids: list[str] = []
+        for expectation_id in expectation_ids:
+            routed_finding = finding.model_copy(
+                update={"expectation_id": expectation_id},
+                deep=True,
+            )
+            child = self._ensure_document2_candidate_routing_objection(
+                checkpoint,
+                objection,
+                routed_finding,
+            )
+            child_objection_ids.append(child.objection_id)
+            routed.append(
+                routed_finding.model_copy(
+                    update={"source_objection_id": child.objection_id},
+                    deep=True,
+                )
+            )
+        self._resolve_document2_split_routing_objection(
+            checkpoint,
+            objection,
+            child_objection_ids,
+        )
+        return routed
+
+    def _attributed_document2_expectation_ids(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        objection: Objection,
+        finding: Document2ReviewFinding,
+    ) -> list[str]:
+        candidate_ids, document_ids = self._pending_document2_candidate_identity(checkpoint)
+        if not candidate_ids:
+            return []
+
+        target = objection.target
+        for refs in (
+            [target.expectation_id],
+            [target.document_id],
+            [finding.expectation_id],
+            [
+                objection.target_path,
+                target.field_path,
+                objection.objection_id,
+                objection.reason,
+                finding.target_path,
+                *finding.target_paths,
+                finding.finding_id,
+                finding.reason,
+            ],
+        ):
+            resolved = self._resolve_document2_expectation_refs(
+                refs,
+                candidate_ids=candidate_ids,
+                document_ids=document_ids,
+            )
+            if resolved:
+                return resolved
+
+        if self._document2_subject_requests_all_pending_candidates(objection, finding):
+            return candidate_ids
+        if len(candidate_ids) == 1:
+            return candidate_ids
+        return []
+
+    def _pending_document2_candidate_identity(
+        self,
+        checkpoint: WorkflowCheckpoint,
+    ) -> tuple[list[str], dict[str, str]]:
+        candidate_ids: list[str] = []
+        document_ids: dict[str, str] = {}
+        for patch in checkpoint.pending_patches:
+            if patch.target.document_type is not DocumentType.EXPECTATION_UNIT:
+                continue
+            after = patch.after if isinstance(patch.after, dict) else {}
+            expectation_id = str(
+                patch.target.expectation_id or after.get("expectation_id") or ""
+            ).strip()
+            if not expectation_id:
+                continue
+            if expectation_id not in candidate_ids:
+                candidate_ids.append(expectation_id)
+            for document_id in (patch.target.document_id, after.get("document_id")):
+                text = str(document_id or "").strip()
+                if text:
+                    document_ids[text] = expectation_id
+        return candidate_ids, document_ids
+
+    def _resolve_document2_expectation_refs(
+        self,
+        refs: Iterable[Any],
+        *,
+        candidate_ids: list[str],
+        document_ids: dict[str, str],
+    ) -> list[str]:
+        resolved: list[str] = []
+        candidates = set(candidate_ids)
+        for ref in refs:
+            text = str(ref or "").strip()
+            if not text or text == _DOCUMENT2_UNKNOWN_EXPECTATION_ID:
+                continue
+            if text in candidates:
+                resolved.append(text)
+                continue
+            if text in document_ids:
+                resolved.append(document_ids[text])
+                continue
+            for match in _DOCUMENT2_EXPECTATION_ID_PATTERN.findall(text):
+                if match in candidates:
+                    resolved.append(match)
+                elif match in document_ids:
+                    resolved.append(document_ids[match])
+        return self._dedupe_strings(resolved)
+
+    def _document2_subject_requests_all_pending_candidates(
+        self,
+        objection: Objection,
+        finding: Document2ReviewFinding,
+    ) -> bool:
+        paths = [
+            objection.target_path,
+            objection.target.field_path,
+            finding.target_path,
+            *finding.target_paths,
+        ]
+        document_level = any(
+            str(path or "").strip() in {"document", "expectation_unit:default:document"}
+            for path in paths
+        )
+        if not document_level:
+            return False
+        text = " ".join(
+            str(value or "").lower()
+            for value in [
+                objection.reason,
+                objection.taxonomy,
+                objection.objection_id,
+                finding.reason,
+                *finding.supplemental_context,
+            ]
+        )
+        broad_markers = (
+            "both",
+            "all pending",
+            "all current",
+            "each pending",
+            "every pending",
+            "two pending",
+            "current pending candidates",
+            "pending candidates",
+            "all expectation",
+            "both expectation",
+            "data gap",
+            "两份",
+            "两个",
+            "全部",
+            "所有",
+            "每个",
+            "数据缺口",
+            "预期补丁",
+        )
+        return any(marker in text for marker in broad_markers)
+
+    def _ensure_document2_routing_blocker(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        objection: Objection,
+        finding: Document2ReviewFinding,
+    ) -> None:
+        if objection.taxonomy == _DOCUMENT2_ROUTING_BLOCKER_TAXONOMY:
+            return
+        candidate_ids, _document_ids = self._pending_document2_candidate_identity(checkpoint)
+        source_id = finding.source_objection_id or objection.objection_id or finding.finding_id
+        safe_source = re.sub(r"[^0-9A-Za-z_]+", "_", source_id).strip("_")[:96]
+        blocker_id = f"obj_d2routing_{safe_source}"
+        run = self.blackboard.get_run(checkpoint.run_id)
+        if any(item.objection_id == blocker_id and item.is_unresolved for item in run.objections):
+            return
+        reason = (
+            "Document2 resolver could not attribute a document-level blocker to a "
+            "specific pending expectation candidate, so it was not sent to O1 repair. "
+            f"source_objection_id={objection.objection_id}; "
+            f"source_finding_id={finding.finding_id}; "
+            f"pending_expectation_ids={candidate_ids or ['<none>']}."
+        )
+        self.blackboard.create_objection(
+            checkpoint.run_id,
+            Objection(
+                objection_id=blocker_id,
+                source_agent=AgentName.SYSTEM,
+                target=BlackboardTarget(
+                    document_type=DocumentType.EXPECTATION_UNIT,
+                    ticker=checkpoint.ticker,
+                    expectation_id=None,
+                    field_path="document",
+                ),
+                severity=ObjectionSeverity.BLOCKING,
+                reason=reason,
+                taxonomy=_DOCUMENT2_ROUTING_BLOCKER_TAXONOMY,
+                target_path="document",
+                dedupe_hash=f"{_DOCUMENT2_ROUTING_BLOCKER_TAXONOMY}:{source_id}",
+                status=ObjectionStatus.OPEN,
+            ),
+        )
+
+    def _ensure_document2_candidate_routing_objection(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        source_objection: Objection,
+        finding: Document2ReviewFinding,
+    ) -> Objection:
+        source_id = finding.source_objection_id or source_objection.objection_id
+        safe_source = re.sub(r"[^0-9A-Za-z_]+", "_", source_id).strip("_")[:80]
+        safe_expectation = re.sub(
+            r"[^0-9A-Za-z_]+",
+            "_",
+            finding.expectation_id,
+        ).strip("_")[:80]
+        objection_id = f"obj_d2route_{safe_source}_{safe_expectation}"
+        reason = (
+            f"Candidate-specific routing copy for {source_objection.objection_id} "
+            f"and {finding.expectation_id}: {source_objection.reason}"
+        )
+        return self.blackboard.create_objection(
+            checkpoint.run_id,
+            Objection(
+                objection_id=objection_id,
+                source_agent=source_objection.source_agent,
+                target=BlackboardTarget(
+                    document_type=DocumentType.EXPECTATION_UNIT,
+                    ticker=checkpoint.ticker,
+                    expectation_id=finding.expectation_id,
+                    field_path=finding.target_path,
+                ),
+                severity=source_objection.severity,
+                reason=reason,
+                evidence_refs=list(source_objection.evidence_refs),
+                taxonomy=source_objection.taxonomy,
+                target_path=finding.target_path,
+                dedupe_hash=(
+                    "document2_candidate_routing:"
+                    f"{source_objection.objection_id}:{finding.expectation_id}"
+                ),
+                status=ObjectionStatus.OPEN,
+            ),
+        )
+
+    def _resolve_document2_split_routing_objection(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        objection: Objection,
+        child_objection_ids: list[str],
+    ) -> None:
+        if not objection.is_unresolved:
+            return
+        note = (
+            "Document-level objection was split into candidate-specific repair blockers: "
+            f"{', '.join(child_objection_ids)}."
+        )
+        self.blackboard.resolve_objection(
+            checkpoint.run_id,
+            objection.objection_id,
+            note,
+            changed_paths=["document2.routing"],
+            evidence_refs=[],
         )
 
     def _document2_repair_target_paths(
