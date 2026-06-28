@@ -158,6 +158,7 @@ class Document1BuilderMixin:
 
             results.append(result)
             try:
+                self._assert_no_document1_proposed_patches(result, node)
                 if cached is None:
                     self._write_working_memory(current, result, "global_research_agent_result")
                 self._validate_agent_success(result, node, require_patches=False)
@@ -246,6 +247,18 @@ class Document1BuilderMixin:
                 "global_research_patch_id": patch.patch_id,
             },
         )
+
+    def _assert_no_document1_proposed_patches(
+        self,
+        result: AgentResult,
+        node: WorkflowNode,
+    ) -> None:
+        if result.proposed_patches:
+            raise WorkflowContractError(
+                f"{node.value} forbids proposed_patches: Document1 agents must return "
+                "ResearchSection output; GlobalResearchDocument assembly is owned by "
+                "the workflow transaction layer."
+            )
 
     def _research_section_from_result(
         self,
