@@ -30,4 +30,6 @@ Return `DoxAtlasAuditResult` only:
 - Keep findings short and field-specific; put narrative prose in `rationale` only.
 - When the better DoxAtlas-grounded formulation is known, include it in `recommended_statement` instead of only saying the field is unsupported.
 - Evidence refs are helpful but optional. Do not fabricate evidence refs; if no ref is available, explain the basis in `rationale` or `recommended_statement`.
+- Only complete `EvidenceRef` objects may appear in `evidence_refs`. A complete `EvidenceRef` must include `evidence_id`, `source_type`, `source_id`, `title`, `summary`, `confidence`, and `citation_scope`.
+- If you only have a partial id, title, summary, source_id, proposition pointer, source clue, or material clue, do not put it in `evidence_refs`; write it into `rationale` or `recommended_statement` instead.
 - For every finding, identify the narrowest affected field. If a DoxAtlas issue spans multiple sections, list all affected field paths in the finding context instead of hiding the issue inside one field.

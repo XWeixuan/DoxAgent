@@ -12,6 +12,7 @@ from doxagent.models import (
     BlackboardPatch,
     BlackboardTarget,
     DocumentType,
+    EvidenceRef,
     EvidenceSourceType,
     ExpectationDetailCandidateResult,
     Objection,
@@ -143,6 +144,29 @@ class Document2NodeMatrixRunner(StructuredInitializationRunner):
                 AgentName.A1_DOXATLAS_AUDIT,
             )
             return result.model_copy(update={"proposed_patches": [patch]}, deep=True)
+        if self.construction_review_case in {
+            "partial_finding_evidence_ref",
+            "complete_finding_evidence_ref",
+        }:
+            structured = self._structured_payload(result)
+            evidence_ref = self.factory._evidence(
+                EvidenceSourceType.DOXATLAS_SOURCE
+            ).model_dump(mode="json")
+            if self.construction_review_case == "partial_finding_evidence_ref":
+                evidence_ref.pop("confidence", None)
+                evidence_ref.pop("citation_scope", None)
+            structured["verdict"] = "needs_revision"
+            structured["revision_required"] = True
+            structured["findings"] = [
+                {
+                    "field_path": "market_view",
+                    "status": "needs_more_evidence",
+                    "rationale": "Fixture A1 construction finding cites DoxAtlas material.",
+                    "recommended_statement": "Fixture A1 construction formulation.",
+                    "evidence_refs": [evidence_ref],
+                }
+            ]
+            return self._with_structured(result, structured)
         objection = self._construction_objection(
             task.ticker,
             field_path=self.construction_review_case,
@@ -246,6 +270,9 @@ class Document2NodeMatrixRunner(StructuredInitializationRunner):
                 "supported_recommended_statement",
                 "invalid_evidence_refs_string",
                 "invalid_recommended_statement_object",
+                "complete_evidence_ref",
+                "bad_finding_mixed",
+                "reviewer_result_findings_not_list",
             }
             and task.agent_name is AgentName.C1_FUNDAMENTAL_RESEARCH
         ):
@@ -253,11 +280,19 @@ class Document2NodeMatrixRunner(StructuredInitializationRunner):
             evidence = self.factory._evidence(EvidenceSourceType.EXTERNAL_REPORT)
             finding = {
                 "expectation_id": "exp_mock_core",
-                "target_path": "key_variables[0].current_status",
+                "field_path": "key_variables[0].current_status",
                 "status": "unsupported",
                 "rationale": "Fixture reviewer found unsupported current-status evidence.",
                 "evidence_refs": [evidence.model_dump(mode="json")],
             }
+            if self.review_case == "reviewer_result_findings_not_list":
+                structured["findings"] = {
+                    "field_path": "key_variables[0].current_status",
+                    "status": "unsupported",
+                    "rationale": "Fixture reviewer returned findings as an object.",
+                    "evidence_refs": [evidence.model_dump(mode="json")],
+                }
+                return self._with_structured(result, structured)
             if self.review_case == "structured_blocking_finding_without_expectation_id":
                 finding.pop("expectation_id", None)
                 finding["rationale"] = (
@@ -265,7 +300,7 @@ class Document2NodeMatrixRunner(StructuredInitializationRunner):
                     "routed to pending expectation candidates, not unknown_expectation."
                 )
             elif self.review_case == "structured_blocking_finding_with_target_paths":
-                finding["target_path"] = "document"
+                finding["field_path"] = "document"
                 finding["target_paths"] = [
                     "realized_facts",
                     "event_monitoring_direction",
@@ -276,7 +311,7 @@ class Document2NodeMatrixRunner(StructuredInitializationRunner):
                 )
             elif self.review_case == "structured_document_level_data_gap_without_expectation_id":
                 finding.pop("expectation_id", None)
-                finding["target_path"] = "document"
+                finding["field_path"] = "document"
                 finding["rationale"] = (
                     "Fixture document-level data gap affects both pending candidates."
                 )
@@ -291,7 +326,7 @@ class Document2NodeMatrixRunner(StructuredInitializationRunner):
                 finding["evidence_refs"] = []
             elif self.review_case == "supported_recommended_statement":
                 finding["status"] = "supported"
-                finding["target_path"] = "event_monitoring_direction"
+                finding["field_path"] = "event_monitoring_direction"
                 finding["target_paths"] = ["event_monitoring_direction"]
                 finding["rationale"] = (
                     "Fixture reviewer supplied a supported supplemental formulation."
@@ -304,6 +339,14 @@ class Document2NodeMatrixRunner(StructuredInitializationRunner):
                 finding["evidence_refs"] = ["evidence_id_only"]
             elif self.review_case == "invalid_recommended_statement_object":
                 finding["recommended_statement"] = {"text": "not a plain string"}
+            elif self.review_case == "bad_finding_mixed":
+                bad_finding = {
+                    "status": "unsupported",
+                    "rationale": "Fixture bad finding is missing field_path.",
+                    "evidence_refs": [evidence.model_dump(mode="json")],
+                }
+                structured["findings"] = [bad_finding, finding]
+                return self._with_structured(result, structured)
             structured["findings"] = [finding]
             return self._with_structured(result, structured)
         if (
@@ -659,6 +702,30 @@ def _assert_blocked(result: Any, message: str) -> None:
     assert message in result.error
 
 
+def _working_memory_payloads(
+    workflow: BlackboardInitializationWorkflow,
+    run_id: str,
+    content_type: str,
+) -> list[dict[str, Any]]:
+    run = workflow.blackboard.get_run(run_id)
+    return [
+        entry.payload
+        for entry in run.working_memory
+        if entry.content_type == content_type
+    ]
+
+
+def _reviewer_acceptance_warning_payloads(
+    workflow: BlackboardInitializationWorkflow,
+    run_id: str,
+) -> list[dict[str, Any]]:
+    return _working_memory_payloads(
+        workflow,
+        run_id,
+        "document2_reviewer_acceptance_warning",
+    )
+
+
 @pytest.mark.parametrize(
     ("case", "expected_status", "message"),
     [
@@ -721,9 +788,21 @@ def test_generate_expectation_construction_node_matrix(
             id="ReviewExpectationConstruction__blocking_objection__bridged_objection",
         ),
         pytest.param(
+            "partial_finding_evidence_ref",
+            WorkflowRunStatus.RUNNING,
+            "",
+            id="ReviewExpectationConstruction__partial_finding_evidence_ref__warning",
+        ),
+        pytest.param(
+            "complete_finding_evidence_ref",
+            WorkflowRunStatus.RUNNING,
+            "",
+            id="ReviewExpectationConstruction__complete_finding_evidence_ref__retained",
+        ),
+        pytest.param(
             "reviewer_patch_leak",
             WorkflowRunStatus.BLOCKED,
-            "forbids proposed_patches",
+            "no usable A1 reviewer output",
             id="ReviewExpectationConstruction__contract_patch_leak__schema_failure",
         ),
     ],
@@ -742,10 +821,50 @@ def test_review_expectation_construction_node_matrix(
         _assert_running_to(result, WorkflowNode.RESOLVE_EXPECTATION_CONSTRUCTION)
         if case == "market_view":
             assert result.summary.unresolved_objection_count == 1
+        if case == "partial_finding_evidence_ref":
+            warnings = _reviewer_acceptance_warning_payloads(
+                workflow,
+                result.checkpoint.run_id,
+            )
+            assert any(
+                warning["issue"] == "invalid_evidence_refs_removed"
+                and warning["invalid_evidence_ref_count"] == 1
+                and {"confidence", "citation_scope"}.issubset(
+                    set(warning["missing_fields"])
+                )
+                for payload in warnings
+                for warning in payload["warnings"]
+            )
+            memory_payloads = _working_memory_payloads(
+                workflow,
+                result.checkpoint.run_id,
+                "a1_expectation_construction_review",
+            )
+            findings = memory_payloads[-1]["payload"]["structured"]["findings"]
+            assert findings[0]["evidence_refs"] == []
+        if case == "complete_finding_evidence_ref":
+            memory_payloads = _working_memory_payloads(
+                workflow,
+                result.checkpoint.run_id,
+                "a1_expectation_construction_review",
+            )
+            findings = memory_payloads[-1]["payload"]["structured"]["findings"]
+            assert findings[0]["evidence_refs"][0]["confidence"] is not None
+            assert findings[0]["evidence_refs"][0]["citation_scope"]
         if case == "reviewer_patch_leak":
             assert result.summary.unresolved_objection_count == 0
     else:
         _assert_blocked(result, message)
+        if case == "reviewer_patch_leak":
+            warnings = _reviewer_acceptance_warning_payloads(
+                workflow,
+                result.checkpoint.run_id,
+            )
+            assert any(
+                warning["issue"] == "reviewer_proposed_patches_rejected"
+                for payload in warnings
+                for warning in payload["warnings"]
+            )
 
 
 @pytest.mark.parametrize(
@@ -980,16 +1099,37 @@ def test_generate_expectation_details_node_matrix(
         pytest.param(
             None,
             "invalid_evidence_refs_string",
-            WorkflowRunStatus.BLOCKED,
-            "evidence_refs",
-            id="ReviewExpectationFields__invalid_evidence_refs_string__schema_failure",
+            WorkflowRunStatus.RUNNING,
+            "",
+            id="ReviewExpectationFields__invalid_evidence_refs_string__warning",
         ),
         pytest.param(
             None,
             "invalid_recommended_statement_object",
-            WorkflowRunStatus.BLOCKED,
-            "recommended_statement",
-            id="ReviewExpectationFields__invalid_recommended_statement_object__schema_failure",
+            WorkflowRunStatus.RUNNING,
+            "",
+            id="ReviewExpectationFields__invalid_recommended_statement_object__warning",
+        ),
+        pytest.param(
+            None,
+            "complete_evidence_ref",
+            WorkflowRunStatus.RUNNING,
+            "",
+            id="ReviewExpectationFields__complete_evidence_ref__retained",
+        ),
+        pytest.param(
+            None,
+            "bad_finding_mixed",
+            WorkflowRunStatus.RUNNING,
+            "",
+            id="ReviewExpectationFields__bad_finding_discarded_good_finding_kept",
+        ),
+        pytest.param(
+            None,
+            "reviewer_result_findings_not_list",
+            WorkflowRunStatus.RUNNING,
+            "",
+            id="ReviewExpectationFields__one_bad_reviewer_skipped",
         ),
         pytest.param(
             "placeholder_text",
@@ -1015,16 +1155,16 @@ def test_generate_expectation_details_node_matrix(
         pytest.param(
             None,
             "reviewer_patch_leak",
-            WorkflowRunStatus.BLOCKED,
-            "reviewers must not propose patches",
-            id="ReviewExpectationFields__reviewer_proposed_patches__schema_failure",
+            WorkflowRunStatus.RUNNING,
+            "",
+            id="ReviewExpectationFields__reviewer_proposed_patches__skipped_with_audit",
         ),
         pytest.param(
             None,
             "reviewer_changes_leak",
-            WorkflowRunStatus.BLOCKED,
-            "changes",
-            id="ReviewExpectationFields__reviewer_changes_leak__schema_failure",
+            WorkflowRunStatus.RUNNING,
+            "",
+            id="ReviewExpectationFields__reviewer_changes_leak__skipped_with_audit",
         ),
     ],
 )
@@ -1052,6 +1192,10 @@ def test_review_expectation_fields_node_matrix(
             "structured_document_level_data_gap_without_expectation_id",
             "recommended_statement_without_evidence_refs",
             "a1_recommended_statement_without_evidence_refs",
+            "invalid_evidence_refs_string",
+            "invalid_recommended_statement_object",
+            "complete_evidence_ref",
+            "bad_finding_mixed",
         }
         nonblocking_review_finding_cases = {"supported_recommended_statement"}
         if (
@@ -1090,6 +1234,64 @@ def test_review_expectation_fields_node_matrix(
                     and finding["supplemental_evidence_refs"] == []
                     for finding in blocking
                 )
+            if review_case == "invalid_evidence_refs_string":
+                warnings = _reviewer_acceptance_warning_payloads(
+                    workflow,
+                    result.checkpoint.run_id,
+                )
+                assert any(
+                    warning["issue"] == "invalid_evidence_refs_removed"
+                    and warning["invalid_evidence_ref_count"] == 1
+                    for payload in warnings
+                    for warning in payload["warnings"]
+                )
+                assert any(
+                    finding["reason"]
+                    == "Fixture reviewer found unsupported current-status evidence."
+                    and finding["supplemental_evidence_refs"] == []
+                    for finding in blocking
+                )
+            if review_case == "invalid_recommended_statement_object":
+                warnings = _reviewer_acceptance_warning_payloads(
+                    workflow,
+                    result.checkpoint.run_id,
+                )
+                assert any(
+                    warning["issue"] == "invalid_recommended_statement_removed"
+                    for payload in warnings
+                    for warning in payload["warnings"]
+                )
+                assert any(
+                    finding["reason"]
+                    == "Fixture reviewer found unsupported current-status evidence."
+                    and finding.get("recommended_statement") is None
+                    for finding in blocking
+                )
+            if review_case == "complete_evidence_ref":
+                assert any(
+                    finding["reason"]
+                    == "Fixture reviewer found unsupported current-status evidence."
+                    and finding["supplemental_evidence_refs"]
+                    and finding["supplemental_evidence_refs"][0]["confidence"] is not None
+                    and finding["supplemental_evidence_refs"][0]["citation_scope"]
+                    for finding in blocking
+                )
+            if review_case == "bad_finding_mixed":
+                warnings = _reviewer_acceptance_warning_payloads(
+                    workflow,
+                    result.checkpoint.run_id,
+                )
+                assert any(
+                    warning["issue"] == "reviewer_finding_discarded"
+                    and warning["reason"] == "missing_field_path"
+                    for payload in warnings
+                    for warning in payload["warnings"]
+                )
+                assert any(
+                    finding["reason"]
+                    == "Fixture reviewer found unsupported current-status evidence."
+                    for finding in blocking
+                )
             if review_case == "a1_recommended_statement_without_evidence_refs":
                 assert any(
                     finding["reviewer_agent"] == AgentName.A1_DOXATLAS_AUDIT.value
@@ -1118,6 +1320,32 @@ def test_review_expectation_fields_node_matrix(
                 for objection in run.objections
             )
         else:
+            if review_case in {
+                "reviewer_result_findings_not_list",
+                "reviewer_patch_leak",
+                "reviewer_changes_leak",
+            }:
+                warnings = _reviewer_acceptance_warning_payloads(
+                    workflow,
+                    result.checkpoint.run_id,
+                )
+                expected_issue = {
+                    "reviewer_result_findings_not_list": "reviewer_findings_not_list",
+                    "reviewer_patch_leak": "reviewer_proposed_patches_rejected",
+                    "reviewer_changes_leak": "reviewer_patch_like_fields_rejected",
+                }[review_case]
+                assert any(
+                    warning["issue"] == expected_issue
+                    for payload in warnings
+                    for warning in payload["warnings"]
+                )
+                review_state = result.checkpoint.metadata.get(
+                    "document2_review_state",
+                    {},
+                )
+                assert review_state.get("skipped_reviewer_count") == 1
+                assert findings == []
+                return
             assert findings == []
     else:
         _assert_blocked(result, message)
@@ -1174,6 +1402,39 @@ def test_review_expectation_fields_context_allows_optional_single_batch_tools() 
         "doxa_get_ignored_propositions",
     }.issubset(a1_tools)
     assert "Do not call tools" not in a1_task.input_context["review_instruction"]
+
+
+def test_canonical_evidence_ref_remains_strict_for_stable_contracts() -> None:
+    partial_ref = {
+        "evidence_id": "evidence_partial",
+        "source_type": EvidenceSourceType.DOXATLAS_SOURCE.value,
+        "source_id": "source_partial",
+        "title": "Partial DoxAtlas source",
+        "summary": "Missing confidence and citation scope.",
+    }
+
+    with pytest.raises(Exception, match="confidence"):
+        EvidenceRef.model_validate(partial_ref)
+
+    with pytest.raises(Exception, match="confidence"):
+        BlackboardPatch.model_validate(
+            {
+                "patch_id": "patch_partial_ref",
+                "target": {
+                    "document_type": DocumentType.EXPECTATION_UNIT.value,
+                    "field_path": "market_view",
+                    "ticker": "NVDA",
+                    "expectation_id": "exp_mock_core",
+                },
+                "operation": PatchOperation.CREATE.value,
+                "before": None,
+                "after": {"document_type": DocumentType.EXPECTATION_UNIT.value},
+                "rationale": "Canonical blackboard patch must reject partial EvidenceRef.",
+                "evidence_refs": [partial_ref],
+                "author_agent": AgentName.O1_EXPECTATION_OWNER.value,
+                "validation_status": ValidationStatus.PENDING.value,
+            }
+        )
 
 
 @pytest.mark.parametrize(

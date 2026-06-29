@@ -14,6 +14,7 @@ from doxagent.workflows.document2.review import (
     DOCUMENT2_REVIEW_FINDINGS_KEY,
     document2_review_findings_from_agent_result,
     review_findings_json,
+    sanitize_document2_reviewer_result,
 )
 from doxagent.workflows.document2.transaction import (
     DOCUMENT2_CONSTRUCTION_TRANSACTION_AUDITS_KEY,
@@ -37,6 +38,76 @@ class Document2LegacyPipelineMixin:
             raise WorkflowContractError(
                 f"{node.value} forbids proposed_patches: {message}"
             )
+
+    def _write_document2_reviewer_acceptance_warning(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        node: WorkflowNode,
+        *,
+        agent_name: AgentName,
+        expected_schema: str,
+        warnings: list[dict[str, Any]],
+        result: AgentResult | None = None,
+    ) -> None:
+        if not warnings:
+            return
+        self.blackboard.add_working_memory_entry(
+            checkpoint.run_id,
+            author_agent=agent_name,
+            content_type="document2_reviewer_acceptance_warning",
+            payload={
+                "workflow_node": node.value,
+                "agent_name": agent_name.value,
+                "expected_schema": expected_schema,
+                "warning_count": len(warnings),
+                "warnings": warnings,
+                "task_id": result.task_id if result else None,
+                "result_status": result.status.value if result else "error",
+            },
+            evidence_refs=result.evidence_refs if result else [],
+        )
+
+    def _accepted_document2_reviewer_result(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        node: WorkflowNode,
+        result: AgentResult,
+        *,
+        expected_schema: str,
+    ) -> AgentResult | None:
+        accepted, warnings = sanitize_document2_reviewer_result(
+            result,
+            expected_schema=expected_schema,
+        )
+        self._write_document2_reviewer_acceptance_warning(
+            checkpoint,
+            node,
+            agent_name=result.agent_name,
+            expected_schema=expected_schema,
+            warnings=warnings,
+            result=result,
+        )
+        if accepted is None:
+            return None
+        try:
+            self.output_validator.validate(accepted.payload, expected_schema)
+        except WorkflowContractError as exc:
+            self._write_document2_reviewer_acceptance_warning(
+                checkpoint,
+                node,
+                agent_name=accepted.agent_name,
+                expected_schema=expected_schema,
+                warnings=[
+                    {
+                        "issue": "reviewer_result_schema_rejected",
+                        "severity": "fatal",
+                        "message": str(exc),
+                    }
+                ],
+                result=accepted,
+            )
+            return None
+        return accepted
 
     def _o1_expectation_generation_context(self) -> dict[str, Any]:
         return {
@@ -116,7 +187,19 @@ class Document2LegacyPipelineMixin:
                 ],
                 "required_tool_names": [],
             },
+            validate_output=False,
         )
+        accepted_result = self._accepted_document2_reviewer_result(
+            checkpoint,
+            node,
+            result,
+            expected_schema="DoxAtlasAuditResult",
+        )
+        if accepted_result is None:
+            raise WorkflowContractError(
+                "ReviewExpectationConstruction had no usable A1 reviewer output."
+            )
+        result = accepted_result
         self._write_working_memory(checkpoint, result, "a1_expectation_construction_review")
         self._validate_agent_success(result, node, require_patches=False)
         self._assert_no_proposed_patches(
@@ -1190,7 +1273,13 @@ class Document2LegacyPipelineMixin:
             "you.\n\n"
             "Evidence refs are helpful but optional. Do not fabricate evidence "
             "refs. If no evidence ref is available, provide a concise basis "
-            "summary in rationale or recommended_statement."
+            "summary in rationale or recommended_statement.\n\n"
+            "Only complete EvidenceRef objects may appear in evidence_refs. A "
+            "complete EvidenceRef must include evidence_id, source_type, "
+            "source_id, title, summary, confidence, and citation_scope. If you "
+            "only have a partial id, title, summary, source_id, source clue, or "
+            "material clue, do not put it in evidence_refs; write it into "
+            "rationale or recommended_statement instead."
         )
         specs: list[dict[str, Any]] = [
             {
@@ -1348,28 +1437,63 @@ class Document2LegacyPipelineMixin:
             )
 
         first_error: Exception | None = None
+        skipped_reviewer_count = 0
         for outcome in self._run_agent_jobs_concurrently(checkpoint, node, jobs):
             spec = specs[outcome.job.order]
             if outcome.error is not None:
                 first_error = first_error or outcome.error
+                skipped_reviewer_count += 1
+                self._write_document2_reviewer_acceptance_warning(
+                    checkpoint,
+                    node,
+                    agent_name=outcome.job.agent_name,
+                    expected_schema=spec["schema"],
+                    warnings=[
+                        {
+                            "issue": "reviewer_execution_error",
+                            "severity": "fatal",
+                            "message": str(outcome.error),
+                        }
+                    ],
+                )
                 continue
             result = outcome.result
             if result is None:
-                first_error = first_error or WorkflowContractError(
+                error = WorkflowContractError(
                     f"{node.value}/{outcome.job.agent_name.value} returned no result."
                 )
-                continue
-            try:
-                self._assert_no_proposed_patches(
-                    result,
+                first_error = first_error or error
+                skipped_reviewer_count += 1
+                self._write_document2_reviewer_acceptance_warning(
+                    checkpoint,
                     node,
-                    "ReviewExpectationFields reviewers must not propose patches.",
+                    agent_name=outcome.job.agent_name,
+                    expected_schema=spec["schema"],
+                    warnings=[
+                        {
+                            "issue": "reviewer_missing_result",
+                            "severity": "fatal",
+                            "message": str(error),
+                        }
+                    ],
                 )
-                self._write_working_memory(checkpoint, result, spec["content_type"])
-                self._validate_agent_success(result, node, require_patches=False)
-            except WorkflowContractError as exc:
-                first_error = first_error or exc
                 continue
+            accepted_result = self._accepted_document2_reviewer_result(
+                checkpoint,
+                node,
+                result,
+                expected_schema=spec["schema"],
+            )
+            if accepted_result is None:
+                first_error = first_error or WorkflowContractError(
+                    f"{node.value}/{outcome.job.agent_name.value} reviewer output "
+                    "was skipped by acceptance checks."
+                )
+                skipped_reviewer_count += 1
+                continue
+            result = accepted_result
+            self._write_working_memory(checkpoint, result, spec["content_type"])
+            self._validate_agent_success(result, node, require_patches=False)
             review_findings.extend(
                 document2_review_findings_from_agent_result(
                     result,
@@ -1385,14 +1509,15 @@ class Document2LegacyPipelineMixin:
                 self.blackboard.create_delegation(checkpoint.run_id, delegation)
             results.append(result)
 
-        if first_error is not None:
-            raise first_error
-
         deterministic_findings = [
             finding
             for patch in checkpoint.pending_patches
             for finding in deterministic_findings_from_patch(patch)
         ]
+        if not results and not deterministic_findings:
+            raise first_error or WorkflowContractError(
+                "ReviewExpectationFields had no usable reviewer outputs."
+            )
         review_findings.extend(deterministic_findings)
         placeholder_findings = [
             finding
@@ -1421,6 +1546,8 @@ class Document2LegacyPipelineMixin:
             + source_less_blocking_finding_count,
             "numeric_sanity_disabled": True,
         }
+        if skipped_reviewer_count:
+            review_state["skipped_reviewer_count"] = skipped_reviewer_count
         if placeholder_findings:
             review_state["placeholder_finding_count"] = len(placeholder_findings)
         metadata = self._agent_metadata(node, results)

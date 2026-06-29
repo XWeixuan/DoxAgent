@@ -67,6 +67,19 @@ SIMILARITY_WARNING_THRESHOLD = 0.72
 MICROCOMPACT_MARKER = "[old observation compacted]"
 MAX_TOOL_OBSERVATION_CHARS = 24_000
 _FINAL_PAYLOAD_SCHEMAS: dict[str, type[BaseModel]] = REQUIRED_OUTPUT_SCHEMA_MODELS
+_REVIEWER_ACCEPTANCE_WARNINGS_KEY = "reviewer_acceptance_warnings"
+_REVIEWER_ACCEPTANCE_WARNINGS_INTERNAL_KEY = "_reviewer_acceptance_warnings"
+_REQUIRED_EVIDENCE_REF_FIELDS = frozenset(
+    {
+        "evidence_id",
+        "source_type",
+        "source_id",
+        "title",
+        "summary",
+        "confidence",
+        "citation_scope",
+    }
+)
 _RUNTIME_FINAL_PAYLOAD_SCHEMA_NAMES = frozenset(
     {"W1Result", "W2Result", "A2Result", "O3Result"}
 )
@@ -1138,6 +1151,7 @@ class ReActAgentHarness:
             tool_results=tool_results,
             delegation_results=delegation_results,
         )
+        reviewer_acceptance_warnings = _pop_reviewer_acceptance_warnings(structured)
         if "ExpectationDetailResult" in _schema_names(task.required_output_schema):
             structured = _recover_expectation_detail_arrays_from_text(
                 structured,
@@ -1185,6 +1199,7 @@ class ReActAgentHarness:
                 "text": text,
                 "completion_reason": completion_reason,
                 "model_audits": model_audits,
+                _REVIEWER_ACCEPTANCE_WARNINGS_KEY: reviewer_acceptance_warnings,
                 "react_audit": scratchpad.audit(),
                 "market_evidence_snapshot": market_evidence_snapshot,
                 "skill_ids": sorted(scratchpad.loaded_skills),
@@ -1924,6 +1939,13 @@ def _final_payload_schema_error(payload: JsonDict, required_output_schema: str) 
     return "ReAct final_payload failed schema validation: " + " | ".join(errors)
 
 
+def _pop_reviewer_acceptance_warnings(payload: JsonDict) -> list[JsonDict]:
+    raw = payload.pop(_REVIEWER_ACCEPTANCE_WARNINGS_INTERNAL_KEY, [])
+    if not isinstance(raw, list):
+        return []
+    return [dict(item) for item in raw if isinstance(item, dict)]
+
+
 def _schema_names(required_output_schema: str) -> list[str]:
     return schema_names(required_output_schema)
 
@@ -2589,7 +2611,15 @@ def _output_contract(required_output_schema: str, *, task: AgentTask | None = No
                         "an equivalent corrected formulation instead of only saying "
                         "the field is unsupported."
                     ),
-                    "Evidence refs are helpful but optional; do not fabricate them.",
+                    (
+                        "Evidence refs are helpful but optional; do not fabricate them. "
+                        "Only put complete EvidenceRef objects in evidence_refs. Each "
+                        "EvidenceRef must include evidence_id, source_type, source_id, "
+                        "title, summary, confidence, and citation_scope. If you only "
+                        "have a partial id, title, summary, source_id, or material clue, "
+                        "put it in rationale or recommended_statement instead of "
+                        "evidence_refs."
+                    ),
                     "Use objections only for issues requiring O1 revision before promotion.",
                     "Use delegations only when A2 external retrieval is required.",
                 ],
@@ -2633,7 +2663,15 @@ def _output_contract(required_output_schema: str, *, task: AgentTask | None = No
                         "an equivalent corrected formulation instead of only saying "
                         "the field is unsupported."
                     ),
-                    "Evidence refs are helpful but optional; do not fabricate them.",
+                    (
+                        "Evidence refs are helpful but optional; do not fabricate them. "
+                        "Only put complete EvidenceRef objects in evidence_refs. Each "
+                        "EvidenceRef must include evidence_id, source_type, source_id, "
+                        "title, summary, confidence, and citation_scope. If you only "
+                        "have a partial id, title, summary, source_id, or material clue, "
+                        "put it in rationale or recommended_statement instead of "
+                        "evidence_refs."
+                    ),
                     (
                         "For every finding, identify the narrowest affected field_path. "
                         "If the issue spans multiple fields, set field_path to document "
@@ -3684,6 +3722,9 @@ def _normalize_expectation_field_review_payload(
 ) -> JsonDict:
     if _has_forbidden_review_payload_keys(payload):
         return payload
+    if "findings" in payload and not isinstance(payload.get("findings"), list):
+        return payload
+    reviewer_warnings: list[JsonDict] = []
     evidence_refs = _valid_evidence_ref_payloads(payload.get("evidence_refs"))
     if not evidence_refs:
         evidence_refs = [
@@ -3696,11 +3737,13 @@ def _normalize_expectation_field_review_payload(
         or payload.get("review_findings")
         or payload.get("field_findings"),
         fallback_evidence=evidence_refs,
+        reviewer_warnings=reviewer_warnings,
     )
     if not findings:
         findings = _field_review_findings_from_patches(
             payload.get("patches_reviewed"),
             fallback_evidence=evidence_refs,
+            reviewer_warnings=reviewer_warnings,
         )
     rationale = _first_text(
         payload,
@@ -3727,7 +3770,7 @@ def _normalize_expectation_field_review_payload(
             if findings
             else f"{task.agent_name.value} completed expectation-field review."
         )
-    return {
+    normalized = {
         "findings": findings,
         "evidence_refs": evidence_refs,
         "objections": _normalize_output_objections(
@@ -3744,12 +3787,16 @@ def _normalize_expectation_field_review_payload(
         ),
         "rationale": rationale,
     }
+    if reviewer_warnings:
+        normalized[_REVIEWER_ACCEPTANCE_WARNINGS_INTERNAL_KEY] = reviewer_warnings
+    return normalized
 
 
 def _field_review_findings_from_patches(
     value: Any,
     *,
     fallback_evidence: list[JsonDict],
+    reviewer_warnings: list[JsonDict],
 ) -> list[JsonDict]:
     findings: list[JsonDict] = []
     for item in _dicts(value):
@@ -3770,6 +3817,7 @@ def _field_review_findings_from_patches(
             nested,
             fallback_evidence=fallback_evidence,
             default_field_path=default_field,
+            reviewer_warnings=reviewer_warnings,
         )
         if nested_findings:
             findings.extend(nested_findings)
@@ -3779,6 +3827,7 @@ def _field_review_findings_from_patches(
                 item,
                 fallback_evidence=fallback_evidence,
                 default_field_path=default_field,
+                reviewer_warnings=reviewer_warnings,
             )
         )
     return findings
@@ -3788,6 +3837,7 @@ def _normalize_expectation_field_review_findings(
     value: Any,
     *,
     fallback_evidence: list[JsonDict],
+    reviewer_warnings: list[JsonDict],
     default_field_path: str = "document",
 ) -> list[JsonDict]:
     if isinstance(value, list):
@@ -3833,10 +3883,26 @@ def _normalize_expectation_field_review_findings(
                         or rationale
                     ),
                     "rationale": rationale,
-                    "recommended_statement": _review_recommended_statement_payload(item),
+                    "recommended_statement": _review_recommended_statement_payload(
+                        item,
+                        reviewer_warnings=reviewer_warnings,
+                        finding_path=str(
+                            item.get("field_path")
+                            or item.get("field")
+                            or item.get("path")
+                            or default_field_path
+                        ),
+                    ),
                     "evidence_refs": _review_evidence_refs_payload(
                         item,
                         fallback_evidence=fallback_evidence,
+                        reviewer_warnings=reviewer_warnings,
+                        finding_path=str(
+                            item.get("field_path")
+                            or item.get("field")
+                            or item.get("path")
+                            or default_field_path
+                        ),
                     ),
                 }
             )
@@ -3886,6 +3952,9 @@ def _normalize_doxatlas_audit_payload(
 ) -> JsonDict:
     if _has_forbidden_review_payload_keys(payload):
         return payload
+    if "findings" in payload and not isinstance(payload.get("findings"), list):
+        return payload
+    reviewer_warnings: list[JsonDict] = []
     evidence_refs = _valid_evidence_ref_payloads(payload.get("evidence_refs"))
     if not evidence_refs:
         evidence_refs = [
@@ -3898,9 +3967,14 @@ def _normalize_doxatlas_audit_payload(
         or payload.get("audit_findings")
         or payload.get("field_findings"),
         fallback_evidence=evidence_refs,
+        reviewer_warnings=reviewer_warnings,
     )
     if not findings:
-        finding = _audit_finding_from_payload(payload, fallback_evidence=evidence_refs)
+        finding = _audit_finding_from_payload(
+            payload,
+            fallback_evidence=evidence_refs,
+            reviewer_warnings=reviewer_warnings,
+        )
         if finding is not None:
             findings = [finding]
     objections = _normalize_output_objections(
@@ -3918,7 +3992,7 @@ def _normalize_doxatlas_audit_payload(
         or payload.get("summary")
         or "A1 completed DoxAtlas audit."
     )
-    return {
+    normalized = {
         "verdict": verdict,
         "revision_required": revision_required,
         "findings": findings,
@@ -3928,12 +4002,16 @@ def _normalize_doxatlas_audit_payload(
         "unknowns": _strings(payload.get("unknowns") or payload.get("gaps")),
         "rationale": rationale,
     }
+    if reviewer_warnings:
+        normalized[_REVIEWER_ACCEPTANCE_WARNINGS_INTERNAL_KEY] = reviewer_warnings
+    return normalized
 
 
 def _normalize_doxatlas_audit_findings(
     value: Any,
     *,
     fallback_evidence: list[JsonDict],
+    reviewer_warnings: list[JsonDict],
 ) -> list[JsonDict]:
     raw_items: list[Any]
     if isinstance(value, list):
@@ -3965,10 +4043,26 @@ def _normalize_doxatlas_audit_findings(
                         item.get("status") or item.get("verdict") or rationale
                     ),
                     "rationale": rationale,
-                    "recommended_statement": _review_recommended_statement_payload(item),
+                    "recommended_statement": _review_recommended_statement_payload(
+                        item,
+                        reviewer_warnings=reviewer_warnings,
+                        finding_path=str(
+                            item.get("field_path")
+                            or item.get("field")
+                            or item.get("path")
+                            or "document"
+                        ),
+                    ),
                     "evidence_refs": _review_evidence_refs_payload(
                         item,
                         fallback_evidence=fallback_evidence,
+                        reviewer_warnings=reviewer_warnings,
+                        finding_path=str(
+                            item.get("field_path")
+                            or item.get("field")
+                            or item.get("path")
+                            or "document"
+                        ),
                     ),
                 }
             )
@@ -3989,6 +4083,7 @@ def _audit_finding_from_payload(
     payload: JsonDict,
     *,
     fallback_evidence: list[JsonDict],
+    reviewer_warnings: list[JsonDict],
 ) -> JsonDict | None:
     text = _first_text(
         payload,
@@ -4006,7 +4101,11 @@ def _audit_finding_from_payload(
         "field_path": str(payload.get("field_path") or payload.get("field") or "document"),
         "status": _normalize_audit_finding_status(payload.get("status") or text),
         "rationale": text,
-        "recommended_statement": _review_recommended_statement_payload(payload),
+        "recommended_statement": _review_recommended_statement_payload(
+            payload,
+            reviewer_warnings=reviewer_warnings,
+            finding_path=str(payload.get("field_path") or payload.get("field") or "document"),
+        ),
         "evidence_refs": fallback_evidence,
     }
 
@@ -4188,7 +4287,12 @@ def _has_forbidden_review_payload_keys(payload: JsonDict) -> bool:
     return any(key in payload for key in _FORBIDDEN_REVIEW_PAYLOAD_KEYS)
 
 
-def _review_recommended_statement_payload(payload: JsonDict) -> Any:
+def _review_recommended_statement_payload(
+    payload: JsonDict,
+    *,
+    reviewer_warnings: list[JsonDict] | None = None,
+    finding_path: str = "document",
+) -> Any:
     for key in _REVIEW_RECOMMENDED_STATEMENT_KEYS:
         if key not in payload:
             continue
@@ -4197,7 +4301,18 @@ def _review_recommended_statement_payload(payload: JsonDict) -> Any:
             return None
         if isinstance(value, str):
             return value.strip() or None
-        return value
+        if reviewer_warnings is not None:
+            reviewer_warnings.append(
+                {
+                    "issue": "invalid_recommended_statement_removed",
+                    "severity": "non_fatal",
+                    "finding_path": finding_path,
+                    "field": key,
+                    "expected": "plain string",
+                    "actual_type": type(value).__name__,
+                }
+            )
+        return None
     return None
 
 
@@ -4205,16 +4320,73 @@ def _review_evidence_refs_payload(
     payload: JsonDict,
     *,
     fallback_evidence: list[JsonDict],
+    reviewer_warnings: list[JsonDict] | None = None,
+    finding_path: str = "document",
 ) -> Any:
     if "evidence_refs" not in payload:
         return fallback_evidence
     raw_refs = payload.get("evidence_refs")
-    valid_refs = _valid_evidence_ref_payloads(raw_refs)
-    if valid_refs:
-        return valid_refs
     if raw_refs == []:
         return []
-    return raw_refs
+    if not isinstance(raw_refs, list):
+        if reviewer_warnings is not None:
+            reviewer_warnings.append(
+                {
+                    "issue": "invalid_evidence_refs_removed",
+                    "severity": "non_fatal",
+                    "finding_path": finding_path,
+                    "invalid_evidence_ref_count": 1,
+                    "missing_fields": sorted(_REQUIRED_EVIDENCE_REF_FIELDS),
+                    "actual_type": type(raw_refs).__name__,
+                }
+            )
+        return []
+    valid_refs, warning = _split_valid_review_evidence_refs(
+        raw_refs,
+        finding_path=finding_path,
+    )
+    if warning is not None and reviewer_warnings is not None:
+        reviewer_warnings.append(warning)
+    return valid_refs
+
+
+def _split_valid_review_evidence_refs(
+    raw_refs: list[Any],
+    *,
+    finding_path: str,
+) -> tuple[list[JsonDict], JsonDict | None]:
+    valid_refs: list[JsonDict] = []
+    invalid_count = 0
+    missing_fields: set[str] = set()
+    invalid_types: list[str] = []
+    for raw_ref in raw_refs:
+        if isinstance(raw_ref, EvidenceRef):
+            valid_refs.append(raw_ref.model_dump(mode="json"))
+            continue
+        if not isinstance(raw_ref, dict):
+            invalid_count += 1
+            invalid_types.append(type(raw_ref).__name__)
+            missing_fields.update(_REQUIRED_EVIDENCE_REF_FIELDS)
+            continue
+        try:
+            valid_refs.append(EvidenceRef.model_validate(raw_ref).model_dump(mode="json"))
+        except ValidationError as exc:
+            invalid_count += 1
+            for error in exc.errors():
+                if error.get("type") == "missing" and error.get("loc"):
+                    missing_fields.add(str(error["loc"][-1]))
+    if invalid_count == 0:
+        return valid_refs, None
+    warning: JsonDict = {
+        "issue": "invalid_evidence_refs_removed",
+        "severity": "non_fatal",
+        "finding_path": finding_path,
+        "invalid_evidence_ref_count": invalid_count,
+        "missing_fields": sorted(missing_fields),
+    }
+    if invalid_types:
+        warning["invalid_types"] = sorted(set(invalid_types))
+    return valid_refs, warning
 
 
 def _normalize_expectation_construction_payload(
