@@ -2245,19 +2245,44 @@ def _output_contract(required_output_schema: str, *, task: AgentTask | None = No
                             ),
                             "resolution_note": "separate concise decision record",
                             "changed_paths": ["document.<field_path>"],
-                            "evidence_refs": [],
+                            "evidence_refs": [
+                                {
+                                    "evidence_id": "evidence_<id>",
+                                    "source_type": "agent_output",
+                                    "source_id": "source_<id>",
+                                    "title": "evidence title",
+                                    "summary": "evidence summary",
+                                    "retrieval_metadata": {},
+                                    "confidence": 0.8,
+                                    "citation_scope": "field repair decision",
+                                }
+                            ],
                         }
                     ],
-                    "target_finding_ids": [],
+                    "target_finding_ids": ["finding_id"],
                     "realized_facts": None,
                     "key_variables": None,
                     "event_monitoring_direction": None,
                     "market_view": None,
                     "revised_candidate": None,
-                    "evidence_requests": [],
-                    "unresolved_finding_ids": [],
+                    "evidence_requests": [
+                        "Need primary-source evidence for the observed price reaction."
+                    ],
+                    "unresolved_finding_ids": ["finding_id"],
                     "unresolved_reason": None,
                     "rationale": "short rationale for this single repair task",
+                },
+                "field_type_requirements": {
+                    "evidence_requests": (
+                        "list[str] only. Never output objects like "
+                        "{'question': '...', 'target_field': '...', 'reason': '...'}."
+                    ),
+                    "target_finding_ids": "list[str] only.",
+                    "unresolved_finding_ids": "list[str] only.",
+                    "decisions[].evidence_refs": (
+                        "list[EvidenceRef object], not list[str]. If only an evidence id "
+                        "is known, leave evidence_refs empty and use evidence_requests."
+                    ),
                 },
                 "typed_field_examples": {
                     "realized_facts": [
@@ -2298,6 +2323,51 @@ def _output_contract(required_output_schema: str, *, task: AgentTask | None = No
                         "reviewer_agents": [],
                     },
                 },
+                "decision_branch_rules": {
+                    "accepted_or_partially_accepted": [
+                        (
+                            "For single-field tasks, return exactly one complete "
+                            "replacement value for the allowed typed field."
+                        ),
+                        "For single-field tasks, do not output revised_candidate.",
+                        (
+                            "For field_family=cross_field, return exactly one complete "
+                            "ExpectationUnitDocument as revised_candidate."
+                        ),
+                        (
+                            "Do not output patches, changes, path_map, JSON Patch "
+                            "operations, or multiple candidates."
+                        ),
+                    ],
+                    "resolved_rejected_or_deferred": [
+                        "Do not output typed field updates.",
+                        "Do not output revised_candidate.",
+                        (
+                            "Use decisions, changed_paths, evidence_refs, unresolved_reason, "
+                            "and evidence_requests to explain the result."
+                        ),
+                        "For deferred, provide unresolved_reason.",
+                    ],
+                },
+                "market_evidence_mapping": {
+                    "rule": (
+                        "For field_family=market_evidence, the allowed typed output "
+                        "field is market_view."
+                    ),
+                    "valid": {
+                        "field_family": "market_evidence",
+                        "market_view": "<ResearchSection>",
+                    },
+                    "invalid": {"field_family": "market_evidence", "market_evidence": {}},
+                },
+                "cross_field_identity_rules": [
+                    (
+                        "For field_family=cross_field, revised_candidate must preserve "
+                        "expectation_id, expectation_name, and direction from the current "
+                        "candidate unless the task explicitly says otherwise."
+                    ),
+                    "The transaction layer, not O1, decides whether blockers close.",
+                ],
                 "rules": [
                     "Resolve exactly one input_context.field_repair_task.",
                     (
@@ -2310,8 +2380,17 @@ def _output_contract(required_output_schema: str, *, task: AgentTask | None = No
                         "ExpectationUnitDocument as revised_candidate and no typed field updates."
                     ),
                     (
+                        "For field_family=market_evidence, output market_view; never "
+                        "output a top-level market_evidence field."
+                    ),
+                    (
                         "Do not output patches, proposed_patches, changes, path_map, "
                         "JSON Patch operations, partial document fragments, or multiple candidates."
+                    ),
+                    (
+                        "evidence_requests must be plain strings; target_finding_ids "
+                        "and unresolved_finding_ids must be strings; evidence_refs "
+                        "must be full EvidenceRef objects."
                     ),
                     "Do not include event_time in RealizedFact.",
                     (
@@ -2387,12 +2466,6 @@ def _output_contract(required_output_schema: str, *, task: AgentTask | None = No
                         (
                             "If decision is resolved or rejected, do not return a full patch; "
                             "use changed_paths and evidence_refs to make the closure auditable."
-                        ),
-                        (
-                            "Exception: if input_context.current_numeric_sanity_violations "
-                            "lists the objection_id, decision='resolved' with empty "
-                            "proposed_patches is invalid. Use accepted or partially_accepted "
-                            "and include a revised patch for the affected expectation_id."
                         ),
                         (
                             "Each resolution must include changed_paths or evidence_refs; "
@@ -2493,6 +2566,9 @@ def _output_contract(required_output_schema: str, *, task: AgentTask | None = No
                                 "contradicted | not_checked"
                             ),
                             "rationale": "short field-level audit rationale",
+                            "recommended_statement": (
+                                "optional corrected DoxAtlas-traceable formulation"
+                            ),
                             "evidence_refs": [],
                         }
                     ],
@@ -2508,6 +2584,12 @@ def _output_contract(required_output_schema: str, *, task: AgentTask | None = No
                         "author_agent, or reviewer_agents."
                     ),
                     "Use findings for field-level audit results; keep rationale concise.",
+                    (
+                        "When disagreeing with O1, include recommended_statement or "
+                        "an equivalent corrected formulation instead of only saying "
+                        "the field is unsupported."
+                    ),
+                    "Evidence refs are helpful but optional; do not fabricate them.",
                     "Use objections only for issues requiring O1 revision before promotion.",
                     "Use delegations only when A2 external retrieval is required.",
                 ],
@@ -2528,6 +2610,9 @@ def _output_contract(required_output_schema: str, *, task: AgentTask | None = No
                                 "supported | unsupported | needs_more_evidence | contradicted"
                             ),
                             "rationale": "short field-level review rationale",
+                            "recommended_statement": (
+                                "optional better or corrected formulation for the field"
+                            ),
                             "evidence_refs": [],
                         }
                     ],
@@ -2543,6 +2628,12 @@ def _output_contract(required_output_schema: str, *, task: AgentTask | None = No
                         "or patches_reviewed."
                     ),
                     "Use findings for field-level reviewer output.",
+                    (
+                        "When disagreeing with O1, include recommended_statement or "
+                        "an equivalent corrected formulation instead of only saying "
+                        "the field is unsupported."
+                    ),
+                    "Evidence refs are helpful but optional; do not fabricate them.",
                     (
                         "For every finding, identify the narrowest affected field_path. "
                         "If the issue spans multiple fields, set field_path to document "
@@ -3591,14 +3682,14 @@ def _normalize_expectation_field_review_payload(
     tool_results: list[ToolResult],
     delegation_results: list[AgentResult],
 ) -> JsonDict:
+    if _has_forbidden_review_payload_keys(payload):
+        return payload
     evidence_refs = _valid_evidence_ref_payloads(payload.get("evidence_refs"))
     if not evidence_refs:
         evidence_refs = [
             item.model_dump(mode="json")
             for item in _evidence_refs(tool_results, delegation_results)
         ]
-    if not evidence_refs:
-        evidence_refs = [_agent_output_evidence_ref(task)]
     findings = _normalize_expectation_field_review_findings(
         payload.get("findings")
         or payload.get("issues")
@@ -3742,8 +3833,11 @@ def _normalize_expectation_field_review_findings(
                         or rationale
                     ),
                     "rationale": rationale,
-                    "evidence_refs": _valid_evidence_ref_payloads(item.get("evidence_refs"))
-                    or fallback_evidence,
+                    "recommended_statement": _review_recommended_statement_payload(item),
+                    "evidence_refs": _review_evidence_refs_payload(
+                        item,
+                        fallback_evidence=fallback_evidence,
+                    ),
                 }
             )
         elif str(item).strip():
@@ -3754,6 +3848,7 @@ def _normalize_expectation_field_review_findings(
                     "target_paths": [default_field_path],
                     "status": _normalize_field_review_status(text),
                     "rationale": text,
+                    "recommended_statement": None,
                     "evidence_refs": fallback_evidence,
                 }
             )
@@ -3789,6 +3884,8 @@ def _normalize_doxatlas_audit_payload(
     tool_results: list[ToolResult],
     delegation_results: list[AgentResult],
 ) -> JsonDict:
+    if _has_forbidden_review_payload_keys(payload):
+        return payload
     evidence_refs = _valid_evidence_ref_payloads(payload.get("evidence_refs"))
     if not evidence_refs:
         evidence_refs = [
@@ -3868,8 +3965,11 @@ def _normalize_doxatlas_audit_findings(
                         item.get("status") or item.get("verdict") or rationale
                     ),
                     "rationale": rationale,
-                    "evidence_refs": _valid_evidence_ref_payloads(item.get("evidence_refs"))
-                    or fallback_evidence,
+                    "recommended_statement": _review_recommended_statement_payload(item),
+                    "evidence_refs": _review_evidence_refs_payload(
+                        item,
+                        fallback_evidence=fallback_evidence,
+                    ),
                 }
             )
         elif str(item).strip():
@@ -3878,6 +3978,7 @@ def _normalize_doxatlas_audit_findings(
                     "field_path": "document",
                     "status": _normalize_audit_finding_status(item),
                     "rationale": str(item),
+                    "recommended_statement": None,
                     "evidence_refs": fallback_evidence,
                 }
             )
@@ -3905,6 +4006,7 @@ def _audit_finding_from_payload(
         "field_path": str(payload.get("field_path") or payload.get("field") or "document"),
         "status": _normalize_audit_finding_status(payload.get("status") or text),
         "rationale": text,
+        "recommended_statement": _review_recommended_statement_payload(payload),
         "evidence_refs": fallback_evidence,
     }
 
@@ -4069,6 +4171,50 @@ def _first_text(payload: JsonDict, *keys: str) -> str:
         if isinstance(value, str) and value.strip():
             return value.strip()
     return ""
+
+
+_REVIEW_RECOMMENDED_STATEMENT_KEYS = (
+    "recommended_statement",
+    "corrected_formulation",
+    "corrected_statement",
+    "recommended_formulation",
+)
+_FORBIDDEN_REVIEW_PAYLOAD_KEYS = frozenset(
+    {"patches", "proposed_patches", "changes", "path_map", "path_maps"}
+)
+
+
+def _has_forbidden_review_payload_keys(payload: JsonDict) -> bool:
+    return any(key in payload for key in _FORBIDDEN_REVIEW_PAYLOAD_KEYS)
+
+
+def _review_recommended_statement_payload(payload: JsonDict) -> Any:
+    for key in _REVIEW_RECOMMENDED_STATEMENT_KEYS:
+        if key not in payload:
+            continue
+        value = payload.get(key)
+        if value is None:
+            return None
+        if isinstance(value, str):
+            return value.strip() or None
+        return value
+    return None
+
+
+def _review_evidence_refs_payload(
+    payload: JsonDict,
+    *,
+    fallback_evidence: list[JsonDict],
+) -> Any:
+    if "evidence_refs" not in payload:
+        return fallback_evidence
+    raw_refs = payload.get("evidence_refs")
+    valid_refs = _valid_evidence_ref_payloads(raw_refs)
+    if valid_refs:
+        return valid_refs
+    if raw_refs == []:
+        return []
+    return raw_refs
 
 
 def _normalize_expectation_construction_payload(

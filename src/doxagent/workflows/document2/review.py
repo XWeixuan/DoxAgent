@@ -25,8 +25,18 @@ from doxagent.workflows.document2.evidence import (
     evidence_assessment,
     evidence_assessment_from_review_status,
 )
+from doxagent.workflows.errors import WorkflowContractError
 
 DOCUMENT2_REVIEW_FINDINGS_KEY = "document2_review_findings"
+_FORBIDDEN_REVIEW_PAYLOAD_KEYS = frozenset(
+    {"patches", "proposed_patches", "changes", "path_map", "path_maps"}
+)
+_RECOMMENDED_STATEMENT_KEYS = (
+    "recommended_statement",
+    "corrected_formulation",
+    "corrected_statement",
+    "recommended_formulation",
+)
 
 
 def document2_review_findings_from_agent_result(
@@ -35,7 +45,11 @@ def document2_review_findings_from_agent_result(
 ) -> list[Document2ReviewFinding]:
     findings: list[Document2ReviewFinding] = []
     structured = result.payload.get("structured", {})
-    raw_findings = structured.get("findings", []) if isinstance(structured, dict) else []
+    if isinstance(structured, dict):
+        _assert_no_forbidden_review_payload_keys(structured)
+        raw_findings = structured.get("findings", [])
+    else:
+        raw_findings = []
     if isinstance(raw_findings, list):
         for raw_finding in raw_findings:
             if not isinstance(raw_finding, dict):
@@ -91,6 +105,7 @@ def _document2_review_findings_from_structured_finding(
     raw_finding: dict[str, Any],
     pending_patches: list[BlackboardPatch],
 ) -> list[Document2ReviewFinding]:
+    _validate_structured_review_finding(raw_finding)
     target_path = str(
         raw_finding.get("target_path") or raw_finding.get("field_path") or "document"
     )
@@ -101,6 +116,7 @@ def _document2_review_findings_from_structured_finding(
         or raw_finding.get("reason")
         or f"{result.agent_name.value} review finding."
     )
+    recommended_statement = _recommended_statement_from_raw(raw_finding)
     evidence_refs = _evidence_refs_from_raw(raw_finding.get("evidence_refs"))
     assessment = evidence_assessment_from_review_status(
         target_path=target_path,
@@ -116,6 +132,7 @@ def _document2_review_findings_from_structured_finding(
             target_paths=target_paths,
             severity=_severity_from_review_status(review_status),
             reason=reason,
+            recommended_statement=recommended_statement,
             evidence_assessments=[assessment],
             supplemental_evidence_refs=list(evidence_refs),
             supplemental_context=[f"review_status: {review_status}"],
@@ -136,6 +153,47 @@ def _target_paths_from_raw(raw_finding: dict[str, Any], *, primary: str) -> list
     return list(dict.fromkeys(paths))
 
 
+def _assert_no_forbidden_review_payload_keys(structured: dict[str, Any]) -> None:
+    forbidden = sorted(key for key in _FORBIDDEN_REVIEW_PAYLOAD_KEYS if key in structured)
+    if forbidden:
+        raise WorkflowContractError(
+            "ReviewExpectationFields output must not include patch-like fields: "
+            + ", ".join(forbidden)
+        )
+
+
+def _validate_structured_review_finding(raw_finding: dict[str, Any]) -> None:
+    for key in _RECOMMENDED_STATEMENT_KEYS:
+        if key in raw_finding and raw_finding.get(key) is not None:
+            value = raw_finding.get(key)
+            if not isinstance(value, str):
+                raise WorkflowContractError(
+                    f"ReviewExpectationFields finding {key} must be a plain string."
+                )
+    if "evidence_refs" not in raw_finding:
+        return
+    raw_refs = raw_finding.get("evidence_refs")
+    if raw_refs is None:
+        raise WorkflowContractError(
+            "ReviewExpectationFields finding evidence_refs must be a list of "
+            "EvidenceRef objects when present."
+        )
+    if not isinstance(raw_refs, list):
+        raise WorkflowContractError(
+            "ReviewExpectationFields finding evidence_refs must be a list of "
+            "EvidenceRef objects."
+        )
+    for item in raw_refs:
+        if isinstance(item, EvidenceRef):
+            continue
+        if not isinstance(item, dict):
+            raise WorkflowContractError(
+                "ReviewExpectationFields finding evidence_refs must contain "
+                "EvidenceRef objects, not string ids or scalar values."
+            )
+        EvidenceRef.model_validate(item)
+
+
 def _expectation_ids_for_finding(
     raw_finding: dict[str, Any],
     pending_patches: list[BlackboardPatch],
@@ -153,17 +211,40 @@ def _expectation_ids_for_finding(
     return ["unknown_expectation"]
 
 
+def _recommended_statement_from_raw(raw_finding: dict[str, Any]) -> str | None:
+    for key in _RECOMMENDED_STATEMENT_KEYS:
+        if key not in raw_finding:
+            continue
+        raw = raw_finding.get(key)
+        if raw is None:
+            return None
+        if not isinstance(raw, str):
+            raise WorkflowContractError(
+                f"ReviewExpectationFields finding {key} must be a plain string."
+            )
+        return raw.strip() or None
+    return None
+
+
 def _evidence_refs_from_raw(raw: object) -> list[EvidenceRef]:
     if raw is None:
         return []
     if not isinstance(raw, list):
-        return []
+        raise WorkflowContractError(
+            "ReviewExpectationFields finding evidence_refs must be a list of "
+            "EvidenceRef objects."
+        )
     refs: list[EvidenceRef] = []
     for item in raw:
         if isinstance(item, EvidenceRef):
             refs.append(item)
         elif isinstance(item, dict):
             refs.append(EvidenceRef.model_validate(item))
+        else:
+            raise WorkflowContractError(
+                "ReviewExpectationFields finding evidence_refs must contain "
+                "EvidenceRef objects, not string ids or scalar values."
+            )
     return refs
 
 

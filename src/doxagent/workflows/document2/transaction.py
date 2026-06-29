@@ -67,6 +67,7 @@ def document2_revision_from_field_repair_result(
     if result.field_family == "cross_field":
         if result.revised_candidate is None:
             return None
+        _validate_cross_field_field_repair_identity(result, before)
         return Document2Revision(
             expectation_id=result.expectation_id,
             before=before,
@@ -298,6 +299,28 @@ def _document_from_patch(patch: BlackboardPatch | None) -> ExpectationUnitDocume
     if patch is None or not isinstance(patch.after, dict):
         return None
     return ExpectationUnitDocument.model_validate(patch.after)
+
+
+def _validate_cross_field_field_repair_identity(
+    result: Document2FieldRepairResult,
+    before: ExpectationUnitDocument | None,
+) -> None:
+    if result.revised_candidate is None:
+        return
+    if before is None:
+        raise ValueError(
+            "cross-field Document2 repair requires an existing candidate to verify identity."
+        )
+    changed_fields = [
+        field
+        for field in ("expectation_id", "expectation_name", "direction")
+        if getattr(result.revised_candidate, field) != getattr(before, field)
+    ]
+    if changed_fields:
+        raise ValueError(
+            "cross-field Document2 repair must preserve immutable identity fields: "
+            + ", ".join(changed_fields)
+        )
 
 
 def _field_repair_has_typed_update(result: Document2FieldRepairResult) -> bool:

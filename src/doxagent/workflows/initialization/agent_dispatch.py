@@ -337,10 +337,7 @@ class InitializationAgentDispatchMixin:
             task_timeout = self._task_model_request_timeout_seconds(task)
             if task_timeout is not None:
                 return task_timeout
-            return min(
-                _O1_RESOLVER_TIMEOUT_SECONDS,
-                float(self.settings.model_request_timeout_seconds),
-            )
+            return _O1_RESOLVER_TIMEOUT_SECONDS
         return float(self.settings.workflow_agent_stale_after_seconds)
 
     def _task_model_request_timeout_seconds(self, task: AgentTask) -> float | None:

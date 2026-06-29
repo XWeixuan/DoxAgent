@@ -141,6 +141,8 @@ class Document2LegacyPromotionMixin:
                 ) from exc
             if finding.expectation_id != expectation_id or not finding.blocks_promotion:
                 continue
+            if self._is_numeric_sanity_review_finding(finding):
+                continue
             if finding.source_objection_id is None:
                 findings.append(finding)
                 continue
@@ -164,7 +166,9 @@ class Document2LegacyPromotionMixin:
         run = self.blackboard.get_run(checkpoint.run_id)
         blockers: list[Document2PromotionBlocker] = []
         unresolved_objections = [
-            objection for objection in run.objections if objection.is_unresolved
+            objection
+            for objection in run.objections
+            if objection.is_unresolved and not self._is_numeric_sanity_objection(objection)
         ]
         if unresolved_objections:
             blockers.append(

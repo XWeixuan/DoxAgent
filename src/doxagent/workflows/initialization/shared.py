@@ -115,7 +115,7 @@ _WORKFLOW_AGENT_RESULTS_KEY = "workflow_agent_results"
 _WORKFLOW_AGENT_IDEMPOTENCY_KEY = "workflow_agent_idempotency"
 _EXPECTATION_DETAIL_STATUS_KEY = "expectation_detail_generation_status"
 _OBJECTION_RESOLUTION_BATCH_SIZE = 3
-_O1_RESOLVER_TIMEOUT_SECONDS = 240.0
+_O1_RESOLVER_TIMEOUT_SECONDS = 600.0
 WorkflowExecutionMode = Literal["mock", "agent_runner"]
 
 
@@ -160,7 +160,17 @@ NODE_AGENT_ALLOWED_TOOL_OVERRIDES: dict[tuple[WorkflowNode, AgentName], list[str
     (
         WorkflowNode.REVIEW_EXPECTATION_FIELDS,
         AgentName.A1_DOXATLAS_AUDIT,
-    ): [],
+    ): [
+        "doxa_query_analysis",
+        "doxa_get_analysis",
+        "doxa_query_propositions",
+        "doxa_get_event_source",
+        "doxa_get_media_result",
+        "doxa_get_media_result_detail",
+        "doxa_get_social_result",
+        "doxa_get_social_result_detail",
+        "doxa_get_ignored_propositions",
+    ],
     (
         WorkflowNode.REVIEW_EXPECTATION_FIELDS,
         AgentName.C1_FUNDAMENTAL_RESEARCH,

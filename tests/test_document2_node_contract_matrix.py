@@ -28,6 +28,7 @@ from doxagent.workflows import (
     WorkflowRunStatus,
 )
 from doxagent.workflows.document2.contracts import (
+    Document2FieldRepairResult,
     Document2PromotionCandidate,
     Document2ResolutionPlan,
     Document2ReviewFinding,
@@ -43,7 +44,10 @@ from doxagent.workflows.document2.promotion import (
     document2_promotion_candidate_from_patch,
 )
 from doxagent.workflows.document2.review import DOCUMENT2_REVIEW_FINDINGS_KEY
-from doxagent.workflows.document2.transaction import DOCUMENT2_TRANSACTION_AUDITS_KEY
+from doxagent.workflows.document2.transaction import (
+    DOCUMENT2_TRANSACTION_AUDITS_KEY,
+    document2_revision_from_field_repair_result,
+)
 from tests.test_phase13_real_workflow import StructuredInitializationRunner
 
 DOCUMENT2_PENDING_REVISIONS_KEY = "document2_pending_revisions"
@@ -238,6 +242,10 @@ class Document2NodeMatrixRunner(StructuredInitializationRunner):
                 "structured_blocking_finding_without_expectation_id",
                 "structured_blocking_finding_with_target_paths",
                 "structured_document_level_data_gap_without_expectation_id",
+                "recommended_statement_without_evidence_refs",
+                "supported_recommended_statement",
+                "invalid_evidence_refs_string",
+                "invalid_recommended_statement_object",
             }
             and task.agent_name is AgentName.C1_FUNDAMENTAL_RESEARCH
         ):
@@ -272,7 +280,52 @@ class Document2NodeMatrixRunner(StructuredInitializationRunner):
                 finding["rationale"] = (
                     "Fixture document-level data gap affects both pending candidates."
                 )
+            elif self.review_case == "recommended_statement_without_evidence_refs":
+                finding["status"] = "needs_more_evidence"
+                finding["rationale"] = (
+                    "Fixture reviewer supplemented the field without evidence refs."
+                )
+                finding["recommended_statement"] = (
+                    "Corrected current-state formulation from the C1 review perspective."
+                )
+                finding["evidence_refs"] = []
+            elif self.review_case == "supported_recommended_statement":
+                finding["status"] = "supported"
+                finding["target_path"] = "event_monitoring_direction"
+                finding["target_paths"] = ["event_monitoring_direction"]
+                finding["rationale"] = (
+                    "Fixture reviewer supplied a supported supplemental formulation."
+                )
+                finding["recommended_statement"] = (
+                    "Supplemental industry framing for event monitoring is already aligned."
+                )
+                finding["evidence_refs"] = []
+            elif self.review_case == "invalid_evidence_refs_string":
+                finding["evidence_refs"] = ["evidence_id_only"]
+            elif self.review_case == "invalid_recommended_statement_object":
+                finding["recommended_statement"] = {"text": "not a plain string"}
             structured["findings"] = [finding]
+            return self._with_structured(result, structured)
+        if (
+            self.review_case == "a1_recommended_statement_without_evidence_refs"
+            and task.agent_name is AgentName.A1_DOXATLAS_AUDIT
+        ):
+            structured = self._structured_payload(result)
+            structured["verdict"] = "needs_revision"
+            structured["revision_required"] = True
+            structured["findings"] = [
+                {
+                    "field_path": "market_view",
+                    "status": "needs_more_evidence",
+                    "rationale": (
+                        "Fixture A1 supplemented DoxAtlas traceability without refs."
+                    ),
+                    "recommended_statement": (
+                        "Corrected DoxAtlas-traceable market-view formulation."
+                    ),
+                    "evidence_refs": [],
+                }
+            ]
             return self._with_structured(result, structured)
         if (
             self.review_case == "reviewer_patch_leak"
@@ -284,6 +337,13 @@ class Document2NodeMatrixRunner(StructuredInitializationRunner):
                 AgentName.C1_FUNDAMENTAL_RESEARCH,
             )
             return result.model_copy(update={"proposed_patches": [patch]}, deep=True)
+        if (
+            self.review_case == "reviewer_changes_leak"
+            and task.agent_name is AgentName.C1_FUNDAMENTAL_RESEARCH
+        ):
+            structured = self._structured_payload(result)
+            structured["changes"] = {"market_view.text": "forbidden partial update"}
+            return self._with_structured(result, structured)
         return result
 
     def _mutate_resolver(self, task: AgentTask, result: AgentResult) -> AgentResult:
@@ -633,7 +693,7 @@ def test_generate_expectation_construction_node_matrix(
     expected_status: WorkflowRunStatus,
     message: str,
 ) -> None:
-    _, result = _run_matrix(
+    workflow, result = _run_matrix(
         stop_after=WorkflowNode.GENERATE_EXPECTATION_CONSTRUCTION,
         runner=Document2NodeMatrixRunner(construction_case=case),
     )
@@ -673,7 +733,7 @@ def test_review_expectation_construction_node_matrix(
     expected_status: WorkflowRunStatus,
     message: str,
 ) -> None:
-    _, result = _run_matrix(
+    workflow, result = _run_matrix(
         stop_after=WorkflowNode.REVIEW_EXPECTATION_CONSTRUCTION,
         runner=Document2NodeMatrixRunner(construction_review_case=case),
     )
@@ -741,7 +801,7 @@ def test_resolve_expectation_construction_node_matrix(
     expected_status: WorkflowRunStatus,
     message: str,
 ) -> None:
-    _, result = _run_matrix(
+    workflow, result = _run_matrix(
         stop_after=WorkflowNode.RESOLVE_EXPECTATION_CONSTRUCTION,
         runner=Document2NodeMatrixRunner(
             construction_review_case=review_case,
@@ -897,6 +957,41 @@ def test_generate_expectation_details_node_matrix(
             id="ReviewExpectationFields__document_level_data_gap__fanout_to_candidates",
         ),
         pytest.param(
+            None,
+            "recommended_statement_without_evidence_refs",
+            WorkflowRunStatus.RUNNING,
+            "",
+            id="ReviewExpectationFields__recommended_statement_without_evidence_refs__accepted",
+        ),
+        pytest.param(
+            None,
+            "a1_recommended_statement_without_evidence_refs",
+            WorkflowRunStatus.RUNNING,
+            "",
+            id="ReviewExpectationFields__a1_recommended_statement_without_evidence_refs__accepted",
+        ),
+        pytest.param(
+            None,
+            "supported_recommended_statement",
+            WorkflowRunStatus.RUNNING,
+            "",
+            id="ReviewExpectationFields__supported_recommended_statement__non_blocking",
+        ),
+        pytest.param(
+            None,
+            "invalid_evidence_refs_string",
+            WorkflowRunStatus.BLOCKED,
+            "evidence_refs",
+            id="ReviewExpectationFields__invalid_evidence_refs_string__schema_failure",
+        ),
+        pytest.param(
+            None,
+            "invalid_recommended_statement_object",
+            WorkflowRunStatus.BLOCKED,
+            "recommended_statement",
+            id="ReviewExpectationFields__invalid_recommended_statement_object__schema_failure",
+        ),
+        pytest.param(
             "placeholder_text",
             None,
             WorkflowRunStatus.RUNNING,
@@ -908,7 +1003,7 @@ def test_generate_expectation_details_node_matrix(
             None,
             WorkflowRunStatus.RUNNING,
             "",
-            id="ReviewExpectationFields__numeric_sanity_finding__bridged_objection",
+            id="ReviewExpectationFields__numeric_sanity__disabled",
         ),
         pytest.param(
             "unknown_price_reaction",
@@ -924,6 +1019,13 @@ def test_generate_expectation_details_node_matrix(
             "reviewers must not propose patches",
             id="ReviewExpectationFields__reviewer_proposed_patches__schema_failure",
         ),
+        pytest.param(
+            None,
+            "reviewer_changes_leak",
+            WorkflowRunStatus.BLOCKED,
+            "changes",
+            id="ReviewExpectationFields__reviewer_changes_leak__schema_failure",
+        ),
     ],
 )
 def test_review_expectation_fields_node_matrix(
@@ -932,7 +1034,7 @@ def test_review_expectation_fields_node_matrix(
     expected_status: WorkflowRunStatus,
     message: str,
 ) -> None:
-    _, result = _run_matrix(
+    workflow, result = _run_matrix(
         stop_after=WorkflowNode.REVIEW_EXPECTATION_FIELDS,
         runner=Document2NodeMatrixRunner(
             detail_case=detail_case,
@@ -948,8 +1050,14 @@ def test_review_expectation_fields_node_matrix(
             "structured_blocking_finding_without_expectation_id",
             "structured_blocking_finding_with_target_paths",
             "structured_document_level_data_gap_without_expectation_id",
+            "recommended_statement_without_evidence_refs",
+            "a1_recommended_statement_without_evidence_refs",
         }
-        if detail_case is not None or review_case in review_finding_cases:
+        nonblocking_review_finding_cases = {"supported_recommended_statement"}
+        if (
+            detail_case is not None
+            and detail_case != "numeric_market_view"
+        ) or review_case in review_finding_cases:
             assert findings
             assert result.summary.unresolved_objection_count >= 1
             blocking = [
@@ -975,10 +1083,97 @@ def test_review_expectation_fields_node_matrix(
             }:
                 expectation_ids = {finding["expectation_id"] for finding in blocking}
                 assert {"exp_mock_core", "exp_mock_risk"}.issubset(expectation_ids)
+            if review_case == "recommended_statement_without_evidence_refs":
+                assert any(
+                    finding.get("recommended_statement")
+                    == "Corrected current-state formulation from the C1 review perspective."
+                    and finding["supplemental_evidence_refs"] == []
+                    for finding in blocking
+                )
+            if review_case == "a1_recommended_statement_without_evidence_refs":
+                assert any(
+                    finding["reviewer_agent"] == AgentName.A1_DOXATLAS_AUDIT.value
+                    and finding.get("recommended_statement")
+                    == "Corrected DoxAtlas-traceable market-view formulation."
+                    and finding["supplemental_evidence_refs"] == []
+                    for finding in blocking
+                )
+        elif review_case in nonblocking_review_finding_cases:
+            assert findings
+            assert result.summary.unresolved_objection_count == 0
+            assert all(finding["blocks_promotion"] is False for finding in findings)
+            assert any(
+                finding.get("recommended_statement")
+                == "Supplemental industry framing for event monitoring is already aligned."
+                for finding in findings
+            )
+        elif detail_case == "numeric_market_view":
+            assert not any(
+                "numeric_sanity" in " ".join(finding.get("supplemental_context", []))
+                for finding in findings
+            )
+            run = workflow.blackboard.get_run(result.checkpoint.run_id)
+            assert not any(
+                objection.objection_id.startswith("obj_numeric_sanity_")
+                for objection in run.objections
+            )
         else:
             assert findings == []
     else:
         _assert_blocked(result, message)
+
+
+def test_review_expectation_fields_context_allows_optional_single_batch_tools() -> None:
+    runner = Document2NodeMatrixRunner()
+    _workflow, result = _run_matrix(
+        stop_after=WorkflowNode.REVIEW_EXPECTATION_FIELDS,
+        runner=runner,
+    )
+    _assert_running_to(result, WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS)
+
+    review_tasks = [
+        task
+        for task in runner.tasks
+        if task.run_metadata.workflow_node == WorkflowNode.REVIEW_EXPECTATION_FIELDS.value
+    ]
+    assert {task.agent_name for task in review_tasks} == {
+        AgentName.A1_DOXATLAS_AUDIT,
+        AgentName.C1_FUNDAMENTAL_RESEARCH,
+        AgentName.C3_INDUSTRY_RESEARCH,
+        AgentName.O4_MARKET_TRACE,
+    }
+    for task in review_tasks:
+        context = task.input_context
+        budget = context["react_runtime_budget"]
+        assert context["required_tool_names"] == []
+        assert budget["max_steps"] == 3
+        assert budget["max_tool_call_batches"] == 1
+        assert "model_request_timeout_seconds" not in budget
+        assert all(item["required"] is False for item in context["tool_requirements"])
+        assert "content supplementation and calibration review" in context[
+            "review_instruction"
+        ]
+
+    a1_task = next(
+        task
+        for task in review_tasks
+        if task.agent_name is AgentName.A1_DOXATLAS_AUDIT
+    )
+    a1_tools = set(a1_task.permissions.allowed_tools)
+    assert "tavily.search" not in a1_tools
+    assert all(not tool.startswith("doxa_run_") for tool in a1_tools)
+    assert {
+        "doxa_query_analysis",
+        "doxa_get_analysis",
+        "doxa_query_propositions",
+        "doxa_get_event_source",
+        "doxa_get_media_result",
+        "doxa_get_media_result_detail",
+        "doxa_get_social_result",
+        "doxa_get_social_result_detail",
+        "doxa_get_ignored_propositions",
+    }.issubset(a1_tools)
+    assert "Do not call tools" not in a1_task.input_context["review_instruction"]
 
 
 @pytest.mark.parametrize(
@@ -1055,14 +1250,6 @@ def test_review_expectation_fields_node_matrix(
             id="ResolveObjectionsAndDelegations__revised_candidate_changes_identity__schema_failure",
         ),
         pytest.param(
-            "numeric_market_view",
-            None,
-            "numeric_sanity_revalidation_still_fails",
-            WorkflowRunStatus.BLOCKED,
-            "left blockers unresolved",
-            id="ResolveObjectionsAndDelegations__numeric_sanity_revalidation_still_fails__retained_blocker",
-        ),
-        pytest.param(
             "placeholder_text",
             None,
             "non_numeric_deterministic_blocker_still_fails",
@@ -1093,6 +1280,407 @@ def test_resolve_objections_and_delegations_node_matrix(
         assert result.summary.unresolved_objection_count == 0
     else:
         _assert_blocked(result, message)
+
+
+def test_numeric_sanity_disabled_does_not_enter_resolver_repair_tasks() -> None:
+    runner = Document2NodeMatrixRunner(detail_case="numeric_market_view")
+    workflow, result = _run_matrix(
+        stop_after=WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS,
+        runner=runner,
+    )
+
+    _assert_running_to(result, WorkflowNode.PROMOTE_EXPECTATION_TO_BELIEF_STATE)
+    resolver_tasks = [
+        task
+        for task in runner.tasks
+        if task.run_metadata.workflow_node
+        == WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS.value
+        and task.agent_name is AgentName.O1_EXPECTATION_OWNER
+    ]
+    assert resolver_tasks == []
+    run = workflow.blackboard.get_run(result.checkpoint.run_id)
+    assert not any(
+        objection.objection_id.startswith("obj_numeric_sanity_")
+        for objection in run.objections
+    )
+
+
+def test_legacy_numeric_sanity_objection_is_not_actionable_in_resolver() -> None:
+    runner = Document2NodeMatrixRunner()
+    workflow, review_result = _run_matrix(
+        stop_after=WorkflowNode.REVIEW_EXPECTATION_FIELDS,
+        runner=runner,
+    )
+    _assert_running_to(review_result, WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS)
+    checkpoint = review_result.checkpoint
+    patch = checkpoint.pending_patches[0]
+    expectation_id = str(patch.target.expectation_id)
+    workflow.blackboard.create_objection(
+        checkpoint.run_id,
+        Objection(
+            objection_id=f"obj_numeric_sanity_{expectation_id}_market_data",
+            source_agent=AgentName.SYSTEM,
+            target=BlackboardTarget(
+                document_type=DocumentType.EXPECTATION_UNIT,
+                ticker=checkpoint.ticker,
+                expectation_id=expectation_id,
+                field_path="market_view",
+            ),
+            severity=ObjectionSeverity.BLOCKING,
+            reason="Legacy numeric_sanity objection should be ignored by Document2 resolver.",
+            taxonomy="numeric_sanity_market_data",
+            target_path="market_view",
+            status=ObjectionStatus.OPEN,
+        ),
+    )
+
+    result = _resume_at(
+        workflow,
+        checkpoint,
+        WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS,
+    )
+
+    _assert_running_to(result, WorkflowNode.PROMOTE_EXPECTATION_TO_BELIEF_STATE)
+    resolver_tasks = [
+        task
+        for task in runner.tasks
+        if task.run_metadata.workflow_node
+        == WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS.value
+        and task.agent_name is AgentName.O1_EXPECTATION_OWNER
+    ]
+    assert resolver_tasks == []
+
+
+def test_resolver_o1_contexts_use_600_second_timeout() -> None:
+    review_runner = Document2NodeMatrixRunner(review_case="structured_blocking_finding")
+    review_workflow, review_result = _run_matrix(
+        stop_after=WorkflowNode.REVIEW_EXPECTATION_FIELDS,
+        runner=review_runner,
+    )
+    _assert_running_to(review_result, WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS)
+    unresolved = [
+        objection
+        for objection in review_workflow.blackboard.get_run(
+            review_result.checkpoint.run_id
+        ).objections
+        if objection.is_unresolved
+    ]
+    legacy_context = review_workflow._objection_resolution_context(
+        review_result.checkpoint,
+        unresolved,
+    )
+    assert legacy_context["react_runtime_budget"]["model_request_timeout_seconds"] == 600.0
+    assert "current_numeric_sanity_violations" not in legacy_context
+
+    resolver_runner = Document2NodeMatrixRunner(review_case="structured_blocking_finding")
+    _workflow, resolver_result = _run_matrix(
+        stop_after=WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS,
+        runner=resolver_runner,
+    )
+    _assert_running_to(resolver_result, WorkflowNode.PROMOTE_EXPECTATION_TO_BELIEF_STATE)
+    resolver_tasks = [
+        task
+        for task in resolver_runner.tasks
+        if task.run_metadata.workflow_node
+        == WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS.value
+        and task.agent_name is AgentName.O1_EXPECTATION_OWNER
+    ]
+    assert resolver_tasks
+    assert all(
+        task.input_context["react_runtime_budget"]["model_request_timeout_seconds"] == 600.0
+        for task in resolver_tasks
+    )
+
+
+def _field_repair_contract_payload(
+    *,
+    field_family: str = "realized_facts",
+    decision: str = "deferred",
+    extra: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    payload: dict[str, Any] = {
+        "task_id": "d2repair_contract_matrix",
+        "expectation_id": "exp_mock_core",
+        "field_family": field_family,
+        "decision": decision,
+        "decisions": [],
+        "target_finding_ids": [],
+        "realized_facts": None,
+        "key_variables": None,
+        "event_monitoring_direction": None,
+        "market_view": None,
+        "revised_candidate": None,
+        "evidence_requests": [],
+        "unresolved_finding_ids": [],
+        "unresolved_reason": "Fixture deferred repair needs more evidence."
+        if decision == "deferred"
+        else None,
+        "rationale": "Fixture Document2 field repair contract payload.",
+    }
+    if extra:
+        payload.update(extra)
+    return payload
+
+
+def _field_repair_evidence_ref_payload() -> dict[str, Any]:
+    runner = Document2NodeMatrixRunner()
+    return runner.factory._evidence(EvidenceSourceType.AGENT_OUTPUT).model_dump(
+        mode="json"
+    )
+
+
+def _field_repair_candidate_patch(candidate: dict[str, Any]) -> BlackboardPatch:
+    runner = Document2NodeMatrixRunner()
+    return BlackboardPatch(
+        patch_id="patch_field_repair_contract_matrix",
+        target=BlackboardTarget(
+            document_type=DocumentType.EXPECTATION_UNIT,
+            ticker=str(candidate.get("ticker") or "NVDA"),
+            expectation_id=str(candidate.get("expectation_id") or "exp_mock_core"),
+            field_path="document",
+        ),
+        operation=PatchOperation.UPDATE,
+        before=None,
+        after=candidate,
+        rationale="Fixture patch for field repair transaction identity validation.",
+        evidence_refs=[runner.factory._evidence(EvidenceSourceType.AGENT_OUTPUT)],
+        author_agent=AgentName.SYSTEM,
+        validation_status=ValidationStatus.PENDING,
+    )
+
+
+def test_document2_field_repair_contract_rejects_object_evidence_requests() -> None:
+    payload = _field_repair_contract_payload(
+        extra={
+            "evidence_requests": [
+                {
+                    "question": "Need price reaction source.",
+                    "target_field": "realized_facts",
+                    "reason": "Structured request objects are not allowed.",
+                }
+            ]
+        }
+    )
+
+    with pytest.raises(Exception, match="evidence_requests"):
+        Document2FieldRepairResult.model_validate(payload)
+
+
+def test_document2_field_repair_contract_accepts_plain_string_evidence_requests() -> None:
+    result = Document2FieldRepairResult.model_validate(
+        _field_repair_contract_payload(
+            extra={
+                "evidence_requests": [
+                    "Need primary-source evidence for the observed price reaction."
+                ]
+            }
+        )
+    )
+
+    assert result.evidence_requests == [
+        "Need primary-source evidence for the observed price reaction."
+    ]
+
+
+@pytest.mark.parametrize(
+    "field_name",
+    [
+        pytest.param(
+            "target_finding_ids",
+            id="Document2FieldRepairResult__target_finding_ids_object__schema_failure",
+        ),
+        pytest.param(
+            "unresolved_finding_ids",
+            id="Document2FieldRepairResult__unresolved_finding_ids_object__schema_failure",
+        ),
+    ],
+)
+def test_document2_field_repair_contract_rejects_object_id_lists(
+    field_name: str,
+) -> None:
+    payload = _field_repair_contract_payload(
+        extra={field_name: [{"finding_id": "finding_contract_matrix"}]}
+    )
+
+    with pytest.raises(Exception, match=field_name):
+        Document2FieldRepairResult.model_validate(payload)
+
+
+def test_document2_field_repair_contract_rejects_string_evidence_ref_ids() -> None:
+    payload = _field_repair_contract_payload(
+        decision="resolved",
+        extra={
+            "decisions": [
+                {
+                    "finding_id": "finding_contract_matrix",
+                    "decision": "resolved",
+                    "resolution_note": "Evidence was referenced by id only.",
+                    "changed_paths": ["document.market_view"],
+                    "evidence_refs": ["evidence_contract_id"],
+                }
+            ]
+        },
+    )
+
+    with pytest.raises(Exception, match="evidence_refs"):
+        Document2FieldRepairResult.model_validate(payload)
+
+
+def test_document2_field_repair_contract_accepts_full_evidence_ref_objects() -> None:
+    result = Document2FieldRepairResult.model_validate(
+        _field_repair_contract_payload(
+            decision="resolved",
+            extra={
+                "decisions": [
+                    {
+                        "finding_id": "finding_contract_matrix",
+                        "decision": "resolved",
+                        "resolution_note": "EvidenceRef object is complete.",
+                        "changed_paths": ["document.market_view"],
+                        "evidence_refs": [_field_repair_evidence_ref_payload()],
+                    }
+                ]
+            },
+        )
+    )
+
+    assert result.decisions[0].evidence_refs[0].evidence_id
+
+
+def test_document2_field_repair_contract_market_evidence_accepts_market_view() -> None:
+    candidate = Document2NodeMatrixRunner()._candidate_payload("NVDA")
+
+    result = Document2FieldRepairResult.model_validate(
+        _field_repair_contract_payload(
+            field_family="market_evidence",
+            decision="accepted",
+            extra={"market_view": candidate["market_view"]},
+        )
+    )
+
+    assert result.field_family == "market_evidence"
+    assert result.market_view is not None
+
+
+def test_field_repair_contract_rejects_top_level_market_evidence() -> None:
+    candidate = Document2NodeMatrixRunner()._candidate_payload("NVDA")
+    payload = _field_repair_contract_payload(
+        field_family="market_evidence",
+        decision="accepted",
+        extra={"market_evidence": candidate["market_view"]},
+    )
+
+    with pytest.raises(Exception, match="market_evidence"):
+        Document2FieldRepairResult.model_validate(payload)
+
+
+@pytest.mark.parametrize(
+    "decision",
+    [
+        pytest.param(
+            "accepted",
+            id="Document2FieldRepairResult__single_field_accepted_without_update__schema_failure",
+        ),
+        pytest.param(
+            "partially_accepted",
+            id="Document2FieldRepairResult__single_field_partially_accepted_without_update__schema_failure",
+        ),
+    ],
+)
+def test_document2_field_repair_contract_single_field_acceptance_requires_typed_update(
+    decision: str,
+) -> None:
+    with pytest.raises(Exception, match="single-field accepted repair requires"):
+        Document2FieldRepairResult.model_validate(
+            _field_repair_contract_payload(
+                field_family="market_view",
+                decision=decision,
+            )
+        )
+
+
+def test_document2_field_repair_contract_deferred_without_typed_update_is_valid() -> None:
+    result = Document2FieldRepairResult.model_validate(
+        _field_repair_contract_payload(
+            field_family="market_view",
+            decision="deferred",
+            extra={
+                "unresolved_reason": "Need primary-source market evidence before editing.",
+                "evidence_requests": ["Need primary-source market evidence before editing."],
+            },
+        )
+    )
+
+    assert result.market_view is None
+    assert result.revised_candidate is None
+    assert result.unresolved_reason
+
+
+def test_document2_field_repair_contract_single_field_rejects_revised_candidate() -> None:
+    candidate = Document2NodeMatrixRunner()._candidate_payload("NVDA")
+    payload = _field_repair_contract_payload(
+        field_family="market_view",
+        decision="accepted",
+        extra={
+            "market_view": candidate["market_view"],
+            "revised_candidate": candidate,
+        },
+    )
+
+    with pytest.raises(Exception, match="single-field repair must not return revised_candidate"):
+        Document2FieldRepairResult.model_validate(payload)
+
+
+def test_field_repair_contract_cross_field_acceptance_requires_revised_candidate() -> None:
+    with pytest.raises(Exception, match="cross_field accepted repair requires revised_candidate"):
+        Document2FieldRepairResult.model_validate(
+            _field_repair_contract_payload(
+                field_family="cross_field",
+                decision="accepted",
+            )
+        )
+
+
+@pytest.mark.parametrize(
+    ("field_name", "replacement"),
+    [
+        pytest.param(
+            "expectation_id",
+            "exp_changed_core",
+            id="Document2FieldRepairResult__cross_field_changes_expectation_id__transaction_rejected",
+        ),
+        pytest.param(
+            "expectation_name",
+            "Changed expectation name",
+            id="Document2FieldRepairResult__cross_field_changes_expectation_name__transaction_rejected",
+        ),
+        pytest.param(
+            "direction",
+            "bearish",
+            id="Document2FieldRepairResult__cross_field_changes_direction__transaction_rejected",
+        ),
+    ],
+)
+def test_document2_field_repair_transaction_rejects_cross_field_identity_changes(
+    field_name: str,
+    replacement: str,
+) -> None:
+    candidate = Document2NodeMatrixRunner()._candidate_payload("NVDA")
+    revised_candidate = dict(candidate)
+    revised_candidate[field_name] = replacement
+    result = Document2FieldRepairResult.model_validate(
+        _field_repair_contract_payload(
+            field_family="cross_field",
+            decision="accepted",
+            extra={"revised_candidate": revised_candidate},
+        )
+    )
+
+    with pytest.raises(Exception, match="immutable identity fields"):
+        document2_revision_from_field_repair_result(
+            result,
+            before_patch=_field_repair_candidate_patch(candidate),
+        )
 
 
 def _promotion_checkpoint(
@@ -1219,6 +1807,58 @@ def test_promote_expectation_to_belief_state_unresolved_objection_blocks_promoti
     _assert_blocked(result, "Promotion requires all blocking objections")
 
 
+def test_numeric_sanity_disabled_does_not_block_promotion_or_reopen_revalidation() -> None:
+    workflow, checkpoint = _promotion_checkpoint()
+    patch = checkpoint.pending_patches[0]
+    expectation_id = str(patch.target.expectation_id)
+    numeric_objection = Objection(
+        objection_id=f"obj_numeric_sanity_{expectation_id}_market_data",
+        source_agent=AgentName.SYSTEM,
+        target=BlackboardTarget(
+            document_type=DocumentType.EXPECTATION_UNIT,
+            ticker=checkpoint.ticker,
+            expectation_id=expectation_id,
+            field_path="market_view",
+        ),
+        severity=ObjectionSeverity.BLOCKING,
+        reason="Deterministic numeric sanity review is disabled.",
+        taxonomy="numeric_sanity_market_data",
+        target_path="market_view",
+        status=ObjectionStatus.OPEN,
+    )
+    workflow.blackboard.create_objection(checkpoint.run_id, numeric_objection)
+    numeric_finding = Document2ReviewFinding(
+        reviewer_agent=AgentName.SYSTEM,
+        expectation_id=expectation_id,
+        target_path="market_view",
+        target_paths=["market_view"],
+        severity="blocking",
+        reason="Deterministic numeric sanity review is disabled.",
+        supplemental_context=["finding_source: deterministic_numeric_sanity"],
+        source_objection_id=numeric_objection.objection_id,
+    )
+    checkpoint.metadata[DOCUMENT2_REVIEW_FINDINGS_KEY] = [
+        *checkpoint.metadata.get(DOCUMENT2_REVIEW_FINDINGS_KEY, []),
+        numeric_finding.model_dump(mode="json"),
+    ]
+
+    revalidation = workflow._revalidate_document2_deterministic_findings_for_patch(
+        checkpoint,
+        patch,
+    )
+    result = _resume_at(
+        workflow,
+        checkpoint,
+        WorkflowNode.PROMOTE_EXPECTATION_TO_BELIEF_STATE,
+    )
+
+    assert not any(
+        "numeric_sanity" in " ".join(finding.supplemental_context)
+        for finding in revalidation
+    )
+    _assert_running_to(result, WorkflowNode.GENERATE_GLOBAL_NARRATIVE_REPORT)
+
+
 def test_promote_expectation_to_belief_state_candidate_differs_from_source_patch_rejected() -> None:
     _, checkpoint = _promotion_checkpoint()
     patch = checkpoint.pending_patches[0]
@@ -1330,11 +1970,6 @@ DETERMINISTIC_REVALIDATION_CASES = [
         "market_view.text",
         id="MiniFlow_DetailToReview__placeholder_generic_text__typed_finding",
     ),
-    pytest.param(
-        "numeric_market_view",
-        "realized_facts.price_reaction",
-        id="MiniFlow_DetailToReview__numeric_sanity__typed_finding",
-    ),
 ]
 
 
@@ -1422,13 +2057,6 @@ def test_mini_flow_generate_details_to_review_deterministic_revalidation_matrix(
             WorkflowRunStatus.BLOCKED,
             "left blockers unresolved",
             id="MiniFlow_ReviewToResolver__placeholder_generic_text__retained_blocker",
-        ),
-        pytest.param(
-            "numeric_market_view",
-            None,
-            WorkflowRunStatus.BLOCKED,
-            "left blockers unresolved",
-            id="MiniFlow_ReviewToResolver__numeric_sanity__retained_blocker",
         ),
     ],
 )

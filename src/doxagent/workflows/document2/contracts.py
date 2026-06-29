@@ -117,6 +117,7 @@ class Document2ReviewFinding(Document2ContractModel):
     target_paths: list[NonEmptyStr] = Field(default_factory=list)
     severity: Document2FindingSeverity
     reason: NonEmptyStr
+    recommended_statement: NonEmptyStr | None = None
     evidence_assessments: list[EvidenceAssessment] = Field(default_factory=list)
     supplemental_evidence_refs: list[EvidenceRef] = Field(default_factory=list)
     supplemental_context: list[NonEmptyStr] = Field(default_factory=list)

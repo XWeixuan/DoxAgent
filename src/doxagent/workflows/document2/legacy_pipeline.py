@@ -10,9 +10,6 @@ from doxagent.workflows.document2.contracts import (
 from doxagent.workflows.document2.deterministic_findings import (
     deterministic_findings_from_patch,
 )
-from doxagent.workflows.document2.numeric_sanity import (
-    numeric_sanity_findings_from_objections,
-)
 from doxagent.workflows.document2.review import (
     DOCUMENT2_REVIEW_FINDINGS_KEY,
     document2_review_findings_from_agent_result,
@@ -1172,6 +1169,29 @@ class Document2LegacyPipelineMixin:
             raise WorkflowContractError(
                 "ReviewExpectationFields requires pending expectation patches."
             )
+        review_common_instruction = (
+            "This review has two co-equal goals: content supplementation and "
+            "calibration review.\n\n"
+            "First, review O1's candidate expectation field from your domain "
+            "perspective. Identify material content gaps, missing data, stale "
+            "assumptions, overclaims, or reasoning errors. Do not focus only on "
+            "evidence sufficiency; also check whether the field's actual "
+            "interpretation is correct.\n\n"
+            "Second, supplement the field from your domain perspective. If the "
+            "missing material can reasonably be checked with your allowed tools "
+            "in one tool-call batch, you may call tools once. Tool calling is "
+            "optional, not mandatory.\n\n"
+            "After at most one tool-call batch, return the final review finding. "
+            "Do not keep searching. Do not propose patches. Do not modify the "
+            "candidate directly.\n\n"
+            "When you disagree with O1, do not frame the finding only as "
+            "unsupported. State what the better or corrected formulation should "
+            "be, based on the data, materials, or domain reasoning available to "
+            "you.\n\n"
+            "Evidence refs are helpful but optional. Do not fabricate evidence "
+            "refs. If no evidence ref is available, provide a concise basis "
+            "summary in rationale or recommended_statement."
+        )
         specs: list[dict[str, Any]] = [
             {
                 "agent_name": AgentName.A1_DOXATLAS_AUDIT,
@@ -1184,9 +1204,11 @@ class Document2LegacyPipelineMixin:
                     "realized_facts",
                 ],
                 "instruction": (
-                    "Audit expectation name, direction, market view, and realized facts using "
-                    "only the existing pending patches, attached evidence refs, and context "
-                    "already present in the task. Do not call tools."
+                    "For A1, focus on DoxAtlas traceability, propositions, narrative "
+                    "source ids, ignored propositions, media/social capsules, and source "
+                    "support for market_view and realized_facts. If O1's statement is "
+                    "incomplete or misleading from DoxAtlas traceability, provide the "
+                    "corrected DoxAtlas-grounded formulation."
                 ),
                 "tool_requirements": [
                     {
@@ -1209,9 +1231,11 @@ class Document2LegacyPipelineMixin:
                     "event_monitoring_direction",
                 ],
                 "instruction": (
-                    "Review realized facts, key variables and current state, and event "
-                    "prediction or monitoring direction against company fundamentals, filings, "
-                    "financial statements, and press-release evidence."
+                    "For C1, focus on fundamentals, filings, financial statements, "
+                    "earnings events, press releases, company quality, "
+                    "valuation-sensitive facts, and current_state. If O1's statement "
+                    "is incomplete or misleading, provide the corrected fundamental "
+                    "formulation."
                 ),
             },
             {
@@ -1223,8 +1247,10 @@ class Document2LegacyPipelineMixin:
                     "event_monitoring_direction",
                 ],
                 "instruction": (
-                    "Review key variables and current state plus event prediction or monitoring "
-                    "direction against industry, peer, sector, and policy evidence."
+                    "For C3, focus on industry structure, peer context, sector trends, "
+                    "competitive position, policy, and thematic evidence. If O1's "
+                    "statement misses industry framing or peer-relative context, "
+                    "provide the corrected industry formulation."
                 ),
             },
             {
@@ -1237,8 +1263,10 @@ class Document2LegacyPipelineMixin:
                     "market_evidence",
                 ],
                 "instruction": (
-                    "Review whether realized facts involving price reaction, price-reflection "
-                    "claims, and market evidence are supported by OHLCV or trade-stream data."
+                    "For O4, focus on price reaction, OHLCV behavior, relative "
+                    "performance, volume, technical context, and market evidence. If "
+                    "O1 overstates or understates market pricing, provide the corrected "
+                    "market-action formulation."
                 ),
             },
         ]
@@ -1258,6 +1286,18 @@ class Document2LegacyPipelineMixin:
                     }
                     for tool_name in self._a1_allowed_tools_for_node(node)
                 ]
+            elif not tool_requirements:
+                tool_requirements = [
+                    {
+                        "tool_name": tool_name,
+                        "required": False,
+                        "purpose": self._field_review_tool_purpose(
+                            agent_name,
+                            tool_name,
+                        ),
+                    }
+                    for tool_name in self.registry.get(agent_name).runtime.allowed_tools
+                ]
             pending_patch_context = self._field_review_pending_patch_context(
                 agent_name,
                 checkpoint.pending_patches,
@@ -1265,7 +1305,10 @@ class Document2LegacyPipelineMixin:
             document1_context_pack = self._document1_context_pack_from_checkpoint(checkpoint)
             extra_context = {
                 "review_scope": spec["review_scope"],
-                "review_instruction": spec["instruction"],
+                "review_common_instruction": review_common_instruction,
+                "review_instruction": "\n\n".join(
+                    [review_common_instruction, spec["instruction"]]
+                ),
                 "pending_patches": pending_patch_context,
                 "pending_expectation_patches": pending_patch_context,
                 "global_research_context": self._field_review_global_research_context(
@@ -1281,11 +1324,11 @@ class Document2LegacyPipelineMixin:
                     ),
                 },
                 "tool_requirements": tool_requirements,
-                "required_tool_names": [
-                    item["tool_name"]
-                    for item in tool_requirements
-                    if item.get("required") is True
-                ],
+                "required_tool_names": [],
+                "react_runtime_budget": {
+                    "max_steps": 3,
+                    "max_tool_call_batches": 1,
+                },
             }
             if document1_context_pack is not None:
                 extra_context["document1_context_pack"] = document1_context_pack.model_dump(
@@ -1359,12 +1402,6 @@ class Document2LegacyPipelineMixin:
                 for item in finding.supplemental_context
             )
         ]
-        numeric_sanity_objections = self._numeric_sanity_review_objections(checkpoint)
-        review_findings.extend(
-            numeric_sanity_findings_from_objections(numeric_sanity_objections)
-        )
-        for objection in numeric_sanity_objections:
-            self.blackboard.create_objection(checkpoint.run_id, objection)
         source_less_blocking_finding_count = sum(
             1
             for finding in review_findings
@@ -1378,9 +1415,11 @@ class Document2LegacyPipelineMixin:
         review_state: dict[str, Any] = {
             "primary_state": DOCUMENT2_REVIEW_FINDINGS_KEY,
             "finding_count": len(review_findings),
-            "legacy_objection_bridge_count": len(numeric_sanity_objections)
-            + sum(len(result.objections) for result in results)
+            "legacy_objection_bridge_count": sum(
+                len(result.objections) for result in results
+            )
             + source_less_blocking_finding_count,
+            "numeric_sanity_disabled": True,
         }
         if placeholder_findings:
             review_state["placeholder_finding_count"] = len(placeholder_findings)
@@ -1394,6 +1433,28 @@ class Document2LegacyPipelineMixin:
             node,
             metadata=metadata,
         )
+
+    def _field_review_tool_purpose(
+        self,
+        agent_name: AgentName,
+        tool_name: str,
+    ) -> str:
+        if agent_name is AgentName.C1_FUNDAMENTAL_RESEARCH:
+            return (
+                "Optional fundamental evidence for calibration or supplementation; "
+                "use only if one tool-call batch can materially improve the finding."
+            )
+        if agent_name is AgentName.C3_INDUSTRY_RESEARCH:
+            return (
+                "Optional industry, peer, sector, or policy evidence for calibration "
+                "or supplementation; use only if one tool-call batch is enough."
+            )
+        if agent_name is AgentName.O4_MARKET_TRACE:
+            return (
+                "Optional price, OHLCV, volume, relative-performance, or trade-stream "
+                "evidence for calibration or supplementation."
+            )
+        return f"Optional evidence for {agent_name.value} ReviewExpectationFields."
 
     def _mock_resolve_blockers(self, checkpoint: WorkflowCheckpoint) -> None:
         if self.execution_mode == "agent_runner":

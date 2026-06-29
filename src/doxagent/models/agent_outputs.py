@@ -161,6 +161,7 @@ class DoxAtlasAuditFinding(ContractModel):
         "not_checked",
     ]
     rationale: NonEmptyStr
+    recommended_statement: NonEmptyStr | None = None
     evidence_refs: list[EvidenceRef] = Field(default_factory=list)
 
 
@@ -184,6 +185,7 @@ class ExpectationFieldReviewFinding(ContractModel):
     target_paths: list[NonEmptyStr] = Field(default_factory=list)
     status: Literal["supported", "unsupported", "needs_more_evidence", "contradicted"]
     rationale: NonEmptyStr
+    recommended_statement: NonEmptyStr | None = None
     evidence_refs: list[EvidenceRef] = Field(default_factory=list)
 
 

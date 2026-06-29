@@ -14,9 +14,6 @@ from doxagent.workflows.document2.contracts import (
 from doxagent.workflows.document2.deterministic_findings import (
     deterministic_findings_from_patch,
 )
-from doxagent.workflows.document2.numeric_sanity import (
-    numeric_sanity_findings_from_objections,
-)
 from doxagent.workflows.document2.resolver import (
     DOCUMENT2_RESOLUTION_PLANS_KEY,
     document2_field_repair_result_from_agent_result,
@@ -52,16 +49,14 @@ class Document2LegacyQualityMixin:
         self,
         checkpoint: WorkflowCheckpoint,
     ) -> list[Objection]:
-        objections: list[Objection] = []
-        for patch in checkpoint.pending_patches:
-            objections.extend(self._numeric_sanity_objections_for_patch(checkpoint.ticker, patch))
-        return objections
+        return []
 
     def _numeric_sanity_objections_for_patch(
         self,
         ticker: str,
         patch: BlackboardPatch,
     ) -> list[Objection]:
+        return []
         if patch.target.document_type is not DocumentType.EXPECTATION_UNIT:
             return []
         if not isinstance(patch.after, dict):
@@ -558,9 +553,9 @@ class Document2LegacyQualityMixin:
             results.append(result)
 
         run = self.blackboard.get_run(checkpoint.run_id)
-        unresolved_objections = [
-            objection for objection in run.objections if objection.is_unresolved
-        ]
+        unresolved_objections = self._document2_actionable_unresolved_objections(
+            run.objections
+        )
         task_index = 0
         stalled_task_ids: set[str] = set()
         while unresolved_objections:
@@ -615,9 +610,9 @@ class Document2LegacyQualityMixin:
             self._complete_o1_revision_delegations(checkpoint, result)
             results.append(result)
             run = self.blackboard.get_run(checkpoint.run_id)
-            unresolved_objections = [
-                objection for objection in run.objections if objection.is_unresolved
-            ]
+            unresolved_objections = self._document2_actionable_unresolved_objections(
+                run.objections
+            )
             unresolved_task_objection_ids = {
                 objection.objection_id
                 for objection in unresolved_objections
@@ -634,7 +629,7 @@ class Document2LegacyQualityMixin:
             field_repair_results=field_repair_results,
             transaction_audits=transaction_audits,
         )
-        if any(objection.is_unresolved for objection in run.objections) or any(
+        if self._document2_actionable_unresolved_objections(run.objections) or any(
             delegation.is_blocking for delegation in run.delegations
         ):
             raise WorkflowContractError("ResolveObjectionsAndDelegations left blockers unresolved.")
@@ -715,7 +710,6 @@ class Document2LegacyQualityMixin:
                 revision,
                 legacy_patch,
             )
-            self._reopen_numeric_sanity_objections_after_o1_revision(checkpoint)
             revalidation_findings = self._revalidate_document2_deterministic_findings_for_patch(
                 checkpoint,
                 legacy_patch,
@@ -794,7 +788,6 @@ class Document2LegacyQualityMixin:
                 revision,
                 legacy_patch,
             )
-            self._reopen_numeric_sanity_objections_after_o1_revision(checkpoint)
             revalidation_findings = self._revalidate_document2_deterministic_findings_for_patch(
                 checkpoint,
                 legacy_patch,
@@ -943,16 +936,12 @@ class Document2LegacyQualityMixin:
         checkpoint: WorkflowCheckpoint,
         patch: BlackboardPatch,
     ) -> list[Document2ReviewFinding]:
-        numeric_objections = self._numeric_sanity_objections_for_patch(checkpoint.ticker, patch)
         findings = self._document2_deterministic_findings_for_patch(
             checkpoint,
             patch,
-            numeric_objections=numeric_objections,
         )
         if not findings:
             return []
-        for objection in numeric_objections:
-            self.blackboard.create_objection(checkpoint.run_id, objection)
         findings = self._bridge_document2_blocking_findings_to_objections(
             checkpoint,
             findings,
@@ -964,18 +953,8 @@ class Document2LegacyQualityMixin:
         self,
         checkpoint: WorkflowCheckpoint,
         patch: BlackboardPatch,
-        *,
-        numeric_objections: list[Objection] | None = None,
     ) -> list[Document2ReviewFinding]:
-        numeric = (
-            list(numeric_objections)
-            if numeric_objections is not None
-            else self._numeric_sanity_objections_for_patch(checkpoint.ticker, patch)
-        )
-        return [
-            *deterministic_findings_from_patch(patch),
-            *numeric_sanity_findings_from_objections(numeric),
-        ]
+        return deterministic_findings_from_patch(patch)
 
     def _merge_document2_review_findings_metadata(
         self,
@@ -1081,16 +1060,6 @@ class Document2LegacyQualityMixin:
             return True
         if decision.objection_id is None:
             return False
-        current_numeric_objection_ids = {
-            objection.objection_id
-            for patch in checkpoint.pending_patches
-            for objection in self._numeric_sanity_objections_for_patch(
-                checkpoint.ticker,
-                patch,
-            )
-        }
-        if decision.objection_id in current_numeric_objection_ids:
-            return True
         run = self.blackboard.get_run(checkpoint.run_id)
         objection = next(
             (
@@ -1239,6 +1208,8 @@ class Document2LegacyQualityMixin:
         for objection in unresolved_objections:
             if objection.taxonomy == _DOCUMENT2_ROUTING_BLOCKER_TAXONOMY:
                 continue
+            if self._is_numeric_sanity_objection(objection):
+                continue
             finding = by_objection_id.get(objection.objection_id)
             if finding is None:
                 finding = document2_review_finding_from_objection(objection)
@@ -1345,6 +1316,7 @@ class Document2LegacyQualityMixin:
                 finding
                 for finding in findings
                 if finding.blocks_promotion
+                and not self._is_numeric_sanity_review_finding(finding)
                 and (
                     finding.source_objection_id is None
                     or finding.source_objection_id in unresolved_ids
@@ -1367,11 +1339,44 @@ class Document2LegacyQualityMixin:
             finding
             for finding in bridged
             if finding.blocks_promotion
+            and not self._is_numeric_sanity_review_finding(finding)
             and (
                 finding.source_objection_id is None
                 or finding.source_objection_id in unresolved_ids
             )
         ], metadata_changed
+
+    def _is_numeric_sanity_objection(self, objection: Objection) -> bool:
+        taxonomy = str(objection.taxonomy or "")
+        return taxonomy.startswith("numeric_sanity_") or objection.objection_id.startswith(
+            "obj_numeric_sanity_"
+        )
+
+    def _document2_actionable_unresolved_objections(
+        self,
+        objections: list[Objection],
+    ) -> list[Objection]:
+        return [
+            objection
+            for objection in objections
+            if objection.is_unresolved and not self._is_numeric_sanity_objection(objection)
+        ]
+
+    def _is_numeric_sanity_review_finding(
+        self,
+        finding: Document2ReviewFinding,
+    ) -> bool:
+        if finding.source_objection_id and finding.source_objection_id.startswith(
+            "obj_numeric_sanity_"
+        ):
+            return True
+        if finding.reason.startswith("Deterministic numeric sanity review"):
+            return True
+        return any(
+            "deterministic_numeric_sanity" in item
+            or "numeric_sanity" in item
+            for item in finding.supplemental_context
+        )
 
     def _document2_field_repair_task_from_group(
         self,
@@ -1773,8 +1778,26 @@ class Document2LegacyQualityMixin:
         self,
         field_family: str,
     ) -> dict[str, Any]:
+        type_rules = [
+            "evidence_requests must be list[str]; never output structured objects there.",
+            "target_finding_ids must be list[str].",
+            "unresolved_finding_ids must be list[str].",
+            (
+                "decisions[].evidence_refs must be list[EvidenceRef object], not "
+                "list[str]. If only an evidence id is known, leave evidence_refs empty "
+                "and add a plain string to evidence_requests."
+            ),
+        ]
+        non_revision_rules = [
+            (
+                "When decision is resolved, rejected, or deferred, do not return typed "
+                "field updates and do not return revised_candidate; explain via "
+                "decisions, changed_paths, evidence_refs, unresolved_reason, and "
+                "plain-string evidence_requests."
+            ),
+            "For deferred decisions, provide unresolved_reason.",
+        ]
         common_rules = [
-            "Return exactly one typed field update for this field_family.",
             (
                 "Do not return patches, changes, path_map, JSON Patch operations, "
                 "or multiple candidates."
@@ -1783,6 +1806,8 @@ class Document2LegacyQualityMixin:
                 "O1 may propose a repair; transaction and deterministic "
                 "revalidation decide blocker closure."
             ),
+            *type_rules,
+            *non_revision_rules,
         ]
         if field_family == "cross_field":
             return {
@@ -1790,18 +1815,43 @@ class Document2LegacyQualityMixin:
                 "output_field": "revised_candidate",
                 "requires_full_candidate": True,
                 "rules": [
-                    "Return exactly one complete ExpectationUnitDocument as revised_candidate.",
+                    (
+                        "When decision is accepted or partially_accepted, return exactly "
+                        "one complete ExpectationUnitDocument as revised_candidate."
+                    ),
                     "Do not return typed partial field updates for cross_field tasks.",
-                    *common_rules[1:],
+                    (
+                        "The revised_candidate must preserve immutable identity fields "
+                        "from the current candidate: expectation_id, expectation_name, "
+                        "and direction."
+                    ),
+                    *common_rules,
                 ],
             }
         output_field = "market_view" if field_family == "market_evidence" else field_family
+        field_specific_rules = [
+            (
+                "When decision is accepted or partially_accepted, return exactly one "
+                f"complete replacement value in the top-level '{output_field}' field."
+            ),
+            "Do not return revised_candidate for single-field tasks.",
+        ]
+        if field_family == "market_evidence":
+            field_specific_rules.extend(
+                [
+                    (
+                        "For field_family=market_evidence, the allowed typed output "
+                        "field is market_view."
+                    ),
+                    "Never output a top-level market_evidence field.",
+                ]
+            )
         return {
             "field_family": field_family,
             "output_field": output_field,
             "requires_full_candidate": False,
             "must_return_complete_replacement_value": True,
-            "rules": common_rules,
+            "rules": [*field_specific_rules, *common_rules],
             "schema_notes": {
                 "RealizedFact_fields": [
                     "event_id",
@@ -1821,7 +1871,7 @@ class Document2LegacyQualityMixin:
         task_index: int = 1,
         total_unresolved: int | None = None,
     ) -> dict[str, Any]:
-        timeout_seconds = 480.0 if task.field_family == "cross_field" else 240.0
+        timeout_seconds = _O1_RESOLVER_TIMEOUT_SECONDS
         run = self.blackboard.get_run(checkpoint.run_id)
         task_objections = [
             objection
@@ -1835,15 +1885,48 @@ class Document2LegacyQualityMixin:
             "Do not merge conflicting reviewer opinions into one summary finding.",
             "Do not call external tools; reuse evidence_refs already present here.",
             "A blocker closes only after transaction acceptance and deterministic revalidation.",
+            "evidence_requests must be list[str]; do not output objects there.",
+            "target_finding_ids and unresolved_finding_ids must be list[str].",
+            "decisions[].evidence_refs must be list[EvidenceRef object], not list[str].",
+            (
+                "If only an evidence id is known, leave evidence_refs empty and put a "
+                "plain-string follow-up request in evidence_requests."
+            ),
+            (
+                "For resolved, rejected, or deferred decisions, do not output typed "
+                "field updates and do not output revised_candidate."
+            ),
+            "For deferred decisions, provide unresolved_reason.",
         ]
         if task.field_family == "cross_field":
-            output_guidance.append(
-                "For field_family=cross_field, output exactly one complete revised_candidate."
+            output_guidance.extend(
+                [
+                    (
+                        "For accepted or partially_accepted cross_field tasks, output "
+                        "exactly one complete revised_candidate and no typed partial updates."
+                    ),
+                    (
+                        "The revised_candidate must preserve expectation_id, "
+                        "expectation_name, and direction from the current candidate."
+                    ),
+                ]
             )
         else:
-            output_guidance.append(
-                "For single-field repair, do not output revised_candidate; "
-                "return only the typed field update."
+            output_field = (
+                "market_view" if task.field_family == "market_evidence" else task.field_family
+            )
+            output_guidance.extend(
+                [
+                    (
+                        "For accepted or partially_accepted single-field repair, do "
+                        f"not output revised_candidate; return exactly one complete "
+                        f"replacement value in the top-level {output_field} field."
+                    ),
+                    (
+                        "For field_family=market_evidence, output market_view; never "
+                        "output a top-level market_evidence field."
+                    ),
+                ]
             )
         return {
             "internal_task_skill_ids": ["document2-field-repair"],
@@ -1888,17 +1971,6 @@ class Document2LegacyQualityMixin:
             checkpoint.pending_patches,
             unresolved_objections,
         )
-        current_numeric_violations = [
-            violation
-            for violation in (
-                self._current_numeric_sanity_violation_summary(
-                    checkpoint,
-                    objection,
-                )
-                for objection in unresolved_objections
-            )
-            if violation is not None
-        ]
         output_guidance = [
             (
                 "Only resolve the objections present in unresolved_objections for "
@@ -1924,33 +1996,13 @@ class Document2LegacyQualityMixin:
             "Never return patches, changes, path maps, partial updates, list-wrapped "
             "revised_candidate, or multiple revised candidates.",
             "Each resolution must include changed_paths or evidence_refs.",
-            (
-                "Prioritize numeric sanity blockers: price, market cap, valuation "
-                "multiples, dates, and single-source claims must be corrected, "
-                "downgraded to non-numeric uncertainty, or explicitly rejected with "
-                "evidence. Keeping the same precise number and merely labelling it "
-                "narrative-only, unverified, approximate, or uncertain is not a valid "
-                "resolution."
-            ),
         ]
-        if current_numeric_violations:
-            output_guidance.append(
-                "For every objection listed in current_numeric_sanity_violations, "
-                "decision='resolved' with no revised_candidate is invalid because "
-                "the current pending patch still reproduces the blocker. Return "
-                "decision='accepted' or 'partially_accepted' with a revised_candidate "
-                "that removes the listed false precision or adds source-appropriate "
-                "evidence."
-            )
         return {
             "internal_task_skill_ids": ["document2-resolution-plan"],
             "react_runtime_budget": {
                 "max_steps": 1,
                 "max_tool_call_batches": 0,
-                "model_request_timeout_seconds": min(
-                    _O1_RESOLVER_TIMEOUT_SECONDS,
-                    float(self.settings.model_request_timeout_seconds),
-                ),
+                "model_request_timeout_seconds": _O1_RESOLVER_TIMEOUT_SECONDS,
             },
             "resolution_request": (
                 "Resolve field-review objections using the compact expectation summaries "
@@ -2002,7 +2054,6 @@ class Document2LegacyQualityMixin:
                 self._objection_resolution_objection_summary(objection)
                 for objection in unresolved_objections
             ],
-            "current_numeric_sanity_violations": current_numeric_violations,
             "output_guidance": output_guidance,
             "root_cause_clusters": self._objection_resolution_root_cause_clusters(
                 unresolved_objections
@@ -2152,8 +2203,6 @@ class Document2LegacyQualityMixin:
 
     def _objection_resolution_cluster_priority(self, objection: Objection) -> int:
         root = self._objection_resolution_root_cause_key(objection)
-        if objection.taxonomy.startswith("numeric_sanity_"):
-            return 100
         if root in {
             "root_cause:price_reaction_evidence_gap",
             "root_cause:market_return_magnitude",
@@ -2273,8 +2322,6 @@ class Document2LegacyQualityMixin:
         return keys
 
     def _objection_resolution_root_cause_key(self, objection: Objection) -> str:
-        if objection.taxonomy.startswith("numeric_sanity_"):
-            return f"root_cause:{objection.taxonomy}"
         target_path = str(objection.target_path or objection.target.field_path or "")
         text = " ".join(
             [
@@ -2721,7 +2768,7 @@ class Document2LegacyQualityMixin:
         result: AgentResult | None = None,
     ) -> None:
         run = self.blackboard.get_run(checkpoint.run_id)
-        if any(objection.is_unresolved for objection in run.objections):
+        if self._document2_actionable_unresolved_objections(run.objections):
             return
         summary = self._o1_revision_completion_summary(result)
         for delegation in run.delegations:
