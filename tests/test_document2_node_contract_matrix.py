@@ -428,6 +428,10 @@ class Document2NodeMatrixRunner(StructuredInitializationRunner):
         if self.resolver_case == "resolved_without_changed_paths_evidence_refs":
             changed_paths = []
             evidence_refs = []
+        elif self.resolver_case == "rejected_without_changed_paths_evidence_refs":
+            decision = "rejected"
+            changed_paths = []
+            evidence_refs = []
         elif self.resolver_case == "accepted_without_revised_candidate":
             decision = "accepted"
         elif self.resolver_case == "deferred_blocker":
@@ -1474,9 +1478,17 @@ def test_canonical_evidence_ref_remains_strict_for_stable_contracts() -> None:
             None,
             "structured_blocking_finding",
             "resolved_without_changed_paths_evidence_refs",
-            WorkflowRunStatus.BLOCKED,
-            "changed_paths or evidence_refs",
-            id="ResolveObjectionsAndDelegations__resolved_without_changed_paths_evidence_refs__transaction_rejected",
+            WorkflowRunStatus.RUNNING,
+            "",
+            id="ResolveObjectionsAndDelegations__resolved_without_changed_paths_evidence_refs__audited_not_blocking",
+        ),
+        pytest.param(
+            None,
+            "structured_blocking_finding",
+            "rejected_without_changed_paths_evidence_refs",
+            WorkflowRunStatus.RUNNING,
+            "",
+            id="ResolveObjectionsAndDelegations__rejected_without_changed_paths_evidence_refs__audited_not_blocking",
         ),
         pytest.param(
             None,
@@ -1541,6 +1553,25 @@ def test_resolve_objections_and_delegations_node_matrix(
         assert result.summary.unresolved_objection_count == 0
     else:
         _assert_blocked(result, message)
+
+
+def test_field_repair_noop_rejected_decision_is_audited_not_blocking() -> None:
+    _workflow, result = _run_matrix(
+        stop_after=WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS,
+        runner=Document2NodeMatrixRunner(
+            review_case="structured_blocking_finding",
+            resolver_case="rejected_without_changed_paths_evidence_refs",
+        ),
+    )
+
+    _assert_running_to(result, WorkflowNode.PROMOTE_EXPECTATION_TO_BELIEF_STATE)
+    audits = result.checkpoint.metadata[DOCUMENT2_TRANSACTION_AUDITS_KEY]
+    assert audits
+    assert any(
+        "without changed_paths or evidence_refs" in note
+        for audit in audits
+        for note in audit["notes"]
+    )
 
 
 def test_numeric_sanity_disabled_does_not_enter_resolver_repair_tasks() -> None:

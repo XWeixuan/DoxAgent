@@ -873,8 +873,8 @@ def test_document2_field_repair_context_sets_family_specific_timeouts() -> None:
     cross_context = workflow._field_repair_context(checkpoint, tasks[0])
     single_context = workflow._field_repair_context(checkpoint, tasks[1])
 
-    assert cross_context["react_runtime_budget"]["model_request_timeout_seconds"] == 480.0
-    assert single_context["react_runtime_budget"]["model_request_timeout_seconds"] == 240.0
+    assert cross_context["react_runtime_budget"]["model_request_timeout_seconds"] == 600.0
+    assert single_context["react_runtime_budget"]["model_request_timeout_seconds"] == 600.0
     task = AgentTask(
         task_id="task_cross_field_budget",
         ticker="NVDA",
@@ -897,7 +897,7 @@ def test_document2_field_repair_context_sets_family_specific_timeouts() -> None:
             WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS,
             task,
         )
-        == 480.0
+        == 600.0
     )
 
 

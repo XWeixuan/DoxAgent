@@ -679,10 +679,7 @@ class Document2LegacyQualityMixin:
         checkpoint: WorkflowCheckpoint,
         result: Document2FieldRepairResult,
     ) -> Document2TransactionAudit:
-        try:
-            validate_field_repair_result_for_transaction(result)
-        except ValueError as exc:
-            raise WorkflowContractError(str(exc)) from exc
+        validation_notes = validate_field_repair_result_for_transaction(result)
         before_patch = self._pending_expectation_patch_for_field_repair_result(
             checkpoint,
             result,
@@ -750,6 +747,7 @@ class Document2LegacyQualityMixin:
                 "O1 field repair output was merged through Document2 transaction layer.",
                 "O1 field repair decisions do not directly close Blackboard objections.",
                 "Deterministic full-document revalidation ran after the merge or review.",
+                *validation_notes,
             ],
         )
         self._record_document2_transaction_audit(checkpoint, audit)
@@ -760,10 +758,7 @@ class Document2LegacyQualityMixin:
         checkpoint: WorkflowCheckpoint,
         plan: Document2ResolutionPlan,
     ) -> Document2TransactionAudit:
-        try:
-            validate_resolution_plan_for_transaction(plan)
-        except ValueError as exc:
-            raise WorkflowContractError(str(exc)) from exc
+        validation_notes = validate_resolution_plan_for_transaction(plan)
         before_patch = self._pending_expectation_patch_for_resolution_plan(
             checkpoint,
             plan,
@@ -827,6 +822,7 @@ class Document2LegacyQualityMixin:
             notes=[
                 "O1 resolver output was applied through Document2 transaction layer.",
                 "O1 plan decisions do not directly close Blackboard objections.",
+                *validation_notes,
             ],
         )
         self._record_document2_transaction_audit(checkpoint, audit)

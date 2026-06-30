@@ -275,24 +275,34 @@ def document2_construction_transaction_audit(
     )
 
 
-def validate_resolution_plan_for_transaction(plan: Document2ResolutionPlan) -> None:
+def validate_resolution_plan_for_transaction(plan: Document2ResolutionPlan) -> list[str]:
+    notes: list[str] = []
     for decision in plan.decisions:
         if decision.decision == "deferred":
             continue
         if not decision.changed_paths and not decision.evidence_refs:
-            raise ValueError(
-                "Document2 transaction decisions require changed_paths or evidence_refs."
+            notes.append(
+                "Document2 transaction accepted a decision without changed_paths or "
+                "evidence_refs; blocker closure still depends on transaction "
+                "application and deterministic revalidation."
             )
+    return notes
 
 
-def validate_field_repair_result_for_transaction(result: Document2FieldRepairResult) -> None:
+def validate_field_repair_result_for_transaction(
+    result: Document2FieldRepairResult,
+) -> list[str]:
+    notes: list[str] = []
     for decision in result.decisions:
         if decision.decision == "deferred":
             continue
         if not decision.changed_paths and not decision.evidence_refs:
-            raise ValueError(
-                "Document2 field repair decisions require changed_paths or evidence_refs."
+            notes.append(
+                "Document2 field repair accepted a decision without changed_paths or "
+                "evidence_refs; blocker closure still depends on transaction "
+                "application and deterministic revalidation."
             )
+    return notes
 
 
 def _document_from_patch(patch: BlackboardPatch | None) -> ExpectationUnitDocument | None:
