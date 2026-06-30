@@ -141,6 +141,8 @@ class Document2LegacyPromotionMixin:
                 ) from exc
             if finding.expectation_id != expectation_id or not finding.blocks_promotion:
                 continue
+            if finding.reviewer_agent is AgentName.SYSTEM:
+                continue
             if self._is_numeric_sanity_review_finding(finding):
                 continue
             if finding.source_objection_id is None:
@@ -168,7 +170,9 @@ class Document2LegacyPromotionMixin:
         unresolved_objections = [
             objection
             for objection in run.objections
-            if objection.is_unresolved and not self._is_numeric_sanity_objection(objection)
+            if objection.is_unresolved
+            and objection.source_agent is not AgentName.SYSTEM
+            and not self._is_numeric_sanity_objection(objection)
         ]
         if unresolved_objections:
             blockers.append(

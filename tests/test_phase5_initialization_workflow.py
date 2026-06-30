@@ -856,16 +856,51 @@ def test_document2_field_repair_tasks_create_routing_blocker_for_unroutable_mult
 
     tasks = workflow._document2_field_repair_tasks(checkpoint, run.objections)
     updated = workflow.blackboard.get_run(checkpoint.run_id)
-    routing_blockers = [
+    original = next(
         objection
         for objection in updated.objections
-        if objection.taxonomy == "unroutable_document_level_objection"
-    ]
+        if objection.objection_id == "obj_unroutable_document_level"
+    )
 
     assert tasks == []
-    assert len(routing_blockers) == 1
-    assert routing_blockers[0].is_unresolved is True
-    assert "obj_unroutable_document_level" in routing_blockers[0].reason
+    assert original.status is ObjectionStatus.REJECTED
+    assert not any(objection.source_agent is AgentName.SYSTEM for objection in updated.objections)
+    assert any(
+        entry.content_type == "document2_routing_drop_audit"
+        for entry in updated.working_memory
+    )
+
+
+def test_document2_field_repair_tasks_drop_conflicting_target_and_reason_ids() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        execution_mode="agent_runner",
+        runner=ParallelStructuredInitializationRunner(),
+    )
+    checkpoint, documents, _ = _document2_repair_checkpoint_with_expectations(
+        workflow,
+        ["expectation_mu_001", "expectation_mu_002"],
+    )
+    _create_document2_objection(
+        workflow,
+        checkpoint,
+        objection_id="obj_conflicting_target_reason",
+        expectation_id=documents[0].expectation_id,
+        field_path="market_view.text",
+        reason="The issue is actually about expectation_mu_002 market evidence.",
+    )
+    run = workflow.blackboard.get_run(checkpoint.run_id)
+
+    tasks = workflow._document2_field_repair_tasks(checkpoint, run.objections)
+    updated = workflow.blackboard.get_run(checkpoint.run_id)
+    original = next(
+        objection
+        for objection in updated.objections
+        if objection.objection_id == "obj_conflicting_target_reason"
+    )
+
+    assert tasks == []
+    assert original.status is ObjectionStatus.REJECTED
+    assert not any(objection.source_agent is AgentName.SYSTEM for objection in updated.objections)
 
 
 def test_document2_field_repair_context_sets_family_specific_timeouts() -> None:

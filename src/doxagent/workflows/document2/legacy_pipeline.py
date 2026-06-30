@@ -7,9 +7,6 @@ from doxagent.workflows.document2.contracts import (
     Document2TransactionAudit,
     ExpectationUnitCandidate,
 )
-from doxagent.workflows.document2.deterministic_findings import (
-    deterministic_findings_from_patch,
-)
 from doxagent.workflows.document2.review import (
     DOCUMENT2_REVIEW_FINDINGS_KEY,
     document2_review_findings_from_agent_result,
@@ -1509,11 +1506,7 @@ class Document2LegacyPipelineMixin:
                 self.blackboard.create_delegation(checkpoint.run_id, delegation)
             results.append(result)
 
-        deterministic_findings = [
-            finding
-            for patch in checkpoint.pending_patches
-            for finding in deterministic_findings_from_patch(patch)
-        ]
+        deterministic_findings: list[Document2ReviewFinding] = []
         if not results and not deterministic_findings:
             raise first_error or WorkflowContractError(
                 "ReviewExpectationFields had no usable reviewer outputs."

@@ -11,9 +11,6 @@ from doxagent.workflows.document2.contracts import (
     Document2TransactionAudit,
     ExpectationUnitCandidate,
 )
-from doxagent.workflows.document2.deterministic_findings import (
-    deterministic_findings_from_patch,
-)
 from doxagent.workflows.document2.resolver import (
     DOCUMENT2_RESOLUTION_PLANS_KEY,
     document2_field_repair_result_from_agent_result,
@@ -1039,7 +1036,7 @@ class Document2LegacyQualityMixin:
         checkpoint: WorkflowCheckpoint,
         patch: BlackboardPatch,
     ) -> list[Document2ReviewFinding]:
-        return deterministic_findings_from_patch(patch)
+        return []
 
     def _merge_document2_review_findings_metadata(
         self,
@@ -1075,6 +1072,8 @@ class Document2LegacyQualityMixin:
     ) -> list[Document2ReviewFinding]:
         bridged: list[Document2ReviewFinding] = []
         for finding in findings:
+            if finding.reviewer_agent is AgentName.SYSTEM:
+                continue
             if not finding.blocks_promotion or finding.source_objection_id is not None:
                 bridged.append(finding)
                 continue
@@ -1312,10 +1311,11 @@ class Document2LegacyQualityMixin:
                     expectation_id == _DOCUMENT2_UNKNOWN_EXPECTATION_ID
                     or current_candidate is None
                 ):
-                    self._ensure_document2_routing_blocker(
+                    self._drop_document2_unroutable_objection(
                         checkpoint,
                         objection,
                         routed_finding,
+                        reason="Document2 repair finding did not match a pending candidate.",
                     )
                     continue
                 target_paths = self._document2_repair_target_paths(routed_finding)
@@ -1444,7 +1444,9 @@ class Document2LegacyQualityMixin:
         return [
             objection
             for objection in objections
-            if objection.is_unresolved and not self._is_numeric_sanity_objection(objection)
+            if objection.is_unresolved
+            and objection.source_agent is not AgentName.SYSTEM
+            and not self._is_numeric_sanity_objection(objection)
         ]
 
     def _is_numeric_sanity_review_finding(
@@ -1531,7 +1533,12 @@ class Document2LegacyQualityMixin:
             finding,
         )
         if not expectation_ids:
-            self._ensure_document2_routing_blocker(checkpoint, objection, finding)
+            self._drop_document2_unroutable_objection(
+                checkpoint,
+                objection,
+                finding,
+                reason="Document2 repair finding was unroutable or had conflicting expectation ids.",
+            )
             return []
         if len(expectation_ids) == 1:
             return [
@@ -1582,6 +1589,16 @@ class Document2LegacyQualityMixin:
             candidate_ids=candidate_ids,
             document_ids=document_ids,
         )
+        document_resolved = self._resolve_document2_expectation_refs(
+            [target.document_id],
+            candidate_ids=candidate_ids,
+            document_ids=document_ids,
+        )
+        finding_resolved = self._resolve_document2_expectation_refs(
+            [finding.expectation_id],
+            candidate_ids=candidate_ids,
+            document_ids=document_ids,
+        )
         path_resolved = self._resolve_document2_expectation_refs(
             [
                 objection.target_path,
@@ -1598,18 +1615,37 @@ class Document2LegacyQualityMixin:
             and set(target_resolved) != set(path_resolved)
         ):
             return path_resolved
-        for refs in (
-            target_resolved,
-            [target.document_id],
-            [finding.expectation_id],
-            path_resolved,
+        text_resolved = self._resolve_document2_expectation_refs(
             [objection.objection_id, objection.reason, finding.finding_id, finding.reason],
+            candidate_ids=candidate_ids,
+            document_ids=document_ids,
+        )
+        primary_sets = [
+            resolved
+            for resolved in (target_resolved, document_resolved, finding_resolved)
+            if resolved
+        ]
+        if path_resolved:
+            return path_resolved
+        primary_union = self._dedupe_strings(
+            expectation_id
+            for resolved in primary_sets
+            for expectation_id in resolved
+        )
+        if len({tuple(resolved) for resolved in primary_sets}) > 1:
+            return []
+        if (
+            primary_union
+            and text_resolved
+            and set(primary_union) != set(text_resolved)
         ):
-            resolved = self._resolve_document2_expectation_refs(
-                refs,
-                candidate_ids=candidate_ids,
-                document_ids=document_ids,
-            )
+            return []
+        for resolved in (
+            target_resolved,
+            document_resolved,
+            finding_resolved,
+            text_resolved,
+        ):
             if resolved:
                 return resolved
 
@@ -1717,46 +1753,44 @@ class Document2LegacyQualityMixin:
         )
         return any(marker in text for marker in broad_markers)
 
-    def _ensure_document2_routing_blocker(
+    def _drop_document2_unroutable_objection(
         self,
         checkpoint: WorkflowCheckpoint,
         objection: Objection,
         finding: Document2ReviewFinding,
+        *,
+        reason: str,
     ) -> None:
-        if objection.taxonomy == _DOCUMENT2_ROUTING_BLOCKER_TAXONOMY:
+        if not objection.is_unresolved:
             return
         candidate_ids, _document_ids = self._pending_document2_candidate_identity(checkpoint)
-        source_id = finding.source_objection_id or objection.objection_id or finding.finding_id
-        safe_source = re.sub(r"[^0-9A-Za-z_]+", "_", source_id).strip("_")[:96]
-        blocker_id = f"obj_d2routing_{safe_source}"
-        run = self.blackboard.get_run(checkpoint.run_id)
-        if any(item.objection_id == blocker_id and item.is_unresolved for item in run.objections):
-            return
-        reason = (
-            "Document2 resolver could not attribute a document-level blocker to a "
-            "specific pending expectation candidate, so it was not sent to O1 repair. "
+        note = (
+            f"{reason} The blocker was downgraded and not sent to O1 repair. "
             f"source_objection_id={objection.objection_id}; "
             f"source_finding_id={finding.finding_id}; "
             f"pending_expectation_ids={candidate_ids or ['<none>']}."
         )
-        self.blackboard.create_objection(
+        self.blackboard.reject_objection(
             checkpoint.run_id,
-            Objection(
-                objection_id=blocker_id,
-                source_agent=AgentName.SYSTEM,
-                target=BlackboardTarget(
-                    document_type=DocumentType.EXPECTATION_UNIT,
-                    ticker=checkpoint.ticker,
-                    expectation_id=None,
-                    field_path="document",
-                ),
-                severity=ObjectionSeverity.BLOCKING,
-                reason=reason,
-                taxonomy=_DOCUMENT2_ROUTING_BLOCKER_TAXONOMY,
-                target_path="document",
-                dedupe_hash=f"{_DOCUMENT2_ROUTING_BLOCKER_TAXONOMY}:{source_id}",
-                status=ObjectionStatus.OPEN,
-            ),
+            objection.objection_id,
+            note,
+            changed_paths=["document2.routing"],
+            evidence_refs=[],
+        )
+        self.blackboard.add_working_memory_entry(
+            checkpoint.run_id,
+            author_agent=AgentName.SYSTEM,
+            content_type="document2_routing_drop_audit",
+            payload={
+                "source_objection_id": objection.objection_id,
+                "source_finding_id": finding.finding_id,
+                "reason": reason,
+                "pending_expectation_ids": candidate_ids,
+                "target_path": finding.target_path,
+                "target_paths": list(finding.target_paths),
+                "expectation_id": finding.expectation_id,
+            },
+            evidence_refs=[],
         )
 
     def _ensure_document2_candidate_routing_objection(

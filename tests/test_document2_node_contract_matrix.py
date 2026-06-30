@@ -1526,9 +1526,9 @@ def test_canonical_evidence_ref_remains_strict_for_stable_contracts() -> None:
             "placeholder_text",
             None,
             "non_numeric_deterministic_blocker_still_fails",
-            WorkflowRunStatus.BLOCKED,
-            "left blockers unresolved",
-            id="ResolveObjectionsAndDelegations__non_numeric_deterministic_blocker_still_fails__retained_blocker",
+            WorkflowRunStatus.RUNNING,
+            "",
+            id="ResolveObjectionsAndDelegations__non_numeric_deterministic_blocker_disabled__no_retained_blocker",
         ),
     ],
 )
@@ -2270,18 +2270,21 @@ def test_mini_flow_generate_details_to_review_deterministic_revalidation_matrix(
     detail_case: str,
     target_path: str,
 ) -> None:
-    _, result = _run_matrix(
+    workflow, result = _run_matrix(
         stop_after=WorkflowNode.REVIEW_EXPECTATION_FIELDS,
         runner=Document2NodeMatrixRunner(detail_case=detail_case),
     )
 
     _assert_running_to(result, WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS)
     findings = result.checkpoint.metadata[DOCUMENT2_REVIEW_FINDINGS_KEY]
-    assert any(finding["target_path"] == target_path for finding in findings)
-    blocking = [finding for finding in findings if finding["blocks_promotion"] is True]
-    assert blocking
-    assert all(finding["source_objection_id"] for finding in blocking)
-    assert result.summary.unresolved_objection_count >= 1
+    run = workflow.blackboard.get_run(result.checkpoint.run_id)
+
+    assert not any(finding["reviewer_agent"] == "SYSTEM" for finding in findings)
+    assert not any(objection.source_agent is AgentName.SYSTEM for objection in run.objections)
+    assert not any(
+        finding["target_path"] == target_path and finding["blocks_promotion"] is True
+        for finding in findings
+    )
 
 
 @pytest.mark.parametrize(
@@ -2290,65 +2293,65 @@ def test_mini_flow_generate_details_to_review_deterministic_revalidation_matrix(
         pytest.param(
             "unknown_price_reaction",
             None,
-            WorkflowRunStatus.BLOCKED,
-            "left blockers unresolved",
-            id="MiniFlow_ReviewToResolver__unknown_price_reaction__retained_blocker",
+            WorkflowRunStatus.RUNNING,
+            "",
+            id="MiniFlow_ReviewToResolver__unknown_price_reaction__deterministic_disabled",
         ),
         pytest.param(
             "missing_realized_fact_evidence_refs",
             None,
-            WorkflowRunStatus.BLOCKED,
-            "left blockers unresolved",
-            id="MiniFlow_ReviewToResolver__missing_realized_fact_evidence_refs__retained_blocker",
+            WorkflowRunStatus.RUNNING,
+            "",
+            id="MiniFlow_ReviewToResolver__missing_realized_fact_evidence_refs__deterministic_disabled",
         ),
         pytest.param(
             "missing_key_variable_evidence_refs",
             None,
-            WorkflowRunStatus.BLOCKED,
-            "left blockers unresolved",
-            id="MiniFlow_ReviewToResolver__missing_key_variable_evidence_refs__retained_blocker",
+            WorkflowRunStatus.RUNNING,
+            "",
+            id="MiniFlow_ReviewToResolver__missing_key_variable_evidence_refs__deterministic_disabled",
         ),
         pytest.param(
             "empty_realized_facts",
             None,
-            WorkflowRunStatus.BLOCKED,
-            "left blockers unresolved",
-            id="MiniFlow_ReviewToResolver__empty_realized_facts__retained_blocker",
+            WorkflowRunStatus.RUNNING,
+            "",
+            id="MiniFlow_ReviewToResolver__empty_realized_facts__deterministic_disabled",
         ),
         pytest.param(
             "empty_key_variables",
             None,
-            WorkflowRunStatus.BLOCKED,
-            "left blockers unresolved",
-            id="MiniFlow_ReviewToResolver__empty_key_variables__retained_blocker",
+            WorkflowRunStatus.RUNNING,
+            "",
+            id="MiniFlow_ReviewToResolver__empty_key_variables__deterministic_disabled",
         ),
         pytest.param(
             "empty_positive_events",
             None,
-            WorkflowRunStatus.BLOCKED,
-            "left blockers unresolved",
-            id="MiniFlow_ReviewToResolver__empty_positive_events__retained_blocker",
+            WorkflowRunStatus.RUNNING,
+            "",
+            id="MiniFlow_ReviewToResolver__empty_positive_events__deterministic_disabled",
         ),
         pytest.param(
             "empty_negative_events",
             None,
-            WorkflowRunStatus.BLOCKED,
-            "left blockers unresolved",
-            id="MiniFlow_ReviewToResolver__empty_negative_events__retained_blocker",
+            WorkflowRunStatus.RUNNING,
+            "",
+            id="MiniFlow_ReviewToResolver__empty_negative_events__deterministic_disabled",
         ),
         pytest.param(
             "generic_monitoring_trigger",
             "deferred_blocker",
-            WorkflowRunStatus.BLOCKED,
-            "left blockers unresolved",
-            id="MiniFlow_ReviewToResolver__generic_monitoring_trigger__retained_blocker",
+            WorkflowRunStatus.RUNNING,
+            "",
+            id="MiniFlow_ReviewToResolver__generic_monitoring_trigger__deterministic_disabled",
         ),
         pytest.param(
             "placeholder_text",
             None,
-            WorkflowRunStatus.BLOCKED,
-            "left blockers unresolved",
-            id="MiniFlow_ReviewToResolver__placeholder_generic_text__retained_blocker",
+            WorkflowRunStatus.RUNNING,
+            "",
+            id="MiniFlow_ReviewToResolver__placeholder_generic_text__deterministic_disabled",
         ),
     ],
 )
