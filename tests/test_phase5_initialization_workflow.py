@@ -1013,20 +1013,28 @@ def test_document2_field_repair_decision_objection_id_maps_from_finding_id() -> 
         lambda *_args, **_kwargs: []
     )
 
-    repaired = workflow._canonicalize_document2_field_repair_decisions(result, task)
-    audit = workflow._apply_document2_field_repair_transaction(checkpoint, repaired)
+    repaired, boundary_notes = workflow._canonicalize_document2_field_repair_decisions(
+        result,
+        task,
+    )
+    audit = workflow._apply_document2_field_repair_transaction(
+        checkpoint,
+        repaired,
+        boundary_notes=boundary_notes,
+    )
     updated = workflow.blackboard.get_run(checkpoint.run_id)
     objection = next(
         item for item in updated.objections if item.objection_id == finding.source_objection_id
     )
 
     assert repaired.decisions[0].objection_id == finding.source_objection_id
+    assert boundary_notes == []
     assert wrong_objection_id not in audit.output_summary["closed_objection_ids"]
     assert finding.source_objection_id in audit.output_summary["closed_objection_ids"]
     assert objection.status is ObjectionStatus.ACCEPTED
 
 
-def test_document2_field_repair_decision_rejects_task_external_objection_id() -> None:
+def test_document2_field_repair_decision_drops_task_external_references() -> None:
     workflow = BlackboardInitializationWorkflow(
         execution_mode="agent_runner",
         runner=ParallelStructuredInitializationRunner(),
@@ -1052,22 +1060,27 @@ def test_document2_field_repair_decision_rejects_task_external_objection_id() ->
         decisions=[
             Document2ResolutionDecisionRecord(
                 objection_id="obj_external_not_in_task",
-                finding_id=None,
+                finding_id="d2finding_external_not_in_task",
                 decision="deferred",
                 resolution_note="Cannot repair without more evidence.",
             )
         ],
+        target_finding_ids=[finding.finding_id, "d2finding_external_not_in_task"],
         unresolved_finding_ids=[finding.finding_id],
         unresolved_reason="Cannot repair without more evidence.",
         rationale="Defer repair.",
     )
 
-    try:
-        workflow._canonicalize_document2_field_repair_decisions(result, task)
-    except WorkflowContractError as exc:
-        assert "outside the current task" in str(exc)
-    else:
-        raise AssertionError("Expected external objection id to be rejected")
+    repaired, boundary_notes = workflow._canonicalize_document2_field_repair_decisions(
+        result,
+        task,
+    )
+
+    assert repaired.decisions == []
+    assert repaired.target_finding_ids == [finding.finding_id]
+    assert repaired.unresolved_finding_ids == [finding.finding_id]
+    assert any("task-external decision" in note for note in boundary_notes)
+    assert any("task-external target_finding_ids" in note for note in boundary_notes)
 
 
 def test_initialization_workflow_enforces_document_order() -> None:

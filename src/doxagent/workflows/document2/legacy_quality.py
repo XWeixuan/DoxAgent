@@ -595,13 +595,17 @@ class Document2LegacyQualityMixin:
                 repair_result,
                 repair_task,
             )
-            repair_result = self._canonicalize_document2_field_repair_decisions(
+            (
+                repair_result,
+                boundary_notes,
+            ) = self._canonicalize_document2_field_repair_decisions(
                 repair_result,
                 repair_task,
             )
             audit = self._apply_document2_field_repair_transaction(
                 checkpoint,
                 repair_result,
+                boundary_notes=boundary_notes,
             )
             field_repair_results.append(repair_result)
             transaction_audits.append(audit)
@@ -672,17 +676,12 @@ class Document2LegacyQualityMixin:
             raise WorkflowContractError(
                 "Document2 field repair result field_family does not match resolver task."
             )
-        task_finding_ids = set(task.finding_ids)
-        if task_finding_ids and not set(result.target_finding_ids).issubset(task_finding_ids):
-            raise WorkflowContractError(
-                "Document2 field repair result references findings outside the task."
-            )
-
     def _canonicalize_document2_field_repair_decisions(
         self,
         result: Document2FieldRepairResult,
         task: Document2FieldRepairTask,
-    ) -> Document2FieldRepairResult:
+    ) -> tuple[Document2FieldRepairResult, list[str]]:
+        task_finding_ids = set(task.finding_ids)
         task_objection_ids = set(task.objection_ids)
         finding_to_objection: dict[str, str] = {}
         for finding in task.findings:
@@ -692,36 +691,81 @@ class Document2LegacyQualityMixin:
                 finding_to_objection[finding.finding_id] = finding.source_objection_id
 
         decisions: list[Document2ResolutionDecisionRecord] = []
+        target_finding_ids = [
+            finding_id
+            for finding_id in result.target_finding_ids
+            if not task_finding_ids or finding_id in task_finding_ids
+        ]
+        unresolved_finding_ids = [
+            finding_id
+            for finding_id in result.unresolved_finding_ids
+            if not task_finding_ids or finding_id in task_finding_ids
+        ]
+        notes: list[str] = []
+        dropped_target_count = len(result.target_finding_ids) - len(target_finding_ids)
+        if dropped_target_count:
+            notes.append(
+                "Dropped "
+                f"{dropped_target_count} task-external target_finding_ids from O1 field "
+                "repair output."
+            )
+        dropped_unresolved_count = len(result.unresolved_finding_ids) - len(
+            unresolved_finding_ids
+        )
+        if dropped_unresolved_count:
+            notes.append(
+                "Dropped "
+                f"{dropped_unresolved_count} task-external unresolved_finding_ids from "
+                "O1 field repair output."
+            )
         changed = False
+        dropped_decision_count = 0
         for decision in result.decisions:
             objection_id = decision.objection_id
+            finding_id = decision.finding_id
+            if finding_id is not None and task_finding_ids and finding_id not in task_finding_ids:
+                dropped_decision_count += 1
+                changed = True
+                continue
             if objection_id is None:
                 decisions.append(decision)
                 continue
             if objection_id in task_objection_ids:
                 decisions.append(decision)
                 continue
-            mapped_id = (
-                finding_to_objection.get(decision.finding_id)
-                if decision.finding_id is not None
-                else None
-            )
+            mapped_id = finding_to_objection.get(finding_id) if finding_id is not None else None
             if mapped_id:
                 decisions.append(decision.model_copy(update={"objection_id": mapped_id}))
                 changed = True
                 continue
-            raise WorkflowContractError(
-                "Document2 field repair decision references an objection outside "
-                f"the current task: {objection_id}."
+            dropped_decision_count += 1
+            changed = True
+        if dropped_decision_count:
+            notes.append(
+                "Dropped "
+                f"{dropped_decision_count} task-external decision records from O1 field "
+                "repair output."
             )
-        if not changed:
-            return result
-        return result.model_copy(update={"decisions": decisions}, deep=True)
+        if not changed and not dropped_target_count and not dropped_unresolved_count:
+            return result, notes
+        return (
+            result.model_copy(
+                update={
+                    "decisions": decisions,
+                    "target_finding_ids": target_finding_ids,
+                    "unresolved_finding_ids": unresolved_finding_ids,
+                },
+                deep=True,
+            ),
+            notes,
+        )
 
     def _apply_document2_field_repair_transaction(
         self,
         checkpoint: WorkflowCheckpoint,
         result: Document2FieldRepairResult,
+        *,
+        boundary_notes: list[str] | None = None,
     ) -> Document2TransactionAudit:
         validation_notes = validate_field_repair_result_for_transaction(result)
         before_patch = self._pending_expectation_patch_for_field_repair_result(
@@ -791,6 +835,7 @@ class Document2LegacyQualityMixin:
                 "O1 field repair output was merged through Document2 transaction layer.",
                 "O1 field repair decisions do not directly close Blackboard objections.",
                 "Deterministic full-document revalidation ran after the merge or review.",
+                *(boundary_notes or []),
                 *validation_notes,
             ],
         )
