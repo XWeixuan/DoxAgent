@@ -963,6 +963,113 @@ def test_document2_field_repair_transaction_revalidates_full_document_after_merg
     assert "realized_facts" in revalidated_documents[0]
 
 
+def test_document2_field_repair_decision_objection_id_maps_from_finding_id() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        execution_mode="agent_runner",
+        runner=ParallelStructuredInitializationRunner(),
+    )
+    checkpoint, document, factory = _document2_repair_checkpoint(workflow)
+    finding = _blocking_finding_with_objection(
+        workflow,
+        checkpoint,
+        expectation_id=document.expectation_id,
+        target_path="market_view.text",
+        reason="Market view needs source-specific wording.",
+    )
+    checkpoint.metadata = {
+        DOCUMENT2_REVIEW_FINDINGS_KEY: [finding.model_dump(mode="json")]
+    }
+    run = workflow.blackboard.get_run(checkpoint.run_id)
+    task = workflow._document2_field_repair_tasks(checkpoint, run.objections)[0]
+    evidence = factory._evidence(EvidenceSourceType.AGENT_OUTPUT)
+    revised_market_view = document.market_view.model_copy(
+        update={
+            "text": "Revised market view with source-specific wording.",
+            "summary": "Revised market view.",
+            "evidence_refs": [evidence],
+        },
+        deep=True,
+    )
+    wrong_objection_id = f"obj_d2finding_{finding.finding_id.removeprefix('d2finding_')}"
+    result = Document2FieldRepairResult(
+        task_id=task.task_id,
+        expectation_id=task.expectation_id,
+        field_family=task.field_family,
+        decision="accepted",
+        decisions=[
+            Document2ResolutionDecisionRecord(
+                objection_id=wrong_objection_id,
+                finding_id=finding.finding_id,
+                decision="accepted",
+                resolution_note="Accepted the reviewer correction.",
+                changed_paths=["document.market_view"],
+            )
+        ],
+        target_finding_ids=[finding.finding_id],
+        market_view=revised_market_view,
+        rationale="Repair market view.",
+    )
+    workflow._document2_deterministic_findings_for_patch = (  # type: ignore[method-assign]
+        lambda *_args, **_kwargs: []
+    )
+
+    repaired = workflow._canonicalize_document2_field_repair_decisions(result, task)
+    audit = workflow._apply_document2_field_repair_transaction(checkpoint, repaired)
+    updated = workflow.blackboard.get_run(checkpoint.run_id)
+    objection = next(
+        item for item in updated.objections if item.objection_id == finding.source_objection_id
+    )
+
+    assert repaired.decisions[0].objection_id == finding.source_objection_id
+    assert wrong_objection_id not in audit.output_summary["closed_objection_ids"]
+    assert finding.source_objection_id in audit.output_summary["closed_objection_ids"]
+    assert objection.status is ObjectionStatus.ACCEPTED
+
+
+def test_document2_field_repair_decision_rejects_task_external_objection_id() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        execution_mode="agent_runner",
+        runner=ParallelStructuredInitializationRunner(),
+    )
+    checkpoint, document, _factory = _document2_repair_checkpoint(workflow)
+    finding = _blocking_finding_with_objection(
+        workflow,
+        checkpoint,
+        expectation_id=document.expectation_id,
+        target_path="market_view.text",
+        reason="Market view needs source-specific wording.",
+    )
+    checkpoint.metadata = {
+        DOCUMENT2_REVIEW_FINDINGS_KEY: [finding.model_dump(mode="json")]
+    }
+    run = workflow.blackboard.get_run(checkpoint.run_id)
+    task = workflow._document2_field_repair_tasks(checkpoint, run.objections)[0]
+    result = Document2FieldRepairResult(
+        task_id=task.task_id,
+        expectation_id=task.expectation_id,
+        field_family=task.field_family,
+        decision="deferred",
+        decisions=[
+            Document2ResolutionDecisionRecord(
+                objection_id="obj_external_not_in_task",
+                finding_id=None,
+                decision="deferred",
+                resolution_note="Cannot repair without more evidence.",
+            )
+        ],
+        unresolved_finding_ids=[finding.finding_id],
+        unresolved_reason="Cannot repair without more evidence.",
+        rationale="Defer repair.",
+    )
+
+    try:
+        workflow._canonicalize_document2_field_repair_decisions(result, task)
+    except WorkflowContractError as exc:
+        assert "outside the current task" in str(exc)
+    else:
+        raise AssertionError("Expected external objection id to be rejected")
+
+
 def test_initialization_workflow_enforces_document_order() -> None:
     workflow = BlackboardInitializationWorkflow(execution_mode="mock")
     partial = workflow.run("NVDA", stop_after=WorkflowNode.START_TICKER_INITIALIZATION)

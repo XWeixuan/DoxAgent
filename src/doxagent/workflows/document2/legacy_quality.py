@@ -595,6 +595,10 @@ class Document2LegacyQualityMixin:
                 repair_result,
                 repair_task,
             )
+            repair_result = self._canonicalize_document2_field_repair_decisions(
+                repair_result,
+                repair_task,
+            )
             audit = self._apply_document2_field_repair_transaction(
                 checkpoint,
                 repair_result,
@@ -673,6 +677,46 @@ class Document2LegacyQualityMixin:
             raise WorkflowContractError(
                 "Document2 field repair result references findings outside the task."
             )
+
+    def _canonicalize_document2_field_repair_decisions(
+        self,
+        result: Document2FieldRepairResult,
+        task: Document2FieldRepairTask,
+    ) -> Document2FieldRepairResult:
+        task_objection_ids = set(task.objection_ids)
+        finding_to_objection: dict[str, str] = {}
+        for finding in task.findings:
+            if finding.finding_id in finding_to_objection:
+                continue
+            if finding.source_objection_id and finding.source_objection_id in task_objection_ids:
+                finding_to_objection[finding.finding_id] = finding.source_objection_id
+
+        decisions: list[Document2ResolutionDecisionRecord] = []
+        changed = False
+        for decision in result.decisions:
+            objection_id = decision.objection_id
+            if objection_id is None:
+                decisions.append(decision)
+                continue
+            if objection_id in task_objection_ids:
+                decisions.append(decision)
+                continue
+            mapped_id = (
+                finding_to_objection.get(decision.finding_id)
+                if decision.finding_id is not None
+                else None
+            )
+            if mapped_id:
+                decisions.append(decision.model_copy(update={"objection_id": mapped_id}))
+                changed = True
+                continue
+            raise WorkflowContractError(
+                "Document2 field repair decision references an objection outside "
+                f"the current task: {objection_id}."
+            )
+        if not changed:
+            return result
+        return result.model_copy(update={"decisions": decisions}, deep=True)
 
     def _apply_document2_field_repair_transaction(
         self,
