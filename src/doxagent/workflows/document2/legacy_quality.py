@@ -1577,20 +1577,33 @@ class Document2LegacyQualityMixin:
             return []
 
         target = objection.target
-        for refs in (
+        target_resolved = self._resolve_document2_expectation_refs(
             [target.expectation_id],
-            [target.document_id],
-            [finding.expectation_id],
+            candidate_ids=candidate_ids,
+            document_ids=document_ids,
+        )
+        path_resolved = self._resolve_document2_expectation_refs(
             [
                 objection.target_path,
                 target.field_path,
-                objection.objection_id,
-                objection.reason,
                 finding.target_path,
                 *finding.target_paths,
-                finding.finding_id,
-                finding.reason,
             ],
+            candidate_ids=candidate_ids,
+            document_ids=document_ids,
+        )
+        if (
+            target_resolved
+            and path_resolved
+            and set(target_resolved) != set(path_resolved)
+        ):
+            return path_resolved
+        for refs in (
+            target_resolved,
+            [target.document_id],
+            [finding.expectation_id],
+            path_resolved,
+            [objection.objection_id, objection.reason, finding.finding_id, finding.reason],
         ):
             resolved = self._resolve_document2_expectation_refs(
                 refs,
@@ -1812,10 +1825,28 @@ class Document2LegacyQualityMixin:
         self,
         finding: Document2ReviewFinding,
     ) -> list[str]:
-        paths = [str(path) for path in finding.target_paths if str(path or "").strip()]
-        if finding.target_path and finding.target_path not in paths:
-            paths.insert(0, finding.target_path)
+        paths = [
+            self._document2_strip_expectation_path_prefix(str(path))
+            for path in finding.target_paths
+            if str(path or "").strip()
+        ]
+        if finding.target_path:
+            primary_path = self._document2_strip_expectation_path_prefix(
+                finding.target_path
+            )
+            if primary_path not in paths:
+                paths.insert(0, primary_path)
         return self._dedupe_strings(paths or ["document"])
+
+    def _document2_strip_expectation_path_prefix(self, path: str) -> str:
+        normalized = str(path or "").strip()
+        match = re.match(
+            r"^(?:expectation|exp)_[A-Za-z0-9_]+\.(?P<field>.+)$",
+            normalized,
+        )
+        if match:
+            return match.group("field")
+        return normalized
 
     def _dedupe_strings(self, values: Iterable[Any]) -> list[str]:
         deduped: list[str] = []
@@ -1844,6 +1875,7 @@ class Document2LegacyQualityMixin:
         normalized = str(path or "document").strip()
         if not normalized or normalized == "document":
             return "cross_field"
+        normalized = self._document2_strip_expectation_path_prefix(normalized)
         if normalized.startswith("document."):
             normalized = normalized.removeprefix("document.")
         root = re.split(r"[\.\[]", normalized, maxsplit=1)[0]

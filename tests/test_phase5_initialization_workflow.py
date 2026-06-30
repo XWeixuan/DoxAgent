@@ -726,6 +726,33 @@ def test_document2_field_repair_tasks_attribute_single_expectation_id_from_reaso
     assert all(task.expectation_id != "unknown_expectation" for task in tasks)
 
 
+def test_document2_field_repair_tasks_path_expectation_overrides_conflicting_target() -> None:
+    workflow = BlackboardInitializationWorkflow(
+        execution_mode="agent_runner",
+        runner=ParallelStructuredInitializationRunner(),
+    )
+    checkpoint, documents, _ = _document2_repair_checkpoint_with_expectations(
+        workflow,
+        ["expectation_mu_001", "expectation_mu_002"],
+    )
+    _create_document2_objection(
+        workflow,
+        checkpoint,
+        objection_id="obj_conflicting_target_path",
+        expectation_id=documents[0].expectation_id,
+        field_path="expectation_mu_002.market_view.evidence_refs",
+        reason="The field path explicitly targets expectation_mu_002 evidence refs.",
+    )
+    run = workflow.blackboard.get_run(checkpoint.run_id)
+
+    tasks = workflow._document2_field_repair_tasks(checkpoint, run.objections)
+
+    assert len(tasks) == 1
+    assert tasks[0].expectation_id == "expectation_mu_002"
+    assert tasks[0].field_family == "market_view"
+    assert tasks[0].current_candidate.expectation_id == "expectation_mu_002"
+
+
 def test_document2_field_repair_tasks_fan_out_multi_expectation_reason() -> None:
     workflow = BlackboardInitializationWorkflow(
         execution_mode="agent_runner",
