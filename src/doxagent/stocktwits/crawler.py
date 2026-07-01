@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from typing import Any
@@ -53,11 +54,17 @@ class StocktwitsPollingCrawler:
         client: StocktwitsPageClient,
         config: StocktwitsCrawlerConfig,
         now: Any | None = None,
+        message_sink: Callable[
+            [str, list[StocktwitsMessage], CoverageStatus, StocktwitsTickerState],
+            None,
+        ]
+        | None = None,
     ) -> None:
         self.repository = repository
         self.client = client
         self.config = config
         self._now = now or (lambda: datetime.now(UTC))
+        self._message_sink = message_sink
 
     @classmethod
     def from_settings(
@@ -101,6 +108,10 @@ class StocktwitsPollingCrawler:
                         "enabled": True,
                         "target_cadence_seconds": self.config.target_cadence_seconds,
                         "hot_cadence_seconds": self.config.hot_cadence_seconds,
+                        "page_size": self.config.page_size,
+                        "max_pages_per_crawl": self.config.max_pages_per_crawl,
+                        "hot_message_threshold": self.config.hot_message_threshold,
+                        "hot_cooldown_successes": self.config.hot_cooldown_successes,
                         "next_due_at": scheduled_at if reset_schedule else existing.next_due_at,
                     },
                     deep=True,
@@ -140,6 +151,10 @@ class StocktwitsPollingCrawler:
                     symbol=normalized_symbol,
                     target_cadence_seconds=self.config.target_cadence_seconds,
                     hot_cadence_seconds=self.config.hot_cadence_seconds,
+                    page_size=self.config.page_size,
+                    max_pages_per_crawl=self.config.max_pages_per_crawl,
+                    hot_message_threshold=self.config.hot_message_threshold,
+                    hot_cooldown_successes=self.config.hot_cooldown_successes,
                     next_due_at=started_at,
                 )
             )
@@ -170,6 +185,8 @@ class StocktwitsPollingCrawler:
                 messages=trace.messages,
             )
             coverage_status, gap_reason = self._coverage_for_trace(state, trace)
+            if self._message_sink is not None:
+                self._message_sink(normalized_symbol, trace.messages, coverage_status, state)
             newest = _newest_message(trace.messages)
             oldest_time = _oldest_message_time(trace.messages)
             finished = self._now_utc()
@@ -192,7 +209,7 @@ class StocktwitsPollingCrawler:
                         "stop_reason": trace.stop_reason,
                         "page_limit_reached": trace.page_limit_reached,
                         "suspected_truncation": trace.suspected_truncation,
-                        "hot_message_threshold": self.config.hot_message_threshold,
+                        "hot_message_threshold": state.hot_message_threshold,
                     },
                 },
                 deep=True,
@@ -238,11 +255,12 @@ class StocktwitsPollingCrawler:
         checkpoint_id = state.last_seen_message_id
         max_message_id: str | None = None
         seen_in_run: set[str] = set()
-        for page_index in range(self.config.max_pages_per_crawl):
+        max_pages = max(1, state.max_pages_per_crawl)
+        for page_index in range(max_pages):
             page = self.client.fetch_symbol_page(
                 symbol=state.symbol,
                 max_message_id=max_message_id,
-                page_size=self.config.page_size,
+                page_size=state.page_size,
             )
             trace.pages_fetched += 1
             trace.request_count += 1
@@ -266,11 +284,11 @@ class StocktwitsPollingCrawler:
                 return trace
             next_max = page.next_max_id or _next_max_from_messages(parsed_messages)
             if not next_max or next_max == max_message_id:
-                trace.suspected_truncation = len(page.messages) >= self.config.page_size
+                trace.suspected_truncation = len(page.messages) >= state.page_size
                 trace.stop_reason = "no_pagination_cursor"
                 return trace
             max_message_id = next_max
-            if page_index == self.config.max_pages_per_crawl - 1:
+            if page_index == max_pages - 1:
                 trace.page_limit_reached = True
                 trace.stop_reason = "page_limit_reached"
         return trace
@@ -310,7 +328,7 @@ class StocktwitsPollingCrawler:
             CoverageStatus.INCOMPLETE,
             CoverageStatus.FAILED,
         }
-        high_volume = run.fetched_count >= self.config.hot_message_threshold
+        high_volume = run.fetched_count >= state.hot_message_threshold
         next_mode = state.current_mode
         consecutive_gap_count = state.consecutive_gap_count
         consecutive_complete_count = state.consecutive_complete_count
@@ -322,13 +340,13 @@ class StocktwitsPollingCrawler:
             consecutive_complete_count = 0
             hot_started_at = hot_started_at or finished
             hot_until = finished + timedelta(
-                seconds=state.hot_cadence_seconds * self.config.hot_cooldown_successes
+                seconds=state.hot_cadence_seconds * state.hot_cooldown_successes
             )
         elif covered:
             consecutive_gap_count = 0
             if state.current_mode is TickerMode.HOT:
                 consecutive_complete_count += 1
-                if consecutive_complete_count >= self.config.hot_cooldown_successes:
+                if consecutive_complete_count >= state.hot_cooldown_successes:
                     next_mode = TickerMode.NORMAL
                     consecutive_complete_count = 0
                     hot_started_at = None
@@ -392,7 +410,7 @@ class StocktwitsPollingCrawler:
                     + timedelta(
                         seconds=(
                             state.hot_cadence_seconds
-                            * self.config.hot_cooldown_successes
+                            * state.hot_cooldown_successes
                         )
                     )
                     if next_mode is TickerMode.HOT

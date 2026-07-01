@@ -2,11 +2,17 @@
 
 from __future__ import annotations
 
+import asyncio
 import time
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from doxagent.monitoring.collectors import MonitoringCollectorRegistry
+from doxagent.monitoring.media_enrichment import (
+    Extractor,
+    SessionFactory,
+    enrich_media_records,
+)
 from doxagent.monitoring.normalizer import normalize_message
 from doxagent.monitoring.repository import (
     InMemoryMonitoringRepository,
@@ -14,6 +20,7 @@ from doxagent.monitoring.repository import (
     SQLiteMonitoringRepository,
 )
 from doxagent.monitoring.schema import (
+    EndpointKind,
     EventStreamItem,
     FetchedExternalMessage,
     IngestBatchResult,
@@ -31,7 +38,14 @@ from doxagent.monitoring.schema import (
     parameter_schema_for_source,
     payload_hash,
 )
+from doxagent.monitoring.stocktwits_durable import (
+    StocktwitsDurableMonitoringAdapter,
+    is_stocktwits_durable_source,
+)
 from doxagent.settings import DoxAgentSettings
+from doxagent.stocktwits.client import StocktwitsPageClient
+from doxagent.stocktwits.repository import StocktwitsRepository
+from doxagent.stocktwits.schema import BootstrapEventPolicy, TickerMode
 
 
 class MonitoringPermissionError(PermissionError):
@@ -46,9 +60,16 @@ class MonitoringBusService:
         repository: MonitoringRepository,
         *,
         collectors: MonitoringCollectorRegistry | None = None,
+        settings: DoxAgentSettings | None = None,
+        stocktwits_repository: StocktwitsRepository | None = None,
+        stocktwits_client: StocktwitsPageClient | None = None,
     ) -> None:
+        self.settings = settings or DoxAgentSettings()
         self.repository = repository
         self.collectors = collectors
+        self._stocktwits_repository = stocktwits_repository
+        self._stocktwits_client = stocktwits_client
+        self._stocktwits_adapter: StocktwitsDurableMonitoringAdapter | None = None
         self.repository.ensure_defaults()
 
     @classmethod
@@ -61,7 +82,11 @@ class MonitoringBusService:
             repository: MonitoringRepository = InMemoryMonitoringRepository()
         else:
             repository = SQLiteMonitoringRepository(resolved.monitoring_sqlite_path)
-        return cls(repository, collectors=MonitoringCollectorRegistry(resolved))
+        return cls(
+            repository,
+            collectors=MonitoringCollectorRegistry(resolved),
+            settings=resolved,
+        )
 
     def list_sources(self) -> list[MonitoringSourceConfig]:
         return self.repository.list_sources()
@@ -130,7 +155,8 @@ class MonitoringBusService:
             if source is None:
                 continue
             poll_state = poll_states.get(binding.binding_id)
-            item = {
+            user_only_fields = ["poll_interval_seconds", "global_source_enabled"]
+            item: JsonObject = {
                 "binding": binding.model_dump(mode="json"),
                 "source": source.model_dump(mode="json"),
                 "poll_state": poll_state.model_dump(mode="json") if poll_state else None,
@@ -138,8 +164,23 @@ class MonitoringBusService:
                     "enabled",
                     *parameter_schema_for_source(source.source_id).keys(),
                 ],
-                "user_only_fields": ["poll_interval_seconds", "global_source_enabled"],
+                "user_only_fields": user_only_fields,
             }
+            if is_stocktwits_durable_source(source):
+                item["stocktwits_state"] = self._stocktwits().ticker_state_payload(
+                    symbol=binding.ticker
+                )
+                item["user_only_fields"] = [
+                    *user_only_fields,
+                    "target_cadence_seconds",
+                    "hot_cadence_seconds",
+                    "page_size",
+                    "max_pages_per_crawl",
+                    "hot_message_threshold",
+                    "hot_cooldown_successes",
+                    "bootstrap_event_policy",
+                    "current_mode",
+                ]
             if source.interface_type.value == "by_ticker":
                 by_ticker.append(item)
             else:
@@ -164,6 +205,10 @@ class MonitoringBusService:
         for binding in self.repository.list_bindings(enabled_only=True):
             source = sources.get(binding.source_id)
             if source is None or not source.enabled:
+                continue
+            if is_stocktwits_durable_source(source):
+                if self._stocktwits().is_due(source=source, binding=binding, now=current):
+                    due.append(binding)
                 continue
             state = poll_states.get(binding.binding_id)
             last_attempt = state.last_attempt_at if state is not None else None
@@ -192,8 +237,6 @@ class MonitoringBusService:
         return results
 
     def poll_binding(self, ticker: str, source_id: str) -> IngestBatchResult:
-        if self.collectors is None:
-            raise RuntimeError("No monitoring collectors are configured.")
         started = time.monotonic()
         source = _require_source(self.repository.get_source(source_id), source_id)
         binding = _require_binding(self.repository.get_binding(ticker, source.source_id), ticker)
@@ -212,19 +255,38 @@ class MonitoringBusService:
             self.repository.record_poll_success(result)
             return result
         try:
-            collector = self.collectors.collector_for(source)
-            fetched = collector.collect(source=source, binding=binding)
-            result = (
-                self.ingest_fetched(source=source, fetched=fetched)
-                if fetched
-                else IngestBatchResult(
-                    source_id=source.source_id,
-                    binding_id=binding.binding_id,
-                    ticker=binding.ticker,
+            if is_stocktwits_durable_source(source):
+                result = self._stocktwits().poll(
+                    source=source,
+                    binding=binding,
+                    ingest=self.ingest_fetched,
                 )
-            )
+            else:
+                if self.collectors is None:
+                    raise RuntimeError("No monitoring collectors are configured.")
+                collector = self.collectors.collector_for(source)
+                fetched = collector.collect(source=source, binding=binding)
+                result = (
+                    self.ingest_fetched(source=source, fetched=fetched)
+                    if fetched
+                    else IngestBatchResult(
+                        source_id=source.source_id,
+                        binding_id=binding.binding_id,
+                        ticker=binding.ticker,
+                    )
+                )
             result.latency_ms = int((time.monotonic() - started) * 1000)
-            self.repository.record_poll_success(result)
+            if result.failed_count:
+                self.repository.record_poll_failure(
+                    binding_id=binding.binding_id,
+                    source_id=source.source_id,
+                    ticker=binding.ticker,
+                    message=result.error_message or "Polling failed.",
+                    latency_ms=result.latency_ms,
+                    metadata=result.metadata,
+                )
+            else:
+                self.repository.record_poll_success(result)
             return result
         except Exception as exc:
             latency_ms = int((time.monotonic() - started) * 1000)
@@ -236,6 +298,62 @@ class MonitoringBusService:
                 latency_ms=latency_ms,
             )
             raise
+
+    def configure_stocktwits_persistence(
+        self,
+        ticker: str,
+        *,
+        enabled: bool | None = None,
+        mode: TickerMode | None = None,
+        target_cadence_seconds: int | None = None,
+        hot_cadence_seconds: int | None = None,
+        page_size: int | None = None,
+        max_pages_per_crawl: int | None = None,
+        hot_message_threshold: int | None = None,
+        hot_cooldown_successes: int | None = None,
+        bootstrap_event_policy: BootstrapEventPolicy | None = None,
+        reset_schedule: bool = False,
+        ensure_binding: bool = True,
+        updated_reason: str | None = None,
+    ) -> JsonObject:
+        source = _require_source(
+            self.repository.get_source("stocktwits_messages"),
+            "stocktwits_messages",
+        )
+        if source.endpoint_kind is not EndpointKind.STOCKTWITS_MESSAGES:
+            raise ValueError("stocktwits_messages source is not configured as Stocktwits.")
+        if ensure_binding:
+            binding = self.configure_ticker_source(
+                ticker,
+                source.source_id,
+                enabled=True if enabled is None else enabled,
+                updated_by=UpdateActor.USER,
+                updated_reason=updated_reason,
+            )
+        else:
+            binding = _require_binding(
+                self.repository.get_binding(ticker, source.source_id),
+                ticker,
+            )
+        state = self._stocktwits().update_state(
+            source=source,
+            binding=binding,
+            enabled=enabled,
+            mode=mode,
+            target_cadence_seconds=target_cadence_seconds,
+            hot_cadence_seconds=hot_cadence_seconds,
+            page_size=page_size,
+            max_pages_per_crawl=max_pages_per_crawl,
+            hot_message_threshold=hot_message_threshold,
+            hot_cooldown_successes=hot_cooldown_successes,
+            bootstrap_event_policy=bootstrap_event_policy,
+            reset_schedule=reset_schedule,
+        )
+        return {
+            "binding": binding.model_dump(mode="json"),
+            "stocktwits_state": state.model_dump(mode="json"),
+            "ticker_config": self.get_ticker_config(ticker),
+        }
 
     def ingest_fetched(
         self,
@@ -276,6 +394,14 @@ class MonitoringBusService:
     def recent_events(self, *, ticker: str | None = None, limit: int = 20) -> list[EventStreamItem]:
         return self.repository.recent_events(ticker=ticker, limit=limit)
 
+    def pending_events(
+        self,
+        *,
+        ticker: str | None = None,
+        limit: int = 100,
+    ) -> list[EventStreamItem]:
+        return self.repository.pending_events(ticker=ticker, limit=limit)
+
     def mark_event_consumed(self, event_id: str) -> EventStreamItem | None:
         return self.repository.mark_event_consumed(event_id)
 
@@ -286,6 +412,55 @@ class MonitoringBusService:
         limit: int = 20,
     ) -> list[StandardMessage]:
         return self.repository.recent_standard_messages(ticker=ticker, limit=limit)
+
+    def enrich_recent_media(
+        self,
+        *,
+        ticker: str | None = None,
+        limit: int = 50,
+        concurrency: int = 6,
+        dry_run: bool = False,
+        incomplete_only: bool = True,
+    ) -> JsonObject:
+        return asyncio.run(
+            self.enrich_recent_media_async(
+                ticker=ticker,
+                limit=limit,
+                concurrency=concurrency,
+                dry_run=dry_run,
+                incomplete_only=incomplete_only,
+            )
+        )
+
+    async def enrich_recent_media_async(
+        self,
+        *,
+        ticker: str | None = None,
+        limit: int = 50,
+        concurrency: int = 6,
+        dry_run: bool = False,
+        incomplete_only: bool = True,
+        session_factory: SessionFactory | None = None,
+        extractor: Extractor | None = None,
+    ) -> JsonObject:
+        records = self.repository.list_media_enrichment_records(
+            ticker=ticker,
+            limit=limit,
+            incomplete_only=incomplete_only,
+        )
+        stats, results = await enrich_media_records(
+            records,
+            session_factory=session_factory,
+            extractor=extractor,
+            concurrency=concurrency,
+            dry_run=dry_run,
+        )
+        if not dry_run:
+            stats.written_count = self.repository.apply_media_enrichment_results(results)
+        return {
+            "stats": stats.to_payload(),
+            "results": [result.to_payload() for result in results],
+        }
 
     def _to_raw_message(self, item: FetchedExternalMessage) -> RawExternalMessage:
         return RawExternalMessage(
@@ -309,6 +484,15 @@ class MonitoringBusService:
             raw_payload=item.raw_payload,
             metadata=item.metadata,
         )
+
+    def _stocktwits(self) -> StocktwitsDurableMonitoringAdapter:
+        if self._stocktwits_adapter is None:
+            self._stocktwits_adapter = StocktwitsDurableMonitoringAdapter(
+                self.settings,
+                repository=self._stocktwits_repository,
+                client=self._stocktwits_client,
+            )
+        return self._stocktwits_adapter
 
 
 def snapshot_to_agent_payload(snapshot: MonitoringSnapshot) -> JsonObject:

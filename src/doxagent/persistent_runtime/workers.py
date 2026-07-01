@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 from datetime import UTC, datetime
 from typing import Any
+from zoneinfo import ZoneInfo
 
 from doxagent.agents.runner import AgentRunner
 from doxagent.models import (
@@ -30,6 +31,9 @@ from doxagent.persistent_runtime.schema import (
 )
 
 JsonObject = dict[str, object]
+
+_RUNTIME_CLOCK_TZ_NAME = "America/New_York"
+_RUNTIME_CLOCK_TZ = ZoneInfo(_RUNTIME_CLOCK_TZ_NAME)
 
 
 class AgentRunnerW1Worker:
@@ -212,6 +216,8 @@ def _runtime_worker_task(
     context: JsonObject,
     output_schema: str,
 ) -> AgentTask:
+    runtime_context = dict(context)
+    runtime_context["runtime_clock"] = _runtime_clock()
     return AgentTask(
         task_id=new_id("task"),
         ticker=ticker,
@@ -219,7 +225,7 @@ def _runtime_worker_task(
         task_type=task_type,
         input_context={
             "source_message": message.model_dump(mode="json"),
-            "runtime_context": dict(context),
+            "runtime_context": runtime_context,
         },
         required_output_schema=output_schema,
         permissions=AgentPermissions(),
@@ -230,6 +236,17 @@ def _runtime_worker_task(
             created_at=datetime.now(UTC),
         ),
     )
+
+
+def _runtime_clock() -> JsonObject:
+    now_et = datetime.now(_RUNTIME_CLOCK_TZ)
+    offset = now_et.strftime("%z")
+    formatted_offset = f"{offset[:3]}:{offset[3:]}" if len(offset) == 5 else offset
+    return {
+        "now_et": now_et.isoformat(),
+        "tz_abbrev": now_et.tzname() or "ET",
+        "utc_offset": formatted_offset,
+    }
 
 
 def _structured_payload(payload: object) -> object:

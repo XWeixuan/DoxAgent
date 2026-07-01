@@ -3,11 +3,18 @@
 from __future__ import annotations
 
 import sqlite3
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Protocol
 
+from doxagent.monitoring.media_enrichment import (
+    MediaEnrichmentRecord,
+    MediaExtractionResult,
+    assess_media_body,
+    choose_media_fetch_url,
+    media_enrichment_metadata,
+)
 from doxagent.monitoring.schema import (
     EndpointKind,
     EventStreamItem,
@@ -110,6 +117,7 @@ class MonitoringRepository(Protocol):
         ticker: str,
         message: str,
         latency_ms: int | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> PollState:
         ...
 
@@ -143,6 +151,29 @@ class MonitoringRepository(Protocol):
         ticker: str | None = None,
         limit: int = 20,
     ) -> list[EventStreamItem]:
+        ...
+
+    def pending_events(
+        self,
+        *,
+        ticker: str | None = None,
+        limit: int = 100,
+    ) -> list[EventStreamItem]:
+        ...
+
+    def list_media_enrichment_records(
+        self,
+        *,
+        ticker: str | None = None,
+        limit: int = 50,
+        incomplete_only: bool = True,
+    ) -> list[MediaEnrichmentRecord]:
+        ...
+
+    def apply_media_enrichment_results(
+        self,
+        results: Iterable[MediaExtractionResult],
+    ) -> int:
         ...
 
     def snapshot(self, *, ticker: str | None = None, limit: int = 20) -> MonitoringSnapshot:
@@ -379,6 +410,7 @@ class InMemoryMonitoringRepository:
                 "last_standardized_count": result.standardized_count,
                 "last_event_count": result.event_count,
                 "last_latency_ms": result.latency_ms,
+                "metadata": result.metadata,
                 "updated_at": now,
             },
             deep=True,
@@ -394,6 +426,7 @@ class InMemoryMonitoringRepository:
         ticker: str,
         message: str,
         latency_ms: int | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> PollState:
         existing = self._poll_states.get(binding_id) or PollState(
             binding_id=binding_id,
@@ -413,6 +446,7 @@ class InMemoryMonitoringRepository:
                 "last_standardized_count": 0,
                 "last_event_count": 0,
                 "last_latency_ms": latency_ms,
+                "metadata": metadata or {},
                 "updated_at": now,
             },
             deep=True,
@@ -473,6 +507,103 @@ class InMemoryMonitoringRepository:
         rows = sorted(rows, key=lambda row: row.stream_offset, reverse=True)
         return [row.model_copy(deep=True) for row in rows[:limit]]
 
+    def pending_events(
+        self,
+        *,
+        ticker: str | None = None,
+        limit: int = 100,
+    ) -> list[EventStreamItem]:
+        rows = self._events
+        if ticker is not None:
+            rows = [row for row in rows if row.ticker == ticker.strip().upper()]
+        rows = [
+            row
+            for row in rows
+            if not row.consumed and self._is_live_event(row)
+        ]
+        rows = sorted(rows, key=lambda row: row.stream_offset)
+        return [row.model_copy(deep=True) for row in rows[:limit]]
+
+    def list_media_enrichment_records(
+        self,
+        *,
+        ticker: str | None = None,
+        limit: int = 50,
+        incomplete_only: bool = True,
+    ) -> list[MediaEnrichmentRecord]:
+        resolved_limit = max(0, limit)
+        if resolved_limit == 0:
+            return []
+        normalized_ticker = ticker.strip().upper() if ticker is not None else None
+        rows = sorted(
+            self._standard_by_raw.values(),
+            key=lambda row: row.normalized_at,
+            reverse=True,
+        )
+        records: list[MediaEnrichmentRecord] = []
+        for message in rows:
+            if message.source_type is not SourceType.MEDIA:
+                continue
+            if normalized_ticker is not None and message.ticker != normalized_ticker:
+                continue
+            if incomplete_only and assess_media_body(message.body, message.title).complete_like:
+                continue
+            raw = self._raw_for_standard(message)
+            raw_payload = raw.raw_payload if raw is not None else {}
+            records.append(
+                MediaEnrichmentRecord(
+                    standard_message_id=message.standard_message_id,
+                    raw_message_id=message.raw_message_id,
+                    source_id=message.source_id,
+                    ticker=message.ticker,
+                    title=message.title,
+                    body=message.body,
+                    url=choose_media_fetch_url(
+                        standard_url=message.url,
+                        raw_url=raw.source_url if raw is not None else None,
+                        raw_payload=raw_payload,
+                    ),
+                    raw_url=raw.source_url if raw is not None else None,
+                    source_name=_media_source_name(message, raw_payload),
+                )
+            )
+            if len(records) >= resolved_limit:
+                break
+        return records
+
+    def apply_media_enrichment_results(
+        self,
+        results: Iterable[MediaExtractionResult],
+    ) -> int:
+        result_by_id = {result.record.standard_message_id: result for result in results}
+        if not result_by_id:
+            return 0
+        written = 0
+        for raw_id, message in list(self._standard_by_raw.items()):
+            result = result_by_id.get(message.standard_message_id)
+            if result is None:
+                continue
+            metadata = media_enrichment_metadata(message.metadata, result)
+            update: dict[str, Any] = {"metadata": metadata}
+            if result.succeeded and result.content:
+                update.update(
+                    {
+                        "body": result.content,
+                        "url": result.final_url or message.url,
+                        "author": result.source_name or message.author,
+                    }
+                )
+                written += 1
+            updated = message.model_copy(update=update, deep=True)
+            self._standard_by_raw[raw_id] = updated
+            for index, event in enumerate(self._events):
+                if event.standard_message_id == updated.standard_message_id:
+                    self._events[index] = event.model_copy(
+                        update={"payload": updated.model_dump(mode="json")},
+                        deep=True,
+                    )
+        return written
+
     def snapshot(self, *, ticker: str | None = None, limit: int = 20) -> MonitoringSnapshot:
         return MonitoringSnapshot(
             sources=self.list_sources(),
@@ -496,6 +627,12 @@ class InMemoryMonitoringRepository:
             if message.standard_message_id == event.standard_message_id:
                 return self._is_live_standard_message(message)
         return False
+
+    def _raw_for_standard(self, message: StandardMessage) -> RawExternalMessage | None:
+        for raw in self._raw_by_dedupe.values():
+            if raw.raw_message_id == message.raw_message_id:
+                return raw
+        return None
 
 
 class SQLiteMonitoringRepository:
@@ -839,6 +976,7 @@ class SQLiteMonitoringRepository:
                 "last_standardized_count": result.standardized_count,
                 "last_event_count": result.event_count,
                 "last_latency_ms": result.latency_ms,
+                "metadata": result.metadata,
                 "updated_at": now,
             },
             deep=True,
@@ -853,6 +991,7 @@ class SQLiteMonitoringRepository:
         ticker: str,
         message: str,
         latency_ms: int | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> PollState:
         existing = self._get_poll_state(binding_id)
         now = datetime.now(UTC)
@@ -869,6 +1008,7 @@ class SQLiteMonitoringRepository:
                 "last_standardized_count": 0,
                 "last_event_count": 0,
                 "last_latency_ms": latency_ms,
+                "metadata": metadata or {},
                 "updated_at": now,
             },
             deep=True,
@@ -987,6 +1127,157 @@ class SQLiteMonitoringRepository:
             ).fetchall()
         return [_event_from_row(row) for row in rows]
 
+    def pending_events(
+        self,
+        *,
+        ticker: str | None = None,
+        limit: int = 100,
+    ) -> list[EventStreamItem]:
+        clauses = [
+            "monitoring_event_stream.consumed = 0",
+            "monitoring_bindings.binding_id is not null",
+            "(monitoring_standard_messages.published_at is null "
+            "or monitoring_standard_messages.published_at >= monitoring_bindings.updated_at)",
+        ]
+        params: list[object] = []
+        if ticker is not None:
+            clauses.append("monitoring_event_stream.ticker = ?")
+            params.append(ticker.strip().upper())
+        where = f"where {' and '.join(clauses)}"
+        params.append(limit)
+        with self._connect() as conn:
+            rows = conn.execute(
+                f"""
+                select monitoring_event_stream.*
+                from monitoring_event_stream
+                left join monitoring_standard_messages
+                    on monitoring_event_stream.standard_message_id =
+                        monitoring_standard_messages.standard_message_id
+                left join monitoring_bindings
+                    on monitoring_standard_messages.binding_id = monitoring_bindings.binding_id
+                {where}
+                order by stream_offset asc
+                limit ?
+                """,
+                params,
+            ).fetchall()
+        return [_event_from_row(row) for row in rows]
+
+    def list_media_enrichment_records(
+        self,
+        *,
+        ticker: str | None = None,
+        limit: int = 50,
+        incomplete_only: bool = True,
+    ) -> list[MediaEnrichmentRecord]:
+        resolved_limit = max(0, limit)
+        if resolved_limit == 0:
+            return []
+        clauses = ["s.source_type = ?"]
+        params: list[object] = [SourceType.MEDIA.value]
+        if ticker is not None:
+            clauses.append("s.ticker = ?")
+            params.append(ticker.strip().upper())
+        where = f"where {' and '.join(clauses)}"
+        fetch_limit = resolved_limit if not incomplete_only else max(resolved_limit * 5, 50)
+        params.append(fetch_limit)
+        with self._connect() as conn:
+            rows = conn.execute(
+                f"""
+                select
+                    s.*,
+                    r.raw_payload_json as raw_payload_json,
+                    r.source_url as raw_source_url
+                from monitoring_standard_messages s
+                left join monitoring_raw_messages r
+                    on s.raw_message_id = r.raw_message_id
+                {where}
+                order by coalesce(s.published_at, s.normalized_at, s.collected_at) desc
+                limit ?
+                """,
+                params,
+            ).fetchall()
+        records: list[MediaEnrichmentRecord] = []
+        for row in rows:
+            message = _standard_from_row(row)
+            if incomplete_only and assess_media_body(message.body, message.title).complete_like:
+                continue
+            raw_payload = dict(_load_json(row["raw_payload_json"]) or {})
+            raw_url = row["raw_source_url"]
+            records.append(
+                MediaEnrichmentRecord(
+                    standard_message_id=message.standard_message_id,
+                    raw_message_id=message.raw_message_id,
+                    source_id=message.source_id,
+                    ticker=message.ticker,
+                    title=message.title,
+                    body=message.body,
+                    url=choose_media_fetch_url(
+                        standard_url=message.url,
+                        raw_url=raw_url,
+                        raw_payload=raw_payload,
+                    ),
+                    raw_url=raw_url,
+                    source_name=_media_source_name(message, raw_payload),
+                )
+            )
+            if len(records) >= resolved_limit:
+                break
+        return records
+
+    def apply_media_enrichment_results(
+        self,
+        results: Iterable[MediaExtractionResult],
+    ) -> int:
+        written = 0
+        with self._connect() as conn:
+            for result in results:
+                row = conn.execute(
+                    "select * from monitoring_standard_messages where standard_message_id = ?",
+                    (result.record.standard_message_id,),
+                ).fetchone()
+                if row is None:
+                    continue
+                message = _standard_from_row(row)
+                metadata = media_enrichment_metadata(message.metadata, result)
+                update: dict[str, Any] = {"metadata": metadata}
+                if result.succeeded and result.content:
+                    update.update(
+                        {
+                            "body": result.content,
+                            "url": result.final_url or message.url,
+                            "author": result.source_name or message.author,
+                        }
+                    )
+                    written += 1
+                updated = message.model_copy(update=update, deep=True)
+                conn.execute(
+                    """
+                    update monitoring_standard_messages
+                    set body = ?, url = ?, author = ?, metadata_json = ?
+                    where standard_message_id = ?
+                    """,
+                    (
+                        updated.body,
+                        updated.url,
+                        updated.author,
+                        _json(updated.metadata),
+                        updated.standard_message_id,
+                    ),
+                )
+                conn.execute(
+                    """
+                    update monitoring_event_stream
+                    set payload_json = ?
+                    where standard_message_id = ?
+                    """,
+                    (
+                        canonical_json(updated.model_dump(mode="json")),
+                        updated.standard_message_id,
+                    ),
+                )
+        return written
+
     def snapshot(self, *, ticker: str | None = None, limit: int = 20) -> MonitoringSnapshot:
         return MonitoringSnapshot(
             sources=self.list_sources(),
@@ -1027,8 +1318,8 @@ class SQLiteMonitoringRepository:
                      last_collected_count, last_historical_skipped_count,
                      last_raw_inserted_count, last_duplicate_count,
                      last_standardized_count, last_event_count, last_latency_ms,
-                     updated_at)
-                values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                     metadata_json, updated_at)
+                values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 on conflict(binding_id) do update set
                     status = excluded.status,
                     last_attempt_at = excluded.last_attempt_at,
@@ -1048,6 +1339,7 @@ class SQLiteMonitoringRepository:
                     last_standardized_count = excluded.last_standardized_count,
                     last_event_count = excluded.last_event_count,
                     last_latency_ms = excluded.last_latency_ms,
+                    metadata_json = excluded.metadata_json,
                     updated_at = excluded.updated_at
                 """,
                 _poll_state_row(state),
@@ -1166,6 +1458,7 @@ class SQLiteMonitoringRepository:
                     last_standardized_count integer not null default 0,
                     last_event_count integer not null default 0,
                     last_latency_ms integer,
+                    metadata_json text not null default '{}',
                     updated_at text not null
                 );
                 """
@@ -1218,6 +1511,12 @@ class SQLiteMonitoringRepository:
                 "last_latency_ms",
                 "last_latency_ms integer",
             )
+            _ensure_column(
+                conn,
+                "monitoring_poll_states",
+                "metadata_json",
+                "metadata_json text not null default '{}'",
+            )
 
     def _connect(self) -> sqlite3.Connection:
         conn = sqlite3.connect(self.path)
@@ -1249,6 +1548,8 @@ def _merge_default_source(
 ) -> MonitoringSourceConfig:
     config = {**default.config, **existing.config}
     if existing.source_id == "stocktwits_messages":
+        if existing.config.get("mode") in {None, "rapidapi_or_public", "public"}:
+            config["mode"] = default.config.get("mode", "durable_polling")
         if existing.config.get("limit") == 199:
             config["limit"] = default.config.get("limit")
         config["force_refresh"] = default.config.get("force_refresh", False)
@@ -1262,6 +1563,13 @@ def _merge_default_source(
         },
         deep=True,
     )
+
+
+def _media_source_name(message: StandardMessage, raw_payload: Mapping[str, Any]) -> str | None:
+    for value in (raw_payload.get("source"), raw_payload.get("author"), message.author):
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    return None
 
 
 def _ensure_column(
@@ -1503,6 +1811,7 @@ def _poll_state_row(state: PollState) -> tuple[object, ...]:
         state.last_standardized_count,
         state.last_event_count,
         state.last_latency_ms,
+        _json(state.metadata),
         _dt(state.updated_at),
     )
 
@@ -1534,5 +1843,10 @@ def _poll_state_from_row(row: sqlite3.Row) -> PollState:
         last_standardized_count=_row_int(row, "last_standardized_count"),
         last_event_count=_row_int(row, "last_event_count"),
         last_latency_ms=_row_optional_int(row, "last_latency_ms"),
+        metadata=(
+            dict(_load_json(row["metadata_json"]) or {})
+            if "metadata_json" in row.keys()
+            else {}
+        ),
         updated_at=_parse_dt(row["updated_at"]) or datetime.now(UTC),
     )

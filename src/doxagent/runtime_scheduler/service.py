@@ -1,0 +1,890 @@
+"""Ticker-level orchestration for monitoring and persistent runtime execution."""
+
+from __future__ import annotations
+
+from collections.abc import Iterable
+from datetime import UTC, datetime, time
+from zoneinfo import ZoneInfo
+
+from doxagent.monitoring.schema import (
+    MonitoringParameters,
+    TickerSourceBinding,
+    UpdateActor,
+    parameter_schema_for_source,
+)
+from doxagent.monitoring.service import MonitoringBusService
+from doxagent.persistent_runtime.service import PersistentRuntimeExecutionService
+from doxagent.runtime_scheduler.documents import RuntimeDocumentProvider, WorkflowDocumentProvider
+from doxagent.runtime_scheduler.repository import (
+    InMemoryRuntimeSchedulerRepository,
+    RuntimeSchedulerRepository,
+    SQLiteRuntimeSchedulerRepository,
+)
+from doxagent.runtime_scheduler.schema import (
+    AuditSeverity,
+    DashboardOverview,
+    DocumentBundle,
+    DocumentRefreshRequest,
+    DocumentSetStatus,
+    EventProcessingStatus,
+    MarketSessionPhase,
+    MonitoringBindingStatus,
+    MonitoringRunStatus,
+    RefreshRequestSource,
+    RuntimeAuditEvent,
+    RuntimeHealth,
+    TickerRunDetail,
+    TickerRunState,
+    TickerRunStatus,
+    TradeIntentView,
+)
+from doxagent.settings import DoxAgentSettings
+
+ET = ZoneInfo("America/New_York")
+LOW_FREQUENCY_SOURCE_IDS = frozenset({"stocktwits_messages"})
+RUNNABLE_STATUSES = {
+    TickerRunStatus.RUNNING,
+    TickerRunStatus.DEGRADED,
+}
+
+
+class UnifiedRuntimeSchedulerService:
+    """Coordinate documents, monitoring bindings, event consumption, and state views."""
+
+    def __init__(
+        self,
+        repository: RuntimeSchedulerRepository,
+        *,
+        document_provider: RuntimeDocumentProvider,
+        monitoring_service: MonitoringBusService,
+        runtime_service: PersistentRuntimeExecutionService,
+        low_frequency_source_ids: set[str] | None = None,
+    ) -> None:
+        self.repository = repository
+        self.document_provider = document_provider
+        self.monitoring_service = monitoring_service
+        self.runtime_service = runtime_service
+        self.low_frequency_source_ids = {
+            source_id.strip().lower()
+            for source_id in (low_frequency_source_ids or set(LOW_FREQUENCY_SOURCE_IDS))
+        }
+
+    @classmethod
+    def from_settings(
+        cls,
+        settings: DoxAgentSettings | None = None,
+    ) -> UnifiedRuntimeSchedulerService:
+        resolved = settings or DoxAgentSettings()
+        if resolved.runtime_scheduler_storage_mode == "memory":
+            repository: RuntimeSchedulerRepository = InMemoryRuntimeSchedulerRepository()
+        else:
+            repository = SQLiteRuntimeSchedulerRepository(resolved.runtime_scheduler_sqlite_path)
+        return cls(
+            repository,
+            document_provider=WorkflowDocumentProvider(settings=resolved),
+            monitoring_service=MonitoringBusService.from_settings(resolved),
+            runtime_service=PersistentRuntimeExecutionService.from_settings(resolved),
+        )
+
+    def overview(self) -> DashboardOverview:
+        return DashboardOverview(tickers=self.repository.list_states())
+
+    def start_ticker(
+        self,
+        ticker: str,
+        *,
+        now: datetime | None = None,
+        force_initialize: bool = False,
+    ) -> TickerRunDetail:
+        normalized = _ticker(ticker)
+        current_time = _utc(now)
+        phase = market_session_phase(current_time)
+        existing = self.repository.get_state(normalized)
+        if (
+            existing is not None
+            and existing.status in RUNNABLE_STATUSES
+            and not force_initialize
+        ):
+            self._audit(
+                normalized,
+                "ticker_start_idempotent",
+                "Ticker is already running; start request reused existing state.",
+                payload={"status": existing.status.value},
+            )
+            return self.detail(normalized, now=current_time)
+        state = existing or TickerRunState(ticker=normalized, started_at=current_time)
+        state = state.model_copy(
+            update={
+                "status": TickerRunStatus.INITIALIZING,
+                "health": RuntimeHealth.NORMAL,
+                "session_phase": phase,
+                "updated_at": current_time,
+                "stopped_at": None,
+                "last_error": None,
+            },
+            deep=True,
+        )
+        self.repository.upsert_state(state)
+        self._audit(normalized, "ticker_started", "Ticker runtime start requested.")
+        try:
+            bundle = self._ensure_documents(
+                normalized,
+                now=current_time,
+                force_initialize=force_initialize,
+            )
+        except Exception as exc:
+            blocked = self._blocked_state(
+                state,
+                now=current_time,
+                message=f"Document initialization failed: {exc}",
+            )
+            self.repository.upsert_state(blocked)
+            self._audit(
+                normalized,
+                "documents_initialization_failed",
+                str(exc),
+                severity=AuditSeverity.ERROR,
+            )
+            return self.detail(normalized, now=current_time)
+        if not bundle.status.usable:
+            blocked = self._blocked_state(
+                state,
+                now=current_time,
+                message="Document set is missing, stale, or invalid.",
+                document_status=bundle.status,
+            )
+            self.repository.upsert_state(blocked)
+            self._audit(
+                normalized,
+                "documents_blocked",
+                "Ticker runtime blocked because Document 1/2/3 are not usable.",
+                severity=AuditSeverity.ERROR,
+                payload=bundle.status.model_dump(mode="json"),
+            )
+            return self.detail(normalized, now=current_time)
+        applied_bindings = self._apply_monitoring_config(normalized, bundle)
+        if bundle.monitoring_config is not None and not applied_bindings:
+            blocked = self._blocked_state(
+                state,
+                now=current_time,
+                message="Monitoring Config produced no usable Message Bus bindings.",
+                document_status=bundle.status,
+            )
+            self.repository.upsert_state(blocked)
+            return self.detail(normalized, now=current_time)
+        state = state.model_copy(
+            update={
+                "status": TickerRunStatus.RUNNING,
+                "health": RuntimeHealth.NORMAL,
+                "session_phase": phase,
+                "document_run_id": bundle.status.blackboard_run_id,
+                "document_status": bundle.status,
+                "last_monitoring_config_version": _config_version(bundle),
+                "updated_at": current_time,
+            },
+            deep=True,
+        )
+        self.repository.upsert_state(state)
+        self._audit(
+            normalized,
+            "ticker_running",
+            "Ticker runtime is ready for scheduled polling and event consumption.",
+            payload={"session_phase": phase.value, "binding_count": len(applied_bindings)},
+        )
+        return self.detail(normalized, now=current_time)
+
+    def pause_ticker(
+        self,
+        ticker: str,
+        *,
+        reason: str | None = None,
+        now: datetime | None = None,
+    ) -> TickerRunDetail:
+        state = self._state_or_default(ticker, now=now)
+        current_time = _utc(now)
+        state = state.model_copy(
+            update={
+                "status": TickerRunStatus.PAUSED,
+                "updated_at": current_time,
+                "last_error": reason,
+            },
+            deep=True,
+        )
+        self.repository.upsert_state(state)
+        self._audit(
+            state.ticker,
+            "ticker_paused",
+            reason or "Ticker runtime paused by user/system request.",
+        )
+        return self.detail(state.ticker, now=current_time)
+
+    def stop_ticker(
+        self,
+        ticker: str,
+        *,
+        reason: str | None = None,
+        disable_bindings: bool = True,
+        now: datetime | None = None,
+    ) -> TickerRunDetail:
+        state = self._state_or_default(ticker, now=now)
+        current_time = _utc(now)
+        disabled_count = self._disable_bindings(state.ticker) if disable_bindings else 0
+        state = state.model_copy(
+            update={
+                "status": TickerRunStatus.STOPPED,
+                "health": RuntimeHealth.NORMAL,
+                "updated_at": current_time,
+                "stopped_at": current_time,
+                "last_error": reason,
+            },
+            deep=True,
+        )
+        self.repository.upsert_state(state)
+        self._audit(
+            state.ticker,
+            "ticker_stopped",
+            reason or "Ticker runtime stopped by user/system request.",
+            payload={"disabled_binding_count": disabled_count},
+        )
+        return self.detail(state.ticker, now=current_time)
+
+    def run_due_once(
+        self,
+        *,
+        now: datetime | None = None,
+        event_limit: int = 100,
+    ) -> list[TickerRunDetail]:
+        details: list[TickerRunDetail] = []
+        for state in self.repository.list_states():
+            if state.status not in RUNNABLE_STATUSES:
+                continue
+            details.append(self.tick_ticker(state.ticker, now=now, event_limit=event_limit))
+        return details
+
+    def tick_ticker(
+        self,
+        ticker: str,
+        *,
+        now: datetime | None = None,
+        event_limit: int = 100,
+    ) -> TickerRunDetail:
+        normalized = _ticker(ticker)
+        state = self.repository.get_state(normalized)
+        if state is None:
+            return self.start_ticker(normalized, now=now)
+        current_time = _utc(now)
+        if state.status not in RUNNABLE_STATUSES:
+            self._audit(
+                normalized,
+                "ticker_tick_skipped",
+                "Ticker tick skipped because runtime is not runnable.",
+                payload={"status": state.status.value},
+            )
+            return self.detail(normalized, now=current_time)
+        phase = market_session_phase(current_time)
+        state = state.model_copy(
+            update={"session_phase": phase, "updated_at": current_time},
+            deep=True,
+        )
+        state = self._maybe_run_weekly_update(state, now=current_time)
+        poll_failures = 0
+        poll_messages = 0
+        poll_events = 0
+        for binding in self._due_bindings_for_phase(normalized, phase, now=current_time):
+            try:
+                result = self.monitoring_service.poll_binding(binding.ticker, binding.source_id)
+                poll_messages += result.collected_count
+                poll_events += result.event_count
+                self._audit(
+                    normalized,
+                    "message_poll_completed",
+                    "Monitoring source poll completed.",
+                    payload=result.model_dump(mode="json"),
+                )
+            except Exception as exc:
+                poll_failures += 1
+                self._audit(
+                    normalized,
+                    "message_poll_failed",
+                    str(exc),
+                    severity=AuditSeverity.WARNING,
+                    payload={"source_id": binding.source_id},
+                )
+        pending_count_before_runtime = 0
+        consumed_count = 0
+        runtime_count = 0
+        trade_intent_count = 0
+        failed_event_count = 0
+        runtime_failed = False
+        if phase in {
+            MarketSessionPhase.PRE_MARKET_DIGEST,
+            MarketSessionPhase.FORMAL_MONITORING,
+        }:
+            try:
+                pending = self.monitoring_service.pending_events(
+                    ticker=normalized,
+                    limit=event_limit,
+                )
+                pending_count_before_runtime = len(pending)
+                context = self._runtime_context(state)
+                before_trade_count = len(
+                    self.runtime_service.repository.list_trading_records(ticker=normalized)
+                )
+                records = self.runtime_service.execute_events(
+                    pending,
+                    context=context,
+                    mark_consumed=self.monitoring_service.mark_event_consumed,
+                )
+                after_trade_count = len(
+                    self.runtime_service.repository.list_trading_records(ticker=normalized)
+                )
+                runtime_count = len(records)
+                consumed_count = len(pending)
+                trade_intent_count = max(0, after_trade_count - before_trade_count)
+                if consumed_count:
+                    self._audit(
+                        normalized,
+                        "events_consumed",
+                        "Pending event-stream items were consumed by Persistent Runtime.",
+                        payload={
+                            "event_count": consumed_count,
+                            "runtime_record_count": runtime_count,
+                            "trade_intent_count": trade_intent_count,
+                        },
+                    )
+            except Exception as exc:
+                runtime_failed = True
+                failed_event_count = pending_count_before_runtime
+                self._audit(
+                    normalized,
+                    "runtime_event_consumption_failed",
+                    str(exc),
+                    severity=AuditSeverity.ERROR,
+                )
+        pending_count_after_runtime = len(
+            self.monitoring_service.pending_events(
+                ticker=normalized,
+                limit=event_limit,
+            )
+        )
+        counters = state.counters.model_copy(
+            update={
+                "poll_cycles": state.counters.poll_cycles + 1,
+                "messages_collected": state.counters.messages_collected + poll_messages,
+                "events_created": state.counters.events_created + poll_events,
+                "events_consumed": state.counters.events_consumed + consumed_count,
+                "pending_event_count": pending_count_after_runtime,
+                "processed_event_count": state.counters.processed_event_count + consumed_count,
+                "failed_event_count": state.counters.failed_event_count + failed_event_count,
+                "trade_intents_generated": (
+                    state.counters.trade_intents_generated + trade_intent_count
+                ),
+                "runtime_executions": state.counters.runtime_executions + runtime_count,
+                "execution_failure_count": (
+                    state.counters.execution_failure_count + int(runtime_failed)
+                ),
+                "failure_count": (
+                    state.counters.failure_count + poll_failures + int(runtime_failed)
+                ),
+            },
+            deep=True,
+        )
+        health = RuntimeHealth.NORMAL
+        status = TickerRunStatus.RUNNING
+        last_error = None
+        if runtime_failed:
+            health = RuntimeHealth.DEGRADED
+            status = TickerRunStatus.DEGRADED
+            last_error = "Runtime event consumption failed; pending events remain unconsumed."
+        elif poll_failures:
+            health = RuntimeHealth.DEGRADED
+            status = TickerRunStatus.DEGRADED
+            last_error = f"{poll_failures} monitoring source poll(s) failed."
+        state = state.model_copy(
+            update={
+                "status": status,
+                "health": health,
+                "session_phase": phase,
+                "updated_at": current_time,
+                "last_poll_at": (
+                    current_time if poll_messages or poll_events else state.last_poll_at
+                ),
+                "last_event_consumed_at": (
+                    current_time if consumed_count else state.last_event_consumed_at
+                ),
+                "last_trade_intent_at": (
+                    current_time if trade_intent_count else state.last_trade_intent_at
+                ),
+                "last_error": last_error,
+                "counters": counters,
+            },
+            deep=True,
+        )
+        self.repository.upsert_state(state)
+        return self.detail(normalized, now=current_time)
+
+    def detail(
+        self,
+        ticker: str,
+        *,
+        now: datetime | None = None,
+        limit: int = 50,
+    ) -> TickerRunDetail:
+        normalized = _ticker(ticker)
+        state = self._state_or_default(normalized, now=now)
+        document_status = state.document_status or self.document_provider.latest(
+            normalized,
+            now=_utc(now),
+        ).status
+        return TickerRunDetail(
+            state=state,
+            document_status=document_status,
+            message_bus_status=self.monitoring_status(normalized, now=now, limit=limit),
+            runtime_status=self.event_processing_status(normalized, limit=limit),
+            trade_intents=self.trade_intents(normalized, limit=limit),
+            exceptions=self.runtime_service.repository.list_exceptions(ticker=normalized)[-limit:],
+            refresh_requests=self.repository.list_refresh_requests(
+                ticker=normalized,
+                limit=limit,
+            ),
+            audit_events=self.repository.list_audit_events(ticker=normalized, limit=limit),
+        )
+
+    def document_status(
+        self,
+        ticker: str,
+        *,
+        now: datetime | None = None,
+    ) -> DocumentSetStatus:
+        normalized = _ticker(ticker)
+        state = self.repository.get_state(normalized)
+        if state is not None and state.document_status is not None:
+            return state.document_status
+        return self.document_provider.latest(normalized, now=_utc(now)).status
+
+    def monitoring_status(
+        self,
+        ticker: str,
+        *,
+        now: datetime | None = None,
+        limit: int = 50,
+    ) -> MonitoringRunStatus:
+        normalized = _ticker(ticker)
+        snapshot = self.monitoring_service.status_snapshot(ticker=normalized, limit=limit)
+        poll_states = {state.binding_id: state for state in snapshot.poll_states}
+        pending_events = self.monitoring_service.pending_events(ticker=normalized, limit=limit)
+        last_success_at = _latest(
+            state.last_success_at for state in snapshot.poll_states if state.last_success_at
+        )
+        last_error_at = _latest(
+            state.last_error_at for state in snapshot.poll_states if state.last_error_at
+        )
+        last_error_message = None
+        for state in sorted(
+            snapshot.poll_states,
+            key=lambda item: item.last_error_at or datetime.min.replace(tzinfo=UTC),
+            reverse=True,
+        ):
+            if state.last_error_message:
+                last_error_message = state.last_error_message
+                break
+        return MonitoringRunStatus(
+            ticker=normalized,
+            session_phase=market_session_phase(_utc(now)),
+            configured_sources=[
+                MonitoringBindingStatus(
+                    binding=binding,
+                    poll_state=poll_states.get(binding.binding_id),
+                )
+                for binding in snapshot.bindings
+            ],
+            pending_event_count=len(pending_events),
+            recent_event_count=len(snapshot.recent_events),
+            recent_message_count=len(snapshot.recent_standard_messages),
+            last_success_at=last_success_at,
+            last_error_at=last_error_at,
+            last_error_message=last_error_message,
+        )
+
+    def event_processing_status(
+        self,
+        ticker: str,
+        *,
+        limit: int = 50,
+    ) -> EventProcessingStatus:
+        normalized = _ticker(ticker)
+        pending_events = self.monitoring_service.pending_events(ticker=normalized, limit=limit)
+        recent_events = self.monitoring_service.recent_events(ticker=normalized, limit=limit)
+        observations = self.runtime_service.runtime_observations(ticker=normalized)
+        exceptions = self.runtime_service.repository.list_exceptions(ticker=normalized)
+        last_execution_at = _latest(observation.created_at for observation in observations)
+        return EventProcessingStatus(
+            ticker=normalized,
+            pending_event_count=len(pending_events),
+            consumed_event_count=sum(1 for event in recent_events if event.consumed),
+            runtime_execution_count=len(
+                self.runtime_service.repository.list_executions(ticker=normalized)
+            ),
+            recent_observations=observations[-limit:],
+            exception_count=len(exceptions),
+            last_execution_at=last_execution_at,
+        )
+
+    def trade_intents(self, ticker: str, *, limit: int = 50) -> list[TradeIntentView]:
+        records = self.runtime_service.repository.list_trading_records(ticker=_ticker(ticker))
+        return [TradeIntentView.from_record(record) for record in records[-limit:]]
+
+    def submit_refresh_request(
+        self,
+        ticker: str,
+        *,
+        requested_by: RefreshRequestSource,
+        reason: str,
+        trigger_event_id: str | None = None,
+        metadata: dict[str, object] | None = None,
+    ) -> DocumentRefreshRequest:
+        request = DocumentRefreshRequest(
+            ticker=ticker,
+            requested_by=requested_by,
+            reason=reason,
+            trigger_event_id=trigger_event_id,
+            metadata=dict(metadata or {}),
+        )
+        saved = self.repository.save_refresh_request(request)
+        self._audit(
+            saved.ticker,
+            "document_refresh_requested",
+            "Document refresh request recorded; automatic agent refresh remains disabled.",
+            payload=saved.model_dump(mode="json"),
+        )
+        return saved
+
+    def _ensure_documents(
+        self,
+        ticker: str,
+        *,
+        now: datetime,
+        force_initialize: bool,
+    ) -> DocumentBundle:
+        bundle = self.document_provider.latest(ticker, now=now)
+        if bundle.status.usable and not force_initialize:
+            self._audit(
+                ticker,
+                "documents_reused",
+                "Usable recent Document 1/2/3 set reused.",
+                payload=bundle.status.model_dump(mode="json"),
+            )
+            return bundle
+        self._audit(
+            ticker,
+            "documents_initialization_started",
+            "Document set is missing/stale or force_initialize was requested.",
+            payload=bundle.status.model_dump(mode="json"),
+        )
+        initialized = self.document_provider.initialize(ticker, now=now)
+        self._audit(
+            ticker,
+            "documents_initialized",
+            "Initialization workflow returned a document set.",
+            payload=initialized.status.model_dump(mode="json"),
+        )
+        return initialized
+
+    def _apply_monitoring_config(
+        self,
+        ticker: str,
+        bundle: DocumentBundle,
+    ) -> list[TickerSourceBinding]:
+        document = bundle.monitoring_config
+        if document is None:
+            return []
+        bindings: list[TickerSourceBinding] = []
+        for item in document.monitoring_items:
+            tool_input = dict(item.tool_input)
+            source_id = str(tool_input.get("source_id") or "stocktwits_messages").strip().lower()
+            try:
+                parameters = _parameters_for_source(source_id, tool_input)
+                binding = self.monitoring_service.configure_ticker_source(
+                    ticker,
+                    source_id,
+                    parameters=parameters,
+                    enabled=bool(tool_input.get("enabled", True)),
+                    updated_by=UpdateActor.SYSTEM,
+                    updated_reason=str(
+                        tool_input.get("reason") or item.reasoning or "scheduler config apply"
+                    ),
+                    merge=str(tool_input.get("mode") or "merge").lower() != "replace",
+                )
+                bindings.append(binding)
+            except Exception as exc:
+                self._audit(
+                    ticker,
+                    "monitoring_config_item_failed",
+                    str(exc),
+                    severity=AuditSeverity.WARNING,
+                    payload={"item_id": item.item_id, "source_id": source_id},
+                )
+        self._audit(
+            ticker,
+            "monitoring_config_applied",
+            "Monitoring Config was applied to Message Bus bindings.",
+            payload={
+                "document_id": document.document_id,
+                "applied_config_version": _config_version(bundle),
+                "binding_count": len(bindings),
+            },
+        )
+        return bindings
+
+    def _due_bindings_for_phase(
+        self,
+        ticker: str,
+        phase: MarketSessionPhase,
+        *,
+        now: datetime,
+    ) -> list[TickerSourceBinding]:
+        bindings: list[TickerSourceBinding] = []
+        for binding in self.monitoring_service.due_bindings(now=now):
+            if binding.ticker != ticker:
+                continue
+            if (
+                phase is MarketSessionPhase.OFF_HOURS_LOW_FREQUENCY
+                and binding.source_id not in self.low_frequency_source_ids
+            ):
+                continue
+            bindings.append(binding)
+        return bindings
+
+    def _disable_bindings(self, ticker: str) -> int:
+        disabled = 0
+        for binding in self.monitoring_service.repository.list_bindings(ticker=ticker):
+            if not binding.enabled:
+                continue
+            self.monitoring_service.configure_ticker_source(
+                ticker,
+                binding.source_id,
+                parameters=binding.parameters,
+                enabled=False,
+                updated_by=UpdateActor.USER,
+                updated_reason="Ticker runtime stopped.",
+                merge=False,
+            )
+            disabled += 1
+        return disabled
+
+    def _maybe_run_weekly_update(self, state: TickerRunState, *, now: datetime) -> TickerRunState:
+        if not _weekly_update_due(state, now):
+            return state
+        try:
+            self._audit(
+                state.ticker,
+                "weekly_document_update_started",
+                "Weekly Monday 06:00 ET document update started.",
+            )
+            bundle = self.document_provider.initialize(state.ticker, now=now)
+            if not bundle.status.usable:
+                self._audit(
+                    state.ticker,
+                    "weekly_document_update_failed",
+                    "Weekly update did not produce a usable document set; keeping old version.",
+                    severity=AuditSeverity.WARNING,
+                    payload=bundle.status.model_dump(mode="json"),
+                )
+                return state.model_copy(
+                    update={
+                        "health": RuntimeHealth.DEGRADED,
+                        "status": TickerRunStatus.DEGRADED,
+                        "last_weekly_update_at": now,
+                        "last_error": "Weekly document update did not produce usable docs.",
+                    },
+                    deep=True,
+                )
+            bindings = self._apply_monitoring_config(state.ticker, bundle)
+            self._audit(
+                state.ticker,
+                "weekly_document_update_completed",
+                "Weekly document update completed; scheduler switched to new usable version.",
+                payload={"binding_count": len(bindings)},
+            )
+            return state.model_copy(
+                update={
+                    "document_run_id": bundle.status.blackboard_run_id,
+                    "document_status": bundle.status,
+                    "last_monitoring_config_version": _config_version(bundle),
+                    "last_weekly_update_at": now,
+                    "last_error": None,
+                },
+                deep=True,
+            )
+        except Exception as exc:
+            self._audit(
+                state.ticker,
+                "weekly_document_update_failed",
+                str(exc),
+                severity=AuditSeverity.WARNING,
+            )
+            return state.model_copy(
+                update={
+                    "health": RuntimeHealth.DEGRADED,
+                    "status": TickerRunStatus.DEGRADED,
+                    "last_weekly_update_at": now,
+                    "last_error": f"Weekly document update failed: {exc}",
+                },
+                deep=True,
+            )
+
+    def _runtime_context(self, state: TickerRunState) -> dict[str, object]:
+        bundle = self.document_provider.latest(state.ticker)
+        monitoring_policy = bundle.monitoring_policy
+        known_events = bundle.known_events
+        context: dict[str, object] = {
+            "ticker": state.ticker,
+            "document_run_id": state.document_run_id,
+        }
+        if known_events is not None:
+            context["known_events"] = [
+                event.model_dump(mode="json") for event in known_events.events
+            ]
+        if monitoring_policy is not None:
+            policies = monitoring_policy.policies or [
+                *monitoring_policy.direct_trade_rules,
+                *monitoring_policy.push_to_agent_rules,
+                *monitoring_policy.cache_rules,
+            ]
+            context["monitoring_policies"] = [
+                policy.model_dump(mode="json") for policy in policies
+            ]
+        return context
+
+    def _state_or_default(self, ticker: str, *, now: datetime | None = None) -> TickerRunState:
+        normalized = _ticker(ticker)
+        state = self.repository.get_state(normalized)
+        if state is not None:
+            return state
+        current_time = _utc(now)
+        return TickerRunState(
+            ticker=normalized,
+            status=TickerRunStatus.STOPPED,
+            health=RuntimeHealth.NORMAL,
+            session_phase=market_session_phase(current_time),
+            started_at=current_time,
+            updated_at=current_time,
+        )
+
+    def _blocked_state(
+        self,
+        state: TickerRunState,
+        *,
+        now: datetime,
+        message: str,
+        document_status: DocumentSetStatus | None = None,
+    ) -> TickerRunState:
+        counters = state.counters.model_copy(
+            update={"failure_count": state.counters.failure_count + 1},
+            deep=True,
+        )
+        return state.model_copy(
+            update={
+                "status": TickerRunStatus.BLOCKED,
+                "health": RuntimeHealth.BLOCKED,
+                "updated_at": now,
+                "document_status": document_status or state.document_status,
+                "last_error": message,
+                "counters": counters,
+            },
+            deep=True,
+        )
+
+    def _audit(
+        self,
+        ticker: str,
+        event_type: str,
+        message: str,
+        *,
+        severity: AuditSeverity = AuditSeverity.INFO,
+        payload: dict[str, object] | None = None,
+    ) -> RuntimeAuditEvent:
+        return self.repository.append_audit_event(
+            RuntimeAuditEvent(
+                ticker=ticker,
+                event_type=event_type,
+                severity=severity,
+                message=message,
+                payload=dict(payload or {}),
+            )
+        )
+
+
+def market_session_phase(now: datetime | None = None) -> MarketSessionPhase:
+    current = _utc(now).astimezone(ET)
+    weekday = current.weekday()
+    if weekday <= 4:
+        digest_start = time(7, 0) if weekday == 0 else time(7, 30)
+        if digest_start <= current.time() < time(8, 0):
+            return MarketSessionPhase.PRE_MARKET_DIGEST
+        if time(8, 0) <= current.time() < time(18, 0):
+            return MarketSessionPhase.FORMAL_MONITORING
+    return MarketSessionPhase.OFF_HOURS_LOW_FREQUENCY
+
+
+def _weekly_update_due(state: TickerRunState, now: datetime) -> bool:
+    now_et = now.astimezone(ET)
+    if now_et.weekday() != 0 or now_et.time() < time(6, 0):
+        return False
+    if state.last_weekly_update_at is None:
+        return True
+    return state.last_weekly_update_at.astimezone(ET).date() != now_et.date()
+
+
+def _parameters_for_source(
+    source_id: str,
+    tool_input: dict[str, object],
+) -> MonitoringParameters:
+    allowed = set(parameter_schema_for_source(source_id))
+
+    def allowed_list(key: str) -> list[str]:
+        if key not in allowed:
+            return []
+        value = tool_input.get(key)
+        if isinstance(value, list | tuple | set):
+            return [str(item).strip() for item in value if str(item).strip()]
+        if isinstance(value, str) and value.strip():
+            return [value.strip()]
+        return []
+
+    return MonitoringParameters(
+        keywords=allowed_list("keywords"),
+        usernames=allowed_list("usernames"),
+        search_terms=allowed_list("search_terms"),
+        rss_urls=allowed_list("rss_urls"),
+        source_filters=allowed_list("source_filters"),
+    )
+
+
+def _config_version(bundle: DocumentBundle) -> str | None:
+    if bundle.monitoring_config is None:
+        return None
+    return (
+        bundle.monitoring_config.applied_config_version
+        or f"{bundle.monitoring_config.document_id}:scheduler"
+    )
+
+
+def _latest(values: Iterable[datetime | None]) -> datetime | None:
+    dates = [value for value in values if isinstance(value, datetime)]
+    return max(dates) if dates else None
+
+
+def _ticker(value: str) -> str:
+    normalized = value.strip().upper()
+    if not normalized:
+        raise ValueError("ticker is required.")
+    return normalized
+
+
+def _utc(value: datetime | None) -> datetime:
+    if value is None:
+        return datetime.now(UTC)
+    if value.tzinfo is None:
+        return value.replace(tzinfo=UTC)
+    return value.astimezone(UTC)

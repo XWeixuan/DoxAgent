@@ -132,7 +132,8 @@ def main() -> int:
     )
 
     result = workflow.resume(seed_checkpoint, stop_after=stop_after)
-    brief_state = DebugRunQueryService(settings).brief_state(result.checkpoint.run_id)
+    run_summary = DebugRunQueryService(settings).run_summary(result.checkpoint.run_id)
+    expectation_unit_count = _summary_document_count(run_summary, "expectation_unit")
     output = _base_output(
         ticker=ticker,
         round_label=args.round_label,
@@ -155,8 +156,8 @@ def main() -> int:
         "commit_count": result.summary.commit_count,
         "unresolved_objection_count": result.summary.unresolved_objection_count,
         "blocking_delegation_count": result.summary.blocking_delegation_count,
-        "global_research_status": _safe_nested(brief_state, "global_research", "status"),
-        "expectation_unit_count": len(brief_state.get("expectation_units") or []),
+        "global_research_status": _summary_document_status(run_summary, "global_research"),
+        "expectation_unit_count": expectation_unit_count,
         "document1_context_pack_present": document1_context_pack_present,
         "error": result.error,
         "finished_at": datetime.now(UTC).isoformat(),
@@ -220,6 +221,20 @@ def _safe_nested(data: JsonDict, first: str, second: str) -> Any:
     if not isinstance(raw, dict):
         return None
     return raw.get(second)
+
+
+def _summary_document_count(summary: JsonDict, document_type: str) -> int:
+    counts = _safe_nested(summary, "belief_state", "document_counts")
+    if not isinstance(counts, dict):
+        return 0
+    try:
+        return int(counts.get(document_type) or 0)
+    except (TypeError, ValueError):
+        return 0
+
+
+def _summary_document_status(summary: JsonDict, document_type: str) -> str:
+    return "present" if _summary_document_count(summary, document_type) > 0 else "missing"
 
 
 def _persistent_real_smoke_settings() -> DoxAgentSettings:

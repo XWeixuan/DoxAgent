@@ -20,7 +20,14 @@ from doxagent.models import (
     Objection,
     WorkingMemoryEntry,
 )
-from doxagent.postgres import connect_postgres, retry_postgres_operation
+from doxagent.postgres import (
+    connect_postgres,
+    estimate_json_payload_bytes,
+    postgres_database_error,
+    record_postgres_failure,
+    record_postgres_payload,
+    retry_postgres_operation,
+)
 from doxagent.settings import DoxAgentSettings
 
 
@@ -43,9 +50,19 @@ class PostgresBlackboardRepository:
         return cls(resolved.require_database_url())
 
     def add(self, run: BlackboardRun) -> BlackboardRun:
-        with self._connection() as conn:
-            self._insert_run(conn, run)
-        return self.get(run.run_id)
+        payload_bytes = estimate_json_payload_bytes(run.model_dump(mode="json"))
+
+        def operation() -> None:
+            with self._connection() as conn:
+                self._insert_run(conn, run)
+
+        self._retry(
+            operation,
+            operation_name="blackboard.add",
+            table="blackboard_runs",
+            payload_bytes=payload_bytes,
+        )
+        return run.model_copy(deep=True)
 
     def get(self, run_id: str) -> BlackboardRun:
         def operation() -> BlackboardRun:
@@ -60,8 +77,13 @@ class PostgresBlackboardRepository:
                 self._ensure_run_exists(conn, run.run_id)
                 self._replace_run(conn, run, bump_version=True)
 
-        self._retry(operation)
-        return self.get(run.run_id)
+        self._retry(
+            operation,
+            operation_name="blackboard.save",
+            table="blackboard_runs",
+            payload_bytes=estimate_json_payload_bytes(run.model_dump(mode="json")),
+        )
+        return run.model_copy(deep=True)
 
     def list_by_ticker(self, ticker: str, *, limit: int = 20) -> list[BlackboardRun]:
         def operation() -> list[BlackboardRun]:
@@ -162,7 +184,10 @@ class PostgresBlackboardRepository:
         return self._retry(operation)
 
     def mutate(self, run_id: str, mutator: RunMutator) -> BlackboardRun:
+        updated: BlackboardRun | None = None
+
         def operation() -> None:
+            nonlocal updated
             with self._read_connection() as conn:
                 run = self._get_run(conn, run_id, lock=False)
             updated = mutator(run)
@@ -170,8 +195,14 @@ class PostgresBlackboardRepository:
                 self._lock_run(conn, run_id)
                 self._replace_run(conn, updated, bump_version=True)
 
-        self._retry(operation)
-        return self.get(run_id)
+        self._retry(
+            operation,
+            operation_name="blackboard.mutate",
+            table="blackboard_runs",
+        )
+        if updated is None:
+            raise RuntimeError(f"Blackboard mutate did not produce an updated run: {run_id}")
+        return updated.model_copy(deep=True)
 
     @contextmanager
     def _connection(self, *, autocommit: bool = False) -> Iterator[Any]:
@@ -185,8 +216,27 @@ class PostgresBlackboardRepository:
         with self._connection(autocommit=True) as conn:
             yield conn
 
-    def _retry(self, operation: Any) -> Any:
-        return retry_postgres_operation(self._psycopg(), operation)
+    def _retry(
+        self,
+        operation: Any,
+        *,
+        operation_name: str = "blackboard.postgres_operation",
+        table: str | None = None,
+        payload_bytes: int | None = None,
+    ) -> Any:
+        psycopg = self._psycopg()
+        try:
+            return retry_postgres_operation(psycopg, operation)
+        except postgres_database_error(psycopg) as exc:
+            record_postgres_failure(
+                exc,
+                database_url=self.database_url,
+                operation=operation_name,
+                table=table,
+                payload_bytes=payload_bytes,
+                read_only_status=self._read_only_status(),
+            )
+            raise
 
     def _insert_run(self, conn: Any, run: BlackboardRun) -> None:
         with conn.cursor() as cursor:
@@ -238,12 +288,15 @@ class PostgresBlackboardRepository:
                 "belief_state_snapshots",
             ):
                 cursor.execute(f"delete from doxagent.{table} where run_id = %s", (run.run_id,))
-        self._upsert_evidence_refs(conn, self._collect_evidence_refs(run))
+        evidence_refs = self._collect_evidence_refs(run)
+        self._record_payload_sizes(run, evidence_refs)
+        self._upsert_evidence_refs(conn, evidence_refs)
         self._insert_belief_state(conn, run)
         self._insert_working_memory(conn, run)
         self._insert_commit_log(conn, run)
         self._insert_objections(conn, run)
         self._insert_delegations(conn, run)
+        self._upsert_run_summary(conn, run, evidence_refs)
 
     def _insert_belief_state(self, conn: Any, run: BlackboardRun) -> None:
         belief = run.belief_state
@@ -405,6 +458,74 @@ class PostgresBlackboardRepository:
                     ),
                 )
 
+    def _upsert_run_summary(
+        self,
+        conn: Any,
+        run: BlackboardRun,
+        evidence_refs: dict[str, EvidenceRef],
+    ) -> None:
+        with conn.cursor() as cursor:
+            if not self._relation_exists(cursor, "doxagent.run_summaries"):
+                return
+            belief_dump = run.belief_state.model_dump(mode="json")
+            documents = belief_dump.get("documents", {})
+            stable_document_types = (
+                sorted(str(key) for key in documents)
+                if isinstance(documents, dict)
+                else []
+            )
+            full_payload_ref = {
+                "storage": "supabase_child_tables",
+                "tables": [
+                    "belief_state_snapshots",
+                    "working_memory_entries",
+                    "commit_log_entries",
+                    "objections",
+                    "delegations",
+                    "evidence_refs",
+                ],
+            }
+            cursor.execute(
+                """
+                insert into doxagent.run_summaries
+                    (run_id, ticker, workflow_state, stable_document_types,
+                     working_memory_count, commit_count, unresolved_objection_count,
+                     blocking_delegation_count, evidence_ref_count, full_payload_ref)
+                values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                on conflict (run_id) do update set
+                    ticker = excluded.ticker,
+                    workflow_state = excluded.workflow_state,
+                    stable_document_types = excluded.stable_document_types,
+                    working_memory_count = excluded.working_memory_count,
+                    commit_count = excluded.commit_count,
+                    unresolved_objection_count = excluded.unresolved_objection_count,
+                    blocking_delegation_count = excluded.blocking_delegation_count,
+                    evidence_ref_count = excluded.evidence_ref_count,
+                    full_payload_ref = excluded.full_payload_ref,
+                    updated_at = now()
+                """,
+                (
+                    run.run_id,
+                    run.ticker,
+                    run.workflow_state.value,
+                    self._jsonb(stable_document_types),
+                    len(run.working_memory),
+                    len(run.commit_log),
+                    sum(
+                        1
+                        for item in run.objections
+                        if item.status.value in {"open", "unresolved"}
+                    ),
+                    sum(
+                        1
+                        for item in run.delegations
+                        if item.status.value in {"open", "assigned"}
+                    ),
+                    len(evidence_refs),
+                    self._jsonb(full_payload_ref),
+                ),
+            )
+
     def _get_run(self, conn: Any, run_id: str, *, lock: bool) -> BlackboardRun:
         lock_clause = " for update" if lock else ""
         with conn.cursor() as cursor:
@@ -528,6 +649,96 @@ class PostgresBlackboardRepository:
         for objection in run.objections:
             refs.update({item.evidence_id: item for item in objection.evidence_refs})
         return refs
+
+    def _record_payload_sizes(
+        self,
+        run: BlackboardRun,
+        evidence_refs: dict[str, EvidenceRef],
+    ) -> None:
+        self._record_payload(
+            operation="blackboard.replace_children",
+            table="belief_state_snapshots",
+            run_id=run.run_id,
+            payload=run.belief_state.model_dump(mode="json"),
+            item_count=1,
+        )
+        self._record_payload(
+            operation="blackboard.replace_children",
+            table="working_memory_entries",
+            run_id=run.run_id,
+            payload=[entry.model_dump(mode="json") for entry in run.working_memory],
+            item_count=len(run.working_memory),
+        )
+        self._record_payload(
+            operation="blackboard.replace_children",
+            table="commit_log_entries",
+            run_id=run.run_id,
+            payload=[entry.model_dump(mode="json") for entry in run.commit_log],
+            item_count=len(run.commit_log),
+        )
+        self._record_payload(
+            operation="blackboard.replace_children",
+            table="objections",
+            run_id=run.run_id,
+            payload=[item.model_dump(mode="json") for item in run.objections],
+            item_count=len(run.objections),
+        )
+        self._record_payload(
+            operation="blackboard.replace_children",
+            table="delegations",
+            run_id=run.run_id,
+            payload=[item.model_dump(mode="json") for item in run.delegations],
+            item_count=len(run.delegations),
+        )
+        self._record_payload(
+            operation="blackboard.replace_children",
+            table="evidence_refs",
+            run_id=run.run_id,
+            payload=[item.model_dump(mode="json") for item in evidence_refs.values()],
+            item_count=len(evidence_refs),
+        )
+
+    def _record_payload(
+        self,
+        *,
+        operation: str,
+        table: str,
+        run_id: str,
+        payload: Any,
+        item_count: int,
+    ) -> None:
+        record_postgres_payload(
+            operation=operation,
+            table=table,
+            run_id=run_id,
+            payload_bytes=estimate_json_payload_bytes(payload),
+            item_count=item_count,
+        )
+
+    def _relation_exists(self, cursor: Any, relation: str) -> bool:
+        cursor.execute("select to_regclass(%s)", (relation,))
+        row = cursor.fetchone()
+        return bool(row and row[0])
+
+    def _read_only_status(self) -> dict[str, Any]:
+        try:
+            with self._connection(autocommit=True) as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute(
+                        """
+                        select current_setting('transaction_read_only', true),
+                               current_setting('default_transaction_read_only', true),
+                               pg_is_in_recovery()
+                        """
+                    )
+                    row = cursor.fetchone()
+            return {
+                "transaction_read_only": row[0] if row else None,
+                "default_transaction_read_only": row[1] if row else None,
+                "pg_is_in_recovery": row[2] if row else None,
+            }
+        except Exception as exc:  # pragma: no cover - diagnostic best effort only
+            return {"status_error": str(exc)[:500]}
 
     def _jsonb(self, value: Any) -> Any:
         return self._jsonb_type()(value)

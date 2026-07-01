@@ -1,0 +1,134 @@
+[
+  {
+    "key": "overview",
+    "url": "http://127.0.0.1:5173/overview",
+    "file": "C:/Users/WEIXUANXIE/Desktop/DoxAgent/dev_plan/dashboard_frontend_acceptance_assets/desktop/overview-desktop.png",
+    "info": {
+      "cardCount": 14,
+      "links": [
+        {
+          "href": "/overview",
+          "text": "DoxAgent"
+        }
+      ],
+      "mainHeading": "Overview",
+      "navText": "DoxAgentDashboard State API",
+      "pageHeight": 1541,
+      "url": "http://127.0.0.1:5173/overview",
+      "viewport": {
+        "height": 960,
+        "width": 1440
+      }
+    }
+  },
+  {
+    "key": "research",
+    "url": "http://127.0.0.1:5173/ticker/MU/research",
+    "file": "C:/Users/WEIXUANXIE/Desktop/DoxAgent/dev_plan/dashboard_frontend_acceptance_assets/desktop/research-desktop.png",
+    "info": {
+      "cardCount": 3,
+      "links": [
+        {
+          "href": "/overview",
+          "text": "DoxAgent"
+        }
+      ],
+      "mainHeading": "MU 投研资料",
+      "navText": "DoxAgentDashboard State API",
+      "pageHeight": 960,
+      "url": "http://127.0.0.1:5173/ticker/MU/research",
+      "viewport": {
+        "height": 960,
+        "width": 1440
+      }
+    }
+  },
+  {
+    "key": "strategy",
+    "url": "http://127.0.0.1:5173/ticker/MU/strategy",
+    "file": "C:/Users/WEIXUANXIE/Desktop/DoxAgent/dev_plan/dashboard_frontend_acceptance_assets/desktop/strategy-desktop.png",
+    "info": {
+      "cardCount": 7,
+      "links": [
+        {
+          "href": "/overview",
+          "text": "DoxAgent"
+        }
+      ],
+      "mainHeading": "MU 执行策略",
+      "navText": "DoxAgentDashboard State API",
+      "pageHeight": 1175,
+      "url": "http://127.0.0.1:5173/ticker/MU/strategy",
+      "viewport": {
+        "height": 960,
+        "width": 1440
+      }
+    }
+  },
+  {
+    "key": "message-bus",
+    "url": "http://127.0.0.1:5173/ticker/MU/message-bus",
+    "file": "C:/Users/WEIXUANXIE/Desktop/DoxAgent/dev_plan/dashboard_frontend_acceptance_assets/desktop/message-bus-desktop.png",
+    "info": {
+      "cardCount": 8,
+      "links": [
+        {
+          "href": "/overview",
+          "text": "DoxAgent"
+        }
+      ],
+      "mainHeading": "MU 消息总线",
+      "navText": "DoxAgentDashboard State API",
+      "pageHeight": 995,
+      "url": "http://127.0.0.1:5173/ticker/MU/message-bus",
+      "viewport": {
+        "height": 960,
+        "width": 1440
+      }
+    }
+  },
+  {
+    "key": "runtime",
+    "url": "http://127.0.0.1:5173/ticker/MU/runtime",
+    "file": "C:/Users/WEIXUANXIE/Desktop/DoxAgent/dev_plan/dashboard_frontend_acceptance_assets/desktop/runtime-desktop.png",
+    "info": {
+      "cardCount": 9,
+      "links": [
+        {
+          "href": "/overview",
+          "text": "DoxAgent"
+        }
+      ],
+      "mainHeading": "MU 运行状态",
+      "navText": "DoxAgentDashboard State API",
+      "pageHeight": 1321,
+      "url": "http://127.0.0.1:5173/ticker/MU/runtime",
+      "viewport": {
+        "height": 960,
+        "width": 1440
+      }
+    }
+  },
+  {
+    "key": "audit",
+    "url": "http://127.0.0.1:5173/ticker/MU/audit",
+    "file": "C:/Users/WEIXUANXIE/Desktop/DoxAgent/dev_plan/dashboard_frontend_acceptance_assets/desktop/audit-desktop.png",
+    "info": {
+      "cardCount": 8,
+      "links": [
+        {
+          "href": "/overview",
+          "text": "DoxAgent"
+        }
+      ],
+      "mainHeading": "MU 收益 / 成本审计",
+      "navText": "DoxAgentDashboard State API",
+      "pageHeight": 1087,
+      "url": "http://127.0.0.1:5173/ticker/MU/audit",
+      "viewport": {
+        "height": 960,
+        "width": 1440
+      }
+    }
+  }
+]

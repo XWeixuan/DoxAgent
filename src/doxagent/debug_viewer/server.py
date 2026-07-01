@@ -60,6 +60,10 @@ def _handle_get(handler: BaseHTTPRequestHandler, service: DebugRunQueryService) 
             limit = _safe_int(_first(query.get("limit")), default=50)
             _write_json(handler, {"runs": service.list_runs(ticker=ticker, limit=limit)})
             return
+        if path.startswith("/api/runs/") and path.endswith("/summary"):
+            run_id = path.removeprefix("/api/runs/").removesuffix("/summary").strip("/")
+            _write_json(handler, service.run_summary(run_id))
+            return
         if path.startswith("/api/runs/") and path.endswith("/brief-state"):
             run_id = path.removeprefix("/api/runs/").removesuffix("/brief-state").strip("/")
             _write_json(handler, service.brief_state(run_id))
@@ -354,21 +358,24 @@ INDEX_HTML = r"""<!doctype html>
   </header>
   <main>
     <div class="tabs">
-      <button class="tab active" data-tab="brief">Brief State</button>
+      <button class="tab active" data-tab="summary">Summary</button>
+      <button class="tab" data-tab="brief">Brief State</button>
       <button class="tab" data-tab="metrics">Agent Metrics</button>
     </div>
     <div id="message"></div>
-    <section id="briefTab"></section>
+    <section id="summaryTab"></section>
+    <section id="briefTab" hidden></section>
     <section id="metricsTab" hidden></section>
   </main>
   <script>
-    const state = { runs: [], selectedRunId: null, activeTab: "brief" };
+    const state = { runs: [], selectedRunId: null, activeTab: "summary" };
     const els = {
       ticker: document.getElementById("tickerInput"),
       run: document.getElementById("runSelect"),
       refresh: document.getElementById("refreshButton"),
       latest: document.getElementById("latestButton"),
       message: document.getElementById("message"),
+      summary: document.getElementById("summaryTab"),
       brief: document.getElementById("briefTab"),
       metrics: document.getElementById("metricsTab"),
     };
@@ -572,7 +579,10 @@ INDEX_HTML = r"""<!doctype html>
     async function loadSelectedRun() {
       if (!state.selectedRunId) return;
       setMessage("");
-      if (state.activeTab === "brief") {
+      if (state.activeTab === "summary") {
+        const payload = await getJson(`/api/runs/${encodeURIComponent(state.selectedRunId)}/summary`);
+        renderSummary(payload);
+      } else if (state.activeTab === "brief") {
         const payload = await getJson(`/api/runs/${encodeURIComponent(state.selectedRunId)}/brief-state`);
         renderBrief(payload);
       } else {
@@ -581,7 +591,11 @@ INDEX_HTML = r"""<!doctype html>
       }
     }
     function renderEmpty() {
-      els.brief.innerHTML = `<div class="empty">No persisted runs found. Run an initialization workflow with DOXAGENT_STORAGE_MODE=postgres, then refresh this page.</div>`;
+      els.summary.hidden = false;
+      els.brief.hidden = true;
+      els.metrics.hidden = true;
+      els.summary.innerHTML = `<div class="empty">No persisted runs found. Run an initialization workflow with DOXAGENT_STORAGE_MODE=postgres, then refresh this page.</div>`;
+      els.brief.innerHTML = "";
       els.metrics.innerHTML = "";
     }
     function runPanel(payload) {
@@ -596,6 +610,39 @@ INDEX_HTML = r"""<!doctype html>
           <div class="muted">Updated</div><div>${esc(payload.run?.updated_at)}</div>
           <div class="muted">Next Node</div><div>${esc(cp.next_node || "none")}</div>
           <div class="muted">Completed</div><div class="pill-list">${(cp.completed_nodes || []).map(x => `<span class="pill">${esc(x)}</span>`).join("")}</div>
+        </div>
+      </div>`;
+    }
+    function renderSummary(payload) {
+      const counts = payload.counts || {};
+      const docs = payload.belief_state?.document_types || [];
+      const documentCounts = payload.belief_state?.document_counts || {};
+      const lastError = payload.last_error || {};
+      els.summary.hidden = false;
+      els.brief.hidden = true;
+      els.metrics.hidden = true;
+      els.summary.innerHTML = `<div class="grid">
+        ${runPanel(payload)}
+        <div class="panel span-6">
+          <h2>Counts</h2>
+          <div class="kv">
+            <div class="muted">Working Memory</div><div>${esc(counts.working_memory_entries || 0)}</div>
+            <div class="muted">Commits</div><div>${esc(counts.commit_log_entries || 0)}</div>
+            <div class="muted">Open Objections</div><div>${esc(counts.open_objections || 0)}</div>
+            <div class="muted">Blocking Delegations</div><div>${esc(counts.blocking_delegations || 0)}</div>
+            <div class="muted">Evidence Refs</div><div>${esc(counts.evidence_refs || 0)}</div>
+          </div>
+        </div>
+        <div class="panel span-6">
+          <h2>Documents</h2>
+          <div class="pill-list">${docs.length ? docs.map(x => `<span class="pill">${esc(x)} ${esc(documentCounts[x] || 0)}</span>`).join("") : `<span class="muted">none</span>`}</div>
+          <div class="section">
+            <h3>Last Error</h3>
+            <div class="kv">
+              <div class="muted">Code</div><div>${esc(lastError.code || "none")}</div>
+              <div class="muted">Message</div><div>${esc(lastError.message_preview || "")}</div>
+            </div>
+          </div>
         </div>
       </div>`;
     }
@@ -626,6 +673,7 @@ INDEX_HTML = r"""<!doctype html>
     function renderBrief(payload) {
       const global = payload.global_research || {};
       const expectations = payload.expectation_units || [];
+      els.summary.hidden = true;
       els.brief.hidden = false;
       els.metrics.hidden = true;
       els.brief.innerHTML = `<div class="grid">
@@ -670,6 +718,7 @@ INDEX_HTML = r"""<!doctype html>
     function renderMetrics(payload) {
       const agents = payload.agents || [];
       const maxLoops = Math.max(1, ...agents.map(a => Number(a.agent_loops || 0)));
+      els.summary.hidden = true;
       els.brief.hidden = true;
       els.metrics.hidden = false;
       els.metrics.innerHTML = `<div class="grid">

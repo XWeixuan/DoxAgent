@@ -209,7 +209,7 @@ class OpenAIModelClient:
             kwargs["max_output_tokens"] = request.max_tokens
         if request.timeout_seconds is not None:
             kwargs["timeout"] = request.timeout_seconds
-        if request.response_format is ResponseFormat.JSON and _supports_provider_json_mode(
+        if request.response_format is ResponseFormat.JSON and _supports_responses_json_mode(
             request.model
         ):
             kwargs["text"] = {"format": {"type": "json_object"}}
@@ -217,10 +217,16 @@ class OpenAIModelClient:
             kwargs["langsmith_extra"] = langsmith_extra_from_metadata(request.metadata)
         return kwargs
 
-def _supports_provider_json_mode(model: str) -> bool:
-    """Whether the provider should be asked to enforce JSON-mode output."""
+def _supports_responses_json_mode(model: str) -> bool:
+    """Whether the Responses API should be asked to enforce JSON-mode output."""
 
     return not model.lower().startswith("deepseek-")
+
+
+def _supports_chat_json_mode(model: str) -> bool:
+    """Whether Chat Completions should be asked to enforce JSON-mode output."""
+
+    return model.lower().startswith("deepseek-")
 
 
 def _thinking_extra_body(*, enable_thinking: bool, thinking_budget: int | None) -> dict[str, Any]:
@@ -330,12 +336,19 @@ class BailianChatCompletionsModelClient:
             return ModelResponse(audit=audit, error=_normalize_exception(ProviderName.BAILIAN, exc))
 
     def _request_kwargs(self, request: ModelRequest) -> dict[str, Any]:
+        messages = [
+            {"role": message.role.value, "content": message.content}
+            for message in _messages_with_system(request)
+        ]
+        enforce_json_mode = (
+            request.response_format is ResponseFormat.JSON
+            and _supports_chat_json_mode(request.model)
+        )
+        if enforce_json_mode:
+            messages = _messages_with_json_keyword(messages)
         kwargs: dict[str, Any] = {
             "model": request.model,
-            "messages": [
-                {"role": message.role.value, "content": message.content}
-                for message in _messages_with_system(request)
-            ],
+            "messages": messages,
         }
         if request.temperature is not None:
             kwargs["temperature"] = request.temperature
@@ -343,9 +356,7 @@ class BailianChatCompletionsModelClient:
             kwargs["max_tokens"] = request.max_tokens
         if request.timeout_seconds is not None:
             kwargs["timeout"] = request.timeout_seconds
-        if request.response_format is ResponseFormat.JSON and _supports_provider_json_mode(
-            request.model
-        ):
+        if enforce_json_mode:
             kwargs["response_format"] = {"type": "json_object"}
         kwargs["extra_body"] = _thinking_extra_body(
             enable_thinking=self.enable_thinking,
@@ -354,6 +365,18 @@ class BailianChatCompletionsModelClient:
         if is_langsmith_wrapped(self.client):
             kwargs["langsmith_extra"] = langsmith_extra_from_metadata(request.metadata)
         return kwargs
+
+
+def _messages_with_json_keyword(messages: list[dict[str, str]]) -> list[dict[str, str]]:
+    if any("json" in message.get("content", "").lower() for message in messages):
+        return messages
+    return [
+        {
+            "role": "system",
+            "content": "Return valid JSON. The response_format json_object requirement is active.",
+        },
+        *messages,
+    ]
 
 
 class AnthropicModelClient:

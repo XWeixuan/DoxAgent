@@ -27,6 +27,10 @@ class DoxAgentSettings(BaseSettings):
         default=None,
         validation_alias="DASHSCOPE_FALLBACK_API_KEY",
     )
+    dashscope_fallback_api_keys_csv: str | None = Field(
+        default=None,
+        validation_alias="DASHSCOPE_FALLBACK_API_KEYS",
+    )
     dashscope_base_url: str = Field(
         default="https://dashscope.aliyuncs.com/api/v2/apps/protocols/compatible-mode/v1",
         validation_alias="DASHSCOPE_BASE_URL",
@@ -166,6 +170,10 @@ class DoxAgentSettings(BaseSettings):
         default=None,
         validation_alias="STOCKTWITS_RAPIDAPI_KEY",
     )
+    stocktwits_rapidapi_fallback_key: str | None = Field(
+        default=None,
+        validation_alias="STOCKTWITS_RAPIDAPI_FALLBACK_KEY",
+    )
     stocktwits_rapidapi_base_url: str = Field(
         default="https://stocktwits-sentiment-message-analytics-api.p.rapidapi.com",
         validation_alias="STOCKTWITS_RAPIDAPI_BASE_URL",
@@ -182,9 +190,29 @@ class DoxAgentSettings(BaseSettings):
         default="/streams/symbol/{symbol}.json",
         validation_alias="STOCKTWITS_PUBLIC_PATH_TEMPLATE",
     )
-    stocktwits_storage_mode: Literal["memory", "postgres"] = Field(
-        default="postgres",
+    stocktwits_user_agent: str = Field(
+        default=(
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/126.0.0.0 Safari/537.36"
+        ),
+        validation_alias="STOCKTWITS_USER_AGENT",
+    )
+    stocktwits_accept_language: str = Field(
+        default="en-US,en;q=0.9",
+        validation_alias="STOCKTWITS_ACCEPT_LANGUAGE",
+    )
+    stocktwits_storage_mode: Literal["memory", "sqlite", "postgres"] = Field(
+        default="sqlite",
         validation_alias="DOXAGENT_STOCKTWITS_STORAGE_MODE",
+    )
+    stocktwits_sqlite_path: str = Field(
+        default=".tmp/stocktwits_polling.sqlite3",
+        validation_alias="DOXAGENT_STOCKTWITS_SQLITE_PATH",
+    )
+    stocktwits_allow_postgres: bool = Field(
+        default=False,
+        validation_alias="DOXAGENT_STOCKTWITS_ALLOW_POSTGRES",
     )
     stocktwits_default_symbols: str = Field(
         default="AAPL,MSFT,NVDA,TSLA,AMZN,META,GOOGL,AMD,PLTR,MU",
@@ -285,6 +313,19 @@ class DoxAgentSettings(BaseSettings):
         default=".tmp/persistent_runtime_execution.sqlite3",
         validation_alias="DOXAGENT_PERSISTENT_RUNTIME_SQLITE_PATH",
     )
+    runtime_scheduler_storage_mode: Literal["memory", "sqlite"] = Field(
+        default="sqlite",
+        validation_alias="DOXAGENT_RUNTIME_SCHEDULER_STORAGE_MODE",
+    )
+    runtime_scheduler_sqlite_path: str = Field(
+        default=".tmp/runtime_scheduler.sqlite3",
+        validation_alias="DOXAGENT_RUNTIME_SCHEDULER_SQLITE_PATH",
+    )
+    runtime_scheduler_loop_sleep_seconds: int = Field(
+        default=15,
+        ge=1,
+        validation_alias="DOXAGENT_RUNTIME_SCHEDULER_LOOP_SLEEP_SECONDS",
+    )
 
     polymarket_gamma_base_url: str = Field(
         default="https://gamma-api.polymarket.com",
@@ -329,6 +370,21 @@ class DoxAgentSettings(BaseSettings):
         if not self.dashscope_api_key:
             raise ValueError("DASHSCOPE_API_KEY is required for agent_runner execution.")
         return self.dashscope_api_key
+
+    def dashscope_fallback_api_keys(self) -> list[str]:
+        keys: list[str] = []
+        seen = {self.dashscope_api_key} if self.dashscope_api_key else set()
+        raw_values = [self.dashscope_fallback_api_key, self.dashscope_fallback_api_keys_csv]
+        for raw_value in raw_values:
+            if not raw_value:
+                continue
+            for item in raw_value.replace(";", ",").split(","):
+                key = item.strip()
+                if not key or key in seen:
+                    continue
+                seen.add(key)
+                keys.append(key)
+        return keys
 
     @property
     def langsmith_enabled(self) -> bool:

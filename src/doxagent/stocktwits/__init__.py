@@ -9,6 +9,7 @@ from doxagent.stocktwits.crawler import StocktwitsPollingCrawler
 from doxagent.stocktwits.repository import (
     InMemoryStocktwitsRepository,
     PostgresStocktwitsRepository,
+    SQLiteStocktwitsRepository,
 )
 from doxagent.stocktwits.schema import (
     CoverageStatus,
@@ -25,6 +26,7 @@ __all__ = [
     "InMemoryStocktwitsRepository",
     "PostgresStocktwitsRepository",
     "RequestRateLimiter",
+    "SQLiteStocktwitsRepository",
     "StocktwitsClientError",
     "StocktwitsCrawlerConfig",
     "StocktwitsHTTPClient",

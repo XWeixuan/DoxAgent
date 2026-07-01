@@ -249,7 +249,10 @@ class FakeBailianResponse:
         }
 
 
-class FakeBailianResponses(FakeResponses):
+class FakeBailianResponses:
+    def __init__(self) -> None:
+        self.kwargs: dict[str, Any] | None = None
+
     async def create(self, **kwargs: Any) -> FakeBailianResponse:
         self.kwargs = kwargs
         return FakeBailianResponse()
@@ -269,6 +272,7 @@ async def test_bailian_adapter_uses_responses_api_with_thinking_enabled() -> Non
 
     assert response.text == "bailian text"
     assert response.audit.provider is ProviderName.BAILIAN
+    assert response.raw is not None
     assert response.raw["reasoning_summary"] == ["reasoning summary"]
     assert fake_client.responses.kwargs is not None
     assert fake_client.responses.kwargs["model"] == "mock-model"
@@ -329,7 +333,7 @@ class FakeBailianChatClient:
 
 
 @pytest.mark.asyncio
-async def test_bailian_chat_adapter_supports_deepseek_text_json_parsing_path() -> None:
+async def test_bailian_chat_adapter_enables_deepseek_json_mode() -> None:
     fake_client = FakeBailianChatClient()
     adapter = BailianChatCompletionsModelClient(
         fake_client,
@@ -343,10 +347,15 @@ async def test_bailian_chat_adapter_supports_deepseek_text_json_parsing_path() -
     response = await adapter.complete(deepseek_request)
 
     assert response.text == '{"answer": "ok"}'
+    assert response.raw is not None
     assert response.raw["reasoning_summary"] == ["reasoning"]
     assert fake_client.chat.completions.kwargs is not None
     assert fake_client.chat.completions.kwargs["messages"][0]["role"] == "system"
-    assert "response_format" not in fake_client.chat.completions.kwargs
+    assert any(
+        "json" in message["content"].lower()
+        for message in fake_client.chat.completions.kwargs["messages"]
+    )
+    assert fake_client.chat.completions.kwargs["response_format"] == {"type": "json_object"}
     assert fake_client.chat.completions.kwargs["extra_body"] == {
         "enable_thinking": True,
         "thinking_budget": 2000,

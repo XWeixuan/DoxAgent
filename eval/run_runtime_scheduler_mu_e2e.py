@@ -1,0 +1,410 @@
+"""Phase 26 MU runtime scheduler end-to-end demonstration.
+
+The script prefers existing MU Document 1/2/3 from WorkflowDocumentProvider. If
+none are usable locally, it falls back to a fixture MU document bundle and
+records that boundary in the generated report. Broker execution is never used.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+from datetime import UTC, datetime, timedelta
+from pathlib import Path
+from typing import Any
+
+from doxagent.models import (
+    DocumentType,
+    MonitoringConfigDocument,
+    MonitoringItem,
+    MonitoringPolicyDocument,
+    MonitoringPolicyRule,
+    PolicyActionType,
+)
+from doxagent.monitoring import (
+    InterfaceType,
+    MonitoringBusService,
+    SourceType,
+    SQLiteMonitoringRepository,
+    StandardMessage,
+    UpdateActor,
+)
+from doxagent.persistent_runtime import (
+    PersistentRuntimeExecutionService,
+    SQLitePersistentRuntimeRepository,
+)
+from doxagent.runtime_scheduler import (
+    DashboardStateAPI,
+    DocumentAvailability,
+    DocumentBundle,
+    DocumentComponentStatus,
+    DocumentSetStatus,
+    RuntimeSchedulerLoop,
+    SQLiteRuntimeSchedulerRepository,
+    UnifiedRuntimeSchedulerService,
+    WorkflowDocumentProvider,
+)
+
+JsonObject = dict[str, Any]
+
+
+class DemoDocumentProvider:
+    def __init__(self, latest_bundle: DocumentBundle, initialized_bundle: DocumentBundle) -> None:
+        self.latest_bundle = latest_bundle
+        self.initialized_bundle = initialized_bundle
+        self.latest_calls = 0
+        self.initialize_calls = 0
+
+    def latest(self, ticker: str, *, now: datetime | None = None) -> DocumentBundle:
+        self.latest_calls += 1
+        return self.latest_bundle
+
+    def initialize(self, ticker: str, *, now: datetime | None = None) -> DocumentBundle:
+        self.initialize_calls += 1
+        self.latest_bundle = self.initialized_bundle
+        return self.latest_bundle
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--ticker", default="MU")
+    parser.add_argument("--output-dir", default=".tmp/phase26_runtime_mu_e2e")
+    parser.add_argument("--skip-real-doc-lookup", action="store_true")
+    args = parser.parse_args(argv)
+
+    ticker = args.ticker.strip().upper()
+    if ticker != "MU":
+        raise ValueError("This Phase 26 demo is intentionally scoped to MU.")
+    run_id = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+    run_dir = Path(args.output_dir) / run_id
+    run_dir.mkdir(parents=True, exist_ok=True)
+    formal_now = datetime(2026, 6, 30, 12, 30, tzinfo=UTC)
+
+    latest_bundle, initialized_bundle, document_source, lookup_error = _resolve_documents(
+        ticker,
+        now=formal_now,
+        skip_real_lookup=args.skip_real_doc_lookup,
+    )
+    provider = DemoDocumentProvider(latest_bundle, initialized_bundle)
+    monitoring_service = MonitoringBusService(
+        SQLiteMonitoringRepository(run_dir / "monitoring_message_bus.sqlite3")
+    )
+    runtime_service = PersistentRuntimeExecutionService.from_settings()
+    runtime_service.repository = SQLitePersistentRuntimeRepository(
+        run_dir / "persistent_runtime.sqlite3"
+    )
+    scheduler = UnifiedRuntimeSchedulerService(
+        SQLiteRuntimeSchedulerRepository(run_dir / "runtime_scheduler.sqlite3"),
+        document_provider=provider,
+        monitoring_service=monitoring_service,
+        runtime_service=runtime_service,
+    )
+    api = DashboardStateAPI(scheduler)
+
+    start_detail = api.start_ticker(ticker)
+    binding_count_before_disable = len(start_detail.message_bus_status.configured_sources)
+    disabled_count = _disable_external_polling(monitoring_service, ticker)
+    event = _inject_standard_event(monitoring_service, ticker)
+    pending_before_loop = len(monitoring_service.pending_events(ticker=ticker, limit=50))
+
+    loop = RuntimeSchedulerLoop(scheduler, sleep_seconds=0, event_limit=50)
+    first_summary = loop.run(max_iterations=1, now_fn=lambda: formal_now)
+    detail_after_first_loop = api.get_ticker(ticker)
+    trade_intent_count_after_first_loop = len(detail_after_first_loop.trade_intents)
+
+    second_summary = loop.run(max_iterations=1, now_fn=lambda: formal_now + timedelta(minutes=1))
+    detail_after_second_loop = api.get_ticker(ticker)
+    trade_intent_count_after_second_loop = len(detail_after_second_loop.trade_intents)
+
+    stop_detail = api.stop_ticker(
+        ticker,
+        reason="Phase 26 MU E2E demo completed; terminate message bus bindings.",
+        disable_bindings=True,
+    )
+
+    report = {
+        "run_id": run_id,
+        "ticker": ticker,
+        "document_source": document_source,
+        "document_lookup_error": lookup_error,
+        "boundaries": {
+            "documents": (
+                "real WorkflowDocumentProvider bundle"
+                if document_source == "workflow_document_provider"
+                else (
+                    "fixture bundle generated by this demo because no usable local MU "
+                    "docs were found"
+                )
+            ),
+            "message": (
+                "one simulated StandardMessage injected into the real Monitoring Message Bus"
+            ),
+            "external_polling": (
+                "disabled after config application to avoid live media API usage in this demo"
+            ),
+            "broker": "not connected; no broker order can be sent",
+        },
+        "sqlite_paths": {
+            "scheduler": str((run_dir / "runtime_scheduler.sqlite3").resolve()),
+            "monitoring": str((run_dir / "monitoring_message_bus.sqlite3").resolve()),
+            "persistent_runtime": str((run_dir / "persistent_runtime.sqlite3").resolve()),
+        },
+        "chain": {
+            "start_status": start_detail.state.status.value,
+            "document_initialize_calls": provider.initialize_calls,
+            "document_usable": start_detail.document_status.usable,
+            "monitoring_config_version": start_detail.state.last_monitoring_config_version,
+            "binding_count_before_external_poll_disabled": binding_count_before_disable,
+            "disabled_external_poll_binding_count": disabled_count,
+            "injected_standard_message_id": event.standard_message_id,
+            "pending_before_loop": pending_before_loop,
+            "first_loop_iterations": first_summary.iteration_count,
+            "pending_after_first_loop": detail_after_first_loop.runtime_status.pending_event_count,
+            "runtime_executions_after_first_loop": (
+                detail_after_first_loop.runtime_status.runtime_execution_count
+            ),
+            "trade_intents_after_first_loop": trade_intent_count_after_first_loop,
+            "second_loop_iterations": second_summary.iteration_count,
+            "trade_intents_after_second_loop": trade_intent_count_after_second_loop,
+            "duplicate_trade_intent_generated_on_second_loop": (
+                trade_intent_count_after_second_loop > trade_intent_count_after_first_loop
+            ),
+            "final_status_after_stop": stop_detail.state.status.value,
+        },
+        "dashboard_state_snapshot": detail_after_first_loop.model_dump(mode="json"),
+    }
+    report_json = run_dir / "report.json"
+    report_md = run_dir / "report.md"
+    report_json.write_text(
+        json.dumps(report, ensure_ascii=False, indent=2, default=str),
+        encoding="utf-8",
+    )
+    report_md.write_text(_markdown_report(report), encoding="utf-8")
+    print(
+        json.dumps(
+            {
+                "ok": True,
+                "report_json": str(report_json),
+                "report_md": str(report_md),
+            },
+            ensure_ascii=False,
+        )
+    )
+    return 0
+
+
+def _resolve_documents(
+    ticker: str,
+    *,
+    now: datetime,
+    skip_real_lookup: bool,
+) -> tuple[DocumentBundle, DocumentBundle, str, str | None]:
+    fixture = _fixture_bundle(ticker, now=now)
+    if skip_real_lookup:
+        return _missing_bundle(ticker, now=now), fixture, "fixture", "real lookup skipped"
+    try:
+        real = WorkflowDocumentProvider().latest(ticker, now=now)
+        if real.status.usable and real.monitoring_config is not None:
+            return real, real, "workflow_document_provider", None
+        reason = "real document bundle missing, stale, invalid, or has no Monitoring Config"
+    except Exception as exc:
+        reason = str(exc)
+    return _missing_bundle(ticker, now=now), fixture, "fixture", reason
+
+
+def _fixture_bundle(ticker: str, *, now: datetime) -> DocumentBundle:
+    config = MonitoringConfigDocument(
+        document_id="doc_monitoring_config_mu_phase26",
+        ticker=ticker,
+        created_at=now,
+        applied_config_version="doc_monitoring_config_mu_phase26:fixture",
+        monitoring_items=[
+            MonitoringItem(
+                item_id="monitor_benzinga_mu_phase26",
+                tool_input={
+                    "ticker": ticker,
+                    "source_id": "benzinga_news",
+                    "search_terms": ["MU confirmed HBM order"],
+                    "reason": "Track confirmed HBM order signals for MU.",
+                    "mode": "merge",
+                    "enabled": True,
+                },
+                reasoning="Track confirmed HBM order signals for MU.",
+                base_keywords=[ticker, "HBM"],
+                priority="high",
+                trigger_condition="confirmed HBM order materially above expectation",
+            )
+        ],
+    )
+    components = [
+        DocumentComponentStatus(
+            document_type=document_type,
+            availability=DocumentAvailability.AVAILABLE,
+            document_ids=[f"phase26_{ticker.lower()}_{document_type.value}"],
+            document_count=1,
+            newest_updated_at=now,
+            stale_after=now + timedelta(days=3),
+        )
+        for document_type in [
+            DocumentType.GLOBAL_RESEARCH,
+            DocumentType.EXPECTATION_UNIT,
+            DocumentType.KNOWN_EVENTS,
+            DocumentType.MONITORING_CONFIG,
+            DocumentType.MONITORING_POLICY,
+        ]
+    ]
+    policy = MonitoringPolicyDocument(
+        document_id="doc_monitoring_policy_mu_phase26",
+        ticker=ticker,
+        created_at=now,
+        direct_trade_rules=[
+            MonitoringPolicyRule(
+                policy_id="policy_mu_phase26_direct_trade",
+                rule_id="rule_mu_phase26_direct_trade",
+                policy_type="direct_trade",
+                action_type=PolicyActionType.DIRECT_TRADE,
+                scope={"expectation_unit_id": "phase26_mu_hbm_demand"},
+                trigger={"condition": "confirmed HBM order materially above expectation"},
+                trigger_condition="confirmed HBM order materially above expectation",
+                confirmation={"market_confirmation": "not required for fixture demo"},
+                expectation_id="phase26_mu_hbm_demand",
+                action={
+                    "side": "long",
+                    "conviction": "medium",
+                    "size_bucket": "normal",
+                    "note": "Create trade intent only; broker disabled.",
+                },
+                risk_guard={"guardrail": "Do not create broker orders."},
+                strategy_note="Phase 26 E2E policy routes confirmed HBM order signals.",
+                reasoning="Confirmed HBM orders can change the MU demand expectation.",
+                evidence_fields=["source_id", "event_time", "customer_demand"],
+                escalation_path="human_review",
+            )
+        ],
+    )
+    return DocumentBundle(
+        status=DocumentSetStatus(
+            ticker=ticker,
+            blackboard_run_id="phase26_mu_fixture_run",
+            checked_at=now,
+            usable=True,
+            components=components,
+            applied_config_version=config.applied_config_version,
+        ),
+        monitoring_config=config,
+        monitoring_policy=policy,
+    )
+
+
+def _missing_bundle(ticker: str, *, now: datetime) -> DocumentBundle:
+    required = [
+        DocumentType.GLOBAL_RESEARCH,
+        DocumentType.EXPECTATION_UNIT,
+        DocumentType.KNOWN_EVENTS,
+        DocumentType.MONITORING_CONFIG,
+        DocumentType.MONITORING_POLICY,
+    ]
+    return DocumentBundle(
+        status=DocumentSetStatus(
+            ticker=ticker,
+            checked_at=now,
+            usable=False,
+            missing_document_types=required,
+            components=[
+                DocumentComponentStatus(
+                    document_type=document_type,
+                    availability=DocumentAvailability.MISSING,
+                    reason="No usable local MU document was found before fixture initialization.",
+                )
+                for document_type in required
+            ],
+        )
+    )
+
+
+def _disable_external_polling(service: MonitoringBusService, ticker: str) -> int:
+    disabled = 0
+    for binding in service.repository.list_bindings(ticker=ticker):
+        service.configure_ticker_source(
+            binding.ticker,
+            binding.source_id,
+            parameters=binding.parameters,
+            enabled=False,
+            updated_by=UpdateActor.SYSTEM,
+            updated_reason="Phase 26 E2E uses injected standard event; external poll disabled.",
+            merge=False,
+        )
+        disabled += 1
+    return disabled
+
+
+def _inject_standard_event(service: MonitoringBusService, ticker: str):
+    now = datetime.now(UTC) + timedelta(seconds=1)
+    message = StandardMessage(
+        standard_message_id="std_mu_phase26_hbm_order",
+        raw_message_id="raw_mu_phase26_hbm_order",
+        source_id="benzinga_news",
+        binding_id=f"{ticker}:benzinga_news",
+        ticker=ticker,
+        source_type=SourceType.MEDIA,
+        interface_type=InterfaceType.BY_TICKER,
+        title="MU confirmed HBM order materially above expectation",
+        body=(
+            "MU confirmed a multi-year HBM supply order materially above expectation, "
+            "with customer demand exceeding prior capacity assumptions."
+        ),
+        symbols=[ticker],
+        published_at=now,
+        collected_at=now,
+        metadata={"phase26_demo": True},
+    )
+    standard = service.repository.save_standard_message(message)
+    return service.repository.append_event(standard)
+
+
+def _markdown_report(report: JsonObject) -> str:
+    chain = report["chain"]
+    boundaries = report["boundaries"]
+    return "\n".join(
+        [
+            "# Phase 26 MU Runtime E2E Report",
+            "",
+            f"- run_id: `{report['run_id']}`",
+            f"- ticker: `{report['ticker']}`",
+            f"- document_source: `{report['document_source']}`",
+            f"- document_lookup_error: `{report['document_lookup_error']}`",
+            f"- documents: {boundaries['documents']}",
+            f"- message: {boundaries['message']}",
+            f"- external_polling: {boundaries['external_polling']}",
+            f"- broker: {boundaries['broker']}",
+            "",
+            "## Chain Evidence",
+            "",
+            f"- start_status: `{chain['start_status']}`",
+            f"- document_initialize_calls: `{chain['document_initialize_calls']}`",
+            f"- document_usable: `{chain['document_usable']}`",
+            f"- monitoring_config_version: `{chain['monitoring_config_version']}`",
+            "- binding_count_before_external_poll_disabled: "
+            f"`{chain['binding_count_before_external_poll_disabled']}`",
+            f"- pending_before_loop: `{chain['pending_before_loop']}`",
+            f"- first_loop_iterations: `{chain['first_loop_iterations']}`",
+            f"- pending_after_first_loop: `{chain['pending_after_first_loop']}`",
+            "- runtime_executions_after_first_loop: "
+            f"`{chain['runtime_executions_after_first_loop']}`",
+            f"- trade_intents_after_first_loop: `{chain['trade_intents_after_first_loop']}`",
+            "- duplicate_trade_intent_generated_on_second_loop: "
+            f"`{chain['duplicate_trade_intent_generated_on_second_loop']}`",
+            f"- final_status_after_stop: `{chain['final_status_after_stop']}`",
+            "",
+            "## SQLite Artifacts",
+            "",
+            f"- scheduler: `{report['sqlite_paths']['scheduler']}`",
+            f"- monitoring: `{report['sqlite_paths']['monitoring']}`",
+            f"- persistent_runtime: `{report['sqlite_paths']['persistent_runtime']}`",
+            "",
+        ]
+    )
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

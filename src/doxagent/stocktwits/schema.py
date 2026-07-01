@@ -43,6 +43,12 @@ class CoverageStatus(StrEnum):
     FAILED = "failed"
 
 
+class BootstrapEventPolicy(StrEnum):
+    LIVE_ONLY = "live_only"
+    PUBLISH_ALL = "publish_all"
+    SUPPRESS_INITIAL = "suppress_initial"
+
+
 class CrawlRunStatus(StrEnum):
     SUCCEEDED = "succeeded"
     FAILED = "failed"
@@ -73,6 +79,11 @@ class StocktwitsTickerState(StocktwitsModel):
     enabled: bool = True
     target_cadence_seconds: int = Field(default=300, ge=30)
     hot_cadence_seconds: int = Field(default=90, ge=30)
+    page_size: int = Field(default=30, ge=1)
+    max_pages_per_crawl: int = Field(default=10, ge=1)
+    hot_message_threshold: int = Field(default=80, ge=1)
+    hot_cooldown_successes: int = Field(default=3, ge=1)
+    bootstrap_event_policy: BootstrapEventPolicy = BootstrapEventPolicy.LIVE_ONLY
     next_due_at: datetime
     last_successful_crawl_at: datetime | None = None
     last_seen_message_id: str | None = None

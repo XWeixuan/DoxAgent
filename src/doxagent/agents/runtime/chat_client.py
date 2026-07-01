@@ -32,6 +32,7 @@ class ModelGatewayChatClient(BaseChatClient[dict[str, Any]]):
         model: str = "mock-model",
         response_format: ResponseFormat = ResponseFormat.JSON,
         metadata_builder: MetadataBuilder | None = None,
+        system_prompt: str | None = None,
     ) -> None:
         super().__init__()
         self.gateway = gateway
@@ -39,6 +40,7 @@ class ModelGatewayChatClient(BaseChatClient[dict[str, Any]]):
         self.model = model
         self.response_format = response_format
         self.metadata_builder = metadata_builder
+        self.system_prompt = system_prompt
         self.last_model_response: ModelResponse | None = None
         self.last_model_request: ModelRequest | None = None
 
@@ -89,6 +91,7 @@ class ModelGatewayChatClient(BaseChatClient[dict[str, Any]]):
                 )
                 for message in messages
             ],
+            system_prompt=self.system_prompt,
             temperature=_optional_float(options.get("temperature")),
             max_tokens=_optional_int(options.get("max_tokens")),
             timeout_seconds=_optional_float(options.get("timeout_seconds")),

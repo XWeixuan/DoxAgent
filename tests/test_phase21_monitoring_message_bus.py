@@ -20,6 +20,8 @@ from doxagent.monitoring.schema import (
 )
 from doxagent.monitoring.service import MonitoringBusService, MonitoringPermissionError
 from doxagent.settings import DoxAgentSettings
+from doxagent.stocktwits.repository import InMemoryStocktwitsRepository
+from doxagent.stocktwits.schema import BootstrapEventPolicy, StocktwitsPage, TickerMode
 from doxagent.tools.providers.monitoring import MonitoringToolClient
 from doxagent.tools.schema import ToolRequest
 
@@ -45,6 +47,101 @@ def _request(tool_name: str, input_data: dict[str, object] | None = None) -> Too
     )
 
 
+def _long_article_body() -> str:
+    paragraph = (
+        "Micron shares advanced after analysts pointed to improving demand for high bandwidth "
+        "memory, tighter supply discipline, and stronger pricing across data-center products. "
+        "Management commentary suggested that customer orders were broadening beyond one large "
+        "AI buyer, while inventory levels in consumer and industrial channels continued to "
+        "normalize. Investors also focused on cash-flow recovery because capital expenditure "
+        "plans are being balanced against expected margin expansion. "
+    )
+    return (paragraph * 3).strip()
+
+
+class FakeStocktwitsPageClient:
+    def __init__(self) -> None:
+        self.pages: dict[tuple[str, str | None], StocktwitsPage] = {}
+        self.calls: list[tuple[str, str | None, int]] = []
+
+    def add_page(
+        self,
+        symbol: str,
+        *,
+        max_message_id: str | None,
+        ids: list[int],
+        cursor_more: bool | None = False,
+        next_max_id: str | None = None,
+    ) -> None:
+        self.pages[(symbol.upper(), max_message_id)] = StocktwitsPage(
+            messages=[_stocktwits_message(message_id, symbol) for message_id in ids],
+            cursor_more=cursor_more,
+            next_max_id=next_max_id,
+        )
+
+    def fetch_symbol_page(
+        self,
+        *,
+        symbol: str,
+        max_message_id: str | None = None,
+        page_size: int = 30,
+    ) -> StocktwitsPage:
+        normalized = symbol.upper()
+        self.calls.append((normalized, max_message_id, page_size))
+        return self.pages.get((normalized, max_message_id)) or StocktwitsPage(
+            messages=[],
+            cursor_more=False,
+        )
+
+
+class FakeAsyncResponse:
+    def __init__(
+        self,
+        *,
+        status_code: int = 200,
+        headers: dict[str, str] | None = None,
+        text: str = "",
+        url: str = "https://example.test/",
+    ) -> None:
+        self.status_code = status_code
+        self.headers = headers or {}
+        self.text = text
+        self.url = url
+
+
+class FakeAsyncSession:
+    def __init__(self, responses: dict[str, FakeAsyncResponse]) -> None:
+        self.responses = responses
+        self.calls: list[str] = []
+
+    async def __aenter__(self) -> FakeAsyncSession:
+        return self
+
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc: BaseException | None,
+        traceback: object | None,
+    ) -> bool | None:
+        return None
+
+    async def get(self, url: str, **_: Any) -> FakeAsyncResponse:
+        self.calls.append(url)
+        return self.responses[url]
+
+
+def _stocktwits_message(message_id: int, symbol: str) -> dict[str, object]:
+    published_at = f"2030-01-01T12:{message_id % 60:02d}:00Z"
+    return {
+        "id": message_id,
+        "body": f"{symbol} durable message {message_id}",
+        "created_at": published_at,
+        "user": {"id": "u1", "username": "tester"},
+        "entities": {"sentiment": {"basic": "Bullish"}},
+        "symbols": [{"symbol": symbol}],
+    }
+
+
 def test_default_sources_preserve_source_and_interface_dimensions() -> None:
     service = MonitoringBusService(InMemoryMonitoringRepository())
 
@@ -56,12 +153,16 @@ def test_default_sources_preserve_source_and_interface_dimensions() -> None:
     assert sources["finnhub_company_news"].poll_interval_seconds == 60
     assert sources["stocktwits_messages"].source_type is SourceType.SOCIAL
     assert sources["stocktwits_messages"].interface_type is InterfaceType.BY_TICKER
-    assert sources["stocktwits_messages"].poll_interval_seconds == 600
+    assert sources["stocktwits_messages"].poll_interval_seconds == 300
+    assert sources["stocktwits_messages"].required_api_key_env is None
+    assert sources["stocktwits_messages"].config["mode"] == "durable_polling"
     assert (
         sources["stocktwits_messages"].config["rapidapi_path"]
         == "/functions/v1/stocktwits-query"
     )
     assert sources["stocktwits_messages"].config["force_refresh"] is False
+    assert sources["stocktwits_messages"].config["stagger_slots"] == 10
+    assert sources["stocktwits_messages"].config["bootstrap_event_policy"] == "live_only"
     assert sources["tikhub_x_search"].interface_type is InterfaceType.BY_PARAMETER
     assert sources["tikhub_x_user_posts"].interface_type is InterfaceType.BY_PARAMETER
     assert sources["newswire_rss"].source_type is SourceType.MEDIA
@@ -249,6 +350,137 @@ def test_ingest_skips_messages_published_before_binding_watermark() -> None:
     assert repository.recent_events(ticker="AAPL") == []
 
 
+async def test_media_enrichment_resolves_finnhub_redirect_and_updates_event_payload() -> None:
+    repository = InMemoryMonitoringRepository()
+    service = MonitoringBusService(repository)
+    binding = service.configure_ticker_source(
+        "MU",
+        "finnhub_company_news",
+        updated_by=UpdateActor.USER,
+    )
+    source = repository.get_source("finnhub_company_news")
+    assert source is not None
+    finnhub_url = "https://finnhub.io/api/news?id=101"
+    article_url = "https://finance.yahoo.com/news/micron-ai-memory-demand-101.html"
+    service.ingest_fetched(
+        source=source,
+        fetched=[
+            FetchedExternalMessage(
+                source_id=source.source_id,
+                binding_id=binding.binding_id,
+                ticker=binding.ticker,
+                source_type=source.source_type,
+                interface_type=source.interface_type,
+                provider_message_id="101",
+                source_url=finnhub_url,
+                source_published_at=binding.updated_at + timedelta(seconds=1),
+                raw_payload={
+                    "id": 101,
+                    "headline": "Micron rallies as AI memory demand improves",
+                    "summary": "Micron shares rose in early trading.",
+                    "url": finnhub_url,
+                    "source": "Yahoo",
+                    "datetime": int((binding.updated_at + timedelta(seconds=1)).timestamp()),
+                },
+            )
+        ],
+    )
+    full_body = _long_article_body()
+    fake_session = FakeAsyncSession(
+        {
+            finnhub_url: FakeAsyncResponse(
+                status_code=302,
+                headers={"Location": article_url},
+                url=finnhub_url,
+            ),
+            article_url: FakeAsyncResponse(
+                status_code=200,
+                text="<article>Micron body</article>",
+                url=article_url,
+            ),
+        }
+    )
+
+    payload = await service.enrich_recent_media_async(
+        ticker="MU",
+        limit=10,
+        session_factory=lambda: fake_session,
+        extractor=lambda _: full_body,
+    )
+
+    message = service.recent_messages(ticker="MU")[0]
+    event = service.recent_events(ticker="MU")[0]
+    assert payload["stats"]["succeeded_count"] == 1
+    assert payload["stats"]["written_count"] == 1
+    assert fake_session.calls == [finnhub_url, article_url]
+    assert message.body == full_body
+    assert message.url == article_url
+    assert message.author == "finance.yahoo.com"
+    assert message.metadata["media_enrichment"]["status"] == "success"
+    assert event.payload["body"] == full_body
+    assert event.payload["url"] == article_url
+
+
+async def test_media_enrichment_rejects_short_extract_without_overwriting_body() -> None:
+    repository = InMemoryMonitoringRepository()
+    service = MonitoringBusService(repository)
+    binding = service.configure_ticker_source(
+        "MU",
+        "finnhub_company_news",
+        updated_by=UpdateActor.USER,
+    )
+    source = repository.get_source("finnhub_company_news")
+    assert source is not None
+    article_url = "https://www.cnbc.com/2026/06/26/micron-news.html"
+    service.ingest_fetched(
+        source=source,
+        fetched=[
+            FetchedExternalMessage(
+                source_id=source.source_id,
+                binding_id=binding.binding_id,
+                ticker=binding.ticker,
+                source_type=source.source_type,
+                interface_type=source.interface_type,
+                provider_message_id="102",
+                source_url=article_url,
+                source_published_at=binding.updated_at + timedelta(seconds=1),
+                raw_payload={
+                    "id": 102,
+                    "headline": "Micron update",
+                    "summary": "Existing summary.",
+                    "url": article_url,
+                    "source": "CNBC",
+                    "datetime": int((binding.updated_at + timedelta(seconds=1)).timestamp()),
+                },
+            )
+        ],
+    )
+    fake_session = FakeAsyncSession(
+        {
+            article_url: FakeAsyncResponse(
+                status_code=200,
+                text="<article>short</article>",
+                url=article_url,
+            ),
+        }
+    )
+
+    payload = await service.enrich_recent_media_async(
+        ticker="MU",
+        limit=10,
+        session_factory=lambda: fake_session,
+        extractor=lambda _: "Still only a short summary.",
+    )
+
+    message = service.recent_messages(ticker="MU")[0]
+    assert payload["stats"]["succeeded_count"] == 0
+    assert payload["stats"]["written_count"] == 0
+    assert payload["stats"]["failures_by_reason"] == {"incomplete_extract": 1}
+    assert message.body == "Existing summary."
+    assert message.metadata["media_enrichment"]["status"] == "failed"
+    assert message.metadata["media_enrichment"]["reason"] == "incomplete_extract"
+
+
 def test_sqlite_repository_persists_replayable_event_stream(tmp_path: Path) -> None:
     db_path = tmp_path / "monitoring.sqlite3"
     repository = SQLiteMonitoringRepository(db_path)
@@ -330,6 +562,139 @@ def test_sqlite_defaults_merge_new_source_config_without_resetting_user_cadence(
     assert migrated.config["limit"] == 100
     assert migrated.config["force_refresh"] is False
     assert migrated.config["timeout_seconds"] == 45
+    assert migrated.config["mode"] == "durable_polling"
+    assert migrated.config["bootstrap_event_policy"] == "live_only"
+
+
+def test_stocktwits_durable_adapter_ingests_bus_events_and_poll_metadata() -> None:
+    client = FakeStocktwitsPageClient()
+    client.add_page("MU", max_message_id=None, ids=[103, 102], cursor_more=False)
+    stocktwits_repository = InMemoryStocktwitsRepository()
+    service = MonitoringBusService(
+        InMemoryMonitoringRepository(),
+        settings=_settings(),
+        stocktwits_repository=stocktwits_repository,
+        stocktwits_client=client,
+    )
+    binding = service.configure_ticker_source("MU", "stocktwits_messages")
+
+    result = service.poll_binding("MU", "stocktwits_messages")
+    state = stocktwits_repository.get_ticker_state("MU")
+    poll_state = service.repository.list_poll_states(ticker="MU")[0]
+    events = service.recent_events(ticker="MU")
+
+    assert state is not None
+    assert binding.binding_id == "MU:stocktwits_messages"
+    assert result.collected_count == 2
+    assert result.raw_inserted_count == 2
+    assert result.event_count == 2
+    assert result.metadata["coverage_status"] == "likely_complete"
+    assert poll_state.metadata["coverage_status"] == "likely_complete"
+    assert poll_state.metadata["checkpoint_found"] is False
+    assert poll_state.metadata["stocktwits_run_id"]
+    assert state.last_seen_message_id == "103"
+    assert len(events) == 2
+    assert events[0].source_id == "stocktwits_messages"
+
+
+def test_stocktwits_durable_due_bindings_use_state_next_due_and_hot_mode() -> None:
+    client = FakeStocktwitsPageClient()
+    stocktwits_repository = InMemoryStocktwitsRepository()
+    service = MonitoringBusService(
+        InMemoryMonitoringRepository(),
+        settings=_settings(),
+        stocktwits_repository=stocktwits_repository,
+        stocktwits_client=client,
+    )
+    binding = service.configure_ticker_source("MU", "stocktwits_messages")
+    source = service.repository.get_source("stocktwits_messages")
+    assert source is not None
+    state = service._stocktwits().update_state(
+        source=source,
+        binding=binding,
+        mode=TickerMode.HOT,
+        hot_cadence_seconds=60,
+        reset_schedule=True,
+    )
+
+    due = service.due_bindings(now=state.next_due_at)
+
+    assert [item.binding_id for item in due] == [binding.binding_id]
+
+
+def test_stocktwits_durable_new_tickers_are_staggered() -> None:
+    stocktwits_repository = InMemoryStocktwitsRepository()
+    service = MonitoringBusService(
+        InMemoryMonitoringRepository(),
+        settings=_settings(),
+        stocktwits_repository=stocktwits_repository,
+        stocktwits_client=FakeStocktwitsPageClient(),
+    )
+
+    service.configure_stocktwits_persistence("MU", reset_schedule=True)
+    service.configure_stocktwits_persistence("AMD", reset_schedule=True)
+    first = stocktwits_repository.get_ticker_state("MU")
+    second = stocktwits_repository.get_ticker_state("AMD")
+
+    assert first is not None
+    assert second is not None
+    delta_seconds = (second.next_due_at - first.next_due_at).total_seconds()
+    assert 29 <= delta_seconds <= 31
+
+
+def test_stocktwits_durable_ensure_state_is_read_only_when_unchanged() -> None:
+    stocktwits_repository = InMemoryStocktwitsRepository()
+    service = MonitoringBusService(
+        InMemoryMonitoringRepository(),
+        settings=_settings(),
+        stocktwits_repository=stocktwits_repository,
+        stocktwits_client=FakeStocktwitsPageClient(),
+    )
+    service.configure_stocktwits_persistence("MU", reset_schedule=True)
+    source = service.repository.get_source("stocktwits_messages")
+    binding = service.repository.get_binding("MU", "stocktwits_messages")
+    before = stocktwits_repository.get_ticker_state("MU")
+
+    assert source is not None
+    assert binding is not None
+    assert before is not None
+    returned = service._stocktwits().ensure_state(source=source, binding=binding)
+    after = stocktwits_repository.get_ticker_state("MU")
+
+    assert after is not None
+    assert returned.updated_at == before.updated_at
+    assert after.updated_at == before.updated_at
+
+
+def test_stocktwits_persistence_config_is_user_side_and_visible() -> None:
+    client = FakeStocktwitsPageClient()
+    service = MonitoringBusService(
+        InMemoryMonitoringRepository(),
+        settings=_settings(),
+        stocktwits_repository=InMemoryStocktwitsRepository(),
+        stocktwits_client=client,
+    )
+
+    output = service.configure_stocktwits_persistence(
+        "MU",
+        target_cadence_seconds=300,
+        hot_cadence_seconds=60,
+        page_size=20,
+        max_pages_per_crawl=4,
+        hot_message_threshold=50,
+        hot_cooldown_successes=2,
+        bootstrap_event_policy=BootstrapEventPolicy.SUPPRESS_INITIAL,
+        reset_schedule=True,
+        updated_reason="durable stocktwits smoke",
+    )
+    config = service.get_ticker_config("MU")
+    stocktwits_item = config["by_ticker_sources"][0]
+
+    assert output["stocktwits_state"]["page_size"] == 20
+    assert output["stocktwits_state"]["bootstrap_event_policy"] == "suppress_initial"
+    assert stocktwits_item["stocktwits_state"]["hot_cadence_seconds"] == 60
+    assert "page_size" in stocktwits_item["user_only_fields"]
+    assert "hot_message_threshold" in stocktwits_item["user_only_fields"]
 
 
 def test_agent_tools_can_update_parameters_but_not_poll_interval() -> None:
@@ -569,6 +934,52 @@ def test_stocktwits_rapidapi_collector_uses_query_endpoint() -> None:
     assert requests[0].headers["x-rapidapi-host"] == (
         "stocktwits-sentiment-message-analytics-api.p.rapidapi.com"
     )
+    assert requests[0].headers["x-rapidapi-key"] == "stocktwits-key"
+
+
+def test_stocktwits_rapidapi_collector_fallback_waits_for_primary_retries() -> None:
+    requests: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        if request.headers["x-rapidapi-key"] == "primary-key":
+            return httpx.Response(429, json={"message": "quota exceeded"}, request=request)
+        return httpx.Response(
+            200,
+            json={
+                "messages": [
+                    {
+                        "id": 404,
+                        "created_at": "2026-06-23T10:05:00Z",
+                        "body": "Fallback key recovered Stocktwits messages",
+                    }
+                ]
+            },
+            request=request,
+        )
+
+    registry = MonitoringCollectorRegistry(
+        _settings(
+            stocktwits_rapidapi_key="primary-key",
+            stocktwits_rapidapi_fallback_key="fallback-key",
+            stocktwits_max_retries=3,
+        ),
+        client=httpx.Client(transport=httpx.MockTransport(handler)),
+    )
+    service = MonitoringBusService(InMemoryMonitoringRepository(), collectors=registry)
+    binding = service.configure_ticker_source("MU", "stocktwits_messages")
+    source = service.repository.get_source("stocktwits_messages")
+    assert source is not None
+
+    messages = registry.collector_for(source).collect(source=source, binding=binding)
+
+    assert messages[0].provider_message_id == "404"
+    assert [request.headers["x-rapidapi-key"] for request in requests] == [
+        "primary-key",
+        "primary-key",
+        "primary-key",
+        "fallback-key",
+    ]
 
 
 def test_tikhub_search_collector_skips_failed_term_when_another_term_succeeds() -> None:

@@ -6,6 +6,9 @@ import time
 from datetime import UTC, datetime
 from email.utils import parsedate_to_datetime
 from typing import Any, Protocol
+from urllib import error as urllib_error
+from urllib import parse as urllib_parse
+from urllib import request as urllib_request
 from urllib.parse import urlparse
 
 import httpx
@@ -39,6 +42,17 @@ class StocktwitsPageClient(Protocol):
         max_message_id: str | None = None,
         page_size: int = 30,
     ) -> StocktwitsPage:
+        ...
+
+
+class StocktwitsHTTPTransport(Protocol):
+    def get(
+        self,
+        url: str,
+        *,
+        params: dict[str, str | int] | None = None,
+        headers: dict[str, str] | None = None,
+    ) -> httpx.Response:
         ...
 
 
@@ -78,12 +92,12 @@ class StocktwitsHTTPClient:
         self,
         settings: DoxAgentSettings | None = None,
         *,
-        client: httpx.Client | None = None,
+        client: StocktwitsHTTPTransport | None = None,
         rate_limiter: RequestRateLimiter | None = None,
         sleep: Any = time.sleep,
     ) -> None:
         self.settings = settings or DoxAgentSettings()
-        self.client = client or httpx.Client(
+        self.client = client or UrllibStocktwitsTransport(
             timeout=self.settings.stocktwits_request_timeout_seconds
         )
         self.rate_limiter = rate_limiter or RequestRateLimiter(
@@ -103,10 +117,7 @@ class StocktwitsHTTPClient:
         params: dict[str, str | int] = {"limit": page_size}
         if max_message_id is not None:
             params["max"] = max_message_id
-        headers = {
-            "Accept": "application/json",
-            "User-Agent": "DoxAgent/0.1 stocktwits-polling-crawler",
-        }
+        headers = self._headers()
         max_attempts = max(1, self.settings.stocktwits_max_retries)
         last_error: StocktwitsClientError | None = None
         for attempt in range(max_attempts):
@@ -128,7 +139,7 @@ class StocktwitsHTTPClient:
                     body = response.text.replace("\n", " ")[:500]
                     raise StocktwitsClientError(
                         f"Stocktwits HTTP {response.status_code}: {body}",
-                        code="http_error",
+                        code=_http_error_code(response.status_code, body),
                         retryable=False,
                     )
                 return _page_from_response(response)
@@ -157,6 +168,53 @@ class StocktwitsHTTPClient:
         base_url = self.settings.stocktwits_public_base_url.rstrip("/")
         path = self.settings.stocktwits_public_path_template.format(symbol=symbol)
         return base_url + path
+
+    def _headers(self) -> dict[str, str]:
+        return {
+            "Accept": "application/json, text/plain, */*",
+            "Accept-Language": self.settings.stocktwits_accept_language,
+            "Origin": "https://stocktwits.com",
+            "Referer": "https://stocktwits.com/",
+            "Sec-Fetch-Dest": "empty",
+            "Sec-Fetch-Mode": "cors",
+            "Sec-Fetch-Site": "same-site",
+            "User-Agent": self.settings.stocktwits_user_agent,
+        }
+
+
+class UrllibStocktwitsTransport:
+    """urllib transport used by default because Cloudflare blocks httpx here."""
+
+    def __init__(self, *, timeout: float) -> None:
+        self.timeout = timeout
+
+    def get(
+        self,
+        url: str,
+        *,
+        params: dict[str, str | int] | None = None,
+        headers: dict[str, str] | None = None,
+    ) -> httpx.Response:
+        request = httpx.Request("GET", url, params=params, headers=headers)
+        request_url = _url_with_params(url, params)
+        urllib_req = urllib_request.Request(request_url, headers=headers or {}, method="GET")
+        try:
+            with urllib_request.urlopen(urllib_req, timeout=self.timeout) as response:
+                return httpx.Response(
+                    response.status,
+                    content=response.read(),
+                    headers=dict(response.headers.items()),
+                    request=request,
+                )
+        except urllib_error.HTTPError as exc:
+            return httpx.Response(
+                exc.code,
+                content=exc.read(),
+                headers=dict(exc.headers.items()),
+                request=request,
+            )
+        except urllib_error.URLError as exc:
+            raise httpx.RequestError(str(exc.reason), request=request) from exc
 
 
 def _page_from_response(response: httpx.Response) -> StocktwitsPage:
@@ -225,6 +283,20 @@ def _retry_delay(base_delay_seconds: float, attempt: int) -> float:
     return max(0.0, base_delay_seconds) * float(2**attempt)
 
 
+def _url_with_params(url: str, params: dict[str, str | int] | None) -> str:
+    if not params:
+        return url
+    separator = "&" if "?" in url else "?"
+    return f"{url}{separator}{urllib_parse.urlencode(params)}"
+
+
+def _http_error_code(status_code: int, body: str) -> str:
+    lowered = body.lower()
+    if status_code == 403 and ("cloudflare" in lowered or "attention required" in lowered):
+        return "cloudflare_blocked"
+    return "http_error"
+
+
 def _str_or_none(value: object) -> str | None:
     if value is None:
         return None
@@ -236,6 +308,8 @@ __all__ = [
     "RequestRateLimiter",
     "StocktwitsClientError",
     "StocktwitsHTTPClient",
+    "StocktwitsHTTPTransport",
     "StocktwitsPageClient",
+    "UrllibStocktwitsTransport",
     "parse_stocktwits_datetime",
 ]

@@ -2,9 +2,21 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
-from doxagent.stocktwits.client import StocktwitsClientError
+import httpx
+
+from doxagent.settings import DoxAgentSettings
+from doxagent.stocktwits.client import (
+    RequestRateLimiter,
+    StocktwitsClientError,
+    StocktwitsHTTPClient,
+)
 from doxagent.stocktwits.crawler import StocktwitsPollingCrawler
-from doxagent.stocktwits.repository import InMemoryStocktwitsRepository
+from doxagent.stocktwits.repository import (
+    InMemoryStocktwitsRepository,
+    SQLiteStocktwitsRepository,
+    StocktwitsRepository,
+    repository_from_settings,
+)
 from doxagent.stocktwits.schema import (
     CoverageStatus,
     CrawlRunStatus,
@@ -61,10 +73,30 @@ class FakeStocktwitsClient:
         return page
 
 
+class RecordingHTTPClient:
+    def __init__(self) -> None:
+        self.requests: list[tuple[str, dict[str, object] | None, dict[str, str] | None]] = []
+
+    def get(
+        self,
+        url: str,
+        *,
+        params: dict[str, object] | None = None,
+        headers: dict[str, str] | None = None,
+    ) -> httpx.Response:
+        self.requests.append((url, params, headers))
+        request = httpx.Request("GET", url, params=params, headers=headers)
+        return httpx.Response(
+            200,
+            json={"messages": [], "cursor": {"more": False}},
+            request=request,
+        )
+
+
 def _crawler(
     *,
     client: FakeStocktwitsClient,
-    repo: InMemoryStocktwitsRepository | None = None,
+    repo: StocktwitsRepository | None = None,
     symbols: list[str] | None = None,
     hot_message_threshold: int = 80,
     hot_cooldown_successes: int = 3,
@@ -101,6 +133,25 @@ def _message(message_id: int, symbol: str) -> dict[str, object]:
 _NOW = datetime(2026, 6, 26, 12, 30, tzinfo=UTC)
 
 
+def test_http_client_uses_browser_like_headers_for_public_stream_api() -> None:
+    transport = RecordingHTTPClient()
+    client = StocktwitsHTTPClient(
+        client=transport,
+        rate_limiter=RequestRateLimiter(min_interval_seconds=0),
+    )
+
+    client.fetch_symbol_page(symbol="MU", page_size=5)
+
+    assert len(transport.requests) == 1
+    url, params, headers = transport.requests[0]
+    assert url.endswith("/streams/symbol/MU.json")
+    assert params == {"limit": 5}
+    assert headers is not None
+    assert "Mozilla/5.0" in headers["User-Agent"]
+    assert headers["Accept-Language"] == "en-US,en;q=0.9"
+    assert headers["Origin"] == "https://stocktwits.com"
+
+
 def test_initialize_tickers_staggers_10_symbols_across_5_minute_window() -> None:
     client = FakeStocktwitsClient()
     crawler = _crawler(client=client)
@@ -132,6 +183,49 @@ def test_initialize_tickers_staggers_10_symbols_across_5_minute_window() -> None
         240,
         270,
     ]
+
+
+def test_repository_from_settings_defaults_to_local_sqlite(tmp_path) -> None:
+    db_path = tmp_path / "stocktwits.sqlite3"
+    settings = DoxAgentSettings(stocktwits_sqlite_path=str(db_path))
+
+    repository = repository_from_settings(settings)
+
+    assert isinstance(repository, SQLiteStocktwitsRepository)
+    assert repository.path == db_path
+
+
+def test_repository_from_settings_blocks_postgres_without_explicit_migration_opt_in() -> None:
+    settings = DoxAgentSettings(
+        stocktwits_storage_mode="postgres",
+        database_url="postgresql://example.invalid/db",
+    )
+
+    try:
+        repository_from_settings(settings)
+    except RuntimeError as exc:
+        assert "Postgres/Supabase persistence is disabled" in str(exc)
+    else:  # pragma: no cover - defensive assertion
+        raise AssertionError("postgres Stocktwits persistence should be blocked by default")
+
+
+def test_sqlite_repository_persists_state_messages_and_runs(tmp_path) -> None:
+    db_path = tmp_path / "stocktwits.sqlite3"
+    repo = SQLiteStocktwitsRepository(db_path)
+    client = FakeStocktwitsClient()
+    client.add_page("MU", max_message_id=None, ids=[103, 102], cursor_more=False)
+    crawler = _crawler(client=client, repo=repo, symbols=["MU"])
+
+    run = crawler.crawl_symbol("MU", now=_NOW)
+    reopened = SQLiteStocktwitsRepository(db_path)
+    state = reopened.get_ticker_state("MU")
+    runs = reopened.recent_crawl_runs(symbol="MU", limit=1)
+
+    assert state is not None
+    assert state.last_seen_message_id == "103"
+    assert run.inserted_count == 2
+    assert runs[0].run_id == run.run_id
+    assert runs[0].coverage_status is CoverageStatus.LIKELY_COMPLETE
 
 
 def test_initial_crawl_inserts_messages_then_advances_checkpoint() -> None:

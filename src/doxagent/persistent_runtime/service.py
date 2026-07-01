@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import time
 from collections.abc import Callable
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import Future, ThreadPoolExecutor
 from concurrent.futures import TimeoutError as FutureTimeoutError
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
@@ -110,7 +110,10 @@ class PersistentRuntimeExecutionService:
         a2_worker: A2Worker | None = None,
         o3_worker: O3Worker | None = None,
         o3_budget: O3RuntimeBudget | None = None,
+        w1_w2_worker_timeout_seconds: float = 75.0,
     ) -> None:
+        if w1_w2_worker_timeout_seconds <= 0:
+            raise ValueError("w1_w2_worker_timeout_seconds must be > 0")
         self.repository = repository
         self.route_engine = route_engine or RouteEngine()
         self.w1_worker = w1_worker
@@ -118,6 +121,7 @@ class PersistentRuntimeExecutionService:
         self.a2_worker = a2_worker
         self.o3_worker = o3_worker
         self.o3_budget = o3_budget or O3RuntimeBudget()
+        self.w1_w2_worker_timeout_seconds = w1_w2_worker_timeout_seconds
 
     @classmethod
     def from_settings(
@@ -130,6 +134,7 @@ class PersistentRuntimeExecutionService:
         a2_worker: A2Worker | None = None,
         o3_worker: O3Worker | None = None,
         o3_budget: O3RuntimeBudget | None = None,
+        w1_w2_worker_timeout_seconds: float = 75.0,
     ) -> PersistentRuntimeExecutionService:
         resolved = settings or DoxAgentSettings()
         if resolved.persistent_runtime_storage_mode == "memory":
@@ -146,6 +151,7 @@ class PersistentRuntimeExecutionService:
             a2_worker=a2_worker,
             o3_worker=o3_worker,
             o3_budget=o3_budget,
+            w1_w2_worker_timeout_seconds=w1_w2_worker_timeout_seconds,
         )
 
     def execute_message(
@@ -718,7 +724,11 @@ class PersistentRuntimeExecutionService:
         exception_ids: list[str],
         node_traces: list[RuntimeNodeTrace],
     ) -> tuple[W1Result | None, W2Result | None]:
-        with ThreadPoolExecutor(max_workers=2) as executor:
+        timeout = max(0.001, float(self.w1_w2_worker_timeout_seconds))
+        executor = ThreadPoolExecutor(max_workers=2)
+        try:
+            submitted_at = datetime.now(UTC)
+            submitted = time.monotonic()
             w1_future = executor.submit(
                 self._run_worker_outcome,
                 "W1",
@@ -732,17 +742,31 @@ class PersistentRuntimeExecutionService:
             w1 = self._resolve_worker_outcome(
                 message,
                 "W1",
-                w1_future.result(),
+                self._worker_future_outcome(
+                    "W1",
+                    w1_future,
+                    timeout,
+                    submitted_at=submitted_at,
+                    submitted=submitted,
+                ),
                 exception_ids,
                 node_traces,
             )
             w2 = self._resolve_worker_outcome(
                 message,
                 "W2",
-                w2_future.result(),
+                self._worker_future_outcome(
+                    "W2",
+                    w2_future,
+                    timeout,
+                    submitted_at=submitted_at,
+                    submitted=submitted,
+                ),
                 exception_ids,
                 node_traces,
             )
+        finally:
+            executor.shutdown(wait=False, cancel_futures=True)
         return w1, w2
 
     def _apply_decision(
@@ -1217,6 +1241,34 @@ class PersistentRuntimeExecutionService:
                 started_at=started_at,
             ),
         )
+
+    def _worker_future_outcome(
+        self,
+        node: str,
+        future: Future[_WorkerOutcome],
+        timeout_seconds: float,
+        *,
+        submitted_at: datetime,
+        submitted: float,
+    ) -> _WorkerOutcome:
+        remaining = timeout_seconds - (time.monotonic() - submitted)
+        try:
+            return future.result(timeout=max(0.001, remaining))
+        except FutureTimeoutError:
+            future.cancel()
+            return _WorkerOutcome(
+                result=None,
+                error=TimeoutError(
+                    f"{node} exceeded {timeout_seconds:g}s runtime worker budget."
+                ),
+                trace=RuntimeNodeTrace(
+                    node=node,
+                    status="failed",
+                    duration_ms=_duration_ms(submitted),
+                    attempts=1,
+                    started_at=submitted_at,
+                ),
+            )
 
     def _run_o3_worker_outcome(self, node: str, callback: Callable[[], T]) -> _WorkerOutcome:
         started_at = datetime.now(UTC)

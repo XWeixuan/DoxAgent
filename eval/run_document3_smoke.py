@@ -151,15 +151,14 @@ def main() -> int:
     )
 
     result = workflow.resume(seed.checkpoint, stop_after=stop_after)
-    brief_state = DebugRunQueryService(settings).brief_state(result.checkpoint.run_id)
+    run_summary = DebugRunQueryService(settings).run_summary(result.checkpoint.run_id)
     export_path = None
     if args.export_brief_state:
         from eval.export_brief_state import export_brief_state
 
         export_path = export_brief_state(result.checkpoint.run_id)
 
-    execution_run = workflow.blackboard.get_run(result.checkpoint.run_id)
-    document3_summary = _document3_summary(execution_run)
+    document3_summary = _document3_summary(run_summary)
     output = {
         "event": "document3_smoke_finished",
         "source_run_id": seed.source_run_id,
@@ -177,7 +176,9 @@ def main() -> int:
         "blocking_delegation_count": result.summary.blocking_delegation_count,
         "document3": document3_summary,
         "brief_state_document3_keys": sorted(
-            key for key in brief_state if key in {"known_events", "monitoring_config", "policies"}
+            key
+            for key in _summary_document_counts(run_summary)
+            if key in {"known_events", "monitoring_config", "monitoring_policy"}
         ),
         "brief_state_export": str(export_path) if export_path is not None else None,
         "error": result.error,
@@ -501,26 +502,37 @@ def _resolve_stop_after(value: str) -> WorkflowNode:
         raise ValueError(f"Unknown --stop-after {value!r}; allowed: {allowed}") from exc
 
 
-def _document3_summary(run: BlackboardRun) -> JsonDict:
-    documents = run.belief_state.documents
-    monitoring_configs = documents.get(DocumentType.MONITORING_CONFIG, {})
-    applied_versions = []
-    for stored_document in monitoring_configs.values():
-        document = _stored_document_payload(stored_document)
-        if isinstance(document, dict) and document.get("applied_config_version"):
-            applied_versions.append(document["applied_config_version"])
+def _document3_summary(summary: JsonDict) -> JsonDict:
+    document_counts = _summary_document_counts(summary)
+    applied_versions = _safe_nested(
+        summary,
+        "belief_state",
+        "monitoring_config_applied_versions",
+    )
     return {
-        "known_events_count": len(documents.get(DocumentType.KNOWN_EVENTS, {})),
-        "monitoring_config_count": len(monitoring_configs),
-        "monitoring_policy_count": len(documents.get(DocumentType.MONITORING_POLICY, {})),
-        "applied_config_versions": applied_versions,
+        "known_events_count": int(document_counts.get(DocumentType.KNOWN_EVENTS.value) or 0),
+        "monitoring_config_count": int(
+            document_counts.get(DocumentType.MONITORING_CONFIG.value) or 0
+        ),
+        "monitoring_policy_count": int(
+            document_counts.get(DocumentType.MONITORING_POLICY.value) or 0
+        ),
+        "applied_config_versions": applied_versions if isinstance(applied_versions, list) else [],
     }
 
 
-def _stored_document_payload(value: Any) -> Any:
-    if isinstance(value, dict) and isinstance(value.get("document"), dict):
-        return value["document"]
-    return value
+def _summary_document_counts(summary: JsonDict) -> JsonDict:
+    counts = _safe_nested(summary, "belief_state", "document_counts")
+    if not isinstance(counts, dict):
+        return {}
+    return counts
+
+
+def _safe_nested(data: JsonDict, first: str, second: str) -> Any:
+    raw = data.get(first)
+    if not isinstance(raw, dict):
+        return None
+    return raw.get(second)
 
 
 def _is_successful_document3_smoke(

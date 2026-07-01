@@ -255,6 +255,7 @@ class PollState(MonitoringModel):
     last_standardized_count: int = 0
     last_event_count: int = 0
     last_latency_ms: int | None = None
+    metadata: JsonObject = Field(default_factory=dict)
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
@@ -276,6 +277,7 @@ class IngestBatchResult(MonitoringModel):
     failed_count: int = 0
     error_message: str | None = None
     latency_ms: int | None = None
+    metadata: JsonObject = Field(default_factory=dict)
 
 
 class MonitoringSnapshot(MonitoringModel):
@@ -388,10 +390,10 @@ def default_source_configs() -> list[MonitoringSourceConfig]:
             source_type=SourceType.SOCIAL,
             interface_type=InterfaceType.BY_TICKER,
             endpoint_kind=EndpointKind.STOCKTWITS_MESSAGES,
-            poll_interval_seconds=600,
-            required_api_key_env="STOCKTWITS_RAPIDAPI_KEY",
+            poll_interval_seconds=300,
+            required_api_key_env=None,
             config={
-                "mode": "rapidapi_or_public",
+                "mode": "durable_polling",
                 "rapidapi_path": "/functions/v1/stocktwits-query",
                 "public_path_template": "/streams/symbol/{symbol}.json",
                 "action": "messages",
@@ -400,6 +402,14 @@ def default_source_configs() -> list[MonitoringSourceConfig]:
                 "primary_only": True,
                 "force_refresh": False,
                 "timeout_seconds": 45,
+                "target_cadence_seconds": 300,
+                "hot_cadence_seconds": 90,
+                "page_size": 30,
+                "max_pages_per_crawl": 10,
+                "hot_message_threshold": 80,
+                "hot_cooldown_successes": 3,
+                "stagger_slots": 10,
+                "bootstrap_event_policy": "live_only",
             },
             created_at=now,
             updated_at=now,

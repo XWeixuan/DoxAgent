@@ -13,6 +13,8 @@ services:
     environment:
       PYTHONPATH: /app
       DOXAGENT_STORAGE_MODE: ${DOXAGENT_STORAGE_MODE:-memory}
+      DOXAGENT_STOCKTWITS_STORAGE_MODE: sqlite
+      DOXAGENT_STOCKTWITS_SQLITE_PATH: /app/.tmp/stocktwits_polling.sqlite3
     ports:
       - "127.0.0.1:8765:8765"
     volumes:
@@ -44,6 +46,8 @@ services:
       PYTHONPATH: /app
       DOXAGENT_STORAGE_MODE: ${DOXAGENT_STORAGE_MODE:-memory}
       DOXAGENT_MONITORING_POLLER_SLEEP_SECONDS: ${DOXAGENT_MONITORING_POLLER_SLEEP_SECONDS:-15}
+      DOXAGENT_STOCKTWITS_STORAGE_MODE: sqlite
+      DOXAGENT_STOCKTWITS_SQLITE_PATH: /app/.tmp/stocktwits_polling.sqlite3
     command:
       [
         "python",

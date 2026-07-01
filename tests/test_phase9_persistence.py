@@ -8,8 +8,14 @@ from doxagent.blackboard import (
     InMemoryBlackboardRepository,
     PostgresBlackboardRepository,
 )
+from doxagent.blackboard.state import create_empty_run
 from doxagent.models import AgentName
-from doxagent.postgres import connect_postgres, retry_postgres_operation
+from doxagent.postgres import (
+    connect_postgres,
+    postgres_endpoint_kind,
+    retry_postgres_operation,
+    should_stop_high_frequency_retry,
+)
 from doxagent.settings import DoxAgentSettings
 from doxagent.workflows import (
     BlackboardInitializationWorkflow,
@@ -27,6 +33,9 @@ OBJECTION_DEDUPE_MIGRATION = Path(
 )
 OBJECTION_RUN_SCOPED_KEY_MIGRATION = Path(
     "supabase/migrations/202606160001_objections_run_scoped_primary_key.sql"
+)
+RUN_SUMMARY_MIGRATION = Path(
+    "supabase/migrations/202606300001_run_summaries_and_retention.sql"
 )
 
 
@@ -66,6 +75,18 @@ def test_objection_primary_key_is_run_scoped_for_model_generated_ids() -> None:
     assert "drop constraint if exists objections_pkey" in sql
     assert "primary key (run_id, objection_id)" in sql
     assert "objections_objection_id_idx" in sql
+
+
+def test_run_summary_migration_adds_lightweight_summary_and_checkpoint_retention() -> None:
+    sql = RUN_SUMMARY_MIGRATION.read_text(encoding="utf-8")
+
+    assert "create table if not exists doxagent.run_summaries" in sql
+    assert "stable_document_types jsonb" in sql
+    assert "working_memory_count integer" in sql
+    assert "full_payload_ref jsonb" in sql
+    assert "create or replace function doxagent.prune_workflow_checkpoint_history" in sql
+    assert "row_number() over" in sql
+    assert "rn > max_checkpoints_per_run" in sql
 
 
 def test_migration_does_not_embed_supabase_credentials() -> None:
@@ -277,6 +298,39 @@ def test_postgres_connect_appends_only_missing_pooler_options() -> None:
     )
 
 
+def test_postgres_endpoint_kind_classifies_supabase_connection_paths() -> None:
+    assert (
+        postgres_endpoint_kind(
+            "postgresql://user:secret@aws-0-us-west-1.pooler.supabase.com:6543/postgres"
+        )
+        == "transaction_pooler_6543"
+    )
+    assert (
+        postgres_endpoint_kind(
+            "postgresql://user:secret@aws-0-us-west-1.pooler.supabase.com:5432/postgres"
+        )
+        == "session_pooler_5432"
+    )
+    assert (
+        postgres_endpoint_kind("postgresql://user:secret@db.example.supabase.co:5432/postgres")
+        == "direct_5432"
+    )
+
+
+def test_high_risk_postgres_errors_stop_high_frequency_retry() -> None:
+    assert should_stop_high_frequency_retry(
+        _FakePsycopg.OperationalError(
+            "cannot execute INSERT in a read-only transaction"
+        )
+    )
+    assert should_stop_high_frequency_retry(
+        _FakePsycopg.OperationalError("PGRST000: could not connect to server")
+    )
+    assert not should_stop_high_frequency_retry(
+        _FakePsycopg.OperationalError("SSL error: unexpected eof while reading")
+    )
+
+
 def test_postgres_connect_retries_transient_operational_errors(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -333,6 +387,29 @@ def test_retry_postgres_operation_retries_mid_query_operational_errors(
     assert result == "ok"
     assert attempts == 3
     assert sleeps == [0.1, 0.2]
+
+
+def test_retry_postgres_operation_stops_on_read_only_operational_error(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    psycopg = _FakePsycopg()
+    attempts = 0
+    sleeps: list[float] = []
+
+    def operation() -> str:
+        nonlocal attempts
+        attempts += 1
+        raise _FakePsycopg.OperationalError(
+            "cannot execute INSERT in a read-only transaction"
+        )
+
+    monkeypatch.setattr("doxagent.postgres.time.sleep", sleeps.append)
+
+    with pytest.raises(_FakePsycopg.OperationalError):
+        retry_postgres_operation(psycopg, operation, retry_delay_seconds=0.1)
+
+    assert attempts == 1
+    assert sleeps == []
 
 
 def test_postgres_blackboard_get_retries_mid_query_operational_error(
@@ -448,6 +525,49 @@ def test_postgres_blackboard_mutate_does_not_hold_transaction_during_mutator() -
         "replace_run",
         "write_close",
     ]
+
+
+def test_postgres_blackboard_add_and_save_do_not_read_back_full_run() -> None:
+    repository = PostgresBlackboardRepository(
+        "postgresql://postgres:secret@example.com/postgres"
+    )
+    repository._psycopg = lambda: _FakePsycopg()  # type: ignore[method-assign]
+    run = create_empty_run("NVDA", AgentName.SYSTEM)
+    events: list[str] = []
+
+    @contextmanager
+    def fake_connection(*, autocommit: bool = False) -> object:
+        assert autocommit is False
+        yield "write_conn"
+
+    def insert_run(conn: object, inserted: object) -> None:
+        assert conn == "write_conn"
+        assert inserted is run
+        events.append("insert_run")
+
+    def ensure_run_exists(conn: object, run_id: str) -> None:
+        assert conn == "write_conn"
+        assert run_id == run.run_id
+        events.append("ensure_run_exists")
+
+    def replace_run(conn: object, saved: object, *, bump_version: bool) -> None:
+        assert conn == "write_conn"
+        assert saved is run
+        assert bump_version is True
+        events.append("replace_run")
+
+    def fail_get(_run_id: str) -> object:
+        raise AssertionError("add/save should not read back the full run after writing")
+
+    repository._connection = fake_connection  # type: ignore[method-assign]
+    repository._insert_run = insert_run  # type: ignore[method-assign]
+    repository._ensure_run_exists = ensure_run_exists  # type: ignore[method-assign]
+    repository._replace_run = replace_run  # type: ignore[method-assign]
+    repository.get = fail_get  # type: ignore[method-assign]
+
+    assert repository.add(run) == run
+    assert repository.save(run) == run
+    assert events == ["insert_run", "ensure_run_exists", "replace_run"]
 
 
 def test_postgres_repositories_use_pooler_safe_connections() -> None:

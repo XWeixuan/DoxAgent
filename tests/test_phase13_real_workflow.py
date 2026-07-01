@@ -684,7 +684,11 @@ def test_patch_submission_hydrates_and_localizes_nested_evidence_refs() -> None:
 def test_agent_runner_default_uses_bailian_and_real_tools() -> None:
     workflow = BlackboardInitializationWorkflow(
         execution_mode="agent_runner",
-        settings=DoxAgentSettings(dashscope_api_key="test-key"),
+        settings=DoxAgentSettings(
+            dashscope_api_key="test-key",
+            dashscope_fallback_api_key=None,
+            dashscope_fallback_api_keys_csv=None,
+        ),
     )
 
     assert workflow.runner.default_provider is ProviderName.BAILIAN
@@ -725,6 +729,7 @@ def test_default_real_runner_applies_langsmith_env_and_wraps_bailian(
         settings=DoxAgentSettings(
             dashscope_api_key="test-key",
             dashscope_fallback_api_key=None,
+            dashscope_fallback_api_keys_csv=None,
             langsmith_tracing=True,
             langsmith_endpoint="https://api.smith.langchain.com",
             langsmith_api_key="ls-test",
@@ -769,6 +774,7 @@ def test_default_real_runner_configures_dashscope_fallback_key(
         settings=DoxAgentSettings(
             dashscope_api_key="primary-key",
             dashscope_fallback_api_key="fallback-key",
+            dashscope_fallback_api_keys_csv=None,
             dashscope_base_url="https://dashscope.example.test/v1",
             dashscope_enable_thinking=True,
             dashscope_thinking_budget=2000,
@@ -786,6 +792,38 @@ def test_default_real_runner_configures_dashscope_fallback_key(
     assert primary.thinking_budget == 2000
     assert fallback.enable_thinking is True
     assert fallback.thinking_budget == 2000
+
+
+def test_default_real_runner_configures_multiple_dashscope_fallback_keys(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    sdk_clients: list[dict[str, str]] = []
+
+    class FakeAsyncOpenAI:
+        def __init__(self, *, api_key: str, base_url: str) -> None:
+            sdk_clients.append({"api_key": api_key, "base_url": base_url})
+
+    monkeypatch.setattr("doxagent.agents.runner.AsyncOpenAI", FakeAsyncOpenAI)
+    monkeypatch.setattr(
+        "doxagent.agents.runner.wrap_provider_client",
+        lambda _provider, client, **_kwargs: client,
+    )
+
+    runner = default_real_agent_runner(
+        settings=DoxAgentSettings(
+            dashscope_api_key="primary-key",
+            dashscope_fallback_api_key="fallback-one",
+            dashscope_fallback_api_keys_csv="fallback-two; primary-key, fallback-one",
+            dashscope_base_url="https://dashscope.example.test/v1",
+        )
+    )
+
+    assert [client["api_key"] for client in sdk_clients] == [
+        "primary-key",
+        "fallback-one",
+        "fallback-two",
+    ]
+    assert len(runner.model_gateway.fallbacks) == 2
 
 
 def test_default_real_runner_uses_dashscope_chat_endpoint_for_deepseek(
@@ -807,6 +845,7 @@ def test_default_real_runner_uses_dashscope_chat_endpoint_for_deepseek(
         settings=DoxAgentSettings(
             dashscope_api_key="primary-key",
             dashscope_fallback_api_key=None,
+            dashscope_fallback_api_keys_csv=None,
             dashscope_base_url="https://responses.example.test/v1",
             dashscope_chat_base_url="https://chat.example.test/v1",
             dashscope_model="deepseek-v4-flash",

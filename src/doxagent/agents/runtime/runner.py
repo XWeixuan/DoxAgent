@@ -377,6 +377,8 @@ class ModelGatewayAgentRunner:
                 "max_parallel_tool_call_batches",
             )
         )
+        if max_tool_calls_per_name is None and max_tool_batches is not None:
+            max_tool_calls_per_name = max(1, max_tool_batches)
         model_timeout = _positive_float(
             _first_present(budget, "model_request_timeout_seconds")
         )

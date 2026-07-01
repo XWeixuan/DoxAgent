@@ -150,6 +150,38 @@ class DebugRunQueryService:
     def agent_metrics(self, run_id: str) -> JsonDict:
         return build_agent_metrics_view(self.load_bundle(run_id), storage_status=self.status())
 
+    def run_summary(self, run_id: str) -> JsonDict:
+        if not self.is_postgres_enabled:
+            raise RuntimeError("History browsing requires DOXAGENT_STORAGE_MODE=postgres.")
+        with self._connection() as conn:
+            run = self._load_run(conn, run_id)
+            summary = self._load_run_summary(conn, run_id)
+            mode = "stored"
+            if summary is None:
+                summary = self._derive_run_summary(conn, run_id)
+                mode = "derived"
+            document_counts = self._load_document_counts(conn, run_id)
+            monitoring_config_applied_versions = self._load_monitoring_config_applied_versions(
+                conn,
+                run_id,
+            )
+        storage = self.status()
+        storage["summary_mode"] = mode
+        view = {
+            "storage": storage,
+            "run": run,
+            "latest_checkpoint": summary["latest_checkpoint"],
+            "belief_state": {
+                "document_types": summary["document_types"],
+                "document_counts": document_counts,
+                "monitoring_config_applied_versions": monitoring_config_applied_versions,
+            },
+            "counts": summary["counts"],
+            "last_error": summary["last_error"],
+            "full_payload_ref": summary["full_payload_ref"],
+        }
+        return cast(JsonDict, sanitize(view))
+
     def _load_run(self, conn: Any, run_id: str) -> JsonDict:
         with conn.cursor() as cursor:
             cursor.execute(
@@ -254,6 +286,173 @@ class DebugRunQueryService:
             rows = cursor.fetchall()
         return [_ensure_dict(_coerce_json(row[0])) for row in rows]
 
+    def _load_run_summary(self, conn: Any, run_id: str) -> JsonDict | None:
+        with conn.cursor() as cursor:
+            cursor.execute("select to_regclass(%s)", ("doxagent.run_summaries",))
+            exists = cursor.fetchone()
+            if not exists or not exists[0]:
+                return None
+            cursor.execute(
+                """
+                select latest_checkpoint_id, latest_checkpoint_status,
+                       latest_checkpoint_next_node, latest_checkpoint_created_at,
+                       completed_nodes, stable_document_types,
+                       working_memory_count, commit_count, unresolved_objection_count,
+                       blocking_delegation_count, evidence_ref_count,
+                       last_error_code, last_error_message_preview, full_payload_ref
+                from doxagent.run_summaries
+                where run_id = %s
+                """,
+                (run_id,),
+            )
+            row = cursor.fetchone()
+        if row is None:
+            return None
+        latest_checkpoint = {
+            "checkpoint_id": row[0],
+            "status": row[1],
+            "next_node": row[2],
+            "created_at": _jsonable(row[3]),
+            "completed_nodes": _coerce_json(row[4]),
+        }
+        return {
+            "latest_checkpoint": latest_checkpoint,
+            "document_types": _coerce_json(row[5]),
+            "counts": {
+                "working_memory_entries": _safe_int(row[6]),
+                "commit_log_entries": _safe_int(row[7]),
+                "open_objections": _safe_int(row[8]),
+                "blocking_delegations": _safe_int(row[9]),
+                "evidence_refs": _safe_int(row[10]),
+            },
+            "last_error": {
+                "code": row[11],
+                "message_preview": row[12],
+            },
+            "full_payload_ref": _ensure_dict(_coerce_json(row[13])),
+        }
+
+    def _derive_run_summary(self, conn: Any, run_id: str) -> JsonDict:
+        return {
+            "latest_checkpoint": self._load_latest_checkpoint_summary(conn, run_id),
+            "document_types": self._load_document_types(conn, run_id),
+            "counts": self._load_summary_counts(conn, run_id),
+            "last_error": {"code": None, "message_preview": None},
+            "full_payload_ref": {"storage": "supabase_child_tables"},
+        }
+
+    def _load_latest_checkpoint_summary(self, conn: Any, run_id: str) -> JsonDict:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                """
+                select checkpoint_id, status, next_node, completed_nodes, is_latest, created_at
+                from doxagent.workflow_checkpoints
+                where run_id = %s
+                order by is_latest desc, created_at desc
+                limit 1
+                """,
+                (run_id,),
+            )
+            row = cursor.fetchone()
+        if row is None:
+            return {}
+        return {
+            "checkpoint_id": row[0],
+            "status": row[1],
+            "next_node": row[2],
+            "completed_nodes": _coerce_json(row[3]),
+            "is_latest": row[4],
+            "created_at": _jsonable(row[5]),
+        }
+
+    def _load_document_types(self, conn: Any, run_id: str) -> list[str]:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                """
+                select coalesce(jsonb_agg(document_type order by document_type), '[]'::jsonb)
+                from (
+                    select distinct keys.document_type
+                    from doxagent.belief_state_snapshots b
+                    cross join lateral jsonb_object_keys(b.documents) as keys(document_type)
+                    where b.run_id = %s
+                ) document_keys
+                """,
+                (run_id,),
+            )
+            row = cursor.fetchone()
+        values = _coerce_json(row[0]) if row else []
+        return [str(item) for item in _list_or_empty(values)]
+
+    def _load_document_counts(self, conn: Any, run_id: str) -> JsonDict:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                """
+                select coalesce(jsonb_object_agg(document_type, document_count), '{}'::jsonb)
+                from (
+                    select keys.document_type, count(*) as document_count
+                    from doxagent.belief_state_snapshots b
+                    cross join lateral jsonb_each(b.documents) as keys(document_type, bucket)
+                    cross join lateral jsonb_object_keys(keys.bucket) as object_keys(object_id)
+                    where b.run_id = %s
+                    group by keys.document_type
+                ) document_counts
+                """,
+                (run_id,),
+            )
+            row = cursor.fetchone()
+        raw = _ensure_dict(_coerce_json(row[0])) if row else {}
+        return {str(key): _safe_int(value) for key, value in raw.items()}
+
+    def _load_monitoring_config_applied_versions(self, conn: Any, run_id: str) -> list[str]:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                """
+                select coalesce(
+                    jsonb_agg(applied_version order by applied_version)
+                        filter (where applied_version is not null),
+                    '[]'::jsonb
+                )
+                from doxagent.belief_state_snapshots b
+                cross join lateral jsonb_each(
+                    coalesce(b.documents -> 'monitoring_config', '{}'::jsonb)
+                ) as configs(object_id, document_record)
+                cross join lateral (
+                    select coalesce(
+                        configs.document_record #>> '{document,applied_config_version}',
+                        configs.document_record ->> 'applied_config_version'
+                    ) as applied_version
+                ) versions
+                where b.run_id = %s
+                """,
+                (run_id,),
+            )
+            row = cursor.fetchone()
+        values = _coerce_json(row[0]) if row else []
+        return [str(item) for item in _list_or_empty(values)]
+
+    def _load_summary_counts(self, conn: Any, run_id: str) -> JsonDict:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                """
+                select
+                    (select count(*) from doxagent.working_memory_entries where run_id = %s),
+                    (select count(*) from doxagent.commit_log_entries where run_id = %s),
+                    (select count(*) from doxagent.objections
+                     where run_id = %s and status in ('open', 'unresolved')),
+                    (select count(*) from doxagent.delegations
+                     where run_id = %s and status in ('open', 'assigned'))
+                """,
+                (run_id, run_id, run_id, run_id),
+            )
+            row = cursor.fetchone()
+        return {
+            "working_memory_entries": _safe_int(row[0]) if row else 0,
+            "commit_log_entries": _safe_int(row[1]) if row else 0,
+            "open_objections": _safe_int(row[2]) if row else 0,
+            "blocking_delegations": _safe_int(row[3]) if row else 0,
+            "evidence_refs": 0,
+        }
+
     @contextmanager
     def _connection(self) -> Iterator[Any]:
         psycopg = import_module("psycopg")
@@ -262,7 +461,12 @@ class DebugRunQueryService:
         conn: Any | None = None
         for attempt in range(3):
             try:
-                conn = connect_postgres(psycopg, database_url, connect_timeout=15)
+                conn = connect_postgres(
+                    psycopg,
+                    database_url,
+                    autocommit=True,
+                    connect_timeout=15,
+                )
                 break
             except Exception as exc:  # pragma: no cover - depends on local network/pooler state
                 last_error = exc

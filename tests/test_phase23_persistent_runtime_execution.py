@@ -274,8 +274,8 @@ def test_w1_and_w2_are_registered_prompt_backed_runtime_workers() -> None:
     w2_prompt = prompts.get("runtime.w2").body
     assert '"additionalProperties": false' in w1_prompt
     assert '"novelty_label"' in w1_prompt
-    assert "DeepSeek may not enforce" in w1_prompt
-    assert '"Direct Trade Candidate"' in w2_prompt
+    assert "provider JSON mode" in w1_prompt
+    assert "Direct Trade Candidate" in w2_prompt
     assert '"matched_policy_code"' in w2_prompt
     assert "Do not output `cache`, `ignore`, or" in w2_prompt
     assert "ingest_queue/archive are Route Engine outcomes" in w2_prompt
@@ -387,11 +387,15 @@ def test_agent_runner_runtime_workers_validate_structured_payloads_and_budget() 
 
 def test_agent_runner_w1_w2_workers_normalize_deepseek_schema_drift() -> None:
     seen_context_keys: dict[str, list[str]] = {}
+    seen_runtime_clocks: dict[str, dict[str, object]] = {}
 
     def result_factory(task: AgentTask) -> AgentResult:
         runtime_context = task.input_context["runtime_context"]
         assert isinstance(runtime_context, dict)
         seen_context_keys[task.required_output_schema] = sorted(runtime_context)
+        runtime_clock = runtime_context.get("runtime_clock")
+        assert isinstance(runtime_clock, dict)
+        seen_runtime_clocks[task.required_output_schema] = dict(runtime_clock)
         if task.task_type is TaskType.RUNTIME_W1_NOVELTY:
             payload: dict[str, object] = {
                 "structured": {
@@ -436,10 +440,21 @@ def test_agent_runner_w1_w2_workers_normalize_deepseek_schema_drift() -> None:
     assert w1.novelty_label is W1NoveltyLabel.NEW_EVENT
     assert w2.type is W2Type.NULL
     assert w2.matched_policy_code is None
+    assert "runtime_clock" in seen_context_keys["W1Result"]
     assert "known_events" in seen_context_keys["W1Result"]
     assert "expectation_summaries" not in seen_context_keys["W1Result"]
+    assert "runtime_clock" in seen_context_keys["W2Result"]
     assert "monitoring_policies" in seen_context_keys["W2Result"]
     assert "expectation_summaries" not in seen_context_keys["W2Result"]
+    for runtime_clock in seen_runtime_clocks.values():
+        assert set(runtime_clock) == {"now_et", "tz_abbrev", "utc_offset"}
+        assert isinstance(runtime_clock["tz_abbrev"], str)
+        assert runtime_clock["tz_abbrev"] in {"EST", "EDT"}
+        assert isinstance(runtime_clock["utc_offset"], str)
+        assert runtime_clock["utc_offset"] in {"-05:00", "-04:00"}
+        now_et = runtime_clock["now_et"]
+        assert isinstance(now_et, str)
+        assert datetime.fromisoformat(now_et).tzinfo is not None
 
 
 def test_agent_runner_w1_worker_normalizes_event_id_short_shape() -> None:
@@ -704,6 +719,38 @@ def test_media_null_low_confidence_goes_to_o3_and_can_enter_ingest_queue() -> No
     assert record.route_decision.o3_must_check_novelty_first is True
     assert repository.list_ingest_queue(ticker="ASTS")[0].reason.startswith("O3 final action")
     assert repository.list_trading_records(ticker="ASTS") == []
+
+
+def test_w1_worker_timeout_records_exception_without_blocking_queue() -> None:
+    class SlowW1:
+        def classify(
+            self,
+            message: RuntimeSourceMessage,
+            context: dict[str, object],
+        ) -> W1Result:
+            time.sleep(0.2)
+            return _w1()
+
+    repository = InMemoryPersistentRuntimeRepository()
+    service = PersistentRuntimeExecutionService(
+        repository,
+        w1_worker=SlowW1(),
+        w2_worker=StaticW2(_w2(W2Type.NULL, policy_code=None)),
+        w1_w2_worker_timeout_seconds=0.01,
+    )
+
+    started = time.monotonic()
+    record = service.execute_message(
+        _message(source_type=SourceType.SOCIAL, message_id="std_slow_w1")
+    )
+
+    assert time.monotonic() - started < 0.15
+    assert record.route_decision.route is RuntimeRoute.INGEST_QUEUE
+    exception = repository.list_exceptions(ticker="ASTS")[0]
+    assert exception.node == "W1"
+    assert exception.exception_type == "timeout"
+    assert record.node_traces[0].node == "W1"
+    assert record.node_traces[0].status == "failed"
 
 
 def test_social_new_dtc_must_pass_a2_and_o3_before_trading_record() -> None:

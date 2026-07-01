@@ -10,7 +10,7 @@ from doxagent.agents import (
 )
 from doxagent.blackboard import BlackboardService
 from doxagent.context import ContextBuilder
-from doxagent.gateway import MockModelClient, ModelGateway
+from doxagent.gateway import MockModelClient, ModelGateway, ModelRequest, ModelResponse
 from doxagent.models import (
     AgentName,
     AgentPermissions,
@@ -100,6 +100,34 @@ def test_maf_adapter_accepts_explicit_runner_contract() -> None:
     assert result.status is ResultStatus.SUCCEEDED
     assert result.error is None
     assert result.payload["structured"] == {"summary": "bad schema"}
+
+
+def test_single_shot_model_request_carries_assembled_system_prompt() -> None:
+    class RecordingModelClient(MockModelClient):
+        def __init__(self) -> None:
+            super().__init__(structured={"summary": "ok"})
+            self.requests: list[ModelRequest] = []
+
+        async def complete(self, request: ModelRequest) -> ModelResponse:
+            self.requests.append(request)
+            return await super().complete(request)
+
+    client = RecordingModelClient()
+    task = agent_task().model_copy(
+        update={"input_context": {"execution_mode": "single_shot"}},
+        deep=True,
+    )
+    runner = ModelGatewayAgentRunner(
+        model_gateway=ModelGateway(client),
+        tool_mode="disabled",
+    )
+
+    result = runner.run(task)
+
+    assert result.status is ResultStatus.SUCCEEDED
+    assert client.requests
+    assert client.requests[0].system_prompt is not None
+    assert "Return one JSON object" in client.requests[0].system_prompt
 
 
 def test_default_real_runner_applies_model_request_timeout_from_settings() -> None:

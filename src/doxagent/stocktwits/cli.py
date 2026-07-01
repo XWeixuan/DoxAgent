@@ -10,7 +10,10 @@ from typing import Any
 from doxagent.settings import DoxAgentSettings
 from doxagent.stocktwits.client import StocktwitsHTTPClient
 from doxagent.stocktwits.crawler import StocktwitsPollingCrawler, config_from_settings
-from doxagent.stocktwits.repository import repository_from_settings
+from doxagent.stocktwits.repository import (
+    migrate_postgres_stocktwits_to_sqlite,
+    repository_from_settings,
+)
 from doxagent.stocktwits.schema import normalize_symbols, parse_symbol_csv
 
 
@@ -18,7 +21,20 @@ def main(argv: list[str] | None = None) -> int:
     parser = _build_parser()
     args = parser.parse_args(argv)
     settings = DoxAgentSettings()
-    crawler = _crawler(settings, storage_mode=args.storage)
+
+    if args.command == "migrate-from-postgres":
+        stats = migrate_postgres_stocktwits_to_sqlite(
+            source_database_url=args.source_database_url or settings.require_database_url(),
+            sqlite_path=args.sqlite_path or settings.stocktwits_sqlite_path,
+            batch_size=args.batch_size,
+        )
+        _print_json({"ok": True, "migration": stats})
+        return 0
+
+    try:
+        crawler = _crawler(settings, storage_mode=args.storage)
+    except RuntimeError as exc:
+        parser.error(str(exc))
 
     if args.command == "init":
         crawler.repository.ensure_schema()
@@ -60,7 +76,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="python -m doxagent.stocktwits.cli")
     parser.add_argument(
         "--storage",
-        choices=["postgres", "memory"],
+        choices=["sqlite", "memory"],
         help="Override DOXAGENT_STOCKTWITS_STORAGE_MODE.",
     )
     sub = parser.add_subparsers(dest="command", required=True)
@@ -88,6 +104,20 @@ def _build_parser() -> argparse.ArgumentParser:
         type=int,
         help="Optional finite loop count for server smoke tests.",
     )
+
+    migrate = sub.add_parser(
+        "migrate-from-postgres",
+        help="One-off copy from old Supabase/Postgres Stocktwits tables into local SQLite.",
+    )
+    migrate.add_argument(
+        "--source-database-url",
+        help="Old Supabase/Postgres URL. Defaults to DOXAGENT_DATABASE_URL.",
+    )
+    migrate.add_argument(
+        "--sqlite-path",
+        help="Target local SQLite path. Defaults to DOXAGENT_STOCKTWITS_SQLITE_PATH.",
+    )
+    migrate.add_argument("--batch-size", type=int, default=1000)
     return parser
 
 

@@ -1,0 +1,341 @@
+[
+  {
+    "key": "overview",
+    "label": "Overview",
+    "url": "http://127.0.0.1:5173/overview",
+    "file": "C:/Users/WEIXUANXIE/Desktop/DoxAgent/dev_plan/dashboard_frontend_acceptance_assets/overview.png",
+    "info": {
+      "bodyText": "DoxAgent Dashboard State API Overview 全局状态、标的监测与本地 Mock Dashboard State API 接入视图。 最近刷新：06/30 23:49 刷新 容器状态 正常 实时快照 normal Message Bus 状态 降级 实时快照 degraded Dashboard API 状态 正常 实时快照 normal 当前运行 ticker 数 2 running / degraded running 今日消息数 143 实时快照 normal 今日 DTC 数 4 实时快照 normal 今日 token 成本 $3.2842 实时快照 normal 异常数量 2 实时快照 degraded 开启新标的监测 第一阶段只保留 ticker 输入和后端校验。 启动 ticker 输入股票代码后由 Mock Dashboard State API 校验是否已存在。 ticker 确认启动 已存在的运行中标的会返回“该标的已在监测中”。 标的监测状态 点击卡片主体进入对应 ticker dashboard；操作按钮不会触发跳转。 全部状态 全部健康 ASTS formal_monitoring 异常 最近消息 06/30 19:54 worker 处理 06/30 19:58 今日 DTC 2 今日成本 $1.3812 TikHub X Search 最近一次轮询超时，其他 source 正常。 暂停 重启 删除 CODEX formal_monitoring 暂停 最近消息 暂无数据 worker 处理 暂无数据 今日 DTC 0 今日成本 暂无数据 暂停 重启 删除 EMPTY off_hours_low_frequency 已停止 最近消息 暂无数据 worker 处理 暂无数据 今日 DTC 0 今日成本 暂无数据 暂停 重启 删除 MU formal_monitoring 运行中 最近消息 06/30 20:04 worker 处理 06/30 20:04 今日 DTC 1 今日成本 $0.7924 暂停 重启 删除 NVDA formal_monitoring 初始化中 最近消息 暂无数据 worker 处理 暂无数据 今日 DTC 0 今日成本 $0.2141 暂停 重启 删除",
+      "buttons": [
+        "刷新",
+        "确认启动",
+        "全部状态",
+        "全部健康",
+        "暂停",
+        "重启",
+        "删除",
+        "暂停",
+        "重启",
+        "删除",
+        "暂停",
+        "重启",
+        "删除",
+        "暂停",
+        "重启",
+        "删除",
+        "暂停",
+        "重启",
+        "删除"
+      ],
+      "cards": 17,
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "Overview"
+        },
+        {
+          "tag": "H2",
+          "text": "开启新标的监测"
+        },
+        {
+          "tag": "H2",
+          "text": "标的监测状态"
+        }
+      ],
+      "links": [
+        {
+          "href": "/overview",
+          "text": "DoxAgent"
+        }
+      ],
+      "pageHeight": 2146,
+      "tables": 0,
+      "title": "dashboard",
+      "url": "http://127.0.0.1:5173/overview",
+      "viewport": {
+        "height": 912,
+        "width": 848
+      }
+    },
+    "logs": []
+  },
+  {
+    "key": "research",
+    "label": "投研资料",
+    "url": "http://127.0.0.1:5173/ticker/MU/research",
+    "file": "C:/Users/WEIXUANXIE/Desktop/DoxAgent/dev_plan/dashboard_frontend_acceptance_assets/research.png",
+    "info": {
+      "bodyText": "DoxAgent Dashboard State API MU 投研资料 查看当前 belief state 中的 Document 1 / Document 2，支持历史版本切换。 最近刷新：06/30 23:49 历史版本 刷新 Document 1：Global Research 全局研究资料、基本面与市场观点。 uuid：doc_global_research_mu_v3 生成：06/30 17:30 现行 基本面研究 更新：06/30 18:10 展开 MU 收入、毛利率、资本开支和库存周期摘要。 市场观点 更新：06/30 18:12 展开 消息面偏多，但需等待成交量确认。 Document 2：Expectation Units 当前监测使用的 expectation units。 uuid：doc_expectation_units_mu_v5 生成：06/30 18:20 现行 AI 需求拉动收入加速 更新：06/30 18:45 展开 若高毛利产品出货继续超预期，市场可能重估未来两个季度 EPS。",
+      "buttons": [
+        "历史版本",
+        "刷新",
+        "展开",
+        "展开",
+        "展开"
+      ],
+      "cards": 4,
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "MU 投研资料"
+        },
+        {
+          "tag": "H2",
+          "text": "Document 1：Global Research"
+        },
+        {
+          "tag": "H2",
+          "text": "Document 2：Expectation Units"
+        }
+      ],
+      "links": [
+        {
+          "href": "/overview",
+          "text": "DoxAgent"
+        }
+      ],
+      "pageHeight": 912,
+      "tables": 0,
+      "title": "dashboard",
+      "url": "http://127.0.0.1:5173/ticker/MU/research",
+      "viewport": {
+        "height": 912,
+        "width": 848
+      }
+    },
+    "logs": []
+  },
+  {
+    "key": "strategy",
+    "label": "执行策略",
+    "url": "http://127.0.0.1:5173/ticker/MU/strategy",
+    "file": "C:/Users/WEIXUANXIE/Desktop/DoxAgent/dev_plan/dashboard_frontend_acceptance_assets/strategy.png",
+    "info": {
+      "bodyText": "DoxAgent Dashboard State API MU 执行策略 查看 Document 3 中直接参与持久化监测执行的 Known Events 与 Policy。 最近刷新：06/30 23:49 历史版本 刷新 Document 3：Runtime Strategy 基础信息、版本状态和策略摘要。 uuid：doc_runtime_strategy_mu_v2 生成：06/30 18:50 现行 Known Events 与执行策略摘要 更新：06/30 19:00 展开 包含重复事件识别、DTC/EBA 触发策略和忽略条件。 Known Events 用于重复事件识别和新旧判定的事件记忆。 全部 expectation 财报前预期抬升 更新：06/30 19:25 展开 HBM 价格与订单更新 更新：06/30 18:55 展开 Monitoring Execution Policy 展示 DTC / EBA / NULL / Irrelevant 的监测执行策略。 全部动作 新增客户订单确认触发 DTC POLICY_DTC_HBM_ORDER · 更新：06/30 19:00 DTC 展开 供应链模糊消息委托背景 agent POLICY_EBA_SUPPLY_CHAIN · 更新：06/30 18:58 EBA 展开 已知事件复述不触发交易 POLICY_NULL_RECAP · 更新：06/30 18:54 NULL 展开 泛宏观噪音忽略 POLICY_IRRELEVANT_MACRO · 更新：06/30 18:50 Irrelevant 展开",
+      "buttons": [
+        "历史版本",
+        "刷新",
+        "展开",
+        "全部 expectation",
+        "展开",
+        "展开",
+        "全部动作",
+        "展开",
+        "展开",
+        "展开",
+        "展开"
+      ],
+      "cards": 10,
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "MU 执行策略"
+        },
+        {
+          "tag": "H2",
+          "text": "Document 3：Runtime Strategy"
+        },
+        {
+          "tag": "H2",
+          "text": "Known Events"
+        },
+        {
+          "tag": "H2",
+          "text": "Monitoring Execution Policy"
+        }
+      ],
+      "links": [
+        {
+          "href": "/overview",
+          "text": "DoxAgent"
+        }
+      ],
+      "pageHeight": 1175,
+      "tables": 0,
+      "title": "dashboard",
+      "url": "http://127.0.0.1:5173/ticker/MU/strategy",
+      "viewport": {
+        "height": 912,
+        "width": 848
+      }
+    },
+    "logs": []
+  },
+  {
+    "key": "message-bus",
+    "label": "消息总线",
+    "url": "http://127.0.0.1:5173/ticker/MU/message-bus",
+    "file": "C:/Users/WEIXUANXIE/Desktop/DoxAgent/dev_plan/dashboard_frontend_acceptance_assets/message-bus.png",
+    "info": {
+      "bodyText": "DoxAgent Dashboard State API MU 消息总线 查看采集、标准化、去重、正文补全、相关性过滤与事件流状态。 最近刷新：06/30 23:49 SSE：open 配置 刷新 启动时长 1 小时 0 分钟 实时快照 normal 今日原始消息 80 实时快照 normal 事件流数量 42 实时快照 normal 正文补全成功率 72.0% 实时快照 normal 正常 channel 5/6 实时快照 degraded Live Message Stream 新消息通过 SSE 触发刷新，列表按抓取时间倒序分页加载。 全部来源 全部状态 关键词搜索 搜索 当前关键词：未设置 dashboard.heartbeat · 06/30 23:49 message_bus.message.created · 06/30 20:04 Micron shares rise as AI memory demand stays firm routed_to_trading_records Benzinga · 抓取：06/30 20:04 展开 分析师称 HBM 需求继续支撑下半年收入。 MU traders discuss earnings setup routed_to_archive Stocktwits · 抓取：06/30 20:01 展开 社媒讨论财报前预期，但大多属于已知观点复述。 Rumor: new customer allocation o3_running X Search · 抓取：06/30 19:59 展开 待验证传闻，进入 A2/O3 处理链路。",
+      "buttons": [
+        "配置",
+        "刷新",
+        "全部来源",
+        "全部状态",
+        "搜索",
+        "展开",
+        "展开",
+        "展开"
+      ],
+      "cards": 12,
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "MU 消息总线"
+        },
+        {
+          "tag": "H2",
+          "text": "Live Message Stream"
+        }
+      ],
+      "links": [
+        {
+          "href": "/overview",
+          "text": "DoxAgent"
+        }
+      ],
+      "pageHeight": 1299,
+      "tables": 0,
+      "title": "dashboard",
+      "url": "http://127.0.0.1:5173/ticker/MU/message-bus",
+      "viewport": {
+        "height": 912,
+        "width": 848
+      }
+    },
+    "logs": []
+  },
+  {
+    "key": "runtime",
+    "label": "运行状态",
+    "url": "http://127.0.0.1:5173/ticker/MU/runtime",
+    "file": "C:/Users/WEIXUANXIE/Desktop/DoxAgent/dev_plan/dashboard_frontend_acceptance_assets/runtime.png",
+    "info": {
+      "bodyText": "DoxAgent Dashboard State API MU 运行状态 展示 Message Bus 到 W1 / W2 / O3 / 交易记录等节点的持久化执行链路。 最近刷新：06/30 23:49 SSE：open 刷新 当前队列消息数 8 实时快照 degraded W1 今日处理 40 平均 1.2 秒 normal W2 今日处理 40 平均 1.3 秒 normal O3 今日处理 3 平均 48.0 秒 normal DTC 今日数量 1 实时快照 normal EBA 今日数量 2 实时快照 normal 失败任务数 0 实时快照 normal 平均处理延迟 2.3 秒 实时快照 normal 运行链路图 点击节点查看关键输入、输出、状态和最近错误。 Message Bus message_bus 进入 42 产出 42 失败 0 normal W1 新旧判定 w1 进入 42 产出 42 失败 0 normal W2 Policy 判定 w2 进入 42 产出 38 失败 0 normal O3 值班专家 o3 进入 3 产出 3 失败 0 normal 交易记录 trading_records 进入 1 产出 1 失败 0 normal 委托 O1 / A2 o1_a2 进入 2 产出 1 失败 0 normal 结束 / 忽略 ignored 进入 38 产出 0 失败 0 normal 异常队列 exception_queue 进入 0 产出 0 失败 0 normal 消息进入执行层 message_bus → w1 42 新事件 w1 → w2 42 DTC w2 → trading_records 1 复杂判断 w2 → o3 3 NULL / Irrelevant w2 → ignored 38 最近处理记录 按执行时间倒序展示 runtime execution 摘要。 时间 execution id 来源 最终路由 状态 异常 06/30 20:04 pre_mu_001 media trading_record completed 无 06/30 19:59 pre_mu_003 social o3 running 无",
+      "buttons": [
+        "刷新",
+        "Message Busmessage_bus进入42产出42失败0normal",
+        "W1 新旧判定w1进入42产出42失败0normal",
+        "W2 Policy 判定w2进入42产出38失败0normal",
+        "O3 值班专家o3进入3产出3失败0normal",
+        "交易记录trading_records进入1产出1失败0normal",
+        "委托 O1 / A2o1_a2进入2产出1失败0normal",
+        "结束 / 忽略ignored进入38产出0失败0normal",
+        "异常队列exception_queue进入0产出0失败0normal"
+      ],
+      "cards": 9,
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "MU 运行状态"
+        },
+        {
+          "tag": "H2",
+          "text": "运行链路图"
+        },
+        {
+          "tag": "H2",
+          "text": "最近处理记录"
+        }
+      ],
+      "links": [
+        {
+          "href": "/overview",
+          "text": "DoxAgent"
+        }
+      ],
+      "pageHeight": 1687,
+      "tables": 1,
+      "title": "dashboard",
+      "url": "http://127.0.0.1:5173/ticker/MU/runtime",
+      "viewport": {
+        "height": 912,
+        "width": 848
+      }
+    },
+    "logs": []
+  },
+  {
+    "key": "audit",
+    "label": "收益成本审计",
+    "url": "http://127.0.0.1:5173/ticker/MU/audit",
+    "file": "C:/Users/WEIXUANXIE/Desktop/DoxAgent/dev_plan/dashboard_frontend_acceptance_assets/audit.png",
+    "info": {
+      "bodyText": "DoxAgent Dashboard State API MU 收益 / 成本审计 回答交易意图是否有效，以及运行成本是否可控。 最近刷新：06/30 23:49 SSE：open 收益审计 成本审计 刷新 今日 近7日 近30日 今日交易意图 1 实时快照 normal 已审计交易 1 实时快照 normal 今日收益 $183.42 实时快照 normal 今日收益率 +1.21% 实时快照 normal 胜率 100% 实时快照 normal 审计状态 完成 实时快照 completed 收益趋势 退出策略：close_minus_10min_full_exit 手动补跑 收益 交易意图 2026-06-28 2026-06-29 2026-06-30 -65 0 65 130 195 0 0.5 1 1.5 2 交易意图列表 点击记录查看触发原因、相关消息和 agent 输出摘要。 时间 ticker 触发消息 policy 动作 买入价 卖出价 滑点 收益 状态 06/30 20:04 MU std_mu_001 POLICY_DTC_HBM_ORDER long $134.35 $135.98 0.11% $183.42 audited 0.5",
+      "buttons": [
+        "收益审计",
+        "成本审计",
+        "刷新",
+        "今日",
+        "近7日",
+        "近30日",
+        "手动补跑"
+      ],
+      "cards": 16,
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "MU 收益 / 成本审计"
+        },
+        {
+          "tag": "H2",
+          "text": "收益趋势"
+        },
+        {
+          "tag": "H2",
+          "text": "交易意图列表"
+        }
+      ],
+      "links": [
+        {
+          "href": "/overview",
+          "text": "DoxAgent"
+        }
+      ],
+      "pageHeight": 1391,
+      "tables": 1,
+      "title": "dashboard",
+      "url": "http://127.0.0.1:5173/ticker/MU/audit",
+      "viewport": {
+        "height": 912,
+        "width": 848
+      }
+    },
+    "logs": []
+  },
+  {
+    "key": "login",
+    "label": "登录页",
+    "url": "http://127.0.0.1:5173/login",
+    "file": "C:/Users/WEIXUANXIE/Desktop/DoxAgent/dev_plan/dashboard_frontend_acceptance_assets/login.png",
+    "info": {
+      "bodyText": "DoxAgent Dashboard State API 登录 本地 mock 鉴权入口，真实 Supabase dev 权限不在本阶段伪造。 Mock Dashboard Token mock-required 模式下使用 dev-mock-token；mock-open 模式下可直接进入 Overview。 token 输入 forbidden 可验证 FORBIDDEN 错误态。 登录",
+      "buttons": [
+        "登录"
+      ],
+      "cards": 3,
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "登录"
+        }
+      ],
+      "links": [
+        {
+          "href": "/overview",
+          "text": "DoxAgent"
+        }
+      ],
+      "pageHeight": 912,
+      "tables": 0,
+      "title": "dashboard",
+      "url": "http://127.0.0.1:5173/login",
+      "viewport": {
+        "height": 912,
+        "width": 848
+      }
+    },
+    "logs": []
+  }
+]

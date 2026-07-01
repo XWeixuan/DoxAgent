@@ -17,7 +17,7 @@ Default sources:
 
 - `benzinga_news`: media, by ticker, 60 second default poll interval.
 - `finnhub_company_news`: media, by ticker, 60 second default poll interval.
-- `stocktwits_messages`: social, by ticker, 600 second default poll interval.
+- `stocktwits_messages`: social, by ticker, 300 second default poll interval.
 - `tikhub_x_search`: social, by parameter, 600 second default poll interval.
 - `tikhub_x_user_posts`: social, by parameter, 600 second default poll interval.
 - `newswire_rss`: media, by parameter, 600 second default poll interval.
@@ -34,13 +34,13 @@ API references used for endpoint shape:
 - TikHub X user posts:
   `GET https://api.tikhub.io/api/v1/twitter/web/fetch_user_post_tweet` with
   `Authorization: Bearer <token>`.
-- Stocktwits RapidAPI uses
-  `GET https://stocktwits-sentiment-message-analytics-api.p.rapidapi.com/functions/v1/stocktwits-query`
-  with dynamic `action=messages`, `symbol`, `start`, `end`, `primaryOnly`,
-  `limit`, and `force_refresh=false` parameters. `force_refresh` is disabled by
-  default to avoid exhausting RapidAPI monthly request or upstream refresh
-  quotas during persistent monitoring. The collector falls back to the public
-  Stocktwits symbol stream only when `STOCKTWITS_RAPIDAPI_KEY` is not set.
+- Stocktwits persistent monitoring uses the standalone durable polling adapter
+  against the public Stocktwits symbol stream by default. It keeps per-ticker
+  checkpoints, crawl runs, gap status, hot-mode state, and raw Stocktwits
+  payloads in the dedicated `doxagent.stocktwits_*` tables, then bridges newly
+  accepted messages into the Monitoring Message Bus raw/standard/event tables.
+  The older RapidAPI-shaped collector remains available only if the source is
+  explicitly configured away from `mode=durable_polling`.
 
 ## Persistence
 
@@ -59,6 +59,27 @@ Tables managed by `SQLiteMonitoringRepository`:
 - `monitoring_standard_messages`
 - `monitoring_event_stream`
 - `monitoring_poll_states`
+
+Stocktwits durable acquisition state is managed separately by the Stocktwits
+repository. Production defaults to server-local SQLite with
+`DOXAGENT_STOCKTWITS_STORAGE_MODE=sqlite` and
+`DOXAGENT_STOCKTWITS_SQLITE_PATH=.tmp/stocktwits_polling.sqlite3`; the Docker
+services force this local path under `/app/.tmp` so persistent Stocktwits runs
+do not write to DoxAgent Supabase. Monitoring poll state stores a compact copy
+of the latest Stocktwits run metadata, including coverage status, checkpoint
+status, run id, current mode, rate-limit flag, and error fields.
+
+One-off migration from the old Supabase/Postgres Stocktwits tables to local
+SQLite:
+
+```powershell
+python -m doxagent.stocktwits.cli migrate-from-postgres --sqlite-path .tmp/stocktwits_polling.sqlite3
+```
+
+The command reads `DOXAGENT_DATABASE_URL` unless `--source-database-url` is
+provided. Normal Stocktwits runtime commands no longer accept the Postgres
+storage mode; `DOXAGENT_STOCKTWITS_ALLOW_POSTGRES=1` is reserved for explicit
+manual migration/debug use only.
 
 Raw messages are keyed by a deterministic dedupe key:
 
@@ -96,27 +117,45 @@ PowerShell/cmd launcher:
 .\scripts\monitoring-bus.cmd bind AAPL --source newswire_rss --rss-url "https://example.com/rss.xml"
 .\scripts\monitoring-bus.cmd unbind AAPL --source newswire_rss
 .\scripts\monitoring-bus.cmd delete-ticker AAPL
-.\scripts\monitoring-bus.cmd set-poll-interval stocktwits_messages 600
+.\scripts\monitoring-bus.cmd set-poll-interval stocktwits_messages 300
+.\scripts\monitoring-bus.cmd set-stocktwits-config MU --enabled --target-cadence-seconds 300 --hot-cadence-seconds 90 --page-size 30 --max-pages-per-crawl 10
 .\scripts\monitoring-bus.cmd poll-due
 .\scripts\monitoring-bus.cmd poll-forever --sleep-seconds 15
+python -m doxagent.runtime_scheduler.cli run-loop
 ```
+
+`python -m doxagent.runtime_scheduler.cli run-loop` is the recommended formal
+runtime entry point. It lets the unified scheduler decide whether a ticker is in
+pre-market digest, formal monitoring, or off-hours low-frequency mode before it
+polls sources or consumes events.
 
 `set-poll-interval` is intentionally user-side only. Agent tools reject
 `poll_interval_seconds`.
 
-`poll-due` performs one due-poll pass. It is useful for manual testing, but it
-is not a background worker. Continuous collection should be run with
-`poll-forever` or the Docker `monitoring-poller` service. `poll-forever` checks
-for due bindings every `DOXAGENT_MONITORING_POLLER_SLEEP_SECONDS` seconds while
-each API call is still governed by that source's user-owned
-`poll_interval_seconds`.
+`set-stocktwits-config` is also user-side only. It creates or updates the
+`stocktwits_messages` ticker binding and writes durable per-ticker Stocktwits
+settings: enabled/disabled, `normal` / `hot` / `paused` mode, normal and hot
+cadence, page size, max pages per crawl, hot-mode thresholds, cooldown
+successes, bootstrap event policy, and optional schedule reset. Newly created
+Stocktwits ticker states are staggered across `stagger_slots` so the default
+10-ticker, 300-second window polls roughly one ticker every 30 seconds instead
+of requesting every ticker at once.
+
+`poll-due` performs one due-poll pass. It is useful for manual Message Bus
+testing, but it is not the formal ticker runtime. `poll-forever` and the Docker
+`monitoring-poller` service are now debug/lower-level entry points for the
+durable Message Bus only. Do not run them alongside the unified runtime
+scheduler for the same ticker/source in formal runtime mode, because they can
+bypass the scheduler's trading-session rules and duplicate source polling.
 
 Docker deployment includes two separate services:
 
 - `debug-viewer`: serves the existing debug viewer and provides the CLI runtime
   used by the local Monitoring Control Plane over SSH.
-- `monitoring-poller`: runs
-  `python -m doxagent.monitoring.cli poll-forever` with no exposed port.
+- `monitoring-poller`: legacy/debug worker that runs
+  `python -m doxagent.monitoring.cli poll-forever` with no exposed port. For
+  formal runtime testing, prefer a scheduler worker that runs
+  `python -m doxagent.runtime_scheduler.cli run-loop`.
 
 ## Local Monitoring Viewer
 
@@ -174,7 +213,8 @@ The configuration form is source-aware:
 - `benzinga_news`: ticker binding plus optional `search_terms` used as a small
   Benzinga `topics` fallback when `tickers=<ticker>` returns no rows.
 - `finnhub_company_news`: ticker binding only.
-- `stocktwits_messages`: ticker binding only.
+- `stocktwits_messages`: ticker binding plus user-owned durable Stocktwits
+  state visible as `stocktwits_state`.
 - `tikhub_x_search`: `search_terms`.
 - `tikhub_x_user_posts`: `usernames`.
 - `newswire_rss`: `rss_urls`.
@@ -392,7 +432,8 @@ Field rules:
   - `benzinga_news`: optional `search_terms`, sent as Benzinga `topics`
     fallback only when ticker filtering returns no rows.
   - `finnhub_company_news`: no monitoring parameters.
-  - `stocktwits_messages`: no monitoring parameters.
+  - `stocktwits_messages`: no agent-owned monitoring parameters. Durable
+    Stocktwits polling parameters are user-owned.
   - `tikhub_x_search`: `search_terms`.
   - `tikhub_x_user_posts`: `usernames`.
   - `newswire_rss`: `rss_urls`.
@@ -618,6 +659,10 @@ User-only fields:
 
 - `poll_interval_seconds`
 - global source enable/disable
+- Stocktwits durable polling fields:
+  `target_cadence_seconds`, `hot_cadence_seconds`, `page_size`,
+  `max_pages_per_crawl`, `hot_message_threshold`,
+  `hot_cooldown_successes`, `bootstrap_event_policy`, and `current_mode`.
 
 ## Event Stream Contract
 

@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from doxagent.debug_viewer.query import (
     DebugRunBundle,
     build_agent_metrics_view,
@@ -43,6 +45,27 @@ def test_debug_viewer_renders_expectation_detail_sections_as_readable_cards() ->
     assert "Raw fact JSON" in INDEX_HTML
     assert "Raw variable JSON" in INDEX_HTML
     assert "Raw Event Monitoring JSON" in INDEX_HTML
+
+
+def test_debug_viewer_defaults_to_lightweight_summary_tab() -> None:
+    assert 'data-tab="summary"' in INDEX_HTML
+    assert 'const state = { runs: [], selectedRunId: null, activeTab: "summary" }' in INDEX_HTML
+    assert "/summary" in INDEX_HTML
+    assert "/brief-state" in INDEX_HTML
+    assert "function renderSummary" in INDEX_HTML
+
+
+def test_real_smoke_scripts_default_to_lightweight_summary_reads() -> None:
+    scripts = [
+        Path("eval/run_document1_document2_smoke.py"),
+        Path("eval/run_document2_expectation_units_smoke.py"),
+        Path("eval/run_document3_smoke.py"),
+    ]
+    for script in scripts:
+        text = script.read_text(encoding="utf-8")
+        assert ".run_summary(" in text
+        assert "DebugRunQueryService(settings).brief_state" not in text
+    assert "--export-brief-state" in scripts[1].read_text(encoding="utf-8")
 
 
 def test_debug_viewer_agent_metrics_derive_react_counts() -> None:
