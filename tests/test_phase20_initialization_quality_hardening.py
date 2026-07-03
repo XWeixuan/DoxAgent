@@ -14,6 +14,7 @@ from doxagent.models import (
     DelegatedRetrievalResult,
     DocumentType,
     EvidenceSourceType,
+    MonitoringConfigDocument,
     MonitoringPolicyDocument,
     MonitoringPolicyRule,
     PatchOperation,
@@ -22,12 +23,13 @@ from doxagent.models import (
     ToolCallSummary,
     ValidationStatus,
 )
+from doxagent.agents.runtime.react import _output_contract
 from doxagent.models.output_schemas import REQUIRED_OUTPUT_SCHEMA_MODELS
 from doxagent.tools import ToolRegistry, ToolRequest, ToolResult
 from doxagent.workflows import BlackboardInitializationWorkflow
 from doxagent.workflows.errors import WorkflowContractError
 from doxagent.workflows.output_validation import AgentOutputSchemaValidator
-from doxagent.workflows.schema import WorkflowCheckpoint
+from doxagent.workflows.schema import WorkflowCheckpoint, WorkflowNode, WorkflowRunStatus
 from tests.fixtures.phase1_contracts import (
     evidence_ref,
     known_events_document,
@@ -35,6 +37,9 @@ from tests.fixtures.phase1_contracts import (
     monitoring_policy_document,
 )
 from tests.fixtures.required_output_schemas import golden_required_output_payloads
+
+
+TEST_NOW = datetime(2026, 6, 12, tzinfo=UTC)
 
 
 class _RecordingMonitoringTool:
@@ -57,6 +62,25 @@ class _RunnerWithToolRegistry:
 
     def run(self, task: object) -> AgentResult:
         raise AssertionError("This test should not execute an agent task.")
+
+
+def _monitoring_config_patch(payload: dict[str, object]) -> BlackboardPatch:
+    return BlackboardPatch(
+        patch_id="patch_monitoring_config",
+        target=BlackboardTarget(
+            document_type=DocumentType.MONITORING_CONFIG,
+            ticker=str(payload.get("ticker") or "NVDA"),
+            document_id=str(payload.get("document_id") or "doc_monitoring_config"),
+            field_path="document",
+        ),
+        operation=PatchOperation.CREATE,
+        before=None,
+        after=payload,
+        rationale="test monitoring config apply",
+        evidence_refs=[evidence_ref()],
+        author_agent=AgentName.O2_MONITORING_CONFIG,
+        validation_status=ValidationStatus.PENDING,
+    )
 
 
 def test_required_output_schema_registry_accepts_golden_payloads() -> None:
@@ -94,6 +118,24 @@ def test_document3_agent_registry_assigns_policy_generation_to_o4() -> None:
     assert "anysearch.search" in o2.runtime.allowed_tools
     assert "tavily.search" in o2.runtime.allowed_tools
     assert "monitoring.update_ticker_config" not in o2.runtime.allowed_tools
+
+
+def test_monitoring_config_output_contract_is_api_shaped() -> None:
+    contract = _output_contract("MonitoringConfigDocument")["MonitoringConfigDocument"]
+    tool_input = contract["final_payload"]["monitoring_items"][0]["tool_input"]
+
+    assert tool_input["source_id"] == "benzinga_news"
+    assert set(tool_input) == {
+        "ticker",
+        "source_id",
+        "enabled",
+        "mode",
+        "reason",
+        "search_terms",
+    }
+    rules_text = " ".join(contract["rules"])
+    assert "finnhub_company_news and stocktwits_messages are ticker-only" in rules_text
+    assert "Never put keywords, source_filters, extra, poll_interval_seconds" in rules_text
 
 
 def test_monitoring_policy_normalizer_builds_document3_action_payloads() -> None:
@@ -147,26 +189,12 @@ def test_monitoring_config_apply_uses_message_bus_tool_and_records_version() -> 
         execution_mode="agent_runner",
         runner=_RunnerWithToolRegistry(registry),
     )
+    run = workflow.blackboard.start_run("NVDA", AgentName.SYSTEM)
     document = monitoring_config_document()
-    patch = BlackboardPatch(
-        patch_id="patch_monitoring_config",
-        target=BlackboardTarget(
-            document_type=DocumentType.MONITORING_CONFIG,
-            ticker=document.ticker,
-            document_id=document.document_id,
-            field_path="document",
-        ),
-        operation=PatchOperation.CREATE,
-        before=None,
-        after=document.model_dump(mode="json"),
-        rationale="test monitoring config apply",
-        evidence_refs=[evidence_ref()],
-        author_agent=AgentName.O2_MONITORING_CONFIG,
-        validation_status=ValidationStatus.PENDING,
-    )
+    patch = _monitoring_config_patch(document.model_dump(mode="json"))
 
     updated_patch, audit = workflow._apply_monitoring_config_patch(
-        WorkflowCheckpoint(run_id="run_apply", ticker=document.ticker),
+        WorkflowCheckpoint(run_id=run.run_id, ticker=document.ticker),
         patch,
     )
 
@@ -176,13 +204,222 @@ def test_monitoring_config_apply_uses_message_bus_tool_and_records_version() -> 
     assert request.agent_name is AgentName.O2_MONITORING_CONFIG
     assert request.input["ticker"] == document.ticker
     assert request.input["source_id"]
+    assert "keywords" not in request.input
+    assert "search_terms" not in request.input
+    assert "source_filters" not in request.input
+    assert "extra" not in request.input
     assert "poll_interval_seconds" not in request.input
-    assert request.metadata["workflow_node"] == "ResolveMonitoringConfig"
+    assert request.metadata["workflow_node"] == "FinalizeInitialization"
     assert updated_patch.operation is PatchOperation.UPDATE
     assert updated_patch.before == patch.after
     assert isinstance(updated_patch.after, dict)
     assert updated_patch.after["applied_config_version"]
     assert audit["applied_item_count"] == 1
+    assert audit["status"] == "applied"
+
+
+def test_monitoring_config_runtime_apply_sanitizes_source_contract_fields() -> None:
+    tool = _RecordingMonitoringTool()
+    registry = ToolRegistry()
+    registry.register("monitoring.update_ticker_config", tool)
+    workflow = BlackboardInitializationWorkflow(
+        execution_mode="agent_runner",
+        runner=_RunnerWithToolRegistry(registry),
+    )
+    run = workflow.blackboard.start_run("META", AgentName.SYSTEM)
+    payload = {
+        "document_id": "doc_monitoring_config",
+        "document_type": "monitoring_config",
+        "ticker": "META",
+        "created_at": TEST_NOW.isoformat(),
+        "monitoring_items": [
+            {
+                "item_id": "monitor_meta_finnhub",
+                "tool_input": {
+                    "ticker": "META",
+                    "source_id": "finnhub_company_news",
+                    "keywords": ["Meta AI"],
+                    "source_filters": ["press"],
+                    "extra": {"expectation_id": "exp_meta_ai"},
+                    "reason": "Track company news.",
+                    "mode": "merge",
+                    "enabled": True,
+                },
+                "reasoning": "Track company news.",
+                "base_keywords": ["Meta AI"],
+                "expectation_id": "exp_meta_ai",
+                "priority": "high",
+                "trigger_condition": "Meta company news changes.",
+            },
+            {
+                "item_id": "monitor_meta_stocktwits",
+                "tool_input": {
+                    "ticker": "META",
+                    "source_id": "stocktwits_messages",
+                    "search_terms": ["Meta AI"],
+                    "usernames": ["meta"],
+                    "extra": {"priority": "medium"},
+                    "reason": "Track social chatter.",
+                    "mode": "merge",
+                    "enabled": True,
+                },
+                "reasoning": "Track social chatter.",
+                "related_entities": ["Meta AI"],
+                "priority": "medium",
+                "trigger_condition": "Social chatter changes.",
+            },
+            {
+                "item_id": "monitor_meta_benzinga",
+                "tool_input": {
+                    "ticker": "META",
+                    "source_id": "benzinga_news",
+                    "search_terms": ["Meta AI", "Reality Labs"],
+                    "keywords": ["unsupported keyword"],
+                    "extra": {"priority": "medium"},
+                    "reason": "Track parameterized news.",
+                    "mode": "merge",
+                    "enabled": True,
+                },
+                "reasoning": "Track parameterized news.",
+                "priority": "medium",
+                "trigger_condition": "News changes.",
+            },
+        ],
+    }
+
+    updated_patch, audit = workflow._apply_monitoring_config_patch(
+        WorkflowCheckpoint(run_id=run.run_id, ticker="META"),
+        _monitoring_config_patch(payload),
+    )
+
+    assert updated_patch is not None
+    assert audit["status"] == "applied"
+    requests_by_source = {request.input["source_id"]: request.input for request in tool.requests}
+    assert requests_by_source["finnhub_company_news"] == {
+        "ticker": "META",
+        "source_id": "finnhub_company_news",
+        "enabled": True,
+        "mode": "merge",
+        "reason": "Track company news.",
+    }
+    assert requests_by_source["stocktwits_messages"] == {
+        "ticker": "META",
+        "source_id": "stocktwits_messages",
+        "enabled": True,
+        "mode": "merge",
+        "reason": "Track social chatter.",
+    }
+    assert requests_by_source["benzinga_news"]["search_terms"] == [
+        "Meta AI",
+        "Reality Labs",
+    ]
+    assert "keywords" not in requests_by_source["benzinga_news"]
+    assert "extra" not in requests_by_source["benzinga_news"]
+    dropped_by_item = {
+        item["item_id"]: item["sanitizer"]["dropped_fields"]
+        for item in audit["applied_items"]
+    }
+    assert "keywords" in dropped_by_item["monitor_meta_finnhub"]
+    assert "extra" in dropped_by_item["monitor_meta_finnhub"]
+    assert "source_filters" in dropped_by_item["monitor_meta_finnhub"]
+    assert "search_terms" in dropped_by_item["monitor_meta_stocktwits"]
+    assert "usernames" in dropped_by_item["monitor_meta_stocktwits"]
+    assert "keywords" in dropped_by_item["monitor_meta_benzinga"]
+    assert "extra" in dropped_by_item["monitor_meta_benzinga"]
+
+
+def test_finalize_monitoring_config_apply_partial_failure_does_not_block() -> None:
+    tool = _RecordingMonitoringTool()
+    registry = ToolRegistry()
+    registry.register("monitoring.update_ticker_config", tool)
+    workflow = BlackboardInitializationWorkflow(
+        execution_mode="agent_runner",
+        runner=_RunnerWithToolRegistry(registry),
+    )
+    run = workflow.blackboard.start_run("META", AgentName.SYSTEM)
+    payload = {
+        "document_id": "doc_monitoring_config",
+        "document_type": "monitoring_config",
+        "ticker": "META",
+        "created_at": TEST_NOW.isoformat(),
+        "monitoring_items": [
+            {
+                "item_id": "monitor_meta_benzinga",
+                "tool_input": {
+                    "ticker": "META",
+                    "source_id": "benzinga_news",
+                    "search_terms": ["Meta AI"],
+                    "keywords": ["unsupported keyword"],
+                    "extra": {"priority": "high"},
+                    "reason": "Track Meta AI news.",
+                    "mode": "merge",
+                    "enabled": True,
+                },
+                "reasoning": "Track Meta AI news.",
+                "priority": "high",
+                "trigger_condition": "Meta AI news changes.",
+            },
+            {
+                "item_id": "monitor_meta_missing_source",
+                "tool_input": {
+                    "ticker": "META",
+                    "keywords": ["Meta AI"],
+                    "reason": "Missing source should be skipped.",
+                    "mode": "merge",
+                    "enabled": True,
+                },
+                "reasoning": "Missing source should be skipped.",
+                "priority": "medium",
+                "trigger_condition": "Missing source fixture.",
+            },
+        ],
+    }
+    workflow._submit_patch(
+        run.run_id,
+        _monitoring_config_patch(payload),
+        "seed monitoring config",
+        permissions=AgentPermissions(
+            writable_targets=[DocumentType.MONITORING_CONFIG.value],
+            can_propose_patch=True,
+        ),
+    )
+    checkpoint = WorkflowCheckpoint(
+        run_id=run.run_id,
+        ticker="META",
+        next_node=WorkflowNode.FINALIZE_INITIALIZATION,
+        stable_document_types=[DocumentType.MONITORING_CONFIG],
+    )
+
+    finalized = workflow._finalize_initialization(
+        checkpoint,
+        WorkflowNode.FINALIZE_INITIALIZATION,
+    )
+
+    assert finalized.status is WorkflowRunStatus.COMPLETED
+    assert finalized.next_node is None
+    assert len(tool.requests) == 1
+    assert tool.requests[0].input["source_id"] == "benzinga_news"
+    audit = finalized.metadata["monitoring_config_apply"]
+    assert audit["status"] == "partially_applied"
+    assert audit["applied_item_count"] == 1
+    assert audit["skipped_item_count"] == 1
+    current = workflow.blackboard.get_run(run.run_id)
+    bucket = current.belief_state.documents[DocumentType.MONITORING_CONFIG]
+    stable_payload = next(iter(bucket.values()))["document"]
+    stable_document = MonitoringConfigDocument.model_validate(stable_payload)
+    assert stable_document.applied_config_version
+    system_objections = [
+        objection
+        for objection in current.objections
+        if objection.source_agent is AgentName.SYSTEM
+        and objection.taxonomy == "document3_monitoring_runtime_apply"
+    ]
+    assert len(system_objections) == 1
+    reason = system_objections[0].reason
+    assert "monitor_meta_missing_source" in reason
+    assert "missing source_id" in reason
+    assert "monitoring_items" not in reason
+    assert len(reason) < 700
 
 
 def test_document3_runtime_context_exposes_known_events_and_policy_actions() -> None:

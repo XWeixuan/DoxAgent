@@ -1,6 +1,7 @@
 # ruff: noqa: F403,F405
 """Behavior-preserving initialization workflow orchestrator."""
 
+from doxagent.monitoring.schema import parameter_schema_for_source
 from doxagent.workflows.document1.builder import Document1BuilderMixin
 from doxagent.workflows.document1.context import Document1ContextMixin
 from doxagent.workflows.document1.validators import Document1ValidatorsMixin
@@ -342,7 +343,7 @@ class BlackboardInitializationWorkflow(
         if node == WorkflowNode.RESOLVE_MONITORING_POLICY:
             return self._resolve_monitoring_policy(checkpoint, node)
         if node == WorkflowNode.FINALIZE_INITIALIZATION:
-            return self._complete(self._mark_completed(checkpoint, node, next_node=None))
+            return self._finalize_initialization(checkpoint, node)
         raise WorkflowDependencyError(f"Unsupported workflow node: {node}")
 
     def _submit_result_patches(
@@ -368,15 +369,6 @@ class BlackboardInitializationWorkflow(
                 self._validate_expectation_detail_quality(document)
             self._submit_patch(checkpoint.run_id, patch, f"{node.value} 已产出稳定文档。")
             stable_documents.append(patch.target.document_type)
-            if patch.target.document_type is DocumentType.MONITORING_CONFIG:
-                applied_patch, apply_audit = self._apply_monitoring_config_patch(checkpoint, patch)
-                if apply_audit:
-                    self._submit_patch(
-                        checkpoint.run_id,
-                        applied_patch,
-                        "Monitoring Config applied to Message Bus runtime state.",
-                    )
-                    metadata["monitoring_config_apply"] = apply_audit
         return self._mark_completed(
             checkpoint,
             node,
@@ -418,22 +410,205 @@ class BlackboardInitializationWorkflow(
             },
         )
 
+    def _finalize_initialization(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        node: WorkflowNode,
+    ) -> WorkflowCheckpoint:
+        metadata: dict[str, Any] = {}
+        apply_audit = self._apply_latest_monitoring_config_runtime_state(checkpoint)
+        if apply_audit:
+            metadata["monitoring_config_apply"] = apply_audit
+        completed = self._mark_completed(
+            checkpoint,
+            node,
+            next_node=None,
+            metadata=metadata,
+        )
+        return self._complete(completed)
+
+    def _apply_latest_monitoring_config_runtime_state(
+        self,
+        checkpoint: WorkflowCheckpoint,
+    ) -> dict[str, Any] | None:
+        try:
+            run = self.blackboard.get_run(checkpoint.run_id)
+        except RunNotFoundError:
+            return {
+                "tool_name": "monitoring.update_ticker_config",
+                "status": "failed_non_blocking",
+                "reason": "run not found",
+                "applied_item_count": 0,
+                "applied_items": [],
+                "skipped_items": [],
+            }
+        bucket = run.belief_state.documents.get(DocumentType.MONITORING_CONFIG, {})
+        for entry in bucket.values():
+            raw_document = entry.get("document") if isinstance(entry, dict) else entry
+            if not isinstance(raw_document, dict):
+                continue
+            try:
+                document = MonitoringConfigDocument.model_validate(raw_document)
+            except ValueError as exc:
+                audit = {
+                    "tool_name": "monitoring.update_ticker_config",
+                    "status": "failed_non_blocking",
+                    "reason": f"stable monitoring_config could not be validated: {exc}",
+                    "applied_item_count": 0,
+                    "applied_items": [],
+                    "skipped_items": [],
+                }
+                self._record_monitoring_config_runtime_apply_audit(
+                    checkpoint,
+                    document_id=str(raw_document.get("document_id") or "unknown"),
+                    audit=audit,
+                )
+                return audit
+            if document.applied_config_version:
+                return {
+                    "tool_name": "monitoring.update_ticker_config",
+                    "status": "applied",
+                    "reason": "monitoring config already has applied_config_version",
+                    "applied_config_version": document.applied_config_version,
+                    "applied_item_count": len(document.monitoring_items),
+                    "applied_items": [],
+                    "skipped_items": [],
+                }
+            evidence_refs = self._monitoring_config_commit_evidence_refs(
+                checkpoint,
+                document.document_id,
+            )
+            patch = BlackboardPatch(
+                patch_id=new_id("patch"),
+                target=BlackboardTarget(
+                    document_type=DocumentType.MONITORING_CONFIG,
+                    ticker=checkpoint.ticker,
+                    document_id=document.document_id,
+                    field_path="document",
+                ),
+                operation=PatchOperation.UPDATE,
+                before=raw_document,
+                after=raw_document,
+                rationale="FinalizeInitialization applies Monitoring Config to runtime state.",
+                evidence_refs=evidence_refs,
+                author_agent=AgentName.O2_MONITORING_CONFIG,
+                validation_status=ValidationStatus.PENDING,
+            )
+            try:
+                applied_patch, audit = self._apply_monitoring_config_patch(checkpoint, patch)
+            except (PatchValidationError, WorkflowContractError, ValueError) as exc:
+                audit = {
+                    "tool_name": "monitoring.update_ticker_config",
+                    "status": "failed_non_blocking",
+                    "reason": str(exc),
+                    "applied_item_count": 0,
+                    "applied_items": [],
+                    "skipped_items": [],
+                }
+                self._record_monitoring_config_runtime_apply_audit(
+                    checkpoint,
+                    document_id=document.document_id,
+                    audit=audit,
+                )
+                return audit
+            if applied_patch is not None:
+                try:
+                    self._submit_patch(
+                        checkpoint.run_id,
+                        applied_patch,
+                        "Monitoring Config applied to Message Bus runtime state after finalize.",
+                    )
+                except (PatchValidationError, WorkflowContractError, ValueError) as exc:
+                    audit = dict(audit)
+                    audit["state_patch_status"] = "failed_non_blocking"
+                    audit["state_patch_error"] = self._compact_monitoring_apply_text(
+                        str(exc),
+                        limit=240,
+                    )
+                    self._record_monitoring_config_runtime_apply_audit(
+                        checkpoint,
+                        document_id=document.document_id,
+                        audit=audit,
+                    )
+            return audit
+        audit = {
+            "tool_name": "monitoring.update_ticker_config",
+            "status": "skipped_with_objection",
+            "reason": "no stable monitoring_config document",
+            "applied_item_count": 0,
+            "applied_items": [],
+            "skipped_items": [],
+        }
+        self._record_monitoring_config_runtime_apply_audit(
+            checkpoint,
+            document_id="missing",
+            audit=audit,
+        )
+        return audit
+
+    def _monitoring_config_commit_evidence_refs(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        document_id: str,
+    ) -> list[EvidenceRef]:
+        try:
+            run = self.blackboard.get_run(checkpoint.run_id)
+        except RunNotFoundError:
+            run = None
+        if run is not None:
+            for commit in reversed(run.commit_log):
+                target = commit.patch.target
+                if (
+                    target.document_type is DocumentType.MONITORING_CONFIG
+                    and target.document_id == document_id
+                    and commit.patch.evidence_refs
+                ):
+                    return list(commit.patch.evidence_refs)
+        return [
+            EvidenceRef(
+                evidence_id=new_id("evidence"),
+                source_type=EvidenceSourceType.AGENT_OUTPUT,
+                source_id="workflow:monitoring_config_runtime_apply",
+                title="Monitoring Config runtime apply audit",
+                summary="Workflow audit evidence for Monitoring Config runtime apply.",
+                confidence=1.0,
+                citation_scope="workflow_runtime_apply",
+            )
+        ]
+
     def _apply_monitoring_config_patch(
         self,
         checkpoint: WorkflowCheckpoint,
         patch: BlackboardPatch,
-    ) -> tuple[BlackboardPatch, dict[str, Any]]:
+    ) -> tuple[BlackboardPatch | None, dict[str, Any]]:
         if self.execution_mode == "mock":
-            return patch, {}
+            return None, {"status": "skipped_mock"}
         if not isinstance(patch.after, dict):
             raise WorkflowContractError("GenerateMonitoringConfig patch must contain document.")
         document = MonitoringConfigDocument.model_validate(patch.after)
         tool_registry = self._runner_tool_registry()
         if tool_registry is None:
-            raise WorkflowContractError(
-                "ResolveMonitoringConfig requires monitoring.update_ticker_config, "
-                "but the active runner has no tool registry."
+            audit = {
+                "tool_name": "monitoring.update_ticker_config",
+                "status": "failed_non_blocking",
+                "reason": "active runner has no tool registry",
+                "applied_item_count": 0,
+                "applied_items": [],
+                "skipped_items": [
+                    self._monitoring_config_item_skip_audit(
+                        item_id=item.item_id,
+                        source_id=str(item.tool_input.get("source_id") or "missing"),
+                        reason="active runner has no tool registry",
+                    )
+                    for item in document.monitoring_items
+                ],
+            }
+            self._record_monitoring_config_runtime_apply_audit(
+                checkpoint,
+                document_id=document.document_id,
+                audit=audit,
             )
+            return None, audit
         permissions = self._effective_permissions(
             self.registry.get(AgentName.O2_MONITORING_CONFIG).runtime.to_permissions(),
             WorkflowNode.RESOLVE_MONITORING_CONFIG,
@@ -441,10 +616,30 @@ class BlackboardInitializationWorkflow(
             AgentName.O2_MONITORING_CONFIG,
         ).model_copy(update={"allowed_tools": ["monitoring.update_ticker_config"]}, deep=True)
         applied_results: list[dict[str, Any]] = []
+        skipped_items: list[dict[str, Any]] = []
+        raw_items = self._raw_monitoring_config_items_by_id(patch.after)
         for item in document.monitoring_items:
-            tool_input = dict(item.tool_input)
-            tool_input["ticker"] = checkpoint.ticker
-            tool_input.pop("poll_interval_seconds", None)
+            tool_input, sanitize_audit = self._monitoring_runtime_apply_tool_input(
+                checkpoint,
+                item,
+                raw_item=raw_items.get(item.item_id),
+            )
+            if tool_input is None:
+                skipped = self._monitoring_config_item_skip_audit(
+                    item_id=item.item_id,
+                    source_id=sanitize_audit.get("source_id"),
+                    reason=str(sanitize_audit.get("reason") or "invalid monitoring item"),
+                    dropped_fields=sanitize_audit.get("dropped_fields"),
+                )
+                skipped_items.append(skipped)
+                self._create_monitoring_config_apply_objection(
+                    checkpoint,
+                    document_id=document.document_id,
+                    item_id=item.item_id,
+                    source_id=skipped.get("source_id"),
+                    reason=str(skipped.get("reason") or "invalid monitoring item"),
+                )
+                continue
             request = ToolRequest(
                 tool_name="monitoring.update_ticker_config",
                 ticker=checkpoint.ticker,
@@ -452,7 +647,7 @@ class BlackboardInitializationWorkflow(
                 input=tool_input,
                 metadata={
                     "run_id": checkpoint.run_id,
-                    "workflow_node": WorkflowNode.RESOLVE_MONITORING_CONFIG.value,
+                    "workflow_node": WorkflowNode.FINALIZE_INITIALIZATION.value,
                     "document_id": document.document_id,
                     "monitoring_item_id": item.item_id,
                 },
@@ -460,39 +655,252 @@ class BlackboardInitializationWorkflow(
             result = tool_registry.call(request, permissions)
             if not result.succeeded:
                 message = result.error.message if result.error is not None else "unknown error"
-                raise WorkflowContractError(
-                    "monitoring.update_ticker_config failed for "
-                    f"{item.item_id}: {message}"
+                skipped = self._monitoring_config_item_skip_audit(
+                    item_id=item.item_id,
+                    source_id=str(tool_input.get("source_id") or "missing"),
+                    reason=message,
+                    dropped_fields=sanitize_audit.get("dropped_fields"),
                 )
+                skipped_items.append(skipped)
+                self._create_monitoring_config_apply_objection(
+                    checkpoint,
+                    document_id=document.document_id,
+                    item_id=item.item_id,
+                    source_id=str(tool_input.get("source_id") or "missing"),
+                    reason=message,
+                )
+                continue
             applied_results.append(
                 {
                     "item_id": item.item_id,
                     "tool_name": result.tool_name,
                     "status": result.status.value,
                     "output": result.output,
+                    "sanitizer": sanitize_audit,
                 }
             )
-        updated_after = dict(patch.after)
-        updated_after["applied_config_version"] = (
-            f"{document.document_id}:{len(applied_results)}:{int(time.time())}"
+        status = self._monitoring_config_apply_status(
+            applied_count=len(applied_results),
+            skipped_count=len(skipped_items),
+            total_count=len(document.monitoring_items),
         )
-        runtime_patch = patch.model_copy(
-            update={
-                "patch_id": new_id("patch"),
-                "operation": PatchOperation.UPDATE,
-                "before": patch.after,
-                "after": updated_after,
-                "rationale": "Monitoring Config applied to Message Bus runtime state.",
-                "author_agent": AgentName.O2_MONITORING_CONFIG,
-            },
-            deep=True,
-        )
-        return runtime_patch, {
+        audit: dict[str, Any] = {
             "tool_name": "monitoring.update_ticker_config",
+            "status": status,
             "applied_item_count": len(applied_results),
             "applied_items": applied_results,
-            "applied_config_version": updated_after["applied_config_version"],
+            "skipped_item_count": len(skipped_items),
+            "skipped_items": skipped_items,
         }
+        runtime_patch: BlackboardPatch | None = None
+        if applied_results:
+            updated_after = dict(patch.after)
+            updated_after["applied_config_version"] = (
+                f"{document.document_id}:{len(applied_results)}:{int(time.time())}"
+            )
+            runtime_patch = patch.model_copy(
+                update={
+                    "patch_id": new_id("patch"),
+                    "operation": PatchOperation.UPDATE,
+                    "before": patch.after,
+                    "after": updated_after,
+                    "rationale": "Monitoring Config applied to Message Bus runtime state.",
+                    "author_agent": AgentName.O2_MONITORING_CONFIG,
+                },
+                deep=True,
+            )
+            audit["applied_config_version"] = updated_after["applied_config_version"]
+        self._record_monitoring_config_runtime_apply_audit(
+            checkpoint,
+            document_id=document.document_id,
+            audit=audit,
+        )
+        return runtime_patch, audit
+
+    def _monitoring_runtime_apply_tool_input(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        item: MonitoringItem,
+        *,
+        raw_item: dict[str, Any] | None,
+    ) -> tuple[dict[str, Any] | None, dict[str, Any]]:
+        raw_item = raw_item or {}
+        raw_tool_input = (
+            dict(raw_item.get("tool_input"))
+            if isinstance(raw_item.get("tool_input"), dict)
+            else {}
+        )
+        raw_source_id = str(
+            raw_tool_input.get("source_id")
+            or raw_item.get("source_id")
+            or ""
+        ).strip()
+        source_id = raw_source_id or str(item.tool_input.get("source_id") or "").strip()
+        dropped_fields = self._monitoring_dropped_tool_input_fields(item.tool_input, source_id)
+        if not raw_source_id and not source_id:
+            return None, {
+                "item_id": item.item_id,
+                "source_id": "missing",
+                "reason": "missing source_id",
+                "dropped_fields": dropped_fields,
+            }
+        if not raw_source_id:
+            return None, {
+                "item_id": item.item_id,
+                "source_id": source_id or "missing",
+                "reason": "missing source_id in MonitoringConfig item/tool_input",
+                "dropped_fields": dropped_fields,
+            }
+        source_id = source_id.lower()
+        tool_input: dict[str, Any] = {
+            "ticker": checkpoint.ticker,
+            "source_id": source_id,
+            "enabled": bool(item.tool_input.get("enabled", True)),
+            "mode": str(item.tool_input.get("mode") or "merge"),
+            "reason": str(
+                item.tool_input.get("reason")
+                or item.reasoning
+                or item.trigger_condition
+                or "Apply Document3 monitoring config item."
+            ),
+        }
+        schema = parameter_schema_for_source(source_id)
+        for field, max_items in schema.items():
+            values = self._dedupe_texts(self._string_list(item.tool_input.get(field)))
+            if not values:
+                continue
+            tool_input[field] = values[:max_items]
+            if len(values) > max_items:
+                dropped_fields.append(f"{field}[>{max_items}]")
+        return tool_input, {
+            "item_id": item.item_id,
+            "source_id": source_id,
+            "dropped_fields": sorted(set(dropped_fields)),
+        }
+
+    def _monitoring_dropped_tool_input_fields(
+        self,
+        tool_input: dict[str, Any],
+        source_id: str | None,
+    ) -> list[str]:
+        allowed = {"ticker", "source_id", "enabled", "mode", "reason"}
+        if source_id:
+            allowed.update(parameter_schema_for_source(source_id).keys())
+        dropped: list[str] = []
+        for field, value in tool_input.items():
+            if field in allowed:
+                continue
+            if value in (None, "", [], {}):
+                continue
+            dropped.append(field)
+        return dropped
+
+    def _raw_monitoring_config_items_by_id(self, payload: dict[str, Any]) -> dict[str, dict[str, Any]]:
+        raw_items = payload.get("monitoring_items") or payload.get("items") or []
+        items: dict[str, dict[str, Any]] = {}
+        for raw in raw_items if isinstance(raw_items, list) else []:
+            if not isinstance(raw, dict):
+                continue
+            item_id = str(raw.get("item_id") or raw.get("id") or "").strip()
+            if item_id:
+                items[item_id] = raw
+        return items
+
+    def _monitoring_config_item_skip_audit(
+        self,
+        *,
+        item_id: str,
+        source_id: Any,
+        reason: str,
+        dropped_fields: Any = None,
+    ) -> dict[str, Any]:
+        return {
+            "item_id": item_id,
+            "source_id": str(source_id or "missing"),
+            "reason": self._compact_monitoring_apply_text(reason, limit=240),
+            "required_fix": (
+                "revise tool_input to match monitoring.update_ticker_config source contract."
+            ),
+            "dropped_fields": sorted(str(field) for field in (dropped_fields or [])),
+        }
+
+    def _monitoring_config_apply_status(
+        self,
+        *,
+        applied_count: int,
+        skipped_count: int,
+        total_count: int,
+    ) -> str:
+        if applied_count == total_count and skipped_count == 0:
+            return "applied"
+        if applied_count > 0 and skipped_count > 0:
+            return "partially_applied"
+        if skipped_count > 0:
+            return "skipped_with_objection"
+        return "failed_non_blocking"
+
+    def _record_monitoring_config_runtime_apply_audit(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        *,
+        document_id: str,
+        audit: dict[str, Any],
+    ) -> None:
+        self.blackboard.add_working_memory_entry(
+            checkpoint.run_id,
+            author_agent=AgentName.SYSTEM,
+            content_type="monitoring_config_runtime_apply_audit",
+            payload={
+                "workflow_node": WorkflowNode.FINALIZE_INITIALIZATION.value,
+                "document_id": document_id,
+                "audit": audit,
+            },
+        )
+
+    def _create_monitoring_config_apply_objection(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        *,
+        document_id: str,
+        item_id: str,
+        source_id: str | None,
+        reason: str,
+    ) -> None:
+        compact_reason = self._compact_monitoring_apply_text(reason, limit=240)
+        required_fix = self._compact_monitoring_apply_text(
+            "revise tool_input to match monitoring.update_ticker_config source contract.",
+            limit=160,
+        )
+        self.blackboard.create_objection(
+            checkpoint.run_id,
+            Objection(
+                objection_id=new_id("objection"),
+                source_agent=AgentName.SYSTEM,
+                target=BlackboardTarget(
+                    document_type=DocumentType.MONITORING_CONFIG,
+                    ticker=checkpoint.ticker,
+                    document_id=document_id,
+                    field_path=f"document.monitoring_items.{item_id}",
+                ),
+                severity=ObjectionSeverity.MEDIUM,
+                reason=(
+                    "MonitoringConfig item could not be applied to runtime Message Bus.\n"
+                    f"item_id: {item_id}\n"
+                    f"source_id: {source_id or 'missing'}\n"
+                    f"reason: {compact_reason}\n"
+                    f"required_fix: {required_fix}"
+                ),
+                taxonomy="document3_monitoring_runtime_apply",
+                target_path=f"monitoring_config.{item_id}",
+                dedupe_hash=f"document3_monitoring_apply:{document_id}:{item_id}",
+            ),
+        )
+
+    def _compact_monitoring_apply_text(self, value: str, *, limit: int) -> str:
+        text = " ".join(str(value or "").split())
+        if len(text) <= limit:
+            return text or "unknown"
+        return text[: max(limit - 3, 1)].rstrip() + "..."
 
     def _review_monitoring_config(
         self,
@@ -515,7 +923,14 @@ class BlackboardInitializationWorkflow(
                 "instruction": (
                     "Review whether Monitoring Config misses internal company variables, "
                     "financial signals, order/customer/capacity sources, or uses overly broad "
-                    "low-signal monitoring terms. Raise blocking objections for material gaps."
+                    "low-signal monitoring terms. Keep every recommendation compatible with "
+                    "monitoring.update_ticker_config: do not ask finnhub_company_news or "
+                    "stocktwits_messages to use keywords, extra, source_filters, "
+                    "trigger_condition, priority, or expectation_id inside tool_input. If targeted "
+                    "terms are needed, recommend benzinga_news.search_terms, "
+                    "tikhub_x_search.search_terms, tikhub_x_user_posts.usernames, or "
+                    "newswire_rss.rss_urls. For blocking objections, include the affected item id, "
+                    "source_id, allowed parameter fields, and a concise contract-safe correction."
                 ),
             },
             {
@@ -532,7 +947,15 @@ class BlackboardInitializationWorkflow(
                 "instruction": (
                     "Review whether Monitoring Config misses industry, peer, supply-chain, "
                     "regulatory, macro-policy, or source-scope variables. Raise blocking "
-                    "objections for material gaps or broad keyword waste."
+                    "objections for material gaps or broad keyword waste. Keep every recommendation "
+                    "compatible with monitoring.update_ticker_config: do not ask "
+                    "finnhub_company_news or stocktwits_messages to use keywords, extra, "
+                    "source_filters, trigger_condition, priority, or expectation_id inside "
+                    "tool_input. If targeted terms are needed, recommend "
+                    "benzinga_news.search_terms, tikhub_x_search.search_terms, "
+                    "tikhub_x_user_posts.usernames, or newswire_rss.rss_urls. For blocking "
+                    "objections, include the affected item id, source_id, allowed parameter "
+                    "fields, and a concise contract-safe correction."
                 ),
             },
         ]
@@ -565,17 +988,14 @@ class BlackboardInitializationWorkflow(
             trigger_reason="Monitoring Config reviewed and promoted to Document 3 Brief State.",
         )
         metadata = self._agent_metadata(node, results) if results else {}
-        applied_patch, apply_audit = self._apply_monitoring_config_patch(checkpoint, patch)
-        if apply_audit:
-            self._submit_patch(
-                checkpoint.run_id,
-                applied_patch,
-                "Monitoring Config applied to Message Bus runtime state.",
-            )
-            metadata["monitoring_config_apply"] = apply_audit
+        metadata["monitoring_config_apply"] = {
+            "tool_name": "monitoring.update_ticker_config",
+            "status": "deferred_until_finalize",
+            "reason": "runtime Message Bus apply runs after FinalizeInitialization.",
+        }
         metadata["document3_lifecycle"] = {
             "document_type": DocumentType.MONITORING_CONFIG.value,
-            "state": "applied_runtime_state" if apply_audit else "brief_state",
+            "state": "brief_state",
             "patch_id": patch.patch_id,
         }
         return self._mark_completed(
@@ -1441,8 +1861,6 @@ class BlackboardInitializationWorkflow(
                         tool_input={
                             "ticker": ticker,
                             "source_id": "stocktwits_messages",
-                            "keywords": [ticker],
-                            "extra": {"trigger_condition": text, "priority": "medium"},
                             "reason": text,
                             "mode": "merge",
                             "enabled": True,
@@ -1460,11 +1878,6 @@ class BlackboardInitializationWorkflow(
                     tool_input={
                         "ticker": ticker,
                         "source_id": "stocktwits_messages",
-                        "keywords": [ticker],
-                        "extra": {
-                            "trigger_condition": "Monitor new ticker-related events.",
-                            "priority": "medium",
-                        },
                         "reason": "Monitor new ticker-related events.",
                         "mode": "merge",
                         "enabled": True,
@@ -1488,49 +1901,38 @@ class BlackboardInitializationWorkflow(
         checkpoint_ticker: str,
         item: dict[str, Any],
     ) -> dict[str, Any]:
-        tool_input = dict(item.get("tool_input") or {})
-        tool_input.pop("poll_interval_seconds", None)
-        tool_input.setdefault("ticker", checkpoint_ticker)
-        tool_input.setdefault("source_id", item.get("source_id") or "stocktwits_messages")
-        tool_input.setdefault("mode", item.get("mode") or "merge")
-        tool_input.setdefault("enabled", bool(item.get("enabled", True)))
-        keywords = self._dedupe_texts(
-            [
-                *self._string_list(tool_input.get("keywords")),
-                *self._string_list(item.get("base_keywords")),
-                *self._string_list(item.get("extra_keywords")),
-            ]
-        )
-        if keywords:
-            tool_input["keywords"] = keywords
-        search_terms = self._dedupe_texts(
-            [
-                *self._string_list(tool_input.get("search_terms")),
-                *self._string_list(item.get("extra_objects")),
-                *self._string_list(item.get("related_entities")),
-            ]
-        )
-        if search_terms:
-            tool_input["search_terms"] = search_terms
-        for field in ("usernames", "rss_urls", "source_filters"):
-            values = self._string_list(tool_input.get(field) or item.get(field))
+        raw_tool_input = dict(item.get("tool_input") or {})
+        source_id = str(
+            raw_tool_input.get("source_id") or item.get("source_id") or "stocktwits_messages"
+        ).strip().lower()
+        tool_input: dict[str, Any] = {
+            "ticker": str(raw_tool_input.get("ticker") or checkpoint_ticker),
+            "source_id": source_id,
+            "mode": str(raw_tool_input.get("mode") or item.get("mode") or "merge"),
+            "enabled": bool(raw_tool_input.get("enabled", item.get("enabled", True))),
+        }
+        reason = str(
+            raw_tool_input.get("reason")
+            or item.get("reason")
+            or item.get("reasoning")
+            or item.get("trigger_condition")
+            or item.get("description")
+            or "Apply Document3 monitoring config item."
+        ).strip()
+        tool_input["reason"] = reason or "Apply Document3 monitoring config item."
+        for field, max_items in parameter_schema_for_source(source_id).items():
+            values = self._dedupe_texts(
+                [
+                    *self._string_list(raw_tool_input.get(field)),
+                    *self._string_list(item.get(field)),
+                ]
+            )
             if values:
-                tool_input[field] = values
-        extra = dict(tool_input.get("extra") or {})
-        if item.get("expectation_id"):
-            extra.setdefault("expectation_id", item.get("expectation_id"))
-        extra.setdefault("priority", str(item.get("priority") or "medium"))
-        extra.setdefault(
-            "trigger_condition",
-            str(
-                item.get("trigger_condition")
-                or item.get("condition")
-                or item.get("description")
-                or ""
-            ),
-        )
-        tool_input["extra"] = extra
+                tool_input[field] = values[:max_items]
         return tool_input
+
+    def _payload_string_list(self, payload: dict[str, Any], key: str) -> list[str]:
+        return self._string_list(payload.get(key))
 
     def _normalize_monitoring_policy_document(
         self,

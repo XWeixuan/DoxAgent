@@ -2853,6 +2853,54 @@ def _output_contract(required_output_schema: str, *, task: AgentTask | None = No
                             "item_id": "monitor_<id>",
                             "tool_input": {
                                 "ticker": "<ticker>",
+                                "source_id": "benzinga_news",
+                                "enabled": True,
+                                "mode": "merge",
+                                "reason": "one concise sentence explaining why this item exists",
+                                "search_terms": [],
+                            },
+                            "expectation_id": "expectation_<id>",
+                            "priority": "high | medium | low",
+                            "trigger_condition": "specific observable trigger condition",
+                            "reasoning": "one concise sentence explaining which expectation or variable this item serves",
+                        }
+                    ],
+                },
+                "rules": [
+                    (
+                        "Monitoring config must be API-shaped. tool_input may contain only "
+                        "ticker, source_id, enabled, mode, reason, and the selected source's "
+                        "allowed parameter fields."
+                    ),
+                    (
+                        "Allowed source parameters: benzinga_news.search_terms, "
+                        "tikhub_x_search.search_terms, tikhub_x_user_posts.usernames, "
+                        "newswire_rss.rss_urls. finnhub_company_news and "
+                        "stocktwits_messages are ticker-only."
+                    ),
+                    (
+                        "Never put keywords, source_filters, extra, poll_interval_seconds, "
+                        "expectation_id, priority, or trigger_condition inside tool_input."
+                    ),
+                    (
+                        "Keep expectation_id, priority, trigger_condition, base_keywords, "
+                        "extra_keywords, related_entities, and explanatory text as "
+                        "MonitoringItem metadata only."
+                    ),
+                ],
+            }
+        elif False and schema_name == "MonitoringConfigDocument":
+            contracts[schema_name] = {
+                "final_payload": {
+                    "document_id": "doc_<id>",
+                    "document_type": "monitoring_config",
+                    "ticker": "<ticker>",
+                    "created_at": "ISO-8601 timestamp",
+                    "monitoring_items": [
+                        {
+                            "item_id": "monitor_<id>",
+                            "tool_input": {
+                                "ticker": "<ticker>",
                                 "source_id": "registered monitoring source_id",
                                 "keywords": [],
                                 "usernames": [],
@@ -3189,42 +3237,13 @@ def _normalize_monitoring_config_document_payload(
             or item.get("reasoning")
             or "监控与 ticker 相关的信号变化。"
         )
-        tool_input = dict(item.get("tool_input") or {})
-        tool_input.pop("poll_interval_seconds", None)
-        tool_input.setdefault("ticker", str(payload.get("ticker") or task.ticker))
-        tool_input.setdefault("source_id", item.get("source_id") or "stocktwits_messages")
-        tool_input.setdefault("mode", item.get("mode") or "merge")
-        tool_input.setdefault("enabled", bool(item.get("enabled", True)))
-        keywords = _dedupe_texts(
-            [
-                *_strings(tool_input.get("keywords")),
-                *_strings(item.get("base_keywords")),
-                *_strings(item.get("extra_keywords") or item.get("keywords")),
-            ]
+        raw_tool_input = dict(item.get("tool_input") or {})
+        reasoning = str(item.get("reasoning") or raw_tool_input.get("reason") or trigger_condition)
+        tool_input = _monitoring_config_api_tool_input(
+            item,
+            ticker=str(payload.get("ticker") or task.ticker),
+            reasoning=reasoning,
         )
-        if keywords:
-            tool_input["keywords"] = keywords
-        search_terms = _dedupe_texts(
-            [
-                *_strings(tool_input.get("search_terms")),
-                *_strings(item.get("extra_objects") or item.get("objects")),
-                *_strings(item.get("related_entities")),
-            ]
-        )
-        if search_terms:
-            tool_input["search_terms"] = search_terms
-        for tool_field in ("usernames", "rss_urls", "source_filters"):
-            values = _strings(tool_input.get(tool_field) or item.get(tool_field))
-            if values:
-                tool_input[tool_field] = values
-        extra = dict(tool_input.get("extra") or {})
-        if item.get("expectation_id"):
-            extra.setdefault("expectation_id", item.get("expectation_id"))
-        extra.setdefault("priority", str(item.get("priority") or "medium"))
-        extra.setdefault("trigger_condition", trigger_condition)
-        tool_input["extra"] = extra
-        reasoning = str(item.get("reasoning") or tool_input.get("reason") or trigger_condition)
-        tool_input.setdefault("reason", reasoning)
         items.append(
             {
                 "item_id": str(item.get("item_id") or item.get("id") or new_id("monitor")),
@@ -3246,6 +3265,46 @@ def _normalize_monitoring_config_document_payload(
         "created_at": _event_time(payload.get("created_at")),
         "monitoring_items": items,
     }
+
+
+_MONITORING_SOURCE_ALLOWED_PARAMETERS: dict[str, tuple[str, ...]] = {
+    "benzinga_news": ("search_terms",),
+    "finnhub_company_news": (),
+    "stocktwits_messages": (),
+    "tikhub_x_search": ("search_terms",),
+    "tikhub_x_user_posts": ("usernames",),
+    "newswire_rss": ("rss_urls",),
+}
+
+
+def _monitoring_config_api_tool_input(
+    item: JsonDict,
+    *,
+    ticker: str,
+    reasoning: str,
+) -> JsonDict:
+    raw_tool_input = dict(item.get("tool_input") or {})
+    source_id = str(raw_tool_input.get("source_id") or item.get("source_id") or "").strip()
+    if not source_id:
+        source_id = "stocktwits_messages"
+    source_id = source_id.lower()
+    tool_input: JsonDict = {
+        "ticker": str(raw_tool_input.get("ticker") or ticker),
+        "source_id": source_id,
+        "enabled": bool(raw_tool_input.get("enabled", item.get("enabled", True))),
+        "mode": str(raw_tool_input.get("mode") or item.get("mode") or "merge"),
+        "reason": str(raw_tool_input.get("reason") or item.get("reason") or reasoning),
+    }
+    for field in _MONITORING_SOURCE_ALLOWED_PARAMETERS.get(source_id, ()):
+        values = _dedupe_texts(
+            [
+                *_strings(raw_tool_input.get(field)),
+                *_strings(item.get(field)),
+            ]
+        )
+        if values:
+            tool_input[field] = values
+    return tool_input
 
 
 def _normalize_monitoring_policy_document_payload(
