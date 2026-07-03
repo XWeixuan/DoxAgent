@@ -50,11 +50,32 @@ def test_dashboard_mock_api_mutations_are_fixture_only_and_contract_shaped() -> 
 
     created = client.post(
         "/api/dashboard/v1/tickers",
-        json={"ticker": "AMD", "force_initialize": False, "reason": "frontend smoke"},
+        json={
+            "ticker": "AMD",
+            "force_initialize": False,
+            "monitor_mode": "paper_trading",
+            "reason": "frontend smoke",
+        },
     )
     assert created.status_code == 200
     assert created.json()["data"]["operation"] == "start"
     assert created.json()["data"]["ticker"] == "AMD"
+    assert created.json()["data"]["ticker_state"]["monitor_mode"] == "paper_trading"
+
+    switched = client.patch(
+        "/api/dashboard/v1/tickers/AMD/monitor-mode",
+        json={"monitor_mode": "message_monitoring"},
+    )
+    assert switched.status_code == 200
+    assert switched.json()["data"]["operation"] == "monitor_mode"
+    assert switched.json()["data"]["ticker_state"]["monitor_mode"] == "message_monitoring"
+
+    broker = client.patch(
+        "/api/dashboard/v1/tickers/AMD/monitor-mode",
+        json={"monitor_mode": "broker_trading"},
+    )
+    assert broker.status_code == 422
+    assert broker.json()["error"]["code"] == "INVALID_PARAMS"
 
     paused = client.post("/api/dashboard/v1/tickers/AMD/pause", json={"reason": "pause"})
     assert paused.status_code == 200

@@ -481,6 +481,601 @@ async def test_media_enrichment_rejects_short_extract_without_overwriting_body()
     assert message.metadata["media_enrichment"]["reason"] == "incomplete_extract"
 
 
+async def test_media_enrichment_reader_fallback_recovers_yahoo_after_429() -> None:
+    repository = InMemoryMonitoringRepository()
+    service = MonitoringBusService(repository)
+    binding = service.configure_ticker_source(
+        "MU",
+        "finnhub_company_news",
+        updated_by=UpdateActor.USER,
+    )
+    source = repository.get_source("finnhub_company_news")
+    assert source is not None
+    title = "Micron demand improves as AI memory orders broaden"
+    article_url = "https://finance.yahoo.com/news/micron-ai-memory-demand-101.html"
+    reader_url = f"https://r.jina.ai/http://{article_url}"
+    service.ingest_fetched(
+        source=source,
+        fetched=[
+            FetchedExternalMessage(
+                source_id=source.source_id,
+                binding_id=binding.binding_id,
+                ticker=binding.ticker,
+                source_type=source.source_type,
+                interface_type=source.interface_type,
+                provider_message_id="103",
+                source_url=article_url,
+                source_published_at=binding.updated_at + timedelta(seconds=1),
+                raw_payload={
+                    "id": 103,
+                    "headline": title,
+                    "summary": "Existing summary.",
+                    "url": article_url,
+                    "source": "Yahoo",
+                    "datetime": int((binding.updated_at + timedelta(seconds=1)).timestamp()),
+                },
+            )
+        ],
+    )
+    reader_body = _long_article_body()
+    fake_session = FakeAsyncSession(
+        {
+            article_url: FakeAsyncResponse(
+                status_code=429,
+                text="Edge: Too Many Requests",
+                url=article_url,
+            ),
+            reader_url: FakeAsyncResponse(
+                status_code=200,
+                text=(
+                    "Title: Micron demand improves as AI memory orders broaden\n"
+                    f"URL Source: {article_url}\n\n"
+                    "Markdown Content:\n\n"
+                    "Yahoo Finance\n\nTrending Tickers\n\n"
+                    f"# {title}\n\n"
+                    "Yahoo is using AI to generate takeaways from this article.\n\n"
+                    "Click here to learn more about this disclosure.\n\n"
+                    f"{reader_body}\n\n"
+                    "View Comments\n\nRecommended Stories"
+                ),
+                url=reader_url,
+            ),
+        }
+    )
+
+    payload = await service.enrich_recent_media_async(
+        ticker="MU",
+        limit=10,
+        session_factory=lambda: fake_session,
+    )
+
+    message = service.recent_messages(ticker="MU")[0]
+    enrichment = message.metadata["media_enrichment"]
+    assert payload["stats"]["succeeded_count"] == 1
+    assert fake_session.calls == [article_url, reader_url]
+    assert message.body == reader_body
+    assert "Yahoo Finance" not in message.body
+    assert "Click here to learn more" not in message.body
+    assert enrichment["method"] == "jina_reader_markdown"
+    assert enrichment["attempts"][0]["status_code"] == 429
+    assert enrichment["attempts"][1]["phase"] == "reader"
+
+
+async def test_media_enrichment_reader_fallback_can_be_disabled() -> None:
+    repository = InMemoryMonitoringRepository()
+    service = MonitoringBusService(repository)
+    binding = service.configure_ticker_source(
+        "MU",
+        "finnhub_company_news",
+        updated_by=UpdateActor.USER,
+    )
+    source = repository.get_source("finnhub_company_news")
+    assert source is not None
+    title = "Micron AI demand story"
+    article_url = "https://finance.yahoo.com/news/micron-ai-demand-story-101.html"
+    service.ingest_fetched(
+        source=source,
+        fetched=[
+            FetchedExternalMessage(
+                source_id=source.source_id,
+                binding_id=binding.binding_id,
+                ticker=binding.ticker,
+                source_type=source.source_type,
+                interface_type=source.interface_type,
+                provider_message_id="105",
+                source_url=article_url,
+                source_published_at=binding.updated_at + timedelta(seconds=1),
+                raw_payload={
+                    "id": 105,
+                    "headline": title,
+                    "summary": "Existing summary.",
+                    "url": article_url,
+                    "source": "Yahoo",
+                    "datetime": int((binding.updated_at + timedelta(seconds=1)).timestamp()),
+                },
+            )
+        ],
+    )
+    fake_session = FakeAsyncSession(
+        {
+            article_url: FakeAsyncResponse(
+                status_code=429,
+                text="Edge: Too Many Requests",
+                url=article_url,
+            ),
+        }
+    )
+
+    payload = await service.enrich_recent_media_async(
+        ticker="MU",
+        limit=10,
+        session_factory=lambda: fake_session,
+        reader_fallback=False,
+    )
+
+    message = service.recent_messages(ticker="MU")[0]
+    enrichment = message.metadata["media_enrichment"]
+    assert payload["stats"]["succeeded_count"] == 0
+    assert payload["stats"]["failures_by_reason"] == {"http_429": 1}
+    assert fake_session.calls == [article_url]
+    assert enrichment["status"] == "failed"
+    assert enrichment["attempts"] == [
+        {
+            "phase": "direct",
+            "url": article_url,
+            "domain": "finance.yahoo.com",
+            "final_url": article_url,
+            "fetch_profile": "direct:finance.yahoo.com:c2:gap0.15:j0.10",
+            "status_code": 429,
+            "latency_ms": enrichment["attempts"][0]["latency_ms"],
+            "reason": "http_429",
+            "response_bytes": len("Edge: Too Many Requests"),
+        }
+    ]
+
+
+async def test_media_enrichment_yahoo_summary_only_gets_specific_failure_reason() -> None:
+    repository = InMemoryMonitoringRepository()
+    service = MonitoringBusService(repository)
+    binding = service.configure_ticker_source(
+        "MU",
+        "finnhub_company_news",
+        updated_by=UpdateActor.USER,
+    )
+    source = repository.get_source("finnhub_company_news")
+    assert source is not None
+    title = "Why Chip Stocks Won't Keep Outperforming Big Tech"
+    article_url = "https://finance.yahoo.com/m/abc/why-chip-stocks.html"
+    reader_url = f"https://r.jina.ai/http://{article_url}"
+    service.ingest_fetched(
+        source=source,
+        fetched=[
+            FetchedExternalMessage(
+                source_id=source.source_id,
+                binding_id=binding.binding_id,
+                ticker=binding.ticker,
+                source_type=source.source_type,
+                interface_type=source.interface_type,
+                provider_message_id="106",
+                source_url=article_url,
+                source_published_at=binding.updated_at + timedelta(seconds=1),
+                raw_payload={
+                    "id": 106,
+                    "headline": title,
+                    "summary": "Existing Yahoo summary.",
+                    "url": article_url,
+                    "source": "Yahoo",
+                    "datetime": int((binding.updated_at + timedelta(seconds=1)).timestamp()),
+                },
+            )
+        ],
+    )
+    fake_session = FakeAsyncSession(
+        {
+            article_url: FakeAsyncResponse(
+                status_code=429,
+                text="Edge: Too Many Requests",
+                url=article_url,
+            ),
+            reader_url: FakeAsyncResponse(
+                status_code=200,
+                text=(
+                    f"Title: {title}\n"
+                    f"URL Source: {article_url}\n"
+                    "Markdown Content:\n"
+                    "[Skip to navigation](#navigation-container)\n"
+                    f"{title} ·Barrons.com·Marketwatch\n"
+                    "Barrons.com\n"
+                    "Thu, July 2, 2026 at 8:25 AM PDT 1 min read\n"
+                    "Chip stocks have gotten a boost from Big Tech spending on AI "
+                    "infrastructure, but the short Yahoo card does not include the "
+                    "full article body.\n"
+                    "* * *\n"
+                    f"{title}\n"
+                ),
+                url=reader_url,
+            ),
+        }
+    )
+
+    payload = await service.enrich_recent_media_async(
+        ticker="MU",
+        limit=10,
+        session_factory=lambda: fake_session,
+    )
+
+    message = service.recent_messages(ticker="MU")[0]
+    enrichment = message.metadata["media_enrichment"]
+    assert payload["stats"]["succeeded_count"] == 0
+    assert payload["stats"]["failures_by_reason"] == {"source_summary_only": 1}
+    assert message.body == "Existing Yahoo summary."
+    assert enrichment["reason"] == "source_summary_only"
+    assert enrichment["method"] == "jina_reader_markdown"
+
+
+async def test_media_enrichment_yahoo_reader_does_not_accept_navigation_without_title() -> None:
+    repository = InMemoryMonitoringRepository()
+    service = MonitoringBusService(repository)
+    binding = service.configure_ticker_source(
+        "MU",
+        "finnhub_company_news",
+        updated_by=UpdateActor.USER,
+    )
+    source = repository.get_source("finnhub_company_news")
+    assert source is not None
+    title = "Micron stock article that is missing from the Yahoo page"
+    article_url = "https://finance.yahoo.com/m/abc/missing-title.html"
+    reader_url = f"https://r.jina.ai/http://{article_url}"
+    service.ingest_fetched(
+        source=source,
+        fetched=[
+            FetchedExternalMessage(
+                source_id=source.source_id,
+                binding_id=binding.binding_id,
+                ticker=binding.ticker,
+                source_type=source.source_type,
+                interface_type=source.interface_type,
+                provider_message_id="107",
+                source_url=article_url,
+                source_published_at=binding.updated_at + timedelta(seconds=1),
+                raw_payload={
+                    "id": 107,
+                    "headline": title,
+                    "summary": "Existing Yahoo summary.",
+                    "url": article_url,
+                    "source": "Yahoo",
+                    "datetime": int((binding.updated_at + timedelta(seconds=1)).timestamp()),
+                },
+            )
+        ],
+    )
+    fake_session = FakeAsyncSession(
+        {
+            article_url: FakeAsyncResponse(
+                status_code=429,
+                text="Edge: Too Many Requests",
+                url=article_url,
+            ),
+            reader_url: FakeAsyncResponse(
+                status_code=200,
+                text=(
+                    f"Title: {title}\n"
+                    f"URL Source: {article_url}\n"
+                    "Markdown Content:\n"
+                    "# Yahoo Finance\n"
+                    "### Trending Tickers\n"
+                    + "\n".join(
+                        f"* [News item {index}](https://finance.yahoo.com/news/{index})"
+                        for index in range(80)
+                    )
+                    + "\nTerms of Service\nPrivacy Policy\n"
+                ),
+                url=reader_url,
+            ),
+        }
+    )
+
+    payload = await service.enrich_recent_media_async(
+        ticker="MU",
+        limit=10,
+        session_factory=lambda: fake_session,
+    )
+
+    message = service.recent_messages(ticker="MU")[0]
+    enrichment = message.metadata["media_enrichment"]
+    assert payload["stats"]["succeeded_count"] == 0
+    assert payload["stats"]["failures_by_reason"] == {"empty_extract": 1}
+    assert message.body == "Existing Yahoo summary."
+    assert enrichment["reason"] == "empty_extract"
+
+
+async def test_media_enrichment_yahoo_continue_reading_does_not_absorb_related_story() -> None:
+    repository = InMemoryMonitoringRepository()
+    service = MonitoringBusService(repository)
+    binding = service.configure_ticker_source(
+        "MU",
+        "finnhub_company_news",
+        updated_by=UpdateActor.USER,
+    )
+    source = repository.get_source("finnhub_company_news")
+    assert source is not None
+    title = "Trump Calls Micron a Great Company but Cannot Stop the Stock From Falling"
+    article_url = "https://finance.yahoo.com/m/abc/trump-calls-micron.html"
+    reader_url = f"https://r.jina.ai/http://{article_url}"
+    service.ingest_fetched(
+        source=source,
+        fetched=[
+            FetchedExternalMessage(
+                source_id=source.source_id,
+                binding_id=binding.binding_id,
+                ticker=binding.ticker,
+                source_type=source.source_type,
+                interface_type=source.interface_type,
+                provider_message_id="108",
+                source_url=article_url,
+                source_published_at=binding.updated_at + timedelta(seconds=1),
+                raw_payload={
+                    "id": 108,
+                    "headline": title,
+                    "summary": "Existing Yahoo summary.",
+                    "url": article_url,
+                    "source": "Yahoo",
+                    "datetime": int((binding.updated_at + timedelta(seconds=1)).timestamp()),
+                },
+            )
+        ],
+    )
+    unrelated_long_story = _long_article_body()
+    fake_session = FakeAsyncSession(
+        {
+            article_url: FakeAsyncResponse(
+                status_code=429,
+                text="Edge: Too Many Requests",
+                url=article_url,
+            ),
+            reader_url: FakeAsyncResponse(
+                status_code=200,
+                text=(
+                    f"Title: {title}\n"
+                    f"URL Source: {article_url}\n"
+                    "Markdown Content:\n"
+                    f"# {title}\n"
+                    "Barrons.com\n"
+                    "Thu, July 2, 2026 at 10:21 AM PDT 2 min read\n"
+                    "This Yahoo card exposes only a brief excerpt for the primary story.\n"
+                    "[Continue Reading](https://www.barrons.com/articles/micron-stock)\n"
+                    "## Recommended Stories\n"
+                    f"{unrelated_long_story}\n"
+                ),
+                url=reader_url,
+            ),
+        }
+    )
+
+    payload = await service.enrich_recent_media_async(
+        ticker="MU",
+        limit=10,
+        session_factory=lambda: fake_session,
+    )
+
+    message = service.recent_messages(ticker="MU")[0]
+    enrichment = message.metadata["media_enrichment"]
+    assert payload["stats"]["succeeded_count"] == 0
+    assert payload["stats"]["failures_by_reason"] == {"source_summary_only": 1}
+    assert message.body == "Existing Yahoo summary."
+    assert enrichment["reason"] == "source_summary_only"
+
+
+async def test_media_enrichment_thestreet_short_reader_card_is_source_summary_only() -> None:
+    repository = InMemoryMonitoringRepository()
+    service = MonitoringBusService(repository)
+    binding = service.configure_ticker_source(
+        "MU",
+        "finnhub_company_news",
+        updated_by=UpdateActor.USER,
+    )
+    source = repository.get_source("finnhub_company_news")
+    assert source is not None
+    title = "Navellier explains why Micron is better than SpaceX"
+    article_url = "https://www.thestreet.com/investing/navellier-micron-spacex"
+    reader_url = f"https://r.jina.ai/http://{article_url}"
+    service.ingest_fetched(
+        source=source,
+        fetched=[
+            FetchedExternalMessage(
+                source_id=source.source_id,
+                binding_id=binding.binding_id,
+                ticker=binding.ticker,
+                source_type=source.source_type,
+                interface_type=source.interface_type,
+                provider_message_id="109",
+                source_url=article_url,
+                source_published_at=binding.updated_at + timedelta(seconds=1),
+                raw_payload={
+                    "id": 109,
+                    "headline": title,
+                    "summary": "Existing TheStreet summary.",
+                    "url": article_url,
+                    "source": "TheStreet",
+                    "datetime": int((binding.updated_at + timedelta(seconds=1)).timestamp()),
+                },
+            )
+        ],
+    )
+    fake_session = FakeAsyncSession(
+        {
+            article_url: FakeAsyncResponse(
+                status_code=403,
+                text="Access denied",
+                url=article_url,
+            ),
+            reader_url: FakeAsyncResponse(
+                status_code=200,
+                text=(
+                    f"# {title}\n"
+                    "The article card contains a short teaser and a couple of "
+                    "sentences, but not the full story body.\n"
+                    "Recommended Stories\n"
+                ),
+                url=reader_url,
+            ),
+        }
+    )
+
+    payload = await service.enrich_recent_media_async(
+        ticker="MU",
+        limit=10,
+        session_factory=lambda: fake_session,
+    )
+
+    message = service.recent_messages(ticker="MU")[0]
+    enrichment = message.metadata["media_enrichment"]
+    assert payload["stats"]["succeeded_count"] == 0
+    assert payload["stats"]["failures_by_reason"] == {"source_summary_only": 1}
+    assert message.body == "Existing TheStreet summary."
+    assert enrichment["reason"] == "source_summary_only"
+
+
+async def test_media_enrichment_jwplayer_preview_is_unsupported_media() -> None:
+    repository = InMemoryMonitoringRepository()
+    service = MonitoringBusService(repository)
+    binding = service.configure_ticker_source(
+        "MU",
+        "finnhub_company_news",
+        updated_by=UpdateActor.USER,
+    )
+    source = repository.get_source("finnhub_company_news")
+    assert source is not None
+    title = "Memory stocks are still early innings"
+    article_url = "https://cdn.jwplayer.com/previews/ORPawpZX"
+    service.ingest_fetched(
+        source=source,
+        fetched=[
+            FetchedExternalMessage(
+                source_id=source.source_id,
+                binding_id=binding.binding_id,
+                ticker=binding.ticker,
+                source_type=source.source_type,
+                interface_type=source.interface_type,
+                provider_message_id="110",
+                source_url=article_url,
+                source_published_at=binding.updated_at + timedelta(seconds=1),
+                raw_payload={
+                    "id": 110,
+                    "headline": title,
+                    "summary": "Existing video summary.",
+                    "url": article_url,
+                    "source": "CNBC",
+                    "datetime": int((binding.updated_at + timedelta(seconds=1)).timestamp()),
+                },
+            )
+        ],
+    )
+    fake_session = FakeAsyncSession(
+        {
+            article_url: FakeAsyncResponse(
+                status_code=200,
+                text=(
+                    "<html><body><article>Memory stocks are still early innings. "
+                    "This preview page describes a video clip rather than an article "
+                    "with a complete text body.</article></body></html>"
+                ),
+                url=article_url,
+            ),
+        }
+    )
+
+    payload = await service.enrich_recent_media_async(
+        ticker="MU",
+        limit=10,
+        session_factory=lambda: fake_session,
+    )
+
+    message = service.recent_messages(ticker="MU")[0]
+    enrichment = message.metadata["media_enrichment"]
+    assert payload["stats"]["succeeded_count"] == 0
+    assert payload["stats"]["failures_by_reason"] == {"unsupported_media": 1}
+    assert message.body == "Existing video summary."
+    assert enrichment["reason"] == "unsupported_media"
+
+
+async def test_media_enrichment_reader_summary_only_does_not_overwrite_body() -> None:
+    repository = InMemoryMonitoringRepository()
+    service = MonitoringBusService(repository)
+    binding = service.configure_ticker_source(
+        "MU",
+        "finnhub_company_news",
+        updated_by=UpdateActor.USER,
+    )
+    source = repository.get_source("finnhub_company_news")
+    assert source is not None
+    title = "Micron gains as analysts debate AI demand"
+    article_url = "https://seekingalpha.com/article/1234567-micron-gains"
+    reader_url = f"https://r.jina.ai/http://{article_url}"
+    service.ingest_fetched(
+        source=source,
+        fetched=[
+            FetchedExternalMessage(
+                source_id=source.source_id,
+                binding_id=binding.binding_id,
+                ticker=binding.ticker,
+                source_type=source.source_type,
+                interface_type=source.interface_type,
+                provider_message_id="104",
+                source_url=article_url,
+                source_published_at=binding.updated_at + timedelta(seconds=1),
+                raw_payload={
+                    "id": 104,
+                    "headline": title,
+                    "summary": "Existing SeekingAlpha summary.",
+                    "url": article_url,
+                    "source": "SeekingAlpha",
+                    "datetime": int((binding.updated_at + timedelta(seconds=1)).timestamp()),
+                },
+            )
+        ],
+    )
+    fake_session = FakeAsyncSession(
+        {
+            article_url: FakeAsyncResponse(
+                status_code=403,
+                text="px-captcha",
+                url=article_url,
+            ),
+            reader_url: FakeAsyncResponse(
+                status_code=200,
+                text=(
+                    f"# {title}\n\n"
+                    "- Demand is improving.\n"
+                    "- Valuation remains debated.\n\n"
+                    "This summary is intentionally short and should not be treated "
+                    "as a full article.\n\n"
+                    "### Recommended For You\n\n"
+                    "Another article"
+                ),
+                url=reader_url,
+            ),
+        }
+    )
+
+    payload = await service.enrich_recent_media_async(
+        ticker="MU",
+        limit=10,
+        session_factory=lambda: fake_session,
+    )
+
+    message = service.recent_messages(ticker="MU")[0]
+    enrichment = message.metadata["media_enrichment"]
+    assert payload["stats"]["succeeded_count"] == 0
+    assert payload["stats"]["written_count"] == 0
+    assert payload["stats"]["failures_by_reason"] == {"incomplete_extract": 1}
+    assert message.body == "Existing SeekingAlpha summary."
+    assert enrichment["status"] == "failed"
+    assert enrichment["method"] == "jina_reader_markdown"
+    assert enrichment["attempts"][0]["status_code"] == 403
+    assert enrichment["attempts"][1]["status_code"] == 200
+
+
 def test_sqlite_repository_persists_replayable_event_stream(tmp_path: Path) -> None:
     db_path = tmp_path / "monitoring.sqlite3"
     repository = SQLiteMonitoringRepository(db_path)

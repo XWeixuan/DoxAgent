@@ -51,6 +51,12 @@ class MarketSessionPhase(StrEnum):
     OFF_HOURS_LOW_FREQUENCY = "off_hours_low_frequency"
 
 
+class MonitorMode(StrEnum):
+    MESSAGE_MONITORING = "message_monitoring"
+    PAPER_TRADING = "paper_trading"
+    BROKER_TRADING = "broker_trading"
+
+
 class DocumentAvailability(StrEnum):
     AVAILABLE = "available"
     MISSING = "missing"
@@ -134,6 +140,7 @@ class TickerRunState(RuntimeSchedulerModel):
     status: TickerRunStatus = TickerRunStatus.INITIALIZING
     health: RuntimeHealth = RuntimeHealth.NORMAL
     session_phase: MarketSessionPhase = MarketSessionPhase.OFF_HOURS_LOW_FREQUENCY
+    monitor_mode: MonitorMode = MonitorMode.MESSAGE_MONITORING
     started_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     stopped_at: datetime | None = None

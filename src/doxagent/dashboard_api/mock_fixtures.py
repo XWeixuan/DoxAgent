@@ -7,6 +7,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Any, cast
 
 JsonObject = dict[str, Any]
+ENABLED_MONITOR_MODES = {"message_monitoring", "paper_trading"}
 
 MOCK_GENERATED_AT = "2026-06-30T12:00:00Z"
 
@@ -147,6 +148,8 @@ class MockDashboardStore:
         monitor_mode: str = "message_monitoring",
     ) -> JsonObject:
         normalized = normalize_ticker(ticker)
+        if monitor_mode not in ENABLED_MONITOR_MODES:
+            raise ValueError("unsupported_monitor_mode")
         if normalized in self.tickers and self.tickers[normalized]["status"] != "stopped":
             raise ValueError("already_running")
         base = _new_ticker_fixture(normalized, monitor_mode=monitor_mode)
@@ -177,6 +180,29 @@ class MockDashboardStore:
                 "monitor_mode": monitor_mode,
             },
             "audit_id": f"audit_mock_start_{normalized.lower()}",
+        }
+
+    def set_monitor_mode(self, ticker: str, *, monitor_mode: str) -> JsonObject | None:
+        if monitor_mode not in ENABLED_MONITOR_MODES:
+            raise ValueError("unsupported_monitor_mode")
+        state = self._ticker_state(ticker)
+        if state is None:
+            return None
+        previous = state.get("monitor_mode", "message_monitoring")
+        state["monitor_mode"] = monitor_mode
+        state["updated_at"] = utc_now_iso()
+        self._sync_ticker_detail_state(state)
+        return {
+            "operation": "monitor_mode",
+            "status": "accepted",
+            "ticker": state["ticker"],
+            "ticker_state": {
+                "status": state["status"],
+                "health": state["health"],
+                "monitor_mode": monitor_mode,
+            },
+            "audit_id": f"audit_mock_monitor_mode_{state['ticker'].lower()}",
+            "previous_monitor_mode": previous,
         }
 
     def pause_ticker(self, ticker: str) -> JsonObject | None:

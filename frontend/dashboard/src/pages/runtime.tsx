@@ -167,9 +167,12 @@ export function RuntimePage() {
   }, [executions.data])
 
   const loadNode = useCallback(
-    async (nodeId: string) => {
+    async (nodeId: string, options: { silent?: boolean } = {}) => {
+      const showLoading = !options.silent
       setSelectedNodeId(nodeId)
-      setNodeLoading(true)
+      if (showLoading) {
+        setNodeLoading(true)
+      }
       setNodeError(null)
       try {
         const detail = await dashboardApi.runtimeNode(ticker, nodeId, { limit: 10 })
@@ -195,11 +198,14 @@ export function RuntimePage() {
           setNodeError(error instanceof Error ? error.message : String(error))
         }
       } finally {
-        setNodeLoading(false)
+        if (showLoading) {
+          setNodeLoading(false)
+        }
       }
     },
     [graphNodeLookup, ticker]
   )
+  const selectedDetailNodeId = nodeDetail?.node.node_id
 
   const handleEvent = useCallback(
     (event: DashboardEvent) => {
@@ -211,11 +217,11 @@ export function RuntimePage() {
         void reloadGraph()
         void reloadExecutions()
         if (selectedNodeId) {
-          void loadNode(selectedNodeId)
+          void loadNode(selectedNodeId, { silent: selectedDetailNodeId === selectedNodeId })
         }
       }
     },
-    [loadNode, reloadExecutions, reloadGraph, reloadOverview, selectedNodeId]
+    [loadNode, reloadExecutions, reloadGraph, reloadOverview, selectedDetailNodeId, selectedNodeId]
   )
 
   const events = useDashboardEvents({
@@ -318,7 +324,7 @@ export function RuntimePage() {
 
       <Section
         title="运行链路图"
-        description="点击节点查看关键输入、输出、状态和最近错误；连线宽度按 API 返回的流量计数缩放。"
+        description="点击节点查看关键输入、输出、状态和最近错误；选中节点后高亮对应上游消息流向。"
       >
         {graph.isLoading && !graph.data ? (
           <LoadingGrid rows={4} />
@@ -405,7 +411,11 @@ function RuntimeFlowMap({
   onSelectNode: (nodeId: string) => void
 }) {
   const layout = useMemo(() => buildLayout(graph.nodes), [graph.nodes])
-  const maxEdgeCount = Math.max(1, ...graph.edges.map((edge) => edge.count))
+  const highlightedEdgeIds = useMemo(
+    () => (selectedNodeId ? collectUpstreamEdgeIds(graph.edges, selectedNodeId) : new Set<string>()),
+    [graph.edges, selectedNodeId]
+  )
+  const hasHighlightedEdges = highlightedEdgeIds.size > 0
   const dragRef = useRef<{ x: number; y: number; viewX: number; viewY: number } | null>(null)
   const [view, setView] = useState({ x: -12, y: -10, scale: 0.78 })
 
@@ -499,16 +509,31 @@ function RuntimeFlowMap({
             >
               <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--primary)" opacity="0.56" />
             </marker>
+            <marker
+              id="runtime-arrow-highlight"
+              viewBox="0 0 10 10"
+              refX="8"
+              refY="5"
+              markerWidth="6"
+              markerHeight="6"
+              orient="auto-start-reverse"
+            >
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--primary)" opacity="0.9" />
+            </marker>
           </defs>
-          {graph.edges.map((edge, index) => (
-            <RuntimeEdgePath
-              key={edge.edge_id}
-              edge={edge}
-              index={index}
-              layout={layout}
-              maxEdgeCount={maxEdgeCount}
-            />
-          ))}
+          {graph.edges.map((edge, index) => {
+            const highlighted = highlightedEdgeIds.has(edge.edge_id)
+            return (
+              <RuntimeEdgePath
+                key={edge.edge_id}
+                edge={edge}
+                index={index}
+                layout={layout}
+                highlighted={highlighted}
+                dimmed={hasHighlightedEdges && !highlighted}
+              />
+            )
+          })}
         </svg>
 
         {graph.nodes.map((node) => {
@@ -550,12 +575,14 @@ function RuntimeEdgePath({
   edge,
   index,
   layout,
-  maxEdgeCount,
+  highlighted,
+  dimmed,
 }: {
   edge: RuntimeEdge
   index: number
   layout: Record<string, { x: number; y: number }>
-  maxEdgeCount: number
+  highlighted: boolean
+  dimmed: boolean
 }) {
   const from = layout[edge.from]
   const to = layout[edge.to]
@@ -563,28 +590,38 @@ function RuntimeEdgePath({
     return null
   }
   const edgeRoute = runtimeEdgeRoute(edge, from, to, index)
-  const strokeWidth = 1.4 + (edge.count / maxEdgeCount) * 5.2
+  const strokeWidth = highlighted ? 2.6 : 1.7
+  const haloWidth = highlighted ? 7 : 4.8
+  const haloOpacity = dimmed ? "0.03" : highlighted ? "0.2" : "0.1"
+  const strokeOpacity = dimmed ? "0.14" : highlighted ? "0.84" : "0.48"
   const label = formatNumber(edge.count)
   const pillWidth = Math.max(28, label.length * 7 + 18)
 
   return (
-    <g>
+    <g
+      data-dimmed={dimmed ? "true" : "false"}
+      data-edge-id={edge.edge_id}
+      data-highlighted={highlighted ? "true" : "false"}
+    >
       <path
         d={edgeRoute.d}
         fill="none"
         stroke="var(--primary)"
-        strokeOpacity="0.12"
-        strokeWidth={strokeWidth + 4}
+        strokeOpacity={haloOpacity}
+        strokeWidth={haloWidth}
       />
       <path
         d={edgeRoute.d}
         fill="none"
         stroke="var(--primary)"
-        strokeOpacity="0.58"
+        strokeOpacity={strokeOpacity}
         strokeWidth={strokeWidth}
-        markerEnd="url(#runtime-arrow)"
+        markerEnd={highlighted ? "url(#runtime-arrow-highlight)" : "url(#runtime-arrow)"}
       />
-      <g transform={`translate(${edgeRoute.labelX - pillWidth / 2}, ${edgeRoute.labelY - 9})`}>
+      <g
+        opacity={dimmed ? "0.42" : "1"}
+        transform={`translate(${edgeRoute.labelX - pillWidth / 2}, ${edgeRoute.labelY - 9})`}
+      >
         <rect
           width={pillWidth}
           height="18"
@@ -660,15 +697,15 @@ function RuntimeNodeCard({
     <button
       type="button"
       className="runtime-node p-3 text-left"
+      data-node-id={node.node_id}
       data-selected={selected}
       style={{ left: x, top: y }}
       onClick={onClick}
     >
       <div className="mb-2 flex items-start justify-between gap-2">
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="text-sm font-medium leading-5">{node.label}</div>
         </div>
-        <span className="runtime-node-key">key {node.node_id}</span>
       </div>
       <div className="runtime-node-counts">
         <NodeCount label="入" value={node.in_count} />
@@ -971,6 +1008,36 @@ function runtimeNodeOrder(nodeId: string) {
 function laneIndexForNode(nodeId: string) {
   const laneIndex = runtimeLanes.findIndex((lane) => lane.nodeIds.includes(nodeId))
   return laneIndex >= 0 ? laneIndex : runtimeLanes.length - 1
+}
+
+function collectUpstreamEdgeIds(edges: RuntimeEdge[], targetNodeId: string) {
+  const incoming = new Map<string, RuntimeEdge[]>()
+  for (const edge of edges) {
+    if (edge.count <= 0) {
+      continue
+    }
+    const list = incoming.get(edge.to) ?? []
+    list.push(edge)
+    incoming.set(edge.to, list)
+  }
+
+  const selected = new Set<string>()
+  const seenNodes = new Set<string>([targetNodeId])
+  const stack = [targetNodeId]
+  while (stack.length > 0) {
+    const nodeId = stack.pop()
+    if (!nodeId) {
+      continue
+    }
+    for (const edge of incoming.get(nodeId) ?? []) {
+      selected.add(edge.edge_id)
+      if (!seenNodes.has(edge.from)) {
+        seenNodes.add(edge.from)
+        stack.push(edge.from)
+      }
+    }
+  }
+  return selected
 }
 
 function clamp(value: number, min: number, max: number) {

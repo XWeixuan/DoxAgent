@@ -61,6 +61,44 @@ services:
       - doxagent-cache:/root/.cache
       - doxagent-tmp:/app/.tmp
 
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile.dashboard
+    image: doxagent-dashboard:latest
+    container_name: doxagent-dashboard
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: true
+      - path: .env.dashboard
+        required: false
+    environment:
+      PYTHONPATH: /app
+      DOXAGENT_DASHBOARD_API_MODE: real
+      DOXAGENT_DASHBOARD_AUTH_MODE: ${DOXAGENT_DASHBOARD_AUTH_MODE:-supabase}
+      DOXAGENT_DASHBOARD_STATIC_DIR: /app/frontend/dashboard/dist
+      DOXAGENT_STORAGE_MODE: ${DOXAGENT_STORAGE_MODE:-memory}
+      DOXAGENT_STOCKTWITS_STORAGE_MODE: sqlite
+      DOXAGENT_STOCKTWITS_SQLITE_PATH: /app/.tmp/stocktwits_polling.sqlite3
+    ports:
+      - "127.0.0.1:8780:8780"
+    volumes:
+      - doxagent-cache:/root/.cache
+      - doxagent-tmp:/app/.tmp
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8780/healthz', timeout=5).read()",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
 volumes:
   doxagent-cache:
   doxagent-tmp:

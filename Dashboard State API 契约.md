@@ -1,6 +1,6 @@
 # Dashboard State API 契约
 
-日期：2026-06-30  
+日期：2026-06-30；2026-07-02 根据前端验收后状态更新
 范围：DoxAgent Dashboard 第一阶段前端所需的后端状态聚合接口。  
 依据：`dev_plan/FRONTEND_PRD.md`、当前 `runtime_scheduler`、`monitoring`、`persistent_runtime`、`debug_viewer`、`gateway` 实现排查。
 
@@ -199,6 +199,20 @@ normal | degraded | blocked | unknown
 green | blue | yellow | red | gray
 ```
 
+监测模式：
+
+```text
+message_monitoring | paper_trading | broker_trading
+```
+
+当前阶段开放 `message_monitoring` 与 `paper_trading`；`broker_trading` 保留枚举但必须继续禁用/拒绝。后端必须持久化并回传该字段，不能把该字段退化为 `session_phase` 或内部 scheduler 状态。
+
+模式语义：
+
+- `message_monitoring`：只做 Message Bus 监测，包括 source polling、标准消息生成和 event 入池；不进入 Persistent Runtime，不产生 `TradingRecord` / `TradeIntent`，不接 broker。
+- `paper_trading`：最终产品语义是模拟成交、持仓、现金、滑点、平仓和 PnL 曲线；当前阶段先实现最小闭环，即进入持久化监测运行链路，消费切换后的 pending events，执行 W1/W2/O3/route，并产生 `TradingRecord` / `TradeIntent`。当前阶段不实现完整模拟成交账本，且绝不接真实 broker。
+- `broker_trading`：真实 broker 接入模式，本阶段继续禁用，API 必须拒绝。
+
 Document 可用性：
 
 ```text
@@ -218,6 +232,18 @@ W2 动作类型：
 
 ```text
 DTC | EBA | NULL | Irrelevant
+```
+
+Message Bus poll 状态：
+
+```text
+never_polled | succeeded | failed | disabled
+```
+
+审计状态：
+
+```text
+not_started | calculating | completed | failed | missing | partial
 ```
 
 对应内部枚举：
@@ -251,8 +277,9 @@ DTC | EBA | NULL | Irrelevant
 | `GET` | `/tickers/{ticker}` | 单 ticker 页面状态初始化 | `partial` |
 | `POST` | `/tickers` | 启动 ticker | `partial` |
 | `POST` | `/tickers/{ticker}/pause` | 暂停 ticker | `partial` |
+| `PATCH` | `/tickers/{ticker}/monitor-mode` | 切换监测模式 | `partial` |
 | `DELETE` | `/tickers/{ticker}` | 删除 ticker 监测配置 | `partial` |
-| `POST` | `/tickers/{ticker}/restart` | 重启 ticker | `proposed` |
+| `POST` | `/tickers/{ticker}/restart` | 重启 ticker | `partial` |
 | `GET` | `/tickers/{ticker}/documents/current` | Document 1/2/3 当前版本 | `partial` |
 | `GET` | `/tickers/{ticker}/documents/{document_type}/versions` | Document 历史版本列表 | `proposed` |
 | `GET` | `/tickers/{ticker}/documents/{document_type}/versions/{version_id}` | Document 历史版本详情 | `proposed` |
@@ -262,7 +289,7 @@ DTC | EBA | NULL | Irrelevant
 | `GET` | `/tickers/{ticker}/message-bus/messages` | Live Message Stream | `partial` |
 | `GET` | `/tickers/{ticker}/message-bus/config` | Message Bus 配置状态 | `partial` |
 | `PATCH` | `/tickers/{ticker}/message-bus/config/{source_id}` | 更新 source binding | `partial` |
-| `DELETE` | `/tickers/{ticker}/message-bus/config/{source_id}` | 删除 source binding | `partial` |
+| `DELETE` | `/tickers/{ticker}/message-bus/config/{source_id}` | 删除 source binding，可选；当前前端第一阶段不展示删除入口 | `partial` |
 | `GET` | `/tickers/{ticker}/runtime/overview` | Runtime Execution KPI | `partial` |
 | `GET` | `/tickers/{ticker}/runtime/graph` | Runtime 链路图 | `proposed` |
 | `GET` | `/tickers/{ticker}/runtime/nodes/{node_id}` | Runtime 节点详情 | `proposed` |
@@ -425,8 +452,49 @@ Response schema：
         "status_label": "运行中",
         "health": "normal",
         "session_phase": "formal_monitoring",
+        "monitor_mode": "message_monitoring",
         "started_at": "2026-06-30T12:00:00Z",
         "updated_at": "2026-06-30T12:05:00Z",
+        "startup_progress": {
+          "status": "running",
+          "status_label": "启动中",
+          "current_step_id": "document1",
+          "retryable": false,
+          "message": null,
+          "updated_at": "2026-06-30T12:01:00Z",
+          "steps": [
+            {
+              "step_id": "document1",
+              "label": "进行宏观投研",
+              "status": "running",
+              "progress": 50
+            },
+            {
+              "step_id": "document2",
+              "label": "拆解叙事预期",
+              "status": "pending",
+              "progress": 0
+            },
+            {
+              "step_id": "document3",
+              "label": "生成执行策略",
+              "status": "pending",
+              "progress": 0
+            },
+            {
+              "step_id": "message_bus",
+              "label": "配置消息监测",
+              "status": "pending",
+              "progress": 0
+            },
+            {
+              "step_id": "runtime",
+              "label": "启动持久化监测",
+              "status": "pending",
+              "progress": 0
+            }
+          ]
+        },
         "last_message_at": "2026-06-30T12:04:00Z",
         "last_worker_processed_at": "2026-06-30T12:04:20Z",
         "today_dtc_count": 1,
@@ -452,6 +520,8 @@ Response schema：
 | `status_label` | 中文展示文案。 |
 | `health` | 健康状态。 |
 | `session_phase` | 当前美东交易时段。 |
+| `monitor_mode` | 启动 ticker 时选择的监测模式，决定消息监测、模拟交易或真实 Broker 接入边界。 |
+| `startup_progress` | 新 ticker 启动过程中的真实进度，仅在启动中或启动阻塞时返回；启动完成后应为 `null` 或省略。 |
 | `last_message_at` | 最近标准消息或 event stream 时间。 |
 | `last_worker_processed_at` | 最近 runtime execution 时间。 |
 | `today_dtc_count` | 今日 DTC/trade intent 数。 |
@@ -462,6 +532,20 @@ Response schema：
 - `status`：`initializing | running | paused | stopped | degraded | blocked`
 - `health`：`normal | degraded | blocked | unknown`
 - `session_phase`：`pre_market_digest | formal_monitoring | off_hours_low_frequency`
+- `monitor_mode`：`message_monitoring | paper_trading | broker_trading`
+- `startup_progress.status`：`running | blocked | completed`
+- `startup_progress.steps[].status`：`pending | running | completed | blocked`
+- `startup_progress.steps[].step_id`：`document1 | document2 | document3 | message_bus | runtime`
+
+启动进度语义：
+
+- `document1` 展示为“进行宏观投研”，对应 Document 1 / Global Research 初始化。
+- `document2` 展示为“拆解叙事预期”，对应 Document 2 / Expectation Units 初始化。
+- `document3` 展示为“生成执行策略”，对应 Runtime Strategy 所需的 Known Events 与 Monitoring Policy 初始化。
+- `message_bus` 展示为“配置消息监测”，对应 Monitoring Config 应用到 Message Bus bindings。
+- `runtime` 展示为“启动持久化监测”，对应 scheduler 运行状态进入可调度状态；`paper_trading` 模式下后续 tick 才会消费 pending events。
+- 该字段必须来自 `TickerRunState.metadata.startup_progress` 等真实 scheduler state，不允许前端或 mock fixture 伪造。
+- 前端通过既有 `/overview` 和 `/tickers` 的 7 秒级刷新获取该字段，不新增高频 DB 轮询接口。
 
 示例 JSON：见上方 schema。
 
@@ -494,6 +578,7 @@ Response schema：
       "status": "running",
       "health": "normal",
       "session_phase": "formal_monitoring",
+      "monitor_mode": "message_monitoring",
       "document_run_id": "run_123",
       "last_error": null
     },
@@ -514,6 +599,7 @@ Response schema：
 | 字段 | 含义 |
 | --- | --- |
 | `state` | ticker 运行状态摘要。 |
+| `state.monitor_mode` | 当前 ticker 的监测模式。正式后端应支持 `message_monitoring` 与 `paper_trading`，并拒绝 `broker_trading`。 |
 | `document_status` | Document 1/2/3 可用性摘要。 |
 | `message_bus_status` | Message Bus 配置和积压摘要。 |
 | `runtime_status` | runtime execution 积压、执行、异常摘要。 |
@@ -530,7 +616,7 @@ Response schema：
 
 用途：开启新标的监测。  
 前端页面/组件：Overview 启动 ticker 表单。  
-实现状态：`partial`。已有 `start_ticker`，缺 HTTP、鉴权、幂等错误语义和前端反馈包装。
+实现状态：`partial`。已有 scheduler、real/mock HTTP、鉴权和幂等错误包装；仍需按部署环境完成生产 smoke。
 
 Request body：
 
@@ -538,6 +624,7 @@ Request body：
 {
   "ticker": "MU",
   "force_initialize": false,
+  "monitor_mode": "message_monitoring",
   "reason": "手动启动监测"
 }
 ```
@@ -548,6 +635,7 @@ Request body：
 | --- | --- | --- | --- |
 | `ticker` | string | 是 | 股票代码。 |
 | `force_initialize` | boolean | 否 | 是否强制重新初始化文档。默认 `false`。 |
+| `monitor_mode` | string | 否 | `message_monitoring | paper_trading | broker_trading`，默认 `message_monitoring`。当前阶段接受 `message_monitoring` 与 `paper_trading`，拒绝 `broker_trading` 并返回 `INVALID_PARAMS` 或 `FORBIDDEN`。 |
 | `reason` | string | 否 | 操作原因，写入审计。 |
 
 Response schema：
@@ -560,7 +648,8 @@ Response schema：
     "ticker": "MU",
     "ticker_state": {
       "status": "running",
-      "health": "normal"
+      "health": "normal",
+      "monitor_mode": "message_monitoring"
     },
     "audit_id": "audit_abc"
   }
@@ -582,7 +671,8 @@ Response schema：
     "ticker": "MU",
     "ticker_state": {
       "status": "running",
-      "health": "normal"
+      "health": "normal",
+      "monitor_mode": "message_monitoring"
     },
     "audit_id": "audit_01"
   }
@@ -599,7 +689,7 @@ Response schema：
 
 用途：暂停 ticker 调度。  
 前端页面/组件：Overview ticker 卡片操作。  
-实现状态：`partial`。已有 `pause_ticker`，缺正式 HTTP 和鉴权。
+实现状态：`partial`。已有 scheduler、real/mock HTTP 和鉴权。
 
 Request body：
 
@@ -619,7 +709,8 @@ Response schema：
     "ticker": "MU",
     "ticker_state": {
       "status": "paused",
-      "health": "normal"
+      "health": "normal",
+      "monitor_mode": "message_monitoring"
     }
   }
 }
@@ -637,7 +728,59 @@ Response schema：
 - `src/doxagent/runtime_scheduler/api.py::pause_ticker`
 - `src/doxagent/runtime_scheduler/service.py::pause_ticker`
 
-### 5.3 DELETE `/tickers/{ticker}`
+### 5.3 PATCH `/tickers/{ticker}/monitor-mode`
+
+用途：切换已有 ticker 的监测模式。
+前端页面/组件：Overview 标的监控列表中的监测模式切换入口。
+实现状态：`partial`。正式后端需要写入 scheduler state，并追加 audit event。
+
+Request body：
+
+```json
+{
+  "monitor_mode": "paper_trading",
+  "reason": "用户切换为模拟交易"
+}
+```
+
+字段含义：
+
+| 字段 | 类型 | 必填 | 含义 |
+| --- | --- | --- | --- |
+| `monitor_mode` | string | 是 | `message_monitoring | paper_trading | broker_trading`。当前阶段只接受 `message_monitoring` 与 `paper_trading`，拒绝 `broker_trading`。 |
+| `reason` | string | 否 | 切换原因，写入 scheduler audit。 |
+
+Response schema：
+
+```json
+{
+  "data": {
+    "operation": "monitor_mode",
+    "status": "accepted",
+    "ticker": "MU",
+    "ticker_state": {
+      "status": "running",
+      "health": "normal",
+      "monitor_mode": "paper_trading"
+    },
+    "audit_id": "audit_abc"
+  }
+}
+```
+
+语义要求：
+
+- 切换到 `message_monitoring` 后，后续 scheduler tick 只做 Message Bus source polling、标准消息生成和 event 入池，不调用 Persistent Runtime。
+- 切换到 `paper_trading` 后，后续 scheduler tick 可消费切换后的新 pending events，执行 W1/W2/O3/route，并产生 `TradingRecord` / `TradeIntent`。
+- 当前实现不回溯消费切换前已经 pending 的历史事件，避免用户误操作导致历史消息批量生成交易意图。
+- 切换必须写 `ticker_monitor_mode_changed` audit event，payload 至少包含前后模式和是否回溯历史 pending events。
+
+当前实现位置：
+
+- `src/doxagent/runtime_scheduler/api.py::set_monitor_mode`
+- `src/doxagent/runtime_scheduler/service.py::set_monitor_mode`
+
+### 5.4 DELETE `/tickers/{ticker}`
 
 用途：删除 ticker 监测任务。  
 前端页面/组件：Overview ticker 卡片删除按钮，必须二次确认。  
@@ -686,11 +829,11 @@ Response schema：
 - 删除 Message Bus 配置：`src/doxagent/monitoring/service.py::delete_ticker_config`
 - 现有 viewer：`src/doxagent/monitoring/viewer.py::delete_ticker`
 
-### 5.4 POST `/tickers/{ticker}/restart`
+### 5.5 POST `/tickers/{ticker}/restart`
 
 用途：重启 ticker 监测。  
 前端页面/组件：Overview ticker 卡片重启按钮。  
-实现状态：`proposed`。可组合 `stop_ticker(keep bindings?)` 与 `start_ticker(force_initialize?)`，但当前没有原子重启操作。
+实现状态：`partial`。已有 real/mock HTTP 包装 stop/start；重启时应保留当前 `monitor_mode`，避免从 `paper_trading` 悄悄回退到 `message_monitoring`。
 
 Request body：
 
@@ -712,7 +855,8 @@ Response schema：
     "ticker": "MU",
     "ticker_state": {
       "status": "running",
-      "health": "normal"
+      "health": "normal",
+      "monitor_mode": "message_monitoring"
     }
   }
 }
@@ -1054,6 +1198,7 @@ Response schema：
     "media_enrichment_success_rate": 0.72,
     "healthy_channel_count": 5,
     "total_channel_count": 6,
+    "average_channel_latency_ms": 12800,
     "last_error_message": null
   }
 }
@@ -1068,6 +1213,7 @@ Response schema：
 | `today_event_count` | 今日 event stream 数。 |
 | `media_enrichment_success_rate` | 正文补全成功率。 |
 | `healthy_channel_count` | 最近正常 source channel 数。 |
+| `average_channel_latency_ms` | 最近一轮有延迟记录的 channel 平均轮询延迟。当前前端会从 `/message-bus/config` 兜底计算，但正式 API 应在 overview 直接提供。 |
 
 当前可能数据来源：
 
@@ -1148,7 +1294,14 @@ Response schema：
 
 用途：Config 页面展示当前消息源配置和状态。  
 前端页面/组件：消息总线右上角齿轮 Config 视图。  
-实现状态：`partial`。`MonitoringBusService.get_ticker_config()` 已有较完整结构。
+实现状态：`partial`。`MonitoringBusService.get_ticker_config()` 已有底层结构，但当前返回 `by_ticker_sources/by_parameter_sources + missing_source_ids`，Dashboard State API 必须适配为前端稳定的扁平 `sources[]`，不能直接透传底层 service 原始形状。
+
+契约要求：
+
+- `sources[]` 必须返回该 ticker 所有可配置 channel，而不仅是已经存在 binding 的 channel。
+- 未启用或未配置的 channel 仍必须出现在 `sources[]` 中，`enabled=false`，`binding.enabled=false`，`poll_state.status="disabled"` 或 `never_polled`。
+- `binding.parameters` 只能包含该 source 支持的参数键；不支持参数的 source 返回 `{}`。
+- `parameter_schema` 是 Dashboard API 提供给前端的配置 schema。当前前端仍有本地兜底映射，但正式 API 应返回该字段，避免后续继续在 UI 里硬编码 source 参数。
 
 Response schema：
 
@@ -1158,17 +1311,37 @@ Response schema：
     "ticker": "MU",
     "sources": [
       {
-        "source_id": "stocktwits_messages",
-        "display_name": "Stocktwits Messages API",
-        "source_type": "social",
+        "source_id": "benzinga_news",
+        "display_name": "Benzinga News API",
+        "source_type": "media",
         "interface_type": "by_ticker",
         "enabled": true,
         "poll_interval_seconds": 300,
-        "binding": {},
+        "parameter_schema": [
+          {
+            "key": "search_terms",
+            "label": "搜索词",
+            "max_items": 3,
+            "value_type": "string_list"
+          }
+        ],
+        "binding": {
+          "binding_id": "MU:benzinga_news",
+          "ticker": "MU",
+          "source_id": "benzinga_news",
+          "enabled": true,
+          "parameters": {
+            "search_terms": [
+              "MU earnings"
+            ]
+          }
+        },
         "poll_state": {
           "status": "succeeded",
           "last_success_at": "2026-06-30T12:00:00Z",
-          "last_error_message": null
+          "last_error_message": null,
+          "last_poll_new_message_count": 3,
+          "last_latency_ms": 2200
         },
         "user_only_fields": [
           "poll_interval_seconds"
@@ -1182,6 +1355,29 @@ Response schema：
   }
 }
 ```
+
+必需 source 与参数约束：
+
+| source_id | source_type | interface_type | 参数字段 | 最大数量 |
+| --- | --- | --- | --- | --- |
+| `benzinga_news` | `media` | `by_ticker` | `search_terms` | 3 |
+| `finnhub_company_news` | `media` | `by_ticker` | 无，仅 ticker binding | - |
+| `stocktwits_messages` | `social` | `by_ticker` | 无，仅 ticker binding | - |
+| `tikhub_x_search` | `social` | `by_parameter` | `search_terms` | 3 |
+| `tikhub_x_user_posts` | `social` | `by_parameter` | `usernames` | 2 |
+| `newswire_rss` | `media` | `by_parameter` | `rss_urls` | 3 |
+
+字段含义：
+
+| 字段 | 含义 |
+| --- | --- |
+| `enabled` | Dashboard 层展示的启用状态，应等价于全局 source 可用且 ticker binding 启用；第一阶段 PATCH 只允许改 ticker binding，不允许普通前端改全局 source。 |
+| `binding.enabled` | ticker/source binding 是否启用。 |
+| `parameter_schema[].key` | 可由前端提交的参数键。 |
+| `parameter_schema[].max_items` | list 参数最多条数，必须与 `SOURCE_PARAMETER_SCHEMAS` 一致。 |
+| `poll_state.last_poll_new_message_count` | 上次轮询新增标准消息数，用于 Channel Health 的 `+N` 胶囊。 |
+| `poll_state.last_latency_ms` | 上次轮询延迟，用于 Channel Health 和平均延迟 KPI。 |
+| `agent_mutable_fields` | 当前前端可写字段。至少应包含 `enabled`，以及该 source 支持的参数键。 |
 
 当前实现位置：
 
@@ -1200,7 +1396,6 @@ Request body：
 ```json
 {
   "enabled": true,
-  "mode": "merge",
   "search_terms": [
     "MU earnings"
   ],
@@ -1223,8 +1418,10 @@ Response schema：
 
 字段规则：
 
-- `poll_interval_seconds`、全局 source enable/disable、Stocktwits durable cadence 等 user-only 字段需要更高权限，不能由 agent 自动修改。
-- 参数限制复用 `SOURCE_PARAMETER_SCHEMAS`。
+- 当前前端提交的是顶层字段：`enabled`、`search_terms`、`usernames`、`rss_urls` 与 `reason`；后端需要把支持的参数键归入 `binding.parameters`。
+- `enabled` 只表示 ticker/source binding 启用状态，不能修改全局 source enable/disable。
+- `poll_interval_seconds`、全局 source enable/disable、Stocktwits durable cadence 等 user-only 字段需要更高权限，不能由当前 Dashboard 前端修改。
+- 参数限制复用 `SOURCE_PARAMETER_SCHEMAS`，超限或传入不支持字段时返回 `INVALID_PARAMS`。
 
 当前实现位置：
 
@@ -1234,8 +1431,8 @@ Response schema：
 ### 9.5 DELETE `/tickers/{ticker}/message-bus/config/{source_id}`
 
 用途：删除单个 source binding。  
-前端页面/组件：Config 视图 source 行删除。  
-实现状态：`partial`。底层已有删除 binding，缺正式 Dashboard route。
+前端页面/组件：当前第一阶段前端不展示该入口；Config 视图只展示全部 channel，并通过 `enabled` 做启用/停用。
+实现状态：`partial`。底层已有删除 binding，缺正式 Dashboard route。正式后端可保留该接口作为 dev-only 管理能力，但它不是当前前端联调必需项。
 
 Response schema：
 
@@ -1299,7 +1496,15 @@ Response schema：
 
 用途：运行链路图节点和边。  
 前端页面/组件：Runtime Execution 链路图。  
-实现状态：`proposed`。底层有 observations 和 route，但缺图形聚合 schema。
+实现状态：`proposed`。底层有 observations 和 route，但缺正式图形聚合 schema；mock API 已按本节的固定节点/边形态提供 fixture。正式后端应直接返回本节 canonical graph，不应把旧 UI 原型里的 `o1_a2` 或 `ignored` 节点暴露给前端。
+
+语义要求：
+
+- 图按照四个固定阶段理解：入口 / 任务池、一轮判定、二轮研判、结果沉淀。
+- W1 与 W2 同属一轮判定，后续必须通过 `route_engine` 表达联合判定；不要把 W1/W2 画成单线串行。
+- `objection` 与 `known_event_patch` 是结果沉淀节点，不是 O3 卡片内部动作。
+- `archive` 与 `ingest_queue` 是结果沉淀节点，用于替代旧的 `ignored` / 结束节点。
+- `count` 表示该边在当前统计窗口内通过的消息数量。前端只用它显示数字标签，不再用它决定线宽。
 
 Response schema：
 
@@ -1309,7 +1514,7 @@ Response schema：
     "nodes": [
       {
         "node_id": "message_bus",
-        "label": "Message Bus",
+        "label": "Message Bus / 任务池",
         "status": "normal",
         "in_count": 42,
         "out_count": 42,
@@ -1320,7 +1525,23 @@ Response schema：
         "label": "W1 新旧判定",
         "status": "normal",
         "in_count": 42,
-        "out_count": 42,
+        "out_count": 40,
+        "failed_count": 0
+      },
+      {
+        "node_id": "route_engine",
+        "label": "联合路由",
+        "status": "normal",
+        "in_count": 40,
+        "out_count": 40,
+        "failed_count": 0
+      },
+      {
+        "node_id": "archive",
+        "label": "归档池 Archive",
+        "status": "normal",
+        "in_count": 35,
+        "out_count": 0,
         "failed_count": 0
       }
     ],
@@ -1329,8 +1550,15 @@ Response schema：
         "edge_id": "message_bus_to_w1",
         "from": "message_bus",
         "to": "w1",
-        "label": "消息进入执行层",
+        "label": "W1 novelty 输入",
         "count": 42
+      },
+      {
+        "edge_id": "w1_to_route_engine",
+        "from": "w1",
+        "to": "route_engine",
+        "label": "novelty label",
+        "count": 40
       }
     ]
   }
@@ -1340,8 +1568,30 @@ Response schema：
 节点枚举：
 
 ```text
-message_bus | w1 | w2 | o3 | trading_records | o1_a2 | ignored | exception_queue
+message_bus | w1 | w2 | route_engine | o3 | trading_records |
+exception_queue | objection | known_event_patch | archive | ingest_queue
 ```
+
+推荐边枚举：
+
+```text
+message_bus_to_w1 | message_bus_to_w2 |
+w1_to_route_engine | w2_to_route_engine |
+route_engine_to_trading | route_engine_to_o3 |
+route_engine_to_archive | route_engine_to_ingest_queue |
+o3_to_trading | o3_to_exception_queue | o3_to_objection |
+o3_to_known_event_patch | o3_to_ingest_queue
+```
+
+字段含义：
+
+| 字段 | 含义 |
+| --- | --- |
+| `node_id` | 前端布局使用的稳定节点 ID。 |
+| `label` | 中文/英文混合展示名，API 可回传；前端对 canonical node 有兜底 label。 |
+| `in_count/out_count/failed_count` | 当前统计窗口内节点输入、输出、失败数。 |
+| `edge_id` | 稳定边 ID，建议使用上方枚举。 |
+| `count` | 当前统计窗口内沿该边流转的消息数。 |
 
 当前可能数据来源：
 
@@ -1423,6 +1673,7 @@ Response schema：
       {
         "execution_id": "pre_001",
         "source_message_id": "std_001",
+        "message_title": "Micron shares rise as AI memory demand stays firm",
         "ticker": "MU",
         "source_type": "media",
         "final_route": "trading_record",
@@ -1453,6 +1704,11 @@ Response schema：
 
 - `src/doxagent/persistent_runtime/service.py::recent_executions`
 - `src/doxagent/persistent_runtime/service.py::runtime_observations`
+
+字段补充：
+
+- `message_title` 是当前运行状态页“最近处理记录”主列展示字段；后端应优先从标准消息 title 或 runtime observation source message 摘要中提供，缺失时前端才退回 `source_message_id/execution_id`。
+- `final_route` 推荐稳定值：`trading_record | failed_with_exception | objection | objection_note | archive | ingest_queue | o3`。底层历史记录若出现 raw `a2`，Dashboard API 应优先归一化为 `o3`、`objection` 或 `ingest_queue` 等前端语义；若因回溯兼容必须透传，也不得据此在 runtime graph 中生成 `A2/O1` 节点。
 
 ### 10.5 GET `/tickers/{ticker}/runtime/executions/{execution_id}`
 
@@ -1498,6 +1754,12 @@ Query params：
 | --- | --- | --- | --- |
 | `date` | string | 否 | 默认当前交易日。 |
 | `period` | string | 否 | `today | 7d | 30d`。 |
+
+周期语义：
+
+- 前端通过 `period=today|7d|30d` 切换 KPI、趋势图和交易意图列表。
+- 为保持当前前端类型兼容，`kpis` 字段名仍为 `today_trade_intent_count/today_pnl_usd/today_return_pct`；但当 `period=7d` 或 `period=30d` 时，这些字段必须返回所选周期聚合值，而不是固定今日值。
+- `trend` 应覆盖所选周期内的日序列；`trade_intents` 应限制在所选周期内，按时间倒序或审计时间倒序返回。
 
 Response schema：
 
@@ -1548,10 +1810,16 @@ Response schema：
 | --- | --- |
 | `status` | 审计任务状态。 |
 | `exit_rule` | 当前收益审计退出策略。 |
+| `today_trade_intent_count` | 所选周期内交易意图数；字段名保留 `today_` 是前端兼容约束。 |
+| `audited_trade_count` | 所选周期内已审计交易数。 |
+| `today_pnl_usd` | 所选周期内估算收益；字段名保留 `today_` 是前端兼容约束。 |
+| `today_return_pct` | 所选周期内收益率；字段名保留 `today_` 是前端兼容约束。 |
+| `win_rate` | 所选周期内胜率。 |
 | `theoretical_entry_price` | 交易意图生成时理论买入价。 |
 | `estimated_entry_price` | 考虑滑点后的估算买入价。 |
 | `exit_price` | 收盘前 10 分钟或配置规则对应卖出价。 |
 | `pnl_usd` | 估算收益。 |
+| `period` | 请求周期，回显 `today | 7d | 30d`。 |
 
 状态枚举：
 
@@ -1613,6 +1881,12 @@ Query params：
 | `period` | string | 否 | `today | 7d | 30d`。 |
 | `group_by` | string | 否 | `node | model | ticker`。 |
 
+周期语义：
+
+- 前端通过 `period=today|7d|30d` 切换成本 KPI、成本趋势和成本占比。
+- 为保持当前前端类型兼容，`kpis` 字段名仍为 `today_input_tokens/today_total_cost_usd` 等；但当 `period=7d` 或 `period=30d` 时，这些字段必须返回所选周期聚合值。
+- `trend` 应覆盖所选周期内的日序列；`breakdown.by_node/by_model` 应按所选周期聚合。
+
 Response schema：
 
 ```json
@@ -1642,11 +1916,13 @@ Response schema：
 
 | 字段 | 含义 |
 | --- | --- |
-| `today_input_tokens` | 今日 input tokens。 |
-| `today_output_tokens` | 今日 output tokens。 |
-| `today_total_cost_usd` | 今日估算总成本。 |
-| `highest_cost_node` | 成本最高节点。 |
-| `retry_cost_usd` | 异常重试成本。 |
+| `today_input_tokens` | 所选周期 input tokens；字段名保留 `today_` 是前端兼容约束。 |
+| `today_output_tokens` | 所选周期 output tokens；字段名保留 `today_` 是前端兼容约束。 |
+| `today_total_tokens` | 所选周期 token 总量；字段名保留 `today_` 是前端兼容约束。 |
+| `today_total_cost_usd` | 所选周期估算总成本；字段名保留 `today_` 是前端兼容约束。 |
+| `highest_cost_node` | 所选周期成本最高节点。 |
+| `retry_cost_usd` | 所选周期异常重试成本。 |
+| `period` | 请求周期，回显 `today | 7d | 30d`。 |
 
 状态枚举：
 
@@ -1676,6 +1952,7 @@ Query params：
 | `node` | string | 否 | W1/W2/O3/O1 等节点。 |
 | `model` | string | 否 | 模型名。 |
 | `status` | string | 否 | `succeeded | failed | retried`。 |
+| `period` | string | 否 | `today | 7d | 30d`，若提供则按周期限制明细；当前前端未传该参数，后端可默认当前交易日或与成本概览保持一致。 |
 | `from` | string | 否 | 起始时间。 |
 | `to` | string | 否 | 结束时间。 |
 | `limit` | int | 否 | 默认 50。 |
@@ -1750,12 +2027,20 @@ Query params：
 | `event_types` | string | 否 | 逗号分隔事件类型。 |
 | `last_event_id` | string | 否 | 断线恢复游标。也可使用 SSE `Last-Event-ID` header。 |
 
+断线恢复与去重要求：
+
+- 每个业务事件必须有稳定且唯一的 `event_id`，SSE 帧的 `id:` 必须与 payload 内 `event_id` 一致。
+- 当前前端会通过 query 参数传 `last_event_id`；正式后端必须只返回该事件之后的新事件，不得从 fixture 或持久化流开头重放。
+- 若 `last_event_id` 不存在或已过期，后端可以返回最近窗口内事件，但必须保证同一 `event_id` 不在同一次连接中重复发送。
+- 前端仍会按 `event_id` 做客户端去重；后端不能依赖前端去重来掩盖无限重放或高频重复事件。
+- 允许发送 keepalive comment，例如 `: ping\n\n`，但 keepalive 不应触发业务 payload。
+
 SSE event 格式：
 
 ```text
 id: evt_1001
 event: runtime.execution.updated
-data: {"ticker":"MU","execution_id":"pre_001","status":"completed"}
+data: {"event_id":"evt_1001","event_type":"runtime.execution.updated","ticker":"MU","occurred_at":"2026-06-30T12:00:00Z","payload":{"execution_id":"pre_001","status":"completed"}}
 
 ```
 
@@ -1781,13 +2066,21 @@ Event data schema：
 | `message_bus.message.created` | 新标准消息进入 Message Bus。 |
 | `message_bus.poll.failed` | 来源轮询失败。 |
 | `runtime.execution.started` | Runtime 处理开始。 |
-| `runtime.execution.updated` | W1/W2/A2/O3 或 route 状态变化。 |
+| `runtime.execution.updated` | W1/W2/O3 或 route 状态变化。 |
 | `runtime.execution.failed` | Runtime 处理异常。 |
 | `trade_intent.created` | 交易意图记录生成。 |
 | `known_event.updated` | Known Events 被运行时更新。 |
 | `ticker.state.changed` | ticker 状态变化。 |
 | `audit.revenue.status_changed` | 收益审计状态变化。 |
 | `audit.cost.status_changed` | 成本审计状态变化。 |
+
+当前前端已订阅的事件：
+
+| 页面 | event_types |
+| --- | --- |
+| 消息总线 | `message_bus.message.created,message_bus.poll.failed` |
+| 运行状态 | `runtime.execution.updated,runtime.execution.failed` |
+| 收益 / 成本审计 | `audit.revenue.status_changed,audit.cost.status_changed` |
 
 当前可能数据来源：
 
@@ -1814,9 +2107,10 @@ Event data schema：
 | --- | --- | --- |
 | `GET /overview` | 容器状态、Dashboard API 状态、今日消息数、今日 DTC、成本缺聚合 | 复用 `runtime_scheduler.overview()`，新增 `OverviewStateAssembler`。 |
 | `GET /tickers` | 缺分页、筛选、今日卡片字段 | 在 scheduler state 上叠加 monitoring/runtime 日内聚合。 |
-| `POST /tickers` | 无 HTTP route/auth | 直接挂载 `DashboardStateAPI.start_ticker()`。 |
+| `POST /tickers` | 已有 real/mock HTTP；需确保模式语义进入 scheduler tick | 接受 `message_monitoring/paper_trading`，拒绝 `broker_trading`，并持久化到 `TickerRunState.monitor_mode`。 |
+| `PATCH /tickers/{ticker}/monitor-mode` | 需要正式联调和远端 smoke | 切换模式时写 `ticker_monitor_mode_changed` audit，不回溯消费切换前 pending events。 |
 | `DELETE /tickers/{ticker}` | stop 与删除 Message Bus config 分散 | 新增原子 delete operation，默认不删历史。 |
-| `POST /tickers/{ticker}/restart` | 无原子重启 | 包装 stop/start，明确 `keep_bindings` 与 `force_initialize` 语义。 |
+| `POST /tickers/{ticker}/restart` | 已有包装；需保持当前模式 | 包装 stop/start，明确 `keep_bindings` 与 `force_initialize` 语义，并保留 `monitor_mode`。 |
 
 ### 14.3 Document 与策略页面
 
@@ -1833,23 +2127,24 @@ Event data schema：
 | --- | --- | --- |
 | overview | 今日 raw/event 统计、正文补全成功率缺聚合 | 在 `SQLiteMonitoringRepository` 增加 date-range count 查询。 |
 | messages | 缺 keyword/search/cursor，缺 runtime processing status join | 对 standard messages 做分页查询，并按 `source_message_id` join observations。 |
-| config | 底层已有，但需前端安全字段 | 复用 `get_ticker_config()`，过滤 secret 与 user-only 操作。 |
-| config mutation | viewer 可做，但无正式权限 | 新增 dev-only mutation endpoint，保留 poll cadence 的 user-only 限制。 |
+| config | 底层已有，但返回形状与当前前端不一致 | 在 Dashboard API 层把 `by_ticker_sources/by_parameter_sources/missing_source_ids` 适配为扁平 `sources[]`，并补齐所有可配置 channel、`parameter_schema`、`last_poll_new_message_count`、`last_latency_ms`。 |
+| config mutation | viewer 可做，但无正式权限和参数白名单响应 | 新增 dev-only mutation endpoint，只允许 `enabled` 与 `SOURCE_PARAMETER_SCHEMAS` 中声明的参数键，保留 poll cadence 的 user-only 限制。 |
 
 ### 14.5 Runtime Execution
 
 | API | 缺口 | 建议 |
 | --- | --- | --- |
 | runtime overview | 缺节点日内聚合 | 基于 `RuntimeExecutionRecord.node_traces` 聚合 count/latency/failure。 |
-| graph | 缺链路图 schema | 新增固定节点和 route-derived edge 聚合。 |
+| graph | 缺 canonical 链路图 schema，旧语义可能暴露 `o1_a2/ignored` | 新增固定节点和 route-derived edge 聚合：`route_engine` 表示 W1/W2 联合判定，结果沉淀使用 `trading_records/exception_queue/objection/known_event_patch/archive/ingest_queue`。 |
 | node detail | 缺 node 维度详情 | 过滤 node_traces 并生成 input/output summary。 |
+| executions | 列表缺 `message_title` | 按 `source_message_id` join StandardMessage 或 observation source summary，生成当前运行页主列标题。 |
 | execution detail | 缺按 execution_id 查询 | repository 增加 `execution_for_id()` 或 API 层建立索引。 |
 
 ### 14.6 收益审计
 
 | API | 缺口 | 建议 |
 | --- | --- | --- |
-| revenue overview | 缺审计任务、价格、滑点、收益计算 | 新增 `revenue_audit` 模块，只基于 trade intent 做纸面审计。 |
+| revenue overview | 缺审计任务、价格、滑点、收益计算和周期聚合 | 新增 `revenue_audit` 模块，只基于 trade intent 做纸面审计；`period=7d/30d` 时 KPI 与 trend 必须同步切换。 |
 | revenue run | 缺交易日 18:00 后调度 | 在 scheduler 或独立 audit worker 中触发。 |
 | trade intent detail | 现有 TradingRecord 无价格字段 | 不改 TradingRecord 语义，新增 audit result 表关联 record_id。 |
 
@@ -1857,7 +2152,7 @@ Event data schema：
 
 | API | 缺口 | 建议 |
 | --- | --- | --- |
-| cost overview | usage 分散在 model audit payload 中 | 新增 `model_usage_events` 或 `cost_audit_records`。 |
+| cost overview | usage 分散在 model audit payload 中，缺周期聚合 | 新增 `model_usage_events` 或 `cost_audit_records`；`period=7d/30d` 时 KPI、trend、breakdown 必须同步切换。 |
 | cost pricing | 无模型价格表 | 新增配置化价格表，按 provider/model 生效时间计算。 |
 | cost details | 无统一明细 | 从 AgentRunner/ReAct/Gateway 统一写入 usage 明细，关联 ticker/node/task/execution。 |
 | retry cost | retry_count 有 audit 字段，但未聚合 | 聚合 `ModelAuditSummary.retry_count` 和重复调用记录。 |
@@ -1867,7 +2162,7 @@ Event data schema：
 1. 新增 `dashboard_api` FastAPI 服务骨架、鉴权 middleware、通用响应/错误/pagination helper。
 2. 先挂载 `runtime_scheduler` 已有 facade：`overview/tickers/start/pause/stop/detail`。
 3. 做 `DocumentViewAssembler`，把 Document 1/2/3 转成稳定中文卡片 schema。
-4. 做 Message Bus messages/config read API，再接 config mutation。
-5. 做 Runtime graph/node/executions 聚合。
-6. 做 SSE，先支持 `message_bus.message.created`、`runtime.execution.updated`、`ticker.state.changed`。
+4. 做 Message Bus messages/config read API：先返回扁平 `sources[]`、全量 channel、参数 schema 和轮询健康字段，再接 config mutation。
+5. 做 Runtime graph/node/executions 聚合：优先 canonical graph 和 `message_title`，避免旧节点语义进入前端。
+6. 做 SSE，先支持 `message_bus.message.created`、`runtime.execution.updated`、`runtime.execution.failed`、`audit.revenue.status_changed`、`audit.cost.status_changed`，并实现 `last_event_id` 断线恢复。
 7. 最后补收益审计和成本审计，因为这两块当前数据模型缺口最大。

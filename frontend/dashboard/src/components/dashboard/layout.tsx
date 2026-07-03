@@ -5,11 +5,15 @@ import {
   BookOpenTextIcon,
   ChartNoAxesCombinedIcon,
   CircuitBoardIcon,
+  LogOutIcon,
   MessageSquareTextIcon,
   RouteIcon,
+  UserCircleIcon,
 } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { useDashboardAuth } from "@/lib/dashboard-auth"
 import { cn } from "@/lib/utils"
 
 const tickerNavItems = [
@@ -30,6 +34,7 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
   const location = useLocation()
   const ticker = useTickerFromPath()
   const isTickerPage = location.pathname.startsWith("/ticker/") && Boolean(ticker)
+  const auth = useDashboardAuth()
 
   return (
     <div className="dox-shell">
@@ -67,9 +72,26 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
           ) : null}
 
           <div className="ml-auto flex items-center gap-2">
+            {auth.user ? (
+              <Badge variant="secondary" className="hidden rounded-[4px] px-3 py-1 md:flex">
+                <UserCircleIcon data-icon="inline-start" />
+                {auth.user.email ?? auth.user.tier}
+              </Badge>
+            ) : null}
             <Badge variant="outline" className="rounded-[4px] px-3 py-1">
               {ticker ?? "全局"}
             </Badge>
+            {auth.status === "authenticated" || auth.status === "forbidden" ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label="退出登录"
+                onClick={() => void auth.signOut()}
+              >
+                <LogOutIcon />
+              </Button>
+            ) : null}
           </div>
         </div>
 

@@ -1,0 +1,44 @@
+# syntax=docker/dockerfile:1
+
+FROM node:22-alpine AS dashboard-frontend
+
+WORKDIR /app/frontend/dashboard
+
+RUN corepack enable && corepack prepare pnpm@10.24.0 --activate
+
+COPY frontend/dashboard/package.json frontend/dashboard/pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
+
+COPY frontend/dashboard ./
+RUN pnpm build
+
+
+FROM ghcr.io/astral-sh/uv:0.8.14-python3.11-bookworm-slim AS dashboard-runtime
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_PROJECT_ENVIRONMENT=/app/.venv \
+    PATH="/app/.venv/bin:$PATH" \
+    DOXAGENT_DASHBOARD_API_MODE=real \
+    DOXAGENT_DASHBOARD_AUTH_MODE=supabase \
+    DOXAGENT_DASHBOARD_STATIC_DIR=/app/frontend/dashboard/dist
+
+WORKDIR /app
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates curl git \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY pyproject.toml uv.lock README.md ./
+COPY src ./src
+COPY prompts ./prompts
+
+RUN uv sync --frozen
+
+COPY --from=dashboard-frontend /app/frontend/dashboard/dist /app/frontend/dashboard/dist
+
+EXPOSE 8780
+
+CMD ["python", "-m", "doxagent.dashboard_api", "--host", "0.0.0.0", "--port", "8780", "--mode", "real"]

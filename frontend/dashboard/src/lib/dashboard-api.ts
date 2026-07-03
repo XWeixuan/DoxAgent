@@ -28,7 +28,7 @@ import type {
   TickerDetail,
 } from "@/lib/dashboard-types"
 
-const DEFAULT_API_BASE_URL = "http://127.0.0.1:8780/api/dashboard/v1"
+const DEFAULT_API_BASE_URL = "/api/dashboard/v1"
 
 export const dashboardApiBaseUrl = (
   import.meta.env.VITE_DASHBOARD_API_BASE_URL || DEFAULT_API_BASE_URL
@@ -36,10 +36,42 @@ export const dashboardApiBaseUrl = (
 
 const dashboardAuthToken = import.meta.env.VITE_DASHBOARD_AUTH_TOKEN as string | undefined
 const localTokenKey = "doxagent_dashboard_auth_token"
+const dashboardAuthErrorEvent = "doxagent-dashboard-auth-error"
 
-export function getDashboardAuthToken() {
+type AccessTokenProvider = () => string | undefined | Promise<string | undefined>
+
+let dashboardAccessTokenProvider: AccessTokenProvider | null = null
+
+export interface DashboardAuthConfig {
+  auth_mode: string
+  provider: "supabase" | "mock"
+  supabase_url: string | null
+  supabase_publishable_key: string | null
+  dev_tier: string
+}
+
+export interface DashboardCurrentUser {
+  user_id: string
+  email: string | null
+  tier: string
+  timezone: string | null
+  is_dev: boolean
+  auth_mode: string
+}
+
+export function setDashboardAccessTokenProvider(provider: AccessTokenProvider | null) {
+  dashboardAccessTokenProvider = provider
+}
+
+export async function getDashboardAuthToken() {
   if (dashboardAuthToken) {
     return dashboardAuthToken
+  }
+  if (dashboardAccessTokenProvider) {
+    const provided = await dashboardAccessTokenProvider()
+    if (provided) {
+      return provided
+    }
   }
   if (typeof window === "undefined") {
     return undefined
@@ -71,6 +103,12 @@ export class DashboardApiError extends Error {
     this.requestId = payload.request_id
     this.status = status
   }
+}
+
+export interface DashboardAuthErrorDetail {
+  status: number
+  code: string
+  message: string
 }
 
 export type QueryParams = Record<
@@ -117,7 +155,7 @@ export async function dashboardRequest<T>(
 ) {
   const headers = new Headers(init.headers)
   headers.set("accept", "application/json")
-  const token = getDashboardAuthToken()
+  const token = await getDashboardAuthToken()
   if (token) {
     headers.set("authorization", `Bearer ${token}`)
   }
@@ -135,7 +173,9 @@ export async function dashboardRequest<T>(
   })
 
   if (!response.ok) {
-    throw new DashboardApiError(await parseError(response), response.status)
+    const error = new DashboardApiError(await parseError(response), response.status)
+    notifyDashboardAuthError(error)
+    throw error
   }
 
   const payload = (await response.json()) as ApiResponse<T>
@@ -143,6 +183,8 @@ export async function dashboardRequest<T>(
 }
 
 export const dashboardApi = {
+  authConfig: () => dashboardRequest<DashboardAuthConfig>("/auth/config"),
+  me: () => dashboardRequest<DashboardCurrentUser>("/auth/me"),
   overview: (params?: QueryParams) =>
     dashboardRequest<OverviewState>(`/overview${queryString(params)}`),
   tickers: (params?: QueryParams) =>
@@ -168,6 +210,17 @@ export const dashboardApi = {
       {
         method: "POST",
         body: { reason: "Dashboard 前端手动暂停" },
+      }
+    ),
+  setMonitorMode: (ticker: string, monitorMode: MonitorMode) =>
+    dashboardRequest<OperationResult>(
+      `/tickers/${encodeURIComponent(ticker)}/monitor-mode`,
+      {
+        method: "PATCH",
+        body: {
+          monitor_mode: monitorMode,
+          reason: "Dashboard 前端手动切换监测模式",
+        },
       }
     ),
   restartTicker: (ticker: string) =>
@@ -316,7 +369,7 @@ export interface EventStreamOptions {
 
 export async function connectDashboardEvents(options: EventStreamOptions) {
   const headers = new Headers({ accept: "text/event-stream" })
-  const token = getDashboardAuthToken()
+  const token = await getDashboardAuthToken()
   if (token) {
     headers.set("authorization", `Bearer ${token}`)
   }
@@ -333,7 +386,9 @@ export async function connectDashboardEvents(options: EventStreamOptions) {
       signal: options.signal,
     })
     if (!response.ok) {
-      throw new DashboardApiError(await parseError(response), response.status)
+      const error = new DashboardApiError(await parseError(response), response.status)
+      notifyDashboardAuthError(error)
+      throw error
     }
     if (!response.body) {
       throw new Error("当前浏览器不支持 SSE streaming response。")
@@ -345,6 +400,34 @@ export async function connectDashboardEvents(options: EventStreamOptions) {
     }
     options.onError?.(error instanceof Error ? error : new Error(String(error)))
   }
+}
+
+export function subscribeDashboardAuthErrors(
+  listener: (detail: DashboardAuthErrorDetail) => void
+) {
+  if (typeof window === "undefined") {
+    return () => undefined
+  }
+  const handler = (event: Event) => {
+    listener((event as CustomEvent<DashboardAuthErrorDetail>).detail)
+  }
+  window.addEventListener(dashboardAuthErrorEvent, handler)
+  return () => window.removeEventListener(dashboardAuthErrorEvent, handler)
+}
+
+function notifyDashboardAuthError(error: DashboardApiError) {
+  if (typeof window === "undefined" || ![401, 403].includes(error.status)) {
+    return
+  }
+  window.dispatchEvent(
+    new CustomEvent<DashboardAuthErrorDetail>(dashboardAuthErrorEvent, {
+      detail: {
+        status: error.status,
+        code: error.code,
+        message: error.message,
+      },
+    })
+  )
 }
 
 export async function readSseStream(

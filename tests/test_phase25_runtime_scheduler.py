@@ -34,6 +34,7 @@ from doxagent.runtime_scheduler import (
     DocumentSetStatus,
     InMemoryRuntimeSchedulerRepository,
     MarketSessionPhase,
+    MonitorMode,
     RefreshRequestSource,
     RuntimeAuditEvent,
     RuntimeHealth,
@@ -110,7 +111,11 @@ def test_start_ticker_initializes_missing_documents_and_applies_monitoring_confi
     assert provider.initialize_calls == 1
     assert detail.state.status is TickerRunStatus.RUNNING
     assert detail.state.health is RuntimeHealth.NORMAL
+    assert detail.state.monitor_mode is MonitorMode.MESSAGE_MONITORING
     assert detail.document_status.usable is True
+    startup_progress = detail.state.metadata["startup_progress"]
+    assert startup_progress["status"] == "completed"
+    assert startup_progress["visible"] is False
     binding = monitoring_service.repository.get_binding("NVDA", "benzinga_news")
     assert binding is not None
     assert binding.enabled is True
@@ -118,6 +123,30 @@ def test_start_ticker_initializes_missing_documents_and_applies_monitoring_confi
     audit_types = [event.event_type for event in detail.audit_events]
     assert "documents_initialization_started" in audit_types
     assert "monitoring_config_applied" in audit_types
+
+
+def test_start_ticker_exposes_blocked_startup_progress_when_documents_fail() -> None:
+    scheduler, provider, _monitoring_service, _runtime_service = _scheduler(_missing_bundle())
+
+    detail = scheduler.start_ticker(
+        "nvda",
+        now=datetime(2026, 6, 30, 12, 15, tzinfo=UTC),
+    )
+
+    progress = detail.state.metadata["startup_progress"]
+    assert provider.initialize_calls == 1
+    assert detail.state.status is TickerRunStatus.BLOCKED
+    assert progress["status"] == "blocked"
+    assert progress["visible"] is True
+    assert progress["retryable"] is True
+    assert progress["current_step_id"] == "document1"
+    assert [step["label"] for step in progress["steps"]] == [
+        "进行宏观投研",
+        "拆解叙事预期",
+        "生成执行策略",
+        "配置消息监测",
+        "启动持久化监测",
+    ]
 
 
 def test_repeated_start_is_idempotent_for_running_ticker() -> None:
@@ -132,9 +161,35 @@ def test_repeated_start_is_idempotent_for_running_ticker() -> None:
     assert "ticker_start_idempotent" in [event.event_type for event in detail.audit_events]
 
 
-def test_tick_consumes_pending_events_and_records_trade_intent() -> None:
+def test_message_monitoring_tick_leaves_pending_events_without_trade_intent() -> None:
     scheduler, _provider, monitoring_service, runtime_service = _scheduler(_usable_bundle())
     scheduler.start_ticker("NVDA", now=datetime(2026, 6, 30, 12, 15, tzinfo=UTC))
+    _disable_due_polling(monitoring_service)
+    event = _append_standard_event(monitoring_service)
+
+    detail = scheduler.tick_ticker(
+        "NVDA",
+        now=datetime(2026, 6, 30, 12, 30, tzinfo=UTC),
+    )
+
+    pending = monitoring_service.recent_events(ticker="NVDA")[0]
+    assert pending.event_id == event.event_id
+    assert pending.consumed is False
+    assert detail.event_processing_status.pending_event_count == 1
+    assert detail.event_processing_status.runtime_execution_count == 0
+    assert detail.trade_intents == []
+    assert runtime_service.repository.list_trading_records(ticker="NVDA") == []
+    assert detail.state.counters.events_consumed == 0
+    assert detail.state.counters.trade_intents_generated == 0
+
+
+def test_paper_trading_tick_consumes_pending_events_and_records_trade_intent() -> None:
+    scheduler, _provider, monitoring_service, runtime_service = _scheduler(_usable_bundle())
+    scheduler.start_ticker(
+        "NVDA",
+        now=datetime(2026, 6, 30, 12, 15, tzinfo=UTC),
+        monitor_mode=MonitorMode.PAPER_TRADING,
+    )
     _disable_due_polling(monitoring_service)
     event = _append_standard_event(monitoring_service)
 
@@ -159,6 +214,35 @@ def test_tick_consumes_pending_events_and_records_trade_intent() -> None:
     assert detail.state.counters.llm_call_count_status == "not_yet_integrated"
 
 
+def test_switch_to_paper_trading_does_not_replay_existing_pending_events() -> None:
+    scheduler, _provider, monitoring_service, runtime_service = _scheduler(_usable_bundle())
+    scheduler.start_ticker("NVDA", now=datetime(2026, 6, 30, 12, 15, tzinfo=UTC))
+    _disable_due_polling(monitoring_service)
+    event = _append_standard_event(monitoring_service)
+
+    switched = scheduler.set_monitor_mode(
+        "NVDA",
+        MonitorMode.PAPER_TRADING,
+        now=event.event_time + timedelta(seconds=1),
+        reason="unit test switch",
+    )
+    detail = scheduler.tick_ticker(
+        "NVDA",
+        now=event.event_time + timedelta(seconds=2),
+    )
+
+    persisted_event = monitoring_service.recent_events(ticker="NVDA")[0]
+    assert switched.state.monitor_mode is MonitorMode.PAPER_TRADING
+    assert switched.state.metadata["paper_trading_replays_historical_pending_events"] is False
+    assert persisted_event.consumed is False
+    assert detail.runtime_status.pending_event_count == 1
+    assert detail.state.counters.events_consumed == 0
+    assert runtime_service.repository.list_trading_records(ticker="NVDA") == []
+    assert "ticker_monitor_mode_changed" in [
+        item.event_type for item in detail.audit_events
+    ]
+
+
 def test_dashboard_detail_uses_contract_status_field_names() -> None:
     scheduler, _provider, monitoring_service, _runtime_service = _scheduler(_usable_bundle())
     detail = scheduler.start_ticker("NVDA", now=datetime(2026, 6, 30, 12, 15, tzinfo=UTC))
@@ -181,7 +265,11 @@ def test_dashboard_detail_uses_contract_status_field_names() -> None:
 
 def test_repeated_tick_does_not_reconsume_event_or_duplicate_trade_intent() -> None:
     scheduler, _provider, monitoring_service, runtime_service = _scheduler(_usable_bundle())
-    scheduler.start_ticker("NVDA", now=datetime(2026, 6, 30, 12, 15, tzinfo=UTC))
+    scheduler.start_ticker(
+        "NVDA",
+        now=datetime(2026, 6, 30, 12, 15, tzinfo=UTC),
+        monitor_mode=MonitorMode.PAPER_TRADING,
+    )
     _disable_due_polling(monitoring_service)
     _append_standard_event(monitoring_service)
     scheduler.tick_ticker("NVDA", now=datetime(2026, 6, 30, 12, 30, tzinfo=UTC))
@@ -199,7 +287,11 @@ def test_repeated_tick_does_not_reconsume_event_or_duplicate_trade_intent() -> N
 def test_runtime_failure_keeps_pending_event_and_surfaces_degraded_state() -> None:
     scheduler, _provider, monitoring_service, runtime_service = _scheduler(_usable_bundle())
     scheduler.runtime_service = _FailingRuntimeService(runtime_service.repository)
-    scheduler.start_ticker("NVDA", now=datetime(2026, 6, 30, 12, 15, tzinfo=UTC))
+    scheduler.start_ticker(
+        "NVDA",
+        now=datetime(2026, 6, 30, 12, 15, tzinfo=UTC),
+        monitor_mode=MonitorMode.PAPER_TRADING,
+    )
     _disable_due_polling(monitoring_service)
     event = _append_standard_event(monitoring_service)
 
@@ -283,7 +375,11 @@ def test_sqlite_restart_restores_running_state_and_consumes_pending_event(tmp_pa
         monitoring_service=monitoring_service,
         runtime_service=runtime_service,
     )
-    scheduler.start_ticker("NVDA", now=datetime(2026, 6, 30, 12, 15, tzinfo=UTC))
+    scheduler.start_ticker(
+        "NVDA",
+        now=datetime(2026, 6, 30, 12, 15, tzinfo=UTC),
+        monitor_mode=MonitorMode.PAPER_TRADING,
+    )
     _disable_due_polling(monitoring_service)
     event = _append_standard_event(monitoring_service)
 

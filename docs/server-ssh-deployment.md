@@ -20,6 +20,8 @@ Windows.
 - DoxAtlas currently uses public ports `3000` and `8000`.
 - DoxAgent Debug Viewer publishes only `127.0.0.1:8765:8765`, so it does not
   conflict with DoxAtlas and is not exposed directly to the public network.
+- DoxAgent Dashboard publishes only `127.0.0.1:8780:8780`; Nginx exposes it at
+  `agent.doxatlas.com`.
 
 ## Deploy
 
@@ -42,6 +44,20 @@ scp .env doxagent-hk:/root/doxagent/.env
 ```powershell
 ssh doxagent-hk 'cd /root/doxagent && docker compose ps && curl -fsS http://127.0.0.1:8765/api/config'
 ```
+
+## Dashboard Deploy
+
+Dashboard production deployment is documented in
+[`docs/dashboard-deployment.md`](dashboard-deployment.md). The short path is:
+
+```powershell
+ssh doxagent-hk 'cd /root/doxagent && docker compose build dashboard && docker compose up -d --force-recreate dashboard'
+ssh doxagent-hk 'curl -fsS http://127.0.0.1:8780/healthz'
+```
+
+Create `/root/doxagent/.env.dashboard` from `.env.dashboard.example` before
+starting the service. It should use the existing DoxAtlas Supabase URL and
+publishable/anon key for Dashboard auth.
 
 To inspect the viewer from Windows:
 

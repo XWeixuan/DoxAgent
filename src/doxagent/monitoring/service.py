@@ -421,6 +421,7 @@ class MonitoringBusService:
         concurrency: int = 6,
         dry_run: bool = False,
         incomplete_only: bool = True,
+        reader_fallback: bool = True,
     ) -> JsonObject:
         return asyncio.run(
             self.enrich_recent_media_async(
@@ -429,6 +430,7 @@ class MonitoringBusService:
                 concurrency=concurrency,
                 dry_run=dry_run,
                 incomplete_only=incomplete_only,
+                reader_fallback=reader_fallback,
             )
         )
 
@@ -442,6 +444,7 @@ class MonitoringBusService:
         incomplete_only: bool = True,
         session_factory: SessionFactory | None = None,
         extractor: Extractor | None = None,
+        reader_fallback: bool = True,
     ) -> JsonObject:
         records = self.repository.list_media_enrichment_records(
             ticker=ticker,
@@ -454,6 +457,7 @@ class MonitoringBusService:
             extractor=extractor,
             concurrency=concurrency,
             dry_run=dry_run,
+            reader_fallback=reader_fallback,
         )
         if not dry_run:
             stats.written_count = self.repository.apply_media_enrichment_results(results)

@@ -15,9 +15,13 @@ __pycache__/
 .env
 .env.*
 !.env.example
+!.env.dashboard.example
 
 build/
 dist/
+node_modules/
+frontend/dashboard/node_modules/
+frontend/dashboard/dist/
 *.egg-info/
 htmlcov/
 .coverage

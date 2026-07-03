@@ -4,22 +4,35 @@ from __future__ import annotations
 
 import os
 from http import HTTPStatus
+from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from doxagent.dashboard_api.auth import (
+    DashboardAuthSettings,
+    DashboardAuthVerifier,
+    auth_config_payload,
+    dashboard_auth_settings_from_env,
+)
 from doxagent.dashboard_api.mock_fixtures import JsonObject, MockDashboardStore, utc_now_iso
 from doxagent.dashboard_api.mock_router import (
+    DASHBOARD_API_PREFIX,
     DashboardMockError,
     create_mock_router,
     dashboard_error_payload,
     invalid_params_payload,
 )
+from doxagent.dashboard_api.real_router import create_real_router
+from doxagent.dashboard_api.real_service import RealDashboardOverviewService
+from doxagent.runtime_scheduler.api import DashboardStateAPI
 
-SUPPORTED_DASHBOARD_API_MODES = {"mock", "full-mock", "fixture"}
+SUPPORTED_DASHBOARD_API_MODES = {"mock", "full-mock", "fixture", "real"}
+MOCK_DASHBOARD_API_MODES = {"mock", "full-mock", "fixture"}
 
 
 def create_app(
@@ -27,28 +40,50 @@ def create_app(
     mode: str | None = None,
     auth_mode: str | None = None,
     store: MockDashboardStore | None = None,
+    dashboard_api: DashboardStateAPI | None = None,
+    real_service: RealDashboardOverviewService | None = None,
+    dashboard_auth_settings: DashboardAuthSettings | None = None,
+    dashboard_auth_verifier: DashboardAuthVerifier | None = None,
 ) -> FastAPI:
     env_mode = os.getenv("DOXAGENT_DASHBOARD_API_MODE")
     resolved_mode = (mode if mode is not None else env_mode if env_mode is not None else "mock")
     resolved_mode = resolved_mode.strip().lower()
     if resolved_mode not in SUPPORTED_DASHBOARD_API_MODES:
         raise ValueError(
-            "Only mock Dashboard State API mode is implemented. "
-            "Set DOXAGENT_DASHBOARD_API_MODE=mock."
+            "Unsupported Dashboard State API mode. "
+            "Set DOXAGENT_DASHBOARD_API_MODE=mock or real."
         )
 
+    is_real = resolved_mode == "real"
     app = FastAPI(
-        title="DoxAgent Dashboard State API Mock",
+        title=(
+            "DoxAgent Dashboard State API"
+            if is_real
+            else "DoxAgent Dashboard State API Mock"
+        ),
         version="0.1.0",
         description=(
-            "Full fixture-backed mock for the first-phase DoxAgent Dashboard State API. "
-            "It does not connect to DB, workflow, scheduler, or runtime services."
+            "Real first-phase DoxAgent Dashboard State API backed by runtime scheduler "
+            "services."
+            if is_real
+            else (
+                "Full fixture-backed mock for the first-phase DoxAgent Dashboard State API. "
+                "It does not connect to DB, workflow, scheduler, or runtime services."
+            )
         ),
     )
     app.state.dashboard_api_mode = resolved_mode
-    app.state.dashboard_auth_mode = (
-        auth_mode or os.getenv("DOXAGENT_DASHBOARD_AUTH_MODE", "mock-open")
+    default_auth_mode = "supabase" if is_real else "mock-open"
+    resolved_auth_mode = (
+        auth_mode
+        or os.getenv("DOXAGENT_DASHBOARD_AUTH_MODE", default_auth_mode)
+        or default_auth_mode
     )
+    app.state.dashboard_auth_mode = resolved_auth_mode
+    app.state.dashboard_auth_settings = dashboard_auth_settings or dashboard_auth_settings_from_env(
+        default_auth_mode=resolved_auth_mode
+    )
+    app.state.dashboard_auth_verifier = dashboard_auth_verifier
 
     app.add_middleware(
         CORSMiddleware,
@@ -58,7 +93,11 @@ def create_app(
         allow_headers=["*"],
     )
 
-    app.include_router(create_mock_router(store))
+    if resolved_mode in MOCK_DASHBOARD_API_MODES:
+        app.include_router(create_mock_router(store))
+    else:
+        resolved_service = real_service or RealDashboardOverviewService(dashboard_api)
+        app.include_router(create_real_router(resolved_service))
 
     @app.get("/healthz")
     async def healthz() -> JsonObject:
@@ -68,6 +107,19 @@ def create_app(
             "auth_mode": app.state.dashboard_auth_mode,
             "generated_at": utc_now_iso(),
         }
+
+    @app.get(f"{DASHBOARD_API_PREFIX}/auth/config")
+    async def auth_config() -> JsonObject:
+        return {
+            "data": auth_config_payload(app.state.dashboard_auth_settings),
+            "meta": {
+                "request_id": None,
+                "generated_at": utc_now_iso(),
+                "source": "dashboard_state_api",
+            },
+        }
+
+    _mount_dashboard_static(app)
 
     @app.exception_handler(DashboardMockError)
     async def dashboard_mock_error_handler(
@@ -131,6 +183,38 @@ def _validation_message(exc: RequestValidationError) -> str:
     location = ".".join(str(item) for item in first.get("loc", []))
     message = str(first.get("msg") or "请求参数不合法。")
     return f"{location}: {message}" if location else message
+
+
+def _mount_dashboard_static(app: FastAPI) -> None:
+    static_dir_text = os.getenv("DOXAGENT_DASHBOARD_STATIC_DIR")
+    if not static_dir_text:
+        return
+
+    static_dir = Path(static_dir_text).expanduser().resolve()
+    index_path = static_dir / "index.html"
+    if not index_path.is_file():
+        raise RuntimeError(
+            "DOXAGENT_DASHBOARD_STATIC_DIR must point to a built frontend/dashboard dist."
+        )
+
+    assets_dir = static_dir / "assets"
+    if assets_dir.is_dir():
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="dashboard-assets")
+
+    @app.head("/{full_path:path}", include_in_schema=False)
+    @app.get("/{full_path:path}", include_in_schema=False)
+    async def dashboard_spa(full_path: str) -> FileResponse:
+        if full_path == "healthz" or full_path.startswith("api/"):
+            raise StarletteHTTPException(status_code=HTTPStatus.NOT_FOUND)
+
+        candidate = (static_dir / full_path).resolve()
+        try:
+            candidate.relative_to(static_dir)
+        except ValueError as exc:
+            raise StarletteHTTPException(status_code=HTTPStatus.NOT_FOUND) from exc
+        if candidate.is_file():
+            return FileResponse(candidate)
+        return FileResponse(index_path)
 
 
 app = create_app()

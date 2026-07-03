@@ -7,6 +7,7 @@ from datetime import UTC, datetime, time
 from zoneinfo import ZoneInfo
 
 from doxagent.monitoring.schema import (
+    EventStreamItem,
     MonitoringParameters,
     TickerSourceBinding,
     UpdateActor,
@@ -23,11 +24,13 @@ from doxagent.runtime_scheduler.repository import (
 from doxagent.runtime_scheduler.schema import (
     AuditSeverity,
     DashboardOverview,
+    DocumentAvailability,
     DocumentBundle,
     DocumentRefreshRequest,
     DocumentSetStatus,
     EventProcessingStatus,
     MarketSessionPhase,
+    MonitorMode,
     MonitoringBindingStatus,
     MonitoringRunStatus,
     RefreshRequestSource,
@@ -46,6 +49,23 @@ RUNNABLE_STATUSES = {
     TickerRunStatus.RUNNING,
     TickerRunStatus.DEGRADED,
 }
+STARTUP_STEP_DEFINITIONS = (
+    ("document1", "进行宏观投研"),
+    ("document2", "拆解叙事预期"),
+    ("document3", "生成执行策略"),
+    ("message_bus", "配置消息监测"),
+    ("runtime", "启动持久化监测"),
+)
+ENABLED_MONITOR_MODES = {
+    MonitorMode.MESSAGE_MONITORING,
+    MonitorMode.PAPER_TRADING,
+}
+
+
+class UnsupportedMonitorMode(ValueError):
+    def __init__(self, monitor_mode: str) -> None:
+        super().__init__(monitor_mode)
+        self.monitor_mode = monitor_mode
 
 
 class UnifiedRuntimeSchedulerService:
@@ -95,11 +115,16 @@ class UnifiedRuntimeSchedulerService:
         *,
         now: datetime | None = None,
         force_initialize: bool = False,
+        monitor_mode: MonitorMode | str | None = None,
     ) -> TickerRunDetail:
         normalized = _ticker(ticker)
         current_time = _utc(now)
         phase = market_session_phase(current_time)
         existing = self.repository.get_state(normalized)
+        resolved_mode = _resolve_monitor_mode(
+            monitor_mode,
+            default=_state_monitor_mode(existing) if existing is not None else None,
+        )
         if (
             existing is not None
             and existing.status in RUNNABLE_STATUSES
@@ -113,19 +138,38 @@ class UnifiedRuntimeSchedulerService:
             )
             return self.detail(normalized, now=current_time)
         state = existing or TickerRunState(ticker=normalized, started_at=current_time)
+        metadata = _monitor_mode_metadata(
+            state,
+            resolved_mode,
+            now=current_time,
+            reset_paper_window=existing is None or resolved_mode is MonitorMode.PAPER_TRADING,
+        )
+        metadata = _startup_progress_metadata(
+            metadata,
+            status="running",
+            active_step_id="document1",
+            updated_at=current_time,
+        )
         state = state.model_copy(
             update={
                 "status": TickerRunStatus.INITIALIZING,
                 "health": RuntimeHealth.NORMAL,
                 "session_phase": phase,
+                "monitor_mode": resolved_mode,
                 "updated_at": current_time,
                 "stopped_at": None,
                 "last_error": None,
+                "metadata": metadata,
             },
             deep=True,
         )
         self.repository.upsert_state(state)
-        self._audit(normalized, "ticker_started", "Ticker runtime start requested.")
+        self._audit(
+            normalized,
+            "ticker_started",
+            "Ticker runtime start requested.",
+            payload={"monitor_mode": resolved_mode.value},
+        )
         try:
             bundle = self._ensure_documents(
                 normalized,
@@ -133,6 +177,15 @@ class UnifiedRuntimeSchedulerService:
                 force_initialize=force_initialize,
             )
         except Exception as exc:
+            failed_metadata = _startup_progress_metadata(
+                state.metadata,
+                status="blocked",
+                active_step_id="document1",
+                updated_at=current_time,
+                blocked_step_id="document1",
+                message=str(exc),
+            )
+            state = state.model_copy(update={"metadata": failed_metadata}, deep=True)
             blocked = self._blocked_state(
                 state,
                 now=current_time,
@@ -146,7 +199,33 @@ class UnifiedRuntimeSchedulerService:
                 severity=AuditSeverity.ERROR,
             )
             return self.detail(normalized, now=current_time)
+        metadata = _startup_progress_from_documents(
+            state.metadata,
+            bundle,
+            updated_at=current_time,
+        )
+        state = state.model_copy(
+            update={
+                "document_run_id": bundle.status.blackboard_run_id,
+                "document_status": bundle.status,
+                "metadata": metadata,
+                "updated_at": current_time,
+            },
+            deep=True,
+        )
+        self.repository.upsert_state(state)
         if not bundle.status.usable:
+            blocked_step_id = _first_blocked_document_step(bundle) or "document1"
+            metadata = _startup_progress_metadata(
+                state.metadata,
+                status="blocked",
+                active_step_id=blocked_step_id,
+                updated_at=current_time,
+                completed_step_ids=_completed_document_steps(bundle),
+                blocked_step_id=blocked_step_id,
+                message="Document set is missing, stale, or invalid.",
+            )
+            state = state.model_copy(update={"metadata": metadata}, deep=True)
             blocked = self._blocked_state(
                 state,
                 now=current_time,
@@ -162,8 +241,27 @@ class UnifiedRuntimeSchedulerService:
                 payload=bundle.status.model_dump(mode="json"),
             )
             return self.detail(normalized, now=current_time)
+        metadata = _startup_progress_metadata(
+            state.metadata,
+            status="running",
+            active_step_id="message_bus",
+            updated_at=current_time,
+            completed_step_ids={"document1", "document2", "document3"},
+        )
+        state = state.model_copy(update={"metadata": metadata, "updated_at": current_time}, deep=True)
+        self.repository.upsert_state(state)
         applied_bindings = self._apply_monitoring_config(normalized, bundle)
         if bundle.monitoring_config is not None and not applied_bindings:
+            metadata = _startup_progress_metadata(
+                state.metadata,
+                status="blocked",
+                active_step_id="message_bus",
+                updated_at=current_time,
+                completed_step_ids={"document1", "document2", "document3"},
+                blocked_step_id="message_bus",
+                message="Monitoring Config produced no usable Message Bus bindings.",
+            )
+            state = state.model_copy(update={"metadata": metadata}, deep=True)
             blocked = self._blocked_state(
                 state,
                 now=current_time,
@@ -172,15 +270,40 @@ class UnifiedRuntimeSchedulerService:
             )
             self.repository.upsert_state(blocked)
             return self.detail(normalized, now=current_time)
+        metadata = _startup_progress_metadata(
+            state.metadata,
+            status="running",
+            active_step_id="runtime",
+            updated_at=current_time,
+            completed_step_ids={"document1", "document2", "document3", "message_bus"},
+        )
+        state = state.model_copy(update={"metadata": metadata, "updated_at": current_time}, deep=True)
+        self.repository.upsert_state(state)
+        metadata = _startup_progress_metadata(
+            state.metadata,
+            status="completed",
+            active_step_id=None,
+            updated_at=current_time,
+            completed_step_ids={
+                "document1",
+                "document2",
+                "document3",
+                "message_bus",
+                "runtime",
+            },
+            visible=False,
+        )
         state = state.model_copy(
             update={
                 "status": TickerRunStatus.RUNNING,
                 "health": RuntimeHealth.NORMAL,
                 "session_phase": phase,
+                "monitor_mode": resolved_mode,
                 "document_run_id": bundle.status.blackboard_run_id,
                 "document_status": bundle.status,
                 "last_monitoring_config_version": _config_version(bundle),
                 "updated_at": current_time,
+                "metadata": metadata,
             },
             deep=True,
         )
@@ -189,7 +312,54 @@ class UnifiedRuntimeSchedulerService:
             normalized,
             "ticker_running",
             "Ticker runtime is ready for scheduled polling and event consumption.",
-            payload={"session_phase": phase.value, "binding_count": len(applied_bindings)},
+            payload={
+                "session_phase": phase.value,
+                "binding_count": len(applied_bindings),
+                "monitor_mode": resolved_mode.value,
+            },
+        )
+        return self.detail(normalized, now=current_time)
+
+    def set_monitor_mode(
+        self,
+        ticker: str,
+        monitor_mode: MonitorMode | str,
+        *,
+        reason: str | None = None,
+        now: datetime | None = None,
+    ) -> TickerRunDetail:
+        normalized = _ticker(ticker)
+        state = self.repository.get_state(normalized)
+        if state is None:
+            state = self._state_or_default(normalized, now=now)
+        current_time = _utc(now)
+        previous_mode = _state_monitor_mode(state)
+        resolved_mode = _resolve_monitor_mode(monitor_mode)
+        metadata = _monitor_mode_metadata(
+            state,
+            resolved_mode,
+            now=current_time,
+            reset_paper_window=previous_mode is not resolved_mode
+            and resolved_mode is MonitorMode.PAPER_TRADING,
+        )
+        state = state.model_copy(
+            update={
+                "monitor_mode": resolved_mode,
+                "updated_at": current_time,
+                "metadata": metadata,
+            },
+            deep=True,
+        )
+        self.repository.upsert_state(state)
+        self._audit(
+            normalized,
+            "ticker_monitor_mode_changed",
+            reason or "Ticker monitor mode changed.",
+            payload={
+                "previous_monitor_mode": previous_mode.value,
+                "monitor_mode": resolved_mode.value,
+                "paper_trading_replays_historical_pending_events": False,
+            },
         )
         return self.detail(normalized, now=current_time)
 
@@ -316,15 +486,22 @@ class UnifiedRuntimeSchedulerService:
         trade_intent_count = 0
         failed_event_count = 0
         runtime_failed = False
-        if phase in {
-            MarketSessionPhase.PRE_MARKET_DIGEST,
-            MarketSessionPhase.FORMAL_MONITORING,
-        }:
+        monitor_mode = _state_monitor_mode(state)
+        should_run_runtime = (
+            monitor_mode is MonitorMode.PAPER_TRADING
+            and phase
+            in {
+                MarketSessionPhase.PRE_MARKET_DIGEST,
+                MarketSessionPhase.FORMAL_MONITORING,
+            }
+        )
+        if should_run_runtime:
             try:
                 pending = self.monitoring_service.pending_events(
                     ticker=normalized,
                     limit=event_limit,
                 )
+                pending = _runtime_eligible_events(state, pending)
                 pending_count_before_runtime = len(pending)
                 context = self._runtime_context(state)
                 before_trade_count = len(
@@ -405,6 +582,7 @@ class UnifiedRuntimeSchedulerService:
                 "status": status,
                 "health": health,
                 "session_phase": phase,
+                "monitor_mode": monitor_mode,
                 "updated_at": current_time,
                 "last_poll_at": (
                     current_time if poll_messages or poll_events else state.last_poll_at
@@ -880,6 +1058,196 @@ def _ticker(value: str) -> str:
     if not normalized:
         raise ValueError("ticker is required.")
     return normalized
+
+
+def _resolve_monitor_mode(
+    value: MonitorMode | str | None,
+    *,
+    default: MonitorMode | None = None,
+) -> MonitorMode:
+    if value is None:
+        return default or MonitorMode.MESSAGE_MONITORING
+    if isinstance(value, MonitorMode):
+        resolved = value
+    else:
+        try:
+            resolved = MonitorMode(value.strip())
+        except ValueError as exc:
+            raise UnsupportedMonitorMode(str(value)) from exc
+    if resolved not in ENABLED_MONITOR_MODES:
+        raise UnsupportedMonitorMode(resolved.value)
+    return resolved
+
+
+def _state_monitor_mode(state: TickerRunState | None) -> MonitorMode:
+    if state is None:
+        return MonitorMode.MESSAGE_MONITORING
+    metadata_value = state.metadata.get("monitor_mode")
+    if isinstance(metadata_value, str):
+        try:
+            return MonitorMode(metadata_value)
+        except ValueError:
+            pass
+    return state.monitor_mode
+
+
+def _monitor_mode_metadata(
+    state: TickerRunState,
+    monitor_mode: MonitorMode,
+    *,
+    now: datetime,
+    reset_paper_window: bool,
+) -> dict[str, object]:
+    metadata = dict(state.metadata)
+    metadata["monitor_mode"] = monitor_mode.value
+    if monitor_mode is MonitorMode.PAPER_TRADING and (
+        reset_paper_window or not metadata.get("paper_trading_enabled_at")
+    ):
+        metadata["paper_trading_enabled_at"] = (
+            now.astimezone(UTC).isoformat().replace("+00:00", "Z")
+        )
+        metadata["paper_trading_replays_historical_pending_events"] = False
+    return metadata
+
+
+def _runtime_eligible_events(
+    state: TickerRunState,
+    events: list[EventStreamItem],
+) -> list[EventStreamItem]:
+    enabled_at = _metadata_datetime(state.metadata.get("paper_trading_enabled_at"))
+    if enabled_at is None:
+        return events
+    return [
+        event
+        for event in events
+        if event.event_time.astimezone(UTC) >= enabled_at
+    ]
+
+
+def _metadata_datetime(value: object) -> datetime | None:
+    if isinstance(value, datetime):
+        return _utc(value)
+    if not isinstance(value, str) or not value.strip():
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return _utc(parsed)
+
+
+def _startup_progress_metadata(
+    metadata: dict[str, object],
+    *,
+    status: str,
+    active_step_id: str | None,
+    updated_at: datetime,
+    completed_step_ids: set[str] | None = None,
+    blocked_step_id: str | None = None,
+    message: str | None = None,
+    visible: bool = True,
+) -> dict[str, object]:
+    completed = set(completed_step_ids or set())
+    steps: list[dict[str, object]] = []
+    for step_id, label in STARTUP_STEP_DEFINITIONS:
+        if step_id in completed:
+            step_status = "completed"
+            progress = 100
+        elif step_id == blocked_step_id:
+            step_status = "blocked"
+            progress = 100
+        elif step_id == active_step_id and status == "running":
+            step_status = "running"
+            progress = 50
+        else:
+            step_status = "pending"
+            progress = 0
+        steps.append(
+            {
+                "step_id": step_id,
+                "label": label,
+                "status": step_status,
+                "progress": progress,
+            }
+        )
+    next_metadata = dict(metadata)
+    next_metadata["startup_progress"] = {
+        "status": status,
+        "status_label": _startup_status_label(status),
+        "visible": visible,
+        "current_step_id": active_step_id,
+        "retryable": status == "blocked",
+        "message": message,
+        "updated_at": updated_at.astimezone(UTC).isoformat().replace("+00:00", "Z"),
+        "steps": steps,
+    }
+    return next_metadata
+
+
+def _startup_progress_from_documents(
+    metadata: dict[str, object],
+    bundle: DocumentBundle,
+    *,
+    updated_at: datetime,
+) -> dict[str, object]:
+    completed = _completed_document_steps(bundle)
+    if bundle.status.usable:
+        return _startup_progress_metadata(
+            metadata,
+            status="running",
+            active_step_id="message_bus",
+            completed_step_ids=completed,
+            updated_at=updated_at,
+        )
+    blocked_step_id = _first_blocked_document_step(bundle) or "document1"
+    return _startup_progress_metadata(
+        metadata,
+        status="blocked",
+        active_step_id=blocked_step_id,
+        completed_step_ids=completed,
+        blocked_step_id=blocked_step_id,
+        message="Document set is missing, stale, or invalid.",
+        updated_at=updated_at,
+    )
+
+
+def _completed_document_steps(bundle: DocumentBundle) -> set[str]:
+    availability = _component_availability(bundle)
+    completed: set[str] = set()
+    if availability.get("global_research") is DocumentAvailability.AVAILABLE:
+        completed.add("document1")
+    if availability.get("expectation_unit") is DocumentAvailability.AVAILABLE:
+        completed.add("document2")
+    if (
+        availability.get("known_events") is DocumentAvailability.AVAILABLE
+        and availability.get("monitoring_policy") is DocumentAvailability.AVAILABLE
+    ):
+        completed.add("document3")
+    return completed
+
+
+def _first_blocked_document_step(bundle: DocumentBundle) -> str | None:
+    completed = _completed_document_steps(bundle)
+    for step_id in ("document1", "document2", "document3"):
+        if step_id not in completed:
+            return step_id
+    return None
+
+
+def _component_availability(bundle: DocumentBundle) -> dict[str, DocumentAvailability]:
+    return {
+        component.document_type.value: component.availability
+        for component in bundle.status.components
+    }
+
+
+def _startup_status_label(status: str) -> str:
+    labels = {
+        "running": "启动中",
+        "blocked": "阻塞",
+        "completed": "已完成",
+    }
+    return labels.get(status, status)
 
 
 def _utc(value: datetime | None) -> datetime:

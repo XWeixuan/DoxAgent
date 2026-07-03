@@ -134,6 +134,14 @@ def create_mock_router(store: MockDashboardStore | None = None) -> APIRouter:
                     retryable=False,
                     details={"ticker": ticker.upper()},
                 ) from exc
+            if str(exc) == "unsupported_monitor_mode":
+                raise DashboardMockError(
+                    code="INVALID_PARAMS",
+                    message="当前阶段仅支持消息监测和模拟交易，真实 Broker 暂未开放。",
+                    status_code=HTTPStatus.UNPROCESSABLE_ENTITY,
+                    retryable=False,
+                    details={"monitor_mode": str(data.get("monitor_mode"))},
+                ) from exc
             raise
         return _ok(request, result)
 
@@ -149,6 +157,30 @@ def create_mock_router(store: MockDashboardStore | None = None) -> APIRouter:
     ) -> JsonObject:
         del payload
         return _ok(request, _required_payload(resolved_store.pause_ticker(ticker), ticker=ticker))
+
+    @router.patch("/tickers/{ticker}/monitor-mode")
+    async def set_monitor_mode(
+        request: Request,
+        ticker: str,
+        payload: JsonObject | None = OPTIONAL_JSON_BODY,
+    ) -> JsonObject:
+        data = payload or {}
+        try:
+            result = resolved_store.set_monitor_mode(
+                ticker,
+                monitor_mode=_required_text(data, "monitor_mode"),
+            )
+        except ValueError as exc:
+            if str(exc) == "unsupported_monitor_mode":
+                raise DashboardMockError(
+                    code="INVALID_PARAMS",
+                    message="当前阶段仅支持消息监测和模拟交易，真实 Broker 暂未开放。",
+                    status_code=HTTPStatus.UNPROCESSABLE_ENTITY,
+                    retryable=False,
+                    details={"monitor_mode": str(data.get("monitor_mode"))},
+                ) from exc
+            raise
+        return _ok(request, _required_payload(result, ticker=ticker))
 
     @router.delete("/tickers/{ticker}")
     async def delete_ticker(

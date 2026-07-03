@@ -22,6 +22,22 @@ http://127.0.0.1:8766
 $env:DOXAGENT_RUN_REAL_API_TESTS="1"
 uv run pytest -m real_api tests/test_phase17_real_initialization_smoke.py
 
+前端启动方式：
+uv run python -m doxagent.dashboard_api --host 127.0.0.1 --port 8780
+cd frontend/dashboard
+npm run dev
+http://localhost:5173/
+
+前后端build：
+ssh doxagent-hk 'cd /root/doxagent && docker compose build dashboard'
+ssh doxagent-hk 'cd /root/doxagent && docker compose up -d --force-recreate dashboard'
+ssh doxagent-hk 'cd /root/doxagent && docker compose restart dashboard'
+ssh doxagent-hk 'cd /root/doxagent && docker compose stop dashboard'
+ssh doxagent-hk 'cd /root/doxagent && docker compose logs -f dashboard'
+
+
+
+
 ## Phase 0 Scope
 
 Phase 0 establishes the Python project structure, dependency configuration,

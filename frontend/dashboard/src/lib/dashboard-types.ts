@@ -63,6 +63,7 @@ export interface TickerCard {
   health: HealthStatus
   session_phase: string
   monitor_mode?: MonitorMode | string
+  startup_progress?: StartupProgress | null
   started_at: string | null
   updated_at: string | null
   last_message_at: string | null
@@ -70,6 +71,23 @@ export interface TickerCard {
   today_dtc_count: number
   today_cost_usd: number | null
   last_error: string | null
+}
+
+export interface StartupProgress {
+  status: "running" | "blocked" | "completed" | string
+  status_label: string
+  current_step_id: string | null
+  retryable: boolean
+  message: string | null
+  updated_at: string | null
+  steps: StartupProgressStep[]
+}
+
+export interface StartupProgressStep {
+  step_id: string
+  label: string
+  status: "pending" | "running" | "completed" | "blocked" | string
+  progress: number
 }
 
 export interface OverviewState {
@@ -107,7 +125,7 @@ export interface TickerDetail {
 }
 
 export interface OperationResult {
-  operation: "start" | "pause" | "delete" | "restart"
+  operation: "start" | "pause" | "delete" | "restart" | "monitor_mode"
   status: string
   ticker: string
   ticker_state?: {

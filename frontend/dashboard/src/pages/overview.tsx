@@ -26,6 +26,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -44,9 +45,19 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from "@/components/ui/input-group"
+import { Progress } from "@/components/ui/progress"
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { dashboardApi } from "@/lib/dashboard-api"
-import type { MonitorMode, PageResult, TickerCard } from "@/lib/dashboard-types"
+import type { MonitorMode, PageResult, StartupProgress, StartupProgressStep, TickerCard } from "@/lib/dashboard-types"
+import { cn } from "@/lib/utils"
 import {
   formatCurrency,
   formatDateTime,
@@ -87,6 +98,12 @@ const healthOptions = [
   { value: "degraded", label: "降级" },
   { value: "blocked", label: "阻塞" },
   { value: "unknown", label: "无数据" },
+]
+
+const monitorModeOptions: Array<{ value: MonitorMode; label: string; disabled?: boolean }> = [
+  { value: "message_monitoring", label: "消息监测" },
+  { value: "paper_trading", label: "模拟交易" },
+  { value: "broker_trading", label: "真实 Broker", disabled: true },
 ]
 
 type InitializeMode = "reuse" | "force"
@@ -175,6 +192,26 @@ export function OverviewPage() {
     } finally {
       setPendingTicker(null)
       setDeleteTarget(null)
+    }
+  }
+
+  const changeMonitorMode = async (item: TickerCard, value: MonitorMode) => {
+    if (value === "broker_trading") {
+      toast.error("真实 Broker 本阶段暂未开放。")
+      return
+    }
+    if ((item.monitor_mode ?? "message_monitoring") === value) {
+      return
+    }
+    setPendingTicker(item.ticker)
+    try {
+      await dashboardApi.setMonitorMode(item.ticker, value)
+      toast.success(`${item.ticker} 已切换为${monitorModeLabel(value)}。`)
+      await reloadAll()
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : String(error))
+    } finally {
+      setPendingTicker(null)
     }
   }
 
@@ -302,9 +339,7 @@ export function OverviewPage() {
                       onValueChange={(value) => value && setMonitorMode(value as MonitorMode)}
                     >
                       <ToggleGroupItem value="message_monitoring">消息监测</ToggleGroupItem>
-                      <ToggleGroupItem value="paper_trading" disabled>
-                        模拟交易
-                      </ToggleGroupItem>
+                      <ToggleGroupItem value="paper_trading">模拟交易</ToggleGroupItem>
                       <ToggleGroupItem value="broker_trading" disabled>
                         真实 Broker
                       </ToggleGroupItem>
@@ -354,8 +389,9 @@ export function OverviewPage() {
             <LoadingGrid rows={4} />
           ) : tickerPage && tickerPage.items.length > 0 ? (
             <div className="workbench-section overflow-hidden">
-              <div className="grid grid-cols-[0.78fr_100px_1fr_1fr_0.72fr_0.72fr_180px] gap-3 border-b px-4 py-3 text-xs font-medium text-muted-foreground max-xl:hidden">
+              <div className="grid grid-cols-[0.68fr_150px_100px_1fr_1fr_0.66fr_0.72fr_180px] gap-3 border-b px-4 py-3 text-xs font-medium text-muted-foreground max-xl:hidden">
                 <span>Ticker</span>
+                <span>监测模式</span>
                 <span>状态</span>
                 <span>最近消息</span>
                 <span>Worker 处理</span>
@@ -369,7 +405,7 @@ export function OverviewPage() {
                     key={item.ticker}
                     role="button"
                     tabIndex={0}
-                    className="grid w-full cursor-pointer grid-cols-1 gap-3 px-4 py-4 text-left transition-colors hover:bg-accent/45 xl:grid-cols-[0.78fr_100px_1fr_1fr_0.72fr_0.72fr_180px]"
+                    className="grid w-full cursor-pointer grid-cols-1 gap-3 px-4 py-4 text-left transition-colors hover:bg-accent/45 xl:grid-cols-[0.68fr_150px_100px_1fr_1fr_0.66fr_0.72fr_180px]"
                     onClick={() => navigate(`/ticker/${item.ticker}/research`)}
                     onKeyDown={(event) => {
                       if (event.key === "Enter" || event.key === " ") {
@@ -379,9 +415,35 @@ export function OverviewPage() {
                   >
                     <div className="min-w-0">
                       <div className="text-2xl font-light">{item.ticker}</div>
-                      <div className="truncate text-xs text-muted-foreground">
-                        {monitorModeLabel(item.monitor_mode ?? "message_monitoring")}
-                      </div>
+                    </div>
+                    <div
+                      className="flex items-center justify-between gap-3 xl:block"
+                      onClick={(event) => event.stopPropagation()}
+                      onKeyDown={(event) => event.stopPropagation()}
+                    >
+                      <span className="text-xs text-muted-foreground xl:hidden">监测模式</span>
+                      <Select
+                        value={(item.monitor_mode ?? "message_monitoring") as MonitorMode}
+                        disabled={pendingTicker === item.ticker}
+                        onValueChange={(value) => void changeMonitorMode(item, value as MonitorMode)}
+                      >
+                        <SelectTrigger className="h-8 w-[148px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            {monitorModeOptions.map((option) => (
+                              <SelectItem
+                                key={option.value}
+                                value={option.value}
+                                disabled={option.disabled}
+                              >
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div className="flex items-center justify-between gap-3 xl:block">
                       <span className="text-xs text-muted-foreground xl:hidden">状态</span>
@@ -426,9 +488,16 @@ export function OverviewPage() {
                       </Button>
                     </div>
                     {item.last_error ? (
-                      <p className="rounded-[4px] bg-destructive/10 p-2 text-sm text-destructive xl:col-span-7">
+                      <p className="rounded-[4px] bg-destructive/10 p-2 text-sm text-destructive xl:col-span-8">
                         {item.last_error}
                       </p>
+                    ) : null}
+                    {item.startup_progress ? (
+                      <StartupProgressCard
+                        progress={item.startup_progress}
+                        disabled={pendingTicker === item.ticker}
+                        onRetry={() => void operateTicker(item.ticker, "restart")}
+                      />
                     ) : null}
                   </div>
                 ))}
@@ -470,6 +539,76 @@ export function OverviewPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+    </div>
+  )
+}
+
+function StartupProgressCard({
+  progress,
+  disabled,
+  onRetry,
+}: {
+  progress: StartupProgress
+  disabled: boolean
+  onRetry: () => void
+}) {
+  const blocked = progress.status === "blocked"
+  return (
+    <div
+      className="rounded-[6px] border bg-background/80 p-3 xl:col-span-8"
+      onClick={(event) => event.stopPropagation()}
+      onKeyDown={(event) => event.stopPropagation()}
+    >
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <div className="text-sm font-medium">启动进度</div>
+          <Badge variant={blocked ? "destructive" : "secondary"}>
+            {progress.status_label || (blocked ? "阻塞" : "启动中")}
+          </Badge>
+        </div>
+        {blocked && progress.retryable ? (
+          <Button
+            variant="outline"
+            size="icon-sm"
+            disabled={disabled}
+            onClick={onRetry}
+            aria-label="重试启动"
+          >
+            <RotateCwIcon />
+          </Button>
+        ) : null}
+      </div>
+      <div className="grid gap-2 md:grid-cols-5">
+        {progress.steps.map((step) => (
+          <StartupStep key={step.step_id} step={step} />
+        ))}
+      </div>
+      {progress.message ? (
+        <p className="mt-3 rounded-[4px] bg-muted p-2 text-xs text-muted-foreground">
+          {progress.message}
+        </p>
+      ) : null}
+    </div>
+  )
+}
+
+function StartupStep({ step }: { step: StartupProgressStep }) {
+  const blocked = step.status === "blocked"
+  const running = step.status === "running"
+  const completed = step.status === "completed"
+  const value = Math.min(100, Math.max(0, Number(step.progress) || 0))
+  return (
+    <div className="flex min-w-0 flex-col gap-1">
+      <div
+        className={cn(
+          "truncate text-xs",
+          completed || running ? "text-foreground" : "text-muted-foreground",
+          blocked ? "text-destructive" : null
+        )}
+      >
+        {step.label}
+      </div>
+      <Progress value={value} className="h-1.5" />
     </div>
   )
 }

@@ -37,10 +37,25 @@ class DashboardStateAPI:
         ticker: str,
         *,
         force_initialize: bool = False,
+        monitor_mode: str | None = None,
     ) -> TickerRunDetail:
         return self.scheduler.start_ticker(
             ticker,
             force_initialize=force_initialize,
+            monitor_mode=monitor_mode,
+        )
+
+    def set_monitor_mode(
+        self,
+        ticker: str,
+        monitor_mode: str,
+        *,
+        reason: str | None = None,
+    ) -> TickerRunDetail:
+        return self.scheduler.set_monitor_mode(
+            ticker,
+            monitor_mode,
+            reason=reason,
         )
 
     def pause_ticker(self, ticker: str, *, reason: str | None = None) -> TickerRunDetail:

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
 import { connectDashboardEvents } from "@/lib/dashboard-api"
 import type { DashboardEvent } from "@/lib/dashboard-types"
@@ -20,6 +20,13 @@ export function useDashboardEvents({
   const [lastEvent, setLastEvent] = useState<DashboardEvent | null>(null)
   const [error, setError] = useState<string | null>(null)
   const eventTypesKey = useMemo(() => eventTypes?.join(",") ?? "", [eventTypes])
+  const onEventRef = useRef(onEvent)
+  const lastEventIdRef = useRef<string | null>(null)
+  const seenEventIdsRef = useRef<Set<string>>(new Set())
+
+  useEffect(() => {
+    onEventRef.current = onEvent
+  }, [onEvent])
 
   useEffect(() => {
     if (!enabled) {
@@ -27,6 +34,8 @@ export function useDashboardEvents({
       return undefined
     }
 
+    lastEventIdRef.current = null
+    seenEventIdsRef.current = new Set()
     const controller = new AbortController()
     let reconnectTimer: number | null = null
     let disposed = false
@@ -36,12 +45,24 @@ export function useDashboardEvents({
       void connectDashboardEvents({
         ticker,
         eventTypes: eventTypesKey ? eventTypesKey.split(",") : undefined,
+        lastEventId: lastEventIdRef.current ?? undefined,
         signal: controller.signal,
         onEvent: (event) => {
           setState("open")
           setError(null)
+          if (seenEventIdsRef.current.has(event.event_id)) {
+            return
+          }
+          seenEventIdsRef.current.add(event.event_id)
+          if (seenEventIdsRef.current.size > 500) {
+            const firstEventId = seenEventIdsRef.current.values().next().value
+            if (firstEventId) {
+              seenEventIdsRef.current.delete(firstEventId)
+            }
+          }
+          lastEventIdRef.current = event.event_id
           setLastEvent(event)
-          onEvent(event)
+          onEventRef.current(event)
         },
         onError: (nextError) => {
           if (disposed) {
@@ -64,7 +85,7 @@ export function useDashboardEvents({
       }
       setState("closed")
     }
-  }, [enabled, eventTypesKey, onEvent, ticker])
+  }, [enabled, eventTypesKey, ticker])
 
   return { state, lastEvent, error }
 }

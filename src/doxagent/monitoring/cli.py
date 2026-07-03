@@ -117,6 +117,7 @@ def main(argv: list[str] | None = None) -> int:
                 concurrency=args.concurrency,
                 dry_run=args.dry_run,
                 incomplete_only=not args.include_complete,
+                reader_fallback=not args.no_reader_fallback,
             )
         )
         return 0
@@ -212,6 +213,11 @@ def _build_parser() -> argparse.ArgumentParser:
         "--include-complete",
         action="store_true",
         help="Attempt already complete-like media rows too.",
+    )
+    enrich.add_argument(
+        "--no-reader-fallback",
+        action="store_true",
+        help="Disable external Reader fallback and only use direct HTTP/JSON-LD/trafilatura.",
     )
 
     poll_forever = sub.add_parser(
