@@ -2,6 +2,11 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
+from threading import Event
+from typing import Any, cast
+
+import pytest
 
 from doxagent.blackboard import BlackboardService, InMemoryBlackboardRepository
 from doxagent.models import (
@@ -14,6 +19,7 @@ from doxagent.models import (
 from doxagent.monitoring.repository import InMemoryMonitoringRepository, SQLiteMonitoringRepository
 from doxagent.monitoring.schema import (
     EventStreamItem,
+    IngestBatchResult,
     InterfaceType,
     SourceType,
     StandardMessage,
@@ -73,6 +79,26 @@ class FakeDocumentProvider:
     def initialize(self, ticker: str, *, now: datetime | None = None) -> DocumentBundle:
         self.initialize_calls += 1
         self.bundle = self.initialized_bundle
+        return self.bundle
+
+
+class BlockingDocumentProvider(FakeDocumentProvider):
+    def __init__(
+        self,
+        bundle: DocumentBundle,
+        initialized_bundle: DocumentBundle | None = None,
+    ) -> None:
+        super().__init__(bundle, initialized_bundle)
+        self.initialize_started = Event()
+        self.release_initialize = Event()
+        self.initialize_finished = Event()
+
+    def initialize(self, ticker: str, *, now: datetime | None = None) -> DocumentBundle:
+        self.initialize_calls += 1
+        self.initialize_started.set()
+        self.release_initialize.wait()
+        self.bundle = self.initialized_bundle
+        self.initialize_finished.set()
         return self.bundle
 
 
@@ -214,6 +240,105 @@ def test_paper_trading_tick_consumes_pending_events_and_records_trade_intent() -
     assert detail.state.counters.llm_call_count_status == "not_yet_integrated"
 
 
+def test_paper_trading_runtime_continues_while_weekly_update_is_running() -> None:
+    old_bundle = _usable_bundle()
+    new_status = old_bundle.status.model_copy(
+        update={
+            "blackboard_run_id": "run_nvda_weekly",
+            "applied_config_version": "doc_monitoring_config_nvda:weekly:fixture",
+        },
+        deep=True,
+    )
+    new_bundle = old_bundle.model_copy(
+        update={"status": new_status, "monitoring_config": None},
+        deep=True,
+    )
+    provider = BlockingDocumentProvider(old_bundle, initialized_bundle=new_bundle)
+    monitoring_service = MonitoringBusService(InMemoryMonitoringRepository())
+    runtime_service = PersistentRuntimeExecutionService.from_settings()
+    runtime_service.repository = InMemoryPersistentRuntimeRepository()
+    scheduler = UnifiedRuntimeSchedulerService(
+        InMemoryRuntimeSchedulerRepository(),
+        document_provider=provider,
+        monitoring_service=monitoring_service,
+        runtime_service=runtime_service,
+    )
+    scheduler.start_ticker(
+        "NVDA",
+        now=datetime(2026, 6, 30, 12, 15, tzinfo=UTC),
+        monitor_mode=MonitorMode.PAPER_TRADING,
+    )
+    _disable_due_polling(monitoring_service)
+    event = _append_standard_event(monitoring_service)
+
+    try:
+        detail = scheduler.tick_ticker(
+            "NVDA",
+            now=datetime(2026, 7, 6, 12, 30, tzinfo=UTC),
+        )
+
+        assert provider.initialize_started.wait(timeout=1)
+        consumed = monitoring_service.recent_events(ticker="NVDA")[0]
+        assert consumed.event_id == event.event_id
+        assert consumed.consumed is True
+        assert detail.state.document_run_id == "run_nvda_fixture"
+        assert detail.state.counters.events_consumed == 1
+        assert runtime_service.repository.list_trading_records(ticker="NVDA")
+        assert "weekly_document_update_continues_with_current_documents" in [
+            item.event_type for item in detail.audit_events
+        ]
+    finally:
+        provider.release_initialize.set()
+
+    assert provider.initialize_finished.wait(timeout=1)
+    switched = scheduler.tick_ticker(
+        "NVDA",
+        now=datetime(2026, 7, 6, 12, 35, tzinfo=UTC),
+    )
+
+    assert switched.state.document_run_id == "run_nvda_weekly"
+    assert switched.state.last_weekly_update_at == datetime(2026, 7, 6, 12, 35, tzinfo=UTC)
+    assert "weekly_document_update_completed" in [item.event_type for item in switched.audit_events]
+
+
+def test_paper_trading_excludes_social_events_from_runtime_consumption() -> None:
+    scheduler, _provider, monitoring_service, runtime_service = _scheduler(_usable_bundle())
+    scheduler.start_ticker(
+        "NVDA",
+        now=datetime(2026, 6, 30, 12, 15, tzinfo=UTC),
+        monitor_mode=MonitorMode.PAPER_TRADING,
+    )
+    _disable_due_polling(monitoring_service)
+    monitoring_service.configure_ticker_source(
+        "NVDA",
+        "stocktwits_messages",
+        enabled=False,
+        updated_by=UpdateActor.SYSTEM,
+        updated_reason="unit test injects social event without external polling",
+    )
+    event = _append_standard_event(
+        monitoring_service,
+        source_id="stocktwits_messages",
+        source_type=SourceType.SOCIAL,
+    )
+
+    detail = scheduler.tick_ticker(
+        "NVDA",
+        now=datetime(2026, 6, 30, 12, 30, tzinfo=UTC),
+    )
+
+    persisted_event = monitoring_service.recent_events(ticker="NVDA")[0]
+    assert persisted_event.event_id == event.event_id
+    assert persisted_event.consumed is True
+    assert detail.event_processing_status.pending_event_count == 0
+    assert detail.event_processing_status.runtime_execution_count == 0
+    assert detail.state.counters.events_consumed == 0
+    assert detail.state.counters.processed_event_count == 0
+    assert detail.state.counters.trade_intents_generated == 0
+    assert runtime_service.repository.list_trading_records(ticker="NVDA") == []
+    assert "runtime_social_events_excluded" in [item.event_type for item in detail.audit_events]
+
+
 def test_switch_to_paper_trading_does_not_replay_existing_pending_events() -> None:
     scheduler, _provider, monitoring_service, runtime_service = _scheduler(_usable_bundle())
     scheduler.start_ticker("NVDA", now=datetime(2026, 6, 30, 12, 15, tzinfo=UTC))
@@ -238,9 +363,7 @@ def test_switch_to_paper_trading_does_not_replay_existing_pending_events() -> No
     assert detail.runtime_status.pending_event_count == 1
     assert detail.state.counters.events_consumed == 0
     assert runtime_service.repository.list_trading_records(ticker="NVDA") == []
-    assert "ticker_monitor_mode_changed" in [
-        item.event_type for item in detail.audit_events
-    ]
+    assert "ticker_monitor_mode_changed" in [item.event_type for item in detail.audit_events]
 
 
 def test_dashboard_detail_uses_contract_status_field_names() -> None:
@@ -261,6 +384,53 @@ def test_dashboard_detail_uses_contract_status_field_names() -> None:
     assert "event_processing_status" not in payload
     assert detail.monitoring_status == detail.message_bus_status
     assert detail.event_processing_status == detail.runtime_status
+
+
+def test_tick_enriches_recent_media_after_media_poll_events(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    scheduler, _provider, monitoring_service, _runtime_service = _scheduler(_usable_bundle())
+    scheduler.start_ticker("NVDA", now=datetime(2026, 6, 30, 12, 15, tzinfo=UTC))
+    enrich_calls: list[dict[str, object]] = []
+
+    def fake_poll_binding(ticker: str, source_id: str) -> IngestBatchResult:
+        return IngestBatchResult(
+            source_id=source_id,
+            binding_id=f"{ticker}:{source_id}",
+            ticker=ticker,
+            collected_count=1,
+            raw_inserted_count=1,
+            standardized_count=1,
+            event_count=1,
+        )
+
+    def fake_enrich_recent_media(**kwargs: object) -> dict[str, object]:
+        enrich_calls.append(dict(kwargs))
+        return {
+            "stats": {
+                "selected_count": 1,
+                "attempted_count": 1,
+                "succeeded_count": 1,
+                "failed_count": 0,
+                "written_count": 1,
+            }
+        }
+
+    monkeypatch.setattr(monitoring_service, "poll_binding", fake_poll_binding)
+    monkeypatch.setattr(monitoring_service, "enrich_recent_media", fake_enrich_recent_media)
+
+    detail = scheduler.tick_ticker("NVDA", now=datetime(2026, 6, 30, 12, 30, tzinfo=UTC))
+
+    assert enrich_calls == [
+        {
+            "ticker": "NVDA",
+            "limit": 5,
+            "concurrency": 2,
+            "dry_run": False,
+            "incomplete_only": True,
+        }
+    ]
+    assert "media_enrichment_completed" in [item.event_type for item in detail.audit_events]
 
 
 def test_repeated_tick_does_not_reconsume_event_or_duplicate_trade_intent() -> None:
@@ -308,9 +478,7 @@ def test_runtime_failure_keeps_pending_event_and_surfaces_degraded_state() -> No
     assert detail.runtime_status.pending_event_count == 1
     assert detail.state.counters.failed_event_count == 1
     assert detail.state.counters.execution_failure_count == 1
-    assert "runtime_event_consumption_failed" in [
-        item.event_type for item in detail.audit_events
-    ]
+    assert "runtime_event_consumption_failed" in [item.event_type for item in detail.audit_events]
 
 
 def test_stop_ticker_marks_state_and_disables_monitoring_bindings() -> None:
@@ -342,7 +510,9 @@ def test_refresh_request_is_recorded_without_auto_refreshing_documents() -> None
     assert saved[0].request_id == request.request_id
 
 
-def test_scheduler_sqlite_repository_restores_state_audit_and_refresh_request(tmp_path) -> None:
+def test_scheduler_sqlite_repository_restores_state_audit_and_refresh_request(
+    tmp_path: Path,
+) -> None:
     path = tmp_path / "scheduler.sqlite3"
     repository = SQLiteRuntimeSchedulerRepository(path)
     state = repository.upsert_state(
@@ -362,7 +532,9 @@ def test_scheduler_sqlite_repository_restores_state_audit_and_refresh_request(tm
     assert restored.list_audit_events(ticker="NVDA")[0] == scheduler_audit
 
 
-def test_sqlite_restart_restores_running_state_and_consumes_pending_event(tmp_path) -> None:
+def test_sqlite_restart_restores_running_state_and_consumes_pending_event(
+    tmp_path: Path,
+) -> None:
     scheduler_path = tmp_path / "scheduler.sqlite3"
     monitoring_path = tmp_path / "monitoring.sqlite3"
     runtime_path = tmp_path / "persistent_runtime.sqlite3"
@@ -422,7 +594,7 @@ def test_workflow_document_provider_reuses_recent_blackboard_document_set() -> N
     run.belief_state.documents = _blackboard_documents(now)
     blackboard.repository.save(run)
     provider = WorkflowDocumentProvider(
-        workflow=_NoopWorkflow(blackboard),
+        workflow=cast(Any, _NoopWorkflow(blackboard)),
         blackboard=blackboard,
     )
 
@@ -459,7 +631,7 @@ def _scheduler(
     return scheduler, provider, monitoring_service, runtime_service
 
 
-def _state_for_sqlite(ticker: str, *, now: datetime):
+def _state_for_sqlite(ticker: str, *, now: datetime) -> TickerRunState:
     return TickerRunState(
         ticker=ticker,
         status=TickerRunStatus.RUNNING,
@@ -497,7 +669,7 @@ class _NoopWorkflow:
     def __init__(self, blackboard: BlackboardService) -> None:
         self.blackboard = blackboard
 
-    def run(self, ticker: str):
+    def run(self, ticker: str) -> None:
         raise AssertionError(f"unexpected initialization for {ticker}")
 
 
@@ -654,15 +826,20 @@ def _monitoring_config() -> MonitoringConfigDocument:
     )
 
 
-def _append_standard_event(monitoring_service: MonitoringBusService):
+def _append_standard_event(
+    monitoring_service: MonitoringBusService,
+    *,
+    source_id: str = "benzinga_news",
+    source_type: SourceType = SourceType.MEDIA,
+) -> EventStreamItem:
     now = datetime.now(UTC) + timedelta(seconds=1)
     message = StandardMessage(
-        standard_message_id="std_nvda_order",
-        raw_message_id="raw_nvda_order",
-        source_id="benzinga_news",
-        binding_id="NVDA:benzinga_news",
+        standard_message_id=f"std_nvda_order_{source_id}",
+        raw_message_id=f"raw_nvda_order_{source_id}",
+        source_id=source_id,
+        binding_id=f"NVDA:{source_id}",
         ticker="NVDA",
-        source_type=SourceType.MEDIA,
+        source_type=source_type,
         interface_type=InterfaceType.BY_TICKER,
         title="NVDA confirmed order materially above expectation",
         body="NVDA confirmed order materially above expectation from a hyperscaler customer.",
@@ -687,7 +864,7 @@ def _disable_due_polling(monitoring_service: MonitoringBusService) -> None:
         )
 
 
-def _sqlite_runtime_service(path) -> PersistentRuntimeExecutionService:
+def _sqlite_runtime_service(path: Path) -> PersistentRuntimeExecutionService:
     service = PersistentRuntimeExecutionService.from_settings()
     service.repository = SQLitePersistentRuntimeRepository(path)
     return service

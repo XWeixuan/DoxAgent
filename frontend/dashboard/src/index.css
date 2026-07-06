@@ -298,10 +298,16 @@
 
   .message-stream-toolbar {
     display: grid;
-    grid-template-columns: minmax(112px, 0.6fr) minmax(112px, 0.6fr) minmax(260px, 1.5fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 2.5fr);
     gap: 0.5rem;
     align-items: start;
-    width: min(720px, 100%);
+    width: min(62rem, 100%);
+  }
+
+  .message-stream-filter,
+  .message-stream-search {
+    min-width: 0;
+    width: 100%;
   }
 
   .message-stream-board {

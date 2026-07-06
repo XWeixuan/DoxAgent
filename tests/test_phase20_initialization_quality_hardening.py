@@ -3,27 +3,31 @@ from datetime import UTC, datetime
 import pytest
 
 from doxagent.agents import default_agent_registry
+from doxagent.agents.runtime.react import _output_contract
 from doxagent.blackboard import BlackboardService
 from doxagent.context import ContextBuilder
 from doxagent.models import (
     AgentName,
     AgentPermissions,
     AgentResult,
+    AgentTask,
     BlackboardPatch,
     BlackboardTarget,
     DelegatedRetrievalResult,
     DocumentType,
     EvidenceSourceType,
+    ExpectationUnitDocument,
     MonitoringConfigDocument,
     MonitoringPolicyDocument,
     MonitoringPolicyRule,
     PatchOperation,
     PolicyActionType,
     ResultStatus,
+    RunMetadata,
+    TaskType,
     ToolCallSummary,
     ValidationStatus,
 )
-from doxagent.agents.runtime.react import _output_contract
 from doxagent.models.output_schemas import REQUIRED_OUTPUT_SCHEMA_MODELS
 from doxagent.tools import ToolRegistry, ToolRequest, ToolResult
 from doxagent.workflows import BlackboardInitializationWorkflow
@@ -31,13 +35,17 @@ from doxagent.workflows.errors import WorkflowContractError
 from doxagent.workflows.output_validation import AgentOutputSchemaValidator
 from doxagent.workflows.schema import WorkflowCheckpoint, WorkflowNode, WorkflowRunStatus
 from tests.fixtures.phase1_contracts import (
+    delegation,
     evidence_ref,
+    expectation_document,
+    global_research_document,
     known_events_document,
     monitoring_config_document,
     monitoring_policy_document,
+    objection,
+    research_section,
 )
 from tests.fixtures.required_output_schemas import golden_required_output_payloads
-
 
 TEST_NOW = datetime(2026, 6, 12, tzinfo=UTC)
 
@@ -64,6 +72,24 @@ class _RunnerWithToolRegistry:
         raise AssertionError("This test should not execute an agent task.")
 
 
+class _RecordingResearchSectionRunner:
+    def __init__(self) -> None:
+        self.tasks: list[AgentTask] = []
+
+    def run(self, task: AgentTask) -> AgentResult:
+        self.tasks.append(task)
+        return AgentResult(
+            task_id=task.task_id,
+            agent_name=task.agent_name,
+            status=ResultStatus.SUCCEEDED,
+            payload={
+                "runtime": "test",
+                "structured": research_section(task.agent_name).model_dump(mode="json"),
+            },
+            evidence_refs=[evidence_ref()],
+        )
+
+
 def _monitoring_config_patch(payload: dict[str, object]) -> BlackboardPatch:
     return BlackboardPatch(
         patch_id="patch_monitoring_config",
@@ -80,6 +106,109 @@ def _monitoring_config_patch(payload: dict[str, object]) -> BlackboardPatch:
         evidence_refs=[evidence_ref()],
         author_agent=AgentName.O2_MONITORING_CONFIG,
         validation_status=ValidationStatus.PENDING,
+    )
+
+
+def _document_patch(document_type: DocumentType, payload: dict[str, object]) -> BlackboardPatch:
+    document_id = str(
+        payload.get("document_id")
+        or payload.get("expectation_id")
+        or f"doc_{document_type.value}"
+    )
+    return BlackboardPatch(
+        patch_id=f"patch_{document_type.value}",
+        target=BlackboardTarget(
+            document_type=document_type,
+            ticker=str(payload.get("ticker") or "NVDA"),
+            document_id=document_id,
+            expectation_id=str(payload.get("expectation_id"))
+            if payload.get("expectation_id")
+            else None,
+            field_path="document",
+        ),
+        operation=PatchOperation.CREATE,
+        before=None,
+        after=payload,
+        rationale=f"seed {document_type.value}",
+        evidence_refs=[evidence_ref()],
+        author_agent=AgentName.SYSTEM,
+        validation_status=ValidationStatus.PENDING,
+    )
+
+
+def _seed_document3_context_run(service: BlackboardService) -> str:
+    run = service.start_run("NVDA", AgentName.SYSTEM)
+    permissions = AgentPermissions(
+        writable_targets=[item.value for item in DocumentType],
+        can_propose_patch=True,
+    )
+    documents = [
+        (
+            DocumentType.GLOBAL_RESEARCH,
+            global_research_document().model_dump(mode="json"),
+        ),
+        (
+            DocumentType.EXPECTATION_UNIT,
+            ExpectationUnitDocument.model_validate(expectation_document()).model_dump(mode="json"),
+        ),
+        (
+            DocumentType.KNOWN_EVENTS,
+            known_events_document().model_dump(mode="json"),
+        ),
+        (
+            DocumentType.MONITORING_CONFIG,
+            monitoring_config_document().model_dump(mode="json"),
+        ),
+        (
+            DocumentType.MONITORING_POLICY,
+            monitoring_policy_document().model_dump(mode="json"),
+        ),
+    ]
+    for document_type, payload in documents:
+        service.submit_patch(
+            run.run_id,
+            _document_patch(document_type, payload),
+            permissions=permissions,
+            trigger_reason=f"seed {document_type.value}",
+        )
+    service.add_working_memory_entry(
+        run.run_id,
+        author_agent=AgentName.C1_FUNDAMENTAL_RESEARCH,
+        content_type="large_review_history",
+        payload={"text": "history" * 100},
+        evidence_refs=[evidence_ref()],
+    )
+    service.create_objection(run.run_id, objection())
+    service.create_delegation(run.run_id, delegation())
+    return run.run_id
+
+
+def _document3_task(
+    run_id: str,
+    *,
+    node: WorkflowNode,
+    agent_name: AgentName,
+    task_type: TaskType,
+    readable_scopes: list[str],
+) -> AgentTask:
+    return AgentTask(
+        task_id="task_document3_context",
+        ticker="NVDA",
+        agent_name=agent_name,
+        task_type=task_type,
+        input_context={},
+        required_output_schema="ResearchSection",
+        permissions=AgentPermissions(
+            readable_context_scopes=readable_scopes,
+            writable_targets=[],
+            can_propose_patch=True,
+        ),
+        run_metadata=RunMetadata(
+            run_id=run_id,
+            ticker="NVDA",
+            workflow_node=node.value,
+            created_at=TEST_NOW,
+        ),
     )
 
 
@@ -465,6 +594,101 @@ def test_document3_runtime_context_exposes_known_events_and_policy_actions() -> 
         "escalate",
     }
     assert "source_condition" not in str(context["monitoring_policies"])
+
+
+def test_document3_context_snapshot_keeps_scoped_belief_docs_without_history() -> None:
+    service = BlackboardService()
+    run_id = _seed_document3_context_run(service)
+    task = _document3_task(
+        run_id,
+        node=WorkflowNode.GENERATE_MONITORING_POLICY,
+        agent_name=AgentName.O4_MARKET_TRACE,
+        task_type=TaskType.GENERATE_MONITORING_POLICY,
+        readable_scopes=[
+            DocumentType.GLOBAL_RESEARCH.value,
+            DocumentType.EXPECTATION_UNIT.value,
+            DocumentType.KNOWN_EVENTS.value,
+            DocumentType.MONITORING_CONFIG.value,
+            DocumentType.MONITORING_POLICY.value,
+            "working_memory",
+            "objections",
+            "delegations",
+        ],
+    )
+
+    snapshot = ContextBuilder(service).build(task, run_id)
+
+    assert set(snapshot.belief_state_summary) == {
+        DocumentType.GLOBAL_RESEARCH.value,
+        DocumentType.EXPECTATION_UNIT.value,
+        DocumentType.KNOWN_EVENTS.value,
+        DocumentType.MONITORING_CONFIG.value,
+    }
+    assert DocumentType.MONITORING_POLICY.value not in snapshot.belief_state_summary
+    assert snapshot.belief_state_summary[DocumentType.GLOBAL_RESEARCH.value]
+    assert snapshot.belief_state_summary[DocumentType.EXPECTATION_UNIT.value]
+    assert snapshot.working_memory_summary == []
+    assert snapshot.unresolved_objections == []
+    assert snapshot.blocking_delegations == []
+    assert snapshot.evidence_refs == []
+
+
+def test_document3_review_policy_task_uses_scoped_patch_and_config_brief() -> None:
+    runner = _RecordingResearchSectionRunner()
+    workflow = BlackboardInitializationWorkflow(execution_mode="agent_runner", runner=runner)
+    run_id = _seed_document3_context_run(workflow.blackboard)
+    policy = monitoring_policy_document()
+    patch = BlackboardPatch(
+        patch_id="patch_monitoring_policy_pending",
+        target=BlackboardTarget(
+            document_type=DocumentType.MONITORING_POLICY,
+            ticker=policy.ticker,
+            document_id=policy.document_id,
+            field_path="document",
+        ),
+        operation=PatchOperation.CREATE,
+        before=None,
+        after=policy.model_dump(mode="json"),
+        rationale="pending policy for review",
+        evidence_refs=[evidence_ref()],
+        author_agent=AgentName.O4_MARKET_TRACE,
+        validation_status=ValidationStatus.PENDING,
+    )
+    checkpoint = WorkflowCheckpoint(
+        run_id=run_id,
+        ticker="NVDA",
+        stable_document_types=[
+            DocumentType.GLOBAL_RESEARCH,
+            DocumentType.EXPECTATION_UNIT,
+            DocumentType.KNOWN_EVENTS,
+            DocumentType.MONITORING_CONFIG,
+        ],
+        pending_patches=[patch],
+    )
+
+    workflow._review_monitoring_policy(checkpoint, WorkflowNode.REVIEW_MONITORING_POLICY)
+
+    assert len(runner.tasks) == 1
+    context = runner.tasks[0].input_context
+    assert "document3_pending_patch" in context
+    assert context["document3_pending_patch"]["patch_id"] == "patch_monitoring_policy_pending"
+    assert "review_scope" in context
+    assert "review_instruction" in context
+    assert "monitoring_config_brief" in context
+    brief = context["monitoring_config_brief"]
+    assert brief["status"] == "available"
+    assert brief["items"][0]["source_id"]
+    assert brief["items"][0]["tool_input"]["source_id"]
+    for noisy_key in (
+        "pending_patches",
+        "pending_patch_ids",
+        "working_memory_summary",
+        "unresolved_objections",
+        "blocking_delegations",
+        "global_research_context",
+        "document1_context_pack",
+    ):
+        assert noisy_key not in context
 
 
 def test_monitoring_config_quality_gate_rejects_resource_budget_overflow() -> None:

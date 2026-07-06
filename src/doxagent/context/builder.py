@@ -17,6 +17,28 @@ from doxagent.models import (
     MonitoringPolicyDocument,
 )
 
+_DOCUMENT3_NODE_DOCUMENT_TYPES: dict[str, set[DocumentType]] = {
+    "GenerateKnownEvents": {
+        DocumentType.GLOBAL_RESEARCH,
+        DocumentType.EXPECTATION_UNIT,
+    },
+    "GenerateMonitoringConfig": {
+        DocumentType.GLOBAL_RESEARCH,
+        DocumentType.EXPECTATION_UNIT,
+        DocumentType.KNOWN_EVENTS,
+    },
+    "ReviewMonitoringConfig": set(),
+    "ResolveMonitoringConfig": set(),
+    "GenerateMonitoringPolicy": {
+        DocumentType.GLOBAL_RESEARCH,
+        DocumentType.EXPECTATION_UNIT,
+        DocumentType.KNOWN_EVENTS,
+        DocumentType.MONITORING_CONFIG,
+    },
+    "ReviewMonitoringPolicy": set(),
+    "ResolveMonitoringPolicy": set(),
+}
+
 
 class ContextBuilder:
     def __init__(self, blackboard: BlackboardService) -> None:
@@ -25,49 +47,64 @@ class ContextBuilder:
     def build(self, task: AgentTask, run_id: str) -> AgentContextSnapshot:
         run = self.blackboard.get_run(run_id)
         scopes = set(task.permissions.readable_context_scopes)
-        belief_state_summary = self._belief_state_summary(run.belief_state.documents, scopes)
-        working_memory_summary = [
-            WorkingMemorySummary(
-                entry_id=entry.entry_id,
-                author_agent=entry.author_agent,
-                content_type=entry.content_type,
-                payload=_agent_visible_working_memory_payload(entry.payload),
-                evidence_refs=entry.evidence_refs,
+        document3_document_types = _document3_node_document_types(task)
+        belief_state_summary = self._belief_state_summary(
+            run.belief_state.documents,
+            scopes,
+            document_types=document3_document_types,
+        )
+        if _is_document3_workflow_node(task):
+            working_memory_summary: list[WorkingMemorySummary] = []
+            unresolved_objections: list[ObjectionSummary] = []
+            blocking_delegations: list[BlockingDelegationSummary] = []
+            evidence_refs: list[EvidenceRef] = []
+        else:
+            working_memory_summary = [
+                WorkingMemorySummary(
+                    entry_id=entry.entry_id,
+                    author_agent=entry.author_agent,
+                    content_type=entry.content_type,
+                    payload=_agent_visible_working_memory_payload(entry.payload),
+                    evidence_refs=entry.evidence_refs,
+                )
+                for entry in run.working_memory
+                if "working_memory" in scopes or task.permissions.can_access_private_memory
+            ]
+            unresolved_objections = [
+                ObjectionSummary(
+                    objection_id=objection.objection_id,
+                    source_agent=objection.source_agent,
+                    severity=objection.severity,
+                    status=objection.status,
+                    target_document_type=objection.target.document_type,
+                    target_field_path=objection.target.field_path,
+                    taxonomy=objection.taxonomy,
+                    dedupe_hash=objection.dedupe_hash,
+                    target_path=objection.target_path,
+                    merged_objection_ids=list(objection.merged_objection_ids),
+                    reason=objection.reason,
+                    evidence_refs=objection.evidence_refs,
+                )
+                for objection in run.objections
+                if objection.is_unresolved
+            ]
+            blocking_delegations = [
+                BlockingDelegationSummary(
+                    delegation_id=delegation.delegation_id,
+                    requester_agent=delegation.requester_agent,
+                    target_agent=delegation.target_agent,
+                    status=delegation.status,
+                    target_document_type=delegation.blocking_scope.document_type,
+                    target_field_path=delegation.blocking_scope.field_path,
+                    question=delegation.question,
+                )
+                for delegation in run.delegations
+                if delegation.is_blocking
+            ]
+            evidence_refs = self._collect_evidence(
+                working_memory_summary,
+                unresolved_objections,
             )
-            for entry in run.working_memory
-            if "working_memory" in scopes or task.permissions.can_access_private_memory
-        ]
-        unresolved_objections = [
-            ObjectionSummary(
-                objection_id=objection.objection_id,
-                source_agent=objection.source_agent,
-                severity=objection.severity,
-                status=objection.status,
-                target_document_type=objection.target.document_type,
-                target_field_path=objection.target.field_path,
-                taxonomy=objection.taxonomy,
-                dedupe_hash=objection.dedupe_hash,
-                target_path=objection.target_path,
-                merged_objection_ids=list(objection.merged_objection_ids),
-                reason=objection.reason,
-                evidence_refs=objection.evidence_refs,
-            )
-            for objection in run.objections
-            if objection.is_unresolved
-        ]
-        blocking_delegations = [
-            BlockingDelegationSummary(
-                delegation_id=delegation.delegation_id,
-                requester_agent=delegation.requester_agent,
-                target_agent=delegation.target_agent,
-                status=delegation.status,
-                target_document_type=delegation.blocking_scope.document_type,
-                target_field_path=delegation.blocking_scope.field_path,
-                question=delegation.question,
-            )
-            for delegation in run.delegations
-            if delegation.is_blocking
-        ]
         return AgentContextSnapshot(
             run_id=run.run_id,
             ticker=run.ticker,
@@ -86,10 +123,7 @@ class ContextBuilder:
             skill_summaries=task.skill_bundle.skills if task.skill_bundle is not None else [],
             belief_state_summary=belief_state_summary,
             working_memory_summary=working_memory_summary,
-            evidence_refs=self._collect_evidence(
-                working_memory_summary,
-                unresolved_objections,
-            ),
+            evidence_refs=evidence_refs,
             unresolved_objections=unresolved_objections,
             blocking_delegations=blocking_delegations,
         )
@@ -161,12 +195,26 @@ class ContextBuilder:
         self,
         documents: dict[DocumentType, dict[str, Any]],
         scopes: set[str],
+        *,
+        document_types: set[DocumentType] | None = None,
     ) -> dict[str, dict[str, Any]]:
+        filtered_documents = (
+            documents
+            if document_types is None
+            else {
+                document_type: document
+                for document_type, document in documents.items()
+                if document_type in document_types
+            }
+        )
         if "belief_state" in scopes or "all" in scopes:
-            return {document_type.value: document for document_type, document in documents.items()}
+            return {
+                document_type.value: document
+                for document_type, document in filtered_documents.items()
+            }
         return {
             document_type.value: document
-            for document_type, document in documents.items()
+            for document_type, document in filtered_documents.items()
             if document_type.value in scopes
         }
 
@@ -335,6 +383,16 @@ def _compact_payload_value(value: Any, *, depth: int) -> Any:
             compact[str(key)] = _compact_payload_value(item, depth=depth - 1)
         return compact
     return value
+
+
+def _is_document3_workflow_node(task: AgentTask) -> bool:
+    node = task.run_metadata.workflow_node
+    return isinstance(node, str) and node in _DOCUMENT3_NODE_DOCUMENT_TYPES
+
+
+def _document3_node_document_types(task: AgentTask) -> set[DocumentType] | None:
+    node = task.run_metadata.workflow_node
+    return _DOCUMENT3_NODE_DOCUMENT_TYPES.get(node) if isinstance(node, str) else None
 
 
 def _compact_text(value: Any, *, limit: int) -> str:

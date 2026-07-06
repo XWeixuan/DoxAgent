@@ -252,7 +252,7 @@ def _seed_message_bus(
         normalized_at=timestamp,
         metadata={
             "summary": "Hyperscaler order update mentions NVDA.",
-            "media_enrichment": {"succeeded": True},
+            "media_enrichment": {"status": "success"},
         },
     )
     monitoring_service.repository.save_raw_message(

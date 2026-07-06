@@ -365,23 +365,23 @@ export function MessageBusPage() {
                   placeholder="消息类型"
                   options={messageTypeOptions}
                   onChange={setMessageTypeFilter}
-                  className="sm:w-36"
+                  className="message-stream-filter sm:w-full"
                 />
                 <FilterSelect
                   value={sourceFilter}
                   placeholder="来源"
                   options={sourceOptions}
                   onChange={setSourceFilter}
-                  className="sm:w-auto"
+                  className="message-stream-filter sm:w-full"
                 />
                 <FilterSelect
                   value={statusFilter}
                   placeholder="处理状态"
                   options={statusOptions}
                   onChange={setStatusFilter}
-                  className="sm:w-auto"
+                  className="message-stream-filter sm:w-full"
                 />
-                <FieldGroup>
+                <FieldGroup className="message-stream-search">
                   <Field>
                     <FieldLabel htmlFor="message-query" className="sr-only">
                       关键词搜索

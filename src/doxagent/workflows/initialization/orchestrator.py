@@ -14,6 +14,23 @@ from doxagent.workflows.initialization.mock import InitializationMockResultFacto
 from doxagent.workflows.initialization.recovery import InitializationRecoveryMixin
 from doxagent.workflows.initialization.shared import *
 
+_DOCUMENT3_GENERATE_NODES = {
+    WorkflowNode.GENERATE_KNOWN_EVENTS,
+    WorkflowNode.GENERATE_MONITORING_CONFIG,
+    WorkflowNode.GENERATE_MONITORING_POLICY,
+}
+_DOCUMENT3_REVIEW_NODES = {
+    WorkflowNode.REVIEW_MONITORING_CONFIG,
+    WorkflowNode.REVIEW_MONITORING_POLICY,
+}
+_DOCUMENT3_RESOLVE_NODES = {
+    WorkflowNode.RESOLVE_MONITORING_CONFIG,
+    WorkflowNode.RESOLVE_MONITORING_POLICY,
+}
+_DOCUMENT3_NODES = (
+    _DOCUMENT3_GENERATE_NODES | _DOCUMENT3_REVIEW_NODES | _DOCUMENT3_RESOLVE_NODES
+)
+
 
 class BlackboardInitializationWorkflow(
     Document1BuilderMixin,
@@ -795,7 +812,10 @@ class BlackboardInitializationWorkflow(
             dropped.append(field)
         return dropped
 
-    def _raw_monitoring_config_items_by_id(self, payload: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    def _raw_monitoring_config_items_by_id(
+        self,
+        payload: dict[str, Any],
+    ) -> dict[str, dict[str, Any]]:
         raw_items = payload.get("monitoring_items") or payload.get("items") or []
         items: dict[str, dict[str, Any]] = {}
         for raw in raw_items if isinstance(raw_items, list) else []:
@@ -947,7 +967,8 @@ class BlackboardInitializationWorkflow(
                 "instruction": (
                     "Review whether Monitoring Config misses industry, peer, supply-chain, "
                     "regulatory, macro-policy, or source-scope variables. Raise blocking "
-                    "objections for material gaps or broad keyword waste. Keep every recommendation "
+                    "objections for material gaps or broad keyword waste. Keep every "
+                    "recommendation "
                     "compatible with monitoring.update_ticker_config: do not ask "
                     "finnhub_company_news or stocktwits_messages to use keywords, extra, "
                     "source_filters, trigger_condition, priority, or expectation_id inside "
@@ -1029,6 +1050,9 @@ class BlackboardInitializationWorkflow(
                     "messages as direct_trade, and whether every policy has supportable scope, "
                     "trigger, action, and risk_guard. Raise blocking objections for mismatches."
                 ),
+                "extra_context": {
+                    "monitoring_config_brief": self._monitoring_config_brief(checkpoint),
+                },
             }
         ]
         return self._run_document3_review_jobs(
@@ -1053,6 +1077,9 @@ class BlackboardInitializationWorkflow(
             resolver_task_type=TaskType.RESOLVE_MONITORING_POLICY,
             output_schema="MonitoringPolicyDocument",
             content_type="o4_monitoring_policy_resolution",
+            extra_context={
+                "monitoring_config_brief": self._monitoring_config_brief(checkpoint),
+            },
         )
         stable_documents = self._submit_document3_brief_state_patch(
             checkpoint,
@@ -1086,6 +1113,14 @@ class BlackboardInitializationWorkflow(
     ) -> WorkflowCheckpoint:
         jobs: list[_ParallelAgentJob] = []
         for order, spec in enumerate(specs):
+            extra_context = {
+                "review_scope": spec["review_scope"],
+                "review_instruction": spec["instruction"],
+                "document3_pending_patch": patch.model_dump(mode="json"),
+            }
+            raw_extra_context = spec.get("extra_context")
+            if isinstance(raw_extra_context, dict):
+                extra_context.update(raw_extra_context)
             jobs.append(
                 _ParallelAgentJob(
                     order=order,
@@ -1094,11 +1129,7 @@ class BlackboardInitializationWorkflow(
                     output_schema="ResearchSection",
                     content_type=spec["content_type"],
                     section_key=spec["agent_name"].value,
-                    extra_context={
-                        "review_scope": spec["review_scope"],
-                        "review_instruction": spec["instruction"],
-                        "document3_pending_patch": patch.model_dump(mode="json"),
-                    },
+                    extra_context=extra_context,
                 )
             )
         results: list[AgentResult] = []
@@ -1152,6 +1183,7 @@ class BlackboardInitializationWorkflow(
         resolver_task_type: TaskType,
         output_schema: str,
         content_type: str,
+        extra_context: dict[str, Any] | None = None,
     ) -> tuple[BlackboardPatch, list[AgentResult]]:
         relevant_objections = self._document3_unresolved_objections(checkpoint, patch)
         if not relevant_objections:
@@ -1176,7 +1208,8 @@ class BlackboardInitializationWorkflow(
                 "document3_review_objections": [
                     objection.model_dump(mode="json") for objection in relevant_objections
                 ],
-            },
+            }
+            | (extra_context or {}),
         )
         result = self._ensure_document_patch_result(checkpoint, node, result)
         self._write_working_memory(checkpoint, result, content_type)
@@ -1211,6 +1244,70 @@ class BlackboardInitializationWorkflow(
         if patch.target.document_type not in stable_documents:
             stable_documents.append(patch.target.document_type)
         return stable_documents
+
+    def _monitoring_config_brief(self, checkpoint: WorkflowCheckpoint) -> dict[str, Any]:
+        try:
+            run = self.blackboard.get_run(checkpoint.run_id)
+        except RunNotFoundError:
+            return {"status": "missing_run", "items": []}
+        bucket = run.belief_state.documents.get(DocumentType.MONITORING_CONFIG, {})
+        if not bucket:
+            return {"status": "missing_monitoring_config", "items": []}
+        latest = next(reversed(bucket.values()))
+        raw_document = latest.get("document") if isinstance(latest, dict) else latest
+        if not isinstance(raw_document, dict):
+            return {"status": "invalid_monitoring_config", "items": []}
+        try:
+            document = MonitoringConfigDocument.model_validate(raw_document)
+        except ValueError:
+            return {
+                "status": "invalid_monitoring_config",
+                "document_id": raw_document.get("document_id"),
+                "items": [],
+            }
+        items: list[dict[str, Any]] = []
+        for item in document.monitoring_items:
+            tool_input = dict(item.tool_input)
+            extra = tool_input.get("extra")
+            expectation_id = item.expectation_id
+            if not expectation_id and isinstance(extra, dict):
+                raw_expectation_id = extra.get("expectation_id")
+                expectation_id = str(raw_expectation_id) if raw_expectation_id else None
+            compact_tool_input = {
+                key: value
+                for key, value in tool_input.items()
+                if key
+                in {
+                    "ticker",
+                    "source_id",
+                    "enabled",
+                    "mode",
+                    "reason",
+                    "keywords",
+                    "search_terms",
+                    "usernames",
+                    "rss_urls",
+                    "source_filters",
+                    "extra",
+                }
+                and value not in (None, "", [], {})
+            }
+            items.append(
+                {
+                    "item_id": item.item_id,
+                    "source_id": tool_input.get("source_id"),
+                    "expectation_id": expectation_id,
+                    "reasoning": item.reasoning,
+                    "tool_input": compact_tool_input,
+                }
+            )
+        return {
+            "status": "available",
+            "document_id": document.document_id,
+            "ticker": document.ticker,
+            "item_count": len(items),
+            "items": items,
+        }
 
     def _document3_pending_patch(
         self,
@@ -2570,7 +2667,39 @@ class BlackboardInitializationWorkflow(
             document1_context_pack = global_research_context.get("document1_context_pack")
             if isinstance(document1_context_pack, dict):
                 context["document1_context_pack"] = document1_context_pack
-        return context
+        return self._compact_document3_task_input_context(context, node)
+
+    def _compact_document3_task_input_context(
+        self,
+        context: dict[str, Any],
+        node: WorkflowNode,
+    ) -> dict[str, Any]:
+        if node not in _DOCUMENT3_NODES:
+            return context
+        compacted = dict(context)
+        for key in (
+            "working_memory_summary",
+            "unresolved_objections",
+            "blocking_delegations",
+        ):
+            compacted.pop(key, None)
+        if node in _DOCUMENT3_GENERATE_NODES:
+            compacted.pop("pending_patch_ids", None)
+            compacted.pop("pending_patches", None)
+            return compacted
+        if node in _DOCUMENT3_REVIEW_NODES:
+            compacted.pop("pending_patch_ids", None)
+            compacted.pop("pending_patches", None)
+            compacted.pop("global_research_context", None)
+            compacted.pop("document1_context_pack", None)
+            return compacted
+        if node in _DOCUMENT3_RESOLVE_NODES:
+            compacted.pop("pending_patch_ids", None)
+            compacted.pop("pending_patches", None)
+            compacted.pop("global_research_context", None)
+            compacted.pop("document1_context_pack", None)
+            return compacted
+        return compacted
 
     def _next_node(self, completed_nodes: list[WorkflowNode]) -> WorkflowNode | None:
         for node in INITIALIZATION_NODES:

@@ -337,6 +337,7 @@ def media_enrichment_metadata(
     attempted_at = datetime.now(UTC).isoformat().replace("+00:00", "Z")
     enrichment: JsonObject = {
         "status": "success" if result.succeeded else "failed",
+        "succeeded": result.succeeded,
         "reason": result.reason,
         "attempted_at": attempted_at,
         "source_url": result.record.fetch_url,

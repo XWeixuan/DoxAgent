@@ -8,7 +8,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass, replace
 from datetime import UTC, date, datetime, time, timedelta
 from importlib import import_module
-from typing import Any, TypeVar
+from typing import Any, TypeVar, cast
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pydantic import ValidationError
@@ -2195,8 +2195,14 @@ def _media_enrichment_success_rate(messages: list[StandardMessage]) -> float | N
             records.append(value)
     if not records:
         return None
-    succeeded = sum(1 for record in records if record.get("succeeded") is True)
+    succeeded = sum(1 for record in records if _media_enrichment_succeeded(record))
     return succeeded / len(records)
+
+
+def _media_enrichment_succeeded(record: JsonObject) -> bool:
+    if record.get("succeeded") is True:
+        return True
+    return record.get("status") == "success"
 
 
 def _sort_messages(items: list[JsonObject], sort: str | None) -> list[JsonObject]:
@@ -4369,12 +4375,13 @@ def _latest_document_updated_at_from_record(
     record: DashboardDocumentRunRecord,
     internal_type: DocumentType,
 ) -> datetime | None:
-    model: type[DocumentBase] | None = {
-        DocumentType.GLOBAL_RESEARCH: GlobalResearchDocument,
-        DocumentType.EXPECTATION_UNIT: ExpectationUnitDocument,
-        DocumentType.KNOWN_EVENTS: KnownEventsDocument,
-        DocumentType.MONITORING_POLICY: MonitoringPolicyDocument,
-    }.get(internal_type)
+    models: dict[DocumentType, type[DocumentBase]] = {
+        DocumentType.GLOBAL_RESEARCH: cast(type[DocumentBase], GlobalResearchDocument),
+        DocumentType.EXPECTATION_UNIT: cast(type[DocumentBase], ExpectationUnitDocument),
+        DocumentType.KNOWN_EVENTS: cast(type[DocumentBase], KnownEventsDocument),
+        DocumentType.MONITORING_POLICY: cast(type[DocumentBase], MonitoringPolicyDocument),
+    }
+    model = models.get(internal_type)
     if model is None:
         return None
     documents = _model_documents(record, internal_type, model)

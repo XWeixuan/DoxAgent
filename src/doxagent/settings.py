@@ -161,6 +161,18 @@ class DoxAgentSettings(BaseSettings):
         default=".tmp/monitoring_message_bus.sqlite3",
         validation_alias="DOXAGENT_MONITORING_SQLITE_PATH",
     )
+    monitoring_auto_media_enrichment_enabled: bool = Field(
+        default=True,
+        validation_alias="DOXAGENT_MONITORING_AUTO_MEDIA_ENRICHMENT_ENABLED",
+    )
+    monitoring_auto_media_enrichment_limit: int = Field(
+        default=5,
+        validation_alias="DOXAGENT_MONITORING_AUTO_MEDIA_ENRICHMENT_LIMIT",
+    )
+    monitoring_auto_media_enrichment_concurrency: int = Field(
+        default=2,
+        validation_alias="DOXAGENT_MONITORING_AUTO_MEDIA_ENRICHMENT_CONCURRENCY",
+    )
     benzinga_api_key: str | None = Field(default=None, validation_alias="BENZINGA_API_KEY")
     benzinga_news_base_url: str = Field(
         default="https://api.benzinga.com",
