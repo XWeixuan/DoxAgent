@@ -62,6 +62,7 @@ def test_dashboard_real_overview_reads_scheduler_monitoring_and_runtime_state() 
     payload = overview.json()["data"]
     assert payload["system"]["dashboard_api_status"] == "normal"
     assert payload["system"]["message_bus_status"] == "normal"
+    assert payload["system"]["current_session_label"] in {"运行时段", "盘后休眠"}
     assert payload["kpis"]["running_ticker_count"] == 1
     assert payload["kpis"]["today_message_count"] == 1
     assert payload["kpis"]["today_dtc_count"] == 1
@@ -77,7 +78,12 @@ def test_dashboard_real_overview_reads_scheduler_monitoring_and_runtime_state() 
     assert tickers.status_code == 200
     ticker_page = tickers.json()["data"]
     assert ticker_page["items"][0]["ticker"] == "NVDA"
-    assert ticker_page["page"] == {"limit": 1, "next_cursor": None, "has_more": False}
+    assert ticker_page["page"] == {
+        "limit": 1,
+        "next_cursor": None,
+        "has_more": False,
+        "total_count": 1,
+    }
 
 
 def test_dashboard_real_overview_ticker_operations_are_contract_shaped() -> None:

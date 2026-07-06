@@ -24,7 +24,7 @@ uv run python eval/run_document1_document2_smoke.py --ticker <TICKER> --round-la
 远端容器内执行时使用：
 
 ```bash
-docker compose run --rm -e DOXAGENT_RUN_REAL_API_TESTS=1 -e DOXAGENT_STORAGE_MODE=postgres debug-viewer python eval/run_document1_document2_smoke.py --ticker <TICKER> --round-label <LABEL> --stop-after PromoteExpectationToBeliefState
+docker compose run --rm -e DOXAGENT_RUN_REAL_API_TESTS=1 -e DOXAGENT_STORAGE_MODE=postgres runtime-scheduler python eval/run_document1_document2_smoke.py --ticker <TICKER> --round-label <LABEL> --stop-after PromoteExpectationToBeliefState
 ```
 
 ## 轮次记录

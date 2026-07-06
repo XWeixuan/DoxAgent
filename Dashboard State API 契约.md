@@ -1,6 +1,6 @@
 # Dashboard State API 契约
 
-日期：2026-06-30；2026-07-02 根据前端验收后状态更新
+日期：2026-06-30；2026-07-02 根据前端验收后状态更新；2026-07-03 增补 Overview 回测任务 API；2026-07-04 增补当前运行时段与正式 runtime-scheduler 部署约束
 范围：DoxAgent Dashboard 第一阶段前端所需的后端状态聚合接口。  
 依据：`dev_plan/FRONTEND_PRD.md`、当前 `runtime_scheduler`、`monitoring`、`persistent_runtime`、`debug_viewer`、`gateway` 实现排查。
 
@@ -172,7 +172,8 @@ sort=-created_at
   "page": {
     "limit": 50,
     "next_cursor": "cur_abc",
-    "has_more": true
+    "has_more": true,
+    "total_count": 125
   }
 }
 ```
@@ -212,6 +213,14 @@ message_monitoring | paper_trading | broker_trading
 - `message_monitoring`：只做 Message Bus 监测，包括 source polling、标准消息生成和 event 入池；不进入 Persistent Runtime，不产生 `TradingRecord` / `TradeIntent`，不接 broker。
 - `paper_trading`：最终产品语义是模拟成交、持仓、现金、滑点、平仓和 PnL 曲线；当前阶段先实现最小闭环，即进入持久化监测运行链路，消费切换后的 pending events，执行 W1/W2/O3/route，并产生 `TradingRecord` / `TradeIntent`。当前阶段不实现完整模拟成交账本，且绝不接真实 broker。
 - `broker_trading`：真实 broker 接入模式，本阶段继续禁用，API 必须拒绝。
+
+回测任务状态：
+
+```text
+queued | initializing_documents | collecting_dataset | replaying | draining_runtime | completed | failed | cancelled
+```
+
+回测不是 ticker 级 `MonitorMode`，不得写入 `TickerRunState.monitor_mode`，也不得创建长期 Message Bus monitoring config。回测以 `backtest_run_id` 为主键，可与同 ticker 的消息监测、模拟交易和其他回测 run 并存。
 
 Document 可用性：
 
@@ -280,9 +289,14 @@ not_started | calculating | completed | failed | missing | partial
 | `PATCH` | `/tickers/{ticker}/monitor-mode` | 切换监测模式 | `partial` |
 | `DELETE` | `/tickers/{ticker}` | 删除 ticker 监测配置 | `partial` |
 | `POST` | `/tickers/{ticker}/restart` | 重启 ticker | `partial` |
+| `POST` | `/backtests` | 创建一次性 Overview 回测任务 | `partial` |
+| `GET` | `/backtests` | Overview 回测任务列表 | `partial` |
+| `GET` | `/backtests/{run_id}` | 回测任务详情 | `partial` |
+| `POST` | `/backtests/{run_id}/cancel` | 请求取消回测任务 | `partial` |
 | `GET` | `/tickers/{ticker}/documents/current` | Document 1/2/3 当前版本 | `partial` |
-| `GET` | `/tickers/{ticker}/documents/{document_type}/versions` | Document 历史版本列表 | `proposed` |
-| `GET` | `/tickers/{ticker}/documents/{document_type}/versions/{version_id}` | Document 历史版本详情 | `proposed` |
+| `GET` | `/tickers/{ticker}/documents/{document_type}/versions` | Document 历史版本列表 | `partial` |
+| `GET` | `/tickers/{ticker}/documents/{document_type}/versions/{version_id}` | Document 历史版本详情 | `partial` |
+| `POST` | `/tickers/{ticker}/documents/activate` | 人工切换现行 document set | `partial` |
 | `GET` | `/tickers/{ticker}/known-events` | Known Events 列表 | `partial` |
 | `GET` | `/tickers/{ticker}/policies` | Monitoring Execution Policy | `partial` |
 | `GET` | `/tickers/{ticker}/message-bus/overview` | Message Bus KPI | `partial` |
@@ -336,6 +350,8 @@ Response schema：
     "generated_at": "2026-06-30T12:00:00Z",
     "system": {
       "container_status": "normal",
+      "current_session_phase": "formal_monitoring",
+      "current_session_label": "运行时段",
       "dashboard_api_status": "normal",
       "message_bus_status": "degraded",
       "status_color": "yellow"
@@ -360,7 +376,9 @@ Response schema：
 
 | 字段 | 含义 |
 | --- | --- |
-| `system.container_status` | dashboard 相关容器健康状态。 |
+| `system.container_status` | dashboard 相关容器健康状态。保留兼容字段；Overview 第一阶段不再展示为 KPI。 |
+| `system.current_session_phase` | 当前运行时段枚举：`pre_market_digest | formal_monitoring | off_hours_low_frequency`。 |
+| `system.current_session_label` | 当前运行时段展示值：`运行时段 | 盘后休眠`；`pre_market_digest` 与 `formal_monitoring` 均归为 `运行时段`。 |
 | `system.dashboard_api_status` | Dashboard API 自身健康状态。 |
 | `system.message_bus_status` | Message Bus 总体状态。 |
 | `kpis.running_ticker_count` | 当前 `running/degraded` ticker 数。 |
@@ -373,6 +391,8 @@ Response schema：
 状态枚举：
 
 - `container_status/dashboard_api_status/message_bus_status`：`normal | degraded | blocked | unknown`
+- `current_session_phase`：`pre_market_digest | formal_monitoring | off_hours_low_frequency`
+- `current_session_label`：`运行时段 | 盘后休眠`
 - `status_color`：`green | yellow | red | gray`
 
 示例 JSON：
@@ -383,6 +403,8 @@ Response schema：
     "generated_at": "2026-06-30T12:00:00Z",
     "system": {
       "container_status": "normal",
+      "current_session_phase": "formal_monitoring",
+      "current_session_label": "运行时段",
       "dashboard_api_status": "normal",
       "message_bus_status": "normal",
       "status_color": "green"
@@ -420,7 +442,8 @@ Response schema：
 - `src/doxagent/runtime_scheduler/schema.py::DashboardOverview`
 - `src/doxagent/monitoring/service.py::status_snapshot`
 - `src/doxagent/persistent_runtime/service.py::runtime_observations`
-- `docker-compose.yml` 中现有 `debug-viewer` healthcheck 可作为容器健康参考，但不覆盖未来 dashboard 容器。
+- `src/doxagent/runtime_scheduler/service.py::market_session_phase`
+- `docker-compose.yml` 中 `dashboard` healthcheck 可作为容器健康参考，正式 poll + consume 由 `runtime-scheduler` 服务承担。
 
 ## 4. Ticker 列表与运行状态
 
@@ -874,13 +897,182 @@ Response schema：
 - `src/doxagent/runtime_scheduler/service.py::stop_ticker`
 - `src/doxagent/runtime_scheduler/service.py::start_ticker`
 
+### 5.6 Overview 回测任务 API
+
+用途：Overview 启动一次性历史消息回测，并展示 run 级进度。
+前端页面/组件：Overview 启动表单中的“回测”模式、Overview 回测任务列表。
+实现状态：`partial`。真实后端已提供独立 backtest run service/API；生产外部数据抓取能力仍取决于 Message Bus collector 凭证和上游可用性。
+
+设计约束：
+
+- 回测是独立 run 级资源，主键为 `backtest_run_id` / `run_id`，不是 ticker singleton 状态。
+- 不得把 `backtest` 加入 `MonitorMode`，不得写入 `TickerRunState.monitor_mode`。
+- 不得创建真实长期 Message Bus monitoring config；历史数据采集应使用一次性 dataset 构建路径。
+- 同一 ticker 可同时存在消息监测/模拟交易、7d 回测、30d 回测等多个 run。
+- 注入层必须按历史时间顺序串行执行：上一条消息的 `PersistentRuntimeExecutionService.execute_event()` 返回后，才能注入下一条。
+- Known Events patch 等 agent 运行副作用必须记录在 backtest-scoped runtime repository/namespace，不得修改 Blackboard belief state 或 live runtime repository。
+
+#### 5.6.1 POST `/backtests`
+
+Request body：
+
+```json
+{
+  "ticker": "MU",
+  "period": "7d",
+  "force_initialize": false
+}
+```
+
+字段：
+
+| 字段 | 类型 | 必填 | 含义 |
+| --- | --- | --- | --- |
+| `ticker` | string | 是 | 股票代码，服务端统一转大写。 |
+| `period` | string | 是 | `7d | 15d | 30d`。后端可兼容 `period_days=7/15/30`。 |
+| `force_initialize` | boolean | 否 | 是否强制初始化 Document 1/2/3；默认复用可用文档。 |
+| `replay_interval_ms` | number | 否 | 可选调试参数，控制两条消息处理完成后的短间隔；生产可由后端环境变量控制。 |
+
+Response schema：
+
+```json
+{
+  "data": {
+    "run_id": "bt_01",
+    "ticker": "MU",
+    "period": "7d",
+    "period_days": 7,
+    "status": "queued",
+    "status_label": "排队中",
+    "health": "unknown",
+    "force_initialize": false,
+    "progress": {
+      "total_events": 0,
+      "collected_events": 0,
+      "injected_events": 0,
+      "processed_events": 0,
+      "failed_events": 0,
+      "percent": 0
+    },
+    "dataset": {
+      "dataset_id": null,
+      "source_type_counts": {},
+      "diagnostics": [],
+      "source": {}
+    },
+    "runtime": {
+      "runtime_sqlite_path": ".tmp/dashboard_backtests/runtime/bt_01.sqlite3",
+      "execution_count": 0,
+      "trade_intent_count": 0,
+      "known_event_patch_count": 0,
+      "exception_count": 0
+    },
+    "current_event_id": null,
+    "current_event_time": null,
+    "last_error": null,
+    "cancel_requested": false,
+    "can_cancel": true,
+    "created_at": "2026-07-03T12:00:00Z",
+    "started_at": null,
+    "completed_at": null,
+    "updated_at": "2026-07-03T12:00:00Z"
+  }
+}
+```
+
+错误：
+
+| code | HTTP | 场景 |
+| --- | --- | --- |
+| `UNAUTHORIZED` | 401 | 未登录或 token 无效。 |
+| `FORBIDDEN` | 403 | 非 dev 用户。 |
+| `INVALID_PARAMS` | 422 | ticker 缺失、period 不在 `7d/15d/30d`、replay interval 越界。 |
+| `UPSTREAM_UNAVAILABLE` | 503 | 历史数据源或 runtime service 不可用；也可进入 run `failed` 状态并通过 `last_error` 暴露。 |
+
+#### 5.6.2 GET `/backtests`
+
+Query params：
+
+| 参数 | 类型 | 必填 | 含义 |
+| --- | --- | --- | --- |
+| `ticker` | string | 否 | 按 ticker 过滤。 |
+| `status` | string | 否 | 按回测状态过滤；`all` 表示不过滤。 |
+| `limit` | number | 否 | 默认 50，最大 100。 |
+| `cursor` | string | 否 | 分页游标。 |
+
+Response schema：
+
+```json
+{
+  "data": {
+    "items": [
+      {
+        "run_id": "bt_01",
+        "ticker": "MU",
+        "period": "7d",
+        "status": "replaying",
+        "progress": {
+          "total_events": 30,
+          "processed_events": 12,
+          "percent": 40
+        }
+      }
+    ],
+    "page": {
+      "limit": 50,
+      "next_cursor": null,
+      "has_more": false
+    }
+  }
+}
+```
+
+`items[]` 使用与 `POST /backtests` 相同的 `BacktestRun` schema。
+
+#### 5.6.3 GET `/backtests/{run_id}`
+
+用途：读取单个回测任务详情。
+Response 使用单个 `BacktestRun` schema。
+
+错误：
+
+| code | HTTP | 场景 |
+| --- | --- | --- |
+| `NOT_FOUND` | 404 | run_id 不存在。 |
+
+#### 5.6.4 POST `/backtests/{run_id}/cancel`
+
+用途：请求取消未完成回测任务。后端应尽快停止后续消息注入；已完成的单条 `execute_event()` 不回滚。
+Response 使用单个 `BacktestRun` schema。
+
+错误：
+
+| code | HTTP | 场景 |
+| --- | --- | --- |
+| `NOT_FOUND` | 404 | run_id 不存在。 |
+| `CONFLICT` | 409 | run 已处于 `completed/failed/cancelled` 终态。 |
+
+当前实现位置：
+
+- `src/doxagent/dashboard_api/backtest.py::DashboardBacktestService`
+- `src/doxagent/dashboard_api/real_router.py`
+- `src/doxagent/persistent_runtime/datasets.py::fetch_live_dataset`
+- `src/doxagent/persistent_runtime/service.py::PersistentRuntimeExecutionService.execute_event`
+
 ## 6. Document 1/2/3 当前版本与历史版本
 
 ### 6.1 GET `/tickers/{ticker}/documents/current`
 
 用途：投研资料页与执行策略页加载当前 Document 1/2/3。  
 前端页面/组件：`/ticker/:ticker/research`、`/ticker/:ticker/strategy`。  
-实现状态：`partial`。当前可通过 `WorkflowDocumentProvider.latest()` 读取最新可用文档和 status，但缺前端卡片化 schema、中文 label、历史版本选择。
+实现状态：`partial`。真实后端已返回前端卡片化 schema、历史版本详情和 scheduler 绑定的现行版本；仍保留 dev-only `include_raw`。
+
+现行版本语义：
+
+- 如果 scheduler ticker state 存在且 `document_run_id` 非空，`current` 必须以该 run 为准。
+- Blackboard 中出现更新 run 时，不会自动成为现行版本；版本列表可以展示，但 `version_status` 应为 `historical`。
+- 只有 runtime/workflow/agent 正式刷新并更新 scheduler state，或 Dashboard 调用人工激活 API 后，`current` 才会切换。
+- 如果 ticker 没有 scheduler state，或 state 中没有 `document_run_id`，后端可以 fallback 到最近可展示 Blackboard run；此时属于兼容性 fallback，不代表 scheduler 已绑定该 run。
 
 Query params：
 
@@ -930,6 +1122,7 @@ Response schema：
 
 | 字段 | 含义 |
 | --- | --- |
+| `document_run_id` | 当前返回 documents 所属 Blackboard run id；没有 scheduler state / 无可用 fallback 时可为 `null`。 |
 | `document_type` | 前端稳定类型：`document1/document2/document3`。 |
 | `document_id` | 当前 document UUID/id。 |
 | `version_status` | `current | historical`。 |
@@ -947,6 +1140,8 @@ Response schema：
 
 当前可能数据来源：
 
+- `src/doxagent/runtime_scheduler/schema.py::TickerRunState.document_run_id`
+- `src/doxagent/runtime_scheduler/documents.py::WorkflowDocumentProvider.by_run_id`
 - `src/doxagent/runtime_scheduler/documents.py::WorkflowDocumentProvider.latest`
 - `src/doxagent/models/documents.py::GlobalResearchDocument`
 - `src/doxagent/models/documents.py::ExpectationUnitDocument`
@@ -959,7 +1154,7 @@ Response schema：
 
 用途：历史记录侧边栏。  
 前端页面/组件：投研资料页、执行策略页左侧历史版本侧边栏。  
-实现状态：`proposed`。当前 `WorkflowDocumentProvider.latest()` 会看最近 runs，但没有 Dashboard 级版本列表 schema。
+实现状态：`partial`。真实后端已基于 Blackboard runs 生成 Dashboard 级版本列表，并按 scheduler `document_run_id` 标记现行版本。
 
 Path params：
 
@@ -987,7 +1182,10 @@ Response schema：
         "generated_at": "2026-06-30T10:00:00Z",
         "updated_at": "2026-06-30T10:10:00Z",
         "version_status": "current",
-        "availability": "available"
+        "summary": "收入、毛利率与资本开支摘要。",
+        "reason_label": "workflow_generated",
+        "reason_text": "由初始化或文档生成工作流生成。",
+        "updated_by_label": "Workflow System"
       }
     ],
     "page": {
@@ -999,9 +1197,24 @@ Response schema：
 }
 ```
 
+字段含义：
+
+| 字段 | 含义 |
+| --- | --- |
+| `version_id` | Dashboard 稳定版本 id，可用于详情接口。当前真实后端形如 `{document_type}:{document_run_id}:{document_id}`，前端不应解析其内部结构。 |
+| `document_run_id` | 该版本所属 Blackboard run id；人工激活 API 使用此字段。 |
+| `version_status` | `current` 仅表示 scheduler state 当前绑定该 `document_run_id`；其他版本为 `historical`。 |
+| `summary` | 版本卡片摘要，来源于 DashboardDocument 展示模型。 |
+| `reason_label` | 产品级原因枚举：`workflow_generated | agent_refreshed | manual_activated | monitoring_policy_reviewed | unknown`。 |
+| `reason_text` | 面向用户的简短原因文案。 |
+| `updated_by_label` | 面向用户的来源/角色文案，不暴露 Blackboard raw commit。 |
+
 当前可能数据来源：
 
 - `BlackboardService.list_runs_by_ticker`
+- `TickerRunState.document_run_id`
+- `RuntimeAuditEvent(event_type="document_run_manual_activated")`
+- `BlackboardRun.commit_log`
 - `src/doxagent/runtime_scheduler/documents.py::_bundle_from_run`
 - `src/doxagent/debug_viewer/query.py::list_runs`
 
@@ -1009,7 +1222,7 @@ Response schema：
 
 用途：查看历史 Document 版本内容。  
 前端页面/组件：投研资料页、执行策略页历史版本内容切换。  
-实现状态：`proposed`。底层 Blackboard 有历史 run/document，但缺稳定版本读取接口。
+实现状态：`partial`。真实后端返回版本元信息与同一展示模型下的 `DashboardDocument`。
 
 Response schema：
 
@@ -1017,23 +1230,101 @@ Response schema：
 {
   "data": {
     "ticker": "MU",
-    "document_type": "document2",
-    "document_id": "doc_expectation_mu_001",
-    "version_id": "doc_expectation_mu_001",
-    "document_run_id": "run_123",
-    "version_status": "historical",
-    "availability": "available",
-    "cards": []
+    "version": {
+      "version_id": "document2:run_123:doc_expectation_mu_001",
+      "document_id": "doc_expectation_mu_001",
+      "document_run_id": "run_123",
+      "document_type": "document2",
+      "generated_at": "2026-06-30T10:00:00Z",
+      "updated_at": "2026-06-30T10:10:00Z",
+      "version_status": "historical",
+      "summary": "AI demand remains central.",
+      "reason_label": "agent_refreshed",
+      "reason_text": "Agent 根据最新证据刷新 expectation unit。",
+      "updated_by_label": "Expectation Owner Agent"
+    },
+    "document": {
+      "document_type": "document2",
+      "document_type_label": "Document 2：Expectation Units",
+      "document_id": "doc_expectation_mu_001",
+      "generated_at": "2026-06-30T10:00:00Z",
+      "updated_at": "2026-06-30T10:10:00Z",
+      "version_status": "historical",
+      "availability": "available",
+      "cards": []
+    }
   }
 }
 ```
 
 字段含义同 6.1。
 
+错误：
+
+| code | HTTP | 场景 |
+| --- | --- | --- |
+| `INVALID_PARAMS` | 422 | `document_type` 不是 `document1/document2/document3`。 |
+| `NOT_FOUND` | 404 | `version_id` 不存在，或不属于该 ticker/document_type。 |
+
+### 6.4 POST `/tickers/{ticker}/documents/activate`
+
+用途：人工把某个历史 document set 切换为 scheduler state 的现行文档。
+前端页面/组件：历史版本侧边栏非现行版本卡片的“切换为现行文档”按钮。
+实现状态：`partial`。
+
+Request body：
+
+```json
+{
+  "document_run_id": "run_123",
+  "reason": "Dashboard 手动切换为现行文档。"
+}
+```
+
+后端行为：
+
+- 校验 `document_run_id` 存在且属于 `{ticker}`。
+- 校验该 run 至少包含 Dashboard 运行所需 Document 1/2/3 组成内容，包括 `global_research`、`expectation_unit`、`known_events`、`monitoring_config`、`monitoring_policy`。
+- 更新 scheduler ticker state 的 `document_run_id`、`document_status`、`last_monitoring_config_version` 与相关 metadata。
+- 重新应用该 document set 中的 Monitoring Config 到 Message Bus bindings。
+- 记录 `document_run_manual_activated` audit event。
+
+Response 使用通用 `OperationResult`：
+
+```json
+{
+  "data": {
+    "operation": "activate_documents",
+    "status": "accepted",
+    "ticker": "MU",
+    "ticker_state": {
+      "status": "running",
+      "health": "normal",
+      "monitor_mode": "paper_trading"
+    },
+    "audit_id": "audit_123"
+  }
+}
+```
+
+错误：
+
+| code | HTTP | 场景 |
+| --- | --- | --- |
+| `UNAUTHORIZED` | 401 | 未登录或 token 无效。 |
+| `FORBIDDEN` | 403 | 已登录但非 dev 用户。 |
+| `INVALID_PARAMS` | 422 | 缺少 `document_run_id`、run 不属于 ticker、document set 不可用或 provider 不支持按 run id 读取。 |
+| `NOT_FOUND` | 404 | `document_run_id` 不存在。 |
+
+### 6.5 Markdown 下载
+
+当前不新增后端下载 API。前端下载按钮必须基于当前实际渲染的 `DashboardDocument.cards / fields / summary / status` 展示模型生成 Markdown，而不是直接导出后端 raw JSON。文件名建议包含 `{ticker}-{document_type}-{current|history}-{timestamp}.md`。
+
 当前可能数据来源：
 
 - `src/doxagent/blackboard/service.py`
 - `src/doxagent/runtime_scheduler/documents.py`
+- `src/doxagent/runtime_scheduler/service.py::UnifiedRuntimeSchedulerService.activate_document_run`
 - `src/doxagent/debug_viewer/query.py::load_bundle`
 
 ## 7. Known Events
@@ -1234,6 +1525,7 @@ Query params：
 | 参数 | 类型 | 必填 | 含义 |
 | --- | --- | --- | --- |
 | `source_id` | string | 否 | 来源筛选。 |
+| `source_type` | string | 否 | 消息类型筛选，`social | media`。 |
 | `processing_status` | string | 否 | 处理状态筛选。 |
 | `q` | string | 否 | 标题/正文关键词。 |
 | `from` | string | 否 | 起始时间。 |
@@ -1268,7 +1560,8 @@ Response schema：
     "page": {
       "limit": 50,
       "next_cursor": null,
-      "has_more": false
+      "has_more": false,
+      "total_count": 1
     }
   }
 }
@@ -2071,6 +2364,12 @@ Event data schema：
 | `trade_intent.created` | 交易意图记录生成。 |
 | `known_event.updated` | Known Events 被运行时更新。 |
 | `ticker.state.changed` | ticker 状态变化。 |
+| `dashboard.backtest.queued` | 回测任务已入队。 |
+| `dashboard.backtest.status_changed` | 回测任务状态变化。 |
+| `dashboard.backtest.completed` | 回测任务完成。 |
+| `dashboard.backtest.failed` | 回测任务失败。 |
+| `dashboard.backtest.cancel_requested` | 用户请求取消回测任务。 |
+| `dashboard.backtest.cancelled` | 回测任务已取消。 |
 | `audit.revenue.status_changed` | 收益审计状态变化。 |
 | `audit.cost.status_changed` | 成本审计状态变化。 |
 
@@ -2080,6 +2379,7 @@ Event data schema：
 | --- | --- |
 | 消息总线 | `message_bus.message.created,message_bus.poll.failed` |
 | 运行状态 | `runtime.execution.updated,runtime.execution.failed` |
+| Overview 回测列表 | 当前以前端轮询 `/backtests` 为主；可订阅 `dashboard.backtest.*` 做实时刷新。 |
 | 收益 / 成本审计 | `audit.revenue.status_changed,audit.cost.status_changed` |
 
 当前可能数据来源：
@@ -2111,6 +2411,7 @@ Event data schema：
 | `PATCH /tickers/{ticker}/monitor-mode` | 需要正式联调和远端 smoke | 切换模式时写 `ticker_monitor_mode_changed` audit，不回溯消费切换前 pending events。 |
 | `DELETE /tickers/{ticker}` | stop 与删除 Message Bus config 分散 | 新增原子 delete operation，默认不删历史。 |
 | `POST /tickers/{ticker}/restart` | 已有包装；需保持当前模式 | 包装 stop/start，明确 `keep_bindings` 与 `force_initialize` 语义，并保留 `monitor_mode`。 |
+| `POST/GET /backtests` | 回测是 run 级资源，不能污染 ticker monitor mode 或长期 Message Bus config | 使用 `DashboardBacktestService`，一次性采集 dataset，按时间顺序串行 `execute_event()`，并将 runtime 副作用写入 backtest-scoped repository。 |
 
 ### 14.3 Document 与策略页面
 

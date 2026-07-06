@@ -1,27 +1,34 @@
 # DoxAgent Dashboard Deployment
 
 This deployment runs the React dashboard and the real Dashboard State API in one
-FastAPI container. Production must use the real backend and Supabase auth; mock
-mode remains local-only.
+FastAPI container, plus a runtime scheduler worker that performs the formal
+poll-and-consume loop. Production must use the real backend and Supabase auth;
+mock mode remains local-only.
 
 ## Service
 
 Build and start on the server from `/root/doxagent`:
 
 ```bash
-docker compose build dashboard
-docker compose up -d --force-recreate dashboard
+docker compose build dashboard runtime-scheduler
+docker compose up -d --force-recreate dashboard runtime-scheduler
+docker compose stop monitoring-poller || true
 ```
 
-Stop or restart only this service:
+Stop or restart only these services:
 
 ```bash
-docker compose stop dashboard
-docker compose restart dashboard
-docker compose logs -f dashboard
+docker compose stop dashboard runtime-scheduler
+docker compose restart dashboard runtime-scheduler
+docker compose logs -f dashboard runtime-scheduler
 ```
 
 The container binds to `127.0.0.1:8780:8780`. Nginx is the only public entry.
+`runtime-scheduler` has no public port; it runs
+`python -m doxagent.runtime_scheduler.cli run-loop` and is responsible for both
+Message Bus polling and Persistent Runtime consumption. The legacy
+`monitoring-poller` service is behind the `legacy-debug` compose profile and
+must not run alongside the formal scheduler for the same ticker/source.
 
 ## Environment
 
@@ -98,6 +105,8 @@ certbot --nginx -d agent.doxatlas.com
 
 ```bash
 curl -fsS http://127.0.0.1:8780/healthz
+docker compose ps dashboard runtime-scheduler
+docker compose logs --tail=80 runtime-scheduler
 curl -fsS https://agent.doxatlas.com/healthz
 curl -i https://agent.doxatlas.com/api/dashboard/v1/overview
 curl -i -N https://agent.doxatlas.com/api/dashboard/v1/events?once=true

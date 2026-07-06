@@ -10,6 +10,7 @@ from doxagent.monitoring.schema import (
     IngestBatchResult,
     InterfaceType,
     MonitoringParameters,
+    RawExternalMessage,
     SourceType,
     StandardMessage,
     UpdateActor,
@@ -43,7 +44,7 @@ def test_dashboard_real_message_bus_overview_messages_and_config() -> None:
     assert overview.status_code == 200
     overview_payload = overview.json()["data"]
     assert overview_payload["ticker"] == "NVDA"
-    assert overview_payload["today_raw_message_count"] == 1
+    assert overview_payload["today_raw_message_count"] == 2
     assert overview_payload["today_event_count"] == 1
     assert overview_payload["media_enrichment_success_rate"] == 1.0
     assert overview_payload["healthy_channel_count"] == 6
@@ -57,11 +58,33 @@ def test_dashboard_real_message_bus_overview_messages_and_config() -> None:
 
     assert messages.status_code == 200
     message_payload = messages.json()["data"]
-    assert message_payload["page"] == {"limit": 50, "next_cursor": None, "has_more": False}
+    assert message_payload["page"] == {
+        "limit": 50,
+        "next_cursor": None,
+        "has_more": False,
+        "total_count": 1,
+    }
     assert message_payload["items"][0]["message_id"] == "std_nvda_message_bus"
     assert message_payload["items"][0]["source_label"] == "Benzinga News API"
+    assert message_payload["items"][0]["body"] is None
     assert message_payload["items"][0]["processing_status"] == "w1_running"
     assert message_payload["items"][0]["runtime_execution_id"].startswith("pre_")
+
+    message_detail = client.get(
+        "/api/dashboard/v1/tickers/NVDA/message-bus/messages/std_nvda_message_bus"
+    )
+
+    assert message_detail.status_code == 200
+    assert (
+        message_detail.json()["data"]["body"]
+        == "Hyperscaler order update mentions NVDA AI server demand."
+    )
+
+    social_messages = client.get(
+        "/api/dashboard/v1/tickers/NVDA/message-bus/messages?source_type=social"
+    )
+    assert social_messages.status_code == 200
+    assert social_messages.json()["data"]["items"] == []
 
     config = client.get("/api/dashboard/v1/tickers/NVDA/message-bus/config")
 
@@ -231,6 +254,40 @@ def _seed_message_bus(
             "summary": "Hyperscaler order update mentions NVDA.",
             "media_enrichment": {"succeeded": True},
         },
+    )
+    monitoring_service.repository.save_raw_message(
+        RawExternalMessage(
+            raw_message_id=message.raw_message_id,
+            dedupe_key="raw_nvda_message_bus",
+            source_id=message.source_id,
+            binding_id=binding.binding_id,
+            ticker="NVDA",
+            source_type=SourceType.MEDIA,
+            interface_type=InterfaceType.BY_TICKER,
+            provider_message_id="provider_nvda_message_bus",
+            payload_hash="hash_nvda_message_bus",
+            source_url=message.url,
+            source_published_at=timestamp,
+            collected_at=timestamp,
+            raw_payload={"title": message.title},
+        )
+    )
+    monitoring_service.repository.save_raw_message(
+        RawExternalMessage(
+            raw_message_id="raw_nvda_message_bus_unstandardized",
+            dedupe_key="raw_nvda_message_bus_unstandardized",
+            source_id=message.source_id,
+            binding_id=binding.binding_id,
+            ticker="NVDA",
+            source_type=SourceType.MEDIA,
+            interface_type=InterfaceType.BY_TICKER,
+            provider_message_id="provider_nvda_message_bus_unstandardized",
+            payload_hash="hash_nvda_message_bus_unstandardized",
+            source_url="https://example.test/nvda/raw-only",
+            source_published_at=timestamp,
+            collected_at=timestamp,
+            raw_payload={"title": "raw only"},
+        )
     )
     monitoring_service.repository.save_standard_message(message)
     monitoring_service.repository.append_event(message)

@@ -11,6 +11,7 @@ def test_dashboard_mock_api_serves_contract_snapshot_routes() -> None:
     routes = [
         "/api/dashboard/v1/overview",
         "/api/dashboard/v1/tickers?status=running&limit=1",
+        "/api/dashboard/v1/backtests",
         "/api/dashboard/v1/tickers/MU",
         "/api/dashboard/v1/tickers/MU/documents/current?types=document1,document3",
         "/api/dashboard/v1/tickers/MU/documents/document1/versions",
@@ -43,6 +44,30 @@ def test_dashboard_mock_api_serves_contract_snapshot_routes() -> None:
 
     empty_messages = client.get("/api/dashboard/v1/tickers/EMPTY/message-bus/messages").json()
     assert empty_messages["data"]["items"] == []
+    overview = client.get("/api/dashboard/v1/overview").json()["data"]
+    assert overview["system"]["current_session_label"] == "运行时段"
+
+
+def test_dashboard_static_shell_is_not_browser_cached(tmp_path, monkeypatch) -> None:
+    static_dir = tmp_path / "dist"
+    assets_dir = static_dir / "assets"
+    assets_dir.mkdir(parents=True)
+    (static_dir / "index.html").write_text(
+        '<script type="module" src="/assets/index-test.js"></script>',
+        encoding="utf-8",
+    )
+    (assets_dir / "index-test.js").write_text("console.log('ok')", encoding="utf-8")
+    monkeypatch.setenv("DOXAGENT_DASHBOARD_STATIC_DIR", str(static_dir))
+
+    client = TestClient(create_app())
+
+    index = client.get("/overview")
+    assert index.status_code == 200
+    assert index.headers["cache-control"] == "no-store, max-age=0, must-revalidate"
+
+    asset = client.get("/assets/index-test.js")
+    assert asset.status_code == 200
+    assert asset.headers["cache-control"] == "public, max-age=31536000, immutable"
 
 
 def test_dashboard_mock_api_mutations_are_fixture_only_and_contract_shaped() -> None:
@@ -76,6 +101,14 @@ def test_dashboard_mock_api_mutations_are_fixture_only_and_contract_shaped() -> 
     )
     assert broker.status_code == 422
     assert broker.json()["error"]["code"] == "INVALID_PARAMS"
+
+    backtest = client.post(
+        "/api/dashboard/v1/backtests",
+        json={"ticker": "AMD", "period": "7d", "force_initialize": False},
+    )
+    assert backtest.status_code == 200
+    assert backtest.json()["data"]["ticker"] == "AMD"
+    assert backtest.json()["data"]["status"] == "completed"
 
     paused = client.post("/api/dashboard/v1/tickers/AMD/pause", json={"reason": "pause"})
     assert paused.status_code == 200

@@ -25,7 +25,7 @@ def test_remote_monitoring_command_quotes_path_and_args() -> None:
 
     assert "cd '/root/dox agent'" in command
     assert "'https://example.test/a b'" in command
-    assert "docker compose exec -T debug-viewer" in command
+    assert "docker compose exec -T runtime-scheduler" in command
     assert "python -m doxagent.monitoring.cli" in command
 
 

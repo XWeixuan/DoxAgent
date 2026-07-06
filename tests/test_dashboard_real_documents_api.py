@@ -96,8 +96,19 @@ def test_dashboard_real_strategy_events_policies_and_errors_are_contract_shaped(
     document3 = client.get("/api/dashboard/v1/tickers/NVDA/documents/current?types=document3")
 
     assert document3.status_code == 200
-    cards = document3.json()["data"]["documents"][0]["cards"]
-    assert [card["card_id"] for card in cards] == ["known_events", "monitoring_policy"]
+    document3_payload = document3.json()["data"]["documents"][0]
+    assert document3_payload["document_type"] == "document3"
+    assert document3_payload["cards"] == []
+
+    document3_versions = client.get("/api/dashboard/v1/tickers/NVDA/documents/document3/versions")
+    assert document3_versions.status_code == 200
+    document3_version_id = document3_versions.json()["data"]["items"][0]["version_id"]
+    document3_detail = client.get(
+        f"/api/dashboard/v1/tickers/NVDA/documents/document3/versions/{document3_version_id}"
+    )
+    assert document3_detail.status_code == 200
+    detail_cards = document3_detail.json()["data"]["document"]["cards"]
+    assert [card["card_id"] for card in detail_cards] == ["known_events", "monitoring_policy"]
 
     known_events = client.get("/api/dashboard/v1/tickers/NVDA/known-events?limit=10")
 
@@ -147,6 +158,96 @@ def test_dashboard_real_strategy_events_policies_and_errors_are_contract_shaped(
     assert missing_version.json()["error"]["code"] == "NOT_FOUND"
 
 
+def test_dashboard_real_documents_current_is_scheduler_bound_until_manual_activation() -> None:
+    scheduler, runtime_service, blackboard, original_run_id = (
+        _scheduler_with_seeded_blackboard_objects()
+    )
+    scheduler.start_ticker("NVDA", now=NOW + timedelta(hours=1))
+    newer_run = _add_blackboard_run(
+        blackboard,
+        created_at=NOW + timedelta(hours=2),
+        research_summary="Newer Blackboard summary that is not active yet.",
+        known_event_text="Newer known event should not be active yet.",
+    )
+    client = TestClient(
+        create_app(
+            mode="real",
+            auth_mode="mock-open",
+            dashboard_api=DashboardStateAPI(scheduler),
+        )
+    )
+
+    current = client.get("/api/dashboard/v1/tickers/NVDA/documents/current?types=document1")
+
+    assert current.status_code == 200
+    current_payload = current.json()["data"]
+    assert current_payload["document_run_id"] == original_run_id
+    assert current_payload["documents"][0]["cards"][0]["summary"] == "Research section summary."
+
+    versions = client.get("/api/dashboard/v1/tickers/NVDA/documents/document1/versions")
+
+    assert versions.status_code == 200
+    items = versions.json()["data"]["items"]
+    by_run_id = {item["document_run_id"]: item for item in items}
+    assert by_run_id[original_run_id]["version_status"] == "current"
+    assert by_run_id[newer_run.run_id]["version_status"] == "historical"
+    assert by_run_id[original_run_id]["reason_label"] == "workflow_generated"
+    assert by_run_id[original_run_id]["reason_text"]
+    assert by_run_id[original_run_id]["updated_by_label"]
+    current_events = client.get("/api/dashboard/v1/tickers/NVDA/known-events")
+    assert current_events.status_code == 200
+    assert current_events.json()["data"]["items"][0]["event_name"] == "Prior earnings release"
+
+    activated = client.post(
+        "/api/dashboard/v1/tickers/NVDA/documents/activate",
+        json={
+            "document_run_id": newer_run.run_id,
+            "reason": "Use reviewed research for dashboard validation.",
+        },
+    )
+
+    assert activated.status_code == 200
+    state = scheduler.repository.get_state("NVDA")
+    assert state is not None
+    assert state.document_run_id == newer_run.run_id
+    assert state.document_status is not None
+    assert state.document_status.blackboard_run_id == newer_run.run_id
+    assert state.last_monitoring_config_version is not None
+    assert scheduler.monitoring_service.repository.list_bindings(ticker="NVDA")
+    assert runtime_service.repository.list_known_events(ticker="NVDA") == []
+
+    after_current = client.get("/api/dashboard/v1/tickers/NVDA/documents/current?types=document1")
+
+    assert after_current.status_code == 200
+    after_payload = after_current.json()["data"]
+    assert after_payload["document_run_id"] == newer_run.run_id
+    assert (
+        after_payload["documents"][0]["cards"][0]["summary"]
+        == "Newer Blackboard summary that is not active yet."
+    )
+    after_events = client.get("/api/dashboard/v1/tickers/NVDA/known-events")
+    assert after_events.status_code == 200
+    assert (
+        after_events.json()["data"]["items"][0]["event_name"]
+        == "Newer known event should not be active yet."
+    )
+
+    after_versions = client.get("/api/dashboard/v1/tickers/NVDA/documents/document1/versions")
+
+    assert after_versions.status_code == 200
+    after_items = after_versions.json()["data"]["items"]
+    after_by_run_id = {item["document_run_id"]: item for item in after_items}
+    assert after_by_run_id[newer_run.run_id]["version_status"] == "current"
+    assert after_by_run_id[newer_run.run_id]["reason_label"] == "manual_activated"
+    assert "Use reviewed research" in after_by_run_id[newer_run.run_id]["reason_text"]
+    assert after_by_run_id[original_run_id]["version_status"] == "historical"
+    assert any(
+        event.event_type == "document_run_manual_activated"
+        and event.payload["document_run_id"] == newer_run.run_id
+        for event in scheduler.repository.list_audit_events(ticker="NVDA")
+    )
+
+
 class _NoopWorkflow:
     def __init__(self, blackboard: BlackboardService) -> None:
         self.blackboard = blackboard
@@ -177,11 +278,18 @@ def _scheduler_with_seeded_blackboard() -> tuple[
     PersistentRuntimeExecutionService,
     str,
 ]:
+    scheduler, runtime_service, _blackboard, run_id = _scheduler_with_seeded_blackboard_objects()
+    return scheduler, runtime_service, run_id
+
+
+def _scheduler_with_seeded_blackboard_objects() -> tuple[
+    UnifiedRuntimeSchedulerService,
+    PersistentRuntimeExecutionService,
+    BlackboardService,
+    str,
+]:
     blackboard = BlackboardService(InMemoryBlackboardRepository())
-    run = blackboard.start_run("NVDA", AgentName.SYSTEM)
-    run = run.model_copy(update={"created_at": NOW}, deep=True)
-    run.belief_state.documents = _document_buckets()
-    blackboard.repository.save(run)
+    run = _add_blackboard_run(blackboard, created_at=NOW)
     document_provider = WorkflowDocumentProvider(
         workflow=_NoopWorkflow(blackboard),  # type: ignore[arg-type]
         blackboard=blackboard,
@@ -194,15 +302,65 @@ def _scheduler_with_seeded_blackboard() -> tuple[
         monitoring_service=MonitoringBusService(InMemoryMonitoringRepository()),
         runtime_service=runtime_service,
     )
-    return scheduler, runtime_service, run.run_id
+    return scheduler, runtime_service, blackboard, run.run_id
 
 
-def _document_buckets() -> dict[DocumentType, dict[str, Any]]:
+def _add_blackboard_run(
+    blackboard: BlackboardService,
+    *,
+    created_at,
+    research_summary: str = "Research section summary.",
+    known_event_text: str = "Prior earnings release",
+):
+    run = blackboard.start_run("NVDA", AgentName.SYSTEM)
+    run = run.model_copy(update={"created_at": created_at}, deep=True)
+    run.belief_state.documents = _document_buckets(
+        created_at=created_at,
+        research_summary=research_summary,
+        known_event_text=known_event_text,
+    )
+    return blackboard.repository.save(run)
+
+
+def _document_buckets(
+    *,
+    created_at=NOW,
+    research_summary: str = "Research section summary.",
+    known_event_text: str = "Prior earnings release",
+) -> dict[DocumentType, dict[str, Any]]:
     global_document = global_research_document()
+    global_document = global_document.model_copy(
+        update={
+            "created_at": created_at,
+            "fundamental_report": global_document.fundamental_report.model_copy(
+                update={"summary": research_summary},
+                deep=True,
+            ),
+        },
+        deep=True,
+    )
     expectation = ExpectationUnitDocument.model_validate(expectation_document())
+    expectation = expectation.model_copy(update={"created_at": created_at}, deep=True)
     known_events = known_events_document()
+    known_events = known_events.model_copy(
+        update={
+            "created_at": created_at,
+            "events": [
+                known_events.events[0].model_copy(
+                    update={
+                        "core_fact": known_event_text,
+                        "description": known_event_text,
+                    },
+                    deep=True,
+                )
+            ],
+        },
+        deep=True,
+    )
     monitoring_config = monitoring_config_document()
+    monitoring_config = monitoring_config.model_copy(update={"created_at": created_at}, deep=True)
     monitoring_policy = monitoring_policy_document()
+    monitoring_policy = monitoring_policy.model_copy(update={"created_at": created_at}, deep=True)
     return {
         DocumentType.GLOBAL_RESEARCH: {
             global_document.document_id: {"document": global_document.model_dump(mode="json")}

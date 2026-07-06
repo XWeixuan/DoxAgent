@@ -22,7 +22,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from doxagent.debug_viewer.query import DebugRunQueryService
+from doxagent.blackboard.state import BlackboardRun
 from doxagent.settings import DoxAgentSettings
 from doxagent.workflows import (
     BlackboardInitializationWorkflow,
@@ -132,7 +132,9 @@ def main() -> int:
     )
 
     result = workflow.resume(seed_checkpoint, stop_after=stop_after)
-    run_summary = DebugRunQueryService(settings).run_summary(result.checkpoint.run_id)
+    run_summary = _run_summary_from_blackboard(
+        workflow.blackboard.get_run(result.checkpoint.run_id)
+    )
     expectation_unit_count = _summary_document_count(run_summary, "expectation_unit")
     output = _base_output(
         ticker=ticker,
@@ -221,6 +223,19 @@ def _safe_nested(data: JsonDict, first: str, second: str) -> Any:
     if not isinstance(raw, dict):
         return None
     return raw.get(second)
+
+
+def _run_summary_from_blackboard(run: BlackboardRun) -> JsonDict:
+    return {
+        "belief_state": {
+            "document_counts": {
+                str(getattr(document_type, "value", document_type)): (
+                    len(bucket) if isinstance(bucket, dict) else 0
+                )
+                for document_type, bucket in run.belief_state.documents.items()
+            }
+        }
+    }
 
 
 def _summary_document_count(summary: JsonDict, document_type: str) -> int:

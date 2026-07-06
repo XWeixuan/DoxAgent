@@ -76,48 +76,50 @@ Optional explicit output:
 uv run python eval\export_brief_state.py <run_id> --output eval\brief_state_exports\<run_id>.json
 ```
 
-The exporter reads the same Postgres-backed data used by the local Brief State
-Viewer through `DebugRunQueryService`. It writes a JSON envelope containing:
+The exporter reads the configured workflow storage directly. It writes a JSON
+envelope containing:
 
 - export metadata;
 - storage status;
 - the human-facing Brief State view;
-- agent metrics view;
+- agent metrics placeholder;
 - raw stable documents from the belief state;
 - checkpoints;
 - Working Memory;
 - Commit Log;
 - objections;
 - delegations;
-- evidence refs;
+- evidence refs when the local exporter includes them;
 - a compact eval index for quick navigation.
 
 This export is the result-review entry point. It is not enough for final scoring
 because process rubrics require LangSmith loops, tool calls, and agent
 trajectory.
 
-## Built-In Hard Validators
+## Hard Validator Compatibility
 
-The Brief State Viewer and JSON export include three local hard validators under
-`hard_validators`:
+Debug Viewer has been removed. The current JSON export keeps the
+`hard_validators` envelope for compatibility and marks validators as `not_run`;
+hard-gate review should use the exported stable documents plus workflow and
+LangSmith evidence.
 
-- `evidence_reference_integrity`: checks that key stable beliefs, expectation
+- Legacy `evidence_reference_integrity`: checked that key stable beliefs, expectation
   fields, known events, objections, and state-changing commits have locatable
   evidence refs with required source metadata. It does not judge whether the
   evidence is sufficient or persuasive.
-- `langsmith_trajectory_tool_boundary`: checks the locally persisted ReAct
+- Legacy `langsmith_trajectory_tool_boundary`: checked the locally persisted ReAct
   audit/tool-call mirror in Working Memory against current workflow and agent
   tool boundaries. It flags missing local trajectories, forbidden tools,
   failed tool calls inside successful AgentResults, and declared-but-unexecuted
   tool evidence. Remote LangSmith MCP review is still required for final process
   scoring.
-- `commit_log_state_mutation_consistency`: checks that stable Blackboard
+- Legacy `commit_log_state_mutation_consistency`: checked that stable Blackboard
   documents can be explained by Commit Log mutations and that commit targets
   remain consistent with final state.
 
-Only runs that pass these validators should move into LLM-as-judge rubric
-scoring. Passing them only means the run is minimally auditable; it does not mean
-the Blackboard is high quality.
+Do not treat `not_run` validator envelopes as pass/fail evidence. Recreate any
+required hard-gate checks from the exported documents, workflow records, and
+LangSmith traces.
 
 ## LangSmith Review Expectations
 

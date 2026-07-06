@@ -58,6 +58,19 @@ class DashboardStateAPI:
             reason=reason,
         )
 
+    def activate_document_run(
+        self,
+        ticker: str,
+        document_run_id: str,
+        *,
+        reason: str | None = None,
+    ) -> TickerRunDetail:
+        return self.scheduler.activate_document_run(
+            ticker,
+            document_run_id,
+            reason=reason,
+        )
+
     def pause_ticker(self, ticker: str, *, reason: str | None = None) -> TickerRunDetail:
         return self.scheduler.pause_ticker(ticker, reason=reason)
 

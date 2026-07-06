@@ -371,12 +371,37 @@
   }
 
   .source-health-ring {
+    position: relative;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
     width: 1.75rem;
     height: 1.75rem;
     border-radius: 999px;
-    background:
-      radial-gradient(circle, #ffffff 52%, transparent 53%),
-      conic-gradient(var(--source-health-fg) 0 76%, color-mix(in srgb, var(--border) 72%, #ffffff 28%) 76% 100%);
+    background: color-mix(in srgb, var(--border) 72%, #ffffff 28%);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--source-health-fg) 22%, transparent);
+  }
+
+  .source-health-ring::before {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: conic-gradient(
+      from 0deg,
+      var(--source-health-fg) 0deg 86deg,
+      transparent 86deg 360deg
+    );
+    content: "";
+    animation: source-health-ring-spin var(--source-health-duration, 300s) linear infinite;
+  }
+
+  .source-health-ring::after {
+    position: absolute;
+    inset: 0.38rem;
+    border-radius: inherit;
+    background: rgb(255 255 255 / 92%);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 70%, transparent);
+    content: "";
   }
 
   .source-health-dot {
@@ -404,6 +429,12 @@
   .source-health-gray {
     --source-health-fg: var(--status-gray);
     color: var(--status-gray);
+  }
+
+  @keyframes source-health-ring-spin {
+    to {
+      transform: rotate(360deg);
+    }
   }
 
   .runtime-map {

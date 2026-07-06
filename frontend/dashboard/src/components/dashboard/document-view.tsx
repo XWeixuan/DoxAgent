@@ -3,9 +3,11 @@ import type { ReactNode } from "react"
 import {
   ChevronDownIcon,
   Clock3Icon,
+  DownloadIcon,
   FileClockIcon,
   HistoryIcon,
   Layers3Icon,
+  RefreshCwIcon,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -30,6 +32,7 @@ import type {
   DocumentType,
   DocumentVersion,
 } from "@/lib/dashboard-types"
+import { downloadDashboardDocumentMarkdown } from "@/lib/document-markdown"
 import { formatDateTime, renderJsonValue } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import {
@@ -50,11 +53,13 @@ export function DocumentSection({
   title,
   description,
   statusItems,
+  ticker,
 }: {
   document?: DashboardDocument
   title: string
   description?: string
   statusItems?: Array<{ label: string; value: ReactNode }>
+  ticker?: string
 }) {
   if (!document) {
     return (
@@ -77,7 +82,7 @@ export function DocumentSection({
           )}
         </div>
 
-        <DocumentStatusPanel document={document} statusItems={statusItems} />
+        <DocumentStatusPanel document={document} statusItems={statusItems} ticker={ticker} />
       </div>
     </Section>
   )
@@ -88,11 +93,17 @@ export function DocumentStatusPanel({
   statusItems = [],
   detailItems,
   className,
+  ticker,
+  onDownload,
+  downloading,
 }: {
   document?: DashboardDocument | null
   statusItems?: Array<{ label: string; value: ReactNode }>
   detailItems?: Array<{ label: string; value: ReactNode }>
   className?: string
+  ticker?: string
+  onDownload?: (document: DashboardDocument) => void
+  downloading?: boolean
 }) {
   if (!document) {
     return (
@@ -120,9 +131,32 @@ export function DocumentStatusPanel({
           status={document.version_status === "current" ? "normal" : "historical"}
           label={document.version_status === "current" ? "现行版本" : "历史版本"}
         />
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={downloading}
+          onClick={() => {
+            if (onDownload) {
+              onDownload(document)
+              return
+            }
+            downloadDashboardDocumentMarkdown(document, { ticker })
+          }}
+        >
+          <DownloadIcon data-icon="inline-start" />
+          {downloading ? "准备下载" : "下载 Markdown"}
+        </Button>
         <KeyValueList items={detailItems ?? [
           ...statusItems,
-          { label: "文档 ID", value: <span className="font-mono text-xs">{document.document_id}</span> },
+          {
+            label: "文档 ID",
+            value: (
+              <span className="inline-block max-w-full break-all font-mono text-xs leading-5">
+                {document.document_id}
+              </span>
+            ),
+          },
           { label: "生成时间", value: formatDateTime(document.generated_at) },
           { label: "更新时间", value: formatDateTime(document.updated_at) },
           { label: "可用性", value: document.availability },
@@ -171,12 +205,7 @@ function DocumentContentCard({
         <CardContent className="flex flex-col gap-3">
           {card.fields.length > 0 ? (
             card.fields.map((field) => (
-              <div key={field.key} className="rounded-[4px] border bg-white/55 p-4">
-                <div className="mb-2 text-sm font-medium">{field.label}</div>
-                <pre className="whitespace-pre-wrap break-words font-sans text-sm leading-6 text-muted-foreground">
-                  {renderJsonValue(field.value)}
-                </pre>
-              </div>
+              <DocumentFieldBlock key={field.key} field={field} />
             ))
           ) : (
             <p className="text-sm text-muted-foreground">暂无字段数据</p>
@@ -187,20 +216,185 @@ function DocumentContentCard({
   )
 }
 
+function DocumentFieldBlock({
+  field,
+}: {
+  field: DashboardDocument["cards"][number]["fields"][number]
+}) {
+  const textValue = typeof field.value === "string" ? field.value : null
+  const renderedValue = textValue ?? renderJsonValue(field.value)
+  const longContent =
+    renderedValue.length > 900 || renderedValue.split(/\r?\n/).length > 12
+  const [open, setOpen] = useState(!longContent)
+
+  return (
+    <div className="rounded-[4px] border bg-white/55 p-4">
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <div className="text-sm font-medium">{field.label}</div>
+        {longContent ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-xs"
+            onClick={() => setOpen((value) => !value)}
+          >
+            {open ? "收起" : "展开"}
+          </Button>
+        ) : null}
+      </div>
+      <div className={cn("relative", longContent && !open && "max-h-72 overflow-hidden")}>
+        {textValue !== null ? (
+          <MarkdownContent text={textValue} />
+        ) : (
+          <pre className="whitespace-pre-wrap break-words font-sans text-sm leading-6 text-muted-foreground">
+            {renderedValue}
+          </pre>
+        )}
+        {longContent && !open ? (
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-white/0 to-white/90" />
+        ) : null}
+      </div>
+    </div>
+  )
+}
+
+function MarkdownContent({ text }: { text: string }) {
+  const blocks = markdownBlocks(text)
+  if (blocks.length === 0) {
+    return <p className="text-sm text-muted-foreground">暂无数据</p>
+  }
+  return <div className="markdown-content">{blocks}</div>
+}
+
+function markdownBlocks(text: string): ReactNode[] {
+  const nodes: ReactNode[] = []
+  const lines = text.trim().split(/\r?\n/)
+  let listItems: ReactNode[] = []
+  let listKind: "ul" | "ol" = "ul"
+
+  const flushList = () => {
+    if (!listItems.length) {
+      return
+    }
+    const ListTag = listKind
+    nodes.push(
+      <ListTag key={`list-${nodes.length}`} className="my-2 ml-5 list-outside space-y-1 text-sm leading-6 text-muted-foreground">
+        {listItems}
+      </ListTag>
+    )
+    listItems = []
+  }
+
+  lines.forEach((rawLine, index) => {
+    const line = rawLine.trim()
+    if (!line) {
+      flushList()
+      return
+    }
+
+    const heading = /^(#{1,6})\s+(.+)$/.exec(line)
+    if (heading) {
+      flushList()
+      const level = Math.min(heading[1].length, 4)
+      const className =
+        level === 1
+          ? "mt-2 text-xl font-medium text-foreground"
+          : level === 2
+            ? "mt-4 text-lg font-medium text-foreground"
+            : "mt-3 text-base font-medium text-foreground"
+      if (level === 1) {
+        nodes.push(
+          <h1 key={`heading-${index}`} className={className}>
+            {markdownInline(heading[2])}
+          </h1>
+        )
+      } else if (level === 2) {
+        nodes.push(
+          <h2 key={`heading-${index}`} className={className}>
+            {markdownInline(heading[2])}
+          </h2>
+        )
+      } else {
+        nodes.push(
+          <h3 key={`heading-${index}`} className={className}>
+            {markdownInline(heading[2])}
+          </h3>
+        )
+      }
+      return
+    }
+
+    const unordered = /^[-*]\s+(.+)$/.exec(line)
+    const ordered = /^\d+[.)]\s+(.+)$/.exec(line)
+    if (unordered || ordered) {
+      const nextKind = ordered ? "ol" : "ul"
+      if (listItems.length && listKind !== nextKind) {
+        flushList()
+      }
+      listKind = nextKind
+      listItems.push(
+        <li key={`li-${index}`} className={nextKind === "ol" ? "list-decimal" : "list-disc"}>
+          {markdownInline((unordered ?? ordered)?.[1] ?? line)}
+        </li>
+      )
+      return
+    }
+
+    flushList()
+    nodes.push(
+      <p key={`p-${index}`} className="my-2 whitespace-pre-wrap break-words text-sm leading-6 text-muted-foreground">
+        {markdownInline(line)}
+      </p>
+    )
+  })
+  flushList()
+  return nodes
+}
+
+function markdownInline(text: string): ReactNode[] {
+  return text.split(/(\*\*[^*]+\*\*|`[^`]+`|\[[^\]]+\]\([^)]+\))/g).map((part, index) => {
+    if (!part) {
+      return null
+    }
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return <strong key={index} className="font-semibold text-foreground">{part.slice(2, -2)}</strong>
+    }
+    if (part.startsWith("`") && part.endsWith("`")) {
+      return <code key={index} className="rounded-[3px] bg-muted px-1 py-0.5 font-mono text-xs text-foreground">{part.slice(1, -1)}</code>
+    }
+    const link = /^\[([^\]]+)\]\(([^)]+)\)$/.exec(part)
+    if (link && /^https?:\/\//i.test(link[2])) {
+      return (
+        <a key={index} href={link[2]} target="_blank" rel="noreferrer" className="text-primary underline-offset-4 hover:underline">
+          {link[1]}
+        </a>
+      )
+    }
+    return part
+  })
+}
+
 export function DocumentHistorySheet({
   title,
   versionsByType,
   onSelect,
+  onActivate,
   loading,
+  activatingRunId,
+  onOpenChange,
 }: {
   title: string
   versionsByType: Partial<Record<DocumentType, DocumentVersion[]>>
   onSelect: (documentType: DocumentType, versionId: string) => void
+  onActivate?: (documentType: DocumentType, version: DocumentVersion) => void
   loading?: boolean
+  activatingRunId?: string | null
+  onOpenChange?: (open: boolean) => void
 }) {
   const groups = Object.entries(versionsByType) as Array<[DocumentType, DocumentVersion[]]>
   return (
-    <Sheet>
+    <Sheet onOpenChange={onOpenChange}>
       <SheetTrigger asChild>
         <Button variant="outline">
           <HistoryIcon data-icon="inline-start" />
@@ -223,30 +417,61 @@ export function DocumentHistorySheet({
                   </h3>
                   {versions.length > 0 ? (
                     versions.map((version) => (
-                      <button
+                      <div
                         key={version.version_id}
-                        type="button"
                         className="flex flex-col gap-2 rounded-[4px] border bg-white/70 p-3 text-left transition-colors hover:bg-accent"
-                        disabled={loading}
-                        onClick={() => onSelect(documentType, version.version_id)}
                       >
-                        <span className="text-sm font-medium">{version.document_id}</span>
-                        {version.summary ? (
-                          <span className="text-xs leading-5 text-muted-foreground">
-                            {version.summary}
+                        <button
+                          type="button"
+                          className="flex min-w-0 flex-col gap-2 text-left"
+                          disabled={loading}
+                          onClick={() => onSelect(documentType, version.version_id)}
+                        >
+                          <span className="max-w-full break-all text-sm font-medium">
+                            {version.document_id}
                           </span>
-                        ) : null}
-                        <span className="text-xs text-muted-foreground">
-                          生成：{formatDateTime(version.generated_at)}
-                        </span>
-                        <span className="font-mono text-xs text-muted-foreground">
-                          {version.version_id}
-                        </span>
-                        <StatusBadge
-                          status={version.version_status === "current" ? "normal" : "historical"}
-                          label={version.version_status === "current" ? "现行" : "历史"}
-                        />
-                      </button>
+                          {version.summary ? (
+                            <span className="max-w-full break-words text-xs leading-5 text-muted-foreground">
+                              {version.summary}
+                            </span>
+                          ) : null}
+                          <span className="text-xs text-muted-foreground">
+                            生成：{formatDateTime(version.generated_at)}
+                          </span>
+                          <span className="max-w-full break-all font-mono text-xs text-muted-foreground">
+                            {version.version_id}
+                          </span>
+                          <span className="text-xs leading-5 text-muted-foreground">
+                            原因：{documentReasonLabel(version.reason_label)}
+                            {version.reason_text ? ` · ${version.reason_text}` : ""}
+                          </span>
+                          {version.updated_by_label ? (
+                            <span className="text-xs text-muted-foreground">
+                              来源：{version.updated_by_label}
+                            </span>
+                          ) : null}
+                        </button>
+                        <div className="flex items-center justify-between gap-2">
+                          <StatusBadge
+                            status={version.version_status === "current" ? "normal" : "historical"}
+                            label={version.version_status === "current" ? "现行" : "历史"}
+                          />
+                          {version.version_status !== "current" && onActivate ? (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              disabled={loading || activatingRunId === version.document_run_id}
+                              onClick={() => onActivate(documentType, version)}
+                            >
+                              <RefreshCwIcon data-icon="inline-start" />
+                              {activatingRunId === version.document_run_id
+                                ? "切换中"
+                                : "切换为现行文档"}
+                            </Button>
+                          ) : null}
+                        </div>
+                      </div>
                     ))
                   ) : (
                     <p className="text-sm text-muted-foreground">暂无历史版本</p>
@@ -261,4 +486,15 @@ export function DocumentHistorySheet({
       </SheetContent>
     </Sheet>
   )
+}
+
+function documentReasonLabel(reason?: DocumentVersion["reason_label"]) {
+  const labels: Record<NonNullable<DocumentVersion["reason_label"]>, string> = {
+    workflow_generated: "工作流生成",
+    agent_refreshed: "Agent 刷新",
+    manual_activated: "人工激活",
+    monitoring_policy_reviewed: "监测策略复核",
+    unknown: "原因未记录",
+  }
+  return reason ? labels[reason] : labels.unknown
 }

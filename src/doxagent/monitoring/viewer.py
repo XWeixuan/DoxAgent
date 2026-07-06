@@ -243,8 +243,8 @@ def build_remote_monitoring_command(settings: DoxAgentSettings, args: list[str])
     quoted_args = " ".join(shlex.quote(part) for part in args)
     return (
         f"cd {quoted_path} && "
-        "if docker compose ps --services --status running 2>/dev/null | grep -qx debug-viewer; then "
-        f"docker compose exec -T debug-viewer python -m doxagent.monitoring.cli {quoted_args}; "
+        "if docker compose ps --services --status running 2>/dev/null | grep -qx runtime-scheduler; then "
+        f"docker compose exec -T runtime-scheduler python -m doxagent.monitoring.cli {quoted_args}; "
         "elif command -v uv >/dev/null 2>&1; then "
         f"uv run python -m doxagent.monitoring.cli {quoted_args}; "
         "else "

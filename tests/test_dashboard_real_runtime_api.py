@@ -89,7 +89,12 @@ def test_dashboard_real_runtime_overview_graph_nodes_and_sse() -> None:
     node_payload = node.json()["data"]
     assert node_payload["node"]["node_id"] == "w2"
     assert node_payload["node"]["today_count"] == 3
-    assert node_payload["page"] == {"limit": 1, "next_cursor": "cur_1", "has_more": True}
+    assert node_payload["page"] == {
+        "limit": 1,
+        "next_cursor": "cur_1",
+        "has_more": True,
+        "total_count": 3,
+    }
     assert node_payload["recent_records"][0]["execution_id"] == "pre_nvda_001"
     assert "Direct Trade Candidate" in node_payload["recent_records"][0]["output_summary"]
 
@@ -118,7 +123,12 @@ def test_dashboard_real_runtime_execution_list_filters_pagination_and_detail() -
         "pre_nvda_001",
         "pre_nvda_002",
     ]
-    assert page_payload["page"] == {"limit": 2, "next_cursor": "cur_2", "has_more": True}
+    assert page_payload["page"] == {
+        "limit": 2,
+        "next_cursor": "cur_2",
+        "has_more": True,
+        "total_count": 3,
+    }
 
     filtered = client.get(
         "/api/dashboard/v1/tickers/NVDA/runtime/executions"

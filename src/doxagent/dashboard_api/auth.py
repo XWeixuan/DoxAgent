@@ -2,9 +2,13 @@
 
 from __future__ import annotations
 
+import hashlib
 import os
+import time
+from collections.abc import Callable
 from dataclasses import dataclass
 from http import HTTPStatus
+from threading import RLock
 from typing import Protocol, cast
 
 import httpx
@@ -15,6 +19,13 @@ from doxagent.dashboard_api.mock_router import DashboardMockError, require_mock_
 
 REAL_DASHBOARD_AUTH_MODES = {"supabase", "real", "required"}
 MOCK_DASHBOARD_AUTH_MODES = {"", "open", "off", "mock-open", "mock-required", "mock-forbidden"}
+SUPABASE_AUTH_CACHE_TTL_SECONDS = 15 * 60
+
+
+@dataclass(frozen=True)
+class _CachedDashboardPrincipal:
+    principal: DashboardPrincipal
+    expires_at: float
 
 
 @dataclass(frozen=True)
@@ -59,6 +70,10 @@ class DashboardPrincipal:
             "is_dev": self.is_dev,
             "auth_mode": self.auth_mode,
         }
+
+
+_SUPABASE_AUTH_CACHE: dict[str, _CachedDashboardPrincipal] = {}
+_SUPABASE_AUTH_CACHE_LOCK = RLock()
 
 
 class DashboardAuthVerifier(Protocol):
@@ -135,7 +150,12 @@ async def require_dashboard_auth(request: Request) -> DashboardPrincipal:
 
 
 class SupabaseDashboardAuthVerifier:
-    def __init__(self, settings: DashboardAuthSettings) -> None:
+    def __init__(
+        self,
+        settings: DashboardAuthSettings,
+        *,
+        client_factory: Callable[[], httpx.AsyncClient] | None = None,
+    ) -> None:
         if not settings.supabase_url or not settings.supabase_publishable_key:
             raise DashboardMockError(
                 code="UNAUTHORIZED",
@@ -156,9 +176,15 @@ class SupabaseDashboardAuthVerifier:
         self.settings = settings
         self.supabase_url = settings.supabase_url.rstrip("/")
         self.supabase_publishable_key = settings.supabase_publishable_key
+        self._client_factory = client_factory or (lambda: httpx.AsyncClient(timeout=8.0))
 
     async def authenticate(self, token: str) -> DashboardPrincipal:
-        async with httpx.AsyncClient(timeout=8.0) as client:
+        cache_key = self._cache_key(token)
+        cached = _get_cached_principal(cache_key)
+        if cached is not None:
+            return cached
+
+        async with self._client_factory() as client:
             user = await self._fetch_user(client, token)
             user_id = _text(user.get("id"))
             if not user_id:
@@ -173,13 +199,25 @@ class SupabaseDashboardAuthVerifier:
                 status_code=HTTPStatus.FORBIDDEN,
                 retryable=False,
             )
-        return DashboardPrincipal(
+        principal = DashboardPrincipal(
             user_id=user_id,
             email=_text(user.get("email")) or None,
             tier=tier,
             timezone=_text(profile.get("timezone")) or None,
             auth_mode=self.settings.auth_mode,
         )
+        _store_cached_principal(cache_key, principal)
+        return principal
+
+    def _cache_key(self, token: str) -> str:
+        scope = "\0".join(
+            [
+                self.supabase_url,
+                self.settings.user_profiles_table,
+                self.settings.dev_tier_value,
+            ]
+        )
+        return hashlib.sha256(f"{scope}\0{token}".encode("utf-8")).hexdigest()
 
     async def _fetch_user(self, client: httpx.AsyncClient, token: str) -> JsonObject:
         response = await client.get(
@@ -260,6 +298,32 @@ def _unauthorized(message: str) -> DashboardMockError:
         status_code=HTTPStatus.UNAUTHORIZED,
         retryable=False,
     )
+
+
+def _get_cached_principal(cache_key: str) -> DashboardPrincipal | None:
+    now = time.monotonic()
+    with _SUPABASE_AUTH_CACHE_LOCK:
+        cached = _SUPABASE_AUTH_CACHE.get(cache_key)
+        if cached is None:
+            return None
+        if cached.expires_at <= now:
+            _SUPABASE_AUTH_CACHE.pop(cache_key, None)
+            return None
+        return cached.principal
+
+
+def _store_cached_principal(cache_key: str, principal: DashboardPrincipal) -> None:
+    expires_at = time.monotonic() + SUPABASE_AUTH_CACHE_TTL_SECONDS
+    with _SUPABASE_AUTH_CACHE_LOCK:
+        _SUPABASE_AUTH_CACHE[cache_key] = _CachedDashboardPrincipal(
+            principal=principal,
+            expires_at=expires_at,
+        )
+
+
+def clear_dashboard_auth_cache() -> None:
+    with _SUPABASE_AUTH_CACHE_LOCK:
+        _SUPABASE_AUTH_CACHE.clear()
 
 
 def _first_env(*names: str) -> str | None:

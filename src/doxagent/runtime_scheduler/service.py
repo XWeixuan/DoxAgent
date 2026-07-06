@@ -6,6 +6,7 @@ from collections.abc import Iterable
 from datetime import UTC, datetime, time
 from zoneinfo import ZoneInfo
 
+from doxagent.blackboard.errors import RunNotFoundError
 from doxagent.monitoring.schema import (
     EventStreamItem,
     MonitoringParameters,
@@ -30,9 +31,9 @@ from doxagent.runtime_scheduler.schema import (
     DocumentSetStatus,
     EventProcessingStatus,
     MarketSessionPhase,
-    MonitorMode,
     MonitoringBindingStatus,
     MonitoringRunStatus,
+    MonitorMode,
     RefreshRequestSource,
     RuntimeAuditEvent,
     RuntimeHealth,
@@ -66,6 +67,23 @@ class UnsupportedMonitorMode(ValueError):
     def __init__(self, monitor_mode: str) -> None:
         super().__init__(monitor_mode)
         self.monitor_mode = monitor_mode
+
+
+class DocumentRunActivationError(ValueError):
+    def __init__(self, message: str, *, details: dict[str, object] | None = None) -> None:
+        super().__init__(message)
+        self.message = message
+        self.details = details or {}
+
+
+class DocumentRunNotFound(DocumentRunActivationError):
+    def __init__(self, ticker: str, document_run_id: str) -> None:
+        super().__init__(
+            "Document run was not found.",
+            details={"ticker": ticker, "document_run_id": document_run_id},
+        )
+        self.ticker = ticker
+        self.document_run_id = document_run_id
 
 
 class UnifiedRuntimeSchedulerService:
@@ -248,7 +266,10 @@ class UnifiedRuntimeSchedulerService:
             updated_at=current_time,
             completed_step_ids={"document1", "document2", "document3"},
         )
-        state = state.model_copy(update={"metadata": metadata, "updated_at": current_time}, deep=True)
+        state = state.model_copy(
+            update={"metadata": metadata, "updated_at": current_time},
+            deep=True,
+        )
         self.repository.upsert_state(state)
         applied_bindings = self._apply_monitoring_config(normalized, bundle)
         if bundle.monitoring_config is not None and not applied_bindings:
@@ -277,7 +298,10 @@ class UnifiedRuntimeSchedulerService:
             updated_at=current_time,
             completed_step_ids={"document1", "document2", "document3", "message_bus"},
         )
-        state = state.model_copy(update={"metadata": metadata, "updated_at": current_time}, deep=True)
+        state = state.model_copy(
+            update={"metadata": metadata, "updated_at": current_time},
+            deep=True,
+        )
         self.repository.upsert_state(state)
         metadata = _startup_progress_metadata(
             state.metadata,
@@ -359,6 +383,103 @@ class UnifiedRuntimeSchedulerService:
                 "previous_monitor_mode": previous_mode.value,
                 "monitor_mode": resolved_mode.value,
                 "paper_trading_replays_historical_pending_events": False,
+            },
+        )
+        return self.detail(normalized, now=current_time)
+
+    def activate_document_run(
+        self,
+        ticker: str,
+        document_run_id: str,
+        *,
+        reason: str | None = None,
+        now: datetime | None = None,
+    ) -> TickerRunDetail:
+        normalized = _ticker(ticker)
+        resolved_run_id = document_run_id.strip()
+        if not resolved_run_id:
+            raise DocumentRunActivationError(
+                "document_run_id is required.",
+                details={"ticker": normalized},
+            )
+        current_time = _utc(now)
+        bundle_loader = getattr(self.document_provider, "by_run_id", None)
+        if bundle_loader is None:
+            raise DocumentRunActivationError(
+                "The configured document provider cannot load a document set by run id.",
+                details={"ticker": normalized, "document_run_id": resolved_run_id},
+            )
+        try:
+            bundle = bundle_loader(normalized, resolved_run_id, now=current_time)
+        except RunNotFoundError as exc:
+            raise DocumentRunNotFound(normalized, resolved_run_id) from exc
+        if bundle.status.blackboard_run_id != resolved_run_id:
+            raise DocumentRunActivationError(
+                "Document run does not belong to the requested ticker.",
+                details={"ticker": normalized, "document_run_id": resolved_run_id},
+            )
+        if not bundle.status.usable:
+            raise DocumentRunActivationError(
+                "Document set is not usable for Dashboard runtime activation.",
+                details={
+                    "ticker": normalized,
+                    "document_run_id": resolved_run_id,
+                    "missing_document_types": [
+                        item.value for item in bundle.status.missing_document_types
+                    ],
+                    "stale": bundle.status.stale,
+                    "components": [
+                        component.model_dump(mode="json")
+                        for component in bundle.status.components
+                    ],
+                },
+            )
+        state = self._state_or_default(normalized, now=current_time)
+        bindings = self._apply_monitoring_config(normalized, bundle)
+        metadata = dict(state.metadata)
+        metadata["document_activation"] = {
+            "activated_at": current_time.isoformat(),
+            "activated_by": "dashboard_user",
+            "reason": reason or "Dashboard manual document activation.",
+            "previous_document_run_id": state.document_run_id,
+            "document_run_id": resolved_run_id,
+            "binding_count": len(bindings),
+        }
+        metadata = _startup_progress_metadata(
+            metadata,
+            status="completed",
+            active_step_id=None,
+            updated_at=current_time,
+            completed_step_ids={
+                "document1",
+                "document2",
+                "document3",
+                "message_bus",
+                "runtime",
+            },
+            visible=False,
+        )
+        updated = state.model_copy(
+            update={
+                "document_run_id": resolved_run_id,
+                "document_status": bundle.status,
+                "last_monitoring_config_version": _config_version(bundle),
+                "last_error": None,
+                "updated_at": current_time,
+                "metadata": metadata,
+            },
+            deep=True,
+        )
+        self.repository.upsert_state(updated)
+        self._audit(
+            normalized,
+            "document_run_manual_activated",
+            "Dashboard user manually activated a historical document set.",
+            payload={
+                "document_run_id": resolved_run_id,
+                "previous_document_run_id": state.document_run_id,
+                "reason": reason,
+                "binding_count": len(bindings),
             },
         )
         return self.detail(normalized, now=current_time)
@@ -882,7 +1003,11 @@ class UnifiedRuntimeSchedulerService:
                 state.ticker,
                 "weekly_document_update_completed",
                 "Weekly document update completed; scheduler switched to new usable version.",
-                payload={"binding_count": len(bindings)},
+                payload={
+                    "binding_count": len(bindings),
+                    "document_run_id": bundle.status.blackboard_run_id,
+                    "document_status": bundle.status.model_dump(mode="json"),
+                },
             )
             return state.model_copy(
                 update={

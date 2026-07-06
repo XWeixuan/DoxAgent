@@ -4,16 +4,6 @@ DoxAgent is a message-side equity research agent system. The first development
 phase builds only the project baseline and the scaffolding needed for the later
 Blackboard initialization workflow.
 
-启动测试用blackboard初始化结果展示的命令：
-.\scripts\debug-viewer.cmd 8765
-If 8765 is busy, open the URL printed by the launcher.
-Remote tunnel only; do not keep this running while testing the local viewer on 8765:
-ssh -N -L 8765:127.0.0.1:8765 doxagent-hk
-.\scripts\debug-viewer.cmd
-网页：
-http://127.0.0.1:8765
-http://127.0.0.1:8765/langsmith-renderer.html
----
 监测管线
 .\scripts\monitoring-viewer.cmd 8766
 http://127.0.0.1:8766
@@ -29,11 +19,11 @@ npm run dev
 http://localhost:5173/
 
 前后端build：
-ssh doxagent-hk 'cd /root/doxagent && docker compose build dashboard'
-ssh doxagent-hk 'cd /root/doxagent && docker compose up -d --force-recreate dashboard'
-ssh doxagent-hk 'cd /root/doxagent && docker compose restart dashboard'
-ssh doxagent-hk 'cd /root/doxagent && docker compose stop dashboard'
-ssh doxagent-hk 'cd /root/doxagent && docker compose logs -f dashboard'
+ssh doxagent-hk 'cd /root/doxagent && docker compose build dashboard runtime-scheduler'
+ssh doxagent-hk 'cd /root/doxagent && docker compose up -d --force-recreate dashboard runtime-scheduler && docker compose stop monitoring-poller || true'
+ssh doxagent-hk 'cd /root/doxagent && docker compose restart dashboard runtime-scheduler'
+ssh doxagent-hk 'cd /root/doxagent && docker compose stop dashboard runtime-scheduler'
+ssh doxagent-hk 'cd /root/doxagent && docker compose logs -f dashboard runtime-scheduler'
 
 
 
@@ -267,41 +257,11 @@ $env:DOXAGENT_DATABASE_URL = "postgresql://..."
 Use URL encoding for special characters in database passwords. Tests do not
 connect to Supabase unless a future explicit integration-test flag is provided.
 
-## Local Debug Viewer And LangSmith Rendering
+## Local Dashboard
 
-The local debug viewer serves read-only review pages for persisted Blackboard
-runs and a LangSmith custom output renderer:
-
-```powershell
-.\scripts\debug-viewer.cmd 8765
-```
-
-Open `http://127.0.0.1:8765` to inspect Brief State documents and agent metrics.
-If port `8765` is already occupied, the launcher automatically uses the next
-free port and prints the URL to open.
-The script defaults to `DOXAGENT_STORAGE_MODE=postgres` and repo-local `.tmp-uv`
-cache/temp directories. If PowerShell script execution is enabled, the equivalent
-entrypoint is:
-
-```powershell
-.\scripts\debug-viewer.ps1 -Port 8765
-```
-
-Keep that local process running while viewing LangSmith. In LangSmith, configure
-Custom Output Rendering on the `DoxAgent` tracing project with:
-
-```text
-http://127.0.0.1:8765/langsmith-renderer.html
-```
-
-If the renderer does not appear, open the renderer URL directly in the same
-browser first. Chrome may also require allowing local network access for
-`https://smith.langchain.com`; Safari and Brave can block plain HTTP localhost
-iframes, in which case expose the local viewer through an HTTPS tunnel and use
-that tunnel URL in LangSmith.
-
-The renderer only formats LangSmith's posted `outputs` and `metadata.inputs`
-for display. The original raw JSON panels remain available in LangSmith.
+Debug Viewer has been removed. Use the dashboard API and frontend for normal
+document/status inspection; one-off eval exports can be produced with
+`uv run python eval\export_brief_state.py <run_id>` when needed.
 
 ## Post-MVP 3.3 Skills
 

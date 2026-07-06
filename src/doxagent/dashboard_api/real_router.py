@@ -14,6 +14,11 @@ from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import StreamingResponse
 
 from doxagent.dashboard_api.auth import DashboardPrincipal, require_dashboard_auth
+from doxagent.dashboard_api.backtest import (
+    BacktestRunNotCancellable,
+    BacktestRunNotFound,
+    UnsupportedBacktestPeriod,
+)
 from doxagent.dashboard_api.mock_fixtures import JsonObject, utc_now_iso
 from doxagent.dashboard_api.mock_router import (
     DASHBOARD_API_PREFIX,
@@ -24,15 +29,20 @@ from doxagent.dashboard_api.real_service import (
     DocumentVersionNotFound,
     InvalidAuditParams,
     InvalidMessageBusPatch,
+    MessageBusMessageNotFound,
     RealDashboardOverviewService,
     RuntimeExecutionNotFound,
-    TickerNotFound,
     TickerAlreadyRunning,
+    TickerNotFound,
     UnsupportedDocumentType,
     UnsupportedHistoryDelete,
     UnsupportedMessageSource,
     UnsupportedMonitorMode,
     UnsupportedRuntimeNode,
+)
+from doxagent.runtime_scheduler.service import (
+    DocumentRunActivationError,
+    DocumentRunNotFound,
 )
 
 
@@ -89,6 +99,100 @@ def create_real_router(service: RealDashboardOverviewService | None = None) -> A
     @router.get("/tickers/{ticker}")
     async def get_ticker(request: Request, ticker: str) -> JsonObject:
         data = await run_in_threadpool(resolved.get_ticker, ticker)
+        return _ok(request, data)
+
+    @router.post("/backtests")
+    async def start_backtest(
+        request: Request,
+        payload: JsonObject | None = OPTIONAL_JSON_BODY,
+    ) -> JsonObject:
+        data = payload or {}
+        period = data.get("period", data.get("period_days"))
+        if period is None:
+            raise DashboardMockError(
+                code="INVALID_PARAMS",
+                message="period 不能为空。",
+                status_code=HTTPStatus.UNPROCESSABLE_ENTITY,
+                retryable=False,
+                details={"field": "period", "supported_periods": ["7d", "15d", "30d"]},
+            )
+        try:
+            result = await run_in_threadpool(
+                resolved.start_backtest,
+                _required_text(data, "ticker"),
+                period=period if isinstance(period, int) else str(period),
+                force_initialize=bool(data.get("force_initialize", False)),
+                replay_interval_ms=_optional_int(data.get("replay_interval_ms")),
+            )
+        except UnsupportedBacktestPeriod as exc:
+            raise DashboardMockError(
+                code="INVALID_PARAMS",
+                message="Unsupported backtest period.",
+                status_code=HTTPStatus.UNPROCESSABLE_ENTITY,
+                retryable=False,
+                details={"period": exc.period, "supported_periods": ["7d", "15d", "30d"]},
+            ) from exc
+        except ValueError as exc:
+            raise DashboardMockError(
+                code="INVALID_PARAMS",
+                message=str(exc),
+                status_code=HTTPStatus.UNPROCESSABLE_ENTITY,
+                retryable=False,
+                details={},
+            ) from exc
+        return _ok(request, result)
+
+    @router.get("/backtests")
+    async def list_backtests(
+        request: Request,
+        status: str | None = None,
+        ticker: str | None = None,
+        limit: int | None = None,
+        cursor: str | None = None,
+    ) -> JsonObject:
+        data = await run_in_threadpool(
+            resolved.list_backtests,
+            status=status,
+            ticker=ticker,
+            limit=limit,
+            cursor=cursor,
+        )
+        return _ok(request, data)
+
+    @router.get("/backtests/{run_id}")
+    async def get_backtest(request: Request, run_id: str) -> JsonObject:
+        try:
+            data = await run_in_threadpool(resolved.get_backtest, run_id)
+        except BacktestRunNotFound as exc:
+            raise DashboardMockError(
+                code="NOT_FOUND",
+                message="Backtest run was not found.",
+                status_code=HTTPStatus.NOT_FOUND,
+                retryable=False,
+                details={"run_id": exc.run_id},
+            ) from exc
+        return _ok(request, data)
+
+    @router.post("/backtests/{run_id}/cancel")
+    async def cancel_backtest(request: Request, run_id: str) -> JsonObject:
+        try:
+            data = await run_in_threadpool(resolved.cancel_backtest, run_id)
+        except BacktestRunNotFound as exc:
+            raise DashboardMockError(
+                code="NOT_FOUND",
+                message="Backtest run was not found.",
+                status_code=HTTPStatus.NOT_FOUND,
+                retryable=False,
+                details={"run_id": exc.run_id},
+            ) from exc
+        except BacktestRunNotCancellable as exc:
+            raise DashboardMockError(
+                code="CONFLICT",
+                message="Backtest run is already terminal.",
+                status_code=HTTPStatus.CONFLICT,
+                retryable=False,
+                details={"run_id": exc.run_id, "status": exc.status},
+            ) from exc
         return _ok(request, data)
 
     @router.post("/tickers")
@@ -225,6 +329,51 @@ def create_real_router(service: RealDashboardOverviewService | None = None) -> A
             raise _unsupported_document_type(exc) from exc
         return _ok(request, result)
 
+    @router.post("/tickers/{ticker}/documents/activate")
+    async def activate_document_set(
+        request: Request,
+        ticker: str,
+        payload: JsonObject,
+    ) -> JsonObject:
+        document_run_id = _optional_text(payload.get("document_run_id"))
+        if document_run_id is None:
+            raise DashboardMockError(
+                code="INVALID_PARAMS",
+                message="document_run_id is required.",
+                status_code=HTTPStatus.UNPROCESSABLE_ENTITY,
+                retryable=False,
+                details={"field": "document_run_id"},
+            )
+        try:
+            result = await run_in_threadpool(
+                resolved.activate_document_set,
+                ticker,
+                document_run_id=document_run_id,
+                reason=_optional_text(payload.get("reason")),
+            )
+        except DocumentRunNotFound as exc:
+            raise DashboardMockError(
+                code="NOT_FOUND",
+                message="Document run was not found.",
+                status_code=HTTPStatus.NOT_FOUND,
+                retryable=False,
+                details=exc.details,
+            ) from exc
+        except DocumentRunActivationError as exc:
+            raise DashboardMockError(
+                code="INVALID_PARAMS",
+                message=exc.message,
+                status_code=HTTPStatus.UNPROCESSABLE_ENTITY,
+                retryable=False,
+                details=exc.details,
+            ) from exc
+        return _ok(request, result)
+
+    @router.get("/tickers/{ticker}/documents/revision")
+    async def document_revision(request: Request, ticker: str) -> JsonObject:
+        result = await run_in_threadpool(resolved.document_revision, ticker)
+        return _ok(request, result)
+
     @router.get("/tickers/{ticker}/documents/{document_type}/versions")
     async def document_versions(
         request: Request,
@@ -341,6 +490,7 @@ def create_real_router(service: RealDashboardOverviewService | None = None) -> A
         request: Request,
         ticker: str,
         source_id: str | None = None,
+        source_type: str | None = None,
         processing_status: str | None = None,
         q: str | None = None,
         sort: str | None = None,
@@ -351,12 +501,35 @@ def create_real_router(service: RealDashboardOverviewService | None = None) -> A
             resolved.message_bus_messages,
             ticker,
             source_id=source_id,
+            source_type=source_type,
             processing_status=processing_status,
             q=q,
             sort=sort,
             limit=limit,
             cursor=cursor,
         )
+        return _ok(request, data)
+
+    @router.get("/tickers/{ticker}/message-bus/messages/{message_id}")
+    async def message_bus_message_detail(
+        request: Request,
+        ticker: str,
+        message_id: str,
+    ) -> JsonObject:
+        try:
+            data = await run_in_threadpool(
+                resolved.message_bus_message_detail,
+                ticker,
+                message_id,
+            )
+        except MessageBusMessageNotFound as exc:
+            raise DashboardMockError(
+                code="NOT_FOUND",
+                message="Message Bus message was not found.",
+                status_code=HTTPStatus.NOT_FOUND,
+                retryable=False,
+                details={"ticker": exc.ticker, "message_id": exc.message_id},
+            ) from exc
         return _ok(request, data)
 
     @router.get("/tickers/{ticker}/message-bus/config")
@@ -632,6 +805,27 @@ def _optional_text(value: object) -> str | None:
     if isinstance(value, str) and value.strip():
         return value.strip()
     return None
+
+
+def _optional_int(value: object) -> int | None:
+    if value is None or value == "":
+        return None
+    try:
+        if isinstance(value, bool):
+            raise TypeError
+        if isinstance(value, int):
+            return value
+        if isinstance(value, str):
+            return int(value)
+        raise TypeError
+    except (TypeError, ValueError) as exc:
+        raise DashboardMockError(
+            code="INVALID_PARAMS",
+            message="Expected integer value.",
+            status_code=HTTPStatus.UNPROCESSABLE_ENTITY,
+            retryable=False,
+            details={"value": str(value)},
+        ) from exc
 
 
 def _unsupported_document_type(exc: UnsupportedDocumentType) -> DashboardMockError:

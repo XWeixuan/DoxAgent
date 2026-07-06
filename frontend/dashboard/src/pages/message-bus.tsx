@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import type { FormEvent } from "react"
+import type { CSSProperties, FormEvent } from "react"
 import { useParams } from "react-router-dom"
 import {
   ChevronDownIcon,
@@ -73,6 +73,11 @@ import {
 } from "@/components/dashboard/shared"
 
 const messageLimit = 10
+const messageTypeOptions = [
+  { value: "all", label: "全部类型" },
+  { value: "social", label: "社媒消息" },
+  { value: "media", label: "机构媒体消息" },
+]
 const parameterSchemaBySource: Record<
   string,
   Array<{ key: string; label: string; max: number; placeholder: string }>
@@ -116,6 +121,7 @@ const parameterSchemaBySource: Record<
 export function MessageBusPage() {
   const ticker = useParams().ticker?.toUpperCase() ?? "MU"
   const [view, setView] = useState<"stream" | "config">("stream")
+  const [messageTypeFilter, setMessageTypeFilter] = useState("all")
   const [sourceFilter, setSourceFilter] = useState("all")
   const [statusFilter, setStatusFilter] = useState("all")
   const [query, setQuery] = useState("")
@@ -130,12 +136,13 @@ export function MessageBusPage() {
     () =>
       dashboardApi.messages(ticker, {
         limit: messageLimit,
+        source_type: messageTypeFilter === "all" ? undefined : messageTypeFilter,
         source_id: sourceFilter === "all" ? undefined : sourceFilter,
         processing_status: statusFilter === "all" ? undefined : statusFilter,
         q: appliedQuery || undefined,
         sort: "-collected_at",
       }),
-    [appliedQuery, sourceFilter, statusFilter, ticker]
+    [appliedQuery, messageTypeFilter, sourceFilter, statusFilter, ticker]
   )
 
   const overview = useDashboardQuery(overviewLoader, { intervalMs: 8000 })
@@ -145,6 +152,7 @@ export function MessageBusPage() {
   const reloadMessages = messages.reload
 
   useEffect(() => {
+    setMessageTypeFilter("all")
     setSourceFilter("all")
     setStatusFilter("all")
     setQuery("")
@@ -219,6 +227,7 @@ export function MessageBusPage() {
       const next = await dashboardApi.messages(ticker, {
         limit: messageLimit,
         cursor: messagePage.page.next_cursor,
+        source_type: messageTypeFilter === "all" ? undefined : messageTypeFilter,
         source_id: sourceFilter === "all" ? undefined : sourceFilter,
         processing_status: statusFilter === "all" ? undefined : statusFilter,
         q: appliedQuery || undefined,
@@ -352,6 +361,13 @@ export function MessageBusPage() {
             actions={
               <form className="message-stream-toolbar" onSubmit={search}>
                 <FilterSelect
+                  value={messageTypeFilter}
+                  placeholder="消息类型"
+                  options={messageTypeOptions}
+                  onChange={setMessageTypeFilter}
+                  className="sm:w-36"
+                />
+                <FilterSelect
                   value={sourceFilter}
                   placeholder="来源"
                   options={sourceOptions}
@@ -400,7 +416,7 @@ export function MessageBusPage() {
               ) : messagePage && messagePage.items.length > 0 ? (
                 <div className="flex flex-col gap-3">
                   {messagePage.items.map((message) => (
-                    <MessageCard key={message.message_id} message={message} />
+                    <MessageCard key={message.message_id} ticker={ticker} message={message} />
                   ))}
                   <LoadMoreButton
                     hasMore={messagePage.page.has_more}
@@ -417,6 +433,7 @@ export function MessageBusPage() {
           <MessageBusSidePanel
             sources={config.data?.sources ?? []}
             loading={config.isLoading}
+            configReloadedAt={config.lastUpdatedAt}
           />
         </div>
       ) : (
@@ -447,9 +464,11 @@ export function MessageBusPage() {
 function MessageBusSidePanel({
   sources,
   loading,
+  configReloadedAt,
 }: {
   sources: MessageSourceConfig[]
   loading: boolean
+  configReloadedAt: Date | null
 }) {
   return (
     <aside className="flex flex-col gap-4">
@@ -459,7 +478,11 @@ function MessageBusSidePanel({
         ) : sources.length > 0 ? (
           <div className="source-health-list">
             {sources.map((source) => (
-              <SourceHealthRow key={source.source_id} source={source} />
+              <SourceHealthRow
+                key={source.source_id}
+                source={source}
+                configReloadedAt={configReloadedAt}
+              />
             ))}
           </div>
         ) : (
@@ -470,13 +493,28 @@ function MessageBusSidePanel({
   )
 }
 
-function SourceHealthRow({ source }: { source: MessageSourceConfig }) {
+function SourceHealthRow({
+  source,
+  configReloadedAt,
+}: {
+  source: MessageSourceConfig
+  configReloadedAt: Date | null
+}) {
   const status = sourceConfigStatus(source)
   const tone = sourceStatusTone(status)
   const newCount = source.poll_state.last_poll_new_message_count ?? 0
+  const ringSyncKey = sourceHealthRingSyncKey(source, configReloadedAt)
+  const ringStyle = {
+    "--source-health-duration": `${sourceHealthRingDuration(source)}s`,
+  } as CSSProperties
   return (
     <div className="source-health-row">
-      <div className={cn("source-health-ring", `source-health-${tone}`)} aria-hidden="true" />
+      <div
+        key={ringSyncKey}
+        className={cn("source-health-ring", `source-health-${tone}`)}
+        style={ringStyle}
+        aria-hidden="true"
+      />
       <div className="min-w-0">
         <div className="flex items-center gap-1.5">
           <span className={cn("source-health-dot", `source-health-${tone}`)} />
@@ -505,6 +543,35 @@ function SourceHealthRow({ source }: { source: MessageSourceConfig }) {
       ) : null}
     </div>
   )
+}
+
+function sourceHealthRingSyncKey(
+  source: MessageSourceConfig,
+  configReloadedAt: Date | null
+) {
+  const pollState = source.poll_state
+  const hasPollAnchor = Boolean(
+    pollState.last_success_at ||
+      pollState.last_error_message ||
+      pollState.last_latency_ms != null
+  )
+  return [
+    source.source_id,
+    pollState.status,
+    pollState.last_success_at ?? "",
+    pollState.last_error_message ?? "",
+    pollState.last_poll_new_message_count ?? "",
+    pollState.last_latency_ms ?? "",
+    hasPollAnchor ? "" : configReloadedAt?.getTime() ?? "",
+  ].join("|")
+}
+
+function sourceHealthRingDuration(source: MessageSourceConfig) {
+  const seconds = Number(source.poll_interval_seconds)
+  if (!Number.isFinite(seconds) || seconds <= 0) {
+    return 60
+  }
+  return Math.max(1, Math.min(Math.round(seconds), 3600))
 }
 
 function sourceStatusTone(status: string | null | undefined) {
@@ -708,9 +775,38 @@ function splitParameterInput(value: string) {
   return items
 }
 
-function MessageCard({ message }: { message: MessageItem }) {
+function MessageCard({ ticker, message }: { ticker: string; message: MessageItem }) {
   const [open, setOpen] = useState(false)
-  const toggleOpen = () => setOpen((value) => !value)
+  const [detail, setDetail] = useState<MessageItem | null>(message.body ? message : null)
+  const [loadingDetail, setLoadingDetail] = useState(false)
+  const [detailError, setDetailError] = useState<string | null>(null)
+  const currentMessage = detail ?? message
+  const loadDetail = useCallback(async () => {
+    if (detail || loadingDetail) {
+      return
+    }
+    setLoadingDetail(true)
+    setDetailError(null)
+    try {
+      setDetail(await dashboardApi.message(ticker, message.message_id))
+    } catch (error) {
+      setDetailError(error instanceof Error ? error.message : String(error))
+    } finally {
+      setLoadingDetail(false)
+    }
+  }, [detail, loadingDetail, message.message_id, ticker])
+  const toggleOpen = () => {
+    setOpen((value) => {
+      const next = !value
+      if (next && !currentMessage.body) {
+        void loadDetail()
+      }
+      return next
+    })
+  }
+  const isSocialMessage = currentMessage.source_type === "social"
+  const socialText =
+    currentMessage.body || currentMessage.summary || currentMessage.title || "暂无数据"
   return (
     <Card
       role="button"
@@ -728,22 +824,24 @@ function MessageCard({ message }: { message: MessageItem }) {
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
             <div className="mb-2 flex flex-wrap items-center gap-2">
-              <SourceBadge sourceId={message.source_id} label={message.source_label} />
+              <SourceBadge sourceId={currentMessage.source_id} label={currentMessage.source_label} />
               <StatusBadge
-                status={message.processing_status}
-                label={processingStatusLabel(message.processing_status)}
+                status={currentMessage.processing_status}
+                label={processingStatusLabel(currentMessage.processing_status)}
               />
             </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <CardTitle className="text-xl font-medium">{message.title}</CardTitle>
-            </div>
+            {!isSocialMessage ? (
+              <div className="flex flex-wrap items-center gap-2">
+                <CardTitle className="text-xl font-medium">{currentMessage.title}</CardTitle>
+              </div>
+            ) : null}
           </div>
           <div className="flex shrink-0 flex-col items-end gap-2">
             <div className="flex items-start gap-3">
               <CardDescription className="mt-1 flex items-center gap-2 text-right text-xs leading-5">
-                <span>抓取：{formatDateTime(message.collected_at)}</span>
+                <span>抓取：{formatDateTime(currentMessage.collected_at)}</span>
                 <span className="h-3 w-px bg-border" aria-hidden="true" />
-                <span>发布：{formatDateTime(message.published_at)}</span>
+                <span>发布：{formatDateTime(currentMessage.published_at)}</span>
             </CardDescription>
               <Button
                 variant="ghost"
@@ -757,14 +855,14 @@ function MessageCard({ message }: { message: MessageItem }) {
                 <span className="sr-only">{open ? "收起" : "展开"}</span>
               </Button>
             </div>
-            {message.url ? (
+            {currentMessage.url ? (
               <Button
                 variant="outline"
                 size="sm"
                 asChild
                 onClick={(event) => event.stopPropagation()}
               >
-                <a href={message.url} target="_blank" rel="noreferrer">
+                <a href={currentMessage.url} target="_blank" rel="noreferrer">
                   <ExternalLinkIcon data-icon="inline-start" />
                   原始信源
                 </a>
@@ -774,14 +872,26 @@ function MessageCard({ message }: { message: MessageItem }) {
         </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        <p className="border-t pt-3 text-sm font-normal leading-6 text-foreground">
-          {message.summary || "暂无摘要"}
-        </p>
-        {open ? (
-          <p className="border-t pt-3 font-mono text-xs leading-6 text-muted-foreground">
-            {message.body || "暂无数据"}
+        {isSocialMessage ? (
+          <p className="whitespace-pre-wrap break-words text-base font-normal leading-7 text-foreground">
+            {socialText}
           </p>
-        ) : null}
+        ) : (
+          <>
+            <p className="border-t pt-3 text-sm font-normal leading-6 text-foreground">
+              {currentMessage.summary || "暂无摘要"}
+            </p>
+            {open ? (
+              <p className="border-t pt-3 font-mono text-xs leading-6 text-muted-foreground">
+                {loadingDetail
+                  ? "正在加载..."
+                  : detailError
+                    ? detailError
+                    : currentMessage.body || "暂无数据"}
+              </p>
+            ) : null}
+          </>
+        )}
       </CardContent>
     </Card>
   )

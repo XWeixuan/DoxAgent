@@ -25,7 +25,6 @@ if str(REPO_ROOT) not in sys.path:
 
 from doxagent.blackboard import BlackboardService
 from doxagent.blackboard.state import BlackboardRun
-from doxagent.debug_viewer.query import DebugRunQueryService
 from doxagent.models import (
     CommitLogEntry,
     Delegation,
@@ -151,7 +150,9 @@ def main() -> int:
     )
 
     result = workflow.resume(seed.checkpoint, stop_after=stop_after)
-    run_summary = DebugRunQueryService(settings).run_summary(result.checkpoint.run_id)
+    run_summary = _run_summary_from_blackboard(
+        workflow.blackboard.get_run(result.checkpoint.run_id)
+    )
     export_path = None
     if args.export_brief_state:
         from eval.export_brief_state import export_brief_state
@@ -526,6 +527,39 @@ def _summary_document_counts(summary: JsonDict) -> JsonDict:
     if not isinstance(counts, dict):
         return {}
     return counts
+
+
+def _run_summary_from_blackboard(run: BlackboardRun) -> JsonDict:
+    documents = run.belief_state.documents
+    return {
+        "belief_state": {
+            "document_counts": {
+                str(getattr(document_type, "value", document_type)): (
+                    len(bucket) if isinstance(bucket, dict) else 0
+                )
+                for document_type, bucket in documents.items()
+            },
+            "monitoring_config_applied_versions": _monitoring_config_versions(documents),
+        }
+    }
+
+
+def _monitoring_config_versions(documents: dict[Any, Any]) -> list[str]:
+    bucket = documents.get(DocumentType.MONITORING_CONFIG) or documents.get(
+        DocumentType.MONITORING_CONFIG.value
+    )
+    if not isinstance(bucket, dict):
+        return []
+    versions: list[str] = []
+    for raw in bucket.values():
+        document = raw.get("document") if isinstance(raw, dict) else None
+        candidate = document if isinstance(document, dict) else raw
+        if not isinstance(candidate, dict):
+            continue
+        value = candidate.get("applied_config_version")
+        if isinstance(value, str) and value.strip():
+            versions.append(value.strip())
+    return sorted(set(versions))
 
 
 def _safe_nested(data: JsonDict, first: str, second: str) -> Any:

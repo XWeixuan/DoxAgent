@@ -71,6 +71,29 @@ class WorkflowDocumentProvider:
         self.workflow.run(normalized)
         return self.latest(normalized, now=now)
 
+    def by_run_id(
+        self,
+        ticker: str,
+        document_run_id: str,
+        *,
+        now: datetime | None = None,
+    ) -> DocumentBundle:
+        normalized = ticker.strip().upper()
+        checked_at = now or datetime.now(UTC)
+        run = self.blackboard.get_run(document_run_id)
+        if run.ticker != normalized:
+            return DocumentBundle(
+                status=DocumentSetStatus(
+                    ticker=normalized,
+                    blackboard_run_id=None,
+                    checked_at=checked_at,
+                    usable=False,
+                    missing_document_types=[],
+                    components=[],
+                )
+            )
+        return _bundle_from_run(run, checked_at=checked_at, max_age=self.max_age)
+
 
 def _missing_bundle(ticker: str, *, checked_at: datetime) -> DocumentBundle:
     required = [
@@ -260,4 +283,3 @@ def _latest_document(documents: list[DocumentBase]) -> DocumentBase:
 def _document_time(document: DocumentBase) -> datetime:
     value = document.updated_at or document.created_at
     return value.astimezone(UTC)
-

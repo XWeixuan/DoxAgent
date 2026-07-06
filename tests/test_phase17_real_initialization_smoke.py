@@ -4,9 +4,10 @@ import os
 
 import pytest
 
-from doxagent.debug_viewer.query import DebugRunQueryService
+from doxagent.models import DocumentType
 from doxagent.settings import DoxAgentSettings
 from doxagent.workflows import BlackboardInitializationWorkflow, GlobalResearchInputs, WorkflowNode
+from doxagent.workflows.storage import default_workflow_storage
 
 pytestmark = pytest.mark.real_api
 
@@ -40,16 +41,15 @@ def _persistent_smoke_settings() -> DoxAgentSettings:
     return settings
 
 
-def _assert_run_visible_to_debug_viewer(
+def _assert_run_visible_to_storage(
     settings: DoxAgentSettings,
     run_id: str,
-) -> dict[str, object]:
-    service = DebugRunQueryService(settings)
-    runs = service.list_runs(ticker=_EVAL_TICKER, limit=25)
-    assert any(item.get("run_id") == run_id for item in runs)
-    brief_state = service.brief_state(run_id)
-    assert brief_state["run"]["run_id"] == run_id
-    return brief_state
+):
+    storage = default_workflow_storage(settings)
+    run = storage.blackboard.get_run(run_id)
+    assert run.run_id == run_id
+    assert run.ticker == _EVAL_TICKER
+    return run
 
 
 def test_real_initialization_build_global_research_smoke() -> None:
@@ -64,8 +64,8 @@ def test_real_initialization_build_global_research_smoke() -> None:
 
     assert result.error is None
     assert WorkflowNode.BUILD_GLOBAL_RESEARCH in result.checkpoint.completed_nodes
-    brief_state = _assert_run_visible_to_debug_viewer(settings, result.checkpoint.run_id)
-    assert brief_state["global_research"]["status"] == "present"
+    run = _assert_run_visible_to_storage(settings, result.checkpoint.run_id)
+    assert run.belief_state.documents.get(DocumentType.GLOBAL_RESEARCH)
 
 
 def test_real_initialization_expectation_units_smoke() -> None:
@@ -81,7 +81,5 @@ def test_real_initialization_expectation_units_smoke() -> None:
     assert result.error is None
     assert WorkflowNode.GENERATE_EXPECTATION_DETAILS in result.checkpoint.completed_nodes
     assert len(result.checkpoint.pending_patches) in {1, 2, 3}
-    brief_state = _assert_run_visible_to_debug_viewer(settings, result.checkpoint.run_id)
-    latest_checkpoint = brief_state["latest_checkpoint"]
-    assert isinstance(latest_checkpoint, dict)
-    assert latest_checkpoint["checkpoint"]["pending_patches"]
+    _assert_run_visible_to_storage(settings, result.checkpoint.run_id)
+    assert result.checkpoint.pending_patches

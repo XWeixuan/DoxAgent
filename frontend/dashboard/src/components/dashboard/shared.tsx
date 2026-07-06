@@ -319,9 +319,9 @@ export function KeyValueList({
   return (
     <div className={cn("grid gap-2 text-sm", className)}>
       {items.map((item) => (
-        <div key={item.label} className="flex justify-between gap-3 border-b py-2 last:border-b-0">
-          <span className="text-muted-foreground">{item.label}</span>
-          <span className="min-w-0 text-right">{item.value}</span>
+        <div key={item.label} className="flex min-w-0 justify-between gap-3 border-b py-2 last:border-b-0">
+          <span className="shrink-0 text-muted-foreground">{item.label}</span>
+          <span className="min-w-0 break-words text-right">{item.value}</span>
         </div>
       ))}
     </div>

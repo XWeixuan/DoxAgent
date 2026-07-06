@@ -13,8 +13,24 @@ export type RunStatus =
 export type StatusColor = "green" | "blue" | "yellow" | "red" | "gray"
 export type DocumentType = "document1" | "document2" | "document3"
 export type VersionStatus = "current" | "historical"
+export type DocumentReasonLabel =
+  | "workflow_generated"
+  | "agent_refreshed"
+  | "manual_activated"
+  | "monitoring_policy_reviewed"
+  | "unknown"
 export type ActionType = "DTC" | "EBA" | "NULL" | "Irrelevant"
 export type MonitorMode = "message_monitoring" | "paper_trading" | "broker_trading"
+export type BacktestPeriod = "7d" | "15d" | "30d"
+export type BacktestRunStatus =
+  | "queued"
+  | "initializing_documents"
+  | "collecting_dataset"
+  | "replaying"
+  | "draining_runtime"
+  | "completed"
+  | "failed"
+  | "cancelled"
 export type Period = "today" | "7d" | "30d"
 export type AuditStatus =
   | "not_started"
@@ -49,6 +65,7 @@ export interface PageInfo {
   limit: number
   next_cursor: string | null
   has_more: boolean
+  total_count?: number
 }
 
 export interface PageResult<T> {
@@ -73,6 +90,54 @@ export interface TickerCard {
   last_error: string | null
 }
 
+export interface BacktestProgress {
+  total_events: number
+  collected_events: number
+  injected_events: number
+  processed_events: number
+  failed_events: number
+  percent: number
+}
+
+export interface BacktestDatasetInfo {
+  dataset_id: string | null
+  source_type_counts: Record<string, number>
+  diagnostics: string[]
+  source: JsonObject
+}
+
+export interface BacktestRuntimeInfo {
+  runtime_sqlite_path: string | null
+  execution_count: number
+  trade_intent_count: number
+  known_event_patch_count: number
+  exception_count: number
+}
+
+export interface BacktestRun {
+  run_id: string
+  ticker: string
+  period: BacktestPeriod | string
+  period_days: number
+  status: BacktestRunStatus | string
+  status_label: string
+  health: HealthStatus
+  force_initialize: boolean
+  replay_interval_ms: number
+  progress: BacktestProgress
+  dataset: BacktestDatasetInfo
+  runtime: BacktestRuntimeInfo
+  current_event_id: string | null
+  current_event_time: string | null
+  last_error: string | null
+  cancel_requested: boolean
+  can_cancel: boolean
+  created_at: string
+  started_at: string | null
+  completed_at: string | null
+  updated_at: string
+}
+
 export interface StartupProgress {
   status: "running" | "blocked" | "completed" | string
   status_label: string
@@ -94,6 +159,8 @@ export interface OverviewState {
   generated_at: string
   system: {
     container_status: HealthStatus
+    current_session_phase?: string
+    current_session_label?: "运行时段" | "盘后休眠" | string
     dashboard_api_status: HealthStatus
     message_bus_status: HealthStatus
     status_color: StatusColor
@@ -165,18 +232,32 @@ export interface DashboardDocument {
 
 export interface DocumentsCurrent {
   ticker: string
-  document_run_id: string
+  document_run_id: string | null
   documents: DashboardDocument[]
+}
+
+export interface DocumentRevision {
+  ticker: string
+  document_run_id: string | null
+  document1_updated_at: string | null
+  document2_updated_at: string | null
+  document3_updated_at: string | null
+  known_events_updated_at: string | null
+  policies_updated_at: string | null
 }
 
 export interface DocumentVersion {
   version_id: string
+  document_run_id: string
   document_id: string
   document_type: DocumentType
   generated_at: string | null
   updated_at: string | null
   version_status: VersionStatus
   summary: string | null
+  reason_label?: DocumentReasonLabel
+  reason_text?: string | null
+  updated_by_label?: string | null
 }
 
 export interface DocumentVersionDetail {

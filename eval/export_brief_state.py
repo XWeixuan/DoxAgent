@@ -8,35 +8,45 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from doxagent.debug_viewer.query import (
-    DebugRunQueryService,
-    build_agent_metrics_view,
-    build_brief_state_view,
-)
 from doxagent.settings import DoxAgentSettings
+from doxagent.workflows.storage import default_workflow_storage
 
 JsonDict = dict[str, Any]
 
 
 def export_brief_state(run_id: str, output_path: Path | None = None) -> Path:
     settings = DoxAgentSettings()
-    service = DebugRunQueryService(settings)
-    bundle = service.load_bundle(run_id)
-    storage_status = service.status()
+    storage = default_workflow_storage(settings)
+    run = storage.blackboard.get_run(run_id)
+    try:
+        latest_checkpoint = storage.checkpoint_repository.get_latest(run_id)
+    except Exception:
+        latest_checkpoint = None
 
-    brief_state = build_brief_state_view(bundle, storage_status=storage_status)
-    agent_metrics = build_agent_metrics_view(bundle, storage_status=storage_status)
+    storage_status = {"storage_mode": settings.storage_mode}
+    stable_documents = _to_json(run.belief_state.documents)
+    checkpoints = [_to_json(latest_checkpoint)] if latest_checkpoint is not None else []
+    working_memory = [_to_json(item) for item in run.working_memory]
+    commit_log = [_to_json(item) for item in run.commit_log]
+    objections = [_to_json(item) for item in run.objections]
+    delegations = [_to_json(item) for item in run.delegations]
+    evidence_refs: list[JsonDict] = []
+
+    brief_state = _brief_state_from_storage(
+        run=_to_json(run),
+        stable_documents=stable_documents,
+        latest_checkpoint=_to_json(latest_checkpoint) if latest_checkpoint is not None else {},
+    )
+    agent_metrics = {"agents": []}
     hard_validators = _dict(brief_state.get("hard_validators"))
-    stable_documents = _dict(bundle.belief_state.get("documents"))
-    checkpoints = list(bundle.checkpoints)
 
     export = {
         "export_metadata": {
             "schema_version": 1,
             "exported_at": datetime.now(UTC).isoformat(),
             "run_id": run_id,
-            "ticker": bundle.run.get("ticker"),
-            "source": "doxagent.debug_viewer.query.DebugRunQueryService",
+            "ticker": run.ticker,
+            "source": "eval.export_brief_state.local_storage",
             "intended_use": "blackboard_eval_contract",
         },
         "storage": storage_status,
@@ -45,21 +55,21 @@ def export_brief_state(run_id: str, output_path: Path | None = None) -> Path:
         "hard_validators": hard_validators,
         "stable_documents": stable_documents,
         "workflow_checkpoints": checkpoints,
-        "working_memory": list(bundle.working_memory),
-        "commit_log": list(bundle.commit_log),
-        "objections": list(bundle.objections),
-        "delegations": list(bundle.delegations),
-        "evidence_refs": list(bundle.evidence_refs),
+        "working_memory": working_memory,
+        "commit_log": commit_log,
+        "objections": objections,
+        "delegations": delegations,
+        "evidence_refs": evidence_refs,
         "eval_index": _eval_index(
             brief_state=brief_state,
             hard_validators=hard_validators,
             stable_documents=stable_documents,
             checkpoints=checkpoints,
-            working_memory=list(bundle.working_memory),
-            commit_log=list(bundle.commit_log),
-            objections=list(bundle.objections),
-            delegations=list(bundle.delegations),
-            evidence_refs=list(bundle.evidence_refs),
+            working_memory=working_memory,
+            commit_log=commit_log,
+            objections=objections,
+            delegations=delegations,
+            evidence_refs=evidence_refs,
         ),
     }
 
@@ -70,6 +80,75 @@ def export_brief_state(run_id: str, output_path: Path | None = None) -> Path:
         encoding="utf-8",
     )
     return resolved_output
+
+
+def _brief_state_from_storage(
+    *,
+    run: JsonDict,
+    stable_documents: JsonDict,
+    latest_checkpoint: JsonDict,
+) -> JsonDict:
+    global_research = _first_document(stable_documents, "global_research")
+    expectation_units = [
+        value.get("document") if isinstance(value.get("document"), dict) else value
+        for value in _dict(stable_documents.get("expectation_unit")).values()
+        if isinstance(value, dict)
+    ]
+    checkpoint_payload = _dict(latest_checkpoint)
+    return {
+        "run": {
+            "run_id": run.get("run_id"),
+            "ticker": run.get("ticker"),
+            "workflow_state": run.get("workflow_state"),
+            "created_at": run.get("created_at"),
+        },
+        "latest_checkpoint": {
+            "status": checkpoint_payload.get("status"),
+            "next_node": checkpoint_payload.get("next_node"),
+            "completed_nodes": checkpoint_payload.get("completed_nodes", []),
+            "checkpoint": checkpoint_payload,
+        },
+        "belief_state": {
+            "document_types": sorted(str(key) for key in stable_documents),
+        },
+        "stable_documents": stable_documents,
+        "global_research": {
+            "status": "present" if global_research else "missing",
+            "sections": _global_research_sections(global_research),
+        },
+        "expectation_units": expectation_units,
+        "hard_validators": {
+            "status": "not_run",
+            "summary": {
+                "validator_count": 0,
+                "failed_count": 0,
+                "warning_count": 0,
+                "finding_count": 0,
+            },
+            "validators": [],
+        },
+    }
+
+
+def _global_research_sections(document: JsonDict) -> list[JsonDict]:
+    sections: list[JsonDict] = []
+    for field in (
+        "fundamental_report",
+        "macro_report",
+        "industry_report",
+        "market_trace_report",
+        "market_narrative_report",
+    ):
+        section = _dict(document.get(field))
+        if section:
+            sections.append(
+                {
+                    "field": field,
+                    "summary": section.get("summary"),
+                    "text": section.get("text"),
+                }
+            )
+    return sections
 
 
 def _eval_index(
@@ -196,6 +275,23 @@ def _dict(value: Any) -> JsonDict:
 
 def _list(value: Any) -> list[Any]:
     return value if isinstance(value, list) else []
+
+
+def _to_json(value: Any) -> Any:
+    if value is None:
+        return None
+    if hasattr(value, "model_dump"):
+        return value.model_dump(mode="json")
+    if isinstance(value, dict):
+        return {
+            str(getattr(key, "value", key)): _to_json(item)
+            for key, item in value.items()
+        }
+    if isinstance(value, list):
+        return [_to_json(item) for item in value]
+    if hasattr(value, "value"):
+        return value.value
+    return value
 
 
 def _parse_args() -> argparse.Namespace:

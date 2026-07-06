@@ -69,7 +69,7 @@
 
 | 代码路径 | 行为 | 触发条件 | 风险 |
 | --- | --- | --- | --- |
-| `src/doxagent/workflows/storage.py::default_workflow_storage` | 当 `DOXAGENT_STORAGE_MODE=postgres` 时启用 `PostgresBlackboardRepository` 和 `PostgresWorkflowCheckpointRepository` | 真实 eval / real smoke / debug-viewer 持久化运行 | 所有 Blackboard 和 checkpoint 写入进入 Supabase |
+| `src/doxagent/workflows/storage.py::default_workflow_storage` | 当 `DOXAGENT_STORAGE_MODE=postgres` 时启用 `PostgresBlackboardRepository` 和 `PostgresWorkflowCheckpointRepository` | 真实 eval / real smoke / dashboard runtime 持久化运行 | 所有 Blackboard 和 checkpoint 写入进入 Supabase |
 
 ### 4.2 Blackboard 写入
 
@@ -132,13 +132,13 @@
 | `eval/run_document3_smoke.py` | 要求 `DOXAGENT_STORAGE_MODE=postgres` | 高 |
 | `tests/test_phase18_supabase_persistence_smoke.py` | Supabase persistence smoke | 中，高频运行时高 |
 
-这些脚本通常会在运行后立即调用 `DebugRunQueryService.brief_state()` 或 `export_brief_state()`，因此同时触发高 Egress 读取。
+这些脚本过去会在运行后立即调用 Debug Viewer full bundle 读取。当前 Debug Viewer 已移除，`export_brief_state()` 改为一次性 workflow storage exporter，仍应避免高频运行。
 
 ## 5. 当前读 Supabase 的主要代码路径与 Egress 风险
 
-### 5.1 Debug viewer API / 页面
+### 5.1 历史 Debug Viewer API / 页面
 
-代码路径：
+历史代码路径（当前模块已移除）：
 
 - `src/doxagent/debug_viewer/server.py`
 - `src/doxagent/debug_viewer/query.py`
@@ -150,16 +150,16 @@
 | `GET /api/runs/{run_id}/brief-state` | 选中 run 或 brief tab | `blackboard_runs`, `belief_state_snapshots`, `working_memory_entries`, `commit_log_entries`, `objections`, `delegations`, `workflow_checkpoints`, `evidence_refs` | full bundle 派生 view | 极高 | 改为按需 full；默认 summary |
 | `GET /api/runs/{run_id}/agent-metrics` | metrics tab | 同上，经 `load_bundle()` | full bundle 派生 metrics | 高 | metrics 应优先读取预计算摘要 |
 
-当前页面行为：
+历史页面行为：
 
 - 进入页面后 `loadRuns()` 会选最新 run。
 - 若默认 tab 是 brief，会立即请求 `/brief-state`。
 - 切换 metrics 会再次读取 full bundle。
 - 这意味着“只是打开 debug viewer 看最新状态”也可能拉完整 JSON。
 
-### 5.2 DebugRunQueryService 读取
+### 5.2 历史 Debug Viewer 读取风险
 
-代码路径：`src/doxagent/debug_viewer/query.py`
+历史代码路径：`src/doxagent/debug_viewer/query.py`，当前模块已移除。
 
 | 方法 | 读取内容 | Egress 风险 | 说明 |
 | --- | --- | --- | --- |
@@ -388,4 +388,3 @@ where wc.checkpoint_id = r.checkpoint_id
 4. Supabase 写失败时不会无限高频 retry；本地有结构化错误记录。
 5. 日志能回答每次大 payload 写入的表名、路径、大小、run_id。
 6. 新 Free Supabase 项目中 Supabase 仍能展示 run 状态、latest progress、错误摘要和最终结果摘要。
-

@@ -127,7 +127,12 @@ def test_dashboard_real_cost_audit_extracts_model_usage_details_without_pricing_
     assert detail_payload["items"][0]["model"] == "gpt-4.1"
     assert detail_payload["items"][0]["is_retry"] is True
     assert detail_payload["items"][0]["cost_usd"] == 0.012
-    assert detail_payload["page"] == {"limit": 1, "next_cursor": None, "has_more": False}
+    assert detail_payload["page"] == {
+        "limit": 1,
+        "next_cursor": None,
+        "has_more": False,
+        "total_count": 1,
+    }
 
     events = client.get(
         "/api/dashboard/v1/events"

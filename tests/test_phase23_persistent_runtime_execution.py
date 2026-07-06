@@ -1085,6 +1085,24 @@ def test_sqlite_runtime_repository_is_idempotent_for_trading_records(tmp_path: P
     assert w2_worker.calls == 1
 
 
+def test_sqlite_runtime_repository_supports_limited_newest_reads(tmp_path: Path) -> None:
+    repository = SQLitePersistentRuntimeRepository(tmp_path / "runtime-limited.sqlite3")
+    service = PersistentRuntimeExecutionService(
+        repository,
+        w1_worker=StaticW1(_w1()),
+        w2_worker=StaticW2(_w2()),
+    )
+
+    first = service.execute_message(_message(message_id="std_sqlite_limit_first"))
+    second = service.execute_message(_message(message_id="std_sqlite_limit_second"))
+
+    assert len(repository.list_executions(ticker="ASTS")) == 2
+    newest = repository.list_executions(ticker="ASTS", limit=1, newest_first=True)
+    assert [record.execution_id for record in newest] == [second.execution_id]
+    oldest = repository.list_executions(ticker="ASTS", limit=1)
+    assert [record.execution_id for record in oldest] == [first.execution_id]
+
+
 def test_duplicate_url_archives_without_retriggering_workers() -> None:
     repository = InMemoryPersistentRuntimeRepository()
     w1 = StaticW1(_w1())

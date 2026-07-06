@@ -145,6 +145,68 @@ def create_mock_router(store: MockDashboardStore | None = None) -> APIRouter:
             raise
         return _ok(request, result)
 
+    @router.post("/backtests")
+    async def start_backtest(
+        request: Request,
+        payload: JsonObject | None = OPTIONAL_JSON_BODY,
+    ) -> JsonObject:
+        data = payload or {}
+        try:
+            result = resolved_store.start_backtest(
+                _required_text(data, "ticker"),
+                period=_required_text(data, "period"),
+                force_initialize=bool(data.get("force_initialize", False)),
+            )
+        except ValueError as exc:
+            if str(exc) == "unsupported_backtest_period":
+                raise DashboardMockError(
+                    code="INVALID_PARAMS",
+                    message="Unsupported backtest period.",
+                    status_code=HTTPStatus.UNPROCESSABLE_ENTITY,
+                    retryable=False,
+                    details={"supported_periods": ["7d", "15d", "30d"]},
+                ) from exc
+            raise
+        return _ok(request, result)
+
+    @router.get("/backtests")
+    async def list_backtests(
+        request: Request,
+        status: str | None = None,
+        ticker: str | None = None,
+        limit: int | None = None,
+        cursor: str | None = None,
+    ) -> JsonObject:
+        return _ok(
+            request,
+            resolved_store.list_backtests(
+                status=status,
+                ticker=ticker,
+                limit=limit,
+                cursor=cursor,
+            ),
+        )
+
+    @router.get("/backtests/{run_id}")
+    async def get_backtest(request: Request, run_id: str) -> JsonObject:
+        return _ok(request, _required_payload(resolved_store.get_backtest(run_id)))
+
+    @router.post("/backtests/{run_id}/cancel")
+    async def cancel_backtest(request: Request, run_id: str) -> JsonObject:
+        try:
+            result = resolved_store.cancel_backtest(run_id)
+        except ValueError as exc:
+            if str(exc) == "terminal_backtest":
+                raise DashboardMockError(
+                    code="CONFLICT",
+                    message="Backtest run is already terminal.",
+                    status_code=HTTPStatus.CONFLICT,
+                    retryable=False,
+                    details={"run_id": run_id},
+                ) from exc
+            raise
+        return _ok(request, _required_payload(result))
+
     @router.get("/tickers/{ticker}")
     async def get_ticker(request: Request, ticker: str) -> JsonObject:
         return _ok(request, _required_payload(resolved_store.get_ticker(ticker), ticker=ticker))
@@ -297,6 +359,7 @@ def create_mock_router(store: MockDashboardStore | None = None) -> APIRouter:
         request: Request,
         ticker: str,
         source_id: str | None = None,
+        source_type: str | None = None,
         processing_status: str | None = None,
         q: str | None = None,
         from_: str | None = Query(default=None, alias="from"),
@@ -308,6 +371,7 @@ def create_mock_router(store: MockDashboardStore | None = None) -> APIRouter:
         payload = resolved_store.list_messages(
             ticker,
             source_id=source_id,
+            source_type=source_type,
             processing_status=processing_status,
             q=q,
             from_time=from_,
@@ -317,6 +381,15 @@ def create_mock_router(store: MockDashboardStore | None = None) -> APIRouter:
             sort=sort,
         )
         return _ok(request, _required_payload(payload, ticker=ticker))
+
+    @router.get("/tickers/{ticker}/message-bus/messages/{message_id}")
+    async def message_bus_message_detail(
+        request: Request,
+        ticker: str,
+        message_id: str,
+    ) -> JsonObject:
+        payload = resolved_store.get_message(ticker, message_id)
+        return _ok(request, _required_payload(payload, ticker=ticker, message_id=message_id))
 
     @router.get("/tickers/{ticker}/message-bus/config")
     async def message_bus_config(request: Request, ticker: str) -> JsonObject:

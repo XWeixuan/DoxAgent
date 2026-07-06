@@ -262,10 +262,35 @@ export function statusTone(status: string | null | undefined): StatusColor {
   if (["normal", "running", "completed", "succeeded", "audited", "available"].includes(status)) {
     return "green"
   }
-  if (["initializing", "calculating", "running_task", "processing", "connecting", "open"].includes(status)) {
+  if (
+    [
+      "initializing",
+      "calculating",
+      "running_task",
+      "processing",
+      "connecting",
+      "open",
+      "initializing_documents",
+      "collecting_dataset",
+      "replaying",
+      "draining_runtime",
+    ].includes(status)
+  ) {
     return "blue"
   }
-  if (["degraded", "paused", "partial", "retried", "pending", "pending_audit", "historical"].includes(status)) {
+  if (
+    [
+      "degraded",
+      "paused",
+      "partial",
+      "retried",
+      "pending",
+      "pending_audit",
+      "historical",
+      "queued",
+      "cancelled",
+    ].includes(status)
+  ) {
     return "yellow"
   }
   if (["blocked", "failed", "failed_with_exception", "error", "closed"].includes(status)) {
