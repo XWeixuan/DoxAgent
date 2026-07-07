@@ -7,6 +7,8 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 .tmp/
+.tmp*/
+.tmp-*.tgz
 .coverage
 htmlcov/
 
@@ -28,6 +30,7 @@ dist/
 # Read-only upstream projects used for architecture/capability reference only.
 # Keep local copies out of DoxAgent commits.
 references/external_agent_sources/
+src_upload_tmp/
 
 # IDE / OS
 .idea/

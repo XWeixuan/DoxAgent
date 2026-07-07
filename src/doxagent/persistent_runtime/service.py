@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import time
 from collections.abc import Callable
 from concurrent.futures import Future, ThreadPoolExecutor
@@ -47,6 +48,7 @@ from doxagent.persistent_runtime.schema import (
     runtime_duplicate_keys,
 )
 from doxagent.persistent_runtime.workers import (
+    LazyAgentRunnerA2Worker,
     LazyAgentRunnerO3Worker,
     LazyAgentRunnerW1Worker,
     LazyAgentRunnerW2Worker,
@@ -74,6 +76,13 @@ class _WorkerOutcome:
     result: object | None
     error: Exception | None
     trace: RuntimeNodeTrace
+
+
+@dataclass
+class _RetryOutcome:
+    result: object | None
+    error: Exception | None
+    attempts: int
 
 
 class W1Worker(Protocol):
@@ -115,9 +124,12 @@ class PersistentRuntimeExecutionService:
         o3_worker: O3Worker | None = None,
         o3_budget: O3RuntimeBudget | None = None,
         w1_w2_worker_timeout_seconds: float = 75.0,
+        worker_retry_attempts: int = 2,
     ) -> None:
         if w1_w2_worker_timeout_seconds <= 0:
             raise ValueError("w1_w2_worker_timeout_seconds must be > 0")
+        if worker_retry_attempts <= 0:
+            raise ValueError("worker_retry_attempts must be > 0")
         self.repository = repository
         self.route_engine = route_engine or RouteEngine()
         self.w1_worker = w1_worker
@@ -126,6 +138,7 @@ class PersistentRuntimeExecutionService:
         self.o3_worker = o3_worker
         self.o3_budget = o3_budget or O3RuntimeBudget()
         self.w1_w2_worker_timeout_seconds = w1_w2_worker_timeout_seconds
+        self.worker_retry_attempts = worker_retry_attempts
 
     @classmethod
     def from_settings(
@@ -138,7 +151,8 @@ class PersistentRuntimeExecutionService:
         a2_worker: A2Worker | None = None,
         o3_worker: O3Worker | None = None,
         o3_budget: O3RuntimeBudget | None = None,
-        w1_w2_worker_timeout_seconds: float = 75.0,
+        w1_w2_worker_timeout_seconds: float | None = None,
+        worker_retry_attempts: int | None = None,
     ) -> PersistentRuntimeExecutionService:
         resolved = settings or DoxAgentSettings()
         if resolved.persistent_runtime_storage_mode == "memory":
@@ -152,10 +166,19 @@ class PersistentRuntimeExecutionService:
             route_engine=route_engine,
             w1_worker=w1_worker or LazyAgentRunnerW1Worker(resolved),
             w2_worker=w2_worker or LazyAgentRunnerW2Worker(resolved),
-            a2_worker=a2_worker,
+            a2_worker=a2_worker or LazyAgentRunnerA2Worker(resolved),
             o3_worker=o3_worker or LazyAgentRunnerO3Worker(resolved),
             o3_budget=o3_budget,
-            w1_w2_worker_timeout_seconds=w1_w2_worker_timeout_seconds,
+            w1_w2_worker_timeout_seconds=(
+                w1_w2_worker_timeout_seconds
+                if w1_w2_worker_timeout_seconds is not None
+                else resolved.persistent_runtime_worker_timeout_seconds
+            ),
+            worker_retry_attempts=(
+                worker_retry_attempts
+                if worker_retry_attempts is not None
+                else resolved.persistent_runtime_worker_retry_attempts
+            ),
         )
 
     def execute_message(
@@ -511,6 +534,7 @@ class PersistentRuntimeExecutionService:
                     run_a2_for_item,
                     exception_ids,
                     node_traces,
+                    trace_observation=_worker_trace_observation(message, batch_context),
                 )
                 next_decision = (
                     self.route_engine.plan_a2_failure(
@@ -618,6 +642,11 @@ class PersistentRuntimeExecutionService:
                 pending_items[0].message,
                 batch_context,
                 self.o3_budget,
+            ),
+            trace_observation=_worker_trace_observation(
+                pending_items[0].message,
+                batch_context,
+                timeout_seconds=float(self.o3_budget.target_seconds),
             ),
         )
         if outcome.error is not None:
@@ -733,15 +762,27 @@ class PersistentRuntimeExecutionService:
         try:
             submitted_at = datetime.now(UTC)
             submitted = time.monotonic()
+            w1_observation = _worker_trace_observation(
+                message,
+                context,
+                timeout_seconds=timeout,
+            )
+            w2_observation = _worker_trace_observation(
+                message,
+                context,
+                timeout_seconds=timeout,
+            )
             w1_future = executor.submit(
                 self._run_worker_outcome,
                 "W1",
                 lambda: self._require_w1().classify(message, context),
+                trace_observation=w1_observation,
             )
             w2_future = executor.submit(
                 self._run_worker_outcome,
                 "W2",
                 lambda: self._require_w2().classify(message, context),
+                trace_observation=w2_observation,
             )
             w1 = self._resolve_worker_outcome(
                 message,
@@ -752,6 +793,7 @@ class PersistentRuntimeExecutionService:
                     timeout,
                     submitted_at=submitted_at,
                     submitted=submitted,
+                    trace_observation=w1_observation,
                 ),
                 exception_ids,
                 node_traces,
@@ -765,6 +807,7 @@ class PersistentRuntimeExecutionService:
                     timeout,
                     submitted_at=submitted_at,
                     submitted=submitted,
+                    trace_observation=w2_observation,
                 ),
                 exception_ids,
                 node_traces,
@@ -838,6 +881,7 @@ class PersistentRuntimeExecutionService:
             lambda: self._require_a2().verify(message, context),
             exception_ids,
             node_traces,
+            trace_observation=_worker_trace_observation(message, context),
         )
         if a2 is None:
             next_decision = self.route_engine.plan_a2_failure(
@@ -875,6 +919,11 @@ class PersistentRuntimeExecutionService:
         outcome = self._run_o3_worker_outcome(
             "O3",
             lambda: self._require_o3().judge(message, context, self.o3_budget),
+            trace_observation=_worker_trace_observation(
+                message,
+                context,
+                timeout_seconds=float(self.o3_budget.target_seconds),
+            ),
         )
         if outcome.error is not None:
             exception = self._save_exception(
@@ -1164,6 +1213,11 @@ class PersistentRuntimeExecutionService:
         outcome = self._run_o3_worker_outcome(
             "O3_KNOWN_EVENTS",
             lambda: self._require_o3().judge(message, update_context, self.o3_budget),
+            trace_observation=_worker_trace_observation(
+                message,
+                update_context,
+                timeout_seconds=float(self.o3_budget.target_seconds),
+            ),
         )
         if outcome.error is not None:
             exception = self._save_exception(
@@ -1206,43 +1260,51 @@ class PersistentRuntimeExecutionService:
             return True
         return False
 
-    def _run_with_retry(self, node: str, callback: Callable[[], T]) -> T:
+    def _run_with_retry(self, node: str, callback: Callable[[], T]) -> _RetryOutcome:
         last_error: Exception | None = None
-        for _attempt in range(2):
+        attempts = max(1, int(self.worker_retry_attempts))
+        for attempt in range(1, attempts + 1):
             try:
-                return callback()
+                return _RetryOutcome(result=callback(), error=None, attempts=attempt)
             except Exception as exc:
                 last_error = exc
         if last_error is None:
-            raise RuntimeError(f"{node} did not run.")
-        raise last_error
+            last_error = RuntimeError(f"{node} did not run.")
+        return _RetryOutcome(result=None, error=last_error, attempts=attempts)
 
-    def _run_worker_outcome(self, node: str, callback: Callable[[], T]) -> _WorkerOutcome:
+    def _run_worker_outcome(
+        self,
+        node: str,
+        callback: Callable[[], T],
+        *,
+        trace_observation: JsonObject | None = None,
+    ) -> _WorkerOutcome:
         started_at = datetime.now(UTC)
         started = time.monotonic()
-        try:
-            result = self._run_with_retry(node, callback)
-        except Exception as exc:
+        retry = self._run_with_retry(node, callback)
+        if retry.error is not None:
             return _WorkerOutcome(
                 result=None,
-                error=exc,
+                error=retry.error,
                 trace=RuntimeNodeTrace(
                     node=node,
                     status="failed",
                     duration_ms=_duration_ms(started),
-                    attempts=2,
+                    attempts=retry.attempts,
                     started_at=started_at,
+                    **_trace_observation_fields(trace_observation),
                 ),
             )
         return _WorkerOutcome(
-            result=result,
+            result=retry.result,
             error=None,
             trace=RuntimeNodeTrace(
                 node=node,
                 status="succeeded",
                 duration_ms=_duration_ms(started),
-                attempts=1,
+                attempts=retry.attempts,
                 started_at=started_at,
+                **_trace_observation_fields(trace_observation),
             ),
         )
 
@@ -1254,6 +1316,7 @@ class PersistentRuntimeExecutionService:
         *,
         submitted_at: datetime,
         submitted: float,
+        trace_observation: JsonObject | None = None,
     ) -> _WorkerOutcome:
         remaining = timeout_seconds - (time.monotonic() - submitted)
         try:
@@ -1271,17 +1334,24 @@ class PersistentRuntimeExecutionService:
                     duration_ms=_duration_ms(submitted),
                     attempts=1,
                     started_at=submitted_at,
+                    **_trace_observation_fields(trace_observation),
                 ),
             )
 
-    def _run_o3_worker_outcome(self, node: str, callback: Callable[[], T]) -> _WorkerOutcome:
+    def _run_o3_worker_outcome(
+        self,
+        node: str,
+        callback: Callable[[], T],
+        *,
+        trace_observation: JsonObject | None = None,
+    ) -> _WorkerOutcome:
         started_at = datetime.now(UTC)
         started = time.monotonic()
         executor = ThreadPoolExecutor(max_workers=1)
         future = executor.submit(self._run_with_retry, node, callback)
         try:
             try:
-                result = future.result(timeout=max(0.001, float(self.o3_budget.target_seconds)))
+                retry = future.result(timeout=max(0.001, float(self.o3_budget.target_seconds)))
             except FutureTimeoutError:
                 future.cancel()
                 return _WorkerOutcome(
@@ -1293,8 +1363,9 @@ class PersistentRuntimeExecutionService:
                         node=node,
                         status="failed",
                         duration_ms=_duration_ms(started),
-                        attempts=2,
+                        attempts=max(1, int(self.worker_retry_attempts)),
                         started_at=started_at,
+                        **_trace_observation_fields(trace_observation),
                     ),
                 )
             except Exception as exc:
@@ -1305,19 +1376,34 @@ class PersistentRuntimeExecutionService:
                         node=node,
                         status="failed",
                         duration_ms=_duration_ms(started),
-                        attempts=2,
+                        attempts=max(1, int(self.worker_retry_attempts)),
                         started_at=started_at,
+                        **_trace_observation_fields(trace_observation),
+                    ),
+                )
+            if retry.error is not None:
+                return _WorkerOutcome(
+                    result=None,
+                    error=retry.error,
+                    trace=RuntimeNodeTrace(
+                        node=node,
+                        status="failed",
+                        duration_ms=_duration_ms(started),
+                        attempts=retry.attempts,
+                        started_at=started_at,
+                        **_trace_observation_fields(trace_observation),
                     ),
                 )
             return _WorkerOutcome(
-                result=result,
+                result=retry.result,
                 error=None,
                 trace=RuntimeNodeTrace(
                     node=node,
                     status="succeeded",
                     duration_ms=_duration_ms(started),
-                    attempts=1,
+                    attempts=retry.attempts,
                     started_at=started_at,
+                    **_trace_observation_fields(trace_observation),
                 ),
             )
         finally:
@@ -1354,8 +1440,14 @@ class PersistentRuntimeExecutionService:
         callback: Callable[[], T],
         exception_ids: list[str],
         node_traces: list[RuntimeNodeTrace],
+        *,
+        trace_observation: JsonObject | None = None,
     ) -> T | None:
-        outcome = self._run_worker_outcome(node, callback)
+        outcome = self._run_worker_outcome(
+            node,
+            callback,
+            trace_observation=trace_observation,
+        )
         if outcome.error is None:
             node_traces.append(outcome.trace)
             return cast(T, outcome.result)
@@ -1594,6 +1686,55 @@ def _dt_json(value: datetime | None) -> str | None:
 
 def _duration_ms(started: float) -> int:
     return max(0, int((time.monotonic() - started) * 1000))
+
+
+def _worker_trace_observation(
+    message: RuntimeSourceMessage,
+    context: JsonObject,
+    *,
+    timeout_seconds: float | None = None,
+) -> JsonObject:
+    source_message_bytes = _json_size_bytes(message.model_dump(mode="json"))
+    runtime_context_bytes = _json_size_bytes(context)
+    return {
+        "timeout_budget_ms": (
+            max(1, int(timeout_seconds * 1000)) if timeout_seconds is not None else None
+        ),
+        "source_message_bytes": source_message_bytes,
+        "runtime_context_bytes": runtime_context_bytes,
+        "prompt_input_bytes": source_message_bytes + runtime_context_bytes,
+    }
+
+
+def _trace_observation_fields(observation: JsonObject | None) -> JsonObject:
+    if not observation:
+        return {}
+    return {
+        key: value
+        for key, value in observation.items()
+        if key
+        in {
+            "timeout_budget_ms",
+            "source_message_bytes",
+            "runtime_context_bytes",
+            "prompt_input_bytes",
+        }
+        and isinstance(value, int)
+    }
+
+
+def _json_size_bytes(value: object) -> int:
+    try:
+        text = json.dumps(
+            value,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+            default=str,
+        )
+    except TypeError:
+        text = str(value)
+    return len(text.encode("utf-8", errors="replace"))
 
 
 def _first_duplicate_key_match(

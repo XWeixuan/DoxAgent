@@ -185,6 +185,128 @@ def test_prompt_registry_distinguishes_prompt_internal_and_external_resources() 
     assert registry.get("agent.o1").model_validate_json(registry.get("agent.o1").model_dump_json())
 
 
+def test_document3_prompt_resources_load_and_replace_generic_agent_prompts() -> None:
+    registry = default_prompt_registry()
+    agent_registry = default_agent_registry()
+
+    known_events_skill = registry.get("known-events")
+    known_events_review = registry.get("known-events-review")
+    o1_document3_prompt = registry.get("agent.o1.document3_known_events")
+    o4_document3_prompt = registry.get("agent.o4.document3_monitoring_policy")
+
+    assert "`source`:" in known_events_skill.body
+    assert "complete `EvidenceRef` object" in known_events_skill.body
+    assert known_events_review.manual_only is True
+    assert known_events_review.workflow_nodes == []
+    assert o1_document3_prompt.replaces_prompt_blocks == ["agent.o1"]
+    assert o4_document3_prompt.replaces_prompt_blocks == ["agent.o4"]
+    assert "document-level `no_action_rationale`" in registry.get("monitoring-policy").body
+
+    o1_definition = agent_registry.get(AgentName.O1_EXPECTATION_OWNER)
+    o1_task = agent_task().model_copy(
+        update={
+            "agent_name": AgentName.O1_EXPECTATION_OWNER,
+            "task_type": TaskType.GENERATE_KNOWN_EVENTS,
+            "required_output_schema": "KnownEventsDocument",
+            "permissions": o1_definition.runtime.to_permissions(),
+            "run_metadata": agent_task().run_metadata.model_copy(
+                update={"workflow_node": "GenerateKnownEvents"}
+            ),
+        },
+        deep=True,
+    )
+    o1_injected = PromptInjector().inject(o1_task, o1_definition)
+    assert "agent.o1.document3_known_events" in o1_injected.prompt_bundle.prompt_block_ids
+    assert "agent.o1" not in o1_injected.prompt_bundle.prompt_block_ids
+    assert "known-events" in o1_injected.prompt_bundle.internal_task_skill_ids
+    assert "known-events-review" not in o1_injected.prompt_bundle.internal_task_skill_ids
+
+    o4_definition = agent_registry.get(AgentName.O4_MARKET_TRACE)
+    o4_task = agent_task().model_copy(
+        update={
+            "agent_name": AgentName.O4_MARKET_TRACE,
+            "task_type": TaskType.GENERATE_MONITORING_POLICY,
+            "required_output_schema": "MonitoringPolicyDocument",
+            "permissions": o4_definition.runtime.to_permissions(),
+            "run_metadata": agent_task().run_metadata.model_copy(
+                update={"workflow_node": "GenerateMonitoringPolicy"}
+            ),
+        },
+        deep=True,
+    )
+    o4_injected = PromptInjector().inject(o4_task, o4_definition)
+    assert "agent.o4.document3_monitoring_policy" in o4_injected.prompt_bundle.prompt_block_ids
+    assert "agent.o4" not in o4_injected.prompt_bundle.prompt_block_ids
+    assert "monitoring-policy" in o4_injected.prompt_bundle.internal_task_skill_ids
+    assert "ticker_price_tracking" not in o4_injected.prompt_bundle.internal_task_skill_ids
+
+
+def test_document3_review_skills_auto_inject_only_for_existing_review_nodes() -> None:
+    agent_registry = default_agent_registry()
+
+    c1_definition = agent_registry.get(AgentName.C1_FUNDAMENTAL_RESEARCH)
+    c1_task = agent_task().model_copy(
+        update={
+            "agent_name": AgentName.C1_FUNDAMENTAL_RESEARCH,
+            "task_type": TaskType.REVIEW_MONITORING_CONFIG,
+            "required_output_schema": "ExpectationFieldReviewResult",
+            "permissions": c1_definition.runtime.to_permissions(),
+            "run_metadata": agent_task().run_metadata.model_copy(
+                update={"workflow_node": "ReviewMonitoringConfig"}
+            ),
+        },
+        deep=True,
+    )
+    c1_injected = PromptInjector().inject(c1_task, c1_definition)
+    assert "monitoring-config-review" in c1_injected.prompt_bundle.internal_task_skill_ids
+
+    c3_definition = agent_registry.get(AgentName.C3_INDUSTRY_RESEARCH)
+    c3_task = c1_task.model_copy(
+        update={
+            "agent_name": AgentName.C3_INDUSTRY_RESEARCH,
+            "permissions": c3_definition.runtime.to_permissions(),
+        },
+        deep=True,
+    )
+    c3_injected = PromptInjector().inject(c3_task, c3_definition)
+    assert "monitoring-config-review" in c3_injected.prompt_bundle.internal_task_skill_ids
+
+    o2_definition = agent_registry.get(AgentName.O2_MONITORING_CONFIG)
+    o2_task = agent_task().model_copy(
+        update={
+            "agent_name": AgentName.O2_MONITORING_CONFIG,
+            "task_type": TaskType.REVIEW_MONITORING_POLICY,
+            "required_output_schema": "ExpectationFieldReviewResult",
+            "permissions": o2_definition.runtime.to_permissions(),
+            "run_metadata": agent_task().run_metadata.model_copy(
+                update={"workflow_node": "ReviewMonitoringPolicy"}
+            ),
+        },
+        deep=True,
+    )
+    o2_injected = PromptInjector().inject(o2_task, o2_definition)
+    assert "monitoring-policy-review" in o2_injected.prompt_bundle.internal_task_skill_ids
+
+    a1_definition = agent_registry.get(AgentName.A1_DOXATLAS_AUDIT)
+    future_known_events_review_task = agent_task().model_copy(
+        update={
+            "agent_name": AgentName.A1_DOXATLAS_AUDIT,
+            "task_type": TaskType.REVIEW_EXPECTATION_FIELD,
+            "required_output_schema": "DoxAtlasAuditResult",
+            "permissions": a1_definition.runtime.to_permissions(),
+            "run_metadata": agent_task().run_metadata.model_copy(
+                update={"workflow_node": "ReviewKnownEvents"}
+            ),
+        },
+        deep=True,
+    )
+    a1_injected = PromptInjector().inject(
+        future_known_events_review_task,
+        a1_definition,
+    )
+    assert "known-events-review" not in a1_injected.prompt_bundle.internal_task_skill_ids
+
+
 def test_c1_c3_task_text_moved_to_internal_task_skills() -> None:
     registry = default_prompt_registry()
 

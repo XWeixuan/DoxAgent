@@ -201,6 +201,23 @@ class AgentRunnerA2Worker:
         return A2Result.model_validate(_structured_payload(result.payload))
 
 
+class LazyAgentRunnerA2Worker:
+    """Create the production A2 AgentRunner only when A2 verification is reached."""
+
+    def __init__(self, settings: DoxAgentSettings | None = None) -> None:
+        self.settings = settings
+        self._delegate: AgentRunnerA2Worker | None = None
+
+    def verify(self, message: RuntimeSourceMessage, context: JsonObject) -> A2Result:
+        if self._delegate is None:
+            from doxagent.agents.runner import default_real_agent_runner
+
+            self._delegate = AgentRunnerA2Worker(
+                default_real_agent_runner(settings=self.settings)
+            )
+        return self._delegate.verify(message, context)
+
+
 class HeuristicW1Worker:
     """Deterministic fallback W1 for local dry-runs when no model runner is configured."""
 

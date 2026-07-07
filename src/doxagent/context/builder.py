@@ -73,6 +73,64 @@ class ContextBuilder:
         self.blackboard = blackboard
 
     def build(self, task: AgentTask, run_id: str) -> AgentContextSnapshot:
+        repository = self.blackboard.repository
+        header_loader = getattr(repository, "get_run_header", None)
+        if not callable(header_loader):
+            return self._legacy_build(task, run_id)
+        header = header_loader(run_id)
+        scopes = set(task.permissions.readable_context_scopes)
+        scoped_document_types = _scoped_workflow_node_document_types(task)
+        documents = self._lightweight_documents(
+            run_id,
+            header.ticker,
+            scopes,
+            document_types=scoped_document_types,
+        )
+        belief_state_summary = self._belief_state_summary(documents, scopes)
+        if _is_scoped_workflow_history_node(task):
+            working_memory_summary: list[WorkingMemorySummary] = []
+            unresolved_objections: list[ObjectionSummary] = []
+            blocking_delegations: list[BlockingDelegationSummary] = []
+            evidence_refs: list[EvidenceRef] = []
+        else:
+            working_memory_summary = self._working_memory_summaries(
+                run_id,
+                include="working_memory" in scopes or task.permissions.can_access_private_memory,
+            )
+            unresolved_objections = self._objection_summaries(
+                repository.list_unresolved_objections(run_id)
+            )
+            blocking_delegations = self._delegation_summaries(
+                repository.list_blocking_delegations(run_id)
+            )
+            evidence_refs = self._collect_evidence(
+                working_memory_summary,
+                unresolved_objections,
+            )
+        return AgentContextSnapshot(
+            run_id=run_id,
+            ticker=header.ticker,
+            agent_name=task.agent_name,
+            task_type=task.task_type,
+            workflow_state=header.workflow_state.value,
+            task_input=task.input_context,
+            readable_scopes=list(task.permissions.readable_context_scopes),
+            prompt_summaries=[
+                *task.prompt_bundle.prompt_blocks,
+                *task.prompt_bundle.internal_task_skills,
+                *task.prompt_bundle.external_skill_packages,
+            ]
+            if task.prompt_bundle is not None
+            else [],
+            skill_summaries=task.skill_bundle.skills if task.skill_bundle is not None else [],
+            belief_state_summary=belief_state_summary,
+            working_memory_summary=working_memory_summary,
+            evidence_refs=evidence_refs,
+            unresolved_objections=unresolved_objections,
+            blocking_delegations=blocking_delegations,
+        )
+
+    def _legacy_build(self, task: AgentTask, run_id: str) -> AgentContextSnapshot:
         run = self.blackboard.get_run(run_id)
         scopes = set(task.permissions.readable_context_scopes)
         scoped_document_types = _scoped_workflow_node_document_types(task)
@@ -158,7 +216,18 @@ class ContextBuilder:
 
     def build_document3_runtime_context(self, run_id: str) -> dict[str, Any]:
         """Build the compact Document 3 view used by runtime low-parameter LLMs."""
-        run = self.blackboard.get_run(run_id)
+        repository = self.blackboard.repository
+        header_loader = getattr(repository, "get_run_header", None)
+        document_loader = getattr(repository, "get_document_bundle_by_run_id", None)
+        if callable(header_loader) and callable(document_loader):
+            header = header_loader(run_id)
+            run = document_loader(
+                header.ticker,
+                run_id,
+                [DocumentType.KNOWN_EVENTS, DocumentType.MONITORING_POLICY],
+            )
+        else:
+            run = self.blackboard.get_run(run_id)
         known_events = self._latest_document(run.belief_state.documents, DocumentType.KNOWN_EVENTS)
         monitoring_policy = self._latest_document(
             run.belief_state.documents,
@@ -204,6 +273,99 @@ class ContextBuilder:
                 "per-rule source_condition fields."
             ),
         }
+
+    def _lightweight_documents(
+        self,
+        run_id: str,
+        ticker: str,
+        scopes: set[str],
+        *,
+        document_types: set[DocumentType] | None,
+    ) -> dict[DocumentType, dict[str, Any]]:
+        repository = self.blackboard.repository
+        document_loader = getattr(repository, "get_document_bundle_by_run_id", None)
+        key_loader = getattr(repository, "list_document_keys", None)
+        requested = document_types
+        if requested is None:
+            scoped_types = {
+                DocumentType(scope)
+                for scope in scopes
+                if scope in {item.value for item in DocumentType}
+            }
+            requested = scoped_types or None
+        if requested:
+            if callable(document_loader):
+                run = document_loader(
+                    ticker,
+                    run_id,
+                    sorted(requested, key=lambda item: item.value),
+                )
+                return run.belief_state.documents
+        if "belief_state" in scopes or "all" in scopes:
+            if callable(key_loader):
+                return {
+                    document_type: {document_id: {} for document_id in ids}
+                    for document_type, ids in key_loader(run_id).items()
+                }
+            return self.blackboard.get_run(run_id).belief_state.documents
+        return {}
+
+    def _working_memory_summaries(
+        self,
+        run_id: str,
+        *,
+        include: bool,
+    ) -> list[WorkingMemorySummary]:
+        if not include:
+            return []
+        loader = getattr(self.blackboard.repository, "list_working_memory_summaries", None)
+        if not callable(loader):
+            return []
+        return [
+            WorkingMemorySummary(
+                entry_id=entry.entry_id,
+                author_agent=entry.author_agent,
+                content_type=entry.content_type,
+                payload=_agent_visible_working_memory_payload(entry.payload)
+                if entry.payload
+                else {},
+                evidence_refs=entry.evidence_refs,
+            )
+            for entry in loader(run_id, include_payload=include)
+        ]
+
+    def _objection_summaries(self, objections: list[Any]) -> list[ObjectionSummary]:
+        return [
+            ObjectionSummary(
+                objection_id=objection.objection_id,
+                source_agent=objection.source_agent,
+                severity=objection.severity,
+                status=objection.status,
+                target_document_type=objection.target.document_type,
+                target_field_path=objection.target.field_path,
+                taxonomy=objection.taxonomy,
+                dedupe_hash=objection.dedupe_hash,
+                target_path=objection.target_path,
+                merged_objection_ids=list(objection.merged_objection_ids),
+                reason=objection.reason,
+                evidence_refs=objection.evidence_refs,
+            )
+            for objection in objections
+        ]
+
+    def _delegation_summaries(self, delegations: list[Any]) -> list[BlockingDelegationSummary]:
+        return [
+            BlockingDelegationSummary(
+                delegation_id=delegation.delegation_id,
+                requester_agent=delegation.requester_agent,
+                target_agent=delegation.target_agent,
+                status=delegation.status,
+                target_document_type=delegation.blocking_scope.document_type,
+                target_field_path=delegation.blocking_scope.field_path,
+                question=delegation.question,
+            )
+            for delegation in delegations
+        ]
 
     def _latest_document(
         self,

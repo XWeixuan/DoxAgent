@@ -1,6 +1,7 @@
 # ruff: noqa: F403,F405
 """Behavior-preserving initialization workflow orchestrator."""
 
+from doxagent.blackboard.state import BlackboardRun
 from doxagent.monitoring.schema import parameter_schema_for_source
 from doxagent.workflows.document1.builder import Document1BuilderMixin
 from doxagent.workflows.document1.context import Document1ContextMixin
@@ -465,7 +466,10 @@ class BlackboardInitializationWorkflow(
         checkpoint: WorkflowCheckpoint,
     ) -> dict[str, Any] | None:
         try:
-            run = self.blackboard.get_run(checkpoint.run_id)
+            run = self._workflow_document_bucket_run(
+                checkpoint,
+                [DocumentType.MONITORING_CONFIG],
+            )
         except RunNotFoundError:
             return {
                 "tool_name": "monitoring.update_ticker_config",
@@ -584,19 +588,6 @@ class BlackboardInitializationWorkflow(
         checkpoint: WorkflowCheckpoint,
         document_id: str,
     ) -> list[EvidenceRef]:
-        try:
-            run = self.blackboard.get_run(checkpoint.run_id)
-        except RunNotFoundError:
-            run = None
-        if run is not None:
-            for commit in reversed(run.commit_log):
-                target = commit.patch.target
-                if (
-                    target.document_type is DocumentType.MONITORING_CONFIG
-                    and target.document_id == document_id
-                    and commit.patch.evidence_refs
-                ):
-                    return list(commit.patch.evidence_refs)
         return [
             EvidenceRef(
                 evidence_id=new_id("evidence"),
@@ -1263,7 +1254,10 @@ class BlackboardInitializationWorkflow(
 
     def _monitoring_config_brief(self, checkpoint: WorkflowCheckpoint) -> dict[str, Any]:
         try:
-            run = self.blackboard.get_run(checkpoint.run_id)
+            run = self._workflow_document_bucket_run(
+                checkpoint,
+                [DocumentType.MONITORING_CONFIG],
+            )
         except RunNotFoundError:
             return {"status": "missing_run", "items": []}
         bucket = run.belief_state.documents.get(DocumentType.MONITORING_CONFIG, {})
@@ -1347,10 +1341,9 @@ class BlackboardInitializationWorkflow(
         checkpoint: WorkflowCheckpoint,
         patch: BlackboardPatch,
     ) -> list[Objection]:
-        run = self.blackboard.get_run(checkpoint.run_id)
         return [
             objection
-            for objection in run.objections
+            for objection in self.blackboard.list_unresolved_objections(checkpoint.run_id)
             if objection.is_unresolved
             and objection.target.document_type is patch.target.document_type
             and (
@@ -1437,6 +1430,7 @@ class BlackboardInitializationWorkflow(
         fallback_evidence = self._normalize_evidence_ref_language(
             (result.evidence_refs or [self._agent_output_evidence(result)])[0]
         )
+        known_event_context = self._known_event_context(checkpoint)
         events: list[KnownEvent] = []
         raw_events = payload.get("events")
         created_at = self._coerce_event_time(payload.get("created_at"))
@@ -1449,6 +1443,7 @@ class BlackboardInitializationWorkflow(
                 checkpoint,
                 item,
                 description,
+                context=known_event_context,
             )
             event_source = self._known_event_source_ref(
                 checkpoint,
@@ -1456,6 +1451,7 @@ class BlackboardInitializationWorkflow(
                 description,
                 expectation_id,
                 fallback_evidence,
+                context=known_event_context,
             )
             event_time = self._known_event_time(item, description, created_at)
             has_price_reaction = bool(item.get("has_price_reaction")) or (
@@ -1634,9 +1630,13 @@ class BlackboardInitializationWorkflow(
         checkpoint: WorkflowCheckpoint,
         item: dict[str, Any],
         description: str,
+        *,
+        context: dict[str, Any] | None = None,
     ) -> str | None:
         raw = item.get("expectation_id")
-        expectations = self._stable_expectation_documents(checkpoint)
+        expectations = context.get("expectations") if context is not None else None
+        if expectations is None:
+            expectations = self._stable_expectation_documents(checkpoint)
         ids = {document.expectation_id for document in expectations}
 
         best_id: str | None = None
@@ -1722,6 +1722,8 @@ class BlackboardInitializationWorkflow(
         description: str,
         expectation_id: str | None,
         fallback_evidence: EvidenceRef,
+        *,
+        context: dict[str, Any] | None = None,
     ) -> EvidenceRef:
         refs: list[EvidenceRef] = []
         refs.extend(self._payload_evidence_refs(item.get("evidence_refs")))
@@ -1734,9 +1736,16 @@ class BlackboardInitializationWorkflow(
                     checkpoint,
                     expectation_id,
                     description,
+                    expectations=context.get("expectations") if context is not None else None,
                 )
             )
-        refs.extend(self._global_research_source_refs_for_event(checkpoint, description))
+        refs.extend(
+            self._global_research_source_refs_for_event(
+                checkpoint,
+                description,
+                document=context.get("global_research") if context is not None else None,
+            )
+        )
         refs = self._dedupe_evidence_refs(
             self._normalize_evidence_ref_language(ref) for ref in refs
         )
@@ -1746,6 +1755,12 @@ class BlackboardInitializationWorkflow(
         if refs:
             return refs[0]
         return fallback_evidence
+
+    def _known_event_context(self, checkpoint: WorkflowCheckpoint) -> dict[str, Any]:
+        return {
+            "expectations": self._stable_expectation_documents(checkpoint),
+            "global_research": self._stable_global_research_document(checkpoint),
+        }
 
     def _known_event_time_hint_precise(self, description: str) -> str | None:
         text = str(description or "")
@@ -1848,7 +1863,10 @@ class BlackboardInitializationWorkflow(
         checkpoint: WorkflowCheckpoint,
     ) -> list[ExpectationUnitDocument]:
         try:
-            run = self.blackboard.get_run(checkpoint.run_id)
+            run = self._workflow_document_bucket_run(
+                checkpoint,
+                [DocumentType.EXPECTATION_UNIT],
+            )
         except RunNotFoundError:
             return []
         bucket = run.belief_state.documents.get(DocumentType.EXPECTATION_UNIT, {})
@@ -1868,7 +1886,10 @@ class BlackboardInitializationWorkflow(
         checkpoint: WorkflowCheckpoint,
     ) -> GlobalResearchDocument | None:
         try:
-            run = self.blackboard.get_run(checkpoint.run_id)
+            run = self._workflow_document_bucket_run(
+                checkpoint,
+                [DocumentType.GLOBAL_RESEARCH],
+            )
         except RunNotFoundError:
             return None
         bucket = run.belief_state.documents.get(DocumentType.GLOBAL_RESEARCH, {})
@@ -1887,8 +1908,12 @@ class BlackboardInitializationWorkflow(
         checkpoint: WorkflowCheckpoint,
         expectation_id: str,
         description: str,
+        *,
+        expectations: list[ExpectationUnitDocument] | None = None,
     ) -> list[EvidenceRef]:
-        for document in self._stable_expectation_documents(checkpoint):
+        if expectations is None:
+            expectations = self._stable_expectation_documents(checkpoint)
+        for document in expectations:
             if document.expectation_id != expectation_id:
                 continue
             refs: list[EvidenceRef] = [*document.market_view.evidence_refs]
@@ -1907,8 +1932,10 @@ class BlackboardInitializationWorkflow(
         self,
         checkpoint: WorkflowCheckpoint,
         description: str,
+        *,
+        document: GlobalResearchDocument | None = None,
     ) -> list[EvidenceRef]:
-        document = self._stable_global_research_document(checkpoint)
+        document = document or self._stable_global_research_document(checkpoint)
         if document is None:
             return []
         sections = [
@@ -2640,50 +2667,92 @@ class BlackboardInitializationWorkflow(
         task_type: TaskType,
         permissions: AgentPermissions,
     ) -> dict[str, Any]:
-        run = self.blackboard.get_run(checkpoint.run_id)
+        repository = self.blackboard.repository
+        history_blocks_needed = node not in _DOCUMENT2_NODES and node not in _DOCUMENT3_NODES
         context: dict[str, Any] = {
             "completed_nodes": [item.value for item in checkpoint.completed_nodes],
             "stable_document_types": [item.value for item in checkpoint.stable_document_types],
-            "belief_state_summary": {
-                key.value: list(value.keys())
-                for key, value in run.belief_state.documents.items()
-            },
-            "working_memory_summary": [
+            "belief_state_summary": self._workflow_belief_state_key_summary(checkpoint),
+            "pending_patch_ids": [patch.patch_id for patch in checkpoint.pending_patches],
+            "pending_patches": [
+                patch.model_dump(mode="json") for patch in checkpoint.pending_patches
+            ],
+        }
+        if history_blocks_needed:
+            context["working_memory_summary"] = [
                 {
                     "entry_id": entry.entry_id,
                     "author_agent": entry.author_agent.value,
                     "content_type": entry.content_type,
                 }
-                for entry in run.working_memory
-            ],
-            "pending_patch_ids": [patch.patch_id for patch in checkpoint.pending_patches],
-            "pending_patches": [
-                patch.model_dump(mode="json") for patch in checkpoint.pending_patches
-            ],
-            "unresolved_objections": [
+                for entry in repository.list_working_memory_summaries(
+                    checkpoint.run_id,
+                    include_payload=False,
+                )
+            ]
+            context["unresolved_objections"] = [
                 objection.model_dump(mode="json")
-                for objection in run.objections
-                if objection.is_unresolved
-            ],
-            "blocking_delegations": [
+                for objection in repository.list_unresolved_objections(checkpoint.run_id)
+            ]
+            context["blocking_delegations"] = [
                 delegation.model_dump(mode="json")
-                for delegation in run.delegations
-                if delegation.is_blocking
-            ],
-        }
-        global_research_context = self._global_research_context_from_belief_state(
-            run,
-            node=node,
-            agent_name=agent_name,
-            task_type=task_type,
-            permissions=permissions,
-        )
-        if global_research_context is not None:
-            context["global_research_context"] = global_research_context
-            document1_context_pack = global_research_context.get("document1_context_pack")
-            if isinstance(document1_context_pack, dict):
-                context["document1_context_pack"] = document1_context_pack
+                for delegation in repository.list_blocking_delegations(checkpoint.run_id)
+            ]
+        if self._workflow_task_keeps_global_research_context(node):
+            run = self._workflow_document_bucket_run(
+                checkpoint,
+                [DocumentType.GLOBAL_RESEARCH],
+            )
+            global_research_context = self._global_research_context_from_belief_state(
+                run,
+                node=node,
+                agent_name=agent_name,
+                task_type=task_type,
+                permissions=permissions,
+            )
+            if global_research_context is not None:
+                context["global_research_context"] = global_research_context
+                document1_context_pack = global_research_context.get("document1_context_pack")
+                if isinstance(document1_context_pack, dict):
+                    context["document1_context_pack"] = document1_context_pack
         return self._compact_workflow_task_input_context(context, node)
+
+    def _workflow_belief_state_key_summary(
+        self,
+        checkpoint: WorkflowCheckpoint,
+    ) -> dict[str, list[str]]:
+        loader = getattr(self.blackboard.repository, "list_document_keys", None)
+        if callable(loader):
+            return {
+                document_type.value: list(document_ids)
+                for document_type, document_ids in loader(checkpoint.run_id).items()
+            }
+        run = self.blackboard.get_run(checkpoint.run_id)
+        return {
+            key.value: list(value.keys())
+            for key, value in run.belief_state.documents.items()
+        }
+
+    def _workflow_document_bucket_run(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        document_types: list[DocumentType],
+    ) -> BlackboardRun:
+        loader = getattr(self.blackboard.repository, "get_document_bundle_by_run_id", None)
+        if callable(loader):
+            return loader(checkpoint.ticker, checkpoint.run_id, document_types)
+        return self.blackboard.get_run(checkpoint.run_id)
+
+    def _workflow_task_keeps_global_research_context(self, node: WorkflowNode) -> bool:
+        if node in {
+            WorkflowNode.REVIEW_EXPECTATION_CONSTRUCTION,
+            WorkflowNode.REVIEW_EXPECTATION_FIELDS,
+            WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS,
+        }:
+            return False
+        if node in _DOCUMENT3_REVIEW_NODES or node in _DOCUMENT3_RESOLVE_NODES:
+            return False
+        return True
 
     def _compact_workflow_task_input_context(
         self,

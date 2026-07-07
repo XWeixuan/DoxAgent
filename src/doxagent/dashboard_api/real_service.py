@@ -99,6 +99,7 @@ RUNTIME_NODE_DEFINITIONS = (
     ("w1", "W1 Novelty"),
     ("w2", "W2 Policy"),
     ("route_engine", "Route Engine"),
+    ("a2", "A2 Verification"),
     ("o3", "O3 Duty Expert"),
     ("trading_records", "Trading Records"),
     ("exception_queue", "Exception Queue"),
@@ -577,6 +578,8 @@ class RealDashboardOverviewService:
         ]
         last_error_message = None
         for source in sources:
+            if _message_source_health(source) in {"disabled", "never_polled"}:
+                continue
             message = source["poll_state"].get("last_error_message")
             if isinstance(message, str) and message.strip():
                 last_error_message = message
@@ -2401,9 +2404,10 @@ def _runtime_graph_edges(context: RuntimeDashboardContext) -> list[JsonObject]:
     route_to_o3 = sum(
         1
         for execution in context.executions
-        if _runtime_route_value(execution) in {"o3", "a2"}
-        or _runtime_execution_in_node(execution, "o3", context)
+        if _runtime_execution_in_node(execution, "o3", context)
+        and not _runtime_execution_in_node(execution, "a2", context)
     )
+    route_to_a2 = _runtime_node_count(context.executions, "a2", context=context)
     return [
         _runtime_edge(
             "message_bus_to_w1",
@@ -2446,6 +2450,45 @@ def _runtime_graph_edges(context: RuntimeDashboardContext) -> list[JsonObject]:
             "o3",
             "O3 escalation",
             route_to_o3,
+        ),
+        _runtime_edge(
+            "route_engine_to_a2",
+            "route_engine",
+            "a2",
+            "A2 verification",
+            route_to_a2,
+        ),
+        _runtime_edge(
+            "a2_to_o3",
+            "a2",
+            "o3",
+            "A2 verified escalation",
+            sum(
+                1
+                for execution in context.executions
+                if _runtime_execution_in_node(execution, "a2", context)
+                and _runtime_execution_in_node(execution, "o3", context)
+            ),
+        ),
+        _runtime_edge(
+            "a2_to_ingest_queue",
+            "a2",
+            "ingest_queue",
+            "A2 review queue",
+            sum(
+                1
+                for execution in context.executions
+                if _runtime_execution_in_node(execution, "a2", context)
+                and _runtime_final_route(execution, context) == "ingest_queue"
+                and not _runtime_execution_in_node(execution, "o3", context)
+            ),
+        ),
+        _runtime_edge(
+            "a2_to_exception_queue",
+            "a2",
+            "exception_queue",
+            "A2 exception",
+            _runtime_node_failed_count(context, "a2"),
         ),
         _runtime_edge(
             "route_engine_to_archive",
@@ -2526,7 +2569,7 @@ def _runtime_edge(
 def _runtime_node_in_count(context: RuntimeDashboardContext, node_id: str) -> int:
     if node_id == "message_bus":
         return len(context.executions)
-    if node_id in {"w1", "w2", "o3", "route_engine"}:
+    if node_id in {"w1", "w2", "a2", "o3", "route_engine"}:
         return _runtime_node_count(context.executions, node_id, context=context)
     if node_id == "trading_records":
         return sum(len(items) for items in context.trading_records_by_source.values())
@@ -2550,11 +2593,21 @@ def _runtime_node_out_count(context: RuntimeDashboardContext, node_id: str) -> i
         return _runtime_node_count(context.executions, "route_engine", context=context)
     if node_id == "route_engine":
         return len(context.executions)
+    if node_id == "a2":
+        return sum(
+            1
+            for execution in context.executions
+            if _runtime_execution_in_node(execution, "a2", context)
+            and (
+                _runtime_execution_in_node(execution, "o3", context)
+                or _runtime_final_route(execution, context) != "a2"
+            )
+        )
     if node_id == "o3":
         return sum(
             1
             for execution in context.executions
-            if _runtime_route_value(execution) in {"o3", "a2"}
+            if _runtime_execution_in_node(execution, "o3", context)
             and _runtime_final_route(execution, context) != "o3"
         )
     return 0
@@ -2563,15 +2616,15 @@ def _runtime_node_out_count(context: RuntimeDashboardContext, node_id: str) -> i
 def _runtime_node_failed_count(context: RuntimeDashboardContext, node_id: str) -> int:
     if node_id == "exception_queue":
         return sum(len(items) for items in context.exceptions_by_source.values())
-    if node_id in {"w1", "w2", "o3", "route_engine"}:
+    if node_id in {"w1", "w2", "a2", "o3", "route_engine"}:
         failed_sources: set[str] = set()
         for execution in context.executions:
             source_id = execution.source_message.source_message_id
             trace = _runtime_trace(execution, node_id)
             if trace is not None and trace.status.lower() in {"failed", "error"}:
                 failed_sources.add(source_id)
-            if node_id == "o3" and any(
-                exception.node.strip().lower() == "o3"
+            if node_id in {"a2", "o3"} and any(
+                exception.node.strip().lower() == node_id
                 for exception in context.exceptions_by_source.get(source_id, [])
             ):
                 failed_sources.add(source_id)
@@ -2600,7 +2653,7 @@ def _runtime_node_records(
 ) -> list[JsonObject]:
     records: list[JsonObject] = []
     executions_by_source = _runtime_executions_by_source(context)
-    if node_id in {"message_bus", "w1", "w2", "route_engine", "o3"}:
+    if node_id in {"message_bus", "w1", "w2", "route_engine", "a2", "o3"}:
         for execution in context.executions:
             if _runtime_execution_in_node(execution, node_id, context):
                 records.append(_runtime_execution_node_record(execution, context, node_id))
@@ -3168,11 +3221,21 @@ def _runtime_execution_in_node(
         return execution.w2_result is not None or _runtime_trace(execution, "w2") is not None
     if node_id == "route_engine":
         return True
+    if node_id == "a2":
+        return (
+            execution.a2_result is not None
+            or _runtime_trace(execution, "a2") is not None
+            or _runtime_route_value(execution) == "a2"
+            or any(
+                exception.node.strip().lower() == "a2"
+                for exception in context.exceptions_by_source.get(source_id, [])
+            )
+        )
     if node_id == "o3":
         return (
             execution.o3_result is not None
             or _runtime_trace(execution, "o3") is not None
-            or _runtime_route_value(execution) in {"o3", "a2"}
+            or _runtime_route_value(execution) == "o3"
         )
     if node_id == "trading_records":
         return source_id in context.trading_records_by_source
@@ -3213,7 +3276,7 @@ def _runtime_route_count(context: RuntimeDashboardContext, route: str) -> int:
 def _runtime_o3_action_count(context: RuntimeDashboardContext, action: str) -> int:
     count = 0
     for execution in context.executions:
-        if _runtime_route_value(execution) not in {"o3", "a2"} and execution.o3_result is None:
+        if _runtime_route_value(execution) != "o3" and execution.o3_result is None:
             continue
         if _runtime_final_route(execution, context) == action:
             count += 1
@@ -3245,10 +3308,7 @@ def _runtime_final_route(
         return "archive"
     if execution.o3_result is not None:
         return str(execution.o3_result.primary_action)
-    route = _runtime_route_value(execution)
-    if route == "a2":
-        return "o3"
-    return route
+    return _runtime_route_value(execution)
 
 
 def _runtime_execution_status(
@@ -3298,7 +3358,7 @@ def _runtime_node_durations(execution: RuntimeExecutionRecord) -> dict[str, int]
 
 def _runtime_trace_node_label(value: str) -> str:
     normalized = value.strip()
-    if normalized.lower() in {"w1", "w2", "o3"}:
+    if normalized.lower() in {"w1", "w2", "a2", "o3"}:
         return normalized.upper()
     return normalized
 
@@ -3310,6 +3370,7 @@ def _runtime_trace(
     aliases = {
         "w1": {"w1"},
         "w2": {"w2"},
+        "a2": {"a2"},
         "o3": {"o3"},
         "route_engine": {"route_engine", "router", "route"},
     }.get(node_id, {node_id})
@@ -3940,6 +4001,8 @@ def _runtime_node_input_summary(
         return title or execution.source_message.source_message_id
     if node_id == "route_engine":
         return "W1/W2 runtime results."
+    if node_id == "a2":
+        return "Verification package."
     if node_id == "o3":
         return "Escalated runtime package."
     return title or execution.source_message.source_message_id
@@ -3969,6 +4032,14 @@ def _runtime_node_output_summary(
         )
     if node_id == "route_engine":
         return f"route={_runtime_final_route(execution, context)}"
+    if node_id == "a2":
+        if execution.a2_result is not None:
+            return (
+                f"verification={execution.a2_result.verification_status}, "
+                f"is_new={execution.a2_result.is_new}"
+            )
+        trace = _runtime_trace(execution, "a2")
+        return f"A2 status={_runtime_trace_status(trace)}" if trace is not None else None
     if node_id == "o3":
         if execution.o3_result is not None:
             return (
@@ -4531,6 +4602,35 @@ def _blackboard_document_records(
     limit: int,
     include_commit_summaries: bool,
 ) -> list[DashboardDocumentRunRecord]:
+    repository = getattr(blackboard, "repository", None)
+    by_run_id = getattr(repository, "get_document_bundle_by_run_id", None)
+    candidates = getattr(repository, "list_document_bundle_candidates", None)
+    if callable(by_run_id) and callable(candidates):
+        try:
+            runs = (
+                [by_run_id(ticker, run_id, internal_types)]
+                if run_id
+                else candidates(ticker, internal_types, limit=limit)
+            )
+        except RunNotFoundError:
+            return []
+        return [
+            DashboardDocumentRunRecord(
+                run_id=run.run_id,
+                ticker=run.ticker,
+                workflow_state=str(run.workflow_state),
+                created_at=run.created_at,
+                updated_at=getattr(run.belief_state, "created_at", None),
+                document_buckets={
+                    internal_type.value: _document_bucket(run, internal_type)
+                    for internal_type in internal_types
+                },
+                commit_summaries=[] if include_commit_summaries else [],
+            )
+            for run in runs
+            if run.ticker == ticker
+            and any(_document_bucket(run, internal_type) for internal_type in internal_types)
+        ]
     try:
         runs = [blackboard.get_run(run_id)] if run_id else blackboard.list_runs_by_ticker(
             ticker,

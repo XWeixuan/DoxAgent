@@ -2,32 +2,115 @@
 kind = "internal_task_skill"
 id = "monitoring-config"
 name = "Monitoring Config"
-version = "2026.06.12"
+version = "2026.07.07"
 applicable_agents = ["O2"]
 applicable_task_types = ["generate_monitoring_config"]
 workflow_nodes = ["GenerateMonitoringConfig"]
 +++
 # O2 Monitoring Config
 
-Convert stable expectation units and known events into monitorable inputs.
+Build message-source coverage for Document 3 runtime.
 
-Monitoring config must be API-shaped, not narrative-shaped.
+Monitoring Config is not a policy document and not a research note. It defines what the Message Bus should watch so W1/W2/O3 can receive useful media and social messages.
 
-For each monitoring item:
+## Goal
 
-1. Return a `tool_input` object shaped for `monitoring.update_ticker_config`.
-2. `tool_input` must contain only `ticker`, `source_id`, `enabled`, `mode`, `reason`, plus fields supported by the selected source:
-   - `benzinga_news`: optional `search_terms` only, used as a small Benzinga `topics` fallback when ticker filtering returns no rows.
-   - `finnhub_company_news`: ticker only; do not send monitoring parameters.
-   - `stocktwits_messages`: ticker only; do not send monitoring parameters.
-   - `tikhub_x_search`: `search_terms` only.
-   - `tikhub_x_user_posts`: `usernames` only.
-   - `newswire_rss`: `rss_urls` only.
-3. Never put these fields inside `tool_input`: `keywords`, `source_filters`, `extra`, `poll_interval_seconds`, `expectation_id`, `priority`, or `trigger_condition`.
-4. Keep `expectation_id`, `priority`, `trigger_condition`, `base_keywords`, `extra_keywords`, `related_entities`, and explanatory text as MonitoringItem metadata fields only. They are not monitoring tool parameters.
-5. Keep parameter edits small: at most 3 search terms, 2 usernames, or 3 RSS URLs.
-6. Use concrete API-ready terms/accounts/URLs, not natural-language explanations inside monitoring parameters.
-7. Write one concise `reasoning` sentence explaining why this monitoring item exists and which expectation or global variable it serves.
-8. If a source does not support search parameters, do not try to force keywords into it. Use `reasoning` and metadata fields to explain why the source is included.
+Create API-shaped monitoring items that cover:
 
-Do not create policy actions in this node. Return only `MonitoringConfigDocument`.
+- ticker-level company news
+- policy-relevant catalysts
+- known-event update paths
+- key products, projects, customers, suppliers, regulators, executives, and peers
+- high-value social or X sources when available
+
+Each item must explain which expectation, known-event family, or policy-relevant message type it serves.
+
+## Source coverage
+
+Use sources by their real interface:
+
+1. `benzinga_news`
+   - media, by ticker
+   - optional `search_terms`
+   - use for company news and fast market media coverage
+
+2. `finnhub_company_news`
+   - media, by ticker only
+   - no search parameters
+
+3. `stocktwits_messages`
+   - social, by ticker only
+   - no search parameters
+   - use for ticker chatter, early social recaps, and retail reaction
+
+4. `tikhub_x_search`
+   - social, by parameter
+   - `search_terms` only
+   - use for company + product + project + regulator + catalyst terms
+
+5. `tikhub_x_user_posts`
+   - social, by parameter
+   - `usernames` only
+   - use only for concrete official, executive, regulator, industry, or high-signal accounts
+
+6. `newswire_rss`
+   - media, by parameter
+   - `rss_urls` only
+   - use for company IR, press releases, regulatory or industry feeds when concrete URLs are known
+
+## API shape
+
+For each monitoring item, `tool_input` must contain only:
+
+- `ticker`
+- `source_id`
+- `enabled`
+- `mode`
+- `reason`
+- plus fields supported by that source
+
+Allowed parameter fields:
+
+- `benzinga_news`: `search_terms` only
+- `finnhub_company_news`: ticker only
+- `stocktwits_messages`: ticker only
+- `tikhub_x_search`: `search_terms` only
+- `tikhub_x_user_posts`: `usernames` only
+- `newswire_rss`: `rss_urls` only
+
+Never put these fields inside `tool_input`:
+
+- `keywords`
+- `source_filters`
+- `extra`
+- `poll_interval_seconds`
+- `expectation_id`
+- `priority`
+- `trigger_condition`
+
+Keep `expectation_id`, `priority`, `trigger_condition`, `base_keywords`, `extra_keywords`, `related_entities`, and explanatory text as MonitoringItem metadata only.
+
+## Parameter limits
+
+Keep edits small:
+
+- at most 3 `search_terms`
+- at most 2 `usernames`
+- at most 3 `rss_urls`
+
+Use concrete API-ready terms/accounts/URLs. Do not put natural-language explanations inside parameters.
+
+## Quality rules
+
+Prefer coverage clarity over volume.
+
+Every monitoring item must answer:
+
+- what message type it catches
+- why this source can catch it
+- which expectation or known-event family it supports
+- what would be missed without this item
+
+Do not create policy actions in this node.
+
+Return only `MonitoringConfigDocument`.

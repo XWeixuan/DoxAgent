@@ -522,10 +522,11 @@ class Document2LegacyQualityMixin:
         resolution_plans: list[Document2ResolutionPlan] = []
         field_repair_results: list[Document2FieldRepairResult] = []
         transaction_audits: list[Document2TransactionAudit] = []
-        run = self.blackboard.get_run(checkpoint.run_id)
-        for delegation in run.delegations:
-            if not delegation.is_blocking or delegation.target_agent is not AgentName.A2_FACT_CHECK:
-                continue
+        a2_delegations = self.blackboard.list_blocking_delegations(
+            checkpoint.run_id,
+            target_agent=AgentName.A2_FACT_CHECK,
+        )
+        for delegation in a2_delegations:
             if delegation.status is DelegationStatus.OPEN:
                 self.blackboard.assign_delegation(checkpoint.run_id, delegation.delegation_id)
             result = self._run_agent(
@@ -549,9 +550,8 @@ class Document2LegacyQualityMixin:
             )
             results.append(result)
 
-        run = self.blackboard.get_run(checkpoint.run_id)
         unresolved_objections = self._document2_actionable_unresolved_objections(
-            run.objections
+            self.blackboard.list_unresolved_objections(checkpoint.run_id)
         )
         task_index = 0
         stalled_task_ids: set[str] = set()
@@ -614,9 +614,8 @@ class Document2LegacyQualityMixin:
             )
             self._complete_o1_revision_delegations(checkpoint, result)
             results.append(result)
-            run = self.blackboard.get_run(checkpoint.run_id)
             unresolved_objections = self._document2_actionable_unresolved_objections(
-                run.objections
+                self.blackboard.list_unresolved_objections(checkpoint.run_id)
             )
             unresolved_task_objection_ids = {
                 objection.objection_id
@@ -627,15 +626,17 @@ class Document2LegacyQualityMixin:
                 stalled_task_ids.add(repair_task.task_id)
 
         self._complete_o1_revision_delegations(checkpoint)
-        run = self.blackboard.get_run(checkpoint.run_id)
         self._sync_document2_resolver_metadata(
             checkpoint,
             resolution_plans=resolution_plans,
             field_repair_results=field_repair_results,
             transaction_audits=transaction_audits,
         )
-        if self._document2_actionable_unresolved_objections(run.objections) or any(
-            delegation.is_blocking for delegation in run.delegations
+        if self._document2_actionable_unresolved_objections(
+            self.blackboard.list_unresolved_objections(checkpoint.run_id)
+        ) or any(
+            delegation.is_blocking
+            for delegation in self.blackboard.list_blocking_delegations(checkpoint.run_id)
         ):
             raise WorkflowContractError("ResolveObjectionsAndDelegations left blockers unresolved.")
         return results
@@ -1144,15 +1145,9 @@ class Document2LegacyQualityMixin:
             return True
         if decision.objection_id is None:
             return False
-        run = self.blackboard.get_run(checkpoint.run_id)
-        objection = next(
-            (
-                item
-                for item in run.objections
-                if item.objection_id == decision.objection_id
-            ),
-            None,
-        )
+        getter = getattr(self.blackboard.repository, "get_objections_by_ids", None)
+        matches = getter(checkpoint.run_id, [decision.objection_id]) if callable(getter) else []
+        objection = matches[0] if matches else None
         if objection is None or not objection.dedupe_hash:
             return False
         current_finding_keys = {
@@ -1276,9 +1271,8 @@ class Document2LegacyQualityMixin:
         )
         if metadata_changed:
             self._merge_document2_review_findings_metadata(checkpoint, findings)
-        run = self.blackboard.get_run(checkpoint.run_id)
         unresolved_objections = [
-            objection for objection in run.objections if objection.is_unresolved
+            objection for objection in unresolved_objections if objection.is_unresolved
         ]
         by_objection_id = {
             finding.source_objection_id: finding
@@ -1349,11 +1343,9 @@ class Document2LegacyQualityMixin:
             self._document2_field_repair_task_from_group(checkpoint, group)
             for group in groups.values()
         ]
-        refreshed_run = self.blackboard.get_run(checkpoint.run_id)
         unresolved_by_id = {
             objection.objection_id: objection
-            for objection in refreshed_run.objections
-            if objection.is_unresolved
+            for objection in self.blackboard.list_unresolved_objections(checkpoint.run_id)
         }
         ordered_families = {
             "cross_field": 0,
@@ -1537,7 +1529,10 @@ class Document2LegacyQualityMixin:
                 checkpoint,
                 objection,
                 finding,
-                reason="Document2 repair finding was unroutable or had conflicting expectation ids.",
+                reason=(
+                    "Document2 repair finding was unroutable or had conflicting "
+                    "expectation ids."
+                ),
             )
             return []
         if len(expectation_ids) == 1:
@@ -2023,12 +2018,16 @@ class Document2LegacyQualityMixin:
         total_unresolved: int | None = None,
     ) -> dict[str, Any]:
         timeout_seconds = _O1_RESOLVER_TIMEOUT_SECONDS
-        run = self.blackboard.get_run(checkpoint.run_id)
-        task_objections = [
-            objection
-            for objection in run.objections
-            if objection.objection_id in set(task.objection_ids)
-        ]
+        getter = getattr(self.blackboard.repository, "get_objections_by_ids", None)
+        if callable(getter):
+            task_objections = getter(checkpoint.run_id, list(task.objection_ids))
+        else:
+            run = self.blackboard.get_run(checkpoint.run_id)
+            task_objections = [
+                objection
+                for objection in run.objections
+                if objection.objection_id in set(task.objection_ids)
+            ]
         output_guidance = [
             "You are resolving exactly one Document2 field repair task.",
             "Do not choose a different field or repair findings outside this task.",
@@ -2304,8 +2303,16 @@ class Document2LegacyQualityMixin:
         if not revalidation_objections:
             return
 
-        run = self.blackboard.get_run(checkpoint.run_id)
-        existing_by_id = {objection.objection_id: objection for objection in run.objections}
+        getter = getattr(self.blackboard.repository, "get_objections_by_ids", None)
+        existing = (
+            getter(
+                checkpoint.run_id,
+                [objection.objection_id for objection in revalidation_objections],
+            )
+            if callable(getter)
+            else []
+        )
+        existing_by_id = {objection.objection_id: objection for objection in existing}
         for objection in revalidation_objections:
             if not objection.taxonomy.startswith("numeric_sanity_"):
                 continue
@@ -2918,20 +2925,20 @@ class Document2LegacyQualityMixin:
         checkpoint: WorkflowCheckpoint,
         result: AgentResult | None = None,
     ) -> None:
-        run = self.blackboard.get_run(checkpoint.run_id)
-        if self._document2_actionable_unresolved_objections(run.objections):
+        if self._document2_actionable_unresolved_objections(
+            self.blackboard.list_unresolved_objections(checkpoint.run_id)
+        ):
             return
         summary = self._o1_revision_completion_summary(result)
-        for delegation in run.delegations:
-            if (
-                delegation.is_blocking
-                and delegation.target_agent is AgentName.O1_EXPECTATION_OWNER
-            ):
-                self.blackboard.complete_delegation(
-                    checkpoint.run_id,
-                    delegation.delegation_id,
-                    summary,
-                )
+        for delegation in self.blackboard.list_blocking_delegations(
+            checkpoint.run_id,
+            target_agent=AgentName.O1_EXPECTATION_OWNER,
+        ):
+            self.blackboard.complete_delegation(
+                checkpoint.run_id,
+                delegation.delegation_id,
+                summary,
+            )
 
     def _o1_revision_completion_summary(self, result: AgentResult | None) -> str:
         if result is not None:

@@ -44,16 +44,26 @@ class PromptInjectionPolicy:
         workflow_node: str | None,
     ) -> list[PromptBlockDefinition]:
         selected: dict[str, PromptBlockDefinition] = {}
+        replaced_prompt_block_ids: set[str] = set()
         for definition in registry.find_prompt_blocks(
             task.agent_name,
             task.task_type,
             workflow_node,
         ):
+            for resource_id in definition.replaces_prompt_blocks:
+                selected.pop(resource_id, None)
+                replaced_prompt_block_ids.add(resource_id)
             selected[definition.resource_id] = definition
         for resource_id in agent_definition.runtime.prompt_block_ids:
+            if resource_id in replaced_prompt_block_ids:
+                continue
             selected[resource_id] = _expect_prompt_block(registry.get(resource_id))
         for resource_id in self._requested_ids(task.input_context, "prompt_block_ids"):
-            selected[resource_id] = _expect_prompt_block(registry.get(resource_id))
+            definition = _expect_prompt_block(registry.get(resource_id))
+            for replaced_resource_id in definition.replaces_prompt_blocks:
+                selected.pop(replaced_resource_id, None)
+                replaced_prompt_block_ids.add(replaced_resource_id)
+            selected[resource_id] = definition
         return sorted(selected.values(), key=_prompt_block_sort_key)
 
     def _select_internal_skills(

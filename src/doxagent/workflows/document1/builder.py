@@ -366,7 +366,10 @@ class Document1BuilderMixin:
         self,
         checkpoint: WorkflowCheckpoint,
     ) -> dict[str, Any]:
-        run = self.blackboard.get_run(checkpoint.run_id)
+        run = self._workflow_document_bucket_run(
+            checkpoint,
+            [DocumentType.GLOBAL_RESEARCH],
+        )
         bucket = run.belief_state.documents.get(DocumentType.GLOBAL_RESEARCH, {})
         if not bucket:
             raise WorkflowDependencyError("Missing global_research document.")
@@ -382,7 +385,10 @@ class Document1BuilderMixin:
         self,
         checkpoint: WorkflowCheckpoint,
     ) -> list[str]:
-        run = self.blackboard.get_run(checkpoint.run_id)
+        run = self._workflow_document_bucket_run(
+            checkpoint,
+            [DocumentType.EXPECTATION_UNIT],
+        )
         bucket = run.belief_state.documents.get(DocumentType.EXPECTATION_UNIT, {})
         names: list[str] = []
         for entry in bucket.values():

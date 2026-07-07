@@ -347,6 +347,17 @@ class DoxAgentSettings(BaseSettings):
         default=".tmp/persistent_runtime_execution.sqlite3",
         validation_alias="DOXAGENT_PERSISTENT_RUNTIME_SQLITE_PATH",
     )
+    persistent_runtime_worker_timeout_seconds: float = Field(
+        default=75.0,
+        gt=0,
+        validation_alias="DOXAGENT_PERSISTENT_RUNTIME_WORKER_TIMEOUT_SECONDS",
+    )
+    persistent_runtime_worker_retry_attempts: int = Field(
+        default=2,
+        ge=1,
+        le=5,
+        validation_alias="DOXAGENT_PERSISTENT_RUNTIME_WORKER_RETRY_ATTEMPTS",
+    )
     runtime_scheduler_storage_mode: Literal["memory", "sqlite"] = Field(
         default="sqlite",
         validation_alias="DOXAGENT_RUNTIME_SCHEDULER_STORAGE_MODE",

@@ -211,6 +211,79 @@ def test_message_monitoring_tick_leaves_pending_events_without_trade_intent() ->
     assert detail.state.counters.trade_intents_generated == 0
 
 
+def test_successful_poll_cycle_recovers_degraded_state_and_clears_last_error(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    scheduler, _provider, monitoring_service, _runtime_service = _scheduler(_usable_bundle())
+    scheduler.start_ticker("NVDA", now=datetime(2026, 6, 30, 12, 15, tzinfo=UTC))
+    state = scheduler.repository.get_state("NVDA")
+    assert state is not None
+    scheduler.repository.upsert_state(
+        state.model_copy(
+            update={
+                "status": TickerRunStatus.DEGRADED,
+                "health": RuntimeHealth.DEGRADED,
+                "last_error": "old monitoring source poll failed.",
+            },
+            deep=True,
+        )
+    )
+
+    def poll_binding(ticker: str, source_id: str) -> IngestBatchResult:
+        result = IngestBatchResult(
+            source_id=source_id,
+            binding_id=f"{ticker}:{source_id}",
+            ticker=ticker,
+            latency_ms=17,
+        )
+        monitoring_service.repository.record_poll_success(result)
+        return result
+
+    monkeypatch.setattr(monitoring_service, "poll_binding", poll_binding)
+
+    detail = scheduler.tick_ticker(
+        "NVDA",
+        now=datetime(2026, 6, 30, 12, 30, tzinfo=UTC),
+    )
+
+    assert detail.state.status is TickerRunStatus.RUNNING
+    assert detail.state.health is RuntimeHealth.NORMAL
+    assert detail.state.last_error is None
+    assert detail.monitoring_status.last_error_message is None
+
+
+def test_monitoring_status_ignores_disabled_binding_historical_last_error() -> None:
+    scheduler, _provider, monitoring_service, _runtime_service = _scheduler(_usable_bundle())
+    scheduler.start_ticker("NVDA", now=datetime(2026, 6, 30, 12, 15, tzinfo=UTC))
+    binding = monitoring_service.repository.get_binding("NVDA", "benzinga_news")
+    assert binding is not None
+    monitoring_service.repository.record_poll_failure(
+        binding_id=binding.binding_id,
+        source_id=binding.source_id,
+        ticker=binding.ticker,
+        message="stale source error from before disable",
+    )
+    monitoring_service.configure_ticker_source(
+        "NVDA",
+        "benzinga_news",
+        parameters=binding.parameters,
+        enabled=False,
+        updated_by=UpdateActor.USER,
+        updated_reason="pause source after failure",
+        merge=False,
+    )
+
+    status = scheduler.monitoring_status("NVDA", now=datetime(2026, 6, 30, 12, 30, tzinfo=UTC))
+
+    assert status.last_error_at is None
+    assert status.last_error_message is None
+    assert status.configured_sources[0].poll_state is not None
+    assert (
+        status.configured_sources[0].poll_state.last_error_message
+        == "stale source error from before disable"
+    )
+
+
 def test_paper_trading_tick_consumes_pending_events_and_records_trade_intent() -> None:
     scheduler, _provider, monitoring_service, runtime_service = _scheduler(_usable_bundle())
     scheduler.start_ticker(

@@ -183,6 +183,29 @@ def test_dashboard_real_message_bus_config_mutations_and_errors() -> None:
     assert missing_source.json()["error"]["code"] == "NOT_FOUND"
 
 
+def test_dashboard_real_message_bus_overview_ignores_disabled_source_last_error() -> None:
+    client, timestamp = _client_with_message_bus_state(include_disabled_failure=True)
+    query_date = timestamp.date().isoformat()
+
+    overview = client.get(
+        f"/api/dashboard/v1/tickers/NVDA/message-bus/overview?date={query_date}&tz=UTC"
+    )
+
+    assert overview.status_code == 200
+    assert overview.json()["data"]["last_error_message"] is None
+
+    config = client.get("/api/dashboard/v1/tickers/NVDA/message-bus/config")
+
+    assert config.status_code == 200
+    sources = {source["source_id"]: source for source in config.json()["data"]["sources"]}
+    assert sources["tikhub_x_user_posts"]["enabled"] is False
+    assert sources["tikhub_x_user_posts"]["poll_state"]["status"] == "disabled"
+    assert (
+        sources["tikhub_x_user_posts"]["poll_state"]["last_error_message"]
+        == "stale disabled source failure"
+    )
+
+
 class _DocumentProvider:
     def latest(self, ticker: str, *, now: datetime | None = None) -> DocumentBundle:
         return self._bundle(ticker)
@@ -200,11 +223,30 @@ class _DocumentProvider:
         )
 
 
-def _client_with_message_bus_state() -> tuple[TestClient, datetime]:
+def _client_with_message_bus_state(
+    *,
+    include_disabled_failure: bool = False,
+) -> tuple[TestClient, datetime]:
     monitoring_service = MonitoringBusService(InMemoryMonitoringRepository())
     runtime_service = PersistentRuntimeExecutionService(InMemoryPersistentRuntimeRepository())
     timestamp = datetime.now(UTC).replace(microsecond=0) + timedelta(seconds=1)
     _seed_message_bus(monitoring_service, runtime_service, timestamp)
+    if include_disabled_failure:
+        disabled_binding = monitoring_service.configure_ticker_source(
+            "NVDA",
+            "tikhub_x_user_posts",
+            parameters=MonitoringParameters(usernames=["nvidia"]),
+            enabled=False,
+            updated_by=UpdateActor.USER,
+            updated_reason="unit test disabled channel",
+            merge=False,
+        )
+        monitoring_service.repository.record_poll_failure(
+            binding_id=disabled_binding.binding_id,
+            source_id=disabled_binding.source_id,
+            ticker=disabled_binding.ticker,
+            message="stale disabled source failure",
+        )
     scheduler = UnifiedRuntimeSchedulerService(
         InMemoryRuntimeSchedulerRepository(),
         document_provider=_DocumentProvider(),

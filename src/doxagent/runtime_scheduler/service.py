@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
+from copy import deepcopy
 from dataclasses import dataclass
 from datetime import UTC, datetime, time
 from threading import Lock, Thread
@@ -137,6 +138,8 @@ class UnifiedRuntimeSchedulerService:
         self.auto_media_enrichment_concurrency = max(1, auto_media_enrichment_concurrency)
         self._weekly_update_jobs: dict[str, _WeeklyDocumentUpdateJob] = {}
         self._weekly_update_lock = Lock()
+        self._runtime_bundle_cache: dict[tuple[str, str], DocumentBundle] = {}
+        self._runtime_context_cache: dict[tuple[str, str], dict[str, object]] = {}
 
     @classmethod
     def from_settings(
@@ -264,6 +267,7 @@ class UnifiedRuntimeSchedulerService:
             deep=True,
         )
         self.repository.upsert_state(state)
+        self._clear_runtime_context_cache(normalized)
         if not bundle.status.usable:
             blocked_step_id = _first_blocked_document_step(bundle) or "document1"
             metadata = _startup_progress_metadata(
@@ -364,6 +368,7 @@ class UnifiedRuntimeSchedulerService:
             deep=True,
         )
         self.repository.upsert_state(state)
+        self._clear_runtime_context_cache(normalized)
         self._audit(
             normalized,
             "ticker_running",
@@ -502,6 +507,7 @@ class UnifiedRuntimeSchedulerService:
             deep=True,
         )
         self.repository.upsert_state(updated)
+        self._clear_runtime_context_cache(normalized)
         self._audit(
             normalized,
             "document_run_manual_activated",
@@ -728,17 +734,6 @@ class UnifiedRuntimeSchedulerService:
             },
             deep=True,
         )
-        health = (
-            RuntimeHealth.DEGRADED
-            if state.health is RuntimeHealth.DEGRADED
-            else RuntimeHealth.NORMAL
-        )
-        status = (
-            TickerRunStatus.DEGRADED
-            if state.status is TickerRunStatus.DEGRADED
-            else TickerRunStatus.RUNNING
-        )
-        last_error = state.last_error if health is RuntimeHealth.DEGRADED else None
         if runtime_failed:
             health = RuntimeHealth.DEGRADED
             status = TickerRunStatus.DEGRADED
@@ -747,6 +742,10 @@ class UnifiedRuntimeSchedulerService:
             health = RuntimeHealth.DEGRADED
             status = TickerRunStatus.DEGRADED
             last_error = f"{poll_failures} monitoring source poll(s) failed."
+        else:
+            health = RuntimeHealth.NORMAL
+            status = TickerRunStatus.RUNNING
+            last_error = None
         state = state.model_copy(
             update={
                 "status": status,
@@ -780,13 +779,7 @@ class UnifiedRuntimeSchedulerService:
     ) -> TickerRunDetail:
         normalized = _ticker(ticker)
         state = self._state_or_default(normalized, now=now)
-        document_status = (
-            state.document_status
-            or self.document_provider.latest(
-                normalized,
-                now=_utc(now),
-            ).status
-        )
+        document_status = self._document_status_for_state(state, now=_utc(now))
         return TickerRunDetail(
             state=state,
             document_status=document_status,
@@ -811,7 +804,10 @@ class UnifiedRuntimeSchedulerService:
         state = self.repository.get_state(normalized)
         if state is not None and state.document_status is not None:
             return state.document_status
-        return self.document_provider.latest(normalized, now=_utc(now)).status
+        return self._document_status_for_state(
+            state or self._state_or_default(normalized, now=now),
+            now=_utc(now),
+        )
 
     def monitoring_status(
         self,
@@ -823,16 +819,29 @@ class UnifiedRuntimeSchedulerService:
         normalized = _ticker(ticker)
         snapshot = self.monitoring_service.status_snapshot(ticker=normalized, limit=limit)
         poll_states = {state.binding_id: state for state in snapshot.poll_states}
+        sources = {source.source_id: source for source in snapshot.sources}
+        active_binding_ids = {
+            binding.binding_id
+            for binding in snapshot.bindings
+            if binding.enabled
+            and (source := sources.get(binding.source_id)) is not None
+            and source.enabled
+        }
+        active_poll_states = [
+            state for state in snapshot.poll_states if state.binding_id in active_binding_ids
+        ]
         pending_events = self.monitoring_service.pending_events(ticker=normalized, limit=limit)
         last_success_at = _latest(
-            state.last_success_at for state in snapshot.poll_states if state.last_success_at
+            state.last_success_at for state in active_poll_states if state.last_success_at
         )
         last_error_at = _latest(
-            state.last_error_at for state in snapshot.poll_states if state.last_error_at
+            state.last_error_at
+            for state in active_poll_states
+            if state.last_error_at and state.last_error_message
         )
         last_error_message = None
         for state in sorted(
-            snapshot.poll_states,
+            active_poll_states,
             key=lambda item: item.last_error_at or datetime.min.replace(tzinfo=UTC),
             reverse=True,
         ):
@@ -1130,7 +1139,22 @@ class UnifiedRuntimeSchedulerService:
             job = self._weekly_update_jobs.get(state.ticker)
             if job is not None and job.current_bundle is not None:
                 return job.current_bundle
-        return self.document_provider.latest(state.ticker)
+        if state.document_run_id:
+            cache_key = (state.ticker, state.document_run_id)
+            cached = self._runtime_bundle_cache.get(cache_key)
+            if cached is not None:
+                return cached.model_copy(deep=True)
+            loader = getattr(self.document_provider, "by_run_id", None)
+            if callable(loader):
+                bundle = loader(state.ticker, state.document_run_id)
+                self._runtime_bundle_cache[cache_key] = bundle.model_copy(deep=True)
+                return bundle
+        bundle = self.document_provider.latest(state.ticker)
+        if bundle.status.blackboard_run_id:
+            self._runtime_bundle_cache[(state.ticker, bundle.status.blackboard_run_id)] = (
+                bundle.model_copy(deep=True)
+            )
+        return bundle
 
     def _run_weekly_update_job(self, job: _WeeklyDocumentUpdateJob) -> None:
         bundle: DocumentBundle | None = None
@@ -1191,6 +1215,7 @@ class UnifiedRuntimeSchedulerService:
                 deep=True,
             )
         bindings = self._apply_monitoring_config(state.ticker, bundle)
+        self._clear_runtime_context_cache(state.ticker)
         self._audit(
             state.ticker,
             "weekly_document_update_completed",
@@ -1281,6 +1306,7 @@ class UnifiedRuntimeSchedulerService:
                     deep=True,
                 )
             bindings = self._apply_monitoring_config(state.ticker, bundle)
+            self._clear_runtime_context_cache(state.ticker)
             self._audit(
                 state.ticker,
                 "weekly_document_update_completed",
@@ -1324,12 +1350,18 @@ class UnifiedRuntimeSchedulerService:
         *,
         bundle: DocumentBundle | None = None,
     ) -> dict[str, object]:
-        bundle = bundle or self.document_provider.latest(state.ticker)
+        cache_key = (
+            state.ticker,
+            bundle.status.blackboard_run_id if bundle is not None else state.document_run_id,
+        )
+        if cache_key[1] and bundle is None and cache_key in self._runtime_context_cache:
+            return deepcopy(self._runtime_context_cache[cache_key])
+        bundle = bundle or self._runtime_bundle_for_tick(state)
         monitoring_policy = bundle.monitoring_policy
         known_events = bundle.known_events
         context: dict[str, object] = {
             "ticker": state.ticker,
-            "document_run_id": state.document_run_id,
+            "document_run_id": bundle.status.blackboard_run_id or state.document_run_id,
         }
         if known_events is not None:
             context["known_events"] = [
@@ -1342,7 +1374,34 @@ class UnifiedRuntimeSchedulerService:
                 *monitoring_policy.cache_rules,
             ]
             context["monitoring_policies"] = [policy.model_dump(mode="json") for policy in policies]
+        resolved_key = (state.ticker, str(context["document_run_id"] or ""))
+        if resolved_key[1]:
+            self._runtime_context_cache[resolved_key] = deepcopy(context)
         return context
+
+    def _document_status_for_state(
+        self,
+        state: TickerRunState,
+        *,
+        now: datetime,
+    ) -> DocumentSetStatus:
+        if state.document_status is not None:
+            return state.document_status
+        if state.document_run_id:
+            loader = getattr(self.document_provider, "by_run_id", None)
+            if callable(loader):
+                try:
+                    return loader(state.ticker, state.document_run_id, now=now).status
+                except RunNotFoundError:
+                    pass
+        return self.document_provider.latest(state.ticker, now=now).status
+
+    def _clear_runtime_context_cache(self, ticker: str) -> None:
+        normalized = _ticker(ticker)
+        for key in [item for item in self._runtime_bundle_cache if item[0] == normalized]:
+            self._runtime_bundle_cache.pop(key, None)
+        for key in [item for item in self._runtime_context_cache if item[0] == normalized]:
+            self._runtime_context_cache.pop(key, None)
 
     def _state_or_default(self, ticker: str, *, now: datetime | None = None) -> TickerRunState:
         normalized = _ticker(ticker)

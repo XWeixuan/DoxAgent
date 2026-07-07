@@ -335,6 +335,10 @@ class RuntimeNodeTrace(PersistentRuntimeModel):
     duration_ms: int
     attempts: int = 1
     exception_id: str | None = None
+    timeout_budget_ms: int | None = None
+    source_message_bytes: int | None = None
+    runtime_context_bytes: int | None = None
+    prompt_input_bytes: int | None = None
     started_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 

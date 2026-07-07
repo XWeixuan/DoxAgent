@@ -48,6 +48,7 @@ class PromptBlockDefinition(PromptModel):
     applicable_agents: list[AgentName] = Field(default_factory=list)
     applicable_task_types: list[TaskType] = Field(default_factory=list)
     workflow_nodes: list[NonEmptyStr] = Field(default_factory=list)
+    replaces_prompt_blocks: list[NonEmptyStr] = Field(default_factory=list)
     body: NonEmptyStr
 
     def summarize(self) -> PromptResourceSummary:

@@ -16,6 +16,8 @@ from doxagent.monitoring.schema import (
 from doxagent.monitoring.service import MonitoringBusService
 from doxagent.persistent_runtime import InMemoryPersistentRuntimeRepository
 from doxagent.persistent_runtime.schema import (
+    A2Result,
+    A2VerificationStatus,
     Conviction,
     ExecutionExceptionLog,
     RouteDecision,
@@ -72,11 +74,15 @@ def test_dashboard_real_runtime_overview_graph_nodes_and_sse() -> None:
     nodes = {node["node_id"]: node for node in graph_payload["nodes"]}
     edges = {edge["edge_id"]: edge for edge in graph_payload["edges"]}
     assert nodes["w1"]["in_count"] == 3
+    assert nodes["a2"]["in_count"] == 1
+    assert nodes["a2"]["out_count"] == 1
     assert nodes["o3"]["status"] == "degraded"
     assert nodes["exception_queue"]["in_count"] == 1
     assert nodes["trading_records"]["in_count"] == 1
     assert edges["route_engine_to_trading"]["count"] == 1
-    assert edges["route_engine_to_o3"]["count"] == 2
+    assert edges["route_engine_to_o3"]["count"] == 1
+    assert edges["route_engine_to_a2"]["count"] == 1
+    assert edges["a2_to_o3"]["count"] == 1
     assert edges["route_engine_to_exception_queue"]["count"] == 1
     assert edges["o3_to_exception_queue"]["count"] == 1
 
@@ -362,8 +368,8 @@ def _seed_runtime_state(
             route_decision=RouteDecision(
                 source_message_id="std_nvda_runtime_002",
                 ticker="NVDA",
-                route=RuntimeRoute.O3,
-                reason="Escalate rumor to duty expert.",
+                route=RuntimeRoute.A2,
+                reason="Verify social rumor before O3 duty expert.",
             ),
             w1_result=W1Result(
                 is_new=True,
@@ -376,8 +382,19 @@ def _seed_runtime_state(
                 matched_policy_code="POLICY_EBA_RUMOR",
                 reasoning="Needs expert verification.",
             ),
+            a2_result=A2Result(
+                is_new=True,
+                verification_status=A2VerificationStatus.LIKELY_TRUE,
+                reasoning="A2 found enough corroboration for O3 escalation.",
+            ),
             status="running",
-            message_statuses=["received", "w1_completed", "w2_completed", "o3_running"],
+            message_statuses=[
+                "received",
+                "w1_completed",
+                "w2_completed",
+                "a2_running",
+                "o3_running",
+            ],
             node_traces=[
                 RuntimeNodeTrace(
                     node="W1",
@@ -389,6 +406,12 @@ def _seed_runtime_state(
                     node="W2",
                     status="succeeded",
                     duration_ms=1500,
+                    started_at=second_time,
+                ),
+                RuntimeNodeTrace(
+                    node="A2",
+                    status="succeeded",
+                    duration_ms=2100,
                     started_at=second_time,
                 ),
                 RuntimeNodeTrace(

@@ -3,7 +3,11 @@
 from datetime import UTC, datetime
 from typing import Any
 
-from doxagent.blackboard.errors import PatchValidationError, StateTransitionError
+from doxagent.blackboard.errors import (
+    PatchValidationError,
+    RunNotFoundError,
+    StateTransitionError,
+)
 from doxagent.blackboard.repository import BlackboardRepository, InMemoryBlackboardRepository
 from doxagent.blackboard.state import BlackboardRun, create_empty_run
 from doxagent.models import (
@@ -47,6 +51,22 @@ class BlackboardService:
         payload: dict[str, Any],
         evidence_refs: list[EvidenceRef] | None = None,
     ) -> WorkingMemoryEntry:
+        header_loader = getattr(self.repository, "get_run_header", None)
+        inserter = getattr(self.repository, "insert_working_memory_entry", None)
+        if callable(header_loader) and callable(inserter):
+            header = header_loader(run_id)
+            entry = WorkingMemoryEntry(
+                entry_id=new_id("wm"),
+                ticker=header.ticker,
+                author_agent=author_agent,
+                content_type=content_type,
+                payload=payload,
+                evidence_refs=evidence_refs or [],
+                created_at=datetime.now(UTC),
+            )
+            inserter(run_id, entry)
+            return entry
+
         entry: WorkingMemoryEntry | None = None
 
         def mutate(run: BlackboardRun) -> BlackboardRun:
@@ -99,6 +119,37 @@ class BlackboardService:
         permissions: AgentPermissions,
         trigger_reason: str,
     ) -> CommitLogEntry:
+        header_loader = getattr(self.repository, "get_run_header", None)
+        document_loader = getattr(self.repository, "get_document_bundle_by_run_id", None)
+        apply_patch_commit = getattr(self.repository, "apply_patch_commit", None)
+        if callable(header_loader) and callable(document_loader) and callable(apply_patch_commit):
+            header = header_loader(run_id)
+            run = document_loader(header.ticker, run_id, [patch.target.document_type])
+            list_objections = getattr(self.repository, "list_objections", None)
+            run.objections = (
+                list_objections(run_id)
+                if callable(list_objections)
+                else self.repository.list_unresolved_objections(run_id)
+            )
+            run.delegations = self.repository.list_blocking_delegations(run_id)
+            self._validate_patch(run, patch, permissions)
+            self._apply_patch(run.belief_state, patch)
+            commit = CommitLogEntry(
+                commit_id=new_id("commit"),
+                patch=patch,
+                triggered_by=patch.author_agent,
+                trigger_reason=trigger_reason,
+                resolved_objection_ids=[
+                    item.objection_id for item in run.objections if not item.is_unresolved
+                ],
+                residual_disputes=[
+                    item.objection_id for item in run.objections if item.is_unresolved
+                ],
+                created_at=datetime.now(UTC),
+            )
+            apply_patch_commit(run_id, run.belief_state, commit)
+            return commit
+
         commit: CommitLogEntry | None = None
 
         def mutate(run: BlackboardRun) -> BlackboardRun:
@@ -133,6 +184,27 @@ class BlackboardService:
         return commit
 
     def create_objection(self, run_id: str, objection: Objection) -> Objection:
+        header_loader = getattr(self.repository, "get_run_header", None)
+        getter = getattr(self.repository, "get_objections_by_ids", None)
+        upserter = getattr(self.repository, "upsert_objection", None)
+        if callable(header_loader) and callable(getter) and callable(upserter):
+            header = header_loader(run_id)
+            self._validate_target_matches_ticker(header.ticker, objection.target)
+            enriched = _enrich_objection(objection)
+            existing_by_id = getter(run_id, [enriched.objection_id])
+            if existing_by_id:
+                updated = _merge_objections(existing_by_id[0], enriched)
+                upserter(run_id, updated)
+                return updated
+            for existing in self.repository.list_unresolved_objections(run_id):
+                if _objection_dedupe_key(existing) != _objection_dedupe_key(enriched):
+                    continue
+                updated = _merge_objections(existing, enriched)
+                upserter(run_id, updated)
+                return updated
+            upserter(run_id, enriched)
+            return enriched
+
         updated: Objection | None = None
 
         def mutate(run: BlackboardRun) -> BlackboardRun:
@@ -162,6 +234,18 @@ class BlackboardService:
         return updated
 
     def create_delegation(self, run_id: str, delegation: Delegation) -> Delegation:
+        header_loader = getattr(self.repository, "get_run_header", None)
+        getter = getattr(self.repository, "get_delegations_by_ids", None)
+        inserter = getattr(self.repository, "insert_delegation", None)
+        if callable(header_loader) and callable(getter) and callable(inserter):
+            header = header_loader(run_id)
+            self._validate_target_matches_ticker(header.ticker, delegation.blocking_scope)
+            existing = getter(run_id, [delegation.delegation_id])
+            if existing:
+                return existing[0]
+            inserter(run_id, delegation)
+            return delegation
+
         def mutate(run: BlackboardRun) -> BlackboardRun:
             self._validate_target_matches_run(run, delegation.blocking_scope)
             if any(
@@ -317,9 +401,12 @@ class BlackboardService:
             raise PatchValidationError("Patch target is blocked by objection or delegation.")
 
     def _validate_target_matches_run(self, run: BlackboardRun, target: BlackboardTarget) -> None:
-        if target.ticker is not None and target.ticker != run.ticker:
+        self._validate_target_matches_ticker(run.ticker, target)
+
+    def _validate_target_matches_ticker(self, ticker: str, target: BlackboardTarget) -> None:
+        if target.ticker is not None and target.ticker != ticker:
             raise PatchValidationError(
-                f"Target ticker {target.ticker} does not match run ticker {run.ticker}."
+                f"Target ticker {target.ticker} does not match run ticker {ticker}."
             )
 
     def _apply_patch(self, belief_state: BeliefStateSnapshot, patch: BlackboardPatch) -> None:
@@ -354,6 +441,32 @@ class BlackboardService:
         changed_paths: list[str] | None = None,
         evidence_refs: list[EvidenceRef] | None = None,
     ) -> Objection:
+        getter = getattr(self.repository, "get_objections_by_ids", None)
+        updater = getattr(self.repository, "update_objection", None)
+        if callable(getter) and callable(updater):
+            objections = getter(run_id, [objection_id])
+            if not objections:
+                raise StateTransitionError(f"Objection not found: {objection_id}")
+            objection = objections[0]
+            updated = objection.model_copy(
+                update={
+                    "status": status,
+                    "resolution_note": note,
+                    "resolution_changed_paths": changed_paths
+                    if changed_paths is not None
+                    else objection.resolution_changed_paths,
+                    "resolution_evidence_refs": evidence_refs
+                    if evidence_refs is not None
+                    else objection.resolution_evidence_refs,
+                },
+                deep=True,
+            )
+            try:
+                updater(run_id, updated)
+            except RunNotFoundError as exc:
+                raise StateTransitionError(f"Objection not found: {objection_id}") from exc
+            return updated
+
         updated: Objection | None = None
 
         def mutate(run: BlackboardRun) -> BlackboardRun:
@@ -389,6 +502,23 @@ class BlackboardService:
         status: DelegationStatus,
         summary: str | None = None,
     ) -> Delegation:
+        getter = getattr(self.repository, "get_delegations_by_ids", None)
+        updater = getattr(self.repository, "update_delegation", None)
+        if callable(getter) and callable(updater):
+            delegations = getter(run_id, [delegation_id])
+            if not delegations:
+                raise StateTransitionError(f"Delegation not found: {delegation_id}")
+            delegation = delegations[0]
+            updated = delegation.model_copy(
+                update={"status": status, "result_summary": summary},
+                deep=True,
+            )
+            try:
+                updater(run_id, updated)
+            except RunNotFoundError as exc:
+                raise StateTransitionError(f"Delegation not found: {delegation_id}") from exc
+            return updated
+
         updated: Delegation | None = None
 
         def mutate(run: BlackboardRun) -> BlackboardRun:

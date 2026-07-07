@@ -43,6 +43,7 @@ from doxagent.persistent_runtime import (
     HeuristicW2Worker,
     InMemoryPersistentRuntimeRepository,
     KnownEventsPatch,
+    LazyAgentRunnerA2Worker,
     LazyAgentRunnerO3Worker,
     LazyAgentRunnerW1Worker,
     LazyAgentRunnerW2Worker,
@@ -756,6 +757,93 @@ def test_w1_worker_timeout_records_exception_without_blocking_queue() -> None:
     assert record.node_traces[0].status == "failed"
 
 
+def test_worker_traces_record_input_size_timeout_budget_and_retries() -> None:
+    class FlakyO3:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def judge(
+            self,
+            message: RuntimeSourceMessage,
+            context: dict[str, object],
+            budget: O3RuntimeBudget,
+        ) -> O3Result:
+            self.calls += 1
+            if self.calls == 1:
+                raise RuntimeError("transient O3 failure")
+            return O3Result(
+                primary_action=O3PrimaryAction.INGEST_QUEUE,
+                reasoning="retry recovered O3 judgment",
+            )
+
+    o3 = FlakyO3()
+    service = PersistentRuntimeExecutionService(
+        InMemoryPersistentRuntimeRepository(),
+        w1_worker=StaticW1(_w1(confidence=W1Confidence.LOW)),
+        w2_worker=StaticW2(_w2(W2Type.NULL, policy_code=None)),
+        o3_worker=o3,
+        o3_budget=O3RuntimeBudget(target_seconds=9),
+        w1_w2_worker_timeout_seconds=12,
+        worker_retry_attempts=2,
+    )
+
+    record = service.execute_message(
+        _message(message_id="std_observed_workers"),
+        context={
+            "known_events": [{"event_id": "KE_TRACE", "core_fact": "old milestone"}],
+            "monitoring_policies": [
+                {"policy_id": "POLICY_TRACE", "trigger_condition": "contract milestone"}
+            ],
+        },
+    )
+
+    traces = {trace.node: trace for trace in record.node_traces}
+    assert traces["W1"].timeout_budget_ms == 12_000
+    assert traces["W2"].timeout_budget_ms == 12_000
+    assert traces["O3"].timeout_budget_ms == 9_000
+    assert traces["O3"].attempts == 2
+    assert o3.calls == 2
+    for node in ("W1", "W2", "O3"):
+        assert traces[node].source_message_bytes is not None
+        assert traces[node].source_message_bytes > 0
+        assert traces[node].runtime_context_bytes is not None
+        assert traces[node].runtime_context_bytes > 0
+        assert traces[node].prompt_input_bytes == (
+            traces[node].source_message_bytes + traces[node].runtime_context_bytes
+        )
+
+
+def test_worker_retry_attempts_are_recorded_for_w1_w2_path() -> None:
+    class FlakyW1:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def classify(
+            self,
+            message: RuntimeSourceMessage,
+            context: dict[str, object],
+        ) -> W1Result:
+            self.calls += 1
+            if self.calls == 1:
+                raise RuntimeError("transient W1 failure")
+            return _w1()
+
+    w1 = FlakyW1()
+    service = PersistentRuntimeExecutionService(
+        InMemoryPersistentRuntimeRepository(),
+        w1_worker=w1,
+        w2_worker=StaticW2(_w2()),
+        worker_retry_attempts=2,
+    )
+
+    record = service.execute_message(_message(message_id="std_flaky_w1"))
+
+    traces = {trace.node: trace for trace in record.node_traces}
+    assert record.route_decision.route is RuntimeRoute.TRADING_RECORD
+    assert traces["W1"].attempts == 2
+    assert w1.calls == 2
+
+
 def test_social_new_dtc_must_pass_a2_and_o3_before_trading_record() -> None:
     repository = InMemoryPersistentRuntimeRepository()
     service = PersistentRuntimeExecutionService(
@@ -1397,6 +1485,8 @@ def test_service_from_settings_configures_lazy_real_workers_without_eager_model_
     assert service.w1_worker._delegate is None
     assert isinstance(service.w2_worker, LazyAgentRunnerW2Worker)
     assert service.w2_worker._delegate is None
+    assert isinstance(service.a2_worker, LazyAgentRunnerA2Worker)
+    assert service.a2_worker._delegate is None
     assert isinstance(service.o3_worker, LazyAgentRunnerO3Worker)
     assert service.o3_worker._delegate is None
 
