@@ -46,7 +46,11 @@ from doxagent.persistent_runtime.schema import (
     W2Type,
     runtime_duplicate_keys,
 )
-from doxagent.persistent_runtime.workers import HeuristicW1Worker, HeuristicW2Worker
+from doxagent.persistent_runtime.workers import (
+    LazyAgentRunnerO3Worker,
+    LazyAgentRunnerW1Worker,
+    LazyAgentRunnerW2Worker,
+)
 from doxagent.settings import DoxAgentSettings
 
 JsonObject = dict[str, object]
@@ -146,10 +150,10 @@ class PersistentRuntimeExecutionService:
         return cls(
             repository,
             route_engine=route_engine,
-            w1_worker=w1_worker or HeuristicW1Worker(),
-            w2_worker=w2_worker or HeuristicW2Worker(),
+            w1_worker=w1_worker or LazyAgentRunnerW1Worker(resolved),
+            w2_worker=w2_worker or LazyAgentRunnerW2Worker(resolved),
             a2_worker=a2_worker,
-            o3_worker=o3_worker,
+            o3_worker=o3_worker or LazyAgentRunnerO3Worker(resolved),
             o3_budget=o3_budget,
             w1_w2_worker_timeout_seconds=w1_w2_worker_timeout_seconds,
         )

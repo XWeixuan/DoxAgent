@@ -433,6 +433,11 @@ def test_document2_detail_and_review_contexts_prefer_document1_context_pack() ->
     assert detail_tasks
     for task in detail_tasks:
         assert task.input_context["document1_context_pack"]["ticker"] == "NVDA"
+        assert "pending_patch_ids" not in task.input_context
+        assert "pending_patches" not in task.input_context
+        assert "working_memory_summary" not in task.input_context
+        assert "unresolved_objections" not in task.input_context
+        assert "blocking_delegations" not in task.input_context
         section = task.input_context["global_research_context"]["sections"][
             "fundamental_report"
         ]
@@ -451,6 +456,12 @@ def test_document2_detail_and_review_contexts_prefer_document1_context_pack() ->
     }
     for task in review_tasks:
         assert task.input_context["document1_context_pack"]["ticker"] == "NVDA"
+        assert "pending_patch_ids" not in task.input_context
+        assert "working_memory_summary" not in task.input_context
+        assert "unresolved_objections" not in task.input_context
+        assert "blocking_delegations" not in task.input_context
+        assert task.input_context["pending_patches"]
+        assert "after" not in task.input_context["pending_patches"][0]
         assert task.input_context["global_research_context"]["compaction"][
             "omitted_full_text"
         ] is True
@@ -759,7 +770,10 @@ def test_resolve_objections_uses_field_repair_task_and_transaction_audit() -> No
         and task.agent_name is AgentName.O1_EXPECTATION_OWNER
     ]
     assert resolver_tasks
-    assert all(task.required_output_schema == "Document2FieldRepairResult" for task in resolver_tasks)
+    assert all(
+        task.required_output_schema == "Document2FieldRepairResult"
+        for task in resolver_tasks
+    )
     assert all(task.permissions.writable_targets == [] for task in resolver_tasks)
     assert all(task.permissions.can_propose_patch is False for task in resolver_tasks)
     assert all(
@@ -774,6 +788,20 @@ def test_resolve_objections_uses_field_repair_task_and_transaction_audit() -> No
         task.input_context["react_runtime_budget"]["max_tool_call_batches"] == 0
         for task in resolver_tasks
     )
+    for task in resolver_tasks:
+        assert "pending_patch_ids" not in task.input_context
+        assert "pending_patches" not in task.input_context
+        assert "working_memory_summary" not in task.input_context
+        assert "blocking_delegations" not in task.input_context
+        assert "global_research_context" not in task.input_context
+        assert "document1_context_pack" not in task.input_context
+        scoped_objection_ids = {
+            objection["objection_id"]
+            for objection in task.input_context["unresolved_objections"]
+        }
+        assert scoped_objection_ids <= set(
+            task.input_context["field_repair_task"]["objection_ids"]
+        )
     assert result.summary.unresolved_objection_count == 0
     assert result.summary.blocking_delegation_count == 0
 

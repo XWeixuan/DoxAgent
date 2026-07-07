@@ -507,6 +507,11 @@ function CostAuditView({
   return (
     <div className="flex flex-col gap-6">
       <MetricStrip>
+        <MetricCell
+          title="Audit status"
+          value={<StatusBadge status={cost.status} label={auditStatusLabel(cost.status)} />}
+          status={cost.status}
+        />
         <MetricCell title={`${labelPrefix}token 总量`} value={formatNumber(cost.kpis.today_total_tokens)} status="normal" />
         <MetricCell title={`${labelPrefix}总成本`} value={formatCurrency(cost.kpis.today_total_cost_usd)} status="normal" />
         <MetricCell title={`${labelPrefix}Input tokens`} value={formatNumber(cost.kpis.today_input_tokens)} status="normal" />

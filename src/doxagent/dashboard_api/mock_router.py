@@ -469,6 +469,22 @@ def create_mock_router(store: MockDashboardStore | None = None) -> APIRouter:
         )
         return _ok(request, _required_payload(payload, ticker=ticker))
 
+    @router.get("/tickers/{ticker}/runtime/records")
+    async def runtime_records(
+        request: Request,
+        ticker: str,
+        result_type: str | None = None,
+        limit: int | None = None,
+        cursor: str | None = None,
+    ) -> JsonObject:
+        payload = resolved_store.list_runtime_records(
+            ticker,
+            result_type=result_type,
+            limit=limit,
+            cursor=cursor,
+        )
+        return _ok(request, _required_payload(payload, ticker=ticker))
+
     @router.get("/tickers/{ticker}/runtime/executions/{execution_id}")
     async def runtime_execution_detail(
         request: Request,

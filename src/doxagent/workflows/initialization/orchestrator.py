@@ -14,6 +14,22 @@ from doxagent.workflows.initialization.mock import InitializationMockResultFacto
 from doxagent.workflows.initialization.recovery import InitializationRecoveryMixin
 from doxagent.workflows.initialization.shared import *
 
+_DOCUMENT2_GENERATE_NODES = {
+    WorkflowNode.GENERATE_EXPECTATION_CONSTRUCTION,
+    WorkflowNode.GENERATE_EXPECTATION_DETAILS,
+}
+_DOCUMENT2_REVIEW_NODES = {
+    WorkflowNode.REVIEW_EXPECTATION_CONSTRUCTION,
+    WorkflowNode.REVIEW_EXPECTATION_FIELDS,
+}
+_DOCUMENT2_RESOLVE_NODES = {
+    WorkflowNode.RESOLVE_EXPECTATION_CONSTRUCTION,
+    WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS,
+}
+_DOCUMENT2_NODES = (
+    _DOCUMENT2_GENERATE_NODES | _DOCUMENT2_REVIEW_NODES | _DOCUMENT2_RESOLVE_NODES
+)
+
 _DOCUMENT3_GENERATE_NODES = {
     WorkflowNode.GENERATE_KNOWN_EVENTS,
     WorkflowNode.GENERATE_MONITORING_CONFIG,
@@ -2667,7 +2683,57 @@ class BlackboardInitializationWorkflow(
             document1_context_pack = global_research_context.get("document1_context_pack")
             if isinstance(document1_context_pack, dict):
                 context["document1_context_pack"] = document1_context_pack
+        return self._compact_workflow_task_input_context(context, node)
+
+    def _compact_workflow_task_input_context(
+        self,
+        context: dict[str, Any],
+        node: WorkflowNode,
+    ) -> dict[str, Any]:
+        context = self._compact_document2_task_input_context(context, node)
         return self._compact_document3_task_input_context(context, node)
+
+    def _compact_document2_task_input_context(
+        self,
+        context: dict[str, Any],
+        node: WorkflowNode,
+    ) -> dict[str, Any]:
+        if node not in _DOCUMENT2_NODES:
+            return context
+        compacted = dict(context)
+        for key in (
+            "working_memory_summary",
+            "unresolved_objections",
+            "blocking_delegations",
+        ):
+            compacted.pop(key, None)
+        if node in _DOCUMENT2_GENERATE_NODES:
+            compacted.pop("pending_patch_ids", None)
+            compacted.pop("pending_patches", None)
+            return compacted
+        if node is WorkflowNode.REVIEW_EXPECTATION_CONSTRUCTION:
+            compacted.pop("pending_patch_ids", None)
+            compacted.pop("pending_patches", None)
+            compacted.pop("global_research_context", None)
+            compacted.pop("document1_context_pack", None)
+            return compacted
+        if node is WorkflowNode.REVIEW_EXPECTATION_FIELDS:
+            compacted.pop("pending_patch_ids", None)
+            compacted.pop("pending_patches", None)
+            compacted.pop("global_research_context", None)
+            compacted.pop("document1_context_pack", None)
+            return compacted
+        if node is WorkflowNode.RESOLVE_EXPECTATION_CONSTRUCTION:
+            compacted.pop("pending_patch_ids", None)
+            compacted.pop("pending_patches", None)
+            return compacted
+        if node is WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS:
+            compacted.pop("pending_patch_ids", None)
+            compacted.pop("pending_patches", None)
+            compacted.pop("global_research_context", None)
+            compacted.pop("document1_context_pack", None)
+            return compacted
+        return compacted
 
     def _compact_document3_task_input_context(
         self,

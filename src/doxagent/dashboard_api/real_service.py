@@ -17,6 +17,7 @@ from doxagent.blackboard import BlackboardService
 from doxagent.blackboard.errors import RunNotFoundError
 from doxagent.blackboard.state import BlackboardRun
 from doxagent.dashboard_api.backtest import DashboardBacktestService
+from doxagent.model_usage import ModelUsageCostService
 from doxagent.models import DocumentType
 from doxagent.models.documents import (
     DocumentBase,
@@ -107,6 +108,15 @@ RUNTIME_NODE_DEFINITIONS = (
     ("ingest_queue", "Ingest Queue"),
 )
 RUNTIME_NODE_IDS = {node_id for node_id, _label in RUNTIME_NODE_DEFINITIONS}
+RESULT_RECORD_TYPES = {
+    "all",
+    "trading_record",
+    "exception_queue",
+    "objection",
+    "known_event_patch",
+    "archive",
+    "ingest_queue",
+}
 AUDIT_PERIODS = {"today", "7d", "30d"}
 AUDIT_GROUP_BYS = {"node", "model", "ticker"}
 REVENUE_AUDIT_EVENT_TYPE = "audit.revenue.status_changed"
@@ -187,11 +197,13 @@ class RealDashboardOverviewService:
         dashboard_api: DashboardStateAPI | None = None,
         *,
         backtest_service: DashboardBacktestService | None = None,
+        model_usage_service: ModelUsageCostService | None = None,
     ) -> None:
         self.dashboard_api = dashboard_api or DashboardStateAPI.from_settings()
         self.backtest_service = backtest_service or DashboardBacktestService(
             self.dashboard_api.scheduler
         )
+        self.model_usage_service = model_usage_service or ModelUsageCostService.from_settings()
 
     def overview(self, *, date_text: str | None = None, tz: str | None = None) -> JsonObject:
         zone = _zone(tz)
@@ -210,7 +222,9 @@ class RealDashboardOverviewService:
                 ),
                 "today_message_count": message_count,
                 "today_dtc_count": sum(int(card["today_dtc_count"]) for card in cards),
-                "today_token_cost_usd": None,
+                "today_token_cost_usd": _sum_optional(
+                    card.get("today_cost_usd") for card in cards
+                ),
                 "exception_count": _count_on_day(
                     (item.created_at for item in exceptions),
                     target_date=target_date,
@@ -889,6 +903,26 @@ class RealDashboardOverviewService:
             items = [item for item in items if item["source_type"] == source_type_filter]
         return _paginate(items, limit=limit, cursor=cursor)
 
+    def runtime_records(
+        self,
+        ticker: str,
+        *,
+        result_type: str | None = None,
+        limit: int | None = None,
+        cursor: str | None = None,
+    ) -> JsonObject:
+        context = self._runtime_context(_ticker(ticker))
+        resolved_type = _runtime_result_type(result_type)
+        if resolved_type == "all":
+            records = [
+                _runtime_result_record_from_execution(execution, context)
+                for execution in context.executions
+            ]
+        else:
+            records = _runtime_result_records_by_type(context, resolved_type)
+        records.sort(key=lambda item: str(item.get("created_at") or ""), reverse=True)
+        return _paginate(records, limit=limit, cursor=cursor)
+
     def runtime_execution_detail(self, ticker: str, execution_id: str) -> JsonObject:
         normalized = _ticker(ticker)
         context = self._runtime_context(normalized)
@@ -1003,16 +1037,25 @@ class RealDashboardOverviewService:
         target_date = _target_date(date_text, zone)
         resolved_period = _audit_period(period)
         resolved_group_by = _audit_group_by(group_by)
-        records = [
-            record
-            for record in self._cost_records(normalized)
-            if _in_audit_period(
-                _parse_dt_text(record.get("time")),
-                resolved_period,
-                target_date,
-                zone,
+        try:
+            records = [
+                record
+                for record in self._cost_records(normalized)
+                if _in_audit_period(
+                    _parse_dt_text(record.get("time")),
+                    resolved_period,
+                    target_date,
+                    zone,
+                )
+            ]
+        except Exception as exc:
+            return _failed_cost_audit_payload(
+                normalized,
+                period=resolved_period,
+                group_by=resolved_group_by,
+                target_date=target_date,
+                error=str(exc),
             )
-        ]
         records.sort(key=lambda item: str(item.get("time") or ""), reverse=True)
         return _cost_audit_payload(
             normalized,
@@ -1051,7 +1094,10 @@ class RealDashboardOverviewService:
         node_filter = node.strip().lower() if node and node.strip() else None
         model_filter = model.strip() if model and model.strip() else None
         status_filter = status.strip().lower() if status and status.strip() else None
-        items = self._cost_records(normalized)
+        try:
+            items = self._cost_records(normalized)
+        except Exception:
+            items = []
         if resolved_period:
             items = [
                 item
@@ -1173,6 +1219,26 @@ class RealDashboardOverviewService:
                         "status": status,
                         "final_route": _runtime_final_route(execution, context),
                         "exception_types": _runtime_exception_types(execution, context),
+                    },
+                }
+            )
+            result_record = _runtime_result_record_from_execution(execution, context)
+            result_record_id = str(result_record.get("record_id") or execution.execution_id)
+            result_type = str(result_record.get("result_type") or "all")
+            events.append(
+                {
+                    "event_id": (
+                        f"rt_result_{result_type}_{result_record_id}_"
+                        f"{int(_aware(occurred_at).timestamp())}"
+                    ),
+                    "event_type": "runtime.result.created",
+                    "ticker": execution_ticker,
+                    "occurred_at": _dt(occurred_at),
+                    "payload": {
+                        "record_id": result_record_id,
+                        "execution_id": execution.execution_id,
+                        "source_message_id": execution.source_message.source_message_id,
+                        "result_type": result_type,
                     },
                 }
             )
@@ -1504,6 +1570,11 @@ class RealDashboardOverviewService:
             target_date=target_date,
             zone=zone,
         )
+        today_cost_usd = self._today_cost_usd(
+            state.ticker,
+            target_date=target_date,
+            zone=zone,
+        )
         health = _health_with_exceptions(
             state.health,
             exceptions,
@@ -1522,7 +1593,7 @@ class RealDashboardOverviewService:
             "last_message_at": _dt(last_message_at),
             "last_worker_processed_at": _dt(last_worker_processed_at),
             "today_dtc_count": today_dtc_count,
-            "today_cost_usd": None,
+            "today_cost_usd": today_cost_usd,
             "last_error": state.last_error,
             "startup_progress": _startup_progress_payload(state),
             "_today_message_count": today_message_count,
@@ -1685,10 +1756,38 @@ class RealDashboardOverviewService:
         )
 
     def _cost_records(self, ticker: str) -> list[JsonObject]:
+        primary_records = self.model_usage_service.cost_records(
+            ticker=ticker,
+            limit=READ_AGGREGATION_LIMIT,
+            newest_first=True,
+        )
+        if primary_records:
+            return primary_records
         records: list[JsonObject] = []
         for execution in self._executions(ticker):
             records.extend(_cost_records_from_execution(execution))
         return records
+
+    def _today_cost_usd(
+        self,
+        ticker: str,
+        *,
+        target_date: date,
+        zone: ZoneInfo,
+    ) -> float | None:
+        try:
+            records = [
+                record
+                for record in self._cost_records(ticker)
+                if _is_on_day(
+                    _parse_dt_text(record.get("time")),
+                    target_date=target_date,
+                    zone=zone,
+                )
+            ]
+        except Exception:
+            return None
+        return _sum_optional(record.get("cost_usd") for record in records)
 
     def _latest_scheduler_audit_event(
         self,
@@ -1704,11 +1803,22 @@ class RealDashboardOverviewService:
         return None
 
     def _cost_status_event(self, ticker: str) -> JsonObject:
-        records = self._cost_records(ticker)
-        status = _cost_audit_status(records)
-        occurred_at = _latest_dt(
-            _parse_dt_text(record.get("time")) for record in records
-        ) or datetime.now(UTC)
+        try:
+            records = self._cost_records(ticker)
+            status = _cost_audit_status(records)
+            occurred_at = _latest_dt(
+                _parse_dt_text(record.get("time")) for record in records
+            ) or datetime.now(UTC)
+            missing_capabilities = (
+                []
+                if status == "completed"
+                else ["model_pricing_table"] if status == "partial" else ["model_usage_events"]
+            )
+        except Exception:
+            records = []
+            status = "failed"
+            occurred_at = datetime.now(UTC)
+            missing_capabilities = ["model_usage_aggregation"]
         return {
             "event_id": f"audit_cost_status_{ticker}_{int(_aware(occurred_at).timestamp())}",
             "event_type": COST_AUDIT_EVENT_TYPE,
@@ -1718,11 +1828,7 @@ class RealDashboardOverviewService:
                 "ticker": ticker,
                 "status": status,
                 "cost_record_count": len(records),
-                "missing_capabilities": (
-                    []
-                    if status == "completed"
-                    else ["model_pricing_table", "unified_model_usage_persistence"]
-                ),
+                "missing_capabilities": missing_capabilities,
             },
         }
 
@@ -2239,6 +2345,21 @@ def _runtime_node_id(value: str) -> str:
     return normalized
 
 
+def _runtime_result_type(value: str | None) -> str:
+    normalized = (value or "all").strip().lower()
+    if not normalized:
+        normalized = "all"
+    if normalized not in RESULT_RECORD_TYPES:
+        raise InvalidAuditParams(
+            "Unsupported runtime result_type.",
+            details={
+                "result_type": normalized,
+                "supported_result_types": sorted(RESULT_RECORD_TYPES),
+            },
+        )
+    return normalized
+
+
 def _group_by_source(items: Iterable[T]) -> dict[str, list[T]]:
     grouped: dict[str, list[T]] = {}
     for item in items:
@@ -2697,6 +2818,333 @@ def _runtime_execution_detail(
         "created_at": _dt(execution.created_at),
         "updated_at": _dt(execution.updated_at),
     }
+
+
+def _runtime_result_record_from_execution(
+    execution: RuntimeExecutionRecord,
+    context: RuntimeDashboardContext,
+) -> JsonObject:
+    result_type = _runtime_result_type_from_execution(execution, context)
+    return _runtime_result_record(
+        context,
+        record_id=execution.execution_id,
+        result_type=result_type,
+        source_message_id=execution.source_message.source_message_id,
+        execution=execution,
+        status=_runtime_execution_status(execution, context),
+        created_at=execution.created_at,
+        result=_runtime_result_payload_for_execution(execution, context, result_type),
+        reasoning=_runtime_reasoning_for_execution(execution),
+    )
+
+
+def _runtime_result_records_by_type(
+    context: RuntimeDashboardContext,
+    result_type: str,
+) -> list[JsonObject]:
+    executions_by_source = _runtime_executions_by_source(context)
+    records: list[JsonObject] = []
+    if result_type == "trading_record":
+        for items in context.trading_records_by_source.values():
+            for item in items:
+                records.append(_runtime_result_record_from_trading_record(context, item, executions_by_source))
+    elif result_type == "exception_queue":
+        for items in context.exceptions_by_source.values():
+            for item in items:
+                records.append(_runtime_result_record_from_exception(context, item, executions_by_source))
+    elif result_type == "objection":
+        for items in context.objections_by_source.values():
+            for item in items:
+                records.append(_runtime_result_record_from_objection(context, item, executions_by_source))
+    elif result_type == "known_event_patch":
+        for items in context.known_event_patch_by_source.values():
+            for item in items:
+                records.append(_runtime_result_record_from_known_event_patch(context, item, executions_by_source))
+    elif result_type == "archive":
+        for items in context.archive_by_source.values():
+            for item in items:
+                records.append(_runtime_result_record_from_archive(context, item, executions_by_source))
+    elif result_type == "ingest_queue":
+        for items in context.ingest_queue_by_source.values():
+            for item in items:
+                records.append(_runtime_result_record_from_ingest_queue(context, item, executions_by_source))
+    return records
+
+
+def _runtime_result_record_from_trading_record(
+    context: RuntimeDashboardContext,
+    item: TradingRecord,
+    executions_by_source: dict[str, RuntimeExecutionRecord],
+) -> JsonObject:
+    execution = executions_by_source.get(item.source_message_id)
+    return _runtime_result_record(
+        context,
+        record_id=item.record_id,
+        result_type="trading_record",
+        source_message_id=item.source_message_id,
+        execution=execution,
+        status=str(item.status),
+        created_at=item.created_at,
+        result={
+            "side": str(item.trade_intent.side),
+            "conviction": str(item.trade_intent.conviction),
+            "size_bucket": str(item.trade_intent.size_bucket),
+            "matched_policy_code": item.matched_policy_code,
+            "trade_intent.reasoning": item.trade_intent.reasoning,
+        },
+        reasoning=item.trade_intent.reasoning,
+    )
+
+
+def _runtime_result_record_from_exception(
+    context: RuntimeDashboardContext,
+    item: ExecutionExceptionLog,
+    executions_by_source: dict[str, RuntimeExecutionRecord],
+) -> JsonObject:
+    execution = executions_by_source.get(item.source_message_id)
+    return _runtime_result_record(
+        context,
+        record_id=item.exception_id,
+        result_type="exception_queue",
+        source_message_id=item.source_message_id,
+        execution=execution,
+        status="failed",
+        created_at=item.created_at,
+        result={
+            "exception_type": item.exception_type,
+            "node": item.node,
+            "message": item.message,
+        },
+        reasoning=item.message,
+    )
+
+
+def _runtime_result_record_from_objection(
+    context: RuntimeDashboardContext,
+    item: RuntimeObjectionRecord,
+    executions_by_source: dict[str, RuntimeExecutionRecord],
+) -> JsonObject:
+    execution = executions_by_source.get(item.source_message_id)
+    return _runtime_result_record(
+        context,
+        record_id=item.objection_id,
+        result_type="objection",
+        source_message_id=item.source_message_id,
+        execution=execution,
+        status=str(item.objection_type),
+        created_at=item.created_at,
+        result={
+            "blackboard_target": item.blackboard_target,
+            "objection_type": str(item.objection_type),
+            "reasoning": item.reason,
+        },
+        reasoning=item.reason,
+    )
+
+
+def _runtime_result_record_from_known_event_patch(
+    context: RuntimeDashboardContext,
+    item: KnownEventsPatchLog,
+    executions_by_source: dict[str, RuntimeExecutionRecord],
+) -> JsonObject:
+    execution = executions_by_source.get(item.source_message_id)
+    return _runtime_result_record(
+        context,
+        record_id=item.log_id,
+        result_type="known_event_patch",
+        source_message_id=item.source_message_id,
+        execution=execution,
+        status="completed",
+        created_at=item.changed_at,
+        result={
+            "core_fact": item.patch.core_fact,
+            "event_time_or_window": item.patch.event_time_or_window,
+            "duplicate_detection_keys": list(item.patch.duplicate_detection_keys),
+        },
+        reasoning=item.change_reason,
+    )
+
+
+def _runtime_result_record_from_archive(
+    context: RuntimeDashboardContext,
+    item: ArchiveItem,
+    executions_by_source: dict[str, RuntimeExecutionRecord],
+) -> JsonObject:
+    return _runtime_result_record(
+        context,
+        record_id=item.item_id,
+        result_type="archive",
+        source_message_id=item.source_message_id,
+        execution=executions_by_source.get(item.source_message_id),
+        status="completed",
+        created_at=item.created_at,
+        result={},
+        reasoning=item.reason,
+    )
+
+
+def _runtime_result_record_from_ingest_queue(
+    context: RuntimeDashboardContext,
+    item: IngestQueueItem,
+    executions_by_source: dict[str, RuntimeExecutionRecord],
+) -> JsonObject:
+    return _runtime_result_record(
+        context,
+        record_id=item.item_id,
+        result_type="ingest_queue",
+        source_message_id=item.source_message_id,
+        execution=executions_by_source.get(item.source_message_id),
+        status="pending",
+        created_at=item.created_at,
+        result={},
+        reasoning=item.reason,
+    )
+
+
+def _runtime_result_record(
+    context: RuntimeDashboardContext,
+    *,
+    record_id: str,
+    result_type: str,
+    source_message_id: str,
+    execution: RuntimeExecutionRecord | None,
+    status: str,
+    created_at: datetime,
+    result: JsonObject,
+    reasoning: str | None,
+) -> JsonObject:
+    node_durations = _runtime_node_durations(execution) if execution is not None else {}
+    return {
+        "record_id": record_id,
+        "result_type": result_type,
+        "execution_id": execution.execution_id if execution is not None else None,
+        "source_message_id": source_message_id,
+        "message_title": (
+            _runtime_message_title(execution, context)
+            if execution is not None
+            else source_message_id
+        ),
+        "ticker": execution.source_message.ticker if execution is not None else context.ticker,
+        "source_type": str(execution.source_message.source_type) if execution is not None else None,
+        "final_route": _runtime_final_route(execution, context) if execution is not None else None,
+        "status": status,
+        "node_durations_ms": node_durations,
+        "duration_ms": sum(node_durations.values()) if node_durations else None,
+        "is_new": _runtime_is_new(execution),
+        "policy_type": _runtime_policy_type(execution),
+        "summary": _runtime_message_summary_from_execution(execution, context),
+        "reasoning": reasoning,
+        "result": {key: value for key, value in result.items() if value is not None},
+        "created_at": _dt(created_at),
+    }
+
+
+def _runtime_result_type_from_execution(
+    execution: RuntimeExecutionRecord,
+    context: RuntimeDashboardContext,
+) -> str:
+    source_id = execution.source_message.source_message_id
+    if context.exceptions_by_source.get(source_id):
+        return "exception_queue"
+    if context.trading_records_by_source.get(source_id):
+        return "trading_record"
+    if context.objections_by_source.get(source_id):
+        return "objection"
+    if context.known_event_patch_by_source.get(source_id):
+        return "known_event_patch"
+    if context.archive_by_source.get(source_id):
+        return "archive"
+    if context.ingest_queue_by_source.get(source_id):
+        return "ingest_queue"
+    route = _runtime_final_route(execution, context)
+    if route == "failed_with_exception":
+        return "exception_queue"
+    if route in {"objection", "objection_note"}:
+        return "objection"
+    if route in {"trading_record", "archive", "ingest_queue"}:
+        return route
+    return "all"
+
+
+def _runtime_result_payload_for_execution(
+    execution: RuntimeExecutionRecord,
+    context: RuntimeDashboardContext,
+    result_type: str,
+) -> JsonObject:
+    source_id = execution.source_message.source_message_id
+    if result_type == "trading_record" and context.trading_records_by_source.get(source_id):
+        item = context.trading_records_by_source[source_id][0]
+        return {
+            "side": str(item.trade_intent.side),
+            "conviction": str(item.trade_intent.conviction),
+            "size_bucket": str(item.trade_intent.size_bucket),
+            "matched_policy_code": item.matched_policy_code,
+            "trade_intent.reasoning": item.trade_intent.reasoning,
+        }
+    if result_type == "exception_queue" and context.exceptions_by_source.get(source_id):
+        item = context.exceptions_by_source[source_id][0]
+        return {
+            "exception_type": item.exception_type,
+            "node": item.node,
+            "message": item.message,
+        }
+    if result_type == "objection" and context.objections_by_source.get(source_id):
+        item = context.objections_by_source[source_id][0]
+        return {
+            "blackboard_target": item.blackboard_target,
+            "objection_type": str(item.objection_type),
+            "reasoning": item.reason,
+        }
+    if result_type == "known_event_patch" and context.known_event_patch_by_source.get(source_id):
+        item = context.known_event_patch_by_source[source_id][0]
+        return {
+            "core_fact": item.patch.core_fact,
+            "event_time_or_window": item.patch.event_time_or_window,
+            "duplicate_detection_keys": list(item.patch.duplicate_detection_keys),
+        }
+    return {}
+
+
+def _runtime_is_new(execution: RuntimeExecutionRecord | None) -> bool | None:
+    if execution is None:
+        return None
+    if execution.w1_result is not None:
+        return execution.w1_result.is_new
+    if execution.a2_result is not None:
+        return execution.a2_result.is_new
+    return None
+
+
+def _runtime_policy_type(execution: RuntimeExecutionRecord | None) -> str | None:
+    if execution is None or execution.w2_result is None:
+        return None
+    return str(execution.w2_result.type)
+
+
+def _runtime_reasoning_for_execution(execution: RuntimeExecutionRecord) -> str | None:
+    if execution.o3_result is not None and execution.o3_result.reasoning:
+        return execution.o3_result.reasoning
+    if execution.w2_result is not None and execution.w2_result.reasoning:
+        return execution.w2_result.reasoning
+    if execution.w1_result is not None and execution.w1_result.reasoning:
+        return execution.w1_result.reasoning
+    return execution.route_decision.reason
+
+
+def _runtime_message_summary_from_execution(
+    execution: RuntimeExecutionRecord | None,
+    context: RuntimeDashboardContext,
+) -> str | None:
+    if execution is None:
+        return None
+    source_id = execution.source_message.source_message_id
+    standard = context.messages_by_id.get(source_id)
+    if standard is not None:
+        summary = _message_summary(standard)
+        if summary:
+            return summary
+    body = execution.source_message.body
+    return _truncate(body, 240) if body else None
 
 
 def _runtime_dump_optional(value: Any) -> JsonObject | None:
@@ -3229,10 +3677,47 @@ def _cost_audit_payload(
     }
 
 
+def _failed_cost_audit_payload(
+    ticker: str,
+    *,
+    period: str,
+    group_by: str,
+    target_date: date,
+    error: str,
+) -> JsonObject:
+    return {
+        "ticker": ticker,
+        "period": period,
+        "status": "failed",
+        "group_by": group_by,
+        "kpis": {
+            "today_input_tokens": None,
+            "today_output_tokens": None,
+            "today_total_tokens": None,
+            "today_total_cost_usd": None,
+            "highest_cost_node": None,
+            "retry_cost_usd": None,
+        },
+        "trend": [
+            {"date": item_date.isoformat(), "total_cost_usd": None, "total_tokens": None}
+            for item_date in _audit_period_dates(period, target_date)
+        ],
+        "breakdown": {"by_node": [], "by_model": []},
+        "error": {"message": error},
+    }
+
+
 def _cost_audit_status(records: list[JsonObject]) -> str:
     if not records:
         return "missing"
-    if all(isinstance(record.get("cost_usd"), int | float) for record in records):
+    usage_records = [
+        record
+        for record in records
+        if isinstance(record.get("total_tokens"), int | float) and int(record["total_tokens"]) > 0
+    ]
+    if not usage_records:
+        return "missing"
+    if all(isinstance(record.get("cost_usd"), int | float) for record in usage_records):
         return "completed"
     return "partial"
 

@@ -17,6 +17,7 @@ from doxagent.gateway import (
     tracing_extra_from_metadata,
     wrap_provider_client,
 )
+from doxagent.model_usage import ModelUsageRecorder
 from doxagent.models import AgentResult, AgentTask, ResultStatus
 from doxagent.prompts import PromptInjector
 from doxagent.settings import DoxAgentSettings
@@ -134,6 +135,7 @@ def default_real_agent_runner(
         model_gateway=ModelGateway(
             _build_bailian_model_client(client, settings=resolved_settings),
             fallbacks=fallback_clients,
+            usage_recorder=ModelUsageRecorder.from_settings(resolved_settings),
         ),
         tool_registry=default_real_tool_registry(resolved_settings),
         default_provider=ProviderName.BAILIAN,

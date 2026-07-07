@@ -252,7 +252,8 @@ def test_prompt_injector_selects_o1_internal_sop_without_external_packages() -> 
     field_resolve_task = task.model_copy(
         update={
             "task_type": TaskType.REVIEW_EXPECTATION_FIELD,
-            "required_output_schema": "Document2ResolutionPlan",
+            "input_context": {"internal_task_skill_ids": ["document2-field-repair"]},
+            "required_output_schema": "Document2FieldRepairResult",
             "run_metadata": task.run_metadata.model_copy(
                 update={"workflow_node": "ResolveObjectionsAndDelegations"}
             ),
@@ -260,11 +261,28 @@ def test_prompt_injector_selects_o1_internal_sop_without_external_packages() -> 
         deep=True,
     )
     field_resolve_injected = PromptInjector().inject(field_resolve_task, definition)
-    assert "document2-resolution-plan" in (
+    assert "document2-field-repair" in (
+        field_resolve_injected.prompt_bundle.internal_task_skill_ids
+    )
+    assert "document2-resolution-plan" not in (
         field_resolve_injected.prompt_bundle.internal_task_skill_ids
     )
     assert "expectation-construction" not in (
         field_resolve_injected.prompt_bundle.internal_task_skill_ids
+    )
+    legacy_resolve_task = field_resolve_task.model_copy(
+        update={
+            "input_context": {"internal_task_skill_ids": ["document2-resolution-plan"]},
+            "required_output_schema": "Document2ResolutionPlan",
+        },
+        deep=True,
+    )
+    legacy_resolve_injected = PromptInjector().inject(legacy_resolve_task, definition)
+    assert "document2-resolution-plan" in (
+        legacy_resolve_injected.prompt_bundle.internal_task_skill_ids
+    )
+    assert "document2-field-repair" not in (
+        legacy_resolve_injected.prompt_bundle.internal_task_skill_ids
     )
 
     narrative_task = task.model_copy(
@@ -281,6 +299,7 @@ def test_prompt_injector_selects_o1_internal_sop_without_external_packages() -> 
     assert "global_narrative_report" in narrative_injected.prompt_bundle.internal_task_skill_ids
 
     resolver_skill = default_prompt_registry().get("document2-resolution-plan")
+    assert resolver_skill.manual_only is True
     assert "Document2ResolutionPlan" in resolver_skill.body
     assert "proposed_patches" in resolver_skill.body
     assert "list-wrapped" in resolver_skill.body

@@ -27,6 +27,7 @@ import type {
   RuntimeGraph,
   RuntimeNodeDetail,
   RuntimeOverview,
+  RuntimeResultRecord,
   TickerCard,
   TickerDetail,
 } from "@/lib/dashboard-types"
@@ -371,6 +372,10 @@ export const dashboardApi = {
       `/tickers/${encodeURIComponent(ticker)}/runtime/executions${queryString(
         params
       )}`
+    ),
+  runtimeRecords: (ticker: string, params?: QueryParams) =>
+    dashboardRequest<PageResult<RuntimeResultRecord>>(
+      `/tickers/${encodeURIComponent(ticker)}/runtime/records${queryString(params)}`
     ),
   revenueAudit: (ticker: string, period: Period) =>
     dashboardRequest<RevenueAudit>(

@@ -25,6 +25,7 @@ def test_dashboard_mock_api_serves_contract_snapshot_routes() -> None:
         "/api/dashboard/v1/tickers/MU/runtime/graph",
         "/api/dashboard/v1/tickers/MU/runtime/nodes/w1?limit=1",
         "/api/dashboard/v1/tickers/MU/runtime/executions?route=trading_record",
+        "/api/dashboard/v1/tickers/MU/runtime/records?result_type=trading_record&limit=1",
         "/api/dashboard/v1/tickers/MU/runtime/executions/pre_mu_001",
         "/api/dashboard/v1/tickers/MU/audit/revenue?period=7d",
         "/api/dashboard/v1/tickers/MU/audit/cost?group_by=node",

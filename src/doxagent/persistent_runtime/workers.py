@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 from datetime import UTC, datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from zoneinfo import ZoneInfo
 
 from doxagent.agents.runner import AgentRunner
@@ -31,6 +31,9 @@ from doxagent.persistent_runtime.schema import (
 )
 
 JsonObject = dict[str, object]
+
+if TYPE_CHECKING:
+    from doxagent.settings import DoxAgentSettings
 
 _RUNTIME_CLOCK_TZ_NAME = "America/New_York"
 _RUNTIME_CLOCK_TZ = ZoneInfo(_RUNTIME_CLOCK_TZ_NAME)
@@ -62,6 +65,23 @@ class AgentRunnerW1Worker:
         return W1Result.model_validate(_w1_structured_payload(result.payload))
 
 
+class LazyAgentRunnerW1Worker:
+    """Create the production W1 AgentRunner only when W1 classification is reached."""
+
+    def __init__(self, settings: DoxAgentSettings | None = None) -> None:
+        self.settings = settings
+        self._delegate: AgentRunnerW1Worker | None = None
+
+    def classify(self, message: RuntimeSourceMessage, context: JsonObject) -> W1Result:
+        if self._delegate is None:
+            from doxagent.agents.runner import default_real_agent_runner
+
+            self._delegate = AgentRunnerW1Worker(
+                default_real_agent_runner(settings=self.settings)
+            )
+        return self._delegate.classify(message, context)
+
+
 class AgentRunnerW2Worker:
     """Run W2 through the standard prompt-backed AgentRunner contract."""
 
@@ -86,6 +106,23 @@ class AgentRunnerW2Worker:
             message_text = result.error.message if result.error else "W2 runner failed."
             raise RuntimeError(message_text)
         return W2Result.model_validate(_w2_structured_payload(result.payload, context))
+
+
+class LazyAgentRunnerW2Worker:
+    """Create the production W2 AgentRunner only when W2 classification is reached."""
+
+    def __init__(self, settings: DoxAgentSettings | None = None) -> None:
+        self.settings = settings
+        self._delegate: AgentRunnerW2Worker | None = None
+
+    def classify(self, message: RuntimeSourceMessage, context: JsonObject) -> W2Result:
+        if self._delegate is None:
+            from doxagent.agents.runner import default_real_agent_runner
+
+            self._delegate = AgentRunnerW2Worker(
+                default_real_agent_runner(settings=self.settings)
+            )
+        return self._delegate.classify(message, context)
 
 
 class AgentRunnerO3Worker:
@@ -117,6 +154,28 @@ class AgentRunnerO3Worker:
             message_text = result.error.message if result.error else "O3 runner failed."
             raise RuntimeError(message_text)
         return O3Result.model_validate(_structured_payload(result.payload))
+
+
+class LazyAgentRunnerO3Worker:
+    """Create the production O3 AgentRunner only when an O3 route is reached."""
+
+    def __init__(self, settings: DoxAgentSettings | None = None) -> None:
+        self.settings = settings
+        self._delegate: AgentRunnerO3Worker | None = None
+
+    def judge(
+        self,
+        message: RuntimeSourceMessage,
+        context: JsonObject,
+        budget: O3RuntimeBudget,
+    ) -> O3Result:
+        if self._delegate is None:
+            from doxagent.agents.runner import default_real_agent_runner
+
+            self._delegate = AgentRunnerO3Worker(
+                default_real_agent_runner(settings=self.settings)
+            )
+        return self._delegate.judge(message, context, budget)
 
 
 class AgentRunnerA2Worker:

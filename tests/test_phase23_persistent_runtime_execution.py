@@ -43,6 +43,9 @@ from doxagent.persistent_runtime import (
     HeuristicW2Worker,
     InMemoryPersistentRuntimeRepository,
     KnownEventsPatch,
+    LazyAgentRunnerO3Worker,
+    LazyAgentRunnerW1Worker,
+    LazyAgentRunnerW2Worker,
     O3PrimaryAction,
     O3Result,
     O3RuntimeBudget,
@@ -1379,13 +1382,36 @@ def test_service_from_settings_creates_sqlite_runtime_store(tmp_path: Path) -> N
     assert db_path.exists()
 
 
-def test_service_from_settings_can_use_default_runtime_workers(tmp_path: Path) -> None:
-    db_path = tmp_path / "runtime-default-workers.sqlite3"
+def test_service_from_settings_configures_lazy_real_workers_without_eager_model_setup(
+    tmp_path: Path,
+) -> None:
+    db_path = tmp_path / "runtime-real-defaults.sqlite3"
     service = PersistentRuntimeExecutionService.from_settings(
         DoxAgentSettings(
             persistent_runtime_storage_mode="sqlite",
             persistent_runtime_sqlite_path=str(db_path),
         )
+    )
+
+    assert isinstance(service.w1_worker, LazyAgentRunnerW1Worker)
+    assert service.w1_worker._delegate is None
+    assert isinstance(service.w2_worker, LazyAgentRunnerW2Worker)
+    assert service.w2_worker._delegate is None
+    assert isinstance(service.o3_worker, LazyAgentRunnerO3Worker)
+    assert service.o3_worker._delegate is None
+
+
+def test_service_from_settings_can_use_injected_heuristic_runtime_workers(
+    tmp_path: Path,
+) -> None:
+    db_path = tmp_path / "runtime-heuristic-workers.sqlite3"
+    service = PersistentRuntimeExecutionService.from_settings(
+        DoxAgentSettings(
+            persistent_runtime_storage_mode="sqlite",
+            persistent_runtime_sqlite_path=str(db_path),
+        ),
+        w1_worker=HeuristicW1Worker(),
+        w2_worker=HeuristicW2Worker(),
     )
 
     record = service.execute_message(

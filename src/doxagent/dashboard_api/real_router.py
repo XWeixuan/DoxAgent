@@ -638,6 +638,26 @@ def create_real_router(service: RealDashboardOverviewService | None = None) -> A
         )
         return _ok(request, data)
 
+    @router.get("/tickers/{ticker}/runtime/records")
+    async def runtime_records(
+        request: Request,
+        ticker: str,
+        result_type: str | None = None,
+        limit: int | None = None,
+        cursor: str | None = None,
+    ) -> JsonObject:
+        try:
+            data = await run_in_threadpool(
+                resolved.runtime_records,
+                ticker,
+                result_type=result_type,
+                limit=limit,
+                cursor=cursor,
+            )
+        except InvalidAuditParams as exc:
+            raise _invalid_audit_params(exc) from exc
+        return _ok(request, data)
+
     @router.get("/tickers/{ticker}/runtime/executions/{execution_id}")
     async def runtime_execution_detail(
         request: Request,

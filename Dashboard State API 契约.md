@@ -308,11 +308,12 @@ not_started | calculating | completed | failed | missing | partial
 | `GET` | `/tickers/{ticker}/runtime/graph` | Runtime 链路图 | `proposed` |
 | `GET` | `/tickers/{ticker}/runtime/nodes/{node_id}` | Runtime 节点详情 | `proposed` |
 | `GET` | `/tickers/{ticker}/runtime/executions` | Runtime 处理记录列表 | `partial` |
+| `GET` | `/tickers/{ticker}/runtime/records` | Runtime 结果沉淀记录列表 | `partial` |
 | `GET` | `/tickers/{ticker}/runtime/executions/{execution_id}` | Runtime 单次处理详情 | `proposed` |
 | `GET` | `/tickers/{ticker}/audit/revenue` | 收益审计 | `missing` |
 | `POST` | `/tickers/{ticker}/audit/revenue/run` | 手动触发收益审计 | `proposed` |
-| `GET` | `/tickers/{ticker}/audit/cost` | 成本审计 | `missing` |
-| `GET` | `/tickers/{ticker}/audit/cost/details` | 成本审计明细 | `missing` |
+| `GET` | `/tickers/{ticker}/audit/cost` | 成本审计 | `completed` |
+| `GET` | `/tickers/{ticker}/audit/cost/details` | 成本审计明细 | `completed` |
 | `GET` | `/events` | SSE runtime event stream | `proposed` |
 
 ## 3. 全局 Overview 状态
@@ -321,7 +322,7 @@ not_started | calculating | completed | failed | missing | partial
 
 用途：Overview 页面顶部 KPI、全局健康状态、ticker 卡片摘要。  
 前端页面/组件：`/overview`，KPI 卡片、启动 ticker 区域、ticker 状态卡片列表。  
-实现状态：`partial`。`runtime_scheduler.overview()` 已有 ticker 状态，但容器状态、Dashboard API 状态、全局 Message Bus 统计、今日成本和收益仍缺聚合。
+实现状态：`partial`。`runtime_scheduler.overview()` 已有 ticker 状态；今日成本复用统一 model usage 成本聚合，收益仍缺完整审计计算。
 
 HTTP method：
 
@@ -2003,7 +2004,94 @@ Response schema：
 - `message_title` 是当前运行状态页“最近处理记录”主列展示字段；后端应优先从标准消息 title 或 runtime observation source message 摘要中提供，缺失时前端才退回 `source_message_id/execution_id`。
 - `final_route` 推荐稳定值：`trading_record | failed_with_exception | objection | objection_note | archive | ingest_queue | o3`。底层历史记录若出现 raw `a2`，Dashboard API 应优先归一化为 `o3`、`objection` 或 `ingest_queue` 等前端语义；若因回溯兼容必须透传，也不得据此在 runtime graph 中生成 `A2/O1` 节点。
 
-### 10.5 GET `/tickers/{ticker}/runtime/executions/{execution_id}`
+### 10.5 GET `/tickers/{ticker}/runtime/records`
+
+用途：运行状态页“最近处理记录”的综合记录与结果沉淀筛选懒加载。
+前端页面/组件：`/ticker/:ticker/runtime` 最近处理记录。
+实现状态：`partial`。当前真实服务从 runtime execution、trading record、exception、objection、known event patch、archive、ingest queue 等轻量持久化表聚合，不读取 Supabase 大 payload。
+
+Query params：
+
+| 参数 | 类型 | 必填 | 含义 |
+| --- | --- | --- | --- |
+| `result_type` | string | 否 | 结果类型筛选；缺省或 `all` 时返回综合最近处理记录。支持 `all | trading_record | exception_queue | objection | known_event_patch | archive | ingest_queue`。 |
+| `limit` | int | 否 | 默认 50，前端最近处理记录每次请求 10 条。 |
+| `cursor` | string | 否 | 分页游标。 |
+
+Response schema：
+
+```json
+{
+  "data": {
+    "items": [
+      {
+        "record_id": "trd_001",
+        "result_type": "trading_record",
+        "execution_id": "pre_001",
+        "source_message_id": "std_001",
+        "message_title": "Micron shares rise as AI memory demand stays firm",
+        "ticker": "MU",
+        "source_type": "media",
+        "final_route": "trading_record",
+        "status": "recorded_only",
+        "node_durations_ms": {
+          "W1": 1200,
+          "W2": 1300
+        },
+        "duration_ms": 2500,
+        "is_new": true,
+        "policy_type": "Direct Trade Candidate",
+        "summary": "Micron shares rise as AI memory demand stays firm.",
+        "reasoning": "Matches DTC policy.",
+        "result": {
+          "side": "long",
+          "conviction": "high",
+          "size_bucket": "normal",
+          "matched_policy_code": "POLICY_DTC_ORDER",
+          "trade_intent.reasoning": "Policy matched."
+        },
+        "created_at": "2026-06-30T12:00:00Z"
+      }
+    ],
+    "page": {
+      "limit": 10,
+      "next_cursor": null,
+      "has_more": false
+    }
+  }
+}
+```
+
+`result` 动态字段：
+
+| `result_type` | 字段 |
+| --- | --- |
+| `trading_record` | `side`、`conviction`、`size_bucket`、`matched_policy_code`、`trade_intent.reasoning` |
+| `exception_queue` | `exception_type`、`node`、`message` |
+| `objection` | `blackboard_target`、`objection_type`、`reasoning` |
+| `known_event_patch` | `core_fact`、`event_time_or_window`、`duplicate_detection_keys` |
+| `archive` | 空对象 `{}`；前端展示“暂无”。 |
+| `ingest_queue` | 空对象 `{}`；前端展示“暂无”。 |
+| `all` | 综合执行记录尚未落入结果池时可使用；`result` 为空。 |
+
+更新语义：
+
+- 不做轮询；前端仅在首次加载、用户切换筛选、点击加载更多、手动刷新、收到 `runtime.result.created` / `runtime.execution.updated` / `runtime.execution.failed` SSE 时重新请求。
+- `result_type=all` 不触发各结果池的单独懒加载，只返回综合最近处理记录。
+- `result_type` 为具体结果池时，只读取对应轻量表/索引字段。
+
+当前实现位置：
+
+- `src/doxagent/dashboard_api/real_service.py::RealDashboardOverviewService.runtime_records`
+- `src/doxagent/persistent_runtime/repository.py::list_executions`
+- `src/doxagent/persistent_runtime/repository.py::list_trading_records`
+- `src/doxagent/persistent_runtime/repository.py::list_exceptions`
+- `src/doxagent/persistent_runtime/repository.py::list_objections`
+- `src/doxagent/persistent_runtime/repository.py::list_known_events_patch_logs`
+- `src/doxagent/persistent_runtime/repository.py::list_archive`
+- `src/doxagent/persistent_runtime/repository.py::list_ingest_queue`
+
+### 10.6 GET `/tickers/{ticker}/runtime/executions/{execution_id}`
 
 用途：单条处理记录详情。  
 前端页面/组件：Runtime 记录详情展开。  
@@ -2164,7 +2252,14 @@ Response schema：
 
 用途：成本审计 KPI、趋势图、占比图和明细入口。  
 前端页面/组件：`/ticker/:ticker/audit` 成本审计 tab。  
-实现状态：`missing`。当前有模型调用 audit/usage 痕迹，但缺统一成本聚合。
+实现状态：`completed`。真实后端以 `model_usage_events` 为成本审计主数据源，由 `ModelGateway.complete()` 统一记录 provider/model/token/retry/fallback/ticker/run/node/source_message 等字段；Dashboard API 通过 `ModelUsageCostService` 聚合。历史 `RuntimeExecutionRecord.timing/source_message.metadata` 中的 `model_audit(s)` 仅作为新表为空时的兼容 fallback，不作为真实主路径。
+
+价格语义：
+- 默认价格表位于 `src/doxagent/model_usage/default_pricing.json`，可用 `DOXAGENT_MODEL_PRICING_CONFIG_PATH` 覆盖。
+- 默认优先覆盖阿里云百炼 / DashScope 常用千问模型，价格单位为人民币/百万 token。
+- 计价公式为 `(input_tokens/1_000_000*input_price + output_tokens/1_000_000*output_price) * discount_rate`，默认 `discount_rate=0.45`。
+- 美元换算使用固定 `DOXAGENT_MODEL_PRICING_CNY_USD_RATE=6.8`，即 `cost_usd = cost_cny / 6.8`。
+- 未命中价格表时 `cost_usd=null`，不得猜测或估价。
 
 Query params：
 
@@ -2223,6 +2318,12 @@ Response schema：
 missing | partial | completed | failed
 ```
 
+状态语义：
+- `missing`：所选周期没有 token-bearing model usage。
+- `partial`：存在 usage，但至少一条 usage 未命中价格表。
+- `completed`：所选周期 usage 全部可计价。
+- `failed`：model usage 聚合或价格配置读取异常。
+
 当前可能数据来源：
 
 - `src/doxagent/gateway/schema.py::ModelUsage`
@@ -2236,7 +2337,7 @@ missing | partial | completed | failed
 
 用途：成本明细表。  
 前端页面/组件：成本审计明细表、筛选。  
-实现状态：`missing`。
+实现状态：`completed`。明细来自统一 `model_usage_events` 主路径，保留 legacy runtime metadata fallback。
 
 Query params：
 
@@ -2267,10 +2368,24 @@ Response schema：
         "output_tokens": 200,
         "total_tokens": 1400,
         "cost_usd": 0.0014,
+        "pricing_status": "priced",
         "is_retry": false,
         "status": "succeeded",
         "source_ref": {
-          "execution_id": "pre_001"
+          "provider": "bailian",
+          "run_id": "run_001",
+          "execution_id": "pre_001",
+          "source_message_id": "std_001",
+          "workflow_node": "persistent_runtime_execution",
+          "runtime_node": "W1",
+          "agent_name": "W1",
+          "task_type": "runtime_w1_novelty",
+          "retry_count": 0,
+          "fallback_used": false,
+          "pricing_status": "priced",
+          "pricing_version": "aliyun-model-studio-2026-07-07",
+          "discount_rate": 0.45,
+          "cny_usd_rate": 6.8
         }
       }
     ],
@@ -2283,7 +2398,12 @@ Response schema：
 }
 ```
 
-当前可能数据来源：同 12.1，但需要新增持久化和聚合。
+字段语义补充：
+- `pricing_status`：`priced | missing_price`，缺价格时 `cost_usd=null`。
+- `source_ref`：只暴露 Dashboard 需要的审计维度，不暴露内部 DB 表结构。
+- `status`：`succeeded | failed | retried`。
+
+当前数据来源：同 12.1，主路径为 `model_usage_events`；legacy metadata extraction 仅作历史兼容 fallback。
 
 ## 13. SSE Runtime Event Stream
 
@@ -2361,6 +2481,7 @@ Event data schema：
 | `runtime.execution.started` | Runtime 处理开始。 |
 | `runtime.execution.updated` | W1/W2/O3 或 route 状态变化。 |
 | `runtime.execution.failed` | Runtime 处理异常。 |
+| `runtime.result.created` | Runtime 结果沉淀记录新增；payload 至少包含 `record_id`、`execution_id`、`source_message_id`、`result_type`。 |
 | `trade_intent.created` | 交易意图记录生成。 |
 | `known_event.updated` | Known Events 被运行时更新。 |
 | `ticker.state.changed` | ticker 状态变化。 |
@@ -2378,7 +2499,7 @@ Event data schema：
 | 页面 | event_types |
 | --- | --- |
 | 消息总线 | `message_bus.message.created,message_bus.poll.failed` |
-| 运行状态 | `runtime.execution.updated,runtime.execution.failed` |
+| 运行状态 | `runtime.execution.updated,runtime.execution.failed,runtime.result.created` |
 | Overview 回测列表 | 当前以前端轮询 `/backtests` 为主；可订阅 `dashboard.backtest.*` 做实时刷新。 |
 | 收益 / 成本审计 | `audit.revenue.status_changed,audit.cost.status_changed` |
 
@@ -2453,10 +2574,10 @@ Event data schema：
 
 | API | 缺口 | 建议 |
 | --- | --- | --- |
-| cost overview | usage 分散在 model audit payload 中，缺周期聚合 | 新增 `model_usage_events` 或 `cost_audit_records`；`period=7d/30d` 时 KPI、trend、breakdown 必须同步切换。 |
-| cost pricing | 无模型价格表 | 新增配置化价格表，按 provider/model 生效时间计算。 |
-| cost details | 无统一明细 | 从 AgentRunner/ReAct/Gateway 统一写入 usage 明细，关联 ticker/node/task/execution。 |
-| retry cost | retry_count 有 audit 字段，但未聚合 | 聚合 `ModelAuditSummary.retry_count` 和重复调用记录。 |
+| cost overview | 已落地统一 `model_usage_events` 主路径 | `period=today/7d/30d` 下 KPI、trend、breakdown 同步切换；Overview 的 `today_token_cost_usd` / ticker `today_cost_usd` 复用同一服务。 |
+| cost pricing | 已落地配置化价格表 | 默认按阿里云百炼 / DashScope JSON seed 计价，支持 `DOXAGENT_MODEL_PRICING_CONFIG_PATH` 覆盖；缺价格返回 partial，不估价。 |
+| cost details | 已落地统一明细 | `ModelGateway.complete()` 统一记录 usage，关联 ticker/run/node/agent/task/source_message/retry/fallback。 |
+| retry cost | 已落地聚合 | 基于最终响应 `ModelAuditSummary.retry_count` / `fallback_used` 聚合 retry 成本。 |
 
 ## 15. 推荐最小落地顺序
 

@@ -633,6 +633,35 @@ def test_document3_context_snapshot_keeps_scoped_belief_docs_without_history() -
     assert snapshot.evidence_refs == []
 
 
+def test_document2_context_snapshot_omits_broad_belief_docs_and_history() -> None:
+    service = BlackboardService()
+    run_id = _seed_document3_context_run(service)
+    task = _document3_task(
+        run_id,
+        node=WorkflowNode.GENERATE_EXPECTATION_DETAILS,
+        agent_name=AgentName.O1_EXPECTATION_OWNER,
+        task_type=TaskType.GENERATE_EXPECTATION_DETAIL,
+        readable_scopes=[
+            DocumentType.GLOBAL_RESEARCH.value,
+            DocumentType.EXPECTATION_UNIT.value,
+            "working_memory",
+            "objections",
+            "delegations",
+        ],
+    ).model_copy(
+        update={"required_output_schema": "ExpectationDetailCandidateResult"},
+        deep=True,
+    )
+
+    snapshot = ContextBuilder(service).build(task, run_id)
+
+    assert snapshot.belief_state_summary == {}
+    assert snapshot.working_memory_summary == []
+    assert snapshot.unresolved_objections == []
+    assert snapshot.blocking_delegations == []
+    assert snapshot.evidence_refs == []
+
+
 def test_document3_review_policy_task_uses_scoped_patch_and_config_brief() -> None:
     runner = _RecordingResearchSectionRunner()
     workflow = BlackboardInitializationWorkflow(execution_mode="agent_runner", runner=runner)

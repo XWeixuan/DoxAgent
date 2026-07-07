@@ -64,6 +64,28 @@ class DoxAgentSettings(BaseSettings):
         gt=0,
         validation_alias="DOXAGENT_MODEL_REQUEST_TIMEOUT_SECONDS",
     )
+    model_usage_storage_mode: Literal["memory", "sqlite"] = Field(
+        default="sqlite",
+        validation_alias="DOXAGENT_MODEL_USAGE_STORAGE_MODE",
+    )
+    model_usage_sqlite_path: str = Field(
+        default=".tmp/model_usage.sqlite3",
+        validation_alias="DOXAGENT_MODEL_USAGE_SQLITE_PATH",
+    )
+    model_pricing_config_path: str | None = Field(
+        default=None,
+        validation_alias="DOXAGENT_MODEL_PRICING_CONFIG_PATH",
+    )
+    model_pricing_discount_rate: float = Field(
+        default=0.45,
+        ge=0,
+        validation_alias="DOXAGENT_MODEL_PRICING_DISCOUNT_RATE",
+    )
+    model_pricing_cny_usd_rate: float = Field(
+        default=6.8,
+        gt=0,
+        validation_alias="DOXAGENT_MODEL_PRICING_CNY_USD_RATE",
+    )
     react_tool_call_timeout_seconds: float = Field(
         default=180.0,
         gt=0,

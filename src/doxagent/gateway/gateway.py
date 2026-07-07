@@ -2,9 +2,11 @@
 
 import asyncio
 import json
+import logging
 import re
 from collections import defaultdict
 from collections.abc import Sequence
+from typing import Protocol
 
 from doxagent.gateway.client import ModelClient
 from doxagent.gateway.schema import (
@@ -16,6 +18,17 @@ from doxagent.gateway.schema import (
     ResponseFormat,
 )
 
+logger = logging.getLogger(__name__)
+
+
+class ModelUsageRecorder(Protocol):
+    def record_response(
+        self,
+        request: ModelRequest,
+        response: ModelResponse,
+    ) -> object:
+        ...
+
 
 class ModelGateway:
     def __init__(
@@ -24,12 +37,14 @@ class ModelGateway:
         *,
         fallbacks: Sequence[ModelClient] | None = None,
         max_retries: int = 0,
+        usage_recorder: ModelUsageRecorder | None = None,
     ) -> None:
         if max_retries < 0:
             raise ValueError("max_retries must be >= 0")
         self.primary = primary
         self.fallbacks = list(fallbacks or [])
         self.max_retries = max_retries
+        self.usage_recorder = usage_recorder
         self._langsmith_loop_counters: defaultdict[tuple[str, str, str], int] = defaultdict(int)
 
     async def complete(self, request: ModelRequest) -> ModelResponse:
@@ -48,19 +63,23 @@ class ModelGateway:
                 last_response = response
 
                 if response.error is None:
-                    return response
+                    return self._record_and_return(sequenced_request, response)
                 if not response.error.retryable:
-                    return response
+                    return self._record_and_return(sequenced_request, response)
                 if client_index == 0 and retry_count < self.max_retries:
                     retry_count += 1
                     continue
                 break
 
         if last_response is not None:
-            return last_response
-        return self._internal_error_response(
-            self._with_langsmith_loop_index(request),
-            "No model clients were configured.",
+            return self._record_and_return(sequenced_request, last_response)
+        internal_request = self._with_langsmith_loop_index(request)
+        return self._record_and_return(
+            internal_request,
+            self._internal_error_response(
+                internal_request,
+                "No model clients were configured.",
+            ),
         )
 
     async def _complete_once(self, client: ModelClient, request: ModelRequest) -> ModelResponse:
@@ -91,6 +110,19 @@ class ModelGateway:
                 }
             }
         )
+
+    def _record_and_return(
+        self,
+        request: ModelRequest,
+        response: ModelResponse,
+    ) -> ModelResponse:
+        if self.usage_recorder is None:
+            return response
+        try:
+            self.usage_recorder.record_response(request, response)
+        except Exception:
+            logger.warning("model usage audit recording failed", exc_info=True)
+        return response
 
     def _normalize_structured_response(
         self,

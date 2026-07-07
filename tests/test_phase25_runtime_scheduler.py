@@ -27,6 +27,8 @@ from doxagent.monitoring.schema import (
 )
 from doxagent.monitoring.service import MonitoringBusService
 from doxagent.persistent_runtime import (
+    HeuristicW1Worker,
+    HeuristicW2Worker,
     InMemoryPersistentRuntimeRepository,
     PersistentRuntimeExecutionService,
     RuntimeExecutionRecord,
@@ -255,7 +257,10 @@ def test_paper_trading_runtime_continues_while_weekly_update_is_running() -> Non
     )
     provider = BlockingDocumentProvider(old_bundle, initialized_bundle=new_bundle)
     monitoring_service = MonitoringBusService(InMemoryMonitoringRepository())
-    runtime_service = PersistentRuntimeExecutionService.from_settings()
+    runtime_service = PersistentRuntimeExecutionService.from_settings(
+        w1_worker=HeuristicW1Worker(),
+        w2_worker=HeuristicW2Worker(),
+    )
     runtime_service.repository = InMemoryPersistentRuntimeRepository()
     scheduler = UnifiedRuntimeSchedulerService(
         InMemoryRuntimeSchedulerRepository(),
@@ -620,7 +625,10 @@ def _scheduler(
 ]:
     provider = FakeDocumentProvider(bundle, initialized_bundle)
     monitoring_service = MonitoringBusService(InMemoryMonitoringRepository())
-    runtime_service = PersistentRuntimeExecutionService.from_settings()
+    runtime_service = PersistentRuntimeExecutionService.from_settings(
+        w1_worker=HeuristicW1Worker(),
+        w2_worker=HeuristicW2Worker(),
+    )
     runtime_service.repository = InMemoryPersistentRuntimeRepository()
     scheduler = UnifiedRuntimeSchedulerService(
         InMemoryRuntimeSchedulerRepository(),
@@ -865,6 +873,9 @@ def _disable_due_polling(monitoring_service: MonitoringBusService) -> None:
 
 
 def _sqlite_runtime_service(path: Path) -> PersistentRuntimeExecutionService:
-    service = PersistentRuntimeExecutionService.from_settings()
+    service = PersistentRuntimeExecutionService.from_settings(
+        w1_worker=HeuristicW1Worker(),
+        w2_worker=HeuristicW2Worker(),
+    )
     service.repository = SQLitePersistentRuntimeRepository(path)
     return service

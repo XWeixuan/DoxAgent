@@ -153,6 +153,8 @@ def _definition_matches_task(
     task: AgentTask,
     workflow_node: str | None,
 ) -> bool:
+    if definition.manual_only:
+        return False
     if definition.applicable_agents and task.agent_name not in definition.applicable_agents:
         return False
     if definition.applicable_task_types and task.task_type not in definition.applicable_task_types:

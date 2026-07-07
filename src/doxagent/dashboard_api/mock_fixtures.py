@@ -587,6 +587,30 @@ class MockDashboardStore:
         items = sort_items(items, "-created_at", default="-created_at")
         return paginate_items(items, limit=limit, cursor=cursor)
 
+    def list_runtime_records(
+        self,
+        ticker: str,
+        *,
+        result_type: str | None,
+        limit: int | None,
+        cursor: str | None,
+    ) -> JsonObject | None:
+        items = deepcopy(self.runtime_executions.get(normalize_ticker(ticker)))
+        if items is None:
+            return None
+        records = [
+            _mock_runtime_result_record(
+                item,
+                self.runtime_execution_details.get(str(item.get("execution_id"))) or {},
+            )
+            for item in items
+        ]
+        resolved_type = (result_type or "all").strip().lower() or "all"
+        if resolved_type != "all":
+            records = [item for item in records if item.get("result_type") == resolved_type]
+        records = sort_items(records, "-created_at", default="-created_at")
+        return paginate_items(records, limit=limit, cursor=cursor)
+
     def get_runtime_execution(self, ticker: str, execution_id: str) -> JsonObject | None:
         normalized = normalize_ticker(ticker)
         detail = self.runtime_execution_details.get(execution_id)
@@ -2244,6 +2268,95 @@ def _build_runtime_execution_details() -> dict[str, JsonObject]:
             "created_at": "2026-06-30T11:54:00Z",
         },
     }
+
+
+def _mock_runtime_result_record(item: JsonObject, detail: JsonObject) -> JsonObject:
+    result_type = _mock_runtime_result_type(item)
+    result = _mock_runtime_result_payload(item, detail, result_type)
+    w1_result = detail.get("w1_result") if isinstance(detail.get("w1_result"), dict) else {}
+    w2_result = detail.get("w2_result") if isinstance(detail.get("w2_result"), dict) else {}
+    route_decision = (
+        detail.get("route_decision") if isinstance(detail.get("route_decision"), dict) else {}
+    )
+    reasoning = (
+        _text_or_none(result.get("trade_intent.reasoning"))
+        or _text_or_none(result.get("reasoning"))
+        or _text_or_none(w2_result.get("reasoning"))
+        or _text_or_none(w1_result.get("reasoning"))
+        or _text_or_none(route_decision.get("reason"))
+    )
+    durations = item.get("node_durations_ms") if isinstance(item.get("node_durations_ms"), dict) else {}
+    return {
+        "record_id": str(item.get("execution_id") or item.get("source_message_id")),
+        "result_type": result_type,
+        "execution_id": item.get("execution_id"),
+        "source_message_id": item.get("source_message_id"),
+        "message_title": item.get("message_title"),
+        "ticker": item.get("ticker"),
+        "source_type": item.get("source_type"),
+        "final_route": item.get("final_route"),
+        "status": item.get("status"),
+        "node_durations_ms": durations,
+        "duration_ms": sum(int(value) for value in durations.values()) if durations else None,
+        "is_new": w1_result.get("is_new"),
+        "policy_type": w2_result.get("type"),
+        "summary": item.get("message_title"),
+        "reasoning": reasoning,
+        "result": result,
+        "created_at": item.get("created_at"),
+    }
+
+
+def _mock_runtime_result_type(item: JsonObject) -> str:
+    route = str(item.get("final_route") or "").strip().lower()
+    if route == "failed_with_exception" or item.get("exception_types"):
+        return "exception_queue"
+    if route in {"trading_record", "archive", "ingest_queue"}:
+        return route
+    if route in {"objection", "objection_note"}:
+        return "objection"
+    return "all"
+
+
+def _mock_runtime_result_payload(
+    item: JsonObject,
+    detail: JsonObject,
+    result_type: str,
+) -> JsonObject:
+    w2_result = detail.get("w2_result") if isinstance(detail.get("w2_result"), dict) else {}
+    if result_type == "trading_record":
+        return {
+            "side": "long",
+            "conviction": "medium",
+            "size_bucket": "small",
+            "matched_policy_code": w2_result.get("matched_policy_code"),
+            "trade_intent.reasoning": w2_result.get("reasoning"),
+        }
+    if result_type == "exception_queue":
+        exceptions = detail.get("exceptions") if isinstance(detail.get("exceptions"), list) else []
+        exception = exceptions[0] if exceptions and isinstance(exceptions[0], dict) else {}
+        return {
+            "exception_type": exception.get("type") or (item.get("exception_types") or [None])[0],
+            "node": exception.get("node") or "O3",
+            "message": exception.get("message") or "Mock runtime exception.",
+        }
+    if result_type == "objection":
+        return {
+            "blackboard_target": "document3",
+            "objection_type": item.get("final_route"),
+            "reasoning": detail.get("route_decision", {}).get("reason"),
+        }
+    if result_type == "known_event_patch":
+        return {
+            "core_fact": "Mock known event patch.",
+            "event_time_or_window": "2026-06-30",
+            "duplicate_detection_keys": ["mock"],
+        }
+    return {}
+
+
+def _text_or_none(value: object) -> str | None:
+    return value if isinstance(value, str) and value.strip() else None
 
 
 def _build_revenue_audit() -> dict[str, JsonObject]:

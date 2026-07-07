@@ -422,6 +422,35 @@ export interface RuntimeExecution {
   created_at: string | null
 }
 
+export type RuntimeResultType =
+  | "all"
+  | "trading_record"
+  | "exception_queue"
+  | "objection"
+  | "known_event_patch"
+  | "archive"
+  | "ingest_queue"
+
+export interface RuntimeResultRecord {
+  record_id: string
+  result_type: RuntimeResultType
+  execution_id: string | null
+  source_message_id: string
+  message_title?: string | null
+  ticker: string
+  source_type: string | null
+  final_route: string | null
+  status: string
+  node_durations_ms: Record<string, number>
+  duration_ms: number | null
+  is_new: boolean | null
+  policy_type: string | null
+  summary: string | null
+  reasoning: string | null
+  result: Record<string, unknown>
+  created_at: string | null
+}
+
 export interface RevenueAudit {
   ticker: string
   audit_date: string
@@ -499,6 +528,7 @@ export interface CostRecord {
   output_tokens: number
   total_tokens: number
   cost_usd: number | null
+  pricing_status?: string
   is_retry: boolean
   status: string
   source_ref: JsonObject

@@ -1,10 +1,20 @@
 from __future__ import annotations
 
+import json
 from datetime import UTC, datetime, timedelta
 
+import pytest
 from fastapi.testclient import TestClient
 
 from doxagent.dashboard_api import create_app
+from doxagent.dashboard_api.real_service import RealDashboardOverviewService
+from doxagent.model_usage import (
+    InMemoryModelUsageRepository,
+    ModelPricingCatalog,
+    ModelUsageCostService,
+    ModelUsageEvent,
+)
+from doxagent.model_usage.pricing import DEFAULT_PRICING_PATH
 from doxagent.monitoring.repository import InMemoryMonitoringRepository
 from doxagent.monitoring.schema import SourceType
 from doxagent.monitoring.service import MonitoringBusService
@@ -144,6 +154,90 @@ def test_dashboard_real_cost_audit_extracts_model_usage_details_without_pricing_
     assert '"status": "partial"' in events.text
 
 
+def test_dashboard_real_cost_audit_uses_persisted_model_usage_as_primary_source() -> None:
+    timestamp = datetime(2026, 6, 30, 15, 30, tzinfo=UTC)
+    repository = InMemoryModelUsageRepository(
+        [
+            ModelUsageEvent(
+                provider="bailian",
+                model="qwen3.7-max",
+                status="retried",
+                input_tokens=1_000_000,
+                output_tokens=500_000,
+                total_tokens=1_500_000,
+                retry_count=1,
+                ticker="NVDA",
+                runtime_node="O3",
+                workflow_node="persistent_runtime_execution",
+                agent_name="O3",
+                task_type="runtime_o3_judgment",
+                source_message_id="std_nvda_usage_today",
+                created_at=timestamp,
+            ),
+            ModelUsageEvent(
+                provider="bailian",
+                model="unknown-bailian-model",
+                status="succeeded",
+                input_tokens=100,
+                output_tokens=50,
+                total_tokens=150,
+                ticker="NVDA",
+                runtime_node="W1",
+                source_message_id="std_nvda_usage_missing_price",
+                created_at=timestamp - timedelta(days=2),
+            ),
+            ModelUsageEvent(
+                provider="bailian",
+                model="qwen3.7-max",
+                status="succeeded",
+                input_tokens=2_000_000,
+                output_tokens=1_000_000,
+                total_tokens=3_000_000,
+                ticker="NVDA",
+                runtime_node="W2",
+                source_message_id="std_nvda_usage_old",
+                created_at=timestamp - timedelta(days=9),
+            ),
+        ]
+    )
+    service = ModelUsageCostService(repository, pricing_catalog=_default_model_pricing_catalog())
+    client, _ = _client_with_audit_state(model_usage_service=service)
+    query_date = timestamp.date().isoformat()
+
+    response = client.get(
+        f"/api/dashboard/v1/tickers/NVDA/audit/cost"
+        f"?period=7d&group_by=node&date={query_date}&tz=UTC"
+    )
+
+    assert response.status_code == 200
+    payload = response.json()["data"]
+    assert payload["status"] == "partial"
+    assert payload["kpis"]["today_input_tokens"] == 1_000_100
+    assert payload["kpis"]["today_output_tokens"] == 500_050
+    assert payload["kpis"]["today_total_tokens"] == 1_500_150
+    assert payload["kpis"]["today_total_cost_usd"] == pytest.approx(round(13.5 / 6.8, 6))
+    assert payload["kpis"]["highest_cost_node"] == "O3"
+    assert payload["kpis"]["retry_cost_usd"] == pytest.approx(round(13.5 / 6.8, 6))
+    assert payload["trend"][-1]["total_tokens"] == 1_500_000
+    by_node = {item["key"]: item for item in payload["breakdown"]["by_node"]}
+    assert by_node["O3"]["cost_usd"] == pytest.approx(round(13.5 / 6.8, 6))
+    assert by_node["W1"]["cost_usd"] is None
+
+    details = client.get(
+        "/api/dashboard/v1/tickers/NVDA/audit/cost/details"
+        "?period=7d&node=O3&status=retried&limit=1&date=2026-06-30&tz=UTC"
+    )
+
+    assert details.status_code == 200
+    detail_payload = details.json()["data"]
+    assert detail_payload["page"]["total_count"] == 1
+    assert detail_payload["items"][0]["model"] == "qwen3.7-max"
+    assert detail_payload["items"][0]["pricing_status"] == "priced"
+    assert detail_payload["items"][0]["source_ref"]["source_message_id"] == (
+        "std_nvda_usage_today"
+    )
+
+
 def test_dashboard_real_audit_rejects_invalid_period_and_group_by() -> None:
     client, _timestamp = _client_with_audit_state()
 
@@ -173,7 +267,10 @@ class _DocumentProvider:
         )
 
 
-def _client_with_audit_state() -> tuple[TestClient, datetime]:
+def _client_with_audit_state(
+    *,
+    model_usage_service: ModelUsageCostService | None = None,
+) -> tuple[TestClient, datetime]:
     monitoring_service = MonitoringBusService(InMemoryMonitoringRepository())
     runtime_service = PersistentRuntimeExecutionService(InMemoryPersistentRuntimeRepository())
     timestamp = datetime(2026, 6, 30, 15, 30, tzinfo=UTC)
@@ -184,11 +281,18 @@ def _client_with_audit_state() -> tuple[TestClient, datetime]:
         monitoring_service=monitoring_service,
         runtime_service=runtime_service,
     )
+    resolved_model_usage_service = model_usage_service or ModelUsageCostService(
+        InMemoryModelUsageRepository(),
+        pricing_catalog=_default_model_pricing_catalog(),
+    )
     client = TestClient(
         create_app(
             mode="real",
             auth_mode="mock-open",
-            dashboard_api=DashboardStateAPI(scheduler),
+            real_service=RealDashboardOverviewService(
+                DashboardStateAPI(scheduler),
+                model_usage_service=resolved_model_usage_service,
+            ),
         )
     )
     return client, timestamp
@@ -344,3 +448,8 @@ def _source_message(source_message_id: str, *, timestamp: datetime) -> RuntimeSo
         symbols=["NVDA"],
         collected_at=timestamp,
     )
+
+
+def _default_model_pricing_catalog() -> ModelPricingCatalog:
+    config = json.loads(DEFAULT_PRICING_PATH.read_text(encoding="utf-8"))
+    return ModelPricingCatalog(config, discount_rate=0.45, cny_usd_rate=6.8)

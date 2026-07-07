@@ -39,6 +39,34 @@ _DOCUMENT3_NODE_DOCUMENT_TYPES: dict[str, set[DocumentType]] = {
     "ResolveMonitoringPolicy": set(),
 }
 
+_DOCUMENT2_NODE_DOCUMENT_TYPES: dict[str, set[DocumentType]] = {
+    "GenerateExpectationConstruction": set(),
+    "ReviewExpectationConstruction": set(),
+    "ResolveExpectationConstruction": set(),
+    "GenerateExpectationDetails": set(),
+    "ReviewExpectationFields": set(),
+    "ResolveObjectionsAndDelegations": set(),
+}
+
+_DOCUMENT2_NODE_OUTPUT_SCHEMAS: dict[str, set[str]] = {
+    "GenerateExpectationConstruction": {"ExpectationShellConstructionResult"},
+    "ReviewExpectationConstruction": {"DoxAtlasAuditResult"},
+    "ResolveExpectationConstruction": {
+        "DelegatedRetrievalResult",
+        "ExpectationShellConstructionResult",
+    },
+    "GenerateExpectationDetails": {"ExpectationDetailCandidateResult"},
+    "ReviewExpectationFields": {
+        "DoxAtlasAuditResult",
+        "ExpectationFieldReviewResult",
+    },
+    "ResolveObjectionsAndDelegations": {
+        "DelegatedRetrievalResult",
+        "Document2FieldRepairResult",
+        "Document2ResolutionPlan",
+    },
+}
+
 
 class ContextBuilder:
     def __init__(self, blackboard: BlackboardService) -> None:
@@ -47,13 +75,13 @@ class ContextBuilder:
     def build(self, task: AgentTask, run_id: str) -> AgentContextSnapshot:
         run = self.blackboard.get_run(run_id)
         scopes = set(task.permissions.readable_context_scopes)
-        document3_document_types = _document3_node_document_types(task)
+        scoped_document_types = _scoped_workflow_node_document_types(task)
         belief_state_summary = self._belief_state_summary(
             run.belief_state.documents,
             scopes,
-            document_types=document3_document_types,
+            document_types=scoped_document_types,
         )
-        if _is_document3_workflow_node(task):
+        if _is_scoped_workflow_history_node(task):
             working_memory_summary: list[WorkingMemorySummary] = []
             unresolved_objections: list[ObjectionSummary] = []
             blocking_delegations: list[BlockingDelegationSummary] = []
@@ -385,14 +413,30 @@ def _compact_payload_value(value: Any, *, depth: int) -> Any:
     return value
 
 
-def _is_document3_workflow_node(task: AgentTask) -> bool:
+def _is_scoped_workflow_history_node(task: AgentTask) -> bool:
     node = task.run_metadata.workflow_node
-    return isinstance(node, str) and node in _DOCUMENT3_NODE_DOCUMENT_TYPES
+    if not isinstance(node, str):
+        return False
+    return node in _DOCUMENT3_NODE_DOCUMENT_TYPES or _is_document2_context_task(task)
 
 
-def _document3_node_document_types(task: AgentTask) -> set[DocumentType] | None:
+def _scoped_workflow_node_document_types(task: AgentTask) -> set[DocumentType] | None:
     node = task.run_metadata.workflow_node
-    return _DOCUMENT3_NODE_DOCUMENT_TYPES.get(node) if isinstance(node, str) else None
+    if not isinstance(node, str):
+        return None
+    if node in _DOCUMENT3_NODE_DOCUMENT_TYPES:
+        return _DOCUMENT3_NODE_DOCUMENT_TYPES[node]
+    if _is_document2_context_task(task):
+        return _DOCUMENT2_NODE_DOCUMENT_TYPES[node]
+    return None
+
+
+def _is_document2_context_task(task: AgentTask) -> bool:
+    node = task.run_metadata.workflow_node
+    if not isinstance(node, str):
+        return False
+    output_schemas = _DOCUMENT2_NODE_OUTPUT_SCHEMAS.get(node)
+    return output_schemas is not None and task.required_output_schema in output_schemas
 
 
 def _compact_text(value: Any, *, limit: int) -> str:

@@ -159,6 +159,65 @@ def test_dashboard_real_runtime_execution_list_filters_pagination_and_detail() -
     assert missing.json()["error"]["code"] == "NOT_FOUND"
 
 
+def test_dashboard_real_runtime_result_records_filter_pagination() -> None:
+    client, _timestamp = _client_with_runtime_state()
+
+    page = client.get("/api/dashboard/v1/tickers/NVDA/runtime/records?limit=2")
+
+    assert page.status_code == 200
+    page_payload = page.json()["data"]
+    assert [item["record_id"] for item in page_payload["items"]] == [
+        "pre_nvda_001",
+        "pre_nvda_002",
+    ]
+    assert page_payload["items"][0]["result_type"] == "trading_record"
+    assert page_payload["items"][0]["node_durations_ms"] == {"W1": 1100, "W2": 1300}
+    assert page_payload["items"][0]["is_new"] is True
+    assert page_payload["items"][0]["policy_type"] == "Direct Trade Candidate"
+    assert page_payload["items"][0]["summary"] == "NVDA dashboard runtime order update."
+    assert page_payload["items"][0]["result"]["side"] == "long"
+    assert page_payload["items"][0]["result"]["conviction"] == "high"
+    assert page_payload["items"][0]["result"]["size_bucket"] == "normal"
+    assert page_payload["items"][0]["result"]["matched_policy_code"] == "POLICY_DTC_ORDER"
+    assert page_payload["items"][0]["result"]["trade_intent.reasoning"] == (
+        "Unit test trade intent."
+    )
+    assert page_payload["page"]["next_cursor"] == "cur_2"
+    assert page_payload["page"]["has_more"] is True
+
+    trading = client.get(
+        "/api/dashboard/v1/tickers/NVDA/runtime/records"
+        "?result_type=trading_record&limit=10"
+    )
+
+    assert trading.status_code == 200
+    trading_items = trading.json()["data"]["items"]
+    assert len(trading_items) == 1
+    assert trading_items[0]["execution_id"] == "pre_nvda_001"
+    assert trading_items[0]["result_type"] == "trading_record"
+
+    exceptions = client.get(
+        "/api/dashboard/v1/tickers/NVDA/runtime/records"
+        "?result_type=exception_queue&limit=10"
+    )
+
+    assert exceptions.status_code == 200
+    exception_items = exceptions.json()["data"]["items"]
+    assert len(exception_items) == 1
+    assert exception_items[0]["record_id"] == "exc_nvda_001"
+    assert exception_items[0]["result"] == {
+        "exception_type": "RuntimeWorkerTimeout",
+        "node": "O3",
+        "message": "O3 worker exceeded the bounded runtime.",
+    }
+
+    invalid = client.get(
+        "/api/dashboard/v1/tickers/NVDA/runtime/records?result_type=not_a_result"
+    )
+    assert invalid.status_code == 422
+    assert invalid.json()["error"]["code"] == "INVALID_PARAMS"
+
+
 class _DocumentProvider:
     def latest(self, ticker: str, *, now: datetime | None = None) -> DocumentBundle:
         return self._bundle(ticker)

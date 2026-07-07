@@ -60,6 +60,9 @@ from doxagent.persistent_runtime.workers import (
     AgentRunnerW2Worker,
     HeuristicW1Worker,
     HeuristicW2Worker,
+    LazyAgentRunnerO3Worker,
+    LazyAgentRunnerW1Worker,
+    LazyAgentRunnerW2Worker,
 )
 
 __all__ = [
@@ -75,6 +78,9 @@ __all__ = [
     "ExecutionExceptionLog",
     "HeuristicW1Worker",
     "HeuristicW2Worker",
+    "LazyAgentRunnerW1Worker",
+    "LazyAgentRunnerW2Worker",
+    "LazyAgentRunnerO3Worker",
     "InMemoryPersistentRuntimeRepository",
     "IngestQueueItem",
     "KnownEventsPatch",
