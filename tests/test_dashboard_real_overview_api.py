@@ -62,6 +62,7 @@ def test_dashboard_real_overview_reads_scheduler_monitoring_and_runtime_state() 
     payload = overview.json()["data"]
     assert payload["system"]["dashboard_api_status"] == "normal"
     assert payload["system"]["message_bus_status"] == "normal"
+    assert payload["system"]["current_session_label"] in {"运行时段", "盘后休眠"}
     assert payload["kpis"]["running_ticker_count"] == 1
     assert payload["kpis"]["today_message_count"] == 1
     assert payload["kpis"]["today_dtc_count"] == 1

@@ -2,16 +2,22 @@
 
 from __future__ import annotations
 
+import json
+from collections import defaultdict
 from collections.abc import Iterable
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import UTC, date, datetime, time, timedelta
-from typing import Any, TypeVar
+from importlib import import_module
+from typing import Any, TypeVar, cast
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pydantic import ValidationError
 
 from doxagent.blackboard import BlackboardService
+from doxagent.blackboard.errors import RunNotFoundError
 from doxagent.blackboard.state import BlackboardRun
+from doxagent.dashboard_api.backtest import DashboardBacktestService
+from doxagent.model_usage import ModelUsageCostService
 from doxagent.models import DocumentType
 from doxagent.models.documents import (
     DocumentBase,
@@ -27,6 +33,7 @@ from doxagent.monitoring.schema import (
     EventStreamItem,
     MonitoringParameters,
     PollState,
+    RawExternalMessage,
     StandardMessage,
     TickerSourceBinding,
     UpdateActor,
@@ -44,9 +51,11 @@ from doxagent.persistent_runtime.schema import (
     RuntimeObjectionRecord,
     TradingRecord,
 )
+from doxagent.postgres import connect_postgres, retry_postgres_operation
 from doxagent.runtime_scheduler.api import DashboardStateAPI
 from doxagent.runtime_scheduler.schema import (
     AuditSeverity,
+    MarketSessionPhase,
     MonitorMode,
     RuntimeAuditEvent,
     RuntimeHealth,
@@ -54,6 +63,7 @@ from doxagent.runtime_scheduler.schema import (
     TickerRunState,
     TickerRunStatus,
 )
+from doxagent.runtime_scheduler.service import market_session_phase
 
 JsonObject = dict[str, Any]
 T = TypeVar("T")
@@ -66,6 +76,16 @@ ENABLED_MONITOR_MODES = {
 }
 READ_AGGREGATION_LIMIT = 10_000
 DOCUMENT_HISTORY_LIMIT = 100
+DOCUMENT_DASHBOARD_AUDIT_EVENTS = {
+    "documents_initialized",
+    "weekly_document_update_completed",
+    "document_run_manual_activated",
+}
+DOCUMENT_DASHBOARD_EVENT_TYPES = {
+    "dashboard.document.updated",
+    "dashboard.known_events.updated",
+    "dashboard.policies.updated",
+}
 MESSAGE_BUS_CONFIG_SOURCES = (
     "benzinga_news",
     "finnhub_company_news",
@@ -88,6 +108,15 @@ RUNTIME_NODE_DEFINITIONS = (
     ("ingest_queue", "Ingest Queue"),
 )
 RUNTIME_NODE_IDS = {node_id for node_id, _label in RUNTIME_NODE_DEFINITIONS}
+RESULT_RECORD_TYPES = {
+    "all",
+    "trading_record",
+    "exception_queue",
+    "objection",
+    "known_event_patch",
+    "archive",
+    "ingest_queue",
+}
 AUDIT_PERIODS = {"today", "7d", "30d"}
 AUDIT_GROUP_BYS = {"node", "model", "ticker"}
 REVENUE_AUDIT_EVENT_TYPE = "audit.revenue.status_changed"
@@ -106,6 +135,37 @@ class RuntimeDashboardContext:
     archive_by_source: dict[str, list[ArchiveItem]]
     known_event_patch_by_source: dict[str, list[KnownEventsPatchLog]]
     objections_by_source: dict[str, list[RuntimeObjectionRecord]]
+
+
+@dataclass(frozen=True)
+class DashboardDocumentCommitSummary:
+    document_type: DocumentType | None
+    field_path: str | None
+    author_agent: str | None
+    triggered_by: str | None
+    trigger_reason: str | None
+    rationale: str | None
+    created_at: datetime
+
+
+@dataclass(frozen=True)
+class DashboardDocumentRunRecord:
+    run_id: str
+    ticker: str
+    workflow_state: str
+    created_at: datetime
+    updated_at: datetime | None
+    document_buckets: dict[str, dict[str, Any]]
+    commit_summaries: list[DashboardDocumentCommitSummary]
+
+
+@dataclass(frozen=True)
+class DashboardDocumentRevisionRecord:
+    run_id: str
+    document1_updated_at: str | None
+    document2_updated_at: str | None
+    known_events_updated_at: str | None
+    policies_updated_at: str | None
 
 RUNNING_STATUSES = {TickerRunStatus.RUNNING, TickerRunStatus.DEGRADED}
 FRONTEND_DOCUMENT_TYPES = ("document1", "document2", "document3")
@@ -132,8 +192,18 @@ DOCUMENT_TYPE_LABELS.update(
 class RealDashboardOverviewService:
     """Adapter layer that hides scheduler/runtime internals from HTTP routes."""
 
-    def __init__(self, dashboard_api: DashboardStateAPI | None = None) -> None:
+    def __init__(
+        self,
+        dashboard_api: DashboardStateAPI | None = None,
+        *,
+        backtest_service: DashboardBacktestService | None = None,
+        model_usage_service: ModelUsageCostService | None = None,
+    ) -> None:
         self.dashboard_api = dashboard_api or DashboardStateAPI.from_settings()
+        self.backtest_service = backtest_service or DashboardBacktestService(
+            self.dashboard_api.scheduler
+        )
+        self.model_usage_service = model_usage_service or ModelUsageCostService.from_settings()
 
     def overview(self, *, date_text: str | None = None, tz: str | None = None) -> JsonObject:
         zone = _zone(tz)
@@ -152,7 +222,9 @@ class RealDashboardOverviewService:
                 ),
                 "today_message_count": message_count,
                 "today_dtc_count": sum(int(card["today_dtc_count"]) for card in cards),
-                "today_token_cost_usd": None,
+                "today_token_cost_usd": _sum_optional(
+                    card.get("today_cost_usd") for card in cards
+                ),
                 "exception_count": _count_on_day(
                     (item.created_at for item in exceptions),
                     target_date=target_date,
@@ -272,6 +344,42 @@ class RealDashboardOverviewService:
             "history_deleted": False,
         }
 
+    def start_backtest(
+        self,
+        ticker: str,
+        *,
+        period: str | int,
+        force_initialize: bool = False,
+        replay_interval_ms: int | None = None,
+    ) -> JsonObject:
+        return self.backtest_service.start_backtest(
+            ticker,
+            period=period,
+            force_initialize=force_initialize,
+            replay_interval_ms=replay_interval_ms,
+        )
+
+    def list_backtests(
+        self,
+        *,
+        status: str | None = None,
+        ticker: str | None = None,
+        limit: int | None = None,
+        cursor: str | None = None,
+    ) -> JsonObject:
+        return self.backtest_service.list_backtests(
+            status=status,
+            ticker=ticker,
+            limit=limit,
+            cursor=cursor,
+        )
+
+    def get_backtest(self, run_id: str) -> JsonObject:
+        return self.backtest_service.get_backtest(run_id)
+
+    def cancel_backtest(self, run_id: str) -> JsonObject:
+        return self.backtest_service.cancel_backtest(run_id)
+
     def restart_ticker(
         self,
         ticker: str,
@@ -305,7 +413,11 @@ class RealDashboardOverviewService:
         requested_types = _frontend_document_types(types)
         selected = self._current_document_run(normalized, requested_types)
         if selected is None:
-            return {"ticker": normalized, "document_run_id": None, "documents": []}
+            return {
+                "ticker": normalized,
+                "document_run_id": self._scheduler_document_run_id(normalized),
+                "documents": [],
+            }
         run, documents = selected
         return {
             "ticker": normalized,
@@ -313,6 +425,33 @@ class RealDashboardOverviewService:
             "documents": [
                 _without_raw(document, include_raw=include_raw) for document in documents
             ],
+        }
+
+    def document_revision(self, ticker: str) -> JsonObject:
+        normalized = _ticker(ticker)
+        record = self._document_revision_record(normalized)
+        if record is None:
+            return {
+                "ticker": normalized,
+                "document_run_id": self._scheduler_document_run_id(normalized),
+                "document1_updated_at": None,
+                "document2_updated_at": None,
+                "document3_updated_at": None,
+                "known_events_updated_at": None,
+                "policies_updated_at": None,
+            }
+        document3_updated_at = _max_iso_text(
+            record.known_events_updated_at,
+            record.policies_updated_at,
+        )
+        return {
+            "ticker": normalized,
+            "document_run_id": record.run_id,
+            "document1_updated_at": record.document1_updated_at,
+            "document2_updated_at": record.document2_updated_at,
+            "document3_updated_at": document3_updated_at,
+            "known_events_updated_at": record.known_events_updated_at,
+            "policies_updated_at": record.policies_updated_at,
         }
 
     def document_versions(
@@ -348,6 +487,7 @@ class RealDashboardOverviewService:
             normalized,
             resolved_type,
             include_raw=False,
+            include_cards_for_document3=True,
         ):
             if requested in {version["version_id"], version["document_id"]}:
                 return {
@@ -356,6 +496,21 @@ class RealDashboardOverviewService:
                     "document": document,
                 }
         raise DocumentVersionNotFound(normalized, resolved_type, requested)
+
+    def activate_document_set(
+        self,
+        ticker: str,
+        *,
+        document_run_id: str,
+        reason: str | None = None,
+    ) -> JsonObject:
+        normalized = _ticker(ticker)
+        detail = self.dashboard_api.activate_document_run(
+            normalized,
+            document_run_id,
+            reason=reason or "Dashboard manual document activation.",
+        )
+        return self._operation_result("activate_documents", detail)
 
     def known_events(
         self,
@@ -410,6 +565,7 @@ class RealDashboardOverviewService:
         normalized = _ticker(ticker)
         zone = _zone(tz)
         target_date = _target_date(date_text, zone)
+        raw_messages = self._raw_messages(normalized)
         messages = self._messages(normalized)
         events = self._events(normalized)
         config = self.message_bus_config(normalized)
@@ -431,7 +587,7 @@ class RealDashboardOverviewService:
                 self.dashboard_api.scheduler.repository.get_state(normalized)
             ),
             "today_raw_message_count": _count_on_day(
-                (message.normalized_at for message in messages),
+                (message.collected_at for message in raw_messages),
                 target_date=target_date,
                 zone=zone,
             ),
@@ -451,6 +607,7 @@ class RealDashboardOverviewService:
         ticker: str,
         *,
         source_id: str | None = None,
+        source_type: str | None = None,
         processing_status: str | None = None,
         q: str | None = None,
         sort: str | None = None,
@@ -458,39 +615,72 @@ class RealDashboardOverviewService:
         cursor: str | None = None,
     ) -> JsonObject:
         normalized = _ticker(ticker)
-        runtime_by_source = {
-            execution.source_message.source_message_id: execution
-            for execution in self._executions(normalized)
-        }
-        events_by_message = {
-            event.standard_message_id: event for event in self._events(normalized)
-        }
+        repository = self.dashboard_api.scheduler.monitoring_service.repository
         source_labels = {
             source.source_id: source.display_name
-            for source in self.dashboard_api.scheduler.monitoring_service.repository.list_sources()
+            for source in repository.list_sources()
         }
-        items = [
-            _message_item(
-                message,
-                runtime=runtime_by_source.get(message.standard_message_id),
-                event=events_by_message.get(message.standard_message_id),
-                source_label=source_labels.get(message.source_id),
-            )
-            for message in self._messages(normalized)
-        ]
-        if source_id:
-            normalized_source = source_id.strip().lower()
-            items = [item for item in items if item["source_id"] == normalized_source]
+        resolved_limit = _limit(limit)
+        offset = _parse_cursor(cursor)
         if processing_status:
+            messages, _total_count = repository.query_standard_messages(
+                ticker=normalized,
+                source_id=source_id,
+                source_type=source_type,
+                q=q,
+                sort=sort,
+                limit=READ_AGGREGATION_LIMIT,
+                offset=0,
+            )
+            items = [
+                self._message_item_for_response(
+                    message,
+                    source_label=source_labels.get(message.source_id),
+                    include_body=False,
+                )
+                for message in messages
+            ]
             items = [
                 item
                 for item in items
                 if item["processing_status"] == processing_status.strip()
             ]
-        if q:
-            items = _search_items(items, q, fields=("title", "summary", "body", "source_id"))
-        items = _sort_messages(items, sort)
-        return _paginate(items, limit=limit, cursor=cursor)
+            items = _sort_messages(items, sort)
+            return _paginate(items, limit=limit, cursor=cursor)
+        messages, total_count = repository.query_standard_messages(
+            ticker=normalized,
+            source_id=source_id,
+            source_type=source_type,
+            q=q,
+            sort=sort,
+            limit=resolved_limit,
+            offset=offset,
+        )
+        items = [
+            self._message_item_for_response(
+                message,
+                source_label=source_labels.get(message.source_id),
+                include_body=False,
+            )
+            for message in messages
+        ]
+        return _page_payload(items, limit=resolved_limit, offset=offset, total_count=total_count)
+
+    def message_bus_message_detail(self, ticker: str, message_id: str) -> JsonObject:
+        normalized = _ticker(ticker)
+        message = self.dashboard_api.scheduler.monitoring_service.repository.get_standard_message(
+            message_id.strip()
+        )
+        if message is None or message.ticker != normalized:
+            raise MessageBusMessageNotFound(normalized, message_id)
+        source = self.dashboard_api.scheduler.monitoring_service.repository.get_source(
+            message.source_id
+        )
+        return self._message_item_for_response(
+            message,
+            source_label=source.display_name if source is not None else None,
+            include_body=True,
+        )
 
     def message_bus_config(self, ticker: str) -> JsonObject:
         normalized = _ticker(ticker)
@@ -713,6 +903,26 @@ class RealDashboardOverviewService:
             items = [item for item in items if item["source_type"] == source_type_filter]
         return _paginate(items, limit=limit, cursor=cursor)
 
+    def runtime_records(
+        self,
+        ticker: str,
+        *,
+        result_type: str | None = None,
+        limit: int | None = None,
+        cursor: str | None = None,
+    ) -> JsonObject:
+        context = self._runtime_context(_ticker(ticker))
+        resolved_type = _runtime_result_type(result_type)
+        if resolved_type == "all":
+            records = [
+                _runtime_result_record_from_execution(execution, context)
+                for execution in context.executions
+            ]
+        else:
+            records = _runtime_result_records_by_type(context, resolved_type)
+        records.sort(key=lambda item: str(item.get("created_at") or ""), reverse=True)
+        return _paginate(records, limit=limit, cursor=cursor)
+
     def runtime_execution_detail(self, ticker: str, execution_id: str) -> JsonObject:
         normalized = _ticker(ticker)
         context = self._runtime_context(normalized)
@@ -827,16 +1037,25 @@ class RealDashboardOverviewService:
         target_date = _target_date(date_text, zone)
         resolved_period = _audit_period(period)
         resolved_group_by = _audit_group_by(group_by)
-        records = [
-            record
-            for record in self._cost_records(normalized)
-            if _in_audit_period(
-                _parse_dt_text(record.get("time")),
-                resolved_period,
-                target_date,
-                zone,
+        try:
+            records = [
+                record
+                for record in self._cost_records(normalized)
+                if _in_audit_period(
+                    _parse_dt_text(record.get("time")),
+                    resolved_period,
+                    target_date,
+                    zone,
+                )
+            ]
+        except Exception as exc:
+            return _failed_cost_audit_payload(
+                normalized,
+                period=resolved_period,
+                group_by=resolved_group_by,
+                target_date=target_date,
+                error=str(exc),
             )
-        ]
         records.sort(key=lambda item: str(item.get("time") or ""), reverse=True)
         return _cost_audit_payload(
             normalized,
@@ -875,7 +1094,10 @@ class RealDashboardOverviewService:
         node_filter = node.strip().lower() if node and node.strip() else None
         model_filter = model.strip() if model and model.strip() else None
         status_filter = status.strip().lower() if status and status.strip() else None
-        items = self._cost_records(normalized)
+        try:
+            items = self._cost_records(normalized)
+        except Exception:
+            items = []
         if resolved_period:
             items = [
                 item
@@ -1000,16 +1222,52 @@ class RealDashboardOverviewService:
                     },
                 }
             )
+            result_record = _runtime_result_record_from_execution(execution, context)
+            result_record_id = str(result_record.get("record_id") or execution.execution_id)
+            result_type = str(result_record.get("result_type") or "all")
+            events.append(
+                {
+                    "event_id": (
+                        f"rt_result_{result_type}_{result_record_id}_"
+                        f"{int(_aware(occurred_at).timestamp())}"
+                    ),
+                    "event_type": "runtime.result.created",
+                    "ticker": execution_ticker,
+                    "occurred_at": _dt(occurred_at),
+                    "payload": {
+                        "record_id": result_record_id,
+                        "execution_id": execution.execution_id,
+                        "source_message_id": execution.source_message.source_message_id,
+                        "result_type": result_type,
+                    },
+                }
+            )
+            if "known_events_updated" in execution.message_statuses:
+                events.append(
+                    {
+                        "event_id": f"doc_known_events_{execution.execution_id}",
+                        "event_type": "dashboard.known_events.updated",
+                        "ticker": execution_ticker,
+                        "occurred_at": _dt(occurred_at),
+                        "payload": {
+                            "ticker": execution_ticker,
+                            "document_run_id": self._scheduler_document_run_id(execution_ticker),
+                            "document_type": "known_events",
+                            "updated_at": _dt(occurred_at),
+                        },
+                    }
+                )
         for audit_event in self.dashboard_api.scheduler.repository.list_audit_events(
             ticker=normalized,
             limit=READ_AGGREGATION_LIMIT,
         ):
-            if audit_event.event_type not in {
+            if audit_event.event_type in {
                 REVENUE_AUDIT_EVENT_TYPE,
                 COST_AUDIT_EVENT_TYPE,
             }:
-                continue
-            events.append(_dashboard_event_from_scheduler_audit(audit_event))
+                events.append(_dashboard_event_from_scheduler_audit(audit_event))
+            elif audit_event.event_type in DOCUMENT_DASHBOARD_AUDIT_EVENTS:
+                events.extend(_dashboard_document_events_from_scheduler_audit(audit_event))
         if normalized is not None:
             events.append(self._cost_status_event(normalized))
         if requested_types:
@@ -1027,38 +1285,158 @@ class RealDashboardOverviewService:
         blackboard = getattr(provider, "blackboard", None)
         return blackboard if isinstance(blackboard, BlackboardService) else None
 
-    def _blackboard_runs(
+    def _scheduler_document_run_id(self, ticker: str) -> str | None:
+        state = self.dashboard_api.scheduler.repository.get_state(ticker)
+        if state is None:
+            return None
+        return state.document_run_id
+
+    def _manual_activation_events(self, ticker: str) -> dict[str, RuntimeAuditEvent]:
+        events: dict[str, RuntimeAuditEvent] = {}
+        for event in self.dashboard_api.scheduler.repository.list_audit_events(
+            ticker=ticker,
+            limit=DOCUMENT_HISTORY_LIMIT,
+        ):
+            if event.event_type != "document_run_manual_activated":
+                continue
+            run_id = event.payload.get("document_run_id")
+            if isinstance(run_id, str) and run_id and run_id not in events:
+                events[run_id] = event
+        return events
+
+    def _document_records(
         self,
         ticker: str,
+        internal_types: Iterable[DocumentType],
         *,
+        run_id: str | None = None,
         limit: int = DOCUMENT_HISTORY_LIMIT,
-    ) -> list[BlackboardRun]:
+        include_commit_summaries: bool = False,
+        commit_internal_types: Iterable[DocumentType] | None = None,
+    ) -> list[DashboardDocumentRunRecord]:
+        resolved_internal_types = _unique_document_types(internal_types)
+        if not resolved_internal_types:
+            return []
         blackboard = self._blackboard()
         if blackboard is None:
             return []
-        return blackboard.list_runs_by_ticker(ticker, limit=limit)
+        repository = getattr(blackboard, "repository", None)
+        database_url = getattr(repository, "database_url", None)
+        if isinstance(database_url, str) and database_url.strip():
+            return _postgres_document_records(
+                database_url,
+                ticker,
+                resolved_internal_types,
+                run_id=run_id,
+                limit=limit,
+                include_commit_summaries=include_commit_summaries,
+                commit_internal_types=commit_internal_types,
+            )
+        return _blackboard_document_records(
+            blackboard,
+            ticker,
+            resolved_internal_types,
+            run_id=run_id,
+            limit=limit,
+            include_commit_summaries=include_commit_summaries,
+        )
+
+    def _document_revision_record(self, ticker: str) -> DashboardDocumentRevisionRecord | None:
+        blackboard = self._blackboard()
+        if blackboard is None:
+            return None
+        repository = getattr(blackboard, "repository", None)
+        scheduler_run_id = self._scheduler_document_run_id(ticker)
+        database_url = getattr(repository, "database_url", None)
+        if isinstance(database_url, str) and database_url.strip():
+            return _postgres_document_revision_record(
+                database_url,
+                ticker,
+                run_id=scheduler_run_id,
+            )
+        selected = self._current_document_run(ticker, list(FRONTEND_DOCUMENT_TYPES))
+        if selected is None:
+            return None
+        record, documents = selected
+        by_type = {str(document["document_type"]): document for document in documents}
+        return DashboardDocumentRevisionRecord(
+            run_id=record.run_id,
+            document1_updated_at=_optional_str(by_type.get("document1", {}).get("updated_at")),
+            document2_updated_at=_optional_str(by_type.get("document2", {}).get("updated_at")),
+            known_events_updated_at=_dt(
+                _latest_document_updated_at_from_record(record, DocumentType.KNOWN_EVENTS)
+            ),
+            policies_updated_at=_dt(
+                _latest_document_updated_at_from_record(record, DocumentType.MONITORING_POLICY)
+            ),
+        )
+
+    def _current_or_fallback_document_record(
+        self,
+        ticker: str,
+        internal_types: Iterable[DocumentType],
+    ) -> DashboardDocumentRunRecord | None:
+        resolved_internal_types = _unique_document_types(internal_types)
+        scheduler_run_id = self._scheduler_document_run_id(ticker)
+        if scheduler_run_id:
+            records = self._document_records(
+                ticker,
+                resolved_internal_types,
+                run_id=scheduler_run_id,
+                limit=1,
+            )
+            selected = records[0] if records else None
+            if selected and _record_has_documents(selected, resolved_internal_types):
+                return selected
+            return None
+        records = self._document_records(ticker, resolved_internal_types)
+        return next(
+            (
+                record
+                for record in records
+                if _record_has_documents(record, resolved_internal_types)
+            ),
+            None,
+        )
 
     def _current_document_run(
         self,
         ticker: str,
         document_types: list[str],
-    ) -> tuple[BlackboardRun, list[JsonObject]] | None:
-        for run in self._blackboard_runs(ticker):
+        *,
+        include_cards_for_document3: bool = False,
+    ) -> tuple[DashboardDocumentRunRecord, list[JsonObject]] | None:
+        internal_types = _internal_document_types_for_frontend_types(document_types)
+        scheduler_run_id = self._scheduler_document_run_id(ticker)
+        records = self._document_records(
+            ticker,
+            internal_types,
+            run_id=scheduler_run_id,
+            limit=1,
+        ) if scheduler_run_id else self._document_records(ticker, internal_types)
+        if scheduler_run_id:
+            records = [
+                record for record in records if record.run_id == scheduler_run_id
+            ]
+        for record in records:
             documents = [
                 document
                 for document_type in document_types
                 if (
-                    document := _assemble_dashboard_document(
-                        run,
+                    document := _assemble_dashboard_document_from_record(
+                        record,
                         document_type,
                         version_status="current",
                         include_raw=True,
+                        include_cards=(
+                            document_type != "document3" or include_cards_for_document3
+                        ),
                     )
                 )
                 is not None
             ]
             if documents:
-                return run, documents
+                return record, documents
         return None
 
     def _versioned_documents(
@@ -1067,42 +1445,63 @@ class RealDashboardOverviewService:
         document_type: str,
         *,
         include_raw: bool,
+        include_cards_for_document3: bool = False,
     ) -> list[tuple[JsonObject, JsonObject]]:
-        rows: list[tuple[BlackboardRun, JsonObject]] = []
-        for run in self._blackboard_runs(ticker):
-            document = _assemble_dashboard_document(
-                run,
+        record_internal_types = _document_record_types_for_frontend(document_type)
+        commit_internal_types = _internal_document_types_for_frontend(document_type)
+        rows: list[tuple[DashboardDocumentRunRecord, JsonObject]] = []
+        for record in self._document_records(
+            ticker,
+            record_internal_types,
+            include_commit_summaries=True,
+            commit_internal_types=commit_internal_types,
+        ):
+            document = _assemble_dashboard_document_from_record(
+                record,
                 document_type,
                 version_status="historical",
                 include_raw=include_raw,
+                include_cards=(document_type != "document3" or include_cards_for_document3),
             )
             if document is not None:
-                rows.append((run, document))
+                rows.append((record, document))
+        current_run_id = self._scheduler_document_run_id(ticker)
+        if current_run_id is None and rows:
+            current_run_id = rows[0][0].run_id
+        manual_activation_events = self._manual_activation_events(ticker)
         versioned: list[tuple[JsonObject, JsonObject]] = []
-        for index, (run, document) in enumerate(rows):
-            version_status = "current" if index == 0 else "historical"
+        for record, document in rows:
+            version_status = "current" if record.run_id == current_run_id else "historical"
             document["version_status"] = version_status
+            reason = _document_version_reason_from_record(
+                record,
+                document_type,
+                manual_activation_event=manual_activation_events.get(record.run_id),
+            )
             version = {
-                "version_id": _version_id(run.run_id, document_type, str(document["document_id"])),
+                "version_id": _version_id(
+                    record.run_id,
+                    document_type,
+                    str(document["document_id"]),
+                ),
+                "document_run_id": record.run_id,
                 "document_id": document["document_id"],
                 "document_type": document_type,
                 "generated_at": document["generated_at"],
                 "updated_at": document["updated_at"],
                 "version_status": version_status,
                 "summary": _document_summary(document),
+                **reason,
             }
             versioned.append((version, document))
         return versioned
 
     def _known_event_items(self, ticker: str) -> list[JsonObject]:
         by_id: dict[str, JsonObject] = {}
-        run = _first_run_with_documents(
-            self._blackboard_runs(ticker),
-            [DocumentType.KNOWN_EVENTS],
-        )
-        if run is not None:
+        record = self._current_or_fallback_document_record(ticker, [DocumentType.KNOWN_EVENTS])
+        if record is not None:
             for document in _model_documents(
-                run,
+                record,
                 DocumentType.KNOWN_EVENTS,
                 KnownEventsDocument,
             ):
@@ -1118,15 +1517,15 @@ class RealDashboardOverviewService:
         return list(by_id.values())
 
     def _policy_items(self, ticker: str) -> list[JsonObject]:
-        run = _first_run_with_documents(
-            self._blackboard_runs(ticker),
+        record = self._current_or_fallback_document_record(
+            ticker,
             [DocumentType.MONITORING_POLICY],
         )
-        if run is None:
+        if record is None:
             return []
         items: list[JsonObject] = []
         for document in _model_documents(
-            run,
+            record,
             DocumentType.MONITORING_POLICY,
             MonitoringPolicyDocument,
         ):
@@ -1171,6 +1570,11 @@ class RealDashboardOverviewService:
             target_date=target_date,
             zone=zone,
         )
+        today_cost_usd = self._today_cost_usd(
+            state.ticker,
+            target_date=target_date,
+            zone=zone,
+        )
         health = _health_with_exceptions(
             state.health,
             exceptions,
@@ -1189,7 +1593,7 @@ class RealDashboardOverviewService:
             "last_message_at": _dt(last_message_at),
             "last_worker_processed_at": _dt(last_worker_processed_at),
             "today_dtc_count": today_dtc_count,
-            "today_cost_usd": None,
+            "today_cost_usd": today_cost_usd,
             "last_error": state.last_error,
             "startup_progress": _startup_progress_payload(state),
             "_today_message_count": today_message_count,
@@ -1279,6 +1683,7 @@ class RealDashboardOverviewService:
         }
 
     def _system_status(self, states: list[TickerRunState]) -> JsonObject:
+        session_phase = market_session_phase(datetime.now(UTC))
         if not states:
             message_bus_status = RuntimeHealth.UNKNOWN
         elif any(state.health is RuntimeHealth.BLOCKED for state in states):
@@ -1291,6 +1696,8 @@ class RealDashboardOverviewService:
             message_bus_status = RuntimeHealth.NORMAL
         return {
             "container_status": RuntimeHealth.NORMAL.value,
+            "current_session_phase": session_phase.value,
+            "current_session_label": _session_window_label(session_phase),
             "dashboard_api_status": RuntimeHealth.NORMAL.value,
             "message_bus_status": message_bus_status.value,
             "status_color": _status_color(message_bus_status),
@@ -1298,6 +1705,32 @@ class RealDashboardOverviewService:
 
     def _messages(self, ticker: str | None = None) -> list[StandardMessage]:
         return self.dashboard_api.scheduler.monitoring_service.recent_messages(
+            ticker=ticker,
+            limit=READ_AGGREGATION_LIMIT,
+        )
+
+    def _message_item_for_response(
+        self,
+        message: StandardMessage,
+        *,
+        source_label: str | None,
+        include_body: bool,
+    ) -> JsonObject:
+        runtime = self.dashboard_api.scheduler.runtime_service.repository.execution_for_source(
+            message.standard_message_id
+        )
+        monitoring_repository = self.dashboard_api.scheduler.monitoring_service.repository
+        event = monitoring_repository.event_for_standard_message(message.standard_message_id)
+        return _message_item(
+            message,
+            runtime=runtime,
+            event=event,
+            source_label=source_label,
+            include_body=include_body,
+        )
+
+    def _raw_messages(self, ticker: str | None = None) -> list[RawExternalMessage]:
+        return self.dashboard_api.scheduler.monitoring_service.repository.recent_raw_messages(
             ticker=ticker,
             limit=READ_AGGREGATION_LIMIT,
         )
@@ -1310,19 +1743,51 @@ class RealDashboardOverviewService:
 
     def _executions(self, ticker: str | None = None) -> list[RuntimeExecutionRecord]:
         return self.dashboard_api.scheduler.runtime_service.repository.list_executions(
-            ticker=ticker
+            ticker=ticker,
+            limit=READ_AGGREGATION_LIMIT,
+            newest_first=True,
         )
 
     def _trading_records(self, ticker: str | None = None) -> list[TradingRecord]:
         return self.dashboard_api.scheduler.runtime_service.repository.list_trading_records(
-            ticker=ticker
+            ticker=ticker,
+            limit=READ_AGGREGATION_LIMIT,
+            newest_first=True,
         )
 
     def _cost_records(self, ticker: str) -> list[JsonObject]:
+        primary_records = self.model_usage_service.cost_records(
+            ticker=ticker,
+            limit=READ_AGGREGATION_LIMIT,
+            newest_first=True,
+        )
+        if primary_records:
+            return primary_records
         records: list[JsonObject] = []
         for execution in self._executions(ticker):
             records.extend(_cost_records_from_execution(execution))
         return records
+
+    def _today_cost_usd(
+        self,
+        ticker: str,
+        *,
+        target_date: date,
+        zone: ZoneInfo,
+    ) -> float | None:
+        try:
+            records = [
+                record
+                for record in self._cost_records(ticker)
+                if _is_on_day(
+                    _parse_dt_text(record.get("time")),
+                    target_date=target_date,
+                    zone=zone,
+                )
+            ]
+        except Exception:
+            return None
+        return _sum_optional(record.get("cost_usd") for record in records)
 
     def _latest_scheduler_audit_event(
         self,
@@ -1338,11 +1803,22 @@ class RealDashboardOverviewService:
         return None
 
     def _cost_status_event(self, ticker: str) -> JsonObject:
-        records = self._cost_records(ticker)
-        status = _cost_audit_status(records)
-        occurred_at = _latest_dt(
-            _parse_dt_text(record.get("time")) for record in records
-        ) or datetime.now(UTC)
+        try:
+            records = self._cost_records(ticker)
+            status = _cost_audit_status(records)
+            occurred_at = _latest_dt(
+                _parse_dt_text(record.get("time")) for record in records
+            ) or datetime.now(UTC)
+            missing_capabilities = (
+                []
+                if status == "completed"
+                else ["model_pricing_table"] if status == "partial" else ["model_usage_events"]
+            )
+        except Exception:
+            records = []
+            status = "failed"
+            occurred_at = datetime.now(UTC)
+            missing_capabilities = ["model_usage_aggregation"]
         return {
             "event_id": f"audit_cost_status_{ticker}_{int(_aware(occurred_at).timestamp())}",
             "event_type": COST_AUDIT_EVENT_TYPE,
@@ -1352,17 +1828,15 @@ class RealDashboardOverviewService:
                 "ticker": ticker,
                 "status": status,
                 "cost_record_count": len(records),
-                "missing_capabilities": (
-                    []
-                    if status == "completed"
-                    else ["model_pricing_table", "unified_model_usage_persistence"]
-                ),
+                "missing_capabilities": missing_capabilities,
             },
         }
 
     def _exceptions(self, ticker: str | None = None) -> list[ExecutionExceptionLog]:
         return self.dashboard_api.scheduler.runtime_service.repository.list_exceptions(
-            ticker=ticker
+            ticker=ticker,
+            limit=READ_AGGREGATION_LIMIT,
+            newest_first=True,
         )
 
     def _runtime_context(self, ticker: str) -> RuntimeDashboardContext:
@@ -1381,22 +1855,46 @@ class RealDashboardOverviewService:
             executions=executions,
             messages_by_id=messages_by_id,
             exceptions_by_source=_group_by_source(
-                repository.list_exceptions(ticker=normalized),
+                repository.list_exceptions(
+                    ticker=normalized,
+                    limit=READ_AGGREGATION_LIMIT,
+                    newest_first=True,
+                ),
             ),
             trading_records_by_source=_group_by_source(
-                repository.list_trading_records(ticker=normalized),
+                repository.list_trading_records(
+                    ticker=normalized,
+                    limit=READ_AGGREGATION_LIMIT,
+                    newest_first=True,
+                ),
             ),
             ingest_queue_by_source=_group_by_source(
-                repository.list_ingest_queue(ticker=normalized),
+                repository.list_ingest_queue(
+                    ticker=normalized,
+                    limit=READ_AGGREGATION_LIMIT,
+                    newest_first=True,
+                ),
             ),
             archive_by_source=_group_by_source(
-                repository.list_archive(ticker=normalized),
+                repository.list_archive(
+                    ticker=normalized,
+                    limit=READ_AGGREGATION_LIMIT,
+                    newest_first=True,
+                ),
             ),
             known_event_patch_by_source=_group_by_source(
-                repository.list_known_events_patch_logs(ticker=normalized),
+                repository.list_known_events_patch_logs(
+                    ticker=normalized,
+                    limit=READ_AGGREGATION_LIMIT,
+                    newest_first=True,
+                ),
             ),
             objections_by_source=_group_by_source(
-                repository.list_objections(ticker=normalized),
+                repository.list_objections(
+                    ticker=normalized,
+                    limit=READ_AGGREGATION_LIMIT,
+                    newest_first=True,
+                ),
             ),
         )
 
@@ -1450,6 +1948,13 @@ class UnsupportedMessageSource(DashboardRealServiceError):
     def __init__(self, source_id: str) -> None:
         super().__init__(source_id)
         self.source_id = source_id
+
+
+class MessageBusMessageNotFound(DashboardRealServiceError):
+    def __init__(self, ticker: str, message_id: str) -> None:
+        super().__init__(message_id)
+        self.ticker = ticker
+        self.message_id = message_id
 
 
 class InvalidMessageBusPatch(DashboardRealServiceError):
@@ -1553,8 +2058,9 @@ def _message_item(
     runtime: RuntimeExecutionRecord | None,
     event: EventStreamItem | None,
     source_label: str | None,
+    include_body: bool,
 ) -> JsonObject:
-    body = message.body
+    body = message.body if include_body else None
     title = message.title or _truncate(body or message.standard_message_id, 120)
     summary = _message_summary(message)
     return {
@@ -1795,8 +2301,14 @@ def _media_enrichment_success_rate(messages: list[StandardMessage]) -> float | N
             records.append(value)
     if not records:
         return None
-    succeeded = sum(1 for record in records if record.get("succeeded") is True)
+    succeeded = sum(1 for record in records if _media_enrichment_succeeded(record))
     return succeeded / len(records)
+
+
+def _media_enrichment_succeeded(record: JsonObject) -> bool:
+    if record.get("succeeded") is True:
+        return True
+    return record.get("status") == "success"
 
 
 def _sort_messages(items: list[JsonObject], sort: str | None) -> list[JsonObject]:
@@ -1830,6 +2342,21 @@ def _runtime_node_id(value: str) -> str:
     normalized = value.strip().lower()
     if normalized not in RUNTIME_NODE_IDS:
         raise UnsupportedRuntimeNode(normalized or value)
+    return normalized
+
+
+def _runtime_result_type(value: str | None) -> str:
+    normalized = (value or "all").strip().lower()
+    if not normalized:
+        normalized = "all"
+    if normalized not in RESULT_RECORD_TYPES:
+        raise InvalidAuditParams(
+            "Unsupported runtime result_type.",
+            details={
+                "result_type": normalized,
+                "supported_result_types": sorted(RESULT_RECORD_TYPES),
+            },
+        )
     return normalized
 
 
@@ -2291,6 +2818,333 @@ def _runtime_execution_detail(
         "created_at": _dt(execution.created_at),
         "updated_at": _dt(execution.updated_at),
     }
+
+
+def _runtime_result_record_from_execution(
+    execution: RuntimeExecutionRecord,
+    context: RuntimeDashboardContext,
+) -> JsonObject:
+    result_type = _runtime_result_type_from_execution(execution, context)
+    return _runtime_result_record(
+        context,
+        record_id=execution.execution_id,
+        result_type=result_type,
+        source_message_id=execution.source_message.source_message_id,
+        execution=execution,
+        status=_runtime_execution_status(execution, context),
+        created_at=execution.created_at,
+        result=_runtime_result_payload_for_execution(execution, context, result_type),
+        reasoning=_runtime_reasoning_for_execution(execution),
+    )
+
+
+def _runtime_result_records_by_type(
+    context: RuntimeDashboardContext,
+    result_type: str,
+) -> list[JsonObject]:
+    executions_by_source = _runtime_executions_by_source(context)
+    records: list[JsonObject] = []
+    if result_type == "trading_record":
+        for items in context.trading_records_by_source.values():
+            for item in items:
+                records.append(_runtime_result_record_from_trading_record(context, item, executions_by_source))
+    elif result_type == "exception_queue":
+        for items in context.exceptions_by_source.values():
+            for item in items:
+                records.append(_runtime_result_record_from_exception(context, item, executions_by_source))
+    elif result_type == "objection":
+        for items in context.objections_by_source.values():
+            for item in items:
+                records.append(_runtime_result_record_from_objection(context, item, executions_by_source))
+    elif result_type == "known_event_patch":
+        for items in context.known_event_patch_by_source.values():
+            for item in items:
+                records.append(_runtime_result_record_from_known_event_patch(context, item, executions_by_source))
+    elif result_type == "archive":
+        for items in context.archive_by_source.values():
+            for item in items:
+                records.append(_runtime_result_record_from_archive(context, item, executions_by_source))
+    elif result_type == "ingest_queue":
+        for items in context.ingest_queue_by_source.values():
+            for item in items:
+                records.append(_runtime_result_record_from_ingest_queue(context, item, executions_by_source))
+    return records
+
+
+def _runtime_result_record_from_trading_record(
+    context: RuntimeDashboardContext,
+    item: TradingRecord,
+    executions_by_source: dict[str, RuntimeExecutionRecord],
+) -> JsonObject:
+    execution = executions_by_source.get(item.source_message_id)
+    return _runtime_result_record(
+        context,
+        record_id=item.record_id,
+        result_type="trading_record",
+        source_message_id=item.source_message_id,
+        execution=execution,
+        status=str(item.status),
+        created_at=item.created_at,
+        result={
+            "side": str(item.trade_intent.side),
+            "conviction": str(item.trade_intent.conviction),
+            "size_bucket": str(item.trade_intent.size_bucket),
+            "matched_policy_code": item.matched_policy_code,
+            "trade_intent.reasoning": item.trade_intent.reasoning,
+        },
+        reasoning=item.trade_intent.reasoning,
+    )
+
+
+def _runtime_result_record_from_exception(
+    context: RuntimeDashboardContext,
+    item: ExecutionExceptionLog,
+    executions_by_source: dict[str, RuntimeExecutionRecord],
+) -> JsonObject:
+    execution = executions_by_source.get(item.source_message_id)
+    return _runtime_result_record(
+        context,
+        record_id=item.exception_id,
+        result_type="exception_queue",
+        source_message_id=item.source_message_id,
+        execution=execution,
+        status="failed",
+        created_at=item.created_at,
+        result={
+            "exception_type": item.exception_type,
+            "node": item.node,
+            "message": item.message,
+        },
+        reasoning=item.message,
+    )
+
+
+def _runtime_result_record_from_objection(
+    context: RuntimeDashboardContext,
+    item: RuntimeObjectionRecord,
+    executions_by_source: dict[str, RuntimeExecutionRecord],
+) -> JsonObject:
+    execution = executions_by_source.get(item.source_message_id)
+    return _runtime_result_record(
+        context,
+        record_id=item.objection_id,
+        result_type="objection",
+        source_message_id=item.source_message_id,
+        execution=execution,
+        status=str(item.objection_type),
+        created_at=item.created_at,
+        result={
+            "blackboard_target": item.blackboard_target,
+            "objection_type": str(item.objection_type),
+            "reasoning": item.reason,
+        },
+        reasoning=item.reason,
+    )
+
+
+def _runtime_result_record_from_known_event_patch(
+    context: RuntimeDashboardContext,
+    item: KnownEventsPatchLog,
+    executions_by_source: dict[str, RuntimeExecutionRecord],
+) -> JsonObject:
+    execution = executions_by_source.get(item.source_message_id)
+    return _runtime_result_record(
+        context,
+        record_id=item.log_id,
+        result_type="known_event_patch",
+        source_message_id=item.source_message_id,
+        execution=execution,
+        status="completed",
+        created_at=item.changed_at,
+        result={
+            "core_fact": item.patch.core_fact,
+            "event_time_or_window": item.patch.event_time_or_window,
+            "duplicate_detection_keys": list(item.patch.duplicate_detection_keys),
+        },
+        reasoning=item.change_reason,
+    )
+
+
+def _runtime_result_record_from_archive(
+    context: RuntimeDashboardContext,
+    item: ArchiveItem,
+    executions_by_source: dict[str, RuntimeExecutionRecord],
+) -> JsonObject:
+    return _runtime_result_record(
+        context,
+        record_id=item.item_id,
+        result_type="archive",
+        source_message_id=item.source_message_id,
+        execution=executions_by_source.get(item.source_message_id),
+        status="completed",
+        created_at=item.created_at,
+        result={},
+        reasoning=item.reason,
+    )
+
+
+def _runtime_result_record_from_ingest_queue(
+    context: RuntimeDashboardContext,
+    item: IngestQueueItem,
+    executions_by_source: dict[str, RuntimeExecutionRecord],
+) -> JsonObject:
+    return _runtime_result_record(
+        context,
+        record_id=item.item_id,
+        result_type="ingest_queue",
+        source_message_id=item.source_message_id,
+        execution=executions_by_source.get(item.source_message_id),
+        status="pending",
+        created_at=item.created_at,
+        result={},
+        reasoning=item.reason,
+    )
+
+
+def _runtime_result_record(
+    context: RuntimeDashboardContext,
+    *,
+    record_id: str,
+    result_type: str,
+    source_message_id: str,
+    execution: RuntimeExecutionRecord | None,
+    status: str,
+    created_at: datetime,
+    result: JsonObject,
+    reasoning: str | None,
+) -> JsonObject:
+    node_durations = _runtime_node_durations(execution) if execution is not None else {}
+    return {
+        "record_id": record_id,
+        "result_type": result_type,
+        "execution_id": execution.execution_id if execution is not None else None,
+        "source_message_id": source_message_id,
+        "message_title": (
+            _runtime_message_title(execution, context)
+            if execution is not None
+            else source_message_id
+        ),
+        "ticker": execution.source_message.ticker if execution is not None else context.ticker,
+        "source_type": str(execution.source_message.source_type) if execution is not None else None,
+        "final_route": _runtime_final_route(execution, context) if execution is not None else None,
+        "status": status,
+        "node_durations_ms": node_durations,
+        "duration_ms": sum(node_durations.values()) if node_durations else None,
+        "is_new": _runtime_is_new(execution),
+        "policy_type": _runtime_policy_type(execution),
+        "summary": _runtime_message_summary_from_execution(execution, context),
+        "reasoning": reasoning,
+        "result": {key: value for key, value in result.items() if value is not None},
+        "created_at": _dt(created_at),
+    }
+
+
+def _runtime_result_type_from_execution(
+    execution: RuntimeExecutionRecord,
+    context: RuntimeDashboardContext,
+) -> str:
+    source_id = execution.source_message.source_message_id
+    if context.exceptions_by_source.get(source_id):
+        return "exception_queue"
+    if context.trading_records_by_source.get(source_id):
+        return "trading_record"
+    if context.objections_by_source.get(source_id):
+        return "objection"
+    if context.known_event_patch_by_source.get(source_id):
+        return "known_event_patch"
+    if context.archive_by_source.get(source_id):
+        return "archive"
+    if context.ingest_queue_by_source.get(source_id):
+        return "ingest_queue"
+    route = _runtime_final_route(execution, context)
+    if route == "failed_with_exception":
+        return "exception_queue"
+    if route in {"objection", "objection_note"}:
+        return "objection"
+    if route in {"trading_record", "archive", "ingest_queue"}:
+        return route
+    return "all"
+
+
+def _runtime_result_payload_for_execution(
+    execution: RuntimeExecutionRecord,
+    context: RuntimeDashboardContext,
+    result_type: str,
+) -> JsonObject:
+    source_id = execution.source_message.source_message_id
+    if result_type == "trading_record" and context.trading_records_by_source.get(source_id):
+        item = context.trading_records_by_source[source_id][0]
+        return {
+            "side": str(item.trade_intent.side),
+            "conviction": str(item.trade_intent.conviction),
+            "size_bucket": str(item.trade_intent.size_bucket),
+            "matched_policy_code": item.matched_policy_code,
+            "trade_intent.reasoning": item.trade_intent.reasoning,
+        }
+    if result_type == "exception_queue" and context.exceptions_by_source.get(source_id):
+        item = context.exceptions_by_source[source_id][0]
+        return {
+            "exception_type": item.exception_type,
+            "node": item.node,
+            "message": item.message,
+        }
+    if result_type == "objection" and context.objections_by_source.get(source_id):
+        item = context.objections_by_source[source_id][0]
+        return {
+            "blackboard_target": item.blackboard_target,
+            "objection_type": str(item.objection_type),
+            "reasoning": item.reason,
+        }
+    if result_type == "known_event_patch" and context.known_event_patch_by_source.get(source_id):
+        item = context.known_event_patch_by_source[source_id][0]
+        return {
+            "core_fact": item.patch.core_fact,
+            "event_time_or_window": item.patch.event_time_or_window,
+            "duplicate_detection_keys": list(item.patch.duplicate_detection_keys),
+        }
+    return {}
+
+
+def _runtime_is_new(execution: RuntimeExecutionRecord | None) -> bool | None:
+    if execution is None:
+        return None
+    if execution.w1_result is not None:
+        return execution.w1_result.is_new
+    if execution.a2_result is not None:
+        return execution.a2_result.is_new
+    return None
+
+
+def _runtime_policy_type(execution: RuntimeExecutionRecord | None) -> str | None:
+    if execution is None or execution.w2_result is None:
+        return None
+    return str(execution.w2_result.type)
+
+
+def _runtime_reasoning_for_execution(execution: RuntimeExecutionRecord) -> str | None:
+    if execution.o3_result is not None and execution.o3_result.reasoning:
+        return execution.o3_result.reasoning
+    if execution.w2_result is not None and execution.w2_result.reasoning:
+        return execution.w2_result.reasoning
+    if execution.w1_result is not None and execution.w1_result.reasoning:
+        return execution.w1_result.reasoning
+    return execution.route_decision.reason
+
+
+def _runtime_message_summary_from_execution(
+    execution: RuntimeExecutionRecord | None,
+    context: RuntimeDashboardContext,
+) -> str | None:
+    if execution is None:
+        return None
+    source_id = execution.source_message.source_message_id
+    standard = context.messages_by_id.get(source_id)
+    if standard is not None:
+        summary = _message_summary(standard)
+        if summary:
+            return summary
+    body = execution.source_message.body
+    return _truncate(body, 240) if body else None
 
 
 def _runtime_dump_optional(value: Any) -> JsonObject | None:
@@ -2823,10 +3677,47 @@ def _cost_audit_payload(
     }
 
 
+def _failed_cost_audit_payload(
+    ticker: str,
+    *,
+    period: str,
+    group_by: str,
+    target_date: date,
+    error: str,
+) -> JsonObject:
+    return {
+        "ticker": ticker,
+        "period": period,
+        "status": "failed",
+        "group_by": group_by,
+        "kpis": {
+            "today_input_tokens": None,
+            "today_output_tokens": None,
+            "today_total_tokens": None,
+            "today_total_cost_usd": None,
+            "highest_cost_node": None,
+            "retry_cost_usd": None,
+        },
+        "trend": [
+            {"date": item_date.isoformat(), "total_cost_usd": None, "total_tokens": None}
+            for item_date in _audit_period_dates(period, target_date)
+        ],
+        "breakdown": {"by_node": [], "by_model": []},
+        "error": {"message": error},
+    }
+
+
 def _cost_audit_status(records: list[JsonObject]) -> str:
     if not records:
         return "missing"
-    if all(isinstance(record.get("cost_usd"), int | float) for record in records):
+    usage_records = [
+        record
+        for record in records
+        if isinstance(record.get("total_tokens"), int | float) and int(record["total_tokens"]) > 0
+    ]
+    if not usage_records:
+        return "missing"
+    if all(isinstance(record.get("cost_usd"), int | float) for record in usage_records):
         return "completed"
     return "partial"
 
@@ -2901,6 +3792,69 @@ def _dashboard_event_from_scheduler_audit(event: RuntimeAuditEvent) -> JsonObjec
             **event.payload,
         },
     }
+
+
+def _dashboard_document_events_from_scheduler_audit(
+    event: RuntimeAuditEvent,
+) -> list[JsonObject]:
+    document_run_id = _document_run_id_from_audit_event(event)
+    updated_at = _dt(event.created_at)
+    common_payload = {
+        "ticker": event.ticker,
+        "document_run_id": document_run_id,
+        "updated_at": updated_at,
+    }
+    events: list[JsonObject] = []
+    for document_type in FRONTEND_DOCUMENT_TYPES:
+        events.append(
+            {
+                "event_id": f"{event.audit_id}:{document_type}",
+                "event_type": "dashboard.document.updated",
+                "ticker": event.ticker,
+                "occurred_at": updated_at,
+                "payload": {
+                    **common_payload,
+                    "document_type": document_type,
+                },
+            }
+        )
+    events.extend(
+        [
+            {
+                "event_id": f"{event.audit_id}:known_events",
+                "event_type": "dashboard.known_events.updated",
+                "ticker": event.ticker,
+                "occurred_at": updated_at,
+                "payload": {
+                    **common_payload,
+                    "document_type": "known_events",
+                },
+            },
+            {
+                "event_id": f"{event.audit_id}:monitoring_policy",
+                "event_type": "dashboard.policies.updated",
+                "ticker": event.ticker,
+                "occurred_at": updated_at,
+                "payload": {
+                    **common_payload,
+                    "document_type": "monitoring_policy",
+                },
+            },
+        ]
+    )
+    return events
+
+
+def _document_run_id_from_audit_event(event: RuntimeAuditEvent) -> str | None:
+    value = event.payload.get("document_run_id") or event.payload.get("blackboard_run_id")
+    if isinstance(value, str) and value.strip():
+        return value.strip()
+    status = event.payload.get("document_status")
+    if isinstance(status, dict):
+        nested = status.get("blackboard_run_id")
+        if isinstance(nested, str) and nested.strip():
+            return nested.strip()
+    return None
 
 
 def _sum_optional(values: Iterable[object]) -> float | None:
@@ -3162,6 +4116,72 @@ def _assemble_dashboard_document(
     raise UnsupportedDocumentType(document_type)
 
 
+def _assemble_dashboard_document_from_record(
+    record: DashboardDocumentRunRecord,
+    document_type: str,
+    *,
+    version_status: str,
+    include_raw: bool,
+    include_cards: bool,
+) -> JsonObject | None:
+    if document_type == "document1":
+        documents = _model_documents(
+            record,
+            DocumentType.GLOBAL_RESEARCH,
+            GlobalResearchDocument,
+        )
+        document = _latest_document(documents)
+        return (
+            _global_research_view(
+                document,
+                version_status=version_status,
+                include_raw=include_raw,
+            )
+            if document is not None
+            else None
+        )
+    if document_type == "document2":
+        documents = _model_documents(
+            record,
+            DocumentType.EXPECTATION_UNIT,
+            ExpectationUnitDocument,
+        )
+        return (
+            _expectation_units_view(
+                record,
+                documents,
+                version_status=version_status,
+                include_raw=include_raw,
+            )
+            if documents
+            else None
+        )
+    if document_type == "document3":
+        known_event_documents = _model_documents(
+            record,
+            DocumentType.KNOWN_EVENTS,
+            KnownEventsDocument,
+        )
+        policy_documents = _model_documents(
+            record,
+            DocumentType.MONITORING_POLICY,
+            MonitoringPolicyDocument,
+        )
+        return (
+            _runtime_strategy_view(
+                record,
+                known_event_documents,
+                policy_documents,
+                version_status=version_status,
+                include_raw=include_raw,
+                include_cards=include_cards,
+            )
+            if known_event_documents or policy_documents
+            else None
+        )
+    raise UnsupportedDocumentType(document_type)
+
+
 def _global_research_view(
     document: GlobalResearchDocument,
     *,
@@ -3218,7 +4238,7 @@ def _global_research_view(
 
 
 def _expectation_units_view(
-    run: BlackboardRun,
+    run: BlackboardRun | DashboardDocumentRunRecord,
     documents: list[ExpectationUnitDocument],
     *,
     version_status: str,
@@ -3245,12 +4265,13 @@ def _expectation_units_view(
 
 
 def _runtime_strategy_view(
-    run: BlackboardRun,
+    run: BlackboardRun | DashboardDocumentRunRecord,
     known_event_documents: list[KnownEventsDocument],
     policy_documents: list[MonitoringPolicyDocument],
     *,
     version_status: str,
     include_raw: bool,
+    include_cards: bool = True,
 ) -> JsonObject:
     known_event_document = _latest_document(known_event_documents)
     policy_document = _latest_document(policy_documents)
@@ -3266,10 +4287,14 @@ def _runtime_strategy_view(
         generated_at=generated_at,
         updated_at=updated_at,
         version_status=version_status,
-        cards=_runtime_strategy_cards(
-            known_event_document,
-            policy_document,
-            updated_at=updated_at,
+        cards=(
+            _runtime_strategy_cards(
+                known_event_document,
+                policy_document,
+                updated_at=updated_at,
+            )
+            if include_cards
+            else []
         ),
     )
     if include_raw:
@@ -3328,10 +4353,27 @@ def _research_section_card(
             {
                 "key": "evidence_refs",
                 "label": "Evidence Refs",
-                "value": _json(section.evidence_refs),
+                "value": _compact_evidence_refs(section.evidence_refs),
             },
         ],
     }
+
+
+def _compact_evidence_refs(evidence_refs: Iterable[Any]) -> list[JsonObject]:
+    compact: list[JsonObject] = []
+    for ref in evidence_refs:
+        compact.append(
+            {
+                "evidence_id": str(getattr(ref, "evidence_id", "") or ""),
+                "source_type": str(getattr(ref, "source_type", "") or ""),
+                "source_id": str(getattr(ref, "source_id", "") or ""),
+                "title": str(getattr(ref, "title", "") or ""),
+                "summary": str(getattr(ref, "summary", "") or ""),
+                "confidence": getattr(ref, "confidence", None),
+                "citation_scope": str(getattr(ref, "citation_scope", "") or ""),
+            }
+        )
+    return compact
 
 
 def _expectation_card(document: ExpectationUnitDocument) -> JsonObject:
@@ -3443,8 +4485,359 @@ def _first_run_with_documents(
     return None
 
 
+def _unique_document_types(internal_types: Iterable[DocumentType]) -> list[DocumentType]:
+    seen: set[DocumentType] = set()
+    resolved: list[DocumentType] = []
+    for internal_type in internal_types:
+        if internal_type in seen:
+            continue
+        seen.add(internal_type)
+        resolved.append(internal_type)
+    return resolved
+
+
+def _internal_document_types_for_frontend_types(
+    document_types: Iterable[str],
+) -> list[DocumentType]:
+    resolved: list[DocumentType] = []
+    for document_type in document_types:
+        resolved.extend(_document_record_types_for_frontend(document_type))
+    return _unique_document_types(resolved)
+
+
+def _document_record_types_for_frontend(document_type: str) -> list[DocumentType]:
+    if document_type == "document1":
+        return [DocumentType.GLOBAL_RESEARCH]
+    if document_type == "document2":
+        return [DocumentType.EXPECTATION_UNIT]
+    if document_type == "document3":
+        return [DocumentType.KNOWN_EVENTS, DocumentType.MONITORING_POLICY]
+    raise UnsupportedDocumentType(document_type)
+
+
+def _record_has_documents(
+    record: DashboardDocumentRunRecord,
+    internal_types: Iterable[DocumentType],
+) -> bool:
+    return any(_document_bucket(record, internal_type) for internal_type in internal_types)
+
+
+def _blackboard_document_records(
+    blackboard: BlackboardService,
+    ticker: str,
+    internal_types: list[DocumentType],
+    *,
+    run_id: str | None,
+    limit: int,
+    include_commit_summaries: bool,
+) -> list[DashboardDocumentRunRecord]:
+    repository = getattr(blackboard, "repository", None)
+    by_run_id = getattr(repository, "get_document_bundle_by_run_id", None)
+    candidates = getattr(repository, "list_document_bundle_candidates", None)
+    if callable(by_run_id) and callable(candidates):
+        try:
+            runs = (
+                [by_run_id(ticker, run_id, internal_types)]
+                if run_id
+                else candidates(ticker, internal_types, limit=limit)
+            )
+        except RunNotFoundError:
+            return []
+        return [
+            DashboardDocumentRunRecord(
+                run_id=run.run_id,
+                ticker=run.ticker,
+                workflow_state=str(run.workflow_state),
+                created_at=run.created_at,
+                updated_at=getattr(run.belief_state, "created_at", None),
+                document_buckets={
+                    internal_type.value: _document_bucket(run, internal_type)
+                    for internal_type in internal_types
+                },
+                commit_summaries=[] if include_commit_summaries else [],
+            )
+            for run in runs
+            if run.ticker == ticker
+            and any(_document_bucket(run, internal_type) for internal_type in internal_types)
+        ]
+    try:
+        runs = [blackboard.get_run(run_id)] if run_id else blackboard.list_runs_by_ticker(
+            ticker,
+            limit=limit,
+        )
+    except RunNotFoundError:
+        return []
+    records: list[DashboardDocumentRunRecord] = []
+    for run in runs:
+        if run.ticker != ticker:
+            continue
+        buckets = {
+            internal_type.value: _document_bucket(run, internal_type)
+            for internal_type in internal_types
+        }
+        if not any(buckets.values()):
+            continue
+        records.append(
+            DashboardDocumentRunRecord(
+                run_id=run.run_id,
+                ticker=run.ticker,
+                workflow_state=str(run.workflow_state),
+                created_at=run.created_at,
+                updated_at=getattr(run.belief_state, "created_at", None),
+                document_buckets=buckets,
+                commit_summaries=(
+                    [_commit_summary_from_commit(commit) for commit in run.commit_log]
+                    if include_commit_summaries
+                    else []
+                ),
+            )
+        )
+    return records
+
+
+def _postgres_document_records(
+    database_url: str,
+    ticker: str,
+    internal_types: list[DocumentType],
+    *,
+    run_id: str | None,
+    limit: int,
+    include_commit_summaries: bool,
+    commit_internal_types: Iterable[DocumentType] | None,
+) -> list[DashboardDocumentRunRecord]:
+    psycopg = import_module("psycopg")
+    bucket_select = ", ".join(
+        f"s.documents -> %s as document_bucket_{index}"
+        for index, _internal_type in enumerate(internal_types)
+    )
+    limit_clause = "limit 1" if run_id else "limit %s"
+    where_clause = "b.ticker = %s and b.run_id = %s" if run_id else "b.ticker = %s"
+    sql = f"""
+        select b.run_id, b.ticker, b.workflow_state, b.created_at, b.updated_at,
+               {bucket_select}
+        from doxagent.blackboard_runs b
+        join doxagent.belief_state_snapshots s on s.run_id = b.run_id
+        where {where_clause}
+        order by b.created_at desc
+        {limit_clause}
+    """
+    params: list[Any] = [internal_type.value for internal_type in internal_types]
+    if run_id:
+        params.extend([ticker, run_id])
+    else:
+        params.extend([ticker, max(1, limit)])
+
+    def operation() -> list[DashboardDocumentRunRecord]:
+        with connect_postgres(psycopg, database_url, max_attempts=2, autocommit=True) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(sql, params)
+                rows = cursor.fetchall()
+        records: list[DashboardDocumentRunRecord] = []
+        for row in rows:
+            buckets = {
+                internal_type.value: _coerce_json_object(row[5 + index])
+                for index, internal_type in enumerate(internal_types)
+            }
+            if not any(buckets.values()):
+                continue
+            records.append(
+                DashboardDocumentRunRecord(
+                    run_id=str(row[0]),
+                    ticker=str(row[1]),
+                    workflow_state=str(row[2]),
+                    created_at=row[3],
+                    updated_at=row[4],
+                    document_buckets=buckets,
+                    commit_summaries=[],
+                )
+            )
+        if include_commit_summaries and records:
+            summaries = _postgres_commit_summaries(
+                psycopg,
+                database_url,
+                [record.run_id for record in records],
+                _unique_document_types(commit_internal_types or internal_types),
+            )
+            return [
+                replace(
+                    record,
+                    commit_summaries=summaries.get(record.run_id, []),
+                )
+                for record in records
+            ]
+        return records
+
+    return retry_postgres_operation(psycopg, operation, max_attempts=2)
+
+
+def _postgres_document_revision_record(
+    database_url: str,
+    ticker: str,
+    *,
+    run_id: str | None,
+) -> DashboardDocumentRevisionRecord | None:
+    psycopg = import_module("psycopg")
+    where_clause = "b.ticker = %s and b.run_id = %s" if run_id else "b.ticker = %s"
+    limit_clause = "limit 1"
+    sql = f"""
+        select b.run_id,
+               (
+                   select max(coalesce(
+                       item.value #>> '{{document,updated_at}}',
+                       item.value #>> '{{updated_at}}',
+                       item.value #>> '{{document,created_at}}',
+                       item.value #>> '{{created_at}}'
+                   ))
+                   from jsonb_each(coalesce(s.documents -> %s, '{{}}'::jsonb)) as item
+               ) as document1_updated_at,
+               (
+                   select max(coalesce(
+                       item.value #>> '{{document,updated_at}}',
+                       item.value #>> '{{updated_at}}',
+                       item.value #>> '{{document,created_at}}',
+                       item.value #>> '{{created_at}}'
+                   ))
+                   from jsonb_each(coalesce(s.documents -> %s, '{{}}'::jsonb)) as item
+               ) as document2_updated_at,
+               (
+                   select max(coalesce(
+                       item.value #>> '{{document,updated_at}}',
+                       item.value #>> '{{updated_at}}',
+                       item.value #>> '{{document,created_at}}',
+                       item.value #>> '{{created_at}}'
+                   ))
+                   from jsonb_each(coalesce(s.documents -> %s, '{{}}'::jsonb)) as item
+               ) as known_events_updated_at,
+               (
+                   select max(coalesce(
+                       item.value #>> '{{document,updated_at}}',
+                       item.value #>> '{{updated_at}}',
+                       item.value #>> '{{document,created_at}}',
+                       item.value #>> '{{created_at}}'
+                   ))
+                   from jsonb_each(coalesce(s.documents -> %s, '{{}}'::jsonb)) as item
+               ) as policies_updated_at
+        from doxagent.blackboard_runs b
+        join doxagent.belief_state_snapshots s on s.run_id = b.run_id
+        where {where_clause}
+        order by b.created_at desc
+        {limit_clause}
+    """
+    params: list[Any] = [
+        DocumentType.GLOBAL_RESEARCH.value,
+        DocumentType.EXPECTATION_UNIT.value,
+        DocumentType.KNOWN_EVENTS.value,
+        DocumentType.MONITORING_POLICY.value,
+    ]
+    if run_id:
+        params.extend([ticker, run_id])
+    else:
+        params.append(ticker)
+
+    def operation() -> DashboardDocumentRevisionRecord | None:
+        with connect_postgres(psycopg, database_url, max_attempts=2, autocommit=True) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(sql, params)
+                row = cursor.fetchone()
+        if row is None:
+            return None
+        return DashboardDocumentRevisionRecord(
+            run_id=str(row[0]),
+            document1_updated_at=_optional_str(row[1]),
+            document2_updated_at=_optional_str(row[2]),
+            known_events_updated_at=_optional_str(row[3]),
+            policies_updated_at=_optional_str(row[4]),
+        )
+
+    return retry_postgres_operation(psycopg, operation, max_attempts=2)
+
+
+def _postgres_commit_summaries(
+    psycopg: Any,
+    database_url: str,
+    run_ids: list[str],
+    internal_types: list[DocumentType],
+) -> dict[str, list[DashboardDocumentCommitSummary]]:
+    if not run_ids or not internal_types:
+        return {}
+    run_placeholders = ", ".join(["%s"] * len(run_ids))
+    type_placeholders = ", ".join(["%s"] * len(internal_types))
+    sql = f"""
+        select run_id, document_type, field_path, author_agent, trigger_reason,
+               commit_json #>> '{{patch,rationale}}' as rationale,
+               commit_json ->> 'triggered_by' as triggered_by,
+               created_at
+        from doxagent.commit_log_entries
+        where run_id in ({run_placeholders})
+          and document_type in ({type_placeholders})
+        order by created_at desc
+    """
+    params: list[Any] = [
+        *run_ids,
+        *(internal_type.value for internal_type in internal_types),
+    ]
+
+    def operation() -> dict[str, list[DashboardDocumentCommitSummary]]:
+        with connect_postgres(psycopg, database_url, max_attempts=2, autocommit=True) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(sql, params)
+                rows = cursor.fetchall()
+        by_run: dict[str, list[DashboardDocumentCommitSummary]] = defaultdict(list)
+        for row in rows:
+            by_run[str(row[0])].append(
+                DashboardDocumentCommitSummary(
+                    document_type=_coerce_document_type(row[1]),
+                    field_path=_optional_str(row[2]),
+                    author_agent=_optional_str(row[3]),
+                    triggered_by=_optional_str(row[6]),
+                    trigger_reason=_optional_str(row[4]),
+                    rationale=_optional_str(row[5]),
+                    created_at=row[7],
+                )
+            )
+        return by_run
+
+    return retry_postgres_operation(psycopg, operation, max_attempts=2)
+
+
+def _coerce_json_object(value: Any) -> dict[str, Any]:
+    if value is None:
+        return {}
+    if isinstance(value, str):
+        parsed = json.loads(value)
+        return parsed if isinstance(parsed, dict) else {}
+    return value if isinstance(value, dict) else {}
+
+
+def _coerce_document_type(value: Any) -> DocumentType | None:
+    try:
+        return DocumentType(str(value))
+    except ValueError:
+        return None
+
+
+def _optional_str(value: Any) -> str | None:
+    if isinstance(value, str) and value.strip():
+        return value.strip()
+    return None
+
+
+def _commit_summary_from_commit(commit: Any) -> DashboardDocumentCommitSummary:
+    patch = getattr(commit, "patch", None)
+    target = getattr(patch, "target", None)
+    return DashboardDocumentCommitSummary(
+        document_type=getattr(target, "document_type", None),
+        field_path=str(getattr(target, "field_path", "") or "") or None,
+        author_agent=str(getattr(patch, "author_agent", "") or "") or None,
+        triggered_by=str(getattr(commit, "triggered_by", "") or "") or None,
+        trigger_reason=str(getattr(commit, "trigger_reason", "") or "") or None,
+        rationale=str(getattr(patch, "rationale", "") or "") or None,
+        created_at=commit.created_at,
+    )
+
+
 def _model_documents(
-    run: BlackboardRun,
+    run: BlackboardRun | DashboardDocumentRunRecord,
     internal_type: DocumentType,
     model: type[DocumentBase],
 ) -> list[Any]:
@@ -3461,7 +4854,13 @@ def _model_documents(
     return documents
 
 
-def _document_bucket(run: BlackboardRun, internal_type: DocumentType) -> dict[str, Any]:
+def _document_bucket(
+    run: BlackboardRun | DashboardDocumentRunRecord,
+    internal_type: DocumentType,
+) -> dict[str, Any]:
+    if isinstance(run, DashboardDocumentRunRecord):
+        bucket = run.document_buckets.get(internal_type.value)
+        return bucket if isinstance(bucket, dict) else {}
     for key, bucket in run.belief_state.documents.items():
         if str(key) == internal_type.value and isinstance(bucket, dict):
             return bucket
@@ -3484,6 +4883,28 @@ def _latest_document(documents: Iterable[Any]) -> Any | None:
 
 def _document_time(document: DocumentBase) -> datetime | None:
     return document.updated_at or document.created_at
+
+
+def _latest_document_updated_at_from_record(
+    record: DashboardDocumentRunRecord,
+    internal_type: DocumentType,
+) -> datetime | None:
+    models: dict[DocumentType, type[DocumentBase]] = {
+        DocumentType.GLOBAL_RESEARCH: cast(type[DocumentBase], GlobalResearchDocument),
+        DocumentType.EXPECTATION_UNIT: cast(type[DocumentBase], ExpectationUnitDocument),
+        DocumentType.KNOWN_EVENTS: cast(type[DocumentBase], KnownEventsDocument),
+        DocumentType.MONITORING_POLICY: cast(type[DocumentBase], MonitoringPolicyDocument),
+    }
+    model = models.get(internal_type)
+    if model is None:
+        return None
+    documents = _model_documents(record, internal_type, model)
+    return _max_dt(_document_time(document) for document in documents)
+
+
+def _max_iso_text(*values: str | None) -> str | None:
+    candidates = [value for value in values if isinstance(value, str) and value.strip()]
+    return max(candidates) if candidates else None
 
 
 def _without_raw(document: JsonObject, *, include_raw: bool) -> JsonObject:
@@ -3598,6 +5019,195 @@ def _document_summary(document: JsonObject) -> str | None:
     return _truncate(str(title), 160) if title else None
 
 
+def _document_version_reason(
+    run: BlackboardRun,
+    document_type: str,
+    *,
+    manual_activation_event: RuntimeAuditEvent | None,
+) -> JsonObject:
+    if manual_activation_event is not None:
+        reason = manual_activation_event.payload.get("reason")
+        reason_text = "Dashboard 用户手动切换为现行文档。"
+        if isinstance(reason, str) and reason.strip():
+            reason_text = f"{reason_text}原因：{_truncate(reason.strip(), 120)}"
+        return {
+            "reason_label": "manual_activated",
+            "reason_text": reason_text,
+            "updated_by_label": "Dashboard 用户",
+        }
+
+    commit = _latest_document_commit(run, document_type)
+    if commit is not None:
+        return {
+            "reason_label": _reason_label_from_commit(commit),
+            "reason_text": _reason_text_from_commit(commit),
+            "updated_by_label": _updated_by_label_from_commit(commit),
+        }
+
+    return {
+        "reason_label": "workflow_generated",
+        "reason_text": "由初始化或文档生成工作流生成。",
+        "updated_by_label": "Workflow System",
+    }
+
+
+def _document_version_reason_from_record(
+    record: DashboardDocumentRunRecord,
+    document_type: str,
+    *,
+    manual_activation_event: RuntimeAuditEvent | None,
+) -> JsonObject:
+    if manual_activation_event is not None:
+        reason = manual_activation_event.payload.get("reason")
+        reason_text = "Dashboard 用户手动切换为现行文档。"
+        if isinstance(reason, str) and reason.strip():
+            reason_text = f"{reason_text}原因：{_truncate(reason.strip(), 120)}"
+        return {
+            "reason_label": "manual_activated",
+            "reason_text": reason_text,
+            "updated_by_label": "Dashboard 用户",
+        }
+
+    commit = _latest_document_commit_summary(record, document_type)
+    if commit is not None:
+        return {
+            "reason_label": _reason_label_from_commit_summary(commit),
+            "reason_text": _reason_text_from_commit_summary(commit),
+            "updated_by_label": _updated_by_label_from_commit_summary(commit),
+        }
+
+    return {
+        "reason_label": "workflow_generated",
+        "reason_text": "由初始化或文档生成工作流生成。",
+        "updated_by_label": "Workflow System",
+    }
+
+
+def _latest_document_commit_summary(
+    record: DashboardDocumentRunRecord,
+    document_type: str,
+) -> DashboardDocumentCommitSummary | None:
+    target_types = _internal_document_types_for_frontend(document_type)
+    candidates = [
+        commit
+        for commit in record.commit_summaries
+        if commit.document_type in target_types
+    ]
+    if not candidates and record.commit_summaries:
+        candidates = list(record.commit_summaries)
+    if not candidates:
+        return None
+    return max(candidates, key=lambda item: _aware(item.created_at))
+
+
+def _latest_document_commit(run: BlackboardRun, document_type: str) -> Any | None:
+    target_types = _internal_document_types_for_frontend(document_type)
+    candidates = [
+        commit
+        for commit in run.commit_log
+        if getattr(commit.patch.target, "document_type", None) in target_types
+    ]
+    if not candidates and run.commit_log:
+        candidates = list(run.commit_log)
+    if not candidates:
+        return None
+    return max(candidates, key=lambda item: _aware(item.created_at))
+
+
+def _internal_document_types_for_frontend(document_type: str) -> set[DocumentType]:
+    if document_type == "document1":
+        return {DocumentType.GLOBAL_RESEARCH}
+    if document_type == "document2":
+        return {DocumentType.EXPECTATION_UNIT}
+    if document_type == "document3":
+        return {
+            DocumentType.KNOWN_EVENTS,
+            DocumentType.MONITORING_CONFIG,
+            DocumentType.MONITORING_POLICY,
+        }
+    return set()
+
+
+def _reason_label_from_commit(commit: Any) -> str:
+    target_type = getattr(commit.patch.target, "document_type", None)
+    text = f"{commit.trigger_reason} {commit.patch.rationale}".casefold()
+    if target_type in {DocumentType.MONITORING_CONFIG, DocumentType.MONITORING_POLICY}:
+        return "monitoring_policy_reviewed"
+    if any(token in text for token in ("refresh", "weekly", "runtime", "agent")):
+        return "agent_refreshed"
+    return "workflow_generated"
+
+
+def _reason_label_from_commit_summary(commit: DashboardDocumentCommitSummary) -> str:
+    text = f"{commit.trigger_reason or ''} {commit.rationale or ''}".casefold()
+    if commit.document_type in {DocumentType.MONITORING_CONFIG, DocumentType.MONITORING_POLICY}:
+        return "monitoring_policy_reviewed"
+    if any(token in text for token in ("refresh", "weekly", "runtime", "agent")):
+        return "agent_refreshed"
+    return "workflow_generated"
+
+
+def _reason_text_from_commit(commit: Any) -> str:
+    target = commit.patch.target
+    pieces = [str(commit.trigger_reason).strip(), str(commit.patch.rationale).strip()]
+    text = "；".join(piece for piece in pieces if piece)
+    target_bits = [
+        str(getattr(target, "document_type", "") or ""),
+        str(getattr(target, "field_path", "") or ""),
+    ]
+    target_text = " / ".join(bit for bit in target_bits if bit)
+    if target_text:
+        text = f"{text}（更新范围：{target_text}）" if text else f"更新范围：{target_text}"
+    return _truncate(text or "由文档工作流生成或更新。", 220)
+
+
+def _reason_text_from_commit_summary(commit: DashboardDocumentCommitSummary) -> str:
+    pieces = [str(commit.trigger_reason or "").strip(), str(commit.rationale or "").strip()]
+    text = "；".join(piece for piece in pieces if piece)
+    target_bits = [
+        commit.document_type.value if commit.document_type is not None else "",
+        str(commit.field_path or "").strip(),
+    ]
+    target_text = " / ".join(bit for bit in target_bits if bit)
+    if target_text:
+        text = f"{text}（更新范围：{target_text}）" if text else f"更新范围：{target_text}"
+    return _truncate(text or "由文档工作流生成或更新。", 220)
+
+
+def _updated_by_label_from_commit(commit: Any) -> str:
+    value = str(getattr(commit, "triggered_by", "") or "")
+    labels = {
+        "SYSTEM": "Workflow System",
+        "O1": "Expectation Owner Agent",
+        "O2": "Monitoring Config Agent",
+        "O3": "Trading Strategy Agent",
+        "O4": "Market Trace Agent",
+        "C1": "Fundamental Research Agent",
+        "C2": "Macro Research Agent",
+        "C3": "Industry Research Agent",
+        "W1": "Runtime Novelty Agent",
+        "W2": "Runtime Policy Agent",
+    }
+    return labels.get(value, "Agent 工作流")
+
+
+def _updated_by_label_from_commit_summary(commit: DashboardDocumentCommitSummary) -> str:
+    value = str(commit.triggered_by or commit.author_agent or "")
+    labels = {
+        "SYSTEM": "Workflow System",
+        "O1": "Expectation Owner Agent",
+        "O2": "Monitoring Config Agent",
+        "O3": "Trading Strategy Agent",
+        "O4": "Market Trace Agent",
+        "C1": "Fundamental Research Agent",
+        "C2": "Macro Research Agent",
+        "C3": "Industry Research Agent",
+        "W1": "Runtime Novelty Agent",
+        "W2": "Runtime Policy Agent",
+    }
+    return labels.get(value, "Agent 工作流")
+
+
 def _version_id(run_id: str, document_type: str, document_id: str) -> str:
     return f"{document_type}:{run_id}:{document_id}"
 
@@ -3664,6 +5274,15 @@ def _status_label(status: TickerRunStatus) -> str:
         TickerRunStatus.DEGRADED: "异常降级",
         TickerRunStatus.BLOCKED: "阻塞",
     }[status]
+
+
+def _session_window_label(session_phase: MarketSessionPhase) -> str:
+    if session_phase in {
+        MarketSessionPhase.PRE_MARKET_DIGEST,
+        MarketSessionPhase.FORMAL_MONITORING,
+    }:
+        return "运行时段"
+    return "盘后休眠"
 
 
 def _status_color(health: RuntimeHealth) -> str:
@@ -3773,6 +5392,27 @@ def _paginate(items: list[JsonObject], *, limit: int | None, cursor: str | None)
             "limit": resolved_limit,
             "next_cursor": f"cur_{next_offset}" if has_more else None,
             "has_more": has_more,
+            "total_count": len(items),
+        },
+    }
+
+
+def _page_payload(
+    items: list[JsonObject],
+    *,
+    limit: int,
+    offset: int,
+    total_count: int,
+) -> JsonObject:
+    next_offset = offset + limit
+    has_more = next_offset < total_count
+    return {
+        "items": items,
+        "page": {
+            "limit": limit,
+            "next_cursor": f"cur_{next_offset}" if has_more else None,
+            "has_more": has_more,
+            "total_count": total_count,
         },
     }
 

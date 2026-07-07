@@ -8,6 +8,7 @@ from typing import Any, Protocol
 from pydantic import ValidationError
 
 from doxagent.blackboard import BlackboardService
+from doxagent.blackboard.errors import RunNotFoundError
 from doxagent.blackboard.state import BlackboardRun
 from doxagent.models import DocumentType
 from doxagent.models.documents import (
@@ -26,6 +27,14 @@ from doxagent.runtime_scheduler.schema import (
 )
 from doxagent.settings import DoxAgentSettings
 from doxagent.workflows import BlackboardInitializationWorkflow
+
+_DOCUMENT_BUNDLE_TYPES = [
+    DocumentType.GLOBAL_RESEARCH,
+    DocumentType.EXPECTATION_UNIT,
+    DocumentType.KNOWN_EVENTS,
+    DocumentType.MONITORING_CONFIG,
+    DocumentType.MONITORING_POLICY,
+]
 
 
 class RuntimeDocumentProvider(Protocol):
@@ -54,7 +63,7 @@ class WorkflowDocumentProvider:
     def latest(self, ticker: str, *, now: datetime | None = None) -> DocumentBundle:
         normalized = ticker.strip().upper()
         checked_at = now or datetime.now(UTC)
-        runs = self.blackboard.list_runs_by_ticker(normalized, limit=20)
+        runs = self._candidate_runs(normalized)
         if not runs:
             return _missing_bundle(normalized, checked_at=checked_at)
         bundles = [
@@ -70,6 +79,61 @@ class WorkflowDocumentProvider:
         normalized = ticker.strip().upper()
         self.workflow.run(normalized)
         return self.latest(normalized, now=now)
+
+    def by_run_id(
+        self,
+        ticker: str,
+        document_run_id: str,
+        *,
+        now: datetime | None = None,
+    ) -> DocumentBundle:
+        normalized = ticker.strip().upper()
+        checked_at = now or datetime.now(UTC)
+        try:
+            run = self._run_by_id(normalized, document_run_id)
+        except RunNotFoundError:
+            return DocumentBundle(
+                status=DocumentSetStatus(
+                    ticker=normalized,
+                    blackboard_run_id=None,
+                    checked_at=checked_at,
+                    usable=False,
+                    missing_document_types=[],
+                    components=[],
+                )
+            )
+        if run.ticker != normalized:
+            return DocumentBundle(
+                status=DocumentSetStatus(
+                    ticker=normalized,
+                    blackboard_run_id=None,
+                    checked_at=checked_at,
+                    usable=False,
+                    missing_document_types=[],
+                    components=[],
+                )
+            )
+        return _bundle_from_run(run, checked_at=checked_at, max_age=self.max_age)
+
+    def _candidate_runs(self, ticker: str) -> list[BlackboardRun]:
+        repository = getattr(self.blackboard, "repository", None)
+        loader = getattr(repository, "list_document_bundle_candidates", None)
+        if callable(loader):
+            return loader(ticker, _DOCUMENT_BUNDLE_TYPES, limit=3)
+        return [
+            _document_only_run(run, _DOCUMENT_BUNDLE_TYPES)
+            for run in self.blackboard.list_runs_by_ticker(ticker, limit=3)
+        ]
+
+    def _run_by_id(self, ticker: str, document_run_id: str) -> BlackboardRun:
+        repository = getattr(self.blackboard, "repository", None)
+        loader = getattr(repository, "get_document_bundle_by_run_id", None)
+        if callable(loader):
+            return loader(ticker, document_run_id, _DOCUMENT_BUNDLE_TYPES)
+        return _document_only_run(
+            self.blackboard.get_run(document_run_id),
+            _DOCUMENT_BUNDLE_TYPES,
+        )
 
 
 def _missing_bundle(ticker: str, *, checked_at: datetime) -> DocumentBundle:
@@ -96,6 +160,24 @@ def _missing_bundle(ticker: str, *, checked_at: datetime) -> DocumentBundle:
             ],
         )
     )
+
+
+def _document_only_run(
+    run: BlackboardRun,
+    document_types: list[DocumentType],
+) -> BlackboardRun:
+    copied = run.model_copy(deep=True)
+    allowed = set(document_types)
+    copied.belief_state.documents = {
+        document_type: bucket
+        for document_type, bucket in copied.belief_state.documents.items()
+        if document_type in allowed
+    }
+    copied.working_memory = []
+    copied.commit_log = []
+    copied.objections = []
+    copied.delegations = []
+    return copied
 
 
 def _bundle_from_run(
@@ -260,4 +342,3 @@ def _latest_document(documents: list[DocumentBase]) -> DocumentBase:
 def _document_time(document: DocumentBase) -> datetime:
     value = document.updated_at or document.created_at
     return value.astimezone(UTC)
-

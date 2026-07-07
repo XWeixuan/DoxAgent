@@ -145,6 +145,25 @@ class MonitoringRepository(Protocol):
     ) -> list[StandardMessage]:
         ...
 
+    def get_standard_message(self, standard_message_id: str) -> StandardMessage | None:
+        ...
+
+    def query_standard_messages(
+        self,
+        *,
+        ticker: str,
+        source_id: str | None = None,
+        source_type: str | None = None,
+        q: str | None = None,
+        sort: str | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> tuple[list[StandardMessage], int]:
+        ...
+
+    def event_for_standard_message(self, standard_message_id: str) -> EventStreamItem | None:
+        ...
+
     def recent_events(
         self,
         *,
@@ -493,6 +512,66 @@ class InMemoryMonitoringRepository:
         rows = [row for row in rows if self._is_live_standard_message(row)]
         rows = sorted(rows, key=lambda row: row.normalized_at, reverse=True)
         return [row.model_copy(deep=True) for row in rows[:limit]]
+
+    def get_standard_message(self, standard_message_id: str) -> StandardMessage | None:
+        for message in self._standard_by_raw.values():
+            if message.standard_message_id == standard_message_id:
+                if not self._is_live_standard_message(message):
+                    return None
+                return message.model_copy(deep=True)
+        return None
+
+    def query_standard_messages(
+        self,
+        *,
+        ticker: str,
+        source_id: str | None = None,
+        source_type: str | None = None,
+        q: str | None = None,
+        sort: str | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> tuple[list[StandardMessage], int]:
+        normalized = ticker.strip().upper()
+        rows = [
+            row
+            for row in self._standard_by_raw.values()
+            if row.ticker == normalized and self._is_live_standard_message(row)
+        ]
+        if source_id:
+            resolved_source_id = source_id.strip().lower()
+            rows = [row for row in rows if row.source_id == resolved_source_id]
+        if source_type:
+            resolved_source_type = source_type.strip().lower()
+            rows = [row for row in rows if row.source_type.value == resolved_source_type]
+        if q:
+            needle = q.strip().lower()
+            rows = [
+                row
+                for row in rows
+                if needle
+                and needle
+                in " ".join(
+                    [
+                        row.title or "",
+                        row.body or "",
+                        row.source_id,
+                        str(row.metadata.get("summary") or ""),
+                        str(row.metadata.get("description") or ""),
+                        str(row.metadata.get("excerpt") or ""),
+                    ]
+                ).lower()
+            ]
+        total_count = len(rows)
+        rows = _sort_standard_messages(rows, sort)
+        page = rows[max(0, offset) : max(0, offset) + max(0, limit)]
+        return [row.model_copy(deep=True) for row in page], total_count
+
+    def event_for_standard_message(self, standard_message_id: str) -> EventStreamItem | None:
+        for event in self._events:
+            if event.standard_message_id == standard_message_id and self._is_live_event(event):
+                return event.model_copy(deep=True)
+        return None
 
     def recent_events(
         self,
@@ -1092,6 +1171,111 @@ class SQLiteMonitoringRepository:
             ).fetchall()
         return [_standard_from_row(row) for row in rows]
 
+    def get_standard_message(self, standard_message_id: str) -> StandardMessage | None:
+        with self._connect() as conn:
+            row = conn.execute(
+                """
+                select monitoring_standard_messages.*
+                from monitoring_standard_messages
+                left join monitoring_bindings
+                    on monitoring_standard_messages.binding_id = monitoring_bindings.binding_id
+                where monitoring_standard_messages.standard_message_id = ?
+                  and monitoring_bindings.binding_id is not null
+                  and (
+                    monitoring_standard_messages.published_at is null
+                    or monitoring_standard_messages.published_at >= monitoring_bindings.updated_at
+                  )
+                """,
+                (standard_message_id,),
+            ).fetchone()
+        return _standard_from_row(row) if row is not None else None
+
+    def query_standard_messages(
+        self,
+        *,
+        ticker: str,
+        source_id: str | None = None,
+        source_type: str | None = None,
+        q: str | None = None,
+        sort: str | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> tuple[list[StandardMessage], int]:
+        clauses = [
+            "monitoring_bindings.binding_id is not null",
+            "(monitoring_standard_messages.published_at is null "
+            "or monitoring_standard_messages.published_at >= monitoring_bindings.updated_at)",
+            "monitoring_standard_messages.ticker = ?",
+        ]
+        params: list[object] = [ticker.strip().upper()]
+        if source_id:
+            clauses.append("monitoring_standard_messages.source_id = ?")
+            params.append(source_id.strip().lower())
+        if source_type:
+            clauses.append("monitoring_standard_messages.source_type = ?")
+            params.append(source_type.strip().lower())
+        if q and q.strip():
+            clauses.append(
+                """
+                lower(
+                    coalesce(monitoring_standard_messages.title, '') || ' ' ||
+                    coalesce(monitoring_standard_messages.body, '') || ' ' ||
+                    coalesce(monitoring_standard_messages.source_id, '') || ' ' ||
+                    coalesce(monitoring_standard_messages.metadata_json, '')
+                ) like ?
+                """
+            )
+            params.append(f"%{q.strip().lower()}%")
+        where = f"where {' and '.join(clauses)}"
+        order_by = _standard_message_order_by(sort)
+        with self._connect() as conn:
+            total_row = conn.execute(
+                f"""
+                select count(*) as total_count
+                from monitoring_standard_messages
+                left join monitoring_bindings
+                    on monitoring_standard_messages.binding_id = monitoring_bindings.binding_id
+                {where}
+                """,
+                params,
+            ).fetchone()
+            rows = conn.execute(
+                f"""
+                select monitoring_standard_messages.*
+                from monitoring_standard_messages
+                left join monitoring_bindings
+                    on monitoring_standard_messages.binding_id = monitoring_bindings.binding_id
+                {where}
+                order by {order_by}
+                limit ? offset ?
+                """,
+                [*params, max(0, limit), max(0, offset)],
+            ).fetchall()
+        total_count = int(total_row["total_count"]) if total_row is not None else 0
+        return [_standard_from_row(row) for row in rows], total_count
+
+    def event_for_standard_message(self, standard_message_id: str) -> EventStreamItem | None:
+        with self._connect() as conn:
+            row = conn.execute(
+                """
+                select monitoring_event_stream.*
+                from monitoring_event_stream
+                left join monitoring_standard_messages
+                    on monitoring_event_stream.standard_message_id =
+                        monitoring_standard_messages.standard_message_id
+                left join monitoring_bindings
+                    on monitoring_standard_messages.binding_id = monitoring_bindings.binding_id
+                where monitoring_event_stream.standard_message_id = ?
+                  and monitoring_bindings.binding_id is not null
+                  and (
+                    monitoring_standard_messages.published_at is null
+                    or monitoring_standard_messages.published_at >= monitoring_bindings.updated_at
+                  )
+                """,
+                (standard_message_id,),
+            ).fetchone()
+        return _event_from_row(row) if row is not None else None
+
     def recent_events(
         self,
         *,
@@ -1461,6 +1645,17 @@ class SQLiteMonitoringRepository:
                     metadata_json text not null default '{}',
                     updated_at text not null
                 );
+
+                create index if not exists monitoring_standard_messages_ticker_collected_idx
+                    on monitoring_standard_messages(ticker, collected_at desc);
+                create index if not exists monitoring_standard_messages_ticker_normalized_idx
+                    on monitoring_standard_messages(ticker, normalized_at desc);
+                create index if not exists monitoring_standard_messages_ticker_source_idx
+                    on monitoring_standard_messages(ticker, source_id, normalized_at desc);
+                create index if not exists monitoring_standard_messages_ticker_type_idx
+                    on monitoring_standard_messages(ticker, source_type, normalized_at desc);
+                create index if not exists monitoring_event_stream_standard_message_idx
+                    on monitoring_event_stream(standard_message_id);
                 """
             )
             _ensure_column(
@@ -1620,6 +1815,38 @@ def _load_json(value: object) -> Any:
     if value is None:
         return None
     return __import__("json").loads(str(value))
+
+
+def _sort_standard_messages(
+    rows: list[StandardMessage],
+    sort: str | None,
+) -> list[StandardMessage]:
+    sort_key = sort or "-normalized_at"
+    reverse = sort_key.startswith("-")
+    key = sort_key.removeprefix("-")
+    key_functions = {
+        "collected_at": lambda row: row.collected_at,
+        "published_at": lambda row: row.published_at or datetime.min.replace(tzinfo=UTC),
+        "normalized_at": lambda row: row.normalized_at,
+        "source_id": lambda row: row.source_id,
+    }
+    key_function = key_functions.get(key, key_functions["normalized_at"])
+    return sorted(rows, key=key_function, reverse=reverse)
+
+
+def _standard_message_order_by(sort: str | None) -> str:
+    sort_key = sort or "-normalized_at"
+    reverse = sort_key.startswith("-")
+    key = sort_key.removeprefix("-")
+    columns = {
+        "collected_at": "monitoring_standard_messages.collected_at",
+        "published_at": "monitoring_standard_messages.published_at",
+        "normalized_at": "monitoring_standard_messages.normalized_at",
+        "source_id": "monitoring_standard_messages.source_id",
+    }
+    column = columns.get(key, columns["normalized_at"])
+    direction = "desc" if reverse else "asc"
+    return f"{column} {direction}, monitoring_standard_messages.standard_message_id asc"
 
 
 def _source_row(source: MonitoringSourceConfig) -> tuple[object, ...]:

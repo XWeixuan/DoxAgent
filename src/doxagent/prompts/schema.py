@@ -65,6 +65,7 @@ class InternalTaskSkillDefinition(PromptModel):
     name: NonEmptyStr
     version: NonEmptyStr
     kind: PromptResourceKind = PromptResourceKind.INTERNAL_TASK_SKILL
+    manual_only: bool = False
     applicable_agents: list[AgentName] = Field(default_factory=list)
     applicable_task_types: list[TaskType] = Field(default_factory=list)
     workflow_nodes: list[NonEmptyStr] = Field(default_factory=list)

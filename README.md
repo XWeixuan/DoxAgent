@@ -29,11 +29,11 @@ npm run dev
 http://localhost:5173/
 
 前后端build：
-ssh doxagent-hk 'cd /root/doxagent && docker compose build dashboard'
-ssh doxagent-hk 'cd /root/doxagent && docker compose up -d --force-recreate dashboard'
-ssh doxagent-hk 'cd /root/doxagent && docker compose restart dashboard'
-ssh doxagent-hk 'cd /root/doxagent && docker compose stop dashboard'
-ssh doxagent-hk 'cd /root/doxagent && docker compose logs -f dashboard'
+ssh doxagent-hk 'cd /root/doxagent && docker compose build dashboard runtime-scheduler'
+ssh doxagent-hk 'cd /root/doxagent && docker compose up -d --force-recreate dashboard runtime-scheduler && docker compose stop monitoring-poller || true'
+ssh doxagent-hk 'cd /root/doxagent && docker compose restart dashboard runtime-scheduler'
+ssh doxagent-hk 'cd /root/doxagent && docker compose stop dashboard runtime-scheduler'
+ssh doxagent-hk 'cd /root/doxagent && docker compose logs -f dashboard runtime-scheduler'
 
 
 

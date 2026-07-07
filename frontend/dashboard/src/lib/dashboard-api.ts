@@ -1,10 +1,13 @@
 import type {
   ApiErrorPayload,
   ApiResponse,
+  BacktestPeriod,
+  BacktestRun,
   CostAudit,
   CostRecord,
   DashboardEvent,
   DocumentType,
+  DocumentRevision,
   DocumentVersion,
   DocumentVersionDetail,
   DocumentsCurrent,
@@ -24,6 +27,7 @@ import type {
   RuntimeGraph,
   RuntimeNodeDetail,
   RuntimeOverview,
+  RuntimeResultRecord,
   TickerCard,
   TickerDetail,
 } from "@/lib/dashboard-types"
@@ -191,6 +195,29 @@ export const dashboardApi = {
     dashboardRequest<PageResult<TickerCard>>(`/tickers${queryString(params)}`),
   ticker: (ticker: string) =>
     dashboardRequest<TickerDetail>(`/tickers/${encodeURIComponent(ticker)}`),
+  backtests: (params?: QueryParams) =>
+    dashboardRequest<PageResult<BacktestRun>>(`/backtests${queryString(params)}`),
+  backtest: (runId: string) =>
+    dashboardRequest<BacktestRun>(`/backtests/${encodeURIComponent(runId)}`),
+  startBacktest: (
+    ticker: string,
+    options: {
+      period: BacktestPeriod
+      forceInitialize?: boolean
+    }
+  ) =>
+    dashboardRequest<BacktestRun>("/backtests", {
+      method: "POST",
+      body: {
+        ticker,
+        period: options.period,
+        force_initialize: options.forceInitialize ?? false,
+      },
+    }),
+  cancelBacktest: (runId: string) =>
+    dashboardRequest<BacktestRun>(`/backtests/${encodeURIComponent(runId)}/cancel`, {
+      method: "POST",
+    }),
   startTicker: (
     ticker: string,
     options: { forceInitialize?: boolean; monitorMode?: MonitorMode } = {}
@@ -245,6 +272,10 @@ export const dashboardApi = {
         types: types?.join(","),
       })}`
     ),
+  documentRevision: (ticker: string) =>
+    dashboardRequest<DocumentRevision>(
+      `/tickers/${encodeURIComponent(ticker)}/documents/revision`
+    ),
   documentVersions: (
     ticker: string,
     documentType: DocumentType,
@@ -265,6 +296,17 @@ export const dashboardApi = {
         ticker
       )}/documents/${documentType}/versions/${encodeURIComponent(versionId)}`
     ),
+  activateDocumentSet: (ticker: string, documentRunId: string, reason: string) =>
+    dashboardRequest<OperationResult>(
+      `/tickers/${encodeURIComponent(ticker)}/documents/activate`,
+      {
+        method: "POST",
+        body: {
+          document_run_id: documentRunId,
+          reason,
+        },
+      }
+    ),
   knownEvents: (ticker: string, params?: QueryParams) =>
     dashboardRequest<PageResult<KnownEvent>>(
       `/tickers/${encodeURIComponent(ticker)}/known-events${queryString(params)}`
@@ -282,6 +324,12 @@ export const dashboardApi = {
       `/tickers/${encodeURIComponent(ticker)}/message-bus/messages${queryString(
         params
       )}`
+    ),
+  message: (ticker: string, messageId: string) =>
+    dashboardRequest<MessageItem>(
+      `/tickers/${encodeURIComponent(
+        ticker
+      )}/message-bus/messages/${encodeURIComponent(messageId)}`
     ),
   messageBusConfig: (ticker: string) =>
     dashboardRequest<MessageBusConfig>(
@@ -324,6 +372,10 @@ export const dashboardApi = {
       `/tickers/${encodeURIComponent(ticker)}/runtime/executions${queryString(
         params
       )}`
+    ),
+  runtimeRecords: (ticker: string, params?: QueryParams) =>
+    dashboardRequest<PageResult<RuntimeResultRecord>>(
+      `/tickers/${encodeURIComponent(ticker)}/runtime/records${queryString(params)}`
     ),
   revenueAudit: (ticker: string, period: Period) =>
     dashboardRequest<RevenueAudit>(

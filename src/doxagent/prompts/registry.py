@@ -72,6 +72,7 @@ class PromptRegistry:
                 definition.model_copy(deep=True)
                 for definition in self._definitions.values()
                 if isinstance(definition, InternalTaskSkillDefinition)
+                and not definition.manual_only
                 and self._matches(definition, agent_name, task_type, workflow_node)
             ),
             key=lambda item: item.resource_id,

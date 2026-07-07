@@ -124,8 +124,18 @@ class Document2LegacyPromotionMixin:
         raw_findings = checkpoint.metadata.get(DOCUMENT2_REVIEW_FINDINGS_KEY, [])
         if not isinstance(raw_findings, list):
             return []
-        run = self.blackboard.get_run(checkpoint.run_id)
-        objections_by_id = {objection.objection_id: objection for objection in run.objections}
+        source_objection_ids = [
+            str(item.get("source_objection_id"))
+            for item in raw_findings
+            if isinstance(item, dict) and item.get("source_objection_id")
+        ]
+        getter = getattr(self.blackboard.repository, "get_objections_by_ids", None)
+        objections = (
+            getter(checkpoint.run_id, source_objection_ids)
+            if callable(getter)
+            else self.blackboard.list_unresolved_objections(checkpoint.run_id)
+        )
+        objections_by_id = {objection.objection_id: objection for objection in objections}
         current_deterministic_finding_keys = {
             self._document2_review_finding_key(finding)
             for finding in self._document2_deterministic_findings_for_patch(checkpoint, patch)
@@ -165,13 +175,11 @@ class Document2LegacyPromotionMixin:
         patch: BlackboardPatch,
         _candidate: Document2PromotionCandidate,
     ) -> list[Document2PromotionBlocker]:
-        run = self.blackboard.get_run(checkpoint.run_id)
         blockers: list[Document2PromotionBlocker] = []
         unresolved_objections = [
             objection
-            for objection in run.objections
-            if objection.is_unresolved
-            and objection.source_agent is not AgentName.SYSTEM
+            for objection in self.blackboard.list_unresolved_objections(checkpoint.run_id)
+            if objection.source_agent is not AgentName.SYSTEM
             and not self._is_numeric_sanity_objection(objection)
         ]
         if unresolved_objections:
@@ -185,9 +193,7 @@ class Document2LegacyPromotionMixin:
                     ),
                 )
             )
-        blocking_delegations = [
-            delegation for delegation in run.delegations if delegation.is_blocking
-        ]
+        blocking_delegations = self.blackboard.list_blocking_delegations(checkpoint.run_id)
         if blocking_delegations:
             blockers.append(
                 Document2PromotionBlocker(

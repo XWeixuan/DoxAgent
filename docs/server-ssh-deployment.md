@@ -51,8 +51,9 @@ Dashboard production deployment is documented in
 [`docs/dashboard-deployment.md`](dashboard-deployment.md). The short path is:
 
 ```powershell
-ssh doxagent-hk 'cd /root/doxagent && docker compose build dashboard && docker compose up -d --force-recreate dashboard'
+ssh doxagent-hk 'cd /root/doxagent && docker compose build dashboard runtime-scheduler && docker compose up -d --force-recreate dashboard runtime-scheduler && docker compose stop monitoring-poller || true'
 ssh doxagent-hk 'curl -fsS http://127.0.0.1:8780/healthz'
+ssh doxagent-hk 'cd /root/doxagent && docker compose ps dashboard runtime-scheduler'
 ```
 
 Create `/root/doxagent/.env.dashboard` from `.env.dashboard.example` before

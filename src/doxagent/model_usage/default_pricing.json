@@ -1,0 +1,171 @@
+{
+  "version": "aliyun-model-studio-2026-07-07",
+  "source": "https://help.aliyun.com/zh/model-studio/model-pricing",
+  "currency": "CNY",
+  "unit": "per_1m_tokens",
+  "entries": [
+    {
+      "providers": ["bailian", "dashscope"],
+      "model": "qwen3.7-plus",
+      "aliases": ["qwen3.7-plus-2026-05-26"],
+      "scope": "global",
+      "tiers": [
+        {
+          "min_input_tokens_exclusive": 0,
+          "max_input_tokens": 256000,
+          "input_cny_per_million": 2.0,
+          "output_cny_per_million": 8.0
+        },
+        {
+          "min_input_tokens_exclusive": 256000,
+          "max_input_tokens": 1000000,
+          "input_cny_per_million": 6.0,
+          "output_cny_per_million": 24.0
+        }
+      ]
+    },
+    {
+      "providers": ["bailian", "dashscope"],
+      "model": "qwen3.6-plus",
+      "aliases": ["qwen3.6-plus-2026-04-02"],
+      "scope": "global",
+      "tiers": [
+        {
+          "min_input_tokens_exclusive": 0,
+          "max_input_tokens": 256000,
+          "input_cny_per_million": 2.0,
+          "output_cny_per_million": 12.0
+        },
+        {
+          "min_input_tokens_exclusive": 256000,
+          "max_input_tokens": 1000000,
+          "input_cny_per_million": 8.0,
+          "output_cny_per_million": 48.0
+        }
+      ]
+    },
+    {
+      "providers": ["bailian", "dashscope"],
+      "model": "qwen3.6-flash",
+      "aliases": ["qwen3.6-flash-2026-04-16"],
+      "scope": "mainland_cn",
+      "tiers": [
+        {
+          "min_input_tokens_exclusive": 0,
+          "max_input_tokens": 256000,
+          "input_cny_per_million": 1.2,
+          "output_cny_per_million": 7.2
+        },
+        {
+          "min_input_tokens_exclusive": 256000,
+          "max_input_tokens": 1000000,
+          "input_cny_per_million": 4.8,
+          "output_cny_per_million": 28.8
+        }
+      ]
+    },
+    {
+      "providers": ["bailian", "dashscope"],
+      "model": "qwen3.7-max",
+      "aliases": [
+        "qwen3.7-max-2026-06-08",
+        "qwen3.7-max-2026-05-20",
+        "qwen3.7-max-preview",
+        "qwen3.7-max-2026-05-17"
+      ],
+      "scope": "mainland_cn",
+      "tiers": [
+        {
+          "min_input_tokens_exclusive": 0,
+          "max_input_tokens": 1000000,
+          "input_cny_per_million": 12.0,
+          "output_cny_per_million": 36.0
+        }
+      ]
+    },
+    {
+      "providers": ["bailian", "dashscope"],
+      "model": "qwen3.6-max-preview",
+      "scope": "mainland_cn",
+      "tiers": [
+        {
+          "min_input_tokens_exclusive": 0,
+          "max_input_tokens": 128000,
+          "input_cny_per_million": 9.0,
+          "output_cny_per_million": 54.0
+        },
+        {
+          "min_input_tokens_exclusive": 128000,
+          "max_input_tokens": 256000,
+          "input_cny_per_million": 15.0,
+          "output_cny_per_million": 90.0
+        }
+      ]
+    },
+    {
+      "providers": ["bailian", "dashscope"],
+      "model": "qwen3-max",
+      "aliases": ["qwen3-max-2026-01-23"],
+      "scope": "mainland_cn",
+      "tiers": [
+        {
+          "min_input_tokens_exclusive": 0,
+          "max_input_tokens": 32000,
+          "input_cny_per_million": 2.5,
+          "output_cny_per_million": 10.0
+        },
+        {
+          "min_input_tokens_exclusive": 32000,
+          "max_input_tokens": 128000,
+          "input_cny_per_million": 4.0,
+          "output_cny_per_million": 16.0
+        },
+        {
+          "min_input_tokens_exclusive": 128000,
+          "max_input_tokens": 256000,
+          "input_cny_per_million": 7.0,
+          "output_cny_per_million": 28.0
+        }
+      ]
+    },
+    {
+      "providers": ["bailian", "dashscope"],
+      "model": "qwen-max",
+      "scope": "mainland_cn",
+      "tiers": [
+        {
+          "min_input_tokens_exclusive": 0,
+          "max_input_tokens": null,
+          "input_cny_per_million": 2.4,
+          "output_cny_per_million": 9.6
+        }
+      ]
+    },
+    {
+      "providers": ["bailian", "dashscope"],
+      "model": "qwen-flash",
+      "aliases": ["qwen-flash-2025-07-28"],
+      "scope": "mainland_cn",
+      "tiers": [
+        {
+          "min_input_tokens_exclusive": 0,
+          "max_input_tokens": 128000,
+          "input_cny_per_million": 0.15,
+          "output_cny_per_million": 1.5
+        },
+        {
+          "min_input_tokens_exclusive": 128000,
+          "max_input_tokens": 256000,
+          "input_cny_per_million": 0.6,
+          "output_cny_per_million": 6.0
+        },
+        {
+          "min_input_tokens_exclusive": 256000,
+          "max_input_tokens": 1000000,
+          "input_cny_per_million": 1.2,
+          "output_cny_per_million": 12.0
+        }
+      ]
+    }
+  ]
+}

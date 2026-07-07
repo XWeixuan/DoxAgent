@@ -3,6 +3,7 @@ kind = "internal_task_skill"
 id = "document2-field-repair"
 name = "Document2 Field Repair"
 version = "2026.06.28"
+manual_only = true
 applicable_agents = ["O1"]
 applicable_task_types = ["review_expectation_field"]
 workflow_nodes = ["ResolveObjectionsAndDelegations"]

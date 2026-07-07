@@ -30,7 +30,9 @@ import {
 } from "@/components/dashboard/shared"
 import { dashboardApi } from "@/lib/dashboard-api"
 import type {
+  DashboardEvent,
   DashboardDocument,
+  DocumentType,
   DocumentVersion,
   KnownEvent,
   PageResult,
@@ -38,7 +40,9 @@ import type {
 } from "@/lib/dashboard-types"
 import { actionTypeLabel, formatDateTime } from "@/lib/format"
 import { cn } from "@/lib/utils"
-import { useDashboardQuery } from "@/hooks/use-dashboard-query"
+import { downloadDashboardDocumentMarkdown } from "@/lib/document-markdown"
+import { getErrorMessage, useDashboardQuery } from "@/hooks/use-dashboard-query"
+import { useDashboardEvents } from "@/hooks/use-dashboard-events"
 
 const listLimit = 6
 
@@ -54,20 +58,36 @@ export function StrategyPage() {
   const ticker = useParams().ticker?.toUpperCase() ?? "MU"
   const [selectedDocument, setSelectedDocument] = useState<DashboardDocument | null>(null)
   const [selectingVersion, setSelectingVersion] = useState(false)
+  const [activatingRunId, setActivatingRunId] = useState<string | null>(null)
   const [expectationFilter, setExpectationFilter] = useState("all")
   const [actionFilter, setActionFilter] = useState("all")
   const [knownEventPage, setKnownEventPage] = useState<PageResult<KnownEvent> | null>(null)
   const [policyPage, setPolicyPage] = useState<PageResult<Policy> | null>(null)
   const [loadingMoreKnownEvents, setLoadingMoreKnownEvents] = useState(false)
   const [loadingMorePolicies, setLoadingMorePolicies] = useState(false)
+  const [versionsByType, setVersionsByType] = useState<
+    Partial<Record<DocumentType, DocumentVersion[]>>
+  >({})
+  const [versionsError, setVersionsError] = useState<string | null>(null)
+  const [versionsLoading, setVersionsLoading] = useState(false)
+  const [historyOpen, setHistoryOpen] = useState(false)
+  const [downloadingDocument, setDownloadingDocument] = useState(false)
 
   const documentLoader = useCallback(
     () => dashboardApi.documentsCurrent(ticker, ["document3"]),
     [ticker]
   )
-  const versionsLoader = useCallback(async () => {
-    const result = await dashboardApi.documentVersions(ticker, "document3")
-    return { document3: result.items } satisfies { document3: DocumentVersion[] }
+  const reloadVersions = useCallback(async () => {
+    setVersionsLoading(true)
+    setVersionsError(null)
+    try {
+      const result = await dashboardApi.documentVersions(ticker, "document3")
+      setVersionsByType({ document3: result.items })
+    } catch (error) {
+      setVersionsError(getErrorMessage(error))
+    } finally {
+      setVersionsLoading(false)
+    }
   }, [ticker])
   const knownEventsLoader = useCallback(
     () =>
@@ -86,15 +106,21 @@ export function StrategyPage() {
     [actionFilter, ticker]
   )
 
-  const documents = useDashboardQuery(documentLoader, { intervalMs: 60000 })
-  const versions = useDashboardQuery(versionsLoader, { intervalMs: 60000 })
-  const knownEvents = useDashboardQuery(knownEventsLoader, { intervalMs: 60000 })
-  const policies = useDashboardQuery(policiesLoader, { intervalMs: 60000 })
+  const documents = useDashboardQuery(documentLoader)
+  const knownEvents = useDashboardQuery(knownEventsLoader)
+  const policies = useDashboardQuery(policiesLoader)
+  const documentsData = documents.data
+  const reloadDocuments = documents.reload
+  const reloadKnownEvents = knownEvents.reload
+  const reloadPolicies = policies.reload
 
   useEffect(() => {
     setSelectedDocument(null)
     setExpectationFilter("all")
     setActionFilter("all")
+    setVersionsByType({})
+    setVersionsError(null)
+    setHistoryOpen(false)
   }, [ticker])
 
   useEffect(() => {
@@ -109,7 +135,9 @@ export function StrategyPage() {
     }
   }, [policies.data])
 
-  const document3 = selectedDocument ?? documents.data?.documents[0]
+  const document3 = selectedDocument ?? documentsData?.documents[0]
+  const latestKnownEventsUpdatedAt = knownEventPage?.items[0]?.updated_at ?? null
+  const latestPoliciesUpdatedAt = policyPage?.items[0]?.updated_at ?? null
 
   const expectationOptions = useMemo(() => {
     const ids = new Set<string>()
@@ -127,7 +155,7 @@ export function StrategyPage() {
     ]
   }, [knownEventPage, policyPage])
 
-  const selectVersion = async (_documentType: string, versionId: string) => {
+  const selectVersion = async (_documentType: DocumentType, versionId: string) => {
     setSelectingVersion(true)
     try {
       const detail = await dashboardApi.documentVersionDetail(ticker, "document3", versionId)
@@ -139,6 +167,136 @@ export function StrategyPage() {
       setSelectingVersion(false)
     }
   }
+
+  const activateVersion = async (_documentType: DocumentType, version: DocumentVersion) => {
+    setActivatingRunId(version.document_run_id)
+    try {
+      await dashboardApi.activateDocumentSet(
+        ticker,
+        version.document_run_id,
+        `Dashboard 手动切换 ${version.document_id} 为现行执行策略文档。`
+      )
+      setSelectedDocument(null)
+      await Promise.all([
+        reloadDocuments(),
+        reloadVersions(),
+        reloadKnownEvents(),
+        reloadPolicies(),
+      ])
+      toast.success("已切换为现行文档。")
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : String(error))
+    } finally {
+      setActivatingRunId(null)
+    }
+  }
+
+  const downloadDocument3 = async (document: DashboardDocument) => {
+    setDownloadingDocument(true)
+    try {
+      const detail = await dashboardApi.documentVersionDetail(
+        ticker,
+        "document3",
+        document.document_id
+      )
+      downloadDashboardDocumentMarkdown(detail.document, { ticker })
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : String(error))
+    } finally {
+      setDownloadingDocument(false)
+    }
+  }
+
+  const probeRevision = useCallback(async () => {
+    if (!documentsData) {
+      return
+    }
+    try {
+      const revision = await dashboardApi.documentRevision(ticker)
+      if (
+        revision.document_run_id !== documentsData.document_run_id ||
+        revision.document3_updated_at !== document3?.updated_at
+      ) {
+        setSelectedDocument(null)
+        await reloadDocuments()
+        if (historyOpen) {
+          await reloadVersions()
+        }
+      }
+      if (
+        revision.known_events_updated_at &&
+        revision.known_events_updated_at !== latestKnownEventsUpdatedAt
+      ) {
+        await reloadKnownEvents()
+      }
+      if (revision.policies_updated_at && revision.policies_updated_at !== latestPoliciesUpdatedAt) {
+        await reloadPolicies()
+      }
+    } catch {
+      // Revision probing is a lightweight missed-event guard; visible errors stay on content APIs.
+    }
+  }, [
+    document3?.updated_at,
+    documentsData,
+    historyOpen,
+    latestKnownEventsUpdatedAt,
+    latestPoliciesUpdatedAt,
+    reloadDocuments,
+    reloadKnownEvents,
+    reloadPolicies,
+    reloadVersions,
+    ticker,
+  ])
+
+  const handleEvent = useCallback(
+    (event: DashboardEvent) => {
+      const eventTicker = event.ticker?.toUpperCase()
+      if (eventTicker && eventTicker !== ticker) {
+        return
+      }
+      if (event.event_type === "dashboard.document.updated") {
+        if (event.payload.document_type !== "document3") {
+          return
+        }
+        setSelectedDocument(null)
+        void reloadDocuments()
+        if (historyOpen) {
+          void reloadVersions()
+        }
+        return
+      }
+      if (event.event_type === "dashboard.known_events.updated") {
+        void reloadKnownEvents()
+        return
+      }
+      if (event.event_type === "dashboard.policies.updated") {
+        void reloadPolicies()
+      }
+    },
+    [historyOpen, reloadDocuments, reloadKnownEvents, reloadPolicies, reloadVersions, ticker]
+  )
+
+  useDashboardEvents({
+    ticker,
+    eventTypes: [
+      "dashboard.document.updated",
+      "dashboard.known_events.updated",
+      "dashboard.policies.updated",
+    ],
+    onEvent: handleEvent,
+  })
+
+  useEffect(() => {
+    const onFocus = () => void probeRevision()
+    window.addEventListener("focus", onFocus)
+    const timer = window.setInterval(() => {
+      void probeRevision()
+    }, 300000)
+    return () => {
+      window.removeEventListener("focus", onFocus)
+      window.clearInterval(timer)
+    }
+  }, [probeRevision])
 
   const loadMoreKnownEvents = async () => {
     if (!knownEventPage?.page.next_cursor) {
@@ -184,8 +342,8 @@ export function StrategyPage() {
     }
   }
 
-  const policyCount = policyPage?.items.length ?? 0
-  const knownEventCount = knownEventPage?.items.length ?? 0
+  const policyCount = policyPage?.page.total_count ?? policyPage?.items.length ?? 0
+  const knownEventCount = knownEventPage?.page.total_count ?? knownEventPage?.items.length ?? 0
   const latestUpdatedAt = useMemo(() => {
     const timestamps = [
       document3?.updated_at,
@@ -212,21 +370,31 @@ export function StrategyPage() {
           <>
             <DocumentHistorySheet
               title="执行策略历史版本"
-              versionsByType={versions.data ?? {}}
-              loading={selectingVersion}
+              versionsByType={versionsByType}
+              loading={versionsLoading || selectingVersion || activatingRunId !== null}
+              activatingRunId={activatingRunId}
+              onOpenChange={(open) => {
+                setHistoryOpen(open)
+                if (open) {
+                  void reloadVersions()
+                }
+              }}
               onSelect={selectVersion}
+              onActivate={(documentType, version) => void activateVersion(documentType, version)}
             />
             <RefreshButton
               refreshing={
                 documents.isRefreshing ||
-                versions.isRefreshing ||
+                versionsLoading ||
                 knownEvents.isRefreshing ||
                 policies.isRefreshing
               }
               onClick={() => {
                 setSelectedDocument(null)
                 void documents.reload()
-                void versions.reload()
+                if (historyOpen) {
+                  void reloadVersions()
+                }
                 void knownEvents.reload()
                 void policies.reload()
               }}
@@ -235,7 +403,7 @@ export function StrategyPage() {
         }
       />
 
-      {[documents.error, versions.error, knownEvents.error, policies.error]
+      {[documents.error, versionsError, knownEvents.error, policies.error]
         .filter(Boolean)
         .map((message) => (
           <ErrorState key={message} message={message ?? ""} />
@@ -337,17 +505,27 @@ export function StrategyPage() {
         ) : (
           <DocumentStatusPanel
             document={document3}
+            ticker={ticker}
             detailItems={[
-              { label: "Document 3", value: document3?.version_status === "current" ? "现行" : "历史" },
+              {
+                label: "Document 3",
+                value: document3?.version_status === "current" ? "现行" : "历史",
+              },
               { label: "Known Events", value: knownEventCount },
               { label: "Policy", value: policyCount },
               { label: "生成时间", value: formatDateTime(document3?.generated_at) },
               { label: "最近修改", value: formatDateTime(latestUpdatedAt) },
               {
                 label: "文档 ID",
-                value: <span className="font-mono text-xs">{document3?.document_id ?? "暂无数据"}</span>,
+                value: (
+                  <span className="inline-block max-w-full break-all font-mono text-xs leading-5">
+                    {document3?.document_id ?? "暂无数据"}
+                  </span>
+                ),
               },
             ]}
+            onDownload={(document) => void downloadDocument3(document)}
+            downloading={downloadingDocument}
           />
         )}
       </div>
@@ -363,9 +541,14 @@ function ExpandableKnownEvent({ event }: { event: KnownEvent }) {
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <CardTitle className="text-lg font-light">{event.event_name}</CardTitle>
-            <CardDescription className="mt-1">
-              更新：{formatDateTime(event.updated_at)} · 来源：{event.source}
-            </CardDescription>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <CardDescription>
+                更新：{formatDateTime(event.updated_at)} · 来源：{event.source}
+              </CardDescription>
+              {event.related_expectation_ids.map((id) => (
+                <StatusBadge key={id} status="normal" label={id} />
+              ))}
+            </div>
           </div>
           <Button variant="ghost" size="icon-sm" onClick={() => setOpen((value) => !value)}>
             <ChevronDownIcon className={cn("transition-transform", open && "rotate-180")} />
@@ -380,18 +563,6 @@ function ExpandableKnownEvent({ event }: { event: KnownEvent }) {
             <p className="mt-1 whitespace-pre-wrap leading-6 text-muted-foreground">
               {event.description || "暂无数据"}
             </p>
-          </div>
-          <div className="rounded-[4px] border bg-white/55 p-4">
-            <div className="font-medium">相关 expectation unit</div>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {event.related_expectation_ids.length > 0 ? (
-                event.related_expectation_ids.map((id) => (
-                  <StatusBadge key={id} status="normal" label={id} />
-                ))
-              ) : (
-                <span className="text-muted-foreground">暂无数据</span>
-              )}
-            </div>
           </div>
           <div className="rounded-[4px] border bg-white/55 p-4">
             <div className="font-medium">去重关键字</div>

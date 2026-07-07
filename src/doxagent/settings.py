@@ -64,6 +64,28 @@ class DoxAgentSettings(BaseSettings):
         gt=0,
         validation_alias="DOXAGENT_MODEL_REQUEST_TIMEOUT_SECONDS",
     )
+    model_usage_storage_mode: Literal["memory", "sqlite"] = Field(
+        default="sqlite",
+        validation_alias="DOXAGENT_MODEL_USAGE_STORAGE_MODE",
+    )
+    model_usage_sqlite_path: str = Field(
+        default=".tmp/model_usage.sqlite3",
+        validation_alias="DOXAGENT_MODEL_USAGE_SQLITE_PATH",
+    )
+    model_pricing_config_path: str | None = Field(
+        default=None,
+        validation_alias="DOXAGENT_MODEL_PRICING_CONFIG_PATH",
+    )
+    model_pricing_discount_rate: float = Field(
+        default=0.45,
+        ge=0,
+        validation_alias="DOXAGENT_MODEL_PRICING_DISCOUNT_RATE",
+    )
+    model_pricing_cny_usd_rate: float = Field(
+        default=6.8,
+        gt=0,
+        validation_alias="DOXAGENT_MODEL_PRICING_CNY_USD_RATE",
+    )
     react_tool_call_timeout_seconds: float = Field(
         default=180.0,
         gt=0,
@@ -160,6 +182,18 @@ class DoxAgentSettings(BaseSettings):
     monitoring_sqlite_path: str = Field(
         default=".tmp/monitoring_message_bus.sqlite3",
         validation_alias="DOXAGENT_MONITORING_SQLITE_PATH",
+    )
+    monitoring_auto_media_enrichment_enabled: bool = Field(
+        default=True,
+        validation_alias="DOXAGENT_MONITORING_AUTO_MEDIA_ENRICHMENT_ENABLED",
+    )
+    monitoring_auto_media_enrichment_limit: int = Field(
+        default=5,
+        validation_alias="DOXAGENT_MONITORING_AUTO_MEDIA_ENRICHMENT_LIMIT",
+    )
+    monitoring_auto_media_enrichment_concurrency: int = Field(
+        default=2,
+        validation_alias="DOXAGENT_MONITORING_AUTO_MEDIA_ENRICHMENT_CONCURRENCY",
     )
     benzinga_api_key: str | None = Field(default=None, validation_alias="BENZINGA_API_KEY")
     benzinga_news_base_url: str = Field(

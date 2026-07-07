@@ -57,32 +57,76 @@ class PersistentRuntimeRepository(Protocol):
     ) -> RuntimeExecutionRecord | None:
         ...
 
-    def list_executions(self, *, ticker: str | None = None) -> list[RuntimeExecutionRecord]:
+    def list_executions(
+        self,
+        *,
+        ticker: str | None = None,
+        limit: int | None = None,
+        newest_first: bool = False,
+    ) -> list[RuntimeExecutionRecord]:
         ...
 
-    def list_trading_records(self, *, ticker: str | None = None) -> list[TradingRecord]:
+    def list_trading_records(
+        self,
+        *,
+        ticker: str | None = None,
+        limit: int | None = None,
+        newest_first: bool = False,
+    ) -> list[TradingRecord]:
         ...
 
-    def list_ingest_queue(self, *, ticker: str | None = None) -> list[IngestQueueItem]:
+    def list_ingest_queue(
+        self,
+        *,
+        ticker: str | None = None,
+        limit: int | None = None,
+        newest_first: bool = False,
+    ) -> list[IngestQueueItem]:
         ...
 
-    def list_archive(self, *, ticker: str | None = None) -> list[ArchiveItem]:
+    def list_archive(
+        self,
+        *,
+        ticker: str | None = None,
+        limit: int | None = None,
+        newest_first: bool = False,
+    ) -> list[ArchiveItem]:
         ...
 
     def list_known_events_patch_logs(
         self,
         *,
         ticker: str | None = None,
+        limit: int | None = None,
+        newest_first: bool = False,
     ) -> list[KnownEventsPatchLog]:
         ...
 
-    def list_known_events(self, *, ticker: str | None = None) -> list[RuntimeKnownEvent]:
+    def list_known_events(
+        self,
+        *,
+        ticker: str | None = None,
+        limit: int | None = None,
+        newest_first: bool = False,
+    ) -> list[RuntimeKnownEvent]:
         ...
 
-    def list_objections(self, *, ticker: str | None = None) -> list[RuntimeObjectionRecord]:
+    def list_objections(
+        self,
+        *,
+        ticker: str | None = None,
+        limit: int | None = None,
+        newest_first: bool = False,
+    ) -> list[RuntimeObjectionRecord]:
         ...
 
-    def list_exceptions(self, *, ticker: str | None = None) -> list[ExecutionExceptionLog]:
+    def list_exceptions(
+        self,
+        *,
+        ticker: str | None = None,
+        limit: int | None = None,
+        newest_first: bool = False,
+    ) -> list[ExecutionExceptionLog]:
         ...
 
 
@@ -165,37 +209,124 @@ class InMemoryPersistentRuntimeRepository:
                 return record.model_copy(deep=True)
         return None
 
-    def list_executions(self, *, ticker: str | None = None) -> list[RuntimeExecutionRecord]:
+    def list_executions(
+        self,
+        *,
+        ticker: str | None = None,
+        limit: int | None = None,
+        newest_first: bool = False,
+    ) -> list[RuntimeExecutionRecord]:
         rows = list(self._executions.values())
         if ticker is not None:
             normalized = ticker.strip().upper()
             rows = [row for row in rows if row.source_message.ticker == normalized]
+        if newest_first:
+            rows = sorted(
+                rows,
+                key=lambda row: row.updated_at or row.created_at,
+                reverse=True,
+            )
+        if limit is not None:
+            rows = rows[: max(0, limit)]
         return [row.model_copy(deep=True) for row in rows]
 
-    def list_trading_records(self, *, ticker: str | None = None) -> list[TradingRecord]:
-        return _filter_ticker(list(self._trading_records.values()), ticker)
+    def list_trading_records(
+        self,
+        *,
+        ticker: str | None = None,
+        limit: int | None = None,
+        newest_first: bool = False,
+    ) -> list[TradingRecord]:
+        return _filter_ticker(
+            list(self._trading_records.values()),
+            ticker,
+            limit=limit,
+            newest_first=newest_first,
+        )
 
-    def list_ingest_queue(self, *, ticker: str | None = None) -> list[IngestQueueItem]:
-        return _filter_ticker(list(self._ingest_queue.values()), ticker)
+    def list_ingest_queue(
+        self,
+        *,
+        ticker: str | None = None,
+        limit: int | None = None,
+        newest_first: bool = False,
+    ) -> list[IngestQueueItem]:
+        return _filter_ticker(
+            list(self._ingest_queue.values()),
+            ticker,
+            limit=limit,
+            newest_first=newest_first,
+        )
 
-    def list_archive(self, *, ticker: str | None = None) -> list[ArchiveItem]:
-        return _filter_ticker(list(self._archive.values()), ticker)
+    def list_archive(
+        self,
+        *,
+        ticker: str | None = None,
+        limit: int | None = None,
+        newest_first: bool = False,
+    ) -> list[ArchiveItem]:
+        return _filter_ticker(
+            list(self._archive.values()),
+            ticker,
+            limit=limit,
+            newest_first=newest_first,
+        )
 
     def list_known_events_patch_logs(
         self,
         *,
         ticker: str | None = None,
+        limit: int | None = None,
+        newest_first: bool = False,
     ) -> list[KnownEventsPatchLog]:
-        return _filter_ticker(list(self._known_event_logs.values()), ticker)
+        return _filter_ticker(
+            list(self._known_event_logs.values()),
+            ticker,
+            limit=limit,
+            newest_first=newest_first,
+        )
 
-    def list_known_events(self, *, ticker: str | None = None) -> list[RuntimeKnownEvent]:
-        return _filter_ticker(list(self._known_events.values()), ticker)
+    def list_known_events(
+        self,
+        *,
+        ticker: str | None = None,
+        limit: int | None = None,
+        newest_first: bool = False,
+    ) -> list[RuntimeKnownEvent]:
+        return _filter_ticker(
+            list(self._known_events.values()),
+            ticker,
+            limit=limit,
+            newest_first=newest_first,
+        )
 
-    def list_objections(self, *, ticker: str | None = None) -> list[RuntimeObjectionRecord]:
-        return _filter_ticker(list(self._objections.values()), ticker)
+    def list_objections(
+        self,
+        *,
+        ticker: str | None = None,
+        limit: int | None = None,
+        newest_first: bool = False,
+    ) -> list[RuntimeObjectionRecord]:
+        return _filter_ticker(
+            list(self._objections.values()),
+            ticker,
+            limit=limit,
+            newest_first=newest_first,
+        )
 
-    def list_exceptions(self, *, ticker: str | None = None) -> list[ExecutionExceptionLog]:
-        return _filter_ticker(list(self._exceptions.values()), ticker)
+    def list_exceptions(
+        self,
+        *,
+        ticker: str | None = None,
+        limit: int | None = None,
+        newest_first: bool = False,
+    ) -> list[ExecutionExceptionLog]:
+        return _filter_ticker(
+            list(self._exceptions.values()),
+            ticker,
+            limit=limit,
+            newest_first=newest_first,
+        )
 
 
 class SQLitePersistentRuntimeRepository:
@@ -344,44 +475,132 @@ class SQLitePersistentRuntimeRepository:
                 return record
         return None
 
-    def list_executions(self, *, ticker: str | None = None) -> list[RuntimeExecutionRecord]:
+    def list_executions(
+        self,
+        *,
+        ticker: str | None = None,
+        limit: int | None = None,
+        newest_first: bool = False,
+    ) -> list[RuntimeExecutionRecord]:
         return self._list_payloads(
             "persistent_runtime_executions",
             RuntimeExecutionRecord,
             ticker=ticker,
+            limit=limit,
+            newest_first=newest_first,
+            order_column="updated_at",
         )
 
-    def list_trading_records(self, *, ticker: str | None = None) -> list[TradingRecord]:
-        return self._list_payloads("persistent_trading_records", TradingRecord, ticker=ticker)
+    def list_trading_records(
+        self,
+        *,
+        ticker: str | None = None,
+        limit: int | None = None,
+        newest_first: bool = False,
+    ) -> list[TradingRecord]:
+        return self._list_payloads(
+            "persistent_trading_records",
+            TradingRecord,
+            ticker=ticker,
+            limit=limit,
+            newest_first=newest_first,
+            order_column="created_at",
+        )
 
-    def list_ingest_queue(self, *, ticker: str | None = None) -> list[IngestQueueItem]:
-        return self._list_payloads("persistent_ingest_queue", IngestQueueItem, ticker=ticker)
+    def list_ingest_queue(
+        self,
+        *,
+        ticker: str | None = None,
+        limit: int | None = None,
+        newest_first: bool = False,
+    ) -> list[IngestQueueItem]:
+        return self._list_payloads(
+            "persistent_ingest_queue",
+            IngestQueueItem,
+            ticker=ticker,
+            limit=limit,
+            newest_first=newest_first,
+            order_column="created_at",
+        )
 
-    def list_archive(self, *, ticker: str | None = None) -> list[ArchiveItem]:
-        return self._list_payloads("persistent_archive", ArchiveItem, ticker=ticker)
+    def list_archive(
+        self,
+        *,
+        ticker: str | None = None,
+        limit: int | None = None,
+        newest_first: bool = False,
+    ) -> list[ArchiveItem]:
+        return self._list_payloads(
+            "persistent_archive",
+            ArchiveItem,
+            ticker=ticker,
+            limit=limit,
+            newest_first=newest_first,
+            order_column="created_at",
+        )
 
     def list_known_events_patch_logs(
         self,
         *,
         ticker: str | None = None,
+        limit: int | None = None,
+        newest_first: bool = False,
     ) -> list[KnownEventsPatchLog]:
         return self._list_payloads(
             "persistent_known_event_patch_logs",
             KnownEventsPatchLog,
             ticker=ticker,
+            limit=limit,
+            newest_first=newest_first,
+            order_column="created_at",
         )
 
-    def list_known_events(self, *, ticker: str | None = None) -> list[RuntimeKnownEvent]:
-        return self._list_payloads("persistent_known_events", RuntimeKnownEvent, ticker=ticker)
+    def list_known_events(
+        self,
+        *,
+        ticker: str | None = None,
+        limit: int | None = None,
+        newest_first: bool = False,
+    ) -> list[RuntimeKnownEvent]:
+        return self._list_payloads(
+            "persistent_known_events",
+            RuntimeKnownEvent,
+            ticker=ticker,
+            limit=limit,
+            newest_first=newest_first,
+            order_column="updated_at",
+        )
 
-    def list_objections(self, *, ticker: str | None = None) -> list[RuntimeObjectionRecord]:
-        return self._list_payloads("persistent_objections", RuntimeObjectionRecord, ticker=ticker)
+    def list_objections(
+        self,
+        *,
+        ticker: str | None = None,
+        limit: int | None = None,
+        newest_first: bool = False,
+    ) -> list[RuntimeObjectionRecord]:
+        return self._list_payloads(
+            "persistent_objections",
+            RuntimeObjectionRecord,
+            ticker=ticker,
+            limit=limit,
+            newest_first=newest_first,
+            order_column="created_at",
+        )
 
-    def list_exceptions(self, *, ticker: str | None = None) -> list[ExecutionExceptionLog]:
+    def list_exceptions(
+        self,
+        *,
+        ticker: str | None = None,
+        limit: int | None = None,
+        newest_first: bool = False,
+    ) -> list[ExecutionExceptionLog]:
         return self._list_payloads(
             "persistent_execution_exceptions",
             ExecutionExceptionLog,
             ticker=ticker,
+            limit=limit,
+            newest_first=newest_first,
+            order_column="created_at",
         )
 
     def _initialize(self) -> None:
@@ -450,6 +669,23 @@ class SQLitePersistentRuntimeRepository:
                     payload_json text not null,
                     created_at text not null default current_timestamp
                 );
+
+                create index if not exists persistent_runtime_executions_ticker_updated_idx
+                    on persistent_runtime_executions(ticker, updated_at desc);
+                create index if not exists persistent_trading_records_ticker_created_idx
+                    on persistent_trading_records(ticker, created_at desc);
+                create index if not exists persistent_ingest_queue_ticker_created_idx
+                    on persistent_ingest_queue(ticker, created_at desc);
+                create index if not exists persistent_archive_ticker_created_idx
+                    on persistent_archive(ticker, created_at desc);
+                create index if not exists persistent_known_event_logs_ticker_created_idx
+                    on persistent_known_event_patch_logs(ticker, created_at desc);
+                create index if not exists persistent_known_events_ticker_updated_idx
+                    on persistent_known_events(ticker, updated_at desc);
+                create index if not exists persistent_objections_ticker_created_idx
+                    on persistent_objections(ticker, created_at desc);
+                create index if not exists persistent_exceptions_ticker_created_idx
+                    on persistent_execution_exceptions(ticker, created_at desc);
                 """
             )
 
@@ -548,13 +784,21 @@ class SQLitePersistentRuntimeRepository:
         model: type[T],
         *,
         ticker: str | None,
+        limit: int | None = None,
+        newest_first: bool = False,
+        order_column: str = "rowid",
     ) -> list[T]:
         sql = f"select payload_json from {table}"
-        params: tuple[str, ...] = ()
+        params: list[object] = []
         if ticker is not None:
             sql += " where ticker = ?"
-            params = (ticker.strip().upper(),)
-        sql += " order by rowid"
+            params.append(ticker.strip().upper())
+        direction = "desc" if newest_first else "asc"
+        rowid_direction = "desc" if newest_first else "asc"
+        sql += f" order by {order_column} {direction}, rowid {rowid_direction}"
+        if limit is not None:
+            sql += " limit ?"
+            params.append(max(0, limit))
         with self._connect() as conn:
             rows = conn.execute(sql, params).fetchall()
         return [_model_from_json(model, str(row["payload_json"])) for row in rows]
@@ -573,11 +817,21 @@ def _copy_optional(item: T | None) -> T | None:
     return item
 
 
-def _filter_ticker(items: list[T], ticker: str | None) -> list[T]:
+def _filter_ticker(
+    items: list[T],
+    ticker: str | None,
+    *,
+    limit: int | None = None,
+    newest_first: bool = False,
+) -> list[T]:
     rows = items
     if ticker is not None:
         normalized = ticker.strip().upper()
         rows = [item for item in rows if cast(Any, item).ticker == normalized]
+    if newest_first:
+        rows = list(reversed(rows))
+    if limit is not None:
+        rows = rows[: max(0, limit)]
     copied: list[T] = []
     for item in rows:
         copied.append(_copy_required(item))

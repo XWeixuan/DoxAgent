@@ -25,6 +25,4 @@ COPY eval ./eval
 COPY examples ./examples
 COPY tests ./tests
 
-EXPOSE 8765
-
-CMD ["python", "-m", "doxagent.debug_viewer", "--host", "0.0.0.0", "--port", "8765"]
+CMD ["python", "-m", "doxagent.monitoring.cli", "--help"]

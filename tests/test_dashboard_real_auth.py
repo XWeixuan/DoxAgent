@@ -42,6 +42,8 @@ class _FakeDashboardService:
             "generated_at": utc_now_iso(),
             "system": {
                 "container_status": "normal",
+                "current_session_phase": "formal_monitoring",
+                "current_session_label": "运行时段",
                 "dashboard_api_status": "normal",
                 "message_bus_status": "normal",
                 "status_color": "green",

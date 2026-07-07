@@ -11,6 +11,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.responses import Response
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from doxagent.dashboard_api.auth import (
@@ -33,6 +34,15 @@ from doxagent.runtime_scheduler.api import DashboardStateAPI
 
 SUPPORTED_DASHBOARD_API_MODES = {"mock", "full-mock", "fixture", "real"}
 MOCK_DASHBOARD_API_MODES = {"mock", "full-mock", "fixture"}
+SPA_CACHE_CONTROL = "no-store, max-age=0, must-revalidate"
+ASSET_CACHE_CONTROL = "public, max-age=31536000, immutable"
+
+
+class DashboardAssetStaticFiles(StaticFiles):
+    async def get_response(self, path: str, scope: dict[str, object]) -> Response:
+        response = await super().get_response(path, scope)
+        response.headers.setdefault("Cache-Control", ASSET_CACHE_CONTROL)
+        return response
 
 
 def create_app(
@@ -199,7 +209,11 @@ def _mount_dashboard_static(app: FastAPI) -> None:
 
     assets_dir = static_dir / "assets"
     if assets_dir.is_dir():
-        app.mount("/assets", StaticFiles(directory=assets_dir), name="dashboard-assets")
+        app.mount(
+            "/assets",
+            DashboardAssetStaticFiles(directory=assets_dir),
+            name="dashboard-assets",
+        )
 
     @app.head("/{full_path:path}", include_in_schema=False)
     @app.get("/{full_path:path}", include_in_schema=False)
@@ -213,8 +227,8 @@ def _mount_dashboard_static(app: FastAPI) -> None:
         except ValueError as exc:
             raise StarletteHTTPException(status_code=HTTPStatus.NOT_FOUND) from exc
         if candidate.is_file():
-            return FileResponse(candidate)
-        return FileResponse(index_path)
+            return FileResponse(candidate, headers={"Cache-Control": SPA_CACHE_CONTROL})
+        return FileResponse(index_path, headers={"Cache-Control": SPA_CACHE_CONTROL})
 
 
 app = create_app()

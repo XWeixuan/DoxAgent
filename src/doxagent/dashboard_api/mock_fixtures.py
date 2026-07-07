@@ -5,9 +5,11 @@ from __future__ import annotations
 from copy import deepcopy
 from datetime import UTC, datetime, timedelta
 from typing import Any, cast
+from uuid import uuid4
 
 JsonObject = dict[str, Any]
 ENABLED_MONITOR_MODES = {"message_monitoring", "paper_trading"}
+BACKTEST_PERIODS = {"7d": 7, "15d": 15, "30d": 30}
 
 MOCK_GENERATED_AT = "2026-06-30T12:00:00Z"
 
@@ -46,6 +48,7 @@ def paginate_items(
             "limit": resolved_limit,
             "next_cursor": f"cur_{next_offset}" if has_more else None,
             "has_more": has_more,
+            "total_count": len(items),
         },
     }
 
@@ -96,6 +99,7 @@ class MockDashboardStore:
         self.revenue_audit: dict[str, JsonObject] = seed["revenue_audit"]
         self.cost_audit: dict[str, JsonObject] = seed["cost_audit"]
         self.cost_details: dict[str, list[JsonObject]] = seed["cost_details"]
+        self.backtests: dict[str, JsonObject] = {}
         self.sse_events: list[JsonObject] = seed["sse_events"]
 
     def overview(self, *, date: str | None = None, tz: str | None = None) -> JsonObject:
@@ -105,6 +109,8 @@ class MockDashboardStore:
             "generated_at": MOCK_GENERATED_AT,
             "system": {
                 "container_status": "normal",
+                "current_session_phase": "formal_monitoring",
+                "current_session_label": "运行时段",
                 "dashboard_api_status": "normal",
                 "message_bus_status": "degraded",
                 "status_color": "yellow",
@@ -139,6 +145,96 @@ class MockDashboardStore:
 
     def get_ticker(self, ticker: str) -> JsonObject | None:
         return deepcopy(self.ticker_details.get(normalize_ticker(ticker)))
+
+    def list_backtests(
+        self,
+        *,
+        status: str | None,
+        ticker: str | None,
+        limit: int | None,
+        cursor: str | None,
+    ) -> JsonObject:
+        items = list(self.backtests.values())
+        if status and status != "all":
+            items = [item for item in items if item["status"] == status]
+        if ticker:
+            normalized = normalize_ticker(ticker)
+            items = [item for item in items if item["ticker"] == normalized]
+        items = sorted(items, key=lambda item: str(item["created_at"]), reverse=True)
+        return paginate_items(items, limit=limit, cursor=cursor)
+
+    def get_backtest(self, run_id: str) -> JsonObject | None:
+        return deepcopy(self.backtests.get(run_id))
+
+    def start_backtest(
+        self,
+        ticker: str,
+        *,
+        period: str,
+        force_initialize: bool = False,
+    ) -> JsonObject:
+        normalized = normalize_ticker(ticker)
+        period_key = _normalize_backtest_period(period)
+        now = utc_now_iso()
+        run_id = f"bt_mock_{uuid4().hex[:12]}"
+        run = {
+            "run_id": run_id,
+            "ticker": normalized,
+            "period": period_key,
+            "period_days": BACKTEST_PERIODS[period_key],
+            "status": "completed",
+            "status_label": "已完成",
+            "health": "normal",
+            "force_initialize": force_initialize,
+            "replay_interval_ms": 250,
+            "progress": {
+                "total_events": 3,
+                "collected_events": 3,
+                "injected_events": 3,
+                "processed_events": 3,
+                "failed_events": 0,
+                "percent": 100,
+            },
+            "dataset": {
+                "dataset_id": f"mock_{normalized.lower()}_{period_key}",
+                "source_type_counts": {"media": 2, "social": 1},
+                "diagnostics": ["mock backtest run; production uses real Dashboard API."],
+                "source": {"type": "mock"},
+            },
+            "runtime": {
+                "runtime_sqlite_path": None,
+                "execution_count": 3,
+                "trade_intent_count": 1,
+                "known_event_patch_count": 1,
+                "exception_count": 0,
+            },
+            "current_event_id": None,
+            "current_event_time": None,
+            "last_error": None,
+            "cancel_requested": False,
+            "can_cancel": False,
+            "created_at": now,
+            "started_at": now,
+            "completed_at": now,
+            "updated_at": now,
+        }
+        self.backtests[run_id] = run
+        return deepcopy(run)
+
+    def cancel_backtest(self, run_id: str) -> JsonObject | None:
+        run = self.backtests.get(run_id)
+        if run is None:
+            return None
+        if run["status"] in {"completed", "failed", "cancelled"}:
+            raise ValueError("terminal_backtest")
+        run["status"] = "cancelled"
+        run["status_label"] = "已取消"
+        run["health"] = "degraded"
+        run["cancel_requested"] = True
+        run["can_cancel"] = False
+        run["completed_at"] = utc_now_iso()
+        run["updated_at"] = run["completed_at"]
+        return deepcopy(run)
 
     def start_ticker(
         self,
@@ -354,6 +450,7 @@ class MockDashboardStore:
         *,
         source_id: str | None,
         processing_status: str | None,
+        source_type: str | None,
         q: str | None,
         from_time: str | None,
         to_time: str | None,
@@ -366,6 +463,8 @@ class MockDashboardStore:
             return None
         if source_id:
             items = [item for item in items if item["source_id"] == source_id]
+        if source_type:
+            items = [item for item in items if item.get("source_type") == source_type]
         if processing_status:
             items = [
                 item for item in items if item["processing_status"] == processing_status
@@ -382,6 +481,15 @@ class MockDashboardStore:
         items = _filter_time(items, "collected_at", from_time=from_time, to_time=to_time)
         items = sort_items(items, sort, default="-collected_at")
         return paginate_items(items, limit=limit, cursor=cursor)
+
+    def get_message(self, ticker: str, message_id: str) -> JsonObject | None:
+        items = self.message_bus_messages.get(normalize_ticker(ticker))
+        if items is None:
+            return None
+        for item in items:
+            if item.get("message_id") == message_id:
+                return deepcopy(item)
+        return None
 
     def get_message_bus_config(self, ticker: str) -> JsonObject | None:
         return deepcopy(self.message_bus_config.get(normalize_ticker(ticker)))
@@ -478,6 +586,30 @@ class MockDashboardStore:
             items = [item for item in items if item["source_type"] == source_type]
         items = sort_items(items, "-created_at", default="-created_at")
         return paginate_items(items, limit=limit, cursor=cursor)
+
+    def list_runtime_records(
+        self,
+        ticker: str,
+        *,
+        result_type: str | None,
+        limit: int | None,
+        cursor: str | None,
+    ) -> JsonObject | None:
+        items = deepcopy(self.runtime_executions.get(normalize_ticker(ticker)))
+        if items is None:
+            return None
+        records = [
+            _mock_runtime_result_record(
+                item,
+                self.runtime_execution_details.get(str(item.get("execution_id"))) or {},
+            )
+            for item in items
+        ]
+        resolved_type = (result_type or "all").strip().lower() or "all"
+        if resolved_type != "all":
+            records = [item for item in records if item.get("result_type") == resolved_type]
+        records = sort_items(records, "-created_at", default="-created_at")
+        return paginate_items(records, limit=limit, cursor=cursor)
 
     def get_runtime_execution(self, ticker: str, execution_id: str) -> JsonObject | None:
         normalized = normalize_ticker(ticker)
@@ -621,6 +753,15 @@ def _split_csv(value: str | None) -> set[str]:
     return {item.strip() for item in value.split(",") if item.strip()}
 
 
+def _normalize_backtest_period(period: str) -> str:
+    text = period.strip().lower()
+    if text in BACKTEST_PERIODS:
+        return text
+    if text.isdigit() and f"{text}d" in BACKTEST_PERIODS:
+        return f"{text}d"
+    raise ValueError("unsupported_backtest_period")
+
+
 def _filter_time(
     items: list[JsonObject],
     key: str,
@@ -710,9 +851,18 @@ def _apply_revenue_period_kpis(
     if period == "today":
         kpis["today_return_pct"] = kpis.get("today_return_pct")
     else:
-        kpis["today_return_pct"] = round((pnl_sum or 0) / 10000 * 100, 2) if pnl_sum is not None else None
+        kpis["today_return_pct"] = (
+            round((pnl_sum or 0) / 10000 * 100, 2) if pnl_sum is not None else None
+        )
     kpis["win_rate"] = (
-        len([item for item in audited_trades if _number_or_none(item.get("pnl_usd")) and float(item["pnl_usd"]) >= 0])
+        len(
+            [
+                item
+                for item in audited_trades
+                if _number_or_none(item.get("pnl_usd"))
+                and float(item["pnl_usd"]) >= 0
+            ]
+        )
         / len(audited_trades)
         if audited_trades
         else None
@@ -743,9 +893,10 @@ def _apply_cost_period_payload(
     kpis["highest_cost_node"] = highest_node["label"] if highest_node else None
     kpis["retry_cost_usd"] = _sum_optional_numbers(retry_items, "cost_usd")
     payload["kpis"] = kpis
+    existing_breakdown = cast(JsonObject, payload.get("breakdown") or {})
     payload["breakdown"] = {
-        "by_node": by_node or cast(JsonObject, payload.get("breakdown") or {}).get("by_node", []),
-        "by_model": by_model or cast(JsonObject, payload.get("breakdown") or {}).get("by_model", []),
+        "by_node": by_node or existing_breakdown.get("by_node", []),
+        "by_model": by_model or existing_breakdown.get("by_model", []),
     }
 
 
@@ -769,8 +920,14 @@ def _cost_trend_from_records(items: list[JsonObject]) -> list[JsonObject]:
         if item_date is None:
             continue
         date_key = item_date.isoformat()
-        bucket = buckets.setdefault(date_key, {"date": date_key, "total_cost_usd": 0.0, "total_tokens": 0})
-        bucket["total_cost_usd"] = round(float(bucket["total_cost_usd"]) + float(item.get("cost_usd") or 0), 4)
+        bucket = buckets.setdefault(
+            date_key,
+            {"date": date_key, "total_cost_usd": 0.0, "total_tokens": 0},
+        )
+        bucket["total_cost_usd"] = round(
+            float(bucket["total_cost_usd"]) + float(item.get("cost_usd") or 0),
+            4,
+        )
         bucket["total_tokens"] = int(bucket["total_tokens"]) + int(item.get("total_tokens") or 0)
     return [buckets[key] for key in sorted(buckets)]
 
@@ -1817,7 +1974,10 @@ def _runtime_nodes_fixture(*, failed: bool) -> dict[str, JsonObject]:
                 prefix="pre_bus",
                 count=4,
                 input_summary="标准消息进入 event_stream pending 队列。",
-                output_summary="RuntimeSchedulerLoop 读取 pending_events 并交给 Persistent Runtime。",
+                output_summary=(
+                    "RuntimeSchedulerLoop 读取 pending_events "
+                    "并交给 Persistent Runtime。"
+                ),
                 duration_ms=900,
             ),
         ),
@@ -2108,6 +2268,95 @@ def _build_runtime_execution_details() -> dict[str, JsonObject]:
             "created_at": "2026-06-30T11:54:00Z",
         },
     }
+
+
+def _mock_runtime_result_record(item: JsonObject, detail: JsonObject) -> JsonObject:
+    result_type = _mock_runtime_result_type(item)
+    result = _mock_runtime_result_payload(item, detail, result_type)
+    w1_result = detail.get("w1_result") if isinstance(detail.get("w1_result"), dict) else {}
+    w2_result = detail.get("w2_result") if isinstance(detail.get("w2_result"), dict) else {}
+    route_decision = (
+        detail.get("route_decision") if isinstance(detail.get("route_decision"), dict) else {}
+    )
+    reasoning = (
+        _text_or_none(result.get("trade_intent.reasoning"))
+        or _text_or_none(result.get("reasoning"))
+        or _text_or_none(w2_result.get("reasoning"))
+        or _text_or_none(w1_result.get("reasoning"))
+        or _text_or_none(route_decision.get("reason"))
+    )
+    durations = item.get("node_durations_ms") if isinstance(item.get("node_durations_ms"), dict) else {}
+    return {
+        "record_id": str(item.get("execution_id") or item.get("source_message_id")),
+        "result_type": result_type,
+        "execution_id": item.get("execution_id"),
+        "source_message_id": item.get("source_message_id"),
+        "message_title": item.get("message_title"),
+        "ticker": item.get("ticker"),
+        "source_type": item.get("source_type"),
+        "final_route": item.get("final_route"),
+        "status": item.get("status"),
+        "node_durations_ms": durations,
+        "duration_ms": sum(int(value) for value in durations.values()) if durations else None,
+        "is_new": w1_result.get("is_new"),
+        "policy_type": w2_result.get("type"),
+        "summary": item.get("message_title"),
+        "reasoning": reasoning,
+        "result": result,
+        "created_at": item.get("created_at"),
+    }
+
+
+def _mock_runtime_result_type(item: JsonObject) -> str:
+    route = str(item.get("final_route") or "").strip().lower()
+    if route == "failed_with_exception" or item.get("exception_types"):
+        return "exception_queue"
+    if route in {"trading_record", "archive", "ingest_queue"}:
+        return route
+    if route in {"objection", "objection_note"}:
+        return "objection"
+    return "all"
+
+
+def _mock_runtime_result_payload(
+    item: JsonObject,
+    detail: JsonObject,
+    result_type: str,
+) -> JsonObject:
+    w2_result = detail.get("w2_result") if isinstance(detail.get("w2_result"), dict) else {}
+    if result_type == "trading_record":
+        return {
+            "side": "long",
+            "conviction": "medium",
+            "size_bucket": "small",
+            "matched_policy_code": w2_result.get("matched_policy_code"),
+            "trade_intent.reasoning": w2_result.get("reasoning"),
+        }
+    if result_type == "exception_queue":
+        exceptions = detail.get("exceptions") if isinstance(detail.get("exceptions"), list) else []
+        exception = exceptions[0] if exceptions and isinstance(exceptions[0], dict) else {}
+        return {
+            "exception_type": exception.get("type") or (item.get("exception_types") or [None])[0],
+            "node": exception.get("node") or "O3",
+            "message": exception.get("message") or "Mock runtime exception.",
+        }
+    if result_type == "objection":
+        return {
+            "blackboard_target": "document3",
+            "objection_type": item.get("final_route"),
+            "reasoning": detail.get("route_decision", {}).get("reason"),
+        }
+    if result_type == "known_event_patch":
+        return {
+            "core_fact": "Mock known event patch.",
+            "event_time_or_window": "2026-06-30",
+            "duplicate_detection_keys": ["mock"],
+        }
+    return {}
+
+
+def _text_or_none(value: object) -> str | None:
+    return value if isinstance(value, str) and value.strip() else None
 
 
 def _build_revenue_audit() -> dict[str, JsonObject]:

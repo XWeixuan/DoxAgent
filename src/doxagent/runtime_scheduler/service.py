@@ -3,12 +3,18 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
+from copy import deepcopy
+from dataclasses import dataclass
 from datetime import UTC, datetime, time
+from threading import Lock, Thread
 from zoneinfo import ZoneInfo
 
+from doxagent.blackboard.errors import RunNotFoundError
 from doxagent.monitoring.schema import (
     EventStreamItem,
+    IngestBatchResult,
     MonitoringParameters,
+    SourceType,
     TickerSourceBinding,
     UpdateActor,
     parameter_schema_for_source,
@@ -30,9 +36,9 @@ from doxagent.runtime_scheduler.schema import (
     DocumentSetStatus,
     EventProcessingStatus,
     MarketSessionPhase,
-    MonitorMode,
     MonitoringBindingStatus,
     MonitoringRunStatus,
+    MonitorMode,
     RefreshRequestSource,
     RuntimeAuditEvent,
     RuntimeHealth,
@@ -45,6 +51,13 @@ from doxagent.settings import DoxAgentSettings
 
 ET = ZoneInfo("America/New_York")
 LOW_FREQUENCY_SOURCE_IDS = frozenset({"stocktwits_messages"})
+SOCIAL_RUNTIME_EXCLUDED_SOURCE_IDS = frozenset(
+    {
+        "stocktwits_messages",
+        "tikhub_x_search",
+        "tikhub_x_user_posts",
+    }
+)
 RUNNABLE_STATUSES = {
     TickerRunStatus.RUNNING,
     TickerRunStatus.DEGRADED,
@@ -62,10 +75,39 @@ ENABLED_MONITOR_MODES = {
 }
 
 
+@dataclass
+class _WeeklyDocumentUpdateJob:
+    ticker: str
+    due_at: datetime
+    thread: Thread | None = None
+    current_bundle: DocumentBundle | None = None
+    bundle: DocumentBundle | None = None
+    error: Exception | None = None
+    completed_at: datetime | None = None
+    runtime_continues_audited: bool = False
+
+
 class UnsupportedMonitorMode(ValueError):
     def __init__(self, monitor_mode: str) -> None:
         super().__init__(monitor_mode)
         self.monitor_mode = monitor_mode
+
+
+class DocumentRunActivationError(ValueError):
+    def __init__(self, message: str, *, details: dict[str, object] | None = None) -> None:
+        super().__init__(message)
+        self.message = message
+        self.details = details or {}
+
+
+class DocumentRunNotFound(DocumentRunActivationError):
+    def __init__(self, ticker: str, document_run_id: str) -> None:
+        super().__init__(
+            "Document run was not found.",
+            details={"ticker": ticker, "document_run_id": document_run_id},
+        )
+        self.ticker = ticker
+        self.document_run_id = document_run_id
 
 
 class UnifiedRuntimeSchedulerService:
@@ -79,6 +121,9 @@ class UnifiedRuntimeSchedulerService:
         monitoring_service: MonitoringBusService,
         runtime_service: PersistentRuntimeExecutionService,
         low_frequency_source_ids: set[str] | None = None,
+        auto_media_enrichment_enabled: bool = True,
+        auto_media_enrichment_limit: int = 5,
+        auto_media_enrichment_concurrency: int = 2,
     ) -> None:
         self.repository = repository
         self.document_provider = document_provider
@@ -88,6 +133,13 @@ class UnifiedRuntimeSchedulerService:
             source_id.strip().lower()
             for source_id in (low_frequency_source_ids or set(LOW_FREQUENCY_SOURCE_IDS))
         }
+        self.auto_media_enrichment_enabled = auto_media_enrichment_enabled
+        self.auto_media_enrichment_limit = max(1, auto_media_enrichment_limit)
+        self.auto_media_enrichment_concurrency = max(1, auto_media_enrichment_concurrency)
+        self._weekly_update_jobs: dict[str, _WeeklyDocumentUpdateJob] = {}
+        self._weekly_update_lock = Lock()
+        self._runtime_bundle_cache: dict[tuple[str, str], DocumentBundle] = {}
+        self._runtime_context_cache: dict[tuple[str, str], dict[str, object]] = {}
 
     @classmethod
     def from_settings(
@@ -104,6 +156,11 @@ class UnifiedRuntimeSchedulerService:
             document_provider=WorkflowDocumentProvider(settings=resolved),
             monitoring_service=MonitoringBusService.from_settings(resolved),
             runtime_service=PersistentRuntimeExecutionService.from_settings(resolved),
+            auto_media_enrichment_enabled=(resolved.monitoring_auto_media_enrichment_enabled),
+            auto_media_enrichment_limit=resolved.monitoring_auto_media_enrichment_limit,
+            auto_media_enrichment_concurrency=(
+                resolved.monitoring_auto_media_enrichment_concurrency
+            ),
         )
 
     def overview(self) -> DashboardOverview:
@@ -125,11 +182,7 @@ class UnifiedRuntimeSchedulerService:
             monitor_mode,
             default=_state_monitor_mode(existing) if existing is not None else None,
         )
-        if (
-            existing is not None
-            and existing.status in RUNNABLE_STATUSES
-            and not force_initialize
-        ):
+        if existing is not None and existing.status in RUNNABLE_STATUSES and not force_initialize:
             self._audit(
                 normalized,
                 "ticker_start_idempotent",
@@ -214,6 +267,7 @@ class UnifiedRuntimeSchedulerService:
             deep=True,
         )
         self.repository.upsert_state(state)
+        self._clear_runtime_context_cache(normalized)
         if not bundle.status.usable:
             blocked_step_id = _first_blocked_document_step(bundle) or "document1"
             metadata = _startup_progress_metadata(
@@ -248,7 +302,10 @@ class UnifiedRuntimeSchedulerService:
             updated_at=current_time,
             completed_step_ids={"document1", "document2", "document3"},
         )
-        state = state.model_copy(update={"metadata": metadata, "updated_at": current_time}, deep=True)
+        state = state.model_copy(
+            update={"metadata": metadata, "updated_at": current_time},
+            deep=True,
+        )
         self.repository.upsert_state(state)
         applied_bindings = self._apply_monitoring_config(normalized, bundle)
         if bundle.monitoring_config is not None and not applied_bindings:
@@ -277,7 +334,10 @@ class UnifiedRuntimeSchedulerService:
             updated_at=current_time,
             completed_step_ids={"document1", "document2", "document3", "message_bus"},
         )
-        state = state.model_copy(update={"metadata": metadata, "updated_at": current_time}, deep=True)
+        state = state.model_copy(
+            update={"metadata": metadata, "updated_at": current_time},
+            deep=True,
+        )
         self.repository.upsert_state(state)
         metadata = _startup_progress_metadata(
             state.metadata,
@@ -308,6 +368,7 @@ class UnifiedRuntimeSchedulerService:
             deep=True,
         )
         self.repository.upsert_state(state)
+        self._clear_runtime_context_cache(normalized)
         self._audit(
             normalized,
             "ticker_running",
@@ -359,6 +420,103 @@ class UnifiedRuntimeSchedulerService:
                 "previous_monitor_mode": previous_mode.value,
                 "monitor_mode": resolved_mode.value,
                 "paper_trading_replays_historical_pending_events": False,
+            },
+        )
+        return self.detail(normalized, now=current_time)
+
+    def activate_document_run(
+        self,
+        ticker: str,
+        document_run_id: str,
+        *,
+        reason: str | None = None,
+        now: datetime | None = None,
+    ) -> TickerRunDetail:
+        normalized = _ticker(ticker)
+        resolved_run_id = document_run_id.strip()
+        if not resolved_run_id:
+            raise DocumentRunActivationError(
+                "document_run_id is required.",
+                details={"ticker": normalized},
+            )
+        current_time = _utc(now)
+        bundle_loader = getattr(self.document_provider, "by_run_id", None)
+        if bundle_loader is None:
+            raise DocumentRunActivationError(
+                "The configured document provider cannot load a document set by run id.",
+                details={"ticker": normalized, "document_run_id": resolved_run_id},
+            )
+        try:
+            bundle = bundle_loader(normalized, resolved_run_id, now=current_time)
+        except RunNotFoundError as exc:
+            raise DocumentRunNotFound(normalized, resolved_run_id) from exc
+        if bundle.status.blackboard_run_id != resolved_run_id:
+            raise DocumentRunActivationError(
+                "Document run does not belong to the requested ticker.",
+                details={"ticker": normalized, "document_run_id": resolved_run_id},
+            )
+        if not bundle.status.usable:
+            raise DocumentRunActivationError(
+                "Document set is not usable for Dashboard runtime activation.",
+                details={
+                    "ticker": normalized,
+                    "document_run_id": resolved_run_id,
+                    "missing_document_types": [
+                        item.value for item in bundle.status.missing_document_types
+                    ],
+                    "stale": bundle.status.stale,
+                    "components": [
+                        component.model_dump(mode="json") for component in bundle.status.components
+                    ],
+                },
+            )
+        state = self._state_or_default(normalized, now=current_time)
+        bindings = self._apply_monitoring_config(normalized, bundle)
+        metadata = dict(state.metadata)
+        metadata["document_activation"] = {
+            "activated_at": current_time.isoformat(),
+            "activated_by": "dashboard_user",
+            "reason": reason or "Dashboard manual document activation.",
+            "previous_document_run_id": state.document_run_id,
+            "document_run_id": resolved_run_id,
+            "binding_count": len(bindings),
+        }
+        metadata = _startup_progress_metadata(
+            metadata,
+            status="completed",
+            active_step_id=None,
+            updated_at=current_time,
+            completed_step_ids={
+                "document1",
+                "document2",
+                "document3",
+                "message_bus",
+                "runtime",
+            },
+            visible=False,
+        )
+        updated = state.model_copy(
+            update={
+                "document_run_id": resolved_run_id,
+                "document_status": bundle.status,
+                "last_monitoring_config_version": _config_version(bundle),
+                "last_error": None,
+                "updated_at": current_time,
+                "metadata": metadata,
+            },
+            deep=True,
+        )
+        self.repository.upsert_state(updated)
+        self._clear_runtime_context_cache(normalized)
+        self._audit(
+            normalized,
+            "document_run_manual_activated",
+            "Dashboard user manually activated a historical document set.",
+            payload={
+                "document_run_id": resolved_run_id,
+                "previous_document_run_id": state.document_run_id,
+                "reason": reason,
+                "binding_count": len(bindings),
             },
         )
         return self.detail(normalized, now=current_time)
@@ -456,13 +614,29 @@ class UnifiedRuntimeSchedulerService:
             update={"session_phase": phase, "updated_at": current_time},
             deep=True,
         )
-        state = self._maybe_run_weekly_update(state, now=current_time)
+        state = self._apply_completed_weekly_update_job(state, now=current_time)
+        monitor_mode = _state_monitor_mode(state)
+        should_run_runtime = monitor_mode is MonitorMode.PAPER_TRADING and phase in {
+            MarketSessionPhase.PRE_MARKET_DIGEST,
+            MarketSessionPhase.FORMAL_MONITORING,
+        }
+        runtime_context_bundle = (
+            self._runtime_bundle_for_tick(state) if should_run_runtime else None
+        )
+        self._ensure_weekly_update_job(
+            state,
+            now=current_time,
+            runtime_continues=should_run_runtime,
+            current_bundle=runtime_context_bundle,
+        )
         poll_failures = 0
         poll_messages = 0
         poll_events = 0
+        poll_results: list[IngestBatchResult] = []
         for binding in self._due_bindings_for_phase(normalized, phase, now=current_time):
             try:
                 result = self.monitoring_service.poll_binding(binding.ticker, binding.source_id)
+                poll_results.append(result)
                 poll_messages += result.collected_count
                 poll_events += result.event_count
                 self._audit(
@@ -480,30 +654,23 @@ class UnifiedRuntimeSchedulerService:
                     severity=AuditSeverity.WARNING,
                     payload={"source_id": binding.source_id},
                 )
+        self._maybe_enrich_polled_media(normalized, poll_results)
         pending_count_before_runtime = 0
         consumed_count = 0
         runtime_count = 0
         trade_intent_count = 0
         failed_event_count = 0
         runtime_failed = False
-        monitor_mode = _state_monitor_mode(state)
-        should_run_runtime = (
-            monitor_mode is MonitorMode.PAPER_TRADING
-            and phase
-            in {
-                MarketSessionPhase.PRE_MARKET_DIGEST,
-                MarketSessionPhase.FORMAL_MONITORING,
-            }
-        )
         if should_run_runtime:
             try:
                 pending = self.monitoring_service.pending_events(
                     ticker=normalized,
                     limit=event_limit,
                 )
+                pending = self._exclude_runtime_ineligible_events(normalized, pending)
                 pending = _runtime_eligible_events(state, pending)
                 pending_count_before_runtime = len(pending)
-                context = self._runtime_context(state)
+                context = self._runtime_context(state, bundle=runtime_context_bundle)
                 before_trade_count = len(
                     self.runtime_service.repository.list_trading_records(ticker=normalized)
                 )
@@ -544,6 +711,7 @@ class UnifiedRuntimeSchedulerService:
                 limit=event_limit,
             )
         )
+        state = self._apply_completed_weekly_update_job(state, now=current_time)
         counters = state.counters.model_copy(
             update={
                 "poll_cycles": state.counters.poll_cycles + 1,
@@ -566,9 +734,17 @@ class UnifiedRuntimeSchedulerService:
             },
             deep=True,
         )
-        health = RuntimeHealth.NORMAL
-        status = TickerRunStatus.RUNNING
-        last_error = None
+        health = (
+            RuntimeHealth.DEGRADED
+            if state.health is RuntimeHealth.DEGRADED
+            else RuntimeHealth.NORMAL
+        )
+        status = (
+            TickerRunStatus.DEGRADED
+            if state.status is TickerRunStatus.DEGRADED
+            else TickerRunStatus.RUNNING
+        )
+        last_error = state.last_error if health is RuntimeHealth.DEGRADED else None
         if runtime_failed:
             health = RuntimeHealth.DEGRADED
             status = TickerRunStatus.DEGRADED
@@ -610,10 +786,7 @@ class UnifiedRuntimeSchedulerService:
     ) -> TickerRunDetail:
         normalized = _ticker(ticker)
         state = self._state_or_default(normalized, now=now)
-        document_status = state.document_status or self.document_provider.latest(
-            normalized,
-            now=_utc(now),
-        ).status
+        document_status = self._document_status_for_state(state, now=_utc(now))
         return TickerRunDetail(
             state=state,
             document_status=document_status,
@@ -638,7 +811,10 @@ class UnifiedRuntimeSchedulerService:
         state = self.repository.get_state(normalized)
         if state is not None and state.document_status is not None:
             return state.document_status
-        return self.document_provider.latest(normalized, now=_utc(now)).status
+        return self._document_status_for_state(
+            state or self._state_or_default(normalized, now=now),
+            now=_utc(now),
+        )
 
     def monitoring_status(
         self,
@@ -833,6 +1009,50 @@ class UnifiedRuntimeSchedulerService:
             bindings.append(binding)
         return bindings
 
+    def _maybe_enrich_polled_media(
+        self,
+        ticker: str,
+        poll_results: list[IngestBatchResult],
+    ) -> None:
+        if not self.auto_media_enrichment_enabled:
+            return
+        if not self._poll_results_include_media_events(poll_results):
+            return
+        try:
+            payload = self.monitoring_service.enrich_recent_media(
+                ticker=ticker,
+                limit=self.auto_media_enrichment_limit,
+                concurrency=self.auto_media_enrichment_concurrency,
+                dry_run=False,
+                incomplete_only=True,
+            )
+            stats = payload.get("stats") if isinstance(payload, dict) else None
+            self._audit(
+                ticker,
+                "media_enrichment_completed",
+                "Recent media messages were enriched after polling.",
+                payload={"stats": stats if isinstance(stats, dict) else payload},
+            )
+        except Exception as exc:
+            self._audit(
+                ticker,
+                "media_enrichment_failed",
+                str(exc),
+                severity=AuditSeverity.WARNING,
+            )
+
+    def _poll_results_include_media_events(
+        self,
+        poll_results: list[IngestBatchResult],
+    ) -> bool:
+        for result in poll_results:
+            if result.event_count <= 0:
+                continue
+            source = self.monitoring_service.repository.get_source(result.source_id)
+            if source is not None and source.source_type is SourceType.MEDIA:
+                return True
+        return False
+
     def _disable_bindings(self, ticker: str) -> int:
         disabled = 0
         for binding in self.monitoring_service.repository.list_bindings(ticker=ticker):
@@ -849,6 +1069,208 @@ class UnifiedRuntimeSchedulerService:
             )
             disabled += 1
         return disabled
+
+    def _ensure_weekly_update_job(
+        self,
+        state: TickerRunState,
+        *,
+        now: datetime,
+        runtime_continues: bool,
+        current_bundle: DocumentBundle | None = None,
+    ) -> None:
+        if not _weekly_update_due(state, now):
+            return
+        started = False
+        audit_runtime_continue = False
+        with self._weekly_update_lock:
+            job = self._weekly_update_jobs.get(state.ticker)
+            if job is None:
+                job = _WeeklyDocumentUpdateJob(
+                    ticker=state.ticker,
+                    due_at=now,
+                    current_bundle=current_bundle,
+                )
+                job.thread = Thread(
+                    target=self._run_weekly_update_job,
+                    args=(job,),
+                    daemon=True,
+                    name=f"doxagent-weekly-update-{state.ticker.lower()}",
+                )
+                self._weekly_update_jobs[state.ticker] = job
+                started = True
+            elif job.current_bundle is None and current_bundle is not None:
+                job.current_bundle = current_bundle
+            if runtime_continues and not job.runtime_continues_audited:
+                job.runtime_continues_audited = True
+                audit_runtime_continue = True
+        if started:
+            self._audit(
+                state.ticker,
+                "weekly_document_update_started",
+                "Weekly Monday 06:00 ET document update started asynchronously.",
+            )
+            if job.thread is not None:
+                job.thread.start()
+        if audit_runtime_continue:
+            self._audit(
+                state.ticker,
+                "weekly_document_update_continues_with_current_documents",
+                (
+                    "Persistent Runtime continues with the current document bundle "
+                    "while the weekly update is still pending."
+                ),
+                payload={
+                    "document_run_id": state.document_run_id,
+                    "last_monitoring_config_version": (state.last_monitoring_config_version),
+                    "session_phase": state.session_phase.value,
+                    "monitor_mode": state.monitor_mode.value,
+                    "weekly_update_due_at": now.isoformat(),
+                },
+            )
+
+    def _runtime_bundle_for_tick(self, state: TickerRunState) -> DocumentBundle:
+        with self._weekly_update_lock:
+            job = self._weekly_update_jobs.get(state.ticker)
+            if job is not None and job.current_bundle is not None:
+                return job.current_bundle
+        if state.document_run_id:
+            cache_key = (state.ticker, state.document_run_id)
+            cached = self._runtime_bundle_cache.get(cache_key)
+            if cached is not None:
+                return cached.model_copy(deep=True)
+            loader = getattr(self.document_provider, "by_run_id", None)
+            if callable(loader):
+                bundle = loader(state.ticker, state.document_run_id)
+                self._runtime_bundle_cache[cache_key] = bundle.model_copy(deep=True)
+                return bundle
+        bundle = self.document_provider.latest(state.ticker)
+        if bundle.status.blackboard_run_id:
+            self._runtime_bundle_cache[(state.ticker, bundle.status.blackboard_run_id)] = (
+                bundle.model_copy(deep=True)
+            )
+        return bundle
+
+    def _run_weekly_update_job(self, job: _WeeklyDocumentUpdateJob) -> None:
+        bundle: DocumentBundle | None = None
+        error: Exception | None = None
+        try:
+            bundle = self.document_provider.initialize(job.ticker, now=job.due_at)
+        except Exception as exc:
+            error = exc
+        with self._weekly_update_lock:
+            job.bundle = bundle
+            job.error = error
+            job.completed_at = datetime.now(UTC)
+
+    def _apply_completed_weekly_update_job(
+        self,
+        state: TickerRunState,
+        *,
+        now: datetime,
+    ) -> TickerRunState:
+        with self._weekly_update_lock:
+            job = self._weekly_update_jobs.get(state.ticker)
+            if job is None or job.completed_at is None:
+                return state
+            self._weekly_update_jobs.pop(state.ticker, None)
+        if job.error is not None:
+            self._audit(
+                state.ticker,
+                "weekly_document_update_failed",
+                str(job.error),
+                severity=AuditSeverity.WARNING,
+            )
+            return state.model_copy(
+                update={
+                    "health": RuntimeHealth.DEGRADED,
+                    "status": TickerRunStatus.DEGRADED,
+                    "last_weekly_update_at": now,
+                    "last_error": f"Weekly document update failed: {job.error}",
+                },
+                deep=True,
+            )
+        bundle = job.bundle
+        if bundle is None or not bundle.status.usable:
+            payload = bundle.status.model_dump(mode="json") if bundle is not None else {}
+            self._audit(
+                state.ticker,
+                "weekly_document_update_failed",
+                "Weekly update did not produce a usable document set; keeping old version.",
+                severity=AuditSeverity.WARNING,
+                payload=payload,
+            )
+            return state.model_copy(
+                update={
+                    "health": RuntimeHealth.DEGRADED,
+                    "status": TickerRunStatus.DEGRADED,
+                    "last_weekly_update_at": now,
+                    "last_error": "Weekly document update did not produce usable docs.",
+                },
+                deep=True,
+            )
+        bindings = self._apply_monitoring_config(state.ticker, bundle)
+        self._clear_runtime_context_cache(state.ticker)
+        self._audit(
+            state.ticker,
+            "weekly_document_update_completed",
+            "Weekly document update completed; scheduler switched to new usable version.",
+            payload={
+                "binding_count": len(bindings),
+                "document_run_id": bundle.status.blackboard_run_id,
+                "document_status": bundle.status.model_dump(mode="json"),
+                "completed_at": (job.completed_at.isoformat() if job.completed_at else None),
+                "switch_mode": "atomic_after_async_update",
+            },
+        )
+        return state.model_copy(
+            update={
+                "document_run_id": bundle.status.blackboard_run_id,
+                "document_status": bundle.status,
+                "last_monitoring_config_version": _config_version(bundle),
+                "last_weekly_update_at": now,
+                "last_error": None,
+            },
+            deep=True,
+        )
+
+    def _exclude_runtime_ineligible_events(
+        self,
+        ticker: str,
+        events: list[EventStreamItem],
+    ) -> list[EventStreamItem]:
+        eligible: list[EventStreamItem] = []
+        excluded: list[EventStreamItem] = []
+        for event in events:
+            if self._is_social_runtime_excluded_event(event):
+                excluded.append(event)
+            else:
+                eligible.append(event)
+        if not excluded:
+            return eligible
+        for event in excluded:
+            self.monitoring_service.mark_event_consumed(event.event_id)
+        self._audit(
+            ticker,
+            "runtime_social_events_excluded",
+            "Social source events were excluded from Persistent Runtime consumption.",
+            payload={
+                "reason": "social_sources_temporarily_message_bus_only",
+                "event_count": len(excluded),
+                "source_ids": sorted({event.source_id for event in excluded}),
+                "event_ids": [event.event_id for event in excluded[:20]],
+                "standard_message_ids": [event.standard_message_id for event in excluded[:20]],
+            },
+        )
+        return eligible
+
+    def _is_social_runtime_excluded_event(self, event: EventStreamItem) -> bool:
+        if event.source_id.strip().lower() in SOCIAL_RUNTIME_EXCLUDED_SOURCE_IDS:
+            return True
+        payload_source_type = str(event.payload.get("source_type") or "").lower()
+        if payload_source_type == SourceType.SOCIAL.value:
+            return True
+        source = self.monitoring_service.repository.get_source(event.source_id)
+        return source is not None and source.source_type is SourceType.SOCIAL
 
     def _maybe_run_weekly_update(self, state: TickerRunState, *, now: datetime) -> TickerRunState:
         if not _weekly_update_due(state, now):
@@ -878,11 +1300,16 @@ class UnifiedRuntimeSchedulerService:
                     deep=True,
                 )
             bindings = self._apply_monitoring_config(state.ticker, bundle)
+            self._clear_runtime_context_cache(state.ticker)
             self._audit(
                 state.ticker,
                 "weekly_document_update_completed",
                 "Weekly document update completed; scheduler switched to new usable version.",
-                payload={"binding_count": len(bindings)},
+                payload={
+                    "binding_count": len(bindings),
+                    "document_run_id": bundle.status.blackboard_run_id,
+                    "document_status": bundle.status.model_dump(mode="json"),
+                },
             )
             return state.model_copy(
                 update={
@@ -911,13 +1338,24 @@ class UnifiedRuntimeSchedulerService:
                 deep=True,
             )
 
-    def _runtime_context(self, state: TickerRunState) -> dict[str, object]:
-        bundle = self.document_provider.latest(state.ticker)
+    def _runtime_context(
+        self,
+        state: TickerRunState,
+        *,
+        bundle: DocumentBundle | None = None,
+    ) -> dict[str, object]:
+        cache_key = (
+            state.ticker,
+            bundle.status.blackboard_run_id if bundle is not None else state.document_run_id,
+        )
+        if cache_key[1] and bundle is None and cache_key in self._runtime_context_cache:
+            return deepcopy(self._runtime_context_cache[cache_key])
+        bundle = bundle or self._runtime_bundle_for_tick(state)
         monitoring_policy = bundle.monitoring_policy
         known_events = bundle.known_events
         context: dict[str, object] = {
             "ticker": state.ticker,
-            "document_run_id": state.document_run_id,
+            "document_run_id": bundle.status.blackboard_run_id or state.document_run_id,
         }
         if known_events is not None:
             context["known_events"] = [
@@ -929,10 +1367,35 @@ class UnifiedRuntimeSchedulerService:
                 *monitoring_policy.push_to_agent_rules,
                 *monitoring_policy.cache_rules,
             ]
-            context["monitoring_policies"] = [
-                policy.model_dump(mode="json") for policy in policies
-            ]
+            context["monitoring_policies"] = [policy.model_dump(mode="json") for policy in policies]
+        resolved_key = (state.ticker, str(context["document_run_id"] or ""))
+        if resolved_key[1]:
+            self._runtime_context_cache[resolved_key] = deepcopy(context)
         return context
+
+    def _document_status_for_state(
+        self,
+        state: TickerRunState,
+        *,
+        now: datetime,
+    ) -> DocumentSetStatus:
+        if state.document_status is not None:
+            return state.document_status
+        if state.document_run_id:
+            loader = getattr(self.document_provider, "by_run_id", None)
+            if callable(loader):
+                try:
+                    return loader(state.ticker, state.document_run_id, now=now).status
+                except RunNotFoundError:
+                    pass
+        return self.document_provider.latest(state.ticker, now=now).status
+
+    def _clear_runtime_context_cache(self, ticker: str) -> None:
+        normalized = _ticker(ticker)
+        for key in [item for item in self._runtime_bundle_cache if item[0] == normalized]:
+            self._runtime_bundle_cache.pop(key, None)
+        for key in [item for item in self._runtime_context_cache if item[0] == normalized]:
+            self._runtime_context_cache.pop(key, None)
 
     def _state_or_default(self, ticker: str, *, now: datetime | None = None) -> TickerRunState:
         normalized = _ticker(ticker)
@@ -1117,11 +1580,7 @@ def _runtime_eligible_events(
     enabled_at = _metadata_datetime(state.metadata.get("paper_trading_enabled_at"))
     if enabled_at is None:
         return events
-    return [
-        event
-        for event in events
-        if event.event_time.astimezone(UTC) >= enabled_at
-    ]
+    return [event for event in events if event.event_time.astimezone(UTC) >= enabled_at]
 
 
 def _metadata_datetime(value: object) -> datetime | None:

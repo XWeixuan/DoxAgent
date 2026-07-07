@@ -449,12 +449,15 @@ class ModelGatewayAgentRunner:
         )
 
     def _metadata(self, task: AgentTask) -> dict[str, str]:
+        source_message_id = _source_message_id(task.input_context)
         return {
             "ticker": task.ticker,
             "agent_name": task.agent_name.value,
             "run_id": task.run_metadata.run_id,
             "task_type": task.task_type.value,
             "workflow_node": task.run_metadata.workflow_node or "",
+            "runtime_node": _runtime_node_for_task(task),
+            "source_message_id": source_message_id or "",
             "output_schema": task.required_output_schema,
             "parse_status": "pending",
             "schema_status": "pending",
@@ -532,6 +535,29 @@ def _first_present(payload: dict[str, Any], *keys: str) -> object:
         if key in payload:
             return payload[key]
     return None
+
+
+def _source_message_id(input_context: dict[str, Any]) -> str | None:
+    source_message = input_context.get("source_message")
+    if isinstance(source_message, dict):
+        for key in ("source_message_id", "standard_message_id", "message_id"):
+            value = source_message.get(key)
+            if isinstance(value, str) and value.strip():
+                return value.strip()
+    value = input_context.get("source_message_id")
+    if isinstance(value, str) and value.strip():
+        return value.strip()
+    return None
+
+
+def _runtime_node_for_task(task: AgentTask) -> str:
+    if task.task_type is TaskType.RUNTIME_W1_NOVELTY:
+        return "W1"
+    if task.task_type is TaskType.RUNTIME_W2_POLICY:
+        return "W2"
+    if task.task_type is TaskType.RUNTIME_O3_JUDGMENT:
+        return "O3"
+    return task.run_metadata.workflow_node or task.agent_name.value
 
 
 def _run_agent_coroutine(coro: Coroutine[Any, Any, AgentResult]) -> AgentResult:

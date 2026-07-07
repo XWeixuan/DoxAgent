@@ -22,8 +22,8 @@ from doxagent.runtime_scheduler.schema import (
     DocumentSetStatus,
     EventProcessingStatus,
     MarketSessionPhase,
-    MonitorMode,
     MonitoringRunStatus,
+    MonitorMode,
     RefreshRequestSource,
     RefreshRequestStatus,
     RuntimeAuditEvent,
@@ -35,6 +35,8 @@ from doxagent.runtime_scheduler.schema import (
     TradeIntentView,
 )
 from doxagent.runtime_scheduler.service import (
+    DocumentRunActivationError,
+    DocumentRunNotFound,
     UnifiedRuntimeSchedulerService,
     market_session_phase,
 )
@@ -47,6 +49,8 @@ __all__ = [
     "DocumentBundle",
     "DocumentComponentStatus",
     "DocumentRefreshRequest",
+    "DocumentRunActivationError",
+    "DocumentRunNotFound",
     "DocumentSetStatus",
     "EventProcessingStatus",
     "InMemoryRuntimeSchedulerRepository",

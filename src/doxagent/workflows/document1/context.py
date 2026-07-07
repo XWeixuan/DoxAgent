@@ -93,7 +93,10 @@ class Document1ContextMixin:
         self,
         checkpoint: WorkflowCheckpoint,
     ) -> Document1ContextPack | None:
-        run = self.blackboard.get_run(checkpoint.run_id)
+        run = self._workflow_document_bucket_run(
+            checkpoint,
+            [DocumentType.GLOBAL_RESEARCH],
+        )
         bucket = run.belief_state.documents.get(DocumentType.GLOBAL_RESEARCH, {})
         if not bucket:
             return None

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useParams } from "react-router-dom"
 import {
+  ChevronDownIcon,
   Clock3Icon,
   Maximize2Icon,
   RotateCcwIcon,
@@ -15,22 +16,23 @@ import {
   CardContent,
 } from "@/components/ui/card"
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { dashboardApi } from "@/lib/dashboard-api"
 import type {
   DashboardEvent,
   PageResult,
   RuntimeEdge,
-  RuntimeExecution,
   RuntimeGraph,
   RuntimeNode,
   RuntimeNodeDetail,
+  RuntimeResultRecord,
+  RuntimeResultType,
 } from "@/lib/dashboard-types"
 import { formatDateTime, formatLatency, formatNumber, routeLabel, sourceTypeLabel } from "@/lib/format"
 import { useDashboardEvents } from "@/hooks/use-dashboard-events"
@@ -50,6 +52,15 @@ import {
 } from "@/components/dashboard/shared"
 
 const executionLimit = 10
+const runtimeResultTypeOptions: Array<{ value: RuntimeResultType; label: string }> = [
+  { value: "all", label: "全部" },
+  { value: "trading_record", label: "交易记录" },
+  { value: "exception_queue", label: "异常队列" },
+  { value: "objection", label: "发起 Objection" },
+  { value: "known_event_patch", label: "增补 Known Event" },
+  { value: "archive", label: "归档池" },
+  { value: "ingest_queue", label: "待入库队列" },
+]
 const stageWidth = 1192
 const stageHeight = 940
 const laneWidth = 220
@@ -130,19 +141,25 @@ export function RuntimePage() {
   const [nodeDetail, setNodeDetail] = useState<RuntimeNodeDetail | null>(null)
   const [nodeError, setNodeError] = useState<string | null>(null)
   const [nodeLoading, setNodeLoading] = useState(false)
-  const [executionPage, setExecutionPage] = useState<PageResult<RuntimeExecution> | null>(null)
-  const [loadingMore, setLoadingMore] = useState(false)
+  const [resultType, setResultType] = useState<RuntimeResultType>("all")
+  const [recordPage, setRecordPage] = useState<PageResult<RuntimeResultRecord> | null>(null)
+  const [expandedRecords, setExpandedRecords] = useState<Set<string>>(() => new Set())
+  const [loadingMoreRecords, setLoadingMoreRecords] = useState(false)
 
   const overviewLoader = useCallback(() => dashboardApi.runtimeOverview(ticker), [ticker])
   const graphLoader = useCallback(() => dashboardApi.runtimeGraph(ticker), [ticker])
-  const executionsLoader = useCallback(
-    () => dashboardApi.runtimeExecutions(ticker, { limit: executionLimit }),
-    [ticker]
+  const recordsLoader = useCallback(
+    () =>
+      dashboardApi.runtimeRecords(ticker, {
+        limit: executionLimit,
+        result_type: resultType === "all" ? undefined : resultType,
+      }),
+    [resultType, ticker]
   )
 
   const overview = useDashboardQuery(overviewLoader, { intervalMs: 8000 })
   const graph = useDashboardQuery(graphLoader, { intervalMs: 8000 })
-  const executions = useDashboardQuery(executionsLoader, { intervalMs: 15000 })
+  const records = useDashboardQuery(recordsLoader)
   const normalizedGraph = useMemo(
     () => (graph.data ? normalizeRuntimeGraph(graph.data) : null),
     [graph.data]
@@ -152,19 +169,25 @@ export function RuntimePage() {
   }, [normalizedGraph])
   const reloadOverview = overview.reload
   const reloadGraph = graph.reload
-  const reloadExecutions = executions.reload
+  const reloadRecords = records.reload
 
   useEffect(() => {
     setSelectedNodeId(null)
     setNodeDetail(null)
     setNodeError(null)
+    setExpandedRecords(new Set())
   }, [ticker])
 
   useEffect(() => {
-    if (executions.data) {
-      setExecutionPage(executions.data)
+    if (records.data) {
+      setRecordPage(records.data)
     }
-  }, [executions.data])
+  }, [records.data])
+
+  useEffect(() => {
+    setRecordPage(null)
+    setExpandedRecords(new Set())
+  }, [resultType, ticker])
 
   const loadNode = useCallback(
     async (nodeId: string, options: { silent?: boolean } = {}) => {
@@ -211,44 +234,58 @@ export function RuntimePage() {
     (event: DashboardEvent) => {
       if (
         event.event_type === "runtime.execution.updated" ||
-        event.event_type === "runtime.execution.failed"
+        event.event_type === "runtime.execution.failed" ||
+        event.event_type === "runtime.result.created"
       ) {
         void reloadOverview()
         void reloadGraph()
-        void reloadExecutions()
+        void reloadRecords()
         if (selectedNodeId) {
           void loadNode(selectedNodeId, { silent: selectedDetailNodeId === selectedNodeId })
         }
       }
     },
-    [loadNode, reloadExecutions, reloadGraph, reloadOverview, selectedDetailNodeId, selectedNodeId]
+    [loadNode, reloadGraph, reloadOverview, reloadRecords, selectedDetailNodeId, selectedNodeId]
   )
 
   const events = useDashboardEvents({
     ticker,
-    eventTypes: ["runtime.execution.updated", "runtime.execution.failed"],
+    eventTypes: ["runtime.execution.updated", "runtime.execution.failed", "runtime.result.created"],
     onEvent: handleEvent,
   })
 
-  const loadMoreExecutions = async () => {
-    if (!executionPage?.page.next_cursor) {
+  const loadMoreRecords = async () => {
+    if (!recordPage?.page.next_cursor) {
       return
     }
-    setLoadingMore(true)
+    setLoadingMoreRecords(true)
     try {
-      const next = await dashboardApi.runtimeExecutions(ticker, {
+      const next = await dashboardApi.runtimeRecords(ticker, {
         limit: executionLimit,
-        cursor: executionPage.page.next_cursor,
+        cursor: recordPage.page.next_cursor,
+        result_type: resultType === "all" ? undefined : resultType,
       })
-      setExecutionPage({
-        items: [...executionPage.items, ...next.items],
+      setRecordPage({
+        items: [...recordPage.items, ...next.items],
         page: next.page,
       })
     } catch (error) {
       toast.error(error instanceof Error ? error.message : String(error))
     } finally {
-      setLoadingMore(false)
+      setLoadingMoreRecords(false)
     }
+  }
+
+  const toggleRecord = (recordId: string) => {
+    setExpandedRecords((current) => {
+      const next = new Set(current)
+      if (next.has(recordId)) {
+        next.delete(recordId)
+      } else {
+        next.add(recordId)
+      }
+      return next
+    })
   }
 
   return (
@@ -262,11 +299,11 @@ export function RuntimePage() {
           <>
             <StatusBadge status={events.state} label={`SSE：${events.state}`} />
             <RefreshButton
-              refreshing={overview.isRefreshing || graph.isRefreshing || executions.isRefreshing}
+              refreshing={overview.isRefreshing || graph.isRefreshing || records.isRefreshing}
               onClick={() => {
                 void overview.reload()
                 void graph.reload()
-                void executions.reload()
+                void records.reload()
               }}
             />
           </>
@@ -274,7 +311,7 @@ export function RuntimePage() {
       />
 
       {events.error ? <ErrorState title="SSE 连接异常" message={events.error} /> : null}
-      {[overview.error, graph.error, executions.error]
+      {[overview.error, graph.error, records.error]
         .filter(Boolean)
         .map((message) => (
           <ErrorState key={message} message={message ?? ""} />
@@ -347,58 +384,208 @@ export function RuntimePage() {
         )}
       </Section>
 
-      <Section title="最近处理记录" description="按执行时间倒序展示 runtime execution 摘要。">
-        {executions.isLoading && !executionPage ? (
+      <Section title="最近处理记录" description="通过结果事件或手动刷新更新，不做轮询。">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          <div className="text-sm text-muted-foreground">
+            当前筛选：{runtimeResultTypeLabel(resultType)}
+          </div>
+          <Select
+            value={resultType}
+            onValueChange={(value) => setResultType(value as RuntimeResultType)}
+          >
+            <SelectTrigger className="h-9 w-[196px]">
+              <SelectValue placeholder="结果类型" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                {runtimeResultTypeOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
+        {records.isLoading && !recordPage ? (
           <LoadingGrid rows={3} />
-        ) : executionPage && executionPage.items.length > 0 ? (
-          <Card>
-            <CardContent className="overflow-x-auto p-0 biome-scrollbar">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[128px]">时间</TableHead>
-                    <TableHead className="min-w-[320px]">消息标题</TableHead>
-                    <TableHead className="w-[96px]">来源</TableHead>
-                    <TableHead className="w-[132px]">最终路由</TableHead>
-                    <TableHead className="w-[104px]">状态</TableHead>
-                    <TableHead className="w-[140px]">异常</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {executionPage.items.map((item) => (
-                    <TableRow key={item.execution_id}>
-                      <TableCell>{formatDateTime(item.created_at)}</TableCell>
-                      <TableCell>
-                        <div className="font-medium">
-                          {item.message_title || item.source_message_id || item.execution_id}
-                        </div>
-                        <div className="mt-1 font-mono text-xs text-muted-foreground">
-                          {item.execution_id}
-                        </div>
-                      </TableCell>
-                      <TableCell>{sourceTypeLabel(item.source_type)}</TableCell>
-                      <TableCell>{routeLabel(item.final_route)}</TableCell>
-                      <TableCell>
-                        <StatusBadge status={item.status} label={item.status} />
-                      </TableCell>
-                      <TableCell>{item.exception_types.join(", ") || "无"}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
+        ) : recordPage && recordPage.items.length > 0 ? (
+          <div className="flex flex-col gap-3">
+            {recordPage.items.map((item) => (
+              <RuntimeRecordCard
+                key={item.record_id}
+                item={item}
+                expanded={expandedRecords.has(item.record_id)}
+                onToggle={() => toggleRecord(item.record_id)}
+              />
+            ))}
             <LoadMoreButton
-              hasMore={executionPage.page.has_more}
-              loading={loadingMore}
-              onClick={() => void loadMoreExecutions()}
+              hasMore={recordPage.page.has_more}
+              loading={loadingMoreRecords}
+              onClick={() => void loadMoreRecords()}
             />
-          </Card>
+          </div>
         ) : (
           <EmptyState title="暂无处理记录" />
         )}
       </Section>
     </div>
   )
+}
+
+function RuntimeRecordCard({
+  item,
+  expanded,
+  onToggle,
+}: {
+  item: RuntimeResultRecord
+  expanded: boolean
+  onToggle: () => void
+}) {
+  return (
+    <Card className="overflow-hidden">
+      <button
+        type="button"
+        className="grid w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/40 md:grid-cols-[minmax(140px,0.72fr)_132px_112px_132px_100px_24px]"
+        onClick={onToggle}
+      >
+        <div className="min-w-0">
+          <div className="truncate font-heading text-base">
+            {item.message_title || item.source_message_id || item.record_id}
+          </div>
+          <div className="mt-1 truncate font-mono text-xs text-muted-foreground">
+            {item.execution_id || item.source_message_id}
+          </div>
+        </div>
+        <div className="min-w-0">
+          <div className="text-xs text-muted-foreground">结果类型</div>
+          <div className="truncate text-sm font-medium">{runtimeResultTypeLabel(item.result_type)}</div>
+        </div>
+        <div>
+          <div className="text-xs text-muted-foreground">状态</div>
+          <StatusBadge status={item.status} label={runtimeRecordStatusLabel(item.status)} />
+        </div>
+        <div className="min-w-0">
+          <div className="text-xs text-muted-foreground">时间</div>
+          <div className="truncate text-sm">{formatDateTime(item.created_at)}</div>
+        </div>
+        <div>
+          <div className="text-xs text-muted-foreground">耗时</div>
+          <div className="text-sm">{formatLatency(item.duration_ms)}</div>
+        </div>
+        <ChevronDownIcon
+          data-icon="standalone"
+          className={`size-4 text-muted-foreground transition-transform ${
+            expanded ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+      {expanded ? (
+        <CardContent className="border-t bg-muted/15 p-4">
+          <div className="grid gap-3 md:grid-cols-2">
+            <RuntimeRecordField
+              label="node_durations_ms"
+              value={formatRuntimeValue(item.node_durations_ms)}
+              mono
+            />
+            <RuntimeRecordField label="is_new" value={runtimeBooleanLabel(item.is_new)} />
+            <RuntimeRecordField label="policy_type" value={item.policy_type || "暂无"} />
+            <RuntimeRecordField label="消息 summary" value={item.summary || "暂无"} />
+            <RuntimeRecordField label="reasoning" value={item.reasoning || "暂无"} />
+            <RuntimeRecordField
+              label="result"
+              value={formatRuntimeValue(item.result)}
+              mono
+              wide
+            />
+            <RuntimeRecordField
+              label="来源 / 路由"
+              value={`${sourceTypeLabel(item.source_type)} / ${routeLabel(item.final_route)}`}
+            />
+          </div>
+        </CardContent>
+      ) : null}
+    </Card>
+  )
+}
+
+function RuntimeRecordField({
+  label,
+  value,
+  mono = false,
+  wide = false,
+}: {
+  label: string
+  value: string
+  mono?: boolean
+  wide?: boolean
+}) {
+  return (
+    <div className={`rounded-md border bg-background/80 p-3 ${wide ? "md:col-span-2" : ""}`}>
+      <div className="text-xs font-medium text-muted-foreground">{label}</div>
+      <div
+        className={`mt-2 whitespace-pre-wrap break-words text-sm leading-6 ${
+          mono ? "font-mono text-xs" : ""
+        }`}
+      >
+        {value}
+      </div>
+    </div>
+  )
+}
+
+function runtimeResultTypeLabel(type: RuntimeResultType | string) {
+  return runtimeResultTypeOptions.find((option) => option.value === type)?.label ?? type
+}
+
+function runtimeRecordStatusLabel(status: string) {
+  if (status === "completed" || status === "recorded_only") {
+    return "完成"
+  }
+  if (status === "failed") {
+    return "失败"
+  }
+  if (status === "pending") {
+    return "待处理"
+  }
+  if (status === "running") {
+    return "处理中"
+  }
+  return status || "未知"
+}
+
+function runtimeBooleanLabel(value: boolean | null) {
+  if (value === true) {
+    return "是"
+  }
+  if (value === false) {
+    return "否"
+  }
+  return "暂无"
+}
+
+function formatRuntimeValue(value: unknown): string {
+  if (value === null || value === undefined) {
+    return "暂无"
+  }
+  if (typeof value === "string") {
+    return value || "暂无"
+  }
+  if (typeof value === "number" || typeof value === "boolean") {
+    return String(value)
+  }
+  if (Array.isArray(value) && value.length === 0) {
+    return "暂无"
+  }
+  if (
+    typeof value === "object" &&
+    value &&
+    !Array.isArray(value) &&
+    Object.keys(value as Record<string, unknown>).length === 0
+  ) {
+    return "暂无"
+  }
+  return JSON.stringify(value, null, 2)
 }
 
 function RuntimeFlowMap({

@@ -148,14 +148,18 @@ durable Message Bus only. Do not run them alongside the unified runtime
 scheduler for the same ticker/source in formal runtime mode, because they can
 bypass the scheduler's trading-session rules and duplicate source polling.
 
-Docker deployment includes two separate services:
+Docker deployment includes separate services:
 
 - `debug-viewer`: serves the existing debug viewer and provides the CLI runtime
   used by the local Monitoring Control Plane over SSH.
+- `runtime-scheduler`: formal production worker that runs
+  `python -m doxagent.runtime_scheduler.cli run-loop`; it polls due Message Bus
+  sources through the scheduler and, for eligible monitor modes/session phases,
+  consumes pending events through Persistent Runtime.
 - `monitoring-poller`: legacy/debug worker that runs
-  `python -m doxagent.monitoring.cli poll-forever` with no exposed port. For
-  formal runtime testing, prefer a scheduler worker that runs
-  `python -m doxagent.runtime_scheduler.cli run-loop`.
+  `python -m doxagent.monitoring.cli poll-forever` with no exposed port. It is
+  gated behind the `legacy-debug` compose profile and should be used only for
+  lower-level Message Bus debugging.
 
 ## Local Monitoring Viewer
 

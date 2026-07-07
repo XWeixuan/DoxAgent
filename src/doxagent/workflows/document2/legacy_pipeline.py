@@ -1581,21 +1581,18 @@ class Document2LegacyPipelineMixin:
             raise WorkflowContractError("_mock_resolve_blockers is disabled in agent_runner mode.")
         if not self.auto_resolve_blockers:
             return
-        run = self.blackboard.get_run(checkpoint.run_id)
-        for objection in run.objections:
-            if objection.is_unresolved:
-                self.blackboard.resolve_objection(
-                    checkpoint.run_id,
-                    objection.objection_id,
-                    "Mock O1 revision resolved the objection.",
-                )
-        for delegation in run.delegations:
-            if delegation.is_blocking:
-                self.blackboard.complete_delegation(
-                    checkpoint.run_id,
-                    delegation.delegation_id,
-                    "Mock A2 fact-check completed.",
-                )
+        for objection in self.blackboard.list_unresolved_objections(checkpoint.run_id):
+            self.blackboard.resolve_objection(
+                checkpoint.run_id,
+                objection.objection_id,
+                "Mock O1 revision resolved the objection.",
+            )
+        for delegation in self.blackboard.list_blocking_delegations(checkpoint.run_id):
+            self.blackboard.complete_delegation(
+                checkpoint.run_id,
+                delegation.delegation_id,
+                "Mock A2 fact-check completed.",
+            )
 
     def _validate_expectation_patches(self, ticker: str, result: AgentResult) -> None:
         self._validate_expectation_patch_list(
