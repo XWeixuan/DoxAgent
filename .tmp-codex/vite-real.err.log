@@ -1,2 +1,0 @@
-$ vite "--" "--host" "127.0.0.1" "--port" "5173"
-[2m04:27:19[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/pages/login.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)

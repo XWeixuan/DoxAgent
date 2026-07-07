@@ -4,6 +4,7 @@
 
 - Implemented the follow-up Supabase egress hardening pass: Blackboard runtime/dashboard/workflow paths now prefer lightweight document-bucket reads, active document-run bundle/context caching, targeted objection/delegation/working-memory writes, and targeted patch commit writes instead of full Blackboard run hydration; Document2 resolver/promotion and Known Events normalization now avoid loop-level full-run reads.
 - Preserved the remote `doxagent-hk` dirty worktree on a `server-wip` branch before deployment recovery and tightened ignore rules for local temp snapshots, bundles, tarballs, and upload scratch directories so future server pulls do not pick up deployment artifacts.
+- Removed previously tracked `.tmp*` deployment, pytest, cache, and scratch artifacts from Git tracking so they remain local-only under the tightened ignore rules.
 
 ## 2026-07-04
 
