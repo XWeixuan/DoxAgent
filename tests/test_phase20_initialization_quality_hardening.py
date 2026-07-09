@@ -29,6 +29,7 @@ from doxagent.models import (
     ValidationStatus,
 )
 from doxagent.models.output_schemas import REQUIRED_OUTPUT_SCHEMA_MODELS
+from doxagent.prompts.assembler import agent_visible_context_snapshot
 from doxagent.tools import ToolRegistry, ToolRequest, ToolResult
 from doxagent.workflows import BlackboardInitializationWorkflow
 from doxagent.workflows.errors import WorkflowContractError
@@ -265,6 +266,38 @@ def test_monitoring_config_output_contract_is_api_shaped() -> None:
     rules_text = " ".join(contract["rules"])
     assert "finnhub_company_news and stocktwits_messages are ticker-only" in rules_text
     assert "Never put keywords, source_filters, extra, poll_interval_seconds" in rules_text
+
+
+def test_document3_output_contract_keeps_schema_critical_fields_compact() -> None:
+    known_events = _output_contract("KnownEventsDocument")["KnownEventsDocument"]
+    known_event_shape = known_events["event_shape"]
+    assert set(known_events["final_payload"]) == {
+        "document_id",
+        "document_type",
+        "ticker",
+        "created_at",
+        "events",
+    }
+    assert set(known_event_shape["source"]) >= {
+        "evidence_id",
+        "source_type",
+        "source_id",
+        "title",
+        "summary",
+        "confidence",
+        "citation_scope",
+    }
+    assert len(known_events["rules"]) == 3
+
+    policy = _output_contract("MonitoringPolicyDocument")["MonitoringPolicyDocument"]
+    policy_shape = policy["final_payload"]["policies"][0]
+    assert "strategy_note" in policy_shape
+    assert set(policy_shape) >= {
+        "confirmation",
+        "risk_guard",
+        "action",
+    }
+    assert "no_action_rationale" in " ".join(policy["rules"])
 
 
 def test_monitoring_policy_normalizer_builds_document3_action_payloads() -> None:
@@ -632,6 +665,121 @@ def test_document3_context_snapshot_keeps_scoped_belief_docs_without_history() -
     assert snapshot.blocking_delegations == []
     assert snapshot.evidence_refs == []
 
+    visible_snapshot = agent_visible_context_snapshot(snapshot)
+    assert visible_snapshot is not None
+    assert set(visible_snapshot) == {"belief_state_documents"}
+    assert set(visible_snapshot["belief_state_documents"]) == {
+        DocumentType.GLOBAL_RESEARCH.value,
+        DocumentType.EXPECTATION_UNIT.value,
+        DocumentType.KNOWN_EVENTS.value,
+        DocumentType.MONITORING_CONFIG.value,
+    }
+    assert "belief_state_summary" not in visible_snapshot
+    for redundant_key in (
+        "ticker",
+        "agent_name",
+        "task_type",
+        "readable_scopes",
+        "run_id",
+        "workflow_state",
+        "working_memory_summary",
+        "evidence_refs",
+        "unresolved_objections",
+        "blocking_delegations",
+    ):
+        assert redundant_key not in visible_snapshot
+
+
+def test_document3_review_context_snapshot_is_omitted_without_scoped_documents() -> None:
+    service = BlackboardService()
+    run_id = _seed_document3_context_run(service)
+    task = _document3_task(
+        run_id,
+        node=WorkflowNode.REVIEW_MONITORING_POLICY,
+        agent_name=AgentName.O2_MONITORING_CONFIG,
+        task_type=TaskType.REVIEW_MONITORING_POLICY,
+        readable_scopes=[
+            DocumentType.GLOBAL_RESEARCH.value,
+            DocumentType.EXPECTATION_UNIT.value,
+            DocumentType.KNOWN_EVENTS.value,
+            DocumentType.MONITORING_CONFIG.value,
+            "working_memory",
+            "objections",
+            "delegations",
+        ],
+    )
+
+    snapshot = ContextBuilder(service).build(task, run_id)
+
+    assert snapshot.belief_state_summary == {}
+    assert agent_visible_context_snapshot(snapshot) is None
+
+
+def test_context_snapshot_visible_payload_omits_safe_empty_history_blocks() -> None:
+    visible = agent_visible_context_snapshot(
+        {
+            "run_id": "run_context",
+            "ticker": "NVDA",
+            "agent_name": "C1",
+            "task_type": "generate_global_research",
+            "workflow_state": "running",
+            "task_input": {"duplicated": True},
+            "prompt_summaries": [],
+            "skill_summaries": [],
+            "belief_state_summary": {},
+            "working_memory_summary": [],
+            "evidence_refs": [],
+            "unresolved_objections": [],
+            "blocking_delegations": [],
+        }
+    )
+
+    assert visible == {
+        "run_id": "run_context",
+        "ticker": "NVDA",
+        "agent_name": "C1",
+        "task_type": "generate_global_research",
+        "workflow_state": "running",
+    }
+
+
+def test_document3_generate_task_input_keeps_only_scoped_global_context() -> None:
+    workflow = BlackboardInitializationWorkflow(execution_mode="mock")
+    run_id = _seed_document3_context_run(workflow.blackboard)
+    checkpoint = WorkflowCheckpoint(
+        run_id=run_id,
+        ticker="NVDA",
+        completed_nodes=[WorkflowNode.BUILD_GLOBAL_RESEARCH],
+        stable_document_types=[
+            DocumentType.GLOBAL_RESEARCH,
+            DocumentType.EXPECTATION_UNIT,
+        ],
+    )
+    definition = workflow.registry.get(AgentName.O1_EXPECTATION_OWNER)
+
+    context = workflow._task_input_context(
+        checkpoint,
+        WorkflowNode.GENERATE_KNOWN_EVENTS,
+        AgentName.O1_EXPECTATION_OWNER,
+        TaskType.GENERATE_KNOWN_EVENTS,
+        definition.runtime.to_permissions(),
+    )
+
+    assert "global_research_context" in context
+    assert "document1_context_pack" in context["global_research_context"]
+    for noisy_key in (
+        "completed_nodes",
+        "stable_document_types",
+        "belief_state_summary",
+        "pending_patch_ids",
+        "pending_patches",
+        "working_memory_summary",
+        "unresolved_objections",
+        "blocking_delegations",
+        "document1_context_pack",
+    ):
+        assert noisy_key not in context
+
 
 def test_document2_context_snapshot_omits_broad_belief_docs_and_history() -> None:
     service = BlackboardService()
@@ -709,6 +857,9 @@ def test_document3_review_policy_task_uses_scoped_patch_and_config_brief() -> No
     assert brief["items"][0]["source_id"]
     assert brief["items"][0]["tool_input"]["source_id"]
     for noisy_key in (
+        "completed_nodes",
+        "stable_document_types",
+        "belief_state_summary",
         "pending_patches",
         "pending_patch_ids",
         "working_memory_summary",

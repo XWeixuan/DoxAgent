@@ -2813,6 +2813,9 @@ class BlackboardInitializationWorkflow(
             return context
         compacted = dict(context)
         for key in (
+            "completed_nodes",
+            "stable_document_types",
+            "belief_state_summary",
             "working_memory_summary",
             "unresolved_objections",
             "blocking_delegations",
@@ -2821,6 +2824,7 @@ class BlackboardInitializationWorkflow(
         if node in _DOCUMENT3_GENERATE_NODES:
             compacted.pop("pending_patch_ids", None)
             compacted.pop("pending_patches", None)
+            compacted.pop("document1_context_pack", None)
             return compacted
         if node in _DOCUMENT3_REVIEW_NODES:
             compacted.pop("pending_patch_ids", None)

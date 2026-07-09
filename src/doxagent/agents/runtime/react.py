@@ -125,7 +125,9 @@ class Scratchpad:
     compaction_failures: int = 0
 
     def record_action(self, step: int, action: JsonDict) -> None:
-        self.plan.extend(_strings(action.get("plan_update")))
+        plan_update = _strings(action.get("plan_update"))
+        if plan_update:
+            self.plan = plan_update
         self.task_ledger.extend(_dicts(action.get("task_ledger_updates")))
         self.entries.append(
             {
@@ -1444,14 +1446,16 @@ def _react_user_prompt(
         [_agent_visible_tool_descriptor(descriptor) for descriptor in tool_descriptors]
     )
     tool_call_policy = {
-                "required_tool_names": _strings(task.input_context.get("required_tool_names")),
-                "tool_requirements": task.input_context.get("tool_requirements", []),
-                "available_tools_are_authoritative": True,
-                "required_tool_gap_policy": (
+        "required_tool_names": _strings(task.input_context.get("required_tool_names")),
+        "available_tools_are_authoritative": True,
+        "required_tool_gap_policy": (
                     "如果 required tool 无法满足，在 final_payload 中用中文明确写入 unknowns，"
                     "不得假装已取得证据。"
-                ),
-            }
+        ),
+    }
+    tool_requirements = task.input_context.get("tool_requirements", [])
+    if tool_requirements:
+        tool_call_policy["tool_requirements"] = tool_requirements
     doxatlas_contract_brief = _doxatlas_contract_brief(tool_descriptors)
     if doxatlas_contract_brief:
         tool_call_policy["doxatlas_contract_brief"] = doxatlas_contract_brief
@@ -1459,8 +1463,8 @@ def _react_user_prompt(
         _available_skill_catalog_item(skill)
         for skill in _available_skill_definitions(task, definition, skill_registry)
     ]
-    return json.dumps(
-        {
+    visible_context_snapshot = agent_visible_context_snapshot(context_snapshot)
+    request_payload = {
             "react_protocol": {
                 "max_steps": config.max_steps,
                 "max_tool_calls_per_name": config.max_tool_calls_per_name,
@@ -1515,20 +1519,28 @@ def _react_user_prompt(
             },
             "tool_call_policy": tool_call_policy,
             "output_contract": _output_contract(task.required_output_schema, task=task),
-            "context_snapshot": agent_visible_context_snapshot(context_snapshot),
             "available_tools": available_tools,
             "available_skills": available_skills,
             "loaded_skills": list(scratchpad.loaded_skills.values()),
-            "plan": scratchpad.plan,
-            "task_ledger": scratchpad.task_ledger,
-            "compacted_evidence_summary": scratchpad.compacted_summaries,
-            "market_evidence_snapshot": scratchpad.market_evidence_snapshot(),
-            "recent_trajectory": scratchpad.recent_entries(config.recent_step_window),
-            "scratchpad_warnings": scratchpad.warnings[-5:],
-        },
-        ensure_ascii=False,
-        default=str,
-    )
+    }
+    if visible_context_snapshot is not None:
+        request_payload["context_snapshot"] = visible_context_snapshot
+    if scratchpad.plan:
+        request_payload["plan"] = scratchpad.plan
+    if scratchpad.task_ledger:
+        request_payload["task_ledger"] = scratchpad.task_ledger
+    if scratchpad.compacted_summaries:
+        request_payload["compacted_evidence_summary"] = scratchpad.compacted_summaries
+    market_evidence_snapshot = scratchpad.market_evidence_snapshot()
+    if market_evidence_snapshot:
+        request_payload["market_evidence_snapshot"] = market_evidence_snapshot
+    recent_trajectory = scratchpad.recent_entries(config.recent_step_window)
+    if recent_trajectory:
+        request_payload["recent_trajectory"] = recent_trajectory
+    scratchpad_warnings = scratchpad.warnings[-5:]
+    if scratchpad_warnings:
+        request_payload["scratchpad_warnings"] = scratchpad_warnings
+    return json.dumps(request_payload, ensure_ascii=False, default=str)
 
 
 def _agent_visible_tool_descriptor(descriptor: ToolDescriptor) -> dict[str, Any]:
@@ -1948,6 +1960,62 @@ def _pop_reviewer_acceptance_warnings(payload: JsonDict) -> list[JsonDict]:
 
 def _schema_names(required_output_schema: str) -> list[str]:
     return schema_names(required_output_schema)
+
+
+def _monitoring_policy_output_contract() -> JsonDict:
+    return {
+        "final_payload": {
+            "document_id": "doc_<id>",
+            "document_type": "monitoring_policy",
+            "ticker": "<ticker>",
+            "created_at": "ISO-8601 timestamp",
+            "policies": [
+                {
+                    "policy_id": "policy_<id>",
+                    "policy_type": "direct_trade | escalate",
+                    "scope": {
+                        "expectation_unit_id": "expectation_<id>",
+                        "event_type": "earnings | order | regulatory | industry | macro",
+                    },
+                    "trigger": {"condition": "observable message-content trigger"},
+                    "confirmation": {
+                        "market_confirmation": "optional non-trigger confirmation"
+                    },
+                    "action": {
+                        "side": "long | short | exit",
+                        "conviction": "low | medium | high",
+                        "size_bucket": "small | normal | aggressive",
+                    },
+                    "risk_guard": {
+                        "guardrail": "condition that blocks direct trade or escalates"
+                    },
+                    "strategy_note": "short runtime routing note",
+                    "reasoning": "one concise reason for this policy",
+                    "evidence_fields": [],
+                }
+            ],
+            "direct_trade_rules": [],
+            "push_to_agent_rules": [],
+            "cache_rules": [],
+            "no_action_rationale": None,
+        },
+        "rules": [
+            "MonitoringPolicyDocument is generated by O4 and never executes trades.",
+            "policy_type must be direct_trade or escalate; do not output cache policies.",
+            (
+                "Include both direct_trade and escalate policies, or fill doc-level "
+                "no_action_rationale explaining any omitted policy type."
+            ),
+            (
+                "direct_trade.action needs side, conviction, size_bucket; "
+                "escalate.action needs send_to, question, priority."
+            ),
+            (
+                "Trigger conditions must be message-content based, not price, volume, "
+                "technical, correlation, time, source_condition, cache_label, or handling."
+            ),
+        ],
+    }
 
 
 def _output_contract(required_output_schema: str, *, task: AgentTask | None = None) -> JsonDict:
@@ -2809,37 +2877,43 @@ def _output_contract(required_output_schema: str, *, task: AgentTask | None = No
             }
         elif schema_name == "KnownEventsDocument":
             contracts[schema_name] = {
-        "final_payload": {
-            "document_id": "doc_<id>",
-            "document_type": "known_events",
-            "ticker": "<ticker>",
-            "created_at": "ISO-8601 timestamp",
+                "final_payload": {
+                    "document_id": "doc_<id>",
+                    "document_type": "known_events",
+                    "ticker": "<ticker>",
+                    "created_at": "ISO-8601 timestamp",
                     "events": [],
                 },
                 "rules": [
-                    "Return stable known events only; uncertain facts should remain unknowns.",
-                    "Each material event must have a source evidence ref.",
+                    "Return durable known facts only; keep uncertainty in unknowns if available.",
+                    "Each event requires a complete source EvidenceRef object, not a bare id.",
                     (
-                        "When an event maps to an expectation unit, set expectation_id to the "
-                        "matching expectation_id instead of null."
-                    ),
-                    (
-                        "Use the actual event date when it is available from evidence or event "
-                        "text; do not use the run timestamp as a substitute for historical events."
-                    ),
-                    (
-                        "Prefer source-specific evidence refs over agent-output fallback refs; "
-                        "use agent-output evidence only when no provider/source evidence exists."
-                    ),
-                    (
-                        "Set has_price_reaction=true for events about stock moves, valuation, "
-                        "market cap, ATH, contract prices, spot prices, or explicit market pricing."
-                    ),
-                    (
-                        "Set is_known_old_news=true when the event date is before the run date "
-                        "and the market has already discussed it."
+                        "Use actual event dates/windows when known; never substitute "
+                        "the run timestamp."
                     ),
                 ],
+                "event_shape": {
+                    "event_id": "event_<id>",
+                    "event_time": None,
+                    "event_window": "date or window if known",
+                    "core_fact": "one atomic sourced fact",
+                    "description": "short context without narrative ranking",
+                    "duplicate_detection_keys": ["entity", "event_type", "date_or_window"],
+                    "source": {
+                        "evidence_id": "evidence_<id>",
+                        "source_type": "document | tool | external | agent_output",
+                        "source_id": "source identifier",
+                        "title": "source title",
+                        "summary": "why this source supports the event",
+                        "retrieval_metadata": {},
+                        "confidence": 0.8,
+                        "citation_scope": "event-level citation scope",
+                    },
+                    "expectation_id": None,
+                    "discussed_by_market": True,
+                    "has_price_reaction": False,
+                    "is_known_old_news": True,
+                },
             }
         elif schema_name == "MonitoringConfigDocument":
             contracts[schema_name] = {
@@ -2862,7 +2936,10 @@ def _output_contract(required_output_schema: str, *, task: AgentTask | None = No
                             "expectation_id": "expectation_<id>",
                             "priority": "high | medium | low",
                             "trigger_condition": "specific observable trigger condition",
-                            "reasoning": "one concise sentence explaining which expectation or variable this item serves",
+                            "reasoning": (
+                                "one concise sentence explaining which expectation "
+                                "or variable this item serves"
+                            ),
                         }
                     ],
                 },
@@ -2881,11 +2958,6 @@ def _output_contract(required_output_schema: str, *, task: AgentTask | None = No
                     (
                         "Never put keywords, source_filters, extra, poll_interval_seconds, "
                         "expectation_id, priority, or trigger_condition inside tool_input."
-                    ),
-                    (
-                        "Keep expectation_id, priority, trigger_condition, base_keywords, "
-                        "extra_keywords, related_entities, and explanatory text as "
-                        "MonitoringItem metadata only."
                     ),
                 ],
             }
@@ -2934,6 +3006,8 @@ def _output_contract(required_output_schema: str, *, task: AgentTask | None = No
                 ],
             }
         elif schema_name == "MonitoringPolicyDocument":
+            contracts[schema_name] = _monitoring_policy_output_contract()
+        elif False and schema_name == "MonitoringPolicyDocument":
             contracts[schema_name] = {
                 "final_payload": {
                     "document_id": "doc_<id>",
@@ -3295,15 +3369,15 @@ def _monitoring_config_api_tool_input(
         "mode": str(raw_tool_input.get("mode") or item.get("mode") or "merge"),
         "reason": str(raw_tool_input.get("reason") or item.get("reason") or reasoning),
     }
-    for field in _MONITORING_SOURCE_ALLOWED_PARAMETERS.get(source_id, ()):
+    for parameter_field in _MONITORING_SOURCE_ALLOWED_PARAMETERS.get(source_id, ()):
         values = _dedupe_texts(
             [
-                *_strings(raw_tool_input.get(field)),
-                *_strings(item.get(field)),
+                *_strings(raw_tool_input.get(parameter_field)),
+                *_strings(item.get(parameter_field)),
             ]
         )
         if values:
-            tool_input[field] = values
+            tool_input[parameter_field] = values
     return tool_input
 
 

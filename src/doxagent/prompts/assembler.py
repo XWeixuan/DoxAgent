@@ -33,6 +33,43 @@ _HIDDEN_INPUT_CONTEXT_KEYS = {
     "tool_request_hints",
 }
 
+_DOCUMENT3_TASK_TYPES = {
+    "generate_known_events",
+    "generate_monitoring_config",
+    "review_monitoring_config",
+    "resolve_monitoring_config",
+    "generate_monitoring_policy",
+    "review_monitoring_policy",
+    "resolve_monitoring_policy",
+}
+
+_SAFE_EMPTY_INPUT_CONTEXT_KEYS = {
+    "completed_nodes",
+    "stable_document_types",
+    "belief_state_summary",
+    "pending_patch_ids",
+    "pending_patches",
+    "working_memory_summary",
+    "unresolved_objections",
+    "blocking_delegations",
+    "evidence_refs",
+    "global_research_context",
+    "document1_context_pack",
+    "prior_sections",
+    "loaded_skill_ids",
+    "loaded_external_skill_package_ids",
+    "internal_task_skill_ids",
+}
+
+_SAFE_EMPTY_CONTEXT_SNAPSHOT_KEYS = {
+    "belief_state_summary",
+    "working_memory_summary",
+    "evidence_refs",
+    "unresolved_objections",
+    "blocking_delegations",
+    "readable_scopes",
+}
+
 
 class PromptAssembler:
     def assemble(
@@ -56,23 +93,25 @@ class PromptAssembler:
                 ),
             ]
         )
-        user_prompt = json.dumps(
-            {
-                "task_summary": {
-                    "task_id": task.task_id,
-                    "ticker": task.ticker,
-                    "agent_name": task.agent_name.value,
-                    "task_type": task.task_type.value,
-                    "workflow_node": task.run_metadata.workflow_node,
-                    "required_output_schema": task.required_output_schema,
-                    "permissions": task.permissions.model_dump(mode="json"),
-                    "input_context": agent_visible_input_context(task.input_context),
-                },
-                "context_snapshot": agent_visible_context_snapshot(context_snapshot),
-                "tool_results": [result.model_dump(mode="json") for result in tool_results],
+        visible_context_snapshot = agent_visible_context_snapshot(context_snapshot)
+        tool_result_payload = [result.model_dump(mode="json") for result in tool_results]
+        prompt_payload: dict[str, Any] = {
+            "task_summary": {
+                "task_id": task.task_id,
+                "ticker": task.ticker,
+                "agent_name": task.agent_name.value,
+                "task_type": task.task_type.value,
+                "workflow_node": task.run_metadata.workflow_node,
+                "required_output_schema": task.required_output_schema,
+                "permissions": task.permissions.model_dump(mode="json"),
+                "input_context": agent_visible_input_context(task.input_context),
             },
-            ensure_ascii=True,
-        )
+        }
+        if tool_result_payload:
+            prompt_payload["tool_results"] = tool_result_payload
+        if visible_context_snapshot is not None:
+            prompt_payload["context_snapshot"] = visible_context_snapshot
+        user_prompt = json.dumps(prompt_payload, ensure_ascii=True)
         return AssembledPrompt(
             instructions="\n\n".join(
                 [
@@ -109,6 +148,7 @@ def agent_visible_input_context(input_context: dict[str, Any]) -> dict[str, Any]
         key: value
         for key, value in input_context.items()
         if key not in _HIDDEN_INPUT_CONTEXT_KEYS
+        and not (key in _SAFE_EMPTY_INPUT_CONTEXT_KEYS and _is_empty_container(value))
     }
 
 
@@ -124,9 +164,30 @@ def agent_visible_context_snapshot(context_snapshot: Any | None) -> dict[str, An
         payload = dict(context_snapshot)
     else:
         return {"value": str(context_snapshot)}
+    if _is_document3_context_snapshot(payload):
+        documents = payload.get("belief_state_summary")
+        if isinstance(documents, dict) and documents:
+            return {"belief_state_documents": documents}
+        return None
     for key in ("task_input", "prompt_summaries", "skill_summaries"):
         payload.pop(key, None)
-    return payload
+    visible = {
+        key: value
+        for key, value in payload.items()
+        if not (key in _SAFE_EMPTY_CONTEXT_SNAPSHOT_KEYS and _is_empty_container(value))
+    }
+    return visible or None
+
+
+def _is_document3_context_snapshot(payload: dict[str, Any]) -> bool:
+    task_type = payload.get("task_type")
+    if hasattr(task_type, "value"):
+        task_type = task_type.value
+    return str(task_type) in _DOCUMENT3_TASK_TYPES
+
+
+def _is_empty_container(value: Any) -> bool:
+    return isinstance(value, (list, dict)) and not value
 
 
 def _bodies(items: list[Any]) -> list[str]:

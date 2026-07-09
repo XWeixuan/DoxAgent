@@ -6,7 +6,7 @@ from typing import Any
 
 from doxagent.agents import ModelGatewayAgentRunner
 from doxagent.agents.config import default_agent_registry
-from doxagent.agents.runtime.react import ReActHarnessConfig
+from doxagent.agents.runtime.react import ReActHarnessConfig, Scratchpad
 from doxagent.gateway import (
     MockModelClient,
     ModelAuditSummary,
@@ -17,7 +17,7 @@ from doxagent.gateway import (
 )
 from doxagent.models import AgentName, AgentPermissions, AgentTask, ResultStatus, TaskType
 from doxagent.prompts import PromptAssembler, PromptInjector
-from doxagent.prompts.assembler import CHINESE_OUTPUT_RULES
+from doxagent.prompts.assembler import CHINESE_OUTPUT_RULES, agent_visible_input_context
 from doxagent.tools import (
     ToolClient,
     ToolDescriptor,
@@ -131,6 +131,16 @@ def runtime_o3_task() -> AgentTask:
         },
         deep=True,
     )
+
+
+def test_react_scratchpad_plan_keeps_latest_update_only() -> None:
+    scratchpad = Scratchpad(agent_task())
+
+    scratchpad.record_action(1, {"plan_update": ["first plan"], "is_complete": False})
+    scratchpad.record_action(2, {"plan_update": ["second plan"], "is_complete": False})
+    scratchpad.record_action(3, {"is_complete": False})
+
+    assert scratchpad.plan == ["second plan"]
 
 
 def test_react_is_default_and_accepts_direct_structured_payload() -> None:
@@ -451,10 +461,14 @@ def test_react_requests_include_chinese_output_rules_and_step_metadata() -> None
     assert "rules" not in user_payload
     assert "runtime_output_schema" not in user_payload["task"]
     assert user_payload["task"]["input_context"] == {"document_ids": ["global-research-001"]}
+    assert "context_snapshot" not in user_payload
+    assert "plan" not in user_payload
+    assert "recent_trajectory" not in user_payload
     assert "available_tools" in user_payload
     assert "available_skills" in user_payload
     assert user_payload["loaded_skills"] == []
     assert user_payload["tool_call_policy"]["required_tool_names"] == []
+    assert "tool_requirements" not in user_payload["tool_call_policy"]
 
 
 def test_react_prompt_includes_compact_doxatlas_contract_briefs() -> None:
@@ -523,9 +537,49 @@ def test_prompt_assembler_adds_chinese_output_rules_for_single_shot_paths() -> N
     assert "JSON key" not in assembled.user_prompt
     user_payload = json.loads(assembled.user_prompt)
     assert "rules" not in user_payload
+    assert "context_snapshot" not in user_payload
+    assert "tool_results" not in user_payload
     assert user_payload["task_summary"]["input_context"] == {
         "document_ids": ["global-research-001"]
     }
+
+
+def test_agent_visible_input_context_omits_only_safe_empty_workflow_fields() -> None:
+    visible = agent_visible_input_context(
+        {
+            "completed_nodes": [],
+            "stable_document_types": [],
+            "belief_state_summary": {},
+            "pending_patch_ids": [],
+            "pending_patches": [],
+            "working_memory_summary": [],
+            "unresolved_objections": [],
+            "blocking_delegations": [],
+            "evidence_refs": [],
+            "document3_review_objections": [],
+            "field_repair_task": {},
+            "review_scope": [],
+            "runtime_context": {"known_events": [], "monitoring_policies": []},
+        }
+    )
+
+    for omitted_key in (
+        "completed_nodes",
+        "stable_document_types",
+        "belief_state_summary",
+        "pending_patch_ids",
+        "pending_patches",
+        "working_memory_summary",
+        "unresolved_objections",
+        "blocking_delegations",
+        "evidence_refs",
+    ):
+        assert omitted_key not in visible
+    assert visible["document3_review_objections"] == []
+    assert visible["field_repair_task"] == {}
+    assert visible["review_scope"] == []
+    assert visible["runtime_context"]["known_events"] == []
+    assert visible["runtime_context"]["monitoring_policies"] == []
 
 
 def test_react_loads_external_skill_on_demand() -> None:
