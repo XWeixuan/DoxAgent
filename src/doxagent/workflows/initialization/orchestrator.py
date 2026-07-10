@@ -15,6 +15,11 @@ from doxagent.workflows.initialization.mock import InitializationMockResultFacto
 from doxagent.workflows.initialization.recovery import InitializationRecoveryMixin
 from doxagent.workflows.initialization.shared import *
 
+_DOCUMENT1_LLM_NODES = {
+    WorkflowNode.BUILD_GLOBAL_RESEARCH,
+    WorkflowNode.GENERATE_GLOBAL_NARRATIVE_REPORT,
+}
+
 _DOCUMENT2_GENERATE_NODES = {
     WorkflowNode.GENERATE_EXPECTATION_CONSTRUCTION,
     WorkflowNode.GENERATE_EXPECTATION_DETAILS,
@@ -2668,7 +2673,11 @@ class BlackboardInitializationWorkflow(
         permissions: AgentPermissions,
     ) -> dict[str, Any]:
         repository = self.blackboard.repository
-        history_blocks_needed = node not in _DOCUMENT2_NODES and node not in _DOCUMENT3_NODES
+        history_blocks_needed = (
+            node not in _DOCUMENT1_LLM_NODES
+            and node not in _DOCUMENT2_NODES
+            and node not in _DOCUMENT3_NODES
+        )
         context: dict[str, Any] = {
             "completed_nodes": [item.value for item in checkpoint.completed_nodes],
             "stable_document_types": [item.value for item in checkpoint.stable_document_types],
@@ -2744,6 +2753,8 @@ class BlackboardInitializationWorkflow(
         return self.blackboard.get_run(checkpoint.run_id)
 
     def _workflow_task_keeps_global_research_context(self, node: WorkflowNode) -> bool:
+        if node is WorkflowNode.BUILD_GLOBAL_RESEARCH:
+            return False
         if node in {
             WorkflowNode.REVIEW_EXPECTATION_CONSTRUCTION,
             WorkflowNode.REVIEW_EXPECTATION_FIELDS,
@@ -2759,8 +2770,37 @@ class BlackboardInitializationWorkflow(
         context: dict[str, Any],
         node: WorkflowNode,
     ) -> dict[str, Any]:
+        context = self._compact_document1_task_input_context(context, node)
         context = self._compact_document2_task_input_context(context, node)
         return self._compact_document3_task_input_context(context, node)
+
+    def _compact_document1_task_input_context(
+        self,
+        context: dict[str, Any],
+        node: WorkflowNode,
+    ) -> dict[str, Any]:
+        if node not in _DOCUMENT1_LLM_NODES:
+            return context
+        compacted = dict(context)
+        for key in (
+            "completed_nodes",
+            "stable_document_types",
+            "belief_state_summary",
+            "pending_patch_ids",
+            "pending_patches",
+            "working_memory_summary",
+            "unresolved_objections",
+            "blocking_delegations",
+        ):
+            compacted.pop(key, None)
+        if node is WorkflowNode.BUILD_GLOBAL_RESEARCH:
+            compacted.pop("global_research_context", None)
+            compacted.pop("document1_context_pack", None)
+            return compacted
+        if node is WorkflowNode.GENERATE_GLOBAL_NARRATIVE_REPORT:
+            compacted.pop("document1_context_pack", None)
+            return compacted
+        return compacted
 
     def _compact_document2_task_input_context(
         self,
@@ -2771,6 +2811,9 @@ class BlackboardInitializationWorkflow(
             return context
         compacted = dict(context)
         for key in (
+            "completed_nodes",
+            "stable_document_types",
+            "belief_state_summary",
             "working_memory_summary",
             "unresolved_objections",
             "blocking_delegations",
@@ -2779,6 +2822,7 @@ class BlackboardInitializationWorkflow(
         if node in _DOCUMENT2_GENERATE_NODES:
             compacted.pop("pending_patch_ids", None)
             compacted.pop("pending_patches", None)
+            compacted.pop("document1_context_pack", None)
             return compacted
         if node is WorkflowNode.REVIEW_EXPECTATION_CONSTRUCTION:
             compacted.pop("pending_patch_ids", None)
@@ -2795,6 +2839,7 @@ class BlackboardInitializationWorkflow(
         if node is WorkflowNode.RESOLVE_EXPECTATION_CONSTRUCTION:
             compacted.pop("pending_patch_ids", None)
             compacted.pop("pending_patches", None)
+            compacted.pop("document1_context_pack", None)
             return compacted
         if node is WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS:
             compacted.pop("pending_patch_ids", None)

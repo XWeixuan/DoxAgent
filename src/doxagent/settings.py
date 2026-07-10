@@ -64,7 +64,7 @@ class DoxAgentSettings(BaseSettings):
         gt=0,
         validation_alias="DOXAGENT_MODEL_REQUEST_TIMEOUT_SECONDS",
     )
-    model_usage_storage_mode: Literal["memory", "sqlite"] = Field(
+    model_usage_storage_mode: Literal["memory", "sqlite", "postgres"] = Field(
         default="sqlite",
         validation_alias="DOXAGENT_MODEL_USAGE_STORAGE_MODE",
     )
@@ -357,6 +357,63 @@ class DoxAgentSettings(BaseSettings):
         ge=1,
         le=5,
         validation_alias="DOXAGENT_PERSISTENT_RUNTIME_WORKER_RETRY_ATTEMPTS",
+    )
+    revenue_audit_storage_mode: Literal["memory", "sqlite"] = Field(
+        default="sqlite",
+        validation_alias="DOXAGENT_REVENUE_AUDIT_STORAGE_MODE",
+    )
+    revenue_audit_sqlite_path: str = Field(
+        default=".tmp/revenue_audit.sqlite3",
+        validation_alias="DOXAGENT_REVENUE_AUDIT_SQLITE_PATH",
+    )
+    revenue_audit_market_data_provider: Literal["benzinga", "twelvedata"] = Field(
+        default="twelvedata",
+        validation_alias="DOXAGENT_REVENUE_AUDIT_MARKET_DATA_PROVIDER",
+    )
+    revenue_audit_method_version: str = Field(
+        default="paper-trade-v1",
+        validation_alias="DOXAGENT_REVENUE_AUDIT_METHOD_VERSION",
+    )
+    revenue_audit_slippage_bps: float = Field(
+        default=5.0,
+        ge=0,
+        validation_alias="DOXAGENT_REVENUE_AUDIT_SLIPPAGE_BPS",
+    )
+    revenue_audit_base_notional_usd: float = Field(
+        default=10_000.0,
+        gt=0,
+        validation_alias="DOXAGENT_REVENUE_AUDIT_BASE_NOTIONAL_USD",
+    )
+    revenue_audit_small_multiplier: float = Field(
+        default=0.5,
+        gt=0,
+        validation_alias="DOXAGENT_REVENUE_AUDIT_SMALL_MULTIPLIER",
+    )
+    revenue_audit_normal_multiplier: float = Field(
+        default=1.0,
+        gt=0,
+        validation_alias="DOXAGENT_REVENUE_AUDIT_NORMAL_MULTIPLIER",
+    )
+    revenue_audit_aggressive_multiplier: float = Field(
+        default=2.0,
+        gt=0,
+        validation_alias="DOXAGENT_REVENUE_AUDIT_AGGRESSIVE_MULTIPLIER",
+    )
+    revenue_audit_auto_trigger_hour_et: int = Field(
+        default=18,
+        ge=0,
+        le=23,
+        validation_alias="DOXAGENT_REVENUE_AUDIT_AUTO_TRIGGER_HOUR_ET",
+    )
+    revenue_audit_loop_sleep_seconds: int = Field(
+        default=60,
+        ge=15,
+        validation_alias="DOXAGENT_REVENUE_AUDIT_LOOP_SLEEP_SECONDS",
+    )
+    revenue_audit_market_data_timeout_seconds: float = Field(
+        default=30.0,
+        gt=0,
+        validation_alias="DOXAGENT_REVENUE_AUDIT_MARKET_DATA_TIMEOUT_SECONDS",
     )
     runtime_scheduler_storage_mode: Literal["memory", "sqlite"] = Field(
         default="sqlite",

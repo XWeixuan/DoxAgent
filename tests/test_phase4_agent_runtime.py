@@ -244,18 +244,20 @@ def test_context_builder_compacts_agent_result_working_memory_payload() -> None:
                 },
                 "text": "y" * 5_000,
                 "react_audit": {
-                    "tool_counts": {"twelvedata.daily_ohlcv": 1},
-                    "entries": [{"output": {"blob": "z" * 50_000}}],
-                    "compacted_summaries": ["summary"],
-                    "market_evidence_snapshot": {
-                        "daily_ohlcv": [
-                            {
-                                "kind": "daily_ohlcv_snapshot",
-                                "symbol": "NVDA",
-                                "bar_count": 60,
-                            }
-                        ]
+                    "schema_version": "react_task_memory.v1",
+                    "runtime_guards": {
+                        "tool_counts": {"twelvedata.daily_ohlcv": 1}
                     },
+                    "event_log": [{"kind": "tool_result", "raw_result_id": "tc1"}],
+                    "observation_data": {
+                        "raw_tool_results": {
+                            "tc1": {"tool_result": {"output": {"blob": "z" * 50_000}}}
+                        },
+                        "block_index": [],
+                    },
+                    "memory_state": {},
+                    "warnings": [],
+                    "context_budget_history": [],
                 },
                 "model_audits": [{"request": "large"}],
                 "context_snapshot": {"large": "w" * 50_000},

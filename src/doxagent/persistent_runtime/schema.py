@@ -93,6 +93,12 @@ class SizeBucket(StrEnum):
     AGGRESSIVE = "aggressive"
 
 
+class TradeDecisionSource(StrEnum):
+    W2_POLICY_DIRECT = "w2_policy_direct"
+    O3_DUTY_EXPERT = "o3_duty_expert"
+    O3_UPSTREAM_RETAINED = "o3_upstream_retained"
+
+
 class RuntimeSourceMessage(PersistentRuntimeModel):
     source_message_id: str
     raw_message_id: str | None = None
@@ -109,6 +115,9 @@ class RuntimeSourceMessage(PersistentRuntimeModel):
     keywords: list[str] = Field(default_factory=list)
     published_at: datetime | None = None
     collected_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    normalized_at: datetime | None = None
+    message_bus_event_time: datetime | None = None
+    runtime_started_at: datetime | None = None
     provider_message_id: str | None = None
     metadata: JsonObject = Field(default_factory=dict)
 
@@ -143,6 +152,7 @@ class RuntimeSourceMessage(PersistentRuntimeModel):
             keywords=list(message.keywords),
             published_at=message.published_at,
             collected_at=message.collected_at,
+            normalized_at=message.normalized_at,
             provider_message_id=message.provider_message_id,
             metadata=dict(message.metadata),
         )
@@ -168,6 +178,8 @@ class RuntimeSourceMessage(PersistentRuntimeModel):
             keywords=[str(item) for item in payload.get("keywords") or []],
             published_at=_parse_datetime(payload.get("published_at")),
             collected_at=_parse_datetime(payload.get("collected_at")) or event.event_time,
+            normalized_at=_parse_datetime(payload.get("normalized_at")),
+            message_bus_event_time=event.event_time,
             provider_message_id=_optional_str(payload.get("provider_message_id")),
             metadata=dict(payload.get("metadata") or {}),
         )
@@ -251,6 +263,23 @@ class TradeIntent(PersistentRuntimeModel):
     conviction: Conviction
     size_bucket: SizeBucket
     reasoning: str
+
+
+class TradeAuditSnapshot(PersistentRuntimeModel):
+    published_at: datetime | None = None
+    collected_at: datetime | None = None
+    normalized_at: datetime | None = None
+    message_bus_event_time: datetime | None = None
+    runtime_started_at: datetime | None = None
+    intent_generated_at: datetime
+    decision_source: TradeDecisionSource
+    trigger_policy: str | None = None
+    source_message_id: str
+    runtime_execution_id: str
+    route: str
+    trigger_reason: str | None = None
+    message_summary: str | None = None
+    agent_summary: str | None = None
 
 
 class KnownEventsPatch(PersistentRuntimeModel):
@@ -373,6 +402,7 @@ class TradingRecord(PersistentRuntimeModel):
     w2_result: W2Result | None = None
     a2_result: A2Result | None = None
     o3_result: O3Result | None = None
+    audit_snapshot: TradeAuditSnapshot | None = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 

@@ -5,7 +5,9 @@ from doxagent.model_usage.recorder import ModelUsageRecorder
 from doxagent.model_usage.repository import (
     InMemoryModelUsageRepository,
     ModelUsageRepository,
+    PostgresModelUsageRepository,
     SQLiteModelUsageRepository,
+    copy_model_usage_sqlite_to_postgres,
     model_usage_repository_from_settings,
 )
 from doxagent.model_usage.schema import ModelUsageEvent
@@ -19,6 +21,8 @@ __all__ = [
     "ModelUsageEvent",
     "ModelUsageRecorder",
     "ModelUsageRepository",
+    "PostgresModelUsageRepository",
     "SQLiteModelUsageRepository",
+    "copy_model_usage_sqlite_to_postgres",
     "model_usage_repository_from_settings",
 ]

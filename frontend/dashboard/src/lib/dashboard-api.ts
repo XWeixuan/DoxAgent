@@ -23,6 +23,9 @@ import type {
   Period,
   Policy,
   RevenueAudit,
+  RevenueAuditDetail,
+  RevenueBasis,
+  RevenueTrend,
   RuntimeExecution,
   RuntimeGraph,
   RuntimeNodeDetail,
@@ -30,6 +33,7 @@ import type {
   RuntimeResultRecord,
   TickerCard,
   TickerDetail,
+  TradeIntent,
 } from "@/lib/dashboard-types"
 
 const DEFAULT_API_BASE_URL = "/api/dashboard/v1"
@@ -377,11 +381,29 @@ export const dashboardApi = {
     dashboardRequest<PageResult<RuntimeResultRecord>>(
       `/tickers/${encodeURIComponent(ticker)}/runtime/records${queryString(params)}`
     ),
-  revenueAudit: (ticker: string, period: Period) =>
+  revenueAudit: (ticker: string, period: Period, basis: RevenueBasis) =>
     dashboardRequest<RevenueAudit>(
       `/tickers/${encodeURIComponent(ticker)}/audit/revenue${queryString({
         period,
+        basis,
       })}`
+    ),
+  revenueTrend: (ticker: string, period: Period, basis: RevenueBasis) =>
+    dashboardRequest<RevenueTrend>(
+      `/tickers/${encodeURIComponent(ticker)}/audit/revenue/trend${queryString({
+        period,
+        basis,
+      })}`
+    ),
+  revenueRecords: (ticker: string, params?: QueryParams) =>
+    dashboardRequest<PageResult<TradeIntent>>(
+      `/tickers/${encodeURIComponent(ticker)}/audit/revenue/records${queryString(params)}`
+    ),
+  revenueRecordDetail: (ticker: string, tradingRecordId: string) =>
+    dashboardRequest<RevenueAuditDetail>(
+      `/tickers/${encodeURIComponent(ticker)}/audit/revenue/records/${encodeURIComponent(
+        tradingRecordId
+      )}`
     ),
   runRevenueAudit: (ticker: string, date?: string) =>
     dashboardRequest<{ audit_run_id: string; ticker: string; date: string; status: string }>(

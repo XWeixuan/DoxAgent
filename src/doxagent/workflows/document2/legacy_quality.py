@@ -41,6 +41,26 @@ _DOCUMENT2_ROUTING_BLOCKER_TAXONOMY = "unroutable_document_level_objection"
 _DOCUMENT2_EXPECTATION_ID_PATTERN = re.compile(r"\b(?:expectation|exp)_[A-Za-z0-9_]+\b")
 
 
+def _is_empty_context_value(value: Any) -> bool:
+    return value is None or (isinstance(value, (list, dict)) and not value)
+
+
+def _collect_context_evidence_ids(value: Any, evidence_ids: set[str]) -> None:
+    if isinstance(value, dict):
+        raw_id = value.get("evidence_id")
+        if isinstance(raw_id, str) and raw_id:
+            evidence_ids.add(raw_id)
+        raw_ids = value.get("evidence_ids")
+        if isinstance(raw_ids, list):
+            evidence_ids.update(item for item in raw_ids if isinstance(item, str) and item)
+        for child in value.values():
+            _collect_context_evidence_ids(child, evidence_ids)
+        return
+    if isinstance(value, list):
+        for item in value:
+            _collect_context_evidence_ids(item, evidence_ids)
+
+
 class Document2LegacyQualityMixin:
     def _numeric_sanity_review_objections(
         self,
@@ -2097,7 +2117,7 @@ class Document2LegacyQualityMixin:
                 else len(task_objections),
                 "execution_order": "cross_field tasks first, then single-field tasks",
             },
-            "field_repair_task": task.model_dump(mode="json"),
+            "field_repair_task": self._field_repair_task_header(task),
             "current_candidate": task.current_candidate.model_dump(mode="json"),
             "findings": [
                 finding.model_dump(mode="json") for finding in task.findings
@@ -2108,6 +2128,24 @@ class Document2LegacyQualityMixin:
             "allowed_output_contract": task.allowed_output_contract,
             "output_guidance": output_guidance,
         }
+
+    def _field_repair_task_header(
+        self,
+        task: Document2FieldRepairTask,
+    ) -> dict[str, Any]:
+        return task.model_dump(
+            mode="json",
+            include={
+                "task_id",
+                "expectation_id",
+                "field_family",
+                "target_paths",
+                "finding_ids",
+                "objection_ids",
+                "source_agents",
+                "requires_full_candidate",
+            },
+        )
 
     def _objection_resolution_context(
         self,
@@ -2755,6 +2793,70 @@ class Document2LegacyQualityMixin:
                 "omitted_full_text": True,
             },
         }
+
+    def _field_review_document1_context_pack_brief(
+        self,
+        checkpoint: WorkflowCheckpoint,
+        agent_name: AgentName,
+    ) -> dict[str, Any] | None:
+        pack = self._document1_context_pack_from_checkpoint(checkpoint)
+        if pack is None:
+            return None
+        raw = pack.model_dump(mode="json", exclude_none=True)
+        keys_by_agent = {
+            AgentName.A1_DOXATLAS_AUDIT: (),
+            AgentName.C1_FUNDAMENTAL_RESEARCH: (
+                "recent_company_facts",
+                "catalysts",
+                "risks",
+                "key_variables",
+                "known_gaps",
+            ),
+            AgentName.C3_INDUSTRY_RESEARCH: (
+                "recent_industry_macro_market_drivers",
+                "catalysts",
+                "risks",
+                "key_variables",
+                "known_gaps",
+                "stale_background_facts",
+            ),
+            AgentName.O4_MARKET_TRACE: (
+                "market_trace",
+                "recent_industry_macro_market_drivers",
+                "catalysts",
+                "risks",
+            ),
+        }
+        selected_keys = keys_by_agent.get(agent_name, ())
+        if not selected_keys:
+            return None
+        brief: dict[str, Any] = {
+            "ticker": raw.get("ticker"),
+            "generated_from_document_id": raw.get("generated_from_document_id"),
+            "research_window": raw.get("research_window"),
+        }
+        evidence_ids: set[str] = set()
+        for key in selected_keys:
+            value = raw.get(key)
+            if _is_empty_context_value(value):
+                continue
+            brief[key] = value
+            _collect_context_evidence_ids(value, evidence_ids)
+        evidence_refs = [
+            ref
+            for ref in raw.get("evidence_refs", [])
+            if isinstance(ref, dict) and ref.get("evidence_id") in evidence_ids
+        ]
+        if evidence_refs:
+            brief["evidence_refs"] = evidence_refs[:8]
+        brief["compaction"] = {
+            "mode": "reviewer_role_scoped_document1_context_pack_brief",
+            "agent_name": agent_name.value,
+            "selected_keys": list(selected_keys),
+            "omitted_full_pack": True,
+            "omitted_unreferenced_evidence_refs": True,
+        }
+        return brief
 
     def _field_review_section_context(
         self,

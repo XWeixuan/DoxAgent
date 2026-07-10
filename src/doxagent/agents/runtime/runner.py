@@ -382,11 +382,40 @@ class ModelGatewayAgentRunner:
         model_timeout = _positive_float(
             _first_present(budget, "model_request_timeout_seconds")
         )
+        model_context_window = _positive_int(
+            _first_present(budget, "model_context_window")
+        )
+        reserved_output_tokens = _nonnegative_int(
+            _first_present(budget, "reserved_output_tokens")
+        )
+        safety_reserve_tokens = _nonnegative_int(
+            _first_present(budget, "safety_reserve_tokens")
+        )
+        micro_ratio = _ratio(_first_present(budget, "micro_maintenance_ratio"))
+        full_ratio = _ratio(_first_present(budget, "full_compaction_ratio"))
+        resolved_micro_ratio = (
+            micro_ratio
+            if micro_ratio is not None
+            else self.react_config.micro_maintenance_ratio
+        )
+        resolved_full_ratio = (
+            full_ratio
+            if full_ratio is not None
+            else self.react_config.full_compaction_ratio
+        )
+        if resolved_micro_ratio >= resolved_full_ratio:
+            resolved_micro_ratio = self.react_config.micro_maintenance_ratio
+            resolved_full_ratio = self.react_config.full_compaction_ratio
         if (
             max_steps is None
             and max_tool_calls_per_name is None
             and max_tool_batches is None
             and model_timeout is None
+            and model_context_window is None
+            and reserved_output_tokens is None
+            and safety_reserve_tokens is None
+            and micro_ratio is None
+            and full_ratio is None
         ):
             return self.react_config
         return replace(
@@ -403,6 +432,17 @@ class ModelGatewayAgentRunner:
             model_request_timeout_seconds=model_timeout
             if model_timeout is not None
             else self.react_config.model_request_timeout_seconds,
+            model_context_window=model_context_window
+            if model_context_window is not None
+            else self.react_config.model_context_window,
+            reserved_output_tokens=reserved_output_tokens
+            if reserved_output_tokens is not None
+            else self.react_config.reserved_output_tokens,
+            safety_reserve_tokens=safety_reserve_tokens
+            if safety_reserve_tokens is not None
+            else self.react_config.safety_reserve_tokens,
+            micro_maintenance_ratio=resolved_micro_ratio,
+            full_compaction_ratio=resolved_full_ratio,
         )
 
     def _normalize_delegation_task_type(self, value: str) -> str:
@@ -528,6 +568,11 @@ def _positive_float(value: object) -> float | None:
     except (TypeError, ValueError):
         return None
     return parsed if parsed > 0 else None
+
+
+def _ratio(value: object) -> float | None:
+    parsed = _positive_float(value)
+    return parsed if parsed is not None and parsed < 1 else None
 
 
 def _first_present(payload: dict[str, Any], *keys: str) -> object:

@@ -27,12 +27,20 @@ from doxagent.persistent_runtime.schema import (
     RuntimeRoute,
     RuntimeSourceMessage,
     SizeBucket,
+    TradeAuditSnapshot,
+    TradeDecisionSource,
     TradeIntent,
     TradeRecordStatus,
     TradeSide,
     TradingRecord,
 )
 from doxagent.persistent_runtime.service import PersistentRuntimeExecutionService
+from doxagent.revenue_audit import (
+    InMemoryRevenueAuditRepository,
+    MinuteBar,
+    RevenueAuditConfig,
+    RevenueAuditService,
+)
 from doxagent.runtime_scheduler import (
     DashboardStateAPI,
     DocumentBundle,
@@ -42,7 +50,7 @@ from doxagent.runtime_scheduler import (
 )
 
 
-def test_dashboard_real_revenue_audit_uses_trading_records_and_scheduler_events() -> None:
+def test_dashboard_real_revenue_audit_calculates_and_exposes_bounded_views() -> None:
     client, timestamp = _client_with_audit_state()
     query_date = timestamp.date().isoformat()
 
@@ -55,23 +63,13 @@ def test_dashboard_real_revenue_audit_uses_trading_records_and_scheduler_events(
     payload = response.json()["data"]
     assert payload["ticker"] == "NVDA"
     assert payload["period"] == "7d"
+    assert payload["basis"] == "system_executable"
     assert payload["status"] == "not_started"
-    assert payload["exit_rule"] == "realized_exit_price_audit_not_integrated"
-    assert payload["kpis"] == {
-        "today_trade_intent_count": 2,
-        "audited_trade_count": 0,
-        "today_pnl_usd": None,
-        "today_return_pct": None,
-        "win_rate": None,
-    }
-    assert len(payload["trend"]) == 7
-    assert payload["trend"][-1]["trade_intent_count"] == 1
-    assert [item["record_id"] for item in payload["trade_intents"]] == [
-        "trd_nvda_today",
-        "trd_nvda_recent",
-    ]
-    assert payload["trade_intents"][0]["estimated_entry_price"] is None
-    assert payload["trade_intents"][0]["status"] == "pending_audit"
+    assert payload["trade_intent_count"] == 2
+    assert payload["auditable_trade_count"] == 2
+    assert payload["audited_trade_count"] == 0
+    assert payload["coverage_rate"] == 0
+    assert payload["simulated_pnl_usd"] is None
 
     run_response = client.post(
         "/api/dashboard/v1/tickers/NVDA/audit/revenue/run",
@@ -82,8 +80,42 @@ def test_dashboard_real_revenue_audit_uses_trading_records_and_scheduler_events(
     run_payload = run_response.json()["data"]
     assert run_payload["ticker"] == "NVDA"
     assert run_payload["date"] == query_date
-    assert run_payload["status"] == "not_started"
-    assert run_payload["audit_run_id"].startswith("audit_")
+    assert run_payload["status"] == "completed"
+    assert run_payload["audit_run_id"].startswith("revaud_")
+    assert run_payload["audited_count"] == 3
+
+    overview = client.get(
+        f"/api/dashboard/v1/tickers/NVDA/audit/revenue"
+        f"?period=7d&date={query_date}&tz=UTC&basis=system_executable"
+    ).json()["data"]
+    assert overview["status"] == "partial"
+    assert overview["audited_trade_count"] == 1
+    assert overview["coverage_rate"] == 0.5
+    assert overview["simulated_pnl_usd"] is not None
+    assert overview["latency_losses"]["capture_loss"]["matched_trade_count"] == 1
+
+    trend = client.get(
+        f"/api/dashboard/v1/tickers/NVDA/audit/revenue/trend"
+        f"?period=7d&date={query_date}&tz=UTC&basis=system_executable"
+    )
+    assert trend.status_code == 200
+    assert len(trend.json()["data"]["items"]) == 7
+
+    records = client.get(
+        f"/api/dashboard/v1/tickers/NVDA/audit/revenue/records"
+        f"?period=7d&date={query_date}&tz=UTC&basis=system_executable&limit=1"
+    )
+    assert records.status_code == 200
+    records_payload = records.json()["data"]
+    assert len(records_payload["items"]) == 1
+    assert records_payload["items"][0]["status"] == "audited"
+    assert records_payload["items"][0]["data_source"] == "fixture:1m"
+
+    detail = client.get(
+        "/api/dashboard/v1/tickers/NVDA/audit/revenue/records/trd_nvda_today"
+    )
+    assert detail.status_code == 200
+    assert len(detail.json()["data"]["results"]) == 3
 
     events = client.get(
         "/api/dashboard/v1/events"
@@ -92,8 +124,8 @@ def test_dashboard_real_revenue_audit_uses_trading_records_and_scheduler_events(
 
     assert events.status_code == 200
     assert "event: audit.revenue.status_changed" in events.text
-    assert '"status": "not_started"' in events.text
-    assert "realized_pnl_audit_worker" in events.text
+    assert '"status": "completed"' in events.text
+    assert "paper-trade-v1" in events.text
 
 
 def test_dashboard_real_cost_audit_extracts_model_usage_details_without_pricing_guess() -> None:
@@ -143,16 +175,6 @@ def test_dashboard_real_cost_audit_extracts_model_usage_details_without_pricing_
         "has_more": False,
         "total_count": 1,
     }
-
-    events = client.get(
-        "/api/dashboard/v1/events"
-        "?ticker=NVDA&event_types=audit.cost.status_changed&once=true"
-    )
-
-    assert events.status_code == 200
-    assert "event: audit.cost.status_changed" in events.text
-    assert '"status": "partial"' in events.text
-
 
 def test_dashboard_real_cost_audit_uses_persisted_model_usage_as_primary_source() -> None:
     timestamp = datetime(2026, 6, 30, 15, 30, tzinfo=UTC)
@@ -267,6 +289,24 @@ class _DocumentProvider:
         )
 
 
+class _RevenueBars:
+    name = "fixture"
+
+    def fetch_bars(
+        self,
+        ticker: str,
+        *,
+        start: datetime,
+        end: datetime,
+    ) -> list[MinuteBar]:
+        return [
+            _minute_bar("2026-06-30T11:00:00-04:00", 100),
+            _minute_bar("2026-06-30T11:10:00-04:00", 101),
+            _minute_bar("2026-06-30T11:30:00-04:00", 102),
+            _minute_bar("2026-06-30T15:50:00-04:00", 110),
+        ]
+
+
 def _client_with_audit_state(
     *,
     model_usage_service: ModelUsageCostService | None = None,
@@ -285,6 +325,12 @@ def _client_with_audit_state(
         InMemoryModelUsageRepository(),
         pricing_catalog=_default_model_pricing_catalog(),
     )
+    revenue_audit_service = RevenueAuditService(
+        InMemoryRevenueAuditRepository(),
+        trading_repository=runtime_service.repository,
+        market_data_provider=_RevenueBars(),
+        config=RevenueAuditConfig(),
+    )
     client = TestClient(
         create_app(
             mode="real",
@@ -292,6 +338,7 @@ def _client_with_audit_state(
             real_service=RealDashboardOverviewService(
                 DashboardStateAPI(scheduler),
                 model_usage_service=resolved_model_usage_service,
+                revenue_audit_service=revenue_audit_service,
             ),
         )
     )
@@ -317,6 +364,22 @@ def _seed_audit_state(
                 reasoning="Dashboard audit unit-test trade intent.",
             ),
             status=TradeRecordStatus.RECORDED_ONLY,
+            audit_snapshot=TradeAuditSnapshot(
+                published_at=timestamp - timedelta(minutes=30),
+                collected_at=timestamp - timedelta(minutes=25),
+                normalized_at=timestamp - timedelta(minutes=22),
+                message_bus_event_time=timestamp - timedelta(minutes=20),
+                runtime_started_at=timestamp - timedelta(minutes=5),
+                intent_generated_at=timestamp,
+                decision_source=TradeDecisionSource.W2_POLICY_DIRECT,
+                trigger_policy="POLICY_DTC_SUPPLY",
+                source_message_id="std_nvda_audit_001",
+                runtime_execution_id="pre_nvda_audit_001",
+                route="new_dtc",
+                trigger_reason="DTC policy matched.",
+                message_summary="NVDA audit fixture message.",
+                agent_summary="Dashboard audit unit-test trade intent.",
+            ),
             created_at=timestamp,
         )
     )
@@ -447,6 +510,19 @@ def _source_message(source_message_id: str, *, timestamp: datetime) -> RuntimeSo
         body="NVDA audit test source message.",
         symbols=["NVDA"],
         collected_at=timestamp,
+    )
+
+
+def _minute_bar(timestamp: str, price: float) -> MinuteBar:
+    return MinuteBar(
+        ticker="NVDA",
+        timestamp=datetime.fromisoformat(timestamp),
+        open=price,
+        high=price,
+        low=price,
+        close=price,
+        volume=1_000,
+        data_source="fixture:1m",
     )
 
 

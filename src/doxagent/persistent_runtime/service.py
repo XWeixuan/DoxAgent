@@ -37,6 +37,8 @@ from doxagent.persistent_runtime.schema import (
     RuntimeSourceMessage,
     RuntimeWorkerTimeout,
     SizeBucket,
+    TradeAuditSnapshot,
+    TradeDecisionSource,
     TradeIntent,
     TradeRecordStatus,
     TradeSide,
@@ -45,6 +47,7 @@ from doxagent.persistent_runtime.schema import (
     W1Result,
     W2Result,
     W2Type,
+    new_runtime_id,
     runtime_duplicate_keys,
 )
 from doxagent.persistent_runtime.workers import (
@@ -188,6 +191,10 @@ class PersistentRuntimeExecutionService:
         context: JsonObject | None = None,
     ) -> RuntimeExecutionRecord:
         timing_started_at = datetime.now(UTC)
+        message = message.model_copy(
+            update={"runtime_started_at": timing_started_at},
+            deep=True,
+        )
         timing_started = time.monotonic()
         existing = self.repository.execution_for_source(message.source_message_id)
         if existing is not None:
@@ -982,6 +989,8 @@ class PersistentRuntimeExecutionService:
         exception_ids: list[str],
         node_traces: list[RuntimeNodeTrace],
     ) -> RuntimeExecutionRecord:
+        execution_id = new_runtime_id("pre")
+        intent_generated_at = datetime.now(UTC)
         if isinstance(context.get("batch_window_id"), str) and decision.batch_id is None:
             decision = decision.model_copy(update={"batch_id": context["batch_window_id"]})
         if decision.route is RuntimeRoute.OBJECTION and o3:
@@ -998,20 +1007,22 @@ class PersistentRuntimeExecutionService:
                 )
         known_events_updated = o3 is not None and o3.known_events_patch is not None
         if decision.route is RuntimeRoute.TRADING_RECORD:
+            route_code = _trade_route_code(
+                decision,
+                w2=w2,
+                a2=a2,
+                o3=o3,
+                exception_ids=exception_ids,
+            )
+            trade_intent = _resolve_trade_intent(context=context, w2=w2, o3=o3)
             self.repository.save_trading_record(
                 TradingRecord(
                     source_message_id=message.source_message_id,
                     ticker=message.ticker,
                     source_type=message.source_type,
-                    route=_trade_route_code(
-                        decision,
-                        w2=w2,
-                        a2=a2,
-                        o3=o3,
-                        exception_ids=exception_ids,
-                    ),
+                    route=route_code,
                     matched_policy_code=w2.matched_policy_code if w2 else None,
-                    trade_intent=_resolve_trade_intent(context=context, w2=w2, o3=o3),
+                    trade_intent=trade_intent,
                     status=(
                         TradeRecordStatus.RECORDED_WITH_EXCEPTION
                         if exception_ids
@@ -1025,6 +1036,26 @@ class PersistentRuntimeExecutionService:
                     w2_result=w2,
                     a2_result=a2,
                     o3_result=o3,
+                    audit_snapshot=TradeAuditSnapshot(
+                        published_at=message.published_at,
+                        collected_at=message.collected_at,
+                        normalized_at=message.normalized_at,
+                        message_bus_event_time=message.message_bus_event_time,
+                        runtime_started_at=message.runtime_started_at,
+                        intent_generated_at=intent_generated_at,
+                        decision_source=_trade_decision_source(route_code),
+                        trigger_policy=w2.matched_policy_code if w2 else None,
+                        source_message_id=message.source_message_id,
+                        runtime_execution_id=execution_id,
+                        route=route_code,
+                        trigger_reason=_compact_snapshot_text(decision.reason, limit=1_000),
+                        message_summary=_message_audit_summary(message),
+                        agent_summary=_compact_snapshot_text(
+                            o3.reasoning if o3 is not None else trade_intent.reasoning,
+                            limit=1_000,
+                        ),
+                    ),
+                    created_at=intent_generated_at,
                 )
             )
             if decision.requires_o3_known_events_update:
@@ -1084,6 +1115,7 @@ class PersistentRuntimeExecutionService:
                 )
             )
         record = RuntimeExecutionRecord(
+            execution_id=execution_id,
             source_message=message,
             route_decision=decision,
             w1_result=w1,
@@ -1103,6 +1135,7 @@ class PersistentRuntimeExecutionService:
                 node_traces=node_traces,
             ),
             node_traces=[trace.model_copy(deep=True) for trace in node_traces],
+            created_at=intent_generated_at,
         )
         return self.repository.save_execution(record)
 
@@ -1669,6 +1702,32 @@ def _trade_route_code(
     if w2 is not None and w2.type is W2Type.DIRECT_TRADE_CANDIDATE:
         return "new_dtc"
     return decision.route.value
+
+
+def _trade_decision_source(route_code: str) -> TradeDecisionSource:
+    if route_code == "o3_timeout_trade":
+        return TradeDecisionSource.O3_UPSTREAM_RETAINED
+    if route_code == "o3_trade":
+        return TradeDecisionSource.O3_DUTY_EXPERT
+    return TradeDecisionSource.W2_POLICY_DIRECT
+
+
+def _message_audit_summary(message: RuntimeSourceMessage) -> str | None:
+    parts = [part.strip() for part in (message.title, message.body) if part and part.strip()]
+    if not parts:
+        return None
+    return _compact_snapshot_text("\n".join(parts), limit=600)
+
+
+def _compact_snapshot_text(value: str | None, *, limit: int) -> str | None:
+    if value is None:
+        return None
+    compact = " ".join(value.split())
+    if not compact:
+        return None
+    if len(compact) <= limit:
+        return compact
+    return compact[: max(0, limit - 1)].rstrip() + "…"
 
 
 def _batch_window_id(message: RuntimeSourceMessage) -> str:

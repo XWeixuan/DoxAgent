@@ -24,7 +24,7 @@
 - 尚未实现 Supabase dev 用户鉴权中间件。
 - 尚未实现 Dashboard State API 的 HTTP route、SSE event stream、统一错误响应、分页筛选排序层。
 - Document 1/2/3 目前可读可用性与原始文档，但缺前端稳定卡片化 schema、历史版本接口和中文 label 映射。
-- 收益审计缺买入/卖出价、滑点、退出价、收益计算与审计任务。
+- 收益审计已接入三时间口径、分钟行情、双边滑点、轻量持久化、自动任务与手动补跑。
 - 成本审计缺统一 model usage 明细表、成本价格表和聚合服务。
 
 ### 1.2 实现状态定义
@@ -310,8 +310,11 @@ not_started | calculating | completed | failed | missing | partial
 | `GET` | `/tickers/{ticker}/runtime/executions` | Runtime 处理记录列表 | `partial` |
 | `GET` | `/tickers/{ticker}/runtime/records` | Runtime 结果沉淀记录列表 | `partial` |
 | `GET` | `/tickers/{ticker}/runtime/executions/{execution_id}` | Runtime 单次处理详情 | `proposed` |
-| `GET` | `/tickers/{ticker}/audit/revenue` | 收益审计 | `missing` |
-| `POST` | `/tickers/{ticker}/audit/revenue/run` | 手动触发收益审计 | `proposed` |
+| `GET` | `/tickers/{ticker}/audit/revenue` | 收益审计概览与延迟损耗 | `completed` |
+| `GET` | `/tickers/{ticker}/audit/revenue/trend` | 有限日趋势 | `completed` |
+| `GET` | `/tickers/{ticker}/audit/revenue/records` | 游标分页明细 | `completed` |
+| `GET` | `/tickers/{ticker}/audit/revenue/records/{record_id}` | 三口径详情 | `completed` |
+| `POST` | `/tickers/{ticker}/audit/revenue/run` | 手动触发收益审计 | `completed` |
 | `GET` | `/tickers/{ticker}/audit/cost` | 成本审计 | `completed` |
 | `GET` | `/tickers/{ticker}/audit/cost/details` | 成本审计明细 | `completed` |
 | `GET` | `/events` | SSE runtime event stream | `proposed` |
@@ -2125,9 +2128,9 @@ Response schema：
 
 ### 11.1 GET `/tickers/{ticker}/audit/revenue`
 
-用途：收益审计概览、趋势图、交易意图列表。  
+用途：返回所选周期与收益口径的轻量 KPI、覆盖率和延迟损耗聚合。
 前端页面/组件：`/ticker/:ticker/audit` 收益审计 tab。  
-实现状态：`missing`。当前只有 trade intent/TradingRecord，没有审计价格、滑点、卖出价、收益计算和任务状态。
+实现状态：`completed`。
 
 Query params：
 
@@ -2135,12 +2138,7 @@ Query params：
 | --- | --- | --- | --- |
 | `date` | string | 否 | 默认当前交易日。 |
 | `period` | string | 否 | `today | 7d | 30d`。 |
-
-周期语义：
-
-- 前端通过 `period=today|7d|30d` 切换 KPI、趋势图和交易意图列表。
-- 为保持当前前端类型兼容，`kpis` 字段名仍为 `today_trade_intent_count/today_pnl_usd/today_return_pct`；但当 `period=7d` 或 `period=30d` 时，这些字段必须返回所选周期聚合值，而不是固定今日值。
-- `trend` 应覆盖所选周期内的日序列；`trade_intents` 应限制在所选周期内，按时间倒序或审计时间倒序返回。
+| `basis` | string | 否 | `system_executable | message_bus | ideal_signal`，默认 `system_executable`。 |
 
 Response schema：
 
@@ -2149,77 +2147,47 @@ Response schema：
   "data": {
     "ticker": "MU",
     "audit_date": "2026-06-30",
-    "status": "not_started",
-    "exit_rule": "close_minus_10min_full_exit",
-    "kpis": {
-      "today_trade_intent_count": 1,
-      "audited_trade_count": 0,
-      "today_pnl_usd": null,
-      "today_return_pct": null,
-      "win_rate": null
-    },
-    "trend": [
-      {
-        "date": "2026-06-30",
-        "pnl_usd": null,
-        "trade_intent_count": 1
-      }
-    ],
-    "trade_intents": [
-      {
-        "record_id": "trd_001",
-        "time": "2026-06-30T12:00:00Z",
-        "ticker": "MU",
-        "trigger_message_id": "std_001",
-        "trigger_policy_id": "POLICY_001",
-        "action": "long",
-        "theoretical_entry_price": null,
-        "estimated_entry_price": null,
-        "exit_price": null,
-        "slippage_pct": null,
-        "pnl_usd": null,
-        "status": "pending_audit"
-      }
-    ]
+    "period": "7d",
+    "basis": "system_executable",
+    "status": "partial",
+    "exit_rule": "15:50 America/New_York, nearest valid regular-session minute",
+    "trade_intent_count": 6,
+    "auditable_trade_count": 5,
+    "audited_trade_count": 4,
+    "coverage_rate": 0.8,
+    "simulated_pnl_usd": 183.42,
+    "simulated_return_pct": 0.46,
+    "win_rate": 0.75,
+    "method_version": "paper-trade-v1",
+    "config_fingerprint": "4e3d7edb4d872810",
+    "latency_losses": {
+      "capture_loss": {"matched_trade_count": 3, "pnl_usd": 20.1, "return_pct_points": 0.07},
+      "decision_loss": {"matched_trade_count": 4, "pnl_usd": 35.2, "return_pct_points": 0.09},
+      "total_latency_loss": {"matched_trade_count": 3, "pnl_usd": 55.3, "return_pct_points": 0.16}
+    }
   }
 }
 ```
 
-字段含义：
+聚合收益率严格使用 `sum(simulated_pnl_usd) / sum(notional_usd) × 100`；延迟损耗只比较同一交易意图中两种口径均为 `audited` 的匹配样本。
 
-| 字段 | 含义 |
-| --- | --- |
-| `status` | 审计任务状态。 |
-| `exit_rule` | 当前收益审计退出策略。 |
-| `today_trade_intent_count` | 所选周期内交易意图数；字段名保留 `today_` 是前端兼容约束。 |
-| `audited_trade_count` | 所选周期内已审计交易数。 |
-| `today_pnl_usd` | 所选周期内估算收益；字段名保留 `today_` 是前端兼容约束。 |
-| `today_return_pct` | 所选周期内收益率；字段名保留 `today_` 是前端兼容约束。 |
-| `win_rate` | 所选周期内胜率。 |
-| `theoretical_entry_price` | 交易意图生成时理论买入价。 |
-| `estimated_entry_price` | 考虑滑点后的估算买入价。 |
-| `exit_price` | 收盘前 10 分钟或配置规则对应卖出价。 |
-| `pnl_usd` | 估算收益。 |
-| `period` | 请求周期，回显 `today | 7d | 30d`。 |
+### 11.2 GET `/tickers/{ticker}/audit/revenue/trend`
 
-状态枚举：
+用途：返回 `today/7d/30d` 的有限日序列；响应为 `{ticker, period, basis, items}`。每个 item 包含 `date/pnl_usd/return_pct/trade_intent_count/auditable_trade_count/audited_trade_count/coverage_rate/incomplete`。不得由前端拉全量明细后聚合。
 
-```text
-not_started | calculating | completed | failed
-pending_audit | audited | skipped | failed
-```
+### 11.3 GET `/tickers/{ticker}/audit/revenue/records`
 
-当前可能数据来源：
+用途：返回当前 ticker、周期、口径内的轻量明细。支持 `status`、`limit<=200` 和 `cursor`；数据库使用 `(intent_generated_at, result_id)` keyset pagination。列表不返回消息正文、原始 Payload 或完整 Runtime execution。
 
-- 已有 trade intent：`src/doxagent/persistent_runtime/schema.py::TradingRecord`
-- 价格工具候选：`src/doxagent/agents/market_trace/providers.py`、`src/doxagent/tools/providers/yfinance.py`、`src/doxagent/tools/providers/finnhub.py`
-- 需新增：收益审计 service、持久化表、交易日调度任务。
+### 11.4 GET `/tickers/{ticker}/audit/revenue/records/{record_id}`
 
-### 11.2 POST `/tickers/{ticker}/audit/revenue/run`
+用途：一次读取同一交易意图的三个口径结果和已固化的轻量摘要。最多返回 3 条计算结果，包含时间锚点、理论/滑点后入场与退出、收益率、PnL、行情源、状态、失败原因、方法版本。
+
+### 11.5 POST `/tickers/{ticker}/audit/revenue/run`
 
 用途：人工触发某日收益审计。  
 前端页面/组件：收益审计手动刷新/重跑按钮。  
-实现状态：`proposed`。
+实现状态：`completed`。同一 `ticker + date + method_version + config_fingerprint` 重跑复用 run/result 主键并执行 upsert，不产生无控制重复数据。
 
 Request body：
 
@@ -2239,12 +2207,25 @@ Response schema：
     "audit_run_id": "rev_audit_001",
     "ticker": "MU",
     "date": "2026-06-30",
-    "status": "calculating"
+    "status": "completed",
+    "record_count": 3,
+    "audited_count": 8,
+    "issue_count": 1,
+    "method_version": "paper-trade-v1",
+    "config_fingerprint": "4e3d7edb4d872810"
   }
 }
 ```
 
-当前可能数据来源：无直接实现，需要新增。
+任务状态：`not_started | calculating | completed | partial | failed`。单结果状态：`pending | audited | missing_time | missing_market_data | unsupported_action | failed`。
+
+实现与数据边界：
+
+- 时间快照：`TradingRecord.audit_snapshot`，新交易意图生成时固化；历史记录只使用可可靠恢复的字段，不做静默替代。
+- 计算与行情：`src/doxagent/revenue_audit/`；Benzinga 与 Twelve Data 均为可替换 provider，实际使用源写入每条结果。
+- 持久化：共享卷内 `.tmp/revenue_audit.sqlite3`，与 Supabase/Blackboard 隔离；概览、趋势、列表、详情使用独立有限查询。
+- 自动任务：独立 `revenue-auditor` 服务在 18:00 America/New_York 后执行当日审计；失败不阻塞 Message Bus 或 Persistent Runtime。
+- 前端不做固定高频轮询，仅在首次加载、周期/口径切换、手动刷新/补跑和 SSE `audit.revenue.status_changed` 后刷新。
 
 ## 12. 成本审计
 
@@ -2252,7 +2233,14 @@ Response schema：
 
 用途：成本审计 KPI、趋势图、占比图和明细入口。  
 前端页面/组件：`/ticker/:ticker/audit` 成本审计 tab。  
-实现状态：`completed`。真实后端以 `model_usage_events` 为成本审计主数据源，由 `ModelGateway.complete()` 统一记录 provider/model/token/retry/fallback/ticker/run/node/source_message 等字段；Dashboard API 通过 `ModelUsageCostService` 聚合。历史 `RuntimeExecutionRecord.timing/source_message.metadata` 中的 `model_audit(s)` 仅作为新表为空时的兼容 fallback，不作为真实主路径。
+实现状态：`completed`。生产环境以 Supabase/Postgres `doxagent.model_usage_events` 为成本审计主数据源，由 `ModelGateway.complete()` 统一记录 provider/model/token/retry/fallback/ticker/run/node/source_message 等紧凑字段；Dashboard API 通过 `ModelUsageCostService` 聚合。SQLite 仅保留给本地隔离运行和历史一次性回填。历史 `RuntimeExecutionRecord.timing/source_message.metadata` 中的 `model_audit(s)` 仅作为当前 ticker 尚无新表记录时的兼容 fallback，不作为真实主路径。
+
+持久化与 egress 约束：
+- `doxagent.model_usage_events` 不保存 `payload_json`、`metadata`、`raw_usage` 等大字段；成本审计查询也不得读取这些字段。
+- overview/trend 查询必须带 `ticker + created_at` 时间窗口，分别限定到 `today/7d/30d`，不得扫描整个成本表。
+- details 使用数据库侧筛选、`count(*)` 与 limit/offset 分页，每页只读取当前页紧凑列。
+- 成本页不做定时轮询，只在首次进入、周期/筛选变化和用户手动刷新时请求；Overview 的当日成本摘要使用 5 分钟后端 TTL cache，隔离 Overview 的高频状态刷新。
+- 新表启用 RLS，并撤销 `anon` / `authenticated` 表权限；当前无客户端 policy，仅允许后端数据库角色访问。
 
 价格语义：
 - 默认价格表位于 `src/doxagent/model_usage/default_pricing.json`，可用 `DOXAGENT_MODEL_PRICING_CONFIG_PATH` 覆盖。
@@ -2331,13 +2319,13 @@ missing | partial | completed | failed
 - `src/doxagent/agents/runtime/runner.py` 中 `model_audit`
 - `src/doxagent/agents/runtime/react.py` 中 `model_audits`
 - `src/doxagent/debug_viewer/query.py::build_agent_metrics_view`
-- 需新增：模型价格表、usage 明细持久化、成本聚合 service。
+- 已实现：配置化模型价格表、Supabase usage 明细持久化和成本聚合 service。
 
 ### 12.2 GET `/tickers/{ticker}/audit/cost/details`
 
 用途：成本明细表。  
 前端页面/组件：成本审计明细表、筛选。  
-实现状态：`completed`。明细来自统一 `model_usage_events` 主路径，保留 legacy runtime metadata fallback。
+实现状态：`completed`。明细来自统一 `doxagent.model_usage_events` 主路径，按 ticker、周期、node/model/status 在数据库侧分页；保留 legacy runtime metadata fallback。
 
 Query params：
 
@@ -2501,7 +2489,8 @@ Event data schema：
 | 消息总线 | `message_bus.message.created,message_bus.poll.failed` |
 | 运行状态 | `runtime.execution.updated,runtime.execution.failed,runtime.result.created` |
 | Overview 回测列表 | 当前以前端轮询 `/backtests` 为主；可订阅 `dashboard.backtest.*` 做实时刷新。 |
-| 收益 / 成本审计 | `audit.revenue.status_changed,audit.cost.status_changed` |
+| 收益审计 | `audit.revenue.status_changed` |
+| 成本审计 | 当前不订阅 SSE；首次加载、条件变化和手动刷新时按需请求，避免数据库高频轮询。 |
 
 当前可能数据来源：
 
@@ -2564,19 +2553,19 @@ Event data schema：
 
 ### 14.6 收益审计
 
-| API | 缺口 | 建议 |
+| API | 当前状态 | 实现 |
 | --- | --- | --- |
-| revenue overview | 缺审计任务、价格、滑点、收益计算和周期聚合 | 新增 `revenue_audit` 模块，只基于 trade intent 做纸面审计；`period=7d/30d` 时 KPI 与 trend 必须同步切换。 |
-| revenue run | 缺交易日 18:00 后调度 | 在 scheduler 或独立 audit worker 中触发。 |
-| trade intent detail | 现有 TradingRecord 无价格字段 | 不改 TradingRecord 语义，新增 audit result 表关联 record_id。 |
+| revenue overview/trend | `completed` | `revenue_audit` 仅按 trade intent、口径、日期范围和版本做数据库侧轻量聚合；period 切换同步影响 KPI 与 trend。 |
+| revenue run | `completed` | 独立 `revenue-auditor` 在 18:00 ET 后自动触发；Dashboard POST 支持幂等补跑。 |
+| trade intent detail | `completed` | `TradingRecord.audit_snapshot` 固化时间/来源；独立 audit result 通过 record ID 保存三口径价格、收益与失败原因。 |
 
 ### 14.7 成本审计
 
 | API | 缺口 | 建议 |
 | --- | --- | --- |
-| cost overview | 已落地统一 `model_usage_events` 主路径 | `period=today/7d/30d` 下 KPI、trend、breakdown 同步切换；Overview 的 `today_token_cost_usd` / ticker `today_cost_usd` 复用同一服务。 |
+| cost overview | 已落地 Supabase `doxagent.model_usage_events` 主路径 | `period=today/7d/30d` 下 KPI、trend、breakdown 同步切换；按 ticker + 时间窗口读取紧凑列，Overview 当日摘要使用 5 分钟 TTL cache。 |
 | cost pricing | 已落地配置化价格表 | 默认按阿里云百炼 / DashScope JSON seed 计价，支持 `DOXAGENT_MODEL_PRICING_CONFIG_PATH` 覆盖；缺价格返回 partial，不估价。 |
-| cost details | 已落地统一明细 | `ModelGateway.complete()` 统一记录 usage，关联 ticker/run/node/agent/task/source_message/retry/fallback。 |
+| cost details | 已落地数据库侧分页明细 | `ModelGateway.complete()` 统一记录 usage，关联 ticker/run/node/agent/task/source_message/retry/fallback；不保存或读取大 payload。 |
 | retry cost | 已落地聚合 | 基于最终响应 `ModelAuditSummary.retry_count` / `fallback_used` 聚合 retry 成本。 |
 
 ## 15. 推荐最小落地顺序

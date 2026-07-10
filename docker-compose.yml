@@ -48,8 +48,7 @@ services:
       DOXAGENT_DASHBOARD_API_MODE: real
       DOXAGENT_STORAGE_MODE: ${DOXAGENT_STORAGE_MODE:-memory}
       DOXAGENT_RUNTIME_SCHEDULER_LOOP_SLEEP_SECONDS: ${DOXAGENT_RUNTIME_SCHEDULER_LOOP_SLEEP_SECONDS:-15}
-      DOXAGENT_MODEL_USAGE_STORAGE_MODE: sqlite
-      DOXAGENT_MODEL_USAGE_SQLITE_PATH: /app/.tmp/model_usage.sqlite3
+      DOXAGENT_MODEL_USAGE_STORAGE_MODE: postgres
       DOXAGENT_MODEL_PRICING_CONFIG_PATH: ${DOXAGENT_MODEL_PRICING_CONFIG_PATH:-}
       DOXAGENT_MODEL_PRICING_DISCOUNT_RATE: ${DOXAGENT_MODEL_PRICING_DISCOUNT_RATE:-0.45}
       DOXAGENT_MODEL_PRICING_CNY_USD_RATE: ${DOXAGENT_MODEL_PRICING_CNY_USD_RATE:-6.8}
@@ -81,6 +80,40 @@ services:
       retries: 3
       start_period: 30s
 
+  revenue-auditor:
+    build:
+      context: .
+      dockerfile: Dockerfile.dashboard
+    image: doxagent-dashboard:latest
+    container_name: doxagent-revenue-auditor
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: true
+      - path: .env.dashboard
+        required: false
+    environment:
+      PYTHONPATH: /app
+      DOXAGENT_PERSISTENT_RUNTIME_STORAGE_MODE: sqlite
+      DOXAGENT_PERSISTENT_RUNTIME_SQLITE_PATH: /app/.tmp/persistent_runtime_execution.sqlite3
+      DOXAGENT_REVENUE_AUDIT_STORAGE_MODE: sqlite
+      DOXAGENT_REVENUE_AUDIT_SQLITE_PATH: /app/.tmp/revenue_audit.sqlite3
+      DOXAGENT_REVENUE_AUDIT_MARKET_DATA_PROVIDER: ${DOXAGENT_REVENUE_AUDIT_MARKET_DATA_PROVIDER:-twelvedata}
+      DOXAGENT_REVENUE_AUDIT_LOOP_SLEEP_SECONDS: ${DOXAGENT_REVENUE_AUDIT_LOOP_SLEEP_SECONDS:-60}
+    command:
+      [
+        "python",
+        "-m",
+        "doxagent.revenue_audit.cli",
+        "run-loop",
+        "--sleep-seconds",
+        "${DOXAGENT_REVENUE_AUDIT_LOOP_SLEEP_SECONDS:-60}",
+        "--quiet",
+      ]
+    volumes:
+      - doxagent-cache:/root/.cache
+      - doxagent-tmp:/app/.tmp
+
   dashboard:
     build:
       context: .
@@ -99,8 +132,12 @@ services:
       DOXAGENT_DASHBOARD_AUTH_MODE: ${DOXAGENT_DASHBOARD_AUTH_MODE:-supabase}
       DOXAGENT_DASHBOARD_STATIC_DIR: /app/frontend/dashboard/dist
       DOXAGENT_STORAGE_MODE: ${DOXAGENT_STORAGE_MODE:-memory}
-      DOXAGENT_MODEL_USAGE_STORAGE_MODE: sqlite
-      DOXAGENT_MODEL_USAGE_SQLITE_PATH: /app/.tmp/model_usage.sqlite3
+      DOXAGENT_PERSISTENT_RUNTIME_STORAGE_MODE: sqlite
+      DOXAGENT_PERSISTENT_RUNTIME_SQLITE_PATH: /app/.tmp/persistent_runtime_execution.sqlite3
+      DOXAGENT_REVENUE_AUDIT_STORAGE_MODE: sqlite
+      DOXAGENT_REVENUE_AUDIT_SQLITE_PATH: /app/.tmp/revenue_audit.sqlite3
+      DOXAGENT_REVENUE_AUDIT_MARKET_DATA_PROVIDER: ${DOXAGENT_REVENUE_AUDIT_MARKET_DATA_PROVIDER:-twelvedata}
+      DOXAGENT_MODEL_USAGE_STORAGE_MODE: postgres
       DOXAGENT_MODEL_PRICING_CONFIG_PATH: ${DOXAGENT_MODEL_PRICING_CONFIG_PATH:-}
       DOXAGENT_MODEL_PRICING_DISCOUNT_RATE: ${DOXAGENT_MODEL_PRICING_DISCOUNT_RATE:-0.45}
       DOXAGENT_MODEL_PRICING_CNY_USD_RATE: ${DOXAGENT_MODEL_PRICING_CNY_USD_RATE:-6.8}

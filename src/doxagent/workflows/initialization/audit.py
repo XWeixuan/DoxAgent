@@ -348,8 +348,13 @@ class InitializationAuditMixin:
             for tool_call in result.tool_calls
             if tool_call.status is ResultStatus.SUCCEEDED
         }
-        if isinstance(audit, dict) and isinstance(audit.get("tool_counts"), dict):
-            actual_tools.update(str(tool_name) for tool_name in audit["tool_counts"])
+        runtime_guards = audit.get("runtime_guards") if isinstance(audit, dict) else None
+        if isinstance(runtime_guards, dict) and isinstance(
+            runtime_guards.get("tool_counts"), dict
+        ):
+            actual_tools.update(
+                str(tool_name) for tool_name in runtime_guards["tool_counts"]
+            )
         unexecuted = sorted(declared_tools.difference(actual_tools))
         payload["tool_usage_audit"] = {
             "declared_tool_names": sorted(declared_tools),

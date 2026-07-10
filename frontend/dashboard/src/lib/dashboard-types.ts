@@ -39,6 +39,7 @@ export type AuditStatus =
   | "failed"
   | "missing"
   | "partial"
+export type RevenueBasis = "system_executable" | "message_bus" | "ideal_signal"
 
 export interface ApiMeta {
   request_id: string
@@ -455,21 +456,45 @@ export interface RevenueAudit {
   ticker: string
   audit_date: string
   period: Period
+  basis: RevenueBasis
   status: AuditStatus
   exit_rule: string
-  kpis: {
-    today_trade_intent_count: number
-    audited_trade_count: number
-    today_pnl_usd: number | null
-    today_return_pct: number | null
-    win_rate: number | null
+  trade_intent_count: number
+  auditable_trade_count: number
+  audited_trade_count: number
+  coverage_rate: number | null
+  simulated_pnl_usd: number | null
+  simulated_return_pct: number | null
+  win_rate: number | null
+  method_version: string
+  config_fingerprint: string
+  latency_losses: {
+    capture_loss: RevenueLatencyLoss
+    decision_loss: RevenueLatencyLoss
+    total_latency_loss: RevenueLatencyLoss
   }
-  trend: Array<{
+}
+
+export interface RevenueLatencyLoss {
+  matched_trade_count: number
+  pnl_usd: number | null
+  return_pct_points: number | null
+}
+
+export interface RevenueTrend {
+  ticker: string
+  period: Period
+  basis: RevenueBasis
+  items: Array<{
     date: string
     pnl_usd: number | null
+    return_pct: number | null
     trade_intent_count: number
+    auditable_trade_count: number
+    audited_trade_count: number
+    coverage_rate: number | null
+    incomplete: boolean
   }>
-  trade_intents: TradeIntent[]
 }
 
 export interface TradeIntent {
@@ -478,13 +503,65 @@ export interface TradeIntent {
   ticker: string
   trigger_message_id: string | null
   trigger_policy_id: string | null
+  decision_source: string
   action: string
+  basis: RevenueBasis
+  anchor_time: string | null
+  theoretical_entry_time: string | null
   theoretical_entry_price: number | null
   estimated_entry_price: number | null
+  exit_time: string | null
   exit_price: number | null
-  slippage_pct: number | null
+  theoretical_exit_price: number | null
+  slippage_bps: number
+  theoretical_return_pct: number | null
+  return_pct: number | null
   pnl_usd: number | null
+  notional_usd: number | null
+  data_source: string | null
   status: string
+  failure_reason: string | null
+  method_version: string
+}
+
+export interface RevenueAuditDetail {
+  trading_record_id: string
+  ticker: string
+  decision_source: string
+  trigger_policy: string | null
+  source_message_id: string
+  message_summary: string | null
+  agent_summary: string | null
+  trigger_reason: string | null
+  published_at: string | null
+  collected_at: string | null
+  normalized_at: string | null
+  message_bus_event_time: string | null
+  runtime_started_at: string | null
+  intent_generated_at: string | null
+  results: RevenueAuditCalculation[]
+}
+
+export interface RevenueAuditCalculation {
+  result_id: string
+  trading_record_id: string
+  basis: RevenueBasis
+  status: string
+  anchor_time: string | null
+  theoretical_entry_time: string | null
+  theoretical_entry_price: number | null
+  simulated_entry_price: number | null
+  exit_time: string | null
+  theoretical_exit_price: number | null
+  simulated_exit_price: number | null
+  notional_usd: number | null
+  theoretical_return_pct: number | null
+  simulated_return_pct: number | null
+  simulated_pnl_usd: number | null
+  slippage_bps: number
+  data_source: string | null
+  failure_reason: string | null
+  method_version: string
 }
 
 export interface CostAudit {

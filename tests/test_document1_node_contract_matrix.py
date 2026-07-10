@@ -360,16 +360,24 @@ def test_document1_to_document2_handoff_matrix(
         }
     ]
     assert downstream_tasks
+    context_pack_seen = False
     for task in downstream_tasks:
-        context_pack = task.input_context.get("document1_context_pack")
-        if context_pack is None:
-            continue
-        assert context_pack["ticker"] == "NVDA"
-        assert context_pack["compaction"]["omitted_full_text"] is True
-        context = task.input_context["global_research_context"]
-        assert "market_narrative_report" not in context["sections"]
-        assert all("text" not in section for section in context["sections"].values())
-    assert any("document1_context_pack" in task.input_context for task in downstream_tasks)
+        assert "document1_context_pack" not in task.input_context
+        context = task.input_context.get("global_research_context")
+        if isinstance(context, dict):
+            context_pack = context.get("document1_context_pack")
+            if isinstance(context_pack, dict):
+                context_pack_seen = True
+                assert context_pack["ticker"] == "NVDA"
+                assert context_pack["compaction"]["omitted_full_text"] is True
+            assert "market_narrative_report" not in context["sections"]
+            assert all("text" not in section for section in context["sections"].values())
+        brief = task.input_context.get("document1_context_pack_brief")
+        if isinstance(brief, dict):
+            context_pack_seen = True
+            assert brief["ticker"] == "NVDA"
+            assert brief["compaction"]["omitted_full_pack"] is True
+    assert context_pack_seen
 
 
 def test_generate_global_narrative_report_node_matrix_tool_fragment_recovered() -> None:

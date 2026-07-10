@@ -17,6 +17,14 @@ from doxagent.models import (
     MonitoringPolicyDocument,
 )
 
+_DOCUMENT1_NODE_DOCUMENT_TYPES: dict[str, set[DocumentType]] = {
+    "BuildGlobalResearch": set(),
+    "GenerateGlobalNarrativeReport": {
+        DocumentType.GLOBAL_RESEARCH,
+        DocumentType.EXPECTATION_UNIT,
+    },
+}
+
 _DOCUMENT3_NODE_DOCUMENT_TYPES: dict[str, set[DocumentType]] = {
     "GenerateKnownEvents": {
         DocumentType.GLOBAL_RESEARCH,
@@ -538,19 +546,50 @@ def _compact_patch_summary(patch: dict[str, Any]) -> dict[str, Any]:
 
 
 def _compact_react_audit(audit: dict[str, Any]) -> dict[str, Any]:
+    runtime_guards = audit.get("runtime_guards")
+    if not isinstance(runtime_guards, dict):
+        runtime_guards = {}
+    event_log = audit.get("event_log")
+    events = event_log if isinstance(event_log, list) else []
+    event_counts: dict[str, int] = {}
+    for event in events:
+        if not isinstance(event, dict):
+            continue
+        kind = str(event.get("kind") or "unknown")
+        event_counts[kind] = event_counts.get(kind, 0) + 1
+    event_log_summary = audit.get("event_log_summary")
+    if isinstance(event_log_summary, dict) and isinstance(
+        event_log_summary.get("kind_counts"), dict
+    ):
+        event_counts = dict(event_log_summary["kind_counts"])
+    observation_data = audit.get("observation_data")
+    observation_data = observation_data if isinstance(observation_data, dict) else {}
+    raw_results = observation_data.get("raw_tool_results")
+    block_index = observation_data.get("block_index")
+    if isinstance(block_index, list):
+        block_count = len(block_index)
+    elif isinstance(block_index, dict):
+        block_count = int(block_index.get("block_count") or 0)
+    else:
+        block_count = 0
+    budget_history = audit.get("context_budget_history")
+    latest_budget = (
+        budget_history[-1]
+        if isinstance(budget_history, list) and budget_history
+        else {}
+    )
     return {
-        "max_tool_calls_per_name": audit.get("max_tool_calls_per_name"),
-        "tool_counts": audit.get("tool_counts", {}),
+        "schema_version": audit.get("schema_version"),
+        "tool_counts": runtime_guards.get("tool_counts", {}),
         "loaded_skill_ids": audit.get("loaded_skill_ids", []),
         "warnings": _compact_payload_value(audit.get("warnings", [])[-5:], depth=2)
         if isinstance(audit.get("warnings"), list)
         else [],
-        "compacted_summaries": [
-            _compact_text(item, limit=1_000)
-            for item in audit.get("compacted_summaries", [])[-2:]
-            if isinstance(item, str)
-        ],
-        "market_evidence_snapshot": audit.get("market_evidence_snapshot", {}),
+        "event_counts": event_counts,
+        "raw_tool_result_count": len(raw_results) if isinstance(raw_results, dict) else 0,
+        "observation_block_count": block_count,
+        "memory_state": _compact_payload_value(audit.get("memory_state", {}), depth=3),
+        "latest_context_budget": _compact_payload_value(latest_budget, depth=2),
     }
 
 
@@ -579,13 +618,19 @@ def _is_scoped_workflow_history_node(task: AgentTask) -> bool:
     node = task.run_metadata.workflow_node
     if not isinstance(node, str):
         return False
-    return node in _DOCUMENT3_NODE_DOCUMENT_TYPES or _is_document2_context_task(task)
+    return (
+        node in _DOCUMENT1_NODE_DOCUMENT_TYPES
+        or node in _DOCUMENT3_NODE_DOCUMENT_TYPES
+        or _is_document2_context_task(task)
+    )
 
 
 def _scoped_workflow_node_document_types(task: AgentTask) -> set[DocumentType] | None:
     node = task.run_metadata.workflow_node
     if not isinstance(node, str):
         return None
+    if node in _DOCUMENT1_NODE_DOCUMENT_TYPES:
+        return _DOCUMENT1_NODE_DOCUMENT_TYPES[node]
     if node in _DOCUMENT3_NODE_DOCUMENT_TYPES:
         return _DOCUMENT3_NODE_DOCUMENT_TYPES[node]
     if _is_document2_context_task(task):

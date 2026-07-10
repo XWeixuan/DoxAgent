@@ -128,9 +128,9 @@ def test_real_registry_exposes_strong_tool_descriptors() -> None:
 
     assert registry.describe("finnhub.trade_stream").concurrent_safe is False
     assert registry.describe("doxa_run_narrative_research").concurrent_safe is False
-    assert registry.describe("doxa_run_narrative_research").compactable is False
+    assert registry.describe("doxa_run_narrative_research").observation_policy == "inline"
     assert registry.describe("doxa_run_analysis").concurrent_safe is False
-    assert registry.describe("doxa_run_analysis").compactable is False
+    assert registry.describe("doxa_run_analysis").observation_policy == "inline"
 
 
 def test_real_module_keeps_compatibility_exports() -> None:

@@ -415,9 +415,7 @@ class MockDashboardStore:
             return None
         if expectation_id:
             items = [
-                item
-                for item in items
-                if expectation_id in item.get("related_expectation_ids", [])
+                item for item in items if expectation_id in item.get("related_expectation_ids", [])
             ]
         items = sort_items(items, "-updated_at", default="-updated_at")
         return paginate_items(items, limit=limit, cursor=cursor)
@@ -466,9 +464,7 @@ class MockDashboardStore:
         if source_type:
             items = [item for item in items if item.get("source_type") == source_type]
         if processing_status:
-            items = [
-                item for item in items if item["processing_status"] == processing_status
-            ]
+            items = [item for item in items if item["processing_status"] == processing_status]
         if q:
             lowered = q.lower()
             items = [
@@ -618,26 +614,176 @@ class MockDashboardStore:
             return None
         return deepcopy(detail)
 
-    def get_revenue_audit(self, ticker: str, *, period: str | None) -> JsonObject | None:
+    def get_revenue_audit(
+        self,
+        ticker: str,
+        *,
+        period: str | None,
+        basis: str | None = None,
+    ) -> JsonObject | None:
         payload = deepcopy(self.revenue_audit.get(normalize_ticker(ticker)))
         if payload is None:
             return None
         resolved_period = period or str(payload.get("period") or "today")
         payload["period"] = resolved_period
-        trend = _filter_period_items(
-            cast(list[JsonObject], payload.get("trend") or []),
-            resolved_period,
-            "date",
-        )
         trade_intents = _filter_period_items(
             cast(list[JsonObject], payload.get("trade_intents") or []),
             resolved_period,
             "time",
         )
-        payload["trend"] = trend
-        payload["trade_intents"] = trade_intents
-        _apply_revenue_period_kpis(payload, trend, trade_intents, resolved_period)
-        return payload
+        resolved_basis = basis or "system_executable"
+        selected = [item | {"basis": resolved_basis} for item in trade_intents]
+        audited = [item for item in selected if item.get("status") == "audited"]
+        auditable = [item for item in selected if item.get("action") in {"long", "short"}]
+        pnl = sum(float(item.get("pnl_usd") or 0) for item in audited) if audited else None
+        notional = sum(float(item.get("notional_usd") or 0) for item in audited)
+        return {
+            "ticker": payload["ticker"],
+            "audit_date": payload["audit_date"],
+            "period": resolved_period,
+            "basis": resolved_basis,
+            "status": payload["status"],
+            "exit_rule": payload["exit_rule"],
+            "trade_intent_count": len(selected),
+            "auditable_trade_count": len(auditable),
+            "audited_trade_count": len(audited),
+            "coverage_rate": len(audited) / len(auditable) if auditable else None,
+            "simulated_pnl_usd": pnl,
+            "simulated_return_pct": pnl / notional * 100 if pnl is not None and notional else None,
+            "win_rate": (
+                sum(1 for item in audited if float(item.get("pnl_usd") or 0) > 0) / len(audited)
+                if audited
+                else None
+            ),
+            "method_version": "paper-trade-v1",
+            "config_fingerprint": "mock-config-v1",
+            "latency_losses": {
+                "capture_loss": {
+                    "matched_trade_count": len(audited),
+                    "pnl_usd": 12.0,
+                    "return_pct_points": 0.08,
+                },
+                "decision_loss": {
+                    "matched_trade_count": len(audited),
+                    "pnl_usd": 8.0,
+                    "return_pct_points": 0.05,
+                },
+                "total_latency_loss": {
+                    "matched_trade_count": len(audited),
+                    "pnl_usd": 20.0,
+                    "return_pct_points": 0.13,
+                },
+            },
+        }
+
+    def get_revenue_trend(
+        self,
+        ticker: str,
+        *,
+        period: str | None,
+        basis: str | None,
+    ) -> JsonObject | None:
+        payload = deepcopy(self.revenue_audit.get(normalize_ticker(ticker)))
+        if payload is None:
+            return None
+        resolved_period = period or str(payload.get("period") or "today")
+        items = _filter_period_items(
+            cast(list[JsonObject], payload.get("trend") or []),
+            resolved_period,
+            "date",
+        )
+        return {
+            "ticker": normalize_ticker(ticker),
+            "period": resolved_period,
+            "basis": basis or "system_executable",
+            "items": items,
+        }
+
+    def get_revenue_records(
+        self,
+        ticker: str,
+        *,
+        period: str | None,
+        basis: str | None,
+        status: str | None,
+        limit: int | None,
+        cursor: str | None,
+    ) -> JsonObject | None:
+        payload = deepcopy(self.revenue_audit.get(normalize_ticker(ticker)))
+        if payload is None:
+            return None
+        resolved_period = period or str(payload.get("period") or "today")
+        items = _filter_period_items(
+            cast(list[JsonObject], payload.get("trade_intents") or []),
+            resolved_period,
+            "time",
+        )
+        resolved_basis = basis or "system_executable"
+        items = [item | {"basis": resolved_basis} for item in items]
+        if status:
+            items = [item for item in items if item.get("status") == status]
+        return paginate_items(items, limit=limit, cursor=cursor)
+
+    def get_revenue_record_detail(
+        self,
+        ticker: str,
+        trading_record_id: str,
+    ) -> JsonObject | None:
+        payload = deepcopy(self.revenue_audit.get(normalize_ticker(ticker)))
+        if payload is None:
+            return None
+        record = next(
+            (
+                item
+                for item in cast(list[JsonObject], payload.get("trade_intents") or [])
+                if item.get("record_id") == trading_record_id
+            ),
+            None,
+        )
+        if record is None:
+            return None
+        results = []
+        for basis in ("ideal_signal", "message_bus", "system_executable"):
+            results.append(
+                {
+                    "result_id": f"mock_{trading_record_id}_{basis}",
+                    "trading_record_id": trading_record_id,
+                    "basis": basis,
+                    "status": record.get("status"),
+                    "anchor_time": record.get("time"),
+                    "theoretical_entry_time": record.get("theoretical_entry_time"),
+                    "theoretical_entry_price": record.get("theoretical_entry_price"),
+                    "simulated_entry_price": record.get("estimated_entry_price"),
+                    "exit_time": record.get("exit_time"),
+                    "theoretical_exit_price": record.get("theoretical_exit_price"),
+                    "simulated_exit_price": record.get("exit_price"),
+                    "notional_usd": record.get("notional_usd"),
+                    "theoretical_return_pct": record.get("theoretical_return_pct"),
+                    "simulated_return_pct": record.get("return_pct"),
+                    "simulated_pnl_usd": record.get("pnl_usd"),
+                    "slippage_bps": record.get("slippage_bps"),
+                    "data_source": record.get("data_source"),
+                    "failure_reason": record.get("failure_reason"),
+                    "method_version": "paper-trade-v1",
+                }
+            )
+        return {
+            "trading_record_id": trading_record_id,
+            "ticker": normalize_ticker(ticker),
+            "decision_source": record.get("decision_source"),
+            "trigger_policy": record.get("trigger_policy_id"),
+            "source_message_id": record.get("trigger_message_id"),
+            "message_summary": "Mock trigger message summary.",
+            "agent_summary": "Mock agent summary.",
+            "trigger_reason": "Mock policy match.",
+            "published_at": record.get("time"),
+            "collected_at": record.get("time"),
+            "normalized_at": record.get("time"),
+            "message_bus_event_time": record.get("time"),
+            "runtime_started_at": record.get("time"),
+            "intent_generated_at": record.get("time"),
+            "results": results,
+        }
 
     def run_revenue_audit(self, ticker: str, *, date: str | None) -> JsonObject | None:
         if normalize_ticker(ticker) not in self.tickers:
@@ -859,8 +1005,7 @@ def _apply_revenue_period_kpis(
             [
                 item
                 for item in audited_trades
-                if _number_or_none(item.get("pnl_usd"))
-                and float(item["pnl_usd"]) >= 0
+                if _number_or_none(item.get("pnl_usd")) and float(item["pnl_usd"]) >= 0
             ]
         )
         / len(audited_trades)
@@ -1975,8 +2120,7 @@ def _runtime_nodes_fixture(*, failed: bool) -> dict[str, JsonObject]:
                 count=4,
                 input_summary="标准消息进入 event_stream pending 队列。",
                 output_summary=(
-                    "RuntimeSchedulerLoop 读取 pending_events "
-                    "并交给 Persistent Runtime。"
+                    "RuntimeSchedulerLoop 读取 pending_events 并交给 Persistent Runtime。"
                 ),
                 duration_ms=900,
             ),
@@ -2285,7 +2429,9 @@ def _mock_runtime_result_record(item: JsonObject, detail: JsonObject) -> JsonObj
         or _text_or_none(w1_result.get("reasoning"))
         or _text_or_none(route_decision.get("reason"))
     )
-    durations = item.get("node_durations_ms") if isinstance(item.get("node_durations_ms"), dict) else {}
+    durations = (
+        item.get("node_durations_ms") if isinstance(item.get("node_durations_ms"), dict) else {}
+    )
     return {
         "record_id": str(item.get("execution_id") or item.get("source_message_id")),
         "result_type": result_type,
@@ -2375,9 +2521,36 @@ def _build_revenue_audit() -> dict[str, JsonObject]:
                 "win_rate": 1.0,
             },
             "trend": [
-                {"date": "2026-06-28", "pnl_usd": -42.1, "trade_intent_count": 2},
-                {"date": "2026-06-29", "pnl_usd": 88.0, "trade_intent_count": 1},
-                {"date": "2026-06-30", "pnl_usd": 183.42, "trade_intent_count": 1},
+                {
+                    "date": "2026-06-28",
+                    "pnl_usd": -42.1,
+                    "return_pct": -0.21,
+                    "trade_intent_count": 2,
+                    "auditable_trade_count": 2,
+                    "audited_trade_count": 1,
+                    "coverage_rate": 0.5,
+                    "incomplete": True,
+                },
+                {
+                    "date": "2026-06-29",
+                    "pnl_usd": 88.0,
+                    "return_pct": 0.88,
+                    "trade_intent_count": 1,
+                    "auditable_trade_count": 1,
+                    "audited_trade_count": 1,
+                    "coverage_rate": 1.0,
+                    "incomplete": False,
+                },
+                {
+                    "date": "2026-06-30",
+                    "pnl_usd": 183.42,
+                    "return_pct": 1.83,
+                    "trade_intent_count": 1,
+                    "auditable_trade_count": 1,
+                    "audited_trade_count": 1,
+                    "coverage_rate": 1.0,
+                    "incomplete": False,
+                },
             ],
             "trade_intents": [
                 {
@@ -2386,13 +2559,25 @@ def _build_revenue_audit() -> dict[str, JsonObject]:
                     "ticker": "MU",
                     "trigger_message_id": "std_mu_001",
                     "trigger_policy_id": "POLICY_DTC_HBM_ORDER",
+                    "decision_source": "w2_policy_direct",
                     "action": "long",
+                    "basis": "system_executable",
+                    "anchor_time": "2026-06-30T12:04:20Z",
+                    "theoretical_entry_time": "2026-06-30T12:05:00Z",
                     "theoretical_entry_price": 134.2,
                     "estimated_entry_price": 134.35,
+                    "exit_time": "2026-06-30T19:50:00Z",
                     "exit_price": 135.98,
-                    "slippage_pct": 0.11,
+                    "theoretical_exit_price": 136.05,
+                    "slippage_bps": 5.0,
+                    "theoretical_return_pct": 1.38,
+                    "return_pct": 1.21,
                     "pnl_usd": 183.42,
+                    "notional_usd": 10_000,
+                    "data_source": "twelvedata:time_series:1min",
                     "status": "audited",
+                    "failure_reason": None,
+                    "method_version": "paper-trade-v1",
                 }
             ],
         },
@@ -2416,7 +2601,18 @@ def _empty_revenue_audit(ticker: str) -> JsonObject:
             "today_return_pct": None,
             "win_rate": None,
         },
-        "trend": [{"date": "2026-06-30", "pnl_usd": None, "trade_intent_count": 0}],
+        "trend": [
+            {
+                "date": "2026-06-30",
+                "pnl_usd": None,
+                "return_pct": None,
+                "trade_intent_count": 0,
+                "auditable_trade_count": 0,
+                "audited_trade_count": 0,
+                "coverage_rate": None,
+                "incomplete": False,
+            }
+        ],
         "trade_intents": [],
     }
 

@@ -1,5 +1,7 @@
 """Factory for registering real external tool clients."""
 
+from typing import Literal, cast
+
 from doxagent.settings import DoxAgentSettings
 from doxagent.tools.client import ToolClient
 from doxagent.tools.providers.alpha_vantage import (
@@ -27,6 +29,39 @@ from doxagent.tools.providers.yfinance import (
 )
 from doxagent.tools.registry import ToolDescriptor, ToolRegistry
 
+_INDEXED_OBSERVATION_TOOLS = {
+    "doxa_get_narrative_report",
+    "doxa_query_analysis",
+    "doxa_get_analysis",
+    "doxa_query_propositions",
+    "doxa_get_ignored_propositions",
+    "doxa_get_social_result",
+    "doxa_get_social_result_detail",
+    "doxa_get_media_result",
+    "doxa_get_media_result_detail",
+    "doxa_get_event_source",
+    "doxatlas.query",
+    "doxatlas.source_lookup",
+    "sec.company_facts_and_filings",
+    "sec.filing_sections",
+    "fed.fomc_calendar_materials",
+    "tavily.search",
+    "tavily.extract",
+    "anysearch.search",
+    "monitoring.recent_events",
+}
+
+_RECOMPUTABLE_OBSERVATION_TOOLS = {
+    "alpha.financial_statements",
+    "twelvedata.daily_ohlcv",
+    "fred.series_observations",
+    "bls.timeseries",
+    "bea.nipa_data",
+    "fmp.sector_performance",
+    "finnhub.trade_stream",
+    "yfinance.daily_ohlcv",
+}
+
 
 def _descriptor(
     name: str,
@@ -36,8 +71,27 @@ def _descriptor(
     business_purpose: str,
     contract_brief: str | None = None,
     concurrent_safe: bool = True,
-    compactable: bool = True,
+    observation_policy: str | None = None,
+    observation_adapter: str | None = None,
 ) -> ToolDescriptor:
+    resolved_policy = observation_policy
+    if resolved_policy is None:
+        if name in _RECOMPUTABLE_OBSERVATION_TOOLS:
+            resolved_policy = "recomputable"
+        elif name in _INDEXED_OBSERVATION_TOOLS:
+            resolved_policy = "indexed"
+        else:
+            resolved_policy = "inline"
+    resolved_adapter = observation_adapter
+    if resolved_adapter is None:
+        if name.startswith("doxa_") or name.startswith("doxatlas."):
+            resolved_adapter = "doxatlas"
+        elif name in _RECOMPUTABLE_OBSERVATION_TOOLS:
+            resolved_adapter = "time_series"
+        elif name in {"tavily.search", "anysearch.search"}:
+            resolved_adapter = "search_results"
+        else:
+            resolved_adapter = "auto"
     return ToolDescriptor(
         name=name,
         description=description,
@@ -45,7 +99,22 @@ def _descriptor(
         business_purpose=business_purpose,
         contract_brief=contract_brief,
         concurrent_safe=concurrent_safe,
-        compactable=compactable,
+        observation_policy=cast(
+            Literal["inline", "indexed", "recomputable"],
+            resolved_policy,
+        ),
+        observation_adapter=cast(
+            Literal[
+                "auto",
+                "json",
+                "search_results",
+                "text",
+                "table",
+                "time_series",
+                "doxatlas",
+            ],
+            resolved_adapter,
+        ),
     )
 
 
@@ -60,7 +129,6 @@ _DOXATLAS_DESCRIPTORS: dict[str, ToolDescriptor] = {
             "review agents should not call run tools."
         ),
         concurrent_safe=False,
-        compactable=False,
     ),
     "doxa_run_analysis": _descriptor(
         "doxa_run_analysis",
@@ -72,7 +140,6 @@ _DOXATLAS_DESCRIPTORS: dict[str, ToolDescriptor] = {
             "review agents should not call run tools."
         ),
         concurrent_safe=False,
-        compactable=False,
     ),
     "doxa_get_narrative_report": _descriptor(
         "doxa_get_narrative_report",
@@ -369,7 +436,6 @@ _DESCRIPTORS: dict[str, ToolDescriptor] = {
         input_fields=["ticker", "duration_seconds", "max_events"],
         business_purpose="Support O4 live trade-tape context with bounded capture.",
         concurrent_safe=False,
-        compactable=True,
     ),
     "tavily.search": _descriptor(
         "tavily.search",
@@ -445,7 +511,6 @@ _DESCRIPTORS: dict[str, ToolDescriptor] = {
             "poll_interval_seconds is rejected because only users can change cadence."
         ),
         concurrent_safe=False,
-        compactable=False,
     ),
     "monitoring.list_status": _descriptor(
         "monitoring.list_status",

@@ -406,6 +406,7 @@ class InitializationAgentDispatchMixin:
     ) -> AgentPermissions:
         updates: dict[str, Any] = {}
         if node is WorkflowNode.BUILD_GLOBAL_RESEARCH:
+            updates["readable_context_scopes"] = []
             updates["can_raise_objection"] = False
             updates["writable_targets"] = [DocumentType.GLOBAL_RESEARCH.value]
             if (
@@ -418,6 +419,10 @@ class InitializationAgentDispatchMixin:
         if node_agent_tools is not None:
             updates["allowed_tools"] = node_agent_tools
         if node is WorkflowNode.GENERATE_GLOBAL_NARRATIVE_REPORT:
+            updates["readable_context_scopes"] = [
+                DocumentType.GLOBAL_RESEARCH.value,
+                DocumentType.EXPECTATION_UNIT.value,
+            ]
             updates["writable_targets"] = [DocumentType.GLOBAL_RESEARCH.value]
         if (
             agent_name is AgentName.O1_EXPECTATION_OWNER

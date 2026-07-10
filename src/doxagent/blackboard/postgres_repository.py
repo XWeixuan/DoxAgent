@@ -43,6 +43,9 @@ logger = logging.getLogger(__name__)
 
 _FULL_READ_WARNING_BYTES = 512 * 1024
 _FULL_READ_WARNING_PER_MINUTE = 20
+_AGENT_CONTEXT_PAYLOAD_SQL = (
+    "payload #- '{payload,react_audit}' #- '{payload,model_audits}'"
+)
 
 
 class PostgresBlackboardRepository:
@@ -225,7 +228,11 @@ class PostgresBlackboardRepository:
         include_payload: bool = False,
     ) -> list[WorkingMemoryEntrySummary]:
         def operation() -> list[WorkingMemoryEntrySummary]:
-            payload_sql = "payload" if include_payload else "null"
+            payload_sql = (
+                _AGENT_CONTEXT_PAYLOAD_SQL
+                if include_payload
+                else "null"
+            )
             with self._read_connection() as conn:
                 with conn.cursor() as cursor:
                     cursor.execute(

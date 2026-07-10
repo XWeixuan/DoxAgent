@@ -6,7 +6,8 @@ from typing import Any
 
 from doxagent.agents import ModelGatewayAgentRunner
 from doxagent.agents.config import default_agent_registry
-from doxagent.agents.runtime.react import ReActHarnessConfig, Scratchpad
+from doxagent.agents.runtime.memory import TaskMemoryRuntime
+from doxagent.agents.runtime.react import ReActHarnessConfig
 from doxagent.gateway import (
     MockModelClient,
     ModelAuditSummary,
@@ -133,14 +134,14 @@ def runtime_o3_task() -> AgentTask:
     )
 
 
-def test_react_scratchpad_plan_keeps_latest_update_only() -> None:
-    scratchpad = Scratchpad(agent_task())
+def test_react_task_memory_plan_keeps_latest_update_only() -> None:
+    runtime = TaskMemoryRuntime(agent_task())
 
-    scratchpad.record_action(1, {"plan_update": ["first plan"], "is_complete": False})
-    scratchpad.record_action(2, {"plan_update": ["second plan"], "is_complete": False})
-    scratchpad.record_action(3, {"is_complete": False})
+    runtime.record_action(1, {"plan_update": ["first plan"], "is_complete": False})
+    runtime.record_action(2, {"plan_update": ["second plan"], "is_complete": False})
+    runtime.record_action(3, {"is_complete": False})
 
-    assert scratchpad.plan == ["second plan"]
+    assert runtime.memory.plan == ["second plan"]
 
 
 def test_react_is_default_and_accepts_direct_structured_payload() -> None:
@@ -153,7 +154,12 @@ def test_react_is_default_and_accepts_direct_structured_payload() -> None:
     assert result.payload["structured"] == {"summary": "ok"}
     assert result.payload["runtime"] == "react"
     assert result.payload["structured"] == {"summary": "ok"}
-    assert result.payload["react_audit"]["entries"][0]["completion_reason"]
+    action = next(
+        event
+        for event in result.payload["react_audit"]["event_log"]
+        if event["kind"] == "model_action"
+    )
+    assert action["completion_reason"]
 
 
 def test_react_model_requests_carry_configured_timeout() -> None:
@@ -273,7 +279,12 @@ def test_react_unwraps_nested_react_protocol_action() -> None:
 
     assert result.status is ResultStatus.SUCCEEDED
     assert result.payload["structured"] == {"summary": "ok"}
-    assert result.payload["react_audit"]["entries"][0]["completion_reason"] == "done"
+    action = next(
+        event
+        for event in result.payload["react_audit"]["event_log"]
+        if event["kind"] == "model_action"
+    )
+    assert action["completion_reason"] == "done"
 
 
 def test_react_unwraps_fenced_nested_react_protocol_text() -> None:
@@ -364,7 +375,7 @@ def test_react_does_not_accept_incomplete_final_payload() -> None:
     assert result.payload["structured"] == {"summary": "ok"}
     assert any(
         entry["kind"] == "react_no_progress"
-        for entry in result.payload["react_audit"]["entries"]
+        for entry in result.payload["react_audit"]["event_log"]
     )
 
 
@@ -427,7 +438,7 @@ def test_react_retries_once_after_non_json_model_text() -> None:
     assert result.payload["structured"] == {"summary": "ok"}
     assert any(
         entry["kind"] == "model_format_error"
-        for entry in result.payload["react_audit"]["entries"]
+        for entry in result.payload["react_audit"]["event_log"]
     )
 
 
@@ -462,8 +473,12 @@ def test_react_requests_include_chinese_output_rules_and_step_metadata() -> None
     assert "runtime_output_schema" not in user_payload["task"]
     assert user_payload["task"]["input_context"] == {"document_ids": ["global-research-001"]}
     assert "context_snapshot" not in user_payload
-    assert "plan" not in user_payload
-    assert "recent_trajectory" not in user_payload
+    assert user_payload["task_memory"]["working_synthesis"] == []
+    assert user_payload["task_memory"]["fresh_observations"] == []
+    response_schema = user_payload["react_protocol"]["response_schema"]
+    assert "synthesis_update" in response_schema
+    assert "research_update" in response_schema
+    assert "retain_observations" in response_schema
     assert "available_tools" in user_payload
     assert "available_skills" in user_payload
     assert user_payload["loaded_skills"] == []
@@ -487,7 +502,8 @@ def test_react_prompt_includes_compact_doxatlas_contract_briefs() -> None:
             business_purpose="Audit DoxAtlas proposition support.",
             contract_brief="Use event scope run_id+Nxx+Exx. Returns compact Pxx propositions.",
             concurrent_safe=True,
-            compactable=True,
+                observation_policy="indexed",
+                observation_adapter="doxatlas",
         ),
     )
     task = agent_task().model_copy(
@@ -510,7 +526,8 @@ def test_react_prompt_includes_compact_doxatlas_contract_briefs() -> None:
         "Use event scope run_id+Nxx+Exx. Returns compact Pxx propositions."
     )
     assert "concurrent_safe" not in tool
-    assert "compactable" not in tool
+    assert tool["observation_policy"] == "indexed"
+    assert tool["observation_adapter"] == "doxatlas"
     policy = user_payload["tool_call_policy"]["doxatlas_contract_brief"]
     assert "DoxAtlas uses scoped short ids" in policy
     assert "run_id+narrative_code+event_code" in policy
@@ -645,7 +662,7 @@ def test_react_loads_external_skill_on_demand() -> None:
     assert result.payload["external_skill_package_ids"] == ["financial-statement"]
     assert any(
         entry["kind"] == "skill_result" and entry["status"] == "loaded"
-        for entry in result.payload["react_audit"]["entries"]
+        for entry in result.payload["react_audit"]["event_log"]
     )
 
 
@@ -687,7 +704,7 @@ def test_react_does_not_load_same_skill_twice() -> None:
     assert result.payload["skill_ids"] == ["financial-statement"]
     duplicate_entries = [
         entry
-        for entry in result.payload["react_audit"]["entries"]
+        for entry in result.payload["react_audit"]["event_log"]
         if entry["kind"] == "skill_result" and entry["status"] == "duplicate"
     ]
     assert duplicate_entries
@@ -730,7 +747,7 @@ def test_react_rejects_unexposed_skill_call() -> None:
     assert result.payload["skill_ids"] == []
     assert any(
         entry["kind"] == "skill_result" and entry["status"] == "rejected"
-        for entry in result.payload["react_audit"]["entries"]
+        for entry in result.payload["react_audit"]["event_log"]
     )
 
 
@@ -752,7 +769,7 @@ def test_react_retries_after_no_progress_action() -> None:
     assert result.status is ResultStatus.SUCCEEDED
     assert any(
         entry["kind"] == "react_no_progress"
-        for entry in result.payload["react_audit"]["entries"]
+        for entry in result.payload["react_audit"]["event_log"]
     )
 
 
@@ -2414,9 +2431,12 @@ def test_react_accepts_direct_expectation_field_review_payload_with_delegations_
     assert result.payload["structured"]["findings"][0]["field_path"] == (
         "key_variables.current_state"
     )
-    assert result.payload["react_audit"]["entries"][0]["completion_reason"] == (
-        "model returned direct structured payload"
+    action = next(
+        event
+        for event in result.payload["react_audit"]["event_log"]
+        if event["kind"] == "model_action"
     )
+    assert action["completion_reason"] == "model returned direct structured payload"
 
 
 def test_react_normalizes_a2_search_payload_to_delegated_retrieval_result() -> None:
@@ -2589,7 +2609,7 @@ def test_react_success_filters_failed_tool_calls_to_audit_only() -> None:
 
     tool_entries = [
         entry
-        for entry in result.payload["react_audit"]["entries"]
+        for entry in result.payload["react_audit"]["event_log"]
         if entry.get("kind") == "tool_result"
     ]
     assert result.status is ResultStatus.SUCCEEDED
@@ -2640,7 +2660,7 @@ def test_react_tool_call_timeout_returns_failed_tool_result() -> None:
 
     tool_entries = [
         entry
-        for entry in result.payload["react_audit"]["entries"]
+        for entry in result.payload["react_audit"]["event_log"]
         if entry.get("kind") == "tool_result"
     ]
     assert result.status is ResultStatus.SUCCEEDED
@@ -2676,8 +2696,11 @@ def test_react_allows_multiple_same_tool_calls_in_one_loop() -> None:
     assert result.status is ResultStatus.SUCCEEDED
     assert len(result.tool_calls) == 4
     assert all(call.status is ResultStatus.SUCCEEDED for call in result.tool_calls)
-    assert result.payload["react_audit"]["tool_counts"]["doxatlas.query"] == 4
-    assert "doxatlas.query" not in result.payload["react_audit"]["consecutive_tool_loop_counts"]
+    assert result.payload["react_audit"]["runtime_guards"]["tool_counts"]["doxatlas.query"] == 4
+    consecutive_counts = result.payload["react_audit"]["runtime_guards"][
+        "consecutive_tool_loop_counts"
+    ]
+    assert "doxatlas.query" not in consecutive_counts
 
 
 def test_react_blocks_fourth_consecutive_loop_to_same_tool() -> None:
@@ -2706,13 +2729,16 @@ def test_react_blocks_fourth_consecutive_loop_to_same_tool() -> None:
     assert all(call.status is ResultStatus.SUCCEEDED for call in result.tool_calls)
     failed_tool_entries = [
         entry
-        for entry in result.payload["react_audit"]["entries"]
+        for entry in result.payload["react_audit"]["event_log"]
         if entry.get("kind") == "tool_result" and entry.get("status") == ResultStatus.FAILED.value
     ]
     assert failed_tool_entries
     assert "tool_call_limit_exceeded" in failed_tool_entries[-1]["output_summary"]
-    assert result.payload["react_audit"]["tool_counts"]["doxatlas.query"] == 3
-    assert "doxatlas.query" not in result.payload["react_audit"]["consecutive_tool_loop_counts"]
+    assert result.payload["react_audit"]["runtime_guards"]["tool_counts"]["doxatlas.query"] == 3
+    consecutive_counts = result.payload["react_audit"]["runtime_guards"][
+        "consecutive_tool_loop_counts"
+    ]
+    assert "doxatlas.query" not in consecutive_counts
 
 
 def test_react_resets_same_tool_consecutive_loop_limit_after_non_tool_loop() -> None:
@@ -2728,7 +2754,7 @@ def test_react_resets_same_tool_consecutive_loop_limit_after_non_tool_loop() -> 
             {
                 "is_complete": False,
                 "reasoning_summary": "pause tool use",
-                "task_ledger_updates": [{"item": "review evidence", "status": "todo"}],
+                "research_update": ["OPEN：review evidence"],
             },
             tool_action,
             tool_action,
@@ -2745,12 +2771,12 @@ def test_react_resets_same_tool_consecutive_loop_limit_after_non_tool_loop() -> 
 
     failed_tool_entries = [
         entry
-        for entry in result.payload["react_audit"]["entries"]
+        for entry in result.payload["react_audit"]["event_log"]
         if entry.get("kind") == "tool_result" and entry.get("status") == ResultStatus.FAILED.value
     ]
     assert result.status is ResultStatus.SUCCEEDED
     assert not failed_tool_entries
-    assert result.payload["react_audit"]["tool_counts"]["doxatlas.query"] == 4
+    assert result.payload["react_audit"]["runtime_guards"]["tool_counts"]["doxatlas.query"] == 4
 
 
 def test_react_warns_on_similar_tool_query() -> None:
@@ -2917,7 +2943,7 @@ def test_react_permission_denial_is_a_tool_result_not_exception() -> None:
     assert result.tool_calls == []
     failed_tool_entries = [
         entry
-        for entry in result.payload["react_audit"]["entries"]
+        for entry in result.payload["react_audit"]["event_log"]
         if entry.get("kind") == "tool_result" and entry.get("status") == ResultStatus.FAILED.value
     ]
     assert failed_tool_entries[0]["tool_name"] == "market_data.snapshot"
@@ -2955,7 +2981,7 @@ def test_react_recovers_research_section_from_max_steps_with_tool_evidence() -> 
     assert result.payload["structured"]["evidence_refs"]
     assert any(
         entry["kind"] == "max_steps_recovered"
-        for entry in result.payload["react_audit"]["entries"]
+        for entry in result.payload["react_audit"]["event_log"]
     )
 
 
@@ -3000,7 +3026,7 @@ def test_react_recovers_doxatlas_audit_from_max_steps_as_review_gap() -> None:
     assert any(
         entry["kind"] == "max_steps_recovered"
         and entry["schema"] == "DoxAtlasAuditResult"
-        for entry in result.payload["react_audit"]["entries"]
+        for entry in result.payload["react_audit"]["event_log"]
     )
 
 
@@ -3031,9 +3057,7 @@ def test_react_recovers_review_gap_when_final_step_has_no_progress() -> None:
             },
             {
                 "plan_update": "已找到部分证据，但仍在整理字段级结论。",
-                "task_ledger_updates": [
-                    {"item": "整理 realized_facts 审查结论", "status": "blocked"}
-                ],
+                "research_update": ["OPEN：整理 realized_facts 审查结论"],
             },
         ],
         react_config=ReActHarnessConfig(max_steps=2),
@@ -3048,12 +3072,12 @@ def test_react_recovers_review_gap_when_final_step_has_no_progress() -> None:
     assert "max_steps" in structured["unknowns"][0]
     assert any(
         entry["kind"] == "react_no_progress"
-        for entry in result.payload["react_audit"]["entries"]
+        for entry in result.payload["react_audit"]["event_log"]
     )
     assert any(
         entry["kind"] == "max_steps_recovered"
         and entry["schema"] == "ExpectationFieldReviewResult"
-        for entry in result.payload["react_audit"]["entries"]
+        for entry in result.payload["react_audit"]["event_log"]
     )
 
 
@@ -3090,11 +3114,11 @@ def test_react_required_tool_gap_is_audited_without_blocking_final_payload() -> 
         entry.get("kind") == "tool_result"
         and entry.get("tool_name") == "market_data.snapshot"
         and entry.get("status") == ResultStatus.FAILED.value
-        for entry in result.payload["react_audit"]["entries"]
+        for entry in result.payload["react_audit"]["event_log"]
     )
     assert any(
         entry["kind"] == "required_tool_gap"
-        for entry in result.payload["react_audit"]["entries"]
+        for entry in result.payload["react_audit"]["event_log"]
     )
 
 
@@ -3134,7 +3158,7 @@ class HugeOhlcvToolClient(ToolClient):
         )
 
 
-def test_react_compacts_large_tool_observation_before_next_model_request() -> None:
+def test_react_indexes_large_tool_observation_without_mutating_raw_result() -> None:
     client = RecordingModelClient(
         [
             {
@@ -3152,7 +3176,12 @@ def test_react_compacts_large_tool_observation_before_next_model_request() -> No
     registry.register(
         "huge.context",
         HugeOutputToolClient(),
-        descriptor=ToolDescriptor(name="huge.context", description="huge context"),
+        descriptor=ToolDescriptor(
+            name="huge.context",
+            description="huge context",
+            observation_policy="indexed",
+            observation_adapter="text",
+        ),
     )
     task = agent_task().model_copy(
         update={
@@ -3167,7 +3196,7 @@ def test_react_compacts_large_tool_observation_before_next_model_request() -> No
     runner = ModelGatewayAgentRunner(
         model_gateway=ModelGateway(client),
         tool_registry=registry,
-        react_config=ReActHarnessConfig(max_steps=2, compaction_token_threshold=10_000_000),
+        react_config=ReActHarnessConfig(max_steps=2),
         tool_mode="mock",
     )
 
@@ -3175,23 +3204,28 @@ def test_react_compacts_large_tool_observation_before_next_model_request() -> No
 
     assert result.status is ResultStatus.SUCCEEDED
     second_payload = json.loads(client.requests[1].messages[-1].content)
-    tool_entries = [
-        entry
-        for entry in second_payload["recent_trajectory"]
-        if entry.get("kind") == "tool_result"
-    ]
-    assert tool_entries[0]["output"]["compacted"] is True
-    assert tool_entries[0]["output"]["original_chars"] > 200_000
+    fresh = second_payload["task_memory"]["fresh_observations"][0]
+    assert fresh["outline"]["policy"] == "indexed"
+    assert fresh["outline"]["original_chars"] > 200_000
+    assert fresh["loaded_blocks"]
+    assert "event_log" not in second_payload["task_memory"]
+    assert "raw_tool_results" not in second_payload["task_memory"]
     assert "x" * 50_000 not in client.requests[1].messages[-1].content
-    audit_tool_entries = [
-        entry
-        for entry in result.payload["react_audit"]["entries"]
-        if entry.get("kind") == "tool_result"
+    raw_result = result.payload["react_audit"]["observation_data"]["raw_tool_results"][
+        "tc1"
     ]
-    assert audit_tool_entries[0]["output_compacted"] is True
+    assert raw_result["output_chars"] > 200_000
+    assert len(raw_result["output_sha256"]) == 64
+    assert "tool_result" not in raw_result
+    tool_event = next(
+        event
+        for event in result.payload["react_audit"]["event_log"]
+        if event["kind"] == "tool_result"
+    )
+    assert tool_event["raw_result_id"] == "tc1"
 
 
-def test_react_preserves_daily_ohlcv_market_snapshot_across_compaction() -> None:
+def test_react_exposes_daily_ohlcv_as_recomputable_observation_ranges() -> None:
     client = RecordingModelClient(
         [
             {
@@ -3214,6 +3248,8 @@ def test_react_preserves_daily_ohlcv_market_snapshot_across_compaction() -> None
         descriptor=ToolDescriptor(
             name="twelvedata.daily_ohlcv",
             description="daily OHLCV",
+            observation_policy="recomputable",
+            observation_adapter="time_series",
         ),
     )
     task = agent_task().model_copy(
@@ -3229,7 +3265,7 @@ def test_react_preserves_daily_ohlcv_market_snapshot_across_compaction() -> None
     runner = ModelGatewayAgentRunner(
         model_gateway=ModelGateway(client),
         tool_registry=registry,
-        react_config=ReActHarnessConfig(max_steps=2, compaction_token_threshold=10_000_000),
+        react_config=ReActHarnessConfig(max_steps=2),
         tool_mode="mock",
     )
 
@@ -3237,23 +3273,25 @@ def test_react_preserves_daily_ohlcv_market_snapshot_across_compaction() -> None
 
     assert result.status is ResultStatus.SUCCEEDED
     second_payload = json.loads(client.requests[1].messages[-1].content)
-    snapshot = second_payload["market_evidence_snapshot"]["daily_ohlcv"][0]
-    assert snapshot["symbol"] == "NVDA"
-    assert snapshot["start_close"] == 100
-    assert snapshot["end_close"] == 599
-    tool_entries = [
-        entry
-        for entry in second_payload["recent_trajectory"]
-        if entry.get("kind") == "tool_result"
+    fresh = second_payload["task_memory"]["fresh_observations"][0]
+    assert fresh["outline"]["policy"] == "recomputable"
+    assert fresh["outline"]["blocks"][0]["ref"].startswith("obs_tc1::rows/")
+    first_range = fresh["loaded_blocks"][0]["content"]
+    assert first_range["columns"] == [
+        "close",
+        "datetime",
+        "high",
+        "low",
+        "open",
+        "volume",
     ]
-    assert tool_entries[0]["output"]["tool_aware_compaction"] == "daily_ohlcv"
-    assert tool_entries[0]["output"]["market_evidence_snapshot"]["symbol"] == "NVDA"
-    assert len(tool_entries[0]["output"]["ohlcv_sample_rows"]) < 20
+    assert len(first_range["rows"]) == 50
     assert result.payload["market_evidence_snapshot"]["daily_ohlcv"][0]["symbol"] == "NVDA"
-    assert (
-        result.payload["react_audit"]["market_evidence_snapshot"]["daily_ohlcv"][0]["symbol"]
-        == "NVDA"
-    )
+    raw_result = result.payload["react_audit"]["observation_data"]["raw_tool_results"][
+        "tc1"
+    ]
+    assert raw_result["output_chars"] > 40_000
+    assert "tool_result" not in raw_result
 
 
 def test_react_delegation_requires_permission() -> None:
@@ -3293,36 +3331,200 @@ def test_react_delegation_requires_permission() -> None:
     assert result.status is ResultStatus.SUCCEEDED
     delegation_entries = [
         entry
-        for entry in result.payload["react_audit"]["entries"]
+        for entry in result.payload["react_audit"]["event_log"]
         if entry["kind"] == "delegation_result"
     ]
-    assert delegation_entries[0]["status"] == "failed"
+    assert delegation_entries[0]["result"]["status"] == "failed"
 
 
-def test_react_full_compaction_uses_model_summary() -> None:
-    task = agent_task()
-    runner = runner_with_sequence(
+def test_react_full_compaction_maintains_memory_without_changing_raw_observation() -> None:
+    registry = ToolRegistry()
+    registry.register(
+        "huge.context",
+        HugeOutputToolClient(),
+        descriptor=ToolDescriptor(
+            name="huge.context",
+            description="huge context",
+            observation_policy="indexed",
+            observation_adapter="text",
+        ),
+    )
+    task = agent_task().model_copy(
+        update={
+            "permissions": AgentPermissions(
+                readable_context_scopes=["global_research"],
+                writable_targets=["expectation_unit"],
+                allowed_tools=["huge.context"],
+            )
+        },
+        deep=True,
+    )
+    client = RecordingModelClient(
         [
             {
                 "is_complete": False,
-                "tool_calls": [
-                    {"tool_name": "doxatlas.query", "input": {"query": "large context"}}
-                ],
+                "tool_calls": [{"tool_name": "huge.context", "input": {"query": "large"}}],
             },
-            {"summary": {"data_retrieved": ["tool result"]}},
+            {
+                "compaction_reasoning_summary": "Fresh Observation 受保护，仅更新计划。",
+                "plan_update": ["处理当前 Fresh Observation 后完成任务"],
+            },
             {
                 "is_complete": True,
                 "completion_reason": "done",
                 "final_payload": {"summary": "done"},
             },
-        ],
-        react_config=ReActHarnessConfig(compaction_token_threshold=1),
+        ]
+    )
+    runner = ModelGatewayAgentRunner(
+        model_gateway=ModelGateway(client),
+        tool_registry=registry,
+        react_config=ReActHarnessConfig(
+            max_steps=2,
+            model_context_window=7_000,
+            reserved_output_tokens=1_000,
+            safety_reserve_tokens=1_000,
+            max_full_compaction_retries=0,
+        ),
+        tool_mode="mock",
     )
 
     result = runner.run(task)
 
     assert result.status is ResultStatus.SUCCEEDED
-    assert result.payload["react_audit"]["compacted_summaries"]
+    event_kinds = [event["kind"] for event in result.payload["react_audit"]["event_log"]]
+    assert "full_compaction_applied" in event_kinds
+    raw_result = result.payload["react_audit"]["observation_data"]["raw_tool_results"][
+        "tc1"
+    ]
+    assert raw_result["output_chars"] > 200_000
+    assert len(raw_result["output_sha256"]) == 64
+
+
+def test_react_read_observation_reloads_exact_block_for_the_next_loop() -> None:
+    class SearchToolClient(ToolClient):
+        def call(self, request: ToolRequest) -> ToolResult:
+            return ToolResult(
+                tool_name=request.tool_name,
+                status=ResultStatus.SUCCEEDED,
+                output={
+                    "results": [
+                        {"title": "A", "content": "exact A"},
+                        {"title": "B", "content": "exact B"},
+                    ]
+                },
+                output_summary="two results",
+            )
+
+    registry = ToolRegistry()
+    registry.register(
+        "search.profile",
+        SearchToolClient(),
+        descriptor=ToolDescriptor(
+            name="search.profile",
+            description="profiled search",
+            observation_policy="indexed",
+            observation_adapter="search_results",
+        ),
+    )
+    task = agent_task().model_copy(
+        update={"permissions": AgentPermissions(allowed_tools=["search.profile"])},
+        deep=True,
+    )
+    client = RecordingModelClient(
+        [
+            {
+                "is_complete": False,
+                "tool_calls": [
+                    {"tool_name": "search.profile", "input": {"query": "sample"}}
+                ],
+            },
+            {
+                "is_complete": False,
+                "tool_calls": [
+                    {
+                        "tool_name": "read_observation",
+                        "input": {"ref": "obs_tc1::/results/1"},
+                    }
+                ],
+            },
+            {
+                "is_complete": True,
+                "completion_reason": "已读取精确原文",
+                "final_payload": {"summary": "done"},
+            },
+        ]
+    )
+    runner = ModelGatewayAgentRunner(
+        model_gateway=ModelGateway(client),
+        tool_registry=registry,
+        react_config=ReActHarnessConfig(max_steps=3),
+        tool_mode="mock",
+    )
+
+    result = runner.run(task)
+
+    assert result.status is ResultStatus.SUCCEEDED
+    first_payload = json.loads(client.requests[0].messages[-1].content)
+    second_payload = json.loads(client.requests[1].messages[-1].content)
+    third_payload = json.loads(client.requests[2].messages[-1].content)
+    assert "read_observation" not in {
+        item["name"] for item in first_payload["available_tools"]
+    }
+    assert "read_observation" in {
+        item["name"] for item in second_payload["available_tools"]
+    }
+    read_fresh = third_payload["task_memory"]["fresh_observations"][0]
+    assert read_fresh["observation_read"] == "obs_tc1::/results/1"
+    assert read_fresh["loaded_blocks"][0]["content"]["content"] == "exact B"
+
+
+def test_react_runs_at_most_one_pre_final_research_challenge() -> None:
+    base_task = agent_task()
+    task = base_task.model_copy(
+        update={
+            "input_context": {
+                **base_task.input_context,
+                "research_frame": {"minimum_coverage": ["evidence", "counterexample"]},
+                "pre_final_challenge": True,
+            }
+        },
+        deep=True,
+    )
+    client = RecordingModelClient(
+        [
+            {
+                "is_complete": True,
+                "completion_reason": "proposed",
+                "final_payload": {"summary": "premature"},
+            },
+            {
+                "synthesis_update": ["ADD：已检查证据覆盖和反例。"],
+                "reasoning_summary": "challenge 后确认可以完成。",
+                "is_complete": True,
+                "completion_reason": "challenge passed",
+                "final_payload": {"summary": "ready"},
+            },
+        ]
+    )
+    runner = ModelGatewayAgentRunner(
+        model_gateway=ModelGateway(client),
+        tool_registry=default_tool_registry(),
+        tool_mode="mock",
+    )
+
+    result = runner.run(task)
+
+    assert result.status is ResultStatus.SUCCEEDED
+    assert result.payload["structured"] == {"summary": "ready"}
+    challenge_events = [
+        event
+        for event in result.payload["react_audit"]["event_log"]
+        if event["kind"] == "pre_final_challenge"
+    ]
+    assert len(challenge_events) == 1
+    assert challenge_events[0]["status"] == "completed"
+    assert len(client.requests) == 2
 
 
 class RendezvousToolClient(ToolClient):

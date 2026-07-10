@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import json
+from contextlib import contextmanager
 from datetime import UTC, datetime
+from typing import Any
 
 import pytest
 
@@ -22,6 +24,8 @@ from doxagent.model_usage import (
     ModelUsageCostService,
     ModelUsageEvent,
     ModelUsageRecorder,
+    PostgresModelUsageRepository,
+    model_usage_repository_from_settings,
 )
 from doxagent.model_usage.pricing import DEFAULT_PRICING_PATH
 from doxagent.models import (
@@ -31,6 +35,7 @@ from doxagent.models import (
     RunMetadata,
     TaskType,
 )
+from doxagent.settings import DoxAgentSettings
 
 
 def _request() -> ModelRequest:
@@ -237,6 +242,107 @@ def test_model_usage_repository_period_filtering_and_details_shape() -> None:
     assert records[0]["is_retry"] is True
     assert records[0]["cost_usd"] == pytest.approx(round(13.5 / 6.8, 6))
     assert records[0]["source_ref"]["source_message_id"] == "std_mu_today"
+
+
+def test_model_usage_repository_factory_supports_postgres() -> None:
+    settings = DoxAgentSettings(
+        _env_file=None,
+        model_usage_storage_mode="postgres",
+        database_url="postgresql://example.invalid/doxagent",
+    )
+
+    repository = model_usage_repository_from_settings(settings)
+
+    assert isinstance(repository, PostgresModelUsageRepository)
+    assert repository.database_url == "postgresql://example.invalid/doxagent"
+
+
+def test_postgres_model_usage_reads_only_compact_bounded_columns() -> None:
+    event = ModelUsageEvent(
+        event_id="mue_compact_001",
+        provider="bailian",
+        model="qwen3.7-max",
+        status="succeeded",
+        input_tokens=120,
+        output_tokens=30,
+        total_tokens=150,
+        ticker="MU",
+        runtime_node="W1",
+        created_at=datetime(2026, 7, 9, 12, 0, tzinfo=UTC),
+    )
+    captured: dict[str, Any] = {}
+
+    class FakeCursor:
+        def __enter__(self) -> FakeCursor:
+            return self
+
+        def __exit__(self, *_args: object) -> None:
+            return None
+
+        def execute(self, sql: str, params: list[object]) -> None:
+            captured["sql"] = sql
+            captured["params"] = params
+
+        def fetchall(self) -> list[tuple[object, ...]]:
+            return [
+                (
+                    event.event_id,
+                    event.provider,
+                    event.model,
+                    event.status,
+                    event.input_tokens,
+                    event.output_tokens,
+                    event.total_tokens,
+                    event.retry_count,
+                    event.fallback_used,
+                    event.latency_seconds,
+                    event.ticker,
+                    event.run_id,
+                    event.workflow_node,
+                    event.runtime_node,
+                    event.agent_name,
+                    event.task_type,
+                    event.source_message_id,
+                    event.execution_id,
+                    event.error_code,
+                    event.created_at,
+                )
+            ]
+
+    class FakeConnection:
+        def cursor(self) -> FakeCursor:
+            return FakeCursor()
+
+    @contextmanager
+    def fake_connection() -> Any:
+        yield FakeConnection()
+
+    repository = PostgresModelUsageRepository("postgresql://example.invalid/doxagent")
+    repository._connection = fake_connection  # type: ignore[method-assign]
+    repository._retry = (  # type: ignore[method-assign]
+        lambda operation, *, operation_name: operation()
+    )
+
+    rows = repository.list_events(
+        ticker="MU",
+        start_time=datetime(2026, 7, 1, tzinfo=UTC),
+        end_time=datetime(2026, 7, 10, tzinfo=UTC),
+        limit=10,
+        offset=20,
+        newest_first=True,
+    )
+
+    sql = str(captured["sql"]).lower()
+    assert len(rows) == 1
+    assert rows[0].event_id == event.event_id
+    assert "payload_json" not in sql
+    assert "raw_usage" not in sql
+    assert "metadata" not in sql
+    assert "ticker = %s" in sql
+    assert "created_at >= %s" in sql
+    assert "created_at <= %s" in sql
+    assert "limit %s" in sql
+    assert "offset %s" in sql
 
 
 def _default_catalog() -> ModelPricingCatalog:

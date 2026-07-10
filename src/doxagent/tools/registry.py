@@ -1,5 +1,7 @@
 """Permission-aware tool registry."""
 
+from typing import Literal
+
 from pydantic import BaseModel, ConfigDict, Field
 
 from doxagent.models import AgentPermissions, ResultStatus
@@ -18,7 +20,16 @@ class ToolDescriptor(BaseModel):
     business_purpose: str | None = None
     contract_brief: str | None = None
     concurrent_safe: bool = True
-    compactable: bool = True
+    observation_policy: Literal["inline", "indexed", "recomputable"] = "inline"
+    observation_adapter: Literal[
+        "auto",
+        "json",
+        "search_results",
+        "text",
+        "table",
+        "time_series",
+        "doxatlas",
+    ] = "auto"
 
 
 class ToolRegistry:

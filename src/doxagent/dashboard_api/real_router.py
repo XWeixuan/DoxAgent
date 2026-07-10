@@ -31,6 +31,7 @@ from doxagent.dashboard_api.real_service import (
     InvalidMessageBusPatch,
     MessageBusMessageNotFound,
     RealDashboardOverviewService,
+    RevenueAuditRecordNotFound,
     RuntimeExecutionNotFound,
     TickerAlreadyRunning,
     TickerNotFound,
@@ -680,6 +681,7 @@ def create_real_router(service: RealDashboardOverviewService | None = None) -> A
         ticker: str,
         date: str | None = None,
         period: str | None = None,
+        basis: str | None = None,
         tz: str | None = None,
     ) -> JsonObject:
         try:
@@ -688,10 +690,77 @@ def create_real_router(service: RealDashboardOverviewService | None = None) -> A
                 ticker,
                 date_text=date,
                 period=period,
+                basis=basis,
                 tz=tz,
             )
         except InvalidAuditParams as exc:
             raise _invalid_audit_params(exc) from exc
+        return _ok(request, data)
+
+    @router.get("/tickers/{ticker}/audit/revenue/trend")
+    async def revenue_audit_trend(
+        request: Request,
+        ticker: str,
+        date: str | None = None,
+        period: str | None = None,
+        basis: str | None = None,
+        tz: str | None = None,
+    ) -> JsonObject:
+        try:
+            data = await run_in_threadpool(
+                resolved.revenue_audit_trend,
+                ticker,
+                date_text=date,
+                period=period,
+                basis=basis,
+                tz=tz,
+            )
+        except InvalidAuditParams as exc:
+            raise _invalid_audit_params(exc) from exc
+        return _ok(request, data)
+
+    @router.get("/tickers/{ticker}/audit/revenue/records")
+    async def revenue_audit_records(
+        request: Request,
+        ticker: str,
+        date: str | None = None,
+        period: str | None = None,
+        basis: str | None = None,
+        status: str | None = None,
+        limit: int | None = None,
+        cursor: str | None = None,
+        tz: str | None = None,
+    ) -> JsonObject:
+        try:
+            data = await run_in_threadpool(
+                resolved.revenue_audit_records,
+                ticker,
+                date_text=date,
+                period=period,
+                basis=basis,
+                status=status,
+                limit=limit,
+                cursor=cursor,
+                tz=tz,
+            )
+        except InvalidAuditParams as exc:
+            raise _invalid_audit_params(exc) from exc
+        return _ok(request, data)
+
+    @router.get("/tickers/{ticker}/audit/revenue/records/{trading_record_id}")
+    async def revenue_audit_record_detail(
+        request: Request,
+        ticker: str,
+        trading_record_id: str,
+    ) -> JsonObject:
+        try:
+            data = await run_in_threadpool(
+                resolved.revenue_audit_record_detail,
+                ticker,
+                trading_record_id,
+            )
+        except RevenueAuditRecordNotFound as exc:
+            raise _revenue_audit_record_not_found(exc) from exc
         return _ok(request, data)
 
     @router.post("/tickers/{ticker}/audit/revenue/run")
@@ -707,6 +776,7 @@ def create_real_router(service: RealDashboardOverviewService | None = None) -> A
                 ticker,
                 date_text=_optional_text(data.get("date")),
                 tz=_optional_text(data.get("tz")),
+                force=bool(data.get("force", False)),
             )
         except InvalidAuditParams as exc:
             raise _invalid_audit_params(exc) from exc
@@ -898,6 +968,21 @@ def _runtime_execution_not_found(exc: RuntimeExecutionNotFound) -> DashboardMock
         status_code=HTTPStatus.NOT_FOUND,
         retryable=False,
         details={"ticker": exc.ticker, "execution_id": exc.execution_id},
+    )
+
+
+def _revenue_audit_record_not_found(
+    exc: RevenueAuditRecordNotFound,
+) -> DashboardMockError:
+    return DashboardMockError(
+        code="NOT_FOUND",
+        message="Revenue audit record was not found.",
+        status_code=HTTPStatus.NOT_FOUND,
+        retryable=False,
+        details={
+            "ticker": exc.ticker,
+            "trading_record_id": exc.trading_record_id,
+        },
     )
 
 

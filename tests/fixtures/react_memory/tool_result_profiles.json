@@ -1,0 +1,92 @@
+{
+  "tavily.search": {
+    "policy": "indexed",
+    "adapter": "search_results",
+    "output": {
+      "query": "sample demand outlook",
+      "results": [
+        {
+          "title": "Example result A",
+          "url": "https://example.com/a",
+          "content": "First desensitized source paragraph."
+        },
+        {
+          "title": "Example result B",
+          "url": "https://example.com/b",
+          "content": "Second desensitized source paragraph."
+        }
+      ]
+    }
+  },
+  "alpha.financial_statements": {
+    "policy": "recomputable",
+    "adapter": "table",
+    "output": {
+      "symbol": "SAMPLE",
+      "currency": "USD",
+      "quarterlyReports": [
+        {
+          "fiscalDateEnding": "2026-06-30",
+          "totalRevenue": "1000000",
+          "grossProfit": "500000"
+        },
+        {
+          "fiscalDateEnding": "2026-03-31",
+          "totalRevenue": "900000",
+          "grossProfit": "440000"
+        }
+      ]
+    }
+  },
+  "twelvedata.daily_ohlcv": {
+    "policy": "recomputable",
+    "adapter": "time_series",
+    "output": {
+      "provider": "twelvedata",
+      "symbol": "SAMPLE",
+      "interval": "1day",
+      "ohlcv": [
+        {
+          "datetime": "2026-07-08",
+          "open": 100.0,
+          "high": 102.0,
+          "low": 99.0,
+          "close": 101.0,
+          "volume": 1200000
+        },
+        {
+          "datetime": "2026-07-09",
+          "open": 101.0,
+          "high": 103.0,
+          "low": 100.0,
+          "close": 102.0,
+          "volume": 1300000
+        }
+      ]
+    }
+  },
+  "doxa_get_narrative_report": {
+    "policy": "indexed",
+    "adapter": "doxatlas",
+    "output": {
+      "run_id": "run_profile_sample",
+      "narratives": [
+        {
+          "narrative_code": "N1",
+          "summary": "Desensitized narrative summary.",
+          "events": [
+            {
+              "event_code": "E1",
+              "propositions": [
+                {
+                  "proposition_code": "P1",
+                  "text": "Desensitized proposition text."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

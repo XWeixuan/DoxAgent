@@ -8,6 +8,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass, replace
 from datetime import UTC, date, datetime, time, timedelta
 from importlib import import_module
+from time import monotonic
 from typing import Any, TypeVar, cast
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
@@ -52,6 +53,12 @@ from doxagent.persistent_runtime.schema import (
     TradingRecord,
 )
 from doxagent.postgres import connect_postgres, retry_postgres_operation
+from doxagent.revenue_audit import (
+    InMemoryRevenueAuditRepository,
+    RevenueAuditResult,
+    RevenueAuditService,
+    RevenueBasis,
+)
 from doxagent.runtime_scheduler.api import DashboardStateAPI
 from doxagent.runtime_scheduler.schema import (
     AuditSeverity,
@@ -64,6 +71,7 @@ from doxagent.runtime_scheduler.schema import (
     TickerRunStatus,
 )
 from doxagent.runtime_scheduler.service import market_session_phase
+from doxagent.settings import DoxAgentSettings
 
 JsonObject = dict[str, Any]
 T = TypeVar("T")
@@ -75,6 +83,7 @@ ENABLED_MONITOR_MODES = {
     MonitorMode.PAPER_TRADING.value,
 }
 READ_AGGREGATION_LIMIT = 10_000
+COST_SUMMARY_CACHE_TTL_SECONDS = 300.0
 DOCUMENT_HISTORY_LIMIT = 100
 DOCUMENT_DASHBOARD_AUDIT_EVENTS = {
     "documents_initialized",
@@ -122,7 +131,6 @@ AUDIT_PERIODS = {"today", "7d", "30d"}
 AUDIT_GROUP_BYS = {"node", "model", "ticker"}
 REVENUE_AUDIT_EVENT_TYPE = "audit.revenue.status_changed"
 COST_AUDIT_EVENT_TYPE = "audit.cost.status_changed"
-REVENUE_EXIT_RULE_NOT_INTEGRATED = "realized_exit_price_audit_not_integrated"
 
 
 @dataclass(frozen=True)
@@ -199,12 +207,23 @@ class RealDashboardOverviewService:
         *,
         backtest_service: DashboardBacktestService | None = None,
         model_usage_service: ModelUsageCostService | None = None,
+        revenue_audit_service: RevenueAuditService | None = None,
     ) -> None:
         self.dashboard_api = dashboard_api or DashboardStateAPI.from_settings()
         self.backtest_service = backtest_service or DashboardBacktestService(
             self.dashboard_api.scheduler
         )
         self.model_usage_service = model_usage_service or ModelUsageCostService.from_settings()
+        self.revenue_audit_service = revenue_audit_service or RevenueAuditService.from_settings(
+            DoxAgentSettings(),
+            repository=(
+                InMemoryRevenueAuditRepository() if dashboard_api is not None else None
+            ),
+            trading_repository=self.dashboard_api.scheduler.runtime_service.repository,
+        )
+        self._today_cost_cache: dict[
+            tuple[str, date, str], tuple[float, float | None]
+        ] = {}
 
     def overview(self, *, date_text: str | None = None, tz: str | None = None) -> JsonObject:
         zone = _zone(tz)
@@ -940,46 +959,109 @@ class RealDashboardOverviewService:
         *,
         date_text: str | None = None,
         period: str | None = None,
+        basis: str | None = None,
         tz: str | None = None,
     ) -> JsonObject:
         normalized = _ticker(ticker)
         zone = _zone(tz)
         target_date = _target_date(date_text, zone)
         resolved_period = _audit_period(period)
-        records = [
-            record
-            for record in self._trading_records(normalized)
-            if _in_audit_period(record.created_at, resolved_period, target_date, zone)
-        ]
-        records.sort(key=lambda item: _aware(item.created_at), reverse=True)
-        trade_intents = [_trade_intent_audit_item(record) for record in records]
-        audited_trade_count = sum(
-            1 for item in trade_intents if item["status"] == "audited"
-        )
-        status = _revenue_audit_status(
-            trade_intents,
-            latest_event=self._latest_scheduler_audit_event(
-                normalized,
-                REVENUE_AUDIT_EVENT_TYPE,
+        resolved_basis = _revenue_basis(basis)
+        return cast(
+            JsonObject,
+            self.revenue_audit_service.overview(
+                ticker=normalized,
+                basis=resolved_basis,
+                period=resolved_period,
+                target_date=target_date,
             ),
         )
+
+    def revenue_audit_trend(
+        self,
+        ticker: str,
+        *,
+        date_text: str | None = None,
+        period: str | None = None,
+        basis: str | None = None,
+        tz: str | None = None,
+    ) -> JsonObject:
+        zone = _zone(tz)
+        target_date = _target_date(date_text, zone)
+        resolved_period = _audit_period(period)
+        resolved_basis = _revenue_basis(basis)
         return {
-            "ticker": normalized,
-            "audit_date": target_date.isoformat(),
+            "ticker": _ticker(ticker),
             "period": resolved_period,
-            "status": status,
-            "exit_rule": REVENUE_EXIT_RULE_NOT_INTEGRATED,
-            "kpis": {
-                "today_trade_intent_count": len(trade_intents),
-                "audited_trade_count": audited_trade_count,
-                "today_pnl_usd": _sum_optional(
-                    item.get("pnl_usd") for item in trade_intents
-                ),
-                "today_return_pct": None,
-                "win_rate": _win_rate(trade_intents),
+            "basis": resolved_basis.value,
+            "items": self.revenue_audit_service.trend(
+                ticker=ticker,
+                basis=resolved_basis,
+                period=resolved_period,
+                target_date=target_date,
+            ),
+        }
+
+    def revenue_audit_records(
+        self,
+        ticker: str,
+        *,
+        date_text: str | None = None,
+        period: str | None = None,
+        basis: str | None = None,
+        status: str | None = None,
+        limit: int | None = None,
+        cursor: str | None = None,
+        tz: str | None = None,
+    ) -> JsonObject:
+        zone = _zone(tz)
+        target_date = _target_date(date_text, zone)
+        resolved_period = _audit_period(period)
+        resolved_basis = _revenue_basis(basis)
+        page_size = 50 if limit is None else max(1, min(limit, 200))
+        items, next_cursor = self.revenue_audit_service.list_results(
+            ticker=ticker,
+            basis=resolved_basis,
+            period=resolved_period,
+            target_date=target_date,
+            status=status,
+            limit=page_size,
+            cursor=cursor,
+        )
+        return {
+            "items": [_revenue_result_item(item) for item in items],
+            "page": {
+                "limit": page_size,
+                "next_cursor": next_cursor,
+                "has_more": next_cursor is not None,
             },
-            "trend": _revenue_trend(records, resolved_period, target_date, zone),
-            "trade_intents": trade_intents,
+        }
+
+    def revenue_audit_record_detail(
+        self,
+        ticker: str,
+        trading_record_id: str,
+    ) -> JsonObject:
+        items = self.revenue_audit_service.result_detail(ticker, trading_record_id)
+        if not items:
+            raise RevenueAuditRecordNotFound(_ticker(ticker), trading_record_id)
+        first = items[0]
+        return {
+            "trading_record_id": trading_record_id,
+            "ticker": first.ticker,
+            "decision_source": first.decision_source,
+            "trigger_policy": first.trigger_policy,
+            "source_message_id": first.source_message_id,
+            "message_summary": first.message_summary,
+            "agent_summary": first.agent_summary,
+            "trigger_reason": first.trigger_reason,
+            "published_at": _dt(first.published_at),
+            "collected_at": _dt(first.collected_at),
+            "normalized_at": _dt(first.normalized_at),
+            "message_bus_event_time": _dt(first.message_bus_event_time),
+            "runtime_started_at": _dt(first.runtime_started_at),
+            "intent_generated_at": _dt(first.intent_generated_at),
+            "results": [item.model_dump(mode="json") for item in items],
         }
 
     def run_revenue_audit(
@@ -988,42 +1070,46 @@ class RealDashboardOverviewService:
         *,
         date_text: str | None = None,
         tz: str | None = None,
+        force: bool = False,
     ) -> JsonObject:
         normalized = _ticker(ticker)
         zone = _zone(tz)
         target_date = _target_date(date_text, zone)
-        records = [
-            record
-            for record in self._trading_records(normalized)
-            if _is_on_day(record.created_at, target_date=target_date, zone=zone)
-        ]
+        run = self.revenue_audit_service.audit_date(normalized, target_date)
         event = RuntimeAuditEvent(
             ticker=normalized,
             event_type=REVENUE_AUDIT_EVENT_TYPE,
-            severity=AuditSeverity.WARNING,
-            message=(
-                "Revenue audit was requested, but realized exit-price/PnL audit "
-                "worker is not integrated yet."
+            severity=(
+                AuditSeverity.ERROR
+                if run.status.value == "failed"
+                else AuditSeverity.INFO
             ),
+            message=f"Revenue audit {run.status.value} for {target_date.isoformat()}.",
             payload={
+                "audit_run_id": run.run_id,
                 "ticker": normalized,
                 "date": target_date.isoformat(),
-                "status": "not_started",
-                "trade_intent_count": len(records),
-                "missing_capabilities": [
-                    "entry_price_capture",
-                    "exit_price_capture",
-                    "slippage_calculation",
-                    "realized_pnl_audit_worker",
-                ],
+                "status": run.status.value,
+                "trade_intent_count": run.record_count,
+                "audited_result_count": run.audited_count,
+                "issue_count": run.issue_count,
+                "method_version": run.method_version,
+                "config_fingerprint": run.config_fingerprint,
+                "force": force,
             },
         )
         saved = self.dashboard_api.scheduler.repository.append_audit_event(event)
         return {
-            "audit_run_id": saved.audit_id,
+            "audit_run_id": run.run_id,
+            "event_id": saved.audit_id,
             "ticker": normalized,
             "date": target_date.isoformat(),
-            "status": "not_started",
+            "status": run.status.value,
+            "record_count": run.record_count,
+            "audited_count": run.audited_count,
+            "issue_count": run.issue_count,
+            "method_version": run.method_version,
+            "config_fingerprint": run.config_fingerprint,
         }
 
     def cost_audit(
@@ -1040,10 +1126,20 @@ class RealDashboardOverviewService:
         target_date = _target_date(date_text, zone)
         resolved_period = _audit_period(period)
         resolved_group_by = _audit_group_by(group_by)
+        period_start, period_end = _audit_period_bounds(
+            resolved_period,
+            target_date,
+            zone,
+        )
         try:
             records = [
                 record
-                for record in self._cost_records(normalized)
+                for record in self._cost_records(
+                    normalized,
+                    start_time=period_start,
+                    end_time=period_end,
+                    limit=None,
+                )
                 if _in_audit_period(
                     _parse_dt_text(record.get("time")),
                     resolved_period,
@@ -1094,11 +1190,57 @@ class RealDashboardOverviewService:
             raise InvalidAuditParams("Invalid from timestamp.", details={"field": "from"})
         if to_time and end_time is None:
             raise InvalidAuditParams("Invalid to timestamp.", details={"field": "to"})
+        if resolved_period:
+            period_start, period_end = _audit_period_bounds(
+                resolved_period,
+                target_date,
+                zone,
+            )
+            start_time = max(_aware(start_time), period_start) if start_time else period_start
+            end_time = min(_aware(end_time), period_end) if end_time else period_end
         node_filter = node.strip().lower() if node and node.strip() else None
         model_filter = model.strip() if model and model.strip() else None
         status_filter = status.strip().lower() if status and status.strip() else None
+        if self.model_usage_service.has_records(ticker=normalized):
+            resolved_limit = _limit(limit)
+            offset = _parse_cursor(cursor)
+            total_count = self.model_usage_service.count_records(
+                ticker=normalized,
+                start_time=start_time,
+                end_time=end_time,
+                node=node_filter,
+                model=model_filter,
+                status=status_filter,
+            )
+            records = self.model_usage_service.cost_records(
+                ticker=normalized,
+                start_time=start_time,
+                end_time=end_time,
+                node=node_filter,
+                model=model_filter,
+                status=status_filter,
+                limit=resolved_limit,
+                offset=offset,
+                newest_first=True,
+            )
+            next_offset = offset + len(records)
+            has_more = next_offset < total_count
+            return {
+                "items": records,
+                "page": {
+                    "limit": resolved_limit,
+                    "next_cursor": f"cur_{next_offset}" if has_more else None,
+                    "has_more": has_more,
+                    "total_count": total_count,
+                },
+            }
         try:
-            items = self._cost_records(normalized)
+            items = self._cost_records(
+                normalized,
+                start_time=start_time,
+                end_time=end_time,
+                limit=None,
+            )
         except Exception:
             items = []
         if resolved_period:
@@ -1271,8 +1413,6 @@ class RealDashboardOverviewService:
                 events.append(_dashboard_event_from_scheduler_audit(audit_event))
             elif audit_event.event_type in DOCUMENT_DASHBOARD_AUDIT_EVENTS:
                 events.extend(_dashboard_document_events_from_scheduler_audit(audit_event))
-        if normalized is not None:
-            events.append(self._cost_status_event(normalized))
         if requested_types:
             events = [event for event in events if event["event_type"] in requested_types]
         events = sorted(events, key=lambda event: str(event.get("occurred_at") or ""))
@@ -1758,18 +1898,51 @@ class RealDashboardOverviewService:
             newest_first=True,
         )
 
-    def _cost_records(self, ticker: str) -> list[JsonObject]:
+    def _cost_records(
+        self,
+        ticker: str,
+        *,
+        start_time: datetime | None = None,
+        end_time: datetime | None = None,
+        node: str | None = None,
+        model: str | None = None,
+        status: str | None = None,
+        limit: int | None = READ_AGGREGATION_LIMIT,
+        offset: int = 0,
+    ) -> list[JsonObject]:
         primary_records = self.model_usage_service.cost_records(
             ticker=ticker,
-            limit=READ_AGGREGATION_LIMIT,
+            start_time=start_time,
+            end_time=end_time,
+            node=node,
+            model=model,
+            status=status,
+            limit=limit,
+            offset=offset,
             newest_first=True,
         )
-        if primary_records:
+        if primary_records or self.model_usage_service.has_records(ticker=ticker):
             return primary_records
         records: list[JsonObject] = []
         for execution in self._executions(ticker):
             records.extend(_cost_records_from_execution(execution))
-        return records
+        records = [
+            record
+            for record in records
+            if (
+                (start_time is None or _record_at_or_after(record, start_time))
+                and (end_time is None or _record_at_or_before(record, end_time))
+                and (node is None or str(record.get("node") or "").lower() == node.lower())
+                and (model is None or record.get("model") == model)
+                and (
+                    status is None
+                    or str(record.get("status") or "").lower() == status.lower()
+                )
+            )
+        ]
+        records.sort(key=lambda item: str(item.get("time") or ""), reverse=True)
+        records = records[max(0, offset) :]
+        return records if limit is None else records[: max(0, limit)]
 
     def _today_cost_usd(
         self,
@@ -1778,19 +1951,27 @@ class RealDashboardOverviewService:
         target_date: date,
         zone: ZoneInfo,
     ) -> float | None:
+        cache_key = (ticker, target_date, zone.key)
+        cached = self._today_cost_cache.get(cache_key)
+        now = monotonic()
+        if cached is not None and cached[0] > now:
+            return cached[1]
+        start_time, end_time = _audit_period_bounds("today", target_date, zone)
         try:
-            records = [
-                record
-                for record in self._cost_records(ticker)
-                if _is_on_day(
-                    _parse_dt_text(record.get("time")),
-                    target_date=target_date,
-                    zone=zone,
-                )
-            ]
+            records = self._cost_records(
+                ticker,
+                start_time=start_time,
+                end_time=end_time,
+                limit=None,
+            )
         except Exception:
             return None
-        return _sum_optional(record.get("cost_usd") for record in records)
+        result = _sum_optional(record.get("cost_usd") for record in records)
+        self._today_cost_cache[cache_key] = (
+            now + COST_SUMMARY_CACHE_TTL_SECONDS,
+            result,
+        )
+        return result
 
     def _latest_scheduler_audit_event(
         self,
@@ -1804,36 +1985,6 @@ class RealDashboardOverviewService:
             if event.event_type == event_type:
                 return event
         return None
-
-    def _cost_status_event(self, ticker: str) -> JsonObject:
-        try:
-            records = self._cost_records(ticker)
-            status = _cost_audit_status(records)
-            occurred_at = _latest_dt(
-                _parse_dt_text(record.get("time")) for record in records
-            ) or datetime.now(UTC)
-            missing_capabilities = (
-                []
-                if status == "completed"
-                else ["model_pricing_table"] if status == "partial" else ["model_usage_events"]
-            )
-        except Exception:
-            records = []
-            status = "failed"
-            occurred_at = datetime.now(UTC)
-            missing_capabilities = ["model_usage_aggregation"]
-        return {
-            "event_id": f"audit_cost_status_{ticker}_{int(_aware(occurred_at).timestamp())}",
-            "event_type": COST_AUDIT_EVENT_TYPE,
-            "ticker": ticker,
-            "occurred_at": _dt(occurred_at),
-            "payload": {
-                "ticker": ticker,
-                "status": status,
-                "cost_record_count": len(records),
-                "missing_capabilities": missing_capabilities,
-            },
-        }
 
     def _exceptions(self, ticker: str | None = None) -> list[ExecutionExceptionLog]:
         return self.dashboard_api.scheduler.runtime_service.repository.list_exceptions(
@@ -1978,6 +2129,13 @@ class RuntimeExecutionNotFound(DashboardRealServiceError):
         super().__init__(execution_id)
         self.ticker = ticker
         self.execution_id = execution_id
+
+
+class RevenueAuditRecordNotFound(DashboardRealServiceError):
+    def __init__(self, ticker: str, trading_record_id: str) -> None:
+        super().__init__(trading_record_id)
+        self.ticker = ticker
+        self.trading_record_id = trading_record_id
 
 
 class InvalidAuditParams(DashboardRealServiceError):
@@ -2900,27 +3058,51 @@ def _runtime_result_records_by_type(
     if result_type == "trading_record":
         for items in context.trading_records_by_source.values():
             for item in items:
-                records.append(_runtime_result_record_from_trading_record(context, item, executions_by_source))
+                records.append(
+                    _runtime_result_record_from_trading_record(
+                        context, item, executions_by_source
+                    )
+                )
     elif result_type == "exception_queue":
         for items in context.exceptions_by_source.values():
             for item in items:
-                records.append(_runtime_result_record_from_exception(context, item, executions_by_source))
+                records.append(
+                    _runtime_result_record_from_exception(
+                        context, item, executions_by_source
+                    )
+                )
     elif result_type == "objection":
         for items in context.objections_by_source.values():
             for item in items:
-                records.append(_runtime_result_record_from_objection(context, item, executions_by_source))
+                records.append(
+                    _runtime_result_record_from_objection(
+                        context, item, executions_by_source
+                    )
+                )
     elif result_type == "known_event_patch":
         for items in context.known_event_patch_by_source.values():
             for item in items:
-                records.append(_runtime_result_record_from_known_event_patch(context, item, executions_by_source))
+                records.append(
+                    _runtime_result_record_from_known_event_patch(
+                        context, item, executions_by_source
+                    )
+                )
     elif result_type == "archive":
         for items in context.archive_by_source.values():
             for item in items:
-                records.append(_runtime_result_record_from_archive(context, item, executions_by_source))
+                records.append(
+                    _runtime_result_record_from_archive(
+                        context, item, executions_by_source
+                    )
+                )
     elif result_type == "ingest_queue":
         for items in context.ingest_queue_by_source.values():
             for item in items:
-                records.append(_runtime_result_record_from_ingest_queue(context, item, executions_by_source))
+                records.append(
+                    _runtime_result_record_from_ingest_queue(
+                        context, item, executions_by_source
+                    )
+                )
     return records
 
 
@@ -3420,6 +3602,49 @@ def _audit_period(value: str | None) -> str:
     return resolved
 
 
+def _revenue_basis(value: str | None) -> RevenueBasis:
+    resolved = (value or RevenueBasis.SYSTEM_EXECUTABLE.value).strip().lower()
+    try:
+        return RevenueBasis(resolved)
+    except ValueError as exc:
+        raise InvalidAuditParams(
+            "Unsupported revenue audit basis.",
+            details={
+                "basis": resolved,
+                "supported_bases": [item.value for item in RevenueBasis],
+            },
+        ) from exc
+
+
+def _revenue_result_item(item: RevenueAuditResult) -> JsonObject:
+    return {
+        "record_id": item.trading_record_id,
+        "time": _dt(item.intent_generated_at),
+        "ticker": item.ticker,
+        "trigger_message_id": item.source_message_id,
+        "trigger_policy_id": item.trigger_policy,
+        "decision_source": item.decision_source,
+        "action": item.side,
+        "basis": item.basis.value,
+        "anchor_time": _dt(item.anchor_time),
+        "theoretical_entry_time": _dt(item.theoretical_entry_time),
+        "theoretical_entry_price": item.theoretical_entry_price,
+        "estimated_entry_price": item.simulated_entry_price,
+        "exit_time": _dt(item.exit_time),
+        "exit_price": item.simulated_exit_price,
+        "theoretical_exit_price": item.theoretical_exit_price,
+        "slippage_bps": item.slippage_bps,
+        "theoretical_return_pct": item.theoretical_return_pct,
+        "return_pct": item.simulated_return_pct,
+        "pnl_usd": item.simulated_pnl_usd,
+        "notional_usd": item.notional_usd,
+        "data_source": item.data_source,
+        "status": item.status.value,
+        "failure_reason": item.failure_reason,
+        "method_version": item.method_version,
+    }
+
+
 def _audit_group_by(value: str | None) -> str:
     resolved = (value or "node").strip().lower()
     if resolved not in AUDIT_GROUP_BYS:
@@ -3442,6 +3667,27 @@ def _audit_period_dates(period: str, target_date: date) -> list[date]:
     days = _audit_period_days(period)
     start = target_date - timedelta(days=days - 1)
     return [start + timedelta(days=offset) for offset in range(days)]
+
+
+def _audit_period_bounds(
+    period: str,
+    target_date: date,
+    zone: ZoneInfo,
+) -> tuple[datetime, datetime]:
+    dates = _audit_period_dates(period, target_date)
+    start = datetime.combine(dates[0], time.min, tzinfo=zone).astimezone(UTC)
+    end = datetime.combine(dates[-1], time.max, tzinfo=zone).astimezone(UTC)
+    return start, end
+
+
+def _record_at_or_after(record: JsonObject, boundary: datetime) -> bool:
+    value = _parse_dt_text(record.get("time"))
+    return value is not None and _aware(value) >= _aware(boundary)
+
+
+def _record_at_or_before(record: JsonObject, boundary: datetime) -> bool:
+    value = _parse_dt_text(record.get("time"))
+    return value is not None and _aware(value) <= _aware(boundary)
 
 
 def _in_audit_period(

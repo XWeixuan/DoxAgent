@@ -33,6 +33,11 @@ _HIDDEN_INPUT_CONTEXT_KEYS = {
     "tool_request_hints",
 }
 
+_DOCUMENT1_TASK_TYPES = {
+    "generate_global_research",
+    "generate_global_narrative_report",
+}
+
 _DOCUMENT3_TASK_TYPES = {
     "generate_known_events",
     "generate_monitoring_config",
@@ -41,6 +46,13 @@ _DOCUMENT3_TASK_TYPES = {
     "generate_monitoring_policy",
     "review_monitoring_policy",
     "resolve_monitoring_policy",
+}
+
+_DOCUMENT2_TASK_TYPES = {
+    "generate_expectation_unit",
+    "generate_expectation_detail",
+    "review_expectation_field",
+    "delegated_retrieval",
 }
 
 _SAFE_EMPTY_INPUT_CONTEXT_KEYS = {
@@ -164,7 +176,14 @@ def agent_visible_context_snapshot(context_snapshot: Any | None) -> dict[str, An
         payload = dict(context_snapshot)
     else:
         return {"value": str(context_snapshot)}
+    if _is_document1_context_snapshot(payload):
+        return _document1_visible_context_snapshot(payload)
     if _is_document3_context_snapshot(payload):
+        documents = payload.get("belief_state_summary")
+        if isinstance(documents, dict) and documents:
+            return {"belief_state_documents": documents}
+        return None
+    if _is_document2_context_snapshot(payload):
         documents = payload.get("belief_state_summary")
         if isinstance(documents, dict) and documents:
             return {"belief_state_documents": documents}
@@ -179,11 +198,96 @@ def agent_visible_context_snapshot(context_snapshot: Any | None) -> dict[str, An
     return visible or None
 
 
+def _is_document1_context_snapshot(payload: dict[str, Any]) -> bool:
+    task_type = payload.get("task_type")
+    if hasattr(task_type, "value"):
+        task_type = task_type.value
+    return str(task_type) in _DOCUMENT1_TASK_TYPES
+
+
+def _document1_visible_context_snapshot(payload: dict[str, Any]) -> dict[str, Any] | None:
+    task_type = payload.get("task_type")
+    if hasattr(task_type, "value"):
+        task_type = task_type.value
+    if str(task_type) == "generate_global_research":
+        return None
+    documents = payload.get("belief_state_summary")
+    if not isinstance(documents, dict) or not documents:
+        return None
+    visible_documents = {
+        key: value
+        for key, value in documents.items()
+        if key in {"global_research", "expectation_unit"}
+    }
+    global_research = visible_documents.get("global_research")
+    if isinstance(global_research, dict):
+        visible_documents["global_research"] = _compact_document1_global_research_bucket(
+            global_research
+        )
+    return {"belief_state_documents": visible_documents} if visible_documents else None
+
+
+def _compact_document1_global_research_bucket(bucket: dict[str, Any]) -> dict[str, Any]:
+    compacted: dict[str, Any] = {}
+    for document_id, entry in bucket.items():
+        if isinstance(entry, dict):
+            compact_entry = dict(entry)
+            document = compact_entry.get("document")
+            if isinstance(document, dict):
+                compact_entry["document"] = _compact_document1_global_research_document(document)
+            compacted[str(document_id)] = compact_entry
+        else:
+            compacted[str(document_id)] = entry
+    return compacted
+
+
+def _compact_document1_global_research_document(document: dict[str, Any]) -> dict[str, Any]:
+    section_keys = (
+        "fundamental_report",
+        "macro_report",
+        "industry_report",
+        "market_trace_report",
+        "market_narrative_report",
+    )
+    compact = {
+        key: document[key]
+        for key in ("document_id", "document_type", "ticker", "created_at")
+        if key in document
+    }
+    for key in section_keys:
+        section = document.get(key)
+        if isinstance(section, dict):
+            compact[key] = {
+                section_key: section[section_key]
+                for section_key in (
+                    "summary",
+                    "evidence_refs",
+                    "author_agent",
+                    "reviewer_agents",
+                )
+                if section_key in section
+            }
+        elif section is not None:
+            compact[key] = section
+    compact["compaction"] = {
+        "mode": "document1_narrative_global_research_summary",
+        "omitted_full_text": True,
+    }
+    return compact
+
+
 def _is_document3_context_snapshot(payload: dict[str, Any]) -> bool:
     task_type = payload.get("task_type")
     if hasattr(task_type, "value"):
         task_type = task_type.value
     return str(task_type) in _DOCUMENT3_TASK_TYPES
+
+
+def _is_document2_context_snapshot(payload: dict[str, Any]) -> bool:
+    task_type = payload.get("task_type")
+    if hasattr(task_type, "value"):
+        task_type = task_type.value
+    return str(task_type) in _DOCUMENT2_TASK_TYPES
 
 
 def _is_empty_container(value: Any) -> bool:

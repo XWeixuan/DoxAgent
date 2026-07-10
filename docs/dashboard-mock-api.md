@@ -116,6 +116,9 @@ Authorization: Bearer dev-mock-token
 | `GET` | `/tickers/{ticker}/runtime/executions` |
 | `GET` | `/tickers/{ticker}/runtime/executions/{execution_id}` |
 | `GET` | `/tickers/{ticker}/audit/revenue` |
+| `GET` | `/tickers/{ticker}/audit/revenue/trend` |
+| `GET` | `/tickers/{ticker}/audit/revenue/records` |
+| `GET` | `/tickers/{ticker}/audit/revenue/records/{trading_record_id}` |
 | `POST` | `/tickers/{ticker}/audit/revenue/run` |
 | `GET` | `/tickers/{ticker}/audit/cost` |
 | `GET` | `/tickers/{ticker}/audit/cost/details` |
@@ -169,13 +172,12 @@ GET /api/dashboard/v1/events?ticker=MU&event_types=runtime.execution.updated&onc
 - `audit.cost.status_changed`
 - `dashboard.heartbeat`
 
-## 当前仍未实现
+## Mock 模式边界
 
 - 未接 Supabase 真实鉴权；当前仅提供 mock-open/mock-required/mock-forbidden。
 - 未接真实 DB、Blackboard、runtime scheduler、Monitoring Message Bus 或 Persistent Runtime。
-- 未提供前端页面；本任务只提供后端 mock API。
-- 未提供 real/hybrid 聚合模式；后续应新增独立 service，不要让 mock fixture 变成真实数据适配层。
-- 未实现真实收益审计、成本审计和真实 SSE broker；当前数据均为 fixture。
+- 本文只描述 mock 模式；正式 Dashboard 前端和 real API 已独立实现，不会把 mock fixture 当作真实数据适配层。
+- mock 收益/成本审计和 SSE 数据仍是 fixture；真实收益审计由 `revenue_audit` 模块、共享 SQLite 和独立 auditor 服务提供。
 
 ## 验证命令
 

@@ -344,10 +344,10 @@ def test_document1_context_freezes_o1_global_research_context_shape() -> None:
     ]
     assert o1_tasks
     task = o1_tasks[0]
-    document1_context_pack = task.input_context["document1_context_pack"]
     context = task.input_context["global_research_context"]
+    document1_context_pack = context["document1_context_pack"]
     assert context["ticker"] == "NVDA"
-    assert context["document1_context_pack"] == document1_context_pack
+    assert "document1_context_pack" not in task.input_context
     assert document1_context_pack["window_days"] == 30
     assert document1_context_pack["compaction"]["omitted_full_text"] is True
     assert document1_context_pack["recent_company_facts"]
@@ -432,7 +432,10 @@ def test_document2_detail_and_review_contexts_prefer_document1_context_pack() ->
     ]
     assert detail_tasks
     for task in detail_tasks:
-        assert task.input_context["document1_context_pack"]["ticker"] == "NVDA"
+        assert "document1_context_pack" not in task.input_context
+        assert task.input_context["global_research_context"]["document1_context_pack"][
+            "ticker"
+        ] == "NVDA"
         assert "pending_patch_ids" not in task.input_context
         assert "pending_patches" not in task.input_context
         assert "working_memory_summary" not in task.input_context
@@ -455,7 +458,11 @@ def test_document2_detail_and_review_contexts_prefer_document1_context_pack() ->
         AgentName.O4_MARKET_TRACE,
     }
     for task in review_tasks:
-        assert task.input_context["document1_context_pack"]["ticker"] == "NVDA"
+        assert "document1_context_pack" not in task.input_context
+        if task.agent_name is AgentName.A1_DOXATLAS_AUDIT:
+            assert "document1_context_pack_brief" not in task.input_context
+        else:
+            assert task.input_context["document1_context_pack_brief"]["ticker"] == "NVDA"
         assert "pending_patch_ids" not in task.input_context
         assert "working_memory_summary" not in task.input_context
         assert "unresolved_objections" not in task.input_context

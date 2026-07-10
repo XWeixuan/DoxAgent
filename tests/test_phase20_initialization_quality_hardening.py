@@ -32,6 +32,10 @@ from doxagent.models.output_schemas import REQUIRED_OUTPUT_SCHEMA_MODELS
 from doxagent.prompts.assembler import agent_visible_context_snapshot
 from doxagent.tools import ToolRegistry, ToolRequest, ToolResult
 from doxagent.workflows import BlackboardInitializationWorkflow
+from doxagent.workflows.document2.contracts import (
+    Document2FieldRepairTask,
+    Document2ReviewFinding,
+)
 from doxagent.workflows.errors import WorkflowContractError
 from doxagent.workflows.output_validation import AgentOutputSchemaValidator
 from doxagent.workflows.schema import WorkflowCheckpoint, WorkflowNode, WorkflowRunStatus
@@ -87,6 +91,25 @@ class _RecordingResearchSectionRunner:
                 "runtime": "test",
                 "structured": research_section(task.agent_name).model_dump(mode="json"),
             },
+            evidence_refs=[evidence_ref()],
+        )
+
+
+class _RecordingGoldenSchemaRunner:
+    def __init__(self) -> None:
+        self.tasks: list[AgentTask] = []
+
+    def run(self, task: AgentTask) -> AgentResult:
+        self.tasks.append(task)
+        if task.required_output_schema == "ResearchSection":
+            payload = research_section(task.agent_name).model_dump(mode="json")
+        else:
+            payload = golden_required_output_payloads()[task.required_output_schema]
+        return AgentResult(
+            task_id=task.task_id,
+            agent_name=task.agent_name,
+            status=ResultStatus.SUCCEEDED,
+            payload={"runtime": "test", "structured": payload},
             evidence_refs=[evidence_ref()],
         )
 
@@ -721,7 +744,7 @@ def test_context_snapshot_visible_payload_omits_safe_empty_history_blocks() -> N
             "run_id": "run_context",
             "ticker": "NVDA",
             "agent_name": "C1",
-            "task_type": "generate_global_research",
+            "task_type": "runtime_w1_novelty",
             "workflow_state": "running",
             "task_input": {"duplicated": True},
             "prompt_summaries": [],
@@ -738,9 +761,184 @@ def test_context_snapshot_visible_payload_omits_safe_empty_history_blocks() -> N
         "run_id": "run_context",
         "ticker": "NVDA",
         "agent_name": "C1",
-        "task_type": "generate_global_research",
+        "task_type": "runtime_w1_novelty",
         "workflow_state": "running",
     }
+
+
+def test_document1_build_tasks_use_minimal_context_and_permissions() -> None:
+    runner = _RecordingGoldenSchemaRunner()
+    workflow = BlackboardInitializationWorkflow(execution_mode="agent_runner", runner=runner)
+
+    result = workflow.run("NVDA", stop_after=WorkflowNode.BUILD_GLOBAL_RESEARCH)
+
+    assert result.status is WorkflowRunStatus.RUNNING
+    build_tasks = [
+        task
+        for task in runner.tasks
+        if task.run_metadata.workflow_node == WorkflowNode.BUILD_GLOBAL_RESEARCH.value
+    ]
+    assert {task.agent_name for task in build_tasks} == {
+        AgentName.C1_FUNDAMENTAL_RESEARCH,
+        AgentName.C2_MACRO_RESEARCH,
+        AgentName.C3_INDUSTRY_RESEARCH,
+        AgentName.O4_MARKET_TRACE,
+    }
+    for task in build_tasks:
+        assert task.permissions.readable_context_scopes == []
+        assert "global_research_inputs" in task.input_context
+        assert "document1_research_focus" in task.input_context
+        assert "required_section_key" in task.input_context
+        assert "section_instruction" in task.input_context
+        for noisy_key in (
+            "completed_nodes",
+            "stable_document_types",
+            "belief_state_summary",
+            "pending_patch_ids",
+            "pending_patches",
+            "working_memory_summary",
+            "unresolved_objections",
+            "blocking_delegations",
+            "global_research_context",
+            "document1_context_pack",
+        ):
+            assert noisy_key not in task.input_context
+
+
+def test_document1_context_snapshots_are_scoped_and_compact() -> None:
+    service = BlackboardService()
+    run_id = _seed_document3_context_run(service)
+    build_task = _document3_task(
+        run_id,
+        node=WorkflowNode.BUILD_GLOBAL_RESEARCH,
+        agent_name=AgentName.C1_FUNDAMENTAL_RESEARCH,
+        task_type=TaskType.GENERATE_GLOBAL_RESEARCH,
+        readable_scopes=[
+            DocumentType.GLOBAL_RESEARCH.value,
+            DocumentType.EXPECTATION_UNIT.value,
+            "working_memory",
+            "objections",
+            "delegations",
+        ],
+    )
+
+    build_snapshot = ContextBuilder(service).build(build_task, run_id)
+
+    assert build_snapshot.belief_state_summary == {}
+    assert build_snapshot.working_memory_summary == []
+    assert build_snapshot.unresolved_objections == []
+    assert build_snapshot.blocking_delegations == []
+    assert build_snapshot.evidence_refs == []
+    assert agent_visible_context_snapshot(build_snapshot) is None
+
+    narrative_task = _document3_task(
+        run_id,
+        node=WorkflowNode.GENERATE_GLOBAL_NARRATIVE_REPORT,
+        agent_name=AgentName.O1_EXPECTATION_OWNER,
+        task_type=TaskType.GENERATE_GLOBAL_NARRATIVE_REPORT,
+        readable_scopes=[
+            DocumentType.GLOBAL_RESEARCH.value,
+            DocumentType.EXPECTATION_UNIT.value,
+            "working_memory",
+            "objections",
+            "delegations",
+        ],
+    )
+
+    narrative_snapshot = ContextBuilder(service).build(narrative_task, run_id)
+
+    assert set(narrative_snapshot.belief_state_summary) == {
+        DocumentType.GLOBAL_RESEARCH.value,
+        DocumentType.EXPECTATION_UNIT.value,
+    }
+    assert narrative_snapshot.working_memory_summary == []
+    assert narrative_snapshot.unresolved_objections == []
+    assert narrative_snapshot.blocking_delegations == []
+    assert narrative_snapshot.evidence_refs == []
+    visible_snapshot = agent_visible_context_snapshot(narrative_snapshot)
+    assert visible_snapshot is not None
+    assert set(visible_snapshot) == {"belief_state_documents"}
+    documents = visible_snapshot["belief_state_documents"]
+    assert set(documents) == {
+        DocumentType.GLOBAL_RESEARCH.value,
+        DocumentType.EXPECTATION_UNIT.value,
+    }
+    global_research_entry = next(iter(documents[DocumentType.GLOBAL_RESEARCH.value].values()))
+    global_research = global_research_entry["document"]
+    assert global_research["compaction"]["mode"] == (
+        "document1_narrative_global_research_summary"
+    )
+    assert "text" not in global_research["fundamental_report"]
+    assert global_research["fundamental_report"]["summary"]
+    expectation_entry = next(iter(documents[DocumentType.EXPECTATION_UNIT.value].values()))
+    expectation = expectation_entry["document"]
+    assert expectation["realized_facts"]
+
+
+def test_document1_global_narrative_task_uses_scoped_context_and_permissions() -> None:
+    workflow = BlackboardInitializationWorkflow(execution_mode="mock")
+    run_id = _seed_document3_context_run(workflow.blackboard)
+    checkpoint = WorkflowCheckpoint(
+        run_id=run_id,
+        ticker="NVDA",
+        completed_nodes=[
+            WorkflowNode.BUILD_GLOBAL_RESEARCH,
+            WorkflowNode.REVIEW_GLOBAL_RESEARCH,
+            WorkflowNode.GENERATE_EXPECTATION_CONSTRUCTION,
+            WorkflowNode.REVIEW_EXPECTATION_CONSTRUCTION,
+            WorkflowNode.RESOLVE_EXPECTATION_CONSTRUCTION,
+            WorkflowNode.GENERATE_EXPECTATION_DETAILS,
+            WorkflowNode.REVIEW_EXPECTATION_FIELDS,
+            WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS,
+            WorkflowNode.PROMOTE_EXPECTATION_TO_BELIEF_STATE,
+        ],
+        stable_document_types=[
+            DocumentType.GLOBAL_RESEARCH,
+            DocumentType.EXPECTATION_UNIT,
+        ],
+        pending_patches=[
+            _document_patch(
+                DocumentType.EXPECTATION_UNIT,
+                ExpectationUnitDocument.model_validate(expectation_document()).model_dump(
+                    mode="json"
+                ),
+            )
+        ],
+    )
+    definition = workflow.registry.get(AgentName.O1_EXPECTATION_OWNER)
+    permissions = workflow._effective_permissions(
+        definition.runtime.to_permissions(),
+        WorkflowNode.GENERATE_GLOBAL_NARRATIVE_REPORT,
+        TaskType.GENERATE_GLOBAL_NARRATIVE_REPORT,
+        AgentName.O1_EXPECTATION_OWNER,
+    )
+
+    context = workflow._task_input_context(
+        checkpoint,
+        WorkflowNode.GENERATE_GLOBAL_NARRATIVE_REPORT,
+        AgentName.O1_EXPECTATION_OWNER,
+        TaskType.GENERATE_GLOBAL_NARRATIVE_REPORT,
+        permissions,
+    )
+
+    assert permissions.readable_context_scopes == [
+        DocumentType.GLOBAL_RESEARCH.value,
+        DocumentType.EXPECTATION_UNIT.value,
+    ]
+    assert "global_research_context" in context
+    assert "document1_context_pack" in context["global_research_context"]
+    for noisy_key in (
+        "completed_nodes",
+        "stable_document_types",
+        "belief_state_summary",
+        "pending_patch_ids",
+        "pending_patches",
+        "working_memory_summary",
+        "unresolved_objections",
+        "blocking_delegations",
+        "document1_context_pack",
+    ):
+        assert noisy_key not in context
 
 
 def test_document3_generate_task_input_keeps_only_scoped_global_context() -> None:
@@ -808,6 +1006,189 @@ def test_document2_context_snapshot_omits_broad_belief_docs_and_history() -> Non
     assert snapshot.unresolved_objections == []
     assert snapshot.blocking_delegations == []
     assert snapshot.evidence_refs == []
+    assert agent_visible_context_snapshot(snapshot) is None
+
+
+def test_document2_task_input_context_removes_workflow_indexes_and_doc1_duplicate() -> None:
+    workflow = BlackboardInitializationWorkflow(execution_mode="mock")
+    run_id = _seed_document3_context_run(workflow.blackboard)
+    expectation = ExpectationUnitDocument.model_validate(expectation_document())
+    checkpoint = WorkflowCheckpoint(
+        run_id=run_id,
+        ticker="NVDA",
+        completed_nodes=[
+            WorkflowNode.BUILD_GLOBAL_RESEARCH,
+            WorkflowNode.REVIEW_GLOBAL_RESEARCH,
+        ],
+        stable_document_types=[
+            DocumentType.GLOBAL_RESEARCH,
+            DocumentType.EXPECTATION_UNIT,
+        ],
+        pending_patches=[
+            _document_patch(
+                DocumentType.EXPECTATION_UNIT,
+                expectation.model_dump(mode="json"),
+            )
+        ],
+    )
+
+    def context_for(
+        node: WorkflowNode,
+        agent_name: AgentName,
+        task_type: TaskType,
+    ) -> dict[str, object]:
+        definition = workflow.registry.get(agent_name)
+        return workflow._task_input_context(
+            checkpoint,
+            node,
+            agent_name,
+            task_type,
+            definition.runtime.to_permissions(),
+        )
+
+    generate_context = context_for(
+        WorkflowNode.GENERATE_EXPECTATION_DETAILS,
+        AgentName.O1_EXPECTATION_OWNER,
+        TaskType.GENERATE_EXPECTATION_DETAIL,
+    )
+    assert "global_research_context" in generate_context
+    assert "document1_context_pack" in generate_context["global_research_context"]
+    resolve_construction_context = context_for(
+        WorkflowNode.RESOLVE_EXPECTATION_CONSTRUCTION,
+        AgentName.O1_EXPECTATION_OWNER,
+        TaskType.GENERATE_EXPECTATION_UNIT,
+    )
+    assert "global_research_context" in resolve_construction_context
+
+    for context in (
+        generate_context,
+        resolve_construction_context,
+        context_for(
+            WorkflowNode.REVIEW_EXPECTATION_CONSTRUCTION,
+            AgentName.A1_DOXATLAS_AUDIT,
+            TaskType.REVIEW_EXPECTATION_FIELD,
+        ),
+        context_for(
+            WorkflowNode.REVIEW_EXPECTATION_FIELDS,
+            AgentName.C1_FUNDAMENTAL_RESEARCH,
+            TaskType.REVIEW_EXPECTATION_FIELD,
+        ),
+        context_for(
+            WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS,
+            AgentName.O1_EXPECTATION_OWNER,
+            TaskType.REVIEW_EXPECTATION_FIELD,
+        ),
+    ):
+        for noisy_key in (
+            "completed_nodes",
+            "stable_document_types",
+            "belief_state_summary",
+            "working_memory_summary",
+            "unresolved_objections",
+            "blocking_delegations",
+            "document1_context_pack",
+        ):
+            assert noisy_key not in context
+
+
+def test_document2_review_field_tasks_use_scoped_context_without_duplicate_aliases() -> None:
+    runner = _RecordingGoldenSchemaRunner()
+    workflow = BlackboardInitializationWorkflow(execution_mode="agent_runner", runner=runner)
+    run_id = _seed_document3_context_run(workflow.blackboard)
+    expectation = ExpectationUnitDocument.model_validate(expectation_document())
+    patch = _document_patch(
+        DocumentType.EXPECTATION_UNIT,
+        expectation.model_dump(mode="json"),
+    )
+    checkpoint = WorkflowCheckpoint(
+        run_id=run_id,
+        ticker="NVDA",
+        stable_document_types=[
+            DocumentType.GLOBAL_RESEARCH,
+            DocumentType.EXPECTATION_UNIT,
+        ],
+        pending_patches=[patch],
+    )
+
+    workflow._review_expectation_fields(checkpoint, WorkflowNode.REVIEW_EXPECTATION_FIELDS)
+
+    assert {task.agent_name for task in runner.tasks} == {
+        AgentName.A1_DOXATLAS_AUDIT,
+        AgentName.C1_FUNDAMENTAL_RESEARCH,
+        AgentName.C3_INDUSTRY_RESEARCH,
+        AgentName.O4_MARKET_TRACE,
+    }
+    for task in runner.tasks:
+        context = task.input_context
+        assert "review_instruction" in context
+        assert "review_common_instruction" not in context
+        assert "pending_patches" in context
+        assert "pending_expectation_patches" not in context
+        assert "document1_context_pack" not in context
+        for noisy_key in (
+            "completed_nodes",
+            "stable_document_types",
+            "belief_state_summary",
+            "pending_patch_ids",
+            "working_memory_summary",
+            "unresolved_objections",
+            "blocking_delegations",
+        ):
+            assert noisy_key not in context
+        if task.agent_name is AgentName.A1_DOXATLAS_AUDIT:
+            assert "document1_context_pack_brief" not in context
+        else:
+            brief = context["document1_context_pack_brief"]
+            assert brief["ticker"] == "NVDA"
+            assert brief["compaction"]["mode"] == (
+                "reviewer_role_scoped_document1_context_pack_brief"
+            )
+
+
+def test_document2_field_repair_context_uses_header_only_task() -> None:
+    workflow = BlackboardInitializationWorkflow(execution_mode="mock")
+    run_id = _seed_document3_context_run(workflow.blackboard)
+    checkpoint = WorkflowCheckpoint(run_id=run_id, ticker="NVDA")
+    candidate = ExpectationUnitDocument.model_validate(expectation_document())
+    finding = Document2ReviewFinding(
+        reviewer_agent=AgentName.C1_FUNDAMENTAL_RESEARCH,
+        expectation_id=candidate.expectation_id,
+        target_path="market_view.text",
+        target_paths=["market_view.text"],
+        severity="blocking",
+        reason="The market view needs a field-level repair.",
+    )
+    task = Document2FieldRepairTask(
+        expectation_id=candidate.expectation_id,
+        field_family="market_view",
+        target_paths=["market_view"],
+        finding_ids=[finding.finding_id],
+        objection_ids=[],
+        findings=[finding],
+        source_agents=[AgentName.C1_FUNDAMENTAL_RESEARCH],
+        current_candidate=candidate,
+        allowed_output_contract={"market_view": {"must_return": True}},
+    )
+
+    context = workflow._field_repair_context(checkpoint, task)
+
+    header = context["field_repair_task"]
+    assert header == {
+        "task_id": task.task_id,
+        "expectation_id": task.expectation_id,
+        "field_family": task.field_family,
+        "target_paths": ["market_view"],
+        "finding_ids": [finding.finding_id],
+        "objection_ids": [],
+        "source_agents": [AgentName.C1_FUNDAMENTAL_RESEARCH.value],
+        "requires_full_candidate": False,
+    }
+    assert "current_candidate" not in header
+    assert "findings" not in header
+    assert "allowed_output_contract" not in header
+    assert context["current_candidate"]["expectation_id"] == candidate.expectation_id
+    assert context["findings"][0]["finding_id"] == finding.finding_id
+    assert context["allowed_output_contract"] == {"market_view": {"must_return": True}}
 
 
 def test_document3_review_policy_task_uses_scoped_patch_and_config_brief() -> None:
@@ -1070,7 +1451,7 @@ def test_tool_usage_audit_flags_declared_unexecuted_tool_evidence() -> None:
                     }
                 ],
             },
-            "react_audit": {"tool_counts": {}},
+            "react_audit": {"runtime_guards": {"tool_counts": {}}},
         },
     )
 
@@ -1098,7 +1479,7 @@ def test_tool_usage_audit_counts_successful_prefetched_tool_calls() -> None:
                     }
                 ]
             },
-            "react_audit": {"tool_counts": {}},
+            "react_audit": {"runtime_guards": {"tool_counts": {}}},
         },
         tool_calls=[
             ToolCallSummary(

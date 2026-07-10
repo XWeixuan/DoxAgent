@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sqlite3
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Protocol, TypeVar, cast
 
@@ -72,6 +73,8 @@ class PersistentRuntimeRepository(Protocol):
         ticker: str | None = None,
         limit: int | None = None,
         newest_first: bool = False,
+        created_from: datetime | None = None,
+        created_to: datetime | None = None,
     ) -> list[TradingRecord]:
         ...
 
@@ -236,13 +239,21 @@ class InMemoryPersistentRuntimeRepository:
         ticker: str | None = None,
         limit: int | None = None,
         newest_first: bool = False,
+        created_from: datetime | None = None,
+        created_to: datetime | None = None,
     ) -> list[TradingRecord]:
-        return _filter_ticker(
-            list(self._trading_records.values()),
-            ticker,
-            limit=limit,
-            newest_first=newest_first,
-        )
+        rows = list(self._trading_records.values())
+        if ticker is not None:
+            normalized = ticker.strip().upper()
+            rows = [item for item in rows if item.ticker == normalized]
+        if created_from is not None:
+            rows = [item for item in rows if item.created_at >= created_from]
+        if created_to is not None:
+            rows = [item for item in rows if item.created_at < created_to]
+        rows.sort(key=lambda item: item.created_at, reverse=newest_first)
+        if limit is not None:
+            rows = rows[: max(0, limit)]
+        return [item.model_copy(deep=True) for item in rows]
 
     def list_ingest_queue(
         self,
@@ -360,6 +371,7 @@ class SQLitePersistentRuntimeRepository:
             source_message_id=record.source_message_id,
             ticker=record.ticker,
             payload=record.model_dump(mode="json"),
+            created_at=record.created_at,
         )
         resolved = self.trading_record_for_source(record.source_message_id)
         if resolved is None:
@@ -497,6 +509,8 @@ class SQLitePersistentRuntimeRepository:
         ticker: str | None = None,
         limit: int | None = None,
         newest_first: bool = False,
+        created_from: datetime | None = None,
+        created_to: datetime | None = None,
     ) -> list[TradingRecord]:
         return self._list_payloads(
             "persistent_trading_records",
@@ -505,6 +519,9 @@ class SQLitePersistentRuntimeRepository:
             limit=limit,
             newest_first=newest_first,
             order_column="created_at",
+            created_from=created_from,
+            created_to=created_to,
+            range_column="created_at",
         )
 
     def list_ingest_queue(
@@ -688,6 +705,13 @@ class SQLitePersistentRuntimeRepository:
                     on persistent_execution_exceptions(ticker, created_at desc);
                 """
             )
+            conn.execute(
+                """
+                update persistent_trading_records
+                set created_at = json_extract(payload_json, '$.created_at')
+                where json_extract(payload_json, '$.created_at') is not null
+                """
+            )
 
     def _upsert_known_event(self, event: RuntimeKnownEvent) -> None:
         with self._connect() as conn:
@@ -717,8 +741,25 @@ class SQLitePersistentRuntimeRepository:
         source_message_id: str,
         ticker: str,
         payload: dict[str, Any],
+        created_at: datetime | None = None,
     ) -> None:
         with self._connect() as conn:
+            if created_at is not None:
+                conn.execute(
+                    f"""
+                    insert or ignore into {table}
+                        ({id_column}, source_message_id, ticker, payload_json, created_at)
+                    values (?, ?, ?, ?, ?)
+                    """,
+                    (
+                        id_value,
+                        source_message_id,
+                        ticker,
+                        canonical_json(payload),
+                        created_at.isoformat(),
+                    ),
+                )
+                return
             conn.execute(
                 f"""
                 insert or ignore into {table}
@@ -787,12 +828,28 @@ class SQLitePersistentRuntimeRepository:
         limit: int | None = None,
         newest_first: bool = False,
         order_column: str = "rowid",
+        created_from: datetime | None = None,
+        created_to: datetime | None = None,
+        range_column: str | None = None,
     ) -> list[T]:
         sql = f"select payload_json from {table}"
         params: list[object] = []
+        conditions: list[str] = []
         if ticker is not None:
-            sql += " where ticker = ?"
+            conditions.append("ticker = ?")
             params.append(ticker.strip().upper())
+        if created_from is not None:
+            if range_column is None:
+                raise ValueError("range_column is required for created_from filtering.")
+            conditions.append(f"{range_column} >= ?")
+            params.append(created_from.isoformat())
+        if created_to is not None:
+            if range_column is None:
+                raise ValueError("range_column is required for created_to filtering.")
+            conditions.append(f"{range_column} < ?")
+            params.append(created_to.isoformat())
+        if conditions:
+            sql += " where " + " and ".join(conditions)
         direction = "desc" if newest_first else "asc"
         rowid_direction = "desc" if newest_first else "asc"
         sql += f" order by {order_column} {direction}, rowid {rowid_direction}"

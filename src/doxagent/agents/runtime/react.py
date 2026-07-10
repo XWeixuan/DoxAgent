@@ -7,15 +7,23 @@ import importlib
 import json
 import re
 import threading
-from collections import Counter
 from collections.abc import Awaitable, Callable
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any, cast
 
 from pydantic import BaseModel, ValidationError
 
 from doxagent.agents.config import AgentDefinition
+from doxagent.agents.runtime.memory import (
+    READ_OBSERVATION_TOOL_NAME,
+    ContextBudgetConfig,
+    TaskMemoryRuntime,
+    maintenance_action_schema,
+    measure_context_budget,
+    memory_action_schema,
+    read_observation_descriptor,
+)
 from doxagent.agents.runtime.tools import ToolRegistryFunctionAdapter, tool_result_to_summary
 from doxagent.gateway import (
     GatewayError,
@@ -54,18 +62,11 @@ from doxagent.skills import UnknownSkillError
 from doxagent.skills.registry import SkillRegistry, default_skill_registry
 from doxagent.skills.schema import SkillDefinition
 from doxagent.tools import ToolDescriptor, ToolError, ToolRegistry, ToolRequest, ToolResult
-from doxagent.tools.market_evidence import (
-    build_daily_ohlcv_snapshot,
-    collect_market_evidence_snapshot,
-)
 
 JsonDict = dict[str, Any]
 DelegationHandler = Callable[[JsonDict], Awaitable[AgentResult]]
 
 MAX_TOOL_CALLS_PER_NAME = 3
-SIMILARITY_WARNING_THRESHOLD = 0.72
-MICROCOMPACT_MARKER = "[old observation compacted]"
-MAX_TOOL_OBSERVATION_CHARS = 24_000
 _FINAL_PAYLOAD_SCHEMAS: dict[str, type[BaseModel]] = REQUIRED_OUTPUT_SCHEMA_MODELS
 _REVIEWER_ACCEPTANCE_WARNINGS_KEY = "reviewer_acceptance_warnings"
 _REVIEWER_ACCEPTANCE_WARNINGS_INTERNAL_KEY = "_reviewer_acceptance_warnings"
@@ -101,295 +102,24 @@ class ReActHarnessConfig:
     max_steps: int = 5
     max_tool_calls_per_name: int = MAX_TOOL_CALLS_PER_NAME
     max_tool_call_batches: int | None = None
-    recent_step_window: int = 2
-    compaction_token_threshold: int = 12_000
-    max_consecutive_compaction_failures: int = 3
+    model_context_window: int = 128_000
+    reserved_output_tokens: int = 8_000
+    safety_reserve_tokens: int = 4_000
+    micro_maintenance_ratio: float = 0.75
+    full_compaction_ratio: float = 0.85
+    max_full_compaction_retries: int = 1
     model_request_timeout_seconds: float | None = None
     tool_call_timeout_seconds: float | None = 180.0
 
-
-@dataclass
-class Scratchpad:
-    task: AgentTask
-    tool_counts: Counter[str] = field(default_factory=Counter)
-    consecutive_tool_loop_counts: Counter[str] = field(default_factory=Counter)
-    tool_call_batches: int = 0
-    query_history: list[tuple[str, str]] = field(default_factory=list)
-    plan: list[str] = field(default_factory=list)
-    task_ledger: list[JsonDict] = field(default_factory=list)
-    entries: list[JsonDict] = field(default_factory=list)
-    warnings: list[str] = field(default_factory=list)
-    loaded_skills: dict[str, JsonDict] = field(default_factory=dict)
-    compacted_summaries: list[str] = field(default_factory=list)
-    market_evidence_snapshots: list[JsonDict] = field(default_factory=list)
-    compaction_failures: int = 0
-
-    def record_action(self, step: int, action: JsonDict) -> None:
-        plan_update = _strings(action.get("plan_update"))
-        if plan_update:
-            self.plan = plan_update
-        self.task_ledger.extend(_dicts(action.get("task_ledger_updates")))
-        self.entries.append(
-            {
-                "kind": "action",
-                "step": step,
-                "is_complete": bool(action.get("is_complete", False)),
-                "completion_reason": str(action.get("completion_reason") or ""),
-                "reasoning_summary": str(action.get("reasoning_summary") or ""),
-                "tool_calls": _public_tool_calls(action.get("tool_calls")),
-                "skill_calls": _public_skill_calls(action.get("skill_calls")),
-                "delegations": _public_delegations(action.get("delegations")),
-            }
+    def budget_config(self) -> ContextBudgetConfig:
+        return ContextBudgetConfig(
+            model_context_window=self.model_context_window,
+            reserved_output_tokens=self.reserved_output_tokens,
+            safety_reserve_tokens=self.safety_reserve_tokens,
+            micro_maintenance_ratio=self.micro_maintenance_ratio,
+            full_compaction_ratio=self.full_compaction_ratio,
+            max_full_compaction_retries=self.max_full_compaction_retries,
         )
-
-    def record_tool_call_loop(self, tool_names: set[str]) -> None:
-        for previous_tool_name in list(self.consecutive_tool_loop_counts):
-            if previous_tool_name not in tool_names:
-                self.consecutive_tool_loop_counts.pop(previous_tool_name, None)
-        for tool_name in tool_names:
-            self.consecutive_tool_loop_counts[tool_name] += 1
-
-    def can_call_tool(self, tool_name: str, max_consecutive_loops: int) -> bool:
-        return self.consecutive_tool_loop_counts[tool_name] <= max_consecutive_loops
-
-    def can_start_tool_call_batch(self, max_tool_call_batches: int | None) -> bool:
-        return max_tool_call_batches is None or self.tool_call_batches < max_tool_call_batches
-
-    def record_tool_call_batch(self) -> None:
-        self.tool_call_batches += 1
-
-    def record_tool_attempt(self, tool_name: str, input_payload: JsonDict) -> list[str]:
-        self.tool_counts[tool_name] += 1
-        warnings = self._similar_query_warnings(tool_name, input_payload)
-        self.warnings.extend(warnings)
-        self.query_history.append((tool_name, _query_text(input_payload)))
-        return warnings
-
-    def record_tool_result(
-        self,
-        *,
-        step: int,
-        result: ToolResult,
-        input_payload: JsonDict,
-        warnings: list[str],
-    ) -> None:
-        market_evidence_snapshot = build_daily_ohlcv_snapshot(
-            result.output,
-            tool_name=result.tool_name,
-        )
-        if market_evidence_snapshot is not None:
-            self._append_market_evidence_snapshot(market_evidence_snapshot)
-        output, output_compacted = _compact_tool_observation(
-            result.output,
-            tool_name=result.tool_name,
-            market_evidence_snapshot=market_evidence_snapshot,
-        )
-        self.entries.append(
-            {
-                "kind": "tool_result",
-                "step": step,
-                "tool_name": result.tool_name,
-                "status": result.status.value,
-                "input": input_payload,
-                "output_summary": result.output_summary,
-                "error": result.error.model_dump(mode="json") if result.error else None,
-                "warnings": warnings,
-                "evidence_count": len(result.evidence_refs),
-                "market_evidence_snapshot": market_evidence_snapshot,
-                "output": output,
-                "output_compacted": output_compacted,
-            }
-        )
-
-    def record_skill_result(
-        self,
-        *,
-        step: int,
-        skill_id: str,
-        status: str,
-        reason: str,
-        message: str,
-        skill: SkillDefinition | None = None,
-    ) -> None:
-        entry: JsonDict = {
-            "kind": "skill_result",
-            "step": step,
-            "skill_id": skill_id,
-            "status": status,
-            "reason": reason,
-            "message": message,
-        }
-        if skill is not None and status == "loaded":
-            self.loaded_skills[skill.skill_id] = _loaded_skill_payload(skill)
-            entry["version"] = skill.version
-            entry["source_project"] = skill.source_project
-            entry["source_kind"] = skill.source_kind.value
-        if status != "loaded":
-            self.warnings.append(message)
-        self.entries.append(entry)
-
-    def record_delegation(
-        self,
-        *,
-        step: int,
-        request: JsonDict,
-        result: AgentResult,
-    ) -> None:
-        self.entries.append(
-            {
-                "kind": "delegation_result",
-                "step": step,
-                "target_agent": request.get("target_agent"),
-                "status": result.status.value,
-                "payload": result.payload,
-                "error": result.error.model_dump(mode="json") if result.error else None,
-                "evidence_count": len(result.evidence_refs),
-            }
-        )
-
-    def microcompact(self, recent_step_window: int) -> int:
-        latest_step = max(
-            (int(entry.get("step") or 0) for entry in self.entries),
-            default=0,
-        )
-        min_step_to_keep = max(0, latest_step - recent_step_window + 1)
-        cleared = 0
-        for entry in self.entries:
-            if int(entry.get("step") or 0) >= min_step_to_keep:
-                continue
-            if entry.get("kind") not in {"tool_result", "delegation_result"}:
-                continue
-            if entry.get("output") == MICROCOMPACT_MARKER or entry.get("payload") == {
-                "compacted": True
-            }:
-                continue
-            if "output" in entry:
-                entry["output"] = MICROCOMPACT_MARKER
-            if "payload" in entry:
-                entry["payload"] = {"compacted": True}
-            cleared += 1
-        if cleared:
-            self.entries.append({"kind": "microcompact", "cleared": cleared})
-        return cleared
-
-    def append_compaction_summary(self, summary: str) -> None:
-        self.compacted_summaries.append(summary)
-        self.entries = [
-            entry
-            for entry in self.entries
-            if entry.get("kind") not in {"tool_result", "delegation_result"}
-        ]
-        self.entries.append({"kind": "full_compaction", "summary": summary})
-        self.compaction_failures = 0
-
-    def record_compaction_failure(self, message: str) -> None:
-        self.compaction_failures += 1
-        self.entries.append(
-            {
-                "kind": "compaction_failure",
-                "message": message,
-                "consecutive_failures": self.compaction_failures,
-            }
-        )
-
-    def record_model_format_error(self, *, step: int, error: GatewayError) -> None:
-        warning = (
-            "模型为 JSON ReAct action 返回了非 JSON 文本；将带着 "
-            "相同任务上下文重试。"
-        )
-        self.warnings.append(warning)
-        self.entries.append(
-            {
-                "kind": "model_format_error",
-                "step": step,
-                "status": "warning",
-                "error": error.model_dump(mode="json"),
-            }
-        )
-
-    def record_no_progress(self, *, step: int) -> None:
-        warning = (
-            "模型未返回 final payload、工具调用或委托；将带着 "
-            "相同任务上下文重试。"
-        )
-        self.warnings.append(warning)
-        self.entries.append(
-            {
-                "kind": "react_no_progress",
-                "step": step,
-                "status": "warning",
-            }
-        )
-
-    def recent_entries(self, recent_step_window: int) -> list[JsonDict]:
-        latest_step = max(
-            (int(entry.get("step") or 0) for entry in self.entries),
-            default=0,
-        )
-        min_step_to_keep = max(0, latest_step - recent_step_window + 1)
-        return [
-            entry
-            for entry in self.entries
-            if int(entry.get("step") or latest_step) >= min_step_to_keep
-        ]
-
-    def audit(self) -> JsonDict:
-        return {
-            "max_tool_calls_per_name": MAX_TOOL_CALLS_PER_NAME,
-            "tool_counts": dict(self.tool_counts),
-            "consecutive_tool_loop_counts": dict(self.consecutive_tool_loop_counts),
-            "loaded_skill_ids": sorted(self.loaded_skills),
-            "plan": list(self.plan),
-            "task_ledger": list(self.task_ledger),
-            "warnings": list(self.warnings),
-            "compacted_summaries": list(self.compacted_summaries),
-            "market_evidence_snapshot": self.market_evidence_snapshot(),
-            "entries": list(self.entries),
-        }
-
-    def market_evidence_snapshot(self) -> JsonDict:
-        return collect_market_evidence_snapshot(
-            list(self.market_evidence_snapshots),
-            target_symbol=self.task.ticker,
-        )
-
-    def _append_market_evidence_snapshot(self, snapshot: JsonDict) -> None:
-        key = (
-            snapshot.get("kind"),
-            snapshot.get("tool_name"),
-            snapshot.get("provider"),
-            str(snapshot.get("symbol") or "").upper(),
-            snapshot.get("start_date"),
-            snapshot.get("end_date"),
-        )
-        for index, existing in enumerate(self.market_evidence_snapshots):
-            existing_key = (
-                existing.get("kind"),
-                existing.get("tool_name"),
-                existing.get("provider"),
-                str(existing.get("symbol") or "").upper(),
-                existing.get("start_date"),
-                existing.get("end_date"),
-            )
-            if existing_key == key:
-                self.market_evidence_snapshots[index] = snapshot
-                return
-        self.market_evidence_snapshots.append(snapshot)
-
-    def _similar_query_warnings(self, tool_name: str, input_payload: JsonDict) -> list[str]:
-        query_text = _query_text(input_payload)
-        if not query_text:
-            return []
-        warnings: list[str] = []
-        for previous_tool_name, previous_query in self.query_history:
-            if previous_tool_name != tool_name:
-                continue
-            similarity = _jaccard_similarity(query_text, previous_query)
-            if similarity >= SIMILARITY_WARNING_THRESHOLD:
-                warnings.append(
-                    f"检测到 {tool_name} 的相似查询；similarity={similarity:.2f}。"
-                )
-        return warnings
 
 
 class ReActAgentHarness:
@@ -422,7 +152,7 @@ class ReActAgentHarness:
         metadata: dict[str, str],
         delegate: DelegationHandler,
     ) -> AgentResult:
-        scratchpad = Scratchpad(task)
+        runtime = TaskMemoryRuntime(task)
         tool_results: list[ToolResult] = []
         delegation_results: list[AgentResult] = []
         model_audits: list[JsonDict] = []
@@ -433,19 +163,27 @@ class ReActAgentHarness:
                 task,
                 "invalid_skill_catalog",
                 str(exc),
-                scratchpad=scratchpad,
+                runtime=runtime,
             )
 
         for step in range(1, self.config.max_steps + 1):
-            scratchpad.microcompact(self.config.recent_step_window)
-            await self._compact_if_needed(task, assembled_prompt, scratchpad, metadata)
+            use_micro_context = await self._prepare_active_context(
+                task=task,
+                definition=definition,
+                assembled_prompt=assembled_prompt,
+                context_snapshot=context_snapshot,
+                runtime=runtime,
+                metadata={**metadata, "react_step": str(step)},
+                model_audits=model_audits,
+            )
             response = await self._complete_step(
                 task=task,
                 definition=definition,
                 assembled_prompt=assembled_prompt,
                 context_snapshot=context_snapshot,
-                scratchpad=scratchpad,
+                runtime=runtime,
                 metadata={**metadata, "react_step": str(step)},
+                micro=use_micro_context,
             )
             model_audits.append(response.audit.model_dump(mode="json"))
             if response.error is not None:
@@ -454,7 +192,10 @@ class ReActAgentHarness:
                     and step < self.config.max_steps
                 )
                 if can_retry_json:
-                    scratchpad.record_model_format_error(step=step, error=response.error)
+                    runtime.record_model_format_error(
+                        step=step,
+                        error=response.error.model_dump(mode="json"),
+                    )
                     continue
                 return _failed(
                     task,
@@ -463,7 +204,7 @@ class ReActAgentHarness:
                     retryable=response.error.retryable,
                     tool_results=tool_results,
                     delegation_results=delegation_results,
-                    scratchpad=scratchpad,
+                    runtime=runtime,
                     details={"gateway_error": response.error.model_dump(mode="json")},
                 )
 
@@ -475,14 +216,27 @@ class ReActAgentHarness:
                     "Model response could not be parsed as a ReAct JSON action.",
                     tool_results=tool_results,
                     delegation_results=delegation_results,
-                    scratchpad=scratchpad,
+                    runtime=runtime,
                     details={"text": response.text},
                 )
             action = _coerce_direct_final_action(action, task.required_output_schema)
-            scratchpad.record_action(step, action)
+            runtime.record_action(step, action)
+            action, action_text = await self._maybe_run_pre_final_challenge(
+                step=step,
+                task=task,
+                definition=definition,
+                assembled_prompt=assembled_prompt,
+                context_snapshot=context_snapshot,
+                runtime=runtime,
+                action=action,
+                response_text=response.text,
+                tool_results=tool_results,
+                metadata={**metadata, "react_step": str(step)},
+                model_audits=model_audits,
+            )
 
             tool_call_inputs = _tool_call_inputs(action.get("tool_calls"))
-            scratchpad.record_tool_call_loop(
+            runtime.record_tool_call_loop(
                 {
                     str(call.get("tool_name") or call.get("name") or "")
                     for call in tool_call_inputs
@@ -506,11 +260,11 @@ class ReActAgentHarness:
                         assembled_prompt=assembled_prompt,
                         context_snapshot=context_snapshot,
                         structured=final_payload,
-                        text=response.text or json.dumps(final_payload, ensure_ascii=False),
+                        text=action_text or json.dumps(final_payload, ensure_ascii=False),
                         model_audits=model_audits,
                         tool_results=tool_results,
                         delegation_results=delegation_results,
-                        scratchpad=scratchpad,
+                        runtime=runtime,
                         completion_reason=str(action.get("completion_reason") or "complete"),
                     )
 
@@ -520,7 +274,7 @@ class ReActAgentHarness:
                     task=task,
                     definition=definition,
                     calls=skill_call_inputs,
-                    scratchpad=scratchpad,
+                    runtime=runtime,
                 )
                 if (
                     is_complete
@@ -534,16 +288,16 @@ class ReActAgentHarness:
                         assembled_prompt=assembled_prompt,
                         context_snapshot=context_snapshot,
                         structured=final_payload,
-                        text=response.text or json.dumps(final_payload, ensure_ascii=False),
+                        text=action_text or json.dumps(final_payload, ensure_ascii=False),
                         model_audits=model_audits,
                         tool_results=tool_results,
                         delegation_results=delegation_results,
-                        scratchpad=scratchpad,
+                        runtime=runtime,
                         completion_reason=str(action.get("completion_reason") or "complete"),
                     )
 
             if tool_call_inputs:
-                if not scratchpad.can_start_tool_call_batch(self.config.max_tool_call_batches):
+                if not runtime.can_start_tool_call_batch(self.config.max_tool_call_batches):
                     return _failed(
                         task,
                         "tool_call_batch_limit_exceeded",
@@ -553,24 +307,24 @@ class ReActAgentHarness:
                         ),
                         tool_results=tool_results,
                         delegation_results=delegation_results,
-                        scratchpad=scratchpad,
+                        runtime=runtime,
                         details={
                             "max_tool_call_batches": self.config.max_tool_call_batches,
                             "attempted_batch_step": step,
                         },
                     )
-                scratchpad.record_tool_call_batch()
+                runtime.record_tool_call_batch()
                 step_results = await self._execute_tool_calls(
                     step=step,
                     task=task,
                     calls=tool_call_inputs,
-                    scratchpad=scratchpad,
+                    runtime=runtime,
                 )
                 tool_results.extend(step_results)
 
             for delegation in delegation_inputs:
                 result = await delegate(delegation)
-                scratchpad.record_delegation(step=step, request=delegation, result=result)
+                runtime.record_delegation(step=step, request=delegation, result=result)
                 delegation_results.append(result)
 
             if not tool_call_inputs and not skill_call_inputs and not delegation_inputs:
@@ -582,19 +336,19 @@ class ReActAgentHarness:
                             assembled_prompt=assembled_prompt,
                             context_snapshot=context_snapshot,
                             structured=final_payload,
-                            text=response.text or json.dumps(final_payload, ensure_ascii=False),
+                            text=action_text or json.dumps(final_payload, ensure_ascii=False),
                             model_audits=model_audits,
                             tool_results=tool_results,
                             delegation_results=delegation_results,
-                            scratchpad=scratchpad,
+                            runtime=runtime,
                             completion_reason=str(
                                 action.get("completion_reason") or "final_payload"
                             ),
                         )
                     if step < self.config.max_steps:
-                        scratchpad.record_no_progress(step=step)
+                        runtime.record_no_progress(step=step)
                         continue
-                    scratchpad.record_no_progress(step=step)
+                    runtime.record_no_progress(step=step)
                     recovered_review_result = self._succeeded_with_review_max_steps_fallback(
                         task=task,
                         definition=definition,
@@ -603,7 +357,7 @@ class ReActAgentHarness:
                         model_audits=model_audits,
                         tool_results=tool_results,
                         delegation_results=delegation_results,
-                        scratchpad=scratchpad,
+                        runtime=runtime,
                     )
                     if recovered_review_result is not None:
                         return recovered_review_result
@@ -613,12 +367,12 @@ class ReActAgentHarness:
                         "ReAct step returned final_payload with is_complete=false.",
                         tool_results=tool_results,
                         delegation_results=delegation_results,
-                        scratchpad=scratchpad,
+                        runtime=runtime,
                     )
                 if step < self.config.max_steps:
-                    scratchpad.record_no_progress(step=step)
+                    runtime.record_no_progress(step=step)
                     continue
-                scratchpad.record_no_progress(step=step)
+                runtime.record_no_progress(step=step)
                 recovered_review_result = self._succeeded_with_review_max_steps_fallback(
                     task=task,
                     definition=definition,
@@ -627,7 +381,7 @@ class ReActAgentHarness:
                     model_audits=model_audits,
                     tool_results=tool_results,
                     delegation_results=delegation_results,
-                    scratchpad=scratchpad,
+                    runtime=runtime,
                 )
                 if recovered_review_result is not None:
                     return recovered_review_result
@@ -637,29 +391,29 @@ class ReActAgentHarness:
                     "ReAct step 未返回 final payload、工具调用或委托。",
                     tool_results=tool_results,
                     delegation_results=delegation_results,
-                    scratchpad=scratchpad,
+                    runtime=runtime,
                 )
 
         recovered_research = _max_steps_research_section_fallback(
             task,
             tool_results=tool_results,
             delegation_results=delegation_results,
-            scratchpad=scratchpad,
+            runtime=runtime,
         )
         if recovered_research is not None:
             structured, text = recovered_research
-            scratchpad.warnings.append(
+            runtime.add_warning(
                 "ResearchSection reached max_steps; recovered from successful tool evidence."
             )
-            scratchpad.entries.append(
+            runtime.event_log.append(
+                "max_steps_recovered",
                 {
-                    "kind": "max_steps_recovered",
                     "status": "warning",
                     "schema": "ResearchSection",
                     "successful_tool_count": sum(
                         1 for result in tool_results if result.status is ResultStatus.SUCCEEDED
                     ),
-                }
+                },
             )
             return self._succeeded(
                 task=task,
@@ -671,7 +425,7 @@ class ReActAgentHarness:
                 model_audits=model_audits,
                 tool_results=tool_results,
                 delegation_results=delegation_results,
-                scratchpad=scratchpad,
+                runtime=runtime,
                 completion_reason=(
                     "达到 ReAct max_steps，已基于成功工具证据生成保守 ResearchSection。"
                 ),
@@ -681,7 +435,7 @@ class ReActAgentHarness:
             task,
             tool_results=tool_results,
             delegation_results=delegation_results,
-            scratchpad=scratchpad,
+            runtime=runtime,
         )
         if recovered_review_payload is not None:
             recovered_review_result = self._succeeded_with_review_max_steps_fallback(
@@ -692,7 +446,7 @@ class ReActAgentHarness:
                 model_audits=model_audits,
                 tool_results=tool_results,
                 delegation_results=delegation_results,
-                scratchpad=scratchpad,
+                runtime=runtime,
                 recovered_review=recovered_review_payload,
             )
             if recovered_review_result is not None:
@@ -704,7 +458,7 @@ class ReActAgentHarness:
             "ReAct loop reached max_steps without a complete final payload.",
             tool_results=tool_results,
             delegation_results=delegation_results,
-            scratchpad=scratchpad,
+            runtime=runtime,
         )
 
     def _succeeded_with_review_max_steps_fallback(
@@ -717,30 +471,30 @@ class ReActAgentHarness:
         model_audits: list[JsonDict],
         tool_results: list[ToolResult],
         delegation_results: list[AgentResult],
-        scratchpad: Scratchpad,
+        runtime: TaskMemoryRuntime,
         recovered_review: tuple[JsonDict, str, str] | None = None,
     ) -> AgentResult | None:
         recovered_review = recovered_review or _max_steps_review_result_fallback(
             task,
             tool_results=tool_results,
             delegation_results=delegation_results,
-            scratchpad=scratchpad,
+            runtime=runtime,
         )
         if recovered_review is None:
             return None
         structured, text, schema_name = recovered_review
-        scratchpad.warnings.append(
+        runtime.add_warning(
             f"{schema_name} reached max_steps; recovered as conservative review result."
         )
-        scratchpad.entries.append(
+        runtime.event_log.append(
+            "max_steps_recovered",
             {
-                "kind": "max_steps_recovered",
                 "status": "warning",
                 "schema": schema_name,
                 "successful_tool_count": sum(
                     1 for result in tool_results if result.status is ResultStatus.SUCCEEDED
                 ),
-            }
+            },
         )
         return self._succeeded(
             task=task,
@@ -752,7 +506,7 @@ class ReActAgentHarness:
             model_audits=model_audits,
             tool_results=tool_results,
             delegation_results=delegation_results,
-            scratchpad=scratchpad,
+            runtime=runtime,
             completion_reason=(
                 "Reached ReAct max_steps; recovered as conservative review result."
             ),
@@ -765,7 +519,7 @@ class ReActAgentHarness:
         task: AgentTask,
         definition: AgentDefinition,
         calls: list[JsonDict],
-        scratchpad: Scratchpad,
+        runtime: TaskMemoryRuntime,
     ) -> None:
         available = {
             skill.skill_id: skill
@@ -775,7 +529,7 @@ class ReActAgentHarness:
             skill_id = str(call.get("skill_id") or call.get("name") or "").strip()
             reason = str(call.get("reason") or "")
             if not skill_id:
-                scratchpad.record_skill_result(
+                runtime.record_skill_result(
                     step=step,
                     skill_id="",
                     status="failed",
@@ -783,8 +537,8 @@ class ReActAgentHarness:
                     message="技能调用缺少 skill_id。",
                 )
                 continue
-            if skill_id in scratchpad.loaded_skills:
-                scratchpad.record_skill_result(
+            if skill_id in runtime.loaded_skills:
+                runtime.record_skill_result(
                     step=step,
                     skill_id=skill_id,
                     status="duplicate",
@@ -794,7 +548,7 @@ class ReActAgentHarness:
                 continue
             skill = available.get(skill_id)
             if skill is None:
-                scratchpad.record_skill_result(
+                runtime.record_skill_result(
                     step=step,
                     skill_id=skill_id,
                     status="rejected",
@@ -802,7 +556,7 @@ class ReActAgentHarness:
                     message=f"技能 {skill_id} 未暴露给当前 agent task。",
                 )
                 continue
-            scratchpad.record_skill_result(
+            runtime.record_skill_result(
                 step=step,
                 skill_id=skill_id,
                 status="loaded",
@@ -817,35 +571,65 @@ class ReActAgentHarness:
         step: int,
         task: AgentTask,
         calls: list[JsonDict],
-        scratchpad: Scratchpad,
+        runtime: TaskMemoryRuntime,
     ) -> list[ToolResult]:
-        if self.tool_registry is None:
-            return [
-                self._blocked_tool_result(
-                    task,
-                    call,
-                    code="tool_registry_disabled",
-                    message="当前 runner 未配置 tool registry。",
-                )
-                for call in calls
-            ]
-
-        adapter = ToolRegistryFunctionAdapter(self.tool_registry)
+        adapter = (
+            ToolRegistryFunctionAdapter(self.tool_registry)
+            if self.tool_registry is not None
+            else None
+        )
         results: list[ToolResult | None] = [None] * len(calls)
-        concurrent_work: list[tuple[int, JsonDict, list[str]]] = []
+        concurrent_work: list[
+            tuple[int, JsonDict, list[str], str, ToolDescriptor | None]
+        ] = []
 
         for index, call in enumerate(calls):
             tool_name = str(call.get("tool_name") or call.get("name") or "")
             input_payload = _json_dict(call.get("input"))
+            if tool_name == READ_OBSERVATION_TOOL_NAME:
+                runtime.read_observation(step=step, input_payload=input_payload)
+                continue
+            tool_call_id = runtime.begin_tool_call(
+                step=step,
+                tool_name=tool_name or "unknown_tool",
+                input_payload=input_payload,
+            )
             if not tool_name:
-                results[index] = self._blocked_tool_result(
+                blocked_result = self._blocked_tool_result(
                     task,
                     call,
                     code="invalid_tool_call",
                     message="工具调用缺少 tool_name。",
                 )
+                results[index] = blocked_result
+                runtime.record_tool_result(
+                    step=step,
+                    tool_call_id=tool_call_id,
+                    result=blocked_result,
+                    input_payload=input_payload,
+                    warnings=[],
+                    descriptor=None,
+                )
                 continue
-            if not scratchpad.can_call_tool(tool_name, self.config.max_tool_calls_per_name):
+            if adapter is None:
+                blocked_result = self._blocked_tool_result(
+                    task,
+                    call,
+                    code="tool_registry_disabled",
+                    message="当前 runner 未配置 tool registry。",
+                )
+                results[index] = blocked_result
+                runtime.record_tool_result(
+                    step=step,
+                    tool_call_id=tool_call_id,
+                    result=blocked_result,
+                    input_payload=input_payload,
+                    warnings=[],
+                    descriptor=None,
+                )
+                continue
+            descriptor = self.tool_registry.describe(tool_name) if self.tool_registry else None
+            if not runtime.can_call_tool(tool_name, self.config.max_tool_calls_per_name):
                 blocked_result = self._blocked_tool_result(
                     task,
                     call,
@@ -857,29 +641,34 @@ class ReActAgentHarness:
                     ),
                 )
                 results[index] = blocked_result
-                scratchpad.record_tool_result(
+                runtime.record_tool_result(
                     step=step,
+                    tool_call_id=tool_call_id,
                     result=blocked_result,
                     input_payload=input_payload,
                     warnings=[],
+                    descriptor=descriptor,
                 )
                 continue
 
-            warnings = scratchpad.record_tool_attempt(tool_name, input_payload)
-            descriptor = self.tool_registry.describe(tool_name)
+            warnings = runtime.record_tool_attempt(tool_name, input_payload)
             if descriptor is not None and descriptor.concurrent_safe:
-                concurrent_work.append((index, call, warnings))
+                concurrent_work.append((index, call, warnings, tool_call_id, descriptor))
             else:
+                assert adapter is not None
                 result = await self._call_tool(adapter, tool_name, task, input_payload)
                 results[index] = result
-                scratchpad.record_tool_result(
+                runtime.record_tool_result(
                     step=step,
+                    tool_call_id=tool_call_id,
                     result=result,
                     input_payload=input_payload,
                     warnings=warnings,
+                    descriptor=descriptor,
                 )
 
         if concurrent_work:
+            assert adapter is not None
             gathered = await asyncio.gather(
                 *[
                     self._call_tool(
@@ -888,16 +677,24 @@ class ReActAgentHarness:
                         task,
                         _json_dict(call.get("input")),
                     )
-                    for _, call, _ in concurrent_work
+                    for _, call, _, _, _ in concurrent_work
                 ]
             )
-            for (index, call, warnings), result in zip(concurrent_work, gathered, strict=True):
+            for (
+                index,
+                call,
+                warnings,
+                tool_call_id,
+                descriptor,
+            ), result in zip(concurrent_work, gathered, strict=True):
                 results[index] = result
-                scratchpad.record_tool_result(
+                runtime.record_tool_result(
                     step=step,
+                    tool_call_id=tool_call_id,
                     result=result,
                     input_payload=_json_dict(call.get("input")),
                     warnings=warnings,
+                    descriptor=descriptor,
                 )
 
         return [result for result in results if result is not None]
@@ -930,7 +727,11 @@ class ReActAgentHarness:
                     code="tool_call_exception",
                     message=str(exc),
                 )
-            loop.call_soon_threadsafe(publish, result)
+            try:
+                loop.call_soon_threadsafe(publish, result)
+            except RuntimeError:
+                # A timed-out task may close its loop before the daemon tool thread returns.
+                return
 
         thread = threading.Thread(
             target=target,
@@ -976,8 +777,9 @@ class ReActAgentHarness:
         definition: AgentDefinition,
         assembled_prompt: AssembledPrompt,
         context_snapshot: Any | None,
-        scratchpad: Scratchpad,
+        runtime: TaskMemoryRuntime,
         metadata: dict[str, str],
+        micro: bool,
     ) -> ModelResponse:
         return await self._complete_model_request(
             ModelRequest(
@@ -995,9 +797,10 @@ class ReActAgentHarness:
                                 definition=definition,
                                 assembled_prompt=assembled_prompt,
                                 context_snapshot=context_snapshot,
-                                scratchpad=scratchpad,
+                                runtime=runtime,
                                 tool_registry=self.tool_registry,
                                 skill_registry=self.skill_registry,
+                                active_context=runtime.active_context(micro=micro),
                                 config=self.config,
                             ),
                         ),
@@ -1049,26 +852,254 @@ class ReActAgentHarness:
                 ),
             )
 
-    async def _compact_if_needed(
+    async def _prepare_active_context(
         self,
+        *,
         task: AgentTask,
+        definition: AgentDefinition,
         assembled_prompt: AssembledPrompt,
-        scratchpad: Scratchpad,
+        context_snapshot: Any | None,
+        runtime: TaskMemoryRuntime,
         metadata: dict[str, str],
-    ) -> None:
-        if not any(
-            entry.get("kind") in {"tool_result", "delegation_result"}
-            for entry in scratchpad.entries
+        model_audits: list[JsonDict],
+    ) -> bool:
+        system_prompt = _react_system_prompt(assembled_prompt.instructions)
+        normal_context = runtime.active_context(micro=False)
+        normal_user_prompt = _react_user_prompt(
+            task=task,
+            definition=definition,
+            assembled_prompt=assembled_prompt,
+            context_snapshot=context_snapshot,
+            runtime=runtime,
+            tool_registry=self.tool_registry,
+            skill_registry=self.skill_registry,
+            active_context=normal_context,
+            config=self.config,
+        )
+        available_tools = _available_tool_payloads(task, runtime, self.tool_registry)
+        report = measure_context_budget(
+            system_prompt=system_prompt,
+            user_prompt=normal_user_prompt,
+            active_context=normal_context,
+            available_tools=available_tools,
+            config=self.config.budget_config(),
+            mode="normal",
+        )
+        runtime.record_context_budget(report)
+        if not bool(report["over_micro_threshold"]):
+            return False
+
+        micro_context = runtime.active_context(micro=True)
+        micro_user_prompt = _react_user_prompt(
+            task=task,
+            definition=definition,
+            assembled_prompt=assembled_prompt,
+            context_snapshot=context_snapshot,
+            runtime=runtime,
+            tool_registry=self.tool_registry,
+            skill_registry=self.skill_registry,
+            active_context=micro_context,
+            config=self.config,
+        )
+        micro_report = measure_context_budget(
+            system_prompt=system_prompt,
+            user_prompt=micro_user_prompt,
+            active_context=micro_context,
+            available_tools=available_tools,
+            config=self.config.budget_config(),
+            mode="micro",
+        )
+        runtime.record_micro_maintenance(before=report, after=micro_report)
+        runtime.record_context_budget(micro_report)
+        if not (
+            bool(micro_report["over_full_threshold"])
+            or bool(micro_report["over_hard_budget"])
         ):
-            return
-        if scratchpad.compaction_failures >= self.config.max_consecutive_compaction_failures:
-            return
-        context_payload = {
-            "task": task.model_dump(mode="json"),
-            "scratchpad": scratchpad.audit(),
+            return True
+
+        attempts = 0
+        while attempts <= self.config.max_full_compaction_retries:
+            attempts += 1
+            response = await self._complete_model_request(
+                ModelRequest(
+                    provider=self.provider,
+                    model=self.model,
+                    messages=[
+                        ModelMessage(
+                            role=MessageRole.SYSTEM,
+                            content="\n\n".join(
+                                [
+                                    assembled_prompt.instructions,
+                                    "## Full Compaction",
+                                    (
+                                        "你是当前 AgentTask 的同一个主 agent。只维护当前 Memory "
+                                        "State，不调用工具、不输出最终业务结果、"
+                                        "不改写任何原始 observation。"
+                                    ),
+                                ]
+                            ),
+                        ),
+                        ModelMessage(
+                            role=MessageRole.USER,
+                            content=json.dumps(
+                                {
+                                    "task": {
+                                        "task_id": task.task_id,
+                                        "task_type": task.task_type.value,
+                                        "required_output_schema": task.required_output_schema,
+                                    },
+                                    "full_compaction_reason": micro_report,
+                                    "active_context": micro_context,
+                                    "maintenance_action_schema": maintenance_action_schema(),
+                                    "protected_fresh_observation_count": len(
+                                        micro_context.get("fresh_observations", [])
+                                    ),
+                                    "language_rules": CHINESE_OUTPUT_RULES,
+                                },
+                                ensure_ascii=False,
+                                default=str,
+                            ),
+                        ),
+                    ],
+                    temperature=0,
+                    timeout_seconds=self.config.model_request_timeout_seconds,
+                    response_format=ResponseFormat.JSON,
+                    metadata={**metadata, "react_compaction": "true"},
+                )
+            )
+            model_audits.append(response.audit.model_dump(mode="json"))
+            if response.error is not None:
+                runtime.record_full_compaction_failure(response.error.message)
+                continue
+            action = _parse_action(response)
+            if action is None:
+                runtime.record_full_compaction_failure(
+                    "Full Compaction returned an invalid maintenance action."
+                )
+                continue
+            before_tokens = int(micro_report["projected_input_tokens"])
+            runtime.apply_full_compaction(action, before=micro_report)
+            micro_context = runtime.active_context(micro=True)
+            micro_user_prompt = _react_user_prompt(
+                task=task,
+                definition=definition,
+                assembled_prompt=assembled_prompt,
+                context_snapshot=context_snapshot,
+                runtime=runtime,
+                tool_registry=self.tool_registry,
+                skill_registry=self.skill_registry,
+                active_context=micro_context,
+                config=self.config,
+            )
+            micro_report = measure_context_budget(
+                system_prompt=system_prompt,
+                user_prompt=micro_user_prompt,
+                active_context=micro_context,
+                available_tools=available_tools,
+                config=self.config.budget_config(),
+                mode="full_compaction_result",
+            )
+            runtime.record_context_budget(micro_report)
+            reduced = int(micro_report["projected_input_tokens"]) < before_tokens
+            if reduced and not bool(micro_report["over_hard_budget"]):
+                return True
+            runtime.add_warning(
+                "Full Compaction 未充分降低上下文占用，将重试或执行安全 fallback。",
+                source="full_compaction",
+            )
+
+        while bool(micro_report["over_hard_budget"]):
+            if runtime.safe_budget_fallback() is None:
+                runtime.add_warning(
+                    "Active Context 的固定内容已超过硬预算，无法继续卸载 retained observation。",
+                    source="context_budget",
+                )
+                break
+            micro_context = runtime.active_context(micro=True)
+            micro_user_prompt = _react_user_prompt(
+                task=task,
+                definition=definition,
+                assembled_prompt=assembled_prompt,
+                context_snapshot=context_snapshot,
+                runtime=runtime,
+                tool_registry=self.tool_registry,
+                skill_registry=self.skill_registry,
+                active_context=micro_context,
+                config=self.config,
+            )
+            micro_report = measure_context_budget(
+                system_prompt=system_prompt,
+                user_prompt=micro_user_prompt,
+                active_context=micro_context,
+                available_tools=available_tools,
+                config=self.config.budget_config(),
+                mode="safe_fallback",
+            )
+            runtime.record_context_budget(micro_report)
+        return True
+
+    async def _maybe_run_pre_final_challenge(
+        self,
+        *,
+        step: int,
+        task: AgentTask,
+        definition: AgentDefinition,
+        assembled_prompt: AssembledPrompt,
+        context_snapshot: Any | None,
+        runtime: TaskMemoryRuntime,
+        action: JsonDict,
+        response_text: str | None,
+        tool_results: list[ToolResult],
+        metadata: dict[str, str],
+        model_audits: list[JsonDict],
+    ) -> tuple[JsonDict, str | None]:
+        if not bool(action.get("is_complete", False)):
+            return action, response_text
+        if runtime.pre_final_challenge_completed:
+            return action, response_text
+
+        reloaded_refs = runtime.reload_final_observations()
+        challenge_enabled = bool(task.input_context.get("pre_final_challenge", False)) or (
+            "research_frame" in task.input_context
+        )
+        if not challenge_enabled and not reloaded_refs:
+            return action, response_text
+
+        reasons: list[str] = []
+        memory_audit = runtime.memory.audit()
+        synthesis = memory_audit.get("working_synthesis", [])
+        agenda = memory_audit.get("research_agenda", [])
+        retained = memory_audit.get("retained_observations", [])
+        if not synthesis:
+            reasons.append("Working Synthesis 为空，需确认 final 是否只是复述工具结果。")
+        active_agenda = [
+            item
+            for item in agenda
+            if isinstance(item, dict) and item.get("status") == "active"
+        ]
+        if active_agenda:
+            reasons.append(f"仍有 {len(active_agenda)} 个 active Research Agenda。")
+        if len(tool_results) >= 2 and not synthesis:
+            reasons.append("已有多次 tool result，但尚未形成可复用 Synthesis。")
+        linked_refs = {
+            ref
+            for item in synthesis
+            if isinstance(item, dict)
+            for ref in item.get("observation_refs", [])
+            if isinstance(ref, str)
         }
-        if _estimated_tokens(context_payload) < self.config.compaction_token_threshold:
-            return
+        retained_refs = {
+            str(item.get("ref")) for item in retained if isinstance(item, dict)
+        }
+        if retained_refs and not retained_refs.intersection(linked_refs):
+            reasons.append("存在 Retained Observation，但尚未与有效 Synthesis 建立关联。")
+        if reloaded_refs:
+            reasons.append(
+                "final 所需 INDEX_ONLY observation 已重新加载，必须基于原文重新生成 final。"
+            )
+        if not reasons:
+            return action, response_text
+
         response = await self._complete_model_request(
             ModelRequest(
                 provider=self.provider,
@@ -1076,60 +1107,100 @@ class ReActAgentHarness:
                 messages=[
                     ModelMessage(
                         role=MessageRole.SYSTEM,
-                        content=(
-                            "Summarize tool and delegation observations into JSON. "
-                            "Do not call tools. Do not include hidden chain-of-thought. "
-                            "Use Simplified Chinese for human-readable text while preserving "
-                            "JSON keys, schema names, enum values, tool names, agent ids, "
-                            "and document types in English."
+                        content="\n\n".join(
+                            [
+                                _react_system_prompt(assembled_prompt.instructions),
+                                "## Pre-final Research Challenge",
+                                (
+                                    "检查当前研究是否足以完成 output contract。"
+                                    "若不足，返回继续研究的普通 ReAct action；"
+                                    "若已充分，基于当前原文重新返回完整 final action。"
+                                ),
+                            ]
                         ),
                     ),
                     ModelMessage(
                         role=MessageRole.USER,
                         content=json.dumps(
                             {
-                                "task": task.model_dump(mode="json"),
-                                "tool_and_delegation_history": scratchpad.entries,
-                                "market_evidence_snapshot": (
-                                    scratchpad.market_evidence_snapshot()
+                                "challenge_reasons": reasons,
+                                "proposed_final_action": action,
+                                "active_context": runtime.active_context(micro=False),
+                                "context_snapshot": agent_visible_context_snapshot(
+                                    context_snapshot
                                 ),
-                                "tool_specific_summary_requirements": [
-                                    (
-                                        "For daily_ohlcv tool results, preserve the "
-                                        "market_evidence_snapshot exactly. Do not replace "
-                                        "OHLCV-derived returns, dates, closes, highs, lows, "
-                                        "or volume metrics with generic prose."
-                                    )
-                                ],
-                                "required_summary_fields": [
-                                    "data_retrieved",
-                                    "errors",
-                                    "numbers",
-                                    "pending_data_needs",
-                                    "current_work_state",
-                                    "recommended_next_steps",
-                                ],
-                                "language_rules": CHINESE_OUTPUT_RULES,
+                                "output_contract": _output_contract(
+                                    task.required_output_schema,
+                                    task=task,
+                                ),
+                                "available_tools": _available_tool_payloads(
+                                    task,
+                                    runtime,
+                                    self.tool_registry,
+                                ),
+                                "response_schema": {
+                                    **memory_action_schema(),
+                                    "plan_update": ["…"],
+                                    "reasoning_summary": "中文公开摘要",
+                                    "is_complete": "boolean",
+                                    "completion_reason": "中文完成原因",
+                                    "tool_calls": [
+                                        {
+                                            "tool_name": "registered tool name",
+                                            "input": {"key": "value"},
+                                        }
+                                    ],
+                                    "delegations": [],
+                                    "final_payload": "完整业务 schema",
+                                },
                             },
                             ensure_ascii=False,
                             default=str,
                         ),
                     ),
                 ],
-                temperature=0,
+                temperature=0.2,
                 timeout_seconds=self.config.model_request_timeout_seconds,
                 response_format=ResponseFormat.JSON,
-                metadata={**metadata, "react_compaction": "true"},
+                metadata={**metadata, "react_pre_final_challenge": "true"},
             )
         )
+        model_audits.append(response.audit.model_dump(mode="json"))
         if response.error is not None:
-            scratchpad.record_compaction_failure(response.error.message)
-            return
-        summary = response.structured if isinstance(response.structured, dict) else response.text
-        if summary:
-            scratchpad.append_compaction_summary(json.dumps(summary, ensure_ascii=False))
-        else:
-            scratchpad.record_compaction_failure("Compaction returned an empty summary.")
+            runtime.record_pre_final_challenge(
+                {"reasons": reasons, "status": "failed", "error": response.error.message}
+            )
+            runtime.add_warning(
+                f"Pre-final challenge 失败，保留原 final：{response.error.message}",
+                source="pre_final_challenge",
+            )
+            return action, response_text
+        challenged_action = _parse_action(response)
+        if challenged_action is None:
+            runtime.record_pre_final_challenge(
+                {"reasons": reasons, "status": "invalid_action"}
+            )
+            runtime.add_warning(
+                "Pre-final challenge 返回无效 action，保留原 final。",
+                source="pre_final_challenge",
+            )
+            return action, response_text
+        challenged_action = _coerce_direct_final_action(
+            challenged_action,
+            task.required_output_schema,
+        )
+        runtime.record_pre_final_challenge(
+            {
+                "reasons": reasons,
+                "status": "completed",
+                "is_complete": bool(challenged_action.get("is_complete", False)),
+            }
+        )
+        runtime.record_action(step, challenged_action)
+        return challenged_action, response.text or json.dumps(
+            challenged_action,
+            ensure_ascii=False,
+        )
 
     def _succeeded(
         self,
@@ -1143,7 +1214,7 @@ class ReActAgentHarness:
         model_audits: list[JsonDict],
         tool_results: list[ToolResult],
         delegation_results: list[AgentResult],
-        scratchpad: Scratchpad,
+        runtime: TaskMemoryRuntime,
         completion_reason: str,
     ) -> AgentResult:
         structured = _normalize_final_payload(
@@ -1167,7 +1238,7 @@ class ReActAgentHarness:
                 schema_error,
                 tool_results=tool_results,
                 delegation_results=delegation_results,
-                scratchpad=scratchpad,
+                runtime=runtime,
                 details={"required_output_schema": task.required_output_schema},
             )
         required_tool_names = _strings(task.input_context.get("required_tool_names"))
@@ -1177,20 +1248,22 @@ class ReActAgentHarness:
                 "必需的 ReAct 工具调用缺失或失败；将以 unknowns/data gaps 继续："
                 f"{', '.join(failed_required)}。"
             )
-            scratchpad.warnings.append(warning)
-            scratchpad.entries.append(
+            runtime.add_warning(warning, source="required_tool_gap")
+            runtime.event_log.append(
+                "required_tool_gap",
                 {
-                    "kind": "required_tool_gap",
                     "required_tool_names": required_tool_names,
                     "failed": failed_required,
                     "status": "warning",
-                }
+                },
             )
         successful_tool_results = [
             result for result in tool_results if result.status is ResultStatus.SUCCEEDED
         ]
         evidence_refs = _evidence_refs(successful_tool_results, delegation_results)
-        market_evidence_snapshot = scratchpad.market_evidence_snapshot()
+        runtime.reload_final_observations()
+        runtime.record_final(structured, completion_reason)
+        market_evidence_snapshot = runtime.market_evidence_snapshot()
         return AgentResult(
             task_id=task.task_id,
             agent_name=task.agent_name,
@@ -1202,12 +1275,12 @@ class ReActAgentHarness:
                 "completion_reason": completion_reason,
                 "model_audits": model_audits,
                 _REVIEWER_ACCEPTANCE_WARNINGS_KEY: reviewer_acceptance_warnings,
-                "react_audit": scratchpad.audit(),
+                "react_audit": runtime.persisted_audit(),
                 "market_evidence_snapshot": market_evidence_snapshot,
-                "skill_ids": sorted(scratchpad.loaded_skills),
+                "skill_ids": sorted(runtime.loaded_skills),
                 "skill_versions": {
                     skill_id: str(skill["version"])
-                    for skill_id, skill in scratchpad.loaded_skills.items()
+                    for skill_id, skill in runtime.loaded_skills.items()
                 },
                 "prompt_block_ids": (
                     task.prompt_bundle.prompt_block_ids if task.prompt_bundle else []
@@ -1215,9 +1288,7 @@ class ReActAgentHarness:
                 "internal_task_skill_ids": (
                     task.prompt_bundle.internal_task_skill_ids if task.prompt_bundle else []
                 ),
-                "external_skill_package_ids": (
-                    sorted(scratchpad.loaded_skills)
-                ),
+                "external_skill_package_ids": sorted(runtime.loaded_skills),
                 "prompt_versions": task.prompt_bundle.versions if task.prompt_bundle else {},
                 "assembled_prompt_metadata": assembled_prompt.metadata,
                 "tool_mode": self.tool_mode,
@@ -1238,7 +1309,7 @@ def _max_steps_research_section_fallback(
     *,
     tool_results: list[ToolResult],
     delegation_results: list[AgentResult],
-    scratchpad: Scratchpad,
+    runtime: TaskMemoryRuntime,
 ) -> tuple[JsonDict, str] | None:
     if "ResearchSection" not in _schema_names(task.required_output_schema):
         return None
@@ -1272,11 +1343,8 @@ def _max_steps_research_section_fallback(
         if failed_tools
         else "未记录阻断性的工具失败。"
     )
-    compacted_note = (
-        f"最近一次压缩摘要：{scratchpad.compacted_summaries[-1][:500]}"
-        if scratchpad.compacted_summaries
-        else ""
-    )
+    synthesis = runtime.memory.audit().get("working_synthesis", [])
+    synthesis_note = f"当前 Working Synthesis：{synthesis[:3]}" if synthesis else ""
     text = (
         f"{task.ticker} 的{label}在 ReAct 达到 max_steps 前未收到模型的完整 final_payload，"
         "workflow 因此基于已经成功返回的工具证据生成保守恢复段落。"
@@ -1285,7 +1353,7 @@ def _max_steps_research_section_fallback(
         "该段只能支持后续 Blackboard 初始化继续推进和人工/LLM 复核，不能被解释为无保留的"
         "最终投资结论。后续监控应优先复核缺失基准、同业或异常数据，并把价格反应、相对表现、"
         "成交量和波动率变化与 expectation units 中的已定价/未定价假设连接起来。"
-        f"{compacted_note}"
+        f"{synthesis_note}"
     )
     summary = (
         f"{task.ticker} 的{label}由 ReAct max_steps 恢复逻辑生成；"
@@ -1306,7 +1374,7 @@ def _max_steps_review_result_fallback(
     *,
     tool_results: list[ToolResult],
     delegation_results: list[AgentResult],
-    scratchpad: Scratchpad,
+    runtime: TaskMemoryRuntime,
 ) -> tuple[JsonDict, str, str] | None:
     schemas = set(_schema_names(task.required_output_schema))
     schema_name: str | None = None
@@ -1316,7 +1384,7 @@ def _max_steps_review_result_fallback(
         schema_name = "ExpectationFieldReviewResult"
     if schema_name is None:
         return None
-    if not tool_results and not scratchpad.compacted_summaries:
+    if not tool_results and len(runtime.observations.raw_store) == 0:
         return None
 
     evidence_refs = [
@@ -1414,14 +1482,15 @@ def _react_system_prompt(base_instructions: str) -> str:
             "Do not write Blackboard state directly.",
             (
                 "Do not expose hidden chain-of-thought; use concise reasoning_summary only. "
-                "All human-readable natural-language values in plan_update, "
-                "task_ledger_updates.item, reasoning_summary, completion_reason, "
+                "All human-readable natural-language values in plan_update, synthesis_update, "
+                "research_update, retain_observations, reasoning_summary, completion_reason, "
                 "delegation questions/context, and final_payload must be Simplified Chinese "
                 "unless quoting source text, identifiers, tickers, tool names, or enum values."
             ),
             (
                 "Return one JSON object matching the ReAct action protocol. "
-                "Put plan_update, is_complete, tool_calls, delegations, and final_payload "
+                "Put memory updates, plan_update, is_complete, tool_calls, delegations, and "
+                "final_payload "
                 "at the top level; do not wrap them under react_protocol."
             ),
         ]
@@ -1434,17 +1503,16 @@ def _react_user_prompt(
     definition: AgentDefinition,
     assembled_prompt: AssembledPrompt,
     context_snapshot: Any | None,
-    scratchpad: Scratchpad,
+    runtime: TaskMemoryRuntime,
     tool_registry: ToolRegistry | None,
     skill_registry: SkillRegistry,
+    active_context: JsonDict,
     config: ReActHarnessConfig,
 ) -> str:
     tool_descriptors = (
         tool_registry.describe_allowed(task.permissions) if tool_registry is not None else []
     )
-    available_tools = (
-        [_agent_visible_tool_descriptor(descriptor) for descriptor in tool_descriptors]
-    )
+    available_tools = _available_tool_payloads(task, runtime, tool_registry)
     tool_call_policy = {
         "required_tool_names": _strings(task.input_context.get("required_tool_names")),
         "available_tools_are_authoritative": True,
@@ -1480,9 +1548,7 @@ def _react_user_prompt(
                         "仅专有名词、ticker、工具名、enum、source 原文可保留英文。"
                     ),
                     "plan_update": ["简短中文公开进度；不要使用英文句子"],
-                    "task_ledger_updates": [
-                        {"item": "中文任务项", "status": "todo|done|blocked"}
-                    ],
+                    **memory_action_schema(),
                     "reasoning_summary": "中文公开理由摘要，不要包含隐藏 chain-of-thought",
                     "is_complete": "boolean",
                     "completion_reason": "中文完成原因",
@@ -1521,32 +1587,31 @@ def _react_user_prompt(
             "output_contract": _output_contract(task.required_output_schema, task=task),
             "available_tools": available_tools,
             "available_skills": available_skills,
-            "loaded_skills": list(scratchpad.loaded_skills.values()),
+            "loaded_skills": list(runtime.loaded_skills.values()),
+            "task_memory": active_context,
     }
     if visible_context_snapshot is not None:
         request_payload["context_snapshot"] = visible_context_snapshot
-    if scratchpad.plan:
-        request_payload["plan"] = scratchpad.plan
-    if scratchpad.task_ledger:
-        request_payload["task_ledger"] = scratchpad.task_ledger
-    if scratchpad.compacted_summaries:
-        request_payload["compacted_evidence_summary"] = scratchpad.compacted_summaries
-    market_evidence_snapshot = scratchpad.market_evidence_snapshot()
-    if market_evidence_snapshot:
-        request_payload["market_evidence_snapshot"] = market_evidence_snapshot
-    recent_trajectory = scratchpad.recent_entries(config.recent_step_window)
-    if recent_trajectory:
-        request_payload["recent_trajectory"] = recent_trajectory
-    scratchpad_warnings = scratchpad.warnings[-5:]
-    if scratchpad_warnings:
-        request_payload["scratchpad_warnings"] = scratchpad_warnings
     return json.dumps(request_payload, ensure_ascii=False, default=str)
+
+
+def _available_tool_payloads(
+    task: AgentTask,
+    runtime: TaskMemoryRuntime,
+    tool_registry: ToolRegistry | None,
+) -> list[JsonDict]:
+    descriptors = (
+        tool_registry.describe_allowed(task.permissions) if tool_registry is not None else []
+    )
+    available = [_agent_visible_tool_descriptor(descriptor) for descriptor in descriptors]
+    if len(runtime.observations.block_store) > 0:
+        available.append(read_observation_descriptor())
+    return available
 
 
 def _agent_visible_tool_descriptor(descriptor: ToolDescriptor) -> dict[str, Any]:
     data = descriptor.model_dump(mode="json", exclude_none=True)
     data.pop("concurrent_safe", None)
-    data.pop("compactable", None)
     return data
 
 
@@ -1595,17 +1660,6 @@ def _available_skill_catalog_item(skill: SkillDefinition) -> JsonDict:
         "source_project": skill.source_project,
         "source_kind": skill.source_kind.value,
         "call_format": {"skill_id": skill.skill_id, "reason": "why this step needs it"},
-    }
-
-
-def _loaded_skill_payload(skill: SkillDefinition) -> JsonDict:
-    return {
-        "skill_id": skill.skill_id,
-        "name": skill.name,
-        "version": skill.version,
-        "source_project": skill.source_project,
-        "source_kind": skill.source_kind.value,
-        "instructions": skill.content.prompt_fragment,
     }
 
 
@@ -1666,7 +1720,11 @@ def _parse_json_object_from_text(text: str) -> JsonDict | None:
 def _coerce_direct_final_action(action: JsonDict, required_output_schema: str) -> JsonDict:
     control_keys = {
         "plan_update",
-        "task_ledger_updates",
+        "synthesis_update",
+        "research_update",
+        "retain_observations",
+        "retained_observation_update",
+        "compaction_reasoning_summary",
         "is_complete",
         "completion_reason",
         "final_payload",
@@ -1853,7 +1911,11 @@ def _looks_like_direct_final_payload(payload: JsonDict, required_output_schema: 
 def _unwrap_action_payload(payload: JsonDict) -> JsonDict:
     action_keys = {
         "plan_update",
-        "task_ledger_updates",
+        "synthesis_update",
+        "research_update",
+        "retain_observations",
+        "retained_observation_update",
+        "compaction_reasoning_summary",
         "is_complete",
         "completion_reason",
         "tool_calls",
@@ -1878,21 +1940,23 @@ def _failed(
     retryable: bool = False,
     tool_results: list[ToolResult] | None = None,
     delegation_results: list[AgentResult] | None = None,
-    scratchpad: Scratchpad | None = None,
+    runtime: TaskMemoryRuntime | None = None,
     details: JsonDict | None = None,
 ) -> AgentResult:
     tool_results = tool_results or []
     delegation_results = delegation_results or []
     evidence_refs = _evidence_refs(tool_results, delegation_results)
+    if runtime is not None:
+        runtime.record_failure(code=code, message=message, retryable=retryable)
     return AgentResult(
         task_id=task.task_id,
         agent_name=task.agent_name,
         status=ResultStatus.FAILED,
         payload={
             "runtime": "react",
-            "react_audit": scratchpad.audit() if scratchpad else {},
+            "react_audit": runtime.persisted_audit() if runtime else {},
             "market_evidence_snapshot": (
-                scratchpad.market_evidence_snapshot() if scratchpad else {}
+                runtime.market_evidence_snapshot() if runtime else {}
             ),
         },
         evidence_refs=evidence_refs,
@@ -2961,7 +3025,7 @@ def _output_contract(required_output_schema: str, *, task: AgentTask | None = No
                     ),
                 ],
             }
-        elif False and schema_name == "MonitoringConfigDocument":
+        elif schema_name == "MonitoringConfigDocumentLegacyDisabled":
             contracts[schema_name] = {
                 "final_payload": {
                     "document_id": "doc_<id>",
@@ -3007,7 +3071,7 @@ def _output_contract(required_output_schema: str, *, task: AgentTask | None = No
             }
         elif schema_name == "MonitoringPolicyDocument":
             contracts[schema_name] = _monitoring_policy_output_contract()
-        elif False and schema_name == "MonitoringPolicyDocument":
+        elif schema_name == "MonitoringPolicyDocumentLegacyDisabled":
             contracts[schema_name] = {
                 "final_payload": {
                     "document_id": "doc_<id>",
@@ -5808,75 +5872,6 @@ def _valid_agent_names(value: Any) -> list[str]:
     return [item for item in _strings(value) if item in valid]
 
 
-def _query_text(input_payload: JsonDict) -> str:
-    for key in ("query", "url", "symbol", "series_id"):
-        value = input_payload.get(key)
-        if value is not None:
-            return str(value)
-    return json.dumps(input_payload, ensure_ascii=True, sort_keys=True, default=str)
-
-
-def _jaccard_similarity(left: str, right: str) -> float:
-    left_tokens = set(re.findall(r"[a-zA-Z0-9_]+", left.lower()))
-    right_tokens = set(re.findall(r"[a-zA-Z0-9_]+", right.lower()))
-    if not left_tokens or not right_tokens:
-        return 0.0
-    return len(left_tokens & right_tokens) / len(left_tokens | right_tokens)
-
-
-def _estimated_tokens(value: Any) -> int:
-    text = json.dumps(value, ensure_ascii=True, default=str)
-    return max(1, len(text) // 4)
-
-
-def _compact_tool_observation(
-    value: JsonDict,
-    *,
-    tool_name: str | None = None,
-    market_evidence_snapshot: JsonDict | None = None,
-) -> tuple[JsonDict, bool]:
-    rendered = json.dumps(value, ensure_ascii=False, sort_keys=True, default=str)
-    if len(rendered) <= MAX_TOOL_OBSERVATION_CHARS:
-        return value, False
-    market_evidence_snapshot = market_evidence_snapshot or build_daily_ohlcv_snapshot(
-        value,
-        tool_name=tool_name,
-    )
-    if market_evidence_snapshot is not None:
-        compacted: JsonDict = {
-            "compacted": True,
-            "tool_aware_compaction": "daily_ohlcv",
-            "original_chars": len(rendered),
-            "omitted_fields": ["ohlcv"],
-            "provider": value.get("provider"),
-            "symbol": value.get("symbol"),
-            "interval": value.get("interval"),
-            "market_evidence_snapshot": market_evidence_snapshot,
-        }
-        sample_rows = _ohlcv_compaction_sample(value.get("ohlcv"))
-        if sample_rows:
-            compacted["ohlcv_sample_rows"] = sample_rows
-        return compacted, True
-    return (
-        {
-            "compacted": True,
-            "original_chars": len(rendered),
-            "preview_chars": MAX_TOOL_OBSERVATION_CHARS,
-            "preview": rendered[:MAX_TOOL_OBSERVATION_CHARS],
-        },
-        True,
-    )
-
-
-def _ohlcv_compaction_sample(value: Any) -> list[JsonDict]:
-    if not isinstance(value, list):
-        return []
-    rows = [item for item in value if isinstance(item, dict)]
-    if len(rows) <= 8:
-        return rows
-    return [*rows[:3], {"omitted_rows": len(rows) - 8}, *rows[-5:]]
-
-
 def _dump_context(context_snapshot: Any | None) -> JsonDict | None:
     if context_snapshot is None:
         return None
@@ -5908,7 +5903,6 @@ def gateway_error_to_agent_error(error: GatewayError) -> AgentError:
 __all__ = [
     "ReActAgentHarness",
     "ReActHarnessConfig",
-    "Scratchpad",
     "gateway_error_to_agent_error",
     "tool_request_from_call",
 ]

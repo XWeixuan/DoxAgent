@@ -1433,10 +1433,18 @@ def test_review_expectation_fields_runs_reviewers_concurrently_in_spec_order() -
         if task.run_metadata.workflow_node == WorkflowNode.REVIEW_EXPECTATION_FIELDS.value
         and task.agent_name is AgentName.A1_DOXATLAS_AUDIT
     )
-    assert a1_task.permissions.allowed_tools == []
-    assert a1_task.input_context["tool_requirements"] == []
+    assert a1_task.permissions.allowed_tools == workflow._a1_allowed_tools_for_node(
+        WorkflowNode.REVIEW_EXPECTATION_FIELDS
+    )
+    assert [
+        requirement["tool_name"]
+        for requirement in a1_task.input_context["tool_requirements"]
+    ] == a1_task.permissions.allowed_tools
+    assert all(
+        requirement["required"] is False
+        for requirement in a1_task.input_context["tool_requirements"]
+    )
     assert a1_task.input_context["required_tool_names"] == []
-    assert "Do not call tools" in a1_task.input_context["review_instruction"]
     o4_task = next(
         task
         for task in runner.tasks
@@ -1444,9 +1452,7 @@ def test_review_expectation_fields_runs_reviewers_concurrently_in_spec_order() -
         and task.agent_name is AgentName.O4_MARKET_TRACE
     )
     o4_patch = o4_task.input_context["pending_patches"][0]
-    assert o4_task.input_context["pending_expectation_patches"] == o4_task.input_context[
-        "pending_patches"
-    ]
+    assert "pending_expectation_patches" not in o4_task.input_context
     assert o4_task.input_context["review_context_compaction"]["mode"] == (
         "role_scoped_pending_patch_summary"
     )

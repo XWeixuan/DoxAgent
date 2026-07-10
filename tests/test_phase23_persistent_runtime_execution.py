@@ -56,6 +56,7 @@ from doxagent.persistent_runtime import (
     RuntimeWorkerTimeout,
     SizeBucket,
     SQLitePersistentRuntimeRepository,
+    TradeDecisionSource,
     TradeIntent,
     TradeSide,
     W1Confidence,
@@ -130,9 +131,7 @@ def _standard_message(*, message_id: str = "std_message_bus_event") -> StandardM
 def _w1(*, is_new: bool = True, confidence: W1Confidence = W1Confidence.HIGH) -> W1Result:
     return W1Result(
         is_new=is_new,
-        novelty_label=W1NoveltyLabel.NEW_EVENT
-        if is_new
-        else W1NoveltyLabel.OLD_DUPLICATE,
+        novelty_label=W1NoveltyLabel.NEW_EVENT if is_new else W1NoveltyLabel.OLD_DUPLICATE,
         matched_known_event_ids=[] if is_new else ["KE_001"],
         confidence=confidence,
         reasoning="novelty fixture",
@@ -146,8 +145,7 @@ def _w2(
 ) -> W2Result:
     return W2Result(
         matched_policy_code=policy_code
-        if decision_type
-        in {W2Type.DIRECT_TRADE_CANDIDATE, W2Type.ESCALATE_TO_BACKGROUND_AGENT}
+        if decision_type in {W2Type.DIRECT_TRADE_CANDIDATE, W2Type.ESCALATE_TO_BACKGROUND_AGENT}
         else None,
         type=decision_type,
         reasoning="policy fixture",
@@ -646,6 +644,11 @@ def test_media_new_dtc_high_confidence_bypasses_o3_and_records_trade() -> None:
     assert trading.source_type is SourceType.MEDIA
     assert trading.route == "new_dtc"
     assert trading.status.value == "recorded_only"
+    assert trading.audit_snapshot is not None
+    assert trading.audit_snapshot.decision_source is TradeDecisionSource.W2_POLICY_DIRECT
+    assert trading.audit_snapshot.runtime_execution_id == record.execution_id
+    assert trading.audit_snapshot.runtime_started_at is not None
+    assert trading.audit_snapshot.intent_generated_at == trading.created_at
     assert repository.list_archive(ticker="ASTS") == []
     assert len(repository.list_known_events_patch_logs(ticker="ASTS")) == 1
     assert o3.budgets[0].max_model_calls == 2
@@ -883,6 +886,8 @@ def test_social_new_dtc_must_pass_a2_and_o3_before_trading_record() -> None:
     assert trading.a2_result is not None
     assert trading.o3_result is not None
     assert trading.route == "o3_trade"
+    assert trading.audit_snapshot is not None
+    assert trading.audit_snapshot.decision_source is TradeDecisionSource.O3_DUTY_EXPERT
 
 
 def test_social_batch_merges_a2_passed_items_into_one_o3_input_package() -> None:
@@ -963,6 +968,8 @@ def test_social_batch_dtc_o3_timeout_records_trade_with_exception() -> None:
     trading = repository.list_trading_records(ticker="ASTS")[0]
     assert trading.status.value == "recorded_with_exception"
     assert trading.exception_type == "o3_timeout"
+    assert trading.audit_snapshot is not None
+    assert trading.audit_snapshot.decision_source is TradeDecisionSource.O3_UPSTREAM_RETAINED
     assert repository.list_ingest_queue(ticker="ASTS") == []
     assert repository.list_exceptions(ticker="ASTS")[0].exception_type == "o3_timeout"
 
@@ -1149,9 +1156,7 @@ def test_a2_failure_marks_payload_and_preserves_low_confidence_dtc_for_review() 
     exception = repository.list_exceptions(ticker="ASTS")[0]
     assert record.route_decision.route is RuntimeRoute.INGEST_QUEUE
     assert exception.payload["a2_failed"] is True
-    assert repository.list_ingest_queue(ticker="ASTS")[0].source_message_id == (
-        "std_a2_fail_media"
-    )
+    assert repository.list_ingest_queue(ticker="ASTS")[0].source_message_id == ("std_a2_fail_media")
 
 
 def test_sqlite_runtime_repository_is_idempotent_for_trading_records(tmp_path: Path) -> None:
@@ -1388,6 +1393,25 @@ def test_execute_event_stream_item_converts_message_and_routes_once() -> None:
 
     assert first.execution_id == second.execution_id
     assert repository.list_archive(ticker="ASTS")[0].source_message_id == "std_event_archive"
+
+
+def test_trade_snapshot_uses_immutable_message_bus_event_time() -> None:
+    repository = InMemoryPersistentRuntimeRepository()
+    service = PersistentRuntimeExecutionService(
+        repository,
+        w1_worker=StaticW1(_w1()),
+        w2_worker=StaticW2(_w2()),
+    )
+    event_time = datetime.fromisoformat("2026-07-08T13:31:00+00:00")
+    event = _event(message_id="std_event_trade").model_copy(update={"event_time": event_time})
+
+    service.execute_event(event)
+
+    trading = repository.list_trading_records(ticker="ASTS")[0]
+    assert trading.audit_snapshot is not None
+    assert trading.audit_snapshot.message_bus_event_time == event_time
+    assert trading.audit_snapshot.runtime_execution_id.startswith("pre_")
+    assert trading.audit_snapshot.intent_generated_at == trading.created_at
 
 
 def test_execute_event_can_mark_message_bus_event_consumed() -> None:

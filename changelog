@@ -1,5 +1,17 @@
 # changelog
 
+## 2026-07-10
+
+- Implemented the intent-level Paper Trading revenue-audit vertical slice: immutable trade-time/source snapshots, three independent time bases, replaceable regular-session minute-bar providers, no-lookahead long/short calculations, adverse bilateral slippage, configurable virtual notional, versioned/idempotent SQLite persistence, weighted aggregates, partial/failure isolation, 18:00 ET independent scheduling, manual reruns, bounded Dashboard APIs, and a three-basis audit UI with coverage, trend, latency-loss, pagination, and detail views.
+- Added unit/integration/query-plan coverage and real market-data capability evidence: the supplied Benzinga token returned HTTP 401 for Historical Bars, while the configured Twelve Data source returned a complete 390-bar AAPL regular session and is the current default without silent provider fallback.
+- Added durable Supabase/Postgres persistence for dashboard model-usage cost audit data, including a compact RLS-protected `doxagent.model_usage_events` table, production repository wiring, indexed period queries, database-side detail pagination, and an idempotent SQLite backfill command.
+- Reduced cost-audit database egress by excluding raw/JSON payloads, removing periodic cost-page refresh and synthetic cost SSE scans, bounding trend queries to ticker/time windows, and caching Overview daily cost summaries for five minutes.
+
+## 2026-07-09
+
+- Applied the Document 1 LLM context optimization plan across all three phases: scoped Build/Narrative task context, node-specific readable scopes, D1 snapshot visibility control, and compact Narrative global-research document buckets while retaining promoted expectation units.
+- Optimized Document 2 LLM input context through Phase 3 of the Document2-vs-Document3 audit plan: removed workflow index/history fields from D2 task context, hid empty D2 context snapshots from model prompts, de-duplicated field-review inputs, replaced full top-level Document1 context packs with reviewer-scoped briefs, and made Document2 field-repair task headers avoid nested candidate/finding duplication.
+
 ## 2026-07-07
 
 - Implemented the follow-up Supabase egress hardening pass: Blackboard runtime/dashboard/workflow paths now prefer lightweight document-bucket reads, active document-run bundle/context caching, targeted objection/delegation/working-memory writes, and targeted patch commit writes instead of full Blackboard run hydration; Document2 resolver/promotion and Known Events normalization now avoid loop-level full-run reads.
@@ -399,3 +411,6 @@
 - Expanded the Blackboard initialization memory/compaction audit with `recent_trajectory` construction details and LangSmith-derived compaction trigger frequencies from a real META initialization run.
 - Tightened Document 3 LLM request context by removing workflow-history/index fields from Document3 task inputs, exposing scoped generate documents as `belief_state_documents`, omitting empty review/resolve snapshots, compacting Document3 output contracts while preserving schema-critical fields, and changing ReAct `plan` to keep only the latest plan update.
 - Added safe empty-context omission for LLM-visible prompt assembly: workflow history/pending/context snapshot empty blocks are dropped from visible inputs, single-shot/ReAct requests omit empty snapshots and scratchpad history, while permission arrays, ReAct tool/skill protocol fields, output-contract shape examples, and runtime empty document lists remain preserved.
+- Added `dev_plan/重构计划.md` with the code-audited boundary, full legacy-removal policy, ordered implementation stages, rollout constraint, and acceptance criteria for replacing task-local ReAct memory without changing Blackboard business state or workflow handoffs.
+- Replaced task-local ReAct Scratchpad memory with an immutable event log, raw ToolResult and structural Observation Block stores, stable observation refs and readback, materialized Synthesis/Agenda/Retained Observation state, Active Context budgeting, same-agent compaction, pre-final challenge, profiled tool policies, and the new audit projection; removed the legacy trajectory, ledger, marker compaction, and fixed-threshold paths.
+- Validated all 23 workflow-visible non-DoxAtlas information-source tools with real provider calls and LangSmith tool traces; added recursive size-bounded JSON/table/text chunking, capped observation outlines, persistence-safe ReAct audit metadata, SQL-side removal of legacy heavy audit payloads from agent-context reads, a reusable real-tool validation script, and a per-provider payload/workflow-risk audit document.

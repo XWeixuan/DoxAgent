@@ -42,17 +42,47 @@ class ModelUsageCostService:
         ticker: str | None = None,
         start_time: datetime | None = None,
         end_time: datetime | None = None,
+        node: str | None = None,
+        model: str | None = None,
+        status: str | None = None,
         limit: int | None = None,
+        offset: int = 0,
         newest_first: bool = True,
     ) -> list[JsonObject]:
         events = self.repository.list_events(
             ticker=ticker,
             start_time=start_time,
             end_time=end_time,
+            node=node,
+            model=model,
+            status=status,
             limit=limit,
+            offset=offset,
             newest_first=newest_first,
         )
         return [self._record_from_event(event) for event in events]
+
+    def count_records(
+        self,
+        *,
+        ticker: str | None = None,
+        start_time: datetime | None = None,
+        end_time: datetime | None = None,
+        node: str | None = None,
+        model: str | None = None,
+        status: str | None = None,
+    ) -> int:
+        return self.repository.count_events(
+            ticker=ticker,
+            start_time=start_time,
+            end_time=end_time,
+            node=node,
+            model=model,
+            status=status,
+        )
+
+    def has_records(self, *, ticker: str | None = None) -> bool:
+        return self.count_records(ticker=ticker) > 0
 
     def total_cost_usd(
         self,

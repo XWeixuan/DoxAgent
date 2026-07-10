@@ -44,10 +44,14 @@ async def require_mock_auth(request: Request) -> None:
     401/403 responses without connecting Supabase.
     """
 
-    mode = str(
-        getattr(request.app.state, "dashboard_auth_mode", None)
-        or os.getenv("DOXAGENT_DASHBOARD_AUTH_MODE", "mock-open")
-    ).strip().lower()
+    mode = (
+        str(
+            getattr(request.app.state, "dashboard_auth_mode", None)
+            or os.getenv("DOXAGENT_DASHBOARD_AUTH_MODE", "mock-open")
+        )
+        .strip()
+        .lower()
+    )
     if mode in {"", "open", "off", "mock-open"}:
         return
     authorization = request.headers.get("authorization", "")
@@ -500,10 +504,65 @@ def create_mock_router(store: MockDashboardStore | None = None) -> APIRouter:
         ticker: str,
         date: str | None = None,
         period: str | None = None,
+        basis: str | None = None,
     ) -> JsonObject:
         del date
-        payload = resolved_store.get_revenue_audit(ticker, period=period)
+        payload = resolved_store.get_revenue_audit(ticker, period=period, basis=basis)
         return _ok(request, _required_payload(payload, ticker=ticker))
+
+    @router.get("/tickers/{ticker}/audit/revenue/trend")
+    async def revenue_audit_trend(
+        request: Request,
+        ticker: str,
+        date: str | None = None,
+        period: str | None = None,
+        basis: str | None = None,
+    ) -> JsonObject:
+        del date
+        payload = resolved_store.get_revenue_trend(
+            ticker,
+            period=period,
+            basis=basis,
+        )
+        return _ok(request, _required_payload(payload, ticker=ticker))
+
+    @router.get("/tickers/{ticker}/audit/revenue/records")
+    async def revenue_audit_records(
+        request: Request,
+        ticker: str,
+        date: str | None = None,
+        period: str | None = None,
+        basis: str | None = None,
+        status: str | None = None,
+        limit: int | None = None,
+        cursor: str | None = None,
+    ) -> JsonObject:
+        del date
+        payload = resolved_store.get_revenue_records(
+            ticker,
+            period=period,
+            basis=basis,
+            status=status,
+            limit=limit,
+            cursor=cursor,
+        )
+        return _ok(request, _required_payload(payload, ticker=ticker))
+
+    @router.get("/tickers/{ticker}/audit/revenue/records/{trading_record_id}")
+    async def revenue_audit_record_detail(
+        request: Request,
+        ticker: str,
+        trading_record_id: str,
+    ) -> JsonObject:
+        payload = resolved_store.get_revenue_record_detail(ticker, trading_record_id)
+        return _ok(
+            request,
+            _required_payload(
+                payload,
+                ticker=ticker,
+                trading_record_id=trading_record_id,
+            ),
+        )
 
     @router.post("/tickers/{ticker}/audit/revenue/run")
     async def run_revenue_audit(
@@ -618,6 +677,7 @@ def _required_payload(
     version_id: str | None = None,
     node_id: str | None = None,
     execution_id: str | None = None,
+    trading_record_id: str | None = None,
 ) -> JsonObject:
     if payload is not None:
         return payload
@@ -632,6 +692,8 @@ def _required_payload(
         details["node_id"] = node_id
     if execution_id:
         details["execution_id"] = execution_id
+    if trading_record_id:
+        details["trading_record_id"] = trading_record_id
     raise DashboardMockError(
         code="NOT_FOUND",
         message="请求的 Dashboard mock 资源不存在。",
@@ -704,8 +766,4 @@ async def _sse_event_generator(events: list[JsonObject], *, once: bool) -> Async
 def _format_sse_event(event: JsonObject) -> str:
     event_name = str(event["event_type"])
     event_id = str(event["event_id"])
-    return (
-        f"id: {event_id}\n"
-        f"event: {event_name}\n"
-        f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
-    )
+    return f"id: {event_id}\nevent: {event_name}\ndata: {json.dumps(event, ensure_ascii=False)}\n\n"

@@ -28,6 +28,9 @@ def test_dashboard_mock_api_serves_contract_snapshot_routes() -> None:
         "/api/dashboard/v1/tickers/MU/runtime/records?result_type=trading_record&limit=1",
         "/api/dashboard/v1/tickers/MU/runtime/executions/pre_mu_001",
         "/api/dashboard/v1/tickers/MU/audit/revenue?period=7d",
+        "/api/dashboard/v1/tickers/MU/audit/revenue/trend?period=7d&basis=system_executable",
+        "/api/dashboard/v1/tickers/MU/audit/revenue/records?period=7d&basis=system_executable&limit=1",
+        "/api/dashboard/v1/tickers/MU/audit/revenue/records/trd_mu_001",
         "/api/dashboard/v1/tickers/MU/audit/cost?group_by=node",
         "/api/dashboard/v1/tickers/MU/audit/cost/details?node=O3&status=retried",
     ]

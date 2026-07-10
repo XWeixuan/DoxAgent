@@ -1388,15 +1388,16 @@ class Document2LegacyPipelineMixin:
                 agent_name,
                 checkpoint.pending_patches,
             )
-            document1_context_pack = self._document1_context_pack_from_checkpoint(checkpoint)
+            document1_context_pack_brief = self._field_review_document1_context_pack_brief(
+                checkpoint,
+                agent_name,
+            )
             extra_context = {
                 "review_scope": spec["review_scope"],
-                "review_common_instruction": review_common_instruction,
                 "review_instruction": "\n\n".join(
                     [review_common_instruction, spec["instruction"]]
                 ),
                 "pending_patches": pending_patch_context,
-                "pending_expectation_patches": pending_patch_context,
                 "global_research_context": self._field_review_global_research_context(
                     checkpoint,
                     agent_name,
@@ -1416,11 +1417,8 @@ class Document2LegacyPipelineMixin:
                     "max_tool_call_batches": 1,
                 },
             }
-            if document1_context_pack is not None:
-                extra_context["document1_context_pack"] = document1_context_pack.model_dump(
-                    mode="json",
-                    exclude_none=True,
-                )
+            if document1_context_pack_brief is not None:
+                extra_context["document1_context_pack_brief"] = document1_context_pack_brief
             jobs.append(
                 _ParallelAgentJob(
                     order=order,
