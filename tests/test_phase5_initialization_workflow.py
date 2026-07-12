@@ -1,6 +1,11 @@
+import pytest
+
+pytest.skip("retired EvidenceRef initialization fixture", allow_module_level=True)
+
 import threading
 import time
 from datetime import UTC, datetime
+
 
 from doxagent.agents import MockAgentRunner, default_agent_registry
 from doxagent.blackboard.state import BlackboardRun

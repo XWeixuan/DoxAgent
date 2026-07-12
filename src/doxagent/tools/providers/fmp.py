@@ -6,7 +6,6 @@ from datetime import UTC, date, datetime, timedelta
 
 import httpx
 
-from doxagent.models import EvidenceSourceType
 from doxagent.tools.providers.base import BaseRealToolClient, _input_str, _require
 from doxagent.tools.schema import ToolRequest, ToolResult
 
@@ -26,15 +25,27 @@ class FmpSectorPerformanceClient(BaseRealToolClient):
                 date=date,
                 exchange=exchange,
             )
+            output = {
+                "provider": "fmp",
+                "sector_performance": raw,
+                "request_resolution": {
+                    "requested_date": _input_str(request, "date", "") or None,
+                    "resolved_date": resolved_date,
+                    "date_adjusted_to_free_tier_window": date_adjusted,
+                    "requested_exchange": _input_str(request, "exchange", "NASDAQ").upper(),
+                    "resolved_exchange": resolved_exchange,
+                    "fallback_used": fallback_used,
+                },
+            }
             return self._success(
                 request,
-                output={"provider": "fmp", "sector_performance": raw},
+                output=output,
                 raw=raw,
-                source_type=EvidenceSourceType.MARKET_DATA,
+                source_kind="market_data",
                 source_id="fmp:sector_performance",
                 title="FMP 行业表现快照",
                 summary="已检索 FMP 行业表现快照。",
-                citation_scope="fmp_sector_performance",
+                source_scope="fmp_sector_performance",
                 confidence=0.7,
                 metadata={
                     "date": resolved_date,

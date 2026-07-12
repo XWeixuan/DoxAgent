@@ -25,7 +25,6 @@ from doxagent.models import (
     CommitLogEntry,
     Delegation,
     DocumentType,
-    EvidenceRef,
     Objection,
     WorkingMemoryEntry,
 )
@@ -237,7 +236,7 @@ class PostgresBlackboardRepository:
                 with conn.cursor() as cursor:
                     cursor.execute(
                         f"""
-                        select entry_id, author_agent, content_type, evidence_refs, {payload_sql}
+                        select entry_id, author_agent, content_type, {payload_sql}
                         from doxagent.working_memory_entries
                         where run_id = %s
                         order by created_at asc, entry_id asc
@@ -250,8 +249,7 @@ class PostgresBlackboardRepository:
                     entry_id=row[0],
                     author_agent=AgentName(row[1]),
                     content_type=row[2],
-                    evidence_refs=self._coerce_json(row[3]) or [],
-                    payload=self._coerce_json(row[4]) if include_payload else None,
+                    payload=self._coerce_json(row[3]) if include_payload else None,
                 )
                 for row in rows
             ]
@@ -407,10 +405,6 @@ class PostgresBlackboardRepository:
         def operation() -> None:
             with self._connection() as conn:
                 self._ensure_run_exists(conn, run_id)
-                self._upsert_evidence_refs(
-                    conn,
-                    {item.evidence_id: item for item in entry.evidence_refs},
-                )
                 with conn.cursor() as cursor:
                     dumped = entry.model_dump(mode="json")
                     cursor.execute(
@@ -428,7 +422,7 @@ class PostgresBlackboardRepository:
                             entry.author_agent.value,
                             entry.content_type,
                             self._jsonb(dumped["payload"]),
-                            self._jsonb(dumped["evidence_refs"]),
+                            self._jsonb([]),
                             self._jsonb(dumped),
                             entry.created_at,
                         ),
@@ -448,10 +442,6 @@ class PostgresBlackboardRepository:
         def operation() -> None:
             with self._connection() as conn:
                 self._ensure_run_exists(conn, run_id)
-                self._upsert_evidence_refs(
-                    conn,
-                    {item.evidence_id: item for item in objection.evidence_refs},
-                )
                 with conn.cursor() as cursor:
                     self._execute_upsert_objection(cursor, run_id, objection)
                 self._touch_run(conn, run_id)
@@ -582,10 +572,6 @@ class PostgresBlackboardRepository:
         def operation() -> None:
             with self._connection() as conn:
                 self._ensure_run_exists(conn, run_id)
-                self._upsert_evidence_refs(
-                    conn,
-                    {item.evidence_id: item for item in patch.evidence_refs},
-                )
                 with conn.cursor() as cursor:
                     dumped_commit = commit.model_dump(mode="json")
                     cursor.execute(
@@ -627,7 +613,7 @@ class PostgresBlackboardRepository:
                             patch.target.field_path,
                             patch.author_agent.value,
                             commit.trigger_reason,
-                            self._jsonb(patch.model_dump(mode="json")["evidence_refs"]),
+                            self._jsonb([]),
                             self._jsonb(dumped_commit),
                             commit.created_at,
                         ),
@@ -753,15 +739,13 @@ class PostgresBlackboardRepository:
                 "belief_state_snapshots",
             ):
                 cursor.execute(f"delete from doxagent.{table} where run_id = %s", (run.run_id,))
-        evidence_refs = self._collect_evidence_refs(run)
-        self._record_payload_sizes(run, evidence_refs)
-        self._upsert_evidence_refs(conn, evidence_refs)
+        self._record_payload_sizes(run)
         self._insert_belief_state(conn, run)
         self._insert_working_memory(conn, run)
         self._insert_commit_log(conn, run)
         self._insert_objections(conn, run)
         self._insert_delegations(conn, run)
-        self._upsert_run_summary(conn, run, evidence_refs)
+        self._upsert_run_summary(conn, run)
 
     def _insert_belief_state(self, conn: Any, run: BlackboardRun) -> None:
         belief = run.belief_state
@@ -800,7 +784,7 @@ class PostgresBlackboardRepository:
                         entry.author_agent.value,
                         entry.content_type,
                         self._jsonb(dumped["payload"]),
-                        self._jsonb(dumped["evidence_refs"]),
+                        self._jsonb([]),
                         self._jsonb(dumped),
                         entry.created_at,
                     ),
@@ -827,7 +811,7 @@ class PostgresBlackboardRepository:
                         patch.target.field_path,
                         patch.author_agent.value,
                         commit.trigger_reason,
-                        self._jsonb(patch.model_dump(mode="json")["evidence_refs"]),
+                        self._jsonb([]),
                         self._jsonb(dumped),
                         commit.created_at,
                     ),
@@ -890,44 +874,10 @@ class PostgresBlackboardRepository:
                     ),
                 )
 
-    def _upsert_evidence_refs(self, conn: Any, evidence_refs: dict[str, EvidenceRef]) -> None:
-        with conn.cursor() as cursor:
-            for evidence in evidence_refs.values():
-                dumped = evidence.model_dump(mode="json")
-                cursor.execute(
-                    """
-                    insert into doxagent.evidence_refs
-                        (evidence_id, source_type, source_id, title, summary,
-                         retrieval_metadata, confidence, citation_scope, evidence_json)
-                    values (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    on conflict (evidence_id) do update set
-                        source_type = excluded.source_type,
-                        source_id = excluded.source_id,
-                        title = excluded.title,
-                        summary = excluded.summary,
-                        retrieval_metadata = excluded.retrieval_metadata,
-                        confidence = excluded.confidence,
-                        citation_scope = excluded.citation_scope,
-                        evidence_json = excluded.evidence_json
-                    """,
-                    (
-                        evidence.evidence_id,
-                        evidence.source_type.value,
-                        evidence.source_id,
-                        evidence.title,
-                        evidence.summary,
-                        self._jsonb(dumped["retrieval_metadata"]),
-                        evidence.confidence,
-                        evidence.citation_scope,
-                        self._jsonb(dumped),
-                    ),
-                )
-
     def _upsert_run_summary(
         self,
         conn: Any,
         run: BlackboardRun,
-        evidence_refs: dict[str, EvidenceRef],
     ) -> None:
         with conn.cursor() as cursor:
             if not self._relation_exists(cursor, "doxagent.run_summaries"):
@@ -947,7 +897,6 @@ class PostgresBlackboardRepository:
                     "commit_log_entries",
                     "objections",
                     "delegations",
-                    "evidence_refs",
                 ],
             }
             cursor.execute(
@@ -986,7 +935,7 @@ class PostgresBlackboardRepository:
                         for item in run.delegations
                         if item.status.value in {"open", "assigned"}
                     ),
-                    len(evidence_refs),
+                    0,
                     self._jsonb(full_payload_ref),
                 ),
             )
@@ -1331,20 +1280,9 @@ class PostgresBlackboardRepository:
         if exists is None:
             raise RunNotFoundError(f"Blackboard run not found: {run_id}")
 
-    def _collect_evidence_refs(self, run: BlackboardRun) -> dict[str, EvidenceRef]:
-        refs: dict[str, EvidenceRef] = {}
-        for entry in run.working_memory:
-            refs.update({item.evidence_id: item for item in entry.evidence_refs})
-        for commit in run.commit_log:
-            refs.update({item.evidence_id: item for item in commit.patch.evidence_refs})
-        for objection in run.objections:
-            refs.update({item.evidence_id: item for item in objection.evidence_refs})
-        return refs
-
     def _record_payload_sizes(
         self,
         run: BlackboardRun,
-        evidence_refs: dict[str, EvidenceRef],
     ) -> None:
         self._record_payload(
             operation="blackboard.replace_children",
@@ -1381,14 +1319,6 @@ class PostgresBlackboardRepository:
             payload=[item.model_dump(mode="json") for item in run.delegations],
             item_count=len(run.delegations),
         )
-        self._record_payload(
-            operation="blackboard.replace_children",
-            table="evidence_refs",
-            run_id=run.run_id,
-            payload=[item.model_dump(mode="json") for item in evidence_refs.values()],
-            item_count=len(evidence_refs),
-        )
-
     def _record_payload(
         self,
         *,

@@ -30,7 +30,6 @@ def export_brief_state(run_id: str, output_path: Path | None = None) -> Path:
     commit_log = [_to_json(item) for item in run.commit_log]
     objections = [_to_json(item) for item in run.objections]
     delegations = [_to_json(item) for item in run.delegations]
-    evidence_refs: list[JsonDict] = []
 
     brief_state = _brief_state_from_storage(
         run=_to_json(run),
@@ -59,7 +58,10 @@ def export_brief_state(run_id: str, output_path: Path | None = None) -> Path:
         "commit_log": commit_log,
         "objections": objections,
         "delegations": delegations,
-        "evidence_refs": evidence_refs,
+        "annotation_metrics": {
+            "status": "query_separately",
+            "note": "Citation and time annotations are task-local audit records.",
+        },
         "eval_index": _eval_index(
             brief_state=brief_state,
             hard_validators=hard_validators,
@@ -69,7 +71,6 @@ def export_brief_state(run_id: str, output_path: Path | None = None) -> Path:
             commit_log=commit_log,
             objections=objections,
             delegations=delegations,
-            evidence_refs=evidence_refs,
         ),
     }
 
@@ -161,7 +162,6 @@ def _eval_index(
     commit_log: list[JsonDict],
     objections: list[JsonDict],
     delegations: list[JsonDict],
-    evidence_refs: list[JsonDict],
 ) -> JsonDict:
     global_research = _dict(brief_state.get("global_research"))
     expectation_units = _list(brief_state.get("expectation_units"))
@@ -226,7 +226,6 @@ def _eval_index(
                     if str(item.get("status", "")).lower() in {"open", "assigned"}
                 ]
             ),
-            "evidence_refs": len(evidence_refs),
         },
         "hard_validators": {
             "status": hard_validators.get("status"),
@@ -250,7 +249,7 @@ def _eval_index(
             "Review A1/C1/C3/O4 field-review loops and objection handling.",
             "Review A2 search or verification loops when delegations exist.",
             "Review O2 monitoring config and policy loops.",
-            "Verify tool calls behind cited evidence refs.",
+            "Sample citation annotations back to Observation Blocks and raw tool results.",
         ],
     }
 

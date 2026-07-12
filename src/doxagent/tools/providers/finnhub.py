@@ -7,13 +7,14 @@ import json
 import time
 from typing import Any, cast
 
-from doxagent.models import EvidenceSourceType, ResultStatus
+from doxagent.models import ResultStatus
 from doxagent.settings import DoxAgentSettings
 from doxagent.tools.providers.base import (
     BaseRealToolClient,
     JsonObject,
     _input_list,
     _input_str,
+    _input_str_any,
     _require,
 )
 from doxagent.tools.schema import ToolError, ToolRequest, ToolResult
@@ -23,22 +24,30 @@ class FinnhubPeersClient(BaseRealToolClient):
     def call(self, request: ToolRequest) -> ToolResult:
         try:
             api_key = _require(self.settings.finnhub_api_key, "FINNHUB_API_KEY")
-            symbol = _input_str(request, "symbol", request.ticker).upper()
+            symbol = _input_str_any(request, ("symbol", "ticker"), request.ticker).upper()
             grouping = _input_str(request, "grouping", "industry")
             raw = self._get_json(
                 self.settings.finnhub_base_url.rstrip("/") + "/stock/peers",
                 params={"symbol": symbol, "grouping": grouping, "token": api_key},
                 cache_ttl=self.settings.finnhub_cache_ttl_seconds,
             )
+            peers = raw.get("items")
+            if not isinstance(peers, list) or not peers:
+                return self._failure(
+                    request,
+                    code="empty_result",
+                    message="Finnhub returned no company peers.",
+                    details={"symbol": symbol, "grouping": grouping},
+                )
             return self._success(
                 request,
                 output={"provider": "finnhub", "symbol": symbol, "peers": raw},
                 raw=raw,
-                source_type=EvidenceSourceType.EXTERNAL_REPORT,
+                source_kind="external_report",
                 source_id=f"finnhub:peers:{symbol}",
                 title=f"Finnhub 同业列表 - {symbol}",
                 summary="已检索 Finnhub 公司同业列表。",
-                citation_scope="finnhub_company_peers",
+                source_scope="finnhub_company_peers",
                 confidence=0.7,
                 metadata={"symbol": symbol, "grouping": grouping},
             )
@@ -76,31 +85,47 @@ class FinnhubTradeStreamClient:
                     max_events=max_events,
                 )
             )
+            if not events:
+                return ToolResult(
+                    tool_name=request.tool_name,
+                    status=ResultStatus.PARTIAL,
+                    output={
+                        "provider": "finnhub",
+                        "symbols": symbols,
+                        "events": [],
+                        "capture_status": "empty_sample",
+                    },
+                    output_summary="Finnhub capture completed but produced no trade events.",
+                    raw=[],
+                    error=ToolError(
+                        code="empty_stream_sample",
+                        message="The bounded Finnhub capture window contained no trade events.",
+                        retryable=True,
+                        details={
+                            "symbols": symbols,
+                            "duration_seconds": duration,
+                            "max_events": max_events,
+                        },
+                    ),
+                )
             result = ToolResult(
                 tool_name=request.tool_name,
                 status=ResultStatus.SUCCEEDED,
-                output={"provider": "finnhub", "symbols": symbols, "events": events},
+                output={
+                    "provider": "finnhub",
+                    "symbols": symbols,
+                    "events": events,
+                    "source_coordinates": {
+                        "source_kind": "market_data",
+                        "source_id": f"finnhub:trade_stream:{','.join(symbols)}",
+                        "duration_seconds": duration,
+                        "max_events": max_events,
+                    },
+                },
                 output_summary="已捕获 Finnhub 有界交易流。",
                 raw=events,
             )
-            evidence = result.to_evidence_ref(
-                source_type=EvidenceSourceType.MARKET_DATA,
-                source_id=f"finnhub:trade_stream:{','.join(symbols)}",
-                title="Finnhub 交易流",
-                citation_scope="finnhub_trade_stream",
-                confidence=0.65,
-            ).model_copy(
-                update={
-                    "retrieval_metadata": {
-                        "tool_name": request.tool_name,
-                        "symbols": symbols,
-                        "duration_seconds": duration,
-                        "max_events": max_events,
-                        "bounded_capture": True,
-                    }
-                }
-            )
-            return result.model_copy(update={"evidence_refs": [evidence]}, deep=True)
+            return result
         except Exception as exc:
             code = "tool_execution_failed"
             retryable = False

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from doxagent.models import EvidenceSourceType
 from doxagent.tools.market_evidence import daily_ohlcv_output_with_snapshot
 from doxagent.tools.providers.base import (
     BaseRealToolClient,
@@ -42,6 +41,13 @@ class TwelveDataDailyOhlcvClient(BaseRealToolClient):
             values = raw.get("values")
             if not isinstance(values, list):
                 values = []
+            if not values:
+                return self._failure(
+                    request,
+                    code="empty_result",
+                    message="Twelve Data returned no OHLCV rows for the requested range.",
+                    details={"symbol": symbol, "start_date": start_date, "end_date": end_date},
+                )
             output = daily_ohlcv_output_with_snapshot(
                 {
                     "provider": "twelvedata",
@@ -57,11 +63,11 @@ class TwelveDataDailyOhlcvClient(BaseRealToolClient):
                 request,
                 output=output,
                 raw=raw,
-                source_type=EvidenceSourceType.MARKET_DATA,
+                source_kind="market_data",
                 source_id=f"twelvedata:daily_ohlcv:{symbol}",
                 title=f"Twelve Data 日线 OHLCV - {symbol}",
                 summary="已检索 Twelve Data 日线 OHLCV 数据。",
-                citation_scope="twelvedata_daily_ohlcv",
+                source_scope="twelvedata_daily_ohlcv",
                 confidence=0.76,
                 metadata={
                     "symbol": symbol,

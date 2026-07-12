@@ -1,105 +1,84 @@
-# ReAct Memory 真实 Tool Payload 与 Supabase Egress 验证
+# 数据源 Tool、Payload 与 Observation 验证
 
 日期：2026-07-11  
-范围：DoxAgent 当前 agent/workflow 实际允许调用的全部非 DoxAtlas 信息源工具。
+范围：workflow 实际允许调用的全部 23 个非 DoxAtlas 只读信息源 Tool。
 
-## 1. 验证方法
+## 1. 结论
 
-- 取 `default_agent_definitions()` 中 `allowed_tools` 的并集，排除全部 DoxAtlas 工具和写操作 `monitoring.update_ticker_config`，共 23 个读取型工具。
-- 通过 `default_real_tool_registry()` 调用真实 provider；主样本为 `META`，港股专用接口使用 `0700.HK`。
-- 每次调用写入 LangSmith tool run，统一标签为 `react-memory-real-tool-chunking-2026-07-11`。LangSmith 中共确认 39 条修复前后记录、23 个唯一工具。
-- “原始字符数”是对 `ToolResult.output` 做 canonical JSON 后的字符数，不包含 `raw` 的重复副本。
-- 报告只保存尺寸、结构和 hash 指标，不保存 provider 原文。
-- 结构验收要求：Raw ToolResult 精确保留、block hash 正确、`read_observation` 精确回读、block 内容来自原文、单块不超过 16,000 字符。
+- 23 个 Tool 已按真实 provider 调用方式完成第二轮复验，和 workflow 的 Tool 并集完全一致，无遗漏、无额外测试项。
+- 最终真实轮次为 10 个 `succeeded`、1 个 `partial`、12 个 `failed`。失败项主要是本轮网络不可用或 provider 限额；它们均保留了失败语义，没有包装成成功。
+- 全部 23 个调用均为 `validation_ok=true`；可切块输出的 block 最大 1,199 字符，没有超过 1,200 字符的块。
+- 所有可用输出均通过 block hash、原文来源、task-local Raw ToolResult 保留和 `read_observation` 精确回读验证。
+- SEC Agent 输出从修复前约 270 万字符降到约 19.4 万字符；完整 companyfacts 只保留在 task-local `ToolResult.raw`，不会整体进入 Agent Context 或持久化 ReAct audit。
+- 最终真实轮次已写入 LangSmith，统一标签为 `react-memory-real-tool-chunking-2026-07-11`。代表性 run：SEC `0895d33e-a1cd-46b7-9ac2-b59cba948752`，SEC filing `98bc4e1e-d33b-4bb0-a4ce-fb434dbe27cc`，Tavily Extract `62e13fba-ef65-48cd-b3e4-f67de039561a`。
 
-需要特别区分：`structure_ok=true` 只表示 Memory 正确切块，不代表 provider 返回了有效业务数据。
+这里的 `failed` 不表示整体验收失败。对于当前不可调用的接口，验收重点是状态必须可信、错误可重试语义必须保留，不能伪装成有数据的 `succeeded`。
 
-## 2. 总体结论
+## 2. 状态契约
 
-- 23 个工具本轮合计返回 2,845,776 字符。
-- `sec.company_facts_and_filings` 单次为 2,702,442 字符，占本轮总量约 95%，是最主要的上下文和持久化风险。
-- 修复前存在 4 个真实巨块：SEC companyfacts、FRED、Polymarket、AnySearch，最大单块约 270 万字符。
-- 修复后 23 个工具的结构验收全部通过，所有 block 均不超过 16,000 字符。
-- 切块完成后仍不能把全部 block 放入 prompt。当前只展示有限 outline 和 2 至 3 个 selected block；Micro Maintenance 下进一步只展示一个 selected block。
-- 完整 Raw ToolResult 只留在当前 task 内存，不再随 `AgentResult.react_audit` 写入 Blackboard/Supabase。
+- `succeeded`：provider 返回了可用于研究的有效数据。
+- `partial`：至少一部分子请求或原文可用，同时明确携带未完成部分和 `ToolError`。
+- `failed`：限额、网络错误、业务错误、无有效数据或空结果，不能作为研究证据。
+- 当前 `ResultStatus` 没有单独的 `unavailable` 枚举；临时不可用使用 `failed` 加 `upstream_unavailable`、`rate_limited` 等可辨识错误码表达。
+- Alpha Vantage 的 `Information`、`Note`、`Error Message`，BEA 的 `BEAAPI.Error`，以及其他 provider 的 HTTP 200 错误包现在都会在 provider 层被识别。
 
-## 3. 各数据源原始输出形态
+## 3. 各 Tool 原始输出形态与 workflow 风险
 
-下表是 2026-07-11 真实调用快照。动态接口的条数和字符数会随时间变化。
+“基线字数”来自修复前或上一轮成功真实调用的 `ToolResult.output` canonical JSON，用于说明 provider 的典型 payload 规模；动态接口每次调用会变化。“最终状态/字数”来自本次最终真实复验。
 
-| Tool | Provider 状态 | 原始字符数 | 原始输出形态 | 修复后切块 | 对 workflow 的问题 |
-| --- | --- | ---: | --- | --- | --- |
-| `sec.company_facts_and_filings` | succeeded | 2,702,442 | `{provider,cik,submissions,companyfacts}`；`companyfacts.facts.us-gaap` 有 456 个 concept，约 269 万字符 | 723 blocks；最大 15,984 | P0。绝不能整体进入 Fresh Context、audit 或 checkpoint；outline 也必须限长。 |
-| `sec.filing_sections` | partial | 776 | `{provider_status,sections,unknowns,warnings,error}`；本次 `sections=[]` | 10 blocks；最大 501 | 当前调用没有取得 filing 原文，不能当作 SEC 正文证据。descriptor 使用 `items`，provider 实际读取 `sections`，且自动 primary document 回退存在失败风险。 |
-| `alpha.company_overview` | succeeded，但 payload 为 provider `Information` | 325 | `{provider,function,symbol,data}`；`data` 是单字段提示对象 | inline 1 block | 状态语义错误：配额/提示响应仍被包装成 succeeded，agent 可能误判为已取得公司指标。 |
-| `alpha.financial_statements` | succeeded，但三个 statement 均为 `Information` | 862 | `{provider,symbol,statements}`；三种报表各是嵌套提示对象 | 9 blocks；最大 235 | 没有真实报表行却被判 succeeded；必须在 provider 层识别 `Information`/`Note`/`Error Message`。 |
-| `alpha.shares_outstanding` | succeeded，但 payload 为 `Information` | 335 | `{provider,function,symbol,data}` | inline 1 block | 与 company overview 相同，存在假成功。 |
-| `alpha.earnings_events` | succeeded，部分子接口为 `Information` | 730 | `{provider,symbol,earnings}`；历史/预期为提示对象，calendar 为 1 行数组 | inline 1 block | 混合有效/无效子结果却整体 succeeded，workflow 无法知道哪些字段可用。 |
-| `yfinance.hk_basic_snapshot` | succeeded | 192 | 8 个扁平估值/盈利指标 | inline 1 block | 体积小，但属于 unofficial fallback，不能覆盖主数据源或提高为高置信度事实。 |
-| `fred.series_observations` | succeeded | 39,852 | `{provider,series,failed_series,...}`；DGS10 有 396 observations，CPIAUCSL 有 17 | 40 blocks；最大 4,813 | 输入 `limit=24` 没有下推给 FRED，DGS10 仍返回 396 行；请求规模不受控会增加延迟和 task 内存。 |
-| `bls.timeseries` | succeeded | 5,557 | `data.Results.series[2].data`，分别约 29/30 行 | 10 blocks；最大 5,442 | descriptor 暴露 `start_year/end_year`，provider 读取 `startyear/endyear`，agent 按 descriptor 调用时年份过滤会被忽略。 |
-| `bea.nipa_data` | succeeded，但 `data.BEAAPI.Error` 存在 | 706 | `{provider,dataset,data}`；`data` 内含 Request 与 Error | 11 blocks；最大 514 | provider 没有把 BEA API 业务错误映射为 failed/partial，会产生假成功。 |
-| `fed.fomc_calendar_materials` | succeeded | 6,996 | `{calendar_text,links[80],unknowns,parser}` | 7 blocks；最大 3,974 | 结构正常；80 条链接不应全部默认装入 prompt，只需 outline 与按需读取。 |
-| `polymarket.market_probability` | succeeded | 34,303 | `data.items[5]`；每个 market 约 6.5K 至 7.1K 字符、89 至 91 字段，并嵌套 events | 9 blocks；最大 15,055 | 原始 schema 过宽，且 search 结果可能与问题不相关；应保留市场级 ref，不应整体注入。 |
-| `twelvedata.daily_ohlcv` | succeeded；首次调用曾 transient unavailable | 7,922 | `{provider,symbol,interval,ohlcv[60],meta,market_evidence_snapshot}` | 2 blocks；最大 6,065 | 时间序列适合按日期范围切块；上游瞬时失败必须保留 retryable 状态，不能回退为“无行情”。 |
-| `yfinance.daily_ohlcv` | succeeded | 9,160 | `{provider,symbol,interval,ohlcv[60],market_evidence_snapshot,...}` | 2 blocks；最大 7,226 | 结构正常，但为 unofficial fallback；必须保留 fallback/unofficial 标记。 |
-| `finnhub.company_peers` | succeeded | 134 | `{provider,symbol,peers.items[11]}` | inline 1 block | 体积小；peer 列表只能构造研究范围，不能直接证明竞争关系。 |
-| `fmp.sector_performance` | succeeded | 1,183 | `sector_performance.items[11]`，每行 4 字段 | 3 blocks；最大 1,197 | 结构正常；free-tier 日期/交易所 fallback 必须随证据保留。 |
-| `tavily.search` | succeeded | 7,015 | `search.results[5]`；每条约 1.3K 至 1.5K 字符 | 14 blocks；最大 1,474 | 搜索结果必须保持逐条 ref，不能合并成一个表格 ref；content 仍只是搜索摘要。 |
-| `tavily.extract` | succeeded | 1,791 | `extract.results[1].raw_content`，正文约 1,502 字符 | 2 blocks；最大 1,759 | 本次较小；多 URL 或长正文时必须继续按 URL/段落递归切块。 |
-| `anysearch.search` | succeeded | 22,345 | `search.data.results[5]`；每条约 4.2K 至 4.5K，正文约 4K | 15 blocks；最大 4,545 | 单次 5 条结果已超过 22K；必须逐结果 ref，不能把 `search` 整体放入 prompt。 |
-| `finnhub.trade_stream` | succeeded，但 events 为空 | 53 | `{provider,symbols[1],events[]}` | 4 blocks；最大 35 | 1 秒有界样本在当前市场状态没有成交；空样本不能解释为“没有交易活动”。 |
-| `monitoring.get_ticker_config` | succeeded | 248 | ticker 配置摘要；本次有 6 个 `missing_source_ids` | inline 1 block | 体积小，但结果表明当前 monitoring coverage 不完整。 |
-| `monitoring.list_status` | succeeded | 2,836 | `sources[6]`，bindings/poll states/recent items 本次为空 | inline 1 block | 目前可 inline；若 future recent messages 增长，descriptor 应转 indexed，且 limit 必须继续下推。 |
-| `monitoring.recent_events` | succeeded，空结果 | 13 | `{events[]}` | outline 1 block | 空 replay 只说明当前查询窗口没有持久化事件，不能否定事件源存在。 |
+| Tool | 基线字数 | 原始输出形态 | 最近代表性状态/字数 | 对 workflow 的问题与处理 |
+| --- | ---: | --- | --- | --- |
+| `sec.company_facts_and_filings` | 2,702,442 | 完整 submissions 加 `companyfacts.facts`，META 有 471 个 concept | succeeded / 193,876 | 原始 payload 占总量绝大多数。输出改为公司信息、20 条重要 filing、13 个关键 fact、目录和单 concept 页面；完整原文只在 task-local raw。488 blocks，最大 1,176。 |
+| `sec.filing_sections` | 20,793（成功轮次） | filing 元数据和原文 section；单 section 可达 20K | succeeded / 20,793 | 全量轮次曾因 SEC archive 暂时不可用而正确失败；随后重跑成功，两个 section 按原始空白精确切块和回读。自动查询真实 `primaryDocument`，不再盲猜文件名。 |
+| `alpha.company_overview` | 325 | 常见为公司概览对象，也可能只有 `Information` | failed / 2 | 本轮限额，返回 `rate_limited`；不再把提示对象当公司指标。 |
+| `alpha.financial_statements` | 862（错误包） | income、balance、cash-flow 三个子结果 | failed / 2 | 本轮限额；各子请求独立判定，部分成功时为 `partial`，全部失败时为 `failed`；`statement_type` 真实控制请求范围。 |
+| `alpha.shares_outstanding` | 335（错误包） | shares 时间序列或 `Information` | failed / 2 | 本轮限额，正确返回 `rate_limited`。 |
+| `alpha.earnings_events` | 1,384（partial 轮次） | history、estimates、calendar 三类子结果 | partial / 1,384 | calendar 可用、其他子请求失败时正确返回 `partial`；`event_type` 真实控制子请求。 |
+| `yfinance.hk_basic_snapshot` | 192 | 港股估值和盈利指标，非官方 fallback | succeeded / 192 | 重跑获得有效指标；空指标会返回 `empty_result`，不会成功。 |
+| `fred.series_observations` | 39,852 | 多 series，各自含 observation 数组 | failed / 2 | 本轮 provider 不可用；`limit` 现在同时下推 FRED 并在本地硬截断，避免 provider 忽略参数时返回全量历史。 |
+| `bls.timeseries` | 3,453～5,557 | `Results.series[].data[]` | failed / 2 | 本轮网络不可用；成功轮次返回 2 个 series、35 行。`start_year/end_year` 已翻译为 BLS 的 `startyear/endyear`。 |
+| `bea.nipa_data` | 706（错误包） | `BEAAPI.Results` 或 `BEAAPI.Error` | failed / 2 | 本轮网络不可用；BEA 业务错误和空 Results 不再成功。 |
+| `fed.fomc_calendar_materials` | 6,996 | 年度日程文本和最多 80 个官方链接 | succeeded / 6,996 | 正常按文本、链接连续行切块，最大 1,199；找不到请求年份时返回 `partial`。 |
+| `polymarket.market_probability` | 34,303 | market 列表，每项可能嵌套 events 等宽 schema | failed / 2 | 本轮网络不可用；`limit` 真实生效，空 market 返回 `empty_result`，`market_slug` 与 Descriptor 一致。 |
+| `twelvedata.daily_ohlcv` | 7,922 | `values[]` 日线 OHLCV 和 meta | failed / 2 | 本轮网络不可用；空 `values` 不再成功，错误状态保留 retryable 语义。 |
+| `yfinance.daily_ohlcv` | 2,144～9,160 | 非官方 fallback 日线 OHLCV 和 market snapshot | succeeded / 2,144 | 本轮 20 行，2 个日期范围块，最大 1,175；持续标记 `unofficial_source` 和 `fallback_for`，空行情返回失败。 |
+| `finnhub.company_peers` | 134 | 小型 peers ticker 列表 | succeeded / 134 | 体积小；空 peers 返回 `empty_result`，不能解释为“没有竞争者”。 |
+| `fmp.sector_performance` | 1,183～1,359 | sector 行列表 | succeeded / 1,359 | 输出新增 requested/resolved date、exchange 和 fallback 标记，避免免费层日期或交易所回退不可见。 |
+| `tavily.search` | 6,965～7,015 | 5 条搜索结果，每条含 title、URL、content 等 | succeeded / 6,965 | 保留逐结果/逐字段 ref，44 blocks，最大 1,090；空结果和错误包不再成功。 |
+| `tavily.extract` | 1,791～28,710 | URL 结果和 `raw_content` 长文本 | succeeded / 28,710 | 本轮正文约 27.9K；按原始段落边界和精确子串切成 43 blocks，最大 1,197。部分 URL 失败时为 `partial`。 |
+| `anysearch.search` | 22,345 | `data.results[]`，每条可能含约 4K 正文 | failed / 2 | 本轮网络不可用；成功样本已确认逐结果、逐正文精确切块；空结果返回失败。 |
+| `finnhub.trade_stream` | 53～85 | 有界 WebSocket events 数组 | partial / 85 | 1 秒窗口无事件时返回 `empty_stream_sample`，不再成功，也不能据此推断市场没有成交。 |
+| `monitoring.get_ticker_config` | 248 | ticker 配置和 missing source | succeeded / 248 | 小 payload；缺失 source 保留在输出中，不能解释为完整覆盖。 |
+| `monitoring.list_status` | 2,836 | source 状态、bindings、poll state 和 recent items | succeeded / 2,836 | 9 blocks，最大 1,052；查询 limit 继续由服务层执行。 |
+| `monitoring.recent_events` | 13 | `events[]` | succeeded / 13 | 空持久化查询可以成功，但只表示当前查询没有事件，不表示事件源不存在。 |
 
-## 4. 对整体 workflow 的主要问题
+## 4. SEC 专项输出
 
-### P0：原始 payload 不能进入 prompt 或 Supabase audit
+默认 `ToolResult.output` 只包含：
 
-SEC companyfacts 一次约 270 万字符。即使模型窗口足够大，也不能把它当作普通 observation：
+1. `company`：公司名称、ticker、交易所、SIC、实体类型和财年截止日；
+2. `recent_filings`：优先保留 10-K、10-Q、8-K、20-F、6-K、S-1/S-3、DEF 14A 等重要 filing；
+3. `key_facts`：收入、净利润、经营利润、资产负债、现金、经营现金流、资本开支、研发、EPS、股数和长期债务等高价值 concept，每项保留最新两条原始 observation；
+4. `fact_directory`：concept/page 总数、taxonomy、第一页和稳定 ref 模板；
+5. `fact_pages`：每页一个 concept，仅保留 label、unit 和最新一条原始 observation。
 
-- 会挤掉 Synthesis、Agenda、Fresh Observation 和最终输出预算；
-- 会使 Micro/Full Compaction 每轮都被迫触发；
-- 如果复制进 Working Memory/checkpoint，会再次造成大行写入和 pooler egress；
-- 如果 outline 罗列全部 723 个 ref，本身也会成为新的大上下文。
+META 本轮共有 471 页。Fresh Observation 优先加载目录、关键 fact 和第一页，outline 最多列出 24 个 ref；其他页用 `obs_<tool_call_id>::/fact_pages/page_####` 读取。若个别 page 本身仍超过 1,200 字符，该 page ref 会作为 outline，Agent 可用 `include_children=true` 精确读取其字段。
 
-当前修复：Raw Store 保留原文；Observation Store 递归切块；正常 outline 最多列 48 个 block，并给出总数、遗漏数和 locator prefix；Fresh View 只加载少量 selected block。
+完整 companyfacts 历史仍在当前 task 的 `ToolResult.raw`，用于 task 内恢复和审计校验；持久化 audit 只保存字符数、hash、状态、错误码、block 统计和少量 ref，不保存完整 raw/output。
 
-### P0：provider 的 succeeded 不等于取得有效数据
+## 5. Observation 切块规则
 
-Alpha Vantage 的 `Information`、BEA 的 `BEAAPI.Error` 都被当前 client 包装成 succeeded。这比切块失败更危险，因为 workflow 会把数据缺口误判为已完成工具调用。后续应在各 provider client 的 `_success` 前统一识别：
+- 普通 block 目标上限为 1,200 canonical JSON 字符；实际最终真实轮次最大 1,199。
+- dict 按字段递归；list/table 按连续行和字符上限双重分组；time series 的 ref 保留日期范围。
+- 搜索结果优先保留单条结果层级，再按字段和正文继续拆分。
+- 长文本优先按段落边界切分；超长段落按精确子串切分，不 trim、不重新拼接空白、不生成摘要。
+- outline 最多展示 24 个 block，并给出总数、遗漏数和 locator prefix。
+- `read_observation` 返回被引用 block 的精确内容；父子读取由 `include_parent/include_children` 显式控制。
 
-- `Information`
-- `Note`
-- `Error Message`
-- provider 自有 `Error` 对象
-- HTTP 200 中的业务错误码
+## 6. 验收证据
 
-并映射为 `partial` 或 `failed`。
-
-### P1：descriptor 与 provider 参数不一致
-
-- SEC descriptor 暴露 `items`，provider 读取 `sections`。
-- BLS descriptor 暴露 `start_year/end_year`，provider 读取 `startyear/endyear`。
-- FRED descriptor 暴露 `limit`，provider 没有把它传给上游或在本地截断。
-
-这些问题会让 agent 生成“schema 看似正确、实际被 provider 忽略”的调用。
-
-### P1：fallback 与空响应必须保留语义
-
-- yfinance 必须继续标记为 unofficial fallback。
-- Finnhub 1 秒 stream 的空 events 不能转化为市场结论。
-- Monitoring 空 events、空 poll state 或 missing source 只能作为 coverage gap。
-
-## 5. Memory 上下文修复
-
-本轮增加的约束如下：
-
-1. 大 dict 按字段递归；大 list 优先按自然 item/table 拆分。
-2. 表格同时受 50 行和 16,000 字符双重上限约束。
-3. 长文本按段落和字符上限拆分。
-4. 搜索结果保留 `/results/0` 这类 item-level ref。
-5. time series 保留日期范围 ref。
-6. outline 最多展示 48 个 block，其余通过计数和 locator prefix 暴露。
-7. `read_observation` 仍返回精确 block 原文；Raw Store 仍能恢复完整 ToolResult。
+- 真实复验：`uv run python scripts/validate_react_memory_real_tools.py --group all`，退出码 0，23/23 `validation_ok=true`。
+- Tool/Memory 联合测试：`52 passed`。
+- 定向 Ruff：通过。
+- 定向 Mypy：15 个 source 文件通过。
+- workflow Tool 并集核对：23 个 workflow source tools，`missing=[]`、`extra=[]`。

@@ -10,6 +10,11 @@ from typing import Any, cast
 from doxagent.agents.config import AgentDefinition, AgentRegistry, default_agent_registry
 from doxagent.agents.runtime.chat_client import ModelGatewayChatClient
 from doxagent.agents.runtime.factory import MafAgentFactory
+from doxagent.agents.runtime.memory import (
+    InMemoryObservationArchive,
+    ObservationAliasRegistry,
+    ObservationArchive,
+)
 from doxagent.agents.runtime.react import ReActAgentHarness, ReActHarnessConfig
 from doxagent.agents.runtime.tools import (
     ToolMode,
@@ -18,6 +23,11 @@ from doxagent.agents.runtime.tools import (
     requested_tool_calls,
     resolve_tool_registry,
     tool_result_to_summary,
+)
+from doxagent.annotations import (
+    InMemoryAnnotationStore,
+    TextAnnotationProcessor,
+    render_time_tags,
 )
 from doxagent.context import ContextBuilder
 from doxagent.gateway import MockModelClient, ModelGateway, ProviderName, ResponseFormat
@@ -34,6 +44,12 @@ from doxagent.prompts import PromptAssembler, PromptInjector
 from doxagent.prompts.schema import AssembledPrompt
 from doxagent.skills.injection import SkillInjector
 from doxagent.tools import ToolRegistry, ToolResult
+from doxagent.workflow_memory import (
+    CompiledWorkflowInput,
+    WorkflowMemoryCompiler,
+    WorkflowMemoryError,
+)
+from doxagent.workflow_memory.projectors import BlackboardDocumentBodyProjector
 
 
 class ModelGatewayAgentRunner:
@@ -48,6 +64,7 @@ class ModelGatewayAgentRunner:
         skill_injector: SkillInjector | None = None,
         model_gateway: ModelGateway | None = None,
         context_builder: ContextBuilder | None = None,
+        workflow_memory_compiler: WorkflowMemoryCompiler | None = None,
         tool_registry: ToolRegistry | None = None,
         default_provider: ProviderName = ProviderName.MOCK,
         default_model: str = "mock-model",
@@ -56,13 +73,38 @@ class ModelGatewayAgentRunner:
         react_config: ReActHarnessConfig | None = None,
         model_timeout_seconds: float | None = None,
         max_delegation_depth: int = 1,
+        annotation_processor: TextAnnotationProcessor | None = None,
+        observation_archive: ObservationArchive | None = None,
     ) -> None:
         self.registry = registry or default_agent_registry()
         self.prompt_injector = prompt_injector or PromptInjector()
         self.prompt_assembler = prompt_assembler or PromptAssembler()
         self.skill_injector = skill_injector or SkillInjector()
         self.model_gateway = model_gateway or ModelGateway(MockModelClient(structured={}))
+        annotation_store = InMemoryAnnotationStore()
+        self.annotation_processor = annotation_processor or TextAnnotationProcessor(
+            annotation_store
+        )
+        active_annotation_store = self.annotation_processor.store
+        def text_renderer(value: str) -> str:
+            if active_annotation_store is None or not hasattr(
+                active_annotation_store, "times_for_text"
+            ):
+                return value
+            return render_time_tags(
+                value,
+                active_annotation_store.times_for_text(value),
+            )
+        body_projector = BlackboardDocumentBodyProjector(text_renderer=text_renderer)
         self.context_builder = context_builder
+        self.workflow_memory_compiler = workflow_memory_compiler or (
+            WorkflowMemoryCompiler.from_repository(
+                context_builder.blackboard.repository,
+                body_projector=body_projector,
+            )
+            if context_builder is not None
+            else WorkflowMemoryCompiler(body_projector=body_projector)
+        )
         self.tool_registry = resolve_tool_registry(tool_mode, tool_registry)
         self.default_provider = default_provider
         self.default_model = default_model
@@ -71,6 +113,7 @@ class ModelGatewayAgentRunner:
         self.react_config = react_config or ReActHarnessConfig()
         self.model_timeout_seconds = model_timeout_seconds
         self.max_delegation_depth = max_delegation_depth
+        self.observation_archive = observation_archive or InMemoryObservationArchive()
 
     def run(self, task: AgentTask) -> AgentResult:
         try:
@@ -93,23 +136,27 @@ class ModelGatewayAgentRunner:
             return self._failed(task, "task_type_not_allowed", "Agent cannot run this task type.")
         task = self.prompt_injector.inject(task, definition)
         task = self.skill_injector.inject(task, definition)
-        context_snapshot = (
-            self.context_builder.build(task, task.run_metadata.run_id)
-            if self.context_builder is not None
-            else None
-        )
         if task.prompt_bundle is None:
             return self._failed(
                 task,
                 "missing_prompt_bundle",
                 "Prompt injection produced no bundle.",
             )
+        try:
+            workflow_input = self.workflow_memory_compiler.compile(task)
+        except WorkflowMemoryError as exc:
+            return self._failed(
+                task,
+                "workflow_memory_compilation_failed",
+                str(exc),
+                details={"error_type": exc.__class__.__name__},
+            )
 
         assembled_prompt = self.prompt_assembler.assemble(
             task,
             definition,
             task.prompt_bundle,
-            context_snapshot,
+            workflow_input,
             [],
         )
         mode = self._execution_mode(task, definition)
@@ -121,12 +168,14 @@ class ModelGatewayAgentRunner:
                 model=self.default_model,
                 tool_mode=self.tool_mode,
                 config=self._react_config_for_task(task),
+                annotation_processor=self.annotation_processor,
+                observation_archive=self.observation_archive,
             )
             return await harness.run(
                 task=task,
                 definition=definition,
                 assembled_prompt=assembled_prompt,
-                context_snapshot=context_snapshot,
+                context_snapshot=workflow_input,
                 metadata=self._metadata(task),
                 delegate=lambda payload: self._run_delegation(task, payload),
             )
@@ -134,7 +183,7 @@ class ModelGatewayAgentRunner:
             return await self._async_run_model_once(
                 task,
                 definition,
-                context_snapshot,
+                workflow_input,
                 assembled_prompt,
                 run_requested_tools=False,
             )
@@ -142,7 +191,7 @@ class ModelGatewayAgentRunner:
             return await self._async_run_model_once(
                 task,
                 definition,
-                context_snapshot,
+                workflow_input,
                 assembled_prompt,
                 run_requested_tools=True,
             )
@@ -156,7 +205,7 @@ class ModelGatewayAgentRunner:
         self,
         task: AgentTask,
         definition: AgentDefinition,
-        context_snapshot: Any | None,
+        workflow_input: CompiledWorkflowInput,
         assembled_prompt: AssembledPrompt,
         *,
         run_requested_tools: bool,
@@ -168,7 +217,7 @@ class ModelGatewayAgentRunner:
                 task,
                 definition,
                 task.prompt_bundle,
-                context_snapshot,
+                workflow_input,
                 tool_results,
             )
         if has_required_tool_failure(task, tool_results):
@@ -249,7 +298,7 @@ class ModelGatewayAgentRunner:
                 tool_calls=tool_calls,
                 details={"text": str(response)},
             )
-        return AgentResult(
+        result = AgentResult(
             task_id=task.task_id,
             agent_name=task.agent_name,
             status=ResultStatus.SUCCEEDED,
@@ -280,17 +329,30 @@ class ModelGatewayAgentRunner:
                     "role": definition.role.value,
                     "output_schema": definition.runtime.output_schema,
                 },
-                "context_snapshot": context_snapshot.model_dump(mode="json")
-                if context_snapshot is not None
-                else None,
+                "context_assembly_audit": workflow_input.audit.model_dump(mode="json"),
             },
-            evidence_refs=[
-                evidence
-                for result in tool_results
-                for evidence in result.evidence_refs
-            ],
             tool_calls=tool_calls,
         )
+        annotation_batch = self.annotation_processor.process(
+            run_id=task.run_metadata.run_id,
+            task_id=task.task_id,
+            result_id=new_id("result"),
+            payload=result.payload,
+            aliases=ObservationAliasRegistry(),
+        )
+        annotated_payload = dict(annotation_batch.plain_payload)
+        annotated_payload["text_annotations"] = {
+            "processed_texts": [
+                item.model_dump(mode="json")
+                for item in annotation_batch.processed_texts
+                if item.raw_tagged_text != item.plain_text
+            ],
+            "citations": [item.model_dump(mode="json") for item in annotation_batch.citations],
+            "times": [item.model_dump(mode="json") for item in annotation_batch.times],
+            "warnings": annotation_batch.warnings,
+            "metrics": annotation_batch.metrics.model_dump(mode="json"),
+        }
+        return result.model_copy(update={"payload": annotated_payload}, deep=True)
 
     async def _run_delegation(self, parent_task: AgentTask, payload: dict[str, Any]) -> AgentResult:
         if not parent_task.permissions.can_delegate:
@@ -465,28 +527,6 @@ class ModelGatewayAgentRunner:
                 )
             )
         return results
-
-    def _prompt(
-        self,
-        task: AgentTask,
-        context_snapshot: Any | None,
-        tool_results: list[ToolResult],
-    ) -> str:
-        return json.dumps(
-            {
-                "task": task.model_dump(mode="json"),
-                "context_snapshot": context_snapshot.model_dump(mode="json")
-                if context_snapshot is not None
-                else None,
-                "tool_results": [result.model_dump(mode="json") for result in tool_results],
-                "rules": [
-                    "Return a JSON object.",
-                    "Do not write Blackboard state directly.",
-                    "Put proposed stable changes in AgentResult-compatible structures only.",
-                ],
-            },
-            ensure_ascii=True,
-        )
 
     def _metadata(self, task: AgentTask) -> dict[str, str]:
         source_message_id = _source_message_id(task.input_context)

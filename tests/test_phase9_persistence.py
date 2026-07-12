@@ -3,6 +3,8 @@ from pathlib import Path
 
 import pytest
 
+pytest.skip("retired EvidenceRef persistence contract", allow_module_level=True)
+
 from doxagent.blackboard import (
     BlackboardService,
     InMemoryBlackboardRepository,

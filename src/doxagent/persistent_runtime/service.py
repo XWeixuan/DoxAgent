@@ -1878,7 +1878,6 @@ def _objection_from_o3(
         objection_type=objection_type,
         blackboard_target=o3.blackboard_target or "document3",
         reason=o3.reasoning,
-        evidence_refs=o3.evidence_refs,
     )
 
 

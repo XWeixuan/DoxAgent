@@ -58,7 +58,7 @@ gates:
       workflow: fundamental, macro, industry, market trace, and market narrative.
     failure_conditions:
       - any required section is missing or empty.
-      - any section lacks summary, text, author_agent, or evidence_refs.
+      - any section lacks summary, text, or author_agent.
       - market_narrative_report is missing after GenerateGlobalNarrativeReport
         on a completed run.
       - a section is present only as an agent scratchpad and not in stable
@@ -83,23 +83,6 @@ gates:
     evidence_required:
       - brief_state.expectation_units
       - stable expectation_unit documents
-
-  - id: HG05
-    title: Evidence coverage is present and hydrated
-    check_goal: >
-      Confirm stable claims can be traced to source objects, not only naked text.
-    failure_conditions:
-      - a Global Research section has no hydrated evidence_refs.
-      - an expectation market_view has no evidence_refs.
-      - a realized fact has no evidence_refs or its price_reaction has no
-        evidence_refs.
-      - a key variable has no evidence_refs.
-      - evidence_refs lack source_id, source_type, title, summary, confidence,
-        or citation_scope.
-    evidence_required:
-      - brief_state.evidence_refs
-      - hydrated evidence inside global_research and expectation_units
-      - LangSmith tool-call outputs that produced or supported evidence_refs
 
   - id: HG06
     title: Price-in and not-priced-in reasoning is explicit
@@ -143,8 +126,8 @@ gates:
       reflected in final reasoning.
     failure_conditions:
       - any blocking_delegation remains open or assigned at finalization.
-      - an A2 result lacks answer, claim_verdict, confidence, evidence_refs or
-        source_refs, and can_complete_delegation.
+      - an A2 result lacks answer, claim_verdict, confidence, or
+        can_complete_delegation.
       - inconclusive A2 results are treated as supported facts.
       - requester agent ignores a completed or inconclusive delegation in its
         revision rationale.
@@ -161,8 +144,8 @@ gates:
     failure_conditions:
       - a stable document was written without a commit_log entry.
       - a commit target does not match the stable document or expectation_id.
-      - a commit lacks author_agent, trigger_reason, rationale, or evidence_refs
-        when the patch changes a research conclusion.
+      - a commit lacks author_agent, trigger_reason, or rationale when the
+        patch changes a research conclusion.
       - Working Memory lacks final AgentResult entries for core generation and
         review nodes.
     evidence_required:
@@ -185,10 +168,10 @@ gates:
       - trace metadata: run_id, agent_name, workflow_node, task_type, loop index
 
   - id: HG11
-    title: Tool-call and evidence claims are consistent
+    title: Tool-call and factual claims are consistent
     check_goal: >
       Confirm agents do not claim unavailable, forbidden, or unexecuted tools as
-      evidence support.
+      factual support.
     failure_conditions:
       - an agent cites a tool/source in final_payload that is absent from
         LangSmith tool calls or Working Memory tool summaries.
@@ -198,7 +181,7 @@ gates:
     evidence_required:
       - agent registry tool allowlists
       - LangSmith tool-call events
-      - final AgentResult tool_calls and evidence_refs
+      - final AgentResult tool_calls
 
   - id: HG12
     title: Monitoring outputs are operationally usable

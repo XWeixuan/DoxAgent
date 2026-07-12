@@ -57,7 +57,6 @@ When the task specifies something, that's a requirement, not a suggestion:
 * Use the same metric definitions across competitors.
 * Convert to USD for international companies if necessary; note the exchange rate and date if used.
 * Missing data shows as `-` or `N/A`, with `[E]` for estimates.
-* Important numbers should include source references or evidence IDs where available.
 
 ---
 
@@ -229,7 +228,6 @@ Before finishing:
 * Same metric shows the same value wherever it appears
 * Same fiscal period is used where possible, or exceptions are flagged
 * Missing data is marked as N/A, -, or [E]
-* Important numbers have source references or evidence IDs where available
 
 ### Content
 

@@ -12,7 +12,6 @@ from doxagent.workflows.document2.contracts import (
     Document2PromotionCandidate,
     Document2ReviewFinding,
     Document2TransactionAudit,
-    EvidenceAssessment,
 )
 
 DOCUMENT2_PROMOTION_AUDITS_KEY = "document2_promotion_audits"
@@ -45,19 +44,12 @@ def document2_promotion_candidate_from_patch(
         for finding in review_findings
         if finding.expectation_id == document.expectation_id and finding.blocks_promotion
     ]
-    evidence_assessments = [
-        assessment
-        for finding in blocking_findings
-        for assessment in finding.evidence_assessments
-    ]
     blocking_finding_ids = [finding.finding_id for finding in blocking_findings]
     return Document2PromotionCandidate(
         document=document,
         source_revision_id=patch.patch_id,
-        evidence_assessments=evidence_assessments,
         blocking_finding_ids=blocking_finding_ids,
-        ready_for_promotion=not blocking_finding_ids
-        and not any(assessment.blocks_promotion for assessment in evidence_assessments),
+        ready_for_promotion=not blocking_finding_ids,
         rationale="Pending expectation revision is entering the read-only promotion gate.",
     )
 
@@ -95,7 +87,6 @@ def document2_promotion_blockers(
         )
         for finding_id in candidate.blocking_finding_ids
     )
-    blockers.extend(_evidence_assessment_blockers(candidate.evidence_assessments))
     blockers.extend(
         Document2PromotionBlocker(
             blocker_type="placeholder_text",
@@ -138,9 +129,6 @@ def document2_promotion_audit(
             "source_revision_id": candidate.source_revision_id,
             "ready_for_promotion": candidate.ready_for_promotion,
             "blocking_finding_ids": list(candidate.blocking_finding_ids),
-            "evidence_assessment_statuses": [
-                assessment.status for assessment in candidate.evidence_assessments
-            ],
         },
         output_summary={
             "patch_id": patch.patch_id if patch is not None else None,
@@ -156,21 +144,6 @@ def promotion_audits_json(
     audits: list[Document2TransactionAudit],
 ) -> list[dict[str, object]]:
     return [audit.model_dump(mode="json") for audit in audits]
-
-
-def _evidence_assessment_blockers(
-    assessments: Iterable[EvidenceAssessment],
-) -> list[Document2PromotionBlocker]:
-    return [
-        Document2PromotionBlocker(
-            blocker_type="evidence_insufficient",
-            target_path=assessment.target_path,
-            reason=assessment.reason,
-            evidence_refs=list(assessment.evidence_refs),
-        )
-        for assessment in assessments
-        if assessment.blocks_promotion
-    ]
 
 
 def _placeholder_target_path(finding: str) -> str:

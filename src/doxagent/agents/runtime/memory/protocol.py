@@ -16,8 +16,8 @@ def read_observation_descriptor() -> JsonDict:
             "Read an exact Observation Block already created inside this AgentTask. "
             "This is a read-only harness capability and never changes source data."
         ),
-        "input_fields": ["ref", "include_parent", "include_children"],
-        "business_purpose": "Reload exact indexed or index-only source material by ref.",
+        "input_fields": ["alias", "include_parent", "include_children"],
+        "business_purpose": "Reload exact indexed or index-only source material by O# alias.",
         "observation_policy": "inline",
     }
 
@@ -33,7 +33,7 @@ def memory_action_schema() -> JsonDict:
             "DEFER Q3：…",
         ],
         "retain_observations": [
-            {"ref": "obs_tc1::/results/0", "note": "…", "reason": "…"}
+            {"alias": "O1", "note": "…", "reason": "…"}
         ],
     }
 
@@ -45,7 +45,7 @@ def maintenance_action_schema() -> JsonDict:
         "research_update": ["MERGE Q2 Q5：…", "DEFER Q4：…"],
         "retained_observation_update": [
             {
-                "ref": "obs_tc1::/results/0",
+                "alias": "O1",
                 "action": "KEEP_LOADED|INDEX_ONLY|DROP",
                 "reason": "…",
             }

@@ -17,20 +17,27 @@ _COMMAND_RE = re.compile(
     r"(?:\s+([SQ]\d+))?(?:\s+([SQ]\d+))?\s*(?:[:：]\s*(.*))?$",
     re.IGNORECASE | re.DOTALL,
 )
-_OBSERVATION_REF_RE = re.compile(r"obs_tc\d+::[^\s,，;；)）\]}]+")
+_CITATION_ALIAS_RE = re.compile(r"【cite:(O[1-9]\d*)】")
 
 
 @dataclass(frozen=True)
 class SynthesisBlock:
     block_id: str
     content: str
-    observation_refs: tuple[str, ...] = ()
+    observation_block_ids: tuple[str, ...] = ()
 
-    def agent_view(self) -> JsonDict:
+    def agent_view(self, observations: ObservationService | None = None) -> JsonDict:
+        aliases = []
+        if observations is not None:
+            aliases = [
+                alias
+                for block_id in self.observation_block_ids
+                if (alias := observations.aliases.alias_for(block_id)) is not None
+            ]
         return {
             "id": self.block_id,
             "content": self.content,
-            "observation_refs": list(self.observation_refs),
+            "citation_aliases": aliases,
         }
 
 
@@ -46,14 +53,14 @@ class AgendaItem:
 
 @dataclass(frozen=True)
 class RetainedObservation:
-    ref: str
+    observation_block_id: str
     note: str
     reason: str
     load_state: RetainedLoadState = "loaded"
 
-    def index_view(self) -> JsonDict:
+    def index_view(self, alias: str | None = None) -> JsonDict:
         return {
-            "ref": self.ref,
+            "alias": alias,
             "note": self.note,
             "reason": self.reason,
             "load_state": self.load_state,
@@ -96,7 +103,11 @@ class TaskMemoryState:
         if reasoning:
             self.recent_reasoning.append(ReasoningSummary(step=step, content=reasoning))
             self.recent_reasoning = self.recent_reasoning[-2:]
-        warnings.extend(self._apply_synthesis_updates(action.get("synthesis_update")))
+        warnings.extend(
+            self._apply_synthesis_updates(
+                action.get("synthesis_update"), observations=observations
+            )
+        )
         warnings.extend(self._apply_research_updates(action.get("research_update")))
         warnings.extend(
             self._apply_retain_requests(
@@ -113,7 +124,11 @@ class TaskMemoryState:
         observations: ObservationService,
     ) -> list[str]:
         warnings: list[str] = []
-        warnings.extend(self._apply_synthesis_updates(action.get("synthesis_update")))
+        warnings.extend(
+            self._apply_synthesis_updates(
+                action.get("synthesis_update"), observations=observations
+            )
+        )
         warnings.extend(self._apply_research_updates(action.get("research_update")))
         plan = _strings(action.get("plan_update"))
         if plan:
@@ -127,31 +142,32 @@ class TaskMemoryState:
             if not isinstance(raw, dict):
                 warnings.append("忽略了非对象 retained observation maintenance item。")
                 continue
-            ref = str(raw.get("ref") or "").strip()
+            alias = str(raw.get("alias") or "").strip()
             operation = str(raw.get("action") or "").strip().upper()
-            if observations.block_store.get_by_ref(ref) is None:
-                warnings.append(f"拒绝无效 observation ref：{ref or '<empty>'}。")
+            block_id = observations.aliases.resolve(alias)
+            if block_id is None or observations.block_store.get(block_id) is None:
+                warnings.append(f"忽略无效 observation alias：{alias or '<empty>'}。")
                 continue
-            current = self.retained.get(ref)
+            current = self.retained.get(block_id)
             if current is None:
-                warnings.append(f"无法维护未 retain 的 observation：{ref}。")
+                warnings.append(f"无法维护未 retain 的 observation：{alias}。")
                 continue
             if operation == "KEEP_LOADED":
-                self.retained[ref] = RetainedObservation(
-                    ref=ref,
+                self.retained[block_id] = RetainedObservation(
+                    observation_block_id=block_id,
                     note=current.note,
                     reason=str(raw.get("reason") or current.reason),
                     load_state="loaded",
                 )
             elif operation == "INDEX_ONLY":
-                self.retained[ref] = RetainedObservation(
-                    ref=ref,
+                self.retained[block_id] = RetainedObservation(
+                    observation_block_id=block_id,
                     note=current.note,
                     reason=str(raw.get("reason") or current.reason),
                     load_state="index_only",
                 )
             elif operation == "DROP":
-                self.retained.pop(ref, None)
+                self.retained.pop(block_id, None)
             else:
                 warnings.append(f"忽略未知 retained observation action：{operation or '<empty>'}。")
         return warnings
@@ -159,14 +175,17 @@ class TaskMemoryState:
     def active_view(self, observations: ObservationService) -> JsonDict:
         retained: list[JsonDict] = []
         for item in self.retained.values():
-            payload = item.index_view()
+            alias = observations.aliases.alias_for(item.observation_block_id)
+            payload = item.index_view(alias)
             if item.load_state == "loaded":
-                block = observations.block_store.get_by_ref(item.ref)
+                block = observations.block_store.get(item.observation_block_id)
                 if block is not None:
-                    payload["original_block"] = block.agent_view()
+                    payload["original_block"] = block.agent_view(alias or "")
             retained.append(payload)
         return {
-            "working_synthesis": [item.agent_view() for item in self.synthesis.values()],
+            "working_synthesis": [
+                item.agent_view(observations) for item in self.synthesis.values()
+            ],
             "research_agenda": [item.agent_view() for item in self.agenda.values()],
             "current_plan": list(self.plan),
             "recent_reasoning_summary": [
@@ -177,58 +196,71 @@ class TaskMemoryState:
 
     def reload_final_observations(self) -> list[str]:
         linked = {
-            ref
+            block_id
             for block in self.synthesis.values()
-            for ref in block.observation_refs
+            for block_id in block.observation_block_ids
         }
         reloaded: list[str] = []
-        for ref in linked:
-            item = self.retained.get(ref)
+        for block_id in linked:
+            item = self.retained.get(block_id)
             if item is None or item.load_state == "loaded":
                 continue
-            self.retained[ref] = RetainedObservation(
-                ref=ref,
+            self.retained[block_id] = RetainedObservation(
+                observation_block_id=block_id,
                 note=item.note,
                 reason=item.reason,
                 load_state="loaded",
             )
-            reloaded.append(ref)
+            reloaded.append(block_id)
         return sorted(reloaded)
 
     def downgrade_largest_loaded(self, observations: ObservationService) -> str | None:
         candidates: list[tuple[int, str]] = []
-        for ref, retained in self.retained.items():
+        for block_id, retained in self.retained.items():
             if retained.load_state != "loaded":
                 continue
-            block = observations.block_store.get_by_ref(ref)
+            block = observations.block_store.get(block_id)
             if block is None:
                 continue
             size = len(json.dumps(block.content, ensure_ascii=False, default=str))
-            candidates.append((size, ref))
+            candidates.append((size, block_id))
         if not candidates:
             return None
-        _, ref = max(candidates)
-        item = self.retained[ref]
-        self.retained[ref] = RetainedObservation(
-            ref=ref,
+        _, block_id = max(candidates)
+        item = self.retained[block_id]
+        self.retained[block_id] = RetainedObservation(
+            observation_block_id=block_id,
             note=item.note,
             reason=item.reason,
             load_state="index_only",
         )
-        return ref
+        return observations.aliases.alias_for(block_id)
 
     def audit(self) -> JsonDict:
         return {
             "working_synthesis": [item.agent_view() for item in self.synthesis.values()],
             "research_agenda": [item.agent_view() for item in self.agenda.values()],
-            "retained_observations": [item.index_view() for item in self.retained.values()],
+            "retained_observations": [
+                {
+                    "observation_block_id": item.observation_block_id,
+                    "note": item.note,
+                    "reason": item.reason,
+                    "load_state": item.load_state,
+                }
+                for item in self.retained.values()
+            ],
             "plan": list(self.plan),
             "recent_reasoning_summary": [
                 item.agent_view() for item in self.recent_reasoning[-2:]
             ],
         }
 
-    def _apply_synthesis_updates(self, raw_updates: Any) -> list[str]:
+    def _apply_synthesis_updates(
+        self,
+        raw_updates: Any,
+        *,
+        observations: ObservationService,
+    ) -> list[str]:
         warnings: list[str] = []
         for update in _updates(raw_updates):
             operation, first_id, _, content = _parse_update(update)
@@ -241,7 +273,7 @@ class TaskMemoryState:
                 self.synthesis[block_id] = SynthesisBlock(
                     block_id=block_id,
                     content=content,
-                    observation_refs=_observation_refs(content),
+                    observation_block_ids=_observation_block_ids(content, observations),
                 )
             elif operation == "REVISE":
                 block_id = first_id or ""
@@ -251,7 +283,7 @@ class TaskMemoryState:
                 self.synthesis[block_id] = SynthesisBlock(
                     block_id=block_id,
                     content=content,
-                    observation_refs=_observation_refs(content),
+                    observation_block_ids=_observation_block_ids(content, observations),
                 )
             elif operation == "DROP":
                 block_id = first_id or ""
@@ -333,16 +365,17 @@ class TaskMemoryState:
             if not isinstance(raw, dict):
                 warnings.append("忽略了非对象 retain_observations item。")
                 continue
-            ref = str(raw.get("ref") or "").strip()
+            alias = str(raw.get("alias") or "").strip()
             note = str(raw.get("note") or "").strip()
             reason = str(raw.get("reason") or "").strip()
-            if observations.block_store.get_by_ref(ref) is None:
-                warnings.append(f"拒绝无效 observation ref：{ref or '<empty>'}。")
+            block_id = observations.aliases.resolve(alias)
+            if block_id is None or observations.block_store.get(block_id) is None:
+                warnings.append(f"忽略无效 observation alias：{alias or '<empty>'}。")
                 continue
             if not note or not reason:
-                warnings.append(f"Observation {ref} 缺少 note 或 reason，已按软校验保留。")
-            self.retained[ref] = RetainedObservation(
-                ref=ref,
+                warnings.append(f"Observation {alias} 缺少 note 或 reason，已按软校验保留。")
+            self.retained[block_id] = RetainedObservation(
+                observation_block_id=block_id,
                 note=note,
                 reason=reason,
                 load_state="loaded",
@@ -386,8 +419,17 @@ def _strings(value: Any) -> list[str]:
     return [str(item).strip() for item in value if str(item).strip()]
 
 
-def _observation_refs(value: str) -> tuple[str, ...]:
-    return tuple(dict.fromkeys(_OBSERVATION_REF_RE.findall(value)))
+def _observation_block_ids(
+    value: str,
+    observations: ObservationService,
+) -> tuple[str, ...]:
+    return tuple(
+        dict.fromkeys(
+            block_id
+            for alias in _CITATION_ALIAS_RE.findall(value)
+            if (block_id := observations.aliases.resolve(alias)) is not None
+        )
+    )
 
 
 __all__ = [

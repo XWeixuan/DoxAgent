@@ -14,7 +14,6 @@ from doxagent.models import (
     BlackboardPatch,
     BlackboardTarget,
     DocumentType,
-    EvidenceRef,
     ExpectationShell,
     ExpectationShellConstructionResult,
     ExpectationUnitDocument,
@@ -52,7 +51,6 @@ def document2_revision_from_resolution_plan(
         after=plan.revised_candidate,
         source="resolution_plan",
         rationale=plan.rationale,
-        evidence_refs=_plan_evidence_refs(plan),
         changed_paths=_plan_changed_paths(plan),
         review_finding_ids=list(plan.target_finding_ids),
     )
@@ -74,7 +72,6 @@ def document2_revision_from_field_repair_result(
             after=result.revised_candidate,
             source="resolution_plan",
             rationale=result.rationale,
-            evidence_refs=_field_repair_evidence_refs(result),
             changed_paths=_field_repair_changed_paths(result),
             review_finding_ids=list(result.target_finding_ids),
         )
@@ -92,7 +89,6 @@ def document2_revision_from_field_repair_result(
         after=after,
         source="resolution_plan",
         rationale=result.rationale,
-        evidence_refs=_field_repair_evidence_refs(result),
         changed_paths=_field_repair_changed_paths(result) or [f"document.{changed_path}"],
         review_finding_ids=list(result.target_finding_ids),
     )
@@ -115,7 +111,6 @@ def legacy_patch_from_document2_revision(
         before=revision.before.model_dump(mode="json") if revision.before is not None else None,
         after=revision.after.model_dump(mode="json"),
         rationale=revision.rationale,
-        evidence_refs=list(revision.evidence_refs),
         author_agent=AgentName.SYSTEM,
         validation_status=ValidationStatus.VALID,
     )
@@ -216,8 +211,6 @@ def validate_construction_resolution_transaction(
             mode="json"
         ):
             field_changes.append("market_view")
-        if current.evidence_refs != previous.evidence_refs:
-            field_changes.append("evidence_refs")
         if current.unknowns != previous.unknowns:
             field_changes.append("unknowns")
         if current.rationale != previous.rationale:
@@ -280,10 +273,10 @@ def validate_resolution_plan_for_transaction(plan: Document2ResolutionPlan) -> l
     for decision in plan.decisions:
         if decision.decision == "deferred":
             continue
-        if not decision.changed_paths and not decision.evidence_refs:
+        if not decision.changed_paths:
             notes.append(
-                "Document2 transaction accepted a decision without changed_paths or "
-                "evidence_refs; blocker closure still depends on transaction "
+                "Document2 transaction accepted a decision without changed_paths; "
+                "blocker closure still depends on transaction "
                 "application and deterministic revalidation."
             )
     return notes
@@ -296,10 +289,10 @@ def validate_field_repair_result_for_transaction(
     for decision in result.decisions:
         if decision.decision == "deferred":
             continue
-        if not decision.changed_paths and not decision.evidence_refs:
+        if not decision.changed_paths:
             notes.append(
-                "Document2 field repair accepted a decision without changed_paths or "
-                "evidence_refs; blocker closure still depends on transaction "
+                "Document2 field repair accepted a decision without changed_paths; "
+                "blocker closure still depends on transaction "
                 "application and deterministic revalidation."
             )
     return notes
@@ -369,42 +362,12 @@ def _field_repair_update_payload(result: Document2FieldRepairResult) -> Any:
     raise ValueError("Document2 field repair result has no typed update.")
 
 
-def _field_repair_evidence_refs(result: Document2FieldRepairResult) -> list[EvidenceRef]:
-    refs: dict[str, EvidenceRef] = {}
-    for decision in result.decisions:
-        for ref in decision.evidence_refs:
-            refs.setdefault(ref.evidence_id, ref)
-    if result.market_view is not None:
-        for ref in result.market_view.evidence_refs:
-            refs.setdefault(ref.evidence_id, ref)
-    if result.realized_facts is not None:
-        for fact in result.realized_facts:
-            for ref in [*fact.evidence_refs, *fact.price_reaction.evidence_refs]:
-                refs.setdefault(ref.evidence_id, ref)
-    if result.key_variables is not None:
-        for variable in result.key_variables:
-            for ref in variable.evidence_refs:
-                refs.setdefault(ref.evidence_id, ref)
-    if result.revised_candidate is not None:
-        for ref in result.revised_candidate.market_view.evidence_refs:
-            refs.setdefault(ref.evidence_id, ref)
-    return list(refs.values())
-
-
 def _field_repair_changed_paths(result: Document2FieldRepairResult) -> list[str]:
     paths: dict[str, None] = {}
     for decision in result.decisions:
         for path in decision.changed_paths:
             paths.setdefault(path, None)
     return list(paths)
-
-
-def _plan_evidence_refs(plan: Document2ResolutionPlan) -> list[EvidenceRef]:
-    refs: dict[str, EvidenceRef] = {}
-    for decision in plan.decisions:
-        for ref in decision.evidence_refs:
-            refs.setdefault(ref.evidence_id, ref)
-    return list(refs.values())
 
 
 def _plan_changed_paths(plan: Document2ResolutionPlan) -> list[str]:

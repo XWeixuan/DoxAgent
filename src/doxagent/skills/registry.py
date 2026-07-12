@@ -172,7 +172,6 @@ def _operator_audit_skills(
             ),
             output_requirements=[
                 "ExpectationConstructionResult",
-                "evidence_refs",
                 "delegations",
                 "unknowns",
             ],

@@ -27,8 +27,6 @@ from doxagent.adapters.financial_services.specs import (
 from doxagent.models import (
     AgentName,
     AgentResult,
-    EvidenceRef,
-    EvidenceSourceType,
     ResultStatus,
     new_id,
 )
@@ -110,7 +108,6 @@ class IndustryResearchAgentModule:
                 "markdown_summary": structured.markdown_summary,
                 "metadata": request.metadata,
             },
-            evidence_refs=_evidence_refs(data.source_refs, self._team.name, agent_outputs),
         )
 
 
@@ -407,60 +404,6 @@ def _average_confidence(outputs: list[FinancialServicesAgentOutput]) -> float:
     if not outputs:
         return 0.0
     return sum(output.confidence for output in outputs) / len(outputs)
-
-
-def _evidence_refs(
-    source_refs: list[SourceRef],
-    source_preset: str,
-    outputs: list[FinancialServicesAgentOutput],
-) -> list[EvidenceRef]:
-    source_evidence = [
-        EvidenceRef(
-            evidence_id=new_id("evidence"),
-            source_type=_evidence_source_type(source.source_type),
-            source_id=f"financial_services:{source.source_id}",
-            title=source.title,
-            summary=f"{source.title} ({source.citation_scope}).",
-            retrieval_metadata={
-                **source.retrieval_metadata,
-                "adapter": "financial_services",
-                "source_project": "anthropics/financial-services",
-                "source_preset": source_preset,
-            },
-            confidence=source.confidence,
-            citation_scope=source.citation_scope,
-        )
-        for source in source_refs
-    ]
-    output_evidence = [
-        EvidenceRef(
-            evidence_id=new_id("evidence"),
-            source_type=EvidenceSourceType.AGENT_OUTPUT,
-            source_id=f"financial_services:{source_preset}:{output.task_id}",
-            title=f"{output.role} output",
-            summary=output.markdown,
-            retrieval_metadata={
-                "adapter": "financial_services",
-                "source_project": "anthropics/financial-services",
-                "source_preset": source_preset,
-                "agent_id": output.agent_id,
-                "task_id": output.task_id,
-                "skill_name": output.skill_name,
-                "skill_versions": output.skill_versions,
-                "mock_fixture": True,
-            },
-            confidence=output.confidence,
-            citation_scope="phase8_financial_services_agent_output",
-        )
-        for output in outputs
-    ]
-    return source_evidence + output_evidence
-
-
-def _evidence_source_type(source_type: str) -> EvidenceSourceType:
-    if source_type == "market_data":
-        return EvidenceSourceType.MARKET_DATA
-    return EvidenceSourceType.EXTERNAL_REPORT
 
 
 def _markdown_summary(request: IndustryResearchRequest, note: dict[str, Any]) -> str:

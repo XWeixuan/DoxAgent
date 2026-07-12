@@ -66,7 +66,7 @@ rubrics:
     judge_must_check:
       - 每个 expectation 的 realized_facts 数量和具体性。
       - price_reaction.price_change、price_pattern、interpretation 的质量。
-      - fact 和 price reaction 是否都有 evidence refs。
+      - fact 和 price reaction 的事实是否能在工具轨迹中复核。
       - 是否避免把未验证叙事事实当成已兑现事实。
     score_1: >
       facts 缺失、空数组、泛化、无来源或 materially wrong。
@@ -104,7 +104,7 @@ rubrics:
     evaluates: >
       每个预期是否被拆成可以后续观察和更新的关键变量。
     judge_must_check:
-      - key_variables 的 name、current_status、certainty、why_it_matters 和 evidence_refs。
+      - key_variables 的 name、current_status、certainty 和 why_it_matters。
       - variables 是否对应 expectation 的因果链。
       - variables 是否能驱动后续 MonitoringConfig 和 policy rules。
       - 数据不足时是否明确 unknowns。
@@ -140,14 +140,14 @@ rubrics:
       事件监控方向完整、可路由、可行动，并自然支撑后置监控文档。
 
   - id: D2-R07
-    name: Evidence discipline 与 source traceability
+    name: Observation citation 与 source traceability
     evaluates: >
-      关键 claim 是否由合适粒度的 source refs 支撑，并能追溯到真实工具调用。
+      关键 claim 的 citation 是否能回到 Observation Block 和真实工具调用。
     judge_must_check:
-      - facts、price reactions、market_view、variables 和 objections 的 hydrated evidence_refs。
-      - source_id、source_type、title、summary、confidence、citation_scope。
-      - LangSmith tool calls 是否产生或支撑这些 evidence refs。
-      - 是否存在 fabricated、stale、mismatched 或 narrative-only 过度支撑。
+      - citation alias 是否解析到当前 task 的 Observation Block。
+      - Observation locator 是否能回到完整 Raw ToolResult。
+      - citation resolution、时间标注覆盖和无效标签指标。
+      - 是否存在 fabricated、stale、mismatched 或过度支撑。
     score_1: >
       evidence 缺失、虚构或与 claim 不相关。
     score_2: >
@@ -302,4 +302,3 @@ rubrics:
       问题分类清楚，修改计划具体且可复测。
     score_5: >
       eval 输出可直接支持 baseline、commit、modify、retest、compare、accept/reject 循环。
-

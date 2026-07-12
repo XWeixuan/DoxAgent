@@ -71,7 +71,6 @@ def tool_result_to_summary(result: ToolResult) -> ToolCallSummary:
         status=result.status,
         input_summary="runtime tool request",
         output_summary=result.output_summary,
-        evidence_refs=result.evidence_refs,
     )
 
 

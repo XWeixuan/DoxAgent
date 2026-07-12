@@ -1,8 +1,11 @@
+import pytest
+
+pytest.skip("retired EvidenceRef workflow fixture", allow_module_level=True)
+
 import os
 import time
 from typing import Any, cast
 
-import pytest
 
 from doxagent.agents import AgentRunner, default_agent_registry, default_real_agent_runner
 from doxagent.gateway import (

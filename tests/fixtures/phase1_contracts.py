@@ -11,8 +11,6 @@ from doxagent.models import (
     DelegationStatus,
     DocumentType,
     EventMonitoringDirection,
-    EvidenceRef,
-    EvidenceSourceType,
     ExpectationDirection,
     GlobalResearchDocument,
     KnownEvent,
@@ -42,19 +40,17 @@ NOW = datetime(2026, 5, 29, 4, 0, tzinfo=UTC)
 TICKER = "NVDA"
 
 
-def evidence_ref(
-    source_type: EvidenceSourceType = EvidenceSourceType.DOXATLAS_SOURCE,
-) -> EvidenceRef:
-    return EvidenceRef(
-        evidence_id=new_id("evidence"),
-        source_type=source_type,
-        source_id="source-001",
-        title="DoxAtlas narrative source",
-        summary="Market narratives mention AI server demand.",
-        retrieval_metadata={"retrieved_by": "fixture"},
-        confidence=0.9,
-        citation_scope="market_view",
-    )
+def evidence_ref(source_type: object | None = None) -> dict[str, object]:
+    """Legacy fixture shim representing tool-owned source coordinates.
+
+    It deliberately is not a workflow model and must never be attached to a
+    patch, result, or document contract.
+    """
+    return {
+        "provider": str(source_type or "doxatlas"),
+        "source_id": "source-001",
+        "locator": "narrative/source-001",
+    }
 
 
 def target() -> BlackboardTarget:
@@ -74,7 +70,6 @@ def patch() -> BlackboardPatch:
         before={"summary": "old view"},
         after={"summary": "AI demand remains central"},
         rationale="A supported narrative update is required.",
-        evidence_refs=[evidence_ref()],
         author_agent=AgentName.O1_EXPECTATION_OWNER,
         validation_status=ValidationStatus.PENDING,
     )
@@ -87,7 +82,6 @@ def objection(status: ObjectionStatus = ObjectionStatus.OPEN) -> Objection:
         target=target(),
         severity=ObjectionSeverity.BLOCKING,
         reason="The source id does not yet support the market-view wording.",
-        evidence_refs=[evidence_ref()],
         status=status,
         resolution_note="Resolved by replacing the unsupported wording."
         if status is ObjectionStatus.RESOLVED
@@ -101,7 +95,6 @@ def delegation(status: DelegationStatus = DelegationStatus.OPEN) -> Delegation:
         requester_agent=AgentName.O1_EXPECTATION_OWNER,
         target_agent=AgentName.A2_FACT_CHECK,
         question="Confirm whether the reported shipment timing is accurate.",
-        required_evidence=[EvidenceSourceType.FACT_CHECK],
         blocking_scope=target(),
         status=status,
         result_summary="Fact check confirmed timing."
@@ -141,7 +134,6 @@ def agent_result(status: ResultStatus = ResultStatus.SUCCEEDED) -> AgentResult:
         status=status,
         payload={"summary": "AI demand remains central"},
         proposed_patches=[patch()],
-        evidence_refs=[evidence_ref()],
         objections=[objection()],
         delegations=[delegation()],
         tool_calls=[
@@ -150,7 +142,6 @@ def agent_result(status: ResultStatus = ResultStatus.SUCCEEDED) -> AgentResult:
                 status=ResultStatus.SUCCEEDED,
                 input_summary="ticker narratives",
                 output_summary="AI demand narrative cluster",
-                evidence_refs=[evidence_ref()],
             ),
         ],
     )
@@ -160,7 +151,6 @@ def research_section(author: AgentName = AgentName.C1_FUNDAMENTAL_RESEARCH) -> R
     return ResearchSection(
         text="Detailed research section text.",
         summary="Research section summary.",
-        evidence_refs=[evidence_ref(EvidenceSourceType.EXTERNAL_REPORT)],
         author_agent=author,
         reviewer_agents=[AgentName.O1_EXPECTATION_OWNER],
     )
@@ -197,9 +187,7 @@ def expectation_document() -> dict[str, object]:
                     price_change="+8%",
                     price_pattern="gap up",
                     interpretation="Market priced stronger demand.",
-                    evidence_refs=[evidence_ref(EvidenceSourceType.MARKET_DATA)],
                 ),
-                evidence_refs=[evidence_ref()],
             ),
         ],
         "realized_facts_summary": "Market has priced part of the demand upside.",
@@ -209,7 +197,6 @@ def expectation_document() -> dict[str, object]:
                 name="Data center backlog",
                 current_status="Elevated",
                 certainty="medium",
-                evidence_refs=[evidence_ref()],
             ),
         ],
         "event_monitoring_direction": EventMonitoringDirection(
@@ -232,7 +219,7 @@ def known_events_document() -> KnownEventsDocument:
                 core_fact="Prior earnings release",
                 description="Prior earnings release",
                 duplicate_detection_keys=["NVDA", "earnings", "prior release"],
-                source=evidence_ref(),
+                source_note="source-001",
                 expectation_id="exp_ai_demand",
                 discussed_by_market=True,
                 has_price_reaction=True,

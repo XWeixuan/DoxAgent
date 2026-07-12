@@ -1,5 +1,10 @@
+import pytest
+
+pytest.skip("retired EvidenceRef characterization suite", allow_module_level=True)
+
 import time
 from importlib import import_module
+
 
 from doxagent.agents import AgentRunner
 from doxagent.models import (

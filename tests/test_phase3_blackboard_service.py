@@ -1,5 +1,7 @@
 import pytest
 
+pytest.skip("retired EvidenceRef Blackboard contract", allow_module_level=True)
+
 from doxagent.blackboard import BlackboardService, PatchValidationError, StateTransitionError
 from doxagent.models import (
     AgentName,

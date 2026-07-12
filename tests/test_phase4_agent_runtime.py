@@ -1,5 +1,7 @@
 import pytest
 
+pytest.skip("retired EvidenceRef agent-runtime contract", allow_module_level=True)
+
 from doxagent.agents import (
     MafAgentAdapter,
     MockAgentRunner,

@@ -10,7 +10,6 @@ from doxagent.workflows.document2.contracts import (
     Document2ReviewFinding,
     Document2Revision,
     Document2TransactionAudit,
-    EvidenceAssessment,
     ExpectationUnitCandidate,
 )
 from doxagent.workflows.document2.deterministic_findings import (
@@ -63,7 +62,6 @@ __all__ = [
     "Document2Revision",
     "Document2ReviewFinding",
     "Document2TransactionAudit",
-    "EvidenceAssessment",
     "ExpectationUnitCandidate",
     "DOCUMENT2_REVIEW_FINDINGS_KEY",
     "DOCUMENT2_PROMOTION_AUDITS_KEY",

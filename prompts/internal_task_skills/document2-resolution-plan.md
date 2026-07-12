@@ -31,7 +31,6 @@ Return one JSON final_payload shaped as:
       "decision": "resolved | accepted | partially_accepted | rejected | deferred",
       "resolution_note": "简短说明该 blocker 如何处理",
       "changed_paths": ["document.<field_path> touched or confirmed"],
-      "evidence_refs": []
     }
   ],
   "target_finding_ids": [],
@@ -67,7 +66,6 @@ When included, `revised_candidate` must be one complete `ExpectationUnitDocument
   "market_view": {
     "text": "complete market view",
     "summary": "short summary",
-    "evidence_refs": [],
     "author_agent": "O1",
     "reviewer_agents": []
   },
@@ -76,12 +74,10 @@ When included, `revised_candidate` must be one complete `ExpectationUnitDocument
     {
       "event_id": "event_<id>",
       "description": "完整已发生事实",
-      "evidence_refs": [],
       "price_reaction": {
         "price_change": "具体或证据不足说明",
         "price_pattern": "具体走势模式或 unknown_due_to_missing_market_data",
         "interpretation": "价格反应解释",
-        "evidence_refs": []
       }
     }
   ],
@@ -93,7 +89,6 @@ When included, `revised_candidate` must be one complete `ExpectationUnitDocument
       "name": "变量名",
       "current_status": "当前状态",
       "certainty": "普通短文本，说明确定性或证据缺口",
-      "evidence_refs": []
     }
   ],
   "event_monitoring_direction": {
@@ -121,8 +116,6 @@ Do not return:
 ## Decision rules
 
 1. Use `deferred` if the blocker cannot be resolved from the provided context.
-2. Use `rejected` only when the objection is clearly wrong and you have evidence_refs or changed_paths proving that.
 3. Use `resolved` when no document change is needed but evidence or changed_paths can close the blocker.
 4. Use `accepted` or `partially_accepted` when document content must change.
-5. Every non-deferred decision must include at least one `changed_paths` item or at least one `evidence_refs` item.
 6. O1's decision is advisory. Do not say the objection is closed by O1.

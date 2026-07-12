@@ -123,27 +123,6 @@ gates:
       - Working Memory expectation_detail_result
       - Brief State pending patch 摘要
 
-  - id: D2-HG05
-    title: Evidence refs 必须存在且可追踪
-    applies_to:
-      - detail_only
-      - field_review
-      - resolve
-      - promote
-    check_goal: >
-      确认预期单元中的关键主张有 source 对象支持，而不是只有裸文本或 narrative-level 泛化引用。
-    failure_conditions:
-      - market_view 没有 evidence_refs。
-      - realized fact 没有 evidence_refs。
-      - price_reaction 没有 evidence_refs。
-      - key variable 没有 evidence_refs。
-      - evidence_refs 缺少 source_id、source_type、title、summary、confidence 或 citation_scope。
-      - final payload 引用的 source 或 tool 在 LangSmith 和 Working Memory 中找不到。
-    evidence_required:
-      - pending patches 或 stable expectation_unit evidence_refs
-      - Brief State hydrated evidence_refs
-      - LangSmith tool calls 和 AgentResult tool summaries
-
   - id: D2-HG06
     title: Price-in 推理必须显式
     applies_to:

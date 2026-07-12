@@ -5,7 +5,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from doxagent.models import EvidenceSourceType
 from doxagent.tools.providers.base import (
     BaseRealToolClient,
     BoundToolClient,
@@ -26,8 +25,8 @@ _CONTENT_MODES = frozenset({"preview", "full", "none"})
 @dataclass(frozen=True)
 class EndpointSpec:
     endpoint: str
-    evidence_source_type: EvidenceSourceType
-    citation_scope: str
+    source_kind: str
+    source_scope: str
     title: str
     summary: str
     allowed_fields: frozenset[str]
@@ -44,7 +43,7 @@ class EndpointSpec:
 DOXATLAS_TOOL_SPECS: dict[str, EndpointSpec] = {
     "doxa_run_narrative_research": EndpointSpec(
         "run-narrative-research",
-        EvidenceSourceType.DOXATLAS_SOURCE,
+        "doxatlas_source",
         "doxatlas_run",
         "DoxAtlas Narrative Research 运行",
         "已请求 DoxAtlas Narrative Research 运行。",
@@ -55,7 +54,7 @@ DOXATLAS_TOOL_SPECS: dict[str, EndpointSpec] = {
     ),
     "doxa_run_analysis": EndpointSpec(
         "run-analysis",
-        EvidenceSourceType.DOXATLAS_SOURCE,
+        "doxatlas_source",
         "doxatlas_run",
         "DoxAtlas 单标的分析任务",
         "已请求 DoxAtlas 单标的分析任务。",
@@ -66,7 +65,7 @@ DOXATLAS_TOOL_SPECS: dict[str, EndpointSpec] = {
     ),
     "doxa_get_narrative_report": EndpointSpec(
         "get-narrative-report",
-        EvidenceSourceType.DOXATLAS_SOURCE,
+        "doxatlas_source",
         "doxatlas_narrative_report",
         "DoxAtlas 叙事报告",
         "已检索 DoxAtlas 叙事报告。",
@@ -77,7 +76,7 @@ DOXATLAS_TOOL_SPECS: dict[str, EndpointSpec] = {
     ),
     "doxa_query_analysis": EndpointSpec(
         "query-analysis",
-        EvidenceSourceType.DOXATLAS_SOURCE,
+        "doxatlas_source",
         "doxatlas_analysis_tasks",
         "DoxAtlas analysis task 列表",
         "已检索 DoxAtlas analysis task 短代码列表。",
@@ -88,7 +87,7 @@ DOXATLAS_TOOL_SPECS: dict[str, EndpointSpec] = {
     ),
     "doxa_get_analysis": EndpointSpec(
         "get-analysis",
-        EvidenceSourceType.DOXATLAS_SOURCE,
+        "doxatlas_source",
         "doxatlas_analysis",
         "DoxAtlas 单标的分析",
         "已检索 DoxAtlas 单标的分析。",
@@ -99,7 +98,7 @@ DOXATLAS_TOOL_SPECS: dict[str, EndpointSpec] = {
     ),
     "doxa_query_propositions": EndpointSpec(
         "query-propositions",
-        EvidenceSourceType.DOXATLAS_SOURCE,
+        "doxatlas_source",
         "doxatlas_propositions",
         "DoxAtlas propositions",
         "已检索 DoxAtlas propositions。",
@@ -109,7 +108,7 @@ DOXATLAS_TOOL_SPECS: dict[str, EndpointSpec] = {
     ),
     "doxa_get_ignored_propositions": EndpointSpec(
         "get-ignored-propositions",
-        EvidenceSourceType.DOXATLAS_SOURCE,
+        "doxatlas_source",
         "doxatlas_ignored_propositions",
         "DoxAtlas ignored propositions",
         "已检索 DoxAtlas ignored propositions。",
@@ -118,7 +117,7 @@ DOXATLAS_TOOL_SPECS: dict[str, EndpointSpec] = {
     ),
     "doxa_get_social_result": EndpointSpec(
         "get-social-result",
-        EvidenceSourceType.DOXATLAS_SOURCE,
+        "doxatlas_source",
         "doxatlas_social_result",
         "DoxAtlas social result",
         "已检索 DoxAtlas social result。",
@@ -128,7 +127,7 @@ DOXATLAS_TOOL_SPECS: dict[str, EndpointSpec] = {
     ),
     "doxa_get_social_result_detail": EndpointSpec(
         "get-social-result-detail",
-        EvidenceSourceType.DOXATLAS_SOURCE,
+        "doxatlas_source",
         "doxatlas_social_result_detail",
         "DoxAtlas social result detail",
         "已检索 DoxAtlas social result detail。",
@@ -139,7 +138,7 @@ DOXATLAS_TOOL_SPECS: dict[str, EndpointSpec] = {
     ),
     "doxa_get_media_result": EndpointSpec(
         "get-media-result",
-        EvidenceSourceType.DOXATLAS_SOURCE,
+        "doxatlas_source",
         "doxatlas_media_result",
         "DoxAtlas media result",
         "已检索 DoxAtlas media result。",
@@ -149,7 +148,7 @@ DOXATLAS_TOOL_SPECS: dict[str, EndpointSpec] = {
     ),
     "doxa_get_media_result_detail": EndpointSpec(
         "get-media-result-detail",
-        EvidenceSourceType.DOXATLAS_SOURCE,
+        "doxatlas_source",
         "doxatlas_media_result_detail",
         "DoxAtlas media result detail",
         "已检索 DoxAtlas media result detail。",
@@ -160,7 +159,7 @@ DOXATLAS_TOOL_SPECS: dict[str, EndpointSpec] = {
     ),
     "doxa_get_event_source": EndpointSpec(
         "get-event-source",
-        EvidenceSourceType.DOXATLAS_SOURCE,
+        "doxatlas_source",
         "doxatlas_event_source",
         "DoxAtlas event source",
         "已检索 DoxAtlas event source。",
@@ -286,11 +285,11 @@ class DoxAtlasToolClient(BaseRealToolClient):
                 request,
                 output={"provider": "doxatlas", "data": raw},
                 raw=raw,
-                source_type=spec.evidence_source_type,
+                source_kind=spec.source_kind,
                 source_id=f"doxatlas:{spec.endpoint}:{request.ticker}",
                 title=spec.title,
                 summary=spec.summary,
-                citation_scope=spec.citation_scope,
+                source_scope=spec.source_scope,
                 confidence=0.8,
                 metadata={
                     "endpoint": spec.endpoint,

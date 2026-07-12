@@ -21,7 +21,6 @@ class CommitAuditRecord(AuditModel):
     document_type: DocumentType
     object_id: str
     field_path: str
-    evidence_ids: list[str] = Field(default_factory=list)
     resolved_objection_ids: list[str] = Field(default_factory=list)
     residual_disputes: list[str] = Field(default_factory=list)
     created_at: datetime
@@ -35,7 +34,6 @@ class FieldTrace(AuditModel):
     commit_id: str
     patch_id: str
     author_agent: AgentName
-    evidence_ids: list[str] = Field(default_factory=list)
     trigger_reason: str
 
 
@@ -51,10 +49,8 @@ class ObjectionAuditRecord(AuditModel):
     target_path: str | None = None
     merged_objection_ids: list[str] = Field(default_factory=list)
     reason: str
-    evidence_ids: list[str] = Field(default_factory=list)
     resolution_note: str | None = None
     resolution_changed_paths: list[str] = Field(default_factory=list)
-    resolution_evidence_ids: list[str] = Field(default_factory=list)
 
 
 class DelegationAuditRecord(AuditModel):

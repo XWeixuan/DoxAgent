@@ -1,5 +1,7 @@
 """Task-local ReAct memory architecture."""
 
+from doxagent.agents.runtime.memory.aliases import ObservationAliasRegistry
+from doxagent.agents.runtime.memory.archive import InMemoryObservationArchive, ObservationArchive
 from doxagent.agents.runtime.memory.context import (
     ActiveContextAssembler,
     ContextBudgetConfig,
@@ -36,6 +38,9 @@ __all__ = [
     "AgendaItem",
     "ContextBudgetConfig",
     "ObservationBlock",
+    "ObservationAliasRegistry",
+    "InMemoryObservationArchive",
+    "ObservationArchive",
     "ObservationBlockStore",
     "ObservationCallIndex",
     "ObservationParser",

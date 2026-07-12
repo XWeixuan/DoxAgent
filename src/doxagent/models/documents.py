@@ -6,7 +6,6 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from doxagent.models.blackboard import EvidenceRef
 from doxagent.models.common import AgentName, DocumentType, ExpectationDirection, PolicyActionType
 from doxagent.models.ids import NonEmptyStr
 
@@ -20,7 +19,6 @@ class ContractModel(BaseModel):
 class ResearchSection(ContractModel):
     text: NonEmptyStr
     summary: NonEmptyStr
-    evidence_refs: list[EvidenceRef] = Field(default_factory=list)
     author_agent: AgentName
     reviewer_agents: list[AgentName] = Field(default_factory=list)
 
@@ -46,14 +44,12 @@ class PriceReaction(ContractModel):
     price_change: NonEmptyStr
     price_pattern: NonEmptyStr
     interpretation: NonEmptyStr
-    evidence_refs: list[EvidenceRef] = Field(default_factory=list)
 
 
 class RealizedFact(ContractModel):
     event_id: NonEmptyStr
     description: NonEmptyStr
     price_reaction: PriceReaction
-    evidence_refs: list[EvidenceRef] = Field(default_factory=list)
 
 
 class VariableStatus(ContractModel):
@@ -61,7 +57,6 @@ class VariableStatus(ContractModel):
     name: NonEmptyStr
     current_status: NonEmptyStr
     certainty: NonEmptyStr
-    evidence_refs: list[EvidenceRef] = Field(default_factory=list)
 
 
 class EventMonitoringDirection(ContractModel):
@@ -123,7 +118,7 @@ class KnownEvent(ContractModel):
     core_fact: NonEmptyStr
     description: NonEmptyStr
     duplicate_detection_keys: list[NonEmptyStr]
-    source: EvidenceRef
+    source_note: NonEmptyStr | None = None
     expectation_id: NonEmptyStr | None = None
     discussed_by_market: bool
     has_price_reaction: bool

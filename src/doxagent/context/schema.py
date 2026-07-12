@@ -8,7 +8,6 @@ from doxagent.models import (
     AgentName,
     DelegationStatus,
     DocumentType,
-    EvidenceRef,
     ObjectionSeverity,
     ObjectionStatus,
     TaskType,
@@ -26,7 +25,6 @@ class WorkingMemorySummary(ContextModel):
     author_agent: AgentName
     content_type: str
     payload: dict[str, Any] = Field(default_factory=dict)
-    evidence_refs: list[EvidenceRef] = Field(default_factory=list)
 
 
 class ObjectionSummary(ContextModel):
@@ -41,7 +39,6 @@ class ObjectionSummary(ContextModel):
     target_path: str | None = None
     merged_objection_ids: list[str] = Field(default_factory=list)
     reason: str
-    evidence_refs: list[EvidenceRef] = Field(default_factory=list)
 
 
 class BlockingDelegationSummary(ContextModel):
@@ -66,6 +63,5 @@ class AgentContextSnapshot(ContextModel):
     skill_summaries: list[SkillSummary] = Field(default_factory=list)
     belief_state_summary: dict[str, dict[str, Any]] = Field(default_factory=dict)
     working_memory_summary: list[WorkingMemorySummary] = Field(default_factory=list)
-    evidence_refs: list[EvidenceRef] = Field(default_factory=list)
     unresolved_objections: list[ObjectionSummary] = Field(default_factory=list)
     blocking_delegations: list[BlockingDelegationSummary] = Field(default_factory=list)

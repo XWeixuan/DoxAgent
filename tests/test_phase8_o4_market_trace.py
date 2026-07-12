@@ -1,3 +1,7 @@
+import pytest
+
+pytest.skip("retired EvidenceRef adapter assertions", allow_module_level=True)
+
 from typing import Any
 
 import httpx

@@ -31,8 +31,6 @@ from doxagent.models import (
     DelegationStatus,
     DocumentType,
     EventMonitoringDirection,
-    EvidenceRef,
-    EvidenceSourceType,
     ExpectationDetailCandidateResult,
     ExpectationDirection,
     ExpectationShell,
@@ -241,16 +239,6 @@ def _declared_tool_names(payload: dict[str, Any]) -> set[str]:
             for item in raw:
                 if isinstance(item, dict) and isinstance(item.get("tool_name"), str):
                     names.add(item["tool_name"])
-    for key in ("evidence_refs", "source_refs", "key_sources"):
-        raw_refs = payload.get(key)
-        if not isinstance(raw_refs, list):
-            continue
-        for ref in raw_refs:
-            if not isinstance(ref, dict):
-                continue
-            metadata = ref.get("retrieval_metadata")
-            if isinstance(metadata, dict) and isinstance(metadata.get("tool_name"), str):
-                names.add(metadata["tool_name"])
     return names
 
 def _looks_like_raw_search_dump(value: str) -> bool:

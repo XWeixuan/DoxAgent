@@ -7,7 +7,7 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any, cast
 
-from doxagent.models import EvidenceSourceType, ResultStatus
+from doxagent.models import ResultStatus
 from doxagent.tools.market_evidence import daily_ohlcv_output_with_snapshot
 from doxagent.tools.providers.base import _input_str, _input_str_any
 from doxagent.tools.schema import ToolError, ToolRequest, ToolResult
@@ -41,12 +41,39 @@ class YFinanceHkBasicSnapshotClient:
                 "provider": "yfinance",
                 "symbol": symbol,
                 "unofficial_source": True,
+                "source_coordinates": {
+                    "source_kind": "market_data",
+                    "source_id": f"yfinance:hk_basic_snapshot:{symbol}",
+                    "symbol": symbol,
+                    "hk_only": True,
+                },
                 "market_cap": info.get("marketCap"),
                 "trailing_pe": info.get("trailingPE"),
                 "price_to_book": info.get("priceToBook"),
                 "return_on_equity": info.get("returnOnEquity"),
                 "dividend_yield": info.get("dividendYield"),
             }
+            if all(
+                output[key] is None
+                for key in (
+                    "market_cap",
+                    "trailing_pe",
+                    "price_to_book",
+                    "return_on_equity",
+                    "dividend_yield",
+                )
+            ):
+                return ToolResult(
+                    tool_name=request.tool_name,
+                    status=ResultStatus.FAILED,
+                    output_summary="yfinance returned no usable HK snapshot metrics.",
+                    error=ToolError(
+                        code="empty_result",
+                        message="yfinance returned no usable HK snapshot metrics.",
+                        retryable=True,
+                        details={"provider": "yfinance", "symbol": symbol},
+                    ),
+                )
             result = ToolResult(
                 tool_name=request.tool_name,
                 status=ResultStatus.SUCCEEDED,
@@ -54,23 +81,7 @@ class YFinanceHkBasicSnapshotClient:
                 output_summary="已从 yfinance 检索港股基础快照。",
                 raw={"info_keys": sorted(str(key) for key in info.keys())},
             )
-            evidence = result.to_evidence_ref(
-                source_type=EvidenceSourceType.MARKET_DATA,
-                source_id=f"yfinance:hk_basic_snapshot:{symbol}",
-                title=f"yfinance 港股基础快照 - {symbol}",
-                citation_scope="yfinance_hk_basic_snapshot",
-                confidence=0.45,
-            ).model_copy(
-                update={
-                    "retrieval_metadata": {
-                        "tool_name": request.tool_name,
-                        "symbol": symbol,
-                        "unofficial_source": True,
-                        "hk_only": True,
-                    }
-                }
-            )
-            return result.model_copy(update={"evidence_refs": [evidence]}, deep=True)
+            return result
         except Exception as exc:
             return ToolResult(
                 tool_name=request.tool_name,
@@ -118,11 +129,29 @@ class YFinanceDailyOhlcvClient:
                         "volume": _json_number(_row_value(row, "Volume")),
                     }
                 )
+            if not rows:
+                return ToolResult(
+                    tool_name=request.tool_name,
+                    status=ResultStatus.FAILED,
+                    output_summary="yfinance returned no OHLCV rows.",
+                    error=ToolError(
+                        code="empty_result",
+                        message="yfinance returned no OHLCV rows.",
+                        retryable=True,
+                        details={"provider": "yfinance", "symbol": symbol},
+                    ),
+                )
             output = daily_ohlcv_output_with_snapshot(
                 {
                     "provider": "yfinance",
                     "symbol": symbol,
-                    "unofficial_source": True,
+                "unofficial_source": True,
+                "source_coordinates": {
+                    "source_kind": "market_data",
+                    "source_id": f"yfinance:daily_ohlcv:{symbol}",
+                    "symbol": symbol,
+                    "fallback_for": "twelvedata.daily_ohlcv",
+                },
                     "fallback_for": "twelvedata.daily_ohlcv",
                     "interval": "1day",
                     "ohlcv": rows,
@@ -136,24 +165,7 @@ class YFinanceDailyOhlcvClient:
                 output_summary="已从 yfinance 检索日线 OHLCV 备用数据。",
                 raw={"row_count": len(rows), "unofficial_source": True},
             )
-            evidence = result.to_evidence_ref(
-                source_type=EvidenceSourceType.MARKET_DATA,
-                source_id=f"yfinance:daily_ohlcv:{symbol}",
-                title=f"yfinance 日线 OHLCV 备用数据 - {symbol}",
-                citation_scope="yfinance_daily_ohlcv",
-                confidence=0.48,
-            ).model_copy(
-                update={
-                    "retrieval_metadata": {
-                        "tool_name": request.tool_name,
-                        "symbol": symbol,
-                        "unofficial_source": True,
-                        "fallback_for": "twelvedata.daily_ohlcv",
-                        "market_evidence_snapshot": output.get("market_evidence_snapshot"),
-                    }
-                }
-            )
-            return result.model_copy(update={"evidence_refs": [evidence]}, deep=True)
+            return result
         except Exception as exc:
             return ToolResult(
                 tool_name=request.tool_name,

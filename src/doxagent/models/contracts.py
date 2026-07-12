@@ -5,7 +5,7 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from doxagent.models.blackboard import BlackboardPatch, Delegation, EvidenceRef, Objection
+from doxagent.models.blackboard import BlackboardPatch, Delegation, Objection
 from doxagent.models.common import AgentName, ResultStatus, TaskType
 from doxagent.models.ids import NonEmptyStr
 from doxagent.prompts.schema import PromptBundle
@@ -53,7 +53,6 @@ class ToolCallSummary(ContractModel):
     status: ResultStatus
     input_summary: NonEmptyStr
     output_summary: NonEmptyStr | None = None
-    evidence_refs: list[EvidenceRef] = Field(default_factory=list)
 
 
 class AgentError(ContractModel):
@@ -69,7 +68,6 @@ class AgentResult(ContractModel):
     status: ResultStatus
     payload: dict[str, Any] = Field(default_factory=dict)
     proposed_patches: list[BlackboardPatch] = Field(default_factory=list)
-    evidence_refs: list[EvidenceRef] = Field(default_factory=list)
     objections: list[Objection] = Field(default_factory=list)
     delegations: list[Delegation] = Field(default_factory=list)
     tool_calls: list[ToolCallSummary] = Field(default_factory=list)

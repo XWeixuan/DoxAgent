@@ -123,7 +123,6 @@ def _legacy_decision_records(
             decision=decision.decision,
             resolution_note=decision.resolution_note,
             changed_paths=list(decision.changed_paths),
-            evidence_refs=list(decision.evidence_refs),
         )
         for decision in legacy_decisions
     ]

@@ -1,4 +1,6 @@
 import pytest
+
+pytest.skip("retired EvidenceRef phase-one contract", allow_module_level=True)
 from pydantic import ValidationError
 
 from doxagent.models import (

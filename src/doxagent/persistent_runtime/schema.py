@@ -247,7 +247,6 @@ class A2Result(PersistentRuntimeModel):
     is_new: bool
     verification_status: A2VerificationStatus
     reasoning: str
-    evidence_refs: list[JsonObject] = Field(default_factory=list)
 
     @property
     def passed_for_runtime(self) -> bool:
@@ -328,7 +327,6 @@ class O3Result(PersistentRuntimeModel):
     blackboard_target: str | None = None
     objection_type: O3PrimaryAction | None = None
     reasoning: str
-    evidence_refs: list[JsonObject] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def _required_fields_for_action(self) -> O3Result:
@@ -467,7 +465,6 @@ class RuntimeObjectionRecord(PersistentRuntimeModel):
     objection_type: O3PrimaryAction
     blackboard_target: str
     reason: str
-    evidence_refs: list[JsonObject] = Field(default_factory=list)
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 

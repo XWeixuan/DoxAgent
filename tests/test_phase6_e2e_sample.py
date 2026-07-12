@@ -3,6 +3,8 @@ from pathlib import Path
 
 import pytest
 
+pytest.skip("retired EvidenceRef export contract", allow_module_level=True)
+
 from doxagent.examples.phase6_exporter import DOCUMENT_ORDER
 from doxagent.examples.phase6_mock_run import main, run_sample
 

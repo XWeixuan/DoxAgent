@@ -11,7 +11,7 @@ from typing import Any, cast
 
 import httpx
 
-from doxagent.models import EvidenceSourceType, ResultStatus
+from doxagent.models import ResultStatus
 from doxagent.settings import DoxAgentSettings
 from doxagent.tools.schema import ToolError, ToolRequest, ToolResult
 
@@ -148,42 +148,34 @@ class BaseRealToolClient:
         *,
         output: JsonObject,
         raw: object | None,
-        source_type: EvidenceSourceType,
+        source_kind: str,
         source_id: str,
         title: str,
         summary: str,
-        citation_scope: str,
+        source_scope: str,
         confidence: float,
         metadata: Mapping[str, object],
     ) -> ToolResult:
-        result = ToolResult(
+        enriched_output = dict(output)
+        enriched_output.setdefault(
+            "source_coordinates",
+            {
+                "source_kind": source_kind,
+                "source_id": source_id,
+                "title": title,
+                "source_scope": source_scope,
+                "confidence": confidence,
+                "tool_name": request.tool_name,
+                "provider": source_id.split(":", 1)[0],
+                **dict(metadata),
+            },
+        )
+        return ToolResult(
             tool_name=request.tool_name,
             status=ResultStatus.SUCCEEDED,
-            output=output,
+            output=enriched_output,
             output_summary=summary,
             raw=raw,
-        )
-        return result.model_copy(
-            update={
-                "evidence_refs": [
-                    result.to_evidence_ref(
-                        source_type=source_type,
-                        source_id=source_id,
-                        title=title,
-                        citation_scope=citation_scope,
-                        confidence=confidence,
-                    ).model_copy(
-                        update={
-                            "retrieval_metadata": {
-                                "tool_name": request.tool_name,
-                                "provider": source_id.split(":", 1)[0],
-                                **dict(metadata),
-                            }
-                        }
-                    )
-                ]
-            },
-            deep=True,
         )
 
     def _failure(
@@ -229,6 +221,54 @@ class BaseRealToolClient:
             message=str(exc),
             retryable=False,
             details={"provider_error": type(exc).__name__},
+        )
+
+    def _partial(
+        self,
+        request: ToolRequest,
+        *,
+        output: JsonObject,
+        raw: object | None,
+        source_kind: str,
+        source_id: str,
+        title: str,
+        summary: str,
+        source_scope: str,
+        confidence: float,
+        metadata: Mapping[str, object],
+        code: str,
+        message: str,
+        retryable: bool = False,
+        details: Mapping[str, object] | None = None,
+    ) -> ToolResult:
+        """Return usable data while preserving an incomplete-provider semantic."""
+
+        enriched_output = dict(output)
+        enriched_output.setdefault(
+            "source_coordinates",
+            {
+                "source_kind": source_kind,
+                "source_id": source_id,
+                "title": title,
+                "source_scope": source_scope,
+                "confidence": confidence,
+                "tool_name": request.tool_name,
+                "provider": source_id.split(":", 1)[0],
+                **dict(metadata),
+            },
+        )
+        return ToolResult(
+            tool_name=request.tool_name,
+            status=ResultStatus.PARTIAL,
+            output=enriched_output,
+            output_summary=summary,
+            raw=raw,
+            error=ToolError(
+                code=code,
+                message=message,
+                retryable=retryable,
+                details=dict(details or {}),
+            ),
         )
 
     def _send_with_rate_limit(

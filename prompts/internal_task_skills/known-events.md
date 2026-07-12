@@ -75,11 +75,10 @@ If a fact and its market reaction are both useful, keep the fact in `core_fact`;
 - do not use expectation_id as a main key
 - do not use broad themes such as "AI", "growth", "risk" alone
 
-`source`:
-- required for every event
-- output one complete `EvidenceRef` object, not a bare source id or citation string
-- include `evidence_id`, `source_type`, `source_id`, `title`, `summary`, `confidence`, and `citation_scope`
-- use the best available source for the event
+`source_note`:
+- optional compact human-readable source note
+- do not emit source objects or internal Observation identifiers
+- use `【cite:O#】` only in factual text when the current task exposes that alias
 
 `expectation_id`:
 - fill only when the event clearly supports, weakens, updates, or recaps that expectation
@@ -98,7 +97,7 @@ If a fact and its market reaction are both useful, keep the fact in `core_fact`;
 
 Use only provided stable context and tool results.
 
-DoxAtlas narrative ids, event ids, and narrative rankings are source clues, not Known Event facts. Do not place them in `core_fact`. Mention them only in source/rationale if needed.
+DoxAtlas narrative ids, event ids, and narrative rankings are source clues, not Known Event facts. Do not place them in `core_fact`. Mention them only in `source_note` or rationale if needed.
 
 If coverage is thin, still produce the best known-fact index and state the coverage gap in concise rationale or unknowns if the schema allows it.
 

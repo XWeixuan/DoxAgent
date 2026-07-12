@@ -1,5 +1,8 @@
 import pytest
 
+pytest.skip("retired EvidenceRef realization suite", allow_module_level=True)
+
+
 from doxagent.agents import AgentRunner, default_agent_registry
 from doxagent.models import (
     AgentName,

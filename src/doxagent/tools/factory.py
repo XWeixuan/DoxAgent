@@ -341,25 +341,25 @@ _DESCRIPTORS: dict[str, ToolDescriptor] = {
     "sec.company_facts_and_filings": _descriptor(
         "sec.company_facts_and_filings",
         description="Read SEC submissions and companyfacts for a US issuer.",
-        input_fields=["ticker", "cik"],
+        input_fields=["ticker", "cik", "include_facts"],
         business_purpose="Ground C1 fundamentals and C3 competitive review in SEC structured data.",
     ),
     "sec.filing_sections": _descriptor(
         "sec.filing_sections",
         description="Extract whitelisted sections from a SEC filing primary document.",
-        input_fields=["accession", "primary_document", "cik", "items"],
+        input_fields=["ticker", "cik", "form", "accession", "primary_document", "sections"],
         business_purpose="Support focused filing text review for fundamentals and risk factors.",
     ),
     "alpha.company_overview": _descriptor(
         "alpha.company_overview",
         description="Read Alpha Vantage company overview metrics; free-tier quota is tight.",
-        input_fields=["ticker"],
+        input_fields=["ticker", "symbol"],
         business_purpose="Fill company profile, valuation, dividend, and market-cap metrics.",
     ),
     "alpha.financial_statements": _descriptor(
         "alpha.financial_statements",
         description="Read Alpha Vantage income statement, balance sheet, and cash flow data.",
-        input_fields=["ticker", "statement_type"],
+        input_fields=["ticker", "symbol", "statement_type"],
         business_purpose=(
             "Provide structured financial statement evidence when SEC/yfinance is insufficient."
         ),
@@ -367,13 +367,13 @@ _DESCRIPTORS: dict[str, ToolDescriptor] = {
     "alpha.shares_outstanding": _descriptor(
         "alpha.shares_outstanding",
         description="Read Alpha Vantage shares outstanding time series; free-tier quota is tight.",
-        input_fields=["ticker"],
+        input_fields=["ticker", "symbol"],
         business_purpose="Support share-count and dilution checks.",
     ),
     "alpha.earnings_events": _descriptor(
         "alpha.earnings_events",
         description="Read Alpha Vantage earnings history, estimates, or calendar data.",
-        input_fields=["ticker", "event_type"],
+        input_fields=["ticker", "symbol", "event_type"],
         business_purpose="Support earnings-cycle and forecast-sensitive expectation review.",
     ),
     "twelvedata.daily_ohlcv": _descriptor(
@@ -387,7 +387,15 @@ _DESCRIPTORS: dict[str, ToolDescriptor] = {
         description=(
             "Read one or more FRED time-series observations including rates and commodities."
         ),
-        input_fields=["series_ids", "start_date", "end_date", "limit"],
+        input_fields=[
+            "series_ids",
+            "series_id",
+            "start_date",
+            "end_date",
+            "units",
+            "frequency",
+            "limit",
+        ],
         business_purpose=(
             "Ground macro, rates, credit, inflation, volatility, and commodity regimes."
         ),
@@ -395,7 +403,14 @@ _DESCRIPTORS: dict[str, ToolDescriptor] = {
     "bls.timeseries": _descriptor(
         "bls.timeseries",
         description="Read BLS v2 time-series data for CPI, PPI, labor, and wage series.",
-        input_fields=["series_ids", "start_year", "end_year"],
+        input_fields=[
+            "series_ids",
+            "start_year",
+            "end_year",
+            "calculations",
+            "annual_average",
+            "catalog",
+        ],
         business_purpose="Ground inflation, labor-market, and wage evidence.",
     ),
     "bea.nipa_data": _descriptor(
@@ -407,13 +422,13 @@ _DESCRIPTORS: dict[str, ToolDescriptor] = {
     "fed.fomc_calendar_materials": _descriptor(
         "fed.fomc_calendar_materials",
         description="Parse official Fed FOMC calendar/materials HTML or RSS pages.",
-        input_fields=["year", "material_type"],
+        input_fields=["year"],
         business_purpose="Ground policy-calendar and FOMC-material evidence.",
     ),
     "polymarket.market_probability": _descriptor(
         "polymarket.market_probability",
         description="Read public Polymarket probability data from read-only endpoints.",
-        input_fields=["query", "market_id", "slug"],
+        input_fields=["query", "market_id", "market_slug", "limit"],
         business_purpose="Estimate market-implied probabilities without trading endpoints.",
     ),
     "fmp.sector_performance": _descriptor(
@@ -427,13 +442,13 @@ _DESCRIPTORS: dict[str, ToolDescriptor] = {
     "finnhub.company_peers": _descriptor(
         "finnhub.company_peers",
         description="Read Finnhub company peer tickers.",
-        input_fields=["ticker"],
+        input_fields=["ticker", "symbol", "grouping"],
         business_purpose="Support peer universe construction for C3.",
     ),
     "finnhub.trade_stream": _descriptor(
         "finnhub.trade_stream",
         description="Capture a bounded Finnhub WebSocket trade stream sample.",
-        input_fields=["ticker", "duration_seconds", "max_events"],
+        input_fields=["ticker", "symbol", "symbols", "duration_seconds", "max_events"],
         business_purpose="Support O4 live trade-tape context with bounded capture.",
         concurrent_safe=False,
     ),
@@ -446,7 +461,7 @@ _DESCRIPTORS: dict[str, ToolDescriptor] = {
     "tavily.extract": _descriptor(
         "tavily.extract",
         description="Extract content from specific URLs using Tavily.",
-        input_fields=["urls", "extract_depth"],
+        input_fields=["urls", "extract_depth", "format"],
         business_purpose="Turn search results into cited external evidence snippets.",
     ),
     "anysearch.search": _descriptor(
@@ -467,7 +482,7 @@ _DESCRIPTORS: dict[str, ToolDescriptor] = {
     "yfinance.hk_basic_snapshot": _descriptor(
         "yfinance.hk_basic_snapshot",
         description="Read yfinance basic snapshot metrics for HK tickers only.",
-        input_fields=["ticker"],
+        input_fields=["ticker", "symbol", "market"],
         business_purpose="Provide HK ticker valuation snapshot when primary APIs are insufficient.",
     ),
     "yfinance.daily_ohlcv": _descriptor(

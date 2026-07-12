@@ -1,4 +1,4 @@
-"""Prompt assembly for model-backed agent execution."""
+"""Prompt assembly from already-compiled workflow memory."""
 
 import json
 from typing import Any
@@ -7,6 +7,7 @@ from doxagent.agents.config import AgentDefinition
 from doxagent.models import AgentTask
 from doxagent.prompts.schema import AssembledPrompt, PromptBundle
 from doxagent.tools import ToolResult
+from doxagent.workflow_memory import CompiledWorkflowInput
 
 CHINESE_OUTPUT_RULES = [
     (
@@ -24,74 +25,27 @@ CHINESE_OUTPUT_RULES = [
     ),
 ]
 
-_HIDDEN_INPUT_CONTEXT_KEYS = {
-    "ticker",
-    "agent_name",
-    "workflow_node",
-    "required_tool_names",
-    "tool_requirements",
-    "tool_request_hints",
-}
-
-_DOCUMENT1_TASK_TYPES = {
-    "generate_global_research",
-    "generate_global_narrative_report",
-}
-
-_DOCUMENT3_TASK_TYPES = {
-    "generate_known_events",
-    "generate_monitoring_config",
-    "review_monitoring_config",
-    "resolve_monitoring_config",
-    "generate_monitoring_policy",
-    "review_monitoring_policy",
-    "resolve_monitoring_policy",
-}
-
-_DOCUMENT2_TASK_TYPES = {
-    "generate_expectation_unit",
-    "generate_expectation_detail",
-    "review_expectation_field",
-    "delegated_retrieval",
-}
-
-_SAFE_EMPTY_INPUT_CONTEXT_KEYS = {
-    "completed_nodes",
-    "stable_document_types",
-    "belief_state_summary",
-    "pending_patch_ids",
-    "pending_patches",
-    "working_memory_summary",
-    "unresolved_objections",
-    "blocking_delegations",
-    "evidence_refs",
-    "global_research_context",
-    "document1_context_pack",
-    "prior_sections",
-    "loaded_skill_ids",
-    "loaded_external_skill_package_ids",
-    "internal_task_skill_ids",
-}
-
-_SAFE_EMPTY_CONTEXT_SNAPSHOT_KEYS = {
-    "belief_state_summary",
-    "working_memory_summary",
-    "evidence_refs",
-    "unresolved_objections",
-    "blocking_delegations",
-    "readable_scopes",
-}
+OBSERVATION_ANNOTATION_RULES = [
+    "Observation Block 仅通过当前 AgentTask 内稳定的 O# 别名访问；不要输出 locator、block_id 或 obs_tc 形式的内部标识。",
+    "需要保留原始观察时使用 retain_observations: [{alias: O1, note: ..., reason: ...}]；需要重读时调用 read_observation({alias: O1})。",
+    "自然语言或 Markdown 中，具体事实可在句末标注【cite:O1】；多个来源必须写成多个独立标签，不得写逗号列表，也不得编造不存在的 O#。",
+    "已知事件发生时间可在句末标注【occurred_at:YYYY-MM-DD】；已知发布时间可标注【published_at:YYYY-MM-DD】。支持月份、季度、半年、日期区间和带时区 ISO 时间；未知时不要猜测。",
+    "引用标签和时间标签彼此独立，均为非阻塞审计标注；纯分析、预测和长期结构判断无需强行添加时间。",
+]
 
 
 class PromptAssembler:
+    """Assemble single-shot input without reading Blackboard or workflow state."""
+
     def assemble(
         self,
         task: AgentTask,
         definition: AgentDefinition,
         prompt_bundle: PromptBundle,
-        context_snapshot: Any | None,
+        workflow_input: CompiledWorkflowInput,
         tool_results: list[ToolResult],
     ) -> AssembledPrompt:
+        compiled = workflow_input
         instructions = "\n\n".join(
             [
                 *_section("System / Agent Prompt Blocks", _bodies(prompt_bundle.prompt_blocks)),
@@ -105,31 +59,33 @@ class PromptAssembler:
                 ),
             ]
         )
-        visible_context_snapshot = agent_visible_context_snapshot(context_snapshot)
-        tool_result_payload = [result.model_dump(mode="json") for result in tool_results]
+        task_memory: dict[str, Any] = {}
+        if tool_results:
+            task_memory["fresh_tool_results"] = [
+                _single_shot_tool_result(result) for result in tool_results
+            ]
         prompt_payload: dict[str, Any] = {
-            "task_summary": {
-                "task_id": task.task_id,
-                "ticker": task.ticker,
-                "agent_name": task.agent_name.value,
-                "task_type": task.task_type.value,
-                "workflow_node": task.run_metadata.workflow_node,
+            "react_protocol": {"execution_mode": "single_shot"},
+            "task_contract": compiled.task_contract.model_dump(mode="json"),
+            "tool_call_policy": _tool_call_policy(task),
+            "output_contract": {
                 "required_output_schema": task.required_output_schema,
-                "permissions": task.permissions.model_dump(mode="json"),
-                "input_context": agent_visible_input_context(task.input_context),
             },
+            "available_tools": [],
+            "available_skills": [],
+            "loaded_skills": [],
+            "workflow_memory": compiled.workflow_memory.model_view(),
+            "task_memory": task_memory,
         }
-        if tool_result_payload:
-            prompt_payload["tool_results"] = tool_result_payload
-        if visible_context_snapshot is not None:
-            prompt_payload["context_snapshot"] = visible_context_snapshot
-        user_prompt = json.dumps(prompt_payload, ensure_ascii=True)
+        user_prompt = json.dumps(prompt_payload, ensure_ascii=False, default=str)
         return AssembledPrompt(
             instructions="\n\n".join(
                 [
                     instructions or "Follow DoxAgent prompt resources.",
                     "## Output Language Rules",
                     *CHINESE_OUTPUT_RULES,
+                    "## Observation and text annotations",
+                    *OBSERVATION_ANNOTATION_RULES,
                     "## Runtime Output Rules",
                     "Return one JSON object.",
                     "Do not write Blackboard state directly.",
@@ -139,7 +95,10 @@ class PromptAssembler:
             user_prompt=user_prompt,
             metadata={
                 "agent_name": definition.agent_name.value,
-                "prompt_block_ids": json.dumps(prompt_bundle.prompt_block_ids, ensure_ascii=True),
+                "prompt_block_ids": json.dumps(
+                    prompt_bundle.prompt_block_ids,
+                    ensure_ascii=True,
+                ),
                 "internal_task_skill_ids": json.dumps(
                     prompt_bundle.internal_task_skill_ids,
                     ensure_ascii=True,
@@ -148,150 +107,43 @@ class PromptAssembler:
                     prompt_bundle.external_skill_package_ids,
                     ensure_ascii=True,
                 ),
-                "prompt_versions": json.dumps(prompt_bundle.versions, ensure_ascii=True),
+                "prompt_versions": json.dumps(
+                    prompt_bundle.versions,
+                    ensure_ascii=True,
+                ),
+                "workflow_memory_policy_id": compiled.audit.policy_id,
+                "workflow_memory_content_hash": compiled.audit.content_hash,
             },
         )
 
 
-def agent_visible_input_context(input_context: dict[str, Any]) -> dict[str, Any]:
-    """Return useful model context without duplicated task-envelope fields."""
+def _tool_call_policy(task: AgentTask) -> dict[str, Any]:
+    policy: dict[str, Any] = {
+        "required_tool_names": _strings(task.input_context.get("required_tool_names")),
+        "available_tools_are_authoritative": True,
+    }
+    requirements = task.input_context.get("tool_requirements")
+    if isinstance(requirements, list) and requirements:
+        policy["tool_requirements"] = requirements
+    return policy
 
+
+def _single_shot_tool_result(result: ToolResult) -> dict[str, Any]:
     return {
-        key: value
-        for key, value in input_context.items()
-        if key not in _HIDDEN_INPUT_CONTEXT_KEYS
-        and not (key in _SAFE_EMPTY_INPUT_CONTEXT_KEYS and _is_empty_container(value))
+        "tool_name": result.tool_name,
+        "status": result.status.value,
+        "output": result.output,
+        "output_summary": result.output_summary,
+        "error": result.error.model_dump(mode="json") if result.error else None,
     }
 
 
-def agent_visible_context_snapshot(context_snapshot: Any | None) -> dict[str, Any] | None:
-    """Strip prompt/task metadata from context snapshots before sending them to models."""
-
-    if context_snapshot is None:
-        return None
-    if hasattr(context_snapshot, "model_dump"):
-        dumped = context_snapshot.model_dump(mode="json")
-        payload = dumped if isinstance(dumped, dict) else {"value": dumped}
-    elif isinstance(context_snapshot, dict):
-        payload = dict(context_snapshot)
-    else:
-        return {"value": str(context_snapshot)}
-    if _is_document1_context_snapshot(payload):
-        return _document1_visible_context_snapshot(payload)
-    if _is_document3_context_snapshot(payload):
-        documents = payload.get("belief_state_summary")
-        if isinstance(documents, dict) and documents:
-            return {"belief_state_documents": documents}
-        return None
-    if _is_document2_context_snapshot(payload):
-        documents = payload.get("belief_state_summary")
-        if isinstance(documents, dict) and documents:
-            return {"belief_state_documents": documents}
-        return None
-    for key in ("task_input", "prompt_summaries", "skill_summaries"):
-        payload.pop(key, None)
-    visible = {
-        key: value
-        for key, value in payload.items()
-        if not (key in _SAFE_EMPTY_CONTEXT_SNAPSHOT_KEYS and _is_empty_container(value))
-    }
-    return visible or None
-
-
-def _is_document1_context_snapshot(payload: dict[str, Any]) -> bool:
-    task_type = payload.get("task_type")
-    if hasattr(task_type, "value"):
-        task_type = task_type.value
-    return str(task_type) in _DOCUMENT1_TASK_TYPES
-
-
-def _document1_visible_context_snapshot(payload: dict[str, Any]) -> dict[str, Any] | None:
-    task_type = payload.get("task_type")
-    if hasattr(task_type, "value"):
-        task_type = task_type.value
-    if str(task_type) == "generate_global_research":
-        return None
-    documents = payload.get("belief_state_summary")
-    if not isinstance(documents, dict) or not documents:
-        return None
-    visible_documents = {
-        key: value
-        for key, value in documents.items()
-        if key in {"global_research", "expectation_unit"}
-    }
-    global_research = visible_documents.get("global_research")
-    if isinstance(global_research, dict):
-        visible_documents["global_research"] = _compact_document1_global_research_bucket(
-            global_research
-        )
-    return {"belief_state_documents": visible_documents} if visible_documents else None
-
-
-def _compact_document1_global_research_bucket(bucket: dict[str, Any]) -> dict[str, Any]:
-    compacted: dict[str, Any] = {}
-    for document_id, entry in bucket.items():
-        if isinstance(entry, dict):
-            compact_entry = dict(entry)
-            document = compact_entry.get("document")
-            if isinstance(document, dict):
-                compact_entry["document"] = _compact_document1_global_research_document(document)
-            compacted[str(document_id)] = compact_entry
-        else:
-            compacted[str(document_id)] = entry
-    return compacted
-
-
-def _compact_document1_global_research_document(document: dict[str, Any]) -> dict[str, Any]:
-    section_keys = (
-        "fundamental_report",
-        "macro_report",
-        "industry_report",
-        "market_trace_report",
-        "market_narrative_report",
-    )
-    compact = {
-        key: document[key]
-        for key in ("document_id", "document_type", "ticker", "created_at")
-        if key in document
-    }
-    for key in section_keys:
-        section = document.get(key)
-        if isinstance(section, dict):
-            compact[key] = {
-                section_key: section[section_key]
-                for section_key in (
-                    "summary",
-                    "evidence_refs",
-                    "author_agent",
-                    "reviewer_agents",
-                )
-                if section_key in section
-            }
-        elif section is not None:
-            compact[key] = section
-    compact["compaction"] = {
-        "mode": "document1_narrative_global_research_summary",
-        "omitted_full_text": True,
-    }
-    return compact
-
-
-def _is_document3_context_snapshot(payload: dict[str, Any]) -> bool:
-    task_type = payload.get("task_type")
-    if hasattr(task_type, "value"):
-        task_type = task_type.value
-    return str(task_type) in _DOCUMENT3_TASK_TYPES
-
-
-def _is_document2_context_snapshot(payload: dict[str, Any]) -> bool:
-    task_type = payload.get("task_type")
-    if hasattr(task_type, "value"):
-        task_type = task_type.value
-    return str(task_type) in _DOCUMENT2_TASK_TYPES
-
-
-def _is_empty_container(value: Any) -> bool:
-    return isinstance(value, (list, dict)) and not value
+def _strings(value: Any) -> list[str]:
+    if isinstance(value, str) and value.strip():
+        return [value.strip()]
+    if not isinstance(value, list):
+        return []
+    return [str(item).strip() for item in value if str(item).strip()]
 
 
 def _bodies(items: list[Any]) -> list[str]:
@@ -302,3 +154,10 @@ def _section(title: str, bodies: list[str]) -> list[str]:
     if not bodies:
         return []
     return [f"## {title}", *bodies]
+
+
+__all__ = [
+    "CHINESE_OUTPUT_RULES",
+    "OBSERVATION_ANNOTATION_RULES",
+    "PromptAssembler",
+]

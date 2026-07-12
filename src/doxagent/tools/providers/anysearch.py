@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 
-from doxagent.models import EvidenceSourceType
 from doxagent.tools.providers.base import (
     BaseRealToolClient,
     JsonObject,
@@ -60,16 +59,25 @@ class AnySearchSearchClient(BaseRealToolClient):
                 cache_ttl=self.settings.anysearch_cache_ttl_seconds,
             )
             _raise_for_anysearch_error(raw)
+            data = raw.get("data")
+            results = data.get("results") if isinstance(data, Mapping) else None
+            if not isinstance(results, list) or not results:
+                return self._failure(
+                    request,
+                    code="empty_result",
+                    message="AnySearch returned no search results.",
+                    details={"query": query},
+                )
             metadata = _response_metadata(raw)
             return self._success(
                 request,
                 output={"provider": "anysearch", "search": raw},
                 raw=raw,
-                source_type=EvidenceSourceType.EXTERNAL_REPORT,
+                source_kind="external_report",
                 source_id=f"anysearch:search:{query}",
                 title="AnySearch 搜索结果",
                 summary="已检索 AnySearch 搜索结果。",
-                citation_scope="anysearch_search",
+                source_scope="anysearch_search",
                 confidence=0.62,
                 metadata={**body, **metadata},
             )
@@ -107,12 +115,13 @@ def _raise_for_anysearch_error(raw: JsonObject) -> None:
     code = raw.get("code")
     if code in (None, 0, "0"):
         return
-    data = raw.get("data") if isinstance(raw.get("data"), Mapping) else {}
+    raw_data = raw.get("data")
+    data = dict(raw_data) if isinstance(raw_data, Mapping) else {}
     raise ProviderHttpError(
         code="upstream_api_error",
         message=str(raw.get("message") or "AnySearch returned an error."),
         retryable=str(code).startswith(("429", "500", "502", "503", "504")),
-        details={"provider_code": code, "provider_data": dict(data)},
+        details={"provider_code": code, "provider_data": data},
     )
 
 

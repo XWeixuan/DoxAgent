@@ -13,7 +13,6 @@ from doxagent.models.common import (
     AgentName,
     DelegationStatus,
     DocumentType,
-    EvidenceSourceType,
     ObjectionSeverity,
     ObjectionStatus,
     PatchOperation,
@@ -24,17 +23,6 @@ from doxagent.models.ids import NonEmptyStr
 
 class ContractModel(BaseModel):
     model_config = ConfigDict(extra="forbid", populate_by_name=True)
-
-
-class EvidenceRef(ContractModel):
-    evidence_id: NonEmptyStr
-    source_type: EvidenceSourceType
-    source_id: NonEmptyStr
-    title: NonEmptyStr
-    summary: NonEmptyStr
-    retrieval_metadata: dict[str, Any] = Field(default_factory=dict)
-    confidence: float = Field(ge=0.0, le=1.0)
-    citation_scope: NonEmptyStr
 
 
 class BlackboardTarget(ContractModel):
@@ -52,7 +40,6 @@ class BlackboardPatch(ContractModel):
     before: Any | None = None
     after: Any | None = None
     rationale: NonEmptyStr
-    evidence_refs: list[EvidenceRef] = Field(default_factory=list)
     author_agent: AgentName
     validation_status: ValidationStatus = ValidationStatus.PENDING
 
@@ -63,7 +50,6 @@ class Objection(ContractModel):
     target: BlackboardTarget
     severity: ObjectionSeverity
     reason: NonEmptyStr
-    evidence_refs: list[EvidenceRef] = Field(default_factory=list)
     taxonomy: NonEmptyStr = "general"
     dedupe_hash: NonEmptyStr | None = None
     target_path: NonEmptyStr | None = None
@@ -71,7 +57,6 @@ class Objection(ContractModel):
     status: ObjectionStatus = ObjectionStatus.OPEN
     resolution_note: NonEmptyStr | None = None
     resolution_changed_paths: list[NonEmptyStr] = Field(default_factory=list)
-    resolution_evidence_refs: list[EvidenceRef] = Field(default_factory=list)
 
     @property
     def is_unresolved(self) -> bool:
@@ -83,7 +68,6 @@ class Delegation(ContractModel):
     requester_agent: AgentName
     target_agent: AgentName
     question: NonEmptyStr
-    required_evidence: list[EvidenceSourceType] = Field(default_factory=list)
     blocking_scope: BlackboardTarget
     status: DelegationStatus = DelegationStatus.OPEN
     result_summary: NonEmptyStr | None = None
@@ -109,7 +93,6 @@ class WorkingMemoryEntry(ContractModel):
     author_agent: AgentName
     content_type: NonEmptyStr
     payload: dict[str, Any]
-    evidence_refs: list[EvidenceRef] = Field(default_factory=list)
     created_at: datetime
 
 

@@ -20,6 +20,7 @@ from doxagent.prompts import (
 from doxagent.prompts.registry import default_prompt_registry
 from doxagent.skills import UnknownSkillError, default_skill_registry
 from doxagent.skills.injection import SkillInjector
+from doxagent.workflow_memory import WorkflowMemoryCompiler
 from tests.fixtures.phase1_contracts import agent_task
 
 PROMPT_ROOT = Path(__file__).resolve().parents[1] / "prompts"
@@ -194,8 +195,9 @@ def test_document3_prompt_resources_load_and_replace_generic_agent_prompts() -> 
     o1_document3_prompt = registry.get("agent.o1.document3_known_events")
     o4_document3_prompt = registry.get("agent.o4.document3_monitoring_policy")
 
-    assert "`source`:" in known_events_skill.body
-    assert "complete `EvidenceRef` object" in known_events_skill.body
+    assert "`source_note`:" in known_events_skill.body
+    assert "`【cite:O#】`" in known_events_skill.body
+    assert "EvidenceRef" not in known_events_skill.body
     assert known_events_review.manual_only is True
     assert known_events_review.workflow_nodes == []
     assert o1_document3_prompt.replaces_prompt_blocks == ["agent.o1"]
@@ -591,13 +593,15 @@ def test_prompt_assembler_does_not_embed_full_agent_task_dump() -> None:
         injected,
         definition,
         injected.prompt_bundle,
-        None,
+        WorkflowMemoryCompiler().compile(injected),
         [],
     )
 
     assert "System / Agent Prompt Blocks" in assembled.instructions
     assert "External Skill Packages" not in assembled.instructions
-    assert '"task_summary"' in assembled.user_prompt
+    assert '"task_contract"' in assembled.user_prompt
+    assert '"workflow_memory"' in assembled.user_prompt
+    assert '"input_context"' not in assembled.user_prompt
     assert '"skill_bundle"' not in assembled.user_prompt
 
 

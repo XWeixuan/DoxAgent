@@ -4667,30 +4667,8 @@ def _research_section_card(
                 "label": "Reviewer Agents",
                 "value": [str(agent) for agent in section.reviewer_agents],
             },
-            {
-                "key": "evidence_refs",
-                "label": "Evidence Refs",
-                "value": _compact_evidence_refs(section.evidence_refs),
-            },
         ],
     }
-
-
-def _compact_evidence_refs(evidence_refs: Iterable[Any]) -> list[JsonObject]:
-    compact: list[JsonObject] = []
-    for ref in evidence_refs:
-        compact.append(
-            {
-                "evidence_id": str(getattr(ref, "evidence_id", "") or ""),
-                "source_type": str(getattr(ref, "source_type", "") or ""),
-                "source_id": str(getattr(ref, "source_id", "") or ""),
-                "title": str(getattr(ref, "title", "") or ""),
-                "summary": str(getattr(ref, "summary", "") or ""),
-                "confidence": getattr(ref, "confidence", None),
-                "citation_scope": str(getattr(ref, "citation_scope", "") or ""),
-            }
-        )
-    return compact
 
 
 def _expectation_card(document: ExpectationUnitDocument) -> JsonObject:
@@ -5242,7 +5220,7 @@ def _known_event_item_from_document(
         "description": event.description,
         "related_expectation_ids": [event.expectation_id] if event.expectation_id else [],
         "duplicate_detection_keys": list(event.duplicate_detection_keys),
-        "source": event.source.title or event.source.source_id,
+        "source": event.source_note or "workflow",
         "updated_at": _dt(_document_time(document)),
     }
 

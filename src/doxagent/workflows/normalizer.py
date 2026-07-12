@@ -8,7 +8,6 @@ from doxagent.models import (
     AgentResult,
     BlackboardPatch,
     Delegation,
-    EvidenceRef,
     Objection,
     ToolCallSummary,
 )
@@ -27,8 +26,6 @@ class WorkflowAgentResultNormalizer:
 
         try:
             patches = self._items(structured, "proposed_patches", BlackboardPatch)
-            evidence_refs = self._items(structured, "evidence_refs", EvidenceRef)
-            source_refs = self._items(structured, "source_refs", EvidenceRef)
             objections = self._items(structured, "objections", Objection)
             delegations = self._items(structured, "delegations", Delegation)
             tool_calls = self._items(structured, "tool_calls", ToolCallSummary)
@@ -46,7 +43,6 @@ class WorkflowAgentResultNormalizer:
             update={
                 "payload": payload,
                 "proposed_patches": result.proposed_patches + patches,
-                "evidence_refs": result.evidence_refs + evidence_refs + source_refs,
                 "objections": result.objections + objections,
                 "delegations": result.delegations + delegations,
                 "tool_calls": result.tool_calls + tool_calls,

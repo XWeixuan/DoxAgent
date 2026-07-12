@@ -17,8 +17,6 @@ from doxagent.adapters.vibe_trading.specs import VibeTaskSpec, VibeTeamSpec
 from doxagent.models import (
     AgentName,
     AgentResult,
-    EvidenceRef,
-    EvidenceSourceType,
     ResultStatus,
     new_id,
 )
@@ -391,32 +389,7 @@ def _to_agent_result(
             "markdown_summary": markdown_summary,
             "metadata": metadata or {},
         },
-        evidence_refs=_evidence_refs(source_preset, outputs),
     )
-
-
-def _evidence_refs(source_preset: str, outputs: list[VibeAgentOutput]) -> list[EvidenceRef]:
-    return [
-        EvidenceRef(
-            evidence_id=new_id("evidence"),
-            source_type=EvidenceSourceType.AGENT_OUTPUT,
-            source_id=f"vibe_trading:{source_preset}:{output.task_id}",
-            title=f"{output.role} adapter output",
-            summary=output.markdown,
-            retrieval_metadata={
-                "adapter": "vibe_trading",
-                "source_project": "HKUDS/Vibe-Trading",
-                "source_preset": source_preset,
-                "agent_id": output.agent_id,
-                "task_id": output.task_id,
-                "skill_versions": output.skill_versions,
-                "mock_fixture": True,
-            },
-            confidence=0.65,
-            citation_scope="phase8_vibe_adapter_agent_output",
-        )
-        for output in outputs
-    ]
 
 
 def _macro_markdown_summary(

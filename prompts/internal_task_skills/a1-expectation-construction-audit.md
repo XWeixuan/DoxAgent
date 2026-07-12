@@ -26,8 +26,6 @@ Return `DoxAtlasAuditResult` only:
 - `verdict`: `pass`, `pass_with_warnings`, `needs_revision`, or `blocked`.
 - `revision_required`: `true` only when O1 must revise before detail generation.
 - `findings`: concise field-level findings for `expectation_name`, `direction`, `why_it_matters`, or `market_view`.
-- Only complete `EvidenceRef` objects may appear in `evidence_refs`. A complete `EvidenceRef` must include `evidence_id`, `source_type`, `source_id`, `title`, `summary`, `confidence`, and `citation_scope`.
-- If you only have a partial id, title, summary, source_id, proposition pointer, source clue, or material clue, do not put it in `evidence_refs`; write it into `rationale` or `recommended_statement` instead.
 - `objections`: use only for blocking or revision-required issues.
 - `delegations`: use only when an external source is necessary and DoxAtlas cannot answer.
 - `rationale`: one short audit rationale, not a research summary.

@@ -8,6 +8,8 @@ from openai import AsyncOpenAI
 from doxagent.agents.config import AgentRegistry, default_agent_registry
 from doxagent.agents.runtime.react import ReActHarnessConfig
 from doxagent.agents.runtime.runner import ModelGatewayAgentRunner
+from doxagent.annotations import TextAnnotationProcessor
+from doxagent.annotations.postgres import PostgresObservationAnnotationStore
 from doxagent.gateway import (
     BailianChatCompletionsModelClient,
     BailianResponsesModelClient,
@@ -130,6 +132,14 @@ def default_real_agent_runner(
             tool_call_timeout_seconds=resolved_settings.react_tool_call_timeout_seconds,
         ),
     )
+    if resolved_settings.storage_mode == "postgres":
+        annotation_store = PostgresObservationAnnotationStore(
+            resolved_settings.require_database_url()
+        )
+        runner_kwargs.setdefault(
+            "annotation_processor", TextAnnotationProcessor(annotation_store)
+        )
+        runner_kwargs.setdefault("observation_archive", annotation_store)
     return ModelGatewayAgentRunner(
         registry=registry,
         model_gateway=ModelGateway(

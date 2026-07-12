@@ -203,7 +203,6 @@ class TaskMemoryRuntime:
                 "output_summary": result.output_summary,
                 "error": result.error.model_dump(mode="json") if result.error else None,
                 "warnings": list(warnings),
-                "evidence_ref_ids": [item.evidence_id for item in result.evidence_refs],
             },
             step=step,
         )
@@ -212,8 +211,12 @@ class TaskMemoryRuntime:
             {
                 "tool_call_id": tool_call_id,
                 "policy": index.policy,
-                "block_refs": list(index.block_refs),
-                "selected_refs": list(index.selected_refs),
+                "block_count": len(index.block_refs),
+                "selected_aliases": [
+                    self.observations.aliases.alias_for(block.block_id)
+                    for ref in index.selected_refs
+                    if (block := self.observations.block_store.get_by_ref(ref)) is not None
+                ],
                 "original_chars": index.original_chars,
             },
             step=step,
@@ -221,35 +224,39 @@ class TaskMemoryRuntime:
         self.fresh_tool_call_ids.append(tool_call_id)
 
     def read_observation(self, *, step: int, input_payload: JsonDict) -> bool:
-        ref = str(input_payload.get("ref") or "").strip()
+        alias = str(input_payload.get("alias") or "").strip()
         include_parent = bool(input_payload.get("include_parent", False))
         include_children = bool(input_payload.get("include_children", False))
         blocks = self.observations.read(
-            ref,
+            alias,
             include_parent=include_parent,
             include_children=include_children,
         )
         if not blocks:
-            warning = f"read_observation 拒绝无效 ref：{ref or '<empty>'}。"
+            warning = f"read_observation 忽略无效 alias：{alias or '<empty>'}。"
             self.add_warning(warning, step=step, source="pointer_validation")
             self.event_log.append(
                 "pointer_validation",
-                {"ref": ref, "valid": False, "warning": warning},
+                {"alias": alias, "valid": False, "warning": warning},
                 step=step,
             )
             return False
-        refs = [block.ref for block in blocks]
-        for item in refs:
+        aliases = [
+            value
+            for block in blocks
+            if (value := self.observations.aliases.alias_for(block.block_id)) is not None
+        ]
+        for item in aliases:
             if item not in self.fresh_read_refs:
                 self.fresh_read_refs.append(item)
         self.event_log.append(
             "pointer_validation",
-            {"ref": ref, "valid": True, "loaded_refs": refs},
+            {"alias": alias, "valid": True, "loaded_aliases": aliases},
             step=step,
         )
         self.event_log.append(
             "observation_read",
-            {"requested_ref": ref, "loaded_refs": refs},
+            {"requested_alias": alias, "loaded_aliases": aliases},
             step=step,
         )
         return True
@@ -313,7 +320,6 @@ class TaskMemoryRuntime:
                 "status": result.status.value,
                 "payload": _json_safe(result.payload),
                 "error": result.error.model_dump(mode="json") if result.error else None,
-                "evidence_ref_ids": [item.evidence_id for item in result.evidence_refs],
             }
         )
 
@@ -481,9 +487,6 @@ class TaskMemoryRuntime:
                 "output_chars": len(output_json),
                 "output_sha256": _sha256(output_json),
                 "raw_present": record.result.raw is not None,
-                "evidence_ref_ids": [
-                    item.evidence_id for item in record.result.evidence_refs
-                ],
                 "tool_result_chars": len(_canonical_json(result_dump)),
             }
             index = self.observations.call_index(record.tool_call_id)

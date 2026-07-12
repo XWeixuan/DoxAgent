@@ -61,13 +61,18 @@ class ActiveContextAssembler:
             payload = observations.fresh_view(tool_call_id, micro=micro)
             if payload is not None:
                 fresh.append(payload)
-        for ref in fresh_read_refs:
-            blocks = observations.read(ref)
+        for alias in fresh_read_refs:
+            blocks = observations.read(alias)
             if blocks:
                 fresh.append(
                     {
-                        "observation_read": ref,
-                        "loaded_blocks": [block.agent_view() for block in blocks],
+                        "observation_read": alias,
+                        "loaded_blocks": [
+                            block.agent_view(
+                                observations.aliases.alias_for(block.block_id) or ""
+                            )
+                            for block in blocks
+                        ],
                     }
                 )
         fresh.extend(fresh_runtime_results)
@@ -131,4 +136,3 @@ __all__ = [
     "estimated_tokens",
     "measure_context_budget",
 ]
-

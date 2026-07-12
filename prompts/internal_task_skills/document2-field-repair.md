@@ -49,41 +49,8 @@ Invalid:
 }
 ```
 
-Do not output structured objects in `evidence_requests`.
-
 `target_finding_ids` must be `list[str]`.
 `unresolved_finding_ids` must be `list[str]`.
-`evidence_refs` must be `list[EvidenceRef object]`, not `list[str]`.
-
-If you only know an evidence id but do not have the full `EvidenceRef` object, leave `evidence_refs` empty and use `evidence_requests: list[str]` instead.
-
-For `field_family = market_evidence`, the allowed typed output field is `market_view`.
-
-Valid:
-
-```json
-{
-  "field_family": "market_evidence",
-  "market_view": {
-    "text": "...",
-    "summary": "...",
-    "evidence_refs": [],
-    "author_agent": "O1",
-    "reviewer_agents": []
-  }
-}
-```
-
-Invalid:
-
-```json
-{
-  "field_family": "market_evidence",
-  "market_evidence": {}
-}
-```
-
-Never output a top-level `market_evidence` field.
 
 ## Decision branches
 
@@ -99,7 +66,6 @@ If the repair decision is `resolved`, `rejected`, or `deferred`:
 
 - Do not output typed field updates.
 - Do not output `revised_candidate`.
-- Use `decisions`, `changed_paths`, `evidence_refs`, `unresolved_reason`, and `evidence_requests` to explain the result.
 - For `deferred`, provide `unresolved_reason`; `evidence_requests` may contain plain-string follow-up requests.
 
 ## Single-field output
@@ -138,7 +104,6 @@ For `RealizedFact`, only use:
 - `event_id`
 - `description`
 - `price_reaction`
-- `evidence_refs`
 
 Do not include `event_time`. `certainty` is free text when present in models that allow it; do not present it as an enum unless the model defines an enum.
 
@@ -148,7 +113,7 @@ Do not include `event_time`. `certainty` is free text when present in models tha
 {
   "task_id": "must match input_context.field_repair_task.task_id",
   "expectation_id": "must match input_context.field_repair_task.expectation_id",
-  "field_family": "realized_facts | key_variables | event_monitoring_direction | market_view | market_evidence | cross_field",
+  "field_family": "realized_facts | key_variables | event_monitoring_direction | market_view | cross_field",
   "decision": "resolved | accepted | partially_accepted | rejected | deferred",
   "decisions": [
     {
@@ -157,7 +122,6 @@ Do not include `event_time`. `certainty` is free text when present in models tha
       "decision": "resolved | accepted | partially_accepted | rejected | deferred",
       "resolution_note": "concise reason for this specific finding or objection",
       "changed_paths": ["document.<field_path>"],
-      "evidence_refs": []
     }
   ],
   "target_finding_ids": ["finding_id_1"],

@@ -2,8 +2,14 @@
 
 from __future__ import annotations
 
-from doxagent.models import EvidenceSourceType
-from doxagent.tools.providers.base import BaseRealToolClient, _input_list, _input_str, _require
+from doxagent.tools.providers.base import (
+    BaseRealToolClient,
+    JsonObject,
+    ProviderHttpError,
+    _input_list,
+    _input_str,
+    _require,
+)
 from doxagent.tools.schema import ToolRequest, ToolResult
 
 TAVILY_SEARCH_DEPTHS = {"ultra-fast", "fast", "basic", "advanced"}
@@ -38,15 +44,24 @@ class TavilySearchClient(BaseRealToolClient):
                 headers={"Authorization": f"Bearer {api_key}"},
                 cache_ttl=self.settings.tavily_cache_ttl_seconds,
             )
+            _raise_tavily_error(raw)
+            results = raw.get("results")
+            if not isinstance(results, list) or not results:
+                return self._failure(
+                    request,
+                    code="empty_result",
+                    message="Tavily returned no search results.",
+                    details={"query": body["query"]},
+                )
             return self._success(
                 request,
                 output={"provider": "tavily", "search": raw},
                 raw=raw,
-                source_type=EvidenceSourceType.EXTERNAL_REPORT,
+                source_kind="external_report",
                 source_id=f"tavily:search:{body['query']}",
                 title="Tavily 搜索结果",
                 summary="已检索 Tavily 搜索结果。",
-                citation_scope="tavily_search",
+                source_scope="tavily_search",
                 confidence=0.6,
                 metadata=body,
             )
@@ -72,15 +87,42 @@ class TavilyExtractClient(BaseRealToolClient):
                 headers={"Authorization": f"Bearer {api_key}"},
                 cache_ttl=self.settings.tavily_cache_ttl_seconds,
             )
+            _raise_tavily_error(raw)
+            results = raw.get("results")
+            failed_results = raw.get("failed_results")
+            if not isinstance(results, list) or not results:
+                return self._failure(
+                    request,
+                    code="empty_result",
+                    message="Tavily extracted no URL content.",
+                    details={"urls": urls, "failed_results": failed_results},
+                )
+            output = {"provider": "tavily", "extract": raw}
+            if isinstance(failed_results, list) and failed_results:
+                return self._partial(
+                    request,
+                    output=output,
+                    raw=raw,
+                    source_kind="external_report",
+                    source_id=f"tavily:extract:{len(urls)}",
+                    title="Tavily URL extraction results",
+                    summary="Tavily extracted some URLs while other URLs failed.",
+                    source_scope="tavily_extract",
+                    confidence=0.52,
+                    metadata={"urls": urls, "format": body["format"]},
+                    code="tavily_partial_extract",
+                    message="Some requested URLs could not be extracted.",
+                    details={"failed_results": failed_results},
+                )
             return self._success(
                 request,
-                output={"provider": "tavily", "extract": raw},
+                output=output,
                 raw=raw,
-                source_type=EvidenceSourceType.EXTERNAL_REPORT,
+                source_kind="external_report",
                 source_id=f"tavily:extract:{len(urls)}",
                 title="Tavily URL 抽取结果",
                 summary="已检索 Tavily URL 抽取结果。",
-                citation_scope="tavily_extract",
+                source_scope="tavily_extract",
                 confidence=0.62,
                 metadata={"urls": urls, "format": body["format"]},
             )
@@ -94,6 +136,20 @@ def _normalize_search_depth(value: str) -> str:
     if normalized in TAVILY_SEARCH_DEPTHS:
         return normalized
     return "basic"
+
+
+def _raise_tavily_error(raw: JsonObject) -> None:
+    message = raw.get("error") or raw.get("detail")
+    if message in (None, "", [], {}):
+        return
+    rendered = str(message)
+    retryable = any(token in rendered.lower() for token in ("rate", "quota", "limit"))
+    raise ProviderHttpError(
+        code="rate_limited" if retryable else "upstream_provider_error",
+        message=rendered,
+        retryable=retryable,
+        details={"provider_payload": raw},
+    )
 
 
 def _bounded_int(value: object, minimum: int, maximum: int) -> int:

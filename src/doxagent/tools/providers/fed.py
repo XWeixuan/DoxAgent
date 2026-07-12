@@ -7,7 +7,6 @@ import re
 from datetime import UTC, datetime
 from html.parser import HTMLParser
 
-from doxagent.models import EvidenceSourceType
 from doxagent.tools.providers.base import BaseRealToolClient, JsonObject, _input_str
 from doxagent.tools.schema import ToolRequest, ToolResult
 
@@ -21,15 +20,32 @@ class FedFomcCalendarMaterialsClient(BaseRealToolClient):
                 cache_ttl=self.settings.fed_cache_ttl_seconds,
             )
             parsed = parse_fomc_calendar(html_text, year)
+            output = {"provider": "federal_reserve", "year": year, **parsed}
+            if parsed["unknowns"]:
+                return self._partial(
+                    request,
+                    output=output,
+                    raw=None,
+                    source_kind="external_report",
+                    source_id=f"federal_reserve:fomc:{year}",
+                    title=f"Federal Reserve FOMC materials {year}",
+                    summary=f"The official FOMC page did not contain the requested year {year}.",
+                    source_scope="fed_fomc_calendar_materials",
+                    confidence=0.3,
+                    metadata={"year": year, "official_html_parser": True},
+                    code="requested_year_not_found",
+                    message=f"The official FOMC page did not contain year {year}.",
+                    details={"unknowns": parsed["unknowns"]},
+                )
             return self._success(
                 request,
-                output={"provider": "federal_reserve", "year": year, **parsed},
+                output=output,
                 raw=None,
-                source_type=EvidenceSourceType.EXTERNAL_REPORT,
+                source_kind="external_report",
                 source_id=f"federal_reserve:fomc:{year}",
                 title=f"Federal Reserve FOMC 材料 {year}",
                 summary="已解析 Federal Reserve FOMC 官方日程与材料链接。",
-                citation_scope="fed_fomc_calendar_materials",
+                source_scope="fed_fomc_calendar_materials",
                 confidence=0.84,
                 metadata={"year": year, "official_html_parser": True},
             )

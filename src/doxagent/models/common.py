@@ -103,15 +103,6 @@ class ExpectationDirection(StrEnum):
     RISK = "risk"
 
 
-class EvidenceSourceType(StrEnum):
-    DOXATLAS_SOURCE = "doxatlas_source"
-    MARKET_DATA = "market_data"
-    FACT_CHECK = "fact_check"
-    EXTERNAL_REPORT = "external_report"
-    AGENT_OUTPUT = "agent_output"
-    TOOL_RESULT = "tool_result"
-
-
 class PolicyActionType(StrEnum):
     DIRECT_TRADE = "direct_trade"
     PUSH_TO_AGENT = "push_to_agent"

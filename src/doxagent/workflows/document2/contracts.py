@@ -15,7 +15,6 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from doxagent.models import (
     AgentName,
     EventMonitoringDirection,
-    EvidenceRef,
     ExpectationUnitDocument,
     NonEmptyStr,
     RealizedFact,
@@ -24,13 +23,6 @@ from doxagent.models import (
     new_id,
 )
 
-EvidenceAssessmentStatus = Literal[
-    "sufficient",
-    "insufficient",
-    "unavailable",
-    "stale",
-    "contradictory",
-]
 Document2FindingSeverity = Literal["info", "warning", "blocking"]
 Document2ResolutionDecision = Literal[
     "resolved",
@@ -56,13 +48,11 @@ Document2FieldFamily = Literal[
     "key_variables",
     "event_monitoring_direction",
     "market_view",
-    "market_evidence",
     "cross_field",
 ]
 Document2PromotionBlockerType = Literal[
     "candidate_not_ready",
     "blocking_finding",
-    "evidence_insufficient",
     "placeholder_text",
     "schema_validation",
 ]
@@ -76,38 +66,8 @@ class ExpectationUnitCandidate(Document2ContractModel):
     candidate_id: NonEmptyStr = Field(default_factory=lambda: new_id("d2cand"))
     document: ExpectationUnitDocument
     source_agent: AgentName = AgentName.O1_EXPECTATION_OWNER
-    evidence_refs: list[EvidenceRef] = Field(default_factory=list)
     unknowns: list[NonEmptyStr] = Field(default_factory=list)
     rationale: NonEmptyStr
-
-    @model_validator(mode="after")
-    def evidence_defaults_to_document_refs(self) -> ExpectationUnitCandidate:
-        if self.evidence_refs:
-            return self
-        refs = list(self.document.market_view.evidence_refs)
-        for fact in self.document.realized_facts:
-            refs.extend(fact.evidence_refs)
-            refs.extend(fact.price_reaction.evidence_refs)
-        for variable in self.document.key_variables:
-            refs.extend(variable.evidence_refs)
-        self.evidence_refs = _dedupe_evidence_refs(refs)
-        return self
-
-
-class EvidenceAssessment(Document2ContractModel):
-    assessment_id: NonEmptyStr = Field(default_factory=lambda: new_id("d2evidence"))
-    target_path: NonEmptyStr
-    status: EvidenceAssessmentStatus
-    evidence_refs: list[EvidenceRef] = Field(default_factory=list)
-    reason: NonEmptyStr
-    blocks_promotion: bool = False
-
-    @model_validator(mode="after")
-    def non_sufficient_evidence_blocks_by_default(self) -> EvidenceAssessment:
-        if self.status != "sufficient":
-            self.blocks_promotion = True
-        return self
-
 
 class Document2ReviewFinding(Document2ContractModel):
     finding_id: NonEmptyStr = Field(default_factory=lambda: new_id("d2finding"))
@@ -118,17 +78,13 @@ class Document2ReviewFinding(Document2ContractModel):
     severity: Document2FindingSeverity
     reason: NonEmptyStr
     recommended_statement: NonEmptyStr | None = None
-    evidence_assessments: list[EvidenceAssessment] = Field(default_factory=list)
-    supplemental_evidence_refs: list[EvidenceRef] = Field(default_factory=list)
     supplemental_context: list[NonEmptyStr] = Field(default_factory=list)
     source_objection_id: NonEmptyStr | None = None
     blocks_promotion: bool = False
 
     @model_validator(mode="after")
     def blocking_severity_blocks_promotion(self) -> Document2ReviewFinding:
-        if self.severity == "blocking" or any(
-            assessment.blocks_promotion for assessment in self.evidence_assessments
-        ):
+        if self.severity == "blocking":
             self.blocks_promotion = True
         return self
 
@@ -158,7 +114,6 @@ class Document2ResolutionDecisionRecord(Document2ContractModel):
     decision: Document2ResolutionDecision
     resolution_note: NonEmptyStr
     changed_paths: list[NonEmptyStr] = Field(default_factory=list)
-    evidence_refs: list[EvidenceRef] = Field(default_factory=list)
 
 
 class Document2FieldRepairResult(Document2ContractModel):
@@ -173,7 +128,6 @@ class Document2FieldRepairResult(Document2ContractModel):
     event_monitoring_direction: EventMonitoringDirection | None = None
     market_view: ResearchSection | None = None
     revised_candidate: ExpectationUnitDocument | None = None
-    evidence_requests: list[NonEmptyStr] = Field(default_factory=list)
     unresolved_finding_ids: list[NonEmptyStr] = Field(default_factory=list)
     unresolved_reason: NonEmptyStr | None = None
     rationale: NonEmptyStr
@@ -206,7 +160,6 @@ class Document2FieldRepairResult(Document2ContractModel):
             "key_variables": self.key_variables is not None,
             "event_monitoring_direction": self.event_monitoring_direction is not None,
             "market_view": self.market_view is not None,
-            "market_evidence": self.market_view is not None,
         }
         if any(typed_outputs) and not allowed[self.field_family]:
             raise ValueError("typed field update does not match field_family")
@@ -223,7 +176,6 @@ class Document2Revision(Document2ContractModel):
     source: Document2RevisionSource
     source_patch_id: NonEmptyStr | None = None
     rationale: NonEmptyStr
-    evidence_refs: list[EvidenceRef] = Field(default_factory=list)
     changed_paths: list[NonEmptyStr] = Field(default_factory=list)
     review_finding_ids: list[NonEmptyStr] = Field(default_factory=list)
 
@@ -233,8 +185,6 @@ class Document2Revision(Document2ContractModel):
             raise ValueError("before and after expectation_id must match")
         if self.expectation_id != self.after.expectation_id:
             raise ValueError("revision expectation_id must match after document")
-        if not self.evidence_refs:
-            self.evidence_refs = _dedupe_evidence_refs(self.after.market_view.evidence_refs)
         return self
 
 
@@ -246,7 +196,6 @@ class Document2ResolutionPlan(Document2ContractModel):
     target_finding_ids: list[NonEmptyStr] = Field(default_factory=list)
     proposed_revision: Document2Revision | None = None
     revised_candidate: ExpectationUnitDocument | None = None
-    evidence_requests: list[NonEmptyStr] = Field(default_factory=list)
     unresolved_finding_ids: list[NonEmptyStr] = Field(default_factory=list)
     unresolved_reason: NonEmptyStr | None = None
     rationale: NonEmptyStr
@@ -276,7 +225,6 @@ class Document2PromotionCandidate(Document2ContractModel):
     promotion_candidate_id: NonEmptyStr = Field(default_factory=lambda: new_id("d2promo"))
     document: ExpectationUnitDocument
     source_revision_id: NonEmptyStr | None = None
-    evidence_assessments: list[EvidenceAssessment] = Field(default_factory=list)
     blocking_finding_ids: list[NonEmptyStr] = Field(default_factory=list)
     ready_for_promotion: bool
     rationale: NonEmptyStr
@@ -285,10 +233,6 @@ class Document2PromotionCandidate(Document2ContractModel):
     def ready_candidates_cannot_have_blockers(self) -> Document2PromotionCandidate:
         if self.ready_for_promotion and self.blocking_finding_ids:
             raise ValueError("promotion-ready candidate cannot carry blocking finding ids")
-        if self.ready_for_promotion and any(
-            assessment.blocks_promotion for assessment in self.evidence_assessments
-        ):
-            raise ValueError("promotion-ready candidate cannot carry blocking assessments")
         return self
 
 
@@ -297,7 +241,6 @@ class Document2PromotionBlocker(Document2ContractModel):
     target_path: NonEmptyStr
     reason: NonEmptyStr
     finding_id: NonEmptyStr | None = None
-    evidence_refs: list[EvidenceRef] = Field(default_factory=list)
 
 
 class Document2TransactionAudit(Document2ContractModel):
@@ -310,9 +253,3 @@ class Document2TransactionAudit(Document2ContractModel):
     notes: list[NonEmptyStr] = Field(default_factory=list)
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
-
-def _dedupe_evidence_refs(refs: list[EvidenceRef]) -> list[EvidenceRef]:
-    deduped: dict[str, EvidenceRef] = {}
-    for ref in refs:
-        deduped.setdefault(ref.evidence_id, ref)
-    return list(deduped.values())

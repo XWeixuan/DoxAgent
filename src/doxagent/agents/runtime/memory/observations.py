@@ -9,6 +9,7 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Any, Literal, cast
 
+from doxagent.agents.runtime.memory.aliases import ObservationAliasRegistry
 from doxagent.tools import ToolResult
 
 JsonDict = dict[str, Any]
@@ -23,10 +24,10 @@ ObservationAdapterName = Literal[
     "doxatlas",
 ]
 
-_MAX_NATURAL_BLOCK_CHARS = 16_000
+_MAX_NATURAL_BLOCK_CHARS = 1_200
 _TABLE_ROWS_PER_BLOCK = 50
 _PARAGRAPHS_PER_BLOCK = 8
-_OUTLINE_BLOCK_LIMIT = 48
+_OUTLINE_BLOCK_LIMIT = 24
 _DATE_KEYS = ("datetime", "date", "timestamp", "time", "period")
 _TIME_SERIES_KEYS = ("ohlcv", "rows", "observations", "series", "data")
 _HIERARCHY_KEYS = (
@@ -118,19 +119,17 @@ class ObservationBlock:
     context_envelope: JsonDict
     content_hash: str
     block_type: str
-    evidence_ref_ids: tuple[str, ...] = ()
     metadata: JsonDict = field(default_factory=dict)
 
     @property
     def ref(self) -> str:
         return f"obs_{self.tool_call_id}::{self.locator}"
 
-    def agent_view(self) -> JsonDict:
+    def agent_view(self, alias: str) -> JsonDict:
         return {
-            "ref": self.ref,
+            "alias": alias,
             "block_type": self.block_type,
             "context_envelope": deepcopy(self.context_envelope),
-            "evidence_ref_ids": list(self.evidence_ref_ids),
             "content": deepcopy(self.content),
         }
 
@@ -143,7 +142,6 @@ class ObservationBlock:
             "locator": self.locator,
             "content_hash": self.content_hash,
             "block_type": self.block_type,
-            "evidence_ref_ids": list(self.evidence_ref_ids),
             "context_envelope": deepcopy(self.context_envelope),
             "metadata": deepcopy(self.metadata),
         }
@@ -169,6 +167,9 @@ class ObservationBlockStore:
         block_id = self._by_ref.get(ref)
         return self._by_id.get(block_id) if block_id is not None else None
 
+    def get(self, block_id: str) -> ObservationBlock | None:
+        return self._by_id.get(block_id)
+
     def blocks_for_call(self, tool_call_id: str) -> list[ObservationBlock]:
         return [self._by_id[item] for item in self._by_call.get(tool_call_id, [])]
 
@@ -185,6 +186,9 @@ class ObservationBlockStore:
     def audit(self) -> list[JsonDict]:
         return [block.audit_view() for block in self._by_id.values()]
 
+    def records(self) -> tuple[ObservationBlock, ...]:
+        return tuple(self._by_id.values())
+
     def __len__(self) -> int:
         return len(self._by_id)
 
@@ -198,7 +202,11 @@ class ObservationCallIndex:
     selected_refs: tuple[str, ...]
     original_chars: int
 
-    def outline(self, store: ObservationBlockStore) -> JsonDict:
+    def outline(
+        self,
+        store: ObservationBlockStore,
+        aliases: ObservationAliasRegistry,
+    ) -> JsonDict:
         all_blocks = [
             block
             for ref in self.block_refs
@@ -219,10 +227,9 @@ class ObservationCallIndex:
         for block in listed:
             items.append(
                 {
-                    "ref": block.ref,
+                    "alias": aliases.alias_for(block.block_id),
                     "block_type": block.block_type,
                     "context_envelope": deepcopy(block.context_envelope),
-                    "evidence_ref_ids": list(block.evidence_ref_ids),
                 }
             )
         return {
@@ -266,8 +273,8 @@ class ObservationParser:
         adapter: str = "auto",
     ) -> list[ObservationBlock]:
         output = result.output
-        evidence_ids = tuple(item.evidence_id for item in result.evidence_refs)
-        envelope = _base_envelope(result.tool_name, output, evidence_ids)
+        source_markers: tuple[str, ...] = ()
+        envelope = _base_envelope(result.tool_name, output, source_markers)
         if policy == "inline":
             return [
                 _make_block(
@@ -276,7 +283,7 @@ class ObservationParser:
                     content=output,
                     envelope=envelope,
                     block_type="inline",
-                    evidence_ref_ids=evidence_ids,
+                    source_markers=source_markers,
                 )
             ]
         if policy == "recomputable" or adapter == "time_series":
@@ -284,7 +291,7 @@ class ObservationParser:
                 tool_call_id,
                 output,
                 envelope,
-                evidence_ids,
+                source_markers,
             )
             if time_series:
                 return time_series
@@ -293,7 +300,7 @@ class ObservationParser:
                 tool_call_id,
                 output,
                 envelope,
-                evidence_ids,
+                source_markers,
             )
             if doxatlas:
                 return doxatlas
@@ -301,7 +308,7 @@ class ObservationParser:
             tool_call_id,
             output,
             envelope,
-            evidence_ids,
+            source_markers,
             adapter=adapter,
         )
         if blocks:
@@ -313,7 +320,7 @@ class ObservationParser:
                 content=output,
                 envelope=envelope,
                 block_type="json",
-                evidence_ref_ids=evidence_ids,
+                source_markers=source_markers,
             )
         ]
 
@@ -328,11 +335,13 @@ class ObservationService:
         block_store: ObservationBlockStore | None = None,
         parser: ObservationParser | None = None,
         policy_registry: ObservationPolicyRegistry | None = None,
+        aliases: ObservationAliasRegistry | None = None,
     ) -> None:
         self.raw_store = raw_store or RawToolResultStore()
         self.block_store = block_store or ObservationBlockStore()
         self.parser = parser or ObservationParser()
         self.policy_registry = policy_registry or ObservationPolicyRegistry()
+        self.aliases = aliases or ObservationAliasRegistry()
         self._call_indexes: dict[str, ObservationCallIndex] = {}
 
     def ingest(
@@ -359,13 +368,14 @@ class ObservationService:
             adapter=adapter,
         )
         self.block_store.add_many(blocks)
+        self.aliases.register_many(tuple(block.block_id for block in blocks))
         refs = tuple(block.ref for block in blocks)
         if policy == "inline":
             selected = refs
         elif policy == "recomputable":
-            selected = _selected_block_refs(blocks, limit=2)
+            selected = _selected_block_refs(blocks, limit=2, tool_name=result.tool_name)
         else:
-            selected = _selected_block_refs(blocks, limit=3)
+            selected = _selected_block_refs(blocks, limit=3, tool_name=result.tool_name)
         index = ObservationCallIndex(
             tool_call_id=tool_call_id,
             tool_name=result.tool_name,
@@ -388,26 +398,27 @@ class ObservationService:
         if micro and index.policy != "inline":
             selected = selected[:1]
         loaded = [
-            block.agent_view()
+            block.agent_view(self.aliases.alias_for(block.block_id) or "")
             for ref in selected
             if (block := self.block_store.get_by_ref(ref)) is not None
         ]
         return {
-            "outline": index.outline(self.block_store),
+            "outline": index.outline(self.block_store, self.aliases),
             "loaded_blocks": loaded,
             "read_instruction": (
-                "Use read_observation with a listed ref to load exact parent/child/original data."
+                "Use read_observation with a listed O# alias to load exact parent/child/original data."
             ),
         }
 
     def read(
         self,
-        ref: str,
+        alias: str,
         *,
         include_parent: bool = False,
         include_children: bool = False,
     ) -> list[ObservationBlock]:
-        block = self.block_store.get_by_ref(ref)
+        block_id = self.aliases.resolve(alias)
+        block = self.block_store.get(block_id) if block_id is not None else None
         if block is None:
             return []
         blocks = [block]
@@ -441,7 +452,7 @@ def _structured_blocks(
     tool_call_id: str,
     output: JsonDict,
     envelope: JsonDict,
-    evidence_ids: tuple[str, ...],
+    source_markers: tuple[str, ...],
     *,
     adapter: str,
 ) -> list[ObservationBlock]:
@@ -451,13 +462,46 @@ def _structured_blocks(
     prefer_item_refs = adapter == "search_results"
     for key, value in output.items():
         locator = f"/{_escape_pointer(key)}"
+        if key == "fact_pages" and isinstance(value, dict):
+            page_parent = _make_block(
+                tool_call_id=tool_call_id,
+                locator=locator,
+                content={
+                    "field_count": len(value),
+                    "keys": _bounded_outline_keys(value),
+                    "omitted_key_count": max(
+                        0, len(value) - len(_bounded_outline_keys(value))
+                    ),
+                    "original_chars": len(_canonical_json(value)),
+                },
+                envelope={**envelope, "path": locator},
+                block_type="outline",
+                source_markers=source_markers,
+            )
+            blocks.append(page_parent)
+            for page_key, page in value.items():
+                page_locator = f"{locator}/{_escape_pointer(str(page_key))}"
+                blocks.extend(
+                    _value_blocks(
+                        tool_call_id,
+                        page_locator,
+                        page,
+                        {**envelope, "path": page_locator},
+                        source_markers,
+                        parent_block_id=page_parent.block_id,
+                        hierarchy=hierarchy,
+                        force_structure=False,
+                        prefer_item_refs=False,
+                    )
+                )
+            continue
         blocks.extend(
             _value_blocks(
                 tool_call_id,
                 locator,
                 value,
                 {**envelope, "path": locator},
-                evidence_ids,
+                source_markers,
                 hierarchy=hierarchy,
                 force_structure=force_structure,
                 prefer_item_refs=prefer_item_refs,
@@ -470,7 +514,7 @@ def _doxatlas_blocks(
     tool_call_id: str,
     output: JsonDict,
     envelope: JsonDict,
-    evidence_ids: tuple[str, ...],
+    source_markers: tuple[str, ...],
 ) -> list[ObservationBlock]:
     narratives = output.get("narratives")
     blocks: list[ObservationBlock] = []
@@ -492,7 +536,7 @@ def _doxatlas_blocks(
             content=narrative,
             envelope={**envelope, "narrative": narrative_code},
             block_type="doxatlas_narrative",
-            evidence_ref_ids=evidence_ids,
+            source_markers=source_markers,
         )
         blocks.append(narrative_block)
         events = narrative.get("events")
@@ -520,7 +564,7 @@ def _doxatlas_blocks(
                     "event": event_code,
                 },
                 block_type="doxatlas_event",
-                evidence_ref_ids=evidence_ids,
+                source_markers=source_markers,
                 parent_block_id=narrative_block.block_id,
             )
             blocks.append(event_block)
@@ -551,7 +595,7 @@ def _doxatlas_blocks(
                             "proposition": proposition_code,
                         },
                         block_type="doxatlas_proposition",
-                        evidence_ref_ids=evidence_ids,
+                        source_markers=source_markers,
                         parent_block_id=event_block.block_id,
                     )
                 )
@@ -610,7 +654,7 @@ def _doxatlas_blocks(
                         item_kind: code,
                     },
                     block_type=f"doxatlas_{item_kind}",
-                    evidence_ref_ids=evidence_ids,
+                    source_markers=source_markers,
                 )
             )
     return blocks
@@ -621,7 +665,7 @@ def _value_blocks(
     locator: str,
     value: Any,
     envelope: JsonDict,
-    evidence_ids: tuple[str, ...],
+    source_markers: tuple[str, ...],
     *,
     parent_block_id: str | None = None,
     hierarchy: bool = False,
@@ -635,7 +679,7 @@ def _value_blocks(
             locator,
             value,
             envelope,
-            evidence_ids,
+            source_markers,
             parent_block_id=parent_block_id,
         )
     if isinstance(value, dict) and (
@@ -646,13 +690,13 @@ def _value_blocks(
             locator=locator,
             content={
                 "field_count": len(value),
-                "keys": [str(key) for key in list(value)[:128]],
-                "omitted_key_count": max(0, len(value) - 128),
+                "keys": _bounded_outline_keys(value),
+                "omitted_key_count": max(0, len(value) - len(_bounded_outline_keys(value))),
                 "original_chars": rendered_chars,
             },
             envelope={**envelope, "path": locator},
             block_type="outline",
-            evidence_ref_ids=evidence_ids,
+            source_markers=source_markers,
             parent_block_id=parent_block_id,
         )
         blocks = [parent]
@@ -664,7 +708,7 @@ def _value_blocks(
                     child_locator,
                     item,
                     {**envelope, "path": child_locator},
-                    evidence_ids,
+                    source_markers,
                     parent_block_id=parent.block_id,
                     hierarchy=hierarchy,
                     force_structure=force_structure,
@@ -680,7 +724,7 @@ def _value_blocks(
                 content={"item_count": len(value), "original_chars": rendered_chars},
                 envelope={**envelope, "path": locator},
                 block_type="outline",
-                evidence_ref_ids=evidence_ids,
+                source_markers=source_markers,
                 parent_block_id=parent_block_id,
             )
             blocks = [parent]
@@ -692,7 +736,7 @@ def _value_blocks(
                         child_locator,
                         item,
                         {**envelope, "path": child_locator},
-                        evidence_ids,
+                        source_markers,
                         parent_block_id=parent.block_id,
                         hierarchy=hierarchy,
                         force_structure=False,
@@ -702,14 +746,14 @@ def _value_blocks(
             return blocks
         rows = [item for item in value if isinstance(item, dict)]
         if rows and len(rows) == len(value) and all(
-            len(_canonical_json(row)) <= _MAX_NATURAL_BLOCK_CHARS for row in rows
+            _single_table_row_chars(row) <= _MAX_NATURAL_BLOCK_CHARS for row in rows
         ):
             return _table_blocks(
                 tool_call_id,
                 locator,
                 value,
                 envelope,
-                evidence_ids,
+                source_markers,
                 parent_block_id=parent_block_id,
             )
         parent = _make_block(
@@ -718,7 +762,7 @@ def _value_blocks(
             content={"item_count": len(value), "original_chars": rendered_chars},
             envelope={**envelope, "path": locator},
             block_type="outline",
-            evidence_ref_ids=evidence_ids,
+            source_markers=source_markers,
             parent_block_id=parent_block_id,
         )
         blocks = [parent]
@@ -730,7 +774,7 @@ def _value_blocks(
                     child_locator,
                     item,
                     {**envelope, "path": child_locator},
-                    evidence_ids,
+                    source_markers,
                     parent_block_id=parent.block_id,
                     hierarchy=hierarchy,
                     force_structure=force_structure,
@@ -746,7 +790,7 @@ def _value_blocks(
             content=value,
             envelope=envelope,
             block_type=block_type,
-            evidence_ref_ids=evidence_ids,
+            source_markers=source_markers,
             parent_block_id=parent_block_id,
         )
     ]
@@ -757,17 +801,11 @@ def _text_blocks(
     locator: str,
     text: str,
     envelope: JsonDict,
-    evidence_ids: tuple[str, ...],
+    source_markers: tuple[str, ...],
     *,
     parent_block_id: str | None,
 ) -> list[ObservationBlock]:
-    paragraphs = [item.strip() for item in re.split(r"\n\s*\n", text) if item.strip()]
-    normalized: list[str] = []
-    for paragraph in paragraphs or [text]:
-        normalized.extend(
-            paragraph[index : index + _MAX_NATURAL_BLOCK_CHARS - 256]
-            for index in range(0, len(paragraph), _MAX_NATURAL_BLOCK_CHARS - 256)
-        )
+    normalized = _exact_text_segments(text)
     blocks: list[ObservationBlock] = []
     start = 0
     while start < len(normalized):
@@ -775,7 +813,7 @@ def _text_blocks(
         end = start
         while end < len(normalized) and len(group) < _PARAGRAPHS_PER_BLOCK:
             candidate = [*group, normalized[end]]
-            if group and len(_canonical_json("\n\n".join(candidate))) > _MAX_NATURAL_BLOCK_CHARS:
+            if group and len(_canonical_json("".join(candidate))) > _MAX_NATURAL_BLOCK_CHARS:
                 break
             group = candidate
             end += 1
@@ -785,10 +823,10 @@ def _text_blocks(
             _make_block(
                 tool_call_id=tool_call_id,
                 locator=child_locator,
-                content="\n\n".join(group),
+                content="".join(group),
                 envelope={**envelope, "paragraphs": f"{start}-{end}"},
                 block_type="text",
-                evidence_ref_ids=evidence_ids,
+                source_markers=source_markers,
                 parent_block_id=parent_block_id,
             )
         )
@@ -796,23 +834,48 @@ def _text_blocks(
     return blocks
 
 
+def _exact_text_segments(text: str) -> list[str]:
+    """Split on paragraph boundaries while keeping every segment byte-for-byte exact."""
+
+    paragraph_spans: list[str] = []
+    cursor = 0
+    for match in re.finditer(r"\n[ \t]*\n", text):
+        paragraph_spans.append(text[cursor : match.end()])
+        cursor = match.end()
+    if cursor < len(text):
+        paragraph_spans.append(text[cursor:])
+    if not paragraph_spans:
+        paragraph_spans = [text]
+    segment_chars = _MAX_NATURAL_BLOCK_CHARS - 256
+    return [
+        paragraph[index : index + segment_chars]
+        for paragraph in paragraph_spans
+        for index in range(0, len(paragraph), segment_chars)
+    ]
+
+
 def _time_series_blocks(
     tool_call_id: str,
     output: JsonDict,
     envelope: JsonDict,
-    evidence_ids: tuple[str, ...],
+    source_markers: tuple[str, ...],
 ) -> list[ObservationBlock]:
     for key in _TIME_SERIES_KEYS:
         value = output.get(key)
         if not isinstance(value, list) or not _looks_like_table(value):
             continue
         rows = [deepcopy(item) for item in value if isinstance(item, dict)]
-        if any(
-            len(_canonical_json(row)) > _MAX_NATURAL_BLOCK_CHARS for row in rows
-        ):
+        if any(_single_table_row_chars(row) > _MAX_NATURAL_BLOCK_CHARS for row in rows):
             continue
         blocks: list[ObservationBlock] = []
-        for start, group in _bounded_row_groups(rows):
+        for start, group in _bounded_row_groups(
+            rows,
+            overhead={
+                "series_key": key,
+                "unit": output.get("unit"),
+                "currency": output.get("currency"),
+            },
+        ):
             start_label = _row_label(group[0], start)
             end_label = _row_label(group[-1], start + len(group) - 1)
             locator = f"rows/{start_label}..{end_label}"
@@ -836,7 +899,7 @@ def _time_series_blocks(
                         "currency": output.get("currency"),
                     },
                     block_type="time_series",
-                    evidence_ref_ids=evidence_ids,
+                    source_markers=source_markers,
                 )
             )
         return blocks
@@ -848,7 +911,7 @@ def _table_blocks(
     locator: str,
     value: list[Any],
     envelope: JsonDict,
-    evidence_ids: tuple[str, ...],
+    source_markers: tuple[str, ...],
     *,
     parent_block_id: str | None = None,
 ) -> list[ObservationBlock]:
@@ -865,20 +928,27 @@ def _table_blocks(
                 content={"columns": columns, "rows": group},
                 envelope={**envelope, "path": child_locator, "columns": columns},
                 block_type="table",
-                evidence_ref_ids=evidence_ids,
+                source_markers=source_markers,
                 parent_block_id=parent_block_id,
             )
         )
     return blocks
 
 
-def _bounded_row_groups(rows: list[JsonDict]) -> list[tuple[int, list[JsonDict]]]:
+def _bounded_row_groups(
+    rows: list[JsonDict],
+    *,
+    overhead: JsonDict | None = None,
+) -> list[tuple[int, list[JsonDict]]]:
     groups: list[tuple[int, list[JsonDict]]] = []
     current: list[JsonDict] = []
     start = 0
     for index, row in enumerate(rows):
         candidate = [*current, row]
-        candidate_chars = len(_canonical_json({"rows": candidate}))
+        columns = sorted({str(column) for item in candidate for column in item})
+        candidate_chars = len(
+            _canonical_json({**(overhead or {}), "columns": columns, "rows": candidate})
+        )
         if current and (
             len(current) >= _TABLE_ROWS_PER_BLOCK
             or candidate_chars > _MAX_NATURAL_BLOCK_CHARS
@@ -895,11 +965,43 @@ def _bounded_row_groups(rows: list[JsonDict]) -> list[tuple[int, list[JsonDict]]
     return groups
 
 
+def _single_table_row_chars(row: JsonDict) -> int:
+    return len(
+        _canonical_json(
+            {"columns": sorted(str(column) for column in row), "rows": [row]}
+        )
+    )
+
+
 def _selected_block_refs(
     blocks: list[ObservationBlock],
     *,
     limit: int,
+    tool_name: str = "",
 ) -> tuple[str, ...]:
+    if tool_name == "sec.company_facts_and_filings":
+        preferred: list[ObservationBlock] = []
+        for locator_prefix in (
+            "/fact_directory",
+            "/key_facts",
+            "/fact_pages/page_0001",
+            "/recent_filings",
+        ):
+            candidates = [
+                block for block in blocks if block.locator.startswith(locator_prefix)
+            ]
+            candidates.sort(
+                key=lambda block: (
+                    1 if block.block_type == "outline" else 0,
+                    _locator_depth(block.locator),
+                    block.locator,
+                )
+            )
+            if candidates:
+                preferred.append(candidates[0])
+        deduplicated = list(dict.fromkeys(block.ref for block in preferred))
+        if len(deduplicated) >= limit:
+            return tuple(deduplicated[:limit])
     root_outlines = [
         block
         for block in blocks
@@ -917,6 +1019,16 @@ def _selected_block_refs(
     ]
     ordered = [*root_outlines, *substantive, *remaining]
     return tuple(block.ref for block in ordered[:limit])
+
+
+def _bounded_outline_keys(value: JsonDict) -> list[str]:
+    keys: list[str] = []
+    for key in value:
+        candidate = [*keys, str(key)]
+        if len(candidate) > 32 or len(_canonical_json(candidate)) > 700:
+            break
+        keys = candidate
+    return keys
 
 
 def _locator_depth(locator: str) -> int:
@@ -940,7 +1052,7 @@ def _make_block(
     content: Any,
     envelope: JsonDict,
     block_type: str,
-    evidence_ref_ids: tuple[str, ...],
+    source_markers: tuple[str, ...],
     parent_block_id: str | None = None,
 ) -> ObservationBlock:
     canonical = _canonical_json(content)
@@ -956,14 +1068,13 @@ def _make_block(
         context_envelope=deepcopy(envelope),
         content_hash=content_hash,
         block_type=block_type,
-        evidence_ref_ids=evidence_ref_ids,
     )
 
 
 def _base_envelope(
     tool_name: str,
     output: JsonDict,
-    evidence_ids: tuple[str, ...],
+    source_markers: tuple[str, ...],
 ) -> JsonDict:
     envelope: JsonDict = {"tool": tool_name}
     for key in (
@@ -980,12 +1091,11 @@ def _base_envelope(
         "title",
         "unit",
         "currency",
+        "source_coordinates",
     ):
         value = output.get(key)
         if value not in (None, "", [], {}):
             envelope[key] = deepcopy(value)
-    if evidence_ids:
-        envelope["evidence_ref_ids"] = list(evidence_ids)
     return envelope
 
 

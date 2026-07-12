@@ -12,7 +12,6 @@ from doxagent.context.schema import (
 from doxagent.models import (
     AgentTask,
     DocumentType,
-    EvidenceRef,
     KnownEventsDocument,
     MonitoringPolicyDocument,
 )
@@ -99,7 +98,6 @@ class ContextBuilder:
             working_memory_summary: list[WorkingMemorySummary] = []
             unresolved_objections: list[ObjectionSummary] = []
             blocking_delegations: list[BlockingDelegationSummary] = []
-            evidence_refs: list[EvidenceRef] = []
         else:
             working_memory_summary = self._working_memory_summaries(
                 run_id,
@@ -110,10 +108,6 @@ class ContextBuilder:
             )
             blocking_delegations = self._delegation_summaries(
                 repository.list_blocking_delegations(run_id)
-            )
-            evidence_refs = self._collect_evidence(
-                working_memory_summary,
-                unresolved_objections,
             )
         return AgentContextSnapshot(
             run_id=run_id,
@@ -133,7 +127,6 @@ class ContextBuilder:
             skill_summaries=task.skill_bundle.skills if task.skill_bundle is not None else [],
             belief_state_summary=belief_state_summary,
             working_memory_summary=working_memory_summary,
-            evidence_refs=evidence_refs,
             unresolved_objections=unresolved_objections,
             blocking_delegations=blocking_delegations,
         )
@@ -151,7 +144,6 @@ class ContextBuilder:
             working_memory_summary: list[WorkingMemorySummary] = []
             unresolved_objections: list[ObjectionSummary] = []
             blocking_delegations: list[BlockingDelegationSummary] = []
-            evidence_refs: list[EvidenceRef] = []
         else:
             working_memory_summary = [
                 WorkingMemorySummary(
@@ -159,7 +151,6 @@ class ContextBuilder:
                     author_agent=entry.author_agent,
                     content_type=entry.content_type,
                     payload=_agent_visible_working_memory_payload(entry.payload),
-                    evidence_refs=entry.evidence_refs,
                 )
                 for entry in run.working_memory
                 if "working_memory" in scopes or task.permissions.can_access_private_memory
@@ -177,7 +168,6 @@ class ContextBuilder:
                     target_path=objection.target_path,
                     merged_objection_ids=list(objection.merged_objection_ids),
                     reason=objection.reason,
-                    evidence_refs=objection.evidence_refs,
                 )
                 for objection in run.objections
                 if objection.is_unresolved
@@ -195,10 +185,6 @@ class ContextBuilder:
                 for delegation in run.delegations
                 if delegation.is_blocking
             ]
-            evidence_refs = self._collect_evidence(
-                working_memory_summary,
-                unresolved_objections,
-            )
         return AgentContextSnapshot(
             run_id=run.run_id,
             ticker=run.ticker,
@@ -217,7 +203,6 @@ class ContextBuilder:
             skill_summaries=task.skill_bundle.skills if task.skill_bundle is not None else [],
             belief_state_summary=belief_state_summary,
             working_memory_summary=working_memory_summary,
-            evidence_refs=evidence_refs,
             unresolved_objections=unresolved_objections,
             blocking_delegations=blocking_delegations,
         )
@@ -337,7 +322,6 @@ class ContextBuilder:
                 payload=_agent_visible_working_memory_payload(entry.payload)
                 if entry.payload
                 else {},
-                evidence_refs=entry.evidence_refs,
             )
             for entry in loader(run_id, include_payload=include)
         ]
@@ -356,7 +340,6 @@ class ContextBuilder:
                 target_path=objection.target_path,
                 merged_objection_ids=list(objection.merged_objection_ids),
                 reason=objection.reason,
-                evidence_refs=objection.evidence_refs,
             )
             for objection in objections
         ]
@@ -415,21 +398,6 @@ class ContextBuilder:
             for document_type, document in filtered_documents.items()
             if document_type.value in scopes
         }
-
-    def _collect_evidence(
-        self,
-        working_memory: list[WorkingMemorySummary],
-        objections: list[ObjectionSummary],
-    ) -> list[EvidenceRef]:
-        evidence_by_id: dict[str, EvidenceRef] = {}
-        for entry in working_memory:
-            for evidence in entry.evidence_refs:
-                evidence_by_id[evidence.evidence_id] = evidence
-        for objection in objections:
-            for evidence in objection.evidence_refs:
-                evidence_by_id[evidence.evidence_id] = evidence
-        return list(evidence_by_id.values())
-
 
 def _agent_visible_working_memory_payload(payload: dict[str, Any]) -> dict[str, Any]:
     if not _looks_like_agent_result_memory(payload):
@@ -503,9 +471,6 @@ def _compact_structured_payload(payload: dict[str, Any]) -> dict[str, Any]:
                 compact[key] = _compact_payload_value(payload[key], depth=2)
         if "text" in payload:
             compact["text_preview"] = _compact_text(payload.get("text"), limit=1_500)
-        evidence_refs = payload.get("evidence_refs")
-        if isinstance(evidence_refs, list):
-            compact["evidence_count"] = len(evidence_refs)
         return compact
     patches = payload.get("proposed_patches")
     if isinstance(patches, list):

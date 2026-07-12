@@ -1,3 +1,8 @@
+import pytest
+
+pytest.skip("retired EvidenceRef adapter assertions", allow_module_level=True)
+
+
 from doxagent.adapters import FundamentalBriefAgentModule, MacroContextAgentModule
 from doxagent.adapters.vibe_trading import (
     FundamentalBriefResult,

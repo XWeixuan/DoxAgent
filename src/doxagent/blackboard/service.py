@@ -19,7 +19,6 @@ from doxagent.models import (
     CommitLogEntry,
     Delegation,
     DelegationStatus,
-    EvidenceRef,
     Objection,
     ObjectionSeverity,
     ObjectionStatus,
@@ -49,7 +48,6 @@ class BlackboardService:
         author_agent: AgentName,
         content_type: str,
         payload: dict[str, Any],
-        evidence_refs: list[EvidenceRef] | None = None,
     ) -> WorkingMemoryEntry:
         header_loader = getattr(self.repository, "get_run_header", None)
         inserter = getattr(self.repository, "insert_working_memory_entry", None)
@@ -61,7 +59,6 @@ class BlackboardService:
                 author_agent=author_agent,
                 content_type=content_type,
                 payload=payload,
-                evidence_refs=evidence_refs or [],
                 created_at=datetime.now(UTC),
             )
             inserter(run_id, entry)
@@ -78,7 +75,6 @@ class BlackboardService:
                     author_agent=author_agent,
                     content_type=content_type,
                     payload=payload,
-                    evidence_refs=evidence_refs or [],
                     created_at=datetime.now(UTC),
                 )
             if any(existing.entry_id == entry.entry_id for existing in run.working_memory):
@@ -266,7 +262,6 @@ class BlackboardService:
         note: str,
         *,
         changed_paths: list[str] | None = None,
-        evidence_refs: list[EvidenceRef] | None = None,
     ) -> Objection:
         return self._set_objection_status(
             run_id,
@@ -274,7 +269,6 @@ class BlackboardService:
             ObjectionStatus.RESOLVED,
             note,
             changed_paths=changed_paths,
-            evidence_refs=evidence_refs,
         )
 
     def accept_objection(
@@ -284,7 +278,6 @@ class BlackboardService:
         note: str,
         *,
         changed_paths: list[str] | None = None,
-        evidence_refs: list[EvidenceRef] | None = None,
     ) -> Objection:
         return self._set_objection_status(
             run_id,
@@ -292,7 +285,6 @@ class BlackboardService:
             ObjectionStatus.ACCEPTED,
             note,
             changed_paths=changed_paths,
-            evidence_refs=evidence_refs,
         )
 
     def partially_accept_objection(
@@ -302,7 +294,6 @@ class BlackboardService:
         note: str,
         *,
         changed_paths: list[str] | None = None,
-        evidence_refs: list[EvidenceRef] | None = None,
     ) -> Objection:
         return self._set_objection_status(
             run_id,
@@ -310,7 +301,6 @@ class BlackboardService:
             ObjectionStatus.PARTIALLY_ACCEPTED,
             note,
             changed_paths=changed_paths,
-            evidence_refs=evidence_refs,
         )
 
     def reject_objection(
@@ -320,7 +310,6 @@ class BlackboardService:
         note: str,
         *,
         changed_paths: list[str] | None = None,
-        evidence_refs: list[EvidenceRef] | None = None,
     ) -> Objection:
         return self._set_objection_status(
             run_id,
@@ -328,7 +317,6 @@ class BlackboardService:
             ObjectionStatus.REJECTED,
             note,
             changed_paths=changed_paths,
-            evidence_refs=evidence_refs,
         )
 
     def mark_objection_unresolved(self, run_id: str, objection_id: str, note: str) -> Objection:
@@ -366,7 +354,6 @@ class BlackboardService:
         author_agent: AgentName,
         content_type: str,
         payload: dict[str, Any],
-        evidence_refs: list[EvidenceRef] | None = None,
     ) -> WorkingMemoryEntry:
         run = self.repository.get(run_id)
         entry = WorkingMemoryEntry(
@@ -375,7 +362,6 @@ class BlackboardService:
             author_agent=author_agent,
             content_type=content_type,
             payload=payload,
-            evidence_refs=evidence_refs or [],
             created_at=datetime.now(UTC),
         )
         run.working_memory.append(entry)
@@ -395,8 +381,6 @@ class BlackboardService:
             raise PatchValidationError(
                 f"Agent cannot write document type: {patch.target.document_type.value}"
             )
-        if not patch.evidence_refs:
-            raise PatchValidationError("Patch must include at least one evidence reference.")
         if not can_promote_target(patch.target, run.objections, run.delegations):
             raise PatchValidationError("Patch target is blocked by objection or delegation.")
 
@@ -439,7 +423,6 @@ class BlackboardService:
         note: str,
         *,
         changed_paths: list[str] | None = None,
-        evidence_refs: list[EvidenceRef] | None = None,
     ) -> Objection:
         getter = getattr(self.repository, "get_objections_by_ids", None)
         updater = getattr(self.repository, "update_objection", None)
@@ -455,9 +438,6 @@ class BlackboardService:
                     "resolution_changed_paths": changed_paths
                     if changed_paths is not None
                     else objection.resolution_changed_paths,
-                    "resolution_evidence_refs": evidence_refs
-                    if evidence_refs is not None
-                    else objection.resolution_evidence_refs,
                 },
                 deep=True,
             )
@@ -480,9 +460,6 @@ class BlackboardService:
                             "resolution_changed_paths": changed_paths
                             if changed_paths is not None
                             else objection.resolution_changed_paths,
-                            "resolution_evidence_refs": evidence_refs
-                            if evidence_refs is not None
-                            else objection.resolution_evidence_refs,
                         },
                         deep=True,
                     )
@@ -584,8 +561,6 @@ def _objection_dedupe_key(objection: Objection) -> tuple[str, str, str]:
 
 
 def _merge_objections(existing: Objection, incoming: Objection) -> Objection:
-    evidence_by_id = {item.evidence_id: item for item in existing.evidence_refs}
-    evidence_by_id.update({item.evidence_id: item for item in incoming.evidence_refs})
     merged_ids = [
         *existing.merged_objection_ids,
         incoming.objection_id,
@@ -603,7 +578,6 @@ def _merge_objections(existing: Objection, incoming: Objection) -> Objection:
         update={
             "severity": severity,
             "reason": reason,
-            "evidence_refs": list(evidence_by_id.values()),
             "merged_objection_ids": list(dict.fromkeys(merged_ids)),
             "target_path": existing.target_path or incoming.target_path,
             "dedupe_hash": existing.dedupe_hash or incoming.dedupe_hash,

@@ -15,8 +15,6 @@ from doxagent.agents import MarketTraceAgentModule
 from doxagent.models import (
     AgentName,
     AgentResult,
-    EvidenceRef,
-    EvidenceSourceType,
     GlobalResearchDocument,
     ResearchSection,
     ResultStatus,
@@ -233,9 +231,6 @@ class GlobalResearchAssembler:
 
     def _section(self, result: AgentResult, author: AgentName, label: str) -> ResearchSection:
         structured = self._structured(result)
-        evidence_refs = list(result.evidence_refs)
-        if not evidence_refs:
-            raise WorkflowContractError(f"{label} module output has no evidence refs.")
         summary = str(
             result.payload.get("markdown_summary")
             or structured.get("markdown_summary")
@@ -244,7 +239,6 @@ class GlobalResearchAssembler:
         return ResearchSection(
             text=self._section_text(label, structured, summary),
             summary=summary,
-            evidence_refs=evidence_refs,
             author_agent=author,
             reviewer_agents=[AgentName.O1_EXPECTATION_OWNER],
         )
@@ -254,27 +248,12 @@ class GlobalResearchAssembler:
         ticker: str,
         inputs: GlobalResearchInputs,
     ) -> ResearchSection:
-        evidence = EvidenceRef(
-            evidence_id=new_id("evidence"),
-            source_type=EvidenceSourceType.AGENT_OUTPUT,
-            source_id=f"workflow:pending_market_narrative:{ticker}",
-            title="Pending market narrative integration",
-            summary="Market narrative report awaits O1/DoxAtlas integration in a later phase.",
-            retrieval_metadata={
-                "integration_phase": "3.6",
-                "pending_dependency": "O1/DoxAtlas narrative research",
-                "market": inputs.market,
-            },
-            confidence=0.2,
-            citation_scope="global_research.market_narrative_report",
-        )
         return ResearchSection(
             text=(
                 "Pending O1/DoxAtlas narrative integration. This section is a placeholder "
                 "and must not be treated as a completed market narrative conclusion."
             ),
             summary="Pending O1/DoxAtlas narrative integration.",
-            evidence_refs=[evidence],
             author_agent=AgentName.O1_EXPECTATION_OWNER,
             reviewer_agents=[],
         )

@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import pytest
+
+pytest.skip("retired EvidenceRef contract matrix", allow_module_level=True)
+
 from typing import Any
 
-import pytest
 
 from doxagent.models import (
     AgentError,

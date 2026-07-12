@@ -28,7 +28,6 @@ class WorkingMemoryEntrySummary:
     entry_id: str
     author_agent: AgentName
     content_type: str
-    evidence_refs: list[Any]
     payload: dict[str, Any] | None = None
 
 
@@ -189,7 +188,6 @@ class InMemoryBlackboardRepository:
                 entry_id=entry.entry_id,
                 author_agent=entry.author_agent,
                 content_type=entry.content_type,
-                evidence_refs=list(entry.evidence_refs),
                 payload=entry.payload if include_payload else None,
             )
             for entry in self.get(run_id).working_memory

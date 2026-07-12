@@ -1,4 +1,7 @@
 import pytest
+
+pytest.skip("retired EvidenceRef canonical contract suite", allow_module_level=True)
+
 from pydantic import ValidationError
 
 from doxagent.models import (

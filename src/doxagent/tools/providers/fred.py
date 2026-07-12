@@ -6,7 +6,7 @@ from collections.abc import Iterable
 
 import httpx
 
-from doxagent.models import EvidenceSourceType, ResultStatus
+from doxagent.models import ResultStatus
 from doxagent.tools.providers.base import (
     BaseRealToolClient,
     JsonObject,
@@ -75,7 +75,9 @@ class FredSeriesObservationsClient(BaseRealToolClient):
                 )
 
             observations: JsonObject = {}
+            raw_observations: JsonObject = {}
             failed_series: list[JsonObject] = []
+            limit = _bounded_limit(request.input.get("limit", 100), minimum=1, maximum=1_000)
             params_base = {
                 "api_key": api_key,
                 "file_type": "json",
@@ -87,11 +89,13 @@ class FredSeriesObservationsClient(BaseRealToolClient):
                 ),
                 "units": _input_str(request, "units", "lin"),
                 "frequency": _input_str(request, "frequency", ""),
+                "limit": limit,
+                "sort_order": "desc",
             }
             for batch in _chunks(allowed_ids, FRED_SERIES_BATCH_SIZE):
                 for series_id in batch:
                     try:
-                        observations[series_id] = self._get_json(
+                        raw_series = self._get_json(
                             f"{self.settings.fred_base_url.rstrip('/')}/fred/series/observations",
                             params={**params_base, "series_id": series_id},
                             cache_ttl=self.settings.macro_cache_ttl_seconds,
@@ -99,6 +103,26 @@ class FredSeriesObservationsClient(BaseRealToolClient):
                             min_interval_seconds=self.settings.fred_min_request_interval_seconds,
                             max_rate_limit_retries=1,
                         )
+                        raw_observations[series_id] = raw_series
+                        issue = _fred_payload_issue(raw_series)
+                        if issue is not None:
+                            failed_series.append({"series_id": series_id, **issue})
+                            continue
+                        bounded = _bounded_fred_payload(raw_series, limit)
+                        if not bounded.get("observations"):
+                            failed_series.append(
+                                {
+                                    "series_id": series_id,
+                                    "code": "empty_result",
+                                    "message": (
+                                        "FRED returned no observations for the requested range."
+                                    ),
+                                    "retryable": False,
+                                    "details": {},
+                                }
+                            )
+                            continue
+                        observations[series_id] = bounded
                     except ProviderHttpError as exc:
                         failed_series.append(
                             {
@@ -160,26 +184,27 @@ class FredSeriesObservationsClient(BaseRealToolClient):
                 "failed_series": failed_series,
                 "unsupported_series": unsupported_ids,
                 "batch_size": FRED_SERIES_BATCH_SIZE,
+                "requested_limit": limit,
             }
             if failed_series or unsupported_ids:
                 return _fred_partial_result(
                     request,
                     output=output,
-                    raw=observations,
+                    raw=raw_observations,
                     clean_ids=clean_ids,
                     succeeded_ids=list(observations),
                 )
             return self._success(
                 request,
                 output=output,
-                raw=observations,
-                source_type=EvidenceSourceType.EXTERNAL_REPORT,
+                raw=raw_observations,
+                source_kind="external_report",
                 source_id=f"fred:{','.join(clean_ids)}",
                 title="FRED 序列观察值",
                 summary="已检索 FRED 宏观/商品序列观察值。",
-                citation_scope="fred_series_observations",
+                source_scope="fred_series_observations",
                 confidence=0.88,
-                metadata={"series_ids": clean_ids},
+                metadata={"series_ids": clean_ids, "limit": limit, "sort_order": "desc"},
             )
         except Exception as exc:
             return self._handle_exception(request, exc)
@@ -202,6 +227,35 @@ def _chunks(items: list[str], size: int) -> Iterable[list[str]]:
         yield items[index : index + size]
 
 
+def _bounded_limit(value: object, *, minimum: int, maximum: int) -> int:
+    try:
+        parsed = int(str(value))
+    except (TypeError, ValueError):
+        parsed = 100
+    return max(minimum, min(maximum, parsed))
+
+
+def _fred_payload_issue(raw: JsonObject) -> JsonObject | None:
+    message = raw.get("error_message") or raw.get("error")
+    if message in (None, "", [], {}):
+        return None
+    return {
+        "code": "upstream_provider_error",
+        "message": str(message),
+        "retryable": False,
+        "details": {"provider_error_code": raw.get("error_code")},
+    }
+
+
+def _bounded_fred_payload(raw: JsonObject, limit: int) -> JsonObject:
+    bounded = dict(raw)
+    rows = raw.get("observations")
+    bounded["observations"] = list(rows[:limit]) if isinstance(rows, list) else []
+    bounded["returned_observation_count"] = len(bounded["observations"])
+    bounded["requested_limit"] = limit
+    return bounded
+
+
 def _fred_partial_result(
     request: ToolRequest,
     *,
@@ -210,6 +264,16 @@ def _fred_partial_result(
     clean_ids: list[str],
     succeeded_ids: list[str],
 ) -> ToolResult:
+    output = dict(output)
+    output.setdefault(
+        "source_coordinates",
+        {
+            "source_kind": "external_report",
+            "source_id": f"fred:{','.join(succeeded_ids)}",
+            "series_ids": clean_ids,
+            "succeeded_series_ids": succeeded_ids,
+        },
+    )
     result = ToolResult(
         tool_name=request.tool_name,
         status=ResultStatus.PARTIAL,
@@ -229,30 +293,4 @@ def _fred_partial_result(
             },
         ),
     )
-    return result.model_copy(
-        update={
-            "evidence_refs": [
-                result.to_evidence_ref(
-                    source_type=EvidenceSourceType.EXTERNAL_REPORT,
-                    source_id=f"fred:{','.join(succeeded_ids)}",
-                    title="FRED 序列观察值",
-                    citation_scope="fred_series_observations",
-                    confidence=0.78,
-                ).model_copy(
-                    update={
-                        "retrieval_metadata": {
-                            "tool_name": request.tool_name,
-                            "provider": "fred",
-                            "series_ids": clean_ids,
-                            "succeeded_series_ids": succeeded_ids,
-                            "failed_series_count": len(output.get("failed_series", [])),
-                            "unsupported_series_count": len(
-                                output.get("unsupported_series", [])
-                            ),
-                        }
-                    }
-                )
-            ]
-        },
-        deep=True,
-    )
+    return result

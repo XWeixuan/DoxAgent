@@ -14,7 +14,6 @@ from doxagent.agents.market_trace.analysis import (
 from doxagent.agents.market_trace.providers import MockMarketDataProvider
 from doxagent.agents.market_trace.schema import (
     MarketDataProvider,
-    MarketDataSourceRef,
     MarketDataUnknown,
     MarketTraceRequest,
     MarketTraceResult,
@@ -22,8 +21,6 @@ from doxagent.agents.market_trace.schema import (
 from doxagent.models import (
     AgentName,
     AgentResult,
-    EvidenceRef,
-    EvidenceSourceType,
     ResultStatus,
     new_id,
 )
@@ -145,7 +142,6 @@ class MarketTraceAgentModule:
                     "skill_versions": _skill_versions(MARKET_TRACE_SKILL_IDS),
                 },
             },
-            evidence_refs=_evidence_refs(source_refs),
         )
 
 
@@ -158,27 +154,6 @@ def _dedupe_symbols(symbols: list[str], ticker: str) -> list[str]:
             seen.add(clean)
             result.append(clean)
     return result
-
-
-def _evidence_refs(source_refs: list[MarketDataSourceRef]) -> list[EvidenceRef]:
-    return [
-        EvidenceRef(
-            evidence_id=new_id("evidence"),
-            source_type=EvidenceSourceType.MARKET_DATA,
-            source_id=f"market_trace:{source.source_id}",
-            title=source.title,
-            summary=f"{source.title} used for {source.citation_scope}.",
-            retrieval_metadata={
-                **source.retrieval_metadata,
-                "agent": "O4",
-                "module": "market_trace",
-                "skill_versions": _skill_versions(MARKET_TRACE_SKILL_IDS),
-            },
-            confidence=source.confidence,
-            citation_scope=source.citation_scope,
-        )
-        for source in source_refs
-    ]
 
 
 def _markdown_summary(

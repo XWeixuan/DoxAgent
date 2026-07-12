@@ -8,10 +8,9 @@ from doxagent.models.blackboard import (
     BlackboardPatch,
     BlackboardTarget,
     Delegation,
-    EvidenceRef,
     Objection,
 )
-from doxagent.models.common import AgentName, EvidenceSourceType
+from doxagent.models.common import AgentName
 from doxagent.models.contracts import ContractModel, ToolCallSummary
 from doxagent.models.documents import (
     EventMonitoringDirection,
@@ -31,7 +30,6 @@ class ExpectationShell(ContractModel):
     direction: Literal["bullish", "bearish", "neutral", "risk"]
     why_it_matters: NonEmptyStr
     market_view: ResearchSection
-    evidence_refs: list[EvidenceRef] = Field(default_factory=list)
     unknowns: list[NonEmptyStr] = Field(default_factory=list)
     rationale: NonEmptyStr
 
@@ -40,7 +38,6 @@ class ExpectationShellConstructionResult(ContractModel):
     """O1 output for the construction phase: I/II only, no stable patches."""
 
     shells: list[ExpectationShell] = Field(default_factory=list)
-    evidence_refs: list[EvidenceRef] = Field(default_factory=list)
     delegations: list[Delegation] = Field(default_factory=list)
     unknowns: list[NonEmptyStr] = Field(default_factory=list)
     rationale: NonEmptyStr
@@ -53,14 +50,12 @@ class ObjectionResolutionDecision(ContractModel):
     decision: Literal["resolved", "accepted", "partially_accepted", "rejected"]
     resolution_note: NonEmptyStr
     changed_paths: list[NonEmptyStr] = Field(default_factory=list)
-    evidence_refs: list[EvidenceRef] = Field(default_factory=list)
 
 
 class ExpectationConstructionResult(ContractModel):
     """O1 output for full expectation patches and objection revisions."""
 
     proposed_patches: list[BlackboardPatch] = Field(default_factory=list)
-    evidence_refs: list[EvidenceRef] = Field(default_factory=list)
     delegations: list[Delegation] = Field(default_factory=list)
     unknowns: list[NonEmptyStr] = Field(default_factory=list)
     rationale: NonEmptyStr
@@ -79,7 +74,6 @@ class ExpectationDetailCandidateResult(ContractModel):
     """O1 output for one complete expectation-unit candidate, without patches."""
 
     candidate: ExpectationUnitDocument
-    evidence_refs: list[EvidenceRef] = Field(default_factory=list)
     delegations: list[Delegation] = Field(default_factory=list)
     unknowns: list[NonEmptyStr] = Field(default_factory=list)
     rationale: NonEmptyStr
@@ -93,7 +87,6 @@ class Document2ResolutionDecisionOutput(ContractModel):
     decision: Literal["resolved", "accepted", "partially_accepted", "rejected", "deferred"]
     resolution_note: NonEmptyStr
     changed_paths: list[NonEmptyStr] = Field(default_factory=list)
-    evidence_refs: list[EvidenceRef] = Field(default_factory=list)
 
 
 class Document2ResolutionPlanOutput(ContractModel):
@@ -112,7 +105,6 @@ class Document2ResolutionPlanOutput(ContractModel):
     target_finding_ids: list[NonEmptyStr] = Field(default_factory=list)
     proposed_revision: dict[str, Any] | None = None
     revised_candidate: ExpectationUnitDocument | None = None
-    evidence_requests: list[NonEmptyStr] = Field(default_factory=list)
     unresolved_finding_ids: list[NonEmptyStr] = Field(default_factory=list)
     unresolved_reason: NonEmptyStr | None = None
     rationale: NonEmptyStr
@@ -145,7 +137,6 @@ class Document2FieldRepairResultOutput(ContractModel):
     event_monitoring_direction: EventMonitoringDirection | None = None
     market_view: ResearchSection | None = None
     revised_candidate: ExpectationUnitDocument | None = None
-    evidence_requests: list[NonEmptyStr] = Field(default_factory=list)
     unresolved_finding_ids: list[NonEmptyStr] = Field(default_factory=list)
     unresolved_reason: NonEmptyStr | None = None
     rationale: NonEmptyStr
@@ -162,7 +153,6 @@ class DoxAtlasAuditFinding(ContractModel):
     ]
     rationale: NonEmptyStr
     recommended_statement: NonEmptyStr | None = None
-    evidence_refs: list[EvidenceRef] = Field(default_factory=list)
 
 
 class DoxAtlasAuditResult(ContractModel):
@@ -171,7 +161,6 @@ class DoxAtlasAuditResult(ContractModel):
     verdict: Literal["pass", "pass_with_warnings", "needs_revision", "blocked"] = "pass"
     revision_required: bool = False
     findings: list[DoxAtlasAuditFinding] = Field(default_factory=list)
-    evidence_refs: list[EvidenceRef] = Field(default_factory=list)
     objections: list[Objection] = Field(default_factory=list)
     delegations: list[Delegation] = Field(default_factory=list)
     unknowns: list[NonEmptyStr] = Field(default_factory=list)
@@ -186,14 +175,12 @@ class ExpectationFieldReviewFinding(ContractModel):
     status: Literal["supported", "unsupported", "needs_more_evidence", "contradicted"]
     rationale: NonEmptyStr
     recommended_statement: NonEmptyStr | None = None
-    evidence_refs: list[EvidenceRef] = Field(default_factory=list)
 
 
 class ExpectationFieldReviewResult(ContractModel):
     """Generic non-DoxAtlas expectation-field review output."""
 
     findings: list[ExpectationFieldReviewFinding] = Field(default_factory=list)
-    evidence_refs: list[EvidenceRef] = Field(default_factory=list)
     objections: list[Objection] = Field(default_factory=list)
     delegations: list[Delegation] = Field(default_factory=list)
     unknowns: list[NonEmptyStr] = Field(default_factory=list)
@@ -207,9 +194,6 @@ class DelegatedRetrievalRequest(ContractModel):
     question: NonEmptyStr
     blocking_scope: BlackboardTarget
     purpose: Literal["fact_check", "delegated_retrieval"] = "delegated_retrieval"
-    required_evidence: list[EvidenceSourceType] = Field(
-        default_factory=lambda: [EvidenceSourceType.EXTERNAL_REPORT]
-    )
     completion_criteria: NonEmptyStr = (
         "Return a concise public-search answer or record the gap as inconclusive."
     )
@@ -229,8 +213,6 @@ class DelegatedRetrievalResult(ContractModel):
         "not_applicable",
     ] = "not_applicable"
     retrieval_summary: NonEmptyStr
-    evidence_refs: list[EvidenceRef] = Field(default_factory=list)
-    source_refs: list[EvidenceRef] = Field(default_factory=list)
     confidence: float = Field(ge=0.0, le=1.0)
     unknowns: list[NonEmptyStr] = Field(default_factory=list)
     query_log: list[NonEmptyStr] = Field(default_factory=list)
@@ -251,6 +233,5 @@ def create_a2_retrieval_delegation(
         requester_agent=request.requester_agent,
         target_agent=AgentName.A2_FACT_CHECK,
         question=request.question,
-        required_evidence=list(request.required_evidence),
         blocking_scope=request.blocking_scope,
     )

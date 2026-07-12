@@ -22,7 +22,7 @@ from doxagent.settings import DoxAgentSettings
 from doxagent.tools.factory import default_real_tool_registry
 from doxagent.tools.schema import ToolRequest, ToolResult
 
-MAX_BLOCK_CHARS = 16_000
+MAX_BLOCK_CHARS = 1_200
 VALIDATION_TAG = "react-memory-real-tool-chunking-2026-07-11"
 
 CASES: dict[str, list[tuple[str, str, dict[str, Any]]]] = {
@@ -35,7 +35,7 @@ CASES: dict[str, list[tuple[str, str, dict[str, Any]]]] = {
                 "ticker": "META",
                 "cik": "1326801",
                 "form": "10-K",
-                "items": ["Item 1A", "Item 7"],
+                "sections": ["Item 1A", "Item 7"],
             },
         ),
         ("alpha.company_overview", "META", {"ticker": "META"}),
@@ -209,6 +209,21 @@ def _shape_profile(source: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _contains_provider_error_envelope(value: Any) -> bool:
+    if isinstance(value, dict):
+        for key in ("Error Message", "Information", "Note"):
+            if value.get(key) not in (None, "", [], {}):
+                return True
+        if str(value.get("status") or "").lower() == "error":
+            return True
+        if value.get("Error") not in (None, "", [], {}):
+            return True
+        return any(_contains_provider_error_envelope(item) for item in value.values())
+    if isinstance(value, list):
+        return any(_contains_provider_error_envelope(item) for item in value)
+    return False
+
+
 def _langsmith_client(settings: DoxAgentSettings) -> LangSmithClient | None:
     if not settings.langsmith_api_key or not settings.langsmith_project:
         return None
@@ -308,16 +323,20 @@ def _validate_result(
     raw_exact = raw_record is not None and raw_record.result == result
     original_chars = len(_canonical(result.output))
     oversized = sum(size > MAX_BLOCK_CHARS for size in block_chars)
-    assessable = bool(result.output) and result.status.value != "failed"
-    structure_ok = (
-        assessable
-        and bool(blocks)
+    chunking_assessed = bool(result.output) and result.status.value != "failed"
+    chunking_ok = (not chunking_assessed) or (
+        bool(blocks)
         and oversized == 0
         and hashes_ok
         and reads_ok
         and source_derived
         and raw_exact
     )
+    status_semantics_ok = not (
+        result.status.value == "succeeded"
+        and _contains_provider_error_envelope(result.output)
+    )
+    validation_ok = chunking_ok and status_semantics_ok
     return {
         "status": result.status.value,
         "error": result.error.code if result.error else None,
@@ -333,7 +352,11 @@ def _validate_result(
         "block_hashes_ok": hashes_ok,
         "read_observation_exact": reads_ok,
         "source_derived": source_derived,
-        "structure_ok": structure_ok,
+        "chunking_assessed": chunking_assessed,
+        "chunking_ok": chunking_ok,
+        "status_semantics_ok": status_semantics_ok,
+        "structure_ok": chunking_ok,
+        "validation_ok": validation_ok,
         "refs": [block.ref for block in blocks[:8]],
     }
 
@@ -347,7 +370,7 @@ def _dynamic_input(
     if tool_name == "sec.filing_sections":
         company = prior_results.get("sec.company_facts_and_filings")
         if company:
-            recent = company.output.get("submissions", {}).get("recent_filings", [])
+            recent = company.output.get("recent_filings", [])
             filing = next(
                 (item for item in recent if isinstance(item, dict) and item.get("form") == "10-K"),
                 None,
@@ -358,7 +381,8 @@ def _dynamic_input(
     if tool_name == "tavily.extract":
         search = prior_results.get("tavily.search")
         if search:
-            candidates = search.output.get("results")
+            search_payload = search.output.get("search")
+            candidates = search_payload.get("results") if isinstance(search_payload, dict) else None
             if isinstance(candidates, list):
                 first_url = next(
                     (
@@ -430,7 +454,7 @@ def run(group: str) -> int:
                 }
             )
             summary["langsmith_finish_error"] = _trace_finish(langsmith, trace_id, summary)
-            if not summary.get("structure_ok"):
+            if not summary.get("validation_ok", summary.get("structure_ok")):
                 failed_validations += 1
             print(json.dumps(summary, ensure_ascii=False, sort_keys=True), flush=True)
     return 1 if failed_validations else 0

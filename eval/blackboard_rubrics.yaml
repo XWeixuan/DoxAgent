@@ -56,13 +56,12 @@ rubrics:
   - id: R02
     name: Evidence discipline and source traceability
     evaluates: >
-      Whether claims are supported by concrete source refs and whether evidence
-      is used in the right scope.
+      Whether factual claims can be traced through task-local citations to
+      Observation Blocks and complete Raw ToolResults.
     judge_must_check:
-      - Hydrated evidence_refs in Brief State for sections, facts, variables, and
-        policies.
-      - Source ids, titles, summaries, confidence, and citation_scope.
-      - LangSmith tool calls that produced or justified cited evidence.
+      - Citation resolution and Observation locator fidelity metrics.
+      - Observation Block to Raw ToolResult audit samples.
+      - LangSmith tool calls that produced cited observations.
       - Absence of fabricated, stale, or mismatched sources.
     score_1: >
       Evidence is absent, fabricated, or unrelated to the claims it supports.
@@ -165,7 +164,7 @@ rubrics:
       Whether each expectation is decomposed into variables that can be watched
       and updated.
     judge_must_check:
-      - key_variables names, current_status, certainty, and evidence_refs.
+      - key_variables names, current_status, and certainty.
       - Whether variables map to the expectation's causal thesis.
       - Whether variables can drive later MonitoringConfig and policy rules.
       - Whether unknowns are explicit where data is incomplete.

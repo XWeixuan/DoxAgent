@@ -3,7 +3,7 @@
 from typing import Any
 
 from doxagent.blackboard import BlackboardRun
-from doxagent.models import CommitLogEntry, Delegation, EvidenceRef, Objection, WorkingMemoryEntry
+from doxagent.models import CommitLogEntry, Delegation, Objection, WorkingMemoryEntry
 from doxagent.workflows import WorkflowExecutionResult
 
 DOCUMENT_ORDER = [
@@ -46,7 +46,6 @@ def export_phase6_run(
             "summary": workflow_result.summary.model_dump(mode="json"),
         },
         "documents": _ordered_documents(blackboard_run),
-        "evidence_refs": _collect_evidence(blackboard_run),
         "working_memory": [
             _working_memory_summary(entry) for entry in blackboard_run.working_memory
         ],
@@ -82,30 +81,12 @@ def _ordered_documents(blackboard_run: BlackboardRun) -> dict[str, dict[str, Any
     return documents
 
 
-def _collect_evidence(blackboard_run: BlackboardRun) -> list[dict[str, Any]]:
-    evidence_by_id: dict[str, EvidenceRef] = {}
-    for entry in blackboard_run.working_memory:
-        for evidence in entry.evidence_refs:
-            evidence_by_id[evidence.evidence_id] = evidence
-    for commit in blackboard_run.commit_log:
-        for evidence in commit.patch.evidence_refs:
-            evidence_by_id[evidence.evidence_id] = evidence
-    for objection in blackboard_run.objections:
-        for evidence in objection.evidence_refs:
-            evidence_by_id[evidence.evidence_id] = evidence
-    return [
-        evidence.model_dump(mode="json")
-        for evidence in sorted(evidence_by_id.values(), key=lambda item: item.evidence_id)
-    ]
-
-
 def _working_memory_summary(entry: WorkingMemoryEntry) -> dict[str, Any]:
     return {
         "entry_id": entry.entry_id,
         "author_agent": entry.author_agent.value,
         "content_type": entry.content_type,
         "payload": entry.payload,
-        "evidence_ids": [evidence.evidence_id for evidence in entry.evidence_refs],
         "created_at": entry.created_at.isoformat(),
     }
 
@@ -123,7 +104,6 @@ def _commit_summary(entry: CommitLogEntry) -> dict[str, Any]:
         "patch_id": entry.patch.patch_id,
         "before": entry.patch.before,
         "after": entry.patch.after,
-        "evidence_ids": [evidence.evidence_id for evidence in entry.patch.evidence_refs],
         "resolved_objection_ids": list(entry.resolved_objection_ids),
         "residual_disputes": list(entry.residual_disputes),
         "created_at": entry.created_at.isoformat(),
@@ -139,7 +119,6 @@ def _objection_summary(item: Objection) -> dict[str, Any]:
         "target": item.target.model_dump(mode="json"),
         "reason": item.reason,
         "resolution_note": item.resolution_note,
-        "evidence_ids": [evidence.evidence_id for evidence in item.evidence_refs],
     }
 
 
@@ -151,7 +130,6 @@ def _delegation_summary(item: Delegation) -> dict[str, Any]:
         "status": item.status.value,
         "question": item.question,
         "blocking_scope": item.blocking_scope.model_dump(mode="json"),
-        "required_evidence": [evidence.value for evidence in item.required_evidence],
         "result_summary": item.result_summary,
     }
 

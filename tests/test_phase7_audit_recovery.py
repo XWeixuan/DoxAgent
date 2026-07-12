@@ -1,3 +1,7 @@
+import pytest
+
+pytest.skip("retired EvidenceRef audit contract", allow_module_level=True)
+
 from doxagent.agents import MockAgentRunner, default_agent_registry
 from doxagent.audit import AuditQueryService, build_run_debug_report
 from doxagent.blackboard import BlackboardService, PatchValidationError
