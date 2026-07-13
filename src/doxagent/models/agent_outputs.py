@@ -1,8 +1,9 @@
 """Structured outputs for real O1/A1/A2 workflow execution."""
 
+from datetime import datetime
 from typing import Any, Literal
 
-from pydantic import Field
+from pydantic import Field, model_validator
 
 from doxagent.models.blackboard import (
     BlackboardPatch,
@@ -10,7 +11,7 @@ from doxagent.models.blackboard import (
     Delegation,
     Objection,
 )
-from doxagent.models.common import AgentName
+from doxagent.models.common import AgentName, ExpectationDirection
 from doxagent.models.contracts import ContractModel, ToolCallSummary
 from doxagent.models.documents import (
     EventMonitoringDirection,
@@ -73,10 +74,50 @@ class ExpectationDetailResult(ExpectationConstructionResult):
 class ExpectationDetailCandidateResult(ContractModel):
     """O1 output for one complete expectation-unit candidate, without patches."""
 
-    candidate: ExpectationUnitDocument
+    candidate: "ExpectationUnitCandidateBody"
     delegations: list[Delegation] = Field(default_factory=list)
     unknowns: list[NonEmptyStr] = Field(default_factory=list)
     rationale: NonEmptyStr
+
+
+class ExpectationUnitCandidateBody(ContractModel):
+    """Model-authored business body; workflow supplies document identity and timestamps."""
+
+    @model_validator(mode="before")
+    @classmethod
+    def _discard_runtime_identity(cls, value: Any) -> Any:
+        if not isinstance(value, dict):
+            return value
+        normalized = dict(value)
+        for key in ("document_id", "document_type", "ticker", "created_at", "updated_at"):
+            normalized.pop(key, None)
+        return normalized
+
+    expectation_id: NonEmptyStr
+    expectation_name: NonEmptyStr
+    direction: ExpectationDirection
+    why_it_matters: NonEmptyStr
+    market_view: ResearchSection
+    realized_facts: list[RealizedFact] = Field(min_length=1)
+    realized_facts_summary: NonEmptyStr
+    key_variables: list[VariableStatus] = Field(min_length=1)
+    event_monitoring_direction: EventMonitoringDirection
+
+    def to_document(
+        self,
+        *,
+        document_id: str,
+        ticker: str,
+        created_at: datetime,
+        updated_at: datetime | None = None,
+    ) -> ExpectationUnitDocument:
+        return ExpectationUnitDocument(
+            document_id=document_id,
+            ticker=ticker,
+            created_at=created_at,
+            updated_at=updated_at,
+            **self.model_dump(mode="python"),
+        )
 
 
 class Document2ResolutionDecisionOutput(ContractModel):
@@ -84,6 +125,15 @@ class Document2ResolutionDecisionOutput(ContractModel):
 
     objection_id: NonEmptyStr | None = None
     finding_id: NonEmptyStr | None = None
+    decision: Literal["resolved", "accepted", "partially_accepted", "rejected", "deferred"]
+    resolution_note: NonEmptyStr
+    changed_paths: list[NonEmptyStr] = Field(default_factory=list)
+
+
+class Document2FieldRepairDecisionOutput(ContractModel):
+    """The sole model-authored decision source for one routed review finding."""
+
+    finding_id: NonEmptyStr
     decision: Literal["resolved", "accepted", "partially_accepted", "rejected", "deferred"]
     resolution_note: NonEmptyStr
     changed_paths: list[NonEmptyStr] = Field(default_factory=list)
@@ -123,26 +173,46 @@ class Document2FieldRepairResultOutput(ContractModel):
         "market_evidence",
         "cross_field",
     ]
-    decision: Literal[
-        "resolved",
-        "accepted",
-        "partially_accepted",
-        "rejected",
-        "deferred",
-    ] = "deferred"
-    decisions: list[Document2ResolutionDecisionOutput] = Field(default_factory=list)
-    target_finding_ids: list[NonEmptyStr] = Field(default_factory=list)
-    realized_facts: list[RealizedFact] | None = None
-    key_variables: list[VariableStatus] | None = None
+    decisions: list[Document2FieldRepairDecisionOutput] = Field(min_length=1)
+    realized_facts: list[RealizedFact] | None = Field(default=None, min_length=1)
+    key_variables: list[VariableStatus] | None = Field(default=None, min_length=1)
     event_monitoring_direction: EventMonitoringDirection | None = None
     market_view: ResearchSection | None = None
-    revised_candidate: ExpectationUnitDocument | None = None
-    unresolved_finding_ids: list[NonEmptyStr] = Field(default_factory=list)
+    market_evidence: ResearchSection | None = None
+    revised_candidate: ExpectationUnitCandidateBody | None = None
     unresolved_reason: NonEmptyStr | None = None
     rationale: NonEmptyStr
 
+    @model_validator(mode="after")
+    def decision_and_field_shape_match(self) -> "Document2FieldRepairResultOutput":
+        typed = {
+            "realized_facts": self.realized_facts,
+            "key_variables": self.key_variables,
+            "event_monitoring_direction": self.event_monitoring_direction,
+            "market_view": self.market_view,
+            "market_evidence": self.market_evidence,
+        }
+        accepted = any(
+            item.decision in {"accepted", "partially_accepted"} for item in self.decisions
+        )
+        present = [key for key, value in typed.items() if value is not None]
+        if self.field_family == "cross_field":
+            if present:
+                raise ValueError("cross_field repair must not return typed field updates")
+            if accepted and self.revised_candidate is None:
+                raise ValueError("cross_field accepted repair requires revised_candidate")
+            return self
+        if self.revised_candidate is not None:
+            raise ValueError("single-field repair must not return revised_candidate")
+        if accepted and typed.get(self.field_family) is None:
+            raise ValueError("single-field accepted repair requires its typed field update")
+        if present and present != [self.field_family]:
+            raise ValueError("typed field update does not match field_family")
+        return self
+
 
 class DoxAtlasAuditFinding(ContractModel):
+    expectation_id: NonEmptyStr | None = None
     field_path: NonEmptyStr
     status: Literal[
         "supported",
@@ -170,6 +240,7 @@ class DoxAtlasAuditResult(ContractModel):
 class ExpectationFieldReviewFinding(ContractModel):
     """Field-level review finding from C1/C3/O4 expectation reviewers."""
 
+    expectation_id: NonEmptyStr | None = None
     field_path: NonEmptyStr
     target_paths: list[NonEmptyStr] = Field(default_factory=list)
     status: Literal["supported", "unsupported", "needs_more_evidence", "contradicted"]

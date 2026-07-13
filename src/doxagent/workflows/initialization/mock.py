@@ -61,18 +61,18 @@ class InitializationMockResultFactory:
         return BlackboardPatch(patch_id=new_id('patch'), target=BlackboardTarget(document_type=document_type, ticker=document.ticker, document_id=document.document_id if expectation_id is None else None, expectation_id=expectation_id, field_path='document'), operation=PatchOperation.CREATE, before=None, after=document.model_dump(mode='json'), rationale=f'Promote mock {document_type.value} document.', author_agent=author_agent, validation_status=ValidationStatus.VALID)
 
     def _section(self, ticker: str, author: AgentName, topic: str) -> ResearchSection:
-        return ResearchSection(text=f'{ticker} mock {topic} research text.', summary=f'{ticker} mock {topic} summary.', author_agent=author, reviewer_agents=[AgentName.O1_EXPECTATION_OWNER])
+        return ResearchSection(text=f'{ticker} mock {topic} research text.', summary=f'{ticker} mock {topic} summary.', author_agent=author)
 
     def _global_research(self, ticker: str) -> GlobalResearchDocument:
         now = datetime.now(UTC)
         return GlobalResearchDocument(document_id=new_id('doc'), ticker=ticker, created_at=now, fundamental_report=self._section(ticker, AgentName.C1_FUNDAMENTAL_RESEARCH, 'fundamental'), macro_report=self._section(ticker, AgentName.C2_MACRO_RESEARCH, 'macro'), industry_report=self._section(ticker, AgentName.C3_INDUSTRY_RESEARCH, 'industry'), market_trace_report=self._section(ticker, AgentName.O4_MARKET_TRACE, 'market trace'))
 
     def _expectation_shell(self, ticker: str) -> ExpectationShell:
-        return ExpectationShell(expectation_id='exp_mock_core', expectation_name=f'{ticker} mock core expectation', direction=ExpectationDirection.BULLISH.value, why_it_matters='It anchors the initialization workflow fixture.', market_view=ResearchSection(text=f'{ticker} mock market view text.', summary=f'{ticker} mock market view summary.', author_agent=AgentName.O1_EXPECTATION_OWNER, reviewer_agents=[AgentName.A1_DOXATLAS_AUDIT]), unknowns=[], rationale='Mock construction shell.')
+        return ExpectationShell(expectation_id='exp_mock_core', expectation_name=f'{ticker} mock core expectation', direction=ExpectationDirection.BULLISH.value, why_it_matters='It anchors the initialization workflow fixture.', market_view=ResearchSection(text=f'{ticker} mock market view text.', summary=f'{ticker} mock market view summary.', author_agent=AgentName.O1_EXPECTATION_OWNER), unknowns=[], rationale='Mock construction shell.')
 
     def _expectation_shells(self, ticker: str) -> list[ExpectationShell]:
         core = self._expectation_shell(ticker)
-        risk = core.model_copy(update={'expectation_id': 'exp_mock_risk', 'expectation_name': f'{ticker} mock risk expectation', 'direction': ExpectationDirection.RISK.value, 'why_it_matters': 'It captures downside risk distinct from the core thesis.', 'market_view': ResearchSection(text=f'{ticker} mock risk market view text.', summary=f'{ticker} mock risk market view summary.', author_agent=AgentName.O1_EXPECTATION_OWNER, reviewer_agents=[AgentName.A1_DOXATLAS_AUDIT]), 'rationale': 'Mock construction risk shell.'}, deep=True)
+        risk = core.model_copy(update={'expectation_id': 'exp_mock_risk', 'expectation_name': f'{ticker} mock risk expectation', 'direction': ExpectationDirection.RISK.value, 'why_it_matters': 'It captures downside risk distinct from the core thesis.', 'market_view': ResearchSection(text=f'{ticker} mock risk market view text.', summary=f'{ticker} mock risk market view summary.', author_agent=AgentName.O1_EXPECTATION_OWNER), 'rationale': 'Mock construction risk shell.'}, deep=True)
         return [core, risk]
 
     def _expectation_unit(self, ticker: str) -> ExpectationUnitDocument:

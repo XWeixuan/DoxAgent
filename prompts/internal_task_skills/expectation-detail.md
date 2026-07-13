@@ -18,12 +18,6 @@ You must return one JSON final_payload shaped as:
 ```json
 {
   "candidate": {
-    "document_id": "doc_<id>",
-    "document_type": "expectation_unit",
-    "ticker": "<ticker>",
-    "created_at": "ISO-8601 timestamp",
-    "updated_at": null,
-
     "expectation_id": "exactly the same as expectation_shell.expectation_id",
     "expectation_name": "exactly the same as expectation_shell.expectation_name",
     "direction": "exactly the same as expectation_shell.direction",
@@ -31,8 +25,7 @@ You must return one JSON final_payload shaped as:
     "market_view": {
       "text": "exactly preserve or faithfully extend expectation_shell.market_view.text",
       "summary": "exactly preserve or faithfully extend expectation_shell.market_view.summary",
-      "author_agent": "O1",
-      "reviewer_agents": []
+      "author_agent": "O1"
     },
 
     "realized_facts": [
@@ -79,6 +72,8 @@ You must return one JSON final_payload shaped as:
 1. Return exactly one `candidate`.
 2. Do not return `BlackboardPatch`, `proposed_patches`, `patches`, `changes`, `path_map`, partial update, or multiple candidates.
 3. Preserve `expectation_id`, `expectation_name`, `direction`, `why_it_matters`, and `market_view` from `expectation_shell`.
+4. Do not output `document_id`, `document_type`, `ticker`, `created_at`, or `updated_at`; runtime creates them.
+5. `realized_facts` and `key_variables` must each contain at least one valid item.
 6. `event_monitoring_direction.positive_events` and `negative_events` must be lists of concrete strings, not objects and not generic placeholders.
 7. If market price evidence is unavailable, do not invent price numbers. State the uncertainty inside `price_reaction`.
 8. If evidence is weak, write the gap in `unknowns` and `rationale`; do not fill missing evidence with generic confidence.

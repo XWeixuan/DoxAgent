@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from doxagent.models import AgentName, AgentResult, Objection, ObjectionSeverity
+from doxagent.models import AgentResult, Objection, ObjectionSeverity
 from doxagent.workflows.document2.contracts import (
     Document2FindingSeverity,
     Document2ReviewFinding,
@@ -39,11 +39,15 @@ def document2_review_findings_from_agent_result(
         if not isinstance(raw, dict):
             continue
         target_path = str(raw.get("field_path") or raw.get("target_path") or "document")
-        target_paths = [
-            str(item) for item in raw.get("target_paths", []) if str(item).strip()
-        ] if isinstance(raw.get("target_paths"), list) else []
+        target_paths = (
+            [str(item) for item in raw.get("target_paths", []) if str(item).strip()]
+            if isinstance(raw.get("target_paths"), list)
+            else []
+        )
         status = str(raw.get("status") or "needs_revision")
-        reason = str(raw.get("rationale") or raw.get("reason") or "Reviewer raised a content issue.")
+        reason = str(
+            raw.get("rationale") or raw.get("reason") or "Reviewer raised a content issue."
+        )
         for expectation_id in _finding_expectation_ids(raw, ids):
             findings.append(
                 Document2ReviewFinding(
@@ -82,11 +86,17 @@ def review_findings_json(
     return [item.model_dump(mode="json") for item in findings]
 
 
-def _finding_expectation_ids(raw: dict[str, Any], fallback: list[str]) -> list[str]:
+def _finding_expectation_ids(
+    raw: dict[str, Any],
+    fallback: list[str],
+) -> list[str | None]:
+    del fallback
     value = raw.get("expectation_id")
     if isinstance(value, str) and value.strip():
         return [value.strip()]
-    return fallback or ["unknown"]
+    # Missing attribution remains document-level. Never fan one finding out to
+    # every candidate merely because the review task included multiple ids.
+    return [None]
 
 
 def _severity_from_status(status: str) -> Document2FindingSeverity:

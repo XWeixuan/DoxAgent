@@ -48,6 +48,7 @@ Document2FieldFamily = Literal[
     "key_variables",
     "event_monitoring_direction",
     "market_view",
+    "market_evidence",
     "cross_field",
 ]
 Document2PromotionBlockerType = Literal[
@@ -69,10 +70,11 @@ class ExpectationUnitCandidate(Document2ContractModel):
     unknowns: list[NonEmptyStr] = Field(default_factory=list)
     rationale: NonEmptyStr
 
+
 class Document2ReviewFinding(Document2ContractModel):
     finding_id: NonEmptyStr = Field(default_factory=lambda: new_id("d2finding"))
     reviewer_agent: AgentName
-    expectation_id: NonEmptyStr
+    expectation_id: NonEmptyStr | None = None
     target_path: NonEmptyStr
     target_paths: list[NonEmptyStr] = Field(default_factory=list)
     severity: Document2FindingSeverity
@@ -123,10 +125,11 @@ class Document2FieldRepairResult(Document2ContractModel):
     decision: Document2ResolutionDecision = "deferred"
     decisions: list[Document2ResolutionDecisionRecord] = Field(default_factory=list)
     target_finding_ids: list[NonEmptyStr] = Field(default_factory=list)
-    realized_facts: list[RealizedFact] | None = None
-    key_variables: list[VariableStatus] | None = None
+    realized_facts: list[RealizedFact] | None = Field(default=None, min_length=1)
+    key_variables: list[VariableStatus] | None = Field(default=None, min_length=1)
     event_monitoring_direction: EventMonitoringDirection | None = None
     market_view: ResearchSection | None = None
+    market_evidence: ResearchSection | None = None
     revised_candidate: ExpectationUnitDocument | None = None
     unresolved_finding_ids: list[NonEmptyStr] = Field(default_factory=list)
     unresolved_reason: NonEmptyStr | None = None
@@ -139,12 +142,11 @@ class Document2FieldRepairResult(Document2ContractModel):
             self.key_variables is not None,
             self.event_monitoring_direction is not None,
             self.market_view is not None,
+            self.market_evidence is not None,
         ]
         accepted_decisions = {self.decision}
         accepted_decisions.update(item.decision for item in self.decisions)
-        needs_revision = bool(
-            accepted_decisions.intersection({"accepted", "partially_accepted"})
-        )
+        needs_revision = bool(accepted_decisions.intersection({"accepted", "partially_accepted"}))
         if self.field_family == "cross_field":
             if any(typed_outputs):
                 raise ValueError("cross_field repair must not return typed field updates")
@@ -160,6 +162,7 @@ class Document2FieldRepairResult(Document2ContractModel):
             "key_variables": self.key_variables is not None,
             "event_monitoring_direction": self.event_monitoring_direction is not None,
             "market_view": self.market_view is not None,
+            "market_evidence": self.market_evidence is not None,
         }
         if any(typed_outputs) and not allowed[self.field_family]:
             raise ValueError("typed field update does not match field_family")
@@ -252,4 +255,3 @@ class Document2TransactionAudit(Document2ContractModel):
     output_summary: dict[str, Any] = Field(default_factory=dict)
     notes: list[NonEmptyStr] = Field(default_factory=list)
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
-

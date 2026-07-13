@@ -334,6 +334,7 @@ def _field_repair_has_typed_update(result: Document2FieldRepairResult) -> bool:
             result.key_variables,
             result.event_monitoring_direction,
             result.market_view,
+            result.market_evidence,
         )
     )
 
@@ -347,6 +348,8 @@ def _field_repair_merge_path(result: Document2FieldRepairResult) -> str:
         return "event_monitoring_direction"
     if result.market_view is not None:
         return "market_view"
+    if result.market_evidence is not None:
+        return "market_view"
     raise ValueError("Document2 field repair result has no typed update.")
 
 
@@ -359,6 +362,8 @@ def _field_repair_update_payload(result: Document2FieldRepairResult) -> Any:
         return result.event_monitoring_direction.model_dump(mode="json")
     if result.market_view is not None:
         return result.market_view.model_dump(mode="json")
+    if result.market_evidence is not None:
+        return result.market_evidence.model_dump(mode="json")
     raise ValueError("Document2 field repair result has no typed update.")
 
 

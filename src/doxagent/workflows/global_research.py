@@ -240,7 +240,6 @@ class GlobalResearchAssembler:
             text=self._section_text(label, structured, summary),
             summary=summary,
             author_agent=author,
-            reviewer_agents=[AgentName.O1_EXPECTATION_OWNER],
         )
 
     def _pending_market_narrative_section(
@@ -255,7 +254,6 @@ class GlobalResearchAssembler:
             ),
             summary="Pending O1/DoxAtlas narrative integration.",
             author_agent=AgentName.O1_EXPECTATION_OWNER,
-            reviewer_agents=[],
         )
 
     def _structured(self, result: AgentResult) -> dict[str, Any]:

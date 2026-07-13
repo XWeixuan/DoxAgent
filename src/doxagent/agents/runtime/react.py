@@ -1441,7 +1441,6 @@ def _max_steps_research_section_fallback(
         "text": text,
         "summary": summary,
         "author_agent": task.agent_name.value,
-        "reviewer_agents": [],
     }
     return structured, text
 
@@ -1912,6 +1911,7 @@ def _looks_like_direct_final_payload(payload: JsonDict, required_output_schema: 
             "key_variables",
             "event_monitoring_direction",
             "market_view",
+            "market_evidence",
         },
         "KnownEventsDocument": {
             "document_id",

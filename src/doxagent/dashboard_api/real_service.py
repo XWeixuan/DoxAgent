@@ -4662,11 +4662,6 @@ def _research_section_card(
                 "label": "Author Agent",
                 "value": str(section.author_agent),
             },
-            {
-                "key": "reviewer_agents",
-                "label": "Reviewer Agents",
-                "value": [str(agent) for agent in section.reviewer_agents],
-            },
         ],
     }
 

@@ -15,6 +15,7 @@ from doxagent.models.agent_outputs import (
     ExpectationFieldReviewResult,
     ExpectationShell,
     ExpectationShellConstructionResult,
+    ExpectationUnitCandidateBody,
     ObjectionResolutionDecision,
     create_a2_retrieval_delegation,
 )
@@ -99,6 +100,7 @@ __all__ = [
     "ExpectationDirection",
     "ExpectationConstructionResult",
     "ExpectationDetailCandidateResult",
+    "ExpectationUnitCandidateBody",
     "ExpectationDetailResult",
     "ExpectationFieldReviewFinding",
     "ExpectationFieldReviewResult",

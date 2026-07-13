@@ -150,8 +150,7 @@ def default_agent_definitions() -> list[AgentDefinition]:
                 ],
                 output_schema=(
                     "ExpectationShellConstructionResult|ExpectationDetailCandidateResult|"
-                    "ExpectationDetailResult|ExpectationConstructionResult|"
-                    "Document2ResolutionPlan|KnownEventsDocument|ResearchSection"
+                    "Document2FieldRepairResult|KnownEventsDocument|ResearchSection"
                 ),
                 can_raise_objection=True,
                 can_delegate=True,

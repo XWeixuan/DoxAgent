@@ -4,9 +4,15 @@ from __future__ import annotations
 
 from typing import Any
 
-from doxagent.models import AgentResult, Objection, ObjectionResolutionDecision
+from doxagent.models import (
+    AgentResult,
+    Document2FieldRepairResultOutput,
+    Objection,
+    ObjectionResolutionDecision,
+)
 from doxagent.workflows.document2.contracts import (
     Document2FieldRepairResult,
+    Document2FieldRepairTask,
     Document2ResolutionDecision,
     Document2ResolutionDecisionRecord,
     Document2ResolutionPlan,
@@ -32,6 +38,8 @@ def document2_resolution_plan_from_agent_result(
 
 def document2_field_repair_result_from_agent_result(
     result: AgentResult,
+    *,
+    task: Document2FieldRepairTask,
 ) -> Document2FieldRepairResult:
     payload = _structured_payload(result)
     forbidden = {
@@ -51,11 +59,54 @@ def document2_field_repair_result_from_agent_result(
             f"arbitrary patch keys: {', '.join(present)}."
         )
     try:
-        return Document2FieldRepairResult.model_validate(payload)
+        authored = Document2FieldRepairResultOutput.model_validate(payload)
     except ValueError as exc:
         raise WorkflowContractError(
             f"Document2 field repair output failed schema validation: {exc}"
         ) from exc
+    finding_to_objection = {
+        finding.finding_id: finding.source_objection_id
+        for finding in task.findings
+        if finding.source_objection_id
+    }
+    decisions = [
+        Document2ResolutionDecisionRecord(
+            finding_id=item.finding_id,
+            objection_id=finding_to_objection.get(item.finding_id),
+            decision=item.decision,
+            resolution_note=item.resolution_note,
+            changed_paths=list(item.changed_paths),
+        )
+        for item in authored.decisions
+    ]
+    revised_candidate = None
+    if authored.revised_candidate is not None:
+        current = task.current_candidate
+        revised_candidate = authored.revised_candidate.to_document(
+            document_id=current.document_id,
+            ticker=current.ticker,
+            created_at=current.created_at,
+            updated_at=current.updated_at,
+        )
+    return Document2FieldRepairResult(
+        task_id=authored.task_id,
+        expectation_id=authored.expectation_id,
+        field_family=authored.field_family,
+        decision=_overall_decision(decisions),
+        decisions=decisions,
+        target_finding_ids=[item.finding_id for item in authored.decisions],
+        realized_facts=authored.realized_facts,
+        key_variables=authored.key_variables,
+        event_monitoring_direction=authored.event_monitoring_direction,
+        market_view=authored.market_view,
+        market_evidence=authored.market_evidence,
+        revised_candidate=revised_candidate,
+        unresolved_finding_ids=[
+            item.finding_id for item in authored.decisions if item.decision == "deferred"
+        ],
+        unresolved_reason=authored.unresolved_reason,
+        rationale=authored.rationale,
+    )
 
 
 def resolution_plans_json(plans: list[Document2ResolutionPlan]) -> list[dict[str, Any]]:

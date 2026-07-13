@@ -17,10 +17,20 @@ class ContractModel(BaseModel):
 
 
 class ResearchSection(ContractModel):
+    @model_validator(mode="before")
+    @classmethod
+    def _discard_legacy_reviewer_agents(cls, value: Any) -> Any:
+        """Keep old stored/model payloads readable without exposing reviewer ownership."""
+
+        if not isinstance(value, dict):
+            return value
+        normalized = dict(value)
+        normalized.pop("reviewer_agents", None)
+        return normalized
+
     text: NonEmptyStr
     summary: NonEmptyStr
     author_agent: AgentName
-    reviewer_agents: list[AgentName] = Field(default_factory=list)
 
 
 class DocumentBase(ContractModel):
@@ -72,9 +82,9 @@ class ExpectationUnitDocument(DocumentBase):
     direction: ExpectationDirection
     why_it_matters: NonEmptyStr
     market_view: ResearchSection
-    realized_facts: list[RealizedFact]
+    realized_facts: list[RealizedFact] = Field(min_length=1)
     realized_facts_summary: NonEmptyStr
-    key_variables: list[VariableStatus]
+    key_variables: list[VariableStatus] = Field(min_length=1)
     event_monitoring_direction: EventMonitoringDirection
 
 

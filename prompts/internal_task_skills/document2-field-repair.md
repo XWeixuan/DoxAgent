@@ -2,7 +2,7 @@
 kind = "internal_task_skill"
 id = "document2-field-repair"
 name = "Document2 Field Repair"
-version = "2026.06.28"
+version = "2026.07.14"
 manual_only = true
 applicable_agents = ["O1"]
 applicable_task_types = ["review_expectation_field"]
@@ -11,128 +11,40 @@ workflow_nodes = ["ResolveObjectionsAndDelegations"]
 
 # Document2 Field Repair
 
-You are resolving exactly one Document2 field repair task.
+Resolve exactly the routed field-repair task. Do not expand scope, call tools, return patches, or close objections yourself.
 
-The current required output schema is `Document2FieldRepairResult`.
+`decisions` is the only decision source. Return exactly one decision for every routed `finding_id`. Do not output top-level `decision`, `target_finding_ids`, `unresolved_finding_ids`, or per-decision `objection_id`; runtime derives them.
 
-The resolver has already selected the `field_family`, `target_paths`, findings, and objections. Do not choose a different field, introduce unrelated edits, or repair findings outside this task.
+For `accepted` or `partially_accepted`:
 
-Preserve every finding and objection as a separate decision record. Do not merge conflicting reviewer opinions into a single conclusion.
+- A single-field task returns exactly one complete replacement in the matching field: `realized_facts`, `key_variables`, `event_monitoring_direction`, `market_view`, or `market_evidence`.
+- `realized_facts` and `key_variables` must not be empty.
+- `market_evidence` contains a complete `ResearchSection` and is applied to the candidate's `market_view` by the transaction layer.
+- A `cross_field` task returns one complete candidate business body as `revised_candidate` and no typed field update.
+- `revised_candidate` must omit `document_id`, `document_type`, `ticker`, `created_at`, and `updated_at`; runtime preserves them from the current candidate.
 
-You may propose a repair, but you do not close objections yourself. A finding or objection is closed only if the transaction layer accepts your output and deterministic revalidation confirms that the blocker no longer applies.
-
-## Field types
-
-`evidence_requests` must be a list of plain strings.
-
-Valid:
+For `resolved`, `rejected`, or `deferred`, return no typed update and no `revised_candidate`. A deferred result must include `unresolved_reason`.
 
 ```json
 {
-  "evidence_requests": [
-    "Need primary-source evidence for the observed price reaction."
-  ]
-}
-```
-
-Invalid:
-
-```json
-{
-  "evidence_requests": [
-    {
-      "question": "...",
-      "target_field": "...",
-      "reason": "..."
-    }
-  ]
-}
-```
-
-`target_finding_ids` must be `list[str]`.
-`unresolved_finding_ids` must be `list[str]`.
-
-## Decision branches
-
-If the repair decision is `accepted` or `partially_accepted`:
-
-- For single-field tasks, return exactly one complete replacement value for the allowed typed field.
-- Do not output `revised_candidate`.
-- Do not output patches, changes, `path_map`, JSON Patch operations, or multiple candidates.
-- For `field_family = cross_field`, return exactly one complete `ExpectationUnitDocument` as `revised_candidate`.
-- Do not output partial updates or patch operations.
-
-If the repair decision is `resolved`, `rejected`, or `deferred`:
-
-- Do not output typed field updates.
-- Do not output `revised_candidate`.
-- For `deferred`, provide `unresolved_reason`; `evidence_requests` may contain plain-string follow-up requests.
-
-## Single-field output
-
-For `field_family` other than `cross_field`, do not output a complete `revised_candidate`.
-
-Return exactly one typed field update matching the allowed output contract for this task. The value must be the complete replacement value for that field family:
-
-- `realized_facts`
-- `key_variables`
-- `event_monitoring_direction`
-- `market_view`
-
-Do not output patches, path maps, JSON Patch operations, partial document fragments, or multiple candidates.
-
-## Cross-field output
-
-For `field_family = cross_field`, you may output exactly one complete `ExpectationUnitDocument` as `revised_candidate`.
-
-The revised candidate must preserve immutable identity fields unless the current task explicitly allows construction-level repair:
-
-- `expectation_id`
-- `expectation_name`
-- `direction`
-
-Do not output typed partial updates, patch operations, or multiple candidates for a cross-field task.
-
-The transaction layer, not O1, decides whether blockers are closed.
-
-## Schema notes
-
-All schema examples must strictly match the current Pydantic models.
-
-For `RealizedFact`, only use:
-
-- `event_id`
-- `description`
-- `price_reaction`
-
-Do not include `event_time`. `certainty` is free text when present in models that allow it; do not present it as an enum unless the model defines an enum.
-
-## Final payload shape
-
-```json
-{
-  "task_id": "must match input_context.field_repair_task.task_id",
-  "expectation_id": "must match input_context.field_repair_task.expectation_id",
-  "field_family": "realized_facts | key_variables | event_monitoring_direction | market_view | cross_field",
-  "decision": "resolved | accepted | partially_accepted | rejected | deferred",
+  "task_id": "input field_repair_task.task_id",
+  "expectation_id": "input field_repair_task.expectation_id",
+  "field_family": "realized_facts | key_variables | event_monitoring_direction | market_view | market_evidence | cross_field",
   "decisions": [
     {
-      "objection_id": "must match a task objection id when present",
-      "finding_id": "finding id when applicable",
+      "finding_id": "one routed finding id",
       "decision": "resolved | accepted | partially_accepted | rejected | deferred",
-      "resolution_note": "concise reason for this specific finding or objection",
-      "changed_paths": ["document.<field_path>"],
+      "resolution_note": "concise reason",
+      "changed_paths": ["document.<field_path>"]
     }
   ],
-  "target_finding_ids": ["finding_id_1"],
   "realized_facts": null,
   "key_variables": null,
   "event_monitoring_direction": null,
   "market_view": null,
+  "market_evidence": null,
   "revised_candidate": null,
-  "evidence_requests": ["Need primary-source evidence for the observed price reaction."],
-  "unresolved_finding_ids": ["finding_id_2"],
   "unresolved_reason": null,
-  "rationale": "short summary of this repair task"
+  "rationale": "short repair summary"
 }
 ```

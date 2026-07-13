@@ -59,7 +59,10 @@ class Document2LegacyQualityMixin:
             self._write_working_memory(checkpoint, result, 'objection_resolution_result')
             self._validate_agent_success(result, node, require_patches=False)
             self._assert_no_proposed_patches(result, node, 'O1 resolver must return Document2FieldRepairResult with a typed field update, or one complete revised_candidate only for cross_field tasks.')
-            repair_result = document2_field_repair_result_from_agent_result(result)
+            repair_result = document2_field_repair_result_from_agent_result(
+                result,
+                task=repair_task,
+            )
             self._validate_document2_field_repair_result_matches_task(repair_result, repair_task)
             repair_result, boundary_notes = self._canonicalize_document2_field_repair_decisions(repair_result, repair_task)
             audit = self._apply_document2_field_repair_transaction(checkpoint, repair_result, boundary_notes=boundary_notes)
@@ -92,6 +95,16 @@ class Document2LegacyQualityMixin:
     def _canonicalize_document2_field_repair_decisions(self, result: Document2FieldRepairResult, task: Document2FieldRepairTask) -> tuple[Document2FieldRepairResult, list[str]]:
         task_finding_ids = set(task.finding_ids)
         task_objection_ids = set(task.objection_ids)
+        authored_finding_ids = [
+            decision.finding_id for decision in result.decisions if decision.finding_id
+        ]
+        if task_finding_ids and (
+            set(authored_finding_ids) != task_finding_ids
+            or len(authored_finding_ids) != len(set(authored_finding_ids))
+        ):
+            raise WorkflowContractError(
+                'Document2 field repair decisions must contain exactly one item per routed finding_id.'
+            )
         finding_to_objection: dict[str, str] = {}
         for finding in task.findings:
             if finding.finding_id in finding_to_objection:
@@ -277,7 +290,7 @@ class Document2LegacyQualityMixin:
 
     def _document2_review_finding_key(self, finding: Document2ReviewFinding) -> str:
         target_paths = ','.join(self._document2_repair_target_paths(finding))
-        return '|'.join([finding.expectation_id, finding.target_path, target_paths, finding.reason[:180]])
+        return '|'.join([str(finding.expectation_id or ''), finding.target_path, target_paths, finding.reason[:180]])
 
     def _document2_resolution_decision_retains_blocker(self, checkpoint: WorkflowCheckpoint, decision: Document2ResolutionDecisionRecord, *, revalidation_findings: list[Document2ReviewFinding] | None=None) -> bool:
         if decision.decision == 'deferred':
@@ -444,8 +457,6 @@ class Document2LegacyQualityMixin:
         for resolved in (target_resolved, document_resolved, finding_resolved, text_resolved):
             if resolved:
                 return resolved
-        if self._document2_subject_requests_all_pending_candidates(objection, finding):
-            return candidate_ids
         if len(candidate_ids) == 1:
             return candidate_ids
         return []
@@ -568,14 +579,16 @@ class Document2LegacyQualityMixin:
             return 'event_monitoring_direction'
         if root == 'market_view':
             return 'market_view'
+        if root == 'market_evidence':
+            return 'market_evidence'
         return 'cross_field'
 
     def _allowed_output_contract_for_field_family(self, field_family: str) -> dict[str, Any]:
-        type_rules = ['target_finding_ids must be list[str].', 'unresolved_finding_ids must be list[str].']
-        non_revision_rules = ['When decision is resolved, rejected, or deferred, do not return typed field updates and do not return revised_candidate; explain via decisions, changed_paths, and unresolved_reason.', 'For deferred decisions, provide unresolved_reason.']
-        common_rules = ['Do not return patches, changes, path_map, JSON Patch operations, or multiple candidates.', 'O1 may propose a repair; transaction and deterministic revalidation decide blocker closure.', *type_rules, *non_revision_rules]
+        decision_rules = ['decisions is the only decision source and must contain exactly one item per routed finding_id.', 'Do not output top-level decision, target_finding_ids, unresolved_finding_ids, or per-item objection_id. Runtime derives them.']
+        non_revision_rules = ['When every decision is resolved, rejected, or deferred, do not return typed field updates and do not return revised_candidate.', 'For deferred decisions, provide unresolved_reason.']
+        common_rules = ['Do not return patches, changes, path_map, JSON Patch operations, or multiple candidates.', 'O1 may propose a repair; transaction and deterministic revalidation decide blocker closure.', *decision_rules, *non_revision_rules]
         if field_family == 'cross_field':
-            return {'field_family': 'cross_field', 'output_field': 'revised_candidate', 'requires_full_candidate': True, 'rules': ['When decision is accepted or partially_accepted, return exactly one complete ExpectationUnitDocument as revised_candidate.', 'Do not return typed partial field updates for cross_field tasks.', 'The revised_candidate must preserve immutable identity fields from the current candidate: expectation_id, expectation_name, and direction.', *common_rules]}
+            return {'field_family': 'cross_field', 'output_field': 'revised_candidate', 'requires_full_candidate': True, 'rules': ['When any decision is accepted or partially_accepted, return exactly one complete candidate business body as revised_candidate.', 'Do not return typed partial field updates for cross_field tasks.', 'Omit document_id, document_type, ticker, created_at, and updated_at; runtime preserves them.', *common_rules]}
         output_field = field_family
         field_specific_rules = [f"When decision is accepted or partially_accepted, return exactly one complete replacement value in the top-level '{output_field}' field.", 'Do not return revised_candidate for single-field tasks.']
         return {'field_family': field_family, 'output_field': output_field, 'requires_full_candidate': False, 'must_return_complete_replacement_value': True, 'rules': [*field_specific_rules, *common_rules], 'schema_notes': {'RealizedFact_fields': ['event_id', 'description', 'price_reaction'], 'certainty': 'free text where the model allows certainty.'}}
@@ -588,9 +601,9 @@ class Document2LegacyQualityMixin:
         else:
             run = self.blackboard.get_run(checkpoint.run_id)
             task_objections = [objection for objection in run.objections if objection.objection_id in set(task.objection_ids)]
-        output_guidance = ['You are resolving exactly one Document2 field repair task.', 'Do not choose a different field or repair findings outside this task.', 'Preserve every finding and objection as a separate decision record.', 'Do not merge conflicting reviewer opinions into one summary finding.', 'Do not call external tools in this resolver task.', 'A blocker closes only after transaction acceptance and deterministic revalidation.', 'target_finding_ids and unresolved_finding_ids must be list[str].', 'For resolved, rejected, or deferred decisions, do not output typed field updates and do not output revised_candidate.', 'For deferred decisions, provide unresolved_reason.']
+        output_guidance = ['You are resolving exactly one Document2 field repair task.', 'Do not choose a different field or repair findings outside this task.', 'Return one decisions item per routed finding_id; decisions is the only decision source.', 'Do not output top-level decision, target_finding_ids, unresolved_finding_ids, or per-item objection_id.', 'Do not merge conflicting reviewer opinions into one summary finding.', 'Do not call external tools in this resolver task.', 'A blocker closes only after transaction acceptance and deterministic revalidation.', 'For resolved, rejected, or deferred decisions, do not output typed field updates and do not output revised_candidate.', 'For deferred decisions, provide unresolved_reason.']
         if task.field_family == 'cross_field':
-            output_guidance.extend(['For accepted or partially_accepted cross_field tasks, output exactly one complete revised_candidate and no typed partial updates.', 'The revised_candidate must preserve expectation_id, expectation_name, and direction from the current candidate.'])
+            output_guidance.extend(['For accepted or partially_accepted cross_field tasks, output exactly one complete revised_candidate business body and no typed partial updates.', 'Omit document_id, document_type, ticker, created_at, and updated_at; runtime preserves them.'])
         else:
             output_field = task.field_family
             output_guidance.extend([f'For accepted or partially_accepted single-field repair, do not output revised_candidate; return exactly one complete replacement value in the top-level {output_field} field.'])

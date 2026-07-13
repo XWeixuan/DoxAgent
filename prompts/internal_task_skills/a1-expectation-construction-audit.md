@@ -26,6 +26,7 @@ Return `DoxAtlasAuditResult` only:
 - `verdict`: `pass`, `pass_with_warnings`, `needs_revision`, or `blocked`.
 - `revision_required`: `true` only when O1 must revise before detail generation.
 - `findings`: concise field-level findings for `expectation_name`, `direction`, `why_it_matters`, or `market_view`.
+- Include `expectation_id` on a finding when attribution is clear. If attribution is unclear, omit it; do not copy the finding to every expectation.
 - `objections`: use only for blocking or revision-required issues.
 - `delegations`: use only when an external source is necessary and DoxAtlas cannot answer.
 - `rationale`: one short audit rationale, not a research summary.

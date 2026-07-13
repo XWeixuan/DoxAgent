@@ -188,21 +188,6 @@ def default_workflow_memory_policy_registry() -> WorkflowMemoryPolicyRegistry:
             ),
         ),
         _policy(
-            "init.resolve_objections.plan.v1",
-            "ResolveObjectionsAndDelegations",
-            TaskType.REVIEW_EXPECTATION_FIELD,
-            "Document2ResolutionPlan",
-            agent=AgentName.O1_EXPECTATION_OWNER,
-            directives=("resolution_request", "resolution_mode", "output_guidance"),
-            active=(
-                "pending_patches",
-                "pending_expectation_patch_summaries",
-                "unresolved_objections",
-                "root_cause_clusters",
-                "duplicate_objection_clusters",
-            ),
-        ),
-        _policy(
             "init.generate_known_events.v1",
             "GenerateKnownEvents",
             TaskType.GENERATE_KNOWN_EVENTS,

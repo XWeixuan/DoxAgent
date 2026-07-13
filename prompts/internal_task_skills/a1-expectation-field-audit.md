@@ -30,3 +30,4 @@ Return `DoxAtlasAuditResult` only:
 - Keep findings short and field-specific; put narrative prose in `rationale` only.
 - When the better DoxAtlas-grounded formulation is known, include it in `recommended_statement` instead of only saying the field is unsupported.
 - For every finding, identify the narrowest affected field. If a DoxAtlas issue spans multiple sections, list all affected field paths in the finding context instead of hiding the issue inside one field.
+- Include `expectation_id` whenever the affected candidate is identifiable. Missing attribution is non-blocking for the review result, but an unattributed finding must not be expanded to all candidates.

@@ -70,7 +70,6 @@ _DOCUMENT2_NODE_OUTPUT_SCHEMAS: dict[str, set[str]] = {
     "ResolveObjectionsAndDelegations": {
         "DelegatedRetrievalResult",
         "Document2FieldRepairResult",
-        "Document2ResolutionPlan",
     },
 }
 
@@ -466,7 +465,7 @@ def _compact_agent_result_payload(payload: dict[str, Any]) -> dict[str, Any]:
 def _compact_structured_payload(payload: dict[str, Any]) -> dict[str, Any]:
     if {"text", "summary", "author_agent"} & set(payload):
         compact: dict[str, Any] = {}
-        for key in ("summary", "author_agent", "reviewer_agents"):
+        for key in ("summary", "author_agent"):
             if key in payload:
                 compact[key] = _compact_payload_value(payload[key], depth=2)
         if "text" in payload:

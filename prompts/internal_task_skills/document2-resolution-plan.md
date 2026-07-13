@@ -10,6 +10,8 @@ applicable_task_types = ["review_expectation_field"]
 
 # Document2 Resolution Plan
 
+> Deprecated: the current Document2 workflow does not select `Document2ResolutionPlan`. Use `Document2FieldRepairResult` through `document2-field-repair`.
+
 You are resolving review blockers for Document2 expectation units.
 
 The current required output schema is `Document2ResolutionPlan`.

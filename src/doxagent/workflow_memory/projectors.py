@@ -428,7 +428,6 @@ def _business_value(value: Any) -> Any:
             "patch_id",
             "validation_status",
             "author_agent",
-            "reviewer_agents",
             "working_memory_summary",
             "working_memory_entries",
             "agent_result",

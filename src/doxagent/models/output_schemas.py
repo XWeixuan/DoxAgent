@@ -5,11 +5,8 @@ from pydantic import BaseModel
 from doxagent.models.agent_outputs import (
     DelegatedRetrievalResult,
     Document2FieldRepairResultOutput,
-    Document2ResolutionPlanOutput,
     DoxAtlasAuditResult,
-    ExpectationConstructionResult,
     ExpectationDetailCandidateResult,
-    ExpectationDetailResult,
     ExpectationFieldReviewResult,
     ExpectationShellConstructionResult,
 )
@@ -24,10 +21,7 @@ REQUIRED_OUTPUT_SCHEMA_MODELS: dict[str, type[BaseModel]] = {
     "DelegatedRetrievalResult": DelegatedRetrievalResult,
     "Document2FieldRepairResult": Document2FieldRepairResultOutput,
     "DoxAtlasAuditResult": DoxAtlasAuditResult,
-    "Document2ResolutionPlan": Document2ResolutionPlanOutput,
-    "ExpectationConstructionResult": ExpectationConstructionResult,
     "ExpectationDetailCandidateResult": ExpectationDetailCandidateResult,
-    "ExpectationDetailResult": ExpectationDetailResult,
     "ExpectationFieldReviewResult": ExpectationFieldReviewResult,
     "ExpectationShellConstructionResult": ExpectationShellConstructionResult,
     "KnownEventsDocument": KnownEventsDocument,
@@ -35,6 +29,14 @@ REQUIRED_OUTPUT_SCHEMA_MODELS: dict[str, type[BaseModel]] = {
     "MonitoringPolicyDocument": MonitoringPolicyDocument,
     "ResearchSection": ResearchSection,
 }
+
+DEPRECATED_OUTPUT_SCHEMAS = frozenset(
+    {
+        "Document2ResolutionPlan",
+        "ExpectationConstructionResult",
+        "ExpectationDetailResult",
+    }
+)
 
 
 def schema_names(required_output_schema: str) -> list[str]:
