@@ -92,7 +92,16 @@ class Document1BuilderMixin:
             raise WorkflowContractError(f'{node.value} forbids proposed_patches: Document1 agents must return ResearchSection output; GlobalResearchDocument assembly is owned by the workflow transaction layer.')
 
     def _research_section_from_result(self, result: AgentResult, expected_schema: str) -> ResearchSection:
-        model = self.output_validator.validate(result.payload, expected_schema)
+        structured = result.payload.get('structured')
+        if isinstance(structured, dict) and expected_schema == 'ResearchSection':
+            # Document1 dispatch already owns author identity. Rehydrate it at
+            # the workflow boundary so annotation/model metadata can never
+            # turn an otherwise valid research section into a blocking error.
+            candidate = dict(structured)
+            candidate['author_agent'] = result.agent_name.value
+            model = self.output_validator.validate_structured(candidate, expected_schema)
+        else:
+            model = self.output_validator.validate(result.payload, expected_schema)
         section = model if isinstance(model, ResearchSection) else ResearchSection.model_validate(model)
         return section
 

@@ -44,6 +44,7 @@ from doxagent.workflows.document2.review import (
 from doxagent.workflows.document2.transaction import (
     document2_revision_from_field_repair_result,
 )
+from doxagent.workflows.initialization import BlackboardInitializationWorkflow
 
 
 def _section(text: str = "Market view") -> dict[str, object]:
@@ -193,6 +194,27 @@ def test_research_section_author_is_runtime_owned() -> None:
         ResearchSection.model_validate(normalized).author_agent
         is AgentName.C1_FUNDAMENTAL_RESEARCH
     )
+
+
+def test_document1_rehydrates_author_after_annotation_collision() -> None:
+    workflow = BlackboardInitializationWorkflow()
+    result = AgentResult(
+        task_id="task_o4_research",
+        agent_name=AgentName.O4_MARKET_TRACE,
+        status=ResultStatus.SUCCEEDED,
+        payload={
+            "runtime": "react",
+            "structured": {
+                "text": "Market trace body",
+                "summary": "Market trace summary",
+                "author_agent": "",
+            },
+        },
+    )
+
+    section = workflow._research_section_from_result(result, "ResearchSection")
+
+    assert section.author_agent is AgentName.O4_MARKET_TRACE
 
 
 def test_review_finding_expectation_id_is_optional_without_fanout() -> None:

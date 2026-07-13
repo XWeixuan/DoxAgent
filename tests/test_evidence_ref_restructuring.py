@@ -154,6 +154,38 @@ def test_citation_normalizer_accepts_variants_bare_aliases_and_deduplicates_mirr
     assert batch.metrics.resolved_citation_count == 2
 
 
+def test_bare_alias_annotation_does_not_corrupt_structural_identity_fields() -> None:
+    aliases = ObservationAliasRegistry()
+    for index in range(1, 5):
+        assert aliases.register(f"oblk_{index}") == f"O{index}"
+
+    batch = TextAnnotationProcessor().process(
+        run_id="run_o4_collision",
+        task_id="task_o4_collision",
+        result_id="result_o4_collision",
+        payload={
+            "structured": {
+                "summary": "The price reaction is supported by O4",
+                "author_agent": "O4",
+                "tool_calls": [
+                    {
+                        "tool_name": "read_observation",
+                        "input": {"alias": "O4"},
+                    }
+                ],
+            },
+            "agent_definition": {"agent_name": "O4"},
+        },
+        aliases=aliases,
+    )
+
+    assert batch.plain_payload["structured"]["author_agent"] == "O4"
+    assert batch.plain_payload["structured"]["tool_calls"][0]["input"]["alias"] == "O4"
+    assert batch.plain_payload["agent_definition"]["agent_name"] == "O4"
+    assert "O4" not in batch.plain_payload["structured"]["summary"]
+    assert [item.observation_block_id for item in batch.citations] == ["oblk_4"]
+
+
 def test_recursive_annotation_resolves_citations_and_independent_times() -> None:
     service, _, block_id, alias = _observations()
     store = InMemoryAnnotationStore()

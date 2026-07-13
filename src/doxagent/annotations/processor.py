@@ -31,6 +31,33 @@ _MONTH_RE = re.compile(r"^\d{4}-(?:0[1-9]|1[0-2])$")
 _QUARTER_RE = re.compile(r"^\d{4}-Q[1-4]$")
 _HALF_RE = re.compile(r"^\d{4}-H[12]$")
 
+_NON_ANNOTATABLE_TEXT_KEYS = frozenset(
+    {
+        "agent_name",
+        "alias",
+        "author_agent",
+        "decision",
+        "document_type",
+        "execution_mode",
+        "field_path",
+        "model",
+        "operation",
+        "output_schema",
+        "provider",
+        "required_output_schema",
+        "reviewer_agent",
+        "runtime",
+        "status",
+        "target_agent",
+        "task_type",
+        "ticker",
+        "tool_name",
+        "triggered_by",
+        "validation_status",
+        "workflow_node",
+    }
+)
+
 
 class TextAnnotationProcessor:
     """Parse annotations after result validation without affecting business flow."""
@@ -125,7 +152,9 @@ class TextAnnotationProcessor:
                     item,
                     path=f"{path}/{_escape(str(key))}",
                     suppress_annotations=(
-                        suppress_annotations or (has_structured_mirror and key == "text")
+                        suppress_annotations
+                        or (has_structured_mirror and key == "text")
+                        or _is_non_annotatable_text_key(str(key))
                     ),
                     **context,
                 )
@@ -149,6 +178,12 @@ class TextAnnotationProcessor:
         suppress_annotations: bool = False,
         **_: Any,
     ) -> ProcessedText:
+        if suppress_annotations:
+            return ProcessedText(
+                payload_path=payload_path,
+                raw_tagged_text=raw_text,
+                plain_text=raw_text,
+            )
         plain_text = strip_resolved_citations(raw_text, aliases=aliases)
         plain_text = _TIME_TAG_RE.sub("", plain_text)
         text_hash = hashlib.sha256(plain_text.encode("utf-8")).hexdigest()
@@ -156,12 +191,6 @@ class TextAnnotationProcessor:
         local_citations: list[CitationAnnotation] = []
         local_times: list[TimeAnnotation] = []
         local_warnings: list[str] = []
-        if suppress_annotations:
-            return ProcessedText(
-                payload_path=payload_path,
-                raw_tagged_text=raw_text,
-                plain_text=plain_text,
-            )
         if len(raw_text.strip()) >= 20:
             metrics.annotatable_text_count += 1
         temporal_candidate = bool(
@@ -266,6 +295,17 @@ def render_time_tags(plain_text: str, annotations: list[TimeAnnotation]) -> str:
     if not suffixes:
         return plain_text
     return f"{plain_text}{''.join(dict.fromkeys(suffixes))}"
+
+
+def _is_non_annotatable_text_key(key: str) -> bool:
+    normalized = key.strip().lower()
+    return (
+        normalized in _NON_ANNOTATABLE_TEXT_KEYS
+        or normalized.endswith("_id")
+        or normalized.endswith("_ids")
+        or normalized.endswith("_ref")
+        or normalized.endswith("_refs")
+    )
 
 
 def _valid_time(value: str, *, published: bool) -> bool:
