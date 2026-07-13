@@ -2161,14 +2161,21 @@ def _normalize_final_payload(
     tool_results: list[ToolResult],
     delegation_results: list[AgentResult],
 ) -> JsonDict:
-    """Return model output without synthesizing or repairing business content.
+    """Normalize runtime-owned metadata without repairing business content.
 
     The canonical Pydantic output schema is the only repair/validation boundary.
     Annotation parsing runs later and is intentionally independent of the
     requested workflow document type.
     """
-    del task, required_output_schema, tool_results, delegation_results
-    return dict(payload)
+    del tool_results, delegation_results
+    normalized = dict(payload)
+    schema_names_for_task = _schema_names(required_output_schema)
+    if schema_names_for_task == ["ResearchSection"]:
+        # Authorship is known from the dispatched task and must not depend on a
+        # model echo. Keep the persisted ResearchSection contract unchanged,
+        # while replacing missing, blank, invalid, or spoofed model values.
+        normalized["author_agent"] = task.agent_name.value
+    return normalized
 
 
 def _tool_call_inputs(value: Any) -> list[JsonDict]:

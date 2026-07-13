@@ -6,9 +6,12 @@ import pytest
 from pydantic import ValidationError
 
 from doxagent.agents import default_agent_registry
+from doxagent.agents.runtime.react import _normalize_final_payload
 from doxagent.models import (
     AgentName,
+    AgentPermissions,
     AgentResult,
+    AgentTask,
     BlackboardPatch,
     BlackboardTarget,
     Document2FieldRepairResultOutput,
@@ -20,6 +23,8 @@ from doxagent.models import (
     PatchOperation,
     ResearchSection,
     ResultStatus,
+    RunMetadata,
+    TaskType,
     ValidationStatus,
 )
 from doxagent.models.output_schemas import (
@@ -156,6 +161,38 @@ def test_research_section_hides_and_ignores_legacy_reviewer_agents() -> None:
 
     section = ResearchSection.model_validate({**_section(), "reviewer_agents": ["", "A1"]})
     assert "reviewer_agents" not in section.model_dump(mode="json")
+
+
+def test_research_section_author_is_runtime_owned() -> None:
+    task = AgentTask(
+        task_id="task_research_section",
+        ticker="INTC",
+        agent_name=AgentName.C1_FUNDAMENTAL_RESEARCH,
+        task_type=TaskType.GENERATE_GLOBAL_RESEARCH,
+        input_context={},
+        required_output_schema="ResearchSection",
+        permissions=AgentPermissions(),
+        run_metadata=RunMetadata(
+            run_id="run_research_section",
+            ticker="INTC",
+            workflow_node="BuildGlobalResearch",
+            created_at=datetime.now(UTC),
+        ),
+    )
+
+    normalized = _normalize_final_payload(
+        {"text": "Research body", "summary": "Research summary", "author_agent": ""},
+        task=task,
+        required_output_schema="ResearchSection",
+        tool_results=[],
+        delegation_results=[],
+    )
+
+    assert normalized["author_agent"] == AgentName.C1_FUNDAMENTAL_RESEARCH.value
+    assert (
+        ResearchSection.model_validate(normalized).author_agent
+        is AgentName.C1_FUNDAMENTAL_RESEARCH
+    )
 
 
 def test_review_finding_expectation_id_is_optional_without_fanout() -> None:
