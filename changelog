@@ -427,3 +427,4 @@
 - Made top-level `ResearchSection.author_agent` runtime-owned at the ReAct final-payload boundary, preventing blank or spoofed model echoes from blocking Document1 while preserving the persisted document contract.
 - Prevented bare Observation aliases such as `O4` from corrupting structural identity/ID/ref fields during annotation, and added a Document1 runtime-author rehydration fallback so attribution metadata can no longer block an otherwise valid ResearchSection.
 - Aligned PostgreSQL objection upserts with the deployed run-scoped `(run_id, objection_id)` primary key, removing the deterministic `42P10` blocker encountered by cloned Document1/2 smoke runs.
+- Added the final INTC Document1+2+3 output-schema smoke report with timed-wakeup evidence, root-fixed structural Citation attribution, provider Arrearage failure analysis, node-level LangSmith metrics, retained/passive/compaction statistics, and the newly confirmed Fresh Observation 128k hard-budget escape.
