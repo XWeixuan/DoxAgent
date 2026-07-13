@@ -6,7 +6,7 @@ import hashlib
 import json
 import re
 from copy import deepcopy
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any, Literal, cast
 
 from doxagent.agents.runtime.memory.aliases import ObservationAliasRegistry
@@ -25,6 +25,7 @@ ObservationAdapterName = Literal[
 ]
 
 _MAX_NATURAL_BLOCK_CHARS = 1_200
+_MAX_SINGLE_RESULT_FRESH_TOKENS = 128_000
 _TABLE_ROWS_PER_BLOCK = 50
 _PARAGRAPHS_PER_BLOCK = 8
 _OUTLINE_BLOCK_LIMIT = 24
@@ -201,6 +202,8 @@ class ObservationCallIndex:
     block_refs: tuple[str, ...]
     selected_refs: tuple[str, ...]
     original_chars: int
+    original_token_estimate: int
+    delivery_mode: Literal["full", "indexed_sec", "paged_oversized"] = "full"
 
     def outline(
         self,
@@ -237,6 +240,8 @@ class ObservationCallIndex:
             "tool_name": self.tool_name,
             "policy": self.policy,
             "original_chars": self.original_chars,
+            "original_token_estimate": self.original_token_estimate,
+            "delivery_mode": self.delivery_mode,
             "block_count": len(all_blocks),
             "listed_block_count": len(items),
             "omitted_block_count": max(0, len(all_blocks) - len(items)),
@@ -246,18 +251,15 @@ class ObservationCallIndex:
 
 
 class ObservationPolicyRegistry:
-    """Resolve a declared policy and protect context from unexpectedly huge inline data."""
+    """Resolve only the descriptor policy; block size never changes this policy."""
 
     def resolve(
         self,
         declared_policy: str | None,
         output: JsonDict,
     ) -> ObservationPolicyName:
-        if declared_policy in {"indexed", "recomputable"}:
+        if declared_policy in {"inline", "indexed", "recomputable"}:
             return cast(ObservationPolicyName, declared_policy)
-        rendered_chars = len(_canonical_json(output))
-        if rendered_chars > _MAX_NATURAL_BLOCK_CHARS:
-            return "indexed"
         return "inline"
 
 
@@ -275,26 +277,6 @@ class ObservationParser:
         output = result.output
         source_markers: tuple[str, ...] = ()
         envelope = _base_envelope(result.tool_name, output, source_markers)
-        if policy == "inline":
-            return [
-                _make_block(
-                    tool_call_id=tool_call_id,
-                    locator="/",
-                    content=output,
-                    envelope=envelope,
-                    block_type="inline",
-                    source_markers=source_markers,
-                )
-            ]
-        if policy == "recomputable" or adapter == "time_series":
-            time_series = _time_series_blocks(
-                tool_call_id,
-                output,
-                envelope,
-                source_markers,
-            )
-            if time_series:
-                return time_series
         if adapter == "doxatlas":
             doxatlas = _doxatlas_blocks(
                 tool_call_id,
@@ -368,21 +350,43 @@ class ObservationService:
             adapter=adapter,
         )
         self.block_store.add_many(blocks)
-        self.aliases.register_many(tuple(block.block_id for block in blocks))
+        self.aliases.register_many(
+            tuple(
+                block.block_id
+                for block in blocks
+                if block.block_type != "outline"
+            )
+            + tuple(
+                block.block_id
+                for block in blocks
+                if block.block_type == "outline"
+            )
+        )
         refs = tuple(block.ref for block in blocks)
-        if policy == "inline":
-            selected = refs
-        elif policy == "recomputable":
-            selected = _selected_block_refs(blocks, limit=2, tool_name=result.tool_name)
-        else:
+        original_chars = len(_canonical_json(result.output))
+        original_token_estimate = _estimated_payload_tokens(result.output)
+        if result.tool_name == "sec.company_facts_and_filings":
+            policy = "indexed"
+            delivery_mode = "indexed_sec"
             selected = _selected_block_refs(blocks, limit=3, tool_name=result.tool_name)
+        elif original_token_estimate > _MAX_SINGLE_RESULT_FRESH_TOKENS:
+            policy = "indexed"
+            delivery_mode = "paged_oversized"
+            selected = _selected_block_refs(blocks, limit=3, tool_name=result.tool_name)
+        else:
+            delivery_mode = "full"
+            selected = tuple(
+                block.ref for block in blocks if block.block_type != "outline"
+            )
         index = ObservationCallIndex(
             tool_call_id=tool_call_id,
             tool_name=result.tool_name,
             policy=policy,
             block_refs=refs,
             selected_refs=selected,
-            original_chars=len(_canonical_json(result.output)),
+            original_chars=original_chars,
+            original_token_estimate=original_token_estimate,
+            delivery_mode=delivery_mode,
         )
         self._call_indexes[tool_call_id] = index
         return index
@@ -395,8 +399,6 @@ class ObservationService:
         if index is None:
             return None
         selected = list(index.selected_refs)
-        if micro and index.policy != "inline":
-            selected = selected[:1]
         loaded = [
             block.agent_view(self.aliases.alias_for(block.block_id) or "")
             for ref in selected
@@ -406,9 +408,27 @@ class ObservationService:
             "outline": index.outline(self.block_store, self.aliases),
             "loaded_blocks": loaded,
             "read_instruction": (
-                "Use read_observation with a listed O# alias to load exact parent/child/original data."
+                "All chunks are loaded for this result. Use read_observation "
+                "to reload an exact block."
+                if index.delivery_mode == "full"
+                else (
+                    "This result exceeds the 128k input window and is explicitly paged. "
+                    "Use read_observation with listed O# aliases to load remaining exact blocks."
+                    if index.delivery_mode == "paged_oversized"
+                    else (
+                        "SEC company facts uses its dedicated index/page strategy; "
+                        "use read_observation for exact pages."
+                    )
+                )
             ),
         }
+
+    def reconstruct_output(self, tool_call_id: str) -> JsonDict | None:
+        """Rebuild ToolResult.output from the stored non-outline Observation Blocks."""
+
+        if tool_call_id not in self._call_indexes:
+            return None
+        return _reconstruct_output(self.block_store.blocks_for_call(tool_call_id))
 
     def read(
         self,
@@ -442,6 +462,8 @@ class ObservationService:
                     "block_refs": list(index.block_refs),
                     "selected_refs": list(index.selected_refs),
                     "original_chars": index.original_chars,
+                    "original_token_estimate": index.original_token_estimate,
+                    "delivery_mode": index.delivery_mode,
                 }
                 for call_id, index in self._call_indexes.items()
             },
@@ -516,148 +538,68 @@ def _doxatlas_blocks(
     envelope: JsonDict,
     source_markers: tuple[str, ...],
 ) -> list[ObservationBlock]:
-    narratives = output.get("narratives")
     blocks: list[ObservationBlock] = []
-    for narrative_index, narrative in enumerate(
-        narratives if isinstance(narratives, list) else []
-    ):
-        if not isinstance(narrative, dict):
-            continue
-        narrative_code = str(
-            narrative.get("narrative_code")
-            or narrative.get("code")
-            or narrative.get("narrative_id")
-            or narrative_index
+    data = output.get("data")
+    if isinstance(data, (dict, list)):
+        blocks.extend(
+            _value_blocks(
+                tool_call_id,
+                "/data",
+                data,
+                {**envelope, "path": "/data", "doxatlas_unwrapped": True},
+                source_markers,
+                hierarchy=True,
+                force_structure=True,
+                prefer_item_refs=True,
+                force_item_structure=True,
+            )
         )
-        narrative_locator = f"narrative/{_locator_token(narrative_code)}"
-        narrative_block = _make_block(
-            tool_call_id=tool_call_id,
-            locator=narrative_locator,
-            content=narrative,
-            envelope={**envelope, "narrative": narrative_code},
-            block_type="doxatlas_narrative",
-            source_markers=source_markers,
+        wrapper = {key: value for key, value in output.items() if key != "data"}
+        if wrapper:
+            blocks.extend(
+                _structured_blocks(
+                    tool_call_id,
+                    wrapper,
+                    envelope,
+                    source_markers,
+                    adapter="json",
+                )
+            )
+    else:
+        blocks.extend(
+            _structured_blocks(
+                tool_call_id,
+                output,
+                envelope,
+                source_markers,
+                adapter="json",
+            )
         )
-        blocks.append(narrative_block)
-        events = narrative.get("events")
-        if not isinstance(events, list):
-            continue
-        for event_index, event in enumerate(events):
-            if not isinstance(event, dict):
-                continue
-            event_code = str(
-                event.get("event_code")
-                or event.get("code")
-                or event.get("event_id")
-                or event_index
-            )
-            event_locator = (
-                f"{narrative_locator}/event/{_locator_token(event_code)}"
-            )
-            event_block = _make_block(
-                tool_call_id=tool_call_id,
-                locator=event_locator,
-                content=event,
-                envelope={
-                    **envelope,
-                    "narrative": narrative_code,
-                    "event": event_code,
-                },
-                block_type="doxatlas_event",
-                source_markers=source_markers,
-                parent_block_id=narrative_block.block_id,
-            )
-            blocks.append(event_block)
-            propositions = event.get("propositions")
-            if not isinstance(propositions, list):
-                continue
-            for proposition_index, proposition in enumerate(propositions):
-                if not isinstance(proposition, dict):
-                    continue
-                proposition_code = str(
-                    proposition.get("proposition_code")
-                    or proposition.get("code")
-                    or proposition.get("proposition_id")
-                    or proposition_index
-                )
-                proposition_locator = (
-                    f"{event_locator}/proposition/{_locator_token(proposition_code)}"
-                )
-                blocks.append(
-                    _make_block(
-                        tool_call_id=tool_call_id,
-                        locator=proposition_locator,
-                        content=proposition,
-                        envelope={
-                            **envelope,
-                            "narrative": narrative_code,
-                            "event": event_code,
-                            "proposition": proposition_code,
-                        },
-                        block_type="doxatlas_proposition",
-                        source_markers=source_markers,
-                        parent_block_id=event_block.block_id,
-                    )
-                )
-    prefix_parts: list[str] = []
-    narrative_scope = output.get("narrative_code") or output.get("narrative_id")
-    event_scope = output.get("event_code") or output.get("narrative_event_id")
-    if narrative_scope not in (None, ""):
-        prefix_parts.extend(["narrative", _locator_token(str(narrative_scope))])
-    if event_scope not in (None, ""):
-        prefix_parts.extend(["event", _locator_token(str(event_scope))])
-    prefix = "/".join(prefix_parts)
-    collections = (
-        ("events", "event", ("event_code", "code", "event_id", "id")),
-        (
-            "propositions",
-            "proposition",
-            ("proposition_code", "code", "proposition_id", "id"),
-        ),
-        (
-            "ignored_propositions",
-            "proposition",
-            ("proposition_code", "code", "proposition_id", "id"),
-        ),
-        ("media_results", "media", ("media_code", "code", "media_id", "id")),
-        ("social_results", "social", ("social_code", "code", "social_id", "id")),
-        ("sources", "source", ("source_code", "code", "source_id", "id")),
-    )
-    for collection_key, item_kind, code_keys in collections:
-        items = output.get(collection_key)
-        if not isinstance(items, list):
-            continue
-        for index, item in enumerate(items):
-            if not isinstance(item, dict):
-                continue
-            code = next(
-                (
-                    str(item[key])
-                    for key in code_keys
-                    if item.get(key) not in (None, "")
-                ),
-                str(index),
-            )
-            locator = "/".join(
-                part
-                for part in (prefix, item_kind, _locator_token(code))
-                if part
-            )
-            blocks.append(
-                _make_block(
-                    tool_call_id=tool_call_id,
-                    locator=locator,
-                    content=item,
-                    envelope={
-                        **envelope,
-                        "collection": collection_key,
-                        item_kind: code,
-                    },
-                    block_type=f"doxatlas_{item_kind}",
-                    source_markers=source_markers,
-                )
-            )
+    blocks = [_with_doxatlas_semantics(block) for block in blocks]
     return blocks
+
+
+def _with_doxatlas_semantics(block: ObservationBlock) -> ObservationBlock:
+    locator = block.locator.lower()
+    semantic: tuple[str, str] | None = None
+    for keys, code, name in (
+        (("narratives", "narrative"), "N", "narrative"),
+        (("events", "event"), "E", "event"),
+        (("propositions", "ignored_propositions", "proposition"), "P", "proposition"),
+        (("media_results", "media"), "M", "media"),
+        (("social_results", "social"), "S", "social"),
+        (("sources", "source", "documents"), "D", "source"),
+    ):
+        if any(f"/{key}" in locator for key in keys):
+            semantic = (code, name)
+    if semantic is None:
+        return block
+    code, name = semantic
+    return replace(
+        block,
+        block_type=(block.block_type if block.block_type == "outline" else f"doxatlas_{name}"),
+        context_envelope={**block.context_envelope, "doxatlas_semantic": code},
+    )
 
 
 def _value_blocks(
@@ -671,6 +613,7 @@ def _value_blocks(
     hierarchy: bool = False,
     force_structure: bool = False,
     prefer_item_refs: bool = False,
+    force_item_structure: bool = False,
 ) -> list[ObservationBlock]:
     rendered_chars = len(_canonical_json(value))
     if isinstance(value, str) and rendered_chars > _MAX_NATURAL_BLOCK_CHARS:
@@ -713,6 +656,7 @@ def _value_blocks(
                     hierarchy=hierarchy,
                     force_structure=force_structure,
                     prefer_item_refs=prefer_item_refs,
+                    force_item_structure=force_item_structure,
                 )
             )
         return blocks
@@ -739,13 +683,14 @@ def _value_blocks(
                         source_markers,
                         parent_block_id=parent.block_id,
                         hierarchy=hierarchy,
-                        force_structure=False,
+                        force_structure=force_item_structure,
                         prefer_item_refs=False,
+                        force_item_structure=force_item_structure,
                     )
                 )
             return blocks
         rows = [item for item in value if isinstance(item, dict)]
-        if rows and len(rows) == len(value) and all(
+        if not force_item_structure and rows and len(rows) == len(value) and all(
             _single_table_row_chars(row) <= _MAX_NATURAL_BLOCK_CHARS for row in rows
         ):
             return _table_blocks(
@@ -779,6 +724,7 @@ def _value_blocks(
                     hierarchy=hierarchy,
                     force_structure=force_structure,
                     prefer_item_refs=prefer_item_refs,
+                    force_item_structure=force_item_structure,
                 )
             )
         return blocks
@@ -921,13 +867,21 @@ def _table_blocks(
         end = start + len(group) - 1
         columns = sorted({str(column) for row in group for column in row})
         child_locator = f"{locator}/rows/{start}-{end}"
+        start_label = _row_label(group[0], start)
+        end_label = _row_label(group[-1], end)
+        is_time_series = any(any(key in row for key in _DATE_KEYS) for row in group)
         blocks.append(
             _make_block(
                 tool_call_id=tool_call_id,
                 locator=child_locator,
                 content={"columns": columns, "rows": group},
-                envelope={**envelope, "path": child_locator, "columns": columns},
-                block_type="table",
+                envelope={
+                    **envelope,
+                    "path": child_locator,
+                    "columns": columns,
+                    **({"range": f"{start_label}..{end_label}"} if is_time_series else {}),
+                },
+                block_type="time_series" if is_time_series else "table",
                 source_markers=source_markers,
                 parent_block_id=parent_block_id,
             )
@@ -971,6 +925,95 @@ def _single_table_row_chars(row: JsonDict) -> int:
             {"columns": sorted(str(column) for column in row), "rows": [row]}
         )
     )
+
+
+def _reconstruct_output(blocks: list[ObservationBlock]) -> JsonDict:
+    root: Any = {}
+    regular: list[ObservationBlock] = []
+    row_groups: list[tuple[str, int, list[Any]]] = []
+    text_groups: list[tuple[str, int, str]] = []
+    for block in blocks:
+        if block.block_type == "outline":
+            continue
+        row_match = re.match(r"^(.*)/rows/(\d+)-(\d+)$", block.locator)
+        if (
+            row_match
+            and isinstance(block.content, dict)
+            and isinstance(block.content.get("rows"), list)
+        ):
+            row_groups.append(
+                (
+                    row_match.group(1) or "/",
+                    int(row_match.group(2)),
+                    deepcopy(block.content["rows"]),
+                )
+            )
+            continue
+        paragraph_match = re.match(r"^(.*)/paragraphs/(\d+)-(\d+)$", block.locator)
+        if paragraph_match and isinstance(block.content, str):
+            text_groups.append(
+                (paragraph_match.group(1) or "/", int(paragraph_match.group(2)), block.content)
+            )
+            continue
+        regular.append(block)
+    for block in sorted(regular, key=lambda item: (_locator_depth(item.locator), item.locator)):
+        root = _set_json_pointer(root, block.locator, deepcopy(block.content))
+    grouped_rows: dict[str, list[tuple[int, list[Any]]]] = {}
+    for path, start, rows in row_groups:
+        grouped_rows.setdefault(path, []).append((start, rows))
+    for path, groups in grouped_rows.items():
+        rows: list[Any] = []
+        for start, values in sorted(groups):
+            if len(rows) < start:
+                rows.extend([None] * (start - len(rows)))
+            for offset, value in enumerate(values):
+                index = start + offset
+                if index < len(rows):
+                    rows[index] = value
+                else:
+                    rows.append(value)
+        root = _set_json_pointer(root, path, rows)
+    grouped_text: dict[str, list[tuple[int, str]]] = {}
+    for path, start, text in text_groups:
+        grouped_text.setdefault(path, []).append((start, text))
+    for path, groups in grouped_text.items():
+        root = _set_json_pointer(root, path, "".join(text for _, text in sorted(groups)))
+    return cast(JsonDict, root)
+
+
+def _set_json_pointer(root: Any, pointer: str, value: Any) -> Any:
+    if pointer in {"", "/"}:
+        return value
+    parts = [_unescape_pointer(part) for part in pointer.strip("/").split("/")]
+    if not isinstance(root, (dict, list)):
+        root = [] if parts[0].isdigit() else {}
+    current = root
+    for index, part in enumerate(parts[:-1]):
+        next_is_index = parts[index + 1].isdigit()
+        if isinstance(current, list):
+            position = int(part)
+            while len(current) <= position:
+                current.append(None)
+            if not isinstance(current[position], (dict, list)):
+                current[position] = [] if next_is_index else {}
+            current = current[position]
+        else:
+            if not isinstance(current.get(part), (dict, list)):
+                current[part] = [] if next_is_index else {}
+            current = current[part]
+    final = parts[-1]
+    if isinstance(current, list):
+        position = int(final)
+        while len(current) <= position:
+            current.append(None)
+        current[position] = value
+    else:
+        current[final] = value
+    return root
+
+
+def _unescape_pointer(value: str) -> str:
+    return value.replace("~1", "/").replace("~0", "~")
 
 
 def _selected_block_refs(
@@ -1121,6 +1164,13 @@ def _escape_pointer(value: str) -> str:
 
 def _canonical_json(value: Any) -> str:
     return json.dumps(value, ensure_ascii=False, sort_keys=True, default=str, separators=(",", ":"))
+
+
+def _estimated_payload_tokens(value: Any) -> int:
+    rendered = _canonical_json(value)
+    ascii_chars = sum(1 for char in rendered if ord(char) < 128)
+    non_ascii_chars = len(rendered) - ascii_chars
+    return max(1, (ascii_chars + 3) // 4 + non_ascii_chars)
 
 
 def _json_safe(value: Any) -> Any:

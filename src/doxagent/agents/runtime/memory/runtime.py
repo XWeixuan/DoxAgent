@@ -14,6 +14,7 @@ from doxagent.agents.runtime.memory.context import ActiveContextAssembler
 from doxagent.agents.runtime.memory.events import TaskEventLog
 from doxagent.agents.runtime.memory.observations import ObservationService
 from doxagent.agents.runtime.memory.state import TaskMemoryState
+from doxagent.annotations.citations import normalized_citation_aliases
 from doxagent.models import AgentResult, AgentTask
 from doxagent.skills.schema import SkillDefinition
 from doxagent.tools import ToolDescriptor, ToolResult
@@ -34,9 +35,6 @@ _PERSISTED_EVENT_OMIT_FIELDS = {
     "memory_state",
     "request",
 }
-_CITATION_ALIAS_RE = re.compile(r"【cite:(O[1-9]\d*)】")
-
-
 @dataclass
 class RuntimeGuardState:
     tool_counts: Counter[str] = field(default_factory=Counter)
@@ -173,8 +171,16 @@ class TaskMemoryRuntime:
         reasoning_content: str | None,
     ) -> tuple[list[str], list[str]]:
         retained_block_ids = set(self.memory.retained)
-        action_candidates = _aliases_by_last_mention(_natural_language_text(action))
-        reasoning_candidates = _aliases_by_last_mention(reasoning_content or "")
+        action_candidates = normalized_citation_aliases(
+            _natural_language_text(action),
+            aliases=self.observations.aliases,
+            last_first=True,
+        )
+        reasoning_candidates = normalized_citation_aliases(
+            reasoning_content or "",
+            aliases=self.observations.aliases,
+            last_first=True,
+        )
         selected: set[str] = set()
 
         def valid(candidates: list[str]) -> list[str]:
@@ -280,6 +286,8 @@ class TaskMemoryRuntime:
                     if (block := self.observations.block_store.get_by_ref(ref)) is not None
                 ],
                 "original_chars": index.original_chars,
+                "original_token_estimate": index.original_token_estimate,
+                "delivery_mode": index.delivery_mode,
             },
             step=step,
         )
@@ -654,20 +662,19 @@ def _natural_language_text(value: Any) -> str:
             for nested in item:
                 visit(nested)
 
-    visit(value)
+    if isinstance(value, dict):
+        for key in (
+            "reasoning_summary",
+            "synthesis_update",
+            "research_update",
+            "plan_update",
+            "completion_reason",
+            "final_payload",
+        ):
+            visit(value.get(key))
+    else:
+        visit(value)
     return "\n".join(parts)
-
-
-def _aliases_by_last_mention(text: str) -> list[str]:
-    aliases: list[str] = []
-    seen: set[str] = set()
-    for match in reversed(list(_CITATION_ALIAS_RE.finditer(text))):
-        alias = match.group(1)
-        if alias in seen:
-            continue
-        seen.add(alias)
-        aliases.append(alias)
-    return aliases
 
 
 def _jaccard_similarity(left: str, right: str) -> float:

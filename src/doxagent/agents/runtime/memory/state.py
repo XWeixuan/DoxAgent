@@ -8,6 +8,7 @@ from dataclasses import dataclass, field
 from typing import Any, Literal
 
 from doxagent.agents.runtime.memory.observations import ObservationService
+from doxagent.annotations.citations import normalized_citation_aliases
 
 JsonDict = dict[str, Any]
 RetainedLoadState = Literal["loaded", "index_only"]
@@ -17,9 +18,6 @@ _COMMAND_RE = re.compile(
     r"(?:\s+([SQ]\d+))?(?:\s+([SQ]\d+))?\s*(?:[:：]\s*(.*))?$",
     re.IGNORECASE | re.DOTALL,
 )
-_CITATION_ALIAS_RE = re.compile(r"【cite:(O[1-9]\d*)】")
-
-
 @dataclass(frozen=True)
 class SynthesisBlock:
     block_id: str
@@ -55,14 +53,12 @@ class AgendaItem:
 class RetainedObservation:
     observation_block_id: str
     note: str
-    reason: str
     load_state: RetainedLoadState = "loaded"
 
     def index_view(self, alias: str | None = None) -> JsonDict:
         return {
             "alias": alias,
             "note": self.note,
-            "reason": self.reason,
             "load_state": self.load_state,
         }
 
@@ -156,14 +152,12 @@ class TaskMemoryState:
                 self.retained[block_id] = RetainedObservation(
                     observation_block_id=block_id,
                     note=current.note,
-                    reason=str(raw.get("reason") or current.reason),
                     load_state="loaded",
                 )
             elif operation == "INDEX_ONLY":
                 self.retained[block_id] = RetainedObservation(
                     observation_block_id=block_id,
                     note=current.note,
-                    reason=str(raw.get("reason") or current.reason),
                     load_state="index_only",
                 )
             elif operation == "DROP":
@@ -208,7 +202,6 @@ class TaskMemoryState:
             self.retained[block_id] = RetainedObservation(
                 observation_block_id=block_id,
                 note=item.note,
-                reason=item.reason,
                 load_state="loaded",
             )
             reloaded.append(block_id)
@@ -231,7 +224,6 @@ class TaskMemoryState:
         self.retained[block_id] = RetainedObservation(
             observation_block_id=block_id,
             note=item.note,
-            reason=item.reason,
             load_state="index_only",
         )
         return observations.aliases.alias_for(block_id)
@@ -244,7 +236,6 @@ class TaskMemoryState:
                 {
                     "observation_block_id": item.observation_block_id,
                     "note": item.note,
-                    "reason": item.reason,
                     "load_state": item.load_state,
                 }
                 for item in self.retained.values()
@@ -367,17 +358,15 @@ class TaskMemoryState:
                 continue
             alias = str(raw.get("alias") or "").strip()
             note = str(raw.get("note") or "").strip()
-            reason = str(raw.get("reason") or "").strip()
             block_id = observations.aliases.resolve(alias)
             if block_id is None or observations.block_store.get(block_id) is None:
                 warnings.append(f"忽略无效 observation alias：{alias or '<empty>'}。")
                 continue
-            if not note or not reason:
-                warnings.append(f"Observation {alias} 缺少 note 或 reason，已按软校验保留。")
+            if not note:
+                warnings.append(f"Observation {alias} 缺少 note，已按软校验保留。")
             self.retained[block_id] = RetainedObservation(
                 observation_block_id=block_id,
                 note=note,
-                reason=reason,
                 load_state="loaded",
             )
         return warnings
@@ -426,7 +415,10 @@ def _observation_block_ids(
     return tuple(
         dict.fromkeys(
             block_id
-            for alias in _CITATION_ALIAS_RE.findall(value)
+            for alias in normalized_citation_aliases(
+                value,
+                aliases=observations.aliases,
+            )
             if (block_id := observations.aliases.resolve(alias)) is not None
         )
     )

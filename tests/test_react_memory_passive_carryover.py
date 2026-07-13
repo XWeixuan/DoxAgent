@@ -300,6 +300,7 @@ def test_full_compaction_uses_manual_registry_prompt_and_preserves_user_payload(
 
 def test_evidence_ref_usage_file_is_the_only_prompt_source_for_citation_syntax() -> None:
     evidence = ROOT / "prompts/workflows/evidence_ref_usage.md"
+    memory = ROOT / "prompts/workflows/memory.md"
     prompt_sources = [
         *ROOT.joinpath("prompts").rglob("*.md"),
         *ROOT.joinpath("src/doxagent/prompts").rglob("*.py"),
@@ -308,10 +309,13 @@ def test_evidence_ref_usage_file_is_the_only_prompt_source_for_citation_syntax()
     offenders = [
         path
         for path in prompt_sources
-        if path != evidence and "【cite:" in path.read_text(encoding="utf-8")
+        if path not in {evidence, memory} and "【cite:" in path.read_text(encoding="utf-8")
     ]
     assert offenders == []
     assert "【cite:O1】" in evidence.read_text(encoding="utf-8")
+    memory_text = memory.read_text(encoding="utf-8")
+    assert '"synthesis_update":["ADD：结论【cite:O1】"]' in memory_text
+    assert "Citation 的含义和使用规则仅以独立加载的" in memory_text
 
 
 def test_passive_audit_never_persists_block_payloads() -> None:

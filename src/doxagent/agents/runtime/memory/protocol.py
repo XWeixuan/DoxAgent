@@ -24,16 +24,18 @@ def read_observation_descriptor() -> JsonDict:
 
 def memory_action_schema() -> JsonDict:
     return {
-        "synthesis_update": ["ADD：…", "REVISE S2：…", "DROP S1"],
-        "research_update": [
-            "OPEN：…",
-            "REVISE Q2：…",
-            "RESOLVE Q1",
-            "MERGE Q2 Q4：…",
-            "DEFER Q3：…",
-        ],
-        "retain_observations": [
-            {"alias": "O1", "note": "…", "reason": "…"}
+        "synthesis_update": ["ADD：结论【cite:O1】"],
+        "research_update": ["OPEN：待研究问题"],
+        "retain_observations": [{"alias": "O1", "note": "材料内容"}],
+        "tool_calls": [
+            {
+                "tool_name": "read_observation",
+                "input": {
+                    "alias": "O1",
+                    "include_parent": False,
+                    "include_children": False,
+                },
+            }
         ],
     }
 
@@ -47,7 +49,6 @@ def maintenance_action_schema() -> JsonDict:
             {
                 "alias": "O1",
                 "action": "KEEP_LOADED|INDEX_ONLY|DROP",
-                "reason": "…",
             }
         ],
         "plan_update": ["…"],

@@ -2,6 +2,14 @@
 import json
 from doxagent.workflows.initialization.shared import *
 _SERIAL_AGENT_DISPATCH_KEY = 'serial_agent_dispatch'
+_DOCUMENT12_TEN_STEP_NODES = {
+    WorkflowNode.BUILD_GLOBAL_RESEARCH,
+    WorkflowNode.GENERATE_GLOBAL_NARRATIVE_REPORT,
+    WorkflowNode.GENERATE_EXPECTATION_CONSTRUCTION,
+    WorkflowNode.RESOLVE_EXPECTATION_CONSTRUCTION,
+    WorkflowNode.GENERATE_EXPECTATION_DETAILS,
+    WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS,
+}
 
 class InitializationAgentDispatchMixin:
 
@@ -11,6 +19,7 @@ class InitializationAgentDispatchMixin:
         input_context = self._task_input_context(checkpoint, node, agent_name, task_type, permissions)
         if extra_context:
             input_context = input_context | extra_context
+        input_context = self._with_document12_react_budget(input_context, node)
 
         def build_task(*, retry_attempt: int=0, previous_failure: AgentResult | None=None) -> AgentTask:
             task_input_context = input_context
@@ -45,6 +54,25 @@ class InitializationAgentDispatchMixin:
             if audit_failures and event_code in {'parse_failed', 'schema_failed'}:
                 self._write_agent_acceptance_failure(checkpoint, task, result, event_code=cast(Literal['parse_failed', 'schema_failed'], event_code), message=result.error.message if result.error is not None else 'Agent failed.', expected_schema=output_schema)
         return self._with_failure_audit(self._with_tool_usage_audit(result))
+
+    def _with_document12_react_budget(
+        self,
+        input_context: dict[str, Any],
+        node: WorkflowNode,
+    ) -> dict[str, Any]:
+        if node not in _DOCUMENT12_TEN_STEP_NODES:
+            return input_context
+        raw_budget = input_context.get('react_runtime_budget')
+        budget = dict(raw_budget) if isinstance(raw_budget, dict) else {}
+        raw_steps = budget.get('max_steps', 5)
+        try:
+            current_steps = int(raw_steps)
+        except (TypeError, ValueError):
+            return input_context
+        if current_steps != 5:
+            return input_context
+        budget['max_steps'] = 10
+        return input_context | {'react_runtime_budget': budget}
 
     def _run_agent_jobs_concurrently(self, checkpoint: WorkflowCheckpoint, node: WorkflowNode, jobs: list[_ParallelAgentJob], *, on_outcome: Callable[[_ParallelAgentOutcome], None] | None=None, timeout_seconds: float | None=None) -> list[_ParallelAgentOutcome]:
         if not jobs:

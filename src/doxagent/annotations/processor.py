@@ -6,9 +6,14 @@ import hashlib
 import re
 from copy import deepcopy
 from datetime import UTC, datetime
-from typing import Any, Protocol
+from typing import Any
 from uuid import uuid4
 
+from doxagent.annotations.citations import (
+    ObservationAliasResolver,
+    normalize_citation_mentions,
+    strip_resolved_citations,
+)
 from doxagent.annotations.models import (
     AnnotationBatch,
     AnnotationMetrics,
@@ -18,18 +23,13 @@ from doxagent.annotations.models import (
 )
 from doxagent.annotations.store import AnnotationStore
 
-_TAG_RE = re.compile(
-    r"【(?P<kind>cite|occurred_at|published_at):(?P<value>[^】]+)】"
+_TIME_TAG_RE = re.compile(
+    r"【(?P<kind>occurred_at|published_at):(?P<value>[^】]+)】"
 )
-_ALIAS_RE = re.compile(r"^O[1-9]\d*$")
 _DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 _MONTH_RE = re.compile(r"^\d{4}-(?:0[1-9]|1[0-2])$")
 _QUARTER_RE = re.compile(r"^\d{4}-Q[1-4]$")
 _HALF_RE = re.compile(r"^\d{4}-H[12]$")
-
-
-class ObservationAliasResolver(Protocol):
-    def resolve(self, alias: str) -> str | None: ...
 
 
 class TextAnnotationProcessor:
@@ -91,19 +91,44 @@ class TextAnnotationProcessor:
             metrics=metrics,
         )
 
-    def _walk(self, value: Any, *, path: str, **context: Any) -> Any:
+    def _walk(
+        self,
+        value: Any,
+        *,
+        path: str,
+        suppress_annotations: bool = False,
+        **context: Any,
+    ) -> Any:
         if isinstance(value, str):
-            item = self._process_text(value, payload_path=path or "/", **context)
+            item = self._process_text(
+                value,
+                payload_path=path or "/",
+                suppress_annotations=suppress_annotations,
+                **context,
+            )
             context["processed"].append(item)
             return item.plain_text
         if isinstance(value, list):
             return [
-                self._walk(item, path=f"{path}/{index}", **context)
+                self._walk(
+                    item,
+                    path=f"{path}/{index}",
+                    suppress_annotations=suppress_annotations,
+                    **context,
+                )
                 for index, item in enumerate(value)
             ]
         if isinstance(value, dict):
+            has_structured_mirror = path == "" and isinstance(value.get("structured"), dict)
             return {
-                key: self._walk(item, path=f"{path}/{_escape(str(key))}", **context)
+                key: self._walk(
+                    item,
+                    path=f"{path}/{_escape(str(key))}",
+                    suppress_annotations=(
+                        suppress_annotations or (has_structured_mirror and key == "text")
+                    ),
+                    **context,
+                )
                 for key, item in value.items()
             }
         return value
@@ -121,14 +146,22 @@ class TextAnnotationProcessor:
         times: list[TimeAnnotation],
         warnings: list[str],
         metrics: AnnotationMetrics,
+        suppress_annotations: bool = False,
         **_: Any,
     ) -> ProcessedText:
-        plain_text = _TAG_RE.sub("", raw_text)
+        plain_text = strip_resolved_citations(raw_text, aliases=aliases)
+        plain_text = _TIME_TAG_RE.sub("", plain_text)
         text_hash = hashlib.sha256(plain_text.encode("utf-8")).hexdigest()
         created_at = datetime.now(UTC)
         local_citations: list[CitationAnnotation] = []
         local_times: list[TimeAnnotation] = []
         local_warnings: list[str] = []
+        if suppress_annotations:
+            return ProcessedText(
+                payload_path=payload_path,
+                raw_tagged_text=raw_text,
+                plain_text=plain_text,
+            )
         if len(raw_text.strip()) >= 20:
             metrics.annotatable_text_count += 1
         temporal_candidate = bool(
@@ -136,31 +169,36 @@ class TextAnnotationProcessor:
         )
         if temporal_candidate:
             metrics.temporal_candidate_count += 1
-        for match in _TAG_RE.finditer(raw_text):
+        explicit_candidates = normalize_citation_mentions(raw_text)
+        for candidate in explicit_candidates:
+            if aliases.resolve(candidate.alias) is None:
+                metrics.citation_tag_count += 1
+                metrics.invalid_alias_count += 1
+                local_warnings.append(
+                    f"invalid_citation_alias:{payload_path}:{candidate.alias}"
+                )
+        for mention in normalize_citation_mentions(raw_text, aliases=aliases):
+            metrics.citation_tag_count += 1
+            block_id = aliases.resolve(mention.alias)
+            if block_id is None:
+                continue
+            record = CitationAnnotation(
+                annotation_id=f"citation_{uuid4().hex}",
+                run_id=run_id,
+                task_id=task_id,
+                result_id=result_id,
+                payload_path=payload_path,
+                text_hash=text_hash,
+                span_start=mention.start,
+                span_end=mention.end,
+                observation_block_id=block_id,
+                created_at=created_at,
+            )
+            local_citations.append(record)
+            metrics.resolved_citation_count += 1
+        for match in _TIME_TAG_RE.finditer(raw_text):
             kind = match.group("kind")
             value = match.group("value").strip()
-            if kind == "cite":
-                metrics.citation_tag_count += 1
-                block_id = aliases.resolve(value) if _ALIAS_RE.fullmatch(value) else None
-                if block_id is None:
-                    metrics.invalid_alias_count += 1
-                    local_warnings.append(f"invalid_citation_alias:{payload_path}:{value}")
-                    continue
-                record = CitationAnnotation(
-                    annotation_id=f"citation_{uuid4().hex}",
-                    run_id=run_id,
-                    task_id=task_id,
-                    result_id=result_id,
-                    payload_path=payload_path,
-                    text_hash=text_hash,
-                    span_start=match.start(),
-                    span_end=match.end(),
-                    observation_block_id=block_id,
-                    created_at=created_at,
-                )
-                local_citations.append(record)
-                metrics.resolved_citation_count += 1
-                continue
             metrics.time_tag_count += 1
             if not _valid_time(value, published=(kind == "published_at")):
                 metrics.invalid_time_count += 1

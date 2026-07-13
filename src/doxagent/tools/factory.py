@@ -30,25 +30,7 @@ from doxagent.tools.providers.yfinance import (
 from doxagent.tools.registry import ToolDescriptor, ToolRegistry
 
 _INDEXED_OBSERVATION_TOOLS = {
-    "doxa_get_narrative_report",
-    "doxa_query_analysis",
-    "doxa_get_analysis",
-    "doxa_query_propositions",
-    "doxa_get_ignored_propositions",
-    "doxa_get_social_result",
-    "doxa_get_social_result_detail",
-    "doxa_get_media_result",
-    "doxa_get_media_result_detail",
-    "doxa_get_event_source",
-    "doxatlas.query",
-    "doxatlas.source_lookup",
     "sec.company_facts_and_filings",
-    "sec.filing_sections",
-    "fed.fomc_calendar_materials",
-    "tavily.search",
-    "tavily.extract",
-    "anysearch.search",
-    "monitoring.recent_events",
 }
 
 _RECOMPUTABLE_OBSERVATION_TOOLS = {

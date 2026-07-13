@@ -19,7 +19,7 @@ manual_only = true
 - 合并重复的 Research Agenda；已经解决的问题可以关闭，当前非关键且无法继续推进的问题可以 `DEFER`。
 - 审查 Retained Observations：
   - `KEEP_LOADED`：下一轮或最终输出仍必须直接看到原文；
-  - `INDEX_ONLY`：保留 alias、note 和 reason，原文可在需要时重新读取；
+  - `INDEX_ONLY`：保留 alias 和 note，原文可在需要时重新读取；
   - `DROP`：内容重复、失效或已无后续用途。
 - 仅在执行路径确实需要变化时更新 Plan；`plan_update` 必须是替换后的完整计划。
 - 尚未首次处理的 Fresh Observations 必须受到保护。

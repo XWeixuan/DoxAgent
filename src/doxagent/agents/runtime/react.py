@@ -1203,12 +1203,6 @@ class ReActAgentHarness:
                                     "reasoning_summary": "中文公开摘要",
                                     "is_complete": "boolean",
                                     "completion_reason": "中文完成原因",
-                                    "tool_calls": [
-                                        {
-                                            "tool_name": "registered tool name",
-                                            "input": {"key": "value"},
-                                        }
-                                    ],
                                     "delegations": [],
                                     "final_payload": "完整业务 schema",
                                 },
@@ -1568,6 +1562,11 @@ def _react_system_prompt(base_instructions: str) -> str:
                 "final_payload "
                 "at the top level; do not wrap them under react_protocol."
             ),
+            (
+                "Call Observation reads only through tool_calls using the registered "
+                "tool_name read_observation and an input object. Never emit the shortcut "
+                "shape {\"read_observation\": {...}}."
+            ),
         ]
     )
 
@@ -1626,9 +1625,6 @@ def _react_user_prompt(
                     "reasoning_summary": "中文公开理由摘要，不要包含隐藏 chain-of-thought",
                     "is_complete": "boolean",
                     "completion_reason": "中文完成原因",
-                    "tool_calls": [
-                        {"tool_name": "registered tool name", "input": {"key": "value"}}
-                    ],
                     "skill_calls": [
                         {"skill_id": "available skill id", "reason": "中文说明为何需要该技能"}
                     ],

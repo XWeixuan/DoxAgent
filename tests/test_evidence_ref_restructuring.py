@@ -13,6 +13,7 @@ from doxagent.agents.runtime.memory import (
 from doxagent.annotations import (
     InMemoryAnnotationStore,
     TextAnnotationProcessor,
+    normalized_citation_aliases,
     render_time_tags,
 )
 from doxagent.models import (
@@ -64,7 +65,9 @@ def _observations() -> tuple[ObservationService, ToolResult, str, str]:
         declared_policy="indexed",
         adapter="search_results",
     )
-    block = service.block_store.records()[0]
+    block = next(
+        block for block in service.block_store.records() if block.block_type != "outline"
+    )
     alias = service.aliases.alias_for(block.block_id)
     assert alias is not None
     return service, result, block.block_id, alias
@@ -114,8 +117,8 @@ def test_retain_read_synthesis_and_invalid_alias_share_one_registry() -> None:
         action={
             "synthesis_update": [f"ADD: Revenue increased.【cite:{alias}】"],
             "retain_observations": [
-                {"alias": alias, "note": "quarter", "reason": "supports revenue"},
-                {"alias": "O99", "note": "bad", "reason": "invalid"},
+                {"alias": alias, "note": "quarter"},
+                {"alias": "O99", "note": "bad"},
             ],
         },
         observations=service,
@@ -123,7 +126,32 @@ def test_retain_read_synthesis_and_invalid_alias_share_one_registry() -> None:
     assert service.read(alias)[0].block_id == block_id
     assert memory.synthesis["S1"].observation_block_ids == (block_id,)
     assert block_id in memory.retained
+    assert "reason" not in memory.audit()["retained_observations"][0]
     assert any("O99" in warning for warning in warnings)
+
+
+def test_citation_normalizer_accepts_variants_bare_aliases_and_deduplicates_mirrors() -> None:
+    service, _, block_id, alias = _observations()
+    second = service.aliases.register("oblk_second")
+    text = (
+        f"【cite: {alias}】 [cite:{alias.lower()}] 【{second}】 [{second}] "
+        f"{alias} 【cite:{alias},{second}】 O99"
+    )
+    assert normalized_citation_aliases(text, aliases=service.aliases) == [alias, second]
+
+    batch = TextAnnotationProcessor().process(
+        run_id="run_1",
+        task_id="task_1",
+        result_id="result_1",
+        payload={"structured": {"claim": text}, "text": text},
+        aliases=service.aliases,
+    )
+    assert {item.observation_block_id for item in batch.citations} == {
+        block_id,
+        "oblk_second",
+    }
+    assert len(batch.citations) == 2
+    assert batch.metrics.resolved_citation_count == 2
 
 
 def test_recursive_annotation_resolves_citations_and_independent_times() -> None:
