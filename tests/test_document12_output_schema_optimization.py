@@ -45,6 +45,7 @@ from doxagent.workflows.document2.transaction import (
     document2_revision_from_field_repair_result,
 )
 from doxagent.workflows.initialization import BlackboardInitializationWorkflow
+from doxagent.workflows.output_validation import AgentOutputSchemaValidator
 
 
 def _section(text: str = "Market view") -> dict[str, object]:
@@ -197,7 +198,8 @@ def test_research_section_author_is_runtime_owned() -> None:
 
 
 def test_document1_rehydrates_author_after_annotation_collision() -> None:
-    workflow = BlackboardInitializationWorkflow()
+    workflow = object.__new__(BlackboardInitializationWorkflow)
+    workflow.output_validator = AgentOutputSchemaValidator()
     result = AgentResult(
         task_id="task_o4_research",
         agent_name=AgentName.O4_MARKET_TRACE,
