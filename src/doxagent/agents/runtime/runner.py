@@ -167,6 +167,7 @@ class ModelGatewayAgentRunner:
                 provider=self.default_provider,
                 model=self.default_model,
                 tool_mode=self.tool_mode,
+                prompt_registry=self.prompt_injector.registry,
                 config=self._react_config_for_task(task),
                 annotation_processor=self.annotation_processor,
                 observation_archive=self.observation_archive,
@@ -447,12 +448,6 @@ class ModelGatewayAgentRunner:
         model_context_window = _positive_int(
             _first_present(budget, "model_context_window")
         )
-        reserved_output_tokens = _nonnegative_int(
-            _first_present(budget, "reserved_output_tokens")
-        )
-        safety_reserve_tokens = _nonnegative_int(
-            _first_present(budget, "safety_reserve_tokens")
-        )
         micro_ratio = _ratio(_first_present(budget, "micro_maintenance_ratio"))
         full_ratio = _ratio(_first_present(budget, "full_compaction_ratio"))
         resolved_micro_ratio = (
@@ -474,8 +469,6 @@ class ModelGatewayAgentRunner:
             and max_tool_batches is None
             and model_timeout is None
             and model_context_window is None
-            and reserved_output_tokens is None
-            and safety_reserve_tokens is None
             and micro_ratio is None
             and full_ratio is None
         ):
@@ -497,12 +490,6 @@ class ModelGatewayAgentRunner:
             model_context_window=model_context_window
             if model_context_window is not None
             else self.react_config.model_context_window,
-            reserved_output_tokens=reserved_output_tokens
-            if reserved_output_tokens is not None
-            else self.react_config.reserved_output_tokens,
-            safety_reserve_tokens=safety_reserve_tokens
-            if safety_reserve_tokens is not None
-            else self.react_config.safety_reserve_tokens,
             micro_maintenance_ratio=resolved_micro_ratio,
             full_compaction_ratio=resolved_full_ratio,
         )
@@ -612,7 +599,7 @@ def _positive_float(value: object) -> float | None:
 
 def _ratio(value: object) -> float | None:
     parsed = _positive_float(value)
-    return parsed if parsed is not None and parsed < 1 else None
+    return parsed if parsed is not None and parsed <= 1 else None
 
 
 def _first_present(payload: dict[str, Any], *keys: str) -> object:

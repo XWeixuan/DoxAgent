@@ -4,6 +4,18 @@ block_type = "workflow"
 id = "workflow.research_memory"
 name = "Research Memory Guidance"
 version = "2026.07.12"
+applicable_agents = ["O1", "O2", "O4", "A1", "A2", "C1", "C2", "C3"]
+applicable_task_types = [
+    "generate_global_research",
+    "generate_global_narrative_report",
+    "generate_expectation_unit",
+    "generate_expectation_detail",
+    "fact_check",
+    "delegated_retrieval",
+    "generate_known_events",
+    "generate_monitoring_config",
+    "generate_monitoring_policy",
+]
 +++
 
 # Research Memory Guidance

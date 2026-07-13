@@ -196,7 +196,8 @@ def test_document3_prompt_resources_load_and_replace_generic_agent_prompts() -> 
     o4_document3_prompt = registry.get("agent.o4.document3_monitoring_policy")
 
     assert "`source_note`:" in known_events_skill.body
-    assert "`【cite:O#】`" in known_events_skill.body
+    assert "【cite:" not in known_events_skill.body
+    assert "【cite:O1】" in registry.get("workflow.observation-annotations").body
     assert "EvidenceRef" not in known_events_skill.body
     assert known_events_review.manual_only is True
     assert known_events_review.workflow_nodes == []

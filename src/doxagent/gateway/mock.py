@@ -19,17 +19,21 @@ class MockModelClient:
         self,
         *,
         text: str = "mock response",
+        reasoning_content: str | None = None,
         structured: Any | None = None,
         raw: Any | None = None,
         usage: ModelUsage | None = None,
         failures: list[GatewayError] | None = None,
         structured_sequence: list[Any] | None = None,
         text_sequence: list[str] | None = None,
+        reasoning_sequence: list[str | None] | None = None,
     ) -> None:
         self.text = text
+        self.reasoning_content = reasoning_content
         self.structured = structured
         self.structured_sequence = deque(structured_sequence or [])
         self.text_sequence = deque(text_sequence or [])
+        self.reasoning_sequence = deque(reasoning_sequence or [])
         self.raw = raw if raw is not None else {"provider": ProviderName.MOCK}
         self.usage = usage
         self.failures = deque(failures or [])
@@ -52,6 +56,11 @@ class MockModelClient:
 
         return ModelResponse(
             text=self.text_sequence.popleft() if self.text_sequence else self.text,
+            reasoning_content=(
+                self.reasoning_sequence.popleft()
+                if self.reasoning_sequence
+                else self.reasoning_content
+            ),
             structured=self.structured_sequence.popleft()
             if self.structured_sequence
             else self.structured,

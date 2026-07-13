@@ -3372,8 +3372,6 @@ def test_react_full_compaction_maintains_memory_without_changing_raw_observation
         react_config=ReActHarnessConfig(
             max_steps=2,
             model_context_window=7_000,
-            reserved_output_tokens=1_000,
-            safety_reserve_tokens=1_000,
             max_full_compaction_retries=0,
         ),
         tool_mode="mock",

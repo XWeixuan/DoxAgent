@@ -113,6 +113,11 @@ def _raw_with_reasoning_summary(raw: Any) -> Any:
     return {"raw": raw, "reasoning_summary": summaries}
 
 
+def _responses_reasoning_content(raw: Any) -> str | None:
+    summaries = _extract_reasoning_summary(raw)
+    return "\n\n".join(summaries) if summaries else None
+
+
 def _messages_with_system(request: ModelRequest) -> list[ModelMessage]:
     if request.system_prompt is None:
         return request.messages
@@ -161,6 +166,25 @@ def _raw_with_chat_reasoning(raw: Any) -> Any:
     return enriched
 
 
+def _chat_reasoning_content(raw: Any) -> str | None:
+    if not isinstance(raw, dict):
+        return None
+    choices = raw.get("choices")
+    if not isinstance(choices, list):
+        return None
+    parts: list[str] = []
+    for choice in choices:
+        if not isinstance(choice, Mapping):
+            continue
+        message = choice.get("message")
+        if not isinstance(message, Mapping):
+            continue
+        reasoning = message.get("reasoning_content")
+        if isinstance(reasoning, str) and reasoning:
+            parts.append(reasoning)
+    return "\n\n".join(parts) if parts else None
+
+
 class OpenAIModelClient:
     def __init__(self, client: AsyncOpenAI | Any) -> None:
         self.client = client
@@ -181,6 +205,7 @@ class OpenAIModelClient:
             )
             return ModelResponse(
                 text=getattr(response, "output_text", None),
+                reasoning_content=_responses_reasoning_content(raw),
                 raw=raw,
                 usage=usage,
                 audit=audit,
@@ -256,6 +281,7 @@ class BailianResponsesModelClient(OpenAIModelClient):
             with langsmith_tracing_context(request.metadata):
                 response = await self.client.responses.create(**self._request_kwargs(request))
             raw = _model_dump_or_raw(response)
+            reasoning_content = _responses_reasoning_content(raw)
             raw = _raw_with_reasoning_summary(raw)
             usage = _usage_from_mapping(raw.get("usage") if isinstance(raw, dict) else None)
             audit = ModelAuditSummary(
@@ -267,6 +293,7 @@ class BailianResponsesModelClient(OpenAIModelClient):
             )
             return ModelResponse(
                 text=_extract_responses_message_text(response, raw),
+                reasoning_content=reasoning_content,
                 raw=raw,
                 usage=usage,
                 audit=audit,
@@ -311,6 +338,7 @@ class BailianChatCompletionsModelClient:
                     **self._request_kwargs(request)
                 )
             raw = _model_dump_or_raw(response)
+            reasoning_content = _chat_reasoning_content(raw)
             raw = _raw_with_chat_reasoning(raw)
             usage = _usage_from_mapping(raw.get("usage") if isinstance(raw, dict) else None)
             audit = ModelAuditSummary(
@@ -322,6 +350,7 @@ class BailianChatCompletionsModelClient:
             )
             return ModelResponse(
                 text=_extract_chat_completion_text(raw),
+                reasoning_content=reasoning_content,
                 raw=raw,
                 usage=usage,
                 audit=audit,

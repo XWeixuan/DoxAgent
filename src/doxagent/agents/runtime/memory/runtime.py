@@ -34,6 +34,7 @@ _PERSISTED_EVENT_OMIT_FIELDS = {
     "memory_state",
     "request",
 }
+_CITATION_ALIAS_RE = re.compile(r"【cite:(O[1-9]\d*)】")
 
 
 @dataclass
@@ -66,6 +67,8 @@ class TaskMemoryRuntime:
         self.fresh_tool_call_ids: list[str] = []
         self.fresh_read_refs: list[str] = []
         self.fresh_runtime_results: list[JsonDict] = []
+        self.passive_candidate_aliases: list[str] = []
+        self.passive_budget_tokens = 0
         self.context_budget_history: list[JsonDict] = []
         self._next_tool_call_id = 1
         self._full_compaction_attempts = 0
@@ -92,7 +95,12 @@ class TaskMemoryRuntime:
     def mark_pre_final_challenge_completed(self) -> None:
         self._pre_final_challenge_completed = True
 
-    def active_context(self, *, micro: bool = False) -> JsonDict:
+    def active_context(
+        self,
+        *,
+        micro: bool = False,
+        include_passive: bool = True,
+    ) -> JsonDict:
         return self.context_assembler.build(
             task=self.task,
             memory=self.memory,
@@ -100,11 +108,24 @@ class TaskMemoryRuntime:
             fresh_tool_call_ids=list(self.fresh_tool_call_ids),
             fresh_read_refs=list(self.fresh_read_refs),
             fresh_runtime_results=deepcopy(self.fresh_runtime_results),
+            passive_aliases=(
+                list(self.passive_candidate_aliases) if include_passive else []
+            ),
+            passive_budget_tokens=(self.passive_budget_tokens if include_passive else 0),
             warnings=list(self.warnings),
             micro=micro,
         )
 
-    def record_action(self, step: int, action: JsonDict) -> None:
+    def set_passive_budget_tokens(self, budget_tokens: int) -> None:
+        self.passive_budget_tokens = max(0, budget_tokens)
+
+    def record_action(
+        self,
+        step: int,
+        action: JsonDict,
+        *,
+        reasoning_content: str | None = None,
+    ) -> None:
         event_payload = {
             key: _json_safe(value)
             for key, value in action.items()
@@ -130,7 +151,48 @@ class TaskMemoryRuntime:
         )
         for warning in warnings:
             self.add_warning(warning, step=step, source="memory_update")
+        action_aliases, reasoning_aliases = self._next_passive_aliases(
+            action,
+            reasoning_content,
+        )
+        self.passive_candidate_aliases = [*action_aliases, *reasoning_aliases]
+        self.event_log.append(
+            "passive_observation_carryover_selected",
+            {
+                "action_aliases": action_aliases,
+                "reasoning_aliases": reasoning_aliases,
+                "selected_aliases": list(self.passive_candidate_aliases),
+            },
+            step=step,
+        )
         self._consume_fresh(step)
+
+    def _next_passive_aliases(
+        self,
+        action: JsonDict,
+        reasoning_content: str | None,
+    ) -> tuple[list[str], list[str]]:
+        retained_block_ids = set(self.memory.retained)
+        action_candidates = _aliases_by_last_mention(_natural_language_text(action))
+        reasoning_candidates = _aliases_by_last_mention(reasoning_content or "")
+        selected: set[str] = set()
+
+        def valid(candidates: list[str]) -> list[str]:
+            aliases: list[str] = []
+            for alias in candidates:
+                block_id = self.observations.aliases.resolve(alias)
+                if (
+                    block_id is None
+                    or block_id in retained_block_ids
+                    or alias in selected
+                    or self.observations.block_store.get(block_id) is None
+                ):
+                    continue
+                selected.add(alias)
+                aliases.append(alias)
+            return aliases
+
+        return valid(action_candidates), valid(reasoning_candidates)
 
     def record_tool_call_loop(self, tool_names: set[str]) -> None:
         for previous in list(self.guards.consecutive_tool_loop_counts):
@@ -452,6 +514,10 @@ class TaskMemoryRuntime:
             "loaded_skill_ids": sorted(self.loaded_skills),
             "warnings": list(self.warnings),
             "context_budget_history": deepcopy(self.context_budget_history),
+            "passive_observation_carryover": {
+                "candidate_aliases": list(self.passive_candidate_aliases),
+                "budget_tokens": self.passive_budget_tokens,
+            },
         }
 
     def persisted_audit(self) -> JsonDict:
@@ -525,6 +591,10 @@ class TaskMemoryRuntime:
                 self.context_budget_history[-20:],
                 depth=3,
             ),
+            "passive_observation_carryover": {
+                "candidate_count": len(self.passive_candidate_aliases),
+                "budget_tokens": self.passive_budget_tokens,
+            },
         }
         projection["estimated_json_chars"] = len(_canonical_json(projection))
         return projection
@@ -569,6 +639,35 @@ def _query_text(payload: JsonDict) -> str:
         if isinstance(value, str) and value.strip():
             return value.strip()
     return json.dumps(payload, ensure_ascii=False, sort_keys=True, default=str)
+
+
+def _natural_language_text(value: Any) -> str:
+    parts: list[str] = []
+
+    def visit(item: Any) -> None:
+        if isinstance(item, str):
+            parts.append(item)
+        elif isinstance(item, dict):
+            for nested in item.values():
+                visit(nested)
+        elif isinstance(item, list):
+            for nested in item:
+                visit(nested)
+
+    visit(value)
+    return "\n".join(parts)
+
+
+def _aliases_by_last_mention(text: str) -> list[str]:
+    aliases: list[str] = []
+    seen: set[str] = set()
+    for match in reversed(list(_CITATION_ALIAS_RE.finditer(text))):
+        alias = match.group(1)
+        if alias in seen:
+            continue
+        seen.add(alias)
+        aliases.append(alias)
+    return aliases
 
 
 def _jaccard_similarity(left: str, right: str) -> float:

@@ -274,6 +274,7 @@ async def test_bailian_adapter_uses_responses_api_with_thinking_enabled() -> Non
     assert response.audit.provider is ProviderName.BAILIAN
     assert response.raw is not None
     assert response.raw["reasoning_summary"] == ["reasoning summary"]
+    assert response.reasoning_content == "reasoning summary"
     assert fake_client.responses.kwargs is not None
     assert fake_client.responses.kwargs["model"] == "mock-model"
     assert fake_client.responses.kwargs["extra_body"] == {"enable_thinking": True}
@@ -347,6 +348,7 @@ async def test_bailian_chat_adapter_enables_deepseek_json_mode() -> None:
     response = await adapter.complete(deepseek_request)
 
     assert response.text == '{"answer": "ok"}'
+    assert response.reasoning_content == "reasoning"
     assert response.raw is not None
     assert response.raw["reasoning_summary"] == ["reasoning"]
     assert fake_client.chat.completions.kwargs is not None

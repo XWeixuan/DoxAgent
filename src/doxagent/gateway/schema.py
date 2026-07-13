@@ -74,6 +74,7 @@ class ModelRequest(GatewayModel):
 
 class ModelResponse(GatewayModel):
     text: str | None = None
+    reasoning_content: str | None = None
     structured: Any | None = None
     raw: Any | None = None
     usage: ModelUsage | None = None

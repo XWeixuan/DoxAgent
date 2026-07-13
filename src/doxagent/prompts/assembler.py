@@ -25,15 +25,6 @@ CHINESE_OUTPUT_RULES = [
     ),
 ]
 
-OBSERVATION_ANNOTATION_RULES = [
-    "Observation Block 仅通过当前 AgentTask 内稳定的 O# 别名访问；不要输出 locator、block_id 或 obs_tc 形式的内部标识。",
-    "需要保留原始观察时使用 retain_observations: [{alias: O1, note: ..., reason: ...}]；需要重读时调用 read_observation({alias: O1})。",
-    "自然语言或 Markdown 中，具体事实可在句末标注【cite:O1】；多个来源必须写成多个独立标签，不得写逗号列表，也不得编造不存在的 O#。",
-    "已知事件发生时间可在句末标注【occurred_at:YYYY-MM-DD】；已知发布时间可标注【published_at:YYYY-MM-DD】。支持月份、季度、半年、日期区间和带时区 ISO 时间；未知时不要猜测。",
-    "引用标签和时间标签彼此独立，均为非阻塞审计标注；纯分析、预测和长期结构判断无需强行添加时间。",
-]
-
-
 class PromptAssembler:
     """Assemble single-shot input without reading Blackboard or workflow state."""
 
@@ -84,8 +75,6 @@ class PromptAssembler:
                     instructions or "Follow DoxAgent prompt resources.",
                     "## Output Language Rules",
                     *CHINESE_OUTPUT_RULES,
-                    "## Observation and text annotations",
-                    *OBSERVATION_ANNOTATION_RULES,
                     "## Runtime Output Rules",
                     "Return one JSON object.",
                     "Do not write Blackboard state directly.",
@@ -158,6 +147,5 @@ def _section(title: str, bodies: list[str]) -> list[str]:
 
 __all__ = [
     "CHINESE_OUTPUT_RULES",
-    "OBSERVATION_ANNOTATION_RULES",
     "PromptAssembler",
 ]

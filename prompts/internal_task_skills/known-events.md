@@ -78,7 +78,7 @@ If a fact and its market reaction are both useful, keep the fact in `core_fact`;
 `source_note`:
 - optional compact human-readable source note
 - do not emit source objects or internal Observation identifiers
-- use `【cite:O#】` only in factual text when the current task exposes that alias
+- follow the independently loaded Evidence Citation Prompt for factual source attribution
 
 `expectation_id`:
 - fill only when the event clearly supports, weakens, updates, or recaps that expectation

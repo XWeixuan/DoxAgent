@@ -7,6 +7,7 @@ from doxagent.agents.runtime.memory.context import (
     ContextBudgetConfig,
     estimated_tokens,
     measure_context_budget,
+    passive_observation_budget,
 )
 from doxagent.agents.runtime.memory.events import TaskEvent, TaskEventLog
 from doxagent.agents.runtime.memory.observations import (
@@ -60,5 +61,6 @@ __all__ = [
     "maintenance_action_schema",
     "measure_context_budget",
     "memory_action_schema",
+    "passive_observation_budget",
     "read_observation_descriptor",
 ]

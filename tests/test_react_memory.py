@@ -303,11 +303,9 @@ def test_full_compaction_changes_only_materialized_memory_and_load_state() -> No
     assert runtime.memory.retained[ref].load_state == "loaded"
 
 
-def test_context_budget_uses_actual_prompt_and_reserves_output_and_safety_tokens() -> None:
+def test_context_budget_uses_actual_prompt_without_output_or_safety_reserves() -> None:
     config = ContextBudgetConfig(
         model_context_window=1_000,
-        reserved_output_tokens=100,
-        safety_reserve_tokens=100,
         micro_maintenance_ratio=0.75,
         full_compaction_ratio=0.85,
     )
@@ -321,10 +319,10 @@ def test_context_budget_uses_actual_prompt_and_reserves_output_and_safety_tokens
         mode="normal",
     )
 
-    assert report["available_input_tokens"] == 800
+    assert report["available_input_tokens"] == 1_000
     assert report["projected_input_tokens"] == 700
-    assert report["over_micro_threshold"] is True
-    assert report["over_full_threshold"] is True
+    assert report["over_micro_threshold"] is False
+    assert report["over_full_threshold"] is False
     assert report["over_hard_budget"] is False
 
 

@@ -20,9 +20,11 @@ from doxagent.agents.runtime.memory import (
     InMemoryObservationArchive,
     ObservationArchive,
     TaskMemoryRuntime,
+    estimated_tokens,
     maintenance_action_schema,
     measure_context_budget,
     memory_action_schema,
+    passive_observation_budget,
     read_observation_descriptor,
 )
 from doxagent.agents.runtime.tools import ToolRegistryFunctionAdapter, tool_result_to_summary
@@ -47,11 +49,9 @@ from doxagent.models import (
     new_id,
 )
 from doxagent.models.output_schemas import REQUIRED_OUTPUT_SCHEMA_MODELS, schema_names
-from doxagent.prompts.assembler import (
-    CHINESE_OUTPUT_RULES,
-    OBSERVATION_ANNOTATION_RULES,
-)
-from doxagent.prompts.schema import AssembledPrompt
+from doxagent.prompts.assembler import CHINESE_OUTPUT_RULES
+from doxagent.prompts.registry import PromptRegistry, default_prompt_registry
+from doxagent.prompts.schema import AssembledPrompt, PromptBlockDefinition
 from doxagent.skills import UnknownSkillError
 from doxagent.skills.registry import SkillRegistry, default_skill_registry
 from doxagent.skills.schema import SkillDefinition
@@ -79,6 +79,7 @@ _EXPECTATION_UNIT_FLAT_PATCH_FIELDS = {
     "key_variables",
     "event_monitoring_direction",
 }
+_FULL_COMPACTION_PROMPT_ID = "workflow.full_compaction"
 
 
 @dataclass(frozen=True)
@@ -87,10 +88,8 @@ class ReActHarnessConfig:
     max_tool_calls_per_name: int = MAX_TOOL_CALLS_PER_NAME
     max_tool_call_batches: int | None = None
     model_context_window: int = 128_000
-    reserved_output_tokens: int = 8_000
-    safety_reserve_tokens: int = 4_000
-    micro_maintenance_ratio: float = 0.75
-    full_compaction_ratio: float = 0.85
+    micro_maintenance_ratio: float = 0.90
+    full_compaction_ratio: float = 1.0
     max_full_compaction_retries: int = 1
     model_request_timeout_seconds: float | None = None
     tool_call_timeout_seconds: float | None = 180.0
@@ -98,8 +97,6 @@ class ReActHarnessConfig:
     def budget_config(self) -> ContextBudgetConfig:
         return ContextBudgetConfig(
             model_context_window=self.model_context_window,
-            reserved_output_tokens=self.reserved_output_tokens,
-            safety_reserve_tokens=self.safety_reserve_tokens,
             micro_maintenance_ratio=self.micro_maintenance_ratio,
             full_compaction_ratio=self.full_compaction_ratio,
             max_full_compaction_retries=self.max_full_compaction_retries,
@@ -116,6 +113,7 @@ class ReActAgentHarness:
         model: str,
         tool_mode: str,
         skill_registry: SkillRegistry | None = None,
+        prompt_registry: PromptRegistry | None = None,
         config: ReActHarnessConfig | None = None,
         annotation_processor: TextAnnotationProcessor | None = None,
         observation_archive: ObservationArchive | None = None,
@@ -123,6 +121,13 @@ class ReActAgentHarness:
         self.model_gateway = model_gateway
         self.tool_registry = tool_registry
         self.skill_registry = skill_registry or default_skill_registry()
+        self.prompt_registry = prompt_registry or default_prompt_registry()
+        full_compaction_prompt = self.prompt_registry.get(_FULL_COMPACTION_PROMPT_ID)
+        if not isinstance(full_compaction_prompt, PromptBlockDefinition):
+            raise ValueError(
+                f"{_FULL_COMPACTION_PROMPT_ID} must be a prompt block definition."
+            )
+        self.full_compaction_system_prompt = full_compaction_prompt.body
         self.provider = provider
         self.model = model
         self.tool_mode = tool_mode
@@ -212,7 +217,11 @@ class ReActAgentHarness:
                     details={"text": response.text},
                 )
             action = _coerce_direct_final_action(action, task.required_output_schema)
-            runtime.record_action(step, action)
+            runtime.record_action(
+                step,
+                action,
+                reasoning_content=response.reasoning_content,
+            )
             action, action_text = await self._maybe_run_pre_final_challenge(
                 step=step,
                 task=task,
@@ -844,6 +853,94 @@ class ReActAgentHarness:
                 ),
             )
 
+    def _budgeted_active_context(
+        self,
+        *,
+        task: AgentTask,
+        definition: AgentDefinition,
+        assembled_prompt: AssembledPrompt,
+        context_snapshot: CompiledWorkflowInput,
+        runtime: TaskMemoryRuntime,
+        system_prompt: str,
+        available_tools: list[JsonDict],
+        micro: bool,
+        mode: str,
+    ) -> tuple[JsonDict, str, JsonDict]:
+        base_context = runtime.active_context(micro=micro, include_passive=False)
+        base_user_prompt = _react_user_prompt(
+            task=task,
+            definition=definition,
+            assembled_prompt=assembled_prompt,
+            context_snapshot=context_snapshot,
+            runtime=runtime,
+            tool_registry=self.tool_registry,
+            skill_registry=self.skill_registry,
+            active_context=base_context,
+            config=self.config,
+        )
+        base_report = measure_context_budget(
+            system_prompt=system_prompt,
+            user_prompt=base_user_prompt,
+            active_context=base_context,
+            available_tools=available_tools,
+            config=self.config.budget_config(),
+            mode=f"{mode}_without_passive",
+        )
+        other_input_tokens = int(base_report["projected_input_tokens"])
+        passive_budget = passive_observation_budget(other_input_tokens)
+
+        while True:
+            runtime.set_passive_budget_tokens(passive_budget)
+            active_context = runtime.active_context(micro=micro)
+            user_prompt = _react_user_prompt(
+                task=task,
+                definition=definition,
+                assembled_prompt=assembled_prompt,
+                context_snapshot=context_snapshot,
+                runtime=runtime,
+                tool_registry=self.tool_registry,
+                skill_registry=self.skill_registry,
+                active_context=active_context,
+                config=self.config,
+            )
+            report = measure_context_budget(
+                system_prompt=system_prompt,
+                user_prompt=user_prompt,
+                active_context=active_context,
+                available_tools=available_tools,
+                config=self.config.budget_config(),
+                mode=mode,
+            )
+            projected = int(report["projected_input_tokens"])
+            passive_loaded = active_context.get("passive_observation_carryover", [])
+            if (
+                not passive_loaded
+                or other_input_tokens >= 96_000
+                or projected <= 96_000
+                or passive_budget <= 0
+            ):
+                break
+            loaded_token_total = sum(estimated_tokens(block) for block in passive_loaded)
+            reduced_budget = max(
+                0,
+                loaded_token_total - (projected - 96_000) - 1,
+            )
+            if reduced_budget >= passive_budget:
+                break
+            passive_budget = reduced_budget
+
+        report.update(
+            {
+                "other_input_tokens": other_input_tokens,
+                "passive_budget_tokens": passive_budget,
+                "passive_loaded_block_count": len(
+                    active_context.get("passive_observation_carryover", [])
+                ),
+                "passive_context_ceiling_tokens": 96_000,
+            }
+        )
+        return active_context, user_prompt, report
+
     async def _prepare_active_context(
         self,
         *,
@@ -856,49 +953,31 @@ class ReActAgentHarness:
         model_audits: list[JsonDict],
     ) -> bool:
         system_prompt = _react_system_prompt(assembled_prompt.instructions)
-        normal_context = runtime.active_context(micro=False)
-        normal_user_prompt = _react_user_prompt(
+        available_tools = _available_tool_payloads(task, runtime, self.tool_registry)
+        normal_context, _, report = self._budgeted_active_context(
             task=task,
             definition=definition,
             assembled_prompt=assembled_prompt,
             context_snapshot=context_snapshot,
             runtime=runtime,
-            tool_registry=self.tool_registry,
-            skill_registry=self.skill_registry,
-            active_context=normal_context,
-            config=self.config,
-        )
-        available_tools = _available_tool_payloads(task, runtime, self.tool_registry)
-        report = measure_context_budget(
             system_prompt=system_prompt,
-            user_prompt=normal_user_prompt,
-            active_context=normal_context,
             available_tools=available_tools,
-            config=self.config.budget_config(),
+            micro=False,
             mode="normal",
         )
         runtime.record_context_budget(report)
         if not bool(report["over_micro_threshold"]):
             return False
 
-        micro_context = runtime.active_context(micro=True)
-        micro_user_prompt = _react_user_prompt(
+        micro_context, _, micro_report = self._budgeted_active_context(
             task=task,
             definition=definition,
             assembled_prompt=assembled_prompt,
             context_snapshot=context_snapshot,
             runtime=runtime,
-            tool_registry=self.tool_registry,
-            skill_registry=self.skill_registry,
-            active_context=micro_context,
-            config=self.config,
-        )
-        micro_report = measure_context_budget(
             system_prompt=system_prompt,
-            user_prompt=micro_user_prompt,
-            active_context=micro_context,
             available_tools=available_tools,
-            config=self.config.budget_config(),
+            micro=True,
             mode="micro",
         )
         runtime.record_micro_maintenance(before=report, after=micro_report)
@@ -916,44 +995,11 @@ class ReActAgentHarness:
                 ModelRequest(
                     provider=self.provider,
                     model=self.model,
-                    messages=[
-                        ModelMessage(
-                            role=MessageRole.SYSTEM,
-                            content="\n\n".join(
-                                [
-                                    assembled_prompt.instructions,
-                                    "## Full Compaction",
-                                    (
-                                        "你是当前 AgentTask 的同一个主 agent。只维护当前 Memory "
-                                        "State，不调用工具、不输出最终业务结果、"
-                                        "不改写任何原始 observation。"
-                                    ),
-                                ]
-                            ),
-                        ),
-                        ModelMessage(
-                            role=MessageRole.USER,
-                            content=json.dumps(
-                                {
-                                    "task": {
-                                        "task_id": task.task_id,
-                                        "task_type": task.task_type.value,
-                                        "required_output_schema": task.required_output_schema,
-                                    },
-                                    "full_compaction_reason": micro_report,
-                                    "active_context": micro_context,
-                                    "maintenance_action_schema": maintenance_action_schema(),
-                                    "protected_fresh_observation_count": len(
-                                        micro_context.get("fresh_observations", [])
-                                    ),
-                                    "language_rules": CHINESE_OUTPUT_RULES,
-                                    "observation_annotation_rules": OBSERVATION_ANNOTATION_RULES,
-                                },
-                                ensure_ascii=False,
-                                default=str,
-                            ),
-                        ),
-                    ],
+                    messages=self._full_compaction_messages(
+                        task=task,
+                        micro_report=micro_report,
+                        micro_context=micro_context,
+                    ),
                     temperature=0,
                     timeout_seconds=self.config.model_request_timeout_seconds,
                     response_format=ResponseFormat.JSON,
@@ -972,24 +1018,15 @@ class ReActAgentHarness:
                 continue
             before_tokens = int(micro_report["projected_input_tokens"])
             runtime.apply_full_compaction(action, before=micro_report)
-            micro_context = runtime.active_context(micro=True)
-            micro_user_prompt = _react_user_prompt(
+            micro_context, _, micro_report = self._budgeted_active_context(
                 task=task,
                 definition=definition,
                 assembled_prompt=assembled_prompt,
                 context_snapshot=context_snapshot,
                 runtime=runtime,
-                tool_registry=self.tool_registry,
-                skill_registry=self.skill_registry,
-                active_context=micro_context,
-                config=self.config,
-            )
-            micro_report = measure_context_budget(
                 system_prompt=system_prompt,
-                user_prompt=micro_user_prompt,
-                active_context=micro_context,
                 available_tools=available_tools,
-                config=self.config.budget_config(),
+                micro=True,
                 mode="full_compaction_result",
             )
             runtime.record_context_budget(micro_report)
@@ -1008,28 +1045,54 @@ class ReActAgentHarness:
                     source="context_budget",
                 )
                 break
-            micro_context = runtime.active_context(micro=True)
-            micro_user_prompt = _react_user_prompt(
+            micro_context, _, micro_report = self._budgeted_active_context(
                 task=task,
                 definition=definition,
                 assembled_prompt=assembled_prompt,
                 context_snapshot=context_snapshot,
                 runtime=runtime,
-                tool_registry=self.tool_registry,
-                skill_registry=self.skill_registry,
-                active_context=micro_context,
-                config=self.config,
-            )
-            micro_report = measure_context_budget(
                 system_prompt=system_prompt,
-                user_prompt=micro_user_prompt,
-                active_context=micro_context,
                 available_tools=available_tools,
-                config=self.config.budget_config(),
+                micro=True,
                 mode="safe_fallback",
             )
             runtime.record_context_budget(micro_report)
         return True
+
+    def _full_compaction_messages(
+        self,
+        *,
+        task: AgentTask,
+        micro_report: JsonDict,
+        micro_context: JsonDict,
+    ) -> list[ModelMessage]:
+        return [
+            ModelMessage(
+                role=MessageRole.SYSTEM,
+                content=self.full_compaction_system_prompt,
+            ),
+            ModelMessage(
+                role=MessageRole.USER,
+                content=json.dumps(
+                    {
+                        "task": {
+                            "task_id": task.task_id,
+                            "task_type": task.task_type.value,
+                            "required_output_schema": task.required_output_schema,
+                        },
+                        "full_compaction_reason": micro_report,
+                        "active_context": micro_context,
+                        "maintenance_action_schema": maintenance_action_schema(),
+                        "protected_fresh_observation_count": len(
+                            micro_context.get("fresh_observations", [])
+                        ),
+                        "language_rules": CHINESE_OUTPUT_RULES,
+                    },
+                    ensure_ascii=False,
+                    default=str,
+                ),
+            ),
+        ]
 
     async def _maybe_run_pre_final_challenge(
         self,
@@ -1192,7 +1255,11 @@ class ReActAgentHarness:
                 "is_complete": bool(challenged_action.get("is_complete", False)),
             }
         )
-        runtime.record_action(step, challenged_action)
+        runtime.record_action(
+            step,
+            challenged_action,
+            reasoning_content=response.reasoning_content,
+        )
         return challenged_action, response.text or json.dumps(
             challenged_action,
             ensure_ascii=False,
@@ -2081,14 +2148,6 @@ def _output_contract(required_output_schema: str, *, task: AgentTask | None = No
                 "declared JSON contract."
             ),
             "Do not invent source identifiers or internal Observation Block identifiers.",
-            (
-                "Use only task-local O# aliases for retain_observations, "
-                "read_observation, and 【cite:O#】 tags."
-            ),
-            (
-                "Use optional 【occurred_at:...】 and 【published_at:...】 tags only "
-                "when the time is known."
-            ),
             "Annotation failures never change the requested business result or workflow status.",
         ],
     }
