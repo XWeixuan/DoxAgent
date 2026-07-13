@@ -7,6 +7,7 @@ from pydantic import ValidationError
 
 from doxagent.agents import default_agent_registry
 from doxagent.agents.runtime.react import _normalize_final_payload
+from doxagent.blackboard import PostgresBlackboardRepository
 from doxagent.models import (
     AgentName,
     AgentPermissions,
@@ -20,6 +21,9 @@ from doxagent.models import (
     ExpectationDetailCandidateResult,
     ExpectationFieldReviewFinding,
     ExpectationUnitDocument,
+    Objection,
+    ObjectionSeverity,
+    ObjectionStatus,
     PatchOperation,
     ResearchSection,
     ResultStatus,
@@ -217,6 +221,40 @@ def test_document1_rehydrates_author_after_annotation_collision() -> None:
     section = workflow._research_section_from_result(result, "ResearchSection")
 
     assert section.author_agent is AgentName.O4_MARKET_TRACE
+
+
+def test_postgres_objection_upsert_targets_run_scoped_primary_key() -> None:
+    class _Cursor:
+        query = ""
+
+        def execute(self, query: str, params: object) -> None:
+            del params
+            self.query = query
+
+    objection = Objection(
+        objection_id="obj_shared_across_clones",
+        source_agent=AgentName.A1_DOXATLAS_AUDIT,
+        target=BlackboardTarget(
+            document_type=DocumentType.EXPECTATION_UNIT,
+            ticker="INTC",
+            expectation_id="exp_intc_foundry",
+            field_path="market_view",
+        ),
+        severity=ObjectionSeverity.BLOCKING,
+        reason="Market evidence needs repair.",
+        taxonomy="field_review",
+        target_path="market_view",
+        status=ObjectionStatus.OPEN,
+    )
+    repository = PostgresBlackboardRepository(
+        "postgresql://postgres:secret@example.test/postgres"
+    )
+    cursor = _Cursor()
+
+    repository._execute_upsert_objection(cursor, "run_clone", objection)
+
+    normalized_sql = " ".join(cursor.query.lower().split())
+    assert "on conflict (run_id, objection_id) do update" in normalized_sql
 
 
 def test_review_finding_expectation_id_is_optional_without_fanout() -> None:

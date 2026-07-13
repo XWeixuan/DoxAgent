@@ -1049,7 +1049,7 @@ class PostgresBlackboardRepository:
                  taxonomy, dedupe_hash, target_path, merged_objection_ids,
                  document_type, object_id, field_path, target_json, objection_json)
             values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            on conflict (objection_id) do update set
+            on conflict (run_id, objection_id) do update set
                 source_agent = excluded.source_agent,
                 status = excluded.status,
                 severity = excluded.severity,
