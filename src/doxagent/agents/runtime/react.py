@@ -70,6 +70,9 @@ _REVIEWER_ACCEPTANCE_WARNINGS_INTERNAL_KEY = "_reviewer_acceptance_warnings"
 _RUNTIME_FINAL_PAYLOAD_SCHEMA_NAMES = frozenset(
     {"W1Result", "W2Result", "A2Result", "O3Result"}
 )
+_WORKFLOW_NORMALIZED_FINAL_PAYLOAD_SCHEMA_NAMES = frozenset(
+    {"KnownEventsDocument", "MonitoringConfigDocument", "MonitoringPolicyDocument"}
+)
 _JSON_FENCE_RE = re.compile(r"^```(?:json)?\s*(.*?)\s*```$", re.DOTALL | re.IGNORECASE)
 _EXPECTATION_UNIT_FLAT_PATCH_FIELDS = {
     "expectation_name",
@@ -2056,6 +2059,14 @@ def _failed_required_tools(
 
 
 def _final_payload_schema_error(payload: JsonDict, required_output_schema: str) -> str | None:
+    schema_names_for_task = _schema_names(required_output_schema)
+    if schema_names_for_task and set(schema_names_for_task).issubset(
+        _WORKFLOW_NORMALIZED_FINAL_PAYLOAD_SCHEMA_NAMES
+    ):
+        # Document3 accepts the model's raw JSON object here. Its workflow owns
+        # deterministic normalization and validates the resulting formal
+        # document after invalid individual records have been isolated.
+        return None
     if not payload:
         return "ReAct final_payload must be a non-empty JSON object."
     if "ExpectationDetailResult" in _schema_names(required_output_schema):
@@ -2064,7 +2075,7 @@ def _final_payload_schema_error(payload: JsonDict, required_output_schema: str) 
             return "ExpectationDetailResult requires exactly one proposed_patches item."
     errors: list[str] = []
     schema_checked = False
-    for schema_name in _schema_names(required_output_schema):
+    for schema_name in schema_names_for_task:
         model = _final_payload_schema_model(schema_name)
         if model is None:
             continue

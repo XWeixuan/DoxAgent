@@ -10,6 +10,11 @@ _DOCUMENT12_TEN_STEP_NODES = {
     WorkflowNode.GENERATE_EXPECTATION_DETAILS,
     WorkflowNode.RESOLVE_OBJECTIONS_AND_DELEGATIONS,
 }
+_DOCUMENT3_WORKFLOW_NORMALIZED_OUTPUT_SCHEMAS = {
+    'KnownEventsDocument',
+    'MonitoringConfigDocument',
+    'MonitoringPolicyDocument',
+}
 
 class InitializationAgentDispatchMixin:
 
@@ -29,13 +34,15 @@ class InitializationAgentDispatchMixin:
 
         def run_task(task: AgentTask) -> AgentResult:
             result = self.runner.run(task)
-            try:
-                result = self.result_normalizer.normalize(result)
-            except WorkflowContractError as exc:
-                if audit_failures:
-                    self._write_agent_acceptance_failure(checkpoint, task, result, event_code='schema_failed', message=str(exc), expected_schema=output_schema)
-                raise
-            if validate_output and self.execution_mode == 'agent_runner' and (result.status is ResultStatus.SUCCEEDED):
+            workflow_normalizes_document3 = output_schema in _DOCUMENT3_WORKFLOW_NORMALIZED_OUTPUT_SCHEMAS
+            if not workflow_normalizes_document3:
+                try:
+                    result = self.result_normalizer.normalize(result)
+                except WorkflowContractError as exc:
+                    if audit_failures:
+                        self._write_agent_acceptance_failure(checkpoint, task, result, event_code='schema_failed', message=str(exc), expected_schema=output_schema)
+                    raise
+            if validate_output and self.execution_mode == 'agent_runner' and (result.status is ResultStatus.SUCCEEDED) and (not workflow_normalizes_document3):
                 try:
                     self.output_validator.validate(result.payload, output_schema)
                 except WorkflowContractError as exc:

@@ -492,45 +492,163 @@ class BlackboardInitializationWorkflow(Document1BuilderMixin, Document1ContextMi
     def _ensure_document_patch_result(self, checkpoint: WorkflowCheckpoint, node: WorkflowNode, result: AgentResult) -> AgentResult:
         if result.proposed_patches:
             return result
-        document = self._direct_document_from_result(checkpoint, node, result)
+        normalization_warnings: list[dict[str, str]] = []
+        document = self._direct_document_from_result(
+            checkpoint,
+            node,
+            result,
+            normalization_warnings=normalization_warnings,
+        )
         if document is None:
             return result
         document_type = document.document_type
         patch = BlackboardPatch(patch_id=new_id('patch'), target=BlackboardTarget(document_type=document_type, ticker=checkpoint.ticker, document_id=document.document_id, field_path='document'), operation=PatchOperation.CREATE, before=None, after=document.model_dump(mode='json'), rationale=f'{node.value} 已将代理直接产出的稳定文档转换为 Blackboard 补丁。', author_agent=result.agent_name, validation_status=ValidationStatus.PENDING)
-        return result.model_copy(update={'proposed_patches': [patch]}, deep=True)
+        payload = deepcopy(result.payload)
+        if normalization_warnings:
+            payload['normalization_warnings'] = normalization_warnings
+            payload['normalization_status'] = ResultStatus.PARTIAL.value
+        return result.model_copy(
+            update={
+                'payload': payload,
+                'proposed_patches': [patch],
+                'status': ResultStatus.PARTIAL if normalization_warnings else result.status,
+            },
+            deep=True,
+        )
 
-    def _direct_document_from_result(self, checkpoint: WorkflowCheckpoint, node: WorkflowNode, result: AgentResult) -> KnownEventsDocument | MonitoringConfigDocument | MonitoringPolicyDocument | None:
+    def _direct_document_from_result(self, checkpoint: WorkflowCheckpoint, node: WorkflowNode, result: AgentResult, *, normalization_warnings: list[dict[str, str]] | None=None) -> KnownEventsDocument | MonitoringConfigDocument | MonitoringPolicyDocument | None:
         structured = result.payload.get('structured')
         if not isinstance(structured, dict):
             return None
+        warnings = normalization_warnings if normalization_warnings is not None else []
         if node is WorkflowNode.GENERATE_KNOWN_EVENTS:
-            return self._normalize_known_events_document(checkpoint, structured, result)
+            return self._normalize_known_events_document(checkpoint, structured, result, warnings=warnings)
         if node in {WorkflowNode.GENERATE_MONITORING_CONFIG, WorkflowNode.RESOLVE_MONITORING_CONFIG}:
-            return self._normalize_monitoring_config_document(checkpoint.ticker, structured)
+            return self._normalize_monitoring_config_document(checkpoint.ticker, structured, warnings=warnings)
         if node in {WorkflowNode.GENERATE_MONITORING_POLICY, WorkflowNode.RESOLVE_MONITORING_POLICY}:
-            return self._normalize_monitoring_policy_document(checkpoint.ticker, structured)
+            return self._normalize_monitoring_policy_document(checkpoint.ticker, structured, warnings=warnings)
         return None
 
-    def _normalize_known_events_document(self, checkpoint: WorkflowCheckpoint, payload: dict[str, Any], result: AgentResult) -> KnownEventsDocument:
-        known_event_context = self._known_event_context(checkpoint)
-        events: list[KnownEvent] = []
-        raw_events = payload.get('events')
+    def _normalize_known_events_document(self, checkpoint: WorkflowCheckpoint, payload: dict[str, Any], result: AgentResult, *, warnings: list[dict[str, str]] | None=None) -> KnownEventsDocument:
+        del result
+        normalization_warnings = warnings if warnings is not None else []
         created_at = self._coerce_event_time(payload.get('created_at'))
-        for item in raw_events if isinstance(raw_events, list) else []:
+        known_event_context = self._known_event_context(checkpoint)
+        raw_events = payload.get('events')
+        if not isinstance(raw_events, list):
+            self._document3_warning(normalization_warnings, 'field_fallback_applied', 'events', 'Expected a list of known events.')
+            raw_events = []
+        events: list[KnownEvent] = []
+        for index, item in enumerate(raw_events):
             if not isinstance(item, dict):
+                self._document3_warning(normalization_warnings, 'record_isolated', f'events[{index}]', 'Known event is not a JSON object.')
                 continue
-            date_hint = item.get('date') or item.get('event_date')
-            description = self._known_event_description(item)
-            expectation_id = self._known_event_expectation_id(checkpoint, item, description, context=known_event_context)
-            event_time = self._known_event_time(item, description, created_at)
-            has_price_reaction = bool(item.get('has_price_reaction')) or self._known_event_has_price_reaction(description)
-            is_known_old_news = bool(item.get('is_known_old_news')) or self._known_event_is_old_news(event_time, created_at)
-            if isinstance(date_hint, str) and date_hint and (date_hint not in description):
-                description = f'{date_hint}: {description}'
-            events.append(KnownEvent(event_id=str(item.get('event_id') or item.get('id') or new_id('event')), event_time=event_time, event_window=str(item.get('event_window') or item.get('window') or item.get('time_window') or '') or None, core_fact=str(item.get('core_fact') or description), description=description, duplicate_detection_keys=self._duplicate_detection_keys(item, description, expectation_id), expectation_id=expectation_id, discussed_by_market=bool(item.get('discussed_by_market', True)), has_price_reaction=has_price_reaction, is_known_old_news=is_known_old_news))
+            try:
+                date_hint = item.get('date') or item.get('event_date')
+                description = self._known_event_description(item)
+                expectation_id = self._known_event_expectation_id(checkpoint, item, description, context=known_event_context)
+                event_time, event_window = self._normalize_known_event_time_and_window(item, description, created_at)
+                if isinstance(date_hint, str) and date_hint and date_hint not in description:
+                    description = f'{date_hint}: {description}'
+                event = KnownEvent(
+                    event_id=str(item.get('event_id') or item.get('id') or f'ke_{index + 1:03d}'),
+                    event_time=event_time,
+                    event_window=event_window,
+                    core_fact=str(item.get('core_fact') or description),
+                    description=description,
+                    duplicate_detection_keys=self._duplicate_detection_keys(item, description, expectation_id),
+                    expectation_id=str(expectation_id) if expectation_id else None,
+                    discussed_by_market=bool(item.get('discussed_by_market', True)),
+                    has_price_reaction=bool(item.get('has_price_reaction')) or self._known_event_has_price_reaction(description),
+                    is_known_old_news=bool(item.get('is_known_old_news')) or (event_time is not None and self._known_event_is_old_news(event_time, created_at)),
+                )
+                events.append(event)
+            except (TypeError, ValueError) as exc:
+                self._document3_warning(normalization_warnings, 'record_isolated', f'events[{index}]', str(exc))
         if not events:
-            events.append(KnownEvent(event_id=new_id('event'), event_time=datetime.now(UTC), event_window='fallback', core_fact='agent did not provide known event details', description='agent 未提供已知事件细节。', duplicate_detection_keys=[checkpoint.ticker, 'agent did not provide known event details'], discussed_by_market=False, has_price_reaction=False, is_known_old_news=False))
-        return KnownEventsDocument(document_id=str(payload.get('document_id') or new_id('doc')), ticker=checkpoint.ticker, created_at=created_at, events=events)
+            self._document3_warning(normalization_warnings, 'minimal_fallback_document', 'events', 'No known event record could be normalized.')
+            events = [self._fallback_known_event(checkpoint.ticker)]
+        try:
+            candidate = KnownEventsDocument(
+                document_id=str(payload.get('document_id') or new_id('doc')),
+                ticker=checkpoint.ticker,
+                created_at=created_at,
+                events=events,
+            )
+            return KnownEventsDocument.model_validate(candidate.model_dump(mode='python'))
+        except (TypeError, ValueError) as exc:
+            self._document3_warning(normalization_warnings, 'final_schema_fallback', 'known_events', str(exc))
+            fallback = KnownEventsDocument(
+                document_id=new_id('doc'),
+                ticker=checkpoint.ticker,
+                created_at=created_at,
+                events=[self._fallback_known_event(checkpoint.ticker)],
+            )
+            return KnownEventsDocument.model_validate(fallback.model_dump(mode='python'))
+
+    def _fallback_known_event(self, ticker: str) -> KnownEvent:
+        return KnownEvent(
+            event_id='ke_fallback_001',
+            event_time=None,
+            event_window='unknown',
+            core_fact='No usable known event was returned by the model.',
+            description='No usable known event was returned by the model.',
+            duplicate_detection_keys=[ticker, 'no-usable-known-event'],
+            discussed_by_market=False,
+            has_price_reaction=False,
+            is_known_old_news=False,
+        )
+
+    def _normalize_known_event_time_and_window(self, item: dict[str, Any], description: str, created_at: datetime) -> tuple[datetime | None, str | None]:
+        raw_time = item.get('event_time')
+        date_hint = item.get('date') or item.get('event_date')
+        explicit_window = str(item.get('event_window') or item.get('window') or item.get('time_window') or '').strip() or None
+        raw_time_text = str(raw_time).strip() if raw_time is not None else ''
+        event_window = explicit_window
+        if event_window is None and raw_time_text and not re.fullmatch(r'20\d{2}-\d{2}-\d{2}(?:[T ][^ ]+)?', raw_time_text):
+            event_window = raw_time_text
+        text_hint = self._known_event_time_hint_precise(' '.join(str(value) for value in (date_hint, description) if value))
+        raw_normalized = self._known_event_time_value(raw_time)
+        if text_hint and (raw_time is None or raw_normalized is None or self._known_event_time_is_run_timestamp(raw_time, created_at) or self._known_event_time_is_generic(raw_time)):
+            return self._known_event_time_value(text_hint), event_window
+        if date_hint:
+            return self._known_event_time_value(date_hint), event_window
+        if raw_normalized is not None:
+            return raw_normalized, event_window
+        if text_hint:
+            return self._known_event_time_value(text_hint), event_window
+        return None, event_window
+
+    def _known_event_time_value(self, value: Any) -> datetime | None:
+        if isinstance(value, datetime):
+            return value
+        if not isinstance(value, str) or not value.strip():
+            return None
+        text = value.strip()
+        try:
+            return datetime.fromisoformat(text.replace('Z', '+00:00'))
+        except ValueError:
+            pass
+        quarter_match = re.search(r'(?:FY\s*)?(20\d{2})\s*[- ]?Q([1-4])|Q([1-4])\s*(?:FY\s*)?(20\d{2})', text, re.IGNORECASE)
+        if quarter_match:
+            year = int(quarter_match.group(1) or quarter_match.group(4))
+            quarter = int(quarter_match.group(2) or quarter_match.group(3))
+            return datetime(year, (quarter - 1) * 3 + 1, 1, tzinfo=UTC)
+        half_match = re.search(r'(20\d{2})\s*[- ]?H([12])|H([12])\s*(20\d{2})', text, re.IGNORECASE)
+        if half_match:
+            year = int(half_match.group(1) or half_match.group(4))
+            half = int(half_match.group(2) or half_match.group(3))
+            return datetime(year, 1 if half == 1 else 7, 1, tzinfo=UTC)
+        month_match = re.fullmatch(r'(20\d{2})[-/](0?[1-9]|1[0-2])', text)
+        if month_match:
+            return datetime(int(month_match.group(1)), int(month_match.group(2)), 1, tzinfo=UTC)
+        year_match = re.fullmatch(r'(20\d{2})', text)
+        if year_match:
+            return datetime(int(year_match.group(1)), 1, 1, tzinfo=UTC)
+        period_hint = self._known_event_time_hint_precise(text)
+        if period_hint and period_hint != text:
+            return self._known_event_time_value(period_hint)
+        return None
 
     def _duplicate_detection_keys(self, item: dict[str, Any], description: str, expectation_id: str | None) -> list[str]:
         values = [*self._string_list(item.get('duplicate_detection_keys')), *self._string_list(item.get('duplicate_keys')), *self._string_list(item.get('dedupe_keys'))]
@@ -560,20 +678,6 @@ class BlackboardInitializationWorkflow(Document1BuilderMixin, Document1ContextMi
         if isinstance(event_id, str) and event_id.strip():
             return f'Known event {event_id.strip()}.'
         return 'Known event emitted by agent output.'
-
-    def _known_event_time(self, item: dict[str, Any], description: str, created_at: datetime) -> datetime:
-        raw_time = item.get('event_time')
-        date_hint = item.get('date') or item.get('event_date')
-        text_hint = self._known_event_time_hint_precise(' '.join((str(value) for value in (date_hint, description) if value)))
-        if text_hint and (raw_time is None or self._known_event_time_is_run_timestamp(raw_time, created_at) or self._known_event_time_is_generic(raw_time)):
-            return self._coerce_event_time(text_hint)
-        if date_hint:
-            return self._coerce_event_time(date_hint)
-        if raw_time is not None:
-            return self._coerce_event_time(raw_time)
-        if text_hint:
-            return self._coerce_event_time(text_hint)
-        return created_at
 
     def _known_event_time_is_run_timestamp(self, value: Any, created_at: datetime) -> bool:
         if not value:
@@ -784,22 +888,48 @@ class BlackboardInitializationWorkflow(Document1BuilderMixin, Document1ContextMi
             return False
         return True
 
-    def _normalize_monitoring_config_document(self, ticker: str, payload: dict[str, Any]) -> MonitoringConfigDocument:
+    def _normalize_monitoring_config_document(self, ticker: str, payload: dict[str, Any], *, warnings: list[dict[str, str]] | None=None) -> MonitoringConfigDocument:
+        normalization_warnings = warnings if warnings is not None else []
         raw_items = payload.get('monitoring_items') or payload.get('items') or []
+        if not isinstance(raw_items, list):
+            self._document3_warning(normalization_warnings, 'field_fallback_applied', 'monitoring_items', 'Expected a list of monitoring items.')
+            raw_items = []
         items: list[MonitoringItem] = []
-        for item in raw_items if isinstance(raw_items, list) else []:
-            if isinstance(item, dict):
-                name = str(item.get('name') or item.get('trigger_condition') or 'monitor')
-                trigger_condition = str(item.get('trigger_condition') or item.get('condition') or item.get('description') or name)
-                tool_input = self._monitoring_tool_input(checkpoint_ticker=ticker, item=item)
-                tool_input.setdefault('reason', str(item.get('reasoning') or trigger_condition))
-                items.append(MonitoringItem(item_id=str(item.get('item_id') or item.get('id') or new_id('monitor')), tool_input=tool_input, reasoning=str(item.get('reasoning') or trigger_condition), base_keywords=self._string_list(item.get('base_keywords'), fallback=name), extra_objects=self._string_list(item.get('extra_objects')), extra_keywords=self._string_list(item.get('extra_keywords')), related_entities=self._string_list(item.get('related_entities')), expectation_id=item.get('expectation_id'), priority=str(item.get('priority') or 'medium'), trigger_condition=trigger_condition))
-            elif str(item).strip():
-                text = str(item)
-                items.append(MonitoringItem(item_id=new_id('monitor'), tool_input={'ticker': ticker, 'source_id': 'stocktwits_messages', 'reason': text, 'mode': 'merge', 'enabled': True}, reasoning=text, base_keywords=[ticker], priority='medium', trigger_condition=text))
+        for index, item in enumerate(raw_items):
+            try:
+                if isinstance(item, dict):
+                    name = str(item.get('name') or item.get('trigger_condition') or 'monitor')
+                    trigger_condition = str(item.get('trigger_condition') or item.get('condition') or item.get('description') or name).strip() or f'Monitor {ticker}-specific messages.'
+                    tool_input = self._monitoring_tool_input(checkpoint_ticker=ticker, item=item)
+                    tool_input.setdefault('reason', str(item.get('reasoning') or trigger_condition))
+                    item_id = str(item.get('item_id') or item.get('id') or '').strip()
+                    if not item_id:
+                        item_id = f'mi_{index + 1:03d}'
+                        self._document3_warning(normalization_warnings, 'field_fallback_applied', f'monitoring_items[{index}].item_id', f'Assigned {item_id}.')
+                    items.append(MonitoringItem(item_id=item_id, tool_input=tool_input, reasoning=str(item.get('reasoning') or trigger_condition), base_keywords=self._string_list(item.get('base_keywords'), fallback=name), extra_objects=self._string_list(item.get('extra_objects')), extra_keywords=self._string_list(item.get('extra_keywords')), related_entities=self._string_list(item.get('related_entities')), expectation_id=str(item.get('expectation_id')) if item.get('expectation_id') else None, priority=str(item.get('priority') or 'medium'), trigger_condition=trigger_condition))
+                elif str(item).strip():
+                    text = str(item).strip()
+                    self._document3_warning(normalization_warnings, 'field_fallback_applied', f'monitoring_items[{index}]', 'Converted text item to a safe monitoring record.')
+                    items.append(MonitoringItem(item_id=f'mi_{index + 1:03d}', tool_input={'ticker': ticker, 'source_id': 'stocktwits_messages', 'reason': text, 'mode': 'merge', 'enabled': True}, reasoning=text, base_keywords=[ticker], priority='medium', trigger_condition=text))
+                else:
+                    self._document3_warning(normalization_warnings, 'record_isolated', f'monitoring_items[{index}]', 'Monitoring item is empty.')
+            except (TypeError, ValueError) as exc:
+                self._document3_warning(normalization_warnings, 'record_isolated', f'monitoring_items[{index}]', str(exc))
         if not items:
-            items.append(MonitoringItem(item_id=new_id('monitor'), tool_input={'ticker': ticker, 'source_id': 'stocktwits_messages', 'reason': 'Monitor new ticker-related events.', 'mode': 'merge', 'enabled': True}, reasoning='Monitor new ticker-related events.', base_keywords=[ticker], priority='medium', trigger_condition='Monitor new ticker-related events.'))
-        return MonitoringConfigDocument(document_id=str(payload.get('document_id') or new_id('doc')), ticker=ticker, created_at=self._coerce_event_time(payload.get('created_at')), monitoring_items=items)
+            self._document3_warning(normalization_warnings, 'minimal_fallback_document', 'monitoring_items', 'No monitoring item could be normalized.')
+            items = [self._fallback_monitoring_item(ticker)]
+        created_at = self._coerce_event_time(payload.get('created_at'))
+        try:
+            candidate = MonitoringConfigDocument(document_id=str(payload.get('document_id') or new_id('doc')), ticker=ticker, created_at=created_at, monitoring_items=items)
+            return MonitoringConfigDocument.model_validate(candidate.model_dump(mode='python'))
+        except (TypeError, ValueError) as exc:
+            self._document3_warning(normalization_warnings, 'final_schema_fallback', 'monitoring_config', str(exc))
+            fallback = MonitoringConfigDocument(document_id=new_id('doc'), ticker=ticker, created_at=created_at, monitoring_items=[self._fallback_monitoring_item(ticker)])
+            return MonitoringConfigDocument.model_validate(fallback.model_dump(mode='python'))
+
+    def _fallback_monitoring_item(self, ticker: str) -> MonitoringItem:
+        reason = f'No usable monitoring configuration was returned for {ticker}; keep runtime collection disabled.'
+        return MonitoringItem(item_id='mi_fallback_001', tool_input={'ticker': ticker, 'source_id': 'stocktwits_messages', 'reason': reason, 'mode': 'merge', 'enabled': False}, reasoning=reason, base_keywords=[ticker], priority='low', trigger_condition=f'Keep {ticker} monitoring disabled until a valid configuration is reviewed.')
 
     def _monitoring_tool_input(self, *, checkpoint_ticker: str, item: dict[str, Any]) -> dict[str, Any]:
         raw_tool_input = dict(item.get('tool_input') or {})
@@ -816,41 +946,96 @@ class BlackboardInitializationWorkflow(Document1BuilderMixin, Document1ContextMi
     def _payload_string_list(self, payload: dict[str, Any], key: str) -> list[str]:
         return self._string_list(payload.get(key))
 
-    def _normalize_monitoring_policy_document(self, ticker: str, payload: dict[str, Any]) -> MonitoringPolicyDocument:
-        policies = self._normalize_policy_rules(payload.get('policies'), default_action_type=PolicyActionType.PUSH_TO_AGENT)
-        direct = self._normalize_policy_rules(payload.get('direct_trade_rules'), default_action_type=PolicyActionType.DIRECT_TRADE)
-        push = self._normalize_policy_rules(payload.get('push_to_agent_rules') or payload.get('rules'), default_action_type=PolicyActionType.PUSH_TO_AGENT)
-        if not policies:
-            policies = [*direct, *push]
-        if not direct:
-            direct = [rule for rule in policies if rule.policy_type == PolicyActionType.DIRECT_TRADE.value]
-        if not push:
-            push = [rule for rule in policies if rule.policy_type == 'escalate']
-        return MonitoringPolicyDocument(document_id=str(payload.get('document_id') or new_id('doc')), ticker=ticker, created_at=self._coerce_event_time(payload.get('created_at')), policies=policies, direct_trade_rules=direct, push_to_agent_rules=push, cache_rules=[], no_action_rationale=payload.get('no_action_rationale') or payload.get('omission_rationale'))
-
-    def _normalize_policy_rules(self, value: Any, *, default_action_type: PolicyActionType) -> list[MonitoringPolicyRule]:
-        rules: list[MonitoringPolicyRule] = []
-        for item in value if isinstance(value, list) else []:
-            if not isinstance(item, dict):
+    def _normalize_monitoring_policy_document(self, ticker: str, payload: dict[str, Any], *, warnings: list[dict[str, str]] | None=None) -> MonitoringPolicyDocument:
+        normalization_warnings = warnings if warnings is not None else []
+        candidates = [
+            *self._normalize_policy_rules_safe(payload.get('policies'), default_action_type=PolicyActionType.PUSH_TO_AGENT, ticker=ticker, field_name='policies', warnings=normalization_warnings),
+            *self._normalize_policy_rules_safe(payload.get('direct_trade_rules'), default_action_type=PolicyActionType.DIRECT_TRADE, ticker=ticker, field_name='direct_trade_rules', warnings=normalization_warnings),
+            *self._normalize_policy_rules_safe(payload.get('push_to_agent_rules') or payload.get('rules'), default_action_type=PolicyActionType.PUSH_TO_AGENT, ticker=ticker, field_name='push_to_agent_rules', warnings=normalization_warnings),
+        ]
+        policies: list[MonitoringPolicyRule] = []
+        seen_policy_ids: set[str] = set()
+        for rule in candidates:
+            if rule.policy_id in seen_policy_ids:
                 continue
-            raw_action_type = item.get('action_type')
+            seen_policy_ids.add(rule.policy_id)
+            policies.append(rule)
+        if not policies:
+            self._document3_warning(normalization_warnings, 'minimal_fallback_document', 'policies', 'No monitoring policy rule could be normalized.')
+            policies = [self._fallback_monitoring_policy_rule(ticker)]
+        direct = [rule for rule in policies if rule.policy_type == PolicyActionType.DIRECT_TRADE.value]
+        push = [rule for rule in policies if rule.policy_type == 'escalate']
+        no_action_rationale = str(payload.get('no_action_rationale') or payload.get('omission_rationale') or '').strip() or None
+        missing_paths = [name for name, rules in (('direct_trade', direct), ('escalate', push)) if not rules]
+        if missing_paths and no_action_rationale is None:
+            no_action_rationale = f"No safe rules were normalized for: {', '.join(missing_paths)}."
+            self._document3_warning(normalization_warnings, 'field_fallback_applied', 'no_action_rationale', no_action_rationale)
+        created_at = self._coerce_event_time(payload.get('created_at'))
+        try:
+            candidate = MonitoringPolicyDocument(document_id=str(payload.get('document_id') or new_id('doc')), ticker=ticker, created_at=created_at, policies=policies, direct_trade_rules=direct, push_to_agent_rules=push, cache_rules=[], no_action_rationale=no_action_rationale)
+            return MonitoringPolicyDocument.model_validate(candidate.model_dump(mode='python'))
+        except (TypeError, ValueError) as exc:
+            self._document3_warning(normalization_warnings, 'final_schema_fallback', 'monitoring_policy', str(exc))
+            fallback_rule = self._fallback_monitoring_policy_rule(ticker)
+            fallback = MonitoringPolicyDocument(document_id=new_id('doc'), ticker=ticker, created_at=created_at, policies=[fallback_rule], direct_trade_rules=[], push_to_agent_rules=[fallback_rule], cache_rules=[], no_action_rationale='No direct-trade rule was safe to normalize.')
+            return MonitoringPolicyDocument.model_validate(fallback.model_dump(mode='python'))
+
+    def _normalize_policy_rules_safe(self, value: Any, *, default_action_type: PolicyActionType, ticker: str, field_name: str, warnings: list[dict[str, str]]) -> list[MonitoringPolicyRule]:
+        if value is None:
+            return []
+        if not isinstance(value, list):
+            self._document3_warning(warnings, 'field_fallback_applied', field_name, 'Expected a list of policy rules.')
+            return []
+        rules: list[MonitoringPolicyRule] = []
+        for index, item in enumerate(value):
+            location = f'{field_name}[{index}]'
+            if not isinstance(item, dict):
+                self._document3_warning(warnings, 'record_isolated', location, 'Policy rule is not a JSON object.')
+                continue
             try:
-                action_type = PolicyActionType(str(raw_action_type)) if raw_action_type else default_action_type
-            except ValueError:
-                action_type = default_action_type
-            policy_type = str(item.get('policy_type') or '')
-            if not policy_type:
-                policy_type = 'escalate' if action_type is PolicyActionType.PUSH_TO_AGENT else action_type.value
-            policy_id = str(item.get('policy_id') or item.get('rule_id') or item.get('id') or new_id('policy'))
-            trigger_condition = str(item.get('trigger_condition') or item.get('condition') or item.get('description') or item.get('trigger') or 'Monitor ticker-related signals.')
-            scope = dict(item.get('scope') or {})
-            if item.get('expectation_id'):
-                scope.setdefault('expectation_unit_id', item.get('expectation_id'))
-            trigger: dict[str, Any] = cast(dict[str, Any], item.get('trigger')) if isinstance(item.get('trigger'), dict) else {'condition': trigger_condition}
-            confirmation: dict[str, Any] = cast(dict[str, Any], item.get('confirmation')) if isinstance(item.get('confirmation'), dict) else {'market_confirmation': str(item.get('confirmation') or '')}
-            risk_guard: dict[str, Any] = cast(dict[str, Any], item.get('risk_guard')) if isinstance(item.get('risk_guard'), dict) else {'guardrail': str(item.get('risk_guard') or 'Do not create broker orders.')}
-            rules.append(MonitoringPolicyRule(policy_id=policy_id, rule_id=str(item.get('rule_id') or item.get('id') or new_id('rule')), policy_type=policy_type, action_type=action_type, scope=scope, trigger=trigger, trigger_condition=str(item.get('trigger_condition') or item.get('condition') or item.get('description') or '监控与 ticker 相关的信号。'), confirmation=confirmation, expectation_id=item.get('expectation_id'), action=self._policy_action_payload(item.get('action'), policy_type=policy_type), risk_guard=risk_guard, strategy_note=self._policy_strategy_note_text(item.get('strategy_note') or item.get('rationale') or item.get('note'), action_type=action_type), reasoning=str(item.get('reasoning') or item.get('strategy_note') or item.get('rationale') or 'Policy routes Document 3 runtime monitoring signals.'), evidence_fields=self._payload_string_list(item, 'evidence_fields') or self._payload_string_list(item, 'required_evidence_fields'), escalation_path=item.get('escalation_path') or item.get('route')))
+                raw_action_type = str(item.get('action_type') or '').strip()
+                try:
+                    action_type = PolicyActionType(raw_action_type) if raw_action_type else default_action_type
+                except ValueError:
+                    action_type = default_action_type
+                    self._document3_warning(warnings, 'field_fallback_applied', f'{location}.action_type', f'Normalized to {action_type.value}.')
+                policy_type = str(item.get('policy_type') or '').strip()
+                if policy_type not in {'direct_trade', 'escalate'}:
+                    policy_type = 'direct_trade' if action_type is PolicyActionType.DIRECT_TRADE else 'escalate'
+                    self._document3_warning(warnings, 'field_fallback_applied', f'{location}.policy_type', f'Normalized to {policy_type}.')
+                action_type = PolicyActionType.DIRECT_TRADE if policy_type == 'direct_trade' else PolicyActionType.PUSH_TO_AGENT
+                policy_id = str(item.get('policy_id') or item.get('rule_id') or item.get('id') or f'policy_{index + 1:03d}').strip()
+                rule_id = str(item.get('rule_id') or item.get('id') or f'rule_{index + 1:03d}').strip()
+                trigger_value = item.get('trigger') if isinstance(item.get('trigger'), dict) else {}
+                trigger_condition = str(item.get('trigger_condition') or item.get('condition') or item.get('description') or trigger_value.get('condition') or f'Escalate when a new {ticker}-specific message contradicts an active expectation and includes source evidence.').strip()
+                scope = dict(item.get('scope')) if isinstance(item.get('scope'), dict) else {}
+                if item.get('expectation_id'):
+                    scope.setdefault('expectation_unit_id', str(item.get('expectation_id')))
+                trigger = dict(trigger_value) or {'condition': trigger_condition}
+                trigger.setdefault('condition', trigger_condition)
+                confirmation = dict(item.get('confirmation')) if isinstance(item.get('confirmation'), dict) else {'market_confirmation': str(item.get('confirmation') or '')}
+                risk_guard = dict(item.get('risk_guard')) if isinstance(item.get('risk_guard'), dict) else {'guardrail': str(item.get('risk_guard') or 'Do not create broker orders.')}
+                action = self._policy_action_payload(item.get('action'), policy_type=policy_type)
+                if policy_type == 'direct_trade':
+                    action.setdefault('side', 'long')
+                    action.setdefault('conviction', 'low')
+                    action.setdefault('size_bucket', 'small')
+                else:
+                    action.setdefault('send_to', ['O1', 'O4'])
+                    action.setdefault('question', f'Review whether this {ticker} signal changes an active expectation.')
+                    action.setdefault('priority', 'medium')
+                strategy_note = str(item.get('strategy_note') or '').strip()
+                if not strategy_note:
+                    strategy_note = self._policy_strategy_note_text(item.get('rationale') or item.get('note'), action_type=action_type)
+                    self._document3_warning(warnings, 'field_fallback_applied', f'{location}.strategy_note', 'Applied deterministic runtime routing note.')
+                rules.append(MonitoringPolicyRule(policy_id=policy_id, rule_id=rule_id, policy_type=policy_type, action_type=action_type, scope=scope, trigger=trigger, trigger_condition=trigger_condition, confirmation=confirmation, expectation_id=str(item.get('expectation_id')) if item.get('expectation_id') else None, action=action, risk_guard=risk_guard, strategy_note=strategy_note, reasoning=str(item.get('reasoning') or item.get('rationale') or 'Policy routes Document3 runtime monitoring signals.'), evidence_fields=self._payload_string_list(item, 'evidence_fields') or self._payload_string_list(item, 'required_evidence_fields'), escalation_path=str(item.get('escalation_path') or item.get('route')) if item.get('escalation_path') or item.get('route') else None))
+            except (TypeError, ValueError) as exc:
+                self._document3_warning(warnings, 'record_isolated', location, str(exc))
         return rules
+
+    def _fallback_monitoring_policy_rule(self, ticker: str) -> MonitoringPolicyRule:
+        trigger_condition = f'Escalate only when a new {ticker}-specific message contradicts an active expectation and includes source evidence.'
+        return MonitoringPolicyRule(policy_id='policy_fallback_001', rule_id='rule_fallback_001', policy_type='escalate', action_type=PolicyActionType.PUSH_TO_AGENT, scope={'ticker': ticker}, trigger={'condition': trigger_condition}, trigger_condition=trigger_condition, confirmation={}, action={'send_to': ['O1', 'O4'], 'question': f'Review whether this {ticker} signal changes an active expectation.', 'priority': 'low'}, risk_guard={'guardrail': 'Do not create broker orders.'}, strategy_note='Route to research agents for evidence review; never execute a trade directly.', reasoning='Fallback preserves workflow continuity without authorizing an automated trade.')
 
     def _has_chinese_text(self, value: Any) -> bool:
         return any(('一' <= ch <= '鿿' for ch in str(value or '')))
@@ -930,8 +1115,27 @@ class BlackboardInitializationWorkflow(Document1BuilderMixin, Document1ContextMi
             deduped.append(text)
         return deduped
 
+    def _document3_warning(self, warnings: list[dict[str, str]], code: str, location: str, message: str) -> None:
+        warnings.append(
+            {
+                'code': code,
+                'location': location,
+                'message': ' '.join(str(message).split())[:800] or 'Document3 normalization warning.',
+            }
+        )
+
     def _validate_agent_success(self, result: AgentResult, node: WorkflowNode, *, require_patches: bool=True) -> None:
-        if result.status is not ResultStatus.SUCCEEDED:
+        document3_result_nodes = {
+            WorkflowNode.GENERATE_KNOWN_EVENTS,
+            WorkflowNode.GENERATE_MONITORING_CONFIG,
+            WorkflowNode.RESOLVE_MONITORING_CONFIG,
+            WorkflowNode.GENERATE_MONITORING_POLICY,
+            WorkflowNode.RESOLVE_MONITORING_POLICY,
+        }
+        accepted_statuses = {ResultStatus.SUCCEEDED}
+        if node in document3_result_nodes:
+            accepted_statuses.add(ResultStatus.PARTIAL)
+        if result.status not in accepted_statuses:
             error_message = result.error.message if result.error is not None else 'unknown error'
             raise WorkflowContractError(f'{node.value} agent result failed: {error_message}')
         document_nodes = {WorkflowNode.BUILD_GLOBAL_RESEARCH, WorkflowNode.GENERATE_KNOWN_EVENTS, WorkflowNode.GENERATE_MONITORING_CONFIG, WorkflowNode.RESOLVE_MONITORING_CONFIG, WorkflowNode.GENERATE_MONITORING_POLICY, WorkflowNode.RESOLVE_MONITORING_POLICY}
