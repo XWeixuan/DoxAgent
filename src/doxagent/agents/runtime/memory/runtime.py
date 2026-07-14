@@ -70,6 +70,7 @@ class TaskMemoryRuntime:
         self.context_budget_history: list[JsonDict] = []
         self._next_tool_call_id = 1
         self._full_compaction_attempts = 0
+        self._last_full_compaction_step: int | None = None
         self._pre_final_challenge_completed = False
         self.event_log.append(
             "task_started",
@@ -85,6 +86,13 @@ class TaskMemoryRuntime:
     @property
     def full_compaction_attempts(self) -> int:
         return self._full_compaction_attempts
+
+    @property
+    def last_full_compaction_step(self) -> int | None:
+        return self._last_full_compaction_step
+
+    def full_compaction_blocked_for_step(self, step: int) -> bool:
+        return self._last_full_compaction_step == step - 1
 
     @property
     def pre_final_challenge_completed(self) -> bool:
@@ -163,7 +171,7 @@ class TaskMemoryRuntime:
             },
             step=step,
         )
-        self._consume_fresh(step)
+        self._consume_fresh(step, source="model_action")
 
     def _next_passive_aliases(
         self,
@@ -288,6 +296,8 @@ class TaskMemoryRuntime:
                 "original_chars": index.original_chars,
                 "original_token_estimate": index.original_token_estimate,
                 "delivery_mode": index.delivery_mode,
+                "catalog_group_count": len(index.catalog_groups),
+                "indexed_block_count": len(index.indexed_refs),
             },
             step=step,
         )
@@ -316,7 +326,12 @@ class TaskMemoryRuntime:
             for block in blocks
             if (value := self.observations.aliases.alias_for(block.block_id)) is not None
         ]
-        for item in aliases:
+        fresh_aliases = (
+            [alias]
+            if self.observations.is_catalog_group_alias(alias)
+            else aliases
+        )
+        for item in fresh_aliases:
             if item not in self.fresh_read_refs:
                 self.fresh_read_refs.append(item)
         self.event_log.append(
@@ -436,17 +451,21 @@ class TaskMemoryRuntime:
         self,
         action: JsonDict,
         *,
+        step: int,
         before: JsonDict,
         after: JsonDict | None = None,
     ) -> list[str]:
         self._full_compaction_attempts += 1
+        self._last_full_compaction_step = step
         self.event_log.append(
             "full_compaction_requested",
             {"attempt": self._full_compaction_attempts, "before": deepcopy(before)},
+            step=step,
         )
         warnings = self.memory.apply_maintenance(action, observations=self.observations)
         for warning in warnings:
-            self.add_warning(warning, source="full_compaction")
+            self.add_warning(warning, step=step, source="full_compaction")
+        self._consume_fresh(step, source="full_compaction")
         self.event_log.append(
             "full_compaction_applied",
             {
@@ -456,15 +475,28 @@ class TaskMemoryRuntime:
                 "after": deepcopy(after) if after is not None else None,
                 "memory_state": self.memory.audit(),
             },
+            step=step,
         )
         return warnings
 
-    def record_full_compaction_failure(self, message: str) -> None:
+    def record_full_compaction_failure(self, message: str, *, step: int) -> None:
         self._full_compaction_attempts += 1
-        self.add_warning(message, source="full_compaction")
+        self._last_full_compaction_step = step
+        self.add_warning(message, step=step, source="full_compaction")
         self.event_log.append(
             "full_compaction_failed",
             {"attempt": self._full_compaction_attempts, "message": message},
+            step=step,
+        )
+
+    def record_full_compaction_suppressed(self, *, step: int) -> None:
+        self.event_log.append(
+            "full_compaction_suppressed",
+            {
+                "reason": "previous_loop_started_full_compaction",
+                "previous_step": self._last_full_compaction_step,
+            },
+            step=step,
         )
 
     def safe_budget_fallback(self) -> str | None:
@@ -526,6 +558,10 @@ class TaskMemoryRuntime:
                 "candidate_aliases": list(self.passive_candidate_aliases),
                 "budget_tokens": self.passive_budget_tokens,
             },
+            "full_compaction": {
+                "attempts": self._full_compaction_attempts,
+                "last_attempt_step": self._last_full_compaction_step,
+            },
         }
 
     def persisted_audit(self) -> JsonDict:
@@ -572,6 +608,16 @@ class TaskMemoryRuntime:
                     "block_count": len(index.block_refs),
                     "selected_refs": list(index.selected_refs),
                     "original_chars": index.original_chars,
+                    "delivery_mode": index.delivery_mode,
+                    "catalog_groups": [
+                        {
+                            "path": group.path,
+                            "block_count": len(group.member_refs),
+                            "content_chars": group.content_chars,
+                        }
+                        for group in index.catalog_groups
+                    ],
+                    "indexed_block_count": len(index.indexed_refs),
                 }
         projection: JsonDict = {
             "schema_version": "react_task_memory.v1",
@@ -603,11 +649,15 @@ class TaskMemoryRuntime:
                 "candidate_count": len(self.passive_candidate_aliases),
                 "budget_tokens": self.passive_budget_tokens,
             },
+            "full_compaction": {
+                "attempts": self._full_compaction_attempts,
+                "last_attempt_step": self._last_full_compaction_step,
+            },
         }
         projection["estimated_json_chars"] = len(_canonical_json(projection))
         return projection
 
-    def _consume_fresh(self, step: int) -> None:
+    def _consume_fresh(self, step: int, *, source: str) -> None:
         if not (
             self.fresh_tool_call_ids
             or self.fresh_read_refs
@@ -620,6 +670,7 @@ class TaskMemoryRuntime:
                 "tool_call_ids": list(self.fresh_tool_call_ids),
                 "read_refs": list(self.fresh_read_refs),
                 "runtime_result_count": len(self.fresh_runtime_results),
+                "source": source,
             },
             step=step,
         )

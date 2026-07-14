@@ -14,10 +14,29 @@ def read_observation_descriptor() -> JsonDict:
         "name": READ_OBSERVATION_TOOL_NAME,
         "description": (
             "Read an exact Observation Block already created inside this AgentTask. "
+            "When alias comes from group_catalog, load the complete catalog group. "
             "This is a read-only harness capability and never changes source data."
         ),
         "input_fields": ["alias", "include_parent", "include_children"],
-        "business_purpose": "Reload exact indexed or index-only source material by O# alias.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "alias": {
+                    "type": "string",
+                    "description": (
+                        "A real O# from group_catalog or block_index. A catalog alias "
+                        "loads the complete group; an index alias loads one exact block."
+                    ),
+                },
+                "include_parent": {"type": "boolean", "default": False},
+                "include_children": {"type": "boolean", "default": False},
+            },
+            "required": ["alias"],
+            "additionalProperties": False,
+        },
+        "business_purpose": (
+            "Reload a complete catalog group or one exact indexed source block by O# alias."
+        ),
         "observation_policy": "inline",
     }
 

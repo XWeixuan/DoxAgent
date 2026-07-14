@@ -257,9 +257,21 @@ def test_sec_company_facts_keeps_full_raw_but_exposes_compact_paged_output() -> 
         )
         for block in observations.block_store.blocks_for_call("sec")
     ) <= 1_200
-    assert index.selected_refs[0] == "obs_sec::/fact_directory"
-    assert index.selected_refs[1].startswith("obs_sec::/key_facts/rows/")
-    assert index.selected_refs[2] == page_ref
+    assert index.delivery_mode == "full"
+    selected_paths = set(index.selected_refs)
+    assert "obs_sec::/fact_directory" in selected_paths
+    assert any(ref.startswith("obs_sec::/key_facts/") for ref in selected_paths)
+    outline = index.outline(observations.block_store, observations.aliases)
+    assert "group_catalog" not in outline
+    catalog_refs = {
+        ref for group in index.catalog_groups for ref in group.member_refs
+    }
+    content_refs = {
+        block.ref
+        for block in observations.block_store.blocks_for_call("sec")
+        if block.block_type != "outline"
+    }
+    assert content_refs == selected_paths | catalog_refs | set(index.indexed_refs)
 
 
 def test_source_tool_descriptors_match_public_provider_parameters() -> None:

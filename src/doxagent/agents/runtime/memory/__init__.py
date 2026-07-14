@@ -3,6 +3,8 @@
 from doxagent.agents.runtime.memory.aliases import ObservationAliasRegistry
 from doxagent.agents.runtime.memory.archive import InMemoryObservationArchive, ObservationArchive
 from doxagent.agents.runtime.memory.context import (
+    FULL_COMPACTION_TRIGGER_TOKENS,
+    MICRO_MAINTENANCE_TRIGGER_TOKENS,
     ActiveContextAssembler,
     ContextBudgetConfig,
     estimated_tokens,
@@ -38,6 +40,8 @@ __all__ = [
     "ActiveContextAssembler",
     "AgendaItem",
     "ContextBudgetConfig",
+    "FULL_COMPACTION_TRIGGER_TOKENS",
+    "MICRO_MAINTENANCE_TRIGGER_TOKENS",
     "ObservationBlock",
     "ObservationAliasRegistry",
     "InMemoryObservationArchive",

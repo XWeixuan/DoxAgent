@@ -291,6 +291,7 @@ def test_full_compaction_changes_only_materialized_memory_and_load_state() -> No
                 {"ref": ref, "action": "INDEX_ONLY", "reason": "可按需重载"}
             ],
         },
+        step=3,
         before={"projected_input_tokens": 1000},
     )
 

@@ -13,12 +13,16 @@ from doxagent.models import AgentTask
 JsonDict = dict[str, Any]
 PASSIVE_OBSERVATION_MAX_TOKENS = 64_000
 PASSIVE_CONTEXT_CEILING_TOKENS = 96_000
+MICRO_MAINTENANCE_TRIGGER_TOKENS = 115_200
+FULL_COMPACTION_TRIGGER_TOKENS = 192_000
 
 
 @dataclass(frozen=True)
 class ContextBudgetConfig:
-    model_context_window: int = 128_000
-    micro_maintenance_ratio: float = 0.90
+    model_context_window: int = FULL_COMPACTION_TRIGGER_TOKENS
+    micro_maintenance_ratio: float = (
+        MICRO_MAINTENANCE_TRIGGER_TOKENS / FULL_COMPACTION_TRIGGER_TOKENS
+    )
     full_compaction_ratio: float = 1.0
     max_full_compaction_retries: int = 1
 

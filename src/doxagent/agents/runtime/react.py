@@ -15,6 +15,8 @@ from pydantic import BaseModel, ValidationError
 
 from doxagent.agents.config import AgentDefinition
 from doxagent.agents.runtime.memory import (
+    FULL_COMPACTION_TRIGGER_TOKENS,
+    MICRO_MAINTENANCE_TRIGGER_TOKENS,
     READ_OBSERVATION_TOOL_NAME,
     ContextBudgetConfig,
     InMemoryObservationArchive,
@@ -87,8 +89,10 @@ class ReActHarnessConfig:
     max_steps: int = 5
     max_tool_calls_per_name: int = MAX_TOOL_CALLS_PER_NAME
     max_tool_call_batches: int | None = None
-    model_context_window: int = 128_000
-    micro_maintenance_ratio: float = 0.90
+    model_context_window: int = FULL_COMPACTION_TRIGGER_TOKENS
+    micro_maintenance_ratio: float = (
+        MICRO_MAINTENANCE_TRIGGER_TOKENS / FULL_COMPACTION_TRIGGER_TOKENS
+    )
     full_compaction_ratio: float = 1.0
     max_full_compaction_retries: int = 1
     model_request_timeout_seconds: float | None = None
@@ -165,6 +169,7 @@ class ReActAgentHarness:
 
         for step in range(1, self.config.max_steps + 1):
             use_micro_context = await self._prepare_active_context(
+                step=step,
                 task=task,
                 definition=definition,
                 assembled_prompt=assembled_prompt,
@@ -944,6 +949,7 @@ class ReActAgentHarness:
     async def _prepare_active_context(
         self,
         *,
+        step: int,
         task: AgentTask,
         definition: AgentDefinition,
         assembled_prompt: AssembledPrompt,
@@ -988,55 +994,67 @@ class ReActAgentHarness:
         ):
             return True
 
-        attempts = 0
-        while attempts <= self.config.max_full_compaction_retries:
-            attempts += 1
-            response = await self._complete_model_request(
-                ModelRequest(
-                    provider=self.provider,
-                    model=self.model,
-                    messages=self._full_compaction_messages(
-                        task=task,
-                        micro_report=micro_report,
-                        micro_context=micro_context,
-                    ),
-                    temperature=0,
-                    timeout_seconds=self.config.model_request_timeout_seconds,
-                    response_format=ResponseFormat.JSON,
-                    metadata={**metadata, "react_compaction": "true"},
+        if runtime.full_compaction_blocked_for_step(step):
+            runtime.record_full_compaction_suppressed(step=step)
+        else:
+            attempts = 0
+            while attempts <= self.config.max_full_compaction_retries:
+                attempts += 1
+                response = await self._complete_model_request(
+                    ModelRequest(
+                        provider=self.provider,
+                        model=self.model,
+                        messages=self._full_compaction_messages(
+                            task=task,
+                            micro_report=micro_report,
+                            micro_context=micro_context,
+                        ),
+                        temperature=0,
+                        timeout_seconds=self.config.model_request_timeout_seconds,
+                        response_format=ResponseFormat.JSON,
+                        metadata={**metadata, "react_compaction": "true"},
+                    )
                 )
-            )
-            model_audits.append(response.audit.model_dump(mode="json"))
-            if response.error is not None:
-                runtime.record_full_compaction_failure(response.error.message)
-                continue
-            action = _parse_action(response)
-            if action is None:
-                runtime.record_full_compaction_failure(
-                    "Full Compaction returned an invalid maintenance action."
+                model_audits.append(response.audit.model_dump(mode="json"))
+                if response.error is not None:
+                    runtime.record_full_compaction_failure(
+                        response.error.message,
+                        step=step,
+                    )
+                    continue
+                action = _parse_action(response)
+                if action is None:
+                    runtime.record_full_compaction_failure(
+                        "Full Compaction returned an invalid maintenance action.",
+                        step=step,
+                    )
+                    continue
+                before_tokens = int(micro_report["projected_input_tokens"])
+                runtime.apply_full_compaction(
+                    action,
+                    step=step,
+                    before=micro_report,
                 )
-                continue
-            before_tokens = int(micro_report["projected_input_tokens"])
-            runtime.apply_full_compaction(action, before=micro_report)
-            micro_context, _, micro_report = self._budgeted_active_context(
-                task=task,
-                definition=definition,
-                assembled_prompt=assembled_prompt,
-                context_snapshot=context_snapshot,
-                runtime=runtime,
-                system_prompt=system_prompt,
-                available_tools=available_tools,
-                micro=True,
-                mode="full_compaction_result",
-            )
-            runtime.record_context_budget(micro_report)
-            reduced = int(micro_report["projected_input_tokens"]) < before_tokens
-            if reduced and not bool(micro_report["over_hard_budget"]):
-                return True
-            runtime.add_warning(
-                "Full Compaction 未充分降低上下文占用，将重试或执行安全 fallback。",
-                source="full_compaction",
-            )
+                micro_context, _, micro_report = self._budgeted_active_context(
+                    task=task,
+                    definition=definition,
+                    assembled_prompt=assembled_prompt,
+                    context_snapshot=context_snapshot,
+                    runtime=runtime,
+                    system_prompt=system_prompt,
+                    available_tools=available_tools,
+                    micro=True,
+                    mode="full_compaction_result",
+                )
+                runtime.record_context_budget(micro_report)
+                reduced = int(micro_report["projected_input_tokens"]) < before_tokens
+                if reduced and not bool(micro_report["over_hard_budget"]):
+                    return True
+                runtime.add_warning(
+                    "Full Compaction 未充分降低上下文占用，将重试或执行安全 fallback。",
+                    step=step,
+                    source="full_compaction",
+                )
 
         while bool(micro_report["over_hard_budget"]):
             if runtime.safe_budget_fallback() is None:
@@ -1564,7 +1582,8 @@ def _react_system_prompt(base_instructions: str) -> str:
             (
                 "Call Observation reads only through tool_calls using the registered "
                 "tool_name read_observation and an input object. Never emit the shortcut "
-                "shape {\"read_observation\": {...}}."
+                "shape {\"read_observation\": {...}}. A group_catalog alias loads its "
+                "complete group with the same standard call."
             ),
         ]
     )

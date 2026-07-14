@@ -23,7 +23,21 @@ from doxagent.tools.factory import default_real_tool_registry
 from doxagent.tools.schema import ToolRequest, ToolResult
 
 MAX_BLOCK_CHARS = 1_200
+MAX_AGENT_VISIBLE_RATIO = 1.25
+MAX_SMALL_RESULT_OVERHEAD_CHARS = 1_024
 VALIDATION_TAG = "react-memory-real-tool-chunking-2026-07-11"
+PROFILED_COMPRESSION_TOOLS = {
+    "alpha.financial_statements",
+    "alpha.earnings_events",
+    "fred.series_observations",
+    "sec.company_facts_and_filings",
+    "sec.filing_sections",
+    "bea.nipa_data",
+    "polymarket.market_probability",
+    "doxa_get_analysis",
+    "doxatlas.query",
+    "doxa_get_narrative_report",
+}
 
 CASES: dict[str, list[tuple[str, str, dict[str, Any]]]] = {
     "company": [
@@ -49,9 +63,9 @@ CASES: dict[str, list[tuple[str, str, dict[str, Any]]]] = {
             "fred.series_observations",
             "META",
             {
-                "series_ids": ["DGS10", "CPIAUCSL"],
-                "start_date": "2025-01-01",
-                "limit": 24,
+                "series_ids": ["DGS10", "CPIAUCSL", "UNRATE"],
+                "start_date": "2015-01-01",
+                "limit": 1_000,
             },
         ),
         (
@@ -127,6 +141,44 @@ CASES: dict[str, list[tuple[str, str, dict[str, Any]]]] = {
         ("monitoring.list_status", "META", {"ticker": "META", "limit": 5}),
         ("monitoring.recent_events", "META", {"ticker": "META", "limit": 5}),
     ],
+    "doxatlas": [
+        (
+            "doxa_get_narrative_report",
+            "INTC",
+            {"ticker": "INTC", "view": "agent_provenance"},
+        ),
+        (
+            "doxatlas.query",
+            "INTC",
+            {"ticker": "INTC", "view": "agent_provenance"},
+        ),
+        ("doxa_query_analysis", "INTC", {"ticker": "INTC", "limit": 5}),
+        ("doxa_get_analysis", "INTC", {"ticker": "INTC", "capsule_limit": 5}),
+        ("doxa_query_propositions", "INTC", {"limit": 10}),
+        ("doxa_get_ignored_propositions", "INTC", {}),
+        ("doxa_get_social_result", "INTC", {"limit": 10}),
+        (
+            "doxa_get_social_result_detail",
+            "INTC",
+            {"content_mode": "preview", "preview_chars": 1_200},
+        ),
+        ("doxa_get_media_result", "INTC", {"limit": 10}),
+        (
+            "doxa_get_media_result_detail",
+            "INTC",
+            {"content_mode": "preview", "preview_chars": 1_200},
+        ),
+        (
+            "doxa_get_event_source",
+            "INTC",
+            {"limit": 10, "content_mode": "preview", "preview_chars": 1_200},
+        ),
+        (
+            "doxatlas.source_lookup",
+            "INTC",
+            {"limit": 10, "content_mode": "preview", "preview_chars": 1_200},
+        ),
+    ],
 }
 
 
@@ -148,19 +200,105 @@ def _walk(value: Any) -> Iterable[Any]:
             yield from _walk(item)
 
 
+def _walk_dicts(value: Any) -> Iterable[dict[str, Any]]:
+    if isinstance(value, dict):
+        yield value
+        for item in value.values():
+            yield from _walk_dicts(item)
+    elif isinstance(value, list):
+        for item in value:
+            yield from _walk_dicts(item)
+
+
+def _first_named_scalar(value: Any, names: tuple[str, ...]) -> Any | None:
+    for item in _walk_dicts(value):
+        for name in names:
+            candidate = item.get(name)
+            if candidate not in (None, "", [], {}):
+                return candidate
+    return None
+
+
+def _first_doxatlas_event_scope(value: Any) -> dict[str, Any]:
+    """Find one internally consistent event scope without exposing provider content."""
+
+    scope_fields = {
+        "run_id",
+        "narrative_code",
+        "event_code",
+        "narrative_id",
+        "narrative_event_id",
+    }
+
+    def visit(item: Any, inherited: dict[str, Any]) -> dict[str, Any] | None:
+        if isinstance(item, dict):
+            context = {
+                **inherited,
+                **{
+                    key: candidate
+                    for key, candidate in item.items()
+                    if key in scope_fields and candidate not in (None, "", [], {})
+                },
+            }
+            if context.get("narrative_event_id"):
+                return {"narrative_event_id": context["narrative_event_id"]}
+            if context.get("narrative_id") and context.get("event_code"):
+                return {
+                    "narrative_id": context["narrative_id"],
+                    "event_code": context["event_code"],
+                }
+            if all(context.get(key) for key in ("run_id", "narrative_code", "event_code")):
+                return {
+                    "run_id": context["run_id"],
+                    "narrative_code": context["narrative_code"],
+                    "event_code": context["event_code"],
+                }
+            for child in item.values():
+                found = visit(child, context)
+                if found:
+                    return found
+        elif isinstance(item, list):
+            for child in item:
+                found = visit(child, inherited)
+                if found:
+                    return found
+        return None
+
+    return visit(value, {}) or {}
+
+
 def _is_source_derived(
     content: Any,
     block_type: str,
     source_digests: set[str],
     source_strings: list[str],
+    source_values: list[Any],
 ) -> bool:
     if block_type == "outline":
         return True
-    if block_type in {"table", "time_series"} and isinstance(content, dict):
+    # DoxAtlas semantic labeling changes a table block's public type to M/S/D,
+    # but its exact source rows remain the same contiguous provider records.
+    if isinstance(content, dict) and isinstance(content.get("rows"), list):
         rows = content.get("rows")
-        return isinstance(rows, list) and all(_digest(row) in source_digests for row in rows)
-    if block_type == "text" and isinstance(content, str):
+        return all(_digest(row) in source_digests for row in rows)
+    # Semantic adapters may relabel an exact text fragment as N/E/P/M/S/D.
+    if isinstance(content, str):
         return any(content in candidate for candidate in source_strings)
+    if isinstance(content, dict):
+        return any(
+            isinstance(candidate, dict)
+            and all(key in candidate and candidate[key] == value for key, value in content.items())
+            for candidate in source_values
+        )
+    if isinstance(content, list):
+        return any(
+            isinstance(candidate, list)
+            and any(
+                candidate[index : index + len(content)] == content
+                for index in range(max(1, len(candidate) - len(content) + 1))
+            )
+            for candidate in source_values
+        )
     return _digest(content) in source_digests
 
 
@@ -301,27 +439,98 @@ def _validate_result(
     blocks = service.block_store.blocks_for_call(tool_call_id)
     block_chars = [len(_canonical(block.content)) for block in blocks]
     hashes_ok = all(block.content_hash == _digest(block.content) for block in blocks)
-    reads_ok = all(
-        (loaded := service.read(block.ref))
-        and len(loaded) == 1
-        and _digest(loaded[0].content) == _digest(block.content)
-        for block in blocks
-    )
+    def exact_read(block: Any) -> bool:
+        alias = service.aliases.alias_for(block.block_id)
+        if alias is None:
+            return False
+        loaded = service.read(alias)
+        if service.is_catalog_group_alias(alias):
+            return any(
+                item.block_id == block.block_id
+                and _digest(item.content) == _digest(block.content)
+                for item in loaded
+            )
+        return (
+            len(loaded) == 1
+            and _digest(loaded[0].content) == _digest(block.content)
+        )
+
+    reads_ok = all(exact_read(block) for block in blocks)
     source_values = list(_walk(result.output))
     source_digests = {_digest(value) for value in source_values}
     source_strings = [value for value in source_values if isinstance(value, str)]
-    source_derived = all(
-        _is_source_derived(
-            block.content,
-            block.block_type,
-            source_digests,
-            source_strings,
+    source_derived_checks = [
+        (
+            block,
+            _is_source_derived(
+                block.content,
+                block.block_type,
+                source_digests,
+                source_strings,
+                source_values,
+            ),
         )
         for block in blocks
-    )
+    ]
+    source_derived = all(passed for _, passed in source_derived_checks)
+    source_derived_failures = [
+        {"path": block.locator, "type": block.block_type}
+        for block, passed in source_derived_checks
+        if not passed
+    ][:12]
     raw_record = service.raw_store.get(tool_call_id)
     raw_exact = raw_record is not None and raw_record.result == result
+    reconstructed = service.reconstruct_output(tool_call_id)
+    reconstruction_exact = reconstructed == result.output
     original_chars = len(_canonical(result.output))
+    fresh_view = service.fresh_view(tool_call_id)
+    agent_visible_chars = len(_canonical(fresh_view)) if fresh_view is not None else 0
+    inflation_ratio = agent_visible_chars / max(1, original_chars)
+    allowed_agent_visible_chars = max(
+        original_chars + MAX_SMALL_RESULT_OVERHEAD_CHARS,
+        int(original_chars * MAX_AGENT_VISIBLE_RATIO),
+    )
+    agent_visible_size_ok = agent_visible_chars <= allowed_agent_visible_chars
+    content_refs = {
+        block.ref for block in blocks if block.block_type != "outline"
+    }
+    catalog_refs = {
+        ref for group in index.catalog_groups for ref in group.member_refs
+    }
+    delivery_coverage_ok = content_refs == (
+        set(index.selected_refs) | catalog_refs | set(index.indexed_refs)
+    )
+    delivery_disjoint_ok = not (
+        set(index.selected_refs) & catalog_refs
+        or set(index.selected_refs) & set(index.indexed_refs)
+        or catalog_refs & set(index.indexed_refs)
+    )
+    catalog_reads_ok = all(
+        (anchor := service.block_store.get_by_ref(group.anchor_ref)) is not None
+        and (alias := service.aliases.alias_for(anchor.block_id)) is not None
+        and tuple(block.ref for block in service.read(alias)) == group.member_refs
+        for group in index.catalog_groups
+    )
+    outline = fresh_view.get("outline", {}) if isinstance(fresh_view, dict) else {}
+    catalog_outline = outline.get("group_catalog", [])
+    index_outline = outline.get("block_index", [])
+    catalog_outline_ok = len(catalog_outline) == len(index.catalog_groups)
+    complete_index_ok = (
+        len(index_outline) == len(index.indexed_refs)
+        and all("type" not in item for item in index_outline if isinstance(item, dict))
+        and "omitted_block_count" not in outline
+    )
+    profiled_minimum_ok = not (
+        result.tool_name in PROFILED_COMPRESSION_TOOLS
+        and result.status.value != "failed"
+        and original_chars >= 10_000
+        and agent_visible_chars < 10_000
+    )
+    unprofiled_threshold_ok = not (
+        result.tool_name not in PROFILED_COMPRESSION_TOOLS
+        and original_chars > 50_000
+        and index.delivery_mode not in {"indexed_threshold", "paged_oversized"}
+    )
     oversized = sum(size > MAX_BLOCK_CHARS for size in block_chars)
     chunking_assessed = bool(result.output) and result.status.value != "failed"
     chunking_ok = (not chunking_assessed) or (
@@ -331,6 +540,15 @@ def _validate_result(
         and reads_ok
         and source_derived
         and raw_exact
+        and reconstruction_exact
+        and agent_visible_size_ok
+        and delivery_coverage_ok
+        and delivery_disjoint_ok
+        and catalog_reads_ok
+        and catalog_outline_ok
+        and complete_index_ok
+        and profiled_minimum_ok
+        and unprofiled_threshold_ok
     )
     status_semantics_ok = not (
         result.status.value == "succeeded"
@@ -343,15 +561,33 @@ def _validate_result(
         "policy": index.policy,
         "adapter": descriptor.observation_adapter,
         "original_chars": original_chars,
+        "agent_visible_chars": agent_visible_chars,
+        "agent_visible_inflation_ratio": round(inflation_ratio, 4),
+        "agent_visible_allowed_chars": allowed_agent_visible_chars,
+        "agent_visible_size_ok": agent_visible_size_ok,
+        "delivery_mode": index.delivery_mode,
+        "selected_block_count": len(index.selected_refs),
+        "catalog_group_count": len(index.catalog_groups),
+        "catalog_block_count": len(catalog_refs),
+        "indexed_block_count": len(index.indexed_refs),
+        "catalog_paths": [group.path for group in index.catalog_groups],
         "shape": _shape_profile(result.output),
         "block_count": len(blocks),
         "block_types": sorted({block.block_type for block in blocks}),
         "largest_block_chars": max(block_chars, default=0),
         "oversized_block_count": oversized,
         "raw_exact": raw_exact,
+        "reconstruction_exact": reconstruction_exact,
         "block_hashes_ok": hashes_ok,
         "read_observation_exact": reads_ok,
+        "catalog_read_exact": catalog_reads_ok,
+        "delivery_coverage_ok": delivery_coverage_ok,
+        "delivery_disjoint_ok": delivery_disjoint_ok,
+        "complete_index_ok": complete_index_ok,
+        "profiled_minimum_ok": profiled_minimum_ok,
+        "unprofiled_threshold_ok": unprofiled_threshold_ok,
         "source_derived": source_derived,
+        "source_derived_failures": source_derived_failures,
         "chunking_assessed": chunking_assessed,
         "chunking_ok": chunking_ok,
         "status_semantics_ok": status_semantics_ok,
@@ -394,10 +630,60 @@ def _dynamic_input(
                 )
                 if first_url:
                     resolved["urls"] = [first_url]
+    narrative = prior_results.get("doxa_get_narrative_report")
+    if narrative is None or not narrative.output:
+        narrative = prior_results.get("doxatlas.query")
+    narrative_output = narrative.output if narrative else {}
+    event_scope = _first_doxatlas_event_scope(narrative_output)
+    if tool_name == "doxa_get_analysis":
+        query = prior_results.get("doxa_query_analysis")
+        query_output = query.output if query else {}
+        task_code = _first_named_scalar(query_output, ("task_code",))
+        task_id = _first_named_scalar(query_output, ("task_id",))
+        if task_code:
+            resolved["task_code"] = task_code
+        elif task_id:
+            resolved["task_id"] = task_id
+    if tool_name in {
+        "doxa_query_propositions",
+        "doxa_get_social_result",
+        "doxa_get_social_result_detail",
+        "doxa_get_media_result",
+        "doxa_get_media_result_detail",
+        "doxa_get_event_source",
+        "doxatlas.source_lookup",
+    }:
+        resolved.update(event_scope)
+    if tool_name == "doxa_get_ignored_propositions":
+        run_id = _first_named_scalar(narrative_output, ("run_id",))
+        if run_id:
+            resolved["run_id"] = run_id
+        else:
+            resolved.update(event_scope)
+    if tool_name == "doxa_get_social_result_detail":
+        social = prior_results.get("doxa_get_social_result")
+        social_code = _first_named_scalar(
+            social.output if social else {},
+            ("social_code", "social_result_code"),
+        )
+        if social_code:
+            resolved["social_codes"] = [social_code]
+        else:
+            # Keep the real endpoint call contract-valid even when the selected
+            # event contains no social rows; the provider may return no-data.
+            resolved["social_codes"] = ["S01"]
+    if tool_name == "doxa_get_media_result_detail":
+        media = prior_results.get("doxa_get_media_result")
+        media_code = _first_named_scalar(
+            media.output if media else {},
+            ("media_code", "media_result_code"),
+        )
+        if media_code:
+            resolved["media_codes"] = [media_code]
     return resolved
 
 
-def run(group: str) -> int:
+def run(group: str, tool: str | None = None) -> int:
     settings = DoxAgentSettings()
     registry = default_real_tool_registry(settings)
     langsmith = _langsmith_client(settings)
@@ -406,6 +692,8 @@ def run(group: str) -> int:
     failed_validations = 0
     for group_name, cases in groups.items():
         for position, (tool_name, ticker, base_input) in enumerate(cases, start=1):
+            if tool is not None and tool_name != tool:
+                continue
             input_payload = _dynamic_input(tool_name, base_input, prior_results)
             descriptor = registry.describe(tool_name)
             if descriptor is None:
@@ -463,8 +751,13 @@ def run(group: str) -> int:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--group", choices=["all", *CASES], default="all")
+    parser.add_argument(
+        "--tool",
+        choices=sorted({case[0] for cases in CASES.values() for case in cases}),
+        help="Only call one independent tool from the selected group.",
+    )
     args = parser.parse_args()
-    return run(args.group)
+    return run(args.group, args.tool)
 
 
 if __name__ == "__main__":
