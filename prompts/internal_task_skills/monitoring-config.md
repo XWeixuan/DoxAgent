@@ -2,7 +2,7 @@
 kind = "internal_task_skill"
 id = "monitoring-config"
 name = "Monitoring Config"
-version = "2026.07.07"
+version = "2026.07.15"
 applicable_agents = ["O2"]
 applicable_task_types = ["generate_monitoring_config"]
 workflow_nodes = ["GenerateMonitoringConfig"]
@@ -57,6 +57,13 @@ Use sources by their real interface:
    - media, by parameter
    - `rss_urls` only
    - use for company IR, press releases, regulatory or industry feeds when concrete URLs are known
+
+## Required item id
+
+Every monitoring item must include `item_id`:
+
+- required stable unique id within this document
+- use a compact id such as `mi_001`
 
 ## API shape
 

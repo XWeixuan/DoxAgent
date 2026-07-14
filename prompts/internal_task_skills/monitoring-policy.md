@@ -2,7 +2,7 @@
 kind = "internal_task_skill"
 id = "monitoring-policy"
 name = "Monitoring Policy"
-version = "2026.07.07"
+version = "2026.07.15"
 applicable_agents = ["O4"]
 applicable_task_types = ["generate_monitoring_policy"]
 workflow_nodes = ["GenerateMonitoringPolicy"]
@@ -92,6 +92,7 @@ Every rule must include:
   - `direct_trade`: include `side`, `conviction`, and `size_bucket`
   - `escalate`: include `send_to`, `question`, and `priority`
 - `risk_guard`: what blocks direct trade or forces escalation
+- `strategy_note`: one concise runtime routing and safety note; explain how the system should handle this rule, not why the rule exists
 - `reasoning`: one concise sentence
 
 `confirmation` must not be required for W2 trigger matching. If price or market data is useful, place it in `confirmation` or `risk_guard`, never in `trigger`.

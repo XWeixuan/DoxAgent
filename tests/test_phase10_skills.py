@@ -1,3 +1,4 @@
+from copy import deepcopy
 from pathlib import Path
 
 import pytest
@@ -21,7 +22,14 @@ from doxagent.prompts.registry import default_prompt_registry
 from doxagent.skills import UnknownSkillError, default_skill_registry
 from doxagent.skills.injection import SkillInjector
 from doxagent.workflow_memory import WorkflowMemoryCompiler
-from tests.fixtures.phase1_contracts import agent_task
+from doxagent.workflows.errors import WorkflowContractError
+from doxagent.workflows.output_validation import AgentOutputSchemaValidator
+from tests.fixtures.phase1_contracts import (
+    agent_task,
+    known_events_document,
+    monitoring_config_document,
+    monitoring_policy_document,
+)
 
 PROMPT_ROOT = Path(__file__).resolve().parents[1] / "prompts"
 
@@ -308,6 +316,103 @@ def test_document3_review_skills_auto_inject_only_for_existing_review_nodes() ->
         a1_definition,
     )
     assert "known-events-review" not in a1_injected.prompt_bundle.internal_task_skill_ids
+
+
+def test_document3_generation_skills_state_schema_critical_ids_and_policy_note() -> None:
+    registry = default_prompt_registry()
+
+    known_events = registry.get("known-events").body
+    monitoring_config = registry.get("monitoring-config").body
+    monitoring_policy = registry.get("monitoring-policy").body
+
+    assert "`event_id`:" in known_events
+    assert "required stable unique id within this document" in known_events
+    assert "`ke_001`" in known_events
+    assert "## Required item id" in monitoring_config
+    assert "Every monitoring item must include `item_id`" in monitoring_config
+    assert "`mi_001`" in monitoring_config
+    assert "`strategy_note`: one concise runtime routing and safety note" in monitoring_policy
+    assert "not why the rule exists" in monitoring_policy
+
+
+def test_document3_required_skill_fields_fail_final_schema_validation_when_missing() -> None:
+    validator = AgentOutputSchemaValidator()
+    cases = [
+        (
+            "KnownEventsDocument",
+            known_events_document().model_dump(mode="json"),
+            ("events", 0, "event_id"),
+        ),
+        (
+            "MonitoringConfigDocument",
+            monitoring_config_document().model_dump(mode="json"),
+            ("monitoring_items", 0, "item_id"),
+        ),
+        (
+            "MonitoringPolicyDocument",
+            monitoring_policy_document().model_dump(mode="json"),
+            ("direct_trade_rules", 0, "strategy_note"),
+        ),
+    ]
+
+    for schema_name, payload, (collection, index, field) in cases:
+        invalid = deepcopy(payload)
+        del invalid[collection][index][field]
+        with pytest.raises(WorkflowContractError, match=field):
+            validator.validate_structured(invalid, schema_name)
+
+
+def test_document3_resolve_skills_inject_complete_document_contracts() -> None:
+    agent_registry = default_agent_registry()
+    validator = AgentOutputSchemaValidator()
+
+    o2_definition = agent_registry.get(AgentName.O2_MONITORING_CONFIG)
+    o2_task = agent_task().model_copy(
+        update={
+            "agent_name": AgentName.O2_MONITORING_CONFIG,
+            "task_type": TaskType.RESOLVE_MONITORING_CONFIG,
+            "required_output_schema": "MonitoringConfigDocument",
+            "permissions": o2_definition.runtime.to_permissions(),
+            "run_metadata": agent_task().run_metadata.model_copy(
+                update={"workflow_node": "ResolveMonitoringConfig"}
+            ),
+        },
+        deep=True,
+    )
+    o2_injected = PromptInjector().inject(o2_task, o2_definition)
+    assert "resolve-monitoring-config" in o2_injected.prompt_bundle.internal_task_skill_ids
+    assert "monitoring-config" not in o2_injected.prompt_bundle.internal_task_skill_ids
+    assert "complete revised document, not a patch" in default_prompt_registry().get(
+        "resolve-monitoring-config"
+    ).body
+    validator.validate_structured(
+        monitoring_config_document().model_dump(mode="json"),
+        "MonitoringConfigDocument",
+    )
+
+    o4_definition = agent_registry.get(AgentName.O4_MARKET_TRACE)
+    o4_task = agent_task().model_copy(
+        update={
+            "agent_name": AgentName.O4_MARKET_TRACE,
+            "task_type": TaskType.RESOLVE_MONITORING_POLICY,
+            "required_output_schema": "MonitoringPolicyDocument",
+            "permissions": o4_definition.runtime.to_permissions(),
+            "run_metadata": agent_task().run_metadata.model_copy(
+                update={"workflow_node": "ResolveMonitoringPolicy"}
+            ),
+        },
+        deep=True,
+    )
+    o4_injected = PromptInjector().inject(o4_task, o4_definition)
+    assert "resolve-monitoring-policy" in o4_injected.prompt_bundle.internal_task_skill_ids
+    assert "monitoring-policy" not in o4_injected.prompt_bundle.internal_task_skill_ids
+    assert "complete revised document, not a patch" in default_prompt_registry().get(
+        "resolve-monitoring-policy"
+    ).body
+    validator.validate_structured(
+        monitoring_policy_document().model_dump(mode="json"),
+        "MonitoringPolicyDocument",
+    )
 
 
 def test_c1_c3_task_text_moved_to_internal_task_skills() -> None:

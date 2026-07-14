@@ -2,7 +2,7 @@
 kind = "internal_task_skill"
 id = "known-events"
 name = "Known Events"
-version = "2026.07.07"
+version = "2026.07.15"
 applicable_agents = ["O1"]
 applicable_task_types = ["generate_known_events"]
 workflow_nodes = ["GenerateKnownEvents"]
@@ -53,6 +53,10 @@ Bad:
 - "Bullish narrative N05 moved to first place."
 
 If a fact and its market reaction are both useful, keep the fact in `core_fact`; mention price reaction only in `description` and set `has_price_reaction=true`.
+
+`event_id`:
+- required stable unique id within this document
+- use a compact id such as `ke_001`
 
 ## Field rules
 
