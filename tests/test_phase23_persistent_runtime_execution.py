@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+import sqlite3
 import time
 from datetime import UTC, datetime
 from pathlib import Path
@@ -1179,6 +1181,77 @@ def test_sqlite_runtime_repository_is_idempotent_for_trading_records(tmp_path: P
     assert isinstance(w2_worker, StaticW2)
     assert w1_worker.calls == 1
     assert w2_worker.calls == 1
+
+
+def test_sqlite_runtime_repository_reads_legacy_nested_evidence_refs(tmp_path: Path) -> None:
+    path = tmp_path / "runtime-legacy-evidence.sqlite3"
+    repository = SQLitePersistentRuntimeRepository(path)
+    service = PersistentRuntimeExecutionService(
+        repository,
+        w1_worker=StaticW1(_w1()),
+        w2_worker=StaticW2(_w2()),
+        a2_worker=StaticA2(
+            A2Result(
+                is_new=True,
+                verification_status=A2VerificationStatus.VERIFIED,
+                reasoning="verified social item",
+            )
+        ),
+        o3_worker=StaticO3(
+            O3Result(
+                primary_action=O3PrimaryAction.TRADING_RECORD,
+                trade_intent=TradeIntent(
+                    side=TradeSide.LONG,
+                    conviction=Conviction.MEDIUM,
+                    size_bucket=SizeBucket.SMALL,
+                    reasoning="O3 approved social trade intent",
+                ),
+                reasoning="O3 approved",
+            )
+        ),
+    )
+    service.execute_message(
+        _message(source_type=SourceType.SOCIAL, message_id="std_legacy_evidence")
+    )
+
+    with sqlite3.connect(path) as conn:
+        for table in ("persistent_runtime_executions", "persistent_trading_records"):
+            row = conn.execute(f"select rowid, payload_json from {table}").fetchone()
+            assert row is not None
+            payload = json.loads(row[1])
+            for result_name in ("w1_result", "w2_result", "a2_result", "o3_result"):
+                result = payload.get(result_name)
+                if isinstance(result, dict):
+                    result["evidence_refs"] = [
+                        {"source_type": "legacy", "source_id": "pre-restructure"}
+                    ]
+            conn.execute(
+                f"update {table} set payload_json = ? where rowid = ?",
+                (json.dumps(payload), row[0]),
+            )
+
+    execution = repository.list_executions(ticker="ASTS")[0]
+    trading = repository.list_trading_records(ticker="ASTS")[0]
+
+    assert execution.o3_result is not None
+    assert execution.o3_result.reasoning == "O3 approved"
+    assert trading.o3_result is not None
+    assert trading.o3_result.reasoning == "O3 approved"
+
+    with sqlite3.connect(path) as conn:
+        row = conn.execute(
+            "select rowid, payload_json from persistent_runtime_executions"
+        ).fetchone()
+        assert row is not None
+        payload = json.loads(row[1])
+        payload["o3_result"]["unrelated_unknown_field"] = True
+        conn.execute(
+            "update persistent_runtime_executions set payload_json = ? where rowid = ?",
+            (json.dumps(payload), row[0]),
+        )
+
+    with pytest.raises(ValidationError, match="unrelated_unknown_field"):
+        repository.list_executions(ticker="ASTS")
 
 
 def test_sqlite_runtime_repository_supports_limited_newest_reads(tmp_path: Path) -> None:

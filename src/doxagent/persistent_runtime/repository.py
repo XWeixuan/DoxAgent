@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import sqlite3
 from datetime import datetime
 from pathlib import Path
@@ -22,6 +23,15 @@ from doxagent.persistent_runtime.schema import (
 )
 
 T = TypeVar("T")
+
+_LEGACY_AGENT_RESULT_FIELDS = (
+    "w1_result",
+    "w2_result",
+    "a2_result",
+    "o3_result",
+)
+_LEGACY_AGENT_RESULT_KEYS = frozenset({"evidence_refs"})
+_LEGACY_RUNTIME_PAYLOAD_MODELS = frozenset({RuntimeExecutionRecord, TradingRecord})
 
 
 class PersistentRuntimeRepository(Protocol):
@@ -904,4 +914,33 @@ def _copy_required(item: T) -> T:
 def _model_from_json(model: type[T], value: str) -> T:
     if not hasattr(model, "model_validate_json"):
         raise TypeError("model must be a Pydantic model type.")
-    return model.model_validate_json(value)  # type: ignore[attr-defined, no-any-return]
+    if model not in _LEGACY_RUNTIME_PAYLOAD_MODELS:
+        return model.model_validate_json(value)  # type: ignore[attr-defined, no-any-return]
+    payload = json.loads(value)
+    if not isinstance(payload, dict):
+        return model.model_validate_json(value)  # type: ignore[attr-defined, no-any-return]
+    normalized = _normalize_legacy_agent_results(payload)
+    return model.model_validate(normalized)  # type: ignore[attr-defined, no-any-return]
+
+
+def _normalize_legacy_agent_results(payload: dict[str, Any]) -> dict[str, Any]:
+    """Remove only fields retired from persisted pre-restructure agent results.
+
+    Current writes remain strict. This read-boundary compatibility keeps durable
+    runtime history usable after Evidence Ref moved out of W1/W2/A2/O3 result
+    contracts, while still rejecting every unrelated unknown field.
+    """
+
+    normalized = dict(payload)
+    for field_name in _LEGACY_AGENT_RESULT_FIELDS:
+        result = normalized.get(field_name)
+        if not isinstance(result, dict):
+            continue
+        legacy_keys = _LEGACY_AGENT_RESULT_KEYS.intersection(result)
+        if not legacy_keys:
+            continue
+        current_result = dict(result)
+        for key in legacy_keys:
+            current_result.pop(key, None)
+        normalized[field_name] = current_result
+    return normalized
