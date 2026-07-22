@@ -1,0 +1,60 @@
+{
+  "manifest_version": "step2-eval-v1",
+  "query": {
+    "market": "US",
+    "ticker": "MU",
+    "utc_date": "2026-06-25",
+    "minimum_text_chars": 200,
+    "baseline_row_count": 153
+  },
+  "selection_policy": {
+    "long": "all rows with text_chars >= 10000",
+    "medium": "10 rows with 2000 <= text_chars < 10000, source round-robin",
+    "short": "10 rows with 200 <= text_chars < 2000, source round-robin",
+    "minimum_distinct_sources": 8
+  },
+  "annotation_status": "PENDING_M4_AND_HUMAN_REVIEW_ARREARAGE",
+  "rows": [
+    {"source_row_id":"8495e99e-7baa-4f3b-8b78-3d7d968cc896","document_fingerprint":"6b08ace18c6fab69aba42650b0b1fb12fbb9a65be8adf7953781b99d80d7bfb3","length_bucket":"long","text_chars":45210,"source_name":"benzinga.com","expected_event_families":["FINANCIAL_PERFORMANCE","GUIDANCE_EXPECTATION","COMMERCIAL_OPERATION"],"review_status":"PENDING"},
+    {"source_row_id":"b2adb81b-fb27-4d4a-bc09-75fd0641ccae","document_fingerprint":"8b40e369ea79d2b003cc7989151788aff1f6cebc929ef882755a7a5d25fb827a","length_bucket":"long","text_chars":13968,"source_name":"proactiveinvestors.com","expected_event_families":["MARKET_MOVEMENT","FINANCIAL_PERFORMANCE"],"review_status":"PENDING"},
+    {"source_row_id":"c7bf3123-35a2-475b-8f79-591807726a8c","document_fingerprint":"2a99e687ddb6599edf422c1371a5bfb1e29452965d0203a7b73e09720fc9bca9","length_bucket":"long","text_chars":200252,"source_name":"investorshub.advfn.com","expected_event_families":["MARKET_MOVEMENT"],"review_status":"PENDING"},
+    {"source_row_id":"ef40e27c-58ea-4319-aaf6-34b56c801d7f","document_fingerprint":"c0032c43967320b7e48451ec689e13d2ebe293330181a323255c32eb5c91fc96","length_bucket":"long","text_chars":18384,"source_name":"zerohedge.com","expected_event_families":["FINANCIAL_PERFORMANCE","MARKET_MOVEMENT"],"review_status":"PENDING"},
+    {"source_row_id":"1e515897-64d4-4896-b936-10a04501eff4","document_fingerprint":"092a113c8ac37bf6d8719112498b9de0900b4cae02040c3d73887af778724e8e","length_bucket":"medium","text_chars":4235,"source_name":"247wallst.com","expected_event_families":["FINANCIAL_PERFORMANCE","COMMERCIAL_OPERATION"],"review_status":"PENDING"},
+    {"source_row_id":"181db9d6-5959-4fb0-947e-3c6680861566","document_fingerprint":"85d6a15b47d8ac6507d96c811fa0d72292f21fe848b77df63d47a99f652fca8b","length_bucket":"medium","text_chars":2547,"source_name":"barchart.com","expected_event_families":["FINANCIAL_PERFORMANCE","MARKET_MOVEMENT"],"review_status":"PENDING"},
+    {"source_row_id":"3f25dec4-7f5f-4203-9e0f-d37c2b06a2c7","document_fingerprint":"5156400756755823c30f32abf1b6466067cb9a4ddc8012593ed652b2aa35a62d","length_bucket":"medium","text_chars":2149,"source_name":"beincrypto.com","expected_event_families":["MARKET_MOVEMENT"],"review_status":"PENDING"},
+    {"source_row_id":"005d3637-8724-483c-9077-7f643d3fa481","document_fingerprint":"f1643805e2aa17e7efcf1f4491761bd17749d7d1185c9e31b2cc0378efcf9dcc","length_bucket":"medium","text_chars":2222,"source_name":"benzinga.com","expected_event_families":["GUIDANCE_EXPECTATION","COMMERCIAL_OPERATION"],"review_status":"PENDING"},
+    {"source_row_id":"82a85f82-b2b3-4ee3-aac4-15a783a99742","document_fingerprint":"534c8d2faf564ad28b50b9e137a9b78660508e46df43d93993994de1cb948042","length_bucket":"medium","text_chars":4066,"source_name":"cnbc.com","expected_event_families":["MARKET_MOVEMENT"],"review_status":"PENDING"},
+    {"source_row_id":"1aaec309-8ccb-42d6-b974-b4aa3bf2d43c","document_fingerprint":"18efeec267b946ffff87bfa43d32417952887ab33abfdc75d2e84f06b6868446","length_bucket":"medium","text_chars":2292,"source_name":"edition.cnn.com","expected_event_families":["FINANCIAL_PERFORMANCE","MARKET_MOVEMENT"],"review_status":"PENDING"},
+    {"source_row_id":"2b5bba2a-e472-4a1f-a341-5be6e4286dd1","document_fingerprint":"cbb0aac37db4e729cb4ea3237049e2291b757dea153b39757c83a677772d1a4e","length_bucket":"medium","text_chars":3257,"source_name":"euronews.com","expected_event_families":["FINANCIAL_PERFORMANCE","GUIDANCE_EXPECTATION"],"review_status":"PENDING"},
+    {"source_row_id":"035dc207-3eaf-4042-8518-a42f7bf389bf","document_fingerprint":"8e0ab7d49ed14c5ddad16a08ae12be07eecc45fc7f31572a4eefeeda7186de08","length_bucket":"medium","text_chars":3038,"source_name":"finance.yahoo.com","expected_event_families":["FINANCIAL_PERFORMANCE","GUIDANCE_EXPECTATION","COMMERCIAL_OPERATION"],"review_status":"PENDING"},
+    {"source_row_id":"34fc2a61-fa6e-4db0-8e39-f862da0af41c","document_fingerprint":"46bcec283843aa6562572d9f906f3dfc5695c7ddbeca5a931ecd3792a5119b64","length_bucket":"medium","text_chars":2797,"source_name":"fool.com","expected_event_families":["FINANCIAL_PERFORMANCE"],"review_status":"PENDING"},
+    {"source_row_id":"6b5d042a-9236-453b-8b60-2ba6c2f16b4f","document_fingerprint":"1ca3e5bd8ade77f4d34071123b16e965bf5e2ba91fe37caced8f2d08c5ed4af9","length_bucket":"medium","text_chars":3360,"source_name":"proactiveinvestors.com","expected_event_families":["MARKET_MOVEMENT","COMMERCIAL_OPERATION","FINANCIAL_PERFORMANCE"],"review_status":"PENDING"},
+    {"source_row_id":"ae21326b-3096-42e7-9759-e34211c8c291","document_fingerprint":"1f8d3f802ef2ee797c67375a41899ad1a0fc6c838ef7975348049ff14c9ddc71","length_bucket":"short","text_chars":214,"source_name":"Benzinga","expected_event_families":["MARKET_MOVEMENT","PRODUCTION_SUPPLY"],"review_status":"PENDING"},
+    {"source_row_id":"03ae793d-50b9-4c3e-9719-0e4efede5dd5","document_fingerprint":"6ff0a4733539f68f46118d3c25e7f1a86d4a27e9422f14b21c2493daab82efff","length_bucket":"short","text_chars":744,"source_name":"benzinga.com","expected_event_families":["MARKET_MOVEMENT"],"review_status":"PENDING"},
+    {"source_row_id":"6e04e5e6-801c-4141-ac0f-81d29029b012","document_fingerprint":"6b52fc0e72773a672c622f224893e1a8358026e596a1d6aeea2bfe2fc818d965","length_bucket":"short","text_chars":235,"source_name":"CNBC","expected_event_families":["FINANCIAL_PERFORMANCE","MARKET_MOVEMENT"],"review_status":"PENDING"},
+    {"source_row_id":"152d58e0-fda1-4a21-a3c2-358c2fc90972","document_fingerprint":"b6b911797cb9c7f9ac75f1bcc729d176ecbce7b5f5b28d9165cbee6e44ce000d","length_bucket":"short","text_chars":363,"source_name":"cnbc.com","expected_event_families":["MARKET_MOVEMENT"],"review_status":"PENDING"},
+    {"source_row_id":"19c03d9f-7bf4-46d0-b524-a4c06ae37f4d","document_fingerprint":"3552646c4bec8a8058af26884f1d491909e2ee4ef98f1ff2e4d46a5d5bac63a6","length_bucket":"short","text_chars":504,"source_name":"developers.cloudflare.com","expected_event_families":["MARKET_MOVEMENT"],"review_status":"PENDING"},
+    {"source_row_id":"07d797f2-5934-434c-b359-4cdad6bdec42","document_fingerprint":"b1bbf1ee7baddb8a059329feb89cca88ad4a84c0e59ff70a4a6ee6f2bc78ca05","length_bucket":"short","text_chars":295,"source_name":"finance.yahoo.com","expected_event_families":["MARKET_MOVEMENT"],"review_status":"PENDING"},
+    {"source_row_id":"35a4333e-6608-482b-b963-ba2f64392063","document_fingerprint":"749f4c39197ac4d059f8d195fcee7f49eed75a34d981507f6e78773d82056f64","length_bucket":"short","text_chars":1850,"source_name":"fool.com","expected_event_families":["MARKET_MOVEMENT","FINANCIAL_PERFORMANCE"],"review_status":"PENDING"},
+    {"source_row_id":"03a5e9f2-6101-4d6c-a9cc-37eb95cee1de","document_fingerprint":"a2fccf52fc1fe64fdfbcced2ccfa92cb74bab4afdd32cefd9526f65f2f465de6","length_bucket":"short","text_chars":208,"source_name":"Yahoo","expected_event_families":["MARKET_MOVEMENT"],"review_status":"PENDING"},
+    {"source_row_id":"fce73732-1c68-4d0f-9d7f-c5800393ffff","document_fingerprint":"be7286a6b764fe4dd1b6b6b9af8145cecdae25bef1e03f2ed09e1ee353c2be99","length_bucket":"short","text_chars":248,"source_name":"Benzinga","expected_event_families":["FINANCIAL_PERFORMANCE","MARKET_MOVEMENT"],"review_status":"PENDING"},
+    {"source_row_id":"1516d084-62ab-4c8a-a7f3-e635c464425a","document_fingerprint":"7392141f6fa10c7e4152e37c09b95d2b64245bd22ef4ead36979331ae2c0a021","length_bucket":"short","text_chars":376,"source_name":"benzinga.com","expected_event_families":["ANALYST_ACTION"],"review_status":"PENDING"}
+  ],
+  "aggregate_metrics": {
+    "selected_documents": 24,
+    "long_documents": 4,
+    "medium_documents": 10,
+    "short_documents": 10,
+    "distinct_source_labels": 16,
+    "documents_completed_or_audited": null,
+    "valid_mention_schema_rate": null,
+    "valid_evidence_span_rate": null,
+    "event_recall": null,
+    "mention_precision": null,
+    "financial_projection_core_accuracy": null,
+    "unsupported_evidence_count": null,
+    "forced_wrong_normalization_count": null,
+    "idempotent_rerun_new_model_calls": null,
+    "idempotent_rerun_new_mentions": null
+  }
+}

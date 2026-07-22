@@ -1,0 +1,1 @@
+"""Packaged, versioned normalization catalogs."""

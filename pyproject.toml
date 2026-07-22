@@ -27,6 +27,9 @@ dependencies = [
     "uvicorn[standard]>=0.32,<1",
 ]
 
+[project.scripts]
+cdecr = "cdecr.cli:main"
+
 [dependency-groups]
 dev = [
     "mypy>=1.18,<2",
@@ -37,7 +40,7 @@ dev = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/doxagent"]
+packages = ["src/doxagent", "src/cdecr"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -45,6 +48,9 @@ asyncio_mode = "auto"
 markers = [
     "real_api: tests that call real external free-tier APIs and consume quota",
     "real_db: tests that connect to real Supabase/Postgres persistence",
+    "cdecr_real_models: CDECR tests that consume real DashScope model quota",
+    "cdecr_real_db: CDECR tests that read the real DoxAtlas Supabase project",
+    "cdecr_real_step2: CDECR 24-document step-two quality and idempotence acceptance",
 ]
 
 [tool.ruff]
@@ -57,7 +63,7 @@ select = ["E", "F", "I", "UP", "B"]
 
 [tool.mypy]
 python_version = "3.11"
-packages = ["doxagent"]
+packages = ["doxagent", "cdecr"]
 strict = true
 warn_unreachable = true
 warn_unused_ignores = true

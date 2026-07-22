@@ -1,0 +1,15 @@
+{
+  "version": "metrics-v1",
+  "entries": [
+    {"canonical_id": "REVENUE", "label": "Revenue", "aliases": ["revenue", "sales", "net sales", "营收", "收入"]},
+    {"canonical_id": "NET_INCOME_GAAP", "label": "GAAP net income", "aliases": ["gaap net income", "net income", "GAAP净利润"]},
+    {"canonical_id": "NET_INCOME_NON_GAAP", "label": "Non-GAAP net income", "aliases": ["non-gaap net income", "adjusted net income", "非GAAP净利润"]},
+    {"canonical_id": "EPS_GAAP", "label": "GAAP diluted earnings per share", "aliases": ["gaap eps", "diluted eps", "earnings per share", "每股收益"]},
+    {"canonical_id": "EPS_NON_GAAP", "label": "Non-GAAP earnings per share", "aliases": ["non-gaap eps", "adjusted eps"]},
+    {"canonical_id": "CAPEX", "label": "Capital expenditure", "aliases": ["capex", "capital expenditure", "capital spending", "资本开支"]},
+    {"canonical_id": "GROSS_MARGIN", "label": "Gross margin", "aliases": ["gross margin", "毛利率"]},
+    {"canonical_id": "OPERATING_MARGIN", "label": "Operating margin", "aliases": ["operating margin", "营业利润率"]},
+    {"canonical_id": "PRICE_TARGET", "label": "Price target", "aliases": ["price target", "target price", "目标价"]},
+    {"canonical_id": "UNKNOWN_METRIC", "label": "Unknown metric", "aliases": []}
+  ]
+}

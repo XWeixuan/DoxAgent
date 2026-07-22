@@ -1,0 +1,13 @@
+{
+  "version": "entities-v1",
+  "entries": [
+    {"canonical_id": "COMPANY_MU", "label": "Micron Technology", "aliases": ["Micron", "Micron Technology", "Micron Technology Inc", "MU"]},
+    {"canonical_id": "INSTITUTION_GOLDMAN_SACHS", "label": "Goldman Sachs", "aliases": ["Goldman", "Goldman Sachs"]},
+    {"canonical_id": "INSTITUTION_MORGAN_STANLEY", "label": "Morgan Stanley", "aliases": ["Morgan Stanley"]},
+    {"canonical_id": "INSTITUTION_JPMORGAN", "label": "JPMorgan", "aliases": ["JPMorgan", "JP Morgan", "J.P. Morgan"]},
+    {"canonical_id": "INSTITUTION_CITI", "label": "Citigroup", "aliases": ["Citi", "Citigroup"]},
+    {"canonical_id": "INSTITUTION_BANK_OF_AMERICA", "label": "Bank of America", "aliases": ["Bank of America", "BofA"]},
+    {"canonical_id": "INSTITUTION_UBS", "label": "UBS", "aliases": ["UBS"]},
+    {"canonical_id": "INSTITUTION_BERNSTEIN", "label": "Bernstein", "aliases": ["Bernstein"]}
+  ]
+}

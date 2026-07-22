@@ -1,0 +1,10 @@
+{
+  "version": "fiscal-periods-v1",
+  "entries": [
+    {"period_id": "COMPANY_MU_FY2026_Q1", "company_id": "COMPANY_MU", "fiscal_year": 2026, "fiscal_quarter": 1, "start_date": "2025-08-29", "end_date": "2025-11-27", "aliases": ["FY2026 Q1", "fiscal first quarter 2026", "first quarter of fiscal 2026"]},
+    {"period_id": "COMPANY_MU_FY2026_Q2", "company_id": "COMPANY_MU", "fiscal_year": 2026, "fiscal_quarter": 2, "start_date": "2025-11-28", "end_date": "2026-02-26", "aliases": ["FY2026 Q2", "fiscal second quarter 2026", "second quarter of fiscal 2026"]},
+    {"period_id": "COMPANY_MU_FY2026_Q3", "company_id": "COMPANY_MU", "fiscal_year": 2026, "fiscal_quarter": 3, "start_date": "2026-02-27", "end_date": "2026-05-28", "aliases": ["FY2026 Q3", "fiscal third quarter 2026", "third quarter of fiscal 2026"]},
+    {"period_id": "COMPANY_MU_FY2026_Q4", "company_id": "COMPANY_MU", "fiscal_year": 2026, "fiscal_quarter": 4, "start_date": "2026-05-29", "end_date": "2026-09-03", "aliases": ["FY2026 Q4", "fiscal fourth quarter 2026", "fourth quarter of fiscal 2026"]},
+    {"period_id": "COMPANY_MU_FY2026", "company_id": "COMPANY_MU", "fiscal_year": 2026, "fiscal_quarter": null, "start_date": "2025-08-29", "end_date": "2026-09-03", "aliases": ["FY2026", "fiscal 2026", "fiscal year 2026"]}
+  ]
+}

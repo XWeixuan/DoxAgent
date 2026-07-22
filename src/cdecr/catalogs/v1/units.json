@@ -1,0 +1,6 @@
+{
+  "version": "units-v1",
+  "currencies": {"$": "USD", "USD": "USD", "US$": "USD", "¥": "CNY", "CNY": "CNY", "RMB": "CNY", "€": "EUR", "EUR": "EUR", "£": "GBP", "GBP": "GBP"},
+  "units": {"%": "PERCENT", "percent": "PERCENT", "percentage points": "PERCENTAGE_POINTS", "bp": "BASIS_POINTS", "bps": "BASIS_POINTS", "basis points": "BASIS_POINTS"},
+  "multipliers": {"K": 1000, "THOUSAND": 1000, "M": 1000000, "MILLION": 1000000, "B": 1000000000, "BILLION": 1000000000}
+}
