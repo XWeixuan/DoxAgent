@@ -132,6 +132,7 @@ from cdecr.ports import (
     StructuredModelRequest,
     StructuredModelResult,
 )
+from cdecr.scheduler import take_scheduled_call_metrics
 from cdecr.single_document_contracts import ModelCallSummary
 
 ENGINE_VERSION = "cdecr-cross-document-v13"
@@ -173,6 +174,35 @@ class CrossDocumentPipelineError(RuntimeError):
 def _hash_json(value: object) -> str:
     payload = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def _structured_request_metadata(request: StructuredModelRequest) -> dict[str, object]:
+    try:
+        payload: object = json.loads(request.user_prompt)
+    except json.JSONDecodeError:
+        payload = None
+    request_item_count = 1
+    candidate_count = 0
+    if isinstance(payload, dict):
+        for key in ("mentions", "events", "pairs", "tasks", "candidates"):
+            value = payload.get(key)
+            if isinstance(value, (list, dict)):
+                request_item_count = max(request_item_count, len(value))
+                if "candidate" in key:
+                    candidate_count = max(candidate_count, len(value))
+    return {
+        "batch_key": _hash_json(
+            {"schema": request.json_schema, "user": request.user_prompt}
+        )[:24],
+        "request_item_count": request_item_count,
+        "candidate_count": candidate_count,
+        "request_payload_bytes": len(request.user_prompt.encode("utf-8")),
+    }
+
+
+def _metadata_int(metadata: dict[str, object], key: str) -> int:
+    value = metadata.get(key)
+    return value if isinstance(value, int) else 0
 
 
 def _resolved_field_ids(
@@ -267,9 +297,11 @@ class _AuditedModels:
     def embed(self, texts: Sequence[str], *, stage: str) -> EmbeddingResult:
         call_id = str(uuid.uuid4())
         input_hash = _hash_json(list(texts))
+        payload_bytes = sum(len(value.encode("utf-8")) for value in texts)
         try:
             result = self.embedding_client.embed(texts)
         except Exception as exc:
+            scheduled = take_scheduled_call_metrics(self.embedding_client)
             latency, code = _safe_error(exc)
             self.registry.record_model_call(
                 model_call_id=call_id,
@@ -281,7 +313,13 @@ class _AuditedModels:
                 output_tokens=None,
                 latency_ms=latency,
                 error_code=code,
-                metadata={"input_count": len(texts)},
+                metadata={
+                    "attempt": "initial",
+                    "request_item_count": len(texts),
+                    "request_payload_bytes": payload_bytes,
+                    "queue_wait_ms": scheduled.queue_wait_ms if scheduled else 0,
+                    "cache_hit": False,
+                },
                 stage=stage,
                 prompt_version=PROMPT_VERSION,
                 input_hash=input_hash,
@@ -294,9 +332,13 @@ class _AuditedModels:
                     latency_ms=latency,
                     status="FAILED",
                     error_code=code,
+                    queue_wait_ms=scheduled.queue_wait_ms if scheduled else 0,
+                    request_item_count=len(texts),
+                    request_payload_bytes=payload_bytes,
                 )
             )
             raise CrossDocumentPipelineError(stage, code) from exc
+        scheduled = take_scheduled_call_metrics(self.embedding_client)
         self.registry.record_model_call(
             model_call_id=call_id,
             run_id=self.run_id,
@@ -307,7 +349,14 @@ class _AuditedModels:
             output_tokens=None,
             latency_ms=result.latency_ms,
             error_code=None,
-            metadata={"input_count": len(texts), "dimensions": result.dimensions},
+            metadata={
+                "attempt": "initial",
+                "request_item_count": len(texts),
+                "request_payload_bytes": payload_bytes,
+                "queue_wait_ms": scheduled.queue_wait_ms if scheduled else 0,
+                "dimensions": result.dimensions,
+                "cache_hit": False,
+            },
             stage=stage,
             prompt_version=PROMPT_VERSION,
             input_hash=input_hash,
@@ -319,6 +368,9 @@ class _AuditedModels:
                 model=result.model,
                 input_tokens=result.input_tokens,
                 latency_ms=result.latency_ms,
+                queue_wait_ms=scheduled.queue_wait_ms if scheduled else 0,
+                request_item_count=len(texts),
+                request_payload_bytes=payload_bytes,
             )
         )
         return result
@@ -469,9 +521,11 @@ class _AuditedModels:
         call_id = str(uuid.uuid4())
         input_hash = _hash_json({"system": request.system_prompt, "user": request.user_prompt})
         schema_hash = _hash_json(request.json_schema)
+        request_metadata = _structured_request_metadata(request)
         try:
             result = client.complete(request)
         except Exception as exc:
+            scheduled = take_scheduled_call_metrics(client)
             latency, code = _safe_error(exc)
             self.registry.record_model_call(
                 model_call_id=call_id,
@@ -483,7 +537,12 @@ class _AuditedModels:
                 output_tokens=exc.output_tokens if isinstance(exc, ModelAdapterError) else None,
                 latency_ms=latency,
                 error_code=code,
-                metadata={},
+                metadata={
+                    **request_metadata,
+                    "attempt": "repair" if repaired else "initial",
+                    "queue_wait_ms": scheduled.queue_wait_ms if scheduled else 0,
+                    "cache_hit": False,
+                },
                 stage=call_stage,
                 prompt_version=PROMPT_VERSION,
                 schema_hash=schema_hash,
@@ -502,6 +561,14 @@ class _AuditedModels:
                     status="FAILED",
                     error_code=code,
                     repaired=repaired,
+                    queue_wait_ms=scheduled.queue_wait_ms if scheduled else 0,
+                    request_item_count=_metadata_int(
+                        request_metadata, "request_item_count"
+                    ),
+                    candidate_count=_metadata_int(request_metadata, "candidate_count"),
+                    request_payload_bytes=_metadata_int(
+                        request_metadata, "request_payload_bytes"
+                    ),
                 )
             )
             raise CrossDocumentPipelineError(
@@ -511,6 +578,7 @@ class _AuditedModels:
                     exc.raw_response_text if isinstance(exc, ModelAdapterError) else None
                 ),
             ) from exc
+        scheduled = take_scheduled_call_metrics(client)
         self.registry.record_model_call(
             model_call_id=call_id,
             run_id=self.run_id,
@@ -521,7 +589,13 @@ class _AuditedModels:
             output_tokens=result.output_tokens,
             latency_ms=result.latency_ms,
             error_code=None,
-            metadata={},
+            metadata={
+                **request_metadata,
+                "attempt": "repair" if repaired else "initial",
+                "queue_wait_ms": scheduled.queue_wait_ms if scheduled else 0,
+                "output_hash": _hash_json(result.payload),
+                "cache_hit": False,
+            },
             stage=call_stage,
             prompt_version=PROMPT_VERSION,
             schema_hash=schema_hash,
@@ -536,6 +610,14 @@ class _AuditedModels:
                 output_tokens=result.output_tokens,
                 latency_ms=result.latency_ms,
                 repaired=repaired,
+                queue_wait_ms=scheduled.queue_wait_ms if scheduled else 0,
+                request_item_count=_metadata_int(
+                    request_metadata, "request_item_count"
+                ),
+                candidate_count=_metadata_int(request_metadata, "candidate_count"),
+                request_payload_bytes=_metadata_int(
+                    request_metadata, "request_payload_bytes"
+                ),
             )
         )
         return result
@@ -633,6 +715,15 @@ class CrossDocumentEngine:
             else self.registry.list_mentions_for_message(message_id)
         )
         mentions.sort(key=lambda item: item.mention_id)
+        run_id = str(uuid.uuid4())
+        started_at = datetime.now(UTC)
+        self.registry.start_cross_document_trace(
+            trace_id=run_id,
+            message_id=message_id,
+            engine_version=ENGINE_VERSION,
+            prompt_version=PROMPT_VERSION,
+            model_config=self.model_config,
+        )
         field_resolver = FieldCoreferenceResolver(
             registry=self.registry,
             embedding_client=self.embedding_client,
@@ -646,20 +737,12 @@ class CrossDocumentEngine:
             field_resolver=field_resolver,
         )
         try:
-            field_summary = canonical_fields.resolve_document(source, mentions)
-            canonical_fields.resolve_package_hints(source, mentions)
+            field_summary = canonical_fields.resolve_document(
+                source, mentions, run_id=run_id
+            )
+            canonical_fields.resolve_package_hints(source, mentions, run_id=run_id)
         except Exception as exc:
             processing_key = self.processing_key(message_id, mentions)
-            run_id = str(uuid.uuid4())
-            started_at = datetime.now(UTC)
-            self.registry.start_cross_document_run(
-                run_id=run_id,
-                processing_key=processing_key,
-                message_id=message_id,
-                engine_version=ENGINE_VERSION,
-                prompt_version=PROMPT_VERSION,
-                model_config=self.model_config,
-            )
             error_code = str(getattr(exc, "code", type(exc).__name__))
             self.registry.append_decision_audit(
                 DecisionAuditRecord(
@@ -703,10 +786,9 @@ class CrossDocumentEngine:
         processing_key = self.processing_key(message_id, mentions)
         completed = self.registry.get_completed_cross_document_result(processing_key)
         if completed is not None:
+            self.registry.finish_cross_document_trace(run_id, status="REUSED")
             return completed.model_copy(update={"reused": True, "model_calls": []})
 
-        run_id = str(uuid.uuid4())
-        started_at = datetime.now(UTC)
         started = self.registry.start_cross_document_run(
             run_id=run_id,
             processing_key=processing_key,
@@ -718,6 +800,7 @@ class CrossDocumentEngine:
         if not started:
             completed = self.registry.get_completed_cross_document_result(processing_key)
             if completed is not None:
+                self.registry.finish_cross_document_trace(run_id, status="REUSED")
                 return completed.model_copy(update={"reused": True, "model_calls": []})
             raise CrossDocumentPipelineError("registry", "run_not_started")
 
@@ -771,15 +854,20 @@ class CrossDocumentEngine:
                     "IDENTITY_FIELDS_UNRESOLVED",
                 )
             current_events = self.registry.list_current_atomic_events(limit=10000)
-            atomic_vectors = self._sync_atomic_embeddings(current_events, models)
-            mention_vectors = self._embed_mentions(
-                [
-                    mention
-                    for mention in mentions
-                    if compiled[mention.mention_id].identity_profile is not None
-                ],
-                models,
-            )
+            eligible_mentions = [
+                mention
+                for mention in mentions
+                if compiled[mention.mention_id].identity_profile is not None
+            ]
+            with ThreadPoolExecutor(max_workers=2) as embedding_executor:
+                atomic_future = embedding_executor.submit(
+                    self._sync_atomic_embeddings, current_events, models
+                )
+                mention_future = embedding_executor.submit(
+                    self._embed_mentions, eligible_mentions, models
+                )
+                atomic_vectors = atomic_future.result()
+                mention_vectors = mention_future.result()
             candidates = self._atomic_candidates(
                 mentions,
                 mention_vectors,
@@ -808,8 +896,6 @@ class CrossDocumentEngine:
                 mentions,
                 mention_vectors,
                 models,
-                source,
-                canonical_fields,
                 run_id=run_id,
                 candidate_counts=candidate_counts,
             )
@@ -1789,6 +1875,22 @@ class CrossDocumentEngine:
                     subject_id=mention.mention_id,
                     payload={
                         "assignment": record.model_dump(mode="json"),
+                        "incoming_mention_hash": _hash_json(
+                            mention.model_dump(mode="json")
+                        ),
+                        "candidate_refs": [
+                            {
+                                "event_id": candidate.event.event_id,
+                                "version": candidate.event.version,
+                                "identity_hash": _hash_json(
+                                    candidate.event.identity_profile.model_dump(
+                                        mode="json"
+                                    )
+                                ),
+                            }
+                            for candidate in candidates.get(mention.mention_id, [])
+                        ],
+                        "resulting_event_version": event.version,
                         "n9_decision": (
                             None
                             if decision is None
@@ -1915,12 +2017,13 @@ class CrossDocumentEngine:
                 vectors[package.package_id] = current.vector
             else:
                 missing.append((package, text, input_hash))
-        if missing:
+        for offset in range(0, len(missing), 10):
+            batch = missing[offset : offset + 10]
             result = models.embed(
-                [text for _, text, _ in missing], stage="package_embedding_m1"
+                [text for _, text, _ in batch], stage="package_embedding_m1"
             )
             for (package, _, input_hash), vector in zip(
-                missing, result.vectors, strict=True
+                batch, result.vectors, strict=True
             ):
                 self.registry.save_embedding(
                     owner_kind="event_package",
@@ -1936,12 +2039,7 @@ class CrossDocumentEngine:
         self,
         event: AtomicEvent,
         mentions: list[EventMention],
-        canonical_fields: CanonicalFieldResolutionEngine,
-        source: SourceMessage,
-        *,
-        run_id: str,
     ) -> tuple[PackageSeed, str, str, str]:
-        canonical_fields.resolve_package_hints(source, mentions, run_id=run_id)
         seed = package_seed_for_event(event, mentions)
         resolved_fields = _resolved_field_ids(
             self.registry,
@@ -2109,15 +2207,35 @@ class CrossDocumentEngine:
         if not unresolved:
             return {}
         unresolved_ids = sorted(unresolved)
-        batches = [
-            unresolved_ids[offset : offset + PACKAGE_DECISION_EVENT_BATCH]
-            for offset in range(0, len(unresolved_ids), PACKAGE_DECISION_EVENT_BATCH)
-        ]
+        tiered_ids: dict[ModelTier, list[str]] = {
+            ModelTier.M2: [],
+            ModelTier.M3: [],
+        }
+        for event_id in unresolved_ids:
+            complex_decision = (
+                len(unresolved[event_id]) > 1
+                or seeds[event_id].anchor_conflict
+                or (
+                    seeds[event_id].package_kind is PackageKind.BOUNDED
+                    and not seeds[event_id].package_anchor_ids
+                    and not seeds[event_id].anchor_artifact_id
+                )
+            )
+            tiered_ids[
+                ModelTier.M3 if complex_decision else ModelTier.M2
+            ].append(event_id)
+        batches: list[tuple[ModelTier, list[str]]] = []
+        for tier in (ModelTier.M2, ModelTier.M3):
+            values = tiered_ids[tier]
+            batches.extend(
+                (tier, values[offset : offset + PACKAGE_DECISION_EVENT_BATCH])
+                for offset in range(0, len(values), PACKAGE_DECISION_EVENT_BATCH)
+            )
 
         def process_batch(
-            indexed_batch: tuple[int, list[str]],
+            indexed_batch: tuple[int, tuple[ModelTier, list[str]]],
         ) -> tuple[int, PackageDecisionBatch]:
-            batch_index, event_ids = indexed_batch
+            batch_index, (tier, event_ids) = indexed_batch
             event_short_by_full = {
                 event_id: f"e{index}"
                 for index, event_id in enumerate(event_ids, start=1)
@@ -2142,20 +2260,6 @@ class CrossDocumentEngine:
                 )
                 for event_id in event_ids
             }
-            tier = (
-                ModelTier.M3
-                if any(
-                    len(unresolved[event_id]) > 1
-                    or seeds[event_id].anchor_conflict
-                    or (
-                        seeds[event_id].package_kind is PackageKind.BOUNDED
-                        and not seeds[event_id].package_anchor_ids
-                        and not seeds[event_id].anchor_artifact_id
-                    )
-                    for event_id in event_ids
-                )
-                else ModelTier.M2
-            )
             model_events: dict[str, object] = {}
             model_seeds: dict[str, object] = {}
             model_candidates: dict[str, list[object]] = {}
@@ -2295,6 +2399,8 @@ class CrossDocumentEngine:
         package_id: str,
         compiler: PackageProfileCompiler,
         models: _AuditedModels,
+        *,
+        sync_embedding: bool = True,
     ) -> EventPackage | None:
         package = self.registry.get_current_package(package_id)
         if package is None:
@@ -2318,7 +2424,8 @@ class CrossDocumentEngine:
             )
         if rebuilt.version != package.version:
             self.registry.save_package(rebuilt)
-        self._sync_package_embeddings([rebuilt], models)
+        if sync_embedding:
+            self._sync_package_embeddings([rebuilt], models)
         return rebuilt
 
     def _assign_packages_v13(
@@ -2327,8 +2434,6 @@ class CrossDocumentEngine:
         article_mentions: list[EventMention],
         mention_vectors: dict[str, list[float]],
         models: _AuditedModels,
-        source: SourceMessage,
-        canonical_fields: CanonicalFieldResolutionEngine,
         *,
         run_id: str,
         candidate_counts: dict[str, int],
@@ -2370,9 +2475,6 @@ class CrossDocumentEngine:
             seed, assignment_key, seed_hash, links_hash = self._package_seed_and_key(
                 event,
                 mentions,
-                canonical_fields,
-                source,
-                run_id=run_id,
             )
             seeds[event.event_id] = seed
             keys[event.event_id] = (assignment_key, seed_hash, links_hash)
@@ -2420,6 +2522,7 @@ class CrossDocumentEngine:
             models=models,
         )
         packages: dict[str, EventPackage] = {}
+        dirty_packages: dict[str, EventPackage] = {}
         assignments: list[PackageAssignmentRecord] = []
         for event in events:
             assignment_key, seed_hash, links_hash = keys[event.event_id]
@@ -2572,11 +2675,15 @@ class CrossDocumentEngine:
                     )
                 )
                 rebuilt = self._rebuild_package_after_membership_change(
-                    previous.package_id, compiler, models
+                    previous.package_id,
+                    compiler,
+                    models,
+                    sync_embedding=False,
                 )
                 if rebuilt is not None:
                     packages[rebuilt.package_id] = rebuilt
-            self._sync_package_embeddings([package], models)
+                    dirty_packages[rebuilt.package_id] = rebuilt
+            dirty_packages[package.package_id] = package
             packages[package.package_id] = package
             for assessment in assessments:
                 if (
@@ -2626,10 +2733,34 @@ class CrossDocumentEngine:
                     run_id=run_id,
                     decision_type="PACKAGE_ASSIGNMENT",
                     subject_id=event.event_id,
-                    payload=record.model_dump(mode="json"),
+                    payload={
+                        "assignment": record.model_dump(mode="json"),
+                        "incoming_event_ref": {
+                            "event_id": event.event_id,
+                            "version": event.version,
+                            "identity_hash": _hash_json(
+                                event.identity_profile.model_dump(mode="json")
+                            ),
+                        },
+                        "candidate_refs": [
+                            {
+                                "package_id": candidate.package.package_id,
+                                "version": candidate.package.version,
+                                "profile_hash": _hash_json(
+                                    candidate.package.model_dump(mode="json")
+                                ),
+                            }
+                            for candidate in candidates[event.event_id]
+                        ],
+                        "resulting_package_version": package.version,
+                    },
                 )
             )
             assignments.append(record)
+        if dirty_packages:
+            self._sync_package_embeddings(
+                [dirty_packages[key] for key in sorted(dirty_packages)], models
+            )
         return list(packages.values()), assignments
 
     def _assign_packages(

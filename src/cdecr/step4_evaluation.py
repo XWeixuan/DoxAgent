@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import os
 import uuid
 from collections import Counter, defaultdict
@@ -110,6 +111,21 @@ class Step4CallBudget(StrictModel):
     calls_by_stage: dict[str, int]
     calls_by_tier: dict[str, int]
     recall_or_hard_link_llm_violations: int = Field(ge=0)
+    repair_count: int = Field(ge=0)
+    queue_wait_ms: int = Field(ge=0)
+    request_payload_bytes: int = Field(ge=0)
+
+
+class Step4StageMetric(StrictModel):
+    call_count: int = Field(ge=0)
+    input_tokens: int = Field(ge=0)
+    output_tokens: int = Field(ge=0)
+    payload_bytes: int = Field(ge=0)
+    queue_wait_p50_ms: int = Field(ge=0)
+    queue_wait_p95_ms: int = Field(ge=0)
+    model_latency_p50_ms: int = Field(ge=0)
+    model_latency_p95_ms: int = Field(ge=0)
+    repair_count: int = Field(ge=0)
 
 
 class Step4Idempotency(StrictModel):
@@ -137,6 +153,9 @@ class Step4AcceptanceReport(StrictModel):
     documents: list[Step4DocumentOutcome]
     boundaries: dict[str, Step4BoundaryOutcome]
     call_budget: Step4CallBudget
+    stage_metrics: dict[str, Step4StageMetric] = Field(default_factory=dict)
+    first_pass_wall_clock_ms: int = Field(default=0, ge=0)
+    total_wall_clock_ms: int = Field(default=0, ge=0)
     idempotency: Step4Idempotency
     m4_review_status: Literal["PENDING", "COMPLETED"] = "PENDING"
     projection_evaluation_status: Literal["DEFERRED_BY_USER"] = "DEFERRED_BY_USER"
@@ -600,7 +619,48 @@ def _budget(calls: Sequence[ModelCallSummary]) -> Step4CallBudget:
         calls_by_stage=dict(sorted(by_stage.items())),
         calls_by_tier=dict(sorted(by_tier.items())),
         recall_or_hard_link_llm_violations=llm_recall_violations,
+        repair_count=sum(item.repaired for item in calls),
+        queue_wait_ms=sum(item.queue_wait_ms for item in calls),
+        request_payload_bytes=sum(item.request_payload_bytes for item in calls),
     )
+
+
+def _percentile(values: Sequence[int], percentile: float) -> int:
+    if not values:
+        return 0
+    ordered = sorted(values)
+    index = min(len(ordered) - 1, max(0, math.ceil(percentile * len(ordered)) - 1))
+    return ordered[index]
+
+
+def _stage_metrics(
+    calls: Sequence[ModelCallSummary],
+) -> dict[str, Step4StageMetric]:
+    grouped: dict[str, list[ModelCallSummary]] = {}
+    for call in calls:
+        grouped.setdefault(call.stage, []).append(call)
+    return {
+        stage: Step4StageMetric(
+            call_count=len(values),
+            input_tokens=sum(item.input_tokens or 0 for item in values),
+            output_tokens=sum(item.output_tokens or 0 for item in values),
+            payload_bytes=sum(item.request_payload_bytes for item in values),
+            queue_wait_p50_ms=_percentile(
+                [item.queue_wait_ms for item in values], 0.50
+            ),
+            queue_wait_p95_ms=_percentile(
+                [item.queue_wait_ms for item in values], 0.95
+            ),
+            model_latency_p50_ms=_percentile(
+                [item.latency_ms for item in values], 0.50
+            ),
+            model_latency_p95_ms=_percentile(
+                [item.latency_ms for item in values], 0.95
+            ),
+            repair_count=sum(item.repaired for item in values),
+        )
+        for stage, values in sorted(grouped.items())
+    }
 
 
 def _result_packages(
@@ -733,6 +793,9 @@ def build_step4_report(
     event_results: Sequence[CrossDocumentResult | None],
     registry: SQLiteCDECRRegistry,
     idempotency: Step4Idempotency,
+    expected_document_count: int = 24,
+    first_pass_wall_clock_ms: int = 0,
+    total_wall_clock_ms: int = 0,
 ) -> Step4AcceptanceReport:
     document_by_id = {item.message_id: item for item in document_results}
     event_by_id = {item.message_id: item for item in event_results if item is not None}
@@ -785,16 +848,17 @@ def build_step4_report(
         item is not None and item.status is CrossDocumentStatus.SUCCEEDED for item in event_results
     )
     boundary_violations = sum(item.violations for item in boundaries.values())
-    budget = _budget(registry.list_model_call_summaries())
+    calls = registry.list_model_call_summaries(limit=100000)
+    budget = _budget(calls)
     m4_review_status: Literal["PENDING", "COMPLETED"] = (
         "COMPLETED"
         if corpus and all(row.review_status == "REVIEWED" for row, _ in corpus)
         else "PENDING"
     )
     acceptance = (
-        len(corpus) == 24
-        and completed_documents == 24
-        and completed_events == 24
+        len(corpus) == expected_document_count
+        and completed_documents == expected_document_count
+        and completed_events == expected_document_count
         and valid_mentions == mention_count
         and valid_evidence == mention_count
         and boundary_violations == 0
@@ -822,6 +886,9 @@ def build_step4_report(
         documents=outcomes,
         boundaries=boundaries,
         call_budget=budget,
+        stage_metrics=_stage_metrics(calls),
+        first_pass_wall_clock_ms=first_pass_wall_clock_ms,
+        total_wall_clock_ms=total_wall_clock_ms,
         idempotency=idempotency,
         m4_review_status=m4_review_status,
         acceptance_passed=acceptance,

@@ -477,6 +477,10 @@ class ModelCallSummary(StrictModel):
     status: Literal["SUCCEEDED", "FAILED"] = "SUCCEEDED"
     error_code: str | None = None
     repaired: bool = False
+    queue_wait_ms: int = Field(default=0, ge=0)
+    request_item_count: int = Field(default=1, ge=0)
+    candidate_count: int = Field(default=0, ge=0)
+    request_payload_bytes: int = Field(default=0, ge=0)
 
 
 class JudgeRouting(StrictModel):

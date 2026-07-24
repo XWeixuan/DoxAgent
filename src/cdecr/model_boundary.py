@@ -99,7 +99,13 @@ def normalize_json_prompt(value: str) -> str:
 
 
 def relax_temporal_schema(schema: object) -> object:
-    """Allow plain date/time strings at the LLM boundary; runtime validation stays strict."""
+    """Prepare the model-facing schema without changing validation semantics.
+
+    The in-process DTO retains presentation metadata because callers can use
+    the root title for schema routing. Wire-only compaction is applied by the
+    provider adapter. Descriptions, defaults, examples, required fields,
+    enums, and all validation constraints remain.
+    """
 
     value = copy.deepcopy(schema)
 
@@ -107,6 +113,24 @@ def relax_temporal_schema(schema: object) -> object:
         if isinstance(item, dict):
             if item.get("format") in {"date", "date-time", "time"}:
                 item.pop("format", None)
+            for child in item.values():
+                visit(child)
+        elif isinstance(item, list):
+            for child in item:
+                visit(child)
+
+    visit(value)
+    return value
+
+
+def compact_wire_schema(schema: object) -> object:
+    """Remove only generated titles from the provider-facing schema copy."""
+
+    value = copy.deepcopy(schema)
+
+    def visit(item: object) -> None:
+        if isinstance(item, dict):
+            item.pop("title", None)
             for child in item.values():
                 visit(child)
         elif isinstance(item, list):

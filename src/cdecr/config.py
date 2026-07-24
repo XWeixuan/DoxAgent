@@ -50,6 +50,21 @@ class CDECRSettings(BaseSettings):
     embedding_dimensions: int = Field(default=1024, alias="CDECR_EMBEDDING_DIMENSIONS")
     http_timeout_seconds: float = Field(default=30.0, alias="CDECR_HTTP_TIMEOUT_SECONDS")
     model_timeout_seconds: float = Field(default=600.0, alias="CDECR_MODEL_TIMEOUT_SECONDS")
+    scheduler_m1_concurrency: int = Field(
+        default=2, ge=1, le=64, alias="CDECR_SCHEDULER_M1_CONCURRENCY"
+    )
+    scheduler_m2_concurrency: int = Field(
+        default=6, ge=1, le=64, alias="CDECR_SCHEDULER_M2_CONCURRENCY"
+    )
+    scheduler_m3_concurrency: int = Field(
+        default=3, ge=1, le=64, alias="CDECR_SCHEDULER_M3_CONCURRENCY"
+    )
+    scheduler_m4_concurrency: int = Field(
+        default=2, ge=1, le=64, alias="CDECR_SCHEDULER_M4_CONCURRENCY"
+    )
+    document_concurrency: int = Field(
+        default=3, ge=1, le=32, alias="CDECR_DOCUMENT_CONCURRENCY"
+    )
 
     def require_supabase(self) -> tuple[str, str]:
         if not self.supabase_url or self.supabase_publishable_key is None:

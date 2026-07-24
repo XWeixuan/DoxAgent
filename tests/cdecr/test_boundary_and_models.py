@@ -165,6 +165,46 @@ def test_m2_uses_chat_json_mode_and_disables_thinking() -> None:
     assert "code fences" in fake.chat.completions.kwargs["messages"][0]["content"]
 
 
+def test_provider_wire_schema_removes_only_titles() -> None:
+    fake = FakeOpenAI()
+    client = DashScopeStructuredModelClient(
+        tier=ModelTier.M2,
+        api_key="key",
+        base_url="https://example.test",
+        model="deepseek-v4-flash",
+        client=fake,  # type: ignore[arg-type]
+    )
+    model_request = StructuredModelRequest(
+        system_prompt="system",
+        user_prompt="user",
+        json_schema={
+            "title": "RootTitle",
+            "description": "root-description",
+            "type": "object",
+            "properties": {
+                "status": {
+                    "title": "StatusTitle",
+                    "description": "status-description",
+                    "default": "ok",
+                    "examples": ["ok"],
+                    "type": "string",
+                }
+            },
+        },
+    )
+
+    client.complete(model_request)
+
+    wire_prompt = fake.chat.completions.kwargs["messages"][1]["content"]
+    assert "RootTitle" not in wire_prompt
+    assert "StatusTitle" not in wire_prompt
+    assert "root-description" in wire_prompt
+    assert "status-description" in wire_prompt
+    assert '"default":"ok"' in wire_prompt
+    assert '"examples":["ok"]' in wire_prompt
+    assert model_request.json_schema["title"] == "RootTitle"
+
+
 @pytest.mark.parametrize("tier", [ModelTier.M3, ModelTier.M4])
 def test_m3_m4_use_responses_json_mode_with_thinking_disabled(tier: ModelTier) -> None:
     fake = FakeOpenAI()

@@ -3014,13 +3014,32 @@ class SQLiteCDECRRegistry:
                     return False
                 connection.rollback()
                 raise ImmutableRecordConflict(f"cross-document run {run_id!r} already exists")
-            connection.execute(
-                """
-                INSERT INTO runs(run_id, run_type, status, config_json, started_at)
-                VALUES (?, 'CROSS_DOCUMENT', 'RUNNING', ?, ?)
-                """,
-                (run_id, config_json, now),
-            )
+            trace = connection.execute(
+                "SELECT run_type, status FROM runs WHERE run_id = ?", (run_id,)
+            ).fetchone()
+            if trace is None:
+                connection.execute(
+                    """
+                    INSERT INTO runs(run_id, run_type, status, config_json, started_at)
+                    VALUES (?, 'CROSS_DOCUMENT', 'RUNNING', ?, ?)
+                    """,
+                    (run_id, config_json, now),
+                )
+            elif (
+                str(trace["run_type"]) == "CROSS_DOCUMENT_TRACE"
+                and str(trace["status"]) == "RUNNING"
+            ):
+                connection.execute(
+                    """
+                    UPDATE runs
+                    SET run_type = 'CROSS_DOCUMENT', config_json = ?
+                    WHERE run_id = ?
+                    """,
+                    (config_json, run_id),
+                )
+            else:
+                connection.rollback()
+                raise ImmutableRecordConflict(f"run {run_id!r} cannot be promoted")
             connection.execute(
                 """
                 INSERT INTO cross_document_runs(
@@ -3040,6 +3059,58 @@ class SQLiteCDECRRegistry:
             )
             connection.commit()
             return True
+
+    def start_cross_document_trace(
+        self,
+        *,
+        trace_id: str,
+        message_id: str,
+        engine_version: str,
+        prompt_version: str,
+        model_config: dict[str, Any],
+    ) -> bool:
+        payload = _json_payload(
+            {
+                "trace_id": trace_id,
+                "message_id": message_id,
+                "engine_version": engine_version,
+                "prompt_version": prompt_version,
+                "model_config": model_config,
+            }
+        )
+        with self._connection() as connection:
+            existing = connection.execute(
+                "SELECT run_type, status FROM runs WHERE run_id = ?", (trace_id,)
+            ).fetchone()
+            if existing is not None:
+                if (
+                    str(existing["run_type"]) == "CROSS_DOCUMENT_TRACE"
+                    and str(existing["status"]) == "RUNNING"
+                ):
+                    return False
+                raise ImmutableRecordConflict(f"trace {trace_id!r} already exists")
+            connection.execute(
+                """
+                INSERT INTO runs(run_id, run_type, status, config_json, started_at)
+                VALUES (?, 'CROSS_DOCUMENT_TRACE', 'RUNNING', ?, ?)
+                """,
+                (trace_id, payload, _now()),
+            )
+            connection.commit()
+            return True
+
+    def finish_cross_document_trace(
+        self, trace_id: str, *, status: Literal["REUSED", "FAILED"]
+    ) -> None:
+        with self._connection() as connection:
+            connection.execute(
+                """
+                UPDATE runs SET status = ?, finished_at = ?
+                WHERE run_id = ? AND run_type = 'CROSS_DOCUMENT_TRACE'
+                """,
+                (status, _now(), trace_id),
+            )
+            connection.commit()
 
     def get_completed_cross_document_result(
         self, processing_key: str
@@ -3099,8 +3170,18 @@ class SQLiteCDECRRegistry:
                 "SELECT status FROM cross_document_runs WHERE run_id = ?", (run_id,)
             ).fetchone()
             if row is None:
-                connection.rollback()
-                raise RegistryError(f"unknown cross-document run {run_id!r}")
+                trace = connection.execute(
+                    "SELECT run_type, status FROM runs WHERE run_id = ?", (run_id,)
+                ).fetchone()
+                if trace is None or str(trace["run_type"]) != "CROSS_DOCUMENT_TRACE":
+                    connection.rollback()
+                    raise RegistryError(f"unknown cross-document run {run_id!r}")
+                connection.execute(
+                    "UPDATE runs SET status = 'FAILED', finished_at = ? WHERE run_id = ?",
+                    (finished, run_id),
+                )
+                connection.commit()
+                return
             if row["status"] != "RUNNING":
                 connection.rollback()
                 return
@@ -4084,13 +4165,16 @@ class SQLiteCDECRRegistry:
             rows = connection.execute(
                 """
                 SELECT stage, tier, model, input_tokens, output_tokens, latency_ms,
-                       status, error_code
+                       status, error_code, metadata_json
                 FROM model_calls ORDER BY created_at, model_call_id LIMIT ?
                 """,
                 (limit,),
             ).fetchall()
-        return [
-            ModelCallSummary(
+        summaries: list[ModelCallSummary] = []
+        for row in rows:
+            metadata = json.loads(str(row["metadata_json"]))
+            summaries.append(
+                ModelCallSummary(
                 stage=str(row["stage"] or "unattributed"),
                 tier=row["tier"],
                 model=row["model"],
@@ -4100,9 +4184,15 @@ class SQLiteCDECRRegistry:
                 status=row["status"],
                 error_code=row["error_code"],
                 repaired=str(row["stage"] or "").endswith("_repair"),
+                queue_wait_ms=int(metadata.get("queue_wait_ms", 0)),
+                request_item_count=int(
+                    metadata.get("request_item_count", metadata.get("input_count", 1))
+                ),
+                candidate_count=int(metadata.get("candidate_count", 0)),
+                request_payload_bytes=int(metadata.get("request_payload_bytes", 0)),
             )
-            for row in rows
-        ]
+            )
+        return summaries
 
     def record_model_call(
         self,

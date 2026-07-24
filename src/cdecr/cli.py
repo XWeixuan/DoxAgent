@@ -10,6 +10,7 @@ import sys
 import uuid
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from time import perf_counter
 from typing import Any
 
 from cdecr.canonical_field_resolution import FIELD_RESOLVER_VERSION
@@ -42,6 +43,7 @@ from cdecr.ports import DecisionAuditRecord, SourceQuery
 from cdecr.preprocessing import PIPELINE_VERSION
 from cdecr.registry import SCHEMA_VERSION, RegistryError, SQLiteCDECRRegistry
 from cdecr.result_export import export_final_clusters
+from cdecr.scheduler import CDECRScheduler
 from cdecr.single_document import PROMPT_VERSION, SingleDocumentProcessor
 from cdecr.single_document_contracts import ProcessingStatus, SingleDocumentResult
 from cdecr.step4_evaluation import (
@@ -200,6 +202,15 @@ def _model_names(settings: CDECRSettings) -> dict[ModelTier, str]:
     }
 
 
+def _scheduler(settings: CDECRSettings) -> CDECRScheduler:
+    return CDECRScheduler(
+        m1_limit=settings.scheduler_m1_concurrency,
+        m2_limit=settings.scheduler_m2_concurrency,
+        m3_limit=settings.scheduler_m3_concurrency,
+        m4_limit=settings.scheduler_m4_concurrency,
+    )
+
+
 def _optional_int(value: object) -> int | None:
     return value if isinstance(value, int) else None
 
@@ -274,8 +285,11 @@ def _models_probe(settings: CDECRSettings, args: argparse.Namespace) -> int:
 
 
 def _document_processor(
-    settings: CDECRSettings, registry: SQLiteCDECRRegistry
+    settings: CDECRSettings,
+    registry: SQLiteCDECRRegistry,
+    scheduler: CDECRScheduler | None = None,
 ) -> SingleDocumentProcessor:
+    scheduler = scheduler or _scheduler(settings)
     api_key = settings.require_dashscope()
     embedding = DashScopeEmbeddingClient(
         api_key=api_key,
@@ -311,20 +325,24 @@ def _document_processor(
     )
     return SingleDocumentProcessor(
         registry=registry,
-        embedding_client=embedding,
-        m2_client=m2,
-        m3_client=m3,
-        m4_client=m4,
+        embedding_client=scheduler.embedding_client(embedding),
+        m2_client=scheduler.structured_client(m2, tier=ModelTier.M2),
+        m3_client=scheduler.structured_client(m3, tier=ModelTier.M3),
+        m4_client=scheduler.structured_client(m4, tier=ModelTier.M4),
         model_m1=settings.model_m1,
         model_m2=settings.model_m2,
         model_m3=settings.model_m3,
         model_m4=settings.model_m4,
+        document_concurrency=settings.document_concurrency,
     )
 
 
 def _cross_document_engine(
-    settings: CDECRSettings, registry: SQLiteCDECRRegistry
+    settings: CDECRSettings,
+    registry: SQLiteCDECRRegistry,
+    scheduler: CDECRScheduler | None = None,
 ) -> CrossDocumentEngine:
+    scheduler = scheduler or _scheduler(settings)
     api_key = settings.require_dashscope()
     embedding = DashScopeEmbeddingClient(
         api_key=api_key,
@@ -352,9 +370,9 @@ def _cross_document_engine(
     )
     return CrossDocumentEngine(
         registry=registry,
-        embedding_client=embedding,
-        m2_client=m2,
-        m3_client=m3,
+        embedding_client=scheduler.embedding_client(embedding),
+        m2_client=scheduler.structured_client(m2, tier=ModelTier.M2),
+        m3_client=scheduler.structured_client(m3, tier=ModelTier.M3),
         model_m1=settings.model_m1,
         model_m2=settings.model_m2,
         model_m3=settings.model_m3,
@@ -512,8 +530,9 @@ def _events_batch(settings: CDECRSettings, args: argparse.Namespace) -> int:
             registry.save_source(record.message, fingerprint=record.document_fingerprint)
         sources = [record.message for record in batch.accepted]
         loaded_from = "supabase_read_only"
-    document_processor = _document_processor(settings, registry)
-    event_engine = _cross_document_engine(settings, registry)
+    scheduler = _scheduler(settings)
+    document_processor = _document_processor(settings, registry, scheduler)
+    event_engine = _cross_document_engine(settings, registry, scheduler)
     results: list[dict[str, object]] = []
     failed = 0
     for source in sources:
@@ -617,6 +636,7 @@ def _evaluation_export(_: CDECRSettings, args: argparse.Namespace) -> int:
 
 
 def _evaluation_run_locked(settings: CDECRSettings, args: argparse.Namespace) -> int:
+    evaluation_started = perf_counter()
     manifest_version, corpus = load_step4_corpus(args.snapshot, args.manifest, limit=args.limit)
     registry = SQLiteCDECRRegistry(args.registry)
     registry.initialize()
@@ -629,14 +649,17 @@ def _evaluation_run_locked(settings: CDECRSettings, args: argparse.Namespace) ->
     event_results: list[CrossDocumentResult | None] = []
     checkpoint_path = args.output.with_suffix(args.output.suffix + ".checkpoint.json")
     processing_corpus = sorted(corpus, key=lambda item: (item[1].published_at, item[1].message_id))
-    for index, (row, source) in enumerate(processing_corpus, start=1):
-        document = document_processor.process(source.message_id)
+    document_results = document_processor.process_batch(
+        [source.message_id for _, source in processing_corpus]
+    )
+    for index, ((row, source), document) in enumerate(
+        zip(processing_corpus, document_results, strict=True), start=1
+    ):
         event = (
             event_engine.process(source.message_id)
             if document.status is ProcessingStatus.SUCCEEDED
             else None
         )
-        document_results.append(document)
         event_results.append(event)
         checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
         checkpoint_path.write_text(
@@ -660,6 +683,7 @@ def _evaluation_run_locked(settings: CDECRSettings, args: argparse.Namespace) ->
             ),
             encoding="utf-8",
         )
+    first_pass_wall_clock_ms = round((perf_counter() - evaluation_started) * 1000)
 
     # Load the original persisted results so a resumed run reports all prior calls.
     current_document_by_id = {item.message_id: item for item in document_results}
@@ -695,8 +719,13 @@ def _evaluation_run_locked(settings: CDECRSettings, args: argparse.Namespace) ->
     # Re-open the Registry and clients to prove process-restart recovery and idempotency.
     restarted_registry = SQLiteCDECRRegistry(args.registry)
     restarted_registry.initialize()
-    restarted_documents = _document_processor(settings, restarted_registry)
-    restarted_events = _cross_document_engine(settings, restarted_registry)
+    restarted_scheduler = _scheduler(settings)
+    restarted_documents = _document_processor(
+        settings, restarted_registry, restarted_scheduler
+    )
+    restarted_events = _cross_document_engine(
+        settings, restarted_registry, restarted_scheduler
+    )
     rerun_documents: list[SingleDocumentResult] = []
     rerun_events: list[CrossDocumentResult] = []
     for (_, source), document in zip(corpus, persisted_documents, strict=True):
@@ -730,6 +759,9 @@ def _evaluation_run_locked(settings: CDECRSettings, args: argparse.Namespace) ->
         event_results=persisted_events,
         registry=restarted_registry,
         idempotency=idempotency,
+        expected_document_count=len(corpus),
+        first_pass_wall_clock_ms=first_pass_wall_clock_ms,
+        total_wall_clock_ms=round((perf_counter() - evaluation_started) * 1000),
     )
     write_step4_report(report, args.output)
     _json_stdout(

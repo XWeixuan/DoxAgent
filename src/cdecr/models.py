@@ -13,6 +13,7 @@ from openai import OpenAI
 from pydantic import Field, ValidationError
 
 from cdecr.contracts import StrictModel
+from cdecr.model_boundary import compact_wire_schema
 from cdecr.ports import (
     EmbeddingResult,
     StructuredModelRequest,
@@ -218,7 +219,11 @@ class DashScopeStructuredModelClient:
 
     def complete(self, request: StructuredModelRequest) -> StructuredModelResult:
         started = perf_counter()
-        schema = json.dumps(request.json_schema, ensure_ascii=False, separators=(",", ":"))
+        schema = json.dumps(
+            compact_wire_schema(request.json_schema),
+            ensure_ascii=False,
+            separators=(",", ":"),
+        )
         user_prompt = (
             f"{request.user_prompt}\nReturn exactly one valid JSON object matching this JSON "
             f"Schema: {schema}. Do not use Markdown or code fences."

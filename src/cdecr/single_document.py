@@ -53,7 +53,9 @@ from cdecr.preprocessing import (
     locator_to_evidence,
     preprocess_source,
 )
+from cdecr.scheduler import take_scheduled_call_metrics
 from cdecr.single_document_contracts import (
+    DocumentBlock,
     DreamCandidate,
     DreamerModelOutput,
     EvidenceLocator,
@@ -99,29 +101,43 @@ def _hash_json(value: object) -> str:
     return hashlib.sha256(encoded).hexdigest()
 
 
+def _structured_request_metadata(request: StructuredModelRequest) -> dict[str, object]:
+    try:
+        payload: object = json.loads(request.user_prompt)
+    except json.JSONDecodeError:
+        payload = None
+    request_item_count = 1
+    candidate_count = 0
+    if isinstance(payload, dict):
+        for key in ("drafts", "mentions", "events", "pairs", "tasks", "candidates"):
+            value = payload.get(key)
+            if isinstance(value, (list, dict)):
+                request_item_count = max(request_item_count, len(value))
+                if "candidate" in key:
+                    candidate_count = max(candidate_count, len(value))
+    return {
+        "batch_key": _hash_json(
+            {"schema": request.json_schema, "user": request.user_prompt}
+        )[:24],
+        "request_item_count": request_item_count,
+        "candidate_count": candidate_count,
+        "request_payload_bytes": len(request.user_prompt.encode("utf-8")),
+    }
+
+
+def _metadata_int(metadata: dict[str, object], key: str) -> int:
+    value = metadata.get(key)
+    return value if isinstance(value, int) else 0
+
+
 def _published_at_model(value: datetime) -> str:
     return model_datetime(value)
 
 
 def _compact_model_schema(schema: dict[str, object]) -> dict[str, object]:
-    """Remove redundant presentation metadata before appending a schema to a prompt."""
+    """Keep the internal schema intact; the provider adapter compacts the wire copy."""
 
-    def compact(value: object, *, root: bool = False) -> object:
-        if isinstance(value, dict):
-            return {
-                key: compact(item)
-                for key, item in value.items()
-                if key != "default" and (key != "title" or root)
-            }
-        if isinstance(value, list):
-            return [compact(item) for item in value]
-        return value
-
-    return {
-        key: compact(value)
-        for key, value in schema.items()
-        if key != "default" and key != "title"
-    } | ({"title": schema["title"]} if "title" in schema else {})
+    return schema
 
 
 def _judge_mention(mention: MentionDraft) -> JudgeMentionDraft:
@@ -212,9 +228,11 @@ class _AuditedEmbeddingClient:
     def embed(self, texts: Sequence[str]) -> EmbeddingResult:
         call_id = str(uuid.uuid4())
         input_hash = _hash_json(list(texts))
+        payload_bytes = sum(len(value.encode("utf-8")) for value in texts)
         try:
             result = self.client.embed(texts)
         except Exception as exc:
+            scheduled = take_scheduled_call_metrics(self.client)
             latency = exc.latency_ms if isinstance(exc, ModelAdapterError) else 0
             code = exc.code if isinstance(exc, ModelAdapterError) else type(exc).__name__
             self.registry.record_model_call(
@@ -227,7 +245,13 @@ class _AuditedEmbeddingClient:
                 output_tokens=exc.output_tokens if isinstance(exc, ModelAdapterError) else None,
                 latency_ms=latency,
                 error_code=code,
-                metadata={"input_count": len(texts)},
+                metadata={
+                    "attempt": "initial",
+                    "request_item_count": len(texts),
+                    "request_payload_bytes": payload_bytes,
+                    "queue_wait_ms": scheduled.queue_wait_ms if scheduled else 0,
+                    "cache_hit": False,
+                },
                 stage=self.stage,
                 prompt_version=PROMPT_VERSION,
                 input_hash=input_hash,
@@ -240,9 +264,13 @@ class _AuditedEmbeddingClient:
                     latency_ms=latency,
                     status="FAILED",
                     error_code=code,
+                    queue_wait_ms=scheduled.queue_wait_ms if scheduled else 0,
+                    request_item_count=len(texts),
+                    request_payload_bytes=payload_bytes,
                 )
             )
             raise SingleDocumentPipelineError(self.stage, code) from exc
+        scheduled = take_scheduled_call_metrics(self.client)
         self.registry.record_model_call(
             model_call_id=call_id,
             run_id=self.run_id,
@@ -253,7 +281,14 @@ class _AuditedEmbeddingClient:
             output_tokens=None,
             latency_ms=result.latency_ms,
             error_code=None,
-            metadata={"input_count": len(texts), "dimensions": result.dimensions},
+            metadata={
+                "attempt": "initial",
+                "request_item_count": len(texts),
+                "request_payload_bytes": payload_bytes,
+                "queue_wait_ms": scheduled.queue_wait_ms if scheduled else 0,
+                "dimensions": result.dimensions,
+                "cache_hit": False,
+            },
             stage=self.stage,
             prompt_version=PROMPT_VERSION,
             input_hash=input_hash,
@@ -265,6 +300,9 @@ class _AuditedEmbeddingClient:
                 model=result.model,
                 input_tokens=result.input_tokens,
                 latency_ms=result.latency_ms,
+                queue_wait_ms=scheduled.queue_wait_ms if scheduled else 0,
+                request_item_count=len(texts),
+                request_payload_bytes=payload_bytes,
             )
         )
         return result
@@ -296,9 +334,11 @@ class _AuditedStructuredClient:
         call_id = str(uuid.uuid4())
         input_hash = _hash_json({"system": request.system_prompt, "user": request.user_prompt})
         schema_hash = _hash_json(request.json_schema)
+        request_metadata = _structured_request_metadata(request)
         try:
             result = self.client.complete(request)
         except Exception as exc:
+            scheduled = take_scheduled_call_metrics(self.client)
             latency = exc.latency_ms if isinstance(exc, ModelAdapterError) else 0
             code = exc.code if isinstance(exc, ModelAdapterError) else type(exc).__name__
             self.registry.record_model_call(
@@ -311,7 +351,12 @@ class _AuditedStructuredClient:
                 output_tokens=exc.output_tokens if isinstance(exc, ModelAdapterError) else None,
                 latency_ms=latency,
                 error_code=code,
-                metadata={},
+                metadata={
+                    **request_metadata,
+                    "attempt": "repair" if repaired else "initial",
+                    "queue_wait_ms": scheduled.queue_wait_ms if scheduled else 0,
+                    "cache_hit": False,
+                },
                 stage=call_stage,
                 prompt_version=PROMPT_VERSION,
                 schema_hash=schema_hash,
@@ -330,6 +375,14 @@ class _AuditedStructuredClient:
                     status="FAILED",
                     error_code=code,
                     repaired=repaired,
+                    queue_wait_ms=scheduled.queue_wait_ms if scheduled else 0,
+                    request_item_count=_metadata_int(
+                        request_metadata, "request_item_count"
+                    ),
+                    candidate_count=_metadata_int(request_metadata, "candidate_count"),
+                    request_payload_bytes=_metadata_int(
+                        request_metadata, "request_payload_bytes"
+                    ),
                 )
             )
             raise SingleDocumentPipelineError(
@@ -339,6 +392,7 @@ class _AuditedStructuredClient:
                     exc.raw_response_text if isinstance(exc, ModelAdapterError) else None
                 ),
             ) from exc
+        scheduled = take_scheduled_call_metrics(self.client)
         self.registry.record_model_call(
             model_call_id=call_id,
             run_id=self.run_id,
@@ -349,7 +403,13 @@ class _AuditedStructuredClient:
             output_tokens=result.output_tokens,
             latency_ms=result.latency_ms,
             error_code=None,
-            metadata={},
+            metadata={
+                **request_metadata,
+                "attempt": "repair" if repaired else "initial",
+                "queue_wait_ms": scheduled.queue_wait_ms if scheduled else 0,
+                "output_hash": _hash_json(result.payload),
+                "cache_hit": False,
+            },
             stage=call_stage,
             prompt_version=PROMPT_VERSION,
             schema_hash=schema_hash,
@@ -364,6 +424,14 @@ class _AuditedStructuredClient:
                 output_tokens=result.output_tokens,
                 latency_ms=result.latency_ms,
                 repaired=repaired,
+                queue_wait_ms=scheduled.queue_wait_ms if scheduled else 0,
+                request_item_count=_metadata_int(
+                    request_metadata, "request_item_count"
+                ),
+                candidate_count=_metadata_int(request_metadata, "candidate_count"),
+                request_payload_bytes=_metadata_int(
+                    request_metadata, "request_payload_bytes"
+                ),
             )
         )
         return result
@@ -382,6 +450,7 @@ class SingleDocumentProcessor:
         model_m2: str = "deepseek-v4-flash",
         model_m3: str = "qwen3.7-plus",
         model_m4: str = "qwen3.7-max",
+        document_concurrency: int = 3,
     ) -> None:
         self.registry = registry
         self.embedding_client = embedding_client
@@ -392,6 +461,7 @@ class SingleDocumentProcessor:
         self.model_m2 = model_m2
         self.model_m3 = model_m3
         self.model_m4 = model_m4
+        self.document_concurrency = max(1, document_concurrency)
 
     @property
     def model_config(self) -> dict[str, object]:
@@ -473,15 +543,9 @@ class SingleDocumentProcessor:
                 stage="title_embedding",
                 summaries=summaries,
             )
+            # Keep the title embedding as the fail-fast prerequisite. Running
+            # Dreamer speculatively would spend tokens after a failed M1 call.
             title_embedding = title_client.embed([source.title])
-            self.registry.save_embedding(
-                owner_kind="source_title",
-                owner_id=source.message_id,
-                model=title_embedding.model,
-                input_hash=hashlib.sha256(source.title.encode("utf-8")).hexdigest(),
-                vector=title_embedding.vectors[0],
-            )
-
             candidates = self.registry.get_latest_dream_candidates_for_processing_key(
                 processing_key
             )
@@ -496,8 +560,17 @@ class SingleDocumentProcessor:
                     )
                 )
             else:
-                candidates = self._dream(source, preprocessing.document, run_id, summaries)
+                candidates = self._dream(
+                    source, preprocessing.document, run_id, summaries
+                )
                 self.registry.save_dream_candidates(run_id, candidates)
+            self.registry.save_embedding(
+                owner_kind="source_title",
+                owner_id=source.message_id,
+                model=title_embedding.model,
+                input_hash=hashlib.sha256(source.title.encode("utf-8")).hexdigest(),
+                vector=title_embedding.vectors[0],
+            )
             grounder = self._ground(
                 source,
                 preprocessing.document,
@@ -521,16 +594,23 @@ class SingleDocumentProcessor:
                 )
                 self.registry.save_judge_decisions(run_id, judge_decisions)
                 accepted = self._apply_judge(drafts, judge_decisions)
+                accepted_lineage = self._judge_lineage(drafts, judge_decisions)
             else:
                 accepted = []
+                accepted_lineage = []
 
-            materialized_mentions = [
-                self._materialize_mention(source, preprocessing.document, draft)
-                for draft in accepted
+            materialized_with_lineage = [
+                (
+                    self._materialize_mention(source, preprocessing.document, draft),
+                    lineage,
+                )
+                for draft, lineage in zip(accepted, accepted_lineage, strict=True)
             ]
             mentions_by_id: dict[str, EventMention] = {}
+            lineage_by_mention: dict[str, list[dict[str, object]]] = {}
             duplicate_mention_ids: Counter[str] = Counter()
-            for mention in materialized_mentions:
+            for mention, lineage in materialized_with_lineage:
+                lineage_by_mention.setdefault(mention.mention_id, []).append(lineage)
                 existing = mentions_by_id.get(mention.mention_id)
                 if existing is None:
                     mentions_by_id[mention.mention_id] = mention
@@ -577,6 +657,24 @@ class SingleDocumentProcessor:
                 finished_at=datetime.now(UTC),
             )
             self.registry.complete_document_run(result)
+            for mention in normalized_mentions:
+                self.registry.append_decision_audit(
+                    DecisionAuditRecord(
+                        audit_id=f"mention-derivation:{run_id}:{mention.mention_id}",
+                        run_id=run_id,
+                        decision_type="MENTION_DERIVATION",
+                        subject_id=mention.mention_id,
+                        payload={
+                            "message_id": message_id,
+                            "derivations": lineage_by_mention.get(mention.mention_id, []),
+                            "normalization_decision_ids": [
+                                item.decision_id
+                                for item in normalization_decisions
+                                if item.mention_id == mention.mention_id
+                            ],
+                        },
+                    )
+                )
             return result
         except Exception as exc:
             stage = exc.stage if isinstance(exc, SingleDocumentPipelineError) else "pipeline"
@@ -629,7 +727,40 @@ class SingleDocumentProcessor:
             )
 
     def process_batch(self, message_ids: Sequence[str]) -> list[SingleDocumentResult]:
-        return [self.process(message_id) for message_id in message_ids]
+        if not message_ids:
+            return []
+        indexed = list(enumerate(message_ids))
+        first_by_fingerprint: dict[str, tuple[int, str]] = {}
+        deferred: list[tuple[int, str]] = []
+        for index, message_id in indexed:
+            source = self.registry.get_source(message_id)
+            if source is None:
+                raise ValueError(f"unknown source message {message_id!r}")
+            fingerprint = exact_document_fingerprint(source)
+            if fingerprint in first_by_fingerprint:
+                deferred.append((index, message_id))
+            else:
+                first_by_fingerprint[fingerprint] = (index, message_id)
+        representatives = sorted(first_by_fingerprint.values())
+        results: dict[int, SingleDocumentResult] = {}
+
+        def run(items: list[tuple[int, str]]) -> None:
+            if not items:
+                return
+            with ThreadPoolExecutor(
+                max_workers=min(self.document_concurrency, len(items))
+            ) as executor:
+                values = executor.map(
+                    self.process, [message_id for _, message_id in items]
+                )
+                for (index, _), result in zip(items, values, strict=True):
+                    results[index] = result
+
+        # Preserve the current reuse rule: only exact duplicates wait for a
+        # representative; normalized/URL/near duplicates remain independent.
+        run(representatives)
+        run(deferred)
+        return [results[index] for index, _ in indexed]
 
     def _invoke_typed(
         self,
@@ -853,8 +984,7 @@ class SingleDocumentProcessor:
             stage="dreamer",
             summaries=summaries,
         )
-        outputs: list[DreamerModelOutput] = []
-        for block in document.document_blocks:
+        def process_block(block: DocumentBlock) -> DreamerModelOutput:
             segment_by_id = {item.segment_id: item for item in document.segments}
             exposed_lengths = {
                 segment_id: len(segment_by_id[segment_id].text) for segment_id in block.segment_ids
@@ -913,7 +1043,6 @@ class SingleDocumentProcessor:
                 semantic_validator=validate_dreamer,
                 stage="dreamer",
             )
-            outputs.append(output)
             if any(reconciliation.values()):
                 self.registry.append_decision_audit(
                     DecisionAuditRecord(
@@ -924,6 +1053,12 @@ class SingleDocumentProcessor:
                         payload=reconciliation,
                     )
                 )
+            return output
+
+        with ThreadPoolExecutor(
+            max_workers=min(self.document_concurrency, len(document.document_blocks))
+        ) as executor:
+            outputs = list(executor.map(process_block, document.document_blocks))
         unique: dict[str, DreamCandidate] = {}
         for output in outputs:
             for candidate in output.candidates:
@@ -1459,6 +1594,71 @@ class SingleDocumentProcessor:
             )
         return [mention for draft in drafts for mention in retained[draft.draft_id]]
 
+    def _judge_lineage(
+        self,
+        drafts: list[GroundedMentionDraft],
+        decisions: list[JudgeDecisionRecord],
+    ) -> list[dict[str, object]]:
+        draft_by_id = {draft.draft_id: draft for draft in drafts}
+        decision_by_target = {
+            decision.target_draft_id: decision for decision in decisions
+        }
+        contributors: dict[str, list[JudgeDecisionRecord]] = {
+            draft.draft_id: [] for draft in drafts
+        }
+        for decision in decisions:
+            if (
+                decision.action in {
+                    JudgeAction.DUPLICATE,
+                    JudgeAction.MERGE_AS_ATTRIBUTE,
+                }
+                and decision.target_mention_id in contributors
+            ):
+                contributors[decision.target_mention_id].append(decision)
+
+        lineage: list[dict[str, object]] = []
+        for draft in drafts:
+            decision = decision_by_target[draft.draft_id]
+            if decision.action is JudgeAction.ACCEPT:
+                related = [decision, *contributors[draft.draft_id]]
+                source_drafts = [
+                    draft_by_id[item.target_draft_id] for item in related
+                ]
+                lineage.append(
+                    {
+                        "derivation_kind": "ACCEPT",
+                        "grounder_draft_ids": [
+                            item.draft_id for item in source_drafts
+                        ],
+                        "source_candidate_ids": sorted(
+                            {
+                                candidate_id
+                                for item in source_drafts
+                                for candidate_id in item.source_candidate_ids
+                            }
+                        ),
+                        "judge_decision_ids": [
+                            item.decision_id for item in related
+                        ],
+                        "judge_actions": [item.action.value for item in related],
+                    }
+                )
+            elif decision.action is JudgeAction.SPLIT:
+                for split_index in range(len(decision.split_mentions)):
+                    lineage.append(
+                        {
+                            "derivation_kind": "SPLIT",
+                            "split_index": split_index,
+                            "grounder_draft_ids": [draft.draft_id],
+                            "source_candidate_ids": list(
+                                draft.source_candidate_ids
+                            ),
+                            "judge_decision_ids": [decision.decision_id],
+                            "judge_actions": [decision.action.value],
+                        }
+                    )
+        return lineage
+
     def _materialize_mention(
         self,
         source: SourceMessage,
@@ -1568,4 +1768,28 @@ class SingleDocumentProcessor:
             reused=True,
         )
         self.registry.complete_document_run(result)
+        for prior_mention_id, mention_id in id_map.items():
+            self.registry.append_decision_audit(
+                DecisionAuditRecord(
+                    audit_id=f"mention-derivation:{run_id}:{mention_id}",
+                    run_id=run_id,
+                    decision_type="MENTION_DERIVATION",
+                    subject_id=mention_id,
+                    payload={
+                        "message_id": source.message_id,
+                        "derivations": [
+                            {
+                                "derivation_kind": "EXACT_DOCUMENT_REUSE",
+                                "source_mention_id": prior_mention_id,
+                                "source_document_run_id": previous.run_id,
+                            }
+                        ],
+                        "normalization_decision_ids": [
+                            item.decision_id
+                            for item in decisions
+                            if item.mention_id == mention_id
+                        ],
+                    },
+                )
+            )
         return result

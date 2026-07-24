@@ -377,6 +377,20 @@ class CDECRRegistry(Protocol):
         model_config: dict[str, Any],
     ) -> bool: ...
 
+    def start_cross_document_trace(
+        self,
+        *,
+        trace_id: str,
+        message_id: str,
+        engine_version: str,
+        prompt_version: str,
+        model_config: dict[str, Any],
+    ) -> bool: ...
+
+    def finish_cross_document_trace(
+        self, trace_id: str, *, status: Literal["REUSED", "FAILED"]
+    ) -> None: ...
+
     def get_completed_cross_document_result(
         self, processing_key: str
     ) -> CrossDocumentResult | None: ...
