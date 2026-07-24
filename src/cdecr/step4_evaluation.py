@@ -214,7 +214,29 @@ def load_step4_corpus(
 
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     manifest_version = str(manifest["manifest_version"])
-    rows = [Step4CorpusRow.model_validate(item) for item in manifest["rows"][:limit]]
+    row_payloads: list[dict[str, object]] = []
+    for item in manifest["rows"][:limit]:
+        if "length_bucket" in item:
+            row_payloads.append(item)
+            continue
+        # The frozen 30-document Grounder corpus predates the Step 4 manifest
+        # shape. Adapt only its safe metadata; no expected labels are invented.
+        text_chars = int(item["text_chars"])
+        length_bucket = (
+            "short" if text_chars < 2_000 else "medium" if text_chars < 10_000 else "long"
+        )
+        row_payloads.append(
+            {
+                "source_row_id": item["source_row_id"],
+                "document_fingerprint": item["document_fingerprint"],
+                "length_bucket": length_bucket,
+                "text_chars": text_chars,
+                "source_name": item["source_name"],
+                "expected_event_families": [],
+                "review_status": item["review_status"],
+            }
+        )
+    rows = [Step4CorpusRow.model_validate(item) for item in row_payloads]
     snapshot_by_id: dict[str, dict[str, object]] = {}
     with snapshot_path.open(encoding="utf-8") as handle:
         for line in handle:

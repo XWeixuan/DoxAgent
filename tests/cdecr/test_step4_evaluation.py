@@ -3,9 +3,11 @@ from __future__ import annotations
 import json
 from datetime import UTC, datetime
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
+from cdecr.cli import _checkpoint_outcomes
 from cdecr.contracts import Language, SourceMessage, SourceType
 from cdecr.step4_evaluation import (
     M4ReviewOutput,
@@ -75,12 +77,81 @@ def test_step4_corpus_requires_safe_manifest_to_match_ignored_snapshot(
         load_step4_corpus(snapshot, manifest, limit=1)
 
 
+def test_step4_corpus_accepts_frozen_grounder_manifest_shape(tmp_path: Path) -> None:
+    source = _source()
+    snapshot = tmp_path / "snapshot.jsonl"
+    snapshot.write_text(
+        json.dumps(
+            {
+                "source_row_id": "row-1",
+                "document_fingerprint": "a" * 64,
+                "message": source.model_dump(mode="json"),
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "manifest_version": "cdecr-dreamer-grounder-ab-v1",
+                "rows": [
+                    {
+                        "source_row_id": "row-1",
+                        "document_fingerprint": "a" * 64,
+                        "message_id": source.message_id,
+                        "text_chars": len(source.text),
+                        "paragraph_count": 1,
+                        "source_name": source.source_name,
+                        "title": source.title,
+                        "review_status": "REVIEWED",
+                        "single_article": True,
+                        "aggregate_shape": False,
+                        "transcript_shape": False,
+                        "review_note": "reviewed",
+                        "cohort": "test",
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    _, corpus = load_step4_corpus(snapshot, manifest, limit=1)
+
+    assert corpus[0][0].length_bucket == "short"
+    assert corpus[0][0].expected_event_families == []
+    assert corpus[0][1] == source
+
+
 def test_step4_evaluation_rejects_a_concurrent_process(tmp_path: Path) -> None:
     registry = tmp_path / "evaluation.sqlite3"
     with step4_evaluation_lock(registry):
         with pytest.raises(RuntimeError, match="another CDECR"):
             with step4_evaluation_lock(registry):
                 pass
+
+
+def test_checkpoint_outcomes_only_include_cross_document_progress() -> None:
+    documents = [
+        SimpleNamespace(
+            message_id=f"message-{index}",
+            status=SimpleNamespace(value="SUCCEEDED"),
+        )
+        for index in range(3)
+    ]
+    events = [SimpleNamespace(status="SUCCEEDED")]
+
+    outcomes = _checkpoint_outcomes(documents, events)  # type: ignore[arg-type]
+
+    assert outcomes == [
+        {
+            "message_id": "message-0",
+            "document_status": "SUCCEEDED",
+            "event_status": "SUCCEEDED",
+        }
+    ]
 
 
 def test_m4_review_output_contract_excludes_schema_projections() -> None:

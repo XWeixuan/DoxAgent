@@ -1,0 +1,62 @@
+{
+  "artifact_version": "cdecr-runtime-optimization-phase0-30-v1",
+  "run_date": "2026-07-25",
+  "git_commit_under_test": "dd6c580",
+  "corpus": {
+    "manifest": "dev_plan/CDECR/experiments/grounder_quality_30_manifest.json",
+    "manifest_version": "cdecr-dreamer-grounder-ab-v1",
+    "snapshot": ".tmp/cdecr/grounder_quality_v5/live_all.jsonl",
+    "selected_documents": 30
+  },
+  "ignored_artifacts": {
+    "registry": ".tmp/cdecr/runtime_optimization/phase0_30_20260725_b.sqlite3",
+    "registry_sha256": "0787DAA73F15C7D5E100F3458F5846168990AD61C87CE8F2EA133C9D5BD1A7FC",
+    "report": ".tmp/cdecr/runtime_optimization/phase0_30_20260725_b_report.json",
+    "report_sha256": "24381C7776862113773389FDAAE9D7E57C6923F00C667BFC7E560DD9C2DD1838"
+  },
+  "outcome": {
+    "acceptance_passed": false,
+    "completed_documents": 17,
+    "failed_documents": 13,
+    "completed_cross_document_runs": 15,
+    "mention_count": 96,
+    "atomic_event_count": 37,
+    "package_count": 31,
+    "atomic_assignment_count": 74,
+    "package_assignment_count": 62,
+    "valid_mention_schema_rate": 1.0,
+    "valid_evidence_span_rate": 1.0
+  },
+  "failure_breakdown": {
+    "grounder.semantic_validation_failed_after_repair": 9,
+    "judge.evidence_validation_failed_after_repair": 2,
+    "judge.invalid_json": 1,
+    "judge.semantic_validation_failed_after_repair": 1,
+    "identity_compiler.IDENTITY_FIELDS_UNRESOLVED": 2
+  },
+  "performance": {
+    "first_pass_wall_clock_ms": 2492192,
+    "total_wall_clock_ms": 2777988,
+    "model_call_count": 451,
+    "input_tokens": 1473596,
+    "output_tokens": 295554,
+    "model_latency_ms_sum": 4860955,
+    "queue_wait_ms_sum": 652,
+    "request_payload_bytes_sum": 4151433,
+    "repair_call_count": 28
+  },
+  "idempotency": {
+    "rerun_model_call_delta": 31,
+    "rerun_mention_delta": 0,
+    "rerun_atomic_delta": 0,
+    "rerun_package_delta": 0,
+    "all_successful_documents_reused": true,
+    "all_successful_events_reused": false
+  },
+  "known_limitations": [
+    "This is a single stochastic real-model run; semantic deltas require paired interpretation.",
+    "The frozen Grounder manifest contains no Step 4 expected-event labels; no labels were invented.",
+    "Hard cannot-link enforcement remained in configured shadow mode.",
+    "Cross-document idempotency failed because later global state changed at least one processing key."
+  ]
+}

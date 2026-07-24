@@ -635,6 +635,27 @@ def _evaluation_export(_: CDECRSettings, args: argparse.Namespace) -> int:
     return 0
 
 
+def _checkpoint_outcomes(
+    document_results: list[SingleDocumentResult],
+    event_results: list[CrossDocumentResult | None],
+) -> list[dict[str, object]]:
+    """Project only rows that have reached the sequential cross-document barrier."""
+
+    completed_documents = document_results[: len(event_results)]
+    return [
+        {
+            "message_id": document.message_id,
+            "document_status": document.status.value,
+            "event_status": getattr(event, "status", None),
+        }
+        for document, event in zip(
+            completed_documents,
+            event_results,
+            strict=True,
+        )
+    ]
+
+
 def _evaluation_run_locked(settings: CDECRSettings, args: argparse.Namespace) -> int:
     evaluation_started = perf_counter()
     manifest_version, corpus = load_step4_corpus(args.snapshot, args.manifest, limit=args.limit)
@@ -669,14 +690,10 @@ def _evaluation_run_locked(settings: CDECRSettings, args: argparse.Namespace) ->
                     "completed_rows": index,
                     "total_rows": len(corpus),
                     "last_source_row_id": row.source_row_id,
-                    "outcomes": [
-                        {
-                            "message_id": item.message_id,
-                            "document_status": item.status.value,
-                            "event_status": getattr(event_results[offset], "status", None),
-                        }
-                        for offset, item in enumerate(document_results)
-                    ],
+                    "outcomes": _checkpoint_outcomes(
+                        document_results,
+                        event_results,
+                    ),
                 },
                 ensure_ascii=False,
                 indent=2,
