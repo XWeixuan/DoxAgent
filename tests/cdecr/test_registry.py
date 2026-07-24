@@ -126,7 +126,7 @@ def test_initialize_is_idempotent_and_survives_restart(registry: SQLiteCDECRRegi
     restarted = SQLiteCDECRRegistry(registry.path)
     restarted.initialize()
     assert not restarted.save_source(source(), fingerprint="a" * 64)
-    assert restarted.pragma_state()["user_version"] == 5
+    assert restarted.pragma_state()["user_version"] == 8
     assert restarted.pragma_state()["foreign_keys"] == 1
     assert str(restarted.pragma_state()["journal_mode"]).lower() == "wal"
 

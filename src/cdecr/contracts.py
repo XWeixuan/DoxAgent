@@ -131,8 +131,6 @@ class AtomicSemanticRelation(StrEnum):
 class AtomicAction(StrEnum):
     MERGE = "MERGE"
     CREATE_NEW = "CREATE_NEW"
-    CREATE_AND_LINK = "CREATE_AND_LINK"
-    HOLD = "HOLD"
 
 
 class PackageKind(StrEnum):
@@ -156,6 +154,14 @@ class PackageStatus(StrEnum):
     OPEN = "OPEN"
     CLOSED = "CLOSED"
     UNKNOWN = "UNKNOWN"
+
+
+class PackageQualityState(StrEnum):
+    """Operational expansion state; deliberately separate from event lifecycle."""
+
+    ACTIVE = "ACTIVE"
+    FROZEN = "FROZEN"
+    QUARANTINED = "QUARANTINED"
 
 
 class MembershipRelation(StrEnum):
@@ -194,7 +200,21 @@ class PackageAction(StrEnum):
     CREATE_NEW_PACKAGE = "CREATE_NEW_PACKAGE"
     LINK_EXTERNALLY = "LINK_EXTERNALLY"
     MERGE_PACKAGES = "MERGE_PACKAGES"
-    HOLD = "HOLD"
+
+
+class MembershipDecisionAction(StrEnum):
+    ADD = "ADD"
+    REMOVE = "REMOVE"
+    MOVE = "MOVE"
+
+
+class PackageBoundaryAction(StrEnum):
+    FREEZE_PACKAGE = "FREEZE_PACKAGE"
+    REMOVE_MEMBER = "REMOVE_MEMBER"
+    MOVE_MEMBER = "MOVE_MEMBER"
+    CREATE_SPLIT_PACKAGE = "CREATE_SPLIT_PACKAGE"
+    REBUILD_PROFILE = "REBUILD_PROFILE"
+    REBUILD_EMBEDDING = "REBUILD_EMBEDDING"
 
 
 class EvidenceSpan(StrictModel):
@@ -249,7 +269,16 @@ class SourceMessage(StrictModel):
 
 class Predicate(StrictModel):
     raw: NonEmptyString
-    normalized: Annotated[str, Field(pattern=r"^[a-z][a-z0-9_]*$")]
+    normalized: Annotated[
+        str,
+        Field(
+            pattern=r"^[a-z][a-z0-9_]*$",
+            description=(
+                "Lower-snake-case primary action only; exclude subjects, metrics, "
+                "quantities, and values."
+            ),
+        ),
+    ]
 
 
 class Participant(StrictModel):
@@ -269,8 +298,15 @@ class EventTime(StrictModel):
         if self.event_start is not None and self.event_end is not None:
             start = self.event_start
             end = self.event_end
-            if isinstance(start, datetime) and isinstance(end, datetime) and end < start:
-                raise ValueError("event_end must not precede event_start")
+            if isinstance(start, datetime) and isinstance(end, datetime):
+                try:
+                    end_precedes_start = end < start
+                except TypeError as exc:
+                    raise ValueError(
+                        "event_start and event_end must use compatible timezone awareness"
+                    ) from exc
+                if end_precedes_start:
+                    raise ValueError("event_end must not precede event_start")
             if isinstance(start, date) and not isinstance(start, datetime):
                 if isinstance(end, date) and not isinstance(end, datetime) and end < start:
                     raise ValueError("event_end must not precede event_start")
@@ -484,19 +520,23 @@ class EventPackage(StrictModel):
     package_family: PackageFamily
     canonical_title: NonEmptyString
     anchor_entities: list[NonEmptyString]
+    package_anchor_ids: list[NonEmptyString] = Field(default_factory=list)
     anchor_artifact_id: str | None = None
     anchor_period_id: str | None = None
     time_range: PackageTimeRange
     lifecycle_state: str | None = None
-    member_event_ids: list[NonEmptyString] = Field(min_length=1)
+    member_event_ids: list[NonEmptyString] = Field(default_factory=list)
     canonical_summary: str
     status: PackageStatus
+    quality_state: PackageQualityState = PackageQualityState.ACTIVE
     version: int = Field(default=1, ge=1)
 
     @model_validator(mode="after")
     def validate_members(self) -> EventPackage:
         if len(self.member_event_ids) != len(set(self.member_event_ids)):
             raise ValueError("member_event_ids must be unique")
+        if len(self.package_anchor_ids) != len(set(self.package_anchor_ids)):
+            raise ValueError("package_anchor_ids must be unique")
         return self
 
 
@@ -507,6 +547,39 @@ class PackageMembership(StrictModel):
     relation: MembershipRelation
     role_detail: str | None = None
     version: int = Field(default=1, ge=1)
+
+
+class PackageMembershipDecision(StrictModel):
+    """Append-only membership mutation from which the active projection is built."""
+
+    decision_id: NonEmptyString
+    run_id: str | None = None
+    action: MembershipDecisionAction
+    event_id: NonEmptyString
+    source_package_id: str | None = None
+    target_package_id: str | None = None
+    relation: MembershipRelation | None = None
+    reason: NonEmptyString
+    version: int = Field(default=1, ge=1)
+
+    @model_validator(mode="after")
+    def validate_action_targets(self) -> PackageMembershipDecision:
+        if self.action is MembershipDecisionAction.ADD:
+            if self.source_package_id is not None or self.target_package_id is None:
+                raise ValueError("ADD requires only target_package_id")
+            if self.relation is None:
+                raise ValueError("ADD requires relation")
+        elif self.action is MembershipDecisionAction.REMOVE:
+            if self.source_package_id is None or self.target_package_id is not None:
+                raise ValueError("REMOVE requires only source_package_id")
+        else:
+            if self.source_package_id is None or self.target_package_id is None:
+                raise ValueError("MOVE requires source_package_id and target_package_id")
+            if self.source_package_id == self.target_package_id:
+                raise ValueError("MOVE source and target must differ")
+            if self.relation is None:
+                raise ValueError("MOVE requires relation")
+        return self
 
 
 class ExternalEventRelation(StrictModel):
@@ -527,10 +600,24 @@ class PackageExternalRelation(StrictModel):
     version: int = Field(default=1, ge=1)
 
 
+class PackageExternalRelationCandidate(StrictModel):
+    """N12 audit candidate; it is not a formal PackageExternalRelation edge."""
+
+    candidate_id: NonEmptyString
+    run_id: NonEmptyString
+    source_event_id: NonEmptyString
+    target_package_id: NonEmptyString
+    relation: ExternalRelationType
+    reason: NonEmptyString
+    prompt_version: NonEmptyString
+    model: NonEmptyString
+    version: int = Field(default=1, ge=1)
+
+
 class AtomicCoreferenceDecision(StrictModel):
     relation: AtomicSemanticRelation
     claim_conflict: bool
-    identity_conflicts: list[NonEmptyString]
+    identity_differences: list[NonEmptyString]
 
 
 class PackageAssignmentDecision(StrictModel):

@@ -1465,3 +1465,25 @@ Episode Package比Atomic共指更依赖多事件整体理解，因此强模型�
   `UNCERTAIN/HOLD` 处理歧义，不以业务 confidence 阈值放行。
 - 技术性的 MinHash、Embedding 相似度、召回排序和 NormalizationCandidate `score` 不属于
   业务 confidence，仍用于候选生成，不能越过硬冲突或替代明确决策。
+
+---
+
+# 19. 2026-07-24 N7–N10 Schema 覆盖说明
+
+本节优先于前文 Atomic/Package HOLD、逐 Pair 输出和自动校正示例。
+
+- `AtomicAction = MERGE | CREATE_NEW`；`PackageAction` 不含 HOLD。
+- `AtomicAssignmentDecision` 为单 Mention 联合输出，包含
+  `candidate_assessments[]`、`merge_target_event_id`、
+  `related_candidate_event_ids[]` 与 `possible_duplicate_atomic_ids[]`。
+- 每个 `AtomicCandidateAssessment` 使用
+  `candidate_event_id/relation/claim_conflict/identity_differences`；不再使用
+  `identity_conflicts` 或业务 confidence。
+- `AtomicAssignmentRecord` 必须有 `resulting_event_id`、
+  `identity_processing_key` 和 `assignment_policy_version`；Package Assignment 必须有
+  `resulting_package_id`。
+- `CrossDocumentResult` 不包含 `hold_ids`；SQLite v7 不创建或迁移 `hold_queue`。
+- 运行时 `ResolvedIdentityEvidence`保留 External ID、Canonical Root、Legacy ID、
+  规范化原始文本及信任级别，并只按 `SAME/DIFFERENT/UNKNOWN` 三值规则比较。
+- Atomic Embedding 的 `input_hash` 必须对应确定性 `atomic_identity_text()` 的精确
+  UTF-8 内容；旧 Hash 不参与召回。

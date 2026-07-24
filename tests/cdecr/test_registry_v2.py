@@ -66,7 +66,7 @@ def test_explicit_v1_to_v5_migration_preserves_source(tmp_path: Path) -> None:
         connection.commit()
     registry = SQLiteCDECRRegistry(path)
     registry.initialize()
-    assert registry.pragma_state()["user_version"] == 5
+    assert registry.pragma_state()["user_version"] == 8
     assert registry.get_source("MSG-1") == source()
     with sqlite3.connect(path) as connection:
         tables = {
@@ -175,9 +175,7 @@ def test_grounder_batch_checkpoint_survives_failed_run(tmp_path: Path) -> None:
         output=output,
     )
     registry.fail_document_run("RUN-1", error_code="later_batch_failed")
-    assert registry.get_grounder_batch(
-        processing_key="KEY-1", batch_key="BATCH-1"
-    ) == output
+    assert registry.get_grounder_batch(processing_key="KEY-1", batch_key="BATCH-1") == output
 
 
 def test_model_call_v2_audit_columns_are_append_only(tmp_path: Path) -> None:

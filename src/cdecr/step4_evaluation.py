@@ -195,10 +195,7 @@ def load_step4_corpus(
 
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     manifest_version = str(manifest["manifest_version"])
-    rows = [
-        Step4CorpusRow.model_validate(item)
-        for item in manifest["rows"][:limit]
-    ]
+    rows = [Step4CorpusRow.model_validate(item) for item in manifest["rows"][:limit]]
     snapshot_by_id: dict[str, dict[str, object]] = {}
     with snapshot_path.open(encoding="utf-8") as handle:
         for line in handle:
@@ -228,9 +225,13 @@ def _stable_hash(value: object) -> str:
 def _m4_review_request(
     source: SourceMessage, result: SingleDocumentResult
 ) -> StructuredModelRequest:
+    short_id_by_mention = {
+        mention.mention_id: f"m{index}"
+        for index, mention in enumerate(result.mentions, start=1)
+    }
     extracted_mentions = [
         {
-            "mention_id": mention.mention_id,
+            "mention_id": short_id_by_mention[mention.mention_id],
             "event_family": mention.event_family.value,
             "predicate": mention.predicate.model_dump(mode="json"),
             "canonical_proposition": mention.canonical_proposition,
@@ -251,8 +252,8 @@ def _m4_review_request(
             "either in one gold mention's source_mention_ids or in "
             "unsupported_extracted_mention_ids. A genuinely missing event may have an empty "
             "source_mention_ids list. Evidence text must be an exact case-sensitive substring of "
-            "the "
-            "title or body and no longer than 500 characters."
+            "the title or body and no longer than 500 characters. Mention IDs are request-local "
+            "short IDs such as m1; copy them exactly and never construct an ID."
         ),
         user_prompt=json.dumps(
             {
@@ -271,18 +272,34 @@ def _m4_review_request(
     )
 
 
+def _review_mention_id_maps(
+    result: SingleDocumentResult,
+) -> tuple[dict[str, str], dict[str, str]]:
+    short_by_full = {
+        mention.mention_id: f"m{index}"
+        for index, mention in enumerate(result.mentions, start=1)
+    }
+    return short_by_full, {
+        short_id: full_id for full_id, short_id in short_by_full.items()
+    }
+
+
 def _validate_m4_review(
     output: M4ReviewOutput,
     *,
     source: SourceMessage,
     result: SingleDocumentResult,
 ) -> M4ReviewRecord:
+    _, full_by_short = _review_mention_id_maps(result)
     extracted_ids = {mention.mention_id for mention in result.mentions}
     classified_ids = [
-        mention_id
+        full_by_short.get(mention_id, mention_id)
         for mention in output.mentions
         for mention_id in mention.source_mention_ids
-    ] + list(output.unsupported_extracted_mention_ids)
+    ] + [
+        full_by_short.get(mention_id, mention_id)
+        for mention_id in output.unsupported_extracted_mention_ids
+    ]
     if len(classified_ids) != len(set(classified_ids)):
         raise ValueError("M4 review classifies an extracted mention more than once")
     if set(classified_ids) != extracted_ids:
@@ -317,6 +334,7 @@ def _reconcile_m4_review(
 ) -> M4ReviewRecord:
     """Conservatively reconcile a schema-valid M4 review after its repair was still invalid."""
 
+    _, full_by_short = _review_mention_id_maps(result)
     extracted_ids = {mention.mention_id for mention in result.mentions}
     classified: set[str] = set()
     gold_mentions: list[GoldMention] = []
@@ -333,7 +351,8 @@ def _reconcile_m4_review(
             dropped_gold += 1
             continue
         source_ids = []
-        for mention_id in mention.source_mention_ids:
+        for short_id in mention.source_mention_ids:
+            mention_id = full_by_short.get(short_id, short_id)
             if mention_id not in extracted_ids or mention_id in classified:
                 dropped_ids += 1
                 continue
@@ -348,7 +367,8 @@ def _reconcile_m4_review(
             )
         )
     unsupported: list[str] = []
-    for mention_id in output.unsupported_extracted_mention_ids:
+    for short_id in output.unsupported_extracted_mention_ids:
+        mention_id = full_by_short.get(short_id, short_id)
         if mention_id in extracted_ids and mention_id not in classified:
             classified.add(mention_id)
             unsupported.append(mention_id)
@@ -386,9 +406,7 @@ def _record_m4_call(
         model=model,
         status=status,
         input_tokens=(
-            result.input_tokens
-            if result is not None
-            else getattr(error, "input_tokens", None)
+            result.input_tokens if result is not None else getattr(error, "input_tokens", None)
         ),
         output_tokens=(
             result.output_tokens if result is not None else getattr(error, "output_tokens", None)
@@ -399,9 +417,7 @@ def _record_m4_call(
         stage="m4_gold_review_repair" if repaired else "m4_gold_review",
         prompt_version=M4_REVIEW_VERSION,
         schema_hash=_stable_hash(request.json_schema),
-        input_hash=_stable_hash(
-            {"system": request.system_prompt, "user": request.user_prompt}
-        ),
+        input_hash=_stable_hash({"system": request.system_prompt, "user": request.user_prompt}),
     )
 
 
@@ -616,9 +632,7 @@ def _boundary_report(
         if violation:
             violation_ids[name].append(case_id)
 
-    located = {
-        mention.mention_id: _result_packages(registry, mention) for mention in mentions
-    }
+    located = {mention.mention_id: _result_packages(registry, mention) for mention in mentions}
     for left, right in combinations(mentions, 2):
         if left.message_id == right.message_id:
             continue
@@ -692,9 +706,7 @@ def _boundary_report(
         earnings_memberships = [
             package_id
             for package_id in package_ids
-            if (
-                package := registry.get_current_package(package_id)
-            ) is not None
+            if (package := registry.get_current_package(package_id)) is not None
             and package.package_family is PackageFamily.EARNINGS_DISCLOSURE
         ]
         record(
@@ -770,8 +782,7 @@ def build_step4_report(
         item.status is ProcessingStatus.SUCCEEDED for item in document_results
     )
     completed_events = sum(
-        item is not None and item.status is CrossDocumentStatus.SUCCEEDED
-        for item in event_results
+        item is not None and item.status is CrossDocumentStatus.SUCCEEDED for item in event_results
     )
     boundary_violations = sum(item.violations for item in boundaries.values())
     budget = _budget(registry.list_model_call_summaries())

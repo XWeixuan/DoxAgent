@@ -421,12 +421,33 @@ class NormalizationEngine:
     def _m2_selections(self, pending: list[_Pending]) -> dict[str, str | None]:
         if not pending or self.fallback_client is None:
             return {}
+        field_short_by_path = {
+            item.field_path: f"f{index}"
+            for index, item in enumerate(pending, start=1)
+        }
+        field_path_by_short = {
+            short_id: field_path for field_path, short_id in field_short_by_path.items()
+        }
+        candidate_short_by_field: dict[str, dict[str, str]] = {}
+        candidate_full_by_field: dict[str, dict[str, str]] = {}
+        for item in pending:
+            field_short = field_short_by_path[item.field_path]
+            mapping = {
+                canonical_id: f"k{index}"
+                for index, canonical_id in enumerate(sorted(item.allowed), start=1)
+            }
+            candidate_short_by_field[field_short] = mapping
+            candidate_full_by_field[field_short] = {
+                short_id: canonical_id for canonical_id, short_id in mapping.items()
+            }
         request_items = [
             {
-                "field_path": item.field_path,
+                "field_path": field_short_by_path[item.field_path],
                 "kind": item.kind.value,
                 "raw_value": item.raw_value,
-                "candidate_ids": sorted(item.allowed),
+                "candidate_ids": list(
+                    candidate_short_by_field[field_short_by_path[item.field_path]].values()
+                ),
             }
             for item in pending
         ]
@@ -457,14 +478,19 @@ class NormalizationEngine:
                 )
             )
             batch = _SelectionBatch.model_validate(repaired.payload)
-        by_path = {item.field_path: item for item in pending}
         selections: dict[str, str | None] = {}
         for selection in batch.selections:
-            item = by_path.get(selection.field_path)
-            if item is None:
+            field_path = field_path_by_short.get(selection.field_path)
+            if field_path is None:
                 continue
-            if selection.canonical_id is None or selection.canonical_id in item.allowed:
-                selections[selection.field_path] = selection.canonical_id
+            if selection.canonical_id is None:
+                selections[field_path] = None
+                continue
+            canonical_id = candidate_full_by_field[selection.field_path].get(
+                selection.canonical_id
+            )
+            if canonical_id is not None:
+                selections[field_path] = canonical_id
         return selections
 
     def normalize(

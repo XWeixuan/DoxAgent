@@ -1091,3 +1091,32 @@ Event Package Registry
 6. 原先依赖 confidence 阈值的下游动作改为明确分类与硬规则：只有唯一明确候选才执行
    MERGE/MEMBER/EXTERNAL_RELATED，多候选或 UNCERTAIN 进入 HOLD。Registry 升级到 v5，
    处理版本、Prompt 版本和幂等键同步升级，旧结果不得被新链路误复用。
+
+---
+
+# 十七、2026-07-24 N7–N10 最终优化覆盖说明
+
+本节与
+`CDECR_N7_N10_final_optimization_plan.md`共同覆盖上文所有
+`CREATE_AND_LINK`、`HOLD`、逐 Pair Atomic 判定和自动 Atomic Redirect 旧口径。
+
+1. Atomic Assignment 动作只允许 `MERGE/CREATE_NEW`；Package Assignment 不确定时
+   `CREATE_NEW_PACKAGE`。HOLD 枚举、对象、队列、CLI 与导出字段全部删除。
+2. N8 支持 `enforce/shadow/off`，当前默认 `shadow`：继续计算和审计旧 Hard
+   Cannot-Link，但不排序、不筛选、不进入 N9 输入。
+3. N9 对单 Mention 的全部候选做一次联合裁决，逐候选输出
+   `SAME_EVENT/RELATED_NOT_SAME/UNRELATED/UNCERTAIN`，并直接选择
+   `MERGE/CREATE_NEW`。Related 只留审计，不创建正式关系；持续技术或结构化失败令
+   Run 失败。
+4. Atomic Embedding 的唯一输入为当前 Atomic Version、Identity Profile、时间、
+   Assertion State 和代表 Mention 命题构成的确定性 Identity Text；禁止复用
+   Mention Vector 伪装 Atomic Vector。
+5. N6–N9 使用当前 Canonical Field Link、Redirect Root 和来源等级进行
+   `SAME/DIFFERENT/UNKNOWN` 三值身份判断；Place 及全部 Named Object 进入
+   `FIELD_ID`，Participant Canonical ID 进入 `CORE_ENTITY`，角色不被压平。
+6. Field Resolution 必须先于最终 processing key；Assignment 保存 Identity Key 与
+   Policy Version。Identity 变化时返回 `DERIVED_STATE_REBUILD_REQUIRED`，不得静默
+   复用旧成员或覆盖 Atomic Profile。
+7. `_correct_atomic()` 仅检测并审计疑似重复，不再自动合并或写 Redirect。测试阶段用
+   `python -m cdecr registry rebuild-derived`从不可变 Source、Mention 和当前 Field
+   State 重建 N6 之后的全部派生状态。

@@ -361,9 +361,7 @@ def align_unique_evidence_locator(
         return locator  # pragma: no cover - locator_to_evidence always raises
     if len(starts) > 1:
         distances = sorted((abs(start - locator.start_char), start) for start in starts)
-        if len(locator.text) < 12 or (
-            len(distances) > 1 and distances[0][0] == distances[1][0]
-        ):
+        if len(locator.text) < 12 or (len(distances) > 1 and distances[0][0] == distances[1][0]):
             locator_to_evidence(locator, document, source)
             return locator  # pragma: no cover - locator_to_evidence always raises
         start = distances[0][1]

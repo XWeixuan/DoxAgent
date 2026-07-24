@@ -110,14 +110,14 @@ def _should_rotate_key(exc: Exception) -> bool:
 
 
 class DashScopeEmbeddingClient:
-    """OpenAI-compatible ``text-embedding-v4`` client."""
+    """OpenAI-compatible DashScope text embedding client."""
 
     def __init__(
         self,
         *,
         api_key: str,
         base_url: str,
-        model: str = "text-embedding-v4",
+        model: str = "qwen3.7-text-embedding",
         dimensions: int = 1024,
         timeout_seconds: float = 30.0,
         fallback_api_keys: Sequence[str] = (),
@@ -241,7 +241,7 @@ class DashScopeStructuredModelClient:
                             },
                             {"role": "user", "content": user_prompt},
                         ],
-                        response_format={"type": STRUCTURED_OUTPUT_MODE},
+                        response_format={"type": request.output_mode},
                         extra_body={"enable_thinking": False},
                     )
                 else:
@@ -251,7 +251,7 @@ class DashScopeStructuredModelClient:
                             {"role": "system", "content": system_prompt},
                             {"role": "user", "content": user_prompt},
                         ],
-                        "text": {"format": {"type": STRUCTURED_OUTPUT_MODE}},
+                        "text": {"format": {"type": request.output_mode}},
                         "reasoning": {"effort": STRUCTURED_REASONING_EFFORT},
                     }
                     provider_response = client.responses.create(**response_kwargs)

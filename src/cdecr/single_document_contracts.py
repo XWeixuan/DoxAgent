@@ -7,6 +7,7 @@ from enum import StrEnum
 from typing import Annotated, Literal
 
 from pydantic import Field, JsonValue, model_validator
+from pydantic.json_schema import SkipJsonSchema
 
 from cdecr.contracts import (
     AssertionState,
@@ -173,10 +174,24 @@ class ParticipantDraft(StrictModel):
 
 
 class EventTimeDraft(StrictModel):
-    event_start: datetime | date | None
-    event_end: datetime | date | None
+    event_start: datetime | date | None = Field(
+        description=(
+            "Underlying event start time, not the publication date or a financial reporting period."
+        )
+    )
+    event_end: datetime | date | None = Field(
+        description=(
+            "Underlying event end time, not the publication date or a financial reporting period."
+        )
+    )
     precision: TimePrecision
-    reference_period_id: str | None = None
+    reference_period_id: str | None = Field(
+        default=None,
+        description=(
+            "Document-local reporting or financial-period expression awaiting later "
+            "linking; never a canonical KB ID."
+        ),
+    )
 
     @model_validator(mode="after")
     def validate_bounds(self) -> EventTimeDraft:
@@ -184,8 +199,26 @@ class EventTimeDraft(StrictModel):
         return self
 
 
+def validate_event_time_semantics(value: EventTimeDraft) -> None:
+    if (
+        value.event_start is None
+        and value.event_end is None
+        and value.precision is not TimePrecision.UNKNOWN
+    ):
+        raise ValueError("time without event bounds must use UNKNOWN precision")
+
+
 class QuantityDraft(StrictModel):
-    metric_id: Annotated[str, Field(pattern=r"^[a-z][a-z0-9_]*$")]
+    metric_id: Annotated[
+        str,
+        Field(
+            pattern=r"^[a-z][a-z0-9_]*$",
+            description=(
+                "Document-local metric label awaiting later linking; never invent a "
+                "canonical Metric KB ID."
+            ),
+        ),
+    ]
     value: int | float
     unit: NonEmptyString
     raw_text: NonEmptyString
@@ -193,16 +226,29 @@ class QuantityDraft(StrictModel):
 
 class MentionDraft(StrictModel):
     evidence_locations: list[EvidenceText] = Field(min_length=1)
-    canonical_proposition: NonEmptyString
-    source_claim: str | None
+    canonical_proposition: NonEmptyString = Field(
+        description=("Self-contained underlying event proposition without reporting attribution.")
+    )
+    source_claim: str | None = Field(
+        description=(
+            "Explicit claimant or statement source in the text, not the publishing news "
+            "outlet by default."
+        )
+    )
     event_family: EventFamily
     predicate: Predicate
-    participants: list[ParticipantDraft]
+    participants: list[ParticipantDraft] = Field(
+        description=("Core participants in the underlying event, not every entity mentioned.")
+    )
     locations: list[NonEmptyString]
     time: EventTimeDraft
-    assertion_state: AssertionState
+    assertion_state: AssertionState = Field(
+        description=("State of the underlying proposition, not the state of the reporting act.")
+    )
     quantities: list[QuantityDraft]
-    open_attributes: list[OpenAttributeDraft]
+    open_attributes: list[OpenAttributeDraft] = Field(
+        description=("Evidence-backed modifiers that do not independently constitute events.")
+    )
     local_package_hint: LocalPackageHint | None = None
 
 
@@ -213,9 +259,9 @@ class GroundedMentionDraft(StrictModel):
 
 
 class GroundedMentionDraftInput(StrictModel):
-    source_candidate_ids: list[
-        Annotated[str, Field(pattern=r"^c[1-9][0-9]*$")]
-    ] = Field(min_length=1)
+    source_candidate_ids: list[Annotated[str, Field(pattern=r"^c[1-9][0-9]*$")]] = Field(
+        min_length=1
+    )
     mention: MentionDraft
 
 
@@ -241,43 +287,157 @@ class JudgeDecisionRecord(StrictModel):
 
     @model_validator(mode="after")
     def validate_action_payload(self) -> JudgeDecisionRecord:
-        if self.action is JudgeAction.SPLIT and len(self.split_mentions) < 2:
-            raise ValueError("SPLIT requires at least two replacement mentions")
-        if self.action is not JudgeAction.SPLIT and self.split_mentions:
-            raise ValueError("split_mentions is only valid for SPLIT")
-        if self.action is JudgeAction.DUPLICATE and not self.target_mention_id:
-            raise ValueError("DUPLICATE requires target_mention_id")
-        if self.action is JudgeAction.MERGE_AS_ATTRIBUTE:
+        if self.action is JudgeAction.ACCEPT:
+            if self.split_mentions or self.target_mention_id or self.attribute is not None:
+                raise ValueError("ACCEPT only permits revised_mention")
+        elif self.action is JudgeAction.REJECT:
+            if (
+                self.revised_mention is not None
+                or self.split_mentions
+                or self.target_mention_id
+                or self.attribute is not None
+            ):
+                raise ValueError("REJECT does not permit action payload fields")
+        elif self.action is JudgeAction.SPLIT:
+            if len(self.split_mentions) < 2:
+                raise ValueError("SPLIT requires at least two replacement mentions")
+            if (
+                self.revised_mention is not None
+                or self.target_mention_id
+                or self.attribute is not None
+            ):
+                raise ValueError("SPLIT only permits split_mentions")
+        elif self.action is JudgeAction.DUPLICATE:
+            if not self.target_mention_id:
+                raise ValueError("DUPLICATE requires target_mention_id")
+            if (
+                self.revised_mention is not None
+                or self.split_mentions
+                or self.attribute is not None
+            ):
+                raise ValueError("DUPLICATE only permits target_mention_id")
+        elif self.action is JudgeAction.MERGE_AS_ATTRIBUTE:
             if not self.target_mention_id or self.attribute is None:
                 raise ValueError("MERGE_AS_ATTRIBUTE requires target and attribute")
+            if self.revised_mention is not None or self.split_mentions:
+                raise ValueError("MERGE_AS_ATTRIBUTE only permits target_mention_id and attribute")
         return self
 
 
-class JudgeDecisionDraft(StrictModel):
-    target_draft_id: NonEmptyString
-    action: JudgeAction
-    reason: NonEmptyString
-    revised_mention: MentionDraft | None = None
-    split_mentions: list[MentionDraft] = Field(default_factory=list)
-    target_mention_id: str | None = None
-    attribute: OpenAttributeDraft | None = None
+class JudgeMentionDraft(StrictModel):
+    """N4-only Mention DTO; lineage and package fields remain outside the model."""
+
+    evidence_locations: list[EvidenceText] = Field(min_length=1)
+    canonical_proposition: NonEmptyString = Field(
+        description=("Self-contained underlying event proposition without reporting attribution.")
+    )
+    source_claim: str | None = Field(
+        description=(
+            "Explicit claimant or statement source in the text, not the publishing news "
+            "outlet by default."
+        )
+    )
+    event_family: EventFamily = Field(
+        description="Coarse routing family that N4 may correct when unsupported."
+    )
+    predicate: Predicate
+    participants: list[ParticipantDraft] = Field(
+        description=("Core participants in the underlying event, not every entity mentioned.")
+    )
+    locations: list[NonEmptyString]
+    time: EventTimeDraft
+    assertion_state: AssertionState = Field(
+        description=("State of the underlying proposition, not the state of the reporting act.")
+    )
+    quantities: list[QuantityDraft]
+    open_attributes: list[OpenAttributeDraft] = Field(
+        description=("Evidence-backed modifiers that do not independently constitute events.")
+    )
+
+
+class JudgeDraftInput(StrictModel):
+    id: Annotated[str, Field(pattern=r"^d[1-9][0-9]*$")]
+    mention: JudgeMentionDraft
+
+
+class JudgeMentionChanges(StrictModel):
+    """Field-level replacements for ACCEPT; omitted fields retain their input values."""
+
+    evidence_locations: list[EvidenceText] | SkipJsonSchema[None] = Field(
+        default=None, min_length=1
+    )
+    canonical_proposition: NonEmptyString | SkipJsonSchema[None] = None
+    source_claim: str | None = None
+    event_family: EventFamily | SkipJsonSchema[None] = None
+    predicate: Predicate | SkipJsonSchema[None] = None
+    participants: list[ParticipantDraft] | SkipJsonSchema[None] = None
+    locations: list[NonEmptyString] | SkipJsonSchema[None] = None
+    time: EventTimeDraft | SkipJsonSchema[None] = None
+    assertion_state: AssertionState | SkipJsonSchema[None] = None
+    quantities: list[QuantityDraft] | SkipJsonSchema[None] = None
+    open_attributes: list[OpenAttributeDraft] | SkipJsonSchema[None] = None
 
     @model_validator(mode="after")
-    def validate_action_payload(self) -> JudgeDecisionDraft:
-        if self.action is JudgeAction.SPLIT and len(self.split_mentions) < 2:
-            raise ValueError("SPLIT requires at least two replacement mentions")
-        if self.action is not JudgeAction.SPLIT and self.split_mentions:
-            raise ValueError("split_mentions is only valid for SPLIT")
-        if self.action is JudgeAction.DUPLICATE and not self.target_mention_id:
-            raise ValueError("DUPLICATE requires target_mention_id")
-        if self.action is JudgeAction.MERGE_AS_ATTRIBUTE:
-            if not self.target_mention_id or self.attribute is None:
-                raise ValueError("MERGE_AS_ATTRIBUTE requires target and attribute")
+    def validate_replacements(self) -> JudgeMentionChanges:
+        if not self.model_fields_set:
+            raise ValueError("changes must replace at least one Mention field")
+        nullable_fields = {"source_claim"}
+        for field_name in self.model_fields_set - nullable_fields:
+            if getattr(self, field_name) is None:
+                raise ValueError(f"{field_name} cannot be replaced with null")
         return self
 
 
-class JudgeModelOutput(StrictModel):
-    decisions: list[JudgeDecisionDraft]
+JudgeShortId = Annotated[str, Field(pattern=r"^d[1-9][0-9]*$")]
+JudgeReason = Annotated[str, Field(min_length=1, max_length=240)]
+
+
+class JudgeAcceptedCommand(StrictModel):
+    id: JudgeShortId
+    reason: JudgeReason
+    changes: JudgeMentionChanges | SkipJsonSchema[None] = None
+
+    @model_validator(mode="after")
+    def reject_explicit_null_changes(self) -> JudgeAcceptedCommand:
+        if "changes" in self.model_fields_set and self.changes is None:
+            raise ValueError("changes must be omitted when no fields are replaced")
+        return self
+
+
+class JudgeRejectedCommand(StrictModel):
+    id: JudgeShortId
+    reason: JudgeReason
+
+
+class JudgeSplitCommand(StrictModel):
+    id: JudgeShortId
+    reason: JudgeReason
+    mentions: list[JudgeMentionDraft] = Field(min_length=2)
+
+
+class JudgeDuplicateCommand(StrictModel):
+    id: JudgeShortId
+    reason: JudgeReason
+    keep_id: JudgeShortId = Field(
+        description="Short ID in this batch whose final decision is ACCEPT."
+    )
+
+
+class JudgeAttributeMergeCommand(StrictModel):
+    id: JudgeShortId
+    reason: JudgeReason
+    keep_id: JudgeShortId = Field(
+        description="Short ID in this batch whose final decision is ACCEPT."
+    )
+    attribute: OpenAttributeDraft
+
+
+class JudgeCommandOutput(StrictModel):
+    accepted: list[JudgeAcceptedCommand] = Field(default_factory=list)
+    rejected: list[JudgeRejectedCommand] = Field(default_factory=list)
+    split: list[JudgeSplitCommand] = Field(default_factory=list)
+    duplicates: list[JudgeDuplicateCommand] = Field(default_factory=list)
+    attribute_merges: list[JudgeAttributeMergeCommand] = Field(default_factory=list)
 
 
 class JudgeOutput(StrictModel):

@@ -21,8 +21,6 @@ from cdecr.cross_document_contracts import (
     AtomicAssignmentRecord,
     CrossDocumentResult,
     CrossDocumentStatus,
-    HoldKind,
-    HoldRecord,
     PackageAssignmentRecord,
 )
 from cdecr.registry import SQLiteCDECRRegistry
@@ -60,7 +58,7 @@ def test_v4_to_v5_migration_removes_confidence_columns_and_upgrades_mentions(
         connection.commit()
 
     registry.initialize()
-    assert registry.pragma_state()["user_version"] == 5
+    assert registry.pragma_state()["user_version"] == 8
     restored = registry.get_mention("MENTION-1")
     assert restored is not None and restored.source_claim is None
     assert "extraction_confidence" not in restored.model_dump()
@@ -102,7 +100,9 @@ def test_v3_cross_document_audit_restart_and_recall(tmp_path: Path) -> None:
         action=AtomicAction.CREATE_NEW,
         reason="NO_CANDIDATE",
         hard_conflicts=[],
-        identity_conflicts=[],
+        identity_differences=[],
+        identity_processing_key="identity-v1",
+        assignment_policy_version="atomic-assignment-policy-v2",
     )
     package_record = PackageAssignmentRecord(
         assignment_id="PA-1",
@@ -113,18 +113,8 @@ def test_v3_cross_document_audit_restart_and_recall(tmp_path: Path) -> None:
         relation=PackageAssignmentRelation.NOT_RELATED,
         reason="NO_CANDIDATE",
     )
-    hold = HoldRecord(
-        hold_id="HOLD-1",
-        run_id=run_id,
-        kind=HoldKind.PACKAGE_CORRECTION,
-        subject_id=package.package_id,
-        candidate_ids=[],
-        reason_codes=["REVIEW"],
-        payload={},
-    )
     assert registry.save_atomic_assignment(atomic_record)
     assert registry.save_package_assignment(package_record)
-    assert registry.save_hold(hold)
     assert registry.save_package_external_relation(
         PackageExternalRelation(
             relation_id="PR-1",
@@ -142,7 +132,6 @@ def test_v3_cross_document_audit_restart_and_recall(tmp_path: Path) -> None:
         packages=[package],
         atomic_assignments=[atomic_record],
         package_assignments=[package_record],
-        hold_ids=[hold.hold_id],
         model_calls=[],
         candidate_counts={},
         started_at=datetime.now(UTC),
@@ -152,9 +141,8 @@ def test_v3_cross_document_audit_restart_and_recall(tmp_path: Path) -> None:
 
     restarted = SQLiteCDECRRegistry(registry.path)
     restarted.initialize()
-    assert restarted.pragma_state()["user_version"] == 5
+    assert restarted.pragma_state()["user_version"] == 8
     assert restarted.get_completed_cross_document_result("key-1") == result
-    assert restarted.list_open_holds() == [hold]
     recalled = restarted.recall_atomic_event_ids(
         entity_ids=["COMPANY_MU"],
         event_family=value.event_family.value,
@@ -176,3 +164,32 @@ def test_v3_cross_document_audit_restart_and_recall(tmp_path: Path) -> None:
         time_end=None,
     )
     assert package.package_id in packages
+
+
+def test_rebuild_derived_state_preserves_inputs_and_field_state(tmp_path: Path) -> None:
+    registry = SQLiteCDECRRegistry(tmp_path / "rebuild.sqlite3")
+    registry.initialize()
+    registry.save_source(source(), fingerprint="a" * 64)
+    value = mention()
+    registry.save_mention(value)
+    event = singleton_atomic_event(value)
+    registry.save_atomic_event(event)
+    package = singleton_package(event, package_seed_for_event(event, [value]))
+    registry.save_package(package)
+
+    deleted = registry.rebuild_derived_state()
+
+    assert deleted["atomic_events"] == 1
+    assert deleted["packages"] == 1
+    assert registry.get_source(value.message_id) is not None
+    assert registry.get_mention(value.mention_id) == value
+    assert registry.list_current_atomic_events() == []
+    assert registry.list_current_packages() == []
+    with sqlite3.connect(registry.path) as connection:
+        tables = {
+            row[0]
+            for row in connection.execute(
+                "SELECT name FROM sqlite_master WHERE type = 'table'"
+            )
+        }
+    assert "hold_queue" not in tables

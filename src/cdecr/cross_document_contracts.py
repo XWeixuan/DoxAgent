@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime
 from enum import StrEnum
+from typing import Literal
 
 from pydantic import Field, model_validator
 
@@ -18,9 +19,11 @@ from cdecr.contracts import (
     NonEmptyString,
     PackageAction,
     PackageAssignmentRelation,
+    PackageBoundaryAction,
     PackageFamily,
     PackageKind,
     PackageMergeRelation,
+    PackageQualityState,
     PackageTimeRange,
     StrictModel,
 )
@@ -36,7 +39,12 @@ class RecallRoute(StrEnum):
     SOURCE_FINGERPRINT = "SOURCE_FINGERPRINT"
     LOCAL_PACKAGE_HINT = "LOCAL_PACKAGE_HINT"
     PACKAGE_ANCHOR = "PACKAGE_ANCHOR"
+    CANONICAL_ARTIFACT = "CANONICAL_ARTIFACT"
+    PACKAGE_KIND_FAMILY = "PACKAGE_KIND_FAMILY"
     SHARED_ATOMIC_EVENT = "SHARED_ATOMIC_EVENT"
+    MEMBER_IDENTITY = "MEMBER_IDENTITY"
+    LIFECYCLE_COMPATIBILITY = "LIFECYCLE_COMPATIBILITY"
+    FIELD_ID = "FIELD_ID"
 
 
 class HardConflictCode(StrEnum):
@@ -67,17 +75,16 @@ class HardConflictCode(StrEnum):
     PACKAGE_MATTER = "PACKAGE_MATTER"
 
 
-class HoldKind(StrEnum):
-    ATOMIC_ASSIGNMENT = "ATOMIC_ASSIGNMENT"
-    ATOMIC_CORRECTION = "ATOMIC_CORRECTION"
-    PACKAGE_ASSIGNMENT = "PACKAGE_ASSIGNMENT"
-    PACKAGE_MERGE = "PACKAGE_MERGE"
-    PACKAGE_CORRECTION = "PACKAGE_CORRECTION"
+class HardCannotLinkMode(StrEnum):
+    ENFORCE = "enforce"
+    SHADOW = "shadow"
+    OFF = "off"
 
 
-class HoldStatus(StrEnum):
-    OPEN = "OPEN"
-    RESOLVED = "RESOLVED"
+class PackageConflictMode(StrEnum):
+    OFF = "off"
+    SHADOW = "shadow"
+    ENFORCE = "enforce"
 
 
 class CrossDocumentStatus(StrEnum):
@@ -100,22 +107,47 @@ class AtomicCandidate(StrictModel):
         return self
 
 
-class AtomicPairDecision(StrictModel):
-    mention_id: NonEmptyString
+class AtomicCandidateAssessment(StrictModel):
     candidate_event_id: NonEmptyString
     relation: AtomicSemanticRelation
-    claim_conflict: bool
-    identity_conflicts: list[NonEmptyString]
+    claim_conflict: bool = False
+    identity_differences: list[NonEmptyString] = Field(default_factory=list)
+
+
+class AtomicAssignmentDecision(StrictModel):
+    mention_id: NonEmptyString
+    action: AtomicAction
+    merge_target_event_id: str | None = None
+    candidate_assessments: list[AtomicCandidateAssessment]
+    related_candidate_event_ids: list[NonEmptyString] = Field(default_factory=list)
+    possible_duplicate_atomic_ids: list[NonEmptyString] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def validate_action(self) -> AtomicAssignmentDecision:
+        if self.action is AtomicAction.MERGE and self.merge_target_event_id is None:
+            raise ValueError("MERGE requires merge_target_event_id")
+        if self.action is AtomicAction.CREATE_NEW and self.merge_target_event_id is not None:
+            raise ValueError("CREATE_NEW must not include merge_target_event_id")
+        assessment_ids = [item.candidate_event_id for item in self.candidate_assessments]
+        if len(assessment_ids) != len(set(assessment_ids)):
+            raise ValueError("candidate assessments must be unique")
+        if len(self.related_candidate_event_ids) != len(set(self.related_candidate_event_ids)):
+            raise ValueError("related candidate ids must be unique")
+        if len(self.possible_duplicate_atomic_ids) != len(
+            set(self.possible_duplicate_atomic_ids)
+        ):
+            raise ValueError("possible duplicate atomic ids must be unique")
+        return self
 
 
 class AtomicDecisionBatch(StrictModel):
-    decisions: list[AtomicPairDecision]
+    decisions: list[AtomicAssignmentDecision]
 
     @model_validator(mode="after")
-    def unique_pairs(self) -> AtomicDecisionBatch:
-        pairs = [(item.mention_id, item.candidate_event_id) for item in self.decisions]
-        if len(pairs) != len(set(pairs)):
-            raise ValueError("mention/candidate decision pairs must be unique")
+    def unique_mentions(self) -> AtomicDecisionBatch:
+        mentions = [item.mention_id for item in self.decisions]
+        if len(mentions) != len(set(mentions)):
+            raise ValueError("atomic decisions must be unique per mention")
         return self
 
 
@@ -129,16 +161,18 @@ class AtomicAssignmentRecord(StrictModel):
     relation: AtomicSemanticRelation | None = None
     hard_conflicts: list[HardConflictCode]
     claim_conflict: bool = False
-    identity_conflicts: list[NonEmptyString]
+    identity_differences: list[NonEmptyString]
+    related_candidate_event_ids: list[NonEmptyString] = Field(default_factory=list)
+    possible_duplicate_atomic_ids: list[NonEmptyString] = Field(default_factory=list)
+    identity_processing_key: NonEmptyString
+    assignment_policy_version: NonEmptyString
     reason: NonEmptyString
     version: int = Field(default=1, ge=1)
 
     @model_validator(mode="after")
     def validate_action_target(self) -> AtomicAssignmentRecord:
-        if self.action is AtomicAction.HOLD and self.resulting_event_id is not None:
-            raise ValueError("HOLD must not assign a resulting event")
-        if self.action is not AtomicAction.HOLD and self.resulting_event_id is None:
-            raise ValueError("non-HOLD atomic action requires resulting_event_id")
+        if self.resulting_event_id is None:
+            raise ValueError("atomic assignment requires resulting_event_id")
         return self
 
 
@@ -146,7 +180,8 @@ class PackageCandidate(StrictModel):
     package: EventPackage
     recall_routes: list[RecallRoute] = Field(min_length=1)
     recall_score: Confidence
-    hard_conflicts: list[HardConflictCode]
+    embedding_similarity: float | None = Field(default=None, ge=-1.0, le=1.0)
+    hard_conflicts: list[HardConflictCode] = Field(default_factory=list)
 
 
 class PackageSeed(StrictModel):
@@ -155,13 +190,75 @@ class PackageSeed(StrictModel):
     canonical_title: NonEmptyString
     anchor_entities: list[NonEmptyString]
     local_anchor_hint: str | None = None
+    package_anchor_ids: list[NonEmptyString] = Field(default_factory=list)
+    artifact_candidate_ids: list[NonEmptyString] = Field(default_factory=list)
+    anchor_conflict: bool = False
     anchor_artifact_id: str | None = None
     anchor_period_id: str | None = None
     time_range: PackageTimeRange
     membership_relation: MembershipRelation
 
 
+class PackageAnchorView(StrictModel):
+    canonical_id: NonEmptyString
+    external_id: str | None = None
+    trust: Literal["KB_EXTERNAL", "PROVISIONAL"]
+    canonical_text: NonEmptyString
+
+
+class PackageRepresentativeMember(StrictModel):
+    event_id: NonEmptyString
+    canonical_proposition: NonEmptyString
+    event_family: NonEmptyString
+    identity_profile: dict[str, object]
+    time: dict[str, object]
+    assertion_state: NonEmptyString
+
+
+class PackageRetrievalSignals(StrictModel):
+    routes: list[RecallRoute]
+    embedding_similarity: float | None = Field(default=None, ge=-1.0, le=1.0)
+
+
+class PackageDecisionView(StrictModel):
+    package: EventPackage
+    package_anchors: list[PackageAnchorView]
+    representative_members: list[PackageRepresentativeMember] = Field(max_length=5)
+    retrieval_signals: PackageRetrievalSignals
+
+
+class PackageCandidateAssessment(StrictModel):
+    candidate_package_id: NonEmptyString
+    relation: PackageAssignmentRelation
+    membership_relation: MembershipRelation | None = None
+    external_relation: ExternalRelationType | None = None
+    reason: NonEmptyString
+
+    @model_validator(mode="after")
+    def validate_relation_detail(self) -> PackageCandidateAssessment:
+        if self.relation is PackageAssignmentRelation.EXTERNAL_RELATED:
+            if self.external_relation is None:
+                raise ValueError("EXTERNAL_RELATED requires external_relation")
+        elif self.external_relation is not None:
+            raise ValueError("external_relation is only valid for EXTERNAL_RELATED")
+        if self.relation is PackageAssignmentRelation.MEMBER and self.membership_relation is None:
+            raise ValueError("MEMBER requires membership_relation")
+        if (
+            self.relation is not PackageAssignmentRelation.MEMBER
+            and self.membership_relation is not None
+        ):
+            raise ValueError("membership_relation is only valid for MEMBER")
+        return self
+
+
 class PackagePairDecision(StrictModel):
+    """Compatibility DTO for the current pair-wise N11 executor.
+
+    The newer joint package-assignment contract remains the production-facing
+    target.  Keeping this DTO separate prevents the legacy executor from
+    changing that contract while it is migrated.
+    """
+
     event_id: NonEmptyString
     candidate_package_id: NonEmptyString
     relation: PackageAssignmentRelation
@@ -185,8 +282,63 @@ class PackagePairDecision(StrictModel):
         return self
 
 
-class PackageDecisionBatch(StrictModel):
+class PackagePairDecisionBatch(StrictModel):
     decisions: list[PackagePairDecision]
+
+    @model_validator(mode="after")
+    def unique_pairs(self) -> PackagePairDecisionBatch:
+        pairs = [(item.event_id, item.candidate_package_id) for item in self.decisions]
+        if len(pairs) != len(set(pairs)):
+            raise ValueError("package decisions must be unique per event/candidate pair")
+        return self
+
+
+class PackageAssignmentDecision(StrictModel):
+    event_id: NonEmptyString
+    candidate_assessments: list[PackageCandidateAssessment]
+    ranked_member_package_ids: list[NonEmptyString]
+    selected_member_package_id: str | None = None
+    selection_reason: str | None = None
+
+    @model_validator(mode="after")
+    def validate_ranking_and_selection(self) -> PackageAssignmentDecision:
+        assessment_ids = [item.candidate_package_id for item in self.candidate_assessments]
+        if len(assessment_ids) != len(set(assessment_ids)):
+            raise ValueError("candidate assessments must be unique")
+        member_ids = {
+            item.candidate_package_id
+            for item in self.candidate_assessments
+            if item.relation is PackageAssignmentRelation.MEMBER
+        }
+        if len(self.ranked_member_package_ids) != len(set(self.ranked_member_package_ids)):
+            raise ValueError("ranked_member_package_ids must be unique")
+        if set(self.ranked_member_package_ids) != member_ids:
+            raise ValueError(
+                "ranking must contain every MEMBER candidate and only MEMBER candidates"
+            )
+        if member_ids:
+            if self.selected_member_package_id is None:
+                raise ValueError("MEMBER candidates require one selected target")
+            if self.selected_member_package_id != self.ranked_member_package_ids[0]:
+                raise ValueError("selected target must be the first ranked MEMBER")
+            if not self.selection_reason:
+                raise ValueError("selected target requires selection_reason")
+        elif self.selected_member_package_id is not None:
+            raise ValueError("selected target must be null without MEMBER candidates")
+        elif self.selection_reason is not None:
+            raise ValueError("selection_reason must be null without MEMBER candidates")
+        return self
+
+
+class PackageDecisionBatch(StrictModel):
+    decisions: list[PackageAssignmentDecision]
+
+    @model_validator(mode="after")
+    def unique_events(self) -> PackageDecisionBatch:
+        event_ids = [item.event_id for item in self.decisions]
+        if len(event_ids) != len(set(event_ids)):
+            raise ValueError("package assignment decisions must be unique per event")
+        return self
 
 
 class PackageAssignmentRecord(StrictModel):
@@ -197,15 +349,26 @@ class PackageAssignmentRecord(StrictModel):
     resulting_package_id: str | None = None
     action: PackageAction
     relation: PackageAssignmentRelation | None = None
+    candidate_assessments: list[PackageCandidateAssessment] = Field(default_factory=list)
+    ranked_member_package_ids: list[NonEmptyString] = Field(default_factory=list)
+    selected_member_package_id: str | None = None
+    selection_reason: str | None = None
+    package_assignment_key: NonEmptyString = "legacy"
+    package_seed_hash: NonEmptyString = "legacy"
+    package_field_links_hash: NonEmptyString = "legacy"
+    assignment_policy_version: NonEmptyString = "legacy"
     reason: NonEmptyString
     version: int = Field(default=1, ge=1)
 
     @model_validator(mode="after")
     def validate_action_target(self) -> PackageAssignmentRecord:
-        if self.action is PackageAction.HOLD and self.resulting_package_id is not None:
-            raise ValueError("HOLD must not assign a resulting package")
-        if self.action is not PackageAction.HOLD and self.resulting_package_id is None:
-            raise ValueError("non-HOLD package action requires resulting_package_id")
+        if self.resulting_package_id is None:
+            raise ValueError("package assignment requires resulting_package_id")
+        if (
+            self.selected_member_package_id is not None
+            and self.selected_member_package_id != self.candidate_package_id
+        ):
+            raise ValueError("selected member must equal candidate_package_id")
         return self
 
 
@@ -213,22 +376,46 @@ class PackagePairMergeDecision(StrictModel):
     source_package_id: NonEmptyString
     target_package_id: NonEmptyString
     relation: PackageMergeRelation
+    reason: NonEmptyString
 
 
 class PackageMergeDecisionBatch(StrictModel):
     decisions: list[PackagePairMergeDecision]
 
+    @model_validator(mode="after")
+    def unique_pairs(self) -> PackageMergeDecisionBatch:
+        pairs = [
+            tuple(sorted((item.source_package_id, item.target_package_id)))
+            for item in self.decisions
+        ]
+        if len(pairs) != len(set(pairs)):
+            raise ValueError("package merge decisions must be unique per pair")
+        return self
 
-class HoldRecord(StrictModel):
-    hold_id: NonEmptyString
-    run_id: NonEmptyString
-    kind: HoldKind
-    subject_id: NonEmptyString
-    candidate_ids: list[NonEmptyString]
-    reason_codes: list[NonEmptyString] = Field(min_length=1)
-    payload: dict[str, object]
-    status: HoldStatus = HoldStatus.OPEN
-    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+
+class PackageMergePlan(StrictModel):
+    plan_id: NonEmptyString
+    target_package_id: NonEmptyString
+    source_package_ids: list[NonEmptyString] = Field(min_length=1)
+    decision_ids: list[NonEmptyString] = Field(min_length=1)
+    reason: NonEmptyString
+
+    @model_validator(mode="after")
+    def validate_plan(self) -> PackageMergePlan:
+        if len(self.source_package_ids) != len(set(self.source_package_ids)):
+            raise ValueError("merge sources must be unique")
+        if self.target_package_id in self.source_package_ids:
+            raise ValueError("merge target cannot also be a source")
+        if len(self.decision_ids) != len(set(self.decision_ids)):
+            raise ValueError("merge decision ids must be unique")
+        return self
+
+
+class PackageBoundaryFinding(StrictModel):
+    package_id: NonEmptyString
+    quality_state: PackageQualityState
+    reasons: list[NonEmptyString]
+    actions: list[PackageBoundaryAction]
 
 
 class CrossDocumentResult(StrictModel):
@@ -240,7 +427,6 @@ class CrossDocumentResult(StrictModel):
     packages: list[EventPackage]
     atomic_assignments: list[AtomicAssignmentRecord]
     package_assignments: list[PackageAssignmentRecord]
-    hold_ids: list[NonEmptyString]
     model_calls: list[ModelCallSummary]
     candidate_counts: dict[str, int]
     reused: bool = False

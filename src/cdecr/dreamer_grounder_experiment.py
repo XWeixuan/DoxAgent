@@ -97,9 +97,7 @@ class ArmDocumentResult(StrictModel):
 
 
 class ArmArtifact(StrictModel):
-    experiment_version: Literal["cdecr-dreamer-grounder-ab-v1"] = (
-        "cdecr-dreamer-grounder-ab-v1"
-    )
+    experiment_version: Literal["cdecr-dreamer-grounder-ab-v1"] = "cdecr-dreamer-grounder-ab-v1"
     arm: Literal["dreamer_grounder", "grounder_only"]
     model_m2: NonEmptyString
     model_m3: NonEmptyString
@@ -117,9 +115,7 @@ class PairedReviewDocument(StrictModel):
 
 
 class PairedReviewArtifact(StrictModel):
-    experiment_version: Literal["cdecr-dreamer-grounder-ab-v1"] = (
-        "cdecr-dreamer-grounder-ab-v1"
-    )
+    experiment_version: Literal["cdecr-dreamer-grounder-ab-v1"] = "cdecr-dreamer-grounder-ab-v1"
     model: NonEmptyString
     documents: list[PairedReviewDocument]
 
@@ -151,9 +147,7 @@ class AggregateMetrics(StrictModel):
 
 
 class ComparisonReport(StrictModel):
-    experiment_version: Literal["cdecr-dreamer-grounder-ab-v1"] = (
-        "cdecr-dreamer-grounder-ab-v1"
-    )
+    experiment_version: Literal["cdecr-dreamer-grounder-ab-v1"] = "cdecr-dreamer-grounder-ab-v1"
     dreamer_grounder: AggregateMetrics
     grounder_only: AggregateMetrics
     macro_f1_delta_dreamer_minus_direct: float
@@ -292,7 +286,8 @@ def _direct_ground(
         for draft in output.drafts:
             draft.source_candidate_ids = ["c1"]
             processor._validate_draft_quotes_exist(  # noqa: SLF001 - isolated experiment
-                draft.mention, document  # type: ignore[arg-type]
+                draft.mention,
+                document,  # type: ignore[arg-type]
             )
 
     output = processor._invoke_typed(  # noqa: SLF001 - isolated experiment
@@ -354,9 +349,7 @@ def _run_one_document(
         preprocessing = preprocess_source(source)
         registry.save_preprocessing_result(run_id, preprocessing)
         if arm == "dreamer_grounder":
-            candidates = registry.get_latest_dream_candidates_for_processing_key(
-                processing_key
-            )
+            candidates = registry.get_latest_dream_candidates_for_processing_key(processing_key)
             if not candidates:
                 candidates = processor._dream(  # noqa: SLF001 - isolated experiment
                     source, preprocessing.document, run_id, summaries
@@ -619,9 +612,7 @@ def run_review(
                     else str(exc)
                 )
             else:
-                successful_direct_label: Literal["X", "Y"] = (
-                    "Y" if dreamer_label == "X" else "X"
-                )
+                successful_direct_label: Literal["X", "Y"] = "Y" if dreamer_label == "X" else "X"
                 return PairedReviewDocument(
                     message_id=source.message_id,
                     dreamer_label=dreamer_label,
@@ -751,14 +742,9 @@ def compare(
     dreamer_metrics = _arm_metrics(arm="dreamer", artifact=dreamer, reviews=reviews)
     direct_metrics = _arm_metrics(arm="direct", artifact=direct, reviews=reviews)
     direct_by_id = {item.message_id: item for item in direct_metrics.per_document}
-    deltas = [
-        item.f1 - direct_by_id[item.message_id].f1
-        for item in dreamer_metrics.per_document
-    ]
+    deltas = [item.f1 - direct_by_id[item.message_id].f1 for item in dreamer_metrics.per_document]
     rng = random.Random(20260721)
-    bootstrap = sorted(
-        sum(rng.choice(deltas) for _ in deltas) / len(deltas) for _ in range(10_000)
-    )
+    bootstrap = sorted(sum(rng.choice(deltas) for _ in deltas) / len(deltas) for _ in range(10_000))
     low = bootstrap[249]
     high = bootstrap[9749]
     delta = dreamer_metrics.macro_f1 - direct_metrics.macro_f1
@@ -793,17 +779,14 @@ def compare(
         completed_pair_macro_f1_delta=completed_delta,
         completed_pair_bootstrap_95_ci=(completed_low, completed_high),
         obvious_difference_without_failed_documents=(
-            abs(completed_delta) >= 0.05
-            and (completed_low > 0 or completed_high < 0)
+            abs(completed_delta) >= 0.05 and (completed_low > 0 or completed_high < 0)
         ),
     )
 
 
 def _write_markdown(report: ComparisonReport, path: Path) -> None:
     rows = []
-    direct_by_id = {
-        item.message_id: item for item in report.grounder_only.per_document
-    }
+    direct_by_id = {item.message_id: item for item in report.grounder_only.per_document}
     for item in report.dreamer_grounder.per_document:
         other = direct_by_id[item.message_id]
         rows.append(
@@ -906,11 +889,7 @@ def main(argv: list[str] | None = None) -> int:
             workers=args.workers,
             settings=CDECRSettings(),
         )
-        print(
-            json.dumps(
-                {"ok": True, "reviewed_documents": len(review_artifact.documents)}
-            )
-        )
+        print(json.dumps({"ok": True, "reviewed_documents": len(review_artifact.documents)}))
         return 0
     dreamer = ArmArtifact.model_validate_json(args.dreamer_output.read_text(encoding="utf-8"))
     direct = ArmArtifact.model_validate_json(args.direct_output.read_text(encoding="utf-8"))

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Literal
 
 from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -34,10 +35,18 @@ class CDECRSettings(BaseSettings):
         default="https://dashscope.aliyuncs.com/compatible-mode/v1",
         alias="CDECR_DASHSCOPE_BASE_URL",
     )
-    model_m1: str = Field(default="text-embedding-v4", alias="CDECR_MODEL_M1")
+    model_m1: str = Field(default="qwen3.7-text-embedding", alias="CDECR_MODEL_M1")
     model_m2: str = Field(default="deepseek-v4-flash", alias="CDECR_MODEL_M2")
     model_m3: str = Field(default="qwen3.7-plus", alias="CDECR_MODEL_M3")
     model_m4: str = Field(default="qwen3.7-max", alias="CDECR_MODEL_M4")
+    atomic_hard_cannot_link_mode: Literal["enforce", "shadow", "off"] = Field(
+        default="shadow",
+        alias="CDECR_ATOMIC_HARD_CANNOT_LINK_MODE",
+    )
+    package_conflict_mode: Literal["off", "shadow", "enforce"] = Field(
+        default="off",
+        alias="CDECR_PACKAGE_CONFLICT_MODE",
+    )
     embedding_dimensions: int = Field(default=1024, alias="CDECR_EMBEDDING_DIMENSIONS")
     http_timeout_seconds: float = Field(default=30.0, alias="CDECR_HTTP_TIMEOUT_SECONDS")
     model_timeout_seconds: float = Field(default=600.0, alias="CDECR_MODEL_TIMEOUT_SECONDS")

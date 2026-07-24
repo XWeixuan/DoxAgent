@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ast
+import json
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
@@ -15,7 +16,7 @@ from cdecr.models import (
     ModelAdapterError,
     ModelTier,
 )
-from cdecr.ports import StructuredModelRequest
+from cdecr.ports import StructuredModelRequest, StructuredModelResult
 
 
 def test_cdecr_never_imports_doxagent() -> None:
@@ -91,6 +92,45 @@ def request() -> StructuredModelRequest:
     )
 
 
+def test_structured_request_enforces_json_mode_and_normalizes_model_time_boundary() -> None:
+    value = StructuredModelRequest(
+        system_prompt="system",
+        user_prompt=json.dumps(
+            {
+                "published_at": "2026-06-25T12:00:00Z",
+                "time": {"event_start": "July 22, 2026"},
+            }
+        ),
+        json_schema={
+            "type": "object",
+            "properties": {
+                "event_start": {"type": "string", "format": "date-time"}
+            },
+        },
+    )
+
+    payload = json.loads(value.user_prompt)
+    assert value.output_mode == "json_object"
+    assert payload["published_at"] == "2026-06-25T08:00:00"
+    assert payload["time"]["event_start"] == "2026-07-22"
+    assert "format" not in value.json_schema["properties"]["event_start"]  # type: ignore[index]
+
+    result = StructuredModelResult(
+        model="fake",
+        payload={
+            "time": {
+                "event_start": "07/22/2026",
+                "event_end": "2026-07-22T18:00:00Z",
+            }
+        },
+        latency_ms=1,
+    )
+    assert result.payload["time"] == {
+        "event_start": "2026-07-22",
+        "event_end": "2026-07-22T14:00:00",
+    }
+
+
 def test_m1_enforces_batch_and_dimension() -> None:
     fake = FakeOpenAI()
     client = DashScopeEmbeddingClient(
@@ -102,7 +142,7 @@ def test_m1_enforces_batch_and_dimension() -> None:
     result = client.embed(["one", "two"])
     assert result.dimensions == 1024
     assert len(result.vectors) == 2
-    assert fake.embeddings.kwargs["model"] == "text-embedding-v4"
+    assert fake.embeddings.kwargs["model"] == "qwen3.7-text-embedding"
     assert fake.embeddings.kwargs["dimensions"] == 1024
     with pytest.raises(ValueError, match="between 1 and 10"):
         client.embed([str(index) for index in range(11)])

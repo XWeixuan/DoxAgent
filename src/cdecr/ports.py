@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from datetime import datetime
-from typing import Any, Literal, Protocol
+from typing import TYPE_CHECKING, Any, Literal, Protocol
 
-from pydantic import Field
+from pydantic import Field, field_validator
 
 from cdecr.contracts import (
     AtomicEvent,
@@ -14,16 +14,21 @@ from cdecr.contracts import (
     EventPackage,
     ExternalEventRelation,
     PackageExternalRelation,
+    PackageExternalRelationCandidate,
     PackageMembership,
+    PackageMembershipDecision,
     SourceMessage,
     StrictModel,
 )
-from cdecr.cross_document_contracts import (
-    AtomicAssignmentRecord,
-    CrossDocumentResult,
-    HoldRecord,
-    PackageAssignmentRecord,
-    PackagePairMergeDecision,
+from cdecr.field_coreference_contracts import (
+    CanonicalFieldLink,
+    CanonicalFieldRegistryEntry,
+    FieldNamespace,
+)
+from cdecr.model_boundary import (
+    normalize_json_prompt,
+    normalize_temporal_values,
+    relax_temporal_schema,
 )
 from cdecr.single_document_contracts import (
     DreamCandidate,
@@ -34,6 +39,15 @@ from cdecr.single_document_contracts import (
     PreprocessingResult,
     SingleDocumentResult,
 )
+
+if TYPE_CHECKING:
+    from cdecr.cross_document_contracts import (
+        AtomicAssignmentRecord,
+        CrossDocumentResult,
+        PackageAssignmentRecord,
+        PackageMergePlan,
+        PackagePairMergeDecision,
+    )
 
 
 class SourceQuery(StrictModel):
@@ -78,6 +92,17 @@ class StructuredModelRequest(StrictModel):
     system_prompt: str
     user_prompt: str
     json_schema: dict[str, object]
+    output_mode: Literal["json_object"] = "json_object"
+
+    @field_validator("user_prompt")
+    @classmethod
+    def normalize_model_time_input(cls, value: str) -> str:
+        return normalize_json_prompt(value)
+
+    @field_validator("json_schema", mode="before")
+    @classmethod
+    def relax_model_time_schema(cls, value: object) -> object:
+        return relax_temporal_schema(value)
 
 
 class StructuredModelResult(StrictModel):
@@ -87,6 +112,11 @@ class StructuredModelResult(StrictModel):
     output_tokens: int | None = None
     latency_ms: int = Field(ge=0)
     request_id: str | None = None
+
+    @field_validator("payload", mode="before")
+    @classmethod
+    def normalize_model_time_output(cls, value: object) -> object:
+        return normalize_temporal_values(value)
 
 
 class DecisionAuditRecord(StrictModel):
@@ -146,6 +176,8 @@ class CDECRRegistry(Protocol):
 
     def save_membership(self, membership: PackageMembership) -> bool: ...
 
+    def save_membership_decision(self, decision: PackageMembershipDecision) -> bool: ...
+
     def save_external_relation(self, relation: ExternalEventRelation) -> bool: ...
 
     def list_external_relations(self) -> list[ExternalEventRelation]: ...
@@ -155,6 +187,14 @@ class CDECRRegistry(Protocol):
     def list_package_external_relations(
         self, *, source_event_id: str | None = None
     ) -> list[PackageExternalRelation]: ...
+
+    def save_package_external_relation_candidate(
+        self, candidate: PackageExternalRelationCandidate
+    ) -> bool: ...
+
+    def list_package_external_relation_candidates(
+        self, *, source_event_id: str | None = None
+    ) -> list[PackageExternalRelationCandidate]: ...
 
     def get_source(self, message_id: str) -> SourceMessage | None: ...
 
@@ -176,11 +216,17 @@ class CDECRRegistry(Protocol):
 
     def get_current_package(self, package_id: str) -> EventPackage | None: ...
 
+    def resolve_package_root(self, package_id: str, *, max_depth: int = 32) -> str | None: ...
+
     def list_current_packages(self, *, limit: int = 1000) -> list[EventPackage]: ...
 
     def list_packages_for_event(self, event_id: str) -> list[EventPackage]: ...
 
     def list_memberships_for_package(self, package_id: str) -> list[PackageMembership]: ...
+
+    def list_membership_decisions(
+        self, *, event_id: str | None = None
+    ) -> list[PackageMembershipDecision]: ...
 
     def recall_atomic_event_ids(
         self,
@@ -193,6 +239,7 @@ class CDECRRegistry(Protocol):
         event_start: str | None,
         event_end: str | None,
         source_fingerprint: str | None,
+        field_ids: Sequence[tuple[FieldNamespace, str]] = (),
         per_route_limit: int = 20,
     ) -> dict[str, set[str]]: ...
 
@@ -207,6 +254,7 @@ class CDECRRegistry(Protocol):
         anchor_period_id: str | None,
         time_start: str | None,
         time_end: str | None,
+        package_anchor_ids: Sequence[str] = (),
         per_route_limit: int = 20,
     ) -> dict[str, set[str]]: ...
 
@@ -286,6 +334,38 @@ class CDECRRegistry(Protocol):
         self, *, owner_kind: str, model: str, limit: int = 10000
     ) -> list[Any]: ...
 
+    def get_embedding(
+        self, *, owner_kind: str, owner_id: str, model: str, input_hash: str
+    ) -> Any | None: ...
+
+    def create_field_registry_entry(self, entry: CanonicalFieldRegistryEntry) -> bool: ...
+
+    def get_field_registry_entry(self, registry_id: str) -> CanonicalFieldRegistryEntry | None: ...
+
+    def list_field_registry_entries(
+        self, *, namespace: FieldNamespace | None = None, limit: int = 10000
+    ) -> list[CanonicalFieldRegistryEntry]: ...
+
+    def find_field_registry_by_external_id(
+        self, *, namespace: FieldNamespace, external_id: str
+    ) -> CanonicalFieldRegistryEntry | None: ...
+
+    def update_field_registry_aliases(self, registry_id: str, aliases: Sequence[str]) -> bool: ...
+
+    def set_field_registry_external_id(self, registry_id: str, external_id: str) -> bool: ...
+
+    def save_field_redirect(self, source_id: str, target_id: str) -> bool: ...
+
+    def resolve_field_registry_entry(
+        self, registry_id: str, *, max_depth: int = 16
+    ) -> CanonicalFieldRegistryEntry | None: ...
+
+    def save_field_link(self, link: CanonicalFieldLink) -> bool: ...
+
+    def get_field_link(self, mention_id: str, field_path: str) -> CanonicalFieldLink | None: ...
+
+    def list_field_links_for_mention(self, mention_id: str) -> list[CanonicalFieldLink]: ...
+
     def start_cross_document_run(
         self,
         *,
@@ -307,15 +387,19 @@ class CDECRRegistry(Protocol):
 
     def save_atomic_assignment(self, record: AtomicAssignmentRecord) -> bool: ...
 
+    def get_latest_atomic_assignment_for_mention(
+        self, mention_id: str
+    ) -> AtomicAssignmentRecord | None: ...
+
     def save_package_assignment(self, record: PackageAssignmentRecord) -> bool: ...
+
+    def get_latest_package_assignment_for_event(
+        self, event_id: str
+    ) -> PackageAssignmentRecord | None: ...
 
     def save_package_merge_decision(
         self, *, decision_id: str, run_id: str, decision: PackagePairMergeDecision
     ) -> bool: ...
-
-    def save_hold(self, hold: HoldRecord) -> bool: ...
-
-    def list_open_holds(self, *, limit: int = 100) -> list[HoldRecord]: ...
 
     def save_atomic_redirect(
         self, *, source_event_id: str, target_event_id: str, run_id: str, reason: str
@@ -324,6 +408,18 @@ class CDECRRegistry(Protocol):
     def save_package_redirect(
         self, *, source_package_id: str, target_package_id: str, run_id: str, reason: str
     ) -> bool: ...
+
+    def apply_package_merge_plan(
+        self,
+        *,
+        plan: PackageMergePlan,
+        decisions: Sequence[PackagePairMergeDecision],
+        merged_package: EventPackage,
+        run_id: str,
+        embedding_model: str,
+        embedding_input_hash: str,
+        embedding_vector: Sequence[float],
+    ) -> EventPackage: ...
 
     def record_model_call(
         self,
@@ -345,6 +441,8 @@ class CDECRRegistry(Protocol):
     ) -> bool: ...
 
     def append_decision_audit(self, record: DecisionAuditRecord) -> bool: ...
+
+    def rebuild_derived_state(self) -> dict[str, int]: ...
 
     def complete_document_run(self, result: SingleDocumentResult) -> int: ...
 

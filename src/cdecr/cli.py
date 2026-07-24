@@ -12,6 +12,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
+from cdecr.canonical_field_resolution import FIELD_RESOLVER_VERSION
 from cdecr.config import CDECRSettings
 from cdecr.cross_document import (
     ENGINE_VERSION as CROSS_DOCUMENT_ENGINE_VERSION,
@@ -25,6 +26,9 @@ from cdecr.cross_document import (
 from cdecr.cross_document_contracts import CrossDocumentResult, CrossDocumentStatus
 from cdecr.data import DoxAtlasRawMediaReader, SourceReadError, write_manifest, write_snapshot
 from cdecr.evaluation import evaluate_results
+from cdecr.identity_compiler import IDENTITY_COMPILER_VERSION
+from cdecr.kb_v2 import CATALOG_NAMES, V2KnowledgeBase
+from cdecr.mention_finalization import FINALIZATION_VERSION
 from cdecr.models import (
     STRUCTURED_OUTPUT_MODE,
     STRUCTURED_REASONING_EFFORT,
@@ -34,10 +38,9 @@ from cdecr.models import (
     ModelTier,
     probe_models,
 )
-from cdecr.normalization import CATALOG_VERSION
 from cdecr.ports import DecisionAuditRecord, SourceQuery
 from cdecr.preprocessing import PIPELINE_VERSION
-from cdecr.registry import RegistryError, SQLiteCDECRRegistry
+from cdecr.registry import SCHEMA_VERSION, RegistryError, SQLiteCDECRRegistry
 from cdecr.result_export import export_final_clusters
 from cdecr.single_document import PROMPT_VERSION, SingleDocumentProcessor
 from cdecr.single_document_contracts import ProcessingStatus, SingleDocumentResult
@@ -96,6 +99,43 @@ def _registry_init(settings: CDECRSettings, _: argparse.Namespace) -> int:
         }
     )
     return 0
+
+
+def _registry_rebuild_derived(settings: CDECRSettings, args: argparse.Namespace) -> int:
+    registry = _registry(settings)
+    message_ids = sorted({item.message_id for item in registry.list_all_mentions(limit=100000)})
+    engine = None if args.clear_only else _cross_document_engine(settings, registry)
+    deleted = registry.rebuild_derived_state()
+    if args.clear_only:
+        _json_stdout(
+            {
+                "ok": True,
+                "command": "registry.rebuild-derived",
+                "mode": "clear_only",
+                "deleted": deleted,
+                "message_count": len(message_ids),
+            }
+        )
+        return 0
+
+    assert engine is not None
+    results: list[CrossDocumentResult] = []
+    for message_id in message_ids:
+        results.append(engine.process(message_id))
+    failures = [item for item in results if item.status is not CrossDocumentStatus.SUCCEEDED]
+    _json_stdout(
+        {
+            "ok": not failures,
+            "command": "registry.rebuild-derived",
+            "mode": "rebuild",
+            "deleted": deleted,
+            "message_count": len(message_ids),
+            "succeeded_count": len(results) - len(failures),
+            "failed_count": len(failures),
+            "results": [_event_summary(item) for item in results],
+        }
+    )
+    return 0 if not failures else 1
 
 
 def _snapshot(settings: CDECRSettings, args: argparse.Namespace) -> int:
@@ -318,6 +358,8 @@ def _cross_document_engine(
         model_m1=settings.model_m1,
         model_m2=settings.model_m2,
         model_m3=settings.model_m3,
+        hard_cannot_link_mode=settings.atomic_hard_cannot_link_mode,
+        package_conflict_mode=settings.package_conflict_mode,
     )
 
 
@@ -406,7 +448,6 @@ def _event_summary(value: CrossDocumentResult) -> dict[str, object]:
         "package_ids": [package.package_id for package in value.packages],
         "atomic_assignment_count": len(value.atomic_assignments),
         "package_assignment_count": len(value.package_assignments),
-        "hold_ids": value.hold_ids,
         "model_call_count": len(value.model_calls),
         "candidate_counts": value.candidate_counts,
         "failure_stage": value.failure_stage,
@@ -548,9 +589,7 @@ def _evaluation_export(_: CDECRSettings, args: argparse.Namespace) -> int:
     registry.initialize()
     quality = None
     if args.m4_review.exists():
-        artifact = M4ReviewArtifact.model_validate_json(
-            args.m4_review.read_text(encoding="utf-8")
-        )
+        artifact = M4ReviewArtifact.model_validate_json(args.m4_review.read_text(encoding="utf-8"))
         results = [
             registry.get_latest_completed_document_result_for_message(document.message_id)
             for document in artifact.documents
@@ -578,9 +617,7 @@ def _evaluation_export(_: CDECRSettings, args: argparse.Namespace) -> int:
 
 
 def _evaluation_run_locked(settings: CDECRSettings, args: argparse.Namespace) -> int:
-    manifest_version, corpus = load_step4_corpus(
-        args.snapshot, args.manifest, limit=args.limit
-    )
+    manifest_version, corpus = load_step4_corpus(args.snapshot, args.manifest, limit=args.limit)
     registry = SQLiteCDECRRegistry(args.registry)
     registry.initialize()
     for row, source in corpus:
@@ -591,9 +628,7 @@ def _evaluation_run_locked(settings: CDECRSettings, args: argparse.Namespace) ->
     document_results: list[SingleDocumentResult] = []
     event_results: list[CrossDocumentResult | None] = []
     checkpoint_path = args.output.with_suffix(args.output.suffix + ".checkpoint.json")
-    processing_corpus = sorted(
-        corpus, key=lambda item: (item[1].published_at, item[1].message_id)
-    )
+    processing_corpus = sorted(corpus, key=lambda item: (item[1].published_at, item[1].message_id))
     for index, (row, source) in enumerate(processing_corpus, start=1):
         document = document_processor.process(source.message_id)
         event = (
@@ -615,9 +650,7 @@ def _evaluation_run_locked(settings: CDECRSettings, args: argparse.Namespace) ->
                         {
                             "message_id": item.message_id,
                             "document_status": item.status.value,
-                            "event_status": getattr(
-                                event_results[offset], "status", None
-                            ),
+                            "event_status": getattr(event_results[offset], "status", None),
                         }
                         for offset, item in enumerate(document_results)
                     ],
@@ -630,9 +663,7 @@ def _evaluation_run_locked(settings: CDECRSettings, args: argparse.Namespace) ->
 
     # Load the original persisted results so a resumed run reports all prior calls.
     current_document_by_id = {item.message_id: item for item in document_results}
-    current_event_by_id = {
-        item.message_id: item for item in event_results if item is not None
-    }
+    current_event_by_id = {item.message_id: item for item in event_results if item is not None}
     persisted_documents: list[SingleDocumentResult] = []
     persisted_events: list[CrossDocumentResult | None] = []
     for _, source in corpus:
@@ -745,7 +776,7 @@ def _doctor(settings: CDECRSettings, args: argparse.Namespace) -> int:
         registry = _registry(settings)
         pragma = registry.pragma_state()
         registry_ok = (
-            pragma["user_version"] == 5
+            pragma["user_version"] == SCHEMA_VERSION
             and pragma["foreign_keys"] == 1
             and str(pragma["journal_mode"]).lower() == "wal"
         )
@@ -797,10 +828,10 @@ def _doctor(settings: CDECRSettings, args: argparse.Namespace) -> int:
         checks["model_configuration"] = {"ok": False, "error": type(exc).__name__}
 
     checks["single_document_versions"] = {
-        "ok": all((PIPELINE_VERSION, PROMPT_VERSION, CATALOG_VERSION)),
+        "ok": all((PIPELINE_VERSION, PROMPT_VERSION, FINALIZATION_VERSION)),
         "pipeline_version": PIPELINE_VERSION,
         "prompt_version": PROMPT_VERSION,
-        "catalog_version": CATALOG_VERSION,
+        "finalization_version": FINALIZATION_VERSION,
     }
     checks["single_document_routing"] = {
         "ok": settings.model_m2 == "deepseek-v4-flash"
@@ -823,14 +854,33 @@ def _doctor(settings: CDECRSettings, args: argparse.Namespace) -> int:
         "engine_version": CROSS_DOCUMENT_ENGINE_VERSION,
         "prompt_version": CROSS_DOCUMENT_PROMPT_VERSION,
     }
+    try:
+        knowledge_base = V2KnowledgeBase()
+        checks["canonical_field_resolution"] = {
+            "ok": bool(
+                knowledge_base.catalog_hash and FIELD_RESOLVER_VERSION and IDENTITY_COMPILER_VERSION
+            ),
+            "catalog_count": len(CATALOG_NAMES),
+            "catalog_hash": knowledge_base.catalog_hash,
+            "field_resolver_version": FIELD_RESOLVER_VERSION,
+            "identity_compiler_version": IDENTITY_COMPILER_VERSION,
+            "ordering": "v2_kb_then_field_coreference",
+            "package_hint_stage": "n11",
+        }
+    except (FileNotFoundError, ValueError) as exc:
+        checks["canonical_field_resolution"] = {
+            "ok": False,
+            "error": type(exc).__name__,
+        }
     checks["cross_document_routing"] = {
-        "ok": settings.model_m1 == "text-embedding-v4"
+        "ok": settings.model_m1 == "qwen3.7-text-embedding"
         and settings.model_m2 == "deepseek-v4-flash"
-        and settings.model_m3 == "qwen3.7-plus",
+        and settings.model_m3 == "qwen3.7-plus"
+        and settings.atomic_hard_cannot_link_mode == "shadow",
         "recall": "m0+m1",
-        "hard_cannot_link": "m0",
-        "atomic_default": "m2_batch",
-        "atomic_complex": "m3_batch",
+        "hard_cannot_link": settings.atomic_hard_cannot_link_mode,
+        "atomic_default": "m2_joint",
+        "atomic_escalation": "m3_joint",
         "bounded_package": "m0_then_m2",
         "episode_package": "m2_or_m3",
     }
@@ -848,6 +898,9 @@ def build_parser() -> argparse.ArgumentParser:
     registry_commands = registry.add_subparsers(dest="registry_command", required=True)
     registry_init = registry_commands.add_parser("init")
     registry_init.set_defaults(handler=_registry_init)
+    registry_rebuild = registry_commands.add_parser("rebuild-derived")
+    registry_rebuild.add_argument("--clear-only", action="store_true")
+    registry_rebuild.set_defaults(handler=_registry_rebuild_derived)
 
     data = commands.add_parser("data")
     data_commands = data.add_subparsers(dest="data_command", required=True)
@@ -898,9 +951,7 @@ def build_parser() -> argparse.ArgumentParser:
     event_batch.set_defaults(handler=_events_batch)
 
     evaluation = commands.add_parser("evaluation")
-    evaluation_commands = evaluation.add_subparsers(
-        dest="evaluation_command", required=True
-    )
+    evaluation_commands = evaluation.add_subparsers(dest="evaluation_command", required=True)
     evaluation_run = evaluation_commands.add_parser("run")
     evaluation_run.add_argument(
         "--snapshot",
@@ -910,9 +961,7 @@ def build_parser() -> argparse.ArgumentParser:
     evaluation_run.add_argument(
         "--manifest",
         type=Path,
-        default=Path(
-            "dev_plan/CDECR/baselines/mu_2026-06-25_step2_eval_manifest.json"
-        ),
+        default=Path("dev_plan/CDECR/baselines/mu_2026-06-25_step2_eval_manifest.json"),
     )
     evaluation_run.add_argument(
         "--registry",
@@ -935,9 +984,7 @@ def build_parser() -> argparse.ArgumentParser:
     evaluation_review.add_argument(
         "--manifest",
         type=Path,
-        default=Path(
-            "dev_plan/CDECR/baselines/mu_2026-06-25_step2_eval_manifest.json"
-        ),
+        default=Path("dev_plan/CDECR/baselines/mu_2026-06-25_step2_eval_manifest.json"),
     )
     evaluation_review.add_argument(
         "--registry",

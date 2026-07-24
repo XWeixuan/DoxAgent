@@ -1,0 +1,2 @@
+Namespace policy — participant.unknown:
+This is routing context, never a final canonical namespace. Candidate namespace is the object's real type. LINK one typed candidate only when it is the same object, and omit target_namespace for LINK. Return NEW with exactly one target_namespace for an identifiable named object absent from candidates. Return UNRESOLVED without target_namespace for generic references, collectives, or insufficient context. Never merge candidates across types.

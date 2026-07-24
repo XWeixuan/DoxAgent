@@ -114,22 +114,21 @@ class FakeStructured:
                     "issue_flags": [],
                 }
             )
-        if title == "JudgeModelOutput":
+        if title == "JudgeCommandOutput":
             request_payload = json.loads(request.user_prompt)
             return self._result(
                 {
-                    "decisions": [
+                    "accepted": [
                         {
-                            "target_draft_id": draft["draft_id"],
-                            "action": "ACCEPT",
+                            "id": draft["id"],
                             "reason": "supported",
-                            "revised_mention": None,
-                            "split_mentions": [],
-                            "target_mention_id": None,
-                            "attribute": None,
                         }
                         for draft in request_payload["drafts"]
-                    ]
+                    ],
+                    "rejected": [],
+                    "split": [],
+                    "duplicates": [],
+                    "attribute_merges": [],
                 }
             )
         if title == "_SelectionBatch":
@@ -214,6 +213,16 @@ class DuplicateGrounderDrafts(FakeStructured):
         duplicate = json.loads(json.dumps(drafts[0]))
         duplicate["mention"]["canonical_proposition"] = "Micron guidance was raised."
         drafts.append(duplicate)
+        return result
+
+
+class InvalidJudgeKeepTarget(FakeStructured):
+    def complete(self, request: StructuredModelRequest) -> StructuredModelResult:
+        result = super().complete(request)
+        if request.json_schema.get("title") != "JudgeCommandOutput":
+            return result
+        result.payload["accepted"] = []
+        result.payload["duplicates"] = [{"id": "d1", "reason": "self target", "keep_id": "d1"}]
         return result
 
 
@@ -346,11 +355,34 @@ def test_short_document_routes_m2_dreamer_and_always_m3_grounder(
     assert [request.json_schema["title"] for request in m3.calls] == ["GrounderModelOutput"]
     assert isinstance(service.m4_client, FakeStructured)
     assert [request.json_schema["title"] for request in service.m4_client.calls] == [
-        "JudgeModelOutput"
+        "JudgeCommandOutput"
     ]
     assert len(embedding.calls) == 1
     assert result.judge_routing.invoked
     assert result.judge_routing.reasons == ["all_grounder_drafts_m4"]
+
+
+def test_model_payloads_share_published_at_and_judge_uses_short_n4_dto(
+    registry: SQLiteCDECRRegistry,
+) -> None:
+    save_source(registry, source())
+    service, _, m2, m3 = processor(registry)
+    result = service.process("MSG-1")
+    assert result.status is ProcessingStatus.SUCCEEDED
+    assert isinstance(service.m4_client, FakeStructured)
+
+    dreamer_payload = json.loads(m2.calls[0].user_prompt)
+    grounder_payload = json.loads(m3.calls[0].user_prompt)
+    judge_payload = json.loads(service.m4_client.calls[0].user_prompt)
+    for payload in (dreamer_payload, grounder_payload, judge_payload):
+        assert payload["published_at"] == "2026-06-25T08:00:00"
+    assert "message_id" not in dreamer_payload
+
+    judge_draft = judge_payload["drafts"][0]
+    assert judge_draft["id"] == "d1"
+    assert set(judge_draft) == {"id", "mention"}
+    assert "source_candidate_ids" not in judge_draft
+    assert "local_package_hint" not in judge_draft["mention"]
 
 
 def test_no_event_document_still_runs_grounder_and_persists_empty_result(
@@ -373,10 +405,10 @@ def test_all_grounder_drafts_route_one_batch_m4_judge(
     assert result.status is ProcessingStatus.SUCCEEDED
     assert result.judge_routing.invoked
     assert result.judge_routing.reasons == ["all_grounder_drafts_m4"]
-    assert [request.json_schema["title"] for request in m2.calls].count("JudgeModelOutput") == 0
+    assert [request.json_schema["title"] for request in m2.calls].count("JudgeCommandOutput") == 0
     assert isinstance(service.m4_client, FakeStructured)
     assert [request.json_schema["title"] for request in service.m4_client.calls].count(
-        "JudgeModelOutput"
+        "JudgeCommandOutput"
     ) == 1
 
 
@@ -454,6 +486,23 @@ def test_invalid_grounder_evidence_is_rejected_by_m4_without_fallback_fabricatio
             (result.run_id,),
         ).fetchone()[0]
     assert count == 2
+
+
+def test_judge_keep_target_must_be_a_distinct_final_accept(
+    registry: SQLiteCDECRRegistry,
+) -> None:
+    save_source(registry, source())
+    service = SingleDocumentProcessor(
+        registry=registry,
+        embedding_client=FakeEmbedding(),
+        m2_client=FakeStructured(model="deepseek-v4-flash"),
+        m3_client=FakeStructured(model="qwen3.7-plus"),
+        m4_client=InvalidJudgeKeepTarget(model="qwen3.7-max"),
+    )
+    result = service.process("MSG-1")
+    assert result.status is ProcessingStatus.FAILED
+    assert result.failures[0].stage == "judge"
+    assert result.failures[0].error_code == "semantic_validation_failed_after_repair"
 
 
 def test_dreamer_drops_only_candidates_without_valid_evidence(
@@ -618,9 +667,7 @@ def test_exact_duplicate_reuses_prior_result_without_model_calls(
     service, embedding, m2, m3 = processor(registry)
     first = service.process("A")
     assert isinstance(service.m4_client, FakeStructured)
-    call_count = (
-        len(embedding.calls) + len(m2.calls) + len(m3.calls) + len(service.m4_client.calls)
-    )
+    call_count = len(embedding.calls) + len(m2.calls) + len(m3.calls) + len(service.m4_client.calls)
     second = service.process("B")
     assert first.status is second.status is ProcessingStatus.SUCCEEDED
     assert second.reused
@@ -646,12 +693,14 @@ def test_judge_application_supports_revision_reject_split_duplicate_and_attribut
         )
         for index in range(1, 6)
     ]
+    duplicate_evidence = EvidenceText(segment_id="text:0", text="strong demand")
+    drafts[3] = drafts[3].model_copy(
+        update={"mention": base.model_copy(update={"evidence_locations": [duplicate_evidence]})}
+    )
     attribute = OpenAttributeDraft(
         key="reason",
         value="strong demand",
-        evidence_location=EvidenceText(
-            segment_id="text:0", text="Micron raised guidance"
-        ),
+        evidence_location=EvidenceText(segment_id="text:0", text="Micron raised guidance"),
     )
     decisions = [
         JudgeDecisionRecord(
@@ -694,3 +743,7 @@ def test_judge_application_supports_revision_reject_split_duplicate_and_attribut
     assert len(accepted) == 3
     assert accepted[0].canonical_proposition == "Revised supported claim."
     assert accepted[0].open_attributes == [attribute]
+    assert accepted[0].evidence_locations == [
+        *revised.evidence_locations,
+        duplicate_evidence,
+    ]

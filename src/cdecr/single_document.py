@@ -27,13 +27,14 @@ from cdecr.contracts import (
     StrictModel,
     TimePrecision,
 )
+from cdecr.mention_finalization import FINALIZATION_VERSION, MentionFinalizer
+from cdecr.model_boundary import model_datetime
 from cdecr.models import (
     STRUCTURED_OUTPUT_MODE,
     STRUCTURED_REASONING_EFFORT,
     ModelAdapterError,
     ModelTier,
 )
-from cdecr.normalization import CATALOG_VERSION, NormalizationEngine
 from cdecr.ports import (
     CDECRRegistry,
     DecisionAuditRecord,
@@ -61,27 +62,30 @@ from cdecr.single_document_contracts import (
     GrounderModelOutput,
     GrounderOutput,
     JudgeAction,
+    JudgeCommandOutput,
     JudgeDecisionRecord,
-    JudgeModelOutput,
+    JudgeDraftInput,
+    JudgeMentionChanges,
+    JudgeMentionDraft,
     JudgeRouting,
     MentionDraft,
     ModelCallSummary,
     NormalizationDecision,
+    OpenAttributeDraft,
     PreprocessedDocument,
     ProcessingStatus,
     SingleDocumentResult,
+    validate_event_time_semantics,
 )
 
-PROMPT_VERSION = "single-document-prompts-v6"
+PROMPT_VERSION = "single-document-prompts-v8"
 GROUNDER_CANDIDATE_BATCH = 24
 JUDGE_DRAFT_BATCH = 24
 _T = TypeVar("_T", bound=StrictModel)
 
 
 class SingleDocumentPipelineError(RuntimeError):
-    def __init__(
-        self, stage: str, code: str, *, repair_payload: str | None = None
-    ) -> None:
+    def __init__(self, stage: str, code: str, *, repair_payload: str | None = None) -> None:
         self.stage = stage
         self.code = code
         self.repair_payload = repair_payload
@@ -95,6 +99,48 @@ def _hash_json(value: object) -> str:
     return hashlib.sha256(encoded).hexdigest()
 
 
+def _published_at_model(value: datetime) -> str:
+    return model_datetime(value)
+
+
+def _compact_model_schema(schema: dict[str, object]) -> dict[str, object]:
+    """Remove redundant presentation metadata before appending a schema to a prompt."""
+
+    def compact(value: object, *, root: bool = False) -> object:
+        if isinstance(value, dict):
+            return {
+                key: compact(item)
+                for key, item in value.items()
+                if key != "default" and (key != "title" or root)
+            }
+        if isinstance(value, list):
+            return [compact(item) for item in value]
+        return value
+
+    return {
+        key: compact(value)
+        for key, value in schema.items()
+        if key != "default" and key != "title"
+    } | ({"title": schema["title"]} if "title" in schema else {})
+
+
+def _judge_mention(mention: MentionDraft) -> JudgeMentionDraft:
+    return JudgeMentionDraft.model_validate(
+        mention.model_dump(mode="json", exclude={"local_package_hint"})
+    )
+
+
+def _judge_mention_to_persistent(mention: JudgeMentionDraft) -> MentionDraft:
+    return MentionDraft.model_validate(mention.model_dump(mode="json"))
+
+
+def _apply_judge_changes(mention: MentionDraft, changes: JudgeMentionChanges) -> MentionDraft:
+    payload = mention.model_dump(mode="json")
+    for field_name in changes.model_fields_set:
+        payload[field_name] = getattr(changes, field_name)
+    return MentionDraft.model_validate(payload)
+
+
 def _prompt(name: str) -> str:
     return resources.files("cdecr.prompts.v1").joinpath(name).read_text(encoding="utf-8").strip()
 
@@ -103,10 +149,7 @@ def _repaired_validation_error_code(exc: ValidationError | ValueError) -> str:
     if isinstance(exc, ValidationError):
         return "schema_validation_failed_after_repair"
     message = str(exc).casefold()
-    if any(
-        token in message
-        for token in ("evidence", "segment", "locator", "offset", "slice")
-    ):
+    if any(token in message for token in ("evidence", "segment", "locator", "offset", "slice")):
         return "evidence_validation_failed_after_repair"
     return "semantic_validation_failed_after_repair"
 
@@ -279,9 +322,7 @@ class _AuditedStructuredClient:
                     stage=call_stage,
                     tier=self.tier.value,
                     model=self.model,
-                    input_tokens=(
-                        exc.input_tokens if isinstance(exc, ModelAdapterError) else None
-                    ),
+                    input_tokens=(exc.input_tokens if isinstance(exc, ModelAdapterError) else None),
                     output_tokens=(
                         exc.output_tokens if isinstance(exc, ModelAdapterError) else None
                     ),
@@ -337,7 +378,7 @@ class SingleDocumentProcessor:
         m2_client: StructuredModelClient,
         m3_client: StructuredModelClient,
         m4_client: StructuredModelClient,
-        model_m1: str = "text-embedding-v4",
+        model_m1: str = "qwen3.7-text-embedding",
         model_m2: str = "deepseek-v4-flash",
         model_m3: str = "qwen3.7-plus",
         model_m4: str = "qwen3.7-max",
@@ -374,7 +415,7 @@ class SingleDocumentProcessor:
                 "source_fingerprint": exact_document_fingerprint(source),
                 "pipeline_version": PIPELINE_VERSION,
                 "prompt_version": PROMPT_VERSION,
-                "catalog_version": CATALOG_VERSION,
+                "catalog_version": FINALIZATION_VERSION,
                 "model_config": self.model_config,
             }
         )
@@ -396,7 +437,7 @@ class SingleDocumentProcessor:
             message_id=message_id,
             pipeline_version=PIPELINE_VERSION,
             prompt_version=PROMPT_VERSION,
-            catalog_version=CATALOG_VERSION,
+            catalog_version=FINALIZATION_VERSION,
             model_config=self.model_config,
         )
         if not started:
@@ -513,33 +554,11 @@ class SingleDocumentProcessor:
                     )
                 )
             mentions = list(mentions_by_id.values())
-            normalization_embedding = _AuditedEmbeddingClient(
-                client=self.embedding_client,
-                registry=self.registry,
-                run_id=run_id,
-                model=self.model_m1,
-                stage="normalization_m1",
-                summaries=summaries,
-            )
-            normalization_m2 = _AuditedStructuredClient(
-                client=self.m2_client,
-                registry=self.registry,
-                run_id=run_id,
-                tier=ModelTier.M2,
-                model=self.model_m2,
-                stage="normalization_m2",
-                summaries=summaries,
-            )
-            normalizer = NormalizationEngine(
-                embedding_client=normalization_embedding,
-                fallback_client=normalization_m2,
-            )
+            finalizer = MentionFinalizer()
             normalized_mentions: list[EventMention] = []
             normalization_decisions: list[NormalizationDecision] = []
             for mention in mentions:
-                normalized, mention_decisions = normalizer.normalize(
-                    mention, ticker_hints=source.ticker_hints
-                )
+                normalized, mention_decisions = finalizer.finalize(mention)
                 normalized.validate_evidence(source)
                 normalized_mentions.append(normalized)
                 normalization_decisions.extend(mention_decisions)
@@ -621,9 +640,7 @@ class SingleDocumentProcessor:
         semantic_validator: Callable[[_T], None],
         stage: str,
     ) -> _T:
-        request_key = _hash_json(
-            {"stage": stage, "user_prompt": request.user_prompt}
-        )[:16]
+        request_key = _hash_json({"stage": stage, "user_prompt": request.user_prompt})[:16]
 
         def normalize_model_enums(payload: object, *, attempt: str) -> object:
             if not isinstance(payload, dict):
@@ -652,10 +669,7 @@ class SingleDocumentProcessor:
                 event_time = value.get("time")
                 if isinstance(event_time, dict):
                     precision = event_time.get("precision")
-                    if (
-                        isinstance(precision, str)
-                        and precision not in allowed_time_precisions
-                    ):
+                    if isinstance(precision, str) and precision not in allowed_time_precisions:
                         event_time["precision"] = TimePrecision.UNKNOWN.value
                         normalized_fields["time.precision"] += 1
 
@@ -665,16 +679,44 @@ class SingleDocumentProcessor:
                     for draft in drafts:
                         if isinstance(draft, dict):
                             normalize_mention(draft.get("mention"))
-            elif output_type is JudgeModelOutput:
-                decisions = payload.get("decisions")
-                if isinstance(decisions, list):
-                    for decision in decisions:
-                        if not isinstance(decision, dict):
+            elif output_type is JudgeCommandOutput:
+                command_groups = [
+                    payload.get("accepted"),
+                    payload.get("rejected"),
+                    payload.get("split"),
+                    payload.get("duplicates"),
+                    payload.get("attribute_merges"),
+                ]
+                for commands in command_groups:
+                    if not isinstance(commands, list):
+                        continue
+                    for command in commands:
+                        if not isinstance(command, dict):
                             continue
-                        normalize_mention(decision.get("revised_mention"))
-                        split_mentions = decision.get("split_mentions")
-                        if isinstance(split_mentions, list):
-                            for mention in split_mentions:
+                        reason = command.get("reason")
+                        if isinstance(reason, str) and len(reason) > 240:
+                            command["reason"] = reason[:240]
+                            normalized_fields["reason.truncated_to_240"] += 1
+                accepted = payload.get("accepted")
+                if isinstance(accepted, list):
+                    for command in accepted:
+                        if not isinstance(command, dict):
+                            continue
+                        changes = command.get("changes")
+                        if changes is None or changes == {}:
+                            if "changes" in command:
+                                command.pop("changes")
+                                normalized_fields["accepted.changes.omitted_empty"] += 1
+                            continue
+                        normalize_mention(changes)
+                split_commands = payload.get("split")
+                if isinstance(split_commands, list):
+                    for command in split_commands:
+                        if not isinstance(command, dict):
+                            continue
+                        mentions = command.get("mentions")
+                        if isinstance(mentions, list):
+                            for mention in mentions:
                                 normalize_mention(mention)
             if normalized_fields:
                 client.registry.append_decision_audit(
@@ -695,9 +737,7 @@ class SingleDocumentProcessor:
                 )
             return payload
 
-        def audit_validation_failure(
-            exc: ValidationError | ValueError, *, attempt: str
-        ) -> None:
+        def audit_validation_failure(exc: ValidationError | ValueError, *, attempt: str) -> None:
             if isinstance(exc, ValidationError):
                 all_errors = exc.errors(include_input=False, include_url=False)
                 errors = [
@@ -725,8 +765,7 @@ class SingleDocumentProcessor:
             client.registry.append_decision_audit(
                 DecisionAuditRecord(
                     audit_id=(
-                        f"structured-validation:{client.run_id}:{stage}:"
-                        f"{request_key}:{attempt}"
+                        f"structured-validation:{client.run_id}:{stage}:{request_key}:{attempt}"
                     ),
                     run_id=client.run_id,
                     decision_type="STRUCTURED_VALIDATION_FAILURE",
@@ -753,9 +792,7 @@ class SingleDocumentProcessor:
             )
             try:
                 repaired = client.complete(repair)
-                normalized_payload = normalize_model_enums(
-                    repaired.payload, attempt="repair"
-                )
+                normalized_payload = normalize_model_enums(repaired.payload, attempt="repair")
                 output = output_type.model_validate(normalized_payload)
                 semantic_validator(output)
                 return output
@@ -835,7 +872,7 @@ class SingleDocumentProcessor:
                     content_end - content_start,
                 )
             user_payload = {
-                "message_id": source.message_id,
+                "published_at": _published_at_model(source.published_at),
                 "allowed_segment_ids": list(exposed_lengths),
                 "segment_lengths": exposed_lengths,
                 "common_context": block.common_context,
@@ -971,8 +1008,7 @@ class SingleDocumentProcessor:
                     "candidate_id": short_id,
                     "statement": candidate.statement,
                     "evidence_locations": [
-                        locator.model_dump(mode="json")
-                        for locator in candidate.evidence_locations
+                        locator.model_dump(mode="json") for locator in candidate.evidence_locations
                     ],
                 }
                 for short_id, candidate in zip(short_to_full, batch, strict=True)
@@ -981,6 +1017,7 @@ class SingleDocumentProcessor:
                 system_prompt=_prompt("grounder.md"),
                 user_prompt=json.dumps(
                     {
+                        "published_at": _published_at_model(source.published_at),
                         "batch_index": batch_index,
                         "batch_count": len(batches),
                         "document": grounder_context(document, batch),
@@ -1017,6 +1054,7 @@ class SingleDocumentProcessor:
             def validate(output: GrounderModelOutput) -> None:
                 known_segments = {segment.segment_id for segment in document.segments}
                 for item in output.drafts:
+                    validate_event_time_semantics(item.mention.time)
                     if len(item.source_candidate_ids) != len(set(item.source_candidate_ids)):
                         raise ValueError("Grounder candidate IDs must be unique")
                     if any(value not in candidate_ids for value in item.source_candidate_ids):
@@ -1112,6 +1150,7 @@ class SingleDocumentProcessor:
         document: PreprocessedDocument,
         source: SourceMessage,
     ) -> None:
+        validate_event_time_semantics(draft.time)
         for evidence in draft.evidence_locations:
             locate_unique_evidence_text(evidence, document, source)
         for attribute in draft.open_attributes:
@@ -1133,8 +1172,7 @@ class SingleDocumentProcessor:
                 item.mention.predicate.normalized.casefold(),
                 tuple(
                     sorted(
-                        participant.surface.casefold()
-                        for participant in item.mention.participants
+                        participant.surface.casefold() for participant in item.mention.participants
                     )
                 ),
                 item.draft_id,
@@ -1148,8 +1186,21 @@ class SingleDocumentProcessor:
 
         def process_batch(
             indexed_batch: tuple[int, list[GroundedMentionDraft]],
-        ) -> tuple[int, JudgeModelOutput]:
+        ) -> tuple[int, list[JudgeDecisionRecord]]:
             batch_index, batch = indexed_batch
+            short_to_full = {
+                f"d{index}": draft.draft_id for index, draft in enumerate(batch, start=1)
+            }
+            draft_by_short = {
+                short_id: draft for short_id, draft in zip(short_to_full, batch, strict=True)
+            }
+            model_drafts = [
+                JudgeDraftInput(
+                    id=short_id,
+                    mention=_judge_mention(draft.mention),
+                ).model_dump(mode="json")
+                for short_id, draft in draft_by_short.items()
+            ]
             client = _AuditedStructuredClient(
                 client=self.m4_client,
                 registry=self.registry,
@@ -1163,76 +1214,212 @@ class SingleDocumentProcessor:
                 system_prompt=_prompt("judge.md"),
                 user_prompt=json.dumps(
                     {
+                        "published_at": _published_at_model(source.published_at),
                         "batch_index": batch_index,
                         "batch_count": len(batches),
-                        "document": grounder_context(
-                            document, [draft.mention for draft in batch]
-                        ),
-                        "drafts": [item.model_dump(mode="json") for item in batch],
+                        "document": grounder_context(document, [draft.mention for draft in batch]),
+                        "drafts": model_drafts,
                     },
                     ensure_ascii=False,
                 ),
-                json_schema=JudgeModelOutput.model_json_schema(),
+                json_schema=_compact_model_schema(
+                    JudgeCommandOutput.model_json_schema()
+                ),
             )
-            draft_ids = {item.draft_id for item in batch}
-            draft_by_id = {item.draft_id: item for item in batch}
+            draft_ids = set(short_to_full)
 
-            def validate(output: JudgeModelOutput) -> None:
-                targets = [item.target_draft_id for item in output.decisions]
+            def validate(output: JudgeCommandOutput) -> None:
+                targets = [
+                    *[item.id for item in output.accepted],
+                    *[item.id for item in output.rejected],
+                    *[item.id for item in output.split],
+                    *[item.id for item in output.duplicates],
+                    *[item.id for item in output.attribute_merges],
+                ]
                 if set(targets) != draft_ids or len(targets) != len(set(targets)):
                     raise ValueError("Judge must return exactly one decision for every draft")
-                for item in output.decisions:
-                    if item.target_mention_id is not None:
-                        if (
-                            item.target_mention_id not in draft_ids
-                            or item.target_mention_id == item.target_draft_id
-                        ):
-                            raise ValueError("Judge target must name another retained draft")
-                    if item.revised_mention is not None:
-                        self._validate_draft_evidence(item.revised_mention, document, source)
-                    for split in item.split_mentions:
-                        self._validate_draft_evidence(split, document, source)
-                    if item.attribute is not None:
-                        locate_unique_evidence_text(
-                            item.attribute.evidence_location, document, source
+                accepted_ids = {item.id for item in output.accepted}
+                semantic_errors: list[str] = []
+                for duplicate_command in output.duplicates:
+                    if (
+                        duplicate_command.keep_id not in accepted_ids
+                        or duplicate_command.keep_id == duplicate_command.id
+                    ):
+                        semantic_errors.append(
+                            "DUPLICATE "
+                            f"{duplicate_command.id}: keep_id must name another "
+                            "draft finalized as ACCEPT"
                         )
-                    if item.action is JudgeAction.ACCEPT and item.revised_mention is None:
+                for merge_command in output.attribute_merges:
+                    if (
+                        merge_command.keep_id not in accepted_ids
+                        or merge_command.keep_id == merge_command.id
+                    ):
+                        semantic_errors.append(
+                            "MERGE_AS_ATTRIBUTE "
+                            f"{merge_command.id}: keep_id must name another "
+                            "draft finalized as ACCEPT"
+                        )
+                for accepted_command in output.accepted:
+                    try:
+                        accepted_mention = draft_by_short[accepted_command.id].mention
+                        if accepted_command.changes is not None:
+                            accepted_mention = _apply_judge_changes(
+                                accepted_mention, accepted_command.changes
+                            )
                         self._validate_draft_evidence(
-                            draft_by_id[item.target_draft_id].mention,
+                            accepted_mention, document, source
+                        )
+                    except (ValidationError, ValueError) as exc:
+                        semantic_errors.append(
+                            f"ACCEPT {accepted_command.id}: {exc}"
+                        )
+                for split_command in output.split:
+                    for split_index, split_mention in enumerate(
+                        split_command.mentions,
+                        start=1,
+                    ):
+                        try:
+                            self._validate_draft_evidence(
+                                _judge_mention_to_persistent(split_mention),
+                                document,
+                                source,
+                            )
+                        except (ValidationError, ValueError) as exc:
+                            semantic_errors.append(
+                                "SPLIT "
+                                f"{split_command.id} replacement {split_index}: {exc}"
+                            )
+                for merge_command in output.attribute_merges:
+                    try:
+                        locate_unique_evidence_text(
+                            merge_command.attribute.evidence_location,
                             document,
                             source,
                         )
+                    except ValueError as exc:
+                        semantic_errors.append(
+                            f"MERGE_AS_ATTRIBUTE {merge_command.id}: {exc}"
+                        )
+                if semantic_errors:
+                    raise ValueError(
+                        "Judge semantic validation failed for: "
+                        + " | ".join(semantic_errors)
+                    )
 
             output = self._invoke_typed(
                 client=client,
                 request=request,
-                output_type=JudgeModelOutput,
+                output_type=JudgeCommandOutput,
                 semantic_validator=validate,
                 stage="judge",
             )
-            return batch_index, output
+            persisted: list[JudgeDecisionRecord] = []
+
+            def append_decision(
+                *,
+                short_id: str,
+                action: JudgeAction,
+                reason: str,
+                revised_mention: MentionDraft | None = None,
+                split_mentions: list[MentionDraft] | None = None,
+                keep_id: str | None = None,
+                attribute: OpenAttributeDraft | None = None,
+            ) -> None:
+                provisional = JudgeDecisionRecord(
+                    decision_id="pending",
+                    target_draft_id=short_to_full[short_id],
+                    action=action,
+                    reason=reason,
+                    revised_mention=revised_mention,
+                    split_mentions=split_mentions or [],
+                    target_mention_id=(short_to_full[keep_id] if keep_id is not None else None),
+                    attribute=attribute,
+                )
+                identity = _hash_json(provisional.model_dump(mode="json", exclude={"decision_id"}))
+                persisted.append(
+                    provisional.model_copy(
+                        update={"decision_id": f"judge:{source.message_id}:{identity}"}
+                    )
+                )
+
+            for accepted_command in output.accepted:
+                append_decision(
+                    short_id=accepted_command.id,
+                    action=JudgeAction.ACCEPT,
+                    reason=accepted_command.reason,
+                    revised_mention=(
+                        _apply_judge_changes(
+                            draft_by_short[accepted_command.id].mention,
+                            accepted_command.changes,
+                        )
+                        if accepted_command.changes is not None
+                        else None
+                    ),
+                )
+            for rejected_command in output.rejected:
+                append_decision(
+                    short_id=rejected_command.id,
+                    action=JudgeAction.REJECT,
+                    reason=rejected_command.reason,
+                )
+            for split_command in output.split:
+                append_decision(
+                    short_id=split_command.id,
+                    action=JudgeAction.SPLIT,
+                    reason=split_command.reason,
+                    split_mentions=[
+                        _judge_mention_to_persistent(split_mention)
+                        for split_mention in split_command.mentions
+                    ],
+                )
+            for duplicate_command in output.duplicates:
+                append_decision(
+                    short_id=duplicate_command.id,
+                    action=JudgeAction.DUPLICATE,
+                    reason=duplicate_command.reason,
+                    keep_id=duplicate_command.keep_id,
+                )
+            for merge_command in output.attribute_merges:
+                append_decision(
+                    short_id=merge_command.id,
+                    action=JudgeAction.MERGE_AS_ATTRIBUTE,
+                    reason=merge_command.reason,
+                    keep_id=merge_command.keep_id,
+                    attribute=merge_command.attribute,
+                )
+            return batch_index, persisted
 
         with ThreadPoolExecutor(max_workers=min(3, len(batches))) as executor:
             outputs = list(executor.map(process_batch, enumerate(batches)))
-        decisions: list[JudgeDecisionRecord] = []
-        for _, output in sorted(outputs):
-            for item in output.decisions:
-                identity = _hash_json(item.model_dump(mode="json"))
-                decisions.append(
-                    JudgeDecisionRecord(
-                        decision_id=f"judge:{source.message_id}:{identity}",
-                        **item.model_dump(),
-                    )
-                )
-        return decisions
+        return [decision for _, batch_decisions in sorted(outputs) for decision in batch_decisions]
 
     def _apply_judge(
         self,
         drafts: list[GroundedMentionDraft],
         decisions: list[JudgeDecisionRecord],
     ) -> list[MentionDraft]:
+        draft_ids = {item.draft_id for item in drafts}
+        targets = [item.target_draft_id for item in decisions]
+        if set(targets) != draft_ids or len(targets) != len(set(targets)):
+            raise SingleDocumentPipelineError("judge", "incomplete_decision_coverage")
         by_target = {item.target_draft_id: item for item in decisions}
+        accepted_targets = {
+            item.target_draft_id for item in decisions if item.action is JudgeAction.ACCEPT
+        }
+        for decision in decisions:
+            if decision.action not in {
+                JudgeAction.DUPLICATE,
+                JudgeAction.MERGE_AS_ATTRIBUTE,
+            }:
+                continue
+            if (
+                decision.target_mention_id not in accepted_targets
+                or decision.target_mention_id == decision.target_draft_id
+            ):
+                raise SingleDocumentPipelineError("judge", "invalid_keep_target")
         retained: dict[str, list[MentionDraft]] = {}
+        draft_by_id = {item.draft_id: item for item in drafts}
         for draft in drafts:
             decision = by_target[draft.draft_id]
             if decision.action is JudgeAction.ACCEPT:
@@ -1245,6 +1432,21 @@ class SingleDocumentProcessor:
                 JudgeAction.MERGE_AS_ATTRIBUTE,
             }:
                 retained[draft.draft_id] = []
+        for decision in decisions:
+            if decision.action is not JudgeAction.DUPLICATE:
+                continue
+            target = decision.target_mention_id
+            if target is None or not retained.get(target):
+                raise SingleDocumentPipelineError("judge", "invalid_duplicate_target")
+            mention = retained[target][0]
+            supplemental = draft_by_id[decision.target_draft_id].mention.evidence_locations
+            combined = {
+                (item.segment_id, item.text): item
+                for item in [*mention.evidence_locations, *supplemental]
+            }
+            retained[target][0] = mention.model_copy(
+                update={"evidence_locations": list(combined.values())}
+            )
         for decision in decisions:
             if decision.action is not JudgeAction.MERGE_AS_ATTRIBUTE:
                 continue

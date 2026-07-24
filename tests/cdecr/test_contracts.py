@@ -180,7 +180,7 @@ def test_source_enums_and_normalization() -> None:
             AtomicSemanticRelation,
             {"SAME_EVENT", "RELATED_NOT_SAME", "UNRELATED", "UNCERTAIN"},
         ),
-        (AtomicAction, {"MERGE", "CREATE_NEW", "CREATE_AND_LINK", "HOLD"}),
+        (AtomicAction, {"MERGE", "CREATE_NEW"}),
         (PackageKind, {"BOUNDED", "EPISODE"}),
         (
             PackageFamily,
@@ -226,7 +226,7 @@ def test_source_enums_and_normalization() -> None:
         (PackageMergeRelation, {"SAME_PACKAGE", "DIFFERENT_PACKAGE", "UNCERTAIN"}),
         (
             PackageAction,
-            {"ADD_TO_PACKAGE", "CREATE_NEW_PACKAGE", "LINK_EXTERNALLY", "MERGE_PACKAGES", "HOLD"},
+            {"ADD_TO_PACKAGE", "CREATE_NEW_PACKAGE", "LINK_EXTERNALLY", "MERGE_PACKAGES"},
         ),
     ],
 )

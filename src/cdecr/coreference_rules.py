@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from typing import cast
 
 from pydantic import JsonValue
@@ -143,11 +143,13 @@ def hard_cannot_link(
     mention: EventMention,
     event: AtomicEvent,
     *,
+    incoming_profile: IdentityProfile | None = None,
     representative_mentions: list[EventMention] | None = None,
 ) -> list[HardConflictCode]:
     """Apply only explicit identity conflicts; semantic similarity never overrides these."""
 
-    incoming = identity_profile_for_mention(mention)
+    compiled_profile_supplied = incoming_profile is not None
+    incoming = incoming_profile or identity_profile_for_mention(mention)
     existing = event.identity_profile
     conflicts: set[HardConflictCode] = set()
     if incoming.schema_type != existing.schema_type:
@@ -291,7 +293,7 @@ def hard_cannot_link(
         if mention.assertion_state is not event.assertion_state:
             conflicts.add(HardConflictCode.ASSERTION_STATE)
 
-    if representative_mentions:
+    if representative_mentions and not compiled_profile_supplied:
         incoming_subjects = _role_entities(mention, ParticipantRole.SUBJECT)
         existing_subjects = set().union(
             *(_role_entities(item, ParticipantRole.SUBJECT) for item in representative_mentions)
@@ -319,7 +321,12 @@ def hard_cannot_link(
     return sorted(conflicts, key=str)
 
 
-def singleton_atomic_event(mention: EventMention, *, provisional: bool = False) -> AtomicEvent:
+def singleton_atomic_event(
+    mention: EventMention,
+    *,
+    identity_profile: IdentityProfile | None = None,
+    provisional: bool = False,
+) -> AtomicEvent:
     event_id = stable_id(
         "provisional" if provisional else "atomic", {"mention": mention.mention_id}
     )
@@ -327,7 +334,7 @@ def singleton_atomic_event(mention: EventMention, *, provisional: bool = False) 
         event_id=event_id,
         canonical_proposition=mention.canonical_proposition,
         event_family=mention.event_family,
-        identity_profile=identity_profile_for_mention(mention),
+        identity_profile=identity_profile or identity_profile_for_mention(mention),
         time=mention.time,
         assertion_state=mention.assertion_state,
         mention_ids=[mention.mention_id],
@@ -344,7 +351,8 @@ def add_mention_to_atomic(
     *,
     known_mentions: list[EventMention],
     claim_conflict: bool,
-    identity_conflicts: list[str],
+    identity_differences: list[str],
+    incoming_profile: IdentityProfile | None = None,
 ) -> AtomicEvent:
     if mention.mention_id in event.mention_ids:
         return event
@@ -358,11 +366,13 @@ def add_mention_to_atomic(
     flags = set(event.conflict_flags)
     if claim_conflict:
         flags.add("CLAIM_CONFLICT")
-    flags.update(f"IDENTITY_CONFLICT:{value}" for value in identity_conflicts)
+    flags.update(f"IDENTITY_DIFFERENCE:{value}" for value in identity_differences)
     merged_time = merge_event_times(event.time, mention.time)
     identity = event.identity_profile
     if isinstance(identity, OpenIdentityProfile):
-        incoming = cast(OpenIdentityProfile, identity_profile_for_mention(mention))
+        incoming = cast(
+            OpenIdentityProfile, incoming_profile or identity_profile_for_mention(mention)
+        )
         fields = identity.fields.model_copy(
             update={
                 "principal_participant_ids": sorted(
@@ -414,14 +424,13 @@ def package_seed_for_event(event: AtomicEvent, mentions: list[EventMention]) -> 
             else MembershipRelation.DISCLOSED_IN
         )
     )
-    artifact = next(
-        (
+    artifacts = sorted(
+        {
             value
             for key in ("artifact_id", "filing_id", "report_id")
             for item in mentions
             if (value := _attribute_value(item, key)) is not None
-        ),
-        None,
+        }
     )
     period = reference_period_from_profile(event.identity_profile)
     return PackageSeed(
@@ -430,7 +439,9 @@ def package_seed_for_event(event: AtomicEvent, mentions: list[EventMention]) -> 
         canonical_title=event.canonical_proposition,
         anchor_entities=core_entity_ids_from_profile(event.identity_profile),
         local_anchor_hint=hint.anchor if hint else None,
-        anchor_artifact_id=artifact,
+        artifact_candidate_ids=artifacts,
+        anchor_conflict=len(artifacts) > 1,
+        anchor_artifact_id=artifacts[0] if len(artifacts) == 1 else None,
         anchor_period_id=period,
         time_range=PackageTimeRange(start=event.time.event_start, end=event.time.event_end),
         membership_relation=membership,
@@ -505,6 +516,7 @@ def singleton_package(event: AtomicEvent, seed: PackageSeed) -> EventPackage:
         package_family=seed.package_family,
         canonical_title=seed.canonical_title,
         anchor_entities=seed.anchor_entities,
+        package_anchor_ids=seed.package_anchor_ids,
         anchor_artifact_id=seed.anchor_artifact_id,
         anchor_period_id=seed.anchor_period_id,
         time_range=seed.time_range,
@@ -538,6 +550,11 @@ def merge_packages(target: EventPackage, source: EventPackage) -> EventPackage:
     return target.model_copy(
         update={
             "anchor_entities": sorted(set(target.anchor_entities) | set(source.anchor_entities)),
+            "package_anchor_ids": sorted(
+                set(target.package_anchor_ids) | set(source.package_anchor_ids)
+            ),
+            "anchor_artifact_id": target.anchor_artifact_id or source.anchor_artifact_id,
+            "anchor_period_id": target.anchor_period_id or source.anchor_period_id,
             "member_event_ids": [*target.member_event_ids, *new_members],
             "time_range": merge_package_ranges(target.time_range, source.time_range),
             "version": target.version + 1,
@@ -546,26 +563,15 @@ def merge_packages(target: EventPackage, source: EventPackage) -> EventPackage:
 
 
 def packages_obviously_same(left: EventPackage, right: EventPackage) -> bool:
-    if (
-        left.package_kind is not right.package_kind
-        or left.package_family is not right.package_family
-    ):
-        return False
     if set(left.member_event_ids).intersection(right.member_event_ids):
         return True
-    if left.package_kind is PackageKind.BOUNDED:
-        if left.anchor_period_id or right.anchor_period_id:
-            return bool(
-                left.anchor_period_id
-                and left.anchor_period_id == right.anchor_period_id
-                and set(left.anchor_entities).intersection(right.anchor_entities)
-            )
-        return bool(
-            left.anchor_artifact_id
-            and left.anchor_artifact_id == right.anchor_artifact_id
-            and set(left.anchor_entities).intersection(right.anchor_entities)
-        )
-    return False
+    return bool(
+        left.package_kind is right.package_kind
+        and left.package_family is right.package_family
+        and left.anchor_artifact_id
+        and left.anchor_artifact_id == right.anchor_artifact_id
+        and set(left.anchor_entities).intersection(right.anchor_entities)
+    )
 
 
 def merge_event_times(left: EventTime, right: EventTime) -> EventTime:
@@ -573,6 +579,17 @@ def merge_event_times(left: EventTime, right: EventTime) -> EventTime:
     ends = [value for value in (left.event_end, right.event_end) if value is not None]
     start = min(starts, key=_temporal_key) if starts else None
     end = max(ends, key=_temporal_key) if ends else None
+    if isinstance(start, datetime) and isinstance(end, datetime):
+        start_aware = start.tzinfo is not None and start.utcoffset() is not None
+        end_aware = end.tzinfo is not None and end.utcoffset() is not None
+        if start_aware != end_aware:
+            # Grounded timestamps can legitimately mix an explicit source
+            # offset with a timezone-unspecified timestamp. Normalize the aware
+            # bound to UTC-naive so the merged EventTime remains representable.
+            if start_aware:
+                start = start.astimezone(UTC).replace(tzinfo=None)
+            if end_aware:
+                end = end.astimezone(UTC).replace(tzinfo=None)
     reference = left.reference_period_id or right.reference_period_id
     precision = left.precision if left.precision is not TimePrecision.UNKNOWN else right.precision
     return EventTime(
@@ -720,4 +737,7 @@ def _same_day(left: datetime | date | None, right: datetime | date | None) -> bo
 
 
 def _temporal_key(value: datetime | date) -> str:
+    if isinstance(value, datetime) and value.tzinfo is not None:
+        if value.utcoffset() is not None:
+            return value.astimezone(UTC).replace(tzinfo=None).isoformat()
     return value.isoformat()

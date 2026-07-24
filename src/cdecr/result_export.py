@@ -34,9 +34,7 @@ def export_final_clusters(
     }
     all_mentions = registry.list_all_mentions(limit=100000)
     mentions = {mention.mention_id: mention for mention in all_mentions}
-    sources = {
-        source.message_id: source for source in registry.list_all_sources(limit=10000)
-    }
+    sources = {source.message_id: source for source in registry.list_all_sources(limit=10000)}
     unclustered_mentions = [
         mention for mention in all_mentions if mention.mention_id not in clustered_mention_ids
     ]
@@ -46,12 +44,11 @@ def export_final_clusters(
     }
     atomic_relations = registry.list_external_relations()
     package_relations = registry.list_package_external_relations()
-    open_holds = registry.list_open_holds(limit=1000)
     packaged_event_ids = {
         membership.event_id for values in memberships.values() for membership in values
     }
     payload: dict[str, Any] = {
-        "export_version": "cdecr-final-clusters-v1",
+        "export_version": "cdecr-final-clusters-v2",
         "generated_at": datetime.now(UTC).isoformat(),
         "scope": {
             "document_count": len(sources),
@@ -65,7 +62,6 @@ def export_final_clusters(
                 event.event_id not in packaged_event_ids for event in atomic_events
             ),
             "unclustered_mention_count": len(unclustered_mentions),
-            "open_hold_count": len(open_holds),
         },
         "quality_metrics": (
             quality_metrics.model_dump(mode="json") if quality_metrics is not None else None
@@ -117,13 +113,8 @@ def export_final_clusters(
             }
             for package in sorted(packages, key=lambda item: item.package_id)
         ],
-        "atomic_external_relations": [
-            item.model_dump(mode="json") for item in atomic_relations
-        ],
-        "package_external_relations": [
-            item.model_dump(mode="json") for item in package_relations
-        ],
-        "open_holds": [item.model_dump(mode="json") for item in open_holds],
+        "atomic_external_relations": [item.model_dump(mode="json") for item in atomic_relations],
+        "package_external_relations": [item.model_dump(mode="json") for item in package_relations],
     }
     _write_json(payload, json_path)
 
@@ -143,7 +134,6 @@ def export_final_clusters(
         f"- Atomic 外部关系：{len(atomic_relations)}",
         f"- Package 外部关系：{len(package_relations)}",
         f"- 未进入当前 Atomic Event 的 Mention：{len(unclustered_mentions)}",
-        f"- Open HOLD：{len(open_holds)}",
     ]
     if quality_metrics is not None:
         lines.extend(
@@ -171,10 +161,7 @@ def export_final_clusters(
                     f"- Family / Kind：`{package.package_family.value}` / "
                     f"`{package.package_kind.value}`"
                 ),
-                (
-                    f"- 成员数：{len(package.member_event_ids)}；"
-                    f"版本：{package.version}"
-                ),
+                (f"- 成员数：{len(package.member_event_ids)}；版本：{package.version}"),
                 f"- 摘要：{package.canonical_summary or '（空）'}",
                 "",
             ]
@@ -190,9 +177,7 @@ def export_final_clusters(
                 f"version={event.version}）"
             )
         lines.append("")
-    unpackaged = [
-        event for event in atomic_events if event.event_id not in packaged_event_ids
-    ]
+    unpackaged = [event for event in atomic_events if event.event_id not in packaged_event_ids]
     lines.extend(["## 未进入 Package 的 Atomic Events", ""])
     for event in sorted(unpackaged, key=lambda item: item.event_id):
         lines.append(
@@ -216,12 +201,6 @@ def export_final_clusters(
         lines.append(
             f"- `{mention.mention_id}` [{mention.event_family.value}] "
             f"{mention.canonical_proposition} (document=`{mention.message_id}`)"
-        )
-    lines.extend(["", "## Open HOLD Queue", ""])
-    for hold in open_holds:
-        lines.append(
-            f"- `{hold.hold_id}` [{hold.kind.value}] subject=`{hold.subject_id}`; "
-            f"reasons={', '.join(hold.reason_codes)}"
         )
     markdown_path.parent.mkdir(parents=True, exist_ok=True)
     temporary_markdown = markdown_path.with_suffix(markdown_path.suffix + ".tmp")
