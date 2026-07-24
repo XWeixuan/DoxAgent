@@ -134,9 +134,11 @@ from cdecr.ports import (
 )
 from cdecr.scheduler import take_scheduled_call_metrics
 from cdecr.single_document_contracts import ModelCallSummary
+from cdecr.wire import compact_json, intern_repeated_ids, wire_ref_metadata
 
-ENGINE_VERSION = "cdecr-cross-document-v13"
+ENGINE_VERSION = "cdecr-cross-document-v14"
 PROMPT_VERSION = "cdecr-cross-document-prompts-v7"
+WIRE_PROTOCOL_VERSION = "cdecr-cross-document-wire-v2"
 ATOMIC_ASSIGNMENT_POLICY_VERSION = "atomic-assignment-policy-v2"
 ATOMIC_DECISION_MENTION_BATCH = 3
 PACKAGE_DECISION_EVENT_BATCH = 12
@@ -197,6 +199,7 @@ def _structured_request_metadata(request: StructuredModelRequest) -> dict[str, o
         "request_item_count": request_item_count,
         "candidate_count": candidate_count,
         "request_payload_bytes": len(request.user_prompt.encode("utf-8")),
+        **wire_ref_metadata(payload),
     }
 
 
@@ -569,6 +572,9 @@ class _AuditedModels:
                     request_payload_bytes=_metadata_int(
                         request_metadata, "request_payload_bytes"
                     ),
+                    wire_ref_count=_metadata_int(
+                        request_metadata, "wire_ref_count"
+                    ),
                 )
             )
             raise CrossDocumentPipelineError(
@@ -618,6 +624,7 @@ class _AuditedModels:
                 request_payload_bytes=_metadata_int(
                     request_metadata, "request_payload_bytes"
                 ),
+                wire_ref_count=_metadata_int(request_metadata, "wire_ref_count"),
             )
         )
         return result
@@ -667,6 +674,7 @@ class CrossDocumentEngine:
             "package_profile_compiler_version": PACKAGE_PROFILE_COMPILER_VERSION,
             "package_boundary_policy_version": PACKAGE_BOUNDARY_POLICY_VERSION,
             "hold_policy": "removed",
+            "wire_protocol_version": WIRE_PROTOCOL_VERSION,
         }
 
     def processing_key(self, message_id: str, mentions: Sequence[EventMention]) -> str:
@@ -700,6 +708,7 @@ class CrossDocumentEngine:
                 "package_profile_compiler_version": PACKAGE_PROFILE_COMPILER_VERSION,
                 "package_boundary_policy_version": PACKAGE_BOUNDARY_POLICY_VERSION,
                 "hold_policy": "removed",
+                "wire_protocol_version": WIRE_PROTOCOL_VERSION,
                 "model_config": self.model_config,
             }
         )
@@ -1369,20 +1378,35 @@ class CrossDocumentEngine:
             mention_full_by_short = {
                 short_id: full_id for full_id, short_id in mention_short_by_full.items()
             }
+            candidate_ids = sorted(
+                {
+                    candidate.event.event_id
+                    for values in batch_candidates.values()
+                    for candidate in values
+                }
+            )
+            candidate_short_global = {
+                candidate_id: f"a{index}"
+                for index, candidate_id in enumerate(candidate_ids, start=1)
+            }
+            candidate_full_global = {
+                short_id: full_id
+                for full_id, short_id in candidate_short_global.items()
+            }
             candidate_short_by_full: dict[str, dict[str, str]] = {}
             candidate_full_by_short: dict[str, dict[str, str]] = {}
             for mention in batch_mentions:
                 full_id = mention.mention_id
                 mapping = {
-                    candidate.event.event_id: f"a{index}"
-                    for index, candidate in enumerate(
-                        batch_candidates[full_id], start=1
-                    )
+                    candidate.event.event_id: candidate_short_global[
+                        candidate.event.event_id
+                    ]
+                    for candidate in batch_candidates[full_id]
                 }
                 candidate_short_by_full[full_id] = mapping
                 candidate_full_by_short[mention_short_by_full[full_id]] = {
-                    short_id: candidate_id
-                    for candidate_id, short_id in mapping.items()
+                    short_id: candidate_full_global[short_id]
+                    for short_id in mapping.values()
                 }
             expected = {
                 mention_short_by_full[mention_id]: set(
@@ -1390,6 +1414,41 @@ class CrossDocumentEngine:
                 )
                 for mention_id in batch_candidates
             }
+            candidate_by_id = {
+                candidate.event.event_id: candidate
+                for values in batch_candidates.values()
+                for candidate in values
+            }
+            model_atoms: dict[str, object] = {}
+            for event_id in candidate_ids:
+                candidate = candidate_by_id[event_id]
+                event = candidate.event
+                representatives = [
+                    item
+                    for mention_id in event.representative_mention_ids
+                    if (item := self.registry.get_mention(mention_id)) is not None
+                ]
+                raw_claims = event.consensus_claims.get("source_claims", [])
+                claims = raw_claims if isinstance(raw_claims, list) else []
+                representative_claims = [
+                    str(item.get("source_claim") or item.get("canonical_proposition"))
+                    for item in claims
+                    if isinstance(item, dict)
+                    and (item.get("source_claim") or item.get("canonical_proposition"))
+                ]
+                short_event_id = candidate_short_global[event_id]
+                model_atoms[short_event_id] = {
+                    "event_id": short_event_id,
+                    "canonical_proposition": event.canonical_proposition,
+                    "event_family": event.event_family.value,
+                    "identity_profile": event.identity_profile.model_dump(mode="json"),
+                    "time": event.time.model_dump(mode="json"),
+                    "representative_source_claims": representative_claims[:3],
+                    **canonical_identity_view(
+                        self.registry, representatives
+                    ).model_dump(mode="json"),
+                    "is_provisional": event.event_id.startswith("provisional:"),
+                }
             tasks: list[dict[str, object]] = []
             for mention in batch_mentions:
                 mention_short_id = mention_short_by_full[mention.mention_id]
@@ -1397,42 +1456,18 @@ class CrossDocumentEngine:
                 assert profile is not None
                 source = self.registry.get_source(mention.message_id)
                 incoming_view = canonical_identity_view(self.registry, [mention])
-                candidate_payloads: list[dict[str, object]] = []
-                for candidate in batch_candidates[mention.mention_id]:
-                    event = candidate.event
-                    representatives = [
-                        item
-                        for mention_id in event.representative_mention_ids
-                        if (item := self.registry.get_mention(mention_id)) is not None
-                    ]
-                    raw_claims = event.consensus_claims.get("source_claims", [])
-                    claims = raw_claims if isinstance(raw_claims, list) else []
-                    representative_claims = [
-                        str(item.get("source_claim") or item.get("canonical_proposition"))
-                        for item in claims
-                        if isinstance(item, dict)
-                        and (item.get("source_claim") or item.get("canonical_proposition"))
-                    ]
-                    candidate_payloads.append(
-                        {
-                            "event_id": candidate_short_by_full[mention.mention_id][
-                                event.event_id
-                            ],
-                            "canonical_proposition": event.canonical_proposition,
-                            "event_family": event.event_family.value,
-                            "identity_profile": event.identity_profile.model_dump(mode="json"),
-                            "time": event.time.model_dump(mode="json"),
-                            "representative_source_claims": representative_claims[:3],
-                            **canonical_identity_view(
-                                self.registry, representatives
-                            ).model_dump(mode="json"),
-                            "recall_routes": [
-                                route.value for route in candidate.recall_routes
-                            ],
-                            "recall_score": candidate.recall_score,
-                            "is_provisional": event.event_id.startswith("provisional:"),
-                        }
-                    )
+                candidate_payloads = [
+                    {
+                        "event_id": candidate_short_by_full[mention.mention_id][
+                            candidate.event.event_id
+                        ],
+                        "recall_routes": [
+                            route.value for route in candidate.recall_routes
+                        ],
+                        "recall_score": round(candidate.recall_score, 3),
+                    }
+                    for candidate in batch_candidates[mention.mention_id]
+                ]
                 tasks.append(
                     {
                         "incoming": {
@@ -1456,16 +1491,17 @@ class CrossDocumentEngine:
                         "candidates": candidate_payloads,
                     }
                 )
+            wire_payload = intern_repeated_ids(
+                {
+                    "batch_index": batch_index,
+                    "batch_count": len(batches),
+                    "atoms": model_atoms,
+                    "tasks": tasks,
+                }
+            )
             request = StructuredModelRequest(
                 system_prompt=_prompt("atomic_coreference.md"),
-                user_prompt=json.dumps(
-                    {
-                        "batch_index": batch_index,
-                        "batch_count": len(batches),
-                        "tasks": tasks,
-                    },
-                    ensure_ascii=False,
-                ),
+                user_prompt=compact_json(wire_payload),
                 json_schema=AtomicDecisionBatch.model_json_schema(),
             )
 
@@ -2243,16 +2279,34 @@ class CrossDocumentEngine:
             event_full_by_short = {
                 short_id: full_id for full_id, short_id in event_short_by_full.items()
             }
+            package_ids = sorted(
+                {
+                    candidate.package.package_id
+                    for event_id in event_ids
+                    for candidate in unresolved[event_id]
+                }
+            )
+            package_short_global = {
+                package_id: f"p{index}"
+                for index, package_id in enumerate(package_ids, start=1)
+            }
+            package_full_global = {
+                short_id: full_id
+                for full_id, short_id in package_short_global.items()
+            }
             package_short_by_full: dict[str, dict[str, str]] = {}
             package_full_by_short: dict[str, dict[str, str]] = {}
             for event_id in event_ids:
                 mapping = {
-                    candidate.package.package_id: f"p{index}"
-                    for index, candidate in enumerate(unresolved[event_id], start=1)
+                    candidate.package.package_id: package_short_global[
+                        candidate.package.package_id
+                    ]
+                    for candidate in unresolved[event_id]
                 }
                 package_short_by_full[event_id] = mapping
                 package_full_by_short[event_short_by_full[event_id]] = {
-                    short_id: full_id for full_id, short_id in mapping.items()
+                    short_id: package_full_global[short_id]
+                    for short_id in mapping.values()
                 }
             expected = {
                 event_short_by_full[event_id]: set(
@@ -2263,6 +2317,25 @@ class CrossDocumentEngine:
             model_events: dict[str, object] = {}
             model_seeds: dict[str, object] = {}
             model_candidates: dict[str, list[object]] = {}
+            candidate_by_package_id = {
+                candidate.package.package_id: candidate
+                for event_id in event_ids
+                for candidate in unresolved[event_id]
+            }
+            model_packages: dict[str, object] = {}
+            for package_id in package_ids:
+                view = build_package_decision_view(
+                    self.registry, candidate_by_package_id[package_id]
+                ).model_dump(mode="json")
+                package_payload = view["package"]
+                assert isinstance(package_payload, dict)
+                short_package_id = package_short_global[package_id]
+                package_payload["package_id"] = short_package_id
+                package_payload["member_event_count"] = len(
+                    package_payload.pop("member_event_ids", [])
+                )
+                view.pop("retrieval_signals", None)
+                model_packages[short_package_id] = view
             for event_id in event_ids:
                 short_event_id = event_short_by_full[event_id]
                 event_payload = events[event_id].model_dump(mode="json")
@@ -2280,28 +2353,28 @@ class CrossDocumentEngine:
                     view = build_package_decision_view(
                         self.registry, candidate
                     ).model_dump(mode="json")
-                    package_payload = view["package"]
-                    assert isinstance(package_payload, dict)
-                    package_payload["package_id"] = package_short_by_full[event_id][
-                        candidate.package.package_id
-                    ]
-                    package_payload["member_event_count"] = len(
-                        package_payload.pop("member_event_ids", [])
+                    views.append(
+                        {
+                            "package_id": package_short_by_full[event_id][
+                                candidate.package.package_id
+                            ],
+                            "retrieval_signals": view["retrieval_signals"],
+                        }
                     )
-                    views.append(view)
                 model_candidates[short_event_id] = views
+            wire_payload = intern_repeated_ids(
+                {
+                    "batch_index": batch_index,
+                    "batch_count": len(batches),
+                    "events": model_events,
+                    "seeds": model_seeds,
+                    "packages": model_packages,
+                    "candidates": model_candidates,
+                }
+            )
             request = StructuredModelRequest(
                 system_prompt=_prompt("package_assignment.md"),
-                user_prompt=json.dumps(
-                    {
-                        "batch_index": batch_index,
-                        "batch_count": len(batches),
-                        "events": model_events,
-                        "seeds": model_seeds,
-                        "candidates": model_candidates,
-                    },
-                    ensure_ascii=False,
-                ),
+                user_prompt=compact_json(wire_payload),
                 json_schema=PackageDecisionBatch.model_json_schema(),
             )
 
@@ -2358,7 +2431,7 @@ class CrossDocumentEngine:
             restored: list[PackageAssignmentDecision] = []
             for decision in output.decisions:
                 full_event_id = event_full_by_short[decision.event_id]
-                package_ids = package_full_by_short[decision.event_id]
+                restored_package_ids = package_full_by_short[decision.event_id]
                 restored.append(
                     decision.model_copy(
                         update={
@@ -2366,7 +2439,7 @@ class CrossDocumentEngine:
                             "candidate_assessments": [
                                 assessment.model_copy(
                                     update={
-                                        "candidate_package_id": package_ids[
+                                        "candidate_package_id": restored_package_ids[
                                             assessment.candidate_package_id
                                         ]
                                     }
@@ -2374,13 +2447,15 @@ class CrossDocumentEngine:
                                 for assessment in decision.candidate_assessments
                             ],
                             "ranked_member_package_ids": [
-                                package_ids[value]
+                                restored_package_ids[value]
                                 for value in decision.ranked_member_package_ids
                             ],
                             "selected_member_package_id": (
                                 None
                                 if decision.selected_member_package_id is None
-                                else package_ids[decision.selected_member_package_id]
+                                else restored_package_ids[
+                                    decision.selected_member_package_id
+                                ]
                             ),
                         }
                     )
@@ -3640,44 +3715,70 @@ class CrossDocumentEngine:
                     (short_by_full[left.package_id], short_by_full[right.package_id])
                     for left, right, _, _ in pairs
                 }
+                package_by_id = {
+                    package.package_id: package
+                    for left, right, _, _ in pairs
+                    for package in (left, right)
+                }
+                first_signals_by_package: dict[
+                    str, tuple[list[RecallRoute], float | None]
+                ] = {}
+                for left, right, routes, similarity in pairs:
+                    first_signals_by_package.setdefault(
+                        left.package_id, (routes, similarity)
+                    )
+                    first_signals_by_package.setdefault(
+                        right.package_id, (routes, similarity)
+                    )
+                model_packages: dict[str, object] = {}
+                for package_id in package_ids:
+                    routes, similarity = first_signals_by_package[package_id]
+                    package = package_by_id[package_id]
+                    view = build_package_decision_view(
+                        self.registry,
+                        PackageCandidate(
+                            package=package,
+                            recall_routes=routes,
+                            recall_score=_package_recall_score(routes, similarity),
+                            embedding_similarity=similarity,
+                        ),
+                    ).model_dump(mode="json")
+                    payload = view["package"]
+                    assert isinstance(payload, dict)
+                    short_package_id = short_by_full[package_id]
+                    payload["package_id"] = short_package_id
+                    payload["member_event_count"] = len(
+                        payload.pop("member_event_ids", [])
+                    )
+                    view.pop("retrieval_signals", None)
+                    model_packages[short_package_id] = view
                 model_pairs: list[dict[str, object]] = []
                 for left, right, routes, similarity in pairs:
-                    left_view = build_package_decision_view(
-                        self.registry,
-                        PackageCandidate(
-                            package=left,
-                            recall_routes=routes,
-                            recall_score=_package_recall_score(routes, similarity),
-                            embedding_similarity=similarity,
-                        ),
-                    ).model_dump(mode="json")
-                    right_view = build_package_decision_view(
-                        self.registry,
-                        PackageCandidate(
-                            package=right,
-                            recall_routes=routes,
-                            recall_score=_package_recall_score(routes, similarity),
-                            embedding_similarity=similarity,
-                        ),
-                    ).model_dump(mode="json")
-                    for view, package in ((left_view, left), (right_view, right)):
-                        payload = view["package"]
-                        assert isinstance(payload, dict)
-                        payload["package_id"] = short_by_full[package.package_id]
-                        payload["member_event_count"] = len(
-                            payload.pop("member_event_ids", [])
-                        )
-                    model_pairs.append({"source": left_view, "target": right_view})
+                    model_pairs.append(
+                        {
+                            "source_package_id": short_by_full[left.package_id],
+                            "target_package_id": short_by_full[right.package_id],
+                            "retrieval_signals": {
+                                "routes": [route.value for route in routes],
+                                "embedding_similarity": (
+                                    None
+                                    if similarity is None
+                                    else round(similarity, 3)
+                                ),
+                            },
+                        }
+                    )
+                wire_payload = intern_repeated_ids(
+                    {
+                        "batch_index": batch_index,
+                        "batch_count": len(batches),
+                        "packages": model_packages,
+                        "pairs": model_pairs,
+                    }
+                )
                 request = StructuredModelRequest(
                     system_prompt=_prompt("package_merge.md"),
-                    user_prompt=json.dumps(
-                        {
-                            "batch_index": batch_index,
-                            "batch_count": len(batches),
-                            "pairs": model_pairs,
-                        },
-                        ensure_ascii=False,
-                    ),
+                    user_prompt=compact_json(wire_payload),
                     json_schema=PackageMergeDecisionBatch.model_json_schema(),
                 )
 

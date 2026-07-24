@@ -745,11 +745,18 @@ def _evaluation_run_locked(settings: CDECRSettings, args: argparse.Namespace) ->
     )
     rerun_documents: list[SingleDocumentResult] = []
     rerun_events: list[CrossDocumentResult] = []
-    for (_, source), document in zip(corpus, persisted_documents, strict=True):
+    for (_, source), document, event in zip(
+        corpus,
+        persisted_documents,
+        persisted_events,
+        strict=True,
+    ):
         if document.status is not ProcessingStatus.SUCCEEDED:
             continue
         reused_document = restarted_documents.process(source.message_id)
         rerun_documents.append(reused_document)
+        if event is None or event.status is not CrossDocumentStatus.SUCCEEDED:
+            continue
         reused_event = restarted_events.process(source.message_id)
         rerun_events.append(reused_event)
 

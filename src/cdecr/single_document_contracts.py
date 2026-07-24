@@ -481,6 +481,7 @@ class ModelCallSummary(StrictModel):
     request_item_count: int = Field(default=1, ge=0)
     candidate_count: int = Field(default=0, ge=0)
     request_payload_bytes: int = Field(default=0, ge=0)
+    wire_ref_count: int = Field(default=0, ge=0)
 
 
 class JudgeRouting(StrictModel):

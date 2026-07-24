@@ -102,9 +102,11 @@ class FakeStructured:
         events = body["events"]
         seeds = body["seeds"]
         candidates = body["candidates"]
+        packages = body.get("packages", {})
         assert isinstance(events, dict)
         assert isinstance(seeds, dict)
         assert isinstance(candidates, dict)
+        assert isinstance(packages, dict)
         decisions: list[dict[str, object]] = []
         for event_id, values in candidates.items():
             assert isinstance(event_id, str)
@@ -117,9 +119,16 @@ class FakeStructured:
             members: list[str] = []
             for value in values:
                 assert isinstance(value, dict)
-                package = value["package"]
+                if "package_id" in value:
+                    package_id = value["package_id"]
+                    package_view = packages[package_id]
+                    assert isinstance(package_view, dict)
+                    package = package_view["package"]
+                else:
+                    package = value["package"]
+                    assert isinstance(package, dict)
+                    package_id = package["package_id"]
                 assert isinstance(package, dict)
-                package_id = package["package_id"]
                 assert isinstance(package_id, str)
                 if event["event_family"] == "MARKET_MOVEMENT":
                     relation = "EXTERNAL_RELATED"
@@ -157,6 +166,7 @@ class FakeStructured:
     def _package_merge_payload(self, body: dict[str, object]) -> dict[str, object]:
         pairs = body["pairs"]
         assert isinstance(pairs, list)
+
         def package_id(value: object) -> object:
             assert isinstance(value, dict)
             package = value.get("package", value)
@@ -166,8 +176,16 @@ class FakeStructured:
         return {
             "decisions": [
                 {
-                    "source_package_id": package_id(item["source"]),
-                    "target_package_id": package_id(item["target"]),
+                    "source_package_id": (
+                        item["source_package_id"]
+                        if "source_package_id" in item
+                        else package_id(item["source"])
+                    ),
+                    "target_package_id": (
+                        item["target_package_id"]
+                        if "target_package_id" in item
+                        else package_id(item["target"])
+                    ),
                     "relation": "DIFFERENT_PACKAGE",
                     "reason": "fake-different-package",
                 }
@@ -177,7 +195,9 @@ class FakeStructured:
 
     def _atomic_payload(self, body: dict[str, object]) -> dict[str, object]:
         tasks = body["tasks"]
+        atoms = body.get("atoms", {})
         assert isinstance(tasks, list)
+        assert isinstance(atoms, dict)
         decisions: list[dict[str, object]] = []
         for task in tasks:
             assert isinstance(task, dict)
@@ -185,6 +205,15 @@ class FakeStructured:
             candidates = task["candidates"]
             assert isinstance(incoming, dict)
             assert isinstance(candidates, list)
+            expanded_candidates: list[dict[str, object]] = []
+            for candidate in candidates:
+                assert isinstance(candidate, dict)
+                if atoms:
+                    atom = atoms[candidate["event_id"]]
+                    assert isinstance(atom, dict)
+                    expanded_candidates.append(atom)
+                else:
+                    expanded_candidates.append(candidate)
             assessments = [
                 {
                     "candidate_event_id": candidate["event_id"],
@@ -203,7 +232,7 @@ class FakeStructured:
                         else ["identity_profile"]
                     ),
                 }
-                for candidate in candidates
+                for candidate in expanded_candidates
             ]
             same = [
                 item["candidate_event_id"]
@@ -456,14 +485,12 @@ def test_n9_keeps_three_mentions_per_request_and_uses_only_short_ids(
         "m3",
     ]
     assert all(
-        candidate["event_id"].startswith("a")
-        for task in payload["tasks"]
-        for candidate in task["candidates"]
+        candidate_id.startswith("a")
+        for candidate_id in payload["atoms"]
     )
     assert all(
-        not candidate["event_id"].startswith(("atomic:", "provisional:"))
-        for task in payload["tasks"]
-        for candidate in task["candidates"]
+        not candidate_id.startswith(("atomic:", "provisional:"))
+        for candidate_id in payload["atoms"]
     )
 
 

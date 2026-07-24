@@ -114,6 +114,7 @@ class Step4CallBudget(StrictModel):
     repair_count: int = Field(ge=0)
     queue_wait_ms: int = Field(ge=0)
     request_payload_bytes: int = Field(ge=0)
+    wire_ref_count: int = Field(default=0, ge=0)
 
 
 class Step4StageMetric(StrictModel):
@@ -126,6 +127,7 @@ class Step4StageMetric(StrictModel):
     model_latency_p50_ms: int = Field(ge=0)
     model_latency_p95_ms: int = Field(ge=0)
     repair_count: int = Field(ge=0)
+    wire_ref_count: int = Field(default=0, ge=0)
 
 
 class Step4Idempotency(StrictModel):
@@ -644,6 +646,7 @@ def _budget(calls: Sequence[ModelCallSummary]) -> Step4CallBudget:
         repair_count=sum(item.repaired for item in calls),
         queue_wait_ms=sum(item.queue_wait_ms for item in calls),
         request_payload_bytes=sum(item.request_payload_bytes for item in calls),
+        wire_ref_count=sum(item.wire_ref_count for item in calls),
     )
 
 
@@ -680,6 +683,7 @@ def _stage_metrics(
                 [item.latency_ms for item in values], 0.95
             ),
             repair_count=sum(item.repaired for item in values),
+            wire_ref_count=sum(item.wire_ref_count for item in values),
         )
         for stage, values in sorted(grouped.items())
     }

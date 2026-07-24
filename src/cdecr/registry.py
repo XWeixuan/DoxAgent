@@ -4190,6 +4190,7 @@ class SQLiteCDECRRegistry:
                 ),
                 candidate_count=int(metadata.get("candidate_count", 0)),
                 request_payload_bytes=int(metadata.get("request_payload_bytes", 0)),
+                wire_ref_count=int(metadata.get("wire_ref_count", 0)),
             )
             )
         return summaries
