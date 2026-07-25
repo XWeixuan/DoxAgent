@@ -23,6 +23,7 @@ from cdecr.contracts import (
     Language,
     LocalPackageHint,
     MembershipRelation,
+    PackageQualityState,
     Participant,
     ParticipantRole,
     Predicate,
@@ -60,12 +61,14 @@ class FakeStructured:
         invalid_first: bool = False,
         always_invalid: bool = False,
         atomic_relation: str | None = None,
+        package_merge_relation: str = "DIFFERENT_PACKAGE",
         malformed_derived_fields: bool = False,
     ) -> None:
         self.calls: list[StructuredModelRequest] = []
         self.invalid_first = invalid_first
         self.always_invalid = always_invalid
         self.atomic_relation = atomic_relation
+        self.package_merge_relation = package_merge_relation
         self.malformed_derived_fields = malformed_derived_fields
 
     def complete(self, request: StructuredModelRequest) -> StructuredModelResult:
@@ -187,8 +190,8 @@ class FakeStructured:
                         if "target_package_id" in item
                         else package_id(item["target"])
                     ),
-                    "relation": "DIFFERENT_PACKAGE",
-                    "reason": "fake-different-package",
+                    "relation": self.package_merge_relation,
+                    "reason": f"fake-{self.package_merge_relation.casefold()}",
                 }
                 for item in pairs
             ]
@@ -702,6 +705,84 @@ def test_different_period_splits_atomic_and_package(registry: SQLiteCDECRRegistr
     assert len(registry.list_current_packages()) == 2
     assert result.candidate_counts["atomic_hard_conflict_observed"] == 1
     assert result.candidate_counts["package_hard_blocked"] == 0
+
+
+def test_n12_payload_includes_raw_surface_and_request_local_source_ids(
+    registry: SQLiteCDECRRegistry,
+) -> None:
+    processor, _, m2, _ = engine(registry)
+    add(registry, source("MSG-1"), metric_mention("MSG-1", period="FY2026-Q4"))
+    processor.process("MSG-1")
+    add(registry, source("MSG-2"), metric_mention("MSG-2", period="FY2027-Q1"))
+
+    result = processor.process("MSG-2")
+
+    assert result.status is CrossDocumentStatus.SUCCEEDED
+    request = next(
+        call for call in m2.calls if "Atomic-to-Package assignment" in call.system_prompt
+    )
+    payload = json.loads(request.user_prompt)
+    incoming = next(iter(payload["events"].values()))
+    candidate = next(iter(payload["candidates"].values()))[0]
+    member = candidate["representative_members"][0]
+    assert "Micron" in {
+        surface
+        for participant in incoming["surface_evidence"]["participants"]
+        for surface in participant["surfaces"]
+    }
+    incoming_source = incoming["source_ids"][0]
+    assert "Micron" in {
+        surface
+        for participant in member["surface_evidence"]["participants"]
+        for surface in participant["surfaces"]
+    }
+    member_source = member["source_ids"][0]
+    assert {incoming_source, member_source} == {"s1", "s2"}
+    assert "MSG-1" not in request.user_prompt
+    assert "MSG-2" not in request.user_prompt
+
+
+def test_frozen_package_enters_n13_and_can_return_active(
+    registry: SQLiteCDECRRegistry,
+) -> None:
+    m3 = FakeStructured(package_merge_relation="SAME_PACKAGE")
+    processor, _, _, _ = engine(registry, m3=m3)
+    add(
+        registry,
+        source("MSG-1"),
+        metric_mention("MSG-1", metric="REVENUE", period="FY2026-Q4"),
+    )
+    first = processor.process("MSG-1")
+    frozen = first.packages[0].model_copy(
+        update={
+            "quality_state": PackageQualityState.FROZEN,
+            "version": first.packages[0].version + 1,
+        }
+    )
+    registry.save_package(frozen)
+    add(
+        registry,
+        source("MSG-2"),
+        metric_mention("MSG-2", metric="EPS_GAAP", period="FY2026-Q4"),
+    )
+
+    second = processor.process("MSG-2")
+
+    assert second.status is CrossDocumentStatus.SUCCEEDED
+    roots = {
+        registry.resolve_package_root(package.package_id)
+        for package in registry.list_current_packages()
+    }
+    assert len(roots) == 1
+    root_id = next(iter(roots))
+    assert root_id is not None
+    root = registry.get_current_package(root_id)
+    assert root is not None
+    assert root.quality_state is PackageQualityState.ACTIVE
+    assert len(root.member_event_ids) == 2
+    assert any(
+        "Package coreference review model" in call.system_prompt for call in m3.calls
+    )
 
 
 def test_market_reaction_is_external_not_package_member(

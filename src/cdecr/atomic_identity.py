@@ -38,6 +38,7 @@ class ResolvedIdentityEvidence(StrictModel):
     external_id: str | None = None
     canonical_registry_id: str | None = None
     legacy_entity_id: str | None = None
+    raw_surface: str | None = None
     normalized_surface: str | None = None
     trust_level: IdentityTrustLevel
 
@@ -119,15 +120,9 @@ def compare_identity_evidence(
         return IdentityComparison.UNKNOWN
     if left.canonical_registry_id is not None or right.canonical_registry_id is not None:
         return IdentityComparison.UNKNOWN
-    if (
-        left.legacy_entity_id is not None
-        and left.legacy_entity_id == right.legacy_entity_id
-    ):
+    if left.legacy_entity_id is not None and left.legacy_entity_id == right.legacy_entity_id:
         return IdentityComparison.SAME
-    if (
-        left.normalized_surface
-        and left.normalized_surface == right.normalized_surface
-    ):
+    if left.normalized_surface and left.normalized_surface == right.normalized_surface:
         return IdentityComparison.SAME
     return IdentityComparison.UNKNOWN
 
@@ -218,11 +213,7 @@ def _evidence(
     legacy_entity_id: str | None = None,
 ) -> ResolvedIdentityEvidence:
     link = registry.get_field_link(mention.mention_id, field_path)
-    root = (
-        registry.resolve_field_registry_entry(link.registry_id)
-        if link is not None
-        else None
-    )
+    root = registry.resolve_field_registry_entry(link.registry_id) if link is not None else None
     normalized = normalized_identity_surface(raw_surface) or None
     if root is not None and root.external_id is not None:
         trust = IdentityTrustLevel.EXTERNAL
@@ -241,6 +232,7 @@ def _evidence(
         external_id=None if root is None else root.external_id,
         canonical_registry_id=None if root is None else root.id,
         legacy_entity_id=legacy_entity_id,
+        raw_surface=raw_surface,
         normalized_surface=normalized,
         trust_level=trust,
     )

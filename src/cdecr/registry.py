@@ -920,9 +920,7 @@ class SQLiteCDECRRegistry:
             )
             assignment_columns = {
                 str(row[1])
-                for row in connection.execute(
-                    "PRAGMA table_info(atomic_assignment_decisions)"
-                )
+                for row in connection.execute("PRAGMA table_info(atomic_assignment_decisions)")
             }
             if "identity_processing_key" not in assignment_columns:
                 connection.execute(
@@ -936,9 +934,7 @@ class SQLiteCDECRRegistry:
                 )
             package_assignment_columns = {
                 str(row[1])
-                for row in connection.execute(
-                    "PRAGMA table_info(package_assignment_decisions)"
-                )
+                for row in connection.execute("PRAGMA table_info(package_assignment_decisions)")
             }
             if "assignment_processing_key" not in package_assignment_columns:
                 connection.execute(
@@ -956,9 +952,7 @@ class SQLiteCDECRRegistry:
                 )
             package_relation_columns = {
                 str(row[1])
-                for row in connection.execute(
-                    "PRAGMA table_info(package_external_relations)"
-                )
+                for row in connection.execute("PRAGMA table_info(package_external_relations)")
             }
             if "legacy" not in package_relation_columns:
                 connection.execute(
@@ -991,9 +985,7 @@ class SQLiteCDECRRegistry:
                             package.version,
                         ),
                     )
-                connection.execute(
-                    "DELETE FROM embeddings WHERE owner_kind = 'event_package'"
-                )
+                connection.execute("DELETE FROM embeddings WHERE owner_kind = 'event_package'")
                 connection.execute("DELETE FROM package_recall_fields")
                 connection.execute("DELETE FROM package_recall_entities")
                 connection.execute("DELETE FROM package_recall")
@@ -1008,9 +1000,7 @@ class SQLiteCDECRRegistry:
                 ).fetchall()
                 legacy_active: dict[str, tuple[str, MembershipRelation]] = {}
                 for row in membership_rows:
-                    membership = PackageMembership.model_validate_json(
-                        str(row["payload_json"])
-                    )
+                    membership = PackageMembership.model_validate_json(str(row["payload_json"]))
                     target_id = _resolve_package_root_id(connection, membership.package_id)
                     previous = legacy_active.get(membership.event_id)
                     if previous is not None and previous[0] == target_id:
@@ -1076,7 +1066,7 @@ class SQLiteCDECRRegistry:
                 # and force the next N12 pass to compute a full v13 assignment key.
                 from cdecr.package_engine import PackageProfileCompiler
 
-                compiler = PackageProfileCompiler()
+                compiler = PackageProfileCompiler(self)
                 root_rows = connection.execute(
                     """
                     SELECT versions.payload_json
@@ -1091,9 +1081,7 @@ class SQLiteCDECRRegistry:
                     """
                 ).fetchall()
                 for package_row in root_rows:
-                    package = EventPackage.model_validate_json(
-                        str(package_row["payload_json"])
-                    )
+                    package = EventPackage.model_validate_json(str(package_row["payload_json"]))
                     event_rows = connection.execute(
                         """
                         SELECT versions.payload_json
@@ -1142,8 +1130,7 @@ class SQLiteCDECRRegistry:
                                     )
                                     if (
                                         entry is None
-                                        or entry.namespace
-                                        is not FieldNamespace.PACKAGE_ANCHOR
+                                        or entry.namespace is not FieldNamespace.PACKAGE_ANCHOR
                                     ):
                                         continue
                                     anchors.add(entry.id)
@@ -1156,9 +1143,7 @@ class SQLiteCDECRRegistry:
                                 "anchor_entities": [],
                                 "package_anchor_ids": sorted(anchors),
                                 "anchor_artifact_id": (
-                                    next(iter(artifacts))
-                                    if len(artifacts) == 1
-                                    else None
+                                    next(iter(artifacts)) if len(artifacts) == 1 else None
                                 ),
                                 "anchor_period_id": None,
                                 "time_range": package.time_range.model_copy(
@@ -1172,14 +1157,11 @@ class SQLiteCDECRRegistry:
                             }
                         )
                         compiled = compiler.compile(clean_base, events)
-                        if (
-                            compiled.model_dump(exclude={"version"})
-                            == package.model_dump(exclude={"version"})
+                        if compiled.model_dump(exclude={"version"}) == package.model_dump(
+                            exclude={"version"}
                         ):
                             continue
-                        rebuilt = compiled.model_copy(
-                            update={"version": package.version + 1}
-                        )
+                        rebuilt = compiled.model_copy(update={"version": package.version + 1})
                     connection.execute(
                         """
                         INSERT INTO event_package_versions(
@@ -2250,10 +2232,7 @@ class SQLiteCDECRRegistry:
         )
         connection.executemany(
             "INSERT INTO package_recall_fields(package_id, canonical_id) VALUES (?, ?)",
-            [
-                (package.package_id, value)
-                for value in sorted(set(package.package_anchor_ids))
-            ],
+            [(package.package_id, value) for value in sorted(set(package.package_anchor_ids))],
         )
 
     def save_membership(self, membership: PackageMembership) -> bool:
@@ -2939,8 +2918,7 @@ class SQLiteCDECRRegistry:
         with self._connection() as connection:
             rows = connection.execute(sql, parameters).fetchall()
         return [
-            PackageMembershipDecision.model_validate_json(str(row["payload_json"]))
-            for row in rows
+            PackageMembershipDecision.model_validate_json(str(row["payload_json"])) for row in rows
         ]
 
     def create_run(
@@ -3396,10 +3374,18 @@ class SQLiteCDECRRegistry:
         sql += " ORDER BY created_at, candidate_id"
         with self._connection() as connection:
             rows = connection.execute(sql, parameters).fetchall()
-        return [
+        candidates = [
             PackageExternalRelationCandidate.model_validate_json(str(row["payload_json"]))
             for row in rows
         ]
+        current: list[PackageExternalRelationCandidate] = []
+        for candidate in candidates:
+            memberships = self.list_packages_for_event(candidate.source_event_id)
+            current_target = self.resolve_package_root(candidate.target_package_id)
+            if memberships and memberships[0].package_id == current_target:
+                continue
+            current.append(candidate)
+        return current
 
     def save_atomic_redirect(
         self, *, source_event_id: str, target_event_id: str, run_id: str, reason: str
@@ -4175,23 +4161,23 @@ class SQLiteCDECRRegistry:
             metadata = json.loads(str(row["metadata_json"]))
             summaries.append(
                 ModelCallSummary(
-                stage=str(row["stage"] or "unattributed"),
-                tier=row["tier"],
-                model=row["model"],
-                input_tokens=row["input_tokens"],
-                output_tokens=row["output_tokens"],
-                latency_ms=row["latency_ms"],
-                status=row["status"],
-                error_code=row["error_code"],
-                repaired=str(row["stage"] or "").endswith("_repair"),
-                queue_wait_ms=int(metadata.get("queue_wait_ms", 0)),
-                request_item_count=int(
-                    metadata.get("request_item_count", metadata.get("input_count", 1))
-                ),
-                candidate_count=int(metadata.get("candidate_count", 0)),
-                request_payload_bytes=int(metadata.get("request_payload_bytes", 0)),
-                wire_ref_count=int(metadata.get("wire_ref_count", 0)),
-            )
+                    stage=str(row["stage"] or "unattributed"),
+                    tier=row["tier"],
+                    model=row["model"],
+                    input_tokens=row["input_tokens"],
+                    output_tokens=row["output_tokens"],
+                    latency_ms=row["latency_ms"],
+                    status=row["status"],
+                    error_code=row["error_code"],
+                    repaired=str(row["stage"] or "").endswith("_repair"),
+                    queue_wait_ms=int(metadata.get("queue_wait_ms", 0)),
+                    request_item_count=int(
+                        metadata.get("request_item_count", metadata.get("input_count", 1))
+                    ),
+                    candidate_count=int(metadata.get("candidate_count", 0)),
+                    request_payload_bytes=int(metadata.get("request_payload_bytes", 0)),
+                    wire_ref_count=int(metadata.get("wire_ref_count", 0)),
+                )
             )
         return summaries
 

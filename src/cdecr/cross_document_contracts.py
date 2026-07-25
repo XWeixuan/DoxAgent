@@ -133,9 +133,7 @@ class AtomicAssignmentDecision(StrictModel):
             raise ValueError("candidate assessments must be unique")
         if len(self.related_candidate_event_ids) != len(set(self.related_candidate_event_ids)):
             raise ValueError("related candidate ids must be unique")
-        if len(self.possible_duplicate_atomic_ids) != len(
-            set(self.possible_duplicate_atomic_ids)
-        ):
+        if len(self.possible_duplicate_atomic_ids) != len(set(self.possible_duplicate_atomic_ids)):
             raise ValueError("possible duplicate atomic ids must be unique")
         return self
 
@@ -206,6 +204,22 @@ class PackageAnchorView(StrictModel):
     canonical_text: NonEmptyString
 
 
+class SurfaceCanonicalEvidence(StrictModel):
+    surfaces: list[NonEmptyString] = Field(max_length=3)
+    canonical_ids: list[NonEmptyString] = Field(max_length=3)
+
+
+class SurfaceParticipantEvidence(SurfaceCanonicalEvidence):
+    role: NonEmptyString
+
+
+class AtomicSurfaceEvidence(StrictModel):
+    participants: list[SurfaceParticipantEvidence] | None = None
+    artifacts: SurfaceCanonicalEvidence | None = None
+    periods: SurfaceCanonicalEvidence | None = None
+    object_locations: SurfaceCanonicalEvidence | None = None
+
+
 class PackageRepresentativeMember(StrictModel):
     event_id: NonEmptyString
     canonical_proposition: NonEmptyString
@@ -213,6 +227,8 @@ class PackageRepresentativeMember(StrictModel):
     identity_profile: dict[str, object]
     time: dict[str, object]
     assertion_state: NonEmptyString
+    surface_evidence: AtomicSurfaceEvidence
+    source_ids: list[NonEmptyString] = Field(max_length=3)
 
 
 class PackageRetrievalSignals(StrictModel):
@@ -414,6 +430,7 @@ class PackageMergePlan(StrictModel):
 class PackageBoundaryFinding(StrictModel):
     package_id: NonEmptyString
     quality_state: PackageQualityState
+    severity: Literal["WARNING", "REVIEW_REQUIRED", "BLOCKING_CONFLICT"] | None = None
     reasons: list[NonEmptyString]
     actions: list[PackageBoundaryAction]
 

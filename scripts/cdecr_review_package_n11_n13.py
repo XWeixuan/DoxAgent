@@ -14,6 +14,11 @@ from pydantic import ValidationError, model_validator
 from cdecr.config import CDECRSettings
 from cdecr.contracts import StrictModel
 from cdecr.models import DashScopeStructuredModelClient, ModelTier
+from cdecr.package_engine import (
+    atomic_surface_evidence,
+    representative_package_members,
+    request_local_source_ids,
+)
 from cdecr.ports import StructuredModelRequest
 from cdecr.registry import SQLiteCDECRRegistry
 
@@ -94,19 +99,10 @@ def main() -> int:
         anchor_overlap = bool(
             set(left.anchor_entities).intersection(right.anchor_entities)
             or set(left.package_anchor_ids).intersection(right.package_anchor_ids)
-            or (
-                left.anchor_artifact_id
-                and left.anchor_artifact_id == right.anchor_artifact_id
-            )
-            or (
-                left.anchor_period_id
-                and left.anchor_period_id == right.anchor_period_id
-            )
+            or (left.anchor_artifact_id and left.anchor_artifact_id == right.anchor_artifact_id)
+            or (left.anchor_period_id and left.anchor_period_id == right.anchor_period_id)
         )
-        if (
-            left.package_family is right.package_family
-            and (anchor_overlap or similarity >= 0.65)
-        ):
+        if left.package_family is right.package_family and (anchor_overlap or similarity >= 0.65):
             pair_ids.append(
                 (
                     min(left.package_id, right.package_id),
@@ -114,6 +110,8 @@ def main() -> int:
                 )
             )
     external_candidates = registry.list_package_external_relation_candidates()
+    all_events = registry.list_current_atomic_events(limit=10000)
+    source_short_ids = request_local_source_ids(registry, all_events)
     package_payload = []
     for package in packages:
         members = [
@@ -129,12 +127,20 @@ def main() -> int:
                         "event_id": event.event_id,
                         "event_family": event.event_family.value,
                         "canonical_proposition": event.canonical_proposition,
-                        "identity_profile": event.identity_profile.model_dump(
-                            mode="json"
-                        ),
+                        "identity_profile": event.identity_profile.model_dump(mode="json"),
                         "time": event.time.model_dump(mode="json"),
+                        "surface_evidence": atomic_surface_evidence(
+                            registry,
+                            event,
+                            source_short_ids=source_short_ids,
+                        )[0].model_dump(mode="json", exclude_none=True),
+                        "source_ids": atomic_surface_evidence(
+                            registry,
+                            event,
+                            source_short_ids=source_short_ids,
+                        )[1],
                     }
-                    for event in members
+                    for event in representative_package_members(members)
                 ],
             }
         )
@@ -159,14 +165,20 @@ def main() -> int:
                         "event_family": source_event.event_family.value,
                         "canonical_proposition": source_event.canonical_proposition,
                         "time": source_event.time.model_dump(mode="json"),
+                        "surface_evidence": atomic_surface_evidence(
+                            registry,
+                            source_event,
+                            source_short_ids=source_short_ids,
+                        )[0].model_dump(mode="json", exclude_none=True),
+                        "source_ids": atomic_surface_evidence(
+                            registry,
+                            source_event,
+                            source_short_ids=source_short_ids,
+                        )[1],
                     }
                 ),
-                "target_package_title": (
-                    None if target is None else target.canonical_title
-                ),
-                "target_package_summary": (
-                    None if target is None else target.canonical_summary
-                ),
+                "target_package_title": (None if target is None else target.canonical_title),
+                "target_package_summary": (None if target is None else target.canonical_summary),
             }
         )
     expected_packages = {item.package_id for item in packages}
@@ -175,13 +187,17 @@ def main() -> int:
     system_prompt = """You are an independent CDECR Package quality reviewer.
 Review the supplied real-corpus Package output conservatively.
 For every Package, decide whether all listed Atomic Events belong inside one
-event container; list any reaction or unrelated member as wrong. For every
-candidate Package pair, decide SAME_PACKAGE only when both containers refer to
-the same reporting artifact or the same coherent real-world event process.
-Same company, fiscal period, topic, or semantic similarity alone is never
-enough. For every external candidate, decide whether the Atomic Event is
-genuinely external to but related to the target Package. Cover every supplied
-ID exactly once. Return JSON only."""
+specific parent container or evolving matter; list any reaction or unrelated
+member as wrong. Contents such as actual results, guidance, metrics, and
+management commentary may share one earnings disclosure, while different
+institutions or different analyst reports remain separate. For every candidate
+Package pair, use the combined anchors, entities, raw surfaces, periods, time,
+request-local source IDs, and representative members to decide whether they
+refer to the same parent container or coherent evolving matter. Missing one
+artifact or period field does not force separation. Retrieval similarity is
+only a candidate signal. For every external candidate, decide whether the
+Atomic Event is genuinely external to but related to the target Package. Cover
+every supplied ID exactly once. Return JSON only."""
     user_payload = {
         "packages": package_payload,
         "candidate_pairs": pair_payload,
@@ -205,13 +221,10 @@ ID exactly once. Return JSON only."""
         if {item.package_id for item in output.package_reviews} != expected_packages:
             raise ValueError("package review coverage mismatch")
         if {
-            (item.left_package_id, item.right_package_id)
-            for item in output.pair_reviews
+            (item.left_package_id, item.right_package_id) for item in output.pair_reviews
         } != expected_pairs:
             raise ValueError("pair review coverage mismatch")
-        if {
-            item.candidate_id for item in output.external_candidate_reviews
-        } != expected_external:
+        if {item.candidate_id for item in output.external_candidate_reviews} != expected_external:
             raise ValueError("external candidate review coverage mismatch")
         for review in output.package_reviews:
             member_ids = set(package_by_id[review.package_id].member_event_ids)
@@ -252,12 +265,9 @@ ID exactly once. Return JSON only."""
         for item in output.pair_reviews
         if item.relation == "SAME_PACKAGE"
     ]
-    uncertain_pairs = sum(
-        item.relation == "UNCERTAIN" for item in output.pair_reviews
-    )
+    uncertain_pairs = sum(item.relation == "UNCERTAIN" for item in output.pair_reviews)
     correct_external = sum(
-        item.appropriate_external_relation
-        for item in output.external_candidate_reviews
+        item.appropriate_external_relation for item in output.external_candidate_reviews
     )
     external_accuracy = (
         None
@@ -269,14 +279,10 @@ ID exactly once. Return JSON only."""
         "review_status": "M4_ASSISTED_NOT_HUMAN_SIGNED",
         "package_count": len(packages),
         "noncohesive_package_count": len(false_merge_packages),
-        "overexpansion_rate": (
-            0.0 if not packages else len(false_merge_packages) / len(packages)
-        ),
+        "overexpansion_rate": (0.0 if not packages else len(false_merge_packages) / len(packages)),
         "candidate_pair_count": len(pair_ids),
         "missed_same_package_pair_count": len(same_pairs),
-        "fragmentation_candidate_rate": (
-            0.0 if not pair_ids else len(same_pairs) / len(pair_ids)
-        ),
+        "fragmentation_candidate_rate": (0.0 if not pair_ids else len(same_pairs) / len(pair_ids)),
         "uncertain_pair_count": uncertain_pairs,
         "external_candidate_count": len(output.external_candidate_reviews),
         "external_candidate_accuracy": external_accuracy,
@@ -290,14 +296,12 @@ ID exactly once. Return JSON only."""
         ),
     }
     artifact = {
-        "report_version": "cdecr-package-n11-n13-m4-review-v1",
+        "report_version": "cdecr-package-n11-n13-m4-review-v2",
         "metrics": metrics,
         "review": output.model_dump(mode="json"),
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(
-        json.dumps(artifact, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
+    args.output.write_text(json.dumps(artifact, ensure_ascii=False, indent=2), encoding="utf-8")
     print(json.dumps(metrics, ensure_ascii=False), flush=True)
     return 0 if metrics["semantic_acceptance_passed"] else 1
 

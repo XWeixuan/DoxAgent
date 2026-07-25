@@ -6,12 +6,17 @@ import hashlib
 import json
 from collections.abc import Sequence
 from datetime import date, datetime
+from typing import Literal
 
 from cdecr.contracts import (
+    AnalystActionProjection,
     AtomicEvent,
     EventFamily,
     EventPackage,
+    FinancialMetricProjection,
+    GuidanceProjection,
     PackageBoundaryAction,
+    PackageFamily,
     PackageQualityState,
 )
 from cdecr.coreference_rules import (
@@ -21,6 +26,7 @@ from cdecr.coreference_rules import (
     singleton_package,
 )
 from cdecr.cross_document_contracts import (
+    AtomicSurfaceEvidence,
     PackageAnchorView,
     PackageBoundaryFinding,
     PackageCandidate,
@@ -28,12 +34,28 @@ from cdecr.cross_document_contracts import (
     PackageRepresentativeMember,
     PackageRetrievalSignals,
     PackageSeed,
+    SurfaceCanonicalEvidence,
+    SurfaceParticipantEvidence,
+)
+from cdecr.field_coreference_contracts import (
+    ATOMIC_OBJECT_FIELD_NAMESPACES,
+    PARTICIPANT_FIELD_NAMESPACES,
+    FieldNamespace,
 )
 from cdecr.ports import CDECRRegistry
 
-PACKAGE_PROFILE_COMPILER_VERSION = "package-profile-compiler-v1"
-PACKAGE_ASSIGNMENT_POLICY_VERSION = "package-assignment-policy-v2"
-PACKAGE_BOUNDARY_POLICY_VERSION = "package-boundary-policy-v1"
+PACKAGE_PROFILE_COMPILER_VERSION = "package-profile-compiler-v2"
+PACKAGE_ASSIGNMENT_POLICY_VERSION = "package-assignment-policy-v3"
+PACKAGE_BOUNDARY_POLICY_VERSION = "package-boundary-policy-v2"
+
+_ARTIFACT_NAMESPACES = {
+    FieldNamespace.PACKAGE_ANCHOR,
+    FieldNamespace.ARTIFACT_FILING,
+    FieldNamespace.ARTIFACT_EARNINGS_RELEASE,
+    FieldNamespace.ARTIFACT_PRESS_RELEASE,
+    FieldNamespace.ARTIFACT_REPORT,
+    FieldNamespace.ARTIFACT_AGREEMENT,
+}
 
 
 def package_identity_text(package: EventPackage) -> str:
@@ -117,8 +139,18 @@ def representative_package_members(
     return selected
 
 
+def package_is_n13_repairable(package: EventPackage) -> bool:
+    return package.quality_state in {
+        PackageQualityState.ACTIVE,
+        PackageQualityState.FROZEN,
+    }
+
+
 class PackageProfileCompiler:
     """Compile a complete Package version from active, immutable Atomic Events."""
+
+    def __init__(self, registry: CDECRRegistry | None = None) -> None:
+        self.registry = registry
 
     def compile_singleton(self, event: AtomicEvent, seed: PackageSeed) -> EventPackage:
         return self.compile(singleton_package(event, seed), [event], seed=seed, force_version=1)
@@ -137,36 +169,62 @@ class PackageProfileCompiler:
             {event.event_id: event for event in member_events}.values(),
             key=lambda item: item.event_id,
         )
-        entity_ids = set(root.anchor_entities)
+        entity_ids: set[str] = set()
         periods: set[str] = set()
-        time_range = root.time_range
+        anchor_ids: set[str] = set()
+        artifacts: set[str] = set()
+        time_range = root.time_range.model_copy(
+            update={"start": events[0].time.event_start, "end": events[0].time.event_end}
+        )
         for event in events:
             entity_ids.update(core_entity_ids_from_profile(event.identity_profile))
             period = reference_period_from_profile(event.identity_profile)
-            if period:
+            if period and self.registry is None:
                 periods.add(period)
             event_range = root.time_range.model_copy(
                 update={"start": event.time.event_start, "end": event.time.event_end}
             )
             time_range = merge_package_ranges(time_range, event_range)
-        anchor_ids = set(root.package_anchor_ids)
-        artifacts = {value for value in (root.anchor_artifact_id,) if value}
+            if self.registry is not None:
+                event_periods: set[str] = set()
+                for mention_id in event.mention_ids:
+                    mention = self.registry.get_mention(mention_id)
+                    if mention is None:
+                        continue
+                    for link in self.registry.list_field_links_for_mention(mention_id):
+                        entry = self.registry.resolve_field_registry_entry(link.registry_id)
+                        if entry is None:
+                            continue
+                        if entry.namespace in PARTICIPANT_FIELD_NAMESPACES:
+                            entity_ids.add(entry.external_id or entry.id)
+                        elif entry.namespace is FieldNamespace.FISCAL_PERIOD:
+                            event_periods.add(entry.external_id or entry.id)
+                        elif entry.namespace in _ARTIFACT_NAMESPACES:
+                            anchor_ids.add(entry.id)
+                            if entry.external_id:
+                                artifacts.add(entry.external_id)
+                if event_periods:
+                    periods.update(event_periods)
+                elif period:
+                    periods.add(period)
         if seed is not None:
-            entity_ids.update(seed.anchor_entities)
-            anchor_ids.update(seed.package_anchor_ids)
-            artifacts.update(seed.artifact_candidate_ids)
-            if seed.anchor_artifact_id:
-                artifacts.add(seed.anchor_artifact_id)
-            if seed.anchor_period_id:
-                periods.add(seed.anchor_period_id)
+            # The seed is derived from the same current members. It is only a
+            # fallback when a caller does not expose registry links directly.
+            if self.registry is None:
+                entity_ids.update(seed.anchor_entities)
+                anchor_ids.update(seed.package_anchor_ids)
+                artifacts.update(seed.artifact_candidate_ids)
+                if seed.anchor_artifact_id:
+                    artifacts.add(seed.anchor_artifact_id)
+                if seed.anchor_period_id:
+                    periods.add(seed.anchor_period_id)
         artifact = next(iter(artifacts)) if len(artifacts) == 1 else None
         period = next(iter(periods)) if len(periods) == 1 else None
         propositions = [
-            event.canonical_proposition
-            for event in representative_package_members(events)
+            event.canonical_proposition for event in representative_package_members(events)
         ]
         summary = " ".join(propositions[:3]).strip()
-        title = root.canonical_title or propositions[0]
+        title = propositions[0]
         candidate = root.model_copy(
             update={
                 "canonical_title": title,
@@ -187,6 +245,8 @@ class PackageProfileCompiler:
 def build_package_decision_view(
     registry: CDECRRegistry,
     candidate: PackageCandidate,
+    *,
+    source_short_ids: dict[str, str] | None = None,
 ) -> PackageDecisionView:
     package = candidate.package
     anchors: list[PackageAnchorView] = []
@@ -207,17 +267,25 @@ def build_package_decision_view(
         for event_id in package.member_event_ids
         if (event := registry.get_current_atomic_event(event_id)) is not None
     ]
-    representatives = [
-        PackageRepresentativeMember(
-            event_id=event.event_id,
-            canonical_proposition=event.canonical_proposition,
-            event_family=event.event_family.value,
-            identity_profile=event.identity_profile.model_dump(mode="json"),
-            time=event.time.model_dump(mode="json"),
-            assertion_state=event.assertion_state.value,
+    representatives = []
+    for event in representative_package_members(events):
+        surface_evidence, source_ids = atomic_surface_evidence(
+            registry,
+            event,
+            source_short_ids=source_short_ids,
         )
-        for event in representative_package_members(events)
-    ]
+        representatives.append(
+            PackageRepresentativeMember(
+                event_id=event.event_id,
+                canonical_proposition=event.canonical_proposition,
+                event_family=event.event_family.value,
+                identity_profile=event.identity_profile.model_dump(mode="json"),
+                time=event.time.model_dump(mode="json"),
+                assertion_state=event.assertion_state.value,
+                surface_evidence=surface_evidence,
+                source_ids=source_ids,
+            )
+        )
     return PackageDecisionView(
         package=package,
         package_anchors=anchors,
@@ -226,6 +294,148 @@ def build_package_decision_view(
             routes=candidate.recall_routes,
             embedding_similarity=candidate.embedding_similarity,
         ),
+    )
+
+
+def request_local_source_ids(
+    registry: CDECRRegistry,
+    events: Sequence[AtomicEvent],
+) -> dict[str, str]:
+    """Build deterministic request-local source IDs without exposing metadata."""
+
+    message_ids: list[str] = []
+    seen: set[str] = set()
+    for event in sorted(events, key=lambda item: item.event_id):
+        for mention_id in event.representative_mention_ids:
+            mention = registry.get_mention(mention_id)
+            if mention is None or mention.message_id in seen:
+                continue
+            seen.add(mention.message_id)
+            message_ids.append(mention.message_id)
+    return {message_id: f"s{index}" for index, message_id in enumerate(message_ids, start=1)}
+
+
+def atomic_surface_evidence(
+    registry: CDECRRegistry,
+    event: AtomicEvent,
+    *,
+    source_short_ids: dict[str, str] | None = None,
+) -> tuple[AtomicSurfaceEvidence, list[str]]:
+    """Project compact P0 raw surfaces plus resolved canonical identities."""
+
+    participant_values: dict[str, tuple[list[str], list[str]]] = {}
+    artifact_surfaces: list[str] = []
+    artifact_ids: list[str] = []
+    period_surfaces: list[str] = []
+    period_ids: list[str] = []
+    object_surfaces: list[str] = []
+    object_ids: list[str] = []
+    source_ids: list[str] = []
+
+    def add(target: list[str], value: str | None) -> None:
+        if value and value not in target and len(target) < 3:
+            target.append(value)
+
+    def canonical_id(mention_id: str, field_path: str) -> tuple[FieldNamespace | None, str | None]:
+        link = registry.get_field_link(mention_id, field_path)
+        root = registry.resolve_field_registry_entry(link.registry_id) if link is not None else None
+        return (
+            None if root is None else root.namespace,
+            None if root is None else (root.external_id or root.id),
+        )
+
+    for mention_id in event.representative_mention_ids:
+        mention = registry.get_mention(mention_id)
+        if mention is None:
+            continue
+        if source_short_ids is not None:
+            add(source_ids, source_short_ids.get(mention.message_id))
+        for index, participant in enumerate(mention.participants):
+            role = participant.role.value
+            surfaces, canonical_ids = participant_values.setdefault(role, ([], []))
+            add(surfaces, participant.surface)
+            _, resolved = canonical_id(mention_id, f"participants[{index}]")
+            add(canonical_ids, resolved or participant.entity_id)
+        projection = mention.schema_projection
+        projection_participants: list[tuple[str, str, str]] = []
+        if isinstance(projection, (FinancialMetricProjection, GuidanceProjection)):
+            projection_participants.append(
+                ("ISSUER", "schema_projection.fields.issuer_id", projection.fields.issuer_id)
+            )
+            add(period_surfaces, projection.fields.period_id)
+            _, resolved = canonical_id(mention_id, "schema_projection.fields.period_id")
+            add(period_ids, resolved)
+        elif isinstance(projection, AnalystActionProjection):
+            projection_participants.extend(
+                [
+                    (
+                        "INSTITUTION",
+                        "schema_projection.fields.institution_id",
+                        projection.fields.institution_id,
+                    ),
+                    (
+                        "COMPANY",
+                        "schema_projection.fields.company_id",
+                        projection.fields.company_id,
+                    ),
+                ]
+            )
+        for role, field_path, raw in projection_participants:
+            surfaces, canonical_ids = participant_values.setdefault(role, ([], []))
+            add(surfaces, raw)
+            _, resolved = canonical_id(mention_id, field_path)
+            add(canonical_ids, resolved)
+        if mention.time.reference_period_id:
+            add(period_surfaces, mention.time.reference_period_id)
+            _, resolved = canonical_id(mention_id, "time.reference_period_id")
+            add(period_ids, resolved)
+        if mention.local_package_hint is not None:
+            add(artifact_surfaces, mention.local_package_hint.anchor)
+            _, resolved = canonical_id(mention_id, "local_package_hint.anchor")
+            add(artifact_ids, resolved)
+        for index, location in enumerate(mention.locations):
+            add(object_surfaces, location)
+            _, resolved = canonical_id(mention_id, f"locations[{index}]")
+            add(object_ids, resolved)
+        for index, attribute in enumerate(mention.open_attributes):
+            field_path = f"open_attributes[{index}].value"
+            namespace, resolved = canonical_id(mention_id, field_path)
+            if namespace in _ARTIFACT_NAMESPACES:
+                add(artifact_surfaces, attribute.value)
+                add(artifact_ids, resolved)
+            elif namespace is FieldNamespace.FISCAL_PERIOD:
+                add(period_surfaces, attribute.value)
+                add(period_ids, resolved)
+            elif namespace in ATOMIC_OBJECT_FIELD_NAMESPACES or namespace is FieldNamespace.PLACE:
+                add(object_surfaces, attribute.value)
+                add(object_ids, resolved)
+
+    participants = [
+        SurfaceParticipantEvidence(
+            role=role,
+            surfaces=surfaces,
+            canonical_ids=canonical_ids,
+        )
+        for role, (surfaces, canonical_ids) in sorted(participant_values.items())
+        if surfaces or canonical_ids
+    ]
+
+    def category(surfaces: list[str], canonical_ids: list[str]) -> SurfaceCanonicalEvidence | None:
+        if not surfaces and not canonical_ids:
+            return None
+        return SurfaceCanonicalEvidence(
+            surfaces=surfaces,
+            canonical_ids=canonical_ids,
+        )
+
+    return (
+        AtomicSurfaceEvidence(
+            participants=participants or None,
+            artifacts=category(artifact_surfaces, artifact_ids),
+            periods=category(period_surfaces, period_ids),
+            object_locations=category(object_surfaces, object_ids),
+        ),
+        source_ids,
     )
 
 
@@ -261,47 +471,80 @@ class PackageBoundaryGate:
         package: EventPackage,
         member_events: Sequence[AtomicEvent],
     ) -> PackageBoundaryFinding:
-        reasons: list[str] = []
+        warnings: list[str] = []
+        review_reasons: list[str] = []
+        blocking_reasons: list[str] = []
         actions: list[PackageBoundaryAction] = []
         families = {event.event_family for event in member_events}
+        if not member_events or not package.member_event_ids:
+            blocking_reasons.append("EMPTY_PACKAGE")
         if len(package.member_event_ids) > 25:
-            reasons.append("MEMBER_COUNT_ABNORMAL_GROWTH")
-        if len(package.package_anchor_ids) > 3:
-            reasons.append("TOO_MANY_CANONICAL_ANCHORS")
-        if package.anchor_artifact_id is None and len(package.package_anchor_ids) > 1:
-            reasons.append("CONFLICTING_OR_UNRESOLVED_ARTIFACT_ANCHORS")
-        reaction_families = {EventFamily.MARKET_MOVEMENT, EventFamily.ANALYST_ACTION}
-        if families.intersection(reaction_families) and families.difference(reaction_families):
-            reasons.append("REACTION_EVENT_INSIDE_PACKAGE_BOUNDARY")
-            actions.append(PackageBoundaryAction.REMOVE_MEMBER)
-        if package.package_kind.value == "BOUNDED" and len(families) > 4:
-            reasons.append("BOUNDED_IDENTITY_HETEROGENEITY")
+            warnings.append("PACKAGE_MEMBER_COUNT_WARNING")
+        trusted_artifacts: set[str] = set()
+        provisional_anchors: set[str] = set()
+        for anchor_id in package.package_anchor_ids:
+            entry = self.registry.resolve_field_registry_entry(anchor_id) if self.registry else None
+            if entry is None:
+                provisional_anchors.add(anchor_id)
+            elif entry.external_id:
+                trusted_artifacts.add(entry.external_id)
+            else:
+                provisional_anchors.add(entry.id)
+        if package.anchor_artifact_id:
+            trusted_artifacts.add(package.anchor_artifact_id)
+        if len(trusted_artifacts) > 1:
+            blocking_reasons.append("CONFLICTING_TRUSTED_PARENT_ARTIFACTS")
+        elif len(provisional_anchors) > 1:
+            review_reasons.append("MULTIPLE_PROVISIONAL_PACKAGE_ANCHORS")
+        non_market = families.difference({EventFamily.MARKET_MOVEMENT})
+        if EventFamily.MARKET_MOVEMENT in families and non_market:
+            review_reasons.append("MARKET_REACTION_REQUIRES_N12_REEVALUATION")
+            if package.quality_state is PackageQualityState.ACTIVE:
+                actions.append(PackageBoundaryAction.REMOVE_MEMBER)
+        non_analyst = families.difference({EventFamily.ANALYST_ACTION})
+        if (
+            EventFamily.ANALYST_ACTION in families
+            and non_analyst
+            and package.package_family is not PackageFamily.ANALYST_REPORT
+        ):
+            review_reasons.append("ANALYST_REACTION_REQUIRES_N12_REEVALUATION")
+            if package.quality_state is PackageQualityState.ACTIVE:
+                actions.append(PackageBoundaryAction.REMOVE_MEMBER)
         span_days = _span_days(package.time_range.start, package.time_range.end)
         if package.package_kind.value == "BOUNDED" and span_days is not None and span_days > 120:
-            reasons.append("BOUNDED_TIME_SPAN_EXCEEDED")
-        if len(reasons) >= 2:
-            actions.append(PackageBoundaryAction.CREATE_SPLIT_PACKAGE)
-        if reasons:
+            warnings.append("PACKAGE_TIME_SPAN_WARNING")
+        if blocking_reasons or review_reasons:
             actions.extend(
                 [
-                    PackageBoundaryAction.FREEZE_PACKAGE,
                     PackageBoundaryAction.REBUILD_PROFILE,
                     PackageBoundaryAction.REBUILD_EMBEDDING,
                 ]
             )
-        quality_state = (
-            PackageQualityState.QUARANTINED
-            if len(reasons) >= 3
-            else PackageQualityState.FROZEN
-            if reasons
-            else PackageQualityState.ACTIVE
-        )
+        if review_reasons:
+            actions.append(PackageBoundaryAction.FREEZE_PACKAGE)
+        severity: Literal["WARNING", "REVIEW_REQUIRED", "BLOCKING_CONFLICT"] | None
+        if blocking_reasons:
+            severity = "BLOCKING_CONFLICT"
+            quality_state = PackageQualityState.QUARANTINED
+        elif review_reasons:
+            severity = "REVIEW_REQUIRED"
+            quality_state = PackageQualityState.FROZEN
+        elif warnings:
+            severity = "WARNING"
+            quality_state = PackageQualityState.ACTIVE
+        else:
+            severity = None
+            quality_state = PackageQualityState.ACTIVE
         return PackageBoundaryFinding(
             package_id=package.package_id,
             quality_state=quality_state,
-            reasons=reasons,
+            severity=severity,
+            reasons=[*blocking_reasons, *review_reasons, *warnings],
             actions=list(dict.fromkeys(actions)),
         )
+
+    def __init__(self, registry: CDECRRegistry | None = None) -> None:
+        self.registry = registry
 
 
 def _span_days(start: datetime | date | None, end: datetime | date | None) -> int | None:

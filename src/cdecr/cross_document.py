@@ -118,10 +118,13 @@ from cdecr.package_engine import (
     PACKAGE_PROFILE_COMPILER_VERSION,
     PackageBoundaryGate,
     PackageProfileCompiler,
+    atomic_surface_evidence,
     build_package_decision_view,
     canonical_package_sort_key,
+    package_is_n13_repairable,
     package_retrieval_text,
     representative_package_members,
+    request_local_source_ids,
 )
 from cdecr.ports import (
     CDECRRegistry,
@@ -137,7 +140,7 @@ from cdecr.single_document_contracts import ModelCallSummary
 from cdecr.wire import compact_json, intern_repeated_ids, wire_ref_metadata
 
 ENGINE_VERSION = "cdecr-cross-document-v15"
-PROMPT_VERSION = "cdecr-cross-document-prompts-v7"
+PROMPT_VERSION = "cdecr-cross-document-prompts-v8"
 WIRE_PROTOCOL_VERSION = "cdecr-cross-document-wire-shadow-v3"
 ATOMIC_ASSIGNMENT_POLICY_VERSION = "atomic-assignment-policy-v2"
 ATOMIC_DECISION_MENTION_BATCH = 3
@@ -193,9 +196,7 @@ def _structured_request_metadata(request: StructuredModelRequest) -> dict[str, o
                 if "candidate" in key:
                     candidate_count = max(candidate_count, len(value))
     return {
-        "batch_key": _hash_json(
-            {"schema": request.json_schema, "user": request.user_prompt}
-        )[:24],
+        "batch_key": _hash_json({"schema": request.json_schema, "user": request.user_prompt})[:24],
         "request_item_count": request_item_count,
         "candidate_count": candidate_count,
         "request_payload_bytes": len(request.user_prompt.encode("utf-8")),
@@ -327,24 +328,17 @@ class _AuditedModels:
                     "wire_protocol_version": WIRE_PROTOCOL_VERSION,
                     "baseline_payload_bytes": baseline_bytes,
                     "optimized_payload_bytes": optimized_bytes,
-                    "estimated_savings_bytes": max(
-                        0, baseline_bytes - optimized_bytes
-                    ),
+                    "estimated_savings_bytes": max(0, baseline_bytes - optimized_bytes),
                     "estimated_savings_ratio": (
                         0.0
                         if baseline_bytes == 0
                         else round(
-                            max(0, baseline_bytes - optimized_bytes)
-                            / baseline_bytes,
+                            max(0, baseline_bytes - optimized_bytes) / baseline_bytes,
                             6,
                         )
                     ),
-                    "baseline_hash": hashlib.sha256(
-                        baseline_json.encode("utf-8")
-                    ).hexdigest(),
-                    "optimized_hash": hashlib.sha256(
-                        optimized_json.encode("utf-8")
-                    ).hexdigest(),
+                    "baseline_hash": hashlib.sha256(baseline_json.encode("utf-8")).hexdigest(),
+                    "optimized_hash": hashlib.sha256(optimized_json.encode("utf-8")).hexdigest(),
                     **wire_ref_metadata(optimized_payload),
                 },
             )
@@ -451,8 +445,7 @@ class _AuditedModels:
                 self.registry.append_decision_audit(
                     DecisionAuditRecord(
                         audit_id=(
-                            f"cross-model-adapter:{self.run_id}:{stage}:"
-                            f"{request_key}:{attempt}"
+                            f"cross-model-adapter:{self.run_id}:{stage}:{request_key}:{attempt}"
                         ),
                         run_id=self.run_id,
                         decision_type="CROSS_MODEL_ADAPTER_FALLBACK",
@@ -541,9 +534,7 @@ class _AuditedModels:
                 return repair_and_validate(first_error.repair_payload, first_error.code)
             raise
         try:
-            output = output_type.model_validate(
-                adapt_payload(result.payload, attempt="initial")
-            )
+            output = output_type.model_validate(adapt_payload(result.payload, attempt="initial"))
             validator(output)
             return output
         except (ValidationError, ValueError) as first_error:
@@ -618,16 +609,10 @@ class _AuditedModels:
                     error_code=code,
                     repaired=repaired,
                     queue_wait_ms=scheduled.queue_wait_ms if scheduled else 0,
-                    request_item_count=_metadata_int(
-                        request_metadata, "request_item_count"
-                    ),
+                    request_item_count=_metadata_int(request_metadata, "request_item_count"),
                     candidate_count=_metadata_int(request_metadata, "candidate_count"),
-                    request_payload_bytes=_metadata_int(
-                        request_metadata, "request_payload_bytes"
-                    ),
-                    wire_ref_count=_metadata_int(
-                        request_metadata, "wire_ref_count"
-                    ),
+                    request_payload_bytes=_metadata_int(request_metadata, "request_payload_bytes"),
+                    wire_ref_count=_metadata_int(request_metadata, "wire_ref_count"),
                 )
             )
             raise CrossDocumentPipelineError(
@@ -670,13 +655,9 @@ class _AuditedModels:
                 latency_ms=result.latency_ms,
                 repaired=repaired,
                 queue_wait_ms=scheduled.queue_wait_ms if scheduled else 0,
-                request_item_count=_metadata_int(
-                    request_metadata, "request_item_count"
-                ),
+                request_item_count=_metadata_int(request_metadata, "request_item_count"),
                 candidate_count=_metadata_int(request_metadata, "candidate_count"),
-                request_payload_bytes=_metadata_int(
-                    request_metadata, "request_payload_bytes"
-                ),
+                request_payload_bytes=_metadata_int(request_metadata, "request_payload_bytes"),
                 wire_ref_count=_metadata_int(request_metadata, "wire_ref_count"),
             )
         )
@@ -799,9 +780,7 @@ class CrossDocumentEngine:
             field_resolver=field_resolver,
         )
         try:
-            field_summary = canonical_fields.resolve_document(
-                source, mentions, run_id=run_id
-            )
+            field_summary = canonical_fields.resolve_document(source, mentions, run_id=run_id)
             canonical_fields.resolve_package_hints(source, mentions, run_id=run_id)
         except Exception as exc:
             processing_key = self.processing_key(message_id, mentions)
@@ -906,9 +885,7 @@ class CrossDocumentEngine:
                 summaries=summaries,
             )
             unresolved_identities = [
-                identity
-                for identity in compiled.values()
-                if identity.identity_profile is None
+                identity for identity in compiled.values() if identity.identity_profile is None
             ]
             if unresolved_identities:
                 raise CrossDocumentPipelineError(
@@ -1227,9 +1204,7 @@ class CrossDocumentEngine:
                     existing_evidence = [
                         evidence
                         for representative in representatives
-                        for evidence in resolved_identity_evidence(
-                            self.registry, representative
-                        )
+                        for evidence in resolved_identity_evidence(self.registry, representative)
                     ]
                     for role, conflict in (
                         (ParticipantRole.SUBJECT, HardConflictCode.CORE_SUBJECT),
@@ -1280,8 +1255,7 @@ class CrossDocumentEngine:
                                     ],
                                     "mode": self.hard_cannot_link_mode.value,
                                     "enforced": (
-                                        self.hard_cannot_link_mode
-                                        is HardCannotLinkMode.ENFORCE
+                                        self.hard_cannot_link_mode is HardCannotLinkMode.ENFORCE
                                     ),
                                 },
                             )
@@ -1311,9 +1285,7 @@ class CrossDocumentEngine:
                     )
                 )
             else:
-                ranked.sort(
-                    key=lambda item: (-item.recall_score, item.event.event_id)
-                )
+                ranked.sort(key=lambda item: (-item.recall_score, item.event.event_id))
             output[mention.mention_id] = ranked[:ATOMIC_TOP_K]
             candidate_counts["atomic_recalled"] += len(output[mention.mention_id])
             candidate_counts["atomic_hard_conflict_observed"] += sum(
@@ -1350,9 +1322,7 @@ class CrossDocumentEngine:
         ]
 
         def adapt_atomic_payload(payload: object) -> object:
-            if not isinstance(payload, dict) or not isinstance(
-                payload.get("decisions"), list
-            ):
+            if not isinstance(payload, dict) or not isinstance(payload.get("decisions"), list):
                 return payload
             decisions: list[dict[str, object]] = []
             for raw_decision in payload["decisions"]:
@@ -1443,28 +1413,22 @@ class CrossDocumentEngine:
                 for index, candidate_id in enumerate(candidate_ids, start=1)
             }
             candidate_full_global = {
-                short_id: full_id
-                for full_id, short_id in candidate_short_global.items()
+                short_id: full_id for full_id, short_id in candidate_short_global.items()
             }
             candidate_short_by_full: dict[str, dict[str, str]] = {}
             candidate_full_by_short: dict[str, dict[str, str]] = {}
             for mention in batch_mentions:
                 full_id = mention.mention_id
                 mapping = {
-                    candidate.event.event_id: candidate_short_global[
-                        candidate.event.event_id
-                    ]
+                    candidate.event.event_id: candidate_short_global[candidate.event.event_id]
                     for candidate in batch_candidates[full_id]
                 }
                 candidate_short_by_full[full_id] = mapping
                 candidate_full_by_short[mention_short_by_full[full_id]] = {
-                    short_id: candidate_full_global[short_id]
-                    for short_id in mapping.values()
+                    short_id: candidate_full_global[short_id] for short_id in mapping.values()
                 }
             expected = {
-                mention_short_by_full[mention_id]: set(
-                    candidate_short_by_full[mention_id].values()
-                )
+                mention_short_by_full[mention_id]: set(candidate_short_by_full[mention_id].values())
                 for mention_id in batch_candidates
             }
             candidate_by_id = {
@@ -1497,9 +1461,9 @@ class CrossDocumentEngine:
                     "identity_profile": event.identity_profile.model_dump(mode="json"),
                     "time": event.time.model_dump(mode="json"),
                     "representative_source_claims": representative_claims[:3],
-                    **canonical_identity_view(
-                        self.registry, representatives
-                    ).model_dump(mode="json"),
+                    **canonical_identity_view(self.registry, representatives).model_dump(
+                        mode="json"
+                    ),
                     "is_provisional": event.event_id.startswith("provisional:"),
                 }
             tasks: list[dict[str, object]] = []
@@ -1515,9 +1479,7 @@ class CrossDocumentEngine:
                         "event_id": candidate_short_by_full[mention.mention_id][
                             candidate.event.event_id
                         ],
-                        "recall_routes": [
-                            route.value for route in candidate.recall_routes
-                        ],
+                        "recall_routes": [route.value for route in candidate.recall_routes],
                         "recall_score": round(candidate.recall_score, 3),
                     }
                     for candidate in batch_candidates[mention.mention_id]
@@ -1529,9 +1491,7 @@ class CrossDocumentEngine:
                     "assertion_state": mention.assertion_state.value,
                     "identity_profile": profile.model_dump(mode="json"),
                     "time": mention.time.model_dump(mode="json"),
-                    "claim_values": [
-                        item.model_dump(mode="json") for item in mention.quantities
-                    ],
+                    "claim_values": [item.model_dump(mode="json") for item in mention.quantities],
                     "source_claim": mention.source_claim,
                     "evidence_excerpts": (
                         [_mention_local_context(source, mention)]
@@ -1550,18 +1510,12 @@ class CrossDocumentEngine:
                     legacy_candidates.append(
                         {
                             **atom,
-                            "recall_routes": [
-                                route.value for route in candidate.recall_routes
-                            ],
+                            "recall_routes": [route.value for route in candidate.recall_routes],
                             "recall_score": candidate.recall_score,
                         }
                     )
-                tasks.append(
-                    {"incoming": incoming_payload, "candidates": candidate_payloads}
-                )
-                legacy_tasks.append(
-                    {"incoming": incoming_payload, "candidates": legacy_candidates}
-                )
+                tasks.append({"incoming": incoming_payload, "candidates": candidate_payloads})
+                legacy_tasks.append({"incoming": incoming_payload, "candidates": legacy_candidates})
             legacy_payload: dict[str, object] = {
                 "batch_index": batch_index,
                 "batch_count": len(batches),
@@ -1593,8 +1547,7 @@ class CrossDocumentEngine:
                 for decision in output.decisions:
                     candidate_ids = expected[decision.mention_id]
                     assessment_by_id = {
-                        item.candidate_event_id: item
-                        for item in decision.candidate_assessments
+                        item.candidate_event_id: item for item in decision.candidate_assessments
                     }
                     if set(assessment_by_id) != candidate_ids:
                         raise ValueError(
@@ -1610,8 +1563,7 @@ class CrossDocumentEngine:
                     related = sorted(
                         item.candidate_event_id
                         for item in decision.candidate_assessments
-                        if item.relation
-                        is AtomicSemanticRelation.RELATED_NOT_SAME
+                        if item.relation is AtomicSemanticRelation.RELATED_NOT_SAME
                     )
                     same = sorted(
                         item.candidate_event_id
@@ -1655,9 +1607,7 @@ class CrossDocumentEngine:
                     restored_assessments = [
                         assessment.model_copy(
                             update={
-                                "candidate_event_id": candidate_map[
-                                    assessment.candidate_event_id
-                                ]
+                                "candidate_event_id": candidate_map[assessment.candidate_event_id]
                             }
                         )
                         for assessment in decision.candidate_assessments
@@ -1690,8 +1640,7 @@ class CrossDocumentEngine:
                 for decision in output.decisions:
                     candidate_ids = expected[decision.mention_id]
                     assessment_by_id = {
-                        item.candidate_event_id: item
-                        for item in decision.candidate_assessments
+                        item.candidate_event_id: item for item in decision.candidate_assessments
                     }
                     related = {
                         item.candidate_event_id
@@ -1750,10 +1699,7 @@ class CrossDocumentEngine:
                     raise
                 self.registry.append_decision_audit(
                     DecisionAuditRecord(
-                        audit_id=(
-                            "cross-n9-escalation:"
-                            f"{models.run_id}:{batch_index}:m2-invalid"
-                        ),
+                        audit_id=(f"cross-n9-escalation:{models.run_id}:{batch_index}:m2-invalid"),
                         run_id=models.run_id,
                         decision_type="ATOMIC_N9_ESCALATED",
                         subject_id=f"batch:{batch_index}",
@@ -1800,8 +1746,7 @@ class CrossDocumentEngine:
                                     }
                                 )
                                 if any(
-                                    assessment.relation
-                                    is AtomicSemanticRelation.UNCERTAIN
+                                    assessment.relation is AtomicSemanticRelation.UNCERTAIN
                                     for assessment in decision.candidate_assessments
                                 )
                                 else decision
@@ -1844,9 +1789,7 @@ class CrossDocumentEngine:
             compiled_identity = compiled[mention.mention_id]
             profile = compiled_identity.identity_profile
             if profile is None:
-                raise CrossDocumentPipelineError(
-                    "identity_compiler", "IDENTITY_FIELDS_UNRESOLVED"
-                )
+                raise CrossDocumentPipelineError("identity_compiler", "IDENTITY_FIELDS_UNRESOLVED")
             provisional_id = singleton_atomic_event(
                 mention, identity_profile=profile, provisional=True
             ).event_id
@@ -1857,8 +1800,7 @@ class CrossDocumentEngine:
                 )
                 if (
                     prior_assignment is None
-                    or prior_assignment.identity_processing_key
-                    != compiled_identity.processing_key
+                    or prior_assignment.identity_processing_key != compiled_identity.processing_key
                     or prior_assignment.assignment_policy_version
                     != ATOMIC_ASSIGNMENT_POLICY_VERSION
                 ):
@@ -1894,14 +1836,10 @@ class CrossDocumentEngine:
             if not eligible:
                 action, reason = AtomicAction.CREATE_NEW, "NO_ELIGIBLE_CANDIDATE"
             elif decision is None:
-                raise CrossDocumentPipelineError(
-                    "atomic_assignment", "MISSING_N9_DECISION"
-                )
+                raise CrossDocumentPipelineError("atomic_assignment", "MISSING_N9_DECISION")
             else:
                 action = decision.action
-                relations = {
-                    item.relation for item in decision.candidate_assessments
-                }
+                relations = {item.relation for item in decision.candidate_assessments}
                 if action is AtomicAction.MERGE:
                     reason = "N9_MERGE"
                 elif AtomicSemanticRelation.UNCERTAIN in relations:
@@ -1929,21 +1867,16 @@ class CrossDocumentEngine:
             possible_duplicate_atomic_ids: list[str] = []
             if decision is not None:
                 assessment_by_id = {
-                    item.candidate_event_id: item
-                    for item in decision.candidate_assessments
+                    item.candidate_event_id: item for item in decision.candidate_assessments
                 }
                 related_candidate_event_ids = [
-                    materialize(value)
-                    for value in decision.related_candidate_event_ids
+                    materialize(value) for value in decision.related_candidate_event_ids
                 ]
                 possible_duplicate_atomic_ids = [
-                    materialize(value)
-                    for value in decision.possible_duplicate_atomic_ids
+                    materialize(value) for value in decision.possible_duplicate_atomic_ids
                 ]
                 if decision.merge_target_event_id is not None:
-                    candidate_event_id = materialize(
-                        decision.merge_target_event_id
-                    )
+                    candidate_event_id = materialize(decision.merge_target_event_id)
                     selected = assessment_by_id[decision.merge_target_event_id]
                     relation = selected.relation
                     claim_conflict = selected.claim_conflict
@@ -1993,26 +1926,20 @@ class CrossDocumentEngine:
                     subject_id=mention.mention_id,
                     payload={
                         "assignment": record.model_dump(mode="json"),
-                        "incoming_mention_hash": _hash_json(
-                            mention.model_dump(mode="json")
-                        ),
+                        "incoming_mention_hash": _hash_json(mention.model_dump(mode="json")),
                         "candidate_refs": [
                             {
                                 "event_id": candidate.event.event_id,
                                 "version": candidate.event.version,
                                 "identity_hash": _hash_json(
-                                    candidate.event.identity_profile.model_dump(
-                                        mode="json"
-                                    )
+                                    candidate.event.identity_profile.model_dump(mode="json")
                                 ),
                             }
                             for candidate in candidates.get(mention.mention_id, [])
                         ],
                         "resulting_event_version": event.version,
                         "n9_decision": (
-                            None
-                            if decision is None
-                            else decision.model_dump(mode="json")
+                            None if decision is None else decision.model_dump(mode="json")
                         ),
                     },
                 )
@@ -2125,9 +2052,7 @@ class CrossDocumentEngine:
         for package in packages:
             if not package.member_event_ids:
                 continue
-            representatives = representative_package_members(
-                self._package_member_events(package)
-            )
+            representatives = representative_package_members(self._package_member_events(package))
             text = package_retrieval_text(package, representatives)
             input_hash = hashlib.sha256(text.encode("utf-8")).hexdigest()
             current = stored.get(package.package_id)
@@ -2137,12 +2062,8 @@ class CrossDocumentEngine:
                 missing.append((package, text, input_hash))
         for offset in range(0, len(missing), 10):
             batch = missing[offset : offset + 10]
-            result = models.embed(
-                [text for _, text, _ in batch], stage="package_embedding_m1"
-            )
-            for (package, _, input_hash), vector in zip(
-                batch, result.vectors, strict=True
-            ):
+            result = models.embed([text for _, text, _ in batch], stage="package_embedding_m1")
+            for (package, _, input_hash), vector in zip(batch, result.vectors, strict=True):
                 self.registry.save_embedding(
                     owner_kind="event_package",
                     owner_id=package.package_id,
@@ -2169,8 +2090,7 @@ class CrossDocumentEngine:
             entry.external_id or entry.id
             for namespace, canonical_id in resolved_fields
             if namespace is not FieldNamespace.PACKAGE_ANCHOR
-            and (entry := self.registry.resolve_field_registry_entry(canonical_id))
-            is not None
+            and (entry := self.registry.resolve_field_registry_entry(canonical_id)) is not None
         ]
         artifacts = sorted(set(seed.artifact_candidate_ids) | set(canonical_artifacts))
         seed = seed.model_copy(
@@ -2236,8 +2156,7 @@ class CrossDocumentEngine:
         incoming_identity = _hash_json(event.identity_profile.model_dump(mode="json"))
         for package in active_packages.values():
             if any(
-                _hash_json(member.identity_profile.model_dump(mode="json"))
-                == incoming_identity
+                _hash_json(member.identity_profile.model_dump(mode="json")) == incoming_identity
                 for member in self._package_member_events(package)
             ):
                 recalled.setdefault(package.package_id, set()).add(
@@ -2339,9 +2258,7 @@ class CrossDocumentEngine:
                     and not seeds[event_id].anchor_artifact_id
                 )
             )
-            tiered_ids[
-                ModelTier.M3 if complex_decision else ModelTier.M2
-            ].append(event_id)
+            tiered_ids[ModelTier.M3 if complex_decision else ModelTier.M2].append(event_id)
         batches: list[tuple[ModelTier, list[str]]] = []
         for tier in (ModelTier.M2, ModelTier.M3):
             values = tiered_ids[tier]
@@ -2355,8 +2272,7 @@ class CrossDocumentEngine:
         ) -> tuple[int, PackageDecisionBatch]:
             batch_index, (tier, event_ids) = indexed_batch
             event_short_by_full = {
-                event_id: f"e{index}"
-                for index, event_id in enumerate(event_ids, start=1)
+                event_id: f"e{index}" for index, event_id in enumerate(event_ids, start=1)
             }
             event_full_by_short = {
                 short_id: full_id for full_id, short_id in event_short_by_full.items()
@@ -2369,31 +2285,24 @@ class CrossDocumentEngine:
                 }
             )
             package_short_global = {
-                package_id: f"p{index}"
-                for index, package_id in enumerate(package_ids, start=1)
+                package_id: f"p{index}" for index, package_id in enumerate(package_ids, start=1)
             }
             package_full_global = {
-                short_id: full_id
-                for full_id, short_id in package_short_global.items()
+                short_id: full_id for full_id, short_id in package_short_global.items()
             }
             package_short_by_full: dict[str, dict[str, str]] = {}
             package_full_by_short: dict[str, dict[str, str]] = {}
             for event_id in event_ids:
                 mapping = {
-                    candidate.package.package_id: package_short_global[
-                        candidate.package.package_id
-                    ]
+                    candidate.package.package_id: package_short_global[candidate.package.package_id]
                     for candidate in unresolved[event_id]
                 }
                 package_short_by_full[event_id] = mapping
                 package_full_by_short[event_short_by_full[event_id]] = {
-                    short_id: package_full_global[short_id]
-                    for short_id in mapping.values()
+                    short_id: package_full_global[short_id] for short_id in mapping.values()
                 }
             expected = {
-                event_short_by_full[event_id]: set(
-                    package_short_by_full[event_id].values()
-                )
+                event_short_by_full[event_id]: set(package_short_by_full[event_id].values())
                 for event_id in event_ids
             }
             model_events: dict[str, object] = {}
@@ -2404,11 +2313,24 @@ class CrossDocumentEngine:
                 for event_id in event_ids
                 for candidate in unresolved[event_id]
             }
+            request_events = {
+                event.event_id: event for event_id in event_ids for event in [events[event_id]]
+            }
+            for candidate in candidate_by_package_id.values():
+                for member_id in candidate.package.member_event_ids:
+                    member = self.registry.get_current_atomic_event(member_id)
+                    if member is not None:
+                        request_events[member.event_id] = member
+            source_short_ids = request_local_source_ids(
+                self.registry, list(request_events.values())
+            )
             model_packages: dict[str, object] = {}
             for package_id in package_ids:
                 view = build_package_decision_view(
-                    self.registry, candidate_by_package_id[package_id]
-                ).model_dump(mode="json")
+                    self.registry,
+                    candidate_by_package_id[package_id],
+                    source_short_ids=source_short_ids,
+                ).model_dump(mode="json", exclude_none=True)
                 package_payload = view["package"]
                 assert isinstance(package_payload, dict)
                 short_package_id = package_short_global[package_id]
@@ -2422,19 +2344,29 @@ class CrossDocumentEngine:
                 short_event_id = event_short_by_full[event_id]
                 event_payload = events[event_id].model_dump(mode="json")
                 event_payload["event_id"] = short_event_id
-                event_payload["mention_count"] = len(
-                    event_payload.pop("mention_ids", [])
-                )
+                event_payload["mention_count"] = len(event_payload.pop("mention_ids", []))
                 event_payload["representative_mention_count"] = len(
                     event_payload.pop("representative_mention_ids", [])
                 )
+                event_payload.pop("consensus_claims", None)
+                surface_evidence, source_ids = atomic_surface_evidence(
+                    self.registry,
+                    events[event_id],
+                    source_short_ids=source_short_ids,
+                )
+                event_payload["surface_evidence"] = surface_evidence.model_dump(
+                    mode="json", exclude_none=True
+                )
+                event_payload["source_ids"] = source_ids
                 model_events[short_event_id] = event_payload
                 model_seeds[short_event_id] = seeds[event_id].model_dump(mode="json")
                 views: list[object] = []
                 for candidate in unresolved[event_id]:
                     view = build_package_decision_view(
-                        self.registry, candidate
-                    ).model_dump(mode="json")
+                        self.registry,
+                        candidate,
+                        source_short_ids=source_short_ids,
+                    ).model_dump(mode="json", exclude_none=True)
                     views.append(
                         {
                             "package_id": package_short_by_full[event_id][
@@ -2456,9 +2388,7 @@ class CrossDocumentEngine:
                     expanded.append(
                         {
                             **package_view,
-                            "retrieval_signals": candidate_ref[
-                                "retrieval_signals"
-                            ],
+                            "retrieval_signals": candidate_ref["retrieval_signals"],
                         }
                     )
                 legacy_candidates[short_event_id] = expanded
@@ -2492,9 +2422,7 @@ class CrossDocumentEngine:
             )
 
             def adapt(payload: object) -> object:
-                if not isinstance(payload, dict) or not isinstance(
-                    payload.get("decisions"), list
-                ):
+                if not isinstance(payload, dict) or not isinstance(payload.get("decisions"), list):
                     return payload
                 adapted: list[object] = []
                 for raw in payload["decisions"]:
@@ -2520,14 +2448,9 @@ class CrossDocumentEngine:
 
             def validate(output: PackageDecisionBatch) -> None:
                 if {item.event_id for item in output.decisions} != set(expected):
-                    raise ValueError(
-                        "package decisions must cover exactly requested events"
-                    )
+                    raise ValueError("package decisions must cover exactly requested events")
                 for decision in output.decisions:
-                    actual = {
-                        item.candidate_package_id
-                        for item in decision.candidate_assessments
-                    }
+                    actual = {item.candidate_package_id for item in decision.candidate_assessments}
                     if actual != expected[decision.event_id]:
                         raise ValueError(
                             "package decisions must cover exactly requested candidates"
@@ -2566,9 +2489,7 @@ class CrossDocumentEngine:
                             "selected_member_package_id": (
                                 None
                                 if decision.selected_member_package_id is None
-                                else restored_package_ids[
-                                    decision.selected_member_package_id
-                                ]
+                                else restored_package_ids[decision.selected_member_package_id]
                             ),
                         }
                     )
@@ -2597,8 +2518,7 @@ class CrossDocumentEngine:
         events = [
             event
             for membership in memberships
-            if (event := self.registry.get_current_atomic_event(membership.event_id))
-            is not None
+            if (event := self.registry.get_current_atomic_event(membership.event_id)) is not None
         ]
         if events:
             rebuilt = compiler.compile(package, events)
@@ -2627,7 +2547,7 @@ class CrossDocumentEngine:
         candidate_counts: dict[str, int],
     ) -> tuple[list[EventPackage], list[PackageAssignmentRecord]]:
         del mention_vectors
-        compiler = PackageProfileCompiler()
+        compiler = PackageProfileCompiler(self.registry)
         event_map = {event.event_id: event for event in events}
         events = list(event_map.values())
         article_map = {item.mention_id: item for item in article_mentions}
@@ -2637,9 +2557,7 @@ class CrossDocumentEngine:
             for package in current_packages
             if package.quality_state is PackageQualityState.ACTIVE
         }
-        package_embeddings = self._sync_package_embeddings(
-            list(active_packages.values()), models
-        )
+        package_embeddings = self._sync_package_embeddings(list(active_packages.values()), models)
         atomic_embeddings = {
             item.owner_id: item.vector
             for item in self.registry.list_latest_embeddings(
@@ -2654,10 +2572,7 @@ class CrossDocumentEngine:
             mentions = [
                 mention
                 for mention_id in event.mention_ids
-                if (
-                    mention := article_map.get(mention_id)
-                    or self.registry.get_mention(mention_id)
-                )
+                if (mention := article_map.get(mention_id) or self.registry.get_mention(mention_id))
                 is not None
             ]
             seed, assignment_key, seed_hash, links_hash = self._package_seed_and_key(
@@ -2667,9 +2582,7 @@ class CrossDocumentEngine:
             seeds[event.event_id] = seed
             keys[event.event_id] = (assignment_key, seed_hash, links_hash)
             existing = self.registry.list_packages_for_event(event.event_id)
-            latest = self.registry.get_latest_package_assignment_for_event(
-                event.event_id
-            )
+            latest = self.registry.get_latest_package_assignment_for_event(event.event_id)
             if (
                 existing
                 and latest is not None
@@ -2739,9 +2652,7 @@ class CrossDocumentEngine:
             seed = seeds[event.event_id]
             decision = decisions.get(event.event_id)
             assessments = decision.candidate_assessments if decision is not None else []
-            selected_id = (
-                decision.selected_member_package_id if decision is not None else None
-            )
+            selected_id = decision.selected_member_package_id if decision is not None else None
             previous_values = self.registry.list_packages_for_event(event.event_id)
             previous = previous_values[0] if previous_values else None
             for assessment in assessments:
@@ -2766,8 +2677,7 @@ class CrossDocumentEngine:
                             prompt_version=PROMPT_VERSION,
                             model=(
                                 self.model_m3
-                                if len(candidates[event.event_id]) > 1
-                                or seed.anchor_conflict
+                                if len(candidates[event.event_id]) > 1 or seed.anchor_conflict
                                 else self.model_m2
                             ),
                         )
@@ -2775,9 +2685,7 @@ class CrossDocumentEngine:
             if selected_id is not None:
                 target = self.registry.get_current_package(selected_id)
                 if target is None:
-                    raise CrossDocumentPipelineError(
-                        "package_update", "candidate_missing"
-                    )
+                    raise CrossDocumentPipelineError("package_update", "candidate_missing")
                 package = compiler.compile(
                     target, [*self._package_member_events(target), event], seed=seed
                 )
@@ -2788,9 +2696,7 @@ class CrossDocumentEngine:
                 reason = "N12_SELECTED_CANONICAL_MEMBER"
             else:
                 proposed = compiler.compile_singleton(event, seed)
-                existing_proposed = self.registry.get_current_package(
-                    proposed.package_id
-                )
+                existing_proposed = self.registry.get_current_package(proposed.package_id)
                 if existing_proposed is None:
                     package = proposed
                     self.registry.save_package(package)
@@ -2906,9 +2812,7 @@ class CrossDocumentEngine:
                     decision.ranked_member_package_ids if decision is not None else []
                 ),
                 selected_member_package_id=selected_id,
-                selection_reason=(
-                    decision.selection_reason if decision is not None else None
-                ),
+                selection_reason=(decision.selection_reason if decision is not None else None),
                 package_assignment_key=assignment_key,
                 package_seed_hash=seed_hash,
                 package_field_links_hash=links_hash,
@@ -3126,8 +3030,7 @@ class CrossDocumentEngine:
                 batch_index, event_ids = indexed_batch
                 batch_candidates = {event_id: unresolved[event_id] for event_id in event_ids}
                 event_short_by_full = {
-                    event_id: f"e{index}"
-                    for index, event_id in enumerate(event_ids, start=1)
+                    event_id: f"e{index}" for index, event_id in enumerate(event_ids, start=1)
                 }
                 event_full_by_short = {
                     short_id: full_id for full_id, short_id in event_short_by_full.items()
@@ -3258,9 +3161,9 @@ class CrossDocumentEngine:
                         decision.model_copy(
                             update={
                                 "event_id": event_full_by_short[decision.event_id],
-                                "candidate_package_id": package_full_by_short[
-                                    decision.event_id
-                                ][decision.candidate_package_id],
+                                "candidate_package_id": package_full_by_short[decision.event_id][
+                                    decision.candidate_package_id
+                                ],
                             }
                         )
                         for decision in output.decisions
@@ -3322,12 +3225,9 @@ class CrossDocumentEngine:
                         subject_id=event.event_id,
                         payload={
                             "candidate_package_ids": [
-                                item.package.package_id
-                                for item in candidates[event.event_id]
+                                item.package.package_id for item in candidates[event.event_id]
                             ],
-                            "decisions": [
-                                item.model_dump(mode="json") for item in pair_values
-                            ],
+                            "decisions": [item.model_dump(mode="json") for item in pair_values],
                             "fallback_action": PackageAction.CREATE_NEW_PACKAGE.value,
                         },
                     )
@@ -3546,9 +3446,7 @@ class CrossDocumentEngine:
             EventFamily.MARKET_MOVEMENT,
             EventFamily.ANALYST_ACTION,
         }
-        suspicious = [
-            event for event in member_events if event.event_family in reaction_families
-        ]
+        suspicious = [event for event in member_events if event.event_family in reaction_families]
         if not suspicious or len(suspicious) == len(member_events):
             return set()
         atomic_embeddings = {
@@ -3587,11 +3485,7 @@ class CrossDocumentEngine:
                     entry.external_id
                     for namespace, canonical_id in resolved
                     if namespace is FieldNamespace.PACKAGE_ANCHOR
-                    and (
-                        entry := self.registry.resolve_field_registry_entry(
-                            canonical_id
-                        )
-                    )
+                    and (entry := self.registry.resolve_field_registry_entry(canonical_id))
                     is not None
                     and entry.external_id
                 }
@@ -3600,9 +3494,7 @@ class CrossDocumentEngine:
                 update={
                     "package_anchor_ids": sorted(set(anchor_ids)),
                     "artifact_candidate_ids": artifact_ids,
-                    "anchor_artifact_id": (
-                        artifact_ids[0] if len(artifact_ids) == 1 else None
-                    ),
+                    "anchor_artifact_id": (artifact_ids[0] if len(artifact_ids) == 1 else None),
                     "anchor_conflict": len(artifact_ids) > 1,
                 }
             )
@@ -3644,9 +3536,7 @@ class CrossDocumentEngine:
             else:
                 existing = self.registry.get_current_package(selected_id)
                 if existing is None:
-                    raise CrossDocumentPipelineError(
-                        "package_boundary_repair", "candidate_missing"
-                    )
+                    raise CrossDocumentPipelineError("package_boundary_repair", "candidate_missing")
                 target = compiler.compile(
                     existing,
                     [*self._package_member_events(existing), event],
@@ -3717,7 +3607,7 @@ class CrossDocumentEngine:
         *,
         run_id: str,
     ) -> list[EventPackage]:
-        compiler = PackageProfileCompiler()
+        compiler = PackageProfileCompiler(self.registry)
         all_current = {
             package.package_id: package
             for package in self.registry.list_current_packages(limit=10000)
@@ -3725,7 +3615,7 @@ class CrossDocumentEngine:
         active = {
             package_id: package
             for package_id, package in all_current.items()
-            if package.quality_state is PackageQualityState.ACTIVE
+            if package_is_n13_repairable(package)
         }
         result_ids = {
             package.package_id
@@ -3735,9 +3625,7 @@ class CrossDocumentEngine:
         embeddings = self._sync_package_embeddings(list(active.values()), models)
         seen_pairs: set[tuple[str, str]] = set()
         m0_decisions: list[PackagePairMergeDecision] = []
-        m3_pairs: list[
-            tuple[EventPackage, EventPackage, list[RecallRoute], float | None]
-        ] = []
+        m3_pairs: list[tuple[EventPackage, EventPackage, list[RecallRoute], float | None]] = []
         for touched_id in sorted(result_ids):
             left = active.get(touched_id)
             if left is None:
@@ -3785,9 +3673,7 @@ class CrossDocumentEngine:
                         )
                     )
                 else:
-                    m3_pairs.append(
-                        (source_package, target_package, routes, similarity)
-                    )
+                    m3_pairs.append((source_package, target_package, routes, similarity))
 
         m3_decisions: list[PackagePairMergeDecision] = []
         if m3_pairs:
@@ -3811,19 +3697,12 @@ class CrossDocumentEngine:
             ) -> tuple[int, PackageMergeDecisionBatch]:
                 batch_index, pairs = indexed_batch
                 package_ids = sorted(
-                    {
-                        package.package_id
-                        for left, right, _, _ in pairs
-                        for package in (left, right)
-                    }
+                    {package.package_id for left, right, _, _ in pairs for package in (left, right)}
                 )
                 short_by_full = {
-                    package_id: f"p{index}"
-                    for index, package_id in enumerate(package_ids, start=1)
+                    package_id: f"p{index}" for index, package_id in enumerate(package_ids, start=1)
                 }
-                full_by_short = {
-                    short_id: full_id for full_id, short_id in short_by_full.items()
-                }
+                full_by_short = {short_id: full_id for full_id, short_id in short_by_full.items()}
                 expected = {
                     (short_by_full[left.package_id], short_by_full[right.package_id])
                     for left, right, _, _ in pairs
@@ -3833,17 +3712,19 @@ class CrossDocumentEngine:
                     for left, right, _, _ in pairs
                     for package in (left, right)
                 }
-                first_signals_by_package: dict[
-                    str, tuple[list[RecallRoute], float | None]
-                ] = {}
+                first_signals_by_package: dict[str, tuple[list[RecallRoute], float | None]] = {}
                 for left, right, routes, similarity in pairs:
-                    first_signals_by_package.setdefault(
-                        left.package_id, (routes, similarity)
-                    )
-                    first_signals_by_package.setdefault(
-                        right.package_id, (routes, similarity)
-                    )
+                    first_signals_by_package.setdefault(left.package_id, (routes, similarity))
+                    first_signals_by_package.setdefault(right.package_id, (routes, similarity))
                 model_packages: dict[str, object] = {}
+                request_events = {
+                    event.event_id: event
+                    for package_id in package_ids
+                    for event in self._package_member_events(package_by_id[package_id])
+                }
+                source_short_ids = request_local_source_ids(
+                    self.registry, list(request_events.values())
+                )
                 for package_id in package_ids:
                     routes, similarity = first_signals_by_package[package_id]
                     package = package_by_id[package_id]
@@ -3855,14 +3736,13 @@ class CrossDocumentEngine:
                             recall_score=_package_recall_score(routes, similarity),
                             embedding_similarity=similarity,
                         ),
-                    ).model_dump(mode="json")
+                        source_short_ids=source_short_ids,
+                    ).model_dump(mode="json", exclude_none=True)
                     payload = view["package"]
                     assert isinstance(payload, dict)
                     short_package_id = short_by_full[package_id]
                     payload["package_id"] = short_package_id
-                    payload["member_event_count"] = len(
-                        payload.pop("member_event_ids", [])
-                    )
+                    payload["member_event_count"] = len(payload.pop("member_event_ids", []))
                     view.pop("retrieval_signals", None)
                     model_packages[short_package_id] = view
                 model_pairs: list[dict[str, object]] = []
@@ -3874,9 +3754,7 @@ class CrossDocumentEngine:
                             "retrieval_signals": {
                                 "routes": [route.value for route in routes],
                                 "embedding_similarity": (
-                                    None
-                                    if similarity is None
-                                    else round(similarity, 3)
+                                    None if similarity is None else round(similarity, 3)
                                 ),
                             },
                         }
@@ -3970,12 +3848,8 @@ class CrossDocumentEngine:
                         decisions=[
                             decision.model_copy(
                                 update={
-                                    "source_package_id": full_by_short[
-                                        decision.source_package_id
-                                    ],
-                                    "target_package_id": full_by_short[
-                                        decision.target_package_id
-                                    ],
+                                    "source_package_id": full_by_short[decision.source_package_id],
+                                    "target_package_id": full_by_short[decision.target_package_id],
                                 }
                             )
                             for decision in output.decisions
@@ -3983,9 +3857,7 @@ class CrossDocumentEngine:
                     ),
                 )
 
-            with ThreadPoolExecutor(
-                max_workers=min(MODEL_CONCURRENCY, len(batches))
-            ) as executor:
+            with ThreadPoolExecutor(max_workers=min(MODEL_CONCURRENCY, len(batches))) as executor:
                 outputs = list(executor.map(process_batch, enumerate(batches)))
             for _, output in sorted(outputs):
                 m3_decisions.extend(output.decisions)
@@ -4048,9 +3920,7 @@ class CrossDocumentEngine:
                 for decision in component_same
             ]
             if contradictory:
-                for decision_id, decision in zip(
-                    decision_ids, component_same, strict=True
-                ):
+                for decision_id, decision in zip(decision_ids, component_same, strict=True):
                     self.registry.save_package_merge_decision(
                         decision_id=decision_id,
                         run_id=run_id,
@@ -4072,8 +3942,7 @@ class CrossDocumentEngine:
                         payload={
                             "component": sorted(component),
                             "contradictions": [
-                                item.model_dump(mode="json")
-                                for item in contradictory
+                                item.model_dump(mode="json") for item in contradictory
                             ],
                             "action": "KEEP_SEPARATE_AND_QUARANTINE",
                         },
@@ -4097,16 +3966,12 @@ class CrossDocumentEngine:
                 component_packages,
                 key=lambda package: canonical_package_sort_key(
                     package,
-                    trusted_anchor_count=len(
-                        self._trusted_package_anchor_ids(package)
-                    ),
+                    trusted_anchor_count=len(self._trusted_package_anchor_ids(package)),
                     source_count=self._package_source_count(package),
                 ),
             )
             sources = [
-                package
-                for package in component_packages
-                if package.package_id != target.package_id
+                package for package in component_packages if package.package_id != target.package_id
             ]
             member_events = {
                 event.event_id: event
@@ -4144,13 +4009,9 @@ class CrossDocumentEngine:
             merged = compiler.compile(base, list(member_events.values())).model_copy(
                 update={"version": target.version + 1}
             )
-            representatives = representative_package_members(
-                list(member_events.values())
-            )
+            representatives = representative_package_members(list(member_events.values()))
             retrieval_text = package_retrieval_text(merged, representatives)
-            embedding = models.embed(
-                [retrieval_text], stage="package_merge_embedding_m1"
-            )
+            embedding = models.embed([retrieval_text], stage="package_merge_embedding_m1")
             plan = PackageMergePlan(
                 plan_id=stable_id(
                     "package-merge-plan",
@@ -4161,9 +4022,7 @@ class CrossDocumentEngine:
                     },
                 ),
                 target_package_id=target.package_id,
-                source_package_ids=sorted(
-                    package.package_id for package in sources
-                ),
+                source_package_ids=sorted(package.package_id for package in sources),
                 decision_ids=decision_ids,
                 reason="N13_SAME_PACKAGE_COMPONENT",
             )
@@ -4173,9 +4032,7 @@ class CrossDocumentEngine:
                 merged_package=merged,
                 run_id=run_id,
                 embedding_model=embedding.model,
-                embedding_input_hash=hashlib.sha256(
-                    retrieval_text.encode("utf-8")
-                ).hexdigest(),
+                embedding_input_hash=hashlib.sha256(retrieval_text.encode("utf-8")).hexdigest(),
                 embedding_vector=embedding.vectors[0],
             )
             for source_package in sources:
@@ -4184,7 +4041,7 @@ class CrossDocumentEngine:
             active[target.package_id] = merged
             result_ids.add(target.package_id)
 
-        gate = PackageBoundaryGate()
+        gate = PackageBoundaryGate(self.registry)
         for package_id in sorted(result_ids):
             candidate = active.get(package_id)
             if candidate is None or not candidate.member_event_ids:
@@ -4204,15 +4061,11 @@ class CrossDocumentEngine:
             )
             result_ids.update(affected)
         for package_id in sorted(result_ids):
-            gated_package = active.get(package_id) or self.registry.get_current_package(
-                package_id
-            )
+            gated_package = active.get(package_id) or self.registry.get_current_package(package_id)
             if gated_package is None or not gated_package.member_event_ids:
                 continue
-            finding = gate.evaluate(
-                gated_package, self._package_member_events(gated_package)
-            )
-            if finding.reasons:
+            finding = gate.evaluate(gated_package, self._package_member_events(gated_package))
+            if gated_package.quality_state is not finding.quality_state:
                 gated = gated_package.model_copy(
                     update={
                         "quality_state": finding.quality_state,
@@ -4222,6 +4075,8 @@ class CrossDocumentEngine:
                 self.registry.save_package(gated)
                 self._sync_package_embeddings([gated], models)
                 active[package_id] = gated
+                gated_package = gated
+            if finding.reasons:
                 self.registry.append_decision_audit(
                     DecisionAuditRecord(
                         audit_id=stable_id(
@@ -4280,16 +4135,11 @@ class CrossDocumentEngine:
                 indexed_batch: tuple[int, list[tuple[EventPackage, EventPackage]]],
             ) -> tuple[int, PackageMergeDecisionBatch]:
                 batch_index, pairs = indexed_batch
-                package_ids = sorted(
-                    {package.package_id for pair in pairs for package in pair}
-                )
+                package_ids = sorted({package.package_id for pair in pairs for package in pair})
                 short_by_full = {
-                    package_id: f"p{index}"
-                    for index, package_id in enumerate(package_ids, start=1)
+                    package_id: f"p{index}" for index, package_id in enumerate(package_ids, start=1)
                 }
-                full_by_short = {
-                    short_id: full_id for full_id, short_id in short_by_full.items()
-                }
+                full_by_short = {short_id: full_id for full_id, short_id in short_by_full.items()}
                 expected = {
                     (short_by_full[left.package_id], short_by_full[right.package_id])
                     for left, right in pairs
@@ -4306,9 +4156,7 @@ class CrossDocumentEngine:
                     target_payload["member_event_count"] = len(
                         target_payload.pop("member_event_ids", [])
                     )
-                    model_pairs.append(
-                        {"source": source_payload, "target": target_payload}
-                    )
+                    model_pairs.append({"source": source_payload, "target": target_payload})
                 request = StructuredModelRequest(
                     system_prompt=_prompt("package_merge.md"),
                     user_prompt=json.dumps(
@@ -4368,12 +4216,8 @@ class CrossDocumentEngine:
                     decisions=[
                         decision.model_copy(
                             update={
-                                "source_package_id": full_by_short[
-                                    decision.source_package_id
-                                ],
-                                "target_package_id": full_by_short[
-                                    decision.target_package_id
-                                ],
+                                "source_package_id": full_by_short[decision.source_package_id],
+                                "target_package_id": full_by_short[decision.target_package_id],
                             }
                         )
                         for decision in output.decisions
