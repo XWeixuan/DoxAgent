@@ -1,0 +1,92 @@
+{
+  "artifact_version": "cdecr-runtime-optimization-phase12-shadow-30-v1",
+  "run_date": "2026-07-25",
+  "git_commit_under_test": "57633b9",
+  "corpus": {
+    "manifest_version": "cdecr-dreamer-grounder-ab-v1",
+    "selected_documents": 30
+  },
+  "ignored_artifacts": {
+    "registry": ".tmp/cdecr/runtime_optimization/phase12_shadow_30_20260725.sqlite3",
+    "registry_sha256": "134D70E1B166A672BAED38920537DD04C0F29399AAD1B7C9B4F7D89676E62F76",
+    "report": ".tmp/cdecr/runtime_optimization/phase12_shadow_30_20260725_report.json",
+    "report_sha256": "98A23875938CCDA2C6BE41CF5FD4ECA183804DE52ACE10C88D1A4B12F51A508D"
+  },
+  "outcome": {
+    "acceptance_passed": false,
+    "completed_documents": 18,
+    "failed_documents": 12,
+    "completed_cross_document_runs": 14,
+    "mention_count": 105,
+    "atomic_event_count": 41,
+    "package_count": 30,
+    "valid_mention_schema_rate": 1.0,
+    "valid_evidence_span_rate": 1.0
+  },
+  "failure_breakdown": {
+    "grounder.semantic_validation_failed_after_repair": 9,
+    "identity_compiler.IDENTITY_FIELDS_UNRESOLVED": 2,
+    "judge.evidence_validation_failed_after_repair": 3,
+    "orchestration.ImmutableRecordConflict": 1,
+    "orchestration.ValueError": 1
+  },
+  "performance": {
+    "first_pass_wall_clock_ms": 2358994,
+    "total_wall_clock_ms": 2507824,
+    "first_pass_model_call_count": 428,
+    "model_call_count": 435,
+    "input_tokens": 1221850,
+    "output_tokens": 285438,
+    "model_latency_ms_sum": 4503813,
+    "queue_wait_ms_sum": 615,
+    "request_payload_bytes_sum": 3179344,
+    "repair_call_count": 25
+  },
+  "idempotency": {
+    "rerun_model_call_delta": 7,
+    "rerun_mention_delta": 0,
+    "rerun_atomic_delta": 0,
+    "rerun_package_delta": 0,
+    "all_successful_documents_reused": true,
+    "all_successful_events_reused": false
+  },
+  "wire_candidate_shadow": {
+    "atomic_coreference": {
+      "sample_count": 32,
+      "baseline_payload_bytes": 485904,
+      "optimized_payload_bytes": 381059,
+      "estimated_savings_bytes": 105179,
+      "wire_ref_count": 23,
+      "net_savings_bytes": 104845,
+      "net_savings_ratio": 0.215773,
+      "mode": "shadow_not_sent"
+    },
+    "package_assignment": {
+      "sample_count": 16,
+      "baseline_payload_bytes": 535323,
+      "optimized_payload_bytes": 291826,
+      "estimated_savings_bytes": 243569,
+      "wire_ref_count": 106,
+      "net_savings_bytes": 243497,
+      "net_savings_ratio": 0.45486,
+      "mode": "shadow_not_sent"
+    },
+    "package_merge": {
+      "sample_count": 36,
+      "baseline_payload_bytes": 1131230,
+      "optimized_payload_bytes": 566163,
+      "estimated_savings_bytes": 565067,
+      "wire_ref_count": 202,
+      "net_savings_bytes": 565067,
+      "net_savings_ratio": 0.499516,
+      "mode": "shadow_not_sent"
+    }
+  },
+  "known_limitations": [
+    "Both runs use the same frozen 30-document manifest but real-model outputs are stochastic.",
+    "Aggregate token and stage totals are not paired because successful documents and generated mention/candidate sets differ.",
+    "The candidate dictionary and long-ID wire representation was shadow-only in the official second run.",
+    "Shadow payload byte savings are not validated token or cost savings.",
+    "Neither run passed the full business acceptance gate."
+  ]
+}

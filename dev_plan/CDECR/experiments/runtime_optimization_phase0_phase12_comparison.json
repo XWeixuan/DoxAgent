@@ -1,0 +1,1168 @@
+{
+  "artifact_version": "cdecr-runtime-optimization-comparison-v1",
+  "run_date": "2026-07-25",
+  "commits": {
+    "phase0_implementation": "dd6c580",
+    "phase0_result": "08180dc",
+    "phase12_candidate": "3e71b01",
+    "phase12_shadow_safe": "57633b9"
+  },
+  "corpus": {
+    "manifest_version": "cdecr-dreamer-grounder-ab-v1",
+    "selected_documents": 30,
+    "same_manifest_version": true,
+    "same_selected_document_count": true
+  },
+  "performance": {
+    "first_pass_wall_clock_ms": {
+      "phase0": 2492192,
+      "phase12": 2358994,
+      "delta": -133198,
+      "delta_ratio": -0.053446
+    },
+    "total_wall_clock_ms": {
+      "phase0": 2777988,
+      "phase12": 2507824,
+      "delta": -270164,
+      "delta_ratio": -0.097252
+    },
+    "first_pass_model_calls": {
+      "phase0": 420,
+      "phase12": 428,
+      "delta": 8,
+      "delta_ratio": 0.019048
+    },
+    "total_model_calls": {
+      "phase0": 451,
+      "phase12": 435,
+      "delta": -16,
+      "delta_ratio": -0.035477
+    },
+    "input_tokens": {
+      "phase0": 1473596,
+      "phase12": 1221850,
+      "delta": -251746,
+      "delta_ratio": -0.170838
+    },
+    "output_tokens": {
+      "phase0": 295554,
+      "phase12": 285438,
+      "delta": -10116,
+      "delta_ratio": -0.034227
+    },
+    "request_payload_bytes": {
+      "phase0": 4151433,
+      "phase12": 3179344,
+      "delta": -972089,
+      "delta_ratio": -0.234157
+    },
+    "model_latency_ms_sum": {
+      "phase0": 4860955,
+      "phase12": 4503813,
+      "delta": -357142,
+      "delta_ratio": -0.073472
+    },
+    "repair_calls": {
+      "phase0": 28,
+      "phase12": 25,
+      "delta": -3,
+      "delta_ratio": -0.107143
+    },
+    "queue_wait_ms_sum": {
+      "phase0": 652,
+      "phase12": 615,
+      "delta": -37,
+      "delta_ratio": -0.056748
+    }
+  },
+  "outcome": {
+    "completed_documents": {
+      "phase0": 17,
+      "phase12": 18,
+      "delta": 1,
+      "delta_ratio": 0.058824
+    },
+    "completed_cross_document_runs": {
+      "phase0": 15,
+      "phase12": 14,
+      "delta": -1,
+      "delta_ratio": -0.066667
+    },
+    "failed_documents": {
+      "phase0": 13,
+      "phase12": 12,
+      "delta": -1,
+      "delta_ratio": -0.076923
+    },
+    "atomic_events": {
+      "phase0": 37,
+      "phase12": 41,
+      "delta": 4,
+      "delta_ratio": 0.108108
+    },
+    "packages": {
+      "phase0": 31,
+      "phase12": 30,
+      "delta": -1,
+      "delta_ratio": -0.032258
+    },
+    "document_success_overlap": {
+      "phase0": 17,
+      "phase12": 18,
+      "common": 15,
+      "phase0_only": 2,
+      "phase12_only": 3,
+      "jaccard": 0.75
+    },
+    "cross_document_success_overlap": {
+      "phase0": 15,
+      "phase12": 14,
+      "common": 13,
+      "phase0_only": 2,
+      "phase12_only": 1,
+      "jaccard": 0.8125
+    },
+    "valid_mention_schema_rate": {
+      "phase0": 1.0,
+      "phase12": 1.0,
+      "delta": 0.0,
+      "delta_ratio": 0.0
+    },
+    "valid_evidence_span_rate": {
+      "phase0": 1.0,
+      "phase12": 1.0,
+      "delta": 0.0,
+      "delta_ratio": 0.0
+    },
+    "phase0_acceptance_passed": false,
+    "phase12_acceptance_passed": false
+  },
+  "failure_breakdown": {
+    "phase0": {
+      "grounder.semantic_validation_failed_after_repair": 9,
+      "identity_compiler.IDENTITY_FIELDS_UNRESOLVED": 2,
+      "judge.evidence_validation_failed_after_repair": 2,
+      "judge.invalid_json": 1,
+      "judge.semantic_validation_failed_after_repair": 1
+    },
+    "phase12": {
+      "grounder.semantic_validation_failed_after_repair": 9,
+      "identity_compiler.IDENTITY_FIELDS_UNRESOLVED": 2,
+      "judge.evidence_validation_failed_after_repair": 3,
+      "orchestration.ImmutableRecordConflict": 1,
+      "orchestration.ValueError": 1
+    }
+  },
+  "structure_comparison": {
+    "mention_identity": {
+      "phase0_count": 96,
+      "phase12_count": 105,
+      "common_count": 18,
+      "jaccard": 0.098361
+    },
+    "atomic_co_cluster_pairs_on_common_mentions": {
+      "phase0_count": 17,
+      "phase12_count": 1,
+      "common_count": 1,
+      "jaccard": 0.058824
+    },
+    "package_co_cluster_pairs_on_common_mentions": {
+      "phase0_count": 56,
+      "phase12_count": 4,
+      "common_count": 2,
+      "jaccard": 0.034483
+    }
+  },
+  "boundaries": {
+    "phase0": {
+      "hard_cannot_link_false_merge": {
+        "evaluated_cases": 4106,
+        "violations": 116
+      },
+      "different_metric_same_earnings_package": {
+        "evaluated_cases": 0,
+        "violations": 0
+      },
+      "different_period_atomic_or_package_merge": {
+        "evaluated_cases": 0,
+        "violations": 0
+      },
+      "same_analyst_target_missed_merge": {
+        "evaluated_cases": 0,
+        "violations": 0
+      },
+      "reaction_in_earnings_package": {
+        "evaluated_cases": 28,
+        "violations": 0
+      }
+    },
+    "phase12": {
+      "hard_cannot_link_false_merge": {
+        "evaluated_cases": 4983,
+        "violations": 78
+      },
+      "different_metric_same_earnings_package": {
+        "evaluated_cases": 0,
+        "violations": 0
+      },
+      "different_period_atomic_or_package_merge": {
+        "evaluated_cases": 0,
+        "violations": 0
+      },
+      "same_analyst_target_missed_merge": {
+        "evaluated_cases": 0,
+        "violations": 0
+      },
+      "reaction_in_earnings_package": {
+        "evaluated_cases": 30,
+        "violations": 1
+      }
+    }
+  },
+  "idempotency": {
+    "rerun_model_calls": {
+      "phase0": 31,
+      "phase12": 7,
+      "delta": -24,
+      "delta_ratio": -0.774194
+    },
+    "phase0": {
+      "rerun_model_call_delta": 31,
+      "rerun_mention_delta": 0,
+      "rerun_atomic_delta": 0,
+      "rerun_package_delta": 0,
+      "all_successful_documents_reused": true,
+      "all_successful_events_reused": false
+    },
+    "phase12": {
+      "rerun_model_call_delta": 7,
+      "rerun_mention_delta": 0,
+      "rerun_atomic_delta": 0,
+      "rerun_package_delta": 0,
+      "all_successful_documents_reused": true,
+      "all_successful_events_reused": false
+    }
+  },
+  "audit_counts": {
+    "phase0": {
+      "ATOMIC_ASSIGNMENT": 83,
+      "ATOMIC_HARD_CANNOT_LINK_OBSERVED": 1009,
+      "ATOMIC_N9_ESCALATED": 1,
+      "CANONICAL_FIELD_UNRESOLVED": 20,
+      "CROSS_DOCUMENT_FAILURE": 5,
+      "CROSS_MODEL_ADAPTER_FALLBACK": 2,
+      "CROSS_STRUCTURED_VALIDATION_FAILURE": 1,
+      "DOCUMENT_FIELD_ALIAS_GROUP": 398,
+      "DOCUMENT_PROCESSING_FAILURE": 13,
+      "DREAMER_EVIDENCE_RECONCILIATION": 6,
+      "FIELD_COREFERENCE": 312,
+      "FIELD_MODEL_ADAPTER_FALLBACK": 2,
+      "IDENTITY_COMPILED": 129,
+      "MENTION_DERIVATION": 96,
+      "MODEL_ENUM_NORMALIZATION": 18,
+      "PACKAGE_ALTERNATE_MEMBER_CANDIDATE": 1,
+      "PACKAGE_ASSIGNMENT": 67,
+      "PACKAGE_BOUNDARY_GATE": 1,
+      "PACKAGE_MERGE_CONTRADICTION": 1,
+      "STRUCTURED_VALIDATION_FAILURE": 39
+    },
+    "phase12": {
+      "ATOMIC_ASSIGNMENT": 76,
+      "ATOMIC_HARD_CANNOT_LINK_OBSERVED": 1015,
+      "ATOMIC_N9_ESCALATED": 2,
+      "CANONICAL_FIELD_UNRESOLVED": 20,
+      "CROSS_DOCUMENT_FAILURE": 5,
+      "CROSS_STRUCTURED_VALIDATION_FAILURE": 2,
+      "DOCUMENT_FIELD_ALIAS_GROUP": 387,
+      "DOCUMENT_MENTION_DEDUPLICATION": 1,
+      "DOCUMENT_PROCESSING_FAILURE": 12,
+      "DREAMER_EVIDENCE_RECONCILIATION": 2,
+      "FIELD_COREFERENCE": 300,
+      "IDENTITY_COMPILED": 107,
+      "MENTION_DERIVATION": 105,
+      "MODEL_ENUM_NORMALIZATION": 14,
+      "PACKAGE_ASSIGNMENT": 60,
+      "PACKAGE_BOUNDARY_GATE": 10,
+      "PACKAGE_MERGE_PLAN_APPLIED": 1,
+      "STRUCTURED_VALIDATION_FAILURE": 36,
+      "WIRE_PAYLOAD_SHADOW": 84
+    }
+  },
+  "wire_candidate_shadow": {
+    "atomic_coreference": {
+      "sample_count": 32,
+      "baseline_payload_bytes": 485904,
+      "optimized_payload_bytes": 381059,
+      "estimated_savings_bytes": 105179,
+      "wire_ref_count": 23,
+      "net_savings_bytes": 104845,
+      "net_savings_ratio": 0.215773,
+      "mode": "shadow_not_sent"
+    },
+    "package_assignment": {
+      "sample_count": 16,
+      "baseline_payload_bytes": 535323,
+      "optimized_payload_bytes": 291826,
+      "estimated_savings_bytes": 243569,
+      "wire_ref_count": 106,
+      "net_savings_bytes": 243497,
+      "net_savings_ratio": 0.45486,
+      "mode": "shadow_not_sent"
+    },
+    "package_merge": {
+      "sample_count": 36,
+      "baseline_payload_bytes": 1131230,
+      "optimized_payload_bytes": 566163,
+      "estimated_savings_bytes": 565067,
+      "wire_ref_count": 202,
+      "net_savings_bytes": 565067,
+      "net_savings_ratio": 0.499516,
+      "mode": "shadow_not_sent"
+    }
+  },
+  "stage_comparison": {
+    "atomic_coreference": {
+      "call_count": {
+        "phase0": 33,
+        "phase12": 32,
+        "delta": -1,
+        "delta_ratio": -0.030303
+      },
+      "input_tokens": {
+        "phase0": 182112,
+        "phase12": 180587,
+        "delta": -1525,
+        "delta_ratio": -0.008374
+      },
+      "output_tokens": {
+        "phase0": 31472,
+        "phase12": 31848,
+        "delta": 376,
+        "delta_ratio": 0.011947
+      },
+      "payload_bytes": {
+        "phase0": 492030,
+        "phase12": 485904,
+        "delta": -6126,
+        "delta_ratio": -0.01245
+      },
+      "model_latency_p50_ms": {
+        "phase0": 11366,
+        "phase12": 8841,
+        "delta": -2525,
+        "delta_ratio": -0.222154
+      },
+      "model_latency_p95_ms": {
+        "phase0": 17024,
+        "phase12": 11961,
+        "delta": -5063,
+        "delta_ratio": -0.297404
+      },
+      "repair_count": {
+        "phase0": 0,
+        "phase12": 0,
+        "delta": 0,
+        "delta_ratio": null
+      }
+    },
+    "atomic_coreference_escalation": {
+      "call_count": {
+        "phase0": 3,
+        "phase12": 4,
+        "delta": 1,
+        "delta_ratio": 0.333333
+      },
+      "input_tokens": {
+        "phase0": 18169,
+        "phase12": 23672,
+        "delta": 5503,
+        "delta_ratio": 0.302879
+      },
+      "output_tokens": {
+        "phase0": 3260,
+        "phase12": 4128,
+        "delta": 868,
+        "delta_ratio": 0.266258
+      },
+      "payload_bytes": {
+        "phase0": 55671,
+        "phase12": 67957,
+        "delta": 12286,
+        "delta_ratio": 0.220689
+      },
+      "model_latency_p50_ms": {
+        "phase0": 19684,
+        "phase12": 18848,
+        "delta": -836,
+        "delta_ratio": -0.042471
+      },
+      "model_latency_p95_ms": {
+        "phase0": 20382,
+        "phase12": 20117,
+        "delta": -265,
+        "delta_ratio": -0.013002
+      },
+      "repair_count": {
+        "phase0": 0,
+        "phase12": 0,
+        "delta": 0,
+        "delta_ratio": null
+      }
+    },
+    "atomic_coreference_escalation_repair": {
+      "call_count": {
+        "phase0": 0,
+        "phase12": 1,
+        "delta": 1,
+        "delta_ratio": null
+      },
+      "input_tokens": {
+        "phase0": 0,
+        "phase12": 4621,
+        "delta": 4621,
+        "delta_ratio": null
+      },
+      "output_tokens": {
+        "phase0": 0,
+        "phase12": 867,
+        "delta": 867,
+        "delta_ratio": null
+      },
+      "payload_bytes": {
+        "phase0": 0,
+        "phase12": 16395,
+        "delta": 16395,
+        "delta_ratio": null
+      },
+      "model_latency_p50_ms": {
+        "phase0": 0,
+        "phase12": 15538,
+        "delta": 15538,
+        "delta_ratio": null
+      },
+      "model_latency_p95_ms": {
+        "phase0": 0,
+        "phase12": 15538,
+        "delta": 15538,
+        "delta_ratio": null
+      },
+      "repair_count": {
+        "phase0": 0,
+        "phase12": 1,
+        "delta": 1,
+        "delta_ratio": null
+      }
+    },
+    "atomic_identity_embedding": {
+      "call_count": {
+        "phase0": 16,
+        "phase12": 15,
+        "delta": -1,
+        "delta_ratio": -0.0625
+      },
+      "input_tokens": {
+        "phase0": 14386,
+        "phase12": 13300,
+        "delta": -1086,
+        "delta_ratio": -0.07549
+      },
+      "output_tokens": {
+        "phase0": 0,
+        "phase12": 0,
+        "delta": 0,
+        "delta_ratio": null
+      },
+      "payload_bytes": {
+        "phase0": 49087,
+        "phase12": 43499,
+        "delta": -5588,
+        "delta_ratio": -0.113839
+      },
+      "model_latency_p50_ms": {
+        "phase0": 550,
+        "phase12": 553,
+        "delta": 3,
+        "delta_ratio": 0.005455
+      },
+      "model_latency_p95_ms": {
+        "phase0": 792,
+        "phase12": 755,
+        "delta": -37,
+        "delta_ratio": -0.046717
+      },
+      "repair_count": {
+        "phase0": 0,
+        "phase12": 0,
+        "delta": 0,
+        "delta_ratio": null
+      }
+    },
+    "atomic_recall_m1": {
+      "call_count": {
+        "phase0": 17,
+        "phase12": 16,
+        "delta": -1,
+        "delta_ratio": -0.058824
+      },
+      "input_tokens": {
+        "phase0": 2920,
+        "phase12": 3061,
+        "delta": 141,
+        "delta_ratio": 0.048288
+      },
+      "output_tokens": {
+        "phase0": 0,
+        "phase12": 0,
+        "delta": 0,
+        "delta_ratio": null
+      },
+      "payload_bytes": {
+        "phase0": 6612,
+        "phase12": 7243,
+        "delta": 631,
+        "delta_ratio": 0.095433
+      },
+      "model_latency_p50_ms": {
+        "phase0": 513,
+        "phase12": 442,
+        "delta": -71,
+        "delta_ratio": -0.138402
+      },
+      "model_latency_p95_ms": {
+        "phase0": 794,
+        "phase12": 714,
+        "delta": -80,
+        "delta_ratio": -0.100756
+      },
+      "repair_count": {
+        "phase0": 0,
+        "phase12": 0,
+        "delta": 0,
+        "delta_ratio": null
+      }
+    },
+    "dreamer": {
+      "call_count": {
+        "phase0": 30,
+        "phase12": 30,
+        "delta": 0,
+        "delta_ratio": 0.0
+      },
+      "input_tokens": {
+        "phase0": 31249,
+        "phase12": 31249,
+        "delta": 0,
+        "delta_ratio": 0.0
+      },
+      "output_tokens": {
+        "phase0": 43884,
+        "phase12": 33096,
+        "delta": -10788,
+        "delta_ratio": -0.24583
+      },
+      "payload_bytes": {
+        "phase0": 74708,
+        "phase12": 74708,
+        "delta": 0,
+        "delta_ratio": 0.0
+      },
+      "model_latency_p50_ms": {
+        "phase0": 10574,
+        "phase12": 8467,
+        "delta": -2107,
+        "delta_ratio": -0.199262
+      },
+      "model_latency_p95_ms": {
+        "phase0": 76147,
+        "phase12": 20038,
+        "delta": -56109,
+        "delta_ratio": -0.736851
+      },
+      "repair_count": {
+        "phase0": 0,
+        "phase12": 0,
+        "delta": 0,
+        "delta_ratio": null
+      }
+    },
+    "dreamer_repair": {
+      "call_count": {
+        "phase0": 3,
+        "phase12": 0,
+        "delta": -3,
+        "delta_ratio": -1.0
+      },
+      "input_tokens": {
+        "phase0": 5859,
+        "phase12": 0,
+        "delta": -5859,
+        "delta_ratio": -1.0
+      },
+      "output_tokens": {
+        "phase0": 2673,
+        "phase12": 0,
+        "delta": -2673,
+        "delta_ratio": -1.0
+      },
+      "payload_bytes": {
+        "phase0": 20429,
+        "phase12": 0,
+        "delta": -20429,
+        "delta_ratio": -1.0
+      },
+      "model_latency_p50_ms": {
+        "phase0": 7319,
+        "phase12": 0,
+        "delta": -7319,
+        "delta_ratio": -1.0
+      },
+      "model_latency_p95_ms": {
+        "phase0": 15750,
+        "phase12": 0,
+        "delta": -15750,
+        "delta_ratio": -1.0
+      },
+      "repair_count": {
+        "phase0": 3,
+        "phase12": 0,
+        "delta": -3,
+        "delta_ratio": -1.0
+      }
+    },
+    "field_coreference": {
+      "call_count": {
+        "phase0": 73,
+        "phase12": 75,
+        "delta": 2,
+        "delta_ratio": 0.027397
+      },
+      "input_tokens": {
+        "phase0": 72044,
+        "phase12": 74607,
+        "delta": 2563,
+        "delta_ratio": 0.035575
+      },
+      "output_tokens": {
+        "phase0": 1164,
+        "phase12": 1285,
+        "delta": 121,
+        "delta_ratio": 0.103952
+      },
+      "payload_bytes": {
+        "phase0": 0,
+        "phase12": 0,
+        "delta": 0,
+        "delta_ratio": null
+      },
+      "model_latency_p50_ms": {
+        "phase0": 1022,
+        "phase12": 947,
+        "delta": -75,
+        "delta_ratio": -0.073386
+      },
+      "model_latency_p95_ms": {
+        "phase0": 1371,
+        "phase12": 1142,
+        "delta": -229,
+        "delta_ratio": -0.167031
+      },
+      "repair_count": {
+        "phase0": 0,
+        "phase12": 0,
+        "delta": 0,
+        "delta_ratio": null
+      }
+    },
+    "field_coreference_recall": {
+      "call_count": {
+        "phase0": 84,
+        "phase12": 83,
+        "delta": -1,
+        "delta_ratio": -0.011905
+      },
+      "input_tokens": {
+        "phase0": 2267,
+        "phase12": 2263,
+        "delta": -4,
+        "delta_ratio": -0.001764
+      },
+      "output_tokens": {
+        "phase0": 0,
+        "phase12": 0,
+        "delta": 0,
+        "delta_ratio": null
+      },
+      "payload_bytes": {
+        "phase0": 0,
+        "phase12": 0,
+        "delta": 0,
+        "delta_ratio": null
+      },
+      "model_latency_p50_ms": {
+        "phase0": 257,
+        "phase12": 255,
+        "delta": -2,
+        "delta_ratio": -0.007782
+      },
+      "model_latency_p95_ms": {
+        "phase0": 405,
+        "phase12": 407,
+        "delta": 2,
+        "delta_ratio": 0.004938
+      },
+      "repair_count": {
+        "phase0": 0,
+        "phase12": 0,
+        "delta": 0,
+        "delta_ratio": null
+      }
+    },
+    "grounder": {
+      "call_count": {
+        "phase0": 30,
+        "phase12": 30,
+        "delta": 0,
+        "delta_ratio": 0.0
+      },
+      "input_tokens": {
+        "phase0": 116949,
+        "phase12": 105230,
+        "delta": -11719,
+        "delta_ratio": -0.100206
+      },
+      "output_tokens": {
+        "phase0": 78647,
+        "phase12": 83157,
+        "delta": 4510,
+        "delta_ratio": 0.057345
+      },
+      "payload_bytes": {
+        "phase0": 257486,
+        "phase12": 204551,
+        "delta": -52935,
+        "delta_ratio": -0.205584
+      },
+      "model_latency_p50_ms": {
+        "phase0": 39895,
+        "phase12": 44525,
+        "delta": 4630,
+        "delta_ratio": 0.116055
+      },
+      "model_latency_p95_ms": {
+        "phase0": 84570,
+        "phase12": 92278,
+        "delta": 7708,
+        "delta_ratio": 0.091143
+      },
+      "repair_count": {
+        "phase0": 0,
+        "phase12": 0,
+        "delta": 0,
+        "delta_ratio": null
+      }
+    },
+    "grounder_repair": {
+      "call_count": {
+        "phase0": 18,
+        "phase12": 19,
+        "delta": 1,
+        "delta_ratio": 0.055556
+      },
+      "input_tokens": {
+        "phase0": 96226,
+        "phase12": 102975,
+        "delta": 6749,
+        "delta_ratio": 0.070137
+      },
+      "output_tokens": {
+        "phase0": 54436,
+        "phase12": 64698,
+        "delta": 10262,
+        "delta_ratio": 0.188515
+      },
+      "payload_bytes": {
+        "phase0": 296835,
+        "phase12": 313298,
+        "delta": 16463,
+        "delta_ratio": 0.055462
+      },
+      "model_latency_p50_ms": {
+        "phase0": 46933,
+        "phase12": 58580,
+        "delta": 11647,
+        "delta_ratio": 0.248162
+      },
+      "model_latency_p95_ms": {
+        "phase0": 94533,
+        "phase12": 97644,
+        "delta": 3111,
+        "delta_ratio": 0.032909
+      },
+      "repair_count": {
+        "phase0": 18,
+        "phase12": 19,
+        "delta": 1,
+        "delta_ratio": 0.055556
+      }
+    },
+    "judge": {
+      "call_count": {
+        "phase0": 21,
+        "phase12": 21,
+        "delta": 0,
+        "delta_ratio": 0.0
+      },
+      "input_tokens": {
+        "phase0": 94510,
+        "phase12": 94065,
+        "delta": -445,
+        "delta_ratio": -0.004708
+      },
+      "output_tokens": {
+        "phase0": 11213,
+        "phase12": 13424,
+        "delta": 2211,
+        "delta_ratio": 0.197182
+      },
+      "payload_bytes": {
+        "phase0": 170864,
+        "phase12": 168829,
+        "delta": -2035,
+        "delta_ratio": -0.01191
+      },
+      "model_latency_p50_ms": {
+        "phase0": 8028,
+        "phase12": 6258,
+        "delta": -1770,
+        "delta_ratio": -0.220478
+      },
+      "model_latency_p95_ms": {
+        "phase0": 18967,
+        "phase12": 17414,
+        "delta": -1553,
+        "delta_ratio": -0.081879
+      },
+      "repair_count": {
+        "phase0": 0,
+        "phase12": 0,
+        "delta": 0,
+        "delta_ratio": null
+      }
+    },
+    "judge_repair": {
+      "call_count": {
+        "phase0": 6,
+        "phase12": 5,
+        "delta": -1,
+        "delta_ratio": -0.166667
+      },
+      "input_tokens": {
+        "phase0": 33943,
+        "phase12": 28082,
+        "delta": -5861,
+        "delta_ratio": -0.172672
+      },
+      "output_tokens": {
+        "phase0": 4365,
+        "phase12": 3661,
+        "delta": -704,
+        "delta_ratio": -0.161283
+      },
+      "payload_bytes": {
+        "phase0": 89056,
+        "phase12": 75171,
+        "delta": -13885,
+        "delta_ratio": -0.155913
+      },
+      "model_latency_p50_ms": {
+        "phase0": 11123,
+        "phase12": 8070,
+        "delta": -3053,
+        "delta_ratio": -0.274476
+      },
+      "model_latency_p95_ms": {
+        "phase0": 13765,
+        "phase12": 18535,
+        "delta": 4770,
+        "delta_ratio": 0.346531
+      },
+      "repair_count": {
+        "phase0": 6,
+        "phase12": 5,
+        "delta": -1,
+        "delta_ratio": -0.166667
+      }
+    },
+    "package_assignment": {
+      "call_count": {
+        "phase0": 16,
+        "phase12": 16,
+        "delta": 0,
+        "delta_ratio": 0.0
+      },
+      "input_tokens": {
+        "phase0": 214848,
+        "phase12": 176060,
+        "delta": -38788,
+        "delta_ratio": -0.180537
+      },
+      "output_tokens": {
+        "phase0": 26098,
+        "phase12": 23276,
+        "delta": -2822,
+        "delta_ratio": -0.108131
+      },
+      "payload_bytes": {
+        "phase0": 684466,
+        "phase12": 535323,
+        "delta": -149143,
+        "delta_ratio": -0.217897
+      },
+      "model_latency_p50_ms": {
+        "phase0": 26674,
+        "phase12": 22368,
+        "delta": -4306,
+        "delta_ratio": -0.161431
+      },
+      "model_latency_p95_ms": {
+        "phase0": 68287,
+        "phase12": 67831,
+        "delta": -456,
+        "delta_ratio": -0.006678
+      },
+      "repair_count": {
+        "phase0": 0,
+        "phase12": 0,
+        "delta": 0,
+        "delta_ratio": null
+      }
+    },
+    "package_assignment_repair": {
+      "call_count": {
+        "phase0": 1,
+        "phase12": 0,
+        "delta": -1,
+        "delta_ratio": -1.0
+      },
+      "input_tokens": {
+        "phase0": 18246,
+        "phase12": 0,
+        "delta": -18246,
+        "delta_ratio": -1.0
+      },
+      "output_tokens": {
+        "phase0": 1063,
+        "phase12": 0,
+        "delta": -1063,
+        "delta_ratio": -1.0
+      },
+      "payload_bytes": {
+        "phase0": 64288,
+        "phase12": 0,
+        "delta": -64288,
+        "delta_ratio": -1.0
+      },
+      "model_latency_p50_ms": {
+        "phase0": 19100,
+        "phase12": 0,
+        "delta": -19100,
+        "delta_ratio": -1.0
+      },
+      "model_latency_p95_ms": {
+        "phase0": 19100,
+        "phase12": 0,
+        "delta": -19100,
+        "delta_ratio": -1.0
+      },
+      "repair_count": {
+        "phase0": 1,
+        "phase12": 0,
+        "delta": -1,
+        "delta_ratio": -1.0
+      }
+    },
+    "package_embedding_m1": {
+      "call_count": {
+        "phase0": 20,
+        "phase12": 21,
+        "delta": 1,
+        "delta_ratio": 0.05
+      },
+      "input_tokens": {
+        "phase0": 13978,
+        "phase12": 15454,
+        "delta": 1476,
+        "delta_ratio": 0.105595
+      },
+      "output_tokens": {
+        "phase0": 0,
+        "phase12": 0,
+        "delta": 0,
+        "delta_ratio": null
+      },
+      "payload_bytes": {
+        "phase0": 47533,
+        "phase12": 52094,
+        "delta": 4561,
+        "delta_ratio": 0.095954
+      },
+      "model_latency_p50_ms": {
+        "phase0": 479,
+        "phase12": 478,
+        "delta": -1,
+        "delta_ratio": -0.002088
+      },
+      "model_latency_p95_ms": {
+        "phase0": 637,
+        "phase12": 793,
+        "delta": 156,
+        "delta_ratio": 0.244898
+      },
+      "repair_count": {
+        "phase0": 0,
+        "phase12": 0,
+        "delta": 0,
+        "delta_ratio": null
+      }
+    },
+    "package_merge": {
+      "call_count": {
+        "phase0": 50,
+        "phase12": 36,
+        "delta": -14,
+        "delta_ratio": -0.28
+      },
+      "input_tokens": {
+        "phase0": 554849,
+        "phase12": 365279,
+        "delta": -189570,
+        "delta_ratio": -0.341661
+      },
+      "output_tokens": {
+        "phase0": 37279,
+        "phase12": 25998,
+        "delta": -11281,
+        "delta_ratio": -0.30261
+      },
+      "payload_bytes": {
+        "phase0": 1840076,
+        "phase12": 1131230,
+        "delta": -708846,
+        "delta_ratio": -0.385226
+      },
+      "model_latency_p50_ms": {
+        "phase0": 15006,
+        "phase12": 14545,
+        "delta": -461,
+        "delta_ratio": -0.030721
+      },
+      "model_latency_p95_ms": {
+        "phase0": 18181,
+        "phase12": 17552,
+        "delta": -629,
+        "delta_ratio": -0.034597
+      },
+      "repair_count": {
+        "phase0": 0,
+        "phase12": 0,
+        "delta": 0,
+        "delta_ratio": null
+      }
+    },
+    "package_merge_embedding_m1": {
+      "call_count": {
+        "phase0": 0,
+        "phase12": 1,
+        "delta": 1,
+        "delta_ratio": null
+      },
+      "input_tokens": {
+        "phase0": 0,
+        "phase12": 304,
+        "delta": 304,
+        "delta_ratio": null
+      },
+      "output_tokens": {
+        "phase0": 0,
+        "phase12": 0,
+        "delta": 0,
+        "delta_ratio": null
+      },
+      "payload_bytes": {
+        "phase0": 0,
+        "phase12": 850,
+        "delta": 850,
+        "delta_ratio": null
+      },
+      "model_latency_p50_ms": {
+        "phase0": 0,
+        "phase12": 358,
+        "delta": 358,
+        "delta_ratio": null
+      },
+      "model_latency_p95_ms": {
+        "phase0": 0,
+        "phase12": 358,
+        "delta": 358,
+        "delta_ratio": null
+      },
+      "repair_count": {
+        "phase0": 0,
+        "phase12": 0,
+        "delta": 0,
+        "delta_ratio": null
+      }
+    },
+    "title_embedding": {
+      "call_count": {
+        "phase0": 30,
+        "phase12": 30,
+        "delta": 0,
+        "delta_ratio": 0.0
+      },
+      "input_tokens": {
+        "phase0": 1041,
+        "phase12": 1041,
+        "delta": 0,
+        "delta_ratio": 0.0
+      },
+      "output_tokens": {
+        "phase0": 0,
+        "phase12": 0,
+        "delta": 0,
+        "delta_ratio": null
+      },
+      "payload_bytes": {
+        "phase0": 2292,
+        "phase12": 2292,
+        "delta": 0,
+        "delta_ratio": 0.0
+      },
+      "model_latency_p50_ms": {
+        "phase0": 364,
+        "phase12": 362,
+        "delta": -2,
+        "delta_ratio": -0.005495
+      },
+      "model_latency_p95_ms": {
+        "phase0": 701,
+        "phase12": 688,
+        "delta": -13,
+        "delta_ratio": -0.018545
+      },
+      "repair_count": {
+        "phase0": 0,
+        "phase12": 0,
+        "delta": 0,
+        "delta_ratio": null
+      }
+    }
+  },
+  "interpretation_limits": [
+    "Both runs use the same frozen 30-document manifest but real-model outputs are stochastic.",
+    "Aggregate token and stage totals are not paired because successful documents and generated mention/candidate sets differ.",
+    "The candidate dictionary and long-ID wire representation was shadow-only in the official second run.",
+    "Shadow payload byte savings are not validated token or cost savings.",
+    "Neither run passed the full business acceptance gate."
+  ]
+}
