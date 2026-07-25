@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import sqlite3
 from datetime import UTC, date, datetime
 from pathlib import Path
 
@@ -485,13 +486,26 @@ def test_n9_keeps_three_mentions_per_request_and_uses_only_short_ids(
         "m3",
     ]
     assert all(
-        candidate_id.startswith("a")
-        for candidate_id in payload["atoms"]
+        candidate["event_id"].startswith("a")
+        for task in payload["tasks"]
+        for candidate in task["candidates"]
     )
     assert all(
-        not candidate_id.startswith(("atomic:", "provisional:"))
-        for candidate_id in payload["atoms"]
+        not candidate["event_id"].startswith(("atomic:", "provisional:"))
+        for task in payload["tasks"]
+        for candidate in task["candidates"]
     )
+    with sqlite3.connect(registry.path) as connection:
+        shadow_payloads = [
+            json.loads(row[0])
+            for row in connection.execute(
+                "SELECT payload_json FROM decision_audits "
+                "WHERE decision_type = 'WIRE_PAYLOAD_SHADOW'"
+            )
+        ]
+    assert shadow_payloads
+    assert all(item["mode"] == "shadow_not_sent" for item in shadow_payloads)
+    assert any(item["estimated_savings_bytes"] > 0 for item in shadow_payloads)
 
 
 def test_hard_identity_splits_metrics_but_same_earnings_package(

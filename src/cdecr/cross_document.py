@@ -136,9 +136,9 @@ from cdecr.scheduler import take_scheduled_call_metrics
 from cdecr.single_document_contracts import ModelCallSummary
 from cdecr.wire import compact_json, intern_repeated_ids, wire_ref_metadata
 
-ENGINE_VERSION = "cdecr-cross-document-v14"
+ENGINE_VERSION = "cdecr-cross-document-v15"
 PROMPT_VERSION = "cdecr-cross-document-prompts-v7"
-WIRE_PROTOCOL_VERSION = "cdecr-cross-document-wire-v2"
+WIRE_PROTOCOL_VERSION = "cdecr-cross-document-wire-shadow-v3"
 ATOMIC_ASSIGNMENT_POLICY_VERSION = "atomic-assignment-policy-v2"
 ATOMIC_DECISION_MENTION_BATCH = 3
 PACKAGE_DECISION_EVENT_BATCH = 12
@@ -296,6 +296,59 @@ class _AuditedModels:
         self.model_m2 = model_m2
         self.model_m3 = model_m3
         self.summaries = summaries
+
+    def record_wire_shadow(
+        self,
+        *,
+        stage: str,
+        batch_index: int,
+        baseline_payload: dict[str, object],
+        optimized_payload: dict[str, object],
+    ) -> None:
+        baseline_json = compact_json(baseline_payload)
+        optimized_json = compact_json(optimized_payload)
+        baseline_bytes = len(baseline_json.encode("utf-8"))
+        optimized_bytes = len(optimized_json.encode("utf-8"))
+        self.registry.append_decision_audit(
+            DecisionAuditRecord(
+                audit_id=stable_id(
+                    "wire-shadow",
+                    {
+                        "run": self.run_id,
+                        "stage": stage,
+                        "batch_index": batch_index,
+                    },
+                ),
+                run_id=self.run_id,
+                decision_type="WIRE_PAYLOAD_SHADOW",
+                subject_id=f"{stage}:{batch_index}",
+                payload={
+                    "mode": "shadow_not_sent",
+                    "wire_protocol_version": WIRE_PROTOCOL_VERSION,
+                    "baseline_payload_bytes": baseline_bytes,
+                    "optimized_payload_bytes": optimized_bytes,
+                    "estimated_savings_bytes": max(
+                        0, baseline_bytes - optimized_bytes
+                    ),
+                    "estimated_savings_ratio": (
+                        0.0
+                        if baseline_bytes == 0
+                        else round(
+                            max(0, baseline_bytes - optimized_bytes)
+                            / baseline_bytes,
+                            6,
+                        )
+                    ),
+                    "baseline_hash": hashlib.sha256(
+                        baseline_json.encode("utf-8")
+                    ).hexdigest(),
+                    "optimized_hash": hashlib.sha256(
+                        optimized_json.encode("utf-8")
+                    ).hexdigest(),
+                    **wire_ref_metadata(optimized_payload),
+                },
+            )
+        )
 
     def embed(self, texts: Sequence[str], *, stage: str) -> EmbeddingResult:
         call_id = str(uuid.uuid4())
@@ -1450,6 +1503,7 @@ class CrossDocumentEngine:
                     "is_provisional": event.event_id.startswith("provisional:"),
                 }
             tasks: list[dict[str, object]] = []
+            legacy_tasks: list[dict[str, object]] = []
             for mention in batch_mentions:
                 mention_short_id = mention_short_by_full[mention.mention_id]
                 profile = compiled[mention.mention_id].identity_profile
@@ -1468,29 +1522,51 @@ class CrossDocumentEngine:
                     }
                     for candidate in batch_candidates[mention.mention_id]
                 ]
-                tasks.append(
-                    {
-                        "incoming": {
-                            "mention_id": mention_short_id,
-                            "canonical_proposition": mention.canonical_proposition,
-                            "event_family": mention.event_family.value,
-                            "assertion_state": mention.assertion_state.value,
-                            "identity_profile": profile.model_dump(mode="json"),
-                            "time": mention.time.model_dump(mode="json"),
-                            "claim_values": [
-                                item.model_dump(mode="json") for item in mention.quantities
+                incoming_payload = {
+                    "mention_id": mention_short_id,
+                    "canonical_proposition": mention.canonical_proposition,
+                    "event_family": mention.event_family.value,
+                    "assertion_state": mention.assertion_state.value,
+                    "identity_profile": profile.model_dump(mode="json"),
+                    "time": mention.time.model_dump(mode="json"),
+                    "claim_values": [
+                        item.model_dump(mode="json") for item in mention.quantities
+                    ],
+                    "source_claim": mention.source_claim,
+                    "evidence_excerpts": (
+                        [_mention_local_context(source, mention)]
+                        if source is not None
+                        else [mention.canonical_proposition]
+                    ),
+                    **incoming_view.model_dump(mode="json"),
+                }
+                legacy_candidates: list[dict[str, object]] = []
+                for candidate in batch_candidates[mention.mention_id]:
+                    short_event_id = candidate_short_by_full[mention.mention_id][
+                        candidate.event.event_id
+                    ]
+                    atom = model_atoms[short_event_id]
+                    assert isinstance(atom, dict)
+                    legacy_candidates.append(
+                        {
+                            **atom,
+                            "recall_routes": [
+                                route.value for route in candidate.recall_routes
                             ],
-                            "source_claim": mention.source_claim,
-                            "evidence_excerpts": (
-                                [_mention_local_context(source, mention)]
-                                if source is not None
-                                else [mention.canonical_proposition]
-                            ),
-                            **incoming_view.model_dump(mode="json"),
-                        },
-                        "candidates": candidate_payloads,
-                    }
+                            "recall_score": candidate.recall_score,
+                        }
+                    )
+                tasks.append(
+                    {"incoming": incoming_payload, "candidates": candidate_payloads}
                 )
+                legacy_tasks.append(
+                    {"incoming": incoming_payload, "candidates": legacy_candidates}
+                )
+            legacy_payload: dict[str, object] = {
+                "batch_index": batch_index,
+                "batch_count": len(batches),
+                "tasks": legacy_tasks,
+            }
             wire_payload = intern_repeated_ids(
                 {
                     "batch_index": batch_index,
@@ -1499,9 +1575,15 @@ class CrossDocumentEngine:
                     "tasks": tasks,
                 }
             )
+            models.record_wire_shadow(
+                stage="atomic_coreference",
+                batch_index=batch_index,
+                baseline_payload=legacy_payload,
+                optimized_payload=wire_payload,
+            )
             request = StructuredModelRequest(
                 system_prompt=_prompt("atomic_coreference.md"),
-                user_prompt=compact_json(wire_payload),
+                user_prompt=compact_json(legacy_payload),
                 json_schema=AtomicDecisionBatch.model_json_schema(),
             )
 
@@ -2362,6 +2444,31 @@ class CrossDocumentEngine:
                         }
                     )
                 model_candidates[short_event_id] = views
+            legacy_candidates: dict[str, list[object]] = {}
+            for short_event_id, candidate_refs in model_candidates.items():
+                expanded: list[object] = []
+                for candidate_ref in candidate_refs:
+                    assert isinstance(candidate_ref, dict)
+                    short_package_id = candidate_ref["package_id"]
+                    assert isinstance(short_package_id, str)
+                    package_view = model_packages[short_package_id]
+                    assert isinstance(package_view, dict)
+                    expanded.append(
+                        {
+                            **package_view,
+                            "retrieval_signals": candidate_ref[
+                                "retrieval_signals"
+                            ],
+                        }
+                    )
+                legacy_candidates[short_event_id] = expanded
+            legacy_payload: dict[str, object] = {
+                "batch_index": batch_index,
+                "batch_count": len(batches),
+                "events": model_events,
+                "seeds": model_seeds,
+                "candidates": legacy_candidates,
+            }
             wire_payload = intern_repeated_ids(
                 {
                     "batch_index": batch_index,
@@ -2372,9 +2479,15 @@ class CrossDocumentEngine:
                     "candidates": model_candidates,
                 }
             )
+            models.record_wire_shadow(
+                stage="package_assignment",
+                batch_index=batch_index,
+                baseline_payload=legacy_payload,
+                optimized_payload=wire_payload,
+            )
             request = StructuredModelRequest(
                 system_prompt=_prompt("package_assignment.md"),
-                user_prompt=compact_json(wire_payload),
+                user_prompt=compact_json(legacy_payload),
                 json_schema=PackageDecisionBatch.model_json_schema(),
             )
 
@@ -3768,6 +3881,34 @@ class CrossDocumentEngine:
                             },
                         }
                     )
+                legacy_pairs: list[dict[str, object]] = []
+                for pair in model_pairs:
+                    source_id = pair["source_package_id"]
+                    target_id = pair["target_package_id"]
+                    assert isinstance(source_id, str)
+                    assert isinstance(target_id, str)
+                    source_view = model_packages[source_id]
+                    target_view = model_packages[target_id]
+                    assert isinstance(source_view, dict)
+                    assert isinstance(target_view, dict)
+                    signals = pair["retrieval_signals"]
+                    legacy_pairs.append(
+                        {
+                            "source": {
+                                **source_view,
+                                "retrieval_signals": signals,
+                            },
+                            "target": {
+                                **target_view,
+                                "retrieval_signals": signals,
+                            },
+                        }
+                    )
+                legacy_payload: dict[str, object] = {
+                    "batch_index": batch_index,
+                    "batch_count": len(batches),
+                    "pairs": legacy_pairs,
+                }
                 wire_payload = intern_repeated_ids(
                     {
                         "batch_index": batch_index,
@@ -3776,9 +3917,15 @@ class CrossDocumentEngine:
                         "pairs": model_pairs,
                     }
                 )
+                models.record_wire_shadow(
+                    stage="package_merge",
+                    batch_index=batch_index,
+                    baseline_payload=legacy_payload,
+                    optimized_payload=wire_payload,
+                )
                 request = StructuredModelRequest(
                     system_prompt=_prompt("package_merge.md"),
-                    user_prompt=compact_json(wire_payload),
+                    user_prompt=compact_json(legacy_payload),
                     json_schema=PackageMergeDecisionBatch.model_json_schema(),
                 )
 
