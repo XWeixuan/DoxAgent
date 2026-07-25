@@ -6,6 +6,8 @@ import hashlib
 import html
 import re
 from collections.abc import Iterable, Sequence
+from dataclasses import dataclass
+from typing import Literal
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from cdecr.contracts import EvidenceSpan, SourceMessage
@@ -21,7 +23,7 @@ from cdecr.single_document_contracts import (
     SourceSegment,
 )
 
-PIPELINE_VERSION = "single-document-v5"
+PIPELINE_VERSION = "single-document-v6"
 DREAMER_SHORT_LIMIT = 24_000
 DREAMER_BLOCK_LIMIT = 24_000
 COMMON_CONTEXT_LIMIT = 4_000
@@ -39,6 +41,46 @@ _BOILERPLATE_PATTERNS = (
     re.compile(r"^\s*(?:home|markets|news|business|technology)(?:\s*[|>›]\s*\w+){2,}\s*$", re.I),
     re.compile(r"^\s*(?:share this article|read more|related articles?)\s*$", re.I),
 )
+_WRAPPING_QUOTES = {
+    '"': '"',
+    "'": "'",
+    "“": "”",
+    "‘": "’",
+    "「": "」",
+    "『": "』",
+}
+_EQUIVALENT_CHARACTERS = {
+    "“": '"',
+    "”": '"',
+    "„": '"',
+    "‟": '"',
+    "‘": "'",
+    "’": "'",
+    "‚": "'",
+    "‛": "'",
+    "‐": "-",
+    "‑": "-",
+    "‒": "-",
+    "–": "-",
+    "—": "-",
+    "―": "-",
+}
+
+EvidenceResolution = Literal[
+    "EXACT",
+    "STRIP_WRAPPING_QUOTES",
+    "NORMALIZED_EQUIVALENT",
+    "SEGMENT_CORRECTED",
+    "ANCHOR_DISAMBIGUATED",
+]
+
+
+@dataclass(frozen=True)
+class EvidenceReconciliation:
+    locator: EvidenceLocator
+    resolution: EvidenceResolution
+    segment_id_before: str
+    source_span_hash: str
 
 
 def exact_document_fingerprint(source: SourceMessage) -> str:
@@ -407,6 +449,233 @@ def locate_unique_evidence_text(
     )
     locator_to_evidence(locator, document, source)
     return locator
+
+
+def _occurrences(text: str, needle: str) -> list[int]:
+    starts: list[int] = []
+    cursor = 0
+    while needle:
+        start = text.find(needle, cursor)
+        if start < 0:
+            break
+        starts.append(start)
+        cursor = start + 1
+    return starts
+
+
+def _strip_wrapping_quotes(value: str) -> str:
+    if len(value) < 2:
+        return value
+    expected = _WRAPPING_QUOTES.get(value[0])
+    if expected is None or value[-1] != expected:
+        return value
+    stripped = value[1:-1]
+    return stripped if stripped else value
+
+
+def _normalized_equivalent_with_spans(
+    value: str,
+) -> tuple[str, list[tuple[int, int]]]:
+    normalized: list[str] = []
+    spans: list[tuple[int, int]] = []
+    cursor = 0
+    while cursor < len(value):
+        entity = re.match(r"&(?:#\d+|#x[0-9a-fA-F]+|[A-Za-z][A-Za-z0-9]+);", value[cursor:])
+        if entity is not None:
+            raw = entity.group(0)
+            decoded = html.unescape(raw)
+            if decoded != raw:
+                source_start = cursor
+                cursor += len(raw)
+                for character in decoded:
+                    mapped = _EQUIVALENT_CHARACTERS.get(character, character)
+                    if mapped.isspace():
+                        mapped = " "
+                    for item in mapped:
+                        normalized.append(item)
+                        spans.append((source_start, cursor))
+                continue
+        source_start = cursor
+        character = value[cursor]
+        cursor += 1
+        mapped = _EQUIVALENT_CHARACTERS.get(character, character)
+        if mapped.isspace():
+            mapped = " "
+            while cursor < len(value) and value[cursor].isspace():
+                cursor += 1
+        for item in mapped:
+            normalized.append(item)
+            spans.append((source_start, cursor))
+    return "".join(normalized), spans
+
+
+def _locator(
+    *,
+    segment_id: str,
+    segment_text: str,
+    start: int,
+    end: int,
+) -> EvidenceLocator:
+    return EvidenceLocator(
+        segment_id=segment_id,
+        start_char=start,
+        end_char=end,
+        text=segment_text[start:end],
+    )
+
+
+def _reconciled(
+    *,
+    evidence: EvidenceText,
+    locator: EvidenceLocator,
+    resolution: EvidenceResolution,
+    document: PreprocessedDocument,
+    source: SourceMessage,
+) -> EvidenceReconciliation:
+    span = locator_to_evidence(locator, document, source)
+    source_span_hash = hashlib.sha256(
+        (
+            f"{span.field}|{span.start_char}|{span.end_char}|{span.text}"
+        ).encode()
+    ).hexdigest()
+    return EvidenceReconciliation(
+        locator=locator,
+        resolution=resolution,
+        segment_id_before=evidence.segment_id,
+        source_span_hash=source_span_hash,
+    )
+
+
+def reconcile_evidence_text(
+    evidence: EvidenceText,
+    document: PreprocessedDocument,
+    source: SourceMessage,
+    *,
+    candidate_anchors: Sequence[EvidenceLocator] = (),
+) -> EvidenceReconciliation:
+    """Resolve model Evidence conservatively and return an exact source locator."""
+
+    segments = {item.segment_id: item for item in document.segments}
+    declared = segments.get(evidence.segment_id)
+    exact_starts = (
+        _occurrences(declared.text, evidence.text) if declared is not None else []
+    )
+    if declared is not None and len(exact_starts) == 1:
+        start = exact_starts[0]
+        return _reconciled(
+            evidence=evidence,
+            locator=_locator(
+                segment_id=declared.segment_id,
+                segment_text=declared.text,
+                start=start,
+                end=start + len(evidence.text),
+            ),
+            resolution="EXACT",
+            document=document,
+            source=source,
+        )
+
+    stripped = _strip_wrapping_quotes(evidence.text)
+    stripped_starts = (
+        _occurrences(declared.text, stripped) if declared is not None else []
+    )
+    if stripped != evidence.text and declared is not None and len(stripped_starts) == 1:
+        start = stripped_starts[0]
+        return _reconciled(
+            evidence=evidence,
+            locator=_locator(
+                segment_id=declared.segment_id,
+                segment_text=declared.text,
+                start=start,
+                end=start + len(stripped),
+            ),
+            resolution="STRIP_WRAPPING_QUOTES",
+            document=document,
+            source=source,
+        )
+
+    working_text = stripped if stripped != evidence.text else evidence.text
+    if declared is not None:
+        normalized_segment, segment_spans = _normalized_equivalent_with_spans(
+            declared.text
+        )
+        normalized_evidence, _ = _normalized_equivalent_with_spans(working_text)
+        normalized_starts = _occurrences(normalized_segment, normalized_evidence)
+        if len(normalized_starts) == 1 and normalized_evidence:
+            normalized_start = normalized_starts[0]
+            normalized_end = normalized_start + len(normalized_evidence)
+            original_start = segment_spans[normalized_start][0]
+            original_end = segment_spans[normalized_end - 1][1]
+            return _reconciled(
+                evidence=evidence,
+                locator=_locator(
+                    segment_id=declared.segment_id,
+                    segment_text=declared.text,
+                    start=original_start,
+                    end=original_end,
+                ),
+                resolution="NORMALIZED_EQUIVALENT",
+                document=document,
+                source=source,
+            )
+
+    cross_segment_matches: list[tuple[str, int]] = []
+    for segment in document.segments:
+        for start in _occurrences(segment.text, working_text):
+            cross_segment_matches.append((segment.segment_id, start))
+    if len(cross_segment_matches) == 1:
+        segment_id, start = cross_segment_matches[0]
+        segment = segments[segment_id]
+        return _reconciled(
+            evidence=evidence,
+            locator=_locator(
+                segment_id=segment_id,
+                segment_text=segment.text,
+                start=start,
+                end=start + len(working_text),
+            ),
+            resolution="SEGMENT_CORRECTED",
+            document=document,
+            source=source,
+        )
+
+    candidate_starts = exact_starts or stripped_starts
+    candidate_text = evidence.text if exact_starts else stripped
+    if declared is not None and len(candidate_starts) > 1:
+        anchored: list[tuple[int, int]] = []
+        for start in candidate_starts:
+            end = start + len(candidate_text)
+            overlap = sum(
+                max(0, min(end, anchor.end_char) - max(start, anchor.start_char))
+                for anchor in candidate_anchors
+                if anchor.segment_id == declared.segment_id
+            )
+            anchored.append((overlap, start))
+        anchored.sort(reverse=True)
+        if (
+            anchored
+            and anchored[0][0] > 0
+            and (len(anchored) == 1 or anchored[0][0] > anchored[1][0])
+        ):
+            start = anchored[0][1]
+            return _reconciled(
+                evidence=evidence,
+                locator=_locator(
+                    segment_id=declared.segment_id,
+                    segment_text=declared.text,
+                    start=start,
+                    end=start + len(candidate_text),
+                ),
+                resolution="ANCHOR_DISAMBIGUATED",
+                document=document,
+                source=source,
+            )
+
+    if declared is None:
+        raise ValueError(f"unknown evidence segment {evidence.segment_id}")
+    if candidate_starts:
+        raise ValueError("evidence text is ambiguous within its source segment")
+    raise ValueError("evidence text does not occur in its source segment")
 
 
 def grounder_context(document: PreprocessedDocument, candidates: Sequence[object]) -> str:

@@ -185,6 +185,67 @@ class InvalidOptionalGrounderEvidence(FakeStructured):
         return result
 
 
+class InvalidAuxiliaryGrounderEvidence(FakeStructured):
+    def complete(self, request: StructuredModelRequest) -> StructuredModelResult:
+        result = super().complete(request)
+        if request.json_schema.get("title") != "GrounderModelOutput":
+            return result
+        drafts = result.payload["drafts"]
+        assert isinstance(drafts, list) and drafts
+        mention = drafts[0]["mention"]
+        assert isinstance(mention, dict)
+        mention["open_attributes"] = [
+            {
+                "key": "detail",
+                "value": "unsupported",
+                "evidence_location": {
+                    "segment_id": "text:0",
+                    "text": "Micron increased guidance",
+                },
+            }
+        ]
+        return result
+
+
+class UnboundedDayPrecisionGrounder(FakeStructured):
+    def complete(self, request: StructuredModelRequest) -> StructuredModelResult:
+        result = super().complete(request)
+        if request.json_schema.get("title") != "GrounderModelOutput":
+            return result
+        drafts = result.payload["drafts"]
+        assert isinstance(drafts, list) and drafts
+        time = drafts[0]["mention"]["time"]
+        assert isinstance(time, dict)
+        time.update(
+            {
+                "event_start": None,
+                "event_end": None,
+                "precision": "DAY",
+                "reference_period_id": "FY2026 Q4",
+            }
+        )
+        return result
+
+
+class InvalidJudgeEvidenceWithValidFieldChange(FakeStructured):
+    def complete(self, request: StructuredModelRequest) -> StructuredModelResult:
+        result = super().complete(request)
+        if request.json_schema.get("title") != "JudgeCommandOutput":
+            return result
+        accepted = result.payload["accepted"]
+        assert isinstance(accepted, list) and accepted
+        accepted[0]["changes"] = {
+            "canonical_proposition": "Micron increased its guidance.",
+            "evidence_locations": [
+                {
+                    "segment_id": "text:0",
+                    "text": "Micron increased guidance",
+                }
+            ],
+        }
+        return result
+
+
 class InvalidDreamerEvidence(FakeStructured):
     def complete(self, request: StructuredModelRequest) -> StructuredModelResult:
         result = super().complete(request)
@@ -462,7 +523,7 @@ def test_invalid_json_gets_one_audited_repair(registry: SQLiteCDECRRegistry) -> 
     assert grounder_calls[1].repaired
 
 
-def test_invalid_grounder_evidence_is_rejected_by_m4_without_fallback_fabrication(
+def test_invalid_unique_grounder_main_evidence_fails_at_grounder_without_fabrication(
     registry: SQLiteCDECRRegistry,
 ) -> None:
     save_source(registry, source())
@@ -476,7 +537,7 @@ def test_invalid_grounder_evidence_is_rejected_by_m4_without_fallback_fabricatio
     result = service.process("MSG-1")
     assert result.status is ProcessingStatus.FAILED
     assert result.mentions == []
-    assert result.failures[0].stage == "judge"
+    assert result.failures[0].stage == "grounder"
     with sqlite3.connect(registry.path) as connection:
         count = connection.execute(
             """
@@ -486,6 +547,87 @@ def test_invalid_grounder_evidence_is_rejected_by_m4_without_fallback_fabricatio
             (result.run_id,),
         ).fetchone()[0]
     assert count == 2
+
+
+def test_invalid_auxiliary_grounder_evidence_is_dropped_without_losing_document(
+    registry: SQLiteCDECRRegistry,
+) -> None:
+    save_source(registry, source())
+    service = SingleDocumentProcessor(
+        registry=registry,
+        embedding_client=FakeEmbedding(),
+        m2_client=FakeStructured(model="deepseek-v4-flash"),
+        m3_client=InvalidAuxiliaryGrounderEvidence(model="qwen3.7-plus"),
+        m4_client=FakeStructured(model="qwen3.7-max"),
+    )
+    result = service.process("MSG-1")
+    assert result.status is ProcessingStatus.SUCCEEDED
+    assert len(result.mentions) == 1
+    assert result.mentions[0].open_attributes == []
+    with sqlite3.connect(registry.path) as connection:
+        payload = connection.execute(
+            """
+            SELECT payload_json FROM decision_audits
+            WHERE run_id = ? AND decision_type = 'EVIDENCE_DEGRADATION'
+            """,
+            (result.run_id,),
+        ).fetchone()
+    assert payload is not None
+    assert json.loads(payload[0])["resolution"] == "AUX_ATTRIBUTE_EVIDENCE_DROPPED"
+
+
+def test_unbounded_time_precision_is_normalized_without_changing_reference_period(
+    registry: SQLiteCDECRRegistry,
+) -> None:
+    save_source(registry, source())
+    service = SingleDocumentProcessor(
+        registry=registry,
+        embedding_client=FakeEmbedding(),
+        m2_client=FakeStructured(model="deepseek-v4-flash"),
+        m3_client=UnboundedDayPrecisionGrounder(model="qwen3.7-plus"),
+        m4_client=FakeStructured(model="qwen3.7-max"),
+    )
+    result = service.process("MSG-1")
+    assert result.status is ProcessingStatus.SUCCEEDED
+    assert result.mentions[0].time.precision.value == "UNKNOWN"
+    assert result.mentions[0].time.reference_period_id == "FY2026 Q4"
+    with sqlite3.connect(registry.path) as connection:
+        payload = connection.execute(
+            """
+            SELECT payload_json FROM decision_audits
+            WHERE run_id = ? AND decision_type = 'TIME_SEMANTIC_NORMALIZATION'
+            """,
+            (result.run_id,),
+        ).fetchone()
+    assert payload is not None
+    assert json.loads(payload[0])["reason_code"] == "NO_EVENT_BOUNDS"
+
+
+def test_judge_invalid_evidence_change_reverts_only_evidence(
+    registry: SQLiteCDECRRegistry,
+) -> None:
+    save_source(registry, source())
+    service = SingleDocumentProcessor(
+        registry=registry,
+        embedding_client=FakeEmbedding(),
+        m2_client=FakeStructured(model="deepseek-v4-flash"),
+        m3_client=FakeStructured(model="qwen3.7-plus"),
+        m4_client=InvalidJudgeEvidenceWithValidFieldChange(model="qwen3.7-max"),
+    )
+    result = service.process("MSG-1")
+    assert result.status is ProcessingStatus.SUCCEEDED
+    assert result.mentions[0].canonical_proposition == "Micron increased its guidance."
+    assert result.mentions[0].evidence_spans[0].text == "Micron raised guidance"
+    with sqlite3.connect(registry.path) as connection:
+        payload = connection.execute(
+            """
+            SELECT payload_json FROM decision_audits
+            WHERE run_id = ? AND decision_type = 'EVIDENCE_DEGRADATION'
+            """,
+            (result.run_id,),
+        ).fetchone()
+    assert payload is not None
+    assert json.loads(payload[0])["resolution"] == "JUDGE_EVIDENCE_REVERTED"
 
 
 def test_judge_keep_target_must_be_a_distinct_final_accept(

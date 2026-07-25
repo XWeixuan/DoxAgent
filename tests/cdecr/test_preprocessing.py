@@ -17,8 +17,13 @@ from cdecr.preprocessing import (
     minhash_similarity,
     normalize_url,
     preprocess_source,
+    reconcile_evidence_text,
 )
-from cdecr.single_document_contracts import DuplicateRelationType, EvidenceLocator
+from cdecr.single_document_contracts import (
+    DuplicateRelationType,
+    EvidenceLocator,
+    EvidenceText,
+)
 
 
 def source(
@@ -61,6 +66,69 @@ def test_repeated_evidence_text_does_not_get_heuristically_realigned() -> None:
     locator = EvidenceLocator(segment_id="title:0", start_char=1, end_char=6, text="event")
     with pytest.raises(ValueError, match="does not match"):
         align_unique_evidence_locator(locator, document, message)
+
+
+def test_evidence_reconciler_strips_one_wrapping_quote_layer() -> None:
+    message = source(text="Micron raised guidance.")
+    document = preprocess_source(message).document
+    result = reconcile_evidence_text(
+        EvidenceText(
+            segment_id="text:0",
+            text='"Micron raised guidance"',
+        ),
+        document,
+        message,
+    )
+    assert result.resolution == "STRIP_WRAPPING_QUOTES"
+    assert result.locator.text == "Micron raised guidance"
+
+
+def test_evidence_reconciler_maps_normalized_equivalent_to_original_text() -> None:
+    message = source(title="Revenue—rose  10% & more")
+    document = preprocess_source(message).document
+    result = reconcile_evidence_text(
+        EvidenceText(
+            segment_id="title:0",
+            text="Revenue-rose 10% &amp; more",
+        ),
+        document,
+        message,
+    )
+    assert result.resolution == "NORMALIZED_EQUIVALENT"
+    assert result.locator.text == "Revenue—rose  10% & more"
+    assert locator_to_evidence(result.locator, document, message).text == result.locator.text
+
+
+def test_evidence_reconciler_corrects_only_globally_unique_segment() -> None:
+    message = source(title="Unrelated title", text="Micron raised guidance.")
+    document = preprocess_source(message).document
+    result = reconcile_evidence_text(
+        EvidenceText(segment_id="title:0", text="Micron raised guidance"),
+        document,
+        message,
+    )
+    assert result.resolution == "SEGMENT_CORRECTED"
+    assert result.locator.segment_id == "text:0"
+
+
+def test_evidence_reconciler_uses_candidate_anchor_for_repeated_phrase() -> None:
+    message = source(title="Alpha event and Alpha event")
+    document = preprocess_source(message).document
+    result = reconcile_evidence_text(
+        EvidenceText(segment_id="title:0", text="Alpha event"),
+        document,
+        message,
+        candidate_anchors=[
+            EvidenceLocator(
+                segment_id="title:0",
+                start_char=16,
+                end_char=27,
+                text="Alpha event",
+            )
+        ],
+    )
+    assert result.resolution == "ANCHOR_DISAMBIGUATED"
+    assert (result.locator.start_char, result.locator.end_char) == (16, 27)
 
 
 def test_cleaning_preserves_offsets_and_maps_evidence_back() -> None:

@@ -29,6 +29,7 @@ from cdecr.single_document_contracts import (
     MentionDraft,
     OpenAttributeDraft,
     ParticipantDraft,
+    normalize_event_time_semantics,
     validate_event_time_semantics,
 )
 
@@ -184,6 +185,41 @@ def test_event_time_without_bounds_requires_unknown_precision() -> None:
     )
     validate_event_time_semantics(value)
     assert value.reference_period_id == "FY2026 Q4"
+
+
+def test_event_time_normalization_only_changes_unbounded_precision() -> None:
+    unbounded = EventTimeDraft(
+        event_start=None,
+        event_end=None,
+        precision=TimePrecision.DAY,
+        reference_period_id="FY2026 Q4",
+    )
+    normalized, audit = normalize_event_time_semantics(unbounded)
+    assert normalized.precision is TimePrecision.UNKNOWN
+    assert normalized.reference_period_id == "FY2026 Q4"
+    assert audit == {
+        "precision_before": "DAY",
+        "precision_after": "UNKNOWN",
+        "reason_code": "NO_EVENT_BOUNDS",
+    }
+
+    bounded = EventTimeDraft(
+        event_start=date(2026, 6, 25),
+        event_end=None,
+        precision=TimePrecision.DAY,
+    )
+    unchanged, audit = normalize_event_time_semantics(bounded)
+    assert unchanged == bounded
+    assert audit is None
+
+
+def test_event_time_end_before_start_remains_a_hard_failure() -> None:
+    with pytest.raises(ValidationError, match="event_end"):
+        EventTimeDraft(
+            event_start=date(2026, 6, 26),
+            event_end=date(2026, 6, 25),
+            precision=TimePrecision.INTERVAL,
+        )
 
 
 def test_event_time_rejects_mixed_timezone_awareness_cleanly() -> None:

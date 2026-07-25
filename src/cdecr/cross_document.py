@@ -5,13 +5,14 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import threading
 import traceback
 import uuid
 from collections.abc import Callable, Sequence
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, date, datetime
 from pathlib import Path
-from typing import TypeVar
+from typing import Literal, TypeVar
 
 from pydantic import BaseModel, ValidationError
 
@@ -141,7 +142,7 @@ from cdecr.wire import compact_json, intern_repeated_ids, wire_ref_metadata
 
 ENGINE_VERSION = "cdecr-cross-document-v15"
 PROMPT_VERSION = "cdecr-cross-document-prompts-v8"
-WIRE_PROTOCOL_VERSION = "cdecr-cross-document-wire-shadow-v3"
+WIRE_PROTOCOL_VERSION = "cdecr-cross-document-wire-shadow-v4"
 ATOMIC_ASSIGNMENT_POLICY_VERSION = "atomic-assignment-policy-v2"
 ATOMIC_DECISION_MENTION_BATCH = 3
 PACKAGE_DECISION_EVENT_BATCH = 12
@@ -297,11 +298,29 @@ class _AuditedModels:
         self.model_m2 = model_m2
         self.model_m3 = model_m3
         self.summaries = summaries
+        self._call_context = threading.local()
+
+    def current_model_call_id(self) -> str | None:
+        value = getattr(self._call_context, "model_call_id", None)
+        return value if isinstance(value, str) else None
 
     def record_wire_shadow(
         self,
         *,
         stage: str,
+        operation: Literal[
+            "normal_assignment",
+            "boundary_reassessment",
+            "reaction_member_repair",
+            "merge_review",
+        ],
+        trigger: Literal[
+            "candidate_recall",
+            "package_boundary",
+            "reaction_boundary",
+            "package_recall",
+        ],
+        attempt: Literal["initial", "repair", "escalation"],
         batch_index: int,
         baseline_payload: dict[str, object],
         optimized_payload: dict[str, object],
@@ -310,22 +329,31 @@ class _AuditedModels:
         optimized_json = compact_json(optimized_payload)
         baseline_bytes = len(baseline_json.encode("utf-8"))
         optimized_bytes = len(optimized_json.encode("utf-8"))
+        invocation_context = {
+            "stage": stage,
+            "operation": operation,
+            "trigger": trigger,
+            "batch_index": batch_index,
+            "attempt": attempt,
+        }
         self.registry.append_decision_audit(
             DecisionAuditRecord(
                 audit_id=stable_id(
                     "wire-shadow",
                     {
                         "run": self.run_id,
-                        "stage": stage,
-                        "batch_index": batch_index,
+                        "invocation": invocation_context,
                     },
                 ),
                 run_id=self.run_id,
                 decision_type="WIRE_PAYLOAD_SHADOW",
-                subject_id=f"{stage}:{batch_index}",
+                subject_id=(
+                    f"{stage}:{operation}:{trigger}:{batch_index}:{attempt}"
+                ),
                 payload={
                     "mode": "shadow_not_sent",
                     "wire_protocol_version": WIRE_PROTOCOL_VERSION,
+                    "invocation_context": invocation_context,
                     "baseline_payload_bytes": baseline_bytes,
                     "optimized_payload_bytes": optimized_bytes,
                     "estimated_savings_bytes": max(0, baseline_bytes - optimized_bytes),
@@ -434,13 +462,17 @@ class _AuditedModels:
         output_type: type[_T],
         validator: Callable[[_T], None],
         payload_adapter: Callable[[object], object] | None = None,
+        attempt_payload_adapter: Callable[[object, str], object] | None = None,
     ) -> _T:
         request_key = _hash_json({"stage": stage, "user": request.user_prompt})[:16]
 
         def adapt_payload(payload: object, *, attempt: str) -> object:
-            if payload_adapter is None:
+            if attempt_payload_adapter is not None:
+                adapted = attempt_payload_adapter(payload, attempt)
+            elif payload_adapter is not None:
+                adapted = payload_adapter(payload)
+            else:
                 return payload
-            adapted = payload_adapter(payload)
             if _hash_json(adapted) != _hash_json(payload):
                 self.registry.append_decision_audit(
                     DecisionAuditRecord(
@@ -566,6 +598,7 @@ class _AuditedModels:
         client = self.m3_client if tier is ModelTier.M3 else self.m2_client
         model = self.model_m3 if tier is ModelTier.M3 else self.model_m2
         call_id = str(uuid.uuid4())
+        self._call_context.model_call_id = call_id
         input_hash = _hash_json({"system": request.system_prompt, "user": request.user_prompt})
         schema_hash = _hash_json(request.json_schema)
         request_metadata = _structured_request_metadata(request)
@@ -767,6 +800,18 @@ class CrossDocumentEngine:
             prompt_version=PROMPT_VERSION,
             model_config=self.model_config,
         )
+        # A completed result is keyed from the field-link snapshot that was
+        # actually applied.  Check that snapshot before N5.5 recall/Decide:
+        # later documents may add global field candidates, but replaying an
+        # already-applied message must not spend tokens resolving previously
+        # unresolved auxiliary fields.  A real redirect or link change still
+        # changes this key and therefore reaches the rebuild guard below.
+        pre_resolution_key = self.processing_key(message_id, mentions)
+        completed = self.registry.get_completed_cross_document_result(pre_resolution_key)
+        if completed is not None:
+            self.registry.finish_cross_document_trace(run_id, status="REUSED")
+            return completed.model_copy(update={"reused": True, "model_calls": []})
+
         field_resolver = FieldCoreferenceResolver(
             registry=self.registry,
             embedding_client=self.embedding_client,
@@ -1531,6 +1576,9 @@ class CrossDocumentEngine:
             )
             models.record_wire_shadow(
                 stage="atomic_coreference",
+                operation="normal_assignment",
+                trigger="candidate_recall",
+                attempt="initial",
                 batch_index=batch_index,
                 baseline_payload=legacy_payload,
                 optimized_payload=wire_payload,
@@ -1540,6 +1588,205 @@ class CrossDocumentEngine:
                 user_prompt=compact_json(legacy_payload),
                 json_schema=AtomicDecisionBatch.model_json_schema(),
             )
+
+            def adapt_and_audit_atomic_payload(
+                payload: object,
+                attempt: str,
+            ) -> object:
+                adapted = adapt_atomic_payload(payload)
+                if not isinstance(adapted, dict) or not isinstance(
+                    adapted.get("decisions"), list
+                ):
+                    return adapted
+
+                raw_decisions = [
+                    item for item in adapted["decisions"] if isinstance(item, dict)
+                ]
+                returned_mentions: list[str] = []
+                for item in raw_decisions:
+                    mention_id = item.get("mention_id")
+                    if isinstance(mention_id, str):
+                        returned_mentions.append(mention_id)
+                mention_duplicates = sorted(
+                    {
+                        value
+                        for value in returned_mentions
+                        if returned_mentions.count(value) > 1
+                    }
+                )
+                mention_extra = sorted(set(returned_mentions) - set(expected))
+                mention_missing = sorted(set(expected) - set(returned_mentions))
+
+                normalized_decisions: list[dict[str, object]] = []
+                seen_decisions: dict[str, dict[str, object]] = {}
+                task_diffs: dict[str, object] = {}
+                normalizations: list[dict[str, object]] = []
+                for decision in raw_decisions:
+                    mention_id = decision.get("mention_id")
+                    if not isinstance(mention_id, str) or mention_id not in expected:
+                        continue
+                    prior = seen_decisions.get(mention_id)
+                    if prior is not None:
+                        if prior == decision:
+                            normalizations.append(
+                                {
+                                    "mention_id": mention_id,
+                                    "kind": "IDENTICAL_DECISION_DEDUPLICATED",
+                                }
+                            )
+                            continue
+                        normalized_decisions.append(decision)
+                        continue
+                    seen_decisions[mention_id] = decision
+
+                    expected_candidates = expected[mention_id]
+                    raw_assessments = decision.get("candidate_assessments")
+                    assessments = (
+                        [
+                            item
+                            for item in raw_assessments
+                            if isinstance(item, dict)
+                        ]
+                        if isinstance(raw_assessments, list)
+                        else []
+                    )
+                    returned_candidates: list[str] = []
+                    for assessment in assessments:
+                        candidate_id = assessment.get("candidate_event_id")
+                        if isinstance(candidate_id, str):
+                            returned_candidates.append(candidate_id)
+                    candidate_duplicates = sorted(
+                        {
+                            value
+                            for value in returned_candidates
+                            if returned_candidates.count(value) > 1
+                        }
+                    )
+                    candidate_extra = sorted(
+                        set(returned_candidates) - expected_candidates
+                    )
+                    candidate_missing = sorted(
+                        expected_candidates - set(returned_candidates)
+                    )
+
+                    filtered: list[dict[str, object]] = []
+                    seen_assessments: dict[str, dict[str, object]] = {}
+                    for assessment in assessments:
+                        candidate_id = assessment.get("candidate_event_id")
+                        if (
+                            not isinstance(candidate_id, str)
+                            or candidate_id not in expected_candidates
+                        ):
+                            continue
+                        prior_assessment = seen_assessments.get(candidate_id)
+                        if prior_assessment is not None:
+                            if prior_assessment == assessment:
+                                normalizations.append(
+                                    {
+                                        "mention_id": mention_id,
+                                        "candidate_event_id": candidate_id,
+                                        "kind": "IDENTICAL_ASSESSMENT_DEDUPLICATED",
+                                    }
+                                )
+                                continue
+                            filtered.append(assessment)
+                            continue
+                        seen_assessments[candidate_id] = assessment
+                        filtered.append(assessment)
+                    decision["candidate_assessments"] = filtered
+
+                    target = decision.get("merge_target_event_id")
+                    invalid_target = (
+                        target
+                        if isinstance(target, str)
+                        and target not in expected_candidates
+                        else None
+                    )
+                    same_candidates = [
+                        item.get("candidate_event_id")
+                        for item in filtered
+                        if item.get("relation")
+                        == AtomicSemanticRelation.SAME_EVENT.value
+                        and isinstance(item.get("candidate_event_id"), str)
+                    ]
+                    if (
+                        decision.get("action") == AtomicAction.MERGE.value
+                        and (
+                            not isinstance(target, str)
+                            or target not in expected_candidates
+                        )
+                        and len(same_candidates) == 1
+                    ):
+                        decision["merge_target_event_id"] = same_candidates[0]
+                        normalizations.append(
+                            {
+                                "mention_id": mention_id,
+                                "kind": "UNIQUE_SAME_EVENT_TARGET_RESTORED",
+                                "target_before": target,
+                                "target_after": same_candidates[0],
+                            }
+                        )
+
+                    for field in (
+                        "related_candidate_event_ids",
+                        "possible_duplicate_atomic_ids",
+                    ):
+                        values = decision.get(field)
+                        if isinstance(values, list):
+                            decision[field] = [
+                                value
+                                for value in values
+                                if isinstance(value, str)
+                                and value in expected_candidates
+                            ]
+
+                    task_diffs[mention_id] = {
+                        "expected": sorted(expected_candidates),
+                        "returned": returned_candidates,
+                        "missing": candidate_missing,
+                        "extra": candidate_extra,
+                        "duplicates": candidate_duplicates,
+                        "invalid_target": invalid_target,
+                    }
+                    normalized_decisions.append(decision)
+
+                for mention_id in mention_missing:
+                    task_diffs[mention_id] = {
+                        "expected": sorted(expected[mention_id]),
+                        "returned": [],
+                        "missing": sorted(expected[mention_id]),
+                        "extra": [],
+                        "duplicates": [],
+                        "invalid_target": None,
+                    }
+                validation_payload = {
+                    "model_call_id": models.current_model_call_id(),
+                    "attempt": attempt,
+                    "batch_index": batch_index,
+                    "mentions": {
+                        "expected": sorted(expected),
+                        "returned": returned_mentions,
+                        "missing": mention_missing,
+                        "extra": mention_extra,
+                        "duplicates": mention_duplicates,
+                    },
+                    "tasks": task_diffs,
+                    "normalizations": normalizations,
+                }
+                self.registry.append_decision_audit(
+                    DecisionAuditRecord(
+                        audit_id=(
+                            f"atomic-n9-validation:{models.run_id}:"
+                            f"{batch_index}:{attempt}:"
+                            f"{_hash_json(validation_payload)[:16]}"
+                        ),
+                        run_id=models.run_id,
+                        decision_type="ATOMIC_N9_VALIDATION",
+                        subject_id=f"batch:{batch_index}:{attempt}",
+                        payload=validation_payload,
+                    )
+                )
+                return {"decisions": normalized_decisions}
 
             def validate_coverage(output: AtomicDecisionBatch) -> None:
                 if {item.mention_id for item in output.decisions} != set(expected):
@@ -1554,6 +1801,29 @@ class CrossDocumentEngine:
                             "atomic decision assessments must cover exactly "
                             "the requested candidates"
                         )
+
+            def validate_model_semantics(output: AtomicDecisionBatch) -> None:
+                validate_coverage(output)
+                for decision in output.decisions:
+                    candidate_ids = expected[decision.mention_id]
+                    assessment_by_id = {
+                        item.candidate_event_id: item
+                        for item in decision.candidate_assessments
+                    }
+                    if decision.action is AtomicAction.MERGE:
+                        target = decision.merge_target_event_id
+                        if target not in candidate_ids:
+                            raise ValueError(
+                                "merge target must be an input candidate"
+                            )
+                        if (
+                            target is None
+                            or assessment_by_id[target].relation
+                            is not AtomicSemanticRelation.SAME_EVENT
+                        ):
+                            raise ValueError(
+                                "merge target must be assessed SAME_EVENT"
+                            )
 
             def normalize_derived_fields(
                 output: AtomicDecisionBatch,
@@ -1682,20 +1952,23 @@ class CrossDocumentEngine:
                     stage=stage,
                     request=request,
                     output_type=AtomicDecisionBatch,
-                    validator=validate_coverage,
-                    payload_adapter=adapt_atomic_payload,
+                    validator=validate_model_semantics,
+                    attempt_payload_adapter=adapt_and_audit_atomic_payload,
                 )
                 normalized = normalize_derived_fields(raw)
-                validate_semantics(normalized)
+                try:
+                    validate_semantics(normalized)
+                except ValueError as exc:
+                    raise CrossDocumentPipelineError(
+                        stage, "post_validation_invariant"
+                    ) from exc
                 return normalized
 
             escalated = False
             try:
                 output = invoke(ModelTier.M2, "atomic_coreference")
-            except (CrossDocumentPipelineError, ValueError) as exc:
-                if isinstance(exc, CrossDocumentPipelineError) and exc.code != (
-                    "structured_output_invalid"
-                ):
+            except CrossDocumentPipelineError as exc:
+                if exc.code != "structured_output_invalid":
                     raise
                 self.registry.append_decision_audit(
                     DecisionAuditRecord(
@@ -1707,8 +1980,6 @@ class CrossDocumentEngine:
                             "reason": "M2_BUSINESS_VALIDATION_FAILED",
                             "error_code": (
                                 exc.code
-                                if isinstance(exc, CrossDocumentPipelineError)
-                                else "semantic_constraint"
                             ),
                         },
                     )
@@ -2240,6 +2511,19 @@ class CrossDocumentEngine:
         events: dict[str, AtomicEvent],
         seeds: dict[str, PackageSeed],
         models: _AuditedModels,
+        wire_operation: Literal[
+            "normal_assignment",
+            "boundary_reassessment",
+            "reaction_member_repair",
+            "merge_review",
+        ] = "normal_assignment",
+        wire_trigger: Literal[
+            "candidate_recall",
+            "package_boundary",
+            "reaction_boundary",
+            "package_recall",
+        ] = "candidate_recall",
+        wire_attempt: Literal["initial", "repair", "escalation"] = "initial",
     ) -> dict[str, PackageAssignmentDecision]:
         if not unresolved:
             return {}
@@ -2411,6 +2695,9 @@ class CrossDocumentEngine:
             )
             models.record_wire_shadow(
                 stage="package_assignment",
+                operation=wire_operation,
+                trigger=wire_trigger,
+                attempt=wire_attempt,
                 batch_index=batch_index,
                 baseline_payload=legacy_payload,
                 optimized_payload=wire_payload,
@@ -2446,6 +2733,144 @@ class CrossDocumentEngine:
                     adapted.append(item)
                 return {"decisions": adapted}
 
+            def adapt_and_audit(payload: object, attempt: str) -> object:
+                adapted = adapt(payload)
+                if not isinstance(adapted, dict) or not isinstance(
+                    adapted.get("decisions"), list
+                ):
+                    return adapted
+                normalizations: list[dict[str, object]] = []
+                for raw in adapted["decisions"]:
+                    if not isinstance(raw, dict):
+                        continue
+                    assessments = raw.get("candidate_assessments")
+                    if not isinstance(assessments, list):
+                        continue
+                    member_ids: list[str] = []
+                    reason_by_id: dict[str, str] = {}
+                    for assessment in assessments:
+                        if not isinstance(assessment, dict):
+                            continue
+                        candidate_id = assessment.get("candidate_package_id")
+                        relation = assessment.get("relation")
+                        reason = assessment.get("reason")
+                        if isinstance(candidate_id, str) and isinstance(reason, str):
+                            reason_by_id[candidate_id] = reason
+                        if relation == PackageAssignmentRelation.MEMBER.value:
+                            if isinstance(candidate_id, str) and candidate_id not in member_ids:
+                                member_ids.append(candidate_id)
+                            if assessment.get("external_relation") is not None:
+                                assessment["external_relation"] = None
+                                normalizations.append(
+                                    {
+                                        "event_id": raw.get("event_id"),
+                                        "candidate_package_id": candidate_id,
+                                        "kind": "MEMBER_EXTERNAL_DETAIL_CLEARED",
+                                    }
+                                )
+                        else:
+                            if assessment.get("membership_relation") is not None:
+                                assessment["membership_relation"] = None
+                                normalizations.append(
+                                    {
+                                        "event_id": raw.get("event_id"),
+                                        "candidate_package_id": candidate_id,
+                                        "kind": "NON_MEMBER_MEMBERSHIP_DETAIL_CLEARED",
+                                    }
+                                )
+                            if (
+                                relation
+                                != PackageAssignmentRelation.EXTERNAL_RELATED.value
+                                and assessment.get("external_relation") is not None
+                            ):
+                                assessment["external_relation"] = None
+                                normalizations.append(
+                                    {
+                                        "event_id": raw.get("event_id"),
+                                        "candidate_package_id": candidate_id,
+                                        "kind": "NON_EXTERNAL_DETAIL_CLEARED",
+                                    }
+                                )
+
+                    raw_ranked = raw.get("ranked_member_package_ids")
+                    ranked = (
+                        [
+                            value
+                            for value in raw_ranked
+                            if isinstance(value, str) and value in member_ids
+                        ]
+                        if isinstance(raw_ranked, list)
+                        else []
+                    )
+                    ranked = list(dict.fromkeys(ranked))
+                    ranked.extend(value for value in member_ids if value not in ranked)
+                    if raw_ranked != ranked:
+                        normalizations.append(
+                            {
+                                "event_id": raw.get("event_id"),
+                                "kind": "MEMBER_RANKING_REBUILT",
+                                "before": raw_ranked,
+                                "after": ranked,
+                            }
+                        )
+                        raw["ranked_member_package_ids"] = ranked
+
+                    selected = ranked[0] if ranked else None
+                    if raw.get("selected_member_package_id") != selected:
+                        normalizations.append(
+                            {
+                                "event_id": raw.get("event_id"),
+                                "kind": "SELECTED_MEMBER_ALIGNED",
+                                "before": raw.get("selected_member_package_id"),
+                                "after": selected,
+                            }
+                        )
+                        raw["selected_member_package_id"] = selected
+                    selection_reason = raw.get("selection_reason")
+                    if selected is None:
+                        normalized_reason = None
+                    elif isinstance(selection_reason, str) and selection_reason.strip():
+                        normalized_reason = selection_reason
+                    else:
+                        normalized_reason = reason_by_id.get(
+                            selected, "TOP_RANKED_MEMBER_ASSESSMENT"
+                        )
+                    if selection_reason != normalized_reason:
+                        normalizations.append(
+                            {
+                                "event_id": raw.get("event_id"),
+                                "kind": "SELECTION_REASON_ALIGNED",
+                            }
+                        )
+                        raw["selection_reason"] = normalized_reason
+
+                if normalizations:
+                    payload_hash = _hash_json(
+                        {
+                            "batch_index": batch_index,
+                            "attempt": attempt,
+                            "normalizations": normalizations,
+                        }
+                    )
+                    self.registry.append_decision_audit(
+                        DecisionAuditRecord(
+                            audit_id=(
+                                f"package-n12-normalization:{models.run_id}:"
+                                f"{batch_index}:{attempt}:{payload_hash[:16]}"
+                            ),
+                            run_id=models.run_id,
+                            decision_type="PACKAGE_N12_NORMALIZATION",
+                            subject_id=f"batch:{batch_index}:{attempt}",
+                            payload={
+                                "model_call_id": models.current_model_call_id(),
+                                "attempt": attempt,
+                                "batch_index": batch_index,
+                                "normalizations": normalizations,
+                            },
+                        )
+                    )
+                return adapted
+
             def validate(output: PackageDecisionBatch) -> None:
                 if {item.event_id for item in output.decisions} != set(expected):
                     raise ValueError("package decisions must cover exactly requested events")
@@ -2462,7 +2887,7 @@ class CrossDocumentEngine:
                 request=request,
                 output_type=PackageDecisionBatch,
                 validator=validate,
-                payload_adapter=adapt,
+                attempt_payload_adapter=adapt_and_audit,
             )
             restored: list[PackageAssignmentDecision] = []
             for decision in output.decisions:
@@ -3514,6 +3939,9 @@ class CrossDocumentEngine:
             events=event_map,
             seeds=seeds,
             models=models,
+            wire_operation="reaction_member_repair",
+            wire_trigger="reaction_boundary",
+            wire_attempt="repair",
         )
         affected: set[str] = set()
         for event in suspicious:
@@ -3523,7 +3951,27 @@ class CrossDocumentEngine:
                 continue
             seed = seeds[event.event_id]
             if selected_id is None:
-                target = compiler.compile_singleton(event, seed)
+                natural_singleton = compiler.compile_singleton(event, seed)
+                natural_root = self.registry.resolve_package_root(natural_singleton.package_id)
+                if natural_root is None:
+                    target = natural_singleton
+                else:
+                    # A merged package leaves the original singleton ID redirected.
+                    # Reusing it would resolve straight back to the mixed source package,
+                    # so boundary repair needs a fresh, deterministic split identity.
+                    target = natural_singleton.model_copy(
+                        update={
+                            "package_id": stable_id(
+                                "package-boundary-split",
+                                {
+                                    "event": event.event_id,
+                                    "source": package.package_id,
+                                    "source_version": package.version,
+                                },
+                            ),
+                            "version": 1,
+                        }
+                    )
                 existing = self.registry.get_current_package(target.package_id)
                 if existing is not None:
                     target = compiler.compile(
@@ -3797,6 +4245,9 @@ class CrossDocumentEngine:
                 )
                 models.record_wire_shadow(
                     stage="package_merge",
+                    operation="merge_review",
+                    trigger="package_recall",
+                    attempt="initial",
                     batch_index=batch_index,
                     baseline_payload=legacy_payload,
                     optimized_payload=wire_payload,

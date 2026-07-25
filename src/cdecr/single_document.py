@@ -46,12 +46,14 @@ from cdecr.ports import (
 )
 from cdecr.preprocessing import (
     PIPELINE_VERSION,
+    EvidenceReconciliation,
     align_unique_evidence_locator,
     exact_document_fingerprint,
     grounder_context,
     locate_unique_evidence_text,
     locator_to_evidence,
     preprocess_source,
+    reconcile_evidence_text,
 )
 from cdecr.scheduler import take_scheduled_call_metrics
 from cdecr.single_document_contracts import (
@@ -59,6 +61,7 @@ from cdecr.single_document_contracts import (
     DreamCandidate,
     DreamerModelOutput,
     EvidenceLocator,
+    EvidenceText,
     FailureSummary,
     GroundedMentionDraft,
     GrounderModelOutput,
@@ -77,10 +80,11 @@ from cdecr.single_document_contracts import (
     PreprocessedDocument,
     ProcessingStatus,
     SingleDocumentResult,
+    normalize_event_time_semantics,
     validate_event_time_semantics,
 )
 
-PROMPT_VERSION = "single-document-prompts-v8"
+PROMPT_VERSION = "single-document-prompts-v9"
 GROUNDER_CANDIDATE_BATCH = 24
 JUDGE_DRAFT_BATCH = 24
 _T = TypeVar("_T", bound=StrictModel)
@@ -490,6 +494,214 @@ class SingleDocumentProcessor:
             }
         )
 
+    def _normalize_draft_time(
+        self,
+        draft: MentionDraft,
+        *,
+        run_id: str,
+        stage: str,
+        subject_id: str,
+    ) -> MentionDraft:
+        normalized, details = normalize_event_time_semantics(draft.time)
+        if details is None:
+            return draft
+        updated = draft.model_copy(update={"time": normalized})
+        before_hash = _hash_json(draft.model_dump(mode="json"))
+        after_hash = _hash_json(updated.model_dump(mode="json"))
+        self.registry.append_decision_audit(
+            DecisionAuditRecord(
+                audit_id=(
+                    f"time-semantic-normalization:{run_id}:{stage}:"
+                    f"{subject_id}:{before_hash[:16]}"
+                ),
+                run_id=run_id,
+                decision_type="TIME_SEMANTIC_NORMALIZATION",
+                subject_id=subject_id,
+                payload={
+                    "stage": stage,
+                    **details,
+                    "object_hash_before": before_hash,
+                    "object_hash_after": after_hash,
+                },
+            )
+        )
+        return updated
+
+    def _reconcile_draft_evidence(
+        self,
+        draft: MentionDraft,
+        document: PreprocessedDocument,
+        source: SourceMessage,
+        *,
+        run_id: str,
+        stage: str,
+        subject_id: str,
+        source_candidate_ids: Sequence[str],
+        candidate_anchors: Sequence[EvidenceLocator] = (),
+        fallback_main_evidence: Sequence[EvidenceText] | None = None,
+    ) -> MentionDraft:
+        before_hash = _hash_json(draft.model_dump(mode="json"))
+        main: list[EvidenceText] = []
+        main_resolutions: list[tuple[int, EvidenceReconciliation]] = []
+        failed_main: list[tuple[int, str]] = []
+        for index, evidence in enumerate(draft.evidence_locations):
+            try:
+                reconciliation = reconcile_evidence_text(
+                    evidence,
+                    document,
+                    source,
+                    candidate_anchors=candidate_anchors,
+                )
+            except ValueError as exc:
+                failed_main.append((index, _safe_semantic_error_code(exc)))
+                continue
+            main.append(
+                EvidenceText(
+                    segment_id=reconciliation.locator.segment_id,
+                    text=reconciliation.locator.text,
+                )
+            )
+            main_resolutions.append((index, reconciliation))
+
+        reverted = False
+        if not main and fallback_main_evidence is not None:
+            fallback: list[EvidenceText] = []
+            for evidence in fallback_main_evidence:
+                reconciliation = reconcile_evidence_text(
+                    evidence,
+                    document,
+                    source,
+                    candidate_anchors=candidate_anchors,
+                )
+                fallback.append(
+                    EvidenceText(
+                        segment_id=reconciliation.locator.segment_id,
+                        text=reconciliation.locator.text,
+                    )
+                )
+            if fallback:
+                main = fallback
+                reverted = True
+        if not main:
+            raise ValueError("mention main evidence cannot be reconciled")
+
+        attributes: list[OpenAttributeDraft] = []
+        dropped_attributes: list[tuple[int, str]] = []
+        attribute_resolutions: list[tuple[int, EvidenceReconciliation]] = []
+        for index, attribute in enumerate(draft.open_attributes):
+            try:
+                reconciliation = reconcile_evidence_text(
+                    attribute.evidence_location,
+                    document,
+                    source,
+                    candidate_anchors=candidate_anchors,
+                )
+            except ValueError as exc:
+                dropped_attributes.append((index, _safe_semantic_error_code(exc)))
+                continue
+            attributes.append(
+                attribute.model_copy(
+                    update={
+                        "evidence_location": EvidenceText(
+                            segment_id=reconciliation.locator.segment_id,
+                            text=reconciliation.locator.text,
+                        )
+                    }
+                )
+            )
+            attribute_resolutions.append((index, reconciliation))
+
+        updated = draft.model_copy(
+            update={
+                "evidence_locations": main,
+                "open_attributes": attributes,
+            }
+        )
+        after_hash = _hash_json(updated.model_dump(mode="json"))
+
+        for kind, values in (
+            ("MAIN", main_resolutions),
+            ("ATTRIBUTE", attribute_resolutions),
+        ):
+            for index, reconciliation in values:
+                if reconciliation.resolution == "EXACT":
+                    continue
+                payload = {
+                    "resolution": reconciliation.resolution,
+                    "draft_id": subject_id,
+                    "evidence_kind": kind,
+                    "evidence_index": index,
+                    "segment_id_before": reconciliation.segment_id_before,
+                    "segment_id_after": reconciliation.locator.segment_id,
+                    "source_candidate_ids": list(source_candidate_ids),
+                    "source_span_hash": reconciliation.source_span_hash,
+                    "object_hash_before": before_hash,
+                    "object_hash_after": after_hash,
+                }
+                self.registry.append_decision_audit(
+                    DecisionAuditRecord(
+                        audit_id=(
+                            f"evidence-resolution:{run_id}:{stage}:{subject_id}:"
+                            f"{kind}:{index}:{before_hash[:12]}:"
+                            f"{reconciliation.source_span_hash[:16]}"
+                        ),
+                        run_id=run_id,
+                        decision_type="EVIDENCE_RESOLUTION",
+                        subject_id=subject_id,
+                        payload=payload,
+                    )
+                )
+
+        for index, error_code in failed_main:
+            resolution = (
+                "JUDGE_EVIDENCE_REVERTED" if reverted else "MAIN_EVIDENCE_DROPPED"
+            )
+            self.registry.append_decision_audit(
+                DecisionAuditRecord(
+                    audit_id=(
+                        f"evidence-degradation:{run_id}:{stage}:{subject_id}:"
+                        f"main:{index}:{before_hash[:12]}:{resolution}"
+                    ),
+                    run_id=run_id,
+                    decision_type="EVIDENCE_DEGRADATION",
+                    subject_id=subject_id,
+                    payload={
+                        "resolution": resolution,
+                        "draft_id": subject_id,
+                        "evidence_kind": "MAIN",
+                        "evidence_index": index,
+                        "error_code": error_code,
+                        "source_candidate_ids": list(source_candidate_ids),
+                        "object_hash_before": before_hash,
+                        "object_hash_after": after_hash,
+                    },
+                )
+            )
+        for index, error_code in dropped_attributes:
+            self.registry.append_decision_audit(
+                DecisionAuditRecord(
+                    audit_id=(
+                        f"evidence-degradation:{run_id}:{stage}:{subject_id}:"
+                        f"attribute:{index}:{before_hash[:12]}:"
+                        "AUX_ATTRIBUTE_EVIDENCE_DROPPED"
+                    ),
+                    run_id=run_id,
+                    decision_type="EVIDENCE_DEGRADATION",
+                    subject_id=subject_id,
+                    payload={
+                        "resolution": "AUX_ATTRIBUTE_EVIDENCE_DROPPED",
+                        "draft_id": subject_id,
+                        "evidence_kind": "ATTRIBUTE",
+                        "evidence_index": index,
+                        "error_code": error_code,
+                        "source_candidate_ids": list(source_candidate_ids),
+                        "object_hash_before": before_hash,
+                        "object_hash_after": after_hash,
+                    },
+                )
+            )
+        return updated
+
     def process(self, message_id: str) -> SingleDocumentResult:
         source = self.registry.get_source(message_id)
         if source is None:
@@ -589,6 +801,7 @@ class SingleDocumentProcessor:
                     source,
                     preprocessing.document,
                     drafts,
+                    candidates,
                     run_id,
                     summaries,
                 )
@@ -666,6 +879,7 @@ class SingleDocumentProcessor:
                         subject_id=mention.mention_id,
                         payload={
                             "message_id": message_id,
+                            "final_mention_id": mention.mention_id,
                             "derivations": lineage_by_mention.get(mention.mention_id, []),
                             "normalization_decision_ids": [
                                 item.decision_id
@@ -1138,6 +1352,10 @@ class SingleDocumentProcessor:
                 f"c{index}": candidate.candidate_id
                 for index, candidate in enumerate(batch, start=1)
             }
+            candidate_by_short = {
+                short_id: candidate
+                for short_id, candidate in zip(short_to_full, batch, strict=True)
+            }
             short_candidates = [
                 {
                     "candidate_id": short_id,
@@ -1187,25 +1405,36 @@ class SingleDocumentProcessor:
             candidate_ids = set(short_to_full)
 
             def validate(output: GrounderModelOutput) -> None:
-                known_segments = {segment.segment_id for segment in document.segments}
-                for item in output.drafts:
-                    validate_event_time_semantics(item.mention.time)
+                for draft_index, item in enumerate(output.drafts, start=1):
                     if len(item.source_candidate_ids) != len(set(item.source_candidate_ids)):
                         raise ValueError("Grounder candidate IDs must be unique")
                     if any(value not in candidate_ids for value in item.source_candidate_ids):
                         raise ValueError("Grounder returned an unknown Dreamer candidate")
-                    quoted_segments = {
-                        evidence.segment_id
-                        for evidence in [
-                            *item.mention.evidence_locations,
-                            *(
-                                attribute.evidence_location
-                                for attribute in item.mention.open_attributes
-                            ),
-                        ]
-                    }
-                    if not quoted_segments.issubset(known_segments):
-                        raise ValueError("Grounder returned an unknown evidence segment")
+                    subject_id = f"grounder:{batch_index}:g{draft_index}"
+                    normalized = self._normalize_draft_time(
+                        item.mention,
+                        run_id=run_id,
+                        stage="grounder",
+                        subject_id=subject_id,
+                    )
+                    anchors = [
+                        locator
+                        for candidate_id in item.source_candidate_ids
+                        for locator in candidate_by_short[
+                            candidate_id
+                        ].evidence_locations
+                    ]
+                    item.mention = self._reconcile_draft_evidence(
+                        normalized,
+                        document,
+                        source,
+                        run_id=run_id,
+                        stage="grounder",
+                        subject_id=subject_id,
+                        source_candidate_ids=item.source_candidate_ids,
+                        candidate_anchors=anchors,
+                    )
+                    validate_event_time_semantics(item.mention.time)
 
             output = self._invoke_typed(
                 client=client,
@@ -1296,6 +1525,7 @@ class SingleDocumentProcessor:
         source: SourceMessage,
         document: PreprocessedDocument,
         drafts: list[GroundedMentionDraft],
+        candidates: list[DreamCandidate],
         run_id: str,
         summaries: list[ModelCallSummary],
     ) -> list[JudgeDecisionRecord]:
@@ -1314,6 +1544,7 @@ class SingleDocumentProcessor:
             )
 
         ordered = sorted(drafts, key=grouping_key)
+        candidate_by_id = {item.candidate_id: item for item in candidates}
         batches = [
             ordered[index : index + JUDGE_DRAFT_BATCH]
             for index in range(0, len(ordered), JUDGE_DRAFT_BATCH)
@@ -1362,8 +1593,22 @@ class SingleDocumentProcessor:
                 ),
             )
             draft_ids = set(short_to_full)
+            validated_accepted: dict[str, MentionDraft] = {}
+            validated_splits: dict[str, list[MentionDraft]] = {}
+            dropped_attribute_merges: set[str] = set()
+
+            def draft_anchors(short_id: str) -> list[EvidenceLocator]:
+                return [
+                    locator
+                    for candidate_id in draft_by_short[short_id].source_candidate_ids
+                    if (candidate := candidate_by_id.get(candidate_id)) is not None
+                    for locator in candidate.evidence_locations
+                ]
 
             def validate(output: JudgeCommandOutput) -> None:
+                validated_accepted.clear()
+                validated_splits.clear()
+                dropped_attribute_merges.clear()
                 targets = [
                     *[item.id for item in output.accepted],
                     *[item.id for item in output.rejected],
@@ -1397,45 +1642,121 @@ class SingleDocumentProcessor:
                         )
                 for accepted_command in output.accepted:
                     try:
-                        accepted_mention = draft_by_short[accepted_command.id].mention
+                        original = draft_by_short[accepted_command.id].mention
+                        accepted_mention = original
                         if accepted_command.changes is not None:
                             accepted_mention = _apply_judge_changes(
                                 accepted_mention, accepted_command.changes
                             )
+                        accepted_mention = self._normalize_draft_time(
+                            accepted_mention,
+                            run_id=run_id,
+                            stage="judge",
+                            subject_id=accepted_command.id,
+                        )
+                        accepted_mention = self._reconcile_draft_evidence(
+                            accepted_mention,
+                            document,
+                            source,
+                            run_id=run_id,
+                            stage="judge",
+                            subject_id=accepted_command.id,
+                            source_candidate_ids=draft_by_short[
+                                accepted_command.id
+                            ].source_candidate_ids,
+                            candidate_anchors=draft_anchors(accepted_command.id),
+                            fallback_main_evidence=(
+                                original.evidence_locations
+                                if accepted_command.changes is not None
+                                and accepted_command.changes.evidence_locations
+                                is not None
+                                else None
+                            ),
+                        )
                         self._validate_draft_evidence(
                             accepted_mention, document, source
                         )
+                        validated_accepted[accepted_command.id] = accepted_mention
                     except (ValidationError, ValueError) as exc:
                         semantic_errors.append(
                             f"ACCEPT {accepted_command.id}: {exc}"
                         )
                 for split_command in output.split:
+                    validated_split: list[MentionDraft] = []
                     for split_index, split_mention in enumerate(
                         split_command.mentions,
                         start=1,
                     ):
                         try:
-                            self._validate_draft_evidence(
-                                _judge_mention_to_persistent(split_mention),
+                            persistent = _judge_mention_to_persistent(split_mention)
+                            subject_id = f"{split_command.id}:split:{split_index}"
+                            persistent = self._normalize_draft_time(
+                                persistent,
+                                run_id=run_id,
+                                stage="judge",
+                                subject_id=subject_id,
+                            )
+                            persistent = self._reconcile_draft_evidence(
+                                persistent,
                                 document,
                                 source,
+                                run_id=run_id,
+                                stage="judge",
+                                subject_id=subject_id,
+                                source_candidate_ids=draft_by_short[
+                                    split_command.id
+                                ].source_candidate_ids,
+                                candidate_anchors=draft_anchors(
+                                    split_command.id
+                                ),
                             )
+                            self._validate_draft_evidence(
+                                persistent, document, source
+                            )
+                            validated_split.append(persistent)
                         except (ValidationError, ValueError) as exc:
                             semantic_errors.append(
                                 "SPLIT "
                                 f"{split_command.id} replacement {split_index}: {exc}"
                             )
+                    if len(validated_split) == len(split_command.mentions):
+                        validated_splits[split_command.id] = validated_split
                 for merge_command in output.attribute_merges:
+                    if (
+                        merge_command.keep_id not in draft_by_short
+                        or merge_command.keep_id not in accepted_ids
+                    ):
+                        continue
                     try:
-                        locate_unique_evidence_text(
-                            merge_command.attribute.evidence_location,
+                        target = draft_by_short[merge_command.keep_id]
+                        probe = target.mention.model_copy(
+                            update={
+                                "open_attributes": [
+                                    *target.mention.open_attributes,
+                                    merge_command.attribute,
+                                ]
+                            }
+                        )
+                        reconciled = self._reconcile_draft_evidence(
+                            probe,
                             document,
                             source,
+                            run_id=run_id,
+                            stage="judge",
+                            subject_id=f"{merge_command.id}:attribute",
+                            source_candidate_ids=target.source_candidate_ids,
+                            candidate_anchors=draft_anchors(
+                                merge_command.keep_id
+                            ),
                         )
-                    except ValueError as exc:
-                        semantic_errors.append(
-                            f"MERGE_AS_ATTRIBUTE {merge_command.id}: {exc}"
-                        )
+                        if len(reconciled.open_attributes) == len(
+                            target.mention.open_attributes
+                        ):
+                            dropped_attribute_merges.add(merge_command.id)
+                        else:
+                            merge_command.attribute = reconciled.open_attributes[-1]
+                    except ValueError:
+                        dropped_attribute_merges.add(merge_command.id)
                 if semantic_errors:
                     raise ValueError(
                         "Judge semantic validation failed for: "
@@ -1479,18 +1800,13 @@ class SingleDocumentProcessor:
                 )
 
             for accepted_command in output.accepted:
+                revised = validated_accepted[accepted_command.id]
+                original = draft_by_short[accepted_command.id].mention
                 append_decision(
                     short_id=accepted_command.id,
                     action=JudgeAction.ACCEPT,
                     reason=accepted_command.reason,
-                    revised_mention=(
-                        _apply_judge_changes(
-                            draft_by_short[accepted_command.id].mention,
-                            accepted_command.changes,
-                        )
-                        if accepted_command.changes is not None
-                        else None
-                    ),
+                    revised_mention=(revised if revised != original else None),
                 )
             for rejected_command in output.rejected:
                 append_decision(
@@ -1503,10 +1819,7 @@ class SingleDocumentProcessor:
                     short_id=split_command.id,
                     action=JudgeAction.SPLIT,
                     reason=split_command.reason,
-                    split_mentions=[
-                        _judge_mention_to_persistent(split_mention)
-                        for split_mention in split_command.mentions
-                    ],
+                    split_mentions=validated_splits[split_command.id],
                 )
             for duplicate_command in output.duplicates:
                 append_decision(
@@ -1516,6 +1829,13 @@ class SingleDocumentProcessor:
                     keep_id=duplicate_command.keep_id,
                 )
             for merge_command in output.attribute_merges:
+                if merge_command.id in dropped_attribute_merges:
+                    append_decision(
+                        short_id=merge_command.id,
+                        action=JudgeAction.REJECT,
+                        reason=merge_command.reason,
+                    )
+                    continue
                 append_decision(
                     short_id=merge_command.id,
                     action=JudgeAction.MERGE_AS_ATTRIBUTE,
@@ -1777,6 +2097,7 @@ class SingleDocumentProcessor:
                     subject_id=mention_id,
                     payload={
                         "message_id": source.message_id,
+                        "final_mention_id": mention_id,
                         "derivations": [
                             {
                                 "derivation_kind": "EXACT_DOCUMENT_REUSE",

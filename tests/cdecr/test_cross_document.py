@@ -9,6 +9,7 @@ from pathlib import Path
 import pytest
 
 from cdecr.atomic_identity import atomic_identity_text
+from cdecr.canonical_field_resolution import CanonicalFieldResolutionEngine
 from cdecr.contracts import (
     AccountingBasis,
     AssertionState,
@@ -273,6 +274,60 @@ class FakeStructured:
         return {"decisions": decisions}
 
 
+class AtomicCoverageDrift(FakeStructured):
+    def __init__(self, *, mode: str) -> None:
+        super().__init__()
+        self.mode = mode
+        self.injected = False
+
+    def complete(self, request: StructuredModelRequest) -> StructuredModelResult:
+        result = super().complete(request)
+        if (
+            self.injected
+            or request.system_prompt.startswith("Repair")
+            or "Atomic Event Assignment Adjudicator" not in request.system_prompt
+        ):
+            return result
+        self.injected = True
+        decisions = result.payload["decisions"]
+        assert isinstance(decisions, list) and decisions
+        assessments = decisions[0]["candidate_assessments"]
+        assert isinstance(assessments, list) and assessments
+        if self.mode == "extra_duplicate":
+            duplicate = json.loads(json.dumps(assessments[0]))
+            extra = json.loads(json.dumps(assessments[0]))
+            extra["candidate_event_id"] = "a999"
+            assessments.extend([duplicate, extra])
+        elif self.mode == "missing":
+            decisions[0]["candidate_assessments"] = []
+            decisions[0]["action"] = "CREATE_NEW"
+            decisions[0]["merge_target_event_id"] = None
+            decisions[0]["related_candidate_event_ids"] = []
+            decisions[0]["possible_duplicate_atomic_ids"] = []
+        else:  # pragma: no cover - test helper guard
+            raise AssertionError(self.mode)
+        return result
+
+
+class PackageDerivedFieldDrift(FakeStructured):
+    def _package_payload(self, body: dict[str, object]) -> dict[str, object]:
+        payload = super()._package_payload(body)
+        decisions = payload["decisions"]
+        assert isinstance(decisions, list)
+        for decision in decisions:
+            assert isinstance(decision, dict)
+            assessments = decision["candidate_assessments"]
+            assert isinstance(assessments, list)
+            if any(
+                isinstance(item, dict) and item.get("relation") == "MEMBER"
+                for item in assessments
+            ):
+                decision["ranked_member_package_ids"] = []
+                decision["selected_member_package_id"] = None
+                decision["selection_reason"] = None
+        return payload
+
+
 def source(message_id: str) -> SourceMessage:
     return SourceMessage(
         message_id=message_id,
@@ -438,6 +493,33 @@ def test_cold_start_incremental_merge_package_and_idempotency(
     assert embedding.calls == embedding_calls_before
 
 
+def test_completed_result_is_reused_before_field_coreference(
+    registry: SQLiteCDECRRegistry,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    add(registry, source("MSG-1"), metric_mention("MSG-1"))
+    processor, embedding, _, _ = engine(registry)
+    first = processor.process("MSG-1")
+    assert first.status is CrossDocumentStatus.SUCCEEDED
+    model_calls_before = registry.count_model_calls()
+    embedding_calls_before = embedding.calls
+
+    def unexpected_resolution(*args: object, **kwargs: object) -> object:
+        raise AssertionError("completed replay must not enter N5.5")
+
+    monkeypatch.setattr(
+        CanonicalFieldResolutionEngine,
+        "resolve_document",
+        unexpected_resolution,
+    )
+
+    reused = processor.process("MSG-1")
+
+    assert reused.reused
+    assert registry.count_model_calls() == model_calls_before
+    assert embedding.calls == embedding_calls_before
+
+
 def test_same_batch_mentions_use_temporary_atomic_candidates(
     registry: SQLiteCDECRRegistry,
 ) -> None:
@@ -527,6 +609,33 @@ def test_hard_identity_splits_metrics_but_same_earnings_package(
     assert any("Atomic Event Assignment Adjudicator" in call.system_prompt for call in m2.calls)
     assert result.candidate_counts["atomic_hard_conflict_observed"] >= 1
     assert not result.atomic_assignments[0].hard_conflicts
+
+
+def test_n12_normalizes_redundant_member_selection_fields(
+    registry: SQLiteCDECRRegistry,
+) -> None:
+    m2 = PackageDerivedFieldDrift()
+    processor, _, _, _ = engine(registry, m2=m2)
+    add(registry, source("MSG-1"), metric_mention("MSG-1", metric="REVENUE"))
+    processor.process("MSG-1")
+    add(registry, source("MSG-2"), metric_mention("MSG-2", metric="EPS_GAAP"))
+
+    result = processor.process("MSG-2")
+
+    assert result.status is CrossDocumentStatus.SUCCEEDED
+    assert result.package_assignments[0].selected_member_package_id is not None
+    with sqlite3.connect(registry.path) as connection:
+        audit = connection.execute(
+            """
+            SELECT payload_json FROM decision_audits
+            WHERE run_id = ? AND decision_type = 'PACKAGE_N12_NORMALIZATION'
+            """,
+            (result.run_id,),
+        ).fetchone()
+    assert audit is not None
+    normalizations = json.loads(audit[0])["normalizations"]
+    assert any(item["kind"] == "MEMBER_RANKING_REBUILT" for item in normalizations)
+    assert any(item["kind"] == "SELECTED_MEMBER_ALIGNED" for item in normalizations)
 
 
 def test_enforce_mode_still_blocks_hard_conflicting_atomic_candidate(
@@ -806,6 +915,48 @@ def test_market_reaction_is_external_not_package_member(
     assert reaction.package_assignments[0].action.value == "CREATE_NEW_PACKAGE"
 
 
+def test_n13_boundary_repair_splits_reaction_after_overmerge(
+    registry: SQLiteCDECRRegistry,
+) -> None:
+    m3 = FakeStructured(package_merge_relation="SAME_PACKAGE")
+    processor, _, _, _ = engine(registry, m3=m3)
+    add(registry, source("MSG-1"), metric_mention("MSG-1"))
+    processor.process("MSG-1")
+    add(registry, source("MSG-2"), market_mention("MSG-2"))
+
+    reaction = processor.process("MSG-2")
+
+    assert reaction.status is CrossDocumentStatus.SUCCEEDED
+    packages = registry.list_current_packages()
+    assert len(packages) == 2
+    family_sets = [
+        {
+            registry.get_current_atomic_event(event_id).event_family
+            for event_id in package.member_event_ids
+        }
+        for package in packages
+    ]
+    assert all(
+        not (
+            EventFamily.MARKET_MOVEMENT in families
+            and EventFamily.FINANCIAL_PERFORMANCE in families
+        )
+        for families in family_sets
+    )
+    with sqlite3.connect(registry.path) as connection:
+        contexts = [
+            json.loads(row[0])["invocation_context"]
+            for row in connection.execute(
+                "SELECT payload_json FROM decision_audits "
+                "WHERE decision_type = 'WIRE_PAYLOAD_SHADOW' "
+                "AND run_id = ?",
+                (reaction.run_id,),
+            )
+        ]
+    assert any(item["operation"] == "normal_assignment" for item in contexts)
+    assert any(item["operation"] == "reaction_member_repair" for item in contexts)
+
+
 def test_invalid_structured_output_gets_one_repair(registry: SQLiteCDECRRegistry) -> None:
     m2 = FakeStructured(invalid_first=True)
     processor, _, _, _ = engine(registry, m2=m2)
@@ -856,3 +1007,79 @@ def test_n9_normalizes_redundant_lists_and_unique_same_target_copy_error(
     assert assignment.action is AtomicAction.MERGE
     assert assignment.related_candidate_event_ids == []
     assert assignment.possible_duplicate_atomic_ids == []
+    with sqlite3.connect(registry.path) as connection:
+        payload = connection.execute(
+            """
+            SELECT payload_json FROM decision_audits
+            WHERE run_id = ? AND decision_type = 'ATOMIC_N9_VALIDATION'
+            ORDER BY created_at
+            LIMIT 1
+            """,
+            (result.run_id,),
+        ).fetchone()
+    assert payload is not None
+    audit = json.loads(payload[0])
+    assert audit["model_call_id"]
+    assert audit["tasks"]["m1"]["invalid_target"] == "a1-copy-error"
+    assert any(
+        item["kind"] == "UNIQUE_SAME_EVENT_TARGET_RESTORED"
+        for item in audit["normalizations"]
+    )
+
+
+def test_n9_safely_drops_extra_and_identical_duplicate_assessments(
+    registry: SQLiteCDECRRegistry,
+) -> None:
+    m2 = AtomicCoverageDrift(mode="extra_duplicate")
+    processor, _, _, _ = engine(registry, m2=m2)
+    add(registry, source("MSG-1"), metric_mention("MSG-1"))
+    processor.process("MSG-1")
+    add(registry, source("MSG-2"), metric_mention("MSG-2"))
+
+    result = processor.process("MSG-2")
+
+    assert result.status is CrossDocumentStatus.SUCCEEDED
+    with sqlite3.connect(registry.path) as connection:
+        payload = connection.execute(
+            """
+            SELECT payload_json FROM decision_audits
+            WHERE run_id = ? AND decision_type = 'ATOMIC_N9_VALIDATION'
+              AND json_extract(payload_json, '$.attempt') = 'initial'
+            """,
+            (result.run_id,),
+        ).fetchone()
+    assert payload is not None
+    audit = json.loads(payload[0])
+    assert audit["tasks"]["m1"]["extra"] == ["a999"]
+    assert audit["tasks"]["m1"]["duplicates"] == ["a1"]
+    assert any(
+        item["kind"] == "IDENTICAL_ASSESSMENT_DEDUPLICATED"
+        for item in audit["normalizations"]
+    )
+
+
+def test_n9_missing_assessment_repairs_inside_typed_boundary(
+    registry: SQLiteCDECRRegistry,
+) -> None:
+    m2 = AtomicCoverageDrift(mode="missing")
+    processor, _, _, _ = engine(registry, m2=m2)
+    add(registry, source("MSG-1"), metric_mention("MSG-1"))
+    processor.process("MSG-1")
+    add(registry, source("MSG-2"), metric_mention("MSG-2"))
+
+    result = processor.process("MSG-2")
+
+    assert result.status is CrossDocumentStatus.SUCCEEDED
+    assert any(summary.stage == "atomic_coreference_repair" for summary in result.model_calls)
+    with sqlite3.connect(registry.path) as connection:
+        payload = connection.execute(
+            """
+            SELECT payload_json FROM decision_audits
+            WHERE run_id = ? AND decision_type = 'ATOMIC_N9_VALIDATION'
+              AND json_extract(payload_json, '$.attempt') = 'initial'
+            """,
+            (result.run_id,),
+        ).fetchone()
+    assert payload is not None
+    audit = json.loads(payload[0])
+    assert audit["tasks"]["m1"]["missing"] == ["a1"]

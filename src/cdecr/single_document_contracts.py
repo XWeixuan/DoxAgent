@@ -208,6 +208,32 @@ def validate_event_time_semantics(value: EventTimeDraft) -> None:
         raise ValueError("time without event bounds must use UNKNOWN precision")
 
 
+def normalize_event_time_semantics(
+    value: EventTimeDraft,
+) -> tuple[EventTimeDraft, dict[str, str] | None]:
+    """Normalize the only representation-only time inconsistency.
+
+    Event bounds remain authoritative. Reporting periods are deliberately
+    untouched, and contradictory/non-monotonic bounds still fail in the
+    existing strict validators.
+    """
+
+    if (
+        value.event_start is None
+        and value.event_end is None
+        and value.precision is not TimePrecision.UNKNOWN
+    ):
+        return (
+            value.model_copy(update={"precision": TimePrecision.UNKNOWN}),
+            {
+                "precision_before": value.precision.value,
+                "precision_after": TimePrecision.UNKNOWN.value,
+                "reason_code": "NO_EVENT_BOUNDS",
+            },
+        )
+    return value, None
+
+
 class QuantityDraft(StrictModel):
     metric_id: Annotated[
         str,

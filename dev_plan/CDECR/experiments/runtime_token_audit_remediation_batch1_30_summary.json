@@ -1,0 +1,80 @@
+{
+  "artifact_version": "cdecr-runtime-token-audit-remediation-batch1-30-v1",
+  "run_date": "2026-07-26",
+  "git_commit_under_test": "ac9a7a1+working-tree-batch1",
+  "corpus": {
+    "manifest_version": "cdecr-dreamer-grounder-ab-v1",
+    "selected_documents": 30,
+    "snapshot": ".tmp/cdecr/grounder_quality_v5/live_all.jsonl",
+    "manifest": "dev_plan/CDECR/experiments/grounder_quality_30_manifest.json"
+  },
+  "ignored_artifacts": {
+    "registry": ".tmp/cdecr/remediation/batch1_30_gate3_20260726.sqlite3",
+    "registry_sha256": "E774D8BE741BF1D4170246ACAD5CDCEED570B4E4861A7C87295F985F6F625303",
+    "report": ".tmp/cdecr/remediation/batch1_30_gate3_20260726_report.json",
+    "report_sha256": "02D91F17BFB4FA3361D1F07083F3E5D3E7C4F18D92C747CD735102B81B46F230"
+  },
+  "outcome": {
+    "acceptance_passed": false,
+    "completed_documents": 27,
+    "failed_documents": 3,
+    "completed_cross_document_runs": 19,
+    "atomic_event_count": 63,
+    "package_count": 38,
+    "valid_mention_schema_rate": 1.0,
+    "valid_evidence_span_rate": 1.0
+  },
+  "performance": {
+    "first_pass_wall_clock_ms": 3256769,
+    "total_wall_clock_ms": 3262661,
+    "first_pass_model_call_count": 621,
+    "model_call_count": 621,
+    "input_tokens": 2118571,
+    "output_tokens": 347796,
+    "request_payload_bytes_sum": 6025679
+  },
+  "failure_breakdown": {
+    "document": {
+      "grounder.evidence_validation_failed_after_repair": 1,
+      "judge.evidence_validation_failed_after_repair": 2
+    },
+    "cross_document": {
+      "identity_compiler.IDENTITY_FIELDS_UNRESOLVED": 6,
+      "package_assignment.structured_output_invalid": 1,
+      "atomic_coreference_escalation.structured_output_invalid": 1
+    },
+    "model_calls": {
+      "field_coreference.invalid_structured_output": 1
+    }
+  },
+  "batch1_gate": {
+    "passed": true,
+    "time_without_event_bounds_final_failures": 0,
+    "successful_mention_evidence_span_rate": 1.0,
+    "recoverable_evidence_degradations": 2,
+    "recoverable_evidence_degradations_in_failed_documents": 0,
+    "n9_naked_value_error_count": 0,
+    "immutable_record_conflict_count": 0,
+    "rerun_model_call_delta": 0,
+    "rerun_mention_delta": 0,
+    "rerun_atomic_delta": 0,
+    "rerun_package_delta": 0,
+    "all_successful_documents_reused": true,
+    "all_successful_events_reused": true,
+    "reaction_in_earnings_package_evaluated": 56,
+    "reaction_in_earnings_package_violations": 0
+  },
+  "audit_counts": {
+    "TIME_SEMANTIC_NORMALIZATION": 41,
+    "EVIDENCE_RESOLUTION": 9,
+    "EVIDENCE_DEGRADATION": 2,
+    "ATOMIC_N9_VALIDATION": 69,
+    "WIRE_PAYLOAD_SHADOW": 125,
+    "MENTION_DERIVATION": 183
+  },
+  "interpretation_limits": [
+    "The full Step 4 acceptance remains false because strict document and cross-document business failures remain outside the Batch 1 remediation gate.",
+    "Hard-cannot-link is configured as shadow, so its 294 observations are risk telemetry rather than actual false merges.",
+    "The stopped batch1_30_gate2 run used the 24-document default manifest and is excluded from every metric and comparison."
+  ]
+}

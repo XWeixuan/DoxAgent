@@ -31,6 +31,7 @@ from a calendar quarter without evidence.
 When adding or correcting event_start/event_end, use a plain YYYY-MM-DD date or
 YYYY-MM-DD HH:MM:SS local datetime without a timezone name or offset. Keep an
 unsupported bound null.
+If both event_start and event_end are null, set precision to UNKNOWN.
 
 4. Document-local consolidation.
 

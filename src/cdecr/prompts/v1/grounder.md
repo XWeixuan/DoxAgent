@@ -42,6 +42,7 @@ event time unless the text says the event occurred then.
 For event_start and event_end, return a plain date such as YYYY-MM-DD or a
 plain local datetime such as YYYY-MM-DD HH:MM:SS. Do not add a timezone name or
 offset. Keep the time null when the evidence does not support a concrete bound.
+If both event_start and event_end are null, set precision to UNKNOWN.
 
 Produce only Event Mention drafts and document-level issue flags. Do not create
 Atomic Events, Event Packages, cross-document relations, confidence values, or
