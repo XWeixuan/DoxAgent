@@ -1,0 +1,106 @@
+{
+  "artifact_version": "cdecr-runtime-token-audit-remediation-batch2-30-v1",
+  "run_date": "2026-07-26",
+  "git_commit_under_test": "fafc361+working-tree-batch2",
+  "corpus": {
+    "manifest_version": "cdecr-dreamer-grounder-ab-v1",
+    "selected_documents": 30,
+    "snapshot": ".tmp/cdecr/grounder_quality_v5/live_all.jsonl",
+    "manifest": "dev_plan/CDECR/experiments/grounder_quality_30_manifest.json"
+  },
+  "runs": {
+    "n13_on_rejected_candidate": {
+      "registry": ".tmp/cdecr/remediation/batch2_n13_on_30_retry1_20260726.sqlite3",
+      "registry_sha256": "00AFBCC9BDA2265E00EB12FA948B23A95911B7CCD963B6C209AA9AA4E7DC2E98",
+      "report": ".tmp/cdecr/remediation/batch2_n13_on_30_retry1_20260726_report.json",
+      "report_sha256": "A5D34920C7323F5E695E168A6F18FFEA59B07918519AAA9F28267CEF865FEF7C",
+      "completed_documents": 28,
+      "completed_cross_document_runs": 22,
+      "atomic_event_count": 50,
+      "package_count": 28,
+      "model_call_count": 665,
+      "input_tokens": 1880863,
+      "output_tokens": 290861,
+      "request_payload_bytes": 5087433,
+      "first_pass_wall_clock_ms": 3238932,
+      "valid_mention_schema_rate": 1.0,
+      "valid_evidence_span_rate": 1.0,
+      "reaction_in_earnings_package": {
+        "evaluated_cases": 54,
+        "violations": 2
+      },
+      "idempotency_model_call_delta": 0,
+      "disposition": "REJECTED_AND_FAIL_CLOSED"
+    },
+    "safe_shadow_final": {
+      "registry": ".tmp/cdecr/remediation/batch2_safe_shadow_30_20260726.sqlite3",
+      "registry_sha256": "8B66BADBDC027E12BE7B24B8A7F3FC2424F9345D6981827B49867FC228E0A2FF",
+      "report": ".tmp/cdecr/remediation/batch2_safe_shadow_30_20260726_report.json",
+      "report_sha256": "1ACC34158D1DCBCF9E31AB14D6B9342C43FD322469C84BE7EF6C2C34A6869563",
+      "completed_documents": 26,
+      "completed_cross_document_runs": 19,
+      "atomic_event_count": 40,
+      "package_count": 31,
+      "model_call_count": 538,
+      "input_tokens": 1324849,
+      "output_tokens": 226302,
+      "request_payload_bytes": 3465402,
+      "first_pass_wall_clock_ms": 2479972,
+      "valid_mention_schema_rate": 1.0,
+      "valid_evidence_span_rate": 1.0,
+      "reaction_in_earnings_package": {
+        "evaluated_cases": 47,
+        "violations": 1
+      },
+      "idempotency_model_call_delta": 0,
+      "disposition": "SAFE_SHADOW_ONLY_FULL_GATE_FAILED"
+    }
+  },
+  "protocol_disposition": {
+    "n9_task_local_assessment": {
+      "runtime_mode": "shadow",
+      "activation": "fail_closed",
+      "reason": "No fixed-upstream business A/B approval; safe-shadow payload saving was only 0.2255%."
+    },
+    "n12_task_local_no_ranking": {
+      "runtime_mode": "shadow",
+      "activation": "fail_closed",
+      "reason": "No fixed-upstream business A/B approval; safe-shadow payload saving was only 0.0315%."
+    },
+    "n13_pair_inline": {
+      "runtime_mode": "shadow",
+      "activation": "fail_closed",
+      "reason": "The active candidate reduced same-run payload bytes by 1.9268% but the full run increased the strict reaction boundary from 0 to 2."
+    },
+    "grounder_issue_codes": {
+      "runtime_mode": "legacy",
+      "activation": "fail_closed",
+      "reason": "Not validated; prompt and reason protocol remain unchanged."
+    },
+    "targeted_repair": {
+      "runtime_mode": "legacy",
+      "activation": "fail_closed",
+      "reason": "Not validated with the required node-level repair gate."
+    }
+  },
+  "strict_gate": {
+    "passed": false,
+    "checks": {
+      "document_success_not_lower": false,
+      "cross_document_success_not_lower": true,
+      "mention_schema_rate_100_percent": true,
+      "evidence_span_rate_100_percent": true,
+      "naked_value_error_count_zero": true,
+      "immutable_record_conflict_count_zero": true,
+      "reaction_boundary_not_higher": false,
+      "idempotency_model_call_delta_zero": true
+    }
+  },
+  "interpretation_limits": [
+    "The real-model runs are stochastic and generated different successful documents, mentions, atomic events, packages, and candidate volumes.",
+    "The safe-shadow run sent legacy model inputs, so its aggregate token reduction is not an enabled Wire optimization benefit.",
+    "The N13-on run's 29% aggregate package_merge input reduction versus Batch 1 is confounded by fewer calls and a different package graph; the same-run serialized payload saving was 1.9268%.",
+    "The two N13-on reaction violations originated from N12 NO_MEMBER_CREATE_NEW_PACKAGE classifications; N13 returned DIFFERENT_PACKAGE for their merge candidates, but the strict full-run gate still failed and no exception was granted.",
+    "The earlier provider_arrearage run was stopped, retained only as incident evidence, and excluded from all metrics."
+  ]
+}

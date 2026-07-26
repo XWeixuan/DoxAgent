@@ -442,6 +442,7 @@ def engine(
     m2: FakeStructured | None = None,
     m3: FakeStructured | None = None,
     hard_cannot_link_mode: str = "shadow",
+    n13_wire_protocol: str = "shadow",
 ) -> tuple[CrossDocumentEngine, FakeEmbedding, FakeStructured, FakeStructured]:
     embedding = FakeEmbedding()
     m2 = m2 or FakeStructured()
@@ -453,6 +454,7 @@ def engine(
             m2_client=m2,
             m3_client=m3,
             hard_cannot_link_mode=hard_cannot_link_mode,
+            n13_wire_protocol=n13_wire_protocol,
         ),
         embedding,
         m2,
@@ -955,6 +957,44 @@ def test_n13_boundary_repair_splits_reaction_after_overmerge(
         ]
     assert any(item["operation"] == "normal_assignment" for item in contexts)
     assert any(item["operation"] == "reaction_member_repair" for item in contexts)
+
+
+def test_n13_on_fails_closed_until_full_business_gate(
+    registry: SQLiteCDECRRegistry,
+) -> None:
+    with pytest.raises(ValueError, match="full business gate"):
+        engine(registry, n13_wire_protocol="on")
+
+
+def test_n13_shadow_records_smaller_pair_inline_candidate_without_changing_request(
+    registry: SQLiteCDECRRegistry,
+) -> None:
+    m3 = FakeStructured(package_merge_relation="DIFFERENT_PACKAGE")
+    processor, _, _, _ = engine(registry, m3=m3, n13_wire_protocol="shadow")
+    add(registry, source("MSG-1"), metric_mention("MSG-1", metric="REVENUE"))
+    processor.process("MSG-1")
+    add(registry, source("MSG-2"), market_mention("MSG-2"))
+
+    result = processor.process("MSG-2")
+
+    assert result.status is CrossDocumentStatus.SUCCEEDED
+    request = next(
+        call for call in m3.calls if "Package coreference review model" in call.system_prompt
+    )
+    assert set(json.loads(request.user_prompt)) == {"batch_index", "batch_count", "pairs"}
+    with sqlite3.connect(registry.path) as connection:
+        audit = json.loads(
+            connection.execute(
+                """
+                SELECT payload_json
+                FROM decision_audits
+                WHERE decision_type = 'WIRE_PAYLOAD_SHADOW'
+                  AND subject_id LIKE 'package_merge:%'
+                """
+            ).fetchone()[0]
+        )
+    assert audit["optimized_payload_bytes"] < audit["baseline_payload_bytes"]
+    assert audit["wire_ref_count"] == 0
 
 
 def test_invalid_structured_output_gets_one_repair(registry: SQLiteCDECRRegistry) -> None:

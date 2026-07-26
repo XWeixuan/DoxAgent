@@ -1,0 +1,184 @@
+{
+  "artifact_version": "cdecr-runtime-token-audit-remediation-comparison-v1",
+  "run_date": "2026-07-26",
+  "runs": {
+    "batch1": "batch1_30_gate3_20260726",
+    "batch2_n13_on_rejected": "batch2_n13_on_30_retry1_20260726",
+    "batch2_safe_shadow": "batch2_safe_shadow_30_20260726"
+  },
+  "outcome": {
+    "completed_documents": {
+      "batch1": 27,
+      "n13_on": 28,
+      "safe_shadow": 26
+    },
+    "completed_cross_document_runs": {
+      "batch1": 19,
+      "n13_on": 22,
+      "safe_shadow": 19
+    },
+    "atomic_event_count": {
+      "batch1": 63,
+      "n13_on": 50,
+      "safe_shadow": 40
+    },
+    "package_count": {
+      "batch1": 38,
+      "n13_on": 28,
+      "safe_shadow": 31
+    },
+    "valid_mention_schema_rate": {
+      "batch1": 1.0,
+      "n13_on": 1.0,
+      "safe_shadow": 1.0
+    },
+    "valid_evidence_span_rate": {
+      "batch1": 1.0,
+      "n13_on": 1.0,
+      "safe_shadow": 1.0
+    }
+  },
+  "performance": {
+    "first_pass_wall_clock_ms": {
+      "batch1": 3256769,
+      "n13_on": 3238932,
+      "safe_shadow": 2479972
+    },
+    "model_call_count": {
+      "batch1": 621,
+      "n13_on": 665,
+      "safe_shadow": 538
+    },
+    "input_tokens": {
+      "batch1": 2118571,
+      "n13_on": 1880863,
+      "safe_shadow": 1324849
+    },
+    "output_tokens": {
+      "batch1": 347796,
+      "n13_on": 290861,
+      "safe_shadow": 226302
+    },
+    "total_tokens": {
+      "batch1": 2466367,
+      "n13_on": 2171724,
+      "safe_shadow": 1551151
+    },
+    "tokens_per_successful_document": {
+      "batch1": 91346.93,
+      "n13_on": 77561.57,
+      "safe_shadow": 59659.65
+    },
+    "request_payload_bytes": {
+      "batch1": 6025679,
+      "n13_on": 5087433,
+      "safe_shadow": 3465402
+    }
+  },
+  "n13_package_merge_stage": {
+    "batch1_legacy": {
+      "call_count": 51,
+      "input_tokens": 802128,
+      "output_tokens": 40845,
+      "payload_bytes": 2686333
+    },
+    "n13_on_candidate": {
+      "call_count": 44,
+      "input_tokens": 570447,
+      "output_tokens": 34511,
+      "payload_bytes": 1888394
+    },
+    "cross_run_delta_ratio": {
+      "call_count": -0.137255,
+      "input_tokens": -0.288833,
+      "output_tokens": -0.155074,
+      "payload_bytes": -0.297037
+    },
+    "same_run_wire_projection": {
+      "baseline_payload_bytes": 1925495,
+      "pair_inline_payload_bytes": 1888394,
+      "saving_ratio": 0.019268
+    }
+  },
+  "safe_shadow_projection": {
+    "n9_atomic_coreference": {
+      "sample_count": 40,
+      "baseline_payload_bytes": 612344,
+      "optimized_payload_bytes": 610963,
+      "saving_ratio": 0.002255
+    },
+    "n12_package_assignment": {
+      "sample_count": 21,
+      "baseline_payload_bytes": 676274,
+      "optimized_payload_bytes": 676061,
+      "saving_ratio": 0.000315
+    },
+    "n13_package_merge": {
+      "sample_count": 35,
+      "baseline_payload_bytes": 1244602,
+      "optimized_payload_bytes": 1217155,
+      "saving_ratio": 0.022053
+    }
+  },
+  "business_boundaries": {
+    "reaction_in_earnings_package": {
+      "batch1": {
+        "evaluated_cases": 56,
+        "violations": 0
+      },
+      "n13_on": {
+        "evaluated_cases": 54,
+        "violations": 2
+      },
+      "safe_shadow": {
+        "evaluated_cases": 47,
+        "violations": 1
+      }
+    },
+    "hard_cannot_link_shadow_observations": {
+      "batch1": {
+        "evaluated_cases": 15649,
+        "observations": 294
+      },
+      "n13_on": {
+        "evaluated_cases": 16576,
+        "observations": 259
+      },
+      "safe_shadow": {
+        "evaluated_cases": 9777,
+        "observations": 175
+      }
+    }
+  },
+  "idempotency": {
+    "batch1": {
+      "model_call_delta": 0,
+      "mention_delta": 0,
+      "atomic_delta": 0,
+      "package_delta": 0
+    },
+    "n13_on": {
+      "model_call_delta": 0,
+      "mention_delta": 0,
+      "atomic_delta": 0,
+      "package_delta": 0
+    },
+    "safe_shadow": {
+      "model_call_delta": 0,
+      "mention_delta": 0,
+      "atomic_delta": 0,
+      "package_delta": 0
+    }
+  },
+  "final_conclusion": {
+    "batch1_gate_passed": true,
+    "batch2_full_gate_passed": false,
+    "active_phase2_wire_protocols": [],
+    "safe_shadow_protocols": [
+      "N9 task-local self-contained DTO",
+      "N12 task-local self-contained DTO",
+      "N13 pair-inline DTO"
+    ],
+    "claimable_enabled_token_saving": false
+  }
+}

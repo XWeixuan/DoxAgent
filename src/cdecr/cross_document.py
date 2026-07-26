@@ -138,11 +138,11 @@ from cdecr.ports import (
 )
 from cdecr.scheduler import take_scheduled_call_metrics
 from cdecr.single_document_contracts import ModelCallSummary
-from cdecr.wire import compact_json, intern_repeated_ids, wire_ref_metadata
+from cdecr.wire import compact_json, wire_ref_metadata
 
 ENGINE_VERSION = "cdecr-cross-document-v15"
 PROMPT_VERSION = "cdecr-cross-document-prompts-v8"
-WIRE_PROTOCOL_VERSION = "cdecr-cross-document-wire-shadow-v4"
+WIRE_PROTOCOL_VERSION = "cdecr-cross-document-wire-task-local-v5"
 ATOMIC_ASSIGNMENT_POLICY_VERSION = "atomic-assignment-policy-v2"
 ATOMIC_DECISION_MENTION_BATCH = 3
 PACKAGE_DECISION_EVENT_BATCH = 12
@@ -710,6 +710,9 @@ class CrossDocumentEngine:
         model_m3: str = "qwen3.7-plus",
         hard_cannot_link_mode: str = HardCannotLinkMode.SHADOW.value,
         package_conflict_mode: str = PackageConflictMode.OFF.value,
+        n9_wire_protocol: str = "shadow",
+        n12_wire_protocol: str = "shadow",
+        n13_wire_protocol: str = "shadow",
         knowledge_base: V2KnowledgeBase | None = None,
     ) -> None:
         self.registry = registry
@@ -721,6 +724,22 @@ class CrossDocumentEngine:
         self.model_m3 = model_m3
         self.hard_cannot_link_mode = HardCannotLinkMode(hard_cannot_link_mode)
         self.package_conflict_mode = PackageConflictMode(package_conflict_mode)
+        allowed_protocols = {"legacy", "shadow", "canary", "on"}
+        if n9_wire_protocol not in allowed_protocols:
+            raise ValueError("invalid N9 wire protocol")
+        if n12_wire_protocol not in allowed_protocols:
+            raise ValueError("invalid N12 wire protocol")
+        if n13_wire_protocol not in allowed_protocols:
+            raise ValueError("invalid N13 wire protocol")
+        if n9_wire_protocol in {"canary", "on"}:
+            raise ValueError("N9 task-local assessment protocol has not passed its node A/B gate")
+        if n12_wire_protocol in {"canary", "on"}:
+            raise ValueError("N12 task-local no-ranking protocol has not passed its node A/B gate")
+        if n13_wire_protocol in {"canary", "on"}:
+            raise ValueError("N13 pair-inline protocol has not passed its full business gate")
+        self.n9_wire_protocol = n9_wire_protocol
+        self.n12_wire_protocol = n12_wire_protocol
+        self.n13_wire_protocol = n13_wire_protocol
         self.knowledge_base = knowledge_base or V2KnowledgeBase()
 
     @property
@@ -742,6 +761,7 @@ class CrossDocumentEngine:
             "package_boundary_policy_version": PACKAGE_BOUNDARY_POLICY_VERSION,
             "hold_policy": "removed",
             "wire_protocol_version": WIRE_PROTOCOL_VERSION,
+            "n13_wire_protocol": self.n13_wire_protocol,
         }
 
     def processing_key(self, message_id: str, mentions: Sequence[EventMention]) -> str:
@@ -1566,23 +1586,25 @@ class CrossDocumentEngine:
                 "batch_count": len(batches),
                 "tasks": legacy_tasks,
             }
-            wire_payload = intern_repeated_ids(
-                {
-                    "batch_index": batch_index,
-                    "batch_count": len(batches),
-                    "atoms": model_atoms,
-                    "tasks": tasks,
-                }
-            )
-            models.record_wire_shadow(
-                stage="atomic_coreference",
-                operation="normal_assignment",
-                trigger="candidate_recall",
-                attempt="initial",
-                batch_index=batch_index,
-                baseline_payload=legacy_payload,
-                optimized_payload=wire_payload,
-            )
+            wire_payload: dict[str, object] = {
+                "tasks": [
+                    {
+                        "mention": legacy_task["incoming"],
+                        "candidates": legacy_task["candidates"],
+                    }
+                    for legacy_task in legacy_tasks
+                ]
+            }
+            if self.n9_wire_protocol == "shadow":
+                models.record_wire_shadow(
+                    stage="atomic_coreference",
+                    operation="normal_assignment",
+                    trigger="candidate_recall",
+                    attempt="initial",
+                    batch_index=batch_index,
+                    baseline_payload=legacy_payload,
+                    optimized_payload=wire_payload,
+                )
             request = StructuredModelRequest(
                 system_prompt=_prompt("atomic_coreference.md"),
                 user_prompt=compact_json(legacy_payload),
@@ -2683,25 +2705,26 @@ class CrossDocumentEngine:
                 "seeds": model_seeds,
                 "candidates": legacy_candidates,
             }
-            wire_payload = intern_repeated_ids(
-                {
-                    "batch_index": batch_index,
-                    "batch_count": len(batches),
-                    "events": model_events,
-                    "seeds": model_seeds,
-                    "packages": model_packages,
-                    "candidates": model_candidates,
-                }
-            )
-            models.record_wire_shadow(
-                stage="package_assignment",
-                operation=wire_operation,
-                trigger=wire_trigger,
-                attempt=wire_attempt,
-                batch_index=batch_index,
-                baseline_payload=legacy_payload,
-                optimized_payload=wire_payload,
-            )
+            wire_payload: dict[str, object] = {
+                "tasks": [
+                    {
+                        "event": model_events[event_short_by_full[event_id]],
+                        "seed": model_seeds[event_short_by_full[event_id]],
+                        "candidates": legacy_candidates[event_short_by_full[event_id]],
+                    }
+                    for event_id in event_ids
+                ]
+            }
+            if self.n12_wire_protocol == "shadow":
+                models.record_wire_shadow(
+                    stage="package_assignment",
+                    operation=wire_operation,
+                    trigger=wire_trigger,
+                    attempt=wire_attempt,
+                    batch_index=batch_index,
+                    baseline_payload=legacy_payload,
+                    optimized_payload=wire_payload,
+                )
             request = StructuredModelRequest(
                 system_prompt=_prompt("package_assignment.md"),
                 user_prompt=compact_json(legacy_payload),
@@ -4235,23 +4258,34 @@ class CrossDocumentEngine:
                     "batch_count": len(batches),
                     "pairs": legacy_pairs,
                 }
-                wire_payload = intern_repeated_ids(
-                    {
-                        "batch_index": batch_index,
-                        "batch_count": len(batches),
-                        "packages": model_packages,
-                        "pairs": model_pairs,
-                    }
-                )
-                models.record_wire_shadow(
-                    stage="package_merge",
-                    operation="merge_review",
-                    trigger="package_recall",
-                    attempt="initial",
-                    batch_index=batch_index,
-                    baseline_payload=legacy_payload,
-                    optimized_payload=wire_payload,
-                )
+                wire_pairs: list[dict[str, object]] = []
+                for pair in model_pairs:
+                    source_id = pair["source_package_id"]
+                    target_id = pair["target_package_id"]
+                    assert isinstance(source_id, str)
+                    assert isinstance(target_id, str)
+                    source_view = model_packages[source_id]
+                    target_view = model_packages[target_id]
+                    assert isinstance(source_view, dict)
+                    assert isinstance(target_view, dict)
+                    wire_pairs.append(
+                        {
+                            "source": source_view,
+                            "target": target_view,
+                            "retrieval_signals": pair["retrieval_signals"],
+                        }
+                    )
+                wire_payload: dict[str, object] = {"pairs": wire_pairs}
+                if self.n13_wire_protocol == "shadow":
+                    models.record_wire_shadow(
+                        stage="package_merge",
+                        operation="merge_review",
+                        trigger="package_recall",
+                        attempt="initial",
+                        batch_index=batch_index,
+                        baseline_payload=legacy_payload,
+                        optimized_payload=wire_payload,
+                    )
                 request = StructuredModelRequest(
                     system_prompt=_prompt("package_merge.md"),
                     user_prompt=compact_json(legacy_payload),

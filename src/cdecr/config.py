@@ -47,6 +47,26 @@ class CDECRSettings(BaseSettings):
         default="off",
         alias="CDECR_PACKAGE_CONFLICT_MODE",
     )
+    n9_wire_protocol: Literal["legacy", "shadow", "canary", "on"] = Field(
+        default="shadow",
+        alias="CDECR_N9_WIRE_PROTOCOL",
+    )
+    n12_wire_protocol: Literal["legacy", "shadow", "canary", "on"] = Field(
+        default="shadow",
+        alias="CDECR_N12_WIRE_PROTOCOL",
+    )
+    n13_wire_protocol: Literal["legacy", "shadow", "canary", "on"] = Field(
+        default="shadow",
+        alias="CDECR_N13_WIRE_PROTOCOL",
+    )
+    grounder_issue_protocol: Literal["legacy", "shadow", "canary", "on"] = Field(
+        default="legacy",
+        alias="CDECR_GROUNDER_ISSUE_PROTOCOL",
+    )
+    targeted_repair_protocol: Literal["legacy", "shadow", "canary", "on"] = Field(
+        default="legacy",
+        alias="CDECR_TARGETED_REPAIR",
+    )
     embedding_dimensions: int = Field(default=1024, alias="CDECR_EMBEDDING_DIMENSIONS")
     http_timeout_seconds: float = Field(default=30.0, alias="CDECR_HTTP_TIMEOUT_SECONDS")
     model_timeout_seconds: float = Field(default=600.0, alias="CDECR_MODEL_TIMEOUT_SECONDS")

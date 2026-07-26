@@ -304,6 +304,22 @@ def test_settings_parse_ordered_deduplicated_fallback_keys() -> None:
     assert settings.dashscope_fallback_api_keys() == ("fallback-one", "fallback-two")
 
 
+def test_settings_parse_independent_wire_protocol_switches() -> None:
+    settings = CDECRSettings(
+        CDECR_N9_WIRE_PROTOCOL="legacy",
+        CDECR_N12_WIRE_PROTOCOL="shadow",
+        CDECR_N13_WIRE_PROTOCOL="on",
+        CDECR_GROUNDER_ISSUE_PROTOCOL="canary",
+        CDECR_TARGETED_REPAIR="legacy",
+        _env_file=None,
+    )  # type: ignore[call-arg]
+    assert settings.n9_wire_protocol == "legacy"
+    assert settings.n12_wire_protocol == "shadow"
+    assert settings.n13_wire_protocol == "on"
+    assert settings.grounder_issue_protocol == "canary"
+    assert settings.targeted_repair_protocol == "legacy"
+
+
 def test_embedding_retries_provider_failure_with_fallback(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

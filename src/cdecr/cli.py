@@ -289,6 +289,10 @@ def _document_processor(
     registry: SQLiteCDECRRegistry,
     scheduler: CDECRScheduler | None = None,
 ) -> SingleDocumentProcessor:
+    if settings.grounder_issue_protocol in {"canary", "on"}:
+        raise ValueError("Grounder issue_codes protocol has not passed its node A/B gate")
+    if settings.targeted_repair_protocol in {"canary", "on"}:
+        raise ValueError("targeted repair protocol has not passed its node A/B gate")
     scheduler = scheduler or _scheduler(settings)
     api_key = settings.require_dashscope()
     embedding = DashScopeEmbeddingClient(
@@ -378,6 +382,9 @@ def _cross_document_engine(
         model_m3=settings.model_m3,
         hard_cannot_link_mode=settings.atomic_hard_cannot_link_mode,
         package_conflict_mode=settings.package_conflict_mode,
+        n9_wire_protocol=settings.n9_wire_protocol,
+        n12_wire_protocol=settings.n12_wire_protocol,
+        n13_wire_protocol=settings.n13_wire_protocol,
     )
 
 
