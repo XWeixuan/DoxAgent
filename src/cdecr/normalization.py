@@ -433,7 +433,7 @@ class NormalizationEngine:
         for item in pending:
             field_short = field_short_by_path[item.field_path]
             mapping = {
-                canonical_id: f"k{index}"
+                canonical_id: f"{field_short}k{index}"
                 for index, canonical_id in enumerate(sorted(item.allowed), start=1)
             }
             candidate_short_by_field[field_short] = mapping

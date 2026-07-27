@@ -446,6 +446,52 @@ class FieldCoreferenceResolver:
                 )
         return results
 
+    def canonicalize_unresolved(
+        self,
+        value: FieldCoreferenceInput,
+        *,
+        mention_id: str,
+        field_path: str,
+        run_id: str | None = None,
+        reason: str = "UNRESOLVED",
+    ) -> FieldCoreferenceResult:
+        """Persist a conservative internal identity without claiming a KB match."""
+
+        result = self._apply_internal(
+            value,
+            FieldCoreferenceModelOutput(decision=FieldDecision.UNRESOLVED),
+            (),
+            mention_id=mention_id,
+            field_path=field_path,
+            run_id=run_id,
+        )
+        self._audit(
+            value,
+            (),
+            result,
+            mention_id=mention_id,
+            field_path=field_path,
+            decision=FieldDecision.UNRESOLVED,
+            run_id=run_id,
+        )
+        self.registry.append_decision_audit(
+            DecisionAuditRecord(
+                audit_id=(
+                    f"field-unresolved-canonicalized:{run_id or 'none'}:"
+                    f"{mention_id}:{field_path}"
+                ),
+                run_id=run_id,
+                decision_type="FIELD_UNRESOLVED_CANONICALIZED",
+                subject_id=f"{mention_id}:{field_path}",
+                payload={
+                    "reason": reason,
+                    "canonical_id": result.canonical_id,
+                    "method": FieldLinkMethod.UNRESOLVED_CANONICALIZED.value,
+                },
+            )
+        )
+        return result
+
     def link_external(
         self,
         value: FieldCoreferenceInput,
@@ -1056,9 +1102,25 @@ class FieldCoreferenceResolver:
         field_path: str,
         run_id: str | None,
     ) -> FieldCoreferenceResult:
+        method = FieldLinkMethod.INTERNAL_COREFERENCE
         if output.decision is FieldDecision.UNRESOLVED:
-            return FieldCoreferenceResult()
-        if output.decision is FieldDecision.NEW:
+            target_namespace = _unresolved_target_namespace(value)
+            scope = (
+                value.hints.issuer_id
+                or value.hints.source_ticker
+                or value.hints.published_date
+                or "open"
+            )
+            normalized = normalize_field_text(value.raw_value)
+            identity_seed = f"unresolved:{target_namespace.value}:{normalized}"
+            if _is_generic(value.raw_value) or target_namespace is FieldNamespace.FISCAL_PERIOD:
+                identity_seed = f"{identity_seed}:{scope}"
+            entry = self._create_entry(
+                value.model_copy(update={"namespace": target_namespace}),
+                identity_seed=identity_seed,
+            )
+            method = FieldLinkMethod.UNRESOLVED_CANONICALIZED
+        elif output.decision is FieldDecision.NEW:
             candidate_exists = bool(candidates)
             if value.namespace is FieldNamespace.FISCAL_PERIOD:
                 if value.hints.issuer_id is None:
@@ -1101,13 +1163,13 @@ class FieldCoreferenceResolver:
             mention_id=mention_id,
             field_path=field_path,
             registry_id=entry.id,
-            method=FieldLinkMethod.INTERNAL_COREFERENCE,
+            method=method,
         )
         self.registry.save_field_link(link)
         return FieldCoreferenceResult(
             canonical_id=entry.id,
             external_id=entry.external_id,
-            resolution_method=FieldLinkMethod.INTERNAL_COREFERENCE,
+            resolution_method=method,
         )
 
     def _create_entry(
@@ -1430,6 +1492,17 @@ def _decision_schema(namespace: FieldNamespace) -> dict[str, object]:
 
 def _canonical_surface(value: str) -> str:
     return " ".join(unicodedata.normalize("NFKC", value).split())
+
+
+def _unresolved_target_namespace(value: FieldCoreferenceInput) -> FieldNamespace:
+    if value.namespace is not FieldNamespace.PARTICIPANT_UNKNOWN:
+        return value.namespace
+    role = value.hints.participant_role
+    if role == ParticipantRole.AUTHORITY.value:
+        return FieldNamespace.PARTICIPANT_AUTHORITY
+    if role in {ParticipantRole.ACTOR.value, ParticipantRole.SUBJECT.value}:
+        return FieldNamespace.PARTICIPANT_COMPANY
+    return FieldNamespace.PARTICIPANT_INSTITUTION
 
 
 def _is_generic(value: str) -> bool:

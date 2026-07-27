@@ -26,7 +26,7 @@ from cdecr.contracts import (
 from cdecr.field_coreference import field_resolution_configuration_hash
 from cdecr.ports import CDECRRegistry
 
-IDENTITY_COMPILER_VERSION = "identity-compiler-v2"
+IDENTITY_COMPILER_VERSION = "identity-compiler-v3"
 _PRINCIPAL_ROLES = {
     ParticipantRole.ACTOR,
     ParticipantRole.SUBJECT,
@@ -83,7 +83,7 @@ class IdentityCompiler:
             metric = self._canonical(mention, "schema_projection.fields.metric_id")
             missing = _missing(issuer=issuer, period=period, metric=metric)
             if missing:
-                return None, missing
+                return self._fallback_open_profile(mention), missing
             assert issuer and period and metric
             return (
                 FinancialMetricIdentityProfile(
@@ -103,7 +103,7 @@ class IdentityCompiler:
             metric = self._canonical(mention, "schema_projection.fields.metric_id")
             missing = _missing(issuer=issuer, period=period, metric=metric)
             if missing:
-                return None, missing
+                return self._fallback_open_profile(mention), missing
             assert issuer and period and metric
             return (
                 GuidanceIdentityProfile(
@@ -121,7 +121,7 @@ class IdentityCompiler:
             company = self._canonical(mention, "schema_projection.fields.company_id")
             missing = _missing(institution=institution, company=company)
             if missing:
-                return None, missing
+                return self._fallback_open_profile(mention), missing
             assert institution and company
             report_id = next(
                 (
@@ -147,7 +147,7 @@ class IdentityCompiler:
 
         predicate = self._canonical(mention, "predicate.normalized")
         if predicate is None:
-            return None, ["predicate.normalized"]
+            return self._fallback_open_profile(mention), ["predicate.normalized"]
         principal_ids = sorted(
             {
                 canonical
@@ -181,6 +181,34 @@ class IdentityCompiler:
                 )
             ),
             [],
+        )
+
+    def _fallback_open_profile(self, mention: EventMention) -> OpenIdentityProfile:
+        """Produce a mention-scoped, non-merging identity for recoverable link gaps."""
+
+        predicate = self._canonical(mention, "predicate.normalized")
+        if predicate is None:
+            predicate = f"unresolved_{hashlib.sha256(mention.mention_id.encode()).hexdigest()[:12]}"
+        principal_ids = sorted(
+            {
+                self._canonical(mention, f"participants[{index}]")
+                or f"unresolved:participant:{mention.mention_id}:{index}"
+                for index, participant in enumerate(mention.participants)
+                if participant.role in _PRINCIPAL_ROLES
+            }
+        )
+        period = self._canonical(mention, "time.reference_period_id")
+        if period is None and mention.time.reference_period_id is not None:
+            period = f"unresolved:period:{mention.mention_id}"
+        return OpenIdentityProfile(
+            fields=OpenIdentityFields(
+                normalized_predicate=predicate,
+                principal_participant_ids=principal_ids,
+                event_time=mention.time.model_copy(update={"reference_period_id": period}),
+                reference_period_id=period,
+                location_or_asset_ids=[],
+                assertion_state=mention.assertion_state,
+            )
         )
 
     def _canonical(self, mention: EventMention, field_path: str) -> str | None:

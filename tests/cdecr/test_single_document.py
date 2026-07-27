@@ -446,7 +446,7 @@ def test_model_payloads_share_published_at_and_judge_uses_short_n4_dto(
     assert "local_package_hint" not in judge_draft["mention"]
 
 
-def test_no_event_document_still_runs_grounder_and_persists_empty_result(
+def test_no_event_document_skips_grounder_and_persists_empty_result(
     registry: SQLiteCDECRRegistry,
 ) -> None:
     save_source(registry, source())
@@ -454,7 +454,7 @@ def test_no_event_document_still_runs_grounder_and_persists_empty_result(
     result = service.process("MSG-1")
     assert result.status is ProcessingStatus.SUCCEEDED
     assert result.mentions == []
-    assert [request.json_schema["title"] for request in m3.calls] == ["GrounderModelOutput"]
+    assert m3.calls == []
 
 
 def test_all_grounder_drafts_route_one_batch_m4_judge(
@@ -484,7 +484,7 @@ def test_long_document_uses_m3_dreamer_blocks_and_m3_grounder(
     assert not any(request.json_schema["title"] == "DreamerModelOutput" for request in m2.calls)
     m3_titles = [request.json_schema["title"] for request in m3.calls]
     assert m3_titles.count("DreamerModelOutput") >= 2
-    assert m3_titles.count("GrounderModelOutput") == 1
+    assert m3_titles.count("GrounderModelOutput") == 0
     assert not result.judge_routing.invoked
 
 
@@ -523,7 +523,7 @@ def test_invalid_json_gets_one_audited_repair(registry: SQLiteCDECRRegistry) -> 
     assert grounder_calls[1].repaired
 
 
-def test_invalid_unique_grounder_main_evidence_fails_at_grounder_without_fabrication(
+def test_invalid_unique_grounder_main_evidence_is_retained_without_repair(
     registry: SQLiteCDECRRegistry,
 ) -> None:
     save_source(registry, source())
@@ -535,21 +535,22 @@ def test_invalid_unique_grounder_main_evidence_fails_at_grounder_without_fabrica
         m4_client=FakeStructured(model="qwen3.7-max"),
     )
     result = service.process("MSG-1")
-    assert result.status is ProcessingStatus.FAILED
-    assert result.mentions == []
-    assert result.failures[0].stage == "grounder"
+    assert result.status is ProcessingStatus.SUCCEEDED
+    assert len(result.mentions) == 1
+    assert result.mentions[0].evidence_spans == []
+    assert result.mentions[0].evidence_records[0].status.value == "TEXT_NOT_FOUND"
     with sqlite3.connect(registry.path) as connection:
         count = connection.execute(
             """
             SELECT COUNT(*) FROM decision_audits
-            WHERE run_id = ? AND decision_type = 'STRUCTURED_VALIDATION_FAILURE'
+            WHERE run_id = ? AND decision_type = 'MENTION_EVIDENCE_LOCATION'
             """,
             (result.run_id,),
         ).fetchone()[0]
-    assert count == 2
+    assert count >= 1
 
 
-def test_invalid_auxiliary_grounder_evidence_is_dropped_without_losing_document(
+def test_invalid_auxiliary_grounder_evidence_is_retained_without_losing_document(
     registry: SQLiteCDECRRegistry,
 ) -> None:
     save_source(registry, source())
@@ -563,17 +564,21 @@ def test_invalid_auxiliary_grounder_evidence_is_dropped_without_losing_document(
     result = service.process("MSG-1")
     assert result.status is ProcessingStatus.SUCCEEDED
     assert len(result.mentions) == 1
-    assert result.mentions[0].open_attributes == []
+    attribute = result.mentions[0].open_attributes[0]
+    assert attribute.evidence_record is not None
+    assert attribute.evidence_record.status.value == "TEXT_NOT_FOUND"
+    assert attribute.evidence_span is None
     with sqlite3.connect(registry.path) as connection:
         payload = connection.execute(
             """
             SELECT payload_json FROM decision_audits
-            WHERE run_id = ? AND decision_type = 'EVIDENCE_DEGRADATION'
+            WHERE run_id = ? AND decision_type = 'MENTION_EVIDENCE_LOCATION'
+              AND json_extract(payload_json, '$.evidence_kind') = 'ATTRIBUTE'
             """,
             (result.run_id,),
         ).fetchone()
     assert payload is not None
-    assert json.loads(payload[0])["resolution"] == "AUX_ATTRIBUTE_EVIDENCE_DROPPED"
+    assert json.loads(payload[0])["status"] == "TEXT_NOT_FOUND"
 
 
 def test_unbounded_time_precision_is_normalized_without_changing_reference_period(
@@ -603,7 +608,7 @@ def test_unbounded_time_precision_is_normalized_without_changing_reference_perio
     assert json.loads(payload[0])["reason_code"] == "NO_EVENT_BOUNDS"
 
 
-def test_judge_invalid_evidence_change_reverts_only_evidence(
+def test_judge_invalid_evidence_change_is_retained_with_valid_field_change(
     registry: SQLiteCDECRRegistry,
 ) -> None:
     save_source(registry, source())
@@ -617,17 +622,18 @@ def test_judge_invalid_evidence_change_reverts_only_evidence(
     result = service.process("MSG-1")
     assert result.status is ProcessingStatus.SUCCEEDED
     assert result.mentions[0].canonical_proposition == "Micron increased its guidance."
-    assert result.mentions[0].evidence_spans[0].text == "Micron raised guidance"
+    assert result.mentions[0].evidence_spans == []
+    assert result.mentions[0].evidence_records[0].status.value == "TEXT_NOT_FOUND"
     with sqlite3.connect(registry.path) as connection:
         payload = connection.execute(
             """
             SELECT payload_json FROM decision_audits
-            WHERE run_id = ? AND decision_type = 'EVIDENCE_DEGRADATION'
+            WHERE run_id = ? AND decision_type = 'MENTION_EVIDENCE_LOCATION'
             """,
             (result.run_id,),
         ).fetchone()
     assert payload is not None
-    assert json.loads(payload[0])["resolution"] == "JUDGE_EVIDENCE_REVERTED"
+    assert json.loads(payload[0])["status"] == "TEXT_NOT_FOUND"
 
 
 def test_judge_keep_target_must_be_a_distinct_final_accept(
@@ -642,12 +648,11 @@ def test_judge_keep_target_must_be_a_distinct_final_accept(
         m4_client=InvalidJudgeKeepTarget(model="qwen3.7-max"),
     )
     result = service.process("MSG-1")
-    assert result.status is ProcessingStatus.FAILED
-    assert result.failures[0].stage == "judge"
-    assert result.failures[0].error_code == "semantic_validation_failed_after_repair"
+    assert result.status is ProcessingStatus.SUCCEEDED
+    assert len(result.mentions) == 1
 
 
-def test_dreamer_drops_only_candidates_without_valid_evidence(
+def test_dreamer_retains_candidates_with_invalid_evidence(
     registry: SQLiteCDECRRegistry,
 ) -> None:
     save_source(registry, source())
@@ -660,7 +665,7 @@ def test_dreamer_drops_only_candidates_without_valid_evidence(
     )
     result = service.process("MSG-1")
     assert result.status is ProcessingStatus.SUCCEEDED
-    assert result.mentions == []
+    assert len(result.mentions) == 1
     with sqlite3.connect(registry.path) as connection:
         payload = connection.execute(
             """
@@ -670,7 +675,9 @@ def test_dreamer_drops_only_candidates_without_valid_evidence(
             (result.run_id,),
         ).fetchone()
     assert payload is not None
-    assert json.loads(payload[0])["dropped_candidates"] == 1
+    audit = json.loads(payload[0])
+    assert audit["invalid_evidence_locators"] == 1
+    assert audit["dropped_candidates"] == 0
 
 
 def test_materialized_mentions_with_same_identity_are_deduplicated(
@@ -699,7 +706,7 @@ def test_materialized_mentions_with_same_identity_are_deduplicated(
     assert json.loads(payload[0])["duplicate_identity_count"] == 1
 
 
-def test_missing_short_candidate_id_fails_strict_grounder_contract(
+def test_missing_short_candidate_id_drops_only_invalid_grounder_draft(
     registry: SQLiteCDECRRegistry,
 ) -> None:
     save_source(registry, source())
@@ -711,8 +718,9 @@ def test_missing_short_candidate_id_fails_strict_grounder_contract(
         m4_client=FakeStructured(model="qwen3.7-max"),
     )
     result = service.process("MSG-1")
-    assert result.status is ProcessingStatus.FAILED
+    assert result.status is ProcessingStatus.SUCCEEDED
     assert result.mentions == []
+    assert not any(summary.stage == "grounder_repair" for summary in result.model_calls)
     with sqlite3.connect(registry.path) as connection:
         types = {
             row[0]
@@ -722,7 +730,7 @@ def test_missing_short_candidate_id_fails_strict_grounder_contract(
             )
         }
     assert "MODEL_ENUM_NORMALIZATION" in types
-    assert "STRUCTURED_VALIDATION_FAILURE" in types
+    assert "STRUCTURED_VALIDATION_FAILURE" not in types
 
 
 def test_second_invalid_structured_response_fails_only_that_document(

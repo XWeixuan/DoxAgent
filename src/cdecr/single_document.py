@@ -19,6 +19,9 @@ from cdecr.contracts import (
     EventFamily,
     EventMention,
     EventTime,
+    EvidenceRecord,
+    EvidenceRecordStatus,
+    EvidenceSpan,
     OpenAttribute,
     Participant,
     ParticipantRole,
@@ -46,7 +49,6 @@ from cdecr.ports import (
 )
 from cdecr.preprocessing import (
     PIPELINE_VERSION,
-    EvidenceReconciliation,
     align_unique_evidence_locator,
     exact_document_fingerprint,
     grounder_context,
@@ -64,15 +66,21 @@ from cdecr.single_document_contracts import (
     EvidenceText,
     FailureSummary,
     GroundedMentionDraft,
+    GroundedMentionDraftInput,
     GrounderModelOutput,
     GrounderOutput,
+    JudgeAcceptedCommand,
     JudgeAction,
+    JudgeAttributeMergeCommand,
     JudgeCommandOutput,
     JudgeDecisionRecord,
     JudgeDraftInput,
+    JudgeDuplicateCommand,
     JudgeMentionChanges,
     JudgeMentionDraft,
+    JudgeRejectedCommand,
     JudgeRouting,
+    JudgeSplitCommand,
     MentionDraft,
     ModelCallSummary,
     NormalizationDecision,
@@ -178,6 +186,8 @@ def _safe_semantic_error_code(exc: ValueError) -> str:
     message = str(exc).casefold()
     mappings = (
         ("unknown evidence segment", "evidence_unknown_segment"),
+        ("does not occur", "evidence_text_not_found"),
+        ("ambiguous within", "evidence_text_ambiguous"),
         ("outside its source segment", "evidence_segment_offset_out_of_bounds"),
         ("does not match segment slice", "evidence_segment_slice_mismatch"),
         ("outside the source field", "evidence_source_offset_out_of_bounds"),
@@ -209,6 +219,17 @@ def deterministic_mention_id(
         }
     )
     return f"mention:{digest}"
+
+
+def _evidence_record_status(exc: ValueError) -> EvidenceRecordStatus:
+    message = str(exc).casefold()
+    if "unknown evidence segment" in message:
+        return EvidenceRecordStatus.SEGMENT_NOT_FOUND
+    if any(token in message for token in ("offset", "outside")):
+        return EvidenceRecordStatus.OFFSET_INVALID
+    if any(token in message for token in ("slice", "match")):
+        return EvidenceRecordStatus.TEXT_MISMATCH
+    return EvidenceRecordStatus.TEXT_NOT_FOUND
 
 
 class _AuditedEmbeddingClient:
@@ -540,167 +561,24 @@ class SingleDocumentProcessor:
         candidate_anchors: Sequence[EvidenceLocator] = (),
         fallback_main_evidence: Sequence[EvidenceText] | None = None,
     ) -> MentionDraft:
-        before_hash = _hash_json(draft.model_dump(mode="json"))
-        main: list[EvidenceText] = []
-        main_resolutions: list[tuple[int, EvidenceReconciliation]] = []
-        failed_main: list[tuple[int, str]] = []
-        for index, evidence in enumerate(draft.evidence_locations):
+        # Evidence is model-authored source data. Location is best-effort metadata:
+        # never rewrite, drop, or trigger an LLM repair because location failed.
+        # Final compact audits are emitted after the stable Mention ID is known.
+        del run_id, stage, subject_id, source_candidate_ids, fallback_main_evidence
+        for evidence in [
+            *draft.evidence_locations,
+            *(item.evidence_location for item in draft.open_attributes),
+        ]:
             try:
-                reconciliation = reconcile_evidence_text(
+                reconcile_evidence_text(
                     evidence,
                     document,
                     source,
                     candidate_anchors=candidate_anchors,
                 )
-            except ValueError as exc:
-                failed_main.append((index, _safe_semantic_error_code(exc)))
+            except ValueError:
                 continue
-            main.append(
-                EvidenceText(
-                    segment_id=reconciliation.locator.segment_id,
-                    text=reconciliation.locator.text,
-                )
-            )
-            main_resolutions.append((index, reconciliation))
-
-        reverted = False
-        if not main and fallback_main_evidence is not None:
-            fallback: list[EvidenceText] = []
-            for evidence in fallback_main_evidence:
-                reconciliation = reconcile_evidence_text(
-                    evidence,
-                    document,
-                    source,
-                    candidate_anchors=candidate_anchors,
-                )
-                fallback.append(
-                    EvidenceText(
-                        segment_id=reconciliation.locator.segment_id,
-                        text=reconciliation.locator.text,
-                    )
-                )
-            if fallback:
-                main = fallback
-                reverted = True
-        if not main:
-            raise ValueError("mention main evidence cannot be reconciled")
-
-        attributes: list[OpenAttributeDraft] = []
-        dropped_attributes: list[tuple[int, str]] = []
-        attribute_resolutions: list[tuple[int, EvidenceReconciliation]] = []
-        for index, attribute in enumerate(draft.open_attributes):
-            try:
-                reconciliation = reconcile_evidence_text(
-                    attribute.evidence_location,
-                    document,
-                    source,
-                    candidate_anchors=candidate_anchors,
-                )
-            except ValueError as exc:
-                dropped_attributes.append((index, _safe_semantic_error_code(exc)))
-                continue
-            attributes.append(
-                attribute.model_copy(
-                    update={
-                        "evidence_location": EvidenceText(
-                            segment_id=reconciliation.locator.segment_id,
-                            text=reconciliation.locator.text,
-                        )
-                    }
-                )
-            )
-            attribute_resolutions.append((index, reconciliation))
-
-        updated = draft.model_copy(
-            update={
-                "evidence_locations": main,
-                "open_attributes": attributes,
-            }
-        )
-        after_hash = _hash_json(updated.model_dump(mode="json"))
-
-        for kind, values in (
-            ("MAIN", main_resolutions),
-            ("ATTRIBUTE", attribute_resolutions),
-        ):
-            for index, reconciliation in values:
-                if reconciliation.resolution == "EXACT":
-                    continue
-                payload = {
-                    "resolution": reconciliation.resolution,
-                    "draft_id": subject_id,
-                    "evidence_kind": kind,
-                    "evidence_index": index,
-                    "segment_id_before": reconciliation.segment_id_before,
-                    "segment_id_after": reconciliation.locator.segment_id,
-                    "source_candidate_ids": list(source_candidate_ids),
-                    "source_span_hash": reconciliation.source_span_hash,
-                    "object_hash_before": before_hash,
-                    "object_hash_after": after_hash,
-                }
-                self.registry.append_decision_audit(
-                    DecisionAuditRecord(
-                        audit_id=(
-                            f"evidence-resolution:{run_id}:{stage}:{subject_id}:"
-                            f"{kind}:{index}:{before_hash[:12]}:"
-                            f"{reconciliation.source_span_hash[:16]}"
-                        ),
-                        run_id=run_id,
-                        decision_type="EVIDENCE_RESOLUTION",
-                        subject_id=subject_id,
-                        payload=payload,
-                    )
-                )
-
-        for index, error_code in failed_main:
-            resolution = (
-                "JUDGE_EVIDENCE_REVERTED" if reverted else "MAIN_EVIDENCE_DROPPED"
-            )
-            self.registry.append_decision_audit(
-                DecisionAuditRecord(
-                    audit_id=(
-                        f"evidence-degradation:{run_id}:{stage}:{subject_id}:"
-                        f"main:{index}:{before_hash[:12]}:{resolution}"
-                    ),
-                    run_id=run_id,
-                    decision_type="EVIDENCE_DEGRADATION",
-                    subject_id=subject_id,
-                    payload={
-                        "resolution": resolution,
-                        "draft_id": subject_id,
-                        "evidence_kind": "MAIN",
-                        "evidence_index": index,
-                        "error_code": error_code,
-                        "source_candidate_ids": list(source_candidate_ids),
-                        "object_hash_before": before_hash,
-                        "object_hash_after": after_hash,
-                    },
-                )
-            )
-        for index, error_code in dropped_attributes:
-            self.registry.append_decision_audit(
-                DecisionAuditRecord(
-                    audit_id=(
-                        f"evidence-degradation:{run_id}:{stage}:{subject_id}:"
-                        f"attribute:{index}:{before_hash[:12]}:"
-                        "AUX_ATTRIBUTE_EVIDENCE_DROPPED"
-                    ),
-                    run_id=run_id,
-                    decision_type="EVIDENCE_DEGRADATION",
-                    subject_id=subject_id,
-                    payload={
-                        "resolution": "AUX_ATTRIBUTE_EVIDENCE_DROPPED",
-                        "draft_id": subject_id,
-                        "evidence_kind": "ATTRIBUTE",
-                        "evidence_index": index,
-                        "error_code": error_code,
-                        "source_candidate_ids": list(source_candidate_ids),
-                        "object_hash_before": before_hash,
-                        "object_hash_after": after_hash,
-                    },
-                )
-            )
-        return updated
+        return draft
 
     def process(self, message_id: str) -> SingleDocumentResult:
         source = self.registry.get_source(message_id)
@@ -812,13 +690,33 @@ class SingleDocumentProcessor:
                 accepted = []
                 accepted_lineage = []
 
-            materialized_with_lineage = [
-                (
-                    self._materialize_mention(source, preprocessing.document, draft),
-                    lineage,
-                )
-                for draft, lineage in zip(accepted, accepted_lineage, strict=True)
-            ]
+            materialized_with_lineage: list[
+                tuple[EventMention, dict[str, object]]
+            ] = []
+            for index, (draft, lineage) in enumerate(
+                zip(accepted, accepted_lineage, strict=True)
+            ):
+                try:
+                    mention = self._materialize_mention(
+                        source, preprocessing.document, draft, run_id=run_id
+                    )
+                except (ValidationError, ValueError) as exc:
+                    self.registry.append_decision_audit(
+                        DecisionAuditRecord(
+                            audit_id=f"mention-materialization-degraded:{run_id}:{index}",
+                            run_id=run_id,
+                            decision_type="MENTION_MATERIALIZATION_DEGRADED",
+                            subject_id=f"{source.message_id}:{index}",
+                            payload={
+                                "error_code": type(exc).__name__,
+                                "draft_hash": _hash_json(
+                                    draft.model_dump(mode="json")
+                                ),
+                            },
+                        )
+                    )
+                    continue
+                materialized_with_lineage.append((mention, lineage))
             mentions_by_id: dict[str, EventMention] = {}
             lineage_by_mention: dict[str, list[dict[str, object]]] = {}
             duplicate_mention_ids: Counter[str] = Counter()
@@ -1021,9 +919,17 @@ class SingleDocumentProcessor:
             if output_type is GrounderModelOutput:
                 drafts = payload.get("drafts")
                 if isinstance(drafts, list):
+                    retained_drafts: list[object] = []
                     for draft in drafts:
                         if isinstance(draft, dict):
                             normalize_mention(draft.get("mention"))
+                        try:
+                            GroundedMentionDraftInput.model_validate(draft)
+                        except ValidationError:
+                            normalized_fields["grounder.invalid_draft_dropped"] += 1
+                            continue
+                        retained_drafts.append(draft)
+                    payload["drafts"] = retained_drafts
             elif output_type is JudgeCommandOutput:
                 command_groups = [
                     payload.get("accepted"),
@@ -1063,6 +969,28 @@ class SingleDocumentProcessor:
                         if isinstance(mentions, list):
                             for mention in mentions:
                                 normalize_mention(mention)
+                command_types: dict[str, type[StrictModel]] = {
+                    "accepted": JudgeAcceptedCommand,
+                    "rejected": JudgeRejectedCommand,
+                    "split": JudgeSplitCommand,
+                    "duplicates": JudgeDuplicateCommand,
+                    "attribute_merges": JudgeAttributeMergeCommand,
+                }
+                for group_name, command_type in command_types.items():
+                    raw_commands = payload.get(group_name)
+                    if not isinstance(raw_commands, list):
+                        continue
+                    retained_commands: list[object] = []
+                    for command in raw_commands:
+                        try:
+                            command_type.model_validate(command)
+                        except ValidationError:
+                            normalized_fields[
+                                f"judge.{group_name}.invalid_command_dropped"
+                            ] += 1
+                            continue
+                        retained_commands.append(command)
+                    payload[group_name] = retained_commands
             if normalized_fields:
                 client.registry.append_decision_audit(
                     DecisionAuditRecord(
@@ -1292,11 +1220,8 @@ class SingleDocumentProcessor:
         document: PreprocessedDocument,
         source: SourceMessage,
     ) -> tuple[int, int]:
-        retained = []
         invalid_locators = 0
-        dropped_candidates = 0
         for item in output.candidates:
-            valid_locations: dict[str, EvidenceLocator] = {}
             for locator in item.evidence_locations:
                 try:
                     aligned = align_unique_evidence_locator(locator, document, source)
@@ -1308,15 +1233,7 @@ class SingleDocumentProcessor:
                     locator_to_evidence(aligned, document, source)
                 except ValueError:
                     invalid_locators += 1
-                    continue
-                valid_locations[_hash_json(aligned.model_dump(mode="json"))] = aligned
-            if not valid_locations:
-                dropped_candidates += 1
-                continue
-            item.evidence_locations = list(valid_locations.values())
-            retained.append(item)
-        output.candidates = retained
-        return invalid_locators, dropped_candidates
+        return invalid_locators, 0
 
     def _ground(
         self,
@@ -1327,6 +1244,17 @@ class SingleDocumentProcessor:
         processing_key: str,
         summaries: list[ModelCallSummary],
     ) -> GrounderOutput:
+        if not candidates:
+            self.registry.append_decision_audit(
+                DecisionAuditRecord(
+                    audit_id=f"grounder-empty-candidates:{run_id}",
+                    run_id=run_id,
+                    decision_type="GROUNDER_SKIPPED",
+                    subject_id=source.message_id,
+                    payload={"reason": "NO_DREAM_CANDIDATES"},
+                )
+            )
+            return GrounderOutput(drafts=[], issue_flags=[])
         segment_order = {item.segment_id: index for index, item in enumerate(document.segments)}
 
         def candidate_position(item: DreamCandidate) -> tuple[int, str]:
@@ -1340,7 +1268,7 @@ class SingleDocumentProcessor:
         batches = [
             ordered_candidates[index : index + GROUNDER_CANDIDATE_BATCH]
             for index in range(0, len(ordered_candidates), GROUNDER_CANDIDATE_BATCH)
-        ] or [[]]
+        ]
         drafts_by_id: dict[str, GroundedMentionDraft] = {}
         issue_flags: dict[str, None] = {}
 
@@ -1405,36 +1333,71 @@ class SingleDocumentProcessor:
             candidate_ids = set(short_to_full)
 
             def validate(output: GrounderModelOutput) -> None:
+                retained: list[GroundedMentionDraftInput] = []
+                degraded: list[dict[str, object]] = []
                 for draft_index, item in enumerate(output.drafts, start=1):
                     if len(item.source_candidate_ids) != len(set(item.source_candidate_ids)):
-                        raise ValueError("Grounder candidate IDs must be unique")
+                        degraded.append(
+                            {
+                                "draft_index": draft_index,
+                                "reason": "DUPLICATE_SOURCE_CANDIDATE_IDS",
+                            }
+                        )
+                        continue
                     if any(value not in candidate_ids for value in item.source_candidate_ids):
-                        raise ValueError("Grounder returned an unknown Dreamer candidate")
+                        degraded.append(
+                            {
+                                "draft_index": draft_index,
+                                "reason": "UNKNOWN_SOURCE_CANDIDATE_ID",
+                            }
+                        )
+                        continue
                     subject_id = f"grounder:{batch_index}:g{draft_index}"
-                    normalized = self._normalize_draft_time(
-                        item.mention,
-                        run_id=run_id,
-                        stage="grounder",
-                        subject_id=subject_id,
+                    try:
+                        normalized = self._normalize_draft_time(
+                            item.mention,
+                            run_id=run_id,
+                            stage="grounder",
+                            subject_id=subject_id,
+                        )
+                        anchors = [
+                            locator
+                            for candidate_id in item.source_candidate_ids
+                            for locator in candidate_by_short[
+                                candidate_id
+                            ].evidence_locations
+                        ]
+                        item.mention = self._reconcile_draft_evidence(
+                            normalized,
+                            document,
+                            source,
+                            run_id=run_id,
+                            stage="grounder",
+                            subject_id=subject_id,
+                            source_candidate_ids=item.source_candidate_ids,
+                            candidate_anchors=anchors,
+                        )
+                        validate_event_time_semantics(item.mention.time)
+                    except ValueError as exc:
+                        degraded.append(
+                            {
+                                "draft_index": draft_index,
+                                "reason": _safe_semantic_error_code(exc),
+                            }
+                        )
+                        continue
+                    retained.append(item)
+                output.drafts = retained
+                if degraded:
+                    self.registry.append_decision_audit(
+                        DecisionAuditRecord(
+                            audit_id=f"grounder-item-degraded:{run_id}:{batch_index}",
+                            run_id=run_id,
+                            decision_type="GROUNDER_ITEM_DEGRADED",
+                            subject_id=f"grounder-batch:{batch_index}",
+                            payload={"items": degraded},
+                        )
                     )
-                    anchors = [
-                        locator
-                        for candidate_id in item.source_candidate_ids
-                        for locator in candidate_by_short[
-                            candidate_id
-                        ].evidence_locations
-                    ]
-                    item.mention = self._reconcile_draft_evidence(
-                        normalized,
-                        document,
-                        source,
-                        run_id=run_id,
-                        stage="grounder",
-                        subject_id=subject_id,
-                        source_candidate_ids=item.source_candidate_ids,
-                        candidate_anchors=anchors,
-                    )
-                    validate_event_time_semantics(item.mention.time)
 
             output = self._invoke_typed(
                 client=client,
@@ -1596,6 +1559,7 @@ class SingleDocumentProcessor:
             validated_accepted: dict[str, MentionDraft] = {}
             validated_splits: dict[str, list[MentionDraft]] = {}
             dropped_attribute_merges: set[str] = set()
+            invalid_cross_commands: set[str] = set()
 
             def draft_anchors(short_id: str) -> list[EvidenceLocator]:
                 return [
@@ -1609,6 +1573,7 @@ class SingleDocumentProcessor:
                 validated_accepted.clear()
                 validated_splits.clear()
                 dropped_attribute_merges.clear()
+                invalid_cross_commands.clear()
                 targets = [
                     *[item.id for item in output.accepted],
                     *[item.id for item in output.rejected],
@@ -1616,31 +1581,22 @@ class SingleDocumentProcessor:
                     *[item.id for item in output.duplicates],
                     *[item.id for item in output.attribute_merges],
                 ]
-                if set(targets) != draft_ids or len(targets) != len(set(targets)):
-                    raise ValueError("Judge must return exactly one decision for every draft")
                 accepted_ids = {item.id for item in output.accepted}
-                semantic_errors: list[str] = []
                 for duplicate_command in output.duplicates:
                     if (
                         duplicate_command.keep_id not in accepted_ids
                         or duplicate_command.keep_id == duplicate_command.id
                     ):
-                        semantic_errors.append(
-                            "DUPLICATE "
-                            f"{duplicate_command.id}: keep_id must name another "
-                            "draft finalized as ACCEPT"
-                        )
+                        invalid_cross_commands.add(duplicate_command.id)
                 for merge_command in output.attribute_merges:
                     if (
                         merge_command.keep_id not in accepted_ids
                         or merge_command.keep_id == merge_command.id
                     ):
-                        semantic_errors.append(
-                            "MERGE_AS_ATTRIBUTE "
-                            f"{merge_command.id}: keep_id must name another "
-                            "draft finalized as ACCEPT"
-                        )
+                        invalid_cross_commands.add(merge_command.id)
                 for accepted_command in output.accepted:
+                    if accepted_command.id not in draft_by_short:
+                        continue
                     try:
                         original = draft_by_short[accepted_command.id].mention
                         accepted_mention = original
@@ -1673,15 +1629,15 @@ class SingleDocumentProcessor:
                                 else None
                             ),
                         )
-                        self._validate_draft_evidence(
-                            accepted_mention, document, source
-                        )
+                        validate_event_time_semantics(accepted_mention.time)
                         validated_accepted[accepted_command.id] = accepted_mention
-                    except (ValidationError, ValueError) as exc:
-                        semantic_errors.append(
-                            f"ACCEPT {accepted_command.id}: {exc}"
-                        )
+                    except (ValidationError, ValueError):
+                        validated_accepted[accepted_command.id] = draft_by_short[
+                            accepted_command.id
+                        ].mention
                 for split_command in output.split:
+                    if split_command.id not in draft_by_short:
+                        continue
                     validated_split: list[MentionDraft] = []
                     for split_index, split_mention in enumerate(
                         split_command.mentions,
@@ -1710,15 +1666,11 @@ class SingleDocumentProcessor:
                                     split_command.id
                                 ),
                             )
-                            self._validate_draft_evidence(
-                                persistent, document, source
-                            )
+                            validate_event_time_semantics(persistent.time)
                             validated_split.append(persistent)
-                        except (ValidationError, ValueError) as exc:
-                            semantic_errors.append(
-                                "SPLIT "
-                                f"{split_command.id} replacement {split_index}: {exc}"
-                            )
+                        except (ValidationError, ValueError):
+                            validated_split = []
+                            break
                     if len(validated_split) == len(split_command.mentions):
                         validated_splits[split_command.id] = validated_split
                 for merge_command in output.attribute_merges:
@@ -1757,10 +1709,26 @@ class SingleDocumentProcessor:
                             merge_command.attribute = reconciled.open_attributes[-1]
                     except ValueError:
                         dropped_attribute_merges.add(merge_command.id)
-                if semantic_errors:
-                    raise ValueError(
-                        "Judge semantic validation failed for: "
-                        + " | ".join(semantic_errors)
+                if set(targets) != draft_ids or len(targets) != len(set(targets)):
+                    self.registry.append_decision_audit(
+                        DecisionAuditRecord(
+                            audit_id=f"judge-coverage-degraded:{run_id}:{batch_index}",
+                            run_id=run_id,
+                            decision_type="JUDGE_COVERAGE_DEGRADED",
+                            subject_id=f"judge-batch:{batch_index}",
+                            payload={
+                                "missing": sorted(draft_ids - set(targets)),
+                                "extra": sorted(set(targets) - draft_ids),
+                                "duplicates": sorted(
+                                    {
+                                        value
+                                        for value in targets
+                                        if targets.count(value) > 1
+                                    }
+                                ),
+                                "fallback": "ACCEPT_GROUNDER_DRAFT",
+                            },
+                        )
                     )
 
             output = self._invoke_typed(
@@ -1771,6 +1739,7 @@ class SingleDocumentProcessor:
                 stage="judge",
             )
             persisted: list[JudgeDecisionRecord] = []
+            decided_short_ids: set[str] = set()
 
             def append_decision(
                 *,
@@ -1782,6 +1751,9 @@ class SingleDocumentProcessor:
                 keep_id: str | None = None,
                 attribute: OpenAttributeDraft | None = None,
             ) -> None:
+                if short_id not in short_to_full or short_id in decided_short_ids:
+                    return
+                decided_short_ids.add(short_id)
                 provisional = JudgeDecisionRecord(
                     decision_id="pending",
                     target_draft_id=short_to_full[short_id],
@@ -1800,7 +1772,12 @@ class SingleDocumentProcessor:
                 )
 
             for accepted_command in output.accepted:
-                revised = validated_accepted[accepted_command.id]
+                if accepted_command.id not in draft_by_short:
+                    continue
+                revised = validated_accepted.get(
+                    accepted_command.id,
+                    draft_by_short[accepted_command.id].mention,
+                )
                 original = draft_by_short[accepted_command.id].mention
                 append_decision(
                     short_id=accepted_command.id,
@@ -1815,6 +1792,13 @@ class SingleDocumentProcessor:
                     reason=rejected_command.reason,
                 )
             for split_command in output.split:
+                if split_command.id not in validated_splits:
+                    append_decision(
+                        short_id=split_command.id,
+                        action=JudgeAction.ACCEPT,
+                        reason="INVALID_SPLIT_RETAIN_GROUNDER_DRAFT",
+                    )
+                    continue
                 append_decision(
                     short_id=split_command.id,
                     action=JudgeAction.SPLIT,
@@ -1822,6 +1806,13 @@ class SingleDocumentProcessor:
                     split_mentions=validated_splits[split_command.id],
                 )
             for duplicate_command in output.duplicates:
+                if duplicate_command.id in invalid_cross_commands:
+                    append_decision(
+                        short_id=duplicate_command.id,
+                        action=JudgeAction.ACCEPT,
+                        reason="INVALID_DUPLICATE_RETAIN_GROUNDER_DRAFT",
+                    )
+                    continue
                 append_decision(
                     short_id=duplicate_command.id,
                     action=JudgeAction.DUPLICATE,
@@ -1829,11 +1820,14 @@ class SingleDocumentProcessor:
                     keep_id=duplicate_command.keep_id,
                 )
             for merge_command in output.attribute_merges:
-                if merge_command.id in dropped_attribute_merges:
+                if (
+                    merge_command.id in dropped_attribute_merges
+                    or merge_command.id in invalid_cross_commands
+                ):
                     append_decision(
                         short_id=merge_command.id,
-                        action=JudgeAction.REJECT,
-                        reason=merge_command.reason,
+                        action=JudgeAction.ACCEPT,
+                        reason="INVALID_ATTRIBUTE_MERGE_RETAIN_GROUNDER_DRAFT",
                     )
                     continue
                 append_decision(
@@ -1842,6 +1836,12 @@ class SingleDocumentProcessor:
                     reason=merge_command.reason,
                     keep_id=merge_command.keep_id,
                     attribute=merge_command.attribute,
+                )
+            for short_id in sorted(draft_ids - decided_short_ids):
+                append_decision(
+                    short_id=short_id,
+                    action=JudgeAction.ACCEPT,
+                    reason="JUDGE_MISSING_DECISION_RETAIN_GROUNDER_DRAFT",
                 )
             return batch_index, persisted
 
@@ -1984,30 +1984,73 @@ class SingleDocumentProcessor:
         source: SourceMessage,
         document: PreprocessedDocument,
         draft: MentionDraft,
+        *,
+        run_id: str,
     ) -> EventMention:
-        self._validate_draft_evidence(draft, document, source)
-        evidence = [
-            locator_to_evidence(
-                locate_unique_evidence_text(item, document, source), document, source
-            )
-            for item in draft.evidence_locations
+        def locate(
+            raw: EvidenceText,
+        ) -> tuple[EvidenceRecord, EvidenceSpan | None]:
+            try:
+                reconciliation = reconcile_evidence_text(raw, document, source)
+                span = locator_to_evidence(reconciliation.locator, document, source)
+                return (
+                    EvidenceRecord(
+                        segment_id=raw.segment_id,
+                        text=raw.text,
+                        status=EvidenceRecordStatus.VERIFIED,
+                    ),
+                    span,
+                )
+            except ValueError as exc:
+                return (
+                    EvidenceRecord(
+                        segment_id=raw.segment_id,
+                        text=raw.text,
+                        status=_evidence_record_status(exc),
+                        error_code=_safe_semantic_error_code(exc),
+                    ),
+                    None,
+                )
+
+        main_results = [locate(item) for item in draft.evidence_locations]
+        evidence_records = [item[0] for item in main_results]
+        evidence = [item[1] for item in main_results if item[1] is not None]
+        raw_identity_evidence = [
+            {
+                "kind": "MAIN",
+                "index": index,
+                **item.model_dump(mode="json"),
+            }
+            for index, item in enumerate(draft.evidence_locations)
         ]
-        mention_id = deterministic_mention_id(source.message_id, draft, evidence)
-        attributes = [
-            OpenAttribute(
-                key=item.key,
-                value=item.value,
-                evidence_span=locator_to_evidence(
-                    locate_unique_evidence_text(item.evidence_location, document, source),
-                    document,
-                    source,
-                ),
+        raw_identity_evidence.extend(
+            {
+                "kind": "ATTRIBUTE",
+                "index": index,
+                **item.evidence_location.model_dump(mode="json"),
+            }
+            for index, item in enumerate(draft.open_attributes)
+        )
+        mention_id = deterministic_mention_id(
+            source.message_id, draft, raw_identity_evidence
+        )
+        attributes: list[OpenAttribute] = []
+        attribute_results: list[tuple[EvidenceRecord, EvidenceSpan | None]] = []
+        for item in draft.open_attributes:
+            record, span = locate(item.evidence_location)
+            attribute_results.append((record, span))
+            attributes.append(
+                OpenAttribute(
+                    key=item.key,
+                    value=item.value,
+                    evidence_record=record,
+                    evidence_span=span,
+                )
             )
-            for item in draft.open_attributes
-        ]
         mention = EventMention(
             mention_id=mention_id,
             message_id=source.message_id,
+            evidence_records=evidence_records,
             evidence_spans=evidence,
             canonical_proposition=draft.canonical_proposition,
             source_claim=draft.source_claim,
@@ -2026,6 +2069,41 @@ class SingleDocumentProcessor:
             local_package_hint=draft.local_package_hint,
         )
         mention.validate_evidence(source)
+        for kind, results in (
+            ("MAIN", main_results),
+            ("ATTRIBUTE", attribute_results),
+        ):
+            for index, (record, _) in enumerate(results):
+                raw_hash = hashlib.sha256(
+                    json.dumps(
+                        {
+                            "segment_id": record.segment_id,
+                            "text": record.text,
+                        },
+                        ensure_ascii=False,
+                        sort_keys=True,
+                        separators=(",", ":"),
+                    ).encode("utf-8")
+                ).hexdigest()
+                self.registry.append_decision_audit(
+                    DecisionAuditRecord(
+                        audit_id=(
+                            f"mention-evidence:{run_id}:{mention_id}:{kind}:"
+                            f"{index}:{raw_hash[:16]}"
+                        ),
+                        run_id=run_id,
+                        decision_type="MENTION_EVIDENCE_LOCATION",
+                        subject_id=mention_id,
+                        payload={
+                            "mention_id": mention_id,
+                            "evidence_kind": kind,
+                            "evidence_index": index,
+                            "status": record.status.value,
+                            "error_code": record.error_code,
+                            "raw_evidence_hash": raw_hash,
+                        },
+                    )
+                )
         return mention
 
     def _complete_reused(
@@ -2045,7 +2123,14 @@ class SingleDocumentProcessor:
                 {
                     "pipeline_version": PIPELINE_VERSION,
                     "message_id": source.message_id,
-                    "evidence": [item.model_dump(mode="json") for item in prior.evidence_spans],
+                    "evidence": [
+                        item.model_dump(mode="json")
+                        for item in (
+                            prior.evidence_records
+                            if prior.evidence_records
+                            else prior.evidence_spans
+                        )
+                    ],
                     "predicate": prior.predicate.normalized,
                     "assertion_state": prior.assertion_state.value,
                 }

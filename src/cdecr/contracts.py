@@ -237,6 +237,23 @@ class EvidenceSpan(StrictModel):
             raise ValueError("evidence span text does not match the source slice")
 
 
+class EvidenceRecordStatus(StrEnum):
+    VERIFIED = "VERIFIED"
+    SEGMENT_NOT_FOUND = "SEGMENT_NOT_FOUND"
+    TEXT_NOT_FOUND = "TEXT_NOT_FOUND"
+    TEXT_MISMATCH = "TEXT_MISMATCH"
+    OFFSET_INVALID = "OFFSET_INVALID"
+
+
+class EvidenceRecord(StrictModel):
+    """Raw model Evidence plus its deterministic, non-blocking location result."""
+
+    segment_id: NonEmptyString
+    text: NonEmptyString
+    status: EvidenceRecordStatus
+    error_code: str | None = None
+
+
 class SourceMessage(StrictModel):
     message_id: NonEmptyString
     source_type: SourceType
@@ -323,7 +340,8 @@ class Quantity(StrictModel):
 class OpenAttribute(StrictModel):
     key: NonEmptyString
     value: NonEmptyString
-    evidence_span: EvidenceSpan
+    evidence_record: EvidenceRecord | None = None
+    evidence_span: EvidenceSpan | None = None
 
 
 class FinancialMetricFields(StrictModel):
@@ -396,7 +414,8 @@ class LocalPackageHint(StrictModel):
 class EventMention(StrictModel):
     mention_id: NonEmptyString
     message_id: NonEmptyString
-    evidence_spans: list[EvidenceSpan] = Field(min_length=1)
+    evidence_records: list[EvidenceRecord] = Field(default_factory=list)
+    evidence_spans: list[EvidenceSpan] = Field(default_factory=list)
     canonical_proposition: NonEmptyString
     source_claim: str | None = None
     event_family: EventFamily
@@ -416,7 +435,8 @@ class EventMention(StrictModel):
         for span in self.evidence_spans:
             span.validate_source(source)
         for attribute in self.open_attributes:
-            attribute.evidence_span.validate_source(source)
+            if attribute.evidence_span is not None:
+                attribute.evidence_span.validate_source(source)
 
 
 class FinancialMetricIdentityFields(StrictModel):

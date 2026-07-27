@@ -328,6 +328,24 @@ class PackageDerivedFieldDrift(FakeStructured):
         return payload
 
 
+class PackageCoverageDrift(FakeStructured):
+    def _package_payload(self, body: dict[str, object]) -> dict[str, object]:
+        payload = super()._package_payload(body)
+        decisions = payload["decisions"]
+        assert isinstance(decisions, list) and decisions
+        decisions[0]["candidate_assessments"] = []
+        decisions[0]["ranked_member_package_ids"] = []
+        decisions[0]["selected_member_package_id"] = None
+        decisions[0]["selection_reason"] = None
+        return payload
+
+
+class PackageMergeCoverageDrift(FakeStructured):
+    def _package_merge_payload(self, body: dict[str, object]) -> dict[str, object]:
+        del body
+        return {"decisions": []}
+
+
 def source(message_id: str) -> SourceMessage:
     return SourceMessage(
         message_id=message_id,
@@ -573,8 +591,8 @@ def test_n9_keeps_three_mentions_per_request_and_uses_only_short_ids(
         "m3",
     ]
     assert all(
-        candidate["event_id"].startswith("a")
-        for task in payload["tasks"]
+        candidate["event_id"].startswith(f"m{task_index}c")
+        for task_index, task in enumerate(payload["tasks"], start=1)
         for candidate in task["candidates"]
     )
     assert all(
@@ -833,8 +851,9 @@ def test_n12_payload_includes_raw_surface_and_request_local_source_ids(
         call for call in m2.calls if "Atomic-to-Package assignment" in call.system_prompt
     )
     payload = json.loads(request.user_prompt)
-    incoming = next(iter(payload["events"].values()))
-    candidate = next(iter(payload["candidates"].values()))[0]
+    event_id, incoming = next(iter(payload["events"].items()))
+    candidate = payload["candidates"][event_id][0]
+    assert candidate["package"]["package_id"].startswith(f"{event_id}c")
     member = candidate["representative_members"][0]
     assert "Micron" in {
         surface
@@ -851,6 +870,22 @@ def test_n12_payload_includes_raw_surface_and_request_local_source_ids(
     assert {incoming_source, member_source} == {"s1", "s2"}
     assert "MSG-1" not in request.user_prompt
     assert "MSG-2" not in request.user_prompt
+
+
+def test_n12_invalid_task_degrades_to_new_package_without_batch_repair(
+    registry: SQLiteCDECRRegistry,
+) -> None:
+    m2 = PackageCoverageDrift()
+    processor, _, _, _ = engine(registry, m2=m2)
+    add(registry, source("MSG-1"), metric_mention("MSG-1", period="FY2026-Q4"))
+    processor.process("MSG-1")
+    add(registry, source("MSG-2"), metric_mention("MSG-2", period="FY2027-Q1"))
+
+    result = processor.process("MSG-2")
+
+    assert result.status is CrossDocumentStatus.SUCCEEDED
+    assert not any(summary.stage == "package_assignment_repair" for summary in result.model_calls)
+    assert result.package_assignments[0].action.value == "CREATE_NEW_PACKAGE"
 
 
 def test_frozen_package_enters_n13_and_can_return_active(
@@ -966,7 +1001,7 @@ def test_n13_on_fails_closed_until_full_business_gate(
         engine(registry, n13_wire_protocol="on")
 
 
-def test_n13_shadow_records_smaller_pair_inline_candidate_without_changing_request(
+def test_n13_uses_pair_ids_and_records_smaller_pair_inline_shadow(
     registry: SQLiteCDECRRegistry,
 ) -> None:
     m3 = FakeStructured(package_merge_relation="DIFFERENT_PACKAGE")
@@ -981,7 +1016,10 @@ def test_n13_shadow_records_smaller_pair_inline_candidate_without_changing_reque
     request = next(
         call for call in m3.calls if "Package coreference review model" in call.system_prompt
     )
-    assert set(json.loads(request.user_prompt)) == {"batch_index", "batch_count", "pairs"}
+    request_payload = json.loads(request.user_prompt)
+    assert set(request_payload) == {"batch_index", "batch_count", "pairs"}
+    assert all(pair["pair_id"].startswith("r") for pair in request_payload["pairs"])
+    assert request.json_schema["title"] == "PackageMergeWireDecisionBatch"
     with sqlite3.connect(registry.path) as connection:
         audit = json.loads(
             connection.execute(
@@ -995,6 +1033,30 @@ def test_n13_shadow_records_smaller_pair_inline_candidate_without_changing_reque
         )
     assert audit["optimized_payload_bytes"] < audit["baseline_payload_bytes"]
     assert audit["wire_ref_count"] == 0
+
+
+def test_n13_missing_pair_degrades_to_no_merge_without_batch_repair(
+    registry: SQLiteCDECRRegistry,
+) -> None:
+    m3 = PackageMergeCoverageDrift()
+    processor, _, _, _ = engine(registry, m3=m3)
+    add(registry, source("MSG-1"), metric_mention("MSG-1", metric="REVENUE"))
+    processor.process("MSG-1")
+    add(registry, source("MSG-2"), market_mention("MSG-2"))
+
+    result = processor.process("MSG-2")
+
+    assert result.status is CrossDocumentStatus.SUCCEEDED
+    assert not any(summary.stage == "package_merge_repair" for summary in result.model_calls)
+    with sqlite3.connect(registry.path) as connection:
+        count = connection.execute(
+            """
+            SELECT COUNT(*) FROM decision_audits
+            WHERE run_id = ? AND decision_type = 'PACKAGE_N13_DEGRADED'
+            """,
+            (result.run_id,),
+        ).fetchone()[0]
+    assert count >= 1
 
 
 def test_invalid_structured_output_gets_one_repair(registry: SQLiteCDECRRegistry) -> None:
@@ -1060,7 +1122,7 @@ def test_n9_normalizes_redundant_lists_and_unique_same_target_copy_error(
     assert payload is not None
     audit = json.loads(payload[0])
     assert audit["model_call_id"]
-    assert audit["tasks"]["m1"]["invalid_target"] == "a1-copy-error"
+    assert audit["tasks"]["m1"]["invalid_target"] == "m1c1-copy-error"
     assert any(
         item["kind"] == "UNIQUE_SAME_EVENT_TARGET_RESTORED"
         for item in audit["normalizations"]
@@ -1091,14 +1153,14 @@ def test_n9_safely_drops_extra_and_identical_duplicate_assessments(
     assert payload is not None
     audit = json.loads(payload[0])
     assert audit["tasks"]["m1"]["extra"] == ["a999"]
-    assert audit["tasks"]["m1"]["duplicates"] == ["a1"]
+    assert audit["tasks"]["m1"]["duplicates"] == ["m1c1"]
     assert any(
         item["kind"] == "IDENTICAL_ASSESSMENT_DEDUPLICATED"
         for item in audit["normalizations"]
     )
 
 
-def test_n9_missing_assessment_repairs_inside_typed_boundary(
+def test_n9_missing_assessment_degrades_only_task_without_repair(
     registry: SQLiteCDECRRegistry,
 ) -> None:
     m2 = AtomicCoverageDrift(mode="missing")
@@ -1110,7 +1172,8 @@ def test_n9_missing_assessment_repairs_inside_typed_boundary(
     result = processor.process("MSG-2")
 
     assert result.status is CrossDocumentStatus.SUCCEEDED
-    assert any(summary.stage == "atomic_coreference_repair" for summary in result.model_calls)
+    assert not any(summary.stage == "atomic_coreference_repair" for summary in result.model_calls)
+    assert result.atomic_assignments[0].action is AtomicAction.CREATE_NEW
     with sqlite3.connect(registry.path) as connection:
         payload = connection.execute(
             """
@@ -1122,4 +1185,4 @@ def test_n9_missing_assessment_repairs_inside_typed_boundary(
         ).fetchone()
     assert payload is not None
     audit = json.loads(payload[0])
-    assert audit["tasks"]["m1"]["missing"] == ["a1"]
+    assert audit["tasks"]["m1"]["missing"] == ["m1c1"]

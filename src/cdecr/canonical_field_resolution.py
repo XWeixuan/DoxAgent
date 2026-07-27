@@ -17,7 +17,11 @@ from cdecr.contracts import (
     ParticipantRole,
     SourceMessage,
 )
-from cdecr.field_coreference import FieldCoreferenceResolver, normalize_field_text
+from cdecr.field_coreference import (
+    FieldCoreferenceError,
+    FieldCoreferenceResolver,
+    normalize_field_text,
+)
 from cdecr.field_coreference_contracts import (
     CanonicalFieldLink,
     FieldCoreferenceHints,
@@ -33,9 +37,10 @@ from cdecr.kb_v2 import (
     hard_dimensions_for_match,
     unique_match,
 )
+from cdecr.models import ModelAdapterError
 from cdecr.ports import CDECRRegistry, DecisionAuditRecord
 
-FIELD_RESOLVER_VERSION = "canonical-field-resolution-v4"
+FIELD_RESOLVER_VERSION = "canonical-field-resolution-v5"
 
 
 @dataclass(frozen=True)
@@ -534,34 +539,49 @@ class CanonicalFieldResolutionEngine:
                     aliases=[unique.name, *unique.aliases],
                     run_id=run_id,
                 )
-            elif primary.allow_coreference:
-                for match in matches:
-                    target_namespace = _namespace_for_match(
-                        match,
-                        requested=primary.value.namespace,
-                        participant_role=primary.value.hints.participant_role,
-                    )
-                    self.field_resolver.ensure_external_entry(
-                        primary.value,
-                        external_id=match.external_id,
-                        canonical_text=match.name,
-                        aliases=match.aliases,
-                        run_id=run_id,
-                        namespace=target_namespace,
-                        hard_dimensions=hard_dimensions_for_match(match),
-                    )
-                result = self.field_resolver.resolve(
-                    primary.value,
-                    mention_id=primary.mention_id,
-                    field_path=primary.field_path,
-                    run_id=run_id,
-                )
             else:
-                result = FieldCoreferenceResult()
-                self._audit_unresolved(primary, matches, run_id=run_id)
+                try:
+                    if primary.allow_coreference:
+                        for match in matches:
+                            target_namespace = _namespace_for_match(
+                                match,
+                                requested=primary.value.namespace,
+                                participant_role=primary.value.hints.participant_role,
+                            )
+                            self.field_resolver.ensure_external_entry(
+                                primary.value,
+                                external_id=match.external_id,
+                                canonical_text=match.name,
+                                aliases=match.aliases,
+                                run_id=run_id,
+                                namespace=target_namespace,
+                                hard_dimensions=hard_dimensions_for_match(match),
+                            )
+                        result = self.field_resolver.resolve(
+                            primary.value,
+                            mention_id=primary.mention_id,
+                            field_path=primary.field_path,
+                            run_id=run_id,
+                        )
+                    else:
+                        result = self.field_resolver.canonicalize_unresolved(
+                            primary.value,
+                            mention_id=primary.mention_id,
+                            field_path=primary.field_path,
+                            run_id=run_id,
+                            reason="COREFERENCE_NOT_ELIGIBLE",
+                        )
+                        self._audit_unresolved(primary, matches, run_id=run_id)
+                except (FieldCoreferenceError, ModelAdapterError) as exc:
+                    result = self.field_resolver.canonicalize_unresolved(
+                        primary.value,
+                        mention_id=primary.mention_id,
+                        field_path=primary.field_path,
+                        run_id=run_id,
+                        reason=f"FIELD_RESOLUTION_ERROR:{type(exc).__name__}",
+                    )
             if result.canonical_id is None or result.resolution_method is None:
-                unresolved_count += len(group)
-                continue
+                raise RuntimeError("field resolution returned no persistent canonical link")
             resolved_count += len(group)
             for occurrence in group[1:]:
                 self.registry.save_field_link(

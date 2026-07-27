@@ -327,7 +327,9 @@ def test_second_invalid_model_output_fails_without_loose_parsing(
         _resolve(resolver, mention, "lowercase unclear phrase")
 
 
-def test_generic_value_remains_unresolved(registry: SQLiteCDECRRegistry) -> None:
+def test_generic_value_is_persisted_as_unresolved_canonical(
+    registry: SQLiteCDECRRegistry,
+) -> None:
     mention = _mention("M-1", "S-1")
     _persist_mention(registry, mention)
     resolver = FieldCoreferenceResolver(
@@ -338,9 +340,10 @@ def test_generic_value_remains_unresolved(registry: SQLiteCDECRRegistry) -> None
         ),
     )
     result = _resolve(resolver, mention, "the facility")
-    assert result.canonical_id is None
-    assert result.resolution_method is None
-    assert registry.get_field_link(mention.mention_id, "locations[0]") is None
+    assert result.canonical_id is not None
+    assert result.resolution_method is not None
+    assert result.resolution_method.value == "UNRESOLVED_CANONICALIZED"
+    assert registry.get_field_link(mention.mention_id, "locations[0]") is not None
     unknown = resolver.resolve(
         FieldCoreferenceInput(
             namespace=FieldNamespace.PARTICIPANT_UNKNOWN,
@@ -415,8 +418,10 @@ def test_invalid_unknown_participant_namespace_degrades_to_unresolved(
         field_path="participants[0]",
     )
 
-    assert result.canonical_id is None
-    assert registry.get_field_link(mention.mention_id, "participants[0]") is None
+    assert result.canonical_id is not None
+    assert result.resolution_method is not None
+    assert result.resolution_method.value == "UNRESOLVED_CANONICALIZED"
+    assert registry.get_field_link(mention.mention_id, "participants[0]") is not None
     with sqlite3.connect(registry.path) as connection:
         count = connection.execute(
             """

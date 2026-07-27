@@ -395,6 +395,23 @@ class PackagePairMergeDecision(StrictModel):
     reason: NonEmptyString
 
 
+class PackagePairMergeWireDecision(StrictModel):
+    pair_id: NonEmptyString
+    relation: PackageMergeRelation
+    reason: NonEmptyString
+
+
+class PackageMergeWireDecisionBatch(StrictModel):
+    decisions: list[PackagePairMergeWireDecision]
+
+    @model_validator(mode="after")
+    def unique_pairs(self) -> PackageMergeWireDecisionBatch:
+        pair_ids = [item.pair_id for item in self.decisions]
+        if len(pair_ids) != len(set(pair_ids)):
+            raise ValueError("package merge wire decisions must be unique per pair")
+        return self
+
+
 class PackageMergeDecisionBatch(StrictModel):
     decisions: list[PackagePairMergeDecision]
 

@@ -1,0 +1,169 @@
+{
+  "report_version": "cdecr-item-resilience-30-v1",
+  "evaluated_at": "2026-07-28",
+  "corpus": {
+    "snapshot": ".tmp/cdecr/grounder_quality_v5/live_all.jsonl",
+    "manifest": "dev_plan/CDECR/experiments/grounder_quality_30_manifest.json",
+    "selected_documents": 30
+  },
+  "artifacts": {
+    "registry": {
+      "path": ".tmp/cdecr/resilience/resilience_30_20260728.sqlite3",
+      "sha256": "64AD6C5015D4D66E592BD4B74F030E96BBC1D25EE17B243C6FEADB81C709274F"
+    },
+    "runtime_report": {
+      "path": ".tmp/cdecr/resilience/resilience_30_20260728_report.json",
+      "sha256": "678B172CE3648A4C9000879E36917D65A3D8CAD91795AAE312EBA7B59CF2FB18"
+    },
+    "cluster_export": {
+      "path": ".tmp/cdecr/resilience/resilience_30_20260728_clusters.json",
+      "sha256": "FC29548728B68284F7A8D5461305A4FA51CBDA142F849B399579559F762E8877"
+    }
+  },
+  "execution": {
+    "document_success": {
+      "completed": 30,
+      "total": 30,
+      "rate": 1.0
+    },
+    "cross_document_success": {
+      "completed": 30,
+      "total": 30,
+      "rate": 1.0
+    },
+    "failed_documents": 0,
+    "model_calls": 940,
+    "first_pass_wall_clock_ms": 5397721,
+    "total_wall_clock_ms": 5408298,
+    "restart": {
+      "completed": 30,
+      "total": 30,
+      "added_model_calls": 0,
+      "added_mentions": 0,
+      "added_atomics": 0,
+      "added_packages": 0
+    },
+    "outputs": {
+      "mentions": 225,
+      "atomic_events": 95,
+      "packages": 65,
+      "memberships": 95
+    }
+  },
+  "tokens": {
+    "input": 4403264,
+    "output": 443843,
+    "combined": 4847107,
+    "combined_per_document": 161570.23,
+    "request_payload_bytes": 12781656,
+    "dominant_stages_combined_share": {
+      "package_merge": 0.5474,
+      "package_assignment": 0.1643,
+      "atomic_coreference": 0.1246,
+      "grounder": 0.0405,
+      "field_coreference": 0.0360,
+      "judge": 0.0331
+    },
+    "n9_n12_n13_combined_share": 0.8363
+  },
+  "human_review": {
+    "mention": {
+      "gold": 268,
+      "output": 225,
+      "strict_tp": 192,
+      "strict_fp": 33,
+      "strict_fn": 76,
+      "micro_precision": 0.8533,
+      "micro_recall": 0.7164,
+      "micro_f1": 0.7789,
+      "source_supported_outputs": 225,
+      "source_supported_rate": 1.0
+    },
+    "field_resolution": {
+      "required_and_persisted_links": 790,
+      "correct": 658,
+      "incorrect": 132,
+      "precision": 0.8329,
+      "recall": 0.8329,
+      "accuracy": 0.8329,
+      "unresolved": 52,
+      "correct_unresolved": 19,
+      "unresolved_accuracy": 0.3654
+    },
+    "identity": {
+      "profiles": 225,
+      "profiles_with_missing_required_fields": 0,
+      "open_profiles": 225,
+      "schema_projection_non_null": 0,
+      "predicted_pair_tp": 285,
+      "predicted_pair_fp": 671,
+      "pair_precision": 0.298,
+      "judgeable_true_pairs": 308,
+      "judgeable_false_negatives": 23,
+      "judgeable_recall": 0.925
+    },
+    "atomic": {
+      "predicted_atomic_count": 95,
+      "gold_atomic_count": 115,
+      "predicted_positive_pairs": 956,
+      "gold_positive_pairs": 520,
+      "tp": 400,
+      "fp": 556,
+      "fn": 120,
+      "precision": 0.4184,
+      "recall": 0.7692,
+      "f1": 0.5420,
+      "provisional_stage_metrics": {
+        "n7_recall_at_k": 0.9818,
+        "n9_merge_precision": 0.7231,
+        "n9_conditional_merge_recall": 0.8704,
+        "create_new_accuracy": 0.9053
+      }
+    },
+    "package": {
+      "predicted_positive_pairs": 331,
+      "gold_positive_pairs": 413,
+      "tp": 303,
+      "fp": 28,
+      "fn": 110,
+      "tn": 4024,
+      "precision": 0.9154,
+      "recall": 0.7337,
+      "f1": 0.8145,
+      "n13_conditional_precision": 0.6538,
+      "n13_conditional_recall": 0.6538,
+      "kind_fidelity": 0.9077,
+      "family_fidelity": 0.9077,
+      "title_summary_fidelity": 0.9846,
+      "packages_with_artifact_anchor": 0,
+      "packages_with_anchor_ids": 0
+    }
+  },
+  "resilience": {
+    "model_call_status": {
+      "succeeded": 938,
+      "failed_then_isolated_or_repaired": 2
+    },
+    "semantic_evidence_location_repairs": 0,
+    "dreamer_structural_repairs": 1,
+    "judge_json_repairs": 1,
+    "text_not_found_evidence_records": 16,
+    "candidate_leakage": 0,
+    "n9_task_local_fallbacks": 1,
+    "n12_task_local_fallbacks": 0,
+    "n13_pair_degradations": 0
+  },
+  "acceptance": {
+    "engineering_reliability_passed": true,
+    "semantic_quality_passed": false,
+    "runtime_report_acceptance_passed": false,
+    "p2_legacy_shadow_canary_cleanup_performed": false,
+    "primary_causes": [
+      "N5.5/N6 leaves quantity metrics outside OPEN identity constraints and schema projections empty",
+      "N9 over-merges related facts that share a disclosure, issuer, or period",
+      "N13 merges reaction packages into earnings packages and misses several legitimate package joins",
+      "Package artifact and period anchors are largely absent",
+      "Mention extraction recall is limited by omissions and compound/non-atomic drafts"
+    ]
+  }
+}

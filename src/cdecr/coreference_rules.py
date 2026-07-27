@@ -699,6 +699,8 @@ def _different(
         return
     if unknown is not None and (str(left) == unknown or str(right) == unknown):
         return
+    if _internal_canonical_id(left) or _internal_canonical_id(right):
+        return
     if left != right:
         conflicts.add(code)
 
@@ -708,8 +710,14 @@ def _set_conflict(
 ) -> None:
     left_set = set(left) if isinstance(left, (list, set, tuple)) else set()
     right_set = set(right) if isinstance(right, (list, set, tuple)) else set()
+    left_set = {value for value in left_set if not _internal_canonical_id(value)}
+    right_set = {value for value in right_set if not _internal_canonical_id(value)}
     if left_set and right_set and not left_set.intersection(right_set):
         conflicts.add(code)
+
+
+def _internal_canonical_id(value: object) -> bool:
+    return isinstance(value, str) and value.startswith(("field:", "unresolved:"))
 
 
 def _enum_known(value: AssertionState) -> bool:
@@ -717,7 +725,12 @@ def _enum_known(value: AssertionState) -> bool:
 
 
 def _times_disjoint(left: EventTime, right: EventTime) -> bool:
-    if left.reference_period_id and right.reference_period_id:
+    if (
+        left.reference_period_id
+        and right.reference_period_id
+        and not _internal_canonical_id(left.reference_period_id)
+        and not _internal_canonical_id(right.reference_period_id)
+    ):
         return left.reference_period_id != right.reference_period_id
     if left.event_start is None or right.event_start is None:
         return False

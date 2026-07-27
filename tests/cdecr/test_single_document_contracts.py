@@ -11,6 +11,8 @@ from cdecr.contracts import (
     EventFamily,
     EventMention,
     EventTime,
+    EvidenceRecord,
+    EvidenceRecordStatus,
     LocalPackageHint,
     ParticipantRole,
     Predicate,
@@ -253,21 +255,30 @@ def test_intermediate_contracts_forbid_extra_fields() -> None:
         )
 
 
-def test_final_event_mention_requires_evidence() -> None:
+def test_final_event_mention_allows_raw_unlocated_evidence() -> None:
     draft = mention_draft()
-    with pytest.raises(ValidationError, match="at least 1"):
-        EventMention(
-            mention_id="M1",
-            message_id="MSG-1",
-            evidence_spans=[],
-            canonical_proposition=draft.canonical_proposition,
-            source_claim=draft.source_claim,
-            event_family=draft.event_family,
-            predicate=draft.predicate,
-            participants=[],
-            locations=[],
-            time=draft.time,
-            assertion_state=draft.assertion_state,
-            quantities=[],
-            open_attributes=[],
-        )
+    mention = EventMention(
+        mention_id="M1",
+        message_id="MSG-1",
+        evidence_records=[
+            EvidenceRecord(
+                segment_id="text:0",
+                text="unlocated quote",
+                status=EvidenceRecordStatus.TEXT_NOT_FOUND,
+                error_code="evidence_text_not_found",
+            )
+        ],
+        evidence_spans=[],
+        canonical_proposition=draft.canonical_proposition,
+        source_claim=draft.source_claim,
+        event_family=draft.event_family,
+        predicate=draft.predicate,
+        participants=[],
+        locations=[],
+        time=EventTime(**draft.time.model_dump()),
+        assertion_state=draft.assertion_state,
+        quantities=[],
+        open_attributes=[],
+    )
+    assert mention.evidence_spans == []
+    assert mention.evidence_records[0].status is EvidenceRecordStatus.TEXT_NOT_FOUND

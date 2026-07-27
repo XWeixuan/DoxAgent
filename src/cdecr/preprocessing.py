@@ -23,7 +23,7 @@ from cdecr.single_document_contracts import (
     SourceSegment,
 )
 
-PIPELINE_VERSION = "single-document-v6"
+PIPELINE_VERSION = "single-document-v7"
 DREAMER_SHORT_LIMIT = 24_000
 DREAMER_BLOCK_LIMIT = 24_000
 COMMON_CONTEXT_LIMIT = 4_000

@@ -374,7 +374,7 @@ def _run_one_document(
         mentions_by_id: dict[str, EventMention] = {}
         for draft in grounder.drafts:
             mention = processor._materialize_mention(  # noqa: SLF001 - experiment endpoint
-                source, preprocessing.document, draft.mention
+                source, preprocessing.document, draft.mention, run_id=run_id
             )
             mentions_by_id.setdefault(mention.mention_id, mention)
         result = SingleDocumentResult(
