@@ -5,6 +5,12 @@ from __future__ import annotations
 import hashlib
 import json
 
+from pydantic import Field
+
+from cdecr.atomic_identity_sidecar import (
+    AtomicIdentitySidecar,
+    compile_atomic_identity_sidecar,
+)
 from cdecr.canonical_field_resolution import FIELD_RESOLVER_VERSION
 from cdecr.contracts import (
     AnalystActionIdentityFields,
@@ -28,7 +34,7 @@ from cdecr.field_coreference import field_resolution_configuration_hash
 from cdecr.field_coreference_contracts import FieldLinkMethod, FieldNamespace
 from cdecr.ports import CDECRRegistry
 
-IDENTITY_COMPILER_VERSION = "identity-compiler-v4"
+IDENTITY_COMPILER_VERSION = "identity-compiler-v5"
 _PRINCIPAL_ROLES = {
     ParticipantRole.ACTOR,
     ParticipantRole.SUBJECT,
@@ -48,9 +54,10 @@ class CompiledMentionIdentity(StrictModel):
     primary_metric_id: str | None = None
     primary_metric_field_path: str | None = None
     primary_metric_trust_reason: str | None = None
-    principal_company_ids: list[str] = []
-    principal_company_field_paths: list[str] = []
+    principal_company_ids: list[str] = Field(default_factory=list)
+    principal_company_field_paths: list[str] = Field(default_factory=list)
     principal_company_trust_reason: str | None = None
+    atomic_identity_sidecar: AtomicIdentitySidecar | None = None
     compiler_version: str = IDENTITY_COMPILER_VERSION
 
 
@@ -63,6 +70,11 @@ class IdentityCompiler:
         links = self._link_payload(mention)
         links_hash = _hash(links)
         profile, missing = self._profile(mention)
+        sidecar = (
+            compile_atomic_identity_sidecar(mention, profile)
+            if profile is not None
+            else None
+        )
         (
             primary_metric_id,
             primary_metric_field_path,
@@ -85,6 +97,9 @@ class IdentityCompiler:
                 "identity_compiler_version": IDENTITY_COMPILER_VERSION,
                 "primary_metric_id": primary_metric_id,
                 "principal_company_ids": principal_company_ids,
+                "atomic_identity_sidecar_signature": (
+                    sidecar.signature_hash if sidecar is not None else None
+                ),
             }
         )
         return CompiledMentionIdentity(
@@ -99,6 +114,7 @@ class IdentityCompiler:
             principal_company_ids=principal_company_ids,
             principal_company_field_paths=principal_company_paths,
             principal_company_trust_reason=principal_company_trust_reason,
+            atomic_identity_sidecar=sidecar,
         )
 
     def _primary_metric_discriminant(

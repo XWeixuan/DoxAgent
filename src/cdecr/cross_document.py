@@ -23,7 +23,16 @@ from cdecr.atomic_identity import (
     compare_identity_groups,
     resolved_identity_evidence,
 )
-from cdecr.atomic_recall_audit import append_ranked_candidate_snapshot
+from cdecr.atomic_identity_sidecar import (
+    append_atomic_ranker_shadow_audit,
+    combine_atomic_identity_sidecars,
+    compile_atomic_identity_sidecar,
+    rank_atomic_candidates,
+)
+from cdecr.atomic_recall_audit import (
+    append_ranked_candidate_snapshot,
+    candidate_root_id,
+)
 from cdecr.canonical_field_resolution import (
     FIELD_RESOLVER_VERSION,
     CanonicalFieldResolutionEngine,
@@ -1251,6 +1260,10 @@ class CrossDocumentEngine:
         }
         output: dict[str, list[AtomicCandidate]] = {}
         provisional: list[tuple[AtomicEvent, EventMention, CompiledMentionIdentity]] = []
+        identity_compiler = IdentityCompiler(
+            registry=self.registry,
+            catalog_hash=self.knowledge_base.catalog_hash,
+        )
         for mention in mentions:
             compiled_identity = compiled[mention.mention_id]
             profile = compiled_identity.identity_profile
@@ -1316,6 +1329,7 @@ class CrossDocumentEngine:
                     scores[provisional_event.event_id] = score
             ranked: list[AtomicCandidate] = []
             observed_by_event: dict[str, list[HardConflictCode]] = {}
+            candidate_sidecars = {}
             for event_id, recall_routes in routes.items():
                 event = active_events[event_id]
                 representatives = [
@@ -1332,6 +1346,22 @@ class CrossDocumentEngine:
                         for provisional_event, prior, _ in provisional
                         if provisional_event.event_id == event_id
                     ]
+                representative_sidecars = []
+                for representative in representatives:
+                    representative_identity = identity_compiler.compile(representative)
+                    if representative_identity.atomic_identity_sidecar is not None:
+                        representative_sidecars.append(
+                            representative_identity.atomic_identity_sidecar
+                        )
+                if representative_sidecars:
+                    candidate_sidecars[event_id] = combine_atomic_identity_sidecars(
+                        representative_sidecars
+                    )
+                else:
+                    candidate_sidecars[event_id] = compile_atomic_identity_sidecar(
+                        mention,
+                        event.identity_profile,
+                    )
                 observed_conflicts: list[HardConflictCode] = []
                 if self.hard_cannot_link_mode is not HardCannotLinkMode.OFF:
                     observed_conflicts = hard_cannot_link(
@@ -1350,10 +1380,7 @@ class CrossDocumentEngine:
                         }
                     ]
                     representative_compiled = [
-                        IdentityCompiler(
-                            registry=self.registry,
-                            catalog_hash=self.knowledge_base.catalog_hash,
-                        ).compile(representative)
+                        identity_compiler.compile(representative)
                         for representative in representatives
                     ]
                     active_conflicts, discriminant_payload = (
@@ -1479,6 +1506,29 @@ class CrossDocumentEngine:
                 )
             else:
                 ranked.sort(key=lambda item: (-item.recall_score, item.event.event_id))
+            incoming_sidecar = compiled_identity.atomic_identity_sidecar
+            assert incoming_sidecar is not None
+            shadow_ranked = rank_atomic_candidates(
+                candidates=ranked,
+                incoming_sidecar=incoming_sidecar,
+                candidate_sidecars=candidate_sidecars,
+                candidate_roots={
+                    item.event.event_id: candidate_root_id(
+                        self.registry,
+                        item.event.event_id,
+                    )
+                    for item in ranked
+                },
+                raw_embedding_similarities=scores,
+            )
+            append_atomic_ranker_shadow_audit(
+                registry=self.registry,
+                run_id=run_id,
+                mention_id=mention.mention_id,
+                legacy_ranked=ranked,
+                shadow_ranked=shadow_ranked,
+                top_k=ATOMIC_TOP_K,
+            )
             append_ranked_candidate_snapshot(
                 registry=self.registry,
                 run_id=run_id,
