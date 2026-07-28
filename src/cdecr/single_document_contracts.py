@@ -19,6 +19,7 @@ from cdecr.contracts import (
     NonEmptyString,
     ParticipantRole,
     Predicate,
+    QuantityRole,
     StrictModel,
     TimePrecision,
 )
@@ -248,6 +249,7 @@ class QuantityDraft(StrictModel):
     value: int | float
     unit: NonEmptyString
     raw_text: NonEmptyString
+    role: QuantityRole
 
 
 class MentionDraft(StrictModel):
@@ -277,6 +279,17 @@ class MentionDraft(StrictModel):
     )
     local_package_hint: LocalPackageHint | None = None
 
+    @model_validator(mode="after")
+    def require_one_primary_quantity(self) -> MentionDraft:
+        if not self.quantities:
+            return self
+        primary_count = sum(
+            item.role is QuantityRole.PRIMARY for item in self.quantities
+        )
+        if primary_count != 1:
+            raise ValueError("metric-bearing Mention requires exactly one PRIMARY quantity")
+        return self
+
 
 class GroundedMentionDraft(StrictModel):
     draft_id: NonEmptyString
@@ -291,13 +304,33 @@ class GroundedMentionDraftInput(StrictModel):
     mention: MentionDraft
 
 
+GrounderRejectionCode = Literal[
+    "BACKGROUND",
+    "NOT_INDEPENDENT",
+    "UNSUPPORTED",
+    "OUT_OF_SCOPE",
+]
+
+
+class RejectedCandidateDraft(StrictModel):
+    id: Annotated[str, Field(pattern=r"^c[1-9][0-9]*$")]
+    code: GrounderRejectionCode
+
+
+class RejectedCandidateRecord(StrictModel):
+    candidate_id: NonEmptyString
+    code: GrounderRejectionCode
+
+
 class GrounderModelOutput(StrictModel):
     drafts: list[GroundedMentionDraftInput]
+    rejected_candidates: list[RejectedCandidateDraft]
     issue_flags: list[NonEmptyString]
 
 
 class GrounderOutput(StrictModel):
     drafts: list[GroundedMentionDraft]
+    rejected_candidates: list[RejectedCandidateRecord] = Field(default_factory=list)
     issue_flags: list[NonEmptyString]
 
 

@@ -87,6 +87,7 @@ from cdecr.single_document_contracts import (
     OpenAttributeDraft,
     PreprocessedDocument,
     ProcessingStatus,
+    RejectedCandidateRecord,
     SingleDocumentResult,
     normalize_event_time_semantics,
     validate_event_time_semantics,
@@ -352,9 +353,12 @@ class _AuditedStructuredClient:
         self.model = model
         self.stage = stage
         self.summaries = summaries
+        self.repair_invocations = 0
 
     def complete(self, request: StructuredModelRequest) -> StructuredModelResult:
         repaired = request.system_prompt.casefold().startswith("repair")
+        if repaired:
+            self.repair_invocations += 1
         call_stage = f"{self.stage}_repair" if repaired else self.stage
         call_id = str(uuid.uuid4())
         input_hash = _hash_json({"system": request.system_prompt, "user": request.user_prompt})
@@ -1331,6 +1335,7 @@ class SingleDocumentProcessor:
                 summaries=summaries,
             )
             candidate_ids = set(short_to_full)
+            disposition_failures: list[dict[str, list[str]]] = []
 
             def validate(output: GrounderModelOutput) -> None:
                 retained: list[GroundedMentionDraftInput] = []
@@ -1398,6 +1403,42 @@ class SingleDocumentProcessor:
                             payload={"items": degraded},
                         )
                     )
+                used_ids = [
+                    candidate_id
+                    for item in output.drafts
+                    for candidate_id in item.source_candidate_ids
+                ]
+                rejected_ids = [item.id for item in output.rejected_candidates]
+                duplicate_rejected = sorted(
+                    {
+                        value
+                        for value in rejected_ids
+                        if rejected_ids.count(value) > 1
+                    }
+                )
+                overlap = sorted(set(used_ids) & set(rejected_ids))
+                returned = set(used_ids) | set(rejected_ids)
+                missing = sorted(candidate_ids - returned)
+                extra = sorted(returned - candidate_ids)
+                if (
+                    duplicate_rejected
+                    or overlap
+                    or missing
+                    or extra
+                ):
+                    disposition_failures.append(
+                        {
+                            "duplicate_candidate_ids": duplicate_rejected,
+                            "overlap_candidate_ids": overlap,
+                            "missing_candidate_ids": missing,
+                            "extra_candidate_ids": extra,
+                        }
+                    )
+                    raise ValueError(
+                        "GROUNDER_CANDIDATE_DISPOSITION_INVALID:"
+                        f"duplicate_rejected={duplicate_rejected};"
+                        f"overlap={overlap};missing={missing};extra={extra}"
+                    )
 
             output = self._invoke_typed(
                 client=client,
@@ -1422,9 +1463,42 @@ class SingleDocumentProcessor:
                         mention=item.mention,
                     )
                 )
+            persisted_rejections = [
+                RejectedCandidateRecord(
+                    candidate_id=short_to_full[item.id],
+                    code=item.code,
+                )
+                for item in output.rejected_candidates
+            ]
             persisted = GrounderOutput(
                 drafts=persisted_drafts,
+                rejected_candidates=persisted_rejections,
                 issue_flags=output.issue_flags,
+            )
+            rejection_codes = Counter(item.code for item in output.rejected_candidates)
+            self.registry.append_decision_audit(
+                DecisionAuditRecord(
+                    audit_id=f"grounder-candidate-disposition:{run_id}:{batch_index}",
+                    run_id=run_id,
+                    decision_type="GROUNDER_CANDIDATE_DISPOSITION",
+                    subject_id=f"grounder-batch:{batch_index}",
+                    payload={
+                        "candidate_count": len(batch),
+                        "used_candidate_count": len(
+                            {
+                                candidate_id
+                                for item in output.drafts
+                                for candidate_id in item.source_candidate_ids
+                            }
+                        ),
+                        "rejected_candidate_count": len(output.rejected_candidates),
+                        "rejected_code_counts": dict(rejection_codes),
+                        "missing_candidate_ids": [],
+                        "duplicate_candidate_ids": [],
+                        "initial_disposition_failures": disposition_failures,
+                        "repair_triggered": client.repair_invocations > 0,
+                    },
+                )
             )
             self.registry.save_grounder_batch(
                 run_id=run_id,
@@ -1454,6 +1528,11 @@ class SingleDocumentProcessor:
                 drafts_by_id[item.draft_id] = item
         return GrounderOutput(
             drafts=list(drafts_by_id.values()),
+            rejected_candidates=[
+                item
+                for _, output, _ in sorted(batch_results)
+                for item in output.rejected_candidates
+            ],
             issue_flags=list(issue_flags),
         )
 

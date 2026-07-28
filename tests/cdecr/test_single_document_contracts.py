@@ -16,6 +16,8 @@ from cdecr.contracts import (
     LocalPackageHint,
     ParticipantRole,
     Predicate,
+    Quantity,
+    QuantityRole,
     TimePrecision,
 )
 from cdecr.single_document_contracts import (
@@ -23,6 +25,7 @@ from cdecr.single_document_contracts import (
     EvidenceLocator,
     EvidenceText,
     GroundedMentionDraft,
+    GrounderModelOutput,
     JudgeAction,
     JudgeCommandOutput,
     JudgeDecisionRecord,
@@ -31,6 +34,7 @@ from cdecr.single_document_contracts import (
     MentionDraft,
     OpenAttributeDraft,
     ParticipantDraft,
+    QuantityDraft,
     normalize_event_time_semantics,
     validate_event_time_semantics,
 )
@@ -69,6 +73,95 @@ def test_grounder_draft_forbids_retired_judge_routing_fields() -> None:
             mention=mention_draft(),
             needs_judge=True,
         )
+
+
+def test_grounder_candidate_disposition_contract_is_closed() -> None:
+    output = GrounderModelOutput.model_validate(
+        {
+            "drafts": [
+                {
+                    "source_candidate_ids": ["c1"],
+                    "mention": mention_draft().model_dump(mode="json"),
+                }
+            ],
+            "rejected_candidates": [
+                {"id": "c2", "code": "BACKGROUND"},
+                {"id": "c3", "code": "NOT_INDEPENDENT"},
+            ],
+            "issue_flags": [],
+        }
+    )
+    assert [item.id for item in output.rejected_candidates] == ["c2", "c3"]
+    with pytest.raises(ValidationError, match="literal_error"):
+        GrounderModelOutput.model_validate(
+            {
+                "drafts": [],
+                "rejected_candidates": [{"id": "c1", "code": "GENERIC_OPINION"}],
+                "issue_flags": [],
+            }
+        )
+
+
+def test_quantity_roles_require_exactly_one_primary_in_new_draft() -> None:
+    primary = QuantityDraft(
+        metric_id="revenue",
+        value=50,
+        unit="USD_BILLION",
+        raw_text="$50 billion",
+        role=QuantityRole.PRIMARY,
+    )
+    comparison = QuantityDraft(
+        metric_id="revenue",
+        value=42.95,
+        unit="USD_BILLION",
+        raw_text="$42.95 billion consensus",
+        role=QuantityRole.COMPARISON,
+    )
+    valid = mention_draft().model_copy(
+        update={"quantities": [primary, comparison]}
+    )
+    assert [item.role for item in valid.quantities] == [
+        QuantityRole.PRIMARY,
+        QuantityRole.COMPARISON,
+    ]
+    with pytest.raises(ValidationError, match="exactly one PRIMARY"):
+        MentionDraft.model_validate(
+            {
+                **mention_draft().model_dump(mode="json"),
+                "quantities": [
+                    comparison.model_dump(mode="json"),
+                    comparison.model_dump(mode="json"),
+                ],
+            }
+        )
+
+
+def test_legacy_mention_quantities_assign_first_primary_and_rest_supporting() -> None:
+    draft = mention_draft()
+    legacy_quantities = [
+        Quantity(metric_id="revenue", value=50, unit="USD", raw_text="$50B"),
+        Quantity(metric_id="eps", value=31, unit="USD", raw_text="$31"),
+    ]
+    mention = EventMention(
+        mention_id="M-LEGACY",
+        message_id="MSG-1",
+        evidence_records=[],
+        evidence_spans=[],
+        canonical_proposition=draft.canonical_proposition,
+        source_claim=draft.source_claim,
+        event_family=draft.event_family,
+        predicate=draft.predicate,
+        participants=[],
+        locations=[],
+        time=EventTime(**draft.time.model_dump()),
+        assertion_state=draft.assertion_state,
+        quantities=legacy_quantities,
+        open_attributes=[],
+    )
+    assert [item.role for item in mention.quantities] == [
+        QuantityRole.PRIMARY,
+        QuantityRole.SUPPORTING,
+    ]
 
 
 @pytest.mark.parametrize(

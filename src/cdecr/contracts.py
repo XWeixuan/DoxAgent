@@ -59,6 +59,13 @@ class ParticipantRole(StrEnum):
     OTHER = "OTHER"
 
 
+class QuantityRole(StrEnum):
+    PRIMARY = "PRIMARY"
+    COMPARISON = "COMPARISON"
+    BOUND = "BOUND"
+    SUPPORTING = "SUPPORTING"
+
+
 class TimePrecision(StrEnum):
     TIMESTAMP = "TIMESTAMP"
     DAY = "DAY"
@@ -335,6 +342,7 @@ class Quantity(StrictModel):
     value: int | float
     unit: NonEmptyString
     raw_text: NonEmptyString
+    role: QuantityRole = QuantityRole.PRIMARY
 
 
 class OpenAttribute(StrictModel):
@@ -428,6 +436,31 @@ class EventMention(StrictModel):
     open_attributes: list[OpenAttribute]
     schema_projection: SchemaProjection | None = None
     local_package_hint: LocalPackageHint | None = None
+
+    @model_validator(mode="after")
+    def normalize_legacy_quantity_roles(self) -> EventMention:
+        """Adapt legacy role-less Mention payloads without weakening new drafts."""
+
+        if not self.quantities:
+            return self
+        normalized: list[Quantity] = []
+        for index, quantity in enumerate(self.quantities):
+            if "role" in quantity.model_fields_set:
+                normalized.append(quantity)
+                continue
+            normalized.append(
+                quantity.model_copy(
+                    update={
+                        "role": (
+                            QuantityRole.PRIMARY
+                            if index == 0
+                            else QuantityRole.SUPPORTING
+                        )
+                    }
+                )
+            )
+        self.quantities = normalized
+        return self
 
     def validate_evidence(self, source: SourceMessage) -> None:
         if source.message_id != self.message_id:

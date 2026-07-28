@@ -101,7 +101,13 @@ class FakeStructured:
             request_payload = json.loads(request.user_prompt)
             candidates = request_payload["candidates"]
             if not candidates:
-                return self._result({"drafts": [], "issue_flags": []})
+                return self._result(
+                    {
+                        "drafts": [],
+                        "rejected_candidates": [],
+                        "issue_flags": [],
+                    }
+                )
             candidate_id = candidates[0]["candidate_id"]
             return self._result(
                 {
@@ -111,6 +117,7 @@ class FakeStructured:
                             "mention": mention_draft(),
                         }
                     ],
+                    "rejected_candidates": [],
                     "issue_flags": [],
                 }
             )
@@ -289,14 +296,36 @@ class InvalidJudgeKeepTarget(FakeStructured):
 
 class RecoverableGrounderContractDrift(FakeStructured):
     def complete(self, request: StructuredModelRequest) -> StructuredModelResult:
+        repairing = request.system_prompt.casefold().startswith("repair")
         result = super().complete(request)
-        if request.json_schema.get("title") != "GrounderModelOutput":
+        if request.json_schema.get("title") != "GrounderModelOutput" or repairing:
             return result
         drafts = result.payload["drafts"]
         assert isinstance(drafts, list) and drafts
         drafts[0]["source_candidate_ids"] = []
         drafts[0]["mention"]["event_family"] = "MODEL_INVENTED_FAMILY"
         return result
+
+
+class RejectingGrounder(FakeStructured):
+    def complete(self, request: StructuredModelRequest) -> StructuredModelResult:
+        if request.json_schema.get("title") != "GrounderModelOutput":
+            return super().complete(request)
+        self.calls.append(request)
+        payload = json.loads(request.user_prompt)
+        return self._result(
+            {
+                "drafts": [],
+                "rejected_candidates": [
+                    {
+                        "id": item["candidate_id"],
+                        "code": "BACKGROUND",
+                    }
+                    for item in payload["candidates"]
+                ],
+                "issue_flags": [],
+            }
+        )
 
 
 def mention_draft() -> dict[str, object]:
@@ -706,7 +735,7 @@ def test_materialized_mentions_with_same_identity_are_deduplicated(
     assert json.loads(payload[0])["duplicate_identity_count"] == 1
 
 
-def test_missing_short_candidate_id_drops_only_invalid_grounder_draft(
+def test_missing_candidate_disposition_repairs_batch_and_preserves_valid_result(
     registry: SQLiteCDECRRegistry,
 ) -> None:
     save_source(registry, source())
@@ -719,18 +748,64 @@ def test_missing_short_candidate_id_drops_only_invalid_grounder_draft(
     )
     result = service.process("MSG-1")
     assert result.status is ProcessingStatus.SUCCEEDED
-    assert result.mentions == []
-    assert not any(summary.stage == "grounder_repair" for summary in result.model_calls)
+    assert len(result.mentions) == 1
+    assert any(summary.stage == "grounder_repair" for summary in result.model_calls)
     with sqlite3.connect(registry.path) as connection:
-        types = {
-            row[0]
-            for row in connection.execute(
-                "SELECT decision_type FROM decision_audits WHERE run_id = ?",
-                (result.run_id,),
-            )
-        }
+        rows = connection.execute(
+            """
+            SELECT decision_type, payload_json
+            FROM decision_audits
+            WHERE run_id = ?
+            """,
+            (result.run_id,),
+        ).fetchall()
+    types = {row[0] for row in rows}
+    disposition = next(
+        json.loads(row[1])
+        for row in rows
+        if row[0] == "GROUNDER_CANDIDATE_DISPOSITION"
+    )
     assert "MODEL_ENUM_NORMALIZATION" in types
-    assert "STRUCTURED_VALIDATION_FAILURE" not in types
+    assert "STRUCTURED_VALIDATION_FAILURE" in types
+    assert disposition["candidate_count"] == 1
+    assert disposition["used_candidate_count"] == 1
+    assert disposition["rejected_candidate_count"] == 0
+    assert disposition["repair_triggered"]
+    assert disposition["initial_disposition_failures"][0][
+        "missing_candidate_ids"
+    ] == ["c1"]
+
+
+def test_grounder_rejection_ledger_preserves_complete_candidate_disposition(
+    registry: SQLiteCDECRRegistry,
+) -> None:
+    save_source(registry, source())
+    service = SingleDocumentProcessor(
+        registry=registry,
+        embedding_client=FakeEmbedding(),
+        m2_client=FakeStructured(model="deepseek-v4-flash"),
+        m3_client=RejectingGrounder(model="qwen3.7-plus"),
+        m4_client=FakeStructured(model="qwen3.7-max"),
+    )
+    result = service.process("MSG-1")
+    assert result.status is ProcessingStatus.SUCCEEDED
+    assert result.mentions == []
+    assert not result.judge_routing.invoked
+    with sqlite3.connect(registry.path) as connection:
+        audit = json.loads(
+            connection.execute(
+                """
+                SELECT payload_json FROM decision_audits
+                WHERE run_id = ? AND decision_type = 'GROUNDER_CANDIDATE_DISPOSITION'
+                """,
+                (result.run_id,),
+            ).fetchone()[0]
+        )
+    assert audit["candidate_count"] == 1
+    assert audit["used_candidate_count"] == 0
+    assert audit["rejected_candidate_count"] == 1
+    assert audit["rejected_code_counts"] == {"BACKGROUND": 1}
+    assert not audit["repair_triggered"]
 
 
 def test_second_invalid_structured_response_fails_only_that_document(
