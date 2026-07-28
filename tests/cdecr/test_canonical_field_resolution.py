@@ -25,6 +25,7 @@ from cdecr.contracts import (
     ParticipantRole,
     Predicate,
     Quantity,
+    QuantityRole,
     SourceMessage,
     SourceType,
     TimePrecision,
@@ -281,6 +282,10 @@ def test_n55_groups_aliases_links_v2_kb_and_n6_uses_only_links(tmp_path: Path) -
     assert compiled.identity_profile is not None
     assert compiled.identity_profile.fields.issuer_id == "COMPANY_MU"  # type: ignore[union-attr]
     assert compiled.identity_profile.fields.period_id == "COMPANY_MU_FY2026_Q4"  # type: ignore[union-attr]
+    assert compiled.primary_metric_id == "REVENUE"
+    assert compiled.primary_metric_field_path == "quantities[0].metric_id"
+    assert compiled.primary_metric_trust_reason == "CORE_ONTOLOGY_EXACT"
+    assert compiled.principal_company_ids == ["COMPANY_MU"]
     assert [mention.model_dump(mode="json") for mention in mentions] == before
 
 
@@ -299,6 +304,31 @@ def test_package_hint_is_deferred_until_n11(tmp_path: Path) -> None:
     assert entry is not None
     assert entry.namespace is FieldNamespace.ARTIFACT_EARNINGS_RELEASE
     assert entry.external_id == "ARTIFACT_MU_Q4_2026"
+
+
+def test_identity_discriminant_ignores_comparison_quantity(tmp_path: Path) -> None:
+    registry, kb, engine = _engine(tmp_path)
+    source = _source()
+    mention = _mention("M-COMPARISON", "Micron")
+    primary = mention.quantities[0].model_copy(
+        update={"role": QuantityRole.PRIMARY}
+    )
+    comparison = Quantity(
+        metric_id="EPS",
+        value=1.5,
+        unit="USD",
+        raw_text="consensus EPS of $1.50",
+        role=QuantityRole.COMPARISON,
+    )
+    mention = mention.model_copy(update={"quantities": [primary, comparison]})
+    registry.save_source(source, fingerprint="c" * 64)
+    registry.save_mention(mention)
+    engine.resolve_document(source, [mention])
+    compiled = IdentityCompiler(
+        registry=registry, catalog_hash=kb.catalog_hash
+    ).compile(mention)
+    assert compiled.primary_metric_id == "REVENUE"
+    assert compiled.primary_metric_field_path == "quantities[0].metric_id"
 
 
 def test_routed_occurrences_exposes_n55_inventory_without_package_hint(

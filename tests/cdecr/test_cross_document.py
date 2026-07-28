@@ -28,6 +28,8 @@ from cdecr.contracts import (
     Participant,
     ParticipantRole,
     Predicate,
+    Quantity,
+    QuantityRole,
     SourceMessage,
     SourceType,
     TimePrecision,
@@ -384,7 +386,15 @@ def metric_mention(
             reference_period_id=period,
         ),
         assertion_state=AssertionState.ACTUAL,
-        quantities=[],
+        quantities=[
+            Quantity(
+                metric_id=metric,
+                value=9.3,
+                unit="USD_B",
+                raw_text=f"{metric} was 9.3 billion",
+                role=QuantityRole.PRIMARY,
+            )
+        ],
         open_attributes=[],
         schema_projection=FinancialMetricProjection(
             fields=FinancialMetricFields(

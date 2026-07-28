@@ -239,6 +239,51 @@ def _mention_local_context(source: SourceMessage, mention: EventMention) -> str:
     return mention.source_claim or mention.canonical_proposition
 
 
+def _compiled_active_hard_conflicts(
+    incoming: CompiledMentionIdentity,
+    existing: Sequence[CompiledMentionIdentity],
+) -> tuple[list[HardConflictCode], dict[str, object]]:
+    conflicts: set[HardConflictCode] = set()
+    existing_metrics = {
+        item.primary_metric_id for item in existing if item.primary_metric_id is not None
+    }
+    if (
+        incoming.primary_metric_id is not None
+        and existing_metrics
+        and incoming.primary_metric_id not in existing_metrics
+    ):
+        conflicts.add(HardConflictCode.METRIC)
+    existing_companies = {
+        company_id for item in existing for company_id in item.principal_company_ids
+    }
+    incoming_companies = set(incoming.principal_company_ids)
+    if (
+        incoming_companies
+        and existing_companies
+        and incoming_companies.isdisjoint(existing_companies)
+    ):
+        conflicts.add(HardConflictCode.ISSUER)
+    return (
+        sorted(conflicts, key=str),
+        {
+            "incoming_primary_metric_id": incoming.primary_metric_id,
+            "incoming_primary_metric_field_path": incoming.primary_metric_field_path,
+            "incoming_primary_metric_trust_reason": (
+                incoming.primary_metric_trust_reason
+            ),
+            "existing_primary_metric_ids": sorted(existing_metrics),
+            "incoming_principal_company_ids": sorted(incoming_companies),
+            "incoming_principal_company_field_paths": (
+                incoming.principal_company_field_paths
+            ),
+            "incoming_principal_company_trust_reason": (
+                incoming.principal_company_trust_reason
+            ),
+            "existing_principal_company_ids": sorted(existing_companies),
+        },
+    )
+
+
 def _cosine(left: Sequence[float], right: Sequence[float]) -> float:
     if len(left) != len(right) or not left:
         return 0.0
@@ -709,7 +754,7 @@ class CrossDocumentEngine:
         model_m1: str = "qwen3.7-text-embedding",
         model_m2: str = "deepseek-v4-flash",
         model_m3: str = "qwen3.7-plus",
-        hard_cannot_link_mode: str = HardCannotLinkMode.SHADOW.value,
+        hard_cannot_link_mode: str = HardCannotLinkMode.ENFORCE.value,
         package_conflict_mode: str = PackageConflictMode.OFF.value,
         n9_wire_protocol: str = "shadow",
         n12_wire_protocol: str = "shadow",
@@ -997,6 +1042,52 @@ class CrossDocumentEngine:
                 candidate_counts=candidate_counts,
             )
             packages = self._correct_packages_v13(packages, models, run_id=run_id)
+            current_atomic_events = self.registry.list_current_atomic_events(
+                limit=10000
+            )
+            largest_cluster = max(
+                current_atomic_events,
+                key=lambda event: len(event.mention_ids),
+                default=None,
+            )
+            largest_size = (
+                len(largest_cluster.mention_ids) if largest_cluster is not None else 0
+            )
+            hard_violation_count = sum(
+                assignment.action is AtomicAction.MERGE
+                and bool(assignment.hard_conflicts)
+                for assignment in atomic_assignments
+            )
+            candidate_counts["atomic_max_cluster_size"] = largest_size
+            candidate_counts["atomic_hard_conflict_violations"] = (
+                hard_violation_count
+            )
+            self.registry.append_decision_audit(
+                DecisionAuditRecord(
+                    audit_id=stable_id(
+                        "atomic-cluster-monitor",
+                        {"run": run_id, "message": message_id},
+                    ),
+                    run_id=run_id,
+                    decision_type="ATOMIC_CLUSTER_MONITOR",
+                    subject_id=message_id,
+                    payload={
+                        "largest_event_id": (
+                            largest_cluster.event_id
+                            if largest_cluster is not None
+                            else None
+                        ),
+                        "max_cluster_size": largest_size,
+                        "top_cluster_predicted_pairs": (
+                            largest_size * (largest_size - 1) // 2
+                        ),
+                        "hard_conflict_violation_count": hard_violation_count,
+                        "top_cluster_fp_contribution": (
+                            "REQUIRES_GOLD_EVALUATION"
+                        ),
+                    },
+                )
+            )
             result = CrossDocumentResult(
                 run_id=run_id,
                 processing_key=processing_key,
@@ -1253,6 +1344,29 @@ class CrossDocumentEngine:
                         for conflict in observed_conflicts
                         if conflict
                         not in {
+                            HardConflictCode.METRIC,
+                            HardConflictCode.ISSUER,
+                        }
+                    ]
+                    representative_compiled = [
+                        IdentityCompiler(
+                            registry=self.registry,
+                            catalog_hash=self.knowledge_base.catalog_hash,
+                        ).compile(representative)
+                        for representative in representatives
+                    ]
+                    active_conflicts, discriminant_payload = (
+                        _compiled_active_hard_conflicts(
+                            compiled_identity,
+                            representative_compiled,
+                        )
+                    )
+                    observed_conflicts.extend(active_conflicts)
+                    observed_conflicts = [
+                        conflict
+                        for conflict in observed_conflicts
+                        if conflict
+                        not in {
                             HardConflictCode.CORE_SUBJECT,
                             HardConflictCode.COUNTERPARTY,
                             HardConflictCode.LOCATION_ASSET,
@@ -1315,12 +1429,32 @@ class CrossDocumentEngine:
                                     "enforced": (
                                         self.hard_cannot_link_mode is HardCannotLinkMode.ENFORCE
                                     ),
+                                    "active_conflicts": [
+                                        value.value
+                                        for value in observed_conflicts
+                                        if value
+                                        in {
+                                            HardConflictCode.METRIC,
+                                            HardConflictCode.ASSERTION_STATE,
+                                            HardConflictCode.ISSUER,
+                                        }
+                                    ],
+                                    "active_discriminants": discriminant_payload,
                                 },
                             )
                         )
                 observed_by_event[event_id] = observed_conflicts
                 effective_conflicts = (
-                    observed_conflicts
+                    [
+                        conflict
+                        for conflict in observed_conflicts
+                        if conflict
+                        in {
+                            HardConflictCode.METRIC,
+                            HardConflictCode.ASSERTION_STATE,
+                            HardConflictCode.ISSUER,
+                        }
+                    ]
                     if self.hard_cannot_link_mode is HardCannotLinkMode.ENFORCE
                     else []
                 )

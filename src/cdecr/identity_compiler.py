@@ -21,12 +21,14 @@ from cdecr.contracts import (
     OpenIdentityFields,
     OpenIdentityProfile,
     ParticipantRole,
+    QuantityRole,
     StrictModel,
 )
 from cdecr.field_coreference import field_resolution_configuration_hash
+from cdecr.field_coreference_contracts import FieldLinkMethod, FieldNamespace
 from cdecr.ports import CDECRRegistry
 
-IDENTITY_COMPILER_VERSION = "identity-compiler-v3"
+IDENTITY_COMPILER_VERSION = "identity-compiler-v4"
 _PRINCIPAL_ROLES = {
     ParticipantRole.ACTOR,
     ParticipantRole.SUBJECT,
@@ -43,6 +45,12 @@ class CompiledMentionIdentity(StrictModel):
     missing_required_fields: list[str]
     field_links_hash: str
     processing_key: str
+    primary_metric_id: str | None = None
+    primary_metric_field_path: str | None = None
+    primary_metric_trust_reason: str | None = None
+    principal_company_ids: list[str] = []
+    principal_company_field_paths: list[str] = []
+    principal_company_trust_reason: str | None = None
     compiler_version: str = IDENTITY_COMPILER_VERSION
 
 
@@ -55,6 +63,16 @@ class IdentityCompiler:
         links = self._link_payload(mention)
         links_hash = _hash(links)
         profile, missing = self._profile(mention)
+        (
+            primary_metric_id,
+            primary_metric_field_path,
+            primary_metric_trust_reason,
+        ) = self._primary_metric_discriminant(mention)
+        (
+            principal_company_ids,
+            principal_company_paths,
+            principal_company_trust_reason,
+        ) = self._principal_company_discriminant(mention)
         processing_key = _hash(
             {
                 "mention_id": mention.mention_id,
@@ -65,6 +83,8 @@ class IdentityCompiler:
                     catalog_hash=self.catalog_hash
                 ),
                 "identity_compiler_version": IDENTITY_COMPILER_VERSION,
+                "primary_metric_id": primary_metric_id,
+                "principal_company_ids": principal_company_ids,
             }
         )
         return CompiledMentionIdentity(
@@ -73,6 +93,66 @@ class IdentityCompiler:
             missing_required_fields=missing,
             field_links_hash=links_hash,
             processing_key=processing_key,
+            primary_metric_id=primary_metric_id,
+            primary_metric_field_path=primary_metric_field_path,
+            primary_metric_trust_reason=primary_metric_trust_reason,
+            principal_company_ids=principal_company_ids,
+            principal_company_field_paths=principal_company_paths,
+            principal_company_trust_reason=principal_company_trust_reason,
+        )
+
+    def _primary_metric_discriminant(
+        self, mention: EventMention
+    ) -> tuple[str | None, str | None, str | None]:
+        for index, quantity in enumerate(mention.quantities):
+            if quantity.role is not QuantityRole.PRIMARY:
+                continue
+            path = f"quantities[{index}].metric_id"
+            link = self.registry.get_field_link(mention.mention_id, path)
+            if link is None or link.method is not FieldLinkMethod.EXTERNAL_LINKING:
+                return None, path, None
+            entry = self.registry.resolve_field_registry_entry(link.registry_id)
+            if (
+                entry is None
+                or entry.namespace is not FieldNamespace.METRIC
+                or entry.external_id is None
+                or entry.external_id.startswith(("US_GAAP_", "XBRL_"))
+            ):
+                return None, path, None
+            return entry.external_id, path, "CORE_ONTOLOGY_EXACT"
+        return None, None, None
+
+    def _principal_company_discriminant(
+        self, mention: EventMention
+    ) -> tuple[list[str], list[str], str | None]:
+        paths = [
+            "schema_projection.fields.issuer_id",
+            "schema_projection.fields.company_id",
+            *(
+                f"participants[{index}]"
+                for index, participant in enumerate(mention.participants)
+                if participant.role in {ParticipantRole.SUBJECT, ParticipantRole.ACTOR}
+            ),
+        ]
+        ids: list[str] = []
+        trusted_paths: list[str] = []
+        for path in paths:
+            link = self.registry.get_field_link(mention.mention_id, path)
+            if link is None or link.method is not FieldLinkMethod.EXTERNAL_LINKING:
+                continue
+            entry = self.registry.resolve_field_registry_entry(link.registry_id)
+            if (
+                entry is None
+                or entry.namespace is not FieldNamespace.PARTICIPANT_COMPANY
+                or entry.external_id is None
+            ):
+                continue
+            ids.append(entry.external_id)
+            trusted_paths.append(path)
+        return (
+            sorted(set(ids)),
+            list(dict.fromkeys(trusted_paths)),
+            "CONTEXTUAL_COMPANY_EXACT" if ids else None,
         )
 
     def _profile(self, mention: EventMention) -> tuple[IdentityProfile | None, list[str]]:
