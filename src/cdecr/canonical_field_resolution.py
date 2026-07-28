@@ -40,7 +40,7 @@ from cdecr.kb_v2 import (
 from cdecr.models import ModelAdapterError
 from cdecr.ports import CDECRRegistry, DecisionAuditRecord
 
-FIELD_RESOLVER_VERSION = "canonical-field-resolution-v5"
+FIELD_RESOLVER_VERSION = "canonical-field-resolution-v6"
 
 
 @dataclass(frozen=True)
@@ -136,22 +136,50 @@ class CanonicalFieldResolutionEngine:
         periods: list[tuple[EventMention, str, str]] = []
         for mention in mentions:
             regular.extend(self._regular_occurrences(source, mention))
-            if mention.time.reference_period_id:
+            if mention.time.reference_period_id and _is_fiscal_period_expression(
+                mention.time.reference_period_id
+            ):
                 periods.append(
                     (mention, "time.reference_period_id", mention.time.reference_period_id)
                 )
             projection = mention.schema_projection
-            if isinstance(projection, (FinancialMetricProjection, GuidanceProjection)):
+            if (
+                isinstance(projection, (FinancialMetricProjection, GuidanceProjection))
+                and _is_fiscal_period_expression(projection.fields.period_id)
+            ):
                 periods.append(
                     (mention, "schema_projection.fields.period_id", projection.fields.period_id)
                 )
 
         resolved, unresolved, groups = self._resolve_groups(source, regular, run_id=run_id)
-        issuer_id = self._issuer_id(source, mentions)
-        period_occurrences = [
-            self._period_occurrence_with_issuer(source, mention, path, value, issuer_id)
-            for mention, path, value in periods
-        ]
+        period_occurrences: list[FieldOccurrence] = []
+        for mention, path, value in periods:
+            issuer_id, reason = self._issuer_for_mention(source, mention)
+            period_occurrences.append(
+                self._period_occurrence_with_issuer(
+                    source, mention, path, value, issuer_id
+                )
+            )
+            payload = {
+                "field_path": path,
+                "raw_value": value,
+                "issuer_id": issuer_id,
+                "selection_reason": reason,
+                "derived_candidate": _is_derived_future_period(
+                    value, source.published_at.year
+                ),
+            }
+            self.registry.append_decision_audit(
+                DecisionAuditRecord(
+                    audit_id=_audit_id(
+                        "fiscal-issuer", mention.mention_id, path, payload, run_id=run_id
+                    ),
+                    run_id=run_id,
+                    decision_type="FISCAL_ISSUER_SELECTION",
+                    subject_id=f"{mention.mention_id}:{path}",
+                    payload=payload,
+                )
+            )
         period_resolved, period_unresolved, period_groups = self._resolve_groups(
             source, period_occurrences, run_id=run_id
         )
@@ -172,25 +200,28 @@ class CanonicalFieldResolutionEngine:
         occurrences: list[FieldOccurrence] = []
         for mention in mentions:
             occurrences.extend(self._regular_occurrences(source, mention))
-            if mention.time.reference_period_id:
+            if mention.time.reference_period_id and _is_fiscal_period_expression(
+                mention.time.reference_period_id
+            ):
                 occurrences.append(
                     self._period_occurrence(
                         source,
                         mention,
                         "time.reference_period_id",
                         mention.time.reference_period_id,
-                        mentions,
                     )
                 )
             projection = mention.schema_projection
-            if isinstance(projection, (FinancialMetricProjection, GuidanceProjection)):
+            if (
+                isinstance(projection, (FinancialMetricProjection, GuidanceProjection))
+                and _is_fiscal_period_expression(projection.fields.period_id)
+            ):
                 occurrences.append(
                     self._period_occurrence(
                         source,
                         mention,
                         "schema_projection.fields.period_id",
                         projection.fields.period_id,
-                        mentions,
                     )
                 )
         return occurrences
@@ -201,14 +232,14 @@ class CanonicalFieldResolutionEngine:
         mention: EventMention,
         field_path: str,
         raw_value: str,
-        mentions: list[EventMention],
     ) -> FieldOccurrence:
+        issuer_id, _ = self._issuer_for_mention(source, mention)
         return self._period_occurrence_with_issuer(
             source,
             mention,
             field_path,
             raw_value,
-            self._issuer_id(source, mentions),
+            issuer_id,
         )
 
     def _period_occurrence_with_issuer(
@@ -302,7 +333,9 @@ class CanonicalFieldResolutionEngine:
             )
         ]
         for index, participant in enumerate(mention.participants):
-            catalog, namespace, candidates = self._participant_route(source, participant)
+            catalog, namespace, candidates = self._participant_route(
+                source, mention, participant
+            )
             values.append(
                 FieldOccurrence(
                     mention_id=mention.mention_id,
@@ -321,20 +354,6 @@ class CanonicalFieldResolutionEngine:
             )
         for index, location in enumerate(mention.locations):
             matches = self.knowledge_base.lookup("places", location)
-            if matches:
-                catalog = "places"
-                namespace = FieldNamespace.PLACE
-                kind = None
-            else:
-                object_matches = self.knowledge_base.lookup("named_objects", location)
-                object_match = unique_match(object_matches)
-                catalog = "named_objects" if object_match is not None else "places"
-                namespace = (
-                    _object_namespace(object_match.kind)
-                    if object_match is not None
-                    else FieldNamespace.PLACE
-                )
-                kind = object_match.kind if object_match is not None else None
             values.append(
                 FieldOccurrence(
                     mention_id=mention.mention_id,
@@ -342,12 +361,12 @@ class CanonicalFieldResolutionEngine:
                     value=self._input(
                         source,
                         mention,
-                        namespace=namespace,
+                        namespace=FieldNamespace.PLACE,
                         raw_value=location,
-                        attempted_kb_type=catalog.upper(),
+                        attempted_kb_type="PLACES",
                     ),
-                    catalog=catalog,
-                    kind=kind,
+                    catalog="places",
+                    candidate_matches=tuple(matches),
                 )
             )
         for index, quantity in enumerate(mention.quantities):
@@ -596,7 +615,10 @@ class CanonicalFieldResolutionEngine:
         return resolved_count, unresolved_count, len(groups)
 
     def _participant_route(
-        self, source: SourceMessage, participant: Participant
+        self,
+        source: SourceMessage,
+        mention: EventMention,
+        participant: Participant,
     ) -> tuple[str, FieldNamespace, list[KBMatch]]:
         raw = participant.surface
         normalized = normalize_field_text(raw)
@@ -607,6 +629,22 @@ class CanonicalFieldResolutionEngine:
         ticker_set = {value.casefold() for value in source.ticker_hints}
         if normalized in ticker_set:
             return "companies", FieldNamespace.PARTICIPANT_COMPANY, []
+        if normalized == "nasdaq":
+            local = " ".join(
+                (
+                    mention.canonical_proposition,
+                    mention.predicate.raw,
+                    mention.predicate.normalized,
+                )
+            )
+            if re.search(r"\b(exchange|listing|listed|venue)\b", local, re.I):
+                return "institutions", FieldNamespace.PARTICIPANT_INSTITUTION, []
+            if re.search(
+                r"\b(index|composite|level|move|rose|fell|trade|close)\b",
+                local,
+                re.I,
+            ):
+                return "instruments", FieldNamespace.PARTICIPANT_INSTRUMENT, []
         source_company_ids = {
             match.external_id
             for ticker in source.ticker_hints
@@ -755,29 +793,35 @@ class CanonicalFieldResolutionEngine:
             catalog, raw_value, limit=5, minimum_score=0.67
         )
 
-    def _issuer_id(self, source: SourceMessage, mentions: list[EventMention]) -> str | None:
-        for mention in mentions:
-            paths = [
-                "schema_projection.fields.issuer_id",
-                "schema_projection.fields.company_id",
-                *(
-                    f"participants[{index}]"
-                    for index, participant in enumerate(mention.participants)
-                    if participant.role in {ParticipantRole.SUBJECT, ParticipantRole.ACTOR}
-                ),
-            ]
-            for path in paths:
-                link = self.registry.get_field_link(mention.mention_id, path)
-                if link is None:
-                    continue
-                entry = self.registry.resolve_field_registry_entry(link.registry_id)
-                if entry is not None and entry.namespace is FieldNamespace.PARTICIPANT_COMPANY:
-                    return entry.external_id or entry.id
+    def _issuer_for_mention(
+        self, source: SourceMessage, mention: EventMention
+    ) -> tuple[str | None, str]:
+        paths = [
+            "schema_projection.fields.issuer_id",
+            "schema_projection.fields.company_id",
+            *(
+                f"participants[{index}]"
+                for index, participant in enumerate(mention.participants)
+                if participant.role in {ParticipantRole.SUBJECT, ParticipantRole.ACTOR}
+            ),
+        ]
+        for path in paths:
+            link = self.registry.get_field_link(mention.mention_id, path)
+            if link is None:
+                continue
+            entry = self.registry.resolve_field_registry_entry(link.registry_id)
+            if entry is not None and entry.namespace is FieldNamespace.PARTICIPANT_COMPANY:
+                reason = (
+                    "MENTION_SCHEMA_COMPANY"
+                    if path.startswith("schema_projection")
+                    else "MENTION_SUBJECT_ACTOR_COMPANY"
+                )
+                return entry.external_id or entry.id, reason
         for ticker in source.ticker_hints:
             match = unique_match(self.knowledge_base.lookup("companies", ticker))
             if match is not None:
-                return match.external_id
-        return None
+                return match.external_id, "SOURCE_TICKER"
+        return None, "UNRESOLVED"
 
     @staticmethod
     def _input(
@@ -1145,6 +1189,34 @@ def _generic_participant(normalized: str) -> bool:
         "management",
         "employees",
     }
+
+
+def _is_fiscal_period_expression(raw_value: str) -> bool:
+    normalized = normalize_field_text(raw_value)
+    if re.search(
+        r"\b(past|most recent|rolling|beyond|through|horizon|next)\b",
+        normalized,
+    ):
+        return False
+    return bool(
+        re.search(r"\bfy\s*\d{2,4}(?:\s*[- ]?\s*q[1-4])?\b", normalized, re.I)
+        or re.search(
+            r"\b(?:q[1-4]\s+fy\s*\d{2,4}|\d{4}\s+q[1-4])\b",
+            normalized,
+            re.I,
+        )
+        or re.search(
+            r"\b(?:first|second|third|fourth|q[1-4])\s+fiscal\s+quarter\b",
+            normalized,
+            re.I,
+        )
+        or re.search(r"\bfiscal\s+(?:year|q[1-4]|quarter)\b", normalized, re.I)
+    )
+
+
+def _is_derived_future_period(raw_value: str, published_year: int) -> bool:
+    years = [int(value) for value in re.findall(r"\b(20\d{2})\b", raw_value)]
+    return bool(years and max(years) > published_year)
 
 
 def _local_context(source: SourceMessage, mention: EventMention) -> str:

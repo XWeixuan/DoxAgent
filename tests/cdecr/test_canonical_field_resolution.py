@@ -236,6 +236,26 @@ def test_n5_keeps_object_fields_immutable_and_only_normalizes_scalars() -> None:
     assert decisions[0].field_path == "quantities.0"
 
 
+def test_n5_uses_shared_trillion_and_ratio_units() -> None:
+    base = _mention("M-UNITS", "Micron")
+    trillion = base.quantities[0].model_copy(
+        update={"value": 1.2, "unit": "USD", "raw_text": "1.2 trillion USD"}
+    )
+    basis_points = base.quantities[0].model_copy(
+        update={"value": 25, "unit": "bps", "raw_text": "25 basis points"}
+    )
+    multiple = base.quantities[0].model_copy(
+        update={"value": 4, "unit": "times", "raw_text": "4 times"}
+    )
+    finalized, _ = MentionFinalizer().finalize(
+        base.model_copy(update={"quantities": [trillion, basis_points, multiple]})
+    )
+    assert finalized.quantities[0].value == 1_200_000_000_000
+    assert finalized.quantities[0].unit == "USD"
+    assert finalized.quantities[1].unit == "BASIS_POINT"
+    assert finalized.quantities[2].unit == "MULTIPLE"
+
+
 def test_n55_groups_aliases_links_v2_kb_and_n6_uses_only_links(tmp_path: Path) -> None:
     registry, kb, engine = _engine(tmp_path)
     source = _source()
@@ -292,6 +312,62 @@ def test_routed_occurrences_exposes_n55_inventory_without_package_hint(
     assert "time.reference_period_id" in paths
     assert "schema_projection.fields.period_id" in paths
     assert "local_package_hint.anchor" not in paths
+
+
+def test_non_fiscal_horizon_is_not_sent_to_fiscal_resolver(tmp_path: Path) -> None:
+    _, _, engine = _engine(tmp_path)
+    mention = _mention("M-HORIZON", "Micron")
+    projection = mention.schema_projection
+    assert isinstance(projection, FinancialMetricProjection)
+    mention = mention.model_copy(
+        update={
+            "time": mention.time.model_copy(
+                update={"reference_period_id": "rolling 90 days"}
+            ),
+            "schema_projection": projection.model_copy(
+                update={
+                    "fields": projection.fields.model_copy(
+                        update={"period_id": "through 2030"}
+                    )
+                }
+            ),
+        }
+    )
+    paths = {
+        item.field_path for item in engine.routed_occurrences(_source(), [mention])
+    }
+    assert "time.reference_period_id" not in paths
+    assert "schema_projection.fields.period_id" not in paths
+
+
+def test_locations_remain_place_only_and_nasdaq_uses_local_participant_context(
+    tmp_path: Path,
+) -> None:
+    _, _, engine = _engine(tmp_path)
+    location_mention = _mention("M-LOCATION", "Micron").model_copy(
+        update={"locations": ["Acme"]}
+    )
+    location = next(
+        item
+        for item in engine.routed_occurrences(_source(), [location_mention])
+        if item.field_path == "locations[0]"
+    )
+    assert location.catalog == "places"
+    assert location.value.namespace is FieldNamespace.PLACE
+
+    nasdaq = _mention("M-NASDAQ", "Nasdaq").model_copy(
+        update={
+            "canonical_proposition": "The Nasdaq Composite closed higher",
+            "predicate": Predicate(raw="closed higher", normalized="move_index"),
+        }
+    )
+    participant = next(
+        item
+        for item in engine.routed_occurrences(_source(), [nasdaq])
+        if item.field_path == "participants[0]"
+    )
+    assert participant.catalog == "instruments"
+    assert participant.value.namespace is FieldNamespace.PARTICIPANT_INSTRUMENT
 
 
 def test_fiscal_parser_is_issuer_scoped_and_never_uses_embeddings(

@@ -569,16 +569,21 @@ class SingleDocumentProcessor:
         # never rewrite, drop, or trigger an LLM repair because location failed.
         # Final compact audits are emitted after the stable Mention ID is known.
         del run_id, stage, subject_id, source_candidate_ids, fallback_main_evidence
-        for evidence in [
-            *draft.evidence_locations,
-            *(item.evidence_location for item in draft.open_attributes),
-        ]:
+        del candidate_anchors
+        main_anchors: list[EvidenceLocator] = []
+        for evidence in draft.evidence_locations:
+            try:
+                reconciliation = reconcile_evidence_text(evidence, document, source)
+            except ValueError:
+                continue
+            main_anchors.append(reconciliation.locator)
+        for attribute in draft.open_attributes:
             try:
                 reconcile_evidence_text(
-                    evidence,
+                    attribute.evidence_location,
                     document,
                     source,
-                    candidate_anchors=candidate_anchors,
+                    candidate_anchors=main_anchors,
                 )
             except ValueError:
                 continue
@@ -2068,17 +2073,36 @@ class SingleDocumentProcessor:
     ) -> EventMention:
         def locate(
             raw: EvidenceText,
-        ) -> tuple[EvidenceRecord, EvidenceSpan | None]:
+            *,
+            candidate_anchors: Sequence[EvidenceLocator] = (),
+        ) -> tuple[
+            EvidenceRecord,
+            EvidenceSpan | None,
+            str,
+            EvidenceLocator | None,
+        ]:
             try:
-                reconciliation = reconcile_evidence_text(raw, document, source)
+                reconciliation = reconcile_evidence_text(
+                    raw,
+                    document,
+                    source,
+                    candidate_anchors=candidate_anchors,
+                )
                 span = locator_to_evidence(reconciliation.locator, document, source)
                 return (
                     EvidenceRecord(
-                        segment_id=raw.segment_id,
-                        text=raw.text,
+                        segment_id=reconciliation.locator.segment_id,
+                        text=reconciliation.locator.text,
                         status=EvidenceRecordStatus.VERIFIED,
+                        error_code=(
+                            None
+                            if reconciliation.resolution == "EXACT"
+                            else reconciliation.resolution
+                        ),
                     ),
                     span,
+                    reconciliation.resolution,
+                    reconciliation.locator,
                 )
             except ValueError as exc:
                 return (
@@ -2089,11 +2113,14 @@ class SingleDocumentProcessor:
                         error_code=_safe_semantic_error_code(exc),
                     ),
                     None,
+                    _safe_semantic_error_code(exc),
+                    None,
                 )
 
         main_results = [locate(item) for item in draft.evidence_locations]
         evidence_records = [item[0] for item in main_results]
         evidence = [item[1] for item in main_results if item[1] is not None]
+        main_anchors = [item[3] for item in main_results if item[3] is not None]
         raw_identity_evidence = [
             {
                 "kind": "MAIN",
@@ -2114,10 +2141,21 @@ class SingleDocumentProcessor:
             source.message_id, draft, raw_identity_evidence
         )
         attributes: list[OpenAttribute] = []
-        attribute_results: list[tuple[EvidenceRecord, EvidenceSpan | None]] = []
+        attribute_results: list[
+            tuple[
+                EvidenceRecord,
+                EvidenceSpan | None,
+                str,
+                EvidenceLocator | None,
+            ]
+        ] = []
         for item in draft.open_attributes:
-            record, span = locate(item.evidence_location)
-            attribute_results.append((record, span))
+            result = locate(
+                item.evidence_location,
+                candidate_anchors=main_anchors,
+            )
+            record, span, _, _ = result
+            attribute_results.append(result)
             attributes.append(
                 OpenAttribute(
                     key=item.key,
@@ -2152,23 +2190,21 @@ class SingleDocumentProcessor:
             ("MAIN", main_results),
             ("ATTRIBUTE", attribute_results),
         ):
-            for index, (record, _) in enumerate(results):
-                raw_hash = hashlib.sha256(
-                    json.dumps(
-                        {
-                            "segment_id": record.segment_id,
-                            "text": record.text,
-                        },
-                        ensure_ascii=False,
-                        sort_keys=True,
-                        separators=(",", ":"),
-                    ).encode("utf-8")
+            raw_values = (
+                draft.evidence_locations
+                if kind == "MAIN"
+                else [item.evidence_location for item in draft.open_attributes]
+            )
+            for index, (record, _, repair_kind, _) in enumerate(results):
+                original_hash = hashlib.sha256(
+                    raw_values[index].text.encode("utf-8")
                 ).hexdigest()
+                final_hash = hashlib.sha256(record.text.encode("utf-8")).hexdigest()
                 self.registry.append_decision_audit(
                     DecisionAuditRecord(
                         audit_id=(
                             f"mention-evidence:{run_id}:{mention_id}:{kind}:"
-                            f"{index}:{raw_hash[:16]}"
+                            f"{index}:{original_hash[:16]}"
                         ),
                         run_id=run_id,
                         decision_type="MENTION_EVIDENCE_LOCATION",
@@ -2179,7 +2215,10 @@ class SingleDocumentProcessor:
                             "evidence_index": index,
                             "status": record.status.value,
                             "error_code": record.error_code,
-                            "raw_evidence_hash": raw_hash,
+                            "first_divergence_stage": "MATERIALIZE",
+                            "repair_kind": repair_kind,
+                            "original_model_text_hash": original_hash,
+                            "final_source_text_hash": final_hash,
                         },
                     )
                 )

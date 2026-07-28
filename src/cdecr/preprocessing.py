@@ -41,36 +41,13 @@ _BOILERPLATE_PATTERNS = (
     re.compile(r"^\s*(?:home|markets|news|business|technology)(?:\s*[|>›]\s*\w+){2,}\s*$", re.I),
     re.compile(r"^\s*(?:share this article|read more|related articles?)\s*$", re.I),
 )
-_WRAPPING_QUOTES = {
-    '"': '"',
-    "'": "'",
-    "“": "”",
-    "‘": "’",
-    "「": "」",
-    "『": "』",
-}
-_EQUIVALENT_CHARACTERS = {
-    "“": '"',
-    "”": '"',
-    "„": '"',
-    "‟": '"',
-    "‘": "'",
-    "’": "'",
-    "‚": "'",
-    "‛": "'",
-    "‐": "-",
-    "‑": "-",
-    "‒": "-",
-    "–": "-",
-    "—": "-",
-    "―": "-",
-}
+_TERMINAL_PUNCTUATION = ".,;:!?…"
 
 EvidenceResolution = Literal[
     "EXACT",
-    "STRIP_WRAPPING_QUOTES",
-    "NORMALIZED_EQUIVALENT",
-    "SEGMENT_CORRECTED",
+    "OFFSET_CORRECTED",
+    "SOURCE_EQUIVALENT_PUNCTUATION",
+    "SOURCE_EQUIVALENT_WHITESPACE",
     "ANCHOR_DISAMBIGUATED",
 ]
 
@@ -375,7 +352,7 @@ def align_unique_evidence_locator(
     document: PreprocessedDocument,
     source: SourceMessage,
 ) -> EvidenceLocator:
-    """Correct an offset only when the cited text has one exact occurrence in its segment."""
+    """Apply the shared exact/source-equivalent locator policy to offset evidence."""
 
     segment = next(
         (item for item in document.segments if item.segment_id == locator.segment_id),
@@ -384,36 +361,16 @@ def align_unique_evidence_locator(
     if segment is None:
         locator_to_evidence(locator, document, source)
         return locator  # pragma: no cover - locator_to_evidence always raises
-    if (
-        locator.end_char <= len(segment.text)
-        and segment.text[locator.start_char : locator.end_char] == locator.text
+    if locator.end_char <= len(segment.text) and (
+        segment.text[locator.start_char : locator.end_char] == locator.text
     ):
         locator_to_evidence(locator, document, source)
         return locator
-    starts: list[int] = []
-    cursor = 0
-    while True:
-        start = segment.text.find(locator.text, cursor)
-        if start < 0:
-            break
-        starts.append(start)
-        cursor = start + 1
-    if not starts:
-        locator_to_evidence(locator, document, source)
-        return locator  # pragma: no cover - locator_to_evidence always raises
-    if len(starts) > 1:
-        distances = sorted((abs(start - locator.start_char), start) for start in starts)
-        if len(locator.text) < 12 or (len(distances) > 1 and distances[0][0] == distances[1][0]):
-            locator_to_evidence(locator, document, source)
-            return locator  # pragma: no cover - locator_to_evidence always raises
-        start = distances[0][1]
-    else:
-        start = starts[0]
-    aligned = locator.model_copy(
-        update={"start_char": start, "end_char": start + len(locator.text)}
-    )
-    locator_to_evidence(aligned, document, source)
-    return aligned
+    return reconcile_evidence_text(
+        EvidenceText(segment_id=locator.segment_id, text=locator.text),
+        document,
+        source,
+    ).locator
 
 
 def locate_unique_evidence_text(
@@ -463,50 +420,85 @@ def _occurrences(text: str, needle: str) -> list[int]:
     return starts
 
 
-def _strip_wrapping_quotes(value: str) -> str:
-    if len(value) < 2:
-        return value
-    expected = _WRAPPING_QUOTES.get(value[0])
-    if expected is None or value[-1] != expected:
-        return value
-    stripped = value[1:-1]
-    return stripped if stripped else value
-
-
-def _normalized_equivalent_with_spans(
+def _whitespace_normalized_with_spans(
     value: str,
 ) -> tuple[str, list[tuple[int, int]]]:
     normalized: list[str] = []
     spans: list[tuple[int, int]] = []
     cursor = 0
     while cursor < len(value):
-        entity = re.match(r"&(?:#\d+|#x[0-9a-fA-F]+|[A-Za-z][A-Za-z0-9]+);", value[cursor:])
-        if entity is not None:
-            raw = entity.group(0)
-            decoded = html.unescape(raw)
-            if decoded != raw:
-                source_start = cursor
-                cursor += len(raw)
-                for character in decoded:
-                    mapped = _EQUIVALENT_CHARACTERS.get(character, character)
-                    if mapped.isspace():
-                        mapped = " "
-                    for item in mapped:
-                        normalized.append(item)
-                        spans.append((source_start, cursor))
-                continue
         source_start = cursor
         character = value[cursor]
         cursor += 1
-        mapped = _EQUIVALENT_CHARACTERS.get(character, character)
-        if mapped.isspace():
-            mapped = " "
+        if character.isspace():
+            character = " "
             while cursor < len(value) and value[cursor].isspace():
                 cursor += 1
-        for item in mapped:
+        for item in character:
             normalized.append(item)
             spans.append((source_start, cursor))
     return "".join(normalized), spans
+
+
+def _punctuation_equivalent_candidates(
+    source_text: str, model_text: str
+) -> list[tuple[int, int]]:
+    source_core = model_text.rstrip().rstrip(_TERMINAL_PUNCTUATION).rstrip()
+    if not source_core:
+        return []
+    candidates: list[tuple[int, int]] = []
+    for start in _occurrences(source_text, source_core):
+        end = start + len(source_core)
+        while end < len(source_text) and source_text[end] in _TERMINAL_PUNCTUATION:
+            end += 1
+        source_value = source_text[start:end]
+        if (
+            source_value.rstrip().rstrip(_TERMINAL_PUNCTUATION).rstrip()
+            == source_core
+            and source_value != model_text
+        ):
+            candidates.append((start, end))
+    return candidates
+
+
+def _select_anchored_occurrence(
+    occurrences: list[tuple[int, int]],
+    *,
+    segment_id: str,
+    candidate_anchors: Sequence[EvidenceLocator],
+) -> tuple[int, int] | None:
+    anchors = [
+        anchor for anchor in candidate_anchors if anchor.segment_id == segment_id
+    ]
+    if not anchors:
+        return None
+    overlap_ranked: list[tuple[int, int, int]] = []
+    for start, end in occurrences:
+        overlap = sum(
+            max(0, min(end, anchor.end_char) - max(start, anchor.start_char))
+            for anchor in anchors
+        )
+        overlap_ranked.append((overlap, start, end))
+    overlap_ranked.sort(key=lambda item: (-item[0], item[1]))
+    if overlap_ranked[0][0] > 0 and (
+        len(overlap_ranked) == 1
+        or overlap_ranked[0][0] > overlap_ranked[1][0]
+    ):
+        return overlap_ranked[0][1], overlap_ranked[0][2]
+    distance_ranked = sorted(
+        (
+            min(
+                min(abs(start - anchor.end_char), abs(end - anchor.start_char))
+                for anchor in anchors
+            ),
+            start,
+            end,
+        )
+        for start, end in occurrences
+    )
+    if len(distance_ranked) == 1 or distance_ranked[0][0] < distance_ranked[1][0]:
+        return distance_ranked[0][1], distance_ranked[0][2]
+    return None
 
 
 def _locator(
@@ -574,38 +566,85 @@ def reconcile_evidence_text(
             document=document,
             source=source,
         )
+    if declared is not None and len(exact_starts) > 1:
+        selected = _select_anchored_occurrence(
+            [(start, start + len(evidence.text)) for start in exact_starts],
+            segment_id=declared.segment_id,
+            candidate_anchors=candidate_anchors,
+        )
+        if selected is not None:
+            start, end = selected
+            return _reconciled(
+                evidence=evidence,
+                locator=_locator(
+                    segment_id=declared.segment_id,
+                    segment_text=declared.text,
+                    start=start,
+                    end=end,
+                ),
+                resolution="ANCHOR_DISAMBIGUATED",
+                document=document,
+                source=source,
+            )
+        raise ValueError("evidence text is ambiguous within its source segment")
 
-    stripped = _strip_wrapping_quotes(evidence.text)
-    stripped_starts = (
-        _occurrences(declared.text, stripped) if declared is not None else []
+    punctuation_candidates = (
+        _punctuation_equivalent_candidates(declared.text, evidence.text)
+        if declared is not None
+        else []
     )
-    if stripped != evidence.text and declared is not None and len(stripped_starts) == 1:
-        start = stripped_starts[0]
+    if declared is not None and len(punctuation_candidates) == 1:
+        start, end = punctuation_candidates[0]
         return _reconciled(
             evidence=evidence,
             locator=_locator(
                 segment_id=declared.segment_id,
                 segment_text=declared.text,
                 start=start,
-                end=start + len(stripped),
+                end=end,
             ),
-            resolution="STRIP_WRAPPING_QUOTES",
+            resolution="SOURCE_EQUIVALENT_PUNCTUATION",
             document=document,
             source=source,
         )
+    if declared is not None and len(punctuation_candidates) > 1:
+        selected = _select_anchored_occurrence(
+            punctuation_candidates,
+            segment_id=declared.segment_id,
+            candidate_anchors=candidate_anchors,
+        )
+        if selected is not None:
+            start, end = selected
+            return _reconciled(
+                evidence=evidence,
+                locator=_locator(
+                    segment_id=declared.segment_id,
+                    segment_text=declared.text,
+                    start=start,
+                    end=end,
+                ),
+                resolution="ANCHOR_DISAMBIGUATED",
+                document=document,
+                source=source,
+            )
+        raise ValueError("evidence text is ambiguous within its source segment")
 
-    working_text = stripped if stripped != evidence.text else evidence.text
     if declared is not None:
-        normalized_segment, segment_spans = _normalized_equivalent_with_spans(
+        normalized_segment, segment_spans = _whitespace_normalized_with_spans(
             declared.text
         )
-        normalized_evidence, _ = _normalized_equivalent_with_spans(working_text)
+        normalized_evidence, _ = _whitespace_normalized_with_spans(evidence.text)
         normalized_starts = _occurrences(normalized_segment, normalized_evidence)
-        if len(normalized_starts) == 1 and normalized_evidence:
-            normalized_start = normalized_starts[0]
-            normalized_end = normalized_start + len(normalized_evidence)
-            original_start = segment_spans[normalized_start][0]
-            original_end = segment_spans[normalized_end - 1][1]
+        normalized_occurrences = [
+            (
+                segment_spans[start][0],
+                segment_spans[start + len(normalized_evidence) - 1][1],
+            )
+            for start in normalized_starts
+            if normalized_evidence
+        ]
+        if len(normalized_occurrences) == 1:
+            original_start, original_end = normalized_occurrences[0]
             return _reconciled(
                 evidence=evidence,
                 locator=_locator(
@@ -614,57 +653,26 @@ def reconcile_evidence_text(
                     start=original_start,
                     end=original_end,
                 ),
-                resolution="NORMALIZED_EQUIVALENT",
+                resolution="SOURCE_EQUIVALENT_WHITESPACE",
                 document=document,
                 source=source,
             )
-
-    cross_segment_matches: list[tuple[str, int]] = []
-    for segment in document.segments:
-        for start in _occurrences(segment.text, working_text):
-            cross_segment_matches.append((segment.segment_id, start))
-    if len(cross_segment_matches) == 1:
-        segment_id, start = cross_segment_matches[0]
-        segment = segments[segment_id]
-        return _reconciled(
-            evidence=evidence,
-            locator=_locator(
-                segment_id=segment_id,
-                segment_text=segment.text,
-                start=start,
-                end=start + len(working_text),
-            ),
-            resolution="SEGMENT_CORRECTED",
-            document=document,
-            source=source,
-        )
-
-    candidate_starts = exact_starts or stripped_starts
-    candidate_text = evidence.text if exact_starts else stripped
-    if declared is not None and len(candidate_starts) > 1:
-        anchored: list[tuple[int, int]] = []
-        for start in candidate_starts:
-            end = start + len(candidate_text)
-            overlap = sum(
-                max(0, min(end, anchor.end_char) - max(start, anchor.start_char))
-                for anchor in candidate_anchors
-                if anchor.segment_id == declared.segment_id
+        if len(normalized_occurrences) > 1:
+            selected = _select_anchored_occurrence(
+                normalized_occurrences,
+                segment_id=declared.segment_id,
+                candidate_anchors=candidate_anchors,
             )
-            anchored.append((overlap, start))
-        anchored.sort(reverse=True)
-        if (
-            anchored
-            and anchored[0][0] > 0
-            and (len(anchored) == 1 or anchored[0][0] > anchored[1][0])
-        ):
-            start = anchored[0][1]
+            if selected is None:
+                raise ValueError("evidence text is ambiguous within its source segment")
+            original_start, original_end = selected
             return _reconciled(
                 evidence=evidence,
                 locator=_locator(
                     segment_id=declared.segment_id,
                     segment_text=declared.text,
-                    start=start,
-                    end=start + len(candidate_text),
+                    start=original_start,
+                    end=original_end,
                 ),
                 resolution="ANCHOR_DISAMBIGUATED",
                 document=document,
@@ -673,8 +681,6 @@ def reconcile_evidence_text(
 
     if declared is None:
         raise ValueError(f"unknown evidence segment {evidence.segment_id}")
-    if candidate_starts:
-        raise ValueError("evidence text is ambiguous within its source segment")
     raise ValueError("evidence text does not occur in its source segment")
 
 

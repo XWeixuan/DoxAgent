@@ -14,7 +14,7 @@ from cdecr.single_document_contracts import (
     NormalizationMethod,
 )
 
-FINALIZATION_VERSION = "mention-finalization-v2"
+FINALIZATION_VERSION = "mention-finalization-v3"
 
 
 class MentionFinalizer:

@@ -64,51 +64,72 @@ def test_repeated_evidence_text_does_not_get_heuristically_realigned() -> None:
     message = source(title="event then event")
     document = preprocess_source(message).document
     locator = EvidenceLocator(segment_id="title:0", start_char=1, end_char=6, text="event")
-    with pytest.raises(ValueError, match="does not match"):
+    with pytest.raises(ValueError, match="ambiguous"):
         align_unique_evidence_locator(locator, document, message)
 
 
-def test_evidence_reconciler_strips_one_wrapping_quote_layer() -> None:
+def test_evidence_reconciler_rejects_model_added_wrapping_quotes() -> None:
     message = source(text="Micron raised guidance.")
     document = preprocess_source(message).document
-    result = reconcile_evidence_text(
-        EvidenceText(
-            segment_id="text:0",
-            text='"Micron raised guidance"',
-        ),
-        document,
-        message,
-    )
-    assert result.resolution == "STRIP_WRAPPING_QUOTES"
-    assert result.locator.text == "Micron raised guidance"
+    with pytest.raises(ValueError, match="does not occur"):
+        reconcile_evidence_text(
+            EvidenceText(
+                segment_id="text:0",
+                text='"Micron raised guidance"',
+            ),
+            document,
+            message,
+        )
 
 
-def test_evidence_reconciler_maps_normalized_equivalent_to_original_text() -> None:
-    message = source(title="Revenue—rose  10% & more")
+def test_evidence_reconciler_maps_whitespace_equivalent_to_original_text() -> None:
+    message = source(title="Revenue rose  10% and more")
     document = preprocess_source(message).document
     result = reconcile_evidence_text(
         EvidenceText(
             segment_id="title:0",
-            text="Revenue-rose 10% &amp; more",
+            text="Revenue rose 10% and more",
         ),
         document,
         message,
     )
-    assert result.resolution == "NORMALIZED_EQUIVALENT"
-    assert result.locator.text == "Revenue—rose  10% & more"
+    assert result.resolution == "SOURCE_EQUIVALENT_WHITESPACE"
+    assert result.locator.text == "Revenue rose  10% and more"
     assert locator_to_evidence(result.locator, document, message).text == result.locator.text
 
 
-def test_evidence_reconciler_corrects_only_globally_unique_segment() -> None:
+def test_evidence_reconciler_does_not_cross_segment_boundaries() -> None:
     message = source(title="Unrelated title", text="Micron raised guidance.")
     document = preprocess_source(message).document
+    with pytest.raises(ValueError, match="does not occur"):
+        reconcile_evidence_text(
+            EvidenceText(segment_id="title:0", text="Micron raised guidance"),
+            document,
+            message,
+        )
+
+
+def test_evidence_reconciler_maps_terminal_punctuation_to_source_text() -> None:
+    message = source(text="Micron raised guidance.")
+    document = preprocess_source(message).document
     result = reconcile_evidence_text(
-        EvidenceText(segment_id="title:0", text="Micron raised guidance"),
+        EvidenceText(segment_id="text:0", text="Micron raised guidance!"),
         document,
         message,
     )
-    assert result.resolution == "SEGMENT_CORRECTED"
-    assert result.locator.segment_id == "text:0"
+    assert result.resolution == "SOURCE_EQUIVALENT_PUNCTUATION"
+    assert result.locator.text == "Micron raised guidance."
+
+
+def test_evidence_reconciler_rejects_dash_and_entity_rewrites() -> None:
+    message = source(title="Revenue—rose & more")
+    document = preprocess_source(message).document
+    with pytest.raises(ValueError, match="does not occur"):
+        reconcile_evidence_text(
+            EvidenceText(segment_id="title:0", text="Revenue-rose &amp; more"),
+            document,
+            message,
+        )
 
 
 def test_evidence_reconciler_uses_candidate_anchor_for_repeated_phrase() -> None:
@@ -230,9 +251,8 @@ def test_repeated_evidence_text_aligns_only_to_unique_nearest_occurrence() -> No
         end_char=54,
         text="Micron raised guidance.",
     )
-    aligned = align_unique_evidence_locator(locator, document, message)
-    assert aligned.start_char == 36
-    assert locator_to_evidence(aligned, document, message).text == locator.text
+    with pytest.raises(ValueError, match="ambiguous"):
+        align_unique_evidence_locator(locator, document, message)
 
 
 def test_short_repeated_evidence_text_remains_ambiguous() -> None:
@@ -244,7 +264,7 @@ def test_short_repeated_evidence_text_remains_ambiguous() -> None:
         end_char=8,
         text="Micron",
     )
-    with pytest.raises(ValueError, match="does not match segment slice"):
+    with pytest.raises(ValueError, match="ambiguous"):
         align_unique_evidence_locator(locator, document, message)
 
 
