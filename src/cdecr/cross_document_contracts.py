@@ -8,6 +8,10 @@ from typing import Literal
 
 from pydantic import Field, model_validator
 
+from cdecr.atomic_identity_contracts import (
+    AtomicIdentitySidecar,
+    IdentityAxisAssessment,
+)
 from cdecr.contracts import (
     AtomicAction,
     AtomicEvent,
@@ -97,6 +101,9 @@ class AtomicCandidate(StrictModel):
     recall_routes: list[RecallRoute] = Field(min_length=1)
     recall_score: Confidence
     hard_conflicts: list[HardConflictCode]
+    identity_sidecar: AtomicIdentitySidecar | None = None
+    candidate_root_id: str | None = None
+    raw_embedding_similarity: float | None = Field(default=None, ge=-1.0, le=1.0)
 
     @model_validator(mode="after")
     def unique_routes_and_conflicts(self) -> AtomicCandidate:
@@ -110,8 +117,16 @@ class AtomicCandidate(StrictModel):
 class AtomicCandidateAssessment(StrictModel):
     candidate_event_id: NonEmptyString
     relation: AtomicSemanticRelation
+    axis_assessments: list[IdentityAxisAssessment]
     claim_conflict: bool = False
     identity_differences: list[NonEmptyString] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def unique_identity_axes(self) -> AtomicCandidateAssessment:
+        axes = [item.axis for item in self.axis_assessments]
+        if len(axes) != len(set(axes)):
+            raise ValueError("identity axis assessments must be unique")
+        return self
 
 
 class AtomicAssignmentDecision(StrictModel):

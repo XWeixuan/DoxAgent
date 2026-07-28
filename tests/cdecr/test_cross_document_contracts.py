@@ -3,6 +3,11 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
+from cdecr.atomic_identity_contracts import (
+    IdentityAxis,
+    IdentityAxisAssessment,
+    IdentityAxisVerdict,
+)
 from cdecr.contracts import (
     AtomicAction,
     AtomicSemanticRelation,
@@ -33,6 +38,12 @@ def atomic_decision() -> AtomicAssignmentDecision:
             AtomicCandidateAssessment(
                 candidate_event_id="E1",
                 relation=AtomicSemanticRelation.SAME_EVENT,
+                axis_assessments=[
+                    IdentityAxisAssessment(
+                        axis=IdentityAxis.REFERENT,
+                        verdict=IdentityAxisVerdict.MATCH,
+                    )
+                ],
                 claim_conflict=False,
                 identity_differences=[],
             )

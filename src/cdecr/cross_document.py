@@ -23,10 +23,15 @@ from cdecr.atomic_identity import (
     compare_identity_groups,
     resolved_identity_evidence,
 )
+from cdecr.atomic_identity_contracts import (
+    IdentityAxis,
+    IdentityAxisVerdict,
+)
 from cdecr.atomic_identity_sidecar import (
     append_atomic_ranker_shadow_audit,
     combine_atomic_identity_sidecars,
     compile_atomic_identity_sidecar,
+    deterministic_axis_verdicts,
     rank_atomic_candidates,
 )
 from cdecr.atomic_recall_audit import (
@@ -152,9 +157,9 @@ from cdecr.single_document_contracts import ModelCallSummary
 from cdecr.wire import compact_json, wire_ref_metadata
 
 ENGINE_VERSION = "cdecr-cross-document-v16"
-PROMPT_VERSION = "cdecr-cross-document-prompts-v8"
+PROMPT_VERSION = "cdecr-cross-document-prompts-v10"
 WIRE_PROTOCOL_VERSION = "cdecr-cross-document-wire-task-local-v6"
-ATOMIC_ASSIGNMENT_POLICY_VERSION = "atomic-assignment-policy-v2"
+ATOMIC_ASSIGNMENT_POLICY_VERSION = "atomic-assignment-policy-v3-axis-assessment"
 ATOMIC_DECISION_MENTION_BATCH = 3
 PACKAGE_DECISION_EVENT_BATCH = 12
 PACKAGE_MERGE_PAIR_BATCH = 12
@@ -1494,6 +1499,9 @@ class CrossDocumentEngine:
                         recall_routes=sorted(recall_routes, key=str),
                         recall_score=score,
                         hard_conflicts=effective_conflicts,
+                        identity_sidecar=candidate_sidecars[event_id],
+                        candidate_root_id=candidate_root_id(self.registry, event_id),
+                        raw_embedding_similarity=scores.get(event_id),
                     )
                 )
             if self.hard_cannot_link_mode is HardCannotLinkMode.ENFORCE:
@@ -1513,9 +1521,9 @@ class CrossDocumentEngine:
                 incoming_sidecar=incoming_sidecar,
                 candidate_sidecars=candidate_sidecars,
                 candidate_roots={
-                    item.event.event_id: candidate_root_id(
-                        self.registry,
-                        item.event.event_id,
+                    item.event.event_id: (
+                        item.candidate_root_id
+                        or candidate_root_id(self.registry, item.event.event_id)
                     )
                     for item in ranked
                 },
@@ -1613,6 +1621,7 @@ class CrossDocumentEngine:
                             for key in (
                                 "candidate_event_id",
                                 "relation",
+                                "axis_assessments",
                                 "claim_conflict",
                                 "identity_differences",
                             )
@@ -1632,6 +1641,25 @@ class CrossDocumentEngine:
                                 item.value for item in AtomicSemanticRelation
                             }:
                                 assessment["relation"] = normalized_relation
+                        raw_axis_assessments = assessment.get("axis_assessments")
+                        if isinstance(raw_axis_assessments, list):
+                            normalized_axes: list[dict[str, object]] = []
+                            for raw_axis in raw_axis_assessments:
+                                if not isinstance(raw_axis, dict):
+                                    continue
+                                axis = raw_axis.get("axis")
+                                verdict = raw_axis.get("verdict")
+                                if isinstance(axis, str):
+                                    axis = axis.strip().upper()
+                                if isinstance(verdict, str):
+                                    verdict = verdict.strip().upper()
+                                normalized_axes.append(
+                                    {
+                                        "axis": axis,
+                                        "verdict": verdict,
+                                    }
+                                )
+                            assessment["axis_assessments"] = normalized_axes
                         assessment.setdefault("claim_conflict", False)
                         assessment.setdefault("identity_differences", [])
                         assessments.append(assessment)
@@ -1693,45 +1721,45 @@ class CrossDocumentEngine:
                         if isinstance(item, dict)
                         and (item.get("source_claim") or item.get("canonical_proposition"))
                     ]
-                    short_event_id = candidate_short_by_full[mention.mention_id][
-                        event.event_id
-                    ]
+                    short_event_id = candidate_short_by_full[mention.mention_id][event.event_id]
+                    candidate_sidecar = candidate.identity_sidecar
+                    assert candidate_sidecar is not None
                     model_atoms[short_event_id] = {
                         "event_id": short_event_id,
                         "canonical_proposition": event.canonical_proposition,
                         "event_family": event.event_family.value,
                         "identity_profile": event.identity_profile.model_dump(mode="json"),
+                        "identity_adapter": candidate_sidecar.adapter_kind.value,
+                        "identity_axes": [
+                            axis.value for axis in candidate_sidecar.applicable_axes
+                        ],
                         "time": event.time.model_dump(mode="json"),
                         "representative_source_claims": representative_claims[:3],
-                        **canonical_identity_view(
-                            self.registry, representatives
-                        ).model_dump(mode="json"),
+                        **canonical_identity_view(self.registry, representatives).model_dump(
+                            mode="json"
+                        ),
                         "is_provisional": event.event_id.startswith("provisional:"),
                     }
-            tasks: list[dict[str, object]] = []
             legacy_tasks: list[dict[str, object]] = []
             for mention in batch_mentions:
                 mention_short_id = mention_short_by_full[mention.mention_id]
-                profile = compiled[mention.mention_id].identity_profile
+                compiled_identity = compiled[mention.mention_id]
+                profile = compiled_identity.identity_profile
                 assert profile is not None
+                incoming_sidecar = compiled_identity.atomic_identity_sidecar
+                assert incoming_sidecar is not None
                 source = self.registry.get_source(mention.message_id)
                 incoming_view = canonical_identity_view(self.registry, [mention])
-                candidate_payloads = [
-                    {
-                        "event_id": candidate_short_by_full[mention.mention_id][
-                            candidate.event.event_id
-                        ],
-                        "recall_routes": [route.value for route in candidate.recall_routes],
-                        "recall_score": round(candidate.recall_score, 3),
-                    }
-                    for candidate in batch_candidates[mention.mention_id]
-                ]
                 incoming_payload = {
                     "mention_id": mention_short_id,
                     "canonical_proposition": mention.canonical_proposition,
                     "event_family": mention.event_family.value,
                     "assertion_state": mention.assertion_state.value,
                     "identity_profile": profile.model_dump(mode="json"),
+                    "identity_adapter": incoming_sidecar.adapter_kind.value,
+                    "identity_axes": [
+                        axis.value for axis in incoming_sidecar.applicable_axes
+                    ],
                     "time": mention.time.model_dump(mode="json"),
                     "claim_values": [item.model_dump(mode="json") for item in mention.quantities],
                     "source_claim": mention.source_claim,
@@ -1752,12 +1780,41 @@ class CrossDocumentEngine:
                     legacy_candidates.append(
                         {
                             **atom,
-                            "recall_routes": [route.value for route in candidate.recall_routes],
-                            "recall_score": candidate.recall_score,
                         }
                     )
-                tasks.append({"incoming": incoming_payload, "candidates": candidate_payloads})
                 legacy_tasks.append({"incoming": incoming_payload, "candidates": legacy_candidates})
+            expected_axes: dict[str, dict[str, set[IdentityAxis]]] = {}
+            deterministic_axis_map: dict[
+                str, dict[str, dict[IdentityAxis, IdentityAxisVerdict]]
+            ] = {}
+            exact_signature_matches: set[tuple[str, str]] = set()
+            for mention in batch_mentions:
+                mention_short_id = mention_short_by_full[mention.mention_id]
+                incoming_sidecar = compiled[
+                    mention.mention_id
+                ].atomic_identity_sidecar
+                assert incoming_sidecar is not None
+                expected_axes[mention_short_id] = {}
+                deterministic_axis_map[mention_short_id] = {}
+                for candidate in batch_candidates[mention.mention_id]:
+                    candidate_short_id = candidate_short_by_full[mention.mention_id][
+                        candidate.event.event_id
+                    ]
+                    candidate_sidecar = candidate.identity_sidecar
+                    assert candidate_sidecar is not None
+                    expected_axes[mention_short_id][candidate_short_id] = set(
+                        incoming_sidecar.applicable_axes
+                    )
+                    deterministic_axis_map[mention_short_id][candidate_short_id] = (
+                        deterministic_axis_verdicts(
+                            incoming_sidecar,
+                            candidate_sidecar,
+                        )
+                    )
+                    if incoming_sidecar.signature_hash == candidate_sidecar.signature_hash:
+                        exact_signature_matches.add(
+                            (mention_short_id, candidate_short_id)
+                        )
             legacy_payload: dict[str, object] = {
                 "batch_index": batch_index,
                 "batch_count": len(batches),
@@ -1974,6 +2031,18 @@ class CrossDocumentEngine:
                             {
                                 "candidate_event_id": candidate_id,
                                 "relation": AtomicSemanticRelation.UNRELATED.value,
+                                "axis_assessments": [
+                                    {
+                                        "axis": axis.value,
+                                        "verdict": deterministic_axis_map[mention_id][
+                                            candidate_id
+                                        ][axis].value,
+                                    }
+                                    for axis in sorted(
+                                        expected_axes[mention_id][candidate_id],
+                                        key=str,
+                                    )
+                                ],
                                 "claim_conflict": False,
                                 "identity_differences": [],
                             }
@@ -1997,6 +2066,41 @@ class CrossDocumentEngine:
                             }
                             if set(assessment_by_id) != expected[mention_id]:
                                 raise ValueError("candidate coverage mismatch")
+                            for candidate_id, parsed_assessment in assessment_by_id.items():
+                                returned_axes = {
+                                    item.axis
+                                    for item in parsed_assessment.axis_assessments
+                                }
+                                if returned_axes != expected_axes[mention_id][candidate_id]:
+                                    raise ValueError("identity axis coverage mismatch")
+                                verdict_by_axis = {
+                                    item.axis: item.verdict
+                                    for item in parsed_assessment.axis_assessments
+                                }
+                                if (
+                                    mention_id,
+                                    candidate_id,
+                                ) in exact_signature_matches and any(
+                                    verdict
+                                    is not IdentityAxisVerdict.MATCH
+                                    for verdict in verdict_by_axis.values()
+                                ):
+                                    raise ValueError(
+                                        "exact canonical identity cannot be non-match"
+                                    )
+                                if any(
+                                    deterministic_verdict
+                                    is IdentityAxisVerdict.CONFLICT
+                                    and verdict_by_axis.get(axis)
+                                    is IdentityAxisVerdict.AMBIGUOUS
+                                    for axis, deterministic_verdict in
+                                    deterministic_axis_map[mention_id][
+                                        candidate_id
+                                    ].items()
+                                ):
+                                    raise ValueError(
+                                        "deterministic conflict cannot be ambiguous"
+                                    )
                             if parsed.action is AtomicAction.MERGE and (
                                 parsed.merge_target_event_id not in expected[mention_id]
                                 or assessment_by_id[parsed.merge_target_event_id].relation
@@ -2060,29 +2164,31 @@ class CrossDocumentEngine:
                             "atomic decision assessments must cover exactly "
                             "the requested candidates"
                         )
+                    for candidate_id, assessment in assessment_by_id.items():
+                        if {
+                            item.axis for item in assessment.axis_assessments
+                        } != expected_axes[decision.mention_id][candidate_id]:
+                            raise ValueError(
+                                "atomic identity axes must cover exactly the applicable axes"
+                            )
 
             def validate_model_semantics(output: AtomicDecisionBatch) -> None:
                 validate_coverage(output)
                 for decision in output.decisions:
                     candidate_ids = expected[decision.mention_id]
                     assessment_by_id = {
-                        item.candidate_event_id: item
-                        for item in decision.candidate_assessments
+                        item.candidate_event_id: item for item in decision.candidate_assessments
                     }
                     if decision.action is AtomicAction.MERGE:
                         target = decision.merge_target_event_id
                         if target not in candidate_ids:
-                            raise ValueError(
-                                "merge target must be an input candidate"
-                            )
+                            raise ValueError("merge target must be an input candidate")
                         if (
                             target is None
                             or assessment_by_id[target].relation
                             is not AtomicSemanticRelation.SAME_EVENT
                         ):
-                            raise ValueError(
-                                "merge target must be assessed SAME_EVENT"
-                            )
+                            raise ValueError("merge target must be assessed SAME_EVENT")
 
             def normalize_derived_fields(
                 output: AtomicDecisionBatch,

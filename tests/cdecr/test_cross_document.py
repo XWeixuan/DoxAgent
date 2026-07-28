@@ -235,6 +235,18 @@ class FakeStructured:
                             else "UNRELATED"
                         )
                     ),
+                    "axis_assessments": [
+                        {
+                            "axis": axis,
+                            "verdict": (
+                                "MATCH"
+                                if candidate["identity_profile"]
+                                == incoming["identity_profile"]
+                                else "CONFLICT"
+                            ),
+                        }
+                        for axis in incoming.get("identity_axes", {})
+                    ],
                     "claim_conflict": False,
                     "identity_differences": (
                         []
@@ -309,6 +321,10 @@ class AtomicCoverageDrift(FakeStructured):
             decisions[0]["merge_target_event_id"] = None
             decisions[0]["related_candidate_event_ids"] = []
             decisions[0]["possible_duplicate_atomic_ids"] = []
+        elif self.mode == "missing_axis":
+            axis_assessments = assessments[0]["axis_assessments"]
+            assert isinstance(axis_assessments, list) and axis_assessments
+            assessments[0]["axis_assessments"] = axis_assessments[:-1]
         else:  # pragma: no cover - test helper guard
             raise AssertionError(self.mode)
         return result
@@ -614,6 +630,16 @@ def test_n9_keeps_three_mentions_per_request_and_uses_only_short_ids(
         not candidate["event_id"].startswith(("atomic:", "provisional:"))
         for task in payload["tasks"]
         for candidate in task["candidates"]
+    )
+    assert all(
+        "recall_routes" not in candidate and "recall_score" not in candidate
+        for task in payload["tasks"]
+        for candidate in task["candidates"]
+    )
+    assert all(
+        task["incoming"]["identity_axes"]
+        and all(candidate["identity_axes"] for candidate in task["candidates"])
+        for task in payload["tasks"]
     )
     with sqlite3.connect(registry.path) as connection:
         shadow_payloads = [
@@ -1207,3 +1233,31 @@ def test_n9_missing_assessment_degrades_only_task_without_repair(
     assert payload is not None
     audit = json.loads(payload[0])
     assert audit["tasks"]["m1"]["missing"] == ["m1c1"]
+
+
+def test_n9_missing_identity_axis_degrades_only_task_without_repair(
+    registry: SQLiteCDECRRegistry,
+) -> None:
+    m2 = AtomicCoverageDrift(mode="missing_axis")
+    processor, _, _, _ = engine(registry, m2=m2)
+    add(registry, source("MSG-1"), metric_mention("MSG-1"))
+    processor.process("MSG-1")
+    add(registry, source("MSG-2"), metric_mention("MSG-2"))
+
+    result = processor.process("MSG-2")
+
+    assert result.status is CrossDocumentStatus.SUCCEEDED
+    assert not any(summary.stage == "atomic_coreference_repair" for summary in result.model_calls)
+    assert result.atomic_assignments[0].action is AtomicAction.CREATE_NEW
+    with sqlite3.connect(registry.path) as connection:
+        payload = connection.execute(
+            """
+            SELECT payload_json FROM decision_audits
+            WHERE run_id = ? AND decision_type = 'ATOMIC_N9_VALIDATION'
+              AND json_extract(payload_json, '$.attempt') = 'initial'
+            """,
+            (result.run_id,),
+        ).fetchone()
+    assert payload is not None
+    audit = json.loads(payload[0])
+    assert audit["tasks"]["m1"]["fallback"]["reason"] == "N9_INVALID_TASK_CREATE_NEW"

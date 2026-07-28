@@ -8,6 +8,8 @@ An **Event Mention** is an evidence-supported description or claim about an even
 
 An **Atomic Event** is a cross-document cluster representing one specific real-world event occurrence. Event Mentions from multiple sources may belong to the same Atomic Event even when they use different wording, use aliases, or contain conflicting claim values.
 
+Treat an Atomic Event as one minimal independently assertable fact, not as an article topic or a whole disclosure package.
+
 ## Your Task
 
 For each incoming Event Mention, jointly compare it with all provided candidate Atomic Events. You must choose exactly one of the following business actions:
@@ -56,6 +58,14 @@ However, if the underlying event identity is the same, you must still select:
 
 Identity differences are diagnostic observations, not automatic rejection conditions. You must use the provided context to determine whether each difference is sufficient to establish that the two items represent different events.
 
+For every candidate, return one `axis_assessments` verdict for every identity axis supplied on the incoming Mention:
+
+- `MATCH`: the candidate supports the same referent, occurrence, or facet;
+- `CONFLICT`: the evidence identifies a different value on that axis;
+- `AMBIGUOUS`: the candidate lacks enough evidence for that axis.
+
+Do not add axes that were not supplied and do not omit a supplied axis.
+
 You must not identify candidates as SAME_EVENT solely because they:
 
 - are semantically similar;
@@ -80,6 +90,14 @@ You must determine whether the sources are merely describing the occurrence of t
 
 `RELATED_NOT_SAME`
 
+### High-Risk Boundaries
+
+- Revenue, EPS, free cash flow, CAPEX, gross margin, and other distinct earnings metrics are separate Atomic facts even when disclosed in the same earnings release. Profit, net income, and GAAP profit may describe the same facet when the evidence identifies the same reported measure.
+- Agreement signing, commitment, commercial terms, and projected future revenue are separate Atomic facts unless the evidence actually describes the same minimal assertion.
+- Pre-market, market-open, regular-session, early-trading, and after-hours movements are separate occurrences when explicitly distinguished.
+- Price movement, closing level, trading volume, market capitalization, and index movement are separate market facets.
+- Related facts should remain separate Atomic Events and may later be grouped under the same Event Package.
+
 ## Target Selection When Multiple Candidates Are the Same Event
 
 Choose the merge target according to the following priority order:
@@ -87,7 +105,7 @@ Choose the merge target according to the following priority order:
 1. the candidate with the most complete and best-matching canonical identity;
 2. a persisted, non-provisional Atomic Event;
 3. the candidate supported by the strongest trusted identity-resolution evidence;
-4. the candidate with stronger retrieval evidence.
+4. the candidate supported by the clearest direct source evidence.
 
 ## Output Rules
 

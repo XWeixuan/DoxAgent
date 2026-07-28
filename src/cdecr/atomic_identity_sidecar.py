@@ -6,10 +6,17 @@ import hashlib
 import json
 import re
 from collections.abc import Iterable, Sequence
-from enum import IntEnum, StrEnum
+from enum import IntEnum
 
-from pydantic import Field, model_validator
+from pydantic import Field
 
+from cdecr.atomic_identity_contracts import (
+    ATOMIC_IDENTITY_SIDECAR_VERSION,
+    AtomicIdentityAdapterKind,
+    AtomicIdentitySidecar,
+    IdentityAxis,
+    IdentityAxisVerdict,
+)
 from cdecr.contracts import (
     AnalystActionIdentityProfile,
     EventFamily,
@@ -24,22 +31,7 @@ from cdecr.contracts import (
 from cdecr.cross_document_contracts import AtomicCandidate, RecallRoute
 from cdecr.ports import CDECRRegistry, DecisionAuditRecord
 
-ATOMIC_IDENTITY_SIDECAR_VERSION = "atomic-identity-sidecar-v1"
 ATOMIC_RECALL_RANKER_VERSION = "atomic-recall-ranker-v2-shadow"
-
-
-class AtomicIdentityAdapterKind(StrEnum):
-    FINANCIAL_GUIDANCE = "FINANCIAL_GUIDANCE"
-    MARKET_MOVEMENT = "MARKET_MOVEMENT"
-    ACTION_ARTIFACT = "ACTION_ARTIFACT"
-    OUTLOOK_STATE = "OUTLOOK_STATE"
-    GENERIC_OPEN = "GENERIC_OPEN"
-
-
-class IdentityAxis(StrEnum):
-    REFERENT = "REFERENT"
-    OCCURRENCE = "OCCURRENCE"
-    FACET = "FACET"
 
 
 class AtomicRecallRankBand(IntEnum):
@@ -48,34 +40,6 @@ class AtomicRecallRankBand(IntEnum):
     SEMANTIC_CORROBORATED = 2
     BROAD_RECALL = 3
     AUDIT_TAIL = 4
-
-
-class AtomicIdentitySidecar(StrictModel):
-    adapter_kind: AtomicIdentityAdapterKind
-    referent: list[str] = Field(default_factory=list)
-    occurrence: list[str] = Field(default_factory=list)
-    facet: list[str] = Field(default_factory=list)
-    applicable_axes: list[IdentityAxis] = Field(default_factory=list)
-    compiler_version: str = ATOMIC_IDENTITY_SIDECAR_VERSION
-    signature_hash: str
-
-    @model_validator(mode="after")
-    def validate_axes(self) -> AtomicIdentitySidecar:
-        expected = [
-            axis
-            for axis, values in (
-                (IdentityAxis.REFERENT, self.referent),
-                (IdentityAxis.OCCURRENCE, self.occurrence),
-                (IdentityAxis.FACET, self.facet),
-            )
-            if values
-        ]
-        if self.applicable_axes != expected:
-            raise ValueError("applicable_axes must exactly cover non-empty sidecar axes")
-        return self
-
-    def values(self, axis: IdentityAxis) -> frozenset[str]:
-        return frozenset(getattr(self, axis.value.casefold()))
 
 
 class AtomicAxisComparison(StrictModel):
@@ -203,6 +167,18 @@ def compare_atomic_identity_sidecars(
         conflicted_axes=conflicted,
         ambiguous_axes=ambiguous,
     )
+
+
+def deterministic_axis_verdicts(
+    incoming: AtomicIdentitySidecar,
+    candidate: AtomicIdentitySidecar,
+) -> dict[IdentityAxis, IdentityAxisVerdict]:
+    comparison = compare_atomic_identity_sidecars(incoming, candidate)
+    return {
+        **{axis: IdentityAxisVerdict.MATCH for axis in comparison.matched_axes},
+        **{axis: IdentityAxisVerdict.CONFLICT for axis in comparison.conflicted_axes},
+        **{axis: IdentityAxisVerdict.AMBIGUOUS for axis in comparison.ambiguous_axes},
+    }
 
 
 def rank_atomic_candidates(

@@ -7,8 +7,8 @@ import json
 
 from pydantic import Field
 
+from cdecr.atomic_identity_contracts import AtomicIdentitySidecar
 from cdecr.atomic_identity_sidecar import (
-    AtomicIdentitySidecar,
     compile_atomic_identity_sidecar,
 )
 from cdecr.canonical_field_resolution import FIELD_RESOLVER_VERSION
