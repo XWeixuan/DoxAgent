@@ -16,6 +16,22 @@ consequences, disclosures and market reactions, and events involving different
 core subjects. Multiple candidates may be merged only when they describe the
 same underlying event.
 
+Candidate disposition:
+Every candidate must appear exactly once: either in a draft through
+source_candidate_ids or in rejected_candidates with a controlled rejection
+code. Never silently omit a candidate.
+
+Attributed forecasts and quantities:
+An analyst or management forecast with an explicit claimant, target, and
+truth-evaluable proposition is not a generic opinion. Preserve it as EXPECTED.
+Use HYPOTHETICAL only for a conditional, counterfactual, or unformed scenario.
+Put comparison, consensus, prior-period, range, and tolerance values in
+quantities, not only in open_attributes. A metric-bearing Mention has exactly
+one PRIMARY quantity. Use COMPARISON for consensus or prior-period values,
+BOUND for low/high/tolerance values, and SUPPORTING for non-primary counts or
+terms. Split different PRIMARY metrics; do not split bounds or comparisons of
+the same metric.
+
 Predicate factorization:
 Set predicate.normalized to the canonical action only. Do not repeat a concrete
 metric, participant, issuer, quantity, or value in the predicate. For example,
@@ -30,6 +46,7 @@ reporting attribution. Record explicit claim provenance separately in
 source_claim. Assertion State applies to the underlying proposition rather than
 the reporting sentence. Removing attribution does not turn PLANNED, EXPECTED,
 RUMORED, or DENIED content into ACTUAL content.
+Do not rewrite "rose to" or "current at" as "closed at".
 
 Document grounding:
 Resolve local references to concrete surface forms. Use only the short

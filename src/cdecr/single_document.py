@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import traceback
 import uuid
 from collections import Counter
@@ -16,6 +17,7 @@ from typing import TypeVar
 from pydantic import ValidationError
 
 from cdecr.contracts import (
+    AssertionState,
     EventFamily,
     EventMention,
     EventTime,
@@ -26,6 +28,7 @@ from cdecr.contracts import (
     Participant,
     ParticipantRole,
     Quantity,
+    QuantityRole,
     SourceMessage,
     StrictModel,
     TimePrecision,
@@ -93,7 +96,7 @@ from cdecr.single_document_contracts import (
     validate_event_time_semantics,
 )
 
-PROMPT_VERSION = "single-document-prompts-v9"
+PROMPT_VERSION = "single-document-prompts-v10"
 GROUNDER_CANDIDATE_BATCH = 24
 JUDGE_DRAFT_BATCH = 24
 _T = TypeVar("_T", bound=StrictModel)
@@ -186,6 +189,12 @@ def _repaired_validation_error_code(exc: ValidationError | ValueError) -> str:
 def _safe_semantic_error_code(exc: ValueError) -> str:
     message = str(exc).casefold()
     mappings = (
+        ("multiple_primary_metrics", "MULTIPLE_PRIMARY_METRICS"),
+        ("guidance_assertion_conflict", "GUIDANCE_ASSERTION_CONFLICT"),
+        ("opposing_core_actions", "OPPOSING_CORE_ACTIONS"),
+        ("opposing_subject_actions", "OPPOSING_SUBJECT_ACTIONS"),
+        ("likely_fragmentation", "LIKELY_FRAGMENTATION"),
+        ("generic_umbrella_duplicate", "GENERIC_UMBRELLA_DUPLICATE"),
         ("unknown evidence segment", "evidence_unknown_segment"),
         ("does not occur", "evidence_text_not_found"),
         ("ambiguous within", "evidence_text_ambiguous"),
@@ -199,6 +208,159 @@ def _safe_semantic_error_code(exc: ValueError) -> str:
         ("judge target must name", "judge_invalid_target"),
     )
     return next((code for token, code in mappings if token in message), "semantic_constraint")
+
+
+def _mention_semantic_codes(mention: MentionDraft) -> set[str]:
+    codes: set[str] = set()
+    primary_count = sum(
+        quantity.role is QuantityRole.PRIMARY for quantity in mention.quantities
+    )
+    if mention.quantities and primary_count != 1:
+        codes.add("MULTIPLE_PRIMARY_METRICS")
+    predicate = mention.predicate.normalized.casefold()
+    proposition = mention.canonical_proposition.casefold()
+    if (
+        mention.event_family is EventFamily.GUIDANCE_EXPECTATION
+        and mention.assertion_state is AssertionState.ACTUAL
+        and re.search(r"\bguide(?:_|)metric\b", predicate)
+    ):
+        codes.add("GUIDANCE_ASSERTION_CONFLICT")
+    opposing_pairs = (
+        (r"\brais(?:e|ed|ing)\b", r"\blower(?:ed|ing)?\b|\bcut\b"),
+        (r"\bincreas(?:e|ed|ing)\b", r"\bdecreas(?:e|ed|ing)\b"),
+        (r"\bbuy(?:s|ing)?\b|\bbought\b", r"\bsell(?:s|ing)?\b|\bsold\b"),
+        (r"\binflow\b", r"\boutflow\b"),
+        (r"\benter(?:ed|ing)?\b", r"\bexit(?:ed|ing)?\b"),
+    )
+    opposing = any(
+        re.search(left, proposition) and re.search(right, proposition)
+        for left, right in opposing_pairs
+    )
+    if opposing:
+        codes.add("OPPOSING_CORE_ACTIONS")
+        core_subjects = {
+            participant.surface.casefold()
+            for participant in mention.participants
+            if participant.role in {ParticipantRole.SUBJECT, ParticipantRole.ACTOR}
+        }
+        if len(core_subjects) > 1:
+            codes.add("OPPOSING_SUBJECT_ACTIONS")
+    return codes
+
+
+def _judge_semantic_failures(
+    output: JudgeCommandOutput,
+    draft_by_short: dict[str, GroundedMentionDraft],
+    validated_accepted: dict[str, MentionDraft],
+    validated_splits: dict[str, list[MentionDraft]],
+) -> dict[str, set[str]]:
+    failures: dict[str, set[str]] = {}
+    final_mentions: list[tuple[str, set[str], MentionDraft]] = []
+    for accepted_command in output.accepted:
+        original = draft_by_short.get(accepted_command.id)
+        if original is None:
+            continue
+        mention = validated_accepted.get(accepted_command.id, original.mention)
+        codes = _mention_semantic_codes(mention)
+        if codes:
+            failures.setdefault(accepted_command.id, set()).update(codes)
+        final_mentions.append(
+            (accepted_command.id, set(original.source_candidate_ids), mention)
+        )
+    for split_command in output.split:
+        replacements = validated_splits.get(split_command.id)
+        original = draft_by_short.get(split_command.id)
+        if replacements is None or original is None:
+            continue
+        signatures: set[str] = set()
+        for mention in replacements:
+            failures.setdefault(split_command.id, set()).update(
+                _mention_semantic_codes(mention)
+            )
+            primary_metric = next(
+                (
+                    quantity.metric_id
+                    for quantity in mention.quantities
+                    if quantity.role is QuantityRole.PRIMARY
+                ),
+                None,
+            )
+            signature = _hash_json(
+                {
+                    "subjects": sorted(
+                        participant.surface.casefold()
+                        for participant in mention.participants
+                        if participant.role
+                        in {ParticipantRole.SUBJECT, ParticipantRole.ACTOR}
+                    ),
+                    "predicate": mention.predicate.normalized,
+                    "primary_metric": primary_metric,
+                    "assertion": mention.assertion_state.value,
+                    "time": mention.time.model_dump(mode="json"),
+                }
+            )
+            if signature in signatures:
+                failures.setdefault(split_command.id, set()).add(
+                    "LIKELY_FRAGMENTATION"
+                )
+            signatures.add(signature)
+            final_mentions.append(
+                (split_command.id, set(original.source_candidate_ids), mention)
+            )
+    for index, (left_id, left_lineage, left) in enumerate(final_mentions):
+        if left.quantities or not re.search(
+            r"\b(report(?:ed)?|disclos(?:e|ed))\b.*\b(earnings|results)\b",
+            left.canonical_proposition,
+            re.I,
+        ):
+            continue
+        if re.search(
+            r"\b(filing|release|agreement|sign(?:ed|ing))\b",
+            left.canonical_proposition,
+            re.I,
+        ):
+            continue
+        left_subjects = {
+            participant.surface.casefold()
+            for participant in left.participants
+            if participant.role in {ParticipantRole.SUBJECT, ParticipantRole.ACTOR}
+        }
+        for right_index, (_, right_lineage, right) in enumerate(final_mentions):
+            if right_index == index:
+                continue
+            right_subjects = {
+                participant.surface.casefold()
+                for participant in right.participants
+                if participant.role in {ParticipantRole.SUBJECT, ParticipantRole.ACTOR}
+            }
+            if (
+                left_lineage.intersection(right_lineage)
+                and right.quantities
+                and left_subjects
+                and left_subjects == right_subjects
+            ):
+                failures.setdefault(left_id, set()).add(
+                    "GENERIC_UMBRELLA_DUPLICATE"
+                )
+    return {item_id: codes for item_id, codes in failures.items() if codes}
+
+
+def _judge_semantic_codes(
+    output: JudgeCommandOutput,
+    draft_by_short: dict[str, GroundedMentionDraft],
+    validated_accepted: dict[str, MentionDraft],
+    validated_splits: dict[str, list[MentionDraft]],
+) -> set[str]:
+    return {
+        code
+        for codes in _judge_semantic_failures(
+            output,
+            draft_by_short,
+            validated_accepted,
+            validated_splits,
+        ).values()
+        for code in codes
+    }
 
 
 def deterministic_mention_id(
@@ -1644,6 +1806,7 @@ class SingleDocumentProcessor:
             validated_splits: dict[str, list[MentionDraft]] = {}
             dropped_attribute_merges: set[str] = set()
             invalid_cross_commands: set[str] = set()
+            semantic_degraded_ids: set[str] = set()
 
             def draft_anchors(short_id: str) -> list[EvidenceLocator]:
                 return [
@@ -1658,6 +1821,7 @@ class SingleDocumentProcessor:
                 validated_splits.clear()
                 dropped_attribute_merges.clear()
                 invalid_cross_commands.clear()
+                semantic_degraded_ids.clear()
                 targets = [
                     *[item.id for item in output.accepted],
                     *[item.id for item in output.rejected],
@@ -1814,14 +1978,98 @@ class SingleDocumentProcessor:
                             },
                         )
                     )
+                semantic_failures = _judge_semantic_failures(
+                    output,
+                    draft_by_short,
+                    validated_accepted,
+                    validated_splits,
+                )
+                for short_id, codes in sorted(semantic_failures.items()):
+                    for code in sorted(codes):
+                        self.registry.append_decision_audit(
+                            DecisionAuditRecord(
+                                audit_id=(
+                                    f"judge-semantic:{run_id}:{batch_index}:"
+                                    f"{short_id}:{code}:{client.repair_invocations}"
+                                ),
+                                run_id=run_id,
+                                decision_type="JUDGE_SEMANTIC_VALIDATION",
+                                subject_id=short_to_full.get(short_id, short_id),
+                                payload={
+                                    "code": code,
+                                    "repair_attempt": client.repair_invocations > 0,
+                                },
+                            )
+                        )
+                if semantic_failures and client.repair_invocations > 0:
+                    semantic_degraded_ids.update(semantic_failures)
+                    for short_id in semantic_failures:
+                        grounded_original = draft_by_short.get(short_id)
+                        if grounded_original is not None:
+                            validated_accepted[short_id] = grounded_original.mention
+                        validated_splits.pop(short_id, None)
+                    self.registry.append_decision_audit(
+                        DecisionAuditRecord(
+                            audit_id=f"judge-semantic-degraded:{run_id}:{batch_index}",
+                            run_id=run_id,
+                            decision_type="JUDGE_SEMANTIC_DEGRADED",
+                            subject_id=f"judge-batch:{batch_index}",
+                            payload={
+                                "invalid_ids": sorted(semantic_failures),
+                                "fallback": "ACCEPT_GROUNDER_ITEM",
+                            },
+                        )
+                    )
+                    return
+                if semantic_failures:
+                    raise ValueError(
+                        "|".join(
+                            code.casefold()
+                            for code in sorted(
+                                {
+                                    code
+                                    for codes in semantic_failures.values()
+                                    for code in codes
+                                }
+                            )
+                        )
+                    )
 
-            output = self._invoke_typed(
-                client=client,
-                request=request,
-                output_type=JudgeCommandOutput,
-                semantic_validator=validate,
-                stage="judge",
-            )
+            try:
+                output = self._invoke_typed(
+                    client=client,
+                    request=request,
+                    output_type=JudgeCommandOutput,
+                    semantic_validator=validate,
+                    stage="judge",
+                )
+            except SingleDocumentPipelineError as exc:
+                if exc.code != "semantic_validation_failed_after_repair":
+                    raise
+                validated_accepted.clear()
+                validated_splits.clear()
+                output = JudgeCommandOutput(
+                    accepted=[
+                        JudgeAcceptedCommand(
+                            id=short_id,
+                            reason="SEMANTIC_REPAIR_FAILED_RETAIN_GROUNDER_DRAFT",
+                        )
+                        for short_id in draft_by_short
+                    ]
+                )
+                self.registry.append_decision_audit(
+                    DecisionAuditRecord(
+                        audit_id=f"judge-semantic-degraded:{run_id}:{batch_index}",
+                        run_id=run_id,
+                        decision_type="JUDGE_SEMANTIC_DEGRADED",
+                        subject_id=f"judge-batch:{batch_index}",
+                        payload={
+                            "code": exc.code,
+                            "fallback": "ACCEPT_GROUNDER_DRAFT",
+                            "draft_count": len(batch),
+                        },
+                    )
+                )
             persisted: list[JudgeDecisionRecord] = []
             decided_short_ids: set[str] = set()
 
@@ -1866,7 +2114,11 @@ class SingleDocumentProcessor:
                 append_decision(
                     short_id=accepted_command.id,
                     action=JudgeAction.ACCEPT,
-                    reason=accepted_command.reason,
+                    reason=(
+                        "SEMANTIC_REPAIR_FAILED_RETAIN_GROUNDER_ITEM"
+                        if accepted_command.id in semantic_degraded_ids
+                        else accepted_command.reason
+                    ),
                     revised_mention=(revised if revised != original else None),
                 )
             for rejected_command in output.rejected:

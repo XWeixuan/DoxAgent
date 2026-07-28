@@ -12,7 +12,7 @@ from cdecr.models import ModelAdapterError, ModelTier
 from cdecr.ports import EmbeddingResult, StructuredModelRequest, StructuredModelResult
 from cdecr.preprocessing import exact_document_fingerprint
 from cdecr.registry import SQLiteCDECRRegistry
-from cdecr.single_document import SingleDocumentProcessor
+from cdecr.single_document import SingleDocumentProcessor, _mention_semantic_codes
 from cdecr.single_document_contracts import (
     DreamerModelOutput,
     EvidenceText,
@@ -294,6 +294,20 @@ class InvalidJudgeKeepTarget(FakeStructured):
         return result
 
 
+class RepeatedSemanticInvalidJudge(FakeStructured):
+    def complete(self, request: StructuredModelRequest) -> StructuredModelResult:
+        result = super().complete(request)
+        if request.json_schema.get("title") != "JudgeCommandOutput":
+            return result
+        accepted = result.payload["accepted"]
+        assert isinstance(accepted, list) and accepted
+        accepted[0]["changes"] = {
+            "predicate": {"raw": "guided", "normalized": "guide_metric"},
+            "assertion_state": "ACTUAL",
+        }
+        return result
+
+
 class RecoverableGrounderContractDrift(FakeStructured):
     def complete(self, request: StructuredModelRequest) -> StructuredModelResult:
         repairing = request.system_prompt.casefold().startswith("repair")
@@ -369,6 +383,25 @@ def test_model_facing_mention_contract_excludes_schema_projections() -> None:
     payload["schema_projection"] = None
     with pytest.raises(ValueError, match="Extra inputs are not permitted"):
         MentionDraft.model_validate(payload)
+
+
+def test_judge_semantic_validator_detects_opposing_subject_actions() -> None:
+    payload = mention_draft()
+    payload.update(
+        {
+            "canonical_proposition": "Foreign investors bought while institutions sold.",
+            "predicate": {"raw": "traded", "normalized": "trade"},
+            "event_family": "MARKET_MOVEMENT",
+            "participants": [
+                {"surface": "foreign investors", "role": "ACTOR"},
+                {"surface": "institutions", "role": "ACTOR"},
+            ],
+        }
+    )
+    assert _mention_semantic_codes(MentionDraft.model_validate(payload)) == {
+        "OPPOSING_CORE_ACTIONS",
+        "OPPOSING_SUBJECT_ACTIONS",
+    }
 
 
 def test_dreamer_contract_bounds_candidates_per_block() -> None:
@@ -679,6 +712,47 @@ def test_judge_keep_target_must_be_a_distinct_final_accept(
     result = service.process("MSG-1")
     assert result.status is ProcessingStatus.SUCCEEDED
     assert len(result.mentions) == 1
+
+
+def test_judge_semantic_repair_failure_degrades_to_grounder_item(
+    registry: SQLiteCDECRRegistry,
+) -> None:
+    save_source(registry, source())
+    service = SingleDocumentProcessor(
+        registry=registry,
+        embedding_client=FakeEmbedding(),
+        m2_client=FakeStructured(model="deepseek-v4-flash"),
+        m3_client=FakeStructured(model="qwen3.7-plus"),
+        m4_client=RepeatedSemanticInvalidJudge(model="qwen3.7-max"),
+    )
+    result = service.process("MSG-1")
+    assert result.status is ProcessingStatus.SUCCEEDED
+    assert result.mentions[0].predicate.normalized == "raise_guidance"
+    judge_calls = [
+        summary for summary in result.model_calls if summary.stage.startswith("judge")
+    ]
+    assert [summary.status for summary in judge_calls] == ["SUCCEEDED", "SUCCEEDED"]
+    assert judge_calls[1].repaired
+    with sqlite3.connect(registry.path) as connection:
+        codes = {
+            json.loads(row[0])["code"]
+            for row in connection.execute(
+                """
+                SELECT payload_json FROM decision_audits
+                WHERE run_id = ? AND decision_type = 'JUDGE_SEMANTIC_VALIDATION'
+                """,
+                (result.run_id,),
+            )
+        }
+        degraded = connection.execute(
+            """
+            SELECT COUNT(*) FROM decision_audits
+            WHERE run_id = ? AND decision_type = 'JUDGE_SEMANTIC_DEGRADED'
+            """,
+            (result.run_id,),
+        ).fetchone()[0]
+    assert codes == {"GUIDANCE_ASSERTION_CONFLICT"}
+    assert degraded == 1
 
 
 def test_dreamer_retains_candidates_with_invalid_evidence(

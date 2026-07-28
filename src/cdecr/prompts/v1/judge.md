@@ -16,6 +16,10 @@ subject, Assertion State, and temporal identity. Split different actions,
 subjects, metrics, actual results versus guidance, causes versus consequences,
 and disclosures versus reactions. Do not split multiple values or bounds for
 the same metric, issuer, period, action, and assertion.
+Different PRIMARY metrics must split; bounds and comparisons of the same
+metric must remain together. After specific metric events are retained, reject
+a generic umbrella disclosure unless it has an independent artifact or action
+identity.
 
 3. Field correctness. canonical_proposition states the underlying event without
 reporting attribution. source_claim records an explicit claimant or statement
@@ -23,6 +27,8 @@ source, not the news outlet by default. predicate.normalized is the
 lower_snake_case action only. participants contain core event roles, not every
 named entity. Assertion State describes the underlying proposition: reporting
 a plan, expectation, rumor, or denial does not make it ACTUAL.
+EXPECTED is for a formed forecast or likely expectation. HYPOTHETICAL is only
+for a conditional, counterfactual, or unformed scenario.
 
 published_at is only the anchor for explicit relative dates. Never copy it as
 event time unless the text says the event occurred then. Keep financial or
