@@ -40,7 +40,7 @@ class CDECRSettings(BaseSettings):
     model_m3: str = Field(default="qwen3.7-plus", alias="CDECR_MODEL_M3")
     model_m4: str = Field(default="qwen3.7-max", alias="CDECR_MODEL_M4")
     atomic_hard_cannot_link_mode: Literal["enforce", "shadow", "off"] = Field(
-        default="shadow",
+        default="enforce",
         alias="CDECR_ATOMIC_HARD_CANNOT_LINK_MODE",
     )
     package_conflict_mode: Literal["off", "shadow", "enforce"] = Field(

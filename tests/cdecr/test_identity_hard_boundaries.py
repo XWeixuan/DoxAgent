@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from cdecr.config import CDECRSettings
 from cdecr.cross_document import _compiled_active_hard_conflicts
 from cdecr.cross_document_contracts import HardConflictCode
 from cdecr.identity_compiler import CompiledMentionIdentity
@@ -49,3 +50,9 @@ def test_missing_or_non_primary_metric_is_neutral_not_a_hard_conflict() -> None:
         [compiled("M-OLD", metric="EPS")],
     )
     assert conflicts == []
+
+
+def test_runtime_settings_enable_trusted_hard_boundaries_by_default() -> None:
+    settings = CDECRSettings(_env_file=None)
+
+    assert settings.atomic_hard_cannot_link_mode == "enforce"

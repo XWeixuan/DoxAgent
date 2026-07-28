@@ -73,11 +73,16 @@ class FakeStructured:
         self.atomic_relation = atomic_relation
         self.package_merge_relation = package_merge_relation
         self.malformed_derived_fields = malformed_derived_fields
+        self.invalid_emitted = False
 
     def complete(self, request: StructuredModelRequest) -> StructuredModelResult:
         self.calls.append(request)
-        if self.always_invalid or (self.invalid_first and len(self.calls) == 1):
-            payload: dict[str, object] = {"bad": True}
+        is_field_request = "typed field value" in request.system_prompt
+        if is_field_request:
+            payload: dict[str, object] = {"decision": "NEW"}
+        elif self.always_invalid or (self.invalid_first and not self.invalid_emitted):
+            self.invalid_emitted = True
+            payload = {"bad": True}
         elif request.system_prompt.startswith("Repair"):
             original = json.loads(request.user_prompt)["original_request"]
             payload = self._payload_for_body(json.loads(original))
@@ -90,8 +95,6 @@ class FakeStructured:
             or "Package coreference review model" in request.system_prompt
         ):
             payload = self._package_merge_payload(json.loads(request.user_prompt))
-        elif "typed field value" in request.system_prompt:
-            payload = {"decision": "NEW"}
         else:  # pragma: no cover - protects prompt routing
             raise AssertionError("unexpected prompt")
         return StructuredModelResult(model="fake", payload=payload, latency_ms=1)
@@ -501,7 +504,9 @@ def test_cold_start_incremental_merge_package_and_idempotency(
     assert first.status is CrossDocumentStatus.SUCCEEDED
     assert len(first.atomic_events) == 1
     assert len(first.packages) == 1
-    assert m2.calls == []
+    assert not any(
+        "Atomic Event Assignment Adjudicator" in call.system_prompt for call in m2.calls
+    )
 
     second_source = source("MSG-2")
     second_mention = metric_mention("MSG-2")
@@ -1099,7 +1104,13 @@ def test_persistent_invalid_output_fails_document_without_fake_result(
     result = processor.process("MSG-2")
     assert result.status is CrossDocumentStatus.FAILED
     assert result.error_code == "structured_output_invalid"
-    assert len(m2.calls) == 2
+    atomic_calls = [
+        call
+        for call in m2.calls
+        if "Atomic Event Assignment Adjudicator" in call.system_prompt
+        or call.system_prompt.startswith("Repair")
+    ]
+    assert len(atomic_calls) == 2
     assert len(m3.calls) == 2
 
 
