@@ -23,6 +23,7 @@ from cdecr.atomic_identity import (
     compare_identity_groups,
     resolved_identity_evidence,
 )
+from cdecr.atomic_recall_audit import append_ranked_candidate_snapshot
 from cdecr.canonical_field_resolution import (
     FIELD_RESOLVER_VERSION,
     CanonicalFieldResolutionEngine,
@@ -754,7 +755,7 @@ class CrossDocumentEngine:
         model_m1: str = "qwen3.7-text-embedding",
         model_m2: str = "deepseek-v4-flash",
         model_m3: str = "qwen3.7-plus",
-        hard_cannot_link_mode: str = HardCannotLinkMode.ENFORCE.value,
+        hard_cannot_link_mode: str = HardCannotLinkMode.SHADOW.value,
         package_conflict_mode: str = PackageConflictMode.OFF.value,
         n9_wire_protocol: str = "shadow",
         n12_wire_protocol: str = "shadow",
@@ -1478,6 +1479,18 @@ class CrossDocumentEngine:
                 )
             else:
                 ranked.sort(key=lambda item: (-item.recall_score, item.event.event_id))
+            append_ranked_candidate_snapshot(
+                registry=self.registry,
+                run_id=run_id,
+                mention_id=mention.mention_id,
+                ranked_candidates=ranked,
+                raw_embedding_similarities=scores,
+                observed_conflicts={
+                    event_id: [value.value for value in values]
+                    for event_id, values in observed_by_event.items()
+                },
+                selected_top_k=ATOMIC_TOP_K,
+            )
             output[mention.mention_id] = ranked[:ATOMIC_TOP_K]
             candidate_counts["atomic_recalled"] += len(output[mention.mention_id])
             candidate_counts["atomic_hard_conflict_observed"] += sum(

@@ -127,6 +127,28 @@ def _resolve_package_root_id(
     raise RegistryError("package redirect depth exceeded")
 
 
+def _resolve_atomic_event_root_id(
+    connection: sqlite3.Connection,
+    event_id: str,
+    *,
+    max_depth: int = 32,
+) -> str:
+    current = event_id
+    visited: set[str] = set()
+    for _ in range(max_depth):
+        if current in visited:
+            raise RegistryError("atomic event redirect cycle detected")
+        visited.add(current)
+        row = connection.execute(
+            "SELECT target_event_id FROM atomic_event_redirects WHERE source_event_id = ?",
+            (current,),
+        ).fetchone()
+        if row is None:
+            return current
+        current = str(row["target_event_id"])
+    raise RegistryError("atomic event redirect depth exceeded")
+
+
 def _json_payload(value: StrictModel | dict[str, Any] | list[Any]) -> str:
     data: Any
     if isinstance(value, StrictModel):
@@ -3412,6 +3434,10 @@ class SQLiteCDECRRegistry:
             )
             connection.commit()
             return True
+
+    def resolve_atomic_event_root(self, event_id: str, *, max_depth: int = 32) -> str:
+        with self._connection() as connection:
+            return _resolve_atomic_event_root_id(connection, event_id, max_depth=max_depth)
 
     def save_package_redirect(
         self, *, source_package_id: str, target_package_id: str, run_id: str, reason: str
