@@ -71,7 +71,7 @@ def compile_atomic_identity_sidecar(
     facet: list[str] = []
 
     if isinstance(profile, FinancialMetricIdentityProfile):
-        referent = [profile.fields.issuer_id]
+        referent = [f"issuer:{profile.fields.issuer_id}"]
         occurrence = [
             f"state:{mention.assertion_state.value}",
             f"period:{profile.fields.period_id}",
@@ -82,7 +82,7 @@ def compile_atomic_identity_sidecar(
             f"comparison:{profile.fields.comparison_basis.value}",
         ]
     elif isinstance(profile, GuidanceIdentityProfile):
-        referent = [profile.fields.issuer_id]
+        referent = [f"issuer:{profile.fields.issuer_id}"]
         occurrence = [
             f"state:{mention.assertion_state.value}",
             f"period:{profile.fields.period_id}",
@@ -106,7 +106,10 @@ def compile_atomic_identity_sidecar(
         ]
         facet = [_analyst_facet(profile)]
     elif isinstance(profile, OpenIdentityProfile):
-        referent = list(profile.fields.principal_participant_ids)
+        referent = [
+            f"participant:{value}"
+            for value in profile.fields.principal_participant_ids
+        ]
         occurrence = _open_occurrence(mention, profile)
         facet = _open_facets(mention, adapter)
 

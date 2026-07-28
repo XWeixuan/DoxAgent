@@ -699,7 +699,7 @@ def test_n12_normalizes_redundant_member_selection_fields(
     assert any(item["kind"] == "SELECTED_MEMBER_ALIGNED" for item in normalizations)
 
 
-def test_enforce_mode_still_blocks_hard_conflicting_atomic_candidate(
+def test_legacy_enforce_request_is_shadow_only_for_atomic_candidate(
     registry: SQLiteCDECRRegistry,
 ) -> None:
     processor, _, m2, _ = engine(registry, hard_cannot_link_mode="enforce")
@@ -710,10 +710,8 @@ def test_enforce_mode_still_blocks_hard_conflicting_atomic_candidate(
     result = processor.process("MSG-2")
 
     assert result.status is CrossDocumentStatus.SUCCEEDED
-    assert result.atomic_assignments[0].hard_conflicts
-    assert all(
-        "Atomic Event Assignment Adjudicator" not in call.system_prompt for call in m2.calls
-    )
+    assert not result.atomic_assignments[0].hard_conflicts
+    assert any("Atomic Event Assignment Adjudicator" in call.system_prompt for call in m2.calls)
 
 
 def test_atomic_embedding_tracks_exact_current_identity_text(

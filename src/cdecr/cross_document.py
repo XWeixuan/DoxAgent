@@ -34,6 +34,11 @@ from cdecr.atomic_identity_sidecar import (
     deterministic_axis_verdicts,
     rank_atomic_candidates,
 )
+from cdecr.atomic_merge_invariant import (
+    AtomicMergeInvariantResult,
+    evaluate_atomic_merge_invariant,
+    first_unlocked_atomic_candidate,
+)
 from cdecr.atomic_recall_audit import (
     append_ranked_candidate_snapshot,
     candidate_root_id,
@@ -783,7 +788,13 @@ class CrossDocumentEngine:
         self.model_m1 = model_m1
         self.model_m2 = model_m2
         self.model_m3 = model_m3
-        self.hard_cannot_link_mode = HardCannotLinkMode(hard_cannot_link_mode)
+        requested_hard_cannot_link_mode = HardCannotLinkMode(hard_cannot_link_mode)
+        self.legacy_hard_cannot_link_requested_mode = requested_hard_cannot_link_mode
+        self.hard_cannot_link_mode = (
+            HardCannotLinkMode.SHADOW
+            if requested_hard_cannot_link_mode is HardCannotLinkMode.ENFORCE
+            else requested_hard_cannot_link_mode
+        )
         self.package_conflict_mode = PackageConflictMode(package_conflict_mode)
         allowed_protocols = {"legacy", "shadow", "canary", "on"}
         if n9_wire_protocol not in allowed_protocols:
@@ -815,6 +826,10 @@ class CrossDocumentEngine:
             "reasoning_effort": STRUCTURED_REASONING_EFFORT,
             "schema_projection": "disabled_for_model_output",
             "hard_cannot_link_mode": self.hard_cannot_link_mode.value,
+            "legacy_hard_cannot_link_requested_mode": (
+                self.legacy_hard_cannot_link_requested_mode.value
+            ),
+            "atomic_merge_invariant_enforced_rules": [],
             "package_conflict_mode": self.package_conflict_mode.value,
             "atomic_assignment_policy_version": ATOMIC_ASSIGNMENT_POLICY_VERSION,
             "package_assignment_policy_version": PACKAGE_ASSIGNMENT_POLICY_VERSION,
@@ -1459,9 +1474,7 @@ class CrossDocumentEngine:
                                         value.value for value in observed_conflicts
                                     ],
                                     "mode": self.hard_cannot_link_mode.value,
-                                    "enforced": (
-                                        self.hard_cannot_link_mode is HardCannotLinkMode.ENFORCE
-                                    ),
+                                    "enforced": False,
                                     "active_conflicts": [
                                         value.value
                                         for value in observed_conflicts
@@ -1477,20 +1490,7 @@ class CrossDocumentEngine:
                             )
                         )
                 observed_by_event[event_id] = observed_conflicts
-                effective_conflicts = (
-                    [
-                        conflict
-                        for conflict in observed_conflicts
-                        if conflict
-                        in {
-                            HardConflictCode.METRIC,
-                            HardConflictCode.ASSERTION_STATE,
-                            HardConflictCode.ISSUER,
-                        }
-                    ]
-                    if self.hard_cannot_link_mode is HardCannotLinkMode.ENFORCE
-                    else []
-                )
+                effective_conflicts: list[HardConflictCode] = []
                 route_score = min(1.0, 0.35 + 0.12 * len(recall_routes))
                 score = max(route_score, (scores.get(event_id, 0.0) + 1.0) / 2.0)
                 ranked.append(
@@ -1504,16 +1504,7 @@ class CrossDocumentEngine:
                         raw_embedding_similarity=scores.get(event_id),
                     )
                 )
-            if self.hard_cannot_link_mode is HardCannotLinkMode.ENFORCE:
-                ranked.sort(
-                    key=lambda item: (
-                        bool(item.hard_conflicts),
-                        -item.recall_score,
-                        item.event.event_id,
-                    )
-                )
-            else:
-                ranked.sort(key=lambda item: (-item.recall_score, item.event.event_id))
+            ranked.sort(key=lambda item: (-item.recall_score, item.event.event_id))
             incoming_sidecar = compiled_identity.atomic_identity_sidecar
             assert incoming_sidecar is not None
             shadow_ranked = rank_atomic_candidates(
@@ -2499,6 +2490,108 @@ class CrossDocumentEngine:
                 else:
                     reason = "N9_CREATE_NEW"
 
+            selected_merge_target = (
+                decision.merge_target_event_id
+                if decision is not None and action is AtomicAction.MERGE
+                else None
+            )
+            if decision is not None and action is AtomicAction.MERGE:
+                incoming_sidecar = compiled_identity.atomic_identity_sidecar
+                assert incoming_sidecar is not None
+                assessment_by_id = {
+                    item.candidate_event_id: item
+                    for item in decision.candidate_assessments
+                }
+                candidate_by_id = {
+                    item.event.event_id: item for item in candidates[mention.mention_id]
+                }
+                same_candidate_ids = [
+                    item.event.event_id
+                    for item in candidates[mention.mention_id]
+                    if (
+                        item.event.event_id in assessment_by_id
+                        and assessment_by_id[item.event.event_id].relation
+                        is AtomicSemanticRelation.SAME_EVENT
+                    )
+                ]
+                ordered_same_ids = [
+                    candidate_id
+                    for candidate_id in [
+                        selected_merge_target,
+                        *same_candidate_ids,
+                    ]
+                    if candidate_id is not None
+                ]
+                ordered_same_ids = list(dict.fromkeys(ordered_same_ids))
+                invariant_evaluations = []
+                for candidate_id in ordered_same_ids:
+                    candidate = candidate_by_id[candidate_id]
+                    candidate_sidecar = candidate.identity_sidecar
+                    assert candidate_sidecar is not None
+                    invariant = evaluate_atomic_merge_invariant(
+                        incoming_sidecar,
+                        candidate_sidecar,
+                    )
+                    self.registry.append_decision_audit(
+                        DecisionAuditRecord(
+                            audit_id=(
+                                f"atomic-merge-invariant:{run_id}:"
+                                f"{mention.mention_id}:{candidate_id}"
+                            ),
+                            run_id=run_id,
+                            decision_type="ATOMIC_MERGE_INVARIANT",
+                            subject_id=mention.mention_id,
+                            payload={
+                                "candidate_event_id": candidate_id,
+                                "selected_by_n9": candidate_id == selected_merge_target,
+                                "evaluation": invariant.model_dump(mode="json"),
+                                "legacy_hard_cannot_link_mode": (
+                                    self.hard_cannot_link_mode.value
+                                ),
+                            },
+                        )
+                    )
+                    predicted_member_count = len(candidate.event.mention_ids) + 1
+                    if invariant.triggered_rules or predicted_member_count >= 8:
+                        self.registry.append_decision_audit(
+                            DecisionAuditRecord(
+                                audit_id=(
+                                    f"atomic-supercluster-guard:{run_id}:"
+                                    f"{mention.mention_id}:{candidate_id}"
+                                ),
+                                run_id=run_id,
+                                decision_type="ATOMIC_SUPERCLUSTER_GUARD",
+                                subject_id=candidate_id,
+                                payload={
+                                    "mode": "shadow",
+                                    "incoming_mention_id": mention.mention_id,
+                                    "predicted_member_count": predicted_member_count,
+                                    "triggered_rules": [
+                                        rule.value for rule in invariant.triggered_rules
+                                    ],
+                                    "would_lock": (
+                                        invariant.result
+                                        is AtomicMergeInvariantResult.LOCKED_OUT
+                                    ),
+                                    "shadow_would_lock": bool(
+                                        invariant.triggered_rules
+                                    ),
+                                },
+                            )
+                        )
+                    invariant_evaluations.append((candidate_id, invariant))
+                unlocked_candidate = first_unlocked_atomic_candidate(
+                    invariant_evaluations
+                )
+                if unlocked_candidate is not None:
+                    selected_merge_target = unlocked_candidate
+                    if selected_merge_target != decision.merge_target_event_id:
+                        reason = "MERGE_INVARIANT_ALTERNATE_TARGET"
+                else:
+                    action = AtomicAction.CREATE_NEW
+                    selected_merge_target = None
+                    reason = "MERGE_INVARIANT_ALL_SAME_LOCKED_CREATE_NEW"
+
             def materialize(candidate_id: str) -> str:
                 if not candidate_id.startswith("provisional:"):
                     return candidate_id
@@ -2525,9 +2618,9 @@ class CrossDocumentEngine:
                 possible_duplicate_atomic_ids = [
                     materialize(value) for value in decision.possible_duplicate_atomic_ids
                 ]
-                if decision.merge_target_event_id is not None:
-                    candidate_event_id = materialize(decision.merge_target_event_id)
-                    selected = assessment_by_id[decision.merge_target_event_id]
+                if selected_merge_target is not None:
+                    candidate_event_id = materialize(selected_merge_target)
+                    selected = assessment_by_id[selected_merge_target]
                     relation = selected.relation
                     claim_conflict = selected.claim_conflict
                     identity_differences = selected.identity_differences
