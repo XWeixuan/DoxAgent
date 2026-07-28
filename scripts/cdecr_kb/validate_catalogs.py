@@ -12,7 +12,6 @@ from typing import Any
 
 from common import DEFAULT_OUTPUT_DIR, DEFAULT_WORK_DIR, read_json, runtime_normalize, write_json
 
-
 SCHEMAS: dict[str, dict[str, set[str]]] = {
     "companies": {"required": {"id", "name", "aliases"}, "optional": {"ticker"}},
     "institutions": {"required": {"id", "name", "aliases"}, "optional": set()},
@@ -22,18 +21,51 @@ SCHEMAS: dict[str, dict[str, set[str]]] = {
     "named_objects": {"required": {"id", "name", "kind", "aliases"}, "optional": {"owner_id"}},
     "concepts": {"required": {"id", "name", "kind", "aliases"}, "optional": set()},
     "metrics": {"required": {"id", "name", "aliases"}, "optional": set()},
-    "fiscal_periods": {"required": {"id", "company_id", "start", "end", "aliases"}, "optional": set()},
+    "fiscal_periods": {
+        "required": {"id", "company_id", "start", "end", "aliases"},
+        "optional": set(),
+    },
     "units": {"required": {"id", "name", "multiplier", "kind", "aliases"}, "optional": set()},
-    "artifacts": {"required": {"id", "name", "kind", "aliases"}, "optional": {"owner_id", "date", "period_id"}},
+    "artifacts": {
+        "required": {"id", "name", "kind", "aliases"},
+        "optional": {"owner_id", "date", "period_id"},
+    },
     "attributes": {"required": {"key", "aliases", "target", "use"}, "optional": set()},
 }
 
 ENUMS = {
     ("named_objects", "kind"): {"FACILITY", "PRODUCT", "PROJECT", "ASSET", "TECHNOLOGY", "PROGRAM"},
-    ("concepts", "kind"): {"PREDICATE", "ACCOUNTING_BASIS", "COMPARISON_BASIS", "GUIDANCE_ACTION", "ANALYST_ACTION", "LIFECYCLE_STAGE", "RATING"},
+    ("concepts", "kind"): {
+        "PREDICATE",
+        "ACCOUNTING_BASIS",
+        "COMPARISON_BASIS",
+        "GUIDANCE_ACTION",
+        "ANALYST_ACTION",
+        "LIFECYCLE_STAGE",
+        "RATING",
+    },
     ("units", "kind"): {"CURRENCY", "SCALE", "RATIO", "UNIT"},
-    ("artifacts", "kind"): {"SEC_FILING", "EARNINGS_RELEASE", "PRESS_RELEASE", "ANALYST_REPORT", "AGREEMENT", "REPORT"},
-    ("attributes", "target"): {"COMPANY", "INSTITUTION", "PERSON", "INSTRUMENT", "PLACE", "NAMED_OBJECT", "CONCEPT", "METRIC", "ARTIFACT", "QUANTITY", "LITERAL"},
+    ("artifacts", "kind"): {
+        "SEC_FILING",
+        "EARNINGS_RELEASE",
+        "PRESS_RELEASE",
+        "ANALYST_REPORT",
+        "AGREEMENT",
+        "REPORT",
+    },
+    ("attributes", "target"): {
+        "COMPANY",
+        "INSTITUTION",
+        "PERSON",
+        "INSTRUMENT",
+        "PLACE",
+        "NAMED_OBJECT",
+        "CONCEPT",
+        "METRIC",
+        "ARTIFACT",
+        "QUANTITY",
+        "LITERAL",
+    },
     ("attributes", "use"): {"HARD", "SOFT", "CLAIM"},
 }
 
@@ -103,7 +135,9 @@ def validate(output: Path, *, allow_missing: bool = False) -> dict[str, Any]:
             else:
                 ids.add(entity_id)
             aliases = item.get("aliases")
-            if not isinstance(aliases, list) or any(not isinstance(value, str) or not value.strip() for value in aliases):
+            if not isinstance(aliases, list) or any(
+                not isinstance(value, str) or not value.strip() for value in aliases
+            ):
                 errors.append(f"{label}: aliases must be a list of non-empty strings")
                 aliases = []
             if not aliases:
@@ -130,7 +164,11 @@ def validate(output: Path, *, allow_missing: bool = False) -> dict[str, Any]:
                 start, end = _date(item.get("start")), _date(item.get("end"))
                 if not start or not end or end < start:
                     errors.append(f"{label}: invalid period dates")
-            if catalog == "artifacts" and item.get("date") is not None and not _date(item.get("date")):
+            if (
+                catalog == "artifacts"
+                and item.get("date") is not None
+                and not _date(item.get("date"))
+            ):
                 errors.append(f"{label}: invalid artifact date")
         collisions = {key: owners for key, owners in alias_owner.items() if len(owners) > 1}
         stats[catalog] = {
@@ -139,13 +177,21 @@ def validate(output: Path, *, allow_missing: bool = False) -> dict[str, Any]:
             "mib": round(path.stat().st_size / 1024 / 1024, 3),
             "empty_alias_records": empty_aliases,
             "normalized_alias_collisions": len(collisions),
-            "duplicate_normalized_names": sum(count - 1 for count in normalized_names.values() if count > 1),
+            "duplicate_normalized_names": sum(
+                count - 1 for count in normalized_names.values() if count > 1
+            ),
         }
         if collisions:
-            warnings.append(f"{catalog}: {len(collisions)} normalized aliases resolve to multiple IDs")
+            warnings.append(
+                f"{catalog}: {len(collisions)} normalized aliases resolve to multiple IDs"
+            )
 
     def id_set(catalog: str) -> set[str]:
-        return {item["id"] for item in data.get(catalog, []) if isinstance(item, dict) and isinstance(item.get("id"), str)}
+        return {
+            item["id"]
+            for item in data.get(catalog, [])
+            if isinstance(item, dict) and isinstance(item.get("id"), str)
+        }
 
     companies, institutions = id_set("companies"), id_set("institutions")
     organizations = companies | institutions
@@ -161,12 +207,118 @@ def validate(output: Path, *, allow_missing: bool = False) -> dict[str, Any]:
             errors.append(f"named_objects {item.get('id')}: unknown owner_id {item['owner_id']}")
     for item in data.get("fiscal_periods", []):
         if item.get("company_id") not in companies:
-            errors.append(f"fiscal_periods {item.get('id')}: unknown company_id {item.get('company_id')}")
+            errors.append(
+                f"fiscal_periods {item.get('id')}: unknown company_id {item.get('company_id')}"
+            )
     for item in data.get("artifacts", []):
         if item.get("owner_id") is not None and item["owner_id"] not in organizations:
             errors.append(f"artifacts {item.get('id')}: unknown owner_id {item['owner_id']}")
         if item.get("period_id") is not None and item["period_id"] not in fiscal_periods:
             errors.append(f"artifacts {item.get('id')}: unknown period_id {item['period_id']}")
+
+    participant_catalogs = (
+        "companies",
+        "institutions",
+        "persons",
+        "instruments",
+        "named_objects",
+    )
+    cross_catalog: dict[str, set[str]] = defaultdict(set)
+    for catalog in participant_catalogs:
+        for item in data.get(catalog, []):
+            for surface in [item.get("name", ""), *item.get("aliases", [])]:
+                normalized = runtime_normalize(str(surface))
+                if normalized:
+                    cross_catalog[normalized].add(catalog)
+    stats["cross_catalog_participant_collisions"] = sum(
+        len(catalogs) > 1 for catalogs in cross_catalog.values()
+    )
+
+    policy_path = output / "resolution_policy.json"
+    if not policy_path.is_file():
+        errors.append("missing file: resolution_policy.json")
+        policy: dict[str, Any] = {}
+    else:
+        try:
+            policy = read_json(policy_path)
+        except Exception as exc:
+            errors.append(f"resolution_policy.json: invalid JSON: {exc}")
+            policy = {}
+    expected_policy_fields = {
+        "metric_redirects",
+        "blocked_exact_aliases",
+        "participant_route_overrides",
+    }
+    if set(policy) != expected_policy_fields:
+        errors.append("resolution_policy.json: unexpected or missing top-level fields")
+    metric_ids = id_set("metrics")
+    redirects = policy.get("metric_redirects", {})
+    if isinstance(redirects, dict):
+        for source, target in redirects.items():
+            if source not in metric_ids or target not in metric_ids:
+                errors.append(
+                    "resolution_policy metric redirect "
+                    f"{source!r}->{target!r} references unknown ID"
+                )
+            visited: set[str] = set()
+            current = source
+            while current in redirects:
+                if current in visited:
+                    errors.append(f"resolution_policy metric redirect cycle at {source!r}")
+                    break
+                visited.add(current)
+                current = redirects[current]
+    else:
+        errors.append("resolution_policy metric_redirects must be an object")
+    blocked_aliases = policy.get("blocked_exact_aliases", {})
+    if not isinstance(blocked_aliases, dict):
+        errors.append("resolution_policy blocked_exact_aliases must be an object")
+    else:
+        for raw, blocked in blocked_aliases.items():
+            if not runtime_normalize(raw):
+                errors.append("resolution_policy blocked alias normalizes to empty")
+            if not isinstance(blocked, list) or any(item not in metric_ids for item in blocked):
+                errors.append(f"resolution_policy blocked alias {raw!r} has unknown metric IDs")
+    overrides = policy.get("participant_route_overrides", {})
+    if not isinstance(overrides, dict):
+        errors.append("resolution_policy participant_route_overrides must be an object")
+    else:
+        participant_ids = {catalog: id_set(catalog) for catalog in participant_catalogs}
+        for raw, override in overrides.items():
+            catalog = override.get("catalog") if isinstance(override, dict) else None
+            external_id = override.get("id") if isinstance(override, dict) else None
+            if (
+                not runtime_normalize(raw)
+                or catalog not in participant_ids
+                or external_id not in participant_ids.get(catalog, set())
+            ):
+                errors.append(f"resolution_policy invalid participant override {raw!r}")
+
+    regression_queries = (
+        "trading volume",
+        "stock change",
+        "closing price",
+        "guaranteed revenue",
+        "deal count",
+        "revenue growth",
+        "UBS",
+        "IDC",
+        "Micron management",
+        "Stoxx 600",
+        "Nasdaq",
+    )
+    surface_index: dict[str, list[str]] = defaultdict(list)
+    for catalog, items in data.items():
+        if catalog == "attributes":
+            continue
+        for item in items:
+            for surface in [item.get("name", ""), *item.get("aliases", [])]:
+                normalized = runtime_normalize(str(surface))
+                if normalized:
+                    surface_index[normalized].append(f"{catalog}:{item.get('id')}")
+    stats["regression_queries"] = {
+        query: surface_index.get(runtime_normalize(query), []) for query in regression_queries
+    }
 
     present = sorted(data)
     result = {
@@ -189,7 +341,16 @@ def main() -> None:
     result = validate(args.output_dir, allow_missing=args.allow_missing)
     report_path = args.work_dir / "reports" / "catalog_validation.json"
     write_json(report_path, result)
-    print(json.dumps({"valid": result["valid"], "hash": result["catalog_hash"], "errors": len(result["errors"]), "warnings": len(result["warnings"])}))
+    print(
+        json.dumps(
+            {
+                "valid": result["valid"],
+                "hash": result["catalog_hash"],
+                "errors": len(result["errors"]),
+                "warnings": len(result["warnings"]),
+            }
+        )
+    )
     if not result["valid"]:
         for error in result["errors"][:50]:
             print(f"ERROR {error}")

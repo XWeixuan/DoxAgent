@@ -1,0 +1,17 @@
+{
+  "metric_redirects": {
+    "ADJUSTED_EPS": "EPS_NON_GAAP",
+    "ADJUSTED_NET_INCOME": "NET_INCOME_NON_GAAP"
+  },
+  "blocked_exact_aliases": {
+    "guaranteed_revenue": [
+      "ADJUSTED_REVENUE"
+    ]
+  },
+  "participant_route_overrides": {
+    "ubs": {
+      "catalog": "institutions",
+      "id": "INSTITUTION_UBS"
+    }
+  }
+}

@@ -27,6 +27,7 @@ CATALOG_NAMES = (
     "artifacts",
     "attributes",
 )
+RESOLUTION_POLICY_FILE = "resolution_policy.json"
 _HASH_CACHE: dict[tuple[tuple[str, int, int], ...], str] = {}
 _GLOBAL_QUERY_CACHE: dict[tuple[object, ...], tuple[KBMatch, ...]] = {}
 
@@ -62,6 +63,19 @@ class AttributeRoute:
     use: str
 
 
+@dataclass(frozen=True)
+class ParticipantRouteOverride:
+    catalog: str
+    external_id: str
+
+
+@dataclass(frozen=True)
+class ResolutionPolicy:
+    metric_redirects: dict[str, str]
+    blocked_exact_aliases: dict[str, tuple[str, ...]]
+    participant_route_overrides: dict[str, ParticipantRouteOverride]
+
+
 class V2KnowledgeBase:
     """Exact v2 KB recall without materializing the large catalogs in memory."""
 
@@ -72,6 +86,7 @@ class V2KnowledgeBase:
             raise FileNotFoundError(f"missing v2 catalogs: {', '.join(missing)}")
         self._catalog_hash: str | None = None
         self._attributes: dict[str, AttributeRoute] | None = None
+        self._resolution_policy: ResolutionPolicy | None = None
         self._query_cache: dict[tuple[object, ...], tuple[KBMatch, ...]] = {}
         self._cache_namespace = tuple(
             (
@@ -80,6 +95,80 @@ class V2KnowledgeBase:
                 self._path(name).stat().st_mtime_ns,
             )
             for name in CATALOG_NAMES
+        ) + (
+            (
+                str((self.catalog_dir / RESOLUTION_POLICY_FILE).resolve()),
+                (
+                    (self.catalog_dir / RESOLUTION_POLICY_FILE).stat().st_size
+                    if (self.catalog_dir / RESOLUTION_POLICY_FILE).is_file()
+                    else 0
+                ),
+                (
+                    (self.catalog_dir / RESOLUTION_POLICY_FILE).stat().st_mtime_ns
+                    if (self.catalog_dir / RESOLUTION_POLICY_FILE).is_file()
+                    else 0
+                ),
+            ),
+        )
+
+    @property
+    def resolution_policy(self) -> ResolutionPolicy:
+        if self._resolution_policy is not None:
+            return self._resolution_policy
+        path = self.catalog_dir / RESOLUTION_POLICY_FILE
+        if not path.is_file():
+            self._resolution_policy = ResolutionPolicy({}, {}, {})
+            return self._resolution_policy
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        if set(payload) != {
+            "metric_redirects",
+            "blocked_exact_aliases",
+            "participant_route_overrides",
+        }:
+            raise ValueError("resolution_policy.json has unexpected fields")
+        overrides = {
+            _normalize(raw): ParticipantRouteOverride(
+                catalog=str(value["catalog"]),
+                external_id=str(value["id"]),
+            )
+            for raw, value in payload["participant_route_overrides"].items()
+        }
+        self._resolution_policy = ResolutionPolicy(
+            metric_redirects={
+                str(source): str(target)
+                for source, target in payload["metric_redirects"].items()
+            },
+            blocked_exact_aliases={
+                _normalize(raw): tuple(str(item) for item in blocked)
+                for raw, blocked in payload["blocked_exact_aliases"].items()
+            },
+            participant_route_overrides=overrides,
+        )
+        return self._resolution_policy
+
+    def metric_redirect(self, external_id: str) -> str:
+        redirects = self.resolution_policy.metric_redirects
+        visited: set[str] = set()
+        current = external_id
+        while current in redirects:
+            if current in visited:
+                raise ValueError("metric redirect cycle detected")
+            visited.add(current)
+            current = redirects[current]
+        return current
+
+    def blocked_exact_ids(self, raw_value: str) -> set[str]:
+        return set(
+            self.resolution_policy.blocked_exact_aliases.get(
+                _normalize(raw_value), ()
+            )
+        )
+
+    def participant_route_override(
+        self, raw_value: str
+    ) -> ParticipantRouteOverride | None:
+        return self.resolution_policy.participant_route_overrides.get(
+            _normalize(raw_value)
         )
 
     @property
@@ -93,13 +182,24 @@ class V2KnowledgeBase:
                 )
                 for name in sorted(CATALOG_NAMES)
             )
+            policy_path = self.catalog_dir / RESOLUTION_POLICY_FILE
+            if policy_path.is_file():
+                signature += (
+                    (
+                        RESOLUTION_POLICY_FILE,
+                        policy_path.stat().st_size,
+                        policy_path.stat().st_mtime_ns,
+                    ),
+                )
             cached = _HASH_CACHE.get(signature)
             if cached is not None:
                 self._catalog_hash = cached
                 return cached
             digest = hashlib.sha256()
-            for name in sorted(CATALOG_NAMES):
-                path = self._path(name)
+            paths = [self._path(name) for name in sorted(CATALOG_NAMES)]
+            if policy_path.is_file():
+                paths.append(policy_path)
+            for path in paths:
                 digest.update(path.name.encode())
                 digest.update(b"\0")
                 with path.open("rb") as handle:

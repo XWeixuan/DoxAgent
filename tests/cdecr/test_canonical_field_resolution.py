@@ -4,7 +4,10 @@ import json
 from datetime import UTC, date, datetime
 from pathlib import Path
 
-from cdecr.canonical_field_resolution import CanonicalFieldResolutionEngine
+from cdecr.canonical_field_resolution import (
+    CanonicalFieldResolutionEngine,
+    is_safe_deterministic_match,
+)
 from cdecr.contracts import (
     AccountingBasis,
     AssertionState,
@@ -442,3 +445,52 @@ def test_participant_unknown_uses_typed_multi_catalog_candidates(
         "participant.company",
         "object.product",
     }
+
+
+def test_safe_deterministic_match_rejects_alias_and_cross_catalog_collision(
+    tmp_path: Path,
+) -> None:
+    kb = _catalog(tmp_path)
+    source = _source()
+    micron = kb.lookup("companies", "Micron")[0]
+    safe, reason = is_safe_deterministic_match(
+        "Micron",
+        micron,
+        catalog="companies",
+        source=source,
+        cross_catalog_collision=False,
+    )
+    assert not safe
+    assert reason == "CANDIDATE_REQUIRED"
+    safe, reason = is_safe_deterministic_match(
+        "COMPANY_MU",
+        micron,
+        catalog="companies",
+        source=source,
+        cross_catalog_collision=False,
+    )
+    assert safe
+    assert reason == "EXPLICIT_ID"
+    safe, reason = is_safe_deterministic_match(
+        "Micron Technology",
+        micron,
+        catalog="companies",
+        source=source,
+        cross_catalog_collision=True,
+    )
+    assert not safe
+    assert reason == "CANDIDATE_REQUIRED"
+
+
+def test_default_resolution_policy_redirects_duplicate_metrics_and_adds_core_queries() -> None:
+    kb = V2KnowledgeBase()
+    assert kb.metric_redirect("ADJUSTED_EPS") == "EPS_NON_GAAP"
+    assert kb.metric_redirect("ADJUSTED_NET_INCOME") == "NET_INCOME_NON_GAAP"
+    assert kb.lookup("metrics", "trading volume")[0].external_id == "TRADING_VOLUME"
+    assert kb.lookup("metrics", "closing price")[0].external_id == "CLOSING_PRICE"
+    assert kb.lookup("metrics", "deal count")[0].external_id == "DEAL_COUNT"
+    assert kb.lookup("metrics", "revenue growth")[0].external_id == "REVENUE_GROWTH"
+    override = kb.participant_route_override("UBS")
+    assert override is not None
+    assert override.catalog == "institutions"
+    assert override.external_id == "INSTITUTION_UBS"

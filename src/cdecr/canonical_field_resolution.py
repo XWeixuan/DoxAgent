@@ -55,6 +55,10 @@ class FieldOccurrence:
     allow_coreference: bool = True
     candidate_matches: tuple[KBMatch, ...] = ()
     direct_match: KBMatch | None = None
+    route_reason: str | None = None
+    attempted_catalogs: tuple[str, ...] = ()
+    exact_collision_count: int = 0
+    generic_collective: bool = False
 
 
 @dataclass(frozen=True)
@@ -64,6 +68,55 @@ class CanonicalResolutionSummary:
     unresolved_count: int
     group_count: int
     field_links_hash: str
+
+
+def is_safe_deterministic_match(
+    raw_value: str,
+    match: KBMatch,
+    *,
+    catalog: str,
+    source: SourceMessage,
+    cross_catalog_collision: bool,
+) -> tuple[bool, str]:
+    """Permit only high-precision KB matches to bypass candidate resolution."""
+
+    normalized = normalize_field_text(raw_value)
+    if normalized == normalize_field_text(match.external_id):
+        return True, "EXPLICIT_ID"
+    if (
+        catalog == "companies"
+        and normalized in {ticker.casefold() for ticker in source.ticker_hints}
+        and not cross_catalog_collision
+    ):
+        return True, "TICKER_CONTEXT"
+    if (
+        catalog == "metrics"
+        and not match.external_id.startswith(("US_GAAP_", "XBRL_"))
+        and normalized
+        in {
+            normalize_field_text(match.external_id),
+            normalize_field_text(match.name),
+        }
+    ):
+        return True, "CORE_ONTOLOGY_EXACT"
+    if (
+        normalized == normalize_field_text(match.name)
+        and not cross_catalog_collision
+    ):
+        return True, "UNAMBIGUOUS_CANONICAL_NAME"
+    if (
+        catalog == "concepts"
+        and match.kind == "PREDICATE"
+        and normalized
+        in {
+            normalize_field_text(match.external_id),
+            normalize_field_text(match.name),
+        }
+    ):
+        return True, "CORE_ONTOLOGY_EXACT"
+    if catalog == "fiscal_periods" and match.company_id is not None:
+        return True, "ISSUER_SCOPED_PERIOD"
+    return False, "CANDIDATE_REQUIRED"
 
 
 class CanonicalFieldResolutionEngine:
@@ -336,6 +389,25 @@ class CanonicalFieldResolutionEngine:
             catalog, namespace, candidates = self._participant_route(
                 source, mention, participant
             )
+            generic_collective = _generic_participant(
+                normalize_field_text(participant.surface)
+            )
+            route_reason = (
+                "GENERIC_COLLECTIVE"
+                if generic_collective
+                else (
+                    "POLICY_OVERRIDE"
+                    if self.knowledge_base.participant_route_override(
+                        participant.surface
+                    )
+                    is not None
+                    else (
+                        "CROSS_CATALOG_COLLISION"
+                        if not catalog and len(candidates) > 1
+                        else "CONTEXT_OR_TYPE_ROUTE"
+                    )
+                )
+            )
             values.append(
                 FieldOccurrence(
                     mention_id=mention.mention_id,
@@ -350,6 +422,20 @@ class CanonicalFieldResolutionEngine:
                     ),
                     catalog=catalog,
                     candidate_matches=tuple(candidates),
+                    route_reason=route_reason,
+                    attempted_catalogs=(
+                        "companies",
+                        "institutions",
+                        "persons",
+                        "instruments",
+                        "named_objects",
+                    ),
+                    exact_collision_count=(
+                        len({item.external_id for item in candidates})
+                        if not catalog
+                        else 0
+                    ),
+                    generic_collective=generic_collective,
                 )
             )
         for index, location in enumerate(mention.locations):
@@ -490,21 +576,8 @@ class CanonicalFieldResolutionEngine:
         grouped_by_kb: dict[tuple[str, str], list[FieldOccurrence]] = {}
         for index, group in enumerate(alias_groups):
             primary = group[0]
-            exact_matches = (
-                self.knowledge_base.lookup(
-                    primary.catalog,
-                    primary.value.raw_value,
-                    kind=primary.kind,
-                    company_id=primary.company_id,
-                    owner_id=primary.owner_id,
-                )
-                if primary.catalog
-                else []
-            )
-            matches = list(primary.candidate_matches) or exact_matches
-            unique = primary.direct_match or deterministic_match(
-                primary.value.raw_value, exact_matches
-            )
+            exact_matches = self._exact_matches(source, primary)
+            unique, _ = self._safe_unique(source, primary, exact_matches)
             group_key = (
                 primary.value.namespace.value,
                 f"external:{unique.external_id}" if unique is not None else f"alias:{index}",
@@ -518,17 +591,30 @@ class CanonicalFieldResolutionEngine:
         unresolved_count = 0
         for group in groups:
             primary = group[0]
-            exact_matches = (
-                self.knowledge_base.lookup(
-                    primary.catalog,
-                    primary.value.raw_value,
-                    kind=primary.kind,
-                    company_id=primary.company_id,
-                    owner_id=primary.owner_id,
+            if primary.route_reason is not None:
+                route_payload = {
+                    "attempted_catalogs": list(primary.attempted_catalogs),
+                    "exact_collision_count": primary.exact_collision_count,
+                    "selected_route": primary.catalog or "UNRESOLVED",
+                    "route_reason": primary.route_reason,
+                    "generic_collective": primary.generic_collective,
+                }
+                self.registry.append_decision_audit(
+                    DecisionAuditRecord(
+                        audit_id=_audit_id(
+                            "participant-route",
+                            primary.mention_id,
+                            primary.field_path,
+                            route_payload,
+                            run_id=run_id,
+                        ),
+                        run_id=run_id,
+                        decision_type="PARTICIPANT_ROUTE",
+                        subject_id=f"{primary.mention_id}:{primary.field_path}",
+                        payload=route_payload,
+                    )
                 )
-                if primary.catalog
-                else []
-            )
+            exact_matches = self._exact_matches(source, primary)
             matches = list(primary.candidate_matches) or exact_matches
             if (
                 not matches
@@ -545,8 +631,13 @@ class CanonicalFieldResolutionEngine:
                         owner_id=primary.owner_id,
                     )
                 ]
-            unique = primary.direct_match or deterministic_match(
-                primary.value.raw_value, exact_matches
+            matches = self._apply_candidate_blockers(
+                primary,
+                self._redirect_metric_matches(matches),
+                run_id=run_id,
+            )
+            unique, deterministic_reason = self._safe_unique(
+                source, primary, exact_matches
             )
             result: FieldCoreferenceResult
             if unique is not None:
@@ -556,7 +647,31 @@ class CanonicalFieldResolutionEngine:
                     field_path=primary.field_path,
                     external_id=unique.external_id,
                     aliases=[unique.name, *unique.aliases],
+                    include_raw_alias=False,
                     run_id=run_id,
+                )
+                payload = {
+                    "field_path": primary.field_path,
+                    "raw_value_hash": hashlib.sha256(
+                        primary.value.raw_value.encode("utf-8")
+                    ).hexdigest(),
+                    "external_id": unique.external_id,
+                    "reason": deterministic_reason,
+                }
+                self.registry.append_decision_audit(
+                    DecisionAuditRecord(
+                        audit_id=_audit_id(
+                            "safe-deterministic",
+                            primary.mention_id,
+                            primary.field_path,
+                            payload,
+                            run_id=run_id,
+                        ),
+                        run_id=run_id,
+                        decision_type="FIELD_SAFE_DETERMINISTIC_MATCH",
+                        subject_id=f"{primary.mention_id}:{primary.field_path}",
+                        payload=payload,
+                    )
                 )
             else:
                 try:
@@ -614,6 +729,154 @@ class CanonicalFieldResolutionEngine:
             self._audit_group(group, result, run_id=run_id)
         return resolved_count, unresolved_count, len(groups)
 
+    def _exact_matches(
+        self, source: SourceMessage, occurrence: FieldOccurrence
+    ) -> list[KBMatch]:
+        if not occurrence.catalog:
+            return []
+        matches = self.knowledge_base.lookup(
+            occurrence.catalog,
+            occurrence.value.raw_value,
+            kind=occurrence.kind,
+            company_id=occurrence.company_id,
+            owner_id=occurrence.owner_id,
+        )
+        blocked = self.knowledge_base.blocked_exact_ids(
+            occurrence.value.raw_value
+        )
+        matches = [item for item in matches if item.external_id not in blocked]
+        if occurrence.catalog == "metrics":
+            matches = self._filter_metric_tier(source, occurrence.value.raw_value, matches)
+            matches = self._redirect_metric_matches(matches)
+        return matches
+
+    def _redirect_metric_matches(self, matches: list[KBMatch]) -> list[KBMatch]:
+        redirected: dict[tuple[str, str], KBMatch] = {}
+        for match in matches:
+            if match.catalog != "metrics":
+                redirected[(match.catalog, match.external_id)] = match
+                continue
+            target_id = self.knowledge_base.metric_redirect(match.external_id)
+            target = deterministic_match(
+                target_id, self.knowledge_base.lookup("metrics", target_id)
+            )
+            selected = target or match
+            redirected[(selected.catalog, selected.external_id)] = selected
+        return list(redirected.values())
+
+    @staticmethod
+    def _filter_metric_tier(
+        source: SourceMessage, raw_value: str, matches: list[KBMatch]
+    ) -> list[KBMatch]:
+        core = [
+            item
+            for item in matches
+            if not item.external_id.startswith(("US_GAAP_", "XBRL_"))
+        ]
+        explicit_taxonomy = bool(
+            re.search(r"\b(?:us-gaap|ifrs|dei):", raw_value, re.I)
+            or raw_value.startswith(("US_GAAP_", "XBRL_"))
+        )
+        if source.source_type.value == "FILING" or explicit_taxonomy or not core:
+            return matches
+        return core
+
+    def _safe_unique(
+        self,
+        source: SourceMessage,
+        occurrence: FieldOccurrence,
+        exact_matches: list[KBMatch],
+    ) -> tuple[KBMatch | None, str]:
+        match = occurrence.direct_match or deterministic_match(
+            occurrence.value.raw_value, exact_matches
+        )
+        if match is None:
+            return None, "CANDIDATE_REQUIRED"
+        if occurrence.direct_match is not None and occurrence.catalog == "fiscal_periods":
+            return match, "ISSUER_SCOPED_PERIOD"
+        collision = self._cross_catalog_collision(source, occurrence, match)
+        safe, reason = is_safe_deterministic_match(
+            occurrence.value.raw_value,
+            match,
+            catalog=occurrence.catalog,
+            source=source,
+            cross_catalog_collision=collision,
+        )
+        return (match if safe else None), reason
+
+    def _cross_catalog_collision(
+        self,
+        source: SourceMessage,
+        occurrence: FieldOccurrence,
+        match: KBMatch,
+    ) -> bool:
+        if occurrence.value.namespace.value.startswith(("participant.", "object.")):
+            catalogs = (
+                "companies",
+                "institutions",
+                "persons",
+                "instruments",
+                "named_objects",
+            )
+            ids = {
+                (catalog, item.external_id)
+                for catalog in catalogs
+                for item in self._participant_exact(
+                    source, catalog, occurrence.value.raw_value
+                )
+            }
+            return len(ids) > 1
+        if occurrence.catalog in {"metrics", "concepts"}:
+            other = "concepts" if occurrence.catalog == "metrics" else "metrics"
+            return bool(
+                self.knowledge_base.lookup(other, occurrence.value.raw_value)
+            )
+        return False
+
+    def _apply_candidate_blockers(
+        self,
+        occurrence: FieldOccurrence,
+        matches: list[KBMatch],
+        *,
+        run_id: str | None,
+    ) -> list[KBMatch]:
+        kept: list[KBMatch] = []
+        for match in matches:
+            blocker = _candidate_blocker(
+                occurrence.value.raw_value,
+                occurrence.value.local_context,
+                match,
+            )
+            if blocker is None:
+                kept.append(match)
+                continue
+            payload = {
+                "candidate_id": match.external_id,
+                "blocker_code": blocker,
+                "raw_value_hash": hashlib.sha256(
+                    occurrence.value.raw_value.encode("utf-8")
+                ).hexdigest(),
+                "local_context_hash": hashlib.sha256(
+                    occurrence.value.local_context.encode("utf-8")
+                ).hexdigest(),
+            }
+            self.registry.append_decision_audit(
+                DecisionAuditRecord(
+                    audit_id=_audit_id(
+                        "candidate-blocker",
+                        occurrence.mention_id,
+                        occurrence.field_path,
+                        payload,
+                        run_id=run_id,
+                    ),
+                    run_id=run_id,
+                    decision_type="FIELD_CANDIDATE_BLOCKED",
+                    subject_id=f"{occurrence.mention_id}:{occurrence.field_path}",
+                    payload=payload,
+                )
+            )
+        return kept
+
     def _participant_route(
         self,
         source: SourceMessage,
@@ -626,6 +889,23 @@ class CanonicalFieldResolutionEngine:
             r"\b(prices?|price levels?|market participants)\b", normalized
         ):
             return "", FieldNamespace.PARTICIPANT_UNKNOWN, []
+        override = self.knowledge_base.participant_route_override(raw)
+        if override is not None:
+            matches = [
+                item
+                for item in self._participant_exact(
+                    source, override.catalog, override.external_id
+                )
+                if item.external_id == override.external_id
+            ]
+            namespace = {
+                "companies": FieldNamespace.PARTICIPANT_COMPANY,
+                "institutions": FieldNamespace.PARTICIPANT_INSTITUTION,
+                "persons": FieldNamespace.PARTICIPANT_PERSON,
+                "instruments": FieldNamespace.PARTICIPANT_INSTRUMENT,
+                "named_objects": FieldNamespace.OBJECT_PRODUCT,
+            }[override.catalog]
+            return override.catalog, namespace, matches
         ticker_set = {value.casefold() for value in source.ticker_hints}
         if normalized in ticker_set:
             return "companies", FieldNamespace.PARTICIPANT_COMPANY, []
@@ -1177,6 +1457,10 @@ def _generic_participant(normalized: str) -> bool:
     return normalized in {
         "analyst",
         "analysts",
+        "institution",
+        "institutions",
+        "foreign investors",
+        "individual investors",
         "shareholder",
         "shareholders",
         "customer",
@@ -1187,8 +1471,50 @@ def _generic_participant(normalized: str) -> bool:
         "the stock",
         "company",
         "management",
+        "suppliers",
         "employees",
     }
+
+
+def _candidate_blocker(
+    raw_value: str, local_context: str, match: KBMatch
+) -> str | None:
+    raw = normalize_field_text(raw_value)
+    candidate = normalize_field_text(
+        f"{match.external_id} {match.name} {' '.join(match.aliases)}"
+    )
+    context = normalize_field_text(local_context)
+    if match.catalog == "metrics":
+        if "growth" in raw and "growth" not in candidate:
+            return "METRIC_GROWTH_VALUE_CONFLICT"
+        if "growth" not in raw and "growth" in candidate:
+            return "METRIC_VALUE_GROWTH_CONFLICT"
+        if "margin" in raw and not re.search(r"\bmargin\b", candidate):
+            return "METRIC_MARGIN_VALUE_CONFLICT"
+        if "yield" in raw and "yield" not in candidate:
+            return "METRIC_YIELD_VALUE_CONFLICT"
+        if re.search(r"\b(index|composite)\b", context) and re.search(
+            r"\b(share|stock) price\b", candidate
+        ):
+            return "METRIC_INDEX_SHARE_PRICE_CONFLICT"
+        if re.search(r"\b(share|stock)\b", context) and "index level" in candidate:
+            return "METRIC_SHARE_PRICE_INDEX_CONFLICT"
+        if "organic" in raw and "organic" not in candidate:
+            return "METRIC_ORGANIC_SCOPE_CONFLICT"
+        if "constant currency" in raw and "constant currency" not in candidate:
+            return "METRIC_CONSTANT_CURRENCY_SCOPE_CONFLICT"
+    if match.catalog == "concepts" and match.kind == "PREDICATE":
+        if re.search(r"\b(trade|move|rise|fall)\b", raw) and "split" in candidate:
+            return "PREDICATE_MOVE_SPLIT_CONFLICT"
+        if "close" in raw and re.search(r"\b(cut|lower).*\bprice\b", candidate):
+            return "PREDICATE_CLOSE_PRICE_CUT_CONFLICT"
+        if "report" in raw and "guide" in candidate:
+            return "PREDICATE_REPORT_GUIDE_CONFLICT"
+        if "guide" in raw and "report" in candidate:
+            return "PREDICATE_GUIDE_REPORT_CONFLICT"
+        if "price target" in raw and "price target" not in candidate:
+            return "PREDICATE_PRICE_TARGET_CONFLICT"
+    return None
 
 
 def _is_fiscal_period_expression(raw_value: str) -> bool:

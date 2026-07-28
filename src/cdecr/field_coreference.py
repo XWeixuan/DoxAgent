@@ -500,6 +500,7 @@ class FieldCoreferenceResolver:
         field_path: str,
         external_id: str,
         aliases: Sequence[str] = (),
+        include_raw_alias: bool = True,
         run_id: str | None = None,
     ) -> FieldCoreferenceResult:
         if not external_id.strip():
@@ -530,7 +531,7 @@ class FieldCoreferenceResolver:
         assert trusted is not None
         self._add_aliases(
             trusted,
-            [value.raw_value, *aliases],
+            [*([value.raw_value] if include_raw_alias else []), *aliases],
             run_id=run_id,
             refresh_embedding=False,
         )
@@ -585,7 +586,12 @@ class FieldCoreferenceResolver:
                 external_id=external_id,
                 identity_seed=f"external:{external_id}",
             )
-        self._add_aliases(existing, [canonical_text, value.raw_value, *aliases], run_id=run_id)
+        self._add_aliases(
+            existing,
+            [canonical_text, *aliases],
+            run_id=run_id,
+            refresh_embedding=False,
+        )
         refreshed = self.registry.resolve_field_registry_entry(existing.id)
         if refreshed is None:
             raise FieldCoreferenceError("external KB candidate was not persisted")
@@ -1155,10 +1161,6 @@ class FieldCoreferenceResolver:
                 raise FieldCoreferenceError("model selected an unavailable field candidate")
             assert resolved_entry is not None
             entry = resolved_entry
-            self._add_aliases(entry, [value.raw_value], run_id=run_id)
-            refreshed = self.registry.resolve_field_registry_entry(entry.id)
-            assert refreshed is not None
-            entry = refreshed
         link = CanonicalFieldLink(
             mention_id=mention_id,
             field_path=field_path,
