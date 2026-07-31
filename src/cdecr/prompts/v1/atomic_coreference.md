@@ -58,13 +58,18 @@ However, if the underlying event identity is the same, you must still select:
 
 Identity differences are diagnostic observations, not automatic rejection conditions. You must use the provided context to determine whether each difference is sufficient to establish that the two items represent different events.
 
-For every candidate, return one `axis_assessments` verdict for every identity axis supplied on the incoming Mention:
+For every candidate, return one `axis_assessments` verdict for every identity
+axis supplied on both the incoming Mention and that candidate:
 
 - `MATCH`: the candidate supports the same referent, occurrence, or facet;
 - `CONFLICT`: the evidence identifies a different value on that axis;
-- `AMBIGUOUS`: the candidate lacks enough evidence for that axis.
+- `AMBIGUOUS`: both sides contain relevant evidence, but multiple plausible
+  mappings or unresolved granularity prevent a unique comparison.
 
-Do not add axes that were not supplied and do not omit a supplied axis.
+If either side does not supply an axis, omit that axis; missing evidence is not
+CONFLICT or AMBIGUOUS. Do not add or omit axes applicable to both sides.
+If `exact_identity_signature_match=true`, every returned axis must be MATCH.
+Every axis listed in `canonical_conflict_axes` must be CONFLICT, not AMBIGUOUS.
 
 You must not identify candidates as SAME_EVENT solely because they:
 

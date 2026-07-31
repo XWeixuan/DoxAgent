@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+import threading
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -308,16 +309,83 @@ class RepeatedSemanticInvalidJudge(FakeStructured):
         return result
 
 
+class RepeatedSchemaInvalidJudge(FakeStructured):
+    def complete(self, request: StructuredModelRequest) -> StructuredModelResult:
+        if request.json_schema.get("title") == "JudgeCommandOutput":
+            self.calls.append(request)
+            return self._result({"invalid": True})
+        return super().complete(request)
+
+
 class RecoverableGrounderContractDrift(FakeStructured):
     def complete(self, request: StructuredModelRequest) -> StructuredModelResult:
-        repairing = request.system_prompt.casefold().startswith("repair")
+        if request.json_schema.get("title") == "GroundedMentionDraftInput":
+            self.calls.append(request)
+            payload = json.loads(request.user_prompt)
+            repaired = payload["invalid_draft"]
+            repaired.pop("illegal_extra", None)
+            repaired["mention"]["event_family"] = "OTHER"
+            return self._result(repaired)
         result = super().complete(request)
-        if request.json_schema.get("title") != "GrounderModelOutput" or repairing:
+        if request.json_schema.get("title") != "GrounderModelOutput":
             return result
         drafts = result.payload["drafts"]
         assert isinstance(drafts, list) and drafts
-        drafts[0]["source_candidate_ids"] = []
         drafts[0]["mention"]["event_family"] = "MODEL_INVENTED_FAMILY"
+        drafts[0]["illegal_extra"] = True
+        return result
+
+
+class TwoCandidateDreamer(FakeStructured):
+    def complete(self, request: StructuredModelRequest) -> StructuredModelResult:
+        result = super().complete(request)
+        if request.json_schema.get("title") != "DreamerModelOutput":
+            return result
+        candidates = result.payload["candidates"]
+        assert isinstance(candidates, list) and candidates
+        duplicate = json.loads(json.dumps(candidates[0]))
+        duplicate["statement"] = "Micron updated its guidance."
+        candidates.append(duplicate)
+        return result
+
+
+class ParallelItemRepairGrounder(FakeStructured):
+    def __init__(self, *, model: str) -> None:
+        super().__init__(model=model)
+        self.barrier = threading.Barrier(2)
+        self.lock = threading.Lock()
+        self.active_repairs = 0
+        self.max_active_repairs = 0
+
+    def complete(self, request: StructuredModelRequest) -> StructuredModelResult:
+        if request.json_schema.get("title") == "GroundedMentionDraftInput":
+            self.calls.append(request)
+            with self.lock:
+                self.active_repairs += 1
+                self.max_active_repairs = max(
+                    self.max_active_repairs,
+                    self.active_repairs,
+                )
+            self.barrier.wait(timeout=2)
+            payload = json.loads(request.user_prompt)
+            repaired = payload["invalid_draft"]
+            repaired.pop("illegal_extra", None)
+            with self.lock:
+                self.active_repairs -= 1
+            return self._result(repaired)
+        result = super().complete(request)
+        if request.json_schema.get("title") != "GrounderModelOutput":
+            return result
+        payload = json.loads(request.user_prompt)
+        candidates = payload["candidates"]
+        drafts = result.payload["drafts"]
+        assert isinstance(candidates, list) and len(candidates) == 2
+        assert isinstance(drafts, list) and drafts
+        second = json.loads(json.dumps(drafts[0]))
+        second["source_candidate_ids"] = [candidates[1]["candidate_id"]]
+        drafts[0]["illegal_extra"] = True
+        second["illegal_extra"] = True
+        drafts.append(second)
         return result
 
 
@@ -564,7 +632,9 @@ def test_structured_schema_failure_gets_exactly_one_repair(
     assert any(summary.repaired for summary in result.model_calls)
 
 
-def test_invalid_json_gets_one_audited_repair(registry: SQLiteCDECRRegistry) -> None:
+def test_invalid_grounder_root_json_degrades_only_that_batch(
+    registry: SQLiteCDECRRegistry,
+) -> None:
     save_source(registry, source())
     grounder = FencedGrounderOnce()
     service = SingleDocumentProcessor(
@@ -579,10 +649,19 @@ def test_invalid_json_gets_one_audited_repair(registry: SQLiteCDECRRegistry) -> 
     grounder_calls = [
         summary for summary in result.model_calls if summary.stage.startswith("grounder")
     ]
-    assert [summary.status for summary in grounder_calls] == ["FAILED", "SUCCEEDED"]
+    assert [summary.status for summary in grounder_calls] == ["FAILED"]
     assert grounder_calls[0].error_code == "invalid_json"
     assert grounder_calls[0].input_tokens == 20
-    assert grounder_calls[1].repaired
+    assert result.mentions == []
+    with sqlite3.connect(registry.path) as connection:
+        count = connection.execute(
+            """
+            SELECT COUNT(*) FROM decision_audits
+            WHERE run_id = ? AND decision_type = 'GROUNDER_BATCH_DEGRADED'
+            """,
+            (result.run_id,),
+        ).fetchone()[0]
+    assert count == 1
 
 
 def test_invalid_unique_grounder_main_evidence_is_retained_without_repair(
@@ -755,6 +834,31 @@ def test_judge_semantic_repair_failure_degrades_to_grounder_item(
     assert degraded == 1
 
 
+def test_judge_schema_repair_failure_retains_grounder_batch(
+    registry: SQLiteCDECRRegistry,
+) -> None:
+    save_source(registry, source())
+    service = SingleDocumentProcessor(
+        registry=registry,
+        embedding_client=FakeEmbedding(),
+        m2_client=FakeStructured(model="deepseek-v4-flash"),
+        m3_client=FakeStructured(model="qwen3.7-plus"),
+        m4_client=RepeatedSchemaInvalidJudge(model="qwen3.7-max"),
+    )
+    result = service.process("MSG-1")
+    assert result.status is ProcessingStatus.SUCCEEDED
+    assert len(result.mentions) == 1
+    with sqlite3.connect(registry.path) as connection:
+        degraded = connection.execute(
+            """
+            SELECT COUNT(*) FROM decision_audits
+            WHERE run_id = ? AND decision_type = 'JUDGE_BATCH_DEGRADED'
+            """,
+            (result.run_id,),
+        ).fetchone()[0]
+    assert degraded == 1
+
+
 def test_dreamer_retains_candidates_with_invalid_evidence(
     registry: SQLiteCDECRRegistry,
 ) -> None:
@@ -783,7 +887,7 @@ def test_dreamer_retains_candidates_with_invalid_evidence(
     assert audit["dropped_candidates"] == 0
 
 
-def test_materialized_mentions_with_same_identity_are_deduplicated(
+def test_grounder_duplicate_candidate_use_retains_only_first_draft(
     registry: SQLiteCDECRRegistry,
 ) -> None:
     save_source(registry, source())
@@ -801,15 +905,15 @@ def test_materialized_mentions_with_same_identity_are_deduplicated(
         payload = connection.execute(
             """
             SELECT payload_json FROM decision_audits
-            WHERE run_id = ? AND decision_type = 'DOCUMENT_MENTION_DEDUPLICATION'
+            WHERE run_id = ? AND decision_type = 'GROUNDER_DISPOSITION_DEGRADED'
             """,
             (result.run_id,),
         ).fetchone()
     assert payload is not None
-    assert json.loads(payload[0])["duplicate_identity_count"] == 1
+    assert json.loads(payload[0])["duplicate_candidate_ids"] == ["c1"]
 
 
-def test_missing_candidate_disposition_repairs_batch_and_preserves_valid_result(
+def test_invalid_grounder_draft_repairs_only_that_draft_and_preserves_result(
     registry: SQLiteCDECRRegistry,
 ) -> None:
     save_source(registry, source())
@@ -823,7 +927,8 @@ def test_missing_candidate_disposition_repairs_batch_and_preserves_valid_result(
     result = service.process("MSG-1")
     assert result.status is ProcessingStatus.SUCCEEDED
     assert len(result.mentions) == 1
-    assert any(summary.stage == "grounder_repair" for summary in result.model_calls)
+    assert any(summary.stage == "grounder_item_repair" for summary in result.model_calls)
+    assert not any(summary.stage == "grounder_repair" for summary in result.model_calls)
     with sqlite3.connect(registry.path) as connection:
         rows = connection.execute(
             """
@@ -840,14 +945,32 @@ def test_missing_candidate_disposition_repairs_batch_and_preserves_valid_result(
         if row[0] == "GROUNDER_CANDIDATE_DISPOSITION"
     )
     assert "MODEL_ENUM_NORMALIZATION" in types
-    assert "STRUCTURED_VALIDATION_FAILURE" in types
     assert disposition["candidate_count"] == 1
     assert disposition["used_candidate_count"] == 1
     assert disposition["rejected_candidate_count"] == 0
     assert disposition["repair_triggered"]
-    assert disposition["initial_disposition_failures"][0][
-        "missing_candidate_ids"
-    ] == ["c1"]
+    assert disposition["repair_scope"] == "INDIVIDUAL_INVALID_DRAFT"
+    assert disposition["initial_disposition_failures"] == []
+
+
+def test_multiple_invalid_grounder_drafts_repair_in_parallel(
+    registry: SQLiteCDECRRegistry,
+) -> None:
+    save_source(registry, source())
+    grounder = ParallelItemRepairGrounder(model="qwen3.7-plus")
+    service = SingleDocumentProcessor(
+        registry=registry,
+        embedding_client=FakeEmbedding(),
+        m2_client=TwoCandidateDreamer(model="deepseek-v4-flash"),
+        m3_client=grounder,
+        m4_client=FakeStructured(model="qwen3.7-max"),
+    )
+    result = service.process("MSG-1")
+    assert result.status is ProcessingStatus.SUCCEEDED
+    assert grounder.max_active_repairs == 2
+    assert sum(
+        summary.stage == "grounder_item_repair" for summary in result.model_calls
+    ) == 2
 
 
 def test_grounder_rejection_ledger_preserves_complete_candidate_disposition(
@@ -882,15 +1005,15 @@ def test_grounder_rejection_ledger_preserves_complete_candidate_disposition(
     assert not audit["repair_triggered"]
 
 
-def test_second_invalid_structured_response_fails_only_that_document(
+def test_second_invalid_dreamer_response_degrades_only_that_block(
     registry: SQLiteCDECRRegistry,
 ) -> None:
     save_source(registry, source("BAD"))
     save_source(registry, source("GOOD"))
     service, _, m2, _ = processor(registry, invalid_dreamer_responses=2)
     bad = service.process("BAD")
-    assert bad.status is ProcessingStatus.FAILED
-    assert bad.failures[0].error_code == "schema_validation_failed_after_repair"
+    assert bad.status is ProcessingStatus.SUCCEEDED
+    assert bad.mentions == []
     with sqlite3.connect(registry.path) as connection:
         rows = connection.execute(
             """
@@ -909,6 +1032,15 @@ def test_second_invalid_structured_response_fails_only_that_document(
     serialized = json.dumps(payloads)
     assert "invalid_payload" not in serialized
     assert source("BAD").text not in serialized
+    with sqlite3.connect(registry.path) as connection:
+        degraded = connection.execute(
+            """
+            SELECT COUNT(*) FROM decision_audits
+            WHERE run_id = ? AND decision_type = 'DREAMER_BLOCK_DEGRADED'
+            """,
+            (bad.run_id,),
+        ).fetchone()[0]
+    assert degraded == 1
     m2.invalid_dreamer_responses = 0
     good = service.process("GOOD")
     assert good.status is ProcessingStatus.SUCCEEDED

@@ -1,0 +1,182 @@
+{
+  "artifact_version": "cdecr-30-real-acceptance-20260730-v1",
+  "evaluated_at": "2026-07-30",
+  "git_revision": "e7ad7d4+working-tree",
+  "corpus": {
+    "snapshot": ".tmp/cdecr/grounder_quality_v5/live_all.jsonl",
+    "manifest": "dev_plan/CDECR/experiments/grounder_quality_30_manifest.json",
+    "selected_documents": 30
+  },
+  "artifacts": {
+    "registry": ".tmp/cdecr/acceptance_20260730/cdecr_30_20260730.sqlite3",
+    "runtime_report": ".tmp/cdecr/acceptance_20260730/cdecr_30_20260730_report.json",
+    "cluster_export": ".tmp/cdecr/acceptance_20260730/cdecr_30_20260730_clusters.json",
+    "human_hierarchy": "dev_plan/CDECR/CDECR_30_CORPUS_HIERARCHY_RESULTS_20260730.md"
+  },
+  "execution": {
+    "document_success": {
+      "completed": 29,
+      "total": 30,
+      "rate": 0.9667,
+      "baseline_rate": 1.0
+    },
+    "cross_document_success_for_completed_documents": {
+      "completed": 29,
+      "total": 29,
+      "rate": 1.0
+    },
+    "failed_document_count": 1,
+    "mentions": 199,
+    "atomic_events": 131,
+    "packages": 61,
+    "outputs": {
+      "mentions": 199,
+      "atomic_events": 131,
+      "packages": 61,
+      "memberships": 131
+    },
+    "model_calls": 786,
+    "first_pass_wall_clock_ms": 6027709,
+    "total_wall_clock_ms": 6035206,
+    "idempotency_model_call_delta": 0
+  },
+  "human_review": {
+    "mention": {
+      "micro_precision": 0.7688,
+      "micro_recall": 0.5709,
+      "micro_f1": 0.6552
+    },
+    "atomic": {
+      "precision": 0.5645,
+      "recall": 0.3911,
+      "f1": 0.4620,
+      "fp": 54
+    },
+    "package": {
+      "precision": 0.8043,
+      "recall": 0.3895,
+      "f1": 0.5248,
+      "fp": 81,
+      "fn": 522
+    }
+  },
+  "tokens": {
+    "input": 2610616,
+    "output": 443211,
+    "combined": 3053827,
+    "request_payload_bytes": 6946718,
+    "baseline_input": 4403264,
+    "baseline_output": 443843,
+    "baseline_combined": 4847107,
+    "input_change": -0.4072,
+    "output_change": -0.0014,
+    "combined_change": -0.3699,
+    "payload_change": -0.4565
+  },
+  "n13": {
+    "pair_decisions": 523,
+    "llm_pairs": 355,
+    "deterministic_different_pairs": 168,
+    "model_calls": 47,
+    "input_tokens": 563764,
+    "output_tokens": 24954,
+    "combined_tokens": 588718,
+    "input_reduction": 0.7776,
+    "combined_reduction": 0.7781,
+    "combined_token_share": 0.1928,
+    "aggregate_model_latency_ms": 464217,
+    "exact_profile_pair_duplicates": 0,
+    "same_package_id_pair_rechecks_after_profile_evolution": 235,
+    "confirmed_correct_join_input_tokens": 62640,
+    "confirmed_correct_join_combined_tokens": 65413
+  },
+  "quality": {
+    "mention": {
+      "status": "PROVISIONAL_STRICT_GOLD_REMAP",
+      "tp": 153,
+      "fp": 46,
+      "fn": 115,
+      "precision": 0.7688,
+      "recall": 0.5709,
+      "f1": 0.6552,
+      "candidate_disposition_coverage": 0.8796,
+      "compound_full_repair_rate": 0.3333,
+      "compound_structural_repair_rate": 0.6667,
+      "new_fragmentation_groups_minimum": 3
+    },
+    "evidence": {
+      "verified": 333,
+      "total": 337,
+      "exact_or_source_equivalent_rate": 0.9881,
+      "text_not_found": 4,
+      "semantic_repair_llm_calls": 0,
+      "evidence_triggered_document_failure": 1
+    },
+    "field": {
+      "status": "PROVISIONAL_STRICT_MAPPING_REVIEW",
+      "predicate": 0.9749,
+      "participant": 0.9540,
+      "metric": 0.9673,
+      "fiscal_period": 1.0,
+      "comparable_total": 0.9640,
+      "candidate_recall_at_8_proxy": 0.5181,
+      "safe_deterministic_precision": 1.0,
+      "unresolved": 24,
+      "runtime_alias_errors": 7
+    },
+    "identity": {
+      "status": "PROVISIONAL_CLUSTER_REVIEW",
+      "pair_precision": 0.5258,
+      "judgeable_recall": 0.8571,
+      "max_cluster_size": 12,
+      "hard_conflict_violations": 158,
+      "hard_conflict_reduction": 0.7620
+    },
+    "atomic": {
+      "status": "PROVISIONAL_HIGH_CONFIDENCE_GOLD_PROJECTION",
+      "stable_subset_tp": 70,
+      "stable_subset_fp": 54,
+      "stable_subset_fn": 109,
+      "stable_subset_precision": 0.5645,
+      "stable_subset_recall": 0.3911,
+      "stable_subset_f1": 0.4620,
+      "n7_recall_at_8": 1.0,
+      "n9_merge_precision": 0.6182,
+      "n9_conditional_recall": 0.5574,
+      "old_five_largest_bad_clusters_fully_fixed": 0
+    },
+    "package": {
+      "status": "PROVISIONAL_OLD_GOLD_PROJECTION_105_OF_131_ATOMICS",
+      "tp": 333,
+      "fp": 81,
+      "fn": 522,
+      "precision": 0.8043,
+      "recall": 0.3895,
+      "f1": 0.5248,
+      "n13_conditional_precision": 0.9375,
+      "n13_conditional_recall": 0.6000,
+      "reaction_in_earnings_package_defects": 1,
+      "reaction_atomic_violations": 3,
+      "reaction_mention_violations": 8
+    }
+  },
+  "acceptance": {
+    "passed": false,
+    "retain": [
+      "N13 pair reduction",
+      "exact profile-pair deduplication",
+      "deterministic DIFFERENT guard",
+      "provider payload and token reductions"
+    ],
+    "blockers": [
+      "one document failed in local Dreamer repair serialization",
+      "Mention precision and recall regressed",
+      "Grounder item repair recovered zero of 26 invalid drafts",
+      "Field participant and candidate recall gates failed",
+      "Identity precision and recall gates failed",
+      "Atomic and Package fragmentation increased",
+      "reaction-to-earnings N13 false merge remains"
+    ],
+    "rollback_recommendation": "SELECTIVE_NOT_GLOBAL"
+  }
+}

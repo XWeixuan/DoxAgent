@@ -9,7 +9,7 @@ import pytest
 
 from cdecr.contracts import Language, SourceMessage, SourceType
 from cdecr.preprocessing import preprocess_source
-from cdecr.registry import ImmutableRecordConflict, SQLiteCDECRRegistry
+from cdecr.registry import SCHEMA_VERSION, ImmutableRecordConflict, SQLiteCDECRRegistry
 from cdecr.single_document_contracts import (
     DreamCandidate,
     EvidenceLocator,
@@ -66,7 +66,7 @@ def test_explicit_v1_to_v5_migration_preserves_source(tmp_path: Path) -> None:
         connection.commit()
     registry = SQLiteCDECRRegistry(path)
     registry.initialize()
-    assert registry.pragma_state()["user_version"] == 8
+    assert registry.pragma_state()["user_version"] == SCHEMA_VERSION
     assert registry.get_source("MSG-1") == source()
     with sqlite3.connect(path) as connection:
         tables = {

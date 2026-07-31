@@ -52,7 +52,12 @@ from cdecr.field_coreference_contracts import (
     FieldNamespace,
 )
 from cdecr.ports import EmbeddingResult, StructuredModelRequest, StructuredModelResult
-from cdecr.registry import ImmutableRecordConflict, RegistryError, SQLiteCDECRRegistry
+from cdecr.registry import (
+    SCHEMA_VERSION,
+    ImmutableRecordConflict,
+    RegistryError,
+    SQLiteCDECRRegistry,
+)
 
 
 class FakeEmbeddingClient:
@@ -803,7 +808,7 @@ def test_v5_registry_migrates_to_v6_without_replacing_existing_data(tmp_path: Pa
     registry = SQLiteCDECRRegistry(path)
     registry.initialize()
 
-    assert registry.pragma_state()["user_version"] == 8
+    assert registry.pragma_state()["user_version"] == SCHEMA_VERSION
     with sqlite3.connect(path) as check:
         tables = {
             row[0]

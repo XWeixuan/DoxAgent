@@ -38,6 +38,7 @@ from cdecr.cross_document_contracts import (
     CrossDocumentStatus,
     PackageAssignmentRecord,
     PackageMergePlan,
+    PackagePairEvaluation,
     PackagePairMergeDecision,
 )
 from cdecr.field_coreference_contracts import (
@@ -60,7 +61,7 @@ from cdecr.single_document_contracts import (
     SingleDocumentResult,
 )
 
-SCHEMA_VERSION = 8
+SCHEMA_VERSION = 9
 
 
 class RegistryError(RuntimeError):
@@ -281,6 +282,7 @@ def _clear_derived_state(connection: sqlite3.Connection) -> dict[str, int]:
         "external_relations",
         "package_memberships",
         "package_merge_decisions",
+        "package_pair_evaluations",
         "package_assignment_decisions",
         "atomic_assignment_decisions",
         "package_recall_fields",
@@ -697,6 +699,22 @@ class SQLiteCDECRRegistry:
                     payload_json TEXT NOT NULL,
                     created_at TEXT NOT NULL
                 );
+                CREATE TABLE IF NOT EXISTS package_pair_evaluations (
+                    evaluation_id TEXT PRIMARY KEY,
+                    run_id TEXT NOT NULL REFERENCES runs(run_id),
+                    left_package_id TEXT NOT NULL,
+                    right_package_id TEXT NOT NULL,
+                    left_profile_hash TEXT NOT NULL,
+                    right_profile_hash TEXT NOT NULL,
+                    relation TEXT NOT NULL,
+                    payload_json TEXT NOT NULL,
+                    created_at TEXT NOT NULL
+                );
+                CREATE INDEX IF NOT EXISTS idx_package_pair_evaluation_profile
+                    ON package_pair_evaluations(
+                        left_package_id, right_package_id,
+                        left_profile_hash, right_profile_hash, created_at
+                    );
 
                 CREATE TABLE IF NOT EXISTS package_external_relations (
                     relation_id TEXT PRIMARY KEY,
@@ -3312,6 +3330,59 @@ class SQLiteCDECRRegistry:
                 _now(),
             ),
         )
+
+    def save_package_pair_evaluation(self, evaluation: PackagePairEvaluation) -> bool:
+        return self._save_immutable(
+            table="package_pair_evaluations",
+            id_column="evaluation_id",
+            record_id=evaluation.evaluation_id,
+            payload=_json_payload(evaluation),
+            insert_sql="""
+                INSERT INTO package_pair_evaluations(
+                    evaluation_id, run_id, left_package_id, right_package_id,
+                    left_profile_hash, right_profile_hash, relation,
+                    payload_json, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            insert_values=(
+                evaluation.evaluation_id,
+                evaluation.run_id,
+                evaluation.left_package_id,
+                evaluation.right_package_id,
+                evaluation.left_profile_hash,
+                evaluation.right_profile_hash,
+                evaluation.relation.value,
+                _json_payload(evaluation),
+                _now(),
+            ),
+        )
+
+    def get_package_pair_evaluation(
+        self,
+        *,
+        left_package_id: str,
+        right_package_id: str,
+        left_profile_hash: str,
+        right_profile_hash: str,
+    ) -> PackagePairEvaluation | None:
+        with self._connection() as connection:
+            row = connection.execute(
+                """
+                SELECT payload_json FROM package_pair_evaluations
+                WHERE left_package_id = ? AND right_package_id = ?
+                  AND left_profile_hash = ? AND right_profile_hash = ?
+                ORDER BY created_at DESC, evaluation_id DESC LIMIT 1
+                """,
+                (
+                    left_package_id,
+                    right_package_id,
+                    left_profile_hash,
+                    right_profile_hash,
+                ),
+            ).fetchone()
+        if row is None:
+            return None
+        return PackagePairEvaluation.model_validate_json(str(row["payload_json"]))
 
     def save_package_external_relation(self, relation: PackageExternalRelation) -> bool:
         payload = _json_payload(relation)

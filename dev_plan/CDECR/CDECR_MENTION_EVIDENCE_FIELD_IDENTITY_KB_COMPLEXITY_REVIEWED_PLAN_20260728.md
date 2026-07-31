@@ -1,5 +1,7 @@
 # CDECR Mention / Evidence / Field / Identity / KB 低复杂度修订方案
 
+> 实施说明：最终实施范围以 `CDECR_MENTION_EVIDENCE_FIELD_IDENTITY_KB_FINAL_IMPLEMENTATION_PLAN_20260728.md` 为准。
+
 日期：2026-07-28  
 依据：
 
@@ -1021,4 +1023,3 @@ Identity public schema变化：0。
 -现有 Registry audit承接 provenance。
 
 因此，修订方案不是“为了简单而少修”，而是删掉了收益尚未证明的第二套机制。落地后系统仍保持原来的主工作流、节点数量、KB schema和 Identity schema，同时能够处理当前最主要的召回不可审计、Evidence定位、Field候选污染和 cross-metric错误合并。
-

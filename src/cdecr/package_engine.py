@@ -45,7 +45,7 @@ from cdecr.field_coreference_contracts import (
 from cdecr.ports import CDECRRegistry
 
 PACKAGE_PROFILE_COMPILER_VERSION = "package-profile-compiler-v2"
-PACKAGE_ASSIGNMENT_POLICY_VERSION = "package-assignment-policy-v3"
+PACKAGE_ASSIGNMENT_POLICY_VERSION = "package-assignment-policy-v4"
 PACKAGE_BOUNDARY_POLICY_VERSION = "package-boundary-policy-v2"
 
 _ARTIFACT_NAMESPACES = {
@@ -295,6 +295,94 @@ def build_package_decision_view(
             embedding_similarity=candidate.embedding_similarity,
         ),
     )
+
+
+def build_slim_package_view(
+    registry: CDECRRegistry,
+    package: EventPackage,
+    *,
+    source_short_ids: dict[str, str] | None = None,
+    representative_limit: int = 3,
+) -> dict[str, object]:
+    """Build the N13 dictionary view without repeated container/profile fields."""
+
+    events = [
+        event
+        for event_id in package.member_event_ids
+        if (event := registry.get_current_atomic_event(event_id)) is not None
+    ]
+    representatives: list[dict[str, object]] = []
+    for index, event in enumerate(
+        representative_package_members(events, limit=representative_limit), start=1
+    ):
+        surface_evidence, source_ids = atomic_surface_evidence(
+            registry,
+            event,
+            source_short_ids=source_short_ids,
+        )
+        surface_payload = surface_evidence.model_dump(mode="json", exclude_none=True)
+        # Compact refs carry canonical identity.  Preserve the raw surfaces in
+        # the evidence view but do not repeat canonical IDs there.
+        for value in surface_payload.values():
+            values = value if isinstance(value, list) else [value]
+            for item in values:
+                if isinstance(item, dict):
+                    item.pop("canonical_ids", None)
+        identity_refs: dict[str, object] = {}
+        entity_refs = sorted(core_entity_ids_from_profile(event.identity_profile))
+        if entity_refs:
+            identity_refs["entity_refs"] = entity_refs
+        period_ref = reference_period_from_profile(event.identity_profile)
+        if period_ref:
+            identity_refs["period_ref"] = period_ref
+        if surface_evidence.artifacts and surface_evidence.artifacts.canonical_ids:
+            identity_refs["artifact_refs"] = surface_evidence.artifacts.canonical_ids
+        if (
+            surface_evidence.object_locations
+            and surface_evidence.object_locations.canonical_ids
+        ):
+            identity_refs["object_refs"] = (
+                surface_evidence.object_locations.canonical_ids
+            )
+        representative: dict[str, object] = {
+            "id": f"e{index}",
+            "proposition": event.canonical_proposition,
+            "family": event.event_family.value,
+        }
+        if identity_refs:
+            representative["identity_refs"] = identity_refs
+        time_payload = event.time.model_dump(mode="json", exclude_none=True)
+        if time_payload:
+            representative["time"] = time_payload
+        if event.assertion_state.value != "ACTUAL":
+            representative["assertion"] = event.assertion_state.value
+        if surface_payload:
+            representative["surface_evidence"] = surface_payload
+        if source_ids:
+            representative["sources"] = source_ids
+        representatives.append(representative)
+
+    payload: dict[str, object] = {
+        "kind": package.package_kind.value,
+        "family": package.package_family.value,
+        "container_label": package.canonical_summary or package.canonical_title,
+        "member_count": len(package.member_event_ids),
+        "representatives": representatives,
+    }
+    if package.anchor_entities:
+        payload["entities"] = package.anchor_entities
+    if package.anchor_artifact_id:
+        payload["artifact"] = package.anchor_artifact_id
+    if package.anchor_period_id:
+        payload["period"] = package.anchor_period_id
+    time_range = package.time_range.model_dump(mode="json", exclude_none=True)
+    if time_range and not package.anchor_period_id:
+        payload["time_range"] = time_range
+    if package.lifecycle_state:
+        payload["lifecycle"] = package.lifecycle_state
+    if package.quality_state is not PackageQualityState.ACTIVE:
+        payload["quality"] = package.quality_state.value
+    return payload
 
 
 def request_local_source_ids(

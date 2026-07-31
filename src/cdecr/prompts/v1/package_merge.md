@@ -26,7 +26,13 @@ time, request-local source IDs, member Atomic identities, lifecycle, and
 representative members together. No single field or source is decisive. A shared
 current Atomic Event or trusted canonical parent artifact is strong evidence.
 Recall routes and embedding similarity are retrieval-only signals.
+Inferred external relations are advisory. Only conflicting externally trusted
+artifacts or institutions, exact canonical periods, or explicit controlled
+trading sessions are hard boundaries; mixed Packages remain separate pending review.
 
-Return every requested pair exactly once, use only supplied request-local Package
-IDs, and provide one concise reason. SAME_PACKAGE merges the pair;
-DIFFERENT_PACKAGE and UNCERTAIN keep it separate, with UNCERTAIN audited.
+The request may provide a `packages` dictionary and `pairs` containing `left`
+and `right` references. Resolve each pair through that dictionary; a Package
+view is intentionally sent once per batch.
+
+Return each pair once; copy input `id` unchanged to `pair_id`. SAME_PACKAGE
+merges; otherwise keep separate. Give one concise reason.

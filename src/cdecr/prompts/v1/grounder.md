@@ -16,6 +16,12 @@ consequences, disclosures and market reactions, and events involving different
 core subjects. Multiple candidates may be merged only when they describe the
 same underlying event.
 
+Optional local_package_hint identifies an evidence-explicit, document-local
+parent occurrence or matter that contains this Mention alongside potentially
+distinct Atomic Events. It must distinguish that parent boundary—not name an
+entity, topic, article, Package ID, or the Mention itself. Omit it when no such
+parent is explicit; relation_to_anchor points Mention -> parent.
+
 Candidate disposition:
 Every candidate must appear exactly once: either in a draft through
 source_candidate_ids or in rejected_candidates with a controlled rejection

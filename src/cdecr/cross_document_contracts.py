@@ -47,6 +47,10 @@ class RecallRoute(StrEnum):
     PACKAGE_KIND_FAMILY = "PACKAGE_KIND_FAMILY"
     SHARED_ATOMIC_EVENT = "SHARED_ATOMIC_EVENT"
     MEMBER_IDENTITY = "MEMBER_IDENTITY"
+    MEMBER_EMBEDDING = "MEMBER_EMBEDDING"
+    INCUMBENT_MEMBERSHIP = "INCUMBENT_MEMBERSHIP"
+    PARENT_CONTEXT = "PARENT_CONTEXT"
+    SAME_SOURCE_MEMBER = "SAME_SOURCE_MEMBER"
     LIFECYCLE_COMPATIBILITY = "LIFECYCLE_COMPATIBILITY"
     FIELD_ID = "FIELD_ID"
 
@@ -194,6 +198,7 @@ class PackageCandidate(StrictModel):
     recall_routes: list[RecallRoute] = Field(min_length=1)
     recall_score: Confidence
     embedding_similarity: float | None = Field(default=None, ge=-1.0, le=1.0)
+    member_embedding_similarity: float | None = Field(default=None, ge=-1.0, le=1.0)
     hard_conflicts: list[HardConflictCode] = Field(default_factory=list)
 
 
@@ -408,6 +413,22 @@ class PackagePairMergeDecision(StrictModel):
     target_package_id: NonEmptyString
     relation: PackageMergeRelation
     reason: NonEmptyString
+
+
+class PackagePairEvaluation(StrictModel):
+    evaluation_id: NonEmptyString
+    run_id: NonEmptyString
+    left_package_id: NonEmptyString
+    right_package_id: NonEmptyString
+    left_version: int = Field(ge=1)
+    right_version: int = Field(ge=1)
+    left_profile_hash: NonEmptyString
+    right_profile_hash: NonEmptyString
+    routes: list[RecallRoute]
+    relation: PackageMergeRelation
+    decision_source: Literal["M0", "GUARD", "M3", "REUSED"]
+    deterministic_rule: str | None = None
+    membership_changed: bool = False
 
 
 class PackagePairMergeWireDecision(StrictModel):

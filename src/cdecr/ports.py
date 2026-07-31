@@ -46,6 +46,7 @@ if TYPE_CHECKING:
         CrossDocumentResult,
         PackageAssignmentRecord,
         PackageMergePlan,
+        PackagePairEvaluation,
         PackagePairMergeDecision,
     )
 
@@ -414,6 +415,17 @@ class CDECRRegistry(Protocol):
     def save_package_merge_decision(
         self, *, decision_id: str, run_id: str, decision: PackagePairMergeDecision
     ) -> bool: ...
+
+    def save_package_pair_evaluation(self, evaluation: PackagePairEvaluation) -> bool: ...
+
+    def get_package_pair_evaluation(
+        self,
+        *,
+        left_package_id: str,
+        right_package_id: str,
+        left_profile_hash: str,
+        right_profile_hash: str,
+    ) -> PackagePairEvaluation | None: ...
 
     def save_atomic_redirect(
         self, *, source_event_id: str, target_event_id: str, run_id: str, reason: str

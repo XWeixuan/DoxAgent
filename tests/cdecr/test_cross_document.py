@@ -186,15 +186,21 @@ class FakeStructured:
         return {
             "decisions": [
                 {
-                    "source_package_id": (
-                        item["source_package_id"]
-                        if "source_package_id" in item
-                        else package_id(item["source"])
-                    ),
-                    "target_package_id": (
-                        item["target_package_id"]
-                        if "target_package_id" in item
-                        else package_id(item["target"])
+                    **(
+                        {"pair_id": item["id"]}
+                        if "id" in item
+                        else {
+                            "source_package_id": (
+                                item["source_package_id"]
+                                if "source_package_id" in item
+                                else package_id(item["source"])
+                            ),
+                            "target_package_id": (
+                                item["target_package_id"]
+                                if "target_package_id" in item
+                                else package_id(item["target"])
+                            ),
+                        }
                     ),
                     "relation": self.package_merge_relation,
                     "reason": f"fake-{self.package_merge_relation.casefold()}",
@@ -277,14 +283,10 @@ class FakeStructured:
                     ),
                     "candidate_assessments": assessments,
                     "related_candidate_event_ids": (
-                        ["not-an-input-id"]
-                        if self.malformed_derived_fields
-                        else related
+                        ["not-an-input-id"] if self.malformed_derived_fields else related
                     ),
                     "possible_duplicate_atomic_ids": (
-                        ["not-an-input-id"]
-                        if self.malformed_derived_fields
-                        else same[1:]
+                        ["not-an-input-id"] if self.malformed_derived_fields else same[1:]
                     ),
                 }
             )
@@ -340,8 +342,7 @@ class PackageDerivedFieldDrift(FakeStructured):
             assessments = decision["candidate_assessments"]
             assert isinstance(assessments, list)
             if any(
-                isinstance(item, dict) and item.get("relation") == "MEMBER"
-                for item in assessments
+                isinstance(item, dict) and item.get("relation") == "MEMBER" for item in assessments
             ):
                 decision["ranked_member_package_ids"] = []
                 decision["selected_member_package_id"] = None
@@ -362,6 +363,12 @@ class PackageCoverageDrift(FakeStructured):
 
 
 class PackageMergeCoverageDrift(FakeStructured):
+    def _package_merge_payload(self, body: dict[str, object]) -> dict[str, object]:
+        del body
+        return {"decisions": []}
+
+
+class PackageAndMergeCoverageDrift(PackageCoverageDrift):
     def _package_merge_payload(self, body: dict[str, object]) -> dict[str, object]:
         del body
         return {"decisions": []}
@@ -594,6 +601,40 @@ def test_same_batch_mentions_use_temporary_atomic_candidates(
     assert len(atomic_calls) == 1
 
 
+def test_same_batch_distinct_atomics_share_provisional_parent_context_package(
+    registry: SQLiteCDECRRegistry,
+) -> None:
+    message = source("MSG-1")
+    revenue = metric_mention("MSG-1", metric="REVENUE").model_copy(
+        update={"mention_id": "MENTION-REVENUE"}
+    )
+    eps = metric_mention("MSG-1", metric="EPS_GAAP").model_copy(
+        update={"mention_id": "MENTION-EPS"}
+    )
+    registry.save_source(message, fingerprint="1" * 64)
+    registry.save_mention(revenue)
+    registry.save_mention(eps)
+    processor, _, _, _ = engine(registry)
+
+    result = processor.process(message.message_id)
+
+    assert result.status is CrossDocumentStatus.SUCCEEDED
+    assert len(registry.list_current_atomic_events()) == 2
+    packages = registry.list_current_packages()
+    assert len(packages) == 1
+    assert len(packages[0].member_event_ids) == 2
+    with sqlite3.connect(registry.path) as connection:
+        audit = connection.execute(
+            """
+            SELECT payload_json FROM decision_audits
+            WHERE run_id = ? AND decision_type = 'PACKAGE_PARENT_CONTEXT_GROUP'
+            """,
+            (result.run_id,),
+        ).fetchone()
+    assert audit is not None
+    assert json.loads(audit[0])["parent_context_id"].startswith("parent-context:")
+
+
 def test_n9_keeps_three_mentions_per_request_and_uses_only_short_ids(
     registry: SQLiteCDECRRegistry,
 ) -> None:
@@ -603,9 +644,7 @@ def test_n9_keeps_three_mentions_per_request_and_uses_only_short_ids(
     registry.save_source(source("MSG-1"), fingerprint="1" * 64)
     for index in range(3):
         registry.save_mention(
-            metric_mention("MSG-1").model_copy(
-                update={"mention_id": f"MENTION-BATCH-{index}"}
-            )
+            metric_mention("MSG-1").model_copy(update={"mention_id": f"MENTION-BATCH-{index}"})
         )
 
     result = processor.process("MSG-1")
@@ -791,8 +830,7 @@ def test_n9_persistent_uncertainty_escalates_to_m3_then_creates_new(
     assert second.atomic_assignments[0].action.value == "CREATE_NEW"
     assert len(registry.list_current_atomic_events()) == 2
     assert any(
-        "Atomic Event Assignment Adjudicator" in call.system_prompt
-        for call in used_m3.calls
+        "Atomic Event Assignment Adjudicator" in call.system_prompt for call in used_m3.calls
     )
 
 
@@ -965,9 +1003,7 @@ def test_frozen_package_enters_n13_and_can_return_active(
     assert root is not None
     assert root.quality_state is PackageQualityState.ACTIVE
     assert len(root.member_event_ids) == 2
-    assert any(
-        "Package coreference review model" in call.system_prompt for call in m3.calls
-    )
+    assert any("Package coreference review model" in call.system_prompt for call in m3.calls)
 
 
 def test_market_reaction_is_external_not_package_member(
@@ -991,7 +1027,7 @@ def test_market_reaction_is_external_not_package_member(
     assert reaction.package_assignments[0].action.value == "CREATE_NEW_PACKAGE"
 
 
-def test_n13_boundary_repair_splits_reaction_after_overmerge(
+def test_n13_external_relation_is_advisory_and_boundary_repair_keeps_separate(
     registry: SQLiteCDECRRegistry,
 ) -> None:
     m3 = FakeStructured(package_merge_relation="SAME_PACKAGE")
@@ -1031,6 +1067,16 @@ def test_n13_boundary_repair_splits_reaction_after_overmerge(
         ]
     assert any(item["operation"] == "normal_assignment" for item in contexts)
     assert any(item["operation"] == "reaction_member_repair" for item in contexts)
+    with sqlite3.connect(registry.path) as connection:
+        shadow_count = connection.execute(
+            """
+            SELECT COUNT(*) FROM decision_audits
+            WHERE run_id = ?
+              AND decision_type = 'PACKAGE_EXTERNAL_RELATION_GUARD_SHADOW'
+            """,
+            (reaction.run_id,),
+        ).fetchone()[0]
+    assert shadow_count == 1
 
 
 def test_n13_on_fails_closed_until_full_business_gate(
@@ -1043,11 +1089,13 @@ def test_n13_on_fails_closed_until_full_business_gate(
 def test_n13_uses_pair_ids_and_records_smaller_pair_inline_shadow(
     registry: SQLiteCDECRRegistry,
 ) -> None:
-    m3 = FakeStructured(package_merge_relation="DIFFERENT_PACKAGE")
-    processor, _, _, _ = engine(registry, m3=m3, n13_wire_protocol="shadow")
+    m3 = PackageCoverageDrift(package_merge_relation="DIFFERENT_PACKAGE")
+    processor, _, _, _ = engine(
+        registry, m2=m3, m3=m3, n13_wire_protocol="shadow"
+    )
     add(registry, source("MSG-1"), metric_mention("MSG-1", metric="REVENUE"))
     processor.process("MSG-1")
-    add(registry, source("MSG-2"), market_mention("MSG-2"))
+    add(registry, source("MSG-2"), metric_mention("MSG-2", metric="GROSS_MARGIN"))
 
     result = processor.process("MSG-2")
 
@@ -1074,14 +1122,58 @@ def test_n13_uses_pair_ids_and_records_smaller_pair_inline_shadow(
     assert audit["wire_ref_count"] == 0
 
 
+def test_n13_canary_uses_dictionary_slim_view_and_persists_pair_profile(
+    registry: SQLiteCDECRRegistry,
+) -> None:
+    m3 = PackageCoverageDrift(package_merge_relation="DIFFERENT_PACKAGE")
+    processor, _, _, _ = engine(
+        registry, m2=m3, m3=m3, n13_wire_protocol="canary"
+    )
+    add(registry, source("MSG-1"), metric_mention("MSG-1", metric="REVENUE"))
+    processor.process("MSG-1")
+    add(registry, source("MSG-2"), metric_mention("MSG-2", metric="GROSS_MARGIN"))
+
+    result = processor.process("MSG-2")
+
+    assert result.status is CrossDocumentStatus.SUCCEEDED
+    request = next(
+        call for call in m3.calls if "Package coreference review model" in call.system_prompt
+    )
+    payload = json.loads(request.user_prompt)
+    assert set(payload) == {"batch_index", "batch_count", "packages", "pairs"}
+    assert all(
+        set(pair) == {"id", "left", "right", "routes", "similarity"} for pair in payload["pairs"]
+    )
+    assert all(pair["left"] in payload["packages"] for pair in payload["pairs"])
+    assert all(pair["right"] in payload["packages"] for pair in payload["pairs"])
+    assert all("identity_profile" not in json.dumps(view) for view in payload["packages"].values())
+    with sqlite3.connect(registry.path) as connection:
+        profile = json.loads(
+            connection.execute(
+                """
+                SELECT payload_json FROM decision_audits
+                WHERE run_id = ? AND decision_type = 'PACKAGE_N13_PAYLOAD_PROFILE'
+                """,
+                (result.run_id,),
+            ).fetchone()[0]
+        )
+        pair_count = connection.execute(
+            "SELECT COUNT(*) FROM package_pair_evaluations WHERE run_id = ?",
+            (result.run_id,),
+        ).fetchone()[0]
+    assert profile["optimized_bytes"] < profile["baseline_bytes"]
+    assert profile["field_bytes"]["packages"] > 0
+    assert pair_count >= 1
+
+
 def test_n13_missing_pair_degrades_to_no_merge_without_batch_repair(
     registry: SQLiteCDECRRegistry,
 ) -> None:
-    m3 = PackageMergeCoverageDrift()
-    processor, _, _, _ = engine(registry, m3=m3)
+    m3 = PackageAndMergeCoverageDrift()
+    processor, _, _, _ = engine(registry, m2=m3, m3=m3)
     add(registry, source("MSG-1"), metric_mention("MSG-1", metric="REVENUE"))
     processor.process("MSG-1")
-    add(registry, source("MSG-2"), market_mention("MSG-2"))
+    add(registry, source("MSG-2"), metric_mention("MSG-2", metric="GROSS_MARGIN"))
 
     result = processor.process("MSG-2")
 
@@ -1116,7 +1208,7 @@ def test_invalid_structured_output_gets_one_repair(registry: SQLiteCDECRRegistry
     assert atomic_calls[1].system_prompt.startswith("Repair")
 
 
-def test_persistent_invalid_output_fails_document_without_fake_result(
+def test_persistent_invalid_cross_document_output_degrades_to_separate_results(
     registry: SQLiteCDECRRegistry,
 ) -> None:
     m2 = FakeStructured(always_invalid=True)
@@ -1126,16 +1218,36 @@ def test_persistent_invalid_output_fails_document_without_fake_result(
     processor.process("MSG-1")
     add(registry, source("MSG-2"), metric_mention("MSG-2"))
     result = processor.process("MSG-2")
-    assert result.status is CrossDocumentStatus.FAILED
-    assert result.error_code == "structured_output_invalid"
+    assert result.status is CrossDocumentStatus.SUCCEEDED
+    assert result.atomic_assignments[0].action is AtomicAction.CREATE_NEW
+    assert result.atomic_assignments[0].possible_duplicate_atomic_ids == []
     atomic_calls = [
         call
         for call in m2.calls
         if "Atomic Event Assignment Adjudicator" in call.system_prompt
         or call.system_prompt.startswith("Repair")
     ]
-    assert len(atomic_calls) == 2
-    assert len(m3.calls) == 2
+    assert len(atomic_calls) >= 2
+    with sqlite3.connect(registry.path) as connection:
+        degraded_types = {
+            row[0]
+            for row in connection.execute(
+                """
+            SELECT decision_type FROM decision_audits
+            WHERE run_id = ? AND decision_type IN (
+                'ATOMIC_N9_BATCH_DEGRADED',
+                'PACKAGE_N12_BATCH_DEGRADED',
+                'PACKAGE_N13_BATCH_DEGRADED'
+            )
+            """,
+                (result.run_id,),
+            )
+        }
+    assert degraded_types == {
+        "ATOMIC_N9_BATCH_DEGRADED",
+        "PACKAGE_N12_BATCH_DEGRADED",
+        "PACKAGE_N13_BATCH_DEGRADED",
+    }
 
 
 def test_n9_normalizes_redundant_lists_and_unique_same_target_copy_error(
@@ -1169,8 +1281,7 @@ def test_n9_normalizes_redundant_lists_and_unique_same_target_copy_error(
     assert audit["model_call_id"]
     assert audit["tasks"]["m1"]["invalid_target"] == "m1c1-copy-error"
     assert any(
-        item["kind"] == "UNIQUE_SAME_EVENT_TARGET_RESTORED"
-        for item in audit["normalizations"]
+        item["kind"] == "UNIQUE_SAME_EVENT_TARGET_RESTORED" for item in audit["normalizations"]
     )
 
 
@@ -1200,8 +1311,7 @@ def test_n9_safely_drops_extra_and_identical_duplicate_assessments(
     assert audit["tasks"]["m1"]["extra"] == ["a999"]
     assert audit["tasks"]["m1"]["duplicates"] == ["m1c1"]
     assert any(
-        item["kind"] == "IDENTICAL_ASSESSMENT_DEDUPLICATED"
-        for item in audit["normalizations"]
+        item["kind"] == "IDENTICAL_ASSESSMENT_DEDUPLICATED" for item in audit["normalizations"]
     )
 
 

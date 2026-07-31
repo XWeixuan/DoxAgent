@@ -6,7 +6,7 @@
 范围：Mention、Evidence、Canonical Field Resolution、Identity Compilation，以及它们实际使用的 v1/v2 Knowledge Base  
 不在本轮范围：N7-N13 的 Atomic/Package LLM 决策逻辑全面重写
 
-> 复杂度复核说明：本文保留完整的问题空间和备选设计，但不再作为默认实施清单。经复杂度复核后的正式实施范围，以 `CDECR_MENTION_EVIDENCE_FIELD_IDENTITY_KB_COMPLEXITY_REVIEWED_PLAN_20260728.md` 为准；其中已删除额外 residual LLM 节点、通用 KB overlay、Participant 新类型字段和显式 tri-state Identity schema 等高复杂度设计。
+> 实施说明：本文保留完整的问题空间和备选设计，不作为直接实施清单。最终实施范围以 `CDECR_MENTION_EVIDENCE_FIELD_IDENTITY_KB_FINAL_IMPLEMENTATION_PLAN_20260728.md` 为准。
 
 ## 1. 方案目标
 

@@ -188,6 +188,10 @@ class NormalizationEngine:
         self.metric_resolver = CatalogResolver(
             _catalog_entries("metrics.json"), embedding_client=embedding_client
         )
+        self._candidate_labels = {
+            entry.canonical_id: entry.label
+            for entry in [*self.entity_resolver.entries, *self.metric_resolver.entries]
+        }
         self.fallback_client = fallback_client
         fiscal = _load_json("fiscal_periods.json")
         self._period_exact: dict[str, str] = {}
@@ -422,8 +426,7 @@ class NormalizationEngine:
         if not pending or self.fallback_client is None:
             return {}
         field_short_by_path = {
-            item.field_path: f"f{index}"
-            for index, item in enumerate(pending, start=1)
+            item.field_path: f"f{index}" for index, item in enumerate(pending, start=1)
         }
         field_path_by_short = {
             short_id: field_path for field_path, short_id in field_short_by_path.items()
@@ -445,16 +448,27 @@ class NormalizationEngine:
                 "field_path": field_short_by_path[item.field_path],
                 "kind": item.kind.value,
                 "raw_value": item.raw_value,
-                "candidate_ids": list(
-                    candidate_short_by_field[field_short_by_path[item.field_path]].values()
-                ),
+                "candidates": [
+                    {
+                        "id": candidate_short_by_field[field_short_by_path[item.field_path]][
+                            candidate.canonical_id
+                        ],
+                        "label": self._candidate_labels.get(
+                            candidate.canonical_id,
+                            candidate.canonical_id,
+                        ),
+                        "score": round(candidate.score, 4),
+                    }
+                    for candidate in item.candidates
+                    if candidate.canonical_id in item.allowed
+                ],
             }
             for item in pending
         ]
         result = self.fallback_client.complete(
             StructuredModelRequest(
                 system_prompt=(
-                    "Resolve normalization fields only from candidate_ids. "
+                    "Resolve each normalization field only from its candidate id/label pairs. "
                     "Use null when none is justified; never invent an ID."
                 ),
                 user_prompt=json.dumps(request_items, ensure_ascii=False),
@@ -467,8 +481,9 @@ class NormalizationEngine:
             repaired = self.fallback_client.complete(
                 StructuredModelRequest(
                     system_prompt=(
-                        "Repair the invalid normalization JSON. Resolve only from candidate_ids, "
-                        "use null when unresolved, and return exactly the requested schema."
+                        "Repair the invalid normalization JSON. Resolve only from the supplied "
+                        "candidate id/label pairs, use null when unresolved, and return exactly "
+                        "the requested schema."
                     ),
                     user_prompt=json.dumps(
                         {"request": request_items, "invalid_payload": result.payload},
@@ -477,7 +492,10 @@ class NormalizationEngine:
                     json_schema=_SelectionBatch.model_json_schema(),
                 )
             )
-            batch = _SelectionBatch.model_validate(repaired.payload)
+            try:
+                batch = _SelectionBatch.model_validate(repaired.payload)
+            except ValidationError:
+                return {}
         selections: dict[str, str | None] = {}
         for selection in batch.selections:
             field_path = field_path_by_short.get(selection.field_path)
@@ -486,9 +504,7 @@ class NormalizationEngine:
             if selection.canonical_id is None:
                 selections[field_path] = None
                 continue
-            canonical_id = candidate_full_by_field[selection.field_path].get(
-                selection.canonical_id
-            )
+            canonical_id = candidate_full_by_field[selection.field_path].get(selection.canonical_id)
             if canonical_id is not None:
                 selections[field_path] = canonical_id
         return selections

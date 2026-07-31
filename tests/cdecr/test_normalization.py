@@ -51,11 +51,25 @@ class SelectionModel:
         items = json.loads(request.user_prompt)
         selections = []
         for item in items:
-            canonical = "INVENTED_ID" if self.invent else item["candidate_ids"][0]
+            canonical = "INVENTED_ID" if self.invent else item["candidates"][0]["id"]
+            assert all(candidate["label"] for candidate in item["candidates"])
             selections.append({"field_path": item["field_path"], "canonical_id": canonical})
         return StructuredModelResult(
             model="deepseek-v4-flash",
             payload={"selections": selections},
+            latency_ms=1,
+        )
+
+
+class InvalidSelectionModel:
+    def __init__(self) -> None:
+        self.calls = 0
+
+    def complete(self, request: StructuredModelRequest) -> StructuredModelResult:
+        self.calls += 1
+        return StructuredModelResult(
+            model="deepseek-v4-flash",
+            payload={"invalid": True},
             latency_ms=1,
         )
 
@@ -165,6 +179,21 @@ def test_m2_is_candidate_constrained_and_never_accepts_invented_id() -> None:
         item for item in invented_decisions if item.field_path == "participants.0.entity_id"
     )
     assert invented_decision.method is NormalizationMethod.UNRESOLVED
+
+
+def test_persistent_invalid_m2_output_keeps_field_unresolved() -> None:
+    fallback = InvalidSelectionModel()
+    normalized, decisions = NormalizationEngine(
+        embedding_client=Embeddings(ambiguous=True),
+        fallback_client=fallback,
+    ).normalize(
+        mention(participant="Unknown Holdings", projection_issuer="Micron"),
+        ticker_hints=["MU"],
+    )
+    assert fallback.calls == 2
+    assert normalized.participants[0].entity_id is None
+    decision = next(item for item in decisions if item.field_path == "participants.0.entity_id")
+    assert decision.method is NormalizationMethod.UNRESOLVED
 
 
 def test_unknown_metric_is_preserved_as_unknown_and_bad_projection_is_removed() -> None:

@@ -23,7 +23,7 @@ from cdecr.cross_document_contracts import (
     CrossDocumentStatus,
     PackageAssignmentRecord,
 )
-from cdecr.registry import SQLiteCDECRRegistry
+from cdecr.registry import SCHEMA_VERSION, SQLiteCDECRRegistry
 from tests.cdecr.test_registry import mention, source
 
 
@@ -58,7 +58,7 @@ def test_v4_to_v5_migration_removes_confidence_columns_and_upgrades_mentions(
         connection.commit()
 
     registry.initialize()
-    assert registry.pragma_state()["user_version"] == 8
+    assert registry.pragma_state()["user_version"] == SCHEMA_VERSION
     restored = registry.get_mention("MENTION-1")
     assert restored is not None and restored.source_claim is None
     assert "extraction_confidence" not in restored.model_dump()
@@ -141,7 +141,7 @@ def test_v3_cross_document_audit_restart_and_recall(tmp_path: Path) -> None:
 
     restarted = SQLiteCDECRRegistry(registry.path)
     restarted.initialize()
-    assert restarted.pragma_state()["user_version"] == 8
+    assert restarted.pragma_state()["user_version"] == SCHEMA_VERSION
     assert restarted.get_completed_cross_document_result("key-1") == result
     recalled = restarted.recall_atomic_event_ids(
         entity_ids=["COMPANY_MU"],
