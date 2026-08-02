@@ -11,8 +11,9 @@ from typing import Literal, cast
 
 from pydantic import BaseModel, ConfigDict
 
+from cdecr.cli import _structured_client
 from cdecr.config import CDECRSettings
-from cdecr.models import DashScopeStructuredModelClient, ModelTier
+from cdecr.models import ModelTier
 from cdecr.ports import StructuredModelRequest
 
 FieldStatus = Literal["CORRECT", "INCORRECT", "NOT_APPLICABLE"]
@@ -141,7 +142,6 @@ def main() -> int:
         )
 
     settings = CDECRSettings()
-    api_key = settings.require_dashscope()
     parts_dir = args.output.with_name(f"{args.output.stem}_parts")
     parts_dir.mkdir(parents=True, exist_ok=True)
     system_prompt = (
@@ -169,14 +169,7 @@ def main() -> int:
             }
             if persisted_ids == expected_ids:
                 return cast(dict[str, object], persisted)
-        client = DashScopeStructuredModelClient(
-            tier=ModelTier.M4,
-            api_key=api_key,
-            base_url=settings.dashscope_base_url,
-            model=settings.model_m4,
-            timeout_seconds=settings.model_timeout_seconds,
-            fallback_api_keys=settings.dashscope_fallback_api_keys(),
-        )
+        client = _structured_client(settings, ModelTier.M4)
         totals = {"input_tokens": 0, "output_tokens": 0, "latency_ms": 0}
 
         def complete(target: dict[str, object]) -> list[GoldFieldAssessment]:

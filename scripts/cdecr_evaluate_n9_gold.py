@@ -11,8 +11,9 @@ from typing import Literal, cast
 
 from pydantic import BaseModel, ConfigDict
 
+from cdecr.cli import _structured_client
 from cdecr.config import CDECRSettings
-from cdecr.models import DashScopeStructuredModelClient, ModelTier
+from cdecr.models import ModelTier
 from cdecr.ports import StructuredModelRequest
 
 
@@ -166,17 +167,9 @@ def main() -> int:
         for index in range(0, len(tasks), args.batch_size)
     ]
     settings = CDECRSettings()
-    api_key = settings.require_dashscope()
 
     def review(batch: list[dict[str, object]]) -> dict[str, object]:
-        client = DashScopeStructuredModelClient(
-            tier=ModelTier.M4,
-            api_key=api_key,
-            base_url=settings.dashscope_base_url,
-            model=settings.model_m4,
-            timeout_seconds=settings.model_timeout_seconds,
-            fallback_api_keys=settings.dashscope_fallback_api_keys(),
-        )
+        client = _structured_client(settings, ModelTier.M4)
         result = client.complete(
             StructuredModelRequest(
                 system_prompt=(

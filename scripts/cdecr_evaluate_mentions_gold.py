@@ -10,8 +10,9 @@ from typing import Any, Literal, cast
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from cdecr.cli import _structured_client
 from cdecr.config import CDECRSettings
-from cdecr.models import DashScopeStructuredModelClient, ModelTier
+from cdecr.models import ModelTier
 from cdecr.ports import StructuredModelRequest
 from cdecr.registry import SQLiteCDECRRegistry
 
@@ -128,7 +129,6 @@ def _mention_payload(mention: object) -> dict[str, object]:
 def main() -> int:
     args = _args()
     settings = CDECRSettings()
-    api_key = settings.require_dashscope()
     registry = SQLiteCDECRRegistry(args.registry)
     gold_documents = _gold_documents(args.gold)
     parts_dir = args.output.parent / f"{args.output.stem}_parts"
@@ -151,14 +151,7 @@ def main() -> int:
         assert isinstance(gold, list)
         gold_ids = {str(item["id"]) for item in gold if isinstance(item, dict)}
         mention_ids = {item.mention_id for item in mentions}
-        client = DashScopeStructuredModelClient(
-            tier=ModelTier.M4,
-            api_key=api_key,
-            base_url=settings.dashscope_base_url,
-            model=settings.model_m4,
-            timeout_seconds=settings.model_timeout_seconds,
-            fallback_api_keys=settings.dashscope_fallback_api_keys(),
-        )
+        client = _structured_client(settings, ModelTier.M4)
         request = StructuredModelRequest(
             system_prompt=(
                 "You evaluate CDECR Event Mentions against source-centered Gold. Match one "
