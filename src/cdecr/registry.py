@@ -6,6 +6,7 @@ import json
 import re
 import sqlite3
 import sys
+import threading
 import unicodedata
 import uuid
 from array import array
@@ -329,18 +330,25 @@ class SQLiteCDECRRegistry:
     def __init__(self, path: Path | str, *, busy_timeout_ms: int = 5000) -> None:
         self.path = Path(path)
         self.busy_timeout_ms = busy_timeout_ms
+        # A BULK_EPOCH shares one Registry across many model workers. SQLite WAL still permits
+        # only one writer, and several short audit/link transactions may otherwise collide before
+        # busy_timeout can arbitrate them. Keep the gate process-local and transaction-scoped: LLM
+        # requests and CPU preparation remain concurrent while every Registry transaction has one
+        # owner. RLock preserves the few re-entrant registry helper paths.
+        self._transaction_lock = threading.RLock()
 
     @contextmanager
     def _connection(self) -> Iterator[sqlite3.Connection]:
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        connection = sqlite3.connect(self.path, timeout=self.busy_timeout_ms / 1000)
-        connection.row_factory = sqlite3.Row
-        connection.execute("PRAGMA foreign_keys=ON")
-        connection.execute(f"PRAGMA busy_timeout={self.busy_timeout_ms}")
-        try:
-            yield connection
-        finally:
-            connection.close()
+        with self._transaction_lock:
+            self.path.parent.mkdir(parents=True, exist_ok=True)
+            connection = sqlite3.connect(self.path, timeout=self.busy_timeout_ms / 1000)
+            connection.row_factory = sqlite3.Row
+            connection.execute("PRAGMA foreign_keys=ON")
+            connection.execute(f"PRAGMA busy_timeout={self.busy_timeout_ms}")
+            try:
+                yield connection
+            finally:
+                connection.close()
 
     def initialize(self) -> None:
         with self._connection() as connection:

@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import threading
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
 from pathlib import Path
 from statistics import median
 from time import perf_counter
@@ -154,6 +155,35 @@ def test_bulk_writer_serializes_concurrent_commits() -> None:
         results = list(pool.map(lambda value: writer.run(lambda: commit(value)), range(20)))
     assert sorted(results) == list(range(20))
     assert len(set(actor_threads)) == 1
+
+
+def test_registry_serializes_process_local_transactions(tmp_path: Path) -> None:
+    registry = SQLiteCDECRRegistry(tmp_path / "registry-writer-gate.sqlite3")
+    registry.initialize()
+    active = 0
+    max_active = 0
+    guard = threading.Lock()
+    original = registry._connection
+
+    @contextmanager
+    def observed_connection():
+        nonlocal active, max_active
+        with original() as connection:
+            with guard:
+                active += 1
+                max_active = max(max_active, active)
+            try:
+                threading.Event().wait(0.005)
+                yield connection
+            finally:
+                with guard:
+                    active -= 1
+
+    registry._connection = observed_connection  # type: ignore[method-assign]
+    with ThreadPoolExecutor(max_workers=16) as pool:
+        rows = list(pool.map(lambda _: registry.count_model_calls(), range(64)))
+    assert rows == [0] * 64
+    assert max_active == 1
 
 
 def test_n12_reducer_does_not_cross_explicit_not_related_edge() -> None:
