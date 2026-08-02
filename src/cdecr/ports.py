@@ -111,6 +111,7 @@ class StructuredModelResult(StrictModel):
     payload: dict[str, object]
     input_tokens: int | None = None
     output_tokens: int | None = None
+    reasoning_tokens: int | None = None
     latency_ms: int = Field(ge=0)
     request_id: str | None = None
 

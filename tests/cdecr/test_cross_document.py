@@ -276,33 +276,49 @@ class FakeStructured:
 
     def _atomic_payload(self, body: dict[str, object]) -> dict[str, object]:
         tasks = body["tasks"]
-        atoms = body.get("atoms", {})
+        atoms = body.get("atomics", body.get("atoms", {}))
+        mentions = body.get("mentions", {})
         assert isinstance(tasks, list)
         assert isinstance(atoms, dict)
+        assert isinstance(mentions, dict)
         decisions: list[dict[str, object]] = []
         for task in tasks:
             assert isinstance(task, dict)
-            incoming = task["incoming"]
+            incoming_id = task.get("mention")
+            incoming = (
+                mentions[incoming_id]
+                if isinstance(incoming_id, str) and incoming_id in mentions
+                else task["incoming"]
+            )
             candidates = task["candidates"]
             assert isinstance(incoming, dict)
             assert isinstance(candidates, list)
-            expanded_candidates: list[dict[str, object]] = []
+            expanded_candidates: list[tuple[str, dict[str, object], list[str]]] = []
             for candidate in candidates:
                 assert isinstance(candidate, dict)
                 if atoms:
-                    atom = atoms[candidate["event_id"]]
+                    candidate_id = candidate.get("atomic", candidate.get("event_id"))
+                    atom = atoms[candidate_id]
                     assert isinstance(atom, dict)
-                    expanded_candidates.append(atom)
+                    axes = candidate.get("axes", [])
+                    assert isinstance(candidate_id, str)
+                    assert isinstance(axes, list)
+                    expanded_candidates.append((candidate_id, atom, axes))
                 else:
-                    expanded_candidates.append(candidate)
+                    candidate_id = candidate["event_id"]
+                    axes = incoming.get("identity_axes", [])
+                    assert isinstance(candidate_id, str)
+                    assert isinstance(axes, list)
+                    expanded_candidates.append((candidate_id, candidate, axes))
             assessments = [
                 {
-                    "candidate_event_id": candidate["event_id"],
+                    "candidate_event_id": candidate_id,
                     "relation": (
                         self.atomic_relation
                         or (
                             "SAME_EVENT"
-                            if candidate["identity_profile"] == incoming["identity_profile"]
+                            if candidate.get("identity", candidate.get("identity_profile"))
+                            == incoming.get("identity", incoming.get("identity_profile"))
                             else "UNRELATED"
                         )
                     ),
@@ -311,21 +327,27 @@ class FakeStructured:
                             "axis": axis,
                             "verdict": (
                                 "MATCH"
-                                if candidate["identity_profile"]
-                                == incoming["identity_profile"]
+                                if candidate.get("identity", candidate.get("identity_profile"))
+                                == incoming.get("identity", incoming.get("identity_profile"))
                                 else "CONFLICT"
                             ),
                         }
-                        for axis in incoming.get("identity_axes", {})
+                        for axis in (
+                            {"R": "REFERENT", "O": "OCCURRENCE", "F": "FACET"}.get(
+                                value, value
+                            )
+                            for value in axes
+                        )
                     ],
                     "claim_conflict": False,
                     "identity_differences": (
                         []
-                        if candidate["identity_profile"] == incoming["identity_profile"]
+                        if candidate.get("identity", candidate.get("identity_profile"))
+                        == incoming.get("identity", incoming.get("identity_profile"))
                         else ["identity_profile"]
                     ),
                 }
-                for candidate in expanded_candidates
+                for candidate_id, candidate, axes in expanded_candidates
             ]
             same = [
                 item["candidate_event_id"]
@@ -339,7 +361,7 @@ class FakeStructured:
             ]
             decisions.append(
                 {
-                    "mention_id": incoming["mention_id"],
+                    "mention_id": incoming_id or incoming["mention_id"],
                     "action": "MERGE" if same else "CREATE_NEW",
                     "merge_target_event_id": (
                         f"{same[0]}-copy-error"
@@ -702,7 +724,7 @@ def test_same_batch_distinct_atomics_share_provisional_parent_context_package(
     assert json.loads(audit[0])["parent_context_id"].startswith("parent-context:")
 
 
-def test_n9_keeps_three_mentions_per_request_and_uses_only_short_ids(
+def test_n9_uses_request_level_atomic_dictionary_and_compact_identity_cards(
     registry: SQLiteCDECRRegistry,
 ) -> None:
     processor, _, m2, _ = engine(registry)
@@ -722,18 +744,24 @@ def test_n9_keeps_three_mentions_per_request_and_uses_only_short_ids(
     ]
     assert len(atomic_calls) == 1
     payload = json.loads(atomic_calls[0].user_prompt)
-    assert [task["incoming"]["mention_id"] for task in payload["tasks"]] == [
-        "m1",
-        "m2",
-        "m3",
-    ]
+    assert [task["mention"] for task in payload["tasks"]] == ["m1", "m2", "m3"]
+    assert set(payload["mentions"]) == {"m1", "m2", "m3"}
+    candidate_ids = {
+        candidate["atomic"]
+        for task in payload["tasks"]
+        for candidate in task["candidates"]
+    }
+    assert set(payload["atomics"]) == candidate_ids
+    assert len(payload["atomics"]) <= sum(
+        len(task["candidates"]) for task in payload["tasks"]
+    )
     assert all(
-        candidate["event_id"].startswith(f"m{task_index}c")
-        for task_index, task in enumerate(payload["tasks"], start=1)
+        candidate["atomic"].startswith("a")
+        for task in payload["tasks"]
         for candidate in task["candidates"]
     )
     assert all(
-        not candidate["event_id"].startswith(("atomic:", "provisional:"))
+        not candidate["atomic"].startswith(("atomic:", "provisional:"))
         for task in payload["tasks"]
         for candidate in task["candidates"]
     )
@@ -743,21 +771,26 @@ def test_n9_keeps_three_mentions_per_request_and_uses_only_short_ids(
         for candidate in task["candidates"]
     )
     assert all(
-        task["incoming"]["identity_axes"]
-        and all(candidate["identity_axes"] for candidate in task["candidates"])
+        payload["mentions"][task["mention"]]["identity"]
+        and all(candidate["axes"] for candidate in task["candidates"])
         for task in payload["tasks"]
+    )
+    assert all(
+        "identity_profile" not in card
+        and "identity_adapter" not in card
+        and "identity_axes" not in card
+        for card in [*payload["mentions"].values(), *payload["atomics"].values()]
     )
     with sqlite3.connect(registry.path) as connection:
         shadow_payloads = [
             json.loads(row[0])
-            for row in connection.execute(
-                "SELECT payload_json FROM decision_audits "
-                "WHERE decision_type = 'WIRE_PAYLOAD_SHADOW'"
-            )
+                for row in connection.execute(
+                    "SELECT payload_json FROM decision_audits "
+                    "WHERE decision_type = 'WIRE_PAYLOAD_SHADOW' "
+                    "AND json_extract(payload_json, '$.stage') = 'atomic_coreference'"
+                )
         ]
-    assert shadow_payloads
-    assert all(item["mode"] == "shadow_not_sent" for item in shadow_payloads)
-    assert any(item["estimated_savings_bytes"] > 0 for item in shadow_payloads)
+    assert not shadow_payloads
 
 
 def test_hard_identity_splits_metrics_but_same_earnings_package(
@@ -773,7 +806,7 @@ def test_hard_identity_splits_metrics_but_same_earnings_package(
     packages = registry.list_current_packages()
     assert len(packages) == 1
     assert len(packages[0].member_event_ids) == 2
-    assert any("Atomic Event Assignment Adjudicator" in call.system_prompt for call in m2.calls)
+    assert not any("Atomic Event Assignment Adjudicator" in call.system_prompt for call in m2.calls)
     assert result.candidate_counts["atomic_hard_conflict_observed"] >= 1
     assert not result.atomic_assignments[0].hard_conflicts
 
@@ -805,7 +838,7 @@ def test_n12_normalizes_redundant_member_selection_fields(
     assert any(item["kind"] == "SELECTED_MEMBER_ALIGNED" for item in normalizations)
 
 
-def test_legacy_enforce_request_is_shadow_only_for_atomic_candidate(
+def test_enforced_atomic_candidate_is_assessed_without_model_call(
     registry: SQLiteCDECRRegistry,
 ) -> None:
     processor, _, m2, _ = engine(registry, hard_cannot_link_mode="enforce")
@@ -817,7 +850,18 @@ def test_legacy_enforce_request_is_shadow_only_for_atomic_candidate(
 
     assert result.status is CrossDocumentStatus.SUCCEEDED
     assert not result.atomic_assignments[0].hard_conflicts
-    assert any("Atomic Event Assignment Adjudicator" in call.system_prompt for call in m2.calls)
+    assert not any("Atomic Event Assignment Adjudicator" in call.system_prompt for call in m2.calls)
+    with sqlite3.connect(registry.path) as connection:
+        audit = connection.execute(
+            "SELECT payload_json FROM decision_audits "
+            "WHERE run_id = ? AND decision_type = 'ATOMIC_N9_DETERMINISTIC_NOT_SAME'",
+            (result.run_id,),
+        ).fetchone()
+    assert audit is not None
+    payload = json.loads(audit[0])
+    assert payload["assessment"] == "DETERMINISTIC_NOT_SAME"
+    assert payload["sent_to_model"] is False
+    assert payload["rules"]
 
 
 def test_atomic_embedding_tracks_exact_current_identity_text(
@@ -910,10 +954,14 @@ def test_multiple_same_candidates_absorb_only_singleton_duplicate(
     first_result = processor.process("MSG-1")
     second = metric_mention("MSG-2")
     add(registry, source("MSG-2"), second)
+    # N9 compact identity is Sidecar-backed. Mirror the already-resolved field
+    # links so this synthetic singleton is genuinely identity-equivalent.
+    for link in registry.list_field_links_for_mention(first.mention_id):
+        registry.save_field_link(link.model_copy(update={"mention_id": second.mention_id}))
     duplicate_event = singleton_atomic_event(
-            second,
-            identity_profile=first_result.atomic_events[0].identity_profile,
-        ).model_copy(update={"event_id": "atomic:zzzz-singleton"})
+        second,
+        identity_profile=first_result.atomic_events[0].identity_profile,
+    ).model_copy(update={"event_id": "atomic:zzzz-singleton"})
     registry.save_atomic_event(
         duplicate_event
     )
@@ -1385,7 +1433,7 @@ def test_n9_normalizes_redundant_lists_and_unique_same_target_copy_error(
     assert payload is not None
     audit = json.loads(payload[0])
     assert audit["model_call_id"]
-    assert audit["tasks"]["m1"]["invalid_target"] == "m1c1-copy-error"
+    assert audit["tasks"]["m1"]["invalid_target"] == "a1-copy-error"
     assert any(
         item["kind"] == "UNIQUE_SAME_EVENT_TARGET_RESTORED" for item in audit["normalizations"]
     )
@@ -1415,7 +1463,7 @@ def test_n9_safely_drops_extra_and_identical_duplicate_assessments(
     assert payload is not None
     audit = json.loads(payload[0])
     assert audit["tasks"]["m1"]["extra"] == ["a999"]
-    assert audit["tasks"]["m1"]["duplicates"] == ["m1c1"]
+    assert audit["tasks"]["m1"]["duplicates"] == ["a1"]
     assert any(
         item["kind"] == "IDENTICAL_ASSESSMENT_DEDUPLICATED" for item in audit["normalizations"]
     )
@@ -1446,7 +1494,7 @@ def test_n9_missing_assessment_degrades_only_task_without_repair(
         ).fetchone()
     assert payload is not None
     audit = json.loads(payload[0])
-    assert audit["tasks"]["m1"]["missing"] == ["m1c1"]
+    assert audit["tasks"]["m1"]["missing"] == ["a1"]
 
 
 def test_n9_missing_identity_axis_is_filled_without_task_degradation(

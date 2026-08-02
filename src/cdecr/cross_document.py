@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import re
 import threading
 import traceback
 import uuid
@@ -17,6 +18,7 @@ from typing import Literal, TypeVar
 from pydantic import BaseModel, ValidationError
 
 from cdecr.atomic_identity import (
+    CanonicalIdentityView,
     IdentityComparison,
     atomic_identity_text,
     canonical_identity_view,
@@ -24,6 +26,7 @@ from cdecr.atomic_identity import (
     resolved_identity_evidence,
 )
 from cdecr.atomic_identity_contracts import (
+    AtomicIdentitySidecar,
     IdentityAxis,
     IdentityAxisVerdict,
 )
@@ -171,10 +174,10 @@ from cdecr.scheduler import take_scheduled_call_metrics
 from cdecr.single_document_contracts import ModelCallSummary
 from cdecr.wire import compact_json, wire_ref_metadata
 
-ENGINE_VERSION = "cdecr-cross-document-v19"
-PROMPT_VERSION = "cdecr-cross-document-prompts-v14"
-WIRE_PROTOCOL_VERSION = "cdecr-cross-document-wire-task-local-v8"
-ATOMIC_ASSIGNMENT_POLICY_VERSION = "atomic-assignment-policy-v3-axis-assessment"
+ENGINE_VERSION = "cdecr-cross-document-v20"
+PROMPT_VERSION = "cdecr-cross-document-prompts-v15"
+WIRE_PROTOCOL_VERSION = "cdecr-cross-document-wire-atomic-dictionary-v9"
+ATOMIC_ASSIGNMENT_POLICY_VERSION = "atomic-assignment-policy-v4-deterministic-pair-filter"
 ATOMIC_DECISION_MENTION_BATCH = 3
 PACKAGE_DECISION_EVENT_BATCH = 12
 PACKAGE_MERGE_PAIR_BATCH = 12
@@ -268,6 +271,155 @@ def _mention_local_context(source: SourceMessage, mention: EventMention) -> str:
     if context:
         return context[:4000]
     return mention.source_claim or mention.canonical_proposition
+
+
+def _compact_identity_card(
+    sidecar: AtomicIdentitySidecar,
+    view: CanonicalIdentityView,
+    *,
+    event_time: object,
+) -> dict[str, object]:
+    """Return the model-visible N9 identity card without compiler metadata duplication."""
+
+    card: dict[str, object] = {}
+    if sidecar.referent:
+        card["referent"] = sidecar.referent
+    if sidecar.occurrence:
+        card["occurrence"] = sidecar.occurrence
+    if sidecar.facet:
+        card["facet"] = sidecar.facet
+    if view.canonical_participants_by_role:
+        card["roles"] = view.canonical_participants_by_role
+    if view.canonical_locations:
+        card["locations"] = view.canonical_locations
+    if view.canonical_named_objects:
+        card["objects"] = view.canonical_named_objects
+    if isinstance(event_time, BaseModel):
+        raw_time = event_time.model_dump(mode="json")
+        compact_time = [
+            raw_time.get("event_start"),
+            raw_time.get("event_end"),
+            raw_time.get("precision"),
+            raw_time.get("reference_period_id"),
+        ]
+        while compact_time and compact_time[-1] is None:
+            compact_time.pop()
+        if any(value is not None for value in compact_time):
+            card["time"] = compact_time
+    return card
+
+
+def _compact_quantities(mention: EventMention) -> list[list[object]]:
+    """Keep the metric/value/comparator semantics while removing repeated JSON keys."""
+
+    return [
+        [item.metric_id, item.role.value, item.value, item.unit, item.raw_text]
+        for item in mention.quantities
+    ]
+
+
+def _minimal_evidence_context(source: SourceMessage, mention: EventMention) -> str:
+    """Select the smallest complete evidence sentence, capped at 600 characters."""
+
+    passages: list[str] = []
+    for span in mention.evidence_spans:
+        raw = source.title if span.field == "title" else source.text
+        left = max(
+            raw.rfind(".", 0, span.start_char),
+            raw.rfind("!", 0, span.start_char),
+            raw.rfind("?", 0, span.start_char),
+            raw.rfind("\n", 0, span.start_char),
+        )
+        sentence_start = 0 if left < 0 else left + 1
+        right_candidates = [
+            position
+            for separator in (".", "!", "?", "\n")
+            if (position := raw.find(separator, span.end_char)) >= 0
+        ]
+        sentence_end = min(right_candidates) + 1 if right_candidates else len(raw)
+        sentence = raw[sentence_start:sentence_end].strip()
+        if sentence:
+            passages.append(sentence)
+    context = " ".join(dict.fromkeys(passages)).strip()
+    if not context:
+        context = mention.source_claim or mention.canonical_proposition
+    return context[:600]
+
+
+_N9_BOUNDARY_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
+    ("number", re.compile(r"(?:[$€£]?\d|\d[%x×])", re.IGNORECASE)),
+    (
+        "comparator",
+        re.compile(
+            r"(?:>|<|at least|more than|less than|about|approximately|range)",
+            re.IGNORECASE,
+        ),
+    ),
+    (
+        "session",
+        re.compile(
+            r"(?:pre[- ]market|after[- ]hours|intraday|market open|close)",
+            re.IGNORECASE,
+        ),
+    ),
+    ("period", re.compile(r"(?:q[1-4]|fy\s*\d{2,4}|quarter|year|month|week)", re.IGNORECASE)),
+    ("state", re.compile(r"(?:actual|guidance|forecast|expects?|plans?|reported)", re.IGNORECASE)),
+    (
+        "qualitative",
+        re.compile(
+            r"(?:supply|demand|shortage|streak|record|line of sight)",
+            re.IGNORECASE,
+        ),
+    ),
+)
+
+
+def _claim_boundary_signals(value: str) -> set[str]:
+    return {name for name, pattern in _N9_BOUNDARY_PATTERNS if pattern.search(value)}
+
+
+def _normalized_claim(value: str) -> str:
+    return " ".join(re.sub(r"[^\w]+", " ", value.casefold()).split())
+
+
+def _select_representative_claims(
+    canonical_proposition: str,
+    claims: Sequence[str],
+) -> list[str]:
+    """Select up to two non-duplicative claims that add identity-boundary evidence."""
+
+    canonical_normalized = _normalized_claim(canonical_proposition)
+    canonical_signals = _claim_boundary_signals(canonical_proposition)
+    ranked: list[tuple[int, int, str, set[str]]] = []
+    seen: set[str] = set()
+    for claim in claims:
+        normalized = _normalized_claim(claim)
+        if not normalized or normalized in seen:
+            continue
+        seen.add(normalized)
+        canonical_tokens = set(canonical_normalized.split())
+        claim_tokens = set(normalized.split())
+        overlap = len(canonical_tokens & claim_tokens) / max(
+            1, len(canonical_tokens | claim_tokens)
+        )
+        if normalized == canonical_normalized or overlap >= 0.88:
+            continue
+        signals = _claim_boundary_signals(claim)
+        added_signals = signals - canonical_signals
+        if not added_signals and not (signals and overlap < 0.65):
+            continue
+        ranked.append((len(added_signals), len(signals), claim, signals))
+    ranked.sort(key=lambda item: (-item[0], -item[1], len(item[2]), item[2]))
+    selected: list[str] = []
+    covered = set(canonical_signals)
+    for _, _, claim, signals in ranked:
+        if selected and not (signals - covered):
+            continue
+        selected.append(claim[:600])
+        covered.update(signals)
+        if len(selected) == 2:
+            break
+    return selected
 
 
 def _compiled_active_hard_conflicts(
@@ -787,9 +939,9 @@ class CrossDocumentEngine:
         model_m1: str = "qwen3.7-text-embedding",
         model_m2: str = "deepseek-v4-flash",
         model_m3: str = "qwen3.7-plus",
-        hard_cannot_link_mode: str = HardCannotLinkMode.SHADOW.value,
+        hard_cannot_link_mode: str = HardCannotLinkMode.ENFORCE.value,
         package_conflict_mode: str = PackageConflictMode.OFF.value,
-        n9_wire_protocol: str = "shadow",
+        n9_wire_protocol: str = "on",
         n12_wire_protocol: str = "on",
         n13_wire_protocol: str = "shadow",
         atomic_enforced_rules: Sequence[str] | None = None,
@@ -821,14 +973,12 @@ class CrossDocumentEngine:
         )
         self.package_conflict_mode = PackageConflictMode(package_conflict_mode)
         allowed_protocols = {"legacy", "shadow", "canary", "on"}
-        if n9_wire_protocol not in allowed_protocols:
-            raise ValueError("invalid N9 wire protocol")
+        if n9_wire_protocol != "on":
+            raise ValueError("N9 optimized dictionary protocol is mandatory")
         if n12_wire_protocol not in allowed_protocols:
             raise ValueError("invalid N12 wire protocol")
         if n13_wire_protocol not in allowed_protocols:
             raise ValueError("invalid N13 wire protocol")
-        if n9_wire_protocol in {"canary", "on"}:
-            raise ValueError("N9 task-local assessment protocol has not passed its node A/B gate")
         if n13_wire_protocol == "on":
             raise ValueError("N13 dictionary protocol has not passed its full business gate")
         self.n9_wire_protocol = n9_wire_protocol
@@ -1680,13 +1830,100 @@ class CrossDocumentEngine:
         compiled: dict[str, CompiledMentionIdentity],
         models: _AuditedModels,
     ) -> dict[str, AtomicAssignmentDecision]:
-        eligible = {
-            mention.mention_id: [
-                item for item in candidates[mention.mention_id] if not item.hard_conflicts
-            ]
-            for mention in mentions
-        }
+        deterministic_by_mention: dict[str, list[AtomicCandidateAssessment]] = {}
+        eligible: dict[str, list[AtomicCandidate]] = {}
         decisions: dict[str, AtomicAssignmentDecision] = {}
+        for mention in mentions:
+            incoming_sidecar = compiled[mention.mention_id].atomic_identity_sidecar
+            assert incoming_sidecar is not None
+            model_candidates: list[AtomicCandidate] = []
+            deterministic_assessments: list[AtomicCandidateAssessment] = []
+            for candidate in candidates[mention.mention_id]:
+                candidate_sidecar = candidate.identity_sidecar
+                assert candidate_sidecar is not None
+                invariant = evaluate_atomic_merge_invariant(
+                    incoming_sidecar,
+                    candidate_sidecar,
+                    enforced_rules=self.atomic_enforced_rules,
+                )
+                if not invariant.enforced_rules:
+                    model_candidates.append(candidate)
+                    continue
+                applicable_axes = set(incoming_sidecar.applicable_axes).intersection(
+                    candidate_sidecar.applicable_axes
+                )
+                enforced_axes: set[IdentityAxis] = set()
+                if set(invariant.enforced_rules).intersection(
+                    {
+                        AtomicMergeInvariantRule.PRIMARY_METRIC_FAMILY,
+                        AtomicMergeInvariantRule.METRIC,
+                    }
+                ):
+                    enforced_axes.add(IdentityAxis.FACET)
+                if AtomicMergeInvariantRule.COMPLETE_REFERENT in invariant.enforced_rules:
+                    enforced_axes.add(IdentityAxis.REFERENT)
+                if AtomicMergeInvariantRule.ASSERTION_STATE in invariant.enforced_rules:
+                    enforced_axes.add(IdentityAxis.OCCURRENCE)
+                deterministic_verdicts = deterministic_axis_verdicts(
+                    incoming_sidecar,
+                    candidate_sidecar,
+                )
+                assessment = AtomicCandidateAssessment.model_validate(
+                    {
+                        "candidate_event_id": candidate.event.event_id,
+                        "relation": AtomicSemanticRelation.RELATED_NOT_SAME,
+                        "axis_assessments": [
+                            {
+                            "axis": axis,
+                            "verdict": (
+                                IdentityAxisVerdict.CONFLICT
+                                if axis in enforced_axes
+                                else deterministic_verdicts.get(
+                                    axis, IdentityAxisVerdict.AMBIGUOUS
+                                )
+                            ),
+                            }
+                            for axis in sorted(applicable_axes, key=str)
+                        ],
+                        "claim_conflict": False,
+                        "identity_differences": [
+                            f"DETERMINISTIC_NOT_SAME:{rule.value}"
+                            for rule in invariant.enforced_rules
+                        ],
+                    }
+                )
+                deterministic_assessments.append(assessment)
+                self.registry.append_decision_audit(
+                    DecisionAuditRecord(
+                        audit_id=(
+                            f"atomic-n9-deterministic:{models.run_id}:"
+                            f"{mention.mention_id}:{candidate.event.event_id}"
+                        ),
+                        run_id=models.run_id,
+                        decision_type="ATOMIC_N9_DETERMINISTIC_NOT_SAME",
+                        subject_id=mention.mention_id,
+                        payload={
+                            "candidate_event_id": candidate.event.event_id,
+                            "rules": [rule.value for rule in invariant.enforced_rules],
+                            "axes": [axis.value for axis in sorted(enforced_axes, key=str)],
+                            "assessment": "DETERMINISTIC_NOT_SAME",
+                            "sent_to_model": False,
+                        },
+                    )
+                )
+            eligible[mention.mention_id] = model_candidates
+            deterministic_by_mention[mention.mention_id] = deterministic_assessments
+            if deterministic_assessments and not model_candidates:
+                decisions[mention.mention_id] = AtomicAssignmentDecision(
+                    mention_id=mention.mention_id,
+                    action=AtomicAction.CREATE_NEW,
+                    merge_target_event_id=None,
+                    candidate_assessments=deterministic_assessments,
+                    related_candidate_event_ids=[
+                        item.candidate_event_id for item in deterministic_assessments
+                    ],
+                    possible_duplicate_atomic_ids=[],
+                )
         eligible_mentions = [mention for mention in mentions if eligible[mention.mention_id]]
         batches = [
             eligible_mentions[offset : offset + ATOMIC_DECISION_MENTION_BATCH]
@@ -1793,14 +2030,21 @@ class CrossDocumentEngine:
             mention_full_by_short = {
                 short_id: full_id for full_id, short_id in mention_short_by_full.items()
             }
+            atomic_short_by_full: dict[str, str] = {}
+            for mention in batch_mentions:
+                for candidate in batch_candidates[mention.mention_id]:
+                    atomic_short_by_full.setdefault(
+                        candidate.event.event_id,
+                        f"a{len(atomic_short_by_full) + 1}",
+                    )
             candidate_short_by_full: dict[str, dict[str, str]] = {}
             candidate_full_by_short: dict[str, dict[str, str]] = {}
             for mention in batch_mentions:
                 full_id = mention.mention_id
                 mention_short_id = mention_short_by_full[full_id]
                 mapping = {
-                    candidate.event.event_id: f"{mention_short_id}c{index}"
-                    for index, candidate in enumerate(batch_candidates[full_id], start=1)
+                    candidate.event.event_id: atomic_short_by_full[candidate.event.event_id]
+                    for candidate in batch_candidates[full_id]
                 }
                 candidate_short_by_full[full_id] = mapping
                 candidate_full_by_short[mention_short_id] = {
@@ -1810,10 +2054,13 @@ class CrossDocumentEngine:
                 mention_short_by_full[mention_id]: set(candidate_short_by_full[mention_id].values())
                 for mention_id in batch_candidates
             }
-            model_atoms: dict[str, object] = {}
+            model_atoms: dict[str, dict[str, object]] = {}
             for mention in batch_mentions:
                 for candidate in batch_candidates[mention.mention_id]:
                     event = candidate.event
+                    short_event_id = atomic_short_by_full[event.event_id]
+                    if short_event_id in model_atoms:
+                        continue
                     representatives = [
                         item
                         for mention_id in event.representative_mention_ids
@@ -1821,32 +2068,35 @@ class CrossDocumentEngine:
                     ]
                     raw_claims = event.consensus_claims.get("source_claims", [])
                     claims = raw_claims if isinstance(raw_claims, list) else []
-                    representative_claims = [
+                    all_representative_claims = [
                         str(item.get("source_claim") or item.get("canonical_proposition"))
                         for item in claims
                         if isinstance(item, dict)
                         and (item.get("source_claim") or item.get("canonical_proposition"))
                     ]
-                    short_event_id = candidate_short_by_full[mention.mention_id][event.event_id]
                     candidate_sidecar = candidate.identity_sidecar
                     assert candidate_sidecar is not None
-                    model_atoms[short_event_id] = {
-                        "event_id": short_event_id,
-                        "canonical_proposition": event.canonical_proposition,
-                        "event_family": event.event_family.value,
-                        "identity_profile": event.identity_profile.model_dump(mode="json"),
-                        "identity_adapter": candidate_sidecar.adapter_kind.value,
-                        "identity_axes": [
-                            axis.value for axis in candidate_sidecar.applicable_axes
-                        ],
-                        "time": event.time.model_dump(mode="json"),
-                        "representative_source_claims": representative_claims[:3],
-                        **canonical_identity_view(self.registry, representatives).model_dump(
-                            mode="json"
+                    atom: dict[str, object] = {
+                        "prop": event.canonical_proposition,
+                        "family": event.event_family.value,
+                        "identity": _compact_identity_card(
+                            candidate_sidecar,
+                            canonical_identity_view(self.registry, representatives),
+                            event_time=event.time,
                         ),
-                        "is_provisional": event.event_id.startswith("provisional:"),
                     }
-            legacy_tasks: list[dict[str, object]] = []
+                    representative_claims = _select_representative_claims(
+                        event.canonical_proposition,
+                        all_representative_claims,
+                    )
+                    if representative_claims:
+                        atom["claims"] = representative_claims
+                    if event.event_id.startswith("provisional:"):
+                        atom["provisional"] = True
+                    model_atoms[short_event_id] = atom
+            model_mentions: dict[str, dict[str, object]] = {}
+            wire_tasks: list[dict[str, object]] = []
+            edge_by_pair: dict[tuple[str, str], dict[str, object]] = {}
             for mention in batch_mentions:
                 mention_short_id = mention_short_by_full[mention.mention_id]
                 compiled_identity = compiled[mention.mention_id]
@@ -1856,39 +2106,46 @@ class CrossDocumentEngine:
                 assert incoming_sidecar is not None
                 source = self.registry.get_source(mention.message_id)
                 incoming_view = canonical_identity_view(self.registry, [mention])
-                incoming_payload = {
-                    "mention_id": mention_short_id,
-                    "canonical_proposition": mention.canonical_proposition,
-                    "event_family": mention.event_family.value,
-                    "assertion_state": mention.assertion_state.value,
-                    "identity_profile": profile.model_dump(mode="json"),
-                    "identity_adapter": incoming_sidecar.adapter_kind.value,
-                    "identity_axes": [
-                        axis.value for axis in incoming_sidecar.applicable_axes
-                    ],
-                    "time": mention.time.model_dump(mode="json"),
-                    "claim_values": [item.model_dump(mode="json") for item in mention.quantities],
-                    "source_claim": mention.source_claim,
-                    "evidence_excerpts": (
-                        [_mention_local_context(source, mention)]
-                        if source is not None
-                        else [mention.canonical_proposition]
+                incoming_payload: dict[str, object] = {
+                    "prop": mention.canonical_proposition,
+                    "family": mention.event_family.value,
+                    "identity": _compact_identity_card(
+                        incoming_sidecar,
+                        incoming_view,
+                        event_time=mention.time,
                     ),
-                    **incoming_view.model_dump(mode="json"),
                 }
-                legacy_candidates: list[dict[str, object]] = []
+                quantities = _compact_quantities(mention)
+                if quantities:
+                    incoming_payload["quantities"] = quantities
+                evidence = (
+                    _minimal_evidence_context(source, mention)
+                    if source is not None
+                    else (mention.source_claim or mention.canonical_proposition)[:600]
+                )
+                if evidence and _normalized_claim(evidence) != _normalized_claim(
+                    mention.canonical_proposition
+                ):
+                    incoming_payload["evidence"] = evidence
+                if (
+                    mention.source_claim
+                    and _normalized_claim(mention.source_claim)
+                    not in {
+                        _normalized_claim(evidence),
+                        _normalized_claim(mention.canonical_proposition),
+                    }
+                ):
+                    incoming_payload["claim"] = mention.source_claim[:600]
+                model_mentions[mention_short_id] = incoming_payload
+                task_edges: list[dict[str, object]] = []
                 for candidate in batch_candidates[mention.mention_id]:
                     short_event_id = candidate_short_by_full[mention.mention_id][
                         candidate.event.event_id
                     ]
-                    atom = model_atoms[short_event_id]
-                    assert isinstance(atom, dict)
-                    legacy_candidates.append(
-                        {
-                            **atom,
-                        }
-                    )
-                legacy_tasks.append({"incoming": incoming_payload, "candidates": legacy_candidates})
+                    edge: dict[str, object] = {"atomic": short_event_id}
+                    edge_by_pair[(mention_short_id, short_event_id)] = edge
+                    task_edges.append(edge)
+                wire_tasks.append({"mention": mention_short_id, "candidates": task_edges})
             expected_axes: dict[str, dict[str, set[IdentityAxis]]] = {}
             deterministic_axis_map: dict[
                 str, dict[str, dict[IdentityAxis, IdentityAxisVerdict]]
@@ -1943,13 +2200,20 @@ class CrossDocumentEngine:
                     enforced_axes_map[mention_short_id][candidate_short_id] = (
                         enforced_axes.intersection(applicable_axes)
                     )
-                    atom = model_atoms[candidate_short_id]
-                    assert isinstance(atom, dict)
+                    edge = edge_by_pair[(mention_short_id, candidate_short_id)]
+                    axis_alias = {
+                        IdentityAxis.REFERENT: "R",
+                        IdentityAxis.OCCURRENCE: "O",
+                        IdentityAxis.FACET: "F",
+                    }
+                    edge["axes"] = [
+                        axis_alias[axis] for axis in sorted(applicable_axes, key=str)
+                    ]
                     if incoming_sidecar.signature_hash == candidate_sidecar.signature_hash:
                         exact_signature_matches.add(
                             (mention_short_id, candidate_short_id)
                         )
-                        atom["exact_identity_signature_match"] = True
+                        edge["exact"] = True
                     conflict_axes = sorted(
                         axis.value
                         for axis, verdict in deterministic_axis_map[mention_short_id][
@@ -1958,59 +2222,24 @@ class CrossDocumentEngine:
                         if verdict is IdentityAxisVerdict.CONFLICT
                     )
                     if conflict_axes:
-                        atom["canonical_conflict_axes"] = conflict_axes
+                        edge["warnings"] = [
+                            axis_alias[IdentityAxis(value)] for value in conflict_axes
+                        ]
                     if enforced_axes_map[mention_short_id][candidate_short_id]:
-                        atom["enforced_conflict_axes"] = sorted(
-                            axis.value
+                        edge["enforced"] = sorted(
+                            axis_alias[axis]
                             for axis in enforced_axes_map[mention_short_id][
                                 candidate_short_id
                             ]
                         )
-            for task in legacy_tasks:
-                task_candidates = task.get("candidates")
-                if not isinstance(task_candidates, list):
-                    continue
-                for candidate_payload in task_candidates:
-                    if not isinstance(candidate_payload, dict):
-                        continue
-                    candidate_id = candidate_payload.get("event_id")
-                    atom = model_atoms.get(candidate_id) if isinstance(candidate_id, str) else None
-                    if not isinstance(atom, dict):
-                        continue
-                    for signal_name in (
-                        "exact_identity_signature_match",
-                        "canonical_conflict_axes",
-                        "enforced_conflict_axes",
-                    ):
-                        if signal_name in atom:
-                            candidate_payload[signal_name] = atom[signal_name]
-            legacy_payload: dict[str, object] = {
-                "batch_index": batch_index,
-                "batch_count": len(batches),
-                "tasks": legacy_tasks,
-            }
             wire_payload: dict[str, object] = {
-                "tasks": [
-                    {
-                        "mention": legacy_task["incoming"],
-                        "candidates": legacy_task["candidates"],
-                    }
-                    for legacy_task in legacy_tasks
-                ]
+                "mentions": model_mentions,
+                "atomics": model_atoms,
+                "tasks": wire_tasks,
             }
-            if self.n9_wire_protocol == "shadow":
-                models.record_wire_shadow(
-                    stage="atomic_coreference",
-                    operation="normal_assignment",
-                    trigger="candidate_recall",
-                    attempt="initial",
-                    batch_index=batch_index,
-                    baseline_payload=legacy_payload,
-                    optimized_payload=wire_payload,
-                )
             request = StructuredModelRequest(
                 system_prompt=_prompt("atomic_coreference.md"),
-                user_prompt=compact_json(legacy_payload),
+                user_prompt=compact_json(wire_payload),
                 json_schema=AtomicDecisionBatch.model_json_schema(),
             )
 
@@ -2806,7 +3035,32 @@ class CrossDocumentEngine:
                         ]
                     }
                 )
-            return batch_index, restore_persistent_ids(output)
+            restored_output = restore_persistent_ids(output)
+            merged_decisions: list[AtomicAssignmentDecision] = []
+            for decision in restored_output.decisions:
+                deterministic = deterministic_by_mention.get(decision.mention_id, [])
+                if not deterministic:
+                    merged_decisions.append(decision)
+                    continue
+                assessments = [*decision.candidate_assessments, *deterministic]
+                candidate_order = [
+                    item.event.event_id for item in candidates[decision.mention_id]
+                ]
+                assessments.sort(key=lambda item: candidate_order.index(item.candidate_event_id))
+                related = [
+                    item.candidate_event_id
+                    for item in assessments
+                    if item.relation is AtomicSemanticRelation.RELATED_NOT_SAME
+                ]
+                merged_decisions.append(
+                    decision.model_copy(
+                        update={
+                            "candidate_assessments": assessments,
+                            "related_candidate_event_ids": related,
+                        }
+                    )
+                )
+            return batch_index, restored_output.model_copy(update={"decisions": merged_decisions})
 
         if not batches:
             return decisions

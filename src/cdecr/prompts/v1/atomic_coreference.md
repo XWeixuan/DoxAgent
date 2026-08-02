@@ -17,7 +17,12 @@ State, and metric/facet.
 
 ## Your Task
 
-For each incoming Event Mention, jointly compare it with all provided candidate Atomic Events. You must choose exactly one of the following business actions:
+The request uses three dictionaries: `mentions` maps Mention IDs to compact Mention
+cards, `atomics` maps Atomic IDs to compact Atomic cards, and each `tasks` edge
+references one Mention plus its candidate Atomic IDs. Expand those references
+logically before comparing them. For each task, jointly compare the incoming Event
+Mention with all provided candidate Atomic Events. You must choose exactly one of
+the following business actions:
 
 1. **MERGE**
 
@@ -72,7 +77,8 @@ polarity, session/occurrence, Assertion State, metric/facet, analyst institution
 or source artifact.
 
 For every candidate, return one `axis_assessments` verdict for every identity
-axis supplied on both the incoming Mention and that candidate:
+axis listed on the task edge. Edge aliases map `R` to `REFERENT`, `O` to
+`OCCURRENCE`, and `F` to `FACET`:
 
 - `MATCH`: the candidate supports the same referent, occurrence, or facet;
 - `CONFLICT`: the evidence identifies a different value on that axis;
@@ -81,11 +87,10 @@ axis supplied on both the incoming Mention and that candidate:
 
 If either side does not supply an axis, omit that axis; missing evidence is not
 CONFLICT or AMBIGUOUS. Do not add or omit axes applicable to both sides.
-If `exact_identity_signature_match=true`, every returned axis must be MATCH.
-`canonical_conflict_axes` are deterministic warnings; use the evidence to
-confirm or override them.
-Every axis in `enforced_conflict_axes` must be CONFLICT, and any candidate with
-a CONFLICT axis must not be SAME_EVENT.
+If an edge has `exact=true`, every returned axis must be MATCH. Edge `warnings`
+are deterministic conflict warnings using the same R/O/F aliases; use the
+evidence to confirm or override them. Enforced conflicts are removed before the
+request and therefore never appear as candidates.
 
 You must not identify candidates as SAME_EVENT solely because they:
 
@@ -147,8 +152,10 @@ Choose the merge target according to the following priority order:
 
 ## Output Rules
 
-- All `mention_id` values are request-local short IDs such as `m1`.
-- All candidate `event_id` values are request-local short IDs such as `a1`.
+- `tasks[].mention` is a request-local Mention ID such as `m1`; copy it to
+  output `mention_id`.
+- `tasks[].candidates[].atomic` is a request-local Atomic ID such as `a1`; copy
+  it to output candidate/target ID fields.
 - Copy only these short IDs into the output. Never construct or transform an ID.
 - When selecting MERGE, `merge_target_event_id` must reference a candidate assessed as SAME_EVENT.
 - When selecting CREATE_NEW, `merge_target_event_id` must be `null`.

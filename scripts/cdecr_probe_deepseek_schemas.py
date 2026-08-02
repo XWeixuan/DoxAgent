@@ -1,4 +1,4 @@
-"""Run one real DeepSeek strict-schema probe for every M2/M3 CDECR node shape."""
+"""Run one real DeepSeek strict-schema probe for every M2/M3/M4 CDECR node shape."""
 
 from __future__ import annotations
 
@@ -21,7 +21,11 @@ from cdecr.cross_document_contracts import (
 from cdecr.field_coreference_contracts import FieldCoreferenceModelOutput
 from cdecr.models import DeepSeekStructuredModelClient, ModelAdapterError, ModelTier
 from cdecr.ports import StructuredModelRequest
-from cdecr.single_document_contracts import DreamerModelOutput, GrounderModelOutput
+from cdecr.single_document_contracts import (
+    DreamerModelOutput,
+    GrounderModelOutput,
+    JudgeCommandOutput,
+)
 
 PROBES: tuple[tuple[str, ModelTier, type[BaseModel]], ...] = (
     ("dreamer_m2", ModelTier.M2, DreamerModelOutput),
@@ -35,6 +39,7 @@ PROBES: tuple[tuple[str, ModelTier, type[BaseModel]], ...] = (
     ("package_pair_assignment_m3", ModelTier.M3, PackagePairDecisionBatch),
     ("package_merge_wire", ModelTier.M3, PackageMergeWireDecisionBatch),
     ("package_merge_legacy", ModelTier.M3, PackageMergeDecisionBatch),
+    ("judge", ModelTier.M4, JudgeCommandOutput),
 )
 
 
@@ -86,6 +91,11 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--stage", action="append", default=[])
+    parser.add_argument(
+        "--compare-efforts",
+        action="store_true",
+        help="Probe the same AtomicDecisionBatch request at low/high/max effort.",
+    )
     args = parser.parse_args()
     settings = CDECRSettings()
     results: list[dict[str, object]] = []
@@ -108,8 +118,23 @@ def main() -> int:
             strict=settings.model_m3_strict,
             timeout_seconds=settings.model_timeout_seconds,
         ),
+        ModelTier.M4: DeepSeekStructuredModelClient(
+            tier=ModelTier.M4,
+            api_key=settings.require_deepseek(),
+            base_url=settings.deepseek_base_url,
+            model=settings.model_m4,
+            reasoning_effort=settings.model_m4_reasoning_effort,
+            strict=settings.model_m4_strict,
+            timeout_seconds=settings.model_timeout_seconds,
+        ),
     }
     selected = [probe for probe in PROBES if not args.stage or probe[0] in args.stage]
+    if args.compare_efforts:
+        selected = [
+            ("atomic_assignment_effort_low", ModelTier.M2, AtomicDecisionBatch),
+            ("atomic_assignment_effort_high", ModelTier.M3, AtomicDecisionBatch),
+            ("atomic_assignment_effort_max", ModelTier.M4, AtomicDecisionBatch),
+        ]
     for stage, tier, output_type in selected:
         schema = output_type.model_json_schema()
         sample = _sample(schema, schema)
@@ -179,6 +204,12 @@ def main() -> int:
                 "ok": True,
                 "input_tokens": result.input_tokens,
                 "output_tokens": result.output_tokens,
+                "reasoning_tokens": result.reasoning_tokens,
+                "visible_output_tokens": (
+                    result.output_tokens - result.reasoning_tokens
+                    if result.output_tokens is not None and result.reasoning_tokens is not None
+                    else None
+                ),
                 "latency_ms": result.latency_ms,
             }
         except (ModelAdapterError, ValidationError, ValueError) as exc:

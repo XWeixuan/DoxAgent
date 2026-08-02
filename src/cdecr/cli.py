@@ -216,21 +216,31 @@ def _scheduler(settings: CDECRSettings) -> CDECRScheduler:
 def _structured_client(
     settings: CDECRSettings, tier: ModelTier
 ) -> DashScopeStructuredModelClient | DeepSeekStructuredModelClient:
-    provider = (
-        settings.model_m2_provider if tier is ModelTier.M2 else settings.model_m3_provider
-    )
-    if tier in {ModelTier.M2, ModelTier.M3} and provider == "deepseek":
+    provider = {
+        ModelTier.M2: settings.model_m2_provider,
+        ModelTier.M3: settings.model_m3_provider,
+        ModelTier.M4: settings.model_m4_provider,
+    }[tier]
+    if provider == "deepseek":
         return DeepSeekStructuredModelClient(
             tier=tier,
             api_key=settings.require_deepseek(),
             base_url=settings.deepseek_base_url,
-            model=settings.model_m2 if tier is ModelTier.M2 else settings.model_m3,
-            reasoning_effort=(
-                settings.model_m2_reasoning_effort
-                if tier is ModelTier.M2
-                else settings.model_m3_reasoning_effort
-            ),
-            strict=settings.model_m2_strict if tier is ModelTier.M2 else settings.model_m3_strict,
+            model={
+                ModelTier.M2: settings.model_m2,
+                ModelTier.M3: settings.model_m3,
+                ModelTier.M4: settings.model_m4,
+            }[tier],
+            reasoning_effort={
+                ModelTier.M2: settings.model_m2_reasoning_effort,
+                ModelTier.M3: settings.model_m3_reasoning_effort,
+                ModelTier.M4: settings.model_m4_reasoning_effort,
+            }[tier],
+            strict={
+                ModelTier.M2: settings.model_m2_strict,
+                ModelTier.M3: settings.model_m3_strict,
+                ModelTier.M4: settings.model_m4_strict,
+            }[tier],
             timeout_seconds=settings.model_timeout_seconds,
         )
     api_key = settings.require_dashscope()
@@ -267,14 +277,12 @@ def _models_probe(settings: CDECRSettings, args: argparse.Namespace) -> int:
         call_id = str(uuid.uuid4())
         result: dict[str, object]
         try:
-            provider = (
-                settings.model_m2_provider
-                if tier is ModelTier.M2
-                else settings.model_m3_provider
-                if tier is ModelTier.M3
-                else "dashscope"
-            )
-            if tier in {ModelTier.M2, ModelTier.M3} and provider == "deepseek":
+            provider = {
+                ModelTier.M2: settings.model_m2_provider,
+                ModelTier.M3: settings.model_m3_provider,
+                ModelTier.M4: settings.model_m4_provider,
+            }[tier]
+            if provider == "deepseek":
                 structured = _structured_client(settings, tier).complete(
                     StructuredModelRequest(
                         system_prompt="You are a deterministic API health probe.",

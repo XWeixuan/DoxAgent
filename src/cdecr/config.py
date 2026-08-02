@@ -41,33 +41,40 @@ class CDECRSettings(BaseSettings):
         alias="CDECR_DEEPSEEK_BASE_URL",
     )
     model_m2_provider: Literal["dashscope", "deepseek"] = Field(
-        default="dashscope", alias="CDECR_M2_PROVIDER"
+        default="deepseek", alias="CDECR_M2_PROVIDER"
     )
     model_m3_provider: Literal["dashscope", "deepseek"] = Field(
-        default="dashscope", alias="CDECR_M3_PROVIDER"
+        default="deepseek", alias="CDECR_M3_PROVIDER"
     )
-    model_m2_reasoning_effort: Literal["high", "max"] = Field(
-        default="high", alias="CDECR_M2_REASONING_EFFORT"
+    model_m4_provider: Literal["dashscope", "deepseek"] = Field(
+        default="deepseek", alias="CDECR_M4_PROVIDER"
     )
-    model_m3_reasoning_effort: Literal["high", "max"] = Field(
-        default="max", alias="CDECR_M3_REASONING_EFFORT"
+    model_m2_reasoning_effort: Literal["low", "high", "max"] = Field(
+        default="low", alias="CDECR_M2_REASONING_EFFORT"
+    )
+    model_m3_reasoning_effort: Literal["low", "high", "max"] = Field(
+        default="high", alias="CDECR_M3_REASONING_EFFORT"
+    )
+    model_m4_reasoning_effort: Literal["low", "high", "max"] = Field(
+        default="max", alias="CDECR_M4_REASONING_EFFORT"
     )
     model_m2_strict: bool = Field(default=True, alias="CDECR_M2_STRICT")
     model_m3_strict: bool = Field(default=True, alias="CDECR_M3_STRICT")
+    model_m4_strict: bool = Field(default=True, alias="CDECR_M4_STRICT")
     model_m1: str = Field(default="qwen3.7-text-embedding", alias="CDECR_MODEL_M1")
     model_m2: str = Field(default="deepseek-v4-flash", alias="CDECR_MODEL_M2")
-    model_m3: str = Field(default="qwen3.7-plus", alias="CDECR_MODEL_M3")
-    model_m4: str = Field(default="qwen3.7-max", alias="CDECR_MODEL_M4")
+    model_m3: str = Field(default="deepseek-v4-flash", alias="CDECR_MODEL_M3")
+    model_m4: str = Field(default="deepseek-v4-flash", alias="CDECR_MODEL_M4")
     atomic_hard_cannot_link_mode: Literal["enforce", "shadow", "off"] = Field(
-        default="shadow",
+        default="enforce",
         alias="CDECR_ATOMIC_HARD_CANNOT_LINK_MODE",
     )
     package_conflict_mode: Literal["off", "shadow", "enforce"] = Field(
         default="off",
         alias="CDECR_PACKAGE_CONFLICT_MODE",
     )
-    n9_wire_protocol: Literal["legacy", "shadow", "canary", "on"] = Field(
-        default="shadow",
+    n9_wire_protocol: Literal["on"] = Field(
+        default="on",
         alias="CDECR_N9_WIRE_PROTOCOL",
     )
     n12_wire_protocol: Literal["legacy", "shadow", "canary", "on"] = Field(

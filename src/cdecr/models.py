@@ -99,6 +99,15 @@ def _usage_value(usage: object | None, *names: str) -> int | None:
     return None
 
 
+def _reasoning_usage_value(usage: object | None) -> int | None:
+    if usage is None:
+        return None
+    details = getattr(usage, "completion_tokens_details", None)
+    if details is None and isinstance(usage, Mapping):
+        details = usage.get("completion_tokens_details")
+    return _usage_value(details, "reasoning_tokens", "thinking_tokens")
+
+
 def _should_rotate_key(exc: Exception) -> bool:
     """Rotate only for key/account/provider failures, never for request timeouts."""
 
@@ -386,13 +395,13 @@ class DeepSeekStructuredModelClient:
         api_key: str,
         base_url: str,
         model: str = "deepseek-v4-flash",
-        reasoning_effort: Literal["high", "max"],
+        reasoning_effort: Literal["low", "high", "max"],
         strict: bool = True,
         timeout_seconds: float = 600.0,
         client: OpenAI | None = None,
     ) -> None:
-        if tier not in {ModelTier.M2, ModelTier.M3}:
-            raise ValueError("DeepSeek official provider is supported only for M2/M3")
+        if tier not in {ModelTier.M2, ModelTier.M3, ModelTier.M4}:
+            raise ValueError("DeepSeek official provider is supported only for M2/M3/M4")
         self.tier = tier
         self.model = model
         self.reasoning_effort = reasoning_effort
@@ -479,6 +488,7 @@ class DeepSeekStructuredModelClient:
         usage = getattr(response, "usage", None)
         input_tokens = _usage_value(usage, "prompt_tokens", "input_tokens")
         output_tokens = _usage_value(usage, "completion_tokens", "output_tokens")
+        reasoning_tokens = _reasoning_usage_value(usage)
         if not isinstance(text, str) or not text.strip():
             raise ModelAdapterError(
                 tier=self.tier,
@@ -511,6 +521,7 @@ class DeepSeekStructuredModelClient:
             payload=payload,
             input_tokens=input_tokens,
             output_tokens=output_tokens,
+            reasoning_tokens=reasoning_tokens,
             latency_ms=round((perf_counter() - started) * 1000),
             request_id=getattr(response, "_request_id", None),
         )

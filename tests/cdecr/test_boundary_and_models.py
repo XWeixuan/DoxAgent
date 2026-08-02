@@ -432,16 +432,16 @@ def test_settings_parse_ordered_deduplicated_fallback_keys() -> None:
     assert settings.dashscope_fallback_api_keys() == ("fallback-one", "fallback-two")
 
 
-def test_settings_parse_independent_wire_protocol_switches() -> None:
+def test_settings_keeps_n9_optimized_protocol_mandatory() -> None:
     settings = CDECRSettings(
-        CDECR_N9_WIRE_PROTOCOL="legacy",
+        CDECR_N9_WIRE_PROTOCOL="on",
         CDECR_N12_WIRE_PROTOCOL="shadow",
         CDECR_N13_WIRE_PROTOCOL="on",
         CDECR_GROUNDER_ISSUE_PROTOCOL="canary",
         CDECR_TARGETED_REPAIR="legacy",
         _env_file=None,
     )  # type: ignore[call-arg]
-    assert settings.n9_wire_protocol == "legacy"
+    assert settings.n9_wire_protocol == "on"
     assert settings.n12_wire_protocol == "shadow"
     assert settings.n13_wire_protocol == "on"
     assert settings.grounder_issue_protocol == "canary"
@@ -453,19 +453,25 @@ def test_settings_parse_deepseek_tier_configuration() -> None:
         DEEPSEEK_API_KEY="secret",
         CDECR_M2_PROVIDER="deepseek",
         CDECR_M3_PROVIDER="deepseek",
-        CDECR_M2_REASONING_EFFORT="high",
-        CDECR_M3_REASONING_EFFORT="max",
+        CDECR_M4_PROVIDER="deepseek",
+        CDECR_M2_REASONING_EFFORT="low",
+        CDECR_M3_REASONING_EFFORT="high",
+        CDECR_M4_REASONING_EFFORT="max",
         CDECR_M2_STRICT="true",
         CDECR_M3_STRICT="true",
+        CDECR_M4_STRICT="true",
         _env_file=None,
     )  # type: ignore[call-arg]
     assert settings.require_deepseek() == "secret"
     assert settings.model_m2_provider == "deepseek"
     assert settings.model_m3_provider == "deepseek"
-    assert settings.model_m2_reasoning_effort == "high"
-    assert settings.model_m3_reasoning_effort == "max"
+    assert settings.model_m4_provider == "deepseek"
+    assert settings.model_m2_reasoning_effort == "low"
+    assert settings.model_m3_reasoning_effort == "high"
+    assert settings.model_m4_reasoning_effort == "max"
     assert settings.model_m2_strict is True
     assert settings.model_m3_strict is True
+    assert settings.model_m4_strict is True
 
 
 def test_embedding_retries_provider_failure_with_fallback(
