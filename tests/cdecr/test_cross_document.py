@@ -57,6 +57,55 @@ class FakeEmbedding:
         )
 
 
+def test_bulk_epoch_orders_inputs_and_defers_n13_until_final_document() -> None:
+    class RegistryStub:
+        def __init__(self) -> None:
+            self.sources = {
+                "late": SourceMessage(
+                    message_id="late",
+                    source_type=SourceType.NEWS,
+                    title="late",
+                    text="late",
+                    published_at=datetime(2026, 7, 2, tzinfo=UTC),
+                    source_name="example",
+                    url="https://example.com/late",
+                    ticker_hints=["MU"],
+                    language=Language.EN,
+                ),
+                "early": SourceMessage(
+                    message_id="early",
+                    source_type=SourceType.NEWS,
+                    title="early",
+                    text="early",
+                    published_at=datetime(2026, 7, 1, tzinfo=UTC),
+                    source_name="example",
+                    url="https://example.com/early",
+                    ticker_hints=["MU"],
+                    language=Language.EN,
+                ),
+            }
+
+        def get_source(self, message_id: str) -> SourceMessage | None:
+            return self.sources.get(message_id)
+
+    engine = object.__new__(CrossDocumentEngine)
+    engine.registry = RegistryStub()
+    calls: list[tuple[str, dict[str, object]]] = []
+
+    def fake_process(message_id: str, **kwargs: object) -> str:
+        calls.append((message_id, kwargs))
+        return message_id
+
+    engine.process = fake_process  # type: ignore[method-assign]
+    assert engine.process_batch(["late", "early"], execution_mode="BULK_EPOCH") == [
+        "early",
+        "late",
+    ]
+    assert calls[0][1]["defer_package_merge"] is True
+    assert calls[1][1]["defer_package_merge"] is False
+    assert calls[0][1]["bulk_epoch_id"] == calls[1][1]["bulk_epoch_id"]
+
+
 class FakeStructured:
     def __init__(
         self,
@@ -110,8 +159,22 @@ class FakeStructured:
 
     def _package_payload(self, body: dict[str, object]) -> dict[str, object]:
         events = body["events"]
-        seeds = body["seeds"]
-        candidates = body["candidates"]
+        if "tasks" in body:
+            tasks = body["tasks"]
+            assert isinstance(tasks, list)
+            seeds = {
+                task["event_id"]: task["seed"]
+                for task in tasks
+                if isinstance(task, dict)
+            }
+            candidates = {
+                task["event_id"]: task["candidates"]
+                for task in tasks
+                if isinstance(task, dict)
+            }
+        else:
+            seeds = body["seeds"]
+            candidates = body["candidates"]
         packages = body.get("packages", {})
         assert isinstance(events, dict)
         assert isinstance(seeds, dict)
@@ -133,18 +196,20 @@ class FakeStructured:
                     package_id = value["package_id"]
                     package_view = packages[package_id]
                     assert isinstance(package_view, dict)
-                    package = package_view["package"]
+                    package = package_view.get("package", package_view)
                 else:
                     package = value["package"]
                     assert isinstance(package, dict)
                     package_id = package["package_id"]
                 assert isinstance(package, dict)
                 assert isinstance(package_id, str)
-                if event["event_family"] == "MARKET_MOVEMENT":
+                if event.get("event_family", event.get("family")) == "MARKET_MOVEMENT":
                     relation = "EXTERNAL_RELATED"
                     membership = None
                     external = "MARKET_REACTION_TO"
-                elif package.get("anchor_period_id") == seed.get("anchor_period_id"):
+                elif package.get("anchor_period_id", package.get("period")) == seed.get(
+                    "anchor_period_id"
+                ):
                     relation = "MEMBER"
                     membership = "DISCLOSED_IN"
                     external = None
@@ -496,6 +561,7 @@ def engine(
     m2: FakeStructured | None = None,
     m3: FakeStructured | None = None,
     hard_cannot_link_mode: str = "shadow",
+    n12_wire_protocol: str = "shadow",
     n13_wire_protocol: str = "shadow",
 ) -> tuple[CrossDocumentEngine, FakeEmbedding, FakeStructured, FakeStructured]:
     embedding = FakeEmbedding()
@@ -508,6 +574,7 @@ def engine(
             m2_client=m2,
             m3_client=m3,
             hard_cannot_link_mode=hard_cannot_link_mode,
+            n12_wire_protocol=n12_wire_protocol,
             n13_wire_protocol=n13_wire_protocol,
         ),
         embedding,
@@ -834,7 +901,7 @@ def test_n9_persistent_uncertainty_escalates_to_m3_then_creates_new(
     )
 
 
-def test_multiple_same_candidates_choose_one_and_only_audit_duplicate(
+def test_multiple_same_candidates_absorb_only_singleton_duplicate(
     registry: SQLiteCDECRRegistry,
 ) -> None:
     first = metric_mention("MSG-1")
@@ -843,11 +910,12 @@ def test_multiple_same_candidates_choose_one_and_only_audit_duplicate(
     first_result = processor.process("MSG-1")
     second = metric_mention("MSG-2")
     add(registry, source("MSG-2"), second)
-    registry.save_atomic_event(
-        singleton_atomic_event(
+    duplicate_event = singleton_atomic_event(
             second,
             identity_profile=first_result.atomic_events[0].identity_profile,
-        )
+        ).model_copy(update={"event_id": "atomic:zzzz-singleton"})
+    registry.save_atomic_event(
+        duplicate_event
     )
     third = metric_mention("MSG-3")
     add(registry, source("MSG-3"), third)
@@ -855,8 +923,9 @@ def test_multiple_same_candidates_choose_one_and_only_audit_duplicate(
     result = processor.process("MSG-3")
 
     assert result.status is CrossDocumentStatus.SUCCEEDED
-    assert len(result.atomic_assignments[0].possible_duplicate_atomic_ids) == 1
-    assert len(registry.list_current_atomic_events()) == 2
+    assert result.atomic_assignments[0].possible_duplicate_atomic_ids == []
+    assert len(registry.list_current_atomic_events()) == 1
+    assert len(registry.list_current_atomic_events()[0].mention_ids) == 3
     assert any(
         "Atomic Event Assignment Adjudicator" in call.system_prompt for call in m3.calls
     )
@@ -930,7 +999,7 @@ def test_n12_payload_includes_raw_surface_and_request_local_source_ids(
     payload = json.loads(request.user_prompt)
     event_id, incoming = next(iter(payload["events"].items()))
     candidate = payload["candidates"][event_id][0]
-    assert candidate["package"]["package_id"].startswith(f"{event_id}c")
+    assert candidate["package"]["package_id"].startswith("p")
     member = candidate["representative_members"][0]
     assert "Micron" in {
         surface
@@ -949,11 +1018,38 @@ def test_n12_payload_includes_raw_surface_and_request_local_source_ids(
     assert "MSG-2" not in request.user_prompt
 
 
+def test_n12_on_uses_shared_package_dictionary_and_bounded_cards(
+    registry: SQLiteCDECRRegistry,
+) -> None:
+    processor, _, m2, _ = engine(registry, n12_wire_protocol="on")
+    add(registry, source("MSG-1"), metric_mention("MSG-1", period="FY2026-Q4"))
+    processor.process("MSG-1")
+    registry.save_source(source("MSG-2"), fingerprint="2" * 64)
+    registry.save_mention(metric_mention("MSG-2", metric="EPS_GAAP"))
+
+    result = processor.process("MSG-2")
+
+    assert result.status is CrossDocumentStatus.SUCCEEDED
+    request = next(
+        call for call in m2.calls if "Atomic-to-Package assignment" in call.system_prompt
+    )
+    payload = json.loads(request.user_prompt)
+    assert set(payload) == {"events", "packages", "tasks"}
+    assert len(payload["packages"]) == 1
+    task = payload["tasks"][0]
+    assert task["event_id"] in payload["events"]
+    assert task["candidates"][0]["package_id"] in payload["packages"]
+    card = payload["packages"][task["candidates"][0]["package_id"]]
+    assert card["member_count"] == 1
+    assert "member_event_ids" not in json.dumps(card)
+    assert "consensus_claims" not in request.user_prompt
+
+
 def test_n12_invalid_task_degrades_to_new_package_without_batch_repair(
     registry: SQLiteCDECRRegistry,
 ) -> None:
     m2 = PackageCoverageDrift()
-    processor, _, _, _ = engine(registry, m2=m2)
+    processor, _, _, _ = engine(registry, m2=m2, n12_wire_protocol="on")
     add(registry, source("MSG-1"), metric_mention("MSG-1", period="FY2026-Q4"))
     processor.process("MSG-1")
     add(registry, source("MSG-2"), metric_mention("MSG-2", period="FY2027-Q1"))
@@ -962,6 +1058,9 @@ def test_n12_invalid_task_degrades_to_new_package_without_batch_repair(
 
     assert result.status is CrossDocumentStatus.SUCCEEDED
     assert not any(summary.stage == "package_assignment_repair" for summary in result.model_calls)
+    assert any(
+        summary.stage == "package_assignment_item_repair" for summary in result.model_calls
+    )
     assert result.package_assignments[0].action.value == "CREATE_NEW_PACKAGE"
 
 
@@ -1065,8 +1164,15 @@ def test_n13_external_relation_is_advisory_and_boundary_repair_keeps_separate(
                 (reaction.run_id,),
             )
         ]
+        weak_same_not_applied = connection.execute(
+            "SELECT COUNT(*) FROM decision_audits "
+            "WHERE decision_type = 'SAME_PACKAGE_NOT_APPLIED_WEAK_BOUNDARY' "
+            "AND run_id = ?",
+            (reaction.run_id,),
+        ).fetchone()[0]
     assert any(item["operation"] == "normal_assignment" for item in contexts)
-    assert any(item["operation"] == "reaction_member_repair" for item in contexts)
+    assert not any(item["operation"] == "reaction_member_repair" for item in contexts)
+    assert weak_same_not_applied >= 1
     with sqlite3.connect(registry.path) as connection:
         shadow_count = connection.execute(
             """
@@ -1343,7 +1449,7 @@ def test_n9_missing_assessment_degrades_only_task_without_repair(
     assert audit["tasks"]["m1"]["missing"] == ["m1c1"]
 
 
-def test_n9_missing_identity_axis_degrades_only_task_without_repair(
+def test_n9_missing_identity_axis_is_filled_without_task_degradation(
     registry: SQLiteCDECRRegistry,
 ) -> None:
     m2 = AtomicCoverageDrift(mode="missing_axis")
@@ -1356,7 +1462,7 @@ def test_n9_missing_identity_axis_degrades_only_task_without_repair(
 
     assert result.status is CrossDocumentStatus.SUCCEEDED
     assert not any(summary.stage == "atomic_coreference_repair" for summary in result.model_calls)
-    assert result.atomic_assignments[0].action is AtomicAction.CREATE_NEW
+    assert result.atomic_assignments[0].action is AtomicAction.MERGE
     with sqlite3.connect(registry.path) as connection:
         payload = connection.execute(
             """
@@ -1368,4 +1474,8 @@ def test_n9_missing_identity_axis_degrades_only_task_without_repair(
         ).fetchone()
     assert payload is not None
     audit = json.loads(payload[0])
-    assert audit["tasks"]["m1"]["fallback"]["reason"] == "N9_INVALID_TASK_CREATE_NEW"
+    assert audit["tasks"]["m1"]["assessment_recovery"]["final_action"] == "MERGE"
+    assert any(
+        item["kind"] == "MISSING_AXIS_FILLED_FROM_DETERMINISTIC_VIEW"
+        for item in audit["normalizations"]
+    )

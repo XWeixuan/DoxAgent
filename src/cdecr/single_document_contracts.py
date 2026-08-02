@@ -152,7 +152,12 @@ class DreamCandidate(StrictModel):
 
 class DreamCandidateDraft(StrictModel):
     statement: NonEmptyString
-    evidence_locations: list[EvidenceLocator] = Field(min_length=1)
+    evidence_locations: list[EvidenceText] = Field(
+        min_length=1,
+        description=(
+            "Exact segment-local evidence text; the orchestrator computes character offsets."
+        ),
+    )
 
 
 class DreamerModelOutput(StrictModel):
@@ -277,7 +282,13 @@ class MentionDraft(StrictModel):
     open_attributes: list[OpenAttributeDraft] = Field(
         description=("Evidence-backed modifiers that do not independently constitute events.")
     )
-    local_package_hint: LocalPackageHint | None = None
+    local_package_hint: LocalPackageHint | None = Field(
+        default=None,
+        description=(
+            "Optional source-supported parent boundary that contains this Mention and may "
+            "contain other distinct events; null when no such parent is supported."
+        ),
+    )
 
     @model_validator(mode="after")
     def require_one_primary_quantity(self) -> MentionDraft:

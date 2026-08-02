@@ -39,8 +39,9 @@ from cdecr.kb_v2 import (
 )
 from cdecr.models import ModelAdapterError
 from cdecr.ports import CDECRRegistry, DecisionAuditRecord
+from cdecr.preprocessing import exact_document_fingerprint
 
-FIELD_RESOLVER_VERSION = "canonical-field-resolution-v6"
+FIELD_RESOLVER_VERSION = "canonical-field-resolution-v7-typed-domain-gates"
 
 
 @dataclass(frozen=True)
@@ -338,21 +339,50 @@ class CanonicalFieldResolutionEngine:
             hint = mention.local_package_hint
             if hint is None:
                 continue
+            parent_identity_key = self._package_parent_identity_key(
+                source,
+                mention,
+                hint.anchor,
+            )
+            if parent_identity_key is None:
+                self.registry.append_decision_audit(
+                    DecisionAuditRecord(
+                        audit_id=_audit_id(
+                            "package-anchor-ignored",
+                            mention.mention_id,
+                            "local_package_hint.anchor",
+                            {"reason": "NON_DISTINGUISHING_PARENT_HINT"},
+                            run_id=run_id,
+                        ),
+                        run_id=run_id,
+                        decision_type="PACKAGE_ANCHOR_HINT_IGNORED",
+                        subject_id=mention.mention_id,
+                        payload={"reason": "NON_DISTINGUISHING_PARENT_HINT"},
+                    )
+                )
+                continue
             matches = self.knowledge_base.lookup("artifacts", hint.anchor)
             unique = deterministic_match(hint.anchor, matches)
             kinds = {match.kind for match in matches if match.kind is not None}
             artifact_kind = unique.kind if unique is not None else next(iter(kinds), None)
             namespace = _artifact_namespace(artifact_kind) if len(kinds) <= 1 and matches else None
+            package_input = self._input(
+                source,
+                mention,
+                namespace=namespace or FieldNamespace.PACKAGE_ANCHOR,
+                raw_value=hint.anchor,
+                attempted_kb_type="ARTIFACT" if namespace else "PACKAGE_ANCHOR",
+            )
             occurrences.append(
                 FieldOccurrence(
                     mention_id=mention.mention_id,
                     field_path="local_package_hint.anchor",
-                    value=self._input(
-                        source,
-                        mention,
-                        namespace=namespace or FieldNamespace.PACKAGE_ANCHOR,
-                        raw_value=hint.anchor,
-                        attempted_kb_type="ARTIFACT" if namespace else "PACKAGE_ANCHOR",
+                    value=package_input.model_copy(
+                        update={
+                            "hints": package_input.hints.model_copy(
+                                update={"parent_identity_key": parent_identity_key}
+                            )
+                        }
                     ),
                     catalog="artifacts" if namespace else "",
                     kind=artifact_kind,
@@ -366,6 +396,61 @@ class CanonicalFieldResolutionEngine:
             group_count=groups,
             field_links_hash=field_links_hash(self.registry, mentions),
         )
+
+    def _package_parent_identity_key(
+        self,
+        source: SourceMessage,
+        mention: EventMention,
+        raw_anchor: str,
+    ) -> str | None:
+        """Return a conservative stable parent key, or reject a non-parent hint."""
+
+        normalized = normalize_field_text(raw_anchor)
+        if not normalized:
+            return None
+        compact = set(normalized.split())
+        generic = {
+            "report",
+            "latest report",
+            "latest earnings",
+            "earnings",
+            "quarterly report",
+            "company update",
+            "business update",
+        }
+        if normalized in generic:
+            return None
+        entity_surfaces = {
+            normalize_field_text(participant.surface, company_suffixes=True)
+            for participant in mention.participants
+        }
+        entity_surfaces.update(normalize_field_text(value) for value in source.ticker_hints)
+        if normalized in entity_surfaces or len(compact) == 1:
+            return None
+
+        issuer_id, _ = self._issuer_for_mention(source, mention)
+        source_scope = exact_document_fingerprint(source)[:20]
+        earnings_like = bool(
+            re.search(r"\bearnings\b", normalized)
+            or (
+                re.search(r"\b(?:q[1-4]|quarter|quarterly)\b", normalized)
+                and re.search(r"\b(?:results?|release|report|call)\b", normalized)
+            )
+        )
+        if earnings_like:
+            quarter = re.search(r"\bq([1-4])\b", normalized)
+            year = re.search(r"\b(?:fy)?(20\d{2})\b", normalized)
+            if quarter is not None:
+                period = f"q{quarter.group(1)}"
+                if year is not None:
+                    period += f"-fy{year.group(1)}"
+                return f"earnings:{issuer_id or 'unknown'}:{period}"
+            return f"earnings:{issuer_id or 'unknown'}:source:{source_scope}"
+
+        # Outside well-bounded earnings expressions, only normalize aliases
+        # inside the same immutable source. This avoids cross-document merges
+        # based on generic wording in the open world.
+        return f"source:{source_scope}:{normalized}"
 
     def _regular_occurrences(
         self, source: SourceMessage, mention: EventMention
@@ -635,7 +720,7 @@ class CanonicalFieldResolutionEngine:
                 primary,
                 self._redirect_metric_matches(matches),
                 run_id=run_id,
-            )
+            )[:8]
             unique, deterministic_reason = self._safe_unique(
                 source, primary, exact_matches
             )
@@ -726,6 +811,49 @@ class CanonicalFieldResolutionEngine:
                         method=result.resolution_method,
                     )
                 )
+            candidate_snapshot = {
+                "raw_hash": hashlib.sha256(
+                    primary.value.raw_value.encode("utf-8")
+                ).hexdigest(),
+                "requested_namespace": primary.value.namespace.value,
+                "candidate_external_ids": [
+                    match.external_id for match in matches
+                ],
+                "candidate_namespaces": [
+                    _namespace_for_match(
+                        match,
+                        requested=primary.value.namespace,
+                        participant_role=primary.value.hints.participant_role,
+                    ).value
+                    for match in matches
+                ],
+                "route": primary.route_reason
+                or ("EXACT" if exact_matches else "STRING_RECALL"),
+                "scores": [
+                    1.0 if match in exact_matches else None for match in matches
+                ],
+                "blocked_reason": (
+                    "COREFERENCE_NOT_ELIGIBLE"
+                    if not primary.allow_coreference
+                    else None
+                ),
+                "selected_id": result.external_id,
+            }
+            self.registry.append_decision_audit(
+                DecisionAuditRecord(
+                    audit_id=_audit_id(
+                        "candidate-snapshot",
+                        primary.mention_id,
+                        primary.field_path,
+                        candidate_snapshot,
+                        run_id=run_id,
+                    ),
+                    run_id=run_id,
+                    decision_type="FIELD_CANDIDATE_SNAPSHOT",
+                    subject_id=f"{primary.mention_id}:{primary.field_path}",
+                    payload=candidate_snapshot,
+                )
+            )
             self._audit_group(group, result, run_id=run_id)
         return resolved_count, unresolved_count, len(groups)
 
@@ -777,7 +905,7 @@ class CanonicalFieldResolutionEngine:
             re.search(r"\b(?:us-gaap|ifrs|dei):", raw_value, re.I)
             or raw_value.startswith(("US_GAAP_", "XBRL_"))
         )
-        if source.source_type.value == "FILING" or explicit_taxonomy or not core:
+        if source.source_type.value == "FILING" or explicit_taxonomy:
             return matches
         return core
 
@@ -1115,10 +1243,11 @@ class CanonicalFieldResolutionEngine:
         attempted_kb_type: str | None = None,
         issuer_id: str | None = None,
     ) -> FieldCoreferenceInput:
+        local_context = _local_context(source, mention)
         return FieldCoreferenceInput(
             namespace=namespace,
             raw_value=raw_value,
-            local_context=_local_context(source, mention),
+            local_context=local_context,
             hints=FieldCoreferenceHints(
                 source_ticker=source.ticker_hints[0] if source.ticker_hints else None,
                 issuer_id=issuer_id,
@@ -1126,6 +1255,10 @@ class CanonicalFieldResolutionEngine:
                 attribute_key=attribute_key,
                 published_date=source.published_at.date().isoformat(),
                 attempted_kb_type=attempted_kb_type,
+                source_fingerprint=exact_document_fingerprint(source),
+                evidence_group_hash=hashlib.sha256(
+                    normalize_field_text(local_context).encode("utf-8")
+                ).hexdigest(),
             ),
         )
 
@@ -1322,6 +1455,8 @@ def _alias_groups(
             normalize_field_text(raw, company_suffixes=company),
             normalize_field_text(raw.replace("_", " "), company_suffixes=company),
         }
+        if occurrence.value.hints.parent_identity_key:
+            aliases.add(f"parent:{occurrence.value.hints.parent_identity_key}")
         parenthesized = re.fullmatch(r"\s*(.*?)\s*\(([^()]+)\)\s*", raw)
         if parenthesized:
             aliases.update(

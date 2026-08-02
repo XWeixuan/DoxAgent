@@ -24,6 +24,8 @@ class AtomicMergeInvariantResult(StrEnum):
 
 class AtomicMergeInvariantRule(StrEnum):
     PRIMARY_METRIC_FAMILY = "PRIMARY_METRIC_FAMILY"
+    METRIC = "METRIC"
+    ASSERTION_STATE = "ASSERTION_STATE"
     MARKET_MEASURE = "MARKET_MEASURE"
     MARKET_SESSION = "MARKET_SESSION"
     COMPLETE_REFERENT = "COMPLETE_REFERENT"
@@ -50,8 +52,22 @@ def evaluate_atomic_merge_invariant(
     incoming_values = _by_key(incoming)
     candidate_values = _by_key(candidate)
 
-    if _different_known(incoming_values, candidate_values, "metric"):
+    family_key = (
+        "metric_family"
+        if incoming_values.get("metric_family") and candidate_values.get("metric_family")
+        else "metric"
+    )
+    if _different_known(incoming_values, candidate_values, family_key):
         triggered.append(AtomicMergeInvariantRule.PRIMARY_METRIC_FAMILY)
+
+    if (
+        _same_known(incoming_values, candidate_values, "metric_family")
+        and _different_known(incoming_values, candidate_values, "metric")
+    ):
+        triggered.append(AtomicMergeInvariantRule.METRIC)
+
+    if _assertion_group_conflict(incoming_values, candidate_values):
+        triggered.append(AtomicMergeInvariantRule.ASSERTION_STATE)
 
     if (
         incoming.adapter_kind is AtomicIdentityAdapterKind.MARKET_MOVEMENT
@@ -190,3 +206,21 @@ def _complete_referent_conflict(
         if _different_known(left, right, key):
             return True
     return False
+
+
+def _assertion_group_conflict(
+    left: dict[str, set[str]],
+    right: dict[str, set[str]],
+) -> bool:
+    realized = {"state:ACTUAL", "state:ONGOING"}
+    prospective = {
+        "state:PLANNED",
+        "state:EXPECTED",
+        "state:HYPOTHETICAL",
+    }
+    left_states = left.get("state", set())
+    right_states = right.get("state", set())
+    return bool(
+        (left_states.intersection(realized) and right_states.intersection(prospective))
+        or (left_states.intersection(prospective) and right_states.intersection(realized))
+    )

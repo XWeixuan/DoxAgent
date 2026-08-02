@@ -90,7 +90,8 @@ def test_financial_sidecar_uses_metric_family_not_raw_metric_id() -> None:
     value = compile_atomic_identity_sidecar(mention("1"), profile("US_GAAP_NET_INCOME"))
 
     assert value.adapter_kind is AtomicIdentityAdapterKind.FINANCIAL_GUIDANCE
-    assert "metric:profit" in value.facet
+    assert "metric_family:profit" in value.facet
+    assert "metric:US_GAAP_NET_INCOME" in value.facet
     assert value.applicable_axes == [
         IdentityAxis.REFERENT,
         IdentityAxis.OCCURRENCE,

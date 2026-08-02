@@ -44,9 +44,10 @@ from cdecr.field_coreference_contracts import (
 )
 from cdecr.ports import CDECRRegistry
 
-PACKAGE_PROFILE_COMPILER_VERSION = "package-profile-compiler-v2"
+PACKAGE_PROFILE_COMPILER_VERSION = "package-profile-compiler-v3-anchor-aggregate"
 PACKAGE_ASSIGNMENT_POLICY_VERSION = "package-assignment-policy-v4"
 PACKAGE_BOUNDARY_POLICY_VERSION = "package-boundary-policy-v2"
+N12_PACKAGE_CARD_VERSION = "n12-package-card-v2-task-aware"
 
 _ARTIFACT_NAMESPACES = {
     FieldNamespace.PACKAGE_ANCHOR,
@@ -65,6 +66,8 @@ def package_identity_text(package: EventPackage) -> str:
         "package_kind": package.package_kind.value,
         "package_family": package.package_family.value,
         "package_anchor_ids": sorted(package.package_anchor_ids),
+        "primary_anchor_id": package.primary_anchor_id,
+        "anchor_conflict": package.anchor_conflict,
         "anchor_artifact_id": package.anchor_artifact_id,
         "anchor_entities": sorted(package.anchor_entities),
         "anchor_period_id": package.anchor_period_id,
@@ -111,12 +114,37 @@ def representative_package_members(
     events: Sequence[AtomicEvent],
     *,
     limit: int = 5,
+    preferred_events: Sequence[AtomicEvent] = (),
 ) -> list[AtomicEvent]:
     """Choose stable representatives while preferring distinct identities."""
 
     selected: list[AtomicEvent] = []
     seen_identities: set[str] = set()
-    ordered = sorted(events, key=lambda item: item.event_id)
+
+    def affinity(event: AtomicEvent) -> int:
+        score = 0
+        event_entities = set(core_entity_ids_from_profile(event.identity_profile))
+        event_period = reference_period_from_profile(event.identity_profile)
+        event_identity = event.identity_profile.model_dump(mode="json")
+        for preferred in preferred_events:
+            preferred_score = 0
+            if event.event_family is preferred.event_family:
+                preferred_score += 4
+            if event.identity_profile.schema_type == preferred.identity_profile.schema_type:
+                preferred_score += 2
+            if event_identity == preferred.identity_profile.model_dump(mode="json"):
+                preferred_score += 8
+            if event_entities.intersection(
+                core_entity_ids_from_profile(preferred.identity_profile)
+            ):
+                preferred_score += 2
+            preferred_period = reference_period_from_profile(preferred.identity_profile)
+            if event_period and preferred_period and event_period == preferred_period:
+                preferred_score += 3
+            score = max(score, preferred_score)
+        return score
+
+    ordered = sorted(events, key=lambda item: (-affinity(item), item.event_id))
     for event in ordered:
         identity_key = json.dumps(
             event.identity_profile.model_dump(mode="json"),
@@ -137,6 +165,20 @@ def representative_package_members(
         if len(selected) == limit:
             break
     return selected
+
+
+def canonical_package_members(
+    registry: CDECRRegistry,
+    package: EventPackage,
+) -> list[AtomicEvent]:
+    """Resolve redirects and return each logical Atomic member exactly once."""
+
+    members: dict[str, AtomicEvent] = {}
+    for event_id in package.member_event_ids:
+        event = registry.get_current_atomic_event(event_id)
+        if event is not None:
+            members[event.event_id] = event
+    return [members[event_id] for event_id in sorted(members)]
 
 
 def package_is_n13_repairable(package: EventPackage) -> bool:
@@ -219,6 +261,25 @@ class PackageProfileCompiler:
                 if seed.anchor_period_id:
                     periods.add(seed.anchor_period_id)
         artifact = next(iter(artifacts)) if len(artifacts) == 1 else None
+        anchor_identity_groups: dict[str, list[str]] = {}
+        for anchor_id in sorted(anchor_ids):
+            entry = (
+                self.registry.resolve_field_registry_entry(anchor_id)
+                if self.registry is not None
+                else None
+            )
+            identity = (
+                f"external:{entry.external_id}"
+                if entry is not None and entry.external_id
+                else f"canonical:{entry.id if entry is not None else anchor_id}"
+            )
+            anchor_identity_groups.setdefault(identity, []).append(anchor_id)
+        primary_anchor_id = (
+            sorted(next(iter(anchor_identity_groups.values())))[0]
+            if len(anchor_identity_groups) == 1
+            else None
+        )
+        anchor_conflict = len(anchor_identity_groups) > 1
         period = next(iter(periods)) if len(periods) == 1 else None
         propositions = [
             event.canonical_proposition for event in representative_package_members(events)
@@ -230,6 +291,8 @@ class PackageProfileCompiler:
                 "canonical_title": title,
                 "anchor_entities": sorted(entity_ids),
                 "package_anchor_ids": sorted(anchor_ids),
+                "primary_anchor_id": primary_anchor_id,
+                "anchor_conflict": anchor_conflict,
                 "anchor_artifact_id": artifact,
                 "anchor_period_id": period,
                 "time_range": time_range,
@@ -262,11 +325,7 @@ def build_package_decision_view(
                 canonical_text=entry.canonical_text,
             )
         )
-    events = [
-        event
-        for event_id in package.member_event_ids
-        if (event := registry.get_current_atomic_event(event_id)) is not None
-    ]
+    events = canonical_package_members(registry, package)
     representatives = []
     for event in representative_package_members(events):
         surface_evidence, source_ids = atomic_surface_evidence(
@@ -295,6 +354,138 @@ def build_package_decision_view(
             embedding_similarity=candidate.embedding_similarity,
         ),
     )
+
+
+def build_n12_package_card(
+    registry: CDECRRegistry,
+    package: EventPackage,
+    *,
+    source_short_ids: dict[str, str] | None = None,
+    representative_limit: int = 3,
+    preferred_anchor_ids: Sequence[str] = (),
+    preferred_events: Sequence[AtomicEvent] = (),
+) -> dict[str, object]:
+    """Build a bounded N12 identity card whose size does not track Package size."""
+
+    members = canonical_package_members(registry, package)
+    anchors: list[dict[str, object]] = []
+    preferred_anchor_set = set(preferred_anchor_ids)
+    ordered_anchor_ids = sorted(
+        package.package_anchor_ids,
+        key=lambda value: (
+            value not in preferred_anchor_set,
+            value != package.primary_anchor_id,
+            value,
+        ),
+    )
+    for canonical_id in ordered_anchor_ids:
+        entry = registry.resolve_field_registry_entry(canonical_id)
+        if entry is None:
+            continue
+        anchors.append(
+            {
+                "id": entry.external_id or entry.id,
+                "text": entry.canonical_text,
+                "trust": "KB" if entry.external_id else "PROVISIONAL",
+            }
+        )
+    # A conflicted Package can accumulate many provisional aliases. Preserve
+    # the conflict and total count while bounding the model-visible set.
+    visible_anchors = anchors[:4]
+    representatives: list[dict[str, object]] = []
+    for event in representative_package_members(
+        members,
+        limit=representative_limit,
+        preferred_events=preferred_events,
+    ):
+        surface_evidence, source_ids = atomic_surface_evidence(
+            registry,
+            event,
+            source_short_ids=source_short_ids,
+        )
+        representative: dict[str, object] = {
+            "proposition": event.canonical_proposition,
+            "family": event.event_family.value,
+            "identity": event.identity_profile.model_dump(mode="json", exclude_none=True),
+        }
+        time_payload = event.time.model_dump(mode="json", exclude_none=True)
+        if time_payload:
+            representative["time"] = time_payload
+        if event.assertion_state.value != "ACTUAL":
+            representative["assertion"] = event.assertion_state.value
+        evidence_payload = surface_evidence.model_dump(mode="json", exclude_none=True)
+        if evidence_payload:
+            representative["surface_evidence"] = evidence_payload
+        if source_ids:
+            representative["sources"] = source_ids
+        representatives.append(representative)
+
+    card: dict[str, object] = {
+        "card_version": N12_PACKAGE_CARD_VERSION,
+        "kind": package.package_kind.value,
+        "family": package.package_family.value,
+        "label": package.canonical_summary or package.canonical_title,
+        "member_count": len(members),
+        "representatives": representatives,
+    }
+    if package.anchor_entities:
+        card["entities"] = sorted(set(package.anchor_entities))
+    if visible_anchors:
+        card["anchors"] = visible_anchors
+        card["anchor_count"] = len(anchors)
+    if package.primary_anchor_id:
+        primary = registry.resolve_field_registry_entry(package.primary_anchor_id)
+        card["primary_anchor"] = (
+            package.primary_anchor_id
+            if primary is None
+            else (primary.external_id or primary.id)
+        )
+    if package.anchor_conflict:
+        card["anchor_conflict"] = True
+    if package.anchor_artifact_id:
+        card["artifact"] = package.anchor_artifact_id
+    if package.anchor_period_id:
+        card["period"] = package.anchor_period_id
+    time_range = package.time_range.model_dump(mode="json", exclude_none=True)
+    if time_range and not package.anchor_period_id:
+        card["time_range"] = time_range
+    if package.lifecycle_state:
+        card["lifecycle"] = package.lifecycle_state
+    if package.quality_state is not PackageQualityState.ACTIVE:
+        card["quality"] = package.quality_state.value
+    return card
+
+
+def build_n12_event_card(
+    registry: CDECRRegistry,
+    event: AtomicEvent,
+    *,
+    source_short_ids: dict[str, str] | None = None,
+) -> dict[str, object]:
+    """Build the compact incoming-Atomic definition shared by N12 tasks."""
+
+    surface_evidence, source_ids = atomic_surface_evidence(
+        registry,
+        event,
+        source_short_ids=source_short_ids,
+    )
+    card: dict[str, object] = {
+        "proposition": event.canonical_proposition,
+        "family": event.event_family.value,
+        "identity": event.identity_profile.model_dump(mode="json", exclude_none=True),
+        "mention_count": len(event.mention_ids),
+    }
+    time_payload = event.time.model_dump(mode="json", exclude_none=True)
+    if time_payload:
+        card["time"] = time_payload
+    if event.assertion_state.value != "ACTUAL":
+        card["assertion"] = event.assertion_state.value
+    evidence_payload = surface_evidence.model_dump(mode="json", exclude_none=True)
+    if evidence_payload:
+        card["surface_evidence"] = evidence_payload
+    if source_ids:
+        card["sources"] = source_ids
+    return card
 
 
 def build_slim_package_view(
@@ -608,15 +799,13 @@ class PackageBoundaryGate:
                     PackageBoundaryAction.REBUILD_EMBEDDING,
                 ]
             )
-        if review_reasons:
-            actions.append(PackageBoundaryAction.FREEZE_PACKAGE)
         severity: Literal["WARNING", "REVIEW_REQUIRED", "BLOCKING_CONFLICT"] | None
         if blocking_reasons:
             severity = "BLOCKING_CONFLICT"
             quality_state = PackageQualityState.QUARANTINED
         elif review_reasons:
             severity = "REVIEW_REQUIRED"
-            quality_state = PackageQualityState.FROZEN
+            quality_state = PackageQualityState.ACTIVE
         elif warnings:
             severity = "WARNING"
             quality_state = PackageQualityState.ACTIVE

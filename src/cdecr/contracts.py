@@ -415,8 +415,19 @@ SchemaProjection = Annotated[
 
 
 class LocalPackageHint(StrictModel):
-    anchor: NonEmptyString
-    relation_to_anchor: MembershipRelation
+    anchor: NonEmptyString = Field(
+        description=(
+            "Short document-local identity of a broader, bounded parent occurrence, process, "
+            "episode, matter, or artifact that contains this Mention; never the Mention itself, "
+            "an entity or ticker, a broad topic, the source article or title, or a vague label."
+        )
+    )
+    relation_to_anchor: MembershipRelation = Field(
+        description=(
+            "Membership direction from this Mention to its parent. A reaction or consequence "
+            "is not a member of the event it reacts to or follows."
+        )
+    )
 
 
 class EventMention(StrictModel):
@@ -574,6 +585,8 @@ class EventPackage(StrictModel):
     canonical_title: NonEmptyString
     anchor_entities: list[NonEmptyString]
     package_anchor_ids: list[NonEmptyString] = Field(default_factory=list)
+    primary_anchor_id: str | None = None
+    anchor_conflict: bool = False
     anchor_artifact_id: str | None = None
     anchor_period_id: str | None = None
     time_range: PackageTimeRange
@@ -590,6 +603,11 @@ class EventPackage(StrictModel):
             raise ValueError("member_event_ids must be unique")
         if len(self.package_anchor_ids) != len(set(self.package_anchor_ids)):
             raise ValueError("package_anchor_ids must be unique")
+        if (
+            self.primary_anchor_id is not None
+            and self.primary_anchor_id not in self.package_anchor_ids
+        ):
+            raise ValueError("primary_anchor_id must be included in package_anchor_ids")
         return self
 
 

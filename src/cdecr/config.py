@@ -35,6 +35,25 @@ class CDECRSettings(BaseSettings):
         default="https://dashscope.aliyuncs.com/compatible-mode/v1",
         alias="CDECR_DASHSCOPE_BASE_URL",
     )
+    deepseek_api_key: SecretStr | None = Field(default=None, alias="DEEPSEEK_API_KEY")
+    deepseek_base_url: str = Field(
+        default="https://api.deepseek.com/beta",
+        alias="CDECR_DEEPSEEK_BASE_URL",
+    )
+    model_m2_provider: Literal["dashscope", "deepseek"] = Field(
+        default="dashscope", alias="CDECR_M2_PROVIDER"
+    )
+    model_m3_provider: Literal["dashscope", "deepseek"] = Field(
+        default="dashscope", alias="CDECR_M3_PROVIDER"
+    )
+    model_m2_reasoning_effort: Literal["high", "max"] = Field(
+        default="high", alias="CDECR_M2_REASONING_EFFORT"
+    )
+    model_m3_reasoning_effort: Literal["high", "max"] = Field(
+        default="max", alias="CDECR_M3_REASONING_EFFORT"
+    )
+    model_m2_strict: bool = Field(default=True, alias="CDECR_M2_STRICT")
+    model_m3_strict: bool = Field(default=True, alias="CDECR_M3_STRICT")
     model_m1: str = Field(default="qwen3.7-text-embedding", alias="CDECR_MODEL_M1")
     model_m2: str = Field(default="deepseek-v4-flash", alias="CDECR_MODEL_M2")
     model_m3: str = Field(default="qwen3.7-plus", alias="CDECR_MODEL_M3")
@@ -52,7 +71,7 @@ class CDECRSettings(BaseSettings):
         alias="CDECR_N9_WIRE_PROTOCOL",
     )
     n12_wire_protocol: Literal["legacy", "shadow", "canary", "on"] = Field(
-        default="shadow",
+        default="on",
         alias="CDECR_N12_WIRE_PROTOCOL",
     )
     n13_wire_protocol: Literal["legacy", "shadow", "canary", "on"] = Field(
@@ -95,6 +114,11 @@ class CDECRSettings(BaseSettings):
         if self.dashscope_api_key is None:
             raise ValueError("DASHSCOPE_API_KEY is required")
         return self.dashscope_api_key.get_secret_value()
+
+    def require_deepseek(self) -> str:
+        if self.deepseek_api_key is None:
+            raise ValueError("DEEPSEEK_API_KEY is required")
+        return self.deepseek_api_key.get_secret_value()
 
     def dashscope_fallback_api_keys(self) -> tuple[str, ...]:
         """Return ordered, de-duplicated fallback keys without the primary key."""

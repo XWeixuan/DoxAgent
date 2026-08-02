@@ -10,6 +10,11 @@ An **Atomic Event** is a cross-document cluster representing one specific real-w
 
 Treat an Atomic Event as one minimal independently assertable fact, not as an article topic or a whole disclosure package.
 
+A shared report, filing, call, commercial plan, or parent episode may place
+facts in one Event Package; it is not Atomic identity. SAME_EVENT requires the
+same minimal subject/object, action and polarity, occurrence/session, Assertion
+State, and metric/facet.
+
 ## Your Task
 
 For each incoming Event Mention, jointly compare it with all provided candidate Atomic Events. You must choose exactly one of the following business actions:
@@ -20,7 +25,7 @@ For each incoming Event Mention, jointly compare it with all provided candidate 
 
 2. **CREATE_NEW**
 
-   None of the candidate events is supported by sufficient evidence to be identified as the same event, or significant semantic uncertainty remains after all candidates have been compared.
+   After each candidate has been assessed independently, no valid candidate is SAME_EVENT.
 
 ## Core Relations
 
@@ -56,7 +61,15 @@ However, if the underlying event identity is the same, you must still select:
 
 `SAME_EVENT`
 
-Identity differences are diagnostic observations, not automatic rejection conditions. You must use the provided context to determine whether each difference is sufficient to establish that the two items represent different events.
+Determine each candidate independently from the supplied referent, occurrence,
+and facet evidence. A difference establishes a separate event only when it
+identifies a different minimal fact; uncertainty about one candidate does not
+decide any other candidate's relation or the final action.
+
+Apply claim_conflict only after the identity axes establish the same minimal
+fact. Do not use it to absorb a different issuer/referent, object, action
+polarity, session/occurrence, Assertion State, metric/facet, analyst institution,
+or source artifact.
 
 For every candidate, return one `axis_assessments` verdict for every identity
 axis supplied on both the incoming Mention and that candidate:
@@ -69,7 +82,10 @@ axis supplied on both the incoming Mention and that candidate:
 If either side does not supply an axis, omit that axis; missing evidence is not
 CONFLICT or AMBIGUOUS. Do not add or omit axes applicable to both sides.
 If `exact_identity_signature_match=true`, every returned axis must be MATCH.
-Every axis listed in `canonical_conflict_axes` must be CONFLICT, not AMBIGUOUS.
+`canonical_conflict_axes` are deterministic warnings; use the evidence to
+confirm or override them.
+Every axis in `enforced_conflict_axes` must be CONFLICT, and any candidate with
+a CONFLICT axis must not be SAME_EVENT.
 
 You must not identify candidates as SAME_EVENT solely because they:
 
@@ -79,6 +95,23 @@ You must not identify candidates as SAME_EVENT solely because they:
 - have a high retrieval score.
 
 ## Identity Assessment Guidelines
+
+For each candidate, first resolve the core referent and participant roles; then
+compare the normalized occurrence, time/session, object, action/polarity,
+Assertion State, and metric/facet; only then assign the relation. A specific
+numeric statement and a qualitative summary may be the same occurrence when
+these identity dimensions align and the broader wording does not cover
+additional facts.
+
+Different wording or granularity alone does not create a new occurrence. Treat
+a concise summary as SAME_EVENT only when it can be narrowed to the same
+minimal fact without absorbing additional objects, actions, metrics, periods,
+or sources.
+
+Participant role labels are not referents by themselves. Compare canonical
+entities and their event roles together: a harmless SUBJECT/ACTOR wording
+difference is not a referent conflict, while different issuers, objects,
+counterparties, analysts, or instruments may establish one.
 
 ### OPEN Events
 
@@ -120,5 +153,6 @@ Choose the merge target according to the following priority order:
 - When selecting MERGE, `merge_target_event_id` must reference a candidate assessed as SAME_EVENT.
 - When selecting CREATE_NEW, `merge_target_event_id` must be `null`.
 - A candidate assessed as UNCERTAIN cannot be selected as the merge target.
-- `identity_differences` and `claim_conflict` are audit information and do not automatically override or change the final action.
+- Use `identity_differences` and `claim_conflict` only to summarize evidence
+  already reflected in the axis verdicts and relation.
 - The returned content must strictly match the provided JSON Schema.

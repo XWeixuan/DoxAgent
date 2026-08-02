@@ -118,6 +118,28 @@ def test_package_retrieval_hash_matches_exact_embedding_text() -> None:
     assert updated_hash != package_retrieval_hash(package, [first])
 
 
+def test_n12_representatives_prefer_task_relevant_member_without_growing_card() -> None:
+    first = singleton_atomic_event(mention()).model_copy(update={"event_id": "atomic:a"})
+    second = first.model_copy(
+        update={
+            "event_id": "atomic:z",
+            "event_family": EventFamily.MARKET_MOVEMENT,
+            "canonical_proposition": "Micron shares moved after the disclosure.",
+            "mention_ids": ["MENTION-Z"],
+            "representative_mention_ids": ["MENTION-Z"],
+        }
+    )
+    preferred = second.model_copy(update={"event_id": "atomic:incoming"})
+
+    selected = representative_package_members(
+        [first, second],
+        limit=1,
+        preferred_events=[preferred],
+    )
+
+    assert [event.event_id for event in selected] == [second.event_id]
+
+
 def test_package_boundary_gate_separates_quality_from_lifecycle() -> None:
     first = singleton_atomic_event(mention())
     reaction = first.model_copy(
@@ -136,7 +158,7 @@ def test_package_boundary_gate_separates_quality_from_lifecycle() -> None:
     finding = PackageBoundaryGate().evaluate(package, [first, reaction])
 
     assert package.status.value == "UNKNOWN"
-    assert finding.quality_state is PackageQualityState.FROZEN
+    assert finding.quality_state is PackageQualityState.ACTIVE
     assert "MARKET_REACTION_REQUIRES_N12_REEVALUATION" in finding.reasons
     assert finding.severity == "REVIEW_REQUIRED"
 
@@ -718,7 +740,7 @@ def test_boundary_anchor_severity_uses_resolved_trust(
         [event],
     )
 
-    assert review.quality_state is PackageQualityState.FROZEN
+    assert review.quality_state is PackageQualityState.ACTIVE
     assert review.severity == "REVIEW_REQUIRED"
     assert blocking.quality_state is PackageQualityState.QUARANTINED
     assert blocking.severity == "BLOCKING_CONFLICT"

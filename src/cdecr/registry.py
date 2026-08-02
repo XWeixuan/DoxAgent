@@ -2103,7 +2103,7 @@ class SQLiteCDECRRegistry:
         start = package.time_range.start.isoformat() if package.time_range.start else None
         end = package.time_range.end.isoformat() if package.time_range.end else start
         with self._connection() as connection:
-            local_anchor_hint: str | None = None
+            local_anchor_hints: set[str] = set()
             mention_ids: set[str] = set()
             for event_id in package.member_event_ids:
                 rows = connection.execute(
@@ -2124,8 +2124,11 @@ class SQLiteCDECRRegistry:
                 for row in rows:
                     mention = EventMention.model_validate_json(str(row["payload_json"]))
                     mention_ids.add(mention.mention_id)
-                    if local_anchor_hint is None and mention.local_package_hint is not None:
-                        local_anchor_hint = mention.local_package_hint.anchor
+                    if mention.local_package_hint is not None:
+                        local_anchor_hints.add(mention.local_package_hint.anchor)
+            local_anchor_hint = (
+                next(iter(local_anchor_hints)) if len(local_anchor_hints) == 1 else None
+            )
             package_anchor_ids: set[str] = set(package.package_anchor_ids)
             if mention_ids:
                 placeholders = ",".join("?" for _ in mention_ids)
@@ -2201,7 +2204,7 @@ class SQLiteCDECRRegistry:
     ) -> None:
         start = package.time_range.start.isoformat() if package.time_range.start else None
         end = package.time_range.end.isoformat() if package.time_range.end else start
-        local_anchor_hint: str | None = None
+        local_anchor_hints: set[str] = set()
         for event_id in package.member_event_ids:
             rows = connection.execute(
                 """
@@ -2221,10 +2224,10 @@ class SQLiteCDECRRegistry:
             for row in rows:
                 mention = EventMention.model_validate_json(str(row["payload_json"]))
                 if mention.local_package_hint is not None:
-                    local_anchor_hint = mention.local_package_hint.anchor
-                    break
-            if local_anchor_hint is not None:
-                break
+                    local_anchor_hints.add(mention.local_package_hint.anchor)
+        local_anchor_hint = (
+            next(iter(local_anchor_hints)) if len(local_anchor_hints) == 1 else None
+        )
         connection.execute(
             """
             INSERT INTO package_recall(

@@ -1,4 +1,4 @@
-"""Independent DashScope model adapters for the four CDECR model tiers."""
+"""Independent provider adapters for the four CDECR model tiers."""
 
 from __future__ import annotations
 
@@ -22,6 +22,7 @@ from cdecr.ports import (
 
 STRUCTURED_OUTPUT_MODE: Literal["json_object"] = "json_object"
 STRUCTURED_REASONING_EFFORT: Literal["none"] = "none"
+DEEPSEEK_TOOL_NAME = "return_cdecr_result"
 
 
 class ModelTier(StrEnum):
@@ -316,6 +317,202 @@ class DashScopeStructuredModelClient:
             output_tokens=output_tokens,
             latency_ms=latency_ms,
             request_id=request_id,
+        )
+
+
+def deepseek_strict_wire_schema(schema: object) -> dict[str, object]:
+    """Compile a provider-only strict schema without mutating the CDECR DTO schema."""
+
+    value = compact_wire_schema(schema)
+    if not isinstance(value, dict):
+        raise ValueError("structured output schema must be an object")
+    root = value
+    unsupported = {"minLength", "maxLength", "minItems", "maxItems"}
+
+    def resolve_local_ref(ref: str) -> object:
+        resolved: object = root
+        for part in ref[2:].split("/"):
+            if not isinstance(resolved, dict):
+                return {"$ref": ref}
+            resolved = resolved.get(part.replace("~1", "/").replace("~0", "~"), {})
+        return json.loads(json.dumps(resolved))
+
+    def expand_refs(item: object, stack: tuple[str, ...] = ()) -> object:
+        if isinstance(item, list):
+            return [expand_refs(child, stack) for child in item]
+        if not isinstance(item, dict):
+            return item
+        ref = item.get("$ref")
+        if isinstance(ref, str) and ref.startswith("#/"):
+            if ref in stack:
+                raise ValueError(f"recursive local schema reference is unsupported: {ref}")
+            resolved = resolve_local_ref(ref)
+            if not isinstance(resolved, dict):
+                raise ValueError(f"invalid local schema reference: {ref}")
+            merged = {**resolved, **{key: child for key, child in item.items() if key != "$ref"}}
+            return expand_refs(merged, (*stack, ref))
+        return {key: expand_refs(child, stack) for key, child in item.items()}
+
+    value = expand_refs(value)
+    if not isinstance(value, dict):
+        raise ValueError("structured output schema must remain an object")
+    value.pop("$defs", None)
+
+    def visit(item: object) -> None:
+        if isinstance(item, dict):
+            for key in unsupported:
+                item.pop(key, None)
+            properties = item.get("properties")
+            if item.get("type") == "object" and isinstance(properties, dict):
+                item["required"] = list(properties)
+                item["additionalProperties"] = False
+            for child in item.values():
+                visit(child)
+        elif isinstance(item, list):
+            for child in item:
+                visit(child)
+
+    visit(value)
+    return value
+
+
+class DeepSeekStructuredModelClient:
+    """Official DeepSeek Chat Completions adapter with thinking and strict tools."""
+
+    def __init__(
+        self,
+        *,
+        tier: ModelTier,
+        api_key: str,
+        base_url: str,
+        model: str = "deepseek-v4-flash",
+        reasoning_effort: Literal["high", "max"],
+        strict: bool = True,
+        timeout_seconds: float = 600.0,
+        client: OpenAI | None = None,
+    ) -> None:
+        if tier not in {ModelTier.M2, ModelTier.M3}:
+            raise ValueError("DeepSeek official provider is supported only for M2/M3")
+        self.tier = tier
+        self.model = model
+        self.reasoning_effort = reasoning_effort
+        self.strict = strict
+        self._client = client or OpenAI(
+            api_key=api_key,
+            base_url=base_url,
+            timeout=timeout_seconds,
+            max_retries=0,
+        )
+
+    def complete(self, request: StructuredModelRequest) -> StructuredModelResult:
+        started = perf_counter()
+        system_prompt = request.system_prompt
+        if self.strict:
+            system_prompt = (
+                f"{system_prompt}\nYou must call {DEEPSEEK_TOOL_NAME} exactly once and return "
+                "the complete result as its arguments."
+            )
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": request.user_prompt},
+        ]
+        kwargs: dict[str, Any] = {
+            "model": self.model,
+            "messages": messages,
+            "reasoning_effort": self.reasoning_effort,
+            "extra_body": {"thinking": {"type": "enabled"}},
+        }
+        if self.strict:
+            kwargs.update(
+                tools=[
+                    {
+                        "type": "function",
+                        "function": {
+                            "name": DEEPSEEK_TOOL_NAME,
+                            "description": (
+                                "Always call this function exactly once to return the complete "
+                                "structured CDECR result."
+                            ),
+                            "strict": True,
+                            "parameters": deepseek_strict_wire_schema(request.json_schema),
+                        },
+                    }
+                ],
+            )
+        else:
+            schema = json.dumps(
+                compact_wire_schema(request.json_schema),
+                ensure_ascii=False,
+                separators=(",", ":"),
+            )
+            messages[0]["content"] = (
+                f"{request.system_prompt}\nReturn exactly one valid JSON object without Markdown."
+            )
+            messages[1]["content"] = (
+                f"{request.user_prompt}\nReturn JSON matching this schema: {schema}"
+            )
+            kwargs["response_format"] = {"type": "json_object"}
+        try:
+            response = self._client.chat.completions.create(**kwargs)
+        except Exception as exc:
+            raise _safe_model_error(exc, self.tier, started_at=started) from exc
+
+        message = response.choices[0].message
+        if self.strict:
+            tool_calls = getattr(message, "tool_calls", None) or []
+            if len(tool_calls) != 1:
+                raise ModelAdapterError(
+                    tier=self.tier,
+                    code="invalid_tool_call_count",
+                    latency_ms=round((perf_counter() - started) * 1000),
+                )
+            function = tool_calls[0].function
+            if function.name != DEEPSEEK_TOOL_NAME:
+                raise ModelAdapterError(
+                    tier=self.tier,
+                    code="invalid_tool_name",
+                    latency_ms=round((perf_counter() - started) * 1000),
+                )
+            text = function.arguments
+        else:
+            text = message.content
+        usage = getattr(response, "usage", None)
+        input_tokens = _usage_value(usage, "prompt_tokens", "input_tokens")
+        output_tokens = _usage_value(usage, "completion_tokens", "output_tokens")
+        if not isinstance(text, str) or not text.strip():
+            raise ModelAdapterError(
+                tier=self.tier,
+                code="empty_response",
+                latency_ms=round((perf_counter() - started) * 1000),
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
+            )
+        try:
+            payload = json.loads(text)
+        except json.JSONDecodeError as exc:
+            raise ModelAdapterError(
+                tier=self.tier,
+                code="invalid_json",
+                latency_ms=round((perf_counter() - started) * 1000),
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
+                raw_response_text=text,
+            ) from exc
+        if not isinstance(payload, dict):
+            raise ModelAdapterError(
+                tier=self.tier,
+                code="invalid_json_shape",
+                latency_ms=round((perf_counter() - started) * 1000),
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
+            )
+        return StructuredModelResult(
+            model=self.model,
+            payload=payload,
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+            latency_ms=round((perf_counter() - started) * 1000),
+            request_id=getattr(response, "_request_id", None),
         )
 
 

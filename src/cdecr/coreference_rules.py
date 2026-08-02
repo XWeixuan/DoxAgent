@@ -401,7 +401,9 @@ def add_mention_to_atomic(
 
 
 def package_seed_for_event(event: AtomicEvent, mentions: list[EventMention]) -> PackageSeed:
-    hint = next((item.local_package_hint for item in mentions if item.local_package_hint), None)
+    hints = [item.local_package_hint for item in mentions if item.local_package_hint]
+    anchor_hints = sorted({item.anchor for item in hints})
+    relations = {item.relation_to_anchor for item in hints}
     family = _default_package_family(event.event_family)
     kind = (
         PackageKind.EPISODE
@@ -415,15 +417,12 @@ def package_seed_for_event(event: AtomicEvent, mentions: list[EventMention]) -> 
         }
         else PackageKind.BOUNDED
     )
-    membership = (
-        hint.relation_to_anchor
-        if hint
-        else (
-            MembershipRelation.STAGE_OF
-            if kind is PackageKind.EPISODE
-            else MembershipRelation.DISCLOSED_IN
-        )
+    default_membership = (
+        MembershipRelation.STAGE_OF
+        if kind is PackageKind.EPISODE
+        else MembershipRelation.DISCLOSED_IN
     )
+    membership = next(iter(relations)) if len(relations) == 1 else default_membership
     artifacts = sorted(
         {
             value
@@ -438,7 +437,8 @@ def package_seed_for_event(event: AtomicEvent, mentions: list[EventMention]) -> 
         package_family=family,
         canonical_title=event.canonical_proposition,
         anchor_entities=core_entity_ids_from_profile(event.identity_profile),
-        local_anchor_hint=hint.anchor if hint else None,
+        local_anchor_hint=anchor_hints[0] if len(anchor_hints) == 1 else None,
+        local_anchor_hints=anchor_hints,
         artifact_candidate_ids=artifacts,
         anchor_conflict=len(artifacts) > 1,
         anchor_artifact_id=artifacts[0] if len(artifacts) == 1 else None,

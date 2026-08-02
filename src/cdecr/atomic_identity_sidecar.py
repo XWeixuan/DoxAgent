@@ -32,6 +32,7 @@ from cdecr.cross_document_contracts import AtomicCandidate, RecallRoute
 from cdecr.ports import CDECRRegistry, DecisionAuditRecord
 
 ATOMIC_RECALL_RANKER_VERSION = "atomic-recall-ranker-v2-shadow"
+_UNSET_METRIC = object()
 
 
 class AtomicRecallRankBand(IntEnum):
@@ -64,11 +65,22 @@ class AtomicRankedCandidate(StrictModel):
 def compile_atomic_identity_sidecar(
     mention: EventMention,
     profile: IdentityProfile,
+    *,
+    primary_metric_id: str | None | object = _UNSET_METRIC,
+    principal_company_ids: Sequence[str] = (),
 ) -> AtomicIdentitySidecar:
     adapter = _adapter_kind(mention, profile)
     referent: list[str] = []
     occurrence: list[str] = []
     facet: list[str] = []
+    resolved_primary_metric_id = (
+        profile.fields.metric_id
+        if primary_metric_id is _UNSET_METRIC
+        and isinstance(profile, (FinancialMetricIdentityProfile, GuidanceIdentityProfile))
+        else primary_metric_id
+        if isinstance(primary_metric_id, str)
+        else None
+    )
 
     if isinstance(profile, FinancialMetricIdentityProfile):
         referent = [f"issuer:{profile.fields.issuer_id}"]
@@ -77,7 +89,7 @@ def compile_atomic_identity_sidecar(
             f"period:{profile.fields.period_id}",
         ]
         facet = [
-            f"metric:{metric_family(profile.fields.metric_id)}",
+            *_trusted_metric_facets(resolved_primary_metric_id),
             f"basis:{profile.fields.accounting_basis.value}",
             f"comparison:{profile.fields.comparison_basis.value}",
         ]
@@ -88,7 +100,7 @@ def compile_atomic_identity_sidecar(
             f"period:{profile.fields.period_id}",
             f"guidance_action:{profile.fields.action.value}",
         ]
-        facet = [f"metric:{metric_family(profile.fields.metric_id)}"]
+        facet = _trusted_metric_facets(resolved_primary_metric_id)
     elif isinstance(profile, AnalystActionIdentityProfile):
         referent = [
             f"institution:{profile.fields.institution_id}",
@@ -111,7 +123,13 @@ def compile_atomic_identity_sidecar(
             for value in profile.fields.principal_participant_ids
         ]
         occurrence = _open_occurrence(mention, profile)
-        facet = _open_facets(mention, adapter)
+        facet = _open_facets(
+            mention,
+            adapter,
+            primary_metric_id=resolved_primary_metric_id,
+        )
+
+    referent.extend(f"company:{value}" for value in principal_company_ids)
 
     return _sidecar(
         adapter_kind=adapter,
@@ -383,22 +401,45 @@ def _open_occurrence(
 def _open_facets(
     mention: EventMention,
     adapter: AtomicIdentityAdapterKind,
+    *,
+    primary_metric_id: str | None = None,
 ) -> list[str]:
-    metric = next(
+    raw_metric = next(
         (
-            metric_family(quantity.metric_id)
+            quantity.metric_id
             for quantity in mention.quantities
             if quantity.role is QuantityRole.PRIMARY
         ),
         None,
     )
+    metric_id = primary_metric_id or raw_metric
+    metric = metric_family(metric_id) if metric_id is not None else None
+    trusted_metric_facets = _trusted_metric_facets(primary_metric_id)
     if adapter is AtomicIdentityAdapterKind.MARKET_MOVEMENT:
-        return [f"measure:{metric or _market_measure(mention.predicate.normalized)}"]
+        return [
+            f"measure:{metric or _market_measure(mention.predicate.normalized)}",
+            *trusted_metric_facets,
+        ]
     if adapter is AtomicIdentityAdapterKind.ACTION_ARTIFACT:
-        return [f"artifact_facet:{_artifact_facet(mention)}"]
+        return [
+            f"artifact_facet:{_artifact_facet(mention)}",
+            *trusted_metric_facets,
+        ]
     if adapter is AtomicIdentityAdapterKind.OUTLOOK_STATE:
-        return [f"outlook_topic:{metric or _action_family(mention.predicate.normalized)}"]
-    return []
+        return [
+            f"outlook_topic:{metric or _action_family(mention.predicate.normalized)}",
+            *trusted_metric_facets,
+        ]
+    return trusted_metric_facets
+
+
+def _trusted_metric_facets(primary_metric_id: str | None) -> list[str]:
+    if primary_metric_id is None:
+        return []
+    return [
+        f"metric_family:{metric_family(primary_metric_id)}",
+        f"metric:{primary_metric_id}",
+    ]
 
 
 def _rank_band(

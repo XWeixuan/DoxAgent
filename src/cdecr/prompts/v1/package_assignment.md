@@ -40,6 +40,12 @@ evidence, fiscal period, time, request-local source IDs, member Atomic identitie
 lifecycle, and representative members. No single field, source, family, recall
 route, or embedding score is decisive. A missing artifact ID must not force a new
 Package when the combined evidence identifies the same parent container.
+High-confidence `boundary_conflicts` are evidence against MEMBER; do not override
+them with topic, source, or embedding similarity without direct canonical evidence.
+A shared canonical parent anchor is strong candidate evidence, but
+relation_to_anchor and event family still determine membership: disclosure
+content may be MEMBER, while market or analyst reactions are normally
+EXTERNAL_RELATED. Similar raw hint text alone is not parent identity.
 A topic-specific subset, commercial action, product update, or management
 statement is not evidence of a separate parent artifact. If it is disclosed
 inside the same identified earnings release or call, keep it in that earnings
@@ -54,3 +60,4 @@ membership target.
 
 Return every candidate exactly once, use only supplied request-local IDs, and
 give concise reasons. If no candidate is MEMBER, return no selected target.
+Resolve each task using the request-local package definitions.

@@ -33,7 +33,7 @@ from cdecr.contracts import (
 from cdecr.field_coreference import FieldCoreferenceResolver
 from cdecr.field_coreference_contracts import FieldNamespace
 from cdecr.identity_compiler import IdentityCompiler
-from cdecr.kb_v2 import CATALOG_NAMES, V2KnowledgeBase
+from cdecr.kb_v2 import CATALOG_NAMES, KBMatch, V2KnowledgeBase
 from cdecr.mention_finalization import MentionFinalizer
 from cdecr.ports import (
     EmbeddingResult,
@@ -173,6 +173,28 @@ def _source() -> SourceMessage:
     )
 
 
+def test_non_filing_metric_filter_drops_taxonomy_only_candidates() -> None:
+    taxonomy = KBMatch(
+        catalog="metrics",
+        external_id="US_GAAP_REVENUE",
+        name="Revenue",
+        aliases=("revenue",),
+    )
+    assert (
+        CanonicalFieldResolutionEngine._filter_metric_tier(
+            _source(),
+            "revenue",
+            [taxonomy],
+        )
+        == []
+    )
+    assert CanonicalFieldResolutionEngine._filter_metric_tier(
+        _source(),
+        "us-gaap:Revenue",
+        [taxonomy],
+    ) == [taxonomy]
+
+
 def _mention(mention_id: str, company: str) -> EventMention:
     source = _source()
     evidence = "Micron Technology Inc reported revenue of $8.1 billion."
@@ -304,6 +326,59 @@ def test_package_hint_is_deferred_until_n11(tmp_path: Path) -> None:
     assert entry is not None
     assert entry.namespace is FieldNamespace.ARTIFACT_EARNINGS_RELEASE
     assert entry.external_id == "ARTIFACT_MU_Q4_2026"
+
+
+def test_n11_converges_supported_earnings_parent_aliases_across_sources(
+    tmp_path: Path,
+) -> None:
+    registry, _, engine = _engine(tmp_path)
+    first_source = _source().model_copy(update={"message_id": "S-1"})
+    second_source = _source().model_copy(update={"message_id": "S-2"})
+    first = _mention("M-1", "Micron").model_copy(
+        update={
+            "message_id": "S-1",
+            "local_package_hint": LocalPackageHint(
+                anchor="Micron Q3 FY2026 earnings release",
+                relation_to_anchor=MembershipRelation.DISCLOSED_IN,
+            ),
+        }
+    )
+    second = _mention("M-2", "Micron").model_copy(
+        update={
+            "message_id": "S-2",
+            "local_package_hint": LocalPackageHint(
+                anchor="Q3 2026 earnings report",
+                relation_to_anchor=MembershipRelation.COMPONENT_OF,
+            ),
+        }
+    )
+    for source, mention in ((first_source, first), (second_source, second)):
+        registry.save_source(source, fingerprint=source.message_id[-1] * 64)
+        registry.save_mention(mention)
+        engine.resolve_document(source, [mention])
+        engine.resolve_package_hints(source, [mention])
+    first_link = registry.get_field_link("M-1", "local_package_hint.anchor")
+    second_link = registry.get_field_link("M-2", "local_package_hint.anchor")
+    assert first_link is not None and second_link is not None
+    assert first_link.registry_id == second_link.registry_id
+
+
+def test_n11_does_not_materialize_generic_report_hint(tmp_path: Path) -> None:
+    registry, _, engine = _engine(tmp_path)
+    source = _source()
+    mention = _mention("M-GENERIC", "Micron").model_copy(
+        update={
+            "local_package_hint": LocalPackageHint(
+                anchor="latest report",
+                relation_to_anchor=MembershipRelation.DISCLOSED_IN,
+            )
+        }
+    )
+    registry.save_source(source, fingerprint="g" * 64)
+    registry.save_mention(mention)
+    engine.resolve_document(source, [mention])
+    engine.resolve_package_hints(source, [mention])
+    assert registry.get_field_link(mention.mention_id, "local_package_hint.anchor") is None
 
 
 def test_identity_discriminant_ignores_comparison_quantity(tmp_path: Path) -> None:

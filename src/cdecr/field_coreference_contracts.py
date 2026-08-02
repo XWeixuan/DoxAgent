@@ -110,6 +110,9 @@ class FieldCoreferenceHints(StrictModel):
     attribute_key: str | None = None
     published_date: str | None = None
     attempted_kb_type: str | None = None
+    source_fingerprint: str | None = None
+    evidence_group_hash: str | None = None
+    parent_identity_key: str | None = None
 
 
 class FieldCoreferenceInput(StrictModel):

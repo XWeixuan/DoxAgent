@@ -208,6 +208,7 @@ class PackageSeed(StrictModel):
     canonical_title: NonEmptyString
     anchor_entities: list[NonEmptyString]
     local_anchor_hint: str | None = None
+    local_anchor_hints: list[NonEmptyString] = Field(default_factory=list)
     package_anchor_ids: list[NonEmptyString] = Field(default_factory=list)
     artifact_candidate_ids: list[NonEmptyString] = Field(default_factory=list)
     anchor_conflict: bool = False

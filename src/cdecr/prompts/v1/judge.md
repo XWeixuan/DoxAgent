@@ -10,6 +10,9 @@ action, decision, disclosure, measurable state, state change, or explicit plan,
 expectation, rumor, denial, hypothesis, or ongoing state. Reject headings,
 boilerplate, disclaimers, questions, generic background, opinions, attention,
 and unsupported interpretation.
+An explicit named-source forecast, commitment, constraint, or measurable
+ongoing state remains truth-evaluable without a calendar bound; do not reject
+it merely as explanatory context.
 
 2. Atomicity. One Mention has one underlying event, primary action, core
 subject, Assertion State, and temporal identity. Split different actions,
@@ -50,7 +53,18 @@ DUPLICATE: the draft describes the same underlying event as keep_id. Related
 events are not duplicates.
 MERGE_AS_ATTRIBUTE: the draft is not an independent event but is an
 evidence-backed attribute of keep_id. Do not use this when it changes the core
-action, subject, assertion, or time.
+action, subject, PRIMARY metric, assertion, or time.
+
+For SPLIT, preserve every supported event and attach each period,
+benchmark/range, source, object, and action polarity only to the replacement it
+qualifies. Do not copy all fields to every replacement or leave a supported
+event behind. Each replacement must remain an independently meaningful event;
+keep qualifier, benchmark, bound, trigger, and context fragments with the event
+they modify.
+
+A shared report, plan, article, or topic does not make distinct objects,
+actions/polarities, PRIMARY metrics, Assertion States, or event times/sessions
+one Mention.
 
 keep_id must name a visible draft that is ACCEPTed. Every accepted, revised,
 split, or merged result must use exact segment_id + text evidence. When a field

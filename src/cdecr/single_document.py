@@ -52,7 +52,6 @@ from cdecr.ports import (
 )
 from cdecr.preprocessing import (
     PIPELINE_VERSION,
-    align_unique_evidence_locator,
     exact_document_fingerprint,
     grounder_context,
     locate_unique_evidence_text,
@@ -97,7 +96,7 @@ from cdecr.single_document_contracts import (
     validate_event_time_semantics,
 )
 
-PROMPT_VERSION = "single-document-prompts-v12"
+PROMPT_VERSION = "single-document-prompts-v18"
 GROUNDER_CANDIDATE_BATCH = 24
 JUDGE_DRAFT_BATCH = 24
 _T = TypeVar("_T", bound=StrictModel)
@@ -209,6 +208,61 @@ def _safe_semantic_error_code(exc: ValueError) -> str:
         ("judge target must name", "judge_invalid_target"),
     )
     return next((code for token, code in mappings if token in message), "semantic_constraint")
+
+
+def _validation_business_code(
+    *,
+    error_type: str,
+    message: str,
+    location: Sequence[object],
+) -> str:
+    normalized = message.casefold()
+    if "metric-bearing mention requires exactly one primary quantity" in normalized:
+        return "PRIMARY_QUANTITY_COUNT"
+    if "time without event bounds must use unknown precision" in normalized:
+        return "TIME_PRECISION_WITHOUT_BOUNDS"
+    if "evidence" in normalized or any("evidence" in str(part).casefold() for part in location):
+        return "EVIDENCE_FIELD_SHAPE"
+    if error_type == "missing":
+        return "MISSING_REQUIRED_FIELD"
+    if error_type == "extra_forbidden":
+        return "EXTRA_FIELD"
+    if error_type in {"enum", "literal_error"}:
+        return "INVALID_ENUM"
+    if any(token in error_type for token in ("string_pattern", "string_too_short")) and any(
+        token in str(part).casefold() for part in location for token in ("id", "candidate")
+    ):
+        return "INVALID_SHORT_ID"
+    if error_type.startswith("value_error"):
+        return "BUSINESS_CONSTRAINT"
+    return "OTHER_SCHEMA_ERROR"
+
+
+def _safe_validation_errors(
+    exc: ValidationError,
+    *,
+    limit: int = 100,
+) -> list[dict[str, object]]:
+    """Serialize Pydantic diagnostics without leaking input, ctx exceptions, or tracebacks."""
+
+    safe: list[dict[str, object]] = []
+    for error in exc.errors(include_input=False, include_url=False)[:limit]:
+        location = [str(part) for part in error.get("loc", ())]
+        error_type = str(error.get("type", "value_error"))
+        message = str(error.get("msg", "validation failed"))[:240]
+        safe.append(
+            {
+                "field_path": location,
+                "type": error_type,
+                "code": _validation_business_code(
+                    error_type=error_type,
+                    message=message,
+                    location=location,
+                ),
+                "message": message,
+            }
+        )
+    return safe
 
 
 def _mention_semantic_codes(mention: MentionDraft) -> set[str]:
@@ -868,9 +922,20 @@ class SingleDocumentProcessor:
             for index, (draft, lineage) in enumerate(
                 zip(accepted, accepted_lineage, strict=True)
             ):
+                lineage_candidate_ids = lineage.get("source_candidate_ids", [])
+                if not isinstance(lineage_candidate_ids, list):
+                    lineage_candidate_ids = []
                 try:
                     mention = self._materialize_mention(
-                        source, preprocessing.document, draft, run_id=run_id
+                        source,
+                        preprocessing.document,
+                        draft,
+                        run_id=run_id,
+                        source_candidate_ids=[
+                            str(value)
+                            for value in lineage_candidate_ids
+                        ],
+                        candidates=candidates,
                     )
                 except (ValidationError, ValueError) as exc:
                     self.registry.append_decision_audit(
@@ -983,7 +1048,11 @@ class SingleDocumentProcessor:
                         run_id=run_id,
                         decision_type="DOCUMENT_EXCEPTION_STACK",
                         subject_id=message_id,
-                        payload={"error_code": code, "frames": safe_frames},
+                        payload={
+                            "error_code": code,
+                            "message": str(exc)[:400],
+                            "frames": safe_frames,
+                        },
                     )
                 )
             self.registry.append_decision_audit(
@@ -1106,16 +1175,7 @@ class SingleDocumentProcessor:
                             if invalid_grounder_draft_collector is not None:
                                 invalid_grounder_draft_collector(
                                     draft,
-                                    [
-                                        {
-                                            "loc": [str(part) for part in error["loc"]],
-                                            "type": str(error["type"]),
-                                        }
-                                        for error in exc.errors(
-                                            include_input=False,
-                                            include_url=False,
-                                        )[:20]
-                                    ],
+                                    _safe_validation_errors(exc, limit=20),
                                 )
                             continue
                         retained_drafts.append(draft)
@@ -1224,13 +1284,7 @@ class SingleDocumentProcessor:
         def audit_validation_failure(exc: ValidationError | ValueError, *, attempt: str) -> None:
             if isinstance(exc, ValidationError):
                 all_errors = exc.errors(include_input=False, include_url=False)
-                errors = [
-                    {
-                        "loc": [str(part) for part in error["loc"]],
-                        "type": str(error["type"]),
-                    }
-                    for error in all_errors[:100]
-                ]
+                errors = _safe_validation_errors(exc)
                 payload: dict[str, object] = {
                     "stage": stage,
                     "attempt": attempt,
@@ -1271,6 +1325,7 @@ class SingleDocumentProcessor:
                         "validation_error": validation_error,
                     },
                     ensure_ascii=False,
+                    default=str,
                 ),
                 json_schema=output_type.model_json_schema(),
             )
@@ -1317,9 +1372,7 @@ class SingleDocumentProcessor:
                     error_code,
                 ) from first_error
             if isinstance(first_error, ValidationError):
-                validation_error: object = first_error.errors(
-                    include_input=False, include_url=False
-                )
+                validation_error: object = _safe_validation_errors(first_error)
             else:
                 validation_error = str(first_error)
             return repair_and_validate(result.payload, validation_error)
@@ -1348,7 +1401,9 @@ class SingleDocumentProcessor:
             summaries=summaries,
         )
 
-        def process_block(block: DocumentBlock) -> DreamerModelOutput:
+        def process_block(
+            block: DocumentBlock, *, zero_recovery: bool = False
+        ) -> DreamerModelOutput:
             segment_by_id = {item.segment_id: item for item in document.segments}
             exposed_lengths = {
                 segment_id: len(segment_by_id[segment_id].text) for segment_id in block.segment_ids
@@ -1368,12 +1423,20 @@ class SingleDocumentProcessor:
             user_payload = {
                 "published_at": _published_at_model(source.published_at),
                 "allowed_segment_ids": list(exposed_lengths),
-                "segment_lengths": exposed_lengths,
                 "common_context": block.common_context,
                 "block": block.text,
             }
             request = StructuredModelRequest(
-                system_prompt=_prompt("dreamer.md"),
+                system_prompt=(
+                    _prompt("dreamer.md")
+                    + (
+                        "\n\nA prior pass returned no candidates. Recheck the title and "
+                        "every exposed segment for any explicit, independently "
+                        "truth-evaluable event. Return empty only if none exists."
+                        if zero_recovery
+                        else ""
+                    )
+                ),
                 user_prompt=json.dumps(user_payload, ensure_ascii=False),
                 json_schema=DreamerModelOutput.model_json_schema(),
             )
@@ -1401,18 +1464,35 @@ class SingleDocumentProcessor:
                 )
 
             try:
+                call_stage = "dreamer_zero_recovery" if zero_recovery else "dreamer"
+                call_client = (
+                    _AuditedStructuredClient(
+                        client=raw_client,
+                        registry=self.registry,
+                        run_id=run_id,
+                        tier=tier,
+                        model=model,
+                        stage=call_stage,
+                        summaries=summaries,
+                    )
+                    if zero_recovery
+                    else client
+                )
                 output = self._invoke_typed(
-                    client=client,
+                    client=call_client,
                     request=request,
                     output_type=DreamerModelOutput,
                     semantic_validator=validate_dreamer,
-                    stage="dreamer",
+                    stage=call_stage,
                 )
             except SingleDocumentPipelineError as exc:
                 output = DreamerModelOutput(candidates=[])
                 self.registry.append_decision_audit(
                     DecisionAuditRecord(
-                        audit_id=f"dreamer-block-degraded:{run_id}:{block.block_id}",
+                        audit_id=(
+                            f"dreamer-block-degraded:{run_id}:{block.block_id}:"
+                            f"{'zero-recovery' if zero_recovery else 'initial'}"
+                        ),
                         run_id=run_id,
                         decision_type="DREAMER_BLOCK_DEGRADED",
                         subject_id=block.block_id,
@@ -1425,7 +1505,10 @@ class SingleDocumentProcessor:
             if any(reconciliation.values()):
                 self.registry.append_decision_audit(
                     DecisionAuditRecord(
-                        audit_id=f"dreamer-evidence-reconciliation:{run_id}:{block.block_id}",
+                        audit_id=(
+                            f"dreamer-evidence-reconciliation:{run_id}:{block.block_id}:"
+                            f"{'zero-recovery' if zero_recovery else 'initial'}"
+                        ),
                         run_id=run_id,
                         decision_type="DREAMER_EVIDENCE_RECONCILIATION",
                         subject_id=block.block_id,
@@ -1438,13 +1521,63 @@ class SingleDocumentProcessor:
             max_workers=min(self.document_concurrency, len(document.document_blocks))
         ) as executor:
             outputs = list(executor.map(process_block, document.document_blocks))
+        if not any(output.candidates for output in outputs):
+            with ThreadPoolExecutor(
+                max_workers=min(self.document_concurrency, len(document.document_blocks))
+            ) as executor:
+                outputs = list(
+                    executor.map(
+                        lambda block: process_block(block, zero_recovery=True),
+                        document.document_blocks,
+                    )
+                )
+            self.registry.append_decision_audit(
+                DecisionAuditRecord(
+                    audit_id=f"dreamer-zero-recovery:{run_id}",
+                    run_id=run_id,
+                    decision_type="DREAMER_ZERO_CANDIDATE_RECOVERY",
+                    subject_id=source.message_id,
+                    payload={
+                        "recovered_candidate_count": sum(
+                            len(output.candidates) for output in outputs
+                        )
+                    },
+                )
+            )
         unique: dict[str, DreamCandidate] = {}
         for output in outputs:
             for candidate in output.candidates:
-                identity = _hash_json(candidate.model_dump(mode="json"))
+                evidence_locations: list[EvidenceLocator] = []
+                try:
+                    for evidence in candidate.evidence_locations:
+                        reconciliation = reconcile_evidence_text(
+                            evidence,
+                            document,
+                            source,
+                        )
+                        locator_to_evidence(
+                            reconciliation.locator,
+                            document,
+                            source,
+                        )
+                        evidence_locations.append(reconciliation.locator)
+                except ValueError:
+                    # The same deterministic reconciliation already succeeded in
+                    # _validate_dreamer_output. Treat unexpected drift locally.
+                    continue
+                identity = _hash_json(
+                    {
+                        "statement": candidate.statement,
+                        "evidence_locations": [
+                            item.model_dump(mode="json")
+                            for item in evidence_locations
+                        ],
+                    }
+                )
                 item = DreamCandidate(
                     candidate_id=f"candidate:{source.message_id}:{identity}",
-                    **candidate.model_dump(),
+                    statement=candidate.statement,
+                    evidence_locations=evidence_locations,
                 )
                 unique[item.candidate_id] = item
         return list(unique.values())
@@ -1458,19 +1591,43 @@ class SingleDocumentProcessor:
         source: SourceMessage,
     ) -> tuple[int, int]:
         invalid_locators = 0
+        dropped_candidates = 0
+        retained_candidates = []
         for item in output.candidates:
-            for locator in item.evidence_locations:
+            reconciled_evidence: list[EvidenceText] = []
+            valid_candidate = True
+            for evidence in item.evidence_locations:
                 try:
-                    aligned = align_unique_evidence_locator(locator, document, source)
+                    reconciliation = reconcile_evidence_text(
+                        evidence,
+                        document,
+                        source,
+                    )
+                    aligned = reconciliation.locator
                     if (
                         aligned.segment_id not in exposed_lengths
                         or aligned.end_char > exposed_lengths[aligned.segment_id]
                     ):
                         raise ValueError("Dreamer evidence must use an exposed segment")
                     locator_to_evidence(aligned, document, source)
+                    reconciled_evidence.append(
+                        EvidenceText(
+                            segment_id=aligned.segment_id,
+                            text=aligned.text,
+                        )
+                    )
                 except ValueError:
                     invalid_locators += 1
-        return invalid_locators, 0
+                    valid_candidate = False
+                    break
+            if not valid_candidate:
+                dropped_candidates += 1
+                continue
+            retained_candidates.append(
+                item.model_copy(update={"evidence_locations": reconciled_evidence})
+            )
+        output.candidates = retained_candidates
+        return invalid_locators, dropped_candidates
 
     def _ground(
         self,
@@ -1576,6 +1733,40 @@ class SingleDocumentProcessor:
                 errors: list[dict[str, object]],
             ) -> None:
                 invalid_schema_drafts.append((draft, errors))
+                invalid_index = len(invalid_schema_drafts)
+                raw_source_ids = (
+                    draft.get("source_candidate_ids")
+                    if isinstance(draft, dict)
+                    else None
+                )
+                source_ids = (
+                    [
+                        value
+                        for value in raw_source_ids
+                        if isinstance(value, str)
+                    ]
+                    if isinstance(raw_source_ids, list)
+                    else []
+                )
+                self.registry.append_decision_audit(
+                    DecisionAuditRecord(
+                        audit_id=(
+                            f"grounder-invalid-draft:{run_id}:{batch_index}:"
+                            f"{invalid_index}"
+                        ),
+                        run_id=run_id,
+                        decision_type="GROUNDER_INVALID_DRAFT",
+                        subject_id=(
+                            f"grounder-batch:{batch_index}:invalid:{invalid_index}"
+                        ),
+                        payload={
+                            "draft_index": invalid_index,
+                            "source_candidate_ids": source_ids,
+                            "errors": errors,
+                            "next_action": "INDIVIDUAL_ITEM_REPAIR",
+                        },
+                    )
+                )
 
             def validate_items(output: GrounderModelOutput) -> None:
                 retained: list[GroundedMentionDraftInput] = []
@@ -1677,13 +1868,13 @@ class SingleDocumentProcessor:
 
             def repair_invalid_draft(
                 indexed_invalid: tuple[int, tuple[object, list[dict[str, object]]]],
-            ) -> GroundedMentionDraftInput | None:
+            ) -> list[GroundedMentionDraftInput]:
                 invalid_index, (invalid_draft, validation_errors) = indexed_invalid
                 if not isinstance(invalid_draft, dict):
-                    return None
+                    return []
                 raw_source_ids = invalid_draft.get("source_candidate_ids")
                 if not isinstance(raw_source_ids, list):
-                    return None
+                    return []
                 source_ids = list(
                     dict.fromkeys(
                         value
@@ -1692,7 +1883,7 @@ class SingleDocumentProcessor:
                     )
                 )
                 if not source_ids:
-                    return None
+                    return []
                 repair_candidates = [
                     {
                         "candidate_id": source_id,
@@ -1710,15 +1901,18 @@ class SingleDocumentProcessor:
                     run_id=run_id,
                     tier=ModelTier.M3,
                     model=self.model_m3,
-                    stage="grounder_item",
+                    stage="grounder_item_repair",
                     summaries=summaries,
                 )
                 repair_request = StructuredModelRequest(
                     system_prompt=(
-                        "Repair exactly one existing Grounder draft. Preserve its candidate "
-                        "disposition and meaning; correct only fields required by the schema. "
-                        "Use only the supplied candidate IDs and document evidence. Return one "
-                        "draft object, never a batch."
+                        _prompt("grounder.md")
+                        + "\n\nRepair one invalid Grounder draft using `business_errors`. "
+                        "Preserve its supported meaning and candidate lineage. Return all and "
+                        "only the atomic replacement draft(s) needed to fix those errors; "
+                        "retain each replacement's subject/object, action and polarity, "
+                        "Assertion State, period/session, PRIMARY metric, comparison/range, "
+                        "and explicit source. Do not repair unrelated drafts."
                     ),
                     user_prompt=json.dumps(
                         {
@@ -1729,22 +1923,74 @@ class SingleDocumentProcessor:
                             ),
                             "candidates": repair_candidates,
                             "invalid_draft": invalid_draft,
-                            "validation_errors": validation_errors,
+                            "business_errors": validation_errors,
                         },
                         ensure_ascii=False,
                     ),
-                    json_schema=GroundedMentionDraftInput.model_json_schema(),
+                    json_schema=GrounderModelOutput.model_json_schema(),
                 )
+
                 try:
-                    return self._invoke_typed(
+                    repaired_output = self._invoke_typed(
                         client=repair_client,
                         request=repair_request,
-                        output_type=GroundedMentionDraftInput,
-                        semantic_validator=lambda _draft: None,
+                        output_type=GrounderModelOutput,
+                        # A locally invalid lineage must not discard otherwise legal
+                        # replacements. Filter by the supplied candidate boundary below;
+                        # unresolved candidates remain eligible for missing recovery.
+                        semantic_validator=lambda _output: None,
                         stage="grounder_item_repair",
                         repair_on_failure=False,
                     )
-                except SingleDocumentPipelineError as exc:
+                    legal_replacements = [
+                        draft
+                        for draft in repaired_output.drafts
+                        if draft.source_candidate_ids
+                        and all(
+                            candidate_id in source_ids
+                            for candidate_id in draft.source_candidate_ids
+                        )
+                    ]
+                    returned_ids = {
+                        candidate_id
+                        for draft in legal_replacements
+                        for candidate_id in draft.source_candidate_ids
+                    }
+                    unresolved_ids = sorted(set(source_ids) - returned_ids)
+                    if unresolved_ids or len(legal_replacements) != len(
+                        repaired_output.drafts
+                    ):
+                        self.registry.append_decision_audit(
+                            DecisionAuditRecord(
+                                audit_id=(
+                                    f"grounder-item-repair-partial:{run_id}:"
+                                    f"{batch_index}:{invalid_index}"
+                                ),
+                                run_id=run_id,
+                                decision_type="GROUNDER_ITEM_REPAIR_PARTIAL",
+                                subject_id=(
+                                    f"grounder-batch:{batch_index}:invalid:"
+                                    f"{invalid_index}"
+                                ),
+                                payload={
+                                    "source_candidate_ids": source_ids,
+                                    "recovered_candidate_ids": sorted(returned_ids),
+                                    "unresolved_candidate_ids": unresolved_ids,
+                                    "ignored_draft_count": (
+                                        len(repaired_output.drafts)
+                                        - len(legal_replacements)
+                                    ),
+                                    "fallback": "RETAIN_LEGAL_REPLACEMENTS",
+                                },
+                            )
+                        )
+                    return legal_replacements
+                except Exception as exc:
+                    error_code = (
+                        exc.code
+                        if isinstance(exc, SingleDocumentPipelineError)
+                        else type(exc).__name__
+                    )
                     self.registry.append_decision_audit(
                         DecisionAuditRecord(
                             audit_id=(
@@ -1755,13 +2001,13 @@ class SingleDocumentProcessor:
                             decision_type="GROUNDER_ITEM_REPAIR_DEGRADED",
                             subject_id=f"grounder-batch:{batch_index}:invalid:{invalid_index}",
                             payload={
-                                "code": exc.code,
+                                "code": error_code,
                                 "fallback": "DROP_INVALID_DRAFT_ONLY",
                                 "source_candidate_ids": source_ids,
                             },
                         )
                     )
-                    return None
+                    return []
 
             repaired_drafts: list[GroundedMentionDraftInput] = []
             if invalid_schema_drafts:
@@ -1774,9 +2020,9 @@ class SingleDocumentProcessor:
                     # Validate already-legal drafts while independent item repairs run.
                     validate_items(output)
                     repaired_drafts = [
-                        repaired
+                        repaired_draft
                         for future in repair_futures
-                        if (repaired := future.result()) is not None
+                        for repaired_draft in future.result()
                     ]
             else:
                 validate_items(output)
@@ -1789,16 +2035,34 @@ class SingleDocumentProcessor:
                 validate_items(repaired_output)
                 output.drafts.extend(repaired_output.drafts)
 
-            retained_drafts: list[GroundedMentionDraftInput] = []
-            seen_used: set[str] = set()
-            duplicate_used: set[str] = set()
+            # Candidate disposition is unique, but a compound candidate may
+            # legitimately support several distinct atomic drafts. Collapse
+            # only semantically identical drafts and union their lineage.
+            retained_by_signature: dict[str, GroundedMentionDraftInput] = {}
             for draft in output.drafts:
-                overlap = seen_used.intersection(draft.source_candidate_ids)
-                if overlap:
-                    duplicate_used.update(overlap)
+                signature = _hash_json(draft.mention.model_dump(mode="json"))
+                existing = retained_by_signature.get(signature)
+                if existing is None:
+                    retained_by_signature[signature] = draft
                     continue
-                seen_used.update(draft.source_candidate_ids)
-                retained_drafts.append(draft)
+                retained_by_signature[signature] = existing.model_copy(
+                    update={
+                        "source_candidate_ids": list(
+                            dict.fromkeys(
+                                [
+                                    *existing.source_candidate_ids,
+                                    *draft.source_candidate_ids,
+                                ]
+                            )
+                        )
+                    }
+                )
+            retained_drafts = list(retained_by_signature.values())
+            seen_used = {
+                candidate_id
+                for draft in retained_drafts
+                for candidate_id in draft.source_candidate_ids
+            }
             retained_rejections: list[RejectedCandidateDraft] = []
             seen_rejected: set[str] = set()
             duplicate_rejected: set[str] = set()
@@ -1820,7 +2084,7 @@ class SingleDocumentProcessor:
             output.rejected_candidates = retained_rejections
             missing = sorted(candidate_ids - seen_used - seen_rejected)
             disposition_failure = {
-                "duplicate_candidate_ids": sorted(duplicate_used | duplicate_rejected),
+                "duplicate_candidate_ids": sorted(duplicate_rejected),
                 "overlap_candidate_ids": sorted(overlap_rejected),
                 "missing_candidate_ids": missing,
                 "extra_candidate_ids": sorted(extra),
@@ -1886,7 +2150,16 @@ class SingleDocumentProcessor:
                         "rejected_candidate_count": len(output.rejected_candidates),
                         "rejected_code_counts": dict(rejection_codes),
                         "missing_candidate_ids": missing,
-                        "duplicate_candidate_ids": sorted(duplicate_used | duplicate_rejected),
+                        "duplicate_candidate_ids": sorted(duplicate_rejected),
+                        "candidate_fanout_count": sum(
+                            1
+                            for candidate_id in seen_used
+                            if sum(
+                                candidate_id in item.source_candidate_ids
+                                for item in output.drafts
+                            )
+                            > 1
+                        ),
                         "initial_disposition_failures": disposition_failures,
                         "repair_triggered": bool(invalid_schema_drafts),
                         "repair_scope": (
@@ -1907,6 +2180,7 @@ class SingleDocumentProcessor:
         worker_count = min(3, len(batches))
         with ThreadPoolExecutor(max_workers=worker_count) as executor:
             batch_results = list(executor.map(process_batch, enumerate(batches)))
+        rejected_by_candidate: dict[str, RejectedCandidateRecord] = {}
         for batch_index, output, reused in sorted(batch_results):
             if reused:
                 self.registry.append_decision_audit(
@@ -1922,13 +2196,261 @@ class SingleDocumentProcessor:
                 issue_flags[issue] = None
             for item in output.drafts:
                 drafts_by_id[item.draft_id] = item
+            for rejection in output.rejected_candidates:
+                rejected_by_candidate.setdefault(rejection.candidate_id, rejection)
+
+        used_candidate_ids = {
+            candidate_id
+            for draft in drafts_by_id.values()
+            for candidate_id in draft.source_candidate_ids
+        }
+        missing_candidates = [
+            candidate
+            for candidate in ordered_candidates
+            if candidate.candidate_id not in used_candidate_ids
+            and candidate.candidate_id not in rejected_by_candidate
+        ]
+        recovery_failed_ids: list[str] = []
+        if missing_candidates:
+            recovery_short_to_full = {
+                f"c{index}": candidate.candidate_id
+                for index, candidate in enumerate(missing_candidates, start=1)
+            }
+            recovery_candidate_by_short = {
+                short_id: candidate
+                for short_id, candidate in zip(
+                    recovery_short_to_full,
+                    missing_candidates,
+                    strict=True,
+                )
+            }
+            recovery_ids = set(recovery_short_to_full)
+            recovery_client = _AuditedStructuredClient(
+                client=self.m3_client,
+                registry=self.registry,
+                run_id=run_id,
+                tier=ModelTier.M3,
+                model=self.model_m3,
+                stage="grounder_missing_recovery",
+                summaries=summaries,
+            )
+            recovery_request = StructuredModelRequest(
+                system_prompt=(
+                    _prompt("grounder.md")
+                    + "\n\nResolve every supplied missing candidate. Give each one exactly "
+                    "one disposition under the same USED/REJECTED rules as Grounder. "
+                    "Preserve all supported event fields. Reject background, duplicate, or "
+                    "non-event material; split only when the evidence explicitly supports "
+                    "multiple complete independent events. Return no IDs that were not supplied."
+                ),
+                user_prompt=json.dumps(
+                    {
+                        "published_at": _published_at_model(source.published_at),
+                        "document": grounder_context(document, missing_candidates),
+                        "candidates": [
+                            {
+                                "candidate_id": short_id,
+                                "statement": candidate.statement,
+                                "evidence_locations": [
+                                    locator.model_dump(mode="json")
+                                    for locator in candidate.evidence_locations
+                                ],
+                            }
+                            for short_id, candidate in recovery_candidate_by_short.items()
+                        ],
+                    },
+                    ensure_ascii=False,
+                ),
+                json_schema=GrounderModelOutput.model_json_schema(),
+            )
+
+            try:
+                recovered = self._invoke_typed(
+                    client=recovery_client,
+                    request=recovery_request,
+                    output_type=GrounderModelOutput,
+                    # Coverage is reconciled candidate by candidate below. A missing,
+                    # duplicate, overlapping or foreign ID is local degradation, not a
+                    # reason to throw away every legal disposition in the response.
+                    semantic_validator=lambda _output: None,
+                    stage="grounder_missing_recovery",
+                    repair_on_failure=False,
+                )
+                legal_recovered_drafts = [
+                    item
+                    for item in recovered.drafts
+                    if item.source_candidate_ids
+                    and all(
+                        candidate_id in recovery_ids
+                        for candidate_id in item.source_candidate_ids
+                    )
+                ]
+                recovered_legal_ids: set[str] = set()
+                for recovered_index, recovered_item in enumerate(
+                    legal_recovered_drafts,
+                    start=1,
+                ):
+                    try:
+                        normalized = self._normalize_draft_time(
+                            recovered_item.mention,
+                            run_id=run_id,
+                            stage="grounder_missing_recovery",
+                            subject_id=f"recovered:{recovered_index}",
+                        )
+                        anchors = [
+                            locator
+                            for candidate_id in recovered_item.source_candidate_ids
+                            for locator in recovery_candidate_by_short[
+                                candidate_id
+                            ].evidence_locations
+                        ]
+                        mention = self._reconcile_draft_evidence(
+                            normalized,
+                            document,
+                            source,
+                            run_id=run_id,
+                            stage="grounder_missing_recovery",
+                            subject_id=f"recovered:{recovered_index}",
+                            source_candidate_ids=recovered_item.source_candidate_ids,
+                            candidate_anchors=anchors,
+                        )
+                        validate_event_time_semantics(mention.time)
+                    except (ValidationError, ValueError):
+                        continue
+                    full_ids = [
+                        recovery_short_to_full[value]
+                        for value in recovered_item.source_candidate_ids
+                    ]
+                    identity = _hash_json(
+                        {
+                            "source_candidate_ids": full_ids,
+                            "mention": mention.model_dump(mode="json"),
+                        }
+                    )
+                    recovered_draft = GroundedMentionDraft(
+                        draft_id=f"draft:{source.message_id}:{identity}",
+                        source_candidate_ids=full_ids,
+                        mention=mention,
+                    )
+                    drafts_by_id[recovered_draft.draft_id] = recovered_draft
+                    recovered_legal_ids.update(recovered_item.source_candidate_ids)
+                retained_recovery_rejections: list[RejectedCandidateDraft] = []
+                seen_recovery_rejections: set[str] = set()
+                for recovery_rejection in recovered.rejected_candidates:
+                    if (
+                        recovery_rejection.id not in recovery_ids
+                        or recovery_rejection.id in recovered_legal_ids
+                        or recovery_rejection.id in seen_recovery_rejections
+                    ):
+                        continue
+                    seen_recovery_rejections.add(recovery_rejection.id)
+                    retained_recovery_rejections.append(recovery_rejection)
+                    rejected_by_candidate.setdefault(
+                        recovery_short_to_full[recovery_rejection.id],
+                        RejectedCandidateRecord(
+                            candidate_id=recovery_short_to_full[recovery_rejection.id],
+                            code=recovery_rejection.code,
+                        ),
+                    )
+                recovered_disposed = recovered_legal_ids.union(
+                    recovery_rejection.id
+                    for recovery_rejection in retained_recovery_rejections
+                )
+                recovery_failed_ids = sorted(
+                    recovery_short_to_full[short_id]
+                    for short_id in recovery_ids - recovered_disposed
+                )
+                if (
+                    recovery_failed_ids
+                    or len(legal_recovered_drafts) != len(recovered.drafts)
+                    or len(retained_recovery_rejections)
+                    != len(recovered.rejected_candidates)
+                ):
+                    self.registry.append_decision_audit(
+                        DecisionAuditRecord(
+                            audit_id=f"grounder-missing-recovery-partial:{run_id}",
+                            run_id=run_id,
+                            decision_type="GROUNDER_MISSING_RECOVERY_PARTIAL",
+                            subject_id=source.message_id,
+                            payload={
+                                "candidate_ids": [
+                                    candidate.candidate_id
+                                    for candidate in missing_candidates
+                                ],
+                                "recovered_candidate_ids": sorted(
+                                    recovery_short_to_full[short_id]
+                                    for short_id in recovered_disposed
+                                ),
+                                "failed_candidate_ids": recovery_failed_ids,
+                                "ignored_draft_count": (
+                                    len(recovered.drafts)
+                                    - len(legal_recovered_drafts)
+                                ),
+                                "ignored_rejection_count": (
+                                    len(recovered.rejected_candidates)
+                                    - len(retained_recovery_rejections)
+                                ),
+                                "fallback": "RETAIN_LEGAL_DISPOSITIONS",
+                            },
+                        )
+                    )
+            except Exception as exc:
+                recovery_failed_ids = [
+                    candidate.candidate_id for candidate in missing_candidates
+                ]
+                error_code = (
+                    exc.code
+                    if isinstance(exc, SingleDocumentPipelineError)
+                    else type(exc).__name__
+                )
+                self.registry.append_decision_audit(
+                    DecisionAuditRecord(
+                        audit_id=f"grounder-missing-recovery-failed:{run_id}",
+                        run_id=run_id,
+                        decision_type="GROUNDER_MISSING_RECOVERY_FAILED",
+                        subject_id=source.message_id,
+                        payload={
+                            "candidate_ids": recovery_failed_ids,
+                            "code": error_code,
+                            "disposition": "FAILED_TECHNICAL",
+                        },
+                    )
+                )
+
+        final_used_candidate_ids = {
+            candidate_id
+            for draft in drafts_by_id.values()
+            for candidate_id in draft.source_candidate_ids
+        }
+        final_missing_ids = sorted(
+            candidate.candidate_id
+            for candidate in ordered_candidates
+            if candidate.candidate_id not in final_used_candidate_ids
+            and candidate.candidate_id not in rejected_by_candidate
+        )
+        self.registry.append_decision_audit(
+            DecisionAuditRecord(
+                audit_id=f"grounder-document-disposition:{run_id}",
+                run_id=run_id,
+                decision_type="GROUNDER_DOCUMENT_DISPOSITION",
+                subject_id=source.message_id,
+                payload={
+                    "candidate_count": len(ordered_candidates),
+                    "used_candidate_count": len(final_used_candidate_ids),
+                    "rejected_candidate_count": len(rejected_by_candidate),
+                    "missing_before_recovery": [
+                        candidate.candidate_id for candidate in missing_candidates
+                    ],
+                    "failed_technical_candidate_ids": sorted(
+                        set(recovery_failed_ids).union(final_missing_ids)
+                    ),
+                    "business_coverage_complete": not final_missing_ids,
+                },
+            )
+        )
         return GrounderOutput(
             drafts=list(drafts_by_id.values()),
-            rejected_candidates=[
-                item
-                for _, output, _ in sorted(batch_results)
-                for item in output.rejected_candidates
-            ],
+            rejected_candidates=list(rejected_by_candidate.values()),
             issue_flags=list(issue_flags),
         )
 
@@ -2036,6 +2558,10 @@ class SingleDocumentProcessor:
             dropped_attribute_merges: set[str] = set()
             invalid_cross_commands: set[str] = set()
             semantic_degraded_ids: set[str] = set()
+            semantic_failures_by_id: dict[str, set[str]] = {}
+            coverage_missing_ids: set[str] = set()
+            coverage_duplicate_ids: set[str] = set()
+            coverage_extra_ids: set[str] = set()
 
             def draft_anchors(short_id: str) -> list[EvidenceLocator]:
                 return [
@@ -2051,6 +2577,10 @@ class SingleDocumentProcessor:
                 dropped_attribute_merges.clear()
                 invalid_cross_commands.clear()
                 semantic_degraded_ids.clear()
+                semantic_failures_by_id.clear()
+                coverage_missing_ids.clear()
+                coverage_duplicate_ids.clear()
+                coverage_extra_ids.clear()
                 targets = [
                     *[item.id for item in output.accepted],
                     *[item.id for item in output.rejected],
@@ -2122,6 +2652,21 @@ class SingleDocumentProcessor:
                     ):
                         try:
                             persistent = _judge_mention_to_persistent(split_mention)
+                            original_hint = draft_by_short[
+                                split_command.id
+                            ].mention.local_package_hint
+                            if (
+                                persistent.local_package_hint is None
+                                and original_hint is not None
+                                and persistent.event_family
+                                not in {
+                                    EventFamily.MARKET_MOVEMENT,
+                                    EventFamily.ANALYST_ACTION,
+                                }
+                            ):
+                                persistent = persistent.model_copy(
+                                    update={"local_package_hint": original_hint}
+                                )
                             subject_id = f"{split_command.id}:split:{split_index}"
                             persistent = self._normalize_draft_time(
                                 persistent,
@@ -2186,25 +2731,33 @@ class SingleDocumentProcessor:
                             merge_command.attribute = reconciled.open_attributes[-1]
                     except ValueError:
                         dropped_attribute_merges.add(merge_command.id)
-                if set(targets) != draft_ids or len(targets) != len(set(targets)):
+                target_set = set(targets)
+                coverage_missing_ids.update(draft_ids - target_set)
+                coverage_extra_ids.update(target_set - draft_ids)
+                coverage_duplicate_ids.update(
+                    value for value in targets if targets.count(value) > 1
+                )
+                if (
+                    coverage_missing_ids
+                    or coverage_extra_ids
+                    or coverage_duplicate_ids
+                ):
+                    coverage_payload = {
+                        "missing": sorted(coverage_missing_ids),
+                        "extra": sorted(coverage_extra_ids),
+                        "duplicates": sorted(coverage_duplicate_ids),
+                        "recovery": "TARGETED_COVERAGE_REQUEST",
+                    }
                     self.registry.append_decision_audit(
                         DecisionAuditRecord(
-                            audit_id=f"judge-coverage-degraded:{run_id}:{batch_index}",
+                            audit_id=(
+                                f"judge-coverage-degraded:{run_id}:{batch_index}:"
+                                f"{_hash_json(coverage_payload)[:16]}"
+                            ),
                             run_id=run_id,
                             decision_type="JUDGE_COVERAGE_DEGRADED",
                             subject_id=f"judge-batch:{batch_index}",
-                            payload={
-                                "missing": sorted(draft_ids - set(targets)),
-                                "extra": sorted(set(targets) - draft_ids),
-                                "duplicates": sorted(
-                                    {
-                                        value
-                                        for value in targets
-                                        if targets.count(value) > 1
-                                    }
-                                ),
-                                "fallback": "ACCEPT_GROUNDER_DRAFT",
-                            },
+                            payload=coverage_payload,
                         )
                     )
                 semantic_failures = _judge_semantic_failures(
@@ -2213,56 +2766,72 @@ class SingleDocumentProcessor:
                     validated_accepted,
                     validated_splits,
                 )
+                semantic_failures_by_id.update(semantic_failures)
                 for short_id, codes in sorted(semantic_failures.items()):
                     for code in sorted(codes):
                         self.registry.append_decision_audit(
                             DecisionAuditRecord(
                                 audit_id=(
                                     f"judge-semantic:{run_id}:{batch_index}:"
-                                    f"{short_id}:{code}:{client.repair_invocations}"
+                                    f"{short_id}:{code}:initial"
                                 ),
                                 run_id=run_id,
                                 decision_type="JUDGE_SEMANTIC_VALIDATION",
                                 subject_id=short_to_full.get(short_id, short_id),
                                 payload={
                                     "code": code,
-                                    "repair_attempt": client.repair_invocations > 0,
+                                    "repair_attempt": False,
                                 },
                             )
                         )
-                if semantic_failures and client.repair_invocations > 0:
-                    semantic_degraded_ids.update(semantic_failures)
-                    for short_id in semantic_failures:
-                        grounded_original = draft_by_short.get(short_id)
-                        if grounded_original is not None:
-                            validated_accepted[short_id] = grounded_original.mention
-                        validated_splits.pop(short_id, None)
-                    self.registry.append_decision_audit(
-                        DecisionAuditRecord(
-                            audit_id=f"judge-semantic-degraded:{run_id}:{batch_index}",
-                            run_id=run_id,
-                            decision_type="JUDGE_SEMANTIC_DEGRADED",
-                            subject_id=f"judge-batch:{batch_index}",
-                            payload={
-                                "invalid_ids": sorted(semantic_failures),
-                                "fallback": "ACCEPT_GROUNDER_ITEM",
-                            },
+            command_group_names = (
+                "accepted",
+                "rejected",
+                "split",
+                "duplicates",
+                "attribute_merges",
+            )
+
+            def command_ids(value: JudgeCommandOutput) -> list[str]:
+                return [
+                    command.id
+                    for group_name in command_group_names
+                    for command in getattr(value, group_name)
+                ]
+
+            def without_command_ids(
+                value: JudgeCommandOutput,
+                removed_ids: set[str],
+            ) -> JudgeCommandOutput:
+                return JudgeCommandOutput.model_validate(
+                    {
+                        group_name: [
+                            command.model_dump(mode="json", exclude_unset=True)
+                            for command in getattr(value, group_name)
+                            if command.id not in removed_ids
+                        ]
+                        for group_name in command_group_names
+                    }
+                )
+
+            def merge_command_outputs(
+                base: JudgeCommandOutput,
+                additions: Sequence[JudgeCommandOutput],
+            ) -> JudgeCommandOutput:
+                payload = {
+                    group_name: [
+                        command.model_dump(mode="json", exclude_unset=True)
+                        for command in getattr(base, group_name)
+                    ]
+                    for group_name in command_group_names
+                }
+                for addition in additions:
+                    for group_name in command_group_names:
+                        payload[group_name].extend(
+                            command.model_dump(mode="json", exclude_unset=True)
+                            for command in getattr(addition, group_name)
                         )
-                    )
-                    return
-                if semantic_failures:
-                    raise ValueError(
-                        "|".join(
-                            code.casefold()
-                            for code in sorted(
-                                {
-                                    code
-                                    for codes in semantic_failures.values()
-                                    for code in codes
-                                }
-                            )
-                        )
-                    )
+                return JudgeCommandOutput.model_validate(payload)
 
             try:
                 output = self._invoke_typed(
@@ -2271,6 +2840,7 @@ class SingleDocumentProcessor:
                     output_type=JudgeCommandOutput,
                     semantic_validator=validate,
                     stage="judge",
+                    repair_on_failure=False,
                 )
             except SingleDocumentPipelineError as exc:
                 validated_accepted.clear()
@@ -2297,6 +2867,336 @@ class SingleDocumentProcessor:
                         },
                     )
                 )
+                validate(output)
+
+            # Drop unknown commands and every conflicting duplicate command before
+            # recovering only the affected in-batch IDs.
+            recovery_ids = set(coverage_missing_ids)
+            recovery_ids.update(coverage_duplicate_ids.intersection(draft_ids))
+            if coverage_extra_ids or coverage_duplicate_ids:
+                output = without_command_ids(
+                    output,
+                    coverage_extra_ids | coverage_duplicate_ids,
+                )
+                validate(output)
+                recovery_ids.update(coverage_missing_ids)
+
+            if recovery_ids:
+                recovery_client = _AuditedStructuredClient(
+                    client=self.m4_client,
+                    registry=self.registry,
+                    run_id=run_id,
+                    tier=ModelTier.M4,
+                    model=self.model_m4,
+                    stage="judge_coverage_recovery",
+                    summaries=summaries,
+                )
+                recovery_request = StructuredModelRequest(
+                    system_prompt=(
+                        _prompt("judge.md")
+                        + "\n\nReturn exactly one Judge command for every supplied missing "
+                        "draft ID. Review only these drafts under the same Eventhood, "
+                        "Atomicity, field-correctness, and consolidation rules; do not return "
+                        "any other ID."
+                    ),
+                    user_prompt=json.dumps(
+                        {
+                            "published_at": _published_at_model(source.published_at),
+                            "document": grounder_context(
+                                document,
+                                [
+                                    draft_by_short[short_id].mention
+                                    for short_id in sorted(recovery_ids)
+                                ],
+                            ),
+                            "drafts": [
+                                JudgeDraftInput(
+                                    id=short_id,
+                                    mention=_judge_mention(draft_by_short[short_id].mention),
+                                ).model_dump(mode="json")
+                                for short_id in sorted(recovery_ids)
+                            ],
+                        },
+                        ensure_ascii=False,
+                    ),
+                    json_schema=_compact_model_schema(
+                        JudgeCommandOutput.model_json_schema()
+                    ),
+                )
+
+                def validate_coverage_recovery(value: JudgeCommandOutput) -> None:
+                    ids = command_ids(value)
+                    if len(ids) != len(set(ids)) or set(ids) != recovery_ids:
+                        raise ValueError("judge_coverage_recovery_must_exactly_cover_targets")
+
+                try:
+                    recovered = self._invoke_typed(
+                        client=recovery_client,
+                        request=recovery_request,
+                        output_type=JudgeCommandOutput,
+                        semantic_validator=validate_coverage_recovery,
+                        stage="judge_coverage_recovery",
+                        repair_on_failure=False,
+                    )
+                    output = merge_command_outputs(output, [recovered])
+                except Exception as exc:
+                    error_code = (
+                        exc.code
+                        if isinstance(exc, SingleDocumentPipelineError)
+                        else type(exc).__name__
+                    )
+                    output = merge_command_outputs(
+                        output,
+                        [
+                            JudgeCommandOutput(
+                                accepted=[
+                                    JudgeAcceptedCommand(
+                                        id=short_id,
+                                        reason="JUDGE_COVERAGE_RECOVERY_FAILED_RETAIN_GROUNDER_DRAFT",
+                                    )
+                                    for short_id in sorted(recovery_ids)
+                                ]
+                            )
+                        ],
+                    )
+                    self.registry.append_decision_audit(
+                        DecisionAuditRecord(
+                            audit_id=(
+                                f"judge-coverage-recovery-failed:{run_id}:{batch_index}"
+                            ),
+                            run_id=run_id,
+                            decision_type="JUDGE_COVERAGE_RECOVERY_FAILED",
+                            subject_id=f"judge-batch:{batch_index}",
+                            payload={
+                                "target_ids": sorted(recovery_ids),
+                                "code": error_code,
+                                "fallback": "ACCEPT_GROUNDER_ITEMS",
+                            },
+                        )
+                    )
+                validate(output)
+
+            def business_error_payload(codes: set[str]) -> list[dict[str, str]]:
+                corrections = {
+                    "MULTIPLE_PRIMARY_METRICS": (
+                        "Split independent primary metric facts; keep comparisons and bounds "
+                        "with the metric they qualify."
+                    ),
+                    "OPPOSING_CORE_ACTIONS": (
+                        "Split opposing actions unless the evidence expresses one bounded "
+                        "transition."
+                    ),
+                    "OPPOSING_SUBJECT_ACTIONS": (
+                        "Keep each subject with only its own action and supported fields."
+                    ),
+                    "GENERIC_UMBRELLA_DUPLICATE": (
+                        "Reject an exhausted umbrella, or preserve it only when it has an "
+                        "independent artifact or action."
+                    ),
+                    "LIKELY_FRAGMENTATION": (
+                        "Do not create duplicate or qualifier-only replacement Mentions."
+                    ),
+                    "GUIDANCE_ASSERTION_CONFLICT": (
+                        "Align the predicate and Assertion State with the supported fact."
+                    ),
+                }
+                return [
+                    {
+                        "code": code,
+                        "required_correction": corrections.get(
+                            code,
+                            (
+                                "Correct this business-invalid Mention without losing "
+                                "supported fields."
+                            ),
+                        ),
+                    }
+                    for code in sorted(codes)
+                ]
+
+            initial_semantic_failures = {
+                short_id: set(codes)
+                for short_id, codes in semantic_failures_by_id.items()
+                if short_id in draft_ids
+            }
+
+            def repair_semantic_item(
+                item: tuple[str, set[str]],
+            ) -> tuple[str, JudgeCommandOutput | None, str | None]:
+                short_id, codes = item
+                repair_client = _AuditedStructuredClient(
+                    client=self.m4_client,
+                    registry=self.registry,
+                    run_id=run_id,
+                    tier=ModelTier.M4,
+                    model=self.model_m4,
+                    stage="judge_item_repair",
+                    summaries=summaries,
+                )
+                current_command = without_command_ids(
+                    output,
+                    draft_ids - {short_id},
+                )
+                peer_ids = [
+                    peer_id
+                    for peer_id in draft_by_short
+                    if peer_id != short_id
+                    and (
+                        set(draft_by_short[peer_id].source_candidate_ids)
+                        & set(draft_by_short[short_id].source_candidate_ids)
+                    )
+                ][:6]
+                repair_request = StructuredModelRequest(
+                    system_prompt=(
+                        _prompt("judge.md")
+                        + "\n\nRepair exactly one Judge decision using `business_errors`. "
+                        "Return exactly one command for `target_id` and no command for any "
+                        "other ID. Preserve every source-supported fact and exact evidence; "
+                        "apply the error-specific correction rather than only rewriting the "
+                        "reason. If the draft is compound, SPLIT it into complete atomic "
+                        "replacements. If a generic umbrella is exhausted by the supplied "
+                        "peer facts and has no independent artifact or action, REJECT it."
+                    ),
+                    user_prompt=json.dumps(
+                        {
+                            "published_at": _published_at_model(source.published_at),
+                            "target_id": short_id,
+                            "drafts": [
+                                JudgeDraftInput(
+                                    id=short_id,
+                                    mention=_judge_mention(
+                                        draft_by_short[short_id].mention
+                                    ),
+                                ).model_dump(mode="json")
+                            ],
+                            "target_draft": JudgeDraftInput(
+                                id=short_id,
+                                mention=_judge_mention(draft_by_short[short_id].mention),
+                            ).model_dump(mode="json"),
+                            "invalid_command": current_command.model_dump(mode="json"),
+                            "business_errors": business_error_payload(codes),
+                            "peer_drafts": [
+                                JudgeDraftInput(
+                                    id=peer_id,
+                                    mention=_judge_mention(
+                                        draft_by_short[peer_id].mention
+                                    ),
+                                ).model_dump(mode="json")
+                                for peer_id in peer_ids
+                            ],
+                            "document": grounder_context(
+                                document,
+                                [
+                                    draft_by_short[short_id].mention,
+                                    *[
+                                        draft_by_short[peer_id].mention
+                                        for peer_id in peer_ids
+                                    ],
+                                ],
+                            ),
+                        },
+                        ensure_ascii=False,
+                    ),
+                    json_schema=_compact_model_schema(
+                        JudgeCommandOutput.model_json_schema()
+                    ),
+                )
+
+                def validate_item_repair(value: JudgeCommandOutput) -> None:
+                    ids = command_ids(value)
+                    if ids != [short_id]:
+                        raise ValueError("judge_item_repair_must_return_exactly_one_target")
+
+                try:
+                    repaired = self._invoke_typed(
+                        client=repair_client,
+                        request=repair_request,
+                        output_type=JudgeCommandOutput,
+                        semantic_validator=validate_item_repair,
+                        stage="judge_item_repair",
+                        repair_on_failure=False,
+                    )
+                    return short_id, repaired, None
+                except Exception as exc:
+                    error_code = (
+                        exc.code
+                        if isinstance(exc, SingleDocumentPipelineError)
+                        else type(exc).__name__
+                    )
+                    return short_id, None, error_code
+
+            if initial_semantic_failures:
+                with ThreadPoolExecutor(
+                    max_workers=min(3, len(initial_semantic_failures))
+                ) as repair_executor:
+                    repairs = list(
+                        repair_executor.map(
+                            repair_semantic_item,
+                            sorted(initial_semantic_failures.items()),
+                        )
+                    )
+                repaired_by_id = {
+                    short_id: repaired
+                    for short_id, repaired, _ in repairs
+                    if repaired is not None
+                }
+                output = without_command_ids(output, set(initial_semantic_failures))
+                output = merge_command_outputs(
+                    output,
+                    [
+                        repaired_by_id[short_id]
+                        for short_id in sorted(repaired_by_id)
+                    ],
+                )
+                unrepaired_ids = set(initial_semantic_failures) - set(repaired_by_id)
+                if unrepaired_ids:
+                    output = merge_command_outputs(
+                        output,
+                        [
+                            JudgeCommandOutput(
+                                accepted=[
+                                    JudgeAcceptedCommand(
+                                        id=short_id,
+                                        reason="SEMANTIC_REPAIR_FAILED_RETAIN_GROUNDER_ITEM",
+                                    )
+                                    for short_id in sorted(unrepaired_ids)
+                                ]
+                            )
+                        ],
+                    )
+                    semantic_degraded_ids.update(unrepaired_ids)
+                validate(output)
+                still_invalid_ids = set(semantic_failures_by_id)
+                if still_invalid_ids:
+                    output = without_command_ids(output, still_invalid_ids)
+                    output = merge_command_outputs(
+                        output,
+                        [
+                            JudgeCommandOutput(
+                                accepted=[
+                                    JudgeAcceptedCommand(
+                                        id=short_id,
+                                        reason="SEMANTIC_REPAIR_FAILED_RETAIN_GROUNDER_ITEM",
+                                    )
+                                    for short_id in sorted(still_invalid_ids)
+                                ]
+                            )
+                        ],
+                    )
+                    semantic_degraded_ids.update(still_invalid_ids)
+                    validate(output)
+                    self.registry.append_decision_audit(
+                        DecisionAuditRecord(
+                            audit_id=f"judge-semantic-degraded:{run_id}:{batch_index}",
+                            run_id=run_id,
+                            decision_type="JUDGE_SEMANTIC_DEGRADED",
+                            subject_id=f"judge-batch:{batch_index}",
+                            payload={
+                                "invalid_ids": sorted(still_invalid_ids),
+                                "fallback": "ACCEPT_GROUNDER_ITEMS",
+                            },
+                        )
+                    )
             persisted: list[JudgeDecisionRecord] = []
             decided_short_ids: set[str] = set()
 
@@ -2549,7 +3449,79 @@ class SingleDocumentProcessor:
         draft: MentionDraft,
         *,
         run_id: str,
+        source_candidate_ids: Sequence[str] = (),
+        candidates: Sequence[DreamCandidate] = (),
     ) -> EventMention:
+        source_candidate_id_set = set(source_candidate_ids)
+        lineage_anchors = [
+            locator
+            for candidate in candidates
+            if candidate.candidate_id in source_candidate_id_set
+            for locator in candidate.evidence_locations
+        ]
+        lineage_anchor_sources: dict[tuple[str, int, int, str], list[str]] = {}
+        for candidate in candidates:
+            if candidate.candidate_id not in source_candidate_id_set:
+                continue
+            for locator in candidate.evidence_locations:
+                lineage_anchor_sources.setdefault(
+                    (
+                        locator.segment_id,
+                        locator.start_char,
+                        locator.end_char,
+                        locator.text,
+                    ),
+                    [],
+                ).append(candidate.candidate_id)
+
+        def recover_from_candidate_anchor(
+            raw: EvidenceText,
+            candidate_anchors: Sequence[EvidenceLocator],
+        ) -> EvidenceLocator | None:
+            raw_tokens = set(re.findall(r"[a-z0-9]+", raw.text.casefold()))
+            raw_numbers = set(re.findall(r"\d+(?:\.\d+)?", raw.text))
+            raw_entities = {
+                token.casefold()
+                for token in re.findall(r"\b[A-Z][A-Za-z0-9&.-]+\b", raw.text)
+            }
+            if len(raw_tokens) < 2:
+                return None
+            compatible: dict[
+                tuple[str, int, int, str],
+                EvidenceLocator,
+            ] = {}
+            for anchor in candidate_anchors:
+                if anchor.segment_id != raw.segment_id:
+                    continue
+                try:
+                    locator_to_evidence(anchor, document, source)
+                except ValueError:
+                    continue
+                anchor_tokens = set(
+                    re.findall(r"[a-z0-9]+", anchor.text.casefold())
+                )
+                anchor_numbers = set(
+                    re.findall(r"\d+(?:\.\d+)?", anchor.text)
+                )
+                if raw_numbers - anchor_numbers:
+                    continue
+                if raw_entities - anchor_tokens:
+                    continue
+                coverage = len(raw_tokens.intersection(anchor_tokens)) / len(
+                    raw_tokens
+                )
+                if coverage < 0.75:
+                    continue
+                compatible[
+                    (
+                        anchor.segment_id,
+                        anchor.start_char,
+                        anchor.end_char,
+                        anchor.text,
+                    )
+                ] = anchor
+            return next(iter(compatible.values())) if len(compatible) == 1 else None
+
         def locate(
             raw: EvidenceText,
             *,
@@ -2584,6 +3556,20 @@ class SingleDocumentProcessor:
                     reconciliation.locator,
                 )
             except ValueError as exc:
+                recovered = recover_from_candidate_anchor(raw, candidate_anchors)
+                if recovered is not None:
+                    span = locator_to_evidence(recovered, document, source)
+                    return (
+                        EvidenceRecord(
+                            segment_id=recovered.segment_id,
+                            text=recovered.text,
+                            status=EvidenceRecordStatus.VERIFIED,
+                            error_code="DREAM_CANDIDATE_ANCHOR_RECOVERY",
+                        ),
+                        span,
+                        "DREAM_CANDIDATE_ANCHOR_RECOVERY",
+                        recovered,
+                    )
                 return (
                     EvidenceRecord(
                         segment_id=raw.segment_id,
@@ -2596,7 +3582,10 @@ class SingleDocumentProcessor:
                     None,
                 )
 
-        main_results = [locate(item) for item in draft.evidence_locations]
+        main_results = [
+            locate(item, candidate_anchors=lineage_anchors)
+            for item in draft.evidence_locations
+        ]
         evidence_records = [item[0] for item in main_results]
         evidence = [item[1] for item in main_results if item[1] is not None]
         main_anchors = [item[3] for item in main_results if item[3] is not None]
@@ -2679,6 +3668,21 @@ class SingleDocumentProcessor:
                     raw_values[index].text.encode("utf-8")
                 ).hexdigest()
                 final_hash = hashlib.sha256(record.text.encode("utf-8")).hexdigest()
+                recovered_anchor = results[index][3]
+                recovered_candidate_ids = (
+                    lineage_anchor_sources.get(
+                        (
+                            recovered_anchor.segment_id,
+                            recovered_anchor.start_char,
+                            recovered_anchor.end_char,
+                            recovered_anchor.text,
+                        ),
+                        [],
+                    )
+                    if repair_kind == "DREAM_CANDIDATE_ANCHOR_RECOVERY"
+                    and recovered_anchor is not None
+                    else []
+                )
                 self.registry.append_decision_audit(
                     DecisionAuditRecord(
                         audit_id=(
@@ -2696,6 +3700,7 @@ class SingleDocumentProcessor:
                             "error_code": record.error_code,
                             "first_divergence_stage": "MATERIALIZE",
                             "repair_kind": repair_kind,
+                            "candidate_ids": recovered_candidate_ids,
                             "original_model_text_hash": original_hash,
                             "final_source_text_hash": final_hash,
                         },

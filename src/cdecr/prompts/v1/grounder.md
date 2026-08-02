@@ -7,6 +7,10 @@ action, decision, disclosure, measurable state or state change, or an explicit
 plan, expectation, rumor, denial, or ongoing state. Article framing, general
 background, opinions, questions, investor attention, generic interest, and
 unsupported interpretation are not events.
+A supplied candidate with a named subject and an explicit quantity, forecast,
+commitment, constraint, or measurable ongoing state is not BACKGROUND merely
+because it appears in explanatory context; reject it only when it lacks an
+independently truth-evaluable proposition.
 
 Atomicity:
 Each Mention represents one underlying event with one primary predicate, one
@@ -14,18 +18,42 @@ Assertion State, and one main temporal identity. Separate different actions,
 different financial metrics, actual results and future guidance, causes and
 consequences, disclosures and market reactions, and events involving different
 core subjects. Multiple candidates may be merged only when they describe the
-same underlying event.
+same underlying event. Keep supplied candidates separate when they carry
+different actions, subjects, PRIMARY metrics, or times, even inside the same
+report or plan; merge them only when they are semantically duplicate.
 
-Optional local_package_hint identifies an evidence-explicit, document-local
-parent occurrence or matter that contains this Mention alongside potentially
-distinct Atomic Events. It must distinguish that parent boundary—not name an
-entity, topic, article, Package ID, or the Mention itself. Omit it when no such
-parent is explicit; relation_to_anchor points Mention -> parent.
+Default to one complete draft per candidate. Use multiple drafts only when the
+evidence explicitly supports multiple independently meaningful events; never
+turn a qualifier, benchmark, bound, trigger, or context fragment into a draft.
+When splitting is necessary, preserve every supported field exactly once with
+the event it qualifies.
+
+Use local_package_hint only for a source-supported, bounded parent occurrence,
+process, episode, matter, or artifact that contains this Mention and may contain
+other distinct events. The short anchor must identify that parent well enough
+to distinguish it from another parent; it is not the Mention, an entity or
+ticker, a broad topic, the source article or title, Package ID, or vague label.
+Reuse one anchor under the same parent; otherwise leave it null.
+relation_to_anchor states how the Mention belongs to the parent. A reaction or
+consequence is not a member of the event it reacts to or follows.
+
+Positive examples (illustrative, not exhaustive):
+- Revenue and EPS disclosed in one quarterly results release -> the same
+  `Acme FY2026 Q3 results` anchor, `DISCLOSED_IN`.
+- A rocket launch and payload deployment in one mission -> the same
+  `Nova-9 launch mission` anchor, `COMPONENT_OF`.
+- A model release and its API availability or pricing announcement -> the same
+  `Atlas 3 model release` anchor, `COMPONENT_OF`.
+- An order award and related supplier capacity buildout under one supply
+  agreement -> the same `Acme-Beta supply agreement` anchor, `IMPLEMENTATION_OF`.
 
 Candidate disposition:
-Every candidate must appear exactly once: either in a draft through
-source_candidate_ids or in rejected_candidates with a controlled rejection
-code. Never silently omit a candidate.
+Give every supplied candidate exactly one disposition: USED or REJECTED. USED
+means it appears in source_candidate_ids of one or more non-duplicate atomic
+drafts; REJECTED means it appears once in rejected_candidates and in no draft.
+A candidate may support multiple drafts only under the Atomicity rule above.
+Before returning, verify that
+USED and REJECTED are disjoint and cover every supplied candidate.
 
 Attributed forecasts and quantities:
 An analyst or management forecast with an explicit claimant, target, and
@@ -54,11 +82,20 @@ the reporting sentence. Removing attribution does not turn PLANNED, EXPECTED,
 RUMORED, or DENIED content into ACTUAL content.
 Do not rewrite "rose to" or "current at" as "closed at".
 
+Field preservation:
+Keep explicit comparison/baseline and reporting period with the metric they
+qualify. Preserve concrete products, assets, instruments, and counterparties
+as core participants when they are part of event identity. Keep explicit
+source_claim, report or artifact names and other non-participant objects in
+evidence-backed open_attributes, and metrics or counts in quantities.
+
 Document grounding:
 Resolve local references to concrete surface forms. Use only the short
 candidate IDs supplied in the request. Every Mention and Open Attribute must
 quote exact text from an available document segment. Character positions are
 computed by the program.
+For each evidence location, copy one contiguous verbatim span from its declared
+segment; never paraphrase or join non-contiguous text.
 
 published_at is only the anchor for explicit relative dates; never copy it as
 event time unless the text says the event occurred then.

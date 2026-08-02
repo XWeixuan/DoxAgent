@@ -70,11 +70,6 @@ class IdentityCompiler:
         links = self._link_payload(mention)
         links_hash = _hash(links)
         profile, missing = self._profile(mention)
-        sidecar = (
-            compile_atomic_identity_sidecar(mention, profile)
-            if profile is not None
-            else None
-        )
         (
             primary_metric_id,
             primary_metric_field_path,
@@ -85,6 +80,16 @@ class IdentityCompiler:
             principal_company_paths,
             principal_company_trust_reason,
         ) = self._principal_company_discriminant(mention)
+        sidecar = (
+            compile_atomic_identity_sidecar(
+                mention,
+                profile,
+                primary_metric_id=primary_metric_id,
+                principal_company_ids=principal_company_ids,
+            )
+            if profile is not None
+            else None
+        )
         processing_key = _hash(
             {
                 "mention_id": mention.mention_id,

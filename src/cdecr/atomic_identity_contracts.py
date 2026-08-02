@@ -8,7 +8,7 @@ from pydantic import Field, model_validator
 
 from cdecr.contracts import StrictModel
 
-ATOMIC_IDENTITY_SIDECAR_VERSION = "atomic-identity-sidecar-v1"
+ATOMIC_IDENTITY_SIDECAR_VERSION = "atomic-identity-sidecar-v2-trusted-fields"
 
 
 class AtomicIdentityAdapterKind(StrEnum):

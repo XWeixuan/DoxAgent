@@ -26,9 +26,16 @@ time, request-local source IDs, member Atomic identities, lifecycle, and
 representative members together. No single field or source is decisive. A shared
 current Atomic Event or trusted canonical parent artifact is strong evidence.
 Recall routes and embedding similarity are retrieval-only signals.
-Inferred external relations are advisory. Only conflicting externally trusted
+Inferred external relations are advisory. Conflicting externally trusted
 artifacts or institutions, exact canonical periods, or explicit controlled
-trading sessions are hard boundaries; mixed Packages remain separate pending review.
+trading sessions are hard boundaries.
+
+For a mixed Package, compare the supported core parent evidence; mixed
+membership alone does not decide SAME_PACKAGE or DIFFERENT_PACKAGE.
+
+A shared canonical parent anchor is strong evidence of the same Package.
+Distinct trusted artifact anchors are a boundary; similar raw hints alone are
+not sufficient for SAME_PACKAGE.
 
 The request may provide a `packages` dictionary and `pairs` containing `left`
 and `right` references. Resolve each pair through that dictionary; a Package

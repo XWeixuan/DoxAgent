@@ -13,6 +13,7 @@ from cdecr.config import CDECRSettings
 from cdecr.models import (
     DashScopeEmbeddingClient,
     DashScopeStructuredModelClient,
+    DeepSeekStructuredModelClient,
     ModelAdapterError,
     ModelTier,
 )
@@ -61,6 +62,32 @@ class FakeChat:
             choices=[SimpleNamespace(message=SimpleNamespace(content='{"ok":true}'))],
             usage=SimpleNamespace(prompt_tokens=4, completion_tokens=2),
             _request_id="request-2",
+        )
+
+
+class FakeStrictChat:
+    def __init__(self) -> None:
+        self.kwargs: dict[str, Any] = {}
+
+    def create(self, **kwargs: Any) -> Any:
+        self.kwargs = kwargs
+        return SimpleNamespace(
+            choices=[
+                SimpleNamespace(
+                    message=SimpleNamespace(
+                        content=None,
+                        tool_calls=[
+                            SimpleNamespace(
+                                function=SimpleNamespace(
+                                    name="return_cdecr_result", arguments='{"ok":true}'
+                                )
+                            )
+                        ],
+                    )
+                )
+            ],
+            usage=SimpleNamespace(prompt_tokens=7, completion_tokens=3),
+            _request_id="deepseek-request",
         )
 
 
@@ -163,6 +190,107 @@ def test_m2_uses_chat_json_mode_and_disables_thinking() -> None:
     assert fake.chat.completions.kwargs["extra_body"] == {"enable_thinking": False}
     assert "JSON" in fake.chat.completions.kwargs["messages"][0]["content"]
     assert "code fences" in fake.chat.completions.kwargs["messages"][0]["content"]
+
+
+@pytest.mark.parametrize(
+    ("tier", "effort"), [(ModelTier.M2, "high"), (ModelTier.M3, "max")]
+)
+def test_deepseek_uses_thinking_and_strict_function_schema(
+    tier: ModelTier, effort: str
+) -> None:
+    fake = FakeOpenAI()
+    strict_chat = FakeStrictChat()
+    fake.chat = SimpleNamespace(completions=strict_chat)
+    client = DeepSeekStructuredModelClient(
+        tier=tier,
+        api_key="key",
+        base_url="https://api.deepseek.com/beta",
+        model="deepseek-v4-flash",
+        reasoning_effort=effort,  # type: ignore[arg-type]
+        strict=True,
+        client=fake,  # type: ignore[arg-type]
+    )
+    model_request = StructuredModelRequest(
+        system_prompt="system",
+        user_prompt="user",
+        json_schema={
+            "title": "Result",
+            "type": "object",
+            "properties": {
+                "ok": {"type": "boolean"},
+                "note": {"anyOf": [{"type": "string"}, {"type": "null"}]},
+            },
+            "required": ["ok"],
+        },
+    )
+
+    result = client.complete(model_request)
+
+    assert result.payload == {"ok": True}
+    assert strict_chat.kwargs["reasoning_effort"] == effort
+    assert strict_chat.kwargs["extra_body"] == {"thinking": {"type": "enabled"}}
+    function = strict_chat.kwargs["tools"][0]["function"]
+    assert function["strict"] is True
+    assert function["parameters"]["required"] == ["ok", "note"]
+    assert function["parameters"]["additionalProperties"] is False
+    assert "title" not in function["parameters"]
+    assert "tool_choice" not in strict_chat.kwargs
+
+
+def test_deepseek_json_fallback_keeps_thinking_enabled() -> None:
+    fake = FakeOpenAI()
+    client = DeepSeekStructuredModelClient(
+        tier=ModelTier.M2,
+        api_key="key",
+        base_url="https://api.deepseek.com",
+        model="deepseek-v4-flash",
+        reasoning_effort="high",
+        strict=False,
+        client=fake,  # type: ignore[arg-type]
+    )
+
+    assert client.complete(request()).payload == {"ok": True}
+    kwargs = fake.chat.completions.kwargs
+    assert kwargs["response_format"] == {"type": "json_object"}
+    assert kwargs["extra_body"] == {"thinking": {"type": "enabled"}}
+    assert kwargs["reasoning_effort"] == "high"
+
+
+def test_deepseek_strict_inlines_nullable_local_ref_branch() -> None:
+    fake = FakeOpenAI()
+    strict_chat = FakeStrictChat()
+    fake.chat = SimpleNamespace(completions=strict_chat)
+    client = DeepSeekStructuredModelClient(
+        tier=ModelTier.M2,
+        api_key="key",
+        base_url="https://api.deepseek.com/beta",
+        model="deepseek-v4-flash",
+        reasoning_effort="high",
+        strict=True,
+        client=fake,  # type: ignore[arg-type]
+    )
+    client.complete(
+        StructuredModelRequest(
+            system_prompt="system",
+            user_prompt="user",
+            json_schema={
+                "$defs": {"Choice": {"type": "string", "enum": ["A", "B"]}},
+                "type": "object",
+                "properties": {
+                    "choice": {
+                        "anyOf": [{"$ref": "#/$defs/Choice"}, {"type": "null"}]
+                    }
+                },
+            },
+        )
+    )
+    choice = strict_chat.kwargs["tools"][0]["function"]["parameters"]["properties"][
+        "choice"
+    ]
+    assert choice["anyOf"][0] == {"type": "string", "enum": ["A", "B"]}
+    parameters = strict_chat.kwargs["tools"][0]["function"]["parameters"]
+    assert "$defs" not in parameters
+    assert '"$ref"' not in json.dumps(parameters)
 
 
 def test_provider_wire_schema_removes_only_titles() -> None:
@@ -318,6 +446,26 @@ def test_settings_parse_independent_wire_protocol_switches() -> None:
     assert settings.n13_wire_protocol == "on"
     assert settings.grounder_issue_protocol == "canary"
     assert settings.targeted_repair_protocol == "legacy"
+
+
+def test_settings_parse_deepseek_tier_configuration() -> None:
+    settings = CDECRSettings(
+        DEEPSEEK_API_KEY="secret",
+        CDECR_M2_PROVIDER="deepseek",
+        CDECR_M3_PROVIDER="deepseek",
+        CDECR_M2_REASONING_EFFORT="high",
+        CDECR_M3_REASONING_EFFORT="max",
+        CDECR_M2_STRICT="true",
+        CDECR_M3_STRICT="true",
+        _env_file=None,
+    )  # type: ignore[call-arg]
+    assert settings.require_deepseek() == "secret"
+    assert settings.model_m2_provider == "deepseek"
+    assert settings.model_m3_provider == "deepseek"
+    assert settings.model_m2_reasoning_effort == "high"
+    assert settings.model_m3_reasoning_effort == "max"
+    assert settings.model_m2_strict is True
+    assert settings.model_m3_strict is True
 
 
 def test_embedding_retries_provider_failure_with_fallback(

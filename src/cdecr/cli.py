@@ -35,11 +35,13 @@ from cdecr.models import (
     STRUCTURED_REASONING_EFFORT,
     DashScopeEmbeddingClient,
     DashScopeStructuredModelClient,
+    DeepSeekStructuredModelClient,
     ModelAdapterError,
     ModelTier,
+    ProbePayload,
     probe_models,
 )
-from cdecr.ports import DecisionAuditRecord, SourceQuery
+from cdecr.ports import DecisionAuditRecord, SourceQuery, StructuredModelRequest
 from cdecr.preprocessing import PIPELINE_VERSION
 from cdecr.registry import SCHEMA_VERSION, RegistryError, SQLiteCDECRRegistry
 from cdecr.result_export import export_final_clusters
@@ -211,6 +213,42 @@ def _scheduler(settings: CDECRSettings) -> CDECRScheduler:
     )
 
 
+def _structured_client(
+    settings: CDECRSettings, tier: ModelTier
+) -> DashScopeStructuredModelClient | DeepSeekStructuredModelClient:
+    provider = (
+        settings.model_m2_provider if tier is ModelTier.M2 else settings.model_m3_provider
+    )
+    if tier in {ModelTier.M2, ModelTier.M3} and provider == "deepseek":
+        return DeepSeekStructuredModelClient(
+            tier=tier,
+            api_key=settings.require_deepseek(),
+            base_url=settings.deepseek_base_url,
+            model=settings.model_m2 if tier is ModelTier.M2 else settings.model_m3,
+            reasoning_effort=(
+                settings.model_m2_reasoning_effort
+                if tier is ModelTier.M2
+                else settings.model_m3_reasoning_effort
+            ),
+            strict=settings.model_m2_strict if tier is ModelTier.M2 else settings.model_m3_strict,
+            timeout_seconds=settings.model_timeout_seconds,
+        )
+    api_key = settings.require_dashscope()
+    model = {
+        ModelTier.M2: settings.model_m2,
+        ModelTier.M3: settings.model_m3,
+        ModelTier.M4: settings.model_m4,
+    }[tier]
+    return DashScopeStructuredModelClient(
+        tier=tier,
+        api_key=api_key,
+        base_url=settings.dashscope_base_url,
+        model=model,
+        timeout_seconds=settings.model_timeout_seconds,
+        fallback_api_keys=settings.dashscope_fallback_api_keys(),
+    )
+
+
 def _optional_int(value: object) -> int | None:
     return value if isinstance(value, int) else None
 
@@ -222,22 +260,57 @@ def _required_int(value: object, *, name: str) -> int:
 
 
 def _models_probe(settings: CDECRSettings, args: argparse.Namespace) -> int:
-    api_key = settings.require_dashscope()
     registry = _registry(settings)
     results: list[dict[str, object]] = []
     failures: list[dict[str, object]] = []
     for tier in args.tiers:
         call_id = str(uuid.uuid4())
+        result: dict[str, object]
         try:
-            result = probe_models(
-                api_key=api_key,
-                base_url=settings.dashscope_base_url,
-                tiers=[tier],
-                model_names=_model_names(settings),
-                dimensions=settings.embedding_dimensions,
-                timeout_seconds=settings.model_timeout_seconds,
-                fallback_api_keys=settings.dashscope_fallback_api_keys(),
-            )[0]
+            provider = (
+                settings.model_m2_provider
+                if tier is ModelTier.M2
+                else settings.model_m3_provider
+                if tier is ModelTier.M3
+                else "dashscope"
+            )
+            if tier in {ModelTier.M2, ModelTier.M3} and provider == "deepseek":
+                structured = _structured_client(settings, tier).complete(
+                    StructuredModelRequest(
+                        system_prompt="You are a deterministic API health probe.",
+                        user_prompt=f"Return ok=true, tier={tier.value}, and value=1.",
+                        json_schema=ProbePayload.model_json_schema(),
+                    )
+                )
+                validated_probe = ProbePayload.model_validate(structured.payload)
+                if (
+                    not validated_probe.ok
+                    or validated_probe.tier is not tier
+                    or validated_probe.value != 1
+                ):
+                    raise ModelAdapterError(
+                        tier=tier,
+                        code="probe_value_mismatch",
+                        latency_ms=structured.latency_ms,
+                    )
+                result = {
+                    "tier": tier.value,
+                    "model": structured.model,
+                    "ok": True,
+                    "input_tokens": structured.input_tokens,
+                    "output_tokens": structured.output_tokens,
+                    "latency_ms": structured.latency_ms,
+                }
+            else:
+                result = probe_models(
+                    api_key=settings.require_dashscope(),
+                    base_url=settings.dashscope_base_url,
+                    tiers=[tier],
+                    model_names=_model_names(settings),
+                    dimensions=settings.embedding_dimensions,
+                    timeout_seconds=settings.model_timeout_seconds,
+                    fallback_api_keys=settings.dashscope_fallback_api_keys(),
+                )[0]
         except ModelAdapterError as exc:
             registry.record_model_call(
                 model_call_id=call_id,
@@ -303,30 +376,9 @@ def _document_processor(
         timeout_seconds=settings.model_timeout_seconds,
         fallback_api_keys=settings.dashscope_fallback_api_keys(),
     )
-    m2 = DashScopeStructuredModelClient(
-        tier=ModelTier.M2,
-        api_key=api_key,
-        base_url=settings.dashscope_base_url,
-        model=settings.model_m2,
-        timeout_seconds=settings.model_timeout_seconds,
-        fallback_api_keys=settings.dashscope_fallback_api_keys(),
-    )
-    m3 = DashScopeStructuredModelClient(
-        tier=ModelTier.M3,
-        api_key=api_key,
-        base_url=settings.dashscope_base_url,
-        model=settings.model_m3,
-        timeout_seconds=settings.model_timeout_seconds,
-        fallback_api_keys=settings.dashscope_fallback_api_keys(),
-    )
-    m4 = DashScopeStructuredModelClient(
-        tier=ModelTier.M4,
-        api_key=api_key,
-        base_url=settings.dashscope_base_url,
-        model=settings.model_m4,
-        timeout_seconds=settings.model_timeout_seconds,
-        fallback_api_keys=settings.dashscope_fallback_api_keys(),
-    )
+    m2 = _structured_client(settings, ModelTier.M2)
+    m3 = _structured_client(settings, ModelTier.M3)
+    m4 = _structured_client(settings, ModelTier.M4)
     return SingleDocumentProcessor(
         registry=registry,
         embedding_client=scheduler.embedding_client(embedding),
@@ -356,22 +408,8 @@ def _cross_document_engine(
         timeout_seconds=settings.model_timeout_seconds,
         fallback_api_keys=settings.dashscope_fallback_api_keys(),
     )
-    m2 = DashScopeStructuredModelClient(
-        tier=ModelTier.M2,
-        api_key=api_key,
-        base_url=settings.dashscope_base_url,
-        model=settings.model_m2,
-        timeout_seconds=settings.model_timeout_seconds,
-        fallback_api_keys=settings.dashscope_fallback_api_keys(),
-    )
-    m3 = DashScopeStructuredModelClient(
-        tier=ModelTier.M3,
-        api_key=api_key,
-        base_url=settings.dashscope_base_url,
-        model=settings.model_m3,
-        timeout_seconds=settings.model_timeout_seconds,
-        fallback_api_keys=settings.dashscope_fallback_api_keys(),
-    )
+    m2 = _structured_client(settings, ModelTier.M2)
+    m3 = _structured_client(settings, ModelTier.M3)
     return CrossDocumentEngine(
         registry=registry,
         embedding_client=scheduler.embedding_client(embedding),
@@ -537,30 +575,42 @@ def _events_batch(settings: CDECRSettings, args: argparse.Namespace) -> int:
             registry.save_source(record.message, fingerprint=record.document_fingerprint)
         sources = [record.message for record in batch.accepted]
         loaded_from = "supabase_read_only"
+    sources = sorted(sources, key=lambda item: (item.published_at, item.message_id))
     scheduler = _scheduler(settings)
     document_processor = _document_processor(settings, registry, scheduler)
     event_engine = _cross_document_engine(settings, registry, scheduler)
+    documents = document_processor.process_batch([source.message_id for source in sources])
+    document_by_id = {document.message_id: document for document in documents}
+    eligible_message_ids = [
+        source.message_id
+        for source in sources
+        if document_by_id[source.message_id].status is ProcessingStatus.SUCCEEDED
+    ]
+    events = event_engine.process_batch(
+        eligible_message_ids,
+        execution_mode=args.execution_mode,
+    )
+    event_by_id = {event.message_id: event for event in events}
     results: list[dict[str, object]] = []
     failed = 0
     for source in sources:
-        document = document_processor.process(source.message_id)
-        events: CrossDocumentResult | None = None
-        if document.status is ProcessingStatus.SUCCEEDED:
-            events = event_engine.process(source.message_id)
+        document = document_by_id[source.message_id]
+        event = event_by_id.get(source.message_id)
         if document.status is ProcessingStatus.FAILED or (
-            events is not None and events.status is CrossDocumentStatus.FAILED
+            event is not None and event.status is CrossDocumentStatus.FAILED
         ):
             failed += 1
         results.append(
             {
                 "document": _document_summary(document),
-                "events": _event_summary(events) if events is not None else None,
+                "events": _event_summary(event) if event is not None else None,
             }
         )
     _json_stdout(
         {
             "ok": failed == 0,
             "command": "events.batch",
+            "execution_mode": args.execution_mode,
             "loaded_from": loaded_from,
             "document_count": len(results),
             "succeeded_count": len(results) - failed,
@@ -680,11 +730,39 @@ def _evaluation_run_locked(settings: CDECRSettings, args: argparse.Namespace) ->
     document_results = document_processor.process_batch(
         [source.message_id for _, source in processing_corpus]
     )
+    eligible_cross_document_ids = [
+        source.message_id
+        for (_, source), document in zip(
+            processing_corpus,
+            document_results,
+            strict=True,
+        )
+        if document.status is ProcessingStatus.SUCCEEDED
+    ]
+    bulk_epoch_id = "bulk-epoch:" + hashlib.sha256(
+        json.dumps(
+            {
+                "message_ids": eligible_cross_document_ids,
+                "mode": "BULK_EPOCH",
+            },
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()[:24]
+    final_cross_document_id = (
+        eligible_cross_document_ids[-1] if eligible_cross_document_ids else None
+    )
     for index, ((row, source), document) in enumerate(
         zip(processing_corpus, document_results, strict=True), start=1
     ):
         event = (
-            event_engine.process(source.message_id)
+            event_engine.process(
+                source.message_id,
+                execution_mode="BULK_EPOCH",
+                bulk_epoch_id=bulk_epoch_id,
+                defer_package_merge=source.message_id != final_cross_document_id,
+            )
             if document.status is ProcessingStatus.SUCCEEDED
             else None
         )
@@ -728,7 +806,11 @@ def _evaluation_run_locked(settings: CDECRSettings, args: argparse.Namespace) ->
         mentions = sorted(document.mentions, key=lambda item: item.mention_id)
         persisted_events.append(
             registry.get_completed_cross_document_result(
-                event_engine.processing_key(source.message_id, mentions)
+                event_engine.processing_key(
+                    source.message_id,
+                    mentions,
+                    execution_mode="BULK_EPOCH",
+                )
             )
             or current_event
         )
@@ -764,7 +846,10 @@ def _evaluation_run_locked(settings: CDECRSettings, args: argparse.Namespace) ->
         rerun_documents.append(reused_document)
         if event is None or event.status is not CrossDocumentStatus.SUCCEEDED:
             continue
-        reused_event = restarted_events.process(source.message_id)
+        reused_event = restarted_events.process(
+            source.message_id,
+            execution_mode="BULK_EPOCH",
+        )
         rerun_events.append(reused_event)
 
     idempotency = Step4Idempotency(
@@ -1011,6 +1096,11 @@ def build_parser() -> argparse.ArgumentParser:
     event_batch.add_argument("--end", required=True, type=_parse_timestamp)
     event_batch.add_argument("--limit", type=int, default=200)
     event_batch.add_argument("--min-text-chars", type=int, default=200)
+    event_batch.add_argument(
+        "--execution-mode",
+        choices=("INCREMENTAL", "BULK_EPOCH"),
+        default="BULK_EPOCH",
+    )
     event_batch.set_defaults(handler=_events_batch)
 
     evaluation = commands.add_parser("evaluation")
