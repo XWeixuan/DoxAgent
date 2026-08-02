@@ -2,6 +2,7 @@
 
 ## 2026-08-02
 
+- Implemented CDECR bulk-epoch orchestration v1 for historical-news batches: persistent epoch/item checkpoints, conservative dependency-component execution, complete touched-Package N13 finalization independent of the last document, restart-safe finalized-epoch reuse, localized component failure and convergence handling, shared adaptive provider scheduling, and M1/M2/M3/M4 concurrency 8/24/24/12 with a one-second structured-request start gate. The evaluation CLI now uses the real bulk path for both first pass and idempotency replay; model prompts, business DTOs, N12 shadow mode, and LLM batch sizes remain unchanged.
 - Enabled the dictionary N12 protocol by explicit user decision after adding three bounded mitigations: task-aware selection of the same four anchors and three Package representatives, compact high-confidence boundary-conflict hints, and one-task-only repair with conservative fallback. N9/N13 gates, candidate recall, batch size, output/reason contracts, and provider behavior remain unchanged; no real-model test was run in this change.
 
 ## 2026-07-10

@@ -4,7 +4,8 @@ from concurrent.futures import ThreadPoolExecutor
 from threading import Event, Lock
 from time import monotonic, sleep
 
-from cdecr.scheduler import ConcurrencyLane
+from cdecr.models import ModelTier
+from cdecr.scheduler import CDECRScheduler, ConcurrencyLane
 
 
 def test_concurrency_lane_enforces_limit_and_records_queue_wait() -> None:
@@ -38,3 +39,29 @@ def test_concurrency_lane_enforces_limit_and_records_queue_wait() -> None:
     assert snapshot.max_active == 2
     assert snapshot.completed == 4
     assert snapshot.total_queue_wait_ms >= 0
+
+
+def test_scheduler_reduces_only_pressured_lane_and_recovers() -> None:
+    scheduler = CDECRScheduler(
+        m1_limit=2,
+        m2_limit=8,
+        m3_limit=8,
+        m4_limit=4,
+        structured_start_interval_seconds=0,
+    )
+
+    class RateLimited(RuntimeError):
+        status_code = 429
+
+    try:
+        scheduler.run(ModelTier.M3, lambda: (_ for _ in ()).throw(RateLimited()))
+    except RateLimited:
+        pass
+    else:  # pragma: no cover
+        raise AssertionError("rate limit should propagate")
+
+    assert scheduler.snapshot()["m3"].limit == 4
+    assert scheduler.snapshot()["m2"].limit == 8
+    for _ in range(30):
+        scheduler.run(ModelTier.M3, lambda: 1)
+    assert scheduler.snapshot()["m3"].limit == 6

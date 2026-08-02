@@ -97,19 +97,34 @@ class CDECRSettings(BaseSettings):
     http_timeout_seconds: float = Field(default=30.0, alias="CDECR_HTTP_TIMEOUT_SECONDS")
     model_timeout_seconds: float = Field(default=600.0, alias="CDECR_MODEL_TIMEOUT_SECONDS")
     scheduler_m1_concurrency: int = Field(
-        default=2, ge=1, le=64, alias="CDECR_SCHEDULER_M1_CONCURRENCY"
+        default=8, ge=1, le=128, alias="CDECR_SCHEDULER_M1_CONCURRENCY"
     )
     scheduler_m2_concurrency: int = Field(
-        default=6, ge=1, le=64, alias="CDECR_SCHEDULER_M2_CONCURRENCY"
+        default=24, ge=1, le=128, alias="CDECR_SCHEDULER_M2_CONCURRENCY"
     )
     scheduler_m3_concurrency: int = Field(
-        default=3, ge=1, le=64, alias="CDECR_SCHEDULER_M3_CONCURRENCY"
+        default=24, ge=1, le=128, alias="CDECR_SCHEDULER_M3_CONCURRENCY"
     )
     scheduler_m4_concurrency: int = Field(
-        default=2, ge=1, le=64, alias="CDECR_SCHEDULER_M4_CONCURRENCY"
+        default=12, ge=1, le=128, alias="CDECR_SCHEDULER_M4_CONCURRENCY"
+    )
+    structured_request_start_interval_seconds: float = Field(
+        default=1.0,
+        ge=0.0,
+        le=10.0,
+        alias="CDECR_STRUCTURED_REQUEST_START_INTERVAL_SECONDS",
     )
     document_concurrency: int = Field(
-        default=3, ge=1, le=32, alias="CDECR_DOCUMENT_CONCURRENCY"
+        default=8, ge=1, le=64, alias="CDECR_DOCUMENT_CONCURRENCY"
+    )
+    bulk_atomic_component_workers: int = Field(
+        default=12, ge=1, le=64, alias="CDECR_BULK_ATOMIC_COMPONENT_WORKERS"
+    )
+    bulk_package_component_workers: int = Field(
+        default=10, ge=1, le=64, alias="CDECR_BULK_PACKAGE_COMPONENT_WORKERS"
+    )
+    bulk_n13_component_workers: int = Field(
+        default=12, ge=1, le=64, alias="CDECR_BULK_N13_COMPONENT_WORKERS"
     )
 
     def require_supabase(self) -> tuple[str, str]:

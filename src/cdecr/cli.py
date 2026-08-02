@@ -210,6 +210,9 @@ def _scheduler(settings: CDECRSettings) -> CDECRScheduler:
         m2_limit=settings.scheduler_m2_concurrency,
         m3_limit=settings.scheduler_m3_concurrency,
         m4_limit=settings.scheduler_m4_concurrency,
+        structured_start_interval_seconds=(
+            settings.structured_request_start_interval_seconds
+        ),
     )
 
 
@@ -431,6 +434,9 @@ def _cross_document_engine(
         n9_wire_protocol=settings.n9_wire_protocol,
         n12_wire_protocol=settings.n12_wire_protocol,
         n13_wire_protocol=settings.n13_wire_protocol,
+        bulk_atomic_component_workers=settings.bulk_atomic_component_workers,
+        bulk_package_component_workers=settings.bulk_package_component_workers,
+        bulk_n13_component_workers=settings.bulk_n13_component_workers,
     )
 
 
@@ -729,8 +735,9 @@ def _evaluation_run_locked(settings: CDECRSettings, args: argparse.Namespace) ->
     for row, source in corpus:
         registry.save_source(source, fingerprint=row.document_fingerprint)
 
-    document_processor = _document_processor(settings, registry)
-    event_engine = _cross_document_engine(settings, registry)
+    scheduler = _scheduler(settings)
+    document_processor = _document_processor(settings, registry, scheduler)
+    event_engine = _cross_document_engine(settings, registry, scheduler)
     document_results: list[SingleDocumentResult] = []
     event_results: list[CrossDocumentResult | None] = []
     checkpoint_path = args.output.with_suffix(args.output.suffix + ".checkpoint.json")
@@ -747,52 +754,35 @@ def _evaluation_run_locked(settings: CDECRSettings, args: argparse.Namespace) ->
         )
         if document.status is ProcessingStatus.SUCCEEDED
     ]
-    bulk_epoch_id = "bulk-epoch:" + hashlib.sha256(
+    bulk_events = event_engine.process_batch(
+        eligible_cross_document_ids,
+        execution_mode="BULK_EPOCH",
+    )
+    bulk_event_by_id = {event.message_id: event for event in bulk_events}
+    event_results = [
+        bulk_event_by_id.get(source.message_id)
+        for _, source in processing_corpus
+    ]
+    checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+    checkpoint_path.write_text(
         json.dumps(
             {
-                "message_ids": eligible_cross_document_ids,
-                "mode": "BULK_EPOCH",
+                "report_version": "cdecr-step4-checkpoint-v2-bulk-epoch",
+                "completed_rows": len(corpus),
+                "total_rows": len(corpus),
+                "last_source_row_id": (
+                    processing_corpus[-1][0].source_row_id if processing_corpus else None
+                ),
+                "outcomes": _checkpoint_outcomes(
+                    document_results,
+                    event_results,
+                ),
             },
             ensure_ascii=False,
-            sort_keys=True,
-            separators=(",", ":"),
-        ).encode("utf-8")
-    ).hexdigest()[:24]
-    final_cross_document_id = (
-        eligible_cross_document_ids[-1] if eligible_cross_document_ids else None
+            indent=2,
+        ),
+        encoding="utf-8",
     )
-    for index, ((row, source), document) in enumerate(
-        zip(processing_corpus, document_results, strict=True), start=1
-    ):
-        event = (
-            event_engine.process(
-                source.message_id,
-                execution_mode="BULK_EPOCH",
-                bulk_epoch_id=bulk_epoch_id,
-                defer_package_merge=source.message_id != final_cross_document_id,
-            )
-            if document.status is ProcessingStatus.SUCCEEDED
-            else None
-        )
-        event_results.append(event)
-        checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
-        checkpoint_path.write_text(
-            json.dumps(
-                {
-                    "report_version": "cdecr-step4-checkpoint-v1",
-                    "completed_rows": index,
-                    "total_rows": len(corpus),
-                    "last_source_row_id": row.source_row_id,
-                    "outcomes": _checkpoint_outcomes(
-                        document_results,
-                        event_results,
-                    ),
-                },
-                ensure_ascii=False,
-                indent=2,
-            ),
-            encoding="utf-8",
-        )
     first_pass_wall_clock_ms = round((perf_counter() - evaluation_started) * 1000)
 
     # Load the original persisted results so a resumed run reports all prior calls.
@@ -840,25 +830,21 @@ def _evaluation_run_locked(settings: CDECRSettings, args: argparse.Namespace) ->
     restarted_events = _cross_document_engine(
         settings, restarted_registry, restarted_scheduler
     )
-    rerun_documents: list[SingleDocumentResult] = []
-    rerun_events: list[CrossDocumentResult] = []
-    for (_, source), document, event in zip(
-        corpus,
-        persisted_documents,
-        persisted_events,
-        strict=True,
-    ):
-        if document.status is not ProcessingStatus.SUCCEEDED:
-            continue
-        reused_document = restarted_documents.process(source.message_id)
-        rerun_documents.append(reused_document)
-        if event is None or event.status is not CrossDocumentStatus.SUCCEEDED:
-            continue
-        reused_event = restarted_events.process(
-            source.message_id,
-            execution_mode="BULK_EPOCH",
-        )
-        rerun_events.append(reused_event)
+    successful_document_ids = [
+        source.message_id
+        for (_, source), document in zip(corpus, persisted_documents, strict=True)
+        if document.status is ProcessingStatus.SUCCEEDED
+    ]
+    rerun_documents = restarted_documents.process_batch(successful_document_ids)
+    successful_event_ids = [
+        event.message_id
+        for event in persisted_events
+        if event is not None and event.status is CrossDocumentStatus.SUCCEEDED
+    ]
+    rerun_events = restarted_events.process_batch(
+        successful_event_ids,
+        execution_mode="BULK_EPOCH",
+    )
 
     idempotency = Step4Idempotency(
         rerun_model_call_delta=restarted_registry.count_model_calls() - model_calls_before,

@@ -13,6 +13,7 @@ from collections.abc import Callable, Sequence
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, date, datetime
 from pathlib import Path
+from time import perf_counter
 from typing import Literal, TypeVar
 
 from pydantic import BaseModel, ValidationError
@@ -174,14 +175,14 @@ from cdecr.scheduler import take_scheduled_call_metrics
 from cdecr.single_document_contracts import ModelCallSummary
 from cdecr.wire import compact_json, wire_ref_metadata
 
-ENGINE_VERSION = "cdecr-cross-document-v20"
+ENGINE_VERSION = "cdecr-cross-document-v21-bulk-epoch"
 PROMPT_VERSION = "cdecr-cross-document-prompts-v15"
 WIRE_PROTOCOL_VERSION = "cdecr-cross-document-wire-atomic-dictionary-v9"
+BULK_ORCHESTRATOR_VERSION = "cdecr-bulk-epoch-v1"
 ATOMIC_ASSIGNMENT_POLICY_VERSION = "atomic-assignment-policy-v4-deterministic-pair-filter"
 ATOMIC_DECISION_MENTION_BATCH = 3
 PACKAGE_DECISION_EVENT_BATCH = 12
 PACKAGE_MERGE_PAIR_BATCH = 12
-MODEL_CONCURRENCY = 3
 ATOMIC_TOP_K = 5
 PACKAGE_TOP_K = 6
 PACKAGE_N13_CANDIDATES_PER_TOUCHED = 5
@@ -944,6 +945,9 @@ class CrossDocumentEngine:
         n9_wire_protocol: str = "on",
         n12_wire_protocol: str = "on",
         n13_wire_protocol: str = "shadow",
+        bulk_atomic_component_workers: int = 12,
+        bulk_package_component_workers: int = 10,
+        bulk_n13_component_workers: int = 12,
         atomic_enforced_rules: Sequence[str] | None = None,
         knowledge_base: V2KnowledgeBase | None = None,
     ) -> None:
@@ -984,6 +988,9 @@ class CrossDocumentEngine:
         self.n9_wire_protocol = n9_wire_protocol
         self.n12_wire_protocol = n12_wire_protocol
         self.n13_wire_protocol = n13_wire_protocol
+        self.bulk_atomic_component_workers = max(1, bulk_atomic_component_workers)
+        self.bulk_package_component_workers = max(1, bulk_package_component_workers)
+        self.bulk_n13_component_workers = max(1, bulk_n13_component_workers)
         self.knowledge_base = knowledge_base or V2KnowledgeBase()
 
     @property
@@ -1428,30 +1435,599 @@ class CrossDocumentEngine:
             ]
         if not ordered_ids:
             return []
+        batch_started = perf_counter()
 
-        epoch_id = stable_id(
-            "bulk-epoch",
-            {
-                "message_ids": ordered_ids,
-                "engine_version": ENGINE_VERSION,
-                "mode": execution_mode,
-            },
+        supports_epoch = all(
+            callable(getattr(self.registry, name, None))
+            for name in (
+                "start_bulk_epoch",
+                "get_bulk_epoch",
+                "update_bulk_epoch",
+                "upsert_bulk_epoch_item",
+            )
         )
-        results: list[CrossDocumentResult] = []
-        for index, message_id in enumerate(ordered_ids):
-            # N5.5-N12 retain the current stable, single-writer Apply order.
-            # Only N13 is moved behind the all-document N12 barrier, eliminating
-            # intermediate package-profile re-evaluations without exposing
-            # mutable candidate snapshots to parallel writers.
-            results.append(
+        if not supports_epoch:
+            epoch_id = stable_id(
+                "bulk-epoch",
+                {
+                    "message_ids": ordered_ids,
+                    "engine_version": ENGINE_VERSION,
+                    "mode": execution_mode,
+                },
+            )
+            return [
                 self.process(
                     message_id,
-                    execution_mode=execution_mode,
+                    execution_mode="BULK_EPOCH",
                     bulk_epoch_id=epoch_id,
                     defer_package_merge=index < len(ordered_ids) - 1,
                 )
+                for index, message_id in enumerate(ordered_ids)
+            ]
+        manifest = {
+            "message_ids": ordered_ids,
+            "source_fingerprints": {
+                message_id: self.registry.get_source_fingerprint(message_id)
+                for message_id in ordered_ids
+            },
+            "engine_version": ENGINE_VERSION,
+            "prompt_version": PROMPT_VERSION,
+            "orchestrator_version": BULK_ORCHESTRATOR_VERSION,
+            "model_config": self.model_config,
+            "component_workers": {
+                "atomic": self.bulk_atomic_component_workers,
+                "package": self.bulk_package_component_workers,
+                "n13": self.bulk_n13_component_workers,
+            },
+            "mode": execution_mode,
+        }
+        manifest_hash = _hash_json(manifest)
+        epoch_id = stable_id("bulk-epoch", manifest)
+        existing_epoch = None
+        existing_epoch = self.registry.start_bulk_epoch(
+            epoch_id=epoch_id,
+            manifest_hash=manifest_hash,
+            orchestrator_version=BULK_ORCHESTRATOR_VERSION,
+            message_ids=ordered_ids,
+        )
+        if existing_epoch.get("status") == "FINALIZED":
+            # Preserve the immutable finalized checkpoint.  Re-read each
+            # document result through the ordinary processing key so callers
+            # receive the same shape without rerunning N9/N12/N13 or replacing
+            # the epoch result with an empty finalize summary.
+            return [
+                self.process(
+                    message_id,
+                    execution_mode="BULK_EPOCH",
+                    bulk_epoch_id=epoch_id,
+                    defer_package_merge=True,
+                )
+                for message_id in ordered_ids
+            ]
+        self.registry.update_bulk_epoch(
+            epoch_id,
+            status="RUNNING",
+            current_stage="COMPONENT_PLANNING",
+        )
+
+        planning_started = perf_counter()
+        components = self._bulk_document_components(ordered_ids)
+        planning_ms = round((perf_counter() - planning_started) * 1000)
+        component_by_message = {
+            message_id: component_id
+            for component_id, component in components
+            for message_id in component
+        }
+        if supports_epoch:
+            for component_id, component in components:
+                self.registry.upsert_bulk_epoch_item(
+                    epoch_id=epoch_id,
+                    stage="CROSS_DOCUMENT_COMPONENT",
+                    item_id=component_id,
+                    status="PENDING",
+                    input_hash=_hash_json(component),
+                    snapshot_hash=self._bulk_head_snapshot_hash(),
+                    result_ref={"message_ids": component},
+                )
+            self.registry.update_bulk_epoch(
+                epoch_id,
+                status="RUNNING",
+                current_stage="N5_5_N12_COMPONENTS",
+            )
+
+        results_by_message: dict[str, CrossDocumentResult] = {}
+        result_lock = threading.Lock()
+
+        def run_component(item: tuple[str, list[str]]) -> tuple[str, list[CrossDocumentResult]]:
+            component_id, component = item
+            if supports_epoch:
+                self.registry.upsert_bulk_epoch_item(
+                    epoch_id=epoch_id,
+                    stage="CROSS_DOCUMENT_COMPONENT",
+                    item_id=component_id,
+                    status="RUNNING",
+                    input_hash=_hash_json(component),
+                    snapshot_hash=self._bulk_head_snapshot_hash(),
+                    result_ref={"message_ids": component},
+                )
+            component_results: list[CrossDocumentResult] = []
+            for message_id in component:
+                try:
+                    result = self.process(
+                        message_id,
+                        execution_mode="BULK_EPOCH",
+                        bulk_epoch_id=epoch_id,
+                        defer_package_merge=True,
+                    )
+                except Exception as exc:
+                    now = datetime.now(UTC)
+                    result = CrossDocumentResult(
+                        run_id=stable_id(
+                            "bulk-component-failure",
+                            {
+                                "epoch_id": epoch_id,
+                                "component_id": component_id,
+                                "message_id": message_id,
+                            },
+                        ),
+                        processing_key=_hash_json(
+                            {
+                                "epoch_id": epoch_id,
+                                "component_id": component_id,
+                                "message_id": message_id,
+                                "failure": type(exc).__name__,
+                            }
+                        ),
+                        message_id=message_id,
+                        status=CrossDocumentStatus.FAILED,
+                        atomic_events=[],
+                        packages=[],
+                        atomic_assignments=[],
+                        package_assignments=[],
+                        model_calls=[],
+                        candidate_counts={},
+                        failure_stage="bulk_component",
+                        error_code=str(getattr(exc, "code", type(exc).__name__)),
+                        started_at=now,
+                        finished_at=now,
+                    )
+                component_results.append(result)
+            failures = [
+                result for result in component_results
+                if result.status is CrossDocumentStatus.FAILED
+            ]
+            if supports_epoch:
+                self.registry.upsert_bulk_epoch_item(
+                    epoch_id=epoch_id,
+                    stage="CROSS_DOCUMENT_COMPONENT",
+                    item_id=component_id,
+                    status="DEGRADED" if failures else "SUCCEEDED",
+                    input_hash=_hash_json(component),
+                    snapshot_hash=self._bulk_head_snapshot_hash(),
+                    result_ref={
+                        "message_ids": component,
+                        "run_ids": [result.run_id for result in component_results],
+                        "failed_message_ids": [result.message_id for result in failures],
+                    },
+                    error_code=(
+                        "COMPONENT_PARTIAL_FAILURE" if failures else None
+                    ),
+                )
+            with result_lock:
+                results_by_message.update(
+                    {result.message_id: result for result in component_results}
+                )
+            return component_id, component_results
+
+        components_started = perf_counter()
+        worker_count = min(
+            self.bulk_atomic_component_workers,
+            max(1, len(components)),
+        )
+        with ThreadPoolExecutor(max_workers=worker_count) as executor:
+            list(executor.map(run_component, components))
+
+        convergence_ids = [
+            message_id
+            for message_id in ordered_ids
+            if (
+                (result := results_by_message.get(message_id)) is not None
+                and result.status is CrossDocumentStatus.FAILED
+                and result.error_code in {
+                    "VersionConflict",
+                    "ImmutableRecordConflict",
+                    "DERIVED_STATE_REBUILD_REQUIRED",
+                }
+            )
+        ]
+        for message_id in convergence_ids:
+            retried = self.process(
+                message_id,
+                execution_mode="BULK_EPOCH",
+                bulk_epoch_id=epoch_id,
+                defer_package_merge=True,
+            )
+            results_by_message[message_id] = retried
+            if supports_epoch:
+                self.registry.upsert_bulk_epoch_item(
+                    epoch_id=epoch_id,
+                    stage="CONVERGENCE",
+                    item_id=message_id,
+                    status=(
+                        "SUCCEEDED"
+                        if retried.status is CrossDocumentStatus.SUCCEEDED
+                        else "DEGRADED"
+                    ),
+                    input_hash=_hash_json(
+                        {
+                            "message_id": message_id,
+                            "component_id": component_by_message[message_id],
+                        }
+                    ),
+                    snapshot_hash=self._bulk_head_snapshot_hash(),
+                    result_ref={"run_id": retried.run_id},
+                    error_code=(
+                        retried.error_code
+                        if retried.status is CrossDocumentStatus.FAILED
+                        else None
+                    ),
+                )
+
+        components_ms = round((perf_counter() - components_started) * 1000)
+
+        results = [results_by_message[message_id] for message_id in ordered_ids]
+        successful = [
+            result for result in results if result.status is CrossDocumentStatus.SUCCEEDED
+        ]
+        touched_packages: dict[str, EventPackage] = {}
+        for result in successful:
+            for package in result.packages:
+                root_id = self.registry.resolve_package_root(package.package_id)
+                current = (
+                    self.registry.get_current_package(root_id)
+                    if root_id is not None
+                    else None
+                )
+                if current is not None:
+                    touched_packages[current.package_id] = current
+        if supports_epoch:
+            self.registry.update_bulk_epoch(
+                epoch_id,
+                status="FINALIZING",
+                current_stage="N13_FINALIZE",
+            )
+        finalize_error: str | None = None
+        finalized_packages: list[EventPackage] = []
+        finalize_started = perf_counter()
+        if successful and touched_packages:
+            try:
+                finalized_packages = self._finalize_bulk_epoch_packages(
+                    epoch_id=epoch_id,
+                    message_id=successful[-1].message_id,
+                    packages=list(touched_packages.values()),
+                )
+            except Exception as exc:
+                finalize_error = str(getattr(exc, "code", type(exc).__name__))
+        finalize_ms = round((perf_counter() - finalize_started) * 1000)
+
+        failed_ids = [
+            result.message_id
+            for result in results
+            if result.status is CrossDocumentStatus.FAILED
+        ]
+        epoch_status = "FINALIZED" if finalize_error is None and not failed_ids else "PARTIAL"
+        epoch_result = {
+            "message_count": len(ordered_ids),
+            "successful_message_count": len(successful),
+            "failed_message_ids": failed_ids,
+            "component_count": len(components),
+            "largest_component_size": max((len(value) for _, value in components), default=0),
+            "touched_package_ids": sorted(touched_packages),
+            "finalized_package_ids": sorted(
+                package.package_id for package in finalized_packages
+            ),
+            "n13_error_code": finalize_error,
+            "planning_ms": planning_ms,
+            "components_ms": components_ms,
+            "finalize_ms": finalize_ms,
+            "wall_clock_ms": round((perf_counter() - batch_started) * 1000),
+        }
+        if supports_epoch:
+            self.registry.upsert_bulk_epoch_item(
+                epoch_id=epoch_id,
+                stage="N13_FINALIZE",
+                item_id="epoch",
+                status="SUCCEEDED" if finalize_error is None else "DEGRADED",
+                input_hash=_hash_json(sorted(touched_packages)),
+                snapshot_hash=self._bulk_head_snapshot_hash(),
+                result_ref=epoch_result,
+                error_code=finalize_error,
+            )
+            self.registry.update_bulk_epoch(
+                epoch_id,
+                status=epoch_status,
+                current_stage="COMPLETE",
+                result=epoch_result,
             )
         return results
+
+    def _bulk_document_components(
+        self, ordered_ids: Sequence[str]
+    ) -> list[tuple[str, list[str]]]:
+        parent = {message_id: message_id for message_id in ordered_ids}
+
+        def find(value: str) -> str:
+            while parent[value] != value:
+                parent[value] = parent[parent[value]]
+                value = parent[value]
+            return value
+
+        def union(left: str, right: str) -> None:
+            left_root = find(left)
+            right_root = find(right)
+            if left_root == right_root:
+                return
+            if left_root < right_root:
+                parent[right_root] = left_root
+            else:
+                parent[left_root] = right_root
+
+        owners_by_key: dict[str, str] = {}
+        for message_id in ordered_ids:
+            source = self.registry.get_source(message_id)
+            mentions = self.registry.list_mentions_for_message(message_id)
+            for key in self._bulk_document_dependency_keys(source, mentions):
+                owner = owners_by_key.setdefault(key, message_id)
+                union(owner, message_id)
+
+        grouped: dict[str, list[str]] = {}
+        for message_id in ordered_ids:
+            grouped.setdefault(find(message_id), []).append(message_id)
+
+        def message_sort_key(message_id: str) -> tuple[datetime, str]:
+            source = self.registry.get_source(message_id)
+            published_at = (
+                source.published_at
+                if source is not None
+                else datetime.max.replace(tzinfo=UTC)
+            )
+            return published_at, message_id
+
+        components = []
+        for values in grouped.values():
+            values.sort(key=message_sort_key)
+            component_id = stable_id(
+                "bulk-component",
+                {
+                    "orchestrator_version": BULK_ORCHESTRATOR_VERSION,
+                    "message_ids": values,
+                },
+            )
+            components.append((component_id, values))
+        components.sort(key=lambda item: item[1][0])
+        return components
+
+    def _bulk_document_dependency_keys(
+        self,
+        source: SourceMessage | None,
+        mentions: Sequence[EventMention],
+    ) -> set[str]:
+        keys: set[str] = set()
+        source_fingerprint = (
+            self.registry.get_source_fingerprint(source.message_id)
+            if source is not None
+            else None
+        )
+        if source_fingerprint:
+            keys.add(f"source:{source_fingerprint}")
+        for mention in mentions:
+            participants = sorted(
+                {
+                    (participant.entity_id or participant.surface).strip().casefold()
+                    for participant in mention.participants
+                    if (participant.entity_id or participant.surface).strip()
+                }
+            )
+            principal = participants[0] if participants else "unknown"
+            principal_aliases = self._bulk_principal_aliases(principal)
+            period = mention.time.reference_period_id or ""
+            time_start = (
+                mention.time.event_start.isoformat()
+                if mention.time.event_start is not None
+                else ""
+            )
+            time_bucket = time_start[:10]
+            primary_metrics = sorted(
+                quantity.metric_id.strip().casefold()
+                for quantity in mention.quantities
+                if quantity.role.value == "PRIMARY"
+            )
+            atomic_key = {
+                "family": mention.event_family.value,
+                "predicate": mention.predicate.normalized,
+                "principal": principal,
+                "period": period,
+                "date": time_bucket,
+                "metrics": primary_metrics,
+                "assertion": mention.assertion_state.value,
+            }
+            keys.add(f"atomic:{_hash_json(atomic_key)}")
+            # The scheduler graph must be wider than the eventual business
+            # merge rule.  Two records with the same principal and family can
+            # compete for the same candidate even when their predicate,
+            # metric, date precision, or wording differs.  Connecting them is
+            # a throughput trade-off only; failing to connect them can create
+            # concurrent CREATE_NEW fragmentation or stale-target decisions.
+            for principal_alias in principal_aliases:
+                keys.add(
+                    "atomic-recall-envelope:"
+                    f"{principal_alias}:{mention.event_family.value}"
+                )
+                if period or time_bucket:
+                    keys.add(
+                        "package-recall-envelope:"
+                        f"{principal_alias}:{period or time_bucket}"
+                    )
+            if mention.local_package_hint is not None:
+                anchor = re.sub(
+                    r"\s+", " ", mention.local_package_hint.anchor.strip().casefold()
+                )
+                for principal_alias in principal_aliases:
+                    # Package membership can legitimately cross event family,
+                    # so family is intentionally absent from this scheduler
+                    # dependency key.  This does not make anchor equality an
+                    # automatic business merge.
+                    keys.add(f"package-anchor:{principal_alias}:{anchor}")
+            if mention.source_claim:
+                source_claim = re.sub(
+                    r"[^a-z0-9]+", " ", mention.source_claim.casefold()
+                ).strip()
+                if source_claim:
+                    keys.add(f"source-claim:{source_claim}:{mention.event_family.value}")
+        return keys
+
+    @staticmethod
+    def _bulk_principal_aliases(principal: str) -> set[str]:
+        """Return conservative scheduler-only aliases for one principal.
+
+        These aliases only reduce parallelism.  They never enter an LLM
+        payload and never authorize an Atomic or Package merge.
+        """
+
+        normalized = re.sub(r"[^a-z0-9]+", " ", principal.casefold()).strip()
+        if not normalized or normalized == "unknown":
+            return {"unknown"}
+        tokens = normalized.split()
+        company_suffixes = {
+            "co",
+            "company",
+            "corp",
+            "corporation",
+            "inc",
+            "incorporated",
+            "ltd",
+            "limited",
+            "plc",
+            "technology",
+            "technologies",
+        }
+        trimmed = list(tokens)
+        while len(trimmed) > 1 and trimmed[-1] in company_suffixes:
+            trimmed.pop()
+        aliases = {normalized, " ".join(trimmed)}
+        # The first distinctive token joins common surface variants such as
+        # "Micron" and "Micron Technology".  One-character and generic
+        # tokens are excluded to avoid collapsing an epoch around noise.
+        if len(trimmed[0]) >= 3 and trimmed[0] not in {"the", "company", "group"}:
+            aliases.add(trimmed[0])
+        return aliases
+
+    def _bulk_head_snapshot_hash(self) -> str:
+        atomic_heads = [
+            (event.event_id, event.version)
+            for event in self.registry.list_current_atomic_events(limit=10000)
+        ]
+        package_heads = [
+            (package.package_id, package.version)
+            for package in self.registry.list_current_packages(limit=10000)
+        ]
+        return _hash_json(
+            {
+                "atomic_heads": sorted(atomic_heads),
+                "package_heads": sorted(package_heads),
+            }
+        )
+
+    def _finalize_bulk_epoch_packages(
+        self,
+        *,
+        epoch_id: str,
+        message_id: str,
+        packages: list[EventPackage],
+    ) -> list[EventPackage]:
+        run_id = stable_id(
+            "bulk-finalize-run",
+            {"epoch_id": epoch_id, "stage": "N13_FINALIZE"},
+        )
+        processing_key = _hash_json(
+            {
+                "epoch_id": epoch_id,
+                "stage": "N13_FINALIZE",
+                "package_ids": sorted(package.package_id for package in packages),
+                "package_profiles": sorted(
+                    (
+                        package.package_id,
+                        self._package_n13_profile_hash(package),
+                    )
+                    for package in packages
+                ),
+                "engine_version": ENGINE_VERSION,
+                "prompt_version": PROMPT_VERSION,
+            }
+        )
+        completed = self.registry.get_completed_cross_document_result(processing_key)
+        if completed is not None:
+            return completed.packages
+        self.registry.start_cross_document_trace(
+            trace_id=run_id,
+            message_id=message_id,
+            engine_version=ENGINE_VERSION,
+            prompt_version=PROMPT_VERSION,
+            model_config=self.model_config,
+        )
+        started = self.registry.start_cross_document_run(
+            run_id=run_id,
+            processing_key=processing_key,
+            message_id=message_id,
+            engine_version=ENGINE_VERSION,
+            prompt_version=PROMPT_VERSION,
+            model_config=self.model_config,
+        )
+        if not started:
+            completed = self.registry.get_completed_cross_document_result(processing_key)
+            if completed is not None:
+                return completed.packages
+            raise CrossDocumentPipelineError("bulk_finalize", "RUN_NOT_STARTED")
+        summaries: list[ModelCallSummary] = []
+        models = _AuditedModels(
+            registry=self.registry,
+            run_id=run_id,
+            embedding_client=self.embedding_client,
+            m2_client=self.m2_client,
+            m3_client=self.m3_client,
+            model_m1=self.model_m1,
+            model_m2=self.model_m2,
+            model_m3=self.model_m3,
+            summaries=summaries,
+        )
+        started_at = datetime.now(UTC)
+        try:
+            finalized = self._correct_packages_v13(packages, models, run_id=run_id)
+            result = CrossDocumentResult(
+                run_id=run_id,
+                processing_key=processing_key,
+                message_id=message_id,
+                status=CrossDocumentStatus.SUCCEEDED,
+                atomic_events=[],
+                packages=finalized,
+                atomic_assignments=[],
+                package_assignments=[],
+                model_calls=summaries,
+                candidate_counts={
+                    "bulk_epoch_touched_packages": len(packages),
+                    "bulk_epoch_final_packages": len(finalized),
+                },
+                started_at=started_at,
+                finished_at=datetime.now(UTC),
+            )
+            self.registry.complete_cross_document_run(result)
+            return finalized
+        except Exception as exc:
+            self.registry.fail_cross_document_run(
+                run_id,
+                error_code=str(getattr(exc, "code", type(exc).__name__)),
+            )
+            raise
 
     def _embed_mentions(
         self, mentions: list[EventMention], models: _AuditedModels
@@ -3064,7 +3640,9 @@ class CrossDocumentEngine:
 
         if not batches:
             return decisions
-        with ThreadPoolExecutor(max_workers=min(MODEL_CONCURRENCY, len(batches))) as executor:
+        with ThreadPoolExecutor(
+            max_workers=min(self.bulk_atomic_component_workers, len(batches))
+        ) as executor:
             outputs = list(executor.map(process_batch, enumerate(batches)))
         for _, output in sorted(outputs):
             decisions.update({item.mention_id: item for item in output.decisions})
@@ -4635,7 +5213,9 @@ class CrossDocumentEngine:
                 )
             return batch_index, PackageDecisionBatch(decisions=restored)
 
-        with ThreadPoolExecutor(max_workers=min(MODEL_CONCURRENCY, len(batches))) as executor:
+        with ThreadPoolExecutor(
+            max_workers=min(self.bulk_package_component_workers, len(batches))
+        ) as executor:
             outputs = list(executor.map(process_batch, enumerate(batches)))
         decisions: dict[str, PackageAssignmentDecision] = {}
         for _, output in sorted(outputs):
@@ -5483,7 +6063,9 @@ class CrossDocumentEngine:
                 )
                 return batch_index, restored
 
-            with ThreadPoolExecutor(max_workers=min(MODEL_CONCURRENCY, len(batches))) as executor:
+            with ThreadPoolExecutor(
+                max_workers=min(self.bulk_package_component_workers, len(batches))
+            ) as executor:
                 outputs = list(executor.map(process_package_batch, enumerate(batches)))
             for _, output in sorted(outputs):
                 semantic.update(
@@ -6653,7 +7235,9 @@ class CrossDocumentEngine:
                     ),
                 )
 
-            with ThreadPoolExecutor(max_workers=min(MODEL_CONCURRENCY, len(batches))) as executor:
+            with ThreadPoolExecutor(
+                max_workers=min(self.bulk_n13_component_workers, len(batches))
+            ) as executor:
                 outputs = list(executor.map(process_batch, enumerate(batches)))
             for _, output in sorted(outputs):
                 m3_decisions.extend(output.decisions)
@@ -7169,7 +7753,9 @@ class CrossDocumentEngine:
                 )
                 return batch_index, restored
 
-            with ThreadPoolExecutor(max_workers=min(MODEL_CONCURRENCY, len(batches))) as executor:
+            with ThreadPoolExecutor(
+                max_workers=min(self.bulk_n13_component_workers, len(batches))
+            ) as executor:
                 outputs = list(executor.map(process_merge_batch, enumerate(batches)))
             for _, output in sorted(outputs):
                 for decision in output.decisions:

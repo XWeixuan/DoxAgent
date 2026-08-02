@@ -36,7 +36,7 @@ from cdecr.contracts import (
 )
 from cdecr.coreference_rules import merge_event_times, singleton_atomic_event
 from cdecr.cross_document import CrossDocumentEngine
-from cdecr.cross_document_contracts import CrossDocumentStatus
+from cdecr.cross_document_contracts import CrossDocumentResult, CrossDocumentStatus
 from cdecr.field_coreference_contracts import CanonicalFieldRegistryEntry
 from cdecr.ports import EmbeddingResult, StructuredModelRequest, StructuredModelResult
 from cdecr.registry import SQLiteCDECRRegistry
@@ -603,6 +603,128 @@ def engine(
         m2,
         m3,
     )
+
+
+def test_bulk_epoch_v1_persists_components_finalizes_all_touched_and_reuses(
+    registry: SQLiteCDECRRegistry,
+) -> None:
+    add(registry, source("MSG-1"), metric_mention("MSG-1"))
+    add(registry, source("MSG-2"), metric_mention("MSG-2"))
+    add(registry, source("MSG-3"), market_mention("MSG-3"))
+    processor, _, _, _ = engine(registry)
+
+    first = processor.process_batch(
+        ["MSG-3", "MSG-2", "MSG-1"], execution_mode="BULK_EPOCH"
+    )
+    assert [result.message_id for result in first] == ["MSG-1", "MSG-2", "MSG-3"]
+    assert all(result.status is CrossDocumentStatus.SUCCEEDED for result in first)
+    with sqlite3.connect(registry.path) as connection:
+        epoch_id, status, result_json = connection.execute(
+            "SELECT epoch_id, status, result_json FROM bulk_epochs"
+        ).fetchone()
+    assert status == "FINALIZED"
+    epoch_result = json.loads(result_json)
+    assert epoch_result["successful_message_count"] == 3
+    assert epoch_result["component_count"] == 2
+    assert epoch_result["touched_package_ids"]
+    n13_items = registry.list_bulk_epoch_items(epoch_id, stage="N13_FINALIZE")
+    assert len(n13_items) == 1
+    assert n13_items[0]["status"] == "SUCCEEDED"
+    with sqlite3.connect(registry.path) as connection:
+        deferred_count = connection.execute(
+            """
+            SELECT COUNT(*) FROM decision_audits
+            WHERE decision_type = 'PACKAGE_N13_DEFERRED_TO_BULK_BARRIER'
+            """
+        ).fetchone()[0]
+    assert deferred_count == 3
+
+    calls_before = registry.count_model_calls()
+    epoch_before_rerun = registry.get_bulk_epoch(epoch_id)
+    second = processor.process_batch(
+        ["MSG-1", "MSG-2", "MSG-3"], execution_mode="BULK_EPOCH"
+    )
+    assert all(result.reused for result in second)
+    assert registry.count_model_calls() == calls_before
+    assert registry.get_bulk_epoch(epoch_id) == epoch_before_rerun
+
+
+def test_bulk_component_graph_uses_recall_envelope_not_exact_metric_identity(
+    registry: SQLiteCDECRRegistry,
+) -> None:
+    add(registry, source("MSG-1"), metric_mention("MSG-1", metric="REVENUE"))
+    add(
+        registry,
+        source("MSG-2"),
+        metric_mention("MSG-2", metric="EPS", period="FY2026-Q3"),
+    )
+    processor, _, _, _ = engine(registry)
+
+    components = processor._bulk_document_components(["MSG-1", "MSG-2"])
+
+    assert len(components) == 1
+    assert components[0][1] == ["MSG-1", "MSG-2"]
+
+
+def test_bulk_principal_aliases_join_common_company_surface_variants() -> None:
+    assert "micron" in CrossDocumentEngine._bulk_principal_aliases(
+        "Micron Technology, Inc."
+    )
+
+
+def test_bulk_epoch_finalizes_successful_scope_when_last_document_fails(
+    registry: SQLiteCDECRRegistry,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    add(registry, source("MSG-1"), metric_mention("MSG-1"))
+    add(registry, source("MSG-2"), market_mention("MSG-2"))
+    processor, _, _, _ = engine(registry)
+    successful = processor.process(
+        "MSG-1",
+        execution_mode="BULK_EPOCH",
+        bulk_epoch_id="precondition",
+        defer_package_merge=True,
+    )
+    failed = CrossDocumentResult(
+        run_id="failed-run",
+        processing_key="failed-key",
+        message_id="MSG-2",
+        status=CrossDocumentStatus.FAILED,
+        atomic_events=[],
+        packages=[],
+        atomic_assignments=[],
+        package_assignments=[],
+        model_calls=[],
+        candidate_counts={},
+        failure_stage="package_assignment",
+        error_code="TEST_FAILURE",
+        started_at=datetime.now(UTC),
+        finished_at=datetime.now(UTC),
+    )
+    monkeypatch.setattr(
+        processor,
+        "process",
+        lambda message_id, **_: successful if message_id == "MSG-1" else failed,
+    )
+    finalized: list[str] = []
+
+    def fake_finalize(**kwargs: object) -> list[object]:
+        packages = kwargs["packages"]
+        assert isinstance(packages, list)
+        finalized.extend(package.package_id for package in packages)
+        return packages
+
+    monkeypatch.setattr(processor, "_finalize_bulk_epoch_packages", fake_finalize)
+    results = processor.process_batch(
+        ["MSG-1", "MSG-2"], execution_mode="BULK_EPOCH"
+    )
+
+    assert results[0].status is CrossDocumentStatus.SUCCEEDED
+    assert results[1].status is CrossDocumentStatus.FAILED
+    assert finalized
+    with sqlite3.connect(registry.path) as connection:
+        status = connection.execute("SELECT status FROM bulk_epochs").fetchone()[0]
+    assert status == "PARTIAL"
 
 
 def test_cold_start_incremental_merge_package_and_idempotency(

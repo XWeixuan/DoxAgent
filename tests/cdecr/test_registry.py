@@ -132,6 +132,55 @@ def test_initialize_is_idempotent_and_survives_restart(registry: SQLiteCDECRRegi
     assert str(restarted.pragma_state()["journal_mode"]).lower() == "wal"
 
 
+def test_bulk_epoch_checkpoint_is_idempotent_and_restart_safe(
+    registry: SQLiteCDECRRegistry,
+) -> None:
+    manifest = registry.start_bulk_epoch(
+        epoch_id="bulk-epoch:test",
+        manifest_hash="manifest-v1",
+        orchestrator_version="epoch-v1",
+        message_ids=["m1", "m2"],
+    )
+    assert manifest["status"] == "RUNNING"
+    registry.upsert_bulk_epoch_item(
+        epoch_id="bulk-epoch:test",
+        stage="CROSS_DOCUMENT_COMPONENT",
+        item_id="component:1",
+        status="RUNNING",
+        input_hash="input-v1",
+        snapshot_hash="snapshot-v1",
+        result_ref={"message_ids": ["m1", "m2"]},
+    )
+    registry.upsert_bulk_epoch_item(
+        epoch_id="bulk-epoch:test",
+        stage="CROSS_DOCUMENT_COMPONENT",
+        item_id="component:1",
+        status="SUCCEEDED",
+        input_hash="input-v1",
+        snapshot_hash="snapshot-v2",
+        result_ref={"run_ids": ["r1", "r2"]},
+    )
+    registry.update_bulk_epoch(
+        "bulk-epoch:test",
+        status="FINALIZED",
+        current_stage="COMPLETE",
+        result={"touched_package_ids": ["p1"]},
+    )
+
+    restarted = SQLiteCDECRRegistry(registry.path)
+    restarted.initialize()
+    epoch = restarted.get_bulk_epoch("bulk-epoch:test")
+    assert epoch is not None
+    assert epoch["status"] == "FINALIZED"
+    assert epoch["result"] == {"touched_package_ids": ["p1"]}
+    items = restarted.list_bulk_epoch_items(
+        "bulk-epoch:test", stage="CROSS_DOCUMENT_COMPONENT"
+    )
+    assert len(items) == 1
+    assert items[0]["status"] == "SUCCEEDED"
+    assert items[0]["attempt_count"] == 1
+
+
 def test_source_and_mention_are_immutable_and_idempotent(
     registry: SQLiteCDECRRegistry,
 ) -> None:

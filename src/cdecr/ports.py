@@ -168,6 +168,44 @@ class QuantityNormalizer(Protocol):
 class CDECRRegistry(Protocol):
     def initialize(self) -> None: ...
 
+    def start_bulk_epoch(
+        self,
+        *,
+        epoch_id: str,
+        manifest_hash: str,
+        orchestrator_version: str,
+        message_ids: Sequence[str],
+    ) -> dict[str, Any]: ...
+
+    def get_bulk_epoch(self, epoch_id: str) -> dict[str, Any] | None: ...
+
+    def update_bulk_epoch(
+        self,
+        epoch_id: str,
+        *,
+        status: str,
+        current_stage: str,
+        result: dict[str, Any] | None = None,
+    ) -> None: ...
+
+    def upsert_bulk_epoch_item(
+        self,
+        *,
+        epoch_id: str,
+        stage: str,
+        item_id: str,
+        status: str,
+        input_hash: str,
+        snapshot_hash: str | None = None,
+        expected_versions_hash: str | None = None,
+        result_ref: dict[str, Any] | None = None,
+        error_code: str | None = None,
+    ) -> None: ...
+
+    def list_bulk_epoch_items(
+        self, epoch_id: str, *, stage: str | None = None
+    ) -> list[dict[str, Any]]: ...
+
     def save_source(self, source: SourceMessage, *, fingerprint: str) -> bool: ...
 
     def save_mention(self, mention: EventMention) -> bool: ...

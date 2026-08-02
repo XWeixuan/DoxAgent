@@ -461,8 +461,8 @@ N13 的核心指标不应再是“比当前 4 次调用更少”，而应是：
 | single-document concurrency | 3 | bulk 提高到 8；实时模式仍保持 3 |
 | M1 lane | 2 | bulk 提高到 8，继续优先 embedding 复用/合批 |
 | M2 lane | 6 | bulk 提高到 24 |
-| M3 lane | 3 | bulk 提高到 12 |
-| M4 lane | 2 | bulk 提高到 6 |
+| M3 lane | 3 | bulk 提高到 24 |
+| M4 lane | 2 | bulk 提高到 12 |
 | Atomic component workers | 无 | 12 |
 | Package component workers | 无 | 10 |
 | N13 pair-component workers | 无 | 12 |
@@ -470,14 +470,14 @@ N13 的核心指标不应再是“比当前 4 次调用更少”，而应是：
 | N12 batch | 12 events | 保持 |
 | N13 batch | 12 pairs | 保持 |
 
-这些是应用侧上限，不要求每个 epoch 都达到。connected component 数不足或只有一个巨型 component 时仍会自然串行；不能为了填满 24/12 个 lane 切断真实候选边。
+这些是应用侧上限，不要求每个 epoch 都达到。connected component 数不足或只有一个巨型 component 时仍会自然串行；不能为了填满 24/24 个 M2/M3 lane 切断真实候选边。
 
 ### 7.2 启动节流与自动回落
 
 provider 支持数百并发，不代表同一毫秒提交数十个长请求一定稳定。采用 provider 级 token-bucket/admission gate：
 
 - bulk 新请求默认每 **1 秒**放行一个，带 0-250ms jitter；这是启动间隔，不是请求完成后的固定 sleep；
-- 请求一旦启动即可与前序请求并行，因此长请求会逐步填满 24/12 的 lane，而不是被串行化；
+- 请求一旦启动即可与前序请求并行，因此长请求会逐步填满 24/24 的 M2/M3 lane，而不是被串行化；
 - 若连续窗口出现 429、连接重置或 provider timeout，启动间隔临时提高到 2 秒，并将对应 lane 减半；
 - 连续 30 次成功后按每次 +2 恢复，最高回到配置上限；
 - strict/schema/业务校验错误不视为限流信号，避免模型内容错误错误压低系统并发；
@@ -485,7 +485,7 @@ provider 支持数百并发，不代表同一毫秒提交数十个长请求一�
 
 固定在每个 request 之后 sleep 1-2 秒会占用 worker、放大长尾且不能控制已经在途的请求，因此不采用。上述启动 gate 只平滑突发，真正的并发边界仍由 semaphore 控制。
 
-如果完整 30 篇验收同时满足以下条件，可继续将 M2/M3 lane 提高到 32/16、component workers 提高到 16；否则保留 24/12：
+如果完整 30 篇验收同时满足以下条件，可继续将 M2/M3 lane 提高到 32/32、component workers 提高到 16；否则保留 24/24：
 
 - 该 stage 存在排队 component 且 provider lane 长时间满载；
 - provider 429/timeout/invalid response 比例不升；
@@ -528,7 +528,7 @@ bulk 与实时增量共用服务时，不能让历史任务占满所有 lane。�
 编排并行本身不减少每个判断所需的输入/输出 Token，不能把墙钟收益虚报为 Token 收益：
 
 - **P0**：墙钟与 Token 目标为不显著回归；修复 N13 覆盖后 raw N13 Token 可能上升，这是正确性成本；
-- **完整 P0-P2**：主要收益来自 N9/N12 独立 component 并行。按 24/12 provider lane 与 12/10 component workers，30 篇墙钟设 **下降 30%-50% 的观察目标**，不是硬承诺；
+- **完整 P0-P2**：主要收益来自 N9/N12 独立 component 并行。按 M2/M3 24/24 provider lane 与 12/10 component workers，30 篇墙钟设 **下降 30%-50% 的观察目标**，不是硬承诺；
 - 数百篇、多 issuer/多时间段语料若能形成多个独立 component，吞吐目标为 **2x-4x documents/hour**；同 issuer、同一事件密集语料可能明显低于此范围；
 - embedding 合批、相同 task/profile 复用和 N13 pair 去重预计使全流程 input Token **净变化 -5% 至 +5%**。只有在完整 N13 coverage 下仍下降，才能宣称降本；
 - 当前 3,066,910 output Token 的主要问题与 thinking/model 输出行为有关，orchestrator 无法单独解决，应在独立模型配置 A/B 中处理，不能夹带到本重构。
@@ -720,7 +720,7 @@ CDECR_BULK_ORCHESTRATOR=legacy_defer | epoch_v1
 2. 紧接着接入 N9 component 并行；
 3. 随后接入 N12 component 并行和完整 N13，三者共同组成唯一可交付的 `epoch_v1`；
 4. Field 仅在成为新瓶颈且能证明 component 互斥时再做；
-5. bulk 默认使用 8 个文档 worker、M2/M3 24/12 lane、N9/N12/N13 12/10/12 component workers，并以约 1 秒 provider 启动间隔平滑突发；
+5. bulk 默认使用 8 个文档 worker、M1/M2/M3/M4 8/24/24/12 lane、N9/N12/N13 12/10/12 component workers，并以约 1 秒 provider 启动间隔平滑突发；
 6. 全程不改 Prompt、不扩大复杂 batch、不降低候选覆盖，也不将单项错误扩大为整批失败。
 
 这条路线引入的长期新复杂度仅是一个薄 orchestrator、两张 checkpoint 表和通用 expected-version Apply 合同；它们替代当前 CLI/evaluation 重复编排与隐式 defer 语义，而不是在旧流程旁堆叠另一套业务系统。
