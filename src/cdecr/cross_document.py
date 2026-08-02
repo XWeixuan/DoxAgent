@@ -11,6 +11,7 @@ import traceback
 import uuid
 from collections.abc import Callable, Sequence
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import ExitStack
 from datetime import UTC, date, datetime
 from pathlib import Path
 from time import perf_counter
@@ -175,10 +176,10 @@ from cdecr.scheduler import take_scheduled_call_metrics
 from cdecr.single_document_contracts import ModelCallSummary
 from cdecr.wire import compact_json, wire_ref_metadata
 
-ENGINE_VERSION = "cdecr-cross-document-v21-bulk-epoch"
+ENGINE_VERSION = "cdecr-cross-document-v22-bulk-candidate-graph"
 PROMPT_VERSION = "cdecr-cross-document-prompts-v15"
 WIRE_PROTOCOL_VERSION = "cdecr-cross-document-wire-atomic-dictionary-v9"
-BULK_ORCHESTRATOR_VERSION = "cdecr-bulk-epoch-v1"
+BULK_ORCHESTRATOR_VERSION = "cdecr-bulk-epoch-v2-candidate-graph"
 ATOMIC_ASSIGNMENT_POLICY_VERSION = "atomic-assignment-policy-v4-deterministic-pair-filter"
 ATOMIC_DECISION_MENTION_BATCH = 3
 PACKAGE_DECISION_EVENT_BATCH = 12
@@ -991,6 +992,8 @@ class CrossDocumentEngine:
         self.bulk_atomic_component_workers = max(1, bulk_atomic_component_workers)
         self.bulk_package_component_workers = max(1, bulk_package_component_workers)
         self.bulk_n13_component_workers = max(1, bulk_n13_component_workers)
+        self._bulk_package_lock_guard = threading.Lock()
+        self._bulk_package_locks: dict[str, threading.Lock] = {}
         self.knowledge_base = knowledge_base or V2KnowledgeBase()
 
     @property
@@ -1270,14 +1273,18 @@ class CrossDocumentEngine:
                 run_id=run_id,
             )
             atomic_events = self._correct_atomic(atomic_events, mentions, run_id=run_id)
-            packages, package_assignments = self._assign_packages_v13(
-                atomic_events,
-                mentions,
-                mention_vectors,
-                models,
-                run_id=run_id,
-                candidate_counts=candidate_counts,
-            )
+            with ExitStack() as package_lock_stack:
+                if execution_mode == "BULK_EPOCH":
+                    for package_lock in self._bulk_package_assignment_locks(mentions):
+                        package_lock_stack.enter_context(package_lock)
+                packages, package_assignments = self._assign_packages_v13(
+                    atomic_events,
+                    mentions,
+                    mention_vectors,
+                    models,
+                    run_id=run_id,
+                    candidate_counts=candidate_counts,
+                )
             if defer_package_merge:
                 self.registry.append_decision_audit(
                     DecisionAuditRecord(
@@ -1773,12 +1780,44 @@ class CrossDocumentEngine:
                 parent[left_root] = right_root
 
         owners_by_key: dict[str, str] = {}
+        mentions_by_recall_bucket: dict[
+            tuple[str, str, str], list[tuple[str, EventMention]]
+        ] = {}
         for message_id in ordered_ids:
             source = self.registry.get_source(message_id)
             mentions = self.registry.list_mentions_for_message(message_id)
             for key in self._bulk_document_dependency_keys(source, mentions):
                 owner = owners_by_key.setdefault(key, message_id)
                 union(owner, message_id)
+            for mention in mentions:
+                participants = sorted(
+                    {
+                        (participant.entity_id or participant.surface).strip().casefold()
+                        for participant in mention.participants
+                        if (participant.entity_id or participant.surface).strip()
+                    }
+                )
+                principal = participants[0] if participants else "unknown"
+                for principal_alias in self._bulk_principal_aliases(principal):
+                    bucket = (
+                        principal_alias,
+                        mention.event_family.value,
+                        mention.assertion_state.value,
+                    )
+                    mentions_by_recall_bucket.setdefault(bucket, []).append(
+                        (message_id, mention)
+                    )
+
+        # Add only candidate-like near edges.  Sharing a company/family alone
+        # is deliberately insufficient: dense single-issuer historical sets
+        # would otherwise collapse into one giant serial component.
+        for recall_values in mentions_by_recall_bucket.values():
+            for index, (left_message_id, left) in enumerate(recall_values):
+                for right_message_id, right in recall_values[index + 1 :]:
+                    if left_message_id == right_message_id:
+                        continue
+                    if self._bulk_mentions_share_candidate_boundary(left, right):
+                        union(left_message_id, right_message_id)
 
         grouped: dict[str, list[str]] = {}
         for message_id in ordered_ids:
@@ -1842,49 +1881,124 @@ class CrossDocumentEngine:
                 for quantity in mention.quantities
                 if quantity.role.value == "PRIMARY"
             )
-            atomic_key = {
-                "family": mention.event_family.value,
-                "predicate": mention.predicate.normalized,
-                "principal": principal,
-                "period": period,
-                "date": time_bucket,
-                "metrics": primary_metrics,
-                "assertion": mention.assertion_state.value,
-            }
-            keys.add(f"atomic:{_hash_json(atomic_key)}")
-            # The scheduler graph must be wider than the eventual business
-            # merge rule.  Two records with the same principal and family can
-            # compete for the same candidate even when their predicate,
-            # metric, date precision, or wording differs.  Connecting them is
-            # a throughput trade-off only; failing to connect them can create
-            # concurrent CREATE_NEW fragmentation or stale-target decisions.
             for principal_alias in principal_aliases:
-                keys.add(
-                    "atomic-recall-envelope:"
-                    f"{principal_alias}:{mention.event_family.value}"
-                )
-                if period or time_bucket:
-                    keys.add(
-                        "package-recall-envelope:"
-                        f"{principal_alias}:{period or time_bucket}"
-                    )
-            if mention.local_package_hint is not None:
-                anchor = re.sub(
-                    r"\s+", " ", mention.local_package_hint.anchor.strip().casefold()
-                )
-                for principal_alias in principal_aliases:
-                    # Package membership can legitimately cross event family,
-                    # so family is intentionally absent from this scheduler
-                    # dependency key.  This does not make anchor equality an
-                    # automatic business merge.
-                    keys.add(f"package-anchor:{principal_alias}:{anchor}")
-            if mention.source_claim:
-                source_claim = re.sub(
-                    r"[^a-z0-9]+", " ", mention.source_claim.casefold()
-                ).strip()
-                if source_claim:
-                    keys.add(f"source-claim:{source_claim}:{mention.event_family.value}")
+                atomic_key = {
+                    "family": mention.event_family.value,
+                    "predicate": mention.predicate.normalized,
+                    "principal": principal_alias,
+                    "period": period,
+                    "date": time_bucket,
+                    "metrics": primary_metrics,
+                    "assertion": mention.assertion_state.value,
+                }
+                keys.add(f"atomic:{_hash_json(atomic_key)}")
         return keys
+
+    def _bulk_package_assignment_locks(
+        self, mentions: Sequence[EventMention]
+    ) -> list[threading.Lock]:
+        """Serialize only N12 writers that can compete for one Package head."""
+
+        keys: set[str] = set()
+        for mention in mentions:
+            participants = sorted(
+                {
+                    (participant.entity_id or participant.surface).strip().casefold()
+                    for participant in mention.participants
+                    if (participant.entity_id or participant.surface).strip()
+                }
+            )
+            principal = participants[0] if participants else "unknown"
+            principal_aliases = self._bulk_principal_aliases(principal)
+            period = mention.time.reference_period_id or ""
+            date_bucket = (
+                mention.time.event_start.isoformat()[:10]
+                if mention.time.event_start is not None
+                else ""
+            )
+            for principal_alias in principal_aliases:
+                if mention.local_package_hint is not None:
+                    anchor = re.sub(
+                        r"\s+",
+                        " ",
+                        mention.local_package_hint.anchor.strip().casefold(),
+                    )
+                    keys.add(f"anchor:{principal_alias}:{anchor}")
+                if period or date_bucket:
+                    keys.add(
+                        "window:"
+                        f"{principal_alias}:{mention.event_family.value}:"
+                        f"{period or date_bucket}"
+                    )
+        locks: list[threading.Lock] = []
+        with self._bulk_package_lock_guard:
+            for key in sorted(keys):
+                locks.append(self._bulk_package_locks.setdefault(key, threading.Lock()))
+        return locks
+
+    @classmethod
+    def _bulk_mentions_share_candidate_boundary(
+        cls, left: EventMention, right: EventMention
+    ) -> bool:
+        left_period = left.time.reference_period_id
+        right_period = right.time.reference_period_id
+        same_period = bool(left_period and left_period == right_period)
+        left_date = left.time.event_start.isoformat()[:10] if left.time.event_start else None
+        right_date = (
+            right.time.event_start.isoformat()[:10] if right.time.event_start else None
+        )
+        same_date = bool(left_date and left_date == right_date)
+        left_metrics = {
+            quantity.metric_id.strip().casefold()
+            for quantity in left.quantities
+            if quantity.role.value == "PRIMARY"
+        }
+        right_metrics = {
+            quantity.metric_id.strip().casefold()
+            for quantity in right.quantities
+            if quantity.role.value == "PRIMARY"
+        }
+        same_metric = bool(left_metrics & right_metrics)
+        same_predicate = (
+            left.predicate.normalized.strip().casefold()
+            == right.predicate.normalized.strip().casefold()
+        )
+        if same_predicate and same_period and not left_metrics and not right_metrics:
+            return True
+        if same_metric and (same_period or same_date or same_predicate):
+            return True
+        left_tokens = cls._bulk_identity_tokens(left.canonical_proposition)
+        right_tokens = cls._bulk_identity_tokens(right.canonical_proposition)
+        if min(len(left_tokens), len(right_tokens)) < 3:
+            return False
+        overlap = len(left_tokens & right_tokens)
+        union_size = len(left_tokens | right_tokens)
+        return overlap >= 3 and overlap / max(1, union_size) >= 0.6
+
+    @staticmethod
+    def _bulk_identity_tokens(value: str) -> set[str]:
+        stopwords = {
+            "about",
+            "after",
+            "and",
+            "for",
+            "from",
+            "has",
+            "its",
+            "said",
+            "that",
+            "the",
+            "their",
+            "to",
+            "was",
+            "were",
+            "with",
+        }
+        return {
+            token
+            for token in re.findall(r"[a-z0-9]+", value.casefold())
+            if len(token) >= 3 and token not in stopwords
+        }
 
     @staticmethod
     def _bulk_principal_aliases(principal: str) -> set[str]:
