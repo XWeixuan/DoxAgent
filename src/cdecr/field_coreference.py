@@ -37,7 +37,8 @@ from cdecr.ports import (
 )
 
 FIELD_REGISTRY_OWNER_KIND = "FIELD_REGISTRY"
-FIELD_PROMPT_VERSION = "v2"
+FIELD_PROMPT_VERSION = "v3-bulk-task-coverage"
+_FIELD_PROMPT_RESOURCE_VERSION = "v2"
 CANDIDATE_RETRIEVER_VERSION = "field-candidate-retriever-v2"
 MAX_ALIASES = 8
 MAX_CANDIDATES = 8
@@ -55,8 +56,10 @@ _ONTOLOGY_NAMESPACES = {
     FieldNamespace.FISCAL_PERIOD,
 }
 
-_PROMPT_PATH = Path(__file__).parent / "prompts" / FIELD_PROMPT_VERSION / "field_coreference.md"
-_POLICY_DIR = Path(__file__).parent / "prompts" / FIELD_PROMPT_VERSION / "field_policies"
+_PROMPT_PATH = (
+    Path(__file__).parent / "prompts" / _FIELD_PROMPT_RESOURCE_VERSION / "field_coreference.md"
+)
+_POLICY_DIR = Path(__file__).parent / "prompts" / _FIELD_PROMPT_RESOURCE_VERSION / "field_policies"
 _UNKNOWN_TARGET_NAMESPACES = {
     FieldNamespace.PARTICIPANT_COMPANY,
     FieldNamespace.PARTICIPANT_INSTITUTION,
@@ -374,10 +377,7 @@ class FieldCoreferenceResolver:
 
         entries = self._entries_for_value(value)
         candidates, unique_exact = self._recall(value, entries, run_id=run_id)
-        if (
-            value.namespace is FieldNamespace.PACKAGE_ANCHOR
-            and value.hints.parent_identity_key
-        ):
+        if value.namespace is FieldNamespace.PACKAGE_ANCHOR and value.hints.parent_identity_key:
             # N11 already derived this key from source-supported parent
             # boundaries. Reusing it is deterministic canonicalization, not a
             # semantic alias judgment for the field model.
@@ -485,8 +485,7 @@ class FieldCoreferenceResolver:
         self.registry.append_decision_audit(
             DecisionAuditRecord(
                 audit_id=(
-                    f"field-unresolved-canonicalized:{run_id or 'none'}:"
-                    f"{mention_id}:{field_path}"
+                    f"field-unresolved-canonicalized:{run_id or 'none'}:{mention_id}:{field_path}"
                 ),
                 run_id=run_id,
                 decision_type="FIELD_UNRESOLVED_CANONICALIZED",
@@ -900,6 +899,10 @@ class FieldCoreferenceResolver:
                 system_prompt=system_prompt,
                 user_prompt=user_prompt,
                 json_schema=schema,
+                metadata={
+                    "stage": "field_coreference",
+                    "priority": "repair" if attempt else "normal",
+                },
             )
             call_id = str(uuid.uuid4())
             try:
@@ -943,8 +946,7 @@ class FieldCoreferenceResolver:
                     decision_value = payload.get("decision")
                     if isinstance(decision_value, str):
                         decision_by_token = {
-                            decision.value.casefold(): decision.value
-                            for decision in FieldDecision
+                            decision.value.casefold(): decision.value for decision in FieldDecision
                         }
                         normalized_decision = decision_by_token.get(
                             decision_value.strip().casefold()
@@ -963,8 +965,7 @@ class FieldCoreferenceResolver:
                     else:
                         raw_namespace = ""
                     namespace_by_token = {
-                        namespace.name.casefold(): namespace.value
-                        for namespace in FieldNamespace
+                        namespace.name.casefold(): namespace.value for namespace in FieldNamespace
                     }
                     namespace_by_token.update(
                         {
@@ -1137,8 +1138,7 @@ class FieldCoreferenceResolver:
                     source_scope = value.hints.source_fingerprint or "unknown-source"
                     evidence_scope = value.hints.evidence_group_hash or normalized
                     identity_seed = (
-                        f"unresolved:{target_namespace.value}:"
-                        f"{source_scope}:{evidence_scope}"
+                        f"unresolved:{target_namespace.value}:{source_scope}:{evidence_scope}"
                     )
             if _is_generic(value.raw_value) or target_namespace is FieldNamespace.FISCAL_PERIOD:
                 identity_seed = f"{identity_seed}:{scope}"
@@ -1227,9 +1227,7 @@ class FieldCoreferenceResolver:
         ):
             self.registry.update_field_registry_aliases(
                 existing.id,
-                _stable_aliases(
-                    [*existing.aliases, existing.canonical_text, canonical_text]
-                ),
+                _stable_aliases([*existing.aliases, existing.canonical_text, canonical_text]),
             )
             return self.registry.get_field_registry_entry(existing.id) or existing
         self.registry.create_field_registry_entry(entry)

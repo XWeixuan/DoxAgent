@@ -5,6 +5,8 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from typing import Any
 
@@ -100,10 +102,7 @@ def is_safe_deterministic_match(
         }
     ):
         return True, "CORE_ONTOLOGY_EXACT"
-    if (
-        normalized == normalize_field_text(match.name)
-        and not cross_catalog_collision
-    ):
+    if normalized == normalize_field_text(match.name) and not cross_catalog_collision:
         return True, "UNAMBIGUOUS_CANONICAL_NAME"
     if (
         catalog == "concepts"
@@ -197,10 +196,9 @@ class CanonicalFieldResolutionEngine:
                     (mention, "time.reference_period_id", mention.time.reference_period_id)
                 )
             projection = mention.schema_projection
-            if (
-                isinstance(projection, (FinancialMetricProjection, GuidanceProjection))
-                and _is_fiscal_period_expression(projection.fields.period_id)
-            ):
+            if isinstance(
+                projection, (FinancialMetricProjection, GuidanceProjection)
+            ) and _is_fiscal_period_expression(projection.fields.period_id):
                 periods.append(
                     (mention, "schema_projection.fields.period_id", projection.fields.period_id)
                 )
@@ -210,18 +208,14 @@ class CanonicalFieldResolutionEngine:
         for mention, path, value in periods:
             issuer_id, reason = self._issuer_for_mention(source, mention)
             period_occurrences.append(
-                self._period_occurrence_with_issuer(
-                    source, mention, path, value, issuer_id
-                )
+                self._period_occurrence_with_issuer(source, mention, path, value, issuer_id)
             )
             payload = {
                 "field_path": path,
                 "raw_value": value,
                 "issuer_id": issuer_id,
                 "selection_reason": reason,
-                "derived_candidate": _is_derived_future_period(
-                    value, source.published_at.year
-                ),
+                "derived_candidate": _is_derived_future_period(value, source.published_at.year),
             }
             self.registry.append_decision_audit(
                 DecisionAuditRecord(
@@ -266,10 +260,9 @@ class CanonicalFieldResolutionEngine:
                     )
                 )
             projection = mention.schema_projection
-            if (
-                isinstance(projection, (FinancialMetricProjection, GuidanceProjection))
-                and _is_fiscal_period_expression(projection.fields.period_id)
-            ):
+            if isinstance(
+                projection, (FinancialMetricProjection, GuidanceProjection)
+            ) and _is_fiscal_period_expression(projection.fields.period_id):
                 occurrences.append(
                     self._period_occurrence(
                         source,
@@ -334,6 +327,23 @@ class CanonicalFieldResolutionEngine:
         *,
         run_id: str | None = None,
     ) -> CanonicalResolutionSummary:
+        occurrences = self.package_hint_occurrences(source, mentions, run_id=run_id)
+        resolved, unresolved, groups = self._resolve_groups(source, occurrences, run_id=run_id)
+        return CanonicalResolutionSummary(
+            catalog_hash=self.knowledge_base.catalog_hash,
+            resolved_count=resolved,
+            unresolved_count=unresolved,
+            group_count=groups,
+            field_links_hash=field_links_hash(self.registry, mentions),
+        )
+
+    def package_hint_occurrences(
+        self,
+        source: SourceMessage,
+        mentions: list[EventMention],
+        *,
+        run_id: str | None = None,
+    ) -> list[FieldOccurrence]:
         occurrences: list[FieldOccurrence] = []
         for mention in mentions:
             hint = mention.local_package_hint
@@ -388,14 +398,104 @@ class CanonicalFieldResolutionEngine:
                     kind=artifact_kind,
                 )
             )
-        resolved, unresolved, groups = self._resolve_groups(source, occurrences, run_id=run_id)
+        return occurrences
+
+    def resolve_epoch(
+        self,
+        documents: list[tuple[SourceMessage, list[EventMention]]],
+        *,
+        run_id: str | None,
+        max_workers: int,
+        task_hook: Callable[[str, str, str | None], None] | None = None,
+    ) -> CanonicalResolutionSummary:
+        """Resolve one immutable epoch inventory with semantic-key fan-out.
+
+        Candidate preparation is done before any model task starts. Identical semantic tasks are
+        evaluated once and the resulting canonical link is fanned out by `_resolve_groups`.
+        """
+
+        if not documents:
+            return CanonicalResolutionSummary(
+                catalog_hash=self.knowledge_base.catalog_hash,
+                resolved_count=0,
+                unresolved_count=0,
+                group_count=0,
+                field_links_hash=hashlib.sha256(b"[]").hexdigest(),
+            )
+        self.prime_participant_documents(documents)
+        source_by_mention = {
+            mention.mention_id: source for source, mentions in documents for mention in mentions
+        }
+        inventory: list[FieldOccurrence] = []
+        all_mentions: list[EventMention] = []
+        for source, mentions in documents:
+            all_mentions.extend(mentions)
+            inventory.extend(self.routed_occurrences(source, mentions))
+            inventory.extend(self.package_hint_occurrences(source, mentions, run_id=run_id))
+
+        grouped: dict[str, list[FieldOccurrence]] = {}
+        for occurrence in inventory:
+            key = self._epoch_field_task_key(occurrence)
+            grouped.setdefault(key, []).append(occurrence)
+        ordered_groups = [
+            sorted(values, key=lambda item: (item.mention_id, item.field_path))
+            for _, values in sorted(grouped.items())
+        ]
+
+        def resolve_group(group: list[FieldOccurrence]) -> tuple[int, int, int]:
+            task_id = self._epoch_field_task_key(group[0])
+            if task_hook is not None:
+                task_hook(task_id, "RUNNING", None)
+            try:
+                result = self._resolve_groups(
+                    source_by_mention[group[0].mention_id], group, run_id=run_id
+                )
+            except Exception as exc:
+                if task_hook is not None:
+                    task_hook(
+                        task_id,
+                        "FAILED",
+                        str(getattr(exc, "code", type(exc).__name__)),
+                    )
+                raise
+            if task_hook is not None:
+                task_hook(task_id, "SUCCEEDED", None)
+            return result
+
+        totals = [0, 0, 0]
+        with ThreadPoolExecutor(max_workers=min(max_workers, max(1, len(ordered_groups)))) as pool:
+            futures = [pool.submit(resolve_group, group) for group in ordered_groups]
+            for future in as_completed(futures):
+                result = future.result()
+                for index, value in enumerate(result):
+                    totals[index] += value
         return CanonicalResolutionSummary(
             catalog_hash=self.knowledge_base.catalog_hash,
-            resolved_count=resolved,
-            unresolved_count=unresolved,
-            group_count=groups,
-            field_links_hash=field_links_hash(self.registry, mentions),
+            resolved_count=totals[0],
+            unresolved_count=totals[1],
+            group_count=totals[2],
+            field_links_hash=field_links_hash(self.registry, all_mentions),
         )
+
+    @staticmethod
+    def _epoch_field_task_key(occurrence: FieldOccurrence) -> str:
+        payload = {
+            "namespace": occurrence.value.namespace.value,
+            "raw": normalize_field_text(occurrence.value.raw_value),
+            "issuer": occurrence.company_id or occurrence.value.hints.issuer_id,
+            "participant_role": occurrence.value.hints.participant_role,
+            "period_context": occurrence.value.hints.published_date,
+            "parent_identity": occurrence.value.hints.parent_identity_key,
+            "catalog": occurrence.catalog,
+            "kind": occurrence.kind,
+            "candidate_external_ids": sorted(
+                match.external_id for match in occurrence.candidate_matches
+            ),
+            "allow_coreference": occurrence.allow_coreference,
+        }
+        return hashlib.sha256(
+            json.dumps(payload, ensure_ascii=False, sort_keys=True, default=str).encode("utf-8")
+        ).hexdigest()
 
     def _package_parent_identity_key(
         self,
@@ -471,20 +571,14 @@ class CanonicalFieldResolutionEngine:
             )
         ]
         for index, participant in enumerate(mention.participants):
-            catalog, namespace, candidates = self._participant_route(
-                source, mention, participant
-            )
-            generic_collective = _generic_participant(
-                normalize_field_text(participant.surface)
-            )
+            catalog, namespace, candidates = self._participant_route(source, mention, participant)
+            generic_collective = _generic_participant(normalize_field_text(participant.surface))
             route_reason = (
                 "GENERIC_COLLECTIVE"
                 if generic_collective
                 else (
                     "POLICY_OVERRIDE"
-                    if self.knowledge_base.participant_route_override(
-                        participant.surface
-                    )
+                    if self.knowledge_base.participant_route_override(participant.surface)
                     is not None
                     else (
                         "CROSS_CATALOG_COLLISION"
@@ -516,9 +610,7 @@ class CanonicalFieldResolutionEngine:
                         "named_objects",
                     ),
                     exact_collision_count=(
-                        len({item.external_id for item in candidates})
-                        if not catalog
-                        else 0
+                        len({item.external_id for item in candidates}) if not catalog else 0
                     ),
                     generic_collective=generic_collective,
                 )
@@ -721,9 +813,7 @@ class CanonicalFieldResolutionEngine:
                 self._redirect_metric_matches(matches),
                 run_id=run_id,
             )[:8]
-            unique, deterministic_reason = self._safe_unique(
-                source, primary, exact_matches
-            )
+            unique, deterministic_reason = self._safe_unique(source, primary, exact_matches)
             result: FieldCoreferenceResult
             if unique is not None:
                 result = self.field_resolver.link_external(
@@ -812,13 +902,9 @@ class CanonicalFieldResolutionEngine:
                     )
                 )
             candidate_snapshot = {
-                "raw_hash": hashlib.sha256(
-                    primary.value.raw_value.encode("utf-8")
-                ).hexdigest(),
+                "raw_hash": hashlib.sha256(primary.value.raw_value.encode("utf-8")).hexdigest(),
                 "requested_namespace": primary.value.namespace.value,
-                "candidate_external_ids": [
-                    match.external_id for match in matches
-                ],
+                "candidate_external_ids": [match.external_id for match in matches],
                 "candidate_namespaces": [
                     _namespace_for_match(
                         match,
@@ -827,15 +913,10 @@ class CanonicalFieldResolutionEngine:
                     ).value
                     for match in matches
                 ],
-                "route": primary.route_reason
-                or ("EXACT" if exact_matches else "STRING_RECALL"),
-                "scores": [
-                    1.0 if match in exact_matches else None for match in matches
-                ],
+                "route": primary.route_reason or ("EXACT" if exact_matches else "STRING_RECALL"),
+                "scores": [1.0 if match in exact_matches else None for match in matches],
                 "blocked_reason": (
-                    "COREFERENCE_NOT_ELIGIBLE"
-                    if not primary.allow_coreference
-                    else None
+                    "COREFERENCE_NOT_ELIGIBLE" if not primary.allow_coreference else None
                 ),
                 "selected_id": result.external_id,
             }
@@ -857,9 +938,7 @@ class CanonicalFieldResolutionEngine:
             self._audit_group(group, result, run_id=run_id)
         return resolved_count, unresolved_count, len(groups)
 
-    def _exact_matches(
-        self, source: SourceMessage, occurrence: FieldOccurrence
-    ) -> list[KBMatch]:
+    def _exact_matches(self, source: SourceMessage, occurrence: FieldOccurrence) -> list[KBMatch]:
         if not occurrence.catalog:
             return []
         matches = self.knowledge_base.lookup(
@@ -869,9 +948,7 @@ class CanonicalFieldResolutionEngine:
             company_id=occurrence.company_id,
             owner_id=occurrence.owner_id,
         )
-        blocked = self.knowledge_base.blocked_exact_ids(
-            occurrence.value.raw_value
-        )
+        blocked = self.knowledge_base.blocked_exact_ids(occurrence.value.raw_value)
         matches = [item for item in matches if item.external_id not in blocked]
         if occurrence.catalog == "metrics":
             matches = self._filter_metric_tier(source, occurrence.value.raw_value, matches)
@@ -896,11 +973,7 @@ class CanonicalFieldResolutionEngine:
     def _filter_metric_tier(
         source: SourceMessage, raw_value: str, matches: list[KBMatch]
     ) -> list[KBMatch]:
-        core = [
-            item
-            for item in matches
-            if not item.external_id.startswith(("US_GAAP_", "XBRL_"))
-        ]
+        core = [item for item in matches if not item.external_id.startswith(("US_GAAP_", "XBRL_"))]
         explicit_taxonomy = bool(
             re.search(r"\b(?:us-gaap|ifrs|dei):", raw_value, re.I)
             or raw_value.startswith(("US_GAAP_", "XBRL_"))
@@ -949,16 +1022,12 @@ class CanonicalFieldResolutionEngine:
             ids = {
                 (catalog, item.external_id)
                 for catalog in catalogs
-                for item in self._participant_exact(
-                    source, catalog, occurrence.value.raw_value
-                )
+                for item in self._participant_exact(source, catalog, occurrence.value.raw_value)
             }
             return len(ids) > 1
         if occurrence.catalog in {"metrics", "concepts"}:
             other = "concepts" if occurrence.catalog == "metrics" else "metrics"
-            return bool(
-                self.knowledge_base.lookup(other, occurrence.value.raw_value)
-            )
+            return bool(self.knowledge_base.lookup(other, occurrence.value.raw_value))
         return False
 
     def _apply_candidate_blockers(
@@ -1021,9 +1090,7 @@ class CanonicalFieldResolutionEngine:
         if override is not None:
             matches = [
                 item
-                for item in self._participant_exact(
-                    source, override.catalog, override.external_id
-                )
+                for item in self._participant_exact(source, override.catalog, override.external_id)
                 if item.external_id == override.external_id
             ]
             namespace = {
@@ -1611,13 +1678,9 @@ def _generic_participant(normalized: str) -> bool:
     }
 
 
-def _candidate_blocker(
-    raw_value: str, local_context: str, match: KBMatch
-) -> str | None:
+def _candidate_blocker(raw_value: str, local_context: str, match: KBMatch) -> str | None:
     raw = normalize_field_text(raw_value)
-    candidate = normalize_field_text(
-        f"{match.external_id} {match.name} {' '.join(match.aliases)}"
-    )
+    candidate = normalize_field_text(f"{match.external_id} {match.name} {' '.join(match.aliases)}")
     context = normalize_field_text(local_context)
     if match.catalog == "metrics":
         if "growth" in raw and "growth" not in candidate:

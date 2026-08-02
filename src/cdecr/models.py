@@ -9,7 +9,7 @@ from enum import StrEnum
 from time import perf_counter
 from typing import Any, Literal
 
-from openai import OpenAI
+from openai import AsyncOpenAI, OpenAI
 from pydantic import Field, ValidationError
 
 from cdecr.contracts import StrictModel
@@ -120,6 +120,55 @@ def _should_rotate_key(exc: Exception) -> bool:
     return True
 
 
+def _structured_result_from_text(
+    *,
+    tier: ModelTier,
+    model: str,
+    text: object,
+    input_tokens: int | None,
+    output_tokens: int | None,
+    reasoning_tokens: int | None,
+    request_id: str | None,
+    started_at: float,
+) -> StructuredModelResult:
+    if not isinstance(text, str) or not text.strip():
+        raise ModelAdapterError(
+            tier=tier,
+            code="empty_response",
+            latency_ms=round((perf_counter() - started_at) * 1000),
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+        )
+    try:
+        payload = json.loads(text)
+    except json.JSONDecodeError as exc:
+        raise ModelAdapterError(
+            tier=tier,
+            code="invalid_json",
+            latency_ms=round((perf_counter() - started_at) * 1000),
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+            raw_response_text=text,
+        ) from exc
+    if not isinstance(payload, dict):
+        raise ModelAdapterError(
+            tier=tier,
+            code="invalid_json_shape",
+            latency_ms=round((perf_counter() - started_at) * 1000),
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+        )
+    return StructuredModelResult(
+        model=model,
+        payload=payload,
+        input_tokens=input_tokens,
+        output_tokens=output_tokens,
+        reasoning_tokens=reasoning_tokens,
+        latency_ms=round((perf_counter() - started_at) * 1000),
+        request_id=request_id,
+    )
+
+
 class DashScopeEmbeddingClient:
     """OpenAI-compatible DashScope text embedding client."""
 
@@ -213,8 +262,10 @@ class DashScopeStructuredModelClient:
         self.tier = tier
         self.model = model
         self._clients: tuple[OpenAI, ...]
+        self._async_clients: tuple[AsyncOpenAI, ...]
         if client is not None:
             self._clients = (client,)
+            self._async_clients = ()
         else:
             keys = [api_key, *(key for key in fallback_api_keys if key and key != api_key)]
             self._clients = tuple(
@@ -226,6 +277,89 @@ class DashScopeStructuredModelClient:
                 )
                 for key in dict.fromkeys(keys)
             )
+            self._async_clients = tuple(
+                AsyncOpenAI(
+                    api_key=key,
+                    base_url=base_url,
+                    timeout=timeout_seconds,
+                    max_retries=0,
+                )
+                for key in dict.fromkeys(keys)
+            )
+
+    async def acomplete(self, request: StructuredModelRequest) -> StructuredModelResult:
+        """Native async equivalent used by the BULK_EPOCH stage executor."""
+
+        if not self._async_clients:
+            raise RuntimeError("async DashScope client is unavailable for an injected sync client")
+        started = perf_counter()
+        schema = json.dumps(
+            compact_wire_schema(request.json_schema),
+            ensure_ascii=False,
+            separators=(",", ":"),
+        )
+        user_prompt = (
+            f"{request.user_prompt}\nReturn exactly one valid JSON object matching this JSON "
+            f"Schema: {schema}. Do not use Markdown or code fences."
+        )
+        system_prompt = (
+            f"{request.system_prompt}\nReturn exactly one valid JSON object. "
+            "Do not use Markdown or code fences."
+        )
+        last_error: Exception | None = None
+        provider_response: Any | None = None
+        for index, client in enumerate(self._async_clients):
+            try:
+                if self.tier is ModelTier.M2:
+                    provider_response = await client.chat.completions.create(
+                        model=self.model,
+                        messages=[
+                            {"role": "system", "content": system_prompt},
+                            {"role": "user", "content": user_prompt},
+                        ],
+                        response_format={"type": request.output_mode},
+                        extra_body={"enable_thinking": False},
+                    )
+                else:
+                    provider_response = await client.responses.create(
+                        model=self.model,
+                        input=[
+                            {"role": "system", "content": system_prompt},
+                            {"role": "user", "content": user_prompt},
+                        ],
+                        text={"format": {"type": request.output_mode}},
+                        reasoning={"effort": STRUCTURED_REASONING_EFFORT},
+                    )
+                break
+            except Exception as exc:
+                last_error = exc
+                if index == len(self._async_clients) - 1 or not _should_rotate_key(exc):
+                    break
+        if provider_response is None:
+            assert last_error is not None
+            raise _safe_model_error(last_error, self.tier, started_at=started) from last_error
+        if self.tier is ModelTier.M2:
+            text = provider_response.choices[0].message.content
+            usage = getattr(provider_response, "usage", None)
+            request_id = getattr(provider_response, "_request_id", None)
+            input_tokens = _usage_value(usage, "prompt_tokens", "input_tokens")
+            output_tokens = _usage_value(usage, "completion_tokens", "output_tokens")
+        else:
+            text = provider_response.output_text
+            usage = getattr(provider_response, "usage", None)
+            request_id = getattr(provider_response, "_request_id", None)
+            input_tokens = _usage_value(usage, "input_tokens", "prompt_tokens")
+            output_tokens = _usage_value(usage, "output_tokens", "completion_tokens")
+        return _structured_result_from_text(
+            tier=self.tier,
+            model=self.model,
+            text=text,
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+            reasoning_tokens=None,
+            request_id=request_id,
+            started_at=started,
+        )
 
     def complete(self, request: StructuredModelRequest) -> StructuredModelResult:
         started = perf_counter()
@@ -399,6 +533,7 @@ class DeepSeekStructuredModelClient:
         strict: bool = True,
         timeout_seconds: float = 600.0,
         client: OpenAI | None = None,
+        async_client: AsyncOpenAI | None = None,
     ) -> None:
         if tier not in {ModelTier.M2, ModelTier.M3, ModelTier.M4}:
             raise ValueError("DeepSeek official provider is supported only for M2/M3/M4")
@@ -411,6 +546,101 @@ class DeepSeekStructuredModelClient:
             base_url=base_url,
             timeout=timeout_seconds,
             max_retries=0,
+        )
+        self._async_client = async_client or (
+            None
+            if client is not None
+            else AsyncOpenAI(
+                api_key=api_key,
+                base_url=base_url,
+                timeout=timeout_seconds,
+                max_retries=0,
+            )
+        )
+
+    async def acomplete(self, request: StructuredModelRequest) -> StructuredModelResult:
+        """Use one shared native async transport for bulk stage requests."""
+
+        if self._async_client is None:
+            raise RuntimeError("async DeepSeek client is unavailable for an injected sync client")
+        started = perf_counter()
+        system_prompt = request.system_prompt
+        if self.strict:
+            system_prompt = (
+                f"{system_prompt}\nYou must call {DEEPSEEK_TOOL_NAME} exactly once and return "
+                "the complete result as its arguments."
+            )
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": request.user_prompt},
+        ]
+        kwargs: dict[str, Any] = {
+            "model": self.model,
+            "messages": messages,
+            "reasoning_effort": self.reasoning_effort,
+            "extra_body": {"thinking": {"type": "enabled"}},
+        }
+        if self.strict:
+            kwargs["tools"] = [
+                {
+                    "type": "function",
+                    "function": {
+                        "name": DEEPSEEK_TOOL_NAME,
+                        "description": (
+                            "Always call this function exactly once to return the complete "
+                            "structured CDECR result."
+                        ),
+                        "strict": True,
+                        "parameters": deepseek_strict_wire_schema(request.json_schema),
+                    },
+                }
+            ]
+        else:
+            schema = json.dumps(
+                compact_wire_schema(request.json_schema),
+                ensure_ascii=False,
+                separators=(",", ":"),
+            )
+            messages[0]["content"] = (
+                f"{request.system_prompt}\nReturn exactly one valid JSON object without Markdown."
+            )
+            messages[1]["content"] = (
+                f"{request.user_prompt}\nReturn JSON matching this schema: {schema}"
+            )
+            kwargs["response_format"] = {"type": "json_object"}
+        try:
+            response = await self._async_client.chat.completions.create(**kwargs)
+        except Exception as exc:
+            raise _safe_model_error(exc, self.tier, started_at=started) from exc
+        message = response.choices[0].message
+        if self.strict:
+            tool_calls = getattr(message, "tool_calls", None) or []
+            if len(tool_calls) != 1:
+                raise ModelAdapterError(
+                    tier=self.tier,
+                    code="invalid_tool_call_count",
+                    latency_ms=round((perf_counter() - started) * 1000),
+                )
+            function = tool_calls[0].function
+            if function.name != DEEPSEEK_TOOL_NAME:
+                raise ModelAdapterError(
+                    tier=self.tier,
+                    code="invalid_tool_name",
+                    latency_ms=round((perf_counter() - started) * 1000),
+                )
+            text = function.arguments
+        else:
+            text = message.content
+        usage = getattr(response, "usage", None)
+        return _structured_result_from_text(
+            tier=self.tier,
+            model=self.model,
+            text=text,
+            input_tokens=_usage_value(usage, "prompt_tokens", "input_tokens"),
+            output_tokens=_usage_value(usage, "completion_tokens", "output_tokens"),
+            reasoning_tokens=_reasoning_usage_value(usage),
+            request_id=getattr(response, "_request_id", None),
+            started_at=started,
         )
 
     def complete(self, request: StructuredModelRequest) -> StructuredModelResult:

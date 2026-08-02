@@ -43,3 +43,4 @@ view is intentionally sent once per batch.
 
 Return each pair once; copy input `id` unchanged to `pair_id`. SAME_PACKAGE
 merges; otherwise keep separate. Give one concise reason.
+Decide every pair independently from the supplied immutable Package profiles; do not assume another pair has already changed a Package.

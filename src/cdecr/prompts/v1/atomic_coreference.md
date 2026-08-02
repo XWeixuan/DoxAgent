@@ -163,3 +163,4 @@ Choose the merge target according to the following priority order:
 - Use `identity_differences` and `claim_conflict` only to summarize evidence
   already reflected in the axis verdicts and relation.
 - The returned content must strictly match the provided JSON Schema.
+- Decide every task independently from its supplied immutable candidates and return each task exactly once.

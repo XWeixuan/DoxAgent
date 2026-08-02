@@ -94,6 +94,7 @@ class StructuredModelRequest(StrictModel):
     user_prompt: str
     json_schema: dict[str, object]
     output_mode: Literal["json_object"] = "json_object"
+    metadata: dict[str, object] = Field(default_factory=dict)
 
     @field_validator("user_prompt")
     @classmethod
@@ -205,6 +206,38 @@ class CDECRRegistry(Protocol):
     def list_bulk_epoch_items(
         self, epoch_id: str, *, stage: str | None = None
     ) -> list[dict[str, Any]]: ...
+
+    def upsert_bulk_epoch_task(
+        self,
+        *,
+        epoch_id: str,
+        stage: str,
+        task_id: str,
+        input_hash: str,
+        snapshot_hash: str,
+        status: str,
+        component_id: str | None = None,
+        decision_ref: dict[str, Any] | None = None,
+        error_code: str | None = None,
+    ) -> None: ...
+
+    def list_bulk_epoch_tasks(
+        self, epoch_id: str, *, stage: str | None = None
+    ) -> list[dict[str, Any]]: ...
+
+    def save_bulk_epoch_artifact(
+        self,
+        *,
+        epoch_id: str,
+        artifact_kind: str,
+        artifact_hash: str,
+        upstream_hash: str,
+        payload: dict[str, Any],
+    ) -> None: ...
+
+    def get_bulk_epoch_artifact(
+        self, epoch_id: str, artifact_kind: str
+    ) -> dict[str, Any] | None: ...
 
     def save_source(self, source: SourceMessage, *, fingerprint: str) -> bool: ...
 

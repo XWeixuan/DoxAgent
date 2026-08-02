@@ -61,7 +61,7 @@ from cdecr.single_document_contracts import (
     SingleDocumentResult,
 )
 
-SCHEMA_VERSION = 10
+SCHEMA_VERSION = 11
 
 
 class RegistryError(RuntimeError):
@@ -273,6 +273,8 @@ def _clear_derived_state(connection: sqlite3.Connection) -> dict[str, int]:
         str(row[0])
         for row in connection.execute("SELECT run_id FROM cross_document_runs").fetchall()
     ]
+    connection.execute("DELETE FROM bulk_epoch_artifacts")
+    connection.execute("DELETE FROM bulk_epoch_tasks")
     connection.execute("DELETE FROM bulk_epoch_items")
     connection.execute("DELETE FROM bulk_epochs")
     connection.execute("DROP TABLE IF EXISTS hold_queue")
@@ -689,6 +691,37 @@ class SQLiteCDECRRegistry:
                 );
                 CREATE INDEX IF NOT EXISTS idx_bulk_epoch_items_status
                     ON bulk_epoch_items(epoch_id, stage, status);
+
+                CREATE TABLE IF NOT EXISTS bulk_epoch_tasks (
+                    epoch_id TEXT NOT NULL,
+                    stage TEXT NOT NULL,
+                    task_id TEXT NOT NULL,
+                    component_id TEXT,
+                    input_hash TEXT NOT NULL,
+                    snapshot_hash TEXT NOT NULL,
+                    status TEXT NOT NULL,
+                    attempt_count INTEGER NOT NULL DEFAULT 0,
+                    decision_ref_json TEXT,
+                    error_code TEXT,
+                    started_at TEXT,
+                    finished_at TEXT,
+                    updated_at TEXT NOT NULL,
+                    PRIMARY KEY(epoch_id, stage, task_id),
+                    FOREIGN KEY(epoch_id) REFERENCES bulk_epochs(epoch_id)
+                );
+                CREATE INDEX IF NOT EXISTS idx_bulk_epoch_tasks_status
+                    ON bulk_epoch_tasks(epoch_id, stage, status);
+
+                CREATE TABLE IF NOT EXISTS bulk_epoch_artifacts (
+                    epoch_id TEXT NOT NULL,
+                    artifact_kind TEXT NOT NULL,
+                    artifact_hash TEXT NOT NULL,
+                    upstream_hash TEXT NOT NULL,
+                    payload_json TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    PRIMARY KEY(epoch_id, artifact_kind),
+                    FOREIGN KEY(epoch_id) REFERENCES bulk_epochs(epoch_id)
+                );
                 CREATE UNIQUE INDEX IF NOT EXISTS idx_cross_document_completed_key
                     ON cross_document_runs(processing_key) WHERE status = 'SUCCEEDED';
                 CREATE INDEX IF NOT EXISTS idx_cross_document_message
@@ -2262,9 +2295,7 @@ class SQLiteCDECRRegistry:
                 mention = EventMention.model_validate_json(str(row["payload_json"]))
                 if mention.local_package_hint is not None:
                     local_anchor_hints.add(mention.local_package_hint.anchor)
-        local_anchor_hint = (
-            next(iter(local_anchor_hints)) if len(local_anchor_hints) == 1 else None
-        )
+        local_anchor_hint = next(iter(local_anchor_hints)) if len(local_anchor_hints) == 1 else None
         connection.execute(
             """
             INSERT INTO package_recall(
@@ -3067,9 +3098,7 @@ class SQLiteCDECRRegistry:
                     or str(existing["message_ids_json"]) != message_ids_json
                 ):
                     connection.rollback()
-                    raise ImmutableRecordConflict(
-                        f"bulk epoch {epoch_id!r} manifest is immutable"
-                    )
+                    raise ImmutableRecordConflict(f"bulk epoch {epoch_id!r} manifest is immutable")
                 connection.rollback()
         epoch = self.get_bulk_epoch(epoch_id)
         assert epoch is not None
@@ -3090,9 +3119,7 @@ class SQLiteCDECRRegistry:
             "current_stage": str(row["current_stage"]),
             "message_ids": json.loads(str(row["message_ids_json"])),
             "result": (
-                json.loads(str(row["result_json"]))
-                if row["result_json"] is not None
-                else None
+                json.loads(str(row["result_json"])) if row["result_json"] is not None else None
             ),
             "created_at": str(row["created_at"]),
             "updated_at": str(row["updated_at"]),
@@ -3214,6 +3241,151 @@ class SQLiteCDECRRegistry:
             }
             for row in rows
         ]
+
+    def upsert_bulk_epoch_task(
+        self,
+        *,
+        epoch_id: str,
+        stage: str,
+        task_id: str,
+        input_hash: str,
+        snapshot_hash: str,
+        status: str,
+        component_id: str | None = None,
+        decision_ref: dict[str, Any] | None = None,
+        error_code: str | None = None,
+    ) -> None:
+        now = _now()
+        started_at = now if status == "RUNNING" else None
+        finished_at = now if status in {"SUCCEEDED", "FAILED"} else None
+        with self._connection() as connection:
+            connection.execute(
+                """
+                INSERT INTO bulk_epoch_tasks(
+                    epoch_id, stage, task_id, component_id, input_hash,
+                    snapshot_hash, status, attempt_count, decision_ref_json,
+                    error_code, started_at, finished_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?)
+                ON CONFLICT(epoch_id, stage, task_id) DO UPDATE SET
+                    component_id = excluded.component_id,
+                    input_hash = excluded.input_hash,
+                    snapshot_hash = excluded.snapshot_hash,
+                    status = excluded.status,
+                    attempt_count = CASE
+                        WHEN excluded.status = 'RUNNING'
+                        THEN bulk_epoch_tasks.attempt_count + 1
+                        ELSE bulk_epoch_tasks.attempt_count
+                    END,
+                    decision_ref_json = excluded.decision_ref_json,
+                    error_code = excluded.error_code,
+                    started_at = COALESCE(excluded.started_at, bulk_epoch_tasks.started_at),
+                    finished_at = excluded.finished_at,
+                    updated_at = excluded.updated_at
+                """,
+                (
+                    epoch_id,
+                    stage,
+                    task_id,
+                    component_id,
+                    input_hash,
+                    snapshot_hash,
+                    status,
+                    _json_payload(decision_ref) if decision_ref is not None else None,
+                    error_code,
+                    started_at,
+                    finished_at,
+                    now,
+                ),
+            )
+            connection.commit()
+
+    def list_bulk_epoch_tasks(
+        self, epoch_id: str, *, stage: str | None = None
+    ) -> list[dict[str, Any]]:
+        sql = "SELECT * FROM bulk_epoch_tasks WHERE epoch_id = ?"
+        parameters: tuple[object, ...] = (epoch_id,)
+        if stage is not None:
+            sql += " AND stage = ?"
+            parameters = (epoch_id, stage)
+        sql += " ORDER BY stage, task_id"
+        with self._connection() as connection:
+            rows = connection.execute(sql, parameters).fetchall()
+        return [
+            {
+                "epoch_id": str(row["epoch_id"]),
+                "stage": str(row["stage"]),
+                "task_id": str(row["task_id"]),
+                "component_id": row["component_id"],
+                "input_hash": str(row["input_hash"]),
+                "snapshot_hash": str(row["snapshot_hash"]),
+                "status": str(row["status"]),
+                "attempt_count": int(row["attempt_count"]),
+                "decision_ref": (
+                    json.loads(str(row["decision_ref_json"]))
+                    if row["decision_ref_json"] is not None
+                    else None
+                ),
+                "error_code": row["error_code"],
+            }
+            for row in rows
+        ]
+
+    def save_bulk_epoch_artifact(
+        self,
+        *,
+        epoch_id: str,
+        artifact_kind: str,
+        artifact_hash: str,
+        upstream_hash: str,
+        payload: dict[str, Any],
+    ) -> None:
+        payload_json = _json_payload(payload)
+        with self._connection() as connection:
+            existing = connection.execute(
+                """
+                SELECT artifact_hash, upstream_hash, payload_json
+                FROM bulk_epoch_artifacts
+                WHERE epoch_id = ? AND artifact_kind = ?
+                """,
+                (epoch_id, artifact_kind),
+            ).fetchone()
+            if existing is not None:
+                if (
+                    str(existing["artifact_hash"]) != artifact_hash
+                    or str(existing["upstream_hash"]) != upstream_hash
+                    or str(existing["payload_json"]) != payload_json
+                ):
+                    raise ImmutableRecordConflict(
+                        f"bulk artifact {epoch_id!r}/{artifact_kind!r} is immutable"
+                    )
+                return
+            connection.execute(
+                """
+                INSERT INTO bulk_epoch_artifacts(
+                    epoch_id, artifact_kind, artifact_hash, upstream_hash,
+                    payload_json, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (epoch_id, artifact_kind, artifact_hash, upstream_hash, payload_json, _now()),
+            )
+            connection.commit()
+
+    def get_bulk_epoch_artifact(self, epoch_id: str, artifact_kind: str) -> dict[str, Any] | None:
+        with self._connection() as connection:
+            row = connection.execute(
+                "SELECT * FROM bulk_epoch_artifacts WHERE epoch_id = ? AND artifact_kind = ?",
+                (epoch_id, artifact_kind),
+            ).fetchone()
+        if row is None:
+            return None
+        return {
+            "epoch_id": str(row["epoch_id"]),
+            "artifact_kind": str(row["artifact_kind"]),
+            "artifact_hash": str(row["artifact_hash"]),
+            "upstream_hash": str(row["upstream_hash"]),
+            "payload": json.loads(str(row["payload_json"])),
+            "created_at": str(row["created_at"]),
+        }
 
     def start_cross_document_run(
         self,

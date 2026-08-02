@@ -61,3 +61,5 @@ membership target.
 Return every candidate exactly once, use only supplied request-local IDs, and
 give concise reasons. If no candidate is MEMBER, return no selected target.
 Resolve each task using the request-local package definitions.
+Decide every task independently from the supplied immutable Package candidates. Return every task ID exactly once. Do not assume that another task has already created or modified a Package.
+Provisional Package seeds are candidate parent containers for this epoch; judge membership by the same parent-boundary rules as existing Packages.

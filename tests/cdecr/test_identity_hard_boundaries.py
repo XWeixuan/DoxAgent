@@ -52,7 +52,7 @@ def test_missing_or_non_primary_metric_is_neutral_not_a_hard_conflict() -> None:
     assert conflicts == []
 
 
-def test_runtime_settings_keep_legacy_hard_boundaries_in_shadow_by_default() -> None:
+def test_runtime_settings_enforce_promoted_hard_boundaries_by_default() -> None:
     settings = CDECRSettings(_env_file=None)
 
-    assert settings.atomic_hard_cannot_link_mode == "shadow"
+    assert settings.atomic_hard_cannot_link_mode == "enforce"

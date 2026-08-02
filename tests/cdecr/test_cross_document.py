@@ -36,7 +36,7 @@ from cdecr.contracts import (
 )
 from cdecr.coreference_rules import merge_event_times, singleton_atomic_event
 from cdecr.cross_document import CrossDocumentEngine
-from cdecr.cross_document_contracts import CrossDocumentResult, CrossDocumentStatus
+from cdecr.cross_document_contracts import CrossDocumentStatus
 from cdecr.field_coreference_contracts import CanonicalFieldRegistryEntry
 from cdecr.ports import EmbeddingResult, StructuredModelRequest, StructuredModelResult
 from cdecr.registry import SQLiteCDECRRegistry
@@ -57,53 +57,9 @@ class FakeEmbedding:
         )
 
 
-def test_bulk_epoch_orders_inputs_and_defers_n13_until_final_document() -> None:
-    class RegistryStub:
-        def __init__(self) -> None:
-            self.sources = {
-                "late": SourceMessage(
-                    message_id="late",
-                    source_type=SourceType.NEWS,
-                    title="late",
-                    text="late",
-                    published_at=datetime(2026, 7, 2, tzinfo=UTC),
-                    source_name="example",
-                    url="https://example.com/late",
-                    ticker_hints=["MU"],
-                    language=Language.EN,
-                ),
-                "early": SourceMessage(
-                    message_id="early",
-                    source_type=SourceType.NEWS,
-                    title="early",
-                    text="early",
-                    published_at=datetime(2026, 7, 1, tzinfo=UTC),
-                    source_name="example",
-                    url="https://example.com/early",
-                    ticker_hints=["MU"],
-                    language=Language.EN,
-                ),
-            }
-
-        def get_source(self, message_id: str) -> SourceMessage | None:
-            return self.sources.get(message_id)
-
+def test_incremental_engine_batch_has_no_bulk_orchestration_switch() -> None:
     engine = object.__new__(CrossDocumentEngine)
-    engine.registry = RegistryStub()
-    calls: list[tuple[str, dict[str, object]]] = []
-
-    def fake_process(message_id: str, **kwargs: object) -> str:
-        calls.append((message_id, kwargs))
-        return message_id
-
-    engine.process = fake_process  # type: ignore[method-assign]
-    assert engine.process_batch(["late", "early"], execution_mode="BULK_EPOCH") == [
-        "early",
-        "late",
-    ]
-    assert calls[0][1]["defer_package_merge"] is True
-    assert calls[1][1]["defer_package_merge"] is False
-    assert calls[0][1]["bulk_epoch_id"] == calls[1][1]["bulk_epoch_id"]
+    assert engine.process_batch([]) == []
 
 
 class FakeStructured:
@@ -162,15 +118,9 @@ class FakeStructured:
         if "tasks" in body:
             tasks = body["tasks"]
             assert isinstance(tasks, list)
-            seeds = {
-                task["event_id"]: task["seed"]
-                for task in tasks
-                if isinstance(task, dict)
-            }
+            seeds = {task["event_id"]: task["seed"] for task in tasks if isinstance(task, dict)}
             candidates = {
-                task["event_id"]: task["candidates"]
-                for task in tasks
-                if isinstance(task, dict)
+                task["event_id"]: task["candidates"] for task in tasks if isinstance(task, dict)
             }
         else:
             seeds = body["seeds"]
@@ -333,9 +283,7 @@ class FakeStructured:
                             ),
                         }
                         for axis in (
-                            {"R": "REFERENT", "O": "OCCURRENCE", "F": "FACET"}.get(
-                                value, value
-                            )
+                            {"R": "REFERENT", "O": "OCCURRENCE", "F": "FACET"}.get(value, value)
                             for value in axes
                         )
                     ],
@@ -583,8 +531,8 @@ def engine(
     m2: FakeStructured | None = None,
     m3: FakeStructured | None = None,
     hard_cannot_link_mode: str = "shadow",
-    n12_wire_protocol: str = "shadow",
-    n13_wire_protocol: str = "shadow",
+    n12_wire_protocol: str = "on",
+    n13_wire_protocol: str = "on",
 ) -> tuple[CrossDocumentEngine, FakeEmbedding, FakeStructured, FakeStructured]:
     embedding = FakeEmbedding()
     m2 = m2 or FakeStructured()
@@ -605,128 +553,6 @@ def engine(
     )
 
 
-def test_bulk_epoch_v1_persists_components_finalizes_all_touched_and_reuses(
-    registry: SQLiteCDECRRegistry,
-) -> None:
-    add(registry, source("MSG-1"), metric_mention("MSG-1"))
-    add(registry, source("MSG-2"), metric_mention("MSG-2"))
-    add(registry, source("MSG-3"), market_mention("MSG-3"))
-    processor, _, _, _ = engine(registry)
-
-    first = processor.process_batch(
-        ["MSG-3", "MSG-2", "MSG-1"], execution_mode="BULK_EPOCH"
-    )
-    assert [result.message_id for result in first] == ["MSG-1", "MSG-2", "MSG-3"]
-    assert all(result.status is CrossDocumentStatus.SUCCEEDED for result in first)
-    with sqlite3.connect(registry.path) as connection:
-        epoch_id, status, result_json = connection.execute(
-            "SELECT epoch_id, status, result_json FROM bulk_epochs"
-        ).fetchone()
-    assert status == "FINALIZED"
-    epoch_result = json.loads(result_json)
-    assert epoch_result["successful_message_count"] == 3
-    assert epoch_result["component_count"] == 2
-    assert epoch_result["touched_package_ids"]
-    n13_items = registry.list_bulk_epoch_items(epoch_id, stage="N13_FINALIZE")
-    assert len(n13_items) == 1
-    assert n13_items[0]["status"] == "SUCCEEDED"
-    with sqlite3.connect(registry.path) as connection:
-        deferred_count = connection.execute(
-            """
-            SELECT COUNT(*) FROM decision_audits
-            WHERE decision_type = 'PACKAGE_N13_DEFERRED_TO_BULK_BARRIER'
-            """
-        ).fetchone()[0]
-    assert deferred_count == 3
-
-    calls_before = registry.count_model_calls()
-    epoch_before_rerun = registry.get_bulk_epoch(epoch_id)
-    second = processor.process_batch(
-        ["MSG-1", "MSG-2", "MSG-3"], execution_mode="BULK_EPOCH"
-    )
-    assert all(result.reused for result in second)
-    assert registry.count_model_calls() == calls_before
-    assert registry.get_bulk_epoch(epoch_id) == epoch_before_rerun
-
-
-def test_bulk_component_graph_uses_recall_envelope_not_exact_metric_identity(
-    registry: SQLiteCDECRRegistry,
-) -> None:
-    add(registry, source("MSG-1"), metric_mention("MSG-1", metric="REVENUE"))
-    add(
-        registry,
-        source("MSG-2"),
-        metric_mention("MSG-2", metric="EPS", period="FY2026-Q3"),
-    )
-    processor, _, _, _ = engine(registry)
-
-    components = processor._bulk_document_components(["MSG-1", "MSG-2"])
-
-    assert len(components) == 1
-    assert components[0][1] == ["MSG-1", "MSG-2"]
-
-
-def test_bulk_principal_aliases_join_common_company_surface_variants() -> None:
-    assert "micron" in CrossDocumentEngine._bulk_principal_aliases(
-        "Micron Technology, Inc."
-    )
-
-
-def test_bulk_epoch_finalizes_successful_scope_when_last_document_fails(
-    registry: SQLiteCDECRRegistry,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    add(registry, source("MSG-1"), metric_mention("MSG-1"))
-    add(registry, source("MSG-2"), market_mention("MSG-2"))
-    processor, _, _, _ = engine(registry)
-    successful = processor.process(
-        "MSG-1",
-        execution_mode="BULK_EPOCH",
-        bulk_epoch_id="precondition",
-        defer_package_merge=True,
-    )
-    failed = CrossDocumentResult(
-        run_id="failed-run",
-        processing_key="failed-key",
-        message_id="MSG-2",
-        status=CrossDocumentStatus.FAILED,
-        atomic_events=[],
-        packages=[],
-        atomic_assignments=[],
-        package_assignments=[],
-        model_calls=[],
-        candidate_counts={},
-        failure_stage="package_assignment",
-        error_code="TEST_FAILURE",
-        started_at=datetime.now(UTC),
-        finished_at=datetime.now(UTC),
-    )
-    monkeypatch.setattr(
-        processor,
-        "process",
-        lambda message_id, **_: successful if message_id == "MSG-1" else failed,
-    )
-    finalized: list[str] = []
-
-    def fake_finalize(**kwargs: object) -> list[object]:
-        packages = kwargs["packages"]
-        assert isinstance(packages, list)
-        finalized.extend(package.package_id for package in packages)
-        return packages
-
-    monkeypatch.setattr(processor, "_finalize_bulk_epoch_packages", fake_finalize)
-    results = processor.process_batch(
-        ["MSG-1", "MSG-2"], execution_mode="BULK_EPOCH"
-    )
-
-    assert results[0].status is CrossDocumentStatus.SUCCEEDED
-    assert results[1].status is CrossDocumentStatus.FAILED
-    assert finalized
-    with sqlite3.connect(registry.path) as connection:
-        status = connection.execute("SELECT status FROM bulk_epochs").fetchone()[0]
-    assert status == "PARTIAL"
-
-
 def test_cold_start_incremental_merge_package_and_idempotency(
     registry: SQLiteCDECRRegistry,
 ) -> None:
@@ -738,9 +564,7 @@ def test_cold_start_incremental_merge_package_and_idempotency(
     assert first.status is CrossDocumentStatus.SUCCEEDED
     assert len(first.atomic_events) == 1
     assert len(first.packages) == 1
-    assert not any(
-        "Atomic Event Assignment Adjudicator" in call.system_prompt for call in m2.calls
-    )
+    assert not any("Atomic Event Assignment Adjudicator" in call.system_prompt for call in m2.calls)
 
     second_source = source("MSG-2")
     second_mention = metric_mention("MSG-2")
@@ -869,14 +693,10 @@ def test_n9_uses_request_level_atomic_dictionary_and_compact_identity_cards(
     assert [task["mention"] for task in payload["tasks"]] == ["m1", "m2", "m3"]
     assert set(payload["mentions"]) == {"m1", "m2", "m3"}
     candidate_ids = {
-        candidate["atomic"]
-        for task in payload["tasks"]
-        for candidate in task["candidates"]
+        candidate["atomic"] for task in payload["tasks"] for candidate in task["candidates"]
     }
     assert set(payload["atomics"]) == candidate_ids
-    assert len(payload["atomics"]) <= sum(
-        len(task["candidates"]) for task in payload["tasks"]
-    )
+    assert len(payload["atomics"]) <= sum(len(task["candidates"]) for task in payload["tasks"])
     assert all(
         candidate["atomic"].startswith("a")
         for task in payload["tasks"]
@@ -906,11 +726,11 @@ def test_n9_uses_request_level_atomic_dictionary_and_compact_identity_cards(
     with sqlite3.connect(registry.path) as connection:
         shadow_payloads = [
             json.loads(row[0])
-                for row in connection.execute(
-                    "SELECT payload_json FROM decision_audits "
-                    "WHERE decision_type = 'WIRE_PAYLOAD_SHADOW' "
-                    "AND json_extract(payload_json, '$.stage') = 'atomic_coreference'"
-                )
+            for row in connection.execute(
+                "SELECT payload_json FROM decision_audits "
+                "WHERE decision_type = 'WIRE_PAYLOAD_SHADOW' "
+                "AND json_extract(payload_json, '$.stage') = 'atomic_coreference'"
+            )
         ]
     assert not shadow_payloads
 
@@ -1084,9 +904,7 @@ def test_multiple_same_candidates_absorb_only_singleton_duplicate(
         second,
         identity_profile=first_result.atomic_events[0].identity_profile,
     ).model_copy(update={"event_id": "atomic:zzzz-singleton"})
-    registry.save_atomic_event(
-        duplicate_event
-    )
+    registry.save_atomic_event(duplicate_event)
     third = metric_mention("MSG-3")
     add(registry, source("MSG-3"), third)
 
@@ -1096,9 +914,7 @@ def test_multiple_same_candidates_absorb_only_singleton_duplicate(
     assert result.atomic_assignments[0].possible_duplicate_atomic_ids == []
     assert len(registry.list_current_atomic_events()) == 1
     assert len(registry.list_current_atomic_events()[0].mention_ids) == 3
-    assert any(
-        "Atomic Event Assignment Adjudicator" in call.system_prompt for call in m3.calls
-    )
+    assert any("Atomic Event Assignment Adjudicator" in call.system_prompt for call in m3.calls)
 
 
 def test_identity_root_change_requires_derived_rebuild_before_reassignment(
@@ -1168,21 +984,22 @@ def test_n12_payload_includes_raw_surface_and_request_local_source_ids(
     )
     payload = json.loads(request.user_prompt)
     event_id, incoming = next(iter(payload["events"].items()))
-    candidate = payload["candidates"][event_id][0]
-    assert candidate["package"]["package_id"].startswith("p")
-    member = candidate["representative_members"][0]
+    task = next(item for item in payload["tasks"] if item["event_id"] == event_id)
+    package_id = task["candidates"][0]["package_id"]
+    assert package_id.startswith("p")
+    member = payload["packages"][package_id]["representatives"][0]
     assert "Micron" in {
         surface
         for participant in incoming["surface_evidence"]["participants"]
         for surface in participant["surfaces"]
     }
-    incoming_source = incoming["source_ids"][0]
+    incoming_source = incoming["sources"][0]
     assert "Micron" in {
         surface
         for participant in member["surface_evidence"]["participants"]
         for surface in participant["surfaces"]
     }
-    member_source = member["source_ids"][0]
+    member_source = member["sources"][0]
     assert {incoming_source, member_source} == {"s1", "s2"}
     assert "MSG-1" not in request.user_prompt
     assert "MSG-2" not in request.user_prompt
@@ -1228,9 +1045,7 @@ def test_n12_invalid_task_degrades_to_new_package_without_batch_repair(
 
     assert result.status is CrossDocumentStatus.SUCCEEDED
     assert not any(summary.stage == "package_assignment_repair" for summary in result.model_calls)
-    assert any(
-        summary.stage == "package_assignment_item_repair" for summary in result.model_calls
-    )
+    assert any(summary.stage == "package_assignment_item_repair" for summary in result.model_calls)
     assert result.package_assignments[0].action.value == "CREATE_NEW_PACKAGE"
 
 
@@ -1325,23 +1140,12 @@ def test_n13_external_relation_is_advisory_and_boundary_repair_keeps_separate(
         for families in family_sets
     )
     with sqlite3.connect(registry.path) as connection:
-        contexts = [
-            json.loads(row[0])["invocation_context"]
-            for row in connection.execute(
-                "SELECT payload_json FROM decision_audits "
-                "WHERE decision_type = 'WIRE_PAYLOAD_SHADOW' "
-                "AND run_id = ?",
-                (reaction.run_id,),
-            )
-        ]
         weak_same_not_applied = connection.execute(
             "SELECT COUNT(*) FROM decision_audits "
             "WHERE decision_type = 'SAME_PACKAGE_NOT_APPLIED_WEAK_BOUNDARY' "
             "AND run_id = ?",
             (reaction.run_id,),
         ).fetchone()[0]
-    assert any(item["operation"] == "normal_assignment" for item in contexts)
-    assert not any(item["operation"] == "reaction_member_repair" for item in contexts)
     assert weak_same_not_applied >= 1
     with sqlite3.connect(registry.path) as connection:
         shadow_count = connection.execute(
@@ -1355,20 +1159,18 @@ def test_n13_external_relation_is_advisory_and_boundary_repair_keeps_separate(
     assert shadow_count == 1
 
 
-def test_n13_on_fails_closed_until_full_business_gate(
+def test_n13_non_dictionary_protocol_is_rejected(
     registry: SQLiteCDECRRegistry,
 ) -> None:
-    with pytest.raises(ValueError, match="full business gate"):
-        engine(registry, n13_wire_protocol="on")
+    with pytest.raises(ValueError, match="dictionary protocol is mandatory"):
+        engine(registry, n13_wire_protocol="shadow")
 
 
-def test_n13_uses_pair_ids_and_records_smaller_pair_inline_shadow(
+def test_n13_uses_pair_ids_and_records_payload_profile(
     registry: SQLiteCDECRRegistry,
 ) -> None:
     m3 = PackageCoverageDrift(package_merge_relation="DIFFERENT_PACKAGE")
-    processor, _, _, _ = engine(
-        registry, m2=m3, m3=m3, n13_wire_protocol="shadow"
-    )
+    processor, _, _, _ = engine(registry, m2=m3, m3=m3, n13_wire_protocol="on")
     add(registry, source("MSG-1"), metric_mention("MSG-1", metric="REVENUE"))
     processor.process("MSG-1")
     add(registry, source("MSG-2"), metric_mention("MSG-2", metric="GROSS_MARGIN"))
@@ -1380,31 +1182,16 @@ def test_n13_uses_pair_ids_and_records_smaller_pair_inline_shadow(
         call for call in m3.calls if "Package coreference review model" in call.system_prompt
     )
     request_payload = json.loads(request.user_prompt)
-    assert set(request_payload) == {"batch_index", "batch_count", "pairs"}
-    assert all(pair["pair_id"].startswith("r") for pair in request_payload["pairs"])
+    assert set(request_payload) == {"batch_index", "batch_count", "packages", "pairs"}
+    assert all(pair["id"].startswith("r") for pair in request_payload["pairs"])
     assert request.json_schema["title"] == "PackageMergeWireDecisionBatch"
-    with sqlite3.connect(registry.path) as connection:
-        audit = json.loads(
-            connection.execute(
-                """
-                SELECT payload_json
-                FROM decision_audits
-                WHERE decision_type = 'WIRE_PAYLOAD_SHADOW'
-                  AND subject_id LIKE 'package_merge:%'
-                """
-            ).fetchone()[0]
-        )
-    assert audit["optimized_payload_bytes"] < audit["baseline_payload_bytes"]
-    assert audit["wire_ref_count"] == 0
 
 
-def test_n13_canary_uses_dictionary_slim_view_and_persists_pair_profile(
+def test_n13_dictionary_slim_view_persists_pair_profile(
     registry: SQLiteCDECRRegistry,
 ) -> None:
     m3 = PackageCoverageDrift(package_merge_relation="DIFFERENT_PACKAGE")
-    processor, _, _, _ = engine(
-        registry, m2=m3, m3=m3, n13_wire_protocol="canary"
-    )
+    processor, _, _, _ = engine(registry, m2=m3, m3=m3, n13_wire_protocol="on")
     add(registry, source("MSG-1"), metric_mention("MSG-1", metric="REVENUE"))
     processor.process("MSG-1")
     add(registry, source("MSG-2"), metric_mention("MSG-2", metric="GROSS_MARGIN"))
@@ -1437,7 +1224,7 @@ def test_n13_canary_uses_dictionary_slim_view_and_persists_pair_profile(
             "SELECT COUNT(*) FROM package_pair_evaluations WHERE run_id = ?",
             (result.run_id,),
         ).fetchone()[0]
-    assert profile["optimized_bytes"] < profile["baseline_bytes"]
+    assert profile["payload_bytes"] > 0
     assert profile["field_bytes"]["packages"] > 0
     assert pair_count >= 1
 
@@ -1459,7 +1246,7 @@ def test_n13_missing_pair_degrades_to_no_merge_without_batch_repair(
         count = connection.execute(
             """
             SELECT COUNT(*) FROM decision_audits
-            WHERE run_id = ? AND decision_type = 'PACKAGE_N13_DEGRADED'
+            WHERE run_id = ? AND decision_type = 'PACKAGE_N13_PAIR_FAILED'
             """,
             (result.run_id,),
         ).fetchone()[0]
@@ -1513,7 +1300,7 @@ def test_persistent_invalid_cross_document_output_degrades_to_separate_results(
             WHERE run_id = ? AND decision_type IN (
                 'ATOMIC_N9_BATCH_DEGRADED',
                 'PACKAGE_N12_BATCH_DEGRADED',
-                'PACKAGE_N13_BATCH_DEGRADED'
+                'PACKAGE_N13_PAIR_FAILED'
             )
             """,
                 (result.run_id,),
@@ -1522,7 +1309,7 @@ def test_persistent_invalid_cross_document_output_degrades_to_separate_results(
     assert degraded_types == {
         "ATOMIC_N9_BATCH_DEGRADED",
         "PACKAGE_N12_BATCH_DEGRADED",
-        "PACKAGE_N13_BATCH_DEGRADED",
+        "PACKAGE_N13_PAIR_FAILED",
     }
 
 

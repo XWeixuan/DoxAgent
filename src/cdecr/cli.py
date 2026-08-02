@@ -11,8 +11,10 @@ import uuid
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from time import perf_counter
-from typing import Any
+from typing import Any, cast
 
+from cdecr.bulk_epoch.engine import BulkEpochEngine
+from cdecr.bulk_epoch.executor import AsyncModelExecutor, AsyncStructuredModelClient
 from cdecr.canonical_field_resolution import FIELD_RESOLVER_VERSION
 from cdecr.config import CDECRSettings
 from cdecr.cross_document import (
@@ -210,9 +212,7 @@ def _scheduler(settings: CDECRSettings) -> CDECRScheduler:
         m2_limit=settings.scheduler_m2_concurrency,
         m3_limit=settings.scheduler_m3_concurrency,
         m4_limit=settings.scheduler_m4_concurrency,
-        structured_start_interval_seconds=(
-            settings.structured_request_start_interval_seconds
-        ),
+        structured_start_interval_seconds=(settings.structured_request_start_interval_seconds),
     )
 
 
@@ -434,9 +434,76 @@ def _cross_document_engine(
         n9_wire_protocol=settings.n9_wire_protocol,
         n12_wire_protocol=settings.n12_wire_protocol,
         n13_wire_protocol=settings.n13_wire_protocol,
-        bulk_atomic_component_workers=settings.bulk_atomic_component_workers,
-        bulk_package_component_workers=settings.bulk_package_component_workers,
-        bulk_n13_component_workers=settings.bulk_n13_component_workers,
+        n9_active_requests=settings.n9_active_requests,
+        n12_active_requests=settings.n12_active_requests,
+        n13_active_requests=settings.n13_active_requests,
+    )
+
+
+def _bulk_epoch_engine(
+    settings: CDECRSettings,
+    registry: SQLiteCDECRRegistry,
+    scheduler: CDECRScheduler | None = None,
+) -> BulkEpochEngine:
+    scheduler = scheduler or _scheduler(settings)
+    embedding = DashScopeEmbeddingClient(
+        api_key=settings.require_dashscope(),
+        base_url=settings.dashscope_base_url,
+        model=settings.model_m1,
+        dimensions=settings.embedding_dimensions,
+        timeout_seconds=settings.model_timeout_seconds,
+        fallback_api_keys=settings.dashscope_fallback_api_keys(),
+    )
+    raw_m2 = _structured_client(settings, ModelTier.M2)
+    raw_m3 = _structured_client(settings, ModelTier.M3)
+    raw_m4 = _structured_client(settings, ModelTier.M4)
+    executor = AsyncModelExecutor(
+        clients={
+            ModelTier.M2: cast(AsyncStructuredModelClient, raw_m2),
+            ModelTier.M3: cast(AsyncStructuredModelClient, raw_m3),
+            ModelTier.M4: cast(AsyncStructuredModelClient, raw_m4),
+        },
+        tier_limits={
+            ModelTier.M2: settings.scheduler_m2_concurrency,
+            ModelTier.M3: settings.scheduler_m3_concurrency,
+            ModelTier.M4: settings.scheduler_m4_concurrency,
+        },
+        stage_limits={
+            "field_coreference": settings.field_active_requests,
+            "atomic_coreference": settings.n9_active_requests,
+            "atomic_coreference_escalation": settings.n9_escalation_active_requests,
+            "package_assignment": settings.n12_active_requests,
+            "package_merge": settings.n13_active_requests,
+        },
+        repair_limit=settings.item_repair_active_requests,
+        rates={
+            ModelTier.M2: (16.0, 24),
+            ModelTier.M3: (10.0, 16),
+            ModelTier.M4: (6.0, 8),
+        },
+    )
+    core = CrossDocumentEngine(
+        registry=registry,
+        embedding_client=scheduler.embedding_client(embedding),
+        m2_client=executor.client(ModelTier.M2),
+        m3_client=executor.client(ModelTier.M3),
+        model_m1=settings.model_m1,
+        model_m2=settings.model_m2,
+        model_m3=settings.model_m3,
+        hard_cannot_link_mode=settings.atomic_hard_cannot_link_mode,
+        package_conflict_mode=settings.package_conflict_mode,
+        n9_wire_protocol=settings.n9_wire_protocol,
+        n12_wire_protocol=settings.n12_wire_protocol,
+        n13_wire_protocol=settings.n13_wire_protocol,
+        n9_active_requests=settings.n9_active_requests,
+        n12_active_requests=settings.n12_active_requests,
+        n13_active_requests=settings.n13_active_requests,
+    )
+    return BulkEpochEngine(
+        registry=registry,
+        core=core,
+        executor=executor,
+        field_active_requests=settings.field_active_requests,
     )
 
 
@@ -592,7 +659,6 @@ def _events_batch(settings: CDECRSettings, args: argparse.Namespace) -> int:
     sources = sorted(sources, key=lambda item: (item.published_at, item.message_id))
     scheduler = _scheduler(settings)
     document_processor = _document_processor(settings, registry, scheduler)
-    event_engine = _cross_document_engine(settings, registry, scheduler)
     documents = document_processor.process_batch([source.message_id for source in sources])
     document_by_id = {document.message_id: document for document in documents}
     eligible_message_ids = [
@@ -600,10 +666,15 @@ def _events_batch(settings: CDECRSettings, args: argparse.Namespace) -> int:
         for source in sources
         if document_by_id[source.message_id].status is ProcessingStatus.SUCCEEDED
     ]
-    events = event_engine.process_batch(
-        eligible_message_ids,
-        execution_mode=args.execution_mode,
-    )
+    if args.execution_mode == "BULK_EPOCH":
+        event_engine = _bulk_epoch_engine(settings, registry, scheduler)
+        try:
+            events = event_engine.process_batch(eligible_message_ids)
+        finally:
+            event_engine.close()
+    else:
+        incremental_engine = _cross_document_engine(settings, registry, scheduler)
+        events = incremental_engine.process_batch(eligible_message_ids)
     event_by_id = {event.message_id: event for event in events}
     results: list[dict[str, object]] = []
     failed = 0
@@ -737,7 +808,7 @@ def _evaluation_run_locked(settings: CDECRSettings, args: argparse.Namespace) ->
 
     scheduler = _scheduler(settings)
     document_processor = _document_processor(settings, registry, scheduler)
-    event_engine = _cross_document_engine(settings, registry, scheduler)
+    event_engine = _bulk_epoch_engine(settings, registry, scheduler)
     document_results: list[SingleDocumentResult] = []
     event_results: list[CrossDocumentResult | None] = []
     checkpoint_path = args.output.with_suffix(args.output.suffix + ".checkpoint.json")
@@ -754,15 +825,12 @@ def _evaluation_run_locked(settings: CDECRSettings, args: argparse.Namespace) ->
         )
         if document.status is ProcessingStatus.SUCCEEDED
     ]
-    bulk_events = event_engine.process_batch(
-        eligible_cross_document_ids,
-        execution_mode="BULK_EPOCH",
-    )
+    try:
+        bulk_events = event_engine.process_batch(eligible_cross_document_ids)
+    finally:
+        event_engine.close()
     bulk_event_by_id = {event.message_id: event for event in bulk_events}
-    event_results = [
-        bulk_event_by_id.get(source.message_id)
-        for _, source in processing_corpus
-    ]
+    event_results = [bulk_event_by_id.get(source.message_id) for _, source in processing_corpus]
     checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
     checkpoint_path.write_text(
         json.dumps(
@@ -801,17 +869,7 @@ def _evaluation_run_locked(settings: CDECRSettings, args: argparse.Namespace) ->
         if current_event is None:
             persisted_events.append(None)
             continue
-        mentions = sorted(document.mentions, key=lambda item: item.mention_id)
-        persisted_events.append(
-            registry.get_completed_cross_document_result(
-                event_engine.processing_key(
-                    source.message_id,
-                    mentions,
-                    execution_mode="BULK_EPOCH",
-                )
-            )
-            or current_event
-        )
+        persisted_events.append(current_event)
 
     model_calls_before = registry.count_model_calls()
     mention_count_before = sum(
@@ -824,12 +882,8 @@ def _evaluation_run_locked(settings: CDECRSettings, args: argparse.Namespace) ->
     restarted_registry = SQLiteCDECRRegistry(args.registry)
     restarted_registry.initialize()
     restarted_scheduler = _scheduler(settings)
-    restarted_documents = _document_processor(
-        settings, restarted_registry, restarted_scheduler
-    )
-    restarted_events = _cross_document_engine(
-        settings, restarted_registry, restarted_scheduler
-    )
+    restarted_documents = _document_processor(settings, restarted_registry, restarted_scheduler)
+    restarted_events = _bulk_epoch_engine(settings, restarted_registry, restarted_scheduler)
     successful_document_ids = [
         source.message_id
         for (_, source), document in zip(corpus, persisted_documents, strict=True)
@@ -841,10 +895,10 @@ def _evaluation_run_locked(settings: CDECRSettings, args: argparse.Namespace) ->
         for event in persisted_events
         if event is not None and event.status is CrossDocumentStatus.SUCCEEDED
     ]
-    rerun_events = restarted_events.process_batch(
-        successful_event_ids,
-        execution_mode="BULK_EPOCH",
-    )
+    try:
+        rerun_events = restarted_events.process_batch(successful_event_ids)
+    finally:
+        restarted_events.close()
 
     idempotency = Step4Idempotency(
         rerun_model_call_delta=restarted_registry.count_model_calls() - model_calls_before,
