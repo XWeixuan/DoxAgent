@@ -15,7 +15,7 @@ For every supplied Package pair, decide:
 - DIFFERENT_PACKAGE: they represent different parent containers or matters.
 - UNCERTAIN: combined evidence is insufficient or materially ambiguous.
 
-Use SAME_PACKAGE for the same bounded parent occurrence even when member coverage, child emphasis, or Package family differs. Use DIFFERENT_PACKAGE only for a material parent-boundary conflict; missing detail alone is not a conflict.
+Choose SAME_PACKAGE only when the evidence identifies one parent occurrence or continuing matter. Missing child detail is not a boundary, but shared topic, source, entity, or family alone is not parent identity.
 
 Different contents inside one parent container do not create different Packages.
 For example, actual results, metrics, guidance, and management commentary may
@@ -42,5 +42,5 @@ and `right` references. Resolve each pair through that dictionary; a Package
 view is intentionally sent once per batch.
 
 Return each pair once; copy input `id` unchanged to `pair_id`. SAME_PACKAGE
-merges; otherwise keep separate. Give one concise reason.
+merges; otherwise keep separate. Give one short reason without restating the cards.
 Decide every pair independently from the supplied immutable Package profiles; do not assume another pair has already changed a Package.

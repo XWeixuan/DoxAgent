@@ -95,6 +95,14 @@ class FakeStructured:
             payload = self._atomic_payload(json.loads(request.user_prompt))
         elif "Atomic-to-Package" in request.system_prompt:
             payload = self._package_payload(json.loads(request.user_prompt))
+        elif "SAME_PARENT" in request.system_prompt:
+            body = json.loads(request.user_prompt)
+            payload = {
+                "decisions": [
+                    {"pair_id": pair["id"], "relation": "DIFFERENT_PARENT"}
+                    for pair in body["pairs"]
+                ]
+            }
         elif (
             "Package-to-Package" in request.system_prompt
             or "Package coreference review model" in request.system_prompt
@@ -428,6 +436,7 @@ def metric_mention(
     *,
     metric: str = "REVENUE",
     period: str = "FY2026-Q4",
+    package_anchor: str | None = None,
 ) -> EventMention:
     return EventMention(
         mention_id=f"MENTION-{message_id}-{metric}-{period}",
@@ -469,7 +478,7 @@ def metric_mention(
             )
         ),
         local_package_hint=LocalPackageHint(
-            anchor=f"MU {period} earnings",
+            anchor=package_anchor or f"MU {period} earnings",
             relation_to_anchor=MembershipRelation.DISCLOSED_IN,
         ),
     )
@@ -1108,7 +1117,14 @@ def test_frozen_package_enters_n13_and_can_return_active(
     assert root is not None
     assert root.quality_state is PackageQualityState.ACTIVE
     assert len(root.member_event_ids) == 2
-    assert any("Package coreference review model" in call.system_prompt for call in m3.calls)
+    assert not any("Package coreference review model" in call.system_prompt for call in m3.calls)
+    with sqlite3.connect(registry.path) as connection:
+        m0_count = connection.execute(
+            "SELECT COUNT(*) FROM package_pair_evaluations "
+            "WHERE run_id = ? AND payload_json LIKE ?",
+            (second.run_id, '%"decision_source":"M0"%'),
+        ).fetchone()[0]
+    assert m0_count >= 1
 
 
 def test_market_reaction_is_external_not_package_member(
@@ -1161,13 +1177,12 @@ def test_n13_external_relation_is_advisory_and_boundary_repair_keeps_separate(
         for families in family_sets
     )
     with sqlite3.connect(registry.path) as connection:
-        weak_same_not_applied = connection.execute(
-            "SELECT COUNT(*) FROM decision_audits "
-            "WHERE decision_type = 'SAME_PACKAGE_NOT_APPLIED_WEAK_BOUNDARY' "
-            "AND run_id = ?",
-            (reaction.run_id,),
+        reaction_guarded = connection.execute(
+            "SELECT COUNT(*) FROM package_pair_evaluations "
+            "WHERE run_id = ? AND payload_json LIKE ?",
+            (reaction.run_id, '%"decision_source":"GUARD"%'),
         ).fetchone()[0]
-    assert weak_same_not_applied >= 1
+    assert reaction_guarded >= 1
     with sqlite3.connect(registry.path) as connection:
         shadow_count = connection.execute(
             """
@@ -1192,9 +1207,17 @@ def test_n13_uses_pair_ids_and_records_payload_profile(
 ) -> None:
     m3 = PackageCoverageDrift(package_merge_relation="DIFFERENT_PACKAGE")
     processor, _, _, _ = engine(registry, m2=m3, m3=m3, n13_wire_protocol="on")
-    add(registry, source("MSG-1"), metric_mention("MSG-1", metric="REVENUE"))
+    add(
+        registry,
+        source("MSG-1"),
+        metric_mention("MSG-1", metric="REVENUE", package_anchor="MU filing alpha"),
+    )
     processor.process("MSG-1")
-    add(registry, source("MSG-2"), metric_mention("MSG-2", metric="GROSS_MARGIN"))
+    add(
+        registry,
+        source("MSG-2"),
+        metric_mention("MSG-2", metric="GROSS_MARGIN", package_anchor="MU release beta"),
+    )
 
     result = processor.process("MSG-2")
 
@@ -1213,9 +1236,17 @@ def test_n13_dictionary_slim_view_persists_pair_profile(
 ) -> None:
     m3 = PackageCoverageDrift(package_merge_relation="DIFFERENT_PACKAGE")
     processor, _, _, _ = engine(registry, m2=m3, m3=m3, n13_wire_protocol="on")
-    add(registry, source("MSG-1"), metric_mention("MSG-1", metric="REVENUE"))
+    add(
+        registry,
+        source("MSG-1"),
+        metric_mention("MSG-1", metric="REVENUE", package_anchor="MU filing alpha"),
+    )
     processor.process("MSG-1")
-    add(registry, source("MSG-2"), metric_mention("MSG-2", metric="GROSS_MARGIN"))
+    add(
+        registry,
+        source("MSG-2"),
+        metric_mention("MSG-2", metric="GROSS_MARGIN", package_anchor="MU release beta"),
+    )
 
     result = processor.process("MSG-2")
 
@@ -1255,9 +1286,17 @@ def test_n13_missing_pair_degrades_to_no_merge_without_batch_repair(
 ) -> None:
     m3 = PackageAndMergeCoverageDrift()
     processor, _, _, _ = engine(registry, m2=m3, m3=m3)
-    add(registry, source("MSG-1"), metric_mention("MSG-1", metric="REVENUE"))
+    add(
+        registry,
+        source("MSG-1"),
+        metric_mention("MSG-1", metric="REVENUE", package_anchor="MU filing alpha"),
+    )
     processor.process("MSG-1")
-    add(registry, source("MSG-2"), metric_mention("MSG-2", metric="GROSS_MARGIN"))
+    add(
+        registry,
+        source("MSG-2"),
+        metric_mention("MSG-2", metric="GROSS_MARGIN", package_anchor="MU release beta"),
+    )
 
     result = processor.process("MSG-2")
 
@@ -1298,9 +1337,17 @@ def test_persistent_invalid_cross_document_output_degrades_to_separate_results(
     m2 = FakeStructured(always_invalid=True)
     m3 = FakeStructured(always_invalid=True)
     processor, _, _, _ = engine(registry, m2=m2, m3=m3)
-    add(registry, source("MSG-1"), metric_mention("MSG-1"))
+    add(
+        registry,
+        source("MSG-1"),
+        metric_mention("MSG-1", package_anchor="MU filing alpha"),
+    )
     processor.process("MSG-1")
-    add(registry, source("MSG-2"), metric_mention("MSG-2"))
+    add(
+        registry,
+        source("MSG-2"),
+        metric_mention("MSG-2", package_anchor="MU release beta"),
+    )
     result = processor.process("MSG-2")
     assert result.status is CrossDocumentStatus.SUCCEEDED
     assert result.atomic_assignments[0].action is AtomicAction.CREATE_NEW

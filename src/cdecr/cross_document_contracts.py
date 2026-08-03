@@ -494,6 +494,9 @@ class PackagePairBoundary(StrictModel):
     analyst_boundary: bool = False
     period_boundary: bool = False
     session_boundary: bool = False
+    instrument_conflict: bool = False
+    market_measure_conflict: bool = False
+    object_scope_difference: bool = False
     left_member_count: int = Field(ge=0)
     right_member_count: int = Field(ge=0)
 
@@ -506,7 +509,44 @@ class PackagePairBoundary(StrictModel):
             or self.analyst_boundary
             or self.period_boundary
             or self.session_boundary
+            or self.instrument_conflict
+            or self.market_measure_conflict
         )
+
+    def compact_signals(self) -> dict[str, list[str]]:
+        """Return only positive pair-boundary signals for model payloads."""
+
+        same: list[str] = []
+        different: list[str] = []
+        for matched, label in (
+            (bool(self.shared_artifact_ids), "artifact"),
+            (bool(self.shared_anchor_ids), "parent"),
+            (self.shared_parent_context, "parent_context"),
+            (self.shared_source_member, "source"),
+            (self.member_identity_support, "member_identity"),
+            (self.time_support, "time"),
+        ):
+            if matched:
+                same.append(label)
+        for conflict, label in (
+            (bool(self.conflicting_artifact_ids), "artifact"),
+            (self.issuer_conflict, "issuer"),
+            (self.reaction_boundary, "reaction_parent"),
+            (self.analyst_boundary, "analyst_institution"),
+            (self.period_boundary, "period"),
+            (self.session_boundary, "market_session"),
+            (self.instrument_conflict, "instrument"),
+            (self.market_measure_conflict, "market_measure"),
+            (self.object_scope_difference, "object_scope"),
+        ):
+            if conflict:
+                different.append(label)
+        output: dict[str, list[str]] = {}
+        if same:
+            output["same"] = same
+        if different:
+            output["diff"] = different
+        return output
 
     @property
     def independent_positive_count(self) -> int:

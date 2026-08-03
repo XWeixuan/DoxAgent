@@ -7,6 +7,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from statistics import median
 from time import perf_counter
+from types import SimpleNamespace
 
 import pytest
 
@@ -16,11 +17,24 @@ from cdecr.bulk_epoch.indexes import MultiKeyBoundedIndex
 from cdecr.bulk_epoch.package_stage import _constrained_components
 from cdecr.bulk_epoch.writer import BulkWriter
 from cdecr.config import CDECRSettings
-from cdecr.contracts import PackageAssignmentRelation
-from cdecr.cross_document import CrossDocumentEngine
+from cdecr.contracts import (
+    EventFamily,
+    EventPackage,
+    PackageAssignmentRelation,
+    PackageFamily,
+    PackageKind,
+    PackageStatus,
+    PackageTimeRange,
+)
+from cdecr.cross_document import CrossDocumentEngine, _balanced_request_batches
 from cdecr.cross_document_contracts import (
     PackageAssignmentDecision,
     PackageCandidateAssessment,
+    PackagePairBoundary,
+)
+from cdecr.field_coreference_contracts import (
+    ATOMIC_OBJECT_FIELD_NAMESPACES,
+    FieldNamespace,
 )
 from cdecr.models import ModelTier
 from cdecr.ports import StructuredModelRequest, StructuredModelResult
@@ -342,6 +356,185 @@ def test_wave_c_source_has_no_full_pair_scan() -> None:
     assert "MultiKeyBoundedIndex" in source
     assert "for right_id in ids[index + 1 :]" not in source
     assert "scheduler_edge_cap" in source
+
+
+def test_n13_balances_one_tail_wave_without_losing_pair_coverage() -> None:
+    items = list(range(300))
+    batches = _balanced_request_batches(
+        items,
+        nominal_size=12,
+        active_requests=24,
+        max_balanced_size=13,
+    )
+    assert len(batches) == 24
+    assert max(map(len, batches)) == 13
+    assert [item for batch in batches for item in batch] == items
+
+
+def test_n13_batch_balancing_does_not_expand_other_shapes() -> None:
+    items = list(range(316))
+    batches = _balanced_request_batches(
+        items,
+        nominal_size=12,
+        active_requests=24,
+        max_balanced_size=13,
+    )
+    assert len(batches) == 27
+    assert max(map(len, batches)) == 12
+    assert [item for batch in batches for item in batch] == items
+
+
+def test_package_pair_boundary_compact_protocol_and_hard_scope() -> None:
+    boundary = PackagePairBoundary(
+        shared_artifact_ids=["A"],
+        shared_source_member=True,
+        instrument_conflict=True,
+        object_scope_difference=True,
+        left_member_count=1,
+        right_member_count=2,
+    )
+    assert boundary.hard_blocked
+    assert boundary.compact_signals() == {
+        "same": ["artifact", "source"],
+        "diff": ["instrument", "object_scope"],
+    }
+    object_only = boundary.model_copy(
+        update={
+            "shared_artifact_ids": [],
+            "shared_source_member": False,
+            "instrument_conflict": False,
+        }
+    )
+    assert not object_only.hard_blocked
+
+
+def test_package_pair_boundary_extracts_only_complete_market_conflicts(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    engine = object.__new__(CrossDocumentEngine)
+
+    def package(package_id: str, *, artifact: str | None = None) -> EventPackage:
+        return EventPackage(
+            package_id=package_id,
+            package_kind=PackageKind.BOUNDED,
+            package_family=PackageFamily.OTHER,
+            canonical_title=package_id,
+            anchor_entities=[],
+            anchor_artifact_id=artifact,
+            time_range=PackageTimeRange(),
+            member_event_ids=[f"event-{package_id}"],
+            canonical_summary=package_id,
+            status=PackageStatus.UNKNOWN,
+        )
+
+    left = package("left")
+    right = package("right")
+    instruments = {"left": {"STOCK_A"}, "right": {"INDEX_B"}}
+    objects = {"left": {"PRODUCT_A"}, "right": {"PRODUCT_B"}}
+
+    def trusted_fields(item: EventPackage, namespaces: set[FieldNamespace]) -> set[str]:
+        if FieldNamespace.PARTICIPANT_INSTRUMENT in namespaces:
+            return instruments[item.package_id]
+        if namespaces.intersection(ATOMIC_OBJECT_FIELD_NAMESPACES):
+            return objects[item.package_id]
+        return set()
+
+    monkeypatch.setattr(engine, "_trusted_package_anchor_ids", lambda item: set())
+    monkeypatch.setattr(engine, "_trusted_package_field_ids", trusted_fields)
+    monkeypatch.setattr(engine, "_package_market_measures", lambda item: {item.package_id})
+    monkeypatch.setattr(engine, "_package_trading_sessions", lambda item: {item.package_id})
+    monkeypatch.setattr(engine, "_package_is_pure_market", lambda _item: True)
+    monkeypatch.setattr(
+        engine,
+        "_package_member_events",
+        lambda _item: [SimpleNamespace(event_family=EventFamily.MARKET_MOVEMENT)],
+    )
+
+    boundary = engine._package_pair_boundary(left, right, [])
+    assert boundary.instrument_conflict
+    assert boundary.market_measure_conflict
+    assert boundary.session_boundary
+    assert boundary.object_scope_difference
+    assert boundary.hard_blocked
+
+    instruments["right"] = set()
+    boundary_with_missing_instrument = engine._package_pair_boundary(left, right, [])
+    assert not boundary_with_missing_instrument.instrument_conflict
+
+
+def test_same_earnings_artifact_different_child_scope_is_not_blocked(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    engine = object.__new__(CrossDocumentEngine)
+    packages = [
+        EventPackage(
+            package_id=value,
+            package_kind=PackageKind.BOUNDED,
+            package_family=PackageFamily.EARNINGS_DISCLOSURE,
+            canonical_title=value,
+            anchor_entities=["COMPANY_MU"],
+            anchor_artifact_id="EARNINGS_RELEASE_MU_Q3",
+            time_range=PackageTimeRange(),
+            member_event_ids=[f"event-{value}"],
+            canonical_summary=value,
+            status=PackageStatus.UNKNOWN,
+        )
+        for value in ("revenue", "eps")
+    ]
+    monkeypatch.setattr(
+        engine, "_trusted_package_anchor_ids", lambda _item: {"EARNINGS_RELEASE_MU_Q3"}
+    )
+    monkeypatch.setattr(
+        engine,
+        "_trusted_package_field_ids",
+        lambda item, namespaces: (
+            {item.package_id.upper()}
+            if namespaces.intersection(ATOMIC_OBJECT_FIELD_NAMESPACES)
+            else set()
+        ),
+    )
+    monkeypatch.setattr(engine, "_package_market_measures", lambda _item: set())
+    monkeypatch.setattr(engine, "_package_trading_sessions", lambda _item: set())
+    monkeypatch.setattr(engine, "_package_is_pure_market", lambda _item: False)
+    monkeypatch.setattr(
+        engine,
+        "_package_member_events",
+        lambda _item: [SimpleNamespace(event_family=EventFamily.FINANCIAL_PERFORMANCE)],
+    )
+
+    boundary = engine._package_pair_boundary(packages[0], packages[1], [])
+    assert boundary.shared_artifact_ids == ["EARNINGS_RELEASE_MU_Q3"]
+    assert boundary.object_scope_difference
+    assert not boundary.hard_blocked
+
+
+def test_wave_c_uses_unique_dictionary_cards_and_shared_boundary() -> None:
+    root = Path(__file__).parents[2]
+    source = (root / "src" / "cdecr" / "bulk_epoch" / "late_stage.py").read_text(
+        encoding="utf-8"
+    )
+    assert '"l": short_by_full[left.package_id]' in source
+    assert '"r": short_by_full[right.package_id]' in source
+    assert 'pair["boundary"] = compact_boundary' in source
+    assert 'f"p{index}l"' not in source
+
+
+def test_n13_pair_local_apply_is_not_disabled_by_late_wall_admission() -> None:
+    root = Path(__file__).parents[2]
+    source = (root / "src" / "cdecr" / "bulk_epoch" / "engine.py").read_text(
+        encoding="utf-8"
+    )
+    assert "self.core.n13_pair_local_apply = self.n13_pair_local_apply" in source
+    assert 'self.n13_pair_local_apply and n13_budget["admitted"]' not in source
+
+
+def test_missing_candidate_recovery_prompt_requires_exact_coverage_and_atomic_splitting() -> None:
+    root = Path(__file__).parents[2]
+    source = (root / "src" / "cdecr" / "single_document.py").read_text(encoding="utf-8")
+    assert source.count("Return every supplied candidate exactly once.") == 2
+    assert source.count("split ") >= 2
+    assert source.count("independent ") >= 2
+    assert source.count("reject an umbrella exhausted by recovered children") == 2
 
 
 def test_removed_bulk_component_path_is_absent() -> None:

@@ -36,6 +36,7 @@ from cdecr.cross_document_contracts import (
     AtomicAssignmentRecord,
     AtomicLateDecisionBatch,
     PackageLateDecisionBatch,
+    PackagePairBoundary,
     PackagePairMergeDecision,
     RecallRoute,
 )
@@ -359,8 +360,11 @@ def run_package_wave_c(
     keys_by_package = {package_id: index_keys(package) for package_id, package in active.items()}
     for package_id in sorted(active):
         candidate_index.add(package_id, keys_by_package[package_id])
-    pair_rows: list[tuple[EventPackage, EventPackage, list[RecallRoute], float]] = []
+    pair_rows: list[
+        tuple[EventPackage, EventPackage, list[RecallRoute], PackagePairBoundary, float]
+    ] = []
     seen_pairs: set[tuple[str, str]] = set()
+    hard_blocked = 0
     for left_id in sorted(active):
         for right_id in candidate_index.query(
             keys_by_package[left_id],
@@ -373,6 +377,26 @@ def run_package_wave_c(
             seen_pairs.add(pair_key)
             left, right = active[left_id], active[right_id]
             routes, _ = engine._package_pair_signals(left, right, {})
+            boundary = engine._package_pair_boundary(left, right, routes)
+            if boundary.hard_blocked:
+                hard_blocked += 1
+                engine.registry.append_decision_audit(
+                    DecisionAuditRecord(
+                        audit_id=stable_id(
+                            "package-wave-c-boundary",
+                            {"run": run_id, "left": pair_key[0], "right": pair_key[1]},
+                        ),
+                        run_id=run_id,
+                        decision_type="PACKAGE_WAVE_C_BOUNDARY_BLOCKED",
+                        subject_id=pair_key[0],
+                        payload={
+                            "target_package_id": pair_key[1],
+                            "boundary": boundary.model_dump(mode="json"),
+                            "action": "SKIP_M3",
+                        },
+                    )
+                )
+                continue
             strong = set(routes).intersection(
                 {
                     RecallRoute.CANONICAL_ARTIFACT,
@@ -398,13 +422,15 @@ def run_package_wave_c(
             )
             score += 0.5 if RecallRoute.CORE_ENTITY in routes else 0.0
             score += 0.5 if RecallRoute.TIME_WINDOW in routes else 0.0
-            pair_rows.append((left, right, routes, score))
-    pair_rows.sort(key=lambda row: (-row[3], row[0].package_id, row[1].package_id))
+            pair_rows.append((left, right, routes, boundary, score))
+    pair_rows.sort(key=lambda row: (-row[4], row[0].package_id, row[1].package_id))
 
     per_fragment: dict[str, int] = defaultdict(int)
-    bounded: list[tuple[EventPackage, EventPackage, list[RecallRoute], float]] = []
+    bounded: list[
+        tuple[EventPackage, EventPackage, list[RecallRoute], PackagePairBoundary, float]
+    ] = []
     for row in pair_rows:
-        left, right, _, _ = row
+        left, right, _, _, _ = row
         if per_fragment[left.package_id] >= 4 or per_fragment[right.package_id] >= 4:
             continue
         bounded.append(row)
@@ -414,18 +440,17 @@ def run_package_wave_c(
             break
 
     direct_same: set[tuple[str, str]] = set()
-    residual: list[tuple[EventPackage, EventPackage, list[RecallRoute], float]] = []
-    hard_blocked = 0
-    for left, right, routes, score in bounded:
-        if engine._package_pair_external_guard(left, right) is not None:
-            hard_blocked += 1
-            continue
-        if RecallRoute.CANONICAL_ARTIFACT in routes or set(left.package_anchor_ids).intersection(
-            right.package_anchor_ids
-        ):
+    residual: list[
+        tuple[EventPackage, EventPackage, list[RecallRoute], PackagePairBoundary, float]
+    ] = []
+    for left, right, routes, boundary, score in bounded:
+        shared_clean_anchor = bool(
+            boundary.shared_anchor_ids and not left.anchor_conflict and not right.anchor_conflict
+        )
+        if boundary.shared_artifact_ids or shared_clean_anchor:
             direct_same.add((left.package_id, right.package_id))
         elif score >= 1.5:
-            residual.append((left, right, routes, score))
+            residual.append((left, right, routes, boundary, score))
 
     model_same: set[tuple[str, str]] = set()
     failed_neutral = 0
@@ -434,45 +459,65 @@ def run_package_wave_c(
     def decide_batch(
         indexed: tuple[
             int,
-            list[tuple[EventPackage, EventPackage, list[RecallRoute], float]],
+            list[
+                tuple[
+                    EventPackage,
+                    EventPackage,
+                    list[RecallRoute],
+                    PackagePairBoundary,
+                    float,
+                ]
+            ],
         ],
     ) -> tuple[int, set[tuple[str, str]], int]:
         batch_index, batch = indexed
         cards: dict[str, dict[str, object]] = {}
         pair_by_short: dict[str, tuple[str, str]] = {}
         pairs: list[dict[str, object]] = []
-        for index, (left, right, routes, _) in enumerate(batch, start=1):
+        package_ids = sorted(
+            {package.package_id for left, right, _, _, _ in batch for package in (left, right)}
+        )
+        short_by_full = {
+            package_id: f"p{index}" for index, package_id in enumerate(package_ids, start=1)
+        }
+        package_by_id = {
+            package.package_id: package
+            for left, right, _, _, _ in batch
+            for package in (left, right)
+        }
+        for package_id in package_ids:
+            package = package_by_id[package_id]
+            members = engine._package_member_events(package)
+            cards[short_by_full[package_id]] = {
+                "kind": package.package_kind.value,
+                "family": package.package_family.value,
+                "anchors": package.package_anchor_ids[:4],
+                "primary_anchor": package.primary_anchor_id,
+                "artifact": package.anchor_artifact_id,
+                "period": package.anchor_period_id,
+                "entities": package.anchor_entities[:4],
+                "member_count": len(package.member_event_ids),
+                "representatives": [event.canonical_proposition for event in members[:3]],
+            }
+        for index, (left, right, _routes, boundary, _) in enumerate(batch, start=1):
             pair_id = f"r{index}"
             pair_by_short[pair_id] = (left.package_id, right.package_id)
-            for package, short in ((left, f"p{index}l"), (right, f"p{index}r")):
-                members = engine._package_member_events(package)
-                cards[short] = {
-                    "kind": package.package_kind.value,
-                    "family": package.package_family.value,
-                    "anchors": package.package_anchor_ids[:4],
-                    "primary_anchor": package.primary_anchor_id,
-                    "artifact": package.anchor_artifact_id,
-                    "period": package.anchor_period_id,
-                    "entities": package.anchor_entities[:4],
-                    "member_count": len(package.member_event_ids),
-                    "representatives": [event.canonical_proposition for event in members[:3]],
-                }
-            pairs.append(
-                {
-                    "pair_id": pair_id,
-                    "left": f"p{index}l",
-                    "right": f"p{index}r",
-                    "routes": [route.value for route in routes],
-                }
-            )
+            pair: dict[str, object] = {
+                "id": pair_id,
+                "l": short_by_full[left.package_id],
+                "r": short_by_full[right.package_id],
+            }
+            compact_boundary = boundary.compact_signals()
+            if compact_boundary:
+                pair["boundary"] = compact_boundary
+            pairs.append(pair)
         request = StructuredModelRequest(
             system_prompt=(
-                _prompt("package_assignment.md")
-                + "\nJudge shared parent membership, not Atomic equality. Different child facts "
-                "may be MEMBER when evidence anchors them to the same bounded parent occurrence; "
-                "choose NOT_RELATED only for a material parent-boundary conflict. Missing parent "
-                "detail or a Package-family mismatch alone is not such a conflict. Return only "
-                "pair_id and SAME_PARENT, DIFFERENT_PARENT, or UNCERTAIN."
+                "Decide whether both cards identify one specific parent occurrence or "
+                "continuing matter. Different child facts may share that parent; shared topic, "
+                "source, or entity alone does not prove it. Use the supplied scope differences "
+                "when deciding the parent boundary. Return each pair once as SAME_PARENT, "
+                "DIFFERENT_PARENT, or UNCERTAIN."
             ),
             user_prompt=compact_json({"packages": cards, "pairs": pairs}),
             json_schema=PackageLateDecisionBatch.model_json_schema(),
@@ -520,7 +565,31 @@ def run_package_wave_c(
         current_right = engine.registry.get_current_package(right_root)
         if current_left is None or current_right is None:
             continue
-        if engine._package_pair_external_guard(current_left, current_right) is not None:
+        current_routes, _ = engine._package_pair_signals(current_left, current_right, {})
+        current_boundary = engine._package_pair_boundary(
+            current_left, current_right, current_routes
+        )
+        if current_boundary.hard_blocked:
+            engine.registry.append_decision_audit(
+                DecisionAuditRecord(
+                    audit_id=stable_id(
+                        "package-wave-c-apply-boundary",
+                        {
+                            "run": run_id,
+                            "left": current_left.package_id,
+                            "right": current_right.package_id,
+                        },
+                    ),
+                    run_id=run_id,
+                    decision_type="PACKAGE_WAVE_C_APPLY_BOUNDARY_BLOCKED",
+                    subject_id=current_left.package_id,
+                    payload={
+                        "target_package_id": current_right.package_id,
+                        "boundary": current_boundary.model_dump(mode="json"),
+                        "action": "SKIP_CURRENT_PAIR",
+                    },
+                )
+            )
             continue
         target, source = sorted(
             (current_left, current_right),

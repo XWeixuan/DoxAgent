@@ -39,7 +39,7 @@ from cdecr.kb_v2 import V2KnowledgeBase
 from cdecr.ports import CDECRRegistry
 from cdecr.single_document_contracts import ModelCallSummary
 
-BULK_STAGE_GRAPH_VERSION = "cdecr-bulk-epoch-v3-late-convergence"
+BULK_STAGE_GRAPH_VERSION = "cdecr-bulk-epoch-v3-final-narrow"
 
 
 class BulkEpochEngine:
@@ -788,9 +788,8 @@ class BulkEpochEngine:
                     n13_apply_started = perf_counter()
 
                 original_pair_local_apply = self.core.n13_pair_local_apply
-                self.core.n13_pair_local_apply = bool(
-                    self.n13_pair_local_apply and n13_budget["admitted"]
-                )
+                self.core.n13_pair_local_apply = self.n13_pair_local_apply
+                n13_apply_telemetry: dict[str, int] = {}
                 try:
                     final_packages = self.core._correct_packages_v13(
                         packages,
@@ -798,6 +797,7 @@ class BulkEpochEngine:
                         run_id=coordinator_run_id,
                         task_hook=n13_task,
                         apply_started_hook=mark_n13_apply_started,
+                        apply_telemetry=n13_apply_telemetry,
                     )
                 finally:
                     self.core.n13_pair_local_apply = original_pair_local_apply
@@ -806,10 +806,10 @@ class BulkEpochEngine:
                     if n13_apply_started is None
                     else round((perf_counter() - n13_apply_started) * 1000)
                 )
+                timings.update(n13_apply_telemetry)
+                package_stage_telemetry.update(n13_apply_telemetry)
                 n13_apply_plan = {
-                    "pair_local": bool(
-                        self.n13_pair_local_apply and n13_budget["admitted"]
-                    ),
+                    "pair_local": self.n13_pair_local_apply,
                     "max_spoke_members": self.late_config.max_spoke_members,
                     "max_spokes_per_hub": self.late_config.max_spokes_per_hub,
                     "rounds": 1,

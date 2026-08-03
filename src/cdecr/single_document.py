@@ -2179,10 +2179,10 @@ class SingleDocumentProcessor:
             recovery_request = StructuredModelRequest(
                 system_prompt=(
                     _prompt("grounder.md")
-                    + "\n\nDispose every supplied missing candidate exactly once. Recover it "
-                    "when its evidence supports a valid atomic Mention; reject it only for a "
-                    "concrete business defect. Missing optional detail is not itself a reason "
-                    "to reject. Return no IDs that were not supplied."
+                    + "\n\nReturn every supplied candidate exactly once. Recover the smallest "
+                    "complete atomic fact or facts supported by its evidence; split independent "
+                    "facts and reject an umbrella exhausted by recovered children. Missing "
+                    "optional detail alone is not a defect. Return no other IDs."
                 ),
                 user_prompt=json.dumps(
                     {
@@ -2382,10 +2382,11 @@ class SingleDocumentProcessor:
                 request = StructuredModelRequest(
                     system_prompt=(
                         _prompt("grounder.md")
-                        + "\n\nDispose every supplied missing candidate exactly once. Recover it "
-                        "when its evidence supports a valid atomic Mention; reject it only for a "
-                        "concrete business defect. Missing optional detail is not itself a reason "
-                        "to reject. Return no IDs that were not supplied."
+                        + "\n\nReturn every supplied candidate exactly once. Recover the smallest "
+                        "complete atomic fact or facts supported by its evidence; split "
+                        "independent "
+                        "facts and reject an umbrella exhausted by recovered children. Missing "
+                        "optional detail alone is not a defect. Return no other IDs."
                     ),
                     user_prompt=json.dumps(
                         {

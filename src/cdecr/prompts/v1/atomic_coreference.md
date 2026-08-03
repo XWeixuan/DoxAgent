@@ -101,7 +101,7 @@ You must not identify candidates as SAME_EVENT solely because they:
 
 ## Identity Assessment Guidelines
 
-Choose SAME_EVENT when the evidence supports the same minimal occurrence despite wording, granularity, omitted detail, or compatible claim values. Choose RELATED_NOT_SAME only for a material identity boundary; missing detail alone is not such a boundary.
+Treat wording, granularity, or omitted detail as non-boundaries only when the supplied referent, occurrence, object/action, and facet evidence still identifies one minimal fact.
 
 For each candidate, first resolve the core referent and participant roles; then
 compare the normalized occurrence, time/session, object, action/polarity,

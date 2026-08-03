@@ -14,6 +14,7 @@ from collections.abc import Callable, Sequence
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, date, datetime
 from pathlib import Path
+from time import perf_counter
 from typing import Literal, TypeVar
 
 from pydantic import BaseModel, ValidationError
@@ -131,6 +132,7 @@ from cdecr.field_coreference import (
 )
 from cdecr.field_coreference_contracts import (
     ATOMIC_FIELD_RECALL_NAMESPACES,
+    ATOMIC_OBJECT_FIELD_NAMESPACES,
     FieldNamespace,
 )
 from cdecr.identity_compiler import (
@@ -174,8 +176,8 @@ from cdecr.scheduler import take_scheduled_call_metrics
 from cdecr.single_document_contracts import ModelCallSummary
 from cdecr.wire import compact_json, wire_ref_metadata
 
-ENGINE_VERSION = "cdecr-cross-document-v24-late-convergence"
-PROMPT_VERSION = "cdecr-cross-document-prompts-v17-late-convergence"
+ENGINE_VERSION = "cdecr-cross-document-v25-final-narrow"
+PROMPT_VERSION = "cdecr-cross-document-prompts-v18-final-narrow"
 WIRE_PROTOCOL_VERSION = "cdecr-cross-document-wire-atomic-dictionary-v9"
 ATOMIC_ASSIGNMENT_POLICY_VERSION = "atomic-assignment-policy-v5-late-convergence"
 ATOMIC_DECISION_MENTION_BATCH = 3
@@ -201,6 +203,37 @@ _PACKAGE_FIELD_NAMESPACES = {
 }
 
 _T = TypeVar("_T", bound=BaseModel)
+_BatchItem = TypeVar("_BatchItem")
+
+
+def _balanced_request_batches(
+    items: Sequence[_BatchItem],
+    *,
+    nominal_size: int,
+    active_requests: int,
+    max_balanced_size: int,
+) -> list[list[_BatchItem]]:
+    """Avoid a one-request tail wave without increasing normal batch size broadly."""
+
+    batches = [
+        list(items[offset : offset + nominal_size])
+        for offset in range(0, len(items), nominal_size)
+    ]
+    if (
+        len(batches) > active_requests
+        and len(batches) % active_requests == 1
+        and math.ceil(len(items) / (len(batches) - 1)) <= max_balanced_size
+    ):
+        batch_count = len(batches) - 1
+        base, extra = divmod(len(items), batch_count)
+        balanced: list[list[_BatchItem]] = []
+        offset = 0
+        for index in range(batch_count):
+            size = base + (1 if index < extra else 0)
+            balanced.append(list(items[offset : offset + size]))
+            offset += size
+        return balanced
+    return batches
 
 
 class CrossDocumentPipelineError(RuntimeError):
@@ -5609,6 +5642,27 @@ class CrossDocumentEngine:
                         sessions.add(normalized)
         return sessions
 
+    def _package_market_measures(self, package: EventPackage) -> set[str]:
+        measures: set[str] = set()
+        for event in self._package_member_events(package):
+            if event.event_family is not EventFamily.MARKET_MOVEMENT:
+                continue
+            for mention_id in event.mention_ids:
+                mention = self.registry.get_mention(mention_id)
+                if mention is None:
+                    continue
+                sidecar = compile_atomic_identity_sidecar(mention, event.identity_profile)
+                measures.update(
+                    value.partition(":")[2]
+                    for value in sidecar.facet
+                    if value.startswith("measure:") and value.partition(":")[2]
+                )
+        return measures
+
+    def _package_is_pure_market(self, package: EventPackage) -> bool:
+        families = {event.event_family for event in self._package_member_events(package)}
+        return families == {EventFamily.MARKET_MOVEMENT}
+
     def _package_pair_external_relation_signal(
         self,
         left: EventPackage,
@@ -5664,6 +5718,17 @@ class CrossDocumentEngine:
                 "package_family": package.package_family.value,
                 "anchor_entities": sorted(package.anchor_entities),
                 "trading_sessions": sorted(self._package_trading_sessions(package)),
+                "market_measures": sorted(self._package_market_measures(package)),
+                "instruments": sorted(
+                    self._trusted_package_field_ids(
+                        package, {FieldNamespace.PARTICIPANT_INSTRUMENT}
+                    )
+                ),
+                "object_scope": sorted(
+                    self._trusted_package_field_ids(
+                        package, set(ATOMIC_OBJECT_FIELD_NAMESPACES)
+                    )
+                ),
                 "representative_identity_hashes": sorted(
                     {
                         _hash_json(event.identity_profile.model_dump(mode="json"))
@@ -5677,45 +5742,26 @@ class CrossDocumentEngine:
         self,
         left: EventPackage,
         right: EventPackage,
+        routes: Sequence[RecallRoute] = (),
     ) -> str | None:
-        left_artifacts = self._trusted_package_anchor_ids(left)
-        right_artifacts = self._trusted_package_anchor_ids(right)
-        if left_artifacts and right_artifacts and left_artifacts.isdisjoint(right_artifacts):
-            return "DIFFERENT_TRUSTED_ARTIFACT_GUARD"
-        left_periods = self._trusted_package_field_ids(
-            left,
-            {FieldNamespace.FISCAL_PERIOD},
+        return self._package_boundary_guard_reason(
+            self._package_pair_boundary(left, right, routes)
         )
-        right_periods = self._trusted_package_field_ids(
-            right,
-            {FieldNamespace.FISCAL_PERIOD},
-        )
-        if left_periods and right_periods and left_periods.isdisjoint(right_periods):
-            return "DIFFERENT_EXACT_PERIOD_GUARD"
-        left_families = {event.event_family for event in self._package_member_events(left)}
-        right_families = {event.event_family for event in self._package_member_events(right)}
-        if (
-            left_families == {EventFamily.MARKET_MOVEMENT}
-            and right_families == {EventFamily.MARKET_MOVEMENT}
-            and (left_sessions := self._package_trading_sessions(left))
-            and (right_sessions := self._package_trading_sessions(right))
-            and left_sessions.isdisjoint(right_sessions)
+
+    @staticmethod
+    def _package_boundary_guard_reason(boundary: PackagePairBoundary) -> str | None:
+        for blocked, reason in (
+            (bool(boundary.conflicting_artifact_ids), "DIFFERENT_TRUSTED_ARTIFACT_GUARD"),
+            (boundary.issuer_conflict, "DIFFERENT_ISSUER_GUARD"),
+            (boundary.reaction_boundary, "REACTION_PARENT_BOUNDARY_GUARD"),
+            (boundary.analyst_boundary, "DIFFERENT_ANALYST_INSTITUTION_GUARD"),
+            (boundary.period_boundary, "DIFFERENT_EXACT_PERIOD_GUARD"),
+            (boundary.session_boundary, "DIFFERENT_EXACT_TRADING_SESSION_GUARD"),
+            (boundary.instrument_conflict, "DIFFERENT_MARKET_INSTRUMENT_GUARD"),
+            (boundary.market_measure_conflict, "DIFFERENT_MARKET_MEASURE_GUARD"),
         ):
-            return "DIFFERENT_EXACT_TRADING_SESSION_GUARD"
-        left_institutions = self._trusted_package_field_ids(
-            left,
-            {FieldNamespace.PARTICIPANT_INSTITUTION},
-        )
-        right_institutions = self._trusted_package_field_ids(
-            right,
-            {FieldNamespace.PARTICIPANT_INSTITUTION},
-        )
-        if (
-            left_institutions
-            and right_institutions
-            and left_institutions.isdisjoint(right_institutions)
-        ):
-            return "DIFFERENT_ANALYST_INSTITUTION_GUARD"
+            if blocked:
+                return reason
         return None
 
     def _package_pair_signals(
@@ -5799,6 +5845,19 @@ class CrossDocumentEngine:
         reaction_families = {EventFamily.MARKET_MOVEMENT, EventFamily.ANALYST_ACTION}
         left_sessions = self._package_trading_sessions(left)
         right_sessions = self._package_trading_sessions(right)
+        left_instruments = self._trusted_package_field_ids(
+            left, {FieldNamespace.PARTICIPANT_INSTRUMENT}
+        )
+        right_instruments = self._trusted_package_field_ids(
+            right, {FieldNamespace.PARTICIPANT_INSTRUMENT}
+        )
+        left_measures = self._package_market_measures(left)
+        right_measures = self._package_market_measures(right)
+        left_objects = self._trusted_package_field_ids(left, set(ATOMIC_OBJECT_FIELD_NAMESPACES))
+        right_objects = self._trusted_package_field_ids(right, set(ATOMIC_OBJECT_FIELD_NAMESPACES))
+        both_pure_market = self._package_is_pure_market(
+            left
+        ) and self._package_is_pure_market(right)
         return PackagePairBoundary(
             shared_artifact_ids=shared_artifacts,
             shared_anchor_ids=sorted(
@@ -5826,6 +5885,21 @@ class CrossDocumentEngine:
             ),
             session_boundary=bool(
                 left_sessions and right_sessions and left_sessions.isdisjoint(right_sessions)
+            ),
+            instrument_conflict=bool(
+                both_pure_market
+                and left_instruments
+                and right_instruments
+                and left_instruments.isdisjoint(right_instruments)
+            ),
+            market_measure_conflict=bool(
+                both_pure_market
+                and left_measures
+                and right_measures
+                and left_measures.isdisjoint(right_measures)
+            ),
+            object_scope_difference=bool(
+                left_objects and right_objects and left_objects.isdisjoint(right_objects)
             ),
             left_member_count=len(left.member_event_ids),
             right_member_count=len(right.member_event_ids),
@@ -6034,6 +6108,7 @@ class CrossDocumentEngine:
         ]
         | None = None,
         apply_started_hook: Callable[[], None] | None = None,
+        apply_telemetry: dict[str, int] | None = None,
     ) -> list[EventPackage]:
         compiler = PackageProfileCompiler(self.registry)
         all_current = {
@@ -6133,7 +6208,10 @@ class CrossDocumentEngine:
                             },
                         )
                     )
-                guard_reason = self._package_pair_external_guard(source_package, target_package)
+                boundary = self._package_pair_boundary(
+                    source_package, target_package, routes
+                )
+                guard_reason = self._package_boundary_guard_reason(boundary)
                 if guard_reason is not None:
                     decision_sources[pair_key] = "GUARD"
                     guard_decisions.append(
@@ -6145,19 +6223,13 @@ class CrossDocumentEngine:
                         )
                     )
                     continue
-                shared_atomic = RecallRoute.SHARED_ATOMIC_EVENT in routes
-                trusted_artifact = RecallRoute.CANONICAL_ARTIFACT in routes
-                obvious_container = bool(
-                    source_package.package_kind is target_package.package_kind
-                    and source_package.package_family is target_package.package_family
-                    and (
-                        set(source_package.anchor_entities).intersection(
-                            target_package.anchor_entities
-                        )
-                        or RecallRoute.MEMBER_IDENTITY in routes
-                    )
+                trusted_artifact = bool(boundary.shared_artifact_ids)
+                shared_clean_anchor = bool(
+                    boundary.shared_anchor_ids
+                    and not source_package.anchor_conflict
+                    and not target_package.anchor_conflict
                 )
-                if shared_atomic or (trusted_artifact and obvious_container):
+                if trusted_artifact or shared_clean_anchor:
                     decision_sources[pair_key] = "M0"
                     m0_decisions.append(
                         PackagePairMergeDecision(
@@ -6165,9 +6237,9 @@ class CrossDocumentEngine:
                             target_package_id=target_package.package_id,
                             relation=PackageMergeRelation.SAME_PACKAGE,
                             reason=(
-                                "SHARED_CURRENT_ATOMIC_ROOT"
-                                if shared_atomic
-                                else "SAME_TRUSTED_CANONICAL_ARTIFACT"
+                                "SAME_TRUSTED_CANONICAL_ARTIFACT"
+                                if trusted_artifact
+                                else "SAME_CONFLICT_FREE_CANONICAL_ANCHOR"
                             ),
                         )
                     )
@@ -6231,10 +6303,12 @@ class CrossDocumentEngine:
 
         m3_decisions: list[PackagePairMergeDecision] = []
         if m3_pairs:
-            batches = [
-                m3_pairs[offset : offset + PACKAGE_MERGE_PAIR_BATCH]
-                for offset in range(0, len(m3_pairs), PACKAGE_MERGE_PAIR_BATCH)
-            ]
+            batches = _balanced_request_batches(
+                m3_pairs,
+                nominal_size=PACKAGE_MERGE_PAIR_BATCH,
+                active_requests=self.n13_active_requests,
+                max_balanced_size=13,
+            )
 
             def process_batch(
                 indexed_batch: tuple[
@@ -6591,6 +6665,10 @@ class CrossDocumentEngine:
                     task_hook(pair_key, "SUCCEEDED", decision, None)
         if apply_started_hook is not None:
             apply_started_hook()
+        post_decide_started = perf_counter()
+        pair_local_started = perf_counter()
+        boundary_blocked_count = 0
+        applied_count = 0
         eligible_same_decisions: list[
             tuple[PackagePairMergeDecision, PackagePairBoundary, int]
         ] = []
@@ -6636,6 +6714,8 @@ class CrossDocumentEngine:
                     assert boundary is not None
                     eligible_same_decisions.append((decision, boundary, 2 if tier_a else 1))
                     continue
+                if boundary is not None and boundary.hard_blocked:
+                    boundary_blocked_count += 1
                 decision_id = stable_id(
                     "package-merge-decision",
                     {
@@ -6731,6 +6811,15 @@ class CrossDocumentEngine:
             consumed_spokes.add(spoke.package_id)
             spokes_by_hub[hub.package_id] += 1
         components = _same_package_components(same_decisions)
+        planned_merges: list[
+            tuple[
+                PackageMergePlan,
+                list[PackagePairMergeDecision],
+                EventPackage,
+                list[EventPackage],
+                str,
+            ]
+        ] = []
         for component in components:
             component_same = [
                 decision
@@ -6800,6 +6889,47 @@ class CrossDocumentEngine:
                     self.registry.save_package(quarantined)
                     self._sync_package_embeddings([quarantined], models)
                     active[package_id] = quarantined
+                continue
+
+            current_boundary_blocked = False
+            for item in component_same:
+                current_left = active.get(item.source_package_id)
+                current_right = active.get(item.target_package_id)
+                if current_left is None or current_right is None:
+                    current_boundary_blocked = True
+                    break
+                current_routes, _ = self._package_pair_signals(
+                    current_left, current_right, embeddings
+                )
+                current_boundary = self._package_pair_boundary(
+                    current_left, current_right, current_routes
+                )
+                if current_boundary.hard_blocked:
+                    current_boundary_blocked = True
+                    boundary_blocked_count += 1
+                    self.registry.append_decision_audit(
+                        DecisionAuditRecord(
+                            audit_id=stable_id(
+                                "audit",
+                                {
+                                    "run": run_id,
+                                    "left": current_left.package_id,
+                                    "right": current_right.package_id,
+                                    "type": "n13_current_boundary_blocked",
+                                },
+                            ),
+                            run_id=run_id,
+                            decision_type="N13_LATE_CURRENT_BOUNDARY_BLOCKED",
+                            subject_id=current_left.package_id,
+                            payload={
+                                "target_package_id": current_right.package_id,
+                                "boundary": current_boundary.model_dump(mode="json"),
+                                "action": "KEEP_PAIR_SEPARATE",
+                            },
+                        )
+                    )
+                    break
+            if current_boundary_blocked:
                 continue
 
             component_packages = [active[package_id] for package_id in component]
@@ -6877,7 +7007,6 @@ class CrossDocumentEngine:
                 continue
             representatives = representative_package_members(list(member_events.values()))
             retrieval_text = package_retrieval_text(merged, representatives)
-            embedding = models.embed([retrieval_text], stage="package_merge_embedding_m1")
             plan = PackageMergePlan(
                 plan_id=stable_id(
                     "package-merge-plan",
@@ -6892,6 +7021,21 @@ class CrossDocumentEngine:
                 decision_ids=decision_ids,
                 reason="N13_SAME_PACKAGE_COMPONENT",
             )
+            planned_merges.append(
+                (plan, component_same, merged, sources, retrieval_text)
+            )
+
+        if planned_merges:
+            embedding = models.embed(
+                [item[4] for item in planned_merges],
+                stage="package_merge_embedding_m1",
+            )
+        else:
+            embedding = None
+        for index, (plan, component_same, merged, sources, retrieval_text) in enumerate(
+            planned_merges
+        ):
+            assert embedding is not None
             self.registry.apply_package_merge_plan(
                 plan=plan,
                 decisions=component_same,
@@ -6899,13 +7043,16 @@ class CrossDocumentEngine:
                 run_id=run_id,
                 embedding_model=embedding.model,
                 embedding_input_hash=hashlib.sha256(retrieval_text.encode("utf-8")).hexdigest(),
-                embedding_vector=embedding.vectors[0],
+                embedding_vector=embedding.vectors[index],
             )
+            applied_count += len(sources)
             for source_package in sources:
                 active.pop(source_package.package_id, None)
                 result_ids.discard(source_package.package_id)
-            active[target.package_id] = merged
-            result_ids.add(target.package_id)
+            active[plan.target_package_id] = merged
+            result_ids.add(plan.target_package_id)
+
+        pair_local_apply_ms = round((perf_counter() - pair_local_started) * 1000)
 
         for decision in decisions:
             pair_key = (
@@ -7008,6 +7155,18 @@ class CrossDocumentEngine:
             current = active.get(package_id)
             if current is not None:
                 result.append(current)
+        if apply_telemetry is not None:
+            apply_telemetry.update(
+                {
+                    "n13_post_decide_ms": round(
+                        (perf_counter() - post_decide_started) * 1000
+                    ),
+                    "n13_pair_local_apply_ms": pair_local_apply_ms,
+                    "n13_pair_local_eligible_count": len(eligible_same_decisions),
+                    "n13_pair_local_applied_count": applied_count,
+                    "n13_pair_local_boundary_blocked_count": boundary_blocked_count,
+                }
+            )
         return result
 
     def _correct_packages(

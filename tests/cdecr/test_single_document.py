@@ -458,7 +458,7 @@ class OverlappingMissingRecoveryGrounder(FakeStructured):
         result = super().complete(request)
         if (
             request.json_schema.get("title") == "GrounderModelOutput"
-            and "Dispose every supplied missing candidate exactly once" in request.system_prompt
+            and "Return every supplied candidate exactly once" in request.system_prompt
         ):
             payload = json.loads(request.user_prompt)
             candidate_id = payload["candidates"][0]["candidate_id"]
