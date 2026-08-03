@@ -525,6 +525,27 @@ def test_merge_event_times_normalizes_mixed_timezone_awareness() -> None:
     assert merged.event_end == datetime(2026, 7, 22, 14)
 
 
+def test_merge_event_times_does_not_join_occurrence_start_to_earlier_period_end() -> None:
+    merged = merge_event_times(
+        EventTime(
+            event_start=date(2026, 6, 24),
+            precision=TimePrecision.DAY,
+            reference_period_id="micron_fiscal_q3",
+        ),
+        EventTime(
+            event_end=date(2026, 5, 28),
+            precision=TimePrecision.QUARTER,
+            reference_period_id="micron_fiscal_q3",
+        ),
+    )
+
+    assert merged == EventTime(
+        event_start=date(2026, 6, 24),
+        precision=TimePrecision.DAY,
+        reference_period_id="micron_fiscal_q3",
+    )
+
+
 def engine(
     registry: SQLiteCDECRRegistry,
     *,

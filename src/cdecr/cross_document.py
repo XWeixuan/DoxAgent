@@ -3260,18 +3260,52 @@ class CrossDocumentEngine:
                 )
                 if target is None:
                     raise CrossDocumentPipelineError("atomic_update", "candidate_missing")
-                event = add_mention_to_atomic(
-                    target,
-                    mention,
-                    known_mentions=list(known_mentions.values()),
-                    claim_conflict=claim_conflict,
-                    identity_differences=identity_differences,
-                    incoming_profile=profile,
-                )
+                try:
+                    event = add_mention_to_atomic(
+                        target,
+                        mention,
+                        known_mentions=list(known_mentions.values()),
+                        claim_conflict=claim_conflict,
+                        identity_differences=identity_differences,
+                        incoming_profile=profile,
+                    )
+                except ValidationError as exc:
+                    self.registry.append_decision_audit(
+                        DecisionAuditRecord(
+                            audit_id=stable_id(
+                                "audit",
+                                {
+                                    "run": run_id,
+                                    "mention": mention.mention_id,
+                                    "target": candidate_event_id,
+                                    "reason": "N9_MERGE_APPLY_INVALID_SINGLETON",
+                                },
+                            ),
+                            run_id=run_id,
+                            decision_type="ATOMIC_APPLY_DEGRADED",
+                            subject_id=mention.mention_id,
+                            payload={
+                                "reason": "N9_MERGE_APPLY_INVALID_SINGLETON",
+                                "attempted_target_event_id": candidate_event_id,
+                                "validation_errors": exc.errors(include_url=False),
+                                "action": "CREATE_NEW_SINGLETON",
+                            },
+                        )
+                    )
+                    event = singleton_atomic_event(mention, identity_profile=profile)
+                    action = AtomicAction.CREATE_NEW
+                    reason = "N9_MERGE_APPLY_INVALID_SINGLETON"
+                    candidate_event_id = None
+                    relation = None
+                    claim_conflict = False
+                    identity_differences = []
+                    possible_duplicate_atomic_ids = []
                 self.registry.save_atomic_event(event)
                 retained_possible_duplicates: list[str] = []
                 absorbed_duplicates: list[str] = []
-                for duplicate_event_id in possible_duplicate_atomic_ids:
+                for duplicate_event_id in (
+                    possible_duplicate_atomic_ids if action is AtomicAction.MERGE else []
+                ):
                     duplicate_root = self.registry.resolve_atomic_event_root(duplicate_event_id)
                     target_root = self.registry.resolve_atomic_event_root(event.event_id)
                     if duplicate_root == target_root:
@@ -3298,17 +3332,43 @@ class CrossDocumentEngine:
                     if duplicate_mention is None:
                         retained_possible_duplicates.append(duplicate_event_id)
                         continue
-                    event = add_mention_to_atomic(
-                        event,
-                        duplicate_mention,
-                        known_mentions=[
-                            *known_mentions.values(),
+                    try:
+                        event = add_mention_to_atomic(
+                            event,
                             duplicate_mention,
-                        ],
-                        claim_conflict=False,
-                        identity_differences=[],
-                        incoming_profile=duplicate_event.identity_profile,
-                    )
+                            known_mentions=[
+                                *known_mentions.values(),
+                                duplicate_mention,
+                            ],
+                            claim_conflict=False,
+                            identity_differences=[],
+                            incoming_profile=duplicate_event.identity_profile,
+                        )
+                    except ValidationError as exc:
+                        retained_possible_duplicates.append(duplicate_event_id)
+                        self.registry.append_decision_audit(
+                            DecisionAuditRecord(
+                                audit_id=stable_id(
+                                    "audit",
+                                    {
+                                        "run": run_id,
+                                        "mention": mention.mention_id,
+                                        "duplicate": duplicate_root,
+                                        "reason": "N9_SINGLETON_ABSORPTION_INVALID_RETAINED",
+                                    },
+                                ),
+                                run_id=run_id,
+                                decision_type="ATOMIC_APPLY_DEGRADED",
+                                subject_id=duplicate_root,
+                                payload={
+                                    "reason": "N9_SINGLETON_ABSORPTION_INVALID_RETAINED",
+                                    "target_event_id": event.event_id,
+                                    "validation_errors": exc.errors(include_url=False),
+                                    "action": "RETAIN_POSSIBLE_DUPLICATE",
+                                },
+                            )
+                        )
+                        continue
                     self.registry.save_atomic_event(event)
                     self.registry.save_atomic_redirect(
                         source_event_id=duplicate_root,

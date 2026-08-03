@@ -592,6 +592,16 @@ def merge_event_times(left: EventTime, right: EventTime) -> EventTime:
                 end = end.astimezone(UTC).replace(tzinfo=None)
     reference = left.reference_period_id or right.reference_period_id
     precision = left.precision if left.precision is not TimePrecision.UNKNOWN else right.precision
+    if start is not None and end is not None and _temporal_key(end) < _temporal_key(start):
+        # A reporting occurrence date and a fiscal-period boundary are both valid
+        # temporal evidence, but they are not the two ends of one interval.  Keep
+        # the established Atomic time instead of fabricating an inverted range.
+        # If the established side is empty, retain the incoming time as-is.
+        preferred = left if left.event_start is not None or left.event_end is not None else right
+        start = preferred.event_start
+        end = preferred.event_end
+        precision = preferred.precision
+        reference = preferred.reference_period_id or reference
     return EventTime(
         event_start=start,
         event_end=end,
