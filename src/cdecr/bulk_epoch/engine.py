@@ -164,6 +164,7 @@ class BulkEpochEngine:
         )
         ledger = BulkTaskLedger(registry=self.registry, epoch_id=epoch_id)
         timings: dict[str, int] = {}
+        late_admission: dict[str, dict[str, object]] = {}
         candidate_counts = {
             "atomic_recalled": 0,
             "atomic_hard_conflict_observed": 0,
@@ -578,7 +579,13 @@ class BulkEpochEngine:
                         base_packages=base_package.packages,
                         writer=writer,
                     )
-                if self.package_wave_c:
+                wave_c_budget = self._late_budget_snapshot(
+                    summaries=summaries,
+                    timings=timings,
+                    wall_started=wall_started,
+                )
+                late_admission["package_wave_c"] = wave_c_budget
+                if self.package_wave_c and bool(wave_c_budget["admitted"]):
                     wave_c_started = perf_counter()
                     self.registry.update_bulk_epoch(
                         epoch_id, status="RUNNING", current_stage="PACKAGE_WAVE_C"
@@ -768,15 +775,41 @@ class BulkEpochEngine:
                             error_code=error_code or "UNJUDGEABLE_FAILED",
                         )
 
-                final_packages = self.core._correct_packages_v13(
-                    packages,
-                    models,
-                    run_id=coordinator_run_id,
-                    task_hook=n13_task,
+                n13_budget = self._late_budget_snapshot(
+                    summaries=summaries,
+                    timings=timings,
+                    wall_started=wall_started,
                 )
-                timings["n13_late_apply_ms"] = round((perf_counter() - n13_started) * 1000)
+                late_admission["n13_pair_local_apply"] = n13_budget
+                n13_apply_started: float | None = None
+
+                def mark_n13_apply_started() -> None:
+                    nonlocal n13_apply_started
+                    n13_apply_started = perf_counter()
+
+                original_pair_local_apply = self.core.n13_pair_local_apply
+                self.core.n13_pair_local_apply = bool(
+                    self.n13_pair_local_apply and n13_budget["admitted"]
+                )
+                try:
+                    final_packages = self.core._correct_packages_v13(
+                        packages,
+                        models,
+                        run_id=coordinator_run_id,
+                        task_hook=n13_task,
+                        apply_started_hook=mark_n13_apply_started,
+                    )
+                finally:
+                    self.core.n13_pair_local_apply = original_pair_local_apply
+                timings["n13_late_apply_ms"] = (
+                    0
+                    if n13_apply_started is None
+                    else round((perf_counter() - n13_apply_started) * 1000)
+                )
                 n13_apply_plan = {
-                    "pair_local": self.n13_pair_local_apply,
+                    "pair_local": bool(
+                        self.n13_pair_local_apply and n13_budget["admitted"]
+                    ),
                     "max_spoke_members": self.late_config.max_spoke_members,
                     "max_spokes_per_hub": self.late_config.max_spokes_per_hub,
                     "rounds": 1,
@@ -850,6 +883,7 @@ class BulkEpochEngine:
                     "input_ratio": self.late_total_input_budget_ratio,
                     "wall_deadline_ratio": self.late_wall_deadline_ratio,
                     "single_round": True,
+                    "admission": late_admission,
                 },
                 "final_package_ids": sorted(package.package_id for package in final_packages),
             }
@@ -939,6 +973,45 @@ class BulkEpochEngine:
             upstream_hash=upstream_hash,
             payload=payload,
         )
+
+    def _late_budget_snapshot(
+        self,
+        *,
+        summaries: list[ModelCallSummary],
+        timings: dict[str, int],
+        wall_started: float,
+    ) -> dict[str, object]:
+        late_stages = {"atomic_late_convergence", "package_wave_c"}
+        late_input = sum(
+            summary.input_tokens or 0
+            for summary in summaries
+            if summary.stage in late_stages
+        )
+        non_late_input = sum(
+            summary.input_tokens or 0
+            for summary in summaries
+            if summary.stage not in late_stages
+        )
+        late_wall_ms = sum(
+            timings.get(stage, 0) for stage in ("atomic_late_ms", "package_wave_c_ms")
+        )
+        elapsed_ms = round((perf_counter() - wall_started) * 1000)
+        non_late_wall_ms = max(1, elapsed_ms - late_wall_ms)
+        input_ratio = late_input / max(1, non_late_input)
+        wall_ratio = late_wall_ms / non_late_wall_ms
+        input_allowed = input_ratio <= self.late_total_input_budget_ratio
+        wall_allowed = wall_ratio <= self.late_wall_deadline_ratio
+        return {
+            "admitted": input_allowed and wall_allowed,
+            "input_allowed": input_allowed,
+            "wall_allowed": wall_allowed,
+            "late_input_tokens": late_input,
+            "non_late_input_tokens": non_late_input,
+            "observed_input_ratio": input_ratio,
+            "late_wall_ms": late_wall_ms,
+            "non_late_wall_ms": non_late_wall_ms,
+            "observed_wall_ratio": wall_ratio,
+        }
 
     @staticmethod
     def _max_active_by_tier(telemetry: list[dict[str, object]]) -> dict[str, int]:

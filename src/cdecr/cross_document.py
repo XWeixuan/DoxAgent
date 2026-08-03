@@ -5973,6 +5973,7 @@ class CrossDocumentEngine:
             [tuple[str, str], str, PackagePairMergeDecision | None, str | None], None
         ]
         | None = None,
+        apply_started_hook: Callable[[], None] | None = None,
     ) -> list[EventPackage]:
         compiler = PackageProfileCompiler(self.registry)
         all_current = {
@@ -6528,6 +6529,8 @@ class CrossDocumentEngine:
                     task_hook(pair_key, "FAILED", None, "UNJUDGEABLE_FAILED")
                 else:
                     task_hook(pair_key, "SUCCEEDED", decision, None)
+        if apply_started_hook is not None:
+            apply_started_hook()
         eligible_same_decisions: list[
             tuple[PackagePairMergeDecision, PackagePairBoundary, int]
         ] = []
