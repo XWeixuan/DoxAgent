@@ -42,6 +42,11 @@ def _args() -> argparse.Namespace:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--workers", type=int, default=3)
     parser.add_argument("--batch-size", type=int, default=12)
+    parser.add_argument(
+        "--reuse-existing",
+        type=Path,
+        help="Reuse persisted pair judgments and request only newly recovered candidates.",
+    )
     return parser.parse_args()
 
 
@@ -76,6 +81,34 @@ def _event_before(
             (event_id,),
         ).fetchone()
     return json.loads(str(row["payload_json"])) if row is not None else None
+
+
+def _selected_target_before_merge(
+    connection: sqlite3.Connection,
+    event_id: str,
+    mention_id: str,
+    created_at: str,
+) -> dict[str, object] | None:
+    """Recover the chosen target card without the incoming mention just applied to it."""
+    event = _event_before(connection, event_id, created_at)
+    if event is None:
+        return None
+    claims = event.get("consensus_claims", {})
+    source_claims = claims.get("source_claims", []) if isinstance(claims, dict) else []
+    propositions = [
+        str(item.get("canonical_proposition"))
+        for item in source_claims
+        if isinstance(item, dict)
+        and item.get("mention_id") != mention_id
+        and item.get("canonical_proposition")
+    ][:5]
+    if not propositions:
+        return None
+    return {
+        "candidate_event_id": event_id,
+        "rank": "SELECTED_TARGET_RECOVERED",
+        "propositions": propositions,
+    }
 
 
 def _task_payloads(path: Path) -> list[dict[str, object]]:
@@ -133,6 +166,17 @@ def _task_payloads(path: Path) -> list[dict[str, object]]:
                         "propositions": propositions,
                     }
                 )
+        chosen = row["candidate_event_id"]
+        candidate_ids = {item["candidate_event_id"] for item in candidates}
+        if row["action"] == "MERGE" and isinstance(chosen, str) and chosen not in candidate_ids:
+            recovered = _selected_target_before_merge(
+                connection,
+                chosen,
+                mention_id,
+                str(row["created_at"]),
+            )
+            if recovered is not None:
+                candidates.append(recovered)
         mention = mentions[mention_id]
         tasks.append(
             {
@@ -162,9 +206,28 @@ def _task_payloads(path: Path) -> list[dict[str, object]]:
 def main() -> int:
     args = _args()
     tasks = _task_payloads(args.registry)
+    reused_payload: dict[str, object] = {}
+    reused_judgments: dict[tuple[str, str], dict[str, object]] = {}
+    if args.reuse_existing is not None and args.reuse_existing.exists():
+        reused_payload = json.loads(args.reuse_existing.read_text(encoding="utf-8"))
+        for task in cast(list[dict[str, object]], reused_payload.get("tasks", [])):
+            mention_id = str(task["mention_id"])
+            for judgment in cast(list[dict[str, object] | None], task.get("review_judgments", [])):
+                if judgment is not None:
+                    reused_judgments[(mention_id, str(judgment["candidate_event_id"]))] = judgment
+    pending_tasks: list[dict[str, object]] = []
+    for task in tasks:
+        mention_id = str(task["mention_id"])
+        missing = [
+            candidate
+            for candidate in cast(list[dict[str, object]], task["candidates"])
+            if (mention_id, str(candidate["candidate_event_id"])) not in reused_judgments
+        ]
+        if missing:
+            pending_tasks.append({**task, "candidates": missing})
     batches = [
-        tasks[index : index + args.batch_size]
-        for index in range(0, len(tasks), args.batch_size)
+        pending_tasks[index : index + args.batch_size]
+        for index in range(0, len(pending_tasks), args.batch_size)
     ]
     settings = CDECRSettings()
 
@@ -194,7 +257,7 @@ def main() -> int:
 
     with ThreadPoolExecutor(max_workers=max(1, min(args.workers, 4))) as executor:
         reviews = list(executor.map(review, batches))
-    judgment_by_pair = {
+    judgment_by_pair = reused_judgments | {
         (str(task["mention_id"]), str(candidate["candidate_event_id"])): candidate
         for review in reviews
         for task in cast(list[dict[str, object]], review["tasks"])
@@ -241,8 +304,11 @@ def main() -> int:
     merge_total = correct_merges + incorrect_merges
     create_total = create_new_correct + create_new_incorrect
     payload = {
-        "report_version": "cdecr-n9-independent-review-v1",
-        "method": "Independent M4 review of every selected N7 candidate at assignment time.",
+        "report_version": "cdecr-n9-independent-review-v2",
+        "method": (
+            "Independent M4 review of every selected N7 candidate plus any materialized merge "
+            "target recovered without the incoming mention."
+        ),
         "summary": {
             "task_count": len(tasks),
             "candidate_coverage": candidate_coverage / len(tasks) if tasks else 1.0,
@@ -254,9 +320,19 @@ def main() -> int:
             "create_new_correct": create_new_correct,
             "create_new_incorrect": create_new_incorrect,
             "create_new_accuracy": create_new_correct / create_total if create_total else 1.0,
-            "input_tokens": sum(cast(int, item["input_tokens"]) for item in reviews),
-            "output_tokens": sum(cast(int, item["output_tokens"]) for item in reviews),
-            "latency_ms": sum(cast(int, item["latency_ms"]) for item in reviews),
+            "input_tokens": int(
+                cast(dict[str, object], reused_payload.get("summary", {})).get("input_tokens", 0)
+            )
+            + sum(cast(int, item["input_tokens"]) for item in reviews),
+            "output_tokens": int(
+                cast(dict[str, object], reused_payload.get("summary", {})).get("output_tokens", 0)
+            )
+            + sum(cast(int, item["output_tokens"]) for item in reviews),
+            "latency_ms": int(
+                cast(dict[str, object], reused_payload.get("summary", {})).get("latency_ms", 0)
+            )
+            + sum(cast(int, item["latency_ms"]) for item in reviews),
+            "new_review_task_count": len(pending_tasks),
         },
         "tasks": rows,
     }

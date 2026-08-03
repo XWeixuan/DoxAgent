@@ -1,5 +1,9 @@
 # changelog
 
+## 2026-08-04
+
+- Completed the fixed 30-document real acceptance for the final narrow CDECR changes: 30/30 documents completed, wall time fell 4.40%, total workflow tokens fell 17.67%, and N13 input fell 60.22% versus R4. Corrected the N9 evaluator to recover materialized selected targets without the incoming Mention and reuse prior pair judgments; symmetric corrected N9 precision/recall improved to 98.61%/89.87%, while Mention recall fell to 69.40% and the 65-Atomic mutual Package comparison fell to 89.10%/72.97%. The report traces a new five-Gold market-roundup false merge directly to N13 pair-local Apply and recommends rolling back only that Apply activation while retaining the DTO, batching, boundary, embedding, and telemetry improvements.
+
 ## 2026-08-02
 
 - 完成 `BULK_EPOCH` 固定30篇真实 A/B 验收：正式 R2 单文档与跨文档均 30/30 成功，M1/M2/M3/M4 并发 8/24/24/12 下墙钟环比下降 21.90%、总 Token 下降 1.97%、N9 Input 下降 58.76%；但高置信 Package Gold 子集的 Pair Precision/Recall 从 87.99%/78.81% 降至 82.57%/32.95%，碎片 excess components 从 3 增至 16。结论为保留 epoch、幂等、并发 lane、N9 组件化与完整 N13 finalize，但下一轮必须替换 N12 组件间交错 Apply；本轮仅评估、未执行回滚。详见 `dev_plan/CDECR/CDECR_BULK_EPOCH_30_REAL_AB_ACCEPTANCE_REPORT_20260802.md`。
