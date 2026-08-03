@@ -425,8 +425,10 @@ def test_c1_c3_task_text_moved_to_internal_task_skills() -> None:
 
     assert "## Task" not in c1_prompt.body
     assert "## Task" not in c3_prompt.body
-    assert "Use load_skill(\"financial-statement\")" in fundamental.body
-    assert "Use load_skill(\"valuation-model\")" in fundamental.body
+    assert "load_skill(" not in fundamental.body
+    assert "Recent Fundamental State and Changes" in fundamental.body
+    assert "Key Variable Transmission Chains" in fundamental.body
+    assert "candidate questions, not formal `PotentialGap` objects" in fundamental.body
     assert "Invoke `sector-overview` skill" in industry.body
     assert "Invoke `competitive-analysis` skill" in industry.body
 
@@ -629,7 +631,8 @@ def test_prompt_injector_selects_global_research_internal_skills_for_c1_c3() -> 
     assert c1_injected.prompt_bundle.external_skill_package_ids == []
     c1_skill = default_prompt_registry().get("fundamental-research")
     assert "Document 1" in c1_skill.body
-    assert "current market attention" in c1_skill.body
+    assert "Management and Sell-Side Expectations" in c1_skill.body
+    assert "priced in" in c1_skill.body
 
     c3_definition = agent_registry.get(AgentName.C3_INDUSTRY_RESEARCH)
     c3_task = c1_task.model_copy(

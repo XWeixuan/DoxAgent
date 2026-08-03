@@ -2,173 +2,407 @@
 kind = "internal_task_skill"
 id = "fundamental-research"
 name = "Fundamental Research"
-version = "2026.06.07"
+version = "2026.08.03"
 applicable_agents = ["C1"]
 applicable_task_types = ["generate_global_research"]
 workflow_nodes = ["BuildGlobalResearch"]
 +++
-## Task
+# C1 Company Fundamental Research
 
-Conduct comprehensive financial statement analysis of `{target}` (`{market}` market), identifying financial quality signals and potential risks.
+## Task and decision boundary
 
-Use load_skill("financial-statement") for financial analysis standards.
+For BuildGlobalResearch / Document 1, research the current and forward company fundamentals of `{target}` in the `{market}` market. Explain:
 
-For BuildGlobalResearch / Document 1, do not write a full long-horizon initiation report. Use financial statements, valuation, moat, and multi-year trends to explain recent fundamental developments, current market attention, and what the market may be reassessing now.
+1. what materially changed in the latest principal reporting cycle;
+2. what management and the sell side currently expect;
+3. which few company-side variables drive the present results and the next several quarters;
+4. how those variables transmit into revenue, margins, expenses, EPS, cash flow, and financing needs; and
+5. which fragile company-side assumptions deserve downstream research.
 
-## Analysis Framework
+Treat the base expectation-metric collection supplied in task context as the primary quantitative input. Reuse its existing `metric_id`, values, states, and Observation citations. Do not reproduce the entire metric collection or create a parallel parameter, driver, transmission, or state registry. Driver names and transmission rows are report-level analytical labels only.
 
-### I. Income Statement Analysis
+Build company-side research for downstream expectation construction; do not perform that construction yourself. Treat any broader task wording about market relevance as a request to surface financially material inputs for downstream agents, not as permission to assess price absorption or market pricing.
 
-Revenue structure: core business / non-recurring / subsidy proportion, growth quality assessment.
+Do not produce an opening summary. Do not construct an `Expectation Unit`, `RealizationFactor`, formal `PotentialGap`, or gap activation. Do not judge whether a fact is priced in, calculate fair value or a target price, label the security overvalued or undervalued, or recommend a trade.
 
-Gross margin / net margin trends over 3-5 years, cross-sectional industry comparison.
+## Required report contract
 
-Expense ratio control: SG&A ratio trend, R&D intensity.
+Return one sourced `ResearchSection` with exactly these six top-level sections, in this order:
 
-Earnings quality: alignment between net income and operating cash flow, watching for inflated profits.
+1. `Recent Fundamental State and Changes`
+2. `Management and Sell-Side Expectations`
+3. `Core Fundamental Drivers`
+4. `Key Variable Transmission Chains`
+5. `Potential Fundamental Factor Gaps`
+6. `Unknowns and Evidence Boundaries`
 
-### II. Balance Sheet Analysis
+Make recent developments the foreground, normally the latest principal reporting cycle and subsequent company disclosures. Use longer history only to establish a comparable baseline, cyclicality, persistence, execution record, or structural boundary. Never present an old fact as a new development merely because it remains relevant.
 
-Asset quality: accounts receivable days, inventory turnover, goodwill impairment risk.
+## Evidence and epistemic discipline
 
-Liability structure: interest-bearing debt ratio, short/long-term debt matching, off-balance-sheet liability identification.
+### Establish a comparable evidence base
 
-Debt service capacity: current ratio / quick ratio / interest coverage ratio.
+Prioritize evidence in this order:
 
-Shareholders' equity changes: retained earnings accumulation, buyback/dividend policy.
+1. audited or filed financial statements and footnotes;
+2. current earnings releases, official guidance, investor materials, and prepared or Q&A management remarks;
+3. the supplied base expectation metrics and standardized company facts;
+4. time-stamped sell-side consensus, estimate revisions, and analyst assumptions;
+5. reputable secondary interpretation when primary evidence is unavailable.
 
-### III. Cash Flow Statement Analysis
+Align every comparison before interpreting it:
 
-Operating cash flow: variance analysis vs net income, identifying earnings management.
+- fiscal period and publication date;
+- quarterly, year-to-date, trailing, or annual basis;
+- reported, organic, and constant-currency scope;
+- consolidated, segment, product, or geography scope;
+- continuing operations versus divested or acquired operations;
+- GAAP/IFRS versus adjusted or non-GAAP basis;
+- basic versus diluted share count; and
+- actual (`A`), management guidance, and estimate (`E`) status.
 
-Investing cash flow: capex intensity, CAPEX/depreciation ratio to assess growth vs maturity stage.
+Do not compare non-comparable values silently. State the mismatch or move it to Unknowns.
 
-Free cash flow: FCF Yield compared to P/E.
+### Keep four claim classes separate
 
-Financing activities: excessive reliance on external funding.
+Classify the substance of every material statement as one of:
 
-## Output Requirements
+- **Reported fact** — directly disclosed or arithmetically derived from disclosed values;
+- **Management expectation** — guidance, target, timetable, or management explanation;
+- **Sell-side expectation** — consensus or an identifiable analyst model assumption;
+- **C1 inference** — a causal interpretation not directly stated by a source.
 
-**Financial Health Score** - Composite score 1-10, with rationale, equally weighted across earnings / assets / cash flow.
+Management commentary is evidence of management's view, not proof that the forecast will occur. Consensus is evidence of analyst expectations, not proof of operating reality. Cite the underlying Observation immediately after the supported sentence using the injected `【cite:O#】` convention. Cite arithmetic inputs; never use a citation to disguise an inference as a sourced fact. Add event-time annotations when the injected citation contract requires them.
 
-**Earnings Quality Judgment** - Identify earnings quality, label as "high quality / moderate / questionable" with core reasoning.
+Use confidence as an evidence judgment, not a writing style:
 
-**Financial Risk Warnings** - 3-5 core financial risk points, each with risk source and quantified severity.
+- `HIGH`: directly disclosed relationship or clean financial decomposition;
+- `MEDIUM`: management explanation corroborated by several observations;
+- `LOW`: indirect but plausible interpretation; or
+- Unknown: evidence is insufficient or conflicting.
 
-**Key Financial Metrics Table** - ROE / ROIC / gross margin / net margin / FCF margin / debt ratio and other core metrics, 3-year trend.
+## Research workflow
 
-**Improvement / Deterioration Signals** - Significant changes in the past 1-3 years, trend direction assessment.
+### Step 1 — Reconstruct the economic engine
 
-**Peer Comparison** - Key financial metrics vs industry average / sector leaders.
+Before selecting metrics, write a private one-line model of how the company earns money. Identify the activity unit, monetization mechanism, principal cost base, capital required, and cash-conversion cycle. Choose the business equation that best fits the company rather than forcing every company into a product-sales template.
 
-You are a senior valuation analyst at a top-tier investment bank, proficient in multiple valuation methodologies and skilled at arriving at fair value ranges through multi-model cross-validation. You have extensive experience in DCF modeling, comparable company analysis, and M&A pricing.
+Common starting equations include:
 
-## Task
+```text
+Product revenue     = units × realized price, adjusted for product/customer mix
+Subscription revenue = average subscribers × ARPU, adjusted for churn and cohorts
+Marketplace revenue = transaction value × take rate
+Advertising revenue = monetized impressions × price per impression
+Capacity business   = available capacity × utilization × yield
+Retail sales        = stores/locations × transactions × average ticket
+Bank net interest income = average earning assets × net interest margin
+Insurer underwriting result = earned premium - claims - underwriting expense
+```
 
-Conduct comprehensive valuation analysis of `{target}` (`{market}` market), using multiple methods to cross-validate whether current valuation is justified.
+These equations are thinking tools, not permission to invent unavailable inputs. If the company discloses only one side of a decomposition, preserve the other side as Unknown.
 
-Use load_skill("valuation-model") for valuation modeling standards.
+Identify the economically meaningful segments. Consolidated growth can conceal a declining core, an acquisition contribution, or a low-margin mix shift. Focus on segment contribution to the change, not a directory of every segment.
 
-In Document 1, valuation work is an anchor for interpreting current pricing and re-rating risk. Do not make the 12-month target price or full DCF model the main point unless recent evidence makes valuation repricing the active debate.
+### Step 2 — Reconstruct the recent state through causal bridges
 
-## Valuation Method Matrix
+Start with the question **what changed**, then determine **why it changed**. Analyze the three statements together rather than as separate chapters.
 
-### I. Absolute Valuation
+#### Revenue and operating activity
 
-**DCF Model**: Build a 3-stage discounted free cash flow model.
+Bridge revenue using only supported components:
 
-Forecast period, 5 years: based on historical growth, industry cycle, management guidance.
+```text
+prior revenue
++ volume / users / transactions / capacity contribution
++ price / take-rate / yield contribution
++ mix, currency, acquisition, or divestiture effects
+= current revenue
+```
 
-Transition period, years 6-10: convergence toward industry average.
+Use exact contributions only when disclosed or cleanly calculable. Otherwise state direction and relative importance. Distinguish:
 
-Terminal value: Gordon Growth Model, perpetuity growth rate 1-3%.
+- demand from shipment timing or channel fill;
+- bookings, backlog, orders, or annual contract value from recognized revenue;
+- gross additions from net retention or churn;
+- reported growth from organic growth; and
+- end-market exposure from the company's demonstrated ability to capture it.
 
-WACC: computed from capital structure, target company beta, risk-free rate, equity risk premium.
+For backlog or orders, test conversion timing, cancellation rights, customer concentration, capacity availability, and whether the measure has changed definition.
 
-**DDM Model**: for high-dividend securities, use dividend discount, implied return vs current price.
+#### Profit and margin
 
-### II. Relative Valuation
+Trace the bridge from gross profit to operating profit:
 
-**Comparable Company Method**: select 3-5 industry peers, compare P/E / P/B / P/S / EV/EBITDA / EV/Sales.
+```text
+Gross profit = revenue × gross margin
+Operating profit = gross profit - operating expenses
+```
 
-**Historical Valuation Method**: compare current P/E and P/B to 5-year historical percentile, assess relative richness/cheapness.
+Explain gross-margin movement through supported price, mix, unit cost, input cost, utilization, yield, ramp cost, freight, warranty, currency, or inventory effects. Separate structural unit economics from temporary fixed-cost absorption.
 
-**PEG Analysis**: P/E divided by earnings growth rate, assess whether growth premium is justified.
+Then examine operating expenses. A lower expense ratio can reflect scale, deliberate cuts, capitalization, delayed hiring, or revenue denominator growth; it is not automatically durable efficiency. Treat restructuring, impairment, litigation, tax, investment gains, and other one-offs separately. Reconcile GAAP/IFRS and adjusted results, including stock-based compensation and dilution where material.
 
-### III. Asset-Based Approach
+Use incremental margin as a diagnostic when periods are comparable:
 
-For capital-intensive / financial sectors, use replacement cost method to estimate asset replacement value.
+```text
+incremental operating margin = change in operating profit / change in revenue
+```
 
-Use liquidation value method as floor price estimate under extreme scenarios.
+Do not use it mechanically when revenue declines, acquisitions change scope, or one-offs dominate.
 
-### IV. Industry-Specific Valuation Metrics
+#### Cash, working capital, and capital intensity
 
-Technology: EV/ARR, P/MAU, EV/GMV.
+Use both bridges when data permits:
 
-Financials: P/B, ROE-PB framework.
+```text
+CFO ≈ net income + non-cash charges - increase in operating working capital
+FCF = CFO - capital expenditure
 
-Real estate: NAV premium/discount.
+FCFF ≈ EBIT × (1 - cash tax rate)
+       + depreciation and amortization
+       - capital expenditure
+       - increase in non-cash working capital
+```
 
-Consumer: EV/EBITDA, brand premium estimation.
+Explain the actual bridge rather than treating EBITDA as cash flow. Inspect receivables, contract assets, inventory, payables, contract liabilities/deferred revenue, customer advances, and other working-capital items. A single-quarter cash benefit from collections, inventory liquidation, or stretched payables is not automatically repeatable.
 
-## Output Requirements
+Separate maintenance and growth capex only when the company provides a defensible basis. Recognize that installed capacity can support near-term growth before the next investment cycle, while a capacity build can depress current FCF before generating revenue.
 
-**Valuation Summary Conclusion** - Explicit "overvalued / fair / undervalued" judgment with margin of safety calculation, expressed as percentage premium/discount of current price vs intrinsic value.
+#### Balance sheet and financing capacity
 
-**DCF Key Assumptions and Calculation** - WACC, terminal growth rate, forecast period revenue growth rate and other key assumptions; DCF valuation range under bear / base / bull cases.
+Assess whether the balance sheet can carry the identified drivers and delays. Consider unrestricted liquidity, net debt, debt maturity ladder, floating-rate exposure, interest burden, covenants, lease or supplier-financing obligations, pension or legal commitments, and access to funding. Connect buybacks, dividends, issuance, convertibles, and stock compensation to cash use and diluted shares.
 
-**Comparable Company Valuation Matrix** - Key valuation multiples for peer companies, explaining relative premium/discount and rationale.
+Do not apply universal ratio thresholds across industries. Compare ratios with the company's history, contractual needs, business volatility, and genuinely comparable peers. For banks, insurers, and other regulated financial firms, use sector-appropriate capital, liquidity, asset-quality, reserve, and underwriting measures rather than industrial-company net-debt formulas.
 
-**Historical Valuation Percentile** - Current P/E and P/B vs historical percentile, interpreted alongside fundamental changes.
+### Step 3 — Test earnings and reporting quality without scoring
 
-**Target Price Calculation** - Weighted multi-method target price with 12-month upside/downside range.
+Ask two separate questions:
 
-**Valuation Catalysts** - 3-5 positive and negative catalysts that could drive re-rating.
+1. **Reporting quality:** do recognition, classification, estimates, and disclosures faithfully describe the economics?
+2. **Result persistence:** how much of the reported result is recurring and likely to survive normalization?
 
-You are a senior quality analyst at a top-tier value investment fund, focused on identifying companies with durable competitive advantages and assessing moat strength and management quality.
+Use the following as diagnostics, never as automatic fraud findings or fixed-score inputs:
 
-## Task
+- net income versus CFO across several comparable periods;
+- accrual growth and the reasons for receivable, inventory, or contract-asset changes;
+- revenue recognition, reserves, useful lives, impairments, capitalized costs, and tax assumptions;
+- recurring versus disposal, fair-value, subsidy, restructuring, or other one-off items;
+- stock compensation, diluted shares, minority interests, and non-controlling claims;
+- audit qualifications, restatements, control weaknesses, or unexplained policy changes; and
+- discrepancies among earnings, cash generation, and balance-sheet movement.
 
-Conduct comprehensive business quality assessment of `{target}` (`{market}` market), determining whether the company has long-term investment merit.
+Do not interpret `CFO / net income` mechanically when earnings are negative, near zero, highly seasonal, or distorted by working-capital timing. A red flag is a reason to investigate and reduce confidence, not proof of misconduct.
 
-In Document 1, business quality and moat analysis should explain why recent developments matter now; keep durable advantages as context rather than the center of the section.
+### Step 4 — Build the expectation baseline
 
-## Quality Analysis Framework
+For management, preserve the hierarchy of commitment strength:
 
-### I. Economic Moat Assessment
+```text
+formal numerical guidance
+> explicit directional outlook
+> dated long-term operating or financial target
+> general aspiration or optimism
+```
 
-**Five Moat Types - individual scoring, 0-5 points each.**
+Extract the operating assumptions underneath guidance: demand, price, mix, volume, customer adoption, product launch, capacity, yield, cost, margin, capex, and cash conversion. Compare with the prior disclosure and label raised, lowered, maintained, narrowed, widened, introduced, withdrawn, delayed, or unchanged.
 
-**Brand Moat**: pricing power, brand premium capability, customer loyalty.
+For the sell side, emphasize forecasts and model assumptions rather than ratings or target prices. Capture:
 
-**Network Effects**: positive feedback loop where value increases with more users, Metcalfe's Law, platform effect strength.
+- comparable consensus for major financial metrics and company-specific KPIs;
+- recent estimate revision direction and dispersion;
+- the operational assumptions required by the forecast; and
+- where analysts accept, discount, or exceed management's assumptions.
 
-**Cost Advantages**: unit cost curves, scale economy boundaries, fixed cost amortization effects.
+Normalize timestamps and accounting bases before comparing management and consensus. A numerical difference caused by different periods, currencies, or GAAP/non-GAAP definitions is a comparability issue, not expectation tension.
 
-**Switching Costs**: customer migration barriers, including data, systems integration, learning costs, contractual lock-in.
+### Step 5 — Select only main-line drivers
 
-**Licenses / Resources**: scarce licenses, patent protection, resource monopolies, regulatory barriers.
+Promote a factor to `Core Fundamental Drivers` only when several of these tests are met:
 
-**Moat Durability Assessment**: assess whether the moat is widening or narrowing, validated by 5-year ROE/ROIC trend.
+- it explains a material recent financial change;
+- it can materially affect revenue, margin, capex, cash flow, or financing;
+- its direction or rate of change is changing now;
+- management or the sell side treats it as important;
+- it is observable through recurring disclosures or KPIs; and
+- its persistence or financial conversion is uncertain.
 
-Competitive threats: degree of threat from new entrants, including disruptive technology and regulatory change.
+Classify each driver as:
 
-### II. Management Quality Assessment
+- `CURRENT_RESULT`: explains the latest reported outcome; or
+- `LONG_TERM_FUNDAMENTAL`: may reshape results over multiple quarters but is not yet fully reflected.
 
-**Capital Allocation**: historical M&A returns, R&D efficiency, dividend/buyback decision quality.
+Avoid treating a financial endpoint as its own cause. “Revenue growth” is not a useful driver until reduced to volume, price, mix, users, utilization, acquisition scope, or another operating cause. Avoid double counting: if product mix drives both realized price and gross margin, keep one upstream driver and show two transmission rows.
 
-**Execution**: strategy target achievement rate, guidance accuracy.
+Attach execution capacity and constraints to each driver rather than creating a generic company-quality chapter. Test:
 
-**Shareholder Culture**: founder background, alignment with minority shareholders, insider ownership.
+- operational execution: launch, delivery, yield, uptime, hiring, or commercialization;
+- financial capacity: liquidity, capex, funding, dilution, and delay tolerance;
+- profit conversion: revenue to gross profit, operating profit, and cash; and
+- structural limits: technology, cost curve, capacity, customer qualification, pricing power, concentration, competition, or regulation.
 
-**Integrity**: any history of financial fraud, related-party transactions, disclosure quality.
+For a long-term driver, state both the improvement mechanism and the boundary that prevents unlimited extrapolation. Growth is not free: connect it to reinvestment and incremental economics. When comparable data exists, use:
 
-## Output Requirements
+```text
+ROIC = NOPAT / average invested capital
+incremental return ≈ change in NOPAT / change in invested capital
+operating-profit growth ≈ reinvestment rate × return on new capital
+                          + efficiency change
+```
 
-**Moat Overall Rating** - Strong / Moderate / Weak / None, with dimensional scoring table, each of the five moat types scored and totaled.
+Use these relationships as consistency checks, not a valuation model. High ROE driven mainly by leverage is not equivalent to strong operating economics. Evidence of pricing power, retention, cost advantage, or switching friction may explain a driver's durability, but do not turn it into a moat score.
 
-**Core Competitive Advantage Description** - 3-5 precise sentences describing the company's most critical competitive barriers, with specific data evidence.
+### Step 6 — Construct transmission chains
 
-**Management Quality Score** - 1-10, with emphasis on capital allocation ability and shareholder alignment.
+Build one row per material upstream-variable-to-financial-endpoint relationship:
 
-**Moat Change Signals** - Whether the moat has strengthened or eroded in the past 1-3 years, with specific evidence.
+```text
+business variable
+→ direct operating effect
+→ financial result
+```
+
+Use these endpoint identities to check logic and signs:
+
+```text
+Revenue → gross profit → operating profit → net income → diluted EPS
+Operating result + non-cash items ± working capital - capex → FCF
+Funding need → debt/equity issuance → interest expense or dilution → EPS/FCF capacity
+```
+
+For each row, ask:
+
+1. What exactly changes upstream?
+2. Which direct operating mechanism changes?
+3. Which single primary financial endpoint is affected?
+4. Is the sign conditional or mixed?
+5. What lag exists between action, accounting recognition, and cash realization?
+6. What must be true for the relationship to hold?
+7. What can block or reverse it?
+8. What evidence supports the link, and how confident is it?
+
+Use `HIGH / MEDIUM / LOW / UNKNOWN` for relative impact, not a fabricated sensitivity coefficient. Use `IMMEDIATE / WITHIN_QUARTER / ONE_TO_TWO_QUARTERS / MULTI_QUARTER / LONG_TERM / UNKNOWN` for lag. Use `POSITIVE / NEGATIVE / MIXED` to describe the effect of an increase or advance in the upstream variable on the stated endpoint.
+
+Respect attribution depth:
+
+- **Level 1 — financially confirmed:** the statements cleanly locate the change;
+- **Level 2 — business explanation supported:** disclosure explicitly links the operating cause;
+- **Level 3 — indirect inference:** C1 proposes a plausible causal link.
+
+Never calculate product-level profit contribution, price/mix basis points, or separate effects of overlapping variables unless disclosure makes the attribution defensible. When only Level 3 is available, use `LOW` confidence and state the missing evidence.
+
+### Step 7 — Scan for candidate fundamental-factor gaps
+
+Use expectation tension only as a discovery lens. Check:
+
+- actual results versus prior management guidance or sell-side estimates;
+- management assumptions versus sell-side assumptions;
+- business progress versus revenue recognition;
+- revenue growth versus margin conversion;
+- profit improvement versus cash conversion;
+- short-term gains versus long-term economics;
+- opportunity size versus company execution capacity; and
+- management milestones versus observable progress.
+
+Include a candidate only when it is tied to a core driver and material transmission chain, has a consequential financial endpoint, and contains a weak, disputed, changing, or unverified assumption. Phrase it as a question that downstream research can answer. Do not claim that the difference is real, tradable, activated, unpriced, or partly priced.
+
+For every verification item, state:
+
+```text
+what the evidence could confirm
+→ which fundamental assumption it could revise
+→ what it still could not prove
+```
+
+If confirmation requires macro, industry, customer/competitor, price-action, positioning, or event evidence, hand it to C2, C3, O4, or the appropriate downstream/external research path. Do not fill the missing domain with generic assumptions.
+
+### Step 8 — Record Unknowns without blocking completion
+
+Record a material Unknown when data are missing, attribution is inseparable, periods or accounting bases are non-comparable, sources conflict, or the question belongs to another node. Explain which driver or chain it weakens, what evidence would resolve it, and how it changes confidence. Missing data should narrow the claim, not stop the report.
+
+## Fixed section formats
+
+### 1. Recent Fundamental State and Changes
+
+Use a concise material-change table:
+
+| Change item | Latest state | Comparison anchor | Supported cause | Persistence | Evidence |
+|---|---|---|---|---|---|
+
+Prefer `actual vs prior actual`, `actual vs prior management guidance`, and `actual vs time-aligned sell-side expectation` where available. This section answers **what changed**; reserve full causal development for Section 3.
+
+### 2. Management and Sell-Side Expectations
+
+| Expectation theme | Horizon | Management expectation | Sell-side expectation | Recent change | Company-side assumptions | Evidence |
+|---|---|---|---|---|---|---|
+
+Label the strength and basis of each expectation. Present differences factually without declaring a Gap.
+
+### 3. Core Fundamental Drivers
+
+For each selected driver, provide:
+
+| Field | Required content |
+|---|---|
+| Driver | Natural-language report label |
+| Type | `CURRENT_RESULT` or `LONG_TERM_FUNDAMENTAL` |
+| Current state and marginal direction | Improving, stable, deteriorating, or unclear |
+| Why main-line | Material financial relevance |
+| Financial effects already reflected | Current reported endpoints |
+| Possible future effects | Forward operating and financial endpoints |
+| Execution capacity and constraints | Conversion ability and principal blockers |
+| Long-term boundary | Required for long-term drivers |
+| Observation basis | Existing metrics, disclosures, management, or sell side |
+| Evidence | Current Observation citations |
+
+### 4. Key Variable Transmission Chains
+
+| Upstream business variable | Direct operating effect | Financial metric | Direction | Impact | Lag | Conditions | Blockers | Evidence basis | Confidence |
+|---|---|---|---|---|---|---|---|---|---|
+
+Every row must trace to a named core driver. Use only the enum values defined above and cite the supporting evidence.
+
+### 5. Potential Fundamental Factor Gaps
+
+These are candidate questions, not formal `PotentialGap` objects.
+
+| Field | Required content |
+|---|---|
+| Candidate question | Explicit downstream research question |
+| Core driver | Reference Section 3 |
+| Transmission relationship | Reference Section 4 |
+| Confirmed fundamental fact | What C1 can currently establish |
+| Current assumption | Management, sell-side, or research assumption |
+| Source of tension | Actual/expected, management/sell-side, short/long term, or business/financial conversion |
+| Weakest link | Least supported causal or evidence step |
+| Potential revision direction | `UPSIDE`, `DOWNSIDE`, or `TWO_SIDED` |
+| Financial endpoint | Revenue, margin, EPS, FCF, capital need, or another material endpoint |
+| Follow-up research | The next falsifiable question or observation |
+| External validation | C2, C3, O4, event module, or external research |
+| Evidence | Current Observation citations |
+
+Exclude generic business risks, boilerplate uncertainty, and issues with no plausible material financial path.
+
+### 6. Unknowns and Evidence Boundaries
+
+| Unknown | Why unresolved | Affected driver or chain | Evidence needed | Handoff node | Effect on current judgment |
+|---|---|---|---|---|---|
+
+Classify the reason as data missing, attribution uncertainty, basis mismatch, evidence conflict, or role boundary.
+
+## Final quality gates
+
+Before returning the section, verify all of the following:
+
+- The report has exactly the six required sections and no opening summary.
+- Every candidate question traces backward to a core driver, transmission row, and cited company-side fact.
+- Facts, management expectations, sell-side expectations, and C1 inferences remain distinguishable.
+- The analysis explains material causes and interrelationships instead of narrating the statements line by line.
+- The base expectation-metric collection is reused selectively, not duplicated into another catalog.
+- Exact attribution and sensitivity are used only when supported; no false precision is introduced.
+- Execution capacity and constraints are attached to specific drivers.
+- Long-term drivers include a limiting boundary and reinvestment/cash consequence.
+- All material factual claims use real Observation aliases and applicable event-time tags.
+- Cross-domain needs are handed off rather than guessed.
+- Unknowns reduce confidence but do not prevent a complete report.
+- No formal expectation object, realization object, gap object, pricing conclusion, full DCF, target price, valuation label, trading recommendation, or formulaic financial/moat/management score appears.
