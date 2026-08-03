@@ -23,6 +23,7 @@ from cdecr.atomic_merge_invariant import (
     AtomicMergeInvariantResult,
     evaluate_atomic_merge_invariant,
 )
+from cdecr.bulk_epoch.indexes import MultiKeyBoundedIndex
 from cdecr.contracts import (
     AtomicEvent,
     AtomicSemanticRelation,
@@ -334,10 +335,42 @@ def run_package_wave_c(
     """Run one bounded package-fragment convergence wave over the frozen Wave-B partition."""
 
     active = {package.package_id: package for package in packages}
+
+    def index_keys(package: EventPackage) -> list[str]:
+        keys: list[str] = []
+        if package.anchor_artifact_id:
+            keys.append(f"artifact:{package.anchor_artifact_id}")
+        keys.extend(f"anchor:{value}" for value in package.package_anchor_ids)
+        keys.extend(f"entity:{value}" for value in package.anchor_entities)
+        if package.anchor_period_id:
+            keys.append(f"period:{package.anchor_period_id}")
+        for event in engine._package_member_events(package):
+            keys.append(
+                "identity:"
+                + stable_id("wave-c-identity", event.identity_profile.model_dump(mode="json"))
+            )
+            for mention_id in event.mention_ids:
+                mention = engine.registry.get_mention(mention_id)
+                if mention is not None:
+                    keys.append(f"source:{mention.message_id}")
+        return sorted(set(keys))
+
+    candidate_index = MultiKeyBoundedIndex()
+    keys_by_package = {package_id: index_keys(package) for package_id, package in active.items()}
+    for package_id in sorted(active):
+        candidate_index.add(package_id, keys_by_package[package_id])
     pair_rows: list[tuple[EventPackage, EventPackage, list[RecallRoute], float]] = []
-    ids = sorted(active)
-    for index, left_id in enumerate(ids):
-        for right_id in ids[index + 1 :]:
+    seen_pairs: set[tuple[str, str]] = set()
+    for left_id in sorted(active):
+        for right_id in candidate_index.query(
+            keys_by_package[left_id],
+            limit=16,
+            exclude=left_id,
+        ):
+            pair_key = (left_id, right_id) if left_id < right_id else (right_id, left_id)
+            if pair_key in seen_pairs:
+                continue
+            seen_pairs.add(pair_key)
             left, right = active[left_id], active[right_id]
             routes, _ = engine._package_pair_signals(left, right, {})
             strong = set(routes).intersection(
@@ -564,5 +597,7 @@ def run_package_wave_c(
         "m3_merge_count": sum(item["decision_source"] == "N12_WAVE_C_M3" for item in applied),
         "failed_neutral_count": failed_neutral,
         "hard_blocked_count": hard_blocked,
+        "scheduler_edges": candidate_index.stats().emitted_edges,
+        "scheduler_edge_cap": 16 * len(active),
         "applied_edges": applied,
     }

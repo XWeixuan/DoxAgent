@@ -336,6 +336,14 @@ def test_stage_graph_capacity_defaults_are_fixed() -> None:
     assert settings.late_max_spokes_per_hub == 4
 
 
+def test_wave_c_source_has_no_full_pair_scan() -> None:
+    root = Path(__file__).parents[2]
+    source = (root / "src" / "cdecr" / "bulk_epoch" / "late_stage.py").read_text(encoding="utf-8")
+    assert "MultiKeyBoundedIndex" in source
+    assert "for right_id in ids[index + 1 :]" not in source
+    assert "scheduler_edge_cap" in source
+
+
 def test_removed_bulk_component_path_is_absent() -> None:
     root = Path(__file__).parents[2]
     source = (root / "src" / "cdecr" / "cross_document.py").read_text(encoding="utf-8")
