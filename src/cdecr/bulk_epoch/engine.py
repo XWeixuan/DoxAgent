@@ -9,6 +9,11 @@ from time import perf_counter
 
 from cdecr.bulk_epoch.artifacts import StageArtifact, canonical_hash
 from cdecr.bulk_epoch.executor import AsyncModelExecutor
+from cdecr.bulk_epoch.late_stage import (
+    LateStageConfig,
+    run_atomic_late_convergence,
+    run_package_wave_c,
+)
 from cdecr.bulk_epoch.package_stage import assign_packages_epoch
 from cdecr.bulk_epoch.snapshots import atomic_snapshot, package_snapshot
 from cdecr.bulk_epoch.task_ledger import BulkTaskLedger
@@ -34,7 +39,7 @@ from cdecr.kb_v2 import V2KnowledgeBase
 from cdecr.ports import CDECRRegistry
 from cdecr.single_document_contracts import ModelCallSummary
 
-BULK_STAGE_GRAPH_VERSION = "cdecr-bulk-epoch-v3-stage-graph"
+BULK_STAGE_GRAPH_VERSION = "cdecr-bulk-epoch-v3-late-convergence"
 
 
 class BulkEpochEngine:
@@ -53,12 +58,33 @@ class BulkEpochEngine:
         executor: AsyncModelExecutor,
         field_active_requests: int,
         knowledge_base: V2KnowledgeBase | None = None,
+        atomic_late_convergence: bool = True,
+        package_wave_c: bool = True,
+        n13_pair_local_apply: bool = True,
+        atomic_late_task_cap: int = 48,
+        package_wave_c_pair_cap: int = 64,
+        late_total_input_budget_ratio: float = 0.08,
+        late_wall_deadline_ratio: float = 0.12,
+        late_max_spoke_members: int = 4,
+        late_max_spokes_per_hub: int = 4,
     ) -> None:
         self.registry = registry
         self.core = core
         self.executor = executor
         self.field_active_requests = max(1, field_active_requests)
         self.knowledge_base = knowledge_base or core.knowledge_base
+        self.atomic_late_convergence = atomic_late_convergence
+        self.package_wave_c = package_wave_c
+        self.n13_pair_local_apply = n13_pair_local_apply
+        self.late_total_input_budget_ratio = late_total_input_budget_ratio
+        self.late_wall_deadline_ratio = late_wall_deadline_ratio
+        self.late_config = LateStageConfig(
+            atomic_task_cap=atomic_late_task_cap,
+            package_pair_cap=package_wave_c_pair_cap,
+            max_spoke_members=late_max_spoke_members,
+            max_spokes_per_hub=late_max_spokes_per_hub,
+        )
+        self.core.n13_pair_local_apply = n13_pair_local_apply
 
     def close(self) -> None:
         self.executor.close()
@@ -355,9 +381,7 @@ class BulkEpochEngine:
                         )
                 decisions = {
                     **cached_decisions,
-                    **self.core._atomic_decisions(
-                        pending_mentions, candidates, compiled, models
-                    ),
+                    **self.core._atomic_decisions(pending_mentions, candidates, compiled, models),
                 }
                 for mention in eligible_mentions:
                     task_payload = {
@@ -404,6 +428,78 @@ class BulkEpochEngine:
                 atomic_events = self.core._correct_atomic(
                     atomic_events, mentions, run_id=coordinator_run_id
                 )
+                atomic_late_telemetry: dict[str, object] = {}
+                if self.atomic_late_convergence:
+                    late_started = perf_counter()
+                    self.registry.update_bulk_epoch(
+                        epoch_id, status="RUNNING", current_stage="ATOMIC_LATE"
+                    )
+                    atomic_plan_artifact = self.registry.get_bulk_epoch_artifact(
+                        epoch_id, "atomic_plan_v1"
+                    )
+                    assert atomic_plan_artifact is not None
+                    self._save_artifact(
+                        epoch_id=epoch_id,
+                        manifest_hash=manifest_hash,
+                        kind="atomic_late_plan_v1",
+                        upstream_hash=str(atomic_plan_artifact["artifact_hash"]),
+                        payload={
+                            "snapshot_hash": canonical_hash(
+                                [
+                                    (event.event_id, event.version)
+                                    for event in sorted(
+                                        atomic_events, key=lambda item: item.event_id
+                                    )
+                                ]
+                            ),
+                            "task_cap": self.late_config.atomic_task_cap,
+                            "rounds": 1,
+                            "failure_semantics": "NEUTRAL_OMISSION",
+                        },
+                    )
+                    atomic_late_task_hash = canonical_hash(
+                        {
+                            "epoch": epoch_id,
+                            "stage": "ATOMIC_LATE",
+                            "cap": self.late_config.atomic_task_cap,
+                        }
+                    )
+                    ledger.start(
+                        stage="N9_LATE",
+                        task_id="epoch",
+                        input_hash=atomic_late_task_hash,
+                        snapshot_hash=str(atomic_plan_artifact["artifact_hash"]),
+                    )
+                    atomic_events, atomic_late_telemetry = run_atomic_late_convergence(
+                        engine=self.core,
+                        events=atomic_events,
+                        assignments=atomic_assignments,
+                        models=models,
+                        run_id=coordinator_run_id,
+                        config=self.late_config,
+                    )
+                    ledger.finish(
+                        stage="N9_LATE",
+                        task_id="epoch",
+                        input_hash=atomic_late_task_hash,
+                        snapshot_hash=str(atomic_plan_artifact["artifact_hash"]),
+                        decision_ref=atomic_late_telemetry,
+                    )
+                    atomic_late_plan = self.registry.get_bulk_epoch_artifact(
+                        epoch_id, "atomic_late_plan_v1"
+                    )
+                    assert atomic_late_plan is not None
+                    self._save_artifact(
+                        epoch_id=epoch_id,
+                        manifest_hash=manifest_hash,
+                        kind="atomic_late_partition_v1",
+                        upstream_hash=str(atomic_late_plan["artifact_hash"]),
+                        payload={
+                            **atomic_late_telemetry,
+                            "event_ids": sorted(event.event_id for event in atomic_events),
+                        },
+                    )
+                    timings["atomic_late_ms"] = round((perf_counter() - late_started) * 1000)
                 self.core._sync_atomic_embeddings(atomic_events, models)
                 atomic_plan_artifact = self.registry.get_bulk_epoch_artifact(
                     epoch_id, "atomic_plan_v1"
@@ -447,11 +543,15 @@ class BulkEpochEngine:
                     epoch_id, "atomic_partition_v1"
                 )
                 assert atomic_partition_artifact is not None
+                atomic_upstream_artifact = (
+                    self.registry.get_bulk_epoch_artifact(epoch_id, "atomic_late_partition_v1")
+                    or atomic_partition_artifact
+                )
                 self._save_artifact(
                     epoch_id=epoch_id,
                     manifest_hash=manifest_hash,
                     kind="package_plan_v1",
-                    upstream_hash=str(atomic_partition_artifact["artifact_hash"]),
+                    upstream_hash=str(atomic_upstream_artifact["artifact_hash"]),
                     payload={
                         "snapshot_hash": base_package.snapshot_hash,
                         "event_ids": sorted(event.event_id for event in atomic_events),
@@ -464,9 +564,7 @@ class BulkEpochEngine:
                     ledger.start(
                         stage="N12_A",
                         task_id=event.event_id,
-                        input_hash=canonical_hash(
-                            {"event_id": event.event_id, "wave": "A"}
-                        ),
+                        input_hash=canonical_hash({"event_id": event.event_id, "wave": "A"}),
                         snapshot_hash=base_package.snapshot_hash,
                     )
                 with BulkWriter() as writer:
@@ -480,10 +578,75 @@ class BulkEpochEngine:
                         base_packages=base_package.packages,
                         writer=writer,
                     )
-                for assignment in package_assignments:
-                    wave_a_hash = canonical_hash(
-                        {"event_id": assignment.event_id, "wave": "A"}
+                if self.package_wave_c:
+                    wave_c_started = perf_counter()
+                    self.registry.update_bulk_epoch(
+                        epoch_id, status="RUNNING", current_stage="PACKAGE_WAVE_C"
                     )
+                    self._save_artifact(
+                        epoch_id=epoch_id,
+                        manifest_hash=manifest_hash,
+                        kind="package_wave_c_plan_v1",
+                        upstream_hash=str(atomic_partition_artifact["artifact_hash"]),
+                        payload={
+                            "snapshot_hash": canonical_hash(
+                                [
+                                    (package.package_id, package.version)
+                                    for package in sorted(
+                                        packages, key=lambda item: item.package_id
+                                    )
+                                ]
+                            ),
+                            "pair_cap": self.late_config.package_pair_cap,
+                            "rounds": 1,
+                            "failure_semantics": "NEUTRAL_OMISSION",
+                        },
+                    )
+                    wave_c_task_hash = canonical_hash(
+                        {
+                            "epoch": epoch_id,
+                            "stage": "PACKAGE_WAVE_C",
+                            "cap": self.late_config.package_pair_cap,
+                        }
+                    )
+                    ledger.start(
+                        stage="N12_C",
+                        task_id="epoch",
+                        input_hash=wave_c_task_hash,
+                        snapshot_hash=str(atomic_partition_artifact["artifact_hash"]),
+                    )
+                    packages, wave_c_telemetry = run_package_wave_c(
+                        engine=self.core,
+                        packages=packages,
+                        models=models,
+                        run_id=coordinator_run_id,
+                        config=self.late_config,
+                    )
+                    ledger.finish(
+                        stage="N12_C",
+                        task_id="epoch",
+                        input_hash=wave_c_task_hash,
+                        snapshot_hash=str(atomic_partition_artifact["artifact_hash"]),
+                        decision_ref=wave_c_telemetry,
+                    )
+                    package_stage_telemetry["wave_c"] = wave_c_telemetry
+                    wave_c_plan = self.registry.get_bulk_epoch_artifact(
+                        epoch_id, "package_wave_c_plan_v1"
+                    )
+                    assert wave_c_plan is not None
+                    self._save_artifact(
+                        epoch_id=epoch_id,
+                        manifest_hash=manifest_hash,
+                        kind="package_wave_c_partition_v1",
+                        upstream_hash=str(wave_c_plan["artifact_hash"]),
+                        payload={
+                            **wave_c_telemetry,
+                            "package_ids": sorted(package.package_id for package in packages),
+                        },
+                    )
+                    timings["package_wave_c_ms"] = round((perf_counter() - wave_c_started) * 1000)
+                for assignment in package_assignments:
+                    wave_a_hash = canonical_hash({"event_id": assignment.event_id, "wave": "A"})
                     ledger.finish(
                         stage="N12_A",
                         task_id=assignment.event_id,
@@ -497,9 +660,7 @@ class BulkEpochEngine:
                         },
                     )
                     if assignment.reason != "N12_WAVE_A_SELECTED_HISTORY":
-                        wave_b_hash = canonical_hash(
-                            {"event_id": assignment.event_id, "wave": "B"}
-                        )
+                        wave_b_hash = canonical_hash({"event_id": assignment.event_id, "wave": "B"})
                         ledger.start(
                             stage="N12_B",
                             task_id=assignment.event_id,
@@ -520,9 +681,7 @@ class BulkEpochEngine:
                                 task_id=assignment.event_id,
                                 input_hash=wave_b_hash,
                                 snapshot_hash=base_package.snapshot_hash,
-                                decision_ref={
-                                    "assignment_id": assignment.assignment_id
-                                },
+                                decision_ref={"assignment_id": assignment.assignment_id},
                             )
                 package_plan_artifact = self.registry.get_bulk_epoch_artifact(
                     epoch_id, "package_plan_v1"
@@ -570,9 +729,7 @@ class BulkEpochEngine:
                     upstream_hash=str(package_partition_artifact["artifact_hash"]),
                     payload={
                         "snapshot_hash": n13_snapshot.snapshot_hash,
-                        "touched_package_ids": sorted(
-                            package.package_id for package in packages
-                        ),
+                        "touched_package_ids": sorted(package.package_id for package in packages),
                         "pair_candidate_cap_per_package": 6,
                         "batch_size": 2,
                         "coverage": "FULL_BOUNDED_PAIR_PLAN",
@@ -586,9 +743,7 @@ class BulkEpochEngine:
                     error_code: str | None,
                 ) -> None:
                     task_id = f"{pair[0]}|{pair[1]}"
-                    task_hash = canonical_hash(
-                        {"left": pair[0], "right": pair[1]}
-                    )
+                    task_hash = canonical_hash({"left": pair[0], "right": pair[1]})
                     if status == "RUNNING":
                         ledger.start(
                             stage="N13",
@@ -618,6 +773,39 @@ class BulkEpochEngine:
                     models,
                     run_id=coordinator_run_id,
                     task_hook=n13_task,
+                )
+                timings["n13_late_apply_ms"] = round((perf_counter() - n13_started) * 1000)
+                n13_apply_plan = {
+                    "pair_local": self.n13_pair_local_apply,
+                    "max_spoke_members": self.late_config.max_spoke_members,
+                    "max_spokes_per_hub": self.late_config.max_spokes_per_hub,
+                    "rounds": 1,
+                    "package_ids": sorted(package.package_id for package in final_packages),
+                }
+                n13_plan_artifact = self.registry.get_bulk_epoch_artifact(
+                    epoch_id, "n13_pair_plan_v1"
+                )
+                assert n13_plan_artifact is not None
+                self._save_artifact(
+                    epoch_id=epoch_id,
+                    manifest_hash=manifest_hash,
+                    kind="n13_late_apply_plan_v1",
+                    upstream_hash=str(n13_plan_artifact["artifact_hash"]),
+                    payload=n13_apply_plan,
+                )
+                n13_apply_hash = canonical_hash(n13_apply_plan)
+                ledger.start(
+                    stage="N13_LATE_APPLY",
+                    task_id="epoch",
+                    input_hash=n13_apply_hash,
+                    snapshot_hash=n13_snapshot.snapshot_hash,
+                )
+                ledger.finish(
+                    stage="N13_LATE_APPLY",
+                    task_id="epoch",
+                    input_hash=n13_apply_hash,
+                    snapshot_hash=n13_snapshot.snapshot_hash,
+                    decision_ref=n13_apply_plan,
                 )
                 n13_plan_artifact = self.registry.get_bulk_epoch_artifact(
                     epoch_id, "n13_pair_plan_v1"
@@ -658,6 +846,11 @@ class BulkEpochEngine:
                     "failed_call_count": sum(item["status"] == "FAILED" for item in telemetry),
                 },
                 "candidate_counts": candidate_counts,
+                "late_budget": {
+                    "input_ratio": self.late_total_input_budget_ratio,
+                    "wall_deadline_ratio": self.late_wall_deadline_ratio,
+                    "single_round": True,
+                },
                 "final_package_ids": sorted(package.package_id for package in final_packages),
             }
             self.registry.update_bulk_epoch(

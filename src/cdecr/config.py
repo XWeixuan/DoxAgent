@@ -125,6 +125,31 @@ class CDECRSettings(BaseSettings):
     item_repair_active_requests: int = Field(
         default=8, ge=1, le=32, alias="CDECR_ITEM_REPAIR_ACTIVE_REQUESTS"
     )
+    atomic_late_convergence: bool = Field(
+        default=True, alias="CDECR_ATOMIC_LATE_CONVERGENCE"
+    )
+    package_wave_c: bool = Field(default=True, alias="CDECR_PACKAGE_WAVE_C")
+    n13_pair_local_apply: bool = Field(
+        default=True, alias="CDECR_N13_PAIR_LOCAL_APPLY"
+    )
+    atomic_late_task_cap: int = Field(
+        default=48, ge=0, le=128, alias="CDECR_ATOMIC_LATE_TASK_CAP"
+    )
+    package_wave_c_pair_cap: int = Field(
+        default=64, ge=0, le=128, alias="CDECR_PACKAGE_WAVE_C_PAIR_CAP"
+    )
+    late_total_input_budget_ratio: float = Field(
+        default=0.08, ge=0.0, le=0.25, alias="CDECR_LATE_TOTAL_INPUT_BUDGET_RATIO"
+    )
+    late_wall_deadline_ratio: float = Field(
+        default=0.12, ge=0.0, le=0.5, alias="CDECR_LATE_WALL_DEADLINE_RATIO"
+    )
+    late_max_spoke_members: int = Field(
+        default=4, ge=1, le=8, alias="CDECR_LATE_MAX_SPOKE_MEMBERS"
+    )
+    late_max_spokes_per_hub: int = Field(
+        default=4, ge=1, le=8, alias="CDECR_LATE_MAX_SPOKES_PER_HUB"
+    )
 
     def require_supabase(self) -> tuple[str, str]:
         if not self.supabase_url or self.supabase_publishable_key is None:

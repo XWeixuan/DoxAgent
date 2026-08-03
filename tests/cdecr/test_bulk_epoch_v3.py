@@ -65,9 +65,7 @@ class AsyncFakeStructured:
                 self.active -= 1
 
 
-def executor(
-    m2: AsyncFakeStructured, m3: AsyncFakeStructured
-) -> AsyncModelExecutor:
+def executor(m2: AsyncFakeStructured, m3: AsyncFakeStructured) -> AsyncModelExecutor:
     return AsyncModelExecutor(
         clients={ModelTier.M2: m2, ModelTier.M3: m3, ModelTier.M4: m3},
         tier_limits={ModelTier.M2: 48, ModelTier.M3: 48, ModelTier.M4: 16},
@@ -127,9 +125,7 @@ def test_async_executor_failure_does_not_cancel_other_requests() -> None:
     ]
     try:
         with ThreadPoolExecutor(max_workers=12) as pool:
-            futures = [
-                pool.submit(hub.complete, ModelTier.M2, request) for request in requests
-            ]
+            futures = [pool.submit(hub.complete, ModelTier.M2, request) for request in requests]
             succeeded = 0
             failed = 0
             for future in futures:
@@ -225,7 +221,35 @@ def test_n12_reducer_does_not_cross_explicit_not_related_edge() -> None:
     components = _constrained_components(
         ["a", "b", "c"], decisions, {"pa": "a", "pb": "b", "pc": "c"}
     )
-    assert components == [["a", "b"], ["c"]]
+    # Model NOT_RELATED is a soft negative. It must not veto an independently
+    # supported MEMBER path through another task.
+    assert components == [["a", "b", "c"]]
+
+
+def test_constrained_components_respects_only_structured_hard_negative() -> None:
+    decisions = {
+        "a": PackageAssignmentDecision(
+            event_id="a",
+            candidate_assessments=[
+                PackageCandidateAssessment(
+                    candidate_package_id="pb",
+                    relation=PackageAssignmentRelation.MEMBER,
+                    membership_relation="DISCLOSED_IN",
+                    reason="same parent",
+                )
+            ],
+            ranked_member_package_ids=["pb"],
+            selected_member_package_id="pb",
+            selection_reason="same parent",
+        )
+    }
+    components = _constrained_components(
+        ["a", "b"],
+        decisions,
+        {"pa": "a", "pb": "b"},
+        hard_negative_pairs={frozenset(("a", "b"))},
+    )
+    assert components == [["a"], ["b"]]
 
 
 def test_bulk_epoch_v3_is_only_bulk_path_and_reuses_finalized_epoch(
@@ -279,10 +303,15 @@ def test_bulk_epoch_v3_is_only_bulk_path_and_reuses_finalized_epoch(
         "field_plan_v1",
         "field_overlay_v1",
         "atomic_plan_v1",
+        "atomic_late_plan_v1",
+        "atomic_late_partition_v1",
         "atomic_partition_v1",
         "package_plan_v1",
+        "package_wave_c_plan_v1",
+        "package_wave_c_partition_v1",
         "package_partition_v1",
         "n13_pair_plan_v1",
+        "n13_late_apply_plan_v1",
         "final_package_partition_v1",
     ):
         assert registry.get_bulk_epoch_artifact(str(epochs["epoch_id"]), kind) is not None
@@ -301,6 +330,10 @@ def test_stage_graph_capacity_defaults_are_fixed() -> None:
     ) == (32, 48, 48, 16)
     assert settings.document_concurrency == 24
     assert settings.structured_request_start_interval_seconds == 0.0
+    assert settings.atomic_late_task_cap == 48
+    assert settings.package_wave_c_pair_cap == 64
+    assert settings.late_max_spoke_members == 4
+    assert settings.late_max_spokes_per_hub == 4
 
 
 def test_removed_bulk_component_path_is_absent() -> None:

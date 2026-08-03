@@ -504,6 +504,15 @@ def _bulk_epoch_engine(
         core=core,
         executor=executor,
         field_active_requests=settings.field_active_requests,
+        atomic_late_convergence=settings.atomic_late_convergence,
+        package_wave_c=settings.package_wave_c,
+        n13_pair_local_apply=settings.n13_pair_local_apply,
+        atomic_late_task_cap=settings.atomic_late_task_cap,
+        package_wave_c_pair_cap=settings.package_wave_c_pair_cap,
+        late_total_input_budget_ratio=settings.late_total_input_budget_ratio,
+        late_wall_deadline_ratio=settings.late_wall_deadline_ratio,
+        late_max_spoke_members=settings.late_max_spoke_members,
+        late_max_spokes_per_hub=settings.late_max_spokes_per_hub,
     )
 
 

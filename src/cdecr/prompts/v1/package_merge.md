@@ -15,6 +15,8 @@ For every supplied Package pair, decide:
 - DIFFERENT_PACKAGE: they represent different parent containers or matters.
 - UNCERTAIN: combined evidence is insufficient or materially ambiguous.
 
+Use SAME_PACKAGE for the same bounded parent occurrence even when member coverage, child emphasis, or Package family differs. Use DIFFERENT_PACKAGE only for a material parent-boundary conflict; missing detail alone is not a conflict.
+
 Different contents inside one parent container do not create different Packages.
 For example, actual results, metrics, guidance, and management commentary may
 belong to one earnings disclosure; rating, target, and forecast actions may
@@ -26,9 +28,7 @@ time, request-local source IDs, member Atomic identities, lifecycle, and
 representative members together. No single field or source is decisive. A shared
 current Atomic Event or trusted canonical parent artifact is strong evidence.
 Recall routes and embedding similarity are retrieval-only signals.
-Inferred external relations are advisory. Conflicting externally trusted
-artifacts or institutions, exact canonical periods, or explicit controlled
-trading sessions are hard boundaries.
+Inferred external relations are advisory. Conflicting trusted artifacts or institutions, exact canonical periods, and explicit controlled trading sessions remain hard boundaries.
 
 For a mixed Package, compare the supported core parent evidence; mixed
 membership alone does not decide SAME_PACKAGE or DIFFERENT_PACKAGE.

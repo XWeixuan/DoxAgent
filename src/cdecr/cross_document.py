@@ -9,6 +9,7 @@ import re
 import threading
 import traceback
 import uuid
+from collections import defaultdict
 from collections.abc import Callable, Sequence
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, date, datetime
@@ -114,6 +115,7 @@ from cdecr.cross_document_contracts import (
     PackageMergeDecisionBatch,
     PackageMergePlan,
     PackageMergeWireDecisionBatch,
+    PackagePairBoundary,
     PackagePairDecision,
     PackagePairDecisionBatch,
     PackagePairEvaluation,
@@ -172,10 +174,10 @@ from cdecr.scheduler import take_scheduled_call_metrics
 from cdecr.single_document_contracts import ModelCallSummary
 from cdecr.wire import compact_json, wire_ref_metadata
 
-ENGINE_VERSION = "cdecr-cross-document-v23-stage-graph-business-core"
-PROMPT_VERSION = "cdecr-cross-document-prompts-v16-immutable-stage-tasks"
+ENGINE_VERSION = "cdecr-cross-document-v24-late-convergence"
+PROMPT_VERSION = "cdecr-cross-document-prompts-v17-late-convergence"
 WIRE_PROTOCOL_VERSION = "cdecr-cross-document-wire-atomic-dictionary-v9"
-ATOMIC_ASSIGNMENT_POLICY_VERSION = "atomic-assignment-policy-v4-deterministic-pair-filter"
+ATOMIC_ASSIGNMENT_POLICY_VERSION = "atomic-assignment-policy-v5-late-convergence"
 ATOMIC_DECISION_MENTION_BATCH = 3
 PACKAGE_DECISION_EVENT_BATCH = 12
 PACKAGE_MERGE_PAIR_BATCH = 12
@@ -918,6 +920,7 @@ class CrossDocumentEngine:
         self.n9_active_requests = max(1, n9_active_requests)
         self.n12_active_requests = max(1, n12_active_requests)
         self.n13_active_requests = max(1, n13_active_requests)
+        self.n13_pair_local_apply = True
         self.knowledge_base = knowledge_base or V2KnowledgeBase()
 
     @property
@@ -1396,9 +1399,7 @@ class CrossDocumentEngine:
             event.event_id: event for event in self.registry.list_current_atomic_events(limit=10000)
         }
         output: dict[str, list[AtomicCandidate]] = {}
-        provisional_by_id: dict[
-            str, tuple[AtomicEvent, EventMention, CompiledMentionIdentity]
-        ] = {}
+        provisional_by_id: dict[str, tuple[AtomicEvent, EventMention, CompiledMentionIdentity]] = {}
         provisional_index = MultiKeyBoundedIndex(bucket_limit=12)
 
         def provisional_keys(
@@ -1488,9 +1489,7 @@ class CrossDocumentEngine:
                 limit=12,
             )
             for provisional_id in scheduler_ids:
-                provisional_event, prior_mention, prior_compiled = provisional_by_id[
-                    provisional_id
-                ]
+                provisional_event, prior_mention, prior_compiled = provisional_by_id[provisional_id]
                 assert prior_compiled.identity_profile is not None
                 provisional_routes = _provisional_routes(
                     mention,
@@ -2879,8 +2878,7 @@ class CrossDocumentEngine:
                             }
                             if (
                                 target not in by_id
-                                or by_id[target].relation
-                                is not AtomicSemanticRelation.SAME_EVENT
+                                or by_id[target].relation is not AtomicSemanticRelation.SAME_EVENT
                             ):
                                 raise ValueError("item repair merge target is not SAME_EVENT")
                         status = "SUCCEEDED"
@@ -2917,9 +2915,7 @@ class CrossDocumentEngine:
 
                 repair_items = sorted(invalid_task_errors.items())
                 with ThreadPoolExecutor(max_workers=min(8, len(repair_items))) as repair_pool:
-                    repaired_by_mention = dict(
-                        repair_pool.map(repair_invalid_task, repair_items)
-                    )
+                    repaired_by_mention = dict(repair_pool.map(repair_invalid_task, repair_items))
                 retained_decisions: list[AtomicAssignmentDecision] = []
                 for decision in output.decisions:
                     repaired = repaired_by_mention.get(decision.mention_id, decision)
@@ -4236,14 +4232,7 @@ class CrossDocumentEngine:
                             invalid_task_errors[event_id] = fallback_reason
                         raw = {
                             "event_id": event_id,
-                            "candidate_assessments": [
-                                {
-                                    "candidate_package_id": candidate_id,
-                                    "relation": (PackageAssignmentRelation.NOT_RELATED.value),
-                                    "reason": ("N12_INVALID_TASK_CREATE_NEW_PACKAGE"),
-                                }
-                                for candidate_id in sorted(expected[event_id])
-                            ],
+                            "candidate_assessments": [],
                             "ranked_member_package_ids": [],
                             "selected_member_package_id": None,
                             "selection_reason": None,
@@ -4251,7 +4240,7 @@ class CrossDocumentEngine:
                         normalizations.append(
                             {
                                 "event_id": event_id,
-                                "kind": "TASK_DEGRADED_TO_CREATE_NEW_PACKAGE",
+                                "kind": "TASK_DEGRADED_TO_NEUTRAL_OMISSION",
                                 "reason": fallback_reason,
                             }
                         )
@@ -4290,10 +4279,8 @@ class CrossDocumentEngine:
                     raise ValueError("package decisions must cover exactly requested events")
                 for decision in output.decisions:
                     actual = {item.candidate_package_id for item in decision.candidate_assessments}
-                    if actual != expected[decision.event_id]:
-                        raise ValueError(
-                            "package decisions must cover exactly requested candidates"
-                        )
+                    if not actual.issubset(expected[decision.event_id]):
+                        raise ValueError("package decisions must not contain unknown candidates")
 
             try:
                 output = models.typed(
@@ -5684,6 +5671,8 @@ class CrossDocumentEngine:
             self._trusted_package_anchor_ids(right)
         ):
             routes.add(RecallRoute.CANONICAL_ARTIFACT)
+        if set(left.package_anchor_ids).intersection(right.package_anchor_ids):
+            routes.add(RecallRoute.PACKAGE_ANCHOR)
         if set(left.anchor_entities).intersection(right.anchor_entities):
             routes.add(RecallRoute.CORE_ENTITY)
         left_members = self._package_member_events(left)
@@ -5720,6 +5709,67 @@ class CrossDocumentEngine:
             if similarity >= 0.65:
                 routes.add(RecallRoute.PROPOSITION_EMBEDDING)
         return sorted(routes, key=str), similarity
+
+    def _package_pair_boundary(
+        self,
+        left: EventPackage,
+        right: EventPackage,
+        routes: Sequence[RecallRoute],
+    ) -> PackagePairBoundary:
+        left_artifacts = self._trusted_package_anchor_ids(left)
+        right_artifacts = self._trusted_package_anchor_ids(right)
+        shared_artifacts = sorted(left_artifacts.intersection(right_artifacts))
+        conflicting_artifacts = sorted(
+            left_artifacts.union(right_artifacts)
+            if left_artifacts and right_artifacts and left_artifacts.isdisjoint(right_artifacts)
+            else set()
+        )
+        left_issuers = self._trusted_package_field_ids(left, {FieldNamespace.PARTICIPANT_COMPANY})
+        right_issuers = self._trusted_package_field_ids(right, {FieldNamespace.PARTICIPANT_COMPANY})
+        left_institutions = self._trusted_package_field_ids(
+            left, {FieldNamespace.PARTICIPANT_INSTITUTION}
+        )
+        right_institutions = self._trusted_package_field_ids(
+            right, {FieldNamespace.PARTICIPANT_INSTITUTION}
+        )
+        left_periods = self._trusted_package_field_ids(left, {FieldNamespace.FISCAL_PERIOD})
+        right_periods = self._trusted_package_field_ids(right, {FieldNamespace.FISCAL_PERIOD})
+        left_families = {event.event_family for event in self._package_member_events(left)}
+        right_families = {event.event_family for event in self._package_member_events(right)}
+        reaction_families = {EventFamily.MARKET_MOVEMENT, EventFamily.ANALYST_ACTION}
+        left_sessions = self._package_trading_sessions(left)
+        right_sessions = self._package_trading_sessions(right)
+        return PackagePairBoundary(
+            shared_artifact_ids=shared_artifacts,
+            shared_anchor_ids=sorted(
+                set(left.package_anchor_ids).intersection(right.package_anchor_ids)
+            ),
+            conflicting_artifact_ids=conflicting_artifacts,
+            shared_parent_context=RecallRoute.PARENT_CONTEXT in routes,
+            shared_source_member=RecallRoute.SAME_SOURCE_MEMBER in routes,
+            member_identity_support=RecallRoute.MEMBER_IDENTITY in routes,
+            time_support=RecallRoute.TIME_WINDOW in routes,
+            issuer_conflict=bool(
+                left_issuers and right_issuers and left_issuers.isdisjoint(right_issuers)
+            ),
+            reaction_boundary=bool(
+                left_families.intersection(reaction_families)
+                != right_families.intersection(reaction_families)
+            ),
+            analyst_boundary=bool(
+                left_institutions
+                and right_institutions
+                and left_institutions.isdisjoint(right_institutions)
+            ),
+            period_boundary=bool(
+                left_periods and right_periods and left_periods.isdisjoint(right_periods)
+            ),
+            session_boundary=bool(
+                left_sessions and right_sessions and left_sessions.isdisjoint(right_sessions)
+            ),
+            left_member_count=len(left.member_event_ids),
+            right_member_count=len(right.member_event_ids),
+        )
 
     def _repair_reaction_members_v13(
         self,
@@ -6209,9 +6259,7 @@ class CrossDocumentEngine:
                             "left": source_id,
                             "right": target_id,
                             "routes": [route.value for route in routes],
-                            "similarity": (
-                                None if similarity is None else round(similarity, 3)
-                            ),
+                            "similarity": (None if similarity is None else round(similarity, 3)),
                         }
                     )
                 wire_payload: dict[str, object] = {
@@ -6434,13 +6482,9 @@ class CrossDocumentEngine:
                     with ThreadPoolExecutor(
                         max_workers=min(8, len(failed_pair_ids))
                     ) as repair_pool:
-                        repaired_pairs = dict(
-                            repair_pool.map(repair_pair, sorted(failed_pair_ids))
-                        )
+                        repaired_pairs = dict(repair_pool.map(repair_pair, sorted(failed_pair_ids)))
                     repaired_decisions = [
-                        decision
-                        for decision in repaired_pairs.values()
-                        if decision is not None
+                        decision for decision in repaired_pairs.values() if decision is not None
                     ]
                 else:
                     repaired_decisions = []
@@ -6475,9 +6519,7 @@ class CrossDocumentEngine:
         ]
         if task_hook is not None:
             decision_by_pair = {
-                tuple(
-                    sorted((decision.source_package_id, decision.target_package_id))
-                ): decision
+                tuple(sorted((decision.source_package_id, decision.target_package_id))): decision
                 for decision in decisions
             }
             for pair_key in sorted(seen_pairs):
@@ -6486,7 +6528,9 @@ class CrossDocumentEngine:
                     task_hook(pair_key, "FAILED", None, "UNJUDGEABLE_FAILED")
                 else:
                     task_hook(pair_key, "SUCCEEDED", decision, None)
-        applicable_same_decisions: list[PackagePairMergeDecision] = []
+        eligible_same_decisions: list[
+            tuple[PackagePairMergeDecision, PackagePairBoundary, int]
+        ] = []
         for decision in decisions:
             if decision.relation is PackageMergeRelation.SAME_PACKAGE:
                 left_package = active.get(decision.source_package_id)
@@ -6504,49 +6548,30 @@ class CrossDocumentEngine:
                     ),
                     [],
                 )
-                left_families = (
-                    {event.event_family for event in self._package_member_events(left_package)}
-                    if left_package is not None
-                    else set()
+                boundary = (
+                    self._package_pair_boundary(left_package, right_package, routes)
+                    if left_package is not None and right_package is not None
+                    else None
                 )
-                right_families = (
-                    {event.event_family for event in self._package_member_events(right_package)}
-                    if right_package is not None
-                    else set()
-                )
-                reaction_families = {
-                    EventFamily.MARKET_MOVEMENT,
-                    EventFamily.ANALYST_ACTION,
-                }
-                reaction_boundary = bool(
-                    left_families.intersection(reaction_families)
-                    != right_families.intersection(reaction_families)
-                )
-                shared_primary_anchor = bool(
-                    left_package is not None
-                    and right_package is not None
-                    and left_package.primary_anchor_id is not None
-                    and left_package.primary_anchor_id == right_package.primary_anchor_id
-                )
-                strong_same = bool(
+                tier_a = bool(
                     RecallRoute.SHARED_ATOMIC_EVENT in routes
-                    or (
-                        (RecallRoute.CANONICAL_ARTIFACT in routes or shared_primary_anchor)
-                        and left_package is not None
-                        and right_package is not None
-                        and left_package.package_family is right_package.package_family
-                    )
+                    or (boundary and boundary.shared_artifact_ids)
+                    or (boundary and boundary.shared_anchor_ids)
+                )
+                tier_b = bool(
+                    boundary
+                    and min(boundary.left_member_count, boundary.right_member_count) <= 4
+                    and boundary.independent_positive_count >= 2
                 )
                 apply_allowed = bool(
-                    left_package is not None
-                    and right_package is not None
-                    and not left_package.anchor_conflict
-                    and not right_package.anchor_conflict
-                    and not reaction_boundary
-                    and strong_same
+                    getattr(self, "n13_pair_local_apply", True)
+                    and boundary is not None
+                    and not boundary.hard_blocked
+                    and (tier_a or tier_b)
                 )
                 if apply_allowed:
-                    applicable_same_decisions.append(decision)
+                    assert boundary is not None
+                    eligible_same_decisions.append((decision, boundary, 2 if tier_a else 1))
                     continue
                 decision_id = stable_id(
                     "package-merge-decision",
@@ -6570,12 +6595,14 @@ class CrossDocumentEngine:
                         payload={
                             "target_package_id": decision.target_package_id,
                             "routes": [route.value for route in routes],
-                            "shared_primary_anchor": shared_primary_anchor,
+                            "shared_primary_anchor": bool(boundary and boundary.shared_anchor_ids),
                             "anchor_conflict": bool(
                                 (left_package and left_package.anchor_conflict)
                                 or (right_package and right_package.anchor_conflict)
                             ),
-                            "reaction_boundary": reaction_boundary,
+                            "pair_boundary": (
+                                boundary.model_dump(mode="json") if boundary else None
+                            ),
                             "reason": decision.reason,
                         },
                     )
@@ -6603,21 +6630,61 @@ class CrossDocumentEngine:
                     )
                 )
 
-        same_decisions = applicable_same_decisions
+        # One fixed hub-and-spoke round. A small fragment may be consumed once;
+        # a hub may absorb at most four independent spokes. No newly merged root
+        # is recalled again in this epoch.
+        same_decisions: list[PackagePairMergeDecision] = []
+        consumed_spokes: set[str] = set()
+        spokes_by_hub: dict[str, int] = defaultdict(int)
+        for decision, _boundary, _tier in sorted(
+            eligible_same_decisions,
+            key=lambda item: (
+                -item[2],
+                -item[1].independent_positive_count,
+                item[0].source_package_id,
+                item[0].target_package_id,
+            ),
+        ):
+            left = active[decision.source_package_id]
+            right = active[decision.target_package_id]
+            hub, spoke = sorted(
+                (left, right),
+                key=lambda package: (-len(package.member_event_ids), package.package_id),
+            )
+            if (
+                spoke.package_id in consumed_spokes
+                or len(spoke.member_event_ids) > 4
+                or spokes_by_hub[hub.package_id] >= 4
+            ):
+                continue
+            same_decisions.append(
+                decision.model_copy(
+                    update={
+                        "source_package_id": spoke.package_id,
+                        "target_package_id": hub.package_id,
+                    }
+                )
+            )
+            consumed_spokes.add(spoke.package_id)
+            spokes_by_hub[hub.package_id] += 1
         components = _same_package_components(same_decisions)
         for component in components:
-            contradictory = [
-                decision
-                for decision in decisions
-                if decision.relation is PackageMergeRelation.DIFFERENT_PACKAGE
-                and decision.source_package_id in component
-                and decision.target_package_id in component
-            ]
             component_same = [
                 decision
                 for decision in same_decisions
                 if decision.source_package_id in component
                 and decision.target_package_id in component
+            ]
+            applied_pairs = {
+                frozenset((item.source_package_id, item.target_package_id))
+                for item in component_same
+            }
+            contradictory = [
+                decision
+                for decision in decisions
+                if decision.relation is PackageMergeRelation.DIFFERENT_PACKAGE
+                and frozenset((decision.source_package_id, decision.target_package_id))
+                in applied_pairs
             ]
             decision_ids = [
                 stable_id(
@@ -6720,6 +6787,31 @@ class CrossDocumentEngine:
             merged = compiler.compile(base, list(member_events.values())).model_copy(
                 update={"version": target.version + 1}
             )
+            late_boundary = PackageBoundaryGate(self.registry).evaluate(
+                merged, list(member_events.values())
+            )
+            if late_boundary.severity == "BLOCKING_CONFLICT":
+                self.registry.append_decision_audit(
+                    DecisionAuditRecord(
+                        audit_id=stable_id(
+                            "audit",
+                            {
+                                "run": run_id,
+                                "target": target.package_id,
+                                "type": "n13_late_plan_blocked",
+                            },
+                        ),
+                        run_id=run_id,
+                        decision_type="N13_LATE_MERGE_PLAN_BLOCKED",
+                        subject_id=target.package_id,
+                        payload={
+                            "sources": sorted(package.package_id for package in sources),
+                            "finding": late_boundary.model_dump(mode="json"),
+                            "action": "KEEP_COMPONENTS_SEPARATE",
+                        },
+                    )
+                )
+                continue
             representatives = representative_package_members(list(member_events.values()))
             retrieval_text = package_retrieval_text(merged, representatives)
             embedding = models.embed([retrieval_text], stage="package_merge_embedding_m1")

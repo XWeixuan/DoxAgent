@@ -181,10 +181,7 @@ class EmptyDreamerOnce(FakeStructured):
         self.returned_empty = False
 
     def complete(self, request: StructuredModelRequest) -> StructuredModelResult:
-        if (
-            request.json_schema.get("title") == "DreamerModelOutput"
-            and not self.returned_empty
-        ):
+        if request.json_schema.get("title") == "DreamerModelOutput" and not self.returned_empty:
             self.calls.append(request)
             self.returned_empty = True
             return self._result({"candidates": []})
@@ -279,10 +276,7 @@ class InvalidDreamerEvidence(FakeStructured):
 
     def complete(self, request: StructuredModelRequest) -> StructuredModelResult:
         result = super().complete(request)
-        if (
-            request.json_schema.get("title") != "DreamerModelOutput"
-            or self.returned_invalid
-        ):
+        if request.json_schema.get("title") != "DreamerModelOutput" or self.returned_invalid:
             return result
         self.returned_invalid = True
         candidates = result.payload["candidates"]
@@ -357,10 +351,7 @@ class RepeatedSchemaInvalidJudge(FakeStructured):
 class RecoverableGrounderContractDrift(FakeStructured):
     def complete(self, request: StructuredModelRequest) -> StructuredModelResult:
         payload = json.loads(request.user_prompt)
-        if (
-            request.json_schema.get("title") == "GrounderModelOutput"
-            and "invalid_draft" in payload
-        ):
+        if request.json_schema.get("title") == "GrounderModelOutput" and "invalid_draft" in payload:
             self.calls.append(request)
             repaired = payload["invalid_draft"]
             repaired.pop("illegal_extra", None)
@@ -405,10 +396,7 @@ class ParallelItemRepairGrounder(FakeStructured):
 
     def complete(self, request: StructuredModelRequest) -> StructuredModelResult:
         payload = json.loads(request.user_prompt)
-        if (
-            request.json_schema.get("title") == "GrounderModelOutput"
-            and "invalid_draft" in payload
-        ):
+        if request.json_schema.get("title") == "GrounderModelOutput" and "invalid_draft" in payload:
             self.calls.append(request)
             with self.lock:
                 self.active_repairs += 1
@@ -470,13 +458,11 @@ class OverlappingMissingRecoveryGrounder(FakeStructured):
         result = super().complete(request)
         if (
             request.json_schema.get("title") == "GrounderModelOutput"
-            and "Resolve every supplied missing candidate" in request.system_prompt
+            and "Dispose every supplied missing candidate exactly once" in request.system_prompt
         ):
             payload = json.loads(request.user_prompt)
             candidate_id = payload["candidates"][0]["candidate_id"]
-            result.payload["rejected_candidates"] = [
-                {"id": candidate_id, "code": "BACKGROUND"}
-            ]
+            result.payload["rejected_candidates"] = [{"id": candidate_id, "code": "BACKGROUND"}]
         return result
 
 
@@ -677,9 +663,7 @@ def test_zero_candidate_dreamer_gets_one_narrow_recovery_pass(
 
     assert result.status is ProcessingStatus.SUCCEEDED
     assert len(result.mentions) == 1
-    assert sum(
-        summary.stage == "dreamer_zero_recovery" for summary in result.model_calls
-    ) == 1
+    assert sum(summary.stage == "dreamer_zero_recovery" for summary in result.model_calls) == 1
 
 
 def test_all_grounder_drafts_route_one_batch_m4_judge(
@@ -903,9 +887,7 @@ def test_judge_semantic_repair_failure_degrades_to_grounder_item(
     result = service.process("MSG-1")
     assert result.status is ProcessingStatus.SUCCEEDED
     assert result.mentions[0].predicate.normalized == "raise_guidance"
-    judge_calls = [
-        summary for summary in result.model_calls if summary.stage.startswith("judge")
-    ]
+    judge_calls = [summary for summary in result.model_calls if summary.stage.startswith("judge")]
     assert [summary.status for summary in judge_calls] == ["SUCCEEDED", "SUCCEEDED"]
     assert judge_calls[1].stage == "judge_item_repair"
     assert not judge_calls[1].repaired
@@ -1092,21 +1074,12 @@ def test_invalid_grounder_draft_repairs_only_that_draft_and_preserves_result(
         ).fetchall()
     types = {row[0] for row in rows}
     disposition = next(
-        json.loads(row[1])
-        for row in rows
-        if row[0] == "GROUNDER_CANDIDATE_DISPOSITION"
+        json.loads(row[1]) for row in rows if row[0] == "GROUNDER_CANDIDATE_DISPOSITION"
     )
-    invalid_draft = next(
-        json.loads(row[1])
-        for row in rows
-        if row[0] == "GROUNDER_INVALID_DRAFT"
-    )
+    invalid_draft = next(json.loads(row[1]) for row in rows if row[0] == "GROUNDER_INVALID_DRAFT")
     assert "MODEL_ENUM_NORMALIZATION" in types
     assert invalid_draft["source_candidate_ids"] == ["c1"]
-    assert any(
-        error["code"] == "EXTRA_FIELD"
-        for error in invalid_draft["errors"]
-    )
+    assert any(error["code"] == "EXTRA_FIELD" for error in invalid_draft["errors"])
     assert invalid_draft["next_action"] == "INDIVIDUAL_ITEM_REPAIR"
     assert disposition["candidate_count"] == 1
     assert disposition["used_candidate_count"] == 1
@@ -1131,9 +1104,7 @@ def test_multiple_invalid_grounder_drafts_repair_in_parallel(
     result = service.process("MSG-1")
     assert result.status is ProcessingStatus.SUCCEEDED
     assert grounder.max_active_repairs == 2
-    assert sum(
-        summary.stage == "grounder_item_repair" for summary in result.model_calls
-    ) == 2
+    assert sum(summary.stage == "grounder_item_repair" for summary in result.model_calls) == 2
 
 
 def test_grounder_rejection_ledger_preserves_complete_candidate_disposition(
@@ -1219,9 +1190,7 @@ def test_second_invalid_dreamer_response_degrades_only_that_block(
     bad = service.process("BAD")
     assert bad.status is ProcessingStatus.SUCCEEDED
     assert len(bad.mentions) == 1
-    assert any(
-        summary.stage == "dreamer_zero_recovery" for summary in bad.model_calls
-    )
+    assert any(summary.stage == "dreamer_zero_recovery" for summary in bad.model_calls)
     with sqlite3.connect(registry.path) as connection:
         rows = connection.execute(
             """

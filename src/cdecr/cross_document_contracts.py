@@ -168,6 +168,22 @@ class AtomicDecisionBatch(StrictModel):
         return self
 
 
+class AtomicLatePairDecision(StrictModel):
+    pair_id: NonEmptyString
+    relation: AtomicSemanticRelation
+
+
+class AtomicLateDecisionBatch(StrictModel):
+    decisions: list[AtomicLatePairDecision]
+
+    @model_validator(mode="after")
+    def unique_pairs(self) -> AtomicLateDecisionBatch:
+        pair_ids = [item.pair_id for item in self.decisions]
+        if len(pair_ids) != len(set(pair_ids)):
+            raise ValueError("atomic late decisions must be unique per pair")
+        return self
+
+
 class AtomicAssignmentRecord(StrictModel):
     assignment_id: NonEmptyString
     run_id: NonEmptyString
@@ -447,6 +463,63 @@ class PackageMergeWireDecisionBatch(StrictModel):
         if len(pair_ids) != len(set(pair_ids)):
             raise ValueError("package merge wire decisions must be unique per pair")
         return self
+
+
+class PackageLatePairDecision(StrictModel):
+    pair_id: NonEmptyString
+    relation: Literal["SAME_PARENT", "DIFFERENT_PARENT", "UNCERTAIN"]
+
+
+class PackageLateDecisionBatch(StrictModel):
+    decisions: list[PackageLatePairDecision]
+
+    @model_validator(mode="after")
+    def unique_pairs(self) -> PackageLateDecisionBatch:
+        pair_ids = [item.pair_id for item in self.decisions]
+        if len(pair_ids) != len(set(pair_ids)):
+            raise ValueError("package late decisions must be unique per pair")
+        return self
+
+
+class PackagePairBoundary(StrictModel):
+    shared_artifact_ids: list[NonEmptyString] = Field(default_factory=list)
+    shared_anchor_ids: list[NonEmptyString] = Field(default_factory=list)
+    conflicting_artifact_ids: list[NonEmptyString] = Field(default_factory=list)
+    shared_parent_context: bool = False
+    shared_source_member: bool = False
+    member_identity_support: bool = False
+    time_support: bool = False
+    issuer_conflict: bool = False
+    reaction_boundary: bool = False
+    analyst_boundary: bool = False
+    period_boundary: bool = False
+    session_boundary: bool = False
+    left_member_count: int = Field(ge=0)
+    right_member_count: int = Field(ge=0)
+
+    @property
+    def hard_blocked(self) -> bool:
+        return bool(
+            self.conflicting_artifact_ids
+            or self.issuer_conflict
+            or self.reaction_boundary
+            or self.analyst_boundary
+            or self.period_boundary
+            or self.session_boundary
+        )
+
+    @property
+    def independent_positive_count(self) -> int:
+        return sum(
+            (
+                bool(self.shared_artifact_ids),
+                bool(self.shared_anchor_ids),
+                self.shared_parent_context,
+                self.shared_source_member,
+                self.member_identity_support,
+                self.time_support,
+            )
+        )
 
 
 class PackageMergeDecisionBatch(StrictModel):

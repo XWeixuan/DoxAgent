@@ -108,8 +108,7 @@ def _seed_index_keys(seed: PackageSeed) -> list[str]:
     if seed.anchor_period_id:
         keys.append(f"period:{kind_family}:{seed.anchor_period_id}")
         keys.extend(
-            f"entity-period:{value}:{seed.anchor_period_id}"
-            for value in seed.anchor_entities
+            f"entity-period:{value}:{seed.anchor_period_id}" for value in seed.anchor_entities
         )
     return keys
 
@@ -118,10 +117,12 @@ def _constrained_components(
     event_ids: Sequence[str],
     decisions: dict[str, PackageAssignmentDecision],
     owner_by_package: dict[str, str],
+    *,
+    hard_negative_pairs: set[frozenset[str]] | None = None,
 ) -> list[list[str]]:
     parent = {event_id: event_id for event_id in event_ids}
     members = {event_id: {event_id} for event_id in event_ids}
-    explicit_not: set[frozenset[str]] = set()
+    hard_negative_pairs = hard_negative_pairs or set()
     same_edges: list[tuple[str, str]] = []
 
     def root(value: str) -> str:
@@ -135,18 +136,15 @@ def _constrained_components(
             owner = owner_by_package.get(assessment.candidate_package_id)
             if owner is None or owner == event_id:
                 continue
-            pair = frozenset((event_id, owner))
             if assessment.relation is PackageAssignmentRelation.MEMBER:
                 same_edges.append((event_id, owner))
-            elif assessment.relation is PackageAssignmentRelation.NOT_RELATED:
-                explicit_not.add(pair)
 
     for left, right in sorted(same_edges):
         left_root, right_root = root(left), root(right)
         if left_root == right_root:
             continue
         if any(
-            frozenset((left_member, right_member)) in explicit_not
+            frozenset((left_member, right_member)) in hard_negative_pairs
             for left_member in members[left_root]
             for right_member in members[right_root]
         ):
@@ -310,11 +308,14 @@ def assign_packages_epoch(
                 reason = "N12_WAVE_B_MEMBER"
             else:
                 action = PackageAction.CREATE_NEW_PACKAGE
-                relation = PackageAssignmentRelation.NOT_RELATED
+                unjudgeable = bool(wave_b_candidates.get(event_id) and decision is None)
+                relation = (
+                    PackageAssignmentRelation.UNCERTAIN
+                    if unjudgeable
+                    else PackageAssignmentRelation.NOT_RELATED
+                )
                 reason = (
-                    "N12_UNJUDGEABLE_FAILED_SINGLETON"
-                    if wave_b_candidates.get(event_id) and decision is None
-                    else "N12_WAVE_B_SINGLETON"
+                    "N12_UNJUDGEABLE_FAILED_SINGLETON" if unjudgeable else "N12_WAVE_B_SINGLETON"
                 )
             engine._save_membership(event, package, seeds[event_id].membership_relation)
             assignment_key, seed_hash, links_hash = keys[event_id]

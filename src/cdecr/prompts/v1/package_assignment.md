@@ -27,6 +27,8 @@ For each Atomic Event, evaluate every supplied candidate Package:
 - NOT_RELATED: it belongs to another parent container or matter.
 - UNCERTAIN: combined evidence is insufficient or materially ambiguous.
 
+Judge shared parent membership, not Atomic equality. Different child facts may be MEMBER when evidence anchors them to the same bounded parent occurrence; choose NOT_RELATED only for a material parent-boundary conflict. Missing parent detail or a Package-family mismatch alone is not such a conflict.
+
 For MEMBER, membership_relation is directed from the Atomic Event to the
 Package: DISCLOSED_IN means disclosed by that container; COMPONENT_OF means a
 constituent part; STAGE_OF means a lifecycle stage; UPDATE_OF, CORRECTION_OF,
