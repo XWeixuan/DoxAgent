@@ -14,7 +14,11 @@ class DoxAgentSettings(BaseSettings):
     external services unless explicitly configured.
     """
 
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore", populate_by_name=True)
+    model_config = SettingsConfigDict(
+        env_file=(".env", ".env.providers.local"),
+        extra="ignore",
+        populate_by_name=True,
+    )
 
     storage_mode: Literal["memory", "postgres"] = Field(
         default="memory",
@@ -118,6 +122,19 @@ class DoxAgentSettings(BaseSettings):
     bls_base_url: str = Field(default="https://api.bls.gov", validation_alias="BLS_BASE_URL")
     bea_api_key: str | None = Field(default=None, validation_alias="BEA_API_KEY")
     bea_base_url: str = Field(default="https://apps.bea.gov", validation_alias="BEA_BASE_URL")
+    data_gov_api_key: str | None = Field(default=None, validation_alias="DATA_GOV_API_KEY")
+    census_api_key: str | None = Field(default=None, validation_alias="CENSUS_API_KEY")
+    census_m3_base_url: str = Field(
+        default="https://api.census.gov", validation_alias="CENSUS_M3_BASE_URL"
+    )
+    eia_api_key: str | None = Field(default=None, validation_alias="EIA_API_KEY")
+    eia_base_url: str = Field(default="https://api.eia.gov/v2", validation_alias="EIA_BASE_URL")
+    sam_api_key: str | None = Field(default=None, validation_alias="SAM_GOV_API_KEY")
+    regulations_api_key: str | None = Field(
+        default=None, validation_alias="DATA_GOV_API_KEY"
+    )
+    congress_api_key: str | None = Field(default=None, validation_alias="DATA_GOV_API_KEY")
+    openfda_api_key: str | None = Field(default=None, validation_alias="DATA_GOV_API_KEY")
     macro_cache_ttl_seconds: int = Field(default=86_400, validation_alias="MACRO_CACHE_TTL_SECONDS")
 
     fed_fomc_calendar_url: str = Field(
@@ -196,9 +213,22 @@ class DoxAgentSettings(BaseSettings):
         validation_alias="DOXAGENT_MONITORING_AUTO_MEDIA_ENRICHMENT_CONCURRENCY",
     )
     benzinga_api_key: str | None = Field(default=None, validation_alias="BENZINGA_API_KEY")
+    benzinga_base_url: str = Field(
+        default="https://api.benzinga.com", validation_alias="BENZINGA_BASE_URL"
+    )
+    benzinga_cache_ttl_seconds: int = Field(
+        default=900, validation_alias="BENZINGA_CACHE_TTL_SECONDS"
+    )
     benzinga_news_base_url: str = Field(
         default="https://api.benzinga.com",
         validation_alias="BENZINGA_NEWS_BASE_URL",
+    )
+    ibkr_api_key: str | None = Field(default=None, validation_alias="IBKR_API_KEY")
+    ibkr_base_url: str = Field(
+        default="https://api.ibkr.com/v1/api", validation_alias="IBKR_BASE_URL"
+    )
+    ibkr_cache_ttl_seconds: int = Field(
+        default=15, validation_alias="IBKR_CACHE_TTL_SECONDS"
     )
     stocktwits_rapidapi_key: str | None = Field(
         default=None,

@@ -513,7 +513,9 @@ class PackagePairBoundary(StrictModel):
             or self.market_measure_conflict
         )
 
-    def compact_signals(self) -> dict[str, list[str]]:
+    def compact_signals(
+        self, *, include_object_scope: bool = True
+    ) -> dict[str, list[str]]:
         """Return only positive pair-boundary signals for model payloads."""
 
         same: list[str] = []
@@ -537,7 +539,7 @@ class PackagePairBoundary(StrictModel):
             (self.session_boundary, "market_session"),
             (self.instrument_conflict, "instrument"),
             (self.market_measure_conflict, "market_measure"),
-            (self.object_scope_difference, "object_scope"),
+            (self.object_scope_difference and include_object_scope, "object_scope"),
         ):
             if conflict:
                 different.append(label)

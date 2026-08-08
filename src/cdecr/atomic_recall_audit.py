@@ -32,6 +32,7 @@ def append_ranked_candidate_snapshot(
     raw_embedding_similarities: dict[str, float],
     observed_conflicts: dict[str, list[str]],
     selected_top_k: int,
+    audit_sink: Callable[[DecisionAuditRecord], object] | None = None,
 ) -> None:
     """Persist the complete legacy pool before Top-K truncation without changing ranking."""
 
@@ -40,7 +41,9 @@ def append_ranked_candidate_snapshot(
         event_id = candidate.event.event_id
         candidates.append(
             {
-                "candidate_root_id": candidate_root_id(registry, event_id),
+                "candidate_root_id": (
+                    candidate.candidate_root_id or candidate_root_id(registry, event_id)
+                ),
                 "original_candidate_event_id": event_id,
                 "rank": rank,
                 "rank_band": None,
@@ -56,7 +59,7 @@ def append_ranked_candidate_snapshot(
                 "selected": rank <= selected_top_k,
             }
         )
-    registry.append_decision_audit(
+    (audit_sink or registry.append_decision_audit)(
         DecisionAuditRecord(
             audit_id=f"n7-ranked-candidates:{run_id}:{mention_id}",
             run_id=run_id,

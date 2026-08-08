@@ -8,6 +8,7 @@ from collections.abc import Sequence
 from datetime import date, datetime
 from typing import Literal
 
+from cdecr.bulk_epoch.stage_runtime import StageReadSnapshot
 from cdecr.contracts import (
     AnalystActionProjection,
     AtomicEvent,
@@ -194,8 +195,20 @@ class PackageProfileCompiler:
     def __init__(self, registry: CDECRRegistry | None = None) -> None:
         self.registry = registry
 
-    def compile_singleton(self, event: AtomicEvent, seed: PackageSeed) -> EventPackage:
-        return self.compile(singleton_package(event, seed), [event], seed=seed, force_version=1)
+    def compile_singleton(
+        self,
+        event: AtomicEvent,
+        seed: PackageSeed,
+        *,
+        read_snapshot: StageReadSnapshot | None = None,
+    ) -> EventPackage:
+        return self.compile(
+            singleton_package(event, seed),
+            [event],
+            seed=seed,
+            force_version=1,
+            read_snapshot=read_snapshot,
+        )
 
     def compile(
         self,
@@ -204,6 +217,7 @@ class PackageProfileCompiler:
         *,
         seed: PackageSeed | None = None,
         force_version: int | None = None,
+        read_snapshot: StageReadSnapshot | None = None,
     ) -> EventPackage:
         if not member_events:
             raise ValueError("Package profile requires at least one active member")
@@ -227,14 +241,27 @@ class PackageProfileCompiler:
                 update={"start": event.time.event_start, "end": event.time.event_end}
             )
             time_range = merge_package_ranges(time_range, event_range)
-            if self.registry is not None:
+            if self.registry is not None or read_snapshot is not None:
                 event_periods: set[str] = set()
                 for mention_id in event.mention_ids:
-                    mention = self.registry.get_mention(mention_id)
+                    mention = (
+                        read_snapshot.mentions_by_id.get(mention_id)
+                        if read_snapshot is not None
+                        else self.registry.get_mention(mention_id)  # type: ignore[union-attr]
+                    )
                     if mention is None:
                         continue
-                    for link in self.registry.list_field_links_for_mention(mention_id):
-                        entry = self.registry.resolve_field_registry_entry(link.registry_id)
+                    links = (
+                        read_snapshot.field_links_by_mention.get(mention_id, ())
+                        if read_snapshot is not None
+                        else self.registry.list_field_links_for_mention(mention_id)  # type: ignore[union-attr]
+                    )
+                    for link in links:
+                        entry = (
+                            read_snapshot.field_entries_by_id.get(link.registry_id)
+                            if read_snapshot is not None
+                            else self.registry.resolve_field_registry_entry(link.registry_id)  # type: ignore[union-attr]
+                        )
                         if entry is None:
                             continue
                         if entry.namespace in PARTICIPANT_FIELD_NAMESPACES:
@@ -264,7 +291,16 @@ class PackageProfileCompiler:
         anchor_identity_groups: dict[str, list[str]] = {}
         for anchor_id in sorted(anchor_ids):
             entry = (
-                self.registry.resolve_field_registry_entry(anchor_id)
+                next(
+                        (
+                            entry
+                            for entry in read_snapshot.field_entries_by_id.values()
+                            if entry.id == anchor_id
+                        ),
+                        None,
+                    )
+                    if read_snapshot is not None
+                    else self.registry.resolve_field_registry_entry(anchor_id)
                 if self.registry is not None
                 else None
             )

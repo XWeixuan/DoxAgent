@@ -221,6 +221,10 @@ class CDECRRegistry(Protocol):
         error_code: str | None = None,
     ) -> None: ...
 
+    def upsert_bulk_epoch_tasks(
+        self, records: Sequence[dict[str, Any]], *, chunk_size: int = 512
+    ) -> dict[str, int]: ...
+
     def list_bulk_epoch_tasks(
         self, epoch_id: str, *, stage: str | None = None
     ) -> list[dict[str, Any]]: ...
@@ -403,6 +407,10 @@ class CDECRRegistry(Protocol):
         embedding_id: str | None = None,
     ) -> bool: ...
 
+    def save_embeddings(
+        self, records: Sequence[dict[str, Any]], *, chunk_size: int = 256
+    ) -> int: ...
+
     def list_latest_embeddings(
         self, *, owner_kind: str, model: str, limit: int = 10000
     ) -> list[Any]: ...
@@ -438,6 +446,16 @@ class CDECRRegistry(Protocol):
     def get_field_link(self, mention_id: str, field_path: str) -> CanonicalFieldLink | None: ...
 
     def list_field_links_for_mention(self, mention_id: str) -> list[CanonicalFieldLink]: ...
+
+    def list_all_field_links(self, *, limit: int = 1000000) -> list[CanonicalFieldLink]: ...
+
+    def get_field_links_for_mentions(
+        self, mention_ids: Sequence[str]
+    ) -> dict[str, list[CanonicalFieldLink]]: ...
+
+    def list_packages_for_events(
+        self, event_ids: Sequence[str]
+    ) -> dict[str, list[str]]: ...
 
     def start_cross_document_run(
         self,
@@ -541,6 +559,18 @@ class CDECRRegistry(Protocol):
     ) -> bool: ...
 
     def append_decision_audit(self, record: DecisionAuditRecord) -> bool: ...
+
+    def append_decision_audits(
+        self, records: Sequence[DecisionAuditRecord], *, chunk_size: int = 512
+    ) -> dict[str, int]: ...
+
+    def save_atomic_stage_batch(
+        self, records: Sequence[dict[str, Any]], *, chunk_size: int = 64
+    ) -> dict[str, int]: ...
+
+    def save_package_stage_batch(
+        self, records: Sequence[dict[str, Any]], *, chunk_size: int = 64
+    ) -> dict[str, int]: ...
 
     def rebuild_derived_state(self) -> dict[str, int]: ...
 

@@ -39,7 +39,7 @@ class MissedGold(StrictModel):
         "JUDGE_REJECTED_OR_MERGED",
         "OUTPUT_PARTIAL",
         "UNKNOWN",
-    ]
+    ] = "UNKNOWN"
 
 
 class DocumentEvaluation(StrictModel):
@@ -275,7 +275,7 @@ def main() -> int:
         )
         return payload
 
-    with ThreadPoolExecutor(max_workers=max(1, min(args.workers, 4))) as executor:
+    with ThreadPoolExecutor(max_workers=max(1, min(args.workers, 48))) as executor:
         documents = list(executor.map(evaluate, gold_documents))
     strict_tp = sum(
         item["verdict"] == "STRICT_TP"

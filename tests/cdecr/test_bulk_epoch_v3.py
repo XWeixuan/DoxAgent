@@ -154,6 +154,43 @@ def test_async_executor_failure_does_not_cancel_other_requests() -> None:
         hub.close()
 
 
+def test_async_executor_enforces_shared_provider_hard_limit() -> None:
+    delegate = FakeStructured()
+    async_client = AsyncFakeStructured(delegate, delay=0.03)
+    hub = AsyncModelExecutor(
+        clients={
+            ModelTier.M2: async_client,
+            ModelTier.M3: async_client,
+            ModelTier.M4: async_client,
+        },
+        tier_limits={ModelTier.M2: 24, ModelTier.M3: 24, ModelTier.M4: 24},
+        stage_limits={"atomic_coreference": 24},
+        repair_limit=4,
+        rates={
+            ModelTier.M2: (1000.0, 24),
+            ModelTier.M3: (1000.0, 24),
+            ModelTier.M4: (1000.0, 24),
+        },
+        provider_target=8,
+        provider_hard_limit=10,
+        provider_start_rate=1000,
+        provider_initial_burst=64,
+    )
+    request = StructuredModelRequest(
+        system_prompt="Return JSON.",
+        user_prompt="{}",
+        json_schema={"type": "object"},
+        metadata={"stage": "atomic_coreference", "priority": "normal"},
+    )
+    try:
+        with ThreadPoolExecutor(max_workers=24) as pool:
+            results = list(pool.map(lambda _: hub.complete(ModelTier.M3, request), range(24)))
+        assert len(results) == 24
+        assert hub.provider_snapshot().max_active == 10
+    finally:
+        hub.close()
+
+
 def test_bulk_writer_serializes_concurrent_commits() -> None:
     actor_threads: list[int] = []
 
@@ -165,6 +202,31 @@ def test_bulk_writer_serializes_concurrent_commits() -> None:
         results = list(pool.map(lambda value: writer.run(lambda: commit(value)), range(20)))
     assert sorted(results) == list(range(20))
     assert len(set(actor_threads)) == 1
+
+
+def test_bulk_writer_has_bounded_queue_and_single_writer_telemetry() -> None:
+    release = threading.Event()
+
+    def commit(value: int) -> int:
+        release.wait(timeout=2)
+        return value
+
+    with BulkWriter(low_watermark=1, high_watermark=2, hard_limit=4) as writer:
+        with ThreadPoolExecutor(max_workers=4) as pool:
+            futures = [
+                pool.submit(writer.run, lambda value=value: commit(value)) for value in range(4)
+            ]
+            deadline = perf_counter() + 1
+            while writer.snapshot().max_queued < 2 and perf_counter() < deadline:
+                threading.Event().wait(0.005)
+            snapshot = writer.snapshot()
+            assert snapshot.active_writers == 1
+            assert snapshot.max_queued >= 2
+            assert snapshot.high_watermark_hits >= 1
+            release.set()
+            assert sorted(future.result() for future in futures) == list(range(4))
+    assert writer.snapshot().active_writers == 0
+    assert writer.snapshot().completed == 4
 
 
 def test_registry_serializes_process_local_transactions(tmp_path: Path) -> None:
@@ -312,6 +374,10 @@ def test_bulk_epoch_v3_is_only_bulk_path_and_reuses_finalized_epoch(
     assert epochs is not None
     assert epochs["status"] == "FINALIZED"
     assert epochs["orchestrator_version"] == BULK_STAGE_GRAPH_VERSION
+    assert epochs["result"]["package_stage"]["n13_pair_local_applied_count"] == 0
+    assert epochs["result"]["async_executor"]["provider"]["target"] == 100
+    assert epochs["result"]["async_executor"]["provider"]["hard_limit"] == 160
+    assert all(item["active_writers"] == 0 for item in epochs["result"]["bulk_writer"])
     for kind in (
         "manifest_v1",
         "field_plan_v1",
@@ -329,6 +395,11 @@ def test_bulk_epoch_v3_is_only_bulk_path_and_reuses_finalized_epoch(
         "final_package_partition_v1",
     ):
         assert registry.get_bulk_epoch_artifact(str(epochs["epoch_id"]), kind) is not None
+    n13_apply_plan = registry.get_bulk_epoch_artifact(
+        str(epochs["epoch_id"]), "n13_late_apply_plan_v1"
+    )
+    assert n13_apply_plan is not None
+    assert n13_apply_plan["payload"]["pair_local"] is False
     tasks = registry.list_bulk_epoch_tasks(str(epochs["epoch_id"]))
     assert tasks
     assert {str(item["status"]) for item in tasks}.issubset({"SUCCEEDED", "FAILED"})
@@ -341,13 +412,29 @@ def test_stage_graph_capacity_defaults_are_fixed() -> None:
         settings.scheduler_m2_concurrency,
         settings.scheduler_m3_concurrency,
         settings.scheduler_m4_concurrency,
-    ) == (32, 48, 48, 16)
-    assert settings.document_concurrency == 24
+    ) == (64, 128, 160, 96)
+    assert settings.structured_provider_target_concurrency == 100
+    assert settings.structured_provider_hard_concurrency == 160
+    assert settings.document_workers == 120
+    assert settings.document_block_concurrency == 24
+    assert settings.dreamer_active_requests == 100
+    assert settings.grounder_active_requests == 100
+    assert settings.judge_active_requests == 64
+    assert settings.field_active_requests == 100
+    assert settings.n9_active_requests == 72
+    assert settings.n9_escalation_active_requests == 32
+    assert settings.n9_late_active_requests == 24
+    assert settings.n12_active_requests == 48
+    assert settings.package_wave_c_active_requests == 32
+    assert settings.n13_active_requests == 96
+    assert settings.n13_planner_version == "indexed_v2"
+    assert settings.item_repair_active_requests == 16
     assert settings.structured_request_start_interval_seconds == 0.0
     assert settings.atomic_late_task_cap == 48
     assert settings.package_wave_c_pair_cap == 64
     assert settings.late_max_spoke_members == 4
     assert settings.late_max_spokes_per_hub == 4
+    assert not settings.n13_pair_local_apply
 
 
 def test_wave_c_source_has_no_full_pair_scan() -> None:
@@ -397,6 +484,10 @@ def test_package_pair_boundary_compact_protocol_and_hard_scope() -> None:
     assert boundary.compact_signals() == {
         "same": ["artifact", "source"],
         "diff": ["instrument", "object_scope"],
+    }
+    assert boundary.compact_signals(include_object_scope=False) == {
+        "same": ["artifact", "source"],
+        "diff": ["instrument"],
     }
     object_only = boundary.model_copy(
         update={
@@ -510,20 +601,29 @@ def test_same_earnings_artifact_different_child_scope_is_not_blocked(
 
 def test_wave_c_uses_unique_dictionary_cards_and_shared_boundary() -> None:
     root = Path(__file__).parents[2]
-    source = (root / "src" / "cdecr" / "bulk_epoch" / "late_stage.py").read_text(
-        encoding="utf-8"
-    )
+    source = (root / "src" / "cdecr" / "bulk_epoch" / "late_stage.py").read_text(encoding="utf-8")
     assert '"l": short_by_full[left.package_id]' in source
     assert '"r": short_by_full[right.package_id]' in source
     assert 'pair["boundary"] = compact_boundary' in source
+    assert "boundary.compact_signals(include_object_scope=False)" in source
     assert 'f"p{index}l"' not in source
 
 
-def test_n13_pair_local_apply_is_not_disabled_by_late_wall_admission() -> None:
+def test_wave_c_restores_shared_anchor_m0_and_parent_membership_prompt() -> None:
     root = Path(__file__).parents[2]
-    source = (root / "src" / "cdecr" / "bulk_epoch" / "engine.py").read_text(
-        encoding="utf-8"
-    )
+    source = (root / "src" / "cdecr" / "bulk_epoch" / "late_stage.py").read_text(encoding="utf-8")
+    assert "if boundary.shared_artifact_ids or boundary.shared_anchor_ids:" in source
+    assert "shared_clean_anchor" not in source
+    assert "Judge shared parent membership, not Atomic equality." in source
+    assert "shared topic, source, or entity alone is insufficient." in source
+
+
+def test_n13_pair_local_apply_defaults_off_without_late_wall_admission_control() -> None:
+    root = Path(__file__).parents[2]
+    source = (root / "src" / "cdecr" / "bulk_epoch" / "engine.py").read_text(encoding="utf-8")
+    settings = CDECRSettings(_env_file=None)
+    assert not settings.n13_pair_local_apply
+    assert "n13_pair_local_apply: bool = False" in source
     assert "self.core.n13_pair_local_apply = self.n13_pair_local_apply" in source
     assert 'self.n13_pair_local_apply and n13_budget["admitted"]' not in source
 

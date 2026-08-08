@@ -529,7 +529,7 @@ class DeepSeekStructuredModelClient:
         api_key: str,
         base_url: str,
         model: str = "deepseek-v4-flash",
-        reasoning_effort: Literal["low", "high", "max"],
+        reasoning_effort: Literal["none", "low", "high", "max"],
         strict: bool = True,
         timeout_seconds: float = 600.0,
         client: OpenAI | None = None,
@@ -558,6 +558,14 @@ class DeepSeekStructuredModelClient:
             )
         )
 
+    def _thinking_kwargs(self) -> dict[str, Any]:
+        if self.reasoning_effort == "none":
+            return {"extra_body": {"thinking": {"type": "disabled"}}}
+        return {
+            "reasoning_effort": self.reasoning_effort,
+            "extra_body": {"thinking": {"type": "enabled"}},
+        }
+
     async def acomplete(self, request: StructuredModelRequest) -> StructuredModelResult:
         """Use one shared native async transport for bulk stage requests."""
 
@@ -577,8 +585,7 @@ class DeepSeekStructuredModelClient:
         kwargs: dict[str, Any] = {
             "model": self.model,
             "messages": messages,
-            "reasoning_effort": self.reasoning_effort,
-            "extra_body": {"thinking": {"type": "enabled"}},
+            **self._thinking_kwargs(),
         }
         if self.strict:
             kwargs["tools"] = [
@@ -658,8 +665,7 @@ class DeepSeekStructuredModelClient:
         kwargs: dict[str, Any] = {
             "model": self.model,
             "messages": messages,
-            "reasoning_effort": self.reasoning_effort,
-            "extra_body": {"thinking": {"type": "enabled"}},
+            **self._thinking_kwargs(),
         }
         if self.strict:
             kwargs.update(

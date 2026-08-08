@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Sequence
+from collections import deque
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from threading import Condition, Lock, local
 from time import monotonic, perf_counter, sleep
@@ -38,6 +39,16 @@ class LaneSnapshot:
     total_queue_wait_ms: int
 
 
+@dataclass(frozen=True)
+class ProviderSnapshot:
+    target: int
+    hard_limit: int
+    active: int
+    max_active: int
+    completed: int
+    pressure_events: int
+
+
 class RequestStartGate:
     """Smooth structured-request starts without serializing in-flight work."""
 
@@ -70,6 +81,81 @@ class RequestStartGate:
     def recover(self) -> None:
         with self._lock:
             self._interval_seconds = self.base_interval_seconds
+
+
+class StructuredProviderGate:
+    """Work-conserving provider guard with a soft target and a separate safety ceiling."""
+
+    def __init__(
+        self,
+        *,
+        target: int,
+        hard_limit: int,
+        start_rate: float,
+        burst: int,
+    ) -> None:
+        if target < 1 or hard_limit < target:
+            raise ValueError("provider concurrency must satisfy 1 <= target <= hard_limit")
+        self.target = target
+        self.hard_limit = hard_limit
+        self._condition = Condition(Lock())
+        self._active = 0
+        self._max_active = 0
+        self._completed = 0
+        self._pressure_events = 0
+        self._start_rate = max(1.0, start_rate)
+        self._burst = max(1, burst)
+        self._tokens = float(self._burst)
+        self._tokens_updated_at = monotonic()
+        self._start_lock = Lock()
+        self._sequence = 0
+
+    def _wait_for_start(self) -> None:
+        while True:
+            with self._start_lock:
+                now = monotonic()
+                elapsed = max(0.0, now - self._tokens_updated_at)
+                self._tokens = min(self._burst, self._tokens + elapsed * self._start_rate)
+                self._tokens_updated_at = now
+                if self._tokens >= 1.0:
+                    self._tokens -= 1.0
+                    self._sequence += 1
+                    jitter = 0.01 + (self._sequence % 3) * 0.01
+                    break
+                delay = (1.0 - self._tokens) / self._start_rate
+            sleep(delay)
+        sleep(jitter)
+
+    def run(self, operation: Callable[[], _T]) -> _T:
+        self._wait_for_start()
+        with self._condition:
+            while self._active >= self.hard_limit:
+                self._condition.wait()
+            self._active += 1
+            self._max_active = max(self._max_active, self._active)
+        try:
+            return operation()
+        except Exception as exc:
+            if _is_provider_pressure(exc):
+                with self._condition:
+                    self._pressure_events += 1
+            raise
+        finally:
+            with self._condition:
+                self._active -= 1
+                self._completed += 1
+                self._condition.notify_all()
+
+    def snapshot(self) -> ProviderSnapshot:
+        with self._condition:
+            return ProviderSnapshot(
+                target=self.target,
+                hard_limit=self.hard_limit,
+                active=self._active,
+                max_active=self._max_active,
+                completed=self._completed,
+                pressure_events=self._pressure_events,
+            )
 
 
 class ConcurrencyLane:
@@ -132,9 +218,9 @@ class ConcurrencyLane:
                 total_queue_wait_ms=self._total_queue_wait_ms,
             )
 
-    def reduce_limit(self) -> None:
+    def reduce_limit(self, factor: float = 0.5) -> None:
         with self._condition:
-            self._dynamic_limit = max(1, self._dynamic_limit // 2)
+            self._dynamic_limit = max(1, int(self._dynamic_limit * factor))
 
     def increase_limit(self, amount: int = 2) -> None:
         with self._condition:
@@ -153,6 +239,12 @@ class CDECRScheduler:
         m3_limit: int = 3,
         m4_limit: int = 2,
         structured_start_interval_seconds: float = 0.0,
+        structured_provider_target: int = 100,
+        structured_provider_hard_limit: int = 160,
+        structured_provider_start_rate: float = 50.0,
+        structured_provider_initial_burst: int = 80,
+        stage_limits: Mapping[str, int] | None = None,
+        repair_limit: int = 16,
     ) -> None:
         self._lanes = {
             ModelTier.M1: ConcurrencyLane(ModelTier.M1.value, m1_limit),
@@ -163,35 +255,90 @@ class CDECRScheduler:
         self._structured_start_gate = RequestStartGate(
             structured_start_interval_seconds
         )
+        self._provider_gate = StructuredProviderGate(
+            target=structured_provider_target,
+            hard_limit=structured_provider_hard_limit,
+            start_rate=structured_provider_start_rate,
+            burst=structured_provider_initial_burst,
+        )
+        self._stage_lanes = {
+            stage: ConcurrencyLane(stage, limit)
+            for stage, limit in (stage_limits or {}).items()
+        }
+        self._repair_lane = ConcurrencyLane("structured_repair", repair_limit)
         self._success_lock = Lock()
         self._structured_successes = 0
+        self._tier_outcomes: dict[ModelTier, deque[bool]] = {
+            tier: deque(maxlen=100) for tier in ModelTier if tier is not ModelTier.M1
+        }
 
     def run(
-        self, tier: ModelTier, operation: Callable[[], _T]
+        self,
+        tier: ModelTier,
+        operation: Callable[[], _T],
+        *,
+        stage: str | None = None,
+        priority: str = "normal",
     ) -> tuple[_T, ScheduledCallMetrics]:
         structured = tier is not ModelTier.M1
         if structured:
             self._structured_start_gate.wait()
         try:
-            result = self._lanes[tier].run(operation)
+            wrapped = operation
+            if structured:
+                def provider_operation() -> _T:
+                    return self._provider_gate.run(operation)
+
+                wrapped = provider_operation
+                stage_lane = self._stage_lanes.get(stage or "")
+                if stage_lane is not None:
+                    previous = wrapped
+
+                    def stage_operation(
+                        previous_operation: Callable[[], _T] = previous,
+                    ) -> _T:
+                        assert stage_lane is not None
+                        return stage_lane.run(previous_operation)[0]
+
+                    wrapped = stage_operation
+                if priority == "repair":
+                    previous = wrapped
+
+                    def repair_operation(
+                        previous_operation: Callable[[], _T] = previous,
+                    ) -> _T:
+                        return self._repair_lane.run(previous_operation)[0]
+
+                    wrapped = repair_operation
+            result = self._lanes[tier].run(wrapped)
         except Exception as exc:
             if structured and _is_provider_pressure(exc):
                 self._structured_start_gate.backoff()
-                self._lanes[tier].reduce_limit()
+                outcomes = self._tier_outcomes.get(tier)
+                assert outcomes is not None
+                outcomes.append(False)
+                pressure_rate = 1.0 - (sum(outcomes) / len(outcomes))
+                self._lanes[tier].reduce_limit(0.6 if pressure_rate > 0.03 else 0.8)
                 with self._success_lock:
                     self._structured_successes = 0
             raise
         if structured:
+            outcomes = self._tier_outcomes.get(tier)
+            assert outcomes is not None
+            outcomes.append(True)
             with self._success_lock:
                 self._structured_successes += 1
-                if self._structured_successes >= 30:
+                if self._structured_successes >= 100:
                     self._structured_successes = 0
                     self._structured_start_gate.recover()
-                    self._lanes[tier].increase_limit(2)
+                    self._lanes[tier].increase_limit(8)
         return result
 
     def snapshot(self) -> dict[str, LaneSnapshot]:
         return {tier.value: lane.snapshot() for tier, lane in self._lanes.items()}
+
+    def provider_snapshot(self) -> ProviderSnapshot:
+        return self._provider_gate.snapshot()
 
     def take_last_call_metrics(self, tier: ModelTier) -> ScheduledCallMetrics | None:
         return self._lanes[tier].take_last_call_metrics()
@@ -256,9 +403,14 @@ class ScheduledStructuredModelClient(_ScheduledClient):
         self.model = getattr(client, "model", "structured-model")
 
     def complete(self, request: StructuredModelRequest) -> StructuredModelResult:
+        stage = str(request.metadata.get("stage", "unspecified"))
+        priority = str(request.metadata.get("priority", "normal"))
         try:
             result, metrics = self.scheduler.run(
-                self.tier, lambda: self.client.complete(request)
+                self.tier,
+                lambda: self.client.complete(request),
+                stage=stage,
+                priority=priority,
             )
         except Exception:
             failure_metrics = _take_lane_failure_metrics(

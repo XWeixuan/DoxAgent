@@ -71,6 +71,8 @@ class CanonicalResolutionSummary:
     unresolved_count: int
     group_count: int
     field_links_hash: str
+    failed_group_count: int = 0
+    skipped_group_count: int = 0
 
 
 def is_safe_deterministic_match(
@@ -407,6 +409,36 @@ class CanonicalFieldResolutionEngine:
         run_id: str | None,
         max_workers: int,
         task_hook: Callable[[str, str, str | None], None] | None = None,
+        completed_task_ids: set[str] | None = None,
+    ) -> CanonicalResolutionSummary:
+        if not documents:
+            return self._resolve_epoch_snapshot(
+                documents,
+                run_id=run_id,
+                max_workers=max_workers,
+                task_hook=task_hook,
+                completed_task_ids=completed_task_ids,
+            )
+        self.field_resolver.begin_epoch_snapshot()
+        try:
+            return self._resolve_epoch_snapshot(
+                documents,
+                run_id=run_id,
+                max_workers=max_workers,
+                task_hook=task_hook,
+                completed_task_ids=completed_task_ids,
+            )
+        finally:
+            self.field_resolver.end_epoch_snapshot()
+
+    def _resolve_epoch_snapshot(
+        self,
+        documents: list[tuple[SourceMessage, list[EventMention]]],
+        *,
+        run_id: str | None,
+        max_workers: int,
+        task_hook: Callable[[str, str, str | None], None] | None = None,
+        completed_task_ids: set[str] | None = None,
     ) -> CanonicalResolutionSummary:
         """Resolve one immutable epoch inventory with semantic-key fan-out.
 
@@ -441,8 +473,14 @@ class CanonicalFieldResolutionEngine:
             sorted(values, key=lambda item: (item.mention_id, item.field_path))
             for _, values in sorted(grouped.items())
         ]
+        completed = completed_task_ids or set()
+        pending_groups = [
+            group
+            for group in ordered_groups
+            if self._epoch_field_task_key(group[0]) not in completed
+        ]
 
-        def resolve_group(group: list[FieldOccurrence]) -> tuple[int, int, int]:
+        def resolve_group(group: list[FieldOccurrence]) -> tuple[int, int, int, bool]:
             task_id = self._epoch_field_task_key(group[0])
             if task_hook is not None:
                 task_hook(task_id, "RUNNING", None)
@@ -457,24 +495,28 @@ class CanonicalFieldResolutionEngine:
                         "FAILED",
                         str(getattr(exc, "code", type(exc).__name__)),
                     )
-                raise
+                return 0, 0, 0, True
             if task_hook is not None:
                 task_hook(task_id, "SUCCEEDED", None)
-            return result
+            return result[0], result[1], result[2], False
 
         totals = [0, 0, 0]
-        with ThreadPoolExecutor(max_workers=min(max_workers, max(1, len(ordered_groups)))) as pool:
-            futures = [pool.submit(resolve_group, group) for group in ordered_groups]
+        failed_group_count = 0
+        with ThreadPoolExecutor(max_workers=min(max_workers, max(1, len(pending_groups)))) as pool:
+            futures = [pool.submit(resolve_group, group) for group in pending_groups]
             for future in as_completed(futures):
                 result = future.result()
-                for index, value in enumerate(result):
+                failed_group_count += int(result[3])
+                for index, value in enumerate(result[:3]):
                     totals[index] += value
         return CanonicalResolutionSummary(
             catalog_hash=self.knowledge_base.catalog_hash,
             resolved_count=totals[0],
             unresolved_count=totals[1],
-            group_count=totals[2],
+            group_count=len(ordered_groups),
             field_links_hash=field_links_hash(self.registry, all_mentions),
+            failed_group_count=failed_group_count,
+            skipped_group_count=len(ordered_groups) - len(pending_groups),
         )
 
     @staticmethod
@@ -1407,22 +1449,29 @@ class CanonicalFieldResolutionEngine:
 
 def field_links_hash(registry: CDECRRegistry, mentions: list[EventMention]) -> str:
     payload: list[dict[str, str | None]] = []
-    for mention in sorted(mentions, key=lambda item: item.mention_id):
-        for link in registry.list_field_links_for_mention(mention.mention_id):
-            if link.field_path.startswith("local_package_hint."):
-                continue
-            entry = registry.resolve_field_registry_entry(link.registry_id)
-            if entry is None:
-                continue
-            payload.append(
-                {
-                    "mention_id": mention.mention_id,
-                    "field_path": link.field_path,
-                    "registry_id": entry.id,
-                    "external_id": entry.external_id,
-                    "method": link.method.value,
-                }
-            )
+    mention_ids = {mention.mention_id for mention in mentions}
+    links = [
+        link
+        for link in registry.list_all_field_links(limit=2000000)
+        if link.mention_id in mention_ids and not link.field_path.startswith("local_package_hint.")
+    ]
+    roots = {
+        registry_id: registry.resolve_field_registry_entry(registry_id)
+        for registry_id in {link.registry_id for link in links}
+    }
+    for link in sorted(links, key=lambda item: (item.mention_id, item.field_path)):
+        entry = roots[link.registry_id]
+        if entry is None:
+            continue
+        payload.append(
+            {
+                "mention_id": link.mention_id,
+                "field_path": link.field_path,
+                "registry_id": entry.id,
+                "external_id": entry.external_id,
+                "method": link.method.value,
+            }
+        )
     encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
 

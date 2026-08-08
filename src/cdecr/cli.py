@@ -213,6 +213,22 @@ def _scheduler(settings: CDECRSettings) -> CDECRScheduler:
         m3_limit=settings.scheduler_m3_concurrency,
         m4_limit=settings.scheduler_m4_concurrency,
         structured_start_interval_seconds=(settings.structured_request_start_interval_seconds),
+        structured_provider_target=settings.structured_provider_target_concurrency,
+        structured_provider_hard_limit=settings.structured_provider_hard_concurrency,
+        structured_provider_start_rate=settings.structured_provider_start_rate,
+        structured_provider_initial_burst=settings.structured_provider_initial_burst,
+        stage_limits={
+            "dreamer": settings.dreamer_active_requests,
+            "dreamer_zero_recovery": settings.dreamer_active_requests,
+            "grounder": settings.grounder_active_requests,
+            "grounder_item_repair": settings.item_repair_active_requests,
+            "grounder_missing_recovery": settings.item_repair_active_requests,
+            "grounder_missing_item_recovery": settings.item_repair_active_requests,
+            "judge": settings.judge_active_requests,
+            "judge_coverage_recovery": settings.item_repair_active_requests,
+            "judge_item_repair": settings.item_repair_active_requests,
+        },
+        repair_limit=settings.item_repair_active_requests,
     )
 
 
@@ -400,7 +416,8 @@ def _document_processor(
         model_m2=settings.model_m2,
         model_m3=settings.model_m3,
         model_m4=settings.model_m4,
-        document_concurrency=settings.document_concurrency,
+        document_workers=settings.document_workers,
+        document_block_concurrency=settings.document_block_concurrency,
     )
 
 
@@ -437,6 +454,7 @@ def _cross_document_engine(
         n9_active_requests=settings.n9_active_requests,
         n12_active_requests=settings.n12_active_requests,
         n13_active_requests=settings.n13_active_requests,
+        n13_planner_version=settings.n13_planner_version,
     )
 
 
@@ -472,14 +490,20 @@ def _bulk_epoch_engine(
             "field_coreference": settings.field_active_requests,
             "atomic_coreference": settings.n9_active_requests,
             "atomic_coreference_escalation": settings.n9_escalation_active_requests,
+            "atomic_late_convergence": settings.n9_late_active_requests,
             "package_assignment": settings.n12_active_requests,
+            "package_wave_c": settings.package_wave_c_active_requests,
             "package_merge": settings.n13_active_requests,
         },
         repair_limit=settings.item_repair_active_requests,
+        provider_target=settings.structured_provider_target_concurrency,
+        provider_hard_limit=settings.structured_provider_hard_concurrency,
+        provider_start_rate=settings.structured_provider_start_rate,
+        provider_initial_burst=settings.structured_provider_initial_burst,
         rates={
-            ModelTier.M2: (16.0, 24),
-            ModelTier.M3: (10.0, 16),
-            ModelTier.M4: (6.0, 8),
+            ModelTier.M2: (1000.0, settings.scheduler_m2_concurrency),
+            ModelTier.M3: (1000.0, settings.scheduler_m3_concurrency),
+            ModelTier.M4: (1000.0, settings.scheduler_m4_concurrency),
         },
     )
     core = CrossDocumentEngine(
@@ -498,6 +522,7 @@ def _bulk_epoch_engine(
         n9_active_requests=settings.n9_active_requests,
         n12_active_requests=settings.n12_active_requests,
         n13_active_requests=settings.n13_active_requests,
+        n13_planner_version=settings.n13_planner_version,
     )
     return BulkEpochEngine(
         registry=registry,
@@ -509,10 +534,20 @@ def _bulk_epoch_engine(
         n13_pair_local_apply=settings.n13_pair_local_apply,
         atomic_late_task_cap=settings.atomic_late_task_cap,
         package_wave_c_pair_cap=settings.package_wave_c_pair_cap,
+        n9_late_active_requests=settings.n9_late_active_requests,
+        package_wave_c_active_requests=settings.package_wave_c_active_requests,
         late_total_input_budget_ratio=settings.late_total_input_budget_ratio,
         late_wall_deadline_ratio=settings.late_wall_deadline_ratio,
         late_max_spoke_members=settings.late_max_spoke_members,
         late_max_spokes_per_hub=settings.late_max_spokes_per_hub,
+        writer_queue_low_watermark=settings.writer_queue_low_watermark,
+        writer_queue_high_watermark=settings.writer_queue_high_watermark,
+        writer_queue_hard_limit=settings.writer_queue_hard_limit,
+        batch_audit_write=settings.batch_audit_write,
+        stage_read_snapshot=settings.stage_read_snapshot,
+        chunked_stage_apply=settings.chunked_stage_apply,
+        batch_task_ledger=settings.batch_task_ledger,
+        embedding_batch_executor=settings.embedding_batch_executor,
     )
 
 

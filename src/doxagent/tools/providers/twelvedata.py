@@ -82,6 +82,118 @@ class TwelveDataDailyOhlcvClient(BaseRealToolClient):
             return self._handle_exception(request, exc)
 
 
+class TwelveDataSellSideEstimatesClient(BaseRealToolClient):
+    """Temporary consensus fallback; it returns source rows, never a derived value."""
+
+    def call(self, request: ToolRequest) -> ToolResult:
+        try:
+            api_key = _require(self.settings.twelvedata_api_key, "TWELVEDATA_API_KEY")
+            symbol = _input_str_any(request, ("symbol", "ticker"), request.ticker).upper()
+            data: JsonObject = {}
+            issues: list[JsonObject] = []
+            for label, endpoint in (
+                ("earnings_estimate", "/earnings_estimate"),
+                ("revenue_estimate", "/revenue_estimate"),
+            ):
+                try:
+                    raw = self._get_json(
+                        self.settings.twelvedata_base_url.rstrip("/") + endpoint,
+                        params={"symbol": symbol, "apikey": api_key},
+                        cache_ttl=self.settings.twelvedata_cache_ttl_seconds,
+                        rate_limit_key="twelvedata",
+                        min_interval_seconds=0.25,
+                        max_rate_limit_retries=1,
+                    )
+                    _raise_twelvedata_error(raw)
+                except ProviderHttpError as exc:
+                    issues.append(
+                        {
+                            "endpoint": label,
+                            "code": exc.code,
+                            "message": exc.message,
+                            "retryable": exc.retryable,
+                        }
+                    )
+                    continue
+                if _has_estimate_rows(raw):
+                    rows = raw.get(label)
+                    meta = raw.get("meta")
+                    data[label] = {
+                        "meta": {
+                            key: meta[key]
+                            for key in ("symbol", "currency", "exchange")
+                            if isinstance(meta, dict) and meta.get(key) not in (None, "")
+                        },
+                        "estimates": [
+                            {
+                                key: row[key]
+                                for key in (
+                                    "date",
+                                    "period",
+                                    "number_of_analysts",
+                                    "avg_estimate",
+                                    "low_estimate",
+                                    "high_estimate",
+                                    "year_ago_eps",
+                                    "year_ago_sales",
+                                    "sales_growth",
+                                )
+                                if row.get(key) not in (None, "", [], {})
+                            }
+                            for row in rows or []
+                            if isinstance(row, dict)
+                        ],
+                    }
+                else:
+                    issues.append(
+                        {
+                            "endpoint": label,
+                            "code": "empty_result",
+                            "message": "No usable estimate rows.",
+                        }
+                    )
+            output = {
+                "provider": "twelvedata",
+                "symbol": symbol,
+                "sell_side_estimates": data,
+                "provider_errors": issues,
+            }
+            if not data:
+                return self._failure(
+                    request,
+                    code="upstream_provider_error",
+                    message="Twelve Data returned no usable estimate data.",
+                    details={"provider_errors": issues},
+                )
+            kwargs = dict(
+                output=output,
+                raw=output,
+                source_kind="external_report",
+                source_id=f"twelvedata:sell_side_estimates:{symbol}",
+                title=f"Twelve Data sell-side estimates - {symbol}",
+                summary="Retrieved Twelve Data EPS and revenue estimate rows.",
+                source_scope="twelvedata_sell_side_estimates",
+                confidence=0.68,
+                metadata={
+                    "symbol": symbol,
+                    "endpoints": list(data),
+                    "failed_endpoints": [item["endpoint"] for item in issues],
+                },
+            )
+            if issues:
+                return self._partial(
+                    request,
+                    code="twelvedata_partial_subrequest_failure",
+                    message="Some Twelve Data estimate requests failed or were empty.",
+                    retryable=any(bool(item.get("retryable")) for item in issues),
+                    details={"provider_errors": issues},
+                    **kwargs,
+                )
+            return self._success(request, **kwargs)
+        except Exception as exc:
+            return self._handle_exception(request, exc)
+
+
 def _raise_twelvedata_error(raw: JsonObject) -> None:
     if str(raw.get("status", "")).lower() == "error":
         message = str(raw.get("message") or "Twelve Data returned an error.")
@@ -102,3 +214,11 @@ def _bounded_int(value: object, minimum: int, maximum: int) -> int:
         parsed = minimum
     bounded = max(minimum, min(maximum, parsed))
     return int(bounded)
+
+
+def _has_estimate_rows(raw: JsonObject) -> bool:
+    return any(
+        value not in (None, "", [], {})
+        for key, value in raw.items()
+        if key not in {"status", "message", "code"}
+    )

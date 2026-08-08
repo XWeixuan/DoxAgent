@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import subprocess
 import uuid
+from collections.abc import Sequence
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
 from time import perf_counter
@@ -39,7 +41,21 @@ from cdecr.kb_v2 import V2KnowledgeBase
 from cdecr.ports import CDECRRegistry
 from cdecr.single_document_contracts import ModelCallSummary
 
-BULK_STAGE_GRAPH_VERSION = "cdecr-bulk-epoch-v3-final-narrow"
+BULK_STAGE_GRAPH_VERSION = "cdecr-bulk-epoch-v6-stage-snapshot-batch-io"
+
+
+def _git_commit() -> str | None:
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return result.stdout.strip() or None
 
 
 class BulkEpochEngine:
@@ -60,13 +76,23 @@ class BulkEpochEngine:
         knowledge_base: V2KnowledgeBase | None = None,
         atomic_late_convergence: bool = True,
         package_wave_c: bool = True,
-        n13_pair_local_apply: bool = True,
+        n13_pair_local_apply: bool = False,
         atomic_late_task_cap: int = 48,
         package_wave_c_pair_cap: int = 64,
+        n9_late_active_requests: int = 24,
+        package_wave_c_active_requests: int = 32,
         late_total_input_budget_ratio: float = 0.08,
         late_wall_deadline_ratio: float = 0.12,
         late_max_spoke_members: int = 4,
         late_max_spokes_per_hub: int = 4,
+        writer_queue_low_watermark: int = 1000,
+        writer_queue_high_watermark: int = 5000,
+        writer_queue_hard_limit: int = 10000,
+        batch_audit_write: bool = True,
+        stage_read_snapshot: bool = True,
+        chunked_stage_apply: bool = True,
+        batch_task_ledger: bool = True,
+        embedding_batch_executor: bool = True,
     ) -> None:
         self.registry = registry
         self.core = core
@@ -81,10 +107,28 @@ class BulkEpochEngine:
         self.late_config = LateStageConfig(
             atomic_task_cap=atomic_late_task_cap,
             package_pair_cap=package_wave_c_pair_cap,
+            atomic_active_requests=n9_late_active_requests,
+            package_active_requests=package_wave_c_active_requests,
             max_spoke_members=late_max_spoke_members,
             max_spokes_per_hub=late_max_spokes_per_hub,
         )
         self.core.n13_pair_local_apply = n13_pair_local_apply
+        self.writer_queue_low_watermark = writer_queue_low_watermark
+        self.writer_queue_high_watermark = writer_queue_high_watermark
+        self.writer_queue_hard_limit = writer_queue_hard_limit
+        self.batch_audit_write = batch_audit_write
+        self.stage_read_snapshot = stage_read_snapshot
+        self.chunked_stage_apply = chunked_stage_apply
+        self.batch_task_ledger = batch_task_ledger
+        self.embedding_batch_executor = embedding_batch_executor
+        self.core._bulk_batch_audit_write = batch_audit_write
+
+    def _writer(self) -> BulkWriter:
+        return BulkWriter(
+            low_watermark=self.writer_queue_low_watermark,
+            high_watermark=self.writer_queue_high_watermark,
+            hard_limit=self.writer_queue_hard_limit,
+        )
 
     def close(self) -> None:
         self.executor.close()
@@ -112,7 +156,24 @@ class BulkEpochEngine:
             "prompt_version": PROMPT_VERSION,
             "orchestrator_version": BULK_STAGE_GRAPH_VERSION,
             "model_config": self.core.model_config,
+            "capacity_config": self.executor.capacity_config(),
+            "git_commit": _git_commit(),
+            "deterministic_runtime_config": {
+                "batch_audit_write": self.batch_audit_write,
+                "stage_read_snapshot": self.stage_read_snapshot,
+                "chunked_stage_apply": self.chunked_stage_apply,
+                "batch_task_ledger": self.batch_task_ledger,
+                "embedding_batch_executor": self.embedding_batch_executor,
+                "atomic_apply_chunk_size": 64,
+                "package_apply_chunk_size": 32,
+                "audit_chunk_size": 512,
+                "embedding_preferred_batch_size": 64,
+                "embedding_active_requests": 4,
+            },
         }
+        manifest["deterministic_runtime_config_hash"] = canonical_hash(
+            manifest["deterministic_runtime_config"]
+        )
         manifest_hash = canonical_hash(manifest)
         epoch_id = f"bulk-epoch:{manifest_hash[:24]}"
         epoch = self.registry.start_bulk_epoch(
@@ -162,8 +223,14 @@ class BulkEpochEngine:
             model_m3=self.core.model_m3,
             summaries=summaries,
         )
-        ledger = BulkTaskLedger(registry=self.registry, epoch_id=epoch_id)
+        ledger = BulkTaskLedger(
+            registry=self.registry,
+            epoch_id=epoch_id,
+            batch_enabled=self.batch_task_ledger,
+        )
         timings: dict[str, int] = {}
+        deterministic_telemetry: dict[str, object] = {}
+        writer_telemetry: list[dict[str, object]] = []
         late_admission: dict[str, dict[str, object]] = {}
         candidate_counts = {
             "atomic_recalled": 0,
@@ -270,6 +337,7 @@ class BulkEpochEngine:
                     run_id=coordinator_run_id,
                     max_workers=self.field_active_requests,
                     task_hook=field_task,
+                    completed_task_ids=set(ledger.completed("FIELD")),
                 )
                 field_plan_artifact = self.registry.get_bulk_epoch_artifact(
                     epoch_id, "field_plan_v1"
@@ -284,6 +352,8 @@ class BulkEpochEngine:
                         "resolved_count": field_summary.resolved_count,
                         "unresolved_count": field_summary.unresolved_count,
                         "group_count": field_summary.group_count,
+                        "failed_group_count": field_summary.failed_group_count,
+                        "skipped_group_count": field_summary.skipped_group_count,
                         "field_links_hash": field_summary.field_links_hash,
                     },
                 )
@@ -312,10 +382,18 @@ class BulkEpochEngine:
                 ]
                 with ThreadPoolExecutor(max_workers=2) as pool:
                     atomic_future = pool.submit(
-                        self.core._sync_atomic_embeddings, list(base_atomic.events), models
+                        lambda: self.core._sync_atomic_embeddings(
+                            list(base_atomic.events),
+                            models,
+                            use_batch_executor=self.embedding_batch_executor,
+                        )
                     )
                     mention_future = pool.submit(
-                        self.core._embed_mentions, eligible_mentions, models
+                        lambda: self.core._embed_mentions(
+                            eligible_mentions,
+                            models,
+                            use_batch_executor=self.embedding_batch_executor,
+                        )
                     )
                     atomic_vectors = atomic_future.result()
                     mention_vectors = mention_future.result()
@@ -326,6 +404,9 @@ class BulkEpochEngine:
                     atomic_vectors,
                     run_id=coordinator_run_id,
                     candidate_counts=candidate_counts,
+                )
+                deterministic_telemetry["atomic_candidate"] = getattr(
+                    self.core, "_last_atomic_candidate_telemetry", {}
                 )
                 field_overlay_artifact = self.registry.get_bulk_epoch_artifact(
                     epoch_id, "field_overlay_v1"
@@ -352,6 +433,7 @@ class BulkEpochEngine:
                 completed_n9 = ledger.completed("N9")
                 cached_decisions: dict[str, AtomicAssignmentDecision] = {}
                 pending_mentions = []
+                pending_task_rows: list[dict[str, object]] = []
                 for mention in eligible_mentions:
                     task_payload = {
                         "mention_id": mention.mention_id,
@@ -374,17 +456,23 @@ class BulkEpochEngine:
                         )
                     else:
                         pending_mentions.append(mention)
-                        ledger.start(
-                            stage="N9",
-                            task_id=mention.mention_id,
-                            input_hash=task_hash,
-                            snapshot_hash=base_atomic.snapshot_hash,
+                        pending_task_rows.append(
+                            {
+                                "stage": "N9",
+                                "task_id": mention.mention_id,
+                                "input_hash": task_hash,
+                                "snapshot_hash": base_atomic.snapshot_hash,
+                            }
                         )
+                if pending_task_rows:
+                    ledger.start_many(pending_task_rows)
                 decisions = {
                     **cached_decisions,
                     **self.core._atomic_decisions(pending_mentions, candidates, compiled, models),
                 }
-                for mention in eligible_mentions:
+                finished_task_rows: list[dict[str, object]] = []
+                failed_task_rows: list[dict[str, object]] = []
+                for mention in pending_mentions:
                     task_payload = {
                         "mention_id": mention.mention_id,
                         "candidate_ids": [
@@ -393,39 +481,56 @@ class BulkEpochEngine:
                     }
                     task_hash = canonical_hash(task_payload)
                     if mention.mention_id in decisions or not candidates[mention.mention_id]:
-                        ledger.finish(
-                            stage="N9",
-                            task_id=mention.mention_id,
-                            input_hash=task_hash,
-                            snapshot_hash=base_atomic.snapshot_hash,
-                            decision_ref={
+                        finished_task_rows.append(
+                            {
+                                "stage": "N9",
+                                "task_id": mention.mention_id,
+                                "input_hash": task_hash,
+                                "snapshot_hash": base_atomic.snapshot_hash,
+                                "decision_ref": {
                                 "decision": (
                                     decisions[mention.mention_id].model_dump(mode="json")
                                     if mention.mention_id in decisions
                                     else {"deterministic": "NO_CANDIDATE"}
                                 )
-                            },
+                                },
+                            }
                         )
                     else:
-                        ledger.fail(
-                            stage="N9",
-                            task_id=mention.mention_id,
-                            input_hash=task_hash,
-                            snapshot_hash=base_atomic.snapshot_hash,
-                            error_code="UNJUDGEABLE_FAILED",
+                        failed_task_rows.append(
+                            {
+                                "stage": "N9",
+                                "task_id": mention.mention_id,
+                                "input_hash": task_hash,
+                                "snapshot_hash": base_atomic.snapshot_hash,
+                                "error_code": "UNJUDGEABLE_FAILED",
+                            }
                         )
-                with BulkWriter() as writer:
-                    atomic_events, atomic_assignments = writer.run(
-                        lambda: self.core._apply_atomic(
-                            mentions,
-                            candidates,
-                            decisions,
-                            compiled,
-                            models,
-                            run_id=coordinator_run_id,
-                            sync_embeddings=False,
-                        )
+                if finished_task_rows:
+                    ledger.finish_many(finished_task_rows)
+                if failed_task_rows:
+                    ledger.fail_many(failed_task_rows)
+                with self._writer() as writer:
+                    atomic_events, atomic_assignments = self.core._apply_atomic(
+                        mentions,
+                        candidates,
+                        decisions,
+                        compiled,
+                        models,
+                        run_id=coordinator_run_id,
+                        sync_embeddings=False,
+                        chunked_apply=self.chunked_stage_apply,
+                        stage_writer=writer,
+                        apply_checkpoint_context={
+                            "epoch_id": epoch_id,
+                            "snapshot_hash": base_atomic.snapshot_hash,
+                        },
+                        completed_apply_chunks=ledger.completed("ATOMIC_APPLY"),
                     )
+                writer_telemetry.append({"stage": "ATOMIC_APPLY", **writer.snapshot().__dict__})
+                deterministic_telemetry["atomic_apply"] = getattr(
+                    self.core, "_last_atomic_apply_telemetry", {}
+                )
                 atomic_events = self.core._correct_atomic(
                     atomic_events, mentions, run_id=coordinator_run_id
                 )
@@ -501,7 +606,11 @@ class BulkEpochEngine:
                         },
                     )
                     timings["atomic_late_ms"] = round((perf_counter() - late_started) * 1000)
-                self.core._sync_atomic_embeddings(atomic_events, models)
+                self.core._sync_atomic_embeddings(
+                    atomic_events,
+                    models,
+                    use_batch_executor=self.embedding_batch_executor,
+                )
                 atomic_plan_artifact = self.registry.get_bulk_epoch_artifact(
                     epoch_id, "atomic_plan_v1"
                 )
@@ -561,14 +670,7 @@ class BulkEpochEngine:
                         "scheduler_edge_cap": 24 * len(atomic_events),
                     },
                 )
-                for event in atomic_events:
-                    ledger.start(
-                        stage="N12_A",
-                        task_id=event.event_id,
-                        input_hash=canonical_hash({"event_id": event.event_id, "wave": "A"}),
-                        snapshot_hash=base_package.snapshot_hash,
-                    )
-                with BulkWriter() as writer:
+                with self._writer() as writer:
                     packages, package_assignments, package_stage_telemetry = assign_packages_epoch(
                         engine=self.core,
                         events=atomic_events,
@@ -578,7 +680,12 @@ class BulkEpochEngine:
                         candidate_counts=candidate_counts,
                         base_packages=base_package.packages,
                         writer=writer,
+                        ledger=ledger,
+                        task_snapshot_hash=base_package.snapshot_hash,
+                        use_embedding_batch_executor=self.embedding_batch_executor,
+                        chunked_apply=self.chunked_stage_apply,
                     )
+                writer_telemetry.append({"stage": "PACKAGE_APPLY", **writer.snapshot().__dict__})
                 wave_c_budget = self._late_budget_snapshot(
                     summaries=summaries,
                     timings=timings,
@@ -652,44 +759,6 @@ class BulkEpochEngine:
                         },
                     )
                     timings["package_wave_c_ms"] = round((perf_counter() - wave_c_started) * 1000)
-                for assignment in package_assignments:
-                    wave_a_hash = canonical_hash({"event_id": assignment.event_id, "wave": "A"})
-                    ledger.finish(
-                        stage="N12_A",
-                        task_id=assignment.event_id,
-                        input_hash=wave_a_hash,
-                        snapshot_hash=base_package.snapshot_hash,
-                        decision_ref={
-                            "assignment_id": assignment.assignment_id,
-                            "selected_history": (
-                                assignment.reason == "N12_WAVE_A_SELECTED_HISTORY"
-                            ),
-                        },
-                    )
-                    if assignment.reason != "N12_WAVE_A_SELECTED_HISTORY":
-                        wave_b_hash = canonical_hash({"event_id": assignment.event_id, "wave": "B"})
-                        ledger.start(
-                            stage="N12_B",
-                            task_id=assignment.event_id,
-                            input_hash=wave_b_hash,
-                            snapshot_hash=base_package.snapshot_hash,
-                        )
-                        if assignment.reason == "N12_UNJUDGEABLE_FAILED_SINGLETON":
-                            ledger.fail(
-                                stage="N12_B",
-                                task_id=assignment.event_id,
-                                input_hash=wave_b_hash,
-                                snapshot_hash=base_package.snapshot_hash,
-                                error_code="UNJUDGEABLE_FAILED",
-                            )
-                        else:
-                            ledger.finish(
-                                stage="N12_B",
-                                task_id=assignment.event_id,
-                                input_hash=wave_b_hash,
-                                snapshot_hash=base_package.snapshot_hash,
-                                decision_ref={"assignment_id": assignment.assignment_id},
-                            )
                 package_plan_artifact = self.registry.get_bulk_epoch_artifact(
                     epoch_id, "package_plan_v1"
                 )
@@ -737,9 +806,11 @@ class BulkEpochEngine:
                     payload={
                         "snapshot_hash": n13_snapshot.snapshot_hash,
                         "touched_package_ids": sorted(package.package_id for package in packages),
-                        "pair_candidate_cap_per_package": 6,
-                        "batch_size": 2,
-                        "coverage": "FULL_BOUNDED_PAIR_PLAN",
+                        "planner_version": self.core.n13_planner_version,
+                        "cheap_candidate_universe_cap": 64,
+                        "m3_candidate_cap_per_package": 5,
+                        "batch_size": 12,
+                        "coverage": "INDEXED_MULTI_LANE_BOUNDED_PLAN",
                     },
                 )
 
@@ -787,6 +858,34 @@ class BulkEpochEngine:
                     nonlocal n13_apply_started
                     n13_apply_started = perf_counter()
 
+                def n13_planner_chunk(
+                    chunk_index: int,
+                    touched_ids: Sequence[str],
+                    pair_count: int,
+                ) -> None:
+                    task_id = f"chunk:{chunk_index}"
+                    task_hash = canonical_hash(
+                        {
+                            "chunk_index": chunk_index,
+                            "touched_package_ids": list(touched_ids),
+                            "pair_count": pair_count,
+                            "planner_version": self.core.n13_planner_version,
+                        }
+                    )
+                    ledger.start(
+                        stage="N13_RECALL_CHUNK",
+                        task_id=task_id,
+                        input_hash=task_hash,
+                        snapshot_hash=n13_snapshot.snapshot_hash,
+                    )
+                    ledger.finish(
+                        stage="N13_RECALL_CHUNK",
+                        task_id=task_id,
+                        input_hash=task_hash,
+                        snapshot_hash=n13_snapshot.snapshot_hash,
+                        decision_ref={"pair_count": pair_count},
+                    )
+
                 original_pair_local_apply = self.core.n13_pair_local_apply
                 self.core.n13_pair_local_apply = self.n13_pair_local_apply
                 n13_apply_telemetry: dict[str, int] = {}
@@ -798,6 +897,7 @@ class BulkEpochEngine:
                         task_hook=n13_task,
                         apply_started_hook=mark_n13_apply_started,
                         apply_telemetry=n13_apply_telemetry,
+                        planner_chunk_hook=n13_planner_chunk,
                     )
                 finally:
                     self.core.n13_pair_local_apply = original_pair_local_apply
@@ -865,6 +965,7 @@ class BulkEpochEngine:
             )
             timings["wall_clock_ms"] = round((perf_counter() - wall_started) * 1000)
             telemetry = [item.__dict__ for item in self.executor.telemetry()]
+            provider_telemetry = self.executor.provider_snapshot()
             result_payload = {
                 "message_count": len(ordered_ids),
                 "mention_count": len(mentions),
@@ -873,12 +974,48 @@ class BulkEpochEngine:
                 "stage_timings": timings,
                 "package_stage": package_stage_telemetry,
                 "async_executor": {
+                    "capacity_config": self.executor.capacity_config(),
                     "call_count": len(telemetry),
                     "max_active_by_tier": self._max_active_by_tier(telemetry),
                     "queue_wait_ms": sum(_as_int(item["queue_wait_ms"]) for item in telemetry),
                     "failed_call_count": sum(item["status"] == "FAILED" for item in telemetry),
+                    "provider": provider_telemetry.__dict__,
+                },
+                "bulk_writer": writer_telemetry,
+                "deterministic_runtime": {
+                    **deterministic_telemetry,
+                    "embedding": {
+                        key: value.__dict__
+                        for key, value in self.core._embedding_telemetry_by_stage.items()
+                    },
+                    "embedding_batch_count": sum(
+                        value.batch_count
+                        for value in self.core._embedding_telemetry_by_stage.values()
+                    ),
+                    "embedding_batch_size_distribution": [
+                        size
+                        for value in self.core._embedding_telemetry_by_stage.values()
+                        for size in value.batch_sizes
+                    ],
+                    "time_to_first_model_request_ms": (
+                        max(
+                            0,
+                            min(_as_int(item["started_at_ms"]) for item in telemetry)
+                            - round(wall_started * 1000),
+                        )
+                        if telemetry
+                        else None
+                    ),
+                    "runtime_flags": {
+                        "batch_audit_write": self.batch_audit_write,
+                        "stage_read_snapshot": self.stage_read_snapshot,
+                        "chunked_stage_apply": self.chunked_stage_apply,
+                        "batch_task_ledger": self.batch_task_ledger,
+                        "embedding_batch_executor": self.embedding_batch_executor,
+                    },
                 },
                 "candidate_counts": candidate_counts,
+                "audit_degraded": self.core._bulk_audit_degraded,
                 "late_budget": {
                     "input_ratio": self.late_total_input_budget_ratio,
                     "wall_deadline_ratio": self.late_wall_deadline_ratio,
@@ -983,14 +1120,10 @@ class BulkEpochEngine:
     ) -> dict[str, object]:
         late_stages = {"atomic_late_convergence", "package_wave_c"}
         late_input = sum(
-            summary.input_tokens or 0
-            for summary in summaries
-            if summary.stage in late_stages
+            summary.input_tokens or 0 for summary in summaries if summary.stage in late_stages
         )
         non_late_input = sum(
-            summary.input_tokens or 0
-            for summary in summaries
-            if summary.stage not in late_stages
+            summary.input_tokens or 0 for summary in summaries if summary.stage not in late_stages
         )
         late_wall_ms = sum(
             timings.get(stage, 0) for stage in ("atomic_late_ms", "package_wave_c_ms")

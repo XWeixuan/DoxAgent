@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import threading
+from collections import deque
 from collections.abc import Mapping
 from dataclasses import dataclass
 from time import monotonic, perf_counter
@@ -33,6 +34,15 @@ class AsyncCallTelemetry:
     error_code: str | None
 
 
+@dataclass(frozen=True)
+class AsyncProviderSnapshot:
+    target: int
+    hard_limit: int
+    active: int
+    max_active: int
+    completed: int
+
+
 class _TokenBucket:
     def __init__(self, *, rate: float, burst: int) -> None:
         self.rate = max(0.01, rate)
@@ -53,6 +63,44 @@ class _TokenBucket:
                     return
                 delay = (1.0 - self.tokens) / self.rate
             await asyncio.sleep(delay)
+
+
+class _AdaptiveLimiter:
+    def __init__(self, limit: int) -> None:
+        self.maximum = max(1, limit)
+        self.limit = self.maximum
+        self.active = 0
+        self.successes = 0
+        self.outcomes: deque[bool] = deque(maxlen=100)
+        self.condition = asyncio.Condition()
+
+    async def acquire(self) -> None:
+        async with self.condition:
+            while self.active >= self.limit:
+                await self.condition.wait()
+            self.active += 1
+
+    async def release(self) -> None:
+        async with self.condition:
+            self.active -= 1
+            self.condition.notify_all()
+
+    async def pressure(self) -> None:
+        async with self.condition:
+            self.outcomes.append(False)
+            self.successes = 0
+            error_rate = 1.0 - (sum(self.outcomes) / len(self.outcomes))
+            factor = 0.6 if error_rate > 0.03 else 0.8
+            self.limit = max(1, int(self.limit * factor))
+
+    async def success(self) -> None:
+        async with self.condition:
+            self.outcomes.append(True)
+            self.successes += 1
+            if self.successes >= 100:
+                self.successes = 0
+                self.limit = min(self.maximum, self.limit + 8)
+                self.condition.notify_all()
 
 
 def _provider_pressure(exc: Exception) -> bool:
@@ -81,6 +129,11 @@ class AsyncModelExecutor:
         stage_limits: Mapping[str, int],
         repair_limit: int,
         rates: Mapping[ModelTier, tuple[float, int]],
+        provider_target: int = 100,
+        provider_hard_limit: int = 160,
+        provider_start_rate: float = 50.0,
+        provider_initial_burst: int = 80,
+        retry_limit: int = 16,
         max_retries: int = 2,
     ) -> None:
         self._clients = dict(clients)
@@ -88,6 +141,13 @@ class AsyncModelExecutor:
         self._stage_limits = dict(stage_limits)
         self._repair_limit = max(1, repair_limit)
         self._rates = dict(rates)
+        if provider_target < 1 or provider_hard_limit < provider_target:
+            raise ValueError("provider concurrency must satisfy 1 <= target <= hard_limit")
+        self._provider_target = provider_target
+        self._provider_hard_limit = provider_hard_limit
+        self._provider_start_rate = provider_start_rate
+        self._provider_initial_burst = provider_initial_burst
+        self._retry_limit = max(1, retry_limit)
         self._max_retries = max(0, max_retries)
         self._telemetry: list[AsyncCallTelemetry] = []
         self._telemetry_lock = threading.Lock()
@@ -107,12 +167,22 @@ class AsyncModelExecutor:
         self._loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self._loop)
         self._tier_semaphores = {
-            tier: asyncio.Semaphore(limit) for tier, limit in self._tier_limits.items()
+            tier: _AdaptiveLimiter(limit) for tier, limit in self._tier_limits.items()
         }
         self._stage_semaphores = {
             stage: asyncio.Semaphore(limit) for stage, limit in self._stage_limits.items()
         }
         self._repair_semaphore = asyncio.Semaphore(self._repair_limit)
+        self._provider_semaphore = asyncio.Semaphore(self._provider_hard_limit)
+        self._retry_semaphore = asyncio.Semaphore(self._retry_limit)
+        self._provider_bucket = _TokenBucket(
+            rate=self._provider_start_rate,
+            burst=self._provider_initial_burst,
+        )
+        self._provider_active = 0
+        self._provider_max_active = 0
+        self._provider_completed = 0
+        self._start_sequence = 0
         self._buckets = {
             tier: _TokenBucket(rate=rate, burst=burst)
             for tier, (rate, burst) in self._rates.items()
@@ -136,13 +206,20 @@ class AsyncModelExecutor:
         tier_semaphore = self._tier_semaphores[tier]
         stage_semaphore = self._stage_semaphores.get(stage)
         priority_semaphore = self._repair_semaphore if priority == "repair" else None
-        semaphores = [tier_semaphore]
+        semaphores: list[asyncio.Semaphore] = []
         if stage_semaphore is not None:
             semaphores.append(stage_semaphore)
         if priority_semaphore is not None:
             semaphores.append(priority_semaphore)
+        semaphores.append(self._provider_semaphore)
+        await self._provider_bucket.acquire()
+        self._start_sequence += 1
+        await asyncio.sleep(0.01 + (self._start_sequence % 3) * 0.01)
+        await tier_semaphore.acquire()
         for semaphore in semaphores:
             await semaphore.acquire()
+        self._provider_active += 1
+        self._provider_max_active = max(self._provider_max_active, self._provider_active)
         started = perf_counter()
         attempt = 0
         try:
@@ -151,6 +228,7 @@ class AsyncModelExecutor:
                 attempt += 1
                 try:
                     result = await self._clients[tier].acomplete(request)
+                    await tier_semaphore.success()
                     self._record(
                         tier=tier,
                         stage=stage,
@@ -163,10 +241,14 @@ class AsyncModelExecutor:
                     )
                     return result
                 except Exception as exc:
+                    if _provider_pressure(exc):
+                        await tier_semaphore.pressure()
                     if attempt <= self._max_retries and _provider_pressure(exc):
                         retry_after = getattr(exc, "retry_after", None)
                         delay = float(retry_after) if isinstance(retry_after, (int, float)) else 1.0
-                        await asyncio.sleep(max(0.1, min(delay, 10.0)))
+                        async with self._retry_semaphore:
+                            await asyncio.sleep(max(0.1, min(delay, 10.0)))
+                            await self._provider_bucket.acquire()
                         continue
                     self._record(
                         tier=tier,
@@ -180,8 +262,11 @@ class AsyncModelExecutor:
                     )
                     raise
         finally:
+            self._provider_active -= 1
+            self._provider_completed += 1
             for semaphore in reversed(semaphores):
                 semaphore.release()
+            await tier_semaphore.release()
 
     def _record(
         self,
@@ -220,6 +305,43 @@ class AsyncModelExecutor:
     def telemetry(self) -> list[AsyncCallTelemetry]:
         with self._telemetry_lock:
             return list(self._telemetry)
+
+    def capacity_config(self) -> dict[str, object]:
+        return {
+            "tier_limits": {
+                tier.value: limit for tier, limit in sorted(
+                    self._tier_limits.items(), key=lambda item: item[0].value
+                )
+            },
+            "stage_limits": dict(sorted(self._stage_limits.items())),
+            "repair_limit": self._repair_limit,
+            "retry_limit": self._retry_limit,
+            "provider_target": self._provider_target,
+            "provider_hard_limit": self._provider_hard_limit,
+            "provider_start_rate": self._provider_start_rate,
+            "provider_initial_burst": self._provider_initial_burst,
+        }
+
+    async def _provider_snapshot(self) -> AsyncProviderSnapshot:
+        return AsyncProviderSnapshot(
+            target=self._provider_target,
+            hard_limit=self._provider_hard_limit,
+            active=self._provider_active,
+            max_active=self._provider_max_active,
+            completed=self._provider_completed,
+        )
+
+    def provider_snapshot(self) -> AsyncProviderSnapshot:
+        if self._closed:
+            return AsyncProviderSnapshot(
+                target=self._provider_target,
+                hard_limit=self._provider_hard_limit,
+                active=0,
+                max_active=self._provider_max_active,
+                completed=self._provider_completed,
+            )
+        future = asyncio.run_coroutine_threadsafe(self._provider_snapshot(), self._loop)
+        return future.result()
 
     def close(self) -> None:
         if self._closed:

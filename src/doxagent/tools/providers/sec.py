@@ -10,6 +10,7 @@ from typing import Any
 
 import httpx
 
+from doxagent.models import ResultStatus
 from doxagent.tools.providers.base import (
     DEFAULT_USER_AGENT,
     BaseRealToolClient,
@@ -230,8 +231,7 @@ class SecFilingSectionsClient(SecCompanyFactsAndFilingsClient):
                     source_id=source_id,
                     title=f"SEC filing sections - {request.ticker}",
                     summary=(
-                        "SEC filing was retrieved, but none of the requested sections "
-                        "were found."
+                        "SEC filing was retrieved, but none of the requested sections were found."
                     ),
                     source_scope="sec_filing_sections",
                     confidence=0.25,
@@ -303,6 +303,202 @@ class SecFilingSectionsClient(SecCompanyFactsAndFilingsClient):
         )
         return _json_object(_json_object(submissions.get("filings", {})).get("recent", {}))
 
+    def _call_recent_matching(
+        self, request: ToolRequest, *, max_filings: int = 12
+    ) -> ToolResult:
+        """Search bounded recent filings when requested Items are alternatives."""
+        if _input_str(request, "accession", ""):
+            return SecFilingSectionsClient.call(self, request)
+        cik = self._resolve_cik(request)
+        form = _input_str(request, "form", "8-K").upper()
+        recent = self._recent_filings(cik)
+        forms = _object_list(recent.get("form"))
+        accessions = _object_list(recent.get("accessionNumber"))
+        documents = _object_list(recent.get("primaryDocument"))
+        attempted = 0
+        last_result: ToolResult | None = None
+        for index, raw_form in enumerate(forms):
+            if str(raw_form).upper() != form or index >= len(accessions):
+                continue
+            candidate = ToolRequest.model_validate(
+                {
+                    **request.model_dump(),
+                    "input": {
+                        **request.input,
+                        "accession": str(accessions[index]),
+                        "primary_document": (
+                            str(documents[index]) if index < len(documents) else ""
+                        ),
+                    },
+                }
+            )
+            last_result = SecFilingSectionsClient.call(self, candidate)
+            attempted += 1
+            sections = last_result.output.get("sections") if last_result.output else None
+            if isinstance(sections, list) and sections:
+                last_result.output["searched_recent_filings"] = attempted
+                return last_result
+            if attempted >= max_filings:
+                break
+        if last_result is not None:
+            last_result.output["searched_recent_filings"] = attempted
+            return last_result
+        return SecFilingSectionsClient.call(self, request)
+
+
+# Semantic SEC clients deliberately retain the two legacy clients above.  The
+# factory may therefore migrate callers one tool at a time without changing the
+# wire contract of ``sec.company_facts_and_filings`` or ``sec.filing_sections``.
+class SecIssuerFilingsClient(SecCompanyFactsAndFilingsClient):
+    """Return a governed filing index; it does not fetch filing bodies."""
+
+    def call(self, request: ToolRequest) -> ToolResult:
+        try:
+            cik = self._resolve_cik(request)
+            submissions = self._get_json(
+                f"{self.settings.sec_data_base_url.rstrip('/')}/submissions/CIK{cik}.json",
+                headers={"User-Agent": self.settings.sec_user_agent or DEFAULT_USER_AGENT},
+                cache_ttl=self.settings.sec_cache_ttl_seconds,
+                rate_limit_key="sec",
+                min_interval_seconds=self.settings.sec_min_request_interval_seconds,
+            )
+            forms = {item.upper() for item in _input_list(request, "forms")}
+            limit = int(request.input.get("limit", 50))
+            filings = _all_sec_filings(submissions, limit=500)
+            if forms:
+                filings = [item for item in filings if str(item.get("form", "")).upper() in forms]
+            filings = filings[:limit]
+            if not filings:
+                return self._partial(
+                    request,
+                    output={
+                        "provider": "sec",
+                        "cik": cik,
+                        "company": _summarize_sec_company(submissions),
+                        "filings": [],
+                    },
+                    raw=submissions,
+                    source_kind="external_report",
+                    source_id=f"sec:issuer:{cik}",
+                    title=f"SEC issuer filing index - {request.ticker}",
+                    summary=(
+                        "SEC issuer index was retrieved, but no filing matched "
+                        "the requested filter."
+                    ),
+                    source_scope="sec_issuer_filings",
+                    confidence=0.75,
+                    metadata={"cik": cik, "form_filter": sorted(forms)},
+                    code="empty_result",
+                    message="No SEC filing matched the requested filter.",
+                )
+            return self._success(
+                request,
+                output={
+                    "provider": "sec",
+                    "cik": cik,
+                    "company": _summarize_sec_company(submissions),
+                    "filings": filings,
+                },
+                raw=submissions,
+                source_kind="external_report",
+                source_id=f"sec:issuer:{cik}",
+                title=f"SEC issuer filing index - {request.ticker}",
+                summary="Retrieved a filtered SEC submission index.",
+                source_scope="sec_issuer_filings",
+                confidence=0.94,
+                metadata={"cik": cik, "form_filter": sorted(forms)},
+            )
+        except Exception as exc:
+            return self._handle_exception(request, exc)
+
+
+class SecCompanyFinancialsClient(SecCompanyFactsAndFilingsClient):
+    """Return selected XBRL concepts and their exact reported observations."""
+
+    def call(self, request: ToolRequest) -> ToolResult:
+        try:
+            cik = self._resolve_cik(request)
+            facts = self._get_json(
+                f"{self.settings.sec_data_base_url.rstrip('/')}/api/xbrl/companyfacts/CIK{cik}.json",
+                headers={"User-Agent": self.settings.sec_user_agent or DEFAULT_USER_AGENT},
+                cache_ttl=self.settings.sec_cache_ttl_seconds,
+                rate_limit_key="sec",
+                min_interval_seconds=self.settings.sec_min_request_interval_seconds,
+            )
+            requested = set(_input_list(request, "concepts"))
+            view = _build_sec_fact_view(facts)
+            if requested:
+                view = {
+                    "key_facts": _requested_sec_fact_previews(facts, requested),
+                    "requested_concepts": sorted(requested),
+                }
+            return self._success(
+                request,
+                output={"provider": "sec", "cik": cik, **view},
+                raw=facts,
+                source_kind="external_report",
+                source_id=f"sec:companyfacts:{cik}",
+                title=f"SEC XBRL company facts - {request.ticker}",
+                summary="Retrieved governed SEC XBRL financial facts.",
+                source_scope="sec_company_financials",
+                confidence=0.93,
+                metadata={"cik": cik, "concept_count": len(view["key_facts"])},
+            )
+        except Exception as exc:
+            return self._handle_exception(request, exc)
+
+
+class SecFilingContentClient(SecFilingSectionsClient):
+    """Semantic alias for original filing content and section coordinates."""
+
+    def call(self, request: ToolRequest) -> ToolResult:
+        result = super().call(request)
+        if result.output:
+            result.output["source_coordinates"]["source_scope"] = "sec_filing_content"
+        return result
+
+
+class SecMaterialContractsProjectsClient(SecFilingSectionsClient):
+    def call(self, request: ToolRequest) -> ToolResult:
+        copied = ToolRequest.model_validate(
+            {
+                **request.model_dump(),
+                "input": {
+                    **request.input,
+                    "form": request.input.get("form", "8-K"),
+                    "sections": request.input.get(
+                        "sections", ["Item 1.01", "Item 2.03", "Item 2.04", "Item 8.01"]
+                    ),
+                },
+            }
+        )
+        result = self._call_recent_matching(copied)
+        if result.output:
+            result.output["record_type"] = "material_contract_or_project_disclosure"
+            result.output["source_coordinates"]["source_scope"] = "sec_material_contracts_projects"
+        return _accept_any_sec_section(result)
+
+
+class SecManagementDisclosuresClient(SecFilingSectionsClient):
+    def call(self, request: ToolRequest) -> ToolResult:
+        copied = ToolRequest.model_validate(
+            {
+                **request.model_dump(),
+                "input": {
+                    **request.input,
+                    "form": request.input.get("form", "8-K"),
+                    "sections": request.input.get(
+                        "sections", ["Item 2.02", "Item 7.01", "Item 8.01"]
+                    ),
+                },
+            }
+        )
+        result = self._call_recent_matching(copied)
+        if result.output:
+            result.output["record_type"] = "management_disclosure"
+            result.output["source_coordinates"]["source_scope"] = "sec_management_disclosures"
+        return _accept_any_sec_section(result)
+
 
 def parse_sec_sections(raw_text: str, target_sections: Iterable[str]) -> JsonObject:
     text = _strip_html(raw_text)
@@ -335,6 +531,27 @@ def parse_sec_sections(raw_text: str, target_sections: Iterable[str]) -> JsonObj
         if section not in found
     ]
     return {"sections": sections, "unknowns": unknowns}
+
+
+def _accept_any_sec_section(result: ToolResult) -> ToolResult:
+    sections = result.output.get("sections") if result.output else None
+    if (
+        result.status is ResultStatus.PARTIAL
+        and result.error is not None
+        and result.error.code == "sec_partial_sections"
+        and isinstance(sections, list)
+        and sections
+    ):
+        return result.model_copy(
+            update={
+                "status": ResultStatus.SUCCEEDED,
+                "error": None,
+                "output_summary": (
+                    "Retrieved at least one requested alternative SEC disclosure section."
+                ),
+            }
+        )
+    return result
 
 
 def _strip_html(raw_text: str) -> str:
@@ -379,6 +596,26 @@ def _summarize_sec_filings(submissions: Mapping[str, Any], limit: int = 20) -> l
         if len(items) >= limit:
             break
     return items
+
+
+def _all_sec_filings(submissions: Mapping[str, Any], limit: int = 50) -> list[JsonObject]:
+    """Preserve the filing index semantic tool's full form coverage."""
+    recent = _json_object(_json_object(submissions.get("filings", {})).get("recent", {}))
+    forms = _object_list(recent.get("form"))
+    accessions = _object_list(recent.get("accessionNumber"))
+    filing_dates = _object_list(recent.get("filingDate"))
+    report_dates = _object_list(recent.get("reportDate"))
+    primary_docs = _object_list(recent.get("primaryDocument"))
+    return [
+        {
+            "form": form,
+            "accession": accessions[index] if index < len(accessions) else None,
+            "filing_date": filing_dates[index] if index < len(filing_dates) else None,
+            "report_date": report_dates[index] if index < len(report_dates) else None,
+            "primary_document": primary_docs[index] if index < len(primary_docs) else None,
+        }
+        for index, form in enumerate(forms[:limit])
+    ]
 
 
 def _build_sec_fact_view(companyfacts: JsonObject) -> JsonObject:
@@ -430,6 +667,31 @@ def _build_sec_fact_view(companyfacts: JsonObject) -> JsonObject:
         },
         "fact_pages": pages,
     }
+
+
+def _requested_sec_fact_previews(
+    companyfacts: JsonObject, requested: set[str]
+) -> list[JsonObject]:
+    facts = companyfacts.get("facts")
+    previews: list[JsonObject] = []
+    if not isinstance(facts, dict):
+        return previews
+    for taxonomy, taxonomy_facts in facts.items():
+        if not isinstance(taxonomy_facts, dict):
+            continue
+        for concept in sorted(requested):
+            definition = taxonomy_facts.get(concept)
+            if isinstance(definition, dict):
+                previews.append(
+                    _fact_preview(
+                        str(taxonomy),
+                        concept,
+                        definition,
+                        observation_limit=8,
+                        include_description=False,
+                    )
+                )
+    return previews
 
 
 def _fact_preview(

@@ -256,6 +256,26 @@ def test_deepseek_json_fallback_keeps_thinking_enabled() -> None:
     assert kwargs["reasoning_effort"] == "high"
 
 
+def test_deepseek_none_disables_thinking_without_sending_effort() -> None:
+    fake = FakeOpenAI()
+    strict_chat = FakeStrictChat()
+    fake.chat = SimpleNamespace(completions=strict_chat)
+    client = DeepSeekStructuredModelClient(
+        tier=ModelTier.M2,
+        api_key="key",
+        base_url="https://api.deepseek.com/beta",
+        model="deepseek-v4-flash",
+        reasoning_effort="none",
+        strict=True,
+        client=fake,  # type: ignore[arg-type]
+    )
+
+    assert client.complete(request()).payload == {"ok": True}
+    kwargs = strict_chat.kwargs
+    assert kwargs["extra_body"] == {"thinking": {"type": "disabled"}}
+    assert "reasoning_effort" not in kwargs
+
+
 def test_deepseek_strict_inlines_nullable_local_ref_branch() -> None:
     fake = FakeOpenAI()
     strict_chat = FakeStrictChat()
@@ -454,9 +474,9 @@ def test_settings_parse_deepseek_tier_configuration() -> None:
         CDECR_M2_PROVIDER="deepseek",
         CDECR_M3_PROVIDER="deepseek",
         CDECR_M4_PROVIDER="deepseek",
-        CDECR_M2_REASONING_EFFORT="low",
-        CDECR_M3_REASONING_EFFORT="high",
-        CDECR_M4_REASONING_EFFORT="max",
+        CDECR_M2_REASONING_EFFORT="none",
+        CDECR_M3_REASONING_EFFORT="low",
+        CDECR_M4_REASONING_EFFORT="high",
         CDECR_M2_STRICT="true",
         CDECR_M3_STRICT="true",
         CDECR_M4_STRICT="true",
@@ -466,9 +486,9 @@ def test_settings_parse_deepseek_tier_configuration() -> None:
     assert settings.model_m2_provider == "deepseek"
     assert settings.model_m3_provider == "deepseek"
     assert settings.model_m4_provider == "deepseek"
-    assert settings.model_m2_reasoning_effort == "low"
-    assert settings.model_m3_reasoning_effort == "high"
-    assert settings.model_m4_reasoning_effort == "max"
+    assert settings.model_m2_reasoning_effort == "none"
+    assert settings.model_m3_reasoning_effort == "low"
+    assert settings.model_m4_reasoning_effort == "high"
     assert settings.model_m2_strict is True
     assert settings.model_m3_strict is True
     assert settings.model_m4_strict is True

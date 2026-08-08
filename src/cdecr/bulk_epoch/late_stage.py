@@ -24,6 +24,7 @@ from cdecr.atomic_merge_invariant import (
     evaluate_atomic_merge_invariant,
 )
 from cdecr.bulk_epoch.indexes import MultiKeyBoundedIndex
+from cdecr.bulk_epoch.stage_runtime import StageReadSnapshot
 from cdecr.contracts import (
     AtomicEvent,
     AtomicSemanticRelation,
@@ -42,6 +43,7 @@ from cdecr.cross_document_contracts import (
 )
 from cdecr.identity_compiler import IdentityCompiler
 from cdecr.models import ModelTier
+from cdecr.n13_planner import N13PackageCard, package_card_signals
 from cdecr.ports import CDECRRegistry, DecisionAuditRecord, StructuredModelRequest
 from cdecr.wire import compact_json
 
@@ -56,6 +58,8 @@ _PROMPT_DIR = Path(__file__).resolve().parents[1] / "prompts" / "v1"
 class LateStageConfig:
     atomic_task_cap: int = 48
     package_pair_cap: int = 64
+    atomic_active_requests: int = 24
+    package_active_requests: int = 32
     max_spoke_members: int = 4
     max_spokes_per_hub: int = 4
 
@@ -221,7 +225,9 @@ def run_atomic_late_convergence(
         return batch_index, same, invalid
 
     if batches:
-        with ThreadPoolExecutor(max_workers=min(16, len(batches))) as pool:
+        with ThreadPoolExecutor(
+            max_workers=min(config.atomic_active_requests, len(batches))
+        ) as pool:
             outputs = list(pool.map(decide_batch, enumerate(batches)))
         for _, same, invalid in sorted(outputs):
             model_same.update(same)
@@ -336,28 +342,34 @@ def run_package_wave_c(
     """Run one bounded package-fragment convergence wave over the frozen Wave-B partition."""
 
     active = {package.package_id: package for package in packages}
+    read_snapshot = StageReadSnapshot.load(
+        engine.registry,
+        packages=packages,
+        embedding_owner_kind="event_package",
+        embedding_model=engine.model_m1,
+    )
+    package_cards = engine._n13_package_cards(
+        packages,
+        {key: list(value) for key, value in read_snapshot.embeddings_by_owner.items()},
+        read_snapshot=read_snapshot,
+    )
+    audit_buffer: list[DecisionAuditRecord] = []
 
-    def index_keys(package: EventPackage) -> list[str]:
+    def index_keys(card: N13PackageCard) -> list[str]:
         keys: list[str] = []
-        if package.anchor_artifact_id:
-            keys.append(f"artifact:{package.anchor_artifact_id}")
-        keys.extend(f"anchor:{value}" for value in package.package_anchor_ids)
-        keys.extend(f"entity:{value}" for value in package.anchor_entities)
-        if package.anchor_period_id:
-            keys.append(f"period:{package.anchor_period_id}")
-        for event in engine._package_member_events(package):
-            keys.append(
-                "identity:"
-                + stable_id("wave-c-identity", event.identity_profile.model_dump(mode="json"))
-            )
-            for mention_id in event.mention_ids:
-                mention = engine.registry.get_mention(mention_id)
-                if mention is not None:
-                    keys.append(f"source:{mention.message_id}")
+        keys.extend(f"artifact:{value}" for value in card.artifact_ids)
+        keys.extend(f"anchor:{value}" for value in card.anchor_ids)
+        keys.extend(f"entity:{value}" for value in card.entity_ids)
+        if card.anchor_period_id:
+            keys.append(f"period:{card.anchor_period_id}")
+        keys.extend(f"identity:{value}" for value in card.member_identity_hashes)
+        keys.extend(f"source:{value}" for value in card.source_ids)
         return sorted(set(keys))
 
     candidate_index = MultiKeyBoundedIndex()
-    keys_by_package = {package_id: index_keys(package) for package_id, package in active.items()}
+    keys_by_package = {
+        package_id: index_keys(package_cards[package_id]) for package_id in active
+    }
     for package_id in sorted(active):
         candidate_index.add(package_id, keys_by_package[package_id])
     pair_rows: list[
@@ -376,11 +388,15 @@ def run_package_wave_c(
                 continue
             seen_pairs.add(pair_key)
             left, right = active[left_id], active[right_id]
-            routes, _ = engine._package_pair_signals(left, right, {})
-            boundary = engine._package_pair_boundary(left, right, routes)
+            routes, _ = package_card_signals(
+                package_cards[left_id], package_cards[right_id]
+            )
+            boundary = engine._n13_card_boundary(
+                package_cards[left_id], package_cards[right_id], routes
+            )
             if boundary.hard_blocked:
                 hard_blocked += 1
-                engine.registry.append_decision_audit(
+                audit_buffer.append(
                     DecisionAuditRecord(
                         audit_id=stable_id(
                             "package-wave-c-boundary",
@@ -444,10 +460,7 @@ def run_package_wave_c(
         tuple[EventPackage, EventPackage, list[RecallRoute], PackagePairBoundary, float]
     ] = []
     for left, right, routes, boundary, score in bounded:
-        shared_clean_anchor = bool(
-            boundary.shared_anchor_ids and not left.anchor_conflict and not right.anchor_conflict
-        )
-        if boundary.shared_artifact_ids or shared_clean_anchor:
+        if boundary.shared_artifact_ids or boundary.shared_anchor_ids:
             direct_same.add((left.package_id, right.package_id))
         elif score >= 1.5:
             residual.append((left, right, routes, boundary, score))
@@ -487,7 +500,6 @@ def run_package_wave_c(
         }
         for package_id in package_ids:
             package = package_by_id[package_id]
-            members = engine._package_member_events(package)
             cards[short_by_full[package_id]] = {
                 "kind": package.package_kind.value,
                 "family": package.package_family.value,
@@ -497,7 +509,9 @@ def run_package_wave_c(
                 "period": package.anchor_period_id,
                 "entities": package.anchor_entities[:4],
                 "member_count": len(package.member_event_ids),
-                "representatives": [event.canonical_proposition for event in members[:3]],
+                "representatives": list(
+                    package_cards[package_id].representative_propositions
+                ),
             }
         for index, (left, right, _routes, boundary, _) in enumerate(batch, start=1):
             pair_id = f"r{index}"
@@ -507,17 +521,17 @@ def run_package_wave_c(
                 "l": short_by_full[left.package_id],
                 "r": short_by_full[right.package_id],
             }
-            compact_boundary = boundary.compact_signals()
+            compact_boundary = boundary.compact_signals(include_object_scope=False)
             if compact_boundary:
                 pair["boundary"] = compact_boundary
             pairs.append(pair)
         request = StructuredModelRequest(
             system_prompt=(
-                "Decide whether both cards identify one specific parent occurrence or "
-                "continuing matter. Different child facts may share that parent; shared topic, "
-                "source, or entity alone does not prove it. Use the supplied scope differences "
-                "when deciding the parent boundary. Return each pair once as SAME_PARENT, "
-                "DIFFERENT_PARENT, or UNCERTAIN."
+                "Judge shared parent membership, not Atomic equality. Different child facts, "
+                "missing detail, or Package-family differences do not by themselves create a "
+                "new parent. Choose DIFFERENT_PARENT only for a material parent-boundary "
+                "conflict; shared topic, source, or entity alone is insufficient. Return each "
+                "pair once as SAME_PARENT, DIFFERENT_PARENT, or UNCERTAIN."
             ),
             user_prompt=compact_json({"packages": cards, "pairs": pairs}),
             json_schema=PackageLateDecisionBatch.model_json_schema(),
@@ -544,7 +558,9 @@ def run_package_wave_c(
         return batch_index, same, len(pair_by_short) - len(returned)
 
     if batches:
-        with ThreadPoolExecutor(max_workers=min(16, len(batches))) as pool:
+        with ThreadPoolExecutor(
+            max_workers=min(config.package_active_requests, len(batches))
+        ) as pool:
             outputs = list(pool.map(decide_batch, enumerate(batches)))
         for _, same, failed in sorted(outputs):
             model_same.update(same)
@@ -556,6 +572,19 @@ def run_package_wave_c(
     spokes_by_hub: dict[str, int] = defaultdict(int)
     consumed: set[str] = set()
     applied: list[dict[str, object]] = []
+
+    def current_card(package: EventPackage) -> N13PackageCard:
+        cached = package_cards.get(package.package_id)
+        if cached is not None and cached.package_version == package.version:
+            return cached
+        compiled = engine._n13_package_cards(
+            [package],
+            {},
+            read_snapshot=read_snapshot,
+        )[package.package_id]
+        package_cards[package.package_id] = compiled
+        return compiled
+
     for left_id, right_id, source_kind in candidate_edges:
         left_root = engine.registry.resolve_package_root(left_id)
         right_root = engine.registry.resolve_package_root(right_id)
@@ -565,12 +594,13 @@ def run_package_wave_c(
         current_right = engine.registry.get_current_package(right_root)
         if current_left is None or current_right is None:
             continue
-        current_routes, _ = engine._package_pair_signals(current_left, current_right, {})
-        current_boundary = engine._package_pair_boundary(
-            current_left, current_right, current_routes
+        left_card, right_card = current_card(current_left), current_card(current_right)
+        current_routes, _ = package_card_signals(left_card, right_card)
+        current_boundary = engine._n13_card_boundary(
+            left_card, right_card, current_routes
         )
         if current_boundary.hard_blocked:
-            engine.registry.append_decision_audit(
+            audit_buffer.append(
                 DecisionAuditRecord(
                     audit_id=stable_id(
                         "package-wave-c-apply-boundary",
@@ -616,12 +646,15 @@ def run_package_wave_c(
             run_id=run_id,
             decision=decision,
         )
-        engine._merge_package_pair(
+        merged = engine._merge_package_pair(
             target,
             source,
             run_id=run_id,
             reason=source_kind,
         )
+        package_cards[target.package_id] = engine._n13_package_cards(
+            [merged], {}, read_snapshot=read_snapshot
+        )[target.package_id]
         consumed.add(source.package_id)
         spokes_by_hub[target.package_id] += 1
         applied.append(
@@ -632,7 +665,7 @@ def run_package_wave_c(
             }
         )
 
-    engine.registry.append_decision_audit(
+    audit_buffer.append(
         DecisionAuditRecord(
             audit_id=stable_id("package-wave-c-audit", {"run": run_id}),
             run_id=run_id,
@@ -649,6 +682,19 @@ def run_package_wave_c(
             },
         )
     )
+    if getattr(engine, "_bulk_batch_audit_write", False):
+        audit_result = engine.registry.append_decision_audits(audit_buffer, chunk_size=512)
+    else:
+        inserted = sum(engine.registry.append_decision_audit(item) for item in audit_buffer)
+        audit_result = {
+            "inserted": inserted,
+            "reused": len(audit_buffer) - inserted,
+            "conflicted": 0,
+            "degraded": 0,
+            "transactions": len(audit_buffer),
+        }
+    if audit_result["conflicted"] or audit_result["degraded"]:
+        engine._bulk_audit_degraded = True
     result_roots = {
         root
         for package in packages
@@ -665,6 +711,12 @@ def run_package_wave_c(
         "m3_task_count": len(residual),
         "m3_merge_count": sum(item["decision_source"] == "N12_WAVE_C_M3" for item in applied),
         "failed_neutral_count": failed_neutral,
+        "pair_registry_read_count": 0,
+        "snapshot_load_ms": read_snapshot.load_ms,
+        "snapshot_query_count": read_snapshot.query_count,
+        "audit_buffered_count": len(audit_buffer),
+        "audit_transaction_count": audit_result["transactions"],
+        "audit_degraded": bool(audit_result["conflicted"] or audit_result["degraded"]),
         "hard_blocked_count": hard_blocked,
         "scheduler_edges": candidate_index.stats().emitted_edges,
         "scheduler_edge_cap": 16 * len(active),

@@ -1560,6 +1560,31 @@ class SQLiteCDECRRegistry:
             ).fetchall()
         return [EventPackage.model_validate_json(str(row["payload_json"])) for row in rows]
 
+    def list_packages_for_events(self, event_ids: Sequence[str]) -> dict[str, list[str]]:
+        ordered = sorted(set(event_ids))
+        output: dict[str, list[str]] = {event_id: [] for event_id in ordered}
+        for offset in range(0, len(ordered), 800):
+            chunk = ordered[offset : offset + 800]
+            if not chunk:
+                continue
+            placeholders = ",".join("?" for _ in chunk)
+            with self._connection() as connection:
+                rows = connection.execute(
+                    f"""
+                    SELECT memberships.event_id, memberships.package_id
+                    FROM active_package_memberships memberships
+                    LEFT JOIN package_redirects redirects
+                      ON redirects.source_package_id = memberships.package_id
+                    WHERE memberships.event_id IN ({placeholders})
+                      AND redirects.source_package_id IS NULL
+                    ORDER BY memberships.event_id, memberships.package_id
+                    """,
+                    tuple(chunk),
+                ).fetchall()
+            for row in rows:
+                output[str(row["event_id"])].append(str(row["package_id"]))
+        return output
+
     def recall_atomic_event_ids(
         self,
         *,
@@ -1878,16 +1903,38 @@ class SQLiteCDECRRegistry:
         insert_values: tuple[object, ...],
     ) -> bool:
         with self._connection() as connection:
-            existing = connection.execute(
-                f"SELECT payload_json FROM {table} WHERE {id_column} = ?", (record_id,)
-            ).fetchone()
-            if existing is not None:
-                if str(existing["payload_json"]) == payload:
-                    return False
-                raise ImmutableRecordConflict(f"{table} record {record_id!r} is immutable")
-            connection.execute(insert_sql, insert_values)
+            saved = self._save_immutable_in_transaction(
+                connection,
+                table=table,
+                id_column=id_column,
+                record_id=record_id,
+                payload=payload,
+                insert_sql=insert_sql,
+                insert_values=insert_values,
+            )
             connection.commit()
-            return True
+            return saved
+
+    @staticmethod
+    def _save_immutable_in_transaction(
+        connection: sqlite3.Connection,
+        *,
+        table: str,
+        id_column: str,
+        record_id: str,
+        payload: str,
+        insert_sql: str,
+        insert_values: tuple[object, ...],
+    ) -> bool:
+        existing = connection.execute(
+            f"SELECT payload_json FROM {table} WHERE {id_column} = ?", (record_id,)
+        ).fetchone()
+        if existing is not None:
+            if str(existing["payload_json"]) == payload:
+                return False
+            raise ImmutableRecordConflict(f"{table} record {record_id!r} is immutable")
+        connection.execute(insert_sql, insert_values)
+        return True
 
     def save_source(self, source: SourceMessage, *, fingerprint: str) -> bool:
         payload = _json_payload(source)
@@ -1958,55 +2005,79 @@ class SQLiteCDECRRegistry:
         version_insert_values: tuple[object, ...],
         mention_ids: Sequence[str] = (),
     ) -> bool:
-        id_column = "event_id" if object_name == "atomic event" else "package_id"
         with self._connection() as connection:
             connection.execute("BEGIN IMMEDIATE")
-            existing_version = connection.execute(
-                f"SELECT payload_json FROM {version_table} WHERE {id_column} = ? AND version = ?",
-                (object_id, version),
-            ).fetchone()
-            if existing_version is not None:
-                if existing_version["payload_json"] == payload:
-                    connection.rollback()
-                    return False
-                connection.rollback()
-                raise ImmutableRecordConflict(
-                    f"{object_name} {object_id!r} version {version} is immutable"
-                )
-            head = connection.execute(
-                f"SELECT current_version FROM {head_table} WHERE {id_column} = ?", (object_id,)
-            ).fetchone()
-            if head is None:
-                if version != 1:
-                    connection.rollback()
-                    raise VersionConflict(f"new {object_name} must start at version 1")
-                connection.execute(
-                    f"INSERT INTO {head_table}({id_column}, current_version) VALUES (?, 1)",
-                    (object_id,),
-                )
-            else:
-                current = int(head["current_version"])
-                if version != current + 1:
-                    connection.rollback()
-                    raise VersionConflict(
-                        f"{object_name} {object_id!r} must advance from {current} to {current + 1}"
-                    )
-            connection.execute(version_insert_sql, version_insert_values)
-            if mention_ids:
-                connection.executemany(
-                    """
-                    INSERT INTO atomic_event_mentions(event_id, event_version, mention_id)
-                    VALUES (?, ?, ?)
-                    """,
-                    [(object_id, version, mention_id) for mention_id in mention_ids],
-                )
-            if head is not None:
-                connection.execute(
-                    f"UPDATE {head_table} SET current_version = ? WHERE {id_column} = ?",
-                    (version, object_id),
-                )
+            saved = self._save_versioned_in_transaction(
+                connection,
+                object_name=object_name,
+                object_id=object_id,
+                version=version,
+                payload=payload,
+                head_table=head_table,
+                version_table=version_table,
+                version_insert_sql=version_insert_sql,
+                version_insert_values=version_insert_values,
+                mention_ids=mention_ids,
+            )
             connection.commit()
-            return True
+            return saved
+
+    def _save_versioned_in_transaction(
+        self,
+        connection: sqlite3.Connection,
+        *,
+        object_name: str,
+        object_id: str,
+        version: int,
+        payload: str,
+        head_table: str,
+        version_table: str,
+        version_insert_sql: str,
+        version_insert_values: tuple[object, ...],
+        mention_ids: Sequence[str] = (),
+    ) -> bool:
+        id_column = "event_id" if object_name == "atomic event" else "package_id"
+        existing_version = connection.execute(
+            f"SELECT payload_json FROM {version_table} WHERE {id_column} = ? AND version = ?",
+            (object_id, version),
+        ).fetchone()
+        if existing_version is not None:
+            if existing_version["payload_json"] == payload:
+                return False
+            raise ImmutableRecordConflict(
+                f"{object_name} {object_id!r} version {version} is immutable"
+            )
+        head = connection.execute(
+            f"SELECT current_version FROM {head_table} WHERE {id_column} = ?", (object_id,)
+        ).fetchone()
+        if head is None:
+            if version != 1:
+                raise VersionConflict(f"new {object_name} must start at version 1")
+            connection.execute(
+                f"INSERT INTO {head_table}({id_column}, current_version) VALUES (?, 1)",
+                (object_id,),
+            )
+        else:
+            current = int(head["current_version"])
+            if version != current + 1:
+                raise VersionConflict(
+                    f"{object_name} {object_id!r} must advance from {current} to {current + 1}"
+                )
+        connection.execute(version_insert_sql, version_insert_values)
+        if mention_ids:
+            connection.executemany(
+                """
+                INSERT INTO atomic_event_mentions(event_id, event_version, mention_id)
+                VALUES (?, ?, ?)
+                """,
+                [(object_id, version, mention_id) for mention_id in mention_ids],
+            )
+        if head is not None:
+            connection.execute(
+                f"UPDATE {head_table} SET current_version = ? WHERE {id_column} = ?",
+                (version, object_id),
+            )
+        return True
 
     def save_atomic_event(self, event: AtomicEvent) -> bool:
         payload = _json_payload(event)
@@ -2064,7 +2135,407 @@ class SQLiteCDECRRegistry:
         self._refresh_package_recall(package)
         return saved
 
+    def _append_audit_in_transaction(
+        self, connection: sqlite3.Connection, record: DecisionAuditRecord
+    ) -> bool:
+        payload = _json_payload(record.payload)
+        existing = connection.execute(
+            "SELECT * FROM decision_audits WHERE audit_id = ?", (record.audit_id,)
+        ).fetchone()
+        comparable = (record.run_id, record.decision_type, record.subject_id, payload)
+        if existing is not None:
+            stored = tuple(
+                existing[name]
+                for name in ("run_id", "decision_type", "subject_id", "payload_json")
+            )
+            if stored == comparable:
+                return False
+            raise ImmutableRecordConflict(f"decision audit {record.audit_id!r} is immutable")
+        connection.execute(
+            """
+            INSERT INTO decision_audits(
+                audit_id, run_id, decision_type, subject_id, payload_json, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (record.audit_id, *comparable, _now()),
+        )
+        return True
+
+    def save_atomic_stage_batch(
+        self,
+        records: Sequence[dict[str, Any]],
+        *,
+        chunk_size: int = 64,
+    ) -> dict[str, int]:
+        """Commit Atomic versions, assignments and audits as real chunk transactions.
+
+        Each record accepts ``event`` plus optional ``assignment`` and ``audits``.  The
+        caller is responsible for preserving the serial business-decision order; this
+        method preserves it by sorting event versions within each stable input ordinal.
+        """
+
+        counts = {"rows": 0, "transactions": 0, "retries": 0, "degraded": 0}
+        indexed = list(enumerate(records))
+
+        def write(chunk: Sequence[tuple[int, dict[str, Any]]]) -> None:
+            if not chunk:
+                return
+            try:
+                with self._connection() as connection:
+                    connection.execute("BEGIN IMMEDIATE")
+                    for _, record in chunk:
+                        event = record.get("event")
+                        if event is not None:
+                            assert isinstance(event, AtomicEvent)
+                            payload = _json_payload(event)
+                            self._save_versioned_in_transaction(
+                                connection,
+                                object_name="atomic event",
+                                object_id=event.event_id,
+                                version=event.version,
+                                payload=payload,
+                                head_table="atomic_event_heads",
+                                version_table="atomic_event_versions",
+                                version_insert_sql="""
+                                    INSERT INTO atomic_event_versions(
+                                        event_id, version, event_family, assertion_state,
+                                        payload_json, created_at
+                                    ) VALUES (?, ?, ?, ?, ?, ?)
+                                """,
+                                version_insert_values=(
+                                    event.event_id,
+                                    event.version,
+                                    event.event_family.value,
+                                    event.assertion_state.value,
+                                    payload,
+                                    _now(),
+                                ),
+                                mention_ids=event.mention_ids,
+                            )
+                            self._refresh_atomic_recall_in_transaction(connection, event)
+                        assignment = record.get("assignment")
+                        if assignment is not None:
+                            payload = _json_payload(assignment)
+                            self._save_immutable_in_transaction(
+                                connection,
+                                table="atomic_assignment_decisions",
+                                id_column="assignment_id",
+                                record_id=assignment.assignment_id,
+                                payload=payload,
+                                insert_sql="""
+                                    INSERT INTO atomic_assignment_decisions(
+                                        assignment_id, run_id, mention_id, candidate_event_id,
+                                        resulting_event_id, action, relation,
+                                        identity_processing_key, assignment_policy_version,
+                                        payload_json, created_at
+                                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                """,
+                                insert_values=(
+                                    assignment.assignment_id,
+                                    assignment.run_id,
+                                    assignment.mention_id,
+                                    assignment.candidate_event_id,
+                                    assignment.resulting_event_id,
+                                    assignment.action.value,
+                                    assignment.relation.value if assignment.relation else None,
+                                    assignment.identity_processing_key,
+                                    assignment.assignment_policy_version,
+                                    payload,
+                                    _now(),
+                                ),
+                            )
+                        audits = sorted(
+                            record.get("audits", ()), key=lambda item: item.audit_id
+                        )
+                        for audit in audits:
+                            self._append_audit_in_transaction(connection, audit)
+                    checkpoints = [
+                        record["checkpoint"]
+                        for _, record in chunk
+                        if record.get("checkpoint") is not None
+                    ]
+                    for checkpoint in checkpoints:
+                        now = _now()
+                        connection.execute(
+                            """
+                            INSERT INTO bulk_epoch_tasks(
+                                epoch_id, stage, task_id, component_id, input_hash,
+                                snapshot_hash, status, attempt_count, decision_ref_json,
+                                error_code, started_at, finished_at, updated_at
+                            ) VALUES (?, ?, ?, NULL, ?, ?, 'SUCCEEDED', 1, ?, NULL, ?, ?, ?)
+                            ON CONFLICT(epoch_id, stage, task_id) DO UPDATE SET
+                                input_hash=excluded.input_hash,
+                                snapshot_hash=excluded.snapshot_hash,
+                                status='SUCCEEDED',
+                                decision_ref_json=excluded.decision_ref_json,
+                                error_code=NULL,
+                                finished_at=excluded.finished_at,
+                                updated_at=excluded.updated_at
+                            """,
+                            (
+                                checkpoint["epoch_id"],
+                                checkpoint["stage"],
+                                checkpoint["task_id"],
+                                checkpoint["input_hash"],
+                                checkpoint["snapshot_hash"],
+                                _json_payload(checkpoint.get("decision_ref", {})),
+                                now,
+                                now,
+                                now,
+                            ),
+                        )
+                    connection.commit()
+                counts["rows"] += len(chunk)
+                counts["transactions"] += 1
+            except (ImmutableRecordConflict, VersionConflict, RegistryError, sqlite3.Error):
+                if len(chunk) > 1:
+                    counts["retries"] += 1
+                    middle = len(chunk) // 2
+                    write(chunk[:middle])
+                    write(chunk[middle:])
+                else:
+                    counts["degraded"] += 1
+
+        for offset in range(0, len(indexed), max(1, chunk_size)):
+            write(indexed[offset : offset + max(1, chunk_size)])
+        return counts
+
+    def save_package_stage_batch(
+        self,
+        records: Sequence[dict[str, Any]],
+        *,
+        chunk_size: int = 64,
+    ) -> dict[str, int]:
+        """Commit Package versions, memberships, assignments and audits per chunk."""
+
+        counts = {"rows": 0, "transactions": 0, "retries": 0, "degraded": 0}
+        indexed = list(enumerate(records))
+
+        def write(chunk: Sequence[tuple[int, dict[str, Any]]]) -> None:
+            if not chunk:
+                return
+            try:
+                with self._connection() as connection:
+                    connection.execute("BEGIN IMMEDIATE")
+                    for _, record in chunk:
+                        package = record.get("package")
+                        if package is not None:
+                            assert isinstance(package, EventPackage)
+                            payload = _json_payload(package)
+                            self._save_versioned_in_transaction(
+                                connection,
+                                object_name="event package",
+                                object_id=package.package_id,
+                                version=package.version,
+                                payload=payload,
+                                head_table="event_package_heads",
+                                version_table="event_package_versions",
+                                version_insert_sql="""
+                                    INSERT INTO event_package_versions(
+                                        package_id, version, package_kind, package_family, status,
+                                        quality_state, payload_json, created_at
+                                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                                """,
+                                version_insert_values=(
+                                    package.package_id,
+                                    package.version,
+                                    package.package_kind.value,
+                                    package.package_family.value,
+                                    package.status.value,
+                                    package.quality_state.value,
+                                    payload,
+                                    _now(),
+                                ),
+                            )
+                            self._refresh_package_recall_in_transaction(connection, package)
+                        for membership in sorted(
+                            record.get("memberships", ()), key=lambda item: item.membership_id
+                        ):
+                            payload = _json_payload(membership)
+                            saved = self._save_immutable_in_transaction(
+                                connection,
+                                table="package_memberships",
+                                id_column="membership_id",
+                                record_id=membership.membership_id,
+                                payload=payload,
+                                insert_sql="""
+                                    INSERT INTO package_memberships(
+                                        membership_id, event_id, package_id, relation,
+                                        payload_json, created_at
+                                    ) VALUES (?, ?, ?, ?, ?, ?)
+                                """,
+                                insert_values=(
+                                    membership.membership_id,
+                                    membership.event_id,
+                                    membership.package_id,
+                                    membership.relation.value,
+                                    payload,
+                                    _now(),
+                                ),
+                            )
+                            if saved:
+                                current = connection.execute(
+                                    """
+                                    SELECT package_id FROM active_package_memberships
+                                    WHERE event_id = ?
+                                    """,
+                                    (membership.event_id,),
+                                ).fetchone()
+                                source_id = (
+                                    str(current["package_id"])
+                                    if current is not None
+                                    else None
+                                )
+                                if source_id == membership.package_id:
+                                    continue
+                                action = "ADD" if source_id is None else "MOVE"
+                                decision_id = f"membership-decision:{membership.membership_id}"
+                                decision_payload = {
+                                    "decision_id": decision_id,
+                                    "run_id": None,
+                                    "action": action,
+                                    "event_id": membership.event_id,
+                                    "source_package_id": source_id,
+                                    "target_package_id": membership.package_id,
+                                    "relation": membership.relation.value,
+                                    "reason": f"LEGACY_SAVE_MEMBERSHIP_{action}",
+                                    "version": 1,
+                                }
+                                connection.execute(
+                                    """
+                                    INSERT INTO package_membership_decisions(
+                                        decision_id, run_id, action, event_id, source_package_id,
+                                        target_package_id, relation, reason, payload_json,
+                                        created_at
+                                    ) VALUES (?, NULL, ?, ?, ?, ?, ?, ?, ?, ?)
+                                    """,
+                                    (
+                                        decision_id,
+                                        action,
+                                        membership.event_id,
+                                        source_id,
+                                        membership.package_id,
+                                        membership.relation.value,
+                                        f"LEGACY_SAVE_MEMBERSHIP_{action}",
+                                        _json_payload(decision_payload),
+                                        _now(),
+                                    ),
+                                )
+                                connection.execute(
+                                    """
+                                    INSERT INTO active_package_memberships(
+                                        event_id, package_id, relation, decision_id, updated_at
+                                    ) VALUES (?, ?, ?, ?, ?)
+                                    ON CONFLICT(event_id) DO UPDATE SET
+                                        package_id=excluded.package_id,
+                                        relation=excluded.relation,
+                                        decision_id=excluded.decision_id,
+                                        updated_at=excluded.updated_at
+                                    """,
+                                    (
+                                        membership.event_id,
+                                        membership.package_id,
+                                        membership.relation.value,
+                                        decision_id,
+                                        _now(),
+                                    ),
+                                )
+                        assignment = record.get("assignment")
+                        if assignment is not None:
+                            payload = _json_payload(assignment)
+                            self._save_immutable_in_transaction(
+                                connection,
+                                table="package_assignment_decisions",
+                                id_column="assignment_id",
+                                record_id=assignment.assignment_id,
+                                payload=payload,
+                                insert_sql="""
+                                    INSERT INTO package_assignment_decisions(
+                                        assignment_id, run_id, event_id, candidate_package_id,
+                                        resulting_package_id, action, relation,
+                                        assignment_processing_key, payload_json, created_at
+                                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                """,
+                                insert_values=(
+                                    assignment.assignment_id,
+                                    assignment.run_id,
+                                    assignment.event_id,
+                                    assignment.candidate_package_id,
+                                    assignment.resulting_package_id,
+                                    assignment.action.value,
+                                    assignment.relation.value if assignment.relation else None,
+                                    assignment.package_assignment_key,
+                                    payload,
+                                    _now(),
+                                ),
+                            )
+                        audits = sorted(
+                            record.get("audits", ()), key=lambda item: item.audit_id
+                        )
+                        for audit in audits:
+                            self._append_audit_in_transaction(connection, audit)
+                    checkpoints = [
+                        record["checkpoint"]
+                        for _, record in chunk
+                        if record.get("checkpoint") is not None
+                    ]
+                    for checkpoint in checkpoints:
+                        now = _now()
+                        connection.execute(
+                            """
+                            INSERT INTO bulk_epoch_tasks(
+                                epoch_id, stage, task_id, component_id, input_hash,
+                                snapshot_hash, status, attempt_count, decision_ref_json,
+                                error_code, started_at, finished_at, updated_at
+                            ) VALUES (?, ?, ?, NULL, ?, ?, 'SUCCEEDED', 1, ?, NULL, ?, ?, ?)
+                            ON CONFLICT(epoch_id, stage, task_id) DO UPDATE SET
+                                input_hash=excluded.input_hash,
+                                snapshot_hash=excluded.snapshot_hash,
+                                status='SUCCEEDED',
+                                decision_ref_json=excluded.decision_ref_json,
+                                error_code=NULL,
+                                finished_at=excluded.finished_at,
+                                updated_at=excluded.updated_at
+                            """,
+                            (
+                                checkpoint["epoch_id"],
+                                checkpoint["stage"],
+                                checkpoint["task_id"],
+                                checkpoint["input_hash"],
+                                checkpoint["snapshot_hash"],
+                                _json_payload(checkpoint.get("decision_ref", {})),
+                                now,
+                                now,
+                                now,
+                            ),
+                        )
+                    connection.commit()
+                counts["rows"] += len(chunk)
+                counts["transactions"] += 1
+            except (ImmutableRecordConflict, VersionConflict, RegistryError, sqlite3.Error):
+                if len(chunk) > 1:
+                    counts["retries"] += 1
+                    middle = len(chunk) // 2
+                    write(chunk[:middle])
+                    write(chunk[middle:])
+                else:
+                    counts["degraded"] += 1
+
+        for offset in range(0, len(indexed), max(1, chunk_size)):
+            write(indexed[offset : offset + max(1, chunk_size)])
+        return counts
+
     def _refresh_atomic_recall(self, event: AtomicEvent) -> None:
+        with self._connection() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            self._refresh_atomic_recall_in_transaction(connection, event)
+            connection.commit()
+
+    def _refresh_atomic_recall_in_transaction(
+        self,
+        connection: sqlite3.Connection,
+        event: AtomicEvent,
+    ) -> None:
         fields = event.identity_profile.fields.model_dump(mode="json")
         schema_type = event.identity_profile.schema_type
         reference_period = fields.get("period_id") or fields.get("reference_period_id")
@@ -2080,9 +2551,8 @@ class SQLiteCDECRRegistry:
         normalized_predicate = ""
         source_fingerprints: set[str] = set()
         field_ids: set[tuple[FieldNamespace, str]] = set()
-        with self._connection() as connection:
-            placeholders = ",".join("?" for _ in event.mention_ids)
-            rows = connection.execute(
+        placeholders = ",".join("?" for _ in event.mention_ids)
+        rows = connection.execute(
                 f"""
                 SELECT mentions.payload_json, sources.fingerprint
                 FROM event_mentions mentions
@@ -2091,28 +2561,27 @@ class SQLiteCDECRRegistry:
                 ORDER BY mentions.mention_id
                 """,
                 tuple(event.mention_ids),
-            ).fetchall()
-            for row in rows:
-                mention = EventMention.model_validate_json(str(row["payload_json"]))
-                if not normalized_predicate:
-                    normalized_predicate = mention.predicate.normalized
-                source_fingerprints.add(str(row["fingerprint"]))
-            field_rows = connection.execute(
+        ).fetchall()
+        for row in rows:
+            mention = EventMention.model_validate_json(str(row["payload_json"]))
+            if not normalized_predicate:
+                normalized_predicate = mention.predicate.normalized
+            source_fingerprints.add(str(row["fingerprint"]))
+        field_rows = connection.execute(
                 f"""
                 SELECT links.registry_id
                 FROM canonical_field_links links
                 WHERE links.mention_id IN ({placeholders})
                 """,
                 tuple(event.mention_ids),
-            ).fetchall()
-            for row in field_rows:
-                root = self._resolve_field_entry(connection, str(row["registry_id"]), max_depth=16)
-                if root is not None and root.namespace in ATOMIC_FIELD_RECALL_NAMESPACES:
-                    field_ids.add((root.namespace, root.id))
-            start = event.time.event_start.isoformat() if event.time.event_start else None
-            end = event.time.event_end.isoformat() if event.time.event_end else start
-            connection.execute("BEGIN IMMEDIATE")
-            connection.execute(
+        ).fetchall()
+        for row in field_rows:
+            root = self._resolve_field_entry(connection, str(row["registry_id"]), max_depth=16)
+            if root is not None and root.namespace in ATOMIC_FIELD_RECALL_NAMESPACES:
+                field_ids.add((root.namespace, root.id))
+        start = event.time.event_start.isoformat() if event.time.event_start else None
+        end = event.time.event_end.isoformat() if event.time.event_end else start
+        connection.execute(
                 """
                 INSERT INTO atomic_event_recall(
                     event_id, current_version, event_family, normalized_predicate,
@@ -2142,28 +2611,28 @@ class SQLiteCDECRRegistry:
                     end,
                     _now(),
                 ),
-            )
-            connection.execute(
-                "DELETE FROM atomic_event_recall_entities WHERE event_id = ?", (event.event_id,)
-            )
-            connection.executemany(
+        )
+        connection.execute(
+            "DELETE FROM atomic_event_recall_entities WHERE event_id = ?", (event.event_id,)
+        )
+        connection.executemany(
                 "INSERT INTO atomic_event_recall_entities(event_id, entity_id) VALUES (?, ?)",
                 [(event.event_id, entity_id) for entity_id in sorted(entity_ids)],
-            )
-            connection.execute(
-                "DELETE FROM atomic_event_recall_sources WHERE event_id = ?", (event.event_id,)
-            )
-            connection.executemany(
+        )
+        connection.execute(
+            "DELETE FROM atomic_event_recall_sources WHERE event_id = ?", (event.event_id,)
+        )
+        connection.executemany(
                 """
                 INSERT INTO atomic_event_recall_sources(event_id, source_fingerprint)
                 VALUES (?, ?)
                 """,
                 [(event.event_id, value) for value in sorted(source_fingerprints)],
-            )
-            connection.execute(
-                "DELETE FROM atomic_event_recall_fields WHERE event_id = ?", (event.event_id,)
-            )
-            connection.executemany(
+        )
+        connection.execute(
+            "DELETE FROM atomic_event_recall_fields WHERE event_id = ?", (event.event_id,)
+        )
+        connection.executemany(
                 """
                 INSERT INTO atomic_event_recall_fields(event_id, namespace, canonical_id)
                 VALUES (?, ?, ?)
@@ -2174,8 +2643,7 @@ class SQLiteCDECRRegistry:
                         field_ids, key=lambda item: (item[0].value, item[1])
                     )
                 ],
-            )
-            connection.commit()
+        )
 
     def _refresh_package_recall(self, package: EventPackage) -> None:
         start = package.time_range.start.isoformat() if package.time_range.start else None
@@ -2544,8 +3012,36 @@ class SQLiteCDECRRegistry:
                     _field_surface_key(stored.canonical_text),
                     *(_field_surface_key(alias) for alias in stored.aliases),
                 }
-                if stored.namespace is entry.namespace and (same_external or same_surface):
-                    connection.rollback()
+                same_parent_anchor = (
+                    stored.namespace is FieldNamespace.PACKAGE_ANCHOR
+                    and entry.namespace is FieldNamespace.PACKAGE_ANCHOR
+                )
+                if stored.namespace is entry.namespace and (
+                    same_external or same_surface or same_parent_anchor
+                ):
+                    if same_parent_anchor:
+                        aliases: list[str] = []
+                        alias_keys: set[str] = set()
+                        for alias in (
+                            *stored.aliases,
+                            stored.canonical_text,
+                            entry.canonical_text,
+                            *entry.aliases,
+                        ):
+                            key = _field_surface_key(alias)
+                            if not key or key in alias_keys:
+                                continue
+                            aliases.append(alias)
+                            alias_keys.add(key)
+                            if len(aliases) >= 8:
+                                break
+                        connection.execute(
+                            "UPDATE canonical_field_registry SET aliases_json = ? WHERE id = ?",
+                            (_json_payload(aliases), stored.id),
+                        )
+                        connection.commit()
+                    else:
+                        connection.rollback()
                     return False
                 raise ImmutableRecordConflict(
                     f"canonical field registry entry {entry.id!r} already exists"
@@ -2798,6 +3294,57 @@ class SQLiteCDECRRegistry:
             for row in rows
         ]
 
+    def list_all_field_links(self, *, limit: int = 1000000) -> list[CanonicalFieldLink]:
+        if limit < 1 or limit > 2000000:
+            raise ValueError("field link list limit must be between 1 and 2000000")
+        with self._connection() as connection:
+            rows = connection.execute(
+                "SELECT * FROM canonical_field_links ORDER BY mention_id, field_path LIMIT ?",
+                (limit,),
+            ).fetchall()
+        return [
+            CanonicalFieldLink(
+                mention_id=str(row["mention_id"]),
+                field_path=str(row["field_path"]),
+                registry_id=str(row["registry_id"]),
+                method=FieldLinkMethod(str(row["method"])),
+            )
+            for row in rows
+        ]
+
+    def get_field_links_for_mentions(
+        self, mention_ids: Sequence[str]
+    ) -> dict[str, list[CanonicalFieldLink]]:
+        ordered = sorted(set(mention_ids))
+        output: dict[str, list[CanonicalFieldLink]] = {
+            mention_id: [] for mention_id in ordered
+        }
+        for offset in range(0, len(ordered), 800):
+            chunk = ordered[offset : offset + 800]
+            if not chunk:
+                continue
+            placeholders = ",".join("?" for _ in chunk)
+            with self._connection() as connection:
+                rows = connection.execute(
+                    f"""
+                    SELECT * FROM canonical_field_links
+                    WHERE mention_id IN ({placeholders})
+                    ORDER BY mention_id, field_path, registry_id
+                    """,
+                    tuple(chunk),
+                ).fetchall()
+            for row in rows:
+                mention_id = str(row["mention_id"])
+                output[mention_id].append(
+                    CanonicalFieldLink(
+                        mention_id=mention_id,
+                        field_path=str(row["field_path"]),
+                        registry_id=str(row["registry_id"]),
+                        method=FieldLinkMethod(str(row["method"])),
+                    )
+                )
+        return output
+
     def _refresh_field_recall_for_mention(self, mention_id: str) -> None:
         with self._connection() as connection:
             event_rows = connection.execute(
@@ -2888,6 +3435,69 @@ class SQLiteCDECRRegistry:
             )
             connection.commit()
             return True
+
+    def save_embeddings(
+        self,
+        records: Sequence[dict[str, Any]],
+        *,
+        chunk_size: int = 256,
+    ) -> int:
+        inserted = 0
+        ordered = sorted(
+            records,
+            key=lambda item: (
+                str(item["owner_kind"]),
+                str(item["owner_id"]),
+                str(item["model"]),
+                str(item["input_hash"]),
+            ),
+        )
+        for offset in range(0, len(ordered), max(1, chunk_size)):
+            chunk = ordered[offset : offset + max(1, chunk_size)]
+            with self._connection() as connection:
+                connection.execute("BEGIN IMMEDIATE")
+                for record in chunk:
+                    values = array("f", record["vector"])
+                    if sys.byteorder != "little":
+                        values.byteswap()
+                    identity = (
+                        record["owner_kind"],
+                        record["owner_id"],
+                        record["model"],
+                        record["input_hash"],
+                    )
+                    existing = connection.execute(
+                        """
+                        SELECT dimension FROM embeddings
+                        WHERE owner_kind = ? AND owner_id = ? AND model = ? AND input_hash = ?
+                        """,
+                        identity,
+                    ).fetchone()
+                    if existing is not None:
+                        if int(existing["dimension"]) != len(values):
+                            raise ImmutableRecordConflict(
+                                "embedding identity already exists with a different dimension"
+                            )
+                        continue
+                    connection.execute(
+                        """
+                        INSERT INTO embeddings(
+                            embedding_id, owner_kind, owner_id, model, dimension,
+                            input_hash, vector_f32, created_at
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (
+                            record.get("embedding_id") or str(uuid.uuid4()),
+                            *identity[:3],
+                            len(values),
+                            identity[3],
+                            values.tobytes(),
+                            _now(),
+                        ),
+                    )
+                    inserted += 1
+                connection.commit()
+        return inserted
 
     def get_embedding(
         self, *, owner_kind: str, owner_id: str, model: str, input_hash: str
@@ -3306,6 +3916,78 @@ class SQLiteCDECRRegistry:
                 ),
             )
             connection.commit()
+
+    def upsert_bulk_epoch_tasks(
+        self,
+        records: Sequence[dict[str, Any]],
+        *,
+        chunk_size: int = 512,
+    ) -> dict[str, int]:
+        """Persist task transitions in deterministic transactions.
+
+        Attempt semantics are intentionally identical to ``upsert_bulk_epoch_task``:
+        only a RUNNING transition increments the attempt counter.
+        """
+
+        ordered = sorted(
+            records,
+            key=lambda item: (
+                str(item["epoch_id"]),
+                str(item["stage"]),
+                str(item["task_id"]),
+                str(item["status"]),
+            ),
+        )
+        transactions = 0
+        for offset in range(0, len(ordered), max(1, chunk_size)):
+            chunk = ordered[offset : offset + max(1, chunk_size)]
+            with self._connection() as connection:
+                connection.execute("BEGIN IMMEDIATE")
+                for record in chunk:
+                    now = _now()
+                    status = str(record["status"])
+                    started_at = now if status == "RUNNING" else None
+                    finished_at = now if status in {"SUCCEEDED", "FAILED"} else None
+                    decision_ref = record.get("decision_ref")
+                    connection.execute(
+                        """
+                        INSERT INTO bulk_epoch_tasks(
+                            epoch_id, stage, task_id, component_id, input_hash,
+                            snapshot_hash, status, attempt_count, decision_ref_json,
+                            error_code, started_at, finished_at, updated_at
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?)
+                        ON CONFLICT(epoch_id, stage, task_id) DO UPDATE SET
+                            component_id = excluded.component_id,
+                            input_hash = excluded.input_hash,
+                            snapshot_hash = excluded.snapshot_hash,
+                            status = excluded.status,
+                            attempt_count = CASE WHEN excluded.status = 'RUNNING'
+                                THEN bulk_epoch_tasks.attempt_count + 1
+                                ELSE bulk_epoch_tasks.attempt_count END,
+                            decision_ref_json = excluded.decision_ref_json,
+                            error_code = excluded.error_code,
+                            started_at = COALESCE(excluded.started_at, bulk_epoch_tasks.started_at),
+                            finished_at = excluded.finished_at,
+                            updated_at = excluded.updated_at
+                        """,
+                        (
+                            record["epoch_id"],
+                            record["stage"],
+                            record["task_id"],
+                            record.get("component_id"),
+                            record["input_hash"],
+                            record["snapshot_hash"],
+                            status,
+                            _json_payload(decision_ref) if decision_ref is not None else None,
+                            record.get("error_code"),
+                            started_at,
+                            finished_at,
+                            now,
+                        ),
+                    )
+                connection.commit()
+            transactions += 1
+        return {"rows": len(ordered), "transactions": transactions}
 
     def list_bulk_epoch_tasks(
         self, epoch_id: str, *, stage: str | None = None
@@ -4789,3 +5471,98 @@ class SQLiteCDECRRegistry:
             )
             connection.commit()
             return True
+
+    def append_decision_audits(
+        self,
+        records: Sequence[DecisionAuditRecord],
+        *,
+        chunk_size: int = 512,
+    ) -> dict[str, int]:
+        """Append immutable audits with chunk rollback and local conflict isolation."""
+
+        unique: dict[str, DecisionAuditRecord] = {}
+        conflicted = 0
+        for record in sorted(records, key=lambda item: item.audit_id):
+            prior = unique.get(record.audit_id)
+            if prior is not None and _json_payload(prior) != _json_payload(record):
+                conflicted += 1
+                continue
+            unique[record.audit_id] = record
+        counts = {
+            "inserted": 0,
+            "reused": 0,
+            "conflicted": conflicted,
+            "degraded": 0,
+            "transactions": 0,
+            "retries": 0,
+        }
+
+        def write_chunk(chunk: Sequence[DecisionAuditRecord], *, retried: bool = False) -> None:
+            if not chunk:
+                return
+            try:
+                ids = [record.audit_id for record in chunk]
+                placeholders = ",".join("?" for _ in ids)
+                with self._connection() as connection:
+                    connection.execute("BEGIN IMMEDIATE")
+                    rows = connection.execute(
+                        f"SELECT * FROM decision_audits WHERE audit_id IN ({placeholders})",
+                        tuple(ids),
+                    ).fetchall()
+                    existing = {str(row["audit_id"]): row for row in rows}
+                    inserts: list[tuple[object, ...]] = []
+                    for record in chunk:
+                        payload = _json_payload(record.payload)
+                        comparable = (
+                            record.run_id,
+                            record.decision_type,
+                            record.subject_id,
+                            payload,
+                        )
+                        row = existing.get(record.audit_id)
+                        if row is None:
+                            inserts.append((record.audit_id, *comparable, _now()))
+                            continue
+                        stored = tuple(
+                            row[name]
+                            for name in ("run_id", "decision_type", "subject_id", "payload_json")
+                        )
+                        if stored != comparable:
+                            raise ImmutableRecordConflict(
+                                f"decision audit {record.audit_id!r} is immutable"
+                            )
+                        counts["reused"] += 1
+                    connection.executemany(
+                        """
+                        INSERT INTO decision_audits(
+                            audit_id, run_id, decision_type, subject_id, payload_json, created_at
+                        ) VALUES (?, ?, ?, ?, ?, ?)
+                        """,
+                        inserts,
+                    )
+                    connection.commit()
+                    counts["inserted"] += len(inserts)
+                    counts["transactions"] += 1
+            except sqlite3.OperationalError:
+                if not retried:
+                    counts["retries"] += 1
+                    write_chunk(chunk, retried=True)
+                    return
+                if len(chunk) > 1:
+                    middle = len(chunk) // 2
+                    write_chunk(chunk[:middle], retried=True)
+                    write_chunk(chunk[middle:], retried=True)
+                    return
+                counts["degraded"] += 1
+            except ImmutableRecordConflict:
+                if len(chunk) > 1:
+                    middle = len(chunk) // 2
+                    write_chunk(chunk[:middle], retried=retried)
+                    write_chunk(chunk[middle:], retried=retried)
+                    return
+                counts["conflicted"] += 1
+
+        ordered = list(unique.values())
+        for offset in range(0, len(ordered), max(1, chunk_size)):
+            write_chunk(ordered[offset : offset + max(1, chunk_size)])
+        return counts

@@ -8,9 +8,13 @@ import math
 import re
 import unicodedata
 import uuid
+from collections import defaultdict
 from collections.abc import Iterable, Sequence
+from concurrent.futures import Future
+from dataclasses import dataclass
 from difflib import SequenceMatcher
 from pathlib import Path
+from threading import Lock, Timer
 
 from pydantic import ValidationError
 
@@ -18,6 +22,7 @@ from cdecr.contracts import EventMention, OpenAttribute, Participant, Participan
 from cdecr.field_coreference_contracts import (
     CanonicalFieldLink,
     CanonicalFieldRegistryEntry,
+    FieldBatchWireOutput,
     FieldCoreferenceCandidate,
     FieldCoreferenceHints,
     FieldCoreferenceInput,
@@ -37,13 +42,18 @@ from cdecr.ports import (
 )
 
 FIELD_REGISTRY_OWNER_KIND = "FIELD_REGISTRY"
-FIELD_PROMPT_VERSION = "v3-bulk-task-coverage"
+FIELD_PROMPT_VERSION = "v4-namespace-batch-wire"
 _FIELD_PROMPT_RESOURCE_VERSION = "v2"
 CANDIDATE_RETRIEVER_VERSION = "field-candidate-retriever-v2"
 MAX_ALIASES = 8
 MAX_CANDIDATES = 8
 EMBEDDING_TOP_K = 5
 EMBEDDING_MATCH_THRESHOLD = 0.82
+FIELD_BATCH_WINDOW_SECONDS = 0.04
+FIELD_BATCH_DEFAULT_SIZE = 12
+FIELD_BATCH_UNKNOWN_SIZE = 8
+FIELD_BATCH_DEFAULT_BYTES = 48_000
+FIELD_BATCH_UNKNOWN_BYTES = 40_000
 _ONTOLOGY_NAMESPACES = {
     FieldNamespace.METRIC,
     FieldNamespace.CONCEPT_PREDICATE,
@@ -155,6 +165,14 @@ _ATTRIBUTE_NAMESPACES = {
 
 class FieldCoreferenceError(RuntimeError):
     """A schema-valid field decision could not be produced."""
+
+
+@dataclass(frozen=True)
+class _PendingFieldDecision:
+    value: FieldCoreferenceInput
+    candidates: tuple[FieldCoreferenceCandidate, ...]
+    run_id: str | None
+    future: Future[FieldCoreferenceModelOutput]
 
 
 def normalize_field_text(value: str, *, company_suffixes: bool = False) -> str:
@@ -355,6 +373,54 @@ class FieldCoreferenceResolver:
             for namespace in FieldNamespace
         }
         self._candidate_dimensions: dict[str, dict[str, str | int | float | bool | None]] = {}
+        self._batch_lock = Lock()
+        self._pending_batches: dict[FieldNamespace, list[_PendingFieldDecision]] = {}
+        self._batch_timers: dict[FieldNamespace, Timer] = {}
+        self._epoch_roots: dict[FieldNamespace, dict[str, CanonicalFieldRegistryEntry]] | None = (
+            None
+        )
+        self._epoch_links: dict[tuple[str, str], CanonicalFieldLink] | None = None
+        self._epoch_embeddings: dict[tuple[str, str], list[float]] | None = None
+        self._embedding_lock = Lock()
+        self._embedding_inflight: dict[tuple[str, str], Future[list[float]]] = {}
+
+    def begin_epoch_snapshot(self) -> None:
+        """Load immutable read inventories once; writes are mirrored into a local overlay."""
+
+        roots: dict[FieldNamespace, dict[str, CanonicalFieldRegistryEntry]] = defaultdict(dict)
+        for entry in self.registry.list_field_registry_entries(limit=100000):
+            root = self.registry.resolve_field_registry_entry(entry.id)
+            if root is not None:
+                roots[root.namespace][root.id] = root
+        self._epoch_roots = roots
+        self._epoch_links = {
+            (link.mention_id, link.field_path): link
+            for link in self.registry.list_all_field_links(limit=2000000)
+        }
+        self._epoch_embeddings = {
+            (item.owner_id, item.input_hash): list(item.vector)
+            for item in self.registry.list_latest_embeddings(
+                owner_kind=FIELD_REGISTRY_OWNER_KIND,
+                model=self.embedding_model,
+                limit=100000,
+            )
+        }
+
+    def end_epoch_snapshot(self) -> None:
+        self._epoch_roots = None
+        self._epoch_links = None
+        self._epoch_embeddings = None
+
+    def _existing_link(self, mention_id: str, field_path: str) -> CanonicalFieldLink | None:
+        if self._epoch_links is not None:
+            return self._epoch_links.get((mention_id, field_path))
+        return self.registry.get_field_link(mention_id, field_path)
+
+    def _save_link(self, link: CanonicalFieldLink) -> bool:
+        changed = self.registry.save_field_link(link)
+        if self._epoch_links is not None:
+            self._epoch_links[(link.mention_id, link.field_path)] = link
+        return changed
 
     def resolve(
         self,
@@ -364,7 +430,7 @@ class FieldCoreferenceResolver:
         field_path: str,
         run_id: str | None = None,
     ) -> FieldCoreferenceResult:
-        existing_link = self.registry.get_field_link(mention_id, field_path)
+        existing_link = self._existing_link(mention_id, field_path)
         if existing_link is not None:
             root = self.registry.resolve_field_registry_entry(existing_link.registry_id)
             if root is None:
@@ -512,7 +578,7 @@ class FieldCoreferenceResolver:
     ) -> FieldCoreferenceResult:
         if not external_id.strip():
             raise ValueError("external_id must not be blank")
-        current_link = self.registry.get_field_link(mention_id, field_path)
+        current_link = self._existing_link(mention_id, field_path)
         current = (
             self.registry.resolve_field_registry_entry(current_link.registry_id)
             if current_link is not None
@@ -548,7 +614,7 @@ class FieldCoreferenceResolver:
             registry_id=trusted.id,
             method=FieldLinkMethod.EXTERNAL_LINKING,
         )
-        self.registry.save_field_link(link)
+        self._save_link(link)
         result = FieldCoreferenceResult(
             canonical_id=trusted.id,
             external_id=external_id,
@@ -640,8 +706,8 @@ class FieldCoreferenceResolver:
         root = self.registry.resolve_field_registry_entry(registry_id)
         if root is None:
             raise FieldCoreferenceError("field link update target does not exist")
-        previous = self.registry.get_field_link(mention_id, field_path)
-        changed = self.registry.save_field_link(
+        previous = self._existing_link(mention_id, field_path)
+        changed = self._save_link(
             CanonicalFieldLink(
                 mention_id=mention_id,
                 field_path=field_path,
@@ -673,6 +739,11 @@ class FieldCoreferenceResolver:
         )
 
     def _root_entries(self, namespace: FieldNamespace) -> list[CanonicalFieldRegistryEntry]:
+        if self._epoch_roots is not None:
+            return [
+                self._epoch_roots[namespace][key]
+                for key in sorted(self._epoch_roots.get(namespace, {}))
+            ]
         roots: dict[str, CanonicalFieldRegistryEntry] = {}
         for entry in self.registry.list_field_registry_entries(namespace=namespace, limit=100000):
             root = self.registry.resolve_field_registry_entry(entry.id)
@@ -764,28 +835,74 @@ class FieldCoreferenceResolver:
         for entry in entries:
             text = registry_embedding_text(entry)
             input_hash = _sha256(text)
-            stored = self.registry.get_embedding(
-                owner_kind=FIELD_REGISTRY_OWNER_KIND,
-                owner_id=entry.id,
-                model=self.embedding_model,
-                input_hash=input_hash,
+            cached_vector = (
+                self._epoch_embeddings.get((entry.id, input_hash))
+                if self._epoch_embeddings is not None
+                else None
             )
-            if stored is None:
+            stored = (
+                None
+                if cached_vector is not None
+                else self.registry.get_embedding(
+                    owner_kind=FIELD_REGISTRY_OWNER_KIND,
+                    owner_id=entry.id,
+                    model=self.embedding_model,
+                    input_hash=input_hash,
+                )
+            )
+            if cached_vector is not None:
+                vectors[entry.id] = list(cached_vector)
+            elif stored is None:
                 missing.append((entry, text, input_hash))
             else:
                 vectors[entry.id] = list(stored.vector)
-        for offset in range(0, len(missing), 10):
-            batch = missing[offset : offset + 10]
-            result = self._embed([item[1] for item in batch], run_id=run_id)
-            for (entry, _, input_hash), vector in zip(batch, result.vectors, strict=True):
-                vectors[entry.id] = vector
-                self.registry.save_embedding(
-                    owner_kind=FIELD_REGISTRY_OWNER_KIND,
-                    owner_id=entry.id,
-                    model=result.model,
-                    input_hash=input_hash,
-                    vector=vector,
+        owned: list[tuple[CanonicalFieldRegistryEntry, str, str, Future[list[float]]]] = []
+        waiting: list[tuple[CanonicalFieldRegistryEntry, Future[list[float]]]] = []
+        with self._embedding_lock:
+            for entry, text, input_hash in missing:
+                key = (entry.id, input_hash)
+                cached = (
+                    self._epoch_embeddings.get(key) if self._epoch_embeddings is not None else None
                 )
+                if cached is not None:
+                    vectors[entry.id] = list(cached)
+                    continue
+                future = self._embedding_inflight.get(key)
+                if future is None:
+                    future = Future()
+                    self._embedding_inflight[key] = future
+                    owned.append((entry, text, input_hash, future))
+                else:
+                    waiting.append((entry, future))
+        for offset in range(0, len(owned), 10):
+            batch = owned[offset : offset + 10]
+            try:
+                result = self._embed([item[1] for item in batch], run_id=run_id)
+                for (entry, _, input_hash, future), vector in zip(
+                    batch, result.vectors, strict=True
+                ):
+                    vector = list(vector)
+                    vectors[entry.id] = vector
+                    self.registry.save_embedding(
+                        owner_kind=FIELD_REGISTRY_OWNER_KIND,
+                        owner_id=entry.id,
+                        model=result.model,
+                        input_hash=input_hash,
+                        vector=vector,
+                    )
+                    with self._embedding_lock:
+                        if self._epoch_embeddings is not None:
+                            self._epoch_embeddings[(entry.id, input_hash)] = vector
+                        self._embedding_inflight.pop((entry.id, input_hash), None)
+                    future.set_result(vector)
+            except Exception as exc:
+                for entry, _, input_hash, future in batch:
+                    with self._embedding_lock:
+                        self._embedding_inflight.pop((entry.id, input_hash), None)
+                    future.set_exception(exc)
+                raise
+        for entry, future in waiting:
+            vectors[entry.id] = future.result()
         query_result = self._embed([value.raw_value], run_id=run_id)
         query_vector = query_result.vectors[0]
         ranked = sorted(
@@ -837,6 +954,356 @@ class FieldCoreferenceResolver:
         return result
 
     def _model_decision(
+        self,
+        value: FieldCoreferenceInput,
+        candidates: Sequence[FieldCoreferenceCandidate],
+        *,
+        run_id: str | None,
+    ) -> FieldCoreferenceModelOutput:
+        """Micro-batch concurrent epoch tasks without changing incremental semantics."""
+
+        if self._epoch_roots is None:
+            return self._model_decision_legacy(value, candidates, run_id=run_id)
+        future: Future[FieldCoreferenceModelOutput] = Future()
+        pending = _PendingFieldDecision(value, tuple(candidates), run_id, future)
+        namespace = value.namespace
+        max_items = (
+            FIELD_BATCH_UNKNOWN_SIZE
+            if namespace is FieldNamespace.PARTICIPANT_UNKNOWN
+            else FIELD_BATCH_DEFAULT_SIZE
+        )
+        flush_now = False
+        with self._batch_lock:
+            queue = self._pending_batches.setdefault(namespace, [])
+            queue.append(pending)
+            if len(queue) == 1:
+                timer = Timer(
+                    FIELD_BATCH_WINDOW_SECONDS,
+                    self._flush_pending_namespace,
+                    args=(namespace,),
+                )
+                timer.daemon = True
+                self._batch_timers[namespace] = timer
+                timer.start()
+            if len(queue) >= max_items:
+                timer = self._batch_timers.pop(namespace, None)
+                if timer is not None:
+                    timer.cancel()
+                flush_now = True
+        if flush_now:
+            self._flush_pending_namespace(namespace)
+        return future.result()
+
+    def _flush_pending_namespace(self, namespace: FieldNamespace) -> None:
+        max_items = (
+            FIELD_BATCH_UNKNOWN_SIZE
+            if namespace is FieldNamespace.PARTICIPANT_UNKNOWN
+            else FIELD_BATCH_DEFAULT_SIZE
+        )
+        max_bytes = (
+            FIELD_BATCH_UNKNOWN_BYTES
+            if namespace is FieldNamespace.PARTICIPANT_UNKNOWN
+            else FIELD_BATCH_DEFAULT_BYTES
+        )
+        with self._batch_lock:
+            self._batch_timers.pop(namespace, None)
+            queued = self._pending_batches.pop(namespace, [])
+        while queued:
+            batch: list[_PendingFieldDecision] = []
+            estimated = 0
+            while queued and len(batch) < max_items:
+                item = queued[0]
+                item_bytes = len(
+                    json.dumps(
+                        {
+                            "v": item.value.model_dump(mode="json", exclude_none=True),
+                            "c": [
+                                candidate.model_dump(mode="json", exclude_none=True)
+                                for candidate in item.candidates
+                            ],
+                        },
+                        ensure_ascii=False,
+                        separators=(",", ":"),
+                    ).encode("utf-8")
+                )
+                if batch and estimated + item_bytes > max_bytes:
+                    break
+                queued.pop(0)
+                batch.append(item)
+                estimated += item_bytes
+            self._execute_field_batch(batch, split_depth=0)
+
+    def _execute_field_batch(
+        self,
+        batch: Sequence[_PendingFieldDecision],
+        *,
+        split_depth: int,
+    ) -> None:
+        if not batch:
+            return
+        namespace = batch[0].value.namespace
+        candidate_cards: dict[str, dict[str, object]] = {}
+        candidate_short: dict[str, str] = {}
+        tasks: list[dict[str, object]] = []
+        candidates_by_task: dict[str, dict[str, str]] = {}
+        for task_index, item in enumerate(batch, start=1):
+            task_id = f"t{task_index}"
+            local_candidates: list[str] = []
+            local_map: dict[str, str] = {}
+            for candidate in item.candidates:
+                short_id = candidate_short.get(candidate.canonical_id)
+                if short_id is None:
+                    short_id = f"k{len(candidate_cards) + 1}"
+                    candidate_short[candidate.canonical_id] = short_id
+                    candidate_cards[short_id] = candidate.model_dump(
+                        mode="json", exclude={"canonical_id"}, exclude_none=True
+                    )
+                local_candidates.append(short_id)
+                local_map[short_id] = candidate.canonical_id
+            candidates_by_task[task_id] = local_map
+            tasks.append(
+                {
+                    "task_id": task_id,
+                    "raw_value": item.value.raw_value,
+                    "local_context": _sanitize(item.value.local_context, limit=4000),
+                    "hints": item.value.hints.model_dump(mode="json", exclude_none=True),
+                    "candidate_ids": local_candidates,
+                }
+            )
+        model_input = {
+            "namespace": namespace.value,
+            "candidates": candidate_cards,
+            "tasks": tasks,
+        }
+        prompt = json.dumps(model_input, ensure_ascii=False, separators=(",", ":"))
+        schema = _batch_decision_schema()
+        policy = self._policies[namespace]
+        request = StructuredModelRequest(
+            system_prompt=f"{self.base_system_prompt}\n\n{policy}",
+            user_prompt=prompt,
+            json_schema=schema,
+            metadata={"stage": "field_coreference", "batch_size": len(batch)},
+        )
+        call_id = str(uuid.uuid4())
+        try:
+            result = self.model_client.complete(request)
+        except Exception as exc:
+            self._record_field_batch_call(
+                call_id=call_id,
+                batch=batch,
+                prompt=prompt,
+                schema=schema,
+                status="FAILED",
+                result=None,
+                error_code=str(getattr(exc, "code", type(exc).__name__)),
+                split_depth=split_depth,
+                exception=exc,
+            )
+            if split_depth == 0 and len(batch) > 1:
+                midpoint = len(batch) // 2
+                self._execute_field_batch(batch[:midpoint], split_depth=1)
+                self._execute_field_batch(batch[midpoint:], split_depth=1)
+            else:
+                for item in batch:
+                    self._field_batch_fallback(item, "PROVIDER_REJECTED_BATCH")
+            return
+
+        raw_decisions = (
+            result.payload.get("decisions")
+            if isinstance(result.payload, dict)
+            and isinstance(result.payload.get("decisions"), list)
+            else []
+        )
+        by_task: dict[str, list[object]] = {}
+        for raw in raw_decisions:
+            if isinstance(raw, dict) and isinstance(raw.get("task_id"), str):
+                by_task.setdefault(str(raw["task_id"]), []).append(raw)
+        invalid: list[tuple[str, _PendingFieldDecision, object | None, str]] = []
+        valid_count = 0
+        for index, item in enumerate(batch, start=1):
+            task_id = f"t{index}"
+            values = by_task.get(task_id, [])
+            raw = values[0] if len(values) == 1 else None
+            try:
+                if raw is None:
+                    raise ValueError("missing or duplicate task decision")
+                output = self._adapt_field_wire_item(
+                    raw,
+                    value=item.value,
+                    short_to_full=candidates_by_task[task_id],
+                )
+            except (ValidationError, ValueError) as exc:
+                invalid.append((task_id, item, raw, str(exc)[:300]))
+            else:
+                valid_count += 1
+                item.future.set_result(output)
+        self._record_field_batch_call(
+            call_id=call_id,
+            batch=batch,
+            prompt=prompt,
+            schema=schema,
+            status="SUCCEEDED",
+            result=result,
+            error_code=None,
+            split_depth=split_depth,
+            valid_count=valid_count,
+        )
+        for task_id, item, raw, error in invalid:
+            self._repair_field_item(task_id, item, raw, error)
+
+    def _adapt_field_wire_item(
+        self,
+        raw: object,
+        *,
+        value: FieldCoreferenceInput,
+        short_to_full: dict[str, str],
+    ) -> FieldCoreferenceModelOutput:
+        if not isinstance(raw, dict):
+            raise ValueError("field decision is not an object")
+        decision_token = str(raw.get("decision", "")).strip().upper()
+        if decision_token not in {item.value for item in FieldDecision}:
+            raise ValueError("unknown field decision")
+        decision = FieldDecision(decision_token)
+        canonical_id = raw.get("canonical_id")
+        if decision is FieldDecision.LINK:
+            if not isinstance(canonical_id, str) or canonical_id not in short_to_full:
+                raise ValueError("LINK canonical_id is not supplied for this task")
+            canonical_id = short_to_full[canonical_id]
+        else:
+            canonical_id = None
+        target_raw = raw.get("target_namespace")
+        target: FieldNamespace | None = None
+        if target_raw is not None:
+            try:
+                target = FieldNamespace(str(target_raw).strip().lower().replace("-", "_"))
+            except ValueError as exc:
+                raise ValueError("unknown target_namespace") from exc
+        output = FieldCoreferenceModelOutput(
+            decision=decision,
+            canonical_id=canonical_id,
+            target_namespace=target,
+        )
+        if value.namespace is FieldNamespace.PARTICIPANT_UNKNOWN:
+            if decision is FieldDecision.NEW and target not in _UNKNOWN_TARGET_NAMESPACES:
+                raise ValueError("participant.unknown NEW requires an allowed target_namespace")
+            if decision is not FieldDecision.NEW and target is not None:
+                raise ValueError("target_namespace is allowed only for participant.unknown NEW")
+        elif target is not None:
+            raise ValueError("target_namespace is not allowed for this namespace")
+        return output
+
+    def _repair_field_item(
+        self,
+        task_id: str,
+        item: _PendingFieldDecision,
+        invalid_payload: object | None,
+        validation_error: str,
+    ) -> None:
+        if item.future.done():
+            return
+        short_to_full = {
+            f"k{index}": candidate.canonical_id
+            for index, candidate in enumerate(item.candidates, start=1)
+        }
+        payload = {
+            "validation_error": validation_error,
+            "invalid_decision": invalid_payload,
+            "namespace": item.value.namespace.value,
+            "candidates": {
+                short_id: candidate.model_dump(
+                    mode="json", exclude={"canonical_id"}, exclude_none=True
+                )
+                for short_id, candidate in zip(short_to_full, item.candidates, strict=True)
+            },
+            "tasks": [
+                {
+                    "task_id": task_id,
+                    "raw_value": item.value.raw_value,
+                    "local_context": _sanitize(item.value.local_context, limit=4000),
+                    "hints": item.value.hints.model_dump(mode="json", exclude_none=True),
+                    "candidate_ids": list(short_to_full),
+                }
+            ],
+            "repair_instruction": "Repair only this invalid task and return it exactly once.",
+        }
+        request = StructuredModelRequest(
+            system_prompt=f"{self.base_system_prompt}\n\n{self._policies[item.value.namespace]}",
+            user_prompt=json.dumps(payload, ensure_ascii=False, separators=(",", ":")),
+            json_schema=_batch_decision_schema(),
+            metadata={"stage": "field_coreference_item_repair", "priority": "repair"},
+        )
+        try:
+            result = self.model_client.complete(request)
+            output = FieldBatchWireOutput.model_validate(result.payload)
+            if len(output.decisions) != 1 or output.decisions[0].task_id != task_id:
+                raise ValueError("repair must return exactly the requested task")
+            adapted = self._adapt_field_wire_item(
+                output.decisions[0].model_dump(mode="json"),
+                value=item.value,
+                short_to_full=short_to_full,
+            )
+        except Exception as exc:
+            self._field_batch_fallback(item, f"ITEM_REPAIR_FAILED:{type(exc).__name__}")
+        else:
+            item.future.set_result(adapted)
+
+    def _field_batch_fallback(self, item: _PendingFieldDecision, reason: str) -> None:
+        if item.future.done():
+            return
+        self.registry.append_decision_audit(
+            DecisionAuditRecord(
+                audit_id=f"field-batch-fallback:{uuid.uuid4()}",
+                run_id=item.run_id,
+                decision_type="FIELD_BATCH_ITEM_FALLBACK",
+                subject_id=item.value.namespace.value,
+                payload={"reason": reason, "action": FieldDecision.UNRESOLVED.value},
+            )
+        )
+        item.future.set_result(FieldCoreferenceModelOutput(decision=FieldDecision.UNRESOLVED))
+
+    def _record_field_batch_call(
+        self,
+        *,
+        call_id: str,
+        batch: Sequence[_PendingFieldDecision],
+        prompt: str,
+        schema: dict[str, object],
+        status: str,
+        result: object | None,
+        error_code: str | None,
+        split_depth: int,
+        exception: Exception | None = None,
+        valid_count: int = 0,
+    ) -> None:
+        sample = batch[0]
+        self.registry.record_model_call(
+            model_call_id=call_id,
+            run_id=sample.run_id,
+            tier="m2",
+            model=str(
+                getattr(result, "model", None)
+                or getattr(self.model_client, "model", "structured-model")
+            ),
+            status=status,
+            input_tokens=getattr(result or exception, "input_tokens", None),
+            output_tokens=getattr(result or exception, "output_tokens", None),
+            latency_ms=int(getattr(result or exception, "latency_ms", 0)),
+            error_code=error_code,
+            metadata={
+                "stage": "field_coreference",
+                "batch_size": len(batch),
+                "valid_item_count": valid_count,
+                "split_depth": split_depth,
+                "namespace": sample.value.namespace.value,
+                "wire_protocol": "field_batch_v2",
+            },
+            stage="field_coreference",
+            prompt_version=FIELD_PROMPT_VERSION,
+            schema_hash=_sha256(json.dumps(schema, sort_keys=True)),
+            input_hash=_sha256(prompt),
+        )
+
+    def _model_decision_legacy(
         self,
         value: FieldCoreferenceInput,
         candidates: Sequence[FieldCoreferenceCandidate],
@@ -1188,7 +1655,7 @@ class FieldCoreferenceResolver:
             registry_id=entry.id,
             method=method,
         )
-        self.registry.save_field_link(link)
+        self._save_link(link)
         return FieldCoreferenceResult(
             canonical_id=entry.id,
             external_id=entry.external_id,
@@ -1234,6 +1701,8 @@ class FieldCoreferenceResolver:
         stored = self.registry.get_field_registry_entry(registry_id)
         if stored is None:
             raise FieldCoreferenceError("field registry entry was not persisted")
+        if self._epoch_roots is not None:
+            self._epoch_roots[stored.namespace][stored.id] = stored
         return stored
 
     def _add_aliases(
@@ -1254,6 +1723,10 @@ class FieldCoreferenceResolver:
             refreshed = self.registry.get_field_registry_entry(entry.id)
             if refreshed is not None:
                 self._ensure_embedding(refreshed, run_id=run_id)
+        if self._epoch_roots is not None:
+            refreshed = self.registry.get_field_registry_entry(entry.id)
+            if refreshed is not None:
+                self._epoch_roots[refreshed.namespace][refreshed.id] = refreshed
 
     def _ensure_embedding(self, entry: CanonicalFieldRegistryEntry, *, run_id: str | None) -> None:
         text = registry_embedding_text(entry)
@@ -1523,6 +1996,40 @@ def _decision_schema(namespace: FieldNamespace) -> dict[str, object]:
         }
     ]
     return schema
+
+
+def _batch_decision_schema() -> dict[str, object]:
+    """Provider-friendly wire schema; all relational rules stay in local validation."""
+
+    return {
+        "type": "object",
+        "additionalProperties": False,
+        "required": ["decisions"],
+        "properties": {
+            "decisions": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "required": [
+                        "task_id",
+                        "decision",
+                        "canonical_id",
+                        "target_namespace",
+                    ],
+                    "properties": {
+                        "task_id": {"type": "string"},
+                        "decision": {
+                            "type": "string",
+                            "enum": [item.value for item in FieldDecision],
+                        },
+                        "canonical_id": {"type": ["string", "null"]},
+                        "target_namespace": {"type": ["string", "null"]},
+                    },
+                },
+            }
+        },
+    }
 
 
 def _canonical_surface(value: str) -> str:

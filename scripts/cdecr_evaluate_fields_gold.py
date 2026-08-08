@@ -233,7 +233,7 @@ def main() -> int:
         )
         return reviewed_document
 
-    with ThreadPoolExecutor(max_workers=max(1, min(args.workers, 4))) as executor:
+    with ThreadPoolExecutor(max_workers=max(1, min(args.workers, 48))) as executor:
         reviewed = list(executor.map(evaluate, documents))
     fields = ("predicate", "participant", "metric", "fiscal_period")
     metrics: dict[str, dict[str, float | int]] = {}

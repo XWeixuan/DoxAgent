@@ -6,7 +6,14 @@ from datetime import UTC, date, datetime, timedelta
 
 import httpx
 
-from doxagent.tools.providers.base import BaseRealToolClient, _input_str, _require
+from doxagent.tools.providers.base import (
+    BaseRealToolClient,
+    JsonObject,
+    ProviderHttpError,
+    _input_str,
+    _input_str_any,
+    _require,
+)
 from doxagent.tools.schema import ToolRequest, ToolResult
 
 FMP_FREE_SECTOR_EXCHANGES = {"NASDAQ", "NYSE", "AMEX", "CBOE", "OTC", "PNK", "CNQ"}
@@ -74,8 +81,7 @@ class FmpSectorPerformanceClient(BaseRealToolClient):
         ):
             try:
                 raw = self._get_json(
-                    self.settings.fmp_base_url.rstrip("/")
-                    + "/stable/sector-performance-snapshot",
+                    self.settings.fmp_base_url.rstrip("/") + "/stable/sector-performance-snapshot",
                     params={
                         "date": candidate_date,
                         "exchange": candidate_exchange,
@@ -147,5 +153,324 @@ def _has_items(raw: object) -> bool:
         return bool(raw)
     if isinstance(raw, dict):
         items = raw.get("items")
-        return isinstance(items, list) and bool(items)
-    return False
+        if isinstance(items, list):
+            return bool(items)
+        return any(value not in (None, "", [], {}) for value in raw.values())
+    return bool(raw)
+
+
+class _FmpCompositeClient(BaseRealToolClient):
+    """Base for bounded FMP business tools with per-endpoint partial success."""
+
+    source_scope = "fmp"
+    title = "FMP data"
+
+    def _fetch_many(
+        self, api_key: str, symbol: str, endpoints: dict[str, tuple[str, dict[str, object]]]
+    ) -> tuple[JsonObject, list[JsonObject]]:
+        data: JsonObject = {}
+        issues: list[JsonObject] = []
+        for label, (path, params) in endpoints.items():
+            try:
+                raw = self._get_json(
+                    self.settings.fmp_base_url.rstrip("/") + path,
+                    params={"symbol": symbol, **params, "apikey": api_key},
+                    cache_ttl=self.settings.fmp_cache_ttl_seconds,
+                    rate_limit_key="fmp",
+                    min_interval_seconds=0.2,
+                    max_rate_limit_retries=1,
+                )
+                _raise_fmp_issue(raw)
+                if not _has_items(raw):
+                    issues.append(
+                        {"endpoint": label, "code": "empty_result", "message": "No usable rows."}
+                    )
+                else:
+                    projected = _project_fmp_payload(label, raw)
+                    if projected:
+                        data[label] = projected
+                    else:
+                        issues.append(
+                            {
+                                "endpoint": label,
+                                "code": "empty_result",
+                                "message": "No governed fields remained after projection.",
+                            }
+                        )
+            except ProviderHttpError as exc:
+                issues.append(
+                    {
+                        "endpoint": label,
+                        "code": exc.code,
+                        "message": exc.message,
+                        "retryable": exc.retryable,
+                    }
+                )
+        return data, issues
+
+    def _composite_result(
+        self,
+        request: ToolRequest,
+        *,
+        symbol: str,
+        data: JsonObject,
+        issues: list[JsonObject],
+        payload_key: str,
+        summary: str,
+    ) -> ToolResult:
+        output = {"provider": "fmp", "symbol": symbol, payload_key: data, "provider_errors": issues}
+        if not data:
+            return self._failure(
+                request,
+                code="upstream_provider_error",
+                message="FMP returned no usable data.",
+                details={"provider_errors": issues},
+            )
+        kwargs = dict(
+            output=output,
+            raw={payload_key: data, "provider_errors": issues},
+            source_kind="external_report",
+            source_id=f"fmp:{self.source_scope}:{symbol}",
+            title=self.title,
+            summary=summary,
+            source_scope=self.source_scope,
+            confidence=0.74,
+            metadata={
+                "symbol": symbol,
+                "endpoints": list(data),
+                "failed_endpoints": [item["endpoint"] for item in issues],
+            },
+        )
+        if issues:
+            return self._partial(
+                request,
+                code="fmp_partial_subrequest_failure",
+                message="Some FMP endpoint requests failed or were empty.",
+                retryable=any(bool(item.get("retryable")) for item in issues),
+                details={"provider_errors": issues},
+                **kwargs,
+            )
+        return self._success(request, **kwargs)
+
+
+class FmpSellSideEstimatesClient(_FmpCompositeClient):
+    source_scope = "fmp_sell_side_estimates"
+    title = "FMP sell-side estimates"
+
+    def call(self, request: ToolRequest) -> ToolResult:
+        try:
+            api_key = _require(self.settings.fmp_api_key, "FMP_API_KEY")
+            symbol = _input_str_any(request, ("symbol", "ticker"), request.ticker).upper()
+            period = _input_str(request, "period", "annual")
+            data, issues = self._fetch_many(
+                api_key,
+                symbol,
+                {
+                    "analyst_estimates": (
+                        "/stable/analyst-estimates",
+                        {"period": period, "page": 0, "limit": 10},
+                    ),
+                    "price_target_summary": ("/stable/price-target-summary", {}),
+                    "price_target_consensus": ("/stable/price-target-consensus", {}),
+                },
+            )
+            return self._composite_result(
+                request,
+                symbol=symbol,
+                data=data,
+                issues=issues,
+                payload_key="sell_side_estimates",
+                summary="Retrieved FMP current sell-side estimate and target snapshots.",
+            )
+        except Exception as exc:
+            return self._handle_exception(request, exc)
+
+
+class FmpValuationSnapshotClient(_FmpCompositeClient):
+    source_scope = "fmp_valuation_snapshot"
+    title = "FMP valuation snapshot"
+
+    def call(self, request: ToolRequest) -> ToolResult:
+        try:
+            api_key = _require(self.settings.fmp_api_key, "FMP_API_KEY")
+            symbol = _input_str_any(request, ("symbol", "ticker"), request.ticker).upper()
+            data, issues = self._fetch_many(
+                api_key,
+                symbol,
+                {
+                    "profile": ("/stable/profile", {}),
+                    "enterprise_values": ("/stable/enterprise-values", {}),
+                    "key_metrics_ttm": ("/stable/key-metrics-ttm", {}),
+                    "ratios_ttm": ("/stable/ratios-ttm", {}),
+                },
+            )
+            return self._composite_result(
+                request,
+                symbol=symbol,
+                data=data,
+                issues=issues,
+                payload_key="valuation_snapshot",
+                summary="Retrieved FMP trailing valuation inputs without deriving a multiple.",
+            )
+        except Exception as exc:
+            return self._handle_exception(request, exc)
+
+
+class FmpTranscriptFallbackClient(_FmpCompositeClient):
+    source_scope = "fmp_transcript_fallback"
+    title = "FMP earnings-call transcript"
+
+    def call(self, request: ToolRequest) -> ToolResult:
+        try:
+            api_key = _require(self.settings.fmp_api_key, "FMP_API_KEY")
+            symbol = _input_str_any(request, ("symbol", "ticker"), request.ticker).upper()
+            year = _input_str(request, "year", "")
+            quarter = _input_str(request, "quarter", "")
+            if not year or not quarter:
+                data, issues = self._fetch_many(
+                    api_key,
+                    symbol,
+                    {"available_dates": ("/stable/earning-call-transcript-dates", {})},
+                )
+            else:
+                data, issues = self._fetch_many(
+                    api_key,
+                    symbol,
+                    {
+                        "transcript": (
+                            "/stable/earning-call-transcript",
+                            {"year": year, "quarter": quarter},
+                        )
+                    },
+                )
+            return self._composite_result(
+                request,
+                symbol=symbol,
+                data=data,
+                issues=issues,
+                payload_key="transcript",
+                summary="Retrieved FMP transcript detail or available transcript dates.",
+            )
+        except Exception as exc:
+            return self._handle_exception(request, exc)
+
+
+def _raise_fmp_issue(raw: JsonObject) -> None:
+    message = raw.get("Error Message") or raw.get("error") or raw.get("message")
+    if not message:
+        return
+    text = str(message)
+    lowered = text.lower()
+    if any(
+        token in lowered
+        for token in (
+            "invalid api key",
+            "not available",
+            "subscription",
+            "not authorized",
+            "limit",
+            "rate",
+        )
+    ):
+        raise ProviderHttpError(
+            code="rate_limited"
+            if any(token in lowered for token in ("limit", "rate"))
+            else "entitlement_or_permission_denied",
+            message=text,
+            retryable="limit" in lowered or "rate" in lowered,
+            details={"provider_payload": raw},
+        )
+
+
+_FMP_FIELDS: dict[str, tuple[str, ...]] = {
+    "analyst_estimates": (
+        "symbol",
+        "date",
+        "revenueLow",
+        "revenueHigh",
+        "revenueAvg",
+        "ebitdaLow",
+        "ebitdaHigh",
+        "ebitdaAvg",
+        "ebitLow",
+        "ebitHigh",
+        "ebitAvg",
+        "netIncomeLow",
+        "netIncomeHigh",
+        "netIncomeAvg",
+        "epsLow",
+        "epsHigh",
+        "epsAvg",
+        "numAnalystsRevenue",
+        "numAnalystsEps",
+    ),
+    "price_target_summary": (
+        "symbol",
+        "lastMonthCount",
+        "lastMonthAvgPriceTarget",
+        "lastQuarterCount",
+        "lastQuarterAvgPriceTarget",
+        "lastYearCount",
+        "lastYearAvgPriceTarget",
+    ),
+    "price_target_consensus": (
+        "symbol",
+        "targetHigh",
+        "targetLow",
+        "targetConsensus",
+        "targetMedian",
+    ),
+    "profile": ("symbol", "price", "marketCap", "currency", "exchange", "sector", "industry"),
+    "enterprise_values": (
+        "symbol",
+        "date",
+        "stockPrice",
+        "numberOfShares",
+        "marketCapitalization",
+        "minusCashAndCashEquivalents",
+        "addTotalDebt",
+        "enterpriseValue",
+    ),
+    "key_metrics_ttm": (
+        "symbol",
+        "marketCap",
+        "enterpriseValueTTM",
+        "evToSalesTTM",
+        "evToEBITDATTM",
+        "evToOperatingCashFlowTTM",
+        "evToFreeCashFlowTTM",
+        "earningsYieldTTM",
+        "freeCashFlowYieldTTM",
+        "returnOnInvestedCapitalTTM",
+    ),
+    "ratios_ttm": (
+        "symbol",
+        "priceToEarningsRatioTTM",
+        "priceToBookRatioTTM",
+        "priceToSalesRatioTTM",
+        "priceToFreeCashFlowRatioTTM",
+        "priceToOperatingCashFlowRatioTTM",
+        "enterpriseValueMultipleTTM",
+        "grossProfitMarginTTM",
+        "operatingProfitMarginTTM",
+        "netProfitMarginTTM",
+        "debtToEquityRatioTTM",
+    ),
+    "available_dates": ("symbol", "fiscalYear", "quarter", "date"),
+    "transcript": ("symbol", "quarter", "year", "date", "content"),
+}
+
+
+def _project_fmp_payload(label: str, raw: JsonObject) -> list[JsonObject]:
+    value = raw.get("items")
+    if isinstance(value, list):
+        rows = value
+    else:
+        rows = [raw]
+    fields = _FMP_FIELDS.get(label, ())
+    limit = 10 if label == "analyst_estimates" else 5
+    return [
+        {key: row[key] for key in fields if row.get(key) not in (None, "", [], {})}
+        for row in rows[:limit]
+        if isinstance(row, dict)
+    ]

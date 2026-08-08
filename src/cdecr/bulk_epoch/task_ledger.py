@@ -2,15 +2,19 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import Any
 
 from cdecr.ports import CDECRRegistry
 
 
 class BulkTaskLedger:
-    def __init__(self, *, registry: CDECRRegistry, epoch_id: str) -> None:
+    def __init__(
+        self, *, registry: CDECRRegistry, epoch_id: str, batch_enabled: bool = True
+    ) -> None:
         self.registry = registry
         self.epoch_id = epoch_id
+        self.batch_enabled = batch_enabled
 
     def start(
         self,
@@ -30,6 +34,25 @@ class BulkTaskLedger:
             snapshot_hash=snapshot_hash,
             status="RUNNING",
         )
+
+    def _write_many(self, records: Sequence[dict[str, Any]]) -> dict[str, int]:
+        if not self.batch_enabled:
+            for record in records:
+                self.registry.upsert_bulk_epoch_task(epoch_id=self.epoch_id, **record)
+            return {"rows": len(records), "transactions": len(records)}
+        return self.registry.upsert_bulk_epoch_tasks(
+            [{"epoch_id": self.epoch_id, **record} for record in records],
+            chunk_size=512,
+        )
+
+    def start_many(self, tasks: Sequence[dict[str, Any]]) -> dict[str, int]:
+        return self._write_many([{**task, "status": "RUNNING"} for task in tasks])
+
+    def finish_many(self, tasks: Sequence[dict[str, Any]]) -> dict[str, int]:
+        return self._write_many([{**task, "status": "SUCCEEDED"} for task in tasks])
+
+    def fail_many(self, tasks: Sequence[dict[str, Any]]) -> dict[str, int]:
+        return self._write_many([{**task, "status": "FAILED"} for task in tasks])
 
     def finish(
         self,

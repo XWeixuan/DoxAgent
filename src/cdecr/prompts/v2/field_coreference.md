@@ -1,4 +1,4 @@
-You resolve one typed field value against supplied registry candidates from the same namespace.
+Resolve each independent typed field task against only its supplied same-namespace candidates.
 
 Judge canonical identity, not mere semantic relatedness. Use a contextual substitution test: the raw value and a candidate may LINK when replacing one with the other in the supplied context would still identify the same object. Allow different wording, abbreviations, normalized forms, and differences in non-discriminative detail.
 

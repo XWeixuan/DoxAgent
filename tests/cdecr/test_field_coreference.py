@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, date, datetime
 from pathlib import Path
 
@@ -95,6 +96,75 @@ class FakeStructuredClient:
             output_tokens=2,
             latency_ms=1,
         )
+
+
+def test_epoch_field_requests_are_namespace_batched_with_simple_wire_schema(
+    registry: SQLiteCDECRRegistry,
+) -> None:
+    mention = _mention("M-BATCH", "S-BATCH")
+    _persist_mention(registry, mention)
+    registry.create_field_registry_entry(
+        CanonicalFieldRegistryEntry(
+            id="FIELD-ONE",
+            namespace=FieldNamespace.OBJECT_FACILITY,
+            canonical_text="Boise facility one",
+            aliases=["Boise facility one"],
+        )
+    )
+    model = FakeStructuredClient(
+        [
+            {
+                "decisions": [
+                    {
+                        "task_id": "t1",
+                        "decision": "UNRESOLVED",
+                        "canonical_id": None,
+                        "target_namespace": None,
+                    },
+                    {
+                        "task_id": "t2",
+                        "decision": "UNRESOLVED",
+                        "canonical_id": None,
+                        "target_namespace": None,
+                    },
+                ]
+            }
+        ]
+    )
+    resolver = FieldCoreferenceResolver(
+        registry=registry,
+        embedding_client=FakeEmbeddingClient(),
+        model_client=model,
+    )
+    values = [
+        FieldCoreferenceInput(
+            namespace=FieldNamespace.OBJECT_FACILITY,
+            raw_value=f"Unclear facility {index}",
+            local_context=f"Unclear facility {index} was discussed.",
+        )
+        for index in range(2)
+    ]
+    resolver.begin_epoch_snapshot()
+    try:
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            results = list(
+                pool.map(
+                    lambda item: resolver.resolve(
+                        item[1],
+                        mention_id=mention.mention_id,
+                        field_path=f"open_attributes[{item[0]}].value",
+                    ),
+                    enumerate(values),
+                )
+            )
+    finally:
+        resolver.end_epoch_snapshot()
+    assert all(result.canonical_id for result in results)
+    assert len(model.requests) == 1
+    payload = json.loads(model.requests[0].user_prompt)
+    assert len(payload["tasks"]) == 2
+    assert isinstance(payload["candidates"], dict)
+    assert "allOf" not in json.dumps(model.requests[0].json_schema)
 
 
 def _source(message_id: str) -> SourceMessage:
@@ -390,7 +460,8 @@ def test_prompt_v2_policies_and_llm_visible_candidate_contract(
     assert len(resolver._policies) == len(FieldNamespace) == 28
     request = model.requests[0]
     assert request.system_prompt.startswith(
-        "You resolve one typed field value against supplied registry candidates"
+        "Resolve each independent typed field task against only its supplied "
+        "same-namespace candidates."
     )
     payload = json.loads(request.user_prompt)
     candidate = payload["candidates"][0]

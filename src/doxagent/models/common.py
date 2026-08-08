@@ -64,6 +64,8 @@ class ResultStatus(StrEnum):
     SUCCEEDED = "succeeded"
     FAILED = "failed"
     PARTIAL = "partial"
+    EMPTY = "empty"
+    NOT_APPLICABLE = "not_applicable"
 
 
 class ValidationStatus(StrEnum):

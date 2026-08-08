@@ -250,6 +250,9 @@ def test_document3_prompt_resources_load_and_replace_generic_agent_prompts() -> 
     assert "agent.o4" not in o4_injected.prompt_bundle.prompt_block_ids
     assert "monitoring-policy" in o4_injected.prompt_bundle.internal_task_skill_ids
     assert "ticker_price_tracking" not in o4_injected.prompt_bundle.internal_task_skill_ids
+    assert "market-implied-expectations" not in (
+        o4_injected.prompt_bundle.internal_task_skill_ids
+    )
 
 
 def test_document3_review_skills_auto_inject_only_for_existing_review_nodes() -> None:
@@ -429,8 +432,65 @@ def test_c1_c3_task_text_moved_to_internal_task_skills() -> None:
     assert "Recent Fundamental State and Changes" in fundamental.body
     assert "Key Variable Transmission Chains" in fundamental.body
     assert "candidate questions, not formal `PotentialGap` objects" in fundamental.body
-    assert "Invoke `sector-overview` skill" in industry.body
-    assert "Invoke `competitive-analysis` skill" in industry.body
+    assert "Invoke `" not in industry.body
+    assert "Target-Relevant Industry and Value-Chain Fact Baseline" in industry.body
+    assert "Core External Drivers, Allocation Mechanisms, and Transmission" in industry.body
+    assert "candidate questions, not formal `PotentialGap` objects" in industry.body
+
+
+def test_c4_manual_resources_follow_external_sdk_contract_and_size() -> None:
+    registry = default_prompt_registry()
+    prompt = registry.get("agent.c4")
+    skill = registry.get("entity-map-and-future-nodes")
+
+    assert prompt.manual_only is True
+    assert skill.manual_only is True
+    assert prompt.applicable_agents == []
+    assert skill.applicable_task_types == [TaskType.GENERATE_GLOBAL_RESEARCH]
+
+    c1_blocks = registry.find_prompt_blocks(
+        AgentName.C1_FUNDAMENTAL_RESEARCH,
+        TaskType.GENERATE_GLOBAL_RESEARCH,
+        "BuildGlobalResearch",
+    )
+    c1_skills = registry.find_internal_task_skills(
+        AgentName.C1_FUNDAMENTAL_RESEARCH,
+        TaskType.GENERATE_GLOBAL_RESEARCH,
+        "BuildGlobalResearch",
+    )
+    assert "agent.c4" not in {item.resource_id for item in c1_blocks}
+    assert "entity-map-and-future-nodes" not in {
+        item.resource_id for item in c1_skills
+    }
+
+    for mode in (
+        "BUILD_OR_REFRESH_ENTITY_MAP",
+        "SCAN_DIRECT_FUTURE_NODES",
+        "ENRICH_FUTURE_NODES",
+    ):
+        assert mode in prompt.body
+        assert mode in skill.body
+    for artifact in (
+        "entity_exposure_map",
+        "future_nodes_pre_scan",
+        "future_nodes_final",
+    ):
+        assert artifact in prompt.body
+        assert artifact in skill.body
+
+    assert "who -> will do/decide/receive what -> when" in skill.body
+    assert "source reliability, not outcome probability" in skill.body
+    assert "fiscal from calendar quarter" in skill.body
+    assert "One step does not prove the next" in skill.body
+    assert "load_skill(" not in skill.body
+    assert len((PROMPT_ROOT / "agents" / "c4.md").read_text(encoding="utf-8")) <= 2000
+    assert len(
+        (
+            PROMPT_ROOT
+            / "internal_task_skills"
+            / "entity-map-and-future-nodes.md"
+        ).read_text(encoding="utf-8")
+    ) <= 15000
 
 
 def test_prompt_injector_selects_o1_internal_sop_without_external_packages() -> None:
@@ -646,6 +706,10 @@ def test_prompt_injector_selects_global_research_internal_skills_for_c1_c3() -> 
 
     assert "industry-research" in c3_injected.prompt_bundle.internal_task_skill_ids
     assert c3_injected.prompt_bundle.external_skill_package_ids == []
+    c3_skill = default_prompt_registry().get("industry-research")
+    assert "Document 1" in c3_skill.body
+    assert "Industry and Commercialization Milestones and Proof Boundaries" in c3_skill.body
+    assert "priced in" in c3_skill.body
 
     o4_definition = agent_registry.get(AgentName.O4_MARKET_TRACE)
     o4_task = c1_task.model_copy(
@@ -657,8 +721,20 @@ def test_prompt_injector_selects_global_research_internal_skills_for_c1_c3() -> 
     )
     o4_injected = PromptInjector().inject(o4_task, o4_definition)
     assert "ticker_price_tracking" in o4_injected.prompt_bundle.internal_task_skill_ids
-    o4_skill = default_prompt_registry().get("ticker_price_tracking")
-    assert "recent price and flow reaction first" in o4_skill.body
+    assert "market-implied-expectations" in (
+        o4_injected.prompt_bundle.internal_task_skill_ids
+    )
+    assert o4_injected.prompt_bundle.external_skill_package_ids == []
+    ticker_skill = default_prompt_registry().get("ticker_price_tracking")
+    implied_skill = default_prompt_registry().get("market-implied-expectations")
+    o4_prompt = default_prompt_registry().get("agent.o4")
+    assert "recent price and flow reaction first" in ticker_skill.body
+    assert "Current Market Pricing Baseline" in implied_skill.body
+    assert "Major Repricing Episodes and Pricing Drivers" in implied_skill.body
+    assert "one or at most two focal assumptions" in implied_skill.body
+    assert "NOT_IDENTIFIABLE" in implied_skill.body
+    assert "O4-B Macro Market Research" in o4_prompt.body
+    assert "O4-A Market-Implied Expectations Research" in o4_prompt.body
 
 
 def test_c2_exposes_macro_analysis_not_global_macro() -> None:

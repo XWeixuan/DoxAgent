@@ -13,9 +13,10 @@ from collections import defaultdict
 from collections.abc import Callable, Sequence
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, date, datetime
+from functools import partial
 from pathlib import Path
 from time import perf_counter
-from typing import Literal, TypeVar
+from typing import Literal, TypeVar, cast
 
 from pydantic import BaseModel, ValidationError
 
@@ -49,7 +50,15 @@ from cdecr.atomic_recall_audit import (
     append_ranked_candidate_snapshot,
     candidate_root_id,
 )
+from cdecr.bulk_epoch.candidate_cards import AtomicCandidateCard
+from cdecr.bulk_epoch.embedding import (
+    EmbeddingBatchExecutor,
+    EmbeddingBatchTelemetry,
+    EmbeddingWorkItem,
+)
 from cdecr.bulk_epoch.indexes import MultiKeyBoundedIndex
+from cdecr.bulk_epoch.stage_runtime import StageReadSnapshot, StageWriteBuffer
+from cdecr.bulk_epoch.writer import BulkWriter
 from cdecr.canonical_field_resolution import (
     FIELD_RESOLVER_VERSION,
     CanonicalFieldResolutionEngine,
@@ -147,6 +156,12 @@ from cdecr.models import (
     ModelAdapterError,
     ModelTier,
 )
+from cdecr.n13_planner import (
+    N13PackageCard,
+    N13ParentBlock,
+    as_date,
+    build_indexed_n13_plan,
+)
 from cdecr.package_engine import (
     PACKAGE_ASSIGNMENT_POLICY_VERSION,
     PACKAGE_BOUNDARY_POLICY_VERSION,
@@ -176,8 +191,8 @@ from cdecr.scheduler import take_scheduled_call_metrics
 from cdecr.single_document_contracts import ModelCallSummary
 from cdecr.wire import compact_json, wire_ref_metadata
 
-ENGINE_VERSION = "cdecr-cross-document-v25-final-narrow"
-PROMPT_VERSION = "cdecr-cross-document-prompts-v18-final-narrow"
+ENGINE_VERSION = "cdecr-cross-document-v27-indexed-n13-planner"
+PROMPT_VERSION = "cdecr-cross-document-prompts-v19-package-semantics-rollback"
 WIRE_PROTOCOL_VERSION = "cdecr-cross-document-wire-atomic-dictionary-v9"
 ATOMIC_ASSIGNMENT_POLICY_VERSION = "atomic-assignment-policy-v5-late-convergence"
 ATOMIC_DECISION_MENTION_BATCH = 3
@@ -186,6 +201,7 @@ PACKAGE_MERGE_PAIR_BATCH = 12
 ATOMIC_TOP_K = 5
 PACKAGE_TOP_K = 6
 PACKAGE_N13_CANDIDATES_PER_TOUCHED = 5
+PACKAGE_N13_M3_PAIR_CAP = 12335
 EMBEDDING_RECALL_THRESHOLD = 0.82
 HIGH_IMPACT_FAMILIES = {
     EventFamily.TRANSACTION_CAPITAL,
@@ -216,8 +232,7 @@ def _balanced_request_batches(
     """Avoid a one-request tail wave without increasing normal batch size broadly."""
 
     batches = [
-        list(items[offset : offset + nominal_size])
-        for offset in range(0, len(items), nominal_size)
+        list(items[offset : offset + nominal_size]) for offset in range(0, len(items), nominal_size)
     ]
     if (
         len(batches) > active_requests
@@ -282,14 +297,79 @@ def _resolved_field_ids(
     mentions: Sequence[EventMention],
     *,
     allowed: set[FieldNamespace],
+    read_snapshot: StageReadSnapshot | None = None,
 ) -> list[tuple[FieldNamespace, str]]:
     resolved: set[tuple[FieldNamespace, str]] = set()
     for mention in mentions:
-        for link in registry.list_field_links_for_mention(mention.mention_id):
-            root = registry.resolve_field_registry_entry(link.registry_id)
+        links = (
+            read_snapshot.field_links_by_mention.get(mention.mention_id, ())
+            if read_snapshot is not None
+            else registry.list_field_links_for_mention(mention.mention_id)
+        )
+        for link in links:
+            root = (
+                read_snapshot.field_entries_by_id.get(link.registry_id)
+                if read_snapshot is not None
+                else registry.resolve_field_registry_entry(link.registry_id)
+            )
             if root is not None and root.namespace in allowed:
                 resolved.add((root.namespace, root.id))
     return sorted(resolved, key=lambda item: (item[0].value, item[1]))
+
+
+def _package_field_links_hash_from_snapshot(
+    snapshot: StageReadSnapshot,
+    mentions: Sequence[EventMention],
+    *,
+    catalog_hash: str,
+) -> str:
+    payload: dict[str, object] = {
+        "catalog_hash": catalog_hash,
+        "resolver_version": FIELD_RESOLVER_VERSION,
+        "mentions": [],
+    }
+    mention_payloads: list[dict[str, object]] = []
+    for mention in sorted(mentions, key=lambda item: item.mention_id):
+        links: list[dict[str, str | None]] = []
+        for link in snapshot.field_links_by_mention.get(mention.mention_id, ()):
+            root = snapshot.field_entries_by_id.get(link.registry_id)
+            if root is None or (
+                not link.field_path.startswith("local_package_hint.")
+                and root.namespace not in _PACKAGE_FIELD_NAMESPACES
+            ):
+                continue
+            links.append(
+                {
+                    "field_path": link.field_path,
+                    "linked_registry_id": link.registry_id,
+                    "resolved_registry_id": root.id,
+                    "namespace": root.namespace.value,
+                    "external_id": root.external_id,
+                    "method": link.method.value,
+                }
+            )
+        hint = mention.local_package_hint
+        mention_payloads.append(
+            {
+                "mention_id": mention.mention_id,
+                "local_package_hint": (
+                    None
+                    if hint is None
+                    else {
+                        "anchor": hint.anchor,
+                        "relation_to_anchor": hint.relation_to_anchor.value,
+                    }
+                ),
+                "links": sorted(
+                    links,
+                    key=lambda item: (
+                        str(item["field_path"]), str(item["linked_registry_id"])
+                    ),
+                ),
+            }
+        )
+    payload["mentions"] = mention_payloads
+    return _hash_json(payload)
 
 
 def _mention_local_context(source: SourceMessage, mention: EventMention) -> str:
@@ -916,6 +996,7 @@ class CrossDocumentEngine:
         n9_active_requests: int = 24,
         n12_active_requests: int = 24,
         n13_active_requests: int = 24,
+        n13_planner_version: Literal["indexed_v2", "legacy"] = "indexed_v2",
         atomic_enforced_rules: Sequence[str] | None = None,
         knowledge_base: V2KnowledgeBase | None = None,
     ) -> None:
@@ -953,7 +1034,11 @@ class CrossDocumentEngine:
         self.n9_active_requests = max(1, n9_active_requests)
         self.n12_active_requests = max(1, n12_active_requests)
         self.n13_active_requests = max(1, n13_active_requests)
-        self.n13_pair_local_apply = True
+        self.n13_planner_version = n13_planner_version
+        self.n13_pair_local_apply = False
+        self._embedding_telemetry_by_stage: dict[str, EmbeddingBatchTelemetry] = {}
+        self._bulk_audit_degraded = False
+        self._bulk_batch_audit_write = False
         self.knowledge_base = knowledge_base or V2KnowledgeBase()
 
     @property
@@ -975,6 +1060,7 @@ class CrossDocumentEngine:
                 rule.value for rule in self.atomic_enforced_rules
             ),
             "package_conflict_mode": self.package_conflict_mode.value,
+            "n13_planner_version": self.n13_planner_version,
             "atomic_assignment_policy_version": ATOMIC_ASSIGNMENT_POLICY_VERSION,
             "package_assignment_policy_version": PACKAGE_ASSIGNMENT_POLICY_VERSION,
             "package_profile_compiler_version": PACKAGE_PROFILE_COMPILER_VERSION,
@@ -1339,7 +1425,11 @@ class CrossDocumentEngine:
         return [self.process(message_id) for message_id in ordered_ids]
 
     def _embed_mentions(
-        self, mentions: list[EventMention], models: _AuditedModels
+        self,
+        mentions: list[EventMention],
+        models: _AuditedModels,
+        *,
+        use_batch_executor: bool = False,
     ) -> dict[str, list[float]]:
         stored = {
             item.owner_id: item
@@ -1356,6 +1446,26 @@ class CrossDocumentEngine:
                 vectors[mention.mention_id] = existing.vector
             else:
                 missing.append(mention)
+        if use_batch_executor and missing:
+            generated, telemetry = EmbeddingBatchExecutor().run(
+                items=[
+                    EmbeddingWorkItem(
+                        owner_id=mention.mention_id,
+                        text=mention.canonical_proposition,
+                        input_hash=hashlib.sha256(
+                            mention.canonical_proposition.encode("utf-8")
+                        ).hexdigest(),
+                    )
+                    for mention in missing
+                ],
+                models=models,
+                registry=self.registry,
+                owner_kind="event_mention",
+                stage="atomic_recall_m1",
+            )
+            vectors.update(generated)
+            self._embedding_telemetry_by_stage["atomic_recall_m1"] = telemetry
+            return vectors
         for offset in range(0, len(missing), 10):
             batch = missing[offset : offset + 10]
             if not batch:
@@ -1380,6 +1490,8 @@ class CrossDocumentEngine:
         self,
         events: Sequence[AtomicEvent],
         models: _AuditedModels,
+        *,
+        use_batch_executor: bool = False,
     ) -> dict[str, list[float]]:
         vectors: dict[str, list[float]] = {}
         missing: list[tuple[AtomicEvent, str, str]] = []
@@ -1401,6 +1513,24 @@ class CrossDocumentEngine:
                 vectors[event.event_id] = existing.vector
             else:
                 missing.append((event, identity_text, input_hash))
+        if use_batch_executor and missing:
+            generated, telemetry = EmbeddingBatchExecutor().run(
+                items=[
+                    EmbeddingWorkItem(
+                        owner_id=event.event_id,
+                        text=identity_text,
+                        input_hash=input_hash,
+                    )
+                    for event, identity_text, input_hash in missing
+                ],
+                models=models,
+                registry=self.registry,
+                owner_kind="atomic_event",
+                stage="atomic_identity_embedding",
+            )
+            vectors.update(generated)
+            self._embedding_telemetry_by_stage["atomic_identity_embedding"] = telemetry
+            return vectors
         for offset in range(0, len(missing), 10):
             batch = missing[offset : offset + 10]
             result = models.embed(
@@ -1428,12 +1558,73 @@ class CrossDocumentEngine:
         run_id: str,
         candidate_counts: dict[str, int],
     ) -> dict[str, list[AtomicCandidate]]:
+        candidate_started = perf_counter()
         active_events = {
             event.event_id: event for event in self.registry.list_current_atomic_events(limit=10000)
         }
+        read_snapshot = StageReadSnapshot.load(
+            self.registry,
+            events=list(active_events.values()),
+            packages=[],
+        )
         output: dict[str, list[AtomicCandidate]] = {}
         provisional_by_id: dict[str, tuple[AtomicEvent, EventMention, CompiledMentionIdentity]] = {}
         provisional_index = MultiKeyBoundedIndex(bucket_limit=12)
+        identity_compiler = IdentityCompiler(
+            registry=self.registry,
+            catalog_hash=self.knowledge_base.catalog_hash,
+        )
+        candidate_cards: dict[str, AtomicCandidateCard] = {}
+        audit_buffer: list[DecisionAuditRecord] = []
+
+        def build_candidate_card(
+            event: AtomicEvent,
+            representatives: Sequence[EventMention],
+            prepared: Sequence[CompiledMentionIdentity] | None = None,
+        ) -> AtomicCandidateCard:
+            representative_values = tuple(representatives)
+            compiled_values = tuple(prepared or [
+                identity_compiler.compile(representative)
+                for representative in representative_values
+            ])
+            sidecars = [
+                item.atomic_identity_sidecar
+                for item in compiled_values
+                if item.atomic_identity_sidecar is not None
+            ]
+            sidecar = (
+                combine_atomic_identity_sidecars(sidecars)
+                if sidecars
+                else compile_atomic_identity_sidecar(
+                    representative_values[0], event.identity_profile
+                )
+            )
+            return AtomicCandidateCard(
+                event=event,
+                representative_mentions=representative_values,
+                representative_compiled=compiled_values,
+                representative_sidecar=sidecar,
+                resolved_identity_evidence=tuple(
+                    evidence
+                    for representative in representative_values
+                    for evidence in resolved_identity_evidence(self.registry, representative)
+                ),
+                identity_profile_hash=_hash_json(
+                    event.identity_profile.model_dump(mode="json")
+                ),
+                candidate_root_id=candidate_root_id(self.registry, event.event_id),
+                source_ids=frozenset(item.message_id for item in representative_values),
+                snapshot_hash=read_snapshot.snapshot_hash,
+            )
+
+        for event in active_events.values():
+            representatives = [
+                read_snapshot.mentions_by_id[mention_id]
+                for mention_id in event.representative_mention_ids
+                if mention_id in read_snapshot.mentions_by_id
+            ]
+            if representatives:
+                candidate_cards[event.event_id] = build_candidate_card(event, representatives)
 
         def provisional_keys(
             mention: EventMention,
@@ -1469,12 +1660,10 @@ class CrossDocumentEngine:
                 identity,
             )
             provisional_by_id[item[0].event_id] = item
+            candidate_cards[item[0].event_id] = build_candidate_card(
+                item[0], [mention], [identity]
+            )
             provisional_index.add(item[0].event_id, provisional_keys(mention, identity))
-
-        identity_compiler = IdentityCompiler(
-            registry=self.registry,
-            catalog_hash=self.knowledge_base.catalog_hash,
-        )
         for mention in mentions:
             compiled_identity = compiled[mention.mention_id]
             profile = compiled_identity.identity_profile
@@ -1540,30 +1729,13 @@ class CrossDocumentEngine:
             ranked: list[AtomicCandidate] = []
             observed_by_event: dict[str, list[HardConflictCode]] = {}
             candidate_sidecars = {}
+            incoming_evidence = resolved_identity_evidence(self.registry, mention)
             for event_id, recall_routes in routes.items():
                 event = active_events[event_id]
-                representatives = [
-                    item
-                    for item in (
-                        self.registry.get_mention(value)
-                        for value in event.representative_mention_ids
-                    )
-                    if item is not None
-                ]
-                if event_id.startswith("provisional:"):
-                    provisional_item = provisional_by_id.get(event_id)
-                    representatives = [] if provisional_item is None else [provisional_item[1]]
-                representative_sidecars = []
-                for representative in representatives:
-                    representative_identity = identity_compiler.compile(representative)
-                    if representative_identity.atomic_identity_sidecar is not None:
-                        representative_sidecars.append(
-                            representative_identity.atomic_identity_sidecar
-                        )
-                if representative_sidecars:
-                    candidate_sidecars[event_id] = combine_atomic_identity_sidecars(
-                        representative_sidecars
-                    )
+                card = candidate_cards.get(event_id)
+                representatives = list(card.representative_mentions) if card is not None else []
+                if card is not None:
+                    candidate_sidecars[event_id] = card.representative_sidecar
                 else:
                     candidate_sidecars[event_id] = compile_atomic_identity_sidecar(
                         mention,
@@ -1586,10 +1758,9 @@ class CrossDocumentEngine:
                             HardConflictCode.ISSUER,
                         }
                     ]
-                    representative_compiled = [
-                        identity_compiler.compile(representative)
-                        for representative in representatives
-                    ]
+                    representative_compiled = (
+                        list(card.representative_compiled) if card is not None else []
+                    )
                     active_conflicts, discriminant_payload = _compiled_active_hard_conflicts(
                         compiled_identity,
                         representative_compiled,
@@ -1605,12 +1776,9 @@ class CrossDocumentEngine:
                             HardConflictCode.LOCATION_ASSET,
                         }
                     ]
-                    incoming_evidence = resolved_identity_evidence(self.registry, mention)
-                    existing_evidence = [
-                        evidence
-                        for representative in representatives
-                        for evidence in resolved_identity_evidence(self.registry, representative)
-                    ]
+                    existing_evidence = (
+                        list(card.resolved_identity_evidence) if card is not None else []
+                    )
                     for role, conflict in (
                         (ParticipantRole.SUBJECT, HardConflictCode.CORE_SUBJECT),
                         (ParticipantRole.COUNTERPARTY, HardConflictCode.COUNTERPARTY),
@@ -1639,7 +1807,7 @@ class CrossDocumentEngine:
                         observed_conflicts.append(HardConflictCode.LOCATION_ASSET)
                     observed_conflicts = sorted(set(observed_conflicts), key=str)
                     if observed_conflicts:
-                        self.registry.append_decision_audit(
+                        audit_buffer.append(
                             DecisionAuditRecord(
                                 audit_id=stable_id(
                                     "audit",
@@ -1685,7 +1853,11 @@ class CrossDocumentEngine:
                         recall_score=score,
                         hard_conflicts=effective_conflicts,
                         identity_sidecar=candidate_sidecars[event_id],
-                        candidate_root_id=candidate_root_id(self.registry, event_id),
+                        candidate_root_id=(
+                            card.candidate_root_id
+                            if card is not None
+                            else candidate_root_id(self.registry, event_id)
+                        ),
                         raw_embedding_similarity=scores.get(event_id),
                     )
                 )
@@ -1699,7 +1871,7 @@ class CrossDocumentEngine:
                 candidate_roots={
                     item.event.event_id: (
                         item.candidate_root_id
-                        or candidate_root_id(self.registry, item.event.event_id)
+                        or candidate_cards[item.event.event_id].candidate_root_id
                     )
                     for item in ranked
                 },
@@ -1712,6 +1884,7 @@ class CrossDocumentEngine:
                 legacy_ranked=ranked,
                 shadow_ranked=shadow_ranked,
                 top_k=ATOMIC_TOP_K,
+                audit_sink=audit_buffer.append,
             )
             append_ranked_candidate_snapshot(
                 registry=self.registry,
@@ -1724,6 +1897,7 @@ class CrossDocumentEngine:
                     for event_id, values in observed_by_event.items()
                 },
                 selected_top_k=ATOMIC_TOP_K,
+                audit_sink=audit_buffer.append,
             )
             output[mention.mention_id] = ranked[:ATOMIC_TOP_K]
             candidate_counts["atomic_recalled"] += len(output[mention.mention_id])
@@ -1732,6 +1906,31 @@ class CrossDocumentEngine:
                 for item in output[mention.mention_id]
             )
             register_provisional(mention, compiled_identity)
+        if getattr(self, "_bulk_batch_audit_write", False):
+            audit_result = self.registry.append_decision_audits(audit_buffer, chunk_size=512)
+        else:
+            inserted = sum(self.registry.append_decision_audit(item) for item in audit_buffer)
+            audit_result = {
+                "inserted": inserted,
+                "reused": len(audit_buffer) - inserted,
+                "conflicted": 0,
+                "degraded": 0,
+                "transactions": len(audit_buffer),
+            }
+        if audit_result["conflicted"] or audit_result["degraded"]:
+            self._bulk_audit_degraded = True
+        self._last_atomic_candidate_telemetry = {
+            "snapshot_load_ms": read_snapshot.load_ms,
+            "snapshot_query_count": read_snapshot.query_count,
+            "candidate_prepare_ms": round((perf_counter() - candidate_started) * 1000),
+            "candidate_pair_count": sum(len(values) for values in output.values()),
+            "pair_registry_read_count": 0,
+            "audit_buffered_count": len(audit_buffer),
+            "audit_transaction_count": audit_result["transactions"],
+            "audit_degraded": bool(
+                audit_result["conflicted"] or audit_result["degraded"]
+            ),
+        }
         return output
 
     def _atomic_decisions(
@@ -1741,6 +1940,16 @@ class CrossDocumentEngine:
         compiled: dict[str, CompiledMentionIdentity],
         models: _AuditedModels,
     ) -> dict[str, AtomicAssignmentDecision]:
+        audit_buffer: list[DecisionAuditRecord] = []
+
+        def flush_audits() -> None:
+            if getattr(self, "_bulk_batch_audit_write", False):
+                result = self.registry.append_decision_audits(audit_buffer, chunk_size=512)
+                if result["conflicted"] or result["degraded"]:
+                    self._bulk_audit_degraded = True
+            else:
+                for audit in audit_buffer:
+                    self.registry.append_decision_audit(audit)
         deterministic_by_mention: dict[str, list[AtomicCandidateAssessment]] = {}
         eligible: dict[str, list[AtomicCandidate]] = {}
         decisions: dict[str, AtomicAssignmentDecision] = {}
@@ -1804,7 +2013,7 @@ class CrossDocumentEngine:
                     }
                 )
                 deterministic_assessments.append(assessment)
-                self.registry.append_decision_audit(
+                audit_buffer.append(
                     DecisionAuditRecord(
                         audit_id=(
                             f"atomic-n9-deterministic:{models.run_id}:"
@@ -3041,11 +3250,13 @@ class CrossDocumentEngine:
             return batch_index, restored_output.model_copy(update={"decisions": merged_decisions})
 
         if not batches:
+            flush_audits()
             return decisions
         with ThreadPoolExecutor(max_workers=min(self.n9_active_requests, len(batches))) as executor:
             outputs = list(executor.map(process_batch, enumerate(batches)))
         for _, output in sorted(outputs):
             decisions.update({item.mention_id: item for item in output.decisions})
+        flush_audits()
         return decisions
 
     def _apply_atomic(
@@ -3058,10 +3269,97 @@ class CrossDocumentEngine:
         *,
         run_id: str,
         sync_embeddings: bool = True,
+        chunked_apply: bool = False,
+        stage_writer: BulkWriter | None = None,
+        apply_checkpoint_context: dict[str, str] | None = None,
+        completed_apply_chunks: dict[str, dict[str, object]] | None = None,
     ) -> tuple[list[AtomicEvent], list[AtomicAssignmentRecord]]:
         touched: dict[str, AtomicEvent] = {}
         assignments: list[AtomicAssignmentRecord] = []
         provisional_map: dict[str, str | None] = {}
+        stage_records: list[dict[str, object]] = []
+        apply_telemetry = {"transactions": 0, "retries": 0, "degraded": 0}
+        write_buffer = (
+            StageWriteBuffer(stage_writer, default_chunk_size=64)
+            if chunked_apply and stage_writer is not None
+            else None
+        )
+        apply_chunk_index = 0
+
+        def collect_write_results() -> None:
+            if write_buffer is None:
+                return
+            for result in write_buffer.barrier():
+                for key in apply_telemetry:
+                    apply_telemetry[key] += result[key]
+
+        def flush_stage_records(*, wait: bool = False) -> None:
+            nonlocal apply_chunk_index
+            if not stage_records:
+                if wait:
+                    collect_write_results()
+                return
+            records, stage_records[:] = list(stage_records), []
+            if apply_checkpoint_context is not None:
+                task_id = f"atomic-apply:{apply_chunk_index:06d}"
+                identities: list[dict[str, object]] = []
+                for record in records:
+                    event_record = cast(AtomicEvent | None, record.get("event"))
+                    assignment_record = cast(
+                        AtomicAssignmentRecord | None, record.get("assignment")
+                    )
+                    identities.append(
+                        {
+                            "event": (
+                                None
+                                if event_record is None
+                                else (event_record.event_id, event_record.version)
+                            ),
+                            "assignment": (
+                                None
+                                if assignment_record is None
+                                else assignment_record.assignment_id
+                            ),
+                        }
+                    )
+                input_hash = _hash_json(identities)
+                completed = (completed_apply_chunks or {}).get(task_id)
+                apply_chunk_index += 1
+                if (
+                    completed is not None
+                    and completed.get("input_hash") == input_hash
+                    and completed.get("snapshot_hash")
+                    == apply_checkpoint_context["snapshot_hash"]
+                ):
+                    if wait:
+                        collect_write_results()
+                    return
+                records[0] = {
+                    **records[0],
+                    "checkpoint": {
+                        "epoch_id": apply_checkpoint_context["epoch_id"],
+                        "stage": "ATOMIC_APPLY",
+                        "task_id": task_id,
+                        "input_hash": input_hash,
+                        "snapshot_hash": apply_checkpoint_context["snapshot_hash"],
+                        "decision_ref": {"row_count": len(records)},
+                    },
+                }
+            if write_buffer is not None:
+                frozen_records = tuple(records)
+                write_buffer.submit(
+                    partial(
+                        self.registry.save_atomic_stage_batch,
+                        frozen_records,
+                        chunk_size=len(frozen_records),
+                    )
+                )
+                if wait:
+                    collect_write_results()
+            else:
+                result = self.registry.save_atomic_stage_batch(records, chunk_size=64)
+                for key in apply_telemetry:
+                    apply_telemetry[key] += result[key]
         known_mentions = {
             mention.mention_id: mention
             for event in self.registry.list_current_atomic_events(limit=10000)
@@ -3103,7 +3401,10 @@ class CrossDocumentEngine:
                     reason="RECOVERED_EXISTING_ASSIGNMENT",
                     identity_processing_key=compiled_identity.processing_key,
                 )
-                self.registry.save_atomic_assignment(record)
+                if chunked_apply:
+                    stage_records.append({"assignment": record})
+                else:
+                    self.registry.save_atomic_assignment(record)
                 assignments.append(record)
                 continue
             eligible = [item for item in candidates[mention.mention_id] if not item.hard_conflicts]
@@ -3333,7 +3634,15 @@ class CrossDocumentEngine:
                     claim_conflict = False
                     identity_differences = []
                     possible_duplicate_atomic_ids = []
-                self.registry.save_atomic_event(event)
+                duplicate_absorption_requested = bool(
+                    possible_duplicate_atomic_ids if action is AtomicAction.MERGE else []
+                )
+                event_persisted = False
+                if duplicate_absorption_requested:
+                    if chunked_apply:
+                        flush_stage_records(wait=True)
+                    self.registry.save_atomic_event(event)
+                    event_persisted = True
                 retained_possible_duplicates: list[str] = []
                 absorbed_duplicates: list[str] = []
                 for duplicate_event_id in (
@@ -3403,6 +3712,7 @@ class CrossDocumentEngine:
                         )
                         continue
                     self.registry.save_atomic_event(event)
+                    event_persisted = True
                     self.registry.save_atomic_redirect(
                         source_event_id=duplicate_root,
                         target_event_id=event.event_id,
@@ -3440,7 +3750,7 @@ class CrossDocumentEngine:
                     )
             else:
                 event = singleton_atomic_event(mention, identity_profile=profile)
-                self.registry.save_atomic_event(event)
+                event_persisted = False
             touched[event.event_id] = event
             provisional_map[provisional_id] = event.event_id
             record = self._atomic_record(
@@ -3458,9 +3768,7 @@ class CrossDocumentEngine:
                 hard_conflicts=blocked_conflicts,
                 identity_processing_key=compiled_identity.processing_key,
             )
-            self.registry.save_atomic_assignment(record)
-            self.registry.append_decision_audit(
-                DecisionAuditRecord(
+            assignment_audit = DecisionAuditRecord(
                     audit_id=stable_id("audit", {"assignment": record.assignment_id}),
                     run_id=run_id,
                     decision_type="ATOMIC_ASSIGNMENT",
@@ -3484,8 +3792,25 @@ class CrossDocumentEngine:
                         ),
                     },
                 )
-            )
+            if chunked_apply:
+                stage_records.append(
+                    {
+                        "event": None if event_persisted else event,
+                        "assignment": record,
+                        "audits": [assignment_audit],
+                    }
+                )
+                if len(stage_records) >= 64:
+                    flush_stage_records()
+            else:
+                if not event_persisted:
+                    self.registry.save_atomic_event(event)
+                self.registry.save_atomic_assignment(record)
+                self.registry.append_decision_audit(assignment_audit)
             assignments.append(record)
+        if chunked_apply:
+            flush_stage_records(wait=True)
+            self._last_atomic_apply_telemetry = apply_telemetry
         if sync_embeddings:
             self._sync_atomic_embeddings(list(touched.values()), models)
         return list(touched.values()), assignments
@@ -3583,6 +3908,8 @@ class CrossDocumentEngine:
         self,
         packages: Sequence[EventPackage],
         models: _AuditedModels,
+        *,
+        use_batch_executor: bool = False,
     ) -> dict[str, list[float]]:
         stored = {
             item.owner_id: item
@@ -3603,6 +3930,24 @@ class CrossDocumentEngine:
                 vectors[package.package_id] = current.vector
             else:
                 missing.append((package, text, input_hash))
+        if use_batch_executor and missing:
+            generated, telemetry = EmbeddingBatchExecutor().run(
+                items=[
+                    EmbeddingWorkItem(
+                        owner_id=package.package_id,
+                        text=text,
+                        input_hash=input_hash,
+                    )
+                    for package, text, input_hash in missing
+                ],
+                models=models,
+                registry=self.registry,
+                owner_kind="event_package",
+                stage="package_embedding_m1",
+            )
+            vectors.update(generated)
+            self._embedding_telemetry_by_stage["package_embedding_m1"] = telemetry
+            return vectors
         for offset in range(0, len(missing), 10):
             batch = missing[offset : offset + 10]
             result = models.embed([text for _, text, _ in batch], stage="package_embedding_m1")
@@ -3621,19 +3966,34 @@ class CrossDocumentEngine:
         self,
         event: AtomicEvent,
         mentions: list[EventMention],
+        *,
+        read_snapshot: StageReadSnapshot | None = None,
     ) -> tuple[PackageSeed, str, str, str]:
         seed = package_seed_for_event(event, mentions)
         resolved_fields = _resolved_field_ids(
             self.registry,
             mentions,
             allowed=_PACKAGE_FIELD_NAMESPACES,
+            read_snapshot=read_snapshot,
         )
         anchor_ids = [canonical_id for _, canonical_id in resolved_fields]
+        snapshot_entries = (
+            {entry.id: entry for entry in read_snapshot.field_entries_by_id.values()}
+            if read_snapshot is not None
+            else {}
+        )
         canonical_artifacts = [
             entry.external_id or entry.id
             for namespace, canonical_id in resolved_fields
             if namespace is not FieldNamespace.PACKAGE_ANCHOR
-            and (entry := self.registry.resolve_field_registry_entry(canonical_id)) is not None
+            and (
+                entry := (
+                    snapshot_entries.get(canonical_id)
+                    if read_snapshot is not None
+                    else self.registry.resolve_field_registry_entry(canonical_id)
+                )
+            )
+            is not None
         ]
         artifacts = sorted(set(seed.artifact_candidate_ids) | set(canonical_artifacts))
         seed = seed.model_copy(
@@ -3645,10 +4005,18 @@ class CrossDocumentEngine:
             }
         )
         seed_hash = _hash_json(seed.model_dump(mode="json"))
-        links_hash = package_field_links_hash(
-            self.registry,
-            mentions,
-            catalog_hash=self.knowledge_base.catalog_hash,
+        links_hash = (
+            _package_field_links_hash_from_snapshot(
+                read_snapshot,
+                mentions,
+                catalog_hash=self.knowledge_base.catalog_hash,
+            )
+            if read_snapshot is not None
+            else package_field_links_hash(
+                self.registry,
+                mentions,
+                catalog_hash=self.knowledge_base.catalog_hash,
+            )
         )
         assignment_key = _hash_json(
             {
@@ -5725,9 +6093,7 @@ class CrossDocumentEngine:
                     )
                 ),
                 "object_scope": sorted(
-                    self._trusted_package_field_ids(
-                        package, set(ATOMIC_OBJECT_FIELD_NAMESPACES)
-                    )
+                    self._trusted_package_field_ids(package, set(ATOMIC_OBJECT_FIELD_NAMESPACES))
                 ),
                 "representative_identity_hashes": sorted(
                     {
@@ -5744,9 +6110,7 @@ class CrossDocumentEngine:
         right: EventPackage,
         routes: Sequence[RecallRoute] = (),
     ) -> str | None:
-        return self._package_boundary_guard_reason(
-            self._package_pair_boundary(left, right, routes)
-        )
+        return self._package_boundary_guard_reason(self._package_pair_boundary(left, right, routes))
 
     @staticmethod
     def _package_boundary_guard_reason(boundary: PackagePairBoundary) -> str | None:
@@ -5816,6 +6180,215 @@ class CrossDocumentEngine:
                 routes.add(RecallRoute.PROPOSITION_EMBEDDING)
         return sorted(routes, key=str), similarity
 
+    def _n13_package_cards(
+        self,
+        packages: Sequence[EventPackage],
+        embeddings: dict[str, list[float]],
+        *,
+        read_snapshot: StageReadSnapshot | None = None,
+    ) -> dict[str, N13PackageCard]:
+        """Compile one immutable read snapshot; planning below performs no registry reads."""
+
+        snapshot = read_snapshot or StageReadSnapshot.load(
+            self.registry,
+            packages=packages,
+            embedding_owner_kind="event_package",
+            embedding_model=self.model_m1,
+        )
+        events = snapshot.events_by_id
+        mentions = snapshot.mentions_by_id
+        links_by_mention = snapshot.field_links_by_mention
+        root_by_id = snapshot.field_entries_by_id
+        sessions_aliases = {
+            "pre_market": "PRE_MARKET",
+            "premarket": "PRE_MARKET",
+            "pre-market": "PRE_MARKET",
+            "regular": "REGULAR",
+            "regular_session": "REGULAR",
+            "regular session": "REGULAR",
+            "market_hours": "REGULAR",
+            "market hours": "REGULAR",
+            "after_hours": "AFTER_HOURS",
+            "after hours": "AFTER_HOURS",
+            "after-hours": "AFTER_HOURS",
+            "post_market": "AFTER_HOURS",
+            "post-market": "AFTER_HOURS",
+        }
+        reaction_families = {EventFamily.MARKET_MOVEMENT, EventFamily.ANALYST_ACTION}
+        cards: dict[str, N13PackageCard] = {}
+        for package in packages:
+            members = [
+                events[event_id] for event_id in package.member_event_ids if event_id in events
+            ]
+            package_mentions = [
+                mentions[mention_id]
+                for event in members
+                for mention_id in event.mention_ids
+                if mention_id in mentions
+            ]
+            trusted: dict[FieldNamespace, set[str]] = defaultdict(set)
+            for mention in package_mentions:
+                for link in links_by_mention.get(mention.mention_id, ()):
+                    entry = root_by_id.get(link.registry_id)
+                    if entry is not None and entry.external_id:
+                        trusted[entry.namespace].add(entry.external_id)
+            artifact_ids: set[str] = set()
+            for anchor_id in package.package_anchor_ids:
+                entry = root_by_id.get(anchor_id)
+                if entry is not None and entry.external_id:
+                    artifact_ids.add(entry.external_id)
+            if package.anchor_artifact_id:
+                artifact_ids.add(package.anchor_artifact_id)
+            parent_blocks: list[N13ParentBlock] = []
+            sessions: set[str] = set()
+            measures: set[str] = set()
+            for event in members:
+                for mention_id in event.mention_ids:
+                    current_mention = mentions.get(mention_id)
+                    if current_mention is None:
+                        continue
+                    if event.event_family not in reaction_families:
+                        originators = frozenset(self._mention_originators(current_mention))
+                        if originators:
+                            parent_blocks.extend(
+                                N13ParentBlock(
+                                    message_id=current_mention.message_id,
+                                    originators=originators,
+                                    field=span.field,
+                                    start_char=span.start_char,
+                                    end_char=span.end_char,
+                                )
+                                for span in current_mention.evidence_spans
+                            )
+                    for attribute in current_mention.open_attributes:
+                        key = attribute.key.strip().casefold().replace("-", "_").replace(" ", "_")
+                        if key in {"trading_session", "market_session"}:
+                            raw = attribute.value.strip().casefold()
+                            normalized = sessions_aliases.get(raw) or sessions_aliases.get(
+                                raw.replace("-", "_").replace(" ", "_")
+                            )
+                            if normalized:
+                                sessions.add(normalized)
+                    if event.event_family is EventFamily.MARKET_MOVEMENT:
+                        sidecar = compile_atomic_identity_sidecar(
+                            current_mention, event.identity_profile
+                        )
+                        measures.update(
+                            value.partition(":")[2]
+                            for value in sidecar.facet
+                            if value.startswith("measure:") and value.partition(":")[2]
+                        )
+            cards[package.package_id] = N13PackageCard(
+                package_id=package.package_id,
+                member_event_ids=frozenset(package.member_event_ids),
+                artifact_ids=frozenset(artifact_ids),
+                anchor_ids=frozenset(package.package_anchor_ids),
+                entity_ids=frozenset(package.anchor_entities),
+                issuer_ids=frozenset(trusted[FieldNamespace.PARTICIPANT_COMPANY]),
+                institution_ids=frozenset(trusted[FieldNamespace.PARTICIPANT_INSTITUTION]),
+                instrument_ids=frozenset(trusted[FieldNamespace.PARTICIPANT_INSTRUMENT]),
+                object_ids=frozenset(
+                    value
+                    for namespace in ATOMIC_OBJECT_FIELD_NAMESPACES
+                    for value in trusted[namespace]
+                ),
+                market_sessions=frozenset(sessions),
+                market_measures=frozenset(measures),
+                member_identity_hashes=frozenset(
+                    _hash_json(event.identity_profile.model_dump(mode="json")) for event in members
+                ),
+                source_ids=frozenset(mention.message_id for mention in package_mentions),
+                parent_blocks=tuple(parent_blocks),
+                event_families=frozenset(event.event_family.value for event in members),
+                package_kind=package.package_kind.value,
+                package_family=package.package_family.value,
+                anchor_period_id=package.anchor_period_id,
+                lifecycle_state=package.lifecycle_state,
+                time_start=as_date(package.time_range.start),
+                time_end=as_date(package.time_range.end),
+                vector=(
+                    tuple(embeddings[package.package_id])
+                    if package.package_id in embeddings
+                    else None
+                ),
+                anchor_conflict=package.anchor_conflict,
+                representative_propositions=tuple(
+                    event.canonical_proposition
+                    for event in representative_package_members(members)[:3]
+                ),
+                package_version=package.version,
+                profile_hash=_hash_json(package.model_dump(mode="json")),
+            )
+        return cards
+
+    @staticmethod
+    def _n13_card_boundary(
+        left: N13PackageCard,
+        right: N13PackageCard,
+        routes: Sequence[RecallRoute],
+    ) -> PackagePairBoundary:
+        reaction = {EventFamily.MARKET_MOVEMENT.value, EventFamily.ANALYST_ACTION.value}
+        left_reaction = left.event_families.intersection(reaction)
+        right_reaction = right.event_families.intersection(reaction)
+        both_pure_market = (
+            left.event_families == right.event_families == {EventFamily.MARKET_MOVEMENT.value}
+        )
+        return PackagePairBoundary(
+            shared_artifact_ids=sorted(left.artifact_ids.intersection(right.artifact_ids)),
+            shared_anchor_ids=sorted(left.anchor_ids.intersection(right.anchor_ids)),
+            conflicting_artifact_ids=sorted(
+                left.artifact_ids.union(right.artifact_ids)
+                if left.artifact_ids
+                and right.artifact_ids
+                and left.artifact_ids.isdisjoint(right.artifact_ids)
+                else set()
+            ),
+            shared_parent_context=RecallRoute.PARENT_CONTEXT in routes,
+            shared_source_member=RecallRoute.SAME_SOURCE_MEMBER in routes,
+            member_identity_support=RecallRoute.MEMBER_IDENTITY in routes,
+            time_support=RecallRoute.TIME_WINDOW in routes,
+            issuer_conflict=bool(
+                left.issuer_ids
+                and right.issuer_ids
+                and left.issuer_ids.isdisjoint(right.issuer_ids)
+            ),
+            reaction_boundary=left_reaction != right_reaction,
+            analyst_boundary=bool(
+                left.institution_ids
+                and right.institution_ids
+                and left.institution_ids.isdisjoint(right.institution_ids)
+            ),
+            period_boundary=bool(
+                left.anchor_period_id
+                and right.anchor_period_id
+                and left.anchor_period_id != right.anchor_period_id
+            ),
+            session_boundary=bool(
+                left.market_sessions
+                and right.market_sessions
+                and left.market_sessions.isdisjoint(right.market_sessions)
+            ),
+            instrument_conflict=bool(
+                both_pure_market
+                and left.instrument_ids
+                and right.instrument_ids
+                and left.instrument_ids.isdisjoint(right.instrument_ids)
+            ),
+            market_measure_conflict=bool(
+                both_pure_market
+                and left.market_measures
+                and right.market_measures
+                and left.market_measures.isdisjoint(right.market_measures)
+            ),
+            object_scope_difference=bool(
+                left.object_ids
+                and right.object_ids
+                and left.object_ids.isdisjoint(right.object_ids)
+            ),
+            left_member_count=len(left.member_event_ids),
+            right_member_count=len(right.member_event_ids),
+        )
+
     def _package_pair_boundary(
         self,
         left: EventPackage,
@@ -5855,9 +6428,9 @@ class CrossDocumentEngine:
         right_measures = self._package_market_measures(right)
         left_objects = self._trusted_package_field_ids(left, set(ATOMIC_OBJECT_FIELD_NAMESPACES))
         right_objects = self._trusted_package_field_ids(right, set(ATOMIC_OBJECT_FIELD_NAMESPACES))
-        both_pure_market = self._package_is_pure_market(
-            left
-        ) and self._package_is_pure_market(right)
+        both_pure_market = self._package_is_pure_market(left) and self._package_is_pure_market(
+            right
+        )
         return PackagePairBoundary(
             shared_artifact_ids=shared_artifacts,
             shared_anchor_ids=sorted(
@@ -6109,6 +6682,7 @@ class CrossDocumentEngine:
         | None = None,
         apply_started_hook: Callable[[], None] | None = None,
         apply_telemetry: dict[str, int] | None = None,
+        planner_chunk_hook: Callable[[int, Sequence[str], int], None] | None = None,
     ) -> list[EventPackage]:
         compiler = PackageProfileCompiler(self.registry)
         all_current = {
@@ -6134,38 +6708,120 @@ class CrossDocumentEngine:
         pair_profiles: dict[tuple[str, str], tuple[int, int, str, str]] = {}
         decision_sources: dict[tuple[str, str], Literal["M0", "GUARD", "M3", "REUSED"]] = {}
         m3_pairs: list[tuple[EventPackage, EventPackage, list[RecallRoute], float | None]] = []
+        use_indexed_planner = self.n13_planner_version == "indexed_v2" or len(active) > 200
+        if self.n13_planner_version == "legacy" and len(active) > 200:
+            self.registry.append_decision_audit(
+                DecisionAuditRecord(
+                    audit_id=f"n13-legacy-disabled:{run_id}",
+                    run_id=run_id,
+                    decision_type="N13_LEGACY_PLANNER_DISABLED",
+                    subject_id=run_id,
+                    payload={"active_package_count": len(active), "threshold": 200},
+                )
+            )
+        cards = (
+            self._n13_package_cards(list(active.values()), embeddings)
+            if use_indexed_planner
+            else {}
+        )
+        profile_hashes = {
+            package_id: self._package_n13_profile_hash(package)
+            for package_id, package in active.items()
+        }
+        recalled_by_touched: dict[
+            str, list[tuple[EventPackage, EventPackage, list[RecallRoute], float | None]]
+        ] = defaultdict(list)
+        if use_indexed_planner:
+            plan = build_indexed_n13_plan(cards.values(), touched_package_ids=result_ids)
+            for chunk in plan.chunks:
+                self.registry.append_decision_audit(
+                    DecisionAuditRecord(
+                        audit_id=f"n13-recall-chunk:{run_id}:{chunk.chunk_index}",
+                        run_id=run_id,
+                        decision_type="N13_RECALL_CHUNK",
+                        subject_id=f"chunk:{chunk.chunk_index}",
+                        payload={
+                            "planner_version": plan.planner_version,
+                            "touched_package_ids": list(chunk.touched_package_ids),
+                            "candidate_pair_count": len(chunk.pairs),
+                        },
+                    )
+                )
+                if planner_chunk_hook is not None:
+                    planner_chunk_hook(
+                        chunk.chunk_index,
+                        chunk.touched_package_ids,
+                        len(chunk.pairs),
+                    )
+                for pair in chunk.pairs:
+                    item = (
+                        active[pair.left_package_id],
+                        active[pair.right_package_id],
+                        list(pair.routes),
+                        pair.similarity,
+                    )
+                    for touched_id in (pair.left_package_id, pair.right_package_id):
+                        if touched_id in result_ids:
+                            recalled_by_touched[touched_id].append(item)
+            self.registry.append_decision_audit(
+                DecisionAuditRecord(
+                    audit_id=f"n13-snapshot:{run_id}",
+                    run_id=run_id,
+                    decision_type="N13_SNAPSHOT",
+                    subject_id=run_id,
+                    payload={
+                        "planner_version": plan.planner_version,
+                        "active_package_count": len(active),
+                        "touched_package_count": len(result_ids),
+                        "candidate_pair_count": plan.candidate_pair_count,
+                        "strong_bucket_overflow_count": plan.strong_bucket_overflow_count,
+                        "vector_query_count": plan.vector_query_count,
+                    },
+                )
+            )
+        else:
+            for touched_id in sorted(result_ids):
+                left = active.get(touched_id)
+                if left is None:
+                    continue
+                for right in active.values():
+                    if left.package_id == right.package_id:
+                        continue
+                    pair_ids = (
+                        min(left.package_id, right.package_id),
+                        max(left.package_id, right.package_id),
+                    )
+                    source_package = active[pair_ids[0]]
+                    target_package = active[pair_ids[1]]
+                    routes, similarity = self._package_pair_signals(
+                        source_package, target_package, embeddings
+                    )
+                    weak_routes = {
+                        RecallRoute.CORE_ENTITY,
+                        RecallRoute.TIME_WINDOW,
+                        RecallRoute.PROPOSITION_EMBEDDING,
+                        RecallRoute.SAME_SOURCE_MEMBER,
+                    }
+                    if routes and not (len(routes) == 1 and routes[0] in weak_routes):
+                        recalled_by_touched[touched_id].append(
+                            (source_package, target_package, routes, similarity)
+                        )
+        package_by_event = {
+            event_id: package.package_id
+            for package in active.values()
+            for event_id in package.member_event_ids
+        }
+        external_signal_pairs: set[tuple[str, str]] = set()
+        for candidate in self.registry.list_package_external_relation_candidates():
+            left_id = package_by_event.get(candidate.source_event_id)
+            right_id = self.registry.resolve_package_root(candidate.target_package_id)
+            if left_id in active and right_id in active and left_id != right_id:
+                external_signal_pairs.add((min(left_id, right_id), max(left_id, right_id)))
         for touched_id in sorted(result_ids):
             left = active.get(touched_id)
             if left is None:
                 continue
-            recalled_for_touched: list[
-                tuple[EventPackage, EventPackage, list[RecallRoute], float | None]
-            ] = []
-            for right in active.values():
-                if left.package_id == right.package_id:
-                    continue
-                pair_ids = (
-                    min(left.package_id, right.package_id),
-                    max(left.package_id, right.package_id),
-                )
-                if pair_ids in seen_pairs:
-                    continue
-                source_package = active[pair_ids[0]]
-                target_package = active[pair_ids[1]]
-                routes, similarity = self._package_pair_signals(
-                    source_package, target_package, embeddings
-                )
-                if not routes:
-                    continue
-                weak_routes = {
-                    RecallRoute.CORE_ENTITY,
-                    RecallRoute.TIME_WINDOW,
-                    RecallRoute.PROPOSITION_EMBEDDING,
-                    RecallRoute.SAME_SOURCE_MEMBER,
-                }
-                if len(routes) == 1 and routes[0] in weak_routes:
-                    continue
-                recalled_for_touched.append((source_package, target_package, routes, similarity))
+            recalled_for_touched = recalled_by_touched.get(touched_id, [])
             recalled_for_touched.sort(
                 key=lambda item: (
                     -_package_recall_score(item[2], item[3]),
@@ -6180,8 +6836,8 @@ class CrossDocumentEngine:
                 if pair_key in seen_pairs:
                     continue
                 seen_pairs.add(pair_key)
-                left_hash = self._package_n13_profile_hash(source_package)
-                right_hash = self._package_n13_profile_hash(target_package)
+                left_hash = profile_hashes[source_package.package_id]
+                right_hash = profile_hashes[target_package.package_id]
                 pair_routes[pair_key] = routes
                 pair_profiles[pair_key] = (
                     source_package.version,
@@ -6189,10 +6845,7 @@ class CrossDocumentEngine:
                     left_hash,
                     right_hash,
                 )
-                if self._package_pair_external_relation_signal(
-                    source_package,
-                    target_package,
-                ):
+                if pair_key in external_signal_pairs:
                     self.registry.append_decision_audit(
                         DecisionAuditRecord(
                             audit_id=(
@@ -6208,8 +6861,14 @@ class CrossDocumentEngine:
                             },
                         )
                     )
-                boundary = self._package_pair_boundary(
-                    source_package, target_package, routes
+                boundary = (
+                    self._n13_card_boundary(
+                        cards[source_package.package_id],
+                        cards[target_package.package_id],
+                        routes,
+                    )
+                    if use_indexed_planner
+                    else self._package_pair_boundary(source_package, target_package, routes)
                 )
                 guard_reason = self._package_boundary_guard_reason(boundary)
                 if guard_reason is not None:
@@ -6297,6 +6956,27 @@ class CrossDocumentEngine:
                     decision_sources[pair_key] = "M3"
                     m3_pairs.append((source_package, target_package, routes, similarity))
 
+        if len(m3_pairs) > PACKAGE_N13_M3_PAIR_CAP:
+            m3_pairs.sort(
+                key=lambda item: (
+                    -_package_recall_score(item[2], item[3]),
+                    item[0].package_id,
+                    item[1].package_id,
+                )
+            )
+            overflow = m3_pairs[PACKAGE_N13_M3_PAIR_CAP:]
+            m3_pairs = m3_pairs[:PACKAGE_N13_M3_PAIR_CAP]
+            for left, right, _, _ in overflow:
+                pair_key = (left.package_id, right.package_id)
+                decision_sources[pair_key] = "GUARD"
+                guard_decisions.append(
+                    PackagePairMergeDecision(
+                        source_package_id=left.package_id,
+                        target_package_id=right.package_id,
+                        relation=PackageMergeRelation.UNCERTAIN,
+                        reason="N13_INDEXED_M3_BUDGET_EXHAUSTED",
+                    )
+                )
         if task_hook is not None:
             for pair_key in sorted(seen_pairs):
                 task_hook(pair_key, "RUNNING", None, None)
@@ -6307,7 +6987,7 @@ class CrossDocumentEngine:
                 m3_pairs,
                 nominal_size=PACKAGE_MERGE_PAIR_BATCH,
                 active_requests=self.n13_active_requests,
-                max_balanced_size=13,
+                max_balanced_size=12,
             )
 
             def process_batch(
@@ -6689,30 +7369,36 @@ class CrossDocumentEngine:
                     ),
                     [],
                 )
-                boundary = (
+                decision_boundary = (
                     self._package_pair_boundary(left_package, right_package, routes)
                     if left_package is not None and right_package is not None
                     else None
                 )
                 tier_a = bool(
                     RecallRoute.SHARED_ATOMIC_EVENT in routes
-                    or (boundary and boundary.shared_artifact_ids)
-                    or (boundary and boundary.shared_anchor_ids)
+                    or (decision_boundary and decision_boundary.shared_artifact_ids)
+                    or (decision_boundary and decision_boundary.shared_anchor_ids)
                 )
                 tier_b = bool(
-                    boundary
-                    and min(boundary.left_member_count, boundary.right_member_count) <= 4
-                    and boundary.independent_positive_count >= 2
+                    decision_boundary
+                    and min(
+                        decision_boundary.left_member_count,
+                        decision_boundary.right_member_count,
+                    )
+                    <= 4
+                    and decision_boundary.independent_positive_count >= 2
                 )
                 apply_allowed = bool(
-                    getattr(self, "n13_pair_local_apply", True)
-                    and boundary is not None
-                    and not boundary.hard_blocked
+                    getattr(self, "n13_pair_local_apply", False)
+                    and decision_boundary is not None
+                    and not decision_boundary.hard_blocked
                     and (tier_a or tier_b)
                 )
                 if apply_allowed:
-                    assert boundary is not None
-                    eligible_same_decisions.append((decision, boundary, 2 if tier_a else 1))
+                    assert decision_boundary is not None
+                    eligible_same_decisions.append(
+                        (decision, decision_boundary, 2 if tier_a else 1)
+                    )
                     continue
                 if boundary is not None and boundary.hard_blocked:
                     boundary_blocked_count += 1
@@ -6892,9 +7578,9 @@ class CrossDocumentEngine:
                 continue
 
             current_boundary_blocked = False
-            for item in component_same:
-                current_left = active.get(item.source_package_id)
-                current_right = active.get(item.target_package_id)
+            for merge_decision in component_same:
+                current_left = active.get(merge_decision.source_package_id)
+                current_right = active.get(merge_decision.target_package_id)
                 if current_left is None or current_right is None:
                     current_boundary_blocked = True
                     break
@@ -7007,7 +7693,7 @@ class CrossDocumentEngine:
                 continue
             representatives = representative_package_members(list(member_events.values()))
             retrieval_text = package_retrieval_text(merged, representatives)
-            plan = PackageMergePlan(
+            merge_plan = PackageMergePlan(
                 plan_id=stable_id(
                     "package-merge-plan",
                     {
@@ -7022,7 +7708,7 @@ class CrossDocumentEngine:
                 reason="N13_SAME_PACKAGE_COMPONENT",
             )
             planned_merges.append(
-                (plan, component_same, merged, sources, retrieval_text)
+                (merge_plan, component_same, merged, sources, retrieval_text)
             )
 
         if planned_merges:
@@ -7032,12 +7718,12 @@ class CrossDocumentEngine:
             )
         else:
             embedding = None
-        for index, (plan, component_same, merged, sources, retrieval_text) in enumerate(
+        for index, (merge_plan, component_same, merged, sources, retrieval_text) in enumerate(
             planned_merges
         ):
             assert embedding is not None
             self.registry.apply_package_merge_plan(
-                plan=plan,
+                plan=merge_plan,
                 decisions=component_same,
                 merged_package=merged,
                 run_id=run_id,
@@ -7049,8 +7735,8 @@ class CrossDocumentEngine:
             for source_package in sources:
                 active.pop(source_package.package_id, None)
                 result_ids.discard(source_package.package_id)
-            active[plan.target_package_id] = merged
-            result_ids.add(plan.target_package_id)
+            active[merge_plan.target_package_id] = merged
+            result_ids.add(merge_plan.target_package_id)
 
         pair_local_apply_ms = round((perf_counter() - pair_local_started) * 1000)
 
@@ -7100,15 +7786,15 @@ class CrossDocumentEngine:
 
         gate = PackageBoundaryGate(self.registry)
         for package_id in sorted(result_ids):
-            candidate = active.get(package_id)
-            if candidate is None or not candidate.member_event_ids:
+            package_candidate = active.get(package_id)
+            if package_candidate is None or not package_candidate.member_event_ids:
                 continue
-            members = self._package_member_events(candidate)
-            finding = gate.evaluate(candidate, members)
+            members = self._package_member_events(package_candidate)
+            finding = gate.evaluate(package_candidate, members)
             if PackageBoundaryAction.REMOVE_MEMBER not in finding.actions:
                 continue
             affected = self._repair_reaction_members_v13(
-                candidate,
+                package_candidate,
                 members,
                 active,
                 embeddings,
@@ -7158,9 +7844,7 @@ class CrossDocumentEngine:
         if apply_telemetry is not None:
             apply_telemetry.update(
                 {
-                    "n13_post_decide_ms": round(
-                        (perf_counter() - post_decide_started) * 1000
-                    ),
+                    "n13_post_decide_ms": round((perf_counter() - post_decide_started) * 1000),
                     "n13_pair_local_apply_ms": pair_local_apply_ms,
                     "n13_pair_local_eligible_count": len(eligible_same_decisions),
                     "n13_pair_local_applied_count": applied_count,

@@ -48,6 +48,8 @@ def test_scheduler_reduces_only_pressured_lane_and_recovers() -> None:
         m3_limit=8,
         m4_limit=4,
         structured_start_interval_seconds=0,
+        structured_provider_start_rate=1000,
+        structured_provider_initial_burst=128,
     )
 
     class RateLimited(RuntimeError):
@@ -62,6 +64,34 @@ def test_scheduler_reduces_only_pressured_lane_and_recovers() -> None:
 
     assert scheduler.snapshot()["m3"].limit == 4
     assert scheduler.snapshot()["m2"].limit == 8
-    for _ in range(30):
+    for _ in range(100):
         scheduler.run(ModelTier.M3, lambda: 1)
-    assert scheduler.snapshot()["m3"].limit == 6
+    assert scheduler.snapshot()["m3"].limit == 8
+
+
+def test_scheduler_provider_hard_limit_is_shared_across_tiers() -> None:
+    scheduler = CDECRScheduler(
+        m2_limit=12,
+        m3_limit=12,
+        m4_limit=12,
+        structured_provider_target=6,
+        structured_provider_hard_limit=8,
+        structured_provider_start_rate=1000,
+        structured_provider_initial_burst=64,
+    )
+    release = Event()
+
+    def operation() -> int:
+        release.wait(timeout=2)
+        return 1
+
+    tiers = [ModelTier.M2, ModelTier.M3, ModelTier.M4] * 4
+    with ThreadPoolExecutor(max_workers=12) as executor:
+        futures = [executor.submit(scheduler.run, tier, operation) for tier in tiers]
+        deadline = monotonic() + 1
+        while scheduler.provider_snapshot().active < 8 and monotonic() < deadline:
+            sleep(0.005)
+        assert scheduler.provider_snapshot().active == 8
+        release.set()
+        assert len([future.result() for future in futures]) == 12
+    assert scheduler.provider_snapshot().max_active == 8

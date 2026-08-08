@@ -5,7 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
-from collections.abc import Iterable, Sequence
+from collections.abc import Callable, Iterable, Sequence
 from enum import IntEnum
 
 from pydantic import Field
@@ -272,6 +272,7 @@ def append_atomic_ranker_shadow_audit(
     legacy_ranked: Sequence[AtomicCandidate],
     shadow_ranked: Sequence[AtomicRankedCandidate],
     top_k: int,
+    audit_sink: Callable[[DecisionAuditRecord], object] | None = None,
 ) -> None:
     legacy_top = [item.event.event_id for item in legacy_ranked[:top_k]]
     deduped_shadow = dedupe_ranked_candidate_roots(shadow_ranked)
@@ -279,7 +280,7 @@ def append_atomic_ranker_shadow_audit(
     shadow_by_event = {
         item.candidate.event.event_id: item for item in shadow_ranked
     }
-    registry.append_decision_audit(
+    (audit_sink or registry.append_decision_audit)(
         DecisionAuditRecord(
             audit_id=f"n7-ranker-shadow:{run_id}:{mention_id}",
             run_id=run_id,

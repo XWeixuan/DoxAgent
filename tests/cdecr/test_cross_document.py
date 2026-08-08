@@ -82,7 +82,7 @@ class FakeStructured:
 
     def complete(self, request: StructuredModelRequest) -> StructuredModelResult:
         self.calls.append(request)
-        is_field_request = "typed field value" in request.system_prompt
+        is_field_request = "typed field" in request.system_prompt
         if is_field_request:
             payload: dict[str, object] = {"decision": "NEW"}
         elif self.always_invalid or (self.invalid_first and not self.invalid_emitted):
@@ -1079,7 +1079,7 @@ def test_n12_invalid_task_degrades_to_new_package_without_batch_repair(
     assert result.package_assignments[0].action.value == "CREATE_NEW_PACKAGE"
 
 
-def test_frozen_package_enters_n13_and_can_return_active(
+def test_frozen_package_enters_n13_but_same_is_not_applied_when_pair_local_is_disabled(
     registry: SQLiteCDECRRegistry,
 ) -> None:
     m3 = FakeStructured(package_merge_relation="SAME_PACKAGE")
@@ -1110,13 +1110,11 @@ def test_frozen_package_enters_n13_and_can_return_active(
         registry.resolve_package_root(package.package_id)
         for package in registry.list_current_packages()
     }
-    assert len(roots) == 1
-    root_id = next(iter(roots))
-    assert root_id is not None
-    root = registry.get_current_package(root_id)
-    assert root is not None
-    assert root.quality_state is PackageQualityState.ACTIVE
-    assert len(root.member_event_ids) == 2
+    assert len(roots) == 2
+    assert any(
+        package.quality_state is PackageQualityState.FROZEN
+        for package in registry.list_current_packages()
+    )
     assert not any("Package coreference review model" in call.system_prompt for call in m3.calls)
     with sqlite3.connect(registry.path) as connection:
         m0_count = connection.execute(
@@ -1125,6 +1123,13 @@ def test_frozen_package_enters_n13_and_can_return_active(
             (second.run_id, '%"decision_source":"M0"%'),
         ).fetchone()[0]
     assert m0_count >= 1
+    with sqlite3.connect(registry.path) as connection:
+        not_applied_count = connection.execute(
+            "SELECT COUNT(*) FROM decision_audits "
+            "WHERE run_id = ? AND decision_type = 'SAME_PACKAGE_NOT_APPLIED_WEAK_BOUNDARY'",
+            (second.run_id,),
+        ).fetchone()[0]
+    assert not_applied_count == 1
 
 
 def test_market_reaction_is_external_not_package_member(

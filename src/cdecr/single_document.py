@@ -562,6 +562,15 @@ class _AuditedStructuredClient:
         if repaired:
             self.repair_invocations += 1
         call_stage = f"{self.stage}_repair" if repaired else self.stage
+        request = request.model_copy(
+            update={
+                "metadata": {
+                    **request.metadata,
+                    "stage": call_stage,
+                    "priority": "repair" if repaired else "normal",
+                }
+            }
+        )
         call_id = str(uuid.uuid4())
         input_hash = _hash_json({"system": request.system_prompt, "user": request.user_prompt})
         schema_hash = _hash_json(request.json_schema)
@@ -673,7 +682,9 @@ class SingleDocumentProcessor:
         model_m2: str = "deepseek-v4-flash",
         model_m3: str = "qwen3.7-plus",
         model_m4: str = "qwen3.7-max",
-        document_concurrency: int = 3,
+        document_workers: int = 3,
+        document_block_concurrency: int = 3,
+        document_concurrency: int | None = None,
     ) -> None:
         self.registry = registry
         self.embedding_client = embedding_client
@@ -684,7 +695,20 @@ class SingleDocumentProcessor:
         self.model_m2 = model_m2
         self.model_m3 = model_m3
         self.model_m4 = model_m4
-        self.document_concurrency = max(1, document_concurrency)
+        # Keep the old constructor keyword as a compatibility alias, but do not let
+        # document-level fan-out implicitly multiply per-document block concurrency.
+        if document_concurrency is not None:
+            document_workers = document_concurrency
+            document_block_concurrency = document_concurrency
+        self.document_workers = max(1, document_workers)
+        self.document_block_concurrency = max(1, document_block_concurrency)
+        self._document_block_executor = ThreadPoolExecutor(
+            max_workers=self.document_block_concurrency,
+            thread_name_prefix="cdecr-document-block",
+        )
+
+    def close(self) -> None:
+        self._document_block_executor.shutdown(wait=True)
 
     @property
     def model_config(self) -> dict[str, object]:
@@ -1066,7 +1090,7 @@ class SingleDocumentProcessor:
             if not items:
                 return
             with ThreadPoolExecutor(
-                max_workers=min(self.document_concurrency, len(items))
+                max_workers=min(self.document_workers, len(items))
             ) as executor:
                 values = executor.map(self.process, [message_id for _, message_id in items])
                 for (index, _), result in zip(items, values, strict=True):
@@ -1478,20 +1502,16 @@ class SingleDocumentProcessor:
                 )
             return output
 
-        with ThreadPoolExecutor(
-            max_workers=min(self.document_concurrency, len(document.document_blocks))
-        ) as executor:
-            outputs = list(executor.map(process_block, document.document_blocks))
+        outputs = list(
+            self._document_block_executor.map(process_block, document.document_blocks)
+        )
         if not any(output.candidates for output in outputs):
-            with ThreadPoolExecutor(
-                max_workers=min(self.document_concurrency, len(document.document_blocks))
-            ) as executor:
-                outputs = list(
-                    executor.map(
-                        lambda block: process_block(block, zero_recovery=True),
-                        document.document_blocks,
-                    )
+            outputs = list(
+                self._document_block_executor.map(
+                    lambda block: process_block(block, zero_recovery=True),
+                    document.document_blocks,
                 )
+            )
             self.registry.append_decision_audit(
                 DecisionAuditRecord(
                     audit_id=f"dreamer-zero-recovery:{run_id}",

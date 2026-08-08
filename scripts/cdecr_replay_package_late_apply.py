@@ -9,8 +9,9 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
+from cdecr.bulk_epoch.indexes import MultiKeyBoundedIndex
 from cdecr.contracts import EventPackage
-from cdecr.coreference_rules import merge_packages
+from cdecr.coreference_rules import merge_packages, stable_id
 from cdecr.cross_document import CrossDocumentEngine
 from cdecr.cross_document_contracts import PackagePairBoundary, RecallRoute
 from cdecr.package_engine import PackageBoundaryGate
@@ -27,8 +28,13 @@ def _args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--registry", type=Path, required=True)
     parser.add_argument("--package-evaluation", type=Path, required=True)
-    parser.add_argument("--gold-registry", type=Path, required=True)
-    parser.add_argument("--gold-review", type=Path, required=True)
+    parser.add_argument("--gold-registry", type=Path)
+    parser.add_argument("--gold-review", type=Path)
+    parser.add_argument(
+        "--mutual-comparison",
+        type=Path,
+        help="Restrict replay to the current-event Gold labels in a mutual-run comparison.",
+    )
     parser.add_argument("--output", type=Path, required=True)
     return parser.parse_args()
 
@@ -43,6 +49,171 @@ def _wave_c_edges(connection: sqlite3.Connection) -> list[dict[str, str]]:
         """
     )
     return [dict(row) for row in rows]
+
+
+def _wave_c_bounded_pairs(
+    engine: CrossDocumentEngine,
+    packages: dict[str, EventPackage],
+    *,
+    pair_cap: int = 64,
+) -> list[tuple[EventPackage, EventPackage, PackagePairBoundary, float]]:
+    """Rebuild the frozen Wave C candidate plan without writing audits or calling a model."""
+
+    def index_keys(package: EventPackage) -> list[str]:
+        keys: list[str] = []
+        if package.anchor_artifact_id:
+            keys.append(f"artifact:{package.anchor_artifact_id}")
+        keys.extend(f"anchor:{value}" for value in package.package_anchor_ids)
+        keys.extend(f"entity:{value}" for value in package.anchor_entities)
+        if package.anchor_period_id:
+            keys.append(f"period:{package.anchor_period_id}")
+        for event in engine._package_member_events(package):
+            keys.append(
+                "identity:"
+                + stable_id("wave-c-identity", event.identity_profile.model_dump(mode="json"))
+            )
+            for mention_id in event.mention_ids:
+                mention = engine.registry.get_mention(mention_id)
+                if mention is not None:
+                    keys.append(f"source:{mention.message_id}")
+        return sorted(set(keys))
+
+    candidate_index = MultiKeyBoundedIndex()
+    keys_by_package = {
+        package_id: index_keys(package) for package_id, package in packages.items()
+    }
+    for package_id in sorted(packages):
+        candidate_index.add(package_id, keys_by_package[package_id])
+    rows: list[tuple[EventPackage, EventPackage, PackagePairBoundary, float]] = []
+    seen: set[tuple[str, str]] = set()
+    for left_id in sorted(packages):
+        for right_id in candidate_index.query(
+            keys_by_package[left_id], limit=16, exclude=left_id
+        ):
+            pair = tuple(sorted((left_id, right_id)))
+            if pair in seen:
+                continue
+            seen.add(pair)
+            left, right = packages[left_id], packages[right_id]
+            routes, _ = engine._package_pair_signals(left, right, {})
+            boundary = engine._package_pair_boundary(left, right, routes)
+            if boundary.hard_blocked:
+                continue
+            strong = set(routes).intersection(
+                {
+                    RecallRoute.CANONICAL_ARTIFACT,
+                    RecallRoute.PACKAGE_ANCHOR,
+                    RecallRoute.PARENT_CONTEXT,
+                    RecallRoute.SAME_SOURCE_MEMBER,
+                    RecallRoute.MEMBER_IDENTITY,
+                }
+            )
+            if not strong:
+                continue
+            score = float(len(strong))
+            score += 0.5 if RecallRoute.CORE_ENTITY in routes else 0.0
+            score += 0.5 if RecallRoute.TIME_WINDOW in routes else 0.0
+            rows.append((left, right, boundary, score))
+    rows.sort(key=lambda row: (-row[3], row[0].package_id, row[1].package_id))
+    per_fragment: dict[str, int] = defaultdict(int)
+    bounded: list[tuple[EventPackage, EventPackage, PackagePairBoundary, float]] = []
+    for row in rows:
+        left, right, _, _ = row
+        if per_fragment[left.package_id] >= 4 or per_fragment[right.package_id] >= 4:
+            continue
+        bounded.append(row)
+        per_fragment[left.package_id] += 1
+        per_fragment[right.package_id] += 1
+        if len(bounded) >= pair_cap:
+            break
+    return bounded
+
+
+def _install_package_read_cache(engine: CrossDocumentEngine) -> None:
+    """Cache immutable package-derived reads during the offline replay.
+
+    The state key includes the package version and members, so Apply-time merged
+    packages cannot reuse candidate-planning values from an older package shape.
+    """
+
+    def state_key(package: EventPackage) -> tuple[Any, ...]:
+        return (
+            package.package_id,
+            package.version,
+            tuple(package.member_event_ids),
+            tuple(package.package_anchor_ids),
+            package.anchor_artifact_id,
+        )
+
+    original_members = engine._package_member_events
+    original_anchors = engine._trusted_package_anchor_ids
+    original_fields = engine._trusted_package_field_ids
+    original_sessions = engine._package_trading_sessions
+    original_measures = engine._package_market_measures
+    original_pure_market = engine._package_is_pure_market
+    member_cache: dict[tuple[Any, ...], Any] = {}
+    anchor_cache: dict[tuple[Any, ...], Any] = {}
+    field_cache: dict[tuple[tuple[Any, ...], frozenset[str]], Any] = {}
+    session_cache: dict[tuple[Any, ...], Any] = {}
+    measure_cache: dict[tuple[Any, ...], Any] = {}
+    pure_market_cache: dict[tuple[Any, ...], Any] = {}
+
+    def members(package: EventPackage) -> Any:
+        key = state_key(package)
+        if key not in member_cache:
+            member_cache[key] = original_members(package)
+        return member_cache[key]
+
+    def anchors(package: EventPackage) -> Any:
+        key = state_key(package)
+        if key not in anchor_cache:
+            anchor_cache[key] = original_anchors(package)
+        return anchor_cache[key]
+
+    def fields(package: EventPackage, namespaces: set[str]) -> Any:
+        key = (state_key(package), frozenset(namespaces))
+        if key not in field_cache:
+            field_cache[key] = original_fields(package, namespaces)
+        return field_cache[key]
+
+    def sessions(package: EventPackage) -> Any:
+        key = state_key(package)
+        if key not in session_cache:
+            session_cache[key] = original_sessions(package)
+        return session_cache[key]
+
+    def measures(package: EventPackage) -> Any:
+        key = state_key(package)
+        if key not in measure_cache:
+            measure_cache[key] = original_measures(package)
+        return measure_cache[key]
+
+    def pure_market(package: EventPackage) -> Any:
+        key = state_key(package)
+        if key not in pure_market_cache:
+            pure_market_cache[key] = original_pure_market(package)
+        return pure_market_cache[key]
+
+    engine._package_member_events = members  # type: ignore[method-assign]
+    engine._trusted_package_anchor_ids = anchors  # type: ignore[method-assign]
+    engine._trusted_package_field_ids = fields  # type: ignore[method-assign]
+    engine._package_trading_sessions = sessions  # type: ignore[method-assign]
+    engine._package_market_measures = measures  # type: ignore[method-assign]
+    engine._package_is_pure_market = pure_market  # type: ignore[method-assign]
+
+
+def _relaxed_m0_edges(
+    bounded: list[tuple[EventPackage, EventPackage, PackagePairBoundary, float]],
+) -> list[dict[str, str]]:
+    return [
+        {
+            "source_package_id": left.package_id,
+            "target_package_id": right.package_id,
+            "reason": "N12_WAVE_C_M0_RELAXED_REPLAY",
+        }
+        for left, right, boundary, _ in bounded
+        if boundary.shared_artifact_ids or boundary.shared_anchor_ids
+    ]
 
 
 def _pre_wave_packages(
@@ -328,35 +499,56 @@ def main() -> None:
     registry = SQLiteCDECRRegistry(args.registry)
     engine = object.__new__(CrossDocumentEngine)
     engine.registry = registry
+    _install_package_read_cache(engine)
 
     package_evaluation = json.loads(args.package_evaluation.read_text(encoding="utf-8"))
-    mapping = {
-        str(item["current_event_id"]): str(item["gold_event_id"])
-        for item in package_evaluation["alignment"]
-        if item.get("accepted")
-    }
-    gold_connection = _connection(args.gold_registry)
-    gold_review = json.loads(args.gold_review.read_text(encoding="utf-8"))
-    gold_labels = _gold_labels(gold_connection, gold_review)
-    gold = {
-        current_id: gold_labels[gold_id]
-        for current_id, gold_id in mapping.items()
-        if gold_id in gold_labels
-    }
+    mutual_comparison: dict[str, Any] | None = None
+    if args.mutual_comparison is not None:
+        mutual_comparison = json.loads(args.mutual_comparison.read_text(encoding="utf-8"))
+        gold = {
+            str(item["current_event_id"]): str(item["gold_label"])
+            for item in mutual_comparison["aligned_pairs"]
+        }
+    else:
+        if args.gold_registry is None or args.gold_review is None:
+            raise SystemExit(
+                "--gold-registry and --gold-review are required without --mutual-comparison"
+            )
+        mapping = {
+            str(item["current_event_id"]): str(item["gold_event_id"])
+            for item in package_evaluation["alignment"]
+            if item.get("accepted")
+        }
+        gold_connection = _connection(args.gold_registry)
+        gold_review = json.loads(args.gold_review.read_text(encoding="utf-8"))
+        gold_labels = _gold_labels(gold_connection, gold_review)
+        gold = {
+            current_id: gold_labels[gold_id]
+            for current_id, gold_id in mapping.items()
+            if gold_id in gold_labels
+        }
     events = _current_events(connection)
     n13_decisions = _n13_same_pairs(connection)
+    bounded_pairs = _wave_c_bounded_pairs(engine, packages)
+    actual_m3_edges = [item for item in edges if item["reason"] == "N12_WAVE_C_M3"]
+    relaxed_m0_edges = _relaxed_m0_edges(bounded_pairs)
+    relaxed_edges_by_pair = {
+        tuple(sorted((item["source_package_id"], item["target_package_id"]))): item
+        for item in [*actual_m3_edges, *relaxed_m0_edges]
+    }
+    relaxed_edges = [relaxed_edges_by_pair[pair] for pair in sorted(relaxed_edges_by_pair)]
 
     scenarios: dict[str, Any] = {}
     scenario_specs = (
-        ("wave_c_keep_n13_off", False, False),
-        ("wave_c_keep_n13_on", False, True),
-        ("wave_c_v2_boundary_n13_on", True, True),
+        ("wave_c_keep_n13_off", edges, True, False),
+        ("wave_c_keep_n13_on", edges, True, True),
+        ("wave_c_relaxed_m0_n13_off", relaxed_edges, True, False),
     )
-    for name, wave_v2, n13_on in scenario_specs:
+    for name, scenario_edges, wave_v2, n13_on in scenario_specs:
         wave_packages, redirects, wave_audit = _apply_wave_c(
             engine=engine,
             packages=packages,
-            edges=edges,
+            edges=scenario_edges,
             enforce_v2=wave_v2,
             gold=gold,
         )
@@ -395,8 +587,18 @@ def main() -> None:
             },
         }
 
-    published = package_evaluation["modes"]["current_actual_packages"]["metrics"]
-    replayed = scenarios["wave_c_keep_n13_off"]["metrics"]
+    if mutual_comparison is not None:
+        published = mutual_comparison["current"]["metrics"]
+    else:
+        published = package_evaluation["modes"]["current_actual_packages"]["metrics"]
+    baseline_name = (
+        "wave_c_keep_n13_on"
+        if connection.execute(
+            "SELECT 1 FROM package_redirects WHERE reason = 'N13_SAME_PACKAGE_COMPONENT' LIMIT 1"
+        ).fetchone()
+        else "wave_c_keep_n13_off"
+    )
+    replayed = scenarios[baseline_name]["metrics"]
     validation = {
         key: replayed[key] == published[key]
         for key in (
@@ -413,9 +615,16 @@ def main() -> None:
             "registry": str(args.registry),
             "pre_wave_package_count": len(packages),
             "wave_c_redirect_count": len(edges),
+            "wave_c_fixed_candidate_pair_count": len(bounded_pairs),
+            "wave_c_relaxed_m0_edge_count": len(relaxed_m0_edges),
             "n13_same_decision_count": len(n13_decisions),
             "gold_evaluable_atomic_count": len(gold),
+            "baseline_scenario": baseline_name,
             "baseline_validation": validation,
+            "prompt_replay_limitation": (
+                "No LLM was called. Frozen M3 SAME decisions are reused; the restored Prompt is "
+                "verified structurally, not re-decided semantically."
+            ),
         },
         "scenarios": scenarios,
     }

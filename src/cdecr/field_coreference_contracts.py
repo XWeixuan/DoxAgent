@@ -61,9 +61,7 @@ ATOMIC_OBJECT_FIELD_NAMESPACES = frozenset(
     }
 )
 
-ATOMIC_FIELD_RECALL_NAMESPACES = frozenset(
-    {FieldNamespace.PLACE, *ATOMIC_OBJECT_FIELD_NAMESPACES}
-)
+ATOMIC_FIELD_RECALL_NAMESPACES = frozenset({FieldNamespace.PLACE, *ATOMIC_OBJECT_FIELD_NAMESPACES})
 
 
 class FieldLinkMethod(StrEnum):
@@ -143,6 +141,19 @@ class FieldCoreferenceModelOutput(StrictModel):
         if self.target_namespace is not None and self.decision is not FieldDecision.NEW:
             raise ValueError("target_namespace is allowed only for NEW")
         return self
+
+
+class FieldBatchWireDecision(StrictModel):
+    """Request-local wire item; semantic constraints are validated per task locally."""
+
+    task_id: NonEmptyString
+    decision: FieldDecision
+    canonical_id: str | None = None
+    target_namespace: str | None = None
+
+
+class FieldBatchWireOutput(StrictModel):
+    decisions: list[FieldBatchWireDecision]
 
 
 class FieldCoreferenceResult(StrictModel):
