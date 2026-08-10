@@ -38,3 +38,7 @@ src_upload_tmp/
 .DS_Store
 Thumbs.db
 eval/brief_state_exports/*.json
+
+# Local recovery and smoke outputs
+recovery/
+exports/document1_document2_smoke/
