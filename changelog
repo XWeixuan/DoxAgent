@@ -1,5 +1,9 @@
 # changelog
 
+## 2026-08-11
+
+- Restored 98 pre-filter tracked worktree files from protected tree `29c23ab1ce788822060900f52f8dc0edbaf16493` in a fully independent bundle-backed repository. Verified `427ebab` and `de185c` blob equality on every target path, exact rescue-blob parity, 52 passed / 2 skipped targeted tests, and 725 passed / 48 skipped full-suite results with two identical baseline failures. Preserved the post-accident forensic changelog and recovery guide separately; excluded `recovery/`, pytest outputs, LFS, history rewrites, and force pushes.
+
 ## 2026-08-10
 
 - 完成 Codex D1 v2 hybrid 最终镜像收尾：Docker Hub manifest 访问 EOF 后改用已验收 dashboard 镜像进行离线、单文件可审计派生构建，将 PublishedDocument/ArtifactRef run-kind 一致性守卫固化进镜像 `sha256:03b7b854104c2db86385c41166db54e36996308e1b3fe801997dc065f6bf0701`；重建后容器健康，历史 published run、12,295-byte 正文、event sequence 9、Storage 配置及未发布 artifact 隔离均通过重启验证。
