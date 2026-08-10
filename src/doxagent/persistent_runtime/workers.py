@@ -76,9 +76,7 @@ class LazyAgentRunnerW1Worker:
         if self._delegate is None:
             from doxagent.agents.runner import default_real_agent_runner
 
-            self._delegate = AgentRunnerW1Worker(
-                default_real_agent_runner(settings=self.settings)
-            )
+            self._delegate = AgentRunnerW1Worker(default_real_agent_runner(settings=self.settings))
         return self._delegate.classify(message, context)
 
 
@@ -119,9 +117,7 @@ class LazyAgentRunnerW2Worker:
         if self._delegate is None:
             from doxagent.agents.runner import default_real_agent_runner
 
-            self._delegate = AgentRunnerW2Worker(
-                default_real_agent_runner(settings=self.settings)
-            )
+            self._delegate = AgentRunnerW2Worker(default_real_agent_runner(settings=self.settings))
         return self._delegate.classify(message, context)
 
 
@@ -172,9 +168,7 @@ class LazyAgentRunnerO3Worker:
         if self._delegate is None:
             from doxagent.agents.runner import default_real_agent_runner
 
-            self._delegate = AgentRunnerO3Worker(
-                default_real_agent_runner(settings=self.settings)
-            )
+            self._delegate = AgentRunnerO3Worker(default_real_agent_runner(settings=self.settings))
         return self._delegate.judge(message, context, budget)
 
 
@@ -212,9 +206,7 @@ class LazyAgentRunnerA2Worker:
         if self._delegate is None:
             from doxagent.agents.runner import default_real_agent_runner
 
-            self._delegate = AgentRunnerA2Worker(
-                default_real_agent_runner(settings=self.settings)
-            )
+            self._delegate = AgentRunnerA2Worker(default_real_agent_runner(settings=self.settings))
         return self._delegate.verify(message, context)
 
 
@@ -344,9 +336,7 @@ def _w1_structured_payload(payload: object) -> object:
     nested = structured.get("W1Result") or structured.get("w1_result")
     if isinstance(nested, dict):
         return _w1_structured_payload(nested)
-    if isinstance(structured.get("event_id"), str) and isinstance(
-        structured.get("core_fact"), str
-    ):
+    if isinstance(structured.get("event_id"), str) and isinstance(structured.get("core_fact"), str):
         event_id = str(structured["event_id"])
         return {
             "is_new": True,
@@ -381,8 +371,7 @@ def _w1_structured_payload(payload: object) -> object:
             )
         ) or _coerce_w1_label_from_text(reasoning)
         return {
-            "is_new": label
-            in {W1NoveltyLabel.MATERIAL_UPDATE, W1NoveltyLabel.NEW_EVENT},
+            "is_new": label in {W1NoveltyLabel.MATERIAL_UPDATE, W1NoveltyLabel.NEW_EVENT},
             "novelty_label": label.value,
             "matched_known_event_ids": [event_id] if event_id.strip() else [],
             "confidence": _coerce_confidence(structured.get("confidence")).value,
@@ -399,8 +388,7 @@ def _w1_structured_payload(payload: object) -> object:
             else W1NoveltyLabel.NEW_EVENT
         )
         return {
-            "is_new": summary_label
-            in {W1NoveltyLabel.MATERIAL_UPDATE, W1NoveltyLabel.NEW_EVENT},
+            "is_new": summary_label in {W1NoveltyLabel.MATERIAL_UPDATE, W1NoveltyLabel.NEW_EVENT},
             "novelty_label": summary_label.value,
             "matched_known_event_ids": [str(item) for item in matched if str(item).strip()],
             "confidence": W1Confidence.LOW.value,
@@ -420,17 +408,11 @@ def _w1_structured_payload(payload: object) -> object:
     )
     if isinstance(raw_is_new, bool):
         matched = (
-            structured.get("matched_known_event_ids")
-            or structured.get("matched_events")
-            or []
+            structured.get("matched_known_event_ids") or structured.get("matched_events") or []
         )
         if not isinstance(matched, list):
             matched = []
-        novelty_label = (
-            W1NoveltyLabel.NEW_EVENT
-            if raw_is_new
-            else W1NoveltyLabel.KNOWN_EVENT_RECAP
-        )
+        novelty_label = W1NoveltyLabel.NEW_EVENT if raw_is_new else W1NoveltyLabel.KNOWN_EVENT_RECAP
         return {
             "is_new": raw_is_new,
             "novelty_label": novelty_label.value,
@@ -475,8 +457,7 @@ def _w1_structured_payload(payload: object) -> object:
     if not isinstance(matched, list):
         matched = []
     return {
-        "is_new": coerced_label
-        in {W1NoveltyLabel.MATERIAL_UPDATE, W1NoveltyLabel.NEW_EVENT},
+        "is_new": coerced_label in {W1NoveltyLabel.MATERIAL_UPDATE, W1NoveltyLabel.NEW_EVENT},
         "novelty_label": coerced_label.value,
         "matched_known_event_ids": [str(item) for item in matched if str(item).strip()],
         "confidence": _coerce_confidence(structured.get("confidence")).value,
@@ -887,9 +868,7 @@ def _is_timeout_error(error: object) -> bool:
     gateway_message = str(gateway_error.get("message") or "").lower()
     gateway_code = str(gateway_error.get("code") or "").lower()
     return (
-        "timed out" in gateway_message
-        or "timeout" in gateway_message
-        or "timeout" in gateway_code
+        "timed out" in gateway_message or "timeout" in gateway_message or "timeout" in gateway_code
     )
 
 

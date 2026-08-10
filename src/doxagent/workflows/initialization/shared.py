@@ -194,18 +194,17 @@ NODE_AGENT_ALLOWED_TOOL_OVERRIDES: dict[tuple[WorkflowNode, AgentName], list[str
         WorkflowNode.REVIEW_EXPECTATION_FIELDS,
         AgentName.O4_MARKET_TRACE,
     ): [
-        "twelvedata.daily_ohlcv",
-        "yfinance.daily_ohlcv",
-        "finnhub.trade_stream",
+        "market.daily_ohlcv",
+        "market.quote_snapshot",
+        "market.trade_tape",
     ],
 }
 
 BUILD_GLOBAL_RESEARCH_MARKET_TOOLS = [
-    "twelvedata.daily_ohlcv",
-    "yfinance.daily_ohlcv",
-    "finnhub.trade_stream",
+    "market.daily_ohlcv",
+    "market.quote_snapshot",
+    "market.trade_tape",
 ]
-
 
 
 def _is_generic_monitoring_trigger(value: str) -> bool:
@@ -231,6 +230,7 @@ def _is_generic_monitoring_trigger(value: str) -> bool:
     )
     return any(marker in normalized for marker in generic_markers)
 
+
 def _declared_tool_names(payload: dict[str, Any]) -> set[str]:
     names: set[str] = set()
     for key in ("tool_calls",):
@@ -240,6 +240,7 @@ def _declared_tool_names(payload: dict[str, Any]) -> set[str]:
                 if isinstance(item, dict) and isinstance(item.get("tool_name"), str):
                     names.add(item["tool_name"])
     return names
+
 
 def _looks_like_raw_search_dump(value: str) -> bool:
     lowered = value.lower()

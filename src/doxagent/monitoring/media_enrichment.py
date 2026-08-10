@@ -123,19 +123,16 @@ class AsyncResponseLike(Protocol):
 
 
 class AsyncSessionLike(Protocol):
-    async def __aenter__(self) -> AsyncSessionLike:
-        ...
+    async def __aenter__(self) -> AsyncSessionLike: ...
 
     async def __aexit__(
         self,
         exc_type: type[BaseException] | None,
         exc: BaseException | None,
         traceback: object | None,
-    ) -> bool | None:
-        ...
+    ) -> bool | None: ...
 
-    async def get(self, url: str, **kwargs: Any) -> AsyncResponseLike:
-        ...
+    async def get(self, url: str, **kwargs: Any) -> AsyncResponseLike: ...
 
 
 SessionFactory = Callable[[], AsyncSessionLike]
@@ -995,9 +992,7 @@ def _source_limited_failure_reason(
     if quality.reason in {"very_short", "short_summary", "same_as_title"}:
         return "source_summary_only"
     if quality.reason == "truncated_or_paywall_marker" and (
-        "continue reading" in lower
-        or "trading disclosure" in lower
-        or "for full access" in lower
+        "continue reading" in lower or "trading disclosure" in lower or "for full access" in lower
     ):
         return "source_continue_reading_only"
     return None
@@ -1101,8 +1096,7 @@ def _request_headers(
     headers = {
         "User-Agent": USER_AGENT,
         "Accept": (
-            "text/html,application/xhtml+xml,application/xml;q=0.9,"
-            "image/avif,image/webp,*/*;q=0.8"
+            "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
         ),
         "Accept-Encoding": "gzip, deflate, br, zstd",
         "Accept-Language": "en-US,en;q=0.9",

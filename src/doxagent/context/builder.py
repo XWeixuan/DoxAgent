@@ -398,6 +398,7 @@ class ContextBuilder:
             if document_type.value in scopes
         }
 
+
 def _agent_visible_working_memory_payload(payload: dict[str, Any]) -> dict[str, Any]:
     if not _looks_like_agent_result_memory(payload):
         return cast(dict[str, Any], _compact_payload_value(payload, depth=3))
@@ -476,9 +477,7 @@ def _compact_structured_payload(payload: dict[str, Any]) -> dict[str, Any]:
         return {
             "proposed_patch_count": len(patches),
             "proposed_patch_summaries": [
-                _compact_patch_summary(item)
-                for item in patches
-                if isinstance(item, dict)
+                _compact_patch_summary(item) for item in patches if isinstance(item, dict)
             ][:8],
             "unknowns": _compact_payload_value(payload.get("unknowns", []), depth=2),
             "rationale_preview": _compact_text(payload.get("rationale"), limit=800),
@@ -538,9 +537,7 @@ def _compact_react_audit(audit: dict[str, Any]) -> dict[str, Any]:
         block_count = 0
     budget_history = audit.get("context_budget_history")
     latest_budget = (
-        budget_history[-1]
-        if isinstance(budget_history, list) and budget_history
-        else {}
+        budget_history[-1] if isinstance(budget_history, list) and budget_history else {}
     )
     return {
         "schema_version": audit.get("schema_version"),

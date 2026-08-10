@@ -172,6 +172,10 @@ def test_factory_registers_every_non_derived_horizontal_tool_with_descriptors() 
         "ibkr.contract_search",
         "ibkr.market_snapshot",
         "ibkr.market_history",
+        "ibkr.trade_tape",
+        "market.daily_ohlcv",
+        "market.quote_snapshot",
+        "market.trade_tape",
         "benzinga.management_guidance",
         "benzinga.analyst_events",
         "benzinga.market_signals",
@@ -206,7 +210,7 @@ def test_factory_registers_every_non_derived_horizontal_tool_with_descriptors() 
         "ir.official_updates",
     }
     assert expected <= set(registry.names())
-    assert len(expected) == 40
+    assert len(expected) == 44
     assert {
         "benzinga.short_interest",
         "benzinga.transcripts",

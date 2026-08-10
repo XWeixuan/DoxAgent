@@ -136,9 +136,7 @@ def default_real_agent_runner(
         annotation_store = PostgresObservationAnnotationStore(
             resolved_settings.require_database_url()
         )
-        runner_kwargs.setdefault(
-            "annotation_processor", TextAnnotationProcessor(annotation_store)
-        )
+        runner_kwargs.setdefault("annotation_processor", TextAnnotationProcessor(annotation_store))
         runner_kwargs.setdefault("observation_archive", annotation_store)
     return ModelGatewayAgentRunner(
         registry=registry,

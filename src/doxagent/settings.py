@@ -26,6 +26,84 @@ class DoxAgentSettings(BaseSettings):
     )
     database_url: str | None = Field(default=None, validation_alias="DOXAGENT_DATABASE_URL")
 
+    codex_d1_v2_enabled: bool = Field(
+        default=False,
+        validation_alias="DOXAGENT_CODEX_D1_V2_ENABLED",
+    )
+    codex_worker_base_url: str = Field(
+        default="http://127.0.0.1:8791",
+        validation_alias="DOXAGENT_CODEX_WORKER_BASE_URL",
+    )
+    codex_worker_bearer_token: str | None = Field(
+        default=None,
+        validation_alias="DOXAGENT_CODEX_WORKER_BEARER_TOKEN",
+    )
+    codex_capability_secret: str | None = Field(
+        default=None,
+        validation_alias="DOXAGENT_CODEX_CAPABILITY_SECRET",
+    )
+    codex_workspace_root: str = Field(
+        default=".tmp/codex-workspaces",
+        validation_alias="DOXAGENT_CODEX_WORKSPACE_ROOT",
+    )
+    codex_runtime_storage_mode: Literal["memory", "sqlite", "hybrid", "postgres"] = Field(
+        default="sqlite",
+        validation_alias="DOXAGENT_CODEX_RUNTIME_STORAGE_MODE",
+    )
+    codex_runtime_sqlite_path: str = Field(
+        default=".tmp/codex-runtime.sqlite3",
+        validation_alias="DOXAGENT_CODEX_RUNTIME_SQLITE_PATH",
+    )
+    codex_remote_runtime_storage_enabled: bool = Field(
+        default=False,
+        validation_alias="DOXAGENT_CODEX_REMOTE_RUNTIME_STORAGE_ENABLED",
+    )
+    codex_hybrid_local_mirror_enabled: bool = Field(
+        default=True,
+        validation_alias="DOXAGENT_CODEX_HYBRID_LOCAL_MIRROR_ENABLED",
+    )
+    codex_published_storage_url: str | None = Field(
+        default=None,
+        validation_alias="DOXAGENT_CODEX_PUBLISHED_STORAGE_URL",
+    )
+    codex_published_storage_secret_key: str | None = Field(
+        default=None,
+        validation_alias="DOXAGENT_CODEX_PUBLISHED_STORAGE_SECRET_KEY",
+    )
+    codex_published_storage_bucket: str = Field(
+        default="codex-published-documents",
+        validation_alias="DOXAGENT_CODEX_PUBLISHED_STORAGE_BUCKET",
+    )
+    codex_model: str = Field(
+        default="gpt-5.6-luna",
+        validation_alias="DOXAGENT_CODEX_MODEL",
+    )
+    codex_model_provider: str | None = Field(
+        default=None,
+        validation_alias="DOXAGENT_CODEX_MODEL_PROVIDER",
+    )
+    codex_reasoning_effort: Literal["low", "medium", "high", "xhigh", "max"] = Field(
+        default="max",
+        validation_alias="DOXAGENT_CODEX_REASONING_EFFORT",
+    )
+    codex_node_timeout_seconds: int = Field(
+        default=1800,
+        ge=30,
+        validation_alias="DOXAGENT_CODEX_NODE_TIMEOUT_SECONDS",
+    )
+    codex_node_max_attempts: int = Field(
+        default=2,
+        ge=1,
+        le=5,
+        validation_alias="DOXAGENT_CODEX_NODE_MAX_ATTEMPTS",
+    )
+    codex_max_subagents: int = Field(
+        default=2,
+        ge=0,
+        le=2,
+        validation_alias="DOXAGENT_CODEX_MAX_SUBAGENTS",
+    )
+
     dashscope_api_key: str | None = Field(default=None, validation_alias="DASHSCOPE_API_KEY")
     dashscope_fallback_api_key: str | None = Field(
         default=None,
@@ -130,9 +208,7 @@ class DoxAgentSettings(BaseSettings):
     eia_api_key: str | None = Field(default=None, validation_alias="EIA_API_KEY")
     eia_base_url: str = Field(default="https://api.eia.gov/v2", validation_alias="EIA_BASE_URL")
     sam_api_key: str | None = Field(default=None, validation_alias="SAM_GOV_API_KEY")
-    regulations_api_key: str | None = Field(
-        default=None, validation_alias="DATA_GOV_API_KEY"
-    )
+    regulations_api_key: str | None = Field(default=None, validation_alias="DATA_GOV_API_KEY")
     congress_api_key: str | None = Field(default=None, validation_alias="DATA_GOV_API_KEY")
     openfda_api_key: str | None = Field(default=None, validation_alias="DATA_GOV_API_KEY")
     macro_cache_ttl_seconds: int = Field(default=86_400, validation_alias="MACRO_CACHE_TTL_SECONDS")
@@ -223,12 +299,25 @@ class DoxAgentSettings(BaseSettings):
         default="https://api.benzinga.com",
         validation_alias="BENZINGA_NEWS_BASE_URL",
     )
-    ibkr_api_key: str | None = Field(default=None, validation_alias="IBKR_API_KEY")
-    ibkr_base_url: str = Field(
-        default="https://api.ibkr.com/v1/api", validation_alias="IBKR_BASE_URL"
+    ibkr_tws_enabled: bool = Field(default=False, validation_alias="IBKR_TWS_ENABLED")
+    ibkr_tws_host: str = Field(default="127.0.0.1", validation_alias="IBKR_TWS_HOST")
+    ibkr_tws_port: int = Field(default=7496, ge=1, le=65535, validation_alias="IBKR_TWS_PORT")
+    ibkr_tws_client_id: int = Field(
+        default=71,
+        ge=0,
+        validation_alias="IBKR_TWS_CLIENT_ID",
     )
-    ibkr_cache_ttl_seconds: int = Field(
-        default=15, validation_alias="IBKR_CACHE_TTL_SECONDS"
+    ibkr_tws_timeout_seconds: int = Field(
+        default=20,
+        ge=1,
+        le=120,
+        validation_alias="IBKR_TWS_TIMEOUT_SECONDS",
+    )
+    ibkr_tws_market_data_type: int = Field(
+        default=3,
+        ge=1,
+        le=4,
+        validation_alias="IBKR_TWS_MARKET_DATA_TYPE",
     )
     stocktwits_rapidapi_key: str | None = Field(
         default=None,

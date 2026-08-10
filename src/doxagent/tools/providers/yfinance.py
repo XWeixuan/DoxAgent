@@ -23,9 +23,7 @@ class YFinanceHkBasicSnapshotClient:
                 status=ResultStatus.FAILED,
                 error=ToolError(
                     code="market_not_allowed",
-                    message=(
-                        "yfinance.hk_basic_snapshot 仅允许用于港股标的，不应用于美股标的。"
-                    ),
+                    message=("yfinance.hk_basic_snapshot 仅允许用于港股标的，不应用于美股标的。"),
                     retryable=False,
                     details={"symbol": symbol, "market": market},
                 ),
@@ -145,13 +143,13 @@ class YFinanceDailyOhlcvClient:
                 {
                     "provider": "yfinance",
                     "symbol": symbol,
-                "unofficial_source": True,
-                "source_coordinates": {
-                    "source_kind": "market_data",
-                    "source_id": f"yfinance:daily_ohlcv:{symbol}",
-                    "symbol": symbol,
-                    "fallback_for": "twelvedata.daily_ohlcv",
-                },
+                    "unofficial_source": True,
+                    "source_coordinates": {
+                        "source_kind": "market_data",
+                        "source_id": f"yfinance:daily_ohlcv:{symbol}",
+                        "symbol": symbol,
+                        "fallback_for": "twelvedata.daily_ohlcv",
+                    },
                     "fallback_for": "twelvedata.daily_ohlcv",
                     "interval": "1day",
                     "ohlcv": rows,

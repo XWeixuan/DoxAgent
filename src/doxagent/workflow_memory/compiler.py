@@ -42,14 +42,10 @@ class WorkflowMemoryCompiler:
         body_projector: BlackboardDocumentBodyProjector | None = None,
         control_projector: WorkflowControlProjector | None = None,
     ) -> None:
-        self.policy_registry = (
-            policy_registry or default_workflow_memory_policy_registry()
-        )
+        self.policy_registry = policy_registry or default_workflow_memory_policy_registry()
         self.document_reader = document_reader
         self.body_projector = body_projector or BlackboardDocumentBodyProjector()
-        self.control_projector = control_projector or WorkflowControlProjector(
-            self.body_projector
-        )
+        self.control_projector = control_projector or WorkflowControlProjector(self.body_projector)
 
     @classmethod
     def from_repository(
@@ -82,9 +78,7 @@ class WorkflowMemoryCompiler:
 
         requested = list(policy.document_types)
         allowed = [
-            document_type
-            for document_type in requested
-            if _permission_allows(task, document_type)
+            document_type for document_type in requested if _permission_allows(task, document_type)
         ]
         permission_excluded = [
             document_type for document_type in requested if document_type not in allowed
@@ -155,9 +149,7 @@ class WorkflowMemoryCompiler:
             run_id=task.run_metadata.run_id,
             workflow_node=task.run_metadata.workflow_node,
             source_documents=source_audits,
-            included_document_types=[
-                item for item in allowed if item.value in documents
-            ],
+            included_document_types=[item for item in allowed if item.value in documents],
             permission_excluded_document_types=permission_excluded,
             missing_document_types=missing,
             control_fields_selected=control_fields,
@@ -175,11 +167,7 @@ class WorkflowMemoryCompiler:
 
 def _permission_allows(task: AgentTask, document_type: DocumentType) -> bool:
     scopes = set(task.permissions.readable_context_scopes)
-    return bool(
-        document_type.value in scopes
-        or "belief_state" in scopes
-        or "all" in scopes
-    )
+    return bool(document_type.value in scopes or "belief_state" in scopes or "all" in scopes)
 
 
 def _source_version(body: JsonDict) -> str | None:

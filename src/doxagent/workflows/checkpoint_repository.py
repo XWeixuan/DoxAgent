@@ -202,6 +202,7 @@ class PostgresWorkflowCheckpointRepository:
         latest_only: bool,
     ) -> list[WorkflowCheckpointRecord]:
         where_latest = "and is_latest = true" if latest_only else ""
+
         def operation() -> list[WorkflowCheckpointRecord]:
             with self._connection() as conn:
                 with conn.cursor() as cursor:

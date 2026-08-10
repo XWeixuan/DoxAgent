@@ -385,14 +385,11 @@ def _container_rows(raw: JsonObject, key: str, symbol: str) -> list[JsonObject]:
 
 def _project_rows(rows: list[JsonObject], fields: tuple[str, ...]) -> list[JsonObject]:
     return [
-        {key: row[key] for key in fields if row.get(key) not in (None, "", [], {})}
-        for row in rows
+        {key: row[key] for key in fields if row.get(key) not in (None, "", [], {})} for row in rows
     ]
 
 
-def _project_transcript_calls(
-    rows: list[JsonObject], *, include_text: bool
-) -> list[JsonObject]:
+def _project_transcript_calls(rows: list[JsonObject], *, include_text: bool) -> list[JsonObject]:
     projected: list[JsonObject] = []
     transcript_fields = (
         "transcript_id",

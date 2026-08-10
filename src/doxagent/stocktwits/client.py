@@ -41,8 +41,7 @@ class StocktwitsPageClient(Protocol):
         symbol: str,
         max_message_id: str | None = None,
         page_size: int = 30,
-    ) -> StocktwitsPage:
-        ...
+    ) -> StocktwitsPage: ...
 
 
 class StocktwitsHTTPTransport(Protocol):
@@ -52,8 +51,7 @@ class StocktwitsHTTPTransport(Protocol):
         *,
         params: dict[str, str | int] | None = None,
         headers: dict[str, str] | None = None,
-    ) -> httpx.Response:
-        ...
+    ) -> httpx.Response: ...
 
 
 class RequestRateLimiter:

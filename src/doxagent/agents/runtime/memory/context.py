@@ -74,9 +74,7 @@ class ActiveContextAssembler:
                     {
                         "observation_read": alias,
                         "loaded_blocks": [
-                            block.agent_view(
-                                observations.aliases.alias_for(block.block_id) or ""
-                            )
+                            block.agent_view(observations.aliases.alias_for(block.block_id) or "")
                             for block in blocks
                         ],
                     }
@@ -121,9 +119,7 @@ def measure_context_budget(
         "usage_ratio": ratio,
         "micro_threshold": config.micro_maintenance_ratio,
         "full_compaction_threshold": config.full_compaction_ratio,
-        "micro_threshold_tokens": int(
-            config.model_context_window * config.micro_maintenance_ratio
-        ),
+        "micro_threshold_tokens": int(config.model_context_window * config.micro_maintenance_ratio),
         "full_compaction_threshold_tokens": int(
             config.model_context_window * config.full_compaction_ratio
         ),

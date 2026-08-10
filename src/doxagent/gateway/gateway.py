@@ -26,8 +26,7 @@ class ModelUsageRecorder(Protocol):
         self,
         request: ModelRequest,
         response: ModelResponse,
-    ) -> object:
-        ...
+    ) -> object: ...
 
 
 class ModelGateway:

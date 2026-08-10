@@ -143,15 +143,14 @@ def record_postgres_failure(
             "error_type": exc.__class__.__name__,
             "error_message": str(exc)[:1000],
             "read_only_status": read_only_status or {},
-            "stack_trace": "".join(
-                traceback.format_exception(type(exc), exc, exc.__traceback__)
-            )[-4000:],
+            "stack_trace": "".join(traceback.format_exception(type(exc), exc, exc.__traceback__))[
+                -4000:
+            ],
         }
         with path.open("a", encoding="utf-8") as handle:
             handle.write(json.dumps(record, ensure_ascii=False, default=str) + "\n")
         print(
-            "[postgres-failure] "
-            + json.dumps(record, ensure_ascii=False, default=str),
+            "[postgres-failure] " + json.dumps(record, ensure_ascii=False, default=str),
             file=sys.stderr,
         )
     except OSError:

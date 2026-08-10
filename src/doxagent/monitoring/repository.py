@@ -42,23 +42,17 @@ from doxagent.monitoring.schema import (
 
 
 class MonitoringRepository(Protocol):
-    def ensure_defaults(self, sources: Iterable[MonitoringSourceConfig] | None = None) -> None:
-        ...
+    def ensure_defaults(self, sources: Iterable[MonitoringSourceConfig] | None = None) -> None: ...
 
-    def upsert_source(self, source: MonitoringSourceConfig) -> MonitoringSourceConfig:
-        ...
+    def upsert_source(self, source: MonitoringSourceConfig) -> MonitoringSourceConfig: ...
 
-    def get_source(self, source_id: str) -> MonitoringSourceConfig | None:
-        ...
+    def get_source(self, source_id: str) -> MonitoringSourceConfig | None: ...
 
-    def list_sources(self) -> list[MonitoringSourceConfig]:
-        ...
+    def list_sources(self) -> list[MonitoringSourceConfig]: ...
 
-    def set_source_enabled(self, source_id: str, enabled: bool) -> MonitoringSourceConfig:
-        ...
+    def set_source_enabled(self, source_id: str, enabled: bool) -> MonitoringSourceConfig: ...
 
-    def set_source_poll_interval(self, source_id: str, seconds: int) -> MonitoringSourceConfig:
-        ...
+    def set_source_poll_interval(self, source_id: str, seconds: int) -> MonitoringSourceConfig: ...
 
     def upsert_binding(
         self,
@@ -70,11 +64,9 @@ class MonitoringRepository(Protocol):
         updated_by: UpdateActor,
         updated_reason: str | None = None,
         merge: bool = True,
-    ) -> TickerSourceBinding:
-        ...
+    ) -> TickerSourceBinding: ...
 
-    def get_binding(self, ticker: str, source_id: str) -> TickerSourceBinding | None:
-        ...
+    def get_binding(self, ticker: str, source_id: str) -> TickerSourceBinding | None: ...
 
     def list_bindings(
         self,
@@ -82,32 +74,23 @@ class MonitoringRepository(Protocol):
         ticker: str | None = None,
         source_id: str | None = None,
         enabled_only: bool = False,
-    ) -> list[TickerSourceBinding]:
-        ...
+    ) -> list[TickerSourceBinding]: ...
 
-    def delete_binding(self, ticker: str, source_id: str) -> bool:
-        ...
+    def delete_binding(self, ticker: str, source_id: str) -> bool: ...
 
-    def delete_ticker_bindings(self, ticker: str) -> int:
-        ...
+    def delete_ticker_bindings(self, ticker: str) -> int: ...
 
-    def save_raw_message(self, message: RawExternalMessage) -> RawMessageSaveResult:
-        ...
+    def save_raw_message(self, message: RawExternalMessage) -> RawMessageSaveResult: ...
 
-    def save_standard_message(self, message: StandardMessage) -> StandardMessage:
-        ...
+    def save_standard_message(self, message: StandardMessage) -> StandardMessage: ...
 
-    def append_event(self, message: StandardMessage) -> EventStreamItem:
-        ...
+    def append_event(self, message: StandardMessage) -> EventStreamItem: ...
 
-    def mark_event_consumed(self, event_id: str) -> EventStreamItem | None:
-        ...
+    def mark_event_consumed(self, event_id: str) -> EventStreamItem | None: ...
 
-    def record_poll_attempt(self, *, binding_id: str, source_id: str, ticker: str) -> PollState:
-        ...
+    def record_poll_attempt(self, *, binding_id: str, source_id: str, ticker: str) -> PollState: ...
 
-    def record_poll_success(self, result: IngestBatchResult) -> PollState:
-        ...
+    def record_poll_success(self, result: IngestBatchResult) -> PollState: ...
 
     def record_poll_failure(
         self,
@@ -118,35 +101,30 @@ class MonitoringRepository(Protocol):
         message: str,
         latency_ms: int | None = None,
         metadata: dict[str, Any] | None = None,
-    ) -> PollState:
-        ...
+    ) -> PollState: ...
 
     def list_poll_states(
         self,
         *,
         ticker: str | None = None,
         source_id: str | None = None,
-    ) -> list[PollState]:
-        ...
+    ) -> list[PollState]: ...
 
     def recent_raw_messages(
         self,
         *,
         ticker: str | None = None,
         limit: int = 20,
-    ) -> list[RawExternalMessage]:
-        ...
+    ) -> list[RawExternalMessage]: ...
 
     def recent_standard_messages(
         self,
         *,
         ticker: str | None = None,
         limit: int = 20,
-    ) -> list[StandardMessage]:
-        ...
+    ) -> list[StandardMessage]: ...
 
-    def get_standard_message(self, standard_message_id: str) -> StandardMessage | None:
-        ...
+    def get_standard_message(self, standard_message_id: str) -> StandardMessage | None: ...
 
     def query_standard_messages(
         self,
@@ -158,27 +136,23 @@ class MonitoringRepository(Protocol):
         sort: str | None = None,
         limit: int = 50,
         offset: int = 0,
-    ) -> tuple[list[StandardMessage], int]:
-        ...
+    ) -> tuple[list[StandardMessage], int]: ...
 
-    def event_for_standard_message(self, standard_message_id: str) -> EventStreamItem | None:
-        ...
+    def event_for_standard_message(self, standard_message_id: str) -> EventStreamItem | None: ...
 
     def recent_events(
         self,
         *,
         ticker: str | None = None,
         limit: int = 20,
-    ) -> list[EventStreamItem]:
-        ...
+    ) -> list[EventStreamItem]: ...
 
     def pending_events(
         self,
         *,
         ticker: str | None = None,
         limit: int = 100,
-    ) -> list[EventStreamItem]:
-        ...
+    ) -> list[EventStreamItem]: ...
 
     def list_media_enrichment_records(
         self,
@@ -186,17 +160,14 @@ class MonitoringRepository(Protocol):
         ticker: str | None = None,
         limit: int = 50,
         incomplete_only: bool = True,
-    ) -> list[MediaEnrichmentRecord]:
-        ...
+    ) -> list[MediaEnrichmentRecord]: ...
 
     def apply_media_enrichment_results(
         self,
         results: Iterable[MediaExtractionResult],
-    ) -> int:
-        ...
+    ) -> int: ...
 
-    def snapshot(self, *, ticker: str | None = None, limit: int = 20) -> MonitoringSnapshot:
-        ...
+    def snapshot(self, *, ticker: str | None = None, limit: int = 20) -> MonitoringSnapshot: ...
 
 
 class InMemoryMonitoringRepository:
@@ -416,11 +387,9 @@ class InMemoryMonitoringRepository:
                 "collected_count": existing.collected_count + result.collected_count,
                 "historical_skipped_count": existing.historical_skipped_count
                 + result.historical_skipped_count,
-                "raw_inserted_count": existing.raw_inserted_count
-                + result.raw_inserted_count,
+                "raw_inserted_count": existing.raw_inserted_count + result.raw_inserted_count,
                 "duplicate_count": existing.duplicate_count + result.duplicate_count,
-                "standardized_count": existing.standardized_count
-                + result.standardized_count,
+                "standardized_count": existing.standardized_count + result.standardized_count,
                 "event_count": existing.event_count + result.event_count,
                 "last_collected_count": result.collected_count,
                 "last_historical_skipped_count": result.historical_skipped_count,
@@ -595,11 +564,7 @@ class InMemoryMonitoringRepository:
         rows = self._events
         if ticker is not None:
             rows = [row for row in rows if row.ticker == ticker.strip().upper()]
-        rows = [
-            row
-            for row in rows
-            if not row.consumed and self._is_live_event(row)
-        ]
+        rows = [row for row in rows if not row.consumed and self._is_live_event(row)]
         rows = sorted(rows, key=lambda row: row.stream_offset)
         return [row.model_copy(deep=True) for row in rows[:limit]]
 
@@ -2055,9 +2020,7 @@ def _poll_state_from_row(row: sqlite3.Row) -> PollState:
         last_error_message=row["last_error_message"],
         collected_count=int(row["collected_count"]),
         historical_skipped_count=(
-            int(row["historical_skipped_count"])
-            if "historical_skipped_count" in row.keys()
-            else 0
+            int(row["historical_skipped_count"]) if "historical_skipped_count" in row.keys() else 0
         ),
         raw_inserted_count=int(row["raw_inserted_count"]),
         duplicate_count=int(row["duplicate_count"]),
@@ -2071,9 +2034,7 @@ def _poll_state_from_row(row: sqlite3.Row) -> PollState:
         last_event_count=_row_int(row, "last_event_count"),
         last_latency_ms=_row_optional_int(row, "last_latency_ms"),
         metadata=(
-            dict(_load_json(row["metadata_json"]) or {})
-            if "metadata_json" in row.keys()
-            else {}
+            dict(_load_json(row["metadata_json"]) or {}) if "metadata_json" in row.keys() else {}
         ),
         updated_at=_parse_dt(row["updated_at"]) or datetime.now(UTC),
     )

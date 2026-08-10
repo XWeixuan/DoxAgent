@@ -195,22 +195,14 @@ class InMemoryBlackboardRepository:
 
     def get_objections_by_ids(self, run_id: str, ids: list[str]) -> list[Objection]:
         requested = set(ids)
-        return [
-            item
-            for item in self.get(run_id).objections
-            if item.objection_id in requested
-        ]
+        return [item for item in self.get(run_id).objections if item.objection_id in requested]
 
     def list_objections(self, run_id: str) -> list[Objection]:
         return list(self.get(run_id).objections)
 
     def get_delegations_by_ids(self, run_id: str, ids: list[str]) -> list[Delegation]:
         requested = set(ids)
-        return [
-            item
-            for item in self.get(run_id).delegations
-            if item.delegation_id in requested
-        ]
+        return [item for item in self.get(run_id).delegations if item.delegation_id in requested]
 
     def insert_working_memory_entry(
         self,
@@ -238,8 +230,7 @@ class InMemoryBlackboardRepository:
     def insert_delegation(self, run_id: str, delegation: Delegation) -> Delegation:
         run = self.get(run_id)
         if not any(
-            existing.delegation_id == delegation.delegation_id
-            for existing in run.delegations
+            existing.delegation_id == delegation.delegation_id for existing in run.delegations
         ):
             run.delegations.append(delegation)
             self.save(run)

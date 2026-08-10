@@ -161,9 +161,7 @@ class RuntimeSourceMessage(PersistentRuntimeModel):
     def from_event(cls, event: EventStreamItem) -> RuntimeSourceMessage:
         payload = dict(event.payload)
         return cls(
-            source_message_id=str(
-                payload.get("standard_message_id") or event.standard_message_id
-            ),
+            source_message_id=str(payload.get("standard_message_id") or event.standard_message_id),
             raw_message_id=_optional_str(payload.get("raw_message_id")),
             ticker=str(payload.get("ticker") or event.ticker),
             source_type=SourceType(str(payload.get("source_type") or SourceType.MEDIA.value)),

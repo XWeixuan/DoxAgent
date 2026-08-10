@@ -38,11 +38,9 @@ _DOCUMENT_BUNDLE_TYPES = [
 
 
 class RuntimeDocumentProvider(Protocol):
-    def latest(self, ticker: str, *, now: datetime | None = None) -> DocumentBundle:
-        ...
+    def latest(self, ticker: str, *, now: datetime | None = None) -> DocumentBundle: ...
 
-    def initialize(self, ticker: str, *, now: datetime | None = None) -> DocumentBundle:
-        ...
+    def initialize(self, ticker: str, *, now: datetime | None = None) -> DocumentBundle: ...
 
 
 class WorkflowDocumentProvider:
@@ -67,8 +65,7 @@ class WorkflowDocumentProvider:
         if not runs:
             return _missing_bundle(normalized, checked_at=checked_at)
         bundles = [
-            _bundle_from_run(run, checked_at=checked_at, max_age=self.max_age)
-            for run in runs
+            _bundle_from_run(run, checked_at=checked_at, max_age=self.max_age) for run in runs
         ]
         for bundle in bundles:
             if bundle.status.usable:
@@ -236,8 +233,7 @@ def _bundle_from_run(
     missing = [
         component.document_type
         for component in components
-        if component.availability
-        in {DocumentAvailability.MISSING, DocumentAvailability.INVALID}
+        if component.availability in {DocumentAvailability.MISSING, DocumentAvailability.INVALID}
     ]
     stale = any(component.availability is DocumentAvailability.STALE for component in components)
     usable = not missing and not stale

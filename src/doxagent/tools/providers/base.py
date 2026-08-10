@@ -40,6 +40,7 @@ class TTLCache:
     def set(self, key: str, value: object, ttl_seconds: int) -> None:
         self._items[key] = (time.time() + ttl_seconds, value)
 
+
 class BaseRealToolClient:
     _rate_limit_lock = threading.Lock()
     _rate_limit_last_request_at: dict[str, float] = {}
@@ -313,6 +314,8 @@ class BoundToolClient:
 
     def call(self, request: ToolRequest) -> ToolResult:
         return self._call_func(request)
+
+
 class ProviderHttpError(Exception):
     def __init__(
         self,

@@ -194,17 +194,15 @@ def _validate_doxatlas_scope(payload: JsonObject, scope_kind: str) -> None:
     if scope_kind == "event_or_proposition":
         has_proposition_id = bool(payload.get("proposition_id"))
         has_event_scope = _has_event_scope(payload)
-        if has_proposition_id and (
-            has_event_scope or payload.get("proposition_codes") is not None
-        ):
-            raise ValueError("proposition_id cannot be combined with event scope or proposition_codes.")
+        if has_proposition_id and (has_event_scope or payload.get("proposition_codes") is not None):
+            raise ValueError(
+                "proposition_id cannot be combined with event scope or proposition_codes."
+            )
         if has_proposition_id or has_event_scope:
             return
         if payload.get("narrative_id") and not payload.get("event_code"):
             raise ValueError("doxa_query_propositions no longer accepts bare narrative_id.")
-        raise ValueError(
-            "doxa_query_propositions requires event scope or a single proposition_id."
-        )
+        raise ValueError("doxa_query_propositions requires event scope or a single proposition_id.")
     if scope_kind == "run_narrative_event":
         if _has_event_scope(payload):
             return
@@ -225,7 +223,9 @@ def _has_event_scope(payload: JsonObject) -> bool:
         return True
     if payload.get("narrative_id") and payload.get("event_code"):
         return True
-    return bool(payload.get("run_id") and payload.get("narrative_code") and payload.get("event_code"))
+    return bool(
+        payload.get("run_id") and payload.get("narrative_code") and payload.get("event_code")
+    )
 
 
 def _looks_like_doxagent_event_id(value: object) -> bool:
@@ -277,9 +277,7 @@ class DoxAtlasToolClient(BaseRealToolClient):
                 url,
                 json_body=payload,
                 headers={"Authorization": f"Bearer {self.settings.doxatlas_tool_server_token}"},
-                cache_ttl=self.settings.doxatlas_cache_ttl_seconds
-                if spec.cacheable
-                else None,
+                cache_ttl=self.settings.doxatlas_cache_ttl_seconds if spec.cacheable else None,
             )
             return self._success(
                 request,

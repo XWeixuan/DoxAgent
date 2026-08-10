@@ -391,9 +391,7 @@ class StocktwitsPollingCrawler:
         next_mode = state.current_mode
         if not run.rate_limited:
             next_mode = TickerMode.HOT
-        cadence = (
-            state.target_cadence_seconds if run.rate_limited else state.hot_cadence_seconds
-        )
+        cadence = state.target_cadence_seconds if run.rate_limited else state.hot_cadence_seconds
         return state.model_copy(
             update={
                 "latest_coverage_status": CoverageStatus.FAILED,
@@ -401,18 +399,11 @@ class StocktwitsPollingCrawler:
                 "consecutive_gap_count": state.consecutive_gap_count + 1,
                 "consecutive_complete_count": 0,
                 "hot_started_at": (
-                    state.hot_started_at or finished
-                    if next_mode is TickerMode.HOT
-                    else None
+                    state.hot_started_at or finished if next_mode is TickerMode.HOT else None
                 ),
                 "hot_until": (
                     finished
-                    + timedelta(
-                        seconds=(
-                            state.hot_cadence_seconds
-                            * state.hot_cooldown_successes
-                        )
-                    )
+                    + timedelta(seconds=(state.hot_cadence_seconds * state.hot_cooldown_successes))
                     if next_mode is TickerMode.HOT
                     else state.hot_until
                 ),

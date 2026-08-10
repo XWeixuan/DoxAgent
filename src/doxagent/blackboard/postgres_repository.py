@@ -42,9 +42,7 @@ logger = logging.getLogger(__name__)
 
 _FULL_READ_WARNING_BYTES = 512 * 1024
 _FULL_READ_WARNING_PER_MINUTE = 20
-_AGENT_CONTEXT_PAYLOAD_SQL = (
-    "payload #- '{payload,react_audit}' #- '{payload,model_audits}'"
-)
+_AGENT_CONTEXT_PAYLOAD_SQL = "payload #- '{payload,react_audit}' #- '{payload,model_audits}'"
 
 
 class PostgresBlackboardRepository:
@@ -227,11 +225,7 @@ class PostgresBlackboardRepository:
         include_payload: bool = False,
     ) -> list[WorkingMemoryEntrySummary]:
         def operation() -> list[WorkingMemoryEntrySummary]:
-            payload_sql = (
-                _AGENT_CONTEXT_PAYLOAD_SQL
-                if include_payload
-                else "null"
-            )
+            payload_sql = _AGENT_CONTEXT_PAYLOAD_SQL if include_payload else "null"
             with self._read_connection() as conn:
                 with conn.cursor() as cursor:
                     cursor.execute(
@@ -885,9 +879,7 @@ class PostgresBlackboardRepository:
             belief_dump = run.belief_state.model_dump(mode="json")
             documents = belief_dump.get("documents", {})
             stable_document_types = (
-                sorted(str(key) for key in documents)
-                if isinstance(documents, dict)
-                else []
+                sorted(str(key) for key in documents) if isinstance(documents, dict) else []
             )
             full_payload_ref = {
                 "storage": "supabase_child_tables",
@@ -926,15 +918,9 @@ class PostgresBlackboardRepository:
                     len(run.working_memory),
                     len(run.commit_log),
                     sum(
-                        1
-                        for item in run.objections
-                        if item.status.value in {"open", "unresolved"}
+                        1 for item in run.objections if item.status.value in {"open", "unresolved"}
                     ),
-                    sum(
-                        1
-                        for item in run.delegations
-                        if item.status.value in {"open", "assigned"}
-                    ),
+                    sum(1 for item in run.delegations if item.status.value in {"open", "assigned"}),
                     0,
                     self._jsonb(full_payload_ref),
                 ),
@@ -1319,6 +1305,7 @@ class PostgresBlackboardRepository:
             payload=[item.model_dump(mode="json") for item in run.delegations],
             item_count=len(run.delegations),
         )
+
     def _record_payload(
         self,
         *,
@@ -1346,9 +1333,7 @@ class PostgresBlackboardRepository:
         payload_bytes = estimate_json_payload_bytes(
             {
                 "documents": run.belief_state.model_dump(mode="json").get("documents", {}),
-                "working_memory": [
-                    entry.model_dump(mode="json") for entry in run.working_memory
-                ],
+                "working_memory": [entry.model_dump(mode="json") for entry in run.working_memory],
                 "commit_log": [commit.model_dump(mode="json") for commit in run.commit_log],
                 "objections": [item.model_dump(mode="json") for item in run.objections],
                 "delegations": [item.model_dump(mode="json") for item in run.delegations],

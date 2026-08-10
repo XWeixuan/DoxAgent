@@ -41,9 +41,7 @@ def deterministic_findings_from_patch(
         return []
     if not isinstance(patch.after, dict):
         return []
-    return deterministic_findings_from_document(
-        ExpectationUnitDocument.model_validate(patch.after)
-    )
+    return deterministic_findings_from_document(ExpectationUnitDocument.model_validate(patch.after))
 
 
 def deterministic_findings_from_document(
@@ -51,9 +49,15 @@ def deterministic_findings_from_document(
 ) -> list[Document2ReviewFinding]:
     findings: list[Document2ReviewFinding] = []
     if not document.realized_facts:
-        findings.append(_finding(document, "realized_facts", "Expectation unit has no realized facts for review."))
+        findings.append(
+            _finding(
+                document, "realized_facts", "Expectation unit has no realized facts for review."
+            )
+        )
     if not document.key_variables:
-        findings.append(_finding(document, "key_variables", "Expectation unit has no key variables for review."))
+        findings.append(
+            _finding(document, "key_variables", "Expectation unit has no key variables for review.")
+        )
     for index, fact in enumerate(document.realized_facts):
         reaction = fact.price_reaction
         text = " ".join(
@@ -69,9 +73,21 @@ def deterministic_findings_from_document(
             )
     monitoring = document.event_monitoring_direction
     if not monitoring.positive_events:
-        findings.append(_finding(document, "event_monitoring_direction.positive_events", "Event monitoring direction has no positive event triggers."))
+        findings.append(
+            _finding(
+                document,
+                "event_monitoring_direction.positive_events",
+                "Event monitoring direction has no positive event triggers.",
+            )
+        )
     if not monitoring.negative_events:
-        findings.append(_finding(document, "event_monitoring_direction.negative_events", "Event monitoring direction has no negative event triggers."))
+        findings.append(
+            _finding(
+                document,
+                "event_monitoring_direction.negative_events",
+                "Event monitoring direction has no negative event triggers.",
+            )
+        )
     for polarity, events in (
         ("positive_events", monitoring.positive_events),
         ("negative_events", monitoring.negative_events),

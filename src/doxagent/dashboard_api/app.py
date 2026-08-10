@@ -11,14 +11,19 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from starlette.responses import Response
 from starlette.exceptions import HTTPException as StarletteHTTPException
+from starlette.responses import Response
 
 from doxagent.dashboard_api.auth import (
     DashboardAuthSettings,
     DashboardAuthVerifier,
     auth_config_payload,
     dashboard_auth_settings_from_env,
+)
+from doxagent.dashboard_api.codex_document1 import (
+    CodexDocument1RunService,
+    build_codex_document1_service,
+    create_codex_document1_router,
 )
 from doxagent.dashboard_api.mock_fixtures import JsonObject, MockDashboardStore, utc_now_iso
 from doxagent.dashboard_api.mock_router import (
@@ -31,6 +36,7 @@ from doxagent.dashboard_api.mock_router import (
 from doxagent.dashboard_api.real_router import create_real_router
 from doxagent.dashboard_api.real_service import RealDashboardOverviewService
 from doxagent.runtime_scheduler.api import DashboardStateAPI
+from doxagent.settings import DoxAgentSettings
 
 SUPPORTED_DASHBOARD_API_MODES = {"mock", "full-mock", "fixture", "real"}
 MOCK_DASHBOARD_API_MODES = {"mock", "full-mock", "fixture"}
@@ -54,27 +60,22 @@ def create_app(
     real_service: RealDashboardOverviewService | None = None,
     dashboard_auth_settings: DashboardAuthSettings | None = None,
     dashboard_auth_verifier: DashboardAuthVerifier | None = None,
+    codex_document1_service: CodexDocument1RunService | None = None,
 ) -> FastAPI:
     env_mode = os.getenv("DOXAGENT_DASHBOARD_API_MODE")
-    resolved_mode = (mode if mode is not None else env_mode if env_mode is not None else "mock")
+    resolved_mode = mode if mode is not None else env_mode if env_mode is not None else "mock"
     resolved_mode = resolved_mode.strip().lower()
     if resolved_mode not in SUPPORTED_DASHBOARD_API_MODES:
         raise ValueError(
-            "Unsupported Dashboard State API mode. "
-            "Set DOXAGENT_DASHBOARD_API_MODE=mock or real."
+            "Unsupported Dashboard State API mode. Set DOXAGENT_DASHBOARD_API_MODE=mock or real."
         )
 
     is_real = resolved_mode == "real"
     app = FastAPI(
-        title=(
-            "DoxAgent Dashboard State API"
-            if is_real
-            else "DoxAgent Dashboard State API Mock"
-        ),
+        title=("DoxAgent Dashboard State API" if is_real else "DoxAgent Dashboard State API Mock"),
         version="0.1.0",
         description=(
-            "Real first-phase DoxAgent Dashboard State API backed by runtime scheduler "
-            "services."
+            "Real first-phase DoxAgent Dashboard State API backed by runtime scheduler services."
             if is_real
             else (
                 "Full fixture-backed mock for the first-phase DoxAgent Dashboard State API. "
@@ -108,6 +109,14 @@ def create_app(
     else:
         resolved_service = real_service or RealDashboardOverviewService(dashboard_api)
         app.include_router(create_real_router(resolved_service))
+
+    resolved_codex_service = codex_document1_service
+    if resolved_codex_service is None:
+        settings = DoxAgentSettings()
+        if settings.codex_d1_v2_enabled:
+            resolved_codex_service = build_codex_document1_service(settings)
+    if resolved_codex_service is not None:
+        app.include_router(create_codex_document1_router(resolved_codex_service))
 
     @app.get("/healthz")
     async def healthz() -> JsonObject:

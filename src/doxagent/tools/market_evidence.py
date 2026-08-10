@@ -124,11 +124,7 @@ def collect_market_evidence_snapshot(
     *,
     target_symbol: str | None = None,
 ) -> JsonDict:
-    daily = [
-        snapshot
-        for snapshot in snapshots
-        if _is_daily_ohlcv_snapshot(snapshot)
-    ]
+    daily = [snapshot for snapshot in snapshots if _is_daily_ohlcv_snapshot(snapshot)]
     target = (target_symbol or "").upper()
     target_return = None
     if target:

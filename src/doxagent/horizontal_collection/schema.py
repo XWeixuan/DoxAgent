@@ -275,3 +275,38 @@ class HorizontalCollectionArtifactEnvelope(HorizontalCollectionModel):
     artifact_kind: str = HORIZONTAL_COLLECTION_MANIFEST_ARTIFACT_KIND
     run_id: NonEmptyStr
     payload: HorizontalCollectionManifest
+
+
+class PromotedStateValue(HorizontalCollectionModel):
+    """Governed v2 projection produced only after identity and provenance checks."""
+
+    parameter_id: NonEmptyStr
+    entity_id: NonEmptyStr
+    metric_id: NonEmptyStr
+    source_role: SourceRole
+    time_scope: NonEmptyStr
+    value: Any
+    unit: NonEmptyStr
+    as_of: datetime
+    source_refs: tuple[ObjectRef, ...]
+    collection_target_id: NonEmptyStr
+    quality_flags: tuple[NonEmptyStr, ...] = ()
+
+    @model_validator(mode="after")
+    def reject_placeholders(self) -> PromotedStateValue:
+        if self.value is None or (
+            isinstance(self.value, str)
+            and self.value.strip().upper() in {"", "UNKNOWN", "N/A", "NULL"}
+        ):
+            raise ValueError("StateValue cannot contain null or unknown placeholders.")
+        if isinstance(self.value, dict) and (
+            self.value.get("lower") is None or self.value.get("upper") is None
+        ):
+            raise ValueError("StateValue ranges require both lower and upper bounds.")
+        return self
+
+
+class HorizontalCollectionBundle(HorizontalCollectionModel):
+    manifest: HorizontalCollectionManifest
+    observations: tuple[CollectionObservation, ...]
+    state_values: tuple[PromotedStateValue, ...]

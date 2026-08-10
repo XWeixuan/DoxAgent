@@ -279,8 +279,7 @@ def _vibe_macro_skills(
                 "bea.nipa_data",
                 "fed.fomc_calendar_materials",
                 "polymarket.market_probability",
-                "twelvedata.daily_ohlcv",
-                "yfinance.daily_ohlcv",
+                "market.daily_ohlcv",
             ],
         ),
         _skill(
@@ -526,9 +525,9 @@ def _hermes_market_trace_skills(
             ),
             output_requirements=["source_refs", "unknowns", "data_quality", "no trading advice"],
             allowed_tools=[
-                "twelvedata.daily_ohlcv",
-                "yfinance.daily_ohlcv",
-                "finnhub.trade_stream",
+                "market.daily_ohlcv",
+                "market.quote_snapshot",
+                "market.trade_tape",
             ],
             guardrails=[
                 "Do not output trade recommendations.",

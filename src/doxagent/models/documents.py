@@ -249,17 +249,13 @@ class MonitoringPolicyRule(ContractModel):
         action_type = str(data.get("action_type") or "").strip()
         if not policy_type:
             policy_type = (
-                "escalate"
-                if action_type == PolicyActionType.PUSH_TO_AGENT.value
-                else action_type
+                "escalate" if action_type == PolicyActionType.PUSH_TO_AGENT.value else action_type
             )
         if not policy_type:
             policy_type = "escalate"
         if not action_type:
             action_type = (
-                PolicyActionType.PUSH_TO_AGENT.value
-                if policy_type == "escalate"
-                else policy_type
+                PolicyActionType.PUSH_TO_AGENT.value if policy_type == "escalate" else policy_type
             )
         data["policy_type"] = policy_type
         data["action_type"] = action_type
@@ -289,10 +285,7 @@ class MonitoringPolicyRule(ContractModel):
         data.setdefault(
             "reasoning",
             str(
-                data.get("reasoning")
-                or data.get("strategy_note")
-                or data.get("note")
-                or ""
+                data.get("reasoning") or data.get("strategy_note") or data.get("note") or ""
             ).strip()
             or "该 policy 服务于 Document 3 运行时动作路由。",
         )

@@ -146,9 +146,7 @@ class YahooChartMarketDataProvider:
         result = _first_chart_result(data, symbol)
         meta = _mapping(result.get("meta", {}))
         price = _float_or_none(meta.get("regularMarketPrice"))
-        previous_close = _float_or_none(
-            meta.get("chartPreviousClose", meta.get("previousClose"))
-        )
+        previous_close = _float_or_none(meta.get("chartPreviousClose", meta.get("previousClose")))
         change = None
         change_percent = None
         if price is not None and previous_close not in {None, 0.0}:

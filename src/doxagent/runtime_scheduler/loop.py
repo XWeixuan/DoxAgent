@@ -17,8 +17,7 @@ class SchedulerLoopService(Protocol):
         *,
         now: datetime | None = None,
         event_limit: int = 100,
-    ) -> list[TickerRunDetail]:
-        ...
+    ) -> list[TickerRunDetail]: ...
 
 
 @dataclass(frozen=True)

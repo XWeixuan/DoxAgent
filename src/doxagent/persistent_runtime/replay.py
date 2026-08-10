@@ -47,8 +47,7 @@ class RuntimeReplayService(Protocol):
         *,
         context: JsonObject | None = None,
         mark_consumed: Callable[[str], object] | None = None,
-    ) -> RuntimeExecutionRecord:
-        ...
+    ) -> RuntimeExecutionRecord: ...
 
     def execute_social_batch(
         self,
@@ -57,8 +56,7 @@ class RuntimeReplayService(Protocol):
         ticker: str,
         batch_window_id: str,
         context: JsonObject | None = None,
-    ) -> list[RuntimeExecutionRecord]:
-        ...
+    ) -> list[RuntimeExecutionRecord]: ...
 
 
 @dataclass

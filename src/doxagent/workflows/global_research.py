@@ -168,7 +168,11 @@ class GlobalResearchAssembler:
             "macro_report": macro_report,
             "industry_report": industry_report,
             "market_trace_report": market_trace_report,
-            **({"market_narrative_report": market_narrative_report} if market_narrative_report else {}),
+            **(
+                {"market_narrative_report": market_narrative_report}
+                if market_narrative_report
+                else {}
+            ),
         }.items():
             marker = "Pending O1/DoxAtlas"
             if marker in section.summary or marker in section.text:

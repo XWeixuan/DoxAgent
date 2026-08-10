@@ -87,20 +87,14 @@ class AgentOutputSchemaValidator:
             if not isinstance(after, dict):
                 continue
             target = item.get("target")
-            target_document_type = (
-                target.get("document_type") if isinstance(target, dict) else None
-            )
+            target_document_type = target.get("document_type") if isinstance(target, dict) else None
             document_type = str(after.get("document_type") or target_document_type or "")
             if document_type in schema_document_types:
                 return after
         return None
 
     def _strip_runtime_envelope(self, payload: dict[str, Any]) -> dict[str, Any]:
-        return {
-            key: value
-            for key, value in payload.items()
-            if key not in _RUNTIME_ENVELOPE_KEYS
-        }
+        return {key: value for key, value in payload.items() if key not in _RUNTIME_ENVELOPE_KEYS}
 
 
 class _AnyStructuredPayload(BaseModel):

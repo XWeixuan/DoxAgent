@@ -56,9 +56,7 @@ class BlsTimeseriesClient(BaseRealToolClient):
             results = raw.get("Results")
             series_items = results.get("series") if isinstance(results, dict) else None
             has_data = isinstance(series_items, list) and any(
-                isinstance(item, dict)
-                and isinstance(item.get("data"), list)
-                and bool(item["data"])
+                isinstance(item, dict) and isinstance(item.get("data"), list) and bool(item["data"])
                 for item in series_items
             )
             if not has_data:

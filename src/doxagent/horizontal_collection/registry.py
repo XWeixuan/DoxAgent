@@ -216,6 +216,9 @@ def _definition(metric_id: str) -> MetricDefinition:
         if metric_id in REQUIRED_METRIC_IDS
         else MetricRequirement.OPTIONAL
     )
+    value_type: MetricValueType
+    unit: str | None
+    time_scope: str
     if metric_id in _REQUIRED_OVERRIDES:
         value_type, unit, time_scope = _REQUIRED_OVERRIDES[metric_id]
     else:
@@ -302,7 +305,7 @@ def _fixed_targets() -> tuple[CollectionTargetDefinition, ...]:
         provider: str | None = None,
         tool: str | None = None,
         output: OutputPolicy = OutputPolicy.STATE_VALUE,
-        capability: ProviderCapabilityStatus = ProviderCapabilityStatus.IMPLEMENTED,
+        capability: ProviderCapabilityStatus = ProviderCapabilityStatus.PRODUCTION_READY,
         method_id: str | None = None,
     ) -> None:
         targets.append(
@@ -494,7 +497,7 @@ def _fixed_targets() -> tuple[CollectionTargetDefinition, ...]:
         ("macro_high_yield_oas", "fred.rates_credit_liquidity", "FRED", "CURRENT"),
         ("macro_financial_conditions", "fred.rates_credit_liquidity", "FRED", "CURRENT"),
         ("macro_broad_usd", "fred.commodities_fx", "FRED", "CURRENT"),
-        ("macro_vix", "fred.commodities_fx", "FRED", "CURRENT"),
+        ("macro_vix", "fred.rates_credit_liquidity", "FRED", "CURRENT"),
     )
     for metric_id, tool, provider, time_scope in macro_routes:
         add(
@@ -526,8 +529,8 @@ def _fixed_targets() -> tuple[CollectionTargetDefinition, ...]:
         "MARKET_SNAPSHOT_TIME",
         EntityScope.SECURITY,
         CollectionMode.PROGRAM,
-        provider="Twelve Data",
-        tool="twelvedata.daily_ohlcv",
+        provider="IBKR-first market route",
+        tool="market.quote_snapshot",
     )
     add(
         "o4_market_cap",

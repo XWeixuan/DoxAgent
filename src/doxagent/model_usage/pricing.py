@@ -99,11 +99,15 @@ class ModelPricingCatalog:
             if not isinstance(entry, dict):
                 continue
             providers = entry.get("providers")
-            provider_values = {
-                str(item).strip().lower()
-                for item in providers
-                if isinstance(item, str) and item.strip()
-            } if isinstance(providers, list) else set()
+            provider_values = (
+                {
+                    str(item).strip().lower()
+                    for item in providers
+                    if isinstance(item, str) and item.strip()
+                }
+                if isinstance(providers, list)
+                else set()
+            )
             if provider_values and normalized_provider not in provider_values:
                 continue
             names = {str(entry.get("model") or "").strip().lower()}

@@ -17,39 +17,32 @@ T = TypeVar("T")
 
 
 class RuntimeSchedulerRepository(Protocol):
-    def get_state(self, ticker: str) -> TickerRunState | None:
-        ...
+    def get_state(self, ticker: str) -> TickerRunState | None: ...
 
-    def list_states(self) -> list[TickerRunState]:
-        ...
+    def list_states(self) -> list[TickerRunState]: ...
 
-    def upsert_state(self, state: TickerRunState) -> TickerRunState:
-        ...
+    def upsert_state(self, state: TickerRunState) -> TickerRunState: ...
 
-    def append_audit_event(self, event: RuntimeAuditEvent) -> RuntimeAuditEvent:
-        ...
+    def append_audit_event(self, event: RuntimeAuditEvent) -> RuntimeAuditEvent: ...
 
     def list_audit_events(
         self,
         *,
         ticker: str | None = None,
         limit: int = 100,
-    ) -> list[RuntimeAuditEvent]:
-        ...
+    ) -> list[RuntimeAuditEvent]: ...
 
     def save_refresh_request(
         self,
         request: DocumentRefreshRequest,
-    ) -> DocumentRefreshRequest:
-        ...
+    ) -> DocumentRefreshRequest: ...
 
     def list_refresh_requests(
         self,
         *,
         ticker: str | None = None,
         limit: int = 100,
-    ) -> list[DocumentRefreshRequest]:
-        ...
+    ) -> list[DocumentRefreshRequest]: ...
 
 
 class InMemoryRuntimeSchedulerRepository:
@@ -248,10 +241,7 @@ class SQLiteRuntimeSchedulerRepository:
                 """,
                 params,
             ).fetchall()
-        return [
-            _model_from_json(DocumentRefreshRequest, str(row["payload_json"]))
-            for row in rows
-        ]
+        return [_model_from_json(DocumentRefreshRequest, str(row["payload_json"])) for row in rows]
 
     def _initialize(self) -> None:
         with self._connect() as conn:

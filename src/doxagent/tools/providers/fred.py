@@ -84,9 +84,7 @@ class FredSeriesObservationsClient(BaseRealToolClient):
                 "observation_start": _input_str(
                     request, "start", _input_str(request, "start_date", "")
                 ),
-                "observation_end": _input_str(
-                    request, "end", _input_str(request, "end_date", "")
-                ),
+                "observation_end": _input_str(request, "end", _input_str(request, "end_date", "")),
                 "units": _input_str(request, "units", "lin"),
                 "frequency": _input_str(request, "frequency", ""),
                 "limit": limit,

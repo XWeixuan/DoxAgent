@@ -1,6 +1,6 @@
 """Permission-aware tool registry."""
 
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -30,6 +30,19 @@ class ToolDescriptor(BaseModel):
         "time_series",
         "doxatlas",
     ] = "auto"
+    input_schema: dict[str, Any] | None = None
+    source_name: str | None = None
+    business_categories: list[str] = Field(default_factory=list)
+    use_when: list[str] = Field(default_factory=list)
+    avoid_when: list[str] = Field(default_factory=list)
+    fallback_tool_ids: list[str] = Field(default_factory=list)
+    freshness: str | None = None
+    point_in_time_safe: bool = False
+    read_only: bool = True
+    contract_version: str = "1.0"
+    availability: Literal["available", "degraded", "unavailable"] = "available"
+    availability_reason: str | None = None
+    output_profile: str | None = None
 
 
 class ToolRegistry:

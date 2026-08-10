@@ -225,9 +225,7 @@ def _render_industry_task(
             },
         }
         source_refs = sorted({ref for comp in data.peer_comps for ref in comp.source_refs})
-        unknowns = [
-            unknown for unknown in data.unknowns if unknown.field.startswith("peer_comps")
-        ]
+        unknowns = [unknown for unknown in data.unknowns if unknown.field.startswith("peer_comps")]
         confidence = _peer_confidence(data.peer_comps)
         markdown = "- Comps: fixture peer spread with metric-period caveats."
     elif task.task_id == "task-idea-generation":
@@ -275,11 +273,7 @@ def _render_industry_task(
                     ),
                     "unknown_fields": [unknown.field for unknown in data.unknowns],
                     "source_refs": sorted(
-                        {
-                            ref
-                            for unknown in data.unknowns
-                            for ref in unknown.related_source_refs
-                        }
+                        {ref for unknown in data.unknowns for ref in unknown.related_source_refs}
                     ),
                 },
             ],

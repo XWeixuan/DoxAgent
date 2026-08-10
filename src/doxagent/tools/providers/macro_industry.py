@@ -475,8 +475,7 @@ class CensusManufacturingOrdersClient(BaseRealToolClient):
             ).rstrip("/")
             params: dict[str, object] = {
                 "get": (
-                    "time_slot_id,cell_value,error_data,seasonally_adj,"
-                    "category_code,data_type_code"
+                    "time_slot_id,cell_value,error_data,seasonally_adj,category_code,data_type_code"
                 ),
                 "time": _input_str(request, "time", "from 2020-01"),
                 "for": "us:*",
@@ -514,9 +513,7 @@ class CensusManufacturingOrdersClient(BaseRealToolClient):
                 )
             header = rows[0] if rows and isinstance(rows[0], list) else []
             projected_rows = [
-                dict(zip(header, row, strict=False))
-                for row in rows[1:]
-                if isinstance(row, list)
+                dict(zip(header, row, strict=False)) for row in rows[1:] if isinstance(row, list)
             ]
             projected_rows.sort(
                 key=lambda row: (

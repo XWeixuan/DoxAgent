@@ -23,9 +23,7 @@ from doxagent.annotations.models import (
 )
 from doxagent.annotations.store import AnnotationStore
 
-_TIME_TAG_RE = re.compile(
-    r"【(?P<kind>occurred_at|published_at):(?P<value>[^】]+)】"
-)
+_TIME_TAG_RE = re.compile(r"【(?P<kind>occurred_at|published_at):(?P<value>[^】]+)】")
 _DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 _MONTH_RE = re.compile(r"^\d{4}-(?:0[1-9]|1[0-2])$")
 _QUARTER_RE = re.compile(r"^\d{4}-Q[1-4]$")
@@ -203,9 +201,7 @@ class TextAnnotationProcessor:
             if aliases.resolve(candidate.alias) is None:
                 metrics.citation_tag_count += 1
                 metrics.invalid_alias_count += 1
-                local_warnings.append(
-                    f"invalid_citation_alias:{payload_path}:{candidate.alias}"
-                )
+                local_warnings.append(f"invalid_citation_alias:{payload_path}:{candidate.alias}")
         for mention in normalize_citation_mentions(raw_text, aliases=aliases):
             metrics.citation_tag_count += 1
             block_id = aliases.resolve(mention.alias)
@@ -312,17 +308,13 @@ def _valid_time(value: str, *, published: bool) -> bool:
     if _DATE_RE.fullmatch(value):
         return _valid_iso(value)
     if not published and (
-        _MONTH_RE.fullmatch(value)
-        or _QUARTER_RE.fullmatch(value)
-        or _HALF_RE.fullmatch(value)
+        _MONTH_RE.fullmatch(value) or _QUARTER_RE.fullmatch(value) or _HALF_RE.fullmatch(value)
     ):
         return True
     if not published and "/" in value:
         left, separator, right = value.partition("/")
         return bool(
-            separator
-            and _valid_time(left, published=False)
-            and _valid_time(right, published=False)
+            separator and _valid_time(left, published=False) and _valid_time(right, published=False)
         )
     return _valid_iso(value, require_time=True)
 

@@ -205,8 +205,7 @@ class InitializationRecoveryMixin:
         idempotency = self._agent_idempotency(checkpoint) | {key: state}
         return checkpoint.model_copy(
             update={
-                "metadata": checkpoint.metadata
-                | {_WORKFLOW_AGENT_IDEMPOTENCY_KEY: idempotency}
+                "metadata": checkpoint.metadata | {_WORKFLOW_AGENT_IDEMPOTENCY_KEY: idempotency}
             },
             deep=True,
         )

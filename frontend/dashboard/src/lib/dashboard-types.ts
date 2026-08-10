@@ -62,6 +62,66 @@ export interface ApiErrorPayload {
   request_id: string
 }
 
+export interface CodexArtifactRef {
+  artifact_id: string
+  run_id: string
+  node: string
+  attempt_id: string
+  kind: string
+  relative_path: string
+  sha256: string
+  size_bytes: number
+  content_type: string
+  published: boolean
+  created_at: string
+}
+
+export interface CodexEntityRelation {
+  关系主体: string
+  关系对象: string
+  关系类型: string
+  关系说明: string
+  关联业务或产品: string
+}
+
+export interface CodexFutureNode {
+  时间: string
+  未来事项: string
+  与目标公司的关系: string
+  来源: string
+  来源发布日期: string
+}
+
+export interface CodexDocument1RunSummary {
+  run_id: string
+  ticker: string
+  workflow_version: "codex_d1_v2"
+  status: "draft" | "published" | "failed" | "running" | "cancelled"
+  created_at: string
+  published_at: string | null
+}
+
+export interface CodexDocument1Bundle extends CodexDocument1RunSummary {
+  reports: Record<string, CodexArtifactRef>
+  entity_relations: CodexEntityRelation[]
+  future_nodes: CodexFutureNode[]
+  citation_manifest: {
+    entries: Array<{
+      alias: string
+      url: string | null
+      title: string | null
+      resolved: boolean
+      warning: string | null
+    }>
+    warnings: string[]
+  } | null
+}
+
+export interface CodexArtifactDetail {
+  artifact: CodexArtifactRef
+  content: string | null
+}
+
 export interface PageInfo {
   limit: number
   next_cursor: string | null

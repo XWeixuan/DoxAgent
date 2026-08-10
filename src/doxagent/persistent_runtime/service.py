@@ -89,18 +89,15 @@ class _RetryOutcome:
 
 
 class W1Worker(Protocol):
-    def classify(self, message: RuntimeSourceMessage, context: JsonObject) -> W1Result:
-        ...
+    def classify(self, message: RuntimeSourceMessage, context: JsonObject) -> W1Result: ...
 
 
 class W2Worker(Protocol):
-    def classify(self, message: RuntimeSourceMessage, context: JsonObject) -> W2Result:
-        ...
+    def classify(self, message: RuntimeSourceMessage, context: JsonObject) -> W2Result: ...
 
 
 class A2Worker(Protocol):
-    def verify(self, message: RuntimeSourceMessage, context: JsonObject) -> A2Result:
-        ...
+    def verify(self, message: RuntimeSourceMessage, context: JsonObject) -> A2Result: ...
 
 
 class O3Worker(Protocol):
@@ -109,8 +106,7 @@ class O3Worker(Protocol):
         message: RuntimeSourceMessage,
         context: JsonObject,
         budget: O3RuntimeBudget,
-    ) -> O3Result:
-        ...
+    ) -> O3Result: ...
 
 
 class PersistentRuntimeExecutionService:
@@ -161,9 +157,7 @@ class PersistentRuntimeExecutionService:
         if resolved.persistent_runtime_storage_mode == "memory":
             repository: PersistentRuntimeRepository = InMemoryPersistentRuntimeRepository()
         else:
-            repository = SQLitePersistentRuntimeRepository(
-                resolved.persistent_runtime_sqlite_path
-            )
+            repository = SQLitePersistentRuntimeRepository(resolved.persistent_runtime_sqlite_path)
         return cls(
             repository,
             route_engine=route_engine,
@@ -335,9 +329,7 @@ class PersistentRuntimeExecutionService:
                 batch_window_id = _batch_window_id(message)
                 social_batches.setdefault((message.ticker, batch_window_id), []).append(event)
                 continue
-            records.append(
-                self.execute_event(event, context=context, mark_consumed=mark_consumed)
-            )
+            records.append(self.execute_event(event, context=context, mark_consumed=mark_consumed))
         for (ticker, batch_window_id), batch_events in social_batches.items():
             batch_records = self.execute_social_batch(
                 [RuntimeSourceMessage.from_event(event) for event in batch_events],
@@ -364,8 +356,7 @@ class PersistentRuntimeExecutionService:
         ticker: str | None = None,
     ) -> list[RuntimeExecutionObservation]:
         trading_sources = {
-            item.source_message_id
-            for item in self.repository.list_trading_records(ticker=ticker)
+            item.source_message_id for item in self.repository.list_trading_records(ticker=ticker)
         }
         ingest_sources = {
             item.source_message_id for item in self.repository.list_ingest_queue(ticker=ticker)
@@ -529,6 +520,7 @@ class PersistentRuntimeExecutionService:
                 continue
             decision = self.route_engine.plan_initial(message, w1=w1, w2=w2)
             if decision.route is RuntimeRoute.A2:
+
                 def run_a2_for_item(
                     current_message: RuntimeSourceMessage = message,
                     current_context: JsonObject = batch_context,
@@ -677,8 +669,7 @@ class PersistentRuntimeExecutionService:
                 decision = self.route_engine.plan_o3_failure(
                     item.message,
                     upstream_trade_path=item.decision.upstream_trade_path,
-                    reason=str(outcome.error)[:200]
-                    or "social batch O3 unavailable after retry.",
+                    reason=str(outcome.error)[:200] or "social batch O3 unavailable after retry.",
                     timeout=isinstance(outcome.error, RuntimeWorkerTimeout),
                 )
                 records.append(
@@ -1059,12 +1050,15 @@ class PersistentRuntimeExecutionService:
                 )
             )
             if decision.requires_o3_known_events_update:
-                known_events_updated = self._run_o3_known_events_update(
-                    message,
-                    context,
-                    exception_ids,
-                    node_traces,
-                ) or known_events_updated
+                known_events_updated = (
+                    self._run_o3_known_events_update(
+                        message,
+                        context,
+                        exception_ids,
+                        node_traces,
+                    )
+                    or known_events_updated
+                )
         elif decision.route is RuntimeRoute.INGEST_QUEUE:
             self.repository.save_ingest_queue_item(
                 IngestQueueItem(
@@ -1084,9 +1078,7 @@ class PersistentRuntimeExecutionService:
                 )
             )
         elif decision.route in {RuntimeRoute.OBJECTION, RuntimeRoute.OBJECTION_NOTE} and o3:
-            self.repository.save_objection(
-                _objection_from_o3(message, decision=decision, o3=o3)
-            )
+            self.repository.save_objection(_objection_from_o3(message, decision=decision, o3=o3))
             if decision.route is RuntimeRoute.OBJECTION_NOTE:
                 self.repository.save_ingest_queue_item(
                     IngestQueueItem(
@@ -1358,9 +1350,7 @@ class PersistentRuntimeExecutionService:
             future.cancel()
             return _WorkerOutcome(
                 result=None,
-                error=TimeoutError(
-                    f"{node} exceeded {timeout_seconds:g}s runtime worker budget."
-                ),
+                error=TimeoutError(f"{node} exceeded {timeout_seconds:g}s runtime worker budget."),
                 trace=RuntimeNodeTrace(
                     node=node,
                     status="failed",
@@ -1602,9 +1592,7 @@ def _social_batch_o3_context(
     non_irrelevant_items: int,
     base_context: JsonObject,
 ) -> JsonObject:
-    timestamps = [
-        item.message.published_at or item.message.collected_at for item in pending_items
-    ]
+    timestamps = [item.message.published_at or item.message.collected_at for item in pending_items]
     items = []
     for item in pending_items:
         message = item.message

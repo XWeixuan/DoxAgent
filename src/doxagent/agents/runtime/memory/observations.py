@@ -218,9 +218,7 @@ class ObservationBlockStore:
         return self._by_id.get(block.parent_block_id)
 
     def children(self, block: ObservationBlock) -> list[ObservationBlock]:
-        return [
-            item for item in self._by_id.values() if item.parent_block_id == block.block_id
-        ]
+        return [item for item in self._by_id.values() if item.parent_block_id == block.block_id]
 
     def audit(self) -> list[JsonDict]:
         return [block.audit_view() for block in self._by_id.values()]
@@ -264,9 +262,7 @@ class ObservationCallIndex:
         aliases: ObservationAliasRegistry,
     ) -> JsonDict:
         all_blocks = [
-            block
-            for ref in self.block_refs
-            if (block := store.get_by_ref(ref)) is not None
+            block for ref in self.block_refs if (block := store.get_by_ref(ref)) is not None
         ]
         base: JsonDict = {
             "tool_name": self.tool_name,
@@ -422,16 +418,8 @@ class ObservationService:
         )
         self.block_store.add_many(blocks)
         self.aliases.register_many(
-            tuple(
-                block.block_id
-                for block in blocks
-                if block.block_type != "outline"
-            )
-            + tuple(
-                block.block_id
-                for block in blocks
-                if block.block_type == "outline"
-            )
+            tuple(block.block_id for block in blocks if block.block_type != "outline")
+            + tuple(block.block_id for block in blocks if block.block_type == "outline")
         )
         refs = tuple(block.ref for block in blocks)
         original_chars = len(_canonical_json(result.output))
@@ -794,12 +782,9 @@ def _bea_high_value_refs(blocks: list[ObservationBlock]) -> set[str]:
     selected = {
         block.ref
         for block in blocks
-        if block.block_type not in {"table", "time_series"}
-        and not _is_repeated_metadata(block)
+        if block.block_type not in {"table", "time_series"} and not _is_repeated_metadata(block)
     }
-    rows = [
-        block for block in blocks if block.block_type in {"table", "time_series"}
-    ]
+    rows = [block for block in blocks if block.block_type in {"table", "time_series"}]
     consumed = 0
     for block in sorted(rows, key=_block_latest_period, reverse=True):
         if consumed >= 16_000:
@@ -832,9 +817,7 @@ def _ensure_minimum_selected_content(
     blocks: list[ObservationBlock],
     selected: set[str],
 ) -> set[str]:
-    consumed = sum(
-        _block_content_chars(block) for block in blocks if block.ref in selected
-    )
+    consumed = sum(_block_content_chars(block) for block in blocks if block.ref in selected)
     if consumed >= _PROFILED_MIN_VISIBLE_CONTENT_CHARS:
         return selected
     expanded = set(selected)
@@ -971,9 +954,13 @@ def _profiled_catalog_path(tool_name: str, block: ObservationBlock) -> str | Non
 
 def _is_repeated_metadata(block: ObservationBlock) -> bool:
     locator = block.locator.lower()
-    return locator == "/provider" or locator.startswith("/source_coordinates") or any(
-        marker in locator
-        for marker in ("/provider_metadata", "/request_metadata", "/response_metadata")
+    return (
+        locator == "/provider"
+        or locator.startswith("/source_coordinates")
+        or any(
+            marker in locator
+            for marker in ("/provider_metadata", "/request_metadata", "/response_metadata")
+        )
     )
 
 
@@ -1062,9 +1049,7 @@ def _structured_blocks(
                 content={
                     "field_count": len(value),
                     "keys": _bounded_outline_keys(value),
-                    "omitted_key_count": max(
-                        0, len(value) - len(_bounded_outline_keys(value))
-                    ),
+                    "omitted_key_count": max(0, len(value) - len(_bounded_outline_keys(value))),
                     "original_chars": len(_canonical_json(value)),
                 },
                 envelope={**envelope, "path": locator},
@@ -1222,9 +1207,7 @@ def _value_blocks(
             nonlocal pending, pending_start
             if not pending:
                 return
-            compact_locator = (
-                f"{locator.rstrip('/')}/$fields/{pending_start}-{end}"
-            )
+            compact_locator = f"{locator.rstrip('/')}/$fields/{pending_start}-{end}"
             blocks.append(
                 _make_block(
                     tool_call_id=tool_call_id,
@@ -1242,9 +1225,7 @@ def _value_blocks(
             field = {str(key): item}
             field_chars = len(_canonical_json(field))
             force_semantic_child = (
-                force_item_structure
-                and key in _HIERARCHY_KEYS
-                and isinstance(item, (dict, list))
+                force_item_structure and key in _HIERARCHY_KEYS and isinstance(item, (dict, list))
             )
             if field_chars > _MAX_NATURAL_BLOCK_CHARS or force_semantic_child:
                 flush_pending(position - 1)
@@ -1318,8 +1299,11 @@ def _value_blocks(
                 )
             return blocks
         rows = [item for item in value if isinstance(item, dict)]
-        if not force_item_structure and rows and len(rows) == len(value) and all(
-            _single_table_row_chars(row) <= _MAX_NATURAL_BLOCK_CHARS for row in rows
+        if (
+            not force_item_structure
+            and rows
+            and len(rows) == len(value)
+            and all(_single_table_row_chars(row) <= _MAX_NATURAL_BLOCK_CHARS for row in rows)
         ):
             return _table_blocks(
                 tool_call_id,
@@ -1591,8 +1575,7 @@ def _bounded_row_groups(
             _canonical_json({**(overhead or {}), "columns": columns, "rows": candidate})
         )
         if current and (
-            len(current) >= _TABLE_ROWS_PER_BLOCK
-            or candidate_chars > _MAX_NATURAL_BLOCK_CHARS
+            len(current) >= _TABLE_ROWS_PER_BLOCK or candidate_chars > _MAX_NATURAL_BLOCK_CHARS
         ):
             groups.append((start, current))
             current = [row]
@@ -1607,11 +1590,7 @@ def _bounded_row_groups(
 
 
 def _single_table_row_chars(row: JsonDict) -> int:
-    return len(
-        _canonical_json(
-            {"columns": sorted(str(column) for column in row), "rows": [row]}
-        )
-    )
+    return len(_canonical_json({"columns": sorted(str(column) for column in row), "rows": [row]}))
 
 
 def _reconstruct_output(blocks: list[ObservationBlock]) -> JsonDict:
@@ -1670,9 +1649,7 @@ def _reconstruct_output(blocks: list[ObservationBlock]) -> JsonDict:
     grouped_dicts: dict[str, list[tuple[int, JsonDict]]] = {}
     for path, start, values in dict_groups:
         grouped_dicts.setdefault(path, []).append((start, values))
-    for path, groups in sorted(
-        grouped_dicts.items(), key=lambda item: _locator_depth(item[0])
-    ):
+    for path, groups in sorted(grouped_dicts.items(), key=lambda item: _locator_depth(item[0])):
         merged: JsonDict = {}
         for _, values in sorted(groups):
             merged.update(values)
@@ -1683,9 +1660,7 @@ def _reconstruct_output(blocks: list[ObservationBlock]) -> JsonDict:
     grouped_lists: dict[str, list[tuple[int, list[Any]]]] = {}
     for path, start, values in list_groups:
         grouped_lists.setdefault(path, []).append((start, values))
-    for path, groups in sorted(
-        grouped_lists.items(), key=lambda item: _locator_depth(item[0])
-    ):
+    for path, groups in sorted(grouped_lists.items(), key=lambda item: _locator_depth(item[0])):
         values: list[Any] = []
         for start, items in sorted(groups):
             if len(values) < start:
@@ -1789,9 +1764,7 @@ def _selected_block_refs(
             "/fact_pages/page_0001",
             "/recent_filings",
         ):
-            candidates = [
-                block for block in blocks if block.locator.startswith(locator_prefix)
-            ]
+            candidates = [block for block in blocks if block.locator.startswith(locator_prefix)]
             candidates.sort(
                 key=lambda block: (
                     1 if block.block_type == "outline" else 0,
@@ -1805,19 +1778,13 @@ def _selected_block_refs(
         if len(deduplicated) >= limit:
             return tuple(deduplicated[:limit])
     root_outlines = [
-        block
-        for block in blocks
-        if block.block_type == "outline" and block.parent_block_id is None
+        block for block in blocks if block.block_type == "outline" and block.parent_block_id is None
     ]
     substantive = [
-        block
-        for block in blocks
-        if block.block_type in {"table", "time_series", "text"}
+        block for block in blocks if block.block_type in {"table", "time_series", "text"}
     ]
     remaining = [
-        block
-        for block in blocks
-        if block not in root_outlines and block not in substantive
+        block for block in blocks if block not in root_outlines and block not in substantive
     ]
     ordered = [*root_outlines, *substantive, *remaining]
     return tuple(block.ref for block in ordered[:limit])

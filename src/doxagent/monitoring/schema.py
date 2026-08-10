@@ -333,11 +333,7 @@ def validate_parameters_for_source(
 ) -> MonitoringParameters:
     normalized_source = source_id.strip().lower()
     schema = parameter_schema_for_source(normalized_source)
-    unsupported = [
-        field
-        for field in parameters.non_empty_fields()
-        if field not in schema
-    ]
+    unsupported = [field for field in parameters.non_empty_fields() if field not in schema]
     if unsupported:
         allowed = ", ".join(schema) if schema else "ticker only"
         raise ValueError(

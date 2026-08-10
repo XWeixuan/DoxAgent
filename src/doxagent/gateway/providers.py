@@ -242,6 +242,7 @@ class OpenAIModelClient:
             kwargs["langsmith_extra"] = langsmith_extra_from_metadata(request.metadata)
         return kwargs
 
+
 def _supports_responses_json_mode(model: str) -> bool:
     """Whether the Responses API should be asked to enforce JSON-mode output."""
 

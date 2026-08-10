@@ -22,8 +22,7 @@ from doxagent.settings import DoxAgentSettings
 
 
 class ModelUsageRepository(Protocol):
-    def save_event(self, event: ModelUsageEvent) -> ModelUsageEvent:
-        ...
+    def save_event(self, event: ModelUsageEvent) -> ModelUsageEvent: ...
 
     def list_events(
         self,
@@ -37,8 +36,7 @@ class ModelUsageRepository(Protocol):
         limit: int | None = None,
         offset: int = 0,
         newest_first: bool = False,
-    ) -> list[ModelUsageEvent]:
-        ...
+    ) -> list[ModelUsageEvent]: ...
 
     def count_events(
         self,
@@ -49,8 +47,7 @@ class ModelUsageRepository(Protocol):
         node: str | None = None,
         model: str | None = None,
         status: str | None = None,
-    ) -> int:
-        ...
+    ) -> int: ...
 
 
 class InMemoryModelUsageRepository:
@@ -612,10 +609,7 @@ class PostgresModelUsageRepository:
         try:
             return import_module("psycopg")
         except ImportError as exc:
-            raise RuntimeError(
-                "psycopg is required for Postgres model usage persistence."
-            ) from exc
-
+            raise RuntimeError("psycopg is required for Postgres model usage persistence.") from exc
 
 
 def model_usage_repository_from_settings(

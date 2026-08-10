@@ -5,6 +5,9 @@ import type {
   BacktestRun,
   CostAudit,
   CostRecord,
+  CodexArtifactDetail,
+  CodexDocument1Bundle,
+  CodexDocument1RunSummary,
   DashboardEvent,
   DocumentType,
   DocumentRevision,
@@ -199,6 +202,16 @@ export const dashboardApi = {
     dashboardRequest<PageResult<TickerCard>>(`/tickers${queryString(params)}`),
   ticker: (ticker: string) =>
     dashboardRequest<TickerDetail>(`/tickers/${encodeURIComponent(ticker)}`),
+  codexDocument1Runs: (ticker: string) =>
+    dashboardRequest<{ items: CodexDocument1RunSummary[] }>(
+      `/codex-runs${queryString({ ticker })}`
+    ),
+  codexDocument1Run: (runId: string) =>
+    dashboardRequest<CodexDocument1Bundle>(`/codex-runs/${encodeURIComponent(runId)}`),
+  codexArtifact: (runId: string, artifactId: string) =>
+    dashboardRequest<CodexArtifactDetail>(
+      `/codex-runs/${encodeURIComponent(runId)}/artifacts/${encodeURIComponent(artifactId)}`
+    ),
   backtests: (params?: QueryParams) =>
     dashboardRequest<PageResult<BacktestRun>>(`/backtests${queryString(params)}`),
   backtest: (runId: string) =>

@@ -245,8 +245,7 @@ class BlackboardService:
         def mutate(run: BlackboardRun) -> BlackboardRun:
             self._validate_target_matches_run(run, delegation.blocking_scope)
             if any(
-                existing.delegation_id == delegation.delegation_id
-                for existing in run.delegations
+                existing.delegation_id == delegation.delegation_id for existing in run.delegations
             ):
                 return run
             run.delegations.append(delegation)

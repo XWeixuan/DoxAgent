@@ -86,6 +86,7 @@ class ModelGatewayAgentRunner:
             annotation_store
         )
         active_annotation_store = self.annotation_processor.store
+
         def text_renderer(value: str) -> str:
             if active_annotation_store is None or not hasattr(
                 active_annotation_store, "times_for_text"
@@ -95,6 +96,7 @@ class ModelGatewayAgentRunner:
                 value,
                 active_annotation_store.times_for_text(value),
             )
+
         body_projector = BlackboardDocumentBodyProjector(text_renderer=text_renderer)
         self.context_builder = context_builder
         self.workflow_memory_compiler = workflow_memory_compiler or (
@@ -228,9 +230,7 @@ class ModelGatewayAgentRunner:
                 "A required runtime tool call failed.",
                 tool_calls=tool_calls,
                 details={
-                    "tool_results": [
-                        result.model_dump(mode="json") for result in tool_results
-                    ],
+                    "tool_results": [result.model_dump(mode="json") for result in tool_results],
                 },
             )
 
@@ -305,9 +305,7 @@ class ModelGatewayAgentRunner:
             status=ResultStatus.SUCCEEDED,
             payload={
                 "runtime": "maf",
-                "execution_mode": "caller_planned_tools"
-                if run_requested_tools
-                else "single_shot",
+                "execution_mode": "caller_planned_tools" if run_requested_tools else "single_shot",
                 "structured": structured,
                 "text": str(response),
                 "model_audit": model_response.audit.model_dump(mode="json"),
@@ -427,12 +425,8 @@ class ModelGatewayAgentRunner:
             )
         if not isinstance(budget, dict):
             return self.react_config
-        max_steps = _positive_int(
-            _first_present(budget, "max_steps", "max_model_calls")
-        )
-        max_tool_calls_per_name = _positive_int(
-            _first_present(budget, "max_tool_calls_per_name")
-        )
+        max_steps = _positive_int(_first_present(budget, "max_steps", "max_model_calls"))
+        max_tool_calls_per_name = _positive_int(_first_present(budget, "max_tool_calls_per_name"))
         max_tool_batches = _nonnegative_int(
             _first_present(
                 budget,
@@ -442,23 +436,15 @@ class ModelGatewayAgentRunner:
         )
         if max_tool_calls_per_name is None and max_tool_batches is not None:
             max_tool_calls_per_name = max(1, max_tool_batches)
-        model_timeout = _positive_float(
-            _first_present(budget, "model_request_timeout_seconds")
-        )
-        model_context_window = _positive_int(
-            _first_present(budget, "model_context_window")
-        )
+        model_timeout = _positive_float(_first_present(budget, "model_request_timeout_seconds"))
+        model_context_window = _positive_int(_first_present(budget, "model_context_window"))
         micro_ratio = _ratio(_first_present(budget, "micro_maintenance_ratio"))
         full_ratio = _ratio(_first_present(budget, "full_compaction_ratio"))
         resolved_micro_ratio = (
-            micro_ratio
-            if micro_ratio is not None
-            else self.react_config.micro_maintenance_ratio
+            micro_ratio if micro_ratio is not None else self.react_config.micro_maintenance_ratio
         )
         resolved_full_ratio = (
-            full_ratio
-            if full_ratio is not None
-            else self.react_config.full_compaction_ratio
+            full_ratio if full_ratio is not None else self.react_config.full_compaction_ratio
         )
         if resolved_micro_ratio >= resolved_full_ratio:
             resolved_micro_ratio = self.react_config.micro_maintenance_ratio
@@ -475,9 +461,7 @@ class ModelGatewayAgentRunner:
             return self.react_config
         return replace(
             self.react_config,
-            max_steps=max_steps
-            if max_steps is not None
-            else self.react_config.max_steps,
+            max_steps=max_steps if max_steps is not None else self.react_config.max_steps,
             max_tool_calls_per_name=max_tool_calls_per_name
             if max_tool_calls_per_name is not None
             else self.react_config.max_tool_calls_per_name,

@@ -37,49 +37,41 @@ from doxagent.stocktwits.schema import (
 
 
 class StocktwitsRepository(Protocol):
-    def ensure_schema(self) -> None:
-        ...
+    def ensure_schema(self) -> None: ...
 
-    def upsert_ticker_state(self, state: StocktwitsTickerState) -> StocktwitsTickerState:
-        ...
+    def upsert_ticker_state(self, state: StocktwitsTickerState) -> StocktwitsTickerState: ...
 
-    def get_ticker_state(self, symbol: str) -> StocktwitsTickerState | None:
-        ...
+    def get_ticker_state(self, symbol: str) -> StocktwitsTickerState | None: ...
 
     def list_ticker_states(
         self,
         *,
         symbol: str | None = None,
         enabled_only: bool = False,
-    ) -> list[StocktwitsTickerState]:
-        ...
+    ) -> list[StocktwitsTickerState]: ...
 
     def save_messages(
         self,
         *,
         requested_symbol: str,
         messages: list[StocktwitsMessage],
-    ) -> StocktwitsIngestResult:
-        ...
+    ) -> StocktwitsIngestResult: ...
 
-    def record_crawl_run(self, run: StocktwitsCrawlRun) -> StocktwitsCrawlRun:
-        ...
+    def record_crawl_run(self, run: StocktwitsCrawlRun) -> StocktwitsCrawlRun: ...
 
     def recent_crawl_runs(
         self,
         *,
         symbol: str | None = None,
         limit: int = 20,
-    ) -> list[StocktwitsCrawlRun]:
-        ...
+    ) -> list[StocktwitsCrawlRun]: ...
 
     def status_snapshot(
         self,
         *,
         symbol: str | None = None,
         limit: int = 20,
-    ) -> StocktwitsStatusSnapshot:
-        ...
+    ) -> StocktwitsStatusSnapshot: ...
 
 
 class InMemoryStocktwitsRepository:

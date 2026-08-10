@@ -21,8 +21,7 @@ class Document2PromotionBlockedError(ValueError):
     def __init__(self, blockers: list[Document2PromotionBlocker]) -> None:
         self.blockers = blockers
         details = "; ".join(
-            f"{blocker.blocker_type}:{blocker.target_path}:{blocker.reason}"
-            for blocker in blockers
+            f"{blocker.blocker_type}:{blocker.target_path}:{blocker.reason}" for blocker in blockers
         )
         super().__init__(f"Document2 promotion blocked: {details}")
 
@@ -132,9 +131,7 @@ def document2_promotion_audit(
         },
         output_summary={
             "patch_id": patch.patch_id if patch is not None else None,
-            "blockers": [
-                blocker.model_dump(mode="json") for blocker in blockers or []
-            ],
+            "blockers": [blocker.model_dump(mode="json") for blocker in blockers or []],
         },
         notes=["Document2 promotion validated and committed the candidate without mutation."],
     )

@@ -303,9 +303,7 @@ class SecFilingSectionsClient(SecCompanyFactsAndFilingsClient):
         )
         return _json_object(_json_object(submissions.get("filings", {})).get("recent", {}))
 
-    def _call_recent_matching(
-        self, request: ToolRequest, *, max_filings: int = 12
-    ) -> ToolResult:
+    def _call_recent_matching(self, request: ToolRequest, *, max_filings: int = 12) -> ToolResult:
         """Search bounded recent filings when requested Items are alternatives."""
         if _input_str(request, "accession", ""):
             return SecFilingSectionsClient.call(self, request)
@@ -669,9 +667,7 @@ def _build_sec_fact_view(companyfacts: JsonObject) -> JsonObject:
     }
 
 
-def _requested_sec_fact_previews(
-    companyfacts: JsonObject, requested: set[str]
-) -> list[JsonObject]:
+def _requested_sec_fact_previews(companyfacts: JsonObject, requested: set[str]) -> list[JsonObject]:
     facts = companyfacts.get("facts")
     previews: list[JsonObject] = []
     if not isinstance(facts, dict):

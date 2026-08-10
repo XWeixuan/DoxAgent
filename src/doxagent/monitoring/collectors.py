@@ -35,8 +35,7 @@ class MonitoringCollector(Protocol):
         *,
         source: MonitoringSourceConfig,
         binding: TickerSourceBinding,
-    ) -> list[FetchedExternalMessage]:
-        ...
+    ) -> list[FetchedExternalMessage]: ...
 
 
 class MonitoringCollectorRegistry:
@@ -73,9 +72,7 @@ class BaseCollector:
         headers: dict[str, str] | None = None,
         timeout: float | None = None,
     ) -> object:
-        filtered_params = {
-            key: value for key, value in (params or {}).items() if value is not None
-        }
+        filtered_params = {key: value for key, value in (params or {}).items() if value is not None}
         kwargs: dict[str, Any] = {
             "params": cast(Any, filtered_params),
             "headers": headers,
@@ -342,9 +339,7 @@ class TikHubXSearchCollector(BaseCollector):
                 )
             except httpx.HTTPStatusError as exc:
                 body = exc.response.text.replace("\n", " ")[:500]
-                term_errors.append(
-                    f"{term}: HTTP {exc.response.status_code} {body}"
-                )
+                term_errors.append(f"{term}: HTTP {exc.response.status_code} {body}")
                 continue
             for row in _tikhub_rows(data):
                 fetched.append(
@@ -361,9 +356,7 @@ class TikHubXSearchCollector(BaseCollector):
                     )
                 )
         if term_errors and not fetched:
-            raise CollectorError(
-                "TikHub X search failed for all terms: " + " | ".join(term_errors)
-            )
+            raise CollectorError("TikHub X search failed for all terms: " + " | ".join(term_errors))
         return fetched
 
 
@@ -554,8 +547,7 @@ def _looks_like_social_message(value: dict[str, Any]) -> bool:
     if {"rest_id", "legacy"} <= keys:
         return True
     return bool(
-        ("created_at" in keys or "createdAt" in keys)
-        and ("text" in keys or "body" in keys)
+        ("created_at" in keys or "createdAt" in keys) and ("text" in keys or "body" in keys)
     )
 
 
@@ -564,10 +556,7 @@ def _tikhub_id(value: JsonObject) -> str | None:
     if not isinstance(legacy, dict):
         legacy = {}
     return _str_or_none(
-        value.get("id")
-        or value.get("rest_id")
-        or value.get("tweet_id")
-        or legacy.get("id_str")
+        value.get("id") or value.get("rest_id") or value.get("tweet_id") or legacy.get("id_str")
     )
 
 

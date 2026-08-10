@@ -73,8 +73,7 @@ class WorkflowMemoryPolicyRegistry:
         missing = sorted(required - covered)
         if missing:
             raise UnknownWorkflowMemoryPolicy(
-                "Workflow nodes missing WorkflowMemoryPolicy coverage: "
-                + ", ".join(missing)
+                "Workflow nodes missing WorkflowMemoryPolicy coverage: " + ", ".join(missing)
             )
 
 

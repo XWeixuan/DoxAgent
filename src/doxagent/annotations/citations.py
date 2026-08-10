@@ -69,9 +69,7 @@ def normalize_citation_mentions(
                 continue
             alias = match.group("alias").upper()
             if _is_valid(alias, aliases):
-                candidates.append(
-                    CitationMention(alias, match.start(), match.end(), False)
-                )
+                candidates.append(CitationMention(alias, match.start(), match.end(), False))
     candidates.sort(key=lambda item: (item.start, item.end, item.alias))
     ordered = reversed(candidates) if last_first else candidates
     result: list[CitationMention] = []

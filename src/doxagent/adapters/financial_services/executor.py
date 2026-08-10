@@ -68,9 +68,7 @@ class DeterministicFinancialServicesExecutor:
     def task_graph(self) -> FinancialServicesTaskGraph:
         layers = self._team.topological_layers()
         layer_by_task = {
-            task_id: layer_index
-            for layer_index, layer in enumerate(layers)
-            for task_id in layer
+            task_id: layer_index for layer_index, layer in enumerate(layers) for task_id in layer
         }
         nodes = [
             FinancialServicesTaskGraphNode(

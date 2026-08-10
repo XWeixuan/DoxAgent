@@ -22,6 +22,7 @@ import type {
 } from "@/lib/dashboard-types"
 import { getErrorMessage, useDashboardQuery } from "@/hooks/use-dashboard-query"
 import { useDashboardEvents } from "@/hooks/use-dashboard-events"
+import { CodexDocument1View } from "@/components/dashboard/codex-document1-view"
 
 export function ResearchPage() {
   const ticker = useParams().ticker?.toUpperCase() ?? "MU"
@@ -36,6 +37,7 @@ export function ResearchPage() {
   const [versionsError, setVersionsError] = useState<string | null>(null)
   const [versionsLoading, setVersionsLoading] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
+  const codexD1V2Enabled = import.meta.env.VITE_CODEX_D1_V2_ENABLED === "true"
 
   const documentsLoader = useCallback(
     () => dashboardApi.documentsCurrent(ticker, ["document1", "document2"]),
@@ -227,6 +229,8 @@ export function ResearchPage() {
           onRetry={() => void reloadVersions()}
         />
       ) : null}
+
+      {codexD1V2Enabled ? <CodexDocument1View ticker={ticker} /> : null}
 
       {documents.isLoading && !documents.data ? (
         <LoadingGrid rows={4} />

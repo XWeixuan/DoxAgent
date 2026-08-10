@@ -157,8 +157,4 @@ class AuditQueryService:
 
 
 def _object_id(target: BlackboardTarget) -> str:
-    return (
-        target.document_id
-        or target.expectation_id
-        or f"{target.document_type.value}:default"
-    )
+    return target.document_id or target.expectation_id or f"{target.document_type.value}:default"

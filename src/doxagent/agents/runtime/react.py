@@ -67,9 +67,7 @@ MAX_TOOL_CALLS_PER_NAME = 3
 _FINAL_PAYLOAD_SCHEMAS: dict[str, type[BaseModel]] = REQUIRED_OUTPUT_SCHEMA_MODELS
 _REVIEWER_ACCEPTANCE_WARNINGS_KEY = "reviewer_acceptance_warnings"
 _REVIEWER_ACCEPTANCE_WARNINGS_INTERNAL_KEY = "_reviewer_acceptance_warnings"
-_RUNTIME_FINAL_PAYLOAD_SCHEMA_NAMES = frozenset(
-    {"W1Result", "W2Result", "A2Result", "O3Result"}
-)
+_RUNTIME_FINAL_PAYLOAD_SCHEMA_NAMES = frozenset({"W1Result", "W2Result", "A2Result", "O3Result"})
 _WORKFLOW_NORMALIZED_FINAL_PAYLOAD_SCHEMA_NAMES = frozenset(
     {"KnownEventsDocument", "MonitoringConfigDocument", "MonitoringPolicyDocument"}
 )
@@ -131,9 +129,7 @@ class ReActAgentHarness:
         self.prompt_registry = prompt_registry or default_prompt_registry()
         full_compaction_prompt = self.prompt_registry.get(_FULL_COMPACTION_PROMPT_ID)
         if not isinstance(full_compaction_prompt, PromptBlockDefinition):
-            raise ValueError(
-                f"{_FULL_COMPACTION_PROMPT_ID} must be a prompt block definition."
-            )
+            raise ValueError(f"{_FULL_COMPACTION_PROMPT_ID} must be a prompt block definition.")
         self.full_compaction_system_prompt = full_compaction_prompt.body
         self.provider = provider
         self.model = model
@@ -516,9 +512,7 @@ class ReActAgentHarness:
             tool_results=tool_results,
             delegation_results=delegation_results,
             runtime=runtime,
-            completion_reason=(
-                "Reached ReAct max_steps; recovered as conservative review result."
-            ),
+            completion_reason=("Reached ReAct max_steps; recovered as conservative review result."),
         )
 
     def _load_skill_calls(
@@ -588,9 +582,7 @@ class ReActAgentHarness:
             else None
         )
         results: list[ToolResult | None] = [None] * len(calls)
-        concurrent_work: list[
-            tuple[int, JsonDict, list[str], str, ToolDescriptor | None]
-        ] = []
+        concurrent_work: list[tuple[int, JsonDict, list[str], str, ToolDescriptor | None]] = []
 
         for index, call in enumerate(calls):
             tool_name = str(call.get("tool_name") or call.get("name") or "")
@@ -792,34 +784,34 @@ class ReActAgentHarness:
     ) -> ModelResponse:
         return await self._complete_model_request(
             ModelRequest(
-                    provider=self.provider,
-                    model=self.model,
-                    messages=[
-                        ModelMessage(
-                            role=MessageRole.SYSTEM,
-                            content=_react_system_prompt(assembled_prompt.instructions),
+                provider=self.provider,
+                model=self.model,
+                messages=[
+                    ModelMessage(
+                        role=MessageRole.SYSTEM,
+                        content=_react_system_prompt(assembled_prompt.instructions),
+                    ),
+                    ModelMessage(
+                        role=MessageRole.USER,
+                        content=_react_user_prompt(
+                            task=task,
+                            definition=definition,
+                            assembled_prompt=assembled_prompt,
+                            context_snapshot=context_snapshot,
+                            runtime=runtime,
+                            tool_registry=self.tool_registry,
+                            skill_registry=self.skill_registry,
+                            active_context=runtime.active_context(micro=micro),
+                            config=self.config,
                         ),
-                        ModelMessage(
-                            role=MessageRole.USER,
-                            content=_react_user_prompt(
-                                task=task,
-                                definition=definition,
-                                assembled_prompt=assembled_prompt,
-                                context_snapshot=context_snapshot,
-                                runtime=runtime,
-                                tool_registry=self.tool_registry,
-                                skill_registry=self.skill_registry,
-                                active_context=runtime.active_context(micro=micro),
-                                config=self.config,
-                            ),
-                        ),
-                    ],
-                    temperature=0.2,
-                    timeout_seconds=self.config.model_request_timeout_seconds,
-                    response_format=ResponseFormat.JSON,
-                    metadata=metadata,
-                )
+                    ),
+                ],
+                temperature=0.2,
+                timeout_seconds=self.config.model_request_timeout_seconds,
+                response_format=ResponseFormat.JSON,
+                metadata=metadata,
             )
+        )
 
     async def _complete_model_request(self, request: ModelRequest) -> ModelResponse:
         loop = asyncio.get_running_loop()
@@ -992,8 +984,7 @@ class ReActAgentHarness:
         runtime.record_micro_maintenance(before=report, after=micro_report)
         runtime.record_context_budget(micro_report)
         if not (
-            bool(micro_report["over_full_threshold"])
-            or bool(micro_report["over_hard_budget"])
+            bool(micro_report["over_full_threshold"]) or bool(micro_report["over_hard_budget"])
         ):
             return True
 
@@ -1150,9 +1141,7 @@ class ReActAgentHarness:
         if not synthesis:
             reasons.append("Working Synthesis 为空，需确认 final 是否只是复述工具结果。")
         active_agenda = [
-            item
-            for item in agenda
-            if isinstance(item, dict) and item.get("status") == "active"
+            item for item in agenda if isinstance(item, dict) and item.get("status") == "active"
         ]
         if active_agenda:
             reasons.append(f"仍有 {len(active_agenda)} 个 active Research Agenda。")
@@ -1165,9 +1154,7 @@ class ReActAgentHarness:
             for ref in item.get("observation_refs", [])
             if isinstance(ref, str)
         }
-        retained_refs = {
-            str(item.get("ref")) for item in retained if isinstance(item, dict)
-        }
+        retained_refs = {str(item.get("ref")) for item in retained if isinstance(item, dict)}
         if retained_refs and not retained_refs.intersection(linked_refs):
             reasons.append("存在 Retained Observation，但尚未与有效 Synthesis 建立关联。")
         if reloaded_refs:
@@ -1206,9 +1193,7 @@ class ReActAgentHarness:
                                 "task_contract": context_snapshot.task_contract.model_dump(
                                     mode="json"
                                 ),
-                                "workflow_memory": (
-                                    context_snapshot.workflow_memory.model_view()
-                                ),
+                                "workflow_memory": (context_snapshot.workflow_memory.model_view()),
                                 "output_contract": _output_contract(
                                     task.required_output_schema,
                                     task=task,
@@ -1251,9 +1236,7 @@ class ReActAgentHarness:
             return action, response_text
         challenged_action = _parse_action(response)
         if challenged_action is None:
-            runtime.record_pre_final_challenge(
-                {"reasons": reasons, "status": "invalid_action"}
-            )
+            runtime.record_pre_final_challenge({"reasons": reasons, "status": "invalid_action"})
             runtime.add_warning(
                 "Pre-final challenge 返回无效 action，保留原 final。",
                 source="pre_final_challenge",
@@ -1415,11 +1398,7 @@ def _max_steps_research_section_fallback(
 ) -> tuple[JsonDict, str] | None:
     if "ResearchSection" not in _schema_names(task.required_output_schema):
         return None
-    successful = [
-        result
-        for result in tool_results
-        if result.status is ResultStatus.SUCCEEDED
-    ]
+    successful = [result for result in tool_results if result.status is ResultStatus.SUCCEEDED]
     if not successful:
         return None
 
@@ -1484,12 +1463,8 @@ def _max_steps_review_result_fallback(
     if not tool_results and len(runtime.observations.raw_store) == 0:
         return None
 
-    successful = [
-        result for result in tool_results if result.status is ResultStatus.SUCCEEDED
-    ]
-    failed = [
-        result for result in tool_results if result.status is not ResultStatus.SUCCEEDED
-    ]
+    successful = [result for result in tool_results if result.status is ResultStatus.SUCCEEDED]
+    failed = [result for result in tool_results if result.status is not ResultStatus.SUCCEEDED]
     successful_tools = _unique_tool_names(successful)
     failed_tools = _unique_tool_names(failed)
     review_scope = _strings(task.input_context.get("review_scope")) or ["document"]
@@ -1585,7 +1560,7 @@ def _react_system_prompt(base_instructions: str) -> str:
             (
                 "Call Observation reads only through tool_calls using the registered "
                 "tool_name read_observation and an input object. Never emit the shortcut "
-                "shape {\"read_observation\": {...}}. A group_catalog alias loads its "
+                'shape {"read_observation": {...}}. A group_catalog alias loads its '
                 "complete group with the same standard call."
             ),
         ]
@@ -1612,8 +1587,8 @@ def _react_user_prompt(
         "required_tool_names": _strings(task.input_context.get("required_tool_names")),
         "available_tools_are_authoritative": True,
         "required_tool_gap_policy": (
-                    "如果 required tool 无法满足，在 final_payload 中用中文明确写入 unknowns，"
-                    "不得假装已取得证据。"
+            "如果 required tool 无法满足，在 final_payload 中用中文明确写入 unknowns，"
+            "不得假装已取得证据。"
         ),
     }
     tool_requirements = task.input_context.get("tool_requirements", [])
@@ -1627,51 +1602,50 @@ def _react_user_prompt(
         for skill in _available_skill_definitions(task, definition, skill_registry)
     ]
     request_payload = {
-            "react_protocol": {
-                "max_steps": config.max_steps,
-                "max_tool_calls_per_name": config.max_tool_calls_per_name,
-                "max_tool_call_batches": config.max_tool_call_batches,
-                "tool_call_limit_scope": (
-                    "The limit applies to consecutive ReAct loops for the same tool name "
-                    "inside this task node, not to the number of same-name calls inside "
-                    "one loop. Multiple same-name calls in one loop are allowed."
+        "react_protocol": {
+            "max_steps": config.max_steps,
+            "max_tool_calls_per_name": config.max_tool_calls_per_name,
+            "max_tool_call_batches": config.max_tool_call_batches,
+            "tool_call_limit_scope": (
+                "The limit applies to consecutive ReAct loops for the same tool name "
+                "inside this task node, not to the number of same-name calls inside "
+                "one loop. Multiple same-name calls in one loop are allowed."
+            ),
+            "response_schema": {
+                "language_rule": (
+                    "所有面向用户或评估的自然语言值必须使用简体中文；"
+                    "仅专有名词、ticker、工具名、enum、source 原文可保留英文。"
                 ),
-                "response_schema": {
-                    "language_rule": (
-                        "所有面向用户或评估的自然语言值必须使用简体中文；"
-                        "仅专有名词、ticker、工具名、enum、source 原文可保留英文。"
-                    ),
-                    "plan_update": ["简短中文公开进度；不要使用英文句子"],
-                    **memory_action_schema(),
-                    "reasoning_summary": "中文公开理由摘要，不要包含隐藏 chain-of-thought",
-                    "is_complete": "boolean",
-                    "completion_reason": "中文完成原因",
-                    "skill_calls": [
-                        {"skill_id": "available skill id", "reason": "中文说明为何需要该技能"}
-                    ],
-                    "delegations": [
-                        {
-                            "target_agent": "agent enum value",
-                            "task_type": "optional task type",
-                            "question": "中文委托问题",
-                            "context_summary": "中文边界上下文",
-                            "required_output_schema": "optional schema",
-                        }
-                    ],
-                    "final_payload": (
-                        "完成时返回 AgentResult-compatible 结构化 payload，"
-                        "内部自然语言必须中文"
-                    ),
-                },
+                "plan_update": ["简短中文公开进度；不要使用英文句子"],
+                **memory_action_schema(),
+                "reasoning_summary": "中文公开理由摘要，不要包含隐藏 chain-of-thought",
+                "is_complete": "boolean",
+                "completion_reason": "中文完成原因",
+                "skill_calls": [
+                    {"skill_id": "available skill id", "reason": "中文说明为何需要该技能"}
+                ],
+                "delegations": [
+                    {
+                        "target_agent": "agent enum value",
+                        "task_type": "optional task type",
+                        "question": "中文委托问题",
+                        "context_summary": "中文边界上下文",
+                        "required_output_schema": "optional schema",
+                    }
+                ],
+                "final_payload": (
+                    "完成时返回 AgentResult-compatible 结构化 payload，内部自然语言必须中文"
+                ),
             },
-            "task_contract": context_snapshot.task_contract.model_dump(mode="json"),
-            "tool_call_policy": tool_call_policy,
-            "output_contract": _output_contract(task.required_output_schema, task=task),
-            "available_tools": available_tools,
-            "available_skills": available_skills,
-            "loaded_skills": list(runtime.loaded_skills.values()),
-            "workflow_memory": context_snapshot.workflow_memory.model_view(),
-            "task_memory": active_context,
+        },
+        "task_contract": context_snapshot.task_contract.model_dump(mode="json"),
+        "tool_call_policy": tool_call_policy,
+        "output_contract": _output_contract(task.required_output_schema, task=task),
+        "available_tools": available_tools,
+        "available_skills": available_skills,
+        "loaded_skills": list(runtime.loaded_skills.values()),
+        "workflow_memory": context_snapshot.workflow_memory.model_view(),
+        "task_memory": active_context,
     }
     return json.dumps(request_payload, ensure_ascii=False, default=str)
 
@@ -2035,9 +2009,7 @@ def _failed(
         payload={
             "runtime": "react",
             "react_audit": runtime.persisted_audit() if runtime else {},
-            "market_evidence_snapshot": (
-                runtime.market_evidence_snapshot() if runtime else {}
-            ),
+            "market_evidence_snapshot": (runtime.market_evidence_snapshot() if runtime else {}),
         },
         tool_calls=[tool_result_to_summary(result) for result in tool_results],
         error=AgentError(code=code, message=message, retryable=retryable, details=details or {}),
@@ -2117,17 +2089,13 @@ def _monitoring_policy_output_contract() -> JsonDict:
                         "event_type": "earnings | order | regulatory | industry | macro",
                     },
                     "trigger": {"condition": "observable message-content trigger"},
-                    "confirmation": {
-                        "market_confirmation": "optional non-trigger confirmation"
-                    },
+                    "confirmation": {"market_confirmation": "optional non-trigger confirmation"},
                     "action": {
                         "side": "long | short | exit",
                         "conviction": "low | medium | high",
                         "size_bucket": "small | normal | aggressive",
                     },
-                    "risk_guard": {
-                        "guardrail": "condition that blocks direct trade or escalates"
-                    },
+                    "risk_guard": {"guardrail": "condition that blocks direct trade or escalates"},
                     "strategy_note": "short runtime routing note",
                     "reasoning": "one concise reason for this policy",
                     "evidence_fields": [],

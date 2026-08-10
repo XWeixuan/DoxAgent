@@ -18,9 +18,19 @@ from doxagent.tools.providers.fmp import (
     FmpTranscriptFallbackClient,
     FmpValuationSnapshotClient,
 )
-from doxagent.tools.providers.ibkr import IbkrMarketHistoryClient, IbkrMarketSnapshotClient
+from doxagent.tools.providers.ibkr import (
+    IbkrMarketHistoryClient,
+    IbkrMarketSnapshotClient,
+    IbkrTradeTapeClient,
+)
+from doxagent.tools.providers.ibkr_tws import ResolvedContract
+from doxagent.tools.providers.market import (
+    IbkrFirstMarketClient,
+    MarketProviderRoute,
+    passthrough_input,
+)
 from doxagent.tools.providers.twelvedata import TwelveDataSellSideEstimatesClient
-from doxagent.tools.schema import ToolRequest
+from doxagent.tools.schema import ToolError, ToolRequest, ToolResult
 
 
 def _settings(**overrides: object) -> DoxAgentSettings:
@@ -29,13 +39,10 @@ def _settings(**overrides: object) -> DoxAgentSettings:
         "fmp_api_key": "fmp-test-key",
         "finnhub_api_key": "finnhub-test-key",
         "twelvedata_api_key": "twelve-test-key",
+        "ibkr_tws_enabled": True,
     }
     defaults.update(overrides)
     settings = DoxAgentSettings(**defaults)
-    # IBKR settings are introduced by the owning settings/factory change.  The
-    # provider is deliberately compatible with its absence while unit testing.
-    object.__setattr__(settings, "ibkr_base_url", "https://ibkr.example/v1/api")
-    object.__setattr__(settings, "ibkr_api_key", "ibkr-test-key")
     return settings
 
 
@@ -50,6 +57,75 @@ def _request(name: str, data: dict[str, object] | None = None) -> ToolRequest:
 
 def _client(handler):
     return httpx.Client(transport=httpx.MockTransport(handler))
+
+
+class _FakeIbkrSession:
+    def __init__(self) -> None:
+        self.connect_count = 0
+        self.close_count = 0
+
+    def connect(self) -> dict[str, object]:
+        self.connect_count += 1
+        return {"connected": True}
+
+    def close(self) -> None:
+        self.close_count += 1
+
+    def resolve_stock(self, symbol: str, **_kwargs: object) -> list[ResolvedContract]:
+        return [
+            ResolvedContract(
+                con_id=265598,
+                symbol=symbol,
+                security_type="STK",
+                exchange="SMART",
+                currency="USD",
+                primary_exchange="NASDAQ",
+            )
+        ]
+
+    def market_snapshot(self, contract: ResolvedContract) -> dict[str, object]:
+        return {
+            "con_id": contract.con_id,
+            "symbol": contract.symbol,
+            "market_data_type": 1,
+            "values": {"last": 201.23, "bid": 200.1, "ask": 201.5},
+        }
+
+    def historical_bars(self, contract: ResolvedContract, **_kwargs: object) -> dict[str, object]:
+        return {
+            "con_id": contract.con_id,
+            "symbol": contract.symbol,
+            "use_rth": True,
+            "bars": [
+                {
+                    "date": "20260807",
+                    "open": 199.0,
+                    "high": 202.0,
+                    "low": 198.5,
+                    "close": 201.23,
+                    "volume": 1_000,
+                    "wap": 200.4,
+                    "bar_count": 500,
+                }
+            ],
+        }
+
+    def capture_trade_ticks(
+        self, contract: ResolvedContract, **_kwargs: object
+    ) -> dict[str, object]:
+        return {
+            "con_id": contract.con_id,
+            "symbol": contract.symbol,
+            "duration_seconds": 1,
+            "event_count": 1,
+            "events": [
+                {
+                    "timestamp": "2026-08-10T09:30:00+00:00",
+                    "price": 201.23,
+                    "size": 10,
+                }
+            ],
+        }
 
 
 def test_benzinga_business_tools_bind_symbol_and_source_coordinates() -> None:
@@ -105,30 +181,153 @@ def test_benzinga_http_200_entitlement_envelope_fails_stably() -> None:
     assert result.error.code == "entitlement_or_permission_denied"
 
 
-def test_ibkr_raw_snapshot_and_history_keep_contract_args_and_map_http_auth_failure() -> None:
-    requests: list[httpx.Request] = []
-
-    def handler(request: httpx.Request) -> httpx.Response:
-        requests.append(request)
-        if request.url.path.endswith("history"):
-            return httpx.Response(403, json={"error": "market data not subscribed"})
-        return httpx.Response(200, json=[{"conid": 265598, "31": "201.23"}])
-
+def test_ibkr_snapshot_and_history_use_official_tws_session_and_compact_outputs() -> None:
     settings = _settings()
-    snapshot = IbkrMarketSnapshotClient(settings, TTLCache(), client=_client(handler)).call(
+    session = _FakeIbkrSession()
+
+    def session_factory(_config):
+        return session
+
+    snapshot = IbkrMarketSnapshotClient(settings, TTLCache(), session_factory=session_factory).call(
         _request("ibkr.market_snapshot", {"conid": "265598", "fields": ["31", "84"]})
     )
-    history = IbkrMarketHistoryClient(settings, TTLCache(), client=_client(handler)).call(
+    history = IbkrMarketHistoryClient(settings, TTLCache(), session_factory=session_factory).call(
         _request("ibkr.market_history", {"conid": "265598", "period": "1m", "bar": "1d"})
     )
 
     assert snapshot.status is ResultStatus.SUCCEEDED
-    assert requests[0].url.params["conids"] == "265598"
-    assert requests[0].url.params["fields"] == "31,84"
-    assert requests[0].headers["authorization"] == "Bearer ibkr-test-key"
-    assert history.status is ResultStatus.FAILED
-    assert history.error is not None
-    assert history.error.code == "entitlement_or_permission_denied"
+    assert snapshot.output["snapshot"] == {"bid": 200.1, "last": 201.23}
+    assert snapshot.output["transport"] == "official_tws_socket"
+    assert history.status is ResultStatus.SUCCEEDED
+    assert history.output["bars"][0]["close"] == 201.23
+    assert history.output["as_of"] == "20260807"
+    assert session.connect_count == 2
+    assert session.close_count == 2
+
+
+def test_ibkr_snapshot_keeps_delayed_equivalents_for_requested_canonical_fields() -> None:
+    session = _FakeIbkrSession()
+    session.market_snapshot = lambda contract: {
+        "con_id": contract.con_id,
+        "symbol": contract.symbol,
+        "market_data_type": 3,
+        "values": {
+            "delayed_last": 201.23,
+            "delayed_close": 199.5,
+            "delayed_volume": 12345,
+            "delayed_high": 203.0,
+        },
+    }
+    result = IbkrMarketSnapshotClient(
+        _settings(),
+        TTLCache(),
+        session_factory=lambda _config: session,
+    ).call(
+        _request(
+            "ibkr.market_snapshot",
+            {"symbol": "MU", "fields": ["last", "close", "volume"]},
+        )
+    )
+
+    assert result.status is ResultStatus.SUCCEEDED
+    assert result.output["snapshot"] == {
+        "delayed_last": 201.23,
+        "delayed_close": 199.5,
+        "delayed_volume": 12345,
+    }
+
+
+def test_ibkr_trade_tape_uses_official_tws_session() -> None:
+    session = _FakeIbkrSession()
+    result = IbkrTradeTapeClient(
+        _settings(),
+        TTLCache(),
+        session_factory=lambda _config: session,
+    ).call(
+        _request(
+            "ibkr.trade_tape",
+            {"symbol": "MU", "duration_seconds": 1, "max_events": 5},
+        )
+    )
+
+    assert result.status is ResultStatus.SUCCEEDED
+    assert result.output["event_count"] == 1
+    assert result.output["events"][0]["price"] == 201.23
+
+
+class _FixedResultClient:
+    def __init__(self, result: ToolResult) -> None:
+        self.result = result
+        self.calls: list[str] = []
+
+    def call(self, request: ToolRequest) -> ToolResult:
+        self.calls.append(request.tool_name)
+        return self.result.model_copy(update={"tool_name": request.tool_name}, deep=True)
+
+
+def test_provider_neutral_market_route_prefers_ibkr_and_records_fallback() -> None:
+    ibkr = _FixedResultClient(
+        ToolResult(
+            tool_name="ibkr.market_history",
+            status=ResultStatus.FAILED,
+            error=ToolError(code="market_data_unavailable", message="no data"),
+        )
+    )
+    fallback = _FixedResultClient(
+        ToolResult(
+            tool_name="twelvedata.daily_ohlcv",
+            status=ResultStatus.SUCCEEDED,
+            output={
+                "provider": "twelvedata",
+                "source_coordinates": {"provider": "twelvedata"},
+                "ohlcv": [{"datetime": "2026-08-08", "close": "201.23"}],
+            },
+        )
+    )
+    route = IbkrFirstMarketClient(
+        route_name="daily_ohlcv",
+        providers=(
+            MarketProviderRoute("ibkr.market_history", ibkr, passthrough_input),
+            MarketProviderRoute("twelvedata.daily_ohlcv", fallback, passthrough_input),
+        ),
+    )
+
+    result = route.call(_request("market.daily_ohlcv", {"symbol": "MU"}))
+
+    assert result.status is ResultStatus.SUCCEEDED
+    assert result.tool_name == "market.daily_ohlcv"
+    assert result.output["provider"] == "twelvedata"
+    assert result.output["provider_routing"]["fallback_used"] is True
+    assert result.output["provider_routing"]["selected_tool"] == "twelvedata.daily_ohlcv"
+    assert ibkr.calls == ["ibkr.market_history"]
+    assert fallback.calls == ["twelvedata.daily_ohlcv"]
+
+
+def test_provider_neutral_trade_route_rejects_empty_partial_payloads() -> None:
+    empty_partial = _FixedResultClient(
+        ToolResult(
+            tool_name="finnhub.trade_stream",
+            status=ResultStatus.PARTIAL,
+            output={"events": [], "event_count": 0},
+            error=ToolError(code="empty_stream_sample", message="no trades"),
+        )
+    )
+    route = IbkrFirstMarketClient(
+        route_name="trade_tape",
+        providers=(
+            MarketProviderRoute("ibkr.trade_tape", empty_partial, passthrough_input),
+            MarketProviderRoute("finnhub.trade_stream", empty_partial, passthrough_input),
+        ),
+    )
+
+    result = route.call(_request("market.trade_tape", {"symbol": "MU"}))
+
+    assert result.status is ResultStatus.FAILED
+    assert result.output["provider_routing"]["selected_tool"] is None
+    assert all(
+        attempt["usable"] is False
+        for attempt in result.output["provider_routing"]["attempts"]
+    )
 
 
 def test_fmp_composite_tools_return_partial_with_stable_endpoint_provenance() -> None:

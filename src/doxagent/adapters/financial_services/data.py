@@ -154,8 +154,7 @@ class MockIndustryResearchDataProvider:
                 ticker=comp.ticker,
                 direction="long",
                 thesis_hook=(
-                    f"Best liquid expression of {request.angle} within "
-                    f"{request.sector_or_theme}."
+                    f"Best liquid expression of {request.angle} within {request.sector_or_theme}."
                 ),
                 source_refs=["mock-sector-primer", "mock-capiq-comps"],
                 confidence=0.62,
@@ -179,8 +178,7 @@ class MockIndustryResearchDataProvider:
             growth_claims=[
                 SourcedClaim(
                     claim=(
-                        "Fixture growth is driven by utilization, capex cycle, and customer "
-                        "demand."
+                        "Fixture growth is driven by utilization, capex cycle, and customer demand."
                     ),
                     source_refs=["mock-sector-primer"],
                     confidence=0.6,

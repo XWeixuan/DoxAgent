@@ -35,38 +35,28 @@ _LEGACY_RUNTIME_PAYLOAD_MODELS = frozenset({RuntimeExecutionRecord, TradingRecor
 
 
 class PersistentRuntimeRepository(Protocol):
-    def save_execution(self, record: RuntimeExecutionRecord) -> RuntimeExecutionRecord:
-        ...
+    def save_execution(self, record: RuntimeExecutionRecord) -> RuntimeExecutionRecord: ...
 
-    def save_trading_record(self, record: TradingRecord) -> TradingRecord:
-        ...
+    def save_trading_record(self, record: TradingRecord) -> TradingRecord: ...
 
-    def save_ingest_queue_item(self, item: IngestQueueItem) -> IngestQueueItem:
-        ...
+    def save_ingest_queue_item(self, item: IngestQueueItem) -> IngestQueueItem: ...
 
-    def save_archive_item(self, item: ArchiveItem) -> ArchiveItem:
-        ...
+    def save_archive_item(self, item: ArchiveItem) -> ArchiveItem: ...
 
-    def save_known_events_patch_log(self, log: KnownEventsPatchLog) -> KnownEventsPatchLog:
-        ...
+    def save_known_events_patch_log(self, log: KnownEventsPatchLog) -> KnownEventsPatchLog: ...
 
-    def save_objection(self, objection: RuntimeObjectionRecord) -> RuntimeObjectionRecord:
-        ...
+    def save_objection(self, objection: RuntimeObjectionRecord) -> RuntimeObjectionRecord: ...
 
-    def save_exception(self, exception: ExecutionExceptionLog) -> ExecutionExceptionLog:
-        ...
+    def save_exception(self, exception: ExecutionExceptionLog) -> ExecutionExceptionLog: ...
 
-    def trading_record_for_source(self, source_message_id: str) -> TradingRecord | None:
-        ...
+    def trading_record_for_source(self, source_message_id: str) -> TradingRecord | None: ...
 
-    def execution_for_source(self, source_message_id: str) -> RuntimeExecutionRecord | None:
-        ...
+    def execution_for_source(self, source_message_id: str) -> RuntimeExecutionRecord | None: ...
 
     def execution_for_duplicate(
         self,
         message: RuntimeSourceMessage,
-    ) -> RuntimeExecutionRecord | None:
-        ...
+    ) -> RuntimeExecutionRecord | None: ...
 
     def list_executions(
         self,
@@ -74,8 +64,7 @@ class PersistentRuntimeRepository(Protocol):
         ticker: str | None = None,
         limit: int | None = None,
         newest_first: bool = False,
-    ) -> list[RuntimeExecutionRecord]:
-        ...
+    ) -> list[RuntimeExecutionRecord]: ...
 
     def list_trading_records(
         self,
@@ -85,8 +74,7 @@ class PersistentRuntimeRepository(Protocol):
         newest_first: bool = False,
         created_from: datetime | None = None,
         created_to: datetime | None = None,
-    ) -> list[TradingRecord]:
-        ...
+    ) -> list[TradingRecord]: ...
 
     def list_ingest_queue(
         self,
@@ -94,8 +82,7 @@ class PersistentRuntimeRepository(Protocol):
         ticker: str | None = None,
         limit: int | None = None,
         newest_first: bool = False,
-    ) -> list[IngestQueueItem]:
-        ...
+    ) -> list[IngestQueueItem]: ...
 
     def list_archive(
         self,
@@ -103,8 +90,7 @@ class PersistentRuntimeRepository(Protocol):
         ticker: str | None = None,
         limit: int | None = None,
         newest_first: bool = False,
-    ) -> list[ArchiveItem]:
-        ...
+    ) -> list[ArchiveItem]: ...
 
     def list_known_events_patch_logs(
         self,
@@ -112,8 +98,7 @@ class PersistentRuntimeRepository(Protocol):
         ticker: str | None = None,
         limit: int | None = None,
         newest_first: bool = False,
-    ) -> list[KnownEventsPatchLog]:
-        ...
+    ) -> list[KnownEventsPatchLog]: ...
 
     def list_known_events(
         self,
@@ -121,8 +106,7 @@ class PersistentRuntimeRepository(Protocol):
         ticker: str | None = None,
         limit: int | None = None,
         newest_first: bool = False,
-    ) -> list[RuntimeKnownEvent]:
-        ...
+    ) -> list[RuntimeKnownEvent]: ...
 
     def list_objections(
         self,
@@ -130,8 +114,7 @@ class PersistentRuntimeRepository(Protocol):
         ticker: str | None = None,
         limit: int | None = None,
         newest_first: bool = False,
-    ) -> list[RuntimeObjectionRecord]:
-        ...
+    ) -> list[RuntimeObjectionRecord]: ...
 
     def list_exceptions(
         self,
@@ -139,8 +122,7 @@ class PersistentRuntimeRepository(Protocol):
         ticker: str | None = None,
         limit: int | None = None,
         newest_first: bool = False,
-    ) -> list[ExecutionExceptionLog]:
-        ...
+    ) -> list[ExecutionExceptionLog]: ...
 
 
 class InMemoryPersistentRuntimeRepository:

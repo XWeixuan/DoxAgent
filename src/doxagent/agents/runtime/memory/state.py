@@ -18,6 +18,8 @@ _COMMAND_RE = re.compile(
     r"(?:\s+([SQ]\d+))?(?:\s+([SQ]\d+))?\s*(?:[:：]\s*(.*))?$",
     re.IGNORECASE | re.DOTALL,
 )
+
+
 @dataclass(frozen=True)
 class SynthesisBlock:
     block_id: str
@@ -100,9 +102,7 @@ class TaskMemoryState:
             self.recent_reasoning.append(ReasoningSummary(step=step, content=reasoning))
             self.recent_reasoning = self.recent_reasoning[-2:]
         warnings.extend(
-            self._apply_synthesis_updates(
-                action.get("synthesis_update"), observations=observations
-            )
+            self._apply_synthesis_updates(action.get("synthesis_update"), observations=observations)
         )
         warnings.extend(self._apply_research_updates(action.get("research_update")))
         warnings.extend(
@@ -121,9 +121,7 @@ class TaskMemoryState:
     ) -> list[str]:
         warnings: list[str] = []
         warnings.extend(
-            self._apply_synthesis_updates(
-                action.get("synthesis_update"), observations=observations
-            )
+            self._apply_synthesis_updates(action.get("synthesis_update"), observations=observations)
         )
         warnings.extend(self._apply_research_updates(action.get("research_update")))
         plan = _strings(action.get("plan_update"))
@@ -182,9 +180,7 @@ class TaskMemoryState:
             ],
             "research_agenda": [item.agent_view() for item in self.agenda.values()],
             "current_plan": list(self.plan),
-            "recent_reasoning_summary": [
-                item.agent_view() for item in self.recent_reasoning[-2:]
-            ],
+            "recent_reasoning_summary": [item.agent_view() for item in self.recent_reasoning[-2:]],
             "retained_observations": retained,
         }
 
@@ -241,9 +237,7 @@ class TaskMemoryState:
                 for item in self.retained.values()
             ],
             "plan": list(self.plan),
-            "recent_reasoning_summary": [
-                item.agent_view() for item in self.recent_reasoning[-2:]
-            ],
+            "recent_reasoning_summary": [item.agent_view() for item in self.recent_reasoning[-2:]],
         }
 
     def _apply_synthesis_updates(
@@ -332,9 +326,7 @@ class TaskMemoryState:
                 self.agenda[first] = AgendaItem(
                     question_id=first,
                     content=content or f"{left.content}；{right.content}",
-                    status=(
-                        "active" if "active" in {left.status, right.status} else "deferred"
-                    ),
+                    status=("active" if "active" in {left.status, right.status} else "deferred"),
                 )
                 self.agenda.pop(second, None)
             elif operation:
@@ -383,8 +375,7 @@ def _parse_update(value: Any) -> tuple[str, str | None, str | None, str]:
         operation = str(value.get("action") or value.get("operation") or "").strip().upper()
         first_id = str(value.get("id") or value.get("target_id") or "").strip().upper() or None
         second_id = (
-            str(value.get("merge_with") or value.get("second_id") or "").strip().upper()
-            or None
+            str(value.get("merge_with") or value.get("second_id") or "").strip().upper() or None
         )
         content = str(value.get("content") or value.get("text") or "").strip()
         return operation, first_id, second_id, content

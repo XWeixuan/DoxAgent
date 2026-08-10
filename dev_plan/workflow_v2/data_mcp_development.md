@@ -1,10 +1,10 @@
 # DoxAgent Data MCP 开发方案
 
-> 状态：已完成需求澄清，可进入实现  
+> 状态：代码已完成；实现与验收记录见 `data_mcp_implementation.md`
 > 日期：2026-08-09  
 > 适用版本：`workflow_version=codex_d1_v2`  
 > 上位方案：[`codex_sdk_migration.md`](./codex_sdk_migration.md)  
-> 本文件只定义 Data MCP、共享 Observation 能力及其对接契约；不在本轮实施代码、配置、数据库或远端部署变更。
+> 本文件保留 Data MCP、共享 Observation 能力及其对接契约；实际实现、偏差与验收结果由同目录实现报告记录。
 
 ---
 

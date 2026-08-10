@@ -100,9 +100,7 @@ def build_document1_context_pack(
             )
         if _looks_like_risk(claim.text):
             risks.append(
-                claim.model_copy(
-                    update={"claim_id": f"{claim.claim_id}:risk", "category": "risk"}
-                )
+                claim.model_copy(update={"claim_id": f"{claim.claim_id}:risk", "category": "risk"})
             )
         if _looks_like_key_variable(claim.text):
             key_variables.append(

@@ -30,9 +30,7 @@ from doxagent.workflows.document2.contracts import (
 )
 
 DOCUMENT2_TRANSACTION_AUDITS_KEY = "document2_transaction_audits"
-DOCUMENT2_CONSTRUCTION_TRANSACTION_AUDITS_KEY = (
-    "document2_construction_transaction_audits"
-)
+DOCUMENT2_CONSTRUCTION_TRANSACTION_AUDITS_KEY = "document2_construction_transaction_audits"
 
 
 def document2_revision_from_resolution_plan(
@@ -229,8 +227,7 @@ def validate_construction_resolution_transaction(
     ]
     if unrelated:
         raise ValueError(
-            "Construction resolution cannot close unrelated objections: "
-            + ", ".join(unrelated)
+            "Construction resolution cannot close unrelated objections: " + ", ".join(unrelated)
         )
 
     notes.append(
@@ -255,9 +252,7 @@ def document2_construction_transaction_audit(
         status=status,
         input_summary={
             "shell_count": len(revised.shells),
-            "revised_expectation_ids": [
-                shell.expectation_id for shell in revised.shells
-            ],
+            "revised_expectation_ids": [shell.expectation_id for shell in revised.shells],
         },
         output_summary={
             "closed_objection_ids": list(closed_objection_ids or []),

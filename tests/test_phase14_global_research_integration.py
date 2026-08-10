@@ -280,9 +280,9 @@ def test_build_global_research_tasks_use_draft_permissions_and_no_prior_sections
     assert o4_tasks
     assert o4_tasks[0].input_context["global_research_inputs"]["market_trace_period"] == "3mo"
     assert set(o4_tasks[0].permissions.allowed_tools) == {
-        "twelvedata.daily_ohlcv",
-        "yfinance.daily_ohlcv",
-        "finnhub.trade_stream",
+        "market.daily_ohlcv",
+        "market.quote_snapshot",
+        "market.trade_tape",
     }
 
 

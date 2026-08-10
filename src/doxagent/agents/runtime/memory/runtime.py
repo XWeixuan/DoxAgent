@@ -35,6 +35,8 @@ _PERSISTED_EVENT_OMIT_FIELDS = {
     "memory_state",
     "request",
 }
+
+
 @dataclass
 class RuntimeGuardState:
     tool_counts: Counter[str] = field(default_factory=Counter)
@@ -114,9 +116,7 @@ class TaskMemoryRuntime:
             fresh_tool_call_ids=list(self.fresh_tool_call_ids),
             fresh_read_refs=list(self.fresh_read_refs),
             fresh_runtime_results=deepcopy(self.fresh_runtime_results),
-            passive_aliases=(
-                list(self.passive_candidate_aliases) if include_passive else []
-            ),
+            passive_aliases=(list(self.passive_candidate_aliases) if include_passive else []),
             passive_budget_tokens=(self.passive_budget_tokens if include_passive else 0),
             warnings=list(self.warnings),
             micro=micro,
@@ -133,9 +133,7 @@ class TaskMemoryRuntime:
         reasoning_content: str | None = None,
     ) -> None:
         event_payload = {
-            key: _json_safe(value)
-            for key, value in action.items()
-            if key != "final_payload"
+            key: _json_safe(value) for key, value in action.items() if key != "final_payload"
         }
         self.event_log.append("model_action", event_payload, step=step)
         requested = {
@@ -222,8 +220,7 @@ class TaskMemoryRuntime:
 
     def can_start_tool_call_batch(self, max_tool_call_batches: int | None) -> bool:
         return (
-            max_tool_call_batches is None
-            or self.guards.tool_call_batches < max_tool_call_batches
+            max_tool_call_batches is None or self.guards.tool_call_batches < max_tool_call_batches
         )
 
     def record_tool_call_batch(self) -> None:
@@ -326,11 +323,7 @@ class TaskMemoryRuntime:
             for block in blocks
             if (value := self.observations.aliases.alias_for(block.block_id)) is not None
         ]
-        fresh_aliases = (
-            [alias]
-            if self.observations.is_catalog_group_alias(alias)
-            else aliases
-        )
+        fresh_aliases = [alias] if self.observations.is_catalog_group_alias(alias) else aliases
         for item in fresh_aliases:
             if item not in self.fresh_read_refs:
                 self.fresh_read_refs.append(item)
@@ -658,11 +651,7 @@ class TaskMemoryRuntime:
         return projection
 
     def _consume_fresh(self, step: int, *, source: str) -> None:
-        if not (
-            self.fresh_tool_call_ids
-            or self.fresh_read_refs
-            or self.fresh_runtime_results
-        ):
+        if not (self.fresh_tool_call_ids or self.fresh_read_refs or self.fresh_runtime_results):
             return
         self.event_log.append(
             "fresh_observations_consumed",
@@ -742,9 +731,7 @@ def _json_safe(value: Any) -> Any:
 
 def _persisted_event(event: JsonDict) -> JsonDict:
     compact: JsonDict = {
-        key: event[key]
-        for key in ("sequence", "kind", "created_at", "step")
-        if key in event
+        key: event[key] for key in ("sequence", "kind", "created_at", "step") if key in event
     }
     for key, value in event.items():
         if key in compact or key in _PERSISTED_EVENT_OMIT_FIELDS:
@@ -779,8 +766,7 @@ def _bounded_json(value: Any, *, depth: int) -> Any:
         return [_bounded_json(item, depth=depth - 1) for item in value[:20]]
     if isinstance(value, dict):
         return {
-            str(key): _bounded_json(item, depth=depth - 1)
-            for key, item in list(value.items())[:40]
+            str(key): _bounded_json(item, depth=depth - 1) for key, item in list(value.items())[:40]
         }
     return value
 

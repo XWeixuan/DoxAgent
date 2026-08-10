@@ -36,6 +36,7 @@ from doxagent.tools.providers.ibkr import (
     IbkrContractSearchClient,
     IbkrMarketHistoryClient,
     IbkrMarketSnapshotClient,
+    IbkrTradeTapeClient,
 )
 from doxagent.tools.providers.macro_industry import (
     BeaIndustryAccountsClient,
@@ -50,6 +51,14 @@ from doxagent.tools.providers.macro_industry import (
     FredCommoditiesFxClient,
     FredInflationLaborClient,
     FredRatesCreditLiquidityClient,
+)
+from doxagent.tools.providers.market import (
+    IbkrFirstMarketClient,
+    MarketProviderRoute,
+    daily_close_fallback_input,
+    ibkr_daily_history_input,
+    ibkr_quote_input,
+    passthrough_input,
 )
 from doxagent.tools.providers.monitoring import MONITORING_TOOL_NAMES, MonitoringToolClient
 from doxagent.tools.providers.polymarket import PolymarketMarketProbabilityClient
@@ -99,6 +108,8 @@ _RECOMPUTABLE_OBSERVATION_TOOLS = {
     "finnhub.trade_stream",
     "yfinance.daily_ohlcv",
     "ibkr.market_history",
+    "market.daily_ohlcv",
+    "market.trade_tape",
     "fred.activity_demand",
     "fred.inflation_labor",
     "fred.rates_credit_liquidity",
@@ -407,19 +418,25 @@ _HORIZONTAL_TOOL_SPECS: dict[str, tuple[str, list[str], str]] = {
         "Collect management guidance, outlook, KPI, and MD&A evidence.",
     ),
     "ibkr.contract_search": (
-        "Resolve an IBKR symbol into raw contract identifiers.",
-        ["symbol", "name"],
-        "Prepare governed contract IDs for raw IBKR market-data calls.",
+        "Resolve one US stock symbol through the official local IBKR TWS socket API.",
+        ["symbol", "currency", "primary_exchange"],
+        "Prepare a compact governed contract ID for subsequent TWS market-data calls.",
     ),
     "ibkr.market_snapshot": (
-        "Read whitelisted raw IBKR snapshot fields for up to 100 conids.",
-        ["symbol", "conid", "conids", "fields"],
-        "Collect bid, ask, last, volume, shortable, fee, and subscribed snapshot fields.",
+        "Read bounded quote fields for one contract through the official local TWS socket API.",
+        ["symbol", "conid", "fields"],
+        "Collect available bid, ask, last, OHLC, size, and volume snapshot fields without trading.",
     ),
     "ibkr.market_history": (
-        "Read raw IBKR historical bars for one contract.",
+        "Read IBKR historical bars for one stock through the official local TWS socket API.",
         ["symbol", "conid", "period", "bar", "outside_rth"],
-        "Collect auditable price history; no option or rate derivation is performed.",
+        "Collect compact auditable OHLCV history; no option, rate, or valuation "
+        "derivation is performed.",
+    ),
+    "ibkr.trade_tape": (
+        "Capture bounded raw trade ticks through the official local IBKR TWS socket API.",
+        ["symbol", "conid", "duration_seconds", "max_events"],
+        "Collect an auditable read-only trade tape without orders or account access.",
     ),
     "benzinga.management_guidance": (
         "Read structured Benzinga company guidance events.",
@@ -608,6 +625,63 @@ _DESCRIPTORS: dict[str, ToolDescriptor] = {
         description="Read Alpha Vantage company overview metrics; free-tier quota is tight.",
         input_fields=["ticker", "symbol"],
         business_purpose="Fill company profile, valuation, dividend, and market-cap metrics.",
+    ),
+    "market.daily_ohlcv": _descriptor(
+        "market.daily_ohlcv",
+        description="Read daily OHLCV through an IBKR-first governed provider route.",
+        input_fields=[
+            "ticker",
+            "symbol",
+            "period",
+            "bar",
+            "outputsize",
+            "start_date",
+            "end_date",
+            "outside_rth",
+        ],
+        business_purpose=(
+            "Use IBKR by default for price history and keep external feeds "
+            "internal as fallbacks."
+        ),
+    ).model_copy(
+        update={
+            "source_name": "IBKR-first market route",
+            "fallback_tool_ids": ["twelvedata.daily_ohlcv", "yfinance.daily_ohlcv"],
+            "observation_policy": "recomputable",
+            "observation_adapter": "time_series",
+            "output_profile": "time_series",
+        }
+    ),
+    "market.quote_snapshot": _descriptor(
+        "market.quote_snapshot",
+        description=(
+            "Read a current quote through IBKR, with an explicitly stale "
+            "daily-close fallback."
+        ),
+        input_fields=["ticker", "symbol", "conid", "fields"],
+        business_purpose="Use IBKR by default for current share-price evidence.",
+    ).model_copy(
+        update={
+            "source_name": "IBKR-first market route",
+            "fallback_tool_ids": ["twelvedata.daily_ohlcv", "yfinance.daily_ohlcv"],
+        }
+    ),
+    "market.trade_tape": _descriptor(
+        "market.trade_tape",
+        description=(
+            "Capture a bounded trade tape through IBKR with Finnhub as an "
+            "internal fallback."
+        ),
+        input_fields=["ticker", "symbol", "conid", "duration_seconds", "max_events"],
+        business_purpose="Use IBKR by default for read-only live trade evidence.",
+    ).model_copy(
+        update={
+            "source_name": "IBKR-first market route",
+            "fallback_tool_ids": ["finnhub.trade_stream"],
+            "observation_policy": "recomputable",
+            "observation_adapter": "time_series",
+            "output_profile": "time_series",
+        }
     ),
     "alpha.financial_statements": _descriptor(
         "alpha.financial_statements",
@@ -806,7 +880,23 @@ def default_real_tool_registry(settings: DoxAgentSettings | None = None) -> Tool
     registry = ToolRegistry()
 
     def register(name: str, client: ToolClient) -> None:
-        registry.register(name, client, descriptor=_DESCRIPTORS[name])
+        descriptor = _DESCRIPTORS[name]
+        if name.startswith("ibkr."):
+            enabled = resolved.ibkr_tws_enabled
+            descriptor = descriptor.model_copy(
+                update={
+                    "availability": "available" if enabled else "unavailable",
+                    "availability_reason": (
+                        None
+                        if enabled
+                        else "local official TWS socket tools are disabled or not yet accepted"
+                    ),
+                    "source_name": "Interactive Brokers TWS",
+                    "freshness": "provider_current",
+                    "point_in_time_safe": False,
+                }
+            )
+        registry.register(name, client, descriptor=descriptor)
 
     doxatlas = DoxAtlasToolClient(settings=resolved, cache=cache)
     for name in DOXATLAS_TOOL_SPECS:
@@ -830,8 +920,6 @@ def default_real_tool_registry(settings: DoxAgentSettings | None = None) -> Tool
         "sec.material_contracts_projects": SecMaterialContractsProjectsClient(resolved, cache),
         "sec.management_disclosures": SecManagementDisclosuresClient(resolved, cache),
         "ibkr.contract_search": IbkrContractSearchClient(resolved, cache),
-        "ibkr.market_snapshot": IbkrMarketSnapshotClient(resolved, cache),
-        "ibkr.market_history": IbkrMarketHistoryClient(resolved, cache),
         "benzinga.management_guidance": BenzingaManagementGuidanceClient(resolved, cache),
         "benzinga.analyst_events": BenzingaAnalystEventsClient(resolved, cache),
         "benzinga.market_signals": BenzingaMarketSignalsClient(resolved, cache),
@@ -865,6 +953,59 @@ def default_real_tool_registry(settings: DoxAgentSettings | None = None) -> Tool
     }
     for name, client in horizontal_clients.items():
         register(name, client)
+    ibkr_snapshot = IbkrMarketSnapshotClient(resolved, cache)
+    ibkr_history = IbkrMarketHistoryClient(resolved, cache)
+    ibkr_trade_tape = IbkrTradeTapeClient(resolved, cache)
+    twelve_daily = TwelveDataDailyOhlcvClient(resolved, cache)
+    yahoo_daily = YFinanceDailyOhlcvClient()
+    finnhub_trade_tape = FinnhubTradeStreamClient(resolved)
+    register("ibkr.market_snapshot", ibkr_snapshot)
+    register("ibkr.market_history", ibkr_history)
+    register("ibkr.trade_tape", ibkr_trade_tape)
+    register(
+        "market.daily_ohlcv",
+        IbkrFirstMarketClient(
+            route_name="daily_ohlcv",
+            providers=(
+                MarketProviderRoute("ibkr.market_history", ibkr_history, ibkr_daily_history_input),
+                MarketProviderRoute("twelvedata.daily_ohlcv", twelve_daily, passthrough_input),
+                MarketProviderRoute("yfinance.daily_ohlcv", yahoo_daily, passthrough_input),
+            ),
+        ),
+    )
+    register(
+        "market.quote_snapshot",
+        IbkrFirstMarketClient(
+            route_name="quote_snapshot",
+            providers=(
+                MarketProviderRoute("ibkr.market_snapshot", ibkr_snapshot, ibkr_quote_input),
+                MarketProviderRoute(
+                    "twelvedata.daily_ohlcv",
+                    twelve_daily,
+                    daily_close_fallback_input,
+                    "stale_daily_close_fallback",
+                ),
+                MarketProviderRoute(
+                    "yfinance.daily_ohlcv",
+                    yahoo_daily,
+                    daily_close_fallback_input,
+                    "stale_daily_close_fallback",
+                ),
+            ),
+        ),
+    )
+    register(
+        "market.trade_tape",
+        IbkrFirstMarketClient(
+            route_name="trade_tape",
+            providers=(
+                MarketProviderRoute("ibkr.trade_tape", ibkr_trade_tape, passthrough_input),
+                MarketProviderRoute(
+                    "finnhub.trade_stream", finnhub_trade_tape, passthrough_input
+                ),
+            ),
+        ),
+    )
     register("alpha.company_overview", AlphaVantageClient(resolved, cache, "OVERVIEW"))
     register(
         "alpha.financial_statements",
@@ -875,7 +1016,7 @@ def default_real_tool_registry(settings: DoxAgentSettings | None = None) -> Tool
         AlphaVantageClient(resolved, cache, "SHARES_OUTSTANDING"),
     )
     register("alpha.earnings_events", AlphaVantageEarningsClient(resolved, cache))
-    register("twelvedata.daily_ohlcv", TwelveDataDailyOhlcvClient(resolved, cache))
+    register("twelvedata.daily_ohlcv", twelve_daily)
     register("fred.series_observations", FredSeriesObservationsClient(resolved, cache))
     register("bls.timeseries", BlsTimeseriesClient(resolved, cache))
     register("bea.nipa_data", BeaNipaDataClient(resolved, cache))
@@ -889,10 +1030,10 @@ def default_real_tool_registry(settings: DoxAgentSettings | None = None) -> Tool
     )
     register("fmp.sector_performance", FmpSectorPerformanceClient(resolved, cache))
     register("finnhub.company_peers", FinnhubPeersClient(resolved, cache))
-    register("finnhub.trade_stream", FinnhubTradeStreamClient(resolved))
+    register("finnhub.trade_stream", finnhub_trade_tape)
     register("tavily.search", TavilySearchClient(resolved, cache))
     register("tavily.extract", TavilyExtractClient(resolved, cache))
     register("anysearch.search", AnySearchSearchClient(resolved, cache))
     register("yfinance.hk_basic_snapshot", YFinanceHkBasicSnapshotClient())
-    register("yfinance.daily_ohlcv", YFinanceDailyOhlcvClient())
+    register("yfinance.daily_ohlcv", yahoo_daily)
     return registry

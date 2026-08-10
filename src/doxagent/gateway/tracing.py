@@ -100,8 +100,7 @@ def wrap_provider_client(
 def _run_name_part(value: str | None, *, fallback: str) -> str:
     raw = (value or fallback).strip() or fallback
     return "".join(
-        character if character.isalnum() or character in {"_", "-"} else "_"
-        for character in raw
+        character if character.isalnum() or character in {"_", "-"} else "_" for character in raw
     )
 
 

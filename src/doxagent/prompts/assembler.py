@@ -25,6 +25,7 @@ CHINESE_OUTPUT_RULES = [
     ),
 ]
 
+
 class PromptAssembler:
     """Assemble single-shot input without reading Blackboard or workflow state."""
 

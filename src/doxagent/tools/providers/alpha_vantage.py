@@ -63,9 +63,7 @@ class AlphaVantageClient(BaseRealToolClient):
                     details={"provider_payload": raw},
                 )
             source_type = (
-                "market_data"
-                if self.function_name == "TIME_SERIES_DAILY"
-                else "external_report"
+                "market_data" if self.function_name == "TIME_SERIES_DAILY" else "external_report"
             )
             return self._success(
                 request,

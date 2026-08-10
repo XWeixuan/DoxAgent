@@ -51,6 +51,8 @@ class FedFomcCalendarMaterialsClient(BaseRealToolClient):
             )
         except Exception as exc:
             return self._handle_exception(request, exc)
+
+
 class _TextLinkParser(HTMLParser):
     def __init__(self) -> None:
         super().__init__()

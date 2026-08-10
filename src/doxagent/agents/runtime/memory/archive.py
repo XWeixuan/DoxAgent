@@ -53,9 +53,7 @@ class InMemoryObservationArchive:
     ) -> RawToolResultRecord | None:
         return deepcopy(self.raw_results.get((run_id, task_id, tool_call_id)))
 
-    def get_block(
-        self, run_id: str, task_id: str, block_id: str
-    ) -> ObservationBlock | None:
+    def get_block(self, run_id: str, task_id: str, block_id: str) -> ObservationBlock | None:
         return deepcopy(self.blocks.get((run_id, task_id, block_id)))
 
 

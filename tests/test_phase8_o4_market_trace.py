@@ -191,9 +191,9 @@ def test_market_trace_agent_registry_exposes_market_trace_schema() -> None:
 
     assert definition.runtime.output_schema == "ResearchSection"
     assert definition.runtime.allowed_tools == [
-        "twelvedata.daily_ohlcv",
-        "yfinance.daily_ohlcv",
-        "finnhub.trade_stream",
+        "market.daily_ohlcv",
+        "market.quote_snapshot",
+        "market.trade_tape",
     ]
 
 
