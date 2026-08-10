@@ -1,0 +1,13 @@
+{
+  "job_id": "job-1",
+  "run_id": "run-1",
+  "attempt_id": "attempt-1",
+  "status": "failed",
+  "thread_id": null,
+  "turn_id": null,
+  "final_response": null,
+  "error_code": "WORKER_RESTARTED",
+  "error_message": "worker restarted before the Codex turn completed",
+  "created_at": "2026-08-09T16:01:19.736275Z",
+  "updated_at": "2026-08-09T16:01:19.751446Z"
+}

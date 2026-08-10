@@ -1,0 +1,11 @@
+[
+  {
+    "metric_key": "customer_count",
+    "value": 10,
+    "unit": "count",
+    "as_of": "2026-06-30",
+    "source_aliases": [],
+    "method": "agent_research",
+    "confidence": "medium"
+  }
+]

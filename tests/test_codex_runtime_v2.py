@@ -1,0 +1,352 @@
+from __future__ import annotations
+
+import hashlib
+import io
+import json
+import sqlite3
+from datetime import UTC, datetime
+from pathlib import Path
+
+import pytest
+from fastapi.testclient import TestClient
+from openai_codex import Sandbox
+
+from doxagent.codex_runtime.capabilities import CapabilityTokenCodec
+from doxagent.codex_runtime.config import CodexRuntimeConfig
+from doxagent.codex_runtime.errors import (
+    CapabilityDenied,
+    ImmutableWorkspacePath,
+    InvalidWorkspacePath,
+)
+from doxagent.codex_runtime.repository import (
+    InMemoryCodexRuntimeRepository,
+    SQLiteCodexRuntimeRepository,
+)
+from doxagent.codex_runtime.schema import (
+    CodexAgentRole,
+    CodexD1Node,
+    SourceRecord,
+    ThreadRecord,
+)
+from doxagent.codex_worker import login as worker_login
+from doxagent.codex_worker.app import create_worker_app
+from doxagent.codex_worker.jobs import WorkerJobManager
+from doxagent.codex_worker.schema import WorkerJob, WorkerRunRequest
+from doxagent.codex_worker.sdk_runtime import OpenAICodexRuntime, WorkerTurnResult
+from doxagent.codex_worker.workspace_store import LocalWorkspaceStore
+from doxagent.mcp.source_capture import CitationManifestBuilder, SourceCaptureService
+
+
+def test_capability_tokens_are_run_operation_and_expiry_scoped(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    codec = CapabilityTokenCodec("s" * 32)
+    monkeypatch.setattr("time.time", lambda: 1000)
+    token = codec.issue(run_id="run-1", operations={"read"}, ttl_seconds=10)
+    claims = codec.verify(token, run_id="run-1", operation="read")
+    assert claims.run_id == "run-1"
+    with pytest.raises(CapabilityDenied):
+        codec.verify(token, run_id="run-2", operation="read")
+    with pytest.raises(CapabilityDenied):
+        codec.verify(token, run_id="run-1", operation="write")
+    monkeypatch.setattr("time.time", lambda: 1011)
+    with pytest.raises(CapabilityDenied):
+        codec.verify(token, run_id="run-1", operation="read")
+
+
+def test_sqlite_repository_round_trips_thread_without_legacy_state(tmp_path: Path) -> None:
+    database = tmp_path / "runtime.sqlite3"
+    repository = SQLiteCodexRuntimeRepository(database)
+    record = ThreadRecord(
+        ticker="NVDA",
+        run_id="run-1",
+        agent_role=CodexAgentRole.O4,
+        thread_id="thread-1",
+        model="gpt-test",
+    )
+    repository.save_thread(record)
+    assert repository.get_thread("run-1", CodexAgentRole.O4.value) == record
+    with sqlite3.connect(database) as connection:
+        assert connection.execute("PRAGMA user_version").fetchone()[0] == 2
+
+
+def test_postgres_runtime_storage_requires_explicit_remote_opt_in(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="explicit.*REMOTE_RUNTIME_STORAGE"):
+        CodexRuntimeConfig(
+            enabled=False,
+            worker_base_url="http://127.0.0.1:8791",
+            worker_bearer_token=None,
+            capability_secret=None,
+            workspace_root=tmp_path / "workspaces",
+            storage_mode="postgres",
+            sqlite_path=tmp_path / "runtime.sqlite3",
+            remote_runtime_storage_enabled=False,
+            database_url="postgresql://example.invalid/database",
+            model="test-model",
+            model_provider=None,
+            reasoning_effort="low",
+            node_timeout_seconds=30,
+            node_max_attempts=1,
+            max_subagents=2,
+        )
+
+
+def test_workspace_rejects_traversal_and_makes_context_immutable(tmp_path: Path) -> None:
+    store = LocalWorkspaceStore(tmp_path / "workspaces")
+    with pytest.raises(InvalidWorkspacePath):
+        store.write_text("run-1", "../escape.txt", "bad")
+    first = store.write_text("run-1", "attempts/a-1/input/context.json", "{}")
+    assert first.sha256 == hashlib.sha256(b"{}").hexdigest()
+    assert store.write_text("run-1", "attempts/a-1/input/context.json", "{}").sha256 == first.sha256
+    with pytest.raises(ImmutableWorkspacePath):
+        store.write_text("run-1", "attempts/a-1/input/context.json", '{"changed":true}')
+
+
+def test_workspace_publish_and_export_are_idempotent(tmp_path: Path) -> None:
+    store = LocalWorkspaceStore(tmp_path / "workspaces")
+    artifact = store.write_text("run-1", "artifacts/final.md", "final")
+    first = store.publish("run-1", [artifact.relative_path])
+    second = store.publish("run-1", [artifact.relative_path])
+    assert [item.relative_path for item in first.files] == [
+        item.relative_path for item in second.files
+    ]
+    buffer = io.BytesIO()
+    digest = store.export_zip("run-1", buffer)
+    assert digest
+    assert buffer.getbuffer().nbytes > 0
+
+
+@pytest.mark.asyncio
+async def test_source_capture_failure_is_soft_and_citations_are_deterministic() -> None:
+    repository = InMemoryCodexRuntimeRepository()
+    service = SourceCaptureService(repository)
+    result = await service.capture(
+        run_id="run-1",
+        attempt_id="attempt-1",
+        url="http://127.0.0.1/private",
+    )
+    assert result.alias is None
+    assert result.warning and result.warning.startswith("SOURCE_CAPTURE_WARNING")
+    repository.save_source(
+        SourceRecord(
+            source_id="source-1",
+            run_id="run-1",
+            attempt_id="attempt-1",
+            alias="O1",
+            url="https://example.com",
+            title="Example",
+        )
+    )
+    manifest = CitationManifestBuilder(repository).build(
+        run_id="run-1",
+        artifact_id="artifact-1",
+        markdown="Known 【cite:O1】 and unknown 【cite:O9】, again 【cite:O1】.",
+    )
+    assert [entry.alias for entry in manifest.entries] == ["O1", "O9"]
+    assert manifest.entries[0].resolved is True
+    assert manifest.entries[1].resolved is False
+
+
+class _ImmediateHandle:
+    async def run(self) -> WorkerTurnResult:
+        return WorkerTurnResult(
+            thread_id="thread-1",
+            turn_id="turn-1",
+            status="completed",
+            final_response=json.dumps(
+                {
+                    "status": "completed",
+                    "summary": "done",
+                    "report_markdown": "# report",
+                    "warnings": [],
+                    "observation_candidates": [],
+                    "entity_relations": [],
+                    "future_nodes": [],
+                    "metadata": {},
+                }
+            ),
+        )
+
+    async def interrupt(self) -> None:
+        return None
+
+
+class _ImmediateRuntime:
+    async def start(self, request, cwd):
+        return _ImmediateHandle()
+
+
+class _AsyncSdkTurn:
+    id = "thread-sdk-1"
+
+    def __init__(self) -> None:
+        self.turn_was_awaited = False
+        self.turn_kwargs: dict[str, object] | None = None
+
+    async def turn(self, *args, **kwargs):
+        self.turn_was_awaited = True
+        self.turn_kwargs = kwargs
+        return _RawSdkHandle()
+
+
+class _RawSdkResult:
+    id = "turn-sdk-1"
+    status = "completed"
+    error = None
+    final_response = '{"status":"completed"}'
+
+
+class _RawSdkHandle:
+    async def run(self):
+        return _RawSdkResult()
+
+    async def interrupt(self) -> None:
+        return None
+
+
+class _FakeLoginHandle:
+    verification_url = "https://auth.example/device"
+    user_code = "ABCD-EFGH"
+
+    async def wait(self) -> None:
+        return None
+
+
+class _FakeLoginCodex:
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc, traceback) -> None:
+        return None
+
+    async def login_chatgpt_device_code(self) -> _FakeLoginHandle:
+        return _FakeLoginHandle()
+
+
+class _AsyncSdkClient:
+    def __init__(self, *args, **kwargs) -> None:
+        self.thread = _AsyncSdkTurn()
+        self.thread_start_kwargs: dict[str, object] | None = None
+
+    async def thread_start(self, **kwargs):
+        self.thread_start_kwargs = kwargs
+        return self.thread
+
+
+@pytest.mark.asyncio
+async def test_sdk_runtime_awaits_async_thread_turn(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    sdk = _AsyncSdkClient()
+    monkeypatch.setattr(
+        "doxagent.codex_worker.sdk_runtime.AsyncCodex",
+        lambda *args, **kwargs: sdk,
+    )
+    runtime = OpenAICodexRuntime(capability_secret="s" * 32, container_isolated=True)
+    run_root = tmp_path / "run-1"
+    run_root.mkdir()
+    handle = await runtime.start(
+        WorkerRunRequest(
+            run_id="run-1",
+            ticker="NVDA",
+            node=CodexD1Node.C1,
+            agent_role=CodexAgentRole.C1,
+            attempt_id="attempt-1",
+            cutoff_at=datetime.now(UTC),
+            prompt="Return a structured response.",
+            output_schema={"type": "object"},
+            model="test-model",
+            allow_subagents=True,
+            max_subagents=2,
+        ),
+        run_root,
+    )
+    assert sdk.thread.turn_was_awaited is True
+    assert sdk.thread_start_kwargs is not None
+    assert sdk.thread_start_kwargs["sandbox"] is Sandbox.full_access
+    assert sdk.thread.turn_kwargs is not None
+    assert sdk.thread.turn_kwargs["sandbox"] is Sandbox.full_access
+    sdk_config = sdk.thread_start_kwargs["config"]
+    assert isinstance(sdk_config, dict)
+    assert sdk_config["features.multi_agent"] is True
+    assert "Never spawn more than 2 subagents" in str(sdk.thread_start_kwargs["base_instructions"])
+    assert await handle.run() == WorkerTurnResult(
+        thread_id="thread-sdk-1",
+        turn_id="turn-sdk-1",
+        status="completed",
+        final_response='{"status":"completed"}',
+    )
+
+
+@pytest.mark.asyncio
+async def test_worker_device_login_uses_python_sdk(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    monkeypatch.setattr(worker_login, "AsyncCodex", _FakeLoginCodex)
+    await worker_login.login_device_code()
+    output = capsys.readouterr().out
+    assert "https://auth.example/device" in output
+    assert "ABCD-EFGH" in output
+    assert "login completed" in output
+
+
+def test_worker_api_requires_bearer_and_workspace_capability(tmp_path: Path) -> None:
+    bearer = "b" * 24
+    secret = "s" * 32
+    app = create_worker_app(
+        workspace_root=str(tmp_path / "workspaces"),
+        bearer_token=bearer,
+        capability_secret=secret,
+        runtime=_ImmediateRuntime(),
+    )
+    client = TestClient(app)
+    assert client.get("/healthz").status_code == 200
+    assert client.get("/v1/capabilities").status_code == 401
+    headers = {"Authorization": f"Bearer {bearer}"}
+    assert client.get("/v1/capabilities", headers=headers).status_code == 200
+    assert (
+        client.put(
+            "/v1/workspaces/run-1/files/context/a.json",
+            headers=headers,
+            json={"content": "{}"},
+        ).status_code
+        == 403
+    )
+    token = CapabilityTokenCodec(secret).issue(run_id="run-1", operations={"write"})
+    response = client.put(
+        "/v1/workspaces/run-1/files/context/a.json",
+        headers={**headers, "X-Workspace-Capability": token},
+        json={"content": "{}"},
+    )
+    assert response.status_code == 200
+
+
+def test_worker_job_normalizes_numeric_json_rpc_error_code() -> None:
+    job = WorkerJob.model_validate(
+        {
+            "job_id": "job-rpc-error",
+            "run_id": "run-1",
+            "attempt_id": "attempt-1",
+            "status": "failed",
+            "error_code": -32600,
+            "error_message": "invalid request",
+        }
+    )
+    assert job.error_code == "-32600"
+
+
+def test_worker_restart_marks_orphaned_active_job_failed(tmp_path: Path) -> None:
+    store = LocalWorkspaceStore(tmp_path / "workspaces")
+    job = WorkerJob(
+        job_id="job-1",
+        run_id="run-1",
+        attempt_id="attempt-1",
+        status="running",
+    )
+    store.write_text("run-1", "audit/jobs/job-1.json", job.model_dump_json())
+    manager = WorkerJobManager(_ImmediateRuntime(), store)
+    recovered = manager.get("job-1")
+    assert recovered and recovered.status == "failed"
+    assert recovered.error_code == "WORKER_RESTARTED"

@@ -1,0 +1,20 @@
+{
+  "status": "completed",
+  "summary": "c1",
+  "report_markdown": "### c1\ncompleted",
+  "warnings": [],
+  "observation_candidates": [
+    {
+      "metric_key": "customer_count",
+      "value": 10,
+      "unit": "count",
+      "as_of": "2026-06-30",
+      "source_aliases": [],
+      "method": "agent_research",
+      "confidence": "medium"
+    }
+  ],
+  "entity_relations": [],
+  "future_nodes": [],
+  "metadata": {}
+}

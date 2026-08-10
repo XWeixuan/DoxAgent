@@ -1,0 +1,22 @@
+{
+  "schema_version": "codex-d1-node-context-v1",
+  "run_id": "run-1",
+  "node": "c4_finalization",
+  "payload": {
+    "ticker": "NVDA",
+    "company_name": null,
+    "research_brief": "test",
+    "base_context": {},
+    "enriched_c4": {
+      "status": "completed",
+      "summary": "c4_enrichment",
+      "report_markdown": "### c4_enrichment\ncompleted",
+      "warnings": [],
+      "observation_candidates": [],
+      "entity_relations": [],
+      "future_nodes": [],
+      "metadata": {}
+    },
+    "public_schema_note": "Entity relations and future nodes must contain only their five governed fields."
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "schema_version": "codex-d1-node-context-v1",
+  "run_id": "run-1",
+  "node": "c3",
+  "payload": {
+    "ticker": "NVDA",
+    "company_name": null,
+    "research_brief": "test",
+    "base_context": {},
+    "c4_pre_scan": {
+      "status": "completed",
+      "summary": "c4_pre_scan",
+      "report_markdown": "### c4_pre_scan\ncompleted",
+      "warnings": [],
+      "observation_candidates": [],
+      "entity_relations": [],
+      "future_nodes": [],
+      "metadata": {}
+    }
+  }
+}

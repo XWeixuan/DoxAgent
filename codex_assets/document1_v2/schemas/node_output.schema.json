@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Codex D1 node output",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "summary",
+    "report_markdown",
+    "warnings",
+    "observation_candidates",
+    "entity_relations",
+    "future_nodes",
+    "metadata"
+  ],
+  "properties": {
+    "status": {"type": "string"},
+    "summary": {"type": "string"},
+    "report_markdown": {"type": "string"},
+    "warnings": {"type": "array", "items": {"type": "string"}},
+    "observation_candidates": {"type": "array", "items": {"type": "object"}},
+    "entity_relations": {"type": "array", "items": {"type": "object"}},
+    "future_nodes": {"type": "array", "items": {"type": "object"}},
+    "metadata": {"type": "object"}
+  }
+}

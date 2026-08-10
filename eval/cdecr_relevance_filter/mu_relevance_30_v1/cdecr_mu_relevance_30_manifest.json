@@ -1,0 +1,844 @@
+{
+  "counts": {
+    "categories": {
+      "hard_indirect_relevance": 10,
+      "mixed_relevant_and_irrelevant": 10,
+      "mostly_high_or_very_high": 5,
+      "very_low_or_none": 5
+    },
+    "documents": 30,
+    "event_families": [
+      "ANALYST_ACTION",
+      "COMMERCIAL_OPERATION",
+      "FINANCIAL_PERFORMANCE",
+      "GOVERNANCE_PERSONNEL",
+      "GUIDANCE_EXPECTATION",
+      "INCIDENT_GEOPOLITICAL",
+      "MARKET_MOVEMENT",
+      "OTHER",
+      "PRODUCTION_SUPPLY",
+      "PRODUCT_SCIENCE",
+      "REGULATORY_LEGAL_POLICY",
+      "TRANSACTION_CAPITAL"
+    ],
+    "event_family_count": 12,
+    "mention_labels": {
+      "DIRECT": 81,
+      "INDIRECT_ECONOMIC": 83,
+      "NONE": 190
+    },
+    "mentions": 354,
+    "unique_document_fingerprints": 30,
+    "unique_source_rows": 30,
+    "unique_titles": 30
+  },
+  "created_at": "2026-08-10",
+  "dataset_version": "cdecr-mu-relevance-30-v1-20260810",
+  "documents": [
+    {
+      "document_fingerprint": "e4b4e22e2fe59518bbc5d40f396449e796c40fc489972e4de791ab096399b44d",
+      "document_id": "D017",
+      "document_index_in_mu300": 17,
+      "event_families": [
+        "COMMERCIAL_OPERATION",
+        "PRODUCTION_SUPPLY",
+        "REGULATORY_LEGAL_POLICY",
+        "TRANSACTION_CAPITAL"
+      ],
+      "indirect_path": null,
+      "mention_count": 15,
+      "mention_label_counts": {
+        "NONE": 15
+      },
+      "published_at": "2026-04-08T17:11:46Z",
+      "review_summary": "印度 Kamala 水电项目；MU 表示 million units，不是 Micron ticker。",
+      "selection_category": "very_low_or_none",
+      "source_name": "devdiscourse.com",
+      "source_row_id": "5cbed56c-eb38-4bd2-afbd-89e1e6ab63cb",
+      "text_chars": 5089,
+      "title": "Cabinet Approves ₹26,069 Crore Kamala Hydropower Project in Arunachal Pradesh",
+      "why_selected": "单位缩写误召回，且包含政策、基建、融资、产能等多种强事件。"
+    },
+    {
+      "document_fingerprint": "6188765a751475216dce773782d722bdf34fd713387a4275817e838271e1a86c",
+      "document_id": "D019",
+      "document_index_in_mu300": 19,
+      "event_families": [
+        "COMMERCIAL_OPERATION",
+        "TRANSACTION_CAPITAL"
+      ],
+      "indirect_path": null,
+      "mention_count": 6,
+      "mention_label_counts": {
+        "NONE": 6
+      },
+      "published_at": "2026-04-10T10:31:17Z",
+      "review_summary": "Masters' Union 的 MU Ventures 基金；MU 是机构/基金名称缩写。",
+      "selection_category": "very_low_or_none",
+      "source_name": "outlookbusiness.com",
+      "source_row_id": "cb9638e4-a933-41e5-bcfd-3042a674bef0",
+      "text_chars": 4245,
+      "title": "Masters’ Union Launches ₹100 Cr MU Ventures Fund for Under",
+      "why_selected": "公司简称碰撞，事件覆盖基金设立、投资条款与创业支持。"
+    },
+    {
+      "document_fingerprint": "20959c8df5204c06e1deea5fadaa814c483194fe97c0bb6ea1dc145343976f6e",
+      "document_id": "D050",
+      "document_index_in_mu300": 50,
+      "event_families": [
+        "REGULATORY_LEGAL_POLICY"
+      ],
+      "indirect_path": null,
+      "mention_count": 2,
+      "mention_label_counts": {
+        "NONE": 2
+      },
+      "published_at": "2026-05-19T01:06:35Z",
+      "review_summary": "Alex Murdaugh 刑事重审与民事诉讼，与 Micron 无经济暴露关系。",
+      "selection_category": "very_low_or_none",
+      "source_name": "wjla.com",
+      "source_row_id": "1d860dc8-26c7-40aa-b2b7-c7f9b2010feb",
+      "text_chars": 1164,
+      "title": "Murdaugh latest: defense bombshells and a lawsuit?",
+      "why_selected": "人物姓名字符串噪声，提供纯法律事件负例。"
+    },
+    {
+      "document_fingerprint": "de000ee2d83a64fdaf0a2aed220df478774483564d086edb09caba83966a5b08",
+      "document_id": "D067",
+      "document_index_in_mu300": 67,
+      "event_families": [
+        "GOVERNANCE_PERSONNEL",
+        "OTHER"
+      ],
+      "indirect_path": null,
+      "mention_count": 6,
+      "mention_label_counts": {
+        "NONE": 6
+      },
+      "published_at": "2026-05-24T11:00:00Z",
+      "review_summary": "University of Missouri/Mizzou 棒垒球报道，且正文存在字符编码污染。",
+      "selection_category": "very_low_or_none",
+      "source_name": "stltoday.com",
+      "source_row_id": "a6226f15-a12b-4dc1-98d0-7f1cfe199b05",
+      "text_chars": 9108,
+      "title": "After another dismal spring on the diamonds, what's next for Mizzou softball and baseball?",
+      "why_selected": "MU 校名缩写碰撞，并覆盖脏文本下的体育、人事与合同事件。"
+    },
+    {
+      "document_fingerprint": "80aa122f453ff3b9dd17bffbad49d6b62c38db889c3639b413d7efbf6c884654",
+      "document_id": "D089",
+      "document_index_in_mu300": 89,
+      "event_families": [
+        "OTHER"
+      ],
+      "indirect_path": null,
+      "mention_count": 4,
+      "mention_label_counts": {
+        "NONE": 4
+      },
+      "published_at": "2026-05-30T13:53:08Z",
+      "review_summary": "Mumbai University 本科录取名单；MU 是大学缩写。",
+      "selection_category": "very_low_or_none",
+      "source_name": "freepressjournal.in",
+      "source_row_id": "314c72a0-e18c-402e-9909-585ad1f25174",
+      "text_chars": 1092,
+      "title": "Mumbai University UG 2nd Merit List 2026 Released: Admission Process, Key Dates Inside",
+      "why_selected": "教育机构缩写碰撞，提供日程/录取流程类纯负例。"
+    },
+    {
+      "document_fingerprint": "23d73a9b7e5b2dff28a21fb24eff2825a2518c0311b9155e4fbc39687430f348",
+      "document_id": "D010",
+      "document_index_in_mu300": 10,
+      "event_families": [
+        "ANALYST_ACTION",
+        "GUIDANCE_EXPECTATION",
+        "MARKET_MOVEMENT"
+      ],
+      "indirect_path": null,
+      "mention_count": 4,
+      "mention_label_counts": {
+        "DIRECT": 4
+      },
+      "published_at": "2026-04-07T07:01:16Z",
+      "review_summary": "Erste 下调 Micron 评级，并披露 Micron CapEx 计划和股价表现。",
+      "selection_category": "mostly_high_or_very_high",
+      "source_name": "finance.yahoo.com",
+      "source_row_id": "3238d391-6074-4a40-86c3-4a9dc591a2b9",
+      "text_chars": 1788,
+      "title": "Micron Technology (MU) Gets Downgraded by Analyst",
+      "why_selected": "分析师行动、资本开支、证券表现均直接涉及目标公司。"
+    },
+    {
+      "document_fingerprint": "d794ec2db3a2509b0589644322506c8fffc73843685b9f6ba78e6c1c8f1ff5f1",
+      "document_id": "D062",
+      "document_index_in_mu300": 62,
+      "event_families": [
+        "PRODUCTION_SUPPLY",
+        "TRANSACTION_CAPITAL"
+      ],
+      "indirect_path": null,
+      "mention_count": 2,
+      "mention_label_counts": {
+        "DIRECT": 2
+      },
+      "published_at": "2026-05-22T13:25:00Z",
+      "review_summary": "Micron 在 Virginia 启动 1-alpha DRAM 制造并投资扩建 Manassas fab。",
+      "selection_category": "mostly_high_or_very_high",
+      "source_name": "finance.yahoo.com",
+      "source_row_id": "b822db43-7c0e-4ece-bbb3-8bda452d927d",
+      "text_chars": 2754,
+      "title": "Micron Advances Made-in-America Memory With Manufacturing Expansion in Virginia",
+      "why_selected": "生产启动与制造投资的高纯度公司特异性事件。"
+    },
+    {
+      "document_fingerprint": "6b34cb174b8a8305ffc4cea6d4f1fd80e47490e5bb51a5168d19b9a38280dcfa",
+      "document_id": "D232",
+      "document_index_in_mu300": 232,
+      "event_families": [
+        "FINANCIAL_PERFORMANCE",
+        "GUIDANCE_EXPECTATION",
+        "MARKET_MOVEMENT",
+        "TRANSACTION_CAPITAL"
+      ],
+      "indirect_path": null,
+      "mention_count": 17,
+      "mention_label_counts": {
+        "DIRECT": 17
+      },
+      "published_at": "2026-06-24T23:11:06Z",
+      "review_summary": "Micron Q3 财务、业务分部、Q4 指引、供需、分红与盘后股价。",
+      "selection_category": "mostly_high_or_very_high",
+      "source_name": "fool.com",
+      "source_row_id": "596afb0f-1aa7-4d7d-aad3-cb5a07cfc26a",
+      "text_chars": 3509,
+      "title": "Micron Just Broke the Mold for Artificial Intelligence (AI) and Its Stock is Soaring",
+      "why_selected": "高密度、多字段、几乎全为直接相关的财报型文本。"
+    },
+    {
+      "document_fingerprint": "563c3cac0c0861c5d7e00bb0ab59e3add982aab214f79632f5cf56683620b992",
+      "document_id": "D292",
+      "document_index_in_mu300": 292,
+      "event_families": [
+        "COMMERCIAL_OPERATION",
+        "GUIDANCE_EXPECTATION",
+        "PRODUCTION_SUPPLY",
+        "REGULATORY_LEGAL_POLICY"
+      ],
+      "indirect_path": "Hyperscaler 资本开支和竞争者 HBM 供给约束会改变 Micron 的需求、定价与市场份额。",
+      "mention_count": 9,
+      "mention_label_counts": {
+        "DIRECT": 7,
+        "INDIRECT_ECONOMIC": 2
+      },
+      "published_at": "2026-06-30T15:43:43Z",
+      "review_summary": "Micron 等被控价格合谋，并包含 Micron HBM 合同、产能与客户满足率。",
+      "selection_category": "mostly_high_or_very_high",
+      "source_name": "247wallst.com",
+      "source_row_id": "9c3573a4-4e04-4383-893d-ef28d4161d0f",
+      "text_chars": 4710,
+      "title": "Micron Hit With Price-Fixing Lawsuit: Real Collusion or Simple Supply and Demand?",
+      "why_selected": "诉讼、历史监管、合同与产能直接相关，夹有少量行业传导事实。"
+    },
+    {
+      "document_fingerprint": "0650f01cb461e3d61c6a783a3bcaf451e6e7a7cc3e55129272967b505af929c8",
+      "document_id": "D298",
+      "document_index_in_mu300": 298,
+      "event_families": [
+        "COMMERCIAL_OPERATION",
+        "PRODUCTION_SUPPLY",
+        "PRODUCT_SCIENCE",
+        "TRANSACTION_CAPITAL"
+      ],
+      "indirect_path": null,
+      "mention_count": 7,
+      "mention_label_counts": {
+        "DIRECT": 7
+      },
+      "published_at": "2026-07-01T12:30:00Z",
+      "review_summary": "Micron 与 General Motors 签长期供货及技术协作协议。",
+      "selection_category": "mostly_high_or_very_high",
+      "source_name": "finance.yahoo.com",
+      "source_row_id": "ba294361-f8ef-44b6-9a56-e7eafd46f6e3",
+      "text_chars": 3136,
+      "title": "Micron and General Motors Sign Strategic Agreement to Secure Supply and Accelerate Innovation",
+      "why_selected": "明确客户关系、产品供给、技术验证与本地制造投资。"
+    },
+    {
+      "document_fingerprint": "8738d5c1e685d064c42bcf06fd3bd099dea673ee65dc46131b32f9ea4838414c",
+      "document_id": "D021",
+      "document_index_in_mu300": 21,
+      "event_families": [
+        "FINANCIAL_PERFORMANCE",
+        "GOVERNANCE_PERSONNEL",
+        "GUIDANCE_EXPECTATION",
+        "MARKET_MOVEMENT",
+        "PRODUCT_SCIENCE",
+        "TRANSACTION_CAPITAL"
+      ],
+      "indirect_path": "AI 模型效率变化可能改变推理成本与用量，进而影响内存需求。",
+      "mention_count": 13,
+      "mention_label_counts": {
+        "DIRECT": 3,
+        "INDIRECT_ECONOMIC": 1,
+        "NONE": 9
+      },
+      "published_at": "2026-04-13T12:41:41Z",
+      "review_summary": "Micron 估值与盈利预期混合 SkyWater 并购、Photronics 财务等独立事件。",
+      "selection_category": "mixed_relevant_and_irrelevant",
+      "source_name": "247wallst.com",
+      "source_row_id": "aec4a429-9ed3-482b-bc8b-b904997e50f9",
+      "text_chars": 4161,
+      "title": "3 AI Semiconductor Stocks That Are Now Trading Below 20X Earnings",
+      "why_selected": "同一推荐文中同时存在目标公司事件、间接技术信号和无关公司事件。"
+    },
+    {
+      "document_fingerprint": "9bab7aa8d60edabcf28f273d4c7b7faff807547cbb81e3a17cff940daed1d57f",
+      "document_id": "D027",
+      "document_index_in_mu300": 27,
+      "event_families": [
+        "COMMERCIAL_OPERATION",
+        "FINANCIAL_PERFORMANCE",
+        "GOVERNANCE_PERSONNEL",
+        "GUIDANCE_EXPECTATION",
+        "INCIDENT_GEOPOLITICAL",
+        "MARKET_MOVEMENT",
+        "OTHER",
+        "PRODUCTION_SUPPLY",
+        "PRODUCT_SCIENCE",
+        "REGULATORY_LEGAL_POLICY"
+      ],
+      "indirect_path": null,
+      "mention_count": 22,
+      "mention_label_counts": {
+        "DIRECT": 2,
+        "NONE": 20
+      },
+      "published_at": "2026-05-06T08:24:45Z",
+      "review_summary": "Micron SSD 出货和股价事件混合 Iran、Disney、Spirit、Intel 等新闻。",
+      "selection_category": "mixed_relevant_and_irrelevant",
+      "source_name": "cnbc.com",
+      "source_row_id": "9dbd518f-dc22-46bb-9710-226f912241fd",
+      "text_chars": 5145,
+      "title": "Peace hopes, Disney earnings, dismantling Spirit Airlines and more in Morning Squawk",
+      "why_selected": "典型 Morning Squawk 杂糅文本，相关与无关事件边界清晰。"
+    },
+    {
+      "document_fingerprint": "24c4f9addaf2af57d13484bd5f13bd380a5946f92d462f2437cddb58035d2818",
+      "document_id": "D072",
+      "document_index_in_mu300": 72,
+      "event_families": [
+        "ANALYST_ACTION",
+        "FINANCIAL_PERFORMANCE",
+        "GUIDANCE_EXPECTATION",
+        "MARKET_MOVEMENT",
+        "PRODUCTION_SUPPLY",
+        "TRANSACTION_CAPITAL"
+      ],
+      "indirect_path": "AMD 数据中心 GPU 部署会形成互补的 HBM/DRAM 需求，从而影响 Micron 需求预期。",
+      "mention_count": 13,
+      "mention_label_counts": {
+        "DIRECT": 7,
+        "INDIRECT_ECONOMIC": 2,
+        "NONE": 4
+      },
+      "published_at": "2026-05-26T11:45:57Z",
+      "review_summary": "Micron 指引/评级/订单簿与 AMD 财务、估值、OpenAI GPU 协议并列。",
+      "selection_category": "mixed_relevant_and_irrelevant",
+      "source_name": "247wallst.com",
+      "source_row_id": "8841713d-52ff-4cae-998f-9508b3a193cf",
+      "text_chars": 2207,
+      "title": "Had You Put $1,000 in AMD or Micron 10 Years Ago, Here’s What You’d Have Today",
+      "why_selected": "目标公司直接事件与另一芯片公司的独立及互补需求事件混合。"
+    },
+    {
+      "document_fingerprint": "dcd20d5fffad98c4970f74f13a9a0aff46df74c5f4673b35cd852188ede72558",
+      "document_id": "D095",
+      "document_index_in_mu300": 95,
+      "event_families": [
+        "ANALYST_ACTION",
+        "COMMERCIAL_OPERATION",
+        "FINANCIAL_PERFORMANCE",
+        "GUIDANCE_EXPECTATION",
+        "MARKET_MOVEMENT"
+      ],
+      "indirect_path": "光互连订单与数据中心资本开支反映 AI 基建扩张，可能传导至服务器内存需求。",
+      "mention_count": 16,
+      "mention_label_counts": {
+        "DIRECT": 3,
+        "INDIRECT_ECONOMIC": 8,
+        "NONE": 5
+      },
+      "published_at": "2026-05-31T18:43:00Z",
+      "review_summary": "Micron 财报预期与股价混合 Ciena 财务、订单和光网络供需。",
+      "selection_category": "mixed_relevant_and_irrelevant",
+      "source_name": "fool.com",
+      "source_row_id": "8ec55933-baa6-4499-87f3-07c21ea4583f",
+      "text_chars": 5031,
+      "title": "This Is My Best Artificial Intelligence (AI) Stock to Buy in June (Hint: It's Not Micron Technology)",
+      "why_selected": "目标公司事件、AI 数据中心间接信号和 Ciena 独立证券事件共存。"
+    },
+    {
+      "document_fingerprint": "029d506d1cde1e60b0cecf40788faceb8b531806a534940557b4de621c430d50",
+      "document_id": "D111",
+      "document_index_in_mu300": 111,
+      "event_families": [
+        "COMMERCIAL_OPERATION",
+        "FINANCIAL_PERFORMANCE",
+        "GUIDANCE_EXPECTATION",
+        "MARKET_MOVEMENT"
+      ],
+      "indirect_path": null,
+      "mention_count": 16,
+      "mention_label_counts": {
+        "DIRECT": 1,
+        "NONE": 15
+      },
+      "published_at": "2026-06-03T16:31:00Z",
+      "review_summary": "Netflix 广告、订阅、财务与估值长文中仅夹有 Micron 股价涨幅。",
+      "selection_category": "mixed_relevant_and_irrelevant",
+      "source_name": "fool.com",
+      "source_row_id": "2730dee0-69cb-4fe4-8806-aa10b6460d88",
+      "text_chars": 4566,
+      "title": "Amid the Artificial Intelligence (AI) Bonanza, Investors Might be Overlooking a Big Opportunity to Buy Netflix Stock",
+      "why_selected": "一个直接目标证券事件被大量跨行业事件包围。"
+    },
+    {
+      "document_fingerprint": "c0d4f7df07aa5fdbf7bc7733d982779efbb33d9c00a3432f73547bd65cacb310",
+      "document_id": "D147",
+      "document_index_in_mu300": 147,
+      "event_families": [
+        "ANALYST_ACTION",
+        "FINANCIAL_PERFORMANCE",
+        "GUIDANCE_EXPECTATION",
+        "MARKET_MOVEMENT",
+        "TRANSACTION_CAPITAL"
+      ],
+      "indirect_path": null,
+      "mention_count": 21,
+      "mention_label_counts": {
+        "DIRECT": 1,
+        "NONE": 20
+      },
+      "published_at": "2026-06-10T07:56:15Z",
+      "review_summary": "Micron 盘前下跌混合餐饮、服饰、宠物零售、黄金与融资事件。",
+      "selection_category": "mixed_relevant_and_irrelevant",
+      "source_name": "cnbc.com",
+      "source_row_id": "f24a2b5e-823a-4313-ad22-bfc820aee31d",
+      "text_chars": 2023,
+      "title": "Stocks making the biggest moves premarket: Super Micro Computer, Cracker Barrel, Nike  and more",
+      "why_selected": "短篇行情清单包含单一直接相关事件和多行业无关事件。"
+    },
+    {
+      "document_fingerprint": "1abe588f389c4f88e5dd639211f0869847aba126b5e89bade392f31e24285ea6",
+      "document_id": "D165",
+      "document_index_in_mu300": 165,
+      "event_families": [
+        "ANALYST_ACTION",
+        "INCIDENT_GEOPOLITICAL",
+        "MARKET_MOVEMENT",
+        "REGULATORY_LEGAL_POLICY",
+        "TRANSACTION_CAPITAL"
+      ],
+      "indirect_path": null,
+      "mention_count": 22,
+      "mention_label_counts": {
+        "DIRECT": 2,
+        "NONE": 20
+      },
+      "published_at": "2026-06-15T07:28:56Z",
+      "review_summary": "Micron 目标价与股价混合 SpaceX、油价、航空、媒体并购等事件。",
+      "selection_category": "mixed_relevant_and_irrelevant",
+      "source_name": "cnbc.com",
+      "source_row_id": "df6ee8e3-7060-4843-893c-291db436aac9",
+      "text_chars": 2430,
+      "title": "Stocks making the biggest moves premarket: SpaceX, United Airlines, Roku & more",
+      "why_selected": "多资产盘前清单，直接相关 mention 占少数。"
+    },
+    {
+      "document_fingerprint": "bda7b54d5eee67e994cd97ebc26fdbc55a7990a0608e0f9b96cdb03afa772087",
+      "document_id": "D167",
+      "document_index_in_mu300": 167,
+      "event_families": [
+        "FINANCIAL_PERFORMANCE",
+        "GUIDANCE_EXPECTATION",
+        "MARKET_MOVEMENT",
+        "TRANSACTION_CAPITAL"
+      ],
+      "indirect_path": null,
+      "mention_count": 15,
+      "mention_label_counts": {
+        "DIRECT": 4,
+        "NONE": 11
+      },
+      "published_at": "2026-06-15T22:10:42Z",
+      "review_summary": "Micron 毛利率、CapEx 与股价混合 Oracle 云业务、融资及分红。",
+      "selection_category": "mixed_relevant_and_irrelevant",
+      "source_name": "247wallst.com",
+      "source_row_id": "de6899c5-754f-4818-b8d3-10ecdb3ae2e7",
+      "text_chars": 3246,
+      "title": "Forget Micron: 1 Record-Breaking Cloud Powerhouse to Buy Hand Over Fist After the Pullback",
+      "why_selected": "两家公司基本面事件交错，适合测试比较型文章的事件级过滤。"
+    },
+    {
+      "document_fingerprint": "29823dd88f1bb91671d4ee75b013e5012544917cf0f922d133d127e1749be269",
+      "document_id": "D220",
+      "document_index_in_mu300": 220,
+      "event_families": [
+        "COMMERCIAL_OPERATION",
+        "FINANCIAL_PERFORMANCE",
+        "GOVERNANCE_PERSONNEL",
+        "GUIDANCE_EXPECTATION",
+        "INCIDENT_GEOPOLITICAL",
+        "MARKET_MOVEMENT",
+        "OTHER",
+        "REGULATORY_LEGAL_POLICY"
+      ],
+      "indirect_path": null,
+      "mention_count": 16,
+      "mention_label_counts": {
+        "DIRECT": 1,
+        "NONE": 15
+      },
+      "published_at": "2026-06-24T08:37:22Z",
+      "review_summary": "Micron 财报日信息混合芯片抛售、Iran、Fed、Cerebras 与 PGA。",
+      "selection_category": "mixed_relevant_and_irrelevant",
+      "source_name": "cnbc.com",
+      "source_row_id": "c758224f-847f-4375-8e6f-e70e2f9fcc1d",
+      "text_chars": 5259,
+      "title": "The global chip rout, Cerebras earnings, the PGA Tour's next chapter and more in Morning Squawk",
+      "why_selected": "宏观、政治、体育和公司事件同时出现的高异质 newsletter。"
+    },
+    {
+      "document_fingerprint": "19a1e272b9e35dd6feae804d8b2932917dfb8777adf4b5317470b46863f19294",
+      "document_id": "D223",
+      "document_index_in_mu300": 223,
+      "event_families": [
+        "COMMERCIAL_OPERATION",
+        "FINANCIAL_PERFORMANCE",
+        "GUIDANCE_EXPECTATION",
+        "MARKET_MOVEMENT",
+        "OTHER",
+        "REGULATORY_LEGAL_POLICY"
+      ],
+      "indirect_path": null,
+      "mention_count": 13,
+      "mention_label_counts": {
+        "DIRECT": 4,
+        "NONE": 9
+      },
+      "published_at": "2026-06-24T14:30:00Z",
+      "review_summary": "Micron 财报预期与证券表现混合住房立法、销售数据和房企财报。",
+      "selection_category": "mixed_relevant_and_irrelevant",
+      "source_name": "finance.yahoo.com",
+      "source_row_id": "e5b4a038-a3ec-4d75-8a7b-f815f7d2be27",
+      "text_chars": 3059,
+      "title": "Micron Reports After the Close, Home Sales After the Open",
+      "why_selected": "目标公司财报事件与完全不同的房地产主题并置。"
+    },
+    {
+      "document_fingerprint": "d4be497cbcc6f1bf7ee355a20a46755050aa1de099087a4d2117d69b06621143",
+      "document_id": "D001",
+      "document_index_in_mu300": 1,
+      "event_families": [
+        "ANALYST_ACTION",
+        "GUIDANCE_EXPECTATION",
+        "MARKET_MOVEMENT",
+        "OTHER",
+        "PRODUCT_SCIENCE",
+        "TRANSACTION_CAPITAL"
+      ],
+      "indirect_path": "内存压缩改变单位推理内存需求、内存价格与 AI 用量，进而改变 Micron 产品需求。",
+      "mention_count": 15,
+      "mention_label_counts": {
+        "DIRECT": 7,
+        "INDIRECT_ECONOMIC": 5,
+        "NONE": 3
+      },
+      "published_at": "2026-04-04T06:25:00Z",
+      "review_summary": "Google TurboQuant 降低内存用量，但也可能通过 Jevons 效应扩大 AI/内存需求。",
+      "selection_category": "hard_indirect_relevance",
+      "source_name": "fool.com",
+      "source_row_id": "2c299dfb-45bd-4e94-a940-8f4ec6309119",
+      "text_chars": 4479,
+      "title": "What Is the Jevons Paradox and What Does It Mean for Micron and Sandisk Investors After Google's Revolutionary AI Breakthrough?",
+      "why_selected": "技术替代与需求弹性的方向相反，属于高难间接相关。"
+    },
+    {
+      "document_fingerprint": "cf710047155c0f92f9a05dba55cbc8ff662db21d67ebb1cd05b6e23e8de5c179",
+      "document_id": "D025",
+      "document_index_in_mu300": 25,
+      "event_families": [
+        "COMMERCIAL_OPERATION",
+        "FINANCIAL_PERFORMANCE",
+        "GUIDANCE_EXPECTATION",
+        "MARKET_MOVEMENT",
+        "PRODUCT_SCIENCE"
+      ],
+      "indirect_path": "AI 加速器和机架部署量增加会提高配套 HBM/DRAM 消耗，影响 Micron 需求。",
+      "mention_count": 16,
+      "mention_label_counts": {
+        "DIRECT": 1,
+        "INDIRECT_ECONOMIC": 8,
+        "NONE": 7
+      },
+      "published_at": "2026-05-05T16:19:59Z",
+      "review_summary": "AMD 数据中心增长、Helios 出货及 OpenAI/Meta 部署映射到互补内存需求。",
+      "selection_category": "hard_indirect_relevance",
+      "source_name": "cnbc.com",
+      "source_row_id": "581e6e23-2036-4ac7-930d-67755265bfb5",
+      "text_chars": 3809,
+      "title": "AMD's stock soars 16% as data center growth pushes revenue and guidance past estimates",
+      "why_selected": "事件主体是 AMD，但 GPU/机架部署对 HBM/DRAM 有具体需求传导。"
+    },
+    {
+      "document_fingerprint": "bbcd9ea6b2133449b206342fe83c66dc62c5787bf8e81154d8940d3a0142fe4d",
+      "document_id": "D045",
+      "document_index_in_mu300": 45,
+      "event_families": [
+        "ANALYST_ACTION",
+        "FINANCIAL_PERFORMANCE",
+        "GUIDANCE_EXPECTATION",
+        "MARKET_MOVEMENT"
+      ],
+      "indirect_path": "服务器厂商内存成本和毛利变化反映内存定价与需求承受力，影响 Micron 价格/销量判断。",
+      "mention_count": 10,
+      "mention_label_counts": {
+        "DIRECT": 1,
+        "INDIRECT_ECONOMIC": 2,
+        "NONE": 7
+      },
+      "published_at": "2026-05-15T16:00:45Z",
+      "review_summary": "HPE/Dell 评级上调被归因于内存成本压力缓解，反向映射内存价格周期。",
+      "selection_category": "hard_indirect_relevance",
+      "source_name": "247wallst.com",
+      "source_row_id": "fac88ce0-2a17-4c11-913a-cd58af53e520",
+      "text_chars": 3137,
+      "title": "JPMorgan Just Hiked Hewlett Packard Enterprise Price Target to $37: Memory Reversal Powers IT Hardware Rally",
+      "why_selected": "下游客户利润与上游 Micron 定价/需求之间存在方向可能相反的传导。"
+    },
+    {
+      "document_fingerprint": "f6d06d21faccbcebfdd6c884fba84db8b7cd20bc27a99d4b2631e0c26658362f",
+      "document_id": "D061",
+      "document_index_in_mu300": 61,
+      "event_families": [
+        "COMMERCIAL_OPERATION",
+        "FINANCIAL_PERFORMANCE",
+        "MARKET_MOVEMENT",
+        "PRODUCTION_SUPPLY",
+        "PRODUCT_SCIENCE",
+        "TRANSACTION_CAPITAL"
+      ],
+      "indirect_path": "Kioxia/SK Hynix 的技术、产能、成本与融资能力会改变 NAND/HBM 竞争、供给和 Micron 市占率。",
+      "mention_count": 20,
+      "mention_label_counts": {
+        "DIRECT": 1,
+        "INDIRECT_ECONOMIC": 17,
+        "NONE": 2
+      },
+      "published_at": "2026-05-22T13:00:02Z",
+      "review_summary": "Kioxia 的上市准备、产品、产能、财务与供货安排构成 NAND 竞争信号。",
+      "selection_category": "hard_indirect_relevance",
+      "source_name": "barchart.com",
+      "source_row_id": "7fd97d2f-64b5-445e-be58-41ea59524a4a",
+      "text_chars": 7900,
+      "title": "Memory Chip Maker Kioxia Is Preparing to Debut in the U.S. Kioxia Stock Could Offer a Cheaper, Better Play for Investors.",
+      "why_selected": "竞争者事件是否足以更新 Micron 份额、价格或投资判断，需要逐事件判断。"
+    },
+    {
+      "document_fingerprint": "7780da1bdd6e812b6e8a175358431c65a328e53c8da8d244cb89bb8800843b2f",
+      "document_id": "D097",
+      "document_index_in_mu300": 97,
+      "event_families": [
+        "ANALYST_ACTION",
+        "GUIDANCE_EXPECTATION"
+      ],
+      "indirect_path": "DRAM/NAND/HBM 的短缺、价格和容量直接作用于 Micron 的销量、ASP 与毛利率。",
+      "mention_count": 14,
+      "mention_label_counts": {
+        "INDIRECT_ECONOMIC": 10,
+        "NONE": 4
+      },
+      "published_at": "2026-06-01T10:15:57Z",
+      "review_summary": "Goldman 对 DRAM/NAND/HBM 供需、价格与市场规模的预测未直接点名 Micron。",
+      "selection_category": "hard_indirect_relevance",
+      "source_name": "benzinga.com",
+      "source_row_id": "cf629404-da25-4202-94ce-b82ee1b44c86",
+      "text_chars": 4508,
+      "title": "AI's Memory Shortage Runs Into 2028 — Goldman Stays Bullish On SanDisk, Samsung, SK Hynix",
+      "why_selected": "行业事件必须通过 Micron 的产品暴露映射到收入、价格和利润率。"
+    },
+    {
+      "document_fingerprint": "11db963dbceab97994245346ddc76b767da6fbca581e4039bd4e03b7046c094d",
+      "document_id": "D102",
+      "document_index_in_mu300": 102,
+      "event_families": [
+        "COMMERCIAL_OPERATION",
+        "MARKET_MOVEMENT",
+        "PRODUCTION_SUPPLY",
+        "PRODUCT_SCIENCE"
+      ],
+      "indirect_path": "高内存配置 AI PC 的采用量会改变客户端内存需求和共享制造资源的紧张程度。",
+      "mention_count": 7,
+      "mention_label_counts": {
+        "DIRECT": 1,
+        "INDIRECT_ECONOMIC": 6
+      },
+      "published_at": "2026-06-02T11:08:56Z",
+      "review_summary": "Nvidia/Microsoft RTX Spark 推动本地 AI PC，同时可能争夺紧缺内存产能。",
+      "selection_category": "hard_indirect_relevance",
+      "source_name": "247wallst.com",
+      "source_row_id": "5104ba17-1424-486c-8a2d-f5745acc617c",
+      "text_chars": 5075,
+      "title": "Jensen Huang Says Nvidia and Microsoft Just Reinvented the PC. But There Might Be 1 Problem",
+      "why_selected": "终端新品既可能创造客户需求，也可能因价格抑制采用，方向并不简单。"
+    },
+    {
+      "document_fingerprint": "3472cb362034dc9b0e243e446e4a5ecb36964c5d6d7e4d964983bc36ff8ef685",
+      "document_id": "D138",
+      "document_index_in_mu300": 138,
+      "event_families": [
+        "FINANCIAL_PERFORMANCE",
+        "GUIDANCE_EXPECTATION",
+        "MARKET_MOVEMENT",
+        "OTHER",
+        "PRODUCTION_SUPPLY"
+      ],
+      "indirect_path": "Hyperscaler 预算和 AI 基建订单决定服务器部署，进而影响 Micron HBM/数据中心内存订单。",
+      "mention_count": 8,
+      "mention_label_counts": {
+        "DIRECT": 2,
+        "INDIRECT_ECONOMIC": 3,
+        "NONE": 3
+      },
+      "published_at": "2026-06-09T09:11:17Z",
+      "review_summary": "Hyperscaler CapEx、Oracle RPO 与 AI 芯片利润率被用作 AI 基建需求信号。",
+      "selection_category": "hard_indirect_relevance",
+      "source_name": "247wallst.com",
+      "source_row_id": "bea8d68c-3336-4138-b40e-b58d92fe50e8",
+      "text_chars": 3631,
+      "title": "The One Hyperscaler Signal That Will Make or Break ARTY in 2026",
+      "why_selected": "需区分可传导的客户预算信号与仅为 ETF/宏观背景的信息。"
+    },
+    {
+      "document_fingerprint": "4fcda84484b7533bfd286711eb4a8b17d96e44b92ad249954118b2b460a5adaf",
+      "document_id": "D180",
+      "document_index_in_mu300": 180,
+      "event_families": [
+        "COMMERCIAL_OPERATION",
+        "FINANCIAL_PERFORMANCE",
+        "MARKET_MOVEMENT"
+      ],
+      "indirect_path": "SK Hynix 的 HBM 产品、Nvidia 供应关系和盈利能力会改变 Micron 的客户份额与定价空间。",
+      "mention_count": 5,
+      "mention_label_counts": {
+        "INDIRECT_ECONOMIC": 4,
+        "NONE": 1
+      },
+      "published_at": "2026-06-18T00:36:51Z",
+      "review_summary": "SK Hynix 向客户送样 HBM4E，并披露 Nvidia 主供关系和财务表现。",
+      "selection_category": "hard_indirect_relevance",
+      "source_name": "benzinga.com",
+      "source_row_id": "7bbaf4a4-01df-4d72-82c6-571e4e690dd0",
+      "text_chars": 1959,
+      "title": "Nvidia Supplier SK Hynix Ships Next-Generation HBM Memory Samples To Major Customers",
+      "why_selected": "直接竞争者的产品资格和核心客户份额会影响 Micron 竞争地位。"
+    },
+    {
+      "document_fingerprint": "8ccb9a33faa367ce41eb649c8b04e27fe23abf3905e5c3c47cf4b83ee6107aab",
+      "document_id": "D190",
+      "document_index_in_mu300": 190,
+      "event_families": [
+        "COMMERCIAL_OPERATION",
+        "GUIDANCE_EXPECTATION",
+        "MARKET_MOVEMENT",
+        "OTHER",
+        "PRODUCTION_SUPPLY",
+        "TRANSACTION_CAPITAL"
+      ],
+      "indirect_path": "竞争者扩产/份额与 PC、手机、HBM 需求共同改变 Micron 的供需平衡、ASP 和市场份额。",
+      "mention_count": 15,
+      "mention_label_counts": {
+        "DIRECT": 3,
+        "INDIRECT_ECONOMIC": 12
+      },
+      "published_at": "2026-06-19T12:43:00Z",
+      "review_summary": "SK Hynix 扩产、市场份额及终端销量预测同时影响 Micron 的供需与竞争。",
+      "selection_category": "hard_indirect_relevance",
+      "source_name": "fool.com",
+      "source_row_id": "553e436e-9932-48fe-aef5-13ba6d2e0b0a",
+      "text_chars": 5166,
+      "title": "SK Hynix Has a Major Warning for Micron Technology Stock Investors",
+      "why_selected": "竞争供给增加与行业需求增长方向相反，具有真实判定难度。"
+    },
+    {
+      "document_fingerprint": "7c3d76264760160f524e531d9db61e770eead83c2ff2093cd883b3c48b5587b5",
+      "document_id": "D293",
+      "document_index_in_mu300": 293,
+      "event_families": [
+        "COMMERCIAL_OPERATION",
+        "MARKET_MOVEMENT",
+        "OTHER",
+        "PRODUCTION_SUPPLY"
+      ],
+      "indirect_path": "Apple 的内存成本、提价和终端需求会反馈到其采购量及 Micron 的价格/销量。",
+      "mention_count": 5,
+      "mention_label_counts": {
+        "INDIRECT_ECONOMIC": 3,
+        "NONE": 2
+      },
+      "published_at": "2026-06-30T17:20:00Z",
+      "review_summary": "Apple 因内存短缺提价，可能带来供应商定价收益，也可能造成终端需求破坏。",
+      "selection_category": "hard_indirect_relevance",
+      "source_name": "fool.com",
+      "source_row_id": "a3015874-2bcb-4f58-9b2b-d0aec9b64409",
+      "text_chars": 2683,
+      "title": "Apple Is Raising Prices Due to Higher Memory Costs. Is the Stock in Trouble?",
+      "why_selected": "明确客户成本和需求弹性路径，影响方向具有不确定性。"
+    }
+  ],
+  "provenance": {
+    "mentions_database": {
+      "path": "D:\\DoxAgent_CDECR_Stress_20260804_MU300_R1\\pre_n13_frozen.sqlite3",
+      "read_mode": "SQLite read-only",
+      "sha256": "e58f2e8c6a20c029767a62126184aa799b78da64daa2f0279da8a45e9c8ce579",
+      "tables": [
+        "document_processing_runs",
+        "document_run_mentions",
+        "event_mentions"
+      ]
+    },
+    "snapshot": {
+      "path": "D:\\DoxAgent_CDECR_Stress_20260804_MU300_R1\\mu_300_snapshot.jsonl",
+      "row_count": 300,
+      "sha256": "ff4ccbd3f71123e70ccf95f0c74c0920f036db440a3c186333820a746c7c2f48"
+    },
+    "source_manifest": {
+      "path": "D:\\DoxAgent_CDECR_Stress_20260804_MU300_R1\\mu_300_manifest.json",
+      "sha256": "b34f1e2be4a35ef0342dea9158a29f12f4844bb1b393da5758023f4961febecd"
+    },
+    "source_root": "D:\\DoxAgent_CDECR_Stress_20260804_MU300_R1"
+  },
+  "quality_gates": {
+    "category_split_5_5_10_10": "PASS",
+    "high_group_at_least_80pct_relevant_per_document": "PASS",
+    "indirect_group_has_indirect_relevance_per_document": "PASS",
+    "low_group_zero_relevant_per_document": "PASS",
+    "mention_evidence_exact_match": "PASS",
+    "mixed_group_has_relevant_and_irrelevant_per_document": "PASS",
+    "unique_source_row_fingerprint_and_title": "PASS"
+  },
+  "relevance_rule": {
+    "article_level_label_is_not_gold": true,
+    "relevant_if": [
+      "DIRECT",
+      "INDIRECT_ECONOMIC"
+    ],
+    "unit": "event mention and its evidence sentence/paragraph"
+  },
+  "scope": "Frozen source articles plus production EventMention results only; no Atomic/EventPackage normalized results.",
+  "target": {
+    "company": "Micron Technology",
+    "market": "US",
+    "ticker": "MU"
+  }
+}

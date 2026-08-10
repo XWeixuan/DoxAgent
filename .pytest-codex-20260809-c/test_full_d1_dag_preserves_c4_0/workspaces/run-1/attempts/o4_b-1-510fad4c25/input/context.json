@@ -1,0 +1,12 @@
+{
+  "schema_version": "codex-d1-node-context-v1",
+  "run_id": "run-1",
+  "node": "o4_b",
+  "payload": {
+    "ticker": "NVDA",
+    "company_name": null,
+    "research_brief": "test",
+    "base_context": {},
+    "horizontal_context": "{\n  \"schema_version\": \"d1-horizontal-context-v1\",\n  \"state_values\": [],\n  \"target_status\": [],\n  \"instructions\": \"Use promoted state_values as governed measurements. EMPTY, FAILED, and UNAVAILABLE targets are explicit unknowns and must not be replaced by zero.\"\n}"
+  }
+}

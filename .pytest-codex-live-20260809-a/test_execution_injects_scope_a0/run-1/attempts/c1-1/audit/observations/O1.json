@@ -1,0 +1,39 @@
+{
+  "schema_version": "attempt_observation/1.0",
+  "run_id": "run-1",
+  "attempt_id": "c1-1",
+  "alias": "O1",
+  "block_id": "oblk_20c48929dfa334ec75a8",
+  "tool_call_id": "call_4aec63e492564cde99041a80c0a29f7a",
+  "tool_name": "test.lookup",
+  "title": "rows 1-1",
+  "locator": "/rows/0-0",
+  "block_type": "time_series",
+  "content": {
+    "columns": [
+      "date",
+      "value"
+    ],
+    "rows": [
+      {
+        "date": "2026-08-08",
+        "value": 42
+      }
+    ]
+  },
+  "content_hash": "70c6554ea45b86daee4b30d5601e844527c8b16efe76f81d0ea74e345e7cbb9e",
+  "source_locator": "/rows/0-0",
+  "source_coordinates": null,
+  "provider": "Test provider",
+  "method_version": "test.lookup/1.0",
+  "metadata": {
+    "profile_envelope": {
+      "output_profile": "json",
+      "source_url": "https://example.test/data?api_key=[REDACTED]"
+    },
+    "removed_paths": [
+      "/source_url"
+    ]
+  },
+  "created_at": "2026-08-09T10:34:17.119760Z"
+}

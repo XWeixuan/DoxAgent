@@ -1,0 +1,26 @@
+{
+  "status": "completed",
+  "summary": "c4_finalization",
+  "report_markdown": "### c4_finalization\ncompleted",
+  "warnings": [],
+  "observation_candidates": [],
+  "entity_relations": [
+    {
+      "关系主体": "NVDA",
+      "关系对象": "TSMC",
+      "关系类型": "晶圆代工合作",
+      "关系说明": "先进制程供应关系",
+      "关联业务或产品": "GPU"
+    }
+  ],
+  "future_nodes": [
+    {
+      "时间": "2026-Q4",
+      "未来事项": "新产品发布",
+      "与目标公司的关系": "可能影响收入节奏",
+      "来源": "company",
+      "来源发布日期": "2026-07-01"
+    }
+  ],
+  "metadata": {}
+}

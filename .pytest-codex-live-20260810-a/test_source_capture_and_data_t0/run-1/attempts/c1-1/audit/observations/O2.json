@@ -1,0 +1,37 @@
+{
+  "schema_version": "attempt_observation/1.0",
+  "run_id": "run-1",
+  "attempt_id": "c1-1",
+  "alias": "O2",
+  "block_id": "oblk_4e84d4d32b75162157e7",
+  "tool_call_id": "capture-1",
+  "tool_name": "source_capture",
+  "title": "text",
+  "locator": "/text",
+  "block_type": "text",
+  "content": "Useful captured paragraph.",
+  "content_hash": "ccb24ac9547f256d1cd5a82cc5b72121e2434a332bd571f8e4eb5d9e9383f19c",
+  "source_locator": "https://example.test/source",
+  "source_coordinates": {
+    "url": "https://example.test/source",
+    "source_id": "capture-1"
+  },
+  "provider": "Example",
+  "method_version": "source_capture/1.0",
+  "metadata": {
+    "profile_envelope": {
+      "output_profile": "text",
+      "url": "https://example.test/source",
+      "title": "Captured source",
+      "source": "Example"
+    },
+    "removed_paths": [
+      "/url",
+      "/title",
+      "/source",
+      "/note",
+      "/source_coordinates"
+    ]
+  },
+  "created_at": "2026-08-09T17:50:24.254739Z"
+}

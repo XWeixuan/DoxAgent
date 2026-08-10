@@ -1,0 +1,81 @@
+{
+  "schema_version": "codex-d1-node-context-v1",
+  "run_id": "run-1",
+  "node": "o4_a",
+  "payload": {
+    "ticker": "NVDA",
+    "company_name": null,
+    "research_brief": "test",
+    "base_context": {},
+    "o4_b": {
+      "status": "completed",
+      "summary": "o4_b",
+      "report_markdown": "### o4_b\ncompleted",
+      "warnings": [],
+      "observation_candidates": [],
+      "entity_relations": [],
+      "future_nodes": [],
+      "metadata": {}
+    },
+    "c1": {
+      "status": "completed",
+      "summary": "c1",
+      "report_markdown": "### c1\ncompleted",
+      "warnings": [],
+      "observation_candidates": [
+        {
+          "metric_key": "customer_count",
+          "value": 10,
+          "unit": "count",
+          "as_of": "2026-06-30",
+          "source_aliases": [],
+          "method": "agent_research",
+          "confidence": "medium"
+        }
+      ],
+      "entity_relations": [],
+      "future_nodes": [],
+      "metadata": {}
+    },
+    "c2": {
+      "status": "completed",
+      "summary": "c2",
+      "report_markdown": "### c2\ncompleted",
+      "warnings": [],
+      "observation_candidates": [],
+      "entity_relations": [],
+      "future_nodes": [],
+      "metadata": {}
+    },
+    "c3": {
+      "status": "completed",
+      "summary": "c3",
+      "report_markdown": "### c3\ncompleted",
+      "warnings": [],
+      "observation_candidates": [],
+      "entity_relations": [],
+      "future_nodes": [],
+      "metadata": {}
+    },
+    "known_future_nodes": [
+      {
+        "时间": "2026-Q4",
+        "未来事项": "新产品发布",
+        "与目标公司的关系": "可能影响收入节奏",
+        "来源": "company",
+        "来源发布日期": "2026-07-01"
+      }
+    ],
+    "agent_observations": [
+      {
+        "metric_key": "customer_count",
+        "value": 10,
+        "unit": "count",
+        "as_of": "2026-06-30",
+        "source_aliases": [],
+        "method": "agent_research",
+        "confidence": "medium"
+      }
+    ]
+  }
+}

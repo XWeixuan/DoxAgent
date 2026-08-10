@@ -1,0 +1,93 @@
+{
+  "manifest": {
+    "artifact_kind": "horizontal_collection_manifest",
+    "schema_version": "1.0",
+    "run_id": "run-1",
+    "ticker": "NVDA",
+    "metric_registry_version": "d1-horizontal-metrics-v1",
+    "target_registry_version": "d1-horizontal-targets-v1",
+    "created_at": "2026-08-08T21:31:45.411827Z",
+    "target_results": [
+      {
+        "collection_target_id": "c1_revenue",
+        "status": "FILLED",
+        "requested_items": 1,
+        "succeeded_items": 1,
+        "unavailable_items": 0,
+        "failed_items": 0,
+        "provider_attempts": [
+          {
+            "provider": "test",
+            "tool_name": "test.value",
+            "status": "FILLED",
+            "started_at": "2026-08-08T21:31:45.410829Z",
+            "finished_at": "2026-08-08T21:31:45.410829Z",
+            "error_code": null,
+            "message": null
+          }
+        ],
+        "output_refs": [
+          {
+            "object_type": "METRIC",
+            "provider_specific_id": null,
+            "source_locator": "https://example.com/filing",
+            "canonical_object_id_candidate": "c1_revenue:2026-06-30T00:00:00+00:00",
+            "resolver_status": "CANDIDATE"
+          }
+        ],
+        "reason": null
+      }
+    ]
+  },
+  "observations": [
+    {
+      "collection_target_id": "c1_revenue",
+      "item_key": "fin_revenue",
+      "value": 100,
+      "as_of": "2026-06-30T00:00:00Z",
+      "source_refs": [
+        {
+          "object_type": "METRIC",
+          "provider_specific_id": null,
+          "source_locator": "https://example.com/filing",
+          "canonical_object_id_candidate": "c1_revenue:2026-06-30T00:00:00+00:00",
+          "resolver_status": "CANDIDATE"
+        }
+      ],
+      "unit": "USD",
+      "published_at": null,
+      "retrieved_at": "2026-08-08T21:31:45.410829Z",
+      "quality_flags": [
+        "program_collected"
+      ],
+      "method_id": null,
+      "method_version": null,
+      "input_refs": []
+    }
+  ],
+  "state_values": [
+    {
+      "parameter_id": "param_nvda_fin_revenue",
+      "entity_id": "NVDA",
+      "metric_id": "fin_revenue",
+      "source_role": "ACTUAL",
+      "time_scope": "LATEST_REPORTED_QUARTER",
+      "value": 100,
+      "unit": "USD",
+      "as_of": "2026-06-30T00:00:00Z",
+      "source_refs": [
+        {
+          "object_type": "METRIC",
+          "provider_specific_id": null,
+          "source_locator": "https://example.com/filing",
+          "canonical_object_id_candidate": "c1_revenue:2026-06-30T00:00:00+00:00",
+          "resolver_status": "CANDIDATE"
+        }
+      ],
+      "collection_target_id": "c1_revenue",
+      "quality_flags": [
+        "program_collected"
+      ]
+    }
+  ]
+}

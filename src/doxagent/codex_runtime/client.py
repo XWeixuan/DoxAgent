@@ -1,0 +1,162 @@
+"""Async internal client used by the orchestrator to reach codex-worker."""
+
+from __future__ import annotations
+
+import asyncio
+from typing import Any, Protocol
+
+import httpx
+
+from doxagent.codex_runtime.capabilities import CapabilityTokenCodec
+from doxagent.codex_runtime.errors import WorkerUnavailable
+from doxagent.codex_worker.schema import (
+    WorkerJob,
+    WorkerRunRequest,
+    WorkspaceFileResponse,
+    WorkspaceInventory,
+)
+from doxagent.observations.models import PersistedObservation
+
+
+class CodexWorkerClient(Protocol):
+    async def run(self, request: WorkerRunRequest) -> WorkerJob: ...
+    async def cancel(self, job_id: str) -> WorkerJob | None: ...
+
+
+class WorkspaceClient(Protocol):
+    async def write_text(
+        self, run_id: str, relative_path: str, content: str
+    ) -> WorkspaceFileResponse: ...
+    async def read_text(self, run_id: str, relative_path: str) -> WorkspaceFileResponse: ...
+    async def inventory(self, run_id: str) -> WorkspaceInventory: ...
+    async def read_attempt_observations(
+        self, run_id: str, attempt_id: str
+    ) -> list[PersistedObservation]: ...
+    async def publish(self, run_id: str, paths: list[str]) -> WorkspaceInventory: ...
+
+
+class HttpCodexWorkerClient:
+    def __init__(
+        self,
+        base_url: str,
+        bearer_token: str,
+        *,
+        capability_secret: str | None = None,
+        poll_seconds: float = 0.5,
+    ) -> None:
+        self._client = httpx.AsyncClient(
+            base_url=base_url,
+            headers={"Authorization": f"Bearer {bearer_token}"},
+            timeout=httpx.Timeout(30, read=60),
+        )
+        self._capabilities = CapabilityTokenCodec(capability_secret) if capability_secret else None
+        self._poll_seconds = poll_seconds
+
+    async def run(self, request: WorkerRunRequest) -> WorkerJob:
+        job: WorkerJob | None = None
+        try:
+            response = await self._client.post("/v1/jobs", json=request.model_dump(mode="json"))
+            response.raise_for_status()
+            job = WorkerJob.model_validate(response.json())
+            while job.status in {"queued", "running"}:
+                await asyncio.sleep(self._poll_seconds)
+                response = await self._client.get(f"/v1/jobs/{job.job_id}")
+                response.raise_for_status()
+                job = WorkerJob.model_validate(response.json())
+            return job
+        except asyncio.CancelledError:
+            if job is not None:
+                await asyncio.shield(self.cancel(job.job_id))
+            raise
+        except httpx.HTTPError as exc:
+            raise WorkerUnavailable(str(exc)) from exc
+
+    async def cancel(self, job_id: str) -> WorkerJob | None:
+        try:
+            response = await self._client.delete(f"/v1/jobs/{job_id}")
+            if response.status_code == 404:
+                return None
+            response.raise_for_status()
+            return WorkerJob.model_validate(response.json())
+        except httpx.HTTPError as exc:
+            raise WorkerUnavailable(str(exc)) from exc
+
+    async def write_text(
+        self,
+        run_id: str,
+        relative_path: str,
+        content: str,
+    ) -> WorkspaceFileResponse:
+        response = await self._request(
+            "PUT",
+            f"/v1/workspaces/{run_id}/files/{relative_path}",
+            run_id=run_id,
+            operation="write",
+            json={"content": content},
+        )
+        return WorkspaceFileResponse.model_validate(response.json())
+
+    async def read_text(self, run_id: str, relative_path: str) -> WorkspaceFileResponse:
+        response = await self._request(
+            "GET",
+            f"/v1/workspaces/{run_id}/files/{relative_path}",
+            run_id=run_id,
+            operation="read",
+        )
+        return WorkspaceFileResponse.model_validate(response.json())
+
+    async def inventory(self, run_id: str) -> WorkspaceInventory:
+        response = await self._request(
+            "GET", f"/v1/workspaces/{run_id}", run_id=run_id, operation="inventory"
+        )
+        return WorkspaceInventory.model_validate(response.json())
+
+    async def read_attempt_observations(
+        self,
+        run_id: str,
+        attempt_id: str,
+    ) -> list[PersistedObservation]:
+        response = await self._request(
+            "GET",
+            f"/v1/workspaces/{run_id}/attempts/{attempt_id}/observations",
+            run_id=run_id,
+            operation="read_observations",
+        )
+        return [PersistedObservation.model_validate(item) for item in response.json()]
+
+    async def publish(self, run_id: str, paths: list[str]) -> WorkspaceInventory:
+        response = await self._request(
+            "POST",
+            f"/v1/workspaces/{run_id}/publish",
+            run_id=run_id,
+            operation="publish",
+            json=paths,
+        )
+        return WorkspaceInventory.model_validate(response.json())
+
+    async def _request(
+        self,
+        method: str,
+        path: str,
+        *,
+        run_id: str,
+        operation: str,
+        **kwargs: Any,
+    ) -> httpx.Response:
+        if self._capabilities is None:
+            raise WorkerUnavailable("workspace capability secret is not configured")
+        token = self._capabilities.issue(run_id=run_id, operations={operation})
+        try:
+            response = await self._client.request(
+                method,
+                path,
+                headers={"X-Workspace-Capability": token},
+                **kwargs,
+            )
+            response.raise_for_status()
+            return response
+        except httpx.HTTPError as exc:
+            raise WorkerUnavailable(str(exc)) from exc
+
+    async def aclose(self) -> None:
+        await self._client.aclose()

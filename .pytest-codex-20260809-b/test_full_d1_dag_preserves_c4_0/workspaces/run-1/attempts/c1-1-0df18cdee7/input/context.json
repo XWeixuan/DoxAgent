@@ -1,0 +1,22 @@
+{
+  "schema_version": "codex-d1-node-context-v1",
+  "run_id": "run-1",
+  "node": "c1",
+  "payload": {
+    "ticker": "NVDA",
+    "company_name": null,
+    "research_brief": "test",
+    "base_context": {},
+    "horizontal_context": "{\n  \"schema_version\": \"d1-horizontal-context-v1\",\n  \"state_values\": [\n    {\n      \"parameter_id\": \"param_nvda_fin_revenue\",\n      \"entity_id\": \"NVDA\",\n      \"metric_id\": \"fin_revenue\",\n      \"source_role\": \"ACTUAL\",\n      \"time_scope\": \"LATEST_REPORTED_QUARTER\",\n      \"value\": 100,\n      \"unit\": \"USD\",\n      \"as_of\": \"2026-06-30T00:00:00Z\",\n      \"source_refs\": [\n        {\n          \"object_type\": \"METRIC\",\n          \"provider_specific_id\": null,\n          \"source_locator\": \"https://example.com/filing\",\n          \"canonical_object_id_candidate\": \"c1_revenue:2026-06-30T00:00:00+00:00\",\n          \"resolver_status\": \"CANDIDATE\"\n        }\n      ],\n      \"collection_target_id\": \"c1_revenue\",\n      \"quality_flags\": [\n        \"program_collected\"\n      ]\n    }\n  ],\n  \"target_status\": [\n    {\n      \"collection_target_id\": \"c1_revenue\",\n      \"status\": \"FILLED\",\n      \"requested_items\": 1,\n      \"succeeded_items\": 1,\n      \"unavailable_items\": 0,\n      \"failed_items\": 0,\n      \"provider_attempts\": [\n        {\n          \"provider\": \"test\",\n          \"tool_name\": \"test.value\",\n          \"status\": \"FILLED\",\n          \"started_at\": \"2026-08-08T21:17:48.785092Z\",\n          \"finished_at\": \"2026-08-08T21:17:48.785092Z\",\n          \"error_code\": null,\n          \"message\": null\n        }\n      ],\n      \"output_refs\": [\n        {\n          \"object_type\": \"METRIC\",\n          \"provider_specific_id\": null,\n          \"source_locator\": \"https://example.com/filing\",\n          \"canonical_object_id_candidate\": \"c1_revenue:2026-06-30T00:00:00+00:00\",\n          \"resolver_status\": \"CANDIDATE\"\n        }\n      ],\n      \"reason\": null\n    }\n  ],\n  \"instructions\": \"Use promoted state_values as governed measurements. EMPTY, FAILED, and UNAVAILABLE targets are explicit unknowns and must not be replaced by zero.\"\n}",
+    "c4_pre_scan": {
+      "status": "completed",
+      "summary": "c4_pre_scan",
+      "report_markdown": "### c4_pre_scan\ncompleted",
+      "warnings": [],
+      "observation_candidates": [],
+      "entity_relations": [],
+      "future_nodes": [],
+      "metadata": {}
+    }
+  }
+}

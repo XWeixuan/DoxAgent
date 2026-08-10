@@ -1,0 +1,23 @@
+{
+  "schema_version": "attempt_observation/1.0",
+  "run_id": "run-1",
+  "attempt_id": "c1-1",
+  "alias": "O23",
+  "block_id": "block-18",
+  "tool_call_id": "call-18",
+  "tool_name": "test.lookup",
+  "title": "Row 18",
+  "locator": "/rows/18",
+  "block_type": "json",
+  "content": {
+    "index": 18,
+    "value": "value-18"
+  },
+  "content_hash": "57cb79c09993f87b14a5ef841c2264227cf106d02996288a280ebbc5eb3b4569",
+  "source_locator": "test://rows/18",
+  "source_coordinates": null,
+  "provider": "Test provider",
+  "method_version": "test.lookup/1.0",
+  "metadata": {},
+  "created_at": "2026-08-09T16:01:21.363975Z"
+}
