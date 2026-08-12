@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import threading
 from collections import deque
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from time import monotonic, perf_counter
 from typing import Protocol
@@ -302,6 +302,32 @@ class AsyncModelExecutor:
         future = asyncio.run_coroutine_threadsafe(self._complete(tier, request), self._loop)
         return future.result()
 
+    def complete_many(
+        self,
+        tier: ModelTier,
+        requests: Sequence[StructuredModelRequest],
+    ) -> list[StructuredModelResult | Exception]:
+        """Submit a whole stage wave to the shared native-async hub."""
+
+        if self._closed:
+            raise RuntimeError("bulk async model executor is closed")
+
+        async def gather() -> list[StructuredModelResult | Exception]:
+            values = await asyncio.gather(
+                *(self._complete(tier, request) for request in requests),
+                return_exceptions=True,
+            )
+            normalized: list[StructuredModelResult | Exception] = []
+            for value in values:
+                if isinstance(value, BaseException) and not isinstance(value, Exception):
+                    normalized.append(RuntimeError(f"{type(value).__name__}: {value}"))
+                else:
+                    normalized.append(value)
+            return normalized
+
+        future = asyncio.run_coroutine_threadsafe(gather(), self._loop)
+        return future.result()
+
     def telemetry(self) -> list[AsyncCallTelemetry]:
         with self._telemetry_lock:
             return list(self._telemetry)
@@ -370,3 +396,8 @@ class BlockingAsyncStructuredClient:
 
     def complete(self, request: StructuredModelRequest) -> StructuredModelResult:
         return self.executor.complete(self.tier, request)
+
+    def complete_many(
+        self, requests: Sequence[StructuredModelRequest]
+    ) -> list[StructuredModelResult | Exception]:
+        return self.executor.complete_many(self.tier, requests)

@@ -164,12 +164,22 @@ class StructuredCompletion(StrictModel):
 
 class AgentObservationCandidate(StrictModel):
     metric_key: str
+    meaning: str | None = None
     value: str | float | int | bool
     unit: str | None = None
     as_of: str | None = None
     source_aliases: list[str] = Field(default_factory=list)
     method: str
     confidence: Literal["high", "medium", "low"] = "medium"
+
+
+class NormalizedAgentObservation(AgentObservationCandidate):
+    node: CodexD1Node
+    attempt_id: str
+    artifact_id: str
+    governed_metric: bool
+    freeform_metric: bool
+    source_role: Literal["AGENT"] = "AGENT"
 
 
 class EntityRelation(StrictModel):

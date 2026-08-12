@@ -452,18 +452,17 @@ def test_settings_parse_ordered_deduplicated_fallback_keys() -> None:
     assert settings.dashscope_fallback_api_keys() == ("fallback-one", "fallback-two")
 
 
-def test_settings_keeps_cross_document_dictionary_protocols_mandatory() -> None:
+def test_settings_keeps_atomic_wire_and_parent_stage_contracts_mandatory() -> None:
     settings = CDECRSettings(
         CDECR_N9_WIRE_PROTOCOL="on",
-        CDECR_N12_WIRE_PROTOCOL="on",
-        CDECR_N13_WIRE_PROTOCOL="on",
         CDECR_GROUNDER_ISSUE_PROTOCOL="canary",
         CDECR_TARGETED_REPAIR="legacy",
         _env_file=None,
     )  # type: ignore[call-arg]
     assert settings.n9_wire_protocol == "on"
-    assert settings.n12_wire_protocol == "on"
-    assert settings.n13_wire_protocol == "on"
+    assert settings.parent_induction_active_requests == 96
+    assert settings.parent_resolution_active_requests == 128
+    assert settings.parent_reconcile_active_requests == 96
     assert settings.grounder_issue_protocol == "canary"
     assert settings.targeted_repair_protocol == "legacy"
 

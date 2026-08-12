@@ -15,9 +15,7 @@ from cdecr.contracts import (
     AnalystActionProjection,
     AssertionState,
     AtomicEvent,
-    EventFamily,
     EventMention,
-    EventPackage,
     EventTime,
     FinancialMetricIdentityFields,
     FinancialMetricIdentityProfile,
@@ -26,17 +24,12 @@ from cdecr.contracts import (
     GuidanceIdentityProfile,
     GuidanceProjection,
     IdentityProfile,
-    MembershipRelation,
     OpenIdentityFields,
     OpenIdentityProfile,
-    PackageFamily,
-    PackageKind,
-    PackageStatus,
-    PackageTimeRange,
     ParticipantRole,
     TimePrecision,
 )
-from cdecr.cross_document_contracts import HardConflictCode, PackageSeed
+from cdecr.cross_document_contracts import HardConflictCode
 
 _PRINCIPAL_ROLES = {
     ParticipantRole.ACTOR,
@@ -400,180 +393,6 @@ def add_mention_to_atomic(
     )
 
 
-def package_seed_for_event(event: AtomicEvent, mentions: list[EventMention]) -> PackageSeed:
-    hints = [item.local_package_hint for item in mentions if item.local_package_hint]
-    anchor_hints = sorted({item.anchor for item in hints})
-    relations = {item.relation_to_anchor for item in hints}
-    family = _default_package_family(event.event_family)
-    kind = (
-        PackageKind.EPISODE
-        if family
-        in {
-            PackageFamily.TRANSACTION,
-            PackageFamily.REGULATORY_LEGAL,
-            PackageFamily.POLICY,
-            PackageFamily.OPERATIONAL_INCIDENT,
-            PackageFamily.PRODUCT_SCIENCE,
-        }
-        else PackageKind.BOUNDED
-    )
-    default_membership = (
-        MembershipRelation.STAGE_OF
-        if kind is PackageKind.EPISODE
-        else MembershipRelation.DISCLOSED_IN
-    )
-    membership = next(iter(relations)) if len(relations) == 1 else default_membership
-    artifacts = sorted(
-        {
-            value
-            for key in ("artifact_id", "filing_id", "report_id")
-            for item in mentions
-            if (value := _attribute_value(item, key)) is not None
-        }
-    )
-    period = reference_period_from_profile(event.identity_profile)
-    return PackageSeed(
-        package_kind=kind,
-        package_family=family,
-        canonical_title=event.canonical_proposition,
-        anchor_entities=core_entity_ids_from_profile(event.identity_profile),
-        local_anchor_hint=anchor_hints[0] if len(anchor_hints) == 1 else None,
-        local_anchor_hints=anchor_hints,
-        artifact_candidate_ids=artifacts,
-        anchor_conflict=len(artifacts) > 1,
-        anchor_artifact_id=artifacts[0] if len(artifacts) == 1 else None,
-        anchor_period_id=period,
-        time_range=PackageTimeRange(start=event.time.event_start, end=event.time.event_end),
-        membership_relation=membership,
-    )
-
-
-def package_hard_conflicts(seed: PackageSeed, package: EventPackage) -> list[HardConflictCode]:
-    conflicts: set[HardConflictCode] = set()
-    if seed.package_kind is not package.package_kind:
-        conflicts.add(HardConflictCode.PACKAGE_KIND)
-    if seed.package_family is package.package_family:
-        if seed.anchor_period_id and package.anchor_period_id:
-            _different(
-                seed.anchor_period_id,
-                package.anchor_period_id,
-                HardConflictCode.PACKAGE_PERIOD,
-                conflicts,
-            )
-        if seed.anchor_artifact_id and package.anchor_artifact_id:
-            _different(
-                seed.anchor_artifact_id,
-                package.anchor_artifact_id,
-                HardConflictCode.PACKAGE_ARTIFACT,
-                conflicts,
-            )
-        _set_conflict(
-            seed.anchor_entities,
-            package.anchor_entities,
-            HardConflictCode.PACKAGE_ANCHOR,
-            conflicts,
-        )
-    elif seed.package_kind is PackageKind.EPISODE and package.package_kind is PackageKind.EPISODE:
-        conflicts.add(HardConflictCode.PACKAGE_FAMILY)
-    return sorted(conflicts, key=str)
-
-
-def bounded_package_exact_match(seed: PackageSeed, package: EventPackage) -> bool:
-    if (
-        seed.package_kind is not PackageKind.BOUNDED
-        or package.package_kind is not PackageKind.BOUNDED
-    ):
-        return False
-    if seed.package_family is not package.package_family:
-        return False
-    if not set(seed.anchor_entities) or not set(seed.anchor_entities).intersection(
-        package.anchor_entities
-    ):
-        return False
-    if seed.anchor_period_id or package.anchor_period_id:
-        return bool(seed.anchor_period_id and seed.anchor_period_id == package.anchor_period_id)
-    if seed.anchor_artifact_id and package.anchor_artifact_id:
-        return seed.anchor_artifact_id == package.anchor_artifact_id
-    if seed.package_family is PackageFamily.ANALYST_REPORT:
-        return _same_day(seed.time_range.start, package.time_range.start)
-    return False
-
-
-def singleton_package(event: AtomicEvent, seed: PackageSeed) -> EventPackage:
-    return EventPackage(
-        package_id=stable_id(
-            "package",
-            {
-                "kind": seed.package_kind.value,
-                "family": seed.package_family.value,
-                "entities": seed.anchor_entities,
-                "artifact": seed.anchor_artifact_id,
-                "period": seed.anchor_period_id,
-                "event": event.event_id,
-            },
-        ),
-        package_kind=seed.package_kind,
-        package_family=seed.package_family,
-        canonical_title=seed.canonical_title,
-        anchor_entities=seed.anchor_entities,
-        package_anchor_ids=seed.package_anchor_ids,
-        anchor_artifact_id=seed.anchor_artifact_id,
-        anchor_period_id=seed.anchor_period_id,
-        time_range=seed.time_range,
-        lifecycle_state=None,
-        member_event_ids=[event.event_id],
-        canonical_summary=event.canonical_proposition,
-        status=PackageStatus.UNKNOWN,
-        version=1,
-    )
-
-
-def add_event_to_package(package: EventPackage, event: AtomicEvent) -> EventPackage:
-    if event.event_id in package.member_event_ids:
-        return package
-    event_range = PackageTimeRange(start=event.time.event_start, end=event.time.event_end)
-    return package.model_copy(
-        update={
-            "member_event_ids": [*package.member_event_ids, event.event_id],
-            "time_range": merge_package_ranges(package.time_range, event_range),
-            "version": package.version + 1,
-        }
-    )
-
-
-def merge_packages(target: EventPackage, source: EventPackage) -> EventPackage:
-    new_members = [
-        value for value in source.member_event_ids if value not in target.member_event_ids
-    ]
-    if not new_members:
-        return target
-    return target.model_copy(
-        update={
-            "anchor_entities": sorted(set(target.anchor_entities) | set(source.anchor_entities)),
-            "package_anchor_ids": sorted(
-                set(target.package_anchor_ids) | set(source.package_anchor_ids)
-            ),
-            "anchor_artifact_id": target.anchor_artifact_id or source.anchor_artifact_id,
-            "anchor_period_id": target.anchor_period_id or source.anchor_period_id,
-            "member_event_ids": [*target.member_event_ids, *new_members],
-            "time_range": merge_package_ranges(target.time_range, source.time_range),
-            "version": target.version + 1,
-        }
-    )
-
-
-def packages_obviously_same(left: EventPackage, right: EventPackage) -> bool:
-    if set(left.member_event_ids).intersection(right.member_event_ids):
-        return True
-    return bool(
-        left.package_kind is right.package_kind
-        and left.package_family is right.package_family
-        and left.anchor_artifact_id
-        and left.anchor_artifact_id == right.anchor_artifact_id
-        and set(left.anchor_entities).intersection(right.anchor_entities)
-    )
-
-
 def merge_event_times(left: EventTime, right: EventTime) -> EventTime:
     starts = [value for value in (left.event_start, right.event_start) if value is not None]
     ends = [value for value in (left.event_end, right.event_end) if value is not None]
@@ -608,27 +427,6 @@ def merge_event_times(left: EventTime, right: EventTime) -> EventTime:
         precision=precision,
         reference_period_id=reference,
     )
-
-
-def merge_package_ranges(left: PackageTimeRange, right: PackageTimeRange) -> PackageTimeRange:
-    starts = [value for value in (left.start, right.start) if value is not None]
-    ends = [value for value in (left.end, right.end) if value is not None]
-    return PackageTimeRange(
-        start=min(starts, key=_temporal_key) if starts else None,
-        end=max(ends, key=_temporal_key) if ends else None,
-    )
-
-
-def _default_package_family(family: EventFamily) -> PackageFamily:
-    return {
-        EventFamily.FINANCIAL_PERFORMANCE: PackageFamily.EARNINGS_DISCLOSURE,
-        EventFamily.GUIDANCE_EXPECTATION: PackageFamily.EARNINGS_DISCLOSURE,
-        EventFamily.ANALYST_ACTION: PackageFamily.ANALYST_REPORT,
-        EventFamily.TRANSACTION_CAPITAL: PackageFamily.TRANSACTION,
-        EventFamily.REGULATORY_LEGAL_POLICY: PackageFamily.REGULATORY_LEGAL,
-        EventFamily.INCIDENT_GEOPOLITICAL: PackageFamily.OPERATIONAL_INCIDENT,
-        EventFamily.PRODUCT_SCIENCE: PackageFamily.PRODUCT_SCIENCE,
-    }.get(family, PackageFamily.COMPANY_DISCLOSURE)
 
 
 def _source_claim(mention: EventMention) -> JsonValue:

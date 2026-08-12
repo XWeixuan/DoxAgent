@@ -1,0 +1,22 @@
+{
+  "document_id": "D017",
+  "annotator_model": "gpt-5.6-terra",
+  "reasoning_effort": "xhigh",
+  "input_isolation": "sanitized_candidates_input_only",
+  "candidate_gold": [
+    {"candidate_id":"candidate:doxatlas:raw_media:5cbed56c-eb38-4bd2-afbd-89e1e6ab63cb:0219f33c6418b1b36afa188023374b48f4cbc33d2485f1b1f5a6cc028cda2b4c","relevance":"IRRELEVANT","rationale":"This concerns construction of an Indian hydropower project and has no concrete economic path to Micron."},
+    {"candidate_id":"candidate:doxatlas:raw_media:5cbed56c-eb38-4bd2-afbd-89e1e6ab63cb:0449a8c50b04d2099325cbaea30458762e6e5e93770a28f1381fdaacc5a1c19f","relevance":"IRRELEVANT","rationale":"Indian government funding for hydropower infrastructure does not directly or materially affect Micron."},
+    {"candidate_id":"candidate:doxatlas:raw_media:5cbed56c-eb38-4bd2-afbd-89e1e6ab63cb:0b52c72bdda188185ab9069233bb00d8602edf0759e5f62b1f5d02a8509181a3","relevance":"IRRELEVANT","rationale":"The planning status of an Indian hydropower project has no specific linkage to Micron."},
+    {"candidate_id":"candidate:doxatlas:raw_media:5cbed56c-eb38-4bd2-afbd-89e1e6ab63cb:0c44364bceecdd2b963347954360133bbd7775647c264a7263190ecadda845f5","relevance":"IRRELEVANT","rationale":"Power and revenue allocations to Arunachal Pradesh are unrelated to Micron's business or securities."},
+    {"candidate_id":"candidate:doxatlas:raw_media:5cbed56c-eb38-4bd2-afbd-89e1e6ab63cb:17c648f59be9967c87e7a0931a1c34e32e5078f20db82a271f20d5eaefa32069","relevance":"IRRELEVANT","rationale":"The geographic location of the Kamala hydropower project has no concrete relevance to Micron."},
+    {"candidate_id":"candidate:doxatlas:raw_media:5cbed56c-eb38-4bd2-afbd-89e1e6ab63cb:22cc54aa7e64728fcecffd3b53340ab9ab6ba2febb1a3a1b2515dc77fd4fbe51","relevance":"IRRELEVANT","rationale":"Funding for flood moderation at an Indian hydropower project does not update Micron's economics."},
+    {"candidate_id":"candidate:doxatlas:raw_media:5cbed56c-eb38-4bd2-afbd-89e1e6ab63cb:2b90bcbcbd6ee84484c983cbd2caddb2510c647791158ec709bdf52bc0430167","relevance":"IRRELEVANT","rationale":"Local community infrastructure funding around the hydropower project has no material path to Micron."},
+    {"candidate_id":"candidate:doxatlas:raw_media:5cbed56c-eb38-4bd2-afbd-89e1e6ab63cb:2f66c313a96d961cd4111401d550b558b6e1d8c2e8b2cf18fc95389d7ad1a495","relevance":"IRRELEVANT","rationale":"Financial assistance for a state equity share in the hydropower venture is unrelated to Micron."},
+    {"candidate_id":"candidate:doxatlas:raw_media:5cbed56c-eb38-4bd2-afbd-89e1e6ab63cb:417a5cb4d5ce76e13f2b5f8e9e833655eda2a70c4505ff3dbd84b9dc9f2e4b1b","relevance":"IRRELEVANT","rationale":"The NHPC and Arunachal Pradesh joint venture does not involve Micron or its markets."},
+    {"candidate_id":"candidate:doxatlas:raw_media:5cbed56c-eb38-4bd2-afbd-89e1e6ab63cb:4eeec112d9136238870748335fcbbb41daf746f704906cd2c5a8222a88cff64f","relevance":"IRRELEVANT","rationale":"Commissioning progress at another Indian hydropower project has no specific effect on Micron."},
+    {"candidate_id":"candidate:doxatlas:raw_media:5cbed56c-eb38-4bd2-afbd-89e1e6ab63cb:509ea5eb2d369816bde415d112dd7782ebc8f8bc5a998f3c253a33126b7403e7","relevance":"IRRELEVANT","rationale":"Here MU means million units of electricity, not Micron's ticker, so the statement is unrelated."},
+    {"candidate_id":"candidate:doxatlas:raw_media:5cbed56c-eb38-4bd2-afbd-89e1e6ab63cb:548162b51c27038309fc0a650170d1937f56484712060a4d5355360dabf86b10","relevance":"IRRELEVANT","rationale":"The capacity and schedule of an Indian hydropower plant do not materially update Micron."},
+    {"candidate_id":"candidate:doxatlas:raw_media:5cbed56c-eb38-4bd2-afbd-89e1e6ab63cb:56d8a6863651661f5e0d92573f35b8f2e3e65ea3e95c6f2f2ce989e8970d6183","relevance":"IRRELEVANT","rationale":"Approval of investment in the Kamala hydropower project has no concrete connection to Micron."},
+    {"candidate_id":"candidate:doxatlas:raw_media:5cbed56c-eb38-4bd2-afbd-89e1e6ab63cb:c2d5a480b168afad64c040f73e056b4fa35f9fc898a2fabe47f8d6d7f43114eb","relevance":"IRRELEVANT","rationale":"Road and bridge construction for the remote hydropower region has no material linkage to Micron."}
+  ]
+}

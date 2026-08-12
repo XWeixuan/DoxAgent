@@ -69,7 +69,16 @@ def create_worker_app(
     async def worker_capabilities() -> dict[str, object]:
         return {
             "sdk": "openai-codex",
-            "workspace_operations": ["read", "write", "inventory", "publish", "export", "delete"],
+            "workspace_operations": [
+                "read",
+                "write",
+                "inventory",
+                "read_observations",
+                "write_observations",
+                "publish",
+                "export",
+                "delete",
+            ],
             "source_capture_mcp": True,
             "data_mcp": True,
         }
@@ -190,6 +199,20 @@ def create_worker_app(
         return workspaces.read_attempt_observations(run_id, attempt_id)
 
     @app.post(
+        "/v1/workspaces/{run_id}/attempts/{attempt_id}/observations",
+        response_model=list[PersistedObservation],
+        dependencies=[Depends(require_service_auth)],
+    )
+    async def import_attempt_observations(
+        run_id: str,
+        attempt_id: str,
+        observations: list[PersistedObservation],
+        x_workspace_capability: str | None = Header(default=None),
+    ) -> list[PersistedObservation]:
+        require_capability(run_id, "write_observations", x_workspace_capability)
+        return workspaces.import_attempt_observations(run_id, attempt_id, observations)
+
+    @app.post(
         "/v1/workspaces/{run_id}/publish",
         response_model=WorkspaceInventory,
         dependencies=[Depends(require_service_auth)],
@@ -221,11 +244,16 @@ def create_worker_app(
     )
     async def export_workspace(
         run_id: str,
+        control_attempt_id: str | None = None,
         x_workspace_capability: str | None = Header(default=None),
     ) -> StreamingResponse:
         require_capability(run_id, "export", x_workspace_capability)
         buffer = io.BytesIO()
-        digest = workspaces.export_zip(run_id, buffer)
+        digest = workspaces.export_zip(
+            run_id,
+            buffer,
+            control_attempt_id=control_attempt_id,
+        )
         buffer.seek(0)
         return StreamingResponse(
             buffer,

@@ -1,0 +1,187 @@
+{
+  "annotator_model": "gpt-5.6-terra",
+  "reasoning_effort": "xhigh",
+  "generated_at_utc": "2026-08-11T05:57:27+00:00",
+  "source_dataset": "eval/cdecr_relevance_filter/mu_relevance_30_v1/cdecr_mu_relevance_30_candidates_input.jsonl",
+  "source_dataset_sha256": "1bd92c36bf3ec72e790b277ccfa88150098353cb7ca3b73c9733344068fa3b6e",
+  "input_documents": 30,
+  "input_candidates": 409,
+  "output_documents": 29,
+  "output_candidates": 395,
+  "label_counts": {
+    "IRRELEVANT": 193,
+    "RELEVANT": 202
+  },
+  "document_counts": {
+    "D019": {
+      "candidate_count": 15,
+      "RELEVANT": 0,
+      "IRRELEVANT": 15
+    },
+    "D050": {
+      "candidate_count": 5,
+      "RELEVANT": 0,
+      "IRRELEVANT": 5
+    },
+    "D067": {
+      "candidate_count": 8,
+      "RELEVANT": 0,
+      "IRRELEVANT": 8
+    },
+    "D089": {
+      "candidate_count": 6,
+      "RELEVANT": 0,
+      "IRRELEVANT": 6
+    },
+    "D010": {
+      "candidate_count": 7,
+      "RELEVANT": 7,
+      "IRRELEVANT": 0
+    },
+    "D062": {
+      "candidate_count": 6,
+      "RELEVANT": 6,
+      "IRRELEVANT": 0
+    },
+    "D232": {
+      "candidate_count": 21,
+      "RELEVANT": 21,
+      "IRRELEVANT": 0
+    },
+    "D292": {
+      "candidate_count": 10,
+      "RELEVANT": 10,
+      "IRRELEVANT": 0
+    },
+    "D298": {
+      "candidate_count": 7,
+      "RELEVANT": 7,
+      "IRRELEVANT": 0
+    },
+    "D021": {
+      "candidate_count": 18,
+      "RELEVANT": 6,
+      "IRRELEVANT": 12
+    },
+    "D027": {
+      "candidate_count": 24,
+      "RELEVANT": 2,
+      "IRRELEVANT": 22
+    },
+    "D072": {
+      "candidate_count": 13,
+      "RELEVANT": 9,
+      "IRRELEVANT": 4
+    },
+    "D095": {
+      "candidate_count": 16,
+      "RELEVANT": 4,
+      "IRRELEVANT": 12
+    },
+    "D111": {
+      "candidate_count": 17,
+      "RELEVANT": 1,
+      "IRRELEVANT": 16
+    },
+    "D147": {
+      "candidate_count": 12,
+      "RELEVANT": 1,
+      "IRRELEVANT": 11
+    },
+    "D165": {
+      "candidate_count": 21,
+      "RELEVANT": 2,
+      "IRRELEVANT": 19
+    },
+    "D167": {
+      "candidate_count": 16,
+      "RELEVANT": 13,
+      "IRRELEVANT": 3
+    },
+    "D220": {
+      "candidate_count": 15,
+      "RELEVANT": 2,
+      "IRRELEVANT": 13
+    },
+    "D223": {
+      "candidate_count": 15,
+      "RELEVANT": 4,
+      "IRRELEVANT": 11
+    },
+    "D001": {
+      "candidate_count": 15,
+      "RELEVANT": 13,
+      "IRRELEVANT": 2
+    },
+    "D025": {
+      "candidate_count": 20,
+      "RELEVANT": 11,
+      "IRRELEVANT": 9
+    },
+    "D045": {
+      "candidate_count": 14,
+      "RELEVANT": 8,
+      "IRRELEVANT": 6
+    },
+    "D061": {
+      "candidate_count": 18,
+      "RELEVANT": 16,
+      "IRRELEVANT": 2
+    },
+    "D097": {
+      "candidate_count": 16,
+      "RELEVANT": 16,
+      "IRRELEVANT": 0
+    },
+    "D102": {
+      "candidate_count": 13,
+      "RELEVANT": 11,
+      "IRRELEVANT": 2
+    },
+    "D138": {
+      "candidate_count": 13,
+      "RELEVANT": 3,
+      "IRRELEVANT": 10
+    },
+    "D180": {
+      "candidate_count": 9,
+      "RELEVANT": 8,
+      "IRRELEVANT": 1
+    },
+    "D190": {
+      "candidate_count": 14,
+      "RELEVANT": 14,
+      "IRRELEVANT": 0
+    },
+    "D293": {
+      "candidate_count": 11,
+      "RELEVANT": 7,
+      "IRRELEVANT": 4
+    }
+  },
+  "excluded_documents": {
+    "D017": {
+      "status": "D017_EXCLUDED_CONTAMINATED",
+      "candidate_count": 14,
+      "reason": "An unintended original-row display exposed legacy mentions/relevance_gold before annotation; no candidate labels were generated for this document."
+    }
+  },
+  "input_isolation_statement": "All 29 output documents were annotated only from the sanitized candidates input: each full source_message, the fixed Micron target, and frozen dream_candidates statement/evidence. The source JSONL with mentions/relevance_gold was not accessed again after D017 was excluded; no existing mention or relevance Gold was used or inferred. D017 is intentionally absent because its legacy labels were unintentionally displayed before annotation.",
+  "validation": {
+    "candidate_gold_matches_dream_candidate_ids_in_order": true,
+    "all_output_candidate_ids_unique_within_document": true,
+    "expected_output_document_count": 29,
+    "expected_output_candidate_count": 395,
+    "question_only_rationales": 0,
+    "question_mark_containing_rationales": 0
+  },
+  "output_artifact_sha256": "2d8bb903bedf2b3f82ab108a9bc8407df67b7ea96ed0bcbdddc313a8d5640190",
+  "rationale_encoding_repair": {
+    "repaired_question_only_rationales": 200,
+    "replacement_language": "English ASCII",
+    "question_only_rationales": 0,
+    "labels_candidate_ids_document_order_and_d017_exclusion_preserved": true,
+    "repaired_any_question_mark_rationales": 195,
+    "question_mark_containing_rationales": 0
+  }
+}

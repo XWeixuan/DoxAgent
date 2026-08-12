@@ -65,25 +65,23 @@ class CDECRSettings(BaseSettings):
     model_m2: str = Field(default="deepseek-v4-flash", alias="CDECR_MODEL_M2")
     model_m3: str = Field(default="deepseek-v4-flash", alias="CDECR_MODEL_M3")
     model_m4: str = Field(default="deepseek-v4-flash", alias="CDECR_MODEL_M4")
+    relevance_filter_mode: Literal["off", "shadow", "enforce"] = Field(
+        default="shadow", alias="CDECR_RELEVANCE_FILTER_MODE"
+    )
+    relevance_target_profiles: dict[str, str] = Field(
+        default_factory=dict,
+        alias="CDECR_RELEVANCE_TARGET_PROFILES",
+        description=(
+            "JSON object mapping ticker to 'Company (TICKER); concise business description'."
+        ),
+    )
     atomic_hard_cannot_link_mode: Literal["enforce", "shadow", "off"] = Field(
         default="enforce",
         alias="CDECR_ATOMIC_HARD_CANNOT_LINK_MODE",
     )
-    package_conflict_mode: Literal["off", "shadow", "enforce"] = Field(
-        default="off",
-        alias="CDECR_PACKAGE_CONFLICT_MODE",
-    )
     n9_wire_protocol: Literal["on"] = Field(
         default="on",
         alias="CDECR_N9_WIRE_PROTOCOL",
-    )
-    n12_wire_protocol: Literal["on"] = Field(
-        default="on",
-        alias="CDECR_N12_WIRE_PROTOCOL",
-    )
-    n13_wire_protocol: Literal["on"] = Field(
-        default="on",
-        alias="CDECR_N13_WIRE_PROTOCOL",
     )
     grounder_issue_protocol: Literal["legacy", "shadow", "canary", "on"] = Field(
         default="legacy",
@@ -152,19 +150,38 @@ class CDECRSettings(BaseSettings):
     n9_late_active_requests: int = Field(
         default=24, ge=1, le=160, alias="CDECR_N9_LATE_ACTIVE_REQUESTS"
     )
-    n12_active_requests: int = Field(default=48, ge=1, le=160, alias="CDECR_N12_ACTIVE_REQUESTS")
-    package_wave_c_active_requests: int = Field(
-        default=32, ge=1, le=160, alias="CDECR_PACKAGE_WAVE_C_ACTIVE_REQUESTS"
+    parent_induction_active_requests: int = Field(
+        default=96, ge=1, le=160, alias="CDECR_PARENT_INDUCTION_ACTIVE_REQUESTS"
     )
-    n13_active_requests: int = Field(default=96, ge=1, le=128, alias="CDECR_N13_ACTIVE_REQUESTS")
-    n13_planner_version: Literal["indexed_v2", "legacy"] = Field(
-        default="indexed_v2", alias="CDECR_N13_PLANNER_VERSION"
+    parent_resolution_active_requests: int = Field(
+        default=128, ge=1, le=160, alias="CDECR_PARENT_RESOLUTION_ACTIVE_REQUESTS"
+    )
+    parent_reconcile_active_requests: int = Field(
+        default=96, ge=1, le=160, alias="CDECR_PARENT_RECONCILE_ACTIVE_REQUESTS"
+    )
+    parent_induction_max_documents: int = Field(
+        default=4, ge=1, le=16, alias="CDECR_PARENT_INDUCTION_MAX_DOCUMENTS"
+    )
+    parent_induction_max_slices: int = Field(
+        default=48, ge=1, le=96, alias="CDECR_PARENT_INDUCTION_MAX_SLICES"
+    )
+    parent_resolution_max_proposals: int = Field(
+        default=24, ge=2, le=48, alias="CDECR_PARENT_RESOLUTION_MAX_PROPOSALS"
+    )
+    parent_resolution_max_existing_parents: int = Field(
+        default=12, ge=0, le=24, alias="CDECR_PARENT_RESOLUTION_MAX_EXISTING_PARENTS"
     )
     item_repair_active_requests: int = Field(
         default=16, ge=1, le=64, alias="CDECR_ITEM_REPAIR_ACTIVE_REQUESTS"
     )
     dreamer_active_requests: int = Field(
         default=100, ge=1, le=160, alias="CDECR_DREAMER_ACTIVE_REQUESTS"
+    )
+    dreamer_relevance_active_requests: int = Field(
+        default=100,
+        ge=1,
+        le=160,
+        alias="CDECR_DREAMER_RELEVANCE_ACTIVE_REQUESTS",
     )
     grounder_active_requests: int = Field(
         default=100, ge=1, le=160, alias="CDECR_GROUNDER_ACTIVE_REQUESTS"
@@ -189,22 +206,7 @@ class CDECRSettings(BaseSettings):
         default=True, alias="CDECR_EMBEDDING_BATCH_EXECUTOR"
     )
     atomic_late_convergence: bool = Field(default=True, alias="CDECR_ATOMIC_LATE_CONVERGENCE")
-    package_wave_c: bool = Field(default=True, alias="CDECR_PACKAGE_WAVE_C")
-    n13_pair_local_apply: bool = Field(default=False, alias="CDECR_N13_PAIR_LOCAL_APPLY")
     atomic_late_task_cap: int = Field(default=48, ge=0, le=128, alias="CDECR_ATOMIC_LATE_TASK_CAP")
-    package_wave_c_pair_cap: int = Field(
-        default=64, ge=0, le=128, alias="CDECR_PACKAGE_WAVE_C_PAIR_CAP"
-    )
-    late_total_input_budget_ratio: float = Field(
-        default=0.08, ge=0.0, le=0.25, alias="CDECR_LATE_TOTAL_INPUT_BUDGET_RATIO"
-    )
-    late_wall_deadline_ratio: float = Field(
-        default=0.12, ge=0.0, le=0.5, alias="CDECR_LATE_WALL_DEADLINE_RATIO"
-    )
-    late_max_spoke_members: int = Field(default=4, ge=1, le=8, alias="CDECR_LATE_MAX_SPOKE_MEMBERS")
-    late_max_spokes_per_hub: int = Field(
-        default=4, ge=1, le=8, alias="CDECR_LATE_MAX_SPOKES_PER_HUB"
-    )
 
     @model_validator(mode="after")
     def validate_capacity_ordering(self) -> CDECRSettings:
@@ -216,6 +218,14 @@ class CDECRSettings(BaseSettings):
             <= self.writer_queue_hard_limit
         ):
             raise ValueError("writer queue watermarks must satisfy low <= high <= hard")
+        for ticker, profile in self.relevance_target_profiles.items():
+            normalized_ticker = ticker.strip().upper()
+            if not normalized_ticker or not profile.strip():
+                raise ValueError("relevance target profiles must not contain blank keys or values")
+            if normalized_ticker.casefold() not in profile.casefold():
+                raise ValueError(
+                    f"relevance target profile for {normalized_ticker} must include its ticker"
+                )
         return self
 
     def require_supabase(self) -> tuple[str, str]:

@@ -10,7 +10,12 @@ import pytest
 
 from cdecr.contracts import Language, SourceMessage, SourceType
 from cdecr.models import ModelAdapterError, ModelTier
-from cdecr.ports import EmbeddingResult, StructuredModelRequest, StructuredModelResult
+from cdecr.ports import (
+    EmbeddingResult,
+    ResponsesModelRequest,
+    StructuredModelRequest,
+    StructuredModelResult,
+)
 from cdecr.preprocessing import exact_document_fingerprint
 from cdecr.registry import SQLiteCDECRRegistry
 from cdecr.single_document import (
@@ -144,6 +149,27 @@ class FakeStructured:
         if title == "_SelectionBatch":
             return self._result({"selections": []})
         raise AssertionError(f"unexpected schema {title}")
+
+    def complete_response(self, request: ResponsesModelRequest) -> StructuredModelResult:
+        system = next(
+            str(item["content"])
+            for item in reversed(request.input)
+            if item.get("role") == "system"
+        )
+        user = next(
+            str(item["content"])
+            for item in reversed(request.input)
+            if item.get("role") == "user"
+        )
+        result = self.complete(
+            StructuredModelRequest(
+                system_prompt=system,
+                user_prompt=user,
+                json_schema=request.json_schema,
+                metadata=request.metadata,
+            )
+        )
+        return result.model_copy(update={"response_id": f"resp-{len(self.calls)}"})
 
     def _result(self, payload: dict[str, object]) -> StructuredModelResult:
         return StructuredModelResult(
@@ -489,10 +515,6 @@ def mention_draft() -> dict[str, object]:
         "assertion_state": "ACTUAL",
         "quantities": [],
         "open_attributes": [],
-        "local_package_hint": {
-            "anchor": "Micron FY2026 earnings release",
-            "relation_to_anchor": "DISCLOSED_IN",
-        },
     }
 
 
@@ -682,7 +704,7 @@ def test_all_grounder_drafts_route_one_batch_m4_judge(
     ) == 1
 
 
-def test_long_document_uses_m3_dreamer_blocks_and_m3_grounder(
+def test_long_document_uses_m2_responses_dreamer_blocks(
     registry: SQLiteCDECRRegistry,
 ) -> None:
     value = source(long=True)
@@ -690,9 +712,9 @@ def test_long_document_uses_m3_dreamer_blocks_and_m3_grounder(
     service, _, m2, m3 = processor(registry, no_events=True)
     result = service.process("MSG-1")
     assert result.status is ProcessingStatus.SUCCEEDED
-    assert not any(request.json_schema["title"] == "DreamerModelOutput" for request in m2.calls)
+    assert sum(request.json_schema["title"] == "DreamerModelOutput" for request in m2.calls) >= 2
     m3_titles = [request.json_schema["title"] for request in m3.calls]
-    assert m3_titles.count("DreamerModelOutput") >= 2
+    assert m3_titles.count("DreamerModelOutput") == 0
     assert m3_titles.count("GrounderModelOutput") == 0
     assert not result.judge_routing.invoked
 

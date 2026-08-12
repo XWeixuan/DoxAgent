@@ -15,6 +15,7 @@ from dataclasses import dataclass
 from difflib import SequenceMatcher
 from pathlib import Path
 from threading import Lock, Timer
+from typing import Literal
 
 from pydantic import ValidationError
 
@@ -443,12 +444,7 @@ class FieldCoreferenceResolver:
 
         entries = self._entries_for_value(value)
         candidates, unique_exact = self._recall(value, entries, run_id=run_id)
-        if value.namespace is FieldNamespace.PACKAGE_ANCHOR and value.hints.parent_identity_key:
-            # N11 already derived this key from source-supported parent
-            # boundaries. Reusing it is deterministic canonicalization, not a
-            # semantic alias judgment for the field model.
-            output = FieldCoreferenceModelOutput(decision=FieldDecision.UNRESOLVED)
-        elif unique_exact is not None:
+        if unique_exact is not None:
             output = FieldCoreferenceModelOutput(
                 decision=FieldDecision.LINK, canonical_id=unique_exact.id
             )
@@ -986,9 +982,10 @@ class FieldCoreferenceResolver:
                 self._batch_timers[namespace] = timer
                 timer.start()
             if len(queue) >= max_items:
-                timer = self._batch_timers.pop(namespace, None)
-                if timer is not None:
-                    timer.cancel()
+                active_timer = self._batch_timers.get(namespace)
+                if active_timer is not None:
+                    del self._batch_timers[namespace]
+                    active_timer.cancel()
                 flush_now = True
         if flush_now:
             self._flush_pending_namespace(namespace)
@@ -1108,11 +1105,11 @@ class FieldCoreferenceResolver:
                     self._field_batch_fallback(item, "PROVIDER_REJECTED_BATCH")
             return
 
-        raw_decisions = (
-            result.payload.get("decisions")
-            if isinstance(result.payload, dict)
-            and isinstance(result.payload.get("decisions"), list)
-            else []
+        payload_decisions = (
+            result.payload.get("decisions") if isinstance(result.payload, dict) else None
+        )
+        raw_decisions: list[object] = (
+            list(payload_decisions) if isinstance(payload_decisions, list) else []
         )
         by_task: dict[str, list[object]] = {}
         for raw in raw_decisions:
@@ -1268,7 +1265,7 @@ class FieldCoreferenceResolver:
         batch: Sequence[_PendingFieldDecision],
         prompt: str,
         schema: dict[str, object],
-        status: str,
+        status: Literal["SUCCEEDED", "FAILED"],
         result: object | None,
         error_code: str | None,
         split_depth: int,
@@ -1595,18 +1592,6 @@ class FieldCoreferenceResolver:
             )
             normalized = normalize_field_text(value.raw_value)
             identity_seed = f"unresolved:{target_namespace.value}:{normalized}"
-            if target_namespace is FieldNamespace.PACKAGE_ANCHOR:
-                if value.hints.parent_identity_key:
-                    identity_seed = (
-                        f"unresolved:{target_namespace.value}:"
-                        f"parent:{value.hints.parent_identity_key}"
-                    )
-                else:
-                    source_scope = value.hints.source_fingerprint or "unknown-source"
-                    evidence_scope = value.hints.evidence_group_hash or normalized
-                    identity_seed = (
-                        f"unresolved:{target_namespace.value}:{source_scope}:{evidence_scope}"
-                    )
             if _is_generic(value.raw_value) or target_namespace is FieldNamespace.FISCAL_PERIOD:
                 identity_seed = f"{identity_seed}:{scope}"
             entry = self._create_entry(
@@ -1685,18 +1670,6 @@ class FieldCoreferenceResolver:
             aliases=[canonical_text],
             external_id=external_id,
         )
-        existing = self.registry.get_field_registry_entry(registry_id)
-        if (
-            existing is not None
-            and existing.namespace is value.namespace
-            and value.namespace is FieldNamespace.PACKAGE_ANCHOR
-            and ":parent:" in identity_seed
-        ):
-            self.registry.update_field_registry_aliases(
-                existing.id,
-                _stable_aliases([*existing.aliases, existing.canonical_text, canonical_text]),
-            )
-            return self.registry.get_field_registry_entry(existing.id) or existing
         self.registry.create_field_registry_entry(entry)
         stored = self.registry.get_field_registry_entry(registry_id)
         if stored is None:

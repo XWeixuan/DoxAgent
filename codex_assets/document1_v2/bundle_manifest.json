@@ -1,0 +1,15 @@
+{
+  "bundle_version": "codex-d1-agent-bundle-v2",
+  "common_instructions": "AGENTS.md",
+  "schema": "schemas/node_output.schema.json",
+  "nodes": {
+    "c4_pre_scan": {"agent": "agents/c4.md", "required_skills": ["skills/entity-map-and-future-nodes.md"], "required_sections": []},
+    "c1": {"agent": "agents/c1.md", "required_skills": ["skills/fundamental-research.md"], "required_sections": ["Business and revenue", "Profitability and earnings", "Cash flow and balance sheet", "Drivers, outlook, and uncertainty"]},
+    "c2": {"agent": "agents/c2.md", "required_skills": [], "required_sections": ["Growth and labor", "Inflation and policy", "Rates, credit, liquidity, and currency", "Issuer transmission and uncertainty"]},
+    "c3": {"agent": "agents/c3.md", "required_skills": ["skills/industry-research.md"], "required_sections": ["Industry structure", "Demand, orders, and inventory", "Supply, pricing, and competition", "Value-chain dependencies and milestones"]},
+    "o4_b": {"agent": "agents/o4_b.md", "required_skills": ["skills/ticker-price-tracking.md"], "required_sections": ["Current market snapshot", "Returns and repricing episodes", "Valuation and relative performance", "Positioning, liquidity, and unknowns"]},
+    "c4_enrichment": {"agent": "agents/c4.md", "required_skills": ["skills/entity-map-and-future-nodes.md"], "required_sections": []},
+    "c4_finalization": {"agent": "agents/c4.md", "required_skills": ["skills/entity-map-and-future-nodes.md"], "required_sections": []},
+    "o4_a": {"agent": "agents/o4_a.md", "required_skills": ["skills/market-implied-expectations.md"], "required_sections": ["Current pricing baseline", "Repricing episodes and drivers", "Implied business, financial, and time scenarios", "Pricing evidence, uncertainty, and technical distortions", "Market anchor candidates and pricing questions", "Unknowns and handoff"]}
+  }
+}

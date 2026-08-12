@@ -43,6 +43,7 @@ from cdecr.models import (
     ProbePayload,
     probe_models,
 )
+from cdecr.parent_occurrence_contracts import ParentInductionBatch, ParentResolutionBatch
 from cdecr.ports import DecisionAuditRecord, SourceQuery, StructuredModelRequest
 from cdecr.preprocessing import PIPELINE_VERSION
 from cdecr.registry import SCHEMA_VERSION, RegistryError, SQLiteCDECRRegistry
@@ -220,6 +221,7 @@ def _scheduler(settings: CDECRSettings) -> CDECRScheduler:
         stage_limits={
             "dreamer": settings.dreamer_active_requests,
             "dreamer_zero_recovery": settings.dreamer_active_requests,
+            "dreamer_relevance": settings.dreamer_relevance_active_requests,
             "grounder": settings.grounder_active_requests,
             "grounder_item_repair": settings.item_repair_active_requests,
             "grounder_missing_recovery": settings.item_repair_active_requests,
@@ -406,12 +408,18 @@ def _document_processor(
     m2 = _structured_client(settings, ModelTier.M2)
     m3 = _structured_client(settings, ModelTier.M3)
     m4 = _structured_client(settings, ModelTier.M4)
+    scheduled_m2 = scheduler.structured_client(m2, tier=ModelTier.M2)
+    scheduled_relevance = scheduler.structured_client(m2, tier=ModelTier.M3)
     return SingleDocumentProcessor(
         registry=registry,
         embedding_client=scheduler.embedding_client(embedding),
-        m2_client=scheduler.structured_client(m2, tier=ModelTier.M2),
+        m2_client=scheduled_m2,
         m3_client=scheduler.structured_client(m3, tier=ModelTier.M3),
         m4_client=scheduler.structured_client(m4, tier=ModelTier.M4),
+        dreamer_responses_client=scheduled_m2,
+        relevance_responses_client=scheduled_relevance,
+        relevance_filter_mode=settings.relevance_filter_mode,
+        relevance_target_profiles=settings.relevance_target_profiles,
         model_m1=settings.model_m1,
         model_m2=settings.model_m2,
         model_m3=settings.model_m3,
@@ -438,23 +446,20 @@ def _cross_document_engine(
     )
     m2 = _structured_client(settings, ModelTier.M2)
     m3 = _structured_client(settings, ModelTier.M3)
+    m4 = _structured_client(settings, ModelTier.M4)
     return CrossDocumentEngine(
         registry=registry,
         embedding_client=scheduler.embedding_client(embedding),
         m2_client=scheduler.structured_client(m2, tier=ModelTier.M2),
         m3_client=scheduler.structured_client(m3, tier=ModelTier.M3),
+        m4_client=scheduler.structured_client(m4, tier=ModelTier.M4),
         model_m1=settings.model_m1,
         model_m2=settings.model_m2,
         model_m3=settings.model_m3,
+        model_m4=settings.model_m4,
         hard_cannot_link_mode=settings.atomic_hard_cannot_link_mode,
-        package_conflict_mode=settings.package_conflict_mode,
         n9_wire_protocol=settings.n9_wire_protocol,
-        n12_wire_protocol=settings.n12_wire_protocol,
-        n13_wire_protocol=settings.n13_wire_protocol,
         n9_active_requests=settings.n9_active_requests,
-        n12_active_requests=settings.n12_active_requests,
-        n13_active_requests=settings.n13_active_requests,
-        n13_planner_version=settings.n13_planner_version,
     )
 
 
@@ -491,9 +496,10 @@ def _bulk_epoch_engine(
             "atomic_coreference": settings.n9_active_requests,
             "atomic_coreference_escalation": settings.n9_escalation_active_requests,
             "atomic_late_convergence": settings.n9_late_active_requests,
-            "package_assignment": settings.n12_active_requests,
-            "package_wave_c": settings.package_wave_c_active_requests,
-            "package_merge": settings.n13_active_requests,
+            "parent_induction": settings.parent_induction_active_requests,
+            "parent_resolution_r1": settings.parent_resolution_active_requests,
+            "parent_resolution_r2": settings.parent_resolution_active_requests,
+            "parent_reconcile": settings.parent_reconcile_active_requests,
         },
         repair_limit=settings.item_repair_active_requests,
         provider_target=settings.structured_provider_target_concurrency,
@@ -511,18 +517,14 @@ def _bulk_epoch_engine(
         embedding_client=scheduler.embedding_client(embedding),
         m2_client=executor.client(ModelTier.M2),
         m3_client=executor.client(ModelTier.M3),
+        m4_client=executor.client(ModelTier.M4),
         model_m1=settings.model_m1,
         model_m2=settings.model_m2,
         model_m3=settings.model_m3,
+        model_m4=settings.model_m4,
         hard_cannot_link_mode=settings.atomic_hard_cannot_link_mode,
-        package_conflict_mode=settings.package_conflict_mode,
         n9_wire_protocol=settings.n9_wire_protocol,
-        n12_wire_protocol=settings.n12_wire_protocol,
-        n13_wire_protocol=settings.n13_wire_protocol,
         n9_active_requests=settings.n9_active_requests,
-        n12_active_requests=settings.n12_active_requests,
-        n13_active_requests=settings.n13_active_requests,
-        n13_planner_version=settings.n13_planner_version,
     )
     return BulkEpochEngine(
         registry=registry,
@@ -530,16 +532,15 @@ def _bulk_epoch_engine(
         executor=executor,
         field_active_requests=settings.field_active_requests,
         atomic_late_convergence=settings.atomic_late_convergence,
-        package_wave_c=settings.package_wave_c,
-        n13_pair_local_apply=settings.n13_pair_local_apply,
         atomic_late_task_cap=settings.atomic_late_task_cap,
-        package_wave_c_pair_cap=settings.package_wave_c_pair_cap,
         n9_late_active_requests=settings.n9_late_active_requests,
-        package_wave_c_active_requests=settings.package_wave_c_active_requests,
-        late_total_input_budget_ratio=settings.late_total_input_budget_ratio,
-        late_wall_deadline_ratio=settings.late_wall_deadline_ratio,
-        late_max_spoke_members=settings.late_max_spoke_members,
-        late_max_spokes_per_hub=settings.late_max_spokes_per_hub,
+        parent_induction_active_requests=settings.parent_induction_active_requests,
+        parent_resolution_active_requests=settings.parent_resolution_active_requests,
+        parent_reconcile_active_requests=settings.parent_reconcile_active_requests,
+        parent_induction_max_documents=settings.parent_induction_max_documents,
+        parent_induction_max_slices=settings.parent_induction_max_slices,
+        parent_resolution_max_proposals=settings.parent_resolution_max_proposals,
+        parent_resolution_max_existing_parents=settings.parent_resolution_max_existing_parents,
         writer_queue_low_watermark=settings.writer_queue_low_watermark,
         writer_queue_high_watermark=settings.writer_queue_high_watermark,
         writer_queue_hard_limit=settings.writer_queue_hard_limit,
@@ -1085,14 +1086,20 @@ def _doctor(settings: CDECRSettings, args: argparse.Namespace) -> int:
     prompt_root = package_root / "prompts" / "v1"
     cross_prompts = [
         prompt_root / "atomic_coreference.md",
-        prompt_root / "package_assignment.md",
-        prompt_root / "package_merge.md",
+        prompt_root / "parent_occurrence_induction.md",
+        prompt_root / "parent_occurrence_resolution.md",
     ]
+    parent_schemas = {
+        "parent_induction": ParentInductionBatch.model_json_schema(),
+        "parent_resolution": ParentResolutionBatch.model_json_schema(),
+    }
     checks["cross_document_versions"] = {
         "ok": bool(CROSS_DOCUMENT_ENGINE_VERSION and CROSS_DOCUMENT_PROMPT_VERSION)
-        and all(path.is_file() for path in cross_prompts),
+        and all(path.is_file() for path in cross_prompts)
+        and all(bool(schema.get("properties")) for schema in parent_schemas.values()),
         "engine_version": CROSS_DOCUMENT_ENGINE_VERSION,
         "prompt_version": CROSS_DOCUMENT_PROMPT_VERSION,
+        "parent_schema_names": sorted(parent_schemas),
     }
     try:
         knowledge_base = V2KnowledgeBase()
@@ -1105,7 +1112,7 @@ def _doctor(settings: CDECRSettings, args: argparse.Namespace) -> int:
             "field_resolver_version": FIELD_RESOLVER_VERSION,
             "identity_compiler_version": IDENTITY_COMPILER_VERSION,
             "ordering": "v2_kb_then_field_coreference",
-            "package_hint_stage": "n11",
+            "package_hint_stage": "removed_parent_occurrence_v2",
         }
     except (FileNotFoundError, ValueError) as exc:
         checks["canonical_field_resolution"] = {
@@ -1121,8 +1128,10 @@ def _doctor(settings: CDECRSettings, args: argparse.Namespace) -> int:
         "hard_cannot_link": settings.atomic_hard_cannot_link_mode,
         "atomic_default": "m2_joint",
         "atomic_escalation": "m3_joint",
-        "bounded_package": "m0_then_m2",
-        "episode_package": "m2_or_m3",
+        "parent_induction": "m3_bounded_document_sets",
+        "parent_resolution": "m3_bounded_proposal_sets",
+        "parent_reconcile": "m3_same_resolver_review_mode",
+        "package_apply": "frozen_partition_once",
     }
 
     ok = all(bool(check["ok"]) for check in checks.values())

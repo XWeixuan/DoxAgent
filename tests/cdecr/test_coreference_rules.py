@@ -15,19 +15,14 @@ from cdecr.contracts import (
     EvidenceSpan,
     FinancialMetricFields,
     FinancialMetricProjection,
-    LocalPackageHint,
-    MembershipRelation,
     Participant,
     ParticipantRole,
     Predicate,
     TimePrecision,
 )
 from cdecr.coreference_rules import (
-    bounded_package_exact_match,
     hard_cannot_link,
-    package_seed_for_event,
     singleton_atomic_event,
-    singleton_package,
 )
 from cdecr.cross_document_contracts import HardConflictCode
 
@@ -70,10 +65,6 @@ def metric_mention(
                 comparison_basis=ComparisonBasis.ABSOLUTE,
                 accounting_basis=accounting,
             )
-        ),
-        local_package_hint=LocalPackageHint(
-            anchor="MU FY2026-Q4 earnings",
-            relation_to_anchor=MembershipRelation.DISCLOSED_IN,
         ),
     )
 
@@ -134,16 +125,6 @@ def test_analyst_institution_is_identity_but_target_value_is_not() -> None:
     assert HardConflictCode.ANALYST_INSTITUTION in other_institution
 
 
-def test_same_earnings_period_groups_distinct_metrics_but_periods_do_not() -> None:
-    revenue = singleton_atomic_event(metric_mention())
-    revenue_seed = package_seed_for_event(revenue, [metric_mention()])
-    package = singleton_package(revenue, revenue_seed)
-    eps = singleton_atomic_event(metric_mention(mention_id="M2", metric="EPS_GAAP"))
-    next_period = singleton_atomic_event(
-        metric_mention(mention_id="M3", period="FY2027-Q1", metric="EPS_GAAP")
-    )
-    assert bounded_package_exact_match(package_seed_for_event(eps, []), package)
-    assert not bounded_package_exact_match(package_seed_for_event(next_period, []), package)
 
 
 def test_contract_fixture_timestamps_are_timezone_aware() -> None:

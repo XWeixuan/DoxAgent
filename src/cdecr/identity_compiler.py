@@ -322,8 +322,6 @@ class IdentityCompiler:
     def _link_payload(self, mention: EventMention) -> list[dict[str, str | None]]:
         payload: list[dict[str, str | None]] = []
         for link in self.registry.list_field_links_for_mention(mention.mention_id):
-            if link.field_path.startswith("local_package_hint."):
-                continue
             entry = self.registry.resolve_field_registry_entry(link.registry_id)
             if entry is None:
                 continue

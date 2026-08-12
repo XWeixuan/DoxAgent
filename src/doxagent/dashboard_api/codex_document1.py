@@ -31,6 +31,7 @@ from doxagent.horizontal_collection.registry import (
     default_collection_target_registry,
     default_metric_registry,
 )
+from doxagent.model_usage.repository import SQLiteModelUsageRepository
 from doxagent.settings import DoxAgentSettings
 from doxagent.tools.factory import default_real_tool_registry
 from doxagent.workflows.codex_document1.orchestrator import CodexDocument1Orchestrator
@@ -214,6 +215,7 @@ def build_codex_document1_service(settings: DoxAgentSettings) -> CodexDocument1R
         max_attempts=config.node_max_attempts,
         max_subagents=config.max_subagents,
         published_storage=published_storage,
+        usage_repository=SQLiteModelUsageRepository(settings.model_usage_sqlite_path),
     )
     return CodexDocument1RunService(
         orchestrator=orchestrator,

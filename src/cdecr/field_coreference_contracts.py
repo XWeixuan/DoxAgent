@@ -37,7 +37,6 @@ class FieldNamespace(StrEnum):
     ARTIFACT_PRESS_RELEASE = "artifact.press_release"
     ARTIFACT_REPORT = "artifact.report"
     ARTIFACT_AGREEMENT = "artifact.agreement"
-    PACKAGE_ANCHOR = "package_anchor"
 
 
 PARTICIPANT_FIELD_NAMESPACES = frozenset(
@@ -110,7 +109,6 @@ class FieldCoreferenceHints(StrictModel):
     attempted_kb_type: str | None = None
     source_fingerprint: str | None = None
     evidence_group_hash: str | None = None
-    parent_identity_key: str | None = None
 
 
 class FieldCoreferenceInput(StrictModel):

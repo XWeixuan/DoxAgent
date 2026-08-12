@@ -7,17 +7,20 @@ import uuid
 from collections.abc import Sequence
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
+from functools import partial
 from time import perf_counter
 
 from cdecr.bulk_epoch.artifacts import StageArtifact, canonical_hash
-from cdecr.bulk_epoch.executor import AsyncModelExecutor
-from cdecr.bulk_epoch.late_stage import (
+from cdecr.bulk_epoch.atomic_late_stage import (
     LateStageConfig,
     run_atomic_late_convergence,
-    run_package_wave_c,
 )
-from cdecr.bulk_epoch.package_stage import assign_packages_epoch
-from cdecr.bulk_epoch.snapshots import atomic_snapshot, package_snapshot
+from cdecr.bulk_epoch.executor import AsyncModelExecutor
+from cdecr.bulk_epoch.package_stage import (
+    project_parent_partition,
+    resolve_parent_partition,
+)
+from cdecr.bulk_epoch.snapshots import atomic_snapshot
 from cdecr.bulk_epoch.task_ledger import BulkTaskLedger
 from cdecr.bulk_epoch.writer import BulkWriter
 from cdecr.canonical_field_resolution import CanonicalFieldResolutionEngine
@@ -33,15 +36,16 @@ from cdecr.cross_document_contracts import (
     CrossDocumentResult,
     CrossDocumentStatus,
     PackageAssignmentRecord,
-    PackagePairMergeDecision,
 )
 from cdecr.field_coreference import FieldCoreferenceResolver
 from cdecr.identity_compiler import IdentityCompiler
 from cdecr.kb_v2 import V2KnowledgeBase
+from cdecr.parent_occurrence import ParentOccurrenceService
+from cdecr.parent_occurrence_contracts import FrozenParentPartition
 from cdecr.ports import CDECRRegistry
 from cdecr.single_document_contracts import ModelCallSummary
 
-BULK_STAGE_GRAPH_VERSION = "cdecr-bulk-epoch-v6-stage-snapshot-batch-io"
+BULK_STAGE_GRAPH_VERSION = "cdecr-bulk-epoch-v7-parent-occurrence-v2"
 
 
 def _git_commit() -> str | None:
@@ -75,16 +79,15 @@ class BulkEpochEngine:
         field_active_requests: int,
         knowledge_base: V2KnowledgeBase | None = None,
         atomic_late_convergence: bool = True,
-        package_wave_c: bool = True,
-        n13_pair_local_apply: bool = False,
         atomic_late_task_cap: int = 48,
-        package_wave_c_pair_cap: int = 64,
         n9_late_active_requests: int = 24,
-        package_wave_c_active_requests: int = 32,
-        late_total_input_budget_ratio: float = 0.08,
-        late_wall_deadline_ratio: float = 0.12,
-        late_max_spoke_members: int = 4,
-        late_max_spokes_per_hub: int = 4,
+        parent_induction_active_requests: int = 96,
+        parent_resolution_active_requests: int = 128,
+        parent_reconcile_active_requests: int = 96,
+        parent_induction_max_documents: int = 4,
+        parent_induction_max_slices: int = 48,
+        parent_resolution_max_proposals: int = 24,
+        parent_resolution_max_existing_parents: int = 12,
         writer_queue_low_watermark: int = 1000,
         writer_queue_high_watermark: int = 5000,
         writer_queue_hard_limit: int = 10000,
@@ -100,19 +103,20 @@ class BulkEpochEngine:
         self.field_active_requests = max(1, field_active_requests)
         self.knowledge_base = knowledge_base or core.knowledge_base
         self.atomic_late_convergence = atomic_late_convergence
-        self.package_wave_c = package_wave_c
-        self.n13_pair_local_apply = n13_pair_local_apply
-        self.late_total_input_budget_ratio = late_total_input_budget_ratio
-        self.late_wall_deadline_ratio = late_wall_deadline_ratio
+        self.parent_service = ParentOccurrenceService(
+            registry=registry,
+            induction_active_requests=parent_induction_active_requests,
+            resolution_active_requests=parent_resolution_active_requests,
+            reconcile_active_requests=parent_reconcile_active_requests,
+            induction_max_documents=parent_induction_max_documents,
+            induction_max_slices=parent_induction_max_slices,
+            resolution_max_proposals=parent_resolution_max_proposals,
+            resolution_max_existing_parents=parent_resolution_max_existing_parents,
+        )
         self.late_config = LateStageConfig(
             atomic_task_cap=atomic_late_task_cap,
-            package_pair_cap=package_wave_c_pair_cap,
             atomic_active_requests=n9_late_active_requests,
-            package_active_requests=package_wave_c_active_requests,
-            max_spoke_members=late_max_spoke_members,
-            max_spokes_per_hub=late_max_spokes_per_hub,
         )
-        self.core.n13_pair_local_apply = n13_pair_local_apply
         self.writer_queue_low_watermark = writer_queue_low_watermark
         self.writer_queue_high_watermark = writer_queue_high_watermark
         self.writer_queue_hard_limit = writer_queue_hard_limit
@@ -218,9 +222,11 @@ class BulkEpochEngine:
             embedding_client=self.core.embedding_client,
             m2_client=self.core.m2_client,
             m3_client=self.core.m3_client,
+            m4_client=self.core.m4_client,
             model_m1=self.core.model_m1,
             model_m2=self.core.model_m2,
             model_m3=self.core.model_m3,
+            model_m4=self.core.model_m4,
             summaries=summaries,
         )
         ledger = BulkTaskLedger(
@@ -231,7 +237,6 @@ class BulkEpochEngine:
         timings: dict[str, int] = {}
         deterministic_telemetry: dict[str, object] = {}
         writer_telemetry: list[dict[str, object]] = []
-        late_admission: dict[str, dict[str, object]] = {}
         candidate_counts = {
             "atomic_recalled": 0,
             "atomic_hard_conflict_observed": 0,
@@ -488,11 +493,11 @@ class BulkEpochEngine:
                                 "input_hash": task_hash,
                                 "snapshot_hash": base_atomic.snapshot_hash,
                                 "decision_ref": {
-                                "decision": (
-                                    decisions[mention.mention_id].model_dump(mode="json")
-                                    if mention.mention_id in decisions
-                                    else {"deterministic": "NO_CANDIDATE"}
-                                )
+                                    "decision": (
+                                        decisions[mention.mention_id].model_dump(mode="json")
+                                        if mention.mention_id in decisions
+                                        else {"deterministic": "NO_CANDIDATE"}
+                                    )
                                 },
                             }
                         )
@@ -638,421 +643,23 @@ class BulkEpochEngine:
                 epoch_id, status="RUNNING", current_stage="ATOMIC_COMMITTED"
             )
 
-            package_started = perf_counter()
-            self.registry.update_bulk_epoch(
-                epoch_id, status="RUNNING", current_stage="PACKAGE_DECIDE"
-            )
-            package_artifact = self.registry.get_bulk_epoch_artifact(
-                epoch_id, "package_partition_v1"
-            )
-            package_assignments: list[PackageAssignmentRecord] = []
-            package_stage_telemetry: dict[str, object] = {}
-            if package_artifact is None:
-                base_package = package_snapshot(self.registry)
-                atomic_partition_artifact = self.registry.get_bulk_epoch_artifact(
-                    epoch_id, "atomic_partition_v1"
-                )
-                assert atomic_partition_artifact is not None
-                atomic_upstream_artifact = (
-                    self.registry.get_bulk_epoch_artifact(epoch_id, "atomic_late_partition_v1")
-                    or atomic_partition_artifact
-                )
-                self._save_artifact(
-                    epoch_id=epoch_id,
-                    manifest_hash=manifest_hash,
-                    kind="package_plan_v1",
-                    upstream_hash=str(atomic_upstream_artifact["artifact_hash"]),
-                    payload={
-                        "snapshot_hash": base_package.snapshot_hash,
-                        "event_ids": sorted(event.event_id for event in atomic_events),
-                        "waves": 2,
-                        "model_candidate_cap": 6,
-                        "scheduler_edge_cap": 24 * len(atomic_events),
-                    },
-                )
-                with self._writer() as writer:
-                    packages, package_assignments, package_stage_telemetry = assign_packages_epoch(
-                        engine=self.core,
-                        events=atomic_events,
-                        mentions=mentions,
-                        models=models,
-                        run_id=coordinator_run_id,
-                        candidate_counts=candidate_counts,
-                        base_packages=base_package.packages,
-                        writer=writer,
-                        ledger=ledger,
-                        task_snapshot_hash=base_package.snapshot_hash,
-                        use_embedding_batch_executor=self.embedding_batch_executor,
-                        chunked_apply=self.chunked_stage_apply,
-                    )
-                writer_telemetry.append({"stage": "PACKAGE_APPLY", **writer.snapshot().__dict__})
-                wave_c_budget = self._late_budget_snapshot(
-                    summaries=summaries,
-                    timings=timings,
-                    wall_started=wall_started,
-                )
-                late_admission["package_wave_c"] = wave_c_budget
-                if self.package_wave_c and bool(wave_c_budget["admitted"]):
-                    wave_c_started = perf_counter()
-                    self.registry.update_bulk_epoch(
-                        epoch_id, status="RUNNING", current_stage="PACKAGE_WAVE_C"
-                    )
-                    self._save_artifact(
-                        epoch_id=epoch_id,
-                        manifest_hash=manifest_hash,
-                        kind="package_wave_c_plan_v1",
-                        upstream_hash=str(atomic_partition_artifact["artifact_hash"]),
-                        payload={
-                            "snapshot_hash": canonical_hash(
-                                [
-                                    (package.package_id, package.version)
-                                    for package in sorted(
-                                        packages, key=lambda item: item.package_id
-                                    )
-                                ]
-                            ),
-                            "pair_cap": self.late_config.package_pair_cap,
-                            "rounds": 1,
-                            "failure_semantics": "NEUTRAL_OMISSION",
-                        },
-                    )
-                    wave_c_task_hash = canonical_hash(
-                        {
-                            "epoch": epoch_id,
-                            "stage": "PACKAGE_WAVE_C",
-                            "cap": self.late_config.package_pair_cap,
-                        }
-                    )
-                    ledger.start(
-                        stage="N12_C",
-                        task_id="epoch",
-                        input_hash=wave_c_task_hash,
-                        snapshot_hash=str(atomic_partition_artifact["artifact_hash"]),
-                    )
-                    packages, wave_c_telemetry = run_package_wave_c(
-                        engine=self.core,
-                        packages=packages,
-                        models=models,
-                        run_id=coordinator_run_id,
-                        config=self.late_config,
-                    )
-                    ledger.finish(
-                        stage="N12_C",
-                        task_id="epoch",
-                        input_hash=wave_c_task_hash,
-                        snapshot_hash=str(atomic_partition_artifact["artifact_hash"]),
-                        decision_ref=wave_c_telemetry,
-                    )
-                    package_stage_telemetry["wave_c"] = wave_c_telemetry
-                    wave_c_plan = self.registry.get_bulk_epoch_artifact(
-                        epoch_id, "package_wave_c_plan_v1"
-                    )
-                    assert wave_c_plan is not None
-                    self._save_artifact(
-                        epoch_id=epoch_id,
-                        manifest_hash=manifest_hash,
-                        kind="package_wave_c_partition_v1",
-                        upstream_hash=str(wave_c_plan["artifact_hash"]),
-                        payload={
-                            **wave_c_telemetry,
-                            "package_ids": sorted(package.package_id for package in packages),
-                        },
-                    )
-                    timings["package_wave_c_ms"] = round((perf_counter() - wave_c_started) * 1000)
-                package_plan_artifact = self.registry.get_bulk_epoch_artifact(
-                    epoch_id, "package_plan_v1"
-                )
-                assert package_plan_artifact is not None
-                self._save_artifact(
-                    epoch_id=epoch_id,
-                    manifest_hash=manifest_hash,
-                    kind="package_partition_v1",
-                    upstream_hash=str(package_plan_artifact["artifact_hash"]),
-                    payload={
-                        "package_ids": sorted(package.package_id for package in packages),
-                        "assignment_ids": sorted(
-                            assignment.assignment_id for assignment in package_assignments
-                        ),
-                        **package_stage_telemetry,
-                    },
-                )
-            else:
-                packages = [
-                    package
-                    for package_id in package_artifact["payload"]["package_ids"]
-                    if (package := self.registry.get_current_package(str(package_id))) is not None
-                ]
-            timings["package_ms"] = round((perf_counter() - package_started) * 1000)
-            self.registry.update_bulk_epoch(
-                epoch_id, status="RUNNING", current_stage="PACKAGE_REDUCED"
-            )
-
-            n13_started = perf_counter()
-            self.registry.update_bulk_epoch(epoch_id, status="RUNNING", current_stage="N13_DECIDE")
-            final_artifact = self.registry.get_bulk_epoch_artifact(
-                epoch_id, "final_package_partition_v1"
-            )
-            if final_artifact is None:
-                package_partition_artifact = self.registry.get_bulk_epoch_artifact(
-                    epoch_id, "package_partition_v1"
-                )
-                assert package_partition_artifact is not None
-                n13_snapshot = package_snapshot(self.registry)
-                self._save_artifact(
-                    epoch_id=epoch_id,
-                    manifest_hash=manifest_hash,
-                    kind="n13_pair_plan_v1",
-                    upstream_hash=str(package_partition_artifact["artifact_hash"]),
-                    payload={
-                        "snapshot_hash": n13_snapshot.snapshot_hash,
-                        "touched_package_ids": sorted(package.package_id for package in packages),
-                        "planner_version": self.core.n13_planner_version,
-                        "cheap_candidate_universe_cap": 64,
-                        "m3_candidate_cap_per_package": 5,
-                        "batch_size": 12,
-                        "coverage": "INDEXED_MULTI_LANE_BOUNDED_PLAN",
-                    },
-                )
-
-                def n13_task(
-                    pair: tuple[str, str],
-                    status: str,
-                    decision: PackagePairMergeDecision | None,
-                    error_code: str | None,
-                ) -> None:
-                    task_id = f"{pair[0]}|{pair[1]}"
-                    task_hash = canonical_hash({"left": pair[0], "right": pair[1]})
-                    if status == "RUNNING":
-                        ledger.start(
-                            stage="N13",
-                            task_id=task_id,
-                            input_hash=task_hash,
-                            snapshot_hash=n13_snapshot.snapshot_hash,
-                        )
-                    elif status == "SUCCEEDED" and decision is not None:
-                        ledger.finish(
-                            stage="N13",
-                            task_id=task_id,
-                            input_hash=task_hash,
-                            snapshot_hash=n13_snapshot.snapshot_hash,
-                            decision_ref=decision.model_dump(mode="json"),
-                        )
-                    else:
-                        ledger.fail(
-                            stage="N13",
-                            task_id=task_id,
-                            input_hash=task_hash,
-                            snapshot_hash=n13_snapshot.snapshot_hash,
-                            error_code=error_code or "UNJUDGEABLE_FAILED",
-                        )
-
-                n13_budget = self._late_budget_snapshot(
-                    summaries=summaries,
-                    timings=timings,
-                    wall_started=wall_started,
-                )
-                late_admission["n13_pair_local_apply"] = n13_budget
-                n13_apply_started: float | None = None
-
-                def mark_n13_apply_started() -> None:
-                    nonlocal n13_apply_started
-                    n13_apply_started = perf_counter()
-
-                def n13_planner_chunk(
-                    chunk_index: int,
-                    touched_ids: Sequence[str],
-                    pair_count: int,
-                ) -> None:
-                    task_id = f"chunk:{chunk_index}"
-                    task_hash = canonical_hash(
-                        {
-                            "chunk_index": chunk_index,
-                            "touched_package_ids": list(touched_ids),
-                            "pair_count": pair_count,
-                            "planner_version": self.core.n13_planner_version,
-                        }
-                    )
-                    ledger.start(
-                        stage="N13_RECALL_CHUNK",
-                        task_id=task_id,
-                        input_hash=task_hash,
-                        snapshot_hash=n13_snapshot.snapshot_hash,
-                    )
-                    ledger.finish(
-                        stage="N13_RECALL_CHUNK",
-                        task_id=task_id,
-                        input_hash=task_hash,
-                        snapshot_hash=n13_snapshot.snapshot_hash,
-                        decision_ref={"pair_count": pair_count},
-                    )
-
-                original_pair_local_apply = self.core.n13_pair_local_apply
-                self.core.n13_pair_local_apply = self.n13_pair_local_apply
-                n13_apply_telemetry: dict[str, int] = {}
-                try:
-                    final_packages = self.core._correct_packages_v13(
-                        packages,
-                        models,
-                        run_id=coordinator_run_id,
-                        task_hook=n13_task,
-                        apply_started_hook=mark_n13_apply_started,
-                        apply_telemetry=n13_apply_telemetry,
-                        planner_chunk_hook=n13_planner_chunk,
-                    )
-                finally:
-                    self.core.n13_pair_local_apply = original_pair_local_apply
-                timings["n13_late_apply_ms"] = (
-                    0
-                    if n13_apply_started is None
-                    else round((perf_counter() - n13_apply_started) * 1000)
-                )
-                timings.update(n13_apply_telemetry)
-                package_stage_telemetry.update(n13_apply_telemetry)
-                n13_apply_plan = {
-                    "pair_local": self.n13_pair_local_apply,
-                    "max_spoke_members": self.late_config.max_spoke_members,
-                    "max_spokes_per_hub": self.late_config.max_spokes_per_hub,
-                    "rounds": 1,
-                    "package_ids": sorted(package.package_id for package in final_packages),
-                }
-                n13_plan_artifact = self.registry.get_bulk_epoch_artifact(
-                    epoch_id, "n13_pair_plan_v1"
-                )
-                assert n13_plan_artifact is not None
-                self._save_artifact(
-                    epoch_id=epoch_id,
-                    manifest_hash=manifest_hash,
-                    kind="n13_late_apply_plan_v1",
-                    upstream_hash=str(n13_plan_artifact["artifact_hash"]),
-                    payload=n13_apply_plan,
-                )
-                n13_apply_hash = canonical_hash(n13_apply_plan)
-                ledger.start(
-                    stage="N13_LATE_APPLY",
-                    task_id="epoch",
-                    input_hash=n13_apply_hash,
-                    snapshot_hash=n13_snapshot.snapshot_hash,
-                )
-                ledger.finish(
-                    stage="N13_LATE_APPLY",
-                    task_id="epoch",
-                    input_hash=n13_apply_hash,
-                    snapshot_hash=n13_snapshot.snapshot_hash,
-                    decision_ref=n13_apply_plan,
-                )
-                n13_plan_artifact = self.registry.get_bulk_epoch_artifact(
-                    epoch_id, "n13_pair_plan_v1"
-                )
-                assert n13_plan_artifact is not None
-                self._save_artifact(
-                    epoch_id=epoch_id,
-                    manifest_hash=manifest_hash,
-                    kind="final_package_partition_v1",
-                    upstream_hash=str(n13_plan_artifact["artifact_hash"]),
-                    payload={
-                        "package_ids": sorted(package.package_id for package in final_packages)
-                    },
-                )
-            else:
-                final_packages = [
-                    package
-                    for package_id in final_artifact["payload"]["package_ids"]
-                    if (package := self.registry.get_current_package(str(package_id))) is not None
-                ]
-            timings["n13_ms"] = round((perf_counter() - n13_started) * 1000)
-            self.registry.update_bulk_epoch(
-                epoch_id, status="RUNNING", current_stage="PACKAGE_COMMITTED"
-            )
-            timings["wall_clock_ms"] = round((perf_counter() - wall_started) * 1000)
-            telemetry = [item.__dict__ for item in self.executor.telemetry()]
-            provider_telemetry = self.executor.provider_snapshot()
-            result_payload = {
-                "message_count": len(ordered_ids),
-                "mention_count": len(mentions),
-                "atomic_count": len(self.registry.list_current_atomic_events(limit=10000)),
-                "package_count": len(self.registry.list_current_packages(limit=10000)),
-                "stage_timings": timings,
-                "package_stage": package_stage_telemetry,
-                "async_executor": {
-                    "capacity_config": self.executor.capacity_config(),
-                    "call_count": len(telemetry),
-                    "max_active_by_tier": self._max_active_by_tier(telemetry),
-                    "queue_wait_ms": sum(_as_int(item["queue_wait_ms"]) for item in telemetry),
-                    "failed_call_count": sum(item["status"] == "FAILED" for item in telemetry),
-                    "provider": provider_telemetry.__dict__,
-                },
-                "bulk_writer": writer_telemetry,
-                "deterministic_runtime": {
-                    **deterministic_telemetry,
-                    "embedding": {
-                        key: value.__dict__
-                        for key, value in self.core._embedding_telemetry_by_stage.items()
-                    },
-                    "embedding_batch_count": sum(
-                        value.batch_count
-                        for value in self.core._embedding_telemetry_by_stage.values()
-                    ),
-                    "embedding_batch_size_distribution": [
-                        size
-                        for value in self.core._embedding_telemetry_by_stage.values()
-                        for size in value.batch_sizes
-                    ],
-                    "time_to_first_model_request_ms": (
-                        max(
-                            0,
-                            min(_as_int(item["started_at_ms"]) for item in telemetry)
-                            - round(wall_started * 1000),
-                        )
-                        if telemetry
-                        else None
-                    ),
-                    "runtime_flags": {
-                        "batch_audit_write": self.batch_audit_write,
-                        "stage_read_snapshot": self.stage_read_snapshot,
-                        "chunked_stage_apply": self.chunked_stage_apply,
-                        "batch_task_ledger": self.batch_task_ledger,
-                        "embedding_batch_executor": self.embedding_batch_executor,
-                    },
-                },
-                "candidate_counts": candidate_counts,
-                "audit_degraded": self.core._bulk_audit_degraded,
-                "late_budget": {
-                    "input_ratio": self.late_total_input_budget_ratio,
-                    "wall_deadline_ratio": self.late_wall_deadline_ratio,
-                    "single_round": True,
-                    "admission": late_admission,
-                },
-                "final_package_ids": sorted(package.package_id for package in final_packages),
-            }
-            self.registry.update_bulk_epoch(
-                epoch_id,
-                status="FINALIZED",
-                current_stage="FINALIZED",
-                result=result_payload,
-            )
-            results = self._results_from_registry(
+            return self._run_parent_occurrence_package_stage(
                 epoch_id=epoch_id,
-                message_ids=ordered_ids,
+                manifest_hash=manifest_hash,
+                ordered_ids=ordered_ids,
+                mentions=mentions,
+                atomic_assignments=atomic_assignments,
+                models=models,
                 summaries=summaries,
                 candidate_counts=candidate_counts,
-                reused=False,
+                coordinator_run_id=coordinator_run_id,
                 started_at=started_at,
-                atomic_assignments=atomic_assignments,
-                package_assignments=package_assignments,
+                wall_started=wall_started,
+                timings=timings,
+                writer_telemetry=writer_telemetry,
+                deterministic_telemetry=deterministic_telemetry,
             )
-            self.registry.complete_cross_document_run(
-                results[0].model_copy(
-                    update={
-                        "run_id": coordinator_run_id,
-                        "atomic_events": self.registry.list_current_atomic_events(limit=10000),
-                        "packages": self.registry.list_current_packages(limit=10000),
-                        "atomic_assignments": atomic_assignments,
-                        "package_assignments": package_assignments,
-                        "model_calls": summaries,
-                    }
-                )
-            )
-            return results
+
         except Exception as exc:
             error_code = str(getattr(exc, "code", type(exc).__name__))
             self.registry.update_bulk_epoch(
@@ -1087,6 +694,268 @@ class BulkEpochEngine:
                 for index, message_id in enumerate(ordered_ids)
             ]
 
+    def _run_parent_occurrence_package_stage(
+        self,
+        *,
+        epoch_id: str,
+        manifest_hash: str,
+        ordered_ids: list[str],
+        mentions: Sequence[object],
+        atomic_assignments: list[AtomicAssignmentRecord],
+        models: _AuditedModels,
+        summaries: list[ModelCallSummary],
+        candidate_counts: dict[str, int],
+        coordinator_run_id: str,
+        started_at: datetime,
+        wall_started: float,
+        timings: dict[str, int],
+        writer_telemetry: list[dict[str, object]],
+        deterministic_telemetry: dict[str, object],
+    ) -> list[CrossDocumentResult]:
+        """Resolve the complete parent partition, then perform the sole Package Apply."""
+
+        package_started = perf_counter()
+        self.registry.update_bulk_epoch(epoch_id, status="RUNNING", current_stage="PARENT_INDUCE")
+        applied_artifact = self.registry.get_bulk_epoch_artifact(epoch_id, "package_partition_v2")
+        package_assignments: list[PackageAssignmentRecord] = []
+        package_stage_telemetry: dict[str, object] = {}
+        if applied_artifact is None:
+            final_events = self.registry.list_current_atomic_events(limit=10000)
+            existing_packages = self.registry.list_current_packages(limit=10000)
+            frozen_artifact = self.registry.get_bulk_epoch_artifact(
+                epoch_id, "package_frozen_partition_v2"
+            )
+            if frozen_artifact is None:
+                self.registry.update_bulk_epoch(
+                    epoch_id, status="RUNNING", current_stage="PARENT_RESOLVE"
+                )
+                stage_result = resolve_parent_partition(
+                    service=self.parent_service,
+                    events=final_events,
+                    mentions=None,
+                    sources=None,
+                    existing_packages=existing_packages,
+                    models=models,
+                    run_id=coordinator_run_id,
+                    persistence_scope_id=epoch_id,
+                )
+                package_stage_telemetry = dict(stage_result.telemetry)
+                if stage_result.status != "FINALIZED" or stage_result.partition is None:
+                    failure_payload: dict[str, object] = {
+                        "status": stage_result.status,
+                        "failures": [
+                            item.model_dump(mode="json") for item in stage_result.failures
+                        ],
+                        "telemetry": package_stage_telemetry,
+                    }
+                    self._save_artifact(
+                        epoch_id=epoch_id,
+                        manifest_hash=manifest_hash,
+                        kind=(
+                            "package_partial_parent_resolution_v2:"
+                            f"{canonical_hash(failure_payload)[:16]}"
+                        ),
+                        upstream_hash=manifest_hash,
+                        payload=failure_payload,
+                    )
+                    timings["package_ms"] = round((perf_counter() - package_started) * 1000)
+                    timings["wall_clock_ms"] = round((perf_counter() - wall_started) * 1000)
+                    self.registry.update_bulk_epoch(
+                        epoch_id,
+                        status="PARTIAL_PARENT_RESOLUTION",
+                        current_stage="PARTIAL_PARENT_RESOLUTION",
+                        result={
+                            **failure_payload,
+                            "stage_timings": timings,
+                        },
+                    )
+                    return [
+                        CrossDocumentResult(
+                            run_id=f"{epoch_id}:{index}",
+                            processing_key=canonical_hash(
+                                {"epoch": epoch_id, "message": message_id}
+                            ),
+                            message_id=message_id,
+                            status=CrossDocumentStatus.PARTIAL_PARENT_RESOLUTION,
+                            atomic_events=[
+                                event
+                                for event in final_events
+                                if set(event.mention_ids).intersection(
+                                    {
+                                        item.mention_id
+                                        for item in self.registry.list_mentions_for_message(
+                                            message_id
+                                        )
+                                    }
+                                )
+                            ],
+                            packages=[],
+                            atomic_assignments=atomic_assignments,
+                            package_assignments=[],
+                            model_calls=summaries if index == 0 else [],
+                            candidate_counts=candidate_counts,
+                            failure_stage="parent_occurrence",
+                            error_code="PARTIAL_PARENT_RESOLUTION",
+                            started_at=started_at,
+                            finished_at=datetime.now(UTC),
+                        )
+                        for index, message_id in enumerate(ordered_ids)
+                    ]
+                partition = stage_result.partition
+                self._save_artifact(
+                    epoch_id=epoch_id,
+                    manifest_hash=manifest_hash,
+                    kind="package_frozen_partition_v2",
+                    upstream_hash=partition.snapshot_hash,
+                    payload=partition.model_dump(mode="json"),
+                )
+            else:
+                partition = FrozenParentPartition.model_validate(frozen_artifact["payload"])
+                package_stage_telemetry = {
+                    "resumed_from_frozen_partition": True,
+                    "partition_hash": partition.partition_hash,
+                }
+            self.registry.update_bulk_epoch(
+                epoch_id, status="RUNNING", current_stage="PACKAGE_APPLY"
+            )
+            (
+                packages,
+                memberships,
+                package_assignments,
+                external_relations,
+                redirects,
+            ) = project_parent_partition(
+                partition,
+                events=final_events,
+                existing_packages=existing_packages,
+                run_id=coordinator_run_id,
+            )
+            records: list[dict[str, object]] = [{"package": package} for package in packages]
+            assignment_by_event = {item.event_id: item for item in package_assignments}
+            for membership in memberships:
+                records.append(
+                    {
+                        "memberships": [membership],
+                        "assignment": assignment_by_event[membership.event_id],
+                    }
+                )
+            if external_relations:
+                records.append({"external_relations": external_relations})
+            with self._writer() as writer:
+                apply_future = writer.submit(
+                    partial(self.registry.save_package_stage_batch, records, chunk_size=64)
+                )
+                apply_result = apply_future.result()
+                for source_id, target_id in redirects:
+                    writer.submit(
+                        partial(
+                            self.registry.save_package_redirect,
+                            source_package_id=source_id,
+                            target_package_id=target_id,
+                            run_id=coordinator_run_id,
+                            reason="PARENT_OCCURRENCE_V2_EXISTING_PARENT_CONTINUITY",
+                        )
+                    ).result()
+            writer_telemetry.append({"stage": "PACKAGE_APPLY", **writer.snapshot().__dict__})
+            package_stage_telemetry.update(
+                {
+                    "apply_chunk_count": (len(records) + 63) // 64,
+                    "apply_retry_count": int(apply_result.get("retries", 0)),
+                    "apply_degraded_count": int(apply_result.get("degraded", 0)),
+                    "redirect_count": len(redirects),
+                    "external_relation_count": len(external_relations),
+                }
+            )
+            if int(apply_result.get("degraded", 0)):
+                raise RuntimeError("PACKAGE_APPLY_DEGRADED")
+            self._save_artifact(
+                epoch_id=epoch_id,
+                manifest_hash=manifest_hash,
+                kind="package_partition_v2",
+                upstream_hash=partition.partition_hash,
+                payload={
+                    "partition_hash": partition.partition_hash,
+                    "package_ids": sorted(item.package_id for item in packages),
+                    "assignment_ids": sorted(item.assignment_id for item in package_assignments),
+                    **package_stage_telemetry,
+                },
+            )
+        else:
+            packages = [
+                package
+                for package_id in applied_artifact["payload"]["package_ids"]
+                if (package := self.registry.get_current_package(str(package_id))) is not None
+            ]
+            event_ids = {event_id for package in packages for event_id in package.member_event_ids}
+            package_assignments = [
+                assignment
+                for event_id in sorted(event_ids)
+                if (assignment := self.registry.get_latest_package_assignment_for_event(event_id))
+                is not None
+            ]
+            package_stage_telemetry = {
+                key: value
+                for key, value in applied_artifact["payload"].items()
+                if key not in {"package_ids", "assignment_ids"}
+            }
+        final_packages = packages
+        timings["package_ms"] = round((perf_counter() - package_started) * 1000)
+        timings["wall_clock_ms"] = round((perf_counter() - wall_started) * 1000)
+        self.registry.update_bulk_epoch(
+            epoch_id, status="RUNNING", current_stage="PACKAGE_COMMITTED"
+        )
+        telemetry = [item.__dict__ for item in self.executor.telemetry()]
+        provider_telemetry = self.executor.provider_snapshot()
+        result_payload = {
+            "message_count": len(ordered_ids),
+            "mention_count": len(mentions),
+            "atomic_count": len(self.registry.list_current_atomic_events(limit=10000)),
+            "package_count": len(self.registry.list_current_packages(limit=10000)),
+            "stage_timings": timings,
+            "package_stage": package_stage_telemetry,
+            "async_executor": {
+                "capacity_config": self.executor.capacity_config(),
+                "call_count": len(telemetry),
+                "max_active_by_tier": self._max_active_by_tier(telemetry),
+                "queue_wait_ms": sum(_as_int(item["queue_wait_ms"]) for item in telemetry),
+                "failed_call_count": sum(item["status"] == "FAILED" for item in telemetry),
+                "provider": provider_telemetry.__dict__,
+            },
+            "bulk_writer": writer_telemetry,
+            "deterministic_runtime": deterministic_telemetry,
+            "candidate_counts": candidate_counts,
+            "final_package_ids": sorted(package.package_id for package in final_packages),
+        }
+        self.registry.update_bulk_epoch(
+            epoch_id,
+            status="FINALIZED",
+            current_stage="FINALIZED",
+            result=result_payload,
+        )
+        results = self._results_from_registry(
+            epoch_id=epoch_id,
+            message_ids=ordered_ids,
+            summaries=summaries,
+            candidate_counts=candidate_counts,
+            reused=False,
+            started_at=started_at,
+            atomic_assignments=atomic_assignments,
+            package_assignments=package_assignments,
+        )
+        self.registry.complete_cross_document_run(
+            results[0].model_copy(
+                update={
+                    "run_id": coordinator_run_id,
+                    "atomic_events": self.registry.list_current_atomic_events(limit=10000),
+                    "packages": self.registry.list_current_packages(limit=10000),
+                    "atomic_assignments": atomic_assignments,
+                    "package_assignments": package_assignments,
+                    "model_calls": summaries,
+                }
+            )
+        )
+        return results
+
     def _save_artifact(
         self,
         *,
@@ -1110,41 +979,6 @@ class BulkEpochEngine:
             upstream_hash=upstream_hash,
             payload=payload,
         )
-
-    def _late_budget_snapshot(
-        self,
-        *,
-        summaries: list[ModelCallSummary],
-        timings: dict[str, int],
-        wall_started: float,
-    ) -> dict[str, object]:
-        late_stages = {"atomic_late_convergence", "package_wave_c"}
-        late_input = sum(
-            summary.input_tokens or 0 for summary in summaries if summary.stage in late_stages
-        )
-        non_late_input = sum(
-            summary.input_tokens or 0 for summary in summaries if summary.stage not in late_stages
-        )
-        late_wall_ms = sum(
-            timings.get(stage, 0) for stage in ("atomic_late_ms", "package_wave_c_ms")
-        )
-        elapsed_ms = round((perf_counter() - wall_started) * 1000)
-        non_late_wall_ms = max(1, elapsed_ms - late_wall_ms)
-        input_ratio = late_input / max(1, non_late_input)
-        wall_ratio = late_wall_ms / non_late_wall_ms
-        input_allowed = input_ratio <= self.late_total_input_budget_ratio
-        wall_allowed = wall_ratio <= self.late_wall_deadline_ratio
-        return {
-            "admitted": input_allowed and wall_allowed,
-            "input_allowed": input_allowed,
-            "wall_allowed": wall_allowed,
-            "late_input_tokens": late_input,
-            "non_late_input_tokens": non_late_input,
-            "observed_input_ratio": input_ratio,
-            "late_wall_ms": late_wall_ms,
-            "non_late_wall_ms": non_late_wall_ms,
-            "observed_wall_ratio": wall_ratio,
-        }
 
     @staticmethod
     def _max_active_by_tier(telemetry: list[dict[str, object]]) -> dict[str, int]:

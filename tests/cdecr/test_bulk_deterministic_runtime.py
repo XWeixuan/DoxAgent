@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import hashlib
-from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, cast
@@ -9,26 +8,17 @@ from typing import Any, cast
 import pytest
 
 from cdecr.bulk_epoch.embedding import EmbeddingBatchExecutor, EmbeddingWorkItem
-from cdecr.bulk_epoch.stage_runtime import StageReadSnapshot
 from cdecr.bulk_epoch.task_ledger import BulkTaskLedger
 from cdecr.bulk_epoch.writer import BulkWriter
 from cdecr.canonical_field_resolution import (
     CanonicalFieldResolutionEngine,
     FieldOccurrence,
 )
-from cdecr.coreference_rules import (
-    package_seed_for_event,
-    singleton_atomic_event,
-    singleton_package,
-)
 from cdecr.field_coreference_contracts import (
-    CanonicalFieldRegistryEntry,
     FieldCoreferenceHints,
     FieldCoreferenceInput,
     FieldNamespace,
 )
-from cdecr.identity_compiler import IdentityCompiler
-from cdecr.package_engine import PackageProfileCompiler
 from cdecr.ports import DecisionAuditRecord, EmbeddingResult
 from cdecr.registry import ImmutableRecordConflict, SQLiteCDECRRegistry
 from tests.cdecr.test_cross_document import add, metric_mention, source
@@ -99,29 +89,6 @@ def test_batch_task_ledger_preserves_attempt_and_stage_times(tmp_path: Path) -> 
     assert [row["attempt_count"] for row in rows[1:]] == [1, 1, 1]
 
 
-def test_package_anchor_create_merges_concurrent_parent_aliases(tmp_path: Path) -> None:
-    value = registry(tmp_path / "anchor-race.sqlite3")
-    entries = [
-        CanonicalFieldRegistryEntry(
-            id="field:shared-parent",
-            namespace=FieldNamespace.PACKAGE_ANCHOR,
-            canonical_text=text,
-            aliases=[text],
-        )
-        for text in (
-            "Micron FY2026 Q3 results",
-            "Micron FY2026 Q3 earnings report",
-        )
-    ]
-    with ThreadPoolExecutor(max_workers=2) as pool:
-        results = list(pool.map(value.create_field_registry_entry, entries))
-    stored = value.get_field_registry_entry("field:shared-parent")
-    assert stored is not None
-    assert sorted(results) == [False, True]
-    assert set(stored.aliases) == {
-        "Micron FY2026 Q3 results",
-        "Micron FY2026 Q3 earnings report",
-    }
 
 
 def test_field_epoch_localizes_failure_and_skips_completed_task_on_resume(
@@ -161,11 +128,6 @@ def test_field_epoch_localizes_failure_and_skips_completed_task_on_resume(
         engine,
         "routed_occurrences",
         lambda _source, _mentions: occurrences,
-    )
-    monkeypatch.setattr(
-        engine,
-        "package_hint_occurrences",
-        lambda _source, _mentions, *, run_id=None: [],
     )
     fail_bad = True
     calls: list[str] = []
@@ -209,43 +171,6 @@ def test_field_epoch_localizes_failure_and_skips_completed_task_on_resume(
     assert resumed.skipped_group_count == 1
 
 
-def test_stage_snapshot_and_chunk_apply_match_single_writes(tmp_path: Path) -> None:
-    batch = registry(tmp_path / "batch.sqlite3")
-    single = registry(tmp_path / "single.sqlite3")
-    mention = metric_mention("MSG-1")
-    for value in (batch, single):
-        add(value, source("MSG-1"), mention)
-    profile = IdentityCompiler(registry=single, catalog_hash="test").compile(
-        mention
-    ).identity_profile
-    assert profile is not None
-    event = singleton_atomic_event(mention, identity_profile=profile)
-    single.save_atomic_event(event)
-    batch_result = batch.save_atomic_stage_batch([{"event": event}])
-    assert batch_result["degraded"] == 0
-    assert batch.get_current_atomic_event(event.event_id) == single.get_current_atomic_event(
-        event.event_id
-    )
-    seed = package_seed_for_event(event, [mention])
-    package = singleton_package(event, seed)
-    single.save_package(package)
-    package_result = batch.save_package_stage_batch([{"package": package}])
-    assert package_result["degraded"] == 0
-    assert batch.get_current_package(package.package_id) == single.get_current_package(
-        package.package_id
-    )
-    snapshot = StageReadSnapshot.load(batch)
-    assert snapshot.mentions_by_id[mention.mention_id] == mention
-    assert snapshot.events_by_id[event.event_id] == event
-    assert snapshot.packages_by_id[package.package_id] == package
-    compiler = PackageProfileCompiler(batch)
-    assert compiler.compile(
-        package,
-        [event],
-        seed=seed,
-        force_version=1,
-        read_snapshot=snapshot,
-    ) == compiler.compile(package, [event], seed=seed, force_version=1)
 
 
 class _EmbeddingModels:

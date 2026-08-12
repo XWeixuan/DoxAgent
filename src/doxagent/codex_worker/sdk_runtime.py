@@ -12,7 +12,8 @@ from typing import Any, Protocol
 from openai_codex import ApprovalMode, AsyncCodex, CodexConfig, Sandbox
 from openai_codex.types import ReasoningEffort
 
-from doxagent.codex_worker.schema import WorkerRunRequest
+from doxagent.codex_worker.schema import WorkerRunRequest, WorkerTurnTelemetry
+from doxagent.codex_worker.telemetry import project_turn_telemetry
 from doxagent.data_runtime.contracts import build_data_tool_contracts
 from doxagent.data_runtime.policy import DataCapabilityCodec, DataToolPolicyRegistry
 from doxagent.mcp.data_server import GUIDE_TOOL_NAME, READ_TOOL_NAME
@@ -27,6 +28,7 @@ class WorkerTurnResult:
     status: str
     final_response: str | None
     error_message: str | None = None
+    telemetry: WorkerTurnTelemetry | None = None
 
 
 class TurnHandle(Protocol):
@@ -48,12 +50,20 @@ class _SdkTurnHandle:
         error = getattr(result, "error", None)
         error_message = str(error) if error is not None else None
         status = getattr(result.status, "value", str(result.status))
+        telemetry = None
+        if any(hasattr(result, name) for name in ("items", "usage", "duration_ms")):
+            telemetry = project_turn_telemetry(
+                items=getattr(result, "items", ()),
+                usage=getattr(result, "usage", None),
+                duration_ms=getattr(result, "duration_ms", None),
+            )
         return WorkerTurnResult(
             thread_id=self._thread_id,
             turn_id=result.id,
             status=status,
             final_response=result.final_response,
             error_message=error_message,
+            telemetry=telemetry,
         )
 
     async def interrupt(self) -> None:
@@ -184,13 +194,10 @@ class OpenAICodexRuntime:
                 approval_mode=ApprovalMode.deny_all,
                 config=sdk_config,
                 base_instructions=(
-                    "Work only inside the current run workspace. Read context/ and the named "
-                    "current attempt input file under attempts/<attempt>/input/. That input is "
-                    "already present and readable; use a file-reading tool before answering. "
-                    "Write node results only under the current attempt output directory named in "
-                    "the prompt. "
-                    "Use Data MCP semantic tools for governed data and data_tool_guide when tool "
-                    "routing is unclear. Cite only returned attempt-local O# aliases. "
+                    "Work only inside the current run workspace and preserve workspace audit "
+                    "boundaries. Read the attempt-local AGENTS.md and task.json named in the turn "
+                    "before acting, then follow their file paths. Use configured MCP tools only "
+                    "within their granted capability. "
                     f"Never spawn more than {request.max_subagents} subagents."
                 ),
             )

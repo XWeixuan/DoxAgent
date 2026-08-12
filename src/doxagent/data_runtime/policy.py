@@ -38,6 +38,7 @@ class DataCapabilityClaims(DataRuntimeModel):
     read_only: bool = True
     expires_at: int
     nonce: str
+    pilot_case_id: str | None = None
     audience: str = "doxagent-data-mcp"
     issued_at: int = Field(default_factory=lambda: int(time.time()))
 
@@ -129,6 +130,7 @@ class DataCapabilityCodec:
         cutoff_at: datetime,
         enabled_tool_ids: Iterable[str],
         ttl_seconds: int = 7_200,
+        pilot_case_id: str | None = None,
     ) -> str:
         claims = DataCapabilityClaims(
             run_id=run_id,
@@ -140,6 +142,7 @@ class DataCapabilityCodec:
             enabled_tool_ids=sorted(set(enabled_tool_ids)),
             expires_at=int(time.time()) + ttl_seconds,
             nonce=uuid4().hex,
+            pilot_case_id=pilot_case_id,
         )
         raw = json.dumps(
             claims.model_dump(mode="json"),

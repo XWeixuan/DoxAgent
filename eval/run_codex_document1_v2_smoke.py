@@ -25,9 +25,11 @@ from doxagent.horizontal_collection.collector import HorizontalCollector
 from doxagent.horizontal_collection.compiler import HorizontalStateCompiler
 from doxagent.horizontal_collection.schema import (
     CollectionObservation,
+    CollectionTargetDefinition,
     HorizontalCollectionBundle,
     HorizontalCollectionManifest,
 )
+from doxagent.model_usage.repository import SQLiteModelUsageRepository
 from doxagent.settings import DoxAgentSettings
 from doxagent.workflows.codex_document1.orchestrator import CodexDocument1Orchestrator
 from doxagent.workflows.codex_document1.schema import Document1V2RunRequest
@@ -38,6 +40,18 @@ class SmokeHorizontalCollector(HorizontalCollector):
 
     def __init__(self) -> None:
         pass
+
+    @property
+    def targets(self) -> tuple[CollectionTargetDefinition, ...]:
+        return ()
+
+    @property
+    def metric_registry_version(self) -> str:
+        return "smoke-v1"
+
+    @property
+    def target_registry_version(self) -> str:
+        return "smoke-v1"
 
     def collect(
         self, *, run_id: str, ticker: str
@@ -153,6 +167,7 @@ async def _run(args: argparse.Namespace) -> dict[str, object]:
         timeout_seconds=900,
         max_attempts=2,
         max_subagents=args.max_subagents,
+        usage_repository=SQLiteModelUsageRepository(settings.model_usage_sqlite_path),
     )
     try:
         bundle = await orchestrator.run(

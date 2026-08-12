@@ -1,0 +1,38 @@
+model = "gpt-5.6-sol"
+model_reasoning_effort = "high"
+approval_policy = "never"
+sandbox_mode = "workspace-write"
+
+[features]
+multi_agent = true
+
+[mcp_servers.data]
+command = "<ABSOLUTE_VENV_PYTHON>"
+args = ["-m", "doxagent.mcp.data_server"]
+cwd = "<CASE_ROOT>"
+enabled_tools = ["data_tool_guide", "read_observation", "<NODE_TOOL>"]
+required = true
+startup_timeout_sec = 20
+tool_timeout_sec = 120
+
+[mcp_servers.data.env]
+DOXAGENT_DATA_MCP_CAPABILITY = "<SHORT_LIVED_CAPABILITY>"
+DOXAGENT_DATA_MCP_PUBLIC_KEY = "<PUBLIC_KEY>"
+DOXAGENT_OBSERVATION_CONTROL_ROOT = "<CONTROL_ROOT>"
+DOXAGENT_PILOT_ENV_FILE = "D:\\DoxAgentPilot\\runtime\\.env.local"
+
+[mcp_servers.source_capture]
+command = "<ABSOLUTE_VENV_PYTHON>"
+args = ["-m", "doxagent.mcp.source_capture_server"]
+cwd = "<CASE_ROOT>"
+enabled_tools = ["capture_source"]
+required = false
+startup_timeout_sec = 10
+tool_timeout_sec = 30
+
+[mcp_servers.source_capture.env]
+DOXAGENT_CODEX_RUN_ID = "<RUN_ID>"
+DOXAGENT_CODEX_ATTEMPT_ID = "<ATTEMPT_ID>"
+DOXAGENT_PILOT_CASE_ID = "<CASE_ID>"
+DOXAGENT_OBSERVATION_CONTROL_ROOT = "<CONTROL_ROOT>"
+DOXAGENT_PILOT_ENV_FILE = "D:\\DoxAgentPilot\\runtime\\.env.local"

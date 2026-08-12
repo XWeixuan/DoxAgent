@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import json
 import re
 from collections.abc import Mapping, Sequence
@@ -16,6 +17,7 @@ from cdecr.contracts import StrictModel
 from cdecr.model_boundary import compact_wire_schema
 from cdecr.ports import (
     EmbeddingResult,
+    ResponsesModelRequest,
     StructuredModelRequest,
     StructuredModelResult,
 )
@@ -105,7 +107,20 @@ def _reasoning_usage_value(usage: object | None) -> int | None:
     details = getattr(usage, "completion_tokens_details", None)
     if details is None and isinstance(usage, Mapping):
         details = usage.get("completion_tokens_details")
+    if details is None:
+        details = getattr(usage, "output_tokens_details", None)
+    if details is None and isinstance(usage, Mapping):
+        details = usage.get("output_tokens_details")
     return _usage_value(details, "reasoning_tokens", "thinking_tokens")
+
+
+def _cached_input_usage_value(usage: object | None) -> int | None:
+    if usage is None:
+        return None
+    details = getattr(usage, "input_tokens_details", None)
+    if details is None and isinstance(usage, Mapping):
+        details = usage.get("input_tokens_details")
+    return _usage_value(details, "cached_tokens", "cached_input_tokens")
 
 
 def _should_rotate_key(exc: Exception) -> bool:
@@ -130,6 +145,8 @@ def _structured_result_from_text(
     reasoning_tokens: int | None,
     request_id: str | None,
     started_at: float,
+    cached_input_tokens: int | None = None,
+    response_id: str | None = None,
 ) -> StructuredModelResult:
     if not isinstance(text, str) or not text.strip():
         raise ModelAdapterError(
@@ -164,9 +181,52 @@ def _structured_result_from_text(
         input_tokens=input_tokens,
         output_tokens=output_tokens,
         reasoning_tokens=reasoning_tokens,
+        cached_input_tokens=cached_input_tokens,
         latency_ms=round((perf_counter() - started_at) * 1000),
         request_id=request_id,
+        response_id=response_id,
     )
+
+
+def _responses_input_with_schema(request: ResponsesModelRequest) -> list[dict[str, Any]]:
+    values = copy.deepcopy(request.input)
+    schema = json.dumps(
+        compact_wire_schema(request.json_schema),
+        ensure_ascii=False,
+        separators=(",", ":"),
+    )
+    instruction = (
+        "Return exactly one valid JSON object matching this JSON Schema: "
+        f"{schema}. Do not use Markdown or code fences."
+    )
+    for item in reversed(values):
+        if item.get("role") != "user":
+            continue
+        content = item.get("content")
+        if isinstance(content, str):
+            item["content"] = f"{content}\n{instruction}"
+            return values
+    values.append({"role": "user", "content": instruction})
+    return values
+
+
+def _responses_kwargs(
+    *,
+    model: str,
+    request: ResponsesModelRequest,
+    session_cache_header: bool,
+) -> dict[str, Any]:
+    kwargs: dict[str, Any] = {
+        "model": model,
+        "input": _responses_input_with_schema(request),
+        "text": {"format": {"type": request.output_mode}},
+        "reasoning": {"effort": request.reasoning_effort},
+    }
+    if request.previous_response_id is not None:
+        kwargs["previous_response_id"] = request.previous_response_id
+    if request.session_cache and session_cache_header:
+        kwargs["extra_headers"] = {"x-dashscope-session-cache": "enable"}
+    return kwargs
 
 
 class DashScopeEmbeddingClient:
@@ -359,6 +419,43 @@ class DashScopeStructuredModelClient:
             reasoning_tokens=None,
             request_id=request_id,
             started_at=started,
+        )
+
+    def complete_response(self, request: ResponsesModelRequest) -> StructuredModelResult:
+        """Run one structured Responses turn, optionally continuing a prior response."""
+
+        started = perf_counter()
+        last_error: Exception | None = None
+        provider_response: Any | None = None
+        for index, client in enumerate(self._clients):
+            try:
+                provider_response = client.responses.create(
+                    **_responses_kwargs(
+                        model=self.model,
+                        request=request,
+                        session_cache_header=True,
+                    )
+                )
+                break
+            except Exception as exc:
+                last_error = exc
+                if index == len(self._clients) - 1 or not _should_rotate_key(exc):
+                    break
+        if provider_response is None:
+            assert last_error is not None
+            raise _safe_model_error(last_error, self.tier, started_at=started) from last_error
+        usage = getattr(provider_response, "usage", None)
+        return _structured_result_from_text(
+            tier=self.tier,
+            model=self.model,
+            text=getattr(provider_response, "output_text", None),
+            input_tokens=_usage_value(usage, "input_tokens", "prompt_tokens"),
+            output_tokens=_usage_value(usage, "output_tokens", "completion_tokens"),
+            reasoning_tokens=_reasoning_usage_value(usage),
+            request_id=getattr(provider_response, "_request_id", None),
+            started_at=started,
+            cached_input_tokens=_cached_input_usage_value(usage),
+            response_id=getattr(provider_response, "id", None),
         )
 
     def complete(self, request: StructuredModelRequest) -> StructuredModelResult:
@@ -760,6 +857,34 @@ class DeepSeekStructuredModelClient:
             reasoning_tokens=reasoning_tokens,
             latency_ms=round((perf_counter() - started) * 1000),
             request_id=getattr(response, "_request_id", None),
+        )
+
+    def complete_response(self, request: ResponsesModelRequest) -> StructuredModelResult:
+        """Use the provider's Responses endpoint when available; errors remain fail-safe."""
+
+        started = perf_counter()
+        try:
+            response = self._client.responses.create(
+                **_responses_kwargs(
+                    model=self.model,
+                    request=request,
+                    session_cache_header=False,
+                )
+            )
+        except Exception as exc:
+            raise _safe_model_error(exc, self.tier, started_at=started) from exc
+        usage = getattr(response, "usage", None)
+        return _structured_result_from_text(
+            tier=self.tier,
+            model=self.model,
+            text=getattr(response, "output_text", None),
+            input_tokens=_usage_value(usage, "input_tokens", "prompt_tokens"),
+            output_tokens=_usage_value(usage, "output_tokens", "completion_tokens"),
+            reasoning_tokens=_reasoning_usage_value(usage),
+            request_id=getattr(response, "_request_id", None),
+            started_at=started,
+            cached_input_tokens=_cached_input_usage_value(usage),
+            response_id=getattr(response, "id", None),
         )
 
 

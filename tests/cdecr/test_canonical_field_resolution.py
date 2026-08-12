@@ -19,8 +19,6 @@ from cdecr.contracts import (
     FinancialMetricFields,
     FinancialMetricProjection,
     Language,
-    LocalPackageHint,
-    MembershipRelation,
     Participant,
     ParticipantRole,
     Predicate,
@@ -224,10 +222,6 @@ def _mention(mention_id: str, company: str) -> EventMention:
                 accounting_basis=AccountingBasis.GAAP,
             )
         ),
-        local_package_hint=LocalPackageHint(
-            anchor="Micron Q4 release",
-            relation_to_anchor=MembershipRelation.DISCLOSED_IN,
-        ),
     )
 
 
@@ -311,74 +305,10 @@ def test_n55_groups_aliases_links_v2_kb_and_n6_uses_only_links(tmp_path: Path) -
     assert [mention.model_dump(mode="json") for mention in mentions] == before
 
 
-def test_package_hint_is_deferred_until_n11(tmp_path: Path) -> None:
-    registry, _, engine = _engine(tmp_path)
-    source = _source()
-    mention = _mention("M-1", "Micron")
-    registry.save_source(source, fingerprint="b" * 64)
-    registry.save_mention(mention)
-    engine.resolve_document(source, [mention])
-    assert registry.get_field_link(mention.mention_id, "local_package_hint.anchor") is None
-    engine.resolve_package_hints(source, [mention])
-    link = registry.get_field_link(mention.mention_id, "local_package_hint.anchor")
-    assert link is not None
-    entry = registry.resolve_field_registry_entry(link.registry_id)
-    assert entry is not None
-    assert entry.namespace is FieldNamespace.ARTIFACT_EARNINGS_RELEASE
-    assert entry.external_id == "ARTIFACT_MU_Q4_2026"
 
 
-def test_n11_converges_supported_earnings_parent_aliases_across_sources(
-    tmp_path: Path,
-) -> None:
-    registry, _, engine = _engine(tmp_path)
-    first_source = _source().model_copy(update={"message_id": "S-1"})
-    second_source = _source().model_copy(update={"message_id": "S-2"})
-    first = _mention("M-1", "Micron").model_copy(
-        update={
-            "message_id": "S-1",
-            "local_package_hint": LocalPackageHint(
-                anchor="Micron Q3 FY2026 earnings release",
-                relation_to_anchor=MembershipRelation.DISCLOSED_IN,
-            ),
-        }
-    )
-    second = _mention("M-2", "Micron").model_copy(
-        update={
-            "message_id": "S-2",
-            "local_package_hint": LocalPackageHint(
-                anchor="Q3 2026 earnings report",
-                relation_to_anchor=MembershipRelation.COMPONENT_OF,
-            ),
-        }
-    )
-    for source, mention in ((first_source, first), (second_source, second)):
-        registry.save_source(source, fingerprint=source.message_id[-1] * 64)
-        registry.save_mention(mention)
-        engine.resolve_document(source, [mention])
-        engine.resolve_package_hints(source, [mention])
-    first_link = registry.get_field_link("M-1", "local_package_hint.anchor")
-    second_link = registry.get_field_link("M-2", "local_package_hint.anchor")
-    assert first_link is not None and second_link is not None
-    assert first_link.registry_id == second_link.registry_id
 
 
-def test_n11_does_not_materialize_generic_report_hint(tmp_path: Path) -> None:
-    registry, _, engine = _engine(tmp_path)
-    source = _source()
-    mention = _mention("M-GENERIC", "Micron").model_copy(
-        update={
-            "local_package_hint": LocalPackageHint(
-                anchor="latest report",
-                relation_to_anchor=MembershipRelation.DISCLOSED_IN,
-            )
-        }
-    )
-    registry.save_source(source, fingerprint="g" * 64)
-    registry.save_mention(mention)
-    engine.resolve_document(source, [mention])
-    engine.resolve_package_hints(source, [mention])
-    assert registry.get_field_link(mention.mention_id, "local_package_hint.anchor") is None
 
 
 def test_identity_discriminant_ignores_comparison_quantity(tmp_path: Path) -> None:

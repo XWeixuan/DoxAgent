@@ -1,0 +1,98 @@
+{
+  "dataset_version": "cdecr-mu-relevance-candidates-gold-readjudicated-v2",
+  "documents": 30,
+  "candidates": 409,
+  "disputes_reviewed": 35,
+  "changed_labels": 9,
+  "change_directions": {
+    "IRRELEVANT_TO_RELEVANT": 1,
+    "RELEVANT_TO_IRRELEVANT": 8
+  },
+  "labels": {
+    "IRRELEVANT": 205,
+    "RELEVANT": 204
+  },
+  "context_contract": "candidate statement + exact evidence span + containing paragraph; stable public knowledge may identify an established competitive or complementary-product exposure, but no other article paragraph may be inherited",
+  "metrics": {
+    "overall": {
+      "candidates": 409,
+      "gold_relevant": 204,
+      "gold_irrelevant": 205,
+      "valid_predictions": 389,
+      "fail_open_predictions": 20,
+      "dropped_candidates": 199,
+      "relevant_recall": 0.9019607843137255,
+      "dropped_candidate_precision": 0.8994974874371859,
+      "valid_prediction_accuracy": 0.9331619537275064,
+      "direct_relevant_candidates": 80,
+      "direct_relevant_false_negatives": 1,
+      "direct_relevant_false_negative_ids": [
+        "candidate:doxatlas:raw_media:aec4a429-9ed3-482b-bc8b-b904997e50f9:c7f103f0ca9dab9ece5487613d53314ee961a14b8e483f73296121526ce61ead"
+      ]
+    },
+    "slices": {
+      "hard_indirect_relevance": {
+        "candidates": 143,
+        "gold_relevant": 107,
+        "gold_irrelevant": 36,
+        "valid_predictions": 143,
+        "fail_open_predictions": 0,
+        "dropped_candidates": 46,
+        "relevant_recall": 0.8785046728971962,
+        "dropped_candidate_precision": 0.717391304347826,
+        "valid_prediction_accuracy": 0.8881118881118881,
+        "direct_relevant_candidates": 15,
+        "direct_relevant_false_negatives": 0,
+        "direct_relevant_false_negative_ids": []
+      },
+      "mixed_relevant_and_irrelevant": {
+        "candidates": 167,
+        "gold_relevant": 46,
+        "gold_irrelevant": 121,
+        "valid_predictions": 167,
+        "fail_open_predictions": 0,
+        "dropped_candidates": 125,
+        "relevant_recall": 0.8478260869565217,
+        "dropped_candidate_precision": 0.944,
+        "valid_prediction_accuracy": 0.9401197604790419,
+        "direct_relevant_candidates": 28,
+        "direct_relevant_false_negatives": 1,
+        "direct_relevant_false_negative_ids": [
+          "candidate:doxatlas:raw_media:aec4a429-9ed3-482b-bc8b-b904997e50f9:c7f103f0ca9dab9ece5487613d53314ee961a14b8e483f73296121526ce61ead"
+        ]
+      },
+      "mostly_high_or_very_high": {
+        "candidates": 51,
+        "gold_relevant": 51,
+        "gold_irrelevant": 0,
+        "valid_predictions": 51,
+        "fail_open_predictions": 0,
+        "dropped_candidates": 0,
+        "relevant_recall": 1.0,
+        "dropped_candidate_precision": null,
+        "valid_prediction_accuracy": 1.0,
+        "direct_relevant_candidates": 37,
+        "direct_relevant_false_negatives": 0,
+        "direct_relevant_false_negative_ids": []
+      },
+      "very_low_or_none": {
+        "candidates": 48,
+        "gold_relevant": 0,
+        "gold_irrelevant": 48,
+        "valid_predictions": 28,
+        "fail_open_predictions": 20,
+        "dropped_candidates": 28,
+        "relevant_recall": null,
+        "dropped_candidate_precision": 1.0,
+        "valid_prediction_accuracy": 1.0,
+        "direct_relevant_candidates": 0,
+        "direct_relevant_false_negatives": 0,
+        "direct_relevant_false_negative_ids": []
+      }
+    }
+  },
+  "source_gold_sha256": "7889d481e3432a19145a03604356fc263ee022edf1e8b211fe21089ebaa571e2",
+  "output_gold_sha256": "fbd6a0e8bd81c8d47e4cbf2d77f695583ef9133c72fef873c21a49fc4ad0dae9",
+  "audit_sha256": "a9e89d4ac167979b3ed57f7df9ccdf8b3310c0974c5f3e4d0629e9fe73a24eda",
+  "candidate_ids_preserved_in_order": true
+}

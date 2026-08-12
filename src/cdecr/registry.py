@@ -26,10 +26,8 @@ from cdecr.contracts import (
     MembershipDecisionAction,
     MembershipRelation,
     PackageExternalRelation,
-    PackageExternalRelationCandidate,
     PackageMembership,
     PackageMembershipDecision,
-    PackageQualityState,
     SourceMessage,
     StrictModel,
 )
@@ -38,9 +36,6 @@ from cdecr.cross_document_contracts import (
     CrossDocumentResult,
     CrossDocumentStatus,
     PackageAssignmentRecord,
-    PackageMergePlan,
-    PackagePairEvaluation,
-    PackagePairMergeDecision,
 )
 from cdecr.field_coreference_contracts import (
     ATOMIC_FIELD_RECALL_NAMESPACES,
@@ -62,7 +57,7 @@ from cdecr.single_document_contracts import (
     SingleDocumentResult,
 )
 
-SCHEMA_VERSION = 11
+SCHEMA_VERSION = 12
 
 
 class RegistryError(RuntimeError):
@@ -151,7 +146,7 @@ def _resolve_atomic_event_root_id(
     raise RegistryError("atomic event redirect depth exceeded")
 
 
-def _json_payload(value: StrictModel | dict[str, Any] | list[Any]) -> str:
+def _json_payload(value: Any) -> str:
     data: Any
     if isinstance(value, StrictModel):
         data = value.model_dump(mode="json")
@@ -225,6 +220,11 @@ def _migrate_json_rows(
     json_column: str = "payload_json",
     draft: bool = False,
 ) -> None:
+    exists = connection.execute(
+        "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?", (table,)
+    ).fetchone()
+    if exists is None:
+        return
     columns = ", ".join((*id_columns, json_column))
     for row in connection.execute(f"SELECT {columns} FROM {table}").fetchall():
         raw = row[json_column]
@@ -300,7 +300,8 @@ def _clear_derived_state(connection: sqlite3.Connection) -> dict[str, int]:
         "package_redirects",
         "atomic_event_redirects",
     ):
-        connection.execute(f"DELETE FROM {table}")
+        if count(table):
+            connection.execute(f"DELETE FROM {table}")
     connection.execute(
         "DELETE FROM embeddings WHERE owner_kind IN ('atomic_event', 'event_package')"
     )
@@ -768,32 +769,6 @@ class SQLiteCDECRRegistry:
                 CREATE INDEX IF NOT EXISTS idx_package_assignments_event
                     ON package_assignment_decisions(event_id, created_at);
 
-                CREATE TABLE IF NOT EXISTS package_merge_decisions (
-                    decision_id TEXT PRIMARY KEY,
-                    run_id TEXT NOT NULL REFERENCES cross_document_runs(run_id),
-                    source_package_id TEXT NOT NULL REFERENCES event_package_heads(package_id),
-                    target_package_id TEXT NOT NULL REFERENCES event_package_heads(package_id),
-                    relation TEXT NOT NULL,
-                    payload_json TEXT NOT NULL,
-                    created_at TEXT NOT NULL
-                );
-                CREATE TABLE IF NOT EXISTS package_pair_evaluations (
-                    evaluation_id TEXT PRIMARY KEY,
-                    run_id TEXT NOT NULL REFERENCES runs(run_id),
-                    left_package_id TEXT NOT NULL,
-                    right_package_id TEXT NOT NULL,
-                    left_profile_hash TEXT NOT NULL,
-                    right_profile_hash TEXT NOT NULL,
-                    relation TEXT NOT NULL,
-                    payload_json TEXT NOT NULL,
-                    created_at TEXT NOT NULL
-                );
-                CREATE INDEX IF NOT EXISTS idx_package_pair_evaluation_profile
-                    ON package_pair_evaluations(
-                        left_package_id, right_package_id,
-                        left_profile_hash, right_profile_hash, created_at
-                    );
-
                 CREATE TABLE IF NOT EXISTS package_external_relations (
                     relation_id TEXT PRIMARY KEY,
                     source_event_id TEXT NOT NULL REFERENCES atomic_event_heads(event_id),
@@ -804,21 +779,6 @@ class SQLiteCDECRRegistry:
                     created_at TEXT NOT NULL,
                     UNIQUE(source_event_id, target_package_id, relation)
                 );
-
-                CREATE TABLE IF NOT EXISTS package_external_relation_candidates (
-                    candidate_id TEXT PRIMARY KEY,
-                    run_id TEXT NOT NULL REFERENCES cross_document_runs(run_id),
-                    source_event_id TEXT NOT NULL REFERENCES atomic_event_heads(event_id),
-                    target_package_id TEXT NOT NULL REFERENCES event_package_heads(package_id),
-                    relation TEXT NOT NULL,
-                    prompt_version TEXT NOT NULL,
-                    model TEXT NOT NULL,
-                    payload_json TEXT NOT NULL,
-                    created_at TEXT NOT NULL,
-                    UNIQUE(run_id, source_event_id, target_package_id, relation)
-                );
-                CREATE INDEX IF NOT EXISTS idx_package_external_candidates_event
-                    ON package_external_relation_candidates(source_event_id, created_at);
 
                 CREATE TABLE IF NOT EXISTS atomic_event_redirects (
                     source_event_id TEXT PRIMARY KEY REFERENCES atomic_event_heads(event_id),
@@ -1081,237 +1041,108 @@ class SQLiteCDECRRegistry:
             if current < 7:
                 _clear_derived_state(connection)
             if current < 8:
-                package_rows = connection.execute(
+                # Package v1 derived state is cleared by the v12 cutover below.
+                pass
+            if current < 12:
+                connection.executescript(
                     """
-                    SELECT package_id, version, payload_json
-                    FROM event_package_versions
-                    ORDER BY package_id, version
+                    CREATE TABLE IF NOT EXISTS parent_occurrence_proposals (
+                        proposal_id TEXT PRIMARY KEY,
+                        run_id TEXT NOT NULL,
+                        document_ref TEXT NOT NULL,
+                        payload_json TEXT NOT NULL,
+                        created_at TEXT NOT NULL
+                    );
+                    CREATE INDEX IF NOT EXISTS idx_parent_proposal_run
+                        ON parent_occurrence_proposals(run_id, document_ref);
+                    CREATE TABLE IF NOT EXISTS parent_occurrence_partitions (
+                        partition_hash TEXT PRIMARY KEY,
+                        run_id TEXT NOT NULL,
+                        snapshot_hash TEXT NOT NULL,
+                        status TEXT NOT NULL,
+                        payload_json TEXT NOT NULL,
+                        created_at TEXT NOT NULL
+                    );
+                    CREATE TABLE IF NOT EXISTS parent_occurrence_checkpoints (
+                        run_id TEXT NOT NULL,
+                        stage TEXT NOT NULL,
+                        task_id TEXT NOT NULL,
+                        input_hash TEXT NOT NULL,
+                        status TEXT NOT NULL,
+                        payload_json TEXT,
+                        error_code TEXT,
+                        updated_at TEXT NOT NULL,
+                        PRIMARY KEY(run_id, stage, task_id)
+                    );
                     """
-                ).fetchall()
-                for row in package_rows:
-                    package = EventPackage.model_validate_json(str(row["payload_json"]))
-                    connection.execute(
-                        """
-                        UPDATE event_package_versions
-                        SET quality_state = ?, payload_json = ?
-                        WHERE package_id = ? AND version = ?
-                        """,
-                        (
-                            package.quality_state.value,
-                            _json_payload(package),
-                            package.package_id,
-                            package.version,
-                        ),
-                    )
-                connection.execute("DELETE FROM embeddings WHERE owner_kind = 'event_package'")
+                )
+                for table in ("event_mentions", "mention_drafts"):
+                    columns = {
+                        str(row[1]) for row in connection.execute(f"PRAGMA table_info({table})")
+                    }
+                    if "payload_json" not in columns:
+                        continue
+                    identity_columns = [
+                        str(row[1])
+                        for row in connection.execute(f"PRAGMA table_info({table})")
+                        if int(row[5]) > 0
+                    ]
+                    select_columns = ",".join([*identity_columns, "payload_json"])
+                    for row in connection.execute(
+                        f"SELECT {select_columns} FROM {table}"
+                    ).fetchall():
+                        payload = json.loads(str(row["payload_json"]))
+                        if isinstance(payload, dict):
+                            payload.pop("local_package_hint", None)
+                            where = " AND ".join(
+                                f"{column} = ?" for column in identity_columns
+                            )
+                            connection.execute(
+                                f"UPDATE {table} SET payload_json = ? WHERE {where}",
+                                (
+                                    json.dumps(
+                                        payload,
+                                        ensure_ascii=False,
+                                        separators=(",", ":"),
+                                        sort_keys=True,
+                                    ),
+                                    *(row[column] for column in identity_columns),
+                                ),
+                            )
+                # Parent Occurrence Package v2 is a one-shot repartition.  Preserve
+                # Source/Mention/Atomic truth, but never import v1 fragmentation or
+                # pair-merge decisions as canonical history.
+                connection.execute("DELETE FROM package_external_relations")
+                connection.execute("DELETE FROM active_package_memberships")
+                connection.execute("DELETE FROM package_membership_decisions")
+                connection.execute("DELETE FROM package_memberships")
+                connection.execute("DELETE FROM package_assignment_decisions")
+                connection.execute("DELETE FROM package_redirects")
                 connection.execute("DELETE FROM package_recall_fields")
                 connection.execute("DELETE FROM package_recall_entities")
                 connection.execute("DELETE FROM package_recall")
-                connection.execute("DELETE FROM active_package_memberships")
-                connection.execute("DELETE FROM package_membership_decisions")
-                membership_rows = connection.execute(
-                    """
-                    SELECT payload_json, created_at
-                    FROM package_memberships
-                    ORDER BY created_at, membership_id
-                    """
-                ).fetchall()
-                legacy_active: dict[str, tuple[str, MembershipRelation]] = {}
-                for row in membership_rows:
-                    membership = PackageMembership.model_validate_json(str(row["payload_json"]))
-                    target_id = _resolve_package_root_id(connection, membership.package_id)
-                    previous = legacy_active.get(membership.event_id)
-                    if previous is not None and previous[0] == target_id:
-                        continue
-                    decision = PackageMembershipDecision(
-                        decision_id=f"legacy-membership:{membership.membership_id}",
-                        action=(
-                            MembershipDecisionAction.ADD
-                            if previous is None
-                            else MembershipDecisionAction.MOVE
-                        ),
-                        event_id=membership.event_id,
-                        source_package_id=None if previous is None else previous[0],
-                        target_package_id=target_id,
-                        relation=membership.relation,
-                        reason="SCHEMA_V8_LEGACY_ACTIVE_PROJECTION",
-                    )
-                    assert decision.relation is not None
-                    connection.execute(
-                        """
-                        INSERT INTO package_membership_decisions(
-                            decision_id, run_id, action, event_id, source_package_id,
-                            target_package_id, relation, reason, payload_json, created_at
-                        ) VALUES (?, NULL, ?, ?, ?, ?, ?, ?, ?, ?)
-                        """,
-                        (
-                            decision.decision_id,
-                            decision.action.value,
-                            decision.event_id,
-                            decision.source_package_id,
-                            target_id,
-                            decision.relation.value,
-                            decision.reason,
-                            _json_payload(decision),
-                            str(row["created_at"]),
-                        ),
-                    )
-                    connection.execute(
-                        """
-                        INSERT INTO active_package_memberships(
-                            event_id, package_id, relation, decision_id, updated_at
-                        ) VALUES (?, ?, ?, ?, ?)
-                        ON CONFLICT(event_id) DO UPDATE SET
-                            package_id=excluded.package_id,
-                            relation=excluded.relation,
-                            decision_id=excluded.decision_id,
-                            updated_at=excluded.updated_at
-                        """,
-                        (
-                            decision.event_id,
-                            target_id,
-                            decision.relation.value,
-                            decision.decision_id,
-                            str(row["created_at"]),
-                        ),
-                    )
-                    legacy_active[decision.event_id] = (
-                        target_id,
-                        decision.relation,
-                    )
-                # Package profiles and assignment keys are derived state. Rebuild
-                # root profiles from current Atomic Events and current Field Links,
-                # and force the next N12 pass to compute a full v13 assignment key.
-                from cdecr.package_engine import PackageProfileCompiler
-
-                compiler = PackageProfileCompiler(self)
-                root_rows = connection.execute(
-                    """
-                    SELECT versions.payload_json
-                    FROM event_package_heads heads
-                    JOIN event_package_versions versions
-                      ON versions.package_id = heads.package_id
-                     AND versions.version = heads.current_version
-                    LEFT JOIN package_redirects redirects
-                      ON redirects.source_package_id = heads.package_id
-                    WHERE redirects.source_package_id IS NULL
-                    ORDER BY heads.package_id
-                    """
-                ).fetchall()
-                for package_row in root_rows:
-                    package = EventPackage.model_validate_json(str(package_row["payload_json"]))
-                    event_rows = connection.execute(
-                        """
-                        SELECT versions.payload_json
-                        FROM active_package_memberships memberships
-                        JOIN atomic_event_heads heads
-                          ON heads.event_id = memberships.event_id
-                        JOIN atomic_event_versions versions
-                          ON versions.event_id = heads.event_id
-                         AND versions.version = heads.current_version
-                        WHERE memberships.package_id = ?
-                        ORDER BY memberships.event_id
-                        """,
-                        (package.package_id,),
-                    ).fetchall()
-                    events = [
-                        AtomicEvent.model_validate_json(str(event_row["payload_json"]))
-                        for event_row in event_rows
-                    ]
-                    if not events:
-                        rebuilt = package.model_copy(
-                            update={
-                                "member_event_ids": [],
-                                "quality_state": PackageQualityState.QUARANTINED,
-                                "version": package.version + 1,
-                            }
-                        )
-                    else:
-                        anchors: set[str] = set()
-                        artifacts: set[str] = set()
-                        for event in events:
-                            for mention_id in event.mention_ids:
-                                link_rows = connection.execute(
-                                    """
-                                    SELECT registry_id
-                                    FROM canonical_field_links
-                                    WHERE mention_id = ?
-                                      AND field_path = 'local_package_hint.anchor'
-                                    """,
-                                    (mention_id,),
-                                ).fetchall()
-                                for link_row in link_rows:
-                                    entry = self._resolve_field_entry(
-                                        connection,
-                                        str(link_row["registry_id"]),
-                                        max_depth=16,
-                                    )
-                                    if (
-                                        entry is None
-                                        or entry.namespace is not FieldNamespace.PACKAGE_ANCHOR
-                                    ):
-                                        continue
-                                    anchors.add(entry.id)
-                                    if entry.external_id:
-                                        artifacts.add(entry.external_id)
-                        first = events[0]
-                        clean_base = package.model_copy(
-                            update={
-                                "canonical_title": first.canonical_proposition,
-                                "anchor_entities": [],
-                                "package_anchor_ids": sorted(anchors),
-                                "anchor_artifact_id": (
-                                    next(iter(artifacts)) if len(artifacts) == 1 else None
-                                ),
-                                "anchor_period_id": None,
-                                "time_range": package.time_range.model_copy(
-                                    update={
-                                        "start": first.time.event_start,
-                                        "end": first.time.event_end,
-                                    }
-                                ),
-                                "member_event_ids": [],
-                                "canonical_summary": "",
-                            }
-                        )
-                        compiled = compiler.compile(clean_base, events)
-                        if compiled.model_dump(exclude={"version"}) == package.model_dump(
-                            exclude={"version"}
-                        ):
-                            continue
-                        rebuilt = compiled.model_copy(update={"version": package.version + 1})
-                    connection.execute(
-                        """
-                        INSERT INTO event_package_versions(
-                            package_id, version, package_kind, package_family,
-                            status, quality_state, payload_json, created_at
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                        """,
-                        (
-                            rebuilt.package_id,
-                            rebuilt.version,
-                            rebuilt.package_kind.value,
-                            rebuilt.package_family.value,
-                            rebuilt.status.value,
-                            rebuilt.quality_state.value,
-                            _json_payload(rebuilt),
-                            _now(),
-                        ),
-                    )
-                    connection.execute(
-                        """
-                        UPDATE event_package_heads
-                        SET current_version = ?
-                        WHERE package_id = ?
-                        """,
-                        (rebuilt.version, rebuilt.package_id),
-                    )
+                connection.execute("DELETE FROM embeddings WHERE owner_kind = 'event_package'")
+                connection.execute("DELETE FROM event_package_versions")
+                connection.execute("DELETE FROM event_package_heads")
                 connection.execute(
-                    """
-                    UPDATE package_assignment_decisions
-                    SET assignment_processing_key = 'v8-rebuild-required'
-                    """
+                    "DELETE FROM bulk_epoch_artifacts "
+                    "WHERE artifact_kind LIKE 'package_%' OR artifact_kind LIKE 'parent_%'"
                 )
+                connection.execute(
+                    "DELETE FROM bulk_epoch_tasks "
+                    "WHERE stage LIKE 'PACKAGE_%' OR stage LIKE 'PARENT_%'"
+                )
+                connection.execute(
+                    "DELETE FROM canonical_field_links "
+                    "WHERE field_path LIKE 'local_package_hint.%' OR registry_id IN "
+                    "(SELECT id FROM canonical_field_registry WHERE namespace = 'package_anchor')"
+                )
+                connection.execute(
+                    "DELETE FROM canonical_field_registry WHERE namespace = 'package_anchor'"
+                )
+                connection.execute("DROP TABLE IF EXISTS package_pair_evaluations")
+                connection.execute("DROP TABLE IF EXISTS package_merge_decisions")
+                connection.execute("DROP TABLE IF EXISTS package_external_relation_candidates")
             connection.execute(f"PRAGMA user_version={SCHEMA_VERSION}")
             connection.commit()
         self._backfill_recall_indexes()
@@ -1713,133 +1544,6 @@ class SQLiteCDECRRegistry:
                         (source_fingerprint, per_route_limit),
                     ).fetchall(),
                     "SOURCE_FINGERPRINT",
-                )
-        return found
-
-    def recall_package_ids(
-        self,
-        *,
-        package_kind: str,
-        package_family: str,
-        anchor_entities: Sequence[str],
-        local_anchor_hint: str | None = None,
-        anchor_artifact_id: str | None,
-        anchor_period_id: str | None,
-        time_start: str | None,
-        time_end: str | None,
-        package_anchor_ids: Sequence[str] = (),
-        per_route_limit: int = 20,
-    ) -> dict[str, set[str]]:
-        if per_route_limit < 1 or per_route_limit > 100:
-            raise ValueError("per_route_limit must be between 1 and 100")
-        found: dict[str, set[str]] = {}
-
-        def add(rows: Sequence[sqlite3.Row], route: str) -> None:
-            for row in rows:
-                found.setdefault(str(row["package_id"]), set()).add(route)
-
-        resolved_anchors = {
-            root.id
-            for canonical_id in package_anchor_ids
-            if (root := self.resolve_field_registry_entry(canonical_id)) is not None
-            and root.namespace is FieldNamespace.PACKAGE_ANCHOR
-        }
-        with self._connection() as connection:
-            active = (
-                "NOT EXISTS (SELECT 1 FROM package_redirects r "
-                "WHERE r.source_package_id = p.package_id) "
-                "AND p.quality_state = 'ACTIVE'"
-            )
-            add(
-                connection.execute(
-                    f"""
-                    SELECT p.package_id FROM package_recall p
-                    WHERE p.package_kind = ? AND p.package_family = ? AND {active}
-                    ORDER BY p.updated_at DESC LIMIT ?
-                    """,
-                    (package_kind, package_family, per_route_limit),
-                ).fetchall(),
-                "PACKAGE_KIND_FAMILY",
-            )
-            for entity_id in sorted(set(anchor_entities))[:8]:
-                add(
-                    connection.execute(
-                        f"""
-                        SELECT entities.package_id
-                        FROM package_recall_entities entities
-                        JOIN package_recall p ON p.package_id = entities.package_id
-                        WHERE entities.entity_id = ? AND {active}
-                        ORDER BY p.updated_at DESC LIMIT ?
-                        """,
-                        (entity_id, per_route_limit),
-                    ).fetchall(),
-                    "CORE_ENTITY",
-                )
-            for canonical_id in sorted(resolved_anchors)[:8]:
-                add(
-                    connection.execute(
-                        f"""
-                        SELECT fields.package_id
-                        FROM package_recall_fields fields
-                        JOIN package_recall p ON p.package_id = fields.package_id
-                        WHERE fields.canonical_id = ? AND {active}
-                        ORDER BY p.updated_at DESC LIMIT ?
-                        """,
-                        (canonical_id, per_route_limit),
-                    ).fetchall(),
-                    "PACKAGE_ANCHOR",
-                )
-            if anchor_period_id is not None:
-                add(
-                    connection.execute(
-                        f"""
-                        SELECT p.package_id FROM package_recall p
-                        WHERE p.anchor_period_id = ? AND {active}
-                        ORDER BY p.updated_at DESC LIMIT ?
-                        """,
-                        (anchor_period_id, per_route_limit),
-                    ).fetchall(),
-                    "TIME_WINDOW",
-                )
-            if anchor_artifact_id is not None:
-                add(
-                    connection.execute(
-                        f"""
-                        SELECT p.package_id FROM package_recall p
-                        WHERE p.anchor_artifact_id = ? AND {active}
-                        ORDER BY p.updated_at DESC LIMIT ?
-                        """,
-                        (anchor_artifact_id, per_route_limit),
-                    ).fetchall(),
-                    "CANONICAL_ARTIFACT",
-                )
-            if local_anchor_hint is not None:
-                add(
-                    connection.execute(
-                        f"""
-                        SELECT p.package_id FROM package_recall p
-                        WHERE p.local_anchor_hint = ? AND {active}
-                        ORDER BY p.updated_at DESC LIMIT ?
-                        """,
-                        (local_anchor_hint, per_route_limit),
-                    ).fetchall(),
-                    "LOCAL_PACKAGE_HINT",
-                )
-            if time_start is not None:
-                upper = time_end or time_start
-                add(
-                    connection.execute(
-                        f"""
-                        SELECT p.package_id FROM package_recall p
-                        WHERE p.time_start IS NOT NULL
-                          AND p.time_start <= ?
-                          AND COALESCE(p.time_end, p.time_start) >= ?
-                          AND {active}
-                        ORDER BY p.updated_at DESC LIMIT ?
-                        """,
-                        (upper, time_start, per_route_limit),
-                    ).fetchall(),
-                    "TIME_WINDOW",
                 )
         return found
 
@@ -2460,11 +2164,38 @@ class SQLiteCDECRRegistry:
                                     assignment.assignment_id,
                                     assignment.run_id,
                                     assignment.event_id,
-                                    assignment.candidate_package_id,
+                                    None,
                                     assignment.resulting_package_id,
-                                    assignment.action.value,
-                                    assignment.relation.value if assignment.relation else None,
-                                    assignment.package_assignment_key,
+                                    "PROJECT_FROZEN_PARTITION",
+                                    assignment.membership_relation.value,
+                                    assignment.partition_hash,
+                                    payload,
+                                    _now(),
+                                ),
+                            )
+                        for relation in sorted(
+                            record.get("external_relations", ()),
+                            key=lambda item: item.relation_id,
+                        ):
+                            assert isinstance(relation, PackageExternalRelation)
+                            payload = _json_payload(relation)
+                            self._save_immutable_in_transaction(
+                                connection,
+                                table="package_external_relations",
+                                id_column="relation_id",
+                                record_id=relation.relation_id,
+                                payload=payload,
+                                insert_sql="""
+                                    INSERT INTO package_external_relations(
+                                        relation_id, source_event_id, target_package_id,
+                                        relation, legacy, payload_json, created_at
+                                    ) VALUES (?, ?, ?, ?, 0, ?, ?)
+                                """,
+                                insert_values=(
+                                    relation.relation_id,
+                                    relation.source_event_id,
+                                    relation.target_package_id,
+                                    relation.relation.value,
                                     payload,
                                     _now(),
                                 ),
@@ -2649,48 +2380,6 @@ class SQLiteCDECRRegistry:
         start = package.time_range.start.isoformat() if package.time_range.start else None
         end = package.time_range.end.isoformat() if package.time_range.end else start
         with self._connection() as connection:
-            local_anchor_hints: set[str] = set()
-            mention_ids: set[str] = set()
-            for event_id in package.member_event_ids:
-                rows = connection.execute(
-                    """
-                    SELECT mentions.payload_json
-                    FROM atomic_event_heads heads
-                    JOIN atomic_event_versions versions
-                      ON versions.event_id = heads.event_id
-                     AND versions.version = heads.current_version
-                    JOIN atomic_event_mentions members
-                      ON members.event_id = versions.event_id
-                     AND members.event_version = versions.version
-                    JOIN event_mentions mentions ON mentions.mention_id = members.mention_id
-                    WHERE heads.event_id = ? ORDER BY mentions.mention_id
-                    """,
-                    (event_id,),
-                ).fetchall()
-                for row in rows:
-                    mention = EventMention.model_validate_json(str(row["payload_json"]))
-                    mention_ids.add(mention.mention_id)
-                    if mention.local_package_hint is not None:
-                        local_anchor_hints.add(mention.local_package_hint.anchor)
-            local_anchor_hint = (
-                next(iter(local_anchor_hints)) if len(local_anchor_hints) == 1 else None
-            )
-            package_anchor_ids: set[str] = set(package.package_anchor_ids)
-            if mention_ids:
-                placeholders = ",".join("?" for _ in mention_ids)
-                field_rows = connection.execute(
-                    f"""
-                    SELECT registry_id FROM canonical_field_links
-                    WHERE mention_id IN ({placeholders})
-                    """,
-                    tuple(sorted(mention_ids)),
-                ).fetchall()
-                for row in field_rows:
-                    root = self._resolve_field_entry(
-                        connection, str(row["registry_id"]), max_depth=16
-                    )
-                    if root is not None and root.namespace is FieldNamespace.PACKAGE_ANCHOR:
-                        package_anchor_ids.add(root.id)
             connection.execute("BEGIN IMMEDIATE")
             connection.execute(
                 """
@@ -2717,9 +2406,9 @@ class SQLiteCDECRRegistry:
                     package.package_kind.value,
                     package.package_family.value,
                     package.quality_state.value,
-                    local_anchor_hint,
-                    package.anchor_artifact_id,
-                    package.anchor_period_id,
+                    None,
+                    None,
+                    None,
                     start,
                     end,
                     _now(),
@@ -2739,7 +2428,7 @@ class SQLiteCDECRRegistry:
                 """
                 INSERT INTO package_recall_fields(package_id, canonical_id) VALUES (?, ?)
                 """,
-                [(package.package_id, value) for value in sorted(package_anchor_ids)],
+                [],
             )
             connection.commit()
 
@@ -2750,28 +2439,6 @@ class SQLiteCDECRRegistry:
     ) -> None:
         start = package.time_range.start.isoformat() if package.time_range.start else None
         end = package.time_range.end.isoformat() if package.time_range.end else start
-        local_anchor_hints: set[str] = set()
-        for event_id in package.member_event_ids:
-            rows = connection.execute(
-                """
-                SELECT mentions.payload_json
-                FROM atomic_event_heads heads
-                JOIN atomic_event_versions versions
-                  ON versions.event_id = heads.event_id
-                 AND versions.version = heads.current_version
-                JOIN atomic_event_mentions members
-                  ON members.event_id = versions.event_id
-                 AND members.event_version = versions.version
-                JOIN event_mentions mentions ON mentions.mention_id = members.mention_id
-                WHERE heads.event_id = ? ORDER BY mentions.mention_id
-                """,
-                (event_id,),
-            ).fetchall()
-            for row in rows:
-                mention = EventMention.model_validate_json(str(row["payload_json"]))
-                if mention.local_package_hint is not None:
-                    local_anchor_hints.add(mention.local_package_hint.anchor)
-        local_anchor_hint = next(iter(local_anchor_hints)) if len(local_anchor_hints) == 1 else None
         connection.execute(
             """
             INSERT INTO package_recall(
@@ -2797,9 +2464,9 @@ class SQLiteCDECRRegistry:
                 package.package_kind.value,
                 package.package_family.value,
                 package.quality_state.value,
-                local_anchor_hint,
-                package.anchor_artifact_id,
-                package.anchor_period_id,
+                None,
+                None,
+                None,
                 start,
                 end,
                 _now(),
@@ -2819,7 +2486,7 @@ class SQLiteCDECRRegistry:
         )
         connection.executemany(
             "INSERT INTO package_recall_fields(package_id, canonical_id) VALUES (?, ?)",
-            [(package.package_id, value) for value in sorted(set(package.package_anchor_ids))],
+            [],
         )
 
     def save_membership(self, membership: PackageMembership) -> bool:
@@ -3012,36 +2679,8 @@ class SQLiteCDECRRegistry:
                     _field_surface_key(stored.canonical_text),
                     *(_field_surface_key(alias) for alias in stored.aliases),
                 }
-                same_parent_anchor = (
-                    stored.namespace is FieldNamespace.PACKAGE_ANCHOR
-                    and entry.namespace is FieldNamespace.PACKAGE_ANCHOR
-                )
-                if stored.namespace is entry.namespace and (
-                    same_external or same_surface or same_parent_anchor
-                ):
-                    if same_parent_anchor:
-                        aliases: list[str] = []
-                        alias_keys: set[str] = set()
-                        for alias in (
-                            *stored.aliases,
-                            stored.canonical_text,
-                            entry.canonical_text,
-                            *entry.aliases,
-                        ):
-                            key = _field_surface_key(alias)
-                            if not key or key in alias_keys:
-                                continue
-                            aliases.append(alias)
-                            alias_keys.add(key)
-                            if len(aliases) >= 8:
-                                break
-                        connection.execute(
-                            "UPDATE canonical_field_registry SET aliases_json = ? WHERE id = ?",
-                            (_json_payload(aliases), stored.id),
-                        )
-                        connection.commit()
-                    else:
-                        connection.rollback()
+                if stored.namespace is entry.namespace and (same_external or same_surface):
+                    connection.rollback()
                     return False
                 raise ImmutableRecordConflict(
                     f"canonical field registry entry {entry.id!r} already exists"
@@ -4020,6 +3659,130 @@ class SQLiteCDECRRegistry:
             for row in rows
         ]
 
+    def save_parent_occurrence_proposals(
+        self, *, run_id: str, records: Sequence[dict[str, Any]]
+    ) -> dict[str, int]:
+        inserted = 0
+        with self._connection() as connection:
+            for record in records:
+                proposal_id = str(record["proposal_id"])
+                document_refs = record.get("document_refs") or []
+                document_ref = str(document_refs[0]) if document_refs else ""
+                payload_json = _json_payload(record)
+                existing = connection.execute(
+                    "SELECT run_id, document_ref, payload_json "
+                    "FROM parent_occurrence_proposals WHERE proposal_id = ?",
+                    (proposal_id,),
+                ).fetchone()
+                if existing is not None:
+                    if (
+                        str(existing["run_id"]) != run_id
+                        or str(existing["document_ref"]) != document_ref
+                        or str(existing["payload_json"]) != payload_json
+                    ):
+                        raise ImmutableRecordConflict(
+                            f"parent proposal {proposal_id!r} is immutable"
+                        )
+                    continue
+                connection.execute(
+                    "INSERT INTO parent_occurrence_proposals("
+                    "proposal_id, run_id, document_ref, payload_json, created_at"
+                    ") VALUES (?, ?, ?, ?, ?)",
+                    (proposal_id, run_id, document_ref, payload_json, _now()),
+                )
+                inserted += 1
+            connection.commit()
+        return {"inserted": inserted, "transactions": int(bool(records))}
+
+    def save_parent_occurrence_partition(
+        self,
+        *,
+        run_id: str,
+        partition_hash: str,
+        snapshot_hash: str,
+        status: str,
+        payload: dict[str, Any],
+    ) -> bool:
+        payload_json = _json_payload(payload)
+        with self._connection() as connection:
+            existing = connection.execute(
+                "SELECT run_id, snapshot_hash, status, payload_json "
+                "FROM parent_occurrence_partitions WHERE partition_hash = ?",
+                (partition_hash,),
+            ).fetchone()
+            if existing is not None:
+                if (
+                    str(existing["run_id"]) != run_id
+                    or str(existing["snapshot_hash"]) != snapshot_hash
+                    or str(existing["status"]) != status
+                    or str(existing["payload_json"]) != payload_json
+                ):
+                    raise ImmutableRecordConflict(
+                        f"parent partition {partition_hash!r} is immutable"
+                    )
+                return False
+            connection.execute(
+                "INSERT INTO parent_occurrence_partitions("
+                "partition_hash, run_id, snapshot_hash, status, payload_json, created_at"
+                ") VALUES (?, ?, ?, ?, ?, ?)",
+                (partition_hash, run_id, snapshot_hash, status, payload_json, _now()),
+            )
+            connection.commit()
+        return True
+
+    def save_parent_occurrence_checkpoints(
+        self, *, run_id: str, records: Sequence[dict[str, Any]]
+    ) -> dict[str, int]:
+        with self._connection() as connection:
+            for record in records:
+                connection.execute(
+                    "INSERT INTO parent_occurrence_checkpoints("
+                    "run_id, stage, task_id, input_hash, status, payload_json, error_code, "
+                    "updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?) "
+                    "ON CONFLICT(run_id, stage, task_id) DO UPDATE SET "
+                    "input_hash=excluded.input_hash, status=excluded.status, "
+                    "payload_json=excluded.payload_json, error_code=excluded.error_code, "
+                    "updated_at=excluded.updated_at",
+                    (
+                        run_id,
+                        str(record["stage"]),
+                        str(record["task_id"]),
+                        str(record["input_hash"]),
+                        str(record["status"]),
+                        _json_payload(record.get("payload"))
+                        if record.get("payload") is not None
+                        else None,
+                        record.get("error_code"),
+                        _now(),
+                    ),
+                )
+            connection.commit()
+        return {"updated": len(records), "transactions": int(bool(records))}
+
+    def list_parent_occurrence_checkpoints(
+        self, *, run_id: str, stage: str
+    ) -> list[dict[str, Any]]:
+        with self._connection() as connection:
+            rows = connection.execute(
+                "SELECT task_id, input_hash, status, payload_json, error_code, updated_at "
+                "FROM parent_occurrence_checkpoints WHERE run_id = ? AND stage = ? "
+                "ORDER BY task_id",
+                (run_id, stage),
+            ).fetchall()
+        return [
+            {
+                "task_id": str(row["task_id"]),
+                "input_hash": str(row["input_hash"]),
+                "status": str(row["status"]),
+                "payload": json.loads(str(row["payload_json"]))
+                if row["payload_json"] is not None
+                else None,
+                "error_code": row["error_code"],
+                "updated_at": str(row["updated_at"]),
+            }
+            for row in rows
+        ]
+
     def save_bulk_epoch_artifact(
         self,
         *,
@@ -4368,11 +4131,11 @@ class SQLiteCDECRRegistry:
                 record.assignment_id,
                 record.run_id,
                 record.event_id,
-                record.candidate_package_id,
+                None,
                 record.resulting_package_id,
-                record.action.value,
-                record.relation.value if record.relation else None,
-                record.package_assignment_key,
+                "PROJECT_FROZEN_PARTITION",
+                record.membership_relation.value,
+                record.partition_hash,
                 _json_payload(record),
                 _now(),
             ),
@@ -4394,85 +4157,6 @@ class SQLiteCDECRRegistry:
         if row is None:
             return None
         return PackageAssignmentRecord.model_validate_json(str(row["payload_json"]))
-
-    def save_package_merge_decision(
-        self, *, decision_id: str, run_id: str, decision: PackagePairMergeDecision
-    ) -> bool:
-        payload = _json_payload(decision)
-        return self._save_immutable(
-            table="package_merge_decisions",
-            id_column="decision_id",
-            record_id=decision_id,
-            payload=payload,
-            insert_sql="""
-                INSERT INTO package_merge_decisions(
-                    decision_id, run_id, source_package_id, target_package_id,
-                    relation, payload_json, created_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?)
-            """,
-            insert_values=(
-                decision_id,
-                run_id,
-                decision.source_package_id,
-                decision.target_package_id,
-                decision.relation.value,
-                payload,
-                _now(),
-            ),
-        )
-
-    def save_package_pair_evaluation(self, evaluation: PackagePairEvaluation) -> bool:
-        return self._save_immutable(
-            table="package_pair_evaluations",
-            id_column="evaluation_id",
-            record_id=evaluation.evaluation_id,
-            payload=_json_payload(evaluation),
-            insert_sql="""
-                INSERT INTO package_pair_evaluations(
-                    evaluation_id, run_id, left_package_id, right_package_id,
-                    left_profile_hash, right_profile_hash, relation,
-                    payload_json, created_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            insert_values=(
-                evaluation.evaluation_id,
-                evaluation.run_id,
-                evaluation.left_package_id,
-                evaluation.right_package_id,
-                evaluation.left_profile_hash,
-                evaluation.right_profile_hash,
-                evaluation.relation.value,
-                _json_payload(evaluation),
-                _now(),
-            ),
-        )
-
-    def get_package_pair_evaluation(
-        self,
-        *,
-        left_package_id: str,
-        right_package_id: str,
-        left_profile_hash: str,
-        right_profile_hash: str,
-    ) -> PackagePairEvaluation | None:
-        with self._connection() as connection:
-            row = connection.execute(
-                """
-                SELECT payload_json FROM package_pair_evaluations
-                WHERE left_package_id = ? AND right_package_id = ?
-                  AND left_profile_hash = ? AND right_profile_hash = ?
-                ORDER BY created_at DESC, evaluation_id DESC LIMIT 1
-                """,
-                (
-                    left_package_id,
-                    right_package_id,
-                    left_profile_hash,
-                    right_profile_hash,
-                ),
-            ).fetchone()
-        if row is None:
-            return None
-        return PackagePairEvaluation.model_validate_json(str(row["payload_json"]))
 
     def save_package_external_relation(self, relation: PackageExternalRelation) -> bool:
         payload = _json_payload(relation)
@@ -4511,64 +4195,6 @@ class SQLiteCDECRRegistry:
         return [
             PackageExternalRelation.model_validate_json(str(row["payload_json"])) for row in rows
         ]
-
-    def save_package_external_relation_candidate(
-        self,
-        candidate: PackageExternalRelationCandidate,
-    ) -> bool:
-        root_id = self.resolve_package_root(candidate.target_package_id)
-        if root_id is None:
-            raise RegistryError("external relation candidate target does not exist")
-        stored = candidate.model_copy(update={"target_package_id": root_id})
-        return self._save_immutable(
-            table="package_external_relation_candidates",
-            id_column="candidate_id",
-            record_id=stored.candidate_id,
-            payload=_json_payload(stored),
-            insert_sql="""
-                INSERT INTO package_external_relation_candidates(
-                    candidate_id, run_id, source_event_id, target_package_id, relation,
-                    prompt_version, model, payload_json, created_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            insert_values=(
-                stored.candidate_id,
-                stored.run_id,
-                stored.source_event_id,
-                stored.target_package_id,
-                stored.relation.value,
-                stored.prompt_version,
-                stored.model,
-                _json_payload(stored),
-                _now(),
-            ),
-        )
-
-    def list_package_external_relation_candidates(
-        self,
-        *,
-        source_event_id: str | None = None,
-    ) -> list[PackageExternalRelationCandidate]:
-        sql = "SELECT payload_json FROM package_external_relation_candidates"
-        parameters: tuple[object, ...] = ()
-        if source_event_id is not None:
-            sql += " WHERE source_event_id = ?"
-            parameters = (source_event_id,)
-        sql += " ORDER BY created_at, candidate_id"
-        with self._connection() as connection:
-            rows = connection.execute(sql, parameters).fetchall()
-        candidates = [
-            PackageExternalRelationCandidate.model_validate_json(str(row["payload_json"]))
-            for row in rows
-        ]
-        current: list[PackageExternalRelationCandidate] = []
-        for candidate in candidates:
-            memberships = self.list_packages_for_event(candidate.source_event_id)
-            current_target = self.resolve_package_root(candidate.target_package_id)
-            if memberships and memberships[0].package_id == current_target:
-                continue
-            current.append(candidate)
-        return current
 
     def save_atomic_redirect(
         self, *, source_event_id: str, target_event_id: str, run_id: str, reason: str
@@ -4643,230 +4269,6 @@ class SQLiteCDECRRegistry:
             )
             connection.commit()
             return True
-
-    def apply_package_merge_plan(
-        self,
-        *,
-        plan: PackageMergePlan,
-        decisions: Sequence[PackagePairMergeDecision],
-        merged_package: EventPackage,
-        run_id: str,
-        embedding_model: str,
-        embedding_input_hash: str,
-        embedding_vector: Sequence[float],
-    ) -> EventPackage:
-        """Apply one N13 component merge atomically, including derived state."""
-
-        if merged_package.package_id != plan.target_package_id:
-            raise ValueError("merged profile must use the plan target ID")
-        if len(decisions) != len(plan.decision_ids):
-            raise ValueError("merge plan decisions and decision IDs must align")
-        vector = array("f", [float(value) for value in embedding_vector])
-        if not vector:
-            raise ValueError("merge embedding vector cannot be empty")
-        if sys.byteorder != "little":
-            vector.byteswap()
-        with self._connection() as connection:
-            connection.execute("BEGIN IMMEDIATE")
-            target_root = _resolve_package_root_id(connection, plan.target_package_id)
-            if target_root != plan.target_package_id:
-                connection.rollback()
-                raise RegistryError("merge plan target was redirected before execution")
-            target_row = self._current_package_row(connection, target_root)
-            if target_row is None:
-                connection.rollback()
-                raise RegistryError("merge plan target is missing")
-            current_target = EventPackage.model_validate_json(str(target_row["payload_json"]))
-            if merged_package.version != current_target.version + 1:
-                connection.rollback()
-                raise VersionConflict("merge profile must advance target by exactly one version")
-            for decision_id, decision in zip(plan.decision_ids, decisions, strict=True):
-                existing_decision = connection.execute(
-                    "SELECT payload_json FROM package_merge_decisions WHERE decision_id = ?",
-                    (decision_id,),
-                ).fetchone()
-                decision_payload = _json_payload(decision)
-                if existing_decision is not None:
-                    if str(existing_decision["payload_json"]) != decision_payload:
-                        connection.rollback()
-                        raise ImmutableRecordConflict(
-                            "package merge decision ID already has different content"
-                        )
-                    continue
-                connection.execute(
-                    """
-                    INSERT INTO package_merge_decisions(
-                        decision_id, run_id, source_package_id, target_package_id,
-                        relation, payload_json, created_at
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?)
-                    """,
-                    (
-                        decision_id,
-                        run_id,
-                        decision.source_package_id,
-                        decision.target_package_id,
-                        decision.relation.value,
-                        decision_payload,
-                        _now(),
-                    ),
-                )
-            source_roots: list[str] = []
-            for source_id in plan.source_package_ids:
-                source_root = _resolve_package_root_id(connection, source_id)
-                if source_root != source_id:
-                    connection.rollback()
-                    raise ImmutableRecordConflict(
-                        "merge plan source was already consumed by another plan"
-                    )
-                if source_root == target_root or source_root in source_roots:
-                    connection.rollback()
-                    raise RegistryError("merge plan contains duplicate or target source")
-                if self._current_package_row(connection, source_root) is None:
-                    connection.rollback()
-                    raise RegistryError("merge plan source is missing")
-                source_roots.append(source_root)
-            payload = _json_payload(merged_package)
-            connection.execute(
-                """
-                INSERT INTO event_package_versions(
-                    package_id, version, package_kind, package_family, status,
-                    quality_state, payload_json, created_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                (
-                    merged_package.package_id,
-                    merged_package.version,
-                    merged_package.package_kind.value,
-                    merged_package.package_family.value,
-                    merged_package.status.value,
-                    merged_package.quality_state.value,
-                    payload,
-                    _now(),
-                ),
-            )
-            connection.execute(
-                "UPDATE event_package_heads SET current_version = ? WHERE package_id = ?",
-                (merged_package.version, merged_package.package_id),
-            )
-            for source_id in source_roots:
-                membership_rows = connection.execute(
-                    """
-                    SELECT event_id, relation FROM active_package_memberships
-                    WHERE package_id = ? ORDER BY event_id
-                    """,
-                    (source_id,),
-                ).fetchall()
-                for row in membership_rows:
-                    event_id = str(row["event_id"])
-                    relation = str(row["relation"])
-                    membership_decision = PackageMembershipDecision(
-                        decision_id=(
-                            f"package-merge-membership:{plan.plan_id}:{source_id}:{event_id}"
-                        ),
-                        run_id=run_id,
-                        action=MembershipDecisionAction.MOVE,
-                        event_id=event_id,
-                        source_package_id=source_id,
-                        target_package_id=target_root,
-                        relation=MembershipRelation(relation),
-                        reason=plan.reason,
-                    )
-                    connection.execute(
-                        """
-                        INSERT INTO package_membership_decisions(
-                            decision_id, run_id, action, event_id, source_package_id,
-                            target_package_id, relation, reason, payload_json, created_at
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                        """,
-                        (
-                            membership_decision.decision_id,
-                            run_id,
-                            membership_decision.action.value,
-                            event_id,
-                            source_id,
-                            target_root,
-                            relation,
-                            membership_decision.reason,
-                            _json_payload(membership_decision),
-                            _now(),
-                        ),
-                    )
-                    connection.execute(
-                        """
-                        UPDATE active_package_memberships
-                        SET package_id = ?, decision_id = ?, updated_at = ?
-                        WHERE event_id = ? AND package_id = ?
-                        """,
-                        (
-                            target_root,
-                            membership_decision.decision_id,
-                            _now(),
-                            event_id,
-                            source_id,
-                        ),
-                    )
-                connection.execute(
-                    """
-                    INSERT INTO package_redirects(
-                        source_package_id, target_package_id, run_id, reason, created_at
-                    ) VALUES (?, ?, ?, ?, ?)
-                    """,
-                    (source_id, target_root, run_id, plan.reason, _now()),
-                )
-                connection.execute(
-                    "DELETE FROM package_recall_fields WHERE package_id = ?",
-                    (source_id,),
-                )
-                connection.execute(
-                    "DELETE FROM package_recall_entities WHERE package_id = ?",
-                    (source_id,),
-                )
-                connection.execute(
-                    "DELETE FROM package_recall WHERE package_id = ?",
-                    (source_id,),
-                )
-                connection.execute(
-                    "DELETE FROM embeddings WHERE owner_kind = 'event_package' AND owner_id = ?",
-                    (source_id,),
-                )
-            connection.execute(
-                "DELETE FROM embeddings WHERE owner_kind = 'event_package' AND owner_id = ?",
-                (target_root,),
-            )
-            connection.execute(
-                """
-                INSERT INTO embeddings(
-                    embedding_id, owner_kind, owner_id, model, dimension,
-                    input_hash, vector_f32, created_at
-                ) VALUES (?, 'event_package', ?, ?, ?, ?, ?, ?)
-                """,
-                (
-                    str(uuid.uuid4()),
-                    target_root,
-                    embedding_model,
-                    len(vector),
-                    embedding_input_hash,
-                    vector.tobytes(),
-                    _now(),
-                ),
-            )
-            self._refresh_package_recall_in_transaction(connection, merged_package)
-            connection.execute(
-                """
-                INSERT INTO decision_audits(
-                    audit_id, run_id, decision_type, subject_id, payload_json, created_at
-                ) VALUES (?, ?, 'PACKAGE_MERGE_PLAN_APPLIED', ?, ?, ?)
-                """,
-                (
-                    f"package-merge-plan-audit:{plan.plan_id}",
-                    run_id,
-                    target_root,
-                    _json_payload(plan),
-                    _now(),
-                ),
-            )
-            connection.commit()
-        return merged_package
 
     def rebuild_derived_state(self) -> dict[str, int]:
         with self._connection() as connection:

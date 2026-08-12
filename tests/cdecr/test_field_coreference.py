@@ -14,17 +14,11 @@ from cdecr.contracts import (
     AtomicEvent,
     EventFamily,
     EventMention,
-    EventPackage,
     EventTime,
     EvidenceSpan,
     Language,
-    LocalPackageHint,
-    MembershipRelation,
     OpenIdentityFields,
     OpenIdentityProfile,
-    PackageFamily,
-    PackageKind,
-    PackageStatus,
     Participant,
     ParticipantRole,
     Predicate,
@@ -186,13 +180,7 @@ def _mention(
     message_id: str,
     *,
     facility: str = "Fab 21",
-    anchor: str | None = None,
 ) -> EventMention:
-    hint = (
-        LocalPackageHint(anchor=anchor, relation_to_anchor=MembershipRelation.STAGE_OF)
-        if anchor
-        else None
-    )
     return EventMention(
         mention_id=mention_id,
         message_id=message_id,
@@ -207,7 +195,6 @@ def _mention(
         assertion_state=AssertionState.PLANNED,
         quantities=[],
         open_attributes=[],
-        local_package_hint=hint,
     ).model_copy(
         update={
             "open_attributes": [],
@@ -457,7 +444,7 @@ def test_prompt_v2_policies_and_llm_visible_candidate_contract(
     )
     result = _resolve(resolver, mention, "Boise fab complex")
     assert result.canonical_id == "FIELD-FAB"
-    assert len(resolver._policies) == len(FieldNamespace) == 28
+    assert len(resolver._policies) == len(FieldNamespace)
     request = model.requests[0]
     assert request.system_prompt.startswith(
         "Resolve each independent typed field task against only its supplied "
@@ -667,7 +654,7 @@ def test_current_link_can_be_corrected_without_rewriting_mention(
 
 
 def test_field_extraction_excludes_values_dates_units_and_assertion_state() -> None:
-    mention = _mention("M-1", "S-1", anchor="Micron Boise expansion")
+    mention = _mention("M-1", "S-1")
     inputs = field_inputs_for_mention(
         mention, local_context=mention.canonical_proposition, source_ticker="MU"
     )
@@ -678,81 +665,6 @@ def test_field_extraction_excludes_values_dates_units_and_assertion_state() -> N
     assert all("time" not in path and "assertion_state" not in path for path in paths)
 
 
-def test_atomic_and_package_recall_use_only_eligible_field_ids(
-    registry: SQLiteCDECRRegistry,
-) -> None:
-    mention = _mention("M-1", "S-1", anchor="Boise expansion")
-    _persist_mention(registry, mention)
-    facility = CanonicalFieldRegistryEntry(
-        id="FACILITY-1",
-        namespace=FieldNamespace.OBJECT_FACILITY,
-        canonical_text="Fab 21",
-        aliases=["Fab 21"],
-    )
-    anchor = CanonicalFieldRegistryEntry(
-        id="ANCHOR-1",
-        namespace=FieldNamespace.PACKAGE_ANCHOR,
-        canonical_text="Boise expansion",
-        aliases=["Boise expansion"],
-    )
-    registry.create_field_registry_entry(facility)
-    registry.create_field_registry_entry(anchor)
-    registry.save_field_link(
-        CanonicalFieldLink(
-            mention_id=mention.mention_id,
-            field_path="locations[0]",
-            registry_id=facility.id,
-            method=FieldLinkMethod.INTERNAL_COREFERENCE,
-        )
-    )
-    registry.save_field_link(
-        CanonicalFieldLink(
-            mention_id=mention.mention_id,
-            field_path="local_package_hint.anchor",
-            registry_id=anchor.id,
-            method=FieldLinkMethod.INTERNAL_COREFERENCE,
-        )
-    )
-    event = _atomic(mention)
-    registry.save_atomic_event(event)
-    package = EventPackage(
-        package_id="PACKAGE-1",
-        package_kind=PackageKind.EPISODE,
-        package_family=PackageFamily.COMPANY_DISCLOSURE,
-        canonical_title="Boise expansion",
-        anchor_entities=[],
-        time_range={},
-        member_event_ids=[event.event_id],
-        canonical_summary="Boise expansion events.",
-        status=PackageStatus.OPEN,
-        version=1,
-    )
-    registry.save_package(package)
-
-    atomic_recall = registry.recall_atomic_event_ids(
-        entity_ids=[],
-        event_family="OTHER",
-        normalized_predicate="other",
-        schema_type="OPEN",
-        reference_period_id=None,
-        event_start=None,
-        event_end=None,
-        source_fingerprint=None,
-        field_ids=[(FieldNamespace.OBJECT_FACILITY, facility.id)],
-    )
-    package_recall = registry.recall_package_ids(
-        package_kind="BOUNDED",
-        package_family="OTHER",
-        anchor_entities=[],
-        anchor_artifact_id=None,
-        anchor_period_id=None,
-        time_start=None,
-        time_end=None,
-        package_anchor_ids=[anchor.id],
-    )
-
-    assert atomic_recall[event.event_id] == {"FIELD_ID"}
-    assert package_recall[package.package_id] == {"PACKAGE_ANCHOR"}
 
 
 @pytest.mark.parametrize(

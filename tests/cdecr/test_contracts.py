@@ -29,11 +29,8 @@ from cdecr.contracts import (
     MembershipRelation,
     OpenIdentityFields,
     OpenIdentityProfile,
-    PackageAction,
-    PackageAssignmentRelation,
     PackageFamily,
     PackageKind,
-    PackageMergeRelation,
     PackageStatus,
     Participant,
     ParticipantRole,
@@ -93,7 +90,6 @@ def mention() -> EventMention:
                 unit="USD_BILLION",
             )
         ),
-        local_package_hint=None,
     )
 
 
@@ -218,15 +214,6 @@ def test_source_enums_and_normalization() -> None:
                 "CONTRADICTS",
                 "RELATED_TO",
             },
-        ),
-        (
-            PackageAssignmentRelation,
-            {"MEMBER", "EXTERNAL_RELATED", "NOT_RELATED", "UNCERTAIN"},
-        ),
-        (PackageMergeRelation, {"SAME_PACKAGE", "DIFFERENT_PACKAGE", "UNCERTAIN"}),
-        (
-            PackageAction,
-            {"ADD_TO_PACKAGE", "CREATE_NEW_PACKAGE", "LINK_EXTERNALLY", "MERGE_PACKAGES"},
         ),
     ],
 )

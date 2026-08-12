@@ -9,6 +9,7 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
+from dotenv import load_dotenv
 from mcp import types
 from mcp.server.lowlevel import Server
 from mcp.server.stdio import stdio_server
@@ -20,6 +21,7 @@ from doxagent.data_runtime.contracts import (
 )
 from doxagent.data_runtime.execution import DataExecutionCore
 from doxagent.data_runtime.guidance import DataToolGuide
+from doxagent.data_runtime.pilot_case import validate_pilot_case_root
 from doxagent.data_runtime.policy import (
     DataCapabilityClaims,
     DataCapabilityCodec,
@@ -43,14 +45,24 @@ class DataMcpApplication:
         control_root: Path,
         settings: DoxAgentSettings | None = None,
     ) -> None:
-        if run_root.resolve().name != claims.run_id:
+        resolved_run_root = run_root.resolve()
+        if resolved_run_root.name == claims.run_id:
+            expected_control_root = (
+                resolved_run_root.parent / ".control" / claims.run_id / claims.node_attempt_id
+            ).resolve()
+        elif claims.pilot_case_id:
+            validate_pilot_case_root(
+                run_root=resolved_run_root,
+                pilot_case_id=claims.pilot_case_id,
+                run_id=claims.run_id,
+                attempt_id=claims.node_attempt_id,
+                node=claims.node_id,
+            )
+            expected_control_root = (
+                resolved_run_root / ".control" / claims.run_id / claims.node_attempt_id
+            ).resolve()
+        else:
             raise ValueError("Data MCP cwd does not match capability run_id")
-        expected_control_root = (
-            run_root.parent
-            / ".control"
-            / claims.run_id
-            / claims.node_attempt_id
-        ).resolve()
         if control_root.resolve() != expected_control_root:
             raise ValueError("Data MCP control root does not match attempt scope")
         tools = default_real_tool_registry(settings or DoxAgentSettings())
@@ -89,7 +101,7 @@ class DataMcpApplication:
             observations=self.observations,
         )
         self.guide = DataToolGuide(contracts)
-        self.catalog_path = self._write_catalog(run_root)
+        self.catalog_path = self._write_catalog(resolved_run_root)
 
     def exposed_contracts(self) -> list[DataToolContract]:
         return [
@@ -264,6 +276,9 @@ def build_server(application: DataMcpApplication) -> Server:
 
 
 def main() -> None:
+    pilot_env_file = os.environ.get("DOXAGENT_PILOT_ENV_FILE")
+    if pilot_env_file:
+        load_dotenv(pilot_env_file, override=False)
     token = _required_env("DOXAGENT_DATA_MCP_CAPABILITY")
     public_key = _required_env("DOXAGENT_DATA_MCP_PUBLIC_KEY")
     control_root = Path(_required_env("DOXAGENT_OBSERVATION_CONTROL_ROOT"))

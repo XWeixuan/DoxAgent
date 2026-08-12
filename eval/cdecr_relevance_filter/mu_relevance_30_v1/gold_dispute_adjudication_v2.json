@@ -1,0 +1,645 @@
+{
+  "adjudication_version": "candidate-local-context-v2",
+  "source_gold": "eval/cdecr_relevance_filter/mu_relevance_30_v1/cdecr_mu_relevance_30_candidates_gold_final.jsonl",
+  "source_predictions": "eval/cdecr_relevance_filter/mu_relevance_30_v1/runs/frozen_gate_20260811_retry1/predictions.jsonl",
+  "context_contract": "candidate statement + exact evidence span + containing paragraph; stable public knowledge may identify an established competitive or complementary-product exposure, but no other article paragraph may be inherited",
+  "rules": [
+    "Direct target facts remain Direct even when stated in a comparison or list.",
+    "Stable knowledge may establish a close competitor or complementary-product exposure.",
+    "General company financial or security events require the containing paragraph to establish a material target-exposure driver.",
+    "No other paragraph or article-wide theme may be inherited.",
+    "Gate predictions were not used as adjudication evidence."
+  ],
+  "items": [
+    {
+      "document_id": "D001",
+      "candidate_id": "candidate:doxatlas:raw_media:2c299dfb-45bd-4e94-a940-8f4ec6309119:b3f10c6fa30daa83f40465afbe2678969e2f09dced0de0a4caeabea6d6f1d897",
+      "candidate_statement": "Sandisk was spun off from Western Digital in February 2025 and has since seen its stock price surge 1,850%.",
+      "exact_evidence": [
+        "Sandisk was spun off from Western Digital in February 2025 and has since seen its stock price surge 1,850%, yet sells for just 15 times earnings with a PEG ratio of 0.01."
+      ],
+      "containing_paragraph": "Sandisk was spun off from Western Digital in February 2025 and has since seen its stock price surge 1,850%, yet sells for just 15 times earnings with a PEG ratio of 0.01.",
+      "context_scope": "candidate statement + exact evidence span + containing paragraph; stable public knowledge may identify an established competitive or complementary-product exposure, but no other article paragraph may be inherited",
+      "terra_relevance": "RELEVANT",
+      "previous_final_relevance": "RELEVANT",
+      "readjudicated_relevance": "RELEVANT",
+      "relevance_type": "INDIRECT_ECONOMIC",
+      "transmission_path": "SanDisk restructuring and stock re-rating -> NAND-competitor market expectations -> MU relative expectations.",
+      "rationale": "The event concerns a close NAND competitor and can non-trivially update investor views of comparable memory businesses.",
+      "action": "SECOND_ADJUDICATION_RETAINED",
+      "gate_prediction": "IRRELEVANT"
+    },
+    {
+      "document_id": "D001",
+      "candidate_id": "candidate:doxatlas:raw_media:2c299dfb-45bd-4e94-a940-8f4ec6309119:701d494b58c0f4d458a992935be675b419a4e8a3a700c034912996fffcf0a3c6",
+      "candidate_statement": "Sandisk sells for just 15 times earnings with a PEG ratio of 0.01.",
+      "exact_evidence": [
+        "Sandisk was spun off from Western Digital in February 2025 and has since seen its stock price surge 1,850%, yet sells for just 15 times earnings with a PEG ratio of 0.01."
+      ],
+      "containing_paragraph": "Sandisk was spun off from Western Digital in February 2025 and has since seen its stock price surge 1,850%, yet sells for just 15 times earnings with a PEG ratio of 0.01.",
+      "context_scope": "candidate statement + exact evidence span + containing paragraph; stable public knowledge may identify an established competitive or complementary-product exposure, but no other article paragraph may be inherited",
+      "terra_relevance": "RELEVANT",
+      "previous_final_relevance": "RELEVANT",
+      "readjudicated_relevance": "RELEVANT",
+      "relevance_type": "INDIRECT_ECONOMIC",
+      "transmission_path": "SanDisk valuation -> relative valuation/expectations for an established NAND competitor -> MU market expectations.",
+      "rationale": "SanDisk is a close NAND competitor; its valuation is a concrete competitive read-through, not mere sector membership.",
+      "action": "SECOND_ADJUDICATION_RETAINED",
+      "gate_prediction": "IRRELEVANT"
+    },
+    {
+      "document_id": "D021",
+      "candidate_id": "candidate:doxatlas:raw_media:aec4a429-9ed3-482b-bc8b-b904997e50f9:b81caa95f21c01953ad8aab8cdbafed38fc93fed9261648fa80c47c763c332eb",
+      "candidate_statement": "DeepSeek came out in early 2025 with massively cheaper model performance equal to or better than many flagship models.",
+      "exact_evidence": [
+        "When DeepSeek came out in early 2025, it triggered panic since the model was massively cheaper and the performance was the same, or even better than many flagship models at that time."
+      ],
+      "containing_paragraph": "I’m not comparing apples to oranges, since there is a recent precedent for this. When DeepSeek came out in early 2025, it triggered panic since the model was massively cheaper and the performance was the same, or even better than many flagship models at that time.",
+      "context_scope": "candidate statement + exact evidence span + containing paragraph; stable public knowledge may identify an established competitive or complementary-product exposure, but no other article paragraph may be inherited",
+      "terra_relevance": "RELEVANT",
+      "previous_final_relevance": "RELEVANT",
+      "readjudicated_relevance": "IRRELEVANT",
+      "relevance_type": "NONE",
+      "transmission_path": "No target-specific path in the allowed context.",
+      "rationale": "Cheaper DeepSeek model performance is a general AI event; the paragraph does not connect it to memory demand, pricing, or Micron.",
+      "action": "SECOND_ADJUDICATION_CHANGED",
+      "gate_prediction": "IRRELEVANT"
+    },
+    {
+      "document_id": "D021",
+      "candidate_id": "candidate:doxatlas:raw_media:aec4a429-9ed3-482b-bc8b-b904997e50f9:c7f103f0ca9dab9ece5487613d53314ee961a14b8e483f73296121526ce61ead",
+      "candidate_statement": "The three stocks (Micron, Skywater, Photronics) are the only U.S.-based semiconductor stocks with a market cap over $1 billion trading below 20x earnings.",
+      "exact_evidence": [
+        "these three are the only U.S.-based semiconductor stocks that have a market cap over $1 billion that are trading this low"
+      ],
+      "containing_paragraph": "What makes them special is that these three are the only U.S.-based semiconductor stocks that have a market cap over $1 billion that are trading this low. Most other semiconductor stocks are trading above 20x earnings and have been treading water as their financials catch up.",
+      "context_scope": "candidate statement + exact evidence span + containing paragraph; stable public knowledge may identify an established competitive or complementary-product exposure, but no other article paragraph may be inherited",
+      "terra_relevance": "RELEVANT",
+      "previous_final_relevance": "RELEVANT",
+      "readjudicated_relevance": "RELEVANT",
+      "relevance_type": "DIRECT",
+      "transmission_path": "Micron is explicitly one of the stocks trading below 20x earnings -> direct update to MU valuation.",
+      "rationale": "List membership is not disqualifying because the list itself states a valuation fact about Micron.",
+      "action": "SECOND_ADJUDICATION_RETAINED",
+      "gate_prediction": "IRRELEVANT"
+    },
+    {
+      "document_id": "D025",
+      "candidate_id": "candidate:doxatlas:raw_media:581e6e23-2036-4ac7-930d-67755265bfb5:17df8e8a85aa94094959c6910a2d25e25a5af457e9a30c57e204981b4c2a0730",
+      "candidate_statement": "AMD net income rose to $1.38 billion, or 84 cents per share in the quarter, from $709 million, or 44 cents per share, a year ago.",
+      "exact_evidence": [
+        "Net income rose to $1.38 billion, or 84 cents per share in the quarter, from $709 million, or 44 cents per share, a year ago."
+      ],
+      "containing_paragraph": "Revenue climbed 38% from $7.44 billion a year ago, the company said in a release on Tuesday. Data center sales increased 57% to $5.8 billion from $3.67 billion in the same period a year earlier. Net income rose to $1.38 billion, or 84 cents per share in the quarter, from $709 million, or 44 cents per share, a year ago.",
+      "context_scope": "candidate statement + exact evidence span + containing paragraph; stable public knowledge may identify an established competitive or complementary-product exposure, but no other article paragraph may be inherited",
+      "terra_relevance": "IRRELEVANT",
+      "previous_final_relevance": "IRRELEVANT",
+      "readjudicated_relevance": "IRRELEVANT",
+      "relevance_type": "NONE",
+      "transmission_path": "AMD net-income growth -> no explicit attribution to the locally mentioned data-center business.",
+      "rationale": "The data-center sales figure is adjacent, but the paragraph does not attribute net-income growth to that exposure.",
+      "action": "SECOND_ADJUDICATION_RETAINED",
+      "gate_prediction": "RELEVANT"
+    },
+    {
+      "document_id": "D025",
+      "candidate_id": "candidate:doxatlas:raw_media:581e6e23-2036-4ac7-930d-67755265bfb5:811366e3f84eb7a94771f8907d1ca3541c9b2a7e8292444c9cfaa5aa747ae2af",
+      "candidate_statement": "AMD reported EPS of $1.37 vs. $1.29 adjusted expected for the quarter ended in March per LSEG consensus.",
+      "exact_evidence": [
+        "- EPS: $1.37 vs. $1.29 adjusted expected"
+      ],
+      "containing_paragraph": "- EPS: $1.37 vs. $1.29 adjusted expected",
+      "context_scope": "candidate statement + exact evidence span + containing paragraph; stable public knowledge may identify an established competitive or complementary-product exposure, but no other article paragraph may be inherited",
+      "terra_relevance": "IRRELEVANT",
+      "previous_final_relevance": "IRRELEVANT",
+      "readjudicated_relevance": "IRRELEVANT",
+      "relevance_type": "NONE",
+      "transmission_path": "AMD EPS beat alone -> no locally established MU exposure.",
+      "rationale": "The isolated bullet contains no attribution to data-center or memory-complementary demand.",
+      "action": "SECOND_ADJUDICATION_RETAINED",
+      "gate_prediction": "RELEVANT"
+    },
+    {
+      "document_id": "D025",
+      "candidate_id": "candidate:doxatlas:raw_media:581e6e23-2036-4ac7-930d-67755265bfb5:08233d9fe7e7129ba049fcff9d136aa8ea363fee091d48171672175ab848600a",
+      "candidate_statement": "AMD reported revenue of $10.25 billion vs. $9.89 billion expected for the quarter ended in March per LSEG consensus.",
+      "exact_evidence": [
+        "- Revenue: $10.25 billion vs. $9.89 billion expected"
+      ],
+      "containing_paragraph": "- Revenue: $10.25 billion vs. $9.89 billion expected",
+      "context_scope": "candidate statement + exact evidence span + containing paragraph; stable public knowledge may identify an established competitive or complementary-product exposure, but no other article paragraph may be inherited",
+      "terra_relevance": "IRRELEVANT",
+      "previous_final_relevance": "IRRELEVANT",
+      "readjudicated_relevance": "IRRELEVANT",
+      "relevance_type": "NONE",
+      "transmission_path": "AMD consolidated revenue beat alone -> no locally established MU exposure.",
+      "rationale": "The isolated bullet contains no product mix or data-center attribution.",
+      "action": "SECOND_ADJUDICATION_RETAINED",
+      "gate_prediction": "RELEVANT"
+    },
+    {
+      "document_id": "D025",
+      "candidate_id": "candidate:doxatlas:raw_media:581e6e23-2036-4ac7-930d-67755265bfb5:42afb67824ad957d22d07ff82227a4835fdbcb0bd00317c20f0bca57c9b7fc1c",
+      "candidate_statement": "AMD revenue climbed 38% from $7.44 billion a year ago.",
+      "exact_evidence": [
+        "Revenue climbed 38% from $7.44 billion a year ago, the company said in a release on Tuesday."
+      ],
+      "containing_paragraph": "Revenue climbed 38% from $7.44 billion a year ago, the company said in a release on Tuesday. Data center sales increased 57% to $5.8 billion from $3.67 billion in the same period a year earlier. Net income rose to $1.38 billion, or 84 cents per share in the quarter, from $709 million, or 44 cents per share, a year ago.",
+      "context_scope": "candidate statement + exact evidence span + containing paragraph; stable public knowledge may identify an established competitive or complementary-product exposure, but no other article paragraph may be inherited",
+      "terra_relevance": "IRRELEVANT",
+      "previous_final_relevance": "IRRELEVANT",
+      "readjudicated_relevance": "RELEVANT",
+      "relevance_type": "INDIRECT_ECONOMIC",
+      "transmission_path": "AMD revenue growth materially composed of 57% data-center growth -> accelerator/server deployment -> HBM/DRAM demand -> MU expectations.",
+      "rationale": "The same paragraph shows data-center sales at $5.8B, more than half of reported revenue, establishing a material local driver rather than article-wide inheritance.",
+      "action": "SECOND_ADJUDICATION_CHANGED",
+      "gate_prediction": "RELEVANT"
+    },
+    {
+      "document_id": "D045",
+      "candidate_id": "candidate:doxatlas:raw_media:fac88ce0-2a17-4c11-913a-cd58af53e520:4872fe8d7cdd4b3c939e92bbd5c541711c4b02858b6096099b52f57c9d8d16da",
+      "candidate_statement": "JPMorgan raised its Dell Technologies price target to $280 from $205.",
+      "exact_evidence": [
+        "JPMorgan also paired the action with a similar move on Dell Technologies (NYSE:DELL), lifting that target to $280 from $205, framing the entire IT hardware group as a synchronized opportunity."
+      ],
+      "containing_paragraph": "JPMorgan also paired the action with a similar move on Dell Technologies (NYSE:DELL), lifting that target to $280 from $205, framing the entire IT hardware group as a synchronized opportunity.",
+      "context_scope": "candidate statement + exact evidence span + containing paragraph; stable public knowledge may identify an established competitive or complementary-product exposure, but no other article paragraph may be inherited",
+      "terra_relevance": "IRRELEVANT",
+      "previous_final_relevance": "RELEVANT",
+      "readjudicated_relevance": "IRRELEVANT",
+      "relevance_type": "NONE",
+      "transmission_path": "Dell price-target increase -> no memory driver inside the allowed paragraph.",
+      "rationale": "The memory rationale appears in another paragraph and cannot be inherited under the frozen local-context rule.",
+      "action": "SECOND_ADJUDICATION_CHANGED",
+      "gate_prediction": "IRRELEVANT"
+    },
+    {
+      "document_id": "D045",
+      "candidate_id": "candidate:doxatlas:raw_media:fac88ce0-2a17-4c11-913a-cd58af53e520:0d506fb163dda93d65b37347229b04b5a94828c03874700d334dc538a4e30f12",
+      "candidate_statement": "JPMorgan raised its price target on Hewlett Packard Enterprise to $37 from $27, maintaining an Overweight rating.",
+      "exact_evidence": [
+        "JPMorgan just raised its price target on Hewlett Packard Enterprise (NYSE:HPE | HPE Price Prediction) to $37 from $27, maintaining an Overweight rating."
+      ],
+      "containing_paragraph": "JPMorgan just raised its price target on Hewlett Packard Enterprise (NYSE:HPE | HPE Price Prediction) to $37 from $27, maintaining an Overweight rating. The firm tied the call to a reversal of memory-related concerns that has powered the recent rally in the IT hardware group. For prudent investors, the price target raise signals that Wall Street sees more room to run as margin headwinds fade ahead of earnings season.",
+      "context_scope": "candidate statement + exact evidence span + containing paragraph; stable public knowledge may identify an established competitive or complementary-product exposure, but no other article paragraph may be inherited",
+      "terra_relevance": "IRRELEVANT",
+      "previous_final_relevance": "RELEVANT",
+      "readjudicated_relevance": "RELEVANT",
+      "relevance_type": "INDIRECT_ECONOMIC",
+      "transmission_path": "HPE re-rating tied to reversal of memory concerns -> server-OEM memory cost/demand exposure -> MU expectations.",
+      "rationale": "The containing paragraph explicitly says the analyst call was tied to memory-related concerns.",
+      "action": "SECOND_ADJUDICATION_RETAINED",
+      "gate_prediction": "IRRELEVANT"
+    },
+    {
+      "document_id": "D045",
+      "candidate_id": "candidate:doxatlas:raw_media:fac88ce0-2a17-4c11-913a-cd58af53e520:ca6676fc694a29fa0d344ffd684b50a534e1b735ceb7c139d55c40a6c09b2bac",
+      "candidate_statement": "JPMorgan is most positive on Dell Technologies and Hewlett Packard Enterprise heading into upcoming earnings prints, expecting earnings estimate increases.",
+      "exact_evidence": [
+        "JPMorgan is most positive on Dell Technologies and Hewlett Packard Enterprise heading into upcoming earnings prints, expecting earnings estimate increases to reinforce medium-term earnings growth outlooks."
+      ],
+      "containing_paragraph": "JPMorgan is most positive on Dell Technologies and Hewlett Packard Enterprise heading into upcoming earnings prints, expecting earnings estimate increases to reinforce medium-term earnings growth outlooks. The firm sees shares returning to valuation multiples “more appropriate for the medium-term earnings growth outlook.”",
+      "context_scope": "candidate statement + exact evidence span + containing paragraph; stable public knowledge may identify an established competitive or complementary-product exposure, but no other article paragraph may be inherited",
+      "terra_relevance": "RELEVANT",
+      "previous_final_relevance": "RELEVANT",
+      "readjudicated_relevance": "IRRELEVANT",
+      "relevance_type": "NONE",
+      "transmission_path": "General HPE/Dell earnings optimism -> no locally stated memory exposure.",
+      "rationale": "The paragraph gives earnings and valuation expectations without attributing them to memory prices, demand, or supply.",
+      "action": "SECOND_ADJUDICATION_CHANGED",
+      "gate_prediction": "IRRELEVANT"
+    },
+    {
+      "document_id": "D072",
+      "candidate_id": "candidate:doxatlas:raw_media:8841713d-52ff-4cae-998f-9508b3a193cf:cb18498757e15aa22f3291e8507af147f9b142bdad99b91d5a152be602826b7f",
+      "candidate_statement": "AMD has an OpenAI deal for 6 gigawatts of GPU deployment.",
+      "exact_evidence": [
+        "the OpenAI deal for 6 gigawatts of GPU deployment validates the AI thesis"
+      ],
+      "containing_paragraph": "AMD traded near $4.20 a decade ago, a struggling chipmaker before Ryzen and EPYC rewrote the story. Data center revenue hit $5.775 billion last quarter, up 57% year over year, and the OpenAI deal for 6 gigawatts of GPU deployment validates the AI thesis. The 247Factor base case targets $527.29 over the next year and $705.04 over five years. The current recommendation is to buy shares. At a forward P/E of 67, the comeback appears mostly priced in.",
+      "context_scope": "candidate statement + exact evidence span + containing paragraph; stable public knowledge may identify an established competitive or complementary-product exposure, but no other article paragraph may be inherited",
+      "terra_relevance": "RELEVANT",
+      "previous_final_relevance": "RELEVANT",
+      "readjudicated_relevance": "RELEVANT",
+      "relevance_type": "INDIRECT_ECONOMIC",
+      "transmission_path": "Six-gigawatt GPU deployment -> large HBM/server-memory requirement -> MU demand expectations.",
+      "rationale": "The deployment is concrete and large enough to create a non-trivial complementary-memory demand path.",
+      "action": "SECOND_ADJUDICATION_RETAINED",
+      "gate_prediction": "IRRELEVANT"
+    },
+    {
+      "document_id": "D072",
+      "candidate_id": "candidate:doxatlas:raw_media:8841713d-52ff-4cae-998f-9508b3a193cf:c2f69cca0541e4e19872d097c34359b9b46d829f1cf73a2c558e51aae54c17f7",
+      "candidate_statement": "AMD data center revenue hit $5.775 billion last quarter, up 57% year over year.",
+      "exact_evidence": [
+        "Data center revenue hit $5.775 billion last quarter, up 57% year over year"
+      ],
+      "containing_paragraph": "AMD traded near $4.20 a decade ago, a struggling chipmaker before Ryzen and EPYC rewrote the story. Data center revenue hit $5.775 billion last quarter, up 57% year over year, and the OpenAI deal for 6 gigawatts of GPU deployment validates the AI thesis. The 247Factor base case targets $527.29 over the next year and $705.04 over five years. The current recommendation is to buy shares. At a forward P/E of 67, the comeback appears mostly priced in.",
+      "context_scope": "candidate statement + exact evidence span + containing paragraph; stable public knowledge may identify an established competitive or complementary-product exposure, but no other article paragraph may be inherited",
+      "terra_relevance": "RELEVANT",
+      "previous_final_relevance": "RELEVANT",
+      "readjudicated_relevance": "RELEVANT",
+      "relevance_type": "INDIRECT_ECONOMIC",
+      "transmission_path": "AMD data-center growth -> expanding accelerator/server deployments -> HBM/DRAM demand -> MU revenue expectations.",
+      "rationale": "The same paragraph quantifies data-center growth and a 6 GW OpenAI deployment, establishing a material AI-infrastructure demand signal.",
+      "action": "SECOND_ADJUDICATION_RETAINED",
+      "gate_prediction": "IRRELEVANT"
+    },
+    {
+      "document_id": "D072",
+      "candidate_id": "candidate:doxatlas:raw_media:8841713d-52ff-4cae-998f-9508b3a193cf:bd785a78a90930d3693f766c9a54a9b5233a47d5b8becf43890b4f82f80ced78",
+      "candidate_statement": "AMD has hyperscaler deals with OpenAI, Meta, and Oracle.",
+      "exact_evidence": [
+        "whether the hyperscaler deals (OpenAI, Meta, Oracle) translate into multi-year MI450 share gains against Nvidia"
+      ],
+      "containing_paragraph": "AMD’s bull case rests on whether the hyperscaler deals (OpenAI, Meta, Oracle) translate into multi-year MI450 share gains against Nvidia and margins push toward 56%. The bear case kicks in if AI capex peaks before then and the 156x trailing P/E starts mean-reverting. Micron’s bull case requires accepting the cycle and trusting the order book reportedly stretching into 2027. The bear case rests on memories of 2023 and the model’s bearish base case. Thus, AMD’s secular growth narrative remains cautiously compelling, but Micron’s steep one-year run justifies near-term skepticism. Chip stocks reward patient capital, but they punish a mistimed entry just as quickly.",
+      "context_scope": "candidate statement + exact evidence span + containing paragraph; stable public knowledge may identify an established competitive or complementary-product exposure, but no other article paragraph may be inherited",
+      "terra_relevance": "RELEVANT",
+      "previous_final_relevance": "RELEVANT",
+      "readjudicated_relevance": "RELEVANT",
+      "relevance_type": "INDIRECT_ECONOMIC",
+      "transmission_path": "AMD hyperscaler accelerator share gains -> accelerator deployment -> HBM demand -> MU demand and market expectations.",
+      "rationale": "AMD accelerators and HBM are established complementary products, and the paragraph explicitly frames hyperscaler deployment and AI-capex exposure.",
+      "action": "SECOND_ADJUDICATION_RETAINED",
+      "gate_prediction": "IRRELEVANT"
+    },
+    {
+      "document_id": "D095",
+      "candidate_id": "candidate:doxatlas:raw_media:8ec55933-baa6-4499-87f3-07c21ea4583f:a76f96af5ac0f37702e57d93afd23996f3cfe88b49c39763d355e37210c8bd12",
+      "candidate_statement": "Ciena's revenue increased 33% year over year in fiscal Q1 2026 (ended Jan. 31, 2026) to $1.43 billion.",
+      "exact_evidence": [
+        "The company's revenue increased by 33% year over year in the first quarter of fiscal 2026 (which ended on Jan. 31, 2026) to $1.43 billion."
+      ],
+      "containing_paragraph": "This explains why Ciena has been growing at an incredible pace. The company's revenue increased by 33% year over year in the first quarter of fiscal 2026 (which ended on Jan. 31, 2026) to $1.43 billion. The company anticipates full-year revenue to increase by 28% to $6.1 billion at the midpoint of its guidance range, an improvement over the 19% growth it clocked in the previous fiscal year.",
+      "context_scope": "candidate statement + exact evidence span + containing paragraph; stable public knowledge may identify an established competitive or complementary-product exposure, but no other article paragraph may be inherited",
+      "terra_relevance": "IRRELEVANT",
+      "previous_final_relevance": "RELEVANT",
+      "readjudicated_relevance": "IRRELEVANT",
+      "relevance_type": "NONE",
+      "transmission_path": "Ciena consolidated revenue growth alone -> no locally established MU exposure.",
+      "rationale": "The paragraph gives company-wide revenue figures but does not locally attribute them to AI-data-center demand.",
+      "action": "SECOND_ADJUDICATION_CHANGED",
+      "gate_prediction": "IRRELEVANT"
+    },
+    {
+      "document_id": "D095",
+      "candidate_id": "candidate:doxatlas:raw_media:8ec55933-baa6-4499-87f3-07c21ea4583f:a4300f72042fd113d7036b6a711f2d9fcf921a2ff5140d8939cd8b8d1feb2648",
+      "candidate_statement": "Precedence Research estimates the global data center interconnect market could grow from just under $19 billion this year to almost $65 billion in 2035.",
+      "exact_evidence": [
+        "Precedence Research estimates that the global data center interconnect market could grow from just under $19 billion this year to almost $65 billion in 2035, at an annual rate of almost 15%."
+      ],
+      "containing_paragraph": "Ciena's optical components power these data center interconnects (DCI). Precedence Research estimates that the global data center interconnect market could grow from just under $19 billion this year to almost $65 billion in 2035, at an annual rate of almost 15%. Meanwhile, the demand for optical networking components could increase at a compound annual growth rate (CAGR) of 21% over the next five years to support fast connections in AI data centers, according to market research provider Cignal AI.",
+      "context_scope": "candidate statement + exact evidence span + containing paragraph; stable public knowledge may identify an established competitive or complementary-product exposure, but no other article paragraph may be inherited",
+      "terra_relevance": "IRRELEVANT",
+      "previous_final_relevance": "RELEVANT",
+      "readjudicated_relevance": "RELEVANT",
+      "relevance_type": "INDIRECT_ECONOMIC",
+      "transmission_path": "Data-center interconnect market growth -> data-center capacity buildout -> server-memory demand -> MU expectations.",
+      "rationale": "The same paragraph identifies AI data centers as the use case, so this is more specific than generic networking growth.",
+      "action": "SECOND_ADJUDICATION_RETAINED",
+      "gate_prediction": "IRRELEVANT"
+    },
+    {
+      "document_id": "D095",
+      "candidate_id": "candidate:doxatlas:raw_media:8ec55933-baa6-4499-87f3-07c21ea4583f:363fcc0243b29dd949fcba5abe410c719a61d1bbee3d89c3cf9d05cc3dc3332d",
+      "candidate_statement": "Ciena anticipates full-year revenue to increase by 28% to $6.1 billion at the midpoint of its guidance range.",
+      "exact_evidence": [
+        "The company anticipates full-year revenue to increase by 28% to $6.1 billion at the midpoint of its guidance range"
+      ],
+      "containing_paragraph": "This explains why Ciena has been growing at an incredible pace. The company's revenue increased by 33% year over year in the first quarter of fiscal 2026 (which ended on Jan. 31, 2026) to $1.43 billion. The company anticipates full-year revenue to increase by 28% to $6.1 billion at the midpoint of its guidance range, an improvement over the 19% growth it clocked in the previous fiscal year.",
+      "context_scope": "candidate statement + exact evidence span + containing paragraph; stable public knowledge may identify an established competitive or complementary-product exposure, but no other article paragraph may be inherited",
+      "terra_relevance": "IRRELEVANT",
+      "previous_final_relevance": "RELEVANT",
+      "readjudicated_relevance": "IRRELEVANT",
+      "relevance_type": "NONE",
+      "transmission_path": "Ciena consolidated revenue guidance alone -> no locally established MU exposure.",
+      "rationale": "The paragraph contains general company growth; the referent of 'This explains' lies outside the allowed context and cannot be inherited.",
+      "action": "SECOND_ADJUDICATION_CHANGED",
+      "gate_prediction": "IRRELEVANT"
+    },
+    {
+      "document_id": "D095",
+      "candidate_id": "candidate:doxatlas:raw_media:8ec55933-baa6-4499-87f3-07c21ea4583f:7e553fc88a346698a2e226ef415c36469df3bffdcebb7e14e25bad895405ad60",
+      "candidate_statement": "Cignal AI projects optical networking component demand to grow at a CAGR of 21% over the next five years.",
+      "exact_evidence": [
+        "the demand for optical networking components could increase at a compound annual growth rate (CAGR) of 21% over the next five years to support fast connections in AI data centers, according to market research provider Cignal AI."
+      ],
+      "containing_paragraph": "Ciena's optical components power these data center interconnects (DCI). Precedence Research estimates that the global data center interconnect market could grow from just under $19 billion this year to almost $65 billion in 2035, at an annual rate of almost 15%. Meanwhile, the demand for optical networking components could increase at a compound annual growth rate (CAGR) of 21% over the next five years to support fast connections in AI data centers, according to market research provider Cignal AI.",
+      "context_scope": "candidate statement + exact evidence span + containing paragraph; stable public knowledge may identify an established competitive or complementary-product exposure, but no other article paragraph may be inherited",
+      "terra_relevance": "IRRELEVANT",
+      "previous_final_relevance": "RELEVANT",
+      "readjudicated_relevance": "RELEVANT",
+      "relevance_type": "INDIRECT_ECONOMIC",
+      "transmission_path": "Optical component demand for AI data centers -> data-center capacity buildout -> server-memory demand -> MU expectations.",
+      "rationale": "The evidence expressly states that the projected component growth supports AI data centers.",
+      "action": "SECOND_ADJUDICATION_RETAINED",
+      "gate_prediction": "IRRELEVANT"
+    },
+    {
+      "document_id": "D095",
+      "candidate_id": "candidate:doxatlas:raw_media:8ec55933-baa6-4499-87f3-07c21ea4583f:3447e462d2155993b5fcd3d1e57504a51aecb40c4159f92cd1cfd99a7404fba9",
+      "candidate_statement": "Ciena ended the quarter with an order backlog of $7 billion.",
+      "exact_evidence": [
+        "The company ended the quarter with an order backlog of $7 billion."
+      ],
+      "containing_paragraph": "In fact, the company expects demand to be higher than supply \"at least for the next several quarters,\" suggesting that further price increments could be in the cards. Another important point is that Ciena received $2 billion in orders in fiscal Q1, exceeding its revenue. The company ended the quarter with an order backlog of $7 billion.",
+      "context_scope": "candidate statement + exact evidence span + containing paragraph; stable public knowledge may identify an established competitive or complementary-product exposure, but no other article paragraph may be inherited",
+      "terra_relevance": "IRRELEVANT",
+      "previous_final_relevance": "RELEVANT",
+      "readjudicated_relevance": "IRRELEVANT",
+      "relevance_type": "NONE",
+      "transmission_path": "Ciena backlog alone -> no locally established MU exposure.",
+      "rationale": "The paragraph reports orders, supply, and backlog but does not identify AI data centers or another Micron-specific transmission path.",
+      "action": "SECOND_ADJUDICATION_CHANGED",
+      "gate_prediction": "IRRELEVANT"
+    },
+    {
+      "document_id": "D095",
+      "candidate_id": "candidate:doxatlas:raw_media:8ec55933-baa6-4499-87f3-07c21ea4583f:621ad7ee38d0d9f3f162216d0351264524ead32f3f27054a02057cb88d754ba8",
+      "candidate_statement": "Ciena's adjusted earnings increased 111% year over year in fiscal Q1.",
+      "exact_evidence": [
+        "Its adjusted earnings increased by 111% year over year in fiscal Q1."
+      ],
+      "containing_paragraph": "What's more, the AI data center-fueled demand is leading to higher profitability for Ciena. Its adjusted earnings increased by 111% year over year in fiscal Q1. The good part is that the strong pricing power it enjoys in the optical transport industry is expected to drive further margin gains in the second half of the fiscal year. Ciena notes that demand for its products is outpacing supply, leading to a jump in prices.",
+      "context_scope": "candidate statement + exact evidence span + containing paragraph; stable public knowledge may identify an established competitive or complementary-product exposure, but no other article paragraph may be inherited",
+      "terra_relevance": "IRRELEVANT",
+      "previous_final_relevance": "RELEVANT",
+      "readjudicated_relevance": "RELEVANT",
+      "relevance_type": "INDIRECT_ECONOMIC",
+      "transmission_path": "AI-data-center-driven Ciena profitability -> active data-center interconnect buildout -> server-memory demand -> MU expectations.",
+      "rationale": "The containing paragraph explicitly attributes profitability to AI data-center demand, creating a concrete complementary-infrastructure signal.",
+      "action": "SECOND_ADJUDICATION_RETAINED",
+      "gate_prediction": "IRRELEVANT"
+    },
+    {
+      "document_id": "D095",
+      "candidate_id": "candidate:doxatlas:raw_media:8ec55933-baa6-4499-87f3-07c21ea4583f:fb228d6ec788ef092488a91360be9c4b33bc5290b49f23c3a723e589faebd847",
+      "candidate_statement": "Ciena received $2 billion in orders in fiscal Q1, exceeding its revenue.",
+      "exact_evidence": [
+        "Ciena received $2 billion in orders in fiscal Q1, exceeding its revenue."
+      ],
+      "containing_paragraph": "In fact, the company expects demand to be higher than supply \"at least for the next several quarters,\" suggesting that further price increments could be in the cards. Another important point is that Ciena received $2 billion in orders in fiscal Q1, exceeding its revenue. The company ended the quarter with an order backlog of $7 billion.",
+      "context_scope": "candidate statement + exact evidence span + containing paragraph; stable public knowledge may identify an established competitive or complementary-product exposure, but no other article paragraph may be inherited",
+      "terra_relevance": "IRRELEVANT",
+      "previous_final_relevance": "RELEVANT",
+      "readjudicated_relevance": "IRRELEVANT",
+      "relevance_type": "NONE",
+      "transmission_path": "Ciena orders alone -> no locally established MU exposure.",
+      "rationale": "The paragraph does not state that these orders arise from AI data centers or another target-specific demand channel.",
+      "action": "SECOND_ADJUDICATION_CHANGED",
+      "gate_prediction": "IRRELEVANT"
+    },
+    {
+      "document_id": "D097",
+      "candidate_id": "candidate:doxatlas:raw_media:cf629404-da25-4202-94ce-b82ee1b44c86:40b17b2a972bca13f999f51a4c1becca6bcd2fa133a094e5ff42cf0239c49356",
+      "candidate_statement": "Goldman reiterated its Buy rating on SanDisk, setting a $1,200 target price.",
+      "exact_evidence": [
+        "Goldman reiterated its Buy rating on SanDisk, setting a $1,200 target price"
+      ],
+      "containing_paragraph": "Goldman reiterated its Buy rating on SanDisk, setting a $1,200 target price, and continues to use Micron’s historical upcycle valuation multiples as a benchmark for assessing peers.",
+      "context_scope": "candidate statement + exact evidence span + containing paragraph; stable public knowledge may identify an established competitive or complementary-product exposure, but no other article paragraph may be inherited",
+      "terra_relevance": "RELEVANT",
+      "previous_final_relevance": "RELEVANT",
+      "readjudicated_relevance": "RELEVANT",
+      "relevance_type": "INDIRECT_ECONOMIC",
+      "transmission_path": "SanDisk re-rating benchmarked to Micron's upcycle multiples -> direct relative-valuation read-through to MU.",
+      "rationale": "The paragraph explicitly uses Micron as the valuation benchmark, so the path is locally stated.",
+      "action": "SECOND_ADJUDICATION_RETAINED",
+      "gate_prediction": "IRRELEVANT"
+    },
+    {
+      "document_id": "D097",
+      "candidate_id": "candidate:doxatlas:raw_media:cf629404-da25-4202-94ce-b82ee1b44c86:58d76a728e6606646d55477584471ad9ad6db909e2088b5e27f529f69e5e9999",
+      "candidate_statement": "Goldman upgraded Kioxia to Buy.",
+      "exact_evidence": [
+        "upgraded Kioxia to Buy."
+      ],
+      "containing_paragraph": "The firm raised its 12-month price target on Samsung Electronics by 50%, lifted its target on SK Hynix by 94% and upgraded Kioxia to Buy.",
+      "context_scope": "candidate statement + exact evidence span + containing paragraph; stable public knowledge may identify an established competitive or complementary-product exposure, but no other article paragraph may be inherited",
+      "terra_relevance": "RELEVANT",
+      "previous_final_relevance": "RELEVANT",
+      "readjudicated_relevance": "RELEVANT",
+      "relevance_type": "INDIRECT_ECONOMIC",
+      "transmission_path": "Kioxia upgrade -> close NAND competitor expectations -> MU competitive and relative-valuation expectations.",
+      "rationale": "Kioxia is an established NAND competitor; the analyst action is a specific memory-market read-through.",
+      "action": "SECOND_ADJUDICATION_RETAINED",
+      "gate_prediction": "IRRELEVANT"
+    },
+    {
+      "document_id": "D097",
+      "candidate_id": "candidate:doxatlas:raw_media:cf629404-da25-4202-94ce-b82ee1b44c86:7712fd7d35cd1e3ebc1f2f9f173cc5b3de337b14ad4e59b1a2429979e2939aee",
+      "candidate_statement": "Goldman lifted its target on SK Hynix by 94%.",
+      "exact_evidence": [
+        "lifted its target on SK Hynix by 94%"
+      ],
+      "containing_paragraph": "The firm raised its 12-month price target on Samsung Electronics by 50%, lifted its target on SK Hynix by 94% and upgraded Kioxia to Buy.",
+      "context_scope": "candidate statement + exact evidence span + containing paragraph; stable public knowledge may identify an established competitive or complementary-product exposure, but no other article paragraph may be inherited",
+      "terra_relevance": "RELEVANT",
+      "previous_final_relevance": "RELEVANT",
+      "readjudicated_relevance": "RELEVANT",
+      "relevance_type": "INDIRECT_ECONOMIC",
+      "transmission_path": "SK Hynix re-rating -> close DRAM/HBM competitor expectations -> MU competitive and relative-valuation expectations.",
+      "rationale": "SK Hynix is an established DRAM/HBM competitor, making the target move specifically informative for MU.",
+      "action": "SECOND_ADJUDICATION_RETAINED",
+      "gate_prediction": "IRRELEVANT"
+    },
+    {
+      "document_id": "D097",
+      "candidate_id": "candidate:doxatlas:raw_media:cf629404-da25-4202-94ce-b82ee1b44c86:40328089dc685e0ac5dbd624fbe985a949eae03b40cb6e05dd834dc9efc97082",
+      "candidate_statement": "Goldman raised its 12-month price target on Samsung Electronics by 50%.",
+      "exact_evidence": [
+        "The firm raised its 12-month price target on Samsung Electronics by 50%"
+      ],
+      "containing_paragraph": "The firm raised its 12-month price target on Samsung Electronics by 50%, lifted its target on SK Hynix by 94% and upgraded Kioxia to Buy.",
+      "context_scope": "candidate statement + exact evidence span + containing paragraph; stable public knowledge may identify an established competitive or complementary-product exposure, but no other article paragraph may be inherited",
+      "terra_relevance": "RELEVANT",
+      "previous_final_relevance": "RELEVANT",
+      "readjudicated_relevance": "RELEVANT",
+      "relevance_type": "INDIRECT_ECONOMIC",
+      "transmission_path": "Samsung memory-business re-rating -> close DRAM/NAND competitor expectations -> MU relative expectations.",
+      "rationale": "Samsung is an established memory competitor, making the large target change a specific competitive read-through.",
+      "action": "SECOND_ADJUDICATION_RETAINED",
+      "gate_prediction": "IRRELEVANT"
+    },
+    {
+      "document_id": "D102",
+      "candidate_id": "candidate:doxatlas:raw_media:5104ba17-1424-486c-8a2d-f5745acc617c:b6079edd2a57e75572d2b206fc67ebdc1877231a070069ae81c234be13297705",
+      "candidate_statement": "RTX Spark, internally known as N1X, is a custom system-on-chip designed specifically for PCs.",
+      "exact_evidence": [
+        "RTX Spark — internally known as N1X — is a custom system-on-chip designed specifically for PCs."
+      ],
+      "containing_paragraph": "This is not Vera Rubin, Nvidia’s next-generation data center platform. Nor is it a traditional Blackwell accelerator. Instead, RTX Spark — internally known as N1X — is a custom system-on-chip designed specifically for PCs. It combines Nvidia’s AI, graphics, and computing technologies into a single Arm-based package optimized for local AI workloads.",
+      "context_scope": "candidate statement + exact evidence span + containing paragraph; stable public knowledge may identify an established competitive or complementary-product exposure, but no other article paragraph may be inherited",
+      "terra_relevance": "RELEVANT",
+      "previous_final_relevance": "RELEVANT",
+      "readjudicated_relevance": "RELEVANT",
+      "relevance_type": "INDIRECT_ECONOMIC",
+      "transmission_path": "Dedicated local-AI PC platform -> high-capacity AI-PC memory category demand -> MU DRAM expectations.",
+      "rationale": "Local AI PCs and high-capacity memory are established complementary products; this is a product-category demand path, not generic AI sentiment.",
+      "action": "SECOND_ADJUDICATION_RETAINED",
+      "gate_prediction": "IRRELEVANT"
+    },
+    {
+      "document_id": "D102",
+      "candidate_id": "candidate:doxatlas:raw_media:5104ba17-1424-486c-8a2d-f5745acc617c:7210448b2239ee23d799198a470c82a97485ba5adc69f812b6c07bc01c15821d",
+      "candidate_statement": "RTX Spark delivers up to 1 petaflop of AI performance while maintaining laptop-class power efficiency.",
+      "exact_evidence": [
+        "The system delivers up to 1 petaflop of AI performance while maintaining laptop-class power efficiency."
+      ],
+      "containing_paragraph": "At Computex 2026, Nvidia and Microsoft (NASDAQ:MSFT) unveiled RTX Spark, a new class of Windows PCs designed specifically for agentic AI. According to Nvidia’s June 1 announcement, RTX Spark combines a 20-core Arm (NASDAQ:ARM)-based CPU derived from Nvidia’s Grace architecture with a Blackwell-based RTX GPU containing 6,144 CUDA cores and up to 128GB of unified memory. The system delivers up to 1 petaflop of AI performance while maintaining laptop-class power efficiency.",
+      "context_scope": "candidate statement + exact evidence span + containing paragraph; stable public knowledge may identify an established competitive or complementary-product exposure, but no other article paragraph may be inherited",
+      "terra_relevance": "RELEVANT",
+      "previous_final_relevance": "RELEVANT",
+      "readjudicated_relevance": "RELEVANT",
+      "relevance_type": "INDIRECT_ECONOMIC",
+      "transmission_path": "RTX Spark performance with up to 128GB unified memory -> high-capacity AI-PC memory demand -> MU demand expectations.",
+      "rationale": "The containing paragraph explicitly specifies the unusually large unified-memory configuration.",
+      "action": "SECOND_ADJUDICATION_RETAINED",
+      "gate_prediction": "IRRELEVANT"
+    },
+    {
+      "document_id": "D102",
+      "candidate_id": "candidate:doxatlas:raw_media:5104ba17-1424-486c-8a2d-f5745acc617c:a823d04dcac7e32c5d4cc620e2ff2faf3e0d041f7a16ceec3adf8858a5253cf8",
+      "candidate_statement": "Microsoft spent years promoting digital assistants, from Cortana to various AI-enhanced Windows experiences, with adoption rarely matching expectations.",
+      "exact_evidence": [
+        "The company spent years promoting digital assistants, from Cortana to various AI-enhanced Windows experiences. Adoption rarely matched expectations"
+      ],
+      "containing_paragraph": "Surprisingly, Microsoft has already tried a version of this story. The company spent years promoting digital assistants, from Cortana to various AI-enhanced Windows experiences. Adoption rarely matched expectations because the assistants lacked enough capability to justify becoming a permanent part of users’ workflows.",
+      "context_scope": "candidate statement + exact evidence span + containing paragraph; stable public knowledge may identify an established competitive or complementary-product exposure, but no other article paragraph may be inherited",
+      "terra_relevance": "RELEVANT",
+      "previous_final_relevance": "RELEVANT",
+      "readjudicated_relevance": "IRRELEVANT",
+      "relevance_type": "NONE",
+      "transmission_path": "Historical digital-assistant adoption -> no locally stated hardware-memory consequence.",
+      "rationale": "The paragraph concerns software adoption and capability, without a specific memory-demand or Micron path.",
+      "action": "SECOND_ADJUDICATION_CHANGED",
+      "gate_prediction": "IRRELEVANT"
+    },
+    {
+      "document_id": "D138",
+      "candidate_id": "candidate:doxatlas:raw_media:bea8d68c-3336-4138-b40e-b58d92fe50e8:30be80490b25407b2f801f4068c2887fd4bf6fc376153c9e6fbb85ce085d6e51",
+      "candidate_statement": "Broadcom's CEO is targeting over $100 billion in AI sales by 2027.",
+      "exact_evidence": [
+        "Broadcom’s CEO is targeting over $100 billion in AI sales by 2027"
+      ],
+      "containing_paragraph": "What to watch concretely: any hyperscaler reducing 2027 capex guidance versus the prior call. The transmission to ARTY is direct. Broadcom’s CEO is targeting over $100 billion in AI sales by 2027, Oracle’s $553 billion RPO is backed by hyperscaler and AI-lab prepayments, and Micron’s order books reportedly stretch into 2027. Where to find it: each company’s investor relations 8-K and prepared remarks, released quarterly. The historical precedent is 2022, when one quarter of cloud capex digestion took semis down sharply before the AI cycle restarted. A single soft guide from two hyperscalers would compress multiples across most of ARTY’s book at once.",
+      "context_scope": "candidate statement + exact evidence span + containing paragraph; stable public knowledge may identify an established competitive or complementary-product exposure, but no other article paragraph may be inherited",
+      "terra_relevance": "IRRELEVANT",
+      "previous_final_relevance": "RELEVANT",
+      "readjudicated_relevance": "RELEVANT",
+      "relevance_type": "INDIRECT_ECONOMIC",
+      "transmission_path": "Broadcom AI-sales target -> hyperscaler AI-capex demand -> common AI-supplier demand and pricing -> MU order expectations.",
+      "rationale": "The paragraph explicitly links hyperscaler capex, Broadcom AI sales, and Micron order books.",
+      "action": "SECOND_ADJUDICATION_RETAINED",
+      "gate_prediction": "IRRELEVANT"
+    },
+    {
+      "document_id": "D138",
+      "candidate_id": "candidate:doxatlas:raw_media:bea8d68c-3336-4138-b40e-b58d92fe50e8:5521340ea034cb1882d4c0a8c516cb441fe328be038bafa10452d3508b7ff3d2",
+      "candidate_statement": "NVIDIA is guiding 75% non-GAAP gross margin for Q2.",
+      "exact_evidence": [
+        "NVIDIA is guiding 75% non-GAAP gross margin for Q2"
+      ],
+      "containing_paragraph": "The fund-specific signal to monitor is gross-margin direction at the top anchor holdings. NVIDIA is guiding 75% non-GAAP gross margin for Q2, Broadcom is running at a 68% adjusted EBITDA margin, and Micron’s Cloud Memory unit posted a 66% gross margin. Those margins are what justify the fund’s valuation. Track them in each 8-K release. If two of the top holdings guide margins down sequentially in the same quarter, that signals AI-chip pricing power is easing, and ARTY’s NAV would feel it before the broader Nasdaq does. Also worth checking each NPORT filing for any drift toward hyperscaler customers, which would tell you the manager is hedging the supplier bet.",
+      "context_scope": "candidate statement + exact evidence span + containing paragraph; stable public knowledge may identify an established competitive or complementary-product exposure, but no other article paragraph may be inherited",
+      "terra_relevance": "IRRELEVANT",
+      "previous_final_relevance": "RELEVANT",
+      "readjudicated_relevance": "RELEVANT",
+      "relevance_type": "INDIRECT_ECONOMIC",
+      "transmission_path": "NVIDIA margin direction -> common AI-chip pricing-power signal -> MU Cloud Memory margin expectations.",
+      "rationale": "The paragraph directly compares NVIDIA and Micron margins and defines a common pricing-power signal.",
+      "action": "SECOND_ADJUDICATION_RETAINED",
+      "gate_prediction": "IRRELEVANT"
+    },
+    {
+      "document_id": "D138",
+      "candidate_id": "candidate:doxatlas:raw_media:bea8d68c-3336-4138-b40e-b58d92fe50e8:365cea07239c74501d44f2e51742af91ddb8b314cde5202484d5f401f1125e8d",
+      "candidate_statement": "Oracle has a $553 billion RPO backed by hyperscaler and AI-lab prepayments.",
+      "exact_evidence": [
+        "Oracle’s $553 billion RPO is backed by hyperscaler and AI-lab prepayments"
+      ],
+      "containing_paragraph": "What to watch concretely: any hyperscaler reducing 2027 capex guidance versus the prior call. The transmission to ARTY is direct. Broadcom’s CEO is targeting over $100 billion in AI sales by 2027, Oracle’s $553 billion RPO is backed by hyperscaler and AI-lab prepayments, and Micron’s order books reportedly stretch into 2027. Where to find it: each company’s investor relations 8-K and prepared remarks, released quarterly. The historical precedent is 2022, when one quarter of cloud capex digestion took semis down sharply before the AI cycle restarted. A single soft guide from two hyperscalers would compress multiples across most of ARTY’s book at once.",
+      "context_scope": "candidate statement + exact evidence span + containing paragraph; stable public knowledge may identify an established competitive or complementary-product exposure, but no other article paragraph may be inherited",
+      "terra_relevance": "RELEVANT",
+      "previous_final_relevance": "RELEVANT",
+      "readjudicated_relevance": "RELEVANT",
+      "relevance_type": "INDIRECT_ECONOMIC",
+      "transmission_path": "Oracle hyperscaler/AI-lab-backed RPO -> sustained AI infrastructure buildout -> server-memory demand -> MU orders.",
+      "rationale": "The paragraph explicitly joins the RPO, hyperscaler capex signal, and Micron order-book horizon.",
+      "action": "SECOND_ADJUDICATION_RETAINED",
+      "gate_prediction": "IRRELEVANT"
+    },
+    {
+      "document_id": "D147",
+      "candidate_id": "candidate:doxatlas:raw_media:f24a2b5e-823a-4313-ad22-bfc820aee31d:6c990a041ed9cd0b4c66bb4ad613ef9c9b79f43f1eb5fbb2a1d12cf8c212e525",
+      "candidate_statement": "Super Micro Computer shares tumbled 12% after announcing plans to raise $7 billion in equity-related deals to help cover hardware component purchase costs.",
+      "exact_evidence": [
+        "Super Micro Computer — Shares tumbled 12% after the company announced it plans to raise $7 billion in equity-related deals to help cover the costs of hardware component purchases."
+      ],
+      "containing_paragraph": "Check out the companies making the biggest moves in premarket trading: Super Micro Computer — Shares tumbled 12% after the company announced it plans to raise $7 billion in equity-related deals to help cover the costs of hardware component purchases. Cracker Barrel — The Southern country-themed restaurant chain jumped nearly 11% after raising its full-year revenue and adjusted EBITDA guidance. Cracker Barrel also reported 29 cents per share on $797.4 million in revenue for its fiscal third quarter, topping expectations. Analysts polled by FactSet had expected a loss of 48 cents per share and revenue of $776.7 million. Nike — The footwear and apparel company slipped nearly 2%. RBC downgraded the stock to sector perform from outperform, saying Nike's turnaround is \"slower and narrower than we were anticipating.\" Cava — The fast-casual restaurant chain was upgraded at UBS to buy from hold on its \"compelling growth story.\" The stock climbed 1%. Chip stocks — Semiconductor companies continued their slide, with shares of Micron Technology dropping nearly 5%, Advanced Micro Devices falling roughly 4% and Broadcom shedding 3%. Gold miners — Shares of gold miners fell alongside gold futures for August, which dropped 2%. Anglogold Ashanti tumbled nearly 7%, while Harmony Gold Mining and Gold Fields both lost roughly 6%. Helca Mining shed 3.5%. Chewy — The pet retailer climbed 4% after its first-quarter results were better than anticipated. Chewy's adjusted earnings before interest, taxes, depreciation, and amortization came in at $253.1 million, versus the $241.6 million expected from analysts polled by FactSet. Revenue was $3.36 billion, slightly above the $3.35 billion consensus estimate. Oracle — The maker of database management systems slipped 3.3% ahead of its quarterly earnings report, due after the close. — CNBC's Lisa Kailai Han and Jordan Novet contributed reporting",
+      "context_scope": "candidate statement + exact evidence span + containing paragraph; stable public knowledge may identify an established competitive or complementary-product exposure, but no other article paragraph may be inherited",
+      "terra_relevance": "IRRELEVANT",
+      "previous_final_relevance": "IRRELEVANT",
+      "readjudicated_relevance": "IRRELEVANT",
+      "relevance_type": "NONE",
+      "transmission_path": "Generic hardware-component financing -> no named memory or Micron procurement path.",
+      "rationale": "'Hardware components' is too broad to infer DRAM, NAND, HBM, or a Micron supplier relationship.",
+      "action": "SECOND_ADJUDICATION_RETAINED",
+      "gate_prediction": "RELEVANT"
+    },
+    {
+      "document_id": "D167",
+      "candidate_id": "candidate:doxatlas:raw_media:de6899c5-754f-4818-b8d3-10ecdb3ae2e7:a426f703e60068abd85a38915e81d4f39b1ed0aeeaa5b498c55550b242e3a36c",
+      "candidate_statement": "Oracle delivered a record fiscal Q4 on June 10, 2026, then sold off 22.1% in a week to $184.10.",
+      "exact_evidence": [
+        "Oracle (NYSE:ORCL) just delivered a record fiscal Q4 on June 10, 2026, then sold off 22.1% in a week to $184.10."
+      ],
+      "containing_paragraph": "Oracle (NYSE:ORCL) just delivered a record fiscal Q4 on June 10, 2026, then sold off 22.1% in a week to $184.10. That is the contrarian’s window.",
+      "context_scope": "candidate statement + exact evidence span + containing paragraph; stable public knowledge may identify an established competitive or complementary-product exposure, but no other article paragraph may be inherited",
+      "terra_relevance": "IRRELEVANT",
+      "previous_final_relevance": "IRRELEVANT",
+      "readjudicated_relevance": "IRRELEVANT",
+      "relevance_type": "NONE",
+      "transmission_path": "Oracle stock decline -> no target-specific economic path.",
+      "rationale": "A one-week move in Oracle shares is a security event for Oracle and does not by itself update Micron.",
+      "action": "SECOND_ADJUDICATION_RETAINED",
+      "gate_prediction": "RELEVANT"
+    },
+    {
+      "document_id": "D167",
+      "candidate_id": "candidate:doxatlas:raw_media:de6899c5-754f-4818-b8d3-10ecdb3ae2e7:5d9b2791a4a15840c01f001d16447b09a3c69861743c6020356113f3be4118ec",
+      "candidate_statement": "Oracle raised FY27 non-GAAP EPS guidance to $8.05, representing 18% growth, with FY27 revenue confirmed at $90 billion.",
+      "exact_evidence": [
+        "FY27 non-GAAP EPS guidance was raised to $8.05, representing 18% growth, with FY27 revenue confirmed at $90 billion."
+      ],
+      "containing_paragraph": "3. Guidance raised into the pullback. FY27 non-GAAP EPS guidance was raised to $8.05, representing 18% growth, with FY27 revenue confirmed at $90 billion. Q1 FY27 cloud revenue growth is guided at 58%-64%. The stock has been re-rated lower while forward estimates moved higher. That is a classic contrarian entry.",
+      "context_scope": "candidate statement + exact evidence span + containing paragraph; stable public knowledge may identify an established competitive or complementary-product exposure, but no other article paragraph may be inherited",
+      "terra_relevance": "IRRELEVANT",
+      "previous_final_relevance": "IRRELEVANT",
+      "readjudicated_relevance": "IRRELEVANT",
+      "relevance_type": "NONE",
+      "transmission_path": "Oracle consolidated guidance and generic cloud growth -> no locally established memory-demand path.",
+      "rationale": "The paragraph does not identify AI infrastructure, memory-intensive capacity, capex, or a Micron-specific customer relationship.",
+      "action": "SECOND_ADJUDICATION_RETAINED",
+      "gate_prediction": "RELEVANT"
+    },
+    {
+      "document_id": "D293",
+      "candidate_id": "candidate:doxatlas:raw_media:a3015874-2bcb-4f58-9b2b-d0aec9b64409:6dca3745299f3724cd633336fd84b6608ac531960a09297b9beecd01a99dba3f",
+      "candidate_statement": "The market has been bearish on Apple of late due to concerns that its growth rate and margins may come under pressure.",
+      "exact_evidence": [
+        "The market has been bearish on tech giant Apple (AAPL +4.88%) of late as concerns are rising that its growth rate and margins may come under pressure in its upcoming quarters."
+      ],
+      "containing_paragraph": "The market has been bearish on tech giant Apple (AAPL +4.88%) of late as concerns are rising that its growth rate and margins may come under pressure in its upcoming quarters. The reason? The company is raising prices on its popular products in response to soaring memory prices, as companies such as Micron Technology benefit from insatiable demand.",
+      "context_scope": "candidate statement + exact evidence span + containing paragraph; stable public knowledge may identify an established competitive or complementary-product exposure, but no other article paragraph may be inherited",
+      "terra_relevance": "RELEVANT",
+      "previous_final_relevance": "RELEVANT",
+      "readjudicated_relevance": "RELEVANT",
+      "relevance_type": "INDIRECT_ECONOMIC",
+      "transmission_path": "Soaring memory prices pressure Apple margins while benefiting Micron -> MU pricing and margin expectations.",
+      "rationale": "The containing paragraph explicitly states the memory-price cause and names Micron as a beneficiary.",
+      "action": "SECOND_ADJUDICATION_RETAINED",
+      "gate_prediction": "IRRELEVANT"
+    }
+  ]
+}

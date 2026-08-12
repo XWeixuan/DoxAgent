@@ -86,7 +86,7 @@ def test_node_output_schema_is_strict_at_every_object_boundary() -> None:
     assert_strict(NODE_OUTPUT_SCHEMA)
 
 
-def test_cross_node_handoff_removes_attempt_local_citations() -> None:
+def test_cross_node_handoff_preserves_lineage_for_rebinding() -> None:
     output = NodeOutput(
         status="completed",
         report_markdown="fact【cite:O1】",
@@ -100,15 +100,16 @@ def test_cross_node_handoff_removes_attempt_local_citations() -> None:
         ],
     )
     handoff = CodexDocument1Orchestrator._handoff_output(output)
-    assert handoff["report_markdown"] == "fact[upstream citation]"
+    assert handoff["report_markdown"] == "fact【cite:O1】"
     candidates = handoff["observation_candidates"]
     assert isinstance(candidates, list)
-    assert candidates[0]["source_aliases"] == []
+    assert candidates[0]["source_aliases"] == ["O1"]
 
 
 class _FakeWorker:
-    def __init__(self) -> None:
+    def __init__(self, workspace: LocalWorkspaceClient | None = None) -> None:
         self.requests: list[WorkerRunRequest] = []
+        self.workspace = workspace
 
     async def run(self, request: WorkerRunRequest) -> WorkerJob:
         self.requests.append(request)
@@ -127,6 +128,7 @@ class _FakeWorker:
             output["observation_candidates"] = [
                 {
                     "metric_key": "customer_count",
+                    "meaning": "customer count",
                     "value": 10,
                     "unit": "count",
                     "as_of": "2026-06-30",
@@ -154,6 +156,35 @@ class _FakeWorker:
                     "来源发布日期": "2026-07-01",
                 }
             ]
+        if self.workspace is not None and request.node in {
+            CodexD1Node.C1,
+            CodexD1Node.C2,
+            CodexD1Node.C3,
+            CodexD1Node.O4_B,
+            CodexD1Node.O4_A,
+        }:
+            task_file = await self.workspace.read_text(
+                request.run_id, f"attempts/{request.attempt_id}/input/task.json"
+            )
+            task = json.loads(task_file.content or "")
+            await self.workspace.write_text(
+                request.run_id, task["draft_path"], output["report_markdown"] + "\n"
+            )
+            await self.workspace.write_text(
+                request.run_id,
+                task["progress_path"],
+                json.dumps(
+                    {
+                        "completed_sections": task["required_sections"],
+                        "status": "completed",
+                    }
+                ),
+            )
+            await self.workspace.write_text(
+                request.run_id,
+                task["observation_candidates_path"],
+                json.dumps(output["observation_candidates"]),
+            )
         return WorkerJob(
             job_id=uuid4().hex,
             run_id=request.run_id,
@@ -169,8 +200,8 @@ class _FakeWorker:
 
 
 class _RetryOnceC4Worker(_FakeWorker):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, workspace: LocalWorkspaceClient | None = None) -> None:
+        super().__init__(workspace)
         self.failed_once = False
 
     async def run(self, request: WorkerRunRequest) -> WorkerJob:
@@ -201,8 +232,10 @@ class _RetryOnceC4Worker(_FakeWorker):
 
 
 class _RaiseC3Worker(_FakeWorker):
-    def __init__(self, *, always: bool = False) -> None:
-        super().__init__()
+    def __init__(
+        self, workspace: LocalWorkspaceClient | None = None, *, always: bool = False
+    ) -> None:
+        super().__init__(workspace)
         self.always = always
         self.failures = 0
 
@@ -333,7 +366,7 @@ async def test_full_d1_dag_preserves_c4_and_o4_threads_and_publishes(tmp_path: P
     collector, compiler = _horizontal()
     repository = InMemoryCodexRuntimeRepository()
     workspace = LocalWorkspaceClient(LocalWorkspaceStore(tmp_path / "workspaces"))
-    worker = _FakeWorker()
+    worker = _FakeWorker(workspace)
     orchestrator = CodexDocument1Orchestrator(
         worker=worker,
         workspace=workspace,
@@ -429,7 +462,7 @@ async def test_validation_retry_uses_fresh_thread_and_failure_feedback(tmp_path:
     collector, compiler = _horizontal()
     repository = InMemoryCodexRuntimeRepository()
     workspace = LocalWorkspaceClient(LocalWorkspaceStore(tmp_path / "workspaces"))
-    worker = _RetryOnceC4Worker()
+    worker = _RetryOnceC4Worker(workspace)
     orchestrator = CodexDocument1Orchestrator(
         worker=worker,
         workspace=workspace,
@@ -457,9 +490,10 @@ async def test_validation_retry_uses_fresh_thread_and_failure_feedback(tmp_path:
 async def test_worker_transport_failure_is_persisted_and_retried(tmp_path: Path) -> None:
     collector, compiler = _horizontal()
     repository = InMemoryCodexRuntimeRepository()
+    workspace = LocalWorkspaceClient(LocalWorkspaceStore(tmp_path / "workspaces"))
     orchestrator = CodexDocument1Orchestrator(
-        worker=_RaiseC3Worker(),
-        workspace=LocalWorkspaceClient(LocalWorkspaceStore(tmp_path / "workspaces")),
+        worker=_RaiseC3Worker(workspace),
+        workspace=workspace,
         repository=repository,
         horizontal_collector=collector,
         horizontal_compiler=compiler,
@@ -484,9 +518,10 @@ async def test_worker_transport_failure_is_persisted_and_retried(tmp_path: Path)
 async def test_failed_node_blocks_publish(tmp_path: Path) -> None:
     collector, compiler = _horizontal()
     repository = InMemoryCodexRuntimeRepository()
+    workspace = LocalWorkspaceClient(LocalWorkspaceStore(tmp_path / "workspaces"))
     orchestrator = CodexDocument1Orchestrator(
-        worker=_RaiseC3Worker(always=True),
-        workspace=LocalWorkspaceClient(LocalWorkspaceStore(tmp_path / "workspaces")),
+        worker=_RaiseC3Worker(workspace, always=True),
+        workspace=workspace,
         repository=repository,
         horizontal_collector=collector,
         horizontal_compiler=compiler,

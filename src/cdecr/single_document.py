@@ -8,11 +8,11 @@ import re
 import traceback
 import uuid
 from collections import Counter
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
 from importlib import resources
-from typing import TypeVar
+from typing import Literal, TypeVar, cast
 
 from pydantic import ValidationError
 
@@ -46,6 +46,8 @@ from cdecr.ports import (
     DecisionAuditRecord,
     EmbeddingClient,
     EmbeddingResult,
+    ResponsesModelClient,
+    ResponsesModelRequest,
     StructuredModelClient,
     StructuredModelRequest,
     StructuredModelResult,
@@ -58,6 +60,18 @@ from cdecr.preprocessing import (
     locator_to_evidence,
     preprocess_source,
     reconcile_evidence_text,
+)
+from cdecr.relevance_filter import (
+    RELEVANCE_PROMPT_VERSION,
+    CandidateGateDecision,
+    RelevanceMode,
+    TypedInvocation,
+    dreamer_block_exposed_lengths,
+    dreamer_block_request,
+    relevance_response_request,
+    responses_request_from_structured,
+    select_candidates_fail_open,
+    target_profile_for_source,
 )
 from cdecr.scheduler import take_scheduled_call_metrics
 from cdecr.single_document_contracts import (
@@ -96,7 +110,7 @@ from cdecr.single_document_contracts import (
     validate_event_time_semantics,
 )
 
-PROMPT_VERSION = "single-document-prompts-v18"
+PROMPT_VERSION = "single-document-prompts-v19"
 GROUNDER_CANDIDATE_BATCH = 24
 JUDGE_DRAFT_BATCH = 24
 _T = TypeVar("_T", bound=StrictModel)
@@ -156,7 +170,7 @@ def _compact_model_schema(schema: dict[str, object]) -> dict[str, object]:
 
 def _judge_mention(mention: MentionDraft) -> JudgeMentionDraft:
     return JudgeMentionDraft.model_validate(
-        mention.model_dump(mode="json", exclude={"local_package_hint"})
+        mention.model_dump(mode="json")
     )
 
 
@@ -536,6 +550,39 @@ class _AuditedEmbeddingClient:
         return result
 
 
+class _ResponsesStructuredAdapter:
+    """Present one Responses conversation turn through the existing typed invocation path."""
+
+    def __init__(
+        self,
+        *,
+        client: ResponsesModelClient,
+        reasoning_effort: Literal["none", "low", "high", "max"],
+        previous_response_id: str | None = None,
+        preset_request: ResponsesModelRequest | None = None,
+    ) -> None:
+        self.client = client
+        self.reasoning_effort = reasoning_effort
+        self.previous_response_id = previous_response_id
+        self.preset_request = preset_request
+
+    def complete(self, request: StructuredModelRequest) -> StructuredModelResult:
+        response_request = (
+            self.preset_request.model_copy(update={"metadata": request.metadata})
+            if self.preset_request is not None
+            else responses_request_from_structured(
+                request,
+                previous_response_id=self.previous_response_id,
+                reasoning_effort=self.reasoning_effort,
+            )
+        )
+        return self.client.complete_response(response_request)
+
+    def take_last_call_metrics(self) -> object | None:
+        getter = getattr(self.client, "take_last_call_metrics", None)
+        return getter() if callable(getter) else None
+
+
 class _AuditedStructuredClient:
     def __init__(
         self,
@@ -556,6 +603,7 @@ class _AuditedStructuredClient:
         self.stage = stage
         self.summaries = summaries
         self.repair_invocations = 0
+        self.last_result: StructuredModelResult | None = None
 
     def complete(self, request: StructuredModelRequest) -> StructuredModelResult:
         repaired = request.system_prompt.casefold().startswith("repair")
@@ -629,6 +677,7 @@ class _AuditedStructuredClient:
                 ),
             ) from exc
         scheduled = take_scheduled_call_metrics(self.client)
+        self.last_result = result
         self.registry.record_model_call(
             model_call_id=call_id,
             run_id=self.run_id,
@@ -644,7 +693,10 @@ class _AuditedStructuredClient:
                 "attempt": "repair" if repaired else "initial",
                 "queue_wait_ms": scheduled.queue_wait_ms if scheduled else 0,
                 "output_hash": _hash_json(result.payload),
-                "cache_hit": False,
+                "cache_hit": bool(result.cached_input_tokens),
+                "cached_input_tokens": result.cached_input_tokens,
+                "response_id": result.response_id,
+                "reasoning_tokens": result.reasoning_tokens,
             },
             stage=call_stage,
             prompt_version=PROMPT_VERSION,
@@ -657,6 +709,7 @@ class _AuditedStructuredClient:
                 tier=self.tier.value,
                 model=result.model,
                 input_tokens=result.input_tokens,
+                cached_input_tokens=result.cached_input_tokens,
                 output_tokens=result.output_tokens,
                 latency_ms=result.latency_ms,
                 repaired=repaired,
@@ -678,6 +731,12 @@ class SingleDocumentProcessor:
         m2_client: StructuredModelClient,
         m3_client: StructuredModelClient,
         m4_client: StructuredModelClient,
+        dreamer_responses_client: ResponsesModelClient | None = None,
+        relevance_responses_client: ResponsesModelClient | None = None,
+        relevance_filter_mode: RelevanceMode | Literal["off", "shadow", "enforce"] = (
+            RelevanceMode.SHADOW
+        ),
+        relevance_target_profiles: Mapping[str, str] | None = None,
         model_m1: str = "qwen3.7-text-embedding",
         model_m2: str = "deepseek-v4-flash",
         model_m3: str = "qwen3.7-plus",
@@ -691,6 +750,14 @@ class SingleDocumentProcessor:
         self.m2_client = m2_client
         self.m3_client = m3_client
         self.m4_client = m4_client
+        self.dreamer_responses_client = dreamer_responses_client or cast(
+            ResponsesModelClient, m2_client
+        )
+        self.relevance_responses_client = relevance_responses_client or cast(
+            ResponsesModelClient, m2_client
+        )
+        self.relevance_filter_mode = RelevanceMode(relevance_filter_mode)
+        self.relevance_target_profiles = dict(relevance_target_profiles or {})
         self.model_m1 = model_m1
         self.model_m2 = model_m2
         self.model_m3 = model_m3
@@ -720,6 +787,14 @@ class SingleDocumentProcessor:
             "embedding_dimensions": 1024,
             "grounder_tier": "m3",
             "judge_tier": "m4",
+            "dreamer_transport": "responses",
+            "dreamer_reasoning_effort": "none",
+            "relevance_filter": {
+                "mode": self.relevance_filter_mode.value,
+                "prompt_version": RELEVANCE_PROMPT_VERSION,
+                "reasoning_effort": "low",
+                "target_profiles": self.relevance_target_profiles,
+            },
             "structured_output_mode": STRUCTURED_OUTPUT_MODE,
             "reasoning_effort": STRUCTURED_REASONING_EFFORT,
             "schema_projection": "disabled",
@@ -1362,6 +1437,27 @@ class SingleDocumentProcessor:
                 validation_error = str(first_error)
             return repair_and_validate(result.payload, validation_error)
 
+    def _invoke_typed_with_metadata(
+        self,
+        *,
+        client: _AuditedStructuredClient,
+        request: StructuredModelRequest,
+        output_type: type[_T],
+        semantic_validator: Callable[[_T], None],
+        stage: str,
+        repair_on_failure: bool = True,
+    ) -> TypedInvocation[_T]:
+        output = self._invoke_typed(
+            client=client,
+            request=request,
+            output_type=output_type,
+            semantic_validator=semantic_validator,
+            stage=stage,
+            repair_on_failure=repair_on_failure,
+        )
+        response_id = client.last_result.response_id if client.last_result is not None else None
+        return TypedInvocation(output=output, response_id=response_id)
+
     def _dream(
         self,
         source: SourceMessage,
@@ -1369,13 +1465,12 @@ class SingleDocumentProcessor:
         run_id: str,
         summaries: list[ModelCallSummary],
     ) -> list[DreamCandidate]:
-        tier = (
-            ModelTier.M3
-            if document.is_long_document or document.is_complex_document
-            else ModelTier.M2
+        tier = ModelTier.M2
+        raw_client = _ResponsesStructuredAdapter(
+            client=self.dreamer_responses_client,
+            reasoning_effort="none",
         )
-        raw_client = self.m3_client if tier is ModelTier.M3 else self.m2_client
-        model = self.model_m3 if tier is ModelTier.M3 else self.model_m2
+        model = self.model_m2
         client = _AuditedStructuredClient(
             client=raw_client,
             registry=self.registry,
@@ -1389,42 +1484,14 @@ class SingleDocumentProcessor:
         def process_block(
             block: DocumentBlock, *, zero_recovery: bool = False
         ) -> DreamerModelOutput:
-            segment_by_id = {item.segment_id: item for item in document.segments}
-            exposed_lengths = {
-                segment_id: len(segment_by_id[segment_id].text) for segment_id in block.segment_ids
-            }
-            for context_segment in document.segments[:2]:
-                marker = f"[{context_segment.segment_id}]\n"
-                marker_start = block.common_context.find(marker)
-                if marker_start < 0:
-                    continue
-                content_start = marker_start + len(marker)
-                next_marker = block.common_context.find("\n\n[", content_start)
-                content_end = len(block.common_context) if next_marker < 0 else next_marker
-                exposed_lengths[context_segment.segment_id] = max(
-                    exposed_lengths.get(context_segment.segment_id, 0),
-                    content_end - content_start,
-                )
-            user_payload = {
-                "published_at": _published_at_model(source.published_at),
-                "allowed_segment_ids": list(exposed_lengths),
-                "common_context": block.common_context,
-                "block": block.text,
-            }
-            request = StructuredModelRequest(
-                system_prompt=(
-                    _prompt("dreamer.md")
-                    + (
-                        "\n\nA prior pass returned no candidates. Recheck the title and "
-                        "every exposed segment for any explicit, independently "
-                        "truth-evaluable event. Return empty only if none exists."
-                        if zero_recovery
-                        else ""
-                    )
-                ),
-                user_prompt=json.dumps(user_payload, ensure_ascii=False),
-                json_schema=DreamerModelOutput.model_json_schema(),
+            request = dreamer_block_request(
+                source=source,
+                document=document,
+                block=block,
+                system_prompt=_prompt("dreamer.md"),
+                zero_recovery=zero_recovery,
             )
+            exposed_lengths = dreamer_block_exposed_lengths(document, block)
 
             reconciliation: dict[str, int] = {}
 
@@ -1448,6 +1515,7 @@ class SingleDocumentProcessor:
                     }
                 )
 
+            response_id: str | None = None
             try:
                 call_stage = "dreamer_zero_recovery" if zero_recovery else "dreamer"
                 call_client = (
@@ -1463,13 +1531,15 @@ class SingleDocumentProcessor:
                     if zero_recovery
                     else client
                 )
-                output = self._invoke_typed(
+                invocation = self._invoke_typed_with_metadata(
                     client=call_client,
                     request=request,
                     output_type=DreamerModelOutput,
                     semantic_validator=validate_dreamer,
                     stage=call_stage,
                 )
+                output = invocation.output
+                response_id = invocation.response_id
             except SingleDocumentPipelineError as exc:
                 output = DreamerModelOutput(candidates=[])
                 self.registry.append_decision_audit(
@@ -1500,7 +1570,16 @@ class SingleDocumentProcessor:
                         payload=reconciliation,
                     )
                 )
-            return output
+            return self._apply_relevance_gate(
+                source=source,
+                document=document,
+                block=block,
+                output=output,
+                response_id=response_id,
+                run_id=run_id,
+                summaries=summaries,
+                attempt="zero-recovery" if zero_recovery else "initial",
+            )
 
         outputs = list(
             self._document_block_executor.map(process_block, document.document_blocks)
@@ -1561,6 +1640,164 @@ class SingleDocumentProcessor:
                 )
                 unique[item.candidate_id] = item
         return list(unique.values())
+
+    def _apply_relevance_gate(
+        self,
+        *,
+        source: SourceMessage,
+        document: PreprocessedDocument,
+        block: DocumentBlock,
+        output: DreamerModelOutput,
+        response_id: str | None,
+        run_id: str,
+        summaries: list[ModelCallSummary],
+        attempt: str,
+    ) -> DreamerModelOutput:
+        if self.relevance_filter_mode is RelevanceMode.OFF or not output.candidates:
+            return output
+
+        target = target_profile_for_source(source, self.relevance_target_profiles)
+        skip_reason = (
+            "TARGET_PROFILE_MISSING_OR_AMBIGUOUS"
+            if target is None
+            else "RESPONSE_ID_MISSING"
+            if response_id is None
+            else None
+        )
+        pseudo_candidates: list[DreamCandidate] = []
+        if skip_reason is None:
+            try:
+                for index, candidate in enumerate(output.candidates, start=1):
+                    pseudo_candidates.append(
+                        DreamCandidate(
+                            candidate_id=f"{block.block_id}:c{index}",
+                            statement=candidate.statement,
+                            evidence_locations=[
+                                reconcile_evidence_text(locator, document, source).locator
+                                for locator in candidate.evidence_locations
+                            ],
+                        )
+                    )
+            except ValueError:
+                skip_reason = "CANDIDATE_RECONCILIATION_DRIFT"
+
+        decisions: list[CandidateGateDecision]
+        ignored_ids: tuple[str, ...] = ()
+        if skip_reason is not None:
+            decisions = [
+                CandidateGateDecision(
+                    candidate_id=f"{block.block_id}:c{index}",
+                    relevance=None,
+                    keep=True,
+                    reason=skip_reason,
+                )
+                for index, _ in enumerate(output.candidates, start=1)
+            ]
+            selected_indices = set(range(len(output.candidates)))
+        else:
+            assert target is not None and response_id is not None
+            response_request, short_to_full = relevance_response_request(
+                target=target,
+                candidates=pseudo_candidates,
+                previous_response_id=response_id,
+                system_prompt=_prompt("relevance_filter.md"),
+            )
+            adapter = _ResponsesStructuredAdapter(
+                client=self.relevance_responses_client,
+                reasoning_effort="low",
+                previous_response_id=response_id,
+                preset_request=response_request,
+            )
+            client = _AuditedStructuredClient(
+                client=adapter,
+                registry=self.registry,
+                run_id=run_id,
+                tier=ModelTier.M3,
+                model=self.model_m2,
+                stage="dreamer_relevance",
+                summaries=summaries,
+            )
+            request = StructuredModelRequest(
+                system_prompt=_prompt("relevance_filter.md"),
+                user_prompt=str(response_request.input[-1]["content"]),
+                json_schema=response_request.json_schema,
+                metadata={"candidate_count": len(pseudo_candidates)},
+            )
+            try:
+                raw_result = client.complete(request)
+            except SingleDocumentPipelineError as exc:
+                decisions = [
+                    CandidateGateDecision(
+                        candidate_id=candidate.candidate_id,
+                        relevance=None,
+                        keep=True,
+                        reason=f"GATE_CALL_FAILED:{exc.code}",
+                    )
+                    for candidate in pseudo_candidates
+                ]
+                selected_indices = set(range(len(output.candidates)))
+            else:
+                selection = select_candidates_fail_open(
+                    pseudo_candidates,
+                    raw_result.payload,
+                    short_to_full=short_to_full,
+                )
+                decisions = selection.decisions
+                ignored_ids = selection.ignored_ids
+                kept_ids = {candidate.candidate_id for candidate in selection.retained}
+                selected_indices = {
+                    index
+                    for index, candidate in enumerate(pseudo_candidates)
+                    if candidate.candidate_id in kept_ids
+                }
+
+        relevant_count = sum(item.relevance == "RELEVANT" for item in decisions)
+        irrelevant_count = sum(item.relevance == "IRRELEVANT" for item in decisions)
+        fail_open_count = sum(item.relevance is None for item in decisions)
+        simulated_dropped = len(output.candidates) - len(selected_indices)
+        enforced = self.relevance_filter_mode is RelevanceMode.ENFORCE
+        self.registry.append_decision_audit(
+            DecisionAuditRecord(
+                audit_id=(f"dreamer-relevance:{run_id}:{block.block_id}:{attempt}"),
+                run_id=run_id,
+                decision_type="DREAMER_RELEVANCE_GATE",
+                subject_id=block.block_id,
+                payload={
+                    "mode": self.relevance_filter_mode.value,
+                    "prompt_version": RELEVANCE_PROMPT_VERSION,
+                    "target": target,
+                    "before_count": len(output.candidates),
+                    "after_count": (
+                        len(selected_indices) if enforced else len(output.candidates)
+                    ),
+                    "simulated_dropped_count": simulated_dropped,
+                    "relevant_count": relevant_count,
+                    "irrelevant_count": irrelevant_count,
+                    "fail_open_count": fail_open_count,
+                    "ignored_ids": list(ignored_ids),
+                    "decisions": [
+                        {
+                            "candidate_id": item.candidate_id,
+                            "relevance": item.relevance,
+                            "keep": item.keep,
+                            "reason": item.reason,
+                        }
+                        for item in decisions
+                    ],
+                },
+            )
+        )
+        if not enforced:
+            return output
+        return output.model_copy(
+            update={
+                "candidates": [
+                    candidate
+                    for index, candidate in enumerate(output.candidates)
+                    if index in selected_indices
+                ]
+            }
+        )
 
     def _validate_dreamer_output(
         self,
@@ -2766,21 +3003,6 @@ class SingleDocumentProcessor:
                     ):
                         try:
                             persistent = _judge_mention_to_persistent(split_mention)
-                            original_hint = draft_by_short[
-                                split_command.id
-                            ].mention.local_package_hint
-                            if (
-                                persistent.local_package_hint is None
-                                and original_hint is not None
-                                and persistent.event_family
-                                not in {
-                                    EventFamily.MARKET_MOVEMENT,
-                                    EventFamily.ANALYST_ACTION,
-                                }
-                            ):
-                                persistent = persistent.model_copy(
-                                    update={"local_package_hint": original_hint}
-                                )
                             subject_id = f"{split_command.id}:split:{split_index}"
                             persistent = self._normalize_draft_time(
                                 persistent,
@@ -3719,7 +3941,6 @@ class SingleDocumentProcessor:
             quantities=[Quantity(**item.model_dump()) for item in draft.quantities],
             open_attributes=attributes,
             schema_projection=None,
-            local_package_hint=draft.local_package_hint,
         )
         mention.validate_evidence(source)
         for kind, results in (

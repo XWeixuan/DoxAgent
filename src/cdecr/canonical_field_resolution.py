@@ -322,86 +322,6 @@ class CanonicalFieldResolutionEngine:
             direct_match=direct,
         )
 
-    def resolve_package_hints(
-        self,
-        source: SourceMessage,
-        mentions: list[EventMention],
-        *,
-        run_id: str | None = None,
-    ) -> CanonicalResolutionSummary:
-        occurrences = self.package_hint_occurrences(source, mentions, run_id=run_id)
-        resolved, unresolved, groups = self._resolve_groups(source, occurrences, run_id=run_id)
-        return CanonicalResolutionSummary(
-            catalog_hash=self.knowledge_base.catalog_hash,
-            resolved_count=resolved,
-            unresolved_count=unresolved,
-            group_count=groups,
-            field_links_hash=field_links_hash(self.registry, mentions),
-        )
-
-    def package_hint_occurrences(
-        self,
-        source: SourceMessage,
-        mentions: list[EventMention],
-        *,
-        run_id: str | None = None,
-    ) -> list[FieldOccurrence]:
-        occurrences: list[FieldOccurrence] = []
-        for mention in mentions:
-            hint = mention.local_package_hint
-            if hint is None:
-                continue
-            parent_identity_key = self._package_parent_identity_key(
-                source,
-                mention,
-                hint.anchor,
-            )
-            if parent_identity_key is None:
-                self.registry.append_decision_audit(
-                    DecisionAuditRecord(
-                        audit_id=_audit_id(
-                            "package-anchor-ignored",
-                            mention.mention_id,
-                            "local_package_hint.anchor",
-                            {"reason": "NON_DISTINGUISHING_PARENT_HINT"},
-                            run_id=run_id,
-                        ),
-                        run_id=run_id,
-                        decision_type="PACKAGE_ANCHOR_HINT_IGNORED",
-                        subject_id=mention.mention_id,
-                        payload={"reason": "NON_DISTINGUISHING_PARENT_HINT"},
-                    )
-                )
-                continue
-            matches = self.knowledge_base.lookup("artifacts", hint.anchor)
-            unique = deterministic_match(hint.anchor, matches)
-            kinds = {match.kind for match in matches if match.kind is not None}
-            artifact_kind = unique.kind if unique is not None else next(iter(kinds), None)
-            namespace = _artifact_namespace(artifact_kind) if len(kinds) <= 1 and matches else None
-            package_input = self._input(
-                source,
-                mention,
-                namespace=namespace or FieldNamespace.PACKAGE_ANCHOR,
-                raw_value=hint.anchor,
-                attempted_kb_type="ARTIFACT" if namespace else "PACKAGE_ANCHOR",
-            )
-            occurrences.append(
-                FieldOccurrence(
-                    mention_id=mention.mention_id,
-                    field_path="local_package_hint.anchor",
-                    value=package_input.model_copy(
-                        update={
-                            "hints": package_input.hints.model_copy(
-                                update={"parent_identity_key": parent_identity_key}
-                            )
-                        }
-                    ),
-                    catalog="artifacts" if namespace else "",
-                    kind=artifact_kind,
-                )
-            )
-        return occurrences
-
     def resolve_epoch(
         self,
         documents: list[tuple[SourceMessage, list[EventMention]]],
@@ -463,7 +383,6 @@ class CanonicalFieldResolutionEngine:
         for source, mentions in documents:
             all_mentions.extend(mentions)
             inventory.extend(self.routed_occurrences(source, mentions))
-            inventory.extend(self.package_hint_occurrences(source, mentions, run_id=run_id))
 
         grouped: dict[str, list[FieldOccurrence]] = {}
         for occurrence in inventory:
@@ -527,7 +446,6 @@ class CanonicalFieldResolutionEngine:
             "issuer": occurrence.company_id or occurrence.value.hints.issuer_id,
             "participant_role": occurrence.value.hints.participant_role,
             "period_context": occurrence.value.hints.published_date,
-            "parent_identity": occurrence.value.hints.parent_identity_key,
             "catalog": occurrence.catalog,
             "kind": occurrence.kind,
             "candidate_external_ids": sorted(
@@ -538,61 +456,6 @@ class CanonicalFieldResolutionEngine:
         return hashlib.sha256(
             json.dumps(payload, ensure_ascii=False, sort_keys=True, default=str).encode("utf-8")
         ).hexdigest()
-
-    def _package_parent_identity_key(
-        self,
-        source: SourceMessage,
-        mention: EventMention,
-        raw_anchor: str,
-    ) -> str | None:
-        """Return a conservative stable parent key, or reject a non-parent hint."""
-
-        normalized = normalize_field_text(raw_anchor)
-        if not normalized:
-            return None
-        compact = set(normalized.split())
-        generic = {
-            "report",
-            "latest report",
-            "latest earnings",
-            "earnings",
-            "quarterly report",
-            "company update",
-            "business update",
-        }
-        if normalized in generic:
-            return None
-        entity_surfaces = {
-            normalize_field_text(participant.surface, company_suffixes=True)
-            for participant in mention.participants
-        }
-        entity_surfaces.update(normalize_field_text(value) for value in source.ticker_hints)
-        if normalized in entity_surfaces or len(compact) == 1:
-            return None
-
-        issuer_id, _ = self._issuer_for_mention(source, mention)
-        source_scope = exact_document_fingerprint(source)[:20]
-        earnings_like = bool(
-            re.search(r"\bearnings\b", normalized)
-            or (
-                re.search(r"\b(?:q[1-4]|quarter|quarterly)\b", normalized)
-                and re.search(r"\b(?:results?|release|report|call)\b", normalized)
-            )
-        )
-        if earnings_like:
-            quarter = re.search(r"\bq([1-4])\b", normalized)
-            year = re.search(r"\b(?:fy)?(20\d{2})\b", normalized)
-            if quarter is not None:
-                period = f"q{quarter.group(1)}"
-                if year is not None:
-                    period += f"-fy{year.group(1)}"
-                return f"earnings:{issuer_id or 'unknown'}:{period}"
-            return f"earnings:{issuer_id or 'unknown'}:source:{source_scope}"
-
-        # Outside well-bounded earnings expressions, only normalize aliases
-        # inside the same immutable source. This avoids cross-document merges
-        # based on generic wording in the open world.
-        return f"source:{source_scope}:{normalized}"
 
     def _regular_occurrences(
         self, source: SourceMessage, mention: EventMention
@@ -1453,7 +1316,7 @@ def field_links_hash(registry: CDECRRegistry, mentions: list[EventMention]) -> s
     links = [
         link
         for link in registry.list_all_field_links(limit=2000000)
-        if link.mention_id in mention_ids and not link.field_path.startswith("local_package_hint.")
+        if link.mention_id in mention_ids
     ]
     roots = {
         registry_id: registry.resolve_field_registry_entry(registry_id)
@@ -1473,74 +1336,6 @@ def field_links_hash(registry: CDECRRegistry, mentions: list[EventMention]) -> s
             }
         )
     encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"))
-    return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
-
-
-def package_field_links_hash(
-    registry: CDECRRegistry,
-    mentions: list[EventMention],
-    *,
-    catalog_hash: str,
-    resolver_version: str = FIELD_RESOLVER_VERSION,
-) -> str:
-    """Hash every N11 dependency, including raw hints and redirect roots."""
-
-    package_namespaces = {
-        FieldNamespace.PACKAGE_ANCHOR,
-        FieldNamespace.ARTIFACT_FILING,
-        FieldNamespace.ARTIFACT_EARNINGS_RELEASE,
-        FieldNamespace.ARTIFACT_PRESS_RELEASE,
-        FieldNamespace.ARTIFACT_REPORT,
-        FieldNamespace.ARTIFACT_AGREEMENT,
-    }
-    payload: dict[str, object] = {
-        "catalog_hash": catalog_hash,
-        "resolver_version": resolver_version,
-        "mentions": [],
-    }
-    mention_payloads: list[dict[str, object]] = []
-    for mention in sorted(mentions, key=lambda item: item.mention_id):
-        hint = mention.local_package_hint
-        links: list[dict[str, str | None]] = []
-        for link in registry.list_field_links_for_mention(mention.mention_id):
-            root = registry.resolve_field_registry_entry(link.registry_id)
-            if root is None or (
-                not link.field_path.startswith("local_package_hint.")
-                and root.namespace not in package_namespaces
-            ):
-                continue
-            links.append(
-                {
-                    "field_path": link.field_path,
-                    "linked_registry_id": link.registry_id,
-                    "resolved_registry_id": root.id,
-                    "namespace": root.namespace.value,
-                    "external_id": root.external_id,
-                    "method": link.method.value,
-                }
-            )
-        mention_payloads.append(
-            {
-                "mention_id": mention.mention_id,
-                "local_package_hint": (
-                    None
-                    if hint is None
-                    else {
-                        "anchor": hint.anchor,
-                        "relation_to_anchor": hint.relation_to_anchor.value,
-                    }
-                ),
-                "links": sorted(
-                    links,
-                    key=lambda item: (
-                        str(item["field_path"]),
-                        str(item["linked_registry_id"]),
-                    ),
-                ),
-            }
-        )
-    payload["mentions"] = mention_payloads
-    encoded = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
 
 
@@ -1571,8 +1366,6 @@ def _alias_groups(
             normalize_field_text(raw, company_suffixes=company),
             normalize_field_text(raw.replace("_", " "), company_suffixes=company),
         }
-        if occurrence.value.hints.parent_identity_key:
-            aliases.add(f"parent:{occurrence.value.hints.parent_identity_key}")
         parenthesized = re.fullmatch(r"\s*(.*?)\s*\(([^()]+)\)\s*", raw)
         if parenthesized:
             aliases.update(

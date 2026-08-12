@@ -7,12 +7,13 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from threading import Condition, Lock, local
 from time import monotonic, perf_counter, sleep
-from typing import TypeVar
+from typing import TypeVar, cast
 
 from cdecr.models import ModelTier
 from cdecr.ports import (
     EmbeddingClient,
     EmbeddingResult,
+    ResponsesModelRequest,
     StructuredModelClient,
     StructuredModelRequest,
     StructuredModelResult,
@@ -421,6 +422,28 @@ class ScheduledStructuredModelClient(_ScheduledClient):
             raise
         self._store_metrics(metrics)
         return result
+
+    def complete_response(self, request: ResponsesModelRequest) -> StructuredModelResult:
+        stage = str(request.metadata.get("stage", "unspecified"))
+        priority = str(request.metadata.get("priority", "normal"))
+        responses_client = self.client
+        complete_response = getattr(responses_client, "complete_response", None)
+        if not callable(complete_response):
+            raise TypeError("scheduled structured client does not support Responses")
+        try:
+            result, metrics = self.scheduler.run(
+                self.tier,
+                lambda: complete_response(request),
+                stage=stage,
+                priority=priority,
+            )
+        except Exception:
+            failure_metrics = _take_lane_failure_metrics(self.scheduler, self.tier)
+            if failure_metrics is not None:
+                self._store_metrics(failure_metrics)
+            raise
+        self._store_metrics(metrics)
+        return cast(StructuredModelResult, result)
 
 
 def take_scheduled_call_metrics(client: object) -> ScheduledCallMetrics | None:

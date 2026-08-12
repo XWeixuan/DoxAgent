@@ -11,7 +11,6 @@ _ID_CONTAINER_KEYS = {
     "anchor_entities",
     "artifact_candidate_ids",
     "location_or_asset_ids",
-    "package_anchor_ids",
     "principal_participant_ids",
 }
 
