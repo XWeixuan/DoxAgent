@@ -28,6 +28,7 @@ def main() -> int:
     parser.add_argument("--node", required=True, choices=[item.value for item in CodexD1Node])
     parser.add_argument("--case-id", required=True)
     parser.add_argument("--capability-hours", type=int, default=8)
+    parser.add_argument("--profile", choices=("functional", "quality"), default="functional")
     args = parser.parse_args()
     builder = PilotCaseBuilder(
         repo_root=repo_root,
@@ -42,6 +43,7 @@ def main() -> int:
             node=CodexD1Node(args.node),
             case_id=args.case_id,
             capability_hours=args.capability_hours,
+            profile=args.profile,
         ),
     )
     print(
@@ -49,6 +51,7 @@ def main() -> int:
             {
                 "case_root": str(result.case_root),
                 "node": result.node.value,
+                "node_attempt_id": result.attempt_id,
                 "attempt_id": result.attempt_id,
                 "input_sha256": result.input_sha256,
                 "task_path": str(result.task_path),

@@ -32,7 +32,7 @@ DEFAULT_INPUT = Path(
 )
 DEFAULT_GOLD = Path(
     "eval/cdecr_relevance_filter/mu_relevance_30_v1/"
-    "cdecr_mu_relevance_30_candidates_gold_final.jsonl"
+    "cdecr_mu_relevance_30_candidates_gold_readjudicated_v2.jsonl"
 )
 
 
@@ -47,7 +47,6 @@ def _args() -> argparse.Namespace:
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--registry", type=Path)
     parser.add_argument("--gate-mode", choices=("off", "shadow", "enforce"), default="shadow")
-    parser.add_argument("--target-profile")
     return parser.parse_args()
 
 
@@ -59,17 +58,9 @@ def _prompt(name: str) -> str:
     return resources.files("cdecr.prompts.v1").joinpath(name).read_text(encoding="utf-8")
 
 
-def _target_profile(
-    row: dict[str, Any], settings: CDECRSettings, override: str | None
-) -> str:
-    if override:
-        return override
+def _target_ticker(row: dict[str, Any]) -> str:
     target = row["target"]
-    ticker = str(target["ticker"]).strip().upper()
-    configured = settings.relevance_target_profiles.get(ticker)
-    if configured:
-        return configured
-    return f"{str(target['company']).strip()} ({ticker})"
+    return str(target["ticker"]).strip().upper()
 
 
 def _gold_by_document(path: Path) -> dict[str, dict[str, str]]:
@@ -80,6 +71,20 @@ def _gold_by_document(path: Path) -> dict[str, dict[str, str]]:
             for item in row["candidate_gold"]
         }
     return values
+
+
+def _candidate_direct_gold_ids(path: Path) -> set[str]:
+    """Include candidate-level Direct adjudications that legacy Mention mapping cannot see."""
+
+    direct_ids: set[str] = set()
+    for row in _read_jsonl(path):
+        for item in row["candidate_gold"]:
+            relevance_type = item.get("second_adjudication_relevance_type")
+            if relevance_type is None:
+                relevance_type = item.get("relevance_type")
+            if str(relevance_type).upper() == "DIRECT":
+                direct_ids.add(str(item["candidate_id"]))
+    return direct_ids
 
 
 def _candidate_mention_mapping(
@@ -190,7 +195,6 @@ def _frozen_document(
     *,
     client: Any,
     settings: CDECRSettings,
-    target_profile: str | None,
 ) -> dict[str, Any]:
     source = SourceMessage.model_validate(row["source_message"])
     candidates = [DreamCandidate.model_validate(item) for item in row["dream_candidates"]]
@@ -219,7 +223,7 @@ def _frozen_document(
         request, short_to_full = frozen_relevance_response_request(
             dreamer_request=dreamer_request,
             frozen_output=frozen_output,
-            target=_target_profile(row, settings, target_profile),
+            target=_target_ticker(row),
             candidates=group,
             relevance_system_prompt=_prompt("relevance_filter.md"),
         )
@@ -422,7 +426,6 @@ def _run_frozen(args: argparse.Namespace) -> int:
                     row,
                     client=client,
                     settings=settings,
-                    target_profile=args.target_profile,
                 ),
                 rows_to_run,
             )
@@ -441,11 +444,13 @@ def _run_frozen(args: argparse.Namespace) -> int:
         input_rows=input_rows,
         mention_source=args.mention_gold_source,
     )
-    direct_ids = {
+    mention_direct_ids = {
         str(item["candidate_id"])
         for item in mention_mapping
         if "DIRECT" in item["mention_relevance_types"]
     }
+    adjudicated_direct_ids = _candidate_direct_gold_ids(args.gold)
+    direct_ids = mention_direct_ids | adjudicated_direct_ids
     score = _score(rows, gold=gold, direct_candidate_ids=direct_ids)
     mapping_counts = Counter(
         str(item["mapping_method"]) for item in mention_mapping
@@ -473,6 +478,8 @@ def _run_frozen(args: argparse.Namespace) -> int:
             "mention_label_conflicts": sum(
                 bool(item["mention_label_conflict"]) for item in mention_mapping
             ),
+            "mention_direct_candidate_count": len(mention_direct_ids),
+            "candidate_gold_direct_count": len(adjudicated_direct_ids),
             "direct_candidate_count": len(direct_ids),
         },
         **score,
@@ -522,16 +529,10 @@ def _run_end_to_end(args: argparse.Namespace) -> int:
     if args.registry.exists():
         raise SystemExit(f"refusing to reuse output registry: {args.registry}")
     rows = _read_jsonl(args.input)
-    profiles = {
-        str(row["target"]["ticker"]).strip().upper(): _target_profile(
-            row, CDECRSettings(), args.target_profile
-        )
-        for row in rows
-    }
     settings = CDECRSettings(
         CDECR_SQLITE_PATH=args.registry,
         CDECR_RELEVANCE_FILTER_MODE=args.gate_mode,
-        CDECR_RELEVANCE_TARGET_PROFILES=profiles,
+        CDECR_RELEVANCE_TARGET_PROFILES={},
     )
     registry = SQLiteCDECRRegistry(args.registry)
     registry.initialize()

@@ -262,6 +262,10 @@ class CDECRRegistry(Protocol):
         payload: dict[str, Any],
     ) -> bool: ...
 
+    def get_parent_occurrence_partition_for_snapshot(
+        self, *, run_id: str, snapshot_hash: str
+    ) -> dict[str, Any] | None: ...
+
     def save_parent_occurrence_checkpoints(
         self, *, run_id: str, records: Sequence[dict[str, Any]]
     ) -> dict[str, int]: ...

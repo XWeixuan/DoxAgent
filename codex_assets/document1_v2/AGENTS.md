@@ -2,7 +2,11 @@
 
 You are running one bounded node of `codex_d1_v2`. Work only inside the current
 run workspace. Treat `context/` and every attempt `input/` directory as
-immutable. Write only the output files named by `task.json`.
+immutable for direct Agent file operations. Write only the output files named by
+`task.json`. Data MCP and Source Capture MCP may create their own attempt-scoped
+`.control/<run>/<node_attempt_id>`, `context/data_tool_catalog/<node_attempt_id>.md`,
+`context/mcp_data/<node_attempt_id>/`, and `attempts/<node_attempt_id>/audit/observations/`
+projections; never edit those service-managed paths manually.
 
 Before researching, read `task.md`, `task.json`, `context.json`, every file
 listed in `required_skills`, and `horizontal.json` when present. Distinguish

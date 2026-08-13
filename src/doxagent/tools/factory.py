@@ -91,6 +91,7 @@ from doxagent.tools.providers.twelvedata import (
 from doxagent.tools.providers.yfinance import (
     YFinanceDailyOhlcvClient,
     YFinanceHkBasicSnapshotClient,
+    YFinanceSellSideConsensusClient,
 )
 from doxagent.tools.registry import ToolDescriptor, ToolRegistry
 
@@ -107,6 +108,7 @@ _RECOMPUTABLE_OBSERVATION_TOOLS = {
     "fmp.sector_performance",
     "finnhub.trade_stream",
     "yfinance.daily_ohlcv",
+    "yfinance.sell_side_consensus",
     "ibkr.market_history",
     "market.daily_ohlcv",
     "market.trade_tape",
@@ -394,8 +396,11 @@ _DOXATLAS_DESCRIPTORS: dict[str, ToolDescriptor] = {
 _HORIZONTAL_TOOL_SPECS: dict[str, tuple[str, list[str], str]] = {
     "sec.issuer_filings": (
         "List filtered SEC issuer filings without fetching filing bodies.",
-        ["ticker", "cik", "forms", "limit"],
-        "Locate authoritative filings by form, accession, filing date, and report date.",
+        ["ticker", "cik", "forms", "limit", "limit_per_form", "include_exhibits"],
+        (
+            "Locate authoritative filings by form, accession, filing date, report date, "
+            "and optional exhibit inventory."
+        ),
     ),
     "sec.company_financials": (
         "Read governed SEC XBRL company facts and exact reported observations.",
@@ -409,12 +414,12 @@ _HORIZONTAL_TOOL_SPECS: dict[str, tuple[str, list[str], str]] = {
     ),
     "sec.material_contracts_projects": (
         "Read contract and project disclosure sections from SEC filings.",
-        ["ticker", "cik", "accession", "primary_document", "sections"],
+        ["ticker", "cik", "form", "accession", "primary_document", "sections"],
         "Collect public contract, order, financing, termination, and project evidence.",
     ),
     "sec.management_disclosures": (
         "Read earnings and management disclosure sections from SEC filings.",
-        ["ticker", "cik", "accession", "primary_document", "sections"],
+        ["ticker", "cik", "form", "accession", "primary_document", "sections"],
         "Collect management guidance, outlook, KPI, and MD&A evidence.",
     ),
     "ibkr.contract_search": (
@@ -475,7 +480,7 @@ _HORIZONTAL_TOOL_SPECS: dict[str, tuple[str, list[str], str]] = {
     ),
     "finnhub.company_news_events": (
         "Read Finnhub company news and earnings-calendar events.",
-        ["symbol", "from", "to"],
+        ["symbol", "from", "to", "limit", "include_earnings"],
         "Discover company events; use authoritative sources for final state values.",
     ),
     "fred.activity_demand": (
@@ -520,7 +525,7 @@ _HORIZONTAL_TOOL_SPECS: dict[str, tuple[str, list[str], str]] = {
     ),
     "bea.industry_accounts": (
         "Read governed BEA industry-account datasets.",
-        ["dataset", "table_name", "line_number", "frequency", "year"],
+        ["dataset", "table_id", "industry", "frequency", "year", "limit"],
         "Collect industry output, value added, input-output, and fixed-asset records.",
     ),
     "census.manufacturing_orders": (
@@ -545,17 +550,17 @@ _HORIZONTAL_TOOL_SPECS: dict[str, tuple[str, list[str], str]] = {
     ),
     "usaspending.award_detail": (
         "Read one USAspending award detail record.",
-        ["award_id"],
+        ["generated_internal_id", "award_id"],
         "Collect authoritative award amount, agency, recipient, period, and description.",
     ),
     "sam.contract_opportunities": (
         "Search SAM.gov contract opportunities in a required date window.",
-        ["posted_from", "posted_to", "limit", "params"],
+        ["posted_from", "posted_to", "query", "q", "limit", "params"],
         "Collect solicitations and award notices; records are not recognized revenue.",
     ),
     "regulations.rulemaking_records": (
         "Search Regulations.gov documents/dockets or read one record.",
-        ["mode", "id", "params"],
+        ["mode", "id", "query", "agency_id", "posted_from", "posted_to", "params"],
         "Collect rulemaking docket, document, agency, date, and attachment evidence.",
     ),
     "federal_register.documents": (
@@ -565,7 +570,7 @@ _HORIZONTAL_TOOL_SPECS: dict[str, tuple[str, list[str], str]] = {
     ),
     "congress.legislative_actions": (
         "Read Congress.gov bills, actions, reports, or hearings.",
-        ["resource", "identifier", "params"],
+        ["resource", "identifier", "query", "updated_from", "updated_to", "limit", "params"],
         "Collect legislative status and action timelines.",
     ),
     "openfda.approval_milestones": (
@@ -604,6 +609,31 @@ _HORIZONTAL_DESCRIPTORS = {
     for name, (description, input_fields, purpose) in _HORIZONTAL_TOOL_SPECS.items()
 }
 
+_HORIZONTAL_DESCRIPTORS["twelvedata.sell_side_estimates"] = _HORIZONTAL_DESCRIPTORS[
+    "twelvedata.sell_side_estimates"
+].model_copy(
+    update={
+        "availability": "unavailable",
+        "availability_reason": (
+            "current Twelve Data entitlement does not include the Ultra/Enterprise "
+            "earnings_estimate and revenue_estimate endpoints"
+        ),
+    }
+)
+_HORIZONTAL_DESCRIPTORS["ir.official_updates"] = _HORIZONTAL_DESCRIPTORS[
+    "ir.official_updates"
+].model_copy(update={"business_categories": ["company_events", "management_guidance"]})
+for _sec_tool_id in (
+    "sec.issuer_filings",
+    "sec.company_financials",
+    "sec.filing_content",
+    "sec.material_contracts_projects",
+    "sec.management_disclosures",
+):
+    _HORIZONTAL_DESCRIPTORS[_sec_tool_id] = _HORIZONTAL_DESCRIPTORS[_sec_tool_id].model_copy(
+        update={"point_in_time_safe": True}
+    )
+
 
 _DESCRIPTORS: dict[str, ToolDescriptor] = {
     **_DOXATLAS_DESCRIPTORS,
@@ -613,13 +643,13 @@ _DESCRIPTORS: dict[str, ToolDescriptor] = {
         description="Read SEC submissions and companyfacts for a US issuer.",
         input_fields=["ticker", "cik", "include_facts"],
         business_purpose="Ground C1 fundamentals and C3 competitive review in SEC structured data.",
-    ),
+    ).model_copy(update={"point_in_time_safe": True}),
     "sec.filing_sections": _descriptor(
         "sec.filing_sections",
         description="Extract whitelisted sections from a SEC filing primary document.",
         input_fields=["ticker", "cik", "form", "accession", "primary_document", "sections"],
         business_purpose="Support focused filing text review for fundamentals and risk factors.",
-    ),
+    ).model_copy(update={"point_in_time_safe": True}),
     "alpha.company_overview": _descriptor(
         "alpha.company_overview",
         description="Read Alpha Vantage company overview metrics; free-tier quota is tight.",
@@ -696,12 +726,19 @@ _DESCRIPTORS: dict[str, ToolDescriptor] = {
         description="Read Alpha Vantage shares outstanding time series; free-tier quota is tight.",
         input_fields=["ticker", "symbol"],
         business_purpose="Support share-count and dilution checks.",
-    ),
+    ).model_copy(update={"fallback_tool_ids": ["sec.company_financials"]}),
     "alpha.earnings_events": _descriptor(
         "alpha.earnings_events",
         description="Read Alpha Vantage earnings history, estimates, or calendar data.",
         input_fields=["ticker", "symbol", "event_type"],
         business_purpose="Support earnings-cycle and forecast-sensitive expectation review.",
+    ).model_copy(
+        update={
+            "business_categories": ["sell_side_consensus", "company_events"],
+            "availability": "degraded",
+            "availability_reason": "free-tier request quota can temporarily rate-limit estimates",
+            "fallback_tool_ids": ["yfinance.sell_side_consensus"],
+        }
     ),
     "twelvedata.daily_ohlcv": _descriptor(
         "twelvedata.daily_ohlcv",
@@ -817,6 +854,31 @@ _DESCRIPTORS: dict[str, ToolDescriptor] = {
         description="Read yfinance daily OHLCV as an unofficial fallback for Twelve Data.",
         input_fields=["ticker", "symbol", "outputsize"],
         business_purpose="Fallback market-data evidence when Twelve Data is unavailable.",
+    ),
+    "yfinance.sell_side_consensus": _descriptor(
+        "yfinance.sell_side_consensus",
+        description=(
+            "Read compact current-quarter/year analyst EPS and revenue consensus, ranges, "
+            "sample counts, trends, and revisions from yfinance."
+        ),
+        input_fields=["ticker", "symbol"],
+        business_purpose=(
+            "Provide the governed current sell-side consensus primary route when paid feeds "
+            "are unavailable."
+        ),
+    ).model_copy(
+        update={
+            "business_categories": ["sell_side_consensus"],
+            "source_name": "Yahoo Finance via yfinance",
+            "availability": "degraded",
+            "availability_reason": (
+                "unofficial source with retrieval-time rather than historical "
+                "point-in-time semantics"
+            ),
+            "fallback_tool_ids": ["alpha.earnings_events"],
+            "output_profile": "record",
+            "observation_adapter": "json",
+        }
     ),
     "monitoring.get_ticker_config": _descriptor(
         "monitoring.get_ticker_config",
@@ -1036,4 +1098,5 @@ def default_real_tool_registry(settings: DoxAgentSettings | None = None) -> Tool
     register("anysearch.search", AnySearchSearchClient(resolved, cache))
     register("yfinance.hk_basic_snapshot", YFinanceHkBasicSnapshotClient())
     register("yfinance.daily_ohlcv", yahoo_daily)
+    register("yfinance.sell_side_consensus", YFinanceSellSideConsensusClient())
     return registry

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections import Counter
 from collections.abc import Mapping, Sequence
 
 from cdecr.contracts import (
@@ -11,6 +12,7 @@ from cdecr.contracts import (
     EventPackage,
     MembershipRelation,
     PackageExternalRelation,
+    PackageFamily,
     PackageKind,
     PackageMembership,
     PackageQualityState,
@@ -20,7 +22,24 @@ from cdecr.contracts import (
 from cdecr.cross_document_contracts import PackageAssignmentRecord
 from cdecr.parent_occurrence_contracts import FrozenParentGroup, FrozenParentPartition
 
-PACKAGE_ASSIGNMENT_POLICY_VERSION = "parent-occurrence-v2"
+PACKAGE_ASSIGNMENT_POLICY_VERSION = "parent-occurrence-v2.0r"
+
+
+def _derived_family(event: AtomicEvent) -> PackageFamily:
+    value = event.event_family.value
+    if value in {"FINANCIAL_PERFORMANCE", "GUIDANCE_EXPECTATION"}:
+        return PackageFamily.EARNINGS_DISCLOSURE
+    if value == "ANALYST_ACTION":
+        return PackageFamily.ANALYST_REPORT
+    if value == "TRANSACTION_CAPITAL":
+        return PackageFamily.TRANSACTION
+    if value == "REGULATORY_LEGAL_POLICY":
+        return PackageFamily.REGULATORY_LEGAL
+    if value == "INCIDENT_GEOPOLITICAL":
+        return PackageFamily.OPERATIONAL_INCIDENT
+    if value == "PRODUCT_SCIENCE":
+        return PackageFamily.PRODUCT_SCIENCE
+    return PackageFamily.OTHER
 
 
 def _stable_id(prefix: str, value: object) -> str:
@@ -43,12 +62,8 @@ def _event_entities(event: AtomicEvent) -> set[str]:
 
 
 def _time_range(events: Sequence[AtomicEvent]) -> PackageTimeRange:
-    starts = [
-        value for item in events if (value := item.time.event_start) is not None
-    ]
-    ends = [
-        value for item in events if (value := item.time.event_end) is not None
-    ]
+    starts = [value for item in events if (value := item.time.event_start) is not None]
+    ends = [value for item in events if (value := item.time.event_end) is not None]
     start = min(starts, key=lambda value: value.isoformat()) if starts else None
     end = max(ends, key=lambda value: value.isoformat()) if ends else None
     return PackageTimeRange(start=start, end=end)
@@ -69,6 +84,7 @@ def _package_for_group(
         else _stable_id("package", {"partition": partition_hash, "group": group.group_id})
     )
     events = [events_by_id[event_id] for event_id in group.event_ids]
+    package_family = Counter(_derived_family(event) for event in events).most_common(1)[0][0]
     entities = sorted({value for event in events for value in _event_entities(event)})
     summary = "; ".join(dict.fromkeys(item.canonical_proposition for item in events))[:2000]
     return EventPackage(
@@ -76,7 +92,7 @@ def _package_for_group(
         package_kind=(
             PackageKind.EPISODE if group.scope == "CONTINUING_MATTER" else PackageKind.BOUNDED
         ),
-        package_family=group.package_family,
+        package_family=package_family,
         canonical_title=group.canonical_label,
         anchor_entities=entities,
         parent_scope=group.scope,
@@ -167,7 +183,7 @@ def project_frozen_partition(
                     membership_relation=relation,
                     supporting_proposal_ids=sorted(group.proposal_ids),
                     partition_hash=partition.partition_hash,
-                    reason="PARENT_OCCURRENCE_V2_FROZEN_PARTITION",
+                    reason="PARENT_OCCURRENCE_V2_0R_FROZEN_PARTITION",
                 )
             )
     for link in partition.external_links:

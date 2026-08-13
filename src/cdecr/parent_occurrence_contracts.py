@@ -27,7 +27,16 @@ class AtomicDocumentSlice(StrictModel):
     object_cues: list[str] = Field(default_factory=list)
     artifact_cues: list[str] = Field(default_factory=list)
     metric_cues: list[str] = Field(default_factory=list)
-    evidence: list[str] = Field(default_factory=list, max_length=2)
+    institution_cues: list[str] = Field(default_factory=list)
+    counterparty_cues: list[str] = Field(default_factory=list)
+    market_scope: list[str] = Field(default_factory=list)
+    parent_role: str
+    evidence_refs: list[str] = Field(default_factory=list, max_length=4)
+
+
+class ParentContextBlock(StrictModel):
+    block_ref: str
+    text: str = Field(min_length=1)
 
 
 class ParentInductionDocument(StrictModel):
@@ -36,8 +45,16 @@ class ParentInductionDocument(StrictModel):
     title: str
     published_at: str
     source_name: str
-    article: str
+    document_context: list[ParentContextBlock] = Field(min_length=1)
     atomics: list[AtomicDocumentSlice] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def evidence_refs_resolve(self) -> ParentInductionDocument:
+        allowed = {item.block_ref for item in self.document_context}
+        refs = {ref for atomic in self.atomics for ref in atomic.evidence_refs}
+        if not refs.issubset(allowed):
+            raise ValueError("Atomic evidence refs must resolve to document context blocks")
+        return self
 
 
 class ParentMembershipDecision(StrictModel):
@@ -58,7 +75,6 @@ class ParentExternalLinkDecision(StrictModel):
 class ParentInductionGroup(StrictModel):
     local_group_id: str = Field(description="Group ID unique within this task.")
     scope: ParentScope = Field(description="Bounded parent occurrence or continuing matter.")
-    package_family: PackageFamily = Field(description="Best supplied family for this parent.")
     label: str = Field(description="Short distinguishing parent description.")
     members: list[ParentMembershipDecision] = Field(
         min_length=1,
@@ -127,9 +143,13 @@ class ParentProposalCard(StrictModel):
     existing_package_ids: list[str] = Field(default_factory=list)
     participants: list[str] = Field(default_factory=list)
     period_ids: list[str] = Field(default_factory=list)
+    parent_role: str = "OTHER"
     object_cues: list[str] = Field(default_factory=list)
     artifact_cues: list[str] = Field(default_factory=list)
     metric_cues: list[str] = Field(default_factory=list)
+    institution_cues: list[str] = Field(default_factory=list)
+    counterparty_cues: list[str] = Field(default_factory=list)
+    market_scope: list[str] = Field(default_factory=list)
     representative_facts: list[str] = Field(default_factory=list, max_length=6)
     embedding: list[float] = Field(default_factory=list, exclude=True)
 
@@ -143,7 +163,12 @@ class CanonicalParentPrototype(StrictModel):
     event_ids: list[str] = Field(default_factory=list)
     participants: list[str] = Field(default_factory=list)
     period_ids: list[str] = Field(default_factory=list)
+    parent_role: str = "OTHER"
+    object_cues: list[str] = Field(default_factory=list)
     artifact_cues: list[str] = Field(default_factory=list)
+    institution_cues: list[str] = Field(default_factory=list)
+    counterparty_cues: list[str] = Field(default_factory=list)
+    market_scope: list[str] = Field(default_factory=list)
     representative_facts: list[str] = Field(default_factory=list, max_length=6)
     embedding: list[float] = Field(default_factory=list, exclude=True)
 
@@ -151,33 +176,21 @@ class CanonicalParentPrototype(StrictModel):
 class ParentResolutionGroup(StrictModel):
     resolution_group_id: str = Field(description="Group ID unique within this response.")
     proposal_refs: list[str] = Field(
-        default_factory=list,
-        description="Proposals that identify this parent; review splits may be event-only.",
+        min_length=1,
+        description="Proposals that identify this parent.",
     )
     existing_parent_refs: list[str] = Field(
         default_factory=list,
         description="Prototypes that identify this parent.",
     )
-    event_refs: list[str] = Field(
-        default_factory=list,
-        description="Review-only Atomic membership; empty during ordinary resolution.",
-    )
-    includes_remaining_events: bool = Field(
-        default=False,
-        description="Review-only default group for input event refs not listed explicitly.",
-    )
     canonical_label: str = Field(description="Short distinguishing parent description.")
 
     @model_validator(mode="after")
     def unique_refs(self) -> ParentResolutionGroup:
-        if not self.proposal_refs and not self.event_refs and not self.includes_remaining_events:
-            raise ValueError("a resolution group needs proposal refs or review event IDs")
         if len(self.proposal_refs) != len(set(self.proposal_refs)):
             raise ValueError("proposal refs must be unique within a group")
         if len(self.existing_parent_refs) != len(set(self.existing_parent_refs)):
             raise ValueError("prototype refs must be unique within a group")
-        if len(self.event_refs) != len(set(self.event_refs)):
-            raise ValueError("event refs must be unique within a group")
         return self
 
 

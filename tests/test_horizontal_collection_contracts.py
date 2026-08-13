@@ -43,6 +43,13 @@ def test_generated_metric_catalog_matches_governing_plan() -> None:
     assert len(GENERATED_METRIC_IDS) == 304
 
 
+def test_inventory_uses_reporting_currency_unit() -> None:
+    metric = default_metric_registry().get("fin_inventory")
+
+    assert metric.default_unit == "REPORTING_CURRENCY"
+    assert metric.default_time_scope == "LATEST_REPORTED_BALANCE_SHEET_DATE"
+
+
 def test_metric_and_target_registries_cover_every_fixed_required_metric() -> None:
     metrics = default_metric_registry()
     targets = default_collection_target_registry()
@@ -183,6 +190,7 @@ def test_factory_registers_every_non_derived_horizontal_tool_with_descriptors() 
         "fmp.valuation_snapshot",
         "twelvedata.sell_side_estimates",
         "twelvedata.daily_ohlcv",
+        "yfinance.sell_side_consensus",
         "finnhub.company_peers",
         "finnhub.insider_transactions",
         "finnhub.company_news_events",
@@ -210,7 +218,7 @@ def test_factory_registers_every_non_derived_horizontal_tool_with_descriptors() 
         "ir.official_updates",
     }
     assert expected <= set(registry.names())
-    assert len(expected) == 44
+    assert len(expected) == 45
     assert {
         "benzinga.short_interest",
         "benzinga.transcripts",

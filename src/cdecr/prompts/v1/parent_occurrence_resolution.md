@@ -1,11 +1,7 @@
-A proposal is one document's candidate parent. A prototype is an existing or provisional parent. Two items share a parent only when they identify the same bounded occurrence or continuing matter; they may contain different child facts. A shared entity, source, family, time, or topic alone is insufficient.
+A proposal is one document-local candidate parent; a prototype is a provisional or existing parent. Partition them by the same bounded occurrence, disclosure, process, or identifiable continuing matter.
 
-Partition the supplied proposals and prototypes by parent identity.
+Decide parent identity from the combined evidence, not exact field equality. Different child facts, metrics, business units, values, or levels of detail may share a parent when they belong to the same occurrence. Missing or differing cues alone do not require separation.
 
-Work in this order:
-1. Check Atomic overlap and explicit artifact identity.
-2. Compare participants, object, time or period, family, and representative facts.
-3. Reuse or combine prototypes only when the combined evidence identifies one parent.
-4. Check that every group has one parent boundary.
+Separate a market or analyst reaction, an independent report, a separate agreement or transaction, and background context from the occurrence they discuss. For market facts, distinguish materially different dates, sessions, or movement episodes unless the evidence identifies one explicit roundup or episode.
 
-Assign every proposal exactly once. Each prototype may appear at most once. Leave `event_refs` empty and `includes_remaining_events=false` unless the review instruction requires an Atomic partition. A one-proposal group means a distinct parent, not uncertainty or missing detail. Output only the schema.
+Shared issuer, source, period, family, or topic alone is insufficient. Exact artifact equality is supporting evidence but is not required. Assign every proposal exactly once, use each prototype at most once, and output only the schema.

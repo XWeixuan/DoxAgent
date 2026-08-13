@@ -60,7 +60,6 @@ class FailPackedInductionOnce(ScriptedParentModels):
                             ParentInductionGroup(
                                 local_group_id="G1",
                                 scope="PARENT_OCCURRENCE",
-                                package_family="COMPANY_DISCLOSURE",
                                 label="Micron June update",
                                 members=[
                                     ParentMembershipDecision(
@@ -98,7 +97,7 @@ def test_packed_induction_failure_retries_each_document_and_reuses_checkpoints(t
     snapshot = snapshot_type.load(
         registry=store, events=events, mentions=mentions, sources=sources, packages=[]
     )
-    documents, _ = service._slices(snapshot)
+    documents, _, _, _ = service._slices(snapshot)
     models = FailPackedInductionOnce()
 
     decisions, failures, telemetry = service._induce(

@@ -98,6 +98,168 @@ async def test_attempt_bundle_is_role_scoped_and_hash_stable(tmp_path: Path) -> 
 
 
 @pytest.mark.asyncio
+async def test_c1_bundle_injects_complete_fundamental_research_contract(tmp_path: Path) -> None:
+    workspace = LocalWorkspaceClient(LocalWorkspaceStore(tmp_path / "workspaces"))
+    seeded = await AttemptBundleSeeder(
+        workspace, Path("codex_assets/document1_v2")
+    ).seed(
+        run_id="run-c1-skill",
+        node=CodexD1Node.C1,
+        attempt_id="c1-1",
+        context_payload={"ticker": "NVDA", "company_name": "NVIDIA Corporation"},
+        horizontal=None,
+    )
+
+    task = json.loads((await workspace.read_text("run-c1-skill", seeded.task_path)).content or "")
+    assert task["required_sections"] == [
+        "Recent Fundamental State and Changes",
+        "Management and Sell-Side Expectations",
+        "Core Fundamental Drivers",
+        "Key Variable Transmission Chains",
+        "Potential Fundamental Factor Gaps",
+        "Unknowns and Evidence Boundaries",
+    ]
+
+    skill_path = "attempts/c1-1/input/skills/fundamental-research.md"
+    injected = (await workspace.read_text("run-c1-skill", skill_path)).content or ""
+    canonical = Path("prompts/internal_task_skills/fundamental-research.md").read_text(
+        encoding="utf-8"
+    ).replace(
+        "For BuildGlobalResearch / Document 1, research the current and forward company "
+        "fundamentals of `{target}` in the `{market}` market.",
+        "For BuildGlobalResearch / Document 1, research the current and forward company "
+        "fundamentals of the issuer identified by `ticker` and `company_name` in `context.json`.",
+    )
+    assert injected == canonical
+    assert "## Final quality gates" in injected
+    assert len(injected) > 20_000
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("node", "skill_name", "canonical_skill", "canonical_agent", "minimum_bytes"),
+    [
+        (
+            CodexD1Node.C3,
+            "industry-research.md",
+            "prompts/internal_task_skills/industry-research.md",
+            "prompts/agents/c3.md",
+            18_000,
+        ),
+        (
+            CodexD1Node.O4_A,
+            "market-implied-expectations.md",
+            "prompts/internal_task_skills/market-implied-expectations.md",
+            "codex_assets/document1_v2/agents/o4_a.md",
+            29_000,
+        ),
+        (
+            CodexD1Node.C4_PRE_SCAN,
+            "entity-map-and-future-nodes.md",
+            "prompts/internal_task_skills/entity-map-and-future-nodes.md",
+            "prompts/agents/c4.md",
+            14_000,
+        ),
+        (
+            CodexD1Node.C4_ENRICHMENT,
+            "entity-map-and-future-nodes.md",
+            "prompts/internal_task_skills/entity-map-and-future-nodes.md",
+            "prompts/agents/c4.md",
+            14_000,
+        ),
+        (
+            CodexD1Node.C4_FINALIZATION,
+            "entity-map-and-future-nodes.md",
+            "prompts/internal_task_skills/entity-map-and-future-nodes.md",
+            "prompts/agents/c4.md",
+            14_000,
+        ),
+    ],
+)
+async def test_bundle_injects_canonical_agent_and_skill_sources(
+    tmp_path: Path,
+    node: CodexD1Node,
+    skill_name: str,
+    canonical_skill: str,
+    canonical_agent: str,
+    minimum_bytes: int,
+) -> None:
+    workspace = LocalWorkspaceClient(LocalWorkspaceStore(tmp_path / "workspaces"))
+    seeded = await AttemptBundleSeeder(
+        workspace, Path("codex_assets/document1_v2")
+    ).seed(
+        run_id=f"run-{node.value}-skill",
+        node=node,
+        attempt_id=f"{node.value}-1",
+        context_payload={"ticker": "NVDA", "company_name": "NVIDIA Corporation"},
+        horizontal=None,
+    )
+    run_id = f"run-{node.value}-skill"
+    skill_path = f"attempts/{node.value}-1/input/skills/{skill_name}"
+    injected_skill = (await workspace.read_text(run_id, skill_path)).content or ""
+    injected_agent = (await workspace.read_text(run_id, seeded.task_path.replace(
+        "task.json", "task.md"
+    ))).content or ""
+    assert injected_skill == Path(canonical_skill).read_text(encoding="utf-8")
+    assert injected_agent == Path(canonical_agent).read_text(encoding="utf-8")
+    assert len(injected_skill.encode("utf-8")) >= minimum_bytes
+
+
+@pytest.mark.asyncio
+async def test_c3_and_o4_a_bundle_sections_follow_canonical_skills(tmp_path: Path) -> None:
+    workspace = LocalWorkspaceClient(LocalWorkspaceStore(tmp_path / "workspaces"))
+    seeder = AttemptBundleSeeder(workspace, Path("codex_assets/document1_v2"))
+    c3 = await seeder.seed(
+        run_id="run-sections",
+        node=CodexD1Node.C3,
+        attempt_id="c3-1",
+        context_payload={"ticker": "NVDA"},
+        horizontal=None,
+    )
+    o4_a = await seeder.seed(
+        run_id="run-sections",
+        node=CodexD1Node.O4_A,
+        attempt_id="o4-a-1",
+        context_payload={"ticker": "NVDA"},
+        horizontal=None,
+    )
+    assert len(c3.required_sections) == 6
+    assert c3.required_sections[0] == "Target-Relevant Industry and Value-Chain Fact Baseline"
+    assert c3.required_sections[-1] == "Unknowns, Evidence Boundaries, and Cross-Node Handoffs"
+    assert len(o4_a.required_sections) == 6
+    assert o4_a.required_sections[0] == "Current Market Pricing Baseline"
+    assert o4_a.required_sections[-1] == (
+        "Unknowns, Identification Boundaries, and Cross-Node Handoffs"
+    )
+
+
+@pytest.mark.asyncio
+async def test_c4_bundle_declares_and_seeds_structured_output_path(tmp_path: Path) -> None:
+    workspace = LocalWorkspaceClient(LocalWorkspaceStore(tmp_path / "workspaces"))
+    seeded = await AttemptBundleSeeder(
+        workspace, Path("codex_assets/document1_v2")
+    ).seed(
+        run_id="run-c4-output",
+        node=CodexD1Node.C4_PRE_SCAN,
+        attempt_id="c4-pre-1",
+        context_payload={"ticker": "NVDA"},
+        horizontal=None,
+    )
+    assert seeded.structured_output_path == (
+        "attempts/c4-pre-1/output/completion.json"
+    )
+    task = json.loads(
+        (await workspace.read_text("run-c4-output", seeded.task_path)).content or ""
+    )
+    assert task["schema_version"] == "codex-d1-attempt-task-v3"
+    assert task["structured_output_path"] == seeded.structured_output_path
+    assert task["progress_contract"] is None
+    assert (
+        await workspace.read_text("run-c4-output", seeded.structured_output_path)
+    ).content == "{}"
+
+
+@pytest.mark.asyncio
 async def test_progressive_validator_accepts_windows_utf8_bom(tmp_path: Path) -> None:
     workspace = LocalWorkspaceClient(LocalWorkspaceStore(tmp_path / "workspaces"))
     seeded = await AttemptBundleSeeder(

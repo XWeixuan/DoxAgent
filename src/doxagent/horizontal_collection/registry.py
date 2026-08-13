@@ -81,6 +81,11 @@ _REQUIRED_OVERRIDES: dict[str, tuple[MetricValueType, str, str]] = {
         "REPORTING_CURRENCY",
         "LATEST_REPORTED_BALANCE_SHEET_DATE",
     ),
+    "fin_inventory": (
+        MetricValueType.NUMBER,
+        "REPORTING_CURRENCY",
+        "LATEST_REPORTED_BALANCE_SHEET_DATE",
+    ),
     "macro_real_gdp_growth": (
         MetricValueType.NUMBER,
         "PERCENTAGE",

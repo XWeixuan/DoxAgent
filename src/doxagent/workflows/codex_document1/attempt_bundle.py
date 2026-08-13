@@ -14,6 +14,7 @@ from doxagent.codex_runtime.schema import CodexD1Node
 from doxagent.workflows.codex_document1.schema import NodeOutput
 
 BUNDLE_VERSION = "codex-d1-agent-bundle-v2"
+ATTEMPT_TASK_SCHEMA_VERSION = "codex-d1-attempt-task-v3"
 PROGRESSIVE_NODES = frozenset(
     {CodexD1Node.C1, CodexD1Node.C2, CodexD1Node.C3, CodexD1Node.O4_B, CodexD1Node.O4_A}
 )
@@ -28,6 +29,7 @@ class SeededAttemptBundle:
     report_draft_path: str | None
     progress_path: str | None
     observation_candidates_path: str | None
+    structured_output_path: str | None
     required_sections: tuple[str, ...]
     required_skills: tuple[str, ...]
 
@@ -36,6 +38,7 @@ class AttemptBundleSeeder:
     def __init__(self, workspace: WorkspaceClient, root: str | Path) -> None:
         self._workspace = workspace
         self._root = Path(root)
+        self._repo_root = self._root.resolve().parents[1]
         self._manifest_text = (self._root / "bundle_manifest.json").read_text(encoding="utf-8")
         self._manifest = json.loads(self._manifest_text)
         if self._manifest.get("bundle_version") != BUNDLE_VERSION:
@@ -58,6 +61,7 @@ class AttemptBundleSeeder:
         resources = self._resource_contents(definition)
         canonical = {
             "bundle_version": BUNDLE_VERSION,
+            "task_contract_version": ATTEMPT_TASK_SCHEMA_VERSION,
             "bundle_manifest_sha256": _sha256(self._manifest_text),
             "node": node.value,
             "node_definition": definition,
@@ -89,9 +93,12 @@ class AttemptBundleSeeder:
         report_path = f"{output_base}/report_draft.md" if progressive else None
         progress_path = f"{output_base}/progress.json" if progressive else None
         candidates_path = f"{output_base}/observation_candidates.json" if progressive else None
+        structured_output_path = (
+            None if progressive else f"{output_base}/completion.json"
+        )
         required_skill_paths = tuple(f"{input_base}/{item}" for item in skills)
         task = {
-            "schema_version": "codex-d1-attempt-task-v2",
+            "schema_version": ATTEMPT_TASK_SCHEMA_VERSION,
             "bundle_version": BUNDLE_VERSION,
             "node": node.value,
             "required_sections": list(sections),
@@ -101,13 +108,18 @@ class AttemptBundleSeeder:
             "draft_path": report_path,
             "progress_path": progress_path,
             "observation_candidates_path": candidates_path,
+            "structured_output_path": structured_output_path,
             "output_language": "zh-CN",
             "output_schema_path": f"{input_base}/{self._manifest['schema']}",
             "previous_attempt_failure": previous_failure,
-            "progress_contract": {
-                "status": "in_progress | completed",
-                "completed_sections": "ordered subset of required_sections",
-            },
+            "progress_contract": (
+                {
+                    "status": "in_progress | completed",
+                    "completed_sections": "ordered subset of required_sections",
+                }
+                if progressive
+                else None
+            ),
         }
         context = {
             "schema_version": "codex-d1-node-context-v2",
@@ -152,6 +164,8 @@ class AttemptBundleSeeder:
                 ),
             )
             await self._workspace.write_text(run_id, candidates_path or "", "[]")
+        elif structured_output_path is not None:
+            await self._workspace.write_text(run_id, structured_output_path, "{}")
         return SeededAttemptBundle(
             input_sha256=input_hash,
             task_path=f"{input_base}/task.json",
@@ -160,6 +174,7 @@ class AttemptBundleSeeder:
             report_draft_path=report_path,
             progress_path=progress_path,
             observation_candidates_path=candidates_path,
+            structured_output_path=structured_output_path,
             required_sections=sections,
             required_skills=required_skill_paths,
         )
@@ -173,9 +188,16 @@ class AttemptBundleSeeder:
         ]
         values: dict[str, str] = {}
         for relative in paths:
-            path = (self._root / relative).resolve()
-            if self._root.resolve() not in path.parents:
-                raise ValueError(f"bundle resource escaped root: {relative}")
+            source_overrides = definition.get("resource_sources", {})
+            source = source_overrides.get(relative) if isinstance(source_overrides, dict) else None
+            if source is not None:
+                path = (self._repo_root / str(source)).resolve()
+                if self._repo_root not in path.parents:
+                    raise ValueError(f"canonical bundle resource escaped repo: {source}")
+            else:
+                path = (self._root / relative).resolve()
+                if self._root.resolve() not in path.parents:
+                    raise ValueError(f"bundle resource escaped root: {relative}")
             values[relative] = path.read_text(encoding="utf-8")
         return values
 

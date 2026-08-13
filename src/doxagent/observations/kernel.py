@@ -95,6 +95,8 @@ class ObservationKernel:
                     metadata={
                         "profile_envelope": _redact(profiled.envelope),
                         "removed_paths": list(profiled.removed_paths),
+                        "text_encoding": "utf-8",
+                        "mojibake_suspected": _contains_mojibake(content),
                     },
                 )
             )
@@ -201,7 +203,7 @@ class ObservationKernel:
     def _select_large(self, observations: list[PersistedObservation]) -> list[PersistedObservation]:
         preferred = sorted(
             observations,
-            key=lambda item: int(item.alias[1:]),
+            key=lambda item: (-_selection_score(item), int(item.alias[1:])),
         )
         selected: list[PersistedObservation] = []
         consumed = 0
@@ -228,6 +230,46 @@ def _view(item: PersistedObservation) -> DataObservationView:
     )
 
 
+def _selection_score(item: PersistedObservation) -> int:
+    locator = item.locator.lower()
+    score = {
+        "text": 30,
+        "time_series": 28,
+        "table": 26,
+        "json": 10,
+    }.get(item.block_type, 0)
+    if any(
+        token in locator
+        for token in (
+            "/sections",
+            "/results",
+            "/records",
+            "/updates",
+            "/key_facts",
+            "/series",
+            "/rows",
+            "/content",
+            "/text",
+        )
+    ):
+        score += 12
+    if any(
+        token in locator
+        for token in (
+            "/metadata",
+            "/requested",
+            "/concepts",
+            "/accession",
+            "/primary_document",
+            "/applied_filters",
+        )
+    ):
+        score -= 20
+    if content_chars(item.content) < 120:
+        score -= 6
+    return score
+
+
 def _stable_block_id(tool_call_id: str, locator: str, content_hash: str) -> str:
     seed = f"{tool_call_id}|{locator}|{content_hash}".encode()
     return f"oblk_{hashlib.sha256(seed).hexdigest()[:20]}"
@@ -252,6 +294,16 @@ def _source_locator(locator: str, coordinates: Any) -> str:
             if value not in (None, ""):
                 return str(value)[:2_000]
     return locator
+
+
+def _contains_mojibake(value: Any) -> bool:
+    if isinstance(value, dict):
+        return any(_contains_mojibake(item) for item in value.values())
+    if isinstance(value, (list, tuple)):
+        return any(_contains_mojibake(item) for item in value)
+    if not isinstance(value, str):
+        return False
+    return any(marker in value for marker in ("\ufffd", "鈥?", "鈥檚", "Ã¢", "â€™"))
 
 
 def _redact(value: Any, *, key: str | None = None) -> Any:

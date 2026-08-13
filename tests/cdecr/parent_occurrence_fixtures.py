@@ -33,7 +33,7 @@ class ScriptedParentModels:
         outputs = []
         for request, validator in zip(requests, validators, strict=True):
             payload = json.loads(request.user_prompt)
-            if stage == "parent_induction":
+            if stage in {"parent_induction", "parent_induction_repartition"}:
                 decisions = []
                 for document in payload["document_tasks"]:
                     decisions.append(
@@ -43,7 +43,6 @@ class ScriptedParentModels:
                                 ParentInductionGroup(
                                     local_group_id="G1",
                                     scope="PARENT_OCCURRENCE",
-                                    package_family="COMPANY_DISCLOSURE",
                                     label="Micron June update",
                                     members=[
                                         ParentMembershipDecision(

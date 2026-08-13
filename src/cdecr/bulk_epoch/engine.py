@@ -24,6 +24,7 @@ from cdecr.bulk_epoch.snapshots import atomic_snapshot
 from cdecr.bulk_epoch.task_ledger import BulkTaskLedger
 from cdecr.bulk_epoch.writer import BulkWriter
 from cdecr.canonical_field_resolution import CanonicalFieldResolutionEngine
+from cdecr.contracts import AtomicEvent, EventMention
 from cdecr.cross_document import (
     ENGINE_VERSION,
     PROMPT_VERSION,
@@ -45,7 +46,7 @@ from cdecr.parent_occurrence_contracts import FrozenParentPartition
 from cdecr.ports import CDECRRegistry
 from cdecr.single_document_contracts import ModelCallSummary
 
-BULK_STAGE_GRAPH_VERSION = "cdecr-bulk-epoch-v7-parent-occurrence-v2"
+BULK_STAGE_GRAPH_VERSION = "cdecr-bulk-epoch-v9-parent-occurrence-v2.0r"
 
 
 def _git_commit() -> str | None:
@@ -60,6 +61,31 @@ def _git_commit() -> str | None:
     except (OSError, subprocess.SubprocessError):
         return None
     return result.stdout.strip() or None
+
+
+def _recover_atomic_late_state(
+    registry: CDECRRegistry,
+    mentions: Sequence[EventMention],
+) -> tuple[list[AtomicEvent], list[AtomicAssignmentRecord]]:
+    """Recover committed main-Atomic state after an interrupted N9_LATE attempt."""
+
+    events_by_id: dict[str, AtomicEvent] = {}
+    assignments: list[AtomicAssignmentRecord] = []
+    for mention in mentions:
+        assignment = registry.get_latest_atomic_assignment_for_mention(mention.mention_id)
+        root_id = (
+            None
+            if assignment is None or assignment.resulting_event_id is None
+            else registry.resolve_atomic_event_root(assignment.resulting_event_id)
+        )
+        event = None if root_id is None else registry.get_current_atomic_event(root_id)
+        if assignment is None or event is None:
+            raise RuntimeError(
+                f"ATOMIC_LATE_RECOVERY_MISSING_STATE:{mention.mention_id}"
+            )
+        assignments.append(assignment)
+        events_by_id[event.event_id] = event
+    return list(events_by_id.values()), assignments
 
 
 class BulkEpochEngine:
@@ -88,6 +114,11 @@ class BulkEpochEngine:
         parent_induction_max_slices: int = 48,
         parent_resolution_max_proposals: int = 24,
         parent_resolution_max_existing_parents: int = 12,
+        parent_resolution_max_input_tokens: int = 12_000,
+        parent_route_structured_quota: int = 16,
+        parent_route_semantic_quota: int = 24,
+        parent_route_total_k: int = 32,
+        parent_context_soft_token_budget: int = 6_000,
         writer_queue_low_watermark: int = 1000,
         writer_queue_high_watermark: int = 5000,
         writer_queue_hard_limit: int = 10000,
@@ -112,6 +143,11 @@ class BulkEpochEngine:
             induction_max_slices=parent_induction_max_slices,
             resolution_max_proposals=parent_resolution_max_proposals,
             resolution_max_existing_parents=parent_resolution_max_existing_parents,
+            resolution_max_input_tokens=parent_resolution_max_input_tokens,
+            route_structured_quota=parent_route_structured_quota,
+            route_semantic_quota=parent_route_semantic_quota,
+            route_total_k=parent_route_total_k,
+            context_soft_token_budget=parent_context_soft_token_budget,
         )
         self.late_config = LateStageConfig(
             atomic_task_cap=atomic_late_task_cap,
@@ -373,7 +409,65 @@ class BulkEpochEngine:
             )
             atomic_artifact = self.registry.get_bulk_epoch_artifact(epoch_id, "atomic_partition_v1")
             atomic_assignments: list[AtomicAssignmentRecord] = []
-            if atomic_artifact is None:
+            atomic_late_plan_artifact = self.registry.get_bulk_epoch_artifact(
+                epoch_id, "atomic_late_plan_v1"
+            )
+            if atomic_artifact is None and atomic_late_plan_artifact is not None:
+                atomic_events, atomic_assignments = _recover_atomic_late_state(
+                    self.registry, mentions
+                )
+                recovered_telemetry = {
+                    "stage": "N9_LATE",
+                    "event_count": len(atomic_events),
+                    "assignment_count": len(atomic_assignments),
+                    "recovered_after_interruption": True,
+                }
+                deterministic_telemetry["atomic_resume"] = recovered_telemetry
+                atomic_plan_artifact = self.registry.get_bulk_epoch_artifact(
+                    epoch_id, "atomic_plan_v1"
+                )
+                assert atomic_plan_artifact is not None
+                atomic_late_task_hash = canonical_hash(
+                    {
+                        "epoch": epoch_id,
+                        "stage": "ATOMIC_LATE",
+                        "cap": self.late_config.atomic_task_cap,
+                    }
+                )
+                ledger.finish(
+                    stage="N9_LATE",
+                    task_id="epoch",
+                    input_hash=atomic_late_task_hash,
+                    snapshot_hash=str(atomic_plan_artifact["artifact_hash"]),
+                    decision_ref=recovered_telemetry,
+                )
+                if self.registry.get_bulk_epoch_artifact(
+                    epoch_id, "atomic_late_partition_v1"
+                ) is None:
+                    self._save_artifact(
+                        epoch_id=epoch_id,
+                        manifest_hash=manifest_hash,
+                        kind="atomic_late_partition_v1",
+                        upstream_hash=str(atomic_late_plan_artifact["artifact_hash"]),
+                        payload={
+                            **recovered_telemetry,
+                            "event_ids": sorted(event.event_id for event in atomic_events),
+                        },
+                    )
+                self._save_artifact(
+                    epoch_id=epoch_id,
+                    manifest_hash=manifest_hash,
+                    kind="atomic_partition_v1",
+                    upstream_hash=str(atomic_plan_artifact["artifact_hash"]),
+                    payload={
+                        "event_ids": sorted(event.event_id for event in atomic_events),
+                        "assignment_ids": sorted(
+                            assignment.assignment_id for assignment in atomic_assignments
+                        ),
+                        "recovered_after_atomic_late_interruption": True,
+                    },
+                )
+            elif atomic_artifact is None:
                 base_atomic = atomic_snapshot(self.registry)
                 compiler = IdentityCompiler(
                     registry=self.registry,
@@ -549,25 +643,30 @@ class BulkEpochEngine:
                         epoch_id, "atomic_plan_v1"
                     )
                     assert atomic_plan_artifact is not None
-                    self._save_artifact(
-                        epoch_id=epoch_id,
-                        manifest_hash=manifest_hash,
-                        kind="atomic_late_plan_v1",
-                        upstream_hash=str(atomic_plan_artifact["artifact_hash"]),
-                        payload={
-                            "snapshot_hash": canonical_hash(
-                                [
-                                    (event.event_id, event.version)
-                                    for event in sorted(
-                                        atomic_events, key=lambda item: item.event_id
-                                    )
-                                ]
-                            ),
-                            "task_cap": self.late_config.atomic_task_cap,
-                            "rounds": 1,
-                            "failure_semantics": "NEUTRAL_OMISSION",
-                        },
-                    )
+                    if atomic_late_plan_artifact is None:
+                        self._save_artifact(
+                            epoch_id=epoch_id,
+                            manifest_hash=manifest_hash,
+                            kind="atomic_late_plan_v1",
+                            upstream_hash=str(atomic_plan_artifact["artifact_hash"]),
+                            payload={
+                                "snapshot_hash": canonical_hash(
+                                    [
+                                        (event.event_id, event.version)
+                                        for event in sorted(
+                                            atomic_events, key=lambda item: item.event_id
+                                        )
+                                    ]
+                                ),
+                                "task_cap": self.late_config.atomic_task_cap,
+                                "rounds": 1,
+                                "failure_semantics": "NEUTRAL_OMISSION",
+                            },
+                        )
+                        atomic_late_plan_artifact = self.registry.get_bulk_epoch_artifact(
+                            epoch_id, "atomic_late_plan_v1"
+                        )
+                    assert atomic_late_plan_artifact is not None
                     atomic_late_task_hash = canonical_hash(
                         {
                             "epoch": epoch_id,

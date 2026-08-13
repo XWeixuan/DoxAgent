@@ -9,7 +9,7 @@ import re
 import threading
 import traceback
 import uuid
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
 from functools import partial
@@ -131,8 +131,8 @@ from cdecr.scheduler import take_scheduled_call_metrics
 from cdecr.single_document_contracts import ModelCallSummary
 from cdecr.wire import compact_json, wire_ref_metadata
 
-ENGINE_VERSION = "cdecr-cross-document-v28-parent-occurrence-package-v2"
-PROMPT_VERSION = "cdecr-parent-occurrence-package-prompts-v2"
+ENGINE_VERSION = "cdecr-cross-document-v30-parent-occurrence-package-v2.0r"
+PROMPT_VERSION = "cdecr-parent-occurrence-package-prompts-v2.0r"
 WIRE_PROTOCOL_VERSION = "cdecr-cross-document-wire-atomic-dictionary-v9"
 ATOMIC_ASSIGNMENT_POLICY_VERSION = "atomic-assignment-policy-v5-late-convergence"
 ATOMIC_DECISION_MENTION_BATCH = 3
@@ -188,6 +188,17 @@ class CrossDocumentPipelineError(RuntimeError):
 def _hash_json(value: object) -> str:
     payload = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def _active_atomic_target(
+    registry: CDECRRegistry,
+    touched: Mapping[str, AtomicEvent],
+    event_id: str,
+) -> tuple[str, AtomicEvent | None]:
+    """Resolve an Apply target through redirects before consulting local state."""
+
+    root_id = registry.resolve_atomic_event_root(event_id)
+    return root_id, touched.get(root_id) or registry.get_current_atomic_event(root_id)
 
 
 def _structured_request_metadata(request: StructuredModelRequest) -> dict[str, object]:
@@ -1071,7 +1082,7 @@ class CrossDocumentEngine:
                 rule.value for rule in self.atomic_enforced_rules
             ),
             "atomic_assignment_policy_version": ATOMIC_ASSIGNMENT_POLICY_VERSION,
-            "package_partition_policy_version": "parent-occurrence-package-v2",
+            "package_partition_policy_version": "parent-occurrence-package-v2.0r",
             "hold_policy": "removed",
             "wire_protocol_version": WIRE_PROTOCOL_VERSION,
         }
@@ -1102,7 +1113,7 @@ class CrossDocumentEngine:
                 "identity_compiler_version": IDENTITY_COMPILER_VERSION,
                 "hard_cannot_link_mode": self.hard_cannot_link_mode.value,
                 "atomic_assignment_policy_version": ATOMIC_ASSIGNMENT_POLICY_VERSION,
-                "package_partition_policy_version": "parent-occurrence-package-v2",
+                "package_partition_policy_version": "parent-occurrence-package-v2.0r",
                 "hold_policy": "removed",
                 "wire_protocol_version": WIRE_PROTOCOL_VERSION,
                 "model_config": self.model_config,
@@ -3639,8 +3650,12 @@ class CrossDocumentEngine:
                     identity_differences = selected.identity_differences
 
             if action is AtomicAction.MERGE and candidate_event_id is not None:
-                target = touched.get(candidate_event_id) or self.registry.get_current_atomic_event(
-                    candidate_event_id
+                # A previously materialized provisional candidate may have been absorbed as a
+                # singleton earlier in this same Apply pass.  Always write through the redirect
+                # root; otherwise later Mentions keep extending the redirected source Atomic and
+                # disappear from the active Atomic/Package view.
+                candidate_event_id, target = _active_atomic_target(
+                    self.registry, touched, candidate_event_id
                 )
                 if target is None:
                     raise CrossDocumentPipelineError("atomic_update", "candidate_missing")

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import sys
+from types import ModuleType
 
 import httpx
 import pytest
@@ -14,6 +16,7 @@ from doxagent.tools import ToolRequest, default_real_tool_registry
 from doxagent.tools.market_evidence import daily_ohlcv_output_with_snapshot
 from doxagent.tools.providers.alpha_vantage import (
     AlphaVantageClient,
+    AlphaVantageEarningsClient,
     AlphaVantageFinancialStatementsClient,
 )
 from doxagent.tools.providers.anysearch import AnySearchSearchClient
@@ -28,7 +31,10 @@ from doxagent.tools.providers.fred import FredSeriesObservationsClient
 from doxagent.tools.providers.polymarket import PolymarketMarketProbabilityClient
 from doxagent.tools.providers.sec import (
     SecCompanyFactsAndFilingsClient,
+    SecCompanyFinancialsClient,
     SecFilingSectionsClient,
+    SecManagementDisclosuresClient,
+    parse_sec_filing_index,
     parse_sec_sections,
 )
 from doxagent.tools.providers.tavily import TavilySearchClient
@@ -36,6 +42,7 @@ from doxagent.tools.providers.twelvedata import TwelveDataDailyOhlcvClient
 from doxagent.tools.providers.yfinance import (
     YFinanceDailyOhlcvClient,
     YFinanceHkBasicSnapshotClient,
+    YFinanceSellSideConsensusClient,
 )
 from doxagent.tools.real import AlphaVantageClient as CompatAlphaVantageClient
 
@@ -360,6 +367,43 @@ def test_alpha_multi_request_returns_partial_when_one_statement_fails() -> None:
     assert len(requests) == 3
 
 
+def test_alpha_earnings_removes_false_annual_period_and_labels_eps_basis() -> None:
+    payload = {
+        "symbol": "NVDA",
+        "annualEarnings": [
+            {"fiscalDateEnding": "2026-07-31", "reportedEPS": "1.87"},
+            {"fiscalDateEnding": "2026-01-31", "reportedEPS": "4.78"},
+            {"fiscalDateEnding": "2025-01-31", "reportedEPS": "2.99"},
+        ],
+        "quarterlyEarnings": [
+            {
+                "fiscalDateEnding": "2026-04-30",
+                "reportedDate": "2026-05-20",
+                "reportedEPS": "1.87",
+                "estimatedEPS": "None",
+            }
+        ],
+    }
+    client = AlphaVantageEarningsClient(
+        _settings(),
+        TTLCache(),
+        client=httpx.Client(
+            transport=httpx.MockTransport(lambda _request: httpx.Response(200, json=payload))
+        ),
+    )
+
+    result = client.call(_request("alpha.earnings_events", {"event_type": "history"}))
+
+    normalized = result.output["earnings"]["EARNINGS"]
+    assert [item["fiscalDateEnding"] for item in normalized["annualEarnings"]] == [
+        "2026-01-31",
+        "2025-01-31",
+    ]
+    assert normalized["quarterlyEarnings"][0]["reportedEPS"] == 1.87
+    assert "estimatedEPS" not in normalized["quarterlyEarnings"][0]
+    assert "do not label" in normalized["eps_basis"]
+
+
 def test_bls_descriptor_years_are_translated_to_provider_body() -> None:
     requests: list[httpx.Request] = []
     client = BlsTimeseriesClient(
@@ -634,9 +678,91 @@ def test_sec_section_parser_extracts_known_item_text() -> None:
     assert parsed["unknowns"] == [{"field": "Item 8", "reason": "section heading not found"}]
 
 
+def test_sec_section_parser_skips_table_of_contents_and_reference_mentions() -> None:
+    raw = """
+    <html><body>
+    <div>Table of Contents Item 2. Management's Discussion 23 Item 3. Quantitative
+    and Qualitative Disclosures 30 Item 1A. Risk Factors 31 Item 2. Unregistered Sales 38</div>
+    <div>Refer to Part II, Item 1A. Risk Factors for more information.</div>
+    <h1>Item 2. Management's Discussion and Analysis</h1>
+    Management explains current revenue growth and gross margin changes in substantive detail.
+    Additional operating discussion provides enough text to qualify as body content.
+    <h1>Item 3. Quantitative and Qualitative Disclosures About Market Risk</h1>
+    <h1>Item 1A. Risk Factors</h1>
+    The company faces a substantive supply constraint and export-control risk discussion.
+    Additional risk detail provides enough text to qualify as body content for this section.
+    <h1>Item 2. Unregistered Sales of Equity Securities</h1>
+    </body></html>
+    """
+
+    parsed = parse_sec_sections(raw, ["Item 2", "Item 1A"])
+
+    sections = {item["section"]: item for item in parsed["sections"]}
+    assert "current revenue growth" in sections["Item 2"]["text"]
+    assert "supply constraint" in sections["Item 1A"]["text"]
+    assert sections["Item 2"]["match_quality"] == "substantive_body"
+    assert parsed["unknowns"] == []
+
+
+def test_sec_named_risk_factor_prefers_item_heading_over_mda_reference() -> None:
+    raw = """
+    Item 2. Management's Discussion and Analysis
+    Management discussion should be read with the risk factors set forth in Item 1A.
+    "Risk Factors" of the annual report. This paragraph is intentionally much longer
+    than the heading and repeats generic risk prose without opening the actual section.
+    Item 3. Quantitative and Qualitative Disclosures About Market Risk
+    Market-risk disclosure with enough substantive content to establish the boundary.
+    Item 4. Controls and Procedures
+    Controls disclosure with enough substantive content to establish the boundary.
+    Part II Other Information
+    Item 1. Legal Proceedings
+    Legal proceedings disclosure with sufficient body text for section separation.
+    Item 1A. Risk Factors
+    Other than the risks listed below, export controls and supply constraints remain
+    material and this is the actual quarterly risk-factor section body.
+    Item 2. Unregistered Sales of Equity Securities
+    """
+
+    parsed = parse_sec_sections(raw, ["Risk Factors"])
+
+    assert parsed["unknowns"] == []
+    assert parsed["sections"][0]["text"].startswith("Other than the risks listed below")
+
+
+def test_sec_filing_index_parser_returns_exhibit_coordinates() -> None:
+    index_html = """
+    <table class="tableFile"><tr><th>Seq</th><th>Description</th><th>Document</th>
+    <th>Type</th><th>Size</th></tr>
+    <tr><td>1</td><td>8-K</td><td><a href="main.htm">main.htm</a></td>
+    <td>8-K</td><td>100</td></tr>
+    <tr><td>2</td><td>Earnings release</td><td><a href="release.htm">release.htm</a></td>
+    <td>EX-99.1</td><td>2500</td></tr></table>
+    """
+
+    exhibits = parse_sec_filing_index(
+        index_html,
+        "https://www.sec.gov/Archives/edgar/data/1/2/filing-index.html",
+    )
+
+    assert exhibits == [
+        {
+            "sequence": "2",
+            "type": "EX-99.1",
+            "description": "Earnings release",
+            "filename": "release.htm",
+            "url": "https://www.sec.gov/Archives/edgar/data/1/2/release.htm",
+            "size_bytes": "2500",
+        }
+    ]
+
+
 def test_sec_filing_sections_client_uses_archive_url() -> None:
     client = SecFilingSectionsClient(
-        _settings(), TTLCache(), client=_text_client("Item 7. MD&A body")
+        _settings(),
+        TTLCache(),
+        client=_text_client(
+            "Item 7. MD&A body with substantive revenue, margin, and liquidity discussion."
+        ),
     )
 
     result = client.call(
@@ -654,6 +780,191 @@ def test_sec_filing_sections_client_uses_archive_url() -> None:
     assert result.status is ResultStatus.SUCCEEDED
     assert result.output["sections"][0]["section"] == "Item 7"
     assert "source_url" in result.output
+
+
+def test_sec_10q_defaults_and_management_route_are_form_aware() -> None:
+    submissions = {
+        "filings": {
+            "recent": {
+                "form": ["10-Q"],
+                "accessionNumber": ["0001045810-26-000100"],
+                "primaryDocument": ["nvda-20260426.htm"],
+                "filingDate": ["2026-05-20"],
+                "reportDate": ["2026-04-26"],
+            }
+        }
+    }
+    filing = """
+    <h1>Item 1. Financial Statements</h1>
+    Condensed consolidated statements and notes with enough substantive filing body text.
+    <h1>Item 2. Management's Discussion and Analysis</h1>
+    Revenue, margin, liquidity, demand and operating trends are discussed in detail here.
+    <h1>Item 3. Quantitative and Qualitative Disclosures About Market Risk</h1>
+    Foreign exchange and interest-rate exposure are described with substantive context.
+    <h1>Item 4. Controls and Procedures</h1>
+    Disclosure controls were evaluated and management reported its conclusions in detail.
+    <h1>Item 1A. Risk Factors</h1>
+    Export controls and supply constraints remain material risks for the business model.
+    <h1>Item 2. Unregistered Sales of Equity Securities</h1>
+    """
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if "/submissions/" in request.url.path:
+            return httpx.Response(200, json=submissions)
+        return httpx.Response(200, text=filing)
+
+    transport = httpx.MockTransport(handler)
+    sections = SecFilingSectionsClient(
+        _settings(), TTLCache(), client=httpx.Client(transport=transport)
+    ).call(_request("sec.filing_sections", {"cik": "1045810", "form": "10-Q"}))
+    management = SecManagementDisclosuresClient(
+        _settings(), TTLCache(), client=httpx.Client(transport=transport)
+    ).call(_request("sec.management_disclosures", {"cik": "1045810", "form": "10-Q"}))
+
+    assert sections.status is ResultStatus.SUCCEEDED
+    assert sections.output["form"] == "10-Q"
+    assert sections.output["default_sections_for_form"] is True
+    assert {item["section"] for item in sections.output["sections"]} == {
+        "Financial Statements",
+        "Management's Discussion and Analysis",
+        "Quantitative and Qualitative Disclosures About Market Risk",
+        "Controls and Procedures",
+        "Risk Factors",
+    }
+    assert management.status is ResultStatus.SUCCEEDED
+    assert management.output["record_type"] == "management_discussion_and_analysis"
+    assert management.output["sections"][0]["section"] == (
+        "Management's Discussion and Analysis"
+    )
+
+
+def test_sec_xbrl_uses_governed_fallback_and_partial_for_missing_or_stale() -> None:
+    submissions = {
+        "filings": {
+            "recent": {
+                "form": ["10-Q"],
+                "filingDate": ["2026-05-20"],
+                "reportDate": ["2026-04-26"],
+            }
+        }
+    }
+    facts = {
+        "facts": {
+            "us-gaap": {
+                "PaymentsToAcquireProductiveAssets": {
+                    "label": "Capital expenditures",
+                    "units": {
+                        "USD": [
+                            {
+                                "val": 1757000000,
+                                "end": "2026-04-26",
+                                "filed": "2026-05-20",
+                                "form": "10-Q",
+                                "accn": "0001045810-26-000100",
+                            }
+                        ]
+                    },
+                },
+                "InventoryNet": {
+                    "label": "Inventory",
+                    "units": {
+                        "USD": [
+                            {
+                                "val": 100,
+                                "end": "2025-01-01",
+                                "filed": "2025-02-01",
+                                "form": "10-K",
+                                "accn": "old",
+                            }
+                        ]
+                    },
+                },
+            }
+        }
+    }
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            json=submissions if "/submissions/" in request.url.path else facts,
+        )
+
+    client = SecCompanyFinancialsClient(
+        _settings(), TTLCache(), client=httpx.Client(transport=httpx.MockTransport(handler))
+    )
+    fallback = client.call(
+        _request(
+            "sec.company_financials",
+            {"cik": "1045810", "concepts": ["PaymentsToAcquirePropertyPlantAndEquipment"]},
+        )
+    )
+    incomplete = client.call(
+        _request(
+            "sec.company_financials",
+            {"cik": "1045810", "concepts": ["InventoryNet", "ConceptThatDoesNotExist"]},
+        )
+    )
+
+    assert fallback.status is ResultStatus.SUCCEEDED
+    assert fallback.output["concept_resolution"] == [
+        {
+            "requested_concept": "PaymentsToAcquirePropertyPlantAndEquipment",
+            "resolved_concept": "PaymentsToAcquireProductiveAssets",
+            "canonical_metric": "capital_expenditure",
+            "resolution": "fallback",
+            "reason": "used the freshest governed issuer concept for this metric",
+        }
+    ]
+    assert incomplete.status is ResultStatus.PARTIAL
+    assert incomplete.error is not None
+    assert incomplete.error.code == "sec_financials_incomplete"
+    assert incomplete.output["unmatched_concepts"] == ["ConceptThatDoesNotExist"]
+    assert incomplete.output["stale_concepts"] == ["InventoryNet"]
+
+
+def test_yfinance_sell_side_consensus_is_compact_and_basis_safe(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    module = ModuleType("yfinance")
+
+    class FakeTicker:
+        def __init__(self, symbol: str) -> None:
+            assert symbol == "AAPL"
+
+        def get_earnings_estimate(self, *, as_dict: bool) -> dict[str, object]:
+            assert as_dict
+            return {"avg": {"0q": 2.1}, "numberOfAnalysts": {"0q": 40}}
+
+        def get_revenue_estimate(self, *, as_dict: bool) -> dict[str, object]:
+            assert as_dict
+            return {"avg": {"0q": 91846000000}, "numberOfAnalysts": {"0q": 42}}
+
+        def get_eps_trend(self, *, as_dict: bool) -> dict[str, object]:
+            assert as_dict
+            return {"current": {"0q": 2.1}, "30daysAgo": {"0q": 2.0}}
+
+        def get_eps_revisions(self, *, as_dict: bool) -> dict[str, object]:
+            assert as_dict
+            return {"upLast30days": {"0q": 12}, "downLast30days": {"0q": 1}}
+
+    module.Ticker = FakeTicker  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "yfinance", module)
+    result = YFinanceSellSideConsensusClient().call(
+        _request("yfinance.sell_side_consensus", {"symbol": "AAPL"})
+    )
+
+    assert result.status is ResultStatus.SUCCEEDED
+    assert result.output["periods"] == [
+        {
+            "period_code": "0q",
+            "earnings_estimate": {"avg": 2.1, "numberOfAnalysts": 40},
+            "revenue_estimate": {"avg": 91846000000, "numberOfAnalysts": 42},
+            "eps_trend": {"current": 2.1, "30daysAgo": 2},
+            "eps_revisions": {"upLast30days": 12, "downLast30days": 1},
+        }
+    ]
+    assert result.output["unofficial_source"] is True
+    assert "must not be labeled SEC GAAP" in result.output["accounting_basis"]
 
 
 def test_fomc_calendar_parser_marks_official_html_source() -> None:

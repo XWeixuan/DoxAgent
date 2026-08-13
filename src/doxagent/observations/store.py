@@ -18,7 +18,11 @@ _ALIAS = re.compile(r"^O[1-9]\d*$")
 
 
 class AttemptObservationStore:
-    """Private SQLite source of truth plus cleaned workspace mirror files."""
+    """Private store keyed by canonical node attempt id.
+
+    ``attempt_id`` is the legacy persistence field name and is required to be
+    byte-for-byte identical to the Data MCP ``node_attempt_id``.
+    """
 
     def __init__(
         self,
@@ -31,6 +35,7 @@ class AttemptObservationStore:
         self._validate_identifier(run_id, "run_id")
         self._validate_identifier(attempt_id, "attempt_id")
         self.run_id = run_id
+        self.node_attempt_id = attempt_id
         self.attempt_id = attempt_id
         self.control_root = Path(control_root).resolve()
         self.mirror_root = Path(mirror_root).resolve()

@@ -371,6 +371,7 @@ def default_agent_definitions() -> list[AgentDefinition]:
                     "alpha.financial_statements",
                     "alpha.shares_outstanding",
                     "alpha.earnings_events",
+                    "yfinance.sell_side_consensus",
                     "fmp.sell_side_estimates",
                     "fmp.valuation_snapshot",
                     "twelvedata.sell_side_estimates",

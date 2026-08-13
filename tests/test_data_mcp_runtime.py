@@ -23,11 +23,13 @@ from doxagent.data_runtime.contracts import (
     build_data_tool_contracts,
 )
 from doxagent.data_runtime.execution import DataExecutionCore, _availability
+from doxagent.data_runtime.guidance import DataToolGuide
 from doxagent.data_runtime.policy import DataCapabilityCodec, DataToolPolicyRegistry
 from doxagent.mcp.source_capture_server import ObservationSourceRepository
 from doxagent.models import ResultStatus
 from doxagent.observations.kernel import ObservationKernel
 from doxagent.observations.models import PersistedObservation
+from doxagent.observations.pack import _publish_directory
 from doxagent.observations.profiles import apply_output_profile
 from doxagent.observations.promotion import CitationPromotionService
 from doxagent.observations.store import AttemptObservationStore
@@ -108,6 +110,33 @@ def test_contracts_cover_registry_and_exclude_known_unavailable_tools() -> None:
         (CodexD1Node.O4_A, CodexAgentRole.O4),
     ):
         assert policy.allowed_tools(node, role).issubset(registry.names())
+
+
+def test_c1_guide_is_category_strict_sec_first_and_exposes_sell_side_gap() -> None:
+    registry = default_real_tool_registry(DoxAgentSettings(IBKR_TWS_ENABLED=False))
+    contracts = build_data_tool_contracts(registry)
+    allowed = DataToolPolicyRegistry().allowed_tools(CodexD1Node.C1, CodexAgentRole.C1)
+    guide = DataToolGuide(contracts)
+
+    financials = guide.recommend(
+        task="current NVDA financial actuals",
+        effective_tool_ids=allowed,
+        business_category="company_financials",
+    )
+    consensus = guide.recommend(
+        task="current NVDA revenue and EPS consensus",
+        effective_tool_ids=allowed,
+        business_category="sell_side_consensus",
+    )
+
+    assert financials["candidates"][0]["canonical_tool_id"] == "sec.company_financials"
+    assert [item["canonical_tool_id"] for item in consensus["candidates"]] == [
+        "yfinance.sell_side_consensus",
+        "alpha.earnings_events",
+    ]
+    assert {
+        item["canonical_tool_id"] for item in consensus["unavailable_gaps"]
+    } >= {"twelvedata.sell_side_estimates", "fmp.sell_side_estimates"}
 
 
 def test_ibkr_contracts_are_exposed_only_when_local_tws_is_enabled() -> None:
@@ -196,6 +225,24 @@ def test_attempt_capability_is_signed_scoped_and_tamper_evident() -> None:
     )
     with pytest.raises(CapabilityDenied):
         DataCapabilityCodec.verify(mismatched, public_key=codec.public_key)
+
+
+def test_c1_effective_tools_hide_hk_only_snapshot_for_us_ticker() -> None:
+    codec = DataCapabilityCodec("m" * 40)
+    policy = DataToolPolicyRegistry()
+    allowed = policy.allowed_tools(CodexD1Node.C1, CodexAgentRole.C1)
+    token = codec.issue(
+        run_id="run-market-filter",
+        node_id=CodexD1Node.C1,
+        node_attempt_id="c1-1",
+        agent_role=CodexAgentRole.C1,
+        ticker="NVDA",
+        cutoff_at=datetime(2026, 8, 12, tzinfo=UTC),
+        enabled_tool_ids=allowed,
+    )
+    claims = DataCapabilityCodec.verify(token, public_key=codec.public_key)
+
+    assert "yfinance.hk_basic_snapshot" not in policy.effective_tools(claims)
 
 
 def test_store_allocates_unique_attempt_local_aliases_concurrently(tmp_path: Path) -> None:
@@ -305,6 +352,53 @@ def test_execution_injects_scope_and_returns_clean_inline_observations(tmp_path:
     assert all(item.title != "/source_coordinates" for item in result.delivery.observations)
 
 
+def test_observation_utf8_roundtrip_and_mojibake_marker(tmp_path: Path) -> None:
+    run_root, store = _store(tmp_path)
+    kernel = ObservationKernel(store=store, run_root=run_root)
+    contract = DataToolContract(
+        canonical_tool_id="test.utf8",
+        mcp_name="test_utf8",
+        source_name="Test provider",
+        business_categories=["company_financials"],
+        description="UTF-8 test.",
+        business_purpose="UTF-8 roundtrip.",
+        use_when=["testing"],
+        avoid_when=["never"],
+        input_schema={"type": "object", "properties": {}, "additionalProperties": False},
+        output_profile="json",
+        observation_adapter="json",
+    )
+    kernel.ingest_tool_result(
+        tool_call_id="call-clean",
+        contract=contract,
+        input_payload={},
+        result=ToolResult(
+            tool_name="test.utf8",
+            status=ResultStatus.SUCCEEDED,
+            output={"text": "管理层称：需求仍然强劲—但供应受限。"},
+        ),
+        availability=DataAvailability.AVAILABLE,
+    )
+    kernel.ingest_tool_result(
+        tool_call_id="call-bad",
+        contract=contract,
+        input_payload={},
+        result=ToolResult(
+            tool_name="test.utf8",
+            status=ResultStatus.SUCCEEDED,
+            output={"text": "broken \ufffd text"},
+        ),
+        availability=DataAvailability.AVAILABLE,
+    )
+
+    clean = store.read_alias("O1")
+    bad = store.read_alias("O2")
+    assert clean is not None and clean.content == "管理层称：需求仍然强劲—但供应受限。"
+    assert clean.metadata["text_encoding"] == "utf-8"
+    assert clean.metadata["mojibake_suspected"] is False
+    assert bad is not None and bad.metadata["mojibake_suspected"] is True
+
+
 def test_large_results_materialize_bounded_observation_pack(tmp_path: Path) -> None:
     run_root, store = _store(tmp_path)
     kernel = ObservationKernel(
@@ -352,6 +446,35 @@ def test_large_results_materialize_bounded_observation_pack(tmp_path: Path) -> N
     assert kernel.read_observation("O999") is None
 
 
+def test_pack_publish_retries_bounded_windows_access_denied(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    staging = tmp_path / "staging"
+    target = tmp_path / "target"
+    staging.mkdir()
+    real_rename = os.rename
+    attempts = 0
+
+    def flaky_rename(source: Path, destination: Path) -> None:
+        nonlocal attempts
+        attempts += 1
+        if attempts < 3:
+            error = PermissionError(13, "access denied")
+            error.winerror = 5  # type: ignore[attr-defined]
+            raise error
+        real_rename(source, destination)
+
+    monkeypatch.setattr("doxagent.observations.pack.os.name", "nt")
+    monkeypatch.setattr("doxagent.observations.pack.os.rename", flaky_rename)
+    monkeypatch.setattr("doxagent.observations.pack.time.sleep", lambda _seconds: None)
+
+    _publish_directory(staging, target)
+
+    assert attempts == 3
+    assert target.is_dir()
+
+
 def test_promotion_is_cited_only_and_keeps_attempt_local_o_numbers(tmp_path: Path) -> None:
     repository = InMemoryCodexRuntimeRepository()
     promotion = CitationPromotionService(repository)
@@ -394,6 +517,15 @@ async def test_stdio_server_lists_only_authorized_tools_and_calls_guide(tmp_path
     run_root = tmp_path / "run-stdio"
     run_root.mkdir()
     control_root = tmp_path / ".control" / "run-stdio" / "o4-1"
+    store = AttemptObservationStore(
+        control_root=control_root,
+        mirror_root=run_root / "attempts" / "o4-1" / "audit" / "observations",
+        run_id="run-stdio",
+        attempt_id="o4-1",
+    )
+    observation = _observation(1, run_id="run-stdio", attempt_id="o4-1")
+    observation.content = {"index": 1, "value": "project-me"}
+    store.save_observation(observation)
     codec = DataCapabilityCodec("s" * 40)
     policy = DataToolPolicyRegistry()
     allowed = policy.allowed_tools(CodexD1Node.O4_A, CodexAgentRole.O4)
@@ -424,6 +556,8 @@ async def test_stdio_server_lists_only_authorized_tools_and_calls_guide(tmp_path
             listed = await session.list_tools()
             names = {item.name for item in listed.tools}
             assert "data_tool_guide" in names
+            assert "data_validate_citations" in names
+            assert "data_read_observation" in names
             assert "market_daily_ohlcv" in names
             assert "market_quote_snapshot" in names
             assert "market_trade_tape" in names
@@ -436,3 +570,15 @@ async def test_stdio_server_lists_only_authorized_tools_and_calls_guide(tmp_path
             )
             assert result.is_error is False
             assert result.structured_content["candidates"]
+            projected = await session.call_tool(
+                "data_read_observation",
+                arguments={"alias": "O1", "keys": ["value"]},
+            )
+            assert projected.structured_content["content"] == {"value": "project-me"}
+            citation = await session.call_tool(
+                "data_validate_citations",
+                arguments={"text": "可验证事实【cite:O1】；缺失事实【cite:O9】。"},
+            )
+            assert citation.structured_content["resolved_aliases"] == ["O1"]
+            assert citation.structured_content["unresolved_aliases"] == ["O9"]
+            assert citation.structured_content["valid"] is False

@@ -63,6 +63,8 @@ BLS_GROUPS: dict[str, dict[str, str]] = {
     "industry_producer_prices": {
         "final_demand_ppi": "WPUFD4",
         "processed_goods_ppi": "WPUIP2311001",
+        "semiconductor_manufacturing_ppi": "PCU334413334413",
+        "electronic_computer_manufacturing_ppi": "PCU334111334111",
     },
     "import_export_prices": {"import_all_commodities": "EIUIR", "export_all_commodities": "EIUXX"},
 }
@@ -79,6 +81,12 @@ EIA_GROUPS: dict[str, dict[str, tuple[str, str, str, dict[str, str]]]] = {
             "weekly",
             {"facets[series][]": "EMM_EPM0_PTE_NUS_DPG"},
         ),
+        "industrial_electricity_price": (
+            "electricity/retail-sales",
+            "price",
+            "monthly",
+            {"facets[sectorid][]": "IND", "facets[stateid][]": "US"},
+        ),
     },
     "energy_supply_operations": {
         "us_crude_oil_inventory": (
@@ -86,6 +94,12 @@ EIA_GROUPS: dict[str, dict[str, tuple[str, str, str, dict[str, str]]]] = {
             "value",
             "weekly",
             {"facets[series][]": "WCESTUS1"},
+        ),
+        "industrial_electricity_sales": (
+            "electricity/retail-sales",
+            "sales",
+            "monthly",
+            {"facets[sectorid][]": "IND", "facets[stateid][]": "US"},
         ),
     },
 }
@@ -288,13 +302,13 @@ class _BlsSemanticClient(BaseRealToolClient):
                     details={"provider_messages": messages},
                 )
             projected_series = []
+            missing_series: list[JsonObject] = []
             metric_by_series = {series_id: key for key, series_id in registry.items()}
             for row in rows:
                 if not isinstance(row, dict):
                     continue
                 series_id = str(row.get("seriesID") or "")
-                projected_series.append(
-                    {
+                projected = {
                         "metric_key": metric_by_series.get(series_id),
                         "series_id": series_id,
                         "observations": [
@@ -307,14 +321,31 @@ class _BlsSemanticClient(BaseRealToolClient):
                             if isinstance(item, dict)
                         ],
                     }
-                )
-            return self._success(
-                request,
-                output={
-                    "provider": "bls",
-                    "semantic_group": self.group,
-                    "series": projected_series,
-                },
+                projected_series.append(projected)
+                if not projected["observations"]:
+                    missing_series.append(
+                        {
+                            "metric_key": projected["metric_key"],
+                            "series_id": series_id,
+                            "code": "empty_result",
+                        }
+                    )
+            output = {
+                "provider": "bls",
+                "semantic_group": self.group,
+                "series": projected_series,
+                "series_status": [
+                    {
+                        "metric_key": item["metric_key"],
+                        "series_id": item["series_id"],
+                        "status": "empty" if not item["observations"] else "available",
+                        "observation_count": len(item["observations"]),
+                    }
+                    for item in projected_series
+                ],
+            }
+            kwargs = dict(
+                output=output,
                 raw=raw,
                 source_kind="external_report",
                 source_id=f"bls:{self.group}",
@@ -327,6 +358,18 @@ class _BlsSemanticClient(BaseRealToolClient):
                     "metric_keys": keys,
                     "series_ids": [registry[key] for key in keys],
                 },
+            )
+            if missing_series:
+                return self._partial(
+                    request,
+                    code="bls_partial_series_empty",
+                    message="One or more requested BLS series contained no observations.",
+                    details={"missing_series": missing_series},
+                    **kwargs,
+                )
+            return self._success(
+                request,
+                **kwargs,
             )
         except Exception as exc:
             return self._handle_exception(request, exc)
@@ -350,13 +393,22 @@ class _BeaSemanticClient(BaseRealToolClient):
     def call(self, request: ToolRequest) -> ToolResult:
         try:
             api_key = _require(self.settings.bea_api_key, "BEA_API_KEY")
-            dataset = (
+            requested_dataset = (
                 "NIPA"
                 if self.scope == "national_accounts"
                 else _input_str(request, "dataset", "GDPByIndustry")
             )
-            if self.scope == "industry_accounts" and dataset not in BEA_DATASETS:
-                raise ValueError(f"Unsupported BEA dataset {dataset!r}.")
+            dataset = requested_dataset
+            if self.scope == "industry_accounts":
+                dataset = next(
+                    (item for item in BEA_DATASETS if item.lower() == requested_dataset.lower()),
+                    requested_dataset,
+                )
+                if dataset not in BEA_DATASETS:
+                    raise ValueError(
+                        f"Unsupported BEA dataset {requested_dataset!r}; use one of "
+                        f"{sorted(BEA_DATASETS)}."
+                    )
             year = _input_str(request, "year", str(datetime.now(UTC).year))
             params: dict[str, object] = {
                 "UserID": api_key,
@@ -403,11 +455,22 @@ class _BeaSemanticClient(BaseRealToolClient):
                     message="BEA returned no data rows.",
                     details={"request": public},
                 )
+            total_rows = len(rows)
+            row_limit = _bounded_int(request.input.get("limit", 100), 1, 1_000)
+            rows = rows[:row_limit]
             output = {
                 "provider": "bea",
                 "semantic_group": self.scope,
                 "dataset": dataset,
+                "requested_dataset": requested_dataset,
                 "rows": rows,
+                "row_count": len(rows),
+                "total_rows": total_rows,
+                "truncated": total_rows > len(rows),
+                "value_basis": (
+                    "Use each row's Unit/UnitOfMeasure and Description fields; BEA datasets may "
+                    "mix current dollars, chained dollars, indexes, quantities, or percentages."
+                ),
             }
             kwargs = dict(
                 raw=raw,
@@ -451,14 +514,19 @@ class CensusManufacturingOrdersClient(BaseRealToolClient):
             naics = _input_str(request, "naics", "")
             if not naics:
                 raise ValueError("naics is required for census.manufacturing_orders.")
-            category_code = _input_str(
-                request,
-                "category_code",
-                CENSUS_M3_CATEGORY_BY_NAICS.get(naics, ""),
+            resolved_naics = next(
+                (
+                    aggregate
+                    for aggregate in sorted(CENSUS_M3_CATEGORY_BY_NAICS, key=len, reverse=True)
+                    if naics.startswith(aggregate)
+                ),
+                "",
             )
+            category_code = CENSUS_M3_CATEGORY_BY_NAICS.get(resolved_naics, "")
             if not category_code:
                 raise ValueError(
-                    "Unsupported NAICS aggregate. Supply a governed M3 category_code explicitly."
+                    "Unsupported NAICS for the governed Census M3 aggregate registry; supported "
+                    f"prefixes are {sorted(CENSUS_M3_CATEGORY_BY_NAICS)}."
                 )
             raw_seasonality = request.input.get("seasonally_adjusted", "yes")
             if isinstance(raw_seasonality, bool):
@@ -522,16 +590,23 @@ class CensusManufacturingOrdersClient(BaseRealToolClient):
                 ),
                 reverse=True,
             )
-            return self._success(
-                request,
-                output={
+            output = {
                     "provider": "census_m3",
                     "measure": measure,
-                    "naics": naics,
+                    "requested_naics": naics,
+                    "resolved_naics_aggregate": resolved_naics,
                     "category_code": category_code,
+                    "aggregation_notice": (
+                        None
+                        if naics == resolved_naics
+                        else f"Census M3 has no {naics} series; values are for NAICS "
+                        f"{resolved_naics} aggregate."
+                    ),
                     "seasonally_adjusted": seasonally_adjusted,
                     "rows": projected_rows,
-                },
+                }
+            kwargs = dict(
+                output=output,
                 raw=raw,
                 source_kind="external_report",
                 source_id=f"census_m3:{measure}:{naics}",
@@ -541,12 +616,26 @@ class CensusManufacturingOrdersClient(BaseRealToolClient):
                 confidence=0.9,
                 metadata={
                     "measure": measure,
-                    "naics": naics,
+                    "requested_naics": naics,
+                    "resolved_naics_aggregate": resolved_naics,
                     "category_code": category_code,
                     "seasonally_adjusted": seasonally_adjusted,
                     "time": params["time"],
                 },
             )
+            if naics != resolved_naics:
+                return self._partial(
+                    request,
+                    code="census_m3_aggregate_fallback",
+                    message=output["aggregation_notice"],
+                    details={
+                        "requested_naics": naics,
+                        "resolved_naics_aggregate": resolved_naics,
+                        "category_code": category_code,
+                    },
+                    **kwargs,
+                )
+            return self._success(request, **kwargs)
         except Exception as exc:
             return self._handle_exception(request, exc)
 
@@ -613,10 +702,16 @@ class _EiaSemanticClient(BaseRealToolClient):
                                     field: row.get(field)
                                     for field in (
                                         "period",
+                                        data_field,
+                                        f"{data_field}-units",
                                         "value",
                                         "units",
                                         "series",
                                         "series-description",
+                                        "stateid",
+                                        "stateDescription",
+                                        "sectorid",
+                                        "sectorName",
                                     )
                                     if row.get(field) not in (None, "", [], {})
                                 }

@@ -9,16 +9,22 @@ import shutil
 import stat
 import tempfile
 import zipfile
+from copy import deepcopy
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path, PurePosixPath
+from typing import Literal
 
 from doxagent.codex_runtime.client import HttpCodexWorkerClient
 from doxagent.codex_runtime.schema import CodexD1Node, utc_now
 from doxagent.codex_worker.schema import WorkerJob
 from doxagent.data_runtime.contracts import build_data_tool_contracts
 from doxagent.data_runtime.policy import DataCapabilityCodec, DataToolPolicyRegistry
-from doxagent.mcp.data_server import GUIDE_TOOL_NAME, READ_TOOL_NAME
+from doxagent.mcp.data_server import (
+    GUIDE_TOOL_NAME,
+    READ_TOOL_NAME,
+    VALIDATE_CITATIONS_TOOL_NAME,
+)
 from doxagent.pilot.case_workspace import PilotCaseWorkspace
 from doxagent.pilot.templates import render_config, render_task
 from doxagent.settings import DoxAgentSettings
@@ -33,6 +39,7 @@ class PilotCaseRequest:
     node: CodexD1Node
     case_id: str
     capability_hours: int = 8
+    profile: Literal["functional", "quality"] = "functional"
 
 
 @dataclass(frozen=True)
@@ -75,6 +82,10 @@ class PilotCaseBuilder:
         _validate_identifier(request.case_id, "case_id")
         if not 1 <= request.capability_hours <= 24:
             raise ValueError("capability_hours must be between 1 and 24")
+        if request.profile == "quality" and request.node not in QUALITY_PILOT_NODES:
+            raise ValueError(
+                "the quality Pilot profile supports C1, C3, O4-A and the three C4 turns"
+            )
         case_root = self.cases_root / request.node.value / request.case_id
         if case_root.exists():
             raise FileExistsError(f"Pilot case already exists: {case_root}")
@@ -133,6 +144,9 @@ class PilotCaseBuilder:
         payload = context_outer.get("payload")
         if not isinstance(payload, dict):
             raise ValueError("source attempt context payload is invalid")
+        payload = deepcopy(payload)
+        if request.profile == "quality":
+            payload = _quality_payload(request.node, payload)
         horizontal_path = attempt_root / "input" / "horizontal.json"
         horizontal: dict[str, object] | None = None
         if horizontal_path.is_file():
@@ -166,7 +180,7 @@ class PilotCaseBuilder:
         policy = DataToolPolicyRegistry()
         canonical_tools = sorted(policy.allowed_tools(request.node, role))
         contracts = build_data_tool_contracts(default_real_tool_registry(self.settings))
-        enabled_tools = [GUIDE_TOOL_NAME, READ_TOOL_NAME]
+        enabled_tools = [GUIDE_TOOL_NAME, READ_TOOL_NAME, VALIDATE_CITATIONS_TOOL_NAME]
         enabled_tools.extend(
             contract.mcp_name
             for tool_id in canonical_tools
@@ -188,10 +202,14 @@ class PilotCaseBuilder:
         manifest = {
             "schema_version": "codex-d1-pilot-case-v1",
             "case_id": request.case_id,
+            "profile": request.profile,
             "source_run_id": request.source_run,
             "run_id": request.source_run,
             "node": request.node.value,
             "agent_role": role.value,
+            "node_attempt_id": attempt.attempt_id,
+            # Compatibility alias for storage/runtime DTOs that have not yet
+            # renamed their persistence field. Validators require equality.
             "attempt_id": attempt.attempt_id,
             "ticker": ticker,
             "cutoff_at": cutoff.isoformat(),
@@ -238,6 +256,7 @@ class PilotCaseBuilder:
                 node=request.node.value,
                 run_id=request.source_run,
                 attempt_id=attempt.attempt_id,
+                profile=request.profile,
             ),
             encoding="utf-8",
         )
@@ -322,6 +341,10 @@ def _clear_current_node_outputs(root: Path, node: CodexD1Node, attempt_id: str) 
     for path in (root / "artifacts").rglob("*") if (root / "artifacts").is_dir() else ():
         if path.is_file() and attempt_id in path.as_posix():
             path.unlink()
+    current_catalog = root / "context" / "data_tool_catalog" / f"{attempt_id}.md"
+    if current_catalog.is_file():
+        current_catalog.chmod(stat.S_IWRITE)
+        current_catalog.unlink()
 
 
 def _assert_control_store(root: Path, run_id: str, attempt_id: str) -> None:
@@ -373,6 +396,129 @@ def _parse_datetime(value: object) -> datetime | None:
         return None
 
 
+def _c1_quality_payload(payload: dict[str, object]) -> dict[str, object]:
+    payload["research_brief"] = (
+        "C1 research-quality Pilot. Produce a decision-useful, evidence-led company "
+        "fundamental report that fully follows the injected six-section fundamental-research "
+        "skill. Do not optimize for brevity and do not inherit functional-smoke coverage "
+        "limits. Use governed Data MCP evidence first; when the governed catalog is insufficient, "
+        "use native web research and persist every cited public source through Source Capture MCP. "
+        "Compare the latest principal reporting cycle with appropriate prior periods, separate "
+        "reported facts, management expectations, sell-side expectations and C1 inference, and "
+        "complete drivers, transmission chains, candidate fundamental-factor gaps and Unknowns."
+    )
+    base = payload.get("base_context")
+    quality_context = dict(base) if isinstance(base, dict) else {}
+    quality_context["smoke_mode"] = False
+    quality_context["quality_acceptance"] = True
+    quality_context.pop("horizontal_collection", None)
+    payload["base_context"] = quality_context
+    return payload
+
+
+QUALITY_PILOT_NODES = frozenset(
+    {
+        CodexD1Node.C1,
+        CodexD1Node.C3,
+        CodexD1Node.O4_A,
+        CodexD1Node.C4_PRE_SCAN,
+        CodexD1Node.C4_ENRICHMENT,
+        CodexD1Node.C4_FINALIZATION,
+    }
+)
+
+
+def _quality_payload(
+    node: CodexD1Node, payload: dict[str, object]
+) -> dict[str, object]:
+    if node is CodexD1Node.C1:
+        return _c1_quality_payload(payload)
+    briefs = {
+        CodexD1Node.C3: (
+            "C3 research-quality Pilot. Produce a decision-useful, evidence-led industry "
+            "and value-chain report that fully follows the injected six-section "
+            "industry-research skill. Do not optimize for brevity or inherit functional-"
+            "smoke coverage limits. Select the target's material external lines, test "
+            "actor words against actions and constraints, reconstruct allocation and "
+            "target transmission, and preserve milestone proof boundaries and Unknowns."
+        ),
+        CodexD1Node.O4_A: (
+            "O4-A research-quality Pilot. Produce the full six-section market-implied "
+            "expectations report under the market-implied-expectations skill. Do not "
+            "optimize for brevity or inherit functional-smoke coverage limits. Use the "
+            "frozen C1/C2/C3/O4-B inputs as dependencies rather than redoing them, and "
+            "separate observed pricing evidence, calculations, sell-side views, conditional "
+            "scenario consistency and identification limits."
+        ),
+        CodexD1Node.C4_PRE_SCAN: (
+            "C4 quality Pilot, pre-scan turn. Fully execute the entity-map refresh and "
+            "direct-future-node scan required by the injected skill. Quality means precise "
+            "entity identity, direct target linkage, reliable sources, normalized time and "
+            "valid five-field public artifacts; it does not mean producing a long report."
+        ),
+        CodexD1Node.C4_ENRICHMENT: (
+            "C4 quality Pilot, enrichment turn. Use the frozen pre-scan and C1/C3 research "
+            "only to narrow searches, then validate, update, add and deduplicate directly "
+            "observable future matters under the injected skill and five-field contract."
+        ),
+        CodexD1Node.C4_FINALIZATION: (
+            "C4 quality Pilot, finalization turn. Finalize the frozen enriched entity map "
+            "and future nodes without semantic expansion: preserve distinct milestones, "
+            "deduplicate only identical event identities, and emit only the governed "
+            "five-field public artifacts required by the injected skill."
+        ),
+    }
+    payload["research_brief"] = briefs[node]
+    base = payload.get("base_context")
+    quality_context = dict(base) if isinstance(base, dict) else {}
+    quality_context["smoke_mode"] = False
+    quality_context["quality_acceptance"] = True
+    quality_context.pop("horizontal_collection", None)
+    payload["base_context"] = quality_context
+    _sanitize_unverified_c4_pre_scan(payload)
+    return payload
+
+
+def _sanitize_unverified_c4_pre_scan(payload: dict[str, object]) -> None:
+    pre_scan = payload.get("c4_pre_scan")
+    if not isinstance(pre_scan, dict):
+        return
+    rendered = json.dumps(pre_scan, ensure_ascii=False, default=str).lower()
+    observations = pre_scan.get("observation_candidates")
+    has_observations = isinstance(observations, list) and bool(observations)
+    unverified_markers = (
+        "未进行外部研究",
+        "待补充经验证来源",
+        "来源及发布日期待后续补充",
+        "待后续研究确认",
+        "待补充（预扫描）",
+        "unverified",
+        "source pending",
+    )
+    mojibake_markers = ("\ufffd", "鈥?", "Ã¢", "â€™", "æœª", "å¾…")
+    if has_observations and not any(marker in rendered for marker in mojibake_markers):
+        return
+    if not any(marker.lower() in rendered for marker in unverified_markers + mojibake_markers):
+        return
+    payload["c4_pre_scan"] = {
+        "status": "unavailable",
+        "summary": None,
+        "report_markdown": "",
+        "warnings": [
+            "C4 pre-scan contained no source-backed observations or failed the UTF-8 "
+            "readability gate; placeholder relations and future nodes were removed."
+        ],
+        "observation_candidates": [],
+        "entity_relations": [],
+        "future_nodes": [],
+        "metadata": {
+            "availability": "unavailable",
+            "reason": "no_verified_source_backing_or_text_encoding_failure",
+            "text_encoding": "utf-8",
+        },
+    }
+
+
 def _probe_for_node(node: CodexD1Node, enabled: list[str]) -> tuple[str, dict[str, object]]:
     preferences = {
         CodexD1Node.C1: ("sec_issuer_filings", {"forms": ["10-K"], "limit": 1}),
@@ -381,6 +527,9 @@ def _probe_for_node(node: CodexD1Node, enabled: list[str]) -> tuple[str, dict[st
             {"series_ids": ["FEDFUNDS"], "limit": 2},
         ),
         CodexD1Node.C3: ("sec_issuer_filings", {"forms": ["10-K"], "limit": 1}),
+        CodexD1Node.C4_PRE_SCAN: ("sec_issuer_filings", {"forms": ["10-K"], "limit": 1}),
+        CodexD1Node.C4_ENRICHMENT: ("sec_issuer_filings", {"forms": ["10-K"], "limit": 1}),
+        CodexD1Node.C4_FINALIZATION: ("sec_issuer_filings", {"forms": ["10-K"], "limit": 1}),
         CodexD1Node.O4_B: ("market_quote_snapshot", {}),
         CodexD1Node.O4_A: ("market_quote_snapshot", {}),
     }

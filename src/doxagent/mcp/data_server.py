@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import json
 import os
+import re
 import tempfile
 from pathlib import Path
 from typing import Any
@@ -34,6 +36,8 @@ from doxagent.tools.factory import default_real_tool_registry
 
 GUIDE_TOOL_NAME = "data_tool_guide"
 READ_TOOL_NAME = "data_read_observation"
+VALIDATE_CITATIONS_TOOL_NAME = "data_validate_citations"
+_CITATION_ALIAS = re.compile(r"【cite:(O[1-9]\d*)】")
 
 
 class DataMcpApplication:
@@ -169,13 +173,38 @@ def build_server(application: DataMcpApplication) -> Server:
             types.Tool(
                 name=READ_TOOL_NAME,
                 description=(
-                    "Read one complete cleaned attempt-local O# block. Prefer native Observation "
-                    "Pack files for large results; use this as a bounded compatibility fallback."
+                    "Read or project one cleaned attempt-local O# block by JSON pointer, keys, "
+                    "item range, or character range."
                 ),
                 input_schema={
                     "type": "object",
-                    "properties": {"alias": {"type": "string", "pattern": "^O[1-9]\\d*$"}},
+                    "properties": {
+                        "alias": {"type": "string", "pattern": "^O[1-9]\\d*$"},
+                        "json_pointer": {"type": "string", "maxLength": 2_000},
+                        "keys": {
+                            "type": "array",
+                            "items": {"type": "string", "maxLength": 200},
+                            "maxItems": 50,
+                        },
+                        "offset": {"type": "integer", "minimum": 0},
+                        "max_items": {"type": "integer", "minimum": 1, "maximum": 200},
+                        "max_chars": {"type": "integer", "minimum": 1, "maximum": 16_000},
+                    },
                     "required": ["alias"],
+                    "additionalProperties": False,
+                },
+                annotations=_read_annotations(idempotent=True),
+            ),
+            types.Tool(
+                name=VALIDATE_CITATIONS_TOOL_NAME,
+                description=(
+                    "Validate 【cite:O#】 aliases against this attempt and return a deterministic "
+                    "UTF-8 SHA-256 without requiring shell or PowerShell helper scripts."
+                ),
+                input_schema={
+                    "type": "object",
+                    "properties": {"text": {"type": "string", "maxLength": 100_000}},
+                    "required": ["text"],
                     "additionalProperties": False,
                 },
                 annotations=_read_annotations(idempotent=True),
@@ -236,12 +265,22 @@ def build_server(application: DataMcpApplication) -> Server:
                     },
                     is_error=True,
                 )
+            try:
+                content, projection = _project_observation_content(
+                    observation.content, arguments
+                )
+            except (KeyError, IndexError, TypeError, ValueError) as exc:
+                return _call_result(
+                    {"error": {"code": "invalid_projection", "message": str(exc)[:500]}},
+                    is_error=True,
+                )
             return _call_result(
                 {
                     "alias": observation.alias,
                     "block_id": observation.block_id,
                     "title": observation.title,
-                    "content": observation.content,
+                    "content": content,
+                    "projection": projection,
                     "block_type": observation.block_type,
                     "source_locator": observation.source_locator,
                     "source_coordinates": observation.source_coordinates,
@@ -251,6 +290,28 @@ def build_server(application: DataMcpApplication) -> Server:
                         "tool_name": observation.tool_name,
                         "method_version": observation.method_version,
                     },
+                }
+            )
+        if params.name == VALIDATE_CITATIONS_TOOL_NAME:
+            value = arguments.get("text")
+            if not isinstance(value, str):
+                return _call_result(
+                    {"error": {"code": "invalid_tool_input", "message": "text is required"}},
+                    is_error=True,
+                )
+            aliases = list(dict.fromkeys(_CITATION_ALIAS.findall(value)))
+            resolved = [
+                alias
+                for alias in aliases
+                if application.observations.read_observation(alias) is not None
+            ]
+            return _call_result(
+                {
+                    "sha256_utf8": hashlib.sha256(value.encode("utf-8")).hexdigest(),
+                    "citation_count": len(aliases),
+                    "resolved_aliases": resolved,
+                    "unresolved_aliases": [alias for alias in aliases if alias not in resolved],
+                    "valid": len(resolved) == len(aliases),
                 }
             )
         contract = application.contracts.get_by_mcp_name(params.name)
@@ -332,6 +393,54 @@ def _required_env(name: str) -> str:
 
 def _optional_string(value: object) -> str | None:
     return value if isinstance(value, str) and value else None
+
+
+def _project_observation_content(
+    content: Any, arguments: dict[str, Any]
+) -> tuple[Any, dict[str, Any]]:
+    pointer = arguments.get("json_pointer") or ""
+    projected = content
+    if pointer:
+        if not isinstance(pointer, str) or not pointer.startswith("/"):
+            raise ValueError("json_pointer must be empty or begin with '/'")
+        for raw_token in pointer.split("/")[1:]:
+            token = raw_token.replace("~1", "/").replace("~0", "~")
+            if isinstance(projected, dict):
+                if token not in projected:
+                    raise KeyError(f"JSON pointer key not found: {token}")
+                projected = projected[token]
+            elif isinstance(projected, list):
+                try:
+                    projected = projected[int(token)]
+                except ValueError as exc:
+                    raise ValueError("JSON pointer list token must be an integer") from exc
+            else:
+                raise TypeError("JSON pointer traversed through a scalar value")
+    keys = arguments.get("keys")
+    if keys is not None:
+        if not isinstance(projected, dict) or not isinstance(keys, list):
+            raise TypeError("keys projection requires an object")
+        projected = {key: projected[key] for key in keys if key in projected}
+    offset = int(arguments.get("offset", 0))
+    max_items = int(arguments.get("max_items", 200))
+    max_chars = int(arguments.get("max_chars", 16_000))
+    total: int | None = None
+    if isinstance(projected, list):
+        total = len(projected)
+        projected = projected[offset : offset + max_items]
+    elif isinstance(projected, str):
+        total = len(projected)
+        projected = projected[offset : offset + max_chars]
+    elif offset:
+        raise TypeError("offset is supported only for arrays and strings")
+    return projected, {
+        "json_pointer": pointer,
+        "keys": keys or [],
+        "offset": offset,
+        "returned_items_or_chars": len(projected) if isinstance(projected, (list, str)) else None,
+        "total_items_or_chars": total,
+        "truncated": total is not None and offset + len(projected) < total,
+    }
 
 
 if __name__ == "__main__":

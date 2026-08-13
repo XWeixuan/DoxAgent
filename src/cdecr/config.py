@@ -66,7 +66,7 @@ class CDECRSettings(BaseSettings):
     model_m3: str = Field(default="deepseek-v4-flash", alias="CDECR_MODEL_M3")
     model_m4: str = Field(default="deepseek-v4-flash", alias="CDECR_MODEL_M4")
     relevance_filter_mode: Literal["off", "shadow", "enforce"] = Field(
-        default="shadow", alias="CDECR_RELEVANCE_FILTER_MODE"
+        default="enforce", alias="CDECR_RELEVANCE_FILTER_MODE"
     )
     relevance_target_profiles: dict[str, str] = Field(
         default_factory=dict,
@@ -170,6 +170,21 @@ class CDECRSettings(BaseSettings):
     )
     parent_resolution_max_existing_parents: int = Field(
         default=12, ge=0, le=24, alias="CDECR_PARENT_RESOLUTION_MAX_EXISTING_PARENTS"
+    )
+    parent_resolution_max_input_tokens: int = Field(
+        default=12000, ge=2000, le=64000, alias="CDECR_PARENT_RESOLUTION_MAX_INPUT_TOKENS"
+    )
+    parent_route_structured_quota: int = Field(
+        default=16, ge=4, le=96, alias="CDECR_PARENT_ROUTE_STRUCTURED_QUOTA"
+    )
+    parent_route_semantic_quota: int = Field(
+        default=24, ge=2, le=64, alias="CDECR_PARENT_ROUTE_SEMANTIC_QUOTA"
+    )
+    parent_route_total_k: int = Field(
+        default=32, ge=2, le=96, alias="CDECR_PARENT_ROUTE_TOTAL_K"
+    )
+    parent_context_soft_token_budget: int = Field(
+        default=6000, ge=1000, le=32000, alias="CDECR_PARENT_CONTEXT_SOFT_TOKEN_BUDGET"
     )
     item_repair_active_requests: int = Field(
         default=16, ge=1, le=64, alias="CDECR_ITEM_REPAIR_ACTIVE_REQUESTS"

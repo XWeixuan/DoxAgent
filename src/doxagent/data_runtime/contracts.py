@@ -234,7 +234,7 @@ _REQUIRED_FIELDS: dict[str, list[str]] = {
     "regulations.rulemaking_records": ["mode"],
     "sam.contract_opportunities": ["posted_from", "posted_to"],
     "tavily.extract": ["urls"],
-    "usaspending.award_detail": ["award_id"],
+    "usaspending.award_detail": [],
     "usaspending.award_search": ["filters"],
 }
 
@@ -291,9 +291,12 @@ _BOOLEAN_FIELDS = {
     "enabled",
     "force",
     "include_facts",
+    "include_exhibits",
+    "limit_per_form",
     "include_reasoning",
     "include_source_propositions",
     "outside_rth",
+    "include_earnings",
     "reuse_recent",
 }
 _OBJECT_FIELDS = {"filters", "params"}
@@ -386,6 +389,112 @@ def _build_input_schema(descriptor: ToolDescriptor) -> dict[str, Any]:
             {"required": ["document_number"]},
             {"required": ["params"]},
         ]
+    if descriptor.name == "census.manufacturing_orders":
+        schema["required"] = ["naics"]
+        properties["measure"] = {
+            "type": "string",
+            "enum": ["shipments", "inventories", "new_orders", "unfilled_orders"],
+        }
+    if descriptor.name == "bea.industry_accounts":
+        properties["dataset"] = {
+            "type": "string",
+            "enum": [
+                "GDPByIndustry",
+                "InputOutput",
+                "UnderlyingGDPByIndustry",
+                "FixedAssets",
+            ],
+        }
+    if descriptor.name == "usaspending.award_search":
+        properties["filters"] = {
+            "type": "object",
+            "properties": {
+                "award_type_codes": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "minItems": 1,
+                    "maxItems": 100,
+                },
+                "time_period": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "start_date": {"type": "string", "format": "date"},
+                            "end_date": {"type": "string", "format": "date"},
+                        },
+                        "required": ["start_date", "end_date"],
+                        "additionalProperties": False,
+                    },
+                    "minItems": 1,
+                    "maxItems": 20,
+                },
+                "recipient_search_text": {
+                    "type": "array",
+                    "items": {"type": "string", "maxLength": 300},
+                    "maxItems": 20,
+                },
+                "agencies": {"type": "array", "maxItems": 20},
+                "naics_codes": {"type": "object"},
+                "psc_codes": {"type": "object"},
+            },
+            "required": ["award_type_codes", "time_period"],
+            "additionalProperties": True,
+            "maxProperties": 40,
+        }
+    if descriptor.name == "usaspending.award_detail":
+        schema["anyOf"] = [
+            {"required": ["generated_internal_id"]},
+            {"required": ["award_id"]},
+        ]
+    if descriptor.name == "regulations.rulemaking_records":
+        properties["mode"] = {"type": "string", "enum": ["documents", "dockets"]}
+    if descriptor.name == "congress.legislative_actions":
+        properties["resource"] = {
+            "type": "string",
+            "enum": ["bill", "committee-report", "hearing"],
+        }
+    metric_enums = {
+        "bls.industry_producer_prices": [
+            "final_demand_ppi",
+            "processed_goods_ppi",
+            "semiconductor_manufacturing_ppi",
+            "electronic_computer_manufacturing_ppi",
+        ],
+        "bls.import_export_prices": [
+            "import_all_commodities",
+            "export_all_commodities",
+        ],
+        "eia.energy_prices": [
+            "retail_gasoline",
+            "industrial_electricity_price",
+        ],
+        "eia.energy_supply_operations": [
+            "us_crude_oil_inventory",
+            "industrial_electricity_sales",
+        ],
+    }
+    if descriptor.name in metric_enums:
+        properties["metric_keys"] = {
+            "type": "array",
+            "items": {"type": "string", "enum": metric_enums[descriptor.name]},
+            "minItems": 1,
+            "maxItems": 100,
+        }
+    dataset_enums = {
+        "openfda.approval_milestones": ["device/510k", "device/pma", "drug/drugsfda"],
+        "openfda.safety_actions": [
+            "device/enforcement",
+            "drug/enforcement",
+            "device/event",
+            "drug/event",
+        ],
+    }
+    if descriptor.name in dataset_enums:
+        properties["dataset"] = {
+            "type": "string",
+            "enum": dataset_enums[descriptor.name],
+        }
     return schema
 
 

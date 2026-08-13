@@ -21,7 +21,7 @@ from cdecr.single_document_contracts import (
     PreprocessedDocument,
 )
 
-RELEVANCE_PROMPT_VERSION = "relevance-filter-v1"
+RELEVANCE_PROMPT_VERSION = "relevance-filter-v2"
 _T = TypeVar("_T")
 
 
@@ -34,6 +34,7 @@ class RelevanceMode(StrEnum):
 class RelevanceEvent(StrictModel):
     id: str = Field(min_length=1)
     statement: str = Field(min_length=1)
+    exact_evidence: list[str] = Field(min_length=1)
 
 
 class RelevanceInput(StrictModel):
@@ -75,12 +76,17 @@ def target_profile_for_source(
     source: SourceMessage,
     profiles: Mapping[str, str],
 ) -> str | None:
-    """Resolve one configured target profile without guessing an issuer identity."""
+    """Resolve one configured profile or an unambiguous ticker-only target."""
 
     normalized = {str(key).strip().upper(): str(value).strip() for key, value in profiles.items()}
     matches = [normalized[ticker] for ticker in source.ticker_hints if ticker in normalized]
     unique = list(dict.fromkeys(value for value in matches if value))
-    return unique[0] if len(unique) == 1 else None
+    if len(unique) == 1:
+        return unique[0]
+    if unique:
+        return None
+    tickers = list(dict.fromkeys(ticker.strip().upper() for ticker in source.ticker_hints))
+    return tickers[0] if len(tickers) == 1 else None
 
 
 def dreamer_block_exposed_lengths(
@@ -195,7 +201,11 @@ def relevance_response_request(
     gate_input = RelevanceInput(
         target=target,
         events=[
-            RelevanceEvent(id=short_id, statement=candidate.statement)
+            RelevanceEvent(
+                id=short_id,
+                statement=candidate.statement,
+                exact_evidence=[item.text for item in candidate.evidence_locations],
+            )
             for short_id, candidate in zip(short_to_full, candidates, strict=True)
         ],
     )

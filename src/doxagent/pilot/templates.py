@@ -70,31 +70,106 @@ def render_config(
     return "\n".join(lines)
 
 
-def render_task(*, case_root: Path, node: str, run_id: str, attempt_id: str) -> str:
+def render_task(
+    *,
+    case_root: Path,
+    node: str,
+    run_id: str,
+    attempt_id: str,
+    profile: str = "functional",
+) -> str:
+    structured_c4 = node.startswith("c4_")
+    project_root_guard = f"""## 项目根硬检查
+
+开始任何预检或写入前，先确认当前 Codex 项目根和工作目录**恰好是**：
+`{case_root}`
+
+父目录（例如 `{case_root.parent}`）不合格，因为 Codex 不会加载本 case 的
+`.codex/config.toml`。如果当前根目录不完全一致，立即停止，不写问题日志，直接要求用户
+以该 case 目录重新打开一个可信项目并创建新任务。不要把这种启动错误诊断成 capability
+或 Data MCP 故障。
+"""
+    if profile == "quality":
+        quality_focus = {
+            "c1": "完整执行 attempt-local C1 fundamental-research skill",
+            "c3": "完整执行 attempt-local C3 industry-research skill",
+            "o4_a": "完整执行 attempt-local O4-A market-implied-expectations skill",
+            "c4_pre_scan": "完整执行 C4 前置实体地图与未来节点扫描合同",
+            "c4_enrichment": "完整执行 C4 研究后未来节点补充合同",
+            "c4_finalization": "完整执行 C4 去重与公开五字段终稿合同",
+        }.get(node, f"完整执行 attempt-local {node} skill")
+        objective = (
+            f"本次正式产物质量是唯一主目标。{quality_focus}，"
+            "不得沿用 functional smoke 的简短输出标准。\n\n"
+            "Pilot tester 记录是次要目标：只记录直接阻塞证据闭环或显著损害报告质量的 "
+            "blocker/major；不要为了审计而额外编写哈希、schema 或引用校验脚本，"
+            "不要让过程排查挤占正式研究。"
+        )
+    else:
+        objective = """本次任务有两个同等重要、但输出必须隔离的目标：
+
+1. 完成该节点真实研究任务，按生产文件合同生成正式节点报告。
+2. 作为 Pilot tester，持续发现并记录妨碍 workflow 成功、证据闭环或报告质量的问题。"""
+    if structured_c4:
+        execution_contract = """严格按 attempt-local 指令、task.json、required skill
+和 schema 工作：
+
+- 使用 Data MCP 获取受治理数据；只引用当前 attempt 真实存在的 `【cite:O#】`。
+- 不得编造 alias；EMPTY/FAILED/UNAVAILABLE 表示未知，不是零。
+- 区分直接事实、转述事实、C4 推断和 Unknowns；Pilot 元分析不得进入正式产物。
+- 只完成 context.json 指定的当前 C4 阶段，不越权代做其他 C4 Turn。
+- 实体关系与未来节点必须严格使用治理规定的五个公开字段；不得增加内部 ID、枚举、
+  可靠性、重要性、影响、Gap 或 priced-in 字段。
+- C4 没有 progressive Markdown 合同；不要创建或寻找 report_draft.md、progress.json
+  或 observation_candidates.json。
+- 将完整 NodeOutput JSON 写入 task.json 的 `structured_output_path`；该文件是唯一正式
+  C4 输出落点。最终回复中的 structured completion 必须与文件内容一致并通过 output schema。
+
+完成前检查 structured output、全部 citation、五字段边界和阶段边界，并确认未误改只读输入。"""
+    else:
+        execution_contract = """严格按 attempt-local 指令、task.json、required skills
+和 schema 工作：
+
+- 使用 Data MCP 获取受治理数据；只引用当前 attempt 真实存在的 `【cite:O#】`。
+- 不得编造 alias；EMPTY/FAILED/UNAVAILABLE 表示未知，不是零。
+- 区分事实、解释和不确定性；Pilot 元分析不得进入研究报告。
+- 按 required sections 顺序工作；每完成一节立即更新 report_draft.md 和 progress.json。
+- observation_candidates.json 与最终结构化输出保持一致。
+- 最终 report_markdown 与 report_draft.md 保持一致。
+
+完成前检查 required sections、progress、draft、candidates、全部 citation，并确认未误改只读输入。"""
     return f"""你现在执行一次 Document 1 v2 单节点 Pilot Test。
 
 当前工作目录：`{case_root}`
 测试节点：`{node}`
 Run ID：`{run_id}`
-Attempt ID：`{attempt_id}`
+Node Attempt ID：`{attempt_id}`（这是 capability、MCP 与 O# 命名空间的 canonical ID；
+持久化对象中的 legacy `attempt_id` 必须与其逐字相等）
 
-本次任务有两个同等重要、但输出必须隔离的目标：
+{objective}
 
-1. 完成该节点真实研究任务，按生产文件合同生成正式节点报告。
-2. 作为 Pilot tester，持续发现并记录妨碍 workflow 成功、证据闭环或报告质量的问题。
+{project_root_guard}
 
-Pilot 分析只能写入：
+Pilot Agent 的直接写入只能落到：
 `attempts/{attempt_id}/audit/pilot_issues.md`
 
 这是 attempt-local `AGENTS.md` 中“只写 task.json 指定输出”的唯一额外例外。
 
-## 不可修改
+## 不可修改与 MCP 管理路径
 
-不得修改、删除或覆盖 `.codex/`、`.control/`、`context/`、`artifacts/`、
+不得由 Agent 直接修改、删除或覆盖 `.codex/`、`.control/`、`context/`、`artifacts/`、
 `attempts/{attempt_id}/input/`、任何 prompt/skill/schema/bundle manifest 或上游产物。
 不要在 Pilot workspace 中修复发现的问题；只记录问题和建议修复方向。
 
-你只能写：
+Data MCP 与 Source Capture MCP 被明确授权仅写以下运行时管理投影；这些写入不属于
+Agent 文件写入，也不得由 Agent 手工创建或编辑：
+
+- `.control/{run_id}/{attempt_id}/observations.sqlite3*`
+- `context/data_tool_catalog/{attempt_id}.md`
+- `context/mcp_data/{attempt_id}/`
+- `attempts/{attempt_id}/audit/observations/`
+
+Agent 自己只能写：
 
 - `task.json` 指定的 output 文件
 - `attempts/{attempt_id}/audit/pilot_issues.md`
@@ -125,16 +200,7 @@ context 冲突或缺失、prompt/skill 冲突、schema 表达困难、progressiv
 
 ## 正式研究合同
 
-严格按 attempt-local 指令、task.json、required skills 和 schema 工作：
-
-- 使用 Data MCP 获取受治理数据；只引用当前 attempt 真实存在的 `【cite:O#】`。
-- 不得编造 alias；EMPTY/FAILED/UNAVAILABLE 表示未知，不是零。
-- 区分事实、解释和不确定性；Pilot 元分析不得进入研究报告。
-- 按 required sections 顺序工作；每完成一节立即更新 report_draft.md 和 progress.json。
-- observation_candidates.json 与最终结构化输出保持一致。
-- 最终 report_markdown 与 report_draft.md 保持一致。
-
-完成前检查 required sections、progress、draft、candidates、全部 citation，并确认未误改只读输入。
+{execution_contract}
 最后在问题日志追加：
 
 ## Final summary

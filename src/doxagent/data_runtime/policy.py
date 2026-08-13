@@ -102,7 +102,10 @@ class DataToolPolicyRegistry:
 
     def effective_tools(self, claims: DataCapabilityClaims) -> frozenset[str]:
         maximum = self.allowed_tools(claims.node_id, claims.agent_role)
-        return maximum.intersection(claims.enabled_tool_ids)
+        effective = maximum.intersection(claims.enabled_tool_ids)
+        if not claims.ticker.upper().endswith(".HK"):
+            effective = effective.difference({"yfinance.hk_basic_snapshot"})
+        return effective
 
 
 class DataCapabilityCodec:

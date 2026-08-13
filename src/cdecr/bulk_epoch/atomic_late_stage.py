@@ -76,6 +76,36 @@ def _event_sidecar(
     return combine_atomic_identity_sidecars(sidecars)
 
 
+def _merge_source_mentions_for_single_save(
+    *,
+    source: AtomicEvent,
+    target: AtomicEvent,
+    registry: CDECRRegistry,
+    known_mentions: list[EventMention],
+) -> AtomicEvent:
+    """Merge all source Mentions while advancing the persisted target only once.
+
+    ``add_mention_to_atomic`` increments the in-memory version for each Mention. A late-stage
+    source may contain two Mentions, while the registry persists the completed merge as one
+    atomic update and therefore requires exactly ``target.version + 1``.
+    """
+
+    merged = target
+    for mention_id in source.mention_ids:
+        mention = registry.get_mention(mention_id)
+        if mention is None:
+            continue
+        merged = add_mention_to_atomic(
+            merged,
+            mention,
+            known_mentions=known_mentions,
+            claim_conflict=False,
+            identity_differences=[],
+            incoming_profile=source.identity_profile,
+        )
+    return merged.model_copy(update={"version": target.version + 1})
+
+
 def run_atomic_late_convergence(
     *,
     engine: CrossDocumentEngine,
@@ -248,19 +278,12 @@ def run_atomic_late_convergence(
         )
         if invariant.result is AtomicMergeInvariantResult.LOCKED_OUT:
             continue
-        merged = target
-        for mention_id in source.mention_ids:
-            mention = registry.get_mention(mention_id)
-            if mention is None:
-                continue
-            merged = add_mention_to_atomic(
-                merged,
-                mention,
-                known_mentions=known_mentions,
-                claim_conflict=False,
-                identity_differences=[],
-                incoming_profile=source.identity_profile,
-            )
+        merged = _merge_source_mentions_for_single_save(
+            source=source,
+            target=target,
+            registry=registry,
+            known_mentions=known_mentions,
+        )
         registry.save_atomic_event(merged)
         registry.save_atomic_redirect(
             source_event_id=source_root,

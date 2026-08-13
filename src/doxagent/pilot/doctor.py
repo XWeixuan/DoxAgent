@@ -15,7 +15,10 @@ from typing import Any
 from mcp import ClientSession
 from mcp.client.stdio import StdioServerParameters, stdio_client
 
-from doxagent.data_runtime.pilot_case import validate_pilot_case_root
+from doxagent.data_runtime.pilot_case import (
+    canonical_node_attempt_id,
+    validate_pilot_case_root,
+)
 
 
 @dataclass(frozen=True)
@@ -29,7 +32,7 @@ async def run_doctor(case_root: str | Path) -> DoctorResult:
     root = Path(case_root).resolve()
     manifest = _load_json(root / "case_manifest.json")
     run_id = str(manifest["run_id"])
-    attempt_id = str(manifest["attempt_id"])
+    attempt_id = canonical_node_attempt_id(manifest)
     node = str(manifest["node"])
     validate_pilot_case_root(
         run_root=root,
@@ -112,7 +115,7 @@ async def run_doctor(case_root: str | Path) -> DoctorResult:
                     timeout=120,
                 )
                 checks["semantic_probe"] = {
-                    "passed": not probe_result.is_error,
+                    "passed": _semantic_tool_succeeded(probe_result),
                     "tool": probe["name"],
                     "summary": _tool_summary(probe_result),
                 }
@@ -166,6 +169,15 @@ def _tool_summary(result: Any) -> str:
         return _bounded(json.dumps(structured, ensure_ascii=False, default=str))
     content = getattr(result, "content", None)
     return _bounded(str(content))
+
+
+def _semantic_tool_succeeded(result: Any) -> bool:
+    if bool(getattr(result, "is_error", False)):
+        return False
+    structured = getattr(result, "structured_content", None)
+    if isinstance(structured, dict) and "execution_status" in structured:
+        return structured["execution_status"] == "succeeded"
+    return True
 
 
 def _bounded(value: str, limit: int = 1000) -> str:

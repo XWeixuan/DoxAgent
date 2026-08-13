@@ -5,7 +5,8 @@ from datetime import UTC, datetime
 
 from cdecr.contracts import Language, SourceMessage, SourceType
 from cdecr.ports import ResponsesModelRequest, StructuredModelRequest, StructuredModelResult
-from cdecr.preprocessing import preprocess_source
+from cdecr.preprocessing import exact_document_fingerprint, preprocess_source
+from cdecr.registry import SQLiteCDECRRegistry
 from cdecr.relevance_filter import (
     RelevanceMode,
     dreamer_block_exposed_lengths,
@@ -17,6 +18,7 @@ from cdecr.relevance_filter import (
 )
 from cdecr.single_document import SingleDocumentProcessor
 from cdecr.single_document_contracts import DreamCandidate, DreamerModelOutput
+from tests.cdecr.test_single_document import FakeEmbedding, FakeStructured
 
 
 def source() -> SourceMessage:
@@ -64,11 +66,17 @@ def candidates() -> list[DreamCandidate]:
 
 def test_target_profile_requires_one_configured_target() -> None:
     value = source()
-    assert target_profile_for_source(
-        value,
-        {"MU": "Micron Technology (MU); DRAM, NAND and HBM memory semiconductors"},
-    ) == "Micron Technology (MU); DRAM, NAND and HBM memory semiconductors"
-    assert target_profile_for_source(value, {}) is None
+    assert (
+        target_profile_for_source(
+            value,
+            {"MU": "Micron Technology (MU); DRAM, NAND and HBM memory semiconductors"},
+        )
+        == "Micron Technology (MU); DRAM, NAND and HBM memory semiconductors"
+    )
+    assert target_profile_for_source(value, {}) == "MU"
+
+    ambiguous = value.model_copy(update={"ticker_hints": ["MU", "AMD"]})
+    assert target_profile_for_source(ambiguous, {}) is None
 
 
 def test_dreamer_block_request_is_shared_and_exposes_exact_segments() -> None:
@@ -141,6 +149,19 @@ def test_production_and_frozen_requests_share_the_production_schema() -> None:
     assert live.previous_response_id == "resp-1"
     assert live.reasoning_effort == "low"
     assert mapping == {"c1": "candidate:1", "c2": "candidate:2"}
+    gate_payload = json.loads(live.input[-1]["content"])
+    assert gate_payload["events"] == [
+        {
+            "id": "c1",
+            "statement": "Micron raised guidance.",
+            "exact_evidence": ["Micron raised guidance"],
+        },
+        {
+            "id": "c2",
+            "statement": "A university published an admission list.",
+            "exact_evidence": ["A university published an admission list"],
+        },
+    ]
 
     dreamer_request = StructuredModelRequest(
         system_prompt="dreamer prompt",
@@ -163,6 +184,7 @@ def test_production_and_frozen_requests_share_the_production_schema() -> None:
         "user",
     ]
     assert frozen_mapping == mapping
+    assert json.loads(frozen.input[-1]["content"])["events"] == gate_payload["events"]
 
 
 class FakeRegistry:
@@ -207,9 +229,7 @@ def test_block_gate_enforces_valid_irrelevant_and_audits_cache() -> None:
         candidates=[
             {
                 "statement": "Micron raised guidance.",
-                "evidence_locations": [
-                    {"segment_id": "text:0", "text": "Micron raised guidance"}
-                ],
+                "evidence_locations": [{"segment_id": "text:0", "text": "Micron raised guidance"}],
             },
             {
                 "statement": "A university published an admission list.",
@@ -233,9 +253,7 @@ def test_block_gate_enforces_valid_irrelevant_and_audits_cache() -> None:
     )
     processor = object.__new__(SingleDocumentProcessor)
     processor.relevance_filter_mode = RelevanceMode.ENFORCE
-    processor.relevance_target_profiles = {
-        "MU": "Micron Technology (MU); DRAM, NAND and HBM memory semiconductors"
-    }
+    processor.relevance_target_profiles = {}
     processor.relevance_responses_client = responses
     processor.model_m2 = responses.model
     processor.registry = registry
@@ -254,6 +272,8 @@ def test_block_gate_enforces_valid_irrelevant_and_audits_cache() -> None:
     assert [item.statement for item in filtered.candidates] == ["Micron raised guidance."]
     assert responses.calls[0].previous_response_id == "resp-dreamer"
     assert responses.calls[0].reasoning_effort == "low"
+    gate_payload = json.loads(responses.calls[0].input[1]["content"])
+    assert gate_payload["target"] == "MU"
     assert registry.model_calls[0]["metadata"]["cached_input_tokens"] == 80  # type: ignore[index]
 
 
@@ -284,9 +304,7 @@ def test_block_gate_shadow_records_drop_without_filtering() -> None:
     )
     processor = object.__new__(SingleDocumentProcessor)
     processor.relevance_filter_mode = RelevanceMode.SHADOW
-    processor.relevance_target_profiles = {
-        "MU": "Micron Technology (MU); DRAM, NAND and HBM memory semiconductors"
-    }
+    processor.relevance_target_profiles = {}
     processor.relevance_responses_client = responses
     processor.model_m2 = responses.model
     processor.registry = registry
@@ -306,3 +324,70 @@ def test_block_gate_shadow_records_drop_without_filtering() -> None:
     audit = registry.audits[-1]
     assert audit.payload["after_count"] == 2  # type: ignore[attr-defined,index]
     assert audit.payload["simulated_dropped_count"] == 1  # type: ignore[attr-defined,index]
+
+
+def test_enforced_irrelevant_candidate_never_enters_grounder_or_mentions(tmp_path) -> None:
+    class TwoCandidateDreamer(FakeStructured):
+        def complete(self, request: StructuredModelRequest) -> StructuredModelResult:
+            if request.json_schema.get("title") != "DreamerModelOutput":
+                return super().complete(request)
+            self.calls.append(request)
+            return self._result(
+                {
+                    "candidates": [
+                        {
+                            "statement": "Micron raised guidance.",
+                            "evidence_locations": [
+                                {"segment_id": "text:0", "text": "Micron raised guidance"}
+                            ],
+                        },
+                        {
+                            "statement": "A university published an admission list.",
+                            "evidence_locations": [
+                                {
+                                    "segment_id": "text:0",
+                                    "text": "A university published an admission list",
+                                }
+                            ],
+                        },
+                    ]
+                }
+            )
+
+    value = source()
+    store = SQLiteCDECRRegistry(tmp_path / "relevance-integration.sqlite3")
+    store.initialize()
+    store.save_source(value, fingerprint=exact_document_fingerprint(value))
+    dreamer = TwoCandidateDreamer(model="deepseek-v4-flash")
+    grounder = FakeStructured(model="qwen3.7-plus")
+    judge = FakeStructured(model="qwen3.7-max")
+    gate = FakeResponses(
+        {
+            "results": [
+                {"id": "c1", "relevance": "RELEVANT"},
+                {"id": "c2", "relevance": "IRRELEVANT"},
+            ]
+        }
+    )
+    processor = SingleDocumentProcessor(
+        registry=store,
+        embedding_client=FakeEmbedding(),
+        m2_client=dreamer,
+        m3_client=grounder,
+        m4_client=judge,
+        relevance_responses_client=gate,
+        relevance_filter_mode="enforce",
+    )
+
+    result = processor.process(value.message_id)
+
+    grounder_payload = json.loads(grounder.calls[0].user_prompt)
+    assert [item["statement"] for item in grounder_payload["candidates"]] == [
+        "Micron raised guidance."
+    ]
+    assert len(result.mentions) == 1
+    assert result.mentions[0].canonical_proposition == "Micron raised guidance."
+    persisted = store.get_latest_dream_candidates_for_processing_key(
+        processor.processing_key(value)
+    )
+    assert [item.statement for item in persisted] == ["Micron raised guidance."]

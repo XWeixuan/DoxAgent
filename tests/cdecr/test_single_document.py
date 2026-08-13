@@ -603,6 +603,7 @@ def processor(
             m2_client=m2,
             m3_client=m3,
             m4_client=m4,
+            relevance_filter_mode="off",
         ),
         embedding,
         m2,

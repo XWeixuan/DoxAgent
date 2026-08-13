@@ -3675,10 +3675,17 @@ class SQLiteCDECRRegistry:
                     (proposal_id,),
                 ).fetchone()
                 if existing is not None:
+                    existing_payload = json.loads(str(existing["payload_json"]))
+                    incoming_payload = json.loads(payload_json)
+                    # proposal_ref is a request-local compact alias.  Identity and
+                    # immutable business content are carried by proposal_id and the
+                    # remaining payload, so repacking may legitimately renumber it.
+                    existing_payload.pop("proposal_ref", None)
+                    incoming_payload.pop("proposal_ref", None)
                     if (
                         str(existing["run_id"]) != run_id
                         or str(existing["document_ref"]) != document_ref
-                        or str(existing["payload_json"]) != payload_json
+                        or existing_payload != incoming_payload
                     ):
                         raise ImmutableRecordConflict(
                             f"parent proposal {proposal_id!r} is immutable"
@@ -3729,6 +3736,20 @@ class SQLiteCDECRRegistry:
             )
             connection.commit()
         return True
+
+    def get_parent_occurrence_partition_for_snapshot(
+        self, *, run_id: str, snapshot_hash: str
+    ) -> dict[str, Any] | None:
+        """Return the finalized immutable partition for one persistence scope/snapshot."""
+
+        with self._connection() as connection:
+            row = connection.execute(
+                "SELECT payload_json FROM parent_occurrence_partitions "
+                "WHERE run_id = ? AND snapshot_hash = ? AND status = 'FINALIZED' "
+                "ORDER BY created_at DESC LIMIT 1",
+                (run_id, snapshot_hash),
+            ).fetchone()
+        return json.loads(str(row["payload_json"])) if row is not None else None
 
     def save_parent_occurrence_checkpoints(
         self, *, run_id: str, records: Sequence[dict[str, Any]]

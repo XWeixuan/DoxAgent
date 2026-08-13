@@ -7,13 +7,19 @@ from typing import Any, cast
 
 import pytest
 
+from cdecr.bulk_epoch.atomic_late_stage import _merge_source_mentions_for_single_save
 from cdecr.bulk_epoch.embedding import EmbeddingBatchExecutor, EmbeddingWorkItem
+from cdecr.bulk_epoch.engine import _recover_atomic_late_state
 from cdecr.bulk_epoch.task_ledger import BulkTaskLedger
 from cdecr.bulk_epoch.writer import BulkWriter
 from cdecr.canonical_field_resolution import (
     CanonicalFieldResolutionEngine,
     FieldOccurrence,
 )
+from cdecr.contracts import AtomicAction
+from cdecr.coreference_rules import add_mention_to_atomic, singleton_atomic_event
+from cdecr.cross_document import _active_atomic_target
+from cdecr.cross_document_contracts import AtomicAssignmentRecord
 from cdecr.field_coreference_contracts import (
     FieldCoreferenceHints,
     FieldCoreferenceInput,
@@ -87,6 +93,141 @@ def test_batch_task_ledger_preserves_attempt_and_stage_times(tmp_path: Path) -> 
     assert [row["status"] for row in rows] == ["SUCCEEDED"] * 4
     assert rows[0]["attempt_count"] == 2
     assert [row["attempt_count"] for row in rows[1:]] == [1, 1, 1]
+
+
+def test_atomic_late_multi_mention_source_advances_target_version_once(tmp_path: Path) -> None:
+    value = registry(tmp_path / "atomic-late-version.sqlite3")
+    target_mention = metric_mention("TARGET", metric="REVENUE")
+    source_first = metric_mention("SOURCE-A", metric="REVENUE")
+    source_second = metric_mention("SOURCE-B", metric="REVENUE")
+    for message_id, mention in (
+        ("TARGET", target_mention),
+        ("SOURCE-A", source_first),
+        ("SOURCE-B", source_second),
+    ):
+        add(value, source(message_id), mention)
+    target = singleton_atomic_event(target_mention)
+    source_event = add_mention_to_atomic(
+        singleton_atomic_event(source_first),
+        source_second,
+        known_mentions=[source_first, source_second],
+        claim_conflict=False,
+        identity_differences=[],
+    )
+    value.save_atomic_event(target)
+
+    merged = _merge_source_mentions_for_single_save(
+        source=source_event,
+        target=target,
+        registry=value,
+        known_mentions=[target_mention, source_first, source_second],
+    )
+    value.save_atomic_event(merged)
+
+    assert merged.version == target.version + 1
+    assert merged.mention_ids == [
+        target_mention.mention_id,
+        source_first.mention_id,
+        source_second.mention_id,
+    ]
+    assert value.get_current_atomic_event(target.event_id) == merged
+
+
+def test_atomic_apply_resolves_redirect_before_using_touched_source(tmp_path: Path) -> None:
+    value = registry(tmp_path / "atomic-redirect-target.sqlite3")
+    source_mention = metric_mention("REDIRECT-SOURCE", metric="EPS")
+    target_mention = metric_mention("REDIRECT-TARGET", metric="EPS")
+    for message_id, mention in (
+        ("REDIRECT-SOURCE", source_mention),
+        ("REDIRECT-TARGET", target_mention),
+    ):
+        add(value, source(message_id), mention)
+    source_event = singleton_atomic_event(source_mention)
+    target_event = singleton_atomic_event(target_mention)
+    value.save_atomic_event(source_event)
+    value.save_atomic_event(target_event)
+    value.start_cross_document_run(
+        run_id="run",
+        processing_key="redirect-test",
+        message_id="REDIRECT-SOURCE",
+        engine_version="test",
+        prompt_version="test",
+        model_config={},
+    )
+    value.save_atomic_redirect(
+        source_event_id=source_event.event_id,
+        target_event_id=target_event.event_id,
+        run_id="run",
+        reason="N9_SAME_SINGLETON_ABSORPTION",
+    )
+
+    root_id, resolved = _active_atomic_target(
+        value, {source_event.event_id: source_event}, source_event.event_id
+    )
+
+    assert root_id == target_event.event_id
+    assert resolved == target_event
+
+
+def test_atomic_late_resume_recovers_persisted_assignments_without_replanning(
+    tmp_path: Path,
+) -> None:
+    value = registry(tmp_path / "atomic-late-resume.sqlite3")
+    first = metric_mention("RESUME-A", metric="REVENUE")
+    second = metric_mention("RESUME-B", metric="EPS")
+    for message_id, mention in (("RESUME-A", first), ("RESUME-B", second)):
+        add(value, source(message_id), mention)
+    value.start_cross_document_run(
+        run_id="original-run",
+        processing_key="original-processing-key",
+        message_id="RESUME-A",
+        engine_version="test",
+        prompt_version="test",
+        model_config={},
+    )
+    for mention in (first, second):
+        event = singleton_atomic_event(mention)
+        value.save_atomic_event(event)
+        value.save_atomic_assignment(
+            AtomicAssignmentRecord(
+                assignment_id=f"assignment-{mention.mention_id}",
+                run_id="original-run",
+                mention_id=mention.mention_id,
+                resulting_event_id=event.event_id,
+                action=AtomicAction.CREATE_NEW,
+                hard_conflicts=[],
+                identity_differences=[],
+                identity_processing_key="identity-key",
+                assignment_policy_version="atomic-assignment-policy-v5-late-convergence",
+                reason="N9_RELATED_CREATE_NEW",
+            )
+        )
+    target_event = singleton_atomic_event(first)
+    source_event = singleton_atomic_event(second)
+    value.save_atomic_event(
+        add_mention_to_atomic(
+            target_event,
+            second,
+            known_mentions=[first, second],
+            claim_conflict=False,
+            identity_differences=[],
+        )
+    )
+    value.save_atomic_redirect(
+        source_event_id=source_event.event_id,
+        target_event_id=target_event.event_id,
+        run_id="original-run",
+        reason="test-partial-late-merge",
+    )
+
+    events, assignments = _recover_atomic_late_state(value, [first, second])
+
+    assert [event.event_id for event in events] == [target_event.event_id]
+    assert set(events[0].mention_ids) == {first.mention_id, second.mention_id}
+    assert {assignment.mention_id for assignment in assignments} == {
+        first.mention_id,
+        second.mention_id,
+    }
 
 
 

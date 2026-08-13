@@ -734,7 +734,7 @@ class SingleDocumentProcessor:
         dreamer_responses_client: ResponsesModelClient | None = None,
         relevance_responses_client: ResponsesModelClient | None = None,
         relevance_filter_mode: RelevanceMode | Literal["off", "shadow", "enforce"] = (
-            RelevanceMode.SHADOW
+            RelevanceMode.ENFORCE
         ),
         relevance_target_profiles: Mapping[str, str] | None = None,
         model_m1: str = "qwen3.7-text-embedding",

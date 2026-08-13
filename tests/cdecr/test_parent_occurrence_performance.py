@@ -27,7 +27,7 @@ def test_snapshot_is_bounded_and_resolution_uses_shared_stage_waves(tmp_path) ->
         sources=sources,
         packages=[],
     )
-    assert snapshot.query_count == 0
+    assert snapshot.query_count == 1
     models = ScriptedParentModels()
     result = ParentOccurrenceService(registry=store).run(
         events=events,
@@ -40,7 +40,21 @@ def test_snapshot_is_bounded_and_resolution_uses_shared_stage_waves(tmp_path) ->
     assert result.status == "FINALIZED"
     assert result.telemetry["snapshot_query_count"] <= 8
     assert result.telemetry["pair_registry_read_count"] == 0
-    assert int(result.telemetry["resolution_wave_count"]) <= 3
+    assert int(result.telemetry["resolution_wave_count"]) == 2
+    assert int(result.telemetry["reconcile_wave_count"]) == 0
+    model_call_count = len(models.stages)
+    replay = ParentOccurrenceService(registry=store).run(
+        events=events,
+        mentions=mentions,
+        sources=sources,
+        existing_packages=[],
+        models=models,
+        run_id="run-ok",
+    )
+    assert replay.status == "FINALIZED"
+    assert replay.partition == result.partition
+    assert replay.telemetry["resumed_from_frozen_partition"] is True
+    assert len(models.stages) == model_call_count
 
 
 def test_parent_profile_embeddings_respect_provider_batch_limit(tmp_path) -> None:

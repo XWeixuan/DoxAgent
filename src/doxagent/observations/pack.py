@@ -7,6 +7,7 @@ import os
 import re
 import shutil
 import tempfile
+import time
 from pathlib import Path
 
 from doxagent.data_runtime.contracts import DataPackLocator
@@ -88,6 +89,9 @@ class ObservationPackWriter:
                 json.dumps(
                     {
                         "schema_version": "observation_pack/1.0",
+                        "text_encoding": "utf-8",
+                        "node_attempt_id": attempt_id,
+                        # Legacy persistence alias; required to equal node_attempt_id.
                         "attempt_id": attempt_id,
                         "tool_call_id": tool_call_id,
                         "tool_name": tool_name,
@@ -99,7 +103,7 @@ class ObservationPackWriter:
                 ),
                 encoding="utf-8",
             )
-            os.rename(staging, target)
+            _publish_directory(staging, target)
             _make_read_only(target)
         finally:
             if staging.exists():
@@ -131,6 +135,19 @@ def _render_content(content: object) -> str:
     if isinstance(content, str):
         return content
     return "```json\n" + json.dumps(content, ensure_ascii=False, indent=2) + "\n```"
+
+
+def _publish_directory(staging: Path, target: Path) -> None:
+    """Atomically publish a pack with a bounded Windows scanner-contention retry."""
+
+    for attempt in range(4):
+        try:
+            os.rename(staging, target)
+            return
+        except PermissionError as exc:
+            if os.name != "nt" or getattr(exc, "winerror", None) != 5 or attempt == 3:
+                raise
+            time.sleep(0.05 * (attempt + 1))
 
 
 def render_observation_block(observation: PersistedObservation) -> tuple[str, str]:
