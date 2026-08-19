@@ -21,7 +21,7 @@ from cdecr.single_document_contracts import (
     PreprocessedDocument,
 )
 
-RELEVANCE_PROMPT_VERSION = "relevance-filter-v2"
+RELEVANCE_PROMPT_VERSION = "relevance-filter-v3-ticker"
 _T = TypeVar("_T")
 
 
@@ -89,6 +89,15 @@ def target_profile_for_source(
     return tickers[0] if len(tickers) == 1 else None
 
 
+def ticker_target_instruction(target: str) -> str:
+    """Keep the relevance target explicit without injecting a business profile."""
+
+    return (
+        f"The target is the U.S.-listed company identified by stock ticker {target}; "
+        "judge relevance to that company or security."
+    )
+
+
 def dreamer_block_exposed_lengths(
     document: PreprocessedDocument,
     block: DocumentBlock,
@@ -121,6 +130,7 @@ def dreamer_block_request(
     block: DocumentBlock,
     system_prompt: str,
     zero_recovery: bool = False,
+    strict: bool = False,
 ) -> StructuredModelRequest:
     """Build the production Dreamer request for one document block."""
 
@@ -144,6 +154,9 @@ def dreamer_block_request(
         ),
         user_prompt=json.dumps(user_payload, ensure_ascii=False),
         json_schema=DreamerModelOutput.model_json_schema(),
+        output_mode="json_schema" if strict else "json_object",
+        schema_name="cdecr_dreamer_output",
+        strict=strict,
     )
 
 
@@ -151,6 +164,7 @@ def dreamer_response_request(
     request: StructuredModelRequest,
     *,
     reasoning_effort: Literal["none", "low", "high", "max"] = "none",
+    strict: bool = False,
 ) -> ResponsesModelRequest:
     """Compile a normal typed Dreamer request onto the Responses transport."""
 
@@ -160,7 +174,9 @@ def dreamer_response_request(
             {"role": "user", "content": request.user_prompt},
         ],
         json_schema=request.json_schema,
-        output_mode=request.output_mode,
+        output_mode="json_schema" if strict else "json_object",
+        schema_name="cdecr_dreamer_output",
+        strict=strict,
         reasoning_effort=reasoning_effort,
         session_cache=True,
         metadata=request.metadata,
@@ -180,6 +196,8 @@ def responses_request_from_structured(
         ],
         json_schema=request.json_schema,
         output_mode=request.output_mode,
+        schema_name=request.schema_name,
+        strict=request.strict,
         previous_response_id=previous_response_id,
         reasoning_effort=reasoning_effort,
         session_cache=True,
@@ -191,8 +209,8 @@ def relevance_response_request(
     *,
     target: str,
     candidates: Sequence[DreamCandidate],
-    previous_response_id: str,
     system_prompt: str,
+    strict: bool = False,
 ) -> tuple[ResponsesModelRequest, dict[str, str]]:
     short_to_full = {
         f"c{index}": candidate.candidate_id
@@ -218,9 +236,12 @@ def relevance_response_request(
             },
         ],
         json_schema=RelevanceOutput.model_json_schema(),
-        previous_response_id=previous_response_id,
-        reasoning_effort="low",
-        session_cache=True,
+        output_mode="json_schema" if strict else "json_object",
+        schema_name="cdecr_relevance_output",
+        strict=strict,
+        previous_response_id=None,
+        reasoning_effort="none",
+        session_cache=False,
         metadata={"candidate_count": len(candidates)},
     )
     return request, short_to_full
@@ -239,31 +260,27 @@ def frozen_relevance_response_request(
     request, short_to_full = relevance_response_request(
         target=target,
         candidates=candidates,
-        previous_response_id="frozen-placeholder",
         system_prompt=relevance_system_prompt,
     )
-    gate_user = request.input[-1]
-    return (
-        request.model_copy(
-            update={
-                "previous_response_id": None,
-                "session_cache": False,
-                "input": [
-                    {"role": "system", "content": dreamer_request.system_prompt},
-                    {"role": "user", "content": dreamer_request.user_prompt},
-                    {
-                        "role": "assistant",
-                        "content": json.dumps(
-                            frozen_output.model_dump(mode="json"), ensure_ascii=False
-                        ),
-                    },
-                    {"role": "system", "content": relevance_system_prompt},
-                    gate_user,
-                ],
-            }
-        ),
-        short_to_full,
-    )
+    # Relevance is deliberately independent from Dreamer transport/session
+    # state.  Frozen evaluation and production therefore share exactly the
+    # same two-message request.
+    del dreamer_request, frozen_output
+    return request, short_to_full
+
+
+def validate_relevance_coverage(
+    payload: object,
+    *,
+    expected_short_ids: set[str],
+) -> RelevanceOutput:
+    """Require every input candidate exactly once before any item can be dropped."""
+
+    output = RelevanceOutput.model_validate(payload)
+    actual = [item.id for item in output.results]
+    if len(actual) != len(set(actual)) or set(actual) != expected_short_ids:
+        raise ValueError("relevance results must cover every candidate id exactly once")
+    return output
 
 
 def select_candidates_fail_open(

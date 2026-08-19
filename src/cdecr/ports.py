@@ -89,7 +89,12 @@ class StructuredModelRequest(StrictModel):
     system_prompt: str
     user_prompt: str
     json_schema: dict[str, object]
-    output_mode: Literal["json_object"] = "json_object"
+    output_mode: Literal["json_object", "json_schema"] = "json_object"
+    schema_name: str = "cdecr_response"
+    strict: bool = False
+    reasoning_effort: Literal["none", "low", "high", "max"] = "none"
+    previous_response_id: str | None = None
+    session_cache: bool = True
     metadata: dict[str, object] = Field(default_factory=dict)
 
     @field_validator("user_prompt")
@@ -108,7 +113,9 @@ class ResponsesModelRequest(StrictModel):
 
     input: list[dict[str, Any]] = Field(min_length=1)
     json_schema: dict[str, object]
-    output_mode: Literal["json_object"] = "json_object"
+    output_mode: Literal["json_object", "json_schema"] = "json_object"
+    schema_name: str = "cdecr_response"
+    strict: bool = False
     previous_response_id: str | None = None
     reasoning_effort: Literal["none", "low", "high", "max"] = "none"
     session_cache: bool = True
@@ -130,6 +137,16 @@ class StructuredModelResult(StrictModel):
     latency_ms: int = Field(ge=0)
     request_id: str | None = None
     response_id: str | None = None
+    transport: Literal[
+        "chat_json_object",
+        "chat_json_schema",
+        "responses_json_object",
+        "responses_json_schema",
+    ] | None = None
+    output_mode: Literal["json_object", "json_schema"] | None = None
+    effective_reasoning_effort: Literal["none", "low", "high", "max"] | None = None
+    provider_key_fingerprint: str | None = None
+    parse_diagnostics: dict[str, object] = Field(default_factory=dict)
 
     @field_validator("payload", mode="before")
     @classmethod
@@ -251,6 +268,76 @@ class CDECRRegistry(Protocol):
     def save_parent_occurrence_proposals(
         self, *, run_id: str, records: Sequence[dict[str, Any]]
     ) -> dict[str, int]: ...
+
+    def list_parent_occurrence_proposals(
+        self, *, run_id: str | None = None
+    ) -> list[dict[str, Any]]: ...
+
+    def upsert_package_parent_occurrences_v3(
+        self, *, registry_scope_id: str, records: Sequence[dict[str, Any]]
+    ) -> list[dict[str, Any]]: ...
+
+    def list_package_parent_occurrences_v3(
+        self, *, registry_scope_id: str
+    ) -> list[dict[str, Any]]: ...
+
+    def get_package_registry_v3(
+        self, *, registry_scope_id: str
+    ) -> dict[str, Any] | None: ...
+
+    def allocate_package_mcp_ids_v3(
+        self, *, registry_scope_id: str, count: int
+    ) -> list[str]: ...
+
+    def get_package_registry_batch_v3(
+        self, *, registry_scope_id: str, batch_id: str
+    ) -> dict[str, Any] | None: ...
+
+    def save_package_registry_batch_v3(
+        self,
+        *,
+        registry_scope_id: str,
+        batch_id: str,
+        base_registry_version: int,
+        input_hash: str,
+        status: str,
+        response_a_payload: dict[str, Any] | None = None,
+        staged_changes: dict[str, Any] | None = None,
+        affected_mcp_ids: Sequence[str] = (),
+        error_code: str | None = None,
+    ) -> None: ...
+
+    def save_package_registry_description_task_v3(
+        self,
+        *,
+        registry_scope_id: str,
+        batch_id: str,
+        mcp_id: str,
+        input_hash: str,
+        status: str,
+        payload: dict[str, Any] | None = None,
+        error_code: str | None = None,
+    ) -> None: ...
+
+    def save_package_registry_description_tasks_v3(
+        self, records: Sequence[dict[str, Any]], *, chunk_size: int = 256
+    ) -> dict[str, int]: ...
+
+    def list_package_registry_description_tasks_v3(
+        self, *, registry_scope_id: str, batch_id: str
+    ) -> list[dict[str, Any]]: ...
+
+    def finalize_package_registry_batch_v3(
+        self,
+        *,
+        registry_scope_id: str,
+        batch_id: str,
+        expected_base_version: int,
+        expected_base_hash: str,
+        registry_version: int,
+        registry_hash: str,
+        snapshot: dict[str, Any],
+    ) -> bool: ...
 
     def save_parent_occurrence_partition(
         self,
@@ -563,6 +650,17 @@ class CDECRRegistry(Protocol):
 
     def save_package_stage_batch(
         self, records: Sequence[dict[str, Any]], *, chunk_size: int = 64
+    ) -> dict[str, int]: ...
+
+    def activate_package_partition_v3(
+        self,
+        *,
+        packages: Sequence[EventPackage],
+        memberships: Sequence[PackageMembership],
+        assignments: Sequence[Any],
+        external_relations: Sequence[PackageExternalRelation],
+        redirects: Sequence[tuple[str, str]],
+        run_id: str,
     ) -> dict[str, int]: ...
 
     def rebuild_derived_state(self) -> dict[str, int]: ...

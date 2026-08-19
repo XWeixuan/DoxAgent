@@ -7,6 +7,7 @@ from typing import Any, cast
 
 import pytest
 
+from cdecr.atomic_exact_recall import ExactCosineRecallIndex
 from cdecr.bulk_epoch.atomic_late_stage import _merge_source_mentions_for_single_save
 from cdecr.bulk_epoch.embedding import EmbeddingBatchExecutor, EmbeddingWorkItem
 from cdecr.bulk_epoch.engine import _recover_atomic_late_state
@@ -18,7 +19,13 @@ from cdecr.canonical_field_resolution import (
 )
 from cdecr.contracts import AtomicAction
 from cdecr.coreference_rules import add_mention_to_atomic, singleton_atomic_event
-from cdecr.cross_document import _active_atomic_target
+from cdecr.cross_document import (
+    CrossDocumentPipelineError,
+    _active_atomic_target,
+    _cosine,
+    _pack_mentions_by_candidate_overlap,
+    is_content_repairable,
+)
 from cdecr.cross_document_contracts import AtomicAssignmentRecord
 from cdecr.field_coreference_contracts import (
     FieldCoreferenceHints,
@@ -34,6 +41,38 @@ def registry(path: Path) -> SQLiteCDECRRegistry:
     value = SQLiteCDECRRegistry(path)
     value.initialize()
     return value
+
+
+def test_n9_overlap_packing_keeps_every_mention_and_candidate_order() -> None:
+    mentions = [metric_mention(f"MSG-{index}") for index in range(1, 6)]
+    candidate_ids = {
+        mentions[0].mention_id: ["A", "B"],
+        mentions[1].mention_id: ["X"],
+        mentions[2].mention_id: ["B", "C"],
+        mentions[3].mention_id: ["X", "Y"],
+        mentions[4].mention_id: ["C", "D"],
+    }
+    candidates = {
+        mention_id: [
+            SimpleNamespace(event=SimpleNamespace(event_id=event_id))
+            for event_id in event_ids
+        ]
+        for mention_id, event_ids in candidate_ids.items()
+    }
+    batches = _pack_mentions_by_candidate_overlap(
+        mentions,
+        cast(Any, candidates),
+    )
+    packed_mentions = [mention for batch in batches for mention in batch]
+    assert sorted(item.mention_id for item in packed_mentions) == sorted(
+        item.mention_id for item in mentions
+    )
+    assert max(map(len, batches)) == 3
+    assert mentions[2] in batches[0]
+    assert {
+        mention_id: [item.event.event_id for item in candidates[mention_id]]
+        for mention_id in candidates
+    } == candidate_ids
 
 
 def test_batch_audit_is_idempotent_and_does_not_hide_conflict(tmp_path: Path) -> None:
@@ -93,6 +132,51 @@ def test_batch_task_ledger_preserves_attempt_and_stage_times(tmp_path: Path) -> 
     assert [row["status"] for row in rows] == ["SUCCEEDED"] * 4
     assert rows[0]["attempt_count"] == 2
     assert [row["attempt_count"] for row in rows[1:]] == [1, 1, 1]
+
+
+def test_provider_failures_are_not_content_repairable() -> None:
+    assert is_content_repairable(ValueError("bad shape"))
+    assert is_content_repairable(
+        CrossDocumentPipelineError("package", "structured_output_invalid")
+    )
+    for code in ("provider_arrearage", "timeout", "rate_limit_429", "transport_error"):
+        assert not is_content_repairable(CrossDocumentPipelineError("package", code))
+
+
+def test_exact_cosine_matrix_matches_scalar_and_has_stable_order() -> None:
+    vectors = {"B": [0.0, 1.0], "A": [1.0, 0.0], "ZERO": [0.0, 0.0]}
+    index = ExactCosineRecallIndex(vectors)
+    scores = index.scores([0.6, 0.8])
+    assert abs(scores["A"] - _cosine([0.6, 0.8], vectors["A"])) < 1e-12
+    assert abs(scores["B"] - _cosine([0.6, 0.8], vectors["B"])) < 1e-12
+    assert scores["ZERO"] == 0.0
+    assert sorted(scores, key=lambda event_id: (-scores[event_id], event_id)) == [
+        "B",
+        "A",
+        "ZERO",
+    ]
+
+
+def test_description_task_batch_uses_one_transaction(tmp_path: Path) -> None:
+    value = registry(tmp_path / "description-tasks.sqlite3")
+    rows = [
+        {
+            "registry_scope_id": "scope",
+            "batch_id": "batch",
+            "mcp_id": f"MCP-{index:06d}",
+            "input_hash": f"hash-{index}",
+            "status": "SUCCEEDED",
+            "payload": {"compressed_description": str(index)},
+        }
+        for index in range(100)
+    ]
+    telemetry = value.save_package_registry_description_tasks_v3(rows, chunk_size=256)
+    assert telemetry == {"rows": 100, "transactions": 1}
+    assert len(
+        value.list_package_registry_description_tasks_v3(
+            registry_scope_id="scope", batch_id="batch"
+        )
+    ) == 100
 
 
 def test_atomic_late_multi_mention_source_advances_target_version_once(tmp_path: Path) -> None:
@@ -342,12 +426,44 @@ def test_embedding_batch_executor_preserves_owner_mapping(tmp_path: Path) -> Non
         owner_kind="test",
         stage="runtime-test",
     )
-    assert telemetry.batch_sizes == (64, 64, 2)
+    assert telemetry.batch_sizes == (*((8,) * 16), 2)
+    assert telemetry.configured_cap == 8
     assert telemetry.failed_owner_ids == ()
     assert vectors["owner-000"] == [0.0, 1.0]
     assert vectors["owner-129"] == [129.0, 1.0]
     stored = value.list_latest_embeddings(owner_kind="test", model="embed-test", limit=200)
     assert [item.owner_id for item in stored] == sorted(vectors)
+
+
+def test_embedding_transport_failure_does_not_recursive_split(tmp_path: Path) -> None:
+    class TimeoutModels:
+        def __init__(self) -> None:
+            self.calls: list[int] = []
+
+        def embed(self, texts: list[str], *, stage: str) -> EmbeddingResult:
+            del stage
+            self.calls.append(len(texts))
+            error = RuntimeError("timeout")
+            error.code = "transport_timeout"  # type: ignore[attr-defined]
+            raise error
+
+    value = registry(tmp_path / "embedding-timeout.sqlite3")
+    models = TimeoutModels()
+    items = [
+        EmbeddingWorkItem(owner_id=str(index), text=str(index), input_hash=str(index))
+        for index in range(8)
+    ]
+    vectors, telemetry = EmbeddingBatchExecutor().run(
+        items=items,
+        models=models,
+        registry=value,
+        owner_kind="test",
+        stage="runtime-test",
+    )
+    assert vectors == {}
+    assert models.calls == [8]
+    assert telemetry.provider_failure_count == 1
+    assert telemetry.single_item_failure_count == 0
 
 
 def test_bulk_writer_submit_is_non_blocking_and_barrier_waits() -> None:

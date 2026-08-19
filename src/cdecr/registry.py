@@ -14,6 +14,7 @@ from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
 from datetime import UTC, datetime
 from pathlib import Path
+from time import perf_counter
 from typing import Any, Literal
 
 from pydantic import Field
@@ -57,7 +58,7 @@ from cdecr.single_document_contracts import (
     SingleDocumentResult,
 )
 
-SCHEMA_VERSION = 12
+SCHEMA_VERSION = 13
 
 
 class RegistryError(RuntimeError):
@@ -328,7 +329,13 @@ def _clear_derived_state(connection: sqlite3.Connection) -> dict[str, int]:
 class SQLiteCDECRRegistry:
     """Versioned local registry with immutable source, mention, and audit records."""
 
-    def __init__(self, path: Path | str, *, busy_timeout_ms: int = 5000) -> None:
+    def __init__(
+        self,
+        path: Path | str,
+        *,
+        busy_timeout_ms: int = 5000,
+        bulk_read_mode: Literal["snapshot", "locked"] = "snapshot",
+    ) -> None:
         self.path = Path(path)
         self.busy_timeout_ms = busy_timeout_ms
         # A BULK_EPOCH shares one Registry across many model workers. SQLite WAL still permits
@@ -337,10 +344,21 @@ class SQLiteCDECRRegistry:
         # requests and CPU preparation remain concurrent while every Registry transaction has one
         # owner. RLock preserves the few re-entrant registry helper paths.
         self._transaction_lock = threading.RLock()
+        self.bulk_read_mode = bulk_read_mode
+        self._connection_metrics_lock = threading.Lock()
+        self._connection_metrics = {
+            "read_queries": 0,
+            "read_wall_ms": 0.0,
+            "write_transactions": 0,
+            "write_lock_wait_ms": 0.0,
+            "write_wall_ms": 0.0,
+        }
 
     @contextmanager
-    def _connection(self) -> Iterator[sqlite3.Connection]:
+    def _write_connection(self) -> Iterator[sqlite3.Connection]:
+        wait_started = perf_counter()
         with self._transaction_lock:
+            acquired = perf_counter()
             self.path.parent.mkdir(parents=True, exist_ok=True)
             connection = sqlite3.connect(self.path, timeout=self.busy_timeout_ms / 1000)
             connection.row_factory = sqlite3.Row
@@ -350,6 +368,51 @@ class SQLiteCDECRRegistry:
                 yield connection
             finally:
                 connection.close()
+                with self._connection_metrics_lock:
+                    self._connection_metrics["write_transactions"] += 1
+                    self._connection_metrics["write_lock_wait_ms"] += (
+                        acquired - wait_started
+                    ) * 1000
+                    self._connection_metrics["write_wall_ms"] += (
+                        perf_counter() - acquired
+                    ) * 1000
+
+    @contextmanager
+    def _read_connection(self, *, snapshot: bool = False) -> Iterator[sqlite3.Connection]:
+        if self.bulk_read_mode == "locked":
+            with self._write_connection() as connection:
+                yield connection
+            return
+        started = perf_counter()
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        connection = sqlite3.connect(self.path, timeout=self.busy_timeout_ms / 1000)
+        connection.row_factory = sqlite3.Row
+        connection.execute(f"PRAGMA busy_timeout={self.busy_timeout_ms}")
+        connection.execute("PRAGMA query_only=ON")
+        if snapshot:
+            connection.execute("BEGIN")
+        try:
+            yield connection
+            if snapshot and connection.in_transaction:
+                connection.rollback()
+        finally:
+            connection.close()
+            with self._connection_metrics_lock:
+                self._connection_metrics["read_queries"] += 1
+                self._connection_metrics["read_wall_ms"] += (
+                    perf_counter() - started
+                ) * 1000
+
+    @contextmanager
+    def _connection(self) -> Iterator[sqlite3.Connection]:
+        """Compatibility alias for mutating and legacy transaction paths."""
+
+        with self._write_connection() as connection:
+            yield connection
+
+    def connection_telemetry(self) -> dict[str, int | float | str]:
+        with self._connection_metrics_lock:
+            return {"read_mode": self.bulk_read_mode, **self._connection_metrics}
 
     def initialize(self) -> None:
         with self._connection() as connection:
@@ -1143,6 +1206,90 @@ class SQLiteCDECRRegistry:
                 connection.execute("DROP TABLE IF EXISTS package_pair_evaluations")
                 connection.execute("DROP TABLE IF EXISTS package_merge_decisions")
                 connection.execute("DROP TABLE IF EXISTS package_external_relation_candidates")
+            connection.executescript(
+                """
+                CREATE TABLE IF NOT EXISTS package_parent_occurrences_v3 (
+                    registry_scope_id TEXT NOT NULL,
+                    occurrence_id TEXT NOT NULL,
+                    occurrence_business_key TEXT NOT NULL,
+                    source_proposal_id TEXT NOT NULL,
+                    parent_occurrence TEXT NOT NULL,
+                    payload_json TEXT NOT NULL,
+                    source_payload_hash TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    PRIMARY KEY(registry_scope_id, occurrence_id),
+                    UNIQUE(registry_scope_id, occurrence_business_key)
+                );
+                CREATE TABLE IF NOT EXISTS package_registry_heads_v3 (
+                    registry_scope_id TEXT PRIMARY KEY,
+                    current_registry_version INTEGER NOT NULL,
+                    current_registry_hash TEXT NOT NULL,
+                    next_occurrence_sequence INTEGER NOT NULL,
+                    next_mcp_sequence INTEGER NOT NULL,
+                    status TEXT NOT NULL,
+                    updated_at TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS package_mcp_heads_v3 (
+                    registry_scope_id TEXT NOT NULL,
+                    mcp_id TEXT NOT NULL,
+                    canonical TEXT NOT NULL,
+                    compressed_description TEXT NOT NULL,
+                    status TEXT NOT NULL CHECK(status IN ('ACTIVE','MERGED')),
+                    redirect_to TEXT,
+                    created_registry_version INTEGER NOT NULL,
+                    updated_registry_version INTEGER NOT NULL,
+                    payload_json TEXT NOT NULL,
+                    PRIMARY KEY(registry_scope_id, mcp_id)
+                );
+                CREATE TABLE IF NOT EXISTS package_mcp_occurrence_memberships_v3 (
+                    registry_scope_id TEXT NOT NULL,
+                    occurrence_id TEXT NOT NULL,
+                    mcp_id TEXT NOT NULL,
+                    assigned_registry_version INTEGER NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    PRIMARY KEY(registry_scope_id, occurrence_id)
+                );
+                CREATE INDEX IF NOT EXISTS idx_package_mcp_memberships_v3
+                    ON package_mcp_occurrence_memberships_v3(registry_scope_id, mcp_id);
+                CREATE TABLE IF NOT EXISTS package_registry_batches_v3 (
+                    registry_scope_id TEXT NOT NULL,
+                    batch_id TEXT NOT NULL,
+                    base_registry_version INTEGER NOT NULL,
+                    input_hash TEXT NOT NULL,
+                    status TEXT NOT NULL,
+                    response_a_payload_json TEXT,
+                    staged_changes_json TEXT,
+                    affected_mcp_ids_json TEXT,
+                    error_code TEXT,
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    PRIMARY KEY(registry_scope_id, batch_id)
+                );
+                CREATE TABLE IF NOT EXISTS package_registry_description_tasks_v3 (
+                    registry_scope_id TEXT NOT NULL,
+                    batch_id TEXT NOT NULL,
+                    mcp_id TEXT NOT NULL,
+                    input_hash TEXT NOT NULL,
+                    status TEXT NOT NULL,
+                    payload_json TEXT,
+                    error_code TEXT,
+                    attempt_count INTEGER NOT NULL DEFAULT 0,
+                    updated_at TEXT NOT NULL,
+                    PRIMARY KEY(registry_scope_id, batch_id, mcp_id)
+                );
+                CREATE TABLE IF NOT EXISTS package_registry_versions_v3 (
+                    registry_scope_id TEXT NOT NULL,
+                    registry_version INTEGER NOT NULL,
+                    registry_hash TEXT NOT NULL,
+                    source_batch_id TEXT NOT NULL,
+                    snapshot_json TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    PRIMARY KEY(registry_scope_id, registry_version),
+                    UNIQUE(registry_scope_id, registry_hash)
+                );
+                """
+            )
             connection.execute(f"PRAGMA user_version={SCHEMA_VERSION}")
             connection.commit()
         self._backfill_recall_indexes()
@@ -1196,7 +1343,7 @@ class SQLiteCDECRRegistry:
             }
 
     def get_source(self, message_id: str) -> SourceMessage | None:
-        with self._connection() as connection:
+        with self._read_connection() as connection:
             row = connection.execute(
                 "SELECT payload_json FROM source_messages WHERE message_id = ?", (message_id,)
             ).fetchone()
@@ -1207,7 +1354,7 @@ class SQLiteCDECRRegistry:
     def list_all_sources(self, *, limit: int = 10000) -> list[SourceMessage]:
         if limit < 1 or limit > 100000:
             raise ValueError("source list limit must be between 1 and 100000")
-        with self._connection() as connection:
+        with self._read_connection(snapshot=True) as connection:
             rows = connection.execute(
                 "SELECT payload_json FROM source_messages "
                 "ORDER BY published_at, message_id LIMIT ?",
@@ -1216,14 +1363,14 @@ class SQLiteCDECRRegistry:
         return [SourceMessage.model_validate_json(str(row["payload_json"])) for row in rows]
 
     def get_source_fingerprint(self, message_id: str) -> str | None:
-        with self._connection() as connection:
+        with self._read_connection() as connection:
             row = connection.execute(
                 "SELECT fingerprint FROM source_messages WHERE message_id = ?", (message_id,)
             ).fetchone()
         return None if row is None else str(row["fingerprint"])
 
     def get_mention(self, mention_id: str) -> EventMention | None:
-        with self._connection() as connection:
+        with self._read_connection() as connection:
             row = connection.execute(
                 "SELECT payload_json FROM event_mentions WHERE mention_id = ?", (mention_id,)
             ).fetchone()
@@ -1234,7 +1381,7 @@ class SQLiteCDECRRegistry:
     def list_all_mentions(self, *, limit: int = 100000) -> list[EventMention]:
         if limit < 1 or limit > 1000000:
             raise ValueError("mention list limit must be between 1 and 1000000")
-        with self._connection() as connection:
+        with self._read_connection(snapshot=True) as connection:
             rows = connection.execute(
                 "SELECT payload_json FROM event_mentions ORDER BY message_id, mention_id LIMIT ?",
                 (limit,),
@@ -1242,7 +1389,7 @@ class SQLiteCDECRRegistry:
         return [EventMention.model_validate_json(str(row["payload_json"])) for row in rows]
 
     def list_mentions_for_message(self, message_id: str) -> list[EventMention]:
-        with self._connection() as connection:
+        with self._read_connection() as connection:
             rows = connection.execute(
                 """
                 SELECT payload_json FROM event_mentions
@@ -1253,7 +1400,7 @@ class SQLiteCDECRRegistry:
         return [EventMention.model_validate_json(str(row["payload_json"])) for row in rows]
 
     def get_current_atomic_event(self, event_id: str) -> AtomicEvent | None:
-        with self._connection() as connection:
+        with self._read_connection() as connection:
             row = connection.execute(
                 """
                 SELECT versions.payload_json
@@ -1272,7 +1419,7 @@ class SQLiteCDECRRegistry:
     def list_current_atomic_events(self, *, limit: int = 1000) -> list[AtomicEvent]:
         if limit < 1 or limit > 10000:
             raise ValueError("atomic event list limit must be between 1 and 10000")
-        with self._connection() as connection:
+        with self._read_connection(snapshot=True) as connection:
             rows = connection.execute(
                 """
                 SELECT versions.payload_json
@@ -2256,6 +2403,279 @@ class SQLiteCDECRRegistry:
             write(indexed[offset : offset + max(1, chunk_size)])
         return counts
 
+    def activate_package_partition_v3(
+        self,
+        *,
+        packages: Sequence[EventPackage],
+        memberships: Sequence[PackageMembership],
+        assignments: Sequence[PackageAssignmentRecord],
+        external_relations: Sequence[PackageExternalRelation],
+        redirects: Sequence[tuple[str, str]],
+        run_id: str,
+    ) -> dict[str, int]:
+        """Atomically publish one finalized V3 partition into active Package state."""
+
+        assignment_by_event = {item.event_id: item for item in assignments}
+        now = _now()
+        with self._connection() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            active_membership_by_event = {
+                str(row["event_id"]): str(row["package_id"])
+                for row in connection.execute(
+                    "SELECT event_id,package_id FROM active_package_memberships"
+                ).fetchall()
+            }
+            for package in sorted(packages, key=lambda item: item.package_id):
+                payload = _json_payload(package)
+                saved = self._save_versioned_in_transaction(
+                    connection,
+                    object_name="event package",
+                    object_id=package.package_id,
+                    version=package.version,
+                    payload=payload,
+                    head_table="event_package_heads",
+                    version_table="event_package_versions",
+                    version_insert_sql="""
+                        INSERT INTO event_package_versions(
+                            package_id, version, package_kind, package_family, status,
+                            quality_state, payload_json, created_at
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    version_insert_values=(
+                        package.package_id,
+                        package.version,
+                        package.package_kind.value,
+                        package.package_family.value,
+                        package.status.value,
+                        package.quality_state.value,
+                        payload,
+                        now,
+                    ),
+                )
+                if saved:
+                    self._refresh_package_recall_in_transaction(connection, package)
+            ordered_memberships = sorted(memberships, key=lambda item: item.membership_id)
+            membership_ids = [item.membership_id for item in ordered_memberships]
+            decision_ids = [f"membership-decision-v3:{item}" for item in membership_ids]
+            assignment_ids = [item.assignment_id for item in assignments]
+
+            def existing_payloads(
+                table: str, id_column: str, ids: Sequence[str]
+            ) -> dict[str, str]:
+                if not ids:
+                    return {}
+                placeholders = ",".join("?" for _ in ids)
+                return {
+                    str(row[id_column]): str(row["payload_json"])
+                    for row in connection.execute(
+                        f"SELECT {id_column},payload_json FROM {table} "
+                        f"WHERE {id_column} IN ({placeholders})",
+                        tuple(ids),
+                    ).fetchall()
+                }
+
+            existing_memberships = existing_payloads(
+                "package_memberships", "membership_id", membership_ids
+            )
+            existing_decisions = existing_payloads(
+                "package_membership_decisions", "decision_id", decision_ids
+            )
+            existing_assignments = existing_payloads(
+                "package_assignment_decisions", "assignment_id", assignment_ids
+            )
+            membership_rows: list[tuple[object, ...]] = []
+            decision_rows: list[tuple[object, ...]] = []
+            active_rows: list[tuple[object, ...]] = []
+            assignment_rows: list[tuple[object, ...]] = []
+            for membership in ordered_memberships:
+                assignment = assignment_by_event[membership.event_id]
+                membership_payload = _json_payload(membership)
+                if membership.membership_id not in existing_memberships:
+                    membership_rows.append((
+                        membership.membership_id,
+                        membership.event_id,
+                        membership.package_id,
+                        membership.relation.value,
+                        membership_payload,
+                        now,
+                    ))
+                elif existing_memberships[membership.membership_id] != membership_payload:
+                    raise ImmutableRecordConflict("Package V3 membership changed")
+                source_id = active_membership_by_event.get(membership.event_id)
+                same_package = source_id == membership.package_id
+                action = "ADD" if source_id is None or same_package else "MOVE"
+                decision_source_id = None if same_package else source_id
+                decision_id = f"membership-decision-v3:{membership.membership_id}"
+                decision_payload = {
+                    "decision_id": decision_id,
+                    "run_id": run_id,
+                    "action": action,
+                    "event_id": membership.event_id,
+                    "source_package_id": decision_source_id,
+                    "target_package_id": membership.package_id,
+                    "relation": membership.relation.value,
+                    "reason": "PACKAGE_GLOBAL_REGISTRY_V3_FROZEN_PARTITION",
+                    "version": 1,
+                }
+                serialized_decision = _json_payload(decision_payload)
+                if decision_id not in existing_decisions:
+                    decision_rows.append((
+                            decision_id,
+                            run_id,
+                            action,
+                            membership.event_id,
+                            decision_source_id,
+                            membership.package_id,
+                            membership.relation.value,
+                            "PACKAGE_GLOBAL_REGISTRY_V3_FROZEN_PARTITION",
+                            serialized_decision,
+                            now,
+                        ))
+                elif existing_decisions[decision_id] != serialized_decision:
+                    connection.rollback()
+                    raise ImmutableRecordConflict("Package V3 membership decision changed")
+                active_rows.append((
+                        membership.event_id,
+                        membership.package_id,
+                        membership.relation.value,
+                        decision_id,
+                        now,
+                    ))
+                active_membership_by_event[membership.event_id] = membership.package_id
+                assignment_payload = _json_payload(assignment)
+                if assignment.assignment_id not in existing_assignments:
+                    assignment_rows.append((
+                        assignment.assignment_id,
+                        assignment.run_id,
+                        assignment.event_id,
+                        None,
+                        assignment.resulting_package_id,
+                        "PROJECT_FROZEN_PARTITION",
+                        assignment.membership_relation.value,
+                        assignment.partition_hash,
+                        assignment_payload,
+                        now,
+                    ))
+                elif existing_assignments[assignment.assignment_id] != assignment_payload:
+                    raise ImmutableRecordConflict("Package V3 assignment changed")
+            connection.executemany(
+                "INSERT INTO package_memberships("
+                "membership_id,event_id,package_id,relation,payload_json,created_at) "
+                "VALUES (?,?,?,?,?,?)",
+                membership_rows,
+            )
+            connection.executemany(
+                "INSERT INTO package_membership_decisions("
+                "decision_id,run_id,action,event_id,source_package_id,target_package_id,"
+                "relation,reason,payload_json,created_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
+                decision_rows,
+            )
+            connection.executemany(
+                "INSERT INTO active_package_memberships("
+                "event_id,package_id,relation,decision_id,updated_at) VALUES (?,?,?,?,?) "
+                "ON CONFLICT(event_id) DO UPDATE SET package_id=excluded.package_id,"
+                "relation=excluded.relation,decision_id=excluded.decision_id,"
+                "updated_at=excluded.updated_at",
+                active_rows,
+            )
+            connection.executemany(
+                "INSERT INTO package_assignment_decisions("
+                "assignment_id,run_id,event_id,candidate_package_id,resulting_package_id,"
+                "action,relation,assignment_processing_key,payload_json,created_at) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?)",
+                assignment_rows,
+            )
+            ordered_relations = sorted(
+                external_relations, key=lambda item: item.relation_id
+            )
+            existing_relations = existing_payloads(
+                "package_external_relations",
+                "relation_id",
+                [item.relation_id for item in ordered_relations],
+            )
+            relation_rows: list[tuple[object, ...]] = []
+            for relation in ordered_relations:
+                relation_payload = _json_payload(relation)
+                if relation.relation_id not in existing_relations:
+                    relation_rows.append(
+                        (
+                            relation.relation_id,
+                            relation.source_event_id,
+                            relation.target_package_id,
+                            relation.relation.value,
+                            relation_payload,
+                            now,
+                        )
+                    )
+                elif existing_relations[relation.relation_id] != relation_payload:
+                    raise ImmutableRecordConflict("Package V3 external relation changed")
+            connection.executemany(
+                "INSERT INTO package_external_relations("
+                "relation_id,source_event_id,target_package_id,relation,legacy,"
+                "payload_json,created_at) VALUES (?,?,?,?,0,?,?)",
+                relation_rows,
+            )
+            redirect_pairs = [
+                item for item in sorted(set(redirects)) if item[0] != item[1]
+            ]
+            redirect_package_ids = sorted(
+                {package_id for pair in redirect_pairs for package_id in pair}
+            )
+            placeholders = ",".join("?" for _ in redirect_package_ids)
+            existing_package_ids = (
+                {
+                    str(row["package_id"])
+                    for row in connection.execute(
+                        f"SELECT package_id FROM event_package_heads "
+                        f"WHERE package_id IN ({placeholders})",
+                        tuple(redirect_package_ids),
+                    ).fetchall()
+                }
+                if redirect_package_ids
+                else set()
+            )
+            current_redirects = {
+                str(row["source_package_id"]): (
+                    str(row["target_package_id"]),
+                    str(row["run_id"]),
+                    str(row["reason"]),
+                )
+                for row in connection.execute(
+                    "SELECT source_package_id,target_package_id,run_id,reason "
+                    "FROM package_redirects"
+                ).fetchall()
+            }
+            redirect_rows: list[tuple[object, ...]] = []
+            for source_id, target_id in redirect_pairs:
+                if source_id not in existing_package_ids or target_id not in existing_package_ids:
+                    continue
+                expected = (
+                    target_id,
+                    run_id,
+                    "PACKAGE_GLOBAL_REGISTRY_V3_MCP_MERGE",
+                )
+                existing = current_redirects.get(source_id)
+                if existing is None:
+                    redirect_rows.append((*((source_id,) + expected), now))
+                elif existing != expected:
+                    connection.rollback()
+                    raise ImmutableRecordConflict("Package V3 redirect changed")
+            connection.executemany(
+                "INSERT INTO package_redirects("
+                "source_package_id,target_package_id,run_id,reason,created_at"
+                ") VALUES (?,?,?,?,?)",
+                redirect_rows,
+            )
+            connection.commit()
+        return {
+            "package_count": len(packages),
+            "membership_count": len(memberships),
+            "assignment_count": len(assignments),
+            "external_relation_count": len(external_relations),
+            "redirect_count": len(redirects),
+            "transactions": 1,
+        }
+
     def _refresh_atomic_recall(self, event: AtomicEvent) -> None:
         with self._connection() as connection:
             connection.execute("BEGIN IMMEDIATE")
@@ -2703,7 +3123,7 @@ class SQLiteCDECRRegistry:
             return True
 
     def get_field_registry_entry(self, registry_id: str) -> CanonicalFieldRegistryEntry | None:
-        with self._connection() as connection:
+        with self._read_connection() as connection:
             row = connection.execute(
                 "SELECT * FROM canonical_field_registry WHERE id = ?", (registry_id,)
             ).fetchone()
@@ -2714,7 +3134,7 @@ class SQLiteCDECRRegistry:
     ) -> list[CanonicalFieldRegistryEntry]:
         if limit < 1 or limit > 100000:
             raise ValueError("field registry list limit must be between 1 and 100000")
-        with self._connection() as connection:
+        with self._read_connection(snapshot=True) as connection:
             if namespace is None:
                 rows = connection.execute(
                     "SELECT * FROM canonical_field_registry ORDER BY namespace, id LIMIT ?",
@@ -2733,7 +3153,7 @@ class SQLiteCDECRRegistry:
     def find_field_registry_by_external_id(
         self, *, namespace: FieldNamespace, external_id: str
     ) -> CanonicalFieldRegistryEntry | None:
-        with self._connection() as connection:
+        with self._read_connection() as connection:
             row = connection.execute(
                 """
                 SELECT * FROM canonical_field_registry
@@ -2815,7 +3235,7 @@ class SQLiteCDECRRegistry:
     ) -> CanonicalFieldRegistryEntry | None:
         if max_depth < 1 or max_depth > 64:
             raise ValueError("max_depth must be between 1 and 64")
-        with self._connection() as connection:
+        with self._read_connection() as connection:
             return self._resolve_field_entry(connection, registry_id, max_depth=max_depth)
 
     def save_field_redirect(self, source_id: str, target_id: str) -> bool:
@@ -2897,7 +3317,7 @@ class SQLiteCDECRRegistry:
         return True
 
     def get_field_link(self, mention_id: str, field_path: str) -> CanonicalFieldLink | None:
-        with self._connection() as connection:
+        with self._read_connection() as connection:
             row = connection.execute(
                 """
                 SELECT * FROM canonical_field_links
@@ -2915,7 +3335,7 @@ class SQLiteCDECRRegistry:
         )
 
     def list_field_links_for_mention(self, mention_id: str) -> list[CanonicalFieldLink]:
-        with self._connection() as connection:
+        with self._read_connection() as connection:
             rows = connection.execute(
                 """
                 SELECT * FROM canonical_field_links
@@ -2936,7 +3356,7 @@ class SQLiteCDECRRegistry:
     def list_all_field_links(self, *, limit: int = 1000000) -> list[CanonicalFieldLink]:
         if limit < 1 or limit > 2000000:
             raise ValueError("field link list limit must be between 1 and 2000000")
-        with self._connection() as connection:
+        with self._read_connection(snapshot=True) as connection:
             rows = connection.execute(
                 "SELECT * FROM canonical_field_links ORDER BY mention_id, field_path LIMIT ?",
                 (limit,),
@@ -3141,7 +3561,7 @@ class SQLiteCDECRRegistry:
     def get_embedding(
         self, *, owner_kind: str, owner_id: str, model: str, input_hash: str
     ) -> StoredEmbedding | None:
-        with self._connection() as connection:
+        with self._read_connection() as connection:
             resolved_owner_id = (
                 _resolve_package_root_id(connection, owner_id)
                 if owner_kind == "event_package"
@@ -3173,7 +3593,7 @@ class SQLiteCDECRRegistry:
     def get_latest_embedding(
         self, *, owner_kind: str, owner_id: str, model: str
     ) -> StoredEmbedding | None:
-        with self._connection() as connection:
+        with self._read_connection() as connection:
             resolved_owner_id = (
                 _resolve_package_root_id(connection, owner_id)
                 if owner_kind == "event_package"
@@ -3208,7 +3628,7 @@ class SQLiteCDECRRegistry:
     ) -> list[StoredEmbedding]:
         if limit < 1 or limit > 100000:
             raise ValueError("embedding list limit must be between 1 and 100000")
-        with self._connection() as connection:
+        with self._read_connection(snapshot=True) as connection:
             rows = connection.execute(
                 """
                 SELECT embeddings.* FROM embeddings
@@ -3700,6 +4120,456 @@ class SQLiteCDECRRegistry:
                 inserted += 1
             connection.commit()
         return {"inserted": inserted, "transactions": int(bool(records))}
+
+    def list_parent_occurrence_proposals(
+        self, *, run_id: str | None = None
+    ) -> list[dict[str, Any]]:
+        sql = "SELECT payload_json FROM parent_occurrence_proposals"
+        parameters: tuple[object, ...] = ()
+        if run_id is not None:
+            sql += " WHERE run_id = ?"
+            parameters = (run_id,)
+        sql += " ORDER BY proposal_id"
+        with self._read_connection(snapshot=True) as connection:
+            rows = connection.execute(sql, parameters).fetchall()
+        return [json.loads(str(row["payload_json"])) for row in rows]
+
+    def upsert_package_parent_occurrences_v3(
+        self,
+        *,
+        registry_scope_id: str,
+        records: Sequence[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        """Allocate stable short occurrence IDs and retain mutable labels by business key."""
+
+        output: list[dict[str, Any]] = []
+        with self._connection() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            now = _now()
+            connection.execute(
+                "INSERT INTO package_registry_heads_v3("
+                "registry_scope_id,current_registry_version,current_registry_hash,"
+                "next_occurrence_sequence,next_mcp_sequence,status,updated_at"
+                ") VALUES (?,0,'',1,1,'EMPTY',?) ON CONFLICT(registry_scope_id) DO NOTHING",
+                (registry_scope_id, now),
+            )
+            head = connection.execute(
+                "SELECT next_occurrence_sequence FROM package_registry_heads_v3 "
+                "WHERE registry_scope_id = ?",
+                (registry_scope_id,),
+            ).fetchone()
+            if head is None:
+                raise RegistryError("Package V3 registry head is missing")
+            next_sequence = int(head["next_occurrence_sequence"])
+            for record in sorted(records, key=lambda item: str(item["occurrence_business_key"])):
+                business_key = str(record["occurrence_business_key"])
+                existing = connection.execute(
+                    "SELECT occurrence_id, created_at FROM package_parent_occurrences_v3 "
+                    "WHERE registry_scope_id = ? AND occurrence_business_key = ?",
+                    (registry_scope_id, business_key),
+                ).fetchone()
+                if existing is None:
+                    occurrence_id = f"PO-{next_sequence:06d}"
+                    created_at = now
+                    next_sequence += 1
+                else:
+                    occurrence_id = str(existing["occurrence_id"])
+                    created_at = str(existing["created_at"])
+                payload = {
+                    **record,
+                    "registry_scope_id": registry_scope_id,
+                    "occurrence_id": occurrence_id,
+                }
+                connection.execute(
+                    "INSERT INTO package_parent_occurrences_v3("
+                    "registry_scope_id,occurrence_id,occurrence_business_key,source_proposal_id,"
+                    "parent_occurrence,payload_json,source_payload_hash,created_at,updated_at"
+                    ") VALUES (?,?,?,?,?,?,?,?,?) ON CONFLICT(registry_scope_id,occurrence_id) "
+                    "DO UPDATE SET parent_occurrence=excluded.parent_occurrence,"
+                    "payload_json=excluded.payload_json,source_payload_hash=excluded.source_payload_hash,"
+                    "updated_at=excluded.updated_at",
+                    (
+                        registry_scope_id,
+                        occurrence_id,
+                        business_key,
+                        str(record["source_proposal_id"]),
+                        str(record["parent_occurrence"]),
+                        _json_payload(payload),
+                        str(record["source_payload_hash"]),
+                        created_at,
+                        now,
+                    ),
+                )
+                output.append(payload)
+            connection.execute(
+                "UPDATE package_registry_heads_v3 SET next_occurrence_sequence=?,updated_at=? "
+                "WHERE registry_scope_id=?",
+                (next_sequence, now, registry_scope_id),
+            )
+            connection.commit()
+        return sorted(output, key=lambda item: str(item["occurrence_id"]))
+
+    def list_package_parent_occurrences_v3(
+        self, *, registry_scope_id: str
+    ) -> list[dict[str, Any]]:
+        with self._read_connection(snapshot=True) as connection:
+            rows = connection.execute(
+                "SELECT payload_json FROM package_parent_occurrences_v3 "
+                "WHERE registry_scope_id=? ORDER BY occurrence_id",
+                (registry_scope_id,),
+            ).fetchall()
+        return [json.loads(str(row["payload_json"])) for row in rows]
+
+    def get_package_registry_v3(self, *, registry_scope_id: str) -> dict[str, Any] | None:
+        with self._read_connection(snapshot=True) as connection:
+            head = connection.execute(
+                "SELECT * FROM package_registry_heads_v3 WHERE registry_scope_id=?",
+                (registry_scope_id,),
+            ).fetchone()
+            if head is None:
+                return None
+            version = int(head["current_registry_version"])
+            if version == 0:
+                return {
+                    "registry_scope_id": registry_scope_id,
+                    "registry_version": 0,
+                    "registry_hash": "",
+                    "status": str(head["status"]),
+                    "mcps": [],
+                    "redirects": {},
+                }
+            row = connection.execute(
+                "SELECT snapshot_json FROM package_registry_versions_v3 "
+                "WHERE registry_scope_id=? AND registry_version=?",
+                (registry_scope_id, version),
+            ).fetchone()
+        if row is None:
+            raise RegistryError("Package V3 current Registry snapshot is missing")
+        payload = json.loads(str(row["snapshot_json"]))
+        if not isinstance(payload, dict):
+            raise RegistryError("Package V3 Registry snapshot must be an object")
+        return {str(key): value for key, value in payload.items()}
+
+    def allocate_package_mcp_ids_v3(
+        self, *, registry_scope_id: str, count: int
+    ) -> list[str]:
+        if count < 0:
+            raise ValueError("Package V3 MCP allocation count must be non-negative")
+        if count == 0:
+            return []
+        with self._connection() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            row = connection.execute(
+                "SELECT next_mcp_sequence FROM package_registry_heads_v3 "
+                "WHERE registry_scope_id=?",
+                (registry_scope_id,),
+            ).fetchone()
+            if row is None:
+                connection.rollback()
+                raise RegistryError("Package V3 Registry head does not exist")
+            start = int(row["next_mcp_sequence"])
+            connection.execute(
+                "UPDATE package_registry_heads_v3 SET next_mcp_sequence=?,updated_at=? "
+                "WHERE registry_scope_id=?",
+                (start + count, _now(), registry_scope_id),
+            )
+            connection.commit()
+        return [f"MCP-{value:06d}" for value in range(start, start + count)]
+
+    def get_package_registry_batch_v3(
+        self, *, registry_scope_id: str, batch_id: str
+    ) -> dict[str, Any] | None:
+        with self._read_connection() as connection:
+            row = connection.execute(
+                "SELECT * FROM package_registry_batches_v3 "
+                "WHERE registry_scope_id=? AND batch_id=?",
+                (registry_scope_id, batch_id),
+            ).fetchone()
+        if row is None:
+            return None
+        return {
+            "registry_scope_id": registry_scope_id,
+            "batch_id": batch_id,
+            "base_registry_version": int(row["base_registry_version"]),
+            "input_hash": str(row["input_hash"]),
+            "status": str(row["status"]),
+            "response_a_payload": json.loads(str(row["response_a_payload_json"]))
+            if row["response_a_payload_json"] is not None
+            else None,
+            "staged_changes": json.loads(str(row["staged_changes_json"]))
+            if row["staged_changes_json"] is not None
+            else None,
+            "affected_mcp_ids": json.loads(str(row["affected_mcp_ids_json"]))
+            if row["affected_mcp_ids_json"] is not None
+            else [],
+            "error_code": row["error_code"],
+        }
+
+    def save_package_registry_batch_v3(
+        self,
+        *,
+        registry_scope_id: str,
+        batch_id: str,
+        base_registry_version: int,
+        input_hash: str,
+        status: str,
+        response_a_payload: dict[str, Any] | None = None,
+        staged_changes: dict[str, Any] | None = None,
+        affected_mcp_ids: Sequence[str] = (),
+        error_code: str | None = None,
+    ) -> None:
+        with self._connection() as connection:
+            existing = connection.execute(
+                "SELECT base_registry_version,input_hash,status FROM package_registry_batches_v3 "
+                "WHERE registry_scope_id=? AND batch_id=?",
+                (registry_scope_id, batch_id),
+            ).fetchone()
+            if existing is not None and (
+                int(existing["base_registry_version"]) != base_registry_version
+                or str(existing["input_hash"]) != input_hash
+            ):
+                raise ImmutableRecordConflict(f"Package V3 batch {batch_id!r} changed identity")
+            now = _now()
+            connection.execute(
+                "INSERT INTO package_registry_batches_v3("
+                "registry_scope_id,batch_id,base_registry_version,input_hash,status,"
+                "response_a_payload_json,staged_changes_json,affected_mcp_ids_json,error_code,"
+                "created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?) "
+                "ON CONFLICT(registry_scope_id,batch_id) DO UPDATE SET "
+                "status=excluded.status,response_a_payload_json=COALESCE("
+                "excluded.response_a_payload_json,package_registry_batches_v3.response_a_payload_json),"
+                "staged_changes_json=COALESCE(excluded.staged_changes_json,"
+                "package_registry_batches_v3.staged_changes_json),"
+                "affected_mcp_ids_json=excluded.affected_mcp_ids_json,"
+                "error_code=excluded.error_code,updated_at=excluded.updated_at",
+                (
+                    registry_scope_id,
+                    batch_id,
+                    base_registry_version,
+                    input_hash,
+                    status,
+                    _json_payload(response_a_payload) if response_a_payload is not None else None,
+                    _json_payload(staged_changes) if staged_changes is not None else None,
+                    _json_payload(sorted(set(affected_mcp_ids))),
+                    error_code,
+                    now,
+                    now,
+                ),
+            )
+            connection.commit()
+
+    def save_package_registry_description_task_v3(
+        self,
+        *,
+        registry_scope_id: str,
+        batch_id: str,
+        mcp_id: str,
+        input_hash: str,
+        status: str,
+        payload: dict[str, Any] | None = None,
+        error_code: str | None = None,
+    ) -> None:
+        self.save_package_registry_description_tasks_v3(
+            [
+                {
+                    "registry_scope_id": registry_scope_id,
+                    "batch_id": batch_id,
+                    "mcp_id": mcp_id,
+                    "input_hash": input_hash,
+                    "status": status,
+                    "payload": payload,
+                    "error_code": error_code,
+                }
+            ]
+        )
+
+    def save_package_registry_description_tasks_v3(
+        self, records: Sequence[dict[str, Any]], *, chunk_size: int = 256
+    ) -> dict[str, int]:
+        ordered = sorted(
+            records,
+            key=lambda item: (
+                str(item["registry_scope_id"]),
+                str(item["batch_id"]),
+                str(item["mcp_id"]),
+            ),
+        )
+        transactions = 0
+        for offset in range(0, len(ordered), max(1, chunk_size)):
+            chunk = ordered[offset : offset + max(1, chunk_size)]
+            now = _now()
+            with self._connection() as connection:
+                connection.execute("BEGIN IMMEDIATE")
+                connection.executemany(
+                "INSERT INTO package_registry_description_tasks_v3("
+                "registry_scope_id,batch_id,mcp_id,input_hash,status,payload_json,error_code,"
+                "attempt_count,updated_at) VALUES (?,?,?,?,?,?,?,?,?) "
+                "ON CONFLICT(registry_scope_id,batch_id,mcp_id) DO UPDATE SET "
+                "input_hash=excluded.input_hash,status=excluded.status,payload_json=excluded.payload_json,"
+                "error_code=excluded.error_code,attempt_count="
+                "package_registry_description_tasks_v3.attempt_count+1,updated_at=excluded.updated_at",
+                    [
+                        (
+                            str(item["registry_scope_id"]),
+                            str(item["batch_id"]),
+                            str(item["mcp_id"]),
+                            str(item["input_hash"]),
+                            str(item["status"]),
+                            _json_payload(item.get("payload"))
+                            if item.get("payload") is not None
+                            else None,
+                            item.get("error_code"),
+                            1,
+                            now,
+                        )
+                        for item in chunk
+                    ],
+                )
+                connection.commit()
+            transactions += 1
+        return {"rows": len(ordered), "transactions": transactions}
+
+    def list_package_registry_description_tasks_v3(
+        self, *, registry_scope_id: str, batch_id: str
+    ) -> list[dict[str, Any]]:
+        with self._read_connection(snapshot=True) as connection:
+            rows = connection.execute(
+                "SELECT * FROM package_registry_description_tasks_v3 "
+                "WHERE registry_scope_id=? AND batch_id=? ORDER BY mcp_id",
+                (registry_scope_id, batch_id),
+            ).fetchall()
+        return [
+            {
+                "mcp_id": str(row["mcp_id"]),
+                "input_hash": str(row["input_hash"]),
+                "status": str(row["status"]),
+                "payload": json.loads(str(row["payload_json"]))
+                if row["payload_json"] is not None
+                else None,
+                "error_code": row["error_code"],
+                "attempt_count": int(row["attempt_count"]),
+            }
+            for row in rows
+        ]
+
+    def finalize_package_registry_batch_v3(
+        self,
+        *,
+        registry_scope_id: str,
+        batch_id: str,
+        expected_base_version: int,
+        expected_base_hash: str,
+        registry_version: int,
+        registry_hash: str,
+        snapshot: dict[str, Any],
+    ) -> bool:
+        """CAS-publish one complete Registry version in one SQLite transaction."""
+
+        with self._connection() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            head = connection.execute(
+                "SELECT * FROM package_registry_heads_v3 WHERE registry_scope_id=?",
+                (registry_scope_id,),
+            ).fetchone()
+            if head is None:
+                raise RegistryError("Package V3 Registry head does not exist")
+            current_version = int(head["current_registry_version"])
+            current_hash = str(head["current_registry_hash"])
+            if current_version == registry_version and current_hash == registry_hash:
+                connection.rollback()
+                return False
+            if current_version != expected_base_version or current_hash != expected_base_hash:
+                connection.rollback()
+                raise VersionConflict("Package V3 Registry CAS base changed")
+            now = _now()
+            active_mcps = list(snapshot.get("mcps", []))
+            redirects = dict(snapshot.get("redirects", {}))
+            connection.executemany(
+                    "INSERT INTO package_mcp_heads_v3("
+                    "registry_scope_id,mcp_id,canonical,compressed_description,status,redirect_to,"
+                    "created_registry_version,updated_registry_version,payload_json"
+                    ") VALUES (?,?,?,?,?,?,?,?,?) ON CONFLICT(registry_scope_id,mcp_id) "
+                    "DO UPDATE SET canonical=excluded.canonical,"
+                    "compressed_description=excluded.compressed_description,status='ACTIVE',"
+                    "redirect_to=NULL,updated_registry_version=excluded.updated_registry_version,"
+                    "payload_json=excluded.payload_json",
+                    [(
+                        registry_scope_id,
+                        str(value["mcp_id"]),
+                        str(value["canonical"]),
+                        str(value["compressed_description"]),
+                        "ACTIVE",
+                        None,
+                        int(value["created_registry_version"]),
+                        registry_version,
+                        _json_payload(value),
+                    ) for value in active_mcps],
+                )
+            connection.executemany(
+                    "UPDATE package_mcp_heads_v3 SET status='MERGED',redirect_to=?,"
+                    "updated_registry_version=? WHERE registry_scope_id=? AND mcp_id=?",
+                    [
+                        (target_id, registry_version, registry_scope_id, source_id)
+                        for source_id, target_id in sorted(redirects.items())
+                    ],
+                )
+            connection.execute(
+                "DELETE FROM package_mcp_occurrence_memberships_v3 WHERE registry_scope_id=?",
+                (registry_scope_id,),
+            )
+            connection.executemany(
+                        "INSERT INTO package_mcp_occurrence_memberships_v3("
+                        "registry_scope_id,occurrence_id,mcp_id,assigned_registry_version,updated_at"
+                        ") VALUES (?,?,?,?,?)",
+                        [
+                            (
+                                registry_scope_id,
+                                occurrence_id,
+                                value["mcp_id"],
+                                registry_version,
+                                now,
+                            )
+                            for value in active_mcps
+                            for occurrence_id in value.get("occurrence_ids", [])
+                        ],
+                    )
+            connection.execute(
+                "INSERT INTO package_registry_versions_v3("
+                "registry_scope_id,registry_version,registry_hash,source_batch_id,snapshot_json,created_at"
+                ") VALUES (?,?,?,?,?,?)",
+                (
+                    registry_scope_id,
+                    registry_version,
+                    registry_hash,
+                    batch_id,
+                    _json_payload(snapshot),
+                    now,
+                ),
+            )
+            cursor = connection.execute(
+                "UPDATE package_registry_heads_v3 SET current_registry_version=?,"
+                "current_registry_hash=?,status='FINALIZED',updated_at=? "
+                "WHERE registry_scope_id=? AND current_registry_version=? "
+                "AND current_registry_hash=?",
+                (
+                    registry_version,
+                    registry_hash,
+                    now,
+                    registry_scope_id,
+                    expected_base_version,
+                    expected_base_hash,
+                ),
+            )
+            if cursor.rowcount != 1:
+                connection.rollback()
+                raise VersionConflict("Package V3 Registry CAS update failed")
+            connection.execute(
+                "UPDATE package_registry_batches_v3 SET status='FINALIZED',error_code=NULL,"
+                "updated_at=? WHERE registry_scope_id=? AND batch_id=?",
+                (now, registry_scope_id, batch_id),
+            )
+            connection.commit()
+        return True
 
     def save_parent_occurrence_partition(
         self,
@@ -4389,7 +5259,7 @@ class SQLiteCDECRRegistry:
     def get_latest_completed_document_result_for_message(
         self, message_id: str
     ) -> SingleDocumentResult | None:
-        with self._connection() as connection:
+        with self._read_connection() as connection:
             row = connection.execute(
                 """
                 SELECT result_json FROM document_processing_runs

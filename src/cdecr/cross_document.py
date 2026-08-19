@@ -15,10 +15,11 @@ from datetime import UTC, datetime
 from functools import partial
 from pathlib import Path
 from time import perf_counter
-from typing import TypeVar, cast
+from typing import Literal, TypeVar, cast
 
 from pydantic import BaseModel, ValidationError
 
+from cdecr.atomic_exact_recall import ExactCosineRecallIndex
 from cdecr.atomic_identity import (
     CanonicalIdentityView,
     IdentityComparison,
@@ -116,26 +117,66 @@ from cdecr.models import (
     ModelAdapterError,
     ModelTier,
 )
-from cdecr.package_projection import project_frozen_partition
+from cdecr.package_global_clustering import (
+    PACKAGE_V3_MODEL,
+    PACKAGE_V3_REASONING_EFFORT,
+    PackageWorkflowV3Service,
+)
+from cdecr.package_projection import project_frozen_partition_v3
 from cdecr.parent_occurrence import ParentOccurrenceService
 from cdecr.ports import (
     CDECRRegistry,
     DecisionAuditRecord,
     EmbeddingClient,
     EmbeddingResult,
+    ResponsesModelRequest,
     StructuredModelClient,
     StructuredModelRequest,
     StructuredModelResult,
 )
+from cdecr.provider_resilience import is_provider_failure
 from cdecr.scheduler import take_scheduled_call_metrics
 from cdecr.single_document_contracts import ModelCallSummary
 from cdecr.wire import compact_json, wire_ref_metadata
 
-ENGINE_VERSION = "cdecr-cross-document-v30-parent-occurrence-package-v2.0r"
-PROMPT_VERSION = "cdecr-parent-occurrence-package-prompts-v2.0r"
+ENGINE_VERSION = "cdecr-cross-document-v31-package-global-registry-v3"
+PROMPT_VERSION = "cdecr-package-global-registry-prompts-v3"
 WIRE_PROTOCOL_VERSION = "cdecr-cross-document-wire-atomic-dictionary-v9"
 ATOMIC_ASSIGNMENT_POLICY_VERSION = "atomic-assignment-policy-v5-late-convergence"
 ATOMIC_DECISION_MENTION_BATCH = 3
+N9_BATCH_PACKING_VERSION = "n9-candidate-overlap-packing-v1"
+
+
+def _pack_mentions_by_candidate_overlap(
+    mentions: Sequence[EventMention],
+    candidates: Mapping[str, Sequence[AtomicCandidate]],
+) -> list[list[EventMention]]:
+    remaining = {item.mention_id: item for item in mentions}
+    candidate_ids = {
+        mention_id: {item.event.event_id for item in values}
+        for mention_id, values in candidates.items()
+    }
+    batches: list[list[EventMention]] = []
+    while remaining:
+        seed_id = min(remaining)
+        batch = [remaining.pop(seed_id)]
+        batch_union = set(candidate_ids.get(seed_id, set()))
+        while remaining and len(batch) < ATOMIC_DECISION_MENTION_BATCH:
+            def rank(
+                mention_id: str,
+                current: frozenset[str] = frozenset(batch_union),
+            ) -> tuple[int, float, int, str]:
+                values = candidate_ids.get(mention_id, set())
+                shared = len(current.intersection(values))
+                union = len(current.union(values))
+                jaccard = shared / union if union else 0.0
+                return (-shared, -jaccard, len(values), mention_id)
+
+            selected_id = min(remaining, key=rank)
+            batch.append(remaining.pop(selected_id))
+            batch_union.update(candidate_ids.get(selected_id, set()))
+        batches.append(batch)
+    return batches
 ATOMIC_TOP_K = 5
 EMBEDDING_RECALL_THRESHOLD = 0.82
 HIGH_IMPACT_FAMILIES = {
@@ -227,6 +268,25 @@ def _structured_request_metadata(request: StructuredModelRequest) -> dict[str, o
 def _metadata_int(metadata: dict[str, object], key: str) -> int:
     value = metadata.get(key)
     return value if isinstance(value, int) else 0
+
+
+def _model_result_transport_metadata(result: StructuredModelResult) -> dict[str, object]:
+    return {
+        "transport": result.transport,
+        "output_mode": result.output_mode,
+        "effective_reasoning_effort": result.effective_reasoning_effort,
+        "provider_key_fingerprint": result.provider_key_fingerprint,
+        "parse_diagnostics": result.parse_diagnostics,
+    }
+
+
+def _model_error_parse_metadata(exc: Exception) -> dict[str, object]:
+    if not isinstance(exc, ModelAdapterError):
+        return {}
+    return {
+        "provider_key_fingerprint": exc.provider_key_fingerprint,
+        "parse_diagnostics": exc.parse_diagnostics,
+    }
 
 
 def _resolved_field_ids(
@@ -466,6 +526,20 @@ def _cosine(left: Sequence[float], right: Sequence[float]) -> float:
     return max(-1.0, min(1.0, dot / (left_norm * right_norm)))
 
 
+def is_content_repairable(error: Exception) -> bool:
+    """Return whether another LLM call can repair the returned content itself."""
+
+    if isinstance(error, (ValidationError, ValueError)):
+        return True
+    if isinstance(error, CrossDocumentPipelineError):
+        return error.code in {
+            "invalid_json",
+            "invalid_json_shape",
+            "structured_output_invalid",
+        }
+    return False
+
+
 def _prompt(name: str) -> str:
     return (Path(__file__).parent / "prompts" / "v1" / name).read_text(encoding="utf-8")
 
@@ -485,6 +559,8 @@ class _AuditedModels:
         summaries: list[ModelCallSummary],
         m4_client: StructuredModelClient | None = None,
         model_m4: str | None = None,
+        responses_m4_client: StructuredModelClient | None = None,
+        responses_model_m4: str | None = None,
     ) -> None:
         self.registry = registry
         self.run_id = run_id
@@ -492,12 +568,28 @@ class _AuditedModels:
         self.m2_client = m2_client
         self.m3_client = m3_client
         self.m4_client = m4_client or m3_client
+        self.responses_m4_client = responses_m4_client or self.m4_client
         self.model_m1 = model_m1
         self.model_m2 = model_m2
         self.model_m3 = model_m3
         self.model_m4 = model_m4 or model_m3
+        self.responses_model_m4 = responses_model_m4 or self.model_m4
         self.summaries = summaries
         self._call_context = threading.local()
+
+    def _client_and_model(
+        self,
+        execution_tier: ModelTier,
+        *,
+        responses: bool = False,
+    ) -> tuple[StructuredModelClient, str]:
+        if responses and execution_tier is ModelTier.M4:
+            return self.responses_m4_client, self.responses_model_m4
+        if execution_tier is ModelTier.M4:
+            return self.m4_client, self.model_m4
+        if execution_tier is ModelTier.M3:
+            return self.m3_client, self.model_m3
+        return self.m2_client, self.model_m2
 
     def current_model_call_id(self) -> str | None:
         value = getattr(self._call_context, "model_call_id", None)
@@ -594,7 +686,9 @@ class _AuditedModels:
         validator: Callable[[_T], None],
         payload_adapter: Callable[[object], object] | None = None,
         attempt_payload_adapter: Callable[[object, str], object] | None = None,
+        execution_tier: ModelTier | None = None,
     ) -> _T:
+        lane = execution_tier or tier
         request_key = _hash_json({"stage": stage, "user": request.user_prompt})[:16]
 
         def adapt_payload(payload: object, *, attempt: str) -> object:
@@ -676,7 +770,13 @@ class _AuditedModels:
                 json_schema=output_type.model_json_schema(),
             )
             try:
-                repaired = self._structured(tier=tier, stage=stage, request=repair, repaired=True)
+                repaired = self._structured(
+                    tier=tier,
+                    execution_tier=lane,
+                    stage=stage,
+                    request=repair,
+                    repaired=True,
+                )
                 output = output_type.model_validate(
                     adapt_payload(repaired.payload, attempt="repair")
                 )
@@ -688,7 +788,13 @@ class _AuditedModels:
                 raise CrossDocumentPipelineError(stage, "structured_output_invalid") from exc
 
         try:
-            result = self._structured(tier=tier, stage=stage, request=request, repaired=False)
+            result = self._structured(
+                tier=tier,
+                execution_tier=lane,
+                stage=stage,
+                request=request,
+                repaired=False,
+            )
         except CrossDocumentPipelineError as first_error:
             if (
                 first_error.code in {"invalid_json", "invalid_json_shape"}
@@ -717,6 +823,140 @@ class _AuditedModels:
                 validation_error = str(first_error)
             return repair_and_validate(result.payload, validation_error)
 
+    def typed_response(
+        self,
+        *,
+        tier: ModelTier,
+        stage: str,
+        request: ResponsesModelRequest,
+        output_type: type[_T],
+        validator: Callable[[_T], None],
+        execution_tier: ModelTier | None = None,
+    ) -> _T:
+        """Execute one audited Responses request with one same-contract repair."""
+
+        lane = execution_tier or tier
+
+        def execute(value: ResponsesModelRequest, *, repaired: bool) -> StructuredModelResult:
+            call_stage = f"{stage}_repair" if repaired else stage
+            client, model = self._client_and_model(lane, responses=True)
+            complete_response = getattr(client, "complete_response", None)
+            if not callable(complete_response):
+                raise CrossDocumentPipelineError(call_stage, "responses_api_unavailable")
+            call_id = str(uuid.uuid4())
+            prepared = value.model_copy(
+                update={
+                    "metadata": {
+                        **value.metadata,
+                        "stage": call_stage,
+                        "priority": "repair" if repaired else "normal",
+                        "model_profile": tier.value,
+                        "scheduler_lane": lane.value,
+                    }
+                }
+            )
+            input_hash = _hash_json(prepared.input)
+            schema_hash = _hash_json(prepared.json_schema)
+            started = perf_counter()
+            try:
+                result = cast(StructuredModelResult, complete_response(prepared))
+            except Exception as exc:
+                scheduled = take_scheduled_call_metrics(client)
+                latency, code = _safe_error(exc)
+                self.registry.record_model_call(
+                    model_call_id=call_id,
+                    run_id=self.run_id,
+                    tier=tier.value,
+                    model=model,
+                    status="FAILED",
+                    input_tokens=(
+                        exc.input_tokens if isinstance(exc, ModelAdapterError) else None
+                    ),
+                    output_tokens=(
+                        exc.output_tokens if isinstance(exc, ModelAdapterError) else None
+                    ),
+                    latency_ms=latency,
+                    error_code=code,
+                    metadata={
+                        **prepared.metadata,
+                        "attempt": "repair" if repaired else "initial",
+                        "queue_wait_ms": scheduled.queue_wait_ms if scheduled else 0,
+                        "output_mode": prepared.output_mode,
+                        **_model_error_parse_metadata(exc),
+                    },
+                    stage=call_stage,
+                    prompt_version=PROMPT_VERSION,
+                    schema_hash=schema_hash,
+                    input_hash=input_hash,
+                )
+                raise CrossDocumentPipelineError(call_stage, code) from exc
+            self.registry.record_model_call(
+                model_call_id=call_id,
+                run_id=self.run_id,
+                tier=tier.value,
+                model=result.model,
+                status="SUCCEEDED",
+                input_tokens=result.input_tokens,
+                output_tokens=result.output_tokens,
+                latency_ms=result.latency_ms,
+                error_code=None,
+                metadata={
+                    **prepared.metadata,
+                    "attempt": "repair" if repaired else "initial",
+                    "reasoning_tokens": result.reasoning_tokens,
+                    "cached_input_tokens": result.cached_input_tokens,
+                    "response_id": result.response_id,
+                    "output_mode": prepared.output_mode,
+                    "elapsed_ms": round((perf_counter() - started) * 1000),
+                    "output_hash": _hash_json(result.payload),
+                    **_model_result_transport_metadata(result),
+                },
+                stage=call_stage,
+                prompt_version=PROMPT_VERSION,
+                schema_hash=schema_hash,
+                input_hash=input_hash,
+            )
+            self.summaries.append(
+                ModelCallSummary(
+                    stage=call_stage,
+                    tier=tier.value,
+                    model=result.model,
+                    input_tokens=result.input_tokens,
+                    output_tokens=result.output_tokens,
+                    latency_ms=result.latency_ms,
+                    repaired=repaired,
+                )
+            )
+            return result
+
+        try:
+            initial = execute(request, repaired=False)
+            output = output_type.model_validate(initial.payload)
+            validator(output)
+            return output
+        except (ValidationError, ValueError, CrossDocumentPipelineError) as first_error:
+            if not is_content_repairable(first_error):
+                raise
+            repair_input = [
+                *request.input,
+                {
+                    "role": "user",
+                    "content": json.dumps(
+                        {
+                            "repair": "Correct the prior invalid output using only input IDs.",
+                            "validation_error": str(first_error)[:1200],
+                        },
+                        ensure_ascii=False,
+                    ),
+                },
+            ]
+            repaired = execute(
+                request.model_copy(update={"input": repair_input}), repaired=True
+            )
+            output = output_type.model_validate(repaired.payload)
+            validator(output)
+            return output
+
     def typed_many(
         self,
         *,
@@ -725,27 +965,17 @@ class _AuditedModels:
         requests: Sequence[StructuredModelRequest],
         output_type: type[_T],
         validators: Sequence[Callable[[_T], None]],
+        execution_tier: ModelTier | None = None,
     ) -> list[_T | Exception]:
         """Validate one parallel stage wave without creating a private HTTP/thread pool."""
+
+        lane = execution_tier or tier
 
         if len(requests) != len(validators):
             raise ValueError("typed_many requests and validators must align")
         if not requests:
             return []
-        client = (
-            self.m4_client
-            if tier is ModelTier.M4
-            else self.m3_client
-            if tier is ModelTier.M3
-            else self.m2_client
-        )
-        model = (
-            self.model_m4
-            if tier is ModelTier.M4
-            else self.model_m3
-            if tier is ModelTier.M3
-            else self.model_m2
-        )
+        client, model = self._client_and_model(lane)
         complete_many = getattr(client, "complete_many", None)
         if complete_many is None:
             raw_results: list[StructuredModelResult | Exception] = []
@@ -762,6 +992,8 @@ class _AuditedModels:
                             **request.metadata,
                             "stage": stage,
                             "priority": "normal",
+                            "model_profile": tier.value,
+                            "scheduler_lane": lane.value,
                         }
                     }
                 )
@@ -774,7 +1006,11 @@ class _AuditedModels:
             zip(requests, validators, raw_results, strict=True)
         ):
             call_id = str(uuid.uuid4())
-            metadata = _structured_request_metadata(request)
+            metadata = {
+                **_structured_request_metadata(request),
+                "model_profile": tier.value,
+                "scheduler_lane": lane.value,
+            }
             input_hash = _hash_json(
                 {"system": request.system_prompt, "user": request.user_prompt}
             )
@@ -793,7 +1029,12 @@ class _AuditedModels:
                     ),
                     latency_ms=latency,
                     error_code=code,
-                    metadata={**metadata, "attempt": "initial", "batch_index": index},
+                    metadata={
+                        **metadata,
+                        "attempt": "initial",
+                        "batch_index": index,
+                        **_model_error_parse_metadata(raw),
+                    },
                     stage=stage,
                     prompt_version=PROMPT_VERSION,
                     schema_hash=schema_hash,
@@ -828,6 +1069,7 @@ class _AuditedModels:
                     "attempt": "initial",
                     "batch_index": index,
                     "output_hash": _hash_json(raw.payload),
+                    **_model_result_transport_metadata(raw),
                 },
                 stage=stage,
                 prompt_version=PROMPT_VERSION,
@@ -870,6 +1112,7 @@ class _AuditedModels:
                     outputs.append(
                         self.typed(
                             tier=tier,
+                            execution_tier=lane,
                             stage=stage,
                             request=repair_request,
                             output_type=output_type,
@@ -884,25 +1127,14 @@ class _AuditedModels:
         self,
         *,
         tier: ModelTier,
+        execution_tier: ModelTier | None = None,
         stage: str,
         request: StructuredModelRequest,
         repaired: bool,
     ) -> StructuredModelResult:
         call_stage = f"{stage}_repair" if repaired else stage
-        client = (
-            self.m4_client
-            if tier is ModelTier.M4
-            else self.m3_client
-            if tier is ModelTier.M3
-            else self.m2_client
-        )
-        model = (
-            self.model_m4
-            if tier is ModelTier.M4
-            else self.model_m3
-            if tier is ModelTier.M3
-            else self.model_m2
-        )
+        lane = execution_tier or tier
+        client, model = self._client_and_model(lane)
         call_id = str(uuid.uuid4())
         self._call_context.model_call_id = call_id
         request = request.model_copy(
@@ -911,6 +1143,8 @@ class _AuditedModels:
                     **request.metadata,
                     "stage": call_stage,
                     "priority": "repair" if repaired else "normal",
+                    "model_profile": tier.value,
+                    "scheduler_lane": lane.value,
                 }
             }
         )
@@ -936,6 +1170,10 @@ class _AuditedModels:
                     **request_metadata,
                     "attempt": "repair" if repaired else "initial",
                     "queue_wait_ms": scheduled.queue_wait_ms if scheduled else 0,
+                    "attempt_count": scheduled.attempt_count if scheduled else 1,
+                    "provider_wait_ms": scheduled.provider_wait_ms if scheduled else 0,
+                    "backoff_ms": scheduled.backoff_ms if scheduled else 0,
+                    **_model_error_parse_metadata(exc),
                     "cache_hit": False,
                 },
                 stage=call_stage,
@@ -985,8 +1223,12 @@ class _AuditedModels:
                 **request_metadata,
                 "attempt": "repair" if repaired else "initial",
                 "queue_wait_ms": scheduled.queue_wait_ms if scheduled else 0,
+                "attempt_count": scheduled.attempt_count if scheduled else 1,
+                "provider_wait_ms": scheduled.provider_wait_ms if scheduled else 0,
+                "backoff_ms": scheduled.backoff_ms if scheduled else 0,
                 "output_hash": _hash_json(result.payload),
                 "cache_hit": False,
+                **_model_result_transport_metadata(result),
             },
             stage=call_stage,
             prompt_version=PROMPT_VERSION,
@@ -1021,25 +1263,43 @@ class CrossDocumentEngine:
         m2_client: StructuredModelClient,
         m3_client: StructuredModelClient,
         m4_client: StructuredModelClient | None = None,
+        package_m4_client: StructuredModelClient | None = None,
         model_m1: str = "qwen3.7-text-embedding",
-        model_m2: str = "deepseek-v4-flash",
-        model_m3: str = "qwen3.7-plus",
+        model_m2: str = "deepseek-v4-flash-0731",
+        model_m3: str = "deepseek-v4-flash-0731",
         model_m4: str | None = None,
+        package_model_m4: str = PACKAGE_V3_MODEL,
         hard_cannot_link_mode: str = HardCannotLinkMode.ENFORCE.value,
         n9_wire_protocol: str = "on",
         n9_active_requests: int = 24,
+        n9_overlap_batch_packing: bool = False,
+        parent_compact_wire_dto: bool = True,
         atomic_enforced_rules: Sequence[str] | None = None,
         knowledge_base: V2KnowledgeBase | None = None,
+        package_registry_scope_id: str = "cdecr-default",
+        package_v3_batch_size: int = 200,
+        package_v3_context_token_budget: int = 100_000,
+        package_v3_context_reserve_tokens: int = 8_000,
+        package_v3_description_token_budget: int = 32_000,
+        package_v3_description_active_requests: int = 16,
+        package_v3_reasoning_effort: Literal["none", "low", "high", "max"] = "low",
+        package_v3_description_reasoning_effort: Literal[
+            "none", "low", "high", "max"
+        ] = "none",
+        package_v3_strict_output: bool = False,
+        atomic_cosine_backend: str = "matrix",
     ) -> None:
         self.registry = registry
         self.embedding_client = embedding_client
         self.m2_client = m2_client
         self.m3_client = m3_client
         self.m4_client = m4_client or m3_client
+        self.package_m4_client = package_m4_client or self.m4_client
         self.model_m1 = model_m1
         self.model_m2 = model_m2
         self.model_m3 = model_m3
         self.model_m4 = model_m4 or model_m3
+        self.package_model_m4 = package_model_m4
         requested_hard_cannot_link_mode = HardCannotLinkMode(hard_cannot_link_mode)
         self.legacy_hard_cannot_link_requested_mode = requested_hard_cannot_link_mode
         self.hard_cannot_link_mode = requested_hard_cannot_link_mode
@@ -1058,10 +1318,25 @@ class CrossDocumentEngine:
             raise ValueError("N9 optimized dictionary protocol is mandatory")
         self.n9_wire_protocol = n9_wire_protocol
         self.n9_active_requests = max(1, n9_active_requests)
+        self.n9_overlap_batch_packing = n9_overlap_batch_packing
+        self.parent_compact_wire_dto = parent_compact_wire_dto
         self._embedding_telemetry_by_stage: dict[str, EmbeddingBatchTelemetry] = {}
         self._bulk_audit_degraded = False
         self._bulk_batch_audit_write = False
         self.knowledge_base = knowledge_base or V2KnowledgeBase()
+        self.package_registry_scope_id = package_registry_scope_id
+        self.package_service = PackageWorkflowV3Service(
+            registry=registry,
+            batch_size=package_v3_batch_size,
+            context_token_budget=package_v3_context_token_budget,
+            context_reserve_tokens=package_v3_context_reserve_tokens,
+            description_pack_token_budget=package_v3_description_token_budget,
+            description_active_requests=package_v3_description_active_requests,
+            reasoning_effort=package_v3_reasoning_effort,
+            description_reasoning_effort=package_v3_description_reasoning_effort,
+            strict_output=package_v3_strict_output,
+        )
+        self.atomic_cosine_backend = atomic_cosine_backend
 
     @property
     def model_config(self) -> dict[str, object]:
@@ -1082,7 +1357,14 @@ class CrossDocumentEngine:
                 rule.value for rule in self.atomic_enforced_rules
             ),
             "atomic_assignment_policy_version": ATOMIC_ASSIGNMENT_POLICY_VERSION,
-            "package_partition_policy_version": "parent-occurrence-package-v2.0r",
+            "n9_overlap_batch_packing": self.n9_overlap_batch_packing,
+            "parent_compact_wire_dto": self.parent_compact_wire_dto,
+            "package_partition_policy_version": "package-global-registry-v3",
+            "package_v3_model": self.package_model_m4,
+            "package_v3_reasoning_effort": PACKAGE_V3_REASONING_EFFORT,
+            "package_v3_description_reasoning_effort": (
+                self.package_service.description_reasoning_effort
+            ),
             "hold_policy": "removed",
             "wire_protocol_version": WIRE_PROTOCOL_VERSION,
         }
@@ -1113,7 +1395,7 @@ class CrossDocumentEngine:
                 "identity_compiler_version": IDENTITY_COMPILER_VERSION,
                 "hard_cannot_link_mode": self.hard_cannot_link_mode.value,
                 "atomic_assignment_policy_version": ATOMIC_ASSIGNMENT_POLICY_VERSION,
-                "package_partition_policy_version": "parent-occurrence-package-v2.0r",
+                "package_partition_policy_version": "package-global-registry-v3",
                 "hold_policy": "removed",
                 "wire_protocol_version": WIRE_PROTOCOL_VERSION,
                 "model_config": self.model_config,
@@ -1273,6 +1555,21 @@ class CrossDocumentEngine:
                 model_m4=self.model_m4,
                 summaries=summaries,
             )
+            package_models = _AuditedModels(
+                registry=self.registry,
+                run_id=run_id,
+                embedding_client=self.embedding_client,
+                m2_client=self.m2_client,
+                m3_client=self.m3_client,
+                m4_client=self.m4_client,
+                responses_m4_client=self.package_m4_client,
+                model_m1=self.model_m1,
+                model_m2=self.model_m2,
+                model_m3=self.model_m3,
+                model_m4=self.model_m4,
+                responses_model_m4=self.package_model_m4,
+                summaries=summaries,
+            )
             current_events = self.registry.list_current_atomic_events(limit=10000)
             eligible_mentions = [
                 mention
@@ -1312,15 +1609,20 @@ class CrossDocumentEngine:
             )
             atomic_events = self._correct_atomic(atomic_events, mentions, run_id=run_id)
             final_atomic_events = self.registry.list_current_atomic_events(limit=10000)
-            parent_result = ParentOccurrenceService(registry=self.registry).run(
+            parent_service = ParentOccurrenceService(
+                registry=self.registry,
+                compact_wire_dto=self.parent_compact_wire_dto,
+            )
+            pool = parent_service.build_parent_occurrence_pool(
                 events=final_atomic_events,
                 mentions=None,
                 sources=None,
                 existing_packages=self.registry.list_current_packages(limit=10000),
                 models=models,
                 run_id=run_id,
+                persistence_scope_id=f"{self.package_registry_scope_id}:induction",
             )
-            if parent_result.status != "FINALIZED" or parent_result.partition is None:
+            if pool.status != "FINALIZED":
                 result = CrossDocumentResult(
                     run_id=run_id,
                     processing_key=processing_key,
@@ -1338,6 +1640,32 @@ class CrossDocumentEngine:
                     finished_at=datetime.now(UTC),
                 )
                 return result
+            parent_result = self.package_service.run(
+                events=final_atomic_events,
+                proposals=pool.proposals,
+                external_links=pool.external_links,
+                models=package_models,
+                run_id=run_id,
+                registry_scope_id=self.package_registry_scope_id,
+            )
+            if parent_result.status != "FINALIZED" or parent_result.partition is None:
+                result = CrossDocumentResult(
+                    run_id=run_id,
+                    processing_key=processing_key,
+                    message_id=message_id,
+                    status=CrossDocumentStatus.PARTIAL_PARENT_RESOLUTION,
+                    atomic_events=atomic_events,
+                    packages=[],
+                    atomic_assignments=atomic_assignments,
+                    package_assignments=[],
+                    model_calls=summaries,
+                    candidate_counts=candidate_counts,
+                    failure_stage="package_v3_registry",
+                    error_code="PARTIAL_PACKAGE_REGISTRY",
+                    started_at=started_at,
+                    finished_at=datetime.now(UTC),
+                )
+                return result
             existing_packages = self.registry.list_current_packages(limit=10000)
             (
                 packages,
@@ -1345,32 +1673,20 @@ class CrossDocumentEngine:
                 package_assignments,
                 external_relations,
                 redirects,
-            ) = project_frozen_partition(
+            ) = project_frozen_partition_v3(
                 parent_result.partition,
                 events=final_atomic_events,
                 existing_packages=existing_packages,
                 run_id=run_id,
             )
-            assignment_by_event = {item.event_id: item for item in package_assignments}
-            records: list[dict[str, object]] = [{"package": package} for package in packages]
-            records.extend(
-                {
-                    "memberships": [membership],
-                    "assignment": assignment_by_event[membership.event_id],
-                }
-                for membership in memberships
+            self.registry.activate_package_partition_v3(
+                packages=packages,
+                memberships=memberships,
+                assignments=package_assignments,
+                external_relations=external_relations,
+                redirects=redirects,
+                run_id=run_id,
             )
-            records.append({"external_relations": external_relations})
-            apply_result = self.registry.save_package_stage_batch(records, chunk_size=64)
-            if apply_result["degraded"]:
-                raise CrossDocumentPipelineError("package_apply", "PACKAGE_APPLY_DEGRADED")
-            for source_package_id, target_package_id in redirects:
-                self.registry.save_package_redirect(
-                    source_package_id=source_package_id,
-                    target_package_id=target_package_id,
-                    run_id=run_id,
-                    reason="PARENT_OCCURRENCE_V2_EXISTING_PARENT_CONTINUITY",
-                )
             current_atomic_events = self.registry.list_current_atomic_events(limit=10000)
             largest_cluster = max(
                 current_atomic_events,
@@ -1527,8 +1843,8 @@ class CrossDocumentEngine:
             vectors.update(generated)
             self._embedding_telemetry_by_stage["atomic_recall_m1"] = telemetry
             return vectors
-        for offset in range(0, len(missing), 10):
-            batch = missing[offset : offset + 10]
+        for offset in range(0, len(missing), 8):
+            batch = missing[offset : offset + 8]
             if not batch:
                 continue
             result = models.embed(
@@ -1592,8 +1908,8 @@ class CrossDocumentEngine:
             vectors.update(generated)
             self._embedding_telemetry_by_stage["atomic_identity_embedding"] = telemetry
             return vectors
-        for offset in range(0, len(missing), 10):
-            batch = missing[offset : offset + 10]
+        for offset in range(0, len(missing), 8):
+            batch = missing[offset : offset + 8]
             result = models.embed(
                 [identity_text for _, identity_text, _ in batch],
                 stage="atomic_identity_embedding",
@@ -1637,6 +1953,16 @@ class CrossDocumentEngine:
         )
         candidate_cards: dict[str, AtomicCandidateCard] = {}
         audit_buffer: list[DecisionAuditRecord] = []
+        exact_cosine_index = (
+            ExactCosineRecallIndex(atomic_vectors)
+            if self.atomic_cosine_backend == "matrix"
+            else None
+        )
+        matrix_scores_by_mention = (
+            exact_cosine_index.scores_many(mention_vectors, chunk_size=128)
+            if exact_cosine_index is not None
+            else {}
+        )
 
         def build_candidate_card(
             event: AtomicEvent,
@@ -1762,8 +2088,27 @@ class CrossDocumentEngine:
             }
             vector = mention_vectors.get(mention.mention_id)
             if vector is not None:
+                matrix_scores = (
+                    matrix_scores_by_mention.get(mention.mention_id, {})
+                    if exact_cosine_index is not None
+                    else {}
+                )
+                cutoff = None
+                if matrix_scores:
+                    ordered_raw = sorted(
+                        matrix_scores.items(), key=lambda item: (-item[1], item[0])
+                    )
+                    cutoff = ordered_raw[min(ATOMIC_TOP_K, len(ordered_raw)) - 1][1]
                 for event_id, candidate_vector in atomic_vectors.items():
-                    score = _cosine(vector, candidate_vector)
+                    score = (
+                        matrix_scores.get(event_id, 0.0)
+                        if exact_cosine_index is not None
+                        else _cosine(vector, candidate_vector)
+                    )
+                    if abs(score - EMBEDDING_RECALL_THRESHOLD) < 1e-10 or (
+                        cutoff is not None and abs(score - cutoff) < 1e-10
+                    ):
+                        score = _cosine(vector, candidate_vector)
                     scores[event_id] = score
                     if score >= EMBEDDING_RECALL_THRESHOLD:
                         routes.setdefault(event_id, set()).add(RecallRoute.PROPOSITION_EMBEDDING)
@@ -2106,10 +2451,89 @@ class CrossDocumentEngine:
                     possible_duplicate_atomic_ids=[],
                 )
         eligible_mentions = [mention for mention in mentions if eligible[mention.mention_id]]
-        batches = [
+        frozen_candidate_snapshot = {
+            mention.mention_id: tuple(
+                item.event.event_id for item in eligible[mention.mention_id]
+            )
+            for mention in eligible_mentions
+        }
+        sequential_batches = [
             eligible_mentions[offset : offset + ATOMIC_DECISION_MENTION_BATCH]
             for offset in range(0, len(eligible_mentions), ATOMIC_DECISION_MENTION_BATCH)
         ]
+        batches = (
+            _pack_mentions_by_candidate_overlap(eligible_mentions, eligible)
+            if self.n9_overlap_batch_packing
+            else sequential_batches
+        )
+
+        def unique_card_count(values: Sequence[Sequence[EventMention]]) -> int:
+            return sum(
+                len(
+                    {
+                        candidate.event.event_id
+                        for mention in batch
+                        for candidate in eligible[mention.mention_id]
+                    }
+                )
+                for batch in values
+            )
+
+        overlaps: list[int] = []
+        for batch in batches:
+            candidate_sets = [
+                {item.event.event_id for item in eligible[mention.mention_id]}
+                for mention in batch
+            ]
+            overlaps.append(
+                sum(
+                    len(left.intersection(right))
+                    for index, left in enumerate(candidate_sets)
+                    for right in candidate_sets[index + 1 :]
+                )
+            )
+        overlaps.sort()
+
+        def percentile(values: Sequence[int], ratio: float) -> int:
+            if not values:
+                return 0
+            return values[min(len(values) - 1, round((len(values) - 1) * ratio))]
+
+        sequential_unique = unique_card_count(sequential_batches)
+        packed_unique = unique_card_count(batches)
+        self._last_n9_packing_telemetry = {
+            "packing_version": N9_BATCH_PACKING_VERSION,
+            "enabled": self.n9_overlap_batch_packing,
+            "mention_count": len(eligible_mentions),
+            "batch_count": len(batches),
+            "batch_size_max": max((len(batch) for batch in batches), default=0),
+            "sequential_unique_card_count": sequential_unique,
+            "packed_unique_card_count": packed_unique,
+            "card_reuse_reduction_ratio": (
+                (sequential_unique - packed_unique) / sequential_unique
+                if sequential_unique
+                else 0.0
+            ),
+            "batch_overlap_p50": percentile(overlaps, 0.50),
+            "batch_overlap_p95": percentile(overlaps, 0.95),
+            "mention_exact_coverage": len(
+                {mention.mention_id for batch in batches for mention in batch}
+            )
+            == len(eligible_mentions),
+            "candidate_exact_coverage": all(
+                tuple(item.event.event_id for item in eligible[mention.mention_id])
+                == frozen_candidate_snapshot[mention.mention_id]
+                for mention in eligible_mentions
+            ),
+            "apply_order_hash": _hash_json(
+                [
+                    mention.mention_id
+                    for mention in sorted(
+                        eligible_mentions, key=lambda item: item.mention_id
+                    )
+                ]
+            ),
+        }
 
         def adapt_atomic_payload(payload: object) -> object:
             if not isinstance(payload, dict) or not isinstance(payload.get("decisions"), list):
@@ -3066,9 +3490,12 @@ class CrossDocumentEngine:
             def invoke(
                 tier: ModelTier,
                 stage: str,
+                *,
+                execution_tier: ModelTier | None = None,
             ) -> AtomicDecisionBatch:
                 raw = models.typed(
                     tier=tier,
+                    execution_tier=execution_tier,
                     stage=stage,
                     request=request,
                     output_type=AtomicDecisionBatch,
@@ -3106,6 +3533,8 @@ class CrossDocumentEngine:
             try:
                 output = invoke(ModelTier.M2, "atomic_coreference")
             except CrossDocumentPipelineError as exc:
+                if is_provider_failure(exc):
+                    raise
                 output = conservative_batch(exc)
                 invalid_task_errors.update(
                     {mention_id: f"N9_BATCH_FAILED:{exc.code}" for mention_id in expected}
@@ -3239,7 +3668,11 @@ class CrossDocumentEngine:
             )
             if needs_m3 and not escalated:
                 try:
-                    output = invoke(ModelTier.M3, "atomic_coreference_escalation")
+                    output = invoke(
+                        ModelTier.M2,
+                        "atomic_coreference_escalation",
+                        execution_tier=ModelTier.M3,
+                    )
                 except CrossDocumentPipelineError as exc:
                     self.registry.append_decision_audit(
                         DecisionAuditRecord(

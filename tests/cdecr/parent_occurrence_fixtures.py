@@ -6,15 +6,20 @@ from pathlib import Path
 
 from cdecr.contracts import MembershipRelation
 from cdecr.models import ModelTier
+from cdecr.package_v3_contracts import (
+    PackageV3Description,
+    PackageV3DescriptionOutput,
+    PackageV3ExistingAssignment,
+    PackageV3InitialCluster,
+    PackageV3InitialClusteringOutput,
+    PackageV3RollingClusteringOutput,
+)
 from cdecr.parent_occurrence_contracts import (
     ParentInductionBatch,
     ParentInductionDecision,
     ParentInductionGroup,
     ParentMembershipDecision,
-    ParentResolutionBatch,
-    ParentResolutionGroup,
 )
-from cdecr.ports import EmbeddingResult
 from cdecr.registry import SQLiteCDECRRegistry
 from tests.cdecr.test_registry import atomic, mention, source
 
@@ -26,63 +31,92 @@ class ScriptedParentModels:
         self.fail_stage = fail_stage
         self.stages: list[tuple[ModelTier, str]] = []
 
-    def typed_many(self, *, tier, stage, requests, output_type, validators):
+    def typed_many(
+        self, *, tier, stage, requests, output_type, validators, execution_tier=None
+    ):
         self.stages.extend((tier, stage) for _ in requests)
         if self.fail_stage == stage:
             return [RuntimeError("provider unavailable") for _ in requests]
         outputs = []
         for request, validator in zip(requests, validators, strict=True):
             payload = json.loads(request.user_prompt)
-            if stage in {"parent_induction", "parent_induction_repartition"}:
-                decisions = []
-                for document in payload["document_tasks"]:
-                    decisions.append(
-                        ParentInductionDecision(
-                            task_id=document["task_id"],
-                            groups=[
-                                ParentInductionGroup(
-                                    local_group_id="G1",
-                                    scope="PARENT_OCCURRENCE",
-                                    label="Micron June update",
-                                    members=[
-                                        ParentMembershipDecision(
-                                            atomic_ref=item["atomic_ref"],
-                                            membership_relation=MembershipRelation.COMPONENT_OF,
-                                        )
-                                        for item in document["atomics"]
-                                    ],
-                                )
-                            ],
-                        )
+            if stage not in {"parent_induction", "parent_induction_repartition"}:
+                raise AssertionError(f"unexpected Parent stage: {stage}")
+            decisions = []
+            for document in payload["document_tasks"]:
+                decisions.append(
+                    ParentInductionDecision(
+                        task_id=document["task_id"],
+                        groups=[
+                            ParentInductionGroup(
+                                local_group_id="G1",
+                                scope="PARENT_OCCURRENCE",
+                                label="Micron June update",
+                                members=[
+                                    ParentMembershipDecision(
+                                        atomic_ref=item["atomic_ref"],
+                                        membership_relation=MembershipRelation.COMPONENT_OF,
+                                    )
+                                    for item in document["atomics"]
+                                ],
+                            )
+                        ],
                     )
-                value = ParentInductionBatch(decisions=decisions)
-            else:
-                proposals = payload["proposals"]
-                prototypes = payload["prototypes"]
-                value = ParentResolutionBatch(
-                    groups=[
-                        ParentResolutionGroup(
-                            resolution_group_id="R1",
-                            proposal_refs=[item["proposal_ref"] for item in proposals],
-                            existing_parent_refs=(
-                                [prototypes[0]["parent_ref"]] if prototypes else []
-                            ),
-                            canonical_label="Micron June update",
-                        )
-                    ]
                 )
+            value = ParentInductionBatch(decisions=decisions)
             validator(value)
             outputs.append(value)
         return outputs
 
-    def embed(self, texts, *, stage):
-        return EmbeddingResult(
-            model=self.model_m1,
-            dimensions=2,
-            vectors=[[1.0, 0.0] for _ in texts],
-            input_tokens=len(texts),
-            latency_ms=1,
-        )
+    def typed_response(
+        self, *, tier, stage, request, output_type, validator, execution_tier=None
+    ):
+        self.stages.append((tier, stage))
+        if self.fail_stage == stage:
+            raise RuntimeError("provider unavailable")
+        payload = json.loads(request.input[-1]["content"])
+        if stage == "package_v3_initial_clustering":
+            occurrence_ids = [
+                item["occurrence_id"] for item in payload["parent_occurrences"]
+            ]
+            value = PackageV3InitialClusteringOutput(
+                clusters=[
+                    PackageV3InitialCluster(
+                        mcp_id="C1",
+                        canonical="Micron June update",
+                        occurrence_ids=occurrence_ids,
+                    )
+                ]
+            )
+        elif stage == "package_v3_description":
+            value = PackageV3DescriptionOutput(
+                descriptions=[
+                    PackageV3Description(
+                        mcp_id=item["mcp_id"],
+                        compressed_description="Micron June update.",
+                    )
+                    for item in payload["mcps"]
+                ]
+            )
+        elif stage == "package_v3_rolling_clustering":
+            value = PackageV3RollingClusteringOutput(
+                existing_assignments=[
+                    PackageV3ExistingAssignment(
+                        mcp_id=payload["registry"][0]["mcp_id"],
+                        occurrence_ids=[
+                            item["occurrence_id"]
+                            for item in payload["new_parent_occurrences"]
+                        ],
+                    )
+                ],
+                new_mcps=[],
+                merges=[],
+            )
+        else:
+            raise AssertionError(f"unexpected Responses stage: {stage}")
+        assert isinstance(value, output_type)
+        validator(value)
+        return value
 
 
 def registry(tmp_path: Path) -> SQLiteCDECRRegistry:

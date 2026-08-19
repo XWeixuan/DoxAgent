@@ -2,7 +2,7 @@
 kind = "internal_task_skill"
 id = "industry-research"
 name = "Industry and Value-Chain Research"
-version = "2026.08.04"
+version = "2026.08.18"
 applicable_agents = ["C3"]
 applicable_task_types = ["generate_global_research"]
 workflow_nodes = ["BuildGlobalResearch"]
@@ -168,14 +168,7 @@ For every milestone state: current stage, evidence completed, what that evidence
 
 Create a candidate only when facts expose tension: industry facts versus prevailing consensus, actor words versus actions, conflicting actors, short-term benefit versus long-term supply response, industry opportunity versus target allocation, or milestone progress versus economic realization.
 
-For each question provide:
-
-- the anchor or commonly assumed state;
-- an upside interpretation and the evidence it would require;
-- a downside interpretation and the evidence it would require;
-- the target business state that would change;
-- the next observable that can discriminate between paths;
-- what remains unknown.
+For each question, state the current evidence base, upside and downside revision paths with required evidence, affected target business state, next discriminating observable, and current unknown. Keep both paths live.
 
 Phrase candidates as questions, not conclusions. Do not assert a market expectation, mispricing, activation condition, or valuation consequence that the evidence does not establish.
 
@@ -191,40 +184,42 @@ Apply only the lenses relevant to the selected external lines:
 
 ## Section-by-section output specification
 
+Start each section with `### Core Findings`: 2-5 bullets in Sections 1-5; 1-3 in Section 6. Summarize only its detail. Use tables for comparable observations and flexible blocks for causal or bidirectional paths.
+
 ### 1. Target-Relevant Industry and Value-Chain Fact Baseline
 
-Present a compact table with: external theme; current state; recent change; comparison anchor; target exposure; evidence. Cover only decision-relevant demand, effective supply/capacity, price/economics, inventory/orders, allocation/competition, and commercialization states.
+Retain the detailed table: external theme; current state; recent change; comparison anchor; target exposure; evidence. Limit it to relevant demand, effective supply, price/economics, inventory/orders, allocation/competition, and commercialization.
 
 ### 2. Key External Actors' Views and Behavioral Signals
 
-Present: theme; actor and role; signal type; statement/action/datum; what changed; industry-common versus actor-specific; relationship to other evidence; citation. Explicitly separate actor views, committed actions, observed data, and C3 inference.
+Use table fields: theme; actor and role; latest view/action/datum; change; signal conclusion; citation. Keep latest content and change separate. In the conclusion combine industry-common/actor-specific with support/conflict/partial support.
 
 ### 3. Core External Drivers, Allocation Mechanisms, and Transmission
 
-Present: external driver; state/change; actor signals; industry mechanism; allocation mechanism; target business interface; direction; horizon; necessary conditions; blockers/boundaries; evidence basis; confidence. Evidence basis should identify formal industry data, customer, supplier, competitor, sell-side synthesis, independent multi-source validation, or C3 inference.
+Use one block per Driver with identifiable fields: **Driver**; **Current State & Change**; **Evidence & Actor Signals**; **Transmission Mechanism**; **Target Business Interface**; **Conditions & Boundaries**; **Direction & Horizon**; **Evidence Confidence**. Transmission must show `Driver -> industry/allocation mechanism -> target business state`, not just direction. Confidence rates evidence, not outcome probability. Add a case-specific field only when necessary.
 
 ### 4. Industry and Commercialization Milestones and Proof Boundaries
 
-Present: process or project; current stage; evidence completed; what is proved; what is not proved; next observable evidence; failure/delay path; timing confidence.
+Retain the table: process or project; current stage; evidence completed; what is proved; what is not proved; next observable evidence; failure/delay path; timing confidence.
 
 ### 5. Potential Industry and Value-Chain Factor Gap Candidates
 
-Present: candidate question; anchor; upside path and confirming evidence; downside path and confirming evidence; affected target business state; next observable; unknowns. Keep both sides live.
+Use one block per Candidate with identifiable fields: **Candidate Question**; **Current Evidence Base**; **Upside Revision Path** and evidence; **Downside Revision Path** and evidence; **Affected Target Business State**; **Next Observable Evidence**; **Current Unknown**. Add Related Driver, Key Milestone, Allocation Question, or Alternative Path only when useful. Do not use a Gap `Anchor`; keep this a candidate question, not a downstream conclusion.
 
 ### 6. Unknowns, Evidence Boundaries, and Cross-Node Handoffs
 
-List the material unknown, why it matters, current evidence limit, confidence impact, next evidence, and owning downstream node. Do not repeat generic risk language.
+Use table fields: unknown; current evidence gap / why it matters; next evidence; handoff node. Add effect on current judgment only when needed; do not repeat full Driver or transmission logic.
 
 ## Final quality gate
 
 Before submitting, verify that:
 
-- the report follows three to six target-linked external lines rather than a roster of companies;
+- the report follows three to six target-linked lines, opens each section with supported Core Findings, and uses the required formats;
 - every state, signal, driver, allocation mechanism, transmission link, milestone, and inference is labeled correctly;
 - numerical comparisons use compatible definitions and every material factual claim has nearby evidence;
-- actor words are separated from behavior, and common industry effects from actor-specific effects;
+- actor latest content is separate from change; words from behavior; common effects from actor-specific effects;
 - every claimed target benefit has an allocation mechanism and stops at a target business state;
 - milestones state both proof and non-proof boundaries;
-- candidate questions are bidirectional and are not formal downstream objects;
-- conflicts and unknowns remain visible, with confidence calibrated to evidence;
+- candidate questions use a current evidence base, remain bidirectional, and are not formal objects;
+- conflicts and unknowns remain visible without repeating causal chains; confidence matches evidence;
 - there are no peer comps, stock ideas, valuation conclusions, trading advice, or claims about what is priced in.

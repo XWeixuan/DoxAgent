@@ -2,6 +2,7 @@ from cdecr.bulk_epoch.package_stage import (
     project_parent_partition,
     resolve_parent_partition,
 )
+from cdecr.package_global_clustering import PackageWorkflowV3Service
 from cdecr.parent_occurrence import ParentOccurrenceService
 from tests.cdecr.parent_occurrence_fixtures import (
     ScriptedParentModels,
@@ -29,6 +30,7 @@ def test_bulk_facade_resolves_one_frozen_partition_and_projects_once(tmp_path) -
     )
     result = resolve_parent_partition(
         service=ParentOccurrenceService(registry=store),
+        package_service=PackageWorkflowV3Service(registry=store),
         events=events,
         mentions=None,
         sources=None,
@@ -43,11 +45,11 @@ def test_bulk_facade_resolves_one_frozen_partition_and_projects_once(tmp_path) -
     )
     assert len(projected[0]) == 1
     assert len(projected[1]) == 2
-    assert int(result.telemetry["resolution_wave_count"]) <= 3
-    assert int(result.telemetry["r1"]["candidate_pair_evaluation_count"]) <= 96 * 2
+    assert result.telemetry["registry_batch_count"] == 1
+    assert result.telemetry["package_count"] == 1
 
 
-def test_parent_service_reuses_successful_induction_and_resolution_checkpoints(tmp_path) -> None:
+def test_parent_service_reuses_successful_induction_checkpoint_without_resolution(tmp_path) -> None:
     store = registry(tmp_path)
     sources, mentions, events = two_document_inputs()
     for index, source in enumerate(sources):
@@ -67,7 +69,7 @@ def test_parent_service_reuses_successful_induction_and_resolution_checkpoints(t
         )
     service = ParentOccurrenceService(registry=store)
     first_models = ScriptedParentModels()
-    first = service.run(
+    first = service.build_parent_occurrence_pool(
         events=events,
         mentions=None,
         sources=None,
@@ -77,10 +79,12 @@ def test_parent_service_reuses_successful_induction_and_resolution_checkpoints(t
         persistence_scope_id="epoch-parent-resume",
     )
     assert first.status == "FINALIZED"
-    assert any(stage.startswith("parent_resolution") for _, stage in first_models.stages)
+    assert {stage for _, stage in first_models.stages} == {"parent_induction"}
+    assert first.telemetry is not None
+    assert first.telemetry["repartition_request_count"] == 0
 
     second_models = ScriptedParentModels()
-    second = service.run(
+    second = service.build_parent_occurrence_pool(
         events=events,
         mentions=None,
         sources=None,
@@ -90,5 +94,5 @@ def test_parent_service_reuses_successful_induction_and_resolution_checkpoints(t
         persistence_scope_id="epoch-parent-resume",
     )
     assert second.status == "FINALIZED"
-    assert second.partition == first.partition
+    assert second.proposals == first.proposals
     assert second_models.stages == []

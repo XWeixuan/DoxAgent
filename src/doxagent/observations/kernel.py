@@ -20,6 +20,7 @@ from doxagent.models import ResultStatus
 from doxagent.observations.models import ObservationCallRecord, PersistedObservation
 from doxagent.observations.pack import ObservationPackWriter
 from doxagent.observations.profiles import apply_output_profile
+from doxagent.observations.projection import observation_source
 from doxagent.observations.segmenter import content_chars, segment_cleaned_output
 from doxagent.observations.store import AttemptObservationStore
 from doxagent.tools.schema import ToolResult
@@ -114,7 +115,6 @@ class ObservationKernel:
             pack = self._pack_writer.write(
                 attempt_id=self.store.attempt_id,
                 tool_call_id=tool_call_id,
-                tool_name=contract.canonical_tool_id,
                 observations=persisted,
                 selected_aliases=[item.alias for item in selected],
             )
@@ -221,12 +221,9 @@ class ObservationKernel:
 def _view(item: PersistedObservation) -> DataObservationView:
     return DataObservationView(
         alias=item.alias,
-        block_id=item.block_id,
         title=item.title,
         content=deepcopy(item.content),
-        block_type=item.block_type,
-        source_locator=item.source_locator,
-        content_hash=item.content_hash,
+        source=observation_source(item),
     )
 
 

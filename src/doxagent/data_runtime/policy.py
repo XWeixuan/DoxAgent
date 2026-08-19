@@ -100,12 +100,25 @@ class DataToolPolicyRegistry:
             return frozenset()
         return self._by_role.get(role, frozenset())
 
+    def allowed_tools_for_ticker(
+        self,
+        node: CodexD1Node,
+        role: CodexAgentRole,
+        ticker: str,
+    ) -> frozenset[str]:
+        """Return the maximum allowlist after deterministic market scoping."""
+        allowed = self.allowed_tools(node, role)
+        if not ticker.upper().endswith(".HK"):
+            allowed = allowed.difference({"yfinance.hk_basic_snapshot"})
+        return allowed
+
     def effective_tools(self, claims: DataCapabilityClaims) -> frozenset[str]:
-        maximum = self.allowed_tools(claims.node_id, claims.agent_role)
-        effective = maximum.intersection(claims.enabled_tool_ids)
-        if not claims.ticker.upper().endswith(".HK"):
-            effective = effective.difference({"yfinance.hk_basic_snapshot"})
-        return effective
+        maximum = self.allowed_tools_for_ticker(
+            claims.node_id,
+            claims.agent_role,
+            claims.ticker,
+        )
+        return maximum.intersection(claims.enabled_tool_ids)
 
 
 class DataCapabilityCodec:

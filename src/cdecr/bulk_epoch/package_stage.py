@@ -18,17 +18,19 @@ from cdecr.contracts import (
     SourceMessage,
 )
 from cdecr.cross_document_contracts import PackageAssignmentRecord
-from cdecr.package_projection import project_frozen_partition
+from cdecr.package_global_clustering import PackageWorkflowV3Service
+from cdecr.package_projection import project_frozen_partition, project_frozen_partition_v3
+from cdecr.package_v3_contracts import FrozenPackagePartitionV3, PackageWorkflowV3Result
 from cdecr.parent_occurrence import ParentOccurrenceService
 from cdecr.parent_occurrence_contracts import (
     FrozenParentPartition,
-    ParentOccurrenceStageResult,
 )
 
 
 def resolve_parent_partition(
     *,
     service: ParentOccurrenceService,
+    package_service: PackageWorkflowV3Service,
     events: Sequence[AtomicEvent],
     mentions: Sequence[EventMention] | None,
     sources: Sequence[SourceMessage] | None,
@@ -36,10 +38,10 @@ def resolve_parent_partition(
     models: Any,
     run_id: str,
     persistence_scope_id: str | None = None,
-) -> ParentOccurrenceStageResult:
-    """Run the one shared INDUCE -> R1 -> R2 -> RECONCILE resolver."""
+) -> PackageWorkflowV3Result:
+    """Run retained document induction, then V3 global Package clustering."""
 
-    return service.run(
+    pool = service.build_parent_occurrence_pool(
         events=events,
         mentions=mentions,
         sources=sources,
@@ -48,10 +50,27 @@ def resolve_parent_partition(
         run_id=run_id,
         persistence_scope_id=persistence_scope_id,
     )
+    if pool.status != "FINALIZED":
+        return PackageWorkflowV3Result(
+            status="PARTIAL_PACKAGE_REGISTRY",
+            failures=[],
+            telemetry=pool.telemetry or {},
+        )
+    result = package_service.run(
+        events=events,
+        proposals=pool.proposals,
+        external_links=pool.external_links,
+        models=models,
+        run_id=run_id,
+        registry_scope_id=persistence_scope_id or run_id,
+    )
+    return result.model_copy(
+        update={"telemetry": {**(pool.telemetry or {}), **result.telemetry}}
+    )
 
 
 def project_parent_partition(
-    partition: FrozenParentPartition,
+    partition: FrozenParentPartition | FrozenPackagePartitionV3,
     *,
     events: Sequence[AtomicEvent],
     existing_packages: Sequence[EventPackage],
@@ -65,6 +84,13 @@ def project_parent_partition(
 ]:
     """Project one frozen partition; this function performs no semantic decisions."""
 
+    if isinstance(partition, FrozenPackagePartitionV3):
+        return project_frozen_partition_v3(
+            partition,
+            events=events,
+            existing_packages=existing_packages,
+            run_id=run_id,
+        )
     return project_frozen_partition(
         partition,
         events=events,

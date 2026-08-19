@@ -18,6 +18,7 @@ from cdecr.models import (
     ModelTier,
 )
 from cdecr.ports import StructuredModelRequest, StructuredModelResult
+from cdecr.provider_resilience import ProviderKeyHealthRegistry
 
 
 def test_cdecr_never_imports_doxagent() -> None:
@@ -130,9 +131,7 @@ def test_structured_request_enforces_json_mode_and_normalizes_model_time_boundar
         ),
         json_schema={
             "type": "object",
-            "properties": {
-                "event_start": {"type": "string", "format": "date-time"}
-            },
+            "properties": {"event_start": {"type": "string", "format": "date-time"}},
         },
     )
 
@@ -175,7 +174,7 @@ def test_m1_enforces_batch_and_dimension() -> None:
         client.embed([str(index) for index in range(11)])
 
 
-def test_m2_uses_chat_json_mode_and_disables_thinking() -> None:
+def test_m2_uses_responses_json_object_by_default() -> None:
     fake = FakeOpenAI()
     client = DashScopeStructuredModelClient(
         tier=ModelTier.M2,
@@ -186,18 +185,49 @@ def test_m2_uses_chat_json_mode_and_disables_thinking() -> None:
     )
     result = client.complete(request())
     assert result.payload == {"ok": True}
+    assert fake.responses.kwargs["text"] == {"format": {"type": "json_object"}}
+    assert fake.responses.kwargs["reasoning"] == {"effort": "none"}
+    assert "JSON" in fake.responses.kwargs["input"][-1]["content"]
+    assert "code fences" in fake.responses.kwargs["input"][-1]["content"]
+
+
+def test_m2_chat_transport_disables_thinking_and_keeps_json_object() -> None:
+    fake = FakeOpenAI()
+    client = DashScopeStructuredModelClient(
+        tier=ModelTier.M2,
+        api_key="key",
+        base_url="https://example.test",
+        model="deepseek-v4-flash",
+        structured_transport="chat",
+        client=fake,  # type: ignore[arg-type]
+    )
+    result = client.complete(request())
+    assert result.payload == {"ok": True}
     assert fake.chat.completions.kwargs["response_format"] == {"type": "json_object"}
     assert fake.chat.completions.kwargs["extra_body"] == {"enable_thinking": False}
-    assert "JSON" in fake.chat.completions.kwargs["messages"][0]["content"]
-    assert "code fences" in fake.chat.completions.kwargs["messages"][0]["content"]
+    assert result.transport == "chat_json_object"
+    assert result.effective_reasoning_effort == "none"
 
 
-@pytest.mark.parametrize(
-    ("tier", "effort"), [(ModelTier.M2, "high"), (ModelTier.M3, "max")]
-)
-def test_deepseek_uses_thinking_and_strict_function_schema(
-    tier: ModelTier, effort: str
-) -> None:
+def test_m3_responses_transport_uses_none_reasoning() -> None:
+    fake = FakeOpenAI()
+    client = DashScopeStructuredModelClient(
+        tier=ModelTier.M3,
+        api_key="key",
+        base_url="https://example.test",
+        model="deepseek-v4-flash",
+        reasoning_effort="none",
+        structured_transport="responses",
+        client=fake,  # type: ignore[arg-type]
+    )
+    result = client.complete(request())
+    assert fake.responses.kwargs["reasoning"] == {"effort": "none"}
+    assert result.transport == "responses_json_object"
+    assert result.effective_reasoning_effort == "none"
+
+
+@pytest.mark.parametrize(("tier", "effort"), [(ModelTier.M2, "high"), (ModelTier.M3, "max")])
+def test_deepseek_uses_thinking_and_strict_function_schema(tier: ModelTier, effort: str) -> None:
     fake = FakeOpenAI()
     strict_chat = FakeStrictChat()
     fake.chat = SimpleNamespace(completions=strict_chat)
@@ -296,17 +326,11 @@ def test_deepseek_strict_inlines_nullable_local_ref_branch() -> None:
             json_schema={
                 "$defs": {"Choice": {"type": "string", "enum": ["A", "B"]}},
                 "type": "object",
-                "properties": {
-                    "choice": {
-                        "anyOf": [{"$ref": "#/$defs/Choice"}, {"type": "null"}]
-                    }
-                },
+                "properties": {"choice": {"anyOf": [{"$ref": "#/$defs/Choice"}, {"type": "null"}]}},
             },
         )
     )
-    choice = strict_chat.kwargs["tools"][0]["function"]["parameters"]["properties"][
-        "choice"
-    ]
+    choice = strict_chat.kwargs["tools"][0]["function"]["parameters"]["properties"]["choice"]
     assert choice["anyOf"][0] == {"type": "string", "enum": ["A", "B"]}
     parameters = strict_chat.kwargs["tools"][0]["function"]["parameters"]
     assert "$defs" not in parameters
@@ -343,7 +367,7 @@ def test_provider_wire_schema_removes_only_titles() -> None:
 
     client.complete(model_request)
 
-    wire_prompt = fake.chat.completions.kwargs["messages"][1]["content"]
+    wire_prompt = fake.responses.kwargs["input"][-1]["content"]
     assert "RootTitle" not in wire_prompt
     assert "StatusTitle" not in wire_prompt
     assert "root-description" in wire_prompt
@@ -367,8 +391,8 @@ def test_m3_m4_use_responses_json_mode_with_thinking_disabled(tier: ModelTier) -
     assert result.payload == {"ok": True}
     assert fake.responses.kwargs["reasoning"] == {"effort": "none"}
     assert fake.responses.kwargs["text"] == {"format": {"type": "json_object"}}
-    assert "JSON" in fake.responses.kwargs["input"][0]["content"]
-    assert "code fences" in fake.responses.kwargs["input"][0]["content"]
+    assert "JSON" in fake.responses.kwargs["input"][-1]["content"]
+    assert "code fences" in fake.responses.kwargs["input"][-1]["content"]
 
 
 def test_model_errors_are_redacted() -> None:
@@ -413,7 +437,7 @@ def test_provider_error_code_is_preserved_without_provider_message() -> None:
     assert "account details" not in str(caught.value)
 
 
-def test_invalid_json_keeps_private_repair_payload_out_of_error_text() -> None:
+def test_single_fenced_json_is_safely_normalized() -> None:
     fake = FakeOpenAI()
     fake.responses.output_text = "unused"  # type: ignore[attr-defined]
 
@@ -433,13 +457,9 @@ def test_invalid_json_keeps_private_repair_payload_out_of_error_text() -> None:
         model="qwen-test",
         client=fake,  # type: ignore[arg-type]
     )
-    with pytest.raises(ModelAdapterError) as caught:
-        client.complete(request())
-    assert caught.value.code == "invalid_json"
-    assert caught.value.input_tokens == 5
-    assert caught.value.output_tokens == 8
-    assert caught.value.raw_response_text == '```json\n{"ok":true}\n```'
-    assert "```" not in str(caught.value)
+    result = client.complete(request())
+    assert result.payload == {"ok": True}
+    assert result.parse_diagnostics["normalization"] == "single_code_fence"
 
 
 def test_settings_parse_ordered_deduplicated_fallback_keys() -> None:
@@ -461,10 +481,27 @@ def test_settings_keeps_atomic_wire_and_parent_stage_contracts_mandatory() -> No
     )  # type: ignore[call-arg]
     assert settings.n9_wire_protocol == "on"
     assert settings.parent_induction_active_requests == 96
-    assert settings.parent_resolution_active_requests == 128
-    assert settings.parent_reconcile_active_requests == 96
     assert settings.grounder_issue_protocol == "canary"
     assert settings.targeted_repair_protocol == "legacy"
+
+
+@pytest.mark.parametrize(
+    "removed_setting",
+    (
+        "parent_resolution_active_requests",
+        "parent_reconcile_active_requests",
+        "parent_resolution_max_proposals",
+        "parent_resolution_max_existing_parents",
+        "parent_resolution_max_input_tokens",
+        "parent_route_structured_quota",
+        "parent_route_semantic_quota",
+        "parent_route_total_k",
+    ),
+)
+def test_settings_do_not_expose_removed_parent_resolution_controls(
+    removed_setting: str,
+) -> None:
+    assert not hasattr(CDECRSettings(_env_file=None), removed_setting)
 
 
 def test_settings_parse_deepseek_tier_configuration() -> None:
@@ -491,6 +528,28 @@ def test_settings_parse_deepseek_tier_configuration() -> None:
     assert settings.model_m2_strict is True
     assert settings.model_m3_strict is True
     assert settings.model_m4_strict is True
+
+
+def test_structured_output_defaults_to_responses_json_object_and_strict_off() -> None:
+    settings = CDECRSettings(_env_file=None)
+    assert settings.model_m2_strict is False
+    assert settings.model_m3_strict is False
+    assert settings.model_m4_strict is False
+    assert settings.model_m2_reasoning_effort == "none"
+    assert settings.model_m3_reasoning_effort == "low"
+    assert settings.model_m4_reasoning_effort == "high"
+    assert settings.model_m2 == "deepseek-v4-flash-0731"
+    assert settings.model_m3 == "deepseek-v4-flash-0731"
+    assert settings.model_m4 == "deepseek-v4-flash-0731"
+    assert settings.structured_provider_hard_concurrency == 160
+    assert settings.structured_provider_initial_burst == 80
+    request_value = StructuredModelRequest(
+        system_prompt="system",
+        user_prompt="user",
+        json_schema={"type": "object"},
+    )
+    assert request_value.output_mode == "json_object"
+    assert request_value.strict is False
 
 
 def test_embedding_retries_provider_failure_with_fallback(
@@ -545,6 +604,45 @@ def test_structured_model_retries_provider_failure_with_fallback(
     )
     assert client.complete(request()).payload == {"ok": True}
     assert attempted_keys == ["primary", "fallback"]
+
+
+def test_structured_model_rotates_from_arrearage_to_healthy_fallback(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    called_keys: list[str] = []
+
+    class ArrearageError(RuntimeError):
+        status_code = 400
+        body = {"code": "Arrearage"}
+
+    class KeyResponses(FakeResponses):
+        def __init__(self, key: str) -> None:
+            super().__init__()
+            self.key = key
+
+        def create(self, **kwargs: Any) -> Any:
+            called_keys.append(self.key)
+            if self.key == "primary":
+                raise ArrearageError("account balance unavailable")
+            return super().create(**kwargs)
+
+    def factory(*, api_key: str, **_: Any) -> FakeOpenAI:
+        fake = FakeOpenAI()
+        fake.responses = KeyResponses(api_key)
+        return fake
+
+    monkeypatch.setattr(model_module, "OpenAI", factory)
+    client = DashScopeStructuredModelClient(
+        tier=ModelTier.M2,
+        api_key="primary",
+        fallback_api_keys=("fallback",),
+        base_url="https://example.test",
+        model="deepseek-v4-flash",
+        key_health=ProviderKeyHealthRegistry(state_path=None),
+    )
+
+    assert client.complete(request()).payload == {"ok": True}
+    assert called_keys == ["primary", "fallback"]
 
 
 def test_timeout_does_not_multiply_latency_by_rotating_keys(

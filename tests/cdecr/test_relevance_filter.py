@@ -15,6 +15,7 @@ from cdecr.relevance_filter import (
     relevance_response_request,
     select_candidates_fail_open,
     target_profile_for_source,
+    validate_relevance_coverage,
 )
 from cdecr.single_document import SingleDocumentProcessor
 from cdecr.single_document_contracts import DreamCandidate, DreamerModelOutput
@@ -143,11 +144,13 @@ def test_production_and_frozen_requests_share_the_production_schema() -> None:
     live, mapping = relevance_response_request(
         target="Micron Technology (MU); memory semiconductors",
         candidates=values,
-        previous_response_id="resp-1",
         system_prompt="gate prompt",
     )
-    assert live.previous_response_id == "resp-1"
-    assert live.reasoning_effort == "low"
+    assert live.previous_response_id is None
+    assert live.output_mode == "json_object"
+    assert live.strict is False
+    assert live.session_cache is False
+    assert live.reasoning_effort == "none"
     assert mapping == {"c1": "candidate:1", "c2": "candidate:2"}
     gate_payload = json.loads(live.input[-1]["content"])
     assert gate_payload["events"] == [
@@ -176,13 +179,7 @@ def test_production_and_frozen_requests_share_the_production_schema() -> None:
         relevance_system_prompt="gate prompt",
     )
     assert frozen.previous_response_id is None
-    assert [item["role"] for item in frozen.input] == [
-        "system",
-        "user",
-        "assistant",
-        "system",
-        "user",
-    ]
+    assert [item["role"] for item in frozen.input] == ["system", "user"]
     assert frozen_mapping == mapping
     assert json.loads(frozen.input[-1]["content"])["events"] == gate_payload["events"]
 
@@ -219,6 +216,43 @@ class FakeResponses:
             latency_ms=5,
             response_id="resp-gate",
         )
+
+
+class SequenceResponses(FakeResponses):
+    def __init__(self, payloads: list[dict[str, object]]) -> None:
+        super().__init__(payloads[0])
+        self.payloads = list(payloads)
+
+    def complete_response(self, request: ResponsesModelRequest) -> StructuredModelResult:
+        self.payload = self.payloads.pop(0)
+        return super().complete_response(request)
+
+
+def test_relevance_coverage_requires_every_candidate_exactly_once() -> None:
+    validate_relevance_coverage(
+        {
+            "results": [
+                {"id": "c1", "relevance": "RELEVANT"},
+                {"id": "c2", "relevance": "IRRELEVANT"},
+            ]
+        },
+        expected_short_ids={"c1", "c2"},
+    )
+    for payload in (
+        {"results": [{"id": "c1", "relevance": "RELEVANT"}]},
+        {
+            "results": [
+                {"id": "c1", "relevance": "RELEVANT"},
+                {"id": "c1", "relevance": "IRRELEVANT"},
+            ]
+        },
+    ):
+        try:
+            validate_relevance_coverage(payload, expected_short_ids={"c1", "c2"})
+        except ValueError:
+            pass
+        else:  # pragma: no cover
+            raise AssertionError("invalid candidate coverage must fail")
 
 
 def test_block_gate_enforces_valid_irrelevant_and_audits_cache() -> None:
@@ -270,11 +304,72 @@ def test_block_gate_enforces_valid_irrelevant_and_audits_cache() -> None:
     )
 
     assert [item.statement for item in filtered.candidates] == ["Micron raised guidance."]
-    assert responses.calls[0].previous_response_id == "resp-dreamer"
-    assert responses.calls[0].reasoning_effort == "low"
+    assert responses.calls[0].previous_response_id is None
+    assert responses.calls[0].output_mode == "json_object"
+    assert responses.calls[0].strict is False
+    assert responses.calls[0].session_cache is False
+    assert responses.calls[0].reasoning_effort == "none"
     gate_payload = json.loads(responses.calls[0].input[1]["content"])
     assert gate_payload["target"] == "MU"
-    assert registry.model_calls[0]["metadata"]["cached_input_tokens"] == 80  # type: ignore[index]
+    call_metadata = registry.model_calls[0]["metadata"]
+    assert call_metadata["cached_input_tokens"] == 80  # type: ignore[index]
+    assert call_metadata["request_transport"] == "responses_json_object"  # type: ignore[index]
+    assert call_metadata["request_reasoning_effort"] == "none"  # type: ignore[index]
+    assert call_metadata["request_previous_response_id"] is None  # type: ignore[index]
+    assert call_metadata["request_session_cache"] is False  # type: ignore[index]
+
+
+def test_relevance_repairs_same_independent_batch_once_then_enforces() -> None:
+    value = source()
+    document = preprocess_source(value, known_documents=[]).document
+    block = document.document_blocks[0]
+    output = DreamerModelOutput(
+        candidates=[
+            {
+                "statement": "Micron raised guidance.",
+                "evidence_locations": [{"segment_id": "text:0", "text": "Micron raised guidance"}],
+            },
+            {
+                "statement": "A university published an admission list.",
+                "evidence_locations": [
+                    {"segment_id": "text:0", "text": "A university published an admission list"}
+                ],
+            },
+        ]
+    )
+    responses = SequenceResponses(
+        [
+            {"results": [{"id": "c1", "relevance": "RELEVANT"}]},
+            {
+                "results": [
+                    {"id": "c1", "relevance": "RELEVANT"},
+                    {"id": "c2", "relevance": "IRRELEVANT"},
+                ]
+            },
+        ]
+    )
+    processor = object.__new__(SingleDocumentProcessor)
+    processor.relevance_filter_mode = RelevanceMode.ENFORCE
+    processor.relevance_target_profiles = {}
+    processor.relevance_responses_client = responses
+    processor.model_m2 = responses.model
+    processor.registry = FakeRegistry()
+
+    filtered = processor._apply_relevance_gate(
+        source=value,
+        document=document,
+        block=block,
+        output=output,
+        response_id="ignored-dreamer-response",
+        run_id="RUN-REPAIR",
+        summaries=[],
+        attempt="initial",
+    )
+
+    assert len(responses.calls) == 2
+    assert all(call.previous_response_id is None for call in responses.calls)
+    assert all(call.session_cache is False for call in responses.calls)
+    assert [item.statement for item in filtered.candidates] == ["Micron raised guidance."]
 
 
 def test_block_gate_shadow_records_drop_without_filtering() -> None:

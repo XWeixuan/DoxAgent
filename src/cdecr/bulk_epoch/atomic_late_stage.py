@@ -218,7 +218,8 @@ def run_atomic_late_convergence(
         )
         try:
             result = models._structured(
-                tier=ModelTier.M3,
+                tier=ModelTier.M2,
+                execution_tier=ModelTier.M3,
                 stage="atomic_late_convergence",
                 request=request,
                 repaired=False,

@@ -18,6 +18,7 @@ def main() -> int:
     sys.path.insert(0, str(repo_root / "src"))
     from doxagent.codex_runtime.schema import CodexD1Node
     from doxagent.pilot.case_builder import (
+        DEFAULT_PILOT_CAPABILITY_HOURS,
         PilotCaseBuilder,
         PilotCaseRequest,
         prepare_case_sync,
@@ -27,8 +28,18 @@ def main() -> int:
     parser.add_argument("--source-run", required=True)
     parser.add_argument("--node", required=True, choices=[item.value for item in CodexD1Node])
     parser.add_argument("--case-id", required=True)
-    parser.add_argument("--capability-hours", type=int, default=8)
+    parser.add_argument(
+        "--capability-hours",
+        type=int,
+        default=DEFAULT_PILOT_CAPABILITY_HOURS,
+        help="Capability lifetime in hours; defaults to 10 years for persistent Pilot cases",
+    )
     parser.add_argument("--profile", choices=("functional", "quality"), default="functional")
+    parser.add_argument(
+        "--upstream-dir",
+        type=Path,
+        help="Directory containing manually pasted upstream Markdown/NodeOutput files",
+    )
     args = parser.parse_args()
     builder = PilotCaseBuilder(
         repo_root=repo_root,
@@ -44,6 +55,7 @@ def main() -> int:
             case_id=args.case_id,
             capability_hours=args.capability_hours,
             profile=args.profile,
+            upstream_dir=args.upstream_dir,
         ),
     )
     print(

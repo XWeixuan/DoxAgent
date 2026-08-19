@@ -20,8 +20,10 @@ from cdecr.preprocessing import exact_document_fingerprint
 from cdecr.registry import SQLiteCDECRRegistry
 from cdecr.single_document import (
     SingleDocumentProcessor,
+    _grounder_primary_shadow_candidate,
     _mention_semantic_codes,
     _safe_validation_errors,
+    normalize_grounder_draft_shape,
 )
 from cdecr.single_document_contracts import (
     DreamerModelOutput,
@@ -516,6 +518,100 @@ def mention_draft() -> dict[str, object]:
         "quantities": [],
         "open_attributes": [],
     }
+
+
+def test_grounder_safe_shape_normalization_is_lossless_and_local() -> None:
+    mention = mention_draft()
+    evidence = mention["evidence_locations"][0]
+    assert isinstance(evidence, dict)
+    evidence.update({"start_char": 1, "end_char": 23})
+    mention["source_claim"] = ""
+    event_time = mention["time"]
+    assert isinstance(event_time, dict)
+    event_time["event_end"] = ""
+    mention["quantities"] = [
+        {
+            "metric_id": "revenue",
+            "value": "25.11",
+            "unit": "USD_BILLION",
+            "raw_text": "$25.11 billion",
+            "role": "PRIMARY",
+        }
+    ]
+    mention["open_attributes"] = [
+        {
+            "key": "context",
+            "value": "quarterly",
+            "evidence_location": {
+                "segment_ref": "text:0",
+                "quote": "Micron raised guidance",
+                "start_char": 1,
+                "end_char": 23,
+            },
+        }
+    ]
+    normalized, status, rules = normalize_grounder_draft_shape(
+        {"source_candidate_ids": ["c1"], "mention": mention}
+    )
+    assert status == "NORMALIZED_VALID"
+    assert "NUMERIC_STRING_TO_NUMBER" in rules
+    assert isinstance(normalized, dict)
+    normalized_mention = normalized["mention"]
+    assert isinstance(normalized_mention, dict)
+    assert normalized_mention["evidence_locations"][0] == {
+        "segment_id": "text:0",
+        "text": "Micron raised guidance",
+    }
+    assert normalized_mention["open_attributes"][0]["evidence_location"] == {
+        "segment_id": "text:0",
+        "text": "Micron raised guidance",
+    }
+    assert normalized_mention["quantities"][0]["value"] == 25.11
+    assert normalized_mention["source_claim"] is None
+    assert normalized_mention["time"]["event_end"] is None
+
+
+def test_grounder_normalization_refuses_conflicting_aliases() -> None:
+    mention = mention_draft()
+    mention["evidence"] = [{"segment_id": "text:0", "text": "different"}]
+    normalized, status, rules = normalize_grounder_draft_shape(
+        {"source_candidate_ids": ["c1"], "mention": mention}
+    )
+    assert status == "UNSAFE_TO_NORMALIZE"
+    assert rules == ["ALIAS_CONFLICT:evidence:evidence_locations"]
+    assert isinstance(normalized, dict)
+
+
+def test_grounder_primary_shadow_recognizes_only_single_explicit_metric() -> None:
+    mention = mention_draft()
+    mention["quantities"] = [
+        {
+            "metric_id": "revenue",
+            "value": 9.3,
+            "unit": "USD_BILLION",
+            "raw_text": "$9.3 billion",
+            "role": "SECONDARY",
+        }
+    ]
+    draft = {"source_candidate_ids": ["c1"], "mention": mention}
+    safe, reason = _grounder_primary_shadow_candidate(draft)
+    assert safe is True
+    assert reason == "SINGLE_EXPLICIT_METRIC_QUANTITY"
+    assert mention["quantities"][0]["role"] == "SECONDARY"
+
+    mention["quantities"].append(
+        {
+            "metric_id": "eps",
+            "value": 1.2,
+            "unit": "USD_PER_SHARE",
+            "raw_text": "$1.2",
+            "role": "SECONDARY",
+        }
+    )
+    assert _grounder_primary_shadow_candidate(draft) == (
+        False,
+        "QUANTITY_COUNT_NOT_ONE",
+    )
 
 
 def test_model_facing_mention_contract_excludes_schema_projections() -> None:

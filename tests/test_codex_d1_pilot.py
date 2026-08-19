@@ -6,7 +6,7 @@ import json
 import sqlite3
 import tomllib
 import zipfile
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -20,12 +20,19 @@ from doxagent.codex_worker.workspace_store import LocalWorkspaceStore
 from doxagent.data_runtime.pilot_case import validate_pilot_case_root
 from doxagent.data_runtime.policy import DataCapabilityCodec, DataToolPolicyRegistry
 from doxagent.pilot.case_builder import (
+    DEFAULT_PILOT_CAPABILITY_HOURS,
+    _apply_manual_upstream,
     _c1_quality_payload,
     _clear_current_node_outputs,
+    _load_manual_upstream,
     _quality_payload,
 )
 from doxagent.pilot.doctor import _semantic_tool_succeeded
 from doxagent.pilot.templates import render_config, render_task
+
+
+def test_pilot_capability_default_is_long_lived() -> None:
+    assert DEFAULT_PILOT_CAPABILITY_HOURS == 10 * 365 * 24
 
 
 def test_c1_quality_profile_removes_smoke_constraints() -> None:
@@ -56,6 +63,83 @@ def test_c1_quality_profile_removes_smoke_constraints() -> None:
     assert "正式产物质量是唯一主目标" in task
     assert "不得沿用 functional smoke" in task
     assert "两个同等重要" not in task
+
+
+def test_pilot_task_injects_explicit_est_date_and_freshness_requirement() -> None:
+    task = render_task(
+        case_root=Path(r"D:\DoxAgentPilot\cases\c1\quality-case"),
+        node="c1",
+        run_id="run-1",
+        attempt_id="c1-1",
+        profile="quality",
+        as_of_est=date(2026, 8, 14),
+    )
+    assert "当前日期（EST）：`2026-08-14`" in task
+    assert "在该时间点仍具参考价值，不要给出过时结论" in task
+
+
+def test_manual_upstream_is_sanitized_and_mapped_to_o4_a(tmp_path: Path) -> None:
+    upstream = tmp_path / "round-1"
+    upstream.mkdir()
+    (upstream / "c1.md").write_text(
+        "Revenue is current【cite:O12】", encoding="utf-8"
+    )
+    (upstream / "c4_finalization.json").write_text(
+        json.dumps({"status": "completed", "future_nodes": []}),
+        encoding="utf-8",
+    )
+    imported = _load_manual_upstream(CodexD1Node.O4_A, upstream)
+    assert imported is not None
+    assert sorted(imported.files) == ["c1.md", "c4_finalization.json"]
+    assert "【cite:O12】" not in imported.files["c1.md"]
+    assert "上游引用需在当前 attempt 重新核验" in imported.files["c1.md"]
+    payload = _apply_manual_upstream(
+        CodexD1Node.O4_A,
+        {
+            "c1": {"report_markdown": "stale"},
+            "agent_observations": [{"origin_node": "c1"}],
+        },
+        imported.files,
+    )
+    assert payload["c1"]["report_markdown"] == imported.files["c1.md"]
+    assert payload["known_future_nodes"] == []
+    assert payload["agent_observations"] == []
+    assert payload["manual_upstream_pilot_override"]["files"] == [
+        "c1.md",
+        "c4_finalization.json",
+    ]
+
+
+def test_manual_upstream_rejects_empty_and_invalid_c4_files(tmp_path: Path) -> None:
+    empty = tmp_path / "empty"
+    empty.mkdir()
+    (empty / "c1.md").write_text("", encoding="utf-8")
+    with pytest.raises(ValueError, match="is empty"):
+        _load_manual_upstream(CodexD1Node.O4_A, empty)
+
+    invalid = tmp_path / "invalid"
+    invalid.mkdir()
+    (invalid / "c4_pre_scan.json").write_text("{}", encoding="utf-8")
+    with pytest.raises(ValueError, match="NodeOutput JSON is invalid"):
+        _load_manual_upstream(CodexD1Node.C1, invalid)
+
+
+def test_pilot_task_lists_manual_upstream_and_requires_reverification() -> None:
+    task = render_task(
+        case_root=Path(r"D:\DoxAgentPilot\cases\o4_a\quality-case"),
+        node="o4_a",
+        run_id="run-1",
+        attempt_id="o4-a-1",
+        profile="quality",
+        manual_upstream_paths=(
+            "attempts/o4-a-1/input/manual_upstream/c1.md",
+            "attempts/o4-a-1/input/manual_upstream/c3.md",
+        ),
+    )
+    assert "人工上游输入" in task
+    assert "manual_upstream/c1.md" in task
+    assert "覆盖 context 中同名的 source-run 上游结论" in task
+    assert "O# 已失效" in task
 
 
 @pytest.mark.parametrize(
@@ -181,6 +265,13 @@ def test_signed_pilot_case_scope_and_generated_config(tmp_path: Path) -> None:
     secret = "s" * 40
     codec = DataCapabilityCodec(secret)
     allowed = DataToolPolicyRegistry().allowed_tools(CodexD1Node.C1, CodexAgentRole.C1)
+    ticker_allowed = DataToolPolicyRegistry().allowed_tools_for_ticker(
+        CodexD1Node.C1,
+        CodexAgentRole.C1,
+        "NVDA",
+    )
+    assert "yfinance.hk_basic_snapshot" in allowed
+    assert "yfinance.hk_basic_snapshot" not in ticker_allowed
     token = codec.issue(
         run_id="run-1",
         node_id=CodexD1Node.C1,

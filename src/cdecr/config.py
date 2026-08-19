@@ -41,13 +41,13 @@ class CDECRSettings(BaseSettings):
         alias="CDECR_DEEPSEEK_BASE_URL",
     )
     model_m2_provider: Literal["dashscope", "deepseek"] = Field(
-        default="deepseek", alias="CDECR_M2_PROVIDER"
+        default="dashscope", alias="CDECR_M2_PROVIDER"
     )
     model_m3_provider: Literal["dashscope", "deepseek"] = Field(
-        default="deepseek", alias="CDECR_M3_PROVIDER"
+        default="dashscope", alias="CDECR_M3_PROVIDER"
     )
     model_m4_provider: Literal["dashscope", "deepseek"] = Field(
-        default="deepseek", alias="CDECR_M4_PROVIDER"
+        default="dashscope", alias="CDECR_M4_PROVIDER"
     )
     model_m2_reasoning_effort: Literal["none", "low", "high", "max"] = Field(
         default="none", alias="CDECR_M2_REASONING_EFFORT"
@@ -58,13 +58,13 @@ class CDECRSettings(BaseSettings):
     model_m4_reasoning_effort: Literal["none", "low", "high", "max"] = Field(
         default="high", alias="CDECR_M4_REASONING_EFFORT"
     )
-    model_m2_strict: bool = Field(default=True, alias="CDECR_M2_STRICT")
-    model_m3_strict: bool = Field(default=True, alias="CDECR_M3_STRICT")
-    model_m4_strict: bool = Field(default=True, alias="CDECR_M4_STRICT")
+    model_m2_strict: bool = Field(default=False, alias="CDECR_M2_STRICT")
+    model_m3_strict: bool = Field(default=False, alias="CDECR_M3_STRICT")
+    model_m4_strict: bool = Field(default=False, alias="CDECR_M4_STRICT")
     model_m1: str = Field(default="qwen3.7-text-embedding", alias="CDECR_MODEL_M1")
-    model_m2: str = Field(default="deepseek-v4-flash", alias="CDECR_MODEL_M2")
-    model_m3: str = Field(default="deepseek-v4-flash", alias="CDECR_MODEL_M3")
-    model_m4: str = Field(default="deepseek-v4-flash", alias="CDECR_MODEL_M4")
+    model_m2: str = Field(default="deepseek-v4-flash-0731", alias="CDECR_MODEL_M2")
+    model_m3: str = Field(default="deepseek-v4-flash-0731", alias="CDECR_MODEL_M3")
+    model_m4: str = Field(default="deepseek-v4-flash-0731", alias="CDECR_MODEL_M4")
     relevance_filter_mode: Literal["off", "shadow", "enforce"] = Field(
         default="enforce", alias="CDECR_RELEVANCE_FILTER_MODE"
     )
@@ -82,6 +82,21 @@ class CDECRSettings(BaseSettings):
     n9_wire_protocol: Literal["on"] = Field(
         default="on",
         alias="CDECR_N9_WIRE_PROTOCOL",
+    )
+    field_epoch_planned_batching: bool = Field(
+        default=True, alias="CDECR_FIELD_EPOCH_PLANNED_BATCHING"
+    )
+    grounder_safe_normalization: bool = Field(
+        default=True, alias="CDECR_GROUNDER_SAFE_NORMALIZATION"
+    )
+    grounder_primary_normalization: Literal["off", "shadow"] = Field(
+        default="shadow", alias="CDECR_GROUNDER_PRIMARY_NORMALIZATION"
+    )
+    n9_overlap_batch_packing: bool = Field(
+        default=False, alias="CDECR_N9_OVERLAP_BATCH_PACKING"
+    )
+    parent_compact_wire_dto: bool = Field(
+        default=True, alias="CDECR_PARENT_COMPACT_WIRE_DTO"
     )
     grounder_issue_protocol: Literal["legacy", "shadow", "canary", "on"] = Field(
         default="legacy",
@@ -136,6 +151,12 @@ class CDECRSettings(BaseSettings):
         le=500,
         alias="CDECR_STRUCTURED_PROVIDER_INITIAL_BURST",
     )
+    structured_provider_max_retries: int = Field(
+        default=1, ge=0, le=3, alias="CDECR_STRUCTURED_PROVIDER_MAX_RETRIES"
+    )
+    structured_provider_key_quarantine_seconds: int = Field(
+        default=14400, ge=60, le=86400, alias="CDECR_STRUCTURED_PROVIDER_KEY_QUARANTINE_SECONDS"
+    )
     document_workers: int = Field(default=120, ge=1, le=256, alias="CDECR_DOCUMENT_WORKERS")
     document_block_concurrency: int = Field(
         default=24, ge=1, le=64, alias="CDECR_DOCUMENT_BLOCK_CONCURRENCY"
@@ -153,38 +174,59 @@ class CDECRSettings(BaseSettings):
     parent_induction_active_requests: int = Field(
         default=96, ge=1, le=160, alias="CDECR_PARENT_INDUCTION_ACTIVE_REQUESTS"
     )
-    parent_resolution_active_requests: int = Field(
-        default=128, ge=1, le=160, alias="CDECR_PARENT_RESOLUTION_ACTIVE_REQUESTS"
-    )
-    parent_reconcile_active_requests: int = Field(
-        default=96, ge=1, le=160, alias="CDECR_PARENT_RECONCILE_ACTIVE_REQUESTS"
-    )
     parent_induction_max_documents: int = Field(
         default=4, ge=1, le=16, alias="CDECR_PARENT_INDUCTION_MAX_DOCUMENTS"
     )
     parent_induction_max_slices: int = Field(
         default=48, ge=1, le=96, alias="CDECR_PARENT_INDUCTION_MAX_SLICES"
     )
-    parent_resolution_max_proposals: int = Field(
-        default=24, ge=2, le=48, alias="CDECR_PARENT_RESOLUTION_MAX_PROPOSALS"
-    )
-    parent_resolution_max_existing_parents: int = Field(
-        default=12, ge=0, le=24, alias="CDECR_PARENT_RESOLUTION_MAX_EXISTING_PARENTS"
-    )
-    parent_resolution_max_input_tokens: int = Field(
-        default=12000, ge=2000, le=64000, alias="CDECR_PARENT_RESOLUTION_MAX_INPUT_TOKENS"
-    )
-    parent_route_structured_quota: int = Field(
-        default=16, ge=4, le=96, alias="CDECR_PARENT_ROUTE_STRUCTURED_QUOTA"
-    )
-    parent_route_semantic_quota: int = Field(
-        default=24, ge=2, le=64, alias="CDECR_PARENT_ROUTE_SEMANTIC_QUOTA"
-    )
-    parent_route_total_k: int = Field(
-        default=32, ge=2, le=96, alias="CDECR_PARENT_ROUTE_TOTAL_K"
-    )
     parent_context_soft_token_budget: int = Field(
         default=6000, ge=1000, le=32000, alias="CDECR_PARENT_CONTEXT_SOFT_TOKEN_BUDGET"
+    )
+    package_v3_batch_size: int = Field(
+        default=200, ge=1, le=200, alias="CDECR_PACKAGE_V3_BATCH_SIZE"
+    )
+    package_v3_model: Literal["deepseek-v4-flash-0731"] = Field(
+        default="deepseek-v4-flash-0731", alias="CDECR_PACKAGE_V3_MODEL"
+    )
+    package_v3_reasoning_effort: Literal["none", "low", "high", "max"] = Field(
+        default="low", alias="CDECR_PACKAGE_V3_REASONING_EFFORT"
+    )
+    package_v3_description_reasoning_effort: Literal["none", "low", "high", "max"] = Field(
+        default="none", alias="CDECR_PACKAGE_V3_DESCRIPTION_REASONING_EFFORT"
+    )
+    atomic_cosine_backend: Literal["matrix", "scalar"] = Field(
+        default="matrix", alias="CDECR_ATOMIC_COSINE_BACKEND"
+    )
+    bulk_registry_read_mode: Literal["snapshot", "locked"] = Field(
+        default="snapshot", alias="CDECR_BULK_REGISTRY_READ_MODE"
+    )
+    package_v3_context_token_budget: int = Field(
+        default=100000,
+        ge=8000,
+        le=200000,
+        alias="CDECR_PACKAGE_V3_CONTEXT_TOKEN_BUDGET",
+    )
+    package_v3_description_token_budget: int = Field(
+        default=32000,
+        ge=4000,
+        le=100000,
+        alias="CDECR_PACKAGE_V3_DESCRIPTION_TOKEN_BUDGET",
+    )
+    package_v3_context_reserve_tokens: int = Field(
+        default=8000,
+        ge=1000,
+        le=64000,
+        alias="CDECR_PACKAGE_V3_CONTEXT_RESERVE_TOKENS",
+    )
+    package_v3_description_active_requests: int = Field(
+        default=16,
+        ge=1,
+        le=64,
+        alias="CDECR_PACKAGE_V3_DESCRIPTION_ACTIVE_REQUESTS",
+    )
+    package_v3_registry_scope: str = Field(
+        default="cdecr-default", alias="CDECR_PACKAGE_V3_REGISTRY_SCOPE"
     )
     item_repair_active_requests: int = Field(
         default=16, ge=1, le=64, alias="CDECR_ITEM_REPAIR_ACTIVE_REQUESTS"

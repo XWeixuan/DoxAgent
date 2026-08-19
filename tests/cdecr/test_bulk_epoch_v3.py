@@ -12,6 +12,7 @@ from cdecr.bulk_epoch.writer import BulkWriter
 from cdecr.models import ModelTier
 from cdecr.ports import StructuredModelRequest, StructuredModelResult
 from cdecr.registry import SQLiteCDECRRegistry
+from cdecr.scheduler import CDECRScheduler, StructuredProviderGate
 from tests.cdecr.test_cross_document import (
     FakeStructured,
 )
@@ -55,8 +56,7 @@ def executor(m2: AsyncFakeStructured, m3: AsyncFakeStructured) -> AsyncModelExec
             "field_coreference": 32,
             "atomic_coreference": 24,
             "atomic_coreference_escalation": 16,
-            "parent_occurrence_induction": 24,
-            "parent_occurrence_resolution": 24,
+            "parent_induction": 24,
         },
         repair_limit=8,
         rates={
@@ -155,6 +155,94 @@ def test_async_executor_enforces_shared_provider_hard_limit() -> None:
             results = list(pool.map(lambda _: hub.complete(ModelTier.M3, request), range(24)))
         assert len(results) == 24
         assert hub.provider_snapshot().max_active == 10
+    finally:
+        hub.close()
+
+
+def test_async_bulk_gate_is_isolated_from_document_scheduler() -> None:
+    gate = StructuredProviderGate(target=4, hard_limit=4, start_rate=1000, burst=64)
+    scheduler = CDECRScheduler(
+        m1_limit=8,
+        structured_provider_target=4,
+        structured_provider_hard_limit=4,
+        structured_provider_start_rate=1000,
+        structured_provider_initial_burst=64,
+        provider_gate=gate,
+        max_retries=0,
+    )
+    async_client = AsyncFakeStructured(FakeStructured(), delay=0.05)
+    hub = AsyncModelExecutor(
+        clients={
+            ModelTier.M2: async_client,
+            ModelTier.M3: async_client,
+            ModelTier.M4: async_client,
+        },
+        tier_limits={ModelTier.M2: 8, ModelTier.M3: 8, ModelTier.M4: 8},
+        stage_limits={"atomic_coreference": 8},
+        repair_limit=4,
+        rates={tier: (1000.0, 8) for tier in (ModelTier.M2, ModelTier.M3, ModelTier.M4)},
+        provider_target=4,
+        provider_hard_limit=4,
+        provider_start_rate=1000,
+        provider_initial_burst=64,
+        max_retries=0,
+    )
+    request = StructuredModelRequest(
+        system_prompt="Return JSON.",
+        user_prompt="{}",
+        json_schema={"type": "object"},
+        metadata={"stage": "atomic_coreference"},
+    )
+    release = threading.Event()
+
+    def sync_call() -> int:
+        return scheduler.run(ModelTier.M2, lambda: (release.wait(timeout=2), 1)[1])[0]
+
+    try:
+        with ThreadPoolExecutor(max_workers=8) as pool:
+            futures = [pool.submit(sync_call) for _ in range(4)]
+            futures.extend(pool.submit(hub.complete, ModelTier.M2, request) for _ in range(4))
+            deadline = perf_counter() + 1
+            while gate.snapshot().active < 4 and perf_counter() < deadline:
+                threading.Event().wait(0.005)
+            assert gate.snapshot().active == 4
+            assert hub.provider_snapshot().max_active == 4
+            assert hub.provider_stage_snapshots()["atomic_coreference"]["limit"] == 4
+            release.set()
+            assert len([future.result() for future in futures]) == 8
+    finally:
+        hub.close()
+
+
+def test_async_executor_records_physical_attempt_telemetry() -> None:
+    async_client = AsyncFakeStructured(FakeStructured(), delay=0.0)
+    hub = AsyncModelExecutor(
+        clients={tier: async_client for tier in (ModelTier.M2, ModelTier.M3, ModelTier.M4)},
+        tier_limits={tier: 2 for tier in (ModelTier.M2, ModelTier.M3, ModelTier.M4)},
+        stage_limits={"field_coreference": 2},
+        repair_limit=1,
+        rates={tier: (1000.0, 2) for tier in (ModelTier.M2, ModelTier.M3, ModelTier.M4)},
+        provider_target=2,
+        provider_hard_limit=2,
+        provider_start_rate=1000,
+        provider_initial_burst=8,
+        max_retries=0,
+    )
+    try:
+        hub.complete(
+            ModelTier.M2,
+            StructuredModelRequest(
+                system_prompt="Return JSON.",
+                user_prompt="{}",
+                json_schema={"type": "object"},
+                metadata={"stage": "field_coreference"},
+            ),
+        )
+        attempts = hub.attempt_telemetry()
+        assert len(attempts) == 1
+        assert attempts[0].attempt_index == 1
+        assert attempts[0].stage == "field_coreference"
+        assert attempts[0].status == "SUCCEEDED"
     finally:
         hub.close()
 

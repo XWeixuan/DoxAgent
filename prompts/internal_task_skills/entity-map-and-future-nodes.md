@@ -2,235 +2,115 @@
 kind = "internal_task_skill"
 id = "entity-map-and-future-nodes"
 name = "Entity Map and Future Nodes"
-version = "2026.08.05"
+version = "2026.08.18"
 manual_only = true
 applicable_task_types = ["generate_global_research"]
 +++
+
 # C4 Entity Map and Future Nodes
 
-## Mission and boundary
+## Purpose
 
-Build infrastructure context around Document 1, not a research conclusion. Maintain:
+Provide lightweight context for later research. Do not produce investment conclusions.
 
-1. a low-frequency **entity-exposure map** of material internal business objects and explainable external interfaces;
-2. a high-frequency **future-node list** of matters with an identifiable subject, action/result, supported time window, and public observable.
-
-Use one external C4 agent in exactly three task modes:
-
+Use:
 - `BUILD_OR_REFRESH_ENTITY_MAP`
 - `SCAN_DIRECT_FUTURE_NODES`
 - `ENRICH_FUTURE_NODES`
 
-Build/refresh the map first; scan direct company nodes before C1/C3; then use C1/C3, optional dated C2 evidence, and the pre-scan to find and deduplicate research-linked matters.
+## A. Entity map
 
-Do not turn the map into a knowledge graph, financial model, or priority list, or nodes into outcome forecasts. Never produce valuation, target price, trading advice, price reaction, direction, priced-in state, importance score, formal `ExpectationUnit`, `RealizationFactor`, `PotentialGap`, activation, or Unit/Gap binding. Document 2 owns mapping; the event store owns occurred facts.
+Build a simple map of the target's material business objects and clear external relationships.
 
-## Execution discipline
+Cover when relevant:
+- major segments, products, or platforms;
+- confirmed customers, suppliers, competitors, partners;
+- clear regulatory, regional, input, infrastructure, or technology exposures.
 
-Read `task_mode`, target, `current_date`, timezone, horizon, supplied artifacts, and output format. Default to 12 months only when no horizon is supplied. Resolve "future" against the runtime clock. Label issuer fiscal periods explicitly.
+A relation only needs to explain **who is related to whom, what the relationship is, why it exists, and which business/product it touches**.
 
-Within 0-90 days, seek reasonably complete direct, evidenced nodes. From day 91 through month 12, admit only a formal date/month/quarter, legal-contractual deadline, or explicit bounded window; vague long-range plans stay out.
+Do not guess unnamed or rumor-only counterparties. Do not treat industry membership as a commercial relationship. Prefer official evidence; credible reporting may supplement it.
 
-Treat each mode as non-blocking:
+Output only:
 
-- return a valid empty list when no reliable node exists;
-- omit an unverified relation, or retain it as `UNCERTAIN` only when useful;
-- expose missing inputs, stale evidence, conflicts, and exclusions;
-- never fill a quota by guessing.
+| 关系主体 | 关系对象 | 关系类型 | 关系说明 | 关联业务或产品 |
 
-Use supplied artifacts first. Refresh only affected relations unless restructuring invalidates the boundary. Use C1/C3 to narrow enrichment searches, not import conclusions.
+Keep wording neutral. Do not add importance, research hints, financial impact, expected direction, Gap/Unit mapping, or trading conclusions.
 
-## Evidence model
+## B. Future nodes
 
-### Separate claim types
+Find future matters that are concrete, time-locatable, and publicly observable.
 
-Keep four claim types distinct:
+A valid node should answer:
 
-- **direct fact**: an issuer, authority, contract party, or official organizer states the relation/schedule;
-- **reported fact**: credible named secondary reporting identifies its basis;
-- **C4 inference**: a bounded classification or entity-resolution judgment supported by facts;
-- **unknown**: identity, status, timing, or observability cannot be verified.
+**who will do, announce, decide, launch, deliver, validate, deploy, or report what; and when.**
 
-A source proves only what it says. Risk-factor language can prove exposure, not a named counterparty. Syndication is one evidence chain, not corroboration.
+Use **no fixed research horizon**. Preserve the source's precision: date, month, quarter, half-year, year, or bounded window. Never invent a more precise date.
 
-### Source order
+Search both:
+- scheduled events such as earnings, investor events, conferences, regulatory or court decisions;
+- roadmap/execution milestones such as launches, validation, qualification, production, shipments, capacity start, or customer deployment.
 
-Search in this order:
+### Search requirement
 
-1. issuer filings, IR pages, releases, calendars, exhibits, and official product/trial records;
-2. regulator, court, exchange, government, procurement, standards, and organizer records;
-3. named counterparties discussing the same interface;
-4. reputable financial/specialist media with attributable sourcing;
-5. analyst synthesis, anonymous reports, social media, and unattributed reposts.
+For both Future Node modes, **actively use the available web/search tool to discover future matters**.
 
-For US issuers, establish the boundary from 10-K/20-F business, segment, concentration, geography, risk, exhibit, and notes; update with 10-Q, 8-K/6-K, proxy, and releases. Use equivalents elsewhere. Filing date is not occurrence date.
+Existing artifacts, filings, connected data-source tools, entity maps, and supplied research are **seed context only**. They are not sufficient discovery by themselves.
 
-For every node record source name/type, title/matter, publication date, stable location, and minimal support for **subject, action, and time**.
+A Future Node task is not complete until a search-discovery pass has been performed.
 
-Classify source reliability, not outcome probability:
+Use broad search to discover candidates, then prefer official or direct sources to verify useful candidates.
 
-- `HIGH`: direct issuer/authority/court/exchange/organizer schedule or deadline;
-- `MEDIUM`: attributable credible secondary or counterparty evidence;
-- `LOW`: anonymous, predictive, social, single-rumor, or untraceable evidence.
+Do not restrict discovery to sources already present in the supplied context.
 
-LOW evidence cannot support a pre-scan node alone. Retain it post-research only as `TENTATIVE` when matter, window, business link, and observable are specific.
+### `SCAN_DIRECT_FUTURE_NODES`
 
-## Mode A: build or refresh the entity-exposure map
+Before C1/C3, perform broad future-node discovery around:
 
-### 1. Set the business-object boundary
+1. the target company's announced events;
+2. major product/platform roadmaps and execution milestones;
+3. obvious first-order read-through nodes from **confirmed** entity-map relationships, such as key customer earnings/deployments, supplier capacity or product milestones, partner launches, or regulator decisions.
 
-Decompose only far enough to expose a useful interface:
+Do not crawl every mapped entity. External nodes should have a clear target-company business link without requiring deeper C1/C3 analysis.
 
-`target company -> material reportable segment/business line -> major product, service, platform, program, or necessary subsidiary/brand`
+The goal of pre-scan is to build a useful **future time map**, not merely an issuer IR calendar.
 
-Prefer current operating/reporting structure. Omit immaterial entities, SKUs, old products, and geographies; keep an object needed to disambiguate an external relation.
+### `ENRICH_FUTURE_NODES`
 
-Then consider external objects:
+After C1/C3, use their core drivers, key actors, milestones, and unresolved questions as additional search anchors.
 
-- named customers, suppliers, competitors, partners, and channels;
-- regulators/policy bodies with a direct interface;
-- material regions, inputs, infrastructure, licenses, platforms, or technology routes.
+Actively search for additional **specific future matters** that can observe or verify those research areas, then merge them with the pre-scan list.
 
-An unnamed concentration does not identify a customer. Do not confuse distributor with end customer, user with purchaser, contract manufacturer with supplier of record, or group with contracting subsidiary.
+Do not turn broad drivers, hypotheses, or monitoring topics into events.
 
-### 2. Admit an entity relation only through five gates
+## Future-node output
 
-Require all of the following:
+Output:
 
-1. both endpoints are identifiable at the resolution supported by evidence;
-2. the relationship type is clear and directional;
-3. at least one `related_business_object` names the segment/product/service/interface involved;
-4. one or two neutral sentences explain why the edge exists;
-5. the relation is current or durably relevant, rather than an isolated story or remote third-/fourth-order connection.
+| 时间 | 未来事项 | 与目标公司的关系 | 来源 | 来源发布日期 |
 
-Industry membership does not prove competition; a teardown, job post, specification, or rumor does not prove a commercial relation. Do not infer size, margin, timing, beneficiary, or importance.
+Only explain the direct business/read-through link. Do not add importance scores, expected impact, research checklists, price reactions, priced-in judgments, or Unit/Gap bindings.
 
-Use only these relation types:
+If an announced relevant matter has no supported time window, do not invent one; place it briefly under `待定未来事项`.
 
-- `BUSINESS_COMPOSITION`: segment/product/subsidiary structure;
-- `CUSTOMER`: external purchaser or user;
-- `SUPPLIER`: provider of equipment, material, product, or service;
-- `COMPETITOR`: contest over product, customer, order, capacity, or technology;
-- `PARTNER`: public collaboration, development, distribution, or coordination;
-- `DEPENDENCY`: reliance on infrastructure, license, platform, standard, or capability;
-- `REGULATORY`: approval, restriction, support, or oversight;
-- `REGIONAL_EXPOSURE`: revenue, capacity, customer, or supply-chain regional interface;
-- `COMMODITY_INPUT`: commodity, energy, or raw-material interface;
-- `TECHNOLOGY_RELATION`: technology support, dependency, substitution, interoperability, or constraint;
-- `OTHER`: necessary relation that cannot be represented above.
+Record only source name and publication date. Prefer official/company/counterparty/authority sources for verification; credible secondary sources may be used when necessary.
 
-Set `relation_status` consistently:
+## Output format
 
-- `ESTABLISHED`: current direct or consistent primary evidence supports edge and interface;
-- `REPORTED`: credible attributable reporting supports it without full direct confirmation;
-- `UNCERTAIN`: evidence conflicts, is stale, or leaves endpoint/role ambiguity. Retain sparingly and state the exact uncertainty.
+Return **structured output only**.
 
-### 3. Resolve entities without false precision
+Do not generate a Markdown report or duplicate the structured result into narrative text.
 
-Assign stable local IDs and canonical names; merge aliases only for the same actor. Use category objects only for category-level exposure, never as companies.
+If the runtime response envelope requires a `report_markdown` field, always return:
 
-Use the caller's entity-type enum; otherwise label company, business line, product/service, subsidiary/brand, regulator, region, input, technology, infrastructure, or other object. Customer/supplier/competitor is an edge role, so one company may carry several edges.
+`"report_markdown": ""`
 
-Orient internal edges parent -> child and exposure edges target/internal object -> external object: a `CUSTOMER` target is the source's customer. Separate roles/interfaces. Require `basis_refs` for non-obvious, changing, `REPORTED`, or `UNCERTAIN` edges.
+The structured `entity_relations` / `future_nodes` fields are the authoritative output.
 
-Refresh locally for M&A/divestitures, reorganizations, product-route changes, confirmed counterparties, exits, or structural regulatory/region changes. Return added/modified/removed items and stale edges; search incompleteness alone does not justify deletion.
+## General rules
 
-## Modes B1/B2: construct future nodes
-
-### 1. Apply the event grammar
-
-Admit a node only if it answers:
-
-`who -> will do/decide/receive what -> when -> what public artifact or datum will confirm it`
-
-The observable is evidence, not a predicted outcome: release, filing, vote, order, decision, product/trial update, contract notice, qualification/production disclosure, or measured industry release.
-
-Reject trends, unscheduled recurring activity, monitoring topics, unbounded possibilities, and abstractions such as "when supply balances." A deadline is a procedural node, not proof of a decision. An earnings date is a node; surprise direction is not.
-
-Use only these `node_type` values: `EARNINGS_RELEASE`, `INVESTOR_EVENT`, `PRODUCT_RELEASE`, `CUSTOMER_CONTRACT`, `VALIDATION_QUALIFICATION`, `REGULATORY_DECISION`, `COURT_DECISION`, `POLICY_FUNDING`, `CAPACITY_START`, `PRODUCTION_RAMP`, or `OTHER`.
-
-### 2. Respect milestone economics without predicting economics
-
-Know the operating sequence so distinct nodes are not merged and weak milestones are not overstated:
-
-- manufacturing: construction -> tool install -> qualification -> production start -> yield/utilization ramp -> effective output;
-- semiconductors/hardware: sample -> validation/qualification -> design win -> order -> shipment;
-- biopharma: enrollment -> primary completion -> data readout -> filing -> acceptance -> advisory review -> regulatory action;
-- software/platforms: announcement -> availability -> customer deployment -> usage/renewal disclosure;
-- M&A: signing -> filings/review -> shareholder vote -> clearance -> close;
-- policy: proposal -> comment deadline -> final action -> effective date -> funding award.
-
-One step does not prove the next. Include only separately supported windows; never derive a downstream date from normal lead time.
-
-### 3. Execute the two scans differently
-
-For `SCAN_DIRECT_FUTURE_NODES`, search only target/internal objects: next earnings, investor event, announced product, disclosed contract/closing, direct deadline, or explicit qualification/production/capacity window. Keep 3-10 normally; do not crawl every mapped entity.
-
-For `ENRICH_FUTURE_NODES`, turn C1/C3 drivers, objects, actors, allocation mechanisms, milestones, blockers, questions, and Unknowns into search anchors. Find **specific scheduled matters** that could observe them. Keep target links neutral; never copy a hypothesis into `action_or_result`.
-
-### 4. Normalize time correctly
-
-Separate four clocks:
-
-- occurrence/action date;
-- public announcement or filing date;
-- source publication date;
-- observation/result-availability date.
-
-Match the clock to `action_or_result`; put other clocks in `time_basis`/`notes`. Never sharpen source precision. Preserve half-year, month, quarter, or range. Distinguish fiscal from calendar quarter. Resolve relative phrases from publication date only when unambiguous.
-
-Set `time_precision` to `DATE`, `WEEK`, `MONTH`, `QUARTER`, or `RANGE`. Set status as follows:
-
-- `SCHEDULED`: authoritative exact date or fixed formal schedule;
-- `ANNOUNCED_WINDOW`: authoritative bounded window but no exact date;
-- `TENTATIVE`: provisional estimate, credible indirect schedule, or unresolved source conflict;
-- `DELAYED`: a later source formally moves the window;
-- `CANCELLED`: a later source formally cancels it;
-- `COMPLETED`: use only while reconciling an existing node for handoff; do not retain it in the active future list.
-
-For conflicting dates, prefer the latest direct update; otherwise use the smallest credible range, set `TENTATIVE`, and explain. Estimated clinical dates, targets, review goals, and court calendars can move.
-
-Do not label a recurring-cadence estimate or calendar aggregator date `SCHEDULED`. Use `TENTATIVE` with its basis or exclude it until the issuer/organizer confirms a window.
-
-### 5. Deduplicate by event identity
-
-Merge only co-referential subject, action/result, object, window, and observable. Combine sources and keep the best-supported precision. Do not merge product release, qualification, production, or earnings steps merely because actor/product match.
-
-## Output contracts
-
-Return lightweight Markdown plus YAML/JSON when requested, not a narrative report.
-
-`entity_exposure_map` must contain `as_of`, `target`, `entities`, `relations`, and for refreshes `change_summary`. Each entity contains:
-
-`entity_id`, `entity_name`, `entity_type`, `aliases`, `brief_description`.
-
-Each relation contains:
-
-`source_entity_id`, `target_entity_id`, `relation_type`, `related_business_objects`, `relation_description`, `relation_status`, `basis_refs`.
-
-`future_nodes_pre_scan` contains accepted pre-scan nodes. `future_nodes_final` updates that list, adds accepted post-research nodes, and deduplicates. Each node contains:
-
-`node_id`, `subject_entity`, `node_type`, `action_or_result`, `related_business_objects`, `relationship_to_target`, `time_window`, `time_precision`, `time_basis`, `observable_output`, `scan_stage`, `status`, `source_refs`, `source_reliability`, `reliability_reason`, `notes`.
-
-Use `PRE_SCAN` for B1 additions and `POST_RESEARCH` for B2 additions. If the caller contract permits `PRE_SCAN_ENRICHED`, use it only for a B1 node materially updated in B2. Keep rejected enrichment candidates outside the official list with a short exclusion reason when the mode requests them.
-
-Keep local IDs stable. `source_refs` exposes source, publication date, and location. `reliability_reason` is 1-2 sentences. `notes` holds conflicts, conditions, fiscal clarification, or exclusions - never impact.
-
-Never add `expected_impact`, `bullish_or_bearish`, `importance_score`, `related_gap`, `related_unit`, `priced_in_state`, `expected_price_move`, or `research_hint`.
-
-Soft controls: 3-12 internal objects, 0-10 customers, 0-10 suppliers, 2-10 competitors, 3-12 environment exposures; 3-10 pre-scan and 5-20 final nodes. Prune weak, indirect, stale, unreliable, vague, remote, and duplicate items first.
-
-## Final quality gate
-
-Before returning, verify:
-
-1. output matches the requested mode/artifact;
-2. every relation has identifiable endpoints, direction, business interface, and neutral wording;
-3. no unnamed counterparty or mere peer became a relation;
-4. every active node remains future and has subject, action/result, supported window, and observable;
-5. precision, fiscal/calendar label, status, and reliability match evidence;
-6. each milestone claims only what its step proves;
-7. pre-scan is direct/light and enrichment follows C1/C3 anchors;
-8. duplicates merge while distinct stages remain separate;
-9. empty results and Unknowns replace speculation;
-10. no forbidden impact, recommendation, priced-in, Gap/Unit, or priority field appears.
+- No IDs, enums, status machines, reliability grades, or complex normalization.
+- No fixed node count, entity quota, or time horizon.
+- Do not drop useful long-dated nodes.
+- Omit unsupported claims.
+- Return only the artifact required by the current task mode.

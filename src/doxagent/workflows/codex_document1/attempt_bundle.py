@@ -14,7 +14,7 @@ from doxagent.codex_runtime.schema import CodexD1Node
 from doxagent.workflows.codex_document1.schema import NodeOutput
 
 BUNDLE_VERSION = "codex-d1-agent-bundle-v2"
-ATTEMPT_TASK_SCHEMA_VERSION = "codex-d1-attempt-task-v3"
+ATTEMPT_TASK_SCHEMA_VERSION = "codex-d1-attempt-task-v4"
 PROGRESSIVE_NODES = frozenset(
     {CodexD1Node.C1, CodexD1Node.C2, CodexD1Node.C3, CodexD1Node.O4_B, CodexD1Node.O4_A}
 )
@@ -30,6 +30,7 @@ class SeededAttemptBundle:
     progress_path: str | None
     observation_candidates_path: str | None
     structured_output_path: str | None
+    manual_upstream_paths: tuple[str, ...]
     required_sections: tuple[str, ...]
     required_skills: tuple[str, ...]
 
@@ -56,6 +57,7 @@ class AttemptBundleSeeder:
         node: CodexD1Node,
         context_payload: dict[str, object],
         horizontal: dict[str, object] | None,
+        manual_upstream: dict[str, str] | None = None,
     ) -> str:
         definition = self.node_definition(node)
         resources = self._resource_contents(definition)
@@ -67,6 +69,10 @@ class AttemptBundleSeeder:
             "node_definition": definition,
             "context_payload": context_payload,
             "horizontal": horizontal,
+            "manual_upstream": {
+                name: _sha256(content)
+                for name, content in sorted((manual_upstream or {}).items())
+            },
             "resources": {name: _sha256(text) for name, text in sorted(resources.items())},
         }
         return _sha256(_json(canonical, compact=True))
@@ -80,6 +86,7 @@ class AttemptBundleSeeder:
         context_payload: dict[str, object],
         horizontal: dict[str, object] | None,
         previous_failure: str | None = None,
+        manual_upstream: dict[str, str] | None = None,
     ) -> SeededAttemptBundle:
         definition = self.node_definition(node)
         resources = self._resource_contents(definition)
@@ -97,6 +104,10 @@ class AttemptBundleSeeder:
             None if progressive else f"{output_base}/completion.json"
         )
         required_skill_paths = tuple(f"{input_base}/{item}" for item in skills)
+        manual_upstream_paths = tuple(
+            f"{input_base}/manual_upstream/{name}"
+            for name in sorted(manual_upstream or {})
+        )
         task = {
             "schema_version": ATTEMPT_TASK_SCHEMA_VERSION,
             "bundle_version": BUNDLE_VERSION,
@@ -112,6 +123,16 @@ class AttemptBundleSeeder:
             "output_language": "zh-CN",
             "output_schema_path": f"{input_base}/{self._manifest['schema']}",
             "previous_attempt_failure": previous_failure,
+            "manual_upstream": (
+                {
+                    "mode": "pilot_override",
+                    "files": list(manual_upstream_paths),
+                    "precedence": "manual_over_source_run",
+                    "citation_policy": "context_only_reverify",
+                }
+                if manual_upstream_paths
+                else None
+            ),
             "progress_contract": (
                 {
                     "status": "in_progress | completed",
@@ -128,7 +149,10 @@ class AttemptBundleSeeder:
             "payload": context_payload,
         }
         input_hash = self.input_sha256(
-            node=node, context_payload=context_payload, horizontal=horizontal
+            node=node,
+            context_payload=context_payload,
+            horizontal=horizontal,
+            manual_upstream=manual_upstream,
         )
         writes = {
             f"{input_base}/AGENTS.md": resources["AGENTS.md"],
@@ -142,6 +166,8 @@ class AttemptBundleSeeder:
             writes[f"{input_base}/{skill}"] = resources[skill]
         if horizontal_path is not None:
             writes[horizontal_path] = _json(horizontal)
+        for name, content in sorted((manual_upstream or {}).items()):
+            writes[f"{input_base}/manual_upstream/{name}"] = content
         for path, content in writes.items():
             await self._workspace.write_text(run_id, path, content)
         audit = {
@@ -175,6 +201,7 @@ class AttemptBundleSeeder:
             progress_path=progress_path,
             observation_candidates_path=candidates_path,
             structured_output_path=structured_output_path,
+            manual_upstream_paths=manual_upstream_paths,
             required_sections=sections,
             required_skills=required_skill_paths,
         )

@@ -429,12 +429,24 @@ def test_c1_c3_task_text_moved_to_internal_task_skills() -> None:
     assert "## Task" not in c1_prompt.body
     assert "## Task" not in c3_prompt.body
     assert "load_skill(" not in fundamental.body
-    assert "Recent Fundamental State and Changes" in fundamental.body
-    assert "Key Variable Transmission Chains" in fundamental.body
+    assert "一、近期基本面状态与变化" in fundamental.body
+    assert "四、关键变量传导链" in fundamental.body
+    assert "### 核心驱动概览" in fundamental.body
+    assert "### 综合判断" in fundamental.body
+    assert "| ID | 上游业务变量" in fundamental.body
+    assert "Possible future effects" not in fundamental.body
+    assert "Field | Required content" not in fundamental.body
     assert "candidate questions, not formal `PotentialGap` objects" in fundamental.body
     assert "Invoke `" not in industry.body
+    assert "Do not stop at supplied context or Data Tools" in c3_prompt.body
+    assert "research completeness and freshness" in c3_prompt.body
     assert "Target-Relevant Industry and Value-Chain Fact Baseline" in industry.body
     assert "Core External Drivers, Allocation Mechanisms, and Transmission" in industry.body
+    assert "### Core Findings" in industry.body
+    assert "latest view/action/datum; change; signal conclusion" in industry.body
+    assert "**Transmission Mechanism**" in industry.body
+    assert "**Current Evidence Base**" in industry.body
+    assert "candidate question; anchor;" not in industry.body
     assert "candidate questions, not formal `PotentialGap` objects" in industry.body
 
 
@@ -691,7 +703,7 @@ def test_prompt_injector_selects_global_research_internal_skills_for_c1_c3() -> 
     assert c1_injected.prompt_bundle.external_skill_package_ids == []
     c1_skill = default_prompt_registry().get("fundamental-research")
     assert "Document 1" in c1_skill.body
-    assert "Management and Sell-Side Expectations" in c1_skill.body
+    assert "二、管理层与卖方当前预期" in c1_skill.body
     assert "priced in" in c1_skill.body
 
     c3_definition = agent_registry.get(AgentName.C3_INDUSTRY_RESEARCH)

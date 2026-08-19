@@ -7,8 +7,8 @@ import uuid
 from collections.abc import Sequence
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
-from functools import partial
 from time import perf_counter
+from typing import Literal
 
 from cdecr.bulk_epoch.artifacts import StageArtifact, canonical_hash
 from cdecr.bulk_epoch.atomic_late_stage import (
@@ -41,12 +41,16 @@ from cdecr.cross_document_contracts import (
 from cdecr.field_coreference import FieldCoreferenceResolver
 from cdecr.identity_compiler import IdentityCompiler
 from cdecr.kb_v2 import V2KnowledgeBase
+from cdecr.package_global_clustering import PackageWorkflowV3Service
+from cdecr.package_v3_contracts import FrozenPackagePartitionV3
 from cdecr.parent_occurrence import ParentOccurrenceService
-from cdecr.parent_occurrence_contracts import FrozenParentPartition
-from cdecr.ports import CDECRRegistry
+from cdecr.ports import CDECRRegistry, StructuredModelClient
 from cdecr.single_document_contracts import ModelCallSummary
 
-BULK_STAGE_GRAPH_VERSION = "cdecr-bulk-epoch-v9-parent-occurrence-v2.0r"
+BULK_STAGE_GRAPH_VERSION = "cdecr-bulk-epoch-v12-token-quality-recovery"
+FIELD_EPOCH_POLICY_VERSION = "field-epoch-planned-batching-v2-pure-prepare"
+FIELD_PLAN_ARTIFACT_KIND = "field_plan_v2"
+FIELD_OVERLAY_ARTIFACT_KIND = "field_overlay_v2"
 
 
 def _git_commit() -> str | None:
@@ -103,22 +107,16 @@ class BulkEpochEngine:
         core: CrossDocumentEngine,
         executor: AsyncModelExecutor,
         field_active_requests: int,
+        field_epoch_planned_batching: bool = True,
         knowledge_base: V2KnowledgeBase | None = None,
         atomic_late_convergence: bool = True,
         atomic_late_task_cap: int = 48,
         n9_late_active_requests: int = 24,
         parent_induction_active_requests: int = 96,
-        parent_resolution_active_requests: int = 128,
-        parent_reconcile_active_requests: int = 96,
         parent_induction_max_documents: int = 4,
         parent_induction_max_slices: int = 48,
-        parent_resolution_max_proposals: int = 24,
-        parent_resolution_max_existing_parents: int = 12,
-        parent_resolution_max_input_tokens: int = 12_000,
-        parent_route_structured_quota: int = 16,
-        parent_route_semantic_quota: int = 24,
-        parent_route_total_k: int = 32,
         parent_context_soft_token_budget: int = 6_000,
+        parent_compact_wire_dto: bool = True,
         writer_queue_low_watermark: int = 1000,
         writer_queue_high_watermark: int = 5000,
         writer_queue_hard_limit: int = 10000,
@@ -127,28 +125,47 @@ class BulkEpochEngine:
         chunked_stage_apply: bool = True,
         batch_task_ledger: bool = True,
         embedding_batch_executor: bool = True,
+        package_responses_client: StructuredModelClient | None = None,
+        package_model_m4: str | None = None,
+        package_v3_batch_size: int = 200,
+        package_v3_context_token_budget: int = 100_000,
+        package_v3_context_reserve_tokens: int = 8_000,
+        package_v3_description_token_budget: int = 32_000,
+        package_v3_description_active_requests: int = 16,
+        package_v3_reasoning_effort: Literal["none", "low", "high", "max"] = "low",
+        package_v3_description_reasoning_effort: Literal[
+            "none", "low", "high", "max"
+        ] = "none",
+        package_v3_strict_output: bool = False,
     ) -> None:
         self.registry = registry
         self.core = core
         self.executor = executor
         self.field_active_requests = max(1, field_active_requests)
+        self.field_epoch_planned_batching = field_epoch_planned_batching
         self.knowledge_base = knowledge_base or core.knowledge_base
         self.atomic_late_convergence = atomic_late_convergence
         self.parent_service = ParentOccurrenceService(
             registry=registry,
             induction_active_requests=parent_induction_active_requests,
-            resolution_active_requests=parent_resolution_active_requests,
-            reconcile_active_requests=parent_reconcile_active_requests,
             induction_max_documents=parent_induction_max_documents,
             induction_max_slices=parent_induction_max_slices,
-            resolution_max_proposals=parent_resolution_max_proposals,
-            resolution_max_existing_parents=parent_resolution_max_existing_parents,
-            resolution_max_input_tokens=parent_resolution_max_input_tokens,
-            route_structured_quota=parent_route_structured_quota,
-            route_semantic_quota=parent_route_semantic_quota,
-            route_total_k=parent_route_total_k,
             context_soft_token_budget=parent_context_soft_token_budget,
+            compact_wire_dto=parent_compact_wire_dto,
         )
+        self.package_service = PackageWorkflowV3Service(
+            registry=registry,
+            batch_size=package_v3_batch_size,
+            context_token_budget=package_v3_context_token_budget,
+            context_reserve_tokens=package_v3_context_reserve_tokens,
+            description_pack_token_budget=package_v3_description_token_budget,
+            description_active_requests=package_v3_description_active_requests,
+            reasoning_effort=package_v3_reasoning_effort,
+            description_reasoning_effort=package_v3_description_reasoning_effort,
+            strict_output=package_v3_strict_output,
+        )
+        self.package_responses_client = package_responses_client
+        self.package_model_m4 = package_model_m4 or core.model_m4
         self.late_config = LateStageConfig(
             atomic_task_cap=atomic_late_task_cap,
             atomic_active_requests=n9_late_active_requests,
@@ -207,8 +224,13 @@ class BulkEpochEngine:
                 "atomic_apply_chunk_size": 64,
                 "package_apply_chunk_size": 32,
                 "audit_chunk_size": 512,
-                "embedding_preferred_batch_size": 64,
+                "embedding_preferred_batch_size": 8,
+                "embedding_fallback_batch_size": 4,
                 "embedding_active_requests": 4,
+                "field_epoch_policy_version": FIELD_EPOCH_POLICY_VERSION,
+                "field_epoch_planned_batching": self.field_epoch_planned_batching,
+                "n9_overlap_batch_packing": self.core.n9_overlap_batch_packing,
+                "parent_compact_wire_dto": self.parent_service.compact_wire_dto,
             },
         }
         manifest["deterministic_runtime_config_hash"] = canonical_hash(
@@ -264,6 +286,8 @@ class BulkEpochEngine:
             model_m3=self.core.model_m3,
             model_m4=self.core.model_m4,
             summaries=summaries,
+            responses_m4_client=self.package_responses_client,
+            responses_model_m4=self.package_model_m4,
         )
         ledger = BulkTaskLedger(
             registry=self.registry,
@@ -316,7 +340,9 @@ class BulkEpochEngine:
             self.registry.update_bulk_epoch(
                 epoch_id, status="RUNNING", current_stage="FIELD_DECIDE"
             )
-            field_artifact = self.registry.get_bulk_epoch_artifact(epoch_id, "field_overlay_v1")
+            field_artifact = self.registry.get_bulk_epoch_artifact(
+                epoch_id, FIELD_OVERLAY_ARTIFACT_KIND
+            )
             if field_artifact is None:
                 resolver = FieldCoreferenceResolver(
                     registry=self.registry,
@@ -329,14 +355,21 @@ class BulkEpochEngine:
                     registry=self.registry,
                     knowledge_base=self.knowledge_base,
                     field_resolver=resolver,
+                    planned_batching=self.field_epoch_planned_batching,
                 )
                 field_snapshot_hash = canonical_hash(
-                    [mention.model_dump(mode="json") for mention in mentions]
+                    {
+                        "mentions": [
+                            mention.model_dump(mode="json") for mention in mentions
+                        ],
+                        "policy_version": FIELD_EPOCH_POLICY_VERSION,
+                        "planned_batching": self.field_epoch_planned_batching,
+                    }
                 )
                 self._save_artifact(
                     epoch_id=epoch_id,
                     manifest_hash=manifest_hash,
-                    kind="field_plan_v1",
+                    kind=FIELD_PLAN_ARTIFACT_KIND,
                     upstream_hash=manifest_hash,
                     payload={
                         "snapshot_hash": field_snapshot_hash,
@@ -345,49 +378,72 @@ class BulkEpochEngine:
                         "task_semantics": "GLOBAL_SEMANTIC_KEY_DEDUP",
                         "candidate_cap": 8,
                         "batch_size": 12,
+                        "policy_version": FIELD_EPOCH_POLICY_VERSION,
+                        "planned_batching": self.field_epoch_planned_batching,
                     },
                 )
 
-                def field_task(task_id: str, status: str, error_code: str | None) -> None:
-                    if status == "RUNNING":
-                        ledger.start(
-                            stage="FIELD",
-                            task_id=task_id,
-                            input_hash=task_id,
-                            snapshot_hash=field_snapshot_hash,
-                        )
-                    elif status == "SUCCEEDED":
-                        ledger.finish(
-                            stage="FIELD",
-                            task_id=task_id,
-                            input_hash=task_id,
-                            snapshot_hash=field_snapshot_hash,
-                            decision_ref={"field_task_key": task_id},
-                        )
-                    else:
-                        ledger.fail(
-                            stage="FIELD",
-                            task_id=task_id,
-                            input_hash=task_id,
-                            snapshot_hash=field_snapshot_hash,
-                            error_code=error_code or "FIELD_TASK_FAILED",
-                        )
+                def field_task_input_hash(task_id: str) -> str:
+                    return canonical_hash(
+                        {
+                            "task_id": task_id,
+                            "policy_version": FIELD_EPOCH_POLICY_VERSION,
+                            "planned_batching": self.field_epoch_planned_batching,
+                        }
+                    )
+
+                def field_task_batch(records: Sequence[dict[str, str | None]]) -> None:
+                    base = [
+                        {
+                            "stage": "FIELD",
+                            "task_id": str(item["task_id"]),
+                            "input_hash": field_task_input_hash(str(item["task_id"])),
+                            "snapshot_hash": field_snapshot_hash,
+                        }
+                        for item in records
+                    ]
+                    running = [
+                        row
+                        for row, item in zip(base, records, strict=True)
+                        if item["status"] == "RUNNING"
+                    ]
+                    succeeded = [
+                        {**row, "decision_ref": {"field_task_key": row["task_id"]}}
+                        for row, item in zip(base, records, strict=True)
+                        if item["status"] == "SUCCEEDED"
+                    ]
+                    failed = [
+                        {**row, "error_code": item["error_code"] or "FIELD_TASK_FAILED"}
+                        for row, item in zip(base, records, strict=True)
+                        if item["status"] == "FAILED"
+                    ]
+                    if running:
+                        ledger.start_many(running)
+                    if succeeded:
+                        ledger.finish_many(succeeded)
+                    if failed:
+                        ledger.fail_many(failed)
 
                 field_summary = field_engine.resolve_epoch(
                     documents,
                     run_id=coordinator_run_id,
                     max_workers=self.field_active_requests,
-                    task_hook=field_task,
-                    completed_task_ids=set(ledger.completed("FIELD")),
+                    task_batch_hook=field_task_batch,
+                    completed_task_ids={
+                        task_id
+                        for task_id, record in ledger.completed("FIELD").items()
+                        if record["input_hash"] == field_task_input_hash(task_id)
+                        and record["snapshot_hash"] == field_snapshot_hash
+                    },
                 )
                 field_plan_artifact = self.registry.get_bulk_epoch_artifact(
-                    epoch_id, "field_plan_v1"
+                    epoch_id, FIELD_PLAN_ARTIFACT_KIND
                 )
                 assert field_plan_artifact is not None
                 self._save_artifact(
                     epoch_id=epoch_id,
                     manifest_hash=manifest_hash,
-                    kind="field_overlay_v1",
+                    kind=FIELD_OVERLAY_ARTIFACT_KIND,
                     upstream_hash=str(field_plan_artifact["artifact_hash"]),
                     payload={
                         "resolved_count": field_summary.resolved_count,
@@ -396,7 +452,11 @@ class BulkEpochEngine:
                         "failed_group_count": field_summary.failed_group_count,
                         "skipped_group_count": field_summary.skipped_group_count,
                         "field_links_hash": field_summary.field_links_hash,
+                        "telemetry": field_summary.telemetry,
                     },
+                )
+                deterministic_telemetry["field_planned_batching"] = (
+                    field_summary.telemetry or {}
                 )
             timings["field_ms"] = round((perf_counter() - field_started) * 1000)
             self.registry.update_bulk_epoch(
@@ -508,7 +568,7 @@ class BulkEpochEngine:
                     self.core, "_last_atomic_candidate_telemetry", {}
                 )
                 field_overlay_artifact = self.registry.get_bulk_epoch_artifact(
-                    epoch_id, "field_overlay_v1"
+                    epoch_id, FIELD_OVERLAY_ARTIFACT_KIND
                 )
                 assert field_overlay_artifact is not None
                 atomic_plan_payload = {
@@ -569,6 +629,9 @@ class BulkEpochEngine:
                     **cached_decisions,
                     **self.core._atomic_decisions(pending_mentions, candidates, compiled, models),
                 }
+                deterministic_telemetry["n9_batch_packing"] = getattr(
+                    self.core, "_last_n9_packing_telemetry", {}
+                )
                 finished_task_rows: list[dict[str, object]] = []
                 failed_task_rows: list[dict[str, object]] = []
                 for mention in pending_mentions:
@@ -815,14 +878,14 @@ class BulkEpochEngine:
 
         package_started = perf_counter()
         self.registry.update_bulk_epoch(epoch_id, status="RUNNING", current_stage="PARENT_INDUCE")
-        applied_artifact = self.registry.get_bulk_epoch_artifact(epoch_id, "package_partition_v2")
+        applied_artifact = self.registry.get_bulk_epoch_artifact(epoch_id, "package_partition_v3")
         package_assignments: list[PackageAssignmentRecord] = []
         package_stage_telemetry: dict[str, object] = {}
         if applied_artifact is None:
             final_events = self.registry.list_current_atomic_events(limit=10000)
             existing_packages = self.registry.list_current_packages(limit=10000)
             frozen_artifact = self.registry.get_bulk_epoch_artifact(
-                epoch_id, "package_frozen_partition_v2"
+                epoch_id, "package_frozen_partition_v3"
             )
             if frozen_artifact is None:
                 self.registry.update_bulk_epoch(
@@ -830,6 +893,7 @@ class BulkEpochEngine:
                 )
                 stage_result = resolve_parent_partition(
                     service=self.parent_service,
+                    package_service=self.package_service,
                     events=final_events,
                     mentions=None,
                     sources=None,
@@ -904,12 +968,12 @@ class BulkEpochEngine:
                 self._save_artifact(
                     epoch_id=epoch_id,
                     manifest_hash=manifest_hash,
-                    kind="package_frozen_partition_v2",
-                    upstream_hash=partition.snapshot_hash,
+                    kind="package_frozen_partition_v3",
+                    upstream_hash=partition.registry_hash,
                     payload=partition.model_dump(mode="json"),
                 )
             else:
-                partition = FrozenParentPartition.model_validate(frozen_artifact["payload"])
+                partition = FrozenPackagePartitionV3.model_validate(frozen_artifact["payload"])
                 package_stage_telemetry = {
                     "resumed_from_frozen_partition": True,
                     "partition_hash": partition.partition_hash,
@@ -929,48 +993,27 @@ class BulkEpochEngine:
                 existing_packages=existing_packages,
                 run_id=coordinator_run_id,
             )
-            records: list[dict[str, object]] = [{"package": package} for package in packages]
-            assignment_by_event = {item.event_id: item for item in package_assignments}
-            for membership in memberships:
-                records.append(
-                    {
-                        "memberships": [membership],
-                        "assignment": assignment_by_event[membership.event_id],
-                    }
-                )
-            if external_relations:
-                records.append({"external_relations": external_relations})
-            with self._writer() as writer:
-                apply_future = writer.submit(
-                    partial(self.registry.save_package_stage_batch, records, chunk_size=64)
-                )
-                apply_result = apply_future.result()
-                for source_id, target_id in redirects:
-                    writer.submit(
-                        partial(
-                            self.registry.save_package_redirect,
-                            source_package_id=source_id,
-                            target_package_id=target_id,
-                            run_id=coordinator_run_id,
-                            reason="PARENT_OCCURRENCE_V2_EXISTING_PARENT_CONTINUITY",
-                        )
-                    ).result()
-            writer_telemetry.append({"stage": "PACKAGE_APPLY", **writer.snapshot().__dict__})
+            self.registry.activate_package_partition_v3(
+                packages=packages,
+                memberships=memberships,
+                assignments=package_assignments,
+                external_relations=external_relations,
+                redirects=redirects,
+                run_id=coordinator_run_id,
+            )
             package_stage_telemetry.update(
                 {
-                    "apply_chunk_count": (len(records) + 63) // 64,
-                    "apply_retry_count": int(apply_result.get("retries", 0)),
-                    "apply_degraded_count": int(apply_result.get("degraded", 0)),
+                    "apply_chunk_count": 1,
+                    "apply_retry_count": 0,
+                    "apply_degraded_count": 0,
                     "redirect_count": len(redirects),
                     "external_relation_count": len(external_relations),
                 }
             )
-            if int(apply_result.get("degraded", 0)):
-                raise RuntimeError("PACKAGE_APPLY_DEGRADED")
             self._save_artifact(
                 epoch_id=epoch_id,
                 manifest_hash=manifest_hash,
-                kind="package_partition_v2",
+                kind="package_partition_v3",
                 upstream_hash=partition.partition_hash,
                 payload={
                     "partition_hash": partition.partition_hash,
@@ -1004,6 +1047,7 @@ class BulkEpochEngine:
             epoch_id, status="RUNNING", current_stage="PACKAGE_COMMITTED"
         )
         telemetry = [item.__dict__ for item in self.executor.telemetry()]
+        attempt_telemetry = [item.__dict__ for item in self.executor.attempt_telemetry()]
         provider_telemetry = self.executor.provider_snapshot()
         result_payload = {
             "message_count": len(ordered_ids),
@@ -1019,6 +1063,15 @@ class BulkEpochEngine:
                 "queue_wait_ms": sum(_as_int(item["queue_wait_ms"]) for item in telemetry),
                 "failed_call_count": sum(item["status"] == "FAILED" for item in telemetry),
                 "provider": provider_telemetry.__dict__,
+                "provider_by_stage": self.executor.provider_stage_snapshots(),
+                "physical_attempt_count": len(attempt_telemetry),
+                "retry_attempt_count": sum(
+                    int(item["attempt_index"]) > 1 for item in attempt_telemetry
+                ),
+                "attempt_backoff_ms": sum(
+                    _as_int(item["backoff_ms"]) for item in attempt_telemetry
+                ),
+                "attempts": attempt_telemetry,
             },
             "bulk_writer": writer_telemetry,
             "deterministic_runtime": deterministic_telemetry,

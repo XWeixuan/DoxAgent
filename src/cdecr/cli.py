@@ -32,6 +32,11 @@ from cdecr.evaluation import evaluate_results
 from cdecr.identity_compiler import IDENTITY_COMPILER_VERSION
 from cdecr.kb_v2 import CATALOG_NAMES, V2KnowledgeBase
 from cdecr.mention_finalization import FINALIZATION_VERSION
+from cdecr.model_routing import (
+    InvocationChannel,
+    general_lane_channel,
+    general_lane_profile,
+)
 from cdecr.models import (
     STRUCTURED_OUTPUT_MODE,
     STRUCTURED_REASONING_EFFORT,
@@ -43,7 +48,7 @@ from cdecr.models import (
     ProbePayload,
     probe_models,
 )
-from cdecr.parent_occurrence_contracts import ParentInductionBatch, ParentResolutionBatch
+from cdecr.parent_occurrence_contracts import ParentInductionBatch
 from cdecr.ports import DecisionAuditRecord, SourceQuery, StructuredModelRequest
 from cdecr.preprocessing import PIPELINE_VERSION
 from cdecr.registry import SCHEMA_VERSION, RegistryError, SQLiteCDECRRegistry
@@ -90,7 +95,9 @@ def _tiers(value: str) -> list[ModelTier]:
 
 
 def _registry(settings: CDECRSettings) -> SQLiteCDECRRegistry:
-    registry = SQLiteCDECRRegistry(settings.sqlite_path)
+    registry = SQLiteCDECRRegistry(
+        settings.sqlite_path, bulk_read_mode=settings.bulk_registry_read_mode
+    )
     registry.initialize()
     return registry
 
@@ -231,37 +238,44 @@ def _scheduler(settings: CDECRSettings) -> CDECRScheduler:
             "judge_item_repair": settings.item_repair_active_requests,
         },
         repair_limit=settings.item_repair_active_requests,
+        max_retries=settings.structured_provider_max_retries,
     )
 
 
 def _structured_client(
-    settings: CDECRSettings, tier: ModelTier
+    settings: CDECRSettings,
+    scheduler_lane: ModelTier,
+    *,
+    model_profile: ModelTier | None = None,
+    invocation_channel: InvocationChannel | None = None,
 ) -> DashScopeStructuredModelClient | DeepSeekStructuredModelClient:
+    profile = model_profile or general_lane_profile(scheduler_lane)
+    channel = invocation_channel or general_lane_channel(scheduler_lane)
     provider = {
         ModelTier.M2: settings.model_m2_provider,
         ModelTier.M3: settings.model_m3_provider,
         ModelTier.M4: settings.model_m4_provider,
-    }[tier]
+    }[scheduler_lane]
     if provider == "deepseek":
         return DeepSeekStructuredModelClient(
-            tier=tier,
+            tier=profile,
             api_key=settings.require_deepseek(),
             base_url=settings.deepseek_base_url,
             model={
                 ModelTier.M2: settings.model_m2,
                 ModelTier.M3: settings.model_m3,
                 ModelTier.M4: settings.model_m4,
-            }[tier],
+            }[profile],
             reasoning_effort={
                 ModelTier.M2: settings.model_m2_reasoning_effort,
                 ModelTier.M3: settings.model_m3_reasoning_effort,
                 ModelTier.M4: settings.model_m4_reasoning_effort,
-            }[tier],
+            }[profile],
             strict={
                 ModelTier.M2: settings.model_m2_strict,
                 ModelTier.M3: settings.model_m3_strict,
                 ModelTier.M4: settings.model_m4_strict,
-            }[tier],
+            }[scheduler_lane],
             timeout_seconds=settings.model_timeout_seconds,
         )
     api_key = settings.require_dashscope()
@@ -269,12 +283,43 @@ def _structured_client(
         ModelTier.M2: settings.model_m2,
         ModelTier.M3: settings.model_m3,
         ModelTier.M4: settings.model_m4,
-    }[tier]
+    }[profile]
     return DashScopeStructuredModelClient(
-        tier=tier,
+        tier=profile,
         api_key=api_key,
         base_url=settings.dashscope_base_url,
         model=model,
+        reasoning_effort={
+            ModelTier.M2: settings.model_m2_reasoning_effort,
+            ModelTier.M3: settings.model_m3_reasoning_effort,
+            ModelTier.M4: settings.model_m4_reasoning_effort,
+        }[profile],
+        strict={
+            ModelTier.M2: settings.model_m2_strict,
+            ModelTier.M3: settings.model_m3_strict,
+            ModelTier.M4: settings.model_m4_strict,
+        }[scheduler_lane],
+        structured_transport=(
+            "chat"
+            if channel is InvocationChannel.CHAT_JSON_OBJECT
+            else "responses"
+        ),
+        timeout_seconds=settings.model_timeout_seconds,
+        fallback_api_keys=settings.dashscope_fallback_api_keys(),
+    )
+
+
+def _package_v3_client(settings: CDECRSettings) -> DashScopeStructuredModelClient:
+    """Keep Package Responses transport isolated from the general M4 lane."""
+
+    return DashScopeStructuredModelClient(
+        tier=ModelTier.M3,
+        api_key=settings.require_dashscope(),
+        base_url=settings.dashscope_base_url,
+        model=settings.model_m3,
+        reasoning_effort=settings.model_m3_reasoning_effort,
+        strict=False,
+        structured_transport="responses",
         timeout_seconds=settings.model_timeout_seconds,
         fallback_api_keys=settings.dashscope_fallback_api_keys(),
     )
@@ -304,7 +349,11 @@ def _models_probe(settings: CDECRSettings, args: argparse.Namespace) -> int:
                 ModelTier.M4: settings.model_m4_provider,
             }[tier]
             if provider == "deepseek":
-                structured = _structured_client(settings, tier).complete(
+                structured = _structured_client(
+                    settings,
+                    tier,
+                    model_profile=tier,
+                ).complete(
                     StructuredModelRequest(
                         system_prompt="You are a deterministic API health probe.",
                         user_prompt=f"Return ok=true, tier={tier.value}, and value=1.",
@@ -339,6 +388,11 @@ def _models_probe(settings: CDECRSettings, args: argparse.Namespace) -> int:
                     dimensions=settings.embedding_dimensions,
                     timeout_seconds=settings.model_timeout_seconds,
                     fallback_api_keys=settings.dashscope_fallback_api_keys(),
+                    reasoning_efforts={
+                        ModelTier.M2: settings.model_m2_reasoning_effort,
+                        ModelTier.M3: settings.model_m3_reasoning_effort,
+                        ModelTier.M4: settings.model_m4_reasoning_effort,
+                    },
                 )[0]
         except ModelAdapterError as exc:
             registry.record_model_call(
@@ -426,6 +480,8 @@ def _document_processor(
         model_m4=settings.model_m4,
         document_workers=settings.document_workers,
         document_block_concurrency=settings.document_block_concurrency,
+        grounder_safe_normalization=settings.grounder_safe_normalization,
+        grounder_primary_normalization=settings.grounder_primary_normalization,
     )
 
 
@@ -447,19 +503,36 @@ def _cross_document_engine(
     m2 = _structured_client(settings, ModelTier.M2)
     m3 = _structured_client(settings, ModelTier.M3)
     m4 = _structured_client(settings, ModelTier.M4)
+    package_m4 = _package_v3_client(settings)
     return CrossDocumentEngine(
         registry=registry,
         embedding_client=scheduler.embedding_client(embedding),
         m2_client=scheduler.structured_client(m2, tier=ModelTier.M2),
         m3_client=scheduler.structured_client(m3, tier=ModelTier.M3),
         m4_client=scheduler.structured_client(m4, tier=ModelTier.M4),
+        package_m4_client=scheduler.structured_client(package_m4, tier=ModelTier.M4),
         model_m1=settings.model_m1,
         model_m2=settings.model_m2,
         model_m3=settings.model_m3,
         model_m4=settings.model_m4,
+        package_model_m4=settings.model_m3,
         hard_cannot_link_mode=settings.atomic_hard_cannot_link_mode,
         n9_wire_protocol=settings.n9_wire_protocol,
         n9_active_requests=settings.n9_active_requests,
+        n9_overlap_batch_packing=settings.n9_overlap_batch_packing,
+        parent_compact_wire_dto=settings.parent_compact_wire_dto,
+        package_registry_scope_id=settings.package_v3_registry_scope,
+        package_v3_batch_size=settings.package_v3_batch_size,
+        package_v3_context_token_budget=settings.package_v3_context_token_budget,
+        package_v3_context_reserve_tokens=settings.package_v3_context_reserve_tokens,
+        package_v3_description_token_budget=settings.package_v3_description_token_budget,
+        package_v3_description_active_requests=(
+            settings.package_v3_description_active_requests
+        ),
+        package_v3_reasoning_effort=settings.model_m3_reasoning_effort,
+        package_v3_description_reasoning_effort=settings.model_m2_reasoning_effort,
+        package_v3_strict_output=settings.model_m4_strict,
+        atomic_cosine_backend=settings.atomic_cosine_backend,
     )
 
 
@@ -480,6 +553,7 @@ def _bulk_epoch_engine(
     raw_m2 = _structured_client(settings, ModelTier.M2)
     raw_m3 = _structured_client(settings, ModelTier.M3)
     raw_m4 = _structured_client(settings, ModelTier.M4)
+    package_m4 = _package_v3_client(settings)
     executor = AsyncModelExecutor(
         clients={
             ModelTier.M2: cast(AsyncStructuredModelClient, raw_m2),
@@ -497,16 +571,13 @@ def _bulk_epoch_engine(
             "atomic_coreference_escalation": settings.n9_escalation_active_requests,
             "atomic_late_convergence": settings.n9_late_active_requests,
             "parent_induction": settings.parent_induction_active_requests,
-            "parent_induction_repartition": settings.parent_induction_active_requests,
-            "parent_resolution_r1": settings.parent_resolution_active_requests,
-            "parent_resolution_r2": settings.parent_resolution_active_requests,
-            "parent_reconcile": settings.parent_reconcile_active_requests,
         },
         repair_limit=settings.item_repair_active_requests,
         provider_target=settings.structured_provider_target_concurrency,
         provider_hard_limit=settings.structured_provider_hard_concurrency,
         provider_start_rate=settings.structured_provider_start_rate,
         provider_initial_burst=settings.structured_provider_initial_burst,
+        max_retries=settings.structured_provider_max_retries,
         rates={
             ModelTier.M2: (1000.0, settings.scheduler_m2_concurrency),
             ModelTier.M3: (1000.0, settings.scheduler_m3_concurrency),
@@ -526,27 +597,23 @@ def _bulk_epoch_engine(
         hard_cannot_link_mode=settings.atomic_hard_cannot_link_mode,
         n9_wire_protocol=settings.n9_wire_protocol,
         n9_active_requests=settings.n9_active_requests,
+        n9_overlap_batch_packing=settings.n9_overlap_batch_packing,
+        parent_compact_wire_dto=settings.parent_compact_wire_dto,
     )
     return BulkEpochEngine(
         registry=registry,
         core=core,
         executor=executor,
         field_active_requests=settings.field_active_requests,
+        field_epoch_planned_batching=settings.field_epoch_planned_batching,
         atomic_late_convergence=settings.atomic_late_convergence,
         atomic_late_task_cap=settings.atomic_late_task_cap,
         n9_late_active_requests=settings.n9_late_active_requests,
         parent_induction_active_requests=settings.parent_induction_active_requests,
-        parent_resolution_active_requests=settings.parent_resolution_active_requests,
-        parent_reconcile_active_requests=settings.parent_reconcile_active_requests,
         parent_induction_max_documents=settings.parent_induction_max_documents,
         parent_induction_max_slices=settings.parent_induction_max_slices,
-        parent_resolution_max_proposals=settings.parent_resolution_max_proposals,
-        parent_resolution_max_existing_parents=settings.parent_resolution_max_existing_parents,
-        parent_resolution_max_input_tokens=settings.parent_resolution_max_input_tokens,
-        parent_route_structured_quota=settings.parent_route_structured_quota,
-        parent_route_semantic_quota=settings.parent_route_semantic_quota,
-        parent_route_total_k=settings.parent_route_total_k,
         parent_context_soft_token_budget=settings.parent_context_soft_token_budget,
+        parent_compact_wire_dto=settings.parent_compact_wire_dto,
         writer_queue_low_watermark=settings.writer_queue_low_watermark,
         writer_queue_high_watermark=settings.writer_queue_high_watermark,
         writer_queue_hard_limit=settings.writer_queue_hard_limit,
@@ -555,6 +622,18 @@ def _bulk_epoch_engine(
         chunked_stage_apply=settings.chunked_stage_apply,
         batch_task_ledger=settings.batch_task_ledger,
         embedding_batch_executor=settings.embedding_batch_executor,
+        package_responses_client=scheduler.structured_client(package_m4, tier=ModelTier.M4),
+        package_model_m4=settings.model_m3,
+        package_v3_batch_size=settings.package_v3_batch_size,
+        package_v3_context_token_budget=settings.package_v3_context_token_budget,
+        package_v3_context_reserve_tokens=settings.package_v3_context_reserve_tokens,
+        package_v3_description_token_budget=settings.package_v3_description_token_budget,
+        package_v3_description_active_requests=(
+            settings.package_v3_description_active_requests
+        ),
+        package_v3_reasoning_effort=settings.model_m3_reasoning_effort,
+        package_v3_description_reasoning_effort=settings.model_m2_reasoning_effort,
+        package_v3_strict_output=settings.model_m4_strict,
     )
 
 
@@ -764,7 +843,9 @@ def _evaluation_run(settings: CDECRSettings, args: argparse.Namespace) -> int:
 
 def _evaluation_review(settings: CDECRSettings, args: argparse.Namespace) -> int:
     _, corpus = load_step4_corpus(args.snapshot, args.manifest, limit=args.limit)
-    registry = SQLiteCDECRRegistry(args.registry)
+    registry = SQLiteCDECRRegistry(
+        args.registry, bulk_read_mode=settings.bulk_registry_read_mode
+    )
     registry.initialize()
     api_key = settings.require_dashscope()
     client = DashScopeStructuredModelClient(
@@ -852,7 +933,9 @@ def _checkpoint_outcomes(
 def _evaluation_run_locked(settings: CDECRSettings, args: argparse.Namespace) -> int:
     evaluation_started = perf_counter()
     manifest_version, corpus = load_step4_corpus(args.snapshot, args.manifest, limit=args.limit)
-    registry = SQLiteCDECRRegistry(args.registry)
+    registry = SQLiteCDECRRegistry(
+        args.registry, bulk_read_mode=settings.bulk_registry_read_mode
+    )
     registry.initialize()
     for row, source in corpus:
         registry.save_source(source, fingerprint=row.document_fingerprint)
@@ -1081,23 +1164,24 @@ def _doctor(settings: CDECRSettings, args: argparse.Namespace) -> int:
         "finalization_version": FINALIZATION_VERSION,
     }
     checks["single_document_routing"] = {
-        "ok": settings.model_m2 == "deepseek-v4-flash"
-        and settings.model_m3 == "qwen3.7-plus"
-        and settings.model_m4 == "qwen3.7-max",
-        "short_dreamer": "m2",
-        "long_dreamer": "m3",
-        "grounder": "m3",
-        "judge": "m4_all_drafts",
+        "ok": settings.model_m2 == "deepseek-v4-flash-0731"
+        and settings.model_m3 == settings.model_m2
+        and settings.model_m4 == settings.model_m2
+        and settings.model_m2_reasoning_effort == "none"
+        and settings.model_m3_reasoning_effort == "low"
+        and settings.model_m4_reasoning_effort == "high",
+        "dreamer": "m2_profile_m2_lane_responses",
+        "relevance": "m2_profile_m3_lane_responses",
+        "grounder": "m2_profile_m3_lane_responses",
+        "judge": "m2_profile_m4_lane_responses",
     }
     prompt_root = package_root / "prompts" / "v1"
     cross_prompts = [
         prompt_root / "atomic_coreference.md",
         prompt_root / "parent_occurrence_induction.md",
-        prompt_root / "parent_occurrence_resolution.md",
     ]
     parent_schemas = {
         "parent_induction": ParentInductionBatch.model_json_schema(),
-        "parent_resolution": ParentResolutionBatch.model_json_schema(),
     }
     checks["cross_document_versions"] = {
         "ok": bool(CROSS_DOCUMENT_ENGINE_VERSION and CROSS_DOCUMENT_PROMPT_VERSION)
@@ -1127,16 +1211,16 @@ def _doctor(settings: CDECRSettings, args: argparse.Namespace) -> int:
         }
     checks["cross_document_routing"] = {
         "ok": settings.model_m1 == "qwen3.7-text-embedding"
-        and settings.model_m2 == "deepseek-v4-flash"
-        and settings.model_m3 == "qwen3.7-plus"
-        and settings.atomic_hard_cannot_link_mode == "shadow",
+        and settings.model_m2 == "deepseek-v4-flash-0731"
+        and settings.model_m3 == settings.model_m2
+        and settings.model_m4 == settings.model_m2,
         "recall": "m0+m1",
         "hard_cannot_link": settings.atomic_hard_cannot_link_mode,
-        "atomic_default": "m2_joint",
-        "atomic_escalation": "m3_joint",
-        "parent_induction": "m3_bounded_document_sets",
-        "parent_resolution": "m3_bounded_proposal_sets",
-        "parent_reconcile": "m3_same_resolver_review_mode",
+        "atomic_default": "m2_profile_m2_lane_chat",
+        "atomic_escalation": "m2_profile_m3_lane_responses",
+        "parent_induction": "m2_profile_m3_lane_responses",
+        "package_clustering": "m3_profile_m4_lane_responses",
+        "package_description": "m2_profile_m4_lane_responses",
         "package_apply": "frozen_partition_once",
     }
 

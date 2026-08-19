@@ -12,6 +12,13 @@ from typing import Protocol
 
 from cdecr.models import ModelTier
 from cdecr.ports import StructuredModelRequest, StructuredModelResult
+from cdecr.provider_resilience import (
+    classify_provider_error,
+    is_provider_pressure,
+    is_retryable_provider_failure,
+    provider_retry_delay,
+)
+from cdecr.scheduler import StructuredProviderGate
 
 
 class AsyncStructuredModelClient(Protocol):
@@ -35,9 +42,26 @@ class AsyncCallTelemetry:
 
 
 @dataclass(frozen=True)
+class AsyncAttemptTelemetry:
+    tier: str
+    stage: str
+    priority: str
+    attempt_index: int
+    started_at_ms: int
+    finished_at_ms: int
+    provider_wait_ms: int
+    backoff_ms: int
+    status: str
+    error_class: str | None
+    error_code: str | None
+    provider_key_fingerprint: str | None
+
+
+@dataclass(frozen=True)
 class AsyncProviderSnapshot:
     target: int
     hard_limit: int
+    limit: int
     active: int
     max_active: int
     completed: int
@@ -103,16 +127,6 @@ class _AdaptiveLimiter:
                 self.condition.notify_all()
 
 
-def _provider_pressure(exc: Exception) -> bool:
-    status = getattr(exc, "status_code", None)
-    code = str(getattr(exc, "code", "")).casefold()
-    text = f"{type(exc).__name__}:{exc}".casefold()
-    return status == 429 or any(
-        token in f"{code}:{text}"
-        for token in ("429", "rate_limit", "connection reset", "connectionreset", "timeout")
-    )
-
-
 class AsyncModelExecutor:
     """Run all M2/M3/M4 HTTP calls on one shared event loop and connection pool.
 
@@ -134,7 +148,7 @@ class AsyncModelExecutor:
         provider_start_rate: float = 50.0,
         provider_initial_burst: int = 80,
         retry_limit: int = 16,
-        max_retries: int = 2,
+        max_retries: int = 1,
     ) -> None:
         self._clients = dict(clients)
         self._tier_limits = dict(tier_limits)
@@ -150,6 +164,7 @@ class AsyncModelExecutor:
         self._retry_limit = max(1, retry_limit)
         self._max_retries = max(0, max_retries)
         self._telemetry: list[AsyncCallTelemetry] = []
+        self._attempt_telemetry: list[AsyncAttemptTelemetry] = []
         self._telemetry_lock = threading.Lock()
         self._ready = threading.Event()
         self._closed = False
@@ -173,16 +188,8 @@ class AsyncModelExecutor:
             stage: asyncio.Semaphore(limit) for stage, limit in self._stage_limits.items()
         }
         self._repair_semaphore = asyncio.Semaphore(self._repair_limit)
-        self._provider_semaphore = asyncio.Semaphore(self._provider_hard_limit)
         self._retry_semaphore = asyncio.Semaphore(self._retry_limit)
-        self._provider_bucket = _TokenBucket(
-            rate=self._provider_start_rate,
-            burst=self._provider_initial_burst,
-        )
-        self._provider_active = 0
-        self._provider_max_active = 0
-        self._provider_completed = 0
-        self._start_sequence = 0
+        self._provider_gates: dict[str, StructuredProviderGate] = {}
         self._buckets = {
             tier: _TokenBucket(rate=rate, burst=burst)
             for tier, (rate, burst) in self._rates.items()
@@ -211,24 +218,45 @@ class AsyncModelExecutor:
             semaphores.append(stage_semaphore)
         if priority_semaphore is not None:
             semaphores.append(priority_semaphore)
-        semaphores.append(self._provider_semaphore)
-        await self._provider_bucket.acquire()
-        self._start_sequence += 1
-        await asyncio.sleep(0.01 + (self._start_sequence % 3) * 0.01)
         await tier_semaphore.acquire()
         for semaphore in semaphores:
             await semaphore.acquire()
-        self._provider_active += 1
-        self._provider_max_active = max(self._provider_max_active, self._provider_active)
         started = perf_counter()
         attempt = 0
+        total_backoff_ms = 0
         try:
             await self._buckets[tier].acquire()
             while True:
                 attempt += 1
+                provider_gate = self._provider_gates.setdefault(
+                    stage,
+                    StructuredProviderGate(
+                        target=self._provider_target,
+                        hard_limit=self._provider_hard_limit,
+                        start_rate=self._provider_start_rate,
+                        burst=self._provider_initial_burst,
+                    ),
+                )
+                provider_wait_started = perf_counter()
+                await asyncio.to_thread(provider_gate.acquire)
+                provider_wait_ms = round((perf_counter() - provider_wait_started) * 1000)
+                attempt_started = perf_counter()
+                provider_succeeded = False
                 try:
                     result = await self._clients[tier].acomplete(request)
-                    await tier_semaphore.success()
+                    provider_succeeded = True
+                    self._record_attempt(
+                        tier=tier,
+                        stage=stage,
+                        priority=priority,
+                        attempt=attempt,
+                        started=attempt_started,
+                        provider_wait_ms=provider_wait_ms,
+                        backoff_ms=total_backoff_ms,
+                        status="SUCCEEDED",
+                        error=None,
+                        provider_key_fingerprint=result.provider_key_fingerprint,
+                    )
                     self._record(
                         tier=tier,
                         stage=stage,
@@ -241,14 +269,30 @@ class AsyncModelExecutor:
                     )
                     return result
                 except Exception as exc:
-                    if _provider_pressure(exc):
-                        await tier_semaphore.pressure()
-                    if attempt <= self._max_retries and _provider_pressure(exc):
+                    self._record_attempt(
+                        tier=tier,
+                        stage=stage,
+                        priority=priority,
+                        attempt=attempt,
+                        started=attempt_started,
+                        provider_wait_ms=provider_wait_ms,
+                        backoff_ms=total_backoff_ms,
+                        status="FAILED",
+                        error=exc,
+                        provider_key_fingerprint=getattr(exc, "provider_key_fingerprint", None),
+                    )
+                    if is_provider_pressure(exc):
+                        provider_gate.pressure()
+                    if attempt <= self._max_retries and is_retryable_provider_failure(exc):
                         retry_after = getattr(exc, "retry_after", None)
-                        delay = float(retry_after) if isinstance(retry_after, (int, float)) else 1.0
+                        delay = (
+                            float(retry_after)
+                            if isinstance(retry_after, (int, float))
+                            else provider_retry_delay(attempt)
+                        )
                         async with self._retry_semaphore:
                             await asyncio.sleep(max(0.1, min(delay, 10.0)))
-                            await self._provider_bucket.acquire()
+                        total_backoff_ms += round(max(0.1, min(delay, 10.0)) * 1000)
                         continue
                     self._record(
                         tier=tier,
@@ -261,9 +305,9 @@ class AsyncModelExecutor:
                         error_code=str(getattr(exc, "code", type(exc).__name__)),
                     )
                     raise
+                finally:
+                    provider_gate.release(succeeded=provider_succeeded)
         finally:
-            self._provider_active -= 1
-            self._provider_completed += 1
             for semaphore in reversed(semaphores):
                 semaphore.release()
             await tier_semaphore.release()
@@ -295,6 +339,42 @@ class AsyncModelExecutor:
         )
         with self._telemetry_lock:
             self._telemetry.append(item)
+
+    def _record_attempt(
+        self,
+        *,
+        tier: ModelTier,
+        stage: str,
+        priority: str,
+        attempt: int,
+        started: float,
+        provider_wait_ms: int,
+        backoff_ms: int,
+        status: str,
+        error: Exception | None,
+        provider_key_fingerprint: str | None,
+    ) -> None:
+        finished = perf_counter()
+        item = AsyncAttemptTelemetry(
+            tier=tier.value,
+            stage=stage,
+            priority=priority,
+            attempt_index=attempt,
+            started_at_ms=round(started * 1000),
+            finished_at_ms=round(finished * 1000),
+            provider_wait_ms=provider_wait_ms,
+            backoff_ms=backoff_ms,
+            status=status,
+            error_class=(classify_provider_error(error).value if error is not None else None),
+            error_code=(
+                str(getattr(error, "code", type(error).__name__))
+                if error is not None
+                else None
+            ),
+            provider_key_fingerprint=provider_key_fingerprint,
+        )
+        with self._telemetry_lock:
+            self._attempt_telemetry.append(item)
 
     def complete(self, tier: ModelTier, request: StructuredModelRequest) -> StructuredModelResult:
         if self._closed:
@@ -332,6 +412,25 @@ class AsyncModelExecutor:
         with self._telemetry_lock:
             return list(self._telemetry)
 
+    def attempt_telemetry(self) -> list[AsyncAttemptTelemetry]:
+        with self._telemetry_lock:
+            return list(self._attempt_telemetry)
+
+    def provider_stage_snapshots(self) -> dict[str, dict[str, int]]:
+        return {
+            stage: {
+                "target": snapshot.target,
+                "hard_limit": snapshot.hard_limit,
+                "limit": snapshot.limit,
+                "active": snapshot.active,
+                "max_active": snapshot.max_active,
+                "completed": snapshot.completed,
+                "pressure_events": snapshot.pressure_events,
+            }
+            for stage, gate in sorted(self._provider_gates.items())
+            for snapshot in [gate.snapshot()]
+        }
+
     def capacity_config(self) -> dict[str, object]:
         return {
             "tier_limits": {
@@ -346,25 +445,32 @@ class AsyncModelExecutor:
             "provider_hard_limit": self._provider_hard_limit,
             "provider_start_rate": self._provider_start_rate,
             "provider_initial_burst": self._provider_initial_burst,
+            "provider_scope": "stage_local",
         }
 
     async def _provider_snapshot(self) -> AsyncProviderSnapshot:
+        snapshots = [gate.snapshot() for gate in self._provider_gates.values()]
         return AsyncProviderSnapshot(
             target=self._provider_target,
             hard_limit=self._provider_hard_limit,
-            active=self._provider_active,
-            max_active=self._provider_max_active,
-            completed=self._provider_completed,
+            limit=min((item.limit for item in snapshots), default=self._provider_hard_limit),
+            active=sum(item.active for item in snapshots),
+            max_active=max((item.max_active for item in snapshots), default=0),
+            completed=sum(item.completed for item in snapshots),
         )
 
     def provider_snapshot(self) -> AsyncProviderSnapshot:
         if self._closed:
+            snapshots = [gate.snapshot() for gate in self._provider_gates.values()]
             return AsyncProviderSnapshot(
                 target=self._provider_target,
                 hard_limit=self._provider_hard_limit,
+                limit=min(
+                    (item.limit for item in snapshots), default=self._provider_hard_limit
+                ),
                 active=0,
-                max_active=self._provider_max_active,
-                completed=self._provider_completed,
+                max_active=max((item.max_active for item in snapshots), default=0),
+                completed=sum(item.completed for item in snapshots),
             )
         future = asyncio.run_coroutine_threadsafe(self._provider_snapshot(), self._loop)
         return future.result()

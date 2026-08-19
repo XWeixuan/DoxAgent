@@ -4,10 +4,13 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import re
-from collections.abc import Callable
+from collections.abc import Callable, Mapping, Sequence
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
+from threading import Lock
+from time import perf_counter
 from typing import Any
 
 from cdecr.contracts import (
@@ -22,12 +25,15 @@ from cdecr.contracts import (
 from cdecr.field_coreference import (
     FieldCoreferenceError,
     FieldCoreferenceResolver,
+    PreparedFieldDecision,
     normalize_field_text,
 )
 from cdecr.field_coreference_contracts import (
     CanonicalFieldLink,
+    CanonicalFieldRegistryEntry,
     FieldCoreferenceHints,
     FieldCoreferenceInput,
+    FieldCoreferenceModelOutput,
     FieldCoreferenceResult,
     FieldNamespace,
 )
@@ -43,7 +49,7 @@ from cdecr.models import ModelAdapterError
 from cdecr.ports import CDECRRegistry, DecisionAuditRecord
 from cdecr.preprocessing import exact_document_fingerprint
 
-FIELD_RESOLVER_VERSION = "canonical-field-resolution-v7-typed-domain-gates"
+FIELD_RESOLVER_VERSION = "canonical-field-resolution-v8-parallel-pure-prepare"
 
 
 @dataclass(frozen=True)
@@ -73,6 +79,21 @@ class CanonicalResolutionSummary:
     field_links_hash: str
     failed_group_count: int = 0
     skipped_group_count: int = 0
+    telemetry: dict[str, object] | None = None
+
+
+@dataclass(frozen=True)
+class _PreparedFieldGroup:
+    task_id: str
+    source: SourceMessage
+    occurrences: tuple[FieldOccurrence, ...]
+    primary: FieldOccurrence
+    exact_matches: tuple[KBMatch, ...]
+    matches: tuple[KBMatch, ...]
+    unique: KBMatch | None
+    deterministic_reason: str
+    decision_plan: PreparedFieldDecision | None = None
+    deferred_audits: tuple[DecisionAuditRecord, ...] = ()
 
 
 def is_safe_deterministic_match(
@@ -128,10 +149,12 @@ class CanonicalFieldResolutionEngine:
         registry: CDECRRegistry,
         knowledge_base: V2KnowledgeBase,
         field_resolver: FieldCoreferenceResolver,
+        planned_batching: bool = False,
     ) -> None:
         self.registry = registry
         self.knowledge_base = knowledge_base
         self.field_resolver = field_resolver
+        self.planned_batching = planned_batching
         self._participant_exact_cache: dict[tuple[str, str, str], list[KBMatch]] = {}
         self._participant_string_cache: dict[tuple[str, str, str], list[KBCandidate]] = {}
 
@@ -329,6 +352,7 @@ class CanonicalFieldResolutionEngine:
         run_id: str | None,
         max_workers: int,
         task_hook: Callable[[str, str, str | None], None] | None = None,
+        task_batch_hook: Callable[[Sequence[dict[str, str | None]]], None] | None = None,
         completed_task_ids: set[str] | None = None,
     ) -> CanonicalResolutionSummary:
         if not documents:
@@ -337,6 +361,7 @@ class CanonicalFieldResolutionEngine:
                 run_id=run_id,
                 max_workers=max_workers,
                 task_hook=task_hook,
+                task_batch_hook=task_batch_hook,
                 completed_task_ids=completed_task_ids,
             )
         self.field_resolver.begin_epoch_snapshot()
@@ -346,6 +371,7 @@ class CanonicalFieldResolutionEngine:
                 run_id=run_id,
                 max_workers=max_workers,
                 task_hook=task_hook,
+                task_batch_hook=task_batch_hook,
                 completed_task_ids=completed_task_ids,
             )
         finally:
@@ -358,6 +384,7 @@ class CanonicalFieldResolutionEngine:
         run_id: str | None,
         max_workers: int,
         task_hook: Callable[[str, str, str | None], None] | None = None,
+        task_batch_hook: Callable[[Sequence[dict[str, str | None]]], None] | None = None,
         completed_task_ids: set[str] | None = None,
     ) -> CanonicalResolutionSummary:
         """Resolve one immutable epoch inventory with semantic-key fan-out.
@@ -398,36 +425,233 @@ class CanonicalFieldResolutionEngine:
             for group in ordered_groups
             if self._epoch_field_task_key(group[0]) not in completed
         ]
+        prime_query_embeddings = getattr(
+            self.field_resolver, "prime_query_embeddings", None
+        )
+        if callable(prime_query_embeddings):
+            prime_query_embeddings(
+                [group[0].value for group in pending_groups], run_id=run_id
+            )
 
-        def resolve_group(group: list[FieldOccurrence]) -> tuple[int, int, int, bool]:
+        starting = [
+            {
+                "task_id": self._epoch_field_task_key(group[0]),
+                "status": "RUNNING",
+                "error_code": None,
+            }
+            for group in pending_groups
+        ]
+        if task_batch_hook is not None:
+            for offset in range(0, len(starting), 256):
+                task_batch_hook(starting[offset : offset + 256])
+        elif task_hook is not None:
+            for item in starting:
+                task_hook(str(item["task_id"]), "RUNNING", None)
+
+        if self.planned_batching:
+            prepare_started = perf_counter()
+            prepared_by_task: dict[str, list[_PreparedFieldGroup]] = {}
+            failed_during_prepare: dict[str, str] = {}
+            prepare_durations_ms: list[float] = []
+            prepare_lock = Lock()
+            active_prepare = 0
+            max_active_prepare = 0
+
+            def prepare_group(
+                group: list[FieldOccurrence],
+            ) -> tuple[str, list[_PreparedFieldGroup], float]:
+                nonlocal active_prepare, max_active_prepare
+                task_id = self._epoch_field_task_key(group[0])
+                started_at = perf_counter()
+                with prepare_lock:
+                    active_prepare += 1
+                    max_active_prepare = max(max_active_prepare, active_prepare)
+                try:
+                    prepared = self._prepare_field_groups(
+                        source_by_mention[group[0].mention_id],
+                        group,
+                        run_id=run_id,
+                        task_id=task_id,
+                    )
+                    return task_id, prepared, (perf_counter() - started_at) * 1000
+                finally:
+                    with prepare_lock:
+                        active_prepare -= 1
+
+            prepare_workers = min(max_workers, max(1, len(pending_groups)))
+            with ThreadPoolExecutor(max_workers=prepare_workers) as pool:
+                prepare_futures = {
+                    pool.submit(prepare_group, group): self._epoch_field_task_key(group[0])
+                    for group in pending_groups
+                }
+                for future in as_completed(prepare_futures):
+                    task_id = prepare_futures[future]
+                    try:
+                        _, prepared, duration_ms = future.result()
+                    except Exception as exc:
+                        failed_during_prepare[task_id] = str(
+                            getattr(exc, "code", type(exc).__name__)
+                        )
+                    else:
+                        prepared_by_task[task_id] = prepared
+                        prepare_durations_ms.append(duration_ms)
+            all_plans = [
+                item.decision_plan
+                for task_id in sorted(prepared_by_task)
+                for item in prepared_by_task[task_id]
+                if item.decision_plan is not None
+            ]
+            prepare_finished = perf_counter()
+            outputs, decision_errors, planned_telemetry = self.field_resolver.decide_prepared(
+                all_plans,
+                max_workers=max_workers,
+            )
+            apply_started = perf_counter()
+            totals = [0, 0, 0]
+            finished_records: list[dict[str, str | None]] = []
+            for task_id in sorted(
+                {self._epoch_field_task_key(group[0]) for group in pending_groups}
+            ):
+                if task_id in failed_during_prepare:
+                    finished_records.append(
+                        {
+                            "task_id": task_id,
+                            "status": "FAILED",
+                            "error_code": failed_during_prepare[task_id],
+                        }
+                    )
+                    continue
+                task_errors = [
+                    decision_errors[item.decision_plan.semantic_task_id]
+                    for item in prepared_by_task[task_id]
+                    if item.decision_plan is not None
+                    and item.decision_plan.semantic_task_id in decision_errors
+                ]
+                if task_errors:
+                    first_error = task_errors[0]
+                    finished_records.append(
+                        {
+                            "task_id": task_id,
+                            "status": "FAILED",
+                            "error_code": str(
+                                getattr(first_error, "code", type(first_error).__name__)
+                            ),
+                        }
+                    )
+                    continue
+                try:
+                    result = self._apply_prepared_field_groups(
+                        prepared_by_task[task_id], outputs=outputs, run_id=run_id
+                    )
+                except Exception as exc:
+                    finished_records.append(
+                        {
+                            "task_id": task_id,
+                            "status": "FAILED",
+                            "error_code": str(getattr(exc, "code", type(exc).__name__)),
+                        }
+                    )
+                    continue
+                for index, value in enumerate(result):
+                    totals[index] += value
+                finished_records.append(
+                    {"task_id": task_id, "status": "SUCCEEDED", "error_code": None}
+                )
+            if task_batch_hook is not None and finished_records:
+                for offset in range(0, len(finished_records), 512):
+                    task_batch_hook(finished_records[offset : offset + 512])
+            elif task_hook is not None:
+                for item in finished_records:
+                    task_hook(
+                        str(item["task_id"]),
+                        str(item["status"]),
+                        item["error_code"],
+                    )
+            telemetry = {
+                **planned_telemetry,
+                "planned_batching_enabled": True,
+                "planned_ms": round((prepare_finished - prepare_started) * 1000),
+                "apply_ms": round((perf_counter() - apply_started) * 1000),
+                "prepare_group_count": len(pending_groups),
+                "prepare_worker_count": prepare_workers,
+                "prepare_max_active": max_active_prepare,
+                "prepare_failure_count": len(failed_during_prepare),
+                "prepare_p50_ms": round(_percentile(prepare_durations_ms, 0.50)),
+                "prepare_p95_ms": round(_percentile(prepare_durations_ms, 0.95)),
+                "prepare_max_ms": round(max(prepare_durations_ms, default=0.0)),
+                "prepared_plan_hash": hashlib.sha256(
+                    "\n".join(
+                        item.decision_plan.semantic_task_id
+                        for task_id in sorted(prepared_by_task)
+                        for item in prepared_by_task[task_id]
+                        if item.decision_plan is not None
+                    ).encode("utf-8")
+                ).hexdigest(),
+                "deferred_audit_count": sum(
+                    len(item.deferred_audits)
+                    for plans in prepared_by_task.values()
+                    for item in plans
+                ),
+            }
+            return CanonicalResolutionSummary(
+                catalog_hash=self.knowledge_base.catalog_hash,
+                resolved_count=totals[0],
+                unresolved_count=totals[1],
+                group_count=len(ordered_groups),
+                field_links_hash=field_links_hash(self.registry, all_mentions),
+                failed_group_count=sum(item["status"] == "FAILED" for item in finished_records),
+                skipped_group_count=len(ordered_groups) - len(pending_groups),
+                telemetry=telemetry,
+            )
+
+        def resolve_group(
+            group: list[FieldOccurrence],
+        ) -> tuple[str, int, int, int, bool, str | None]:
             task_id = self._epoch_field_task_key(group[0])
-            if task_hook is not None:
-                task_hook(task_id, "RUNNING", None)
             try:
                 result = self._resolve_groups(
                     source_by_mention[group[0].mention_id], group, run_id=run_id
                 )
             except Exception as exc:
-                if task_hook is not None:
-                    task_hook(
-                        task_id,
-                        "FAILED",
-                        str(getattr(exc, "code", type(exc).__name__)),
-                    )
-                return 0, 0, 0, True
-            if task_hook is not None:
-                task_hook(task_id, "SUCCEEDED", None)
-            return result[0], result[1], result[2], False
+                return task_id, 0, 0, 0, True, str(
+                    getattr(exc, "code", type(exc).__name__)
+                )
+            return task_id, result[0], result[1], result[2], False, None
 
         totals = [0, 0, 0]
         failed_group_count = 0
+        legacy_finished_records: list[dict[str, str | None]] = []
+        last_task_flush = perf_counter()
         with ThreadPoolExecutor(max_workers=min(max_workers, max(1, len(pending_groups)))) as pool:
-            futures = [pool.submit(resolve_group, group) for group in pending_groups]
-            for future in as_completed(futures):
-                result = future.result()
-                failed_group_count += int(result[3])
-                for index, value in enumerate(result[:3]):
+            legacy_futures = [pool.submit(resolve_group, group) for group in pending_groups]
+            for legacy_future in as_completed(legacy_futures):
+                legacy_result = legacy_future.result()
+                failed_group_count += int(legacy_result[4])
+                for index, value in enumerate(legacy_result[1:4]):
                     totals[index] += value
+                legacy_finished_records.append(
+                    {
+                        "task_id": legacy_result[0],
+                        "status": "FAILED" if legacy_result[4] else "SUCCEEDED",
+                        "error_code": legacy_result[5],
+                    }
+                )
+                if task_batch_hook is not None and (
+                    len(legacy_finished_records) >= 512
+                    or perf_counter() - last_task_flush >= 0.2
+                ):
+                    task_batch_hook(legacy_finished_records)
+                    legacy_finished_records = []
+                    last_task_flush = perf_counter()
+                elif task_batch_hook is None and task_hook is not None:
+                    item = legacy_finished_records.pop()
+                    task_hook(
+                        str(item["task_id"]),
+                        str(item["status"]),
+                        item["error_code"],
+                    )
+        if task_batch_hook is not None and legacy_finished_records:
+            task_batch_hook(legacy_finished_records)
         return CanonicalResolutionSummary(
             catalog_hash=self.knowledge_base.catalog_hash,
             resolved_count=totals[0],
@@ -456,6 +680,257 @@ class CanonicalFieldResolutionEngine:
         return hashlib.sha256(
             json.dumps(payload, ensure_ascii=False, sort_keys=True, default=str).encode("utf-8")
         ).hexdigest()
+
+    def _prepare_field_groups(
+        self,
+        source: SourceMessage,
+        occurrences: list[FieldOccurrence],
+        *,
+        run_id: str | None,
+        task_id: str,
+    ) -> list[_PreparedFieldGroup]:
+        alias_groups = _alias_groups(source, occurrences)
+        grouped_by_kb: dict[tuple[str, str], list[FieldOccurrence]] = {}
+        for index, group in enumerate(alias_groups):
+            primary = group[0]
+            exact_matches = self._exact_matches(source, primary)
+            unique, _ = self._safe_unique(source, primary, exact_matches)
+            group_key = (
+                primary.value.namespace.value,
+                f"external:{unique.external_id}" if unique is not None else f"alias:{index}",
+            )
+            grouped_by_kb.setdefault(group_key, []).extend(group)
+        prepared: list[_PreparedFieldGroup] = []
+        for group_index, group in enumerate(
+            sorted(
+                grouped_by_kb.values(),
+                key=lambda values: (values[0].mention_id, values[0].field_path),
+            ),
+            start=1,
+        ):
+            group = sorted(group, key=lambda item: (item.mention_id, item.field_path))
+            primary = group[0]
+            exact_matches = self._exact_matches(source, primary)
+            matches = list(primary.candidate_matches) or exact_matches
+            if (
+                not matches
+                and primary.catalog in {"metrics", "concepts", "fiscal_periods"}
+                and primary.allow_coreference
+            ):
+                matches = [
+                    item.match
+                    for item in self.knowledge_base.string_candidates(
+                        primary.catalog,
+                        primary.value.raw_value,
+                        kind=primary.kind,
+                        company_id=primary.company_id,
+                        owner_id=primary.owner_id,
+                    )
+                ]
+            matches, deferred_audits = self._candidate_blockers_pure(
+                primary,
+                self._redirect_metric_matches(matches),
+                run_id=run_id,
+            )
+            matches = matches[:8]
+            unique, deterministic_reason = self._safe_unique(source, primary, exact_matches)
+            decision_plan: PreparedFieldDecision | None = None
+            if unique is None and primary.allow_coreference:
+                transient: list[CanonicalFieldRegistryEntry] = []
+                transient_dimensions: dict[
+                    str, dict[str, str | int | float | bool | None]
+                ] = {}
+                for match in matches:
+                    target_namespace = _namespace_for_match(
+                        match,
+                        requested=primary.value.namespace,
+                        participant_role=primary.value.hints.participant_role,
+                    )
+                    existing = self.registry.find_field_registry_by_external_id(
+                        namespace=target_namespace,
+                        external_id=match.external_id,
+                    )
+                    if existing is not None:
+                        continue
+                    entry, dimensions = self.field_resolver.transient_external_entry(
+                        external_id=match.external_id,
+                        canonical_text=match.name,
+                        aliases=match.aliases,
+                        namespace=target_namespace,
+                        hard_dimensions=hard_dimensions_for_match(match),
+                    )
+                    transient.append(entry)
+                    transient_dimensions[entry.id] = dimensions
+                decision_plan = self.field_resolver.prepare_decision(
+                    primary.value,
+                    semantic_task_id=f"{task_id}:{group_index}",
+                    mention_id=primary.mention_id,
+                    field_path=primary.field_path,
+                    run_id=run_id,
+                    transient_entries=transient,
+                    transient_dimensions=transient_dimensions,
+                )
+            prepared.append(
+                _PreparedFieldGroup(
+                    task_id=f"{task_id}:{group_index}",
+                    source=source,
+                    occurrences=tuple(group),
+                    primary=primary,
+                    exact_matches=tuple(exact_matches),
+                    matches=tuple(matches),
+                    unique=unique,
+                    deterministic_reason=deterministic_reason,
+                    decision_plan=decision_plan,
+                    deferred_audits=tuple(deferred_audits),
+                )
+            )
+        return prepared
+
+    def _apply_prepared_field_groups(
+        self,
+        plans: Sequence[_PreparedFieldGroup],
+        *,
+        outputs: Mapping[str, FieldCoreferenceModelOutput],
+        run_id: str | None,
+    ) -> tuple[int, int, int]:
+        resolved_count = 0
+        unresolved_count = 0
+        for plan in sorted(plans, key=lambda item: item.task_id):
+            for audit in plan.deferred_audits:
+                self.registry.append_decision_audit(audit)
+            primary = plan.primary
+            group = list(plan.occurrences)
+            if primary.route_reason is not None:
+                route_payload = {
+                    "attempted_catalogs": list(primary.attempted_catalogs),
+                    "exact_collision_count": primary.exact_collision_count,
+                    "selected_route": primary.catalog or "UNRESOLVED",
+                    "route_reason": primary.route_reason,
+                    "generic_collective": primary.generic_collective,
+                }
+                self.registry.append_decision_audit(
+                    DecisionAuditRecord(
+                        audit_id=_audit_id(
+                            "participant-route",
+                            primary.mention_id,
+                            primary.field_path,
+                            route_payload,
+                            run_id=run_id,
+                        ),
+                        run_id=run_id,
+                        decision_type="PARTICIPANT_ROUTE",
+                        subject_id=f"{primary.mention_id}:{primary.field_path}",
+                        payload=route_payload,
+                    )
+                )
+            try:
+                if plan.unique is not None:
+                    result = self.field_resolver.link_external(
+                        primary.value,
+                        mention_id=primary.mention_id,
+                        field_path=primary.field_path,
+                        external_id=plan.unique.external_id,
+                        aliases=[plan.unique.name, *plan.unique.aliases],
+                        include_raw_alias=False,
+                        run_id=run_id,
+                    )
+                    payload = {
+                        "field_path": primary.field_path,
+                        "raw_value_hash": hashlib.sha256(
+                            primary.value.raw_value.encode("utf-8")
+                        ).hexdigest(),
+                        "external_id": plan.unique.external_id,
+                        "reason": plan.deterministic_reason,
+                    }
+                    self.registry.append_decision_audit(
+                        DecisionAuditRecord(
+                            audit_id=_audit_id(
+                                "safe-deterministic",
+                                primary.mention_id,
+                                primary.field_path,
+                                payload,
+                                run_id=run_id,
+                            ),
+                            run_id=run_id,
+                            decision_type="FIELD_SAFE_DETERMINISTIC_MATCH",
+                            subject_id=f"{primary.mention_id}:{primary.field_path}",
+                            payload=payload,
+                        )
+                    )
+                elif plan.decision_plan is not None:
+                    result = self.field_resolver.apply_prepared(
+                        plan.decision_plan,
+                        outputs.get(plan.decision_plan.semantic_task_id),
+                    )
+                else:
+                    result = self.field_resolver.canonicalize_unresolved(
+                        primary.value,
+                        mention_id=primary.mention_id,
+                        field_path=primary.field_path,
+                        run_id=run_id,
+                        reason="COREFERENCE_NOT_ELIGIBLE",
+                    )
+                    self._audit_unresolved(primary, list(plan.matches), run_id=run_id)
+            except (FieldCoreferenceError, ModelAdapterError) as exc:
+                result = self.field_resolver.canonicalize_unresolved(
+                    primary.value,
+                    mention_id=primary.mention_id,
+                    field_path=primary.field_path,
+                    run_id=run_id,
+                    reason=f"FIELD_RESOLUTION_ERROR:{type(exc).__name__}",
+                )
+            if result.canonical_id is None or result.resolution_method is None:
+                raise RuntimeError("field resolution returned no persistent canonical link")
+            resolved_count += len(group)
+            for occurrence in group[1:]:
+                self.registry.save_field_link(
+                    CanonicalFieldLink(
+                        mention_id=occurrence.mention_id,
+                        field_path=occurrence.field_path,
+                        registry_id=result.canonical_id,
+                        method=result.resolution_method,
+                    )
+                )
+            candidate_snapshot = {
+                "raw_hash": hashlib.sha256(primary.value.raw_value.encode("utf-8")).hexdigest(),
+                "requested_namespace": primary.value.namespace.value,
+                "candidate_external_ids": [match.external_id for match in plan.matches],
+                "candidate_namespaces": [
+                    _namespace_for_match(
+                        match,
+                        requested=primary.value.namespace,
+                        participant_role=primary.value.hints.participant_role,
+                    ).value
+                    for match in plan.matches
+                ],
+                "route": primary.route_reason or (
+                    "EXACT" if plan.exact_matches else "STRING_RECALL"
+                ),
+                "scores": [
+                    1.0 if match in plan.exact_matches else None for match in plan.matches
+                ],
+                "blocked_reason": (
+                    "COREFERENCE_NOT_ELIGIBLE" if not primary.allow_coreference else None
+                ),
+                "selected_id": result.external_id,
+            }
+            self.registry.append_decision_audit(
+                DecisionAuditRecord(
+                    audit_id=_audit_id(
+                        "candidate-snapshot",
+                        primary.mention_id,
+                        primary.field_path,
+                        candidate_snapshot,
+                        run_id=run_id,
+                    ),
+                    run_id=run_id,
+                    decision_type="FIELD_CANDIDATE_SNAPSHOT",
+                    subject_id=f"{primary.mention_id}:{primary.field_path}",
+                    payload=candidate_snapshot,
+                )
+            )
+            self._audit_group(group, result, run_id=run_id)
+        return resolved_count, unresolved_count, len(plans)
 
     def _regular_occurrences(
         self, source: SourceMessage, mention: EventMention
@@ -942,7 +1417,22 @@ class CanonicalFieldResolutionEngine:
         *,
         run_id: str | None,
     ) -> list[KBMatch]:
+        kept, audits = self._candidate_blockers_pure(
+            occurrence, matches, run_id=run_id
+        )
+        for audit in audits:
+            self.registry.append_decision_audit(audit)
+        return kept
+
+    def _candidate_blockers_pure(
+        self,
+        occurrence: FieldOccurrence,
+        matches: list[KBMatch],
+        *,
+        run_id: str | None,
+    ) -> tuple[list[KBMatch], list[DecisionAuditRecord]]:
         kept: list[KBMatch] = []
+        audits: list[DecisionAuditRecord] = []
         for match in matches:
             blocker = _candidate_blocker(
                 occurrence.value.raw_value,
@@ -962,7 +1452,7 @@ class CanonicalFieldResolutionEngine:
                     occurrence.value.local_context.encode("utf-8")
                 ).hexdigest(),
             }
-            self.registry.append_decision_audit(
+            audits.append(
                 DecisionAuditRecord(
                     audit_id=_audit_id(
                         "candidate-blocker",
@@ -977,7 +1467,7 @@ class CanonicalFieldResolutionEngine:
                     payload=payload,
                 )
             )
-        return kept
+        return kept, audits
 
     def _participant_route(
         self,
@@ -1612,3 +2102,11 @@ def _audit_id(
         ).encode()
     ).hexdigest()[:24]
     return f"canonical-field:{digest}"
+
+
+def _percentile(values: Sequence[float], quantile: float) -> float:
+    if not values:
+        return 0.0
+    ordered = sorted(values)
+    index = min(len(ordered) - 1, max(0, math.ceil(len(ordered) * quantile) - 1))
+    return ordered[index]

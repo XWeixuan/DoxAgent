@@ -1,6 +1,4 @@
-from cdecr.contracts import MembershipRelation, PackageFamily
 from cdecr.parent_occurrence import PackageStageSnapshotV2, ParentOccurrenceService
-from cdecr.parent_occurrence_contracts import ParentProposalCard
 from tests.cdecr.parent_occurrence_fixtures import (
     ScriptedParentModels,
     registry,
@@ -8,13 +6,15 @@ from tests.cdecr.parent_occurrence_fixtures import (
 )
 
 
-def test_snapshot_is_bounded_and_resolution_uses_shared_stage_waves(tmp_path) -> None:
+def test_snapshot_is_bounded_and_active_parent_path_runs_induction_only(
+    tmp_path, monkeypatch
+) -> None:
     store = registry(tmp_path)
     sources, mentions, events = two_document_inputs()
     store.save_source(sources[0], fingerprint="a" * 64)
     store.start_cross_document_run(
         run_id="run-ok",
-        processing_key="parent-v2-test",
+        processing_key="parent-v3-test",
         message_id=sources[0].message_id,
         engine_version="test",
         prompt_version="test",
@@ -28,68 +28,28 @@ def test_snapshot_is_bounded_and_resolution_uses_shared_stage_waves(tmp_path) ->
         packages=[],
     )
     assert snapshot.query_count == 1
+
     models = ScriptedParentModels()
-    result = ParentOccurrenceService(registry=store).run(
-        events=events,
-        mentions=mentions,
-        sources=sources,
-        existing_packages=[],
-        models=models,
-        run_id="run-ok",
-    )
-    assert result.status == "FINALIZED"
-    assert result.telemetry["snapshot_query_count"] <= 8
-    assert result.telemetry["pair_registry_read_count"] == 0
-    assert int(result.telemetry["resolution_wave_count"]) == 2
-    assert int(result.telemetry["reconcile_wave_count"]) == 0
-    model_call_count = len(models.stages)
-    replay = ParentOccurrenceService(registry=store).run(
-        events=events,
-        mentions=mentions,
-        sources=sources,
-        existing_packages=[],
-        models=models,
-        run_id="run-ok",
-    )
-    assert replay.status == "FINALIZED"
-    assert replay.partition == result.partition
-    assert replay.telemetry["resumed_from_frozen_partition"] is True
-    assert len(models.stages) == model_call_count
-
-
-def test_parent_profile_embeddings_respect_provider_batch_limit(tmp_path) -> None:
-    class BatchLimitedModels(ScriptedParentModels):
-        def __init__(self) -> None:
-            super().__init__()
-            self.embedding_batch_sizes: list[int] = []
-
-        def embed(self, texts, *, stage):
-            self.embedding_batch_sizes.append(len(texts))
-            if len(texts) > 10:
-                raise ValueError("provider batch limit exceeded")
-            return super().embed(texts, stage=stage)
-
-    store = registry(tmp_path)
     service = ParentOccurrenceService(registry=store)
-    proposals = [
-        ParentProposalCard(
-            proposal_ref=f"G{index}",
-            proposal_id=f"proposal-{index}",
-            supporting_proposal_ids=[f"proposal-{index}"],
-            scope="PARENT_OCCURRENCE",
-            package_family=PackageFamily.EARNINGS_DISCLOSURE,
-            label=f"Micron disclosure {index}",
-            atomic_refs=[f"A{index}"],
-            event_ids=[f"EVENT-{index}"],
-            membership_by_event={f"EVENT-{index}": MembershipRelation.COMPONENT_OF},
-            document_refs=[f"DOC-{index}"],
-        )
-        for index in range(23)
-    ]
-    models = BatchLimitedModels()
 
-    embedded, _, telemetry = service._embed_cards(proposals, [], models=models)
+    def fail_if_repartitioned(*args, **kwargs):
+        raise AssertionError("V3 Parent pool must not execute Repartition")
 
-    assert sorted(models.embedding_batch_sizes) == [3, 10, 10]
-    assert all(item.embedding for item in embedded)
-    assert telemetry["embedding_failure_count"] == 0
+    monkeypatch.setattr(service, "_repartition_suspect_groups", fail_if_repartitioned)
+    result = service.build_parent_occurrence_pool(
+        events=events,
+        mentions=mentions,
+        sources=sources,
+        existing_packages=[],
+        models=models,
+        run_id="run-ok",
+    )
+
+    assert result.status == "FINALIZED"
+    assert result.telemetry is not None
+    assert result.telemetry["snapshot_query_count"] <= 8
+    assert result.telemetry["repartition_enabled"] is False
+    assert result.telemetry["suspect_group_count"] == 0
+    assert result.telemetry["repartition_request_count"] == 0
+    assert models.stages
+    assert {stage for _, stage in models.stages} == {"parent_induction"}

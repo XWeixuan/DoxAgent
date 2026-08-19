@@ -30,6 +30,7 @@ from cdecr.field_coreference import (
     FIELD_REGISTRY_OWNER_KIND,
     FieldCoreferenceError,
     FieldCoreferenceResolver,
+    PreparedFieldDecision,
     field_inputs_for_mention,
     normalize_field_text,
     resolved_field_entries,
@@ -89,7 +90,265 @@ class FakeStructuredClient:
             input_tokens=10,
             output_tokens=2,
             latency_ms=1,
+            transport="chat_json_object",
+            output_mode="json_object",
+            effective_reasoning_effort="none",
+            provider_key_fingerprint="test-key-fingerprint",
         )
+
+
+class EchoFieldBatchClient:
+    def __init__(self) -> None:
+        self.requests: list[StructuredModelRequest] = []
+
+    def complete(self, request: StructuredModelRequest) -> StructuredModelResult:
+        self.requests.append(request)
+        tasks = json.loads(request.user_prompt)["tasks"]
+        return StructuredModelResult(
+            model="fake",
+            payload={
+                "decisions": [
+                    {
+                        "task_id": task["task_id"],
+                        "decision": "UNRESOLVED",
+                        "canonical_id": None,
+                        "target_namespace": None,
+                    }
+                    for task in tasks
+                ]
+            },
+            input_tokens=1,
+            output_tokens=1,
+            latency_ms=1,
+        )
+
+
+class InvalidCoverageOnceFieldClient(EchoFieldBatchClient):
+    def complete(self, request: StructuredModelRequest) -> StructuredModelResult:
+        if not self.requests:
+            self.requests.append(request)
+            return StructuredModelResult(
+                model="fake",
+                payload={"decisions": []},
+                input_tokens=1,
+                output_tokens=1,
+                latency_ms=1,
+            )
+        return super().complete(request)
+
+
+def test_planned_field_decisions_pack_by_namespace_and_cover_every_item(
+    registry: SQLiteCDECRRegistry,
+) -> None:
+    model = EchoFieldBatchClient()
+    resolver = FieldCoreferenceResolver(
+        registry=registry,
+        embedding_client=FakeEmbeddingClient(),
+        model_client=model,
+    )
+    plans = [
+        PreparedFieldDecision(
+            semantic_task_id=f"task-{index:02d}",
+            value=FieldCoreferenceInput(
+                namespace=FieldNamespace.OBJECT_FACILITY,
+                raw_value=f"facility {index}",
+                local_context="facility context",
+            ),
+            candidates=(),
+            mention_id=f"mention-{index}",
+            field_path="open_attributes[0].value",
+            run_id=None,
+        )
+        for index in range(13)
+    ]
+    outputs, errors, telemetry = resolver.decide_prepared(plans, max_workers=4)
+    assert not errors
+    assert set(outputs) == {plan.semantic_task_id for plan in plans}
+    assert len(model.requests) == 2
+    assert telemetry["planned_item_count"] == 13
+    assert telemetry["physical_batch_count"] == 2
+    assert telemetry["batch_size_max"] == 12
+    assert telemetry["item_fallback_count"] == 0
+
+
+def test_planned_field_invalid_batch_coverage_splits_once_without_losing_items(
+    registry: SQLiteCDECRRegistry,
+) -> None:
+    model = InvalidCoverageOnceFieldClient()
+    resolver = FieldCoreferenceResolver(
+        registry=registry,
+        embedding_client=FakeEmbeddingClient(),
+        model_client=model,
+    )
+    plans = [
+        PreparedFieldDecision(
+            semantic_task_id=f"task-{index}",
+            value=FieldCoreferenceInput(
+                namespace=FieldNamespace.OBJECT_PROJECT,
+                raw_value=f"project {index}",
+                local_context="project context",
+            ),
+            candidates=(),
+            mention_id=f"mention-{index}",
+            field_path="open_attributes[0].value",
+            run_id=None,
+        )
+        for index in range(4)
+    ]
+    outputs, errors, telemetry = resolver.decide_prepared(plans, max_workers=1)
+    assert not errors
+    assert set(outputs) == {plan.semantic_task_id for plan in plans}
+    assert len(model.requests) == 3
+    assert telemetry["batch_split_count"] == 1
+
+
+def test_field_item_repair_uses_local_t1_and_is_fully_audited(
+    registry: SQLiteCDECRRegistry,
+) -> None:
+    model = FakeStructuredClient(
+        [
+            {
+                "decisions": [
+                    {
+                        "task_id": "t1",
+                        "decision": "LINK",
+                        "canonical_id": "k99",
+                        "target_namespace": None,
+                    }
+                ]
+            },
+            {
+                "decisions": [
+                    {
+                        "task_id": "t1",
+                        "decision": "UNRESOLVED",
+                        "canonical_id": None,
+                        "target_namespace": None,
+                    }
+                ]
+            },
+        ]
+    )
+    resolver = FieldCoreferenceResolver(
+        registry=registry,
+        embedding_client=FakeEmbeddingClient(),
+        model_client=model,
+    )
+    plan = PreparedFieldDecision(
+        semantic_task_id="semantic-task-7",
+        value=FieldCoreferenceInput(
+            namespace=FieldNamespace.OBJECT_PROJECT,
+            raw_value="project seven",
+            local_context="project context",
+        ),
+        candidates=(),
+        mention_id="mention-7",
+        field_path="open_attributes[0].value",
+        run_id=None,
+    )
+
+    outputs, errors, telemetry = resolver.decide_prepared([plan], max_workers=1)
+
+    assert not errors
+    assert outputs[plan.semantic_task_id].decision is FieldDecision.UNRESOLVED
+    repair_payload = json.loads(model.requests[1].user_prompt)
+    assert [task["task_id"] for task in repair_payload["tasks"]] == ["t1"]
+    calls = registry.list_model_call_summaries()
+    assert sum(call.stage == "field_coreference_item_repair" for call in calls) == 1
+    assert telemetry["item_repair_request_count"] == 1
+    assert telemetry["item_repair_succeeded_count"] == 1
+
+
+def test_field_item_repair_local_forbidden_error_falls_back_without_task_failure(
+    registry: SQLiteCDECRRegistry,
+) -> None:
+    invalid = {
+        "decisions": [
+            {
+                "task_id": "t1",
+                "decision": "NEW",
+                "canonical_id": None,
+                "target_namespace": "participant.company",
+            }
+        ]
+    }
+    model = FakeStructuredClient([invalid, invalid])
+    resolver = FieldCoreferenceResolver(
+        registry=registry,
+        embedding_client=FakeEmbeddingClient(),
+        model_client=model,
+    )
+    plan = PreparedFieldDecision(
+        semantic_task_id="semantic-task-local-invalid",
+        value=FieldCoreferenceInput(
+            namespace=FieldNamespace.OBJECT_PROJECT,
+            raw_value="project local invalid",
+            local_context="project context",
+        ),
+        candidates=(),
+        mention_id="mention-local-invalid",
+        field_path="open_attributes[0].value",
+        run_id=None,
+    )
+
+    outputs, errors, telemetry = resolver.decide_prepared([plan], max_workers=1)
+
+    assert not errors
+    assert outputs[plan.semantic_task_id].decision is FieldDecision.UNRESOLVED
+    assert telemetry["item_repair_invalid_count"] == 1
+    assert telemetry["item_repair_provider_failed_count"] == 0
+
+
+def test_apply_prepared_reuses_existing_external_identity_before_immutable_create(
+    registry: SQLiteCDECRRegistry,
+) -> None:
+    mention = _mention("M-APPLY-REUSE", "S-APPLY-REUSE")
+    _persist_mention(registry, mention)
+    resolver = FieldCoreferenceResolver(
+        registry=registry,
+        embedding_client=FakeEmbeddingClient(),
+        model_client=FakeStructuredClient(),
+    )
+    transient, dimensions = resolver.transient_external_entry(
+        external_id="KB:PROJECT:7",
+        canonical_text="Project Seven",
+        aliases=["Project Seven", "Seventh Project"],
+        namespace=FieldNamespace.OBJECT_PROJECT,
+        hard_dimensions={},
+    )
+    registry.create_field_registry_entry(
+        transient.model_copy(update={"aliases": ["Project Seven"]})
+    )
+    plan = PreparedFieldDecision(
+        semantic_task_id="apply-reuse",
+        value=FieldCoreferenceInput(
+            namespace=FieldNamespace.OBJECT_PROJECT,
+            raw_value="Seventh Project",
+            local_context="Project Seven was discussed.",
+        ),
+        candidates=(
+            FieldCoreferenceCandidate(
+                canonical_id=transient.id,
+                aliases=["Project Seven"],
+                hard_dimensions={},
+            ),
+        ),
+        mention_id=mention.mention_id,
+        field_path="open_attributes[0].value",
+        run_id=None,
+        transient_entries=(transient,),
+        transient_dimensions=((transient.id, dimensions),),
+    )
+
+    result = resolver.apply_prepared(
+        plan,
+        FieldCoreferenceModelOutput(
+            decision=FieldDecision.LINK,
+            canonical_id=transient.id,
+        ),
+    )
+
+    assert result.canonical_id == transient.id
 
 
 def test_epoch_field_requests_are_namespace_batched_with_simple_wire_schema(
@@ -159,6 +418,17 @@ def test_epoch_field_requests_are_namespace_batched_with_simple_wire_schema(
     assert len(payload["tasks"]) == 2
     assert isinstance(payload["candidates"], dict)
     assert "allOf" not in json.dumps(model.requests[0].json_schema)
+    with sqlite3.connect(registry.path) as connection:
+        metadata = json.loads(
+            connection.execute(
+                "SELECT metadata_json FROM model_calls "
+                "WHERE stage = 'field_coreference' ORDER BY created_at DESC LIMIT 1"
+            ).fetchone()[0]
+        )
+    assert metadata["transport"] == "chat_json_object"
+    assert metadata["output_mode"] == "json_object"
+    assert metadata["effective_reasoning_effort"] == "none"
+    assert metadata["provider_key_fingerprint"] == "test-key-fingerprint"
 
 
 def _source(message_id: str) -> SourceMessage:

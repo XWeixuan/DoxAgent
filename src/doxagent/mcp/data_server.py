@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-import hashlib
 import json
 import os
 import re
@@ -18,6 +17,7 @@ from mcp.server.stdio import stdio_server
 
 from doxagent.data_runtime.contracts import (
     DataExecutionContext,
+    DataMcpResult,
     DataToolContract,
     build_data_tool_contracts,
 )
@@ -30,6 +30,7 @@ from doxagent.data_runtime.policy import (
     DataToolPolicyRegistry,
 )
 from doxagent.observations.kernel import ObservationKernel
+from doxagent.observations.projection import observation_projection
 from doxagent.observations.store import AttemptObservationStore
 from doxagent.settings import DoxAgentSettings
 from doxagent.tools.factory import default_real_tool_registry
@@ -276,20 +277,8 @@ def build_server(application: DataMcpApplication) -> Server:
                 )
             return _call_result(
                 {
-                    "alias": observation.alias,
-                    "block_id": observation.block_id,
-                    "title": observation.title,
-                    "content": content,
-                    "projection": projection,
-                    "block_type": observation.block_type,
-                    "source_locator": observation.source_locator,
-                    "source_coordinates": observation.source_coordinates,
-                    "content_hash": observation.content_hash,
-                    "provenance": {
-                        "provider": observation.provider,
-                        "tool_name": observation.tool_name,
-                        "method_version": observation.method_version,
-                    },
+                    **observation_projection(observation, content=content),
+                    **({"projection": projection} if projection else {}),
                 }
             )
         if params.name == VALIDATE_CITATIONS_TOOL_NAME:
@@ -307,7 +296,6 @@ def build_server(application: DataMcpApplication) -> Server:
             ]
             return _call_result(
                 {
-                    "sha256_utf8": hashlib.sha256(value.encode("utf-8")).hexdigest(),
                     "citation_count": len(aliases),
                     "resolved_aliases": resolved,
                     "unresolved_aliases": [alias for alias in aliases if alias not in resolved],
@@ -325,7 +313,7 @@ def build_server(application: DataMcpApplication) -> Server:
             contract.canonical_tool_id,
             arguments,
         )
-        return _call_result(result.model_dump(mode="json"))
+        return _call_result(_agent_result_payload(result))
 
     return Server(
         "doxagent-data-mcp",
@@ -373,6 +361,38 @@ def _call_result(payload: dict[str, Any], *, is_error: bool = False) -> types.Ca
         structured_content=payload,
         is_error=is_error,
     )
+
+
+def _agent_result_payload(result: DataMcpResult) -> dict[str, Any]:
+    """Remove runtime-only identifiers from a semantic tool result shown to the Agent."""
+
+    delivery: dict[str, Any] = {
+        "mode": result.delivery.mode,
+        "observations": [item.model_dump(mode="json") for item in result.delivery.observations],
+    }
+    if result.delivery.pack is not None:
+        delivery["pack"] = {
+            "selected_path": result.delivery.pack.selected_path,
+            "catalog_path": result.delivery.pack.catalog_path,
+        }
+        delivery["total_blocks"] = result.delivery.total_blocks
+    source: dict[str, Any] = {"provider": result.provenance.provider}
+    if result.provenance.published_at:
+        source["published_at"] = result.provenance.published_at
+    if result.provenance.as_of:
+        source["as_of"] = result.provenance.as_of
+    payload: dict[str, Any] = {
+        "execution_status": result.execution_status.value,
+        "availability": result.availability.value,
+        "summary": result.summary,
+        "delivery": delivery,
+        "source": source,
+    }
+    if result.warnings:
+        payload["warnings"] = result.warnings
+    if result.error is not None:
+        payload["error"] = result.error
+    return payload
 
 
 def _read_annotations(*, idempotent: bool) -> types.ToolAnnotations:
@@ -433,14 +453,19 @@ def _project_observation_content(
         projected = projected[offset : offset + max_chars]
     elif offset:
         raise TypeError("offset is supported only for arrays and strings")
-    return projected, {
-        "json_pointer": pointer,
-        "keys": keys or [],
-        "offset": offset,
-        "returned_items_or_chars": len(projected) if isinstance(projected, (list, str)) else None,
-        "total_items_or_chars": total,
-        "truncated": total is not None and offset + len(projected) < total,
-    }
+    projection: dict[str, Any] = {}
+    if pointer:
+        projection["json_pointer"] = pointer
+    if keys:
+        projection["keys"] = keys
+    if offset:
+        projection["offset"] = offset
+    if total is not None:
+        projection["returned_items_or_chars"] = len(projected)
+        projection["total_items_or_chars"] = total
+        if offset + len(projected) < total:
+            projection["truncated"] = True
+    return projected, projection
 
 
 if __name__ == "__main__":

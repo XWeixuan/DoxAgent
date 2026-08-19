@@ -143,13 +143,12 @@ class DataExecutionContext(DataRuntimeModel):
 
 
 class DataObservationView(DataRuntimeModel):
+    """Agent-facing Observation content; runtime integrity fields stay private."""
+
     alias: str
-    block_id: str
     title: str
     content: Any
-    block_type: str
-    source_locator: str | None = None
-    content_hash: str
+    source: dict[str, str]
 
 
 class DataPackLocator(DataRuntimeModel):

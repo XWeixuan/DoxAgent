@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import json
 import os
+import re
 import shutil
 import stat
 import tempfile
@@ -13,7 +15,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path, PurePosixPath
-from typing import Literal
+from typing import Any, Literal
 
 from doxagent.codex_runtime.client import HttpCodexWorkerClient
 from doxagent.codex_runtime.schema import CodexD1Node, utc_now
@@ -31,6 +33,26 @@ from doxagent.settings import DoxAgentSettings
 from doxagent.tools.factory import default_real_tool_registry
 from doxagent.workflows.codex_document1.attempt_bundle import AttemptBundleSeeder
 from doxagent.workflows.codex_document1.node_runner import role_for_node
+from doxagent.workflows.codex_document1.schema import NodeOutput
+
+_MANUAL_CITATION = re.compile(r"【cite:O[1-9]\d*】")
+_MANUAL_CITATION_REPLACEMENT = "[上游引用需在当前 attempt 重新核验]"
+_MAX_MANUAL_UPSTREAM_BYTES = 2 * 1024 * 1024
+DEFAULT_PILOT_CAPABILITY_HOURS = 24 * 365 * 10
+MAX_PILOT_CAPABILITY_HOURS = DEFAULT_PILOT_CAPABILITY_HOURS
+MANUAL_UPSTREAM_FILES: dict[CodexD1Node, tuple[str, ...]] = {
+    CodexD1Node.C1: ("c4_pre_scan.json",),
+    CodexD1Node.C3: ("c4_pre_scan.json",),
+    CodexD1Node.C4_ENRICHMENT: ("c4_pre_scan.json", "c1.md", "c3.md"),
+    CodexD1Node.C4_FINALIZATION: ("c4_enrichment.json",),
+    CodexD1Node.O4_A: (
+        "c1.md",
+        "c2.md",
+        "c3.md",
+        "o4_b.md",
+        "c4_finalization.json",
+    ),
+}
 
 
 @dataclass(frozen=True)
@@ -38,8 +60,31 @@ class PilotCaseRequest:
     source_run: str
     node: CodexD1Node
     case_id: str
-    capability_hours: int = 8
+    capability_hours: int = DEFAULT_PILOT_CAPABILITY_HOURS
     profile: Literal["functional", "quality"] = "functional"
+    upstream_dir: Path | None = None
+
+
+@dataclass(frozen=True)
+class ManualUpstreamImport:
+    source_dir: Path
+    files: dict[str, str]
+    source_sha256: dict[str, str]
+    injected_sha256: dict[str, str]
+
+    def manifest(self) -> dict[str, object]:
+        return {
+            "mode": "pilot_override",
+            "set_id": self.source_dir.name,
+            "files": {
+                name: {
+                    "source_sha256": self.source_sha256[name],
+                    "injected_sha256": self.injected_sha256[name],
+                }
+                for name in sorted(self.files)
+            },
+            "citation_policy": "context_only_reverify",
+        }
 
 
 @dataclass(frozen=True)
@@ -80,8 +125,11 @@ class PilotCaseBuilder:
     async def prepare(self, request: PilotCaseRequest) -> PreparedPilotCase:
         _validate_identifier(request.source_run, "source_run")
         _validate_identifier(request.case_id, "case_id")
-        if not 1 <= request.capability_hours <= 24:
-            raise ValueError("capability_hours must be between 1 and 24")
+        if not 1 <= request.capability_hours <= MAX_PILOT_CAPABILITY_HOURS:
+            raise ValueError(
+                "capability_hours must be between 1 and "
+                f"{MAX_PILOT_CAPABILITY_HOURS}"
+            )
         if request.profile == "quality" and request.node not in QUALITY_PILOT_NODES:
             raise ValueError(
                 "the quality Pilot profile supports C1, C3, O4-A and the three C4 turns"
@@ -147,6 +195,9 @@ class PilotCaseBuilder:
         payload = deepcopy(payload)
         if request.profile == "quality":
             payload = _quality_payload(request.node, payload)
+        manual_upstream = _load_manual_upstream(request.node, request.upstream_dir)
+        if manual_upstream is not None:
+            payload = _apply_manual_upstream(request.node, payload, manual_upstream.files)
         horizontal_path = attempt_root / "input" / "horizontal.json"
         horizontal: dict[str, object] | None = None
         if horizontal_path.is_file():
@@ -175,10 +226,13 @@ class PilotCaseBuilder:
             attempt_id=attempt.attempt_id,
             context_payload=payload,
             horizontal=horizontal,
+            manual_upstream=(manual_upstream.files if manual_upstream is not None else None),
         )
         role = role_for_node(request.node)
         policy = DataToolPolicyRegistry()
-        canonical_tools = sorted(policy.allowed_tools(request.node, role))
+        canonical_tools = sorted(
+            policy.allowed_tools_for_ticker(request.node, role, ticker)
+        )
         contracts = build_data_tool_contracts(default_real_tool_registry(self.settings))
         enabled_tools = [GUIDE_TOOL_NAME, READ_TOOL_NAME, VALIDATE_CITATIONS_TOOL_NAME]
         enabled_tools.extend(
@@ -214,6 +268,9 @@ class PilotCaseBuilder:
             "ticker": ticker,
             "cutoff_at": cutoff.isoformat(),
             "input_sha256": seeded.input_sha256,
+            "manual_upstream": (
+                manual_upstream.manifest() if manual_upstream is not None else None
+            ),
             "python": str(self.python),
             "repo_root": str(self.repo_root),
             "enabled_canonical_tools": canonical_tools,
@@ -257,6 +314,7 @@ class PilotCaseBuilder:
                 run_id=request.source_run,
                 attempt_id=attempt.attempt_id,
                 profile=request.profile,
+                manual_upstream_paths=seeded.manual_upstream_paths,
             ),
             encoding="utf-8",
         )
@@ -477,6 +535,118 @@ def _quality_payload(
     payload["base_context"] = quality_context
     _sanitize_unverified_c4_pre_scan(payload)
     return payload
+
+
+def _load_manual_upstream(
+    node: CodexD1Node, upstream_dir: Path | None
+) -> ManualUpstreamImport | None:
+    if upstream_dir is None:
+        return None
+    source_dir = upstream_dir.resolve()
+    if not source_dir.is_dir():
+        raise ValueError(f"manual upstream directory does not exist: {source_dir}")
+    files: dict[str, str] = {}
+    source_hashes: dict[str, str] = {}
+    injected_hashes: dict[str, str] = {}
+    for name in MANUAL_UPSTREAM_FILES.get(node, ()):
+        path = source_dir / name
+        if not path.is_file():
+            continue
+        raw = path.read_bytes()
+        if not raw or not raw.strip():
+            raise ValueError(f"manual upstream file is empty: {name}")
+        if len(raw) > _MAX_MANUAL_UPSTREAM_BYTES:
+            raise ValueError(f"manual upstream file exceeds 2 MiB: {name}")
+        try:
+            text = raw.decode("utf-8-sig")
+        except UnicodeDecodeError as exc:
+            raise ValueError(f"manual upstream file is not UTF-8: {name}") from exc
+        if name.endswith(".json"):
+            try:
+                parsed = json.loads(text)
+                validated = NodeOutput.model_validate(parsed).model_dump(
+                    mode="json", by_alias=True
+                )
+            except (json.JSONDecodeError, ValueError) as exc:
+                raise ValueError(f"manual upstream NodeOutput JSON is invalid: {name}") from exc
+            validated["observation_candidates"] = []
+            warnings = list(validated.get("warnings") or [])
+            warnings.append("manual_pilot_override_no_evidence_rebind")
+            validated["warnings"] = list(dict.fromkeys(warnings))
+            injected = json.dumps(
+                _sanitize_manual_value(validated), ensure_ascii=False, indent=2
+            )
+        else:
+            injected = _MANUAL_CITATION.sub(_MANUAL_CITATION_REPLACEMENT, text)
+        files[name] = injected
+        source_hashes[name] = hashlib.sha256(raw).hexdigest()
+        injected_hashes[name] = hashlib.sha256(injected.encode("utf-8")).hexdigest()
+    if not files:
+        return None
+    return ManualUpstreamImport(
+        source_dir=source_dir,
+        files=files,
+        source_sha256=source_hashes,
+        injected_sha256=injected_hashes,
+    )
+
+
+def _apply_manual_upstream(
+    node: CodexD1Node,
+    payload: dict[str, object],
+    files: dict[str, str],
+) -> dict[str, object]:
+    def structured(name: str) -> dict[str, Any]:
+        return json.loads(files[name])
+
+    def report(name: str) -> dict[str, object]:
+        return {
+            "status": "completed",
+            "summary": f"Manually injected Pilot upstream report: {name}",
+            "report_markdown": files[name],
+            "warnings": ["manual_pilot_override_no_evidence_rebind"],
+            "observation_candidates": [],
+            "entity_relations": [],
+            "future_nodes": [],
+            "metadata": {},
+        }
+
+    if "c4_pre_scan.json" in files:
+        payload["c4_pre_scan"] = structured("c4_pre_scan.json")
+    if node is CodexD1Node.C4_ENRICHMENT:
+        if "c1.md" in files:
+            payload["c1_report"] = report("c1.md")
+        if "c3.md" in files:
+            payload["c3_report"] = report("c3.md")
+    elif node is CodexD1Node.C4_FINALIZATION and "c4_enrichment.json" in files:
+        payload["enriched_c4"] = structured("c4_enrichment.json")
+    elif node is CodexD1Node.O4_A:
+        for key in ("c1", "c2", "c3", "o4_b"):
+            name = f"{key}.md"
+            if name in files:
+                payload[key] = report(name)
+        if "c4_finalization.json" in files:
+            payload["known_future_nodes"] = structured("c4_finalization.json").get(
+                "future_nodes", []
+            )
+    if any(name in files for name in ("c1.md", "c2.md", "c3.md", "o4_b.md")):
+        payload["agent_observations"] = []
+    payload["manual_upstream_pilot_override"] = {
+        "files": sorted(files),
+        "precedence": "manual_over_source_run",
+        "citation_policy": "context_only_reverify",
+    }
+    return payload
+
+
+def _sanitize_manual_value(value: Any) -> Any:
+    if isinstance(value, str):
+        return _MANUAL_CITATION.sub(_MANUAL_CITATION_REPLACEMENT, value)
+    if isinstance(value, list):
+        return [_sanitize_manual_value(item) for item in value]
+    if isinstance(value, dict):
+        return {key: _sanitize_manual_value(item) for key, item in value.items()}
+    return value
 
 
 def _sanitize_unverified_c4_pre_scan(payload: dict[str, object]) -> None:

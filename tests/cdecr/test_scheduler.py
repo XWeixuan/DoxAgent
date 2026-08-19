@@ -41,7 +41,7 @@ def test_concurrency_lane_enforces_limit_and_records_queue_wait() -> None:
     assert snapshot.total_queue_wait_ms >= 0
 
 
-def test_scheduler_reduces_only_pressured_lane_and_recovers() -> None:
+def test_scheduler_pressure_does_not_multiply_shrink_tier_lane() -> None:
     scheduler = CDECRScheduler(
         m1_limit=2,
         m2_limit=8,
@@ -62,9 +62,10 @@ def test_scheduler_reduces_only_pressured_lane_and_recovers() -> None:
     else:  # pragma: no cover
         raise AssertionError("rate limit should propagate")
 
-    assert scheduler.snapshot()["m3"].limit == 4
+    assert scheduler.snapshot()["m3"].limit == 8
     assert scheduler.snapshot()["m2"].limit == 8
-    for _ in range(100):
+    assert scheduler.provider_snapshot().limit < scheduler.provider_snapshot().hard_limit
+    for _ in range(10):
         scheduler.run(ModelTier.M3, lambda: 1)
     assert scheduler.snapshot()["m3"].limit == 8
 
@@ -95,3 +96,30 @@ def test_scheduler_provider_hard_limit_is_shared_across_tiers() -> None:
         release.set()
         assert len([future.result() for future in futures]) == 12
     assert scheduler.provider_snapshot().max_active == 8
+
+
+def test_scheduler_m1_bypasses_structured_provider_gate() -> None:
+    scheduler = CDECRScheduler(
+        m1_limit=4,
+        structured_provider_target=1,
+        structured_provider_hard_limit=1,
+        structured_provider_start_rate=1000,
+        structured_provider_initial_burst=8,
+    )
+    release = Event()
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        futures = [
+            executor.submit(
+                scheduler.run,
+                ModelTier.M1,
+                lambda: (release.wait(timeout=2), 1)[1],
+            )
+            for _ in range(4)
+        ]
+        deadline = monotonic() + 1
+        while scheduler.snapshot()["m1"].active < 4 and monotonic() < deadline:
+            sleep(0.005)
+        assert scheduler.snapshot()["m1"].active == 4
+        assert scheduler.provider_snapshot().active == 0
+        release.set()
+        assert len([future.result() for future in futures]) == 4

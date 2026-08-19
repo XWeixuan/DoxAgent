@@ -30,6 +30,7 @@ from doxagent.model_usage.repository import ModelUsageRepository
 from doxagent.model_usage.schema import ModelUsageEvent
 from doxagent.observations.models import PersistedObservation
 from doxagent.observations.pack import render_observation_block
+from doxagent.observations.projection import projection_matches
 from doxagent.observations.promotion import CitationPromotionService
 from doxagent.workflows.codex_document1.attempt_bundle import (
     AttemptBundleSeeder,
@@ -335,7 +336,9 @@ class CodexD1NodeRunner:
                 continue
             try:
                 mirror = await self._workspace.read_text(run_id, mirror_path)
-                if mirror.content != observation.model_dump_json(indent=2):
+                if mirror.content is None or not projection_matches(
+                    observation, mirror.content
+                ):
                     warnings.append(
                         f"observation projection checksum mismatch: {observation.alias}"
                     )

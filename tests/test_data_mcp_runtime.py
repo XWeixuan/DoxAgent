@@ -25,6 +25,7 @@ from doxagent.data_runtime.contracts import (
 from doxagent.data_runtime.execution import DataExecutionCore, _availability
 from doxagent.data_runtime.guidance import DataToolGuide
 from doxagent.data_runtime.policy import DataCapabilityCodec, DataToolPolicyRegistry
+from doxagent.mcp.data_server import _agent_result_payload
 from doxagent.mcp.source_capture_server import ObservationSourceRepository
 from doxagent.models import ResultStatus
 from doxagent.observations.kernel import ObservationKernel
@@ -57,6 +58,22 @@ class _RecordingClient:
 def _hash(content: object) -> str:
     raw = json.dumps(content, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(raw.encode()).hexdigest()
+
+
+_AGENT_PRIVATE_OBSERVATION_KEYS = {
+    "schema_version",
+    "run_id",
+    "attempt_id",
+    "block_id",
+    "tool_call_id",
+    "tool_name",
+    "block_type",
+    "content_hash",
+    "source_coordinates",
+    "method_version",
+    "metadata",
+    "created_at",
+}
 
 
 def _store(tmp_path: Path, *, run_id: str = "run-1", attempt_id: str = "c1-1"):
@@ -350,6 +367,42 @@ def test_execution_injects_scope_and_returns_clean_inline_observations(tmp_path:
     assert "abc.def.ghi" not in serialized
     assert "must-not-leak" not in serialized
     assert all(item.title != "/source_coordinates" for item in result.delivery.observations)
+    agent_payload = _agent_result_payload(result)
+    assert agent_payload["delivery"]["observations"][0]["content"] == {
+        "columns": ["date", "value"],
+        "rows": [{"date": "2026-08-08", "value": 42}],
+    }
+    assert all(
+        set(item) == {"alias", "title", "content", "source"}
+        for item in agent_payload["delivery"]["observations"]
+    )
+    assert set(agent_payload) == {
+        "execution_status",
+        "availability",
+        "summary",
+        "delivery",
+        "source",
+    }
+
+
+def test_workspace_mirror_is_compact_but_private_record_remains_complete(tmp_path: Path) -> None:
+    run_root, store = _store(tmp_path)
+    stored = store.save_observation(_observation(1))
+    mirror = json.loads(
+        (run_root / "attempts" / "c1-1" / "audit" / "observations" / "O1.json")
+        .read_text(encoding="utf-8")
+    )
+
+    assert mirror == {
+        "alias": "O1",
+        "title": "Row 1",
+        "content": {"index": 1, "value": "value-1"},
+        "source": {"provider": "Test provider", "locator": "test://rows/1"},
+    }
+    assert not (set(mirror) & _AGENT_PRIVATE_OBSERVATION_KEYS)
+    canonical = store.read_alias("O1")
+    assert canonical == stored
+    assert canonical is not None and canonical.content_hash == _hash(canonical.content)
 
 
 def test_observation_utf8_roundtrip_and_mojibake_marker(tmp_path: Path) -> None:
@@ -442,6 +495,24 @@ def test_large_results_materialize_bounded_observation_pack(tmp_path: Path) -> N
     assert (run_root / delivery.pack.manifest_path).is_file()
     assert (run_root / delivery.pack.catalog_path).is_file()
     assert (run_root / delivery.pack.selected_path).is_file()
+    catalog = json.loads((run_root / delivery.pack.catalog_path).read_text(encoding="utf-8"))
+    manifest = json.loads((run_root / delivery.pack.manifest_path).read_text(encoding="utf-8"))
+    first_block = json.loads(
+        (run_root / delivery.pack.root / catalog[0]["path"]).read_text(encoding="utf-8")
+    )
+    assert set(catalog[0]) == {
+        "alias",
+        "title",
+        "block_type",
+        "path",
+        "source",
+        "content_chars",
+        "selected",
+    }
+    assert set(manifest) == {"selected_aliases", "blocks"}
+    assert set(manifest["blocks"][0]) == {"alias", "path"}
+    assert set(first_block) == {"alias", "title", "content", "source"}
+    assert first_block["content"] == store.read_alias(first_block["alias"]).content
     assert kernel.read_observation("O1") is not None
     assert kernel.read_observation("O999") is None
 
@@ -575,6 +646,17 @@ async def test_stdio_server_lists_only_authorized_tools_and_calls_guide(tmp_path
                 arguments={"alias": "O1", "keys": ["value"]},
             )
             assert projected.structured_content["content"] == {"value": "project-me"}
+            assert set(projected.structured_content) == {
+                "alias",
+                "title",
+                "content",
+                "source",
+                "projection",
+            }
+            assert projected.structured_content["source"] == {
+                "provider": "Test provider",
+                "locator": "test://rows/1",
+            }
             citation = await session.call_tool(
                 "data_validate_citations",
                 arguments={"text": "可验证事实【cite:O1】；缺失事实【cite:O9】。"},
@@ -582,3 +664,4 @@ async def test_stdio_server_lists_only_authorized_tools_and_calls_guide(tmp_path
             assert citation.structured_content["resolved_aliases"] == ["O1"]
             assert citation.structured_content["unresolved_aliases"] == ["O9"]
             assert citation.structured_content["valid"] is False
+            assert "sha256_utf8" not in citation.structured_content

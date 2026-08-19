@@ -18,13 +18,17 @@ def main() -> int:
     target = Path(args.target).resolve()
     runtime = target / "runtime"
     cases = target / "cases"
+    upstream_sets = target / "upstream_sets"
     runtime.mkdir(parents=True, exist_ok=True)
     cases.mkdir(parents=True, exist_ok=True)
+    upstream_sets.mkdir(parents=True, exist_ok=True)
     for name in (
         "prepare_case.py",
+        "refresh_capability.py",
         "doctor.py",
         "config.template.toml",
         ".env.local.example",
+        "UPSTREAM_SETS.md",
     ):
         shutil.copy2(repo_root / "pilot_runtime" / name, runtime / name)
 

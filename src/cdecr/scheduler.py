@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
-from collections import deque
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from threading import Condition, Lock, local
 from time import monotonic, perf_counter, sleep
 from typing import TypeVar, cast
@@ -18,6 +17,11 @@ from cdecr.ports import (
     StructuredModelRequest,
     StructuredModelResult,
 )
+from cdecr.provider_resilience import (
+    is_provider_pressure,
+    is_retryable_provider_failure,
+    provider_retry_delay,
+)
 
 _T = TypeVar("_T")
 
@@ -29,6 +33,9 @@ class ScheduledCallMetrics:
     started_at_ms: int
     finished_at_ms: int
     queue_wait_ms: int
+    attempt_count: int = 1
+    provider_wait_ms: int = 0
+    backoff_ms: int = 0
 
 
 @dataclass(frozen=True)
@@ -44,6 +51,7 @@ class LaneSnapshot:
 class ProviderSnapshot:
     target: int
     hard_limit: int
+    limit: int
     active: int
     max_active: int
     completed: int
@@ -99,11 +107,17 @@ class StructuredProviderGate:
             raise ValueError("provider concurrency must satisfy 1 <= target <= hard_limit")
         self.target = target
         self.hard_limit = hard_limit
+        self.minimum_limit = max(1, target // 2)
         self._condition = Condition(Lock())
         self._active = 0
         self._max_active = 0
         self._completed = 0
         self._pressure_events = 0
+        # Start at the safety ceiling; target is the normal recovery ceiling.
+        # With the production defaults both are 100, while custom callers retain
+        # the historical hard-limit behavior.
+        self._dynamic_limit = self.hard_limit
+        self._successes = 0
         self._start_rate = max(1.0, start_rate)
         self._burst = max(1, burst)
         self._tokens = float(self._burst)
@@ -121,42 +135,68 @@ class StructuredProviderGate:
                 if self._tokens >= 1.0:
                     self._tokens -= 1.0
                     self._sequence += 1
-                    jitter = 0.01 + (self._sequence % 3) * 0.01
+                    jitter = (self._sequence % 3) * 0.01
                     break
                 delay = (1.0 - self._tokens) / self._start_rate
             sleep(delay)
         sleep(jitter)
 
-    def run(self, operation: Callable[[], _T]) -> _T:
+    def acquire(self) -> None:
         self._wait_for_start()
         with self._condition:
-            while self._active >= self.hard_limit:
+            while self._active >= self._dynamic_limit:
                 self._condition.wait()
             self._active += 1
             self._max_active = max(self._max_active, self._active)
+
+    def pressure(self) -> None:
+        with self._condition:
+            self._pressure_events += 1
+            self._dynamic_limit = max(self.minimum_limit, int(self._dynamic_limit * 0.8))
+            self._successes = 0
+
+    def release(self, *, succeeded: bool) -> None:
+        with self._condition:
+            self._active -= 1
+            self._completed += 1
+            if succeeded:
+                self._successes += 1
+                if self._successes >= 10 and self._dynamic_limit < self.target:
+                    self._dynamic_limit = min(self.target, self._dynamic_limit + 10)
+                    self._successes = 0
+            self._condition.notify_all()
+
+    def run(self, operation: Callable[[], _T]) -> _T:
+        self.acquire()
+        succeeded = False
         try:
-            return operation()
+            value = operation()
+            succeeded = True
+            return value
         except Exception as exc:
-            if _is_provider_pressure(exc):
-                with self._condition:
-                    self._pressure_events += 1
+            if is_provider_pressure(exc):
+                self.pressure()
             raise
         finally:
-            with self._condition:
-                self._active -= 1
-                self._completed += 1
-                self._condition.notify_all()
+            self.release(succeeded=succeeded)
 
     def snapshot(self) -> ProviderSnapshot:
         with self._condition:
             return ProviderSnapshot(
                 target=self.target,
                 hard_limit=self.hard_limit,
+                limit=self._dynamic_limit,
                 active=self._active,
                 max_active=self._max_active,
                 completed=self._completed,
                 pressure_events=self._pressure_events,
             )
+
+    def reset_capacity(self) -> None:
+        with self._condition:
+            self._dynamic_limit = self.hard_limit
+            self._successes = 0
+            self._condition.notify_all()
 
 
 class ConcurrencyLane:
@@ -246,6 +286,8 @@ class CDECRScheduler:
         structured_provider_initial_burst: int = 80,
         stage_limits: Mapping[str, int] | None = None,
         repair_limit: int = 16,
+        provider_gate: StructuredProviderGate | None = None,
+        max_retries: int = 1,
     ) -> None:
         self._lanes = {
             ModelTier.M1: ConcurrencyLane(ModelTier.M1.value, m1_limit),
@@ -256,22 +298,18 @@ class CDECRScheduler:
         self._structured_start_gate = RequestStartGate(
             structured_start_interval_seconds
         )
-        self._provider_gate = StructuredProviderGate(
+        self._provider_gate = provider_gate or StructuredProviderGate(
             target=structured_provider_target,
             hard_limit=structured_provider_hard_limit,
             start_rate=structured_provider_start_rate,
             burst=structured_provider_initial_burst,
         )
+        self._max_retries = max(0, min(1, max_retries))
         self._stage_lanes = {
             stage: ConcurrencyLane(stage, limit)
             for stage, limit in (stage_limits or {}).items()
         }
         self._repair_lane = ConcurrencyLane("structured_repair", repair_limit)
-        self._success_lock = Lock()
-        self._structured_successes = 0
-        self._tier_outcomes: dict[ModelTier, deque[bool]] = {
-            tier: deque(maxlen=100) for tier in ModelTier if tier is not ModelTier.M1
-        }
 
     def run(
         self,
@@ -284,13 +322,46 @@ class CDECRScheduler:
         structured = tier is not ModelTier.M1
         if structured:
             self._structured_start_gate.wait()
+        attempt_count = 0
+        provider_wait_ms = 0
+        backoff_ms = 0
         try:
-            wrapped = operation
-            if structured:
-                def provider_operation() -> _T:
-                    return self._provider_gate.run(operation)
+            def provider_operation() -> _T:
+                nonlocal attempt_count, provider_wait_ms, backoff_ms
+                while True:
+                    attempt_count += 1
+                    provider_started = perf_counter()
+                    try:
+                        if structured:
+                            self._provider_gate.acquire()
+                            provider_wait_ms += round(
+                                (perf_counter() - provider_started) * 1000
+                            )
+                            succeeded = False
+                            try:
+                                value = operation()
+                                succeeded = True
+                                return value
+                            except Exception as exc:
+                                if is_provider_pressure(exc):
+                                    self._provider_gate.pressure()
+                                raise
+                            finally:
+                                self._provider_gate.release(succeeded=succeeded)
+                        return operation()
+                    except Exception as exc:
+                        if (
+                            not structured
+                            or attempt_count > self._max_retries
+                            or not is_retryable_provider_failure(exc)
+                        ):
+                            raise
+                        delay = provider_retry_delay(attempt_count)
+                        backoff_ms += round(delay * 1000)
+                        sleep(delay)
 
-                wrapped = provider_operation
+            wrapped: Callable[[], _T] = provider_operation
+            if structured:
                 stage_lane = self._stage_lanes.get(stage or "")
                 if stage_lane is not None:
                     previous = wrapped
@@ -313,33 +384,28 @@ class CDECRScheduler:
                     wrapped = repair_operation
             result = self._lanes[tier].run(wrapped)
         except Exception as exc:
-            if structured and _is_provider_pressure(exc):
+            if structured and is_provider_pressure(exc):
                 self._structured_start_gate.backoff()
-                outcomes = self._tier_outcomes.get(tier)
-                assert outcomes is not None
-                outcomes.append(False)
-                pressure_rate = 1.0 - (sum(outcomes) / len(outcomes))
-                self._lanes[tier].reduce_limit(0.6 if pressure_rate > 0.03 else 0.8)
-                with self._success_lock:
-                    self._structured_successes = 0
             raise
         if structured:
-            outcomes = self._tier_outcomes.get(tier)
-            assert outcomes is not None
-            outcomes.append(True)
-            with self._success_lock:
-                self._structured_successes += 1
-                if self._structured_successes >= 100:
-                    self._structured_successes = 0
-                    self._structured_start_gate.recover()
-                    self._lanes[tier].increase_limit(8)
-        return result
+            self._structured_start_gate.recover()
+        value, metrics = result
+        return value, replace(
+            metrics,
+            attempt_count=max(1, attempt_count),
+            provider_wait_ms=provider_wait_ms,
+            backoff_ms=backoff_ms,
+        )
 
     def snapshot(self) -> dict[str, LaneSnapshot]:
         return {tier.value: lane.snapshot() for tier, lane in self._lanes.items()}
 
     def provider_snapshot(self) -> ProviderSnapshot:
         return self._provider_gate.snapshot()
+
+    @property
+    def provider_gate(self) -> StructuredProviderGate:
+        return self._provider_gate
 
     def take_last_call_metrics(self, tier: ModelTier) -> ScheduledCallMetrics | None:
         return self._lanes[tier].take_last_call_metrics()
@@ -455,20 +521,3 @@ def _take_lane_failure_metrics(
     scheduler: CDECRScheduler, tier: ModelTier
 ) -> ScheduledCallMetrics | None:
     return scheduler.take_last_call_metrics(tier)
-
-
-def _is_provider_pressure(exc: Exception) -> bool:
-    status_code = getattr(exc, "status_code", None)
-    code = str(getattr(exc, "code", "")).lower()
-    text = f"{type(exc).__name__}:{exc}".lower()
-    return status_code == 429 or any(
-        token in f"{code}:{text}"
-        for token in (
-            "429",
-            "rate_limit",
-            "timeout",
-            "timed out",
-            "connection reset",
-            "connectionreset",
-        )
-    )

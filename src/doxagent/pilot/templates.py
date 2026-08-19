@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import json
+from datetime import date, datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 
 def render_config(
@@ -77,8 +79,25 @@ def render_task(
     run_id: str,
     attempt_id: str,
     profile: str = "functional",
+    as_of_est: date | None = None,
+    manual_upstream_paths: tuple[str, ...] = (),
 ) -> str:
+    current_est_date = as_of_est or datetime.now(ZoneInfo("America/New_York")).date()
     structured_c4 = node.startswith("c4_")
+    if manual_upstream_paths:
+        rendered_paths = "\n".join(f"- `{path}`" for path in manual_upstream_paths)
+        manual_upstream_contract = f"""## 人工上游输入
+
+本 case 已封存以下人工上游文件：
+
+{rendered_paths}
+
+开始研究前必须读取这些文件。它们覆盖 context 中同名的 source-run 上游结论，但只作为
+研究上下文和线索；其中原 attempt 的 O# 已失效，不得作为当前 attempt 的引用。任何进入
+正式产物的事实或结论，都必须用当前 attempt 可访问的证据重新核验并引用。
+"""
+    else:
+        manual_upstream_contract = ""
     project_root_guard = f"""## 项目根硬检查
 
 开始任何预检或写入前，先确认当前 Codex 项目根和工作目录**恰好是**：
@@ -145,8 +164,13 @@ def render_task(
 Run ID：`{run_id}`
 Node Attempt ID：`{attempt_id}`（这是 capability、MCP 与 O# 命名空间的 canonical ID；
 持久化对象中的 legacy `attempt_id` 必须与其逐字相等）
+当前日期（EST）：`{current_est_date.isoformat()}`
+
+报告或正式产物的任何内容与结论都必须在该时间点仍具参考价值，不要给出过时结论。
 
 {objective}
+
+{manual_upstream_contract}
 
 {project_root_guard}
 

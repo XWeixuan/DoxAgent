@@ -1,959 +1,1542 @@
-你这次对 Gap 的重新定义是正确的，也使整个系统的逻辑真正闭合了。
+# Expectation Shell / Unit 重构方案
 
-上一版把 Gap 理解成“当前不同 Expectation States 之间已经存在的差异”，确实过于僵化。实际情况是：
+本方案沿用原方案已经确定的核心结构：一个 Expectation Shell 内包含多个 Expectation Units，每个 Unit 由 Unit Definition、Expectation State、Expectation Realization Model 和 Potential Expectation Gap Set 四部分构成。
 
-> **Expectation State 保存当前可以观察和维护的预期状态；Potential Expectation Gap 描述未来某类事件发生后，预期可能被怎样修正，以及修正后的预期可能与当前市场定价产生多大差距。**
+本轮重点修正三个问题：
 
-因此，Gap 是一种**条件性的预期修正假设**，也就是你所说的“对预期的预期”。
-
-完整链路应当改为：
-
-```text
-当前 Expectation State
-        ↓
-研究预期可能如何兑现、失败或被修正
-        ↓
-形成 Potential Expectation Gaps
-        ↓
-未来事件发生
-        ↓
-更新 Expectation State 或兑现路径判断
-        ↓
-Potential Gap 被激活
-        ↓
-与市场隐含预期比较
-        ↓
-形成可交易的 Active Gap
-```
-
-下面是重新构思后的完整方案。
+1. Expectation State 不再通过大量固定分类字段描述，而是围绕少量稳定 State Parameter 与持续更新的 State Value 管理；
+2. Realization Factor 不再只是静态“兑现条件”，而需要维护当前情境下的真实语义状态；
+3. Potential Gap 不再被理解为 State 或 Factor 的机械派生项，而是一张基于当前完整研究情境进一步发散形成的**未来单点可能性地图**。
 
 ---
 
-# 一、整体结构
-
-一个 Expectation Shell 内包含多个 Expectation Units。
-
-每个 Expectation Unit 内部包含四个核心板块：
+# 一、系统整体结构
 
 ```text
-1. Unit Definition
-2. Expectation State
-3. Expectation Realization Model
-4. Potential Expectation Gap Set
+Expectation Shell
+有边界的共享研究上下文
+
+        ↓
+
+Expectation Unit
+市场实际讨论和交易的中层预期命题
+
+        ↓
+
+┌───────────────────────────────┐
+│                               │
+Expectation State        Expectation Realization Model
+当前可稳定维护的状态       当前无法稳定参数化的兑现机制
+│                               │
+└──────────────┬────────────────┘
+               ↓
+      Potential Gap Set
+受当前情境约束的未来单点可能性地图
+
+               ↓
+
+          Future Event
+               ↓
+Codex Agent 基于最新 Blackboard 判断：
+- 是否修改 State Value
+- 是否改写 Realization Factor current_status
+- 是否命中某个 Potential Gap
+- 是否产生有交易意义的新预期差
+               ↓
+        Trading Evaluation
 ```
 
-其中：
+这里最重要的区分是：
 
-* **Unit Definition**：定义系统正在管理什么预期；
-* **Expectation State**：维护当前明确可观察的预期参数；
-* **Expectation Realization Model**：研究哪些显式或隐式因素能够使预期发生修正；
-* **Potential Gap Set**：把这些潜在修正整理成可被事件触发的交易假设。
+> **State 与 Factor 描述“现在”；Potential Gap 描述“未来可能发生什么”。**
 
-事件进入后，可以：
-
-* 直接修改 Expectation State；
-* 更新 Realization Model 中某个因素的判断；
-* 激活、削弱或否定 Potential Gap。
+State 和 Factor 是当前研究能够形成的认知状态；Gap 则是在此基础上继续向未来进行受约束发散。
 
 ---
 
 # 二、Expectation Shell
 
-Shell 的总体定位保持不变：
+## 1. Shell 的定位
 
-> **Shell 是一组必须共享完整研究上下文，但可以在运行时独立更新的 Expectation Units 的边界。**
+Expectation Shell 是：
 
-它不是一个宽泛主题，也不是单纯的展示分组。
+> **一组必须共享完整研究上下文，但在运行时仍能够独立更新的 Expectation Units 的边界。**
 
-## Shell 应如何划分
+Shell 不是一个宽泛投资主题，也不是最终交易对象。
 
-Shell 边界由四个条件共同决定。
+它存在的主要原因，是解决两个相反的问题：
 
-### 1. 是否指向同一个终端投资问题
+* Unit 必须足够细，才能被具体事件独立更新；
+* Agent 研究任务又不能被拆得过细，否则会失去完整业务和因果上下文。
 
-例如：
+因此：
 
-> AI 存储周期是否能够持续支撑 Micron 的盈利和估值？
+> **Shell 决定研究上下文粒度，Unit 决定预期认知粒度。**
 
-围绕这个问题，可以包含：
+---
+
+## 2. Shell 的边界如何划分
+
+Shell 的核心不是简单描述“包含什么、不包含什么”，而是定义：
+
+> **为什么这些 Units 必须放在同一研究上下文中，以及在什么情况下一个 Unit 应当与它们分开。**
+
+例如 MU：
+
+### Shell
+
+> AI 存储周期与 Micron 盈利兑现
+
+它可以覆盖：
 
 * AI Capex；
 * HBM/DRAM 供需；
-* Micron HBM4 份额；
-* 产品组合与毛利率；
+* Micron HBM4 竞争兑现；
+* 产品组合；
+* 收入和利润率；
 * 盈利持续性。
 
-### 2. 是否共享主要价值传导体系
-
-例如：
+这些 Units 共享主要经济系统：
 
 ```text
 AI Capex
 → 存储需求
-→ 行业供需和价格
-→ Micron份额与产品组合
+→ 行业供需与价格
+→ Micron份额和产品结构
 → 收入、利润和现金流
-→ 估值
 ```
 
-同一 Shell 内不要求严格按照该顺序计算，但它们应属于同一个主要经济传导体系。
+但如果出现另一个候选 Unit：
 
-### 3. 是否共享主要事件和状态指标
+> 美国出口管制将永久改变 Micron 中国业务价值。
 
-如果多个 Units 会持续消费相同的客户订单、产能、价格、良率、份额和财务数据，就应当共享 Shell 上下文。
+如果它拥有：
 
-### 4. 是否能够在保持共同上下文的同时独立更新
+* 基本独立的事件体系；
+* 基本独立的状态指标；
+* 独立政策传导逻辑；
+* 不依赖 AI 存储核心背景即可完整研究；
 
-例如：
+那么应考虑拆为其他 Shell。
 
-* Micron 是否获得 HBM4 份额；
-* HBM 行业紧缺是否持续到 2027 年以后；
+因此 Shell 的 `boundary_rule` 应同时表达：
 
-需要共享行业研究，但供应商资格事件主要更新前者，竞争者扩产事件主要更新后者。
+1. 什么共同经济系统把这些 Units 连接起来；
+2. 什么条件意味着一个候选 Unit 已经足够独立，应拆出去。
 
-这说明它们适合在一个 Shell，但必须是两个 Unit。
+---
 
-Shell 的核心作用是：
+## 3. Shell 不承担什么
 
-> **确定上下文耦合边界，而不是承担预期状态。**
+Shell 不保存：
 
-不在 Shell 中保存 Market View、方向、Gap、价格判断或事件清单。
+* 综合 bullish / bearish；
+* Market View；
+* Potential Gap；
+* State Value；
+* 具体事件；
+* priced-in 判断；
+* 交易方向。
+
+这些都属于更细的 Unit 或运行时判断。
 
 ---
 
 # 三、Expectation Unit
 
-Expectation Unit 仍然定义为：
+Expectation Unit 是：
 
-> **市场反复讨论、修正和交易的中层命题。**
+> **市场会反复讨论、修正和交易的中层预期命题。**
 
 例如：
 
 * AI Capex 未来几个季度继续扩张；
 * HBM 供给紧张持续到 2027 年以后；
 * Micron 能够获得有意义的 HBM4 订单份额；
-* HBM 收入增长能够转化为持续的利润和现金流改善。
+* HBM 收入增长能够转化为持续利润和现金流改善。
 
-Unit 是系统长期管理的预期对象。
+Unit 不应该是：
 
-它不能只依靠 Gap 承担全部职能。它必须拥有自身的 Expectation State，同时拥有一套研究“该预期未来可能怎样变化”的机制。
+> AI 存储超级周期。
+
+这太宽。
+
+也不应该只是：
+
+> FY27 EPS = 150。
+
+这太底层。
+
+Unit 应处在两者中间：
+
+> **能够承载一整套预期状态和兑现研究，又能够被一组相关未来事件独立修正。**
 
 ---
 
 # 四、第一板块：Unit Definition
 
-Unit Definition 只负责界定预期本体：
+Unit Definition 只负责确定：
 
-* 预期的主体；
-* 预期的结果；
-* 主要时间范围；
-* 在 Shell 传导体系中的位置；
-* 与相邻 Unit 的区别。
+> **系统长期管理的是哪一个预期对象。**
+
+主要包括：
+
+* 中层 Proposition；
+* 主要 Horizon；
+* 与相邻 Unit 的实际区别。
 
 例如：
 
-> 在 Vera Rubin 产品周期内，Micron 能够取得足以形成实质财务贡献的 HBM4 订单份额。
+> 在 Vera Rubin 产品周期内，Micron 能取得足以形成实质财务贡献的 HBM4 订单份额。
 
-该 Unit 不负责判断：
+这句话已经限定：
 
-* 当前市场具体相信多少份额；
-* 模型自己预测多少；
-* 当前有哪些 Gap；
-* 某个事件是否已经 priced in。
+* 主体：Micron；
+* 对象：Vera Rubin HBM4；
+* 结果：实质订单份额；
+* 经济意义：足以形成财务贡献；
+* 时间：Vera Rubin 产品周期。
 
-这些内容由后续板块承担。
+Unit Definition 不负责：
+
+* 当前市场究竟相信多少；
+* 模型认为最终会是多少；
+* 未来哪些事件会发生；
+* 是否已经 priced in。
+
+这些由其他板块承担。
 
 ---
 
 # 五、第二板块：Expectation State
 
-Expectation State 是 Unit 的核心状态层。
+## 1. State 的定位
 
-它保存的是：
+Expectation State 是整个 Unit 中最重要的当前状态层。
 
-> **当前与该 Unit 有直接关系，并且能够被事件持续更新的一系列指标、区间、时间判断、阶段状态和定性证据。**
+它负责保存：
 
-当前 Document2 已经包含 HBM4 份额、DRAM 价格、AI Capex、供给释放和需求破坏等关键变量，但主要以长段 `current_status` 和 `certainty` 保存，难以进行参数级更新和比较。
+> **当前已经能够被稳定定义、稳定观测，并能够持续被未来信息更新的预期状态。**
 
-新方案中，Expectation State 不再是一段综合观点，而是一组稀疏的 State Items。
+它不是一段 Market View，也不是一篇当前状态总结。
+
+State 由两种对象构成：
+
+```text
+State Parameter
+    ↓
+State Value
+```
 
 ---
 
-## 1. State 的两个正交维度
+# 六、State Parameter
 
-每个 State Item 同时拥有两种位置属性。
+State Parameter 表示：
 
-### 传导位置
-
-说明它位于哪个经济传导层：
-
-* 宏观；
-* 产业链；
-* 业务；
-* 财务；
-* 市场定价。
-
-### 来源类型
-
-说明它是什么性质的预期或现实锚点：
-
-* 实际值；
-* 管理层预期；
-* 卖方一致预期；
-* 行业和产业链预期；
-* 市场隐含预期；
-* 少量可审计的模型派生值。
-
-这两种维度不能相互替代。
+> **一个稳定存在、值得长期持续观察的状态变量。**
 
 例如：
 
-> 卖方预计 HBM 供需紧张持续至 2026 年。
+* HBM 供需重新平衡时间；
+* Micron Vera Rubin HBM4 订单份额；
+* FY27 EPS 一致预期；
+* AI hyperscaler Capex 增长趋势；
+* 当前 HBM 合约价格；
+* 客户订单覆盖时间。
 
-它的：
+Parameter 只负责回答：
 
-* 传导位置是产业链；
-* 来源类型是卖方一致预期。
-
-又例如：
-
-> Micron 管理层表示 2027 年客户需求仍超过可供应产能。
-
-它的：
-
-* 传导位置是产业链或业务；
-* 来源类型是管理层预期。
+> **我们到底在持续观察什么？**
 
 ---
 
-## 2. State Item 可以有不同表达方式
+## 1. Parameter 应保持尽可能无上下文
 
-不是所有 State 都能量化，也不应要求整个 Unit 被标记为 quantified 或 qualitative。
+Parameter 本身不需要保存：
 
-### 数值或区间
+* transmission layer；
+* 对 Unit 的影响方向；
+* importance；
+* confidence；
+* 当前值；
+* ordered states。
 
-* 订单份额 10%–15%；
-* 收入一致预期 50 亿美元；
-* 供需平衡预计在 2026Q4；
-* 毛利率指引 45%–47%。
+例如：
 
-### 时间状态
+> `HBM供需重新平衡时间`
 
-* 客户订单覆盖至 2027 年；
-* 新产能预计 2028 年投产；
-* 产品资格确认预计在下一季度。
+本身就是一个稳定变量。
 
-### 阶段状态
+它对于不同 Unit 可能承担不同作用：
 
-* 样品测试；
-* 客户认证；
-* 合格供应商；
-* 量产爬坡；
-* 正式出货。
+* 对“HBM 紧缺持续时间”是核心状态；
+* 对“Micron 盈利持续性”是上游驱动；
+* 对“传统 DRAM 定价”又可能是行业背景。
 
-### 方向状态
+因此，不应把某个固定的 `transmission_layer` 写成 Parameter 的永久属性。
 
-* 需求加速；
-* 稳定；
-* 放缓；
-* 恶化。
+---
+
+## 2. Parameter 与 Unit 不需要形成僵硬所有权
+
+Parameter 可以被多个 Unit 共同使用。
+
+例如：
+
+> AI Capex 增长趋势
+
+可能同时服务于：
+
+* GPU 需求预期；
+* HBM 需求预期；
+* 数据中心电力需求预期。
+
+所以逻辑上是：
+
+```text
+Parameter
+   ↗     ↖
+Unit A   Unit B
+```
+
+Document2 展示时可以把相关 Parameter 放在 Unit 内，但不能因此把 Parameter 理解成只能属于一个 Unit 的私有变量。
+
+---
+
+## 3. Parameter 的准入标准
+
+一个东西适合作为 Parameter，需要基本满足：
+
+1. 即使没有任何新事件，它仍然是一个稳定存在的状态变量；
+2. 不同时间和来源能够持续提供新的 Value；
+3. 新旧 Value 能够在大致相同口径下更新、替换或比较；
+4. 它的变化会对至少一个 Expectation Unit 有实际意义。
+
+如果不能满足这些条件，就不应该为了 Schema 完整而强行 Parameter 化。
+
+---
+
+# 七、State Value
+
+State Value 表示：
+
+> **某一个来源角色，在某一个时间范围和时间点，对 State Parameter 给出的具体当前状态。**
+
+例如 Parameter：
+
+> HBM 供需重新平衡时间
+
+可以同时存在：
+
+### MANAGEMENT
+
+> Micron 管理层：供不应求持续至 2027 年以后。
+
+### SELL_SIDE
+
+> UBS：预计 2028Q2 恢复供需平衡。
+
+### INDUSTRY_CHAIN
+
+> 某产业链预测：2027H2 开始明显缓解。
+
+### MARKET_IMPLIED
+
+只有在确实存在足够依据时，才维护市场定价所隐含的状态。
+
+---
+
+## 1. State Value 可以采用不同表达
+
+不是所有 Value 都应该数值化。
+
+可以是：
+
+### 数值
+
+> FY27 EPS = 150。
+
+### 区间
+
+> Micron HBM4 订单份额 10%–15%。
+
+### 时间
+
+> HBM 供需平衡预计在 2027H2。
+
+### 阶段
+
+> 当前处于客户验证阶段。
+
+### 方向
+
+> AI Capex 仍处于上修状态。
 
 ### 证据状态
 
-* 已确认；
-* 多来源支持；
-* 存在冲突；
-* 仅单一非官方来源；
-* 尚无可靠证据。
+> 当前公开信息对某个状态存在 MIXED evidence。
 
-是否能够 quantified，是具体 State Item 的属性，而不是 Unit 的整体属性。
+关键原则是：
 
----
+> **表达方式服务真实信息，不为了统一 Schema 强迫现实世界进入僵硬枚举。**
 
-## 3. State 的更新方式
+尤其是 `STAGE`，不要求提前建立一个全局 `ordered_states`。
 
-### 硬事件更新
-
-财报、正式指引、合同、产能数据、官方资格确认等硬事件，可以直接：
-
-* 更新数值；
-* 更新区间；
-* 更新阶段；
-* 更新预计时间；
-* 替换旧锚点；
-* 使旧估计失效；
-* 重置相关软证据的权重。
-
-例如新财报公布后：
-
-* 实际收入替代旧季度预测；
-* 新管理层指引替代旧指引；
-* 卖方一致预期仍作为独立 State 保留；
-* 实际值与卖方、管理层及市场隐含状态重新比较。
-
-### 软事件更新
-
-客户评论、技术里程碑、供应链消息和管理层非量化判断主要更新：
-
-* 方向；
-* 证据强度；
-* 独立证据数量；
-* 来源可信度；
-* 某个结果的可行性判断。
-
-它们不需要伪造概率值。
+如果某项业务天然存在稳定流程，可以直接用业务语义表达阶段。
 
 ---
 
-# 六、第三板块：Expectation Realization Model
+## 2. State Value 的来源结构
 
-这是本次新增的桥梁板块。
+预期来源仍然保持五种主要角色：
 
-它解决的问题是：
+* ACTUAL；
+* MANAGEMENT；
+* SELL_SIDE；
+* INDUSTRY_CHAIN；
+* MARKET_IMPLIED。
 
-> **Expectation State 只能覆盖已经明确表达、结构化和持续跟踪的指标，但真实市场中的大量重大事件并不直接对应这些指标。系统必须研究还有哪些条件、阻断点、里程碑和潜在变量会使当前预期发生修正。**
+这些来源不是五个独立 State 板块，而是：
 
-可以称为：
+> **同一个 Parameter 上可以存在的不同 State Values。**
 
-> **预期兑现与修正模型**
+这样才能真正比较：
 
-它不是完整因果图，也不要求验证 A→B→C 的固定路径。
-
-它维护的是：
-
-> 对当前 Unit 可能产生重大修正，但尚未被充分表达为 State Item 的关键影响因素。
-
----
-
-## 1. 为什么这一板块必要
-
-例如太空公司 Unit：
-
-> 公司能够按计划进入商业化发射阶段，并兑现未来订单和收入增长。
-
-其明确 Expectation State 可能包括：
-
-* 管理层预计发射次数；
-* 卖方收入预测；
-* 当前订单储备；
-* 已完成发射次数；
-* 市场估值。
-
-但一次火箭试飞成功可能在财务数据完全没有变化时，显著改变：
-
-* 技术失败风险；
-* 商业化可信度；
-* 客户签约意愿；
-* 监管审批进度；
-* 管理层执行能力评价。
-
-如果系统只有 Expectation State，就很难事前表达这些影响。
-
-因此需要 Realization Model 把以下内容纳入 Unit：
-
-* 技术里程碑；
-* 监管批准；
-* 客户验证；
-* 供应商资格；
-* 制造和交付能力；
-* 关键人员或合作方；
-* 上游瓶颈；
-* 潜在失败点；
-* 影响传导强度的条件。
+> 同一个变量，不同市场参与者目前分别在预期什么。
 
 ---
 
-## 2. Realization Model 应研究什么
+## 3. Previous Value 的作用
 
-针对每个 Unit，领域 Agent 需要回答四类问题。
+每个 State Value 如果存在可靠同口径前值，应同时保存 Previous Value。
 
-### 预期要兑现，哪些关键条件必须成立？
+目的不是单纯记录历史，而是让 Agent 能直接识别：
 
-例如 HBM4 份额兑现：
-
-* 产品通过客户认证；
-* 良率达到量产要求；
-* 获得真实订单；
-* 产能足够交付；
-* 成本和性能具备竞争力。
-
-### 预期可能在哪里被阻断？
-
-* 被排除在供应商体系之外；
-* 技术验证延迟；
-* 良率长期不达标；
-* 竞争者提前锁定主要份额；
-* 客户平台延期。
-
-### 哪些因素会改变预期的强度、时间或受益对象？
-
-* 产品虽然获得认证，但份额很低；
-* 订单虽然存在，但交付延迟；
-* 行业景气存在，但主要受益者是竞争对手；
-* 收入增长存在，但资本开支吞噬现金流。
-
-### 哪些开放世界事件可以揭示这些因素？
-
-* 客户发布供应商名单；
-* 测试或发射结果；
-* 监管决定；
-* 量产公告；
-* 竞争者良率突破；
-* 大客户签署或取消合同。
-
----
-
-## 3. Realization Model 不是“所有可能性清单”
-
-为避免无限膨胀，一个因素只有满足以下条件才纳入：
-
-1. 能明显改变所属 Unit；
-2. 当前 State 不能充分表达它；
-3. 可以被未来事件观察或验证；
-4. 与其他因素有明确区别；
-5. 对后续 Gap 或交易判断有实际作用。
-
-它不需要覆盖一切，只维护高影响、可观察的关键因素。
-
----
-
-## 4. Realization Model 与 State 的关系
-
-二者不是平行的两套世界。
-
-### 已经有明确指标的内容
-
-进入 Expectation State。
-
-例如：
-
-* 卖方预计订单份额 10%；
-* 管理层预计 2027 年量产；
-* 当前毛利率 45%。
-
-### 尚无法稳定参数化，但会重大影响预期的内容
-
-进入 Realization Model。
-
-例如：
-
-* 新产品是否真正通过客户技术验证；
-* 首次发射成功是否改变技术可信度；
-* 监管者是否批准商业运营；
-* 客户是否愿意从测试订单转为规模采购。
-
-### 当因素逐渐变得可衡量
-
-它可以转化或生成新的 State Item。
+> **这个来源的预期本身是否正在发生变化。**
 
 例如：
 
 ```text
-技术验证因素
-→ 客户正式认证
-→ 供应资格阶段 State 更新为 confirmed
+SELL_SIDE FY27 EPS
+
+Previous:
+$120
+
+Current:
+$150
 ```
 
-因此，Realization Model 是 State 的开放世界扩展层。
+这种变化本身就是重要预期信息。
 
----
-
-# 七、第四板块：Potential Expectation Gap Set
-
-Gap 的定义应重新确定为：
-
-> **Potential Expectation Gap 是对未来预期修正的条件性假设：如果某类事件发生，当前预期将被怎样修改，而这一修改可能与当前市场隐含预期形成多大差距。**
-
-它不是当前两个公开 State 之间已经存在的差异。
-
-公开的管理层、卖方、产业链和实际数据主要是：
-
-* 当前锚点；
-* Gap 推导依据；
-* 未来修正的参照物。
-
----
-
-## 1. Gap 的基本逻辑
-
-每个 Potential Gap 本质上描述：
+同样：
 
 ```text
-当前预期状态
-+
-未来事件或条件
-→
-修正后的预期状态
+SELL_SIDE HBM供需平衡时间
+
+Previous:
+2026H2
+
+Current:
+2027H2
 ```
 
-潜在 Gap 是：
+说明卖方正在明显延长景气预期。
 
-```text
-修正后的预期状态
--
-当前市场隐含预期
-```
+但 Previous Value 只能在：
 
-在事件尚未发生时，它只是一种待验证可能性。
+* 相同 Parameter；
+* 相同来源角色；
+* 可比较时间口径；
 
-事件发生后，如果：
+下使用。
 
-* Expectation State 发生实质修正；
-* 该修正没有被市场同步吸收；
-
-它才成为 Active Gap。
+不能为了填字段比较不同口径数据。
 
 ---
 
-## 2. Gap 的两个主要生成渠道
+## 4. State Value 必须有 citation
 
-### 第一类：State-derived Gap
+State Value 是整个预期差系统最接近“硬锚点”的部分。
 
-基于当前明确 Expectation State 推导。
+因此必须能够回答：
 
-例如：
+> **这个状态到底来自哪里？**
 
-* 卖方和市场主要预计紧缺持续至 2026 年；
-* 当前客户锁单和扩产进度显示存在延伸至 2027 年的可能性。
+这里使用 citation 即可，不需要设计过重的 ObjectRef 审计体系。
 
-由此形成 Potential Gap：
+系统目标不是建立一套证据数据库，而是约束 Agent：
 
-> 如果主要客户正式锁定 2027 年供给，市场对紧缺持续时间可能需要由 2026 年上修至 2027 年以后。
-
-同样也可以形成反向 Gap：
-
-> 如果竞争者产能提前释放，紧缺结束时间可能早于当前预期。
-
-State 不是 Gap 本身，而是生成 Gap 的参照基础。
-
-### 第二类：Realization-derived Gap
-
-基于预期兑现与修正模型推导，覆盖明确 State 之外的开放世界可能性。
-
-例如火箭商业化 Unit：
-
-> 如果下一次关键试飞完整成功，市场可能显著上修技术可行性和商业化兑现可信度，即使短期收入和卖方模型尚未改变。
-
-或者：
-
-> 如果关键试飞失败，市场可能下修商业化时间和未来合同兑现能力。
-
-这些 Gap 不是从收入、EPS 或卖方预测之间的差异直接产生，而是从关键技术兑现路径产生。
+> 不得凭空产生 State Value。
 
 ---
 
-## 3. Gap 不应与 Unit 重复
+# 八、State 的更新原则
 
-Unit 描述长期管理的预期对象：
-
-> HBM 供给紧张持续到 2027 年以后。
-
-Gap 描述某个未来事件如何使当前预期发生特定修正：
-
-> 如果主要客户开始正式锁定 2027 年供给，而竞争者新产能仍未提前，当前市场对紧缺持续时间可能被上修至少数个季度。
-
-Unit 是稳定命题；Gap 是条件性修正方案。
-
----
-
-## 4. 每个 Gap 必须回答的核心问题
-
-本轮不先设计具体 Schema，但从业务语义看，每个 Gap 至少必须明确四件事。
-
-### 当前锚点是什么？
-
-现在市场和相关 State 大致处于什么位置。
-
-不要求用一句模型总结，而是引用相关 State Items。
-
-### 什么事件或条件能够触发它？
-
-包括硬事件和软事件。
-
-### 触发后，哪部分预期会如何修正？
-
-例如：
-
-* 数值上修；
-* 时间延长；
-* 阶段推进；
-* 可信度提高；
-* 受益对象改变；
-* 财务转化增强。
-
-### 这次修正为什么可能没有被市场充分吸收？
-
-这是进入交易评估前必须验证的部分。
-
----
-
-## 5. 不强制使用抽象 Gap Dimension
-
-此前试图预先列出一套覆盖所有 Gap 的维度，容易产生两个问题：
-
-* Agent 为了分类而分类；
-* 分类本身不改变下游判断。
-
-更合理的做法是：
-
-> Gap 的修正类型直接来自它所修改的 State 或 Realization Factor。
-
-如果它修改：
-
-* 数值，就是数值修正；
-* 时间，就是时间修正；
-* 阶段，就是状态修正；
-* 可信度，就是证据修正；
-* 受益对象，就是分配修正；
-* 财务传导，就是转化修正。
-
-只有未来证明确实需要不同处理逻辑时，才把这些类型固化为枚举。
-
----
-
-# 八、Potential Gap 与 Active Gap
-
-不需要建立两套完全独立对象，但必须区分两个阶段。
-
-## Potential Gap
-
-事件发生前维护：
-
-* 当前锚点；
-* 未来可能的修正；
-* 触发条件；
-* 反向或否定条件；
-* 涉及的 State 和 Realization Factors。
-
-它是事前交易准备。
-
-## Active Gap
-
-事件发生以后：
-
-* 触发事件已出现；
-* State 或 Realization Factor 被实质更新；
-* 修正幅度具有重大性；
-* 市场隐含状态尚未同步。
-
-这时产生具体的 Gap Activation。
-
-Active Gap 不只是把 Potential Gap 状态改成 active，还应记录本次激活的：
-
-* 事件；
-* State Delta；
-* 证据强度；
-* 市场吸收判断；
-* 交易评估结果。
-
----
-
-# 九、事件如何进入这套结构
-
-正确路径是：
-
-```text
-Event
-→ Signal
-→ State Update 或 Realization Factor Update
-→ 重新评估 Potential Gaps
-→ 形成 Gap Activation
-→ Market Pricing
-→ Trade Evaluation
-```
-
----
-
-## 1. 硬事件
-
-硬事件可以直接修改 Expectation State。
+硬事件可以直接修改 State。
 
 例如财报：
 
-* 更新实际收入；
-* 更新利润率；
-* 更新管理层指引；
-* 使旧季度预测失效；
-* 重算财务转化相关 Potential Gaps。
+* Actual Revenue 更新；
+* Actual Margin 更新；
+* Management Guidance 更新；
+* Previous Value 留作比较；
+* Sell-side Value 暂时不变，直到卖方更新模型。
 
-例如官方供应商名单：
-
-* 更新供应资格阶段；
-* 清除或确认此前冲突证据；
-* 重新评估份额和兑现相关 Gaps。
-
-## 2. 软事件
-
-软事件可能不直接修改数字，但可以：
-
-* 更新某个 Realization Factor；
-* 提高或降低某条路径的可信度；
-* 支持或削弱某个潜在 Gap；
-* 使 Gap 接近或达到激活条件。
-
-例如火箭测试成功：
-
-* 更新技术兑现因素；
-* 降低失败阻断风险；
-* 支持商业化时间或合同兑现 Gap；
-* 不必立即修改收入预测。
-
----
-
-# 十、市场定价的正确处理方式
-
-Expectation State 中仍然可以维护市场隐含预期相关指标，例如：
-
-* 当前估值；
-* 卖方修正；
-* 期权定价；
-* 市场叙事关注点；
-* 板块相对表现。
-
-但这些只是市场状态锚点。
-
-真正的 priced-in 判断发生在 Gap 激活后：
+于是系统能够自然看到：
 
 ```text
-事件前市场隐含状态
-vs
-事件带来的 State Delta
-vs
-事件传播和提前泄露程度
+实际值已经变了
+管理层已经变了
+卖方还没有变
+市场隐含可能也还没有变
 ```
 
-需要判断：
-
-* 该事件是否只是已知信息的正式确认；
-* 市场此前是否已按此结果交易；
-* 卖方模型是否已经修改；
-* 信息是否解决了原有重大不确定性；
-* 价格和估值是否已经反映同方向修正。
-
-事后价格反应主要用于审计和校准，不能作为唯一的交易确认条件。
+这才是预期差系统真正需要的状态基础。
 
 ---
 
-# 十一、两个完整示例
+# 九、第三板块：Expectation Realization Model
 
-## 示例一：HBM 紧缺持续时间
+## 1. 为什么需要 Realization Model
 
-### Unit
+Expectation State 只能覆盖：
+
+> **已经能够稳定定义和持续管理的预期变量。**
+
+但现实中的大量重大事件并不能合理压缩成 State Parameter。
+
+例如火箭商业化：
+
+State 可以包括：
+
+* 发射次数；
+* Backlog；
+* 管理层预计发射节奏；
+* 卖方收入预测。
+
+但真正决定预期能否兑现的还有：
+
+* 核心技术是否完成真实飞行验证；
+* 重复发射可靠性是否成立；
+* 监管批准是否顺利；
+* 制造能力能否支撑发射节奏；
+* 客户是否愿意从试验订单转成规模合同。
+
+如果把这些全部硬 Parameter 化，会大量制造：
+
+> 技术可信度 = MEDIUM
+> 商业化能力 = HIGH
+
+这种不可审计、伪结构化的状态。
+
+因此需要 Realization Model。
+
+---
+
+# 十、Realization Factor
+
+Realization Factor 是：
+
+> **当前 State 无法充分表达，但根据研究能够识别，并会显著影响 Unit 最终兑现、失败、时间、强度、受益对象或转化效率的现实因素。**
+
+它是现实机制对象。
+
+---
+
+## 1. Factor 与 State 的核心边界
+
+### State Parameter
+
+适合那些：
+
+> 能稳定定义、持续更新、不同来源可以给出 Value 的变量。
+
+### Realization Factor
+
+适合那些：
+
+> 很重要，也可以持续研究和观察，但当前状态必须保留具体情境语义，无法可靠压缩成一个标准 Parameter Value。
+
+例如：
+
+### State
+
+> Micron HBM4 订单份额。
+
+### Factor
+
+> Micron 是否真正通过 Vera Rubin 所需要的客户技术验证。
+
+---
+
+## 2. Factor 需要维护 current_status
+
+Factor 不能只写：
+
+> 客户认证非常重要。
+
+它必须同时保存：
+
+> **这个因素目前现实发展到了什么状态。**
+
+例如：
+
+### Factor
+
+> Micron 获得 Vera Rubin 正式客户验证。
+
+### Current Status
+
+> Micron 已公开 HBM4 送样及量产进展，但目前缺少 NVIDIA 或 Micron 对 Vera Rubin 正式资格的明确确认，公开媒体与部分产业链来源之间仍存在直接冲突。
+
+这里不能被强压成：
+
+> PARTIAL
+
+因为真正有交易价值的恰恰是这些细微语义。
+
+---
+
+## 3. current_status 的边界
+
+`current_status` 只回答：
+
+> **截至现在，这个 Factor 所描述的现实条件发展到什么程度？**
+
+不回答：
+
+* 未来最可能怎样；
+* 对股价是利好还是利空；
+* 是否值得交易；
+* 概率是多少。
+
+它是一段受严格任务边界限制的自然语言状态，而不是自由分析文本。
+
+---
+
+## 4. Factor 的 Structural Role
+
+Factor 可以大致承担：
+
+### REQUIRED
+
+预期兑现必须满足的重要条件。
+
+### BLOCKER
+
+一旦出现，会显著阻断预期兑现。
+
+### MODIFIER
+
+不会直接决定成立或失败，但会改变：
+
+* 兑现强度；
+* 时间；
+* 受益对象；
+* 转化效率。
+
+这个分类的价值是：
+
+> 帮助 Agent 理解一个 Factor 的现实作用边界。
+
+而不是对 Factor 进行 bullish / bearish 分类。
+
+---
+
+## 5. Impact
+
+Factor 还必须解释：
+
+> **为什么它影响这个 Unit，以及它不能被外推到哪里。**
+
+例如：
+
+> 通过客户认证只能确认 Micron 获得准入资格，并不能证明其一定获得高订单份额。
+
+这个字段非常重要，因为它限制事件发生后模型产生过度推理。
+
+---
+
+## 6. Observability
+
+Realization Factor 不是抽象哲学概念。
+
+它必须至少存在未来可以观察的事件接口。
+
+例如：
+
+> NVIDIA、Micron 或多个高可信独立来源明确确认供应资格结果。
+
+或者：
+
+> 下一次飞行是否完成完整任务链验证。
+
+如果一个 Factor 无法通过任何未来事件观察，就没有必要进入事件驱动系统。
+
+---
+
+# 十一、Realization Factor 与 Potential Gap 的边界
+
+这是当前方案中非常重要的概念边界。
+
+## Realization Factor 描述现实机制
+
+例如：
+
+> 火箭是否完成端到端飞行验证。
+
+即使市场完全知道它重要，这个因素依然客观存在。
+
+因此它是 Factor。
+
+## Potential Gap 描述未来认知变化
+
+例如：
+
+> 下一次火箭首次完整完成端到端任务。
+
+这是一项未来 possible occurrence。
+
+如果发生：
+
+> 市场可能明显提前商业化时间并降低技术兑现折价。
+
+因此这是 Potential Gap。
+
+最简单的判断方式：
+
+> **把“市场当前怎么看”和“未来会发生什么”全部拿掉以后，这个对象是否仍然客观影响 Unit？**
+
+如果仍然成立：
+
+> Factor。
+
+如果失去意义：
+
+> 更可能是 Gap。
+
+---
+
+# 十二、第四板块：Potential Expectation Gap Set
+
+## 1. Gap 的重新定义
+
+Potential Gap 不再定义为：
+
+> 当前不同 State 之间已经存在的差异。
+
+也不再定义为：
+
+> State/Factor 的下一步机械变化。
+
+它应当定义为：
+
+> **针对某个 Expectation Unit，在充分理解当前 State、Realization Factors、已有事件和研究结论以后，进一步向未来进行受约束发散，得到的一个“未来单点 possible occurrence”，以及如果它发生，当前预期可能产生的有交易意义的修正。**
+
+因此：
+
+> **Potential Gap Set 是未来认知变化地图。**
+
+---
+
+# 十三、为什么称为“对预期的预期”
+
+Expectation State 回答：
+
+> 现在市场、管理层、卖方、产业链等分别在什么位置。
+
+Realization Model 回答：
+
+> 现实中什么决定这个 Unit 最终怎样兑现。
+
+Potential Gap 回答：
+
+> **接下来世界如果发生某件具体事情，我们现在这套预期可能怎样被迫修改？**
+
+因此它实际上是在描述：
+
+```text
+当前预期
++
+未来单点 occurrence
+→
+可能的新预期
+```
+
+而：
+
+```text
+可能的新预期
+vs
+事件发生时仍然存在的市场预期
+```
+
+才可能形成真正可交易的预期差。
+
+---
+
+# 十四、Potential Gap 不是 State/Factor 的机械派生
+
+这是生成 Gap 时最重要的原则。
+
+禁止这种生成方式：
+
+```text
+State A
+→ 写一个 Gap A
+
+State B
+→ 写一个 Gap B
+
+Factor C
+→ 写一个 Gap C
+```
+
+这样只会生成模板化的未来版本。
+
+State 和 Factor 只是：
+
+> **当前现实认知的出发点和约束。**
+
+Gap Discovery 还必须利用：
+
+* Document1 研究；
+* 当前 Event Registry；
+* 历史事件；
+* 行业机制；
+* 产品和技术规律；
+* 竞争行为；
+* 多个 Factor 的组合；
+* 多个 State 的组合；
+* 当前结构未明确覆盖的开放世界变量。
+
+---
+
+# 十五、Potential Gap 的生成方式
+
+针对整个 Unit，不应该问：
+
+> 每个 State 下一步可能怎么变？
+
+而应该问：
+
+> **未来有哪些具体单点事件，一旦发生，会迫使我们实质性地重新判断这个 Unit？**
+
+可以从以下角度进行发散，但这些只是推理视角，不作为 Schema 枚举。
+
+### 当前趋势进一步延伸
+
+例如：
+
+> 主要客户首次开始锁定 2028 年 HBM 供给。
+
+### 当前趋势突然反转
+
+例如：
+
+> 主要客户取消长期 HBM 采购协议。
+
+### 关键兑现条件第一次被真正验证
+
+例如：
+
+> 下一次火箭任务首次完整完成所有关键飞行目标。
+
+### 核心阻断因素发生
+
+例如：
+
+> Micron 被正式排除在 Vera Rubin HBM4 供应体系之外。
+
+### 时间显著变化
+
+例如：
+
+> Samsung / SK Hynix 新产能提前一年进入规模生产。
+
+### 受益对象重新分配
+
+例如：
+
+> HBM 景气继续，但新增订单大部分集中于竞争对手。
+
+### 上游逻辑成立但传导失败
+
+例如：
+
+> HBM 收入继续增长，但良率成本与 Capex 导致自由现金流明显恶化。
+
+### 当前模型尚未充分表达的新变量出现
+
+例如：
+
+> 下一代 AI 加速器架构显著降低单位算力所需 HBM。
+
+这是 Potential Gap Set 相比 Realization Model 更进一步的地方：
+
+> **它必须允许有限度突破当前已经定义出来的 State 和 Factors。**
+
+---
+
+# 十六、Potential Gap 必须是单点 possible occurrence
+
+Gap 必须足够具体，使运行时能够判断：
+
+> **这件事情真实发生了吗？**
+
+不合格：
+
+> AI 需求可能不如预期。
+
+合格：
+
+> Meta、Microsoft、Google 中至少一家正式下调下一年度 AI 基础设施 Capex 指引。
+
+不合格：
+
+> HBM供给可能提前释放并造成价格下跌。
+
+应拆为：
+
+1. Samsung/SK Hynix 新增 HBM 产能提前进入规模量产；
+2. HBM 合约价格首次出现持续性环比下降。
+
+这两个 occurrence 的意义并不完全相同。
+
+---
+
+# 十七、Potential Gap 要表达什么
+
+一个 Gap 只需要讲明几个核心问题。
+
+## 1. Possible Occurrence
+
+未来到底可能发生什么。
+
+这是 Gap 的主体。
+
+---
+
+## 2. Derivation
+
+为什么基于当前情境，我们认为这一可能性值得提前监测。
+
+它不是解释未来影响，而是解释：
+
+> **这个 possible occurrence 是怎么从当前研究状态中被合理推演出来的。**
+
+这样能够避免无限开放世界脑补。
+
+---
+
+## 3. Citation
+
+Gap 必须有当前现实研究基础。
+
+但 citation 不意味着：
+
+> Gap 必须绑定某个具体 Parameter 或 Factor。
+
+它只是证明：
+
+> 该推演不是凭空故事。
+
+依据可以来自：
+
+* State；
+* Factor；
+* Event；
+* Document1；
+* 行业研究；
+* 技术研究；
+* 其他可信研究材料。
+
+---
+
+## 4. Expected Revision
+
+如果 occurrence 真的发生：
+
+> **当前 Expectation Unit 的判断可能需要怎样改变？**
+
+例如：
+
+> 将 HBM 紧缺持续时间进一步向后延长。
+
+或者：
+
+> 显著降低 Micron 能获得实质 HBM4 份额的可信程度。
+
+或者：
+
+> 明显提前商业化兑现时间，但不直接等同于收入预测上修。
+
+Expected Revision 应同时说明：
+
+> 能合理推到哪里，不能过度推到哪里。
+
+---
+
+## 5. Recognition Criteria
+
+这是条件字段。
+
+只有 occurrence 自身包含模糊概念时才需要。
+
+例如：
+
+> “AI Capex 显著放缓”
+
+需要进一步定义：
+
+> 什么样的信息才算真正发生。
+
+而：
+
+> FAA 正式拒绝运营许可
+
+已经很明确，就不需要 Recognition Criteria。
+
+---
+
+# 十八、Potential Gap 不再维护反向条件
+
+如果一个反向未来结果本身具有独立交易意义：
+
+> 它应该成为另一个 Potential Gap。
+
+例如对于 Micron：
+
+### Gap A
+
+> Micron 正式取得显著高于当前预期的订单份额。
+
+### Gap B
+
+> Micron 获得资格但实际份额极低。
+
+### Gap C
+
+> Micron 被正式排除。
+
+### Gap D
+
+> Micron 获得订单但良率不足导致交付延期。
+
+这些都是不同的 future occurrences，应分别研究。
+
+把 B/C/D 全部藏在 A 的 `counter_condition` 中，会系统性降低失败路径研究深度。
+
+---
+
+# 十九、Potential Gap 的数量
+
+Gap 数量不应与 State Parameter 或 Factor 数量绑定。
+
+一个 Unit 有：
+
+* 5 个 State Parameters；
+* 4 个 Realization Factors；
+
+并不意味着应有 9 个 Gap。
+
+Gap 数量取决于：
+
+> **当前情境下能够识别出的、真正会迫使该 Unit 被重新判断的高价值单点 future occurrences。**
+
+需要避免两种极端：
+
+### 太少
+
+只围绕当前几个 State/Factor 机械生成，开放世界覆盖不足。
+
+### 太多
+
+无限想象所有尾部可能性，导致监测和判断系统失去重点。
+
+因此 Potential Gap 应满足：
+
+1. 是具体单点 occurrence；
+2. 发生后会实质改变 Unit；
+3. 有现实研究基础；
+4. 可以通过未来消息观察；
+5. 具有潜在交易意义。
+
+---
+
+# 二十、事件进入系统后如何使用这些对象
+
+当前已经使用 Codex SDK，因此没有必要为 `Expectation Update` 或 `Gap Activation` 再设计专门 Schema。
+
+运行时 Agent 直接读取：
+
+* 当前 Unit；
+* State Values；
+* Realization Factors 及 current_status；
+* Potential Gaps；
+* 新 Event；
+* 当前市场信息。
+
+然后判断：
+
+```text
+Event
+↓
+它是否改变某个稳定 State？
+↓
+是否需要创建/替换 State Value？
+
+同时：
+↓
+它是否改变某个 Realization Factor 的 current_status？
+
+同时：
+↓
+它是否命中了事前定义的 Potential Gap？
+
+↓
+如果命中：
+这次事件造成的真实预期修正是什么？
+
+↓
+该修正相对于当前市场认知是否仍然具有未定价部分？
+
+↓
+Trading Evaluation
+```
+
+不要求初始化阶段提前预测事件发生后一定修改哪个数据库字段。
+
+---
+
+# 二十一、硬事件
+
+硬事件通常能够直接改变 State。
+
+例如财报：
+
+```text
+Revenue Actual
+旧值 → 新值
+
+Management Guidance
+旧值 → 新值
+```
+
+State Value 中 Previous Value 可以直接显示变化。
+
+随后 Agent 判断：
+
+* 哪些原 Potential Gaps 已被命中；
+* 哪些已经失效；
+* 是否需要发现新的 Potential Gap。
+
+---
+
+# 二十二、软事件
+
+软事件可能完全不修改任何数值 State。
+
+例如：
+
+> 火箭完成第一次完整任务验证。
+
+它可以直接改写 Realization Factor：
+
+### Before
+
+> 完整任务链尚未经过一次真实成功验证。
+
+### After
+
+> 首次完成端到端任务，核心飞行能力获得实证；重复执行能力仍未验证。
+
+这可能同时命中一个 Potential Gap：
+
+> 下一次任务首次完整成功。
+
+然后进入预期差判断。
+
+---
+
+# 二十三、State 与 Factor 都可能在事件后发生变化
+
+有些事件会同时更新两者。
+
+例如：
+
+> NVIDIA 正式确认 Micron 获得供应资格，并披露 20% 首批订单份额。
+
+可能同时：
+
+### 更新 Factor
+
+> 客户资格从“存在公开冲突”变成“官方确认”。
+
+### 更新 State
+
+> Micron 订单份额获得新的实际/产业链 Value。
+
+### 命中 Potential Gap
+
+> Micron 获得明显高于当前卖方主要估计区间的订单份额。
+
+因此这些对象不是互斥的。
+
+---
+
+# 二十四、市场定价
+
+Expectation State 中可以存在 MARKET_IMPLIED State Value，但必须建立在能够比较具体状态的前提下。
+
+不能简单维护：
+
+> “该 Unit 已 priced in 70%。”
+
+这种数字并不可可靠获得。
+
+真正有意义的问题是在新事件发生后：
+
+> **这个事件所产生的新增预期修正，市场当前是否已经同步吸收？**
+
+Codex Agent 可以结合：
+
+* 事件前市场认知；
+* Sell-side 是否已经同步；
+* DoxAtlas Narrative 是否已广泛传播；
+* 事件是否只是旧消息正式确认；
+* 事件前后价格；
+* 估值；
+* 期权；
+* 相对表现；
+
+进行判断。
+
+事后价格反应主要用于验证和校准，而不能作为交易判断的前置条件。
+
+---
+
+# 二十五、完整示例一：HBM 紧缺持续时间
+
+## Expectation Unit
 
 > HBM 供给紧张将持续到 2027 年以后。
 
-### Expectation State
+---
 
-包括：
+## Expectation State
 
-* 当前 HBM 价格；
-* 客户订单覆盖时间；
-* 管理层供需判断；
-* 卖方预计供需平衡时间；
-* 竞争者扩产投产时间；
-* 市场估值隐含的盈利持续时间。
+### Parameter：HBM供需重新平衡时间
 
-### Realization Model
+Values：
 
-包括：
+* MANAGEMENT：2027 年以后；
+* SELL_SIDE：2027H2 / 2028Q2 等不同预测；
+* INDUSTRY_CHAIN：根据客户锁单和产能情况持续更新。
 
-* 客户长期锁单；
-* 竞争者扩产进度；
-* 良率爬坡；
-* HBM 与传统 DRAM 产能再分配；
-* 下游需求破坏；
-* 替代技术或产品变化。
+### Parameter：客户订单覆盖时间
 
-### Potential Gap A
+Values：
 
-> 如果客户正式锁定 2027 年供给，并且新产能仍无法提前释放，紧缺持续时间可能被上修至 2027 年以后。
+* 实际合同覆盖时间；
+* 管理层披露；
+* 产业链观察。
 
-来源：State + Realization Model。
+### Parameter：竞争者新增产能预计释放时间
 
-### Potential Gap B
+Values：
 
-> 如果竞争者产能或产能再分配早于预期，紧缺结束时间可能提前。
-
-来源：阻断路径。
-
-### 新事件
-
-客户签署覆盖 2027 年的长期合同：
-
-* 更新订单覆盖 State；
-* 确认 Realization Model 中的长期需求因素；
-* 激活 Gap A；
-* 判断市场是否仍主要定价到 2026 年；
-* 进入交易评估。
+* Samsung；
+* SK Hynix；
+* 产业链预测。
 
 ---
 
-## 示例二：火箭商业化兑现
+## Realization Factors
 
-### Unit
+### 客户长期锁单持续性
 
-> 公司能够在未来产品周期中实现稳定商业发射，并兑现订单和收入增长。
+Current Status：
 
-### Expectation State
+> 主要客户已经出现多年锁单，但当前可确认的覆盖范围主要集中于既有周期，尚未观察到广泛覆盖 2028 年的明确长期锁单。
 
-包括：
+### 新产能良率爬坡
 
-* 当前已完成发射次数；
-* 管理层发射计划；
-* 卖方收入与发射次数预测；
-* 订单储备；
-* 市场估值和商业化时间预期。
+Current Status：
 
-### Realization Model
+> 竞争者已经公布大规模扩产，但新增产能实际设备安装、验证和良率爬坡时间仍存在较大不确定性。
 
-包括：
+### HBM 与传统 DRAM 产能重新分配
 
-* 火箭关键测试成功；
-* 回收能力；
-* 监管批准；
-* 发射场准备；
-* 供应链和制造能力；
-* 客户对可靠性的认可；
-* 保险和事故风险。
+Current Status：
 
-### Potential Gap
-
-> 如果下一次关键试飞完整成功，技术可行性和商业化时间的市场判断可能被明显上修，即使短期财务预测尚未变化。
-
-这个 Gap 无法直接从 EPS 或收入数据之间比较产生，但可以从兑现模型中合理发现。
-
-### 新事件
-
-关键试飞成功：
-
-* 更新技术兑现因素；
-* 提高商业化路径可信度；
-* 可能激活商业化时间 Gap；
-* 判断市场此前是否已经按成功结果定价；
-* 进入交易评估。
+> HBM 优先配置正在挤压部分传统 DRAM 供给，但未来竞争者是否将部分产能重新切回普通 DRAM 尚不明确。
 
 ---
 
-# 十二、Document2 的最终结构
+## Potential Gaps
 
-每个 Expectation Shell 内包含多个 Units。
+### Gap 1：主要AI客户首次锁定2028年HBM供给
 
-每个 Unit 包含：
+Possible Occurrence：
 
-## 1. Unit Definition
+> 核心 AI 客户首次正式签署覆盖 2028 年的 HBM 长期供应或预付协议。
 
-明确管理什么中层预期以及边界。
+Expected Revision：
 
-## 2. Expectation State
-
-维护明确、可更新的：
-
-* 指标；
-* 时间；
-* 阶段；
-* 方向；
-* 证据状态；
-* 市场隐含状态。
-
-## 3. Expectation Realization Model
-
-维护 State 之外、能够影响预期兑现或失败的：
-
-* 关键条件；
-* 阻断点；
-* 技术和运营里程碑；
-* 外部依赖；
-* 传导修正因素。
-
-## 4. Potential Expectation Gaps
-
-分别从：
-
-* Expectation State；
-* Realization Model；
-
-推导未来可能出现的预期修正，并定义事件触发方式。
+> 将进一步延长需求可见度，并显著强化紧缺持续到 2027 年以后的判断。
 
 ---
 
-# 十三、领域 Agent 的职责
+### Gap 2：竞争者新增HBM产能提前进入规模量产
 
-C1/C2/C3/C4 不再只填写 Detail 字段，而是分别贡献三类内容。
+Possible Occurrence：
 
-## 对 Expectation State 的贡献
+> Samsung 或 SK Hynix 新增产能比当前主要公开时间表提前数个季度进入规模生产。
 
-* C1：实际财务、管理层指引、公司业务和财务转化；
-* C2：宏观与资本开支环境；
-* C3：产业链、竞争、供需、份额和客户；
-* C4：市场隐含预期、估值、注意力和价格吸收。
+Expected Revision：
 
-## 对 Realization Model 的贡献
-
-每个 Agent识别本领域中：
-
-* 预期兑现的关键条件；
-* 主要阻断点；
-* 尚未被明确指标表达的重大因素；
-* 能够观察这些因素的未来事件。
-
-## 对 Potential Gap 的贡献
-
-Agent 不直接生成最终交易 Gap，而是提出：
-
-* 当前锚点；
-* 可能的上修或下修路径；
-* 触发事件；
-* 可能的影响范围；
-* 无法确定的部分。
-
-O1 再完成去重、合并、边界调整和最终 Gap 形成。
+> 当前供需重新平衡时间可能明显提前，削弱长期紧缺预期。
 
 ---
 
-# 十四、最终核心模型
+### Gap 3：下一代AI加速器显著降低单位算力HBM需求
+
+Possible Occurrence：
+
+> 主流下一代 AI 加速器出现明确架构变化，使单位算力的 HBM 容量或带宽需求低于当前路线图。
+
+Expected Revision：
+
+> 需要重新评估 AI Capex 向 HBM 需求增长的传导强度，即使 AI Capex 本身没有下降。
+
+这一 Gap 并不是现有某个 State/Factor 的机械改写，而是基于整个当前技术与需求逻辑继续向开放世界进行发散。
+
+---
+
+# 二十六、完整示例二：商业火箭兑现
+
+## Expectation Unit
+
+> 公司能够在未来产品周期内实现稳定商业发射，并兑现现有订单和收入增长。
+
+---
+
+## Expectation State
+
+可以包含：
+
+* 已完成发射次数；
+* 管理层计划发射次数；
+* Sell-side 收入预测；
+* 当前 backlog；
+* 商业化时间预期。
+
+---
+
+## Realization Factors
+
+### 完整飞行任务链验证
+
+Current Status：
+
+> 已完成部分核心飞行能力验证，但完整端到端任务尚未得到一次真实成功验证。
+
+### 重复发射可靠性
+
+Current Status：
+
+> 当前缺乏足够连续成功任务，无法确认系统已经具备稳定商业运行所要求的重复可靠性。
+
+### 监管许可
+
+Current Status：
+
+> 主要许可流程仍在推进，目前没有出现实质性否决，但后续审批仍可能影响商业化时间。
+
+---
+
+## Potential Gaps
+
+### Gap 1：下一次任务首次完整完成所有关键飞行目标
+
+Expected Revision：
+
+> 明显提高商业化路径可信度并可能提前市场对稳定商业发射时间的判断，但不能直接等价为收入预测上修。
+
+---
+
+### Gap 2：下一次任务出现新的关键系统性故障
+
+Expected Revision：
+
+> 可能重新打开技术路径风险，并推迟商业化时间判断。
+
+---
+
+### Gap 3：重大商业客户在完整验证前提前签署规模合同
+
+Expected Revision：
+
+> 客户对技术路径和商业化能力的外部验证明显增强，可能提高现有 backlog 的质量判断，即使当前发射数据未发生变化。
+
+---
+
+# 二十七、Document2 的最终结构
+
+每个 Shell：
 
 ```text
 Expectation Shell
-有边界的共享研究与价值传导系统
+
+└── Expectation Unit
+
+    ├── Unit Definition
+
+    ├── Expectation State
+    │   ├── State Parameter
+    │   └── State Value
+
+    ├── Expectation Realization Model
+    │   └── Realization Factor
+    │       └── current_status
+
+    └── Potential Expectation Gap Set
+        └── Future single-point possible occurrences
+```
+
+---
+
+# 二十八、C1/C2/C3/C4 的职责
+
+各 Agent 不需要各自填写完整 Expectation Detail。
+
+它们在保留自己 D1 完整领域上下文的基础上，对同一个 Shell 提供对应贡献。
+
+## C1
+
+重点提供：
+
+* 公司实际数据；
+* 财务参数；
+* 管理层预期；
+* 财务兑现 Factors；
+* 公司级 Potential Gaps。
+
+## C2
+
+重点提供：
+
+* 宏观 State；
+* Capex、利率、政策环境；
+* 宏观兑现与阻断 Factors；
+* 宏观未来 possibilities。
+
+## C3
+
+重点提供：
+
+* 产业链 State；
+* 竞争；
+* 价格；
+* 份额；
+* 客户和供应商；
+* 行业 Realization Factors；
+* 产业链 Potential Gaps。
+
+## C4
+
+重点提供：
+
+* MARKET_IMPLIED 状态；
+* 市场关注焦点；
+* 定价；
+* 价格吸收；
+* 事件发生后的市场反馈。
+
+---
+
+# 二十九、Potential Gap Discovery 的特殊要求
+
+Potential Gap 是四个板块中最需要发散推理的部分。
+
+因此它不能只是要求领域 Agent：
+
+> “根据你刚才输出的 State 和 Factor 再生成 Gaps。”
+
+而应该要求：
+
+1. 先理解整个 Unit 当前情境；
+2. 使用 State 和 Factor 作为主要现实约束；
+3. 重新查看完整领域研究；
+4. 主动考虑兑现、失败、延迟、提前、重新分配和传导失败；
+5. 寻找目前 State/Factor 尚未完全覆盖的高影响 future occurrences；
+6. 只保留具体、可识别、有现实依据、能实质改变 Unit 的单点 possibility。
+
+O1 最终负责：
+
+* 去重；
+* 合并；
+* 拆分复合事件；
+* 删除低价值尾部想象；
+* 保证不同方向得到合理覆盖；
+* 防止 Gap Set 退化为现有 State/Factor 的机械镜像。
+
+---
+
+# 三十、最终核心逻辑
+
+```text
+Expectation Shell
+确定哪些预期必须共享完整研究上下文
 
         ↓
 
 Expectation Unit
-市场实际交易的中层预期命题
+定义市场真正反复交易的中层命题
 
         ↓
 
 Expectation State
-当前明确可维护的预期参数与状态
+维护已经能够稳定参数化的当前预期
 
         +
 
-Expectation Realization Model
-State之外的兑现条件、阻断点和开放世界变量
+Realization Model
+维护无法稳定参数化但现实中决定预期兑现的关键机制
 
         ↓
 
-Potential Expectation Gap
-未来事件可能导致的预期修正假设
+Potential Gap Set
+在当前完整情境基础上进一步向未来发散，
+形成可能迫使当前预期发生修正的单点事件地图
 
         ↓
 
-Event / Signal
-更新 State 或 Realization Factor
+Future Event
 
         ↓
 
-Active Gap
-事件后的预期修正与当前市场定价之间的差距
+Codex Agent 基于最新 Blackboard 判断：
+State 是否变化？
+Factor current_status 是否变化？
+是否命中已有 Potential Gap？
+是否出现此前未覆盖的新 possibility？
+实际预期修正有多大？
+市场是否已经吸收？
 
         ↓
 
 Trading Evaluation
 ```
 
-这次调整后，Gap 不再是“当前公开数据之间的差异”，而是：
+最终，三者的边界可以压缩成：
 
-> **系统基于当前状态和兑现研究，提前定义的未来预期修正空间。**
+> **Expectation State = 当前能够稳定表达的预期状态。**
 
-Expectation State 提供明确锚点；Expectation Realization Model 负责突破结构化指标的覆盖边界；Potential Gap 把两者转换成可被事件触发和交易的具体假设。
+> **Realization Factor = 当前能够研究和描述、但不适合稳定参数化的现实兑现机制。**
+
+> **Potential Gap = 基于前两者和完整研究情境，对未来可能迫使当前预期发生显著修正的单点 occurrence 所做的事前地图。**
+
+这三层共同作用，才能让下游 Agent 的事件交易判断建立在已有状态、现实机制和事前推演的基础上，而不是在新闻发生后重新依赖模型自由发挥。

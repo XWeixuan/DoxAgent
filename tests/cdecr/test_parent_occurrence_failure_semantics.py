@@ -17,7 +17,7 @@ from tests.cdecr.parent_occurrence_fixtures import (
 def test_provider_failure_never_materializes_singleton_packages(tmp_path) -> None:
     store = registry(tmp_path)
     sources, mentions, events = two_document_inputs()
-    result = ParentOccurrenceService(registry=store).run(
+    result = ParentOccurrenceService(registry=store).build_parent_occurrence_pool(
         events=events,
         mentions=mentions,
         sources=sources,
@@ -25,8 +25,8 @@ def test_provider_failure_never_materializes_singleton_packages(tmp_path) -> Non
         models=ScriptedParentModels(fail_stage="parent_induction"),
         run_id="run-failed",
     )
-    assert result.status == "PARTIAL_PARENT_RESOLUTION"
-    assert result.partition is None
+    assert result.status == "PARTIAL_PARENT_INDUCTION"
+    assert result.proposals == ()
     assert store.list_current_packages(limit=100) == []
 
 
@@ -35,7 +35,9 @@ class FailPackedInductionOnce(ScriptedParentModels):
         super().__init__()
         self.batch_sizes: list[int] = []
 
-    def typed_many(self, *, tier, stage, requests, output_type, validators):
+    def typed_many(
+        self, *, tier, stage, requests, output_type, validators, execution_tier=None
+    ):
         if stage != "parent_induction":
             return super().typed_many(
                 tier=tier,
@@ -43,6 +45,7 @@ class FailPackedInductionOnce(ScriptedParentModels):
                 requests=requests,
                 output_type=output_type,
                 validators=validators,
+                execution_tier=execution_tier,
             )
         outputs = []
         for request, validator in zip(requests, validators, strict=True):

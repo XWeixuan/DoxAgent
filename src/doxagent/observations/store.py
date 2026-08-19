@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from doxagent.observations.models import ObservationCallRecord, PersistedObservation
+from doxagent.observations.projection import projection_matches, render_observation_projection
 
 _IDENTIFIER = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$")
 _ALIAS = re.compile(r"^O[1-9]\d*$")
@@ -138,9 +139,10 @@ class AttemptObservationStore:
 
     def _write_mirror(self, observation: PersistedObservation) -> None:
         target = self.mirror_root / f"{observation.alias}.json"
-        raw = observation.model_dump_json(indent=2).encode("utf-8")
+        raw = render_observation_projection(observation).encode("utf-8")
         if target.exists():
-            if target.read_bytes() != raw:
+            existing = target.read_text(encoding="utf-8")
+            if not projection_matches(observation, existing):
                 raise ValueError(f"immutable observation mirror changed: {observation.alias}")
             return
         descriptor, temporary = tempfile.mkstemp(

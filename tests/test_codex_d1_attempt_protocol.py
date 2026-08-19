@@ -112,12 +112,12 @@ async def test_c1_bundle_injects_complete_fundamental_research_contract(tmp_path
 
     task = json.loads((await workspace.read_text("run-c1-skill", seeded.task_path)).content or "")
     assert task["required_sections"] == [
-        "Recent Fundamental State and Changes",
-        "Management and Sell-Side Expectations",
-        "Core Fundamental Drivers",
-        "Key Variable Transmission Chains",
-        "Potential Fundamental Factor Gaps",
-        "Unknowns and Evidence Boundaries",
+        "一、近期基本面状态与变化",
+        "二、管理层与卖方当前预期",
+        "三、核心基本面驱动因子",
+        "四、关键变量传导链",
+        "五、潜在基本面因素缺口",
+        "六、未知项与证据边界",
     ]
 
     skill_path = "attempts/c1-1/input/skills/fundamental-research.md"
@@ -132,6 +132,9 @@ async def test_c1_bundle_injects_complete_fundamental_research_contract(tmp_path
     )
     assert injected == canonical
     assert "## Final quality gates" in injected
+    assert "### 综合判断" in injected
+    assert "| ID | 上游业务变量" in injected
+    assert "Possible future effects" not in injected
     assert len(injected) > 20_000
 
 
@@ -158,21 +161,21 @@ async def test_c1_bundle_injects_complete_fundamental_research_contract(tmp_path
             "entity-map-and-future-nodes.md",
             "prompts/internal_task_skills/entity-map-and-future-nodes.md",
             "prompts/agents/c4.md",
-            14_000,
+            3_000,
         ),
         (
             CodexD1Node.C4_ENRICHMENT,
             "entity-map-and-future-nodes.md",
             "prompts/internal_task_skills/entity-map-and-future-nodes.md",
             "prompts/agents/c4.md",
-            14_000,
+            3_000,
         ),
         (
             CodexD1Node.C4_FINALIZATION,
             "entity-map-and-future-nodes.md",
             "prompts/internal_task_skills/entity-map-and-future-nodes.md",
             "prompts/agents/c4.md",
-            14_000,
+            3_000,
         ),
     ],
 )
@@ -251,12 +254,58 @@ async def test_c4_bundle_declares_and_seeds_structured_output_path(tmp_path: Pat
     task = json.loads(
         (await workspace.read_text("run-c4-output", seeded.task_path)).content or ""
     )
-    assert task["schema_version"] == "codex-d1-attempt-task-v3"
+    assert task["schema_version"] == "codex-d1-attempt-task-v4"
     assert task["structured_output_path"] == seeded.structured_output_path
     assert task["progress_contract"] is None
     assert (
         await workspace.read_text("run-c4-output", seeded.structured_output_path)
     ).content == "{}"
+
+
+@pytest.mark.asyncio
+async def test_attempt_bundle_hashes_and_seals_manual_upstream(tmp_path: Path) -> None:
+    workspace = LocalWorkspaceClient(LocalWorkspaceStore(tmp_path / "workspaces"))
+    seeder = AttemptBundleSeeder(workspace, Path("codex_assets/document1_v2"))
+    first = await seeder.seed(
+        run_id="run-manual-upstream",
+        node=CodexD1Node.O4_A,
+        attempt_id="o4-a-1",
+        context_payload={"ticker": "NVDA"},
+        horizontal=None,
+        manual_upstream={"c1.md": "Current C1 conclusion"},
+    )
+    second_hash = seeder.input_sha256(
+        node=CodexD1Node.O4_A,
+        context_payload={"ticker": "NVDA"},
+        horizontal=None,
+        manual_upstream={"c1.md": "Changed C1 conclusion"},
+    )
+    assert first.input_sha256 != second_hash
+    assert first.manual_upstream_paths == (
+        "attempts/o4-a-1/input/manual_upstream/c1.md",
+    )
+    task = json.loads(
+        (await workspace.read_text("run-manual-upstream", first.task_path)).content or ""
+    )
+    assert task["manual_upstream"] == {
+        "mode": "pilot_override",
+        "files": ["attempts/o4-a-1/input/manual_upstream/c1.md"],
+        "precedence": "manual_over_source_run",
+        "citation_policy": "context_only_reverify",
+    }
+    copied = await workspace.read_text(
+        "run-manual-upstream", "attempts/o4-a-1/input/manual_upstream/c1.md"
+    )
+    assert copied.content == "Current C1 conclusion"
+    audit = json.loads(
+        (
+            await workspace.read_text(
+                "run-manual-upstream", "attempts/o4-a-1/audit/bundle.json"
+            )
+        ).content
+        or ""
+    )
+    assert "attempts/o4-a-1/input/manual_upstream/c1.md" in audit["files"]
 
 
 @pytest.mark.asyncio

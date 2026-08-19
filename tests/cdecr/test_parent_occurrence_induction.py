@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 
 from cdecr.parent_occurrence import ParentOccurrenceService
@@ -13,6 +15,24 @@ from cdecr.parent_occurrence_contracts import (
 )
 from cdecr.parent_occurrence_signals import ParentBoundarySignature, ParentRole
 from tests.cdecr.parent_occurrence_fixtures import registry, two_document_inputs
+
+
+def test_induction_prompt_removes_the_over_split_boundary_sentence() -> None:
+    prompt = (
+        Path(__file__).resolve().parents[2]
+        / "src"
+        / "cdecr"
+        / "prompts"
+        / "v1"
+        / "parent_occurrence_induction.md"
+    ).read_text(encoding="utf-8")
+    removed = (
+        "Keep clearly independent reports, market occurrences, agreements, transactions, "
+        "reactions, and background context in separate parents. A field difference alone "
+        "does not require a split unless the evidence supports a distinct real-world boundary."
+    )
+    assert removed not in " ".join(prompt.split())
+    assert "Assign every Atomic once and output only the schema." in prompt
 
 
 def test_induction_requires_exact_atomic_coverage() -> None:
@@ -47,6 +67,28 @@ def test_induction_requires_exact_atomic_coverage() -> None:
     )
     with pytest.raises(ValueError, match="document tasks"):
         service._validate_induction(invalid, documents)
+
+
+def test_parent_compact_wire_omits_persistence_only_identifiers() -> None:
+    sources, mentions, events = two_document_inputs()
+    service = ParentOccurrenceService(registry=object(), compact_wire_dto=True)
+    snapshot_type = __import__(
+        "cdecr.parent_occurrence", fromlist=["PackageStageSnapshotV2"]
+    ).PackageStageSnapshotV2
+    snapshot = snapshot_type.load(
+        registry=object(), events=events, mentions=mentions, sources=sources, packages=[]
+    )
+    documents, _, _, _ = service._slices(snapshot)
+    wire = service._induction_document_wire(documents[0])
+    assert wire["task_id"] == documents[0].task_id
+    assert wire["atomics"]
+    atomic = wire["atomics"][0]
+    assert "atomic_ref" in atomic
+    assert "proposition" in atomic
+    assert "event_id" not in atomic
+    assert "slice_id" not in atomic
+    assert "document_ref" not in atomic
+    assert "document_fingerprint" not in atomic
 
 
 def test_proposal_short_refs_do_not_depend_on_concurrent_completion_order() -> None:
