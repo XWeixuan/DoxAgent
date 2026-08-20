@@ -57,7 +57,7 @@ def test_v3_responses_use_true_strict_json_schema_without_prompt_duplication() -
         previous_response_id=None,
     )
     kwargs = _chat_json_schema_kwargs(
-        model="deepseek-v4-flash-0731",
+        model="deepseek-v4-flash",
         request=request,
     )
     assert kwargs["messages"] == request.input

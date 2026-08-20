@@ -88,7 +88,9 @@ def _safe_model_error(
     safe_provider_code: str | None = None
     if isinstance(provider_code, str) and re.fullmatch(r"[A-Za-z0-9_-]{1,64}", provider_code):
         safe_provider_code = f"provider_{provider_code.lower()}"
-    if isinstance(status, int):
+    if status == 402:
+        code = "provider_arrearage"
+    elif isinstance(status, int):
         code = safe_provider_code or "provider_http_error"
     elif isinstance(exc, TimeoutError):
         code = "timeout"
@@ -462,6 +464,17 @@ def _responses_json_schema_kwargs(
             if request.session_cache
             else {}
         ),
+    }
+
+
+def _deepseek_thinking_kwargs(
+    effort: Literal["none", "low", "high", "max"],
+) -> dict[str, Any]:
+    if effort == "none":
+        return {"extra_body": {"thinking": {"type": "disabled"}}}
+    return {
+        "reasoning_effort": effort,
+        "extra_body": {"thinking": {"type": "enabled"}},
     }
 
 
@@ -1092,12 +1105,7 @@ class DeepSeekStructuredModelClient:
         )
 
     def _thinking_kwargs(self) -> dict[str, Any]:
-        if self.reasoning_effort == "none":
-            return {"extra_body": {"thinking": {"type": "disabled"}}}
-        return {
-            "reasoning_effort": self.reasoning_effort,
-            "extra_body": {"thinking": {"type": "enabled"}},
-        }
+        return _deepseek_thinking_kwargs(self.reasoning_effort)
 
     async def acomplete(self, request: StructuredModelRequest) -> StructuredModelResult:
         """Use one shared native async transport for bulk stage requests."""
@@ -1296,31 +1304,95 @@ class DeepSeekStructuredModelClient:
         )
 
     def complete_response(self, request: ResponsesModelRequest) -> StructuredModelResult:
-        """Use the provider's Responses endpoint when available; errors remain fail-safe."""
+        """Translate the local Responses contract onto DeepSeek Chat Completions.
 
-        started = perf_counter()
-        try:
-            response = self._client.responses.create(
-                **_responses_kwargs(
-                    model=self.model,
-                    request=request,
-                    session_cache_header=False,
-                )
+        DeepSeek's documented OpenAI-compatible surface is Chat Completions, not
+        OpenAI Responses.  CDECR still presents one internal Responses contract to
+        callers, while this adapter preserves the JSON/schema and reasoning settings
+        on the provider's supported wire format.
+        """
+
+        if request.previous_response_id is not None:
+            raise ModelAdapterError(
+                tier=self.tier,
+                code="deepseek_previous_response_unsupported",
+                latency_ms=0,
             )
+        started = perf_counter()
+        effective_strict = request.output_mode == "json_schema" or request.strict
+        messages = (
+            copy.deepcopy(request.input)
+            if effective_strict
+            else _responses_input_with_schema(request)
+        )
+        kwargs: dict[str, Any] = {
+            "model": self.model,
+            "messages": messages,
+            **_deepseek_thinking_kwargs(request.reasoning_effort),
+        }
+        if effective_strict:
+            instruction = (
+                f"You must call {DEEPSEEK_TOOL_NAME} exactly once and return the complete "
+                "JSON result as its arguments."
+            )
+            for item in messages:
+                if item.get("role") == "system" and isinstance(item.get("content"), str):
+                    item["content"] = f"{item['content']}\n{instruction}"
+                    break
+            else:
+                messages.insert(0, {"role": "system", "content": instruction})
+            kwargs["tools"] = [
+                {
+                    "type": "function",
+                    "function": {
+                        "name": DEEPSEEK_TOOL_NAME,
+                        "description": (
+                            "Always call this function exactly once to return the complete "
+                            "structured CDECR result."
+                        ),
+                        "strict": True,
+                        "parameters": deepseek_strict_wire_schema(request.json_schema),
+                    },
+                }
+            ]
+        else:
+            kwargs["response_format"] = {"type": "json_object"}
+        try:
+            response = self._client.chat.completions.create(**kwargs)
         except Exception as exc:
             raise _safe_model_error(exc, self.tier, started_at=started) from exc
+        message = response.choices[0].message
+        if effective_strict:
+            tool_calls = getattr(message, "tool_calls", None) or []
+            if len(tool_calls) != 1:
+                raise ModelAdapterError(
+                    tier=self.tier,
+                    code="invalid_tool_call_count",
+                    latency_ms=round((perf_counter() - started) * 1000),
+                )
+            function = tool_calls[0].function
+            if function.name != DEEPSEEK_TOOL_NAME:
+                raise ModelAdapterError(
+                    tier=self.tier,
+                    code="invalid_tool_name",
+                    latency_ms=round((perf_counter() - started) * 1000),
+                )
+            text = function.arguments
+        else:
+            text = message.content
         usage = getattr(response, "usage", None)
         return _structured_result_from_text(
             tier=self.tier,
             model=self.model,
-            text=getattr(response, "output_text", None),
-            input_tokens=_usage_value(usage, "input_tokens", "prompt_tokens"),
-            output_tokens=_usage_value(usage, "output_tokens", "completion_tokens"),
+            text=text,
+            input_tokens=_usage_value(usage, "prompt_tokens", "input_tokens"),
+            output_tokens=_usage_value(usage, "completion_tokens", "output_tokens"),
             reasoning_tokens=_reasoning_usage_value(usage),
             request_id=getattr(response, "_request_id", None),
             started_at=started,
-            cached_input_tokens=_cached_input_usage_value(usage),
-            response_id=getattr(response, "id", None),
+            transport="chat_json_schema" if effective_strict else "chat_json_object",
+            output_mode="json_schema" if effective_strict else "json_object",
+            effective_reasoning_effort=request.reasoning_effort,
         )
 
 

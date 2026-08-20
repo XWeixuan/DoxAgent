@@ -316,15 +316,27 @@ def _structured_client(
     )
 
 
-def _package_v3_client(settings: CDECRSettings) -> DashScopeStructuredModelClient:
-    """Keep Package Responses transport isolated from the general M4 lane."""
+def _package_v3_client(
+    settings: CDECRSettings,
+) -> DashScopeStructuredModelClient | DeepSeekStructuredModelClient:
+    """Keep Package transport isolated while honoring its configured provider."""
 
+    if settings.package_v3_provider == "deepseek":
+        return DeepSeekStructuredModelClient(
+            tier=ModelTier.M3,
+            api_key=settings.require_deepseek(),
+            base_url=settings.deepseek_base_url,
+            model=settings.package_v3_model,
+            reasoning_effort=settings.package_v3_reasoning_effort,
+            strict=settings.model_m4_strict,
+            timeout_seconds=settings.model_timeout_seconds,
+        )
     return DashScopeStructuredModelClient(
         tier=ModelTier.M3,
         api_key=settings.require_dashscope(),
         base_url=settings.dashscope_base_url,
-        model=settings.model_m3,
-        reasoning_effort=settings.model_m3_reasoning_effort,
+        model=settings.package_v3_model,
+        reasoning_effort=settings.package_v3_reasoning_effort,
         strict=False,
         structured_transport="responses",
         timeout_seconds=settings.model_timeout_seconds,
@@ -528,7 +540,7 @@ def _cross_document_engine(
         model_m2=settings.model_m2,
         model_m3=settings.model_m3,
         model_m4=settings.model_m4,
-        package_model_m4=settings.model_m3,
+        package_model_m4=settings.package_v3_model,
         hard_cannot_link_mode=settings.atomic_hard_cannot_link_mode,
         n9_wire_protocol=settings.n9_wire_protocol,
         n9_active_requests=settings.n9_active_requests,
@@ -542,8 +554,10 @@ def _cross_document_engine(
         package_v3_description_active_requests=(
             settings.package_v3_description_active_requests
         ),
-        package_v3_reasoning_effort=settings.model_m3_reasoning_effort,
-        package_v3_description_reasoning_effort=settings.model_m2_reasoning_effort,
+        package_v3_reasoning_effort=settings.package_v3_reasoning_effort,
+        package_v3_description_reasoning_effort=(
+            settings.package_v3_description_reasoning_effort
+        ),
         package_v3_strict_output=settings.model_m4_strict,
         atomic_cosine_backend=settings.atomic_cosine_backend,
     )
@@ -643,7 +657,7 @@ def _bulk_epoch_engine(
         batch_task_ledger=settings.batch_task_ledger,
         embedding_batch_executor=settings.embedding_batch_executor,
         package_responses_client=scheduler.structured_client(package_m4, tier=ModelTier.M4),
-        package_model_m4=settings.model_m3,
+        package_model_m4=settings.package_v3_model,
         package_v3_batch_size=settings.package_v3_batch_size,
         package_v3_context_token_budget=settings.package_v3_context_token_budget,
         package_v3_context_reserve_tokens=settings.package_v3_context_reserve_tokens,
@@ -651,8 +665,10 @@ def _bulk_epoch_engine(
         package_v3_description_active_requests=(
             settings.package_v3_description_active_requests
         ),
-        package_v3_reasoning_effort=settings.model_m3_reasoning_effort,
-        package_v3_description_reasoning_effort=settings.model_m2_reasoning_effort,
+        package_v3_reasoning_effort=settings.package_v3_reasoning_effort,
+        package_v3_description_reasoning_effort=(
+            settings.package_v3_description_reasoning_effort
+        ),
         package_v3_strict_output=settings.model_m4_strict,
     )
 
@@ -1184,7 +1200,7 @@ def _doctor(settings: CDECRSettings, args: argparse.Namespace) -> int:
         "finalization_version": FINALIZATION_VERSION,
     }
     checks["single_document_routing"] = {
-        "ok": settings.model_m2 == "deepseek-v4-flash-0731"
+        "ok": settings.model_m2 == "deepseek-v4-flash"
         and settings.model_m3 == settings.model_m2
         and settings.model_m4 == settings.model_m2
         and settings.model_m2_reasoning_effort == "none"
@@ -1231,7 +1247,7 @@ def _doctor(settings: CDECRSettings, args: argparse.Namespace) -> int:
         }
     checks["cross_document_routing"] = {
         "ok": settings.model_m1 == "qwen3.7-text-embedding"
-        and settings.model_m2 == "deepseek-v4-flash-0731"
+        and settings.model_m2 == "deepseek-v4-flash"
         and settings.model_m3 == settings.model_m2
         and settings.model_m4 == settings.model_m2,
         "recall": "m0+m1",

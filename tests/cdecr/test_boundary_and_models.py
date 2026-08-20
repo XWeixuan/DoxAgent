@@ -17,7 +17,7 @@ from cdecr.models import (
     ModelAdapterError,
     ModelTier,
 )
-from cdecr.ports import StructuredModelRequest, StructuredModelResult
+from cdecr.ports import ResponsesModelRequest, StructuredModelRequest, StructuredModelResult
 from cdecr.provider_resilience import ProviderKeyHealthRegistry
 
 
@@ -234,7 +234,7 @@ def test_deepseek_uses_thinking_and_strict_function_schema(tier: ModelTier, effo
     client = DeepSeekStructuredModelClient(
         tier=tier,
         api_key="key",
-        base_url="https://api.deepseek.com/beta",
+        base_url="https://api.deepseek.com",
         model="deepseek-v4-flash",
         reasoning_effort=effort,  # type: ignore[arg-type]
         strict=True,
@@ -293,7 +293,7 @@ def test_deepseek_none_disables_thinking_without_sending_effort() -> None:
     client = DeepSeekStructuredModelClient(
         tier=ModelTier.M2,
         api_key="key",
-        base_url="https://api.deepseek.com/beta",
+        base_url="https://api.deepseek.com",
         model="deepseek-v4-flash",
         reasoning_effort="none",
         strict=True,
@@ -306,6 +306,36 @@ def test_deepseek_none_disables_thinking_without_sending_effort() -> None:
     assert "reasoning_effort" not in kwargs
 
 
+def test_deepseek_responses_contract_uses_documented_chat_json_object() -> None:
+    fake = FakeOpenAI()
+    client = DeepSeekStructuredModelClient(
+        tier=ModelTier.M3,
+        api_key="key",
+        base_url="https://api.deepseek.com",
+        model="deepseek-v4-flash",
+        reasoning_effort="low",
+        client=fake,  # type: ignore[arg-type]
+    )
+
+    result = client.complete_response(
+        ResponsesModelRequest(
+            input=[
+                {"role": "system", "content": "Return JSON."},
+                {"role": "user", "content": "Return ok=true."},
+            ],
+            json_schema=request().json_schema,
+            reasoning_effort="low",
+            session_cache=False,
+        )
+    )
+
+    assert result.payload == {"ok": True}
+    assert result.transport == "chat_json_object"
+    assert fake.chat.completions.kwargs["response_format"] == {"type": "json_object"}
+    assert fake.chat.completions.kwargs["reasoning_effort"] == "low"
+    assert fake.responses.kwargs == {}
+
+
 def test_deepseek_strict_inlines_nullable_local_ref_branch() -> None:
     fake = FakeOpenAI()
     strict_chat = FakeStrictChat()
@@ -313,7 +343,7 @@ def test_deepseek_strict_inlines_nullable_local_ref_branch() -> None:
     client = DeepSeekStructuredModelClient(
         tier=ModelTier.M2,
         api_key="key",
-        base_url="https://api.deepseek.com/beta",
+        base_url="https://api.deepseek.com",
         model="deepseek-v4-flash",
         reasoning_effort="high",
         strict=True,
@@ -437,6 +467,39 @@ def test_provider_error_code_is_preserved_without_provider_message() -> None:
     assert "account details" not in str(caught.value)
 
 
+def test_official_deepseek_http_402_is_classified_as_arrearage() -> None:
+    class InsufficientBalanceError(Exception):
+        status_code = 402
+        body = {"code": "invalid_request_error", "message": "Insufficient Balance"}
+
+    class BrokenChat:
+        def create(self, **_: Any) -> Any:
+            raise InsufficientBalanceError
+
+    fake = FakeOpenAI()
+    fake.chat = SimpleNamespace(completions=BrokenChat())
+    client = DeepSeekStructuredModelClient(
+        tier=ModelTier.M3,
+        api_key="secret-key",
+        base_url="https://api.deepseek.com",
+        model="deepseek-v4-flash",
+        reasoning_effort="low",
+        client=fake,  # type: ignore[arg-type]
+    )
+
+    with pytest.raises(ModelAdapterError) as caught:
+        client.complete_response(
+            ResponsesModelRequest(
+                input=[{"role": "user", "content": "Return JSON."}],
+                json_schema={"type": "object"},
+                session_cache=False,
+            )
+        )
+
+    assert caught.value.code == "provider_arrearage"
+    assert caught.value.status_code == 402
+
+
 def test_single_fenced_json_is_safely_normalized() -> None:
     fake = FakeOpenAI()
     fake.responses.output_text = "unused"  # type: ignore[attr-defined]
@@ -532,15 +595,18 @@ def test_settings_parse_deepseek_tier_configuration() -> None:
 
 def test_structured_output_defaults_to_responses_json_object_and_strict_off() -> None:
     settings = CDECRSettings(_env_file=None)
+    assert settings.model_m2_provider == "deepseek"
+    assert settings.model_m3_provider == "deepseek"
+    assert settings.model_m4_provider == "deepseek"
     assert settings.model_m2_strict is False
     assert settings.model_m3_strict is False
     assert settings.model_m4_strict is False
     assert settings.model_m2_reasoning_effort == "none"
     assert settings.model_m3_reasoning_effort == "low"
     assert settings.model_m4_reasoning_effort == "high"
-    assert settings.model_m2 == "deepseek-v4-flash-0731"
-    assert settings.model_m3 == "deepseek-v4-flash-0731"
-    assert settings.model_m4 == "deepseek-v4-flash-0731"
+    assert settings.model_m2 == "deepseek-v4-flash"
+    assert settings.model_m3 == "deepseek-v4-flash"
+    assert settings.model_m4 == "deepseek-v4-flash"
     assert settings.structured_provider_hard_concurrency == 160
     assert settings.structured_provider_initial_burst == 80
     request_value = StructuredModelRequest(

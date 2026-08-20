@@ -70,6 +70,9 @@ def test_o4a_policy_exposes_supported_surface_and_hides_unentitled_tools() -> No
         "ibkr.historical_ticks",
         "ibkr.option_surface",
         "twelvedata.sell_side_estimates",
+        "tavily.extract",
+        "tavily.search",
+        "anysearch.search",
     }.isdisjoint(allowed)
 
     # This restriction is node-specific and must not silently change O4-B.
@@ -80,6 +83,7 @@ def test_o4a_policy_exposes_supported_surface_and_hides_unentitled_tools() -> No
     )
     assert "ibkr.option_surface" in o4b_allowed
     assert "alpha.historical_options" in o4b_allowed
+    assert {"tavily.extract", "tavily.search", "anysearch.search"}.isdisjoint(o4b_allowed)
 
 
 def test_historical_quote_skips_live_provider_and_marks_daily_close_partial() -> None:

@@ -65,7 +65,6 @@ _INTENT_PROFILES: tuple[dict[str, object], ...] = (
             "sec.management_disclosures",
             "ir.official_updates",
             "ir.official_feed_discovery",
-            "tavily.search",
         ),
         "excluded": ("openfda.", "eia.", "bls.", "bea.", "census.", "congress."),
         "discovery_fallback": (
@@ -91,8 +90,6 @@ _INTENT_PROFILES: tuple[dict[str, object], ...] = (
             "sec.filing_content",
             "sec.management_disclosures",
             "ir.official_updates",
-            "tavily.search",
-            "tavily.extract",
         ),
         "excluded": ("openfda.", "eia.", "bls.", "bea.", "congress."),
         "discovery_fallback": (
@@ -115,7 +112,6 @@ _INTENT_PROFILES: tuple[dict[str, object], ...] = (
             "sec.issuer_filings",
             "sec.filing_content",
             "regulations.rulemaking_records",
-            "tavily.search",
         ),
         "excluded": ("openfda.", "eia.", "bls.", "bea.", "census."),
         "discovery_fallback": (

@@ -22,9 +22,15 @@ DATA_TOOL_CONTRACT_VERSION = "1.0"
 DATA_MCP_LAUNCH_SCHEMA_VERSION = "data_mcp_launch/1.0"
 DATA_MCP_RESULT_SCHEMA_VERSION = "data_mcp_result/1.0"
 
-# Codex has native web search.  Keep these clients available to the legacy
-# direct ToolRegistry path, but never turn them into Data MCP tools.
-DATA_MCP_EXCLUDED_TOOL_IDS = frozenset({"anysearch.search", "tavily.search"})
+# Codex has native web search. Keep these clients available to the legacy
+# direct ToolRegistry path, but never turn their namespaces into Data MCP tools.
+# Namespace filtering also prevents a newly registered provider endpoint from
+# becoming agent-visible merely because a role's legacy allowlist includes it.
+DATA_MCP_EXCLUDED_TOOL_PREFIXES = ("anysearch.", "tavily.")
+
+
+def is_data_mcp_excluded_tool(tool_id: str) -> bool:
+    return tool_id.startswith(DATA_MCP_EXCLUDED_TOOL_PREFIXES)
 
 
 class DataRuntimeModel(BaseModel):
@@ -315,7 +321,7 @@ def safe_mcp_name(canonical_tool_id: str) -> str:
 def build_data_tool_contracts(registry: ToolRegistry) -> DataToolContractRegistry:
     contracts: list[DataToolContract] = []
     for tool_id in registry.names():
-        if tool_id in DATA_MCP_EXCLUDED_TOOL_IDS:
+        if is_data_mcp_excluded_tool(tool_id):
             continue
         descriptor = registry.describe(tool_id)
         if descriptor is None:

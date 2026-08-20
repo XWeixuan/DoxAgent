@@ -22,7 +22,7 @@ from doxagent.codex_runtime.schema import (
     CodexAgentRole,
     CodexD1Node,
 )
-from doxagent.data_runtime.contracts import DATA_MCP_EXCLUDED_TOOL_IDS, DataRuntimeModel
+from doxagent.data_runtime.contracts import DataRuntimeModel, is_data_mcp_excluded_tool
 from doxagent.models import AgentName
 
 
@@ -105,12 +105,16 @@ class DataToolPolicyRegistry:
     def __init__(self) -> None:
         agents = default_agent_registry()
         self._by_role: dict[CodexAgentRole, frozenset[str]] = {
-            role: frozenset(agents.get(agent_name).runtime.allowed_tools).difference(
-                DATA_MCP_EXCLUDED_TOOL_IDS
+            role: frozenset(
+                tool_id
+                for tool_id in agents.get(agent_name).runtime.allowed_tools
+                if not is_data_mcp_excluded_tool(tool_id)
             )
             for role, agent_name in _LEGACY_AGENT_BY_ROLE.items()
         }
-        self._by_role[CodexAgentRole.C4] = frozenset(_C4_TOOLS)
+        self._by_role[CodexAgentRole.C4] = frozenset(
+            tool_id for tool_id in _C4_TOOLS if not is_data_mcp_excluded_tool(tool_id)
+        )
 
     def allowed_tools(self, node: CodexD1Node, role: CodexAgentRole) -> frozenset[str]:
         expected = _ROLE_BY_NODE.get(node)

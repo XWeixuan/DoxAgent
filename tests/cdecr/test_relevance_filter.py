@@ -199,7 +199,7 @@ class FakeRegistry:
 
 
 class FakeResponses:
-    model = "deepseek-v4-flash-0731"
+    model = "deepseek-v4-flash"
 
     def __init__(self, payload: dict[str, object]) -> None:
         self.payload = payload

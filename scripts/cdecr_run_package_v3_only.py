@@ -86,10 +86,10 @@ def main() -> int:
         )
         snapshot["proposal_count"] = len(proposals)
     settings = CDECRSettings(CDECR_SQLITE_PATH=output_path)
-    if settings.model_m3_provider != "dashscope":
-        raise ValueError("Package V3 Gate requires CDECR_M3_PROVIDER=dashscope")
-    if settings.model_m3 != "deepseek-v4-flash-0731":
-        raise ValueError("Package V3 Gate requires deepseek-v4-flash-0731")
+    if settings.package_v3_provider not in {"dashscope", "deepseek"}:
+        raise ValueError("Package V3 Gate requires a supported package provider")
+    if settings.package_v3_model != "deepseek-v4-flash":
+        raise ValueError("Package V3 Gate requires deepseek-v4-flash")
     engine = _cross_document_engine(settings, registry)
     summaries: list[ModelCallSummary] = []
     models = _AuditedModels(
@@ -114,8 +114,8 @@ def main() -> int:
         context_reserve_tokens=settings.package_v3_context_reserve_tokens,
         description_pack_token_budget=settings.package_v3_description_token_budget,
         description_active_requests=settings.package_v3_description_active_requests,
-        reasoning_effort=settings.model_m3_reasoning_effort,
-        description_reasoning_effort=settings.model_m2_reasoning_effort,
+        reasoning_effort=settings.package_v3_reasoning_effort,
+        description_reasoning_effort=settings.package_v3_description_reasoning_effort,
     )
     events = registry.list_current_atomic_events(limit=10_000)
     calls_before = registry.count_model_calls()

@@ -21,6 +21,7 @@ from doxagent.data_runtime.contracts import (
     DataExecutionContext,
     DataToolContract,
     build_data_tool_contracts,
+    is_data_mcp_excluded_tool,
 )
 from doxagent.data_runtime.execution import DataExecutionCore, _availability
 from doxagent.data_runtime.guidance import DataToolGuide
@@ -110,10 +111,17 @@ def _observation(index: int, *, run_id: str = "run-1", attempt_id: str = "c1-1")
 def test_contracts_cover_registry_and_exclude_known_unavailable_tools() -> None:
     registry = default_real_tool_registry(DoxAgentSettings(IBKR_TWS_ENABLED=False))
     contracts = build_data_tool_contracts(registry)
-    assert len(contracts.all()) == len(registry.names()) - 2
-    assert len({item.mcp_name for item in contracts.all()}) == len(registry.names()) - 2
-    assert contracts.get("tavily.search") is None
-    assert contracts.get("anysearch.search") is None
+    excluded = {tool_id for tool_id in registry.names() if is_data_mcp_excluded_tool(tool_id)}
+    assert excluded == {"anysearch.search", "tavily.extract", "tavily.search"}
+    assert len(contracts.all()) == len(registry.names()) - len(excluded)
+    assert len({item.mcp_name for item in contracts.all()}) == len(registry.names()) - len(
+        excluded
+    )
+    assert all(contracts.get(tool_id) is None for tool_id in excluded)
+    assert is_data_mcp_excluded_tool("tavily.future_endpoint")
+    assert is_data_mcp_excluded_tool("anysearch.future_endpoint")
+    # The Data MCP boundary must not remove the clients used by legacy direct callers.
+    assert excluded.issubset(registry.names())
     assert not contracts.require("benzinga.analyst_events").exposed
     assert not contracts.require("fmp.valuation_snapshot").exposed
     assert not contracts.require("ibkr.market_snapshot").exposed
@@ -124,9 +132,14 @@ def test_contracts_cover_registry_and_exclude_known_unavailable_tools() -> None:
         (CodexD1Node.C2, CodexAgentRole.C2),
         (CodexD1Node.C3, CodexAgentRole.C3),
         (CodexD1Node.C4_PRE_SCAN, CodexAgentRole.C4),
+        (CodexD1Node.C4_ENRICHMENT, CodexAgentRole.C4),
+        (CodexD1Node.C4_FINALIZATION, CodexAgentRole.C4),
         (CodexD1Node.O4_A, CodexAgentRole.O4),
+        (CodexD1Node.O4_B, CodexAgentRole.O4),
     ):
-        assert policy.allowed_tools(node, role).issubset(registry.names())
+        allowed = policy.allowed_tools(node, role)
+        assert allowed.issubset(registry.names())
+        assert not any(is_data_mcp_excluded_tool(tool_id) for tool_id in allowed)
 
 
 def test_c1_guide_is_category_strict_sec_first_and_exposes_sell_side_gap() -> None:
@@ -633,6 +646,7 @@ async def test_stdio_server_lists_only_authorized_tools_and_calls_guide(tmp_path
             assert "market_quote_snapshot" in names
             assert "market_trade_tape" in names
             assert "tavily_search" not in names
+            assert "tavily_extract" not in names
             assert "anysearch_search" not in names
             assert not any(name.startswith(("benzinga_", "fmp_", "ibkr_")) for name in names)
             result = await session.call_tool(

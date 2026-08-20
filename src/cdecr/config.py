@@ -37,17 +37,17 @@ class CDECRSettings(BaseSettings):
     )
     deepseek_api_key: SecretStr | None = Field(default=None, alias="DEEPSEEK_API_KEY")
     deepseek_base_url: str = Field(
-        default="https://api.deepseek.com/beta",
+        default="https://api.deepseek.com",
         alias="CDECR_DEEPSEEK_BASE_URL",
     )
     model_m2_provider: Literal["dashscope", "deepseek"] = Field(
-        default="dashscope", alias="CDECR_M2_PROVIDER"
+        default="deepseek", alias="CDECR_M2_PROVIDER"
     )
     model_m3_provider: Literal["dashscope", "deepseek"] = Field(
-        default="dashscope", alias="CDECR_M3_PROVIDER"
+        default="deepseek", alias="CDECR_M3_PROVIDER"
     )
     model_m4_provider: Literal["dashscope", "deepseek"] = Field(
-        default="dashscope", alias="CDECR_M4_PROVIDER"
+        default="deepseek", alias="CDECR_M4_PROVIDER"
     )
     model_m2_reasoning_effort: Literal["none", "low", "high", "max"] = Field(
         default="none", alias="CDECR_M2_REASONING_EFFORT"
@@ -62,9 +62,9 @@ class CDECRSettings(BaseSettings):
     model_m3_strict: bool = Field(default=False, alias="CDECR_M3_STRICT")
     model_m4_strict: bool = Field(default=False, alias="CDECR_M4_STRICT")
     model_m1: str = Field(default="qwen3.7-text-embedding", alias="CDECR_MODEL_M1")
-    model_m2: str = Field(default="deepseek-v4-flash-0731", alias="CDECR_MODEL_M2")
-    model_m3: str = Field(default="deepseek-v4-flash-0731", alias="CDECR_MODEL_M3")
-    model_m4: str = Field(default="deepseek-v4-flash-0731", alias="CDECR_MODEL_M4")
+    model_m2: str = Field(default="deepseek-v4-flash", alias="CDECR_MODEL_M2")
+    model_m3: str = Field(default="deepseek-v4-flash", alias="CDECR_MODEL_M3")
+    model_m4: str = Field(default="deepseek-v4-flash", alias="CDECR_MODEL_M4")
     relevance_filter_mode: Literal["off", "shadow", "enforce"] = Field(
         default="enforce", alias="CDECR_RELEVANCE_FILTER_MODE"
     )
@@ -207,8 +207,11 @@ class CDECRSettings(BaseSettings):
     package_v3_batch_size: int = Field(
         default=200, ge=1, le=200, alias="CDECR_PACKAGE_V3_BATCH_SIZE"
     )
-    package_v3_model: Literal["deepseek-v4-flash-0731"] = Field(
-        default="deepseek-v4-flash-0731", alias="CDECR_PACKAGE_V3_MODEL"
+    package_v3_provider: Literal["dashscope", "deepseek"] = Field(
+        default="deepseek", alias="CDECR_PACKAGE_V3_PROVIDER"
+    )
+    package_v3_model: Literal["deepseek-v4-flash"] = Field(
+        default="deepseek-v4-flash", alias="CDECR_PACKAGE_V3_MODEL"
     )
     package_v3_reasoning_effort: Literal["none", "low", "high", "max"] = Field(
         default="low", alias="CDECR_PACKAGE_V3_REASONING_EFFORT"

@@ -5,7 +5,11 @@ from pathlib import Path
 from cdecr.cli import _package_v3_client, _structured_client
 from cdecr.config import CDECRSettings
 from cdecr.model_routing import InvocationChannel, LLMNode, route_for
-from cdecr.models import ModelTier
+from cdecr.models import (
+    DashScopeStructuredModelClient,
+    DeepSeekStructuredModelClient,
+    ModelTier,
+)
 
 
 def test_node_routes_decouple_profile_channel_and_scheduler_lane() -> None:
@@ -64,6 +68,9 @@ def test_node_routes_decouple_profile_channel_and_scheduler_lane() -> None:
 def test_general_execution_lanes_keep_transport_but_use_m2_profile() -> None:
     settings = CDECRSettings(
         DASHSCOPE_API_KEY="secret",
+        CDECR_M2_PROVIDER="dashscope",
+        CDECR_M3_PROVIDER="dashscope",
+        CDECR_M4_PROVIDER="dashscope",
         CDECR_M3_STRICT="true",
         _env_file=None,
     )  # type: ignore[call-arg]
@@ -89,20 +96,34 @@ def test_general_execution_lanes_keep_transport_but_use_m2_profile() -> None:
         "responses",
     )
     assert {m2_lane.model, m3_lane.model, m4_lane.model} == {
-        "deepseek-v4-flash-0731"
+        "deepseek-v4-flash"
     }
 
 
 def test_package_transport_uses_m3_profile_without_moving_from_package_lane() -> None:
-    settings = CDECRSettings(DASHSCOPE_API_KEY="secret", _env_file=None)  # type: ignore[call-arg]
+    settings = CDECRSettings(DEEPSEEK_API_KEY="secret", _env_file=None)  # type: ignore[call-arg]
     client = _package_v3_client(settings)
     route = route_for(LLMNode.PACKAGE_CLUSTERING)
 
+    assert isinstance(client, DeepSeekStructuredModelClient)
     assert client.tier is ModelTier.M3
-    assert client.model == "deepseek-v4-flash-0731"
+    assert client.model == "deepseek-v4-flash"
     assert client.reasoning_effort == "low"
-    assert client.structured_transport == "responses"
     assert route.scheduler_lane is ModelTier.M4
+
+
+def test_package_transport_can_still_be_configured_for_dashscope() -> None:
+    settings = CDECRSettings(
+        DASHSCOPE_API_KEY="secret",
+        CDECR_PACKAGE_V3_PROVIDER="dashscope",
+        _env_file=None,
+    )  # type: ignore[call-arg]
+
+    client = _package_v3_client(settings)
+
+    assert isinstance(client, DashScopeStructuredModelClient)
+    assert client.model == "deepseek-v4-flash"
+    assert client.structured_transport == "responses"
 
 
 def test_dreamer_cap_tie_breaker_is_fully_rolled_back() -> None:

@@ -1,5 +1,11 @@
 # changelog
 
+## 2026-08-20
+
+- Regenerated the persistent C1/C3/C4/O4-A Pilot cases after the Data MCP contract tightened its excluded namespace from `tavily.search` to all `tavily.*`. The new cases seal catalogs and enabled-tool lists from the same current source, eliminating the Codex App startup failure caused by stale immutable catalogs.
+
+- Added the implementation-ready Global Research / Market Situation Research two-lane rearchitecture plan. It defines the C4 pre-scan -> parallel C1/C3 -> C5 -> C4 enrichment Global Research DAG, separates C2/O4 into an independently runnable Market Situation lane, removes C4 finalization from the new path, blocks event-library context from Global Research, and inventories the required runtime, persistence, API, Prompt, Skill, Pilot, documentation, compatibility, and test changes. This planning step does not modify runtime code or databases.
+
 ## 2026-08-19
 
 - Recovered all 19 active D1 Pilot cases by rotating their expired Data MCP capability to a 10-year lifetime, preserving every sealed input hash and recording per-case refresh audit metadata. Future Pilot generation now uses the same long-lived default.
@@ -687,3 +693,5 @@
 - 2026-08-20: 按 O4-A 真实 provider/API tier 验收结果收紧节点级 Data MCP 暴露：从 O4-A effective policy、guide、catalog 与 signed capability 移除 Benzinga analyst/signals、FMP valuation、Twelve Data estimates、IBKR historical ticks/options/Fed Funds curve 及 Alpha historical options 共8个明确不可用接口，当前为28项授权且28项可暴露；底层 provider clients、直接 ToolRegistry 调用及 O4-B/其他节点不变。
 - 2026-08-20: 按修订后的 O4-A 架构和 NVDA Pilot 问题报告调整 `market-implied-expectations` 与 O4 prompts：将审计型六节合同收束为五个中文章节及全中文表头，重建当前定价、近期重定价 Driver 排序、业务/财务/持续期条件推导、可选反向估值、精简锚点/定价问题/Unknown 方法；skill 约缩短10%，两处 prompt 未显著增长。同步 bundle/Pilot 合同，并从 O4-A 正常及 Pilot 上下文移除 O4-B、C2、C4 future nodes，过滤为 C1/C3 observations 且启用独立 O4-A 会话线程。O4-A 聚焦回归42项及 touched-file Ruff 全部通过；另行发现未触碰的 C4 prompt 历史断言失败，未越界修改。
 - 2026-08-20: 按 C3 补充方案局部调整 `c3.md` 与 `industry-research.md`：在 Draft 后 completeness/freshness review 中加入目标公司直接业务兑现证据优先级和具有实质商业进展的竞争、替代及分流路径检查，缺少直接证据时保留 Unknown；删除跨节点 Handoff/Routing 和节点责任归属，将六节标题、核心发现、三类表头及 Driver/Candidate 固定字段统一为中文，第六节收缩为三列 Unknowns 与证据边界。同步 Document 1 v2 C3 required sections 与聚焦断言；skill 净缩短，C3 聚焦回归19项、Ruff、manifest JSON 与 diff hygiene 全部通过，未修改 Allocation、Transmission、Proof Boundary 或其他研究方法。
+- 2026-08-20: 将 Tavily 与 AnySearch 设为 Data MCP 全局不可见 namespace：contract 构建、全部 D1 节点/角色 policy、signed capability effective surface 与 guide 推荐均统一排除 `tavily.*`/`anysearch.*`，同时保留 legacy direct ToolRegistry clients；新增跨全部节点、未来 endpoint、真实 stdio MCP discovery 与 O4-A/O4-B 边界回归。
+- 2026-08-20: 将 CDECR 结构化 M2/M3/M4 与 Package V3 默认 provider 切换为 DeepSeek 官方 API，按官方文档统一使用 `https://api.deepseek.com` 和 `deepseek-v4-flash`；M1 embedding 继续使用百炼。Package V3 新增独立 provider 配置并真正使用其 model/reasoning 参数；DeepSeek 适配器将内部 Responses 合同无损翻译为官方 Chat Completions JSON Object/strict tool wire，同时明确拒绝 provider 不支持的 response continuation。56项聚焦回归、Ruff和核心strict mypy通过；完整CDECR套件除一个已知并发时序抖动（单测复跑通过）及一个未触碰的Parent Prompt历史断言外通过。最小Package真实调用已正确到达官方端点，但因账户HTTP 402余额不足未取得有效模型输出，未继续重试。
