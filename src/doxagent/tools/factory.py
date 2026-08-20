@@ -34,8 +34,12 @@ from doxagent.tools.providers.fmp import (
 from doxagent.tools.providers.fred import FredSeriesObservationsClient
 from doxagent.tools.providers.ibkr import (
     IbkrContractSearchClient,
+    IbkrFedFundsCurveClient,
+    IbkrHistoricalTicksClient,
     IbkrMarketHistoryClient,
     IbkrMarketSnapshotClient,
+    IbkrOptionSurfaceClient,
+    IbkrShortabilitySnapshotClient,
     IbkrTradeTapeClient,
 )
 from doxagent.tools.providers.macro_industry import (
@@ -55,12 +59,20 @@ from doxagent.tools.providers.macro_industry import (
 from doxagent.tools.providers.market import (
     IbkrFirstMarketClient,
     MarketProviderRoute,
+    cutoff_daily_input,
     daily_close_fallback_input,
     ibkr_daily_history_input,
     ibkr_quote_input,
     passthrough_input,
 )
 from doxagent.tools.providers.monitoring import MONITORING_TOOL_NAMES, MonitoringToolClient
+from doxagent.tools.providers.o4_market import (
+    AlphaVantageO4Client,
+    MarketRelativePerformanceClient,
+    MarketSellSideConsensusClient,
+    YFinancePeerRelativeValuationClient,
+    YFinanceShortInterestClient,
+)
 from doxagent.tools.providers.polymarket import PolymarketMarketProbabilityClient
 from doxagent.tools.providers.public_records import (
     CongressLegislativeActionsClient,
@@ -79,6 +91,7 @@ from doxagent.tools.providers.sec import (
     SecCompanyFinancialsClient,
     SecFilingContentClient,
     SecFilingSectionsClient,
+    SecInsiderTransactionsEnrichedClient,
     SecIssuerFilingsClient,
     SecManagementDisclosuresClient,
     SecMaterialContractsProjectsClient,
@@ -112,6 +125,8 @@ _RECOMPUTABLE_OBSERVATION_TOOLS = {
     "ibkr.market_history",
     "market.daily_ohlcv",
     "market.trade_tape",
+    "market.relative_performance",
+    "ibkr.historical_ticks",
     "fred.activity_demand",
     "fred.inflation_labor",
     "fred.rates_credit_liquidity",
@@ -422,6 +437,11 @@ _HORIZONTAL_TOOL_SPECS: dict[str, tuple[str, list[str], str]] = {
         ["ticker", "cik", "form", "accession", "primary_document", "sections"],
         "Collect management guidance, outlook, KPI, and MD&A evidence.",
     ),
+    "sec.insider_transactions_enriched": (
+        "Read and parse bounded issuer Form 4 XML filings.",
+        ["ticker", "cik", "limit"],
+        "Collect insider role, ownership nature, footnotes, accession, and transaction context.",
+    ),
     "ibkr.contract_search": (
         "Resolve one US stock symbol through the official local IBKR TWS socket API.",
         ["symbol", "currency", "primary_exchange"],
@@ -442,6 +462,34 @@ _HORIZONTAL_TOOL_SPECS: dict[str, tuple[str, list[str], str]] = {
         "Capture bounded raw trade ticks through the official local IBKR TWS socket API.",
         ["symbol", "conid", "duration_seconds", "max_events"],
         "Collect an auditable read-only trade tape without orders or account access.",
+    ),
+    "ibkr.historical_ticks": (
+        "Read bounded historical trades, bid/ask, or midpoint ticks through official TWS.",
+        [
+            "symbol",
+            "conid",
+            "start_datetime",
+            "end_datetime",
+            "number_of_ticks",
+            "what_to_show",
+            "outside_rth",
+        ],
+        "Reconstruct a bounded historical event window without treating a live tape as historical.",
+    ),
+    "ibkr.option_surface": (
+        "Read a bounded option surface through official TWS chain and snapshot APIs.",
+        ["symbol", "conid", "min_days", "max_days", "max_contracts"],
+        "Collect auditable option quotes and Greeks for O4 volatility and skew analysis.",
+    ),
+    "ibkr.shortability_snapshot": (
+        "Read current IBKR shortability classification and indicated borrowable shares.",
+        ["symbol", "conid"],
+        "Collect borrow-availability context without mislabeling it as listed short interest.",
+    ),
+    "ibkr.fed_funds_curve": (
+        "Read a bounded CBOT Fed Funds futures curve through official TWS.",
+        ["max_contracts"],
+        "Collect contract-month implied average policy rates with an explicit formula.",
     ),
     "benzinga.management_guidance": (
         "Read structured Benzinga company guidance events.",
@@ -629,6 +677,7 @@ for _sec_tool_id in (
     "sec.filing_content",
     "sec.material_contracts_projects",
     "sec.management_disclosures",
+    "sec.insider_transactions_enriched",
 ):
     _HORIZONTAL_DESCRIPTORS[_sec_tool_id] = _HORIZONTAL_DESCRIPTORS[_sec_tool_id].model_copy(
         update={"point_in_time_safe": True}
@@ -656,6 +705,75 @@ _DESCRIPTORS: dict[str, ToolDescriptor] = {
         input_fields=["ticker", "symbol"],
         business_purpose="Fill company profile, valuation, dividend, and market-cap metrics.",
     ),
+    "alpha.valuation_snapshot": _descriptor(
+        "alpha.valuation_snapshot",
+        description=(
+            "Read compact current valuation and enterprise-value inputs from Alpha Vantage."
+        ),
+        input_fields=["ticker", "symbol"],
+        business_purpose=(
+            "Provide an entitled valuation fallback without changing C1 overview projection."
+        ),
+    ).model_copy(update={"business_categories": ["valuation", "market_data"]}),
+    "alpha.institutional_holdings": _descriptor(
+        "alpha.institutional_holdings",
+        description="Read compact Alpha Vantage institutional-holdings records when entitled.",
+        input_fields=["ticker", "symbol", "limit"],
+        business_purpose="Provide current institutional-positioning evidence.",
+    ).model_copy(update={"business_categories": ["ownership_positioning"]}),
+    "alpha.insider_transactions": _descriptor(
+        "alpha.insider_transactions",
+        description="Read compact Alpha Vantage insider-transaction records when entitled.",
+        input_fields=["ticker", "symbol", "limit"],
+        business_purpose="Provide an aggregator fallback for insider activity.",
+    ).model_copy(
+        update={
+            "business_categories": ["ownership_positioning"],
+            "fallback_tool_ids": ["sec.insider_transactions_enriched"],
+        }
+    ),
+    "alpha.historical_options": _descriptor(
+        "alpha.historical_options",
+        description="Read a bounded Alpha Vantage historical option chain when entitled.",
+        input_fields=["ticker", "symbol", "date", "limit"],
+        business_purpose="Provide a controlled historical-option fallback.",
+    ).model_copy(
+        update={
+            "business_categories": ["options", "market_data"],
+            "availability": "degraded",
+            "availability_reason": "premium endpoint entitlement is account-specific",
+        }
+    ),
+    "yfinance.short_interest": _descriptor(
+        "yfinance.short_interest",
+        description="Read an explicitly unofficial current listed short-interest fallback.",
+        input_fields=["ticker", "symbol"],
+        business_purpose=(
+            "Provide short interest, percent of float, and days-to-cover fallback fields."
+        ),
+    ).model_copy(
+        update={
+            "business_categories": ["ownership_positioning"],
+            "availability": "degraded",
+            "availability_reason": (
+                "unofficial current snapshot; verify against official publication"
+            ),
+        }
+    ),
+    "yfinance.peer_relative_valuation": _descriptor(
+        "yfinance.peer_relative_valuation",
+        description="Read compact current valuation fields for an explicit governed peer basket.",
+        input_fields=["symbols"],
+        business_purpose=(
+            "Provide a current cross-sectional valuation alternative when FMP is unavailable."
+        ),
+    ).model_copy(
+        update={
+            "business_categories": ["valuation"],
+            "availability": "degraded",
+            "availability_reason": "unofficial current snapshot and no currency normalization",
+        }
+    ),
     "market.daily_ohlcv": _descriptor(
         "market.daily_ohlcv",
         description="Read daily OHLCV through an IBKR-first governed provider route.",
@@ -670,8 +788,7 @@ _DESCRIPTORS: dict[str, ToolDescriptor] = {
             "outside_rth",
         ],
         business_purpose=(
-            "Use IBKR by default for price history and keep external feeds "
-            "internal as fallbacks."
+            "Use IBKR by default for price history and keep external feeds internal as fallbacks."
         ),
     ).model_copy(
         update={
@@ -680,13 +797,74 @@ _DESCRIPTORS: dict[str, ToolDescriptor] = {
             "observation_policy": "recomputable",
             "observation_adapter": "time_series",
             "output_profile": "time_series",
+            "point_in_time_safe": True,
+        }
+    ),
+    "market.relative_performance": _descriptor(
+        "market.relative_performance",
+        description=(
+            "Read a governed target/benchmark/peer basket with common-cutoff relative returns."
+        ),
+        input_fields=[
+            "symbols",
+            "period",
+            "bar",
+            "outputsize",
+            "start_date",
+            "end_date",
+            "outside_rth",
+        ],
+        business_purpose=(
+            "Provide O4 benchmark and peer attribution without overriding the governed "
+            "target ticker."
+        ),
+    ).model_copy(
+        update={
+            "source_name": "Governed multi-provider market basket",
+            "business_categories": ["market_data"],
+            "observation_policy": "recomputable",
+            "observation_adapter": "time_series",
+            "output_profile": "time_series",
+            "point_in_time_safe": True,
+        }
+    ),
+    "yfinance.adjusted_ohlcv": _descriptor(
+        "yfinance.adjusted_ohlcv",
+        description="Read split/dividend-adjusted daily OHLCV with corporate-action columns.",
+        input_fields=["ticker", "symbol", "outputsize", "start_date", "end_date"],
+        business_purpose="Provide a clearly labeled adjusted/total-return price series for O4.",
+    ).model_copy(
+        update={
+            "business_categories": ["market_data"],
+            "availability": "degraded",
+            "availability_reason": "unofficial source; corporate actions are provider normalized",
+            "observation_policy": "recomputable",
+            "observation_adapter": "time_series",
+            "output_profile": "time_series",
+            "point_in_time_safe": True,
+        }
+    ),
+    "market.sell_side_consensus": _descriptor(
+        "market.sell_side_consensus",
+        description="Read current sell-side consensus through a governed primary/fallback route.",
+        input_fields=["ticker", "symbol"],
+        business_purpose=(
+            "Provide current consensus and revisions while explicitly rejecting historical-"
+            "vintage use."
+        ),
+    ).model_copy(
+        update={
+            "source_name": "Governed current-consensus route",
+            "business_categories": ["sell_side_consensus"],
+            "availability": "degraded",
+            "availability_reason": "current retrieval-time snapshots only",
+            "fallback_tool_ids": ["yfinance.sell_side_consensus", "alpha.earnings_events"],
         }
     ),
     "market.quote_snapshot": _descriptor(
         "market.quote_snapshot",
         description=(
-            "Read a current quote through IBKR, with an explicitly stale "
-            "daily-close fallback."
+            "Read a current quote through IBKR, with an explicitly stale daily-close fallback."
         ),
         input_fields=["ticker", "symbol", "conid", "fields"],
         business_purpose="Use IBKR by default for current share-price evidence.",
@@ -694,13 +872,13 @@ _DESCRIPTORS: dict[str, ToolDescriptor] = {
         update={
             "source_name": "IBKR-first market route",
             "fallback_tool_ids": ["twelvedata.daily_ohlcv", "yfinance.daily_ohlcv"],
+            "point_in_time_safe": True,
         }
     ),
     "market.trade_tape": _descriptor(
         "market.trade_tape",
         description=(
-            "Capture a bounded trade tape through IBKR with Finnhub as an "
-            "internal fallback."
+            "Capture a bounded trade tape through IBKR with Finnhub as an internal fallback."
         ),
         input_fields=["ticker", "symbol", "conid", "duration_seconds", "max_events"],
         business_purpose="Use IBKR by default for read-only live trade evidence.",
@@ -759,6 +937,9 @@ _DESCRIPTORS: dict[str, ToolDescriptor] = {
             "units",
             "frequency",
             "limit",
+            "vintage_as_of",
+            "realtime_start",
+            "realtime_end",
         ],
         business_purpose=(
             "Ground macro, rates, credit, inflation, volatility, and commodity regimes."
@@ -981,7 +1162,12 @@ def default_real_tool_registry(settings: DoxAgentSettings | None = None) -> Tool
         "sec.filing_content": SecFilingContentClient(resolved, cache),
         "sec.material_contracts_projects": SecMaterialContractsProjectsClient(resolved, cache),
         "sec.management_disclosures": SecManagementDisclosuresClient(resolved, cache),
+        "sec.insider_transactions_enriched": SecInsiderTransactionsEnrichedClient(resolved, cache),
         "ibkr.contract_search": IbkrContractSearchClient(resolved, cache),
+        "ibkr.historical_ticks": IbkrHistoricalTicksClient(resolved, cache),
+        "ibkr.option_surface": IbkrOptionSurfaceClient(resolved, cache),
+        "ibkr.shortability_snapshot": IbkrShortabilitySnapshotClient(resolved, cache),
+        "ibkr.fed_funds_curve": IbkrFedFundsCurveClient(resolved, cache),
         "benzinga.management_guidance": BenzingaManagementGuidanceClient(resolved, cache),
         "benzinga.analyst_events": BenzingaAnalystEventsClient(resolved, cache),
         "benzinga.market_signals": BenzingaMarketSignalsClient(resolved, cache),
@@ -1024,17 +1210,19 @@ def default_real_tool_registry(settings: DoxAgentSettings | None = None) -> Tool
     register("ibkr.market_snapshot", ibkr_snapshot)
     register("ibkr.market_history", ibkr_history)
     register("ibkr.trade_tape", ibkr_trade_tape)
-    register(
-        "market.daily_ohlcv",
-        IbkrFirstMarketClient(
-            route_name="daily_ohlcv",
-            providers=(
-                MarketProviderRoute("ibkr.market_history", ibkr_history, ibkr_daily_history_input),
-                MarketProviderRoute("twelvedata.daily_ohlcv", twelve_daily, passthrough_input),
-                MarketProviderRoute("yfinance.daily_ohlcv", yahoo_daily, passthrough_input),
-            ),
+    market_daily = IbkrFirstMarketClient(
+        route_name="daily_ohlcv",
+        providers=(
+            MarketProviderRoute("ibkr.market_history", ibkr_history, ibkr_daily_history_input),
+            MarketProviderRoute("twelvedata.daily_ohlcv", twelve_daily, cutoff_daily_input),
+            MarketProviderRoute("yfinance.daily_ohlcv", yahoo_daily, cutoff_daily_input),
         ),
     )
+    register(
+        "market.daily_ohlcv",
+        market_daily,
+    )
+    register("market.relative_performance", MarketRelativePerformanceClient(market_daily))
     register(
         "market.quote_snapshot",
         IbkrFirstMarketClient(
@@ -1062,9 +1250,7 @@ def default_real_tool_registry(settings: DoxAgentSettings | None = None) -> Tool
             route_name="trade_tape",
             providers=(
                 MarketProviderRoute("ibkr.trade_tape", ibkr_trade_tape, passthrough_input),
-                MarketProviderRoute(
-                    "finnhub.trade_stream", finnhub_trade_tape, passthrough_input
-                ),
+                MarketProviderRoute("finnhub.trade_stream", finnhub_trade_tape, passthrough_input),
             ),
         ),
     )
@@ -1077,7 +1263,19 @@ def default_real_tool_registry(settings: DoxAgentSettings | None = None) -> Tool
         "alpha.shares_outstanding",
         AlphaVantageClient(resolved, cache, "SHARES_OUTSTANDING"),
     )
-    register("alpha.earnings_events", AlphaVantageEarningsClient(resolved, cache))
+    alpha_earnings = AlphaVantageEarningsClient(resolved, cache)
+    register("alpha.earnings_events", alpha_earnings)
+    register("alpha.valuation_snapshot", AlphaVantageO4Client(resolved, cache, "valuation"))
+    register(
+        "alpha.institutional_holdings",
+        AlphaVantageO4Client(resolved, cache, "institutional_holdings"),
+    )
+    register(
+        "alpha.insider_transactions", AlphaVantageO4Client(resolved, cache, "insider_transactions")
+    )
+    register(
+        "alpha.historical_options", AlphaVantageO4Client(resolved, cache, "historical_options")
+    )
     register("twelvedata.daily_ohlcv", twelve_daily)
     register("fred.series_observations", FredSeriesObservationsClient(resolved, cache))
     register("bls.timeseries", BlsTimeseriesClient(resolved, cache))
@@ -1098,5 +1296,18 @@ def default_real_tool_registry(settings: DoxAgentSettings | None = None) -> Tool
     register("anysearch.search", AnySearchSearchClient(resolved, cache))
     register("yfinance.hk_basic_snapshot", YFinanceHkBasicSnapshotClient())
     register("yfinance.daily_ohlcv", yahoo_daily)
-    register("yfinance.sell_side_consensus", YFinanceSellSideConsensusClient())
+    register("yfinance.adjusted_ohlcv", YFinanceDailyOhlcvClient(adjusted=True))
+    yahoo_consensus = YFinanceSellSideConsensusClient()
+    register("yfinance.sell_side_consensus", yahoo_consensus)
+    register(
+        "market.sell_side_consensus",
+        MarketSellSideConsensusClient(
+            [
+                ("yfinance.sell_side_consensus", yahoo_consensus, {}),
+                ("alpha.earnings_events", alpha_earnings, {"event_type": "estimates"}),
+            ]
+        ),
+    )
+    register("yfinance.short_interest", YFinanceShortInterestClient())
+    register("yfinance.peer_relative_valuation", YFinancePeerRelativeValuationClient())
     return registry

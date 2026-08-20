@@ -2,15 +2,17 @@
 
 Create one directory per reusable input set under `D:\DoxAgentPilot\upstream_sets`.
 Paste UTF-8 Markdown reports or complete C4 `NodeOutput` JSON files using only
-these fixed names:
+these fixed names. The same C4 file is intentionally reusable across all C4
+turns and downstream nodes:
 
 | Target node | Recognized files |
 | --- | --- |
-| `c1` | `c4_pre_scan.json` |
-| `c3` | `c4_pre_scan.json` |
-| `c4_enrichment` | `c4_pre_scan.json`, `c1.md`, `c3.md` |
-| `c4_finalization` | `c4_enrichment.json` |
-| `o4_a` | `c1.md`, `c2.md`, `c3.md`, `o4_b.md`, `c4_finalization.json` |
+| `c1` | `c4_finalization.json.json` |
+| `c3` | `c4_finalization.json.json` |
+| `c4_pre_scan` | `c4_finalization.json.json` |
+| `c4_enrichment` | `c4_finalization.json.json`, `c1.md`, `c3.md` |
+| `c4_finalization` | `c4_finalization.json.json` |
+| `o4_a` | `c4_finalization.json.json`, `c1.md`, `c3.md` |
 
 Example:
 

@@ -13,3 +13,4 @@ Decide only one of:
 Candidates are retrieval proposals, not presumed matches. Never link across namespaces.
 Copy candidate IDs exactly. Never construct, expand, or transform an ID.
 Return exactly one decision for every task ID. Tasks are independent; never omit, duplicate, or combine tasks.
+Set `target_namespace` only for `participant.unknown` with decision `NEW`; otherwise return it as `null`.

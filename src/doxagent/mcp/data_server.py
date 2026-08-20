@@ -77,13 +77,7 @@ class DataMcpApplication:
         self.claims = claims
         self.contracts = contracts
         self.effective_tool_ids = frozenset(effective)
-        mirror_root = (
-            run_root
-            / "attempts"
-            / claims.node_attempt_id
-            / "audit"
-            / "observations"
-        )
+        mirror_root = run_root / "attempts" / claims.node_attempt_id / "audit" / "observations"
         store = AttemptObservationStore(
             control_root=expected_control_root,
             mirror_root=mirror_root,
@@ -190,6 +184,8 @@ def build_server(application: DataMcpApplication) -> Server:
                         "offset": {"type": "integer", "minimum": 0},
                         "max_items": {"type": "integer", "minimum": 1, "maximum": 200},
                         "max_chars": {"type": "integer", "minimum": 1, "maximum": 16_000},
+                        "date_from": {"type": "string", "maxLength": 40},
+                        "date_to": {"type": "string", "maxLength": 40},
                     },
                     "required": ["alias"],
                     "additionalProperties": False,
@@ -199,8 +195,8 @@ def build_server(application: DataMcpApplication) -> Server:
             types.Tool(
                 name=VALIDATE_CITATIONS_TOOL_NAME,
                 description=(
-                    "Validate 【cite:O#】 aliases against this attempt and return a deterministic "
-                    "UTF-8 SHA-256 without requiring shell or PowerShell helper scripts."
+                    "Validate only whether 【cite:O#】 aliases resolve inside this attempt. "
+                    "Claim entailment is not checked."
                 ),
                 input_schema={
                     "type": "object",
@@ -267,9 +263,7 @@ def build_server(application: DataMcpApplication) -> Server:
                     is_error=True,
                 )
             try:
-                content, projection = _project_observation_content(
-                    observation.content, arguments
-                )
+                content, projection = _project_observation_content(observation.content, arguments)
             except (KeyError, IndexError, TypeError, ValueError) as exc:
                 return _call_result(
                     {"error": {"code": "invalid_projection", "message": str(exc)[:500]}},
@@ -299,6 +293,8 @@ def build_server(application: DataMcpApplication) -> Server:
                     "citation_count": len(aliases),
                     "resolved_aliases": resolved,
                     "unresolved_aliases": [alias for alias in aliases if alias not in resolved],
+                    "alias_valid": len(resolved) == len(aliases),
+                    "claim_entailment": "not_checked",
                     "valid": len(resolved) == len(aliases),
                 }
             )
@@ -334,7 +330,7 @@ def main() -> None:
     claims = DataCapabilityCodec.verify(token, public_key=public_key)
     application = DataMcpApplication(
         claims=claims,
-        run_root=Path.cwd().resolve(),
+        run_root=_resolve_capability_root(Path.cwd(), claims),
         control_root=control_root,
     )
     server = build_server(application)
@@ -441,6 +437,16 @@ def _project_observation_content(
         if not isinstance(projected, dict) or not isinstance(keys, list):
             raise TypeError("keys projection requires an object")
         projected = {key: projected[key] for key in keys if key in projected}
+    date_from = str(arguments.get("date_from") or "")
+    date_to = str(arguments.get("date_to") or "")
+    if date_from or date_to:
+        if not isinstance(projected, list):
+            raise TypeError("date range projection requires an array")
+        projected = [
+            item
+            for item in projected
+            if isinstance(item, dict) and _item_in_date_range(item, date_from, date_to)
+        ]
     offset = int(arguments.get("offset", 0))
     max_items = int(arguments.get("max_items", 200))
     max_chars = int(arguments.get("max_chars", 16_000))
@@ -458,6 +464,10 @@ def _project_observation_content(
         projection["json_pointer"] = pointer
     if keys:
         projection["keys"] = keys
+    if date_from:
+        projection["date_from"] = date_from
+    if date_to:
+        projection["date_to"] = date_to
     if offset:
         projection["offset"] = offset
     if total is not None:
@@ -466,6 +476,45 @@ def _project_observation_content(
         if offset + len(projected) < total:
             projection["truncated"] = True
     return projected, projection
+
+
+def _item_in_date_range(item: dict[str, Any], date_from: str, date_to: str) -> bool:
+    value = next(
+        (
+            str(item[key])
+            for key in (
+                "datetime",
+                "timestamp",
+                "date",
+                "filing_date",
+                "transaction_date",
+                "period",
+                "report_date",
+                "expiration",
+            )
+            if item.get(key) not in (None, "")
+        ),
+        "",
+    )
+    if not value:
+        return False
+    return (not date_from or value >= date_from) and (not date_to or value <= date_to)
+
+
+def _resolve_capability_root(cwd: Path, claims: DataCapabilityClaims) -> Path:
+    resolved = cwd.resolve()
+    if resolved.name in {claims.run_id, claims.pilot_case_id}:
+        return resolved
+    if claims.pilot_case_id:
+        for candidate in (resolved, *resolved.parents):
+            if (
+                candidate.name == claims.pilot_case_id
+                and (candidate / "case_manifest.json").is_file()
+            ):
+                return candidate
+    raise ValueError(
+        "Data MCP cwd is outside the signed run/case root; start it from the case or a descendant."
+    )
 
 
 if __name__ == "__main__":

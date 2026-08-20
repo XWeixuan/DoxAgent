@@ -134,6 +134,32 @@ def test_batch_task_ledger_preserves_attempt_and_stage_times(tmp_path: Path) -> 
     assert [row["attempt_count"] for row in rows[1:]] == [1, 1, 1]
 
 
+def test_retryable_task_attempt_is_closed_and_resume_increments_attempt(tmp_path: Path) -> None:
+    value = registry(tmp_path / "retryable-tasks.sqlite3")
+    value.start_bulk_epoch(
+        epoch_id="epoch-retryable",
+        manifest_hash="manifest",
+        orchestrator_version="test",
+        message_ids=[],
+    )
+    ledger = BulkTaskLedger(registry=value, epoch_id="epoch-retryable")
+    task = {
+        "stage": "N9",
+        "task_id": "mention-1",
+        "input_hash": "input",
+        "snapshot_hash": "snapshot",
+    }
+    ledger.start_many([task])
+    ledger.fail_many([{**task, "error_code": "provider_http_error"}], status="FAILED_RETRYABLE")
+    failed = value.list_bulk_epoch_tasks("epoch-retryable", stage="N9")[0]
+    assert failed["status"] == "FAILED_RETRYABLE"
+    assert failed["finished_at"] is not None
+    ledger.start_many([task])
+    resumed = value.list_bulk_epoch_tasks("epoch-retryable", stage="N9")[0]
+    assert resumed["status"] == "RUNNING"
+    assert resumed["attempt_count"] == 2
+
+
 def test_provider_failures_are_not_content_repairable() -> None:
     assert is_content_repairable(ValueError("bad shape"))
     assert is_content_repairable(

@@ -3934,7 +3934,11 @@ class SQLiteCDECRRegistry:
     ) -> None:
         now = _now()
         started_at = now if status == "RUNNING" else None
-        finished_at = now if status in {"SUCCEEDED", "FAILED"} else None
+        finished_at = (
+            now
+            if status in {"SUCCEEDED", "FAILED", "FAILED_RETRYABLE", "FAILED_TERMINAL"}
+            else None
+        )
         with self._connection() as connection:
             connection.execute(
                 """
@@ -4006,7 +4010,12 @@ class SQLiteCDECRRegistry:
                     now = _now()
                     status = str(record["status"])
                     started_at = now if status == "RUNNING" else None
-                    finished_at = now if status in {"SUCCEEDED", "FAILED"} else None
+                    finished_at = (
+                        now
+                        if status
+                        in {"SUCCEEDED", "FAILED", "FAILED_RETRYABLE", "FAILED_TERMINAL"}
+                        else None
+                    )
                     decision_ref = record.get("decision_ref")
                     connection.execute(
                         """
@@ -4069,6 +4078,9 @@ class SQLiteCDECRRegistry:
                 "snapshot_hash": str(row["snapshot_hash"]),
                 "status": str(row["status"]),
                 "attempt_count": int(row["attempt_count"]),
+                "started_at": row["started_at"],
+                "finished_at": row["finished_at"],
+                "updated_at": row["updated_at"],
                 "decision_ref": (
                     json.loads(str(row["decision_ref_json"]))
                     if row["decision_ref_json"] is not None
@@ -4862,7 +4874,7 @@ class SQLiteCDECRRegistry:
             return True
 
     def finish_cross_document_trace(
-        self, trace_id: str, *, status: Literal["REUSED", "FAILED"]
+        self, trace_id: str, *, status: Literal["REUSED", "FAILED", "PARTIAL"]
     ) -> None:
         with self._connection() as connection:
             connection.execute(

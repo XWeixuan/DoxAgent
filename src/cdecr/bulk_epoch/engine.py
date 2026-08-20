@@ -629,6 +629,7 @@ class BulkEpochEngine:
                     **cached_decisions,
                     **self.core._atomic_decisions(pending_mentions, candidates, compiled, models),
                 }
+                n9_failures = dict(getattr(self.core, "_last_n9_task_failures", {}))
                 deterministic_telemetry["n9_batch_packing"] = getattr(
                     self.core, "_last_n9_packing_telemetry", {}
                 )
@@ -659,19 +660,81 @@ class BulkEpochEngine:
                             }
                         )
                     else:
+                        failure = n9_failures.get(mention.mention_id)
                         failed_task_rows.append(
                             {
                                 "stage": "N9",
                                 "task_id": mention.mention_id,
                                 "input_hash": task_hash,
                                 "snapshot_hash": base_atomic.snapshot_hash,
-                                "error_code": "UNJUDGEABLE_FAILED",
+                                "error_code": (
+                                    failure.error_code
+                                    if failure is not None
+                                    else "UNJUDGEABLE_FAILED"
+                                ),
+                                "retryable": bool(
+                                    failure is not None and failure.retryable
+                                ),
                             }
                         )
                 if finished_task_rows:
                     ledger.finish_many(finished_task_rows)
                 if failed_task_rows:
-                    ledger.fail_many(failed_task_rows)
+                    retryable_rows = [
+                        {key: value for key, value in row.items() if key != "retryable"}
+                        for row in failed_task_rows
+                        if row["retryable"]
+                    ]
+                    terminal_rows = [
+                        {key: value for key, value in row.items() if key != "retryable"}
+                        for row in failed_task_rows
+                        if not row["retryable"]
+                    ]
+                    if retryable_rows:
+                        ledger.fail_many(retryable_rows, status="FAILED_RETRYABLE")
+                    if terminal_rows:
+                        ledger.fail_many(terminal_rows, status="FAILED_TERMINAL")
+                if any(row["retryable"] for row in failed_task_rows):
+                    retryable_count = sum(bool(row["retryable"]) for row in failed_task_rows)
+                    partial_payload = {
+                        "single_document_succeeded": len(ordered_ids),
+                        "atomic_decide_succeeded_tasks": len(finished_task_rows)
+                        + len(cached_decisions),
+                        "atomic_decide_retryable_tasks": retryable_count,
+                        "atomic_apply_completed": False,
+                        "stage_timings": timings,
+                        "wall_clock_ms": round((perf_counter() - wall_started) * 1000),
+                    }
+                    self.registry.update_bulk_epoch(
+                        epoch_id,
+                        status="PARTIAL",
+                        current_stage="ATOMIC_DECIDE_RETRYABLE",
+                        result=partial_payload,
+                    )
+                    self.registry.finish_cross_document_trace(
+                        coordinator_run_id, status="PARTIAL"
+                    )
+                    return [
+                        CrossDocumentResult(
+                            run_id=coordinator_run_id,
+                            processing_key=canonical_hash(
+                                {"epoch": epoch_id, "message": message_id}
+                            ),
+                            message_id=message_id,
+                            status=CrossDocumentStatus.PARTIAL_ATOMIC_DECIDE_RETRYABLE,
+                            atomic_events=[],
+                            packages=[],
+                            atomic_assignments=[],
+                            package_assignments=[],
+                            model_calls=summaries if index == 0 else [],
+                            candidate_counts=candidate_counts,
+                            failure_stage="ATOMIC_DECIDE_RETRYABLE",
+                            error_code="PARTIAL_PROVIDER_UNAVAILABLE",
+                            started_at=started_at,
+                            finished_at=datetime.now(UTC),
+                        )
+                        for index, message_id in enumerate(ordered_ids)
+                    ]
                 with self._writer() as writer:
                     atomic_events, atomic_assignments = self.core._apply_atomic(
                         mentions,

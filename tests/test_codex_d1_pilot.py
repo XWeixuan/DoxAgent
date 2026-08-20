@@ -21,6 +21,7 @@ from doxagent.data_runtime.pilot_case import validate_pilot_case_root
 from doxagent.data_runtime.policy import DataCapabilityCodec, DataToolPolicyRegistry
 from doxagent.pilot.case_builder import (
     DEFAULT_PILOT_CAPABILITY_HOURS,
+    UNIFIED_C4_UPSTREAM_FILE,
     _apply_manual_upstream,
     _c1_quality_payload,
     _clear_current_node_outputs,
@@ -84,30 +85,58 @@ def test_manual_upstream_is_sanitized_and_mapped_to_o4_a(tmp_path: Path) -> None
     (upstream / "c1.md").write_text(
         "Revenue is current【cite:O12】", encoding="utf-8"
     )
-    (upstream / "c4_finalization.json").write_text(
-        json.dumps({"status": "completed", "future_nodes": []}),
+    (upstream / "c3.md").write_text("Industry state", encoding="utf-8")
+    (upstream / UNIFIED_C4_UPSTREAM_FILE).write_text(
+        json.dumps(
+            {
+                "status": "completed",
+                "summary": "C4 unified upstream",
+                "report_markdown": "",
+                "warnings": [],
+                "observation_candidates": [],
+                "entity_relations": [],
+                "future_nodes": [
+                    {
+                        "时间": "2026-08-26",
+                        "未来事项": "Quarterly results",
+                        "与目标公司的关系": "issuer event",
+                        "来源": "IR",
+                        "来源发布日期": "2026-08-01",
+                    }
+                ],
+                "metadata": {},
+            }
+        ),
         encoding="utf-8",
     )
     imported = _load_manual_upstream(CodexD1Node.O4_A, upstream)
     assert imported is not None
-    assert sorted(imported.files) == ["c1.md", "c4_finalization.json"]
+    assert sorted(imported.files) == sorted(
+        [UNIFIED_C4_UPSTREAM_FILE, "c1.md", "c3.md"]
+    )
     assert "【cite:O12】" not in imported.files["c1.md"]
     assert "上游引用需在当前 attempt 重新核验" in imported.files["c1.md"]
     payload = _apply_manual_upstream(
         CodexD1Node.O4_A,
         {
             "c1": {"report_markdown": "stale"},
+            "c3": {"report_markdown": "stale"},
+            "o4_b": {"report_markdown": "must remain outside O4-A"},
+            "c2": {"report_markdown": "must remain outside O4-A"},
+            "known_future_nodes": [{"future_event": "must remain outside O4-A"}],
             "agent_observations": [{"origin_node": "c1"}],
         },
         imported.files,
     )
     assert payload["c1"]["report_markdown"] == imported.files["c1.md"]
-    assert payload["known_future_nodes"] == []
+    assert payload["c3"]["report_markdown"] == imported.files["c3.md"]
+    assert "o4_b" not in payload
+    assert "c2" not in payload
+    assert payload["known_future_nodes"][0]["时间"] == "2026-08-26"
     assert payload["agent_observations"] == []
-    assert payload["manual_upstream_pilot_override"]["files"] == [
-        "c1.md",
-        "c4_finalization.json",
-    ]
+    assert payload["manual_upstream_pilot_override"]["files"] == sorted(
+        [UNIFIED_C4_UPSTREAM_FILE, "c1.md", "c3.md"]
+    )
 
 
 def test_manual_upstream_rejects_empty_and_invalid_c4_files(tmp_path: Path) -> None:
@@ -119,7 +148,7 @@ def test_manual_upstream_rejects_empty_and_invalid_c4_files(tmp_path: Path) -> N
 
     invalid = tmp_path / "invalid"
     invalid.mkdir()
-    (invalid / "c4_pre_scan.json").write_text("{}", encoding="utf-8")
+    (invalid / UNIFIED_C4_UPSTREAM_FILE).write_text("{}", encoding="utf-8")
     with pytest.raises(ValueError, match="NodeOutput JSON is invalid"):
         _load_manual_upstream(CodexD1Node.C1, invalid)
 

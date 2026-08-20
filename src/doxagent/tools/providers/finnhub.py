@@ -518,11 +518,26 @@ def _select_company_news(
         selected.append(row)
         if len(selected) >= limit:
             break
-    return selected
+    if selected:
+        return selected
+    # A discovery tool should not turn a non-empty, symbol-scoped provider response into a
+    # silent success with zero rows.  Keep a small fallback only when the high-signal filter
+    # found nothing; downstream authoritative-source verification remains required.
+    fallback = []
+    for row in records:
+        related = str(row.get("related") or "").upper()
+        if related and symbol and symbol not in {item.strip() for item in related.split(",")}:
+            continue
+        fallback.append(row)
+        if len(fallback) >= min(limit, 5):
+            break
+    return fallback
 
 
 def _repair_common_mojibake(value: object) -> object:
-    if not isinstance(value, str) or not any(marker in value for marker in ("Ã", "â€", "Â")):
+    if not isinstance(value, str) or not any(
+        marker in value for marker in ("Ã", "â€", "â\u0080", "Â")
+    ):
         return value
     try:
         repaired = value.encode("latin-1").decode("utf-8")

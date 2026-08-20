@@ -11,6 +11,7 @@ import traceback
 import uuid
 from collections.abc import Callable, Mapping, Sequence
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from functools import partial
 from pathlib import Path
@@ -134,7 +135,7 @@ from cdecr.ports import (
     StructuredModelRequest,
     StructuredModelResult,
 )
-from cdecr.provider_resilience import is_provider_failure
+from cdecr.provider_resilience import classify_provider_error, is_provider_failure
 from cdecr.scheduler import take_scheduled_call_metrics
 from cdecr.single_document_contracts import ModelCallSummary
 from cdecr.wire import compact_json, wire_ref_metadata
@@ -145,6 +146,19 @@ WIRE_PROTOCOL_VERSION = "cdecr-cross-document-wire-atomic-dictionary-v9"
 ATOMIC_ASSIGNMENT_POLICY_VERSION = "atomic-assignment-policy-v5-late-convergence"
 ATOMIC_DECISION_MENTION_BATCH = 3
 N9_BATCH_PACKING_VERSION = "n9-candidate-overlap-packing-v1"
+
+
+@dataclass(frozen=True)
+class N9TaskFailure:
+    error_code: str
+    retryable: bool
+
+
+@dataclass(frozen=True)
+class N9BatchOutcome:
+    batch_index: int
+    decisions: tuple[AtomicAssignmentDecision, ...]
+    failures: Mapping[str, N9TaskFailure]
 
 
 def _pack_mentions_by_candidate_overlap(
@@ -284,7 +298,16 @@ def _model_error_parse_metadata(exc: Exception) -> dict[str, object]:
     if not isinstance(exc, ModelAdapterError):
         return {}
     return {
+        "exception_class": type(exc).__name__,
         "provider_key_fingerprint": exc.provider_key_fingerprint,
+        "provider_status_code": exc.status_code,
+        "provider_failure_class": classify_provider_error(exc).value,
+        "physical_attempt_count": int(getattr(exc, "physical_attempt_count", 1)),
+        "retry_attempt_count": int(getattr(exc, "retry_attempt_count", 0)),
+        "circuit_state": str(getattr(exc, "circuit_state", "CLOSED")),
+        "circuit_wait_ms": int(getattr(exc, "circuit_wait_ms", 0)),
+        "provider_wait_ms": int(getattr(exc, "provider_wait_ms", 0)),
+        "backoff_ms": int(getattr(exc, "backoff_ms", 0)),
         "parse_diagnostics": exc.parse_diagnostics,
     }
 
@@ -1173,6 +1196,10 @@ class _AuditedModels:
                     "attempt_count": scheduled.attempt_count if scheduled else 1,
                     "provider_wait_ms": scheduled.provider_wait_ms if scheduled else 0,
                     "backoff_ms": scheduled.backoff_ms if scheduled else 0,
+                    "physical_attempt_count": scheduled.attempt_count if scheduled else 1,
+                    "retry_attempt_count": max(0, scheduled.attempt_count - 1) if scheduled else 0,
+                    "circuit_state": scheduled.circuit_state if scheduled else "CLOSED",
+                    "circuit_wait_ms": scheduled.circuit_wait_ms if scheduled else 0,
                     **_model_error_parse_metadata(exc),
                     "cache_hit": False,
                 },
@@ -1226,6 +1253,10 @@ class _AuditedModels:
                 "attempt_count": scheduled.attempt_count if scheduled else 1,
                 "provider_wait_ms": scheduled.provider_wait_ms if scheduled else 0,
                 "backoff_ms": scheduled.backoff_ms if scheduled else 0,
+                "physical_attempt_count": scheduled.attempt_count if scheduled else 1,
+                "retry_attempt_count": max(0, scheduled.attempt_count - 1) if scheduled else 0,
+                "circuit_state": scheduled.circuit_state if scheduled else "CLOSED",
+                "circuit_wait_ms": scheduled.circuit_wait_ms if scheduled else 0,
                 "output_hash": _hash_json(result.payload),
                 "cache_hit": False,
                 **_model_result_transport_metadata(result),
@@ -1599,6 +1630,10 @@ class CrossDocumentEngine:
                 compiled,
                 models,
             )
+            if getattr(self, "_last_n9_task_failures", {}):
+                raise CrossDocumentPipelineError(
+                    "atomic_coreference", "provider_retryable_tasks_pending"
+                )
             atomic_events, atomic_assignments = self._apply_atomic(
                 mentions,
                 candidates,
@@ -2620,7 +2655,7 @@ class CrossDocumentEngine:
 
         def process_batch(
             indexed_batch: tuple[int, list[EventMention]],
-        ) -> tuple[int, AtomicDecisionBatch]:
+        ) -> N9BatchOutcome:
             batch_index, batch_mentions = indexed_batch
             batch_ids = {mention.mention_id for mention in batch_mentions}
             batch_candidates = {
@@ -2836,6 +2871,7 @@ class CrossDocumentEngine:
                 json_schema=AtomicDecisionBatch.model_json_schema(),
             )
             invalid_task_errors: dict[str, str] = {}
+            item_provider_failures: dict[str, N9TaskFailure] = {}
 
             def adapt_and_audit_atomic_payload(
                 payload: object,
@@ -3534,7 +3570,14 @@ class CrossDocumentEngine:
                 output = invoke(ModelTier.M2, "atomic_coreference")
             except CrossDocumentPipelineError as exc:
                 if is_provider_failure(exc):
-                    raise
+                    failure = N9TaskFailure(error_code=exc.code, retryable=True)
+                    return N9BatchOutcome(
+                        batch_index=batch_index,
+                        decisions=(),
+                        failures={
+                            mention.mention_id: failure for mention in batch_mentions
+                        },
+                    )
                 output = conservative_batch(exc)
                 invalid_task_errors.update(
                     {mention_id: f"N9_BATCH_FAILED:{exc.code}" for mention_id in expected}
@@ -3549,7 +3592,7 @@ class CrossDocumentEngine:
 
                 def repair_invalid_task(
                     item: tuple[str, str],
-                ) -> tuple[str, AtomicAssignmentDecision | None]:
+                ) -> tuple[str, AtomicAssignmentDecision | None, N9TaskFailure | None]:
                     mention_id, error = item
                     task = task_by_mention[mention_id]
                     candidate_refs = task["candidates"]
@@ -3623,6 +3666,14 @@ class CrossDocumentEngine:
                             if isinstance(exc, CrossDocumentPipelineError)
                             else type(exc).__name__
                         )
+                        task_failure = (
+                            N9TaskFailure(error_code=error_code, retryable=True)
+                            if isinstance(exc, CrossDocumentPipelineError)
+                            and is_provider_failure(exc)
+                            else None
+                        )
+                    else:
+                        task_failure = None
                     self.registry.append_decision_audit(
                         DecisionAuditRecord(
                             audit_id=stable_id(
@@ -3643,11 +3694,22 @@ class CrossDocumentEngine:
                             },
                         )
                     )
-                    return mention_id, decision
+                    return mention_id, decision, task_failure
 
                 repair_items = sorted(invalid_task_errors.items())
                 with ThreadPoolExecutor(max_workers=min(8, len(repair_items))) as repair_pool:
-                    repaired_by_mention = dict(repair_pool.map(repair_invalid_task, repair_items))
+                    repaired_results = list(repair_pool.map(repair_invalid_task, repair_items))
+                repaired_by_mention = {
+                    mention_id: decision
+                    for mention_id, decision, _ in repaired_results
+                }
+                item_provider_failures.update(
+                    {
+                        mention_id: failure
+                        for mention_id, _, failure in repaired_results
+                        if failure is not None
+                    }
+                )
                 retained_decisions: list[AtomicAssignmentDecision] = []
                 for decision in output.decisions:
                     repaired = repaired_by_mention.get(decision.mention_id, decision)
@@ -3741,15 +3803,23 @@ class CrossDocumentEngine:
                         }
                     )
                 )
-            return batch_index, restored_output.model_copy(update={"decisions": merged_decisions})
+            return N9BatchOutcome(
+                batch_index=batch_index,
+                decisions=tuple(merged_decisions),
+                failures=item_provider_failures,
+            )
 
         if not batches:
+            self._last_n9_task_failures = {}
             flush_audits()
             return decisions
         with ThreadPoolExecutor(max_workers=min(self.n9_active_requests, len(batches))) as executor:
             outputs = list(executor.map(process_batch, enumerate(batches)))
-        for _, output in sorted(outputs):
+        failures: dict[str, N9TaskFailure] = {}
+        for output in sorted(outputs, key=lambda item: item.batch_index):
             decisions.update({item.mention_id: item for item in output.decisions})
+            failures.update(output.failures)
+        self._last_n9_task_failures = failures
         flush_audits()
         return decisions
 

@@ -71,21 +71,21 @@ def test_metric_and_target_registries_cover_every_fixed_required_metric() -> Non
     }
     assert (
         targets.get("c2_macro_implied_policy_rate_12m").collection_mode
-        is CollectionMode.UNAVAILABLE
+        is CollectionMode.PROGRAM
     )
     assert (
         targets.get("c2_macro_implied_policy_rate_12m").capability_status
-        is ProviderCapabilityStatus.BLOCKED
+        is ProviderCapabilityStatus.IMPLEMENTED
     )
-    for target_id in (
-        "o4_short_interest_pct_float",
-        "o4_days_to_cover",
-        "o4_short_interest_change",
-    ):
+    for target_id in ("o4_short_interest_pct_float", "o4_days_to_cover"):
         target = targets.get(target_id)
-        assert target.collection_mode is CollectionMode.UNAVAILABLE
-        assert target.capability_status is ProviderCapabilityStatus.BLOCKED
-        assert target.tool_name is None
+        assert target.collection_mode is CollectionMode.PROGRAM
+        assert target.capability_status is ProviderCapabilityStatus.IMPLEMENTED
+        assert target.tool_name == "yfinance.short_interest"
+    short_change = targets.get("o4_short_interest_change")
+    assert short_change.collection_mode is CollectionMode.UNAVAILABLE
+    assert short_change.capability_status is ProviderCapabilityStatus.BLOCKED
+    assert short_change.tool_name is None
 
 
 def test_object_ref_includes_realization_factor_and_requires_locator() -> None:

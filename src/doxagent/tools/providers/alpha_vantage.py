@@ -379,7 +379,17 @@ def _alpha_issue(raw: JsonObject) -> JsonObject | None:
         retryable = key == "Note" or any(
             token in lowered for token in ("rate limit", "call frequency", "try again", "requests")
         )
-        code = "rate_limited" if retryable else "upstream_provider_error"
+        entitlement = any(
+            token in lowered
+            for token in ("premium", "subscription", "not entitled", "not authorized")
+        )
+        code = (
+            "rate_limited"
+            if retryable
+            else "entitlement_or_permission_denied"
+            if entitlement
+            else "upstream_provider_error"
+        )
         return {"code": code, "message": message.strip(), "retryable": retryable}
     return None
 

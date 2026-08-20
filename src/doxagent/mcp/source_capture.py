@@ -6,6 +6,7 @@ import asyncio
 import ipaddress
 import re
 import socket
+import time
 from dataclasses import dataclass
 from io import BytesIO
 from typing import Protocol
@@ -19,9 +20,7 @@ from pypdf import PdfReader
 from doxagent.codex_runtime.schema import CitationEntry, CitationManifest, SourceRecord
 
 _CITATION = re.compile(r"【cite:(O\d+)】")
-_SYNTHETIC_PROXY_NETWORKS = (
-    ipaddress.ip_network("198.18.0.0/15"),
-)
+_SYNTHETIC_PROXY_NETWORKS = (ipaddress.ip_network("198.18.0.0/15"),)
 
 
 class SourceRepository(Protocol):
@@ -52,12 +51,17 @@ class SourceCaptureService:
         timeout_seconds: float = 30,
         max_bytes: int = 3_000_000,
         max_pdf_bytes: int = 12_000_000,
+        user_agent: str = "DoxAgent-SourceCapture/1.0",
+        sec_min_request_interval_seconds: float = 0.12,
     ) -> None:
         self._repository = repository
         self._timeout_seconds = timeout_seconds
         self._max_bytes = max_bytes
         self._max_pdf_bytes = max_pdf_bytes
         self._lock = asyncio.Lock()
+        self._user_agent = user_agent
+        self._sec_min_request_interval_seconds = sec_min_request_interval_seconds
+        self._last_sec_request_at = 0.0
 
     async def capture(
         self,
@@ -75,11 +79,17 @@ class SourceCaptureService:
             async with httpx.AsyncClient(
                 follow_redirects=False,
                 timeout=self._timeout_seconds,
-                headers={"User-Agent": "DoxAgent-SourceCapture/1.0"},
+                headers={"User-Agent": self._user_agent},
             ) as client:
                 current_url = url
                 for _redirect in range(6):
                     await self._validate_public_url(current_url)
+                    if _is_sec_url(current_url):
+                        elapsed = time.monotonic() - self._last_sec_request_at
+                        delay = self._sec_min_request_interval_seconds - elapsed
+                        if delay > 0:
+                            await asyncio.sleep(delay)
+                        self._last_sec_request_at = time.monotonic()
                     async with client.stream("GET", current_url) as response:
                         if response.is_redirect:
                             location = response.headers.get("location")
@@ -218,6 +228,11 @@ def _extract_payload_text(
     )
     text = (extracted or re.sub(r"<[^>]+>", " ", html)).strip()
     return text, SourceCaptureService._extract_title(html)
+
+
+def _is_sec_url(url: str) -> bool:
+    hostname = (urlparse(url).hostname or "").lower()
+    return hostname == "sec.gov" or hostname.endswith(".sec.gov")
 
 
 def _looks_like_error_page(text: str, title: str | None) -> bool:

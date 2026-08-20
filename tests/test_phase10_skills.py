@@ -440,12 +440,18 @@ def test_c1_c3_task_text_moved_to_internal_task_skills() -> None:
     assert "Invoke `" not in industry.body
     assert "Do not stop at supplied context or Data Tools" in c3_prompt.body
     assert "research completeness and freshness" in c3_prompt.body
-    assert "Target-Relevant Industry and Value-Chain Fact Baseline" in industry.body
-    assert "Core External Drivers, Allocation Mechanisms, and Transmission" in industry.body
-    assert "### Core Findings" in industry.body
-    assert "latest view/action/datum; change; signal conclusion" in industry.body
-    assert "**Transmission Mechanism**" in industry.body
-    assert "**Current Evidence Base**" in industry.body
+    assert "direct target business realization" in c3_prompt.body
+    assert "material competitor, substitute, technology, or diversion path" in (
+        c3_prompt.body
+    )
+    assert "一、目标相关行业与产业链事实基准" in industry.body
+    assert "三、核心外部驱动、分配机制与传导" in industry.body
+    assert "### 核心发现" in industry.body
+    assert "最新判断、行动或数据；近期变化；信号结论" in industry.body
+    assert "**传导机制**" in industry.body
+    assert "**当前证据基础**" in industry.body
+    assert "Cross-Node Handoffs" not in industry.body
+    assert "handoff node" not in industry.body
     assert "candidate question; anchor;" not in industry.body
     assert "candidate questions, not formal `PotentialGap` objects" in industry.body
 
@@ -720,7 +726,7 @@ def test_prompt_injector_selects_global_research_internal_skills_for_c1_c3() -> 
     assert c3_injected.prompt_bundle.external_skill_package_ids == []
     c3_skill = default_prompt_registry().get("industry-research")
     assert "Document 1" in c3_skill.body
-    assert "Industry and Commercialization Milestones and Proof Boundaries" in c3_skill.body
+    assert "四、行业与商业化里程碑及证明边界" in c3_skill.body
     assert "priced in" in c3_skill.body
 
     o4_definition = agent_registry.get(AgentName.O4_MARKET_TRACE)
@@ -741,12 +747,16 @@ def test_prompt_injector_selects_global_research_internal_skills_for_c1_c3() -> 
     implied_skill = default_prompt_registry().get("market-implied-expectations")
     o4_prompt = default_prompt_registry().get("agent.o4")
     assert "recent price and flow reaction first" in ticker_skill.body
-    assert "Current Market Pricing Baseline" in implied_skill.body
-    assert "Major Repricing Episodes and Pricing Drivers" in implied_skill.body
-    assert "one or at most two focal assumptions" in implied_skill.body
-    assert "NOT_IDENTIFIABLE" in implied_skill.body
+    assert "一、当前市场定价基线" in implied_skill.body
+    assert "三、市场隐含的业务、财务与持续期条件" in implied_skill.body
+    assert "one or at most two focal operating assumptions" in implied_skill.body
+    assert "binding condition or scenario set" in implied_skill.body
+    assert "All final report section titles and table headers must be Chinese" in (
+        implied_skill.body
+    )
     assert "O4-B Macro Market Research" in o4_prompt.body
     assert "O4-A Market-Implied Expectations Research" in o4_prompt.body
+    assert "neither track depends on the other's report" in o4_prompt.body
 
 
 def test_c2_exposes_macro_analysis_not_global_macro() -> None:

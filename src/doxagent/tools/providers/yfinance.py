@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import tempfile
 from collections.abc import Mapping
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any, cast
 
@@ -95,6 +95,9 @@ class YFinanceHkBasicSnapshotClient:
 
 
 class YFinanceDailyOhlcvClient:
+    def __init__(self, *, adjusted: bool = False) -> None:
+        self._adjusted = adjusted
+
     def call(self, request: ToolRequest) -> ToolResult:
         symbol = _input_str_any(request, ("symbol", "ticker"), request.ticker).upper()
         outputsize = _bounded_int(request.input.get("outputsize", 30), 1, 250)
@@ -104,7 +107,30 @@ class YFinanceDailyOhlcvClient:
             yf = cast(Any, importlib.import_module("yfinance"))
             _configure_yfinance_cache(yf)
             ticker = yf.Ticker(symbol)
-            frame = ticker.history(period="1y", interval="1d")
+            start_date = _input_str(request, "start_date", "") or None
+            end_date = _input_str(request, "end_date", "") or None
+            cutoff_date = str(request.metadata.get("cutoff_at") or "")[:10]
+            if cutoff_date and (not end_date or end_date > cutoff_date):
+                end_date = cutoff_date
+            history_kwargs: dict[str, object] = {
+                "period": None if start_date or end_date else "1y",
+                "interval": "1d",
+                "auto_adjust": self._adjusted,
+                "actions": True,
+            }
+            if start_date:
+                history_kwargs["start"] = start_date
+            if end_date:
+                # yfinance treats ``end`` as exclusive. Request the following
+                # calendar day so the caller's inclusive end/cutoff date can
+                # be returned without ever exposing a later daily bar.
+                inclusive_end = date.fromisoformat(end_date)
+                history_kwargs["end"] = (inclusive_end + timedelta(days=1)).isoformat()
+            try:
+                frame = ticker.history(**history_kwargs)
+            except TypeError:
+                # Preserve compatibility with older yfinance and deterministic test doubles.
+                frame = ticker.history(period="1y", interval="1d")
             if getattr(frame, "empty", False):
                 frame = yf.download(
                     symbol,
@@ -118,6 +144,8 @@ class YFinanceDailyOhlcvClient:
             tail = frame.tail(outputsize)
             for index, row in tail.iterrows():
                 row_date = index.date() if hasattr(index, "date") else index
+                if end_date and str(row_date) > end_date:
+                    continue
                 rows.append(
                     {
                         "datetime": str(row_date),
@@ -126,6 +154,8 @@ class YFinanceDailyOhlcvClient:
                         "low": _json_number(_row_value(row, "Low")),
                         "close": _json_number(_row_value(row, "Close")),
                         "volume": _json_number(_row_value(row, "Volume")),
+                        "dividend": _json_number(_row_value(row, "Dividends")),
+                        "stock_split": _json_number(_row_value(row, "Stock Splits")),
                     }
                 )
             if not rows:
@@ -154,6 +184,16 @@ class YFinanceDailyOhlcvClient:
                     "fallback_for": "twelvedata.daily_ohlcv",
                     "interval": "1day",
                     "ohlcv": rows,
+                    "requested_start_date": start_date,
+                    "requested_end_date": end_date,
+                    "adjustment_mode": (
+                        "split_dividend_adjusted" if self._adjusted else "raw_unadjusted"
+                    ),
+                    "corporate_action_metadata": {
+                        "splits_included": self._adjusted,
+                        "dividends_included": self._adjusted,
+                        "total_return": self._adjusted,
+                    },
                 },
                 tool_name=request.tool_name,
             )
@@ -233,6 +273,7 @@ class YFinanceSellSideConsensusClient:
                     ),
                 )
             retrieved_at = datetime.now(UTC).isoformat()
+            cutoff_at = request.metadata.get("cutoff_at")
             output = {
                 "provider": "yfinance",
                 "symbol": symbol,
@@ -251,6 +292,11 @@ class YFinanceSellSideConsensusClient:
                     "0y": "current fiscal year",
                     "+1y": "next fiscal year",
                 },
+                "requested_cutoff_at": cutoff_at,
+                "vintage_policy": (
+                    "retrieval-time current consensus only; the provider does not expose a "
+                    "historical point-in-time vintage"
+                ),
                 "source_coordinates": {
                     "source_kind": "market_data",
                     "source_id": f"yfinance:sell_side_consensus:{symbol}",
@@ -260,23 +306,35 @@ class YFinanceSellSideConsensusClient:
                     "unofficial_source": True,
                 },
             }
+            partial = bool(errors) or cutoff_at is not None
             return ToolResult(
                 tool_name=request.tool_name,
-                status=ResultStatus.PARTIAL if errors else ResultStatus.SUCCEEDED,
+                status=ResultStatus.PARTIAL if partial else ResultStatus.SUCCEEDED,
                 output=output,
                 output_summary=(
                     "Retrieved a compact Yahoo Finance analyst-consensus snapshot."
-                    if not errors
-                    else "Retrieved partial Yahoo Finance analyst consensus with explicit gaps."
+                    if not partial
+                    else "Retrieved current Yahoo Finance consensus with explicit vintage limits."
                 ),
                 error=(
                     ToolError(
-                        code="partial_consensus",
-                        message="Some Yahoo Finance consensus datasets were unavailable.",
-                        retryable=True,
-                        details={"provider_errors": errors},
+                        code=(
+                            "partial_consensus"
+                            if errors
+                            else "current_consensus_not_historical_vintage"
+                        ),
+                        message=(
+                            "Some Yahoo Finance consensus datasets were unavailable."
+                            if errors
+                            else (
+                                "Current consensus cannot establish the requested "
+                                "historical vintage."
+                            )
+                        ),
+                        retryable=bool(errors),
+                        details={"provider_errors": errors, "requested_cutoff_at": cutoff_at},
                     )
-                    if errors
+                    if partial
                     else None
                 ),
                 raw={"datasets": sorted(data)},

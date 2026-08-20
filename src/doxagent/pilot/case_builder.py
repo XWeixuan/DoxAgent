@@ -40,17 +40,17 @@ _MANUAL_CITATION_REPLACEMENT = "[上游引用需在当前 attempt 重新核验]"
 _MAX_MANUAL_UPSTREAM_BYTES = 2 * 1024 * 1024
 DEFAULT_PILOT_CAPABILITY_HOURS = 24 * 365 * 10
 MAX_PILOT_CAPABILITY_HOURS = DEFAULT_PILOT_CAPABILITY_HOURS
+UNIFIED_C4_UPSTREAM_FILE = "c4_finalization.json.json"
 MANUAL_UPSTREAM_FILES: dict[CodexD1Node, tuple[str, ...]] = {
-    CodexD1Node.C1: ("c4_pre_scan.json",),
-    CodexD1Node.C3: ("c4_pre_scan.json",),
-    CodexD1Node.C4_ENRICHMENT: ("c4_pre_scan.json", "c1.md", "c3.md"),
-    CodexD1Node.C4_FINALIZATION: ("c4_enrichment.json",),
+    CodexD1Node.C1: (UNIFIED_C4_UPSTREAM_FILE,),
+    CodexD1Node.C3: (UNIFIED_C4_UPSTREAM_FILE,),
+    CodexD1Node.C4_PRE_SCAN: (UNIFIED_C4_UPSTREAM_FILE,),
+    CodexD1Node.C4_ENRICHMENT: (UNIFIED_C4_UPSTREAM_FILE, "c1.md", "c3.md"),
+    CodexD1Node.C4_FINALIZATION: (UNIFIED_C4_UPSTREAM_FILE,),
     CodexD1Node.O4_A: (
+        UNIFIED_C4_UPSTREAM_FILE,
         "c1.md",
-        "c2.md",
         "c3.md",
-        "o4_b.md",
-        "c4_finalization.json",
     ),
 }
 
@@ -193,6 +193,8 @@ class PilotCaseBuilder:
         if not isinstance(payload, dict):
             raise ValueError("source attempt context payload is invalid")
         payload = deepcopy(payload)
+        if request.node is CodexD1Node.O4_A:
+            payload = _isolate_o4_a_payload(payload)
         if request.profile == "quality":
             payload = _quality_payload(request.node, payload)
         manual_upstream = _load_manual_upstream(request.node, request.upstream_dir)
@@ -501,12 +503,13 @@ def _quality_payload(
             "target transmission, and preserve milestone proof boundaries and Unknowns."
         ),
         CodexD1Node.O4_A: (
-            "O4-A research-quality Pilot. Produce the full six-section market-implied "
-            "expectations report under the market-implied-expectations skill. Do not "
-            "optimize for brevity or inherit functional-smoke coverage limits. Use the "
-            "frozen C1/C2/C3/O4-B inputs as dependencies rather than redoing them, and "
-            "separate observed pricing evidence, calculations, sell-side views, conditional "
-            "scenario consistency and identification limits."
+            "O4-A research-quality Pilot. Produce the five-section market-implied "
+            "expectations report under the market-implied-expectations skill, using Chinese "
+            "section titles and table headers. Use frozen C1/C3 inputs as economic starting "
+            "points without redoing them; do not read or inherit O4-B. Concentrate on recent "
+            "repricing drivers and the business, financial, and duration conditions current "
+            "price requires. When evidence is sparse, prefer a shorter conditional judgment "
+            "to availability, provider, confidence, or identifiability audits."
         ),
         CodexD1Node.C4_PRE_SCAN: (
             "C4 quality Pilot, pre-scan turn. Fully execute the entity-map refresh and "
@@ -596,6 +599,9 @@ def _apply_manual_upstream(
     payload: dict[str, object],
     files: dict[str, str],
 ) -> dict[str, object]:
+    if node is CodexD1Node.O4_A:
+        payload = _isolate_o4_a_payload(payload)
+
     def structured(name: str) -> dict[str, Any]:
         return json.loads(files[name])
 
@@ -611,31 +617,44 @@ def _apply_manual_upstream(
             "metadata": {},
         }
 
-    if "c4_pre_scan.json" in files:
-        payload["c4_pre_scan"] = structured("c4_pre_scan.json")
+    if UNIFIED_C4_UPSTREAM_FILE in files:
+        c4_output = structured(UNIFIED_C4_UPSTREAM_FILE)
+        if node is CodexD1Node.C4_FINALIZATION:
+            payload["enriched_c4"] = c4_output
+        elif node is CodexD1Node.O4_A:
+            payload["known_future_nodes"] = list(c4_output.get("future_nodes") or [])
+        else:
+            payload["c4_pre_scan"] = c4_output
     if node is CodexD1Node.C4_ENRICHMENT:
         if "c1.md" in files:
             payload["c1_report"] = report("c1.md")
         if "c3.md" in files:
             payload["c3_report"] = report("c3.md")
-    elif node is CodexD1Node.C4_FINALIZATION and "c4_enrichment.json" in files:
-        payload["enriched_c4"] = structured("c4_enrichment.json")
     elif node is CodexD1Node.O4_A:
-        for key in ("c1", "c2", "c3", "o4_b"):
+        for key in ("c1", "c3"):
             name = f"{key}.md"
             if name in files:
                 payload[key] = report(name)
-        if "c4_finalization.json" in files:
-            payload["known_future_nodes"] = structured("c4_finalization.json").get(
-                "future_nodes", []
-            )
-    if any(name in files for name in ("c1.md", "c2.md", "c3.md", "o4_b.md")):
+    if any(name in files for name in ("c1.md", "c3.md")):
         payload["agent_observations"] = []
     payload["manual_upstream_pilot_override"] = {
         "files": sorted(files),
         "precedence": "manual_over_source_run",
         "citation_policy": "context_only_reverify",
     }
+    return payload
+
+
+def _isolate_o4_a_payload(payload: dict[str, object]) -> dict[str, object]:
+    for key in ("o4_b", "c2", "known_future_nodes"):
+        payload.pop(key, None)
+    observations = payload.get("agent_observations")
+    if isinstance(observations, list):
+        payload["agent_observations"] = [
+            item
+            for item in observations
+            if isinstance(item, dict) and item.get("origin_node") in {"c1", "c3"}
+        ]
     return payload
 
 

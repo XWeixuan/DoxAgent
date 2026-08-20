@@ -146,7 +146,55 @@ _CAPABILITY_GAPS: tuple[tuple[str, tuple[str, ...]], ...] = (
         "standardized_segment_product_customer_metrics",
         ("segment", "product revenue", "customer concentration", "分部", "产品收入", "客户集中度"),
     ),
+    ("options_surface", ("option", "options", "iv", "skew", "期权", "隐含波动")),
+    (
+        "relative_performance",
+        ("benchmark", "peer return", "relative return", "基准", "同行", "相对收益"),
+    ),
+    (
+        "ownership_positioning",
+        ("short interest", "institutional", "crowding", "空头", "机构持仓", "拥挤"),
+    ),
+    (
+        "company_event_timing",
+        ("event time", "earnings date", "event window", "事件时间", "财报日期", "事件窗"),
+    ),
 )
+
+_CAPABILITY_TOOLS: dict[str, tuple[str, ...]] = {
+    "historical_market_data": (
+        "market.daily_ohlcv",
+        "market.relative_performance",
+        "ibkr.historical_ticks",
+    ),
+    "valuation": (
+        "alpha.valuation_snapshot",
+        "fmp.valuation_snapshot",
+        "yfinance.peer_relative_valuation",
+    ),
+    "sell_side_consensus": (
+        "market.sell_side_consensus",
+        "yfinance.sell_side_consensus",
+        "alpha.earnings_events",
+        "twelvedata.sell_side_estimates",
+        "fmp.sell_side_estimates",
+    ),
+    "earnings_transcript_qa": (),
+    "standardized_segment_product_customer_metrics": ("sec.company_financials",),
+    "options_surface": ("ibkr.option_surface", "alpha.historical_options"),
+    "relative_performance": ("market.relative_performance",),
+    "ownership_positioning": (
+        "yfinance.short_interest",
+        "ibkr.shortability_snapshot",
+        "alpha.institutional_holdings",
+        "sec.insider_transactions_enriched",
+    ),
+    "company_event_timing": (
+        "alpha.earnings_events",
+        "finnhub.company_news_events",
+        "sec.issuer_filings",
+    ),
+}
 
 
 class DataToolGuide:
@@ -160,21 +208,23 @@ class DataToolGuide:
         effective_tool_ids: Iterable[str],
         business_category: str | None = None,
         as_of: str | None = None,
-        limit: int = 5,
+        limit: int = 12,
     ) -> dict[str, object]:
         allowed = set(effective_tool_ids)
         inferred = business_category or self._infer_category(task)
         query_tokens = self._tokens(task)
         intents = _detect_intents(task)
+        requested_capabilities = _requested_capabilities(task)
+        requested_tool_ids = {
+            tool_id
+            for capability in requested_capabilities
+            for tool_id in _CAPABILITY_TOOLS.get(capability, ())
+        }
         preferred_ids = {
-            str(tool_id)
-            for intent in intents
-            for tool_id in intent.get("preferred", ())
+            str(tool_id) for intent in intents for tool_id in intent.get("preferred", ())
         }
         excluded_prefixes = {
-            str(prefix)
-            for intent in intents
-            for prefix in intent.get("excluded", ())
+            str(prefix) for intent in intents for prefix in intent.get("excluded", ())
         }
         scored: list[tuple[int, DataToolContract]] = []
         gaps: list[dict[str, object]] = []
@@ -184,14 +234,20 @@ class DataToolGuide:
             if any(contract.canonical_tool_id.startswith(prefix) for prefix in excluded_prefixes):
                 continue
             intent_match = contract.canonical_tool_id in preferred_ids
-            if inferred and inferred not in contract.business_categories and not intent_match:
+            capability_match = contract.canonical_tool_id in requested_tool_ids
+            if (
+                inferred
+                and inferred not in contract.business_categories
+                and not intent_match
+                and not capability_match
+            ):
                 continue
             score = self._score(contract, query_tokens, inferred)
+            if capability_match:
+                score += 25
             if intent_match:
                 preferred_order = [
-                    str(item)
-                    for intent in intents
-                    for item in intent.get("preferred", ())
+                    str(item) for intent in intents for item in intent.get("preferred", ())
                 ]
                 score += 30 - min(preferred_order.index(contract.canonical_tool_id), 20)
             if contract.availability is DataAvailability.UNAVAILABLE:
@@ -215,7 +271,7 @@ class DataToolGuide:
             )
         )
         candidates = []
-        for score, contract in scored[: max(1, min(limit, 5))]:
+        for score, contract in scored[: max(1, min(limit, 12))]:
             candidates.append(
                 {
                     "canonical_tool_id": contract.canonical_tool_id,
@@ -238,6 +294,7 @@ class DataToolGuide:
             "unavailable_gaps": gaps[:5],
             "intent_coverage": _intent_coverage(intents, candidates),
             "capability_gaps": _capability_gaps(task, candidates),
+            "capability_coverage": _capability_coverage(task, candidates, allowed),
             "guidance": (
                 "Choose one semantic tool from candidates. For SEC documents, call "
                 "sec.issuer_filings(include_exhibits=true) before filing content when accession "
@@ -342,8 +399,7 @@ def _recommended_inputs(tool_id: str) -> list[str]:
         "sec.filing_content": ["form or accession + primary_document", "sections"],
         "sec.filing_sections": ["form or accession + primary_document", "sections"],
         "sec.management_disclosures": [
-            "form=8-K (default) reads Item 2.02 + EX-99.1/EX-99.2; "
-            "form=10-Q reads MD&A"
+            "form=8-K (default) reads Item 2.02 + EX-99.1/EX-99.2; form=10-Q reads MD&A"
         ],
     }.get(tool_id, [])
 
@@ -373,21 +429,50 @@ def _intent_coverage(
 
 
 def _capability_gaps(task: str, candidates: list[dict[str, object]]) -> list[dict[str, object]]:
-    lowered = task.lower()
-    candidate_categories = {
-        str(item["canonical_tool_id"]).split(".", maxsplit=1)[0] for item in candidates
-    }
+    candidate_ids = {str(item["canonical_tool_id"]) for item in candidates}
     gaps = []
-    for capability, hints in _CAPABILITY_GAPS:
-        if not any(hint in lowered for hint in hints):
+    for capability in _requested_capabilities(task):
+        configured = set(_CAPABILITY_TOOLS.get(capability, ()))
+        if configured.intersection(candidate_ids):
             continue
-        # SEC/IR discovery does not become a structured market, consensus, or
-        # transcript capability merely because it can discover a related page.
         gaps.append(
             {
                 "capability": capability,
                 "status": "not_covered_by_current_node_tools",
-                "candidate_source_namespaces": sorted(candidate_categories),
+                "expected_tool_ids": sorted(configured),
             }
         )
     return gaps
+
+
+def _requested_capabilities(task: str) -> list[str]:
+    lowered = task.lower()
+    return [
+        capability
+        for capability, hints in _CAPABILITY_GAPS
+        if any(hint in lowered for hint in hints)
+    ]
+
+
+def _capability_coverage(
+    task: str,
+    candidates: list[dict[str, object]],
+    allowed: set[str],
+) -> list[dict[str, object]]:
+    candidate_by_id = {str(item["canonical_tool_id"]): item for item in candidates}
+    rows: list[dict[str, object]] = []
+    for capability in _requested_capabilities(task):
+        expected = _CAPABILITY_TOOLS.get(capability, ())
+        selected = [tool_id for tool_id in expected if tool_id in candidate_by_id]
+        permitted = [tool_id for tool_id in expected if tool_id in allowed]
+        rows.append(
+            {
+                "capability": capability,
+                "status": "covered"
+                if selected
+                else ("permitted_but_unavailable" if permitted else "not_permitted"),
+                "candidate_tool_ids": selected,
+                "permitted_tool_ids": permitted,
+            }
+        )
+    return rows

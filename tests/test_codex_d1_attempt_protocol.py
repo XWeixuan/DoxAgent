@@ -154,7 +154,7 @@ async def test_c1_bundle_injects_complete_fundamental_research_contract(tmp_path
             "market-implied-expectations.md",
             "prompts/internal_task_skills/market-implied-expectations.md",
             "codex_assets/document1_v2/agents/o4_a.md",
-            29_000,
+            25_000,
         ),
         (
             CodexD1Node.C4_PRE_SCAN,
@@ -226,13 +226,20 @@ async def test_c3_and_o4_a_bundle_sections_follow_canonical_skills(tmp_path: Pat
         context_payload={"ticker": "NVDA"},
         horizontal=None,
     )
-    assert len(c3.required_sections) == 6
-    assert c3.required_sections[0] == "Target-Relevant Industry and Value-Chain Fact Baseline"
-    assert c3.required_sections[-1] == "Unknowns, Evidence Boundaries, and Cross-Node Handoffs"
-    assert len(o4_a.required_sections) == 6
-    assert o4_a.required_sections[0] == "Current Market Pricing Baseline"
-    assert o4_a.required_sections[-1] == (
-        "Unknowns, Identification Boundaries, and Cross-Node Handoffs"
+    assert c3.required_sections == (
+        "一、目标相关行业与产业链事实基准",
+        "二、关键外部主体判断与行为信号",
+        "三、核心外部驱动、分配机制与传导",
+        "四、行业与商业化里程碑及证明边界",
+        "五、潜在行业与产业链因素缺口候选",
+        "六、Unknowns 与证据边界",
+    )
+    assert o4_a.required_sections == (
+        "一、当前市场定价基线",
+        "二、近期重定价与主要定价驱动",
+        "三、市场隐含的业务、财务与持续期条件",
+        "四、市场锚点与定价问题",
+        "五、关键未知项与识别边界",
     )
 
 

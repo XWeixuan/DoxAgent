@@ -586,7 +586,7 @@ class CDECRRegistry(Protocol):
     ) -> bool: ...
 
     def finish_cross_document_trace(
-        self, trace_id: str, *, status: Literal["REUSED", "FAILED"]
+        self, trace_id: str, *, status: Literal["REUSED", "FAILED", "PARTIAL"]
     ) -> None: ...
 
     def get_completed_cross_document_result(

@@ -80,6 +80,24 @@ _C4_TOOLS = {
     "usaspending.award_search",
 }
 
+# Keep provider clients available to direct callers and other nodes, but do not
+# advertise tools to O4-A when the currently configured provider/account tier is
+# known to reject them and there is no usable fallback for that tool contract.
+_NODE_TOOL_EXCLUSIONS: dict[CodexD1Node, frozenset[str]] = {
+    CodexD1Node.O4_A: frozenset(
+        {
+            "alpha.historical_options",
+            "benzinga.analyst_events",
+            "benzinga.market_signals",
+            "fmp.valuation_snapshot",
+            "ibkr.fed_funds_curve",
+            "ibkr.historical_ticks",
+            "ibkr.option_surface",
+            "twelvedata.sell_side_estimates",
+        }
+    ),
+}
+
 
 class DataToolPolicyRegistry:
     """Server-side maximum allowlist keyed by workflow node and role."""
@@ -98,7 +116,9 @@ class DataToolPolicyRegistry:
         expected = _ROLE_BY_NODE.get(node)
         if expected is None or expected is not role:
             return frozenset()
-        return self._by_role.get(role, frozenset())
+        return self._by_role.get(role, frozenset()).difference(
+            _NODE_TOOL_EXCLUSIONS.get(node, frozenset())
+        )
 
     def allowed_tools_for_ticker(
         self,

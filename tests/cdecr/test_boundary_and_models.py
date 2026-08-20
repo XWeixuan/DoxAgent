@@ -572,6 +572,8 @@ def test_embedding_retries_provider_failure_with_fallback(
     client = DashScopeEmbeddingClient(
         api_key="primary",
         fallback_api_keys=("fallback",),
+        key_rotation_enabled=True,
+        auto_quarantine_enabled=True,
         base_url="https://example.test",
     )
     assert client.embed(["hello"]).dimensions == 1024
@@ -601,6 +603,8 @@ def test_structured_model_retries_provider_failure_with_fallback(
         fallback_api_keys=("fallback",),
         base_url="https://example.test",
         model="deepseek-v4-flash",
+        key_rotation_enabled=True,
+        auto_quarantine_enabled=True,
     )
     assert client.complete(request()).payload == {"ok": True}
     assert attempted_keys == ["primary", "fallback"]
@@ -639,6 +643,8 @@ def test_structured_model_rotates_from_arrearage_to_healthy_fallback(
         base_url="https://example.test",
         model="deepseek-v4-flash",
         key_health=ProviderKeyHealthRegistry(state_path=None),
+        key_rotation_enabled=True,
+        auto_quarantine_enabled=True,
     )
 
     assert client.complete(request()).payload == {"ok": True}

@@ -239,6 +239,11 @@ def _scheduler(settings: CDECRSettings) -> CDECRScheduler:
         },
         repair_limit=settings.item_repair_active_requests,
         max_retries=settings.structured_provider_max_retries,
+        provider_first_pause_seconds=settings.provider_first_pause_seconds,
+        provider_second_pause_seconds=settings.provider_second_pause_seconds,
+        provider_half_open_probes=settings.provider_half_open_probes,
+        provider_recovery_start_rate=settings.provider_recovery_start_rate,
+        provider_recovery_initial_concurrency=settings.provider_recovery_initial_concurrency,
     )
 
 
@@ -306,6 +311,8 @@ def _structured_client(
         ),
         timeout_seconds=settings.model_timeout_seconds,
         fallback_api_keys=settings.dashscope_fallback_api_keys(),
+        key_rotation_enabled=settings.provider_key_rotation_enabled,
+        auto_quarantine_enabled=settings.provider_auto_quarantine_enabled,
     )
 
 
@@ -322,6 +329,8 @@ def _package_v3_client(settings: CDECRSettings) -> DashScopeStructuredModelClien
         structured_transport="responses",
         timeout_seconds=settings.model_timeout_seconds,
         fallback_api_keys=settings.dashscope_fallback_api_keys(),
+        key_rotation_enabled=settings.provider_key_rotation_enabled,
+        auto_quarantine_enabled=settings.provider_auto_quarantine_enabled,
     )
 
 
@@ -458,6 +467,8 @@ def _document_processor(
         dimensions=settings.embedding_dimensions,
         timeout_seconds=settings.model_timeout_seconds,
         fallback_api_keys=settings.dashscope_fallback_api_keys(),
+        key_rotation_enabled=settings.provider_key_rotation_enabled,
+        auto_quarantine_enabled=settings.provider_auto_quarantine_enabled,
     )
     m2 = _structured_client(settings, ModelTier.M2)
     m3 = _structured_client(settings, ModelTier.M3)
@@ -499,6 +510,8 @@ def _cross_document_engine(
         dimensions=settings.embedding_dimensions,
         timeout_seconds=settings.model_timeout_seconds,
         fallback_api_keys=settings.dashscope_fallback_api_keys(),
+        key_rotation_enabled=settings.provider_key_rotation_enabled,
+        auto_quarantine_enabled=settings.provider_auto_quarantine_enabled,
     )
     m2 = _structured_client(settings, ModelTier.M2)
     m3 = _structured_client(settings, ModelTier.M3)
@@ -549,6 +562,8 @@ def _bulk_epoch_engine(
         dimensions=settings.embedding_dimensions,
         timeout_seconds=settings.model_timeout_seconds,
         fallback_api_keys=settings.dashscope_fallback_api_keys(),
+        key_rotation_enabled=settings.provider_key_rotation_enabled,
+        auto_quarantine_enabled=settings.provider_auto_quarantine_enabled,
     )
     raw_m2 = _structured_client(settings, ModelTier.M2)
     raw_m3 = _structured_client(settings, ModelTier.M3)
@@ -578,6 +593,11 @@ def _bulk_epoch_engine(
         provider_start_rate=settings.structured_provider_start_rate,
         provider_initial_burst=settings.structured_provider_initial_burst,
         max_retries=settings.structured_provider_max_retries,
+        provider_first_pause_seconds=settings.provider_first_pause_seconds,
+        provider_second_pause_seconds=settings.provider_second_pause_seconds,
+        provider_half_open_probes=settings.provider_half_open_probes,
+        provider_recovery_start_rate=settings.provider_recovery_start_rate,
+        provider_recovery_initial_concurrency=settings.provider_recovery_initial_concurrency,
         rates={
             ModelTier.M2: (1000.0, settings.scheduler_m2_concurrency),
             ModelTier.M3: (1000.0, settings.scheduler_m3_concurrency),

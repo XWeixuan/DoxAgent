@@ -18,9 +18,12 @@ from cdecr.ports import (
     StructuredModelResult,
 )
 from cdecr.provider_resilience import (
+    ModelFailureClass,
+    ProviderBalanceBlockedError,
+    ProviderCircuitState,
+    classify_provider_error,
     is_provider_pressure,
     is_retryable_provider_failure,
-    provider_retry_delay,
 )
 
 _T = TypeVar("_T")
@@ -36,6 +39,8 @@ class ScheduledCallMetrics:
     attempt_count: int = 1
     provider_wait_ms: int = 0
     backoff_ms: int = 0
+    circuit_state: str = ProviderCircuitState.CLOSED.value
+    circuit_wait_ms: int = 0
 
 
 @dataclass(frozen=True)
@@ -102,6 +107,11 @@ class StructuredProviderGate:
         hard_limit: int,
         start_rate: float,
         burst: int,
+        first_pause_seconds: float = 8.0,
+        second_pause_seconds: float = 20.0,
+        half_open_probes: int = 2,
+        recovery_start_rate: float = 5.0,
+        recovery_initial_concurrency: int = 8,
     ) -> None:
         if target < 1 or hard_limit < target:
             raise ValueError("provider concurrency must satisfy 1 <= target <= hard_limit")
@@ -119,11 +129,45 @@ class StructuredProviderGate:
         self._dynamic_limit = self.hard_limit
         self._successes = 0
         self._start_rate = max(1.0, start_rate)
+        self._normal_start_rate = self._start_rate
         self._burst = max(1, burst)
         self._tokens = float(self._burst)
         self._tokens_updated_at = monotonic()
         self._start_lock = Lock()
         self._sequence = 0
+        self._first_pause_seconds = max(0.0, first_pause_seconds)
+        self._second_pause_seconds = max(0.0, second_pause_seconds)
+        self._half_open_probes = max(1, half_open_probes)
+        self._recovery_start_rate = max(0.1, recovery_start_rate)
+        self._recovery_initial_concurrency = max(1, recovery_initial_concurrency)
+        self._state = ProviderCircuitState.CLOSED
+        self._open_until = 0.0
+        self._open_round = 0
+        self._probe_started = 0
+        self._probe_succeeded = 0
+        self._call_state = local()
+
+    def _wait_for_circuit(self) -> tuple[str, int]:
+        started = monotonic()
+        with self._condition:
+            while True:
+                now = monotonic()
+                if self._state is ProviderCircuitState.BALANCE_BLOCKED:
+                    raise ProviderBalanceBlockedError()
+                if self._state in {ProviderCircuitState.OPEN_1, ProviderCircuitState.OPEN_2}:
+                    remaining = self._open_until - now
+                    if remaining > 0:
+                        self._condition.wait(timeout=remaining)
+                        continue
+                    self._state = ProviderCircuitState.HALF_OPEN
+                    self._probe_started = 0
+                    self._probe_succeeded = 0
+                if self._state is ProviderCircuitState.HALF_OPEN:
+                    if self._probe_started >= self._half_open_probes:
+                        self._condition.wait()
+                        continue
+                    self._probe_started += 1
+                return self._state.value, round((monotonic() - started) * 1000)
 
     def _wait_for_start(self) -> None:
         while True:
@@ -142,6 +186,8 @@ class StructuredProviderGate:
         sleep(jitter)
 
     def acquire(self) -> None:
+        state, circuit_wait_ms = self._wait_for_circuit()
+        self._call_state.acquire = (state, circuit_wait_ms)
         self._wait_for_start()
         with self._condition:
             while self._active >= self._dynamic_limit:
@@ -155,16 +201,76 @@ class StructuredProviderGate:
             self._dynamic_limit = max(self.minimum_limit, int(self._dynamic_limit * 0.8))
             self._successes = 0
 
+    def failure(self, exc: Exception) -> None:
+        failure = classify_provider_error(exc)
+        with self._condition:
+            if failure in {ModelFailureClass.KEY_ARREARAGE, ModelFailureClass.KEY_AUTH}:
+                self._state = ProviderCircuitState.BALANCE_BLOCKED
+                self._condition.notify_all()
+                return
+            if failure not in {
+                ModelFailureClass.PROVIDER_THROTTLED,
+                ModelFailureClass.PROVIDER_TRANSIENT,
+            }:
+                return
+            self._pressure_events += 1
+            self._successes = 0
+            self._dynamic_limit = max(
+                self.minimum_limit, int(self._dynamic_limit * 0.8)
+            )
+            if self._state is ProviderCircuitState.CLOSED and self._open_round == 0:
+                self._state = ProviderCircuitState.OPEN_1
+                self._open_round = 1
+                self._open_until = monotonic() + self._first_pause_seconds
+            else:
+                self._state = ProviderCircuitState.OPEN_2
+                self._open_round = 2
+                self._open_until = monotonic() + self._second_pause_seconds
+            self._condition.notify_all()
+
     def release(self, *, succeeded: bool) -> None:
         with self._condition:
             self._active -= 1
             self._completed += 1
             if succeeded:
-                self._successes += 1
+                if self._state is ProviderCircuitState.HALF_OPEN:
+                    self._probe_succeeded += 1
+                    if self._probe_succeeded >= self._half_open_probes:
+                        self._state = ProviderCircuitState.RECOVERING
+                        self._dynamic_limit = min(
+                            self.target, self._recovery_initial_concurrency
+                        )
+                        self._start_rate = self._recovery_start_rate
+                        self._successes = 0
+                elif self._state is ProviderCircuitState.RECOVERING:
+                    self._successes += 1
+                    if self._successes >= 10:
+                        self._dynamic_limit = min(self.target, self._dynamic_limit + 8)
+                        self._successes = 0
+                        if self._dynamic_limit >= self.target:
+                            self._state = ProviderCircuitState.CLOSED
+                            self._open_round = 0
+                            self._start_rate = self._normal_start_rate
+                else:
+                    self._successes += 1
                 if self._successes >= 10 and self._dynamic_limit < self.target:
                     self._dynamic_limit = min(self.target, self._dynamic_limit + 10)
                     self._successes = 0
             self._condition.notify_all()
+
+    def take_last_acquire_telemetry(self) -> tuple[str, int]:
+        value = getattr(
+            self._call_state,
+            "acquire",
+            (self._state.value, 0),
+        )
+        self._call_state.acquire = None
+        return value if value is not None else (self._state.value, 0)
+
+    @property
+    def circuit_state(self) -> str:
+        with self._condition:
+            return self._state.value
 
     def run(self, operation: Callable[[], _T]) -> _T:
         self.acquire()
@@ -288,6 +394,11 @@ class CDECRScheduler:
         repair_limit: int = 16,
         provider_gate: StructuredProviderGate | None = None,
         max_retries: int = 1,
+        provider_first_pause_seconds: float = 8.0,
+        provider_second_pause_seconds: float = 20.0,
+        provider_half_open_probes: int = 2,
+        provider_recovery_start_rate: float = 5.0,
+        provider_recovery_initial_concurrency: int = 8,
     ) -> None:
         self._lanes = {
             ModelTier.M1: ConcurrencyLane(ModelTier.M1.value, m1_limit),
@@ -303,8 +414,13 @@ class CDECRScheduler:
             hard_limit=structured_provider_hard_limit,
             start_rate=structured_provider_start_rate,
             burst=structured_provider_initial_burst,
+            first_pause_seconds=provider_first_pause_seconds,
+            second_pause_seconds=provider_second_pause_seconds,
+            half_open_probes=provider_half_open_probes,
+            recovery_start_rate=provider_recovery_start_rate,
+            recovery_initial_concurrency=provider_recovery_initial_concurrency,
         )
-        self._max_retries = max(0, min(1, max_retries))
+        self._max_retries = max(0, max_retries)
         self._stage_lanes = {
             stage: ConcurrencyLane(stage, limit)
             for stage, limit in (stage_limits or {}).items()
@@ -325,15 +441,22 @@ class CDECRScheduler:
         attempt_count = 0
         provider_wait_ms = 0
         backoff_ms = 0
+        circuit_wait_ms = 0
+        circuit_state = ProviderCircuitState.CLOSED.value
         try:
             def provider_operation() -> _T:
-                nonlocal attempt_count, provider_wait_ms, backoff_ms
+                nonlocal attempt_count, provider_wait_ms, backoff_ms, circuit_wait_ms, circuit_state
                 while True:
                     attempt_count += 1
                     provider_started = perf_counter()
                     try:
                         if structured:
                             self._provider_gate.acquire()
+                            circuit_state, waited = (
+                                self._provider_gate.take_last_acquire_telemetry()
+                            )
+                            circuit_wait_ms += waited
+                            backoff_ms = circuit_wait_ms
                             provider_wait_ms += round(
                                 (perf_counter() - provider_started) * 1000
                             )
@@ -343,8 +466,7 @@ class CDECRScheduler:
                                 succeeded = True
                                 return value
                             except Exception as exc:
-                                if is_provider_pressure(exc):
-                                    self._provider_gate.pressure()
+                                self._provider_gate.failure(exc)
                                 raise
                             finally:
                                 self._provider_gate.release(succeeded=succeeded)
@@ -356,9 +478,9 @@ class CDECRScheduler:
                             or not is_retryable_provider_failure(exc)
                         ):
                             raise
-                        delay = provider_retry_delay(attempt_count)
-                        backoff_ms += round(delay * 1000)
-                        sleep(delay)
+                        # The shared provider circuit owns all retry waiting. No
+                        # request-local sleep is allowed to release a retry herd.
+                        continue
 
             wrapped: Callable[[], _T] = provider_operation
             if structured:
@@ -383,9 +505,19 @@ class CDECRScheduler:
 
                     wrapped = repair_operation
             result = self._lanes[tier].run(wrapped)
-        except Exception as exc:
-            if structured and is_provider_pressure(exc):
-                self._structured_start_gate.backoff()
+        except Exception:
+            metrics = self._lanes[tier].take_last_call_metrics()
+            if metrics is not None:
+                self._lanes[tier]._call_state.metrics = replace(
+                    metrics,
+                    attempt_count=max(1, attempt_count),
+                    provider_wait_ms=provider_wait_ms,
+                    backoff_ms=backoff_ms,
+                    circuit_state=(
+                        self._provider_gate.circuit_state if structured else circuit_state
+                    ),
+                    circuit_wait_ms=circuit_wait_ms,
+                )
             raise
         if structured:
             self._structured_start_gate.recover()
@@ -395,6 +527,8 @@ class CDECRScheduler:
             attempt_count=max(1, attempt_count),
             provider_wait_ms=provider_wait_ms,
             backoff_ms=backoff_ms,
+            circuit_state=circuit_state,
+            circuit_wait_ms=circuit_wait_ms,
         )
 
     def snapshot(self) -> dict[str, LaneSnapshot]:

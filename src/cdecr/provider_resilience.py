@@ -23,6 +23,23 @@ class ModelFailureClass(StrEnum):
     UNKNOWN_PROVIDER_FAILURE = "UNKNOWN_PROVIDER_FAILURE"
 
 
+class ProviderCircuitState(StrEnum):
+    CLOSED = "CLOSED"
+    OPEN_1 = "OPEN_1"
+    HALF_OPEN = "HALF_OPEN"
+    OPEN_2 = "OPEN_2"
+    RECOVERING = "RECOVERING"
+    BALANCE_BLOCKED = "BALANCE_BLOCKED"
+
+
+class ProviderBalanceBlockedError(RuntimeError):
+    code = "provider_arrearage"
+    status_code = 402
+
+    def __init__(self) -> None:
+        super().__init__("provider balance/auth is blocked for this process")
+
+
 def classify_provider_error(exc: Exception) -> ModelFailureClass:
     code = str(getattr(exc, "code", "")).casefold()
     status = getattr(exc, "status_code", None)
@@ -53,7 +70,7 @@ def classify_provider_error(exc: Exception) -> ModelFailureClass:
         token in combined for token in ("429", "rate_limit", "quota", "overload")
     ):
         return ModelFailureClass.PROVIDER_THROTTLED
-    if any(
+    if status in {408, 425} or (isinstance(status, int) and 500 <= status <= 599) or any(
         token in combined
         for token in ("timeout", "connection", "reset", "5xx", "service_unavailable")
     ):
@@ -116,13 +133,16 @@ class ProviderKeyHealthRegistry:
         *,
         quarantine_seconds: int = 14_400,
         state_path: Path | None = Path(".tmp/cdecr/provider_key_health.json"),
+        enabled: bool = True,
     ) -> None:
         self.quarantine_seconds = max(60, quarantine_seconds)
         self.state_path = state_path
+        self.enabled = enabled
         self._lock = threading.Lock()
         self._failures: dict[str, list[tuple[float, ModelFailureClass]]] = {}
         self._frozen_until: dict[str, float] = {}
-        self._load()
+        if self.enabled:
+            self._load()
 
     def _load(self) -> None:
         if self.state_path is None or not self.state_path.exists():
@@ -178,6 +198,8 @@ class ProviderKeyHealthRegistry:
             return
 
     def healthy(self, key: str) -> bool:
+        if not self.enabled:
+            return True
         now = time()
         with self._lock:
             return self._frozen_until.get(key_fingerprint(key), 0.0) <= now
@@ -186,6 +208,8 @@ class ProviderKeyHealthRegistry:
         return tuple(key for key in keys if self.healthy(key))
 
     def record_failure(self, key: str, failure: ModelFailureClass) -> None:
+        if not self.enabled:
+            return
         fingerprint = key_fingerprint(key)
         now = time()
         with self._lock:
@@ -198,6 +222,8 @@ class ProviderKeyHealthRegistry:
             self._persist_locked()
 
     def record_success(self, key: str) -> None:
+        if not self.enabled:
+            return
         fingerprint = key_fingerprint(key)
         with self._lock:
             history = self._failures.get(fingerprint, [])

@@ -152,7 +152,28 @@ class CDECRSettings(BaseSettings):
         alias="CDECR_STRUCTURED_PROVIDER_INITIAL_BURST",
     )
     structured_provider_max_retries: int = Field(
-        default=1, ge=0, le=3, alias="CDECR_STRUCTURED_PROVIDER_MAX_RETRIES"
+        default=2, ge=0, le=3, alias="CDECR_PROVIDER_MAX_RETRIES"
+    )
+    provider_key_rotation_enabled: bool = Field(
+        default=False, alias="CDECR_PROVIDER_KEY_ROTATION_ENABLED"
+    )
+    provider_auto_quarantine_enabled: bool = Field(
+        default=False, alias="CDECR_PROVIDER_AUTO_QUARANTINE_ENABLED"
+    )
+    provider_first_pause_seconds: float = Field(
+        default=8.0, ge=0.0, le=300.0, alias="CDECR_PROVIDER_FIRST_PAUSE_SECONDS"
+    )
+    provider_second_pause_seconds: float = Field(
+        default=20.0, ge=0.0, le=600.0, alias="CDECR_PROVIDER_SECOND_PAUSE_SECONDS"
+    )
+    provider_half_open_probes: int = Field(
+        default=2, ge=1, le=16, alias="CDECR_PROVIDER_HALF_OPEN_PROBES"
+    )
+    provider_recovery_start_rate: float = Field(
+        default=5.0, ge=0.1, le=500.0, alias="CDECR_PROVIDER_RECOVERY_START_RATE"
+    )
+    provider_recovery_initial_concurrency: int = Field(
+        default=8, ge=1, le=160, alias="CDECR_PROVIDER_RECOVERY_INITIAL_CONCURRENCY"
     )
     structured_provider_key_quarantine_seconds: int = Field(
         default=14400, ge=60, le=86400, alias="CDECR_STRUCTURED_PROVIDER_KEY_QUARANTINE_SECONDS"

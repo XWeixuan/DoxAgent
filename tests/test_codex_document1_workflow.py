@@ -362,7 +362,7 @@ def test_codex_document1_dashboard_routes_are_additive_and_authenticated() -> No
 
 
 @pytest.mark.asyncio
-async def test_full_d1_dag_preserves_c4_and_o4_threads_and_publishes(tmp_path: Path) -> None:
+async def test_full_d1_dag_preserves_c4_thread_and_isolates_o4_tracks(tmp_path: Path) -> None:
     collector, compiler = _horizontal()
     repository = InMemoryCodexRuntimeRepository()
     workspace = LocalWorkspaceClient(LocalWorkspaceStore(tmp_path / "workspaces"))
@@ -404,7 +404,21 @@ async def test_full_d1_dag_preserves_c4_and_o4_threads_and_publishes(tmp_path: P
     o4_requests = [item for item in worker.requests if item.agent_role is CodexAgentRole.O4]
     assert [item.node for item in o4_requests] == [CodexD1Node.O4_B, CodexD1Node.O4_A]
     assert o4_requests[0].thread_id is None
-    assert o4_requests[1].thread_id == "o4_researcher-thread"
+    assert o4_requests[1].thread_id is None
+    o4_a_context = json.loads(
+        (
+            await workspace.read_text(
+                "run-1", f"attempts/{o4_requests[1].attempt_id}/input/context.json"
+            )
+        ).content
+        or ""
+    )["payload"]
+    assert {"c1", "c3"}.issubset(o4_a_context)
+    assert {"o4_b", "c2", "known_future_nodes"}.isdisjoint(o4_a_context)
+    assert all(
+        item["origin_node"] in {"c1", "c3"}
+        for item in o4_a_context["agent_observations"]
+    )
     assert {item.node for item in worker.requests if item.allow_subagents} == {
         CodexD1Node.C1,
         CodexD1Node.C3,

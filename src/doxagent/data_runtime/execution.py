@@ -38,6 +38,8 @@ _UNAVAILABLE_ERROR_CODES = {
     "credential_missing",
     "credentials_missing",
     "entitlement_required",
+    "entitlement_or_permission_denied",
+    "premium_endpoint_required",
     "gateway_not_configured",
     "ibkr_gateway_unavailable",
     "provider_not_configured",

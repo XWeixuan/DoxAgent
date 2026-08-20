@@ -521,9 +521,11 @@ def _fixed_targets() -> tuple[CollectionTargetDefinition, ...]:
         SourceRole.MARKET_IMPLIED,
         "TWELVE_MONTHS_FORWARD",
         EntityScope.US_MACRO,
-        CollectionMode.UNAVAILABLE,
+        CollectionMode.PROGRAM,
+        provider="IBKR",
+        tool="ibkr.fed_funds_curve",
         method_id="fed_funds_curve_12m_v1",
-        capability=ProviderCapabilityStatus.BLOCKED,
+        capability=ProviderCapabilityStatus.IMPLEMENTED,
     )
 
     # O4: direct provider fields only; governed calculations remain unavailable this round.
@@ -544,8 +546,8 @@ def _fixed_targets() -> tuple[CollectionTargetDefinition, ...]:
         "MARKET_SNAPSHOT_TIME",
         EntityScope.SECURITY,
         CollectionMode.PROGRAM,
-        provider="FMP",
-        tool="fmp.valuation_snapshot",
+        provider="Alpha Vantage",
+        tool="alpha.valuation_snapshot",
     )
     add(
         "o4_enterprise_value",
@@ -554,8 +556,8 @@ def _fixed_targets() -> tuple[CollectionTargetDefinition, ...]:
         "MARKET_SNAPSHOT_TIME",
         EntityScope.SECURITY,
         CollectionMode.PROGRAM,
-        provider="FMP",
-        tool="fmp.valuation_snapshot",
+        provider="Alpha Vantage",
+        tool="alpha.valuation_snapshot",
     )
     targets.append(
         CollectionTargetDefinition(
@@ -571,21 +573,41 @@ def _fixed_targets() -> tuple[CollectionTargetDefinition, ...]:
             time_scope="NEXT_TWELVE_MONTHS",
             entity_scope=EntityScope.SECURITY,
             collection_mode=CollectionMode.PROGRAM,
-            provider="FMP",
-            tool_name="fmp.valuation_snapshot",
+            provider="Alpha Vantage",
+            tool_name="alpha.valuation_snapshot",
             output_policy=OutputPolicy.STATE_VALUE,
             capability_status=ProviderCapabilityStatus.IMPLEMENTED,
         )
     )
+    add(
+        "o4_primary_multiple_percentile",
+        "market_primary_multiple_percentile",
+        SourceRole.MARKET_IMPLIED,
+        "HISTORICAL_POINT_IN_TIME_FORWARD",
+        EntityScope.SECURITY,
+        CollectionMode.UNAVAILABLE,
+        method_id="historical_forward_percentile_v1",
+        capability=ProviderCapabilityStatus.BLOCKED,
+    )
+    add(
+        "o4_peer_premium",
+        "market_peer_premium",
+        SourceRole.MARKET_IMPLIED,
+        "MARKET_SNAPSHOT_TIME",
+        EntityScope.SECURITY,
+        CollectionMode.PROGRAM,
+        provider="Yahoo Finance",
+        tool="yfinance.peer_relative_valuation",
+        method_id="peer_relative_valuation_v1",
+        capability=ProviderCapabilityStatus.IMPLEMENTED,
+    )
     for target_id, metric_id, method_id in (
-        (
-            "o4_primary_multiple_percentile",
-            "market_primary_multiple_percentile",
-            "historical_forward_percentile_v1",
-        ),
-        ("o4_peer_premium", "market_peer_premium", "peer_relative_valuation_v1"),
         ("o4_atm_iv_30d", "market_atm_iv_30d", "option_iv_30d_v1"),
-        ("o4_next_event_implied_move", "market_next_event_implied_move", "event_straddle_move_v1"),
+        (
+            "o4_next_event_implied_move",
+            "market_next_event_implied_move",
+            "event_straddle_move_v1",
+        ),
         ("o4_put_skew_30d", "market_put_skew_30d", "put_skew_30d_v1"),
     ):
         add(
@@ -594,9 +616,11 @@ def _fixed_targets() -> tuple[CollectionTargetDefinition, ...]:
             SourceRole.MARKET_IMPLIED,
             "MARKET_SNAPSHOT_TIME",
             EntityScope.SECURITY,
-            CollectionMode.UNAVAILABLE,
+            CollectionMode.PROGRAM,
+            provider="IBKR",
+            tool="ibkr.option_surface",
             method_id=method_id,
-            capability=ProviderCapabilityStatus.BLOCKED,
+            capability=ProviderCapabilityStatus.IMPLEMENTED,
         )
     add(
         "o4_short_interest_pct_float",
@@ -604,9 +628,11 @@ def _fixed_targets() -> tuple[CollectionTargetDefinition, ...]:
         SourceRole.MARKET_IMPLIED,
         "LATEST_PUBLISHED_SETTLEMENT_DATE",
         EntityScope.SECURITY,
-        CollectionMode.UNAVAILABLE,
-        capability=ProviderCapabilityStatus.BLOCKED,
-        method_id="benzinga_short_interest_entitlement_required",
+        CollectionMode.PROGRAM,
+        provider="Yahoo Finance",
+        tool="yfinance.short_interest",
+        capability=ProviderCapabilityStatus.IMPLEMENTED,
+        method_id="listed_short_interest_fallback_v1",
     )
     add(
         "o4_days_to_cover",
@@ -614,9 +640,11 @@ def _fixed_targets() -> tuple[CollectionTargetDefinition, ...]:
         SourceRole.MARKET_IMPLIED,
         "LATEST_PUBLISHED_SETTLEMENT_DATE",
         EntityScope.SECURITY,
-        CollectionMode.UNAVAILABLE,
-        capability=ProviderCapabilityStatus.BLOCKED,
-        method_id="benzinga_short_interest_entitlement_required",
+        CollectionMode.PROGRAM,
+        provider="Yahoo Finance",
+        tool="yfinance.short_interest",
+        capability=ProviderCapabilityStatus.IMPLEMENTED,
+        method_id="listed_short_interest_fallback_v1",
     )
     add(
         "o4_short_interest_change",

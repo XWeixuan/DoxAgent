@@ -207,6 +207,74 @@ class FieldWireValidationResult:
     valid: dict[str, FieldCoreferenceModelOutput]
     failures: tuple[FieldWireItemFailure, ...]
     root_error: str | None = None
+    normalized_rules: Mapping[str, tuple[str, ...]] | None = None
+
+
+@dataclass(frozen=True)
+class NormalizedFieldWireItem:
+    output: FieldCoreferenceModelOutput
+    rules: tuple[str, ...]
+
+
+def normalize_field_wire_item(
+    raw: object,
+    input_namespace: FieldNamespace,
+    candidate_map: Mapping[str, str],
+) -> NormalizedFieldWireItem:
+    if not isinstance(raw, dict):
+        raise ValueError("field decision is not an object")
+    rules: list[str] = []
+    decision_token = str(raw.get("decision", "")).strip().upper().replace("-", "_")
+    if decision_token not in {item.value for item in FieldDecision}:
+        raise ValueError("unknown field decision")
+    decision = FieldDecision(decision_token)
+    canonical_id = raw.get("canonical_id")
+    if decision is FieldDecision.LINK:
+        expanded_candidate_map = {
+            **candidate_map,
+            **{full_id: full_id for full_id in candidate_map.values()},
+        }
+        if not isinstance(canonical_id, str) or canonical_id not in expanded_candidate_map:
+            raise ValueError("LINK canonical_id is not supplied for this task")
+        canonical_id = expanded_candidate_map[canonical_id]
+        if canonical_id != raw.get("canonical_id"):
+            rules.append("RESTORE_LINK_CANDIDATE_ID")
+    else:
+        if canonical_id is not None:
+            rules.append("DROP_NON_LINK_CANONICAL_ID")
+        canonical_id = None
+
+    target: FieldNamespace | None = None
+    target_raw = raw.get("target_namespace")
+    if input_namespace is FieldNamespace.PARTICIPANT_UNKNOWN and decision is FieldDecision.NEW:
+        if target_raw is None:
+            raise ValueError("participant.unknown NEW requires an allowed target_namespace")
+        token = str(target_raw).strip().casefold().replace("-", "_")
+        aliases = {namespace.value.casefold(): namespace for namespace in FieldNamespace}
+        aliases.update({namespace.name.casefold(): namespace for namespace in FieldNamespace})
+        aliases.update(
+            {
+                "company": FieldNamespace.PARTICIPANT_COMPANY,
+                "institution": FieldNamespace.PARTICIPANT_INSTITUTION,
+                "person": FieldNamespace.PARTICIPANT_PERSON,
+                "instrument": FieldNamespace.PARTICIPANT_INSTRUMENT,
+                "authority": FieldNamespace.PARTICIPANT_AUTHORITY,
+            }
+        )
+        target = aliases.get(token)
+        if target not in _UNKNOWN_TARGET_NAMESPACES:
+            raise ValueError("unknown target_namespace")
+        if target.value != target_raw:
+            rules.append("NORMALIZE_TARGET_NAMESPACE_ALIAS")
+    elif target_raw is not None:
+        rules.append("DROP_FORBIDDEN_TARGET_NAMESPACE")
+
+    output = FieldCoreferenceModelOutput(
+        decision=decision,
+        canonical_id=canonical_id,
+        target_namespace=target,
+    )
+    return NormalizedFieldWireItem(output=output, rules=tuple(rules))
 
 
 def normalize_field_text(value: str, *, company_suffixes: bool = False) -> str:
@@ -1497,7 +1565,7 @@ class FieldCoreferenceResolver:
             "tasks": tasks,
         }
         prompt = json.dumps(model_input, ensure_ascii=False, separators=(",", ":"))
-        schema = _batch_decision_schema()
+        schema = _batch_decision_schema(namespace)
         policy = self._policies[namespace]
         request = StructuredModelRequest(
             system_prompt=f"{self.base_system_prompt}\n\n{policy}",
@@ -1562,12 +1630,27 @@ class FieldCoreferenceResolver:
             self._execute_field_batch(batch[midpoint:], split_depth=1)
             return
         invalid_by_task = {failure.task_id: failure for failure in validation.failures}
+        normalized_rules = validation.normalized_rules or {}
         valid_count = len(validation.valid)
         for index, item in enumerate(batch, start=1):
             task_id = f"t{index}"
             output = validation.valid.get(task_id)
             if output is not None:
                 item.future.set_result(output)
+            rules = normalized_rules.get(task_id)
+            if rules:
+                self.registry.append_decision_audit(
+                    DecisionAuditRecord(
+                        audit_id=(
+                            f"field-wire-normalized:{item.run_id or 'none'}:"
+                            f"{task_id}:{_sha256(prompt)}:{_sha256('|'.join(rules))}"
+                        ),
+                        run_id=item.run_id,
+                        decision_type="FIELD_WIRE_NORMALIZED",
+                        subject_id=namespace.value,
+                        payload={"rules": list(rules), "namespace": namespace.value},
+                    )
+                )
         self._record_field_batch_call(
             call_id=call_id,
             batch=batch,
@@ -1637,6 +1720,7 @@ class FieldCoreferenceResolver:
         if root_error is None and any(len(values) != 1 for values in by_task.values()):
             root_error = "TASK_DUPLICATE"
         valid: dict[str, FieldCoreferenceModelOutput] = {}
+        normalized_rules: dict[str, tuple[str, ...]] = {}
         failures: list[FieldWireItemFailure] = []
         for task_id, (value, short_to_full) in expected.items():
             values = by_task.get(task_id, [])
@@ -1650,20 +1734,25 @@ class FieldCoreferenceResolver:
                 continue
             raw = values[0]
             try:
-                valid[task_id] = self._adapt_field_wire_item(
-                    raw,
-                    value=value,
-                    short_to_full=short_to_full,
+                normalized = normalize_field_wire_item(
+                    raw, value.namespace, short_to_full
                 )
-            except ValidationError:
+                valid[task_id] = normalized.output
+                if normalized.rules:
+                    normalized_rules[task_id] = normalized.rules
+            except ValidationError as exc:
                 failures.append(
-                    FieldWireItemFailure(task_id, "PYDANTIC_VALIDATION_FAILED", raw)
+                    FieldWireItemFailure(
+                        task_id, _field_pydantic_error_code(exc), raw
+                    )
                 )
             except ValueError as exc:
                 failures.append(
                     FieldWireItemFailure(task_id, _field_wire_error_code(exc), raw)
                 )
-        return FieldWireValidationResult(valid, tuple(failures), root_error)
+        return FieldWireValidationResult(
+            valid, tuple(failures), root_error, normalized_rules
+        )
 
     def _adapt_field_wire_item(
         self,
@@ -1672,41 +1761,9 @@ class FieldCoreferenceResolver:
         value: FieldCoreferenceInput,
         short_to_full: dict[str, str],
     ) -> FieldCoreferenceModelOutput:
-        if not isinstance(raw, dict):
-            raise ValueError("field decision is not an object")
-        decision_token = str(raw.get("decision", "")).strip().upper()
-        if decision_token not in {item.value for item in FieldDecision}:
-            raise ValueError("unknown field decision")
-        decision = FieldDecision(decision_token)
-        canonical_id = raw.get("canonical_id")
-        if decision is FieldDecision.LINK:
-            if not isinstance(canonical_id, str) or canonical_id not in short_to_full:
-                raise ValueError("LINK canonical_id is not supplied for this task")
-            canonical_id = short_to_full[canonical_id]
-        else:
-            if canonical_id is not None:
-                raise ValueError("canonical_id is forbidden for non-LINK decision")
-            canonical_id = None
-        target_raw = raw.get("target_namespace")
-        target: FieldNamespace | None = None
-        if target_raw is not None:
-            try:
-                target = FieldNamespace(str(target_raw).strip().lower().replace("-", "_"))
-            except ValueError as exc:
-                raise ValueError("unknown target_namespace") from exc
-        output = FieldCoreferenceModelOutput(
-            decision=decision,
-            canonical_id=canonical_id,
-            target_namespace=target,
-        )
-        if value.namespace is FieldNamespace.PARTICIPANT_UNKNOWN:
-            if decision is FieldDecision.NEW and target not in _UNKNOWN_TARGET_NAMESPACES:
-                raise ValueError("participant.unknown NEW requires an allowed target_namespace")
-            if decision is not FieldDecision.NEW and target is not None:
-                raise ValueError("target_namespace is allowed only for participant.unknown NEW")
-        elif target is not None:
-            raise ValueError("target_namespace is not allowed for this namespace")
-        return output
+        return normalize_field_wire_item(
+            raw, value.namespace, short_to_full
+        ).output
 
     def _repair_field_item(
         self,
@@ -1743,17 +1800,17 @@ class FieldCoreferenceResolver:
                     "candidate_ids": list(short_to_full),
                 }
             ],
-            "repair_instruction": "Repair only this invalid task and return it exactly once.",
+            "repair_instruction": _field_repair_instruction(validation_error),
         }
         request = StructuredModelRequest(
             system_prompt=f"{self.base_system_prompt}\n\n{self._policies[item.value.namespace]}",
             user_prompt=json.dumps(payload, ensure_ascii=False, separators=(",", ":")),
-            json_schema=_batch_decision_schema(),
+            json_schema=_batch_decision_schema(item.value.namespace),
             metadata={"stage": "field_coreference_item_repair", "priority": "repair"},
         )
         call_id = str(uuid.uuid4())
         prompt = str(request.user_prompt)
-        schema = _batch_decision_schema()
+        schema = _batch_decision_schema(item.value.namespace)
         result: object | None = None
         exception: Exception | None = None
         final_status = "INVALID"
@@ -2015,6 +2072,7 @@ class FieldCoreferenceResolver:
         policy_hash = _sha256(policy)
         prompt = json.dumps(model_input, ensure_ascii=False, separators=(",", ":"))
         invalid_payload: object | None = None
+        validation_error_code = "PYDANTIC_VALIDATION_FAILED"
         for attempt in range(2):
             user_prompt = prompt
             if attempt:
@@ -2022,11 +2080,8 @@ class FieldCoreferenceResolver:
                     {
                         "request": model_input,
                         "invalid_payload": invalid_payload,
-                        "repair_instruction": (
-                            "Return the required schema. LINK may use only a canonical_id "
-                            "present in candidates. LINK and UNRESOLVED must omit "
-                            "target_namespace. NEW must omit canonical_id, and only "
-                            "participant.unknown NEW must return one allowed target_namespace."
+                        "repair_instruction": _field_repair_instruction(
+                            validation_error_code
                         ),
                     },
                     ensure_ascii=False,
@@ -2072,86 +2127,11 @@ class FieldCoreferenceResolver:
                 )
                 raise
             try:
-                payload = result.payload
-                fallback_reason: str | None = None
-                if isinstance(payload, dict):
-                    payload = {
-                        key: payload[key]
-                        for key in ("decision", "canonical_id", "target_namespace")
-                        if key in payload
-                    }
-                    decision_value = payload.get("decision")
-                    if isinstance(decision_value, str):
-                        decision_by_token = {
-                            decision.value.casefold(): decision.value for decision in FieldDecision
-                        }
-                        normalized_decision = decision_by_token.get(
-                            decision_value.strip().casefold()
-                        )
-                        if normalized_decision is not None:
-                            payload["decision"] = normalized_decision
-                    if payload.get("decision") == FieldDecision.LINK.value:
-                        candidate_id = payload.get("canonical_id")
-                        if isinstance(candidate_id, str) and candidate_id in short_to_full:
-                            payload["canonical_id"] = short_to_full[candidate_id]
-                    else:
-                        payload.pop("canonical_id", None)
-                    target_value = payload.get("target_namespace")
-                    if isinstance(target_value, str):
-                        raw_namespace = target_value.strip()
-                    else:
-                        raw_namespace = ""
-                    namespace_by_token = {
-                        namespace.name.casefold(): namespace.value for namespace in FieldNamespace
-                    }
-                    namespace_by_token.update(
-                        {
-                            namespace.value.casefold(): namespace.value
-                            for namespace in FieldNamespace
-                        }
-                    )
-                    namespace_by_token.update(
-                        {
-                            "company": FieldNamespace.PARTICIPANT_COMPANY.value,
-                            "institution": FieldNamespace.PARTICIPANT_INSTITUTION.value,
-                            "person": FieldNamespace.PARTICIPANT_PERSON.value,
-                            "instrument": FieldNamespace.PARTICIPANT_INSTRUMENT.value,
-                            "authority": FieldNamespace.PARTICIPANT_AUTHORITY.value,
-                        }
-                    )
-                    normalized_namespace = namespace_by_token.get(
-                        raw_namespace.casefold().replace("-", "_")
-                    )
-                    if normalized_namespace is not None:
-                        payload["target_namespace"] = normalized_namespace
-                    elif (
-                        payload.get("decision") == FieldDecision.NEW.value
-                        and value.namespace is FieldNamespace.PARTICIPANT_UNKNOWN
-                    ):
-                        payload = {"decision": FieldDecision.UNRESOLVED.value}
-                        fallback_reason = "INVALID_UNKNOWN_PARTICIPANT_TARGET_TO_UNRESOLVED"
-                    else:
-                        payload.pop("target_namespace", None)
-                output = FieldCoreferenceModelOutput.model_validate(payload)
-                candidate_ids = {candidate.canonical_id for candidate in candidates}
-                if (
-                    output.decision is FieldDecision.LINK
-                    and output.canonical_id not in candidate_ids
-                ):
-                    raise ValueError("LINK canonical_id is not in the supplied candidates")
-                if value.namespace is FieldNamespace.PARTICIPANT_UNKNOWN:
-                    if output.decision is FieldDecision.NEW:
-                        if output.target_namespace not in _UNKNOWN_TARGET_NAMESPACES:
-                            raise ValueError(
-                                "participant.unknown NEW requires an allowed target_namespace"
-                            )
-                    elif output.target_namespace is not None:
-                        raise ValueError(
-                            "participant.unknown target_namespace is allowed only for NEW"
-                        )
-                elif output.target_namespace is not None:
-                    raise ValueError("target_namespace is allowed only for participant.unknown NEW")
-                if fallback_reason is not None:
+                normalized = normalize_field_wire_item(
+                    result.payload, value.namespace, short_to_full
+                )
+                output = normalized.output
+                if normalized.rules:
                     self.registry.append_decision_audit(
                         DecisionAuditRecord(
                             audit_id=(
@@ -2159,16 +2139,21 @@ class FieldCoreferenceResolver:
                                 f"{_sha256(prompt)}:{attempt + 1}"
                             ),
                             run_id=run_id,
-                            decision_type="FIELD_MODEL_ADAPTER_FALLBACK",
+                            decision_type="FIELD_WIRE_NORMALIZED",
                             subject_id=value.namespace.value,
                             payload={
-                                "reason": fallback_reason,
-                                "action": FieldDecision.UNRESOLVED.value,
+                                "rules": list(normalized.rules),
+                                "namespace": value.namespace.value,
                             },
                         )
                     )
             except (ValidationError, ValueError) as exc:
                 invalid_payload = result.payload
+                validation_error_code = (
+                    _field_pydantic_error_code(exc)
+                    if isinstance(exc, ValidationError)
+                    else _field_wire_error_code(exc)
+                )
                 validation_errors: object
                 if isinstance(exc, ValidationError):
                     validation_errors = [
@@ -2644,7 +2629,7 @@ def _decision_schema(namespace: FieldNamespace) -> dict[str, object]:
     return schema
 
 
-def _batch_decision_schema() -> dict[str, object]:
+def _batch_decision_schema(namespace: FieldNamespace) -> dict[str, object]:
     """Provider-friendly wire schema; all relational rules stay in local validation."""
 
     return {
@@ -2670,7 +2655,17 @@ def _batch_decision_schema() -> dict[str, object]:
                             "enum": [item.value for item in FieldDecision],
                         },
                         "canonical_id": {"type": ["string", "null"]},
-                        "target_namespace": {"type": ["string", "null"]},
+                        "target_namespace": (
+                            {
+                                "type": ["string", "null"],
+                                "enum": [
+                                    *sorted(item.value for item in _UNKNOWN_TARGET_NAMESPACES),
+                                    None,
+                                ],
+                            }
+                            if namespace is FieldNamespace.PARTICIPANT_UNKNOWN
+                            else {"type": "null"}
+                        ),
                     },
                 },
             }
@@ -2756,6 +2751,39 @@ def _field_wire_error_code(exc: ValueError) -> str:
     if "canonical_id" in message:
         return "CANONICAL_ID_FORBIDDEN"
     return "BUSINESS_VALIDATION_FAILED"
+
+
+def _field_pydantic_error_code(exc: ValidationError) -> str:
+    errors = exc.errors(include_input=False, include_url=False)
+    messages = " ".join(str(item.get("msg", "")) for item in errors).casefold()
+    locations = {str(part) for item in errors for part in item.get("loc", ())}
+    if "decision" in locations:
+        return "DECISION_UNKNOWN"
+    if "canonical_id" in locations or "canonical_id" in messages:
+        return "LINK_CANDIDATE_UNKNOWN"
+    if "target_namespace" in locations or "target_namespace" in messages:
+        return "TARGET_NAMESPACE_UNKNOWN"
+    return "PYDANTIC_VALIDATION_FAILED"
+
+
+def _field_repair_instruction(error_code: str) -> str:
+    if error_code in {"TARGET_NAMESPACE_REQUIRED", "TARGET_NAMESPACE_UNKNOWN"}:
+        return (
+            "For participant.unknown NEW, use exactly one allowed target_namespace; "
+            "otherwise choose UNRESOLVED."
+        )
+    if error_code == "LINK_CANDIDATE_UNKNOWN":
+        return (
+            "For LINK, copy one supplied candidate_id exactly; otherwise choose NEW "
+            "or UNRESOLVED."
+        )
+    if error_code == "DECISION_UNKNOWN":
+        return "Use exactly one decision: LINK, NEW, or UNRESOLVED."
+    if error_code == "TARGET_NAMESPACE_FORBIDDEN":
+        return (
+            "Set target_namespace to null unless this is participant.unknown with decision NEW."
+        )
+    return "Return one valid decision that follows the supplied schema and field policy."
 
 
 def _cosine(left: Sequence[float], right: Sequence[float]) -> float:

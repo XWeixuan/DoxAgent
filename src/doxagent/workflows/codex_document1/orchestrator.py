@@ -228,14 +228,15 @@ class CodexDocument1Orchestrator:
             CodexD1Node.O4_A,
             {
                 **base_context,
-                "o4_b": self._handoff_output(outputs[CodexD1Node.O4_B], reports.get("o4_b")),
                 "c1": self._handoff_output(outputs[CodexD1Node.C1], reports.get("c1")),
-                "c2": self._handoff_output(outputs[CodexD1Node.C2], reports.get("c2")),
                 "c3": self._handoff_output(outputs[CodexD1Node.C3], reports.get("c3")),
-                "known_future_nodes": [
-                    item.model_dump(mode="json", by_alias=True) for item in c4_final.future_nodes
-                ],
-                "agent_observations": self._observation_handoffs(normalized),
+                "agent_observations": self._observation_handoffs(
+                    [
+                        item
+                        for item in normalized
+                        if item.node in {CodexD1Node.C1, CodexD1Node.C3}
+                    ]
+                ),
             },
             checkpoint,
             horizontal=render_horizontal_context(horizontal, role="o4_a"),
@@ -392,7 +393,13 @@ class CodexDocument1Orchestrator:
         horizontal: dict[str, object] | None = None,
     ) -> tuple[NodeOutput, ArtifactRef]:
         role = _ROLE_BY_NODE[node]
-        thread = self._repository.get_thread(request.run_id, role.value)
+        # O4-A and O4-B are independent research tracks even though they share
+        # one agent role. Do not expose the earlier O4-B conversation to O4-A.
+        thread = (
+            None
+            if node is CodexD1Node.O4_A
+            else self._repository.get_thread(request.run_id, role.value)
+        )
         last_error: Exception | None = None
         previous_attempts = [
             item

@@ -31,8 +31,10 @@ from cdecr.field_coreference import (
     FieldCoreferenceError,
     FieldCoreferenceResolver,
     PreparedFieldDecision,
+    _batch_decision_schema,
     field_inputs_for_mention,
     normalize_field_text,
+    normalize_field_wire_item,
     resolved_field_entries,
     trusted_field_identity_conflict,
 )
@@ -54,6 +56,39 @@ from cdecr.registry import (
     RegistryError,
     SQLiteCDECRRegistry,
 )
+
+
+def test_field_wire_normalization_is_lossless_for_forbidden_extras() -> None:
+    normalized = normalize_field_wire_item(
+        {
+            "decision": " new ",
+            "canonical_id": "should-drop",
+            "target_namespace": "metric",
+            "ignored": "value",
+        },
+        FieldNamespace.CONCEPT_PREDICATE,
+        {},
+    )
+    assert normalized.output.decision is FieldDecision.NEW
+    assert normalized.output.canonical_id is None
+    assert normalized.output.target_namespace is None
+    assert set(normalized.rules) == {
+        "DROP_NON_LINK_CANONICAL_ID",
+        "DROP_FORBIDDEN_TARGET_NAMESPACE",
+    }
+
+
+def test_field_batch_schema_restricts_target_namespace_by_input_namespace() -> None:
+    ordinary = _batch_decision_schema(FieldNamespace.METRIC)
+    unknown = _batch_decision_schema(FieldNamespace.PARTICIPANT_UNKNOWN)
+    ordinary_target = ordinary["properties"]["decisions"]["items"]["properties"][
+        "target_namespace"
+    ]
+    unknown_target = unknown["properties"]["decisions"]["items"]["properties"][
+        "target_namespace"
+    ]
+    assert ordinary_target == {"type": "null"}
+    assert None in unknown_target["enum"]
 
 
 class FakeEmbeddingClient:
@@ -294,8 +329,8 @@ def test_field_item_repair_local_forbidden_error_falls_back_without_task_failure
     outputs, errors, telemetry = resolver.decide_prepared([plan], max_workers=1)
 
     assert not errors
-    assert outputs[plan.semantic_task_id].decision is FieldDecision.UNRESOLVED
-    assert telemetry["item_repair_invalid_count"] == 1
+    assert outputs[plan.semantic_task_id].decision is FieldDecision.NEW
+    assert telemetry["item_repair_request_count"] == 0
     assert telemetry["item_repair_provider_failed_count"] == 0
 
 
@@ -728,7 +763,7 @@ def test_prompt_v2_policies_and_llm_visible_candidate_contract(
     assert "external_id" not in request.user_prompt
 
 
-def test_invalid_unknown_participant_namespace_degrades_to_unresolved(
+def test_invalid_unknown_participant_namespace_repairs_to_unresolved(
     registry: SQLiteCDECRRegistry,
 ) -> None:
     mention = _mention("M-1", "S-1")
@@ -737,7 +772,14 @@ def test_invalid_unknown_participant_namespace_degrades_to_unresolved(
         registry=registry,
         embedding_client=FakeEmbeddingClient(),
         model_client=FakeStructuredClient(
-            [{"decision": "NEW", "target_namespace": "made_up_organization_type"}]
+            [
+                {"decision": "NEW", "target_namespace": "made_up_organization_type"},
+                {
+                    "decision": "UNRESOLVED",
+                    "canonical_id": None,
+                    "target_namespace": None,
+                },
+            ]
         ),
     )
 
@@ -762,7 +804,8 @@ def test_invalid_unknown_participant_namespace_degrades_to_unresolved(
             WHERE decision_type = 'FIELD_MODEL_ADAPTER_FALLBACK'
             """
         ).fetchone()[0]
-    assert count == 1
+    assert count == 0
+    assert len(resolver.model_client.requests) == 2
 
 
 def test_candidate_order_is_stable_across_registry_insertion_order(

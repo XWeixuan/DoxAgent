@@ -2,7 +2,7 @@
 kind = "internal_task_skill"
 id = "market-implied-expectations"
 name = "Market-Implied Expectations Research"
-version = "2026.08.04"
+version = "2026.08.20"
 applicable_agents = ["O4"]
 applicable_task_types = ["generate_global_research"]
 workflow_nodes = ["BuildGlobalResearch"]
@@ -11,435 +11,357 @@ workflow_nodes = ["BuildGlobalResearch"]
 
 ## Mission and boundary
 
-Research the target's **pricing structure** before formal expectation construction. Start from C1/C3 drivers; use necessary C2/O4-B controls, the event timeline, and point-in-time price, valuation, sell-side, options, and positioning evidence to answer:
+Research what the market currently requires from the target's fundamentals before Document 2 constructs formal expectations. Begin with the economically material C1 company drivers and C3 industry/value-chain drivers, then use point-in-time price, relative performance, valuation, estimates, sell-side research, and selectively useful market evidence to answer:
 
-> Which business drivers does the market appear to be trading, what business, financial, duration, and risk-premium conditions are broadly consistent with the current price, and which conclusions are identifiable enough to become downstream market-anchor candidates?
+> Which fundamental themes is the market trading, what business, financial, and duration conditions are broadly required for the current price to hold, and which conclusions are specific enough to become downstream market-anchor candidates or pricing questions?
 
-This skill governs **O4-A only**. O4-B first describes macro/sector, liquidity, volatility, trend, and tradability. Use it only to control common effects; never import support/resistance, entry timing, or trading conclusions.
-
-Treat price as the outcome of expected cash flows, their timing, discount rates/risk premia, scenario weights, and market frictions. A price is one observation, not a transcript of investor beliefs. Never claim that price uniquely reveals several unknown assumptions.
+Treat price as the joint outcome of expected cash flows, their timing, discount rates/risk premia, scenario weights, and market frictions. A price is one observation, not a transcript of investor beliefs. Facts must be reliable and time-consistent; interpretations may be conditional and decisive when the evidence supports a bounded conclusion.
 
 Do not:
 
-- rediscover the complete company fundamentals or industry/value chain;
-- turn every event into a same-day "priced in / not priced in" judgment;
-- construct formal `ExpectationUnit`, `RealizationFactor`, `PotentialGap`, `GapActivation`, `MarketAbsorption`, or persisted `StateValue` objects;
-- replace parameter-specific market inference with overall share-price performance;
-- calculate a target price, fair-value recommendation, upside/downside, entry point, support/resistance, or trade;
-- treat sell-side consensus as the market itself, implied volatility as direction, or positioning as fundamental belief.
+- redo C1 company research or C3 industry/value-chain research;
+- explain every price move or turn every disclosure into a same-day “priced in / not priced in” judgment;
+- infer market belief solely from overall share-price performance;
+- calculate a target price, fair value, upside/downside, entry point, support/resistance, or trade;
+- equate management guidance or sell-side consensus with the market;
+- treat implied volatility as direction or positioning as fundamental belief.
 
-O4-A proposes auditable candidates for a downstream `MARKET_IMPLIED` source. Document 2 owns the formal parameter mapping. Event-time priced-in analysis and `MarketAbsorption` belong after a State or Factor update, not in this initialization report.
+O4-A may propose research candidates for a downstream `MARKET_IMPLIED` source. Document 2 owns formal parameter mapping. Later workflows own event-level expectation gaps and market absorption.
 
-## Required inputs and readiness gate
+## Inputs and research readiness
 
-Use supplied inputs in this order:
+Use four input classes:
 
-1. **O4-B**: broad/sector state, risk appetite, volatility/liquidity, common trend, deleveraging, squeeze, or other disturbance.
-2. **C1**: recent company state, management/sell-side expectations, business-to-financial transmission, core drivers, questions, and Unknowns.
-3. **C3**: demand, supply, price, allocation, actor signals, target-business transmission, milestones, questions, and Unknowns.
-4. **C2**: only rates, credit, FX, commodities, liquidity, or policy controls needed for attribution.
-5. **Base market measurements**: price, equity/enterprise value, forward multiples, historical/peer context, options, positioning, and their timestamps.
-6. **Event timeline**: occurrence and first-public times, related atomic events, and candidate driver links.
+1. **C1** — current company state, management and sell-side baseline, core drivers, business-to-financial transmission, constraints, and candidate fundamental questions.
+2. **C3** — external drivers, actors, industry supply/demand/price state, allocation mechanisms, target transmission, milestones, and candidate industry questions.
+3. **Market and sell-side data** — price, volume, benchmark/sector/peer returns, equity or enterprise value, forward and historical valuation, point-in-time revenue/EPS/FCF/KPI estimates and revisions; options or positioning only when useful.
+4. **Question-driven research** — targeted searches for recent pricing explanations, sell-side views, company/customer/value-chain information, comparable disclosures, and imminent information nodes. Do not perform a broad news sweep or build a long event library.
 
-Record each input as `AVAILABLE`, `STALE`, `PARTIAL`, or `MISSING` with its as-of time. Reuse reliable measurements; do not build another Market Metric Registry or copy every metric.
+Not every data class or metric must be available. Missing data should reduce precision and report length, not create an input-audit section. Use the best reliable facts to form a conditional conclusion; if a number is not recoverable, move down the inference ladder from range to binding condition, then to pricing question, and only finally to an Unknown. Never fabricate an input or conceal look-ahead risk.
 
-If current orchestration does not expose this run's C1/C3/O4-B result, state the dependency gap. Do not silently substitute generic company knowledge, invent a driver, or imply that a price-only interpretation is target-linked. Complete the reliable baseline and label unsupported O4-A conclusions `NOT_IDENTIFIABLE`.
+## Core analytical objects and report contract
 
-## Required O4-A report contract
+Use only five analytical concepts:
 
-Use exactly these six top-level O4-A sections, with no investment summary or recommendation:
+- **Market Pricing Baseline** — the current state of price, relative performance, valuation, and earnings expectations.
+- **Pricing Theme** — a material fundamental or value-chain variable worth testing as part of current pricing.
+- **Repricing Phase** — a recent interval in which price, relative performance, valuation, or estimates show a meaningful change in pricing belief; a discrete event is not required.
+- **Market-Implied Condition** — a business, financial, or duration condition broadly required for current price consistency under stated assumptions.
+- **Market Anchor Candidate** — a sufficiently specific parameter/state/time inference that Document 2 may consider as `MARKET_IMPLIED` evidence.
 
-1. **Current Market Pricing Baseline**
-2. **Major Repricing Episodes and Pricing Drivers**
-3. **Market-Implied Business, Financial, and Time Scenarios**
-4. **Pricing Evidence, Market Uncertainty, and Technical Distortions**
-5. **Candidate Market Anchors and Potential Pricing Questions**
-6. **Unknowns, Identification Boundaries, and Cross-Node Handoffs**
+Do not create formal `Pricing Distortion` or `Alternative Explanation` objects. Relevant conflicts, market mechanics, or competing accounts may be incorporated naturally where they change the research judgment.
 
-Keep the report selective: normally 3-6 pricing themes, 2-6 repricing episodes, 4-12 comparable earnings/major-disclosure samples, 2-6 implied-scenario units, 1-5 anchor candidates, and 2-5 pricing questions. These are soft limits. Remove price trivia, isolated one-day stories, generic valuation commentary, and themes that cannot map to a business, financial, or time condition.
+Use exactly these five top-level report sections and these Chinese titles:
 
-## Analytical objects: do not collapse them
+1. **一、当前市场定价基线**
+2. **二、近期重定价与主要定价驱动**
+3. **三、市场隐含的业务、财务与持续期条件**
+4. **四、市场锚点与定价问题**
+5. **五、关键未知项与识别边界**
 
-- **Market Measurement**: timestamped price, return, volume, valuation, estimate, option, or positioning datum. It is evidence, not an expectation conclusion.
-- **Pricing Theme**: a C1/C3 driver selected for market-pricing research, such as margin recovery, customer qualification, supply duration, or share allocation.
-- **Repricing Episode**: a sustained interval of abnormal price, multiple, estimate, or volatility change associated with a cluster of potentially relevant information. It replaces event-by-event storytelling.
-- **Implied Outcome**: a business, financial, duration, or milestone condition broadly consistent with current price under explicit assumptions.
-- **Scenario Consistency**: evidence that price is closer to one defined scenario set than another without claiming a unique number.
-- **Market Anchor Candidate**: a parameter- and time-specific inference suitable for downstream consideration as a `MARKET_IMPLIED` state.
-- **Pricing Distortion**: positioning, liquidity, flow, mechanical hedging, or market-regime influence that weakens a fundamental interpretation.
-- **Alternative Explanation**: another causal account that can explain the same market evidence.
-
-All are report labels only. Do not create a parallel registry or new schema.
+Keep the report selective. The information-weighting guide is approximately 10–15%, 20–25%, 35–40%, about 20%, and below 10% respectively. These are priorities, not word quotas. Remove price trivia, generic valuation commentary, repeated causal chains, and themes that cannot map to a meaningful business, financial, or duration condition.
 
 ## Evidence, time, and calculation discipline
 
 ### Preserve point-in-time integrity
 
-Every market inference must identify a valuation date. Align price, diluted shares, net debt, consensus estimates, fiscal period, option snapshot, and positioning data as closely as possible to that date. Never combine a historical price with today's revised estimates and call the result a historical multiple. Use point-in-time consensus when available; otherwise label look-ahead risk.
+Every factual market claim needs an as-of date. Align price, diluted shares, net debt, consensus estimates, fiscal period, option snapshot, and positioning data as closely as practical. Never combine a historical price with today's revised estimates and call the result a historical multiple. Use point-in-time consensus where available; otherwise disclose look-ahead risk and avoid false precision.
 
-For every measurement state the source, timestamp/time zone, raw/adjusted and split/dividend treatment, price/total-return basis, currency, fiscal and accounting basis, formula/window, and stale/delayed/sparse/survivorship limits.
+Use the workflow's required citation syntax immediately after factual claims. Reuse exact `market_evidence_snapshot` values when available. A calculation cites its inputs and shows enough formula/arithmetic to reproduce the result. An interpretation cites the facts supporting it and states the condition on which it depends; it does not need a mechanical `LOW / MEDIUM / HIGH` label.
 
-Use durable `market_evidence_snapshot` values when present so exact OHLCV dates and numbers survive context compaction. Cite each factual measurement immediately with the workflow's Observation syntax. Cite the input data, not an uncited calculation or inference. Show enough arithmetic for another analyst to reproduce every implied range.
+For material measurements preserve only metadata that affects interpretation: date/time zone, adjusted or raw price, currency, fiscal/accounting basis, numerator/denominator, formula/window, and material staleness or coverage limits. Tool names, provider routing, fallback attempts, and generic availability logs do not belong in the report.
 
-### Separate four epistemic classes
+### Keep evidence classes distinct without turning them into report bureaucracy
 
-Label each important statement as:
+Reason separately about:
 
-1. **observed market datum**;
-2. **reported sell-side/actor expectation**;
-3. **O4 calculation** from cited inputs;
-4. **O4 interpretation** conditional on assumptions.
+1. observed market data;
+2. reported sell-side or actor views;
+3. O4 calculations from cited inputs;
+4. O4 conditional interpretations.
 
-Do not upgrade correlation into attribution. `HIGH`, `MEDIUM`, and `LOW` attribution confidence describe evidence quality, not the probability that a driver is true or that price will rise.
+Make the distinction clear in prose when confusion is possible, but do not prefix every sentence with an epistemic label. Correlation is not attribution. Management guidance is a company statement; consensus is an analyst aggregation; a market-implied condition is O4's bounded interpretation of pricing evidence.
 
-## End-to-end research workflow
+## End-to-end research method
 
-### Step 1 — Select three to six candidate pricing themes
+### Step 1 — Select the pricing questions that matter now
 
-Start with the short list of C1/C3 main-line drivers, not the price chart. Add a theme only when several of these hold:
+Start from the short list of C1/C3 core drivers, but do not analyze every driver. Promote a driver to a Pricing Theme only when it materially affects revenue, price, volume, mix, margin, cash flow, capital needs, failure risk, or value duration **and** could determine whether current price holds.
 
-- material to revenue, margin, cash flow, balance-sheet risk, or long-run value;
-- recently changed or newly evidenced;
-- visible in price, valuation, estimates, options, or positioning;
-- distinguishable from other themes;
-- relevant to the current business cycle and a plausible Document 2 parameter/time scope.
+Prefer variables that are changing, disputed, repeatedly associated with repricing, or capable of separating plausible operating paths. A supporting constraint belongs inside the relevant Theme unless it independently changes the economic scale, profitability, duration, or risk of the business.
 
-Sources are C1/C3 core drivers, material event clusters, broad revisions, or unusual price/valuation changes. Exclude ordinary news, stale stories, isolated price days, common market/sector moves, and narratives without a business or financial endpoint.
+Build a private working chain:
 
-Create a working theme map:
+`C1/C3 driver -> business state -> financial interface -> duration -> expected pricing evidence -> current pricing question`
 
-`theme -> C1/C3 driver -> target business state -> financial interface -> expected market evidence -> competing explanations`
+Use it to focus research, not as another reported registry. Normally a few themes are enough. The research question is not “what could affect the stock?” but “which variables actually determine whether today's valuation and earnings path can be sustained?”
 
-Do not report the map as a new registry.
-
-### Step 2 — Build a comparable current pricing baseline
+### Step 2 — Establish the current pricing baseline
 
 #### Price and relative performance
 
-Use the same trading dates and adjusted-price convention for target, broad benchmark, sector proxy, and a small economically relevant peer basket. Choose comparisons based on business exposure before observing which one produces the desired conclusion. State weights for a peer basket.
+Choose only windows relevant to the current pricing regime: for example since the latest results, since a material inflection, year to date, or a longer comparator when needed. Use the same trading dates and adjusted-price convention for the target, a broad benchmark, a sector proxy, and a small economically relevant peer set. Select comparators by exposure before observing the answer.
 
-Report multi-window absolute and relative returns, material volume/turnover changes, and whether target-specific residual behavior survives simple controls. A research proxy is:
+A simple research proxy is:
 
 `target-specific return proxy = target return - broad-market/sector/peer common return`
 
-This is not causal proof. If a pre-estimated beta or stable factor model is genuinely available, use it; otherwise do not invent regression coefficients. Disclose benchmark mismatch, changing beta, overlapping sector/peer exposures, corporate actions, and missing bars.
+This is not causal proof. Do not invent beta coefficients or factor residuals. State benchmark mismatch only when it could change the conclusion.
 
-#### Market capitalization, enterprise value, and valuation
+#### Market value and valuation
 
-Reconcile the valuation numerator before interpreting it:
+Reconcile the numerator before interpreting a multiple:
 
-`basic equity market capitalization = current price x actual shares outstanding`
+`basic equity market value = price × actual shares outstanding`
 
-`enterprise value = basic equity market capitalization + debt + preferred equity + non-controlling interests - cash/non-operating assets`
+`enterprise value = equity market value + debt + preferred equity + non-controlling interests - cash/non-operating assets`
 
-Reconcile options, RSUs, and convertibles separately when moving to fully diluted value or per-share results; do not blindly multiply price by a diluted-EPS denominator. Treat leases, pensions, associates, investments, and convertibles consistently. Do not mix basic/diluted shares or stale debt with current equity value.
-
-Choose a primary multiple whose denominator matches the business and capital structure. Use the same forward horizon and accounting basis across time and peers. A historical percentile is descriptive only; accounting changes, business-mix change, loss years, interest-rate regimes, and negative denominators can make it incomparable.
+Treat options, RSUs, convertibles, leases, pensions, associates, and investments consistently when material. Do not multiply price blindly by a diluted-EPS denominator. Match forward horizons and accounting bases across time and peers. Historical percentiles are descriptive, not proof of cheapness or expensiveness; business mix, rates, loss years, and accounting changes may break comparability.
 
 #### Earnings-versus-multiple decomposition
 
-When the definitions and forward period are unchanged:
+When definitions and forward periods are unchanged:
 
-`price = forward metric x valuation multiple`
+`price = forward metric × valuation multiple`
 
-For P/E, the exact log bridge is:
+For P/E:
 
 `change in ln(price) = change in ln(forward EPS) + change in ln(forward P/E)`
 
-For enterprise multiples, perform the bridge on enterprise value and the matching denominator. Separate estimate revision, fiscal-period roll, share-count change, capital-structure change, dividend, and multiple rerating. Do not attribute the residual multiple change to optimism by default; rates, risk premium, duration, mix, and failure-risk changes are alternatives.
+For enterprise multiples, bridge enterprise value and the matching denominator. Separate estimate revision, fiscal-period roll, share-count/capital-structure change, and multiple rerating. A residual multiple change may reflect duration, margin confidence, optionality, failure risk, rates, or risk premium; do not call it optimism by default.
 
-#### Sell-side expectation state
+#### Sell-side baseline
 
-Use point-in-time revenue, EPS, FCF, and relevant KPI estimates. Record contributor count, mean/median, dispersion, freshness, basis, and revision window. Measure magnitude and breadth:
+Use point-in-time revenue, EPS, FCF, or economically relevant KPI estimates. Check revision direction, magnitude, breadth, dispersion, freshness, fiscal period, and accounting basis. A useful measure is:
 
-`revision breadth = (number of upward revisions - number of downward revisions) / active contributors`
+`revision breadth = (upward revisions - downward revisions) / active contributors`
 
-Do not mix accounting bases or fiscal periods. More contributors do not cure stale/non-comparable estimates. Target-price/rating changes are secondary framing evidence, not operating consensus or an implied state.
+Target-price and rating changes are secondary framing evidence, not operating consensus and not the market-implied state.
 
-Output only the baseline here. Do not yet assign each change to a driver.
+End the baseline with a direct synthesis of whether current pricing is primarily characterized by earnings change, multiple change, both, or an unresolved mixture. Do not assign detailed drivers yet.
 
-### Step 3 — Identify repricing episodes, not convenient event days
+### Step 3 — Identify recent repricing phases and rank drivers
 
-Define candidate episode boundaries before reading a favored narrative. Look for a sustained combination of:
+Start with the current pricing regime, not a default one-year timeline. Define a Repricing Phase when a meaningful combination of price/relative performance, valuation, estimate revisions, volume, or persistence indicates that the market's required belief changed. A Phase may be gradual and need not contain a single triggering event.
 
-- abnormal absolute or relative return;
-- multiple expansion/contraction or enterprise-value change;
-- repeated estimate revisions;
-- unusual volume/turnover or persistent post-event drift;
-- a volatility-level or term-structure change;
-- a cluster of events linked to selected C1/C3 themes;
-- price movement before formal confirmation.
+For each Phase complete four reasoning steps:
 
-Compare pre-information, announcement, short and medium post-event windows. Align after-hours releases to the next session. Use first credible public availability, checking rumors, earlier chain disclosures, and opposite evidence.
+1. **What was most likely repriced?** State the business, financial, duration, or risk belief—not merely the associated news topic.
+2. **Why is that interpretation stronger?** Test timing, the C1/C3 economic mechanism, estimate or multiple behavior, cross-sectional behavior, and persistence.
+3. **How should drivers rank?** Identify a Primary driver, any genuinely incremental Secondary driver, and an Unresolved item only when it could change the conclusion.
+4. **What belief changed?** Express the transition as `from prior pricing belief -> current pricing belief`.
 
-For each episode, test candidate drivers on six axes:
+Useful diagnostics include:
 
-1. **timing fit** — did evidence arrive before or during the episode?
-2. **mechanism fit** — does C1/C3 show a path to cash flow, duration, or risk?
-3. **estimate bridge** — did relevant forecasts or valuation inputs change?
-4. **cross-sectional fit** — target-specific, sector-wide, or concentrated in similarly exposed peers?
-5. **persistence** — reversal, temporary squeeze, or sustained repricing?
-6. **counterfactual fit** — can macro, rates, sector rotation, capital structure, or another theme explain the move as well?
+- price and relative performance changed with broad estimate revisions: stronger evidence of operating-expectation repricing;
+- price rose while near-term estimates were flat and the multiple expanded: test duration, long-run margin, optionality, lower failure risk, or discount-rate effects;
+- estimates rose while price was flat or fell: test prior anticipation, offsetting risk, multiple compression, or crowding;
+- price led revisions: possible early market inference or stale consensus, not proof of information leakage;
+- a move reversed quickly without estimate or operating change: treat the fundamental attribution cautiously.
 
-Assign `HIGH` when independent evidence classes align and alternatives are limited; `MEDIUM` when the theme matters but co-moves with alternatives; `LOW` for mainly temporal or single-series evidence. Keep residuals visible.
+Do not equate an event-day rise with acceptance or no rise with “already priced in.” Keep unassigned residuals when evidence does not support a clean attribution.
 
-Never infer:
+#### Optional historical pricing sensitivity
 
-`event-day rise -> event accepted` or `no rise -> already priced in`.
+Use this only if comparable disclosures help identify a repeated sensitivity relevant to today's themes. Select roughly 4–8 major earnings or disclosures with comparable pre-release baselines. Consider revenue/segment/KPI surprise, margin, EPS/FCF, guidance, milestones, abnormal return, post-event drift/reversal, and later estimate changes.
 
-### Step 4 — Learn the market's sensitivity from comparable disclosures
+Do not create an event dump or force a confounded sample into a regression. Extract only a repeated conclusion such as “guidance and margin have mattered more than headline revenue.” Historical sensitivity identifies emphasized dimensions; it does not prove a numeric current condition.
 
-Use 4-12 comparable earnings/major-disclosure samples. Build each surprise vector against the point-in-time pre-release baseline:
+### Step 4 — Infer business, financial, and duration conditions
 
-- revenue and relevant segment/KPI surprise;
-- gross/operating margin surprise;
-- EPS and FCF surprise;
-- guidance change;
-- product, customer, capacity, regulatory, or milestone progress.
+This is the core of O4-A. For each selected Pricing Theme, distinguish:
 
-Observe pre-run, announcement abnormal return, drift/reversal, later revisions, and earnings-versus-multiple contribution. Control broad market and sector on the same windows.
+1. **Current business/financial baseline** — the concise C1/C3 state plus the relevant management or sell-side baseline.
+2. **What current price requires** — the operating or financial bar broadly necessary for current valuation consistency.
+3. **Duration requirement** — how long growth, margin, share, returns, capacity, or milestone delivery must persist.
+4. **Condition combinations** — normally 2–3 economically distinct combinations that could support or fail current pricing.
+5. **Market-Implied Conclusion** — one explicit sentence stating the most defensible current pricing requirement and its main condition.
 
-Do not force a small, confounded sample into a single-factor regression. Look for repeated qualitative sensitivities: for example, guidance and margin may repeatedly dominate headline revenue. State sample comparability and co-surprises. Historical sensitivity identifies which dimensions the market has emphasized; it does not prove a current numeric implied outcome.
+Do not demand a uniquely identified number. Apply this inference ladder:
 
-### Step 5 — Reverse-engineer only what the price can identify
+`numeric value/range -> binding condition or scenario set -> pricing question -> material Unknown`
 
-#### Begin with the inverse-problem rule
+A condition is useful when it excludes economically meaningful cases even if several parameter combinations remain possible. Examples include “current valuation needs both double-digit growth through the next platform cycle and no structural margin reset,” or “price can tolerate a near-term margin dip only if it is temporary and estimate revisions preserve the following year's earnings path.” These are conditional inferences, not forecasts.
 
-One observed price cannot uniquely solve revenue growth, margin, reinvestment, duration, discount rate, and scenario probability simultaneously. Freeze evidence-backed inputs, vary one or at most two focal assumptions, and show a grid or range. If many combinations fit, report scenario consistency or driver attention rather than a false point estimate.
+#### Construct condition combinations rather than decorative bull/base/bear cases
 
-Example: if the same EV fits 10% growth with a 22% margin and 15% growth with an 18% margin, neither input is identified. Freeze the C1-supported margin band before solving growth; if that band remains wide, report scenario consistency.
+Each combination should vary the few variables that determine value for the Theme: growth and margin, price and volume, share and industry size, FCF margin and reinvestment, milestone success and delay, or operating level and duration. Avoid changing every assumption simultaneously. State what evidence would distinguish combinations and which are inconsistent with current pricing.
 
-Use current price as the model output target. This is not a fair-value exercise:
+Assess duration explicitly. High near-term growth may not support price if it decays too quickly; a lower operating level may support the same value if it persists longer. For cyclical businesses, solve both level and duration. For high-growth businesses, test maturation, required reinvestment, dilution, and failure/delay rather than assuming current growth indefinitely.
+
+#### Use reverse valuation only when it narrows the answer
+
+Reverse valuation fixes observed market value as the model output and solves for one or at most two focal operating assumptions:
 
 `model value under assumed conditions = observed market value`
 
-Solve for the operating condition that makes the equality hold. Never turn the solved condition into a price target or a claim that the market is wrong.
+It is not a fair-value exercise. Select a model suited to the claim:
 
-#### Select a model that matches the economic claim
+- established non-financial company: FCFF/EV, or FCFE only with stable transparent leverage;
+- financial institution: residual income or conditional P/B–ROE;
+- cyclical/commodity company: normalized price, volume, cost, profit level, and cycle duration;
+- high-growth or pre-commercial company: maturation/milestone scenarios including financing, dilution, failure, and delay;
+- multi-business company: SOTP with corporate costs, cross-holdings, and net debt reconciled once;
+- REIT/asset-backed company: NAV/cap-rate and AFFO with consistent leverage and asset quality.
 
-- **Established non-financial**: FCFF/EV separates operations from leverage; use FCFE only with stable, transparent leverage/equity cash flow.
-- **Financial institution**: use residual income or conditional P/B-ROE; debt is operating, so ordinary EV subtraction is inappropriate.
-- **Cyclical/commodity**: solve normalized price, volume, cost, mid-cycle earnings, and peak/trough duration; current P/E often moves inversely with the cycle.
-- **High-growth/pre-commercial**: use maturation or milestone scenarios with financing/dilution and failure/delay; do not infer a unique success probability.
-- **Multi-business**: use SOTP; reconcile corporate cost, cross-holdings, and net debt once.
-- **REIT/asset-backed**: use NAV/cap-rate and AFFO with consistent leverage and asset quality.
-
-#### Apply valuation identities consistently
-
-For an FCFF model:
+For FCFF:
 
 `EV_0 = sum[FCFF_t / (1 + WACC)^t] + terminal value / (1 + WACC)^N`
 
 `FCFF = NOPAT - reinvestment`
 
-In a stable phase, a useful consistency bridge is:
+In stable growth:
 
-`reinvestment rate approximately = growth / return on invested capital`
+`reinvestment rate ≈ growth / ROIC`
 
-`FCFF approximately = NOPAT x (1 - growth / ROIC)`
+`FCFF ≈ NOPAT × (1 - growth / ROIC)`
 
-This prevents high growth without required investment. Growth creates value only when incremental returns exceed capital cost; growth-option value depends on investment scale, return spread, and duration.
+This prevents unsupported growth without investment. If using perpetual growth, require `WACC > stable growth`, a mature margin/ROIC/reinvestment state, and disclosure of terminal-value dependence. An exit multiple imports another market assumption and must be labelled accordingly.
 
-When R&D, brand building, or customer acquisition is economically investment but expensed, test an adjusted reinvestment/ROIC case. Otherwise accounting ROIC can overstate returns and hide the spending required for growth.
+Prefer small two-dimensional surfaces that match the Theme:
 
-If using perpetual growth:
+- growth × margin;
+- growth × duration;
+- FCF margin × duration;
+- market share × industry size;
+- price/unit economics × cycle duration.
 
-`terminal value_N = FCFF_(N+1) / (WACC - stable growth)`
+Fix evidence-backed inputs, vary one or two focal assumptions, reconcile current equity/enterprise value, fiscal periods, dilution and net debt, and compare the implied bar with management, consensus, historical delivery, capacity/allocation, and milestone evidence. Show ranges rather than a false point estimate.
 
-Require `WACC > stable growth`, mature margin/ROIC/reinvestment, and sustainable long-run growth. Show terminal-value share. An exit multiple imports a future relative assumption; label the circularity.
+Stop and omit the calculation if sensitivity is so wide that it excludes no meaningful scenario, the denominator or capital structure cannot be reconciled, or more than two unknowns must be solved from one price. In that case retain the bounded condition or pricing question. Do not let an uninformative model lengthen the report.
 
-For a stable financial company under clean-surplus and consistent payout assumptions, a conditional relationship is:
+Scenario weights are optional and only valid when two exhaustive, independently specified values bracket market value:
 
-`P/B approximately = (ROE - long-run growth) / (cost of equity - long-run growth)`
+`conditional high-case weight = (market value - low-case value) / (high-case value - low-case value)`
 
-Prefer a multistage residual-income model when ROE, credit losses, capital requirements, or payout are transitioning. For cyclicals, solve both **level** and **duration**: the same value may reflect a higher peak for fewer periods or a lower profit level for longer.
+The result must lie in `[0,1]`. It is a conditional price-consistency weight, not a real-world probability; risk premia, omitted states, optionality, liquidity, and model error remain embedded.
 
-#### Build an auditable reverse-solve
+### Step 5 — Use auxiliary evidence only when it changes interpretation
 
-For each pricing theme:
+#### Sell-side
 
-1. fix the valuation date and reconcile equity/enterprise value;
-2. map the C1/C3 driver to revenue, margin, reinvestment, duration, or risk;
-3. set a public/sell-side base case and cite every input;
-4. define downside/base/upside or short/base/extended-duration scenarios without assigning invented probabilities;
-5. vary one or two focal inputs until model value brackets current market value;
-6. run sensitivity across discount rate, terminal assumption, margin, growth/duration, and dilution as relevant;
-7. compare the implied bar with management, sell-side, historical delivery, capacity/allocation, and milestone evidence;
-8. list other input combinations that also fit the same price.
+Integrate revisions and views into the relevant baseline, Phase, or Theme. Test magnitude, breadth, dispersion, freshness, fiscal roll, and whether one contributor drives the aggregate. Sell-side evidence can define a public baseline or show expectation change; it does not by itself reveal the price-required condition.
 
-Use numerical intervals and scenario surfaces, not a single over-precise output. Round to the precision supported by inputs.
+#### Options
 
-#### Use scenario weights only under strict conditions
+Use only when liquid, timestamp-aligned options add information about an event move, uncertainty timing, skew, or expiry structure. Record the minimum necessary spot, expiry, strike/delta, bid/ask or mid, open interest/volume, and time.
 
-If exactly two exhaustive scenario values are independently specified and comparable:
+`IV × sqrt(T)` is an approximate annualized one-standard-deviation scale under model assumptions. A straddle/spot estimate includes non-event time, risk premium, spread, and model effects. Skew includes tail pricing and hedging supply/demand. Risk-neutral option prices are not direct physical forecasts and do not determine direction.
 
-`implied weight of high case = (market value - low-case value) / (high-case value - low-case value)`
+#### Positioning, short interest, and market mechanics
 
-Require the result to lie in `[0, 1]`; otherwise the scenario set fails to bracket price. This is only a conditional price-consistency weight, not necessarily a real-world probability: risk premia, omitted states, optionality, liquidity, and model error contaminate it. One price cannot identify three or more weights. Never solve both milestone payoff and success probability from the same price.
+Use only if extreme crowding, squeeze risk, borrow constraint, option concentration, or liquidity plausibly changes interpretation. Short interest is delayed; short-sale volume is not open short interest; ownership filings may be stale. High short interest plus a rise does not prove a squeeze. Require supporting borrow/float, volume, catalyst, reversal, or fundamental-divergence evidence.
 
-### Step 6 — Cross-check the implied interpretation
+Benchmark, sector, peer, rates, FX, commodity, volatility, liquidity, index, or corporate-action controls are likewise question-driven. Include them inside the relevant Phase or Theme only if they materially strengthen, weaken, or limit the conclusion. Do not create a separate evidence or technical-distortion section.
 
-#### Sell-side revisions
+### Step 6 — Convert conclusions into anchors, questions, and true Unknowns
 
-Interpret combinations, not single signals:
+A Market Anchor Candidate needs a recognizable parameter or Pricing Theme, a current implied state, a time scope, and a concise basis. It may be conditional. Overall price appreciation, generic optimism, or driver attention without a state is not an anchor.
 
-- price up + broad earnings revisions up: stronger evidence of fundamental-expectation repricing;
-- price up + unchanged near-term estimates + multiple up: possible duration, long-run margin, optionality, lower failure risk, or lower discount rate;
-- estimates up + price flat/down: possible prior anticipation, offsetting risk, multiple compression, or crowded positioning;
-- price leads revisions: possible early market inference, stale consensus, or non-fundamental movement—not proof of information leakage.
+Document 2 decides whether to construct a formal `MARKET_IMPLIED StateValue`. O4-A only indicates one of two downstream uses:
 
-Check revision breadth, dispersion, analyst coverage, stale contributors, fiscal roll, and whether one analyst drives the aggregate.
+- **MARKET_IMPLIED candidate** — sufficiently specific for formal consideration;
+- **Conditional anchor** — economically useful but dependent on an explicit condition or bounded scenario set.
 
-#### Options and uncertainty
+If none qualifies, state that no sufficiently specific Market Anchor Candidate was formed and proceed to useful Pricing Questions. Never place `NOT_IDENTIFIABLE` in the anchor table merely to fill it.
 
-Use only liquid, timestamp-aligned options; record spot, expiry, strike/delta, bid/ask or mid, open interest, volume, and time.
+A Pricing Question contains only:
 
-- Annualized ATM IV over `T` gives an approximate one-standard-deviation scale of `IV x sqrt(T)` under model assumptions.
-- ATM straddle/spot roughly estimates an event-window move but includes non-event time, risk premium, spread, and model effects.
-- Compare event expiry with adjacent maturities or isolate forward variance when reliable.
-- Compare skew at constant delta/maturity; it includes tail pricing and hedging supply/demand, not clean direction.
-- Open interest/volume lack direction without opening/closing and customer/dealer side.
+1. why the issue is important to current pricing;
+2. what tendency the market currently appears to express;
+3. what expectation Document 2 should research or manage.
 
-Option distributions are risk-neutral pricing objects, not direct real-world forecasts. They describe uncertainty magnitude, timing, and tails. If data are missing/illiquid, record the gap; never relabel realized volatility as implied.
+It is not a formal `PotentialGap` and should reference the existing Theme rather than repeat its complete causal chain.
 
-#### Positioning and crowding
-
-Treat positioning as a reliability modifier:
-
-- short interest is a delayed settlement-date snapshot;
-- `days to cover = short interest / average daily share volume` under the provider window;
-- short-sale volume is not open short interest, and shorts may be hedges;
-- borrow cost/utilization/availability, float, turnover, and option concentration require matched timestamps;
-- lagged ownership filings cannot establish current crowding.
-
-High short interest plus a rise does not prove a squeeze. Require constrained borrow/float, extreme volume, catalyst timing, reversal, or fundamental divergence. Mechanical moves do not establish broad belief.
-
-#### O4-B and other alternative explanations
-
-Re-test every theme against broad-market return, sector move, rates/discount rate, FX/commodity exposure, volatility regime, liquidity, deleveraging, index rebalancing, corporate actions, and peer-specific news. State whether each evidence class `STRENGTHENS`, `WEAKENS`, or `DOES_NOT_IDENTIFY` the proposed market-implied interpretation.
-
-### Step 7 — Classify identifiability and hand off candidates
-
-Assign every material implied conclusion one of:
-
-- **HIGH**: direct parameter-value link, explicit reverse method, narrow sensitivity, limited alternatives, and multiple independent market evidence classes.
-- **MEDIUM**: a defensible range or scenario ranking, but meaningful sensitivity to valuation, timing, or another driver.
-- **LOW**: primarily price/event association; several plausible alternatives; useful only as tentative pricing insight.
-- **NOT_IDENTIFIABLE**: available evidence cannot isolate the parameter or scenario. Do not propose a formal market anchor.
-
-Identifiability is not confidence probability and is not written into a downstream schema unless that schema explicitly asks for it.
-
-Use three output layers:
-
-1. **Directly quantifiable** — parameter value/range, phase, direction, and time scope are reproducible. May become a `MARKET_IMPLIED StateValue` candidate.
-2. **Scenario consistency** — current price is closer to one stated scenario set than another, conditional on assumptions. Provide as anchor research; recommend formal mapping only if the parameter/time scope is sufficiently clear.
-3. **Driver attention** — episodes show which driver repeatedly matters, but no specific state is recoverable. Provide as pricing insight only.
+An Unknown belongs in the final section only when obtaining the information could materially change a core Market-Implied Conclusion or anchor decision. Tool/provider failures, routing, generic timestamp gaps, ordinary data imperfections, handoff ownership, and cross-node action lists are not report Unknowns. State what cannot yet be concluded and why, without assigning another Agent a task.
 
 ## Section-by-section output specification
 
-### 1. Current Market Pricing Baseline
+All final report section titles and table headers must be Chinese. Use the exact five top-level titles below; do not add an executive-summary section.
 
-Provide a compact table:
+### 一、当前市场定价基线
 
-| Dimension | Current state | Change versus prior point | Main comparator | Research implication | Data/calculation citation |
+Provide this compact table:
+
+| 维度 | 当前状态 | 近期变化 | 研究含义 |
+|---|---|---|---|
+| 股价与相对表现 |  |  |  |
+| 前瞻估值 |  |  |  |
+| 盈利预期 |  |  |  |
+| 盈利与倍数贡献 |  |  |  |
+
+Use only relevant windows and cite factual values in their cells. Do not add an input-availability table or provider audit. After the table, give a short, direct conclusion on the current pricing state. This section says what pricing looks like, not why every move occurred.
+
+### 二、近期重定价与主要定价驱动
+
+Begin with a concise judgment on the current pricing regime. Then use one flexible structure block per material Phase:
+
+#### 重定价阶段：时间范围 / 阶段名称
+
+- **市场表现**：price, relative performance, multiple, estimate, and persistence evidence that matters.
+- **主要定价判断**：what business, financial, duration, or risk belief was repriced.
+- **驱动排序**：Primary, Secondary, and optional Unresolved drivers, with concise reasoning.
+- **定价含义**：the market belief changed from what to what.
+
+Do not force every Phase into a wide table. If historical samples add a repeated insight, append `### 历史定价敏感性` with a concise synthesis; otherwise omit it.
+
+### 三、市场隐含的业务、财务与持续期条件
+
+Write one independent structure block per important Pricing Theme. Each must make the following identifiable without mechanical fixed subheadings:
+
+- current business/financial baseline;
+- what current price requires;
+- duration requirement;
+- main conditions and failure conditions;
+- evidence, assumptions, and bounded limitations;
+- a mandatory one-sentence **市场隐含结论**.
+
+When condition comparison helps, use this table:
+
+| 条件组合 | 业务条件 | 财务条件 | 持续期要求 | 与当前定价的一致性 | 主要验证信号 |
 |---|---|---|---|---|---|
 
-Include only relevant absolute/relative performance, volume, equity/enterprise value, primary valuation, earnings-versus-multiple bridge, and point-in-time consensus/revision state. State valuation date and data-quality limitations. Do not attribute drivers in this section.
+Use 2–3 economically distinct combinations, not ornamental bull/base/bear labels. Add a small sensitivity table only when an informative reverse valuation was actually completed; all its headers must also be Chinese.
 
-### 2. Major Repricing Episodes and Pricing Drivers
+### 四、市场锚点与定价问题
 
-Provide:
+For qualified candidates use:
 
-| Window | Abnormal price/valuation change | Related event cluster | Candidate C1/C3 driver | Estimate revision | Persistence | Alternative explanation | Attribution confidence | Evidence |
-|---|---|---|---|---|---|---|---|---|
+| 参数或定价主题 | 当前市场隐含状态 | 时间范围 | 主要依据 | 下游用途 |
+|---|---|---|---|---|
 
-After the table, explain competing interpretations and unassigned residuals. Add a concise historical earnings/major-disclosure sensitivity synthesis based on the surprise vectors; do not create a separate event dump.
+`下游用途` is either `MARKET_IMPLIED 候选` or `条件性锚点`. If no row qualifies, state that clearly instead of inserting an Unknown.
 
-### 3. Market-Implied Business, Financial, and Time Scenarios
+Then write only material `### 定价问题` blocks covering:
 
-Write one independent analysis unit per important theme:
+- **为什么重要**；
+- **当前市场倾向**；
+- **Document2 需要研究或管理的预期**。
 
-1. pricing theme and corresponding C1/C3 driver;
-2. current public/sell-side base;
-3. model selected and why;
-4. current-price-consistent business/financial outcome or scenario;
-5. implied time/duration;
-6. valuation, capital-structure, reinvestment, and dilution assumptions;
-7. sensitivity grid/range and other combinations that fit;
-8. scenarios current price is closer to and inconsistent with;
-9. alternatives and identifiability;
-10. evidence and reproducible arithmetic.
+### 五、关键未知项与识别边界
 
-Use small tables inside a unit when numerical comparisons help. Do not force heterogeneous themes into one wide table.
+Keep this short. Use:
 
-### 4. Pricing Evidence, Market Uncertainty, and Technical Distortions
+| 关键未知项 | 可能改变的核心结论 | 当前不能确认什么 | 识别边界或所需证据 |
+|---|---|---|---|
 
-For each core theme synthesize:
-
-- sell-side revision direction, magnitude, breadth, dispersion, and lead/lag;
-- options-implied move, term/tail information, or explicit data absence;
-- short/crowding/liquidity evidence and reporting lag;
-- O4-B market/sector/rates/volatility control;
-- combined effect: `STRENGTHENS`, `WEAKENS`, or `DOES_NOT_IDENTIFY`;
-- evidence citations.
-
-Do not repeat chart trends or technical levels.
-
-### 5. Candidate Market Anchors and Potential Pricing Questions
-
-For anchor candidates provide:
-
-| Pricing theme | Candidate parameter/scenario | Implied state | Time scope | Reverse method | Key assumptions | Main evidence | Identifiability | Recommend downstream `MARKET_IMPLIED` mapping? | Validation needed |
-|---|---|---|---|---|---|---|---|---|---|
-
-Recommend mapping only when the parameter, state, time scope, derivation, and sensitivity are auditable. Overall price appreciation is never a parameter-specific anchor.
-
-Then write each potential pricing question separately:
-
-- current pricing phenomenon;
-- linked C1/C3 driver;
-- stronger/outcome interpretation;
-- cautious or alternative interpretation;
-- weakest evidence;
-- next discriminating observable;
-- Document 2 State/Factor/anchor issue to test.
-
-These are research questions, not formal `PotentialGap` or absorption conclusions.
-
-### 6. Unknowns, Identification Boundaries, and Cross-Node Handoffs
-
-Provide:
-
-| Unknown or handoff | Why it is not identifiable | Affected pricing theme | Data/research needed | Owning node | Effect on anchor candidate |
-|---|---|---|---|---|---|
-
-Cover multi-driver collinearity, market/sector interference, model and terminal-value sensitivity, event-time ambiguity, stale or sparse consensus, illiquid options, lagged positioning, missing C1/C3/O4-B inputs, and parameter non-identification.
-
-Handoff ownership:
-
-- **C1**: correct or deepen company financial transmission and scenario inputs;
-- **C3**: validate industry state, allocation, and milestone assumptions;
-- **C2/O4-B**: validate macro, discount-rate, liquidity, volatility, or common-market controls;
-- **Document 2/O1**: decide formal parameter mapping and create expectation/gap objects;
-- **later activation/absorption workflow**: compare a post-event State/Factor update with the pre-event market anchor.
+Include only decision-changing Unknowns. Do not include handoffs, owning nodes, provider logs, fallback status, or generic limitations already disclosed next to a claim.
 
 ## Zero-context completion and final quality gate
 
-Before submitting, assume a fresh reviewer sees only this report. Verify that the reviewer can reproduce the reasoning without guessing:
+Before submitting, assume a fresh downstream Agent sees only this report. Verify:
 
-- O4-B and O4-A are visibly separate and O4-A contains no tradability or technical-level conclusion.
-- The report states what C1/C3/O4-B inputs were actually available; missing upstream context is not fabricated.
-- Three to six themes originate in material C1/C3 drivers and end in business/financial/time conditions.
-- Every market series is point-in-time aligned, definition-consistent, timestamped, and cited.
-- Relative performance controls market/sector/peer effects but is never presented as causal proof.
-- Repricing uses episodes and event clusters, not isolated event-day storytelling.
-- Historical disclosure analysis uses multi-variable surprises and acknowledges confounding.
-- Each reverse valuation fixes price, selects a suitable model, solves no more than two focal assumptions, and shows sensitivity plus alternative solutions.
-- Growth, reinvestment, ROIC, duration, terminal state, net debt, dilution, and fiscal-period roll are internally consistent where relevant.
-- Price changes are separated into estimate/fundamental changes, multiple/risk-premium changes, and unexplained residuals where data allow.
-- Sell-side, options, positioning, and O4-B controls cross-check rather than define the fundamental expectation.
-- Implied volatility is not called direction; option weights are not called physical probabilities; short-sale volume is not called short interest.
-- Every implied conclusion has an identifiability label; `NOT_IDENTIFIABLE` produces an Unknown, not a number.
-- Directly quantifiable states, scenario consistency, and driver attention remain separate.
-- Candidate anchors specify parameter, state/range, time scope, method, assumptions, sensitivity, and evidence.
-- There is no formal expectation/gap/absorption object, target price, valuation verdict, trade recommendation, or unsupported "priced in" claim.
+- the report contains exactly the five required Chinese top-level sections and all table headers are Chinese;
+- O4-A stands independently and neither cites nor summarizes O4-B;
+- C1/C3 are used as economic starting points rather than repeated as research reports;
+- the current baseline distinguishes price/relative performance, valuation, earnings revisions, and earnings-versus-multiple contribution where evidence allows;
+- Repricing Phases begin from observed pricing change, do not require a discrete event, rank drivers, and state how pricing belief changed;
+- a few Pricing Themes receive most of the analysis, each ending in an explicit Market-Implied Conclusion;
+- inference descends from number/range to binding condition, pricing question, then Unknown rather than defaulting to non-identification;
+- reverse valuation is used only when it narrows the answer, varies no more than two focal assumptions, and never becomes a price target;
+- growth, margin, reinvestment, ROIC, duration, terminal state, net debt, dilution, and fiscal-period roll are internally consistent where relevant;
+- sell-side, options, positioning, and common-factor evidence appear only where they change interpretation;
+- facts are cited and point-in-time consistent, while calculations and conditional interpretations remain distinguishable;
+- anchors specify an implied state and time scope; an empty anchor table is allowed;
+- Unknowns are short and capable of changing a core conclusion;
+- no formal expectation/gap/absorption object, target price, valuation verdict, trade recommendation, technical level, forced “priced in” claim, provider audit, or cross-node handoff remains.

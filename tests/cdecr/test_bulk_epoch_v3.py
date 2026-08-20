@@ -206,6 +206,9 @@ def test_async_bulk_gate_is_isolated_from_document_scheduler() -> None:
             while gate.snapshot().active < 4 and perf_counter() < deadline:
                 threading.Event().wait(0.005)
             assert gate.snapshot().active == 4
+            deadline = perf_counter() + 1
+            while hub.provider_snapshot().max_active < 4 and perf_counter() < deadline:
+                threading.Event().wait(0.005)
             assert hub.provider_snapshot().max_active == 4
             assert hub.provider_stage_snapshots()["atomic_coreference"]["limit"] == 4
             release.set()

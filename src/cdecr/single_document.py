@@ -61,7 +61,7 @@ from cdecr.preprocessing import (
     preprocess_source,
     reconcile_evidence_text,
 )
-from cdecr.provider_resilience import is_provider_failure
+from cdecr.provider_resilience import classify_provider_error, is_provider_failure
 from cdecr.relevance_filter import (
     RELEVANCE_PROMPT_VERSION,
     CandidateGateDecision,
@@ -188,7 +188,16 @@ def _model_error_parse_metadata(exc: Exception) -> dict[str, object]:
     if not isinstance(exc, ModelAdapterError):
         return {}
     return {
+        "exception_class": type(exc).__name__,
         "provider_key_fingerprint": exc.provider_key_fingerprint,
+        "provider_status_code": exc.status_code,
+        "provider_failure_class": classify_provider_error(exc).value,
+        "physical_attempt_count": int(getattr(exc, "physical_attempt_count", 1)),
+        "retry_attempt_count": int(getattr(exc, "retry_attempt_count", 0)),
+        "circuit_state": str(getattr(exc, "circuit_state", "CLOSED")),
+        "circuit_wait_ms": int(getattr(exc, "circuit_wait_ms", 0)),
+        "provider_wait_ms": int(getattr(exc, "provider_wait_ms", 0)),
+        "backoff_ms": int(getattr(exc, "backoff_ms", 0)),
         "parse_diagnostics": exc.parse_diagnostics,
     }
 
@@ -825,6 +834,10 @@ class _AuditedStructuredClient:
                     "attempt_count": scheduled.attempt_count if scheduled else 1,
                     "provider_wait_ms": scheduled.provider_wait_ms if scheduled else 0,
                     "backoff_ms": scheduled.backoff_ms if scheduled else 0,
+                    "physical_attempt_count": scheduled.attempt_count if scheduled else 1,
+                    "retry_attempt_count": max(0, scheduled.attempt_count - 1) if scheduled else 0,
+                    "circuit_state": scheduled.circuit_state if scheduled else "CLOSED",
+                    "circuit_wait_ms": scheduled.circuit_wait_ms if scheduled else 0,
                     **_model_error_parse_metadata(exc),
                     "cache_hit": False,
                 },
@@ -878,6 +891,10 @@ class _AuditedStructuredClient:
                 "attempt_count": scheduled.attempt_count if scheduled else 1,
                 "provider_wait_ms": scheduled.provider_wait_ms if scheduled else 0,
                 "backoff_ms": scheduled.backoff_ms if scheduled else 0,
+                "physical_attempt_count": scheduled.attempt_count if scheduled else 1,
+                "retry_attempt_count": max(0, scheduled.attempt_count - 1) if scheduled else 0,
+                "circuit_state": scheduled.circuit_state if scheduled else "CLOSED",
+                "circuit_wait_ms": scheduled.circuit_wait_ms if scheduled else 0,
                 "output_hash": _hash_json(result.payload),
                 "cache_hit": bool(result.cached_input_tokens),
                 "cached_input_tokens": result.cached_input_tokens,

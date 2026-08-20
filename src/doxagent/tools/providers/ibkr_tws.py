@@ -32,6 +32,9 @@ _INFORMATIONAL_ERROR_CODES = {
     2107,
     2108,
     2158,
+    # TWS will continue with delayed data after this notice when delayed
+    # market-data mode is enabled; treating it as fatal discards usable ticks.
+    10167,
 }
 
 _TICK_NAMES = {
@@ -57,6 +60,14 @@ _TICK_NAMES = {
     74: "delayed_volume",
     75: "delayed_close",
     76: "delayed_open",
+    46: "shortable_tier",
+    89: "shortable_shares",
+    23: "option_historical_volatility",
+    24: "option_implied_volatility",
+    27: "option_call_open_interest",
+    28: "option_put_open_interest",
+    29: "option_call_volume",
+    30: "option_put_volume",
 }
 
 
@@ -130,6 +141,10 @@ class ResolvedContract:
     valid_exchanges: tuple[str, ...] = ()
     time_zone_id: str | None = None
     min_tick: float | None = None
+    last_trade_date_or_contract_month: str | None = None
+    strike: float | None = None
+    right: str | None = None
+    multiplier: str | None = None
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -146,6 +161,10 @@ class ResolvedContract:
             "valid_exchanges": list(self.valid_exchanges),
             "time_zone_id": self.time_zone_id,
             "min_tick": self.min_tick,
+            "last_trade_date_or_contract_month": self.last_trade_date_or_contract_month,
+            "strike": self.strike,
+            "right": self.right,
+            "multiplier": self.multiplier,
         }
 
 
@@ -281,33 +300,118 @@ class IbkrTwsSession:
             )
         return results
 
-    def market_snapshot(self, contract: ResolvedContract) -> dict[str, Any]:
+    def resolve_future_chain(
+        self,
+        symbol: str,
+        *,
+        exchange: str,
+        currency: str = "USD",
+    ) -> list[ResolvedContract]:
+        app = self._require_app()
+        request_id = next(self._request_ids)
+        contract = app.contract_type()
+        contract.symbol = _required_upper(symbol, "symbol")
+        contract.secType = "FUT"
+        contract.exchange = _required_upper(exchange, "exchange")
+        contract.currency = _required_upper(currency, "currency")
+        app.contract_results[request_id] = []
+        event = threading.Event()
+        app.contract_events[request_id] = event
+        try:
+            app.reqContractDetails(request_id, contract)
+            self._wait(event, request_id=request_id, operation="future contract details")
+            self._raise_request_error(request_id, operation="future contract details")
+            results = [_resolved_contract(details) for details in app.contract_results[request_id]]
+        finally:
+            app.contract_events.pop(request_id, None)
+            app.contract_results.pop(request_id, None)
+        if not results:
+            raise IbkrTwsRequestError(f"TWS returned no {exchange} future contracts for {symbol}.")
+        return results
+
+    def option_parameters(self, underlying: ResolvedContract) -> list[dict[str, Any]]:
+        app = self._require_app()
+        request_id = next(self._request_ids)
+        event = threading.Event()
+        app.option_parameter_events[request_id] = event
+        app.option_parameter_results[request_id] = []
+        try:
+            app.reqSecDefOptParams(
+                request_id,
+                underlying.symbol,
+                "",
+                underlying.security_type,
+                underlying.con_id,
+            )
+            self._wait(event, request_id=request_id, operation="option parameters")
+            self._raise_request_error(request_id, operation="option parameters")
+            rows = list(app.option_parameter_results[request_id])
+        finally:
+            app.option_parameter_events.pop(request_id, None)
+            app.option_parameter_results.pop(request_id, None)
+        if not rows:
+            raise IbkrTwsRequestError("TWS returned no option-chain parameters.")
+        return rows
+
+    def market_snapshot(
+        self,
+        contract: ResolvedContract,
+        *,
+        generic_ticks: str = "",
+    ) -> dict[str, Any]:
         app = self._require_app()
         request_id = next(self._request_ids)
         event = threading.Event()
         app.snapshot_events[request_id] = event
         app.snapshot_results[request_id] = {}
         app.snapshot_market_types[request_id] = None
+        app.option_computation_results[request_id] = {}
         app.reqMarketDataType(self.config.market_data_type)
+        streaming = bool(generic_ticks)
         try:
             app.reqMktData(
                 request_id,
                 _to_official_contract(app, contract),
-                "",
-                True,
+                generic_ticks,
+                not streaming,
                 False,
                 [],
             )
-            self._wait(event, request_id=request_id, operation="market snapshot")
+            if streaming:
+                # IBKR rejects generic ticks on regulatory snapshots (error 321).
+                # Use a short read-only streaming capture, then cancel it
+                # deterministically after the requested generic fields arrive.
+                deadline = time.monotonic() + min(self.config.timeout_seconds, 3.0)
+                first_value_at: float | None = None
+                while time.monotonic() < deadline:
+                    self._raise_request_error(request_id, operation="market data capture")
+                    has_values = bool(app.snapshot_results[request_id]) or bool(
+                        app.option_computation_results[request_id]
+                    )
+                    if has_values and first_value_at is None:
+                        first_value_at = time.monotonic()
+                    if first_value_at is not None and time.monotonic() - first_value_at >= 0.75:
+                        break
+                    event.wait(0.1)
+                    event.clear()
+            else:
+                self._wait(event, request_id=request_id, operation="market snapshot")
             self._raise_request_error(request_id, operation="market snapshot")
             values = dict(sorted(app.snapshot_results[request_id].items()))
             market_data_type = app.snapshot_market_types[request_id]
+            option_computation = dict(app.option_computation_results[request_id])
         finally:
-            # A true reqMktData snapshot ends automatically at tickSnapshotEnd.
-            # Cancelling it afterwards produces a misleading TWS error 300.
+            if streaming:
+                try:
+                    app.cancelMktData(request_id)
+                except Exception:
+                    pass
+            # A true reqMktData snapshot ends automatically at tickSnapshotEnd;
+            # only the bounded generic-tick stream is cancelled explicitly.
             app.snapshot_events.pop(request_id, None)
             app.snapshot_results.pop(request_id, None)
             app.snapshot_market_types.pop(request_id, None)
+            app.option_computation_results.pop(request_id, None)
         if not values:
             raise IbkrTwsRequestError(
                 "TWS completed the snapshot but returned no usable ticks. "
@@ -316,8 +420,60 @@ class IbkrTwsSession:
         return {
             "con_id": contract.con_id,
             "symbol": contract.symbol,
+            "captured_at": datetime.now(UTC).isoformat(),
             "market_data_type": market_data_type,
             "values": values,
+            "option_computation": option_computation,
+        }
+
+    def historical_ticks(
+        self,
+        contract: ResolvedContract,
+        *,
+        start_datetime: str = "",
+        end_datetime: str = "",
+        number_of_ticks: int = 100,
+        what_to_show: str = "TRADES",
+        use_rth: bool = True,
+    ) -> dict[str, Any]:
+        if not 1 <= number_of_ticks <= 1_000:
+            raise ValueError("number_of_ticks must be between 1 and 1000.")
+        if what_to_show not in {"TRADES", "BID_ASK", "MIDPOINT"}:
+            raise ValueError("what_to_show must be TRADES, BID_ASK, or MIDPOINT.")
+        if bool(start_datetime) == bool(end_datetime):
+            raise ValueError("Provide exactly one of start_datetime or end_datetime.")
+        app = self._require_app()
+        request_id = next(self._request_ids)
+        event = threading.Event()
+        app.historical_tick_events[request_id] = event
+        app.historical_tick_results[request_id] = []
+        try:
+            app.reqHistoricalTicks(
+                request_id,
+                _to_official_contract(app, contract),
+                start_datetime,
+                end_datetime,
+                number_of_ticks,
+                what_to_show,
+                int(use_rth),
+                False,
+                [],
+            )
+            self._wait(event, request_id=request_id, operation="historical ticks")
+            self._raise_request_error(request_id, operation="historical ticks")
+            ticks = list(app.historical_tick_results[request_id])
+        finally:
+            app.historical_tick_events.pop(request_id, None)
+            app.historical_tick_results.pop(request_id, None)
+        if not ticks:
+            raise IbkrTwsRequestError("TWS returned no historical ticks for the requested window.")
+        return {
+            "con_id": contract.con_id,
+            "symbol": contract.symbol,
+            "what_to_show": what_to_show,
+            "use_rth": use_rth,
+            "event_count": len(ticks),
+            "events": ticks,
         }
 
     def historical_bars(
@@ -500,6 +656,11 @@ def _create_official_app() -> Any:
             self.historical_results: dict[int, list[dict[str, Any]]] = {}
             self.tick_by_tick_events: dict[int, threading.Event] = {}
             self.tick_by_tick_results: dict[int, list[dict[str, Any]]] = {}
+            self.option_parameter_events: dict[int, threading.Event] = {}
+            self.option_parameter_results: dict[int, list[dict[str, Any]]] = {}
+            self.option_computation_results: dict[int, dict[str, Any]] = {}
+            self.historical_tick_events: dict[int, threading.Event] = {}
+            self.historical_tick_results: dict[int, list[dict[str, Any]]] = {}
 
         def nextValidId(self, _order_id: int) -> None:  # noqa: N802
             self.ready_event.set()
@@ -519,6 +680,8 @@ def _create_official_app() -> Any:
                 self.snapshot_events,
                 self.historical_events,
                 self.tick_by_tick_events,
+                self.option_parameter_events,
+                self.historical_tick_events,
             ):
                 event = events.get(request_id)
                 if event is not None:
@@ -550,6 +713,62 @@ def _create_official_app() -> Any:
 
         def tickSnapshotEnd(self, request_id: int) -> None:  # noqa: N802
             event = self.snapshot_events.get(request_id)
+            if event is not None:
+                event.set()
+
+        def tickOptionComputation(  # noqa: N802
+            self,
+            request_id: int,
+            tick_type: int,
+            _tick_attrib: int,
+            implied_vol: float,
+            delta: float,
+            opt_price: float,
+            pv_dividend: float,
+            gamma: float,
+            vega: float,
+            theta: float,
+            underlying_price: float,
+        ) -> None:
+            target = self.option_computation_results.get(request_id)
+            if target is None:
+                return
+            values = {
+                "tick_type": tick_type,
+                "implied_volatility": _json_number(implied_vol),
+                "delta": _json_number(delta),
+                "option_price": _json_number(opt_price),
+                "pv_dividend": _json_number(pv_dividend),
+                "gamma": _json_number(gamma),
+                "vega": _json_number(vega),
+                "theta": _json_number(theta),
+                "underlying_price": _json_number(underlying_price),
+            }
+            target.update({key: value for key, value in values.items() if value is not None})
+
+        def securityDefinitionOptionParameter(  # noqa: N802
+            self,
+            request_id: int,
+            exchange: str,
+            underlying_con_id: int,
+            trading_class: str,
+            multiplier: str,
+            expirations: set[str],
+            strikes: set[float],
+        ) -> None:
+            self.option_parameter_results.setdefault(request_id, []).append(
+                {
+                    "exchange": exchange,
+                    "underlying_con_id": underlying_con_id,
+                    "trading_class": trading_class,
+                    "multiplier": multiplier,
+                    "expirations": sorted(str(item) for item in expirations),
+                    "strikes": sorted(float(item) for item in strikes),
+                }
+            )
+
+        def securityDefinitionOptionParameterEnd(self, request_id: int) -> None:  # noqa: N802
+            event = self.option_parameter_events.get(request_id)
             if event is not None:
                 event.set()
 
@@ -602,6 +821,58 @@ def _create_official_app() -> Any:
             if event is not None:
                 event.set()
 
+        def historicalTicksLast(self, request_id: int, ticks: list[Any], done: bool) -> None:  # noqa: N802,E501
+            target = self.historical_tick_results.setdefault(request_id, [])
+            for tick in ticks:
+                attrib = getattr(tick, "tickAttribLast", None)
+                target.append(
+                    {
+                        "timestamp": datetime.fromtimestamp(int(tick.time), tz=UTC).isoformat(),
+                        "price": _json_number(tick.price),
+                        "size": _json_number(tick.size),
+                        "exchange": str(getattr(tick, "exchange", "")) or None,
+                        "special_conditions": str(getattr(tick, "specialConditions", "")) or None,
+                        "past_limit": bool(getattr(attrib, "pastLimit", False)),
+                        "unreported": bool(getattr(attrib, "unreported", False)),
+                    }
+                )
+            if done:
+                event = self.historical_tick_events.get(request_id)
+                if event is not None:
+                    event.set()
+
+        def historicalTicksBidAsk(self, request_id: int, ticks: list[Any], done: bool) -> None:  # noqa: N802,E501
+            target = self.historical_tick_results.setdefault(request_id, [])
+            for tick in ticks:
+                target.append(
+                    {
+                        "timestamp": datetime.fromtimestamp(int(tick.time), tz=UTC).isoformat(),
+                        "bid_price": _json_number(tick.priceBid),
+                        "ask_price": _json_number(tick.priceAsk),
+                        "bid_size": _json_number(tick.sizeBid),
+                        "ask_size": _json_number(tick.sizeAsk),
+                    }
+                )
+            if done:
+                event = self.historical_tick_events.get(request_id)
+                if event is not None:
+                    event.set()
+
+        def historicalTicks(self, request_id: int, ticks: list[Any], done: bool) -> None:  # noqa: N802,E501
+            target = self.historical_tick_results.setdefault(request_id, [])
+            for tick in ticks:
+                target.append(
+                    {
+                        "timestamp": datetime.fromtimestamp(int(tick.time), tz=UTC).isoformat(),
+                        "price": _json_number(tick.price),
+                        "size": _json_number(tick.size),
+                    }
+                )
+            if done:
+                event = self.historical_tick_events.get(request_id)
+                if event is not None:
+                    event.set()
+
         def _record_tick(self, request_id: int, tick_type: int, value: object) -> None:
             compact = _json_tick_value(value)
             if compact is None:
@@ -632,6 +903,10 @@ def _resolved_contract(details: Any) -> ResolvedContract:
         valid_exchanges=valid_exchanges,
         time_zone_id=str(details.timeZoneId) or None,
         min_tick=_json_number(details.minTick),
+        last_trade_date_or_contract_month=(str(contract.lastTradeDateOrContractMonth) or None),
+        strike=_json_number(contract.strike),
+        right=str(contract.right) or None,
+        multiplier=str(contract.multiplier) or None,
     )
 
 
@@ -644,6 +919,16 @@ def _to_official_contract(app: Any, resolved: ResolvedContract) -> Any:
     contract.currency = resolved.currency
     if resolved.primary_exchange:
         contract.primaryExchange = resolved.primary_exchange
+    if resolved.last_trade_date_or_contract_month:
+        contract.lastTradeDateOrContractMonth = resolved.last_trade_date_or_contract_month
+    if resolved.strike is not None:
+        contract.strike = resolved.strike
+    if resolved.right:
+        contract.right = resolved.right
+    if resolved.multiplier:
+        contract.multiplier = resolved.multiplier
+    if resolved.trading_class:
+        contract.tradingClass = resolved.trading_class
     return contract
 
 

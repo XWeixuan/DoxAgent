@@ -5,6 +5,7 @@ from __future__ import annotations
 import html
 import re
 import ssl
+import xml.etree.ElementTree as ET
 from collections.abc import Iterable, Mapping
 from copy import deepcopy
 from datetime import date
@@ -272,6 +273,131 @@ class SecCompanyFactsAndFilingsClient(BaseRealToolClient):
         return parse_sec_filing_index(index_html, index_url)
 
 
+class SecInsiderTransactionsEnrichedClient(SecCompanyFactsAndFilingsClient):
+    """Read bounded issuer Form 4 XML with ownership and footnote context."""
+
+    def call(self, request: ToolRequest) -> ToolResult:
+        try:
+            cik = self._resolve_cik(request)
+            headers = {"User-Agent": self.settings.sec_user_agent or DEFAULT_USER_AGENT}
+            submissions = self._get_json(
+                f"{self.settings.sec_data_base_url.rstrip('/')}/submissions/CIK{cik}.json",
+                headers=headers,
+                cache_ttl=self.settings.sec_cache_ttl_seconds,
+                rate_limit_key="sec",
+                min_interval_seconds=self.settings.sec_min_request_interval_seconds,
+                max_rate_limit_retries=1,
+            )
+            recent = _json_object(_json_object(submissions.get("filings", {})).get("recent", {}))
+            forms = _object_list(recent.get("form"))
+            accessions = _object_list(recent.get("accessionNumber"))
+            documents = _object_list(recent.get("primaryDocument"))
+            filing_dates = _object_list(recent.get("filingDate"))
+            cutoff_date = str(request.metadata.get("cutoff_at") or "")[:10]
+            limit = max(1, min(25, int(request.input.get("limit", 10))))
+            records: list[JsonObject] = []
+            failures: list[JsonObject] = []
+            for index, form in enumerate(forms):
+                if str(form).upper() not in {"4", "4/A"} or index >= len(accessions):
+                    continue
+                filing_date = str(filing_dates[index]) if index < len(filing_dates) else ""
+                if cutoff_date and filing_date and filing_date > cutoff_date:
+                    continue
+                accession = str(accessions[index])
+                primary_document = str(documents[index]) if index < len(documents) else ""
+                if not primary_document:
+                    failures.append({"accession": accession, "code": "primary_document_missing"})
+                    continue
+                # SEC submissions may expose the presentation transform prefix
+                # (for example ``xslF345X06/``).  The archive stores the raw
+                # ownership XML at the basename; requesting the transform path
+                # can hang or 404 and is not the canonical source document.
+                primary_document = primary_document.rsplit("/", maxsplit=1)[-1]
+                source_url = (
+                    "https://www.sec.gov/Archives/edgar/data/"
+                    f"{int(cik)}/{accession.replace('-', '')}/{primary_document}"
+                )
+                try:
+                    raw_xml = self._get_text(
+                        source_url,
+                        headers=headers,
+                        cache_ttl=self.settings.sec_cache_ttl_seconds,
+                        rate_limit_key="sec",
+                        min_interval_seconds=self.settings.sec_min_request_interval_seconds,
+                        max_rate_limit_retries=1,
+                    )
+                    parsed = _parse_form4_xml(raw_xml)
+                except Exception as exc:
+                    failures.append(
+                        {
+                            "accession": accession,
+                            "code": type(exc).__name__,
+                            "message": str(exc)[:300],
+                        }
+                    )
+                    continue
+                records.append(
+                    {
+                        "form": str(form).upper(),
+                        "filing_date": filing_date or None,
+                        "accession": accession,
+                        "source_url": source_url,
+                        **parsed,
+                    }
+                )
+                if len(records) >= limit:
+                    break
+            if not records:
+                return self._failure(
+                    request,
+                    code="empty_result",
+                    message="No usable issuer Form 4 XML was available before the cutoff.",
+                    details={"cik": cik, "failures": failures},
+                )
+            output = {
+                "provider": "sec",
+                "cik": cik,
+                "ticker": request.ticker,
+                "applied_cutoff": cutoff_date or None,
+                "filings": records,
+                "failed_filings": failures,
+                "transaction_code_legend": {
+                    "P": "open-market or private purchase",
+                    "S": "open-market or private sale",
+                    "A": "grant, award, or other acquisition",
+                    "D": "disposition to issuer or other disposition",
+                    "F": "tax or exercise-price payment by delivery/withholding",
+                    "M": "exercise or conversion of derivative security",
+                    "G": "gift",
+                },
+                "published_at": records[0].get("filing_date"),
+                "as_of": records[0].get("filing_date"),
+            }
+            kwargs = dict(
+                output=output,
+                raw=None,
+                source_kind="external_report",
+                source_id=f"sec:form4:{cik}",
+                title=f"SEC enriched Form 4 transactions - {request.ticker}",
+                summary=f"Retrieved and parsed {len(records)} issuer Form 4 filing(s).",
+                source_scope="sec_insider_transactions_enriched",
+                confidence=0.92,
+                metadata={"cik": cik, "filing_count": len(records)},
+            )
+            if failures:
+                return self._partial(
+                    request,
+                    code="sec_partial_form4",
+                    message="Some Form 4 filings could not be parsed.",
+                    retryable=False,
+                    details={"failures": failures},
+                    **kwargs,
+                )
+            return self._success(request, **kwargs)
+        except Exception as exc:
+            return self._handle_exception(request, exc)
+
+
 class SecFilingSectionsClient(SecCompanyFactsAndFilingsClient):
     def call(self, request: ToolRequest) -> ToolResult:
         try:
@@ -316,11 +442,7 @@ class SecFilingSectionsClient(SecCompanyFactsAndFilingsClient):
             )
             parsed = parse_sec_sections(text, requested_sections)
             section_previews = [
-                {
-                    key: value
-                    for key, value in section.items()
-                    if key != "text"
-                }
+                {key: value for key, value in section.items() if key != "text"}
                 | {"text_preview": str(section.get("text") or "")[:3_000]}
                 for section in parsed["sections"]
             ]
@@ -623,9 +745,7 @@ class SecCompanyFinancialsClient(SecCompanyFactsAndFilingsClient):
                 resolved, concept_resolution = _resolve_requested_sec_concepts(
                     facts, requested, cutoff_date=cutoff_date
                 )
-                previews = _requested_sec_fact_previews(
-                    facts, resolved, cutoff_date=cutoff_date
-                )
+                previews = _requested_sec_fact_previews(facts, resolved, cutoff_date=cutoff_date)
                 for preview in previews:
                     concept = str(preview.get("concept") or "")
                     preview["requested_via"] = [
@@ -664,8 +784,7 @@ class SecCompanyFinancialsClient(SecCompanyFactsAndFilingsClient):
             stale_concepts = [
                 str(item.get("concept"))
                 for item in fact_items
-                if isinstance(item, dict)
-                and item.get("stale_for_principal_cycle") is True
+                if isinstance(item, dict) and item.get("stale_for_principal_cycle") is True
             ]
             unmatched = view.get("unmatched_concepts")
             output = {
@@ -691,9 +810,7 @@ class SecCompanyFinancialsClient(SecCompanyFactsAndFilingsClient):
                 return self._partial(
                     request,
                     **common,
-                    summary=(
-                        "Retrieved SEC XBRL facts with explicit missing or stale concepts."
-                    ),
+                    summary=("Retrieved SEC XBRL facts with explicit missing or stale concepts."),
                     confidence=0.78,
                     code="sec_financials_incomplete",
                     message="Some requested or canonical SEC concepts are missing or stale.",
@@ -785,9 +902,7 @@ class SecManagementDisclosuresClient(SecFilingSectionsClient):
             result = self._call_recent_matching(copied)
             if result.output:
                 result.output["record_type"] = "management_discussion_and_analysis"
-                result.output["source_coordinates"][
-                    "source_scope"
-                ] = "sec_management_disclosures"
+                result.output["source_coordinates"]["source_scope"] = "sec_management_disclosures"
             return result
 
         copied = ToolRequest.model_validate(
@@ -842,8 +957,7 @@ class SecManagementDisclosuresClient(SecFilingSectionsClient):
                     exhibits = [
                         exhibit
                         for exhibit in inventory
-                        if str(exhibit.get("type") or "").upper()
-                        in {"EX-99", "EX-99.1", "EX-99.2"}
+                        if str(exhibit.get("type") or "").upper() in {"EX-99", "EX-99.1", "EX-99.2"}
                     ]
                     result.output["exhibits"] = exhibits
                     documents: list[JsonObject] = []
@@ -875,11 +989,7 @@ class SecManagementDisclosuresClient(SecFilingSectionsClient):
                         )
                     result.output["exhibit_documents"] = documents
                     result.output["exhibit_previews"] = [
-                        {
-                            key: value
-                            for key, value in document.items()
-                            if key != "text"
-                        }
+                        {key: value for key, value in document.items() if key != "text"}
                         | {"text_preview": str(document.get("text") or "")[:3_000]}
                         for document in documents
                     ]
@@ -911,13 +1021,13 @@ def parse_sec_sections(raw_text: str, target_sections: Iterable[str]) -> JsonObj
         for match in pattern.finditer(text):
             section_key = _section_key(section)
             named_heading = (
-                not section_key.startswith("item ")
-                and section_key != "financial statements"
+                not section_key.startswith("item ") and section_key != "financial statements"
             )
             normalized_match = match.group(0).strip().rstrip(".:- ")
-            if named_heading and normalized_match.casefold() != section.strip().rstrip(
-                ".:- "
-            ).casefold():
+            if (
+                named_heading
+                and normalized_match.casefold() != section.strip().rstrip(".:- ").casefold()
+            ):
                 continue
             end = _sec_section_end(text, section, match.end())
             body = text[match.end() : end].strip()
@@ -960,9 +1070,7 @@ def parse_sec_sections(raw_text: str, target_sections: Iterable[str]) -> JsonObj
             _score, end, match = max(candidates, key=lambda item: (item[0], item[2].start()))
             body = text[match.end() : end].strip()
             if len(body) >= 30:
-                matches.append(
-                    (section, match.start(), match.end(), match.group(0).strip(), end)
-                )
+                matches.append((section, match.start(), match.end(), match.group(0).strip(), end))
     matches.sort(key=lambda item: item[1])
     sections: list[JsonObject] = []
     for section, start, heading_end, heading, end in matches:
@@ -1024,9 +1132,7 @@ _SEC_SECTION_BOUNDARIES = {
     "item 1a": re.compile(
         r"\bItem\s+(?:1B|2)\b[.\s:-]*(?:Unresolved|Properties|Unregistered)", re.I
     ),
-    "item 2": re.compile(
-        r"\bItem\s+(?:3|5)\b[.\s:-]*(?:Quantitative|Other\s+Information)", re.I
-    ),
+    "item 2": re.compile(r"\bItem\s+(?:3|5)\b[.\s:-]*(?:Quantitative|Other\s+Information)", re.I),
     "item 2.02": re.compile(r"\bItem\s+9\.01\b", re.I),
     "item 7": re.compile(r"\bItem\s+(?:7A|8)\b", re.I),
     "item 7a": re.compile(r"\bItem\s+8\b", re.I),
@@ -1080,9 +1186,7 @@ def parse_sec_filing_index(index_html: str, index_url: str) -> list[JsonObject]:
                 "description": description or None,
                 "filename": urlparse(href).path.rsplit("/", 1)[-1] or document,
                 "url": urljoin(index_url, href),
-                "size_bytes": (
-                    _strip_html(cells[4]).strip() if len(cells) > 4 else None
-                ),
+                "size_bytes": (_strip_html(cells[4]).strip() if len(cells) > 4 else None),
             }
         )
     return exhibits
@@ -1158,11 +1262,7 @@ def _validate_material_sections(value: object) -> tuple[list[JsonObject], list[J
             item in {"item 1.01", "item 2.03", "item 2.04"}
             and has_obligation
             and (has_amount or has_date_or_term)
-        ) or (
-            item not in {"item 1.01", "item 2.03", "item 2.04"}
-            and has_amount
-            and has_obligation
-        )
+        ) or (item not in {"item 1.01", "item 2.03", "item 2.04"} and has_amount and has_obligation)
         if passes:
             raw["semantic_validation"] = {
                 "has_amount": has_amount,
@@ -1187,6 +1287,111 @@ def _strip_html(raw_text: str) -> str:
     no_scripts = re.sub(r"(?is)<(script|style).*?>.*?</\1>", " ", raw_text)
     no_tags = re.sub(r"(?s)<[^>]+>", " ", no_scripts)
     return re.sub(r"\s+", " ", html.unescape(no_tags))
+
+
+def _parse_form4_xml(raw_xml: str) -> JsonObject:
+    xml_match = re.search(r"(?is)<ownershipDocument\b.*?</ownershipDocument>", raw_xml)
+    payload = xml_match.group(0) if xml_match else raw_xml
+    root = ET.fromstring(payload)
+
+    def text(path: str, node: ET.Element = root) -> str | None:
+        found = node.find(path)
+        if found is None or found.text is None:
+            return None
+        value = found.text.strip()
+        return value or None
+
+    owner = root.find("reportingOwner")
+    relationship = owner.find("reportingOwnerRelationship") if owner is not None else None
+    reporting_owner = {
+        "cik": text("reportingOwnerId/rptOwnerCik", owner) if owner is not None else None,
+        "name": text("reportingOwnerId/rptOwnerName", owner) if owner is not None else None,
+        "is_director": text("isDirector", relationship) if relationship is not None else None,
+        "is_officer": text("isOfficer", relationship) if relationship is not None else None,
+        "is_ten_percent_owner": text("isTenPercentOwner", relationship)
+        if relationship is not None
+        else None,
+        "officer_title": text("officerTitle", relationship) if relationship is not None else None,
+    }
+    reporting_owner = {key: value for key, value in reporting_owner.items() if value is not None}
+    footnotes = {
+        str(item.attrib.get("id")): (item.text or "").strip()
+        for item in root.findall("footnotes/footnote")
+        if item.attrib.get("id") and (item.text or "").strip()
+    }
+    transactions: list[JsonObject] = []
+    for security_type, path in (
+        ("non_derivative", "nonDerivativeTable/nonDerivativeTransaction"),
+        ("derivative", "derivativeTable/derivativeTransaction"),
+    ):
+        for transaction in root.findall(path):
+            footnote_ids = [
+                str(item.attrib.get("id"))
+                for item in transaction.findall(".//footnoteId")
+                if item.attrib.get("id")
+            ]
+            transactions.append(
+                {
+                    "security_type": security_type,
+                    "security_title": text("securityTitle/value", transaction),
+                    "transaction_date": text("transactionDate/value", transaction),
+                    "transaction_code": text("transactionCoding/transactionCode", transaction),
+                    "equity_swap_involved": text(
+                        "transactionCoding/equitySwapInvolved", transaction
+                    ),
+                    "shares": _sec_number(
+                        text("transactionAmounts/transactionShares/value", transaction)
+                    ),
+                    "price_per_share": _sec_number(
+                        text("transactionAmounts/transactionPricePerShare/value", transaction)
+                    ),
+                    "acquired_or_disposed": text(
+                        "transactionAmounts/transactionAcquiredDisposedCode/value", transaction
+                    ),
+                    "shares_owned_after": _sec_number(
+                        text(
+                            "postTransactionAmounts/sharesOwnedFollowingTransaction/value",
+                            transaction,
+                        )
+                    ),
+                    "direct_or_indirect": text(
+                        "ownershipNature/directOrIndirectOwnership/value", transaction
+                    ),
+                    "nature_of_ownership": text(
+                        "ownershipNature/natureOfOwnership/value", transaction
+                    ),
+                    "exercise_date": text("exerciseDate/value", transaction),
+                    "expiration_date": text("expirationDate/value", transaction),
+                    "underlying_security_title": text(
+                        "underlyingSecurity/underlyingSecurityTitle/value", transaction
+                    ),
+                    "underlying_shares": _sec_number(
+                        text("underlyingSecurity/underlyingSecurityShares/value", transaction)
+                    ),
+                    "footnote_ids": footnote_ids,
+                }
+            )
+    cleaned = [
+        {key: value for key, value in item.items() if value not in (None, "", [])}
+        for item in transactions
+    ]
+    return {
+        "period_of_report": text("periodOfReport"),
+        "reporting_owner": reporting_owner,
+        "transactions": cleaned,
+        "footnotes": footnotes,
+        "transaction_count": len(cleaned),
+    }
+
+
+def _sec_number(value: object) -> int | float | None:
+    if value in (None, ""):
+        return None
+    try:
+        number = float(str(value).replace(",", ""))
+    except (TypeError, ValueError):
+        return None
+    return int(number) if number.is_integer() else number
 
 
 def _normalize_sec_text(value: str) -> str:
@@ -1367,9 +1572,7 @@ def _resolve_requested_sec_concepts(
                 if candidate in available
                 and (
                     not cutoff_date
-                    or _concept_latest_filed(
-                        companyfacts, candidate, cutoff_date=cutoff_date
-                    )
+                    or _concept_latest_filed(companyfacts, candidate, cutoff_date=cutoff_date)
                 )
             ),
             key=lambda candidate: (
@@ -1391,9 +1594,7 @@ def _resolve_requested_sec_concepts(
                         {}
                         if exact
                         else {
-                            "reason": (
-                                "used the freshest governed issuer concept for this metric"
-                            )
+                            "reason": ("used the freshest governed issuer concept for this metric")
                         }
                     ),
                 }
@@ -1421,9 +1622,7 @@ def _resolve_requested_sec_concepts(
     return resolved, resolution
 
 
-def _concept_latest_filed(
-    companyfacts: JsonObject, concept: str, *, cutoff_date: str = ""
-) -> str:
+def _concept_latest_filed(companyfacts: JsonObject, concept: str, *, cutoff_date: str = "") -> str:
     facts = companyfacts.get("facts")
     if not isinstance(facts, dict):
         return ""
@@ -1547,9 +1746,7 @@ def _canonical_sec_key_facts(previews: list[JsonObject]) -> list[JsonObject]:
         best["canonical_selection"] = True
         selected.append(best)
         used.update(concepts)
-    selected.extend(
-        item for item in previews if str(item.get("concept")) not in used
-    )
+    selected.extend(item for item in previews if str(item.get("concept")) not in used)
     return selected
 
 

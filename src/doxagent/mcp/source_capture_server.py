@@ -15,6 +15,7 @@ from doxagent.data_runtime.pilot_case import validate_pilot_case_root
 from doxagent.mcp.source_capture import SourceCaptureService
 from doxagent.observations.kernel import ObservationKernel
 from doxagent.observations.store import AttemptObservationStore
+from doxagent.settings import DoxAgentSettings
 
 
 class WorkspaceSourceRepository:
@@ -189,8 +190,13 @@ def main() -> None:
         run_id=run_id,
         attempt_id=attempt_id,
     )
+    settings = DoxAgentSettings()
     build_server(
-        SourceCaptureService(repository),
+        SourceCaptureService(
+            repository,
+            user_agent=settings.sec_user_agent or "DoxAgent-SourceCapture/1.0",
+            sec_min_request_interval_seconds=settings.sec_min_request_interval_seconds,
+        ),
         run_id=run_id,
         attempt_id=attempt_id,
     ).run("stdio")

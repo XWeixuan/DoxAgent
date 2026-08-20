@@ -517,11 +517,15 @@ class DashScopeEmbeddingClient:
         timeout_seconds: float = 30.0,
         fallback_api_keys: Sequence[str] = (),
         key_health: ProviderKeyHealthRegistry | None = None,
+        key_rotation_enabled: bool = False,
+        auto_quarantine_enabled: bool = False,
         client: OpenAI | None = None,
     ) -> None:
         self.model = model
         self.dimensions = dimensions
         self._key_health = key_health or DEFAULT_KEY_HEALTH
+        self._key_rotation_enabled = key_rotation_enabled
+        self._auto_quarantine_enabled = auto_quarantine_enabled
         self._api_keys: tuple[str, ...]
         self._clients: tuple[OpenAI, ...]
         if client is not None:
@@ -550,8 +554,15 @@ class DashScopeEmbeddingClient:
         last_error: Exception | None = None
         last_attempted_key: str | None = None
         response: Any | None = None
-        for index, (key, client) in enumerate(zip(self._api_keys, self._clients, strict=True)):
-            if key != "injected" and not self._key_health.healthy(key):
+        pairs = tuple(zip(self._api_keys, self._clients, strict=True))
+        if not self._key_rotation_enabled:
+            pairs = pairs[:1]
+        for index, (key, client) in enumerate(pairs):
+            if (
+                self._auto_quarantine_enabled
+                and key != "injected"
+                and not self._key_health.healthy(key)
+            ):
                 continue
             try:
                 last_attempted_key = key
@@ -561,12 +572,14 @@ class DashScopeEmbeddingClient:
                     dimensions=self.dimensions,
                     encoding_format="float",
                 )
-                self._key_health.record_success(key)
+                if self._auto_quarantine_enabled:
+                    self._key_health.record_success(key)
                 break
             except Exception as exc:
                 last_error = exc
-                self._key_health.record_failure(key, classify_provider_error(exc))
-                if index == len(self._clients) - 1 or not _should_rotate_key(exc):
+                if self._auto_quarantine_enabled:
+                    self._key_health.record_failure(key, classify_provider_error(exc))
+                if index == len(pairs) - 1 or not _should_rotate_key(exc):
                     break
         if response is None:
             if last_error is None:
@@ -615,6 +628,8 @@ class DashScopeStructuredModelClient:
         timeout_seconds: float = 30.0,
         fallback_api_keys: Sequence[str] = (),
         key_health: ProviderKeyHealthRegistry | None = None,
+        key_rotation_enabled: bool = False,
+        auto_quarantine_enabled: bool = False,
         client: OpenAI | None = None,
     ) -> None:
         if tier is ModelTier.M1:
@@ -625,6 +640,8 @@ class DashScopeStructuredModelClient:
         self.strict = strict
         self.structured_transport = structured_transport
         self._key_health = key_health or DEFAULT_KEY_HEALTH
+        self._key_rotation_enabled = key_rotation_enabled
+        self._auto_quarantine_enabled = auto_quarantine_enabled
         self._api_keys: tuple[str, ...]
         self._clients: tuple[OpenAI, ...]
         self._async_clients: tuple[AsyncOpenAI, ...]
@@ -654,6 +671,29 @@ class DashScopeStructuredModelClient:
                 for key in dict.fromkeys(keys)
             )
 
+    def _sync_pairs(self) -> tuple[tuple[str, OpenAI], ...]:
+        pairs = tuple(zip(self._api_keys, self._clients, strict=True))
+        return pairs if self._key_rotation_enabled else pairs[:1]
+
+    def _async_pairs(self) -> tuple[tuple[str, AsyncOpenAI], ...]:
+        pairs = tuple(zip(self._api_keys, self._async_clients, strict=True))
+        return pairs if self._key_rotation_enabled else pairs[:1]
+
+    def _key_available(self, key: str) -> bool:
+        return (
+            not self._auto_quarantine_enabled
+            or key == "injected"
+            or self._key_health.healthy(key)
+        )
+
+    def _record_key_success(self, key: str) -> None:
+        if self._auto_quarantine_enabled and key != "injected":
+            self._key_health.record_success(key)
+
+    def _record_key_failure(self, key: str, exc: Exception) -> None:
+        if self._auto_quarantine_enabled and key != "injected":
+            self._key_health.record_failure(key, classify_provider_error(exc))
+
     async def acomplete(self, request: StructuredModelRequest) -> StructuredModelResult:
         """Native async equivalent used by the BULK_EPOCH stage executor."""
 
@@ -665,10 +705,9 @@ class DashScopeStructuredModelClient:
         last_attempted_key: str | None = None
         provider_response: Any | None = None
         selected_key: str | None = None
-        for index, (key, client) in enumerate(
-            zip(self._api_keys, self._async_clients, strict=True)
-        ):
-            if key != "injected" and not self._key_health.healthy(key):
+        pairs = self._async_pairs()
+        for index, (key, client) in enumerate(pairs):
+            if not self._key_available(key):
                 continue
             try:
                 last_attempted_key = key
@@ -706,15 +745,13 @@ class DashScopeStructuredModelClient:
                             session_cache_header=True,
                         )
                     )
-                if key != "injected":
-                    self._key_health.record_success(key)
+                self._record_key_success(key)
                 selected_key = key
                 break
             except Exception as exc:
                 last_error = exc
-                if key != "injected":
-                    self._key_health.record_failure(key, classify_provider_error(exc))
-                if index == len(self._async_clients) - 1 or not _should_rotate_key(exc):
+                self._record_key_failure(key, exc)
+                if index == len(pairs) - 1 or not _should_rotate_key(exc):
                     break
         if provider_response is None:
             if last_error is None:
@@ -771,8 +808,9 @@ class DashScopeStructuredModelClient:
         last_attempted_key: str | None = None
         provider_response: Any | None = None
         selected_key: str | None = None
-        for index, (key, client) in enumerate(zip(self._api_keys, self._clients, strict=True)):
-            if key != "injected" and not self._key_health.healthy(key):
+        pairs = self._sync_pairs()
+        for index, (key, client) in enumerate(pairs):
+            if not self._key_available(key):
                 continue
             try:
                 last_attempted_key = key
@@ -788,15 +826,13 @@ class DashScopeStructuredModelClient:
                             session_cache_header=True,
                         )
                     )
-                if key != "injected":
-                    self._key_health.record_success(key)
+                self._record_key_success(key)
                 selected_key = key
                 break
             except Exception as exc:
                 last_error = exc
-                if key != "injected":
-                    self._key_health.record_failure(key, classify_provider_error(exc))
-                if index == len(self._clients) - 1 or not _should_rotate_key(exc):
+                self._record_key_failure(key, exc)
+                if index == len(pairs) - 1 or not _should_rotate_key(exc):
                     break
         if provider_response is None:
             if last_error is None:
@@ -854,8 +890,9 @@ class DashScopeStructuredModelClient:
         last_attempted_key: str | None = None
         provider_response: Any | None = None
         selected_key: str | None = None
-        for index, (key, client) in enumerate(zip(self._api_keys, self._clients, strict=True)):
-            if key != "injected" and not self._key_health.healthy(key):
+        pairs = self._sync_pairs()
+        for index, (key, client) in enumerate(pairs):
+            if not self._key_available(key):
                 continue
             try:
                 last_attempted_key = key
@@ -895,15 +932,13 @@ class DashScopeStructuredModelClient:
                             ),
                         )
                     )
-                if key != "injected":
-                    self._key_health.record_success(key)
+                self._record_key_success(key)
                 selected_key = key
                 break
             except Exception as exc:
                 last_error = exc
-                if key != "injected":
-                    self._key_health.record_failure(key, classify_provider_error(exc))
-                if index == len(self._clients) - 1 or not _should_rotate_key(exc):
+                self._record_key_failure(key, exc)
+                if index == len(pairs) - 1 or not _should_rotate_key(exc):
                     break
         if provider_response is None:
             if last_error is None:
