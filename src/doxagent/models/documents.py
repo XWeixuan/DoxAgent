@@ -50,6 +50,21 @@ class GlobalResearchDocument(DocumentBase):
     market_narrative_report: ResearchSection | None = None
 
 
+class GlobalResearchV1Document(DocumentBase):
+    """Codex Global Research lane; legacy GlobalResearchDocument remains unchanged."""
+
+    document_type: DocumentType = DocumentType.GLOBAL_RESEARCH
+    fundamental_report: ResearchSection
+    industry_report: ResearchSection
+    market_implied_expectations_report: ResearchSection
+
+
+class MarketSituationResearchDocument(DocumentBase):
+    document_type: DocumentType = DocumentType.MARKET_SITUATION_RESEARCH
+    macro_report: ResearchSection
+    price_report: ResearchSection
+
+
 class PriceReaction(ContractModel):
     price_change: NonEmptyStr
     price_pattern: NonEmptyStr

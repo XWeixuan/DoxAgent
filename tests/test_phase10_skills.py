@@ -429,12 +429,30 @@ def test_c1_c3_task_text_moved_to_internal_task_skills() -> None:
     assert "## Task" not in c1_prompt.body
     assert "## Task" not in c3_prompt.body
     assert "load_skill(" not in fundamental.body
-    assert "Recent Fundamental State and Changes" in fundamental.body
-    assert "Key Variable Transmission Chains" in fundamental.body
+    assert "一、近期基本面状态与变化" in fundamental.body
+    assert "四、关键变量传导链" in fundamental.body
+    assert "### 核心驱动概览" in fundamental.body
+    assert "### 综合判断" in fundamental.body
+    assert "| ID | 上游业务变量" in fundamental.body
+    assert "Possible future effects" not in fundamental.body
+    assert "Field | Required content" not in fundamental.body
     assert "candidate questions, not formal `PotentialGap` objects" in fundamental.body
     assert "Invoke `" not in industry.body
-    assert "Target-Relevant Industry and Value-Chain Fact Baseline" in industry.body
-    assert "Core External Drivers, Allocation Mechanisms, and Transmission" in industry.body
+    assert "Do not stop at supplied context or Data Tools" in c3_prompt.body
+    assert "research completeness and freshness" in c3_prompt.body
+    assert "direct target business realization" in c3_prompt.body
+    assert "material competitor, substitute, technology, or diversion path" in (
+        c3_prompt.body
+    )
+    assert "一、目标相关行业与产业链事实基准" in industry.body
+    assert "三、核心外部驱动、分配机制与传导" in industry.body
+    assert "### 核心发现" in industry.body
+    assert "最新判断、行动或数据；近期变化；信号结论" in industry.body
+    assert "**传导机制**" in industry.body
+    assert "**当前证据基础**" in industry.body
+    assert "Cross-Node Handoffs" not in industry.body
+    assert "handoff node" not in industry.body
+    assert "candidate question; anchor;" not in industry.body
     assert "candidate questions, not formal `PotentialGap` objects" in industry.body
 
 
@@ -470,20 +488,19 @@ def test_c4_manual_resources_follow_external_sdk_contract_and_size() -> None:
     ):
         assert mode in prompt.body
         assert mode in skill.body
-    for artifact in (
-        "entity_exposure_map",
-        "future_nodes_pre_scan",
-        "future_nodes_final",
-    ):
-        assert artifact in prompt.body
-        assert artifact in skill.body
+    assert "complete merged snapshot" in prompt.body
+    assert "complete merged snapshot" in skill.body
+    assert "governed five public" in prompt.body
 
     assert "who -> will do/decide/receive what -> when" in skill.body
     assert "source reliability, not outcome probability" in skill.body
     assert "fiscal from calendar quarter" in skill.body
     assert "One step does not prove the next" in skill.body
     assert "load_skill(" not in skill.body
-    assert len((PROMPT_ROOT / "agents" / "c4.md").read_text(encoding="utf-8")) <= 2000
+    c4_prompt_length = len(
+        (PROMPT_ROOT / "agents" / "c4.md").read_text(encoding="utf-8")
+    )
+    assert 5000 <= c4_prompt_length <= 8000
     assert len(
         (
             PROMPT_ROOT
@@ -691,7 +708,7 @@ def test_prompt_injector_selects_global_research_internal_skills_for_c1_c3() -> 
     assert c1_injected.prompt_bundle.external_skill_package_ids == []
     c1_skill = default_prompt_registry().get("fundamental-research")
     assert "Document 1" in c1_skill.body
-    assert "Management and Sell-Side Expectations" in c1_skill.body
+    assert "二、管理层与卖方当前预期" in c1_skill.body
     assert "priced in" in c1_skill.body
 
     c3_definition = agent_registry.get(AgentName.C3_INDUSTRY_RESEARCH)
@@ -708,7 +725,7 @@ def test_prompt_injector_selects_global_research_internal_skills_for_c1_c3() -> 
     assert c3_injected.prompt_bundle.external_skill_package_ids == []
     c3_skill = default_prompt_registry().get("industry-research")
     assert "Document 1" in c3_skill.body
-    assert "Industry and Commercialization Milestones and Proof Boundaries" in c3_skill.body
+    assert "四、行业与商业化里程碑及证明边界" in c3_skill.body
     assert "priced in" in c3_skill.body
 
     o4_definition = agent_registry.get(AgentName.O4_MARKET_TRACE)
@@ -721,20 +738,38 @@ def test_prompt_injector_selects_global_research_internal_skills_for_c1_c3() -> 
     )
     o4_injected = PromptInjector().inject(o4_task, o4_definition)
     assert "ticker_price_tracking" in o4_injected.prompt_bundle.internal_task_skill_ids
-    assert "market-implied-expectations" in (
+    assert "market-implied-expectations" not in (
         o4_injected.prompt_bundle.internal_task_skill_ids
+    )
+
+    c5_definition = agent_registry.get(AgentName.C5_MARKET_IMPLIED_EXPECTATIONS)
+    c5_task = c1_task.model_copy(
+        update={
+            "agent_name": AgentName.C5_MARKET_IMPLIED_EXPECTATIONS,
+            "permissions": c5_definition.runtime.to_permissions(),
+        },
+        deep=True,
+    )
+    c5_injected = PromptInjector().inject(c5_task, c5_definition)
+    assert "market-implied-expectations" in (
+        c5_injected.prompt_bundle.internal_task_skill_ids
     )
     assert o4_injected.prompt_bundle.external_skill_package_ids == []
     ticker_skill = default_prompt_registry().get("ticker_price_tracking")
     implied_skill = default_prompt_registry().get("market-implied-expectations")
     o4_prompt = default_prompt_registry().get("agent.o4")
+    c5_prompt = default_prompt_registry().get("agent.c5")
     assert "recent price and flow reaction first" in ticker_skill.body
-    assert "Current Market Pricing Baseline" in implied_skill.body
-    assert "Major Repricing Episodes and Pricing Drivers" in implied_skill.body
-    assert "one or at most two focal assumptions" in implied_skill.body
-    assert "NOT_IDENTIFIABLE" in implied_skill.body
-    assert "O4-B Macro Market Research" in o4_prompt.body
-    assert "O4-A Market-Implied Expectations Research" in o4_prompt.body
+    assert "一、当前市场定价基线" in implied_skill.body
+    assert "三、市场隐含的业务、财务与持续期条件" in implied_skill.body
+    assert "one or at most two focal operating assumptions" in implied_skill.body
+    assert "binding condition or scenario set" in implied_skill.body
+    assert "All final report section titles and table headers must be Chinese" in (
+        implied_skill.body
+    )
+    assert "Market Situation Research price agent" in o4_prompt.body
+    assert "independent from Global Research" in o4_prompt.body
+    assert "Global Research market-implied-expectations agent" in c5_prompt.body
 
 
 def test_c2_exposes_macro_analysis_not_global_macro() -> None:

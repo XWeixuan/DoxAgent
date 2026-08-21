@@ -1,5 +1,10 @@
 # Codex SDK migration Phase 1-8 implementation handoff
 
+> **Legacy implementation record（2026-08-20）：** 下文只描述 `codex_d1_v2` 首次落地。
+> 新 run 使用独立的 `codex_global_research_v1` 与 `codex_market_situation_v1`，当前实现与
+> 兼容边界以 [`global_market_research_lane_rearchitecture_plan_20260820.md`](./global_market_research_lane_rearchitecture_plan_20260820.md)
+> 为准；本文中的 O4-A/O4-B/C4 finalization 不应再指导新 lane 开发。
+
 Date: 2026-08-09  
 Workflow version: `codex_d1_v2`  
 Scope: Document 1 v2; Document 2 interface freeze only; Data MCP follow-up integrated.

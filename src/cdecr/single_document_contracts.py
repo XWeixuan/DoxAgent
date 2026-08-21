@@ -15,7 +15,6 @@ from cdecr.contracts import (
     EventFamily,
     EventMention,
     EventTime,
-    LocalPackageHint,
     NonEmptyString,
     ParticipantRole,
     Predicate,
@@ -282,14 +281,6 @@ class MentionDraft(StrictModel):
     open_attributes: list[OpenAttributeDraft] = Field(
         description=("Evidence-backed modifiers that do not independently constitute events.")
     )
-    local_package_hint: LocalPackageHint | None = Field(
-        default=None,
-        description=(
-            "Optional source-supported parent boundary that contains this Mention and may "
-            "contain other distinct events; null when no such parent is supported."
-        ),
-    )
-
     @model_validator(mode="after")
     def require_one_primary_quantity(self) -> MentionDraft:
         if not self.quantities:
@@ -542,6 +533,7 @@ class ModelCallSummary(StrictModel):
     tier: Literal["m1", "m2", "m3", "m4"]
     model: NonEmptyString
     input_tokens: int | None = Field(default=None, ge=0)
+    cached_input_tokens: int | None = Field(default=None, ge=0)
     output_tokens: int | None = Field(default=None, ge=0)
     latency_ms: int = Field(ge=0)
     status: Literal["SUCCEEDED", "FAILED"] = "SUCCEEDED"

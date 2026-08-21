@@ -42,7 +42,17 @@ class FinnhubPeersClient(BaseRealToolClient):
                 )
             return self._success(
                 request,
-                output={"provider": "finnhub", "symbol": symbol, "peers": raw},
+                output={
+                    "provider": "finnhub",
+                    "symbol": symbol,
+                    "grouping": grouping,
+                    "peers": raw,
+                    "methodology_notice": (
+                        "Provider-generated peer candidates for universe discovery; membership "
+                        "does not imply a strict comparable-company methodology or hierarchy."
+                    ),
+                    "as_of": request.metadata.get("cutoff_at"),
+                },
                 raw=raw,
                 source_kind="external_report",
                 source_id=f"finnhub:peers:{symbol}",
@@ -61,7 +71,12 @@ class _FinnhubCompositeClient(BaseRealToolClient):
     title = "Finnhub data"
 
     def _fetch_many(
-        self, api_key: str, symbol: str, endpoints: dict[str, tuple[str, dict[str, object]]]
+        self,
+        api_key: str,
+        symbol: str,
+        endpoints: dict[str, tuple[str, dict[str, object]]],
+        *,
+        row_limit: int = 25,
     ) -> tuple[JsonObject, list[JsonObject]]:
         data: JsonObject = {}
         issues: list[JsonObject] = []
@@ -77,7 +92,12 @@ class _FinnhubCompositeClient(BaseRealToolClient):
                 )
                 _raise_finnhub_issue(raw)
                 if _has_finnhub_rows(raw):
-                    projected = _project_finnhub_payload(label, raw)
+                    projected = _project_finnhub_payload(
+                        label,
+                        raw,
+                        symbol=symbol,
+                        limit=row_limit,
+                    )
                     if projected not in (None, "", [], {}):
                         data[label] = projected
                     else:
@@ -178,7 +198,7 @@ class FinnhubInsiderTransactionsClient(_FinnhubCompositeClient):
                     "insider_transactions": ("/stock/insider-transactions", params),
                 },
             )
-            return self._result(
+            result = self._result(
                 request,
                 symbol=symbol,
                 data=data,
@@ -186,6 +206,13 @@ class FinnhubInsiderTransactionsClient(_FinnhubCompositeClient):
                 payload_key="insider_transactions",
                 summary="Retrieved Finnhub insider-transaction records.",
             )
+            if result.output:
+                result.output["transaction_code_notice"] = (
+                    "Finnhub transactionCode is provider-native. Role, direct/indirect ownership, "
+                    "Rule 10b5-1, gift and tax-withholding attribution are not supplied by this "
+                    "endpoint; do not classify records as discretionary buys/sells without Form 4."
+                )
+            return result
         except Exception as exc:
             return self._handle_exception(request, exc)
 
@@ -200,15 +227,19 @@ class FinnhubCompanyNewsEventsClient(_FinnhubCompositeClient):
             symbol = _input_str_any(request, ("symbol", "ticker"), request.ticker).upper()
             date_from = _input_str(request, "from", _input_str(request, "date_from", "2020-01-01"))
             date_to = _input_str(request, "to", _input_str(request, "date_to", "2030-01-01"))
+            row_limit = _bounded_int(request.input.get("limit", 10), 1, 50)
+            endpoints: dict[str, tuple[str, dict[str, object]]] = {
+                "company_news": ("/company-news", {"from": date_from, "to": date_to}),
+            }
+            if bool(request.input.get("include_earnings", True)):
+                endpoints["earnings"] = ("/stock/earnings", {})
             data, issues = self._fetch_many(
                 api_key,
                 symbol,
-                {
-                    "company_news": ("/company-news", {"from": date_from, "to": date_to}),
-                    "earnings": ("/stock/earnings", {}),
-                },
+                endpoints,
+                row_limit=row_limit,
             )
-            return self._result(
+            result = self._result(
                 request,
                 symbol=symbol,
                 data=data,
@@ -216,6 +247,14 @@ class FinnhubCompanyNewsEventsClient(_FinnhubCompositeClient):
                 payload_key="company_news_events",
                 summary="Retrieved Finnhub company-news and earnings-event records.",
             )
+            if result.output:
+                result.output["applied_window"] = {"from": date_from, "to": date_to}
+                result.output["record_limit_per_endpoint"] = row_limit
+                result.output["usage_notice"] = (
+                    "Finnhub news is a bounded discovery feed, not final-state evidence; verify "
+                    "material claims against issuer, SEC, or regulator primary sources."
+                )
+            return result
         except Exception as exc:
             return self._handle_exception(request, exc)
 
@@ -385,7 +424,13 @@ _FINNHUB_FIELDS: dict[str, tuple[str, ...]] = {
 }
 
 
-def _project_finnhub_payload(label: str, raw: JsonObject) -> JsonObject | list[JsonObject]:
+def _project_finnhub_payload(
+    label: str,
+    raw: JsonObject,
+    *,
+    symbol: str = "",
+    limit: int = 25,
+) -> JsonObject | list[JsonObject]:
     container = {
         "ownership": "ownership",
         "insider_transactions": "data",
@@ -397,14 +442,116 @@ def _project_finnhub_payload(label: str, raw: JsonObject) -> JsonObject | list[J
         value = raw.get("items")
     if not isinstance(value, list):
         return {}
-    limit = 25 if label == "company_news" else 50
     fields = _FINNHUB_FIELDS.get(label, ())
-    rows = [
-        {key: row[key] for key in fields if row.get(key) not in (None, "", [], {})}
-        for row in value[:limit]
+    projected = [
+        {
+            key: _repair_common_mojibake(row[key])
+            for key in fields
+            if row.get(key) not in (None, "", [], {})
+        }
+        for row in value
         if isinstance(row, dict)
     ]
-    return {"symbol": raw.get("symbol"), "records": rows}
+    if label == "company_news":
+        projected = _select_company_news(projected, symbol=symbol, limit=limit)
+    else:
+        projected = projected[:limit]
+    return {"symbol": raw.get("symbol") or symbol, "records": projected}
+
+
+def _select_company_news(
+    records: list[JsonObject], *, symbol: str, limit: int
+) -> list[JsonObject]:
+    selected: list[JsonObject] = []
+    seen: set[str] = set()
+    junk_phrases = (
+        "prediction market",
+        "daily roundup",
+        "etf flows",
+        "options corner",
+        "top gainers and losers",
+        "market movers",
+        "dow jones index",
+        "s&p 500 session",
+        "nasdaq session",
+    )
+    material_terms = (
+        "earnings",
+        "financial results",
+        "revenue",
+        "guidance",
+        "outlook",
+        "launch",
+        "product",
+        "partnership",
+        "acquisition",
+        "regulatory",
+        "export control",
+        "data center",
+        "gpu",
+        "hbm",
+        "cloud",
+        "capital expenditure",
+        "capex",
+        "supply",
+        "shipment",
+        "customer",
+    )
+    for row in sorted(records, key=lambda item: int(item.get("datetime") or 0), reverse=True):
+        headline = str(row.get("headline") or "")
+        summary = str(row.get("summary") or "")
+        related = str(row.get("related") or "").upper()
+        lowered = f"{headline} {summary}".lower()
+        company_named = symbol.lower() in lowered or "nvidia" in lowered
+        if any(phrase in lowered for phrase in junk_phrases):
+            continue
+        if not company_named:
+            continue
+        if not any(term in lowered for term in material_terms):
+            continue
+        if related and symbol and symbol not in {item.strip() for item in related.split(",")}:
+            continue
+        identity = str(row.get("url") or headline).strip().lower()
+        if not identity or identity in seen:
+            continue
+        seen.add(identity)
+        selected.append(row)
+        if len(selected) >= limit:
+            break
+    if selected:
+        return selected
+    # A discovery tool should not turn a non-empty, symbol-scoped provider response into a
+    # silent success with zero rows.  Keep a small fallback only when the high-signal filter
+    # found nothing; downstream authoritative-source verification remains required.
+    fallback = []
+    for row in records:
+        related = str(row.get("related") or "").upper()
+        if related and symbol and symbol not in {item.strip() for item in related.split(",")}:
+            continue
+        fallback.append(row)
+        if len(fallback) >= min(limit, 5):
+            break
+    return fallback
+
+
+def _repair_common_mojibake(value: object) -> object:
+    if not isinstance(value, str) or not any(
+        marker in value for marker in ("Ã", "â€", "â\u0080", "Â")
+    ):
+        return value
+    try:
+        repaired = value.encode("latin-1").decode("utf-8")
+    except (UnicodeEncodeError, UnicodeDecodeError):
+        return value
+    return repaired if repaired.count("�") <= value.count("�") else value
+
+
+def _bounded_int(value: object, minimum: int, maximum: int) -> int:
+    try:
+        parsed = int(str(value))
+    except (TypeError, ValueError):
+        parsed = minimum
+    return max(minimum, min(maximum, parsed))
 
 
 async def _capture_finnhub_trades(

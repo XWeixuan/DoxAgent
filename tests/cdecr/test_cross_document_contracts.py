@@ -12,8 +12,6 @@ from cdecr.contracts import (
     AtomicAction,
     AtomicSemanticRelation,
     ExternalRelationType,
-    MembershipRelation,
-    PackageAssignmentRelation,
     PackageExternalRelation,
 )
 from cdecr.cross_document_contracts import (
@@ -21,11 +19,7 @@ from cdecr.cross_document_contracts import (
     AtomicAssignmentRecord,
     AtomicCandidateAssessment,
     AtomicDecisionBatch,
-    PackageAssignmentDecision,
     PackageAssignmentRecord,
-    PackageCandidateAssessment,
-    PackageDecisionBatch,
-    PackagePairDecision,
 )
 
 
@@ -82,92 +76,10 @@ def test_atomic_decision_requires_action_specific_target() -> None:
         )
 
 
-def test_package_decision_requires_relation_specific_detail() -> None:
-    with pytest.raises(ValidationError):
-        PackagePairDecision(
-            event_id="E1",
-            candidate_package_id="P1",
-            relation=PackageAssignmentRelation.MEMBER,
-        )
-    member = PackagePairDecision(
-        event_id="E1",
-        candidate_package_id="P1",
-        relation=PackageAssignmentRelation.MEMBER,
-        membership_relation=MembershipRelation.DISCLOSED_IN,
-    )
-    assert member.membership_relation is MembershipRelation.DISCLOSED_IN
-    external = PackagePairDecision(
-        event_id="E1",
-        candidate_package_id="P1",
-        relation=PackageAssignmentRelation.EXTERNAL_RELATED,
-        external_relation=ExternalRelationType.MARKET_REACTION_TO,
-    )
-    assert external.external_relation is ExternalRelationType.MARKET_REACTION_TO
 
 
-def test_joint_package_decision_enforces_complete_member_ranking() -> None:
-    member_one = PackageCandidateAssessment(
-        candidate_package_id="P1",
-        relation=PackageAssignmentRelation.MEMBER,
-        membership_relation=MembershipRelation.DISCLOSED_IN,
-        reason="same canonical artifact",
-    )
-    member_two = member_one.model_copy(update={"candidate_package_id": "P2"})
-    external = PackageCandidateAssessment(
-        candidate_package_id="P3",
-        relation=PackageAssignmentRelation.EXTERNAL_RELATED,
-        external_relation=ExternalRelationType.MARKET_REACTION_TO,
-        reason="outside boundary",
-    )
-    decision = PackageAssignmentDecision(
-        event_id="E1",
-        candidate_assessments=[member_one, member_two, external],
-        ranked_member_package_ids=["P2", "P1"],
-        selected_member_package_id="P2",
-        selection_reason="P2 has the trusted anchor",
-    )
-    assert decision.selected_member_package_id == "P2"
-    assert PackageDecisionBatch(decisions=[decision]).decisions == [decision]
-
-    invalid_updates = [
-        {"ranked_member_package_ids": ["P1"]},
-        {
-            "ranked_member_package_ids": ["P1", "P2"],
-            "selected_member_package_id": "P2",
-        },
-        {
-            "candidate_assessments": [member_one, member_one, external],
-            "ranked_member_package_ids": ["P1"],
-            "selected_member_package_id": "P1",
-        },
-    ]
-    for update in invalid_updates:
-        with pytest.raises(ValidationError):
-            PackageAssignmentDecision.model_validate(
-                {**decision.model_dump(mode="json"), **update}
-            )
 
 
-def test_joint_package_decision_allows_zero_members_without_target() -> None:
-    decision = PackageAssignmentDecision(
-        event_id="E1",
-        candidate_assessments=[
-            PackageCandidateAssessment(
-                candidate_package_id="P1",
-                relation=PackageAssignmentRelation.NOT_RELATED,
-                reason="different report",
-            ),
-            PackageCandidateAssessment(
-                candidate_package_id="P2",
-                relation=PackageAssignmentRelation.UNCERTAIN,
-                reason="insufficient evidence",
-            ),
-        ],
-        ranked_member_package_ids=[],
-    )
-    assert decision.selected_member_package_id is None
-    with pytest.raises(ValidationError):
-        PackageDecisionBatch(decisions=[decision, decision])
 
 
 def test_assignments_must_have_resulting_objects_and_identity_version() -> None:

@@ -6,6 +6,7 @@ import json
 import sqlite3
 from datetime import UTC, datetime
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 from fastapi.testclient import TestClient
@@ -34,7 +35,11 @@ from doxagent.codex_worker.jobs import WorkerJobManager
 from doxagent.codex_worker.schema import WorkerJob, WorkerRunRequest
 from doxagent.codex_worker.sdk_runtime import OpenAICodexRuntime, WorkerTurnResult
 from doxagent.codex_worker.workspace_store import LocalWorkspaceStore
-from doxagent.mcp.source_capture import CitationManifestBuilder, SourceCaptureService
+from doxagent.mcp.source_capture import (
+    CitationManifestBuilder,
+    SourceCaptureService,
+    _extract_payload_text,
+)
 
 
 def test_capability_tokens_are_run_operation_and_expiry_scoped(
@@ -67,7 +72,7 @@ def test_sqlite_repository_round_trips_thread_without_legacy_state(tmp_path: Pat
     repository.save_thread(record)
     assert repository.get_thread("run-1", CodexAgentRole.O4.value) == record
     with sqlite3.connect(database) as connection:
-        assert connection.execute("PRAGMA user_version").fetchone()[0] == 2
+        assert connection.execute("PRAGMA user_version").fetchone()[0] == 3
 
 
 def test_postgres_runtime_storage_requires_explicit_remote_opt_in(tmp_path: Path) -> None:
@@ -145,6 +150,51 @@ async def test_source_capture_failure_is_soft_and_citations_are_deterministic() 
     assert [entry.alias for entry in manifest.entries] == ["O1", "O9"]
     assert manifest.entries[0].resolved is True
     assert manifest.entries[1].resolved is False
+
+
+@pytest.mark.asyncio
+async def test_source_capture_accepts_proxy_synthetic_dns_but_not_literal_or_private_ip(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def synthetic_dns(host: str, *_args: object, **_kwargs: object):
+        address = "10.0.0.7" if host == "private.example" else "198.18.0.93"
+        return [(2, 1, 6, "", (address, 443))]
+
+    monkeypatch.setattr("doxagent.mcp.source_capture.socket.getaddrinfo", synthetic_dns)
+
+    await SourceCaptureService._validate_public_url("https://public.example/report")
+    with pytest.raises(ValueError, match="private, local, and reserved"):
+        await SourceCaptureService._validate_public_url("https://private.example/report")
+    with pytest.raises(ValueError, match="private, local, and reserved"):
+        await SourceCaptureService._validate_public_url("https://198.18.0.93/report")
+
+
+def test_source_capture_extracts_pdf_text_and_rejects_unknown_binary(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class FakePage:
+        def extract_text(self) -> str:
+            return "Management guidance and financial commentary."
+
+    monkeypatch.setattr(
+        "doxagent.mcp.source_capture.PdfReader",
+        lambda _payload: SimpleNamespace(pages=[FakePage()]),
+    )
+    text, title = _extract_payload_text(
+        b"%PDF-test",
+        content_type="application/pdf",
+        encoding="utf-8",
+        url="https://s201.q4cdn.com/commentary.pdf",
+    )
+    assert text == "Management guidance and financial commentary."
+    assert title == "commentary.pdf"
+    with pytest.raises(ValueError, match="unsupported source content type"):
+        _extract_payload_text(
+            b"binary",
+            content_type="application/octet-stream",
+            encoding="utf-8",
+            url="https://example.com/blob",
+        )
 
 
 class _ImmediateHandle:

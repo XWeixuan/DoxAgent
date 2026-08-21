@@ -10,13 +10,26 @@ _RECORD_LIST_KEYS = {
     "awards",
     "documents",
     "events",
+    "exhibit_documents",
+    "exhibit_previews",
+    "exhibits",
     "items",
     "opportunities",
     "records",
     "results",
+    "section_previews",
+    "sections",
     "updates",
 }
-_TABLE_LIST_KEYS = {"data", "filings", "observations", "ohlcv", "rows", "values"}
+_TABLE_LIST_KEYS = {
+    "data",
+    "filings",
+    "key_facts",
+    "observations",
+    "ohlcv",
+    "rows",
+    "values",
+}
 _DATE_KEYS = {"date", "datetime", "period", "time", "timestamp"}
 
 
@@ -62,18 +75,13 @@ def _segment_list(key: str, values: list[Any], locator: str) -> list[SegmentedOb
     if not values:
         return []
     if key in _RECORD_LIST_KEYS and all(isinstance(item, dict) for item in values):
-        return [
-            SegmentedObservation(
-                locator=f"{locator}/{index}",
-                title=_content_title(item, fallback=f"{key} {index + 1}"),
-                block_type="json",
-                content=item,
-            )
-            for index, item in enumerate(values)
-        ]
+        blocks: list[SegmentedObservation] = []
+        for index, item in enumerate(values):
+            blocks.extend(_segment_record(key, item, index, locator))
+        return blocks
     if all(isinstance(item, dict) for item in values):
         block_type = "time_series" if _looks_time_series(values) else "table"
-        chunk_size = 50 if key in _TABLE_LIST_KEYS else 25
+        chunk_size = 4 if key == "key_facts" else (50 if key in _TABLE_LIST_KEYS else 25)
         blocks = []
         for start in range(0, len(values), chunk_size):
             end = min(len(values), start + chunk_size)
@@ -125,6 +133,47 @@ def _segment_text(text: str, locator: str, title: str) -> list[SegmentedObservat
         )
         for index, content in enumerate(blocks)
     ]
+
+
+def _segment_record(
+    key: str, item: dict[str, Any], index: int, locator: str
+) -> list[SegmentedObservation]:
+    record_locator = f"{locator}/{index}"
+    title = _content_title(item, fallback=f"{key} {index + 1}")
+    body_key = next(
+        (
+            candidate
+            for candidate in ("content", "raw_content", "text", "body")
+            if isinstance(item.get(candidate), str) and len(str(item[candidate])) > 4_000
+        ),
+        None,
+    )
+    if body_key is None:
+        return [
+            SegmentedObservation(
+                locator=record_locator,
+                title=title,
+                block_type="json",
+                content=item,
+            )
+        ]
+    metadata = {name: value for name, value in item.items() if name != body_key}
+    blocks = [
+        SegmentedObservation(
+            locator=f"{record_locator}/metadata",
+            title=f"{title} — metadata",
+            block_type="json",
+            content=metadata,
+        )
+    ]
+    blocks.extend(
+        _segment_text(
+            str(item[body_key]),
+            f"{record_locator}/{_pointer(body_key)}",
+            title,
+        )
+    )
+    return blocks
 
 
 def _looks_time_series(values: list[dict[str, Any]]) -> bool:

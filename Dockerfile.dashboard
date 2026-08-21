@@ -10,6 +10,10 @@ COPY frontend/dashboard/package.json frontend/dashboard/pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
 COPY frontend/dashboard ./
+ARG VITE_CODEX_D1_V2_ENABLED=false
+ARG VITE_CODEX_RESEARCH_LANES_ENABLED=false
+ENV VITE_CODEX_D1_V2_ENABLED=${VITE_CODEX_D1_V2_ENABLED} \
+    VITE_CODEX_RESEARCH_LANES_ENABLED=${VITE_CODEX_RESEARCH_LANES_ENABLED}
 RUN pnpm build
 
 

@@ -51,8 +51,15 @@ class BulkTaskLedger:
     def finish_many(self, tasks: Sequence[dict[str, Any]]) -> dict[str, int]:
         return self._write_many([{**task, "status": "SUCCEEDED"} for task in tasks])
 
-    def fail_many(self, tasks: Sequence[dict[str, Any]]) -> dict[str, int]:
-        return self._write_many([{**task, "status": "FAILED"} for task in tasks])
+    def fail_many(
+        self,
+        tasks: Sequence[dict[str, Any]],
+        *,
+        status: str = "FAILED_TERMINAL",
+    ) -> dict[str, int]:
+        if status not in {"FAILED_RETRYABLE", "FAILED_TERMINAL"}:
+            raise ValueError("failure status must be FAILED_RETRYABLE or FAILED_TERMINAL")
+        return self._write_many([{**task, "status": status} for task in tasks])
 
     def finish(
         self,
@@ -84,6 +91,7 @@ class BulkTaskLedger:
         snapshot_hash: str,
         error_code: str,
         component_id: str | None = None,
+        status: str = "FAILED_TERMINAL",
     ) -> None:
         self.registry.upsert_bulk_epoch_task(
             epoch_id=self.epoch_id,
@@ -92,7 +100,7 @@ class BulkTaskLedger:
             component_id=component_id,
             input_hash=input_hash,
             snapshot_hash=snapshot_hash,
-            status="FAILED",
+            status=status,
             error_code=error_code,
         )
 

@@ -1,0 +1,131 @@
+{
+  "generated_at_utc": "2026-08-11T06:02:44+00:00",
+  "source_terra_artifact": "eval/cdecr_relevance_filter/mu_relevance_30_v1/cdecr_mu_relevance_30_candidates_gold.jsonl",
+  "source_terra_artifact_sha256": "2d8bb903bedf2b3f82ab108a9bc8407df67b7ea96ed0bcbdddc313a8d5640190",
+  "output_artifact": "eval/cdecr_relevance_filter/mu_relevance_30_v1/cdecr_mu_relevance_30_candidates_gold_adjudicated_29.jsonl",
+  "output_artifact_sha256": "3d661178e0402f4b7ac069043d55584deb88dd73d2c55b30bd5a9a34709deeb3",
+  "documents": 29,
+  "candidates": 395,
+  "final_label_counts": {
+    "RELEVANT": 211,
+    "IRRELEVANT": 184
+  },
+  "override_count": 15,
+  "manual_overrides": [
+    {
+      "document_id": "D095",
+      "candidate_id": "candidate:doxatlas:raw_media:8ec55933-baa6-4499-87f3-07c21ea4583f:3447e462d2155993b5fcd3d1e57504a51aecb40c4159f92cd1cfd99a7404fba9",
+      "terra_relevance": "IRRELEVANT",
+      "relevance": "RELEVANT",
+      "adjudication_reason": "article explicitly ties Ciena forecasts/orders/growth/profit to AI data-center interconnect buildout, giving a concrete server-memory demand path."
+    },
+    {
+      "document_id": "D095",
+      "candidate_id": "candidate:doxatlas:raw_media:8ec55933-baa6-4499-87f3-07c21ea4583f:363fcc0243b29dd949fcba5abe410c719a61d1bbee3d89c3cf9d05cc3dc3332d",
+      "terra_relevance": "IRRELEVANT",
+      "relevance": "RELEVANT",
+      "adjudication_reason": "article explicitly ties Ciena forecasts/orders/growth/profit to AI data-center interconnect buildout, giving a concrete server-memory demand path."
+    },
+    {
+      "document_id": "D095",
+      "candidate_id": "candidate:doxatlas:raw_media:8ec55933-baa6-4499-87f3-07c21ea4583f:621ad7ee38d0d9f3f162216d0351264524ead32f3f27054a02057cb88d754ba8",
+      "terra_relevance": "IRRELEVANT",
+      "relevance": "RELEVANT",
+      "adjudication_reason": "article explicitly ties Ciena forecasts/orders/growth/profit to AI data-center interconnect buildout, giving a concrete server-memory demand path."
+    },
+    {
+      "document_id": "D095",
+      "candidate_id": "candidate:doxatlas:raw_media:8ec55933-baa6-4499-87f3-07c21ea4583f:7e553fc88a346698a2e226ef415c36469df3bffdcebb7e14e25bad895405ad60",
+      "terra_relevance": "IRRELEVANT",
+      "relevance": "RELEVANT",
+      "adjudication_reason": "article explicitly ties Ciena forecasts/orders/growth/profit to AI data-center interconnect buildout, giving a concrete server-memory demand path."
+    },
+    {
+      "document_id": "D095",
+      "candidate_id": "candidate:doxatlas:raw_media:8ec55933-baa6-4499-87f3-07c21ea4583f:a4300f72042fd113d7036b6a711f2d9fcf921a2ff5140d8939cd8b8d1feb2648",
+      "terra_relevance": "IRRELEVANT",
+      "relevance": "RELEVANT",
+      "adjudication_reason": "article explicitly ties Ciena forecasts/orders/growth/profit to AI data-center interconnect buildout, giving a concrete server-memory demand path."
+    },
+    {
+      "document_id": "D095",
+      "candidate_id": "candidate:doxatlas:raw_media:8ec55933-baa6-4499-87f3-07c21ea4583f:a76f96af5ac0f37702e57d93afd23996f3cfe88b49c39763d355e37210c8bd12",
+      "terra_relevance": "IRRELEVANT",
+      "relevance": "RELEVANT",
+      "adjudication_reason": "article explicitly ties Ciena forecasts/orders/growth/profit to AI data-center interconnect buildout, giving a concrete server-memory demand path."
+    },
+    {
+      "document_id": "D095",
+      "candidate_id": "candidate:doxatlas:raw_media:8ec55933-baa6-4499-87f3-07c21ea4583f:fb228d6ec788ef092488a91360be9c4b33bc5290b49f23c3a723e589faebd847",
+      "terra_relevance": "IRRELEVANT",
+      "relevance": "RELEVANT",
+      "adjudication_reason": "article explicitly ties Ciena forecasts/orders/growth/profit to AI data-center interconnect buildout, giving a concrete server-memory demand path."
+    },
+    {
+      "document_id": "D025",
+      "candidate_id": "candidate:doxatlas:raw_media:581e6e23-2036-4ac7-930d-67755265bfb5:f9e95defac7b5193888e78bccf913d79802f0eedc0eb33890c12ba641013d6f0",
+      "terra_relevance": "IRRELEVANT",
+      "relevance": "RELEVANT",
+      "adjudication_reason": "article says data center is AMD's primary growth driver and rack-scale AI deployments consume HBM/DRAM."
+    },
+    {
+      "document_id": "D045",
+      "candidate_id": "candidate:doxatlas:raw_media:fac88ce0-2a17-4c11-913a-cd58af53e520:0d506fb163dda93d65b37347229b04b5a94828c03874700d334dc538a4e30f12",
+      "terra_relevance": "IRRELEVANT",
+      "relevance": "RELEVANT",
+      "adjudication_reason": "analyst actions are explicitly tied to reversal of memory concerns and server-OEM margin/demand exposure."
+    },
+    {
+      "document_id": "D045",
+      "candidate_id": "candidate:doxatlas:raw_media:fac88ce0-2a17-4c11-913a-cd58af53e520:332617a12b75a6e0728c9bfc692bdd7de8e2fb25d0a77a1efd57d13321af7251",
+      "terra_relevance": "RELEVANT",
+      "relevance": "IRRELEVANT",
+      "adjudication_reason": "broad HPE EPS beat alone cannot isolate a target-specific memory demand or pricing path."
+    },
+    {
+      "document_id": "D045",
+      "candidate_id": "candidate:doxatlas:raw_media:fac88ce0-2a17-4c11-913a-cd58af53e520:4872fe8d7cdd4b3c939e92bbd5c541711c4b02858b6096099b52f57c9d8d16da",
+      "terra_relevance": "IRRELEVANT",
+      "relevance": "RELEVANT",
+      "adjudication_reason": "analyst actions are explicitly tied to reversal of memory concerns and server-OEM margin/demand exposure."
+    },
+    {
+      "document_id": "D045",
+      "candidate_id": "candidate:doxatlas:raw_media:fac88ce0-2a17-4c11-913a-cd58af53e520:e27ff17498c14fa51bc565895a1f9515116070048404dccc73383e33679184ba",
+      "terra_relevance": "RELEVANT",
+      "relevance": "IRRELEVANT",
+      "adjudication_reason": "Juniper-driven networking growth is adjacent infrastructure but does not establish a specific non-trivial path to Micron memory economics."
+    },
+    {
+      "document_id": "D045",
+      "candidate_id": "candidate:doxatlas:raw_media:fac88ce0-2a17-4c11-913a-cd58af53e520:e87823e9b6d0f8a84c7d7eb26ac8d68a8db3e0fd1ad6ca501034aae3d65ea78d",
+      "terra_relevance": "RELEVANT",
+      "relevance": "IRRELEVANT",
+      "adjudication_reason": "Juniper-driven networking growth is adjacent infrastructure but does not establish a specific non-trivial path to Micron memory economics."
+    },
+    {
+      "document_id": "D138",
+      "candidate_id": "candidate:doxatlas:raw_media:bea8d68c-3336-4138-b40e-b58d92fe50e8:30be80490b25407b2f801f4068c2887fd4bf6fc376153c9e6fbb85ce085d6e51",
+      "terra_relevance": "IRRELEVANT",
+      "relevance": "RELEVANT",
+      "adjudication_reason": "article explicitly uses hyperscaler capex and common AI-supplier pricing power as signals connecting Broadcom/NVIDIA to Micron order and HBM expectations."
+    },
+    {
+      "document_id": "D138",
+      "candidate_id": "candidate:doxatlas:raw_media:bea8d68c-3336-4138-b40e-b58d92fe50e8:5521340ea034cb1882d4c0a8c516cb441fe328be038bafa10452d3508b7ff3d2",
+      "terra_relevance": "IRRELEVANT",
+      "relevance": "RELEVANT",
+      "adjudication_reason": "article explicitly uses hyperscaler capex and common AI-supplier pricing power as signals connecting Broadcom/NVIDIA to Micron order and HBM expectations."
+    }
+  ],
+  "d017_status": "D017_EXCLUDED_CONTAMINATED",
+  "input_isolation_statement": "Generated mechanically from the current 29-document Terra artifact only; no raw mentions or existing Gold source was read.",
+  "validation": {
+    "each_requested_suffix_matched_exactly_once": true,
+    "terra_relevance_preserved_for_every_candidate": true,
+    "candidate_ids_and_document_order_preserved": true,
+    "source_message_and_dream_candidates_preserved": true,
+    "manual_override_count": 15,
+    "expected_final_labels": true
+  }
+}

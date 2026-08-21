@@ -43,6 +43,13 @@ def test_generated_metric_catalog_matches_governing_plan() -> None:
     assert len(GENERATED_METRIC_IDS) == 304
 
 
+def test_inventory_uses_reporting_currency_unit() -> None:
+    metric = default_metric_registry().get("fin_inventory")
+
+    assert metric.default_unit == "REPORTING_CURRENCY"
+    assert metric.default_time_scope == "LATEST_REPORTED_BALANCE_SHEET_DATE"
+
+
 def test_metric_and_target_registries_cover_every_fixed_required_metric() -> None:
     metrics = default_metric_registry()
     targets = default_collection_target_registry()
@@ -64,21 +71,21 @@ def test_metric_and_target_registries_cover_every_fixed_required_metric() -> Non
     }
     assert (
         targets.get("c2_macro_implied_policy_rate_12m").collection_mode
-        is CollectionMode.UNAVAILABLE
+        is CollectionMode.PROGRAM
     )
     assert (
         targets.get("c2_macro_implied_policy_rate_12m").capability_status
-        is ProviderCapabilityStatus.BLOCKED
+        is ProviderCapabilityStatus.IMPLEMENTED
     )
-    for target_id in (
-        "o4_short_interest_pct_float",
-        "o4_days_to_cover",
-        "o4_short_interest_change",
-    ):
+    for target_id in ("o4_short_interest_pct_float", "o4_days_to_cover"):
         target = targets.get(target_id)
-        assert target.collection_mode is CollectionMode.UNAVAILABLE
-        assert target.capability_status is ProviderCapabilityStatus.BLOCKED
-        assert target.tool_name is None
+        assert target.collection_mode is CollectionMode.PROGRAM
+        assert target.capability_status is ProviderCapabilityStatus.IMPLEMENTED
+        assert target.tool_name == "yfinance.short_interest"
+    short_change = targets.get("o4_short_interest_change")
+    assert short_change.collection_mode is CollectionMode.UNAVAILABLE
+    assert short_change.capability_status is ProviderCapabilityStatus.BLOCKED
+    assert short_change.tool_name is None
 
 
 def test_object_ref_includes_realization_factor_and_requires_locator() -> None:
@@ -183,6 +190,7 @@ def test_factory_registers_every_non_derived_horizontal_tool_with_descriptors() 
         "fmp.valuation_snapshot",
         "twelvedata.sell_side_estimates",
         "twelvedata.daily_ohlcv",
+        "yfinance.sell_side_consensus",
         "finnhub.company_peers",
         "finnhub.insider_transactions",
         "finnhub.company_news_events",
@@ -210,7 +218,7 @@ def test_factory_registers_every_non_derived_horizontal_tool_with_descriptors() 
         "ir.official_updates",
     }
     assert expected <= set(registry.names())
-    assert len(expected) == 44
+    assert len(expected) == 45
     assert {
         "benzinga.short_interest",
         "benzinga.transcripts",

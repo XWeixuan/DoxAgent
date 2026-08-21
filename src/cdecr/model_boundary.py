@@ -139,3 +139,62 @@ def compact_wire_schema(schema: object) -> object:
 
     visit(value)
     return value
+
+
+def bailian_strict_wire_schema(schema: object) -> dict[str, object]:
+    """Compile a provider-only schema for Bailian JSON Schema mode.
+
+    The domain schema remains untouched.  Bailian strict mode requires closed
+    objects, while generated Pydantic schemas may contain local refs and
+    presentation-only titles.  Descriptions/defaults/examples and business
+    constraints are intentionally retained.
+    """
+
+    value = compact_wire_schema(schema)
+    if not isinstance(value, dict):
+        raise ValueError("structured output schema must be an object")
+    root = value
+
+    def resolve(ref: str) -> object:
+        current: object = root
+        for part in ref[2:].split("/"):
+            if not isinstance(current, dict):
+                return {"$ref": ref}
+            current = current.get(part.replace("~1", "/").replace("~0", "~"), {})
+        return copy.deepcopy(current)
+
+    def expand(item: object, stack: tuple[str, ...] = ()) -> object:
+        if isinstance(item, list):
+            return [expand(child, stack) for child in item]
+        if not isinstance(item, dict):
+            return item
+        ref = item.get("$ref")
+        if isinstance(ref, str) and ref.startswith("#/"):
+            if ref in stack:
+                raise ValueError(f"recursive local schema reference is unsupported: {ref}")
+            resolved = resolve(ref)
+            if not isinstance(resolved, dict):
+                raise ValueError(f"invalid local schema reference: {ref}")
+            merged = {**resolved, **{key: child for key, child in item.items() if key != "$ref"}}
+            return expand(merged, (*stack, ref))
+        return {key: expand(child, stack) for key, child in item.items()}
+
+    compiled = expand(value)
+    if not isinstance(compiled, dict):
+        raise ValueError("strict schema must remain an object")
+    compiled.pop("$defs", None)
+
+    def close(item: object) -> None:
+        if isinstance(item, dict):
+            if item.get("type") == "object":
+                properties = item.get("properties")
+                if isinstance(properties, dict):
+                    item["additionalProperties"] = False
+            for child in item.values():
+                close(child)
+        elif isinstance(item, list):
+            for child in item:
+                close(child)
+
+    close(compiled)
+    return compiled

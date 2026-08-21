@@ -24,6 +24,7 @@ from doxagent.codex_runtime.errors import (
 )
 from doxagent.codex_worker.schema import WorkspaceFileResponse, WorkspaceInventory
 from doxagent.observations.models import PersistedObservation
+from doxagent.observations.store import AttemptObservationStore
 
 _IDENTIFIER = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$")
 _IMMUTABLE_TOP_LEVEL = {"context", "published"}
@@ -144,14 +145,66 @@ class LocalWorkspaceStore:
                         shutil.rmtree(staging)
         return self.inventory(run_id)
 
-    def export_zip(self, run_id: str, target: BinaryIO) -> str:
+    def export_zip(
+        self,
+        run_id: str,
+        target: BinaryIO,
+        *,
+        control_attempt_id: str | None = None,
+    ) -> str:
         self.ensure_run(run_id)
+        exported: list[dict[str, object]] = []
         with zipfile.ZipFile(target, "w", compression=zipfile.ZIP_DEFLATED) as archive:
             for item in self.inventory(run_id).files:
                 path = self._resolve(run_id, item.relative_path)
                 archive.write(path, arcname=item.relative_path)
+                exported.append(item.model_dump(mode="json"))
+            if control_attempt_id is not None:
+                self._validate_identifier(control_attempt_id, "control_attempt_id")
+                control_root = (self.root / ".control").resolve()
+                control_attempt = (control_root / run_id / control_attempt_id).resolve()
+                if not self._is_contained(control_attempt, control_root):
+                    raise InvalidWorkspacePath("control attempt escaped workspace root")
+                if control_attempt.is_dir():
+                    for path in sorted(control_attempt.rglob("*")):
+                        if not path.is_file() or not self._is_contained(path, control_attempt):
+                            continue
+                        if path.name in {
+                            "observations.sqlite3",
+                            "observations.sqlite3-shm",
+                            "observations.sqlite3-wal",
+                        }:
+                            continue
+                        relative = path.relative_to(control_attempt).as_posix()
+                        arcname = f".control/{run_id}/{control_attempt_id}/{relative}"
+                        archive.write(path, arcname=arcname)
+                        exported.append(
+                            {
+                                "relative_path": arcname,
+                                "sha256": self._sha256_path(path),
+                                "size_bytes": path.stat().st_size,
+                            }
+                        )
+                    database = control_attempt / "observations.sqlite3"
+                    if database.is_file():
+                        with tempfile.TemporaryDirectory(prefix="doxagent-export-") as temporary:
+                            snapshot = Path(temporary) / "observations.sqlite3"
+                            with closing(sqlite3.connect(database, timeout=10)) as source:
+                                with closing(sqlite3.connect(snapshot)) as destination:
+                                    source.backup(destination)
+                            arcname = (
+                                f".control/{run_id}/{control_attempt_id}/observations.sqlite3"
+                            )
+                            archive.write(snapshot, arcname=arcname)
+                            exported.append(
+                                {
+                                    "relative_path": arcname,
+                                    "sha256": self._sha256_path(snapshot),
+                                    "size_bytes": snapshot.stat().st_size,
+                                }
+                            )
         return hashlib.sha256(
-            json.dumps(self.inventory(run_id).model_dump(mode="json"), sort_keys=True).encode()
+            json.dumps(exported, sort_keys=True).encode()
         ).hexdigest()
 
     def delete_attempt(self, run_id: str, attempt_id: str) -> None:
@@ -192,6 +245,28 @@ class LocalWorkspaceStore:
         if any(item.run_id != run_id or item.attempt_id != attempt_id for item in values):
             raise InvalidWorkspacePath("observation store scope mismatch")
         return values
+
+    def import_attempt_observations(
+        self,
+        run_id: str,
+        attempt_id: str,
+        observations: list[PersistedObservation],
+    ) -> list[PersistedObservation]:
+        """Rehydrate verified upstream observations into a new attempt-local alias store."""
+
+        attempt_root = self.ensure_attempt(run_id, attempt_id)
+        store = AttemptObservationStore(
+            control_root=self.root / ".control" / run_id / attempt_id,
+            mirror_root=attempt_root / "audit" / "observations",
+            run_id=run_id,
+            attempt_id=attempt_id,
+        )
+        imported: list[PersistedObservation] = []
+        for observation in observations:
+            if observation.run_id != run_id or observation.attempt_id != attempt_id:
+                raise InvalidWorkspacePath("imported observation scope mismatch")
+            imported.append(store.save_observation(observation.model_copy(update={"alias": ""})))
+        return imported
 
     def _run_root(self, run_id: str) -> Path:
         self._validate_identifier(run_id, "run_id")
@@ -234,6 +309,7 @@ class LocalWorkspaceStore:
         return parts[0] in _IMMUTABLE_TOP_LEVEL or (
             len(parts) >= 3 and parts[0] == "attempts" and parts[2] == "input"
         )
+
     @staticmethod
     def _is_contained(path: Path, parent: Path) -> bool:
         try:

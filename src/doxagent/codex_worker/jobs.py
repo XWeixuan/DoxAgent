@@ -4,13 +4,19 @@ from __future__ import annotations
 
 import asyncio
 import json
+import time
 from collections import defaultdict
 from collections.abc import AsyncIterator
 from contextlib import suppress
 from uuid import uuid4
 
 from doxagent.codex_runtime.schema import utc_now
-from doxagent.codex_worker.schema import WorkerEvent, WorkerJob, WorkerRunRequest
+from doxagent.codex_worker.schema import (
+    WorkerEvent,
+    WorkerJob,
+    WorkerRunRequest,
+    WorkerTurnTelemetry,
+)
 from doxagent.codex_worker.sdk_runtime import CodexExecutionRuntime, TurnHandle
 from doxagent.codex_worker.workspace_store import LocalWorkspaceStore
 
@@ -81,6 +87,7 @@ class WorkerJobManager:
 
     async def _run(self, job_id: str, request: WorkerRunRequest) -> None:
         job = self._jobs[job_id]
+        started = time.monotonic()
         try:
             attempt_root = self._workspaces.ensure_attempt(request.run_id, request.attempt_id)
             run_root = attempt_root.parents[1]
@@ -88,6 +95,11 @@ class WorkerJobManager:
             handle = await self._runtime.start(request, run_root)
             self._handles[job_id] = handle
             result = await asyncio.wait_for(handle.run(), timeout=request.timeout_seconds)
+            telemetry = result.telemetry
+            if telemetry is not None:
+                telemetry = telemetry.model_copy(
+                    update={"worker_wall_time_ms": int((time.monotonic() - started) * 1000)}
+                )
             if result.status.lower() not in {"completed", "succeeded", "success"}:
                 await self._finish(
                     job_id,
@@ -97,7 +109,9 @@ class WorkerJobManager:
                     final_response=result.final_response,
                     error_code="CODEX_TURN_FAILED",
                     error_message=result.error_message or result.status,
+                    telemetry=telemetry,
                 )
+                self._persist_telemetry(request, self._jobs[job_id])
                 return
             await self._finish(
                 job_id,
@@ -105,7 +119,9 @@ class WorkerJobManager:
                 thread_id=result.thread_id,
                 turn_id=result.turn_id,
                 final_response=result.final_response,
+                telemetry=telemetry,
             )
+            self._persist_telemetry(request, self._jobs[job_id])
         except asyncio.CancelledError:
             if job.status != "cancelled":
                 await self._finish(job_id, status="cancelled")
@@ -120,14 +136,21 @@ class WorkerJobManager:
                 status="failed",
                 error_code="CODEX_TURN_TIMEOUT",
                 error_message=f"turn exceeded {request.timeout_seconds} seconds",
+                telemetry=self._failure_telemetry(
+                    started,
+                    f"timeout:{request.timeout_seconds}s",
+                ),
             )
+            self._persist_telemetry(request, self._jobs[job_id])
         except Exception as exc:
             await self._finish(
                 job_id,
                 status="failed",
                 error_code=getattr(exc, "code", "CODEX_WORKER_ERROR"),
                 error_message=str(exc),
+                telemetry=self._failure_telemetry(started, str(exc)),
             )
+            self._persist_telemetry(request, self._jobs[job_id])
         finally:
             self._handles.pop(job_id, None)
 
@@ -156,6 +179,47 @@ class WorkerJobManager:
             job.run_id,
             relative,
             json.dumps(job.model_dump(mode="json"), ensure_ascii=False, indent=2),
+        )
+
+    def _persist_telemetry(self, request: WorkerRunRequest, job: WorkerJob) -> None:
+        telemetry = job.telemetry
+        if telemetry is None:
+            return
+        base = f"attempts/{request.attempt_id}/audit"
+        loop = "".join(
+            json.dumps(item.model_dump(mode="json"), ensure_ascii=False, separators=(",", ":"))
+            + "\n"
+            for item in telemetry.events
+        )
+        self._workspaces.write_text(request.run_id, f"{base}/agent_loop.jsonl", loop)
+        summary = {
+            "schema_version": "codex-d1-turn-summary-v1",
+            "run_id": request.run_id,
+            "attempt_id": request.attempt_id,
+            "node": request.node.value,
+            "model": request.model,
+            "model_provider": request.model_provider,
+            "job_status": job.status,
+            "thread_id": job.thread_id,
+            "turn_id": job.turn_id,
+            **telemetry.model_dump(mode="json", exclude={"events"}),
+            "validation": {
+                "schema": "pending",
+                "progressive": "pending",
+                "citation": "pending",
+            },
+        }
+        self._workspaces.write_text(
+            request.run_id,
+            f"{base}/turn_summary.json",
+            json.dumps(summary, ensure_ascii=False, indent=2),
+        )
+
+    @staticmethod
+    def _failure_telemetry(started: float, failure: str) -> WorkerTurnTelemetry:
+        return WorkerTurnTelemetry(
+            worker_wall_time_ms=int((time.monotonic() - started) * 1000),
+            failures=[" ".join(failure.split())[:500]],
         )
 
     def _recover_snapshots(self) -> None:

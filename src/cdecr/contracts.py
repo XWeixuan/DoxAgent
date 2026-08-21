@@ -167,7 +167,6 @@ class PackageQualityState(StrEnum):
     """Operational expansion state; deliberately separate from event lifecycle."""
 
     ACTIVE = "ACTIVE"
-    FROZEN = "FROZEN"
     QUARANTINED = "QUARANTINED"
 
 
@@ -189,39 +188,10 @@ class ExternalRelationType(StrEnum):
     RELATED_TO = "RELATED_TO"
 
 
-class PackageAssignmentRelation(StrEnum):
-    MEMBER = "MEMBER"
-    EXTERNAL_RELATED = "EXTERNAL_RELATED"
-    NOT_RELATED = "NOT_RELATED"
-    UNCERTAIN = "UNCERTAIN"
-
-
-class PackageMergeRelation(StrEnum):
-    SAME_PACKAGE = "SAME_PACKAGE"
-    DIFFERENT_PACKAGE = "DIFFERENT_PACKAGE"
-    UNCERTAIN = "UNCERTAIN"
-
-
-class PackageAction(StrEnum):
-    ADD_TO_PACKAGE = "ADD_TO_PACKAGE"
-    CREATE_NEW_PACKAGE = "CREATE_NEW_PACKAGE"
-    LINK_EXTERNALLY = "LINK_EXTERNALLY"
-    MERGE_PACKAGES = "MERGE_PACKAGES"
-
-
 class MembershipDecisionAction(StrEnum):
     ADD = "ADD"
     REMOVE = "REMOVE"
     MOVE = "MOVE"
-
-
-class PackageBoundaryAction(StrEnum):
-    FREEZE_PACKAGE = "FREEZE_PACKAGE"
-    REMOVE_MEMBER = "REMOVE_MEMBER"
-    MOVE_MEMBER = "MOVE_MEMBER"
-    CREATE_SPLIT_PACKAGE = "CREATE_SPLIT_PACKAGE"
-    REBUILD_PROFILE = "REBUILD_PROFILE"
-    REBUILD_EMBEDDING = "REBUILD_EMBEDDING"
 
 
 class EvidenceSpan(StrictModel):
@@ -414,22 +384,6 @@ SchemaProjection = Annotated[
 ]
 
 
-class LocalPackageHint(StrictModel):
-    anchor: NonEmptyString = Field(
-        description=(
-            "Short document-local identity of a broader, bounded parent occurrence, process, "
-            "episode, matter, or artifact that contains this Mention; never the Mention itself, "
-            "an entity or ticker, a broad topic, the source article or title, or a vague label."
-        )
-    )
-    relation_to_anchor: MembershipRelation = Field(
-        description=(
-            "Membership direction from this Mention to its parent. A reaction or consequence "
-            "is not a member of the event it reacts to or follows."
-        )
-    )
-
-
 class EventMention(StrictModel):
     mention_id: NonEmptyString
     message_id: NonEmptyString
@@ -446,7 +400,6 @@ class EventMention(StrictModel):
     quantities: list[Quantity]
     open_attributes: list[OpenAttribute]
     schema_projection: SchemaProjection | None = None
-    local_package_hint: LocalPackageHint | None = None
 
     @model_validator(mode="after")
     def normalize_legacy_quantity_roles(self) -> EventMention:
@@ -584,11 +537,10 @@ class EventPackage(StrictModel):
     package_family: PackageFamily
     canonical_title: NonEmptyString
     anchor_entities: list[NonEmptyString]
-    package_anchor_ids: list[NonEmptyString] = Field(default_factory=list)
-    primary_anchor_id: str | None = None
-    anchor_conflict: bool = False
-    anchor_artifact_id: str | None = None
-    anchor_period_id: str | None = None
+    parent_scope: Literal["PARENT_OCCURRENCE", "CONTINUING_MATTER"] = "PARENT_OCCURRENCE"
+    supporting_proposal_ids: list[NonEmptyString] = Field(default_factory=list)
+    supporting_document_refs: list[NonEmptyString] = Field(default_factory=list)
+    partition_hash: str | None = None
     time_range: PackageTimeRange
     lifecycle_state: str | None = None
     member_event_ids: list[NonEmptyString] = Field(default_factory=list)
@@ -601,13 +553,10 @@ class EventPackage(StrictModel):
     def validate_members(self) -> EventPackage:
         if len(self.member_event_ids) != len(set(self.member_event_ids)):
             raise ValueError("member_event_ids must be unique")
-        if len(self.package_anchor_ids) != len(set(self.package_anchor_ids)):
-            raise ValueError("package_anchor_ids must be unique")
-        if (
-            self.primary_anchor_id is not None
-            and self.primary_anchor_id not in self.package_anchor_ids
-        ):
-            raise ValueError("primary_anchor_id must be included in package_anchor_ids")
+        if len(self.supporting_proposal_ids) != len(set(self.supporting_proposal_ids)):
+            raise ValueError("supporting_proposal_ids must be unique")
+        if len(self.supporting_document_refs) != len(set(self.supporting_document_refs)):
+            raise ValueError("supporting_document_refs must be unique")
         return self
 
 
@@ -671,29 +620,7 @@ class PackageExternalRelation(StrictModel):
     version: int = Field(default=1, ge=1)
 
 
-class PackageExternalRelationCandidate(StrictModel):
-    """N12 audit candidate; it is not a formal PackageExternalRelation edge."""
-
-    candidate_id: NonEmptyString
-    run_id: NonEmptyString
-    source_event_id: NonEmptyString
-    target_package_id: NonEmptyString
-    relation: ExternalRelationType
-    reason: NonEmptyString
-    prompt_version: NonEmptyString
-    model: NonEmptyString
-    version: int = Field(default=1, ge=1)
-
-
 class AtomicCoreferenceDecision(StrictModel):
     relation: AtomicSemanticRelation
     claim_conflict: bool
     identity_differences: list[NonEmptyString]
-
-
-class PackageAssignmentDecision(StrictModel):
-    relation: PackageAssignmentRelation
-
-
-class PackageMergeDecision(StrictModel):
-    relation: PackageMergeRelation

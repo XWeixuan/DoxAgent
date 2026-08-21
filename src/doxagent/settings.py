@@ -30,6 +30,10 @@ class DoxAgentSettings(BaseSettings):
         default=False,
         validation_alias="DOXAGENT_CODEX_D1_V2_ENABLED",
     )
+    codex_research_lanes_enabled: bool = Field(
+        default=False,
+        validation_alias="DOXAGENT_CODEX_RESEARCH_LANES_ENABLED",
+    )
     codex_worker_base_url: str = Field(
         default="http://127.0.0.1:8791",
         validation_alias="DOXAGENT_CODEX_WORKER_BASE_URL",

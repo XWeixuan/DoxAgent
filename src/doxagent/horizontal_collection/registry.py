@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
+from doxagent.codex_runtime.schema import ResearchLane
 from doxagent.horizontal_collection.generated_metric_catalog import GENERATED_METRIC_IDS
 from doxagent.horizontal_collection.schema import (
     CollectionMode,
@@ -19,6 +20,8 @@ from doxagent.horizontal_collection.schema import (
 
 METRIC_REGISTRY_VERSION = "d1-horizontal-metrics-v1"
 TARGET_REGISTRY_VERSION = "d1-horizontal-targets-v1"
+GLOBAL_TARGET_REGISTRY_VERSION = "global-research-horizontal-targets-v1"
+MARKET_TARGET_REGISTRY_VERSION = "market-situation-horizontal-targets-v1"
 
 REQUIRED_METRIC_IDS = frozenset(
     {
@@ -77,6 +80,11 @@ _REQUIRED_OVERRIDES: dict[str, tuple[MetricValueType, str, str]] = {
         "LATEST_REPORTED_BALANCE_SHEET_DATE",
     ),
     "fin_net_debt": (
+        MetricValueType.NUMBER,
+        "REPORTING_CURRENCY",
+        "LATEST_REPORTED_BALANCE_SHEET_DATE",
+    ),
+    "fin_inventory": (
         MetricValueType.NUMBER,
         "REPORTING_CURRENCY",
         "LATEST_REPORTED_BALANCE_SHEET_DATE",
@@ -208,6 +216,33 @@ def default_metric_registry() -> MetricRegistry:
 
 def default_collection_target_registry() -> CollectionTargetRegistry:
     return CollectionTargetRegistry(_fixed_targets())
+
+
+def collection_target_registry_for_lane(lane: ResearchLane) -> CollectionTargetRegistry:
+    """Build a lane-local registry without changing historical D1 target identities."""
+
+    if lane is ResearchLane.LEGACY_DOCUMENT1:
+        return default_collection_target_registry()
+    fixed = _fixed_targets()
+    if lane is ResearchLane.GLOBAL_RESEARCH:
+        selected = [item for item in fixed if item.collection_target_id.startswith("c1_")]
+        selected.extend(
+            item.model_copy(
+                update={"collection_target_id": item.collection_target_id.replace("o4_", "c5_", 1)}
+            )
+            for item in fixed
+            if item.collection_target_id.startswith("o4_")
+        )
+        registry = CollectionTargetRegistry(selected)
+        registry.version = GLOBAL_TARGET_REGISTRY_VERSION
+        return registry
+    if lane is ResearchLane.MARKET_SITUATION_RESEARCH:
+        selected = [item for item in fixed if item.collection_target_id.startswith("c2_")]
+        selected.extend(item for item in fixed if item.collection_target_id == "o4_price_snapshot")
+        registry = CollectionTargetRegistry(selected)
+        registry.version = MARKET_TARGET_REGISTRY_VERSION
+        return registry
+    raise ValueError(f"unsupported horizontal research lane: {lane}")
 
 
 def _definition(metric_id: str) -> MetricDefinition:
@@ -516,9 +551,11 @@ def _fixed_targets() -> tuple[CollectionTargetDefinition, ...]:
         SourceRole.MARKET_IMPLIED,
         "TWELVE_MONTHS_FORWARD",
         EntityScope.US_MACRO,
-        CollectionMode.UNAVAILABLE,
+        CollectionMode.PROGRAM,
+        provider="IBKR",
+        tool="ibkr.fed_funds_curve",
         method_id="fed_funds_curve_12m_v1",
-        capability=ProviderCapabilityStatus.BLOCKED,
+        capability=ProviderCapabilityStatus.IMPLEMENTED,
     )
 
     # O4: direct provider fields only; governed calculations remain unavailable this round.
@@ -539,8 +576,8 @@ def _fixed_targets() -> tuple[CollectionTargetDefinition, ...]:
         "MARKET_SNAPSHOT_TIME",
         EntityScope.SECURITY,
         CollectionMode.PROGRAM,
-        provider="FMP",
-        tool="fmp.valuation_snapshot",
+        provider="Alpha Vantage",
+        tool="alpha.valuation_snapshot",
     )
     add(
         "o4_enterprise_value",
@@ -549,8 +586,8 @@ def _fixed_targets() -> tuple[CollectionTargetDefinition, ...]:
         "MARKET_SNAPSHOT_TIME",
         EntityScope.SECURITY,
         CollectionMode.PROGRAM,
-        provider="FMP",
-        tool="fmp.valuation_snapshot",
+        provider="Alpha Vantage",
+        tool="alpha.valuation_snapshot",
     )
     targets.append(
         CollectionTargetDefinition(
@@ -566,21 +603,41 @@ def _fixed_targets() -> tuple[CollectionTargetDefinition, ...]:
             time_scope="NEXT_TWELVE_MONTHS",
             entity_scope=EntityScope.SECURITY,
             collection_mode=CollectionMode.PROGRAM,
-            provider="FMP",
-            tool_name="fmp.valuation_snapshot",
+            provider="Alpha Vantage",
+            tool_name="alpha.valuation_snapshot",
             output_policy=OutputPolicy.STATE_VALUE,
             capability_status=ProviderCapabilityStatus.IMPLEMENTED,
         )
     )
+    add(
+        "o4_primary_multiple_percentile",
+        "market_primary_multiple_percentile",
+        SourceRole.MARKET_IMPLIED,
+        "HISTORICAL_POINT_IN_TIME_FORWARD",
+        EntityScope.SECURITY,
+        CollectionMode.UNAVAILABLE,
+        method_id="historical_forward_percentile_v1",
+        capability=ProviderCapabilityStatus.BLOCKED,
+    )
+    add(
+        "o4_peer_premium",
+        "market_peer_premium",
+        SourceRole.MARKET_IMPLIED,
+        "MARKET_SNAPSHOT_TIME",
+        EntityScope.SECURITY,
+        CollectionMode.PROGRAM,
+        provider="Yahoo Finance",
+        tool="yfinance.peer_relative_valuation",
+        method_id="peer_relative_valuation_v1",
+        capability=ProviderCapabilityStatus.IMPLEMENTED,
+    )
     for target_id, metric_id, method_id in (
-        (
-            "o4_primary_multiple_percentile",
-            "market_primary_multiple_percentile",
-            "historical_forward_percentile_v1",
-        ),
-        ("o4_peer_premium", "market_peer_premium", "peer_relative_valuation_v1"),
         ("o4_atm_iv_30d", "market_atm_iv_30d", "option_iv_30d_v1"),
-        ("o4_next_event_implied_move", "market_next_event_implied_move", "event_straddle_move_v1"),
+        (
+            "o4_next_event_implied_move",
+            "market_next_event_implied_move",
+            "event_straddle_move_v1",
+        ),
         ("o4_put_skew_30d", "market_put_skew_30d", "put_skew_30d_v1"),
     ):
         add(
@@ -589,9 +646,11 @@ def _fixed_targets() -> tuple[CollectionTargetDefinition, ...]:
             SourceRole.MARKET_IMPLIED,
             "MARKET_SNAPSHOT_TIME",
             EntityScope.SECURITY,
-            CollectionMode.UNAVAILABLE,
+            CollectionMode.PROGRAM,
+            provider="IBKR",
+            tool="ibkr.option_surface",
             method_id=method_id,
-            capability=ProviderCapabilityStatus.BLOCKED,
+            capability=ProviderCapabilityStatus.IMPLEMENTED,
         )
     add(
         "o4_short_interest_pct_float",
@@ -599,9 +658,11 @@ def _fixed_targets() -> tuple[CollectionTargetDefinition, ...]:
         SourceRole.MARKET_IMPLIED,
         "LATEST_PUBLISHED_SETTLEMENT_DATE",
         EntityScope.SECURITY,
-        CollectionMode.UNAVAILABLE,
-        capability=ProviderCapabilityStatus.BLOCKED,
-        method_id="benzinga_short_interest_entitlement_required",
+        CollectionMode.PROGRAM,
+        provider="Yahoo Finance",
+        tool="yfinance.short_interest",
+        capability=ProviderCapabilityStatus.IMPLEMENTED,
+        method_id="listed_short_interest_fallback_v1",
     )
     add(
         "o4_days_to_cover",
@@ -609,9 +670,11 @@ def _fixed_targets() -> tuple[CollectionTargetDefinition, ...]:
         SourceRole.MARKET_IMPLIED,
         "LATEST_PUBLISHED_SETTLEMENT_DATE",
         EntityScope.SECURITY,
-        CollectionMode.UNAVAILABLE,
-        capability=ProviderCapabilityStatus.BLOCKED,
-        method_id="benzinga_short_interest_entitlement_required",
+        CollectionMode.PROGRAM,
+        provider="Yahoo Finance",
+        tool="yfinance.short_interest",
+        capability=ProviderCapabilityStatus.IMPLEMENTED,
+        method_id="listed_short_interest_fallback_v1",
     )
     add(
         "o4_short_interest_change",

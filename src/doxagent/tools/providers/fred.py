@@ -90,6 +90,13 @@ class FredSeriesObservationsClient(BaseRealToolClient):
                 "limit": limit,
                 "sort_order": "desc",
             }
+            vintage_as_of = _input_str(request, "vintage_as_of", "")
+            realtime_start = _input_str(request, "realtime_start", "") or vintage_as_of
+            realtime_end = _input_str(request, "realtime_end", "") or vintage_as_of
+            if realtime_start:
+                params_base["realtime_start"] = realtime_start
+            if realtime_end:
+                params_base["realtime_end"] = realtime_end
             for batch in _chunks(allowed_ids, FRED_SERIES_BATCH_SIZE):
                 for series_id in batch:
                     try:
@@ -183,6 +190,11 @@ class FredSeriesObservationsClient(BaseRealToolClient):
                 "unsupported_series": unsupported_ids,
                 "batch_size": FRED_SERIES_BATCH_SIZE,
                 "requested_limit": limit,
+                "vintage": {
+                    "realtime_start": realtime_start or None,
+                    "realtime_end": realtime_end or None,
+                    "point_in_time_requested": bool(realtime_start or realtime_end),
+                },
             }
             if failed_series or unsupported_ids:
                 return _fred_partial_result(
@@ -202,7 +214,13 @@ class FredSeriesObservationsClient(BaseRealToolClient):
                 summary="已检索 FRED 宏观/商品序列观察值。",
                 source_scope="fred_series_observations",
                 confidence=0.88,
-                metadata={"series_ids": clean_ids, "limit": limit, "sort_order": "desc"},
+                metadata={
+                    "series_ids": clean_ids,
+                    "limit": limit,
+                    "sort_order": "desc",
+                    "realtime_start": realtime_start or None,
+                    "realtime_end": realtime_end or None,
+                },
             )
         except Exception as exc:
             return self._handle_exception(request, exc)

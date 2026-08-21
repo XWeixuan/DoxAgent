@@ -117,6 +117,7 @@ def _default_skill_definitions() -> list[SkillDefinition]:
     c2 = [AgentName.C2_MACRO_RESEARCH]
     c3 = [AgentName.C3_INDUSTRY_RESEARCH]
     o4 = [AgentName.O4_MARKET_TRACE]
+    c5 = [AgentName.C5_MARKET_IMPLIED_EXPECTATIONS]
     global_research = [TaskType.GENERATE_GLOBAL_RESEARCH]
     return [
         _skill(
@@ -128,6 +129,7 @@ def _default_skill_definitions() -> list[SkillDefinition]:
                 AgentName.O1_EXPECTATION_OWNER,
                 AgentName.O2_MONITORING_CONFIG,
                 AgentName.O4_MARKET_TRACE,
+                AgentName.C5_MARKET_IMPLIED_EXPECTATIONS,
                 AgentName.C1_FUNDAMENTAL_RESEARCH,
                 AgentName.C2_MACRO_RESEARCH,
                 AgentName.C3_INDUSTRY_RESEARCH,
@@ -143,6 +145,7 @@ def _default_skill_definitions() -> list[SkillDefinition]:
         *_vibe_fundamental_skills(c1, global_research),
         *_financial_services_skills(c3, global_research),
         *_hermes_market_trace_skills(o4, global_research),
+        *_hermes_market_trace_skills(c5, global_research),
     ]
 
 

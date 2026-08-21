@@ -2,7 +2,7 @@
 kind = "internal_task_skill"
 id = "fundamental-research"
 name = "Fundamental Research"
-version = "2026.08.03"
+version = "2026.08.14"
 applicable_agents = ["C1"]
 applicable_task_types = ["generate_global_research"]
 workflow_nodes = ["BuildGlobalResearch"]
@@ -19,22 +19,22 @@ For BuildGlobalResearch / Document 1, research the current and forward company f
 4. how those variables transmit into revenue, margins, expenses, EPS, cash flow, and financing needs; and
 5. which fragile company-side assumptions deserve downstream research.
 
-Treat the base expectation-metric collection supplied in task context as the primary quantitative input. Reuse its existing `metric_id`, values, states, and Observation citations. Do not reproduce the entire metric collection or create a parallel parameter, driver, transmission, or state registry. Driver names and transmission rows are report-level analytical labels only.
+Treat the base expectation-metric collection supplied in task context as the primary quantitative input. Reuse its existing `metric_id`, values, states, and Observation citations. Do not reproduce the entire metric collection or create a parallel parameter, driver, transmission, or state registry. Driver names and `T#` transmission rows are report-local labels.
 
 Build company-side research for downstream expectation construction; do not perform that construction yourself. Treat any broader task wording about market relevance as a request to surface financially material inputs for downstream agents, not as permission to assess price absorption or market pricing.
 
-Do not produce an opening summary. Do not construct an `Expectation Unit`, `RealizationFactor`, formal `PotentialGap`, or gap activation. Do not judge whether a fact is priced in, calculate fair value or a target price, label the security overvalued or undervalued, or recommend a trade.
+Do not produce a report-level opening summary. Each required `综合判断` only synthesizes its own section and adds no facts or conclusions. Do not construct an `Expectation Unit`, `RealizationFactor`, formal `PotentialGap`, or gap activation. Do not judge whether a fact is priced in, calculate fair value or a target price, label the security overvalued or undervalued, or recommend a trade.
 
 ## Required report contract
 
 Return one sourced `ResearchSection` with exactly these six top-level sections, in this order:
 
-1. `Recent Fundamental State and Changes`
-2. `Management and Sell-Side Expectations`
-3. `Core Fundamental Drivers`
-4. `Key Variable Transmission Chains`
-5. `Potential Fundamental Factor Gaps`
-6. `Unknowns and Evidence Boundaries`
+1. `一、近期基本面状态与变化`
+2. `二、管理层与卖方当前预期`
+3. `三、核心基本面驱动因子`
+4. `四、关键变量传导链`
+5. `五、潜在基本面因素缺口`
+6. `六、未知项与证据边界`
 
 Make recent developments the foreground, normally the latest principal reporting cycle and subsequent company disclosures. Use longer history only to establish a comparable baseline, cyclicality, persistence, execution record, or structural boundary. Never present an old fact as a new development merely because it remains relevant.
 
@@ -227,6 +227,8 @@ Promote a factor to `Core Fundamental Drivers` only when several of these tests 
 - it is observable through recurring disclosures or KPIs; and
 - its persistence or financial conversion is uncertain.
 
+If a factor mainly enables or constrains another driver instead of determining scale, price, volume, mix, cost, or long-term economics, keep it under that driver's execution capacity and constraints.
+
 Classify each driver as:
 
 - `CURRENT_RESULT`: explains the latest reported outcome; or
@@ -254,7 +256,7 @@ Use these relationships as consistency checks, not a valuation model. High ROE d
 
 ### Step 6 — Construct transmission chains
 
-Build one row per material upstream-variable-to-financial-endpoint relationship:
+Build one row per material driver-or-constraint to major-financial-endpoint relationship. Exclude ordinary accounting mechanics unless important now. Assign report-local `T1`, `T2`, ... IDs.
 
 ```text
 business variable
@@ -306,6 +308,8 @@ Use expectation tension only as a discovery lens. Check:
 
 Include a candidate only when it is tied to a core driver and material transmission chain, has a consequential financial endpoint, and contains a weak, disputed, changing, or unverified assumption. Phrase it as a question that downstream research can answer. Do not claim that the difference is real, tradable, activated, unpriced, or partly priced.
 
+Reference the driver and `T#` row instead of restating the chain.
+
 For every verification item, state:
 
 ```text
@@ -314,7 +318,7 @@ what the evidence could confirm
 → what it still could not prove
 ```
 
-If confirmation requires macro, industry, customer/competitor, price-action, positioning, or event evidence, hand it to C2, C3, O4, or the appropriate downstream/external research path. Do not fill the missing domain with generic assumptions.
+If confirmation requires industry or customer/competitor evidence, hand it to C3. If it requires macro, price-action, or positioning evidence, record an explicit Unknown or a handoff request for the independent Market Situation lane; do not read, await, or assume C2/O4 output inside Global Research. Event-specific confirmation belongs to the appropriate downstream/external path. Do not fill the missing domain with generic assumptions.
 
 ### Step 8 — Record Unknowns without blocking completion
 
@@ -322,80 +326,74 @@ Record a material Unknown when data are missing, attribution is inseparable, per
 
 ## Fixed section formats
 
-### 1. Recent Fundamental State and Changes
+### 一、近期基本面状态与变化
 
-Use a concise material-change table:
+Begin with `### 综合判断`: bullets synthesizing only the table. Then use:
 
-| Change item | Latest state | Comparison anchor | Supported cause | Persistence | Evidence |
+| 变化项目 | 最新状态 | 比较锚点 | 支持的变化原因 | 持续性判断 | 证据 |
 |---|---|---|---|---|---|
 
-Prefer `actual vs prior actual`, `actual vs prior management guidance`, and `actual vs time-aligned sell-side expectation` where available. This section answers **what changed**; reserve full causal development for Section 3.
+Prefer `actual vs prior actual`, prior guidance, and time-aligned sell-side expectation. Answer only **最近基本面发生了什么变化**; do not expand future transmission.
 
-### 2. Management and Sell-Side Expectations
+### 二、管理层与卖方当前预期
 
-| Expectation theme | Horizon | Management expectation | Sell-side expectation | Recent change | Company-side assumptions | Evidence |
+Begin with `### 综合判断`: synthesize the baseline, management changes, actor differences, and missing data below. Then use:
+
+| 预期主题 | 时间范围 | 管理层预期 | 卖方预期 | 最近变化 | 公司侧关键假设 | 证据 |
 |---|---|---|---|---|---|---|
 
-Label the strength and basis of each expectation. Present differences factually without declaring a Gap.
+Label each expectation's strength and basis; present differences without declaring a Gap. Answer only **管理层和卖方当前分别预计什么**.
 
-### 3. Core Fundamental Drivers
+### 三、核心基本面驱动因子
 
-For each selected driver, provide:
+Begin with `### 核心驱动概览`, listing each driver, type, and role. Then use flexible concise blocks that identify:
 
-| Field | Required content |
-|---|---|
-| Driver | Natural-language report label |
-| Type | `CURRENT_RESULT` or `LONG_TERM_FUNDAMENTAL` |
-| Current state and marginal direction | Improving, stable, deteriorating, or unclear |
-| Why main-line | Material financial relevance |
-| Financial effects already reflected | Current reported endpoints |
-| Possible future effects | Forward operating and financial endpoints |
-| Execution capacity and constraints | Conversion ability and principal blockers |
-| Long-term boundary | Required for long-term drivers |
-| Observation basis | Existing metrics, disclosures, management, or sell side |
-| Evidence | Current Observation citations |
+- driver and type (`CURRENT_RESULT` or `LONG_TERM_FUNDAMENTAL`);
+- current state and marginal direction; why it matters; where already reflected;
+- execution capacity and company-side constraints;
+- evidence and judgment strength; and
+- for long-term drivers, the fundamental boundary.
 
-### 4. Key Variable Transmission Chains
+Do not add a future-effects field; put forward business-to-financial transmission in Section 4.
 
-| Upstream business variable | Direct operating effect | Financial metric | Direction | Impact | Lag | Conditions | Blockers | Evidence basis | Confidence |
+### 四、关键变量传导链
+
+Begin with `### 综合判断`: bullets synthesizing only the table's business-to-financial skeleton. Then use:
+
+| ID | 上游业务变量 | 直接经营影响 | 主要财务终点 | 方向 | 相对影响 | 时滞 | 成立条件与阻断因素 | 归因与置信度 | 证据 |
 |---|---|---|---|---|---|---|---|---|---|
 
-Every row must trace to a named core driver. Use only the enum values defined above and cite the supporting evidence.
+Use sequential `T1`, `T2`, ... only within Document 1. Each row must trace to a named core driver or material company constraint and use the enums, attribution levels, and evidence rules above.
 
-### 5. Potential Fundamental Factor Gaps
+### 五、潜在基本面因素缺口
 
-These are candidate questions, not formal `PotentialGap` objects.
+These are candidate questions, not formal `PotentialGap` objects. Use flexible concise blocks that clearly identify:
 
-| Field | Required content |
-|---|---|
-| Candidate question | Explicit downstream research question |
-| Core driver | Reference Section 3 |
-| Transmission relationship | Reference Section 4 |
-| Confirmed fundamental fact | What C1 can currently establish |
-| Current assumption | Management, sell-side, or research assumption |
-| Source of tension | Actual/expected, management/sell-side, short/long term, or business/financial conversion |
-| Weakest link | Least supported causal or evidence step |
-| Potential revision direction | `UPSIDE`, `DOWNSIDE`, or `TWO_SIDED` |
-| Financial endpoint | Revenue, margin, EPS, FCF, capital need, or another material endpoint |
-| Follow-up research | The next falsifiable question or observation |
-| External validation | C2, C3, O4, event module, or external research |
-| Evidence | Current Observation citations |
+- question; related core driver and `T#`; current tension; why it matters;
+- confirming evidence; what still cannot be proved; and downstream handoff.
 
-Exclude generic business risks, boilerplate uncertainty, and issues with no plausible material financial path.
+Reference the driver and `T#` instead of repeating the chain. Exclude generic risks, boilerplate uncertainty, and issues without a material financial path.
 
-### 6. Unknowns and Evidence Boundaries
+### 六、未知项与证据边界
 
-| Unknown | Why unresolved | Affected driver or chain | Evidence needed | Handoff node | Effect on current judgment |
+| 未知项 | 未解决原因 | 受影响的驱动因子或传导链 | 所需证据 | Handoff 节点 | 对当前判断的影响 |
 |---|---|---|---|---|---|
 
 Classify the reason as data missing, attribution uncertainty, basis mismatch, evidence conflict, or role boundary.
+
+## Cross-section deduplication
+
+Section roles: 1 = changes; 2 = actor expectations; 3 = drivers and execution boundary; 4 = financial transmission; 5 = assumptions to test; 6 = evidence limits. Driver blocks stop before forward transmission; gaps reference drivers and `T#`; each `综合判断` only synthesizes its section.
 
 ## Final quality gates
 
 Before returning the section, verify all of the following:
 
-- The report has exactly the six required sections and no opening summary.
-- Every candidate question traces backward to a core driver, transmission row, and cited company-side fact.
+- The report has exactly the six required Chinese sections and no report-level opening summary.
+- Every `综合判断` only synthesizes its section and adds no fact.
+- Driver blocks stop at current reflection and execution boundary.
+- Every transmission row has a local `T#` ID and traces to a core driver or important company-side constraint.
+- Every candidate question references a core driver, `T#` row, and cited company-side fact without restating the full chain.
 - Facts, management expectations, sell-side expectations, and C1 inferences remain distinguishable.
 - The analysis explains material causes and interrelationships instead of narrating the statements line by line.
 - The base expectation-metric collection is reused selectively, not duplicated into another catalog.

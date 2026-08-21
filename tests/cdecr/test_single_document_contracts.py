@@ -13,7 +13,6 @@ from cdecr.contracts import (
     EventTime,
     EvidenceRecord,
     EvidenceRecordStatus,
-    LocalPackageHint,
     ParticipantRole,
     Predicate,
     Quantity,
@@ -215,7 +214,7 @@ def test_split_requires_two_replacements_and_duplicate_requires_target() -> None
 
 def test_judge_model_contract_groups_actions_and_excludes_persistence_fields() -> None:
     judge_mention = JudgeMentionDraft.model_validate(
-        mention_draft().model_dump(mode="json", exclude={"local_package_hint"})
+        mention_draft().model_dump(mode="json")
     )
     output = JudgeCommandOutput.model_validate(
         {
@@ -335,15 +334,6 @@ def test_intermediate_contracts_forbid_extra_fields() -> None:
                 "end_char": 6,
                 "text": "Micron",
                 "absolute_offset": 0,
-            }
-        )
-    with pytest.raises(ValidationError, match="extra"):
-        LocalPackageHint.model_validate(
-            {
-                "anchor": "Micron earnings release",
-                "relation_to_anchor": "DISCLOSED_IN",
-                "package_kind": "BOUNDED",
-                "anchor_artifact_id": "old-field",
             }
         )
 

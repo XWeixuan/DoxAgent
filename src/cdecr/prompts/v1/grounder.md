@@ -28,25 +28,6 @@ turn a qualifier, benchmark, bound, trigger, or context fragment into a draft.
 When splitting is necessary, preserve every supported field exactly once with
 the event it qualifies.
 
-Use local_package_hint only for a source-supported, bounded parent occurrence,
-process, episode, matter, or artifact that contains this Mention and may contain
-other distinct events. The short anchor must identify that parent well enough
-to distinguish it from another parent; it is not the Mention, an entity or
-ticker, a broad topic, the source article or title, Package ID, or vague label.
-Reuse one anchor under the same parent; otherwise leave it null.
-relation_to_anchor states how the Mention belongs to the parent. A reaction or
-consequence is not a member of the event it reacts to or follows.
-
-Positive examples (illustrative, not exhaustive):
-- Revenue and EPS disclosed in one quarterly results release -> the same
-  `Acme FY2026 Q3 results` anchor, `DISCLOSED_IN`.
-- A rocket launch and payload deployment in one mission -> the same
-  `Nova-9 launch mission` anchor, `COMPONENT_OF`.
-- A model release and its API availability or pricing announcement -> the same
-  `Atlas 3 model release` anchor, `COMPONENT_OF`.
-- An order award and related supplier capacity buildout under one supply
-  agreement -> the same `Acme-Beta supply agreement` anchor, `IMPLEMENTATION_OF`.
-
 Candidate disposition:
 Give every supplied candidate exactly one disposition: USED or REJECTED. USED
 means it appears in source_candidate_ids of one or more non-duplicate atomic

@@ -8,11 +8,11 @@ import re
 import traceback
 import uuid
 from collections import Counter
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
 from importlib import resources
-from typing import TypeVar
+from typing import Literal, TypeVar, cast
 
 from pydantic import ValidationError
 
@@ -46,6 +46,8 @@ from cdecr.ports import (
     DecisionAuditRecord,
     EmbeddingClient,
     EmbeddingResult,
+    ResponsesModelClient,
+    ResponsesModelRequest,
     StructuredModelClient,
     StructuredModelRequest,
     StructuredModelResult,
@@ -58,6 +60,21 @@ from cdecr.preprocessing import (
     locator_to_evidence,
     preprocess_source,
     reconcile_evidence_text,
+)
+from cdecr.provider_resilience import classify_provider_error, is_provider_failure
+from cdecr.relevance_filter import (
+    RELEVANCE_PROMPT_VERSION,
+    CandidateGateDecision,
+    RelevanceMode,
+    TypedInvocation,
+    dreamer_block_exposed_lengths,
+    dreamer_block_request,
+    relevance_response_request,
+    responses_request_from_structured,
+    select_candidates_fail_open,
+    target_profile_for_source,
+    ticker_target_instruction,
+    validate_relevance_coverage,
 )
 from cdecr.scheduler import take_scheduled_call_metrics
 from cdecr.single_document_contracts import (
@@ -96,10 +113,18 @@ from cdecr.single_document_contracts import (
     validate_event_time_semantics,
 )
 
-PROMPT_VERSION = "single-document-prompts-v18"
+PROMPT_VERSION = "single-document-prompts-v20-selective-recovery"
 GROUNDER_CANDIDATE_BATCH = 24
 JUDGE_DRAFT_BATCH = 24
 _T = TypeVar("_T", bound=StrictModel)
+GrounderNormalizationStatus = Literal[
+    "UNCHANGED",
+    "NORMALIZED_VALID",
+    "NORMALIZED_STILL_INVALID",
+    "UNSAFE_TO_NORMALIZE",
+]
+_PLAIN_NUMBER = re.compile(r"^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?$")
+GROUNDER_NORMALIZATION_POLICY_VERSION = "grounder-safe-shape-normalization-v2-shadow-outcome"
 
 
 class SingleDocumentPipelineError(RuntimeError):
@@ -131,17 +156,50 @@ def _structured_request_metadata(request: StructuredModelRequest) -> dict[str, o
                 request_item_count = max(request_item_count, len(value))
                 if "candidate" in key:
                     candidate_count = max(candidate_count, len(value))
+    metadata = request.metadata
     return {
         "batch_key": _hash_json({"schema": request.json_schema, "user": request.user_prompt})[:24],
         "request_item_count": request_item_count,
         "candidate_count": candidate_count,
         "request_payload_bytes": len(request.user_prompt.encode("utf-8")),
+        "request_transport": metadata.get("transport"),
+        "request_reasoning_effort": metadata.get("reasoning_effort"),
+        "request_previous_response_id": metadata.get("previous_response_id"),
+        "request_session_cache": metadata.get("session_cache"),
     }
 
 
 def _metadata_int(metadata: dict[str, object], key: str) -> int:
     value = metadata.get(key)
     return value if isinstance(value, int) else 0
+
+
+def _model_result_transport_metadata(result: StructuredModelResult) -> dict[str, object]:
+    return {
+        "transport": result.transport,
+        "output_mode": result.output_mode,
+        "effective_reasoning_effort": result.effective_reasoning_effort,
+        "provider_key_fingerprint": result.provider_key_fingerprint,
+        "parse_diagnostics": result.parse_diagnostics,
+    }
+
+
+def _model_error_parse_metadata(exc: Exception) -> dict[str, object]:
+    if not isinstance(exc, ModelAdapterError):
+        return {}
+    return {
+        "exception_class": type(exc).__name__,
+        "provider_key_fingerprint": exc.provider_key_fingerprint,
+        "provider_status_code": exc.status_code,
+        "provider_failure_class": classify_provider_error(exc).value,
+        "physical_attempt_count": int(getattr(exc, "physical_attempt_count", 1)),
+        "retry_attempt_count": int(getattr(exc, "retry_attempt_count", 0)),
+        "circuit_state": str(getattr(exc, "circuit_state", "CLOSED")),
+        "circuit_wait_ms": int(getattr(exc, "circuit_wait_ms", 0)),
+        "provider_wait_ms": int(getattr(exc, "provider_wait_ms", 0)),
+        "backoff_ms": int(getattr(exc, "backoff_ms", 0)),
+        "parse_diagnostics": exc.parse_diagnostics,
+    }
 
 
 def _published_at_model(value: datetime) -> str:
@@ -156,7 +214,7 @@ def _compact_model_schema(schema: dict[str, object]) -> dict[str, object]:
 
 def _judge_mention(mention: MentionDraft) -> JudgeMentionDraft:
     return JudgeMentionDraft.model_validate(
-        mention.model_dump(mode="json", exclude={"local_package_hint"})
+        mention.model_dump(mode="json")
     )
 
 
@@ -261,6 +319,150 @@ def _safe_validation_errors(
             }
         )
     return safe
+
+
+def normalize_grounder_draft_shape(
+    value: object,
+) -> tuple[object, GrounderNormalizationStatus, list[str]]:
+    """Apply only representation-preserving fixes before Grounder validation."""
+
+    if not isinstance(value, dict):
+        return value, "UNSAFE_TO_NORMALIZE", []
+    normalized = json.loads(json.dumps(value, ensure_ascii=False))
+    rules: list[str] = []
+    mention = normalized.get("mention")
+    if not isinstance(mention, dict):
+        return normalized, "UNCHANGED", rules
+
+    aliases = (("evidence", "evidence_locations"),)
+    for old, new in aliases:
+        if old not in mention:
+            continue
+        if new in mention and mention[new] != mention[old]:
+            return value, "UNSAFE_TO_NORMALIZE", [f"ALIAS_CONFLICT:{old}:{new}"]
+        mention.setdefault(new, mention.pop(old))
+        rules.append(f"ALIAS:{old}:{new}")
+
+    evidence_values: list[object] = []
+    main_evidence = mention.get("evidence_locations")
+    if isinstance(main_evidence, list):
+        evidence_values.extend(main_evidence)
+    open_attributes = mention.get("open_attributes")
+    if isinstance(open_attributes, list):
+        evidence_values.extend(
+            attribute.get("evidence_location")
+            for attribute in open_attributes
+            if isinstance(attribute, dict)
+        )
+    for evidence in evidence_values:
+        if not isinstance(evidence, dict):
+            continue
+        for key in ("start_char", "end_char"):
+            if key in evidence:
+                evidence.pop(key)
+                rules.append(f"DROP_EVIDENCE_{key.upper()}")
+        for old, new in (("segment_ref", "segment_id"), ("quote", "text")):
+            if old not in evidence:
+                continue
+            if new in evidence and evidence[new] != evidence[old]:
+                return value, "UNSAFE_TO_NORMALIZE", [f"ALIAS_CONFLICT:{old}:{new}"]
+            evidence.setdefault(new, evidence.pop(old))
+            rules.append(f"ALIAS:{old}:{new}")
+
+    quantities = mention.get("quantities")
+    if isinstance(quantities, list):
+        for quantity in quantities:
+            if not isinstance(quantity, dict):
+                continue
+            raw_number = quantity.get("value")
+            if isinstance(raw_number, str) and _PLAIN_NUMBER.fullmatch(raw_number):
+                quantity["value"] = (
+                    float(raw_number) if "." in raw_number else int(raw_number)
+                )
+                rules.append("NUMERIC_STRING_TO_NUMBER")
+
+    if mention.get("source_claim") == "":
+        mention["source_claim"] = None
+        rules.append("EMPTY_SOURCE_CLAIM_TO_NULL")
+    event_time = mention.get("time")
+    if isinstance(event_time, dict):
+        for key in ("event_start", "event_end", "reference_period_id"):
+            if event_time.get(key) == "":
+                event_time[key] = None
+                rules.append(f"EMPTY_{key.upper()}_TO_NULL")
+
+    if not rules:
+        return normalized, "UNCHANGED", []
+    try:
+        GroundedMentionDraftInput.model_validate(normalized)
+    except ValidationError:
+        return normalized, "NORMALIZED_STILL_INVALID", sorted(set(rules))
+    return normalized, "NORMALIZED_VALID", sorted(set(rules))
+
+
+def _grounder_primary_shadow_candidate(value: object) -> tuple[bool, str]:
+    """Recognize only the no-choice, one-quantity PRIMARY repair in shadow mode."""
+
+    if not isinstance(value, dict) or not isinstance(value.get("mention"), dict):
+        return False, "DRAFT_SHAPE_UNAVAILABLE"
+    mention = value["mention"]
+    quantities = mention.get("quantities")
+    if not isinstance(quantities, list) or len(quantities) != 1:
+        return False, "QUANTITY_COUNT_NOT_ONE"
+    quantity = quantities[0]
+    if not isinstance(quantity, dict):
+        return False, "QUANTITY_SHAPE_UNAVAILABLE"
+    metric_id = quantity.get("metric_id")
+    if not isinstance(metric_id, str) or not metric_id or metric_id == "UNKNOWN_METRIC":
+        return False, "PRIMARY_METRIC_NOT_EXPLICIT"
+    if str(quantity.get("role", "")).upper() == "PRIMARY":
+        return False, "ALREADY_PRIMARY"
+    proposed = json.loads(json.dumps(value, ensure_ascii=False))
+    proposed["mention"]["quantities"][0]["role"] = "PRIMARY"
+    try:
+        GroundedMentionDraftInput.model_validate(proposed)
+    except ValidationError:
+        return False, "PROPOSED_DRAFT_STILL_INVALID"
+    return True, "SINGLE_EXPLICIT_METRIC_QUANTITY"
+
+
+def _grounder_primary_shadow_proposal(value: object) -> object | None:
+    safe, _ = _grounder_primary_shadow_candidate(value)
+    if not safe:
+        return None
+    proposed = json.loads(json.dumps(value, ensure_ascii=False))
+    proposed["mention"]["quantities"][0]["role"] = "PRIMARY"
+    return dict(proposed)
+
+
+def _grounder_shadow_projection(value: object) -> dict[str, object] | None:
+    if not isinstance(value, dict) or not isinstance(value.get("mention"), dict):
+        return None
+    mention = value["mention"]
+    return {
+        "source_candidate_ids": sorted(value.get("source_candidate_ids") or []),
+        "canonical_proposition": mention.get("canonical_proposition"),
+        "event_family": mention.get("event_family"),
+        "predicate": mention.get("predicate"),
+        "participants": mention.get("participants"),
+        "quantities": mention.get("quantities"),
+        "time": mention.get("time"),
+        "assertion_state": mention.get("assertion_state"),
+        "evidence_spans": mention.get("evidence_spans"),
+        "local_package_hint": mention.get("local_package_hint"),
+        "relation_to_anchor": mention.get("relation_to_anchor"),
+    }
+
+
+def _grounder_shadow_changed_fields(
+    proposed: dict[str, object] | None,
+    repaired: dict[str, object] | None,
+) -> list[str]:
+    if proposed is None or repaired is None:
+        return ["OUTPUT_SHAPE"]
+    return sorted(
+        key for key in proposed.keys() | repaired.keys() if proposed.get(key) != repaired.get(key)
+    )
 
 
 def _mention_semantic_codes(mention: MentionDraft) -> set[str]:
@@ -536,6 +738,39 @@ class _AuditedEmbeddingClient:
         return result
 
 
+class _ResponsesStructuredAdapter:
+    """Present one Responses conversation turn through the existing typed invocation path."""
+
+    def __init__(
+        self,
+        *,
+        client: ResponsesModelClient,
+        reasoning_effort: Literal["none", "low", "high", "max"],
+        previous_response_id: str | None = None,
+        preset_request: ResponsesModelRequest | None = None,
+    ) -> None:
+        self.client = client
+        self.reasoning_effort = reasoning_effort
+        self.previous_response_id = previous_response_id
+        self.preset_request = preset_request
+
+    def complete(self, request: StructuredModelRequest) -> StructuredModelResult:
+        response_request = (
+            self.preset_request.model_copy(update={"metadata": request.metadata})
+            if self.preset_request is not None
+            else responses_request_from_structured(
+                request,
+                previous_response_id=self.previous_response_id,
+                reasoning_effort=self.reasoning_effort,
+            )
+        )
+        return self.client.complete_response(response_request)
+
+    def take_last_call_metrics(self) -> object | None:
+        getter = getattr(self.client, "take_last_call_metrics", None)
+        return getter() if callable(getter) else None
+
+
 class _AuditedStructuredClient:
     def __init__(
         self,
@@ -556,6 +791,7 @@ class _AuditedStructuredClient:
         self.stage = stage
         self.summaries = summaries
         self.repair_invocations = 0
+        self.last_result: StructuredModelResult | None = None
 
     def complete(self, request: StructuredModelRequest) -> StructuredModelResult:
         repaired = request.system_prompt.casefold().startswith("repair")
@@ -595,6 +831,14 @@ class _AuditedStructuredClient:
                     **request_metadata,
                     "attempt": "repair" if repaired else "initial",
                     "queue_wait_ms": scheduled.queue_wait_ms if scheduled else 0,
+                    "attempt_count": scheduled.attempt_count if scheduled else 1,
+                    "provider_wait_ms": scheduled.provider_wait_ms if scheduled else 0,
+                    "backoff_ms": scheduled.backoff_ms if scheduled else 0,
+                    "physical_attempt_count": scheduled.attempt_count if scheduled else 1,
+                    "retry_attempt_count": max(0, scheduled.attempt_count - 1) if scheduled else 0,
+                    "circuit_state": scheduled.circuit_state if scheduled else "CLOSED",
+                    "circuit_wait_ms": scheduled.circuit_wait_ms if scheduled else 0,
+                    **_model_error_parse_metadata(exc),
                     "cache_hit": False,
                 },
                 stage=call_stage,
@@ -629,6 +873,7 @@ class _AuditedStructuredClient:
                 ),
             ) from exc
         scheduled = take_scheduled_call_metrics(self.client)
+        self.last_result = result
         self.registry.record_model_call(
             model_call_id=call_id,
             run_id=self.run_id,
@@ -643,8 +888,19 @@ class _AuditedStructuredClient:
                 **request_metadata,
                 "attempt": "repair" if repaired else "initial",
                 "queue_wait_ms": scheduled.queue_wait_ms if scheduled else 0,
+                "attempt_count": scheduled.attempt_count if scheduled else 1,
+                "provider_wait_ms": scheduled.provider_wait_ms if scheduled else 0,
+                "backoff_ms": scheduled.backoff_ms if scheduled else 0,
+                "physical_attempt_count": scheduled.attempt_count if scheduled else 1,
+                "retry_attempt_count": max(0, scheduled.attempt_count - 1) if scheduled else 0,
+                "circuit_state": scheduled.circuit_state if scheduled else "CLOSED",
+                "circuit_wait_ms": scheduled.circuit_wait_ms if scheduled else 0,
                 "output_hash": _hash_json(result.payload),
-                "cache_hit": False,
+                "cache_hit": bool(result.cached_input_tokens),
+                "cached_input_tokens": result.cached_input_tokens,
+                "response_id": result.response_id,
+                "reasoning_tokens": result.reasoning_tokens,
+                **_model_result_transport_metadata(result),
             },
             stage=call_stage,
             prompt_version=PROMPT_VERSION,
@@ -657,6 +913,7 @@ class _AuditedStructuredClient:
                 tier=self.tier.value,
                 model=result.model,
                 input_tokens=result.input_tokens,
+                cached_input_tokens=result.cached_input_tokens,
                 output_tokens=result.output_tokens,
                 latency_ms=result.latency_ms,
                 repaired=repaired,
@@ -678,19 +935,37 @@ class SingleDocumentProcessor:
         m2_client: StructuredModelClient,
         m3_client: StructuredModelClient,
         m4_client: StructuredModelClient,
+        dreamer_responses_client: ResponsesModelClient | None = None,
+        relevance_responses_client: ResponsesModelClient | None = None,
+        relevance_filter_mode: RelevanceMode | Literal["off", "shadow", "enforce"] = (
+            RelevanceMode.ENFORCE
+        ),
+        relevance_target_profiles: Mapping[str, str] | None = None,
         model_m1: str = "qwen3.7-text-embedding",
         model_m2: str = "deepseek-v4-flash",
-        model_m3: str = "qwen3.7-plus",
-        model_m4: str = "qwen3.7-max",
+        model_m3: str = "deepseek-v4-flash",
+        model_m4: str = "deepseek-v4-flash",
         document_workers: int = 3,
         document_block_concurrency: int = 3,
         document_concurrency: int | None = None,
+        grounder_safe_normalization: bool = True,
+        grounder_primary_normalization: Literal["off", "shadow"] = "shadow",
     ) -> None:
         self.registry = registry
         self.embedding_client = embedding_client
         self.m2_client = m2_client
         self.m3_client = m3_client
         self.m4_client = m4_client
+        self.dreamer_responses_client = dreamer_responses_client or cast(
+            ResponsesModelClient, m2_client
+        )
+        self.relevance_responses_client = relevance_responses_client or cast(
+            ResponsesModelClient, m2_client
+        )
+        self.relevance_filter_mode = RelevanceMode(relevance_filter_mode)
+        self.relevance_target_profiles = dict(relevance_target_profiles or {})
+        self.grounder_safe_normalization = grounder_safe_normalization
+        self.grounder_primary_normalization = grounder_primary_normalization
         self.model_m1 = model_m1
         self.model_m2 = model_m2
         self.model_m3 = model_m3
@@ -720,6 +995,22 @@ class SingleDocumentProcessor:
             "embedding_dimensions": 1024,
             "grounder_tier": "m3",
             "judge_tier": "m4",
+            "dreamer_transport": "responses",
+            "dreamer_reasoning_effort": "none",
+            "relevance_filter": {
+                "mode": self.relevance_filter_mode.value,
+                "prompt_version": RELEVANCE_PROMPT_VERSION,
+                "transport": "responses_json_object",
+                "reasoning_effort": "none",
+                "previous_response_id": None,
+                "session_cache": False,
+                "target_profiles": self.relevance_target_profiles,
+            },
+            "grounder_safe_normalization": self.grounder_safe_normalization,
+            "grounder_primary_normalization": self.grounder_primary_normalization,
+            "grounder_normalization_policy_version": (
+                GROUNDER_NORMALIZATION_POLICY_VERSION
+            ),
             "structured_output_mode": STRUCTURED_OUTPUT_MODE,
             "reasoning_effort": STRUCTURED_REASONING_EFFORT,
             "schema_projection": "disabled",
@@ -1152,17 +1443,89 @@ class SingleDocumentProcessor:
                 drafts = payload.get("drafts")
                 if isinstance(drafts, list):
                     retained_drafts: list[object] = []
-                    for draft in drafts:
+                    for draft_index, draft in enumerate(drafts, start=1):
                         if isinstance(draft, dict):
                             normalize_mention(draft.get("mention"))
+                        original_hash = _hash_json(draft)
+                        normalization_status: GrounderNormalizationStatus = "UNCHANGED"
+                        normalization_rules: list[str] = []
+                        if self.grounder_safe_normalization:
+                            draft, normalization_status, normalization_rules = (
+                                normalize_grounder_draft_shape(draft)
+                            )
+                        if normalization_rules or normalization_status == "UNSAFE_TO_NORMALIZE":
+                            after_hash = _hash_json(draft)
+                            self.registry.append_decision_audit(
+                                DecisionAuditRecord(
+                                    audit_id=(
+                                        f"grounder-shape-normalization:{client.run_id}:"
+                                        f"{request_key}:{draft_index}"
+                                    ),
+                                    run_id=client.run_id,
+                                    decision_type="GROUNDER_DRAFT_SHAPE_NORMALIZATION",
+                                    subject_id=f"{request_key}:g{draft_index}",
+                                    payload={
+                                        "draft_ref": f"g{draft_index}",
+                                        "status": normalization_status,
+                                        "rule_codes": normalization_rules,
+                                        "before_shape_hash": original_hash,
+                                        "after_shape_hash": after_hash,
+                                        "avoided_llm_repair": (
+                                            normalization_status == "NORMALIZED_VALID"
+                                        ),
+                                    },
+                                )
+                            )
                         try:
                             GroundedMentionDraftInput.model_validate(draft)
                         except ValidationError as exc:
+                            safe_errors = _safe_validation_errors(exc, limit=20)
+                            if self.grounder_primary_normalization == "shadow" and any(
+                                item["code"] == "PRIMARY_QUANTITY_COUNT"
+                                for item in safe_errors
+                            ):
+                                raw_mention = (
+                                    draft.get("mention")
+                                    if isinstance(draft, dict)
+                                    else None
+                                )
+                                quantities = (
+                                    raw_mention.get("quantities")
+                                    if isinstance(raw_mention, dict)
+                                    else None
+                                )
+                                primary_count = sum(
+                                    isinstance(item, dict)
+                                    and str(item.get("role", "")).upper() == "PRIMARY"
+                                    for item in quantities or []
+                                )
+                                safe_candidate, shadow_reason = (
+                                    _grounder_primary_shadow_candidate(draft)
+                                )
+                                self.registry.append_decision_audit(
+                                    DecisionAuditRecord(
+                                        audit_id=(
+                                            f"grounder-primary-shadow:{client.run_id}:"
+                                            f"{request_key}:{draft_index}"
+                                        ),
+                                        run_id=client.run_id,
+                                        decision_type="GROUNDER_PRIMARY_NORMALIZATION_SHADOW",
+                                        subject_id=f"{request_key}:g{draft_index}",
+                                        payload={
+                                            "draft_ref": f"g{draft_index}",
+                                            "quantity_count": len(quantities or []),
+                                            "primary_count": primary_count,
+                                            "safe_candidate": safe_candidate,
+                                            "would_avoid_repair": safe_candidate,
+                                            "reason": shadow_reason,
+                                        },
+                                    )
+                                )
                             normalized_fields["grounder.invalid_draft_dropped"] += 1
                             if invalid_grounder_draft_collector is not None:
                                 invalid_grounder_draft_collector(
                                     draft,
-                                    _safe_validation_errors(exc, limit=20),
+                                    safe_errors,
                                 )
                             continue
                         retained_drafts.append(draft)
@@ -1362,6 +1725,27 @@ class SingleDocumentProcessor:
                 validation_error = str(first_error)
             return repair_and_validate(result.payload, validation_error)
 
+    def _invoke_typed_with_metadata(
+        self,
+        *,
+        client: _AuditedStructuredClient,
+        request: StructuredModelRequest,
+        output_type: type[_T],
+        semantic_validator: Callable[[_T], None],
+        stage: str,
+        repair_on_failure: bool = True,
+    ) -> TypedInvocation[_T]:
+        output = self._invoke_typed(
+            client=client,
+            request=request,
+            output_type=output_type,
+            semantic_validator=semantic_validator,
+            stage=stage,
+            repair_on_failure=repair_on_failure,
+        )
+        response_id = client.last_result.response_id if client.last_result is not None else None
+        return TypedInvocation(output=output, response_id=response_id)
+
     def _dream(
         self,
         source: SourceMessage,
@@ -1369,13 +1753,12 @@ class SingleDocumentProcessor:
         run_id: str,
         summaries: list[ModelCallSummary],
     ) -> list[DreamCandidate]:
-        tier = (
-            ModelTier.M3
-            if document.is_long_document or document.is_complex_document
-            else ModelTier.M2
+        tier = ModelTier.M2
+        raw_client = _ResponsesStructuredAdapter(
+            client=self.dreamer_responses_client,
+            reasoning_effort="none",
         )
-        raw_client = self.m3_client if tier is ModelTier.M3 else self.m2_client
-        model = self.model_m3 if tier is ModelTier.M3 else self.model_m2
+        model = self.model_m2
         client = _AuditedStructuredClient(
             client=raw_client,
             registry=self.registry,
@@ -1389,42 +1772,14 @@ class SingleDocumentProcessor:
         def process_block(
             block: DocumentBlock, *, zero_recovery: bool = False
         ) -> DreamerModelOutput:
-            segment_by_id = {item.segment_id: item for item in document.segments}
-            exposed_lengths = {
-                segment_id: len(segment_by_id[segment_id].text) for segment_id in block.segment_ids
-            }
-            for context_segment in document.segments[:2]:
-                marker = f"[{context_segment.segment_id}]\n"
-                marker_start = block.common_context.find(marker)
-                if marker_start < 0:
-                    continue
-                content_start = marker_start + len(marker)
-                next_marker = block.common_context.find("\n\n[", content_start)
-                content_end = len(block.common_context) if next_marker < 0 else next_marker
-                exposed_lengths[context_segment.segment_id] = max(
-                    exposed_lengths.get(context_segment.segment_id, 0),
-                    content_end - content_start,
-                )
-            user_payload = {
-                "published_at": _published_at_model(source.published_at),
-                "allowed_segment_ids": list(exposed_lengths),
-                "common_context": block.common_context,
-                "block": block.text,
-            }
-            request = StructuredModelRequest(
-                system_prompt=(
-                    _prompt("dreamer.md")
-                    + (
-                        "\n\nA prior pass returned no candidates. Recheck the title and "
-                        "every exposed segment for any explicit, independently "
-                        "truth-evaluable event. Return empty only if none exists."
-                        if zero_recovery
-                        else ""
-                    )
-                ),
-                user_prompt=json.dumps(user_payload, ensure_ascii=False),
-                json_schema=DreamerModelOutput.model_json_schema(),
+            request = dreamer_block_request(
+                source=source,
+                document=document,
+                block=block,
+                system_prompt=_prompt("dreamer.md"),
+                zero_recovery=zero_recovery,
             )
+            exposed_lengths = dreamer_block_exposed_lengths(document, block)
 
             reconciliation: dict[str, int] = {}
 
@@ -1448,6 +1803,7 @@ class SingleDocumentProcessor:
                     }
                 )
 
+            response_id: str | None = None
             try:
                 call_stage = "dreamer_zero_recovery" if zero_recovery else "dreamer"
                 call_client = (
@@ -1463,13 +1819,15 @@ class SingleDocumentProcessor:
                     if zero_recovery
                     else client
                 )
-                output = self._invoke_typed(
+                invocation = self._invoke_typed_with_metadata(
                     client=call_client,
                     request=request,
                     output_type=DreamerModelOutput,
                     semantic_validator=validate_dreamer,
                     stage=call_stage,
                 )
+                output = invocation.output
+                response_id = invocation.response_id
             except SingleDocumentPipelineError as exc:
                 output = DreamerModelOutput(candidates=[])
                 self.registry.append_decision_audit(
@@ -1500,7 +1858,16 @@ class SingleDocumentProcessor:
                         payload=reconciliation,
                     )
                 )
-            return output
+            return self._apply_relevance_gate(
+                source=source,
+                document=document,
+                block=block,
+                output=output,
+                response_id=response_id,
+                run_id=run_id,
+                summaries=summaries,
+                attempt="zero-recovery" if zero_recovery else "initial",
+            )
 
         outputs = list(
             self._document_block_executor.map(process_block, document.document_blocks)
@@ -1561,6 +1928,223 @@ class SingleDocumentProcessor:
                 )
                 unique[item.candidate_id] = item
         return list(unique.values())
+
+    def _apply_relevance_gate(
+        self,
+        *,
+        source: SourceMessage,
+        document: PreprocessedDocument,
+        block: DocumentBlock,
+        output: DreamerModelOutput,
+        response_id: str | None,
+        run_id: str,
+        summaries: list[ModelCallSummary],
+        attempt: str,
+    ) -> DreamerModelOutput:
+        if self.relevance_filter_mode is RelevanceMode.OFF or not output.candidates:
+            return output
+
+        target = target_profile_for_source(source, self.relevance_target_profiles)
+        skip_reason = "TARGET_PROFILE_MISSING_OR_AMBIGUOUS" if target is None else None
+        pseudo_candidates: list[DreamCandidate] = []
+        if skip_reason is None:
+            try:
+                for index, candidate in enumerate(output.candidates, start=1):
+                    pseudo_candidates.append(
+                        DreamCandidate(
+                            candidate_id=f"{block.block_id}:c{index}",
+                            statement=candidate.statement,
+                            evidence_locations=[
+                                reconcile_evidence_text(locator, document, source).locator
+                                for locator in candidate.evidence_locations
+                            ],
+                        )
+                    )
+            except ValueError:
+                skip_reason = "CANDIDATE_RECONCILIATION_DRIFT"
+
+        decisions: list[CandidateGateDecision]
+        ignored_ids: tuple[str, ...] = ()
+        if skip_reason is not None:
+            decisions = [
+                CandidateGateDecision(
+                    candidate_id=f"{block.block_id}:c{index}",
+                    relevance=None,
+                    keep=True,
+                    reason=skip_reason,
+                )
+                for index, _ in enumerate(output.candidates, start=1)
+            ]
+            selected_indices = set(range(len(output.candidates)))
+        else:
+            assert target is not None
+            relevance_prompt = (
+                _prompt("relevance_filter.md")
+                + "\n\n"
+                + ticker_target_instruction(target)
+            )
+            response_request, short_to_full = relevance_response_request(
+                target=target,
+                candidates=pseudo_candidates,
+                system_prompt=relevance_prompt,
+            )
+            adapter = _ResponsesStructuredAdapter(
+                client=self.relevance_responses_client,
+                reasoning_effort="none",
+                previous_response_id=None,
+                preset_request=response_request,
+            )
+            client = _AuditedStructuredClient(
+                client=adapter,
+                registry=self.registry,
+                run_id=run_id,
+                tier=ModelTier.M2,
+                model=self.model_m2,
+                stage="dreamer_relevance",
+                summaries=summaries,
+            )
+            request = StructuredModelRequest(
+                system_prompt=relevance_prompt,
+                user_prompt=str(response_request.input[-1]["content"]),
+                json_schema=response_request.json_schema,
+                metadata={
+                    "candidate_count": len(pseudo_candidates),
+                    "transport": "responses_json_object",
+                    "reasoning_effort": "none",
+                    "previous_response_id": None,
+                    "session_cache": False,
+                },
+            )
+            raw_result: StructuredModelResult | None = None
+            failure_code: str | None = None
+            try:
+                raw_result = client.complete(request)
+                validate_relevance_coverage(
+                    raw_result.payload,
+                    expected_short_ids=set(short_to_full),
+                )
+            except (SingleDocumentPipelineError, ValueError, ValidationError) as exc:
+                failure_code = getattr(exc, "code", type(exc).__name__)
+                repair_prompt = (
+                    relevance_prompt
+                    + "\n\nRepair the prior batch response. Return every supplied candidate id "
+                    "exactly once and no other id."
+                )
+                repair_response_request = response_request.model_copy(
+                    update={
+                        "input": [
+                            {"role": "system", "content": repair_prompt},
+                            response_request.input[-1],
+                        ],
+                        "previous_response_id": None,
+                        "session_cache": False,
+                        "metadata": {
+                            **response_request.metadata,
+                            "repair_of": failure_code,
+                        },
+                    }
+                )
+                repair_adapter = _ResponsesStructuredAdapter(
+                    client=self.relevance_responses_client,
+                    reasoning_effort="none",
+                    previous_response_id=None,
+                    preset_request=repair_response_request,
+                )
+                repair_client = _AuditedStructuredClient(
+                    client=repair_adapter,
+                    registry=self.registry,
+                    run_id=run_id,
+                    tier=ModelTier.M2,
+                    model=self.model_m2,
+                    stage="dreamer_relevance",
+                    summaries=summaries,
+                )
+                repair_request = request.model_copy(
+                    update={"system_prompt": "Repair relevance batch coverage."}
+                )
+                try:
+                    raw_result = repair_client.complete(repair_request)
+                    validate_relevance_coverage(
+                        raw_result.payload,
+                        expected_short_ids=set(short_to_full),
+                    )
+                except (SingleDocumentPipelineError, ValueError, ValidationError) as repair_exc:
+                    failure_code = getattr(repair_exc, "code", type(repair_exc).__name__)
+                    raw_result = None
+
+            if raw_result is None:
+                decisions = [
+                    CandidateGateDecision(
+                        candidate_id=candidate.candidate_id,
+                        relevance=None,
+                        keep=True,
+                        reason=f"GATE_CALL_FAILED:{failure_code}",
+                    )
+                    for candidate in pseudo_candidates
+                ]
+                selected_indices = set(range(len(output.candidates)))
+            else:
+                selection = select_candidates_fail_open(
+                    pseudo_candidates,
+                    raw_result.payload,
+                    short_to_full=short_to_full,
+                )
+                decisions = selection.decisions
+                ignored_ids = selection.ignored_ids
+                kept_ids = {candidate.candidate_id for candidate in selection.retained}
+                selected_indices = {
+                    index
+                    for index, candidate in enumerate(pseudo_candidates)
+                    if candidate.candidate_id in kept_ids
+                }
+
+        relevant_count = sum(item.relevance == "RELEVANT" for item in decisions)
+        irrelevant_count = sum(item.relevance == "IRRELEVANT" for item in decisions)
+        fail_open_count = sum(item.relevance is None for item in decisions)
+        simulated_dropped = len(output.candidates) - len(selected_indices)
+        enforced = self.relevance_filter_mode is RelevanceMode.ENFORCE
+        self.registry.append_decision_audit(
+            DecisionAuditRecord(
+                audit_id=(f"dreamer-relevance:{run_id}:{block.block_id}:{attempt}"),
+                run_id=run_id,
+                decision_type="DREAMER_RELEVANCE_GATE",
+                subject_id=block.block_id,
+                payload={
+                    "mode": self.relevance_filter_mode.value,
+                    "prompt_version": RELEVANCE_PROMPT_VERSION,
+                    "target": target,
+                    "before_count": len(output.candidates),
+                    "after_count": (
+                        len(selected_indices) if enforced else len(output.candidates)
+                    ),
+                    "simulated_dropped_count": simulated_dropped,
+                    "relevant_count": relevant_count,
+                    "irrelevant_count": irrelevant_count,
+                    "fail_open_count": fail_open_count,
+                    "ignored_ids": list(ignored_ids),
+                    "decisions": [
+                        {
+                            "candidate_id": item.candidate_id,
+                            "relevance": item.relevance,
+                            "keep": item.keep,
+                            "reason": item.reason,
+                        }
+                        for item in decisions
+                    ],
+                },
+            )
+        )
+        if not enforced:
+            return output
+        return output.model_copy(
+            update={
+                "candidates": [
+                    candidate
+                    for index, candidate in enumerate(output.candidates)
+                    if index in selected_indices
+                ]
+            }
+        )
 
     def _validate_dreamer_output(
         self,
@@ -1685,7 +2269,7 @@ class SingleDocumentProcessor:
             batch_key = _hash_json(
                 {
                     "processing_key": processing_key,
-                    "model": self.model_m3,
+                    "model": self.model_m2,
                     "prompt_version": PROMPT_VERSION,
                     "request": request.user_prompt,
                 }
@@ -1699,14 +2283,15 @@ class SingleDocumentProcessor:
                 client=self.m3_client,
                 registry=self.registry,
                 run_id=run_id,
-                tier=ModelTier.M3,
-                model=self.model_m3,
+                tier=ModelTier.M2,
+                model=self.model_m2,
                 stage="grounder",
                 summaries=summaries,
             )
             candidate_ids = set(short_to_full)
             disposition_failures: list[dict[str, list[str]]] = []
             invalid_schema_drafts: list[tuple[object, list[dict[str, object]]]] = []
+            primary_shadow_by_invalid_index: dict[int, dict[str, object]] = {}
 
             def collect_invalid_schema_draft(
                 draft: object,
@@ -1722,6 +2307,28 @@ class SingleDocumentProcessor:
                     if isinstance(raw_source_ids, list)
                     else []
                 )
+                primary_error = any(
+                    item.get("code") == "PRIMARY_QUANTITY_COUNT" for item in errors
+                )
+                safe_candidate, shadow_reason = (
+                    _grounder_primary_shadow_candidate(draft)
+                    if primary_error
+                    else (False, "NOT_PRIMARY_ERROR")
+                )
+                proposed = _grounder_primary_shadow_proposal(draft)
+                primary_shadow_by_invalid_index[invalid_index] = {
+                    "safe_candidate": safe_candidate,
+                    "shadow_reason": shadow_reason,
+                    "original_draft_hash": _hash_json(draft),
+                    "proposed_output_hash": _hash_json(proposed) if proposed is not None else None,
+                    "source_candidate_set_hash": _hash_json(sorted(source_ids)),
+                    "semantic_projection_hash": (
+                        _hash_json(_grounder_shadow_projection(proposed))
+                        if proposed is not None
+                        else None
+                    ),
+                    "proposed_projection": _grounder_shadow_projection(proposed),
+                }
                 self.registry.append_decision_audit(
                     DecisionAuditRecord(
                         audit_id=(f"grounder-invalid-draft:{run_id}:{batch_index}:{invalid_index}"),
@@ -1814,6 +2421,8 @@ class SingleDocumentProcessor:
                 )
                 root_degraded = False
             except SingleDocumentPipelineError as exc:
+                if is_provider_failure(exc):
+                    raise
                 output = GrounderModelOutput(
                     drafts=[],
                     rejected_candidates=[],
@@ -1851,6 +2460,76 @@ class SingleDocumentProcessor:
                 )
                 if not source_ids:
                     return []
+                shadow = primary_shadow_by_invalid_index.get(invalid_index, {})
+
+                def record_shadow_outcome(
+                    *,
+                    status: str,
+                    replacements: list[GroundedMentionDraftInput],
+                ) -> None:
+                    safe_candidate = bool(shadow.get("safe_candidate"))
+                    repaired_payloads = [
+                        item.model_dump(mode="json") for item in replacements
+                    ]
+                    repaired_projection = (
+                        _grounder_shadow_projection(repaired_payloads[0])
+                        if len(repaired_payloads) == 1
+                        else None
+                    )
+                    proposed_projection = shadow.get("proposed_projection")
+                    lineage_exact = bool(
+                        len(repaired_payloads) == 1
+                        and sorted(repaired_payloads[0].get("source_candidate_ids") or [])
+                        == sorted(source_ids)
+                    )
+                    semantic_exact = bool(
+                        len(repaired_payloads) == 1
+                        and proposed_projection == repaired_projection
+                    )
+                    if not safe_candidate:
+                        outcome = "NOT_SAFE_CANDIDATE"
+                    elif status == "FAILED":
+                        outcome = "REPAIR_FAILED"
+                    elif len(repaired_payloads) > 1:
+                        outcome = "REPAIR_SPLIT_OR_MULTI_OUTPUT"
+                    elif len(repaired_payloads) != 1 or not lineage_exact:
+                        outcome = "REPAIR_DROPPED_OR_PARTIAL"
+                    elif semantic_exact:
+                        outcome = "EQUIVALENT_TO_REPAIR"
+                    else:
+                        outcome = "CRITICAL_FIELD_DIFFERENCE"
+                    payload = {
+                        "grounder_batch_index": batch_index,
+                        "invalid_draft_index": invalid_index,
+                        "original_draft_hash": shadow.get("original_draft_hash"),
+                        "proposed_output_hash": shadow.get("proposed_output_hash"),
+                        "source_candidate_set_hash": shadow.get("source_candidate_set_hash"),
+                        "semantic_projection_hash": shadow.get("semantic_projection_hash"),
+                        "repair_status": status,
+                        "repair_output_count": len(repaired_payloads),
+                        "lineage_exact_match": lineage_exact,
+                        "semantic_projection_exact_match": semantic_exact,
+                        "changed_field_codes": _grounder_shadow_changed_fields(
+                            proposed_projection if isinstance(proposed_projection, dict) else None,
+                            repaired_projection,
+                        ),
+                        "would_have_avoided_repair": outcome == "EQUIVALENT_TO_REPAIR",
+                        "outcome_code": outcome,
+                    }
+                    self.registry.append_decision_audit(
+                        DecisionAuditRecord(
+                            audit_id=(
+                                f"grounder-primary-shadow-outcome:{run_id}:"
+                                f"{batch_index}:{invalid_index}"
+                            ),
+                            run_id=run_id,
+                            decision_type="GROUNDER_PRIMARY_NORMALIZATION_SHADOW_OUTCOME",
+                            subject_id=(
+                                f"grounder-batch:{batch_index}:invalid:{invalid_index}"
+                            ),
+                            payload=payload,
+                        )
+                    )
                 repair_candidates = [
                     {
                         "candidate_id": source_id,
@@ -1866,8 +2545,8 @@ class SingleDocumentProcessor:
                     client=self.m3_client,
                     registry=self.registry,
                     run_id=run_id,
-                    tier=ModelTier.M3,
-                    model=self.model_m3,
+                    tier=ModelTier.M2,
+                    model=self.model_m2,
                     stage="grounder_item_repair",
                     summaries=summaries,
                 )
@@ -1947,6 +2626,7 @@ class SingleDocumentProcessor:
                                 },
                             )
                         )
+                    record_shadow_outcome(status="SUCCEEDED", replacements=legal_replacements)
                     return legal_replacements
                 except Exception as exc:
                     error_code = (
@@ -1970,6 +2650,7 @@ class SingleDocumentProcessor:
                             },
                         )
                     )
+                    record_shadow_outcome(status="FAILED", replacements=[])
                     return []
 
             repaired_drafts: list[GroundedMentionDraftInput] = []
@@ -2173,6 +2854,7 @@ class SingleDocumentProcessor:
             and candidate.candidate_id not in rejected_by_candidate
         ]
         recovery_failed_ids: list[str] = []
+        recovery_provider_failure = False
         if missing_candidates:
             recovery_short_to_full = {
                 f"c{index}": candidate.candidate_id
@@ -2191,8 +2873,8 @@ class SingleDocumentProcessor:
                 client=self.m3_client,
                 registry=self.registry,
                 run_id=run_id,
-                tier=ModelTier.M3,
-                model=self.model_m3,
+                tier=ModelTier.M2,
+                model=self.model_m2,
                 stage="grounder_missing_recovery",
                 summaries=summaries,
             )
@@ -2352,6 +3034,7 @@ class SingleDocumentProcessor:
                     )
             except Exception as exc:
                 recovery_failed_ids = [candidate.candidate_id for candidate in missing_candidates]
+                recovery_provider_failure = is_provider_failure(exc)
                 error_code = (
                     exc.code if isinstance(exc, SingleDocumentPipelineError) else type(exc).__name__
                 )
@@ -2365,6 +3048,7 @@ class SingleDocumentProcessor:
                             "candidate_ids": recovery_failed_ids,
                             "code": error_code,
                             "disposition": "FAILED_TECHNICAL",
+                            "item_recovery_suppressed": recovery_provider_failure,
                         },
                     )
                 )
@@ -2372,7 +3056,7 @@ class SingleDocumentProcessor:
         # A root-level or partial recovery failure is isolated to compact candidate
         # chunks. Legal earlier dispositions are retained; this pass never reruns
         # the document or any already disposed candidate.
-        if recovery_failed_ids:
+        if recovery_failed_ids and not recovery_provider_failure:
             failed_candidate_map = {
                 candidate.candidate_id: candidate
                 for candidate in missing_candidates
@@ -2394,8 +3078,8 @@ class SingleDocumentProcessor:
                     client=self.m3_client,
                     registry=self.registry,
                     run_id=run_id,
-                    tier=ModelTier.M3,
-                    model=self.model_m3,
+                    tier=ModelTier.M2,
+                    model=self.model_m2,
                     stage="grounder_missing_item_recovery",
                     summaries=summaries,
                 )
@@ -2648,8 +3332,8 @@ class SingleDocumentProcessor:
                 client=self.m4_client,
                 registry=self.registry,
                 run_id=run_id,
-                tier=ModelTier.M4,
-                model=self.model_m4,
+                tier=ModelTier.M2,
+                model=self.model_m2,
                 stage="judge",
                 summaries=summaries,
             )
@@ -2766,21 +3450,6 @@ class SingleDocumentProcessor:
                     ):
                         try:
                             persistent = _judge_mention_to_persistent(split_mention)
-                            original_hint = draft_by_short[
-                                split_command.id
-                            ].mention.local_package_hint
-                            if (
-                                persistent.local_package_hint is None
-                                and original_hint is not None
-                                and persistent.event_family
-                                not in {
-                                    EventFamily.MARKET_MOVEMENT,
-                                    EventFamily.ANALYST_ACTION,
-                                }
-                            ):
-                                persistent = persistent.model_copy(
-                                    update={"local_package_hint": original_hint}
-                                )
                             subject_id = f"{split_command.id}:split:{split_index}"
                             persistent = self._normalize_draft_time(
                                 persistent,
@@ -2991,8 +3660,8 @@ class SingleDocumentProcessor:
                     client=self.m4_client,
                     registry=self.registry,
                     run_id=run_id,
-                    tier=ModelTier.M4,
-                    model=self.model_m4,
+                    tier=ModelTier.M2,
+                    model=self.model_m2,
                     stage="judge_coverage_recovery",
                     summaries=summaries,
                 )
@@ -3129,8 +3798,8 @@ class SingleDocumentProcessor:
                     client=self.m4_client,
                     registry=self.registry,
                     run_id=run_id,
-                    tier=ModelTier.M4,
-                    model=self.model_m4,
+                    tier=ModelTier.M2,
+                    model=self.model_m2,
                     stage="judge_item_repair",
                     summaries=summaries,
                 )
@@ -3719,7 +4388,6 @@ class SingleDocumentProcessor:
             quantities=[Quantity(**item.model_dump()) for item in draft.quantities],
             open_attributes=attributes,
             schema_projection=None,
-            local_package_hint=draft.local_package_hint,
         )
         mention.validate_evidence(source)
         for kind, results in (

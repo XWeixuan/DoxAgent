@@ -8,6 +8,69 @@ from cdecr.models import ModelTier
 from cdecr.scheduler import CDECRScheduler, ConcurrencyLane
 
 
+def test_scheduler_shared_circuit_allows_two_retries_without_local_sleep() -> None:
+    scheduler = CDECRScheduler(
+        m2_limit=1,
+        structured_provider_target=2,
+        structured_provider_hard_limit=2,
+        structured_provider_start_rate=1000,
+        structured_provider_initial_burst=8,
+        max_retries=2,
+        provider_first_pause_seconds=0.01,
+        provider_second_pause_seconds=0.01,
+        provider_half_open_probes=1,
+        provider_recovery_start_rate=1000,
+        provider_recovery_initial_concurrency=1,
+    )
+    attempts = 0
+
+    class Transient(RuntimeError):
+        status_code = 503
+
+    def operation() -> int:
+        nonlocal attempts
+        attempts += 1
+        if attempts < 3:
+            raise Transient()
+        return 7
+
+    value, metrics = scheduler.run(ModelTier.M2, operation)
+    assert value == 7
+    assert attempts == 3
+    assert metrics.attempt_count == 3
+    assert metrics.circuit_wait_ms >= 0
+
+
+def test_unknown_provider_failure_waits_for_n9_deferred_wave_not_request_retry() -> None:
+    scheduler = CDECRScheduler(
+        m2_limit=1,
+        structured_provider_target=1,
+        structured_provider_hard_limit=1,
+        structured_provider_start_rate=1000,
+        structured_provider_initial_burst=4,
+        max_retries=2,
+    )
+    attempts = 0
+
+    class UnknownProviderFailure(RuntimeError):
+        code = "provider_error"
+
+    def operation() -> int:
+        nonlocal attempts
+        attempts += 1
+        raise UnknownProviderFailure()
+
+    try:
+        scheduler.run(ModelTier.M2, operation)
+    except UnknownProviderFailure:
+        pass
+    else:  # pragma: no cover
+        raise AssertionError("unknown provider failure should propagate to the N9 wave")
+
+    assert attempts == 1
+    assert scheduler.provider_gate.circuit_state == "CLOSED"
+
+
 def test_concurrency_lane_enforces_limit_and_records_queue_wait() -> None:
     lane = ConcurrencyLane("m2", 2)
     release = Event()
@@ -41,7 +104,7 @@ def test_concurrency_lane_enforces_limit_and_records_queue_wait() -> None:
     assert snapshot.total_queue_wait_ms >= 0
 
 
-def test_scheduler_reduces_only_pressured_lane_and_recovers() -> None:
+def test_scheduler_pressure_does_not_multiply_shrink_tier_lane() -> None:
     scheduler = CDECRScheduler(
         m1_limit=2,
         m2_limit=8,
@@ -62,9 +125,10 @@ def test_scheduler_reduces_only_pressured_lane_and_recovers() -> None:
     else:  # pragma: no cover
         raise AssertionError("rate limit should propagate")
 
-    assert scheduler.snapshot()["m3"].limit == 4
+    assert scheduler.snapshot()["m3"].limit == 8
     assert scheduler.snapshot()["m2"].limit == 8
-    for _ in range(100):
+    assert scheduler.provider_snapshot().limit < scheduler.provider_snapshot().hard_limit
+    for _ in range(10):
         scheduler.run(ModelTier.M3, lambda: 1)
     assert scheduler.snapshot()["m3"].limit == 8
 
@@ -95,3 +159,30 @@ def test_scheduler_provider_hard_limit_is_shared_across_tiers() -> None:
         release.set()
         assert len([future.result() for future in futures]) == 12
     assert scheduler.provider_snapshot().max_active == 8
+
+
+def test_scheduler_m1_bypasses_structured_provider_gate() -> None:
+    scheduler = CDECRScheduler(
+        m1_limit=4,
+        structured_provider_target=1,
+        structured_provider_hard_limit=1,
+        structured_provider_start_rate=1000,
+        structured_provider_initial_burst=8,
+    )
+    release = Event()
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        futures = [
+            executor.submit(
+                scheduler.run,
+                ModelTier.M1,
+                lambda: (release.wait(timeout=2), 1)[1],
+            )
+            for _ in range(4)
+        ]
+        deadline = monotonic() + 1
+        while scheduler.snapshot()["m1"].active < 4 and monotonic() < deadline:
+            sleep(0.005)
+        assert scheduler.snapshot()["m1"].active == 4
+        assert scheduler.provider_snapshot().active == 0
+        release.set()
+        assert len([future.result() for future in futures]) == 4

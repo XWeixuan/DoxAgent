@@ -14,7 +14,6 @@ from cdecr.contracts import (
     EventPackage,
     ExternalEventRelation,
     PackageExternalRelation,
-    PackageExternalRelationCandidate,
     PackageMembership,
     PackageMembershipDecision,
     SourceMessage,
@@ -45,9 +44,6 @@ if TYPE_CHECKING:
         AtomicAssignmentRecord,
         CrossDocumentResult,
         PackageAssignmentRecord,
-        PackageMergePlan,
-        PackagePairEvaluation,
-        PackagePairMergeDecision,
     )
 
 
@@ -93,7 +89,12 @@ class StructuredModelRequest(StrictModel):
     system_prompt: str
     user_prompt: str
     json_schema: dict[str, object]
-    output_mode: Literal["json_object"] = "json_object"
+    output_mode: Literal["json_object", "json_schema"] = "json_object"
+    schema_name: str = "cdecr_response"
+    strict: bool = False
+    reasoning_effort: Literal["none", "low", "high", "max"] = "none"
+    previous_response_id: str | None = None
+    session_cache: bool = True
     metadata: dict[str, object] = Field(default_factory=dict)
 
     @field_validator("user_prompt")
@@ -107,14 +108,45 @@ class StructuredModelRequest(StrictModel):
         return relax_temporal_schema(value)
 
 
+class ResponsesModelRequest(StrictModel):
+    """A typed Responses request that can continue one provider response."""
+
+    input: list[dict[str, Any]] = Field(min_length=1)
+    json_schema: dict[str, object]
+    output_mode: Literal["json_object", "json_schema"] = "json_object"
+    schema_name: str = "cdecr_response"
+    strict: bool = False
+    previous_response_id: str | None = None
+    reasoning_effort: Literal["none", "low", "high", "max"] = "none"
+    session_cache: bool = True
+    metadata: dict[str, object] = Field(default_factory=dict)
+
+    @field_validator("json_schema", mode="before")
+    @classmethod
+    def relax_model_time_schema(cls, value: object) -> object:
+        return relax_temporal_schema(value)
+
+
 class StructuredModelResult(StrictModel):
     model: str
     payload: dict[str, object]
     input_tokens: int | None = None
     output_tokens: int | None = None
     reasoning_tokens: int | None = None
+    cached_input_tokens: int | None = None
     latency_ms: int = Field(ge=0)
     request_id: str | None = None
+    response_id: str | None = None
+    transport: Literal[
+        "chat_json_object",
+        "chat_json_schema",
+        "responses_json_object",
+        "responses_json_schema",
+    ] | None = None
+    output_mode: Literal["json_object", "json_schema"] | None = None
+    effective_reasoning_effort: Literal["none", "low", "high", "max"] | None = None
+    provider_key_fingerprint: str | None = None
+    parse_diagnostics: dict[str, object] = Field(default_factory=dict)
 
     @field_validator("payload", mode="before")
     @classmethod
@@ -140,6 +172,10 @@ class EmbeddingClient(Protocol):
 
 class StructuredModelClient(Protocol):
     def complete(self, request: StructuredModelRequest) -> StructuredModelResult: ...
+
+
+class ResponsesModelClient(Protocol):
+    def complete_response(self, request: ResponsesModelRequest) -> StructuredModelResult: ...
 
 
 class EntityNormalizer(Protocol):
@@ -229,6 +265,102 @@ class CDECRRegistry(Protocol):
         self, epoch_id: str, *, stage: str | None = None
     ) -> list[dict[str, Any]]: ...
 
+    def save_parent_occurrence_proposals(
+        self, *, run_id: str, records: Sequence[dict[str, Any]]
+    ) -> dict[str, int]: ...
+
+    def list_parent_occurrence_proposals(
+        self, *, run_id: str | None = None
+    ) -> list[dict[str, Any]]: ...
+
+    def upsert_package_parent_occurrences_v3(
+        self, *, registry_scope_id: str, records: Sequence[dict[str, Any]]
+    ) -> list[dict[str, Any]]: ...
+
+    def list_package_parent_occurrences_v3(
+        self, *, registry_scope_id: str
+    ) -> list[dict[str, Any]]: ...
+
+    def get_package_registry_v3(
+        self, *, registry_scope_id: str
+    ) -> dict[str, Any] | None: ...
+
+    def allocate_package_mcp_ids_v3(
+        self, *, registry_scope_id: str, count: int
+    ) -> list[str]: ...
+
+    def get_package_registry_batch_v3(
+        self, *, registry_scope_id: str, batch_id: str
+    ) -> dict[str, Any] | None: ...
+
+    def save_package_registry_batch_v3(
+        self,
+        *,
+        registry_scope_id: str,
+        batch_id: str,
+        base_registry_version: int,
+        input_hash: str,
+        status: str,
+        response_a_payload: dict[str, Any] | None = None,
+        staged_changes: dict[str, Any] | None = None,
+        affected_mcp_ids: Sequence[str] = (),
+        error_code: str | None = None,
+    ) -> None: ...
+
+    def save_package_registry_description_task_v3(
+        self,
+        *,
+        registry_scope_id: str,
+        batch_id: str,
+        mcp_id: str,
+        input_hash: str,
+        status: str,
+        payload: dict[str, Any] | None = None,
+        error_code: str | None = None,
+    ) -> None: ...
+
+    def save_package_registry_description_tasks_v3(
+        self, records: Sequence[dict[str, Any]], *, chunk_size: int = 256
+    ) -> dict[str, int]: ...
+
+    def list_package_registry_description_tasks_v3(
+        self, *, registry_scope_id: str, batch_id: str
+    ) -> list[dict[str, Any]]: ...
+
+    def finalize_package_registry_batch_v3(
+        self,
+        *,
+        registry_scope_id: str,
+        batch_id: str,
+        expected_base_version: int,
+        expected_base_hash: str,
+        registry_version: int,
+        registry_hash: str,
+        snapshot: dict[str, Any],
+    ) -> bool: ...
+
+    def save_parent_occurrence_partition(
+        self,
+        *,
+        run_id: str,
+        partition_hash: str,
+        snapshot_hash: str,
+        status: str,
+        payload: dict[str, Any],
+    ) -> bool: ...
+
+    def get_parent_occurrence_partition_for_snapshot(
+        self, *, run_id: str, snapshot_hash: str
+    ) -> dict[str, Any] | None: ...
+
+    def save_parent_occurrence_checkpoints(
+        self, *, run_id: str, records: Sequence[dict[str, Any]]
+    ) -> dict[str, int]: ...
+
+    def list_parent_occurrence_checkpoints(
+        self, *, run_id: str, stage: str
+    ) -> list[dict[str, Any]]: ...
+
     def save_bulk_epoch_artifact(
         self,
         *,
@@ -245,7 +377,19 @@ class CDECRRegistry(Protocol):
 
     def save_source(self, source: SourceMessage, *, fingerprint: str) -> bool: ...
 
+    def get_source(self, message_id: str) -> SourceMessage | None: ...
+
+    def list_all_sources(self, *, limit: int = 10000) -> list[SourceMessage]: ...
+
+    def get_source_fingerprint(self, message_id: str) -> str | None: ...
+
     def save_mention(self, mention: EventMention) -> bool: ...
+
+    def get_mention(self, mention_id: str) -> EventMention | None: ...
+
+    def list_all_mentions(self, *, limit: int = 100000) -> list[EventMention]: ...
+
+    def list_mentions_for_message(self, message_id: str) -> list[EventMention]: ...
 
     def save_atomic_event(self, event: AtomicEvent) -> bool: ...
 
@@ -265,29 +409,9 @@ class CDECRRegistry(Protocol):
         self, *, source_event_id: str | None = None
     ) -> list[PackageExternalRelation]: ...
 
-    def save_package_external_relation_candidate(
-        self, candidate: PackageExternalRelationCandidate
-    ) -> bool: ...
-
-    def list_package_external_relation_candidates(
-        self, *, source_event_id: str | None = None
-    ) -> list[PackageExternalRelationCandidate]: ...
-
-    def get_source(self, message_id: str) -> SourceMessage | None: ...
-
-    def list_all_sources(self, *, limit: int = 10000) -> list[SourceMessage]: ...
-
-    def get_source_fingerprint(self, message_id: str) -> str | None: ...
-
-    def get_mention(self, mention_id: str) -> EventMention | None: ...
-
-    def list_all_mentions(self, *, limit: int = 100000) -> list[EventMention]: ...
-
-    def list_mentions_for_message(self, message_id: str) -> list[EventMention]: ...
+    def list_current_atomic_events(self, *, limit: int = 1000) -> list[AtomicEvent]: ...
 
     def get_current_atomic_event(self, event_id: str) -> AtomicEvent | None: ...
-
-    def list_current_atomic_events(self, *, limit: int = 1000) -> list[AtomicEvent]: ...
 
     def get_atomic_event_for_mention(self, mention_id: str) -> AtomicEvent | None: ...
 
@@ -317,21 +441,6 @@ class CDECRRegistry(Protocol):
         event_end: str | None,
         source_fingerprint: str | None,
         field_ids: Sequence[tuple[FieldNamespace, str]] = (),
-        per_route_limit: int = 20,
-    ) -> dict[str, set[str]]: ...
-
-    def recall_package_ids(
-        self,
-        *,
-        package_kind: str,
-        package_family: str,
-        anchor_entities: Sequence[str],
-        local_anchor_hint: str | None = None,
-        anchor_artifact_id: str | None,
-        anchor_period_id: str | None,
-        time_start: str | None,
-        time_end: str | None,
-        package_anchor_ids: Sequence[str] = (),
         per_route_limit: int = 20,
     ) -> dict[str, set[str]]: ...
 
@@ -453,9 +562,7 @@ class CDECRRegistry(Protocol):
         self, mention_ids: Sequence[str]
     ) -> dict[str, list[CanonicalFieldLink]]: ...
 
-    def list_packages_for_events(
-        self, event_ids: Sequence[str]
-    ) -> dict[str, list[str]]: ...
+    def list_packages_for_events(self, event_ids: Sequence[str]) -> dict[str, list[str]]: ...
 
     def start_cross_document_run(
         self,
@@ -479,7 +586,7 @@ class CDECRRegistry(Protocol):
     ) -> bool: ...
 
     def finish_cross_document_trace(
-        self, trace_id: str, *, status: Literal["REUSED", "FAILED"]
+        self, trace_id: str, *, status: Literal["REUSED", "FAILED", "PARTIAL"]
     ) -> None: ...
 
     def get_completed_cross_document_result(
@@ -502,21 +609,6 @@ class CDECRRegistry(Protocol):
         self, event_id: str
     ) -> PackageAssignmentRecord | None: ...
 
-    def save_package_merge_decision(
-        self, *, decision_id: str, run_id: str, decision: PackagePairMergeDecision
-    ) -> bool: ...
-
-    def save_package_pair_evaluation(self, evaluation: PackagePairEvaluation) -> bool: ...
-
-    def get_package_pair_evaluation(
-        self,
-        *,
-        left_package_id: str,
-        right_package_id: str,
-        left_profile_hash: str,
-        right_profile_hash: str,
-    ) -> PackagePairEvaluation | None: ...
-
     def save_atomic_redirect(
         self, *, source_event_id: str, target_event_id: str, run_id: str, reason: str
     ) -> bool: ...
@@ -526,18 +618,6 @@ class CDECRRegistry(Protocol):
     def save_package_redirect(
         self, *, source_package_id: str, target_package_id: str, run_id: str, reason: str
     ) -> bool: ...
-
-    def apply_package_merge_plan(
-        self,
-        *,
-        plan: PackageMergePlan,
-        decisions: Sequence[PackagePairMergeDecision],
-        merged_package: EventPackage,
-        run_id: str,
-        embedding_model: str,
-        embedding_input_hash: str,
-        embedding_vector: Sequence[float],
-    ) -> EventPackage: ...
 
     def record_model_call(
         self,
@@ -570,6 +650,17 @@ class CDECRRegistry(Protocol):
 
     def save_package_stage_batch(
         self, records: Sequence[dict[str, Any]], *, chunk_size: int = 64
+    ) -> dict[str, int]: ...
+
+    def activate_package_partition_v3(
+        self,
+        *,
+        packages: Sequence[EventPackage],
+        memberships: Sequence[PackageMembership],
+        assignments: Sequence[Any],
+        external_relations: Sequence[PackageExternalRelation],
+        redirects: Sequence[tuple[str, str]],
+        run_id: str,
     ) -> dict[str, int]: ...
 
     def rebuild_derived_state(self) -> dict[str, int]: ...

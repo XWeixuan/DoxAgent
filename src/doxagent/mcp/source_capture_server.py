@@ -7,12 +7,15 @@ import tempfile
 import threading
 from pathlib import Path
 
+from dotenv import load_dotenv
 from mcp.server.mcpserver import MCPServer
 
 from doxagent.codex_runtime.schema import SourceRecord
+from doxagent.data_runtime.pilot_case import validate_pilot_case_root
 from doxagent.mcp.source_capture import SourceCaptureService
 from doxagent.observations.kernel import ObservationKernel
 from doxagent.observations.store import AttemptObservationStore
+from doxagent.settings import DoxAgentSettings
 
 
 class WorkspaceSourceRepository:
@@ -156,6 +159,9 @@ def build_server(service: SourceCaptureService, *, run_id: str, attempt_id: str)
 
 
 def main() -> None:
+    pilot_env_file = os.environ.get("DOXAGENT_PILOT_ENV_FILE")
+    if pilot_env_file:
+        load_dotenv(pilot_env_file, override=False)
     run_id = os.environ.get("DOXAGENT_CODEX_RUN_ID")
     attempt_id = os.environ.get("DOXAGENT_CODEX_ATTEMPT_ID")
     if not run_id or not attempt_id:
@@ -165,9 +171,17 @@ def main() -> None:
     if not control_root_value:
         raise RuntimeError("DOXAGENT_OBSERVATION_CONTROL_ROOT is required")
     control_root = Path(control_root_value).resolve()
-    expected_control_root = (
-        run_root.parent / ".control" / run_id / attempt_id
-    ).resolve()
+    pilot_case_id = os.environ.get("DOXAGENT_PILOT_CASE_ID")
+    if pilot_case_id:
+        validate_pilot_case_root(
+            run_root=run_root,
+            pilot_case_id=pilot_case_id,
+            run_id=run_id,
+            attempt_id=attempt_id,
+        )
+        expected_control_root = (run_root / ".control" / run_id / attempt_id).resolve()
+    else:
+        expected_control_root = (run_root.parent / ".control" / run_id / attempt_id).resolve()
     if control_root != expected_control_root:
         raise RuntimeError("Source Capture control root does not match attempt scope")
     repository = ObservationSourceRepository(
@@ -176,8 +190,13 @@ def main() -> None:
         run_id=run_id,
         attempt_id=attempt_id,
     )
+    settings = DoxAgentSettings()
     build_server(
-        SourceCaptureService(repository),
+        SourceCaptureService(
+            repository,
+            user_agent=settings.sec_user_agent or "DoxAgent-SourceCapture/1.0",
+            sec_min_request_interval_seconds=settings.sec_min_request_interval_seconds,
+        ),
         run_id=run_id,
         attempt_id=attempt_id,
     ).run("stdio")

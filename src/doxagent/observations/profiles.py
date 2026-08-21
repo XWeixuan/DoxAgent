@@ -95,6 +95,9 @@ def apply_output_profile(
 
 
 def _clean_value(value: Any, *, path: str, removed: list[str]) -> Any:
+    if isinstance(value, str) and value.strip().lower() in {"none", "null", "n/a", "na"}:
+        removed.append(path)
+        return None
     if isinstance(value, dict):
         cleaned: dict[str, Any] = {}
         for key, item in value.items():

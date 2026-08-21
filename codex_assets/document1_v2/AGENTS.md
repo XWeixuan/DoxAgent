@@ -1,27 +1,30 @@
-# Document 1 v2 execution rules
+# Document 1 v2 common execution contract
 
-You are running one bounded node of `codex_d1_v2`. The legacy workflow is not
-available for mutation. Treat every file under `context/` and every attempt
-`input/` directory as immutable. Write no files unless the node prompt names the
-destination. Never access paths outside the current run workspace.
+You are running one bounded node of `codex_d1_v2`. Work only inside the current
+run workspace. Treat `context/` and every attempt `input/` directory as
+immutable for direct Agent file operations. Write only the output files named by
+`task.json`. Data MCP and Source Capture MCP may create their own attempt-scoped
+`.control/<run>/<node_attempt_id>`, `context/data_tool_catalog/<node_attempt_id>.md`,
+`context/mcp_data/<node_attempt_id>/`, and `attempts/<node_attempt_id>/audit/observations/`
+projections; never edit those service-managed paths manually.
 
-Use program-collected values as governed measurements. A target status of
-`EMPTY`, `FAILED`, or `UNAVAILABLE` is an explicit unknown, not zero. Distinguish
-facts, interpretation, and uncertainty. Use Data MCP semantic tools when the
-program-collected context is insufficient; call `data_tool_guide` when routing
-is unclear. Small results return inline observations, while large results return
-an Observation Pack plus selected observations. Read only a needed block through
-`data_read_observation`. Cite Data MCP and Source Capture observations only with
-the attempt-local form `【cite:O#】`. Citation or Source Capture warnings do not
-block completion.
+Before researching, read `task.md`, `task.json`, `context.json`, every file
+listed in `required_skills`, and `horizontal.json` when present. Distinguish
+facts, interpretation, and uncertainty. Use Data MCP semantic tools for
+governed data and `data_tool_guide` when routing is unclear. Read only needed
+Observation Pack blocks. Cite only observations available in this attempt with
+`【cite:O#】`; never invent an alias. A citation warning is soft, but an
+unsupported claim must not be presented as cited.
 
-Never copy an `O#` citation alias from an upstream node context: aliases are valid
-only in the attempt that created them. If the current node needs to cite the same
-evidence, call Data MCP again and cite the new attempt-local alias.
-Never invent an `O#` alias. If no tool returned an observation in the current
-attempt, omit citation markers instead of guessing one.
+Program values are governed measurements. `EMPTY`, `FAILED`, and `UNAVAILABLE`
+mean unknown, never zero. Agent-found metrics may supplement, but never replace,
+a governed program value. Do not create Document 2 objects, Expectation Units,
+formal `PotentialGap` objects, trading recommendations, or monitoring rules.
 
-Subagents are permitted only for C1, C3, and O4-A, at most two, and must be
-read-only. Return exactly one structured JSON completion matching the supplied
-schema. Do not create Document 2 objects, Expectation Units, gaps, trading
-recommendations, or monitoring rules.
+For nodes with progressive output, draft one required section at a time. After
+each section, atomically refresh `report_draft.md` and `progress.json`. Keep
+`observation_candidates.json` synchronized with the final structured response.
+In `progress.json`, write only `status` and the ordered `completed_sections`
+drawn verbatim from `task.json`; static section definitions remain in the input.
+The final `report_markdown` must exactly mirror the completed draft after newline
+normalization.

@@ -12,13 +12,18 @@ from pathlib import Path
 from typing import Any
 
 from doxagent.observations.models import ObservationCallRecord, PersistedObservation
+from doxagent.observations.projection import projection_matches, render_observation_projection
 
 _IDENTIFIER = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$")
 _ALIAS = re.compile(r"^O[1-9]\d*$")
 
 
 class AttemptObservationStore:
-    """Private SQLite source of truth plus cleaned workspace mirror files."""
+    """Private store keyed by canonical node attempt id.
+
+    ``attempt_id`` is the legacy persistence field name and is required to be
+    byte-for-byte identical to the Data MCP ``node_attempt_id``.
+    """
 
     def __init__(
         self,
@@ -31,6 +36,7 @@ class AttemptObservationStore:
         self._validate_identifier(run_id, "run_id")
         self._validate_identifier(attempt_id, "attempt_id")
         self.run_id = run_id
+        self.node_attempt_id = attempt_id
         self.attempt_id = attempt_id
         self.control_root = Path(control_root).resolve()
         self.mirror_root = Path(mirror_root).resolve()
@@ -133,9 +139,10 @@ class AttemptObservationStore:
 
     def _write_mirror(self, observation: PersistedObservation) -> None:
         target = self.mirror_root / f"{observation.alias}.json"
-        raw = observation.model_dump_json(indent=2).encode("utf-8")
+        raw = render_observation_projection(observation).encode("utf-8")
         if target.exists():
-            if target.read_bytes() != raw:
+            existing = target.read_text(encoding="utf-8")
+            if not projection_matches(observation, existing):
                 raise ValueError(f"immutable observation mirror changed: {observation.alias}")
             return
         descriptor, temporary = tempfile.mkstemp(

@@ -63,6 +63,8 @@ export interface ApiErrorPayload {
 }
 
 export interface CodexArtifactRef {
+  workflow_version: "codex_d1_v2" | "codex_global_research_v1" | "codex_market_situation_v1"
+  research_lane: "legacy_document1" | "global_research" | "market_situation_research"
   artifact_id: string
   run_id: string
   node: string
@@ -121,6 +123,36 @@ export interface CodexArtifactDetail {
   artifact: CodexArtifactRef
   content: string | null
 }
+
+export type CodexResearchLane = "global_research" | "market_situation_research"
+
+export interface CodexResearchRunSummary {
+  run_id: string
+  ticker: string
+  workflow_version: "codex_global_research_v1" | "codex_market_situation_v1"
+  research_lane: CodexResearchLane
+  status: "draft" | "published" | "failed" | "running" | "cancelled"
+  created_at: string
+  published_at: string | null
+}
+
+export interface CodexGlobalResearchBundle extends CodexResearchRunSummary {
+  workflow_version: "codex_global_research_v1"
+  research_lane: "global_research"
+  reports: Record<string, CodexArtifactRef>
+  entity_relations: CodexEntityRelation[]
+  future_nodes: CodexFutureNode[]
+}
+
+export interface CodexMarketSituationBundle extends CodexResearchRunSummary {
+  workflow_version: "codex_market_situation_v1"
+  research_lane: "market_situation_research"
+  reports: Record<string, CodexArtifactRef>
+}
+
+export type CodexResearchBundle =
+  | CodexGlobalResearchBundle
+  | CodexMarketSituationBundle
 
 export interface PageInfo {
   limit: number

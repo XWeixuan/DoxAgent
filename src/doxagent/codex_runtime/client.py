@@ -32,6 +32,9 @@ class WorkspaceClient(Protocol):
     async def read_attempt_observations(
         self, run_id: str, attempt_id: str
     ) -> list[PersistedObservation]: ...
+    async def import_attempt_observations(
+        self, run_id: str, attempt_id: str, observations: list[PersistedObservation]
+    ) -> list[PersistedObservation]: ...
     async def publish(self, run_id: str, paths: list[str]) -> WorkspaceInventory: ...
 
 
@@ -124,6 +127,21 @@ class HttpCodexWorkerClient:
         )
         return [PersistedObservation.model_validate(item) for item in response.json()]
 
+    async def import_attempt_observations(
+        self,
+        run_id: str,
+        attempt_id: str,
+        observations: list[PersistedObservation],
+    ) -> list[PersistedObservation]:
+        response = await self._request(
+            "POST",
+            f"/v1/workspaces/{run_id}/attempts/{attempt_id}/observations",
+            run_id=run_id,
+            operation="write_observations",
+            json=[item.model_dump(mode="json") for item in observations],
+        )
+        return [PersistedObservation.model_validate(item) for item in response.json()]
+
     async def publish(self, run_id: str, paths: list[str]) -> WorkspaceInventory:
         response = await self._request(
             "POST",
@@ -133,6 +151,26 @@ class HttpCodexWorkerClient:
             json=paths,
         )
         return WorkspaceInventory.model_validate(response.json())
+
+    async def export_workspace(
+        self,
+        run_id: str,
+        *,
+        control_attempt_id: str | None = None,
+    ) -> bytes:
+        params = (
+            {"control_attempt_id": control_attempt_id}
+            if control_attempt_id is not None
+            else None
+        )
+        response = await self._request(
+            "GET",
+            f"/v1/workspaces/{run_id}/export",
+            run_id=run_id,
+            operation="export",
+            params=params,
+        )
+        return response.content
 
     async def _request(
         self,

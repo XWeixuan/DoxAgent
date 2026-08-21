@@ -1,5 +1,10 @@
 # DoxAgent Data MCP 开发方案
 
+> **2026-08-20 扩展口径：** Data MCP 同时支持 legacy `codex_d1_v2`、Global
+> `codex_global_research_v1` 与 Market `codex_market_situation_v1`；capability 现同时绑定
+> workflow、lane、node、role、attempt 与 ticker。旧 O4-A entitlement policy 对应新 C5，
+> 新 O4 仅保留价格/市场状态工具面。
+
 > 状态：代码已完成；实现与验收记录见 `data_mcp_implementation.md`
 > 日期：2026-08-09  
 > 适用版本：`workflow_version=codex_d1_v2`  

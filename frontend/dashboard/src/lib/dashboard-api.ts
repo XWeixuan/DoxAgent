@@ -8,6 +8,9 @@ import type {
   CodexArtifactDetail,
   CodexDocument1Bundle,
   CodexDocument1RunSummary,
+  CodexResearchBundle,
+  CodexResearchLane,
+  CodexResearchRunSummary,
   DashboardEvent,
   DocumentType,
   DocumentRevision,
@@ -211,6 +214,18 @@ export const dashboardApi = {
   codexArtifact: (runId: string, artifactId: string) =>
     dashboardRequest<CodexArtifactDetail>(
       `/codex-runs/${encodeURIComponent(runId)}/artifacts/${encodeURIComponent(artifactId)}`
+    ),
+  codexResearchRuns: (ticker: string, lane: CodexResearchLane) =>
+    dashboardRequest<{ items: CodexResearchRunSummary[] }>(
+      `/research-runs${queryString({ ticker, lane })}`
+    ),
+  codexResearchRun: (runId: string) =>
+    dashboardRequest<CodexResearchBundle>(
+      `/research-runs/${encodeURIComponent(runId)}`
+    ),
+  codexResearchArtifact: (runId: string, artifactId: string) =>
+    dashboardRequest<CodexArtifactDetail>(
+      `/research-runs/${encodeURIComponent(runId)}/artifacts/${encodeURIComponent(artifactId)}`
     ),
   backtests: (params?: QueryParams) =>
     dashboardRequest<PageResult<BacktestRun>>(`/backtests${queryString(params)}`),

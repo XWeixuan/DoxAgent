@@ -14,17 +14,11 @@ from cdecr.contracts import (
     AtomicEvent,
     EventFamily,
     EventMention,
-    EventPackage,
     EventTime,
     EvidenceSpan,
     Language,
-    LocalPackageHint,
-    MembershipRelation,
     OpenIdentityFields,
     OpenIdentityProfile,
-    PackageFamily,
-    PackageKind,
-    PackageStatus,
     Participant,
     ParticipantRole,
     Predicate,
@@ -36,8 +30,11 @@ from cdecr.field_coreference import (
     FIELD_REGISTRY_OWNER_KIND,
     FieldCoreferenceError,
     FieldCoreferenceResolver,
+    PreparedFieldDecision,
+    _batch_decision_schema,
     field_inputs_for_mention,
     normalize_field_text,
+    normalize_field_wire_item,
     resolved_field_entries,
     trusted_field_identity_conflict,
 )
@@ -59,6 +56,39 @@ from cdecr.registry import (
     RegistryError,
     SQLiteCDECRRegistry,
 )
+
+
+def test_field_wire_normalization_is_lossless_for_forbidden_extras() -> None:
+    normalized = normalize_field_wire_item(
+        {
+            "decision": " new ",
+            "canonical_id": "should-drop",
+            "target_namespace": "metric",
+            "ignored": "value",
+        },
+        FieldNamespace.CONCEPT_PREDICATE,
+        {},
+    )
+    assert normalized.output.decision is FieldDecision.NEW
+    assert normalized.output.canonical_id is None
+    assert normalized.output.target_namespace is None
+    assert set(normalized.rules) == {
+        "DROP_NON_LINK_CANONICAL_ID",
+        "DROP_FORBIDDEN_TARGET_NAMESPACE",
+    }
+
+
+def test_field_batch_schema_restricts_target_namespace_by_input_namespace() -> None:
+    ordinary = _batch_decision_schema(FieldNamespace.METRIC)
+    unknown = _batch_decision_schema(FieldNamespace.PARTICIPANT_UNKNOWN)
+    ordinary_target = ordinary["properties"]["decisions"]["items"]["properties"][
+        "target_namespace"
+    ]
+    unknown_target = unknown["properties"]["decisions"]["items"]["properties"][
+        "target_namespace"
+    ]
+    assert ordinary_target == {"type": "null"}
+    assert None in unknown_target["enum"]
 
 
 class FakeEmbeddingClient:
@@ -95,7 +125,265 @@ class FakeStructuredClient:
             input_tokens=10,
             output_tokens=2,
             latency_ms=1,
+            transport="chat_json_object",
+            output_mode="json_object",
+            effective_reasoning_effort="none",
+            provider_key_fingerprint="test-key-fingerprint",
         )
+
+
+class EchoFieldBatchClient:
+    def __init__(self) -> None:
+        self.requests: list[StructuredModelRequest] = []
+
+    def complete(self, request: StructuredModelRequest) -> StructuredModelResult:
+        self.requests.append(request)
+        tasks = json.loads(request.user_prompt)["tasks"]
+        return StructuredModelResult(
+            model="fake",
+            payload={
+                "decisions": [
+                    {
+                        "task_id": task["task_id"],
+                        "decision": "UNRESOLVED",
+                        "canonical_id": None,
+                        "target_namespace": None,
+                    }
+                    for task in tasks
+                ]
+            },
+            input_tokens=1,
+            output_tokens=1,
+            latency_ms=1,
+        )
+
+
+class InvalidCoverageOnceFieldClient(EchoFieldBatchClient):
+    def complete(self, request: StructuredModelRequest) -> StructuredModelResult:
+        if not self.requests:
+            self.requests.append(request)
+            return StructuredModelResult(
+                model="fake",
+                payload={"decisions": []},
+                input_tokens=1,
+                output_tokens=1,
+                latency_ms=1,
+            )
+        return super().complete(request)
+
+
+def test_planned_field_decisions_pack_by_namespace_and_cover_every_item(
+    registry: SQLiteCDECRRegistry,
+) -> None:
+    model = EchoFieldBatchClient()
+    resolver = FieldCoreferenceResolver(
+        registry=registry,
+        embedding_client=FakeEmbeddingClient(),
+        model_client=model,
+    )
+    plans = [
+        PreparedFieldDecision(
+            semantic_task_id=f"task-{index:02d}",
+            value=FieldCoreferenceInput(
+                namespace=FieldNamespace.OBJECT_FACILITY,
+                raw_value=f"facility {index}",
+                local_context="facility context",
+            ),
+            candidates=(),
+            mention_id=f"mention-{index}",
+            field_path="open_attributes[0].value",
+            run_id=None,
+        )
+        for index in range(13)
+    ]
+    outputs, errors, telemetry = resolver.decide_prepared(plans, max_workers=4)
+    assert not errors
+    assert set(outputs) == {plan.semantic_task_id for plan in plans}
+    assert len(model.requests) == 2
+    assert telemetry["planned_item_count"] == 13
+    assert telemetry["physical_batch_count"] == 2
+    assert telemetry["batch_size_max"] == 12
+    assert telemetry["item_fallback_count"] == 0
+
+
+def test_planned_field_invalid_batch_coverage_splits_once_without_losing_items(
+    registry: SQLiteCDECRRegistry,
+) -> None:
+    model = InvalidCoverageOnceFieldClient()
+    resolver = FieldCoreferenceResolver(
+        registry=registry,
+        embedding_client=FakeEmbeddingClient(),
+        model_client=model,
+    )
+    plans = [
+        PreparedFieldDecision(
+            semantic_task_id=f"task-{index}",
+            value=FieldCoreferenceInput(
+                namespace=FieldNamespace.OBJECT_PROJECT,
+                raw_value=f"project {index}",
+                local_context="project context",
+            ),
+            candidates=(),
+            mention_id=f"mention-{index}",
+            field_path="open_attributes[0].value",
+            run_id=None,
+        )
+        for index in range(4)
+    ]
+    outputs, errors, telemetry = resolver.decide_prepared(plans, max_workers=1)
+    assert not errors
+    assert set(outputs) == {plan.semantic_task_id for plan in plans}
+    assert len(model.requests) == 3
+    assert telemetry["batch_split_count"] == 1
+
+
+def test_field_item_repair_uses_local_t1_and_is_fully_audited(
+    registry: SQLiteCDECRRegistry,
+) -> None:
+    model = FakeStructuredClient(
+        [
+            {
+                "decisions": [
+                    {
+                        "task_id": "t1",
+                        "decision": "LINK",
+                        "canonical_id": "k99",
+                        "target_namespace": None,
+                    }
+                ]
+            },
+            {
+                "decisions": [
+                    {
+                        "task_id": "t1",
+                        "decision": "UNRESOLVED",
+                        "canonical_id": None,
+                        "target_namespace": None,
+                    }
+                ]
+            },
+        ]
+    )
+    resolver = FieldCoreferenceResolver(
+        registry=registry,
+        embedding_client=FakeEmbeddingClient(),
+        model_client=model,
+    )
+    plan = PreparedFieldDecision(
+        semantic_task_id="semantic-task-7",
+        value=FieldCoreferenceInput(
+            namespace=FieldNamespace.OBJECT_PROJECT,
+            raw_value="project seven",
+            local_context="project context",
+        ),
+        candidates=(),
+        mention_id="mention-7",
+        field_path="open_attributes[0].value",
+        run_id=None,
+    )
+
+    outputs, errors, telemetry = resolver.decide_prepared([plan], max_workers=1)
+
+    assert not errors
+    assert outputs[plan.semantic_task_id].decision is FieldDecision.UNRESOLVED
+    repair_payload = json.loads(model.requests[1].user_prompt)
+    assert [task["task_id"] for task in repair_payload["tasks"]] == ["t1"]
+    calls = registry.list_model_call_summaries()
+    assert sum(call.stage == "field_coreference_item_repair" for call in calls) == 1
+    assert telemetry["item_repair_request_count"] == 1
+    assert telemetry["item_repair_succeeded_count"] == 1
+
+
+def test_field_item_repair_local_forbidden_error_falls_back_without_task_failure(
+    registry: SQLiteCDECRRegistry,
+) -> None:
+    invalid = {
+        "decisions": [
+            {
+                "task_id": "t1",
+                "decision": "NEW",
+                "canonical_id": None,
+                "target_namespace": "participant.company",
+            }
+        ]
+    }
+    model = FakeStructuredClient([invalid, invalid])
+    resolver = FieldCoreferenceResolver(
+        registry=registry,
+        embedding_client=FakeEmbeddingClient(),
+        model_client=model,
+    )
+    plan = PreparedFieldDecision(
+        semantic_task_id="semantic-task-local-invalid",
+        value=FieldCoreferenceInput(
+            namespace=FieldNamespace.OBJECT_PROJECT,
+            raw_value="project local invalid",
+            local_context="project context",
+        ),
+        candidates=(),
+        mention_id="mention-local-invalid",
+        field_path="open_attributes[0].value",
+        run_id=None,
+    )
+
+    outputs, errors, telemetry = resolver.decide_prepared([plan], max_workers=1)
+
+    assert not errors
+    assert outputs[plan.semantic_task_id].decision is FieldDecision.NEW
+    assert telemetry["item_repair_request_count"] == 0
+    assert telemetry["item_repair_provider_failed_count"] == 0
+
+
+def test_apply_prepared_reuses_existing_external_identity_before_immutable_create(
+    registry: SQLiteCDECRRegistry,
+) -> None:
+    mention = _mention("M-APPLY-REUSE", "S-APPLY-REUSE")
+    _persist_mention(registry, mention)
+    resolver = FieldCoreferenceResolver(
+        registry=registry,
+        embedding_client=FakeEmbeddingClient(),
+        model_client=FakeStructuredClient(),
+    )
+    transient, dimensions = resolver.transient_external_entry(
+        external_id="KB:PROJECT:7",
+        canonical_text="Project Seven",
+        aliases=["Project Seven", "Seventh Project"],
+        namespace=FieldNamespace.OBJECT_PROJECT,
+        hard_dimensions={},
+    )
+    registry.create_field_registry_entry(
+        transient.model_copy(update={"aliases": ["Project Seven"]})
+    )
+    plan = PreparedFieldDecision(
+        semantic_task_id="apply-reuse",
+        value=FieldCoreferenceInput(
+            namespace=FieldNamespace.OBJECT_PROJECT,
+            raw_value="Seventh Project",
+            local_context="Project Seven was discussed.",
+        ),
+        candidates=(
+            FieldCoreferenceCandidate(
+                canonical_id=transient.id,
+                aliases=["Project Seven"],
+                hard_dimensions={},
+            ),
+        ),
+        mention_id=mention.mention_id,
+        field_path="open_attributes[0].value",
+        run_id=None,
+        transient_entries=(transient,),
+        transient_dimensions=((transient.id, dimensions),),
+    )
+
+    result = resolver.apply_prepared(
+        plan,
+        FieldCoreferenceModelOutput(
+            decision=FieldDecision.LINK,
+            canonical_id=transient.id,
+        ),
+    )
+
+    assert result.canonical_id == transient.id
 
 
 def test_epoch_field_requests_are_namespace_batched_with_simple_wire_schema(
@@ -165,6 +453,17 @@ def test_epoch_field_requests_are_namespace_batched_with_simple_wire_schema(
     assert len(payload["tasks"]) == 2
     assert isinstance(payload["candidates"], dict)
     assert "allOf" not in json.dumps(model.requests[0].json_schema)
+    with sqlite3.connect(registry.path) as connection:
+        metadata = json.loads(
+            connection.execute(
+                "SELECT metadata_json FROM model_calls "
+                "WHERE stage = 'field_coreference' ORDER BY created_at DESC LIMIT 1"
+            ).fetchone()[0]
+        )
+    assert metadata["transport"] == "chat_json_object"
+    assert metadata["output_mode"] == "json_object"
+    assert metadata["effective_reasoning_effort"] == "none"
+    assert metadata["provider_key_fingerprint"] == "test-key-fingerprint"
 
 
 def _source(message_id: str) -> SourceMessage:
@@ -186,13 +485,7 @@ def _mention(
     message_id: str,
     *,
     facility: str = "Fab 21",
-    anchor: str | None = None,
 ) -> EventMention:
-    hint = (
-        LocalPackageHint(anchor=anchor, relation_to_anchor=MembershipRelation.STAGE_OF)
-        if anchor
-        else None
-    )
     return EventMention(
         mention_id=mention_id,
         message_id=message_id,
@@ -207,7 +500,6 @@ def _mention(
         assertion_state=AssertionState.PLANNED,
         quantities=[],
         open_attributes=[],
-        local_package_hint=hint,
     ).model_copy(
         update={
             "open_attributes": [],
@@ -457,7 +749,7 @@ def test_prompt_v2_policies_and_llm_visible_candidate_contract(
     )
     result = _resolve(resolver, mention, "Boise fab complex")
     assert result.canonical_id == "FIELD-FAB"
-    assert len(resolver._policies) == len(FieldNamespace) == 28
+    assert len(resolver._policies) == len(FieldNamespace)
     request = model.requests[0]
     assert request.system_prompt.startswith(
         "Resolve each independent typed field task against only its supplied "
@@ -471,7 +763,7 @@ def test_prompt_v2_policies_and_llm_visible_candidate_contract(
     assert "external_id" not in request.user_prompt
 
 
-def test_invalid_unknown_participant_namespace_degrades_to_unresolved(
+def test_invalid_unknown_participant_namespace_repairs_to_unresolved(
     registry: SQLiteCDECRRegistry,
 ) -> None:
     mention = _mention("M-1", "S-1")
@@ -480,7 +772,14 @@ def test_invalid_unknown_participant_namespace_degrades_to_unresolved(
         registry=registry,
         embedding_client=FakeEmbeddingClient(),
         model_client=FakeStructuredClient(
-            [{"decision": "NEW", "target_namespace": "made_up_organization_type"}]
+            [
+                {"decision": "NEW", "target_namespace": "made_up_organization_type"},
+                {
+                    "decision": "UNRESOLVED",
+                    "canonical_id": None,
+                    "target_namespace": None,
+                },
+            ]
         ),
     )
 
@@ -505,7 +804,8 @@ def test_invalid_unknown_participant_namespace_degrades_to_unresolved(
             WHERE decision_type = 'FIELD_MODEL_ADAPTER_FALLBACK'
             """
         ).fetchone()[0]
-    assert count == 1
+    assert count == 0
+    assert len(resolver.model_client.requests) == 2
 
 
 def test_candidate_order_is_stable_across_registry_insertion_order(
@@ -667,7 +967,7 @@ def test_current_link_can_be_corrected_without_rewriting_mention(
 
 
 def test_field_extraction_excludes_values_dates_units_and_assertion_state() -> None:
-    mention = _mention("M-1", "S-1", anchor="Micron Boise expansion")
+    mention = _mention("M-1", "S-1")
     inputs = field_inputs_for_mention(
         mention, local_context=mention.canonical_proposition, source_ticker="MU"
     )
@@ -678,81 +978,6 @@ def test_field_extraction_excludes_values_dates_units_and_assertion_state() -> N
     assert all("time" not in path and "assertion_state" not in path for path in paths)
 
 
-def test_atomic_and_package_recall_use_only_eligible_field_ids(
-    registry: SQLiteCDECRRegistry,
-) -> None:
-    mention = _mention("M-1", "S-1", anchor="Boise expansion")
-    _persist_mention(registry, mention)
-    facility = CanonicalFieldRegistryEntry(
-        id="FACILITY-1",
-        namespace=FieldNamespace.OBJECT_FACILITY,
-        canonical_text="Fab 21",
-        aliases=["Fab 21"],
-    )
-    anchor = CanonicalFieldRegistryEntry(
-        id="ANCHOR-1",
-        namespace=FieldNamespace.PACKAGE_ANCHOR,
-        canonical_text="Boise expansion",
-        aliases=["Boise expansion"],
-    )
-    registry.create_field_registry_entry(facility)
-    registry.create_field_registry_entry(anchor)
-    registry.save_field_link(
-        CanonicalFieldLink(
-            mention_id=mention.mention_id,
-            field_path="locations[0]",
-            registry_id=facility.id,
-            method=FieldLinkMethod.INTERNAL_COREFERENCE,
-        )
-    )
-    registry.save_field_link(
-        CanonicalFieldLink(
-            mention_id=mention.mention_id,
-            field_path="local_package_hint.anchor",
-            registry_id=anchor.id,
-            method=FieldLinkMethod.INTERNAL_COREFERENCE,
-        )
-    )
-    event = _atomic(mention)
-    registry.save_atomic_event(event)
-    package = EventPackage(
-        package_id="PACKAGE-1",
-        package_kind=PackageKind.EPISODE,
-        package_family=PackageFamily.COMPANY_DISCLOSURE,
-        canonical_title="Boise expansion",
-        anchor_entities=[],
-        time_range={},
-        member_event_ids=[event.event_id],
-        canonical_summary="Boise expansion events.",
-        status=PackageStatus.OPEN,
-        version=1,
-    )
-    registry.save_package(package)
-
-    atomic_recall = registry.recall_atomic_event_ids(
-        entity_ids=[],
-        event_family="OTHER",
-        normalized_predicate="other",
-        schema_type="OPEN",
-        reference_period_id=None,
-        event_start=None,
-        event_end=None,
-        source_fingerprint=None,
-        field_ids=[(FieldNamespace.OBJECT_FACILITY, facility.id)],
-    )
-    package_recall = registry.recall_package_ids(
-        package_kind="BOUNDED",
-        package_family="OTHER",
-        anchor_entities=[],
-        anchor_artifact_id=None,
-        anchor_period_id=None,
-        time_start=None,
-        time_end=None,
-        package_anchor_ids=[anchor.id],
-    )
-
-    assert atomic_recall[event.event_id] == {"FIELD_ID"}
-    assert package_recall[package.package_id] == {"PACKAGE_ANCHOR"}
 
 
 @pytest.mark.parametrize(

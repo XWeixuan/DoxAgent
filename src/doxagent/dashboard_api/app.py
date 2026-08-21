@@ -35,6 +35,11 @@ from doxagent.dashboard_api.mock_router import (
 )
 from doxagent.dashboard_api.real_router import create_real_router
 from doxagent.dashboard_api.real_service import RealDashboardOverviewService
+from doxagent.dashboard_api.research_lanes import (
+    CodexResearchLaneService,
+    build_codex_research_lane_service,
+    create_codex_research_lane_router,
+)
 from doxagent.runtime_scheduler.api import DashboardStateAPI
 from doxagent.settings import DoxAgentSettings
 
@@ -61,6 +66,7 @@ def create_app(
     dashboard_auth_settings: DashboardAuthSettings | None = None,
     dashboard_auth_verifier: DashboardAuthVerifier | None = None,
     codex_document1_service: CodexDocument1RunService | None = None,
+    codex_research_lane_service: CodexResearchLaneService | None = None,
 ) -> FastAPI:
     env_mode = os.getenv("DOXAGENT_DASHBOARD_API_MODE")
     resolved_mode = mode if mode is not None else env_mode if env_mode is not None else "mock"
@@ -117,6 +123,14 @@ def create_app(
             resolved_codex_service = build_codex_document1_service(settings)
     if resolved_codex_service is not None:
         app.include_router(create_codex_document1_router(resolved_codex_service))
+
+    resolved_research_service = codex_research_lane_service
+    if resolved_research_service is None:
+        settings = DoxAgentSettings()
+        if settings.codex_research_lanes_enabled:
+            resolved_research_service = build_codex_research_lane_service(settings)
+    if resolved_research_service is not None:
+        app.include_router(create_codex_research_lane_router(resolved_research_service))
 
     @app.get("/healthz")
     async def healthz() -> JsonObject:

@@ -15,11 +15,11 @@ from doxagent.codex_runtime.client import HttpCodexWorkerClient, WorkspaceClient
 from doxagent.codex_runtime.repository import (
     PostgresCodexRuntimeRepository,
     SQLiteCodexRuntimeRepository,
+    _parse_bundle_json,
 )
 from doxagent.codex_runtime.schema import (
     ArtifactKind,
     ArtifactRef,
-    Document1V2Bundle,
     NodeAttempt,
     PublishedDocument,
     ThreadRecord,
@@ -39,6 +39,16 @@ def _records(path: Path, record_type: str, model: type[ModelT]) -> list[ModelT]:
             (record_type,),
         ).fetchall()
     return [model.model_validate_json(row[0]) for row in rows]
+
+
+def _bundles(path: Path):
+    """Read legacy and lane-aware bundles without rewriting historical values."""
+    with sqlite3.connect(path) as connection:
+        rows = connection.execute(
+            """SELECT payload_json FROM codex_runtime_records
+               WHERE record_type='bundles' ORDER BY run_id, sort_order, updated_at"""
+        ).fetchall()
+    return [_parse_bundle_json(row[0]) for row in rows]
 
 
 async def _artifact_content(
@@ -77,7 +87,7 @@ async def backfill(args: argparse.Namespace) -> None:
     attempts = _records(sqlite_path, "attempts", NodeAttempt)
     artifacts = _records(sqlite_path, "artifacts", ArtifactRef)
     events = _records(sqlite_path, "events", WorkflowEvent)
-    bundles = _records(sqlite_path, "bundles", Document1V2Bundle)
+    bundles = _bundles(sqlite_path)
     runs = {item.run_id for item in checkpoints}
     if not runs:
         raise RuntimeError("no Codex runs found in SQLite")

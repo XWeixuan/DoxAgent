@@ -4,11 +4,22 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 from enum import StrEnum
-from typing import Any, Final, Literal
+from typing import Any, Final, Literal, TypeAlias
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 CODEX_D1_WORKFLOW_VERSION: Final[Literal["codex_d1_v2"]] = "codex_d1_v2"
+CODEX_GLOBAL_RESEARCH_WORKFLOW_VERSION: Final[Literal["codex_global_research_v1"]] = (
+    "codex_global_research_v1"
+)
+CODEX_MARKET_SITUATION_WORKFLOW_VERSION: Final[Literal["codex_market_situation_v1"]] = (
+    "codex_market_situation_v1"
+)
+CodexWorkflowVersion: TypeAlias = Literal[
+    "codex_d1_v2",
+    "codex_global_research_v1",
+    "codex_market_situation_v1",
+]
 
 
 def utc_now() -> datetime:
@@ -30,8 +41,19 @@ class CodexD1Node(StrEnum):
     C4_ENRICHMENT = "c4_enrichment"
     C4_FINALIZATION = "c4_finalization"
     O4_A = "o4_a"
+    C5 = "c5"
+    O4 = "o4"
     ASSEMBLE = "assemble"
     PUBLISH = "publish"
+
+
+CodexResearchNode = CodexD1Node
+
+
+class ResearchLane(StrEnum):
+    LEGACY_DOCUMENT1 = "legacy_document1"
+    GLOBAL_RESEARCH = "global_research"
+    MARKET_SITUATION_RESEARCH = "market_situation_research"
 
 
 class CodexAgentRole(StrEnum):
@@ -39,7 +61,28 @@ class CodexAgentRole(StrEnum):
     C2 = "c2_researcher"
     C3 = "c3_researcher"
     C4 = "c4_researcher"
+    C5 = "c5_researcher"
     O4 = "o4_researcher"
+
+
+_LANE_BY_WORKFLOW: dict[str, ResearchLane] = {
+    CODEX_D1_WORKFLOW_VERSION: ResearchLane.LEGACY_DOCUMENT1,
+    CODEX_GLOBAL_RESEARCH_WORKFLOW_VERSION: ResearchLane.GLOBAL_RESEARCH,
+    CODEX_MARKET_SITUATION_WORKFLOW_VERSION: ResearchLane.MARKET_SITUATION_RESEARCH,
+}
+
+
+def lane_for_workflow(workflow_version: str) -> ResearchLane:
+    try:
+        return _LANE_BY_WORKFLOW[workflow_version]
+    except KeyError as exc:
+        raise ValueError(f"unsupported Codex workflow version: {workflow_version}") from exc
+
+
+def _validate_workflow_lane(workflow_version: str, research_lane: ResearchLane) -> None:
+    expected = lane_for_workflow(workflow_version)
+    if research_lane is not expected:
+        raise ValueError(f"workflow {workflow_version} requires research_lane={expected.value}")
 
 
 class AttemptStatus(StrEnum):
@@ -60,6 +103,8 @@ class ArtifactKind(StrEnum):
 
 
 class ArtifactRef(StrictModel):
+    workflow_version: CodexWorkflowVersion = CODEX_D1_WORKFLOW_VERSION
+    research_lane: ResearchLane = ResearchLane.LEGACY_DOCUMENT1
     artifact_id: str
     run_id: str
     node: CodexD1Node
@@ -74,13 +119,15 @@ class ArtifactRef(StrictModel):
 
     @model_validator(mode="after")
     def metadata_stays_small(self) -> ArtifactRef:
+        _validate_workflow_lane(self.workflow_version, self.research_lane)
         if len(self.model_dump_json().encode("utf-8")) > 4096:
             raise ValueError("artifact metadata exceeds 4 KiB")
         return self
 
 
 class ThreadRecord(StrictModel):
-    workflow_version: Literal["codex_d1_v2"] = CODEX_D1_WORKFLOW_VERSION
+    workflow_version: CodexWorkflowVersion = CODEX_D1_WORKFLOW_VERSION
+    research_lane: ResearchLane = ResearchLane.LEGACY_DOCUMENT1
     ticker: str
     run_id: str
     agent_role: CodexAgentRole
@@ -92,6 +139,7 @@ class ThreadRecord(StrictModel):
 
     @model_validator(mode="after")
     def metadata_stays_small(self) -> ThreadRecord:
+        _validate_workflow_lane(self.workflow_version, self.research_lane)
         if len(self.model_dump_json().encode("utf-8")) > 4096:
             raise ValueError("thread metadata exceeds 4 KiB")
         return self
@@ -99,7 +147,8 @@ class ThreadRecord(StrictModel):
 
 class NodeAttempt(StrictModel):
     attempt_id: str
-    workflow_version: Literal["codex_d1_v2"] = CODEX_D1_WORKFLOW_VERSION
+    workflow_version: CodexWorkflowVersion = CODEX_D1_WORKFLOW_VERSION
+    research_lane: ResearchLane = ResearchLane.LEGACY_DOCUMENT1
     cutoff_at: datetime = Field(default_factory=utc_now)
     ticker: str
     run_id: str
@@ -123,13 +172,15 @@ class NodeAttempt(StrictModel):
 
     @model_validator(mode="after")
     def attempt_stays_small(self) -> NodeAttempt:
+        _validate_workflow_lane(self.workflow_version, self.research_lane)
         if len(self.model_dump_json().encode("utf-8")) > 8192:
             raise ValueError("attempt metadata exceeds 8 KiB")
         return self
 
 
 class WorkflowCheckpoint(StrictModel):
-    workflow_version: Literal["codex_d1_v2"] = CODEX_D1_WORKFLOW_VERSION
+    workflow_version: CodexWorkflowVersion = CODEX_D1_WORKFLOW_VERSION
+    research_lane: ResearchLane = ResearchLane.LEGACY_DOCUMENT1
     ticker: str
     run_id: str
     completed_nodes: list[CodexD1Node] = Field(default_factory=list)
@@ -147,6 +198,7 @@ class WorkflowCheckpoint(StrictModel):
 
     @model_validator(mode="after")
     def checkpoint_stays_small(self) -> WorkflowCheckpoint:
+        _validate_workflow_lane(self.workflow_version, self.research_lane)
         if len(self.model_dump_json().encode("utf-8")) > 16384:
             raise ValueError("checkpoint exceeds 16 KiB")
         return self
@@ -164,12 +216,22 @@ class StructuredCompletion(StrictModel):
 
 class AgentObservationCandidate(StrictModel):
     metric_key: str
+    meaning: str | None = None
     value: str | float | int | bool
     unit: str | None = None
     as_of: str | None = None
     source_aliases: list[str] = Field(default_factory=list)
     method: str
     confidence: Literal["high", "medium", "low"] = "medium"
+
+
+class NormalizedAgentObservation(AgentObservationCandidate):
+    node: CodexD1Node
+    attempt_id: str
+    artifact_id: str
+    governed_metric: bool
+    freeform_metric: bool
+    source_role: Literal["AGENT"] = "AGENT"
 
 
 class EntityRelation(StrictModel):
@@ -235,6 +297,8 @@ class CitationManifest(StrictModel):
 
 
 class WorkflowEvent(StrictModel):
+    workflow_version: CodexWorkflowVersion = CODEX_D1_WORKFLOW_VERSION
+    research_lane: ResearchLane = ResearchLane.LEGACY_DOCUMENT1
     event_id: str
     run_id: str
     event_type: str
@@ -251,11 +315,17 @@ class WorkflowEvent(StrictModel):
             raise ValueError("workflow event payload exceeds 16 KiB")
         return value
 
+    @model_validator(mode="after")
+    def workflow_matches_lane(self) -> WorkflowEvent:
+        _validate_workflow_lane(self.workflow_version, self.research_lane)
+        return self
+
 
 class CodexRunSummary(StrictModel):
     run_id: str
     ticker: str
-    workflow_version: Literal["codex_d1_v2"] = CODEX_D1_WORKFLOW_VERSION
+    workflow_version: CodexWorkflowVersion = CODEX_D1_WORKFLOW_VERSION
+    research_lane: ResearchLane = ResearchLane.LEGACY_DOCUMENT1
     status: Literal["queued", "running", "failed", "cancelled", "published"]
     current_node: str | None = None
     completed_node_count: int = Field(default=0, ge=0)
@@ -264,6 +334,11 @@ class CodexRunSummary(StrictModel):
     created_at: datetime = Field(default_factory=utc_now)
     updated_at: datetime = Field(default_factory=utc_now)
     published_at: datetime | None = None
+
+    @model_validator(mode="after")
+    def workflow_matches_lane(self) -> CodexRunSummary:
+        _validate_workflow_lane(self.workflow_version, self.research_lane)
+        return self
 
 
 class PublishedDocument(StrictModel):
@@ -319,3 +394,66 @@ class Document1V2Bundle(StrictModel):
         if self.status == "published" and (self.handoff is None or self.published_at is None):
             raise ValueError("published bundles require published_at and handoff")
         return self
+
+
+class GlobalResearchHandoffV1(StrictModel):
+    schema_version: Literal["global-research-handoff-v1"] = "global-research-handoff-v1"
+    run_id: str
+    ticker: str
+    document_artifact_id: str
+    citation_manifest_artifact_id: str | None = None
+    published_at: datetime
+
+
+class MarketSituationHandoffV1(StrictModel):
+    schema_version: Literal["market-situation-handoff-v1"] = "market-situation-handoff-v1"
+    run_id: str
+    ticker: str
+    document_artifact_id: str
+    citation_manifest_artifact_id: str | None = None
+    published_at: datetime
+
+
+class GlobalResearchBundle(StrictModel):
+    workflow_version: Literal["codex_global_research_v1"] = CODEX_GLOBAL_RESEARCH_WORKFLOW_VERSION
+    research_lane: Literal[ResearchLane.GLOBAL_RESEARCH] = ResearchLane.GLOBAL_RESEARCH
+    run_id: str
+    ticker: str
+    status: Literal["draft", "published", "failed"]
+    reports: dict[str, ArtifactRef] = Field(default_factory=dict)
+    entity_relations: list[EntityRelation] = Field(default_factory=list)
+    future_nodes: list[FutureNode] = Field(default_factory=list)
+    citation_manifest: CitationManifest | None = None
+    handoff: GlobalResearchHandoffV1 | None = None
+    created_at: datetime = Field(default_factory=utc_now)
+    published_at: datetime | None = None
+
+    @model_validator(mode="after")
+    def published_requires_handoff(self) -> GlobalResearchBundle:
+        if self.status == "published" and (self.handoff is None or self.published_at is None):
+            raise ValueError("published global research bundles require handoff")
+        return self
+
+
+class MarketSituationBundle(StrictModel):
+    workflow_version: Literal["codex_market_situation_v1"] = CODEX_MARKET_SITUATION_WORKFLOW_VERSION
+    research_lane: Literal[ResearchLane.MARKET_SITUATION_RESEARCH] = (
+        ResearchLane.MARKET_SITUATION_RESEARCH
+    )
+    run_id: str
+    ticker: str
+    status: Literal["draft", "published", "failed"]
+    reports: dict[str, ArtifactRef] = Field(default_factory=dict)
+    citation_manifest: CitationManifest | None = None
+    handoff: MarketSituationHandoffV1 | None = None
+    created_at: datetime = Field(default_factory=utc_now)
+    published_at: datetime | None = None
+
+    @model_validator(mode="after")
+    def published_requires_handoff(self) -> MarketSituationBundle:
+        if self.status == "published" and (self.handoff is None or self.published_at is None):
+            raise ValueError("published market situation bundles require handoff")
+        return self
+
+
+ResearchBundle: TypeAlias = Document1V2Bundle | GlobalResearchBundle | MarketSituationBundle

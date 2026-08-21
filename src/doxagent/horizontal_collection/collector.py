@@ -72,122 +72,12 @@ class HorizontalCollector:
     ) -> tuple[HorizontalCollectionManifest, tuple[CollectionObservation, ...]]:
         results: list[HorizontalCollectionTargetResult] = []
         observations: list[CollectionObservation] = []
-        program_tools = {
-            target.tool_name
-            for target in self._targets.all()
-            if target.collection_mode is CollectionMode.PROGRAM and target.tool_name
-        }
-        permissions = AgentPermissions(allowed_tools=sorted(program_tools))
         for target in self._targets.all():
-            if target.collection_mode is CollectionMode.UNAVAILABLE:
-                results.append(self._terminal_result(target, CollectionTargetStatus.UNAVAILABLE))
-                continue
-            if target.collection_mode is CollectionMode.AGENT:
-                results.append(
-                    self._terminal_result(
-                        target,
-                        CollectionTargetStatus.EMPTY,
-                        reason="reserved for post-program agent collection",
-                    )
-                )
-                continue
-            if target.capability_status is not ProviderCapabilityStatus.PRODUCTION_READY:
-                results.append(
-                    self._terminal_result(
-                        target,
-                        CollectionTargetStatus.UNAVAILABLE,
-                        reason=f"provider capability is {target.capability_status.value}",
-                    )
-                )
-                continue
-            started = datetime.now(UTC)
-            tool_result = self._tools.call(
-                ToolRequest(
-                    tool_name=target.tool_name or "",
-                    ticker=ticker,
-                    agent_name=self._agent_name(target),
-                    input=self._build_input(target, ticker),
-                    metadata={
-                        "run_id": run_id,
-                        "collection_target_id": target.collection_target_id,
-                    },
-                ),
-                permissions,
+            result, target_observations = self.collect_target(
+                run_id=run_id, ticker=ticker, target=target
             )
-            finished = datetime.now(UTC)
-            usable_partial = tool_result.status is ResultStatus.PARTIAL and bool(tool_result.output)
-            if not tool_result.succeeded and not usable_partial:
-                error = tool_result.error
-                results.append(
-                    HorizontalCollectionTargetResult(
-                        collection_target_id=target.collection_target_id,
-                        status=CollectionTargetStatus.FAILED,
-                        failed_items=1,
-                        provider_attempts=(
-                            ProviderAttempt(
-                                provider=target.provider or "unknown",
-                                tool_name=target.tool_name or "unknown",
-                                status=CollectionTargetStatus.FAILED,
-                                started_at=started,
-                                finished_at=finished,
-                                error_code=error.code if error else "tool_failed",
-                                message=error.message if error else "tool returned a failure",
-                            ),
-                        ),
-                        reason=error.message if error else "tool returned a failure",
-                    )
-                )
-                continue
-            normalized = self._normalize(target, tool_result.output, finished)
-            if normalized is None:
-                results.append(
-                    HorizontalCollectionTargetResult(
-                        collection_target_id=target.collection_target_id,
-                        status=CollectionTargetStatus.EMPTY,
-                        unavailable_items=1,
-                        provider_attempts=(
-                            ProviderAttempt(
-                                provider=target.provider or "unknown",
-                                tool_name=target.tool_name or "unknown",
-                                status=CollectionTargetStatus.EMPTY,
-                                started_at=started,
-                                finished_at=finished,
-                                message="provider output contained no usable value",
-                            ),
-                        ),
-                        reason="provider output contained no usable value",
-                    )
-                )
-                continue
-            if usable_partial:
-                normalized = normalized.model_copy(
-                    update={
-                        "quality_flags": (*normalized.quality_flags, "provider_partial"),
-                    }
-                )
-            observations.append(normalized)
-            target_status = (
-                CollectionTargetStatus.PARTIAL if usable_partial else CollectionTargetStatus.FILLED
-            )
-            results.append(
-                HorizontalCollectionTargetResult(
-                    collection_target_id=target.collection_target_id,
-                    status=target_status,
-                    succeeded_items=1,
-                    provider_attempts=(
-                        ProviderAttempt(
-                            provider=target.provider or "unknown",
-                            tool_name=target.tool_name or "unknown",
-                            status=target_status,
-                            started_at=started,
-                            finished_at=finished,
-                            error_code=tool_result.error.code if tool_result.error else None,
-                            message=tool_result.error.message if tool_result.error else None,
-                        ),
-                    ),
-                    output_refs=normalized.source_refs,
-                )
-            )
+            results.append(result)
+            observations.extend(target_observations)
         return (
             HorizontalCollectionManifest(
                 run_id=run_id,
@@ -197,6 +87,135 @@ class HorizontalCollector:
                 target_results=tuple(results),
             ),
             tuple(observations),
+        )
+
+    @property
+    def targets(self) -> tuple[CollectionTargetDefinition, ...]:
+        return self._targets.all()
+
+    @property
+    def metric_registry_version(self) -> str:
+        return self._metrics.version
+
+    @property
+    def target_registry_version(self) -> str:
+        return self._targets.version
+
+    def collect_target(
+        self,
+        *,
+        run_id: str,
+        ticker: str,
+        target: CollectionTargetDefinition,
+    ) -> tuple[HorizontalCollectionTargetResult, tuple[CollectionObservation, ...]]:
+        """Collect one independently recoverable target without failing sibling targets."""
+
+        if target.collection_mode is CollectionMode.UNAVAILABLE:
+            return self._terminal_result(target, CollectionTargetStatus.UNAVAILABLE), ()
+        if target.collection_mode is CollectionMode.AGENT:
+            return (
+                self._terminal_result(
+                    target,
+                    CollectionTargetStatus.EMPTY,
+                    reason="reserved for post-program agent collection",
+                ),
+                (),
+            )
+        if target.capability_status is not ProviderCapabilityStatus.PRODUCTION_READY:
+            return (
+                self._terminal_result(
+                    target,
+                    CollectionTargetStatus.UNAVAILABLE,
+                    reason=f"provider capability is {target.capability_status.value}",
+                ),
+                (),
+            )
+        permissions = AgentPermissions(allowed_tools=[target.tool_name or ""])
+        started = datetime.now(UTC)
+        tool_result = self._tools.call(
+            ToolRequest(
+                tool_name=target.tool_name or "",
+                ticker=ticker,
+                agent_name=self._agent_name(target),
+                input=self._build_input(target, ticker),
+                metadata={"run_id": run_id, "collection_target_id": target.collection_target_id},
+            ),
+            permissions,
+        )
+        finished = datetime.now(UTC)
+        usable_partial = tool_result.status is ResultStatus.PARTIAL and bool(tool_result.output)
+        if not tool_result.succeeded and not usable_partial:
+            error = tool_result.error
+            return (
+                HorizontalCollectionTargetResult(
+                    collection_target_id=target.collection_target_id,
+                    status=CollectionTargetStatus.FAILED,
+                    failed_items=1,
+                    provider_attempts=(
+                        ProviderAttempt(
+                            provider=target.provider or "unknown",
+                            tool_name=target.tool_name or "unknown",
+                            status=CollectionTargetStatus.FAILED,
+                            started_at=started,
+                            finished_at=finished,
+                            error_code=error.code if error else "tool_failed",
+                            message=error.message if error else "tool returned a failure",
+                        ),
+                    ),
+                    reason=error.message if error else "tool returned a failure",
+                ),
+                (),
+            )
+        normalized = self._normalize_many(target, tool_result.output, finished)
+        if not normalized:
+            return (
+                HorizontalCollectionTargetResult(
+                    collection_target_id=target.collection_target_id,
+                    status=CollectionTargetStatus.EMPTY,
+                    unavailable_items=1,
+                    provider_attempts=(
+                        ProviderAttempt(
+                            provider=target.provider or "unknown",
+                            tool_name=target.tool_name or "unknown",
+                            status=CollectionTargetStatus.EMPTY,
+                            started_at=started,
+                            finished_at=finished,
+                            message="provider output contained no usable value",
+                        ),
+                    ),
+                    reason="provider output contained no usable value",
+                ),
+                (),
+            )
+        if usable_partial:
+            normalized = tuple(
+                item.model_copy(update={"quality_flags": (*item.quality_flags, "provider_partial")})
+                for item in normalized
+            )
+        target_status = (
+            CollectionTargetStatus.PARTIAL if usable_partial else CollectionTargetStatus.FILLED
+        )
+        output_refs = tuple(ref for observation in normalized for ref in observation.source_refs)
+        return (
+            HorizontalCollectionTargetResult(
+                collection_target_id=target.collection_target_id,
+                status=target_status,
+                requested_items=len(normalized),
+                succeeded_items=len(normalized),
+                provider_attempts=(
+                    ProviderAttempt(
+                        provider=target.provider or "unknown",
+                        tool_name=target.tool_name or "unknown",
+                        status=target_status,
+                        started_at=started,
+                        finished_at=finished,
+                        error_code=tool_result.error.code if tool_result.error else None,
+                        message=tool_result.error.message if tool_result.error else None,
+                    ),
+                ),
+                output_refs=output_refs,
+            ),
+            normalized,
         )
 
     @staticmethod
@@ -221,6 +240,8 @@ class HorizontalCollector:
             return AgentName.C1_FUNDAMENTAL_RESEARCH
         if target.collection_target_id.startswith("c2_"):
             return AgentName.C2_MACRO_RESEARCH
+        if target.collection_target_id.startswith("c5_"):
+            return AgentName.C5_MARKET_IMPLIED_EXPECTATIONS
         return AgentName.O4_MARKET_TRACE
 
     @staticmethod
@@ -276,6 +297,108 @@ class HorizontalCollector:
             retrieved_at=retrieved_at,
             quality_flags=("program_collected",),
         )
+
+    def _normalize_many(
+        self,
+        target: CollectionTargetDefinition,
+        output: dict[str, Any],
+        retrieved_at: datetime,
+    ) -> tuple[CollectionObservation, ...]:
+        """Keep every metric/window item instead of silently taking the first scalar."""
+
+        metric_ids = tuple(
+            item
+            for item in ((target.metric_id,) if target.metric_id else target.candidate_metric_ids)
+            if item
+        )
+        items: list[CollectionObservation] = []
+        for metric_id in metric_ids:
+            records = self._find_metric_records(output, metric_id)
+            for ordinal, (value, record) in enumerate(records, start=1):
+                metric = self._metrics.get(metric_id)
+                as_of_raw = self._find_key(record, ("as_of", "date", "datetime", "period_end"))
+                as_of = self._parse_datetime(as_of_raw) or retrieved_at
+                locator = self._find_key(record, ("source_url", "url", "endpoint"))
+                item_key = metric_id
+                if len(records) > 1:
+                    item_key = f"{metric_id}:{as_of.isoformat()}:{ordinal}"
+                source_ref = ObjectRef(
+                    object_type=ObjectType.METRIC,
+                    source_locator=str(locator or f"{target.provider}:{target.tool_name}"),
+                    canonical_object_id_candidate=(
+                        f"{target.collection_target_id}:{item_key}:{as_of.isoformat()}"
+                    ),
+                    resolver_status=ResolverStatus.CANDIDATE,
+                )
+                items.append(
+                    CollectionObservation(
+                        collection_target_id=target.collection_target_id,
+                        item_key=item_key,
+                        value=value,
+                        as_of=as_of,
+                        unit=metric.default_unit or "DOMAIN_SPECIFIC",
+                        source_refs=(source_ref,),
+                        retrieved_at=retrieved_at,
+                        quality_flags=("program_collected",),
+                    )
+                )
+        if items:
+            return tuple(items)
+        fallback = self._normalize(target, output, retrieved_at)
+        return (fallback,) if fallback is not None else ()
+
+    @classmethod
+    def _find_metric_records(cls, value: Any, metric_id: str) -> list[tuple[Any, dict[str, Any]]]:
+        aliases = {
+            metric_id.lower(),
+            metric_id.lower().removeprefix("market_").removeprefix("macro_").removeprefix("fin_"),
+        }
+        fields = (*_VALUE_FIELDS.get(metric_id, ()), "value", "val")
+        found: list[tuple[Any, dict[str, Any]]] = []
+
+        def walk(item: Any) -> None:
+            if isinstance(item, dict):
+                concept = item.get("concept")
+                if isinstance(concept, str) and _SEC_CONCEPT_TO_METRIC.get(concept) == metric_id:
+                    candidate = cls._coerce_candidate(item, ("val",))
+                    if candidate is not None:
+                        found.append((candidate, item))
+                        return
+                for key, child in item.items():
+                    if key.lower() in aliases:
+                        if isinstance(child, list):
+                            for record in child:
+                                candidate = cls._coerce_candidate(record, fields)
+                                if candidate is not None:
+                                    found.append(
+                                        (candidate, record if isinstance(record, dict) else item)
+                                    )
+                        else:
+                            candidate = cls._coerce_candidate(child, fields)
+                            if candidate is not None:
+                                found.append(
+                                    (candidate, child if isinstance(child, dict) else item)
+                                )
+                    elif key in fields:
+                        candidate = cls._coerce_candidate(child, fields)
+                        if candidate is not None:
+                            found.append((candidate, item))
+                    else:
+                        walk(child)
+            elif isinstance(item, list):
+                for child in item:
+                    walk(child)
+
+        walk(value)
+        unique: list[tuple[Any, dict[str, Any]]] = []
+        seen: set[tuple[str, str | None]] = set()
+        for candidate, record in found:
+            as_of = cls._find_key(record, ("as_of", "date", "datetime", "period_end"))
+            key = (repr(candidate), str(as_of) if as_of is not None else None)
+            if key not in seen:
+                seen.add(key)
+                unique.append((candidate, record))
+        return unique
 
     @classmethod
     def _find_value(cls, value: Any, metric_ids: tuple[str, ...]) -> Any | None:

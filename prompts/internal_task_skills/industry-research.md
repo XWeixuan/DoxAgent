@@ -2,7 +2,7 @@
 kind = "internal_task_skill"
 id = "industry-research"
 name = "Industry and Value-Chain Research"
-version = "2026.08.04"
+version = "2026.08.20"
 applicable_agents = ["C3"]
 applicable_task_types = ["generate_global_research"]
 workflow_nodes = ["BuildGlobalResearch"]
@@ -17,7 +17,7 @@ For BuildGlobalResearch / Document 1, explain how the external industry and valu
 
 This is target-linked pre-expectation research, not a generic sector primer. Start from the target's products, customers, end markets, geographies, critical inputs, and commercialization paths. Reuse supplied industry metrics and relationship/economic-exposure maps selectively; do not create a parallel Industry State Book, parameter registry, actor registry, or duplicate every `ind_*` metric.
 
-C3 may end at target business states such as orders, backlog, shipment volume, ASP, customer qualification, share, product mix, utilization, lead time, inventory, commercialization stage, or supply cost. C1 owns conversion into revenue, margin, EPS, capex, or free cash flow. Other downstream nodes own formal expectation objects and market interpretation.
+C3 analysis ends at target business states such as orders, backlog, shipment volume, ASP, customer qualification, share, product mix, utilization, lead time, inventory, commercialization stage, or supply cost. It does not convert them into revenue, margin, EPS, capex, or free cash flow, or produce formal expectation objects or market interpretation.
 
 Do not:
 
@@ -28,14 +28,14 @@ Do not:
 
 ## Required Document 1 report contract
 
-Use exactly these six top-level sections, with no opening executive summary or investment conclusion:
+Use exactly these six Chinese top-level sections, with no opening executive summary or investment conclusion. All report titles, subsection titles, structural labels, fixed block fields, and table headers must be Chinese; established abbreviations and proper names may remain in their conventional form.
 
-1. **Target-Relevant Industry and Value-Chain Fact Baseline**
-2. **Key External Actors' Views and Behavioral Signals**
-3. **Core External Drivers, Allocation Mechanisms, and Transmission**
-4. **Industry and Commercialization Milestones and Proof Boundaries**
-5. **Potential Industry and Value-Chain Factor Gap Candidates**
-6. **Unknowns, Evidence Boundaries, and Cross-Node Handoffs**
+1. **一、目标相关行业与产业链事实基准**
+2. **二、关键外部主体判断与行为信号**
+3. **三、核心外部驱动、分配机制与传导**
+4. **四、行业与商业化里程碑及证明边界**
+5. **五、潜在行业与产业链因素缺口候选**
+6. **六、Unknowns 与证据边界**
 
 Document 1 is recent-first: emphasize material changes in the recent research window and why they matter now. Use older history only to establish a comparison anchor, cycle pattern, capacity lead time, regulatory path, or other causal baseline. A normal report contains 4-10 baseline facts, 6-15 actor signals, 3-6 drivers, 3-8 allocation/transmission links, 2-8 milestones, and 2-5 candidate questions. These ranges are discipline, not quotas.
 
@@ -168,14 +168,7 @@ For every milestone state: current stage, evidence completed, what that evidence
 
 Create a candidate only when facts expose tension: industry facts versus prevailing consensus, actor words versus actions, conflicting actors, short-term benefit versus long-term supply response, industry opportunity versus target allocation, or milestone progress versus economic realization.
 
-For each question provide:
-
-- the anchor or commonly assumed state;
-- an upside interpretation and the evidence it would require;
-- a downside interpretation and the evidence it would require;
-- the target business state that would change;
-- the next observable that can discriminate between paths;
-- what remains unknown.
+For each question, state the current evidence base, upside and downside revision paths with required evidence, affected target business state, next discriminating observable, and current unknown. Keep both paths live.
 
 Phrase candidates as questions, not conclusions. Do not assert a market expectation, mispricing, activation condition, or valuation consequence that the evidence does not establish.
 
@@ -191,40 +184,47 @@ Apply only the lenses relevant to the selected external lines:
 
 ## Section-by-section output specification
 
-### 1. Target-Relevant Industry and Value-Chain Fact Baseline
+Start each section with `### 核心发现`: 2-5 bullets in Sections 1-5; 1-3 in Section 6. Summarize only its detail. Use tables for comparable observations and flexible blocks for causal or bidirectional paths.
 
-Present a compact table with: external theme; current state; recent change; comparison anchor; target exposure; evidence. Cover only decision-relevant demand, effective supply/capacity, price/economics, inventory/orders, allocation/competition, and commercialization states.
+### 一、目标相关行业与产业链事实基准
 
-### 2. Key External Actors' Views and Behavioral Signals
+Retain the detailed table with these headers: 行业或产业链主题；当前状态；近期变化；比较锚点；目标公司暴露；证据。Limit it to relevant demand, effective supply, price/economics, inventory/orders, allocation/competition, and commercialization.
 
-Present: theme; actor and role; signal type; statement/action/datum; what changed; industry-common versus actor-specific; relationship to other evidence; citation. Explicitly separate actor views, committed actions, observed data, and C3 inference.
+### 二、关键外部主体判断与行为信号
 
-### 3. Core External Drivers, Allocation Mechanisms, and Transmission
+Use these table headers: 主题；主体及角色；最新判断、行动或数据；近期变化；信号结论；证据。Keep latest content and change separate. In the conclusion combine industry-common/actor-specific with support/conflict/partial support.
 
-Present: external driver; state/change; actor signals; industry mechanism; allocation mechanism; target business interface; direction; horizon; necessary conditions; blockers/boundaries; evidence basis; confidence. Evidence basis should identify formal industry data, customer, supplier, competitor, sell-side synthesis, independent multi-source validation, or C3 inference.
+### 三、核心外部驱动、分配机制与传导
 
-### 4. Industry and Commercialization Milestones and Proof Boundaries
+Use one block per Driver with identifiable fields: **核心驱动**；**当前状态与变化**；**证据与主体信号**；**传导机制**；**目标业务接口**；**成立条件与边界**；**方向与时间范围**；**证据置信度**。Transmission must show `Driver -> industry/allocation mechanism -> target business state`, not just direction. Confidence rates evidence, not outcome probability. Add a case-specific field only when necessary, using a Chinese label.
 
-Present: process or project; current stage; evidence completed; what is proved; what is not proved; next observable evidence; failure/delay path; timing confidence.
+### 四、行业与商业化里程碑及证明边界
 
-### 5. Potential Industry and Value-Chain Factor Gap Candidates
+Retain the table with these headers: 流程或项目；当前阶段；已完成证据；能够证明什么；尚不能证明什么；下一项可观察证据；失败或延迟路径；时间置信度。
 
-Present: candidate question; anchor; upside path and confirming evidence; downside path and confirming evidence; affected target business state; next observable; unknowns. Keep both sides live.
+### 五、潜在行业与产业链因素缺口候选
 
-### 6. Unknowns, Evidence Boundaries, and Cross-Node Handoffs
+Use one block per Candidate with identifiable fields: **候选问题**；**当前证据基础**；**上行修正路径及证据**；**下行修正路径及证据**；**受影响的目标业务状态**；**下一项可观察证据**；**当前未知项**。Add **关联核心驱动**、**关键里程碑**、**分配问题** or **替代路径** only when useful. Do not use a Gap `Anchor`; keep this a candidate question, not a formal conclusion.
 
-List the material unknown, why it matters, current evidence limit, confidence impact, next evidence, and owning downstream node. Do not repeat generic risk language.
+### 六、Unknowns 与证据边界
+
+Use this table:
+
+| 未知项 | 当前证据缺口 / 为什么重要 | 下一项所需证据 |
+|---|---|---|
+
+Add the effect on current judgment only when needed; do not repeat full Driver or transmission logic or assign follow-up responsibility.
 
 ## Final quality gate
 
 Before submitting, verify that:
 
-- the report follows three to six target-linked external lines rather than a roster of companies;
+- the report follows three to six target-linked lines, opens each section with supported 核心发现, and uses the required Chinese structural labels;
 - every state, signal, driver, allocation mechanism, transmission link, milestone, and inference is labeled correctly;
 - numerical comparisons use compatible definitions and every material factual claim has nearby evidence;
-- actor words are separated from behavior, and common industry effects from actor-specific effects;
+- actor latest content is separate from change; words from behavior; common effects from actor-specific effects;
 - every claimed target benefit has an allocation mechanism and stops at a target business state;
 - milestones state both proof and non-proof boundaries;
-- candidate questions are bidirectional and are not formal downstream objects;
-- conflicts and unknowns remain visible, with confidence calibrated to evidence;
+- candidate questions use a current evidence base, remain bidirectional, and are not formal objects;
+- conflicts and unknowns remain visible without repeating causal chains; confidence matches evidence;
 - there are no peer comps, stock ideas, valuation conclusions, trading advice, or claims about what is priced in.

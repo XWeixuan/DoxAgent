@@ -7,10 +7,12 @@ import os
 import re
 import shutil
 import tempfile
+import time
 from pathlib import Path
 
 from doxagent.data_runtime.contracts import DataPackLocator
 from doxagent.observations.models import PersistedObservation
+from doxagent.observations.projection import observation_projection, observation_source
 
 _IDENTIFIER = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$")
 
@@ -24,7 +26,6 @@ class ObservationPackWriter:
         *,
         attempt_id: str,
         tool_call_id: str,
-        tool_name: str,
         observations: list[PersistedObservation],
         selected_aliases: list[str],
     ) -> DataPackLocator:
@@ -54,13 +55,14 @@ class ObservationPackWriter:
                     "title": observation.title,
                     "block_type": observation.block_type,
                     "path": block_relative.as_posix(),
-                    "source_locator": observation.source_locator,
-                    "content_hash": observation.content_hash,
+                    "source": observation_source(observation),
                     "content_chars": size,
                     "selected": observation.alias in selected,
                 }
                 catalog.append(item)
-                manifest_blocks.append(item)
+                manifest_blocks.append(
+                    {"alias": observation.alias, "path": block_relative.as_posix()}
+                )
             (staging / "catalog.json").write_text(
                 json.dumps(catalog, ensure_ascii=False, indent=2), encoding="utf-8"
             )
@@ -76,8 +78,7 @@ class ObservationPackWriter:
                         "",
                         _render_content(selected_observation.content),
                         "",
-                        "Source locator: `"
-                        f"{selected_observation.source_locator or selected_observation.locator}`",
+                        _source_line(selected_observation),
                         "",
                     ]
                 )
@@ -87,10 +88,6 @@ class ObservationPackWriter:
             (staging / "manifest.json").write_text(
                 json.dumps(
                     {
-                        "schema_version": "observation_pack/1.0",
-                        "attempt_id": attempt_id,
-                        "tool_call_id": tool_call_id,
-                        "tool_name": tool_name,
                         "selected_aliases": selected_aliases,
                         "blocks": manifest_blocks,
                     },
@@ -99,7 +96,7 @@ class ObservationPackWriter:
                 ),
                 encoding="utf-8",
             )
-            os.rename(staging, target)
+            _publish_directory(staging, target)
             _make_read_only(target)
         finally:
             if staging.exists():
@@ -133,6 +130,27 @@ def _render_content(content: object) -> str:
     return "```json\n" + json.dumps(content, ensure_ascii=False, indent=2) + "\n```"
 
 
+def _source_line(observation: PersistedObservation) -> str:
+    source = observation_source(observation)
+    value = source["provider"]
+    if locator := source.get("locator"):
+        value += f" · {locator}"
+    return f"Source: {value}"
+
+
+def _publish_directory(staging: Path, target: Path) -> None:
+    """Atomically publish a pack with a bounded Windows scanner-contention retry."""
+
+    for attempt in range(4):
+        try:
+            os.rename(staging, target)
+            return
+        except PermissionError as exc:
+            if os.name != "nt" or getattr(exc, "winerror", None) != 5 or attempt == 3:
+                raise
+            time.sleep(0.05 * (attempt + 1))
+
+
 def render_observation_block(observation: PersistedObservation) -> tuple[str, str]:
     """Return the canonical on-disk block representation used for tamper checks."""
 
@@ -141,19 +159,12 @@ def render_observation_block(observation: PersistedObservation) -> tuple[str, st
             ".md",
             f"# {observation.alias} — {observation.title}\n\n"
             f"{observation.content}\n\n"
-            f"Source locator: `{observation.source_locator or observation.locator}`\n",
+            f"{_source_line(observation)}\n",
         )
     return (
         ".json",
         json.dumps(
-            {
-                "alias": observation.alias,
-                "title": observation.title,
-                "content": observation.content,
-                "source_locator": observation.source_locator,
-                "source_coordinates": observation.source_coordinates,
-                "content_hash": observation.content_hash,
-            },
+            observation_projection(observation),
             ensure_ascii=False,
             indent=2,
         ),

@@ -14,6 +14,8 @@ from doxagent.codex_runtime.schema import (
     CODEX_D1_WORKFLOW_VERSION,
     CodexAgentRole,
     CodexD1Node,
+    CodexWorkflowVersion,
+    ResearchLane,
 )
 from doxagent.models import ResultStatus
 from doxagent.tools.registry import ToolDescriptor, ToolRegistry
@@ -22,9 +24,15 @@ DATA_TOOL_CONTRACT_VERSION = "1.0"
 DATA_MCP_LAUNCH_SCHEMA_VERSION = "data_mcp_launch/1.0"
 DATA_MCP_RESULT_SCHEMA_VERSION = "data_mcp_result/1.0"
 
-# Codex has native web search.  Keep these clients available to the legacy
-# direct ToolRegistry path, but never turn them into Data MCP tools.
-DATA_MCP_EXCLUDED_TOOL_IDS = frozenset({"anysearch.search", "tavily.search"})
+# Codex has native web search. Keep these clients available to the legacy
+# direct ToolRegistry path, but never turn their namespaces into Data MCP tools.
+# Namespace filtering also prevents a newly registered provider endpoint from
+# becoming agent-visible merely because a role's legacy allowlist includes it.
+DATA_MCP_EXCLUDED_TOOL_PREFIXES = ("anysearch.", "tavily.")
+
+
+def is_data_mcp_excluded_tool(tool_id: str) -> bool:
+    return tool_id.startswith(DATA_MCP_EXCLUDED_TOOL_PREFIXES)
 
 
 class DataRuntimeModel(BaseModel):
@@ -120,7 +128,8 @@ class DataToolContractRegistry:
 
 class DataMcpLaunchSpec(DataRuntimeModel):
     schema_version: Literal["data_mcp_launch/1.0"] = "data_mcp_launch/1.0"
-    workflow_version: Literal["codex_d1_v2"] = CODEX_D1_WORKFLOW_VERSION
+    workflow_version: CodexWorkflowVersion = CODEX_D1_WORKFLOW_VERSION
+    research_lane: ResearchLane = ResearchLane.LEGACY_DOCUMENT1
     run_id: str
     node_id: CodexD1Node
     node_attempt_id: str
@@ -132,7 +141,8 @@ class DataMcpLaunchSpec(DataRuntimeModel):
 
 
 class DataExecutionContext(DataRuntimeModel):
-    workflow_version: Literal["codex_d1_v2"] = CODEX_D1_WORKFLOW_VERSION
+    workflow_version: CodexWorkflowVersion = CODEX_D1_WORKFLOW_VERSION
+    research_lane: ResearchLane = ResearchLane.LEGACY_DOCUMENT1
     run_id: str
     node_id: CodexD1Node
     node_attempt_id: str
@@ -143,13 +153,12 @@ class DataExecutionContext(DataRuntimeModel):
 
 
 class DataObservationView(DataRuntimeModel):
+    """Agent-facing Observation content; runtime integrity fields stay private."""
+
     alias: str
-    block_id: str
     title: str
     content: Any
-    block_type: str
-    source_locator: str | None = None
-    content_hash: str
+    source: dict[str, str]
 
 
 class DataPackLocator(DataRuntimeModel):
@@ -234,7 +243,7 @@ _REQUIRED_FIELDS: dict[str, list[str]] = {
     "regulations.rulemaking_records": ["mode"],
     "sam.contract_opportunities": ["posted_from", "posted_to"],
     "tavily.extract": ["urls"],
-    "usaspending.award_detail": ["award_id"],
+    "usaspending.award_detail": [],
     "usaspending.award_search": ["filters"],
 }
 
@@ -276,6 +285,10 @@ _INTEGER_FIELDS = {
     "max_results",
     "outputsize",
     "max_events",
+    "max_contracts",
+    "min_days",
+    "max_days",
+    "number_of_ticks",
     "page",
     "page_size",
     "preview_chars",
@@ -291,9 +304,12 @@ _BOOLEAN_FIELDS = {
     "enabled",
     "force",
     "include_facts",
+    "include_exhibits",
+    "limit_per_form",
     "include_reasoning",
     "include_source_propositions",
     "outside_rth",
+    "include_earnings",
     "reuse_recent",
 }
 _OBJECT_FIELDS = {"filters", "params"}
@@ -309,7 +325,7 @@ def safe_mcp_name(canonical_tool_id: str) -> str:
 def build_data_tool_contracts(registry: ToolRegistry) -> DataToolContractRegistry:
     contracts: list[DataToolContract] = []
     for tool_id in registry.names():
-        if tool_id in DATA_MCP_EXCLUDED_TOOL_IDS:
+        if is_data_mcp_excluded_tool(tool_id):
             continue
         descriptor = registry.describe(tool_id)
         if descriptor is None:
@@ -386,6 +402,112 @@ def _build_input_schema(descriptor: ToolDescriptor) -> dict[str, Any]:
             {"required": ["document_number"]},
             {"required": ["params"]},
         ]
+    if descriptor.name == "census.manufacturing_orders":
+        schema["required"] = ["naics"]
+        properties["measure"] = {
+            "type": "string",
+            "enum": ["shipments", "inventories", "new_orders", "unfilled_orders"],
+        }
+    if descriptor.name == "bea.industry_accounts":
+        properties["dataset"] = {
+            "type": "string",
+            "enum": [
+                "GDPByIndustry",
+                "InputOutput",
+                "UnderlyingGDPByIndustry",
+                "FixedAssets",
+            ],
+        }
+    if descriptor.name == "usaspending.award_search":
+        properties["filters"] = {
+            "type": "object",
+            "properties": {
+                "award_type_codes": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "minItems": 1,
+                    "maxItems": 100,
+                },
+                "time_period": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "start_date": {"type": "string", "format": "date"},
+                            "end_date": {"type": "string", "format": "date"},
+                        },
+                        "required": ["start_date", "end_date"],
+                        "additionalProperties": False,
+                    },
+                    "minItems": 1,
+                    "maxItems": 20,
+                },
+                "recipient_search_text": {
+                    "type": "array",
+                    "items": {"type": "string", "maxLength": 300},
+                    "maxItems": 20,
+                },
+                "agencies": {"type": "array", "maxItems": 20},
+                "naics_codes": {"type": "object"},
+                "psc_codes": {"type": "object"},
+            },
+            "required": ["award_type_codes", "time_period"],
+            "additionalProperties": True,
+            "maxProperties": 40,
+        }
+    if descriptor.name == "usaspending.award_detail":
+        schema["anyOf"] = [
+            {"required": ["generated_internal_id"]},
+            {"required": ["award_id"]},
+        ]
+    if descriptor.name == "regulations.rulemaking_records":
+        properties["mode"] = {"type": "string", "enum": ["documents", "dockets"]}
+    if descriptor.name == "congress.legislative_actions":
+        properties["resource"] = {
+            "type": "string",
+            "enum": ["bill", "committee-report", "hearing"],
+        }
+    metric_enums = {
+        "bls.industry_producer_prices": [
+            "final_demand_ppi",
+            "processed_goods_ppi",
+            "semiconductor_manufacturing_ppi",
+            "electronic_computer_manufacturing_ppi",
+        ],
+        "bls.import_export_prices": [
+            "import_all_commodities",
+            "export_all_commodities",
+        ],
+        "eia.energy_prices": [
+            "retail_gasoline",
+            "industrial_electricity_price",
+        ],
+        "eia.energy_supply_operations": [
+            "us_crude_oil_inventory",
+            "industrial_electricity_sales",
+        ],
+    }
+    if descriptor.name in metric_enums:
+        properties["metric_keys"] = {
+            "type": "array",
+            "items": {"type": "string", "enum": metric_enums[descriptor.name]},
+            "minItems": 1,
+            "maxItems": 100,
+        }
+    dataset_enums = {
+        "openfda.approval_milestones": ["device/510k", "device/pma", "drug/drugsfda"],
+        "openfda.safety_actions": [
+            "device/enforcement",
+            "drug/enforcement",
+            "device/event",
+            "drug/event",
+        ],
+    }
+    if descriptor.name in dataset_enums:
+        properties["dataset"] = {
+            "type": "string",
+            "enum": dataset_enums[descriptor.name],
+        }
     return schema
 
 

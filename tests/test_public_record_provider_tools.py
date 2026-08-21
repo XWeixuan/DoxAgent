@@ -158,6 +158,51 @@ def test_ir_discovery_refuses_unallowlisted_host_and_is_read_only() -> None:
     assert updates.output["updates"][0]["label"] == "Earnings release"
 
 
+def test_ir_updates_follow_bounded_official_rss_discovery_chain() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        path = request.url.path
+        if path.endswith("quarterly-results/default.aspx"):
+            return httpx.Response(
+                200,
+                text='<a href="/investor-resources/rss/default.aspx">RSS</a>',
+            )
+        if path.endswith("rss/default.aspx"):
+            return httpx.Response(
+                200,
+                text=(
+                    '<a href="https://news.apple.com/press_release.xml">'
+                    "Press Release RSS Feed</a>"
+                ),
+            )
+        return httpx.Response(
+            200,
+            text=(
+                "<rss><channel><item><title>Quarterly results</title>"
+                "<link>https://news.apple.com/releases/q1</link>"
+                "<pubDate>Wed, 20 May 2026 20:00:00 GMT</pubDate>"
+                "</item></channel></rss>"
+            ),
+        )
+
+    result = IrOfficialUpdatesClient(
+        _settings(),
+        client=httpx.Client(transport=httpx.MockTransport(handler)),
+    ).call(
+        _request(
+            "ir.official_updates",
+            {
+                "url": "https://investor.apple.com/quarterly-results/default.aspx",
+                "official_domains": ["apple.com"],
+            },
+        )
+    )
+
+    assert result.succeeded
+    assert result.output["updates"][0]["title"] == "Quarterly results"
+    assert result.output["updates"][0]["published_at"].startswith("Wed, 20 May 2026")
+    assert result.output["resolved_feed_url"] == "https://news.apple.com/press_release.xml"
+
+
 def test_sec_issuer_filings_preserves_legacy_cik_resolution_path() -> None:
     seen: list[httpx.Request] = []
     payload = {

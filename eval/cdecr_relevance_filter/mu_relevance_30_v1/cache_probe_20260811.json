@@ -1,0 +1,26 @@
+{
+  "date": "2026-08-11",
+  "provider": "dashscope",
+  "model": "deepseek-v4-flash-0731",
+  "purpose": "Verify two-turn Responses conversation continuity and provider input-cache reporting with one client and model.",
+  "synthetic_input_only": true,
+  "turn_1": {
+    "reasoning_effort": "none",
+    "response_id_present": true,
+    "input_tokens": 3725,
+    "cached_input_tokens": 0,
+    "output_tokens": 5,
+    "latency_ms": 2401
+  },
+  "turn_2": {
+    "reasoning_effort": "low",
+    "previous_response_id_used": true,
+    "response_id_present": true,
+    "input_tokens": 3796,
+    "cached_input_tokens": 3072,
+    "output_tokens": 21,
+    "reasoning_tokens": 14,
+    "latency_ms": 1250
+  },
+  "verdict": "PASS"
+}

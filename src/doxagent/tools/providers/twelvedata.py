@@ -48,14 +48,23 @@ class TwelveDataDailyOhlcvClient(BaseRealToolClient):
                     message="Twelve Data returned no OHLCV rows for the requested range.",
                     details={"symbol": symbol, "start_date": start_date, "end_date": end_date},
                 )
+            numeric_values = [_normalize_ohlcv_row(row) for row in values if isinstance(row, dict)]
             output = daily_ohlcv_output_with_snapshot(
                 {
                     "provider": "twelvedata",
                     "symbol": symbol,
                     "interval": "1day",
-                    "ohlcv": values,
+                    "ohlcv": numeric_values,
                     "meta": raw.get("meta", {}),
                     "fallback_tool": "yfinance.daily_ohlcv",
+                    "requested_start_date": start_date or None,
+                    "requested_end_date": end_date or None,
+                    "adjustment_mode": "raw_unadjusted",
+                    "corporate_action_metadata": {
+                        "splits_included": False,
+                        "dividends_included": False,
+                        "total_return": False,
+                    },
                 },
                 tool_name=request.tool_name,
             )
@@ -214,6 +223,24 @@ def _bounded_int(value: object, minimum: int, maximum: int) -> int:
         parsed = minimum
     bounded = max(minimum, min(maximum, parsed))
     return int(bounded)
+
+
+def _normalize_ohlcv_row(row: JsonObject) -> JsonObject:
+    normalized: JsonObject = {}
+    for key in ("datetime", "date", "time"):
+        if row.get(key) not in (None, ""):
+            normalized["datetime"] = str(row[key])
+            break
+    for key in ("open", "high", "low", "close", "volume"):
+        value = row.get(key)
+        if value in (None, ""):
+            continue
+        try:
+            number = float(str(value).replace(",", ""))
+        except (TypeError, ValueError):
+            continue
+        normalized[key] = int(number) if number.is_integer() else number
+    return normalized
 
 
 def _has_estimate_rows(raw: JsonObject) -> bool:

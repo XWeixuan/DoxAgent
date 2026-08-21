@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
+from datetime import UTC, date, datetime, timedelta
 from typing import Any
 
 from doxagent.models import ResultStatus
@@ -45,7 +46,55 @@ class IbkrFirstMarketClient:
 
     def call(self, request: ToolRequest) -> ToolResult:
         attempts: list[dict[str, Any]] = []
+        cutoff = _cutoff_datetime(request)
+        if self.route_name == "trade_tape" and cutoff is not None:
+            now = datetime.now(UTC)
+            if cutoff.date() < now.date() or abs((now - cutoff).total_seconds()) > 300:
+                return ToolResult(
+                    tool_name=request.tool_name,
+                    status=ResultStatus.NOT_APPLICABLE,
+                    output={
+                        "request_applicability": "historical_cutoff_not_supported_by_live_tape",
+                        "cutoff_at": cutoff.isoformat(),
+                        "recommended_tool": "ibkr.historical_ticks",
+                    },
+                    error=ToolError(
+                        code="not_applicable_for_historical_as_of",
+                        message=(
+                            "Live trade tape cannot reconstruct a historical cutoff; "
+                            "use ibkr.historical_ticks or intraday bars."
+                        ),
+                        retryable=False,
+                    ),
+                    output_summary="Live trade tape is not applicable to a historical cutoff.",
+                )
         for index, route in enumerate(self.providers):
+            if self.route_name == "daily_ohlcv" and cutoff is not None and index == 0:
+                now = datetime.now(UTC)
+                if abs((now - cutoff).total_seconds()) > 300:
+                    attempts.append(
+                        {
+                            "tool_name": route.tool_name,
+                            "status": ResultStatus.NOT_APPLICABLE.value,
+                            "usable": False,
+                            "error_code": "current_history_not_point_in_time",
+                            "retryable": False,
+                        }
+                    )
+                    continue
+            if self.route_name == "quote_snapshot" and cutoff is not None and index == 0:
+                now = datetime.now(UTC)
+                if abs((now - cutoff).total_seconds()) > 300:
+                    attempts.append(
+                        {
+                            "tool_name": route.tool_name,
+                            "status": ResultStatus.NOT_APPLICABLE.value,
+                            "usable": False,
+                            "error_code": "live_quote_not_point_in_time",
+                            "retryable": False,
+                        }
+                    )
+                    continue
             provider_request = request.model_copy(
                 update={
                     "tool_name": route.tool_name,
@@ -96,10 +145,44 @@ class IbkrFirstMarketClient:
                     route.semantic_degradation,
                 ]
             if self.route_name == "quote_snapshot":
-                _normalize_quote_output(output, fallback_used=index > 0)
+                _normalize_quote_output(
+                    output,
+                    request=request,
+                    fallback_used=index > 0,
+                )
+            if self.route_name == "daily_ohlcv":
+                _annotate_daily_output(output, request=request)
+            returned_status = result.status
+            returned_error = result.error
+            if self.route_name == "quote_snapshot" and index > 0:
+                returned_status = ResultStatus.PARTIAL
+                returned_error = ToolError(
+                    code="daily_close_quote_fallback",
+                    message=(
+                        "A daily close was returned because no point-in-time quote was available; "
+                        "it is not equivalent to bid/ask/last."
+                    ),
+                    retryable=False,
+                    details={"selected_tool": route.tool_name},
+                )
+            if self.route_name == "daily_ohlcv" and "requested_end_date_missing" in output.get(
+                "data_quality_flags", []
+            ):
+                returned_status = ResultStatus.PARTIAL
+                returned_error = ToolError(
+                    code="requested_end_date_missing",
+                    message="The provider returned usable bars but not the requested final date.",
+                    retryable=False,
+                    details={
+                        "requested_end_date": output.get("requested_end_date"),
+                        "actual_end_date": output.get("actual_end_date"),
+                    },
+                )
             return result.model_copy(
                 update={
                     "tool_name": request.tool_name,
+                    "status": returned_status,
+                    "error": returned_error,
                     "output": output,
                     "output_summary": _summary(result, route.tool_name, index > 0),
                 },
@@ -131,14 +214,24 @@ class IbkrFirstMarketClient:
                 )
             ),
             output_summary=(
-                f"All providers failed for {self.route_name}; "
-                f"last attempt was {last['tool_name']}."
+                f"All providers failed for {self.route_name}; last attempt was {last['tool_name']}."
             ),
         )
 
 
 def passthrough_input(request: ToolRequest) -> dict[str, Any]:
     return dict(request.input)
+
+
+def cutoff_daily_input(request: ToolRequest) -> dict[str, Any]:
+    value = dict(request.input)
+    cutoff = _cutoff_datetime(request)
+    if cutoff is not None:
+        safe_end = _last_complete_daily_date(cutoff).isoformat()
+        requested_end = str(value.get("end_date") or "")
+        if not requested_end or requested_end > safe_end:
+            value["end_date"] = safe_end
+    return value
 
 
 def ibkr_daily_history_input(request: ToolRequest) -> dict[str, Any]:
@@ -160,6 +253,9 @@ def ibkr_quote_input(request: ToolRequest) -> dict[str, Any]:
 def daily_close_fallback_input(request: ToolRequest) -> dict[str, Any]:
     value = dict(request.input)
     value.setdefault("outputsize", 5)
+    cutoff = _cutoff_datetime(request)
+    if cutoff is not None:
+        value["end_date"] = _last_complete_daily_date(cutoff).isoformat()
     return value
 
 
@@ -191,7 +287,14 @@ def _summary(result: ToolResult, provider_tool: str, fallback_used: bool) -> str
     return f"{prefix}: {provider_tool}. {detail}"
 
 
-def _normalize_quote_output(output: dict[str, Any], *, fallback_used: bool) -> None:
+def _normalize_quote_output(
+    output: dict[str, Any],
+    *,
+    request: ToolRequest,
+    fallback_used: bool,
+) -> None:
+    requested_fields = [str(item) for item in request.input.get("fields", [])]
+    output["requested_fields"] = requested_fields
     if not fallback_used:
         snapshot = output.get("snapshot")
         if isinstance(snapshot, dict):
@@ -204,6 +307,9 @@ def _normalize_quote_output(output: dict[str, Any], *, fallback_used: bool) -> N
                 price = snapshot.get("delayed_close")
             if price is not None:
                 output["price"] = price
+            output["price_kind"] = "quote_snapshot"
+            output["quote_timestamp"] = output.get("as_of")
+            output["session"] = "provider_reported"
         return
     evidence = output.get("market_evidence_snapshot")
     if isinstance(evidence, dict):
@@ -211,6 +317,72 @@ def _normalize_quote_output(output: dict[str, Any], *, fallback_used: bool) -> N
             output["price"] = evidence["end_close"]
         if evidence.get("end_date"):
             output["as_of"] = evidence["end_date"]
+            output["bar_close_date"] = evidence["end_date"]
+    flags = list(output.get("data_quality_flags") or [])
+    if "stale_daily_close_fallback" not in flags:
+        flags.append("stale_daily_close_fallback")
+    output["data_quality_flags"] = flags
+    output["warnings"] = list(flags)
+    output["price_kind"] = "daily_close_fallback"
+    output["quote_timestamp"] = None
+    output["session"] = "daily_bar"
+    output["resolved_fields"] = ["daily_close"]
+    evidence = output.get("market_evidence_snapshot")
+    if isinstance(evidence, dict):
+        evidence["data_quality_flags"] = list(flags)
+    coordinates = output.get("source_coordinates")
+    if isinstance(coordinates, dict):
+        coordinates["data_quality_flags"] = list(flags)
+
+
+def _annotate_daily_output(output: dict[str, Any], *, request: ToolRequest) -> None:
+    snapshot = output.get("market_evidence_snapshot")
+    if not isinstance(snapshot, dict):
+        return
+    requested_end = str(request.input.get("end_date") or "") or None
+    cutoff = _cutoff_datetime(request)
+    if requested_end is None and cutoff is not None:
+        requested_end = _last_complete_daily_date(cutoff).isoformat()
+    actual_end = str(snapshot.get("end_date") or "") or None
+    complete = bool(not requested_end or (actual_end and actual_end >= requested_end))
+    snapshot["requested_end_date"] = requested_end
+    snapshot["actual_end_date"] = actual_end
+    snapshot["end_date_complete"] = complete
+    snapshot.setdefault("adjustment_mode", output.get("adjustment_mode", "provider_unspecified"))
+    snapshot.setdefault("corporate_action_metadata", output.get("corporate_action_metadata", {}))
+    flags = list(snapshot.get("data_quality_flags") or [])
+    if not complete and "requested_end_date_missing" not in flags:
+        flags.append("requested_end_date_missing")
+    snapshot["data_quality_flags"] = flags
+    output["requested_end_date"] = requested_end
+    output["actual_end_date"] = actual_end
+    output["end_date_complete"] = complete
+    output["adjustment_mode"] = snapshot["adjustment_mode"]
+    output["data_quality_flags"] = flags
+    if flags:
+        output["warnings"] = flags
+
+
+def _cutoff_datetime(request: ToolRequest) -> datetime | None:
+    raw = request.metadata.get("cutoff_at")
+    if not raw:
+        return None
+    try:
+        parsed = datetime.fromisoformat(str(raw).replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=UTC)
+    return parsed.astimezone(UTC)
+
+
+def _last_complete_daily_date(cutoff: datetime) -> date:
+    # Daily bars contain the full session and are therefore unsafe for an intraday cutoff.
+    # The conservative UTC rule intentionally excludes the cutoff date unless it is an
+    # explicit end-of-day boundary.
+    if cutoff.time().hour == 23 and cutoff.time().minute == 59:
+        return cutoff.date()
+    return cutoff.date() - timedelta(days=1)
 
 
 def _has_business_payload(route_name: str, output: dict[str, Any]) -> bool:

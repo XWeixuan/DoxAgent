@@ -30,7 +30,9 @@ class HorizontalStateCompiler:
             target = self._targets.get(observation.collection_target_id)
             if target.output_policy is not OutputPolicy.STATE_VALUE:
                 continue
-            metric_id = observation.item_key or target.metric_id
+            metric_id = (
+                observation.item_key.split(":", 1)[0] if observation.item_key else target.metric_id
+            )
             if not metric_id or metric_id not in {item.metric_id for item in self._metrics.all()}:
                 continue
             if observation.unit is None or not observation.source_refs or observation.as_of is None:

@@ -9,12 +9,14 @@ import re
 import unicodedata
 import uuid
 from collections import defaultdict
-from collections.abc import Iterable, Sequence
-from concurrent.futures import Future
+from collections.abc import Iterable, Mapping, Sequence
+from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import dataclass
 from difflib import SequenceMatcher
 from pathlib import Path
-from threading import Lock, Timer
+from threading import BoundedSemaphore, Lock, Timer
+from time import perf_counter
+from typing import Literal
 
 from pydantic import ValidationError
 
@@ -22,7 +24,6 @@ from cdecr.contracts import EventMention, OpenAttribute, Participant, Participan
 from cdecr.field_coreference_contracts import (
     CanonicalFieldLink,
     CanonicalFieldRegistryEntry,
-    FieldBatchWireOutput,
     FieldCoreferenceCandidate,
     FieldCoreferenceHints,
     FieldCoreferenceInput,
@@ -40,9 +41,12 @@ from cdecr.ports import (
     StructuredModelClient,
     StructuredModelRequest,
 )
+from cdecr.provider_resilience import is_provider_failure
 
 FIELD_REGISTRY_OWNER_KIND = "FIELD_REGISTRY"
+FIELD_QUERY_OWNER_KIND = "canonical_field_query"
 FIELD_PROMPT_VERSION = "v4-namespace-batch-wire"
+FIELD_WIRE_VALIDATOR_VERSION = "field-wire-validator-v2-item-local-repair"
 _FIELD_PROMPT_RESOURCE_VERSION = "v2"
 CANDIDATE_RETRIEVER_VERSION = "field-candidate-retriever-v2"
 MAX_ALIASES = 8
@@ -173,6 +177,104 @@ class _PendingFieldDecision:
     candidates: tuple[FieldCoreferenceCandidate, ...]
     run_id: str | None
     future: Future[FieldCoreferenceModelOutput]
+
+
+@dataclass(frozen=True)
+class PreparedFieldDecision:
+    semantic_task_id: str
+    value: FieldCoreferenceInput
+    candidates: tuple[FieldCoreferenceCandidate, ...]
+    mention_id: str
+    field_path: str
+    run_id: str | None
+    immediate_output: FieldCoreferenceModelOutput | None = None
+    existing_result: FieldCoreferenceResult | None = None
+    transient_entries: tuple[CanonicalFieldRegistryEntry, ...] = ()
+    transient_dimensions: tuple[
+        tuple[str, dict[str, str | int | float | bool | None]], ...
+    ] = ()
+
+
+@dataclass(frozen=True)
+class FieldWireItemFailure:
+    task_id: str
+    error_code: str
+    raw: object | None
+
+
+@dataclass(frozen=True)
+class FieldWireValidationResult:
+    valid: dict[str, FieldCoreferenceModelOutput]
+    failures: tuple[FieldWireItemFailure, ...]
+    root_error: str | None = None
+    normalized_rules: Mapping[str, tuple[str, ...]] | None = None
+
+
+@dataclass(frozen=True)
+class NormalizedFieldWireItem:
+    output: FieldCoreferenceModelOutput
+    rules: tuple[str, ...]
+
+
+def normalize_field_wire_item(
+    raw: object,
+    input_namespace: FieldNamespace,
+    candidate_map: Mapping[str, str],
+) -> NormalizedFieldWireItem:
+    if not isinstance(raw, dict):
+        raise ValueError("field decision is not an object")
+    rules: list[str] = []
+    decision_token = str(raw.get("decision", "")).strip().upper().replace("-", "_")
+    if decision_token not in {item.value for item in FieldDecision}:
+        raise ValueError("unknown field decision")
+    decision = FieldDecision(decision_token)
+    canonical_id = raw.get("canonical_id")
+    if decision is FieldDecision.LINK:
+        expanded_candidate_map = {
+            **candidate_map,
+            **{full_id: full_id for full_id in candidate_map.values()},
+        }
+        if not isinstance(canonical_id, str) or canonical_id not in expanded_candidate_map:
+            raise ValueError("LINK canonical_id is not supplied for this task")
+        canonical_id = expanded_candidate_map[canonical_id]
+        if canonical_id != raw.get("canonical_id"):
+            rules.append("RESTORE_LINK_CANDIDATE_ID")
+    else:
+        if canonical_id is not None:
+            rules.append("DROP_NON_LINK_CANONICAL_ID")
+        canonical_id = None
+
+    target: FieldNamespace | None = None
+    target_raw = raw.get("target_namespace")
+    if input_namespace is FieldNamespace.PARTICIPANT_UNKNOWN and decision is FieldDecision.NEW:
+        if target_raw is None:
+            raise ValueError("participant.unknown NEW requires an allowed target_namespace")
+        token = str(target_raw).strip().casefold().replace("-", "_")
+        aliases = {namespace.value.casefold(): namespace for namespace in FieldNamespace}
+        aliases.update({namespace.name.casefold(): namespace for namespace in FieldNamespace})
+        aliases.update(
+            {
+                "company": FieldNamespace.PARTICIPANT_COMPANY,
+                "institution": FieldNamespace.PARTICIPANT_INSTITUTION,
+                "person": FieldNamespace.PARTICIPANT_PERSON,
+                "instrument": FieldNamespace.PARTICIPANT_INSTRUMENT,
+                "authority": FieldNamespace.PARTICIPANT_AUTHORITY,
+            }
+        )
+        target = aliases.get(token)
+        if target not in _UNKNOWN_TARGET_NAMESPACES:
+            raise ValueError("unknown target_namespace")
+        if target.value != target_raw:
+            rules.append("NORMALIZE_TARGET_NAMESPACE_ALIAS")
+    elif target_raw is not None:
+        rules.append("DROP_FORBIDDEN_TARGET_NAMESPACE")
+
+    output = FieldCoreferenceModelOutput(
+        decision=decision,
+        canonical_id=canonical_id,
+        target_namespace=target,
+    )
+    return NormalizedFieldWireItem(output=output, rules=tuple(rules))
 
 
 def normalize_field_text(value: str, *, company_suffixes: bool = False) -> str:
@@ -381,8 +483,17 @@ class FieldCoreferenceResolver:
         )
         self._epoch_links: dict[tuple[str, str], CanonicalFieldLink] | None = None
         self._epoch_embeddings: dict[tuple[str, str], list[float]] | None = None
+        self._epoch_query_embeddings: dict[str, list[float]] | None = None
         self._embedding_lock = Lock()
         self._embedding_inflight: dict[tuple[str, str], Future[list[float]]] = {}
+        self._planned_telemetry_lock = Lock()
+        self._planned_batch_split_count = 0
+        self._planned_item_fallback_count = 0
+        self._planned_item_repair_count = 0
+        self._planned_item_repair_succeeded = 0
+        self._planned_item_repair_invalid = 0
+        self._planned_item_repair_provider_failed = 0
+        self._repair_limiter = BoundedSemaphore(16)
 
     def begin_epoch_snapshot(self) -> None:
         """Load immutable read inventories once; writes are mirrored into a local overlay."""
@@ -405,11 +516,85 @@ class FieldCoreferenceResolver:
                 limit=100000,
             )
         }
+        self._epoch_query_embeddings = {
+            item.input_hash: list(item.vector)
+            for item in self.registry.list_latest_embeddings(
+                owner_kind=FIELD_QUERY_OWNER_KIND,
+                model=self.embedding_model,
+                limit=100000,
+            )
+        }
 
     def end_epoch_snapshot(self) -> None:
         self._epoch_roots = None
         self._epoch_links = None
         self._epoch_embeddings = None
+        self._epoch_query_embeddings = None
+
+    def prime_query_embeddings(
+        self, values: Sequence[FieldCoreferenceInput], *, run_id: str | None
+    ) -> None:
+        """Precompute exact raw-value query vectors before Field workers start."""
+
+        if self._epoch_query_embeddings is None:
+            return
+        unique = {
+            _sha256(value.raw_value): value.raw_value
+            for value in values
+            if value.namespace not in _ONTOLOGY_NAMESPACES and value.raw_value
+        }
+        missing = [
+            (input_hash, text)
+            for input_hash, text in sorted(unique.items())
+            if input_hash not in self._epoch_query_embeddings
+        ]
+        records: list[dict[str, object]] = []
+        for offset in range(0, len(missing), 8):
+            batch = missing[offset : offset + 8]
+            try:
+                result = self._embed([text for _, text in batch], run_id=run_id)
+                if len(result.vectors) != len(batch):
+                    raise ValueError("embedding provider returned a mismatched vector count")
+                resolved = list(zip(batch, result.vectors, strict=True))
+            except Exception as exc:
+                code = str(getattr(exc, "code", type(exc).__name__)).casefold()
+                if not (
+                    "413" in code
+                    or "batch" in code
+                    or "max_items" in code
+                    or isinstance(exc, ValueError)
+                ):
+                    raise
+                resolved = []
+                for input_hash, text in batch:
+                    try:
+                        item_result = self._embed([text], run_id=run_id)
+                    except Exception:
+                        self.registry.append_decision_audit(
+                            DecisionAuditRecord(
+                                audit_id=f"field-query-embedding-fallback:{run_id}:{input_hash}",
+                                run_id=run_id,
+                                decision_type="FIELD_QUERY_EMBEDDING_FALLBACK",
+                                subject_id=input_hash,
+                                payload={"status": "FAILED_SINGLE", "error_code": code},
+                            )
+                        )
+                        continue
+                    resolved.append(((input_hash, text), item_result.vectors[0]))
+            for (input_hash, _), vector in resolved:
+                normalized = list(vector)
+                self._epoch_query_embeddings[input_hash] = normalized
+                records.append(
+                    {
+                        "owner_kind": FIELD_QUERY_OWNER_KIND,
+                        "owner_id": input_hash,
+                        "model": self.embedding_model,
+                        "input_hash": input_hash,
+                        "vector": normalized,
+                    }
+                )
+        if records:
+            self.registry.save_embeddings(records)
 
     def _existing_link(self, mention_id: str, field_path: str) -> CanonicalFieldLink | None:
         if self._epoch_links is not None:
@@ -443,12 +628,7 @@ class FieldCoreferenceResolver:
 
         entries = self._entries_for_value(value)
         candidates, unique_exact = self._recall(value, entries, run_id=run_id)
-        if value.namespace is FieldNamespace.PACKAGE_ANCHOR and value.hints.parent_identity_key:
-            # N11 already derived this key from source-supported parent
-            # boundaries. Reusing it is deterministic canonicalization, not a
-            # semantic alias judgment for the field model.
-            output = FieldCoreferenceModelOutput(decision=FieldDecision.UNRESOLVED)
-        elif unique_exact is not None:
+        if unique_exact is not None:
             output = FieldCoreferenceModelOutput(
                 decision=FieldDecision.LINK, canonical_id=unique_exact.id
             )
@@ -479,6 +659,292 @@ class FieldCoreferenceResolver:
             run_id=run_id,
         )
         return result
+
+    def transient_external_entry(
+        self,
+        *,
+        external_id: str,
+        canonical_text: str,
+        aliases: Sequence[str],
+        namespace: FieldNamespace,
+        hard_dimensions: dict[str, str | int | float | bool | None],
+    ) -> tuple[
+        CanonicalFieldRegistryEntry,
+        dict[str, str | int | float | bool | None],
+    ]:
+        registry_id = "field:" + hashlib.sha256(
+            f"{namespace.value}\0external:{external_id}".encode()
+        ).hexdigest()[:24]
+        return (
+            CanonicalFieldRegistryEntry(
+                id=registry_id,
+                namespace=namespace,
+                canonical_text=canonical_text,
+                aliases=_stable_aliases([canonical_text, *aliases]),
+                external_id=external_id,
+            ),
+            dict(hard_dimensions),
+        )
+
+    def prepare_decision(
+        self,
+        value: FieldCoreferenceInput,
+        *,
+        semantic_task_id: str,
+        mention_id: str,
+        field_path: str,
+        run_id: str | None,
+        transient_entries: Sequence[CanonicalFieldRegistryEntry] = (),
+        transient_dimensions: Mapping[
+            str, dict[str, str | int | float | bool | None]
+        ] | None = None,
+    ) -> PreparedFieldDecision:
+        existing_link = self._existing_link(mention_id, field_path)
+        if existing_link is not None:
+            root = self.registry.resolve_field_registry_entry(existing_link.registry_id)
+            if root is None:
+                raise FieldCoreferenceError("stored field link has no registry target")
+            return PreparedFieldDecision(
+                semantic_task_id=semantic_task_id,
+                value=value,
+                candidates=(),
+                mention_id=mention_id,
+                field_path=field_path,
+                run_id=run_id,
+                existing_result=FieldCoreferenceResult(
+                    canonical_id=root.id,
+                    external_id=root.external_id,
+                    resolution_method=existing_link.method,
+                ),
+            )
+        entry_by_id = {entry.id: entry for entry in self._entries_for_value(value)}
+        entry_by_id.update({entry.id: entry for entry in transient_entries})
+        dimensions = dict(transient_dimensions or {})
+        candidates, unique_exact = self._recall(
+            value,
+            list(entry_by_id.values()),
+            run_id=run_id,
+            transient_dimensions=dimensions,
+        )
+        immediate: FieldCoreferenceModelOutput | None = None
+        if unique_exact is not None:
+            immediate = FieldCoreferenceModelOutput(
+                decision=FieldDecision.LINK, canonical_id=unique_exact.id
+            )
+        elif not candidates and _is_generic(value.raw_value):
+            immediate = FieldCoreferenceModelOutput(decision=FieldDecision.UNRESOLVED)
+        elif not candidates and value.namespace is not FieldNamespace.PARTICIPANT_UNKNOWN and (
+            _clearly_name_like(value.raw_value, value.namespace)
+        ):
+            immediate = FieldCoreferenceModelOutput(decision=FieldDecision.NEW)
+        return PreparedFieldDecision(
+            semantic_task_id=semantic_task_id,
+            value=value,
+            candidates=tuple(candidates),
+            mention_id=mention_id,
+            field_path=field_path,
+            run_id=run_id,
+            immediate_output=immediate,
+            transient_entries=tuple(transient_entries),
+            transient_dimensions=tuple(sorted(dimensions.items())),
+        )
+
+    def decide_prepared(
+        self,
+        plans: Sequence[PreparedFieldDecision],
+        *,
+        max_workers: int,
+    ) -> tuple[
+        dict[str, FieldCoreferenceModelOutput],
+        dict[str, Exception],
+        dict[str, object],
+    ]:
+        started = perf_counter()
+        with self._planned_telemetry_lock:
+            self._planned_batch_split_count = 0
+            self._planned_item_fallback_count = 0
+            self._planned_item_repair_count = 0
+            self._planned_item_repair_succeeded = 0
+            self._planned_item_repair_invalid = 0
+            self._planned_item_repair_provider_failed = 0
+        outputs = {
+            item.semantic_task_id: item.immediate_output
+            for item in plans
+            if item.immediate_output is not None
+        }
+        pending_by_id: dict[str, _PendingFieldDecision] = {}
+        for item in plans:
+            if item.immediate_output is not None or item.existing_result is not None:
+                continue
+            pending_by_id[item.semantic_task_id] = _PendingFieldDecision(
+                item.value,
+                item.candidates,
+                item.run_id,
+                Future(),
+            )
+        batches: list[list[_PendingFieldDecision]] = []
+        payload_sizes: list[int] = []
+        for namespace in sorted(FieldNamespace, key=lambda item: item.value):
+            queued = [
+                pending_by_id[item.semantic_task_id]
+                for item in plans
+                if item.semantic_task_id in pending_by_id and item.value.namespace is namespace
+            ]
+            max_items = (
+                FIELD_BATCH_UNKNOWN_SIZE
+                if namespace is FieldNamespace.PARTICIPANT_UNKNOWN
+                else FIELD_BATCH_DEFAULT_SIZE
+            )
+            max_bytes = (
+                FIELD_BATCH_UNKNOWN_BYTES
+                if namespace is FieldNamespace.PARTICIPANT_UNKNOWN
+                else FIELD_BATCH_DEFAULT_BYTES
+            )
+            while queued:
+                batch: list[_PendingFieldDecision] = []
+                estimated = 0
+                while queued and len(batch) < max_items:
+                    pending_item = queued[0]
+                    item_bytes = self._field_item_bytes(pending_item)
+                    if batch and estimated + item_bytes > max_bytes:
+                        break
+                    queued.pop(0)
+                    batch.append(pending_item)
+                    estimated += item_bytes
+                batches.append(batch)
+                payload_sizes.append(estimated)
+        decide_started = perf_counter()
+        if batches:
+            with ThreadPoolExecutor(
+                max_workers=min(max_workers, len(batches))
+            ) as executor:
+                list(
+                    executor.map(
+                        lambda batch: self._execute_field_batch(batch, split_depth=0),
+                        batches,
+                    )
+                )
+        errors: dict[str, Exception] = {}
+        for item in plans:
+            pending = pending_by_id.get(item.semantic_task_id)
+            if pending is not None:
+                try:
+                    outputs[item.semantic_task_id] = pending.future.result()
+                except Exception as exc:
+                    errors[item.semantic_task_id] = exc
+        decide_ms = round((perf_counter() - decide_started) * 1000)
+        sizes = sorted(len(batch) for batch in batches)
+
+        def pct(values: Sequence[int], ratio: float) -> int:
+            if not values:
+                return 0
+            return values[min(len(values) - 1, round((len(values) - 1) * ratio))]
+
+        unique_cards = {
+            candidate.canonical_id for item in plans for candidate in item.candidates
+        }
+        total_cards = sum(len(item.candidates) for item in plans)
+        with self._planned_telemetry_lock:
+            split_count = self._planned_batch_split_count
+            fallback_count = self._planned_item_fallback_count
+            repair_count = self._planned_item_repair_count
+            repair_succeeded = self._planned_item_repair_succeeded
+            repair_invalid = self._planned_item_repair_invalid
+            repair_provider_failed = self._planned_item_repair_provider_failed
+        return outputs, errors, {
+            "planned_item_count": len(plans),
+            "physical_batch_count": len(batches),
+            "batch_size_min": min(sizes, default=0),
+            "batch_size_p50": pct(sizes, 0.50),
+            "batch_size_p95": pct(sizes, 0.95),
+            "batch_size_max": max(sizes, default=0),
+            "singleton_batch_count": sum(size == 1 for size in sizes),
+            "payload_bytes_min": min(payload_sizes, default=0),
+            "payload_bytes_p50": pct(sorted(payload_sizes), 0.50),
+            "payload_bytes_p95": pct(sorted(payload_sizes), 0.95),
+            "payload_bytes_max": max(payload_sizes, default=0),
+            "candidate_card_unique_count": len(unique_cards),
+            "candidate_card_reuse_ratio": (
+                1.0 - len(unique_cards) / total_cards if total_cards else 0.0
+            ),
+            "batch_split_count": split_count,
+            "item_fallback_count": fallback_count,
+            "item_repair_request_count": repair_count,
+            "item_repair_succeeded_count": repair_succeeded,
+            "item_repair_invalid_count": repair_invalid,
+            "item_repair_provider_failed_count": repair_provider_failed,
+            "decide_ms": decide_ms,
+            "planned_decide_ms": round(
+                (perf_counter() - started) * 1000
+            ),
+        }
+
+    def apply_prepared(
+        self,
+        plan: PreparedFieldDecision,
+        output: FieldCoreferenceModelOutput | None,
+    ) -> FieldCoreferenceResult:
+        if plan.existing_result is not None:
+            return plan.existing_result
+        if output is None:
+            raise FieldCoreferenceError("prepared field decision has no output")
+        transient = {entry.id: entry for entry in plan.transient_entries}
+        if output.decision is FieldDecision.LINK and output.canonical_id in transient:
+            entry = transient[output.canonical_id]
+            stored = (
+                self.registry.find_field_registry_by_external_id(
+                    namespace=entry.namespace,
+                    external_id=entry.external_id,
+                )
+                if entry.external_id is not None
+                else None
+            )
+            if stored is None:
+                self.registry.create_field_registry_entry(entry)
+                stored = self.registry.get_field_registry_entry(entry.id)
+            if stored is None:
+                raise FieldCoreferenceError("selected transient field candidate was not persisted")
+            if output.canonical_id != stored.id:
+                output = output.model_copy(update={"canonical_id": stored.id})
+            if self._epoch_roots is not None:
+                self._epoch_roots[stored.namespace][stored.id] = stored
+            dimensions = dict(plan.transient_dimensions).get(stored.id)
+            if dimensions is not None:
+                self._candidate_dimensions[stored.id] = dimensions
+        result = self._apply_internal(
+            plan.value,
+            output,
+            plan.candidates,
+            mention_id=plan.mention_id,
+            field_path=plan.field_path,
+            run_id=plan.run_id,
+        )
+        self._audit(
+            plan.value,
+            plan.candidates,
+            result,
+            mention_id=plan.mention_id,
+            field_path=plan.field_path,
+            decision=output.decision,
+            run_id=plan.run_id,
+        )
+        return result
+
+    @staticmethod
+    def _field_item_bytes(item: _PendingFieldDecision) -> int:
+        return len(
+            json.dumps(
+                {
+                    "v": item.value.model_dump(mode="json", exclude_none=True),
+                    "c": [
+                        candidate.model_dump(mode="json", exclude_none=True)
+                        for candidate in item.candidates
+                    ],
+                },
+                ensure_ascii=False,
+                separators=(",", ":"),
+            ).encode("utf-8")
+        )
 
     def resolve_mention(
         self,
@@ -777,6 +1243,9 @@ class FieldCoreferenceResolver:
         entries: Sequence[CanonicalFieldRegistryEntry],
         *,
         run_id: str | None,
+        transient_dimensions: Mapping[
+            str, dict[str, str | int | float | bool | None]
+        ] | None = None,
     ) -> tuple[list[FieldCoreferenceCandidate], CanonicalFieldRegistryEntry | None]:
         company = value.namespace in {
             FieldNamespace.PARTICIPANT_COMPANY,
@@ -812,7 +1281,10 @@ class FieldCoreferenceResolver:
             FieldCoreferenceCandidate(
                 canonical_id=entry.id,
                 aliases=_candidate_aliases(entry),
-                hard_dimensions=self._candidate_dimensions.get(entry.id, _hard_dimensions(entry)),
+                hard_dimensions=(transient_dimensions or {}).get(
+                    entry.id,
+                    self._candidate_dimensions.get(entry.id, _hard_dimensions(entry)),
+                ),
                 namespace=(
                     entry.namespace
                     if value.namespace is FieldNamespace.PARTICIPANT_UNKNOWN
@@ -874,8 +1346,8 @@ class FieldCoreferenceResolver:
                     owned.append((entry, text, input_hash, future))
                 else:
                     waiting.append((entry, future))
-        for offset in range(0, len(owned), 10):
-            batch = owned[offset : offset + 10]
+        for offset in range(0, len(owned), 8):
+            batch = owned[offset : offset + 8]
             try:
                 result = self._embed([item[1] for item in batch], run_id=run_id)
                 for (entry, _, input_hash, future), vector in zip(
@@ -903,8 +1375,24 @@ class FieldCoreferenceResolver:
                 raise
         for entry, future in waiting:
             vectors[entry.id] = future.result()
-        query_result = self._embed([value.raw_value], run_id=run_id)
-        query_vector = query_result.vectors[0]
+        query_hash = _sha256(value.raw_value)
+        query_vector = (
+            self._epoch_query_embeddings.get(query_hash)
+            if self._epoch_query_embeddings is not None
+            else None
+        )
+        if query_vector is None:
+            query_result = self._embed([value.raw_value], run_id=run_id)
+            query_vector = list(query_result.vectors[0])
+            self.registry.save_embedding(
+                owner_kind=FIELD_QUERY_OWNER_KIND,
+                owner_id=query_hash,
+                model=query_result.model,
+                input_hash=query_hash,
+                vector=query_vector,
+            )
+            if self._epoch_query_embeddings is not None:
+                self._epoch_query_embeddings[query_hash] = query_vector
         ranked = sorted(
             ((_cosine(query_vector, vectors.get(entry.id, [])), entry) for entry in entries),
             key=lambda item: (-item[0], item[1].id),
@@ -986,9 +1474,10 @@ class FieldCoreferenceResolver:
                 self._batch_timers[namespace] = timer
                 timer.start()
             if len(queue) >= max_items:
-                timer = self._batch_timers.pop(namespace, None)
-                if timer is not None:
-                    timer.cancel()
+                active_timer = self._batch_timers.get(namespace)
+                if active_timer is not None:
+                    del self._batch_timers[namespace]
+                    active_timer.cancel()
                 flush_now = True
         if flush_now:
             self._flush_pending_namespace(namespace)
@@ -1076,7 +1565,7 @@ class FieldCoreferenceResolver:
             "tasks": tasks,
         }
         prompt = json.dumps(model_input, ensure_ascii=False, separators=(",", ":"))
-        schema = _batch_decision_schema()
+        schema = _batch_decision_schema(namespace)
         policy = self._policies[namespace]
         request = StructuredModelRequest(
             system_prompt=f"{self.base_system_prompt}\n\n{policy}",
@@ -1099,7 +1588,16 @@ class FieldCoreferenceResolver:
                 split_depth=split_depth,
                 exception=exc,
             )
-            if split_depth == 0 and len(batch) > 1:
+            if is_provider_failure(exc):
+                # A provider/request failure applies to the logical batch. Splitting
+                # it would multiply the same failure and must never persist false
+                # UNRESOLVED field identities.
+                for item in batch:
+                    if not item.future.done():
+                        item.future.set_exception(exc)
+            elif split_depth == 0 and len(batch) > 1:
+                with self._planned_telemetry_lock:
+                    self._planned_batch_split_count += 1
                 midpoint = len(batch) // 2
                 self._execute_field_batch(batch[:midpoint], split_depth=1)
                 self._execute_field_batch(batch[midpoint:], split_depth=1)
@@ -1108,35 +1606,51 @@ class FieldCoreferenceResolver:
                     self._field_batch_fallback(item, "PROVIDER_REJECTED_BATCH")
             return
 
-        raw_decisions = (
-            result.payload.get("decisions")
-            if isinstance(result.payload, dict)
-            and isinstance(result.payload.get("decisions"), list)
-            else []
-        )
-        by_task: dict[str, list[object]] = {}
-        for raw in raw_decisions:
-            if isinstance(raw, dict) and isinstance(raw.get("task_id"), str):
-                by_task.setdefault(str(raw["task_id"]), []).append(raw)
-        invalid: list[tuple[str, _PendingFieldDecision, object | None, str]] = []
-        valid_count = 0
+        expected = {
+            f"t{index}": (item.value, candidates_by_task[f"t{index}"])
+            for index, item in enumerate(batch, start=1)
+        }
+        validation = self.validate_field_wire_output(result.payload, expected=expected)
+        if validation.root_error is not None and split_depth == 0 and len(batch) > 1:
+            self._record_field_batch_call(
+                call_id=call_id,
+                batch=batch,
+                prompt=prompt,
+                schema=schema,
+                status="SUCCEEDED",
+                result=result,
+                error_code=validation.root_error,
+                split_depth=split_depth,
+                valid_count=0,
+            )
+            with self._planned_telemetry_lock:
+                self._planned_batch_split_count += 1
+            midpoint = len(batch) // 2
+            self._execute_field_batch(batch[:midpoint], split_depth=1)
+            self._execute_field_batch(batch[midpoint:], split_depth=1)
+            return
+        invalid_by_task = {failure.task_id: failure for failure in validation.failures}
+        normalized_rules = validation.normalized_rules or {}
+        valid_count = len(validation.valid)
         for index, item in enumerate(batch, start=1):
             task_id = f"t{index}"
-            values = by_task.get(task_id, [])
-            raw = values[0] if len(values) == 1 else None
-            try:
-                if raw is None:
-                    raise ValueError("missing or duplicate task decision")
-                output = self._adapt_field_wire_item(
-                    raw,
-                    value=item.value,
-                    short_to_full=candidates_by_task[task_id],
-                )
-            except (ValidationError, ValueError) as exc:
-                invalid.append((task_id, item, raw, str(exc)[:300]))
-            else:
-                valid_count += 1
+            output = validation.valid.get(task_id)
+            if output is not None:
                 item.future.set_result(output)
+            rules = normalized_rules.get(task_id)
+            if rules:
+                self.registry.append_decision_audit(
+                    DecisionAuditRecord(
+                        audit_id=(
+                            f"field-wire-normalized:{item.run_id or 'none'}:"
+                            f"{task_id}:{_sha256(prompt)}:{_sha256('|'.join(rules))}"
+                        ),
+                        run_id=item.run_id,
+                        decision_type="FIELD_WIRE_NORMALIZED",
+                        subject_id=namespace.value,
+                        payload={"rules": list(rules), "namespace": namespace.value},
+                    )
+                )
         self._record_field_batch_call(
             call_id=call_id,
             batch=batch,
@@ -1144,12 +1658,101 @@ class FieldCoreferenceResolver:
             schema=schema,
             status="SUCCEEDED",
             result=result,
-            error_code=None,
+            error_code=validation.root_error,
             split_depth=split_depth,
             valid_count=valid_count,
         )
-        for task_id, item, raw, error in invalid:
-            self._repair_field_item(task_id, item, raw, error)
+        for index, item in enumerate(batch, start=1):
+            task_id = f"t{index}"
+            failure = invalid_by_task.get(task_id)
+            if failure is not None:
+                self._repair_field_item(
+                    task_id,
+                    item,
+                    failure.raw,
+                    failure.error_code,
+                )
+
+    def validate_field_wire_output(
+        self,
+        payload: object,
+        *,
+        expected: Mapping[
+            str, tuple[FieldCoreferenceInput, dict[str, str]]
+        ],
+    ) -> FieldWireValidationResult:
+        if not isinstance(payload, dict):
+            return FieldWireValidationResult(
+                {},
+                tuple(
+                    FieldWireItemFailure(task_id, "ROOT_NOT_OBJECT", None)
+                    for task_id in expected
+                ),
+                "ROOT_NOT_OBJECT",
+            )
+        decisions = payload.get("decisions")
+        if not isinstance(decisions, list):
+            return FieldWireValidationResult(
+                {},
+                tuple(
+                    FieldWireItemFailure(task_id, "DECISIONS_NOT_ARRAY", None)
+                    for task_id in expected
+                ),
+                "DECISIONS_NOT_ARRAY",
+            )
+        by_task: dict[str, list[object]] = {}
+        unknown_tasks: list[str] = []
+        for raw in decisions:
+            if not isinstance(raw, dict):
+                unknown_tasks.append("")
+                continue
+            raw_task_id = raw.get("task_id")
+            if not isinstance(raw_task_id, str):
+                unknown_tasks.append("")
+                continue
+            if raw_task_id not in expected:
+                unknown_tasks.append(raw_task_id)
+                continue
+            by_task.setdefault(raw_task_id, []).append(raw)
+        root_error = "TASK_UNKNOWN" if unknown_tasks else None
+        if root_error is None and set(by_task) != set(expected):
+            root_error = "TASK_MISSING"
+        if root_error is None and any(len(values) != 1 for values in by_task.values()):
+            root_error = "TASK_DUPLICATE"
+        valid: dict[str, FieldCoreferenceModelOutput] = {}
+        normalized_rules: dict[str, tuple[str, ...]] = {}
+        failures: list[FieldWireItemFailure] = []
+        for task_id, (value, short_to_full) in expected.items():
+            values = by_task.get(task_id, [])
+            if not values:
+                failures.append(FieldWireItemFailure(task_id, "TASK_MISSING", None))
+                continue
+            if len(values) != 1:
+                failures.append(
+                    FieldWireItemFailure(task_id, "TASK_DUPLICATE", values[0])
+                )
+                continue
+            raw = values[0]
+            try:
+                normalized = normalize_field_wire_item(
+                    raw, value.namespace, short_to_full
+                )
+                valid[task_id] = normalized.output
+                if normalized.rules:
+                    normalized_rules[task_id] = normalized.rules
+            except ValidationError as exc:
+                failures.append(
+                    FieldWireItemFailure(
+                        task_id, _field_pydantic_error_code(exc), raw
+                    )
+                )
+            except ValueError as exc:
+                failures.append(
+                    FieldWireItemFailure(task_id, _field_wire_error_code(exc), raw)
+                )
+        return FieldWireValidationResult(
+            valid, tuple(failures), root_error, normalized_rules
+        )
 
     def _adapt_field_wire_item(
         self,
@@ -1158,39 +1761,9 @@ class FieldCoreferenceResolver:
         value: FieldCoreferenceInput,
         short_to_full: dict[str, str],
     ) -> FieldCoreferenceModelOutput:
-        if not isinstance(raw, dict):
-            raise ValueError("field decision is not an object")
-        decision_token = str(raw.get("decision", "")).strip().upper()
-        if decision_token not in {item.value for item in FieldDecision}:
-            raise ValueError("unknown field decision")
-        decision = FieldDecision(decision_token)
-        canonical_id = raw.get("canonical_id")
-        if decision is FieldDecision.LINK:
-            if not isinstance(canonical_id, str) or canonical_id not in short_to_full:
-                raise ValueError("LINK canonical_id is not supplied for this task")
-            canonical_id = short_to_full[canonical_id]
-        else:
-            canonical_id = None
-        target_raw = raw.get("target_namespace")
-        target: FieldNamespace | None = None
-        if target_raw is not None:
-            try:
-                target = FieldNamespace(str(target_raw).strip().lower().replace("-", "_"))
-            except ValueError as exc:
-                raise ValueError("unknown target_namespace") from exc
-        output = FieldCoreferenceModelOutput(
-            decision=decision,
-            canonical_id=canonical_id,
-            target_namespace=target,
-        )
-        if value.namespace is FieldNamespace.PARTICIPANT_UNKNOWN:
-            if decision is FieldDecision.NEW and target not in _UNKNOWN_TARGET_NAMESPACES:
-                raise ValueError("participant.unknown NEW requires an allowed target_namespace")
-            if decision is not FieldDecision.NEW and target is not None:
-                raise ValueError("target_namespace is allowed only for participant.unknown NEW")
-        elif target is not None:
-            raise ValueError("target_namespace is not allowed for this namespace")
-        return output
+        return normalize_field_wire_item(
+            raw, value.namespace, short_to_full
+        ).output
 
     def _repair_field_item(
         self,
@@ -1205,9 +1778,12 @@ class FieldCoreferenceResolver:
             f"k{index}": candidate.canonical_id
             for index, candidate in enumerate(item.candidates, start=1)
         }
+        repair_invalid_payload = invalid_payload
+        if isinstance(invalid_payload, dict):
+            repair_invalid_payload = {**invalid_payload, "task_id": "t1"}
         payload = {
             "validation_error": validation_error,
-            "invalid_decision": invalid_payload,
+            "invalid_decision": repair_invalid_payload,
             "namespace": item.value.namespace.value,
             "candidates": {
                 short_id: candidate.model_dump(
@@ -1217,39 +1793,180 @@ class FieldCoreferenceResolver:
             },
             "tasks": [
                 {
-                    "task_id": task_id,
+                    "task_id": "t1",
                     "raw_value": item.value.raw_value,
                     "local_context": _sanitize(item.value.local_context, limit=4000),
                     "hints": item.value.hints.model_dump(mode="json", exclude_none=True),
                     "candidate_ids": list(short_to_full),
                 }
             ],
-            "repair_instruction": "Repair only this invalid task and return it exactly once.",
+            "repair_instruction": _field_repair_instruction(validation_error),
         }
         request = StructuredModelRequest(
             system_prompt=f"{self.base_system_prompt}\n\n{self._policies[item.value.namespace]}",
             user_prompt=json.dumps(payload, ensure_ascii=False, separators=(",", ":")),
-            json_schema=_batch_decision_schema(),
+            json_schema=_batch_decision_schema(item.value.namespace),
             metadata={"stage": "field_coreference_item_repair", "priority": "repair"},
         )
+        call_id = str(uuid.uuid4())
+        prompt = str(request.user_prompt)
+        schema = _batch_decision_schema(item.value.namespace)
+        result: object | None = None
+        exception: Exception | None = None
+        final_status = "INVALID"
+        final_error: str | None = validation_error
+        with self._planned_telemetry_lock:
+            self._planned_item_repair_count += 1
         try:
-            result = self.model_client.complete(request)
-            output = FieldBatchWireOutput.model_validate(result.payload)
-            if len(output.decisions) != 1 or output.decisions[0].task_id != task_id:
-                raise ValueError("repair must return exactly the requested task")
-            adapted = self._adapt_field_wire_item(
-                output.decisions[0].model_dump(mode="json"),
-                value=item.value,
-                short_to_full=short_to_full,
+            with self._repair_limiter:
+                result = self.model_client.complete(request)
+            validation = self.validate_field_wire_output(
+                getattr(result, "payload", None),
+                expected={"t1": (item.value, short_to_full)},
             )
+            adapted = validation.valid.get("t1")
+            if adapted is None:
+                failure = validation.failures[0] if validation.failures else None
+                raise ValueError(
+                    failure.error_code if failure is not None else validation.root_error
+                    or "BUSINESS_VALIDATION_FAILED"
+                )
         except Exception as exc:
-            self._field_batch_fallback(item, f"ITEM_REPAIR_FAILED:{type(exc).__name__}")
+            exception = exc
+            final_error = str(getattr(exc, "code", str(exc) or type(exc).__name__))[:300]
+            # Once the provider returned a payload, every subsequent error is a
+            # local schema/business validation failure.  Error codes such as
+            # TARGET_NAMESPACE_FORBIDDEN must not be reclassified as HTTP 403.
+            if result is None and is_provider_failure(exc):
+                final_status = "PROVIDER_FAILED"
+                with self._planned_telemetry_lock:
+                    self._planned_item_repair_provider_failed += 1
+                item.future.set_exception(exc)
+                self._append_field_repair_audit(
+                    item,
+                    task_id=task_id,
+                    decision_type="FIELD_ITEM_REPAIR_PROVIDER_FAILED",
+                    original_error=validation_error,
+                    final_error=final_error,
+                )
+            else:
+                with self._planned_telemetry_lock:
+                    self._planned_item_repair_invalid += 1
+                self._append_field_repair_audit(
+                    item,
+                    task_id=task_id,
+                    decision_type="FIELD_ITEM_REPAIR_INVALID",
+                    original_error=validation_error,
+                    final_error=final_error,
+                )
+                self._field_batch_fallback(item, f"ITEM_REPAIR_FAILED:{type(exc).__name__}")
         else:
+            final_status = "VALID"
+            final_error = None
+            with self._planned_telemetry_lock:
+                self._planned_item_repair_succeeded += 1
+            self._append_field_repair_audit(
+                item,
+                task_id=task_id,
+                decision_type="FIELD_ITEM_REPAIR_SUCCEEDED",
+                original_error=validation_error,
+                final_error=None,
+            )
             item.future.set_result(adapted)
+        finally:
+            self._record_field_item_repair_call(
+                call_id=call_id,
+                item=item,
+                prompt=prompt,
+                schema=schema,
+                result=result,
+                exception=exception,
+                status=final_status,
+                original_error=validation_error,
+                final_error=final_error,
+            )
+
+    def _append_field_repair_audit(
+        self,
+        item: _PendingFieldDecision,
+        *,
+        task_id: str,
+        decision_type: str,
+        original_error: str,
+        final_error: str | None,
+    ) -> None:
+        payload = {
+            "task_id_hash": _sha256(task_id),
+            "original_error_code": original_error,
+            "final_error_code": final_error,
+            "validator_version": FIELD_WIRE_VALIDATOR_VERSION,
+        }
+        self.registry.append_decision_audit(
+            DecisionAuditRecord(
+                audit_id=(
+                    "field-item-repair:"
+                    f"{_sha256(json.dumps(payload, sort_keys=True))[:24]}:{uuid.uuid4()}"
+                ),
+                run_id=item.run_id,
+                decision_type=decision_type,
+                subject_id=item.value.namespace.value,
+                payload=payload,
+            )
+        )
+
+    def _record_field_item_repair_call(
+        self,
+        *,
+        call_id: str,
+        item: _PendingFieldDecision,
+        prompt: str,
+        schema: dict[str, object],
+        result: object | None,
+        exception: Exception | None,
+        status: str,
+        original_error: str,
+        final_error: str | None,
+    ) -> None:
+        source = result if result is not None else exception
+        self.registry.record_model_call(
+            model_call_id=call_id,
+            run_id=item.run_id,
+            tier="m2",
+            model=str(
+                getattr(result, "model", None)
+                or getattr(self.model_client, "model", "structured-model")
+            ),
+            status="SUCCEEDED" if status == "VALID" else "FAILED",
+            input_tokens=getattr(source, "input_tokens", None),
+            output_tokens=getattr(source, "output_tokens", None),
+            latency_ms=int(getattr(source, "latency_ms", 0)),
+            error_code=final_error,
+            metadata={
+                "stage": "field_coreference_item_repair",
+                "final_status": status,
+                "original_error_code": original_error,
+                "repair_error_code": final_error,
+                "validator_version": FIELD_WIRE_VALIDATOR_VERSION,
+                "transport": getattr(source, "transport", None),
+                "output_mode": getattr(source, "output_mode", None),
+                "effective_reasoning_effort": getattr(
+                    source, "effective_reasoning_effort", None
+                ),
+                "provider_key_fingerprint": getattr(
+                    source, "provider_key_fingerprint", None
+                ),
+            },
+            stage="field_coreference_item_repair",
+            prompt_version=FIELD_PROMPT_VERSION,
+            schema_hash=_sha256(json.dumps(schema, sort_keys=True)),
+            input_hash=_sha256(prompt),
+        )
 
     def _field_batch_fallback(self, item: _PendingFieldDecision, reason: str) -> None:
         if item.future.done():
             return
+        with self._planned_telemetry_lock:
+            self._planned_item_fallback_count += 1
         self.registry.append_decision_audit(
             DecisionAuditRecord(
                 audit_id=f"field-batch-fallback:{uuid.uuid4()}",
@@ -1268,7 +1985,7 @@ class FieldCoreferenceResolver:
         batch: Sequence[_PendingFieldDecision],
         prompt: str,
         schema: dict[str, object],
-        status: str,
+        status: Literal["SUCCEEDED", "FAILED"],
         result: object | None,
         error_code: str | None,
         split_depth: int,
@@ -1276,6 +1993,7 @@ class FieldCoreferenceResolver:
         valid_count: int = 0,
     ) -> None:
         sample = batch[0]
+        audit_source = result if result is not None else exception
         self.registry.record_model_call(
             model_call_id=call_id,
             run_id=sample.run_id,
@@ -1296,6 +2014,15 @@ class FieldCoreferenceResolver:
                 "split_depth": split_depth,
                 "namespace": sample.value.namespace.value,
                 "wire_protocol": "field_batch_v2",
+                "transport": getattr(audit_source, "transport", None),
+                "output_mode": getattr(audit_source, "output_mode", None),
+                "effective_reasoning_effort": getattr(
+                    audit_source, "effective_reasoning_effort", None
+                ),
+                "provider_key_fingerprint": getattr(
+                    audit_source, "provider_key_fingerprint", None
+                ),
+                "parse_diagnostics": getattr(audit_source, "parse_diagnostics", {}),
             },
             stage="field_coreference",
             prompt_version=FIELD_PROMPT_VERSION,
@@ -1345,6 +2072,7 @@ class FieldCoreferenceResolver:
         policy_hash = _sha256(policy)
         prompt = json.dumps(model_input, ensure_ascii=False, separators=(",", ":"))
         invalid_payload: object | None = None
+        validation_error_code = "PYDANTIC_VALIDATION_FAILED"
         for attempt in range(2):
             user_prompt = prompt
             if attempt:
@@ -1352,11 +2080,8 @@ class FieldCoreferenceResolver:
                     {
                         "request": model_input,
                         "invalid_payload": invalid_payload,
-                        "repair_instruction": (
-                            "Return the required schema. LINK may use only a canonical_id "
-                            "present in candidates. LINK and UNRESOLVED must omit "
-                            "target_namespace. NEW must omit canonical_id, and only "
-                            "participant.unknown NEW must return one allowed target_namespace."
+                        "repair_instruction": _field_repair_instruction(
+                            validation_error_code
                         ),
                     },
                     ensure_ascii=False,
@@ -1402,86 +2127,11 @@ class FieldCoreferenceResolver:
                 )
                 raise
             try:
-                payload = result.payload
-                fallback_reason: str | None = None
-                if isinstance(payload, dict):
-                    payload = {
-                        key: payload[key]
-                        for key in ("decision", "canonical_id", "target_namespace")
-                        if key in payload
-                    }
-                    decision_value = payload.get("decision")
-                    if isinstance(decision_value, str):
-                        decision_by_token = {
-                            decision.value.casefold(): decision.value for decision in FieldDecision
-                        }
-                        normalized_decision = decision_by_token.get(
-                            decision_value.strip().casefold()
-                        )
-                        if normalized_decision is not None:
-                            payload["decision"] = normalized_decision
-                    if payload.get("decision") == FieldDecision.LINK.value:
-                        candidate_id = payload.get("canonical_id")
-                        if isinstance(candidate_id, str) and candidate_id in short_to_full:
-                            payload["canonical_id"] = short_to_full[candidate_id]
-                    else:
-                        payload.pop("canonical_id", None)
-                    target_value = payload.get("target_namespace")
-                    if isinstance(target_value, str):
-                        raw_namespace = target_value.strip()
-                    else:
-                        raw_namespace = ""
-                    namespace_by_token = {
-                        namespace.name.casefold(): namespace.value for namespace in FieldNamespace
-                    }
-                    namespace_by_token.update(
-                        {
-                            namespace.value.casefold(): namespace.value
-                            for namespace in FieldNamespace
-                        }
-                    )
-                    namespace_by_token.update(
-                        {
-                            "company": FieldNamespace.PARTICIPANT_COMPANY.value,
-                            "institution": FieldNamespace.PARTICIPANT_INSTITUTION.value,
-                            "person": FieldNamespace.PARTICIPANT_PERSON.value,
-                            "instrument": FieldNamespace.PARTICIPANT_INSTRUMENT.value,
-                            "authority": FieldNamespace.PARTICIPANT_AUTHORITY.value,
-                        }
-                    )
-                    normalized_namespace = namespace_by_token.get(
-                        raw_namespace.casefold().replace("-", "_")
-                    )
-                    if normalized_namespace is not None:
-                        payload["target_namespace"] = normalized_namespace
-                    elif (
-                        payload.get("decision") == FieldDecision.NEW.value
-                        and value.namespace is FieldNamespace.PARTICIPANT_UNKNOWN
-                    ):
-                        payload = {"decision": FieldDecision.UNRESOLVED.value}
-                        fallback_reason = "INVALID_UNKNOWN_PARTICIPANT_TARGET_TO_UNRESOLVED"
-                    else:
-                        payload.pop("target_namespace", None)
-                output = FieldCoreferenceModelOutput.model_validate(payload)
-                candidate_ids = {candidate.canonical_id for candidate in candidates}
-                if (
-                    output.decision is FieldDecision.LINK
-                    and output.canonical_id not in candidate_ids
-                ):
-                    raise ValueError("LINK canonical_id is not in the supplied candidates")
-                if value.namespace is FieldNamespace.PARTICIPANT_UNKNOWN:
-                    if output.decision is FieldDecision.NEW:
-                        if output.target_namespace not in _UNKNOWN_TARGET_NAMESPACES:
-                            raise ValueError(
-                                "participant.unknown NEW requires an allowed target_namespace"
-                            )
-                    elif output.target_namespace is not None:
-                        raise ValueError(
-                            "participant.unknown target_namespace is allowed only for NEW"
-                        )
-                elif output.target_namespace is not None:
-                    raise ValueError("target_namespace is allowed only for participant.unknown NEW")
-                if fallback_reason is not None:
+                normalized = normalize_field_wire_item(
+                    result.payload, value.namespace, short_to_full
+                )
+                output = normalized.output
+                if normalized.rules:
                     self.registry.append_decision_audit(
                         DecisionAuditRecord(
                             audit_id=(
@@ -1489,16 +2139,21 @@ class FieldCoreferenceResolver:
                                 f"{_sha256(prompt)}:{attempt + 1}"
                             ),
                             run_id=run_id,
-                            decision_type="FIELD_MODEL_ADAPTER_FALLBACK",
+                            decision_type="FIELD_WIRE_NORMALIZED",
                             subject_id=value.namespace.value,
                             payload={
-                                "reason": fallback_reason,
-                                "action": FieldDecision.UNRESOLVED.value,
+                                "rules": list(normalized.rules),
+                                "namespace": value.namespace.value,
                             },
                         )
                     )
             except (ValidationError, ValueError) as exc:
                 invalid_payload = result.payload
+                validation_error_code = (
+                    _field_pydantic_error_code(exc)
+                    if isinstance(exc, ValidationError)
+                    else _field_wire_error_code(exc)
+                )
                 validation_errors: object
                 if isinstance(exc, ValidationError):
                     validation_errors = [
@@ -1595,18 +2250,6 @@ class FieldCoreferenceResolver:
             )
             normalized = normalize_field_text(value.raw_value)
             identity_seed = f"unresolved:{target_namespace.value}:{normalized}"
-            if target_namespace is FieldNamespace.PACKAGE_ANCHOR:
-                if value.hints.parent_identity_key:
-                    identity_seed = (
-                        f"unresolved:{target_namespace.value}:"
-                        f"parent:{value.hints.parent_identity_key}"
-                    )
-                else:
-                    source_scope = value.hints.source_fingerprint or "unknown-source"
-                    evidence_scope = value.hints.evidence_group_hash or normalized
-                    identity_seed = (
-                        f"unresolved:{target_namespace.value}:{source_scope}:{evidence_scope}"
-                    )
             if _is_generic(value.raw_value) or target_namespace is FieldNamespace.FISCAL_PERIOD:
                 identity_seed = f"{identity_seed}:{scope}"
             entry = self._create_entry(
@@ -1685,18 +2328,6 @@ class FieldCoreferenceResolver:
             aliases=[canonical_text],
             external_id=external_id,
         )
-        existing = self.registry.get_field_registry_entry(registry_id)
-        if (
-            existing is not None
-            and existing.namespace is value.namespace
-            and value.namespace is FieldNamespace.PACKAGE_ANCHOR
-            and ":parent:" in identity_seed
-        ):
-            self.registry.update_field_registry_aliases(
-                existing.id,
-                _stable_aliases([*existing.aliases, existing.canonical_text, canonical_text]),
-            )
-            return self.registry.get_field_registry_entry(existing.id) or existing
         self.registry.create_field_registry_entry(entry)
         stored = self.registry.get_field_registry_entry(registry_id)
         if stored is None:
@@ -1998,7 +2629,7 @@ def _decision_schema(namespace: FieldNamespace) -> dict[str, object]:
     return schema
 
 
-def _batch_decision_schema() -> dict[str, object]:
+def _batch_decision_schema(namespace: FieldNamespace) -> dict[str, object]:
     """Provider-friendly wire schema; all relational rules stay in local validation."""
 
     return {
@@ -2024,7 +2655,17 @@ def _batch_decision_schema() -> dict[str, object]:
                             "enum": [item.value for item in FieldDecision],
                         },
                         "canonical_id": {"type": ["string", "null"]},
-                        "target_namespace": {"type": ["string", "null"]},
+                        "target_namespace": (
+                            {
+                                "type": ["string", "null"],
+                                "enum": [
+                                    *sorted(item.value for item in _UNKNOWN_TARGET_NAMESPACES),
+                                    None,
+                                ],
+                            }
+                            if namespace is FieldNamespace.PARTICIPANT_UNKNOWN
+                            else {"type": "null"}
+                        ),
                     },
                 },
             }
@@ -2093,6 +2734,56 @@ def _sanitize(value: str, *, limit: int) -> str:
 
 def _sha256(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
+def _field_wire_error_code(exc: ValueError) -> str:
+    message = str(exc)
+    if "unknown field decision" in message:
+        return "DECISION_UNKNOWN"
+    if "LINK canonical_id" in message:
+        return "LINK_CANDIDATE_UNKNOWN"
+    if "requires an allowed target_namespace" in message:
+        return "TARGET_NAMESPACE_REQUIRED"
+    if "target_namespace is not allowed" in message or "allowed only" in message:
+        return "TARGET_NAMESPACE_FORBIDDEN"
+    if "unknown target_namespace" in message:
+        return "TARGET_NAMESPACE_UNKNOWN"
+    if "canonical_id" in message:
+        return "CANONICAL_ID_FORBIDDEN"
+    return "BUSINESS_VALIDATION_FAILED"
+
+
+def _field_pydantic_error_code(exc: ValidationError) -> str:
+    errors = exc.errors(include_input=False, include_url=False)
+    messages = " ".join(str(item.get("msg", "")) for item in errors).casefold()
+    locations = {str(part) for item in errors for part in item.get("loc", ())}
+    if "decision" in locations:
+        return "DECISION_UNKNOWN"
+    if "canonical_id" in locations or "canonical_id" in messages:
+        return "LINK_CANDIDATE_UNKNOWN"
+    if "target_namespace" in locations or "target_namespace" in messages:
+        return "TARGET_NAMESPACE_UNKNOWN"
+    return "PYDANTIC_VALIDATION_FAILED"
+
+
+def _field_repair_instruction(error_code: str) -> str:
+    if error_code in {"TARGET_NAMESPACE_REQUIRED", "TARGET_NAMESPACE_UNKNOWN"}:
+        return (
+            "For participant.unknown NEW, use exactly one allowed target_namespace; "
+            "otherwise choose UNRESOLVED."
+        )
+    if error_code == "LINK_CANDIDATE_UNKNOWN":
+        return (
+            "For LINK, copy one supplied candidate_id exactly; otherwise choose NEW "
+            "or UNRESOLVED."
+        )
+    if error_code == "DECISION_UNKNOWN":
+        return "Use exactly one decision: LINK, NEW, or UNRESOLVED."
+    if error_code == "TARGET_NAMESPACE_FORBIDDEN":
+        return (
+            "Set target_namespace to null unless this is participant.unknown with decision NEW."
+        )
+    return "Return one valid decision that follows the supplied schema and field policy."
 
 
 def _cosine(left: Sequence[float], right: Sequence[float]) -> float:

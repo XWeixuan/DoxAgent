@@ -1,8 +1,225 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Codex D1 node output",
-  "type": "object",
+  "$defs": {
+    "AgentObservationCandidate": {
+      "additionalProperties": false,
+      "properties": {
+        "metric_key": {
+          "title": "Metric Key",
+          "type": "string"
+        },
+        "meaning": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Meaning"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "title": "Value"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Unit"
+        },
+        "as_of": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "As Of"
+        },
+        "source_aliases": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Source Aliases",
+          "type": "array"
+        },
+        "method": {
+          "title": "Method",
+          "type": "string"
+        },
+        "confidence": {
+          "default": "medium",
+          "enum": [
+            "high",
+            "medium",
+            "low"
+          ],
+          "title": "Confidence",
+          "type": "string"
+        }
+      },
+      "required": [
+        "metric_key",
+        "meaning",
+        "value",
+        "unit",
+        "as_of",
+        "source_aliases",
+        "method",
+        "confidence"
+      ],
+      "title": "AgentObservationCandidate",
+      "type": "object"
+    },
+    "EntityRelation": {
+      "additionalProperties": false,
+      "properties": {
+        "关系主体": {
+          "title": "关系主体",
+          "type": "string"
+        },
+        "关系对象": {
+          "title": "关系对象",
+          "type": "string"
+        },
+        "关系类型": {
+          "title": "关系类型",
+          "type": "string"
+        },
+        "关系说明": {
+          "title": "关系说明",
+          "type": "string"
+        },
+        "关联业务或产品": {
+          "title": "关联业务或产品",
+          "type": "string"
+        }
+      },
+      "required": [
+        "关系主体",
+        "关系对象",
+        "关系类型",
+        "关系说明",
+        "关联业务或产品"
+      ],
+      "title": "EntityRelation",
+      "type": "object"
+    },
+    "FutureNode": {
+      "additionalProperties": false,
+      "properties": {
+        "时间": {
+          "title": "时间",
+          "type": "string"
+        },
+        "未来事项": {
+          "title": "未来事项",
+          "type": "string"
+        },
+        "与目标公司的关系": {
+          "title": "与目标公司的关系",
+          "type": "string"
+        },
+        "来源": {
+          "title": "来源",
+          "type": "string"
+        },
+        "来源发布日期": {
+          "title": "来源发布日期",
+          "type": "string"
+        }
+      },
+      "required": [
+        "时间",
+        "未来事项",
+        "与目标公司的关系",
+        "来源",
+        "来源发布日期"
+      ],
+      "title": "FutureNode",
+      "type": "object"
+    },
+    "NodeOutputMetadata": {
+      "additionalProperties": false,
+      "description": "Closed extension point; add versioned fields before agents may emit them.",
+      "properties": {},
+      "title": "NodeOutputMetadata",
+      "type": "object",
+      "required": []
+    }
+  },
   "additionalProperties": false,
+  "properties": {
+    "status": {
+      "title": "Status",
+      "type": "string"
+    },
+    "summary": {
+      "default": "",
+      "title": "Summary",
+      "type": "string"
+    },
+    "report_markdown": {
+      "default": "",
+      "title": "Report Markdown",
+      "type": "string"
+    },
+    "warnings": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Warnings",
+      "type": "array"
+    },
+    "observation_candidates": {
+      "items": {
+        "$ref": "#/$defs/AgentObservationCandidate"
+      },
+      "title": "Observation Candidates",
+      "type": "array"
+    },
+    "entity_relations": {
+      "items": {
+        "$ref": "#/$defs/EntityRelation"
+      },
+      "title": "Entity Relations",
+      "type": "array"
+    },
+    "future_nodes": {
+      "items": {
+        "$ref": "#/$defs/FutureNode"
+      },
+      "title": "Future Nodes",
+      "type": "array"
+    },
+    "metadata": {
+      "$ref": "#/$defs/NodeOutputMetadata"
+    }
+  },
   "required": [
     "status",
     "summary",
@@ -13,14 +230,6 @@
     "future_nodes",
     "metadata"
   ],
-  "properties": {
-    "status": {"type": "string"},
-    "summary": {"type": "string"},
-    "report_markdown": {"type": "string"},
-    "warnings": {"type": "array", "items": {"type": "string"}},
-    "observation_candidates": {"type": "array", "items": {"type": "object"}},
-    "entity_relations": {"type": "array", "items": {"type": "object"}},
-    "future_nodes": {"type": "array", "items": {"type": "object"}},
-    "metadata": {"type": "object"}
-  }
+  "title": "NodeOutput",
+  "type": "object"
 }
