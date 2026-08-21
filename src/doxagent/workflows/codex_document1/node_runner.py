@@ -15,13 +15,16 @@ from doxagent.codex_runtime.client import CodexWorkerClient, WorkspaceClient
 from doxagent.codex_runtime.errors import StructuredOutputInvalid
 from doxagent.codex_runtime.repository import CodexRuntimeRepository
 from doxagent.codex_runtime.schema import (
+    CODEX_D1_WORKFLOW_VERSION,
     ArtifactKind,
     ArtifactRef,
     AttemptStatus,
     CitationManifest,
     CodexAgentRole,
     CodexD1Node,
+    CodexWorkflowVersion,
     NodeAttempt,
+    ResearchLane,
     ThreadRecord,
     utc_now,
 )
@@ -42,9 +45,7 @@ from doxagent.workflows.codex_document1.prompts import CodexD1PromptLoader
 from doxagent.workflows.codex_document1.schema import NODE_OUTPUT_SCHEMA, NodeOutput
 from doxagent.workflows.codex_document1.upstream_rebinder import UpstreamObservationRebinder
 
-NodeReuseResolver = Callable[
-    [str], Awaitable[tuple[NodeOutput, ArtifactRef] | None]
-]
+NodeReuseResolver = Callable[[str], Awaitable[tuple[NodeOutput, ArtifactRef] | None]]
 NodeEventSink = Callable[[str, str, dict[str, object]], Awaitable[None]]
 
 _ROLE_BY_NODE = {
@@ -56,6 +57,8 @@ _ROLE_BY_NODE = {
     CodexD1Node.C4_FINALIZATION: CodexAgentRole.C4,
     CodexD1Node.O4_B: CodexAgentRole.O4,
     CodexD1Node.O4_A: CodexAgentRole.O4,
+    CodexD1Node.C5: CodexAgentRole.C5,
+    CodexD1Node.O4: CodexAgentRole.O4,
 }
 
 
@@ -86,11 +89,18 @@ class CodexD1NodeRunner:
         max_subagents: int = 2,
         usage_repository: ModelUsageRepository | None = None,
         event_sink: NodeEventSink | None = None,
+        workflow_version: CodexWorkflowVersion = CODEX_D1_WORKFLOW_VERSION,
+        research_lane: ResearchLane = ResearchLane.LEGACY_DOCUMENT1,
     ) -> None:
         self._worker = worker
         self._workspace = workspace
         self._repository = repository
-        self._contexts = CodexD1ContextCompiler(workspace, repository)
+        self._contexts = CodexD1ContextCompiler(
+            workspace,
+            repository,
+            workflow_version=workflow_version,
+            research_lane=research_lane,
+        )
         self._prompts = CodexD1PromptLoader(prompt_root)
         self._attempt_bundles = AttemptBundleSeeder(workspace, prompt_root)
         self._attempt_outputs = AttemptOutputValidator(workspace)
@@ -103,6 +113,8 @@ class CodexD1NodeRunner:
         self._max_subagents = max_subagents
         self._usage_repository = usage_repository
         self._event_sink = event_sink
+        self._workflow_version = workflow_version
+        self._research_lane = research_lane
 
     @property
     def attempt_bundles(self) -> AttemptBundleSeeder:
@@ -127,6 +139,8 @@ class CodexD1NodeRunner:
         role = role_for_node(node)
         selected_thread_id = None if fresh_thread else thread_id
         attempt = NodeAttempt(
+            workflow_version=self._workflow_version,
+            research_lane=self._research_lane,
             attempt_id=attempt_id,
             cutoff_at=cutoff_at,
             ticker=ticker,
@@ -154,6 +168,8 @@ class CodexD1NodeRunner:
                 context_payload=rebound,
                 horizontal=horizontal,
                 previous_failure=previous_failure,
+                workflow_version=self._workflow_version,
+                research_lane=self._research_lane,
             )
             attempt = attempt.model_copy(update={"input_sha256": seeded.input_sha256})
             self._repository.save_attempt(attempt)
@@ -175,6 +191,8 @@ class CodexD1NodeRunner:
             context_file = await self._workspace.read_text(run_id, seeded.context_path)
             self._repository.save_artifact(
                 ArtifactRef(
+                    workflow_version=self._workflow_version,
+                    research_lane=self._research_lane,
                     artifact_id=uuid4().hex,
                     run_id=run_id,
                     node=node,
@@ -198,6 +216,8 @@ class CodexD1NodeRunner:
                     "exact failure."
                 )
             worker_request = WorkerRunRequest(
+                workflow_version=self._workflow_version,
+                research_lane=self._research_lane,
                 run_id=run_id,
                 ticker=ticker,
                 node=node,
@@ -211,13 +231,16 @@ class CodexD1NodeRunner:
                 model_provider=self._model_provider,
                 effort=self._effort,
                 timeout_seconds=self._timeout_seconds,
-                allow_subagents=node in {CodexD1Node.C1, CodexD1Node.C3, CodexD1Node.O4_A},
+                allow_subagents=node
+                in {CodexD1Node.C1, CodexD1Node.C3, CodexD1Node.O4_A, CodexD1Node.C5},
                 max_subagents=self._max_subagents,
             )
             job = await self._worker.run(worker_request)
             if job.thread_id:
                 self._repository.save_thread(
                     ThreadRecord(
+                        workflow_version=self._workflow_version,
+                        research_lane=self._research_lane,
                         ticker=ticker,
                         run_id=run_id,
                         agent_role=role,
@@ -229,7 +252,13 @@ class CodexD1NodeRunner:
             if job.status != "succeeded" or not job.final_response:
                 raise StructuredOutputInvalid(job.error_message or "worker returned no response")
             output = NodeOutput.model_validate_json(job.final_response)
-            validate_node_output(node, output)
+            validate_node_output(
+                node,
+                output,
+                require_complete_c4_enrichment=(
+                    self._research_lane is ResearchLane.GLOBAL_RESEARCH
+                ),
+            )
             await self._attempt_outputs.validate(
                 run_id=run_id,
                 node=node,
@@ -251,6 +280,11 @@ class CodexD1NodeRunner:
                 anchor=node.value,
                 markdown=output.report_markdown,
             )
+            unresolved = sorted({entry.alias for entry in manifest.entries if not entry.resolved})
+            if self._research_lane is not ResearchLane.LEGACY_DOCUMENT1 and unresolved:
+                raise StructuredOutputInvalid(
+                    "unresolved citation aliases: " + ", ".join(unresolved)
+                )
             self._repository.save_artifact(report)
             self._repository.save_artifact(completion)
             attempt = attempt.model_copy(
@@ -336,9 +370,7 @@ class CodexD1NodeRunner:
                 continue
             try:
                 mirror = await self._workspace.read_text(run_id, mirror_path)
-                if mirror.content is None or not projection_matches(
-                    observation, mirror.content
-                ):
+                if mirror.content is None or not projection_matches(observation, mirror.content):
                     warnings.append(
                         f"observation projection checksum mismatch: {observation.alias}"
                     )
@@ -475,13 +507,26 @@ def role_for_node(node: CodexD1Node) -> CodexAgentRole:
         raise ValueError(f"node is not executable by CodexD1NodeRunner: {node.value}") from exc
 
 
-def validate_node_output(node: CodexD1Node, output: NodeOutput) -> None:
-    if node is CodexD1Node.C4_FINALIZATION and not (
-        output.entity_relations or output.future_nodes
-    ):
+def validate_node_output(
+    node: CodexD1Node,
+    output: NodeOutput,
+    *,
+    require_complete_c4_enrichment: bool = False,
+) -> None:
+    if node is CodexD1Node.C4_FINALIZATION and not (output.entity_relations or output.future_nodes):
         raise StructuredOutputInvalid("C4 finalization returned neither relation nor future nodes")
     if node is CodexD1Node.O4_A and not output.report_markdown.strip():
         raise StructuredOutputInvalid("O4-A requires a separate Markdown report")
+    if node in {CodexD1Node.C5, CodexD1Node.O4} and not output.report_markdown.strip():
+        raise StructuredOutputInvalid(f"{node.value} requires a separate Markdown report")
+    if (
+        require_complete_c4_enrichment
+        and node is CodexD1Node.C4_ENRICHMENT
+        and not (output.entity_relations or output.future_nodes)
+    ):
+        raise StructuredOutputInvalid(
+            "C4 enrichment requires the complete relation/future-node snapshot"
+        )
 
 
 def bounded_error_message(exc: BaseException) -> str:

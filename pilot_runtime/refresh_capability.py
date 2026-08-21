@@ -15,9 +15,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 DEFAULT_CAPABILITY_YEARS = 10
-_CAPABILITY_LINE = re.compile(
-    r'(?m)^DOXAGENT_DATA_MCP_CAPABILITY = "[^"]*"$'
-)
+_CAPABILITY_LINE = re.compile(r'(?m)^DOXAGENT_DATA_MCP_CAPABILITY = "[^"]*"$')
 
 
 def main() -> int:
@@ -88,11 +86,13 @@ def _refresh_case(
     data_env = config["mcp_servers"]["data"]["env"]
     if data_env.get("DOXAGENT_DATA_MCP_PUBLIC_KEY") != codec.public_key:
         raise ValueError(f"capability key mismatch: {case_root}")
-    from doxagent.codex_runtime.schema import CodexAgentRole, CodexD1Node
+    from doxagent.codex_runtime.schema import CodexAgentRole, CodexD1Node, ResearchLane
 
     expires_at = int(datetime.now(UTC).timestamp()) + ttl_hours * 3600
     attempt_id = str(manifest.get("node_attempt_id") or manifest["attempt_id"])
     capability = codec.issue(
+        workflow_version=str(manifest.get("workflow_version") or "codex_d1_v2"),
+        research_lane=ResearchLane(str(manifest.get("research_lane") or "legacy_document1")),
         run_id=str(manifest["run_id"]),
         node_id=CodexD1Node(str(manifest["node"])),
         node_attempt_id=attempt_id,

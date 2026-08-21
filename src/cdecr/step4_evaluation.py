@@ -8,7 +8,7 @@ import math
 import os
 import uuid
 from collections import Counter, defaultdict
-from collections.abc import Iterator, Sequence
+from collections.abc import Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from importlib import import_module
 from itertools import combinations
@@ -156,6 +156,7 @@ class Step4AcceptanceReport(StrictModel):
     boundaries: dict[str, Step4BoundaryOutcome]
     call_budget: Step4CallBudget
     stage_metrics: dict[str, Step4StageMetric] = Field(default_factory=dict)
+    n9_failure_recovery: dict[str, object] = Field(default_factory=dict)
     first_pass_wall_clock_ms: int = Field(default=0, ge=0)
     total_wall_clock_ms: int = Field(default=0, ge=0)
     idempotency: Step4Idempotency
@@ -822,6 +823,7 @@ def build_step4_report(
     expected_document_count: int = 24,
     first_pass_wall_clock_ms: int = 0,
     total_wall_clock_ms: int = 0,
+    n9_failure_recovery: Mapping[str, object] | None = None,
 ) -> Step4AcceptanceReport:
     document_by_id = {item.message_id: item for item in document_results}
     event_by_id = {item.message_id: item for item in event_results if item is not None}
@@ -913,6 +915,7 @@ def build_step4_report(
         boundaries=boundaries,
         call_budget=budget,
         stage_metrics=_stage_metrics(calls),
+        n9_failure_recovery=dict(n9_failure_recovery or {}),
         first_pass_wall_clock_ms=first_pass_wall_clock_ms,
         total_wall_clock_ms=total_wall_clock_ms,
         idempotency=idempotency,

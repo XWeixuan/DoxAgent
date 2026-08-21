@@ -6,6 +6,7 @@ from cdecr.provider_resilience import (
     ModelFailureClass,
     ProviderKeyHealthRegistry,
     classify_provider_error,
+    is_deferred_retry_provider_failure,
     is_provider_failure,
     is_provider_pressure,
 )
@@ -42,6 +43,23 @@ def test_failure_classifier_separates_local_output_from_provider_failure() -> No
     assert classify_provider_error(ProviderError("invalid_parameter", 400)) is (
         ModelFailureClass.REQUEST_CONTRACT_INVALID
     )
+
+
+def test_failure_classifier_reads_wrapped_provider_cause() -> None:
+    class WrappedPipelineError(RuntimeError):
+        code = "provider_error"
+
+    transient = ProviderError("upstream_error", 503)
+    try:
+        raise WrappedPipelineError("N9 request failed") from transient
+    except WrappedPipelineError as wrapped:
+        assert classify_provider_error(wrapped) is ModelFailureClass.PROVIDER_TRANSIENT
+        assert is_deferred_retry_provider_failure(wrapped)
+
+    unknown = ProviderError("provider_error")
+    assert classify_provider_error(unknown) is ModelFailureClass.UNKNOWN_PROVIDER_FAILURE
+    assert is_deferred_retry_provider_failure(unknown)
+    assert not is_deferred_retry_provider_failure(ProviderError("invalid_parameter", 400))
 
 
 def test_arrearage_quarantine_persists_only_fingerprint(tmp_path: Path) -> None:

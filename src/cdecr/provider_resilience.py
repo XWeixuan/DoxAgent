@@ -40,13 +40,30 @@ class ProviderBalanceBlockedError(RuntimeError):
         super().__init__("provider balance/auth is blocked for this process")
 
 
+def _exception_chain(exc: Exception) -> tuple[Exception, ...]:
+    chain: list[Exception] = []
+    seen: set[int] = set()
+    current: BaseException | None = exc
+    while isinstance(current, Exception) and id(current) not in seen:
+        chain.append(current)
+        seen.add(id(current))
+        current = current.__cause__ or (
+            None if current.__suppress_context__ else current.__context__
+        )
+    return tuple(chain)
+
+
 def classify_provider_error(exc: Exception) -> ModelFailureClass:
-    code = str(getattr(exc, "code", "")).casefold()
-    status = getattr(exc, "status_code", None)
-    body = getattr(exc, "body", None)
-    provider_code = str(body.get("code", "")).casefold() if isinstance(body, Mapping) else ""
-    text = f"{type(exc).__name__}:{exc}".casefold()
-    combined = f"{code}:{provider_code}:{text}"
+    chain = _exception_chain(exc)
+    codes = [str(getattr(item, "code", "")).casefold() for item in chain]
+    statuses = [getattr(item, "status_code", None) for item in chain]
+    provider_codes = [
+        str(body.get("code", "")).casefold()
+        for item in chain
+        if isinstance((body := getattr(item, "body", None)), Mapping)
+    ]
+    texts = [f"{type(item).__name__}:{item}".casefold() for item in chain]
+    combined = ":".join([*codes, *provider_codes, *texts])
     if any(
         token in combined
         for token in (
@@ -62,29 +79,37 @@ def classify_provider_error(exc: Exception) -> ModelFailureClass:
         return ModelFailureClass.OUTPUT_WHOLE_INVALID
     if "arrearage" in combined or "insufficient_balance" in combined:
         return ModelFailureClass.KEY_ARREARAGE
-    if status in {401, 403} or any(
+    if any(status in {401, 403} for status in statuses) or any(
         token in combined for token in ("unauthorized", "forbidden", "invalid_api_key")
     ):
         return ModelFailureClass.KEY_AUTH
-    if status == 429 or any(
+    if any(status == 429 for status in statuses) or any(
         token in combined for token in ("429", "rate_limit", "quota", "overload")
     ):
         return ModelFailureClass.PROVIDER_THROTTLED
-    if status in {408, 425} or (isinstance(status, int) and 500 <= status <= 599) or any(
+    if any(
+        status in {408, 425} or (isinstance(status, int) and 500 <= status <= 599)
+        for status in statuses
+    ) or any(
         token in combined
         for token in ("timeout", "connection", "reset", "5xx", "service_unavailable")
     ):
         return ModelFailureClass.PROVIDER_TRANSIENT
-    if status == 400 or any(
+    if any(status == 400 for status in statuses) or any(
         token in combined for token in ("invalid_request", "invalid_parameter", "context_exceeded")
     ):
         return ModelFailureClass.REQUEST_CONTRACT_INVALID
     # Plain local ValueError/Pydantic-style validation failures carry no HTTP
     # status or provider error code.  They must remain item-local instead of
     # triggering provider retry, key rotation, or batch fan-out.
-    if isinstance(exc, ValueError) and not code and status is None and not provider_code:
+    if (
+        isinstance(exc, ValueError)
+        and not any(codes)
+        and not any(status is not None for status in statuses)
+        and not any(provider_codes)
+    ):
         return ModelFailureClass.OUTPUT_LOCAL_INVALID
-    if code or status is not None or provider_code:
+    if any(codes) or any(status is not None for status in statuses) or any(provider_codes):
         return ModelFailureClass.UNKNOWN_PROVIDER_FAILURE
     return ModelFailureClass.OUTPUT_LOCAL_INVALID
 
@@ -106,6 +131,21 @@ def is_retryable_provider_failure(exc: Exception) -> bool:
     return classify_provider_error(exc) in {
         ModelFailureClass.PROVIDER_THROTTLED,
         ModelFailureClass.PROVIDER_TRANSIENT,
+    }
+
+
+def is_deferred_retry_provider_failure(exc: Exception) -> bool:
+    """Return whether N9 may make one node-end retry wave for this failure.
+
+    Unknown provider failures are deliberately excluded from request-local
+    retries and Circuit pressure, but one bounded N9 retry is safe after the
+    first wave has completely drained.
+    """
+
+    return classify_provider_error(exc) in {
+        ModelFailureClass.PROVIDER_THROTTLED,
+        ModelFailureClass.PROVIDER_TRANSIENT,
+        ModelFailureClass.UNKNOWN_PROVIDER_FAILURE,
     }
 
 

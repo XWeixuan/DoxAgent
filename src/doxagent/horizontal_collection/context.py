@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from typing import Any
 
+from doxagent.codex_runtime.schema import ResearchLane
 from doxagent.horizontal_collection.registry import (
+    collection_target_registry_for_lane,
     default_collection_target_registry,
     default_metric_registry,
 )
@@ -19,6 +21,8 @@ _ROLE_PREFIXES = {
     "c3": ("c3_",),
     "o4_b": ("o4_",),
     "o4_a": ("o4_", "c1_"),
+    "c5": ("c5_", "c1_"),
+    "o4": ("o4_",),
 }
 
 _OPTIONAL_METRICS = {
@@ -116,6 +120,40 @@ _OPTIONAL_METRICS = {
         "ind_average_selling_price",
         "ind_market_share_change",
     ),
+    "c5": (
+        "market_share_price",
+        "market_cap",
+        "market_enterprise_value",
+        "market_primary_forward_multiple",
+        "market_primary_multiple_percentile",
+        "market_peer_premium",
+        "market_atm_iv_30d",
+        "market_next_event_implied_move",
+        "fin_revenue",
+        "fin_gross_margin",
+        "fin_operating_margin",
+        "fin_free_cash_flow",
+        "ind_market_growth",
+        "ind_order_growth",
+        "ind_inventory_level",
+        "ind_capacity_utilization",
+        "ind_average_selling_price",
+        "ind_market_share_change",
+    ),
+    "o4": (
+        "market_share_price",
+        "market_price_history",
+        "market_daily_ohlcv",
+        "market_return_1d",
+        "market_return_1m",
+        "market_return_3m",
+        "market_return_1y",
+        "market_relative_return",
+        "market_realized_volatility",
+        "market_short_interest_pct_float",
+        "market_days_to_cover",
+        "market_short_interest_change",
+    ),
 }
 
 
@@ -130,7 +168,12 @@ def render_horizontal_context(
     resolved_role = role or _role_from_prefix(target_prefix)
     prefixes = _ROLE_PREFIXES[resolved_role]
     metrics = default_metric_registry()
-    targets = default_collection_target_registry()
+    if resolved_role == "c5":
+        targets = collection_target_registry_for_lane(ResearchLane.GLOBAL_RESEARCH)
+    elif resolved_role in {"c2", "o4"}:
+        targets = collection_target_registry_for_lane(ResearchLane.MARKET_SITUATION_RESEARCH)
+    else:
+        targets = default_collection_target_registry()
 
     def target_definition(target_id: str) -> CollectionTargetDefinition | None:
         try:
@@ -216,7 +259,13 @@ def render_horizontal_context(
 
 
 def _role_from_prefix(prefix: str | None) -> str:
-    mapping = {"c1_": "c1", "c2_": "c2", "c3_": "c3", "o4_": "o4_b"}
+    mapping = {
+        "c1_": "c1",
+        "c2_": "c2",
+        "c3_": "c3",
+        "c5_": "c5",
+        "o4_": "o4",
+    }
     if prefix not in mapping:
         raise ValueError("role or a known target_prefix is required")
     return mapping[prefix]

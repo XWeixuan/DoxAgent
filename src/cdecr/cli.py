@@ -997,6 +997,7 @@ def _evaluation_run_locked(settings: CDECRSettings, args: argparse.Namespace) ->
     ]
     try:
         bulk_events = event_engine.process_batch(eligible_cross_document_ids)
+        n9_failure_recovery = event_engine.n9_failure_recovery_telemetry()
     finally:
         event_engine.close()
     bulk_event_by_id = {event.message_id: event for event in bulk_events}
@@ -1096,6 +1097,7 @@ def _evaluation_run_locked(settings: CDECRSettings, args: argparse.Namespace) ->
         expected_document_count=len(corpus),
         first_pass_wall_clock_ms=first_pass_wall_clock_ms,
         total_wall_clock_ms=round((perf_counter() - evaluation_started) * 1000),
+        n9_failure_recovery=n9_failure_recovery,
     )
     write_step4_report(report, args.output)
     _json_stdout(

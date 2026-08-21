@@ -81,6 +81,7 @@ def render_task(
     profile: str = "functional",
     as_of_est: date | None = None,
     manual_upstream_paths: tuple[str, ...] = (),
+    research_lane: str = "legacy_document1",
 ) -> str:
     current_est_date = as_of_est or datetime.now(ZoneInfo("America/New_York")).date()
     structured_c4 = node.startswith("c4_")
@@ -112,10 +113,11 @@ def render_task(
         quality_focus = {
             "c1": "完整执行 attempt-local C1 fundamental-research skill",
             "c3": "完整执行 attempt-local C3 industry-research skill",
-            "o4_a": "完整执行 attempt-local O4-A market-implied-expectations skill",
+            "c2": "完整执行独立 Market Situation C2 宏观研究合同",
+            "c5": "完整执行 attempt-local C5 market-implied-expectations skill",
+            "o4": "完整执行独立 Market Situation O4 价格研究合同",
             "c4_pre_scan": "完整执行 C4 前置实体地图与未来节点扫描合同",
             "c4_enrichment": "完整执行 C4 研究后未来节点补充合同",
-            "c4_finalization": "完整执行 C4 去重与公开五字段终稿合同",
         }.get(node, f"完整执行 attempt-local {node} skill")
         objective = (
             f"本次正式产物质量是唯一主目标。{quality_focus}，"
@@ -157,10 +159,16 @@ def render_task(
 - 最终 report_markdown 与 report_draft.md 保持一致。
 
 完成前检查 required sections、progress、draft、candidates、全部 citation，并确认未误改只读输入。"""
-    return f"""你现在执行一次 Document 1 v2 单节点 Pilot Test。
+    lane_title = {
+        "global_research": "Global Research / Document 1",
+        "market_situation_research": "Market Situation Research",
+        "legacy_document1": "Legacy Document 1 v2",
+    }.get(research_lane, research_lane)
+    return f"""你现在执行一次 {lane_title} 单节点 Pilot Test。
 
 当前工作目录：`{case_root}`
 测试节点：`{node}`
+Research Lane：`{research_lane}`
 Run ID：`{run_id}`
 Node Attempt ID：`{attempt_id}`（这是 capability、MCP 与 O# 命名空间的 canonical ID；
 持久化对象中的 legacy `attempt_id` 必须与其逐字相等）

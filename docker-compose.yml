@@ -35,6 +35,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dashboard
+      args:
+        VITE_CODEX_D1_V2_ENABLED: ${VITE_CODEX_D1_V2_ENABLED:-false}
+        VITE_CODEX_RESEARCH_LANES_ENABLED: ${VITE_CODEX_RESEARCH_LANES_ENABLED:-false}
     image: doxagent-dashboard:latest
     container_name: doxagent-runtime-scheduler
     restart: unless-stopped
@@ -144,6 +147,7 @@ services:
       DOXAGENT_STOCKTWITS_STORAGE_MODE: sqlite
       DOXAGENT_STOCKTWITS_SQLITE_PATH: /app/.tmp/stocktwits_polling.sqlite3
       DOXAGENT_CODEX_D1_V2_ENABLED: ${DOXAGENT_CODEX_D1_V2_ENABLED:-false}
+      DOXAGENT_CODEX_RESEARCH_LANES_ENABLED: ${DOXAGENT_CODEX_RESEARCH_LANES_ENABLED:-false}
       DOXAGENT_CODEX_WORKER_BASE_URL: ${DOXAGENT_CODEX_WORKER_BASE_URL:-http://codex-worker:8791}
       DOXAGENT_CODEX_WORKER_BEARER_TOKEN: ${DOXAGENT_CODEX_WORKER_BEARER_TOKEN:-}
       DOXAGENT_CODEX_CAPABILITY_SECRET: ${DOXAGENT_CODEX_CAPABILITY_SECRET:-}

@@ -16,7 +16,7 @@ def main() -> int:
     load_dotenv(runtime_root / ".env.local", override=True)
     repo_root = Path(os.environ["DOXAGENT_PILOT_REPO_ROOT"]).resolve()
     sys.path.insert(0, str(repo_root / "src"))
-    from doxagent.codex_runtime.schema import CodexD1Node
+    from doxagent.codex_runtime.schema import CodexD1Node, ResearchLane
     from doxagent.pilot.case_builder import (
         DEFAULT_PILOT_CAPABILITY_HOURS,
         PilotCaseBuilder,
@@ -24,9 +24,14 @@ def main() -> int:
         prepare_case_sync,
     )
 
-    parser = argparse.ArgumentParser(description="Build a removable Codex D1 Pilot case")
+    parser = argparse.ArgumentParser(description="Build a removable Codex research Pilot case")
     parser.add_argument("--source-run", required=True)
     parser.add_argument("--node", required=True, choices=[item.value for item in CodexD1Node])
+    parser.add_argument(
+        "--lane",
+        required=True,
+        choices=("global_research", "market_situation_research", "legacy_document1"),
+    )
     parser.add_argument("--case-id", required=True)
     parser.add_argument(
         "--capability-hours",
@@ -56,6 +61,7 @@ def main() -> int:
             capability_hours=args.capability_hours,
             profile=args.profile,
             upstream_dir=args.upstream_dir,
+            research_lane=ResearchLane(args.lane),
         ),
     )
     print(

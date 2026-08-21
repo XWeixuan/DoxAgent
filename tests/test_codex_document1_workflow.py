@@ -13,6 +13,7 @@ from doxagent.codex_runtime.schema import (
     CodexAgentRole,
     CodexD1Node,
     PublishedDocument,
+    ResearchLane,
 )
 from doxagent.codex_worker.local_client import LocalWorkspaceClient
 from doxagent.codex_worker.schema import WorkerJob, WorkerRunRequest
@@ -41,6 +42,14 @@ from doxagent.workflows.codex_document1.schema import (
     NODE_OUTPUT_SCHEMA,
     Document1V2RunRequest,
     NodeOutput,
+)
+from doxagent.workflows.codex_global_research import (
+    CodexGlobalResearchOrchestrator,
+    GlobalResearchRunRequest,
+)
+from doxagent.workflows.codex_market_situation import (
+    CodexMarketSituationOrchestrator,
+    MarketSituationRunRequest,
 )
 
 
@@ -137,7 +146,11 @@ class _FakeWorker:
                     "confidence": "medium",
                 }
             ]
-        if request.node is CodexD1Node.C4_FINALIZATION:
+        if request.node in {
+            CodexD1Node.C4_PRE_SCAN,
+            CodexD1Node.C4_ENRICHMENT,
+            CodexD1Node.C4_FINALIZATION,
+        }:
             output["entity_relations"] = [
                 {
                     "关系主体": "NVDA",
@@ -162,6 +175,8 @@ class _FakeWorker:
             CodexD1Node.C3,
             CodexD1Node.O4_B,
             CodexD1Node.O4_A,
+            CodexD1Node.C5,
+            CodexD1Node.O4,
         }:
             task_file = await self.workspace.read_text(
                 request.run_id, f"attempts/{request.attempt_id}/input/task.json"
@@ -310,6 +325,114 @@ def _horizontal() -> tuple[HorizontalCollector, HorizontalStateCompiler]:
     )
 
 
+def _empty_horizontal() -> tuple[HorizontalCollector, HorizontalStateCompiler]:
+    metrics = MetricRegistry([])
+    targets = CollectionTargetRegistry([])
+    return (
+        HorizontalCollector(tools=ToolRegistry(), metrics=metrics, targets=targets),
+        HorizontalStateCompiler(metrics=metrics, targets=targets),
+    )
+
+
+@pytest.mark.asyncio
+async def test_global_research_runs_exact_new_dag_and_publishes_only_c1_c3_c5(
+    tmp_path: Path,
+) -> None:
+    collector, compiler = _empty_horizontal()
+    repository = InMemoryCodexRuntimeRepository()
+    workspace = LocalWorkspaceClient(LocalWorkspaceStore(tmp_path / "global-workspaces"))
+    worker = _FakeWorker(workspace)
+    orchestrator = CodexGlobalResearchOrchestrator(
+        worker=worker,
+        workspace=workspace,
+        repository=repository,
+        horizontal_collector=collector,
+        horizontal_compiler=compiler,
+        model="test-model",
+        max_attempts=1,
+    )
+
+    bundle = await orchestrator.run(
+        GlobalResearchRunRequest(
+            run_id="global-run",
+            ticker="NVDA",
+            research_brief="test",
+        )
+    )
+
+    assert bundle.research_lane is ResearchLane.GLOBAL_RESEARCH
+    assert [item.node for item in worker.requests] == [
+        CodexD1Node.C4_PRE_SCAN,
+        CodexD1Node.C1,
+        CodexD1Node.C3,
+        CodexD1Node.C5,
+        CodexD1Node.C4_ENRICHMENT,
+    ]
+    assert not {CodexD1Node.C2, CodexD1Node.O4, CodexD1Node.C4_FINALIZATION}.intersection(
+        item.node for item in worker.requests
+    )
+    c4_threads = [
+        item.thread_id
+        for item in repository.list_attempts("global-run")
+        if item.node in {CodexD1Node.C4_PRE_SCAN, CodexD1Node.C4_ENRICHMENT}
+    ]
+    assert len(set(c4_threads)) == 1
+    c5_thread = repository.get_thread("global-run", CodexAgentRole.C5.value)
+    assert c5_thread is not None and c5_thread.thread_id not in set(c4_threads)
+    assert bundle.entity_relations[0].relation_object == "TSMC"
+    assert bundle.future_nodes[0].time == "2026-Q4"
+    assert bundle.handoff is not None
+    final_ref = bundle.reports["global_research"]
+    document = await workspace.read_text("global-run", final_ref.relative_path)
+    assert "C1 基本面研究" in document.content
+    assert "C3 行业与价值链研究" in document.content
+    assert "C5 市场隐含预期研究" in document.content
+    assert "C2" not in document.content and "O4" not in document.content
+    c1_request = next(item for item in worker.requests if item.node is CodexD1Node.C1)
+    c1_context = json.loads(
+        (
+            await workspace.read_text(
+                "global-run", f"attempts/{c1_request.attempt_id}/input/context.json"
+            )
+        ).content
+    )["payload"]["c4_pre_scan"]
+    assert c1_context["future_nodes"] == []
+
+
+@pytest.mark.asyncio
+async def test_market_situation_runs_without_global_bundle_or_nodes(tmp_path: Path) -> None:
+    collector, compiler = _empty_horizontal()
+    repository = InMemoryCodexRuntimeRepository()
+    workspace = LocalWorkspaceClient(LocalWorkspaceStore(tmp_path / "market-workspaces"))
+    worker = _FakeWorker(workspace)
+    orchestrator = CodexMarketSituationOrchestrator(
+        worker=worker,
+        workspace=workspace,
+        repository=repository,
+        horizontal_collector=collector,
+        horizontal_compiler=compiler,
+        model="test-model",
+        max_attempts=1,
+    )
+
+    bundle = await orchestrator.run(
+        MarketSituationRunRequest(
+            run_id="market-run",
+            ticker="NVDA",
+            research_brief="test",
+        )
+    )
+
+    assert bundle.research_lane is ResearchLane.MARKET_SITUATION_RESEARCH
+    assert [item.node for item in worker.requests] == [CodexD1Node.C2, CodexD1Node.O4]
+    assert repository.get_bundle("global-run") is None
+    final_ref = bundle.reports["market_situation"]
+    document = await workspace.read_text("market-run", final_ref.relative_path)
+    assert "C2 大盘与宏观环境" in document.content
+    assert "O4 个股价格面与走势" in document.content
+    assert "C1" not in document.content and "C5" not in document.content
+
+
 def test_codex_document1_dashboard_routes_are_additive_and_authenticated() -> None:
     client = TestClient(
         create_app(
@@ -415,10 +538,7 @@ async def test_full_d1_dag_preserves_c4_thread_and_isolates_o4_tracks(tmp_path: 
     )["payload"]
     assert {"c1", "c3"}.issubset(o4_a_context)
     assert {"o4_b", "c2", "known_future_nodes"}.isdisjoint(o4_a_context)
-    assert all(
-        item["origin_node"] in {"c1", "c3"}
-        for item in o4_a_context["agent_observations"]
-    )
+    assert all(item["origin_node"] in {"c1", "c3"} for item in o4_a_context["agent_observations"])
     assert {item.node for item in worker.requests if item.allow_subagents} == {
         CodexD1Node.C1,
         CodexD1Node.C3,

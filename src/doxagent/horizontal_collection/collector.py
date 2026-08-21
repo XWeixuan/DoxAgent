@@ -240,6 +240,8 @@ class HorizontalCollector:
             return AgentName.C1_FUNDAMENTAL_RESEARCH
         if target.collection_target_id.startswith("c2_"):
             return AgentName.C2_MACRO_RESEARCH
+        if target.collection_target_id.startswith("c5_"):
+            return AgentName.C5_MARKET_IMPLIED_EXPECTATIONS
         return AgentName.O4_MARKET_TRACE
 
     @staticmethod

@@ -318,7 +318,7 @@ what the evidence could confirm
 → what it still could not prove
 ```
 
-If confirmation requires macro, industry, customer/competitor, price-action, positioning, or event evidence, hand it to C2, C3, O4, or the appropriate downstream/external research path. Do not fill the missing domain with generic assumptions.
+If confirmation requires industry or customer/competitor evidence, hand it to C3. If it requires macro, price-action, or positioning evidence, record an explicit Unknown or a handoff request for the independent Market Situation lane; do not read, await, or assume C2/O4 output inside Global Research. Event-specific confirmation belongs to the appropriate downstream/external path. Do not fill the missing domain with generic assumptions.
 
 ### Step 8 — Record Unknowns without blocking completion
 

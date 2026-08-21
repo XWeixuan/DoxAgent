@@ -1,7 +1,7 @@
 # Global Research / Market Situation Research 双 Lane 重构方案
 
 > 日期：2026-08-20  
-> 状态：待实施  
+> 状态：本地实现完成，待真实模型功能验收与远端迁移批准
 > 适用范围：Codex SDK 新研究架构；旧 ReAct Run Type 和既有
 > `codex_d1_v2` 历史运行保持可读、可审计，不做原地改名  
 > 本文是后续命名、DAG、Prompt、Skill、Pilot 与持久化改造的当前权威口径。
@@ -546,10 +546,19 @@ o4_a | O4-A | o4_b | O4-B | c4_finalization | C4 finalization
 任何新的 Prompt、Skill、bundle manifest、Pilot、API type、Dashboard label、Data MCP policy
 或 current-state 文档中出现这些名称都视为验收失败。
 
-## 十七、本轮不实施的内容
+## 十七、实施结果与明确延期项
 
-- 不修改运行代码、Prompt、Skill、DB 或远端；
-- 不设计 Market Situation 的更细周期/监控 DAG；
-- 不重构 D2；
-- 不运行真实模型；
-- 不重命名历史 artifact、attempt、Pilot case 或 acceptance 记录。
+截至 2026-08-20，本方案除下列延期项外已在本地代码、Prompt、Skill、Codex Assets、
+Pilot、SQLite/Supabase migration、API 与 Dashboard 中落地；旧 `codex_d1_v2` reader/runtime
+和历史节点值继续保留。Supabase migration 已在临时 PostgreSQL 15 基线库实际应用验证，
+尚未推送远端。
+
+本轮明确延期：
+
+- 外部事件库的请求 schema allowlist 与负向隔离测试；
+- Market Situation 的盘前/盘中/盘后和持续监控高级 DAG；
+- D2 runtime 适配与质量验收；
+- 远端 Supabase migration；
+- 真实模型研究质量验收。
+
+历史 artifact、attempt、Pilot case 和 acceptance 记录不会原地重命名。

@@ -21,13 +21,17 @@ from doxagent.codex_runtime.schema import (
     CODEX_D1_WORKFLOW_VERSION,
     CodexAgentRole,
     CodexD1Node,
+    CodexWorkflowVersion,
+    ResearchLane,
+    lane_for_workflow,
 )
 from doxagent.data_runtime.contracts import DataRuntimeModel, is_data_mcp_excluded_tool
 from doxagent.models import AgentName
 
 
 class DataCapabilityClaims(DataRuntimeModel):
-    workflow_version: str = CODEX_D1_WORKFLOW_VERSION
+    workflow_version: CodexWorkflowVersion = CODEX_D1_WORKFLOW_VERSION
+    research_lane: ResearchLane = ResearchLane.LEGACY_DOCUMENT1
     run_id: str
     node_id: CodexD1Node
     node_attempt_id: str
@@ -52,6 +56,8 @@ _ROLE_BY_NODE = {
     CodexD1Node.C4_FINALIZATION: CodexAgentRole.C4,
     CodexD1Node.O4_B: CodexAgentRole.O4,
     CodexD1Node.O4_A: CodexAgentRole.O4,
+    CodexD1Node.C5: CodexAgentRole.C5,
+    CodexD1Node.O4: CodexAgentRole.O4,
 }
 
 _LEGACY_AGENT_BY_ROLE = {
@@ -59,6 +65,7 @@ _LEGACY_AGENT_BY_ROLE = {
     CodexAgentRole.C2: AgentName.C2_MACRO_RESEARCH,
     CodexAgentRole.C3: AgentName.C3_INDUSTRY_RESEARCH,
     CodexAgentRole.O4: AgentName.O4_MARKET_TRACE,
+    CodexAgentRole.C5: AgentName.C5_MARKET_IMPLIED_EXPECTATIONS,
 }
 
 _C4_TOOLS = {
@@ -83,19 +90,22 @@ _C4_TOOLS = {
 # Keep provider clients available to direct callers and other nodes, but do not
 # advertise tools to O4-A when the currently configured provider/account tier is
 # known to reject them and there is no usable fallback for that tool contract.
+_MARKET_IMPLIED_TOOL_EXCLUSIONS = frozenset(
+    {
+        "alpha.historical_options",
+        "benzinga.analyst_events",
+        "benzinga.market_signals",
+        "fmp.valuation_snapshot",
+        "ibkr.fed_funds_curve",
+        "ibkr.historical_ticks",
+        "ibkr.option_surface",
+        "twelvedata.sell_side_estimates",
+    }
+)
+
 _NODE_TOOL_EXCLUSIONS: dict[CodexD1Node, frozenset[str]] = {
-    CodexD1Node.O4_A: frozenset(
-        {
-            "alpha.historical_options",
-            "benzinga.analyst_events",
-            "benzinga.market_signals",
-            "fmp.valuation_snapshot",
-            "ibkr.fed_funds_curve",
-            "ibkr.historical_ticks",
-            "ibkr.option_surface",
-            "twelvedata.sell_side_estimates",
-        }
-    ),
+    CodexD1Node.O4_A: _MARKET_IMPLIED_TOOL_EXCLUSIONS,
+    CodexD1Node.C5: _MARKET_IMPLIED_TOOL_EXCLUSIONS,
 }
 
 
@@ -115,12 +125,18 @@ class DataToolPolicyRegistry:
         self._by_role[CodexAgentRole.C4] = frozenset(
             tool_id for tool_id in _C4_TOOLS if not is_data_mcp_excluded_tool(tool_id)
         )
+        legacy_o4_tools = self._by_role[CodexAgentRole.C5]
+        self._by_node: dict[CodexD1Node, frozenset[str]] = {
+            CodexD1Node.O4_A: legacy_o4_tools,
+            CodexD1Node.O4_B: legacy_o4_tools,
+        }
 
     def allowed_tools(self, node: CodexD1Node, role: CodexAgentRole) -> frozenset[str]:
         expected = _ROLE_BY_NODE.get(node)
         if expected is None or expected is not role:
             return frozenset()
-        return self._by_role.get(role, frozenset()).difference(
+        maximum = self._by_node.get(node, self._by_role.get(role, frozenset()))
+        return maximum.difference(
             _NODE_TOOL_EXCLUSIONS.get(node, frozenset())
         )
 
@@ -171,8 +187,12 @@ class DataCapabilityCodec:
         enabled_tool_ids: Iterable[str],
         ttl_seconds: int = 7_200,
         pilot_case_id: str | None = None,
+        workflow_version: CodexWorkflowVersion = CODEX_D1_WORKFLOW_VERSION,
+        research_lane: ResearchLane = ResearchLane.LEGACY_DOCUMENT1,
     ) -> str:
         claims = DataCapabilityClaims(
+            workflow_version=workflow_version,
+            research_lane=research_lane,
             run_id=run_id,
             node_id=node_id,
             node_attempt_id=node_attempt_id,
@@ -211,6 +231,8 @@ class DataCapabilityCodec:
             raise CapabilityDenied("expired Data MCP capability")
         if not claims.read_only:
             raise CapabilityDenied("Data MCP capability must be read-only")
+        if lane_for_workflow(claims.workflow_version) is not claims.research_lane:
+            raise CapabilityDenied("Data MCP workflow and research lane do not match")
         expected_role = _ROLE_BY_NODE.get(claims.node_id)
         if expected_role is None or expected_role is not claims.agent_role:
             raise CapabilityDenied("Data MCP node and role scope do not match")

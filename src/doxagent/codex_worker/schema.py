@@ -7,7 +7,14 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from doxagent.codex_runtime.schema import CodexAgentRole, CodexD1Node, utc_now
+from doxagent.codex_runtime.schema import (
+    CODEX_D1_WORKFLOW_VERSION,
+    CodexAgentRole,
+    CodexD1Node,
+    CodexWorkflowVersion,
+    ResearchLane,
+    utc_now,
+)
 
 
 class WorkerModel(BaseModel):
@@ -34,6 +41,8 @@ class WorkspaceInventory(WorkerModel):
 
 
 class WorkerRunRequest(WorkerModel):
+    workflow_version: CodexWorkflowVersion = CODEX_D1_WORKFLOW_VERSION
+    research_lane: ResearchLane = ResearchLane.LEGACY_DOCUMENT1
     run_id: str
     ticker: str
     node: CodexD1Node

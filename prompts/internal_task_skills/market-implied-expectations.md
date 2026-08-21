@@ -3,11 +3,11 @@ kind = "internal_task_skill"
 id = "market-implied-expectations"
 name = "Market-Implied Expectations Research"
 version = "2026.08.20"
-applicable_agents = ["O4"]
+applicable_agents = ["C5"]
 applicable_task_types = ["generate_global_research"]
 workflow_nodes = ["BuildGlobalResearch"]
 +++
-# O4-A Market-Implied Expectations Research
+# C5 Market-Implied Expectations Research
 
 ## Mission and boundary
 
@@ -26,7 +26,7 @@ Do not:
 - equate management guidance or sell-side consensus with the market;
 - treat implied volatility as direction or positioning as fundamental belief.
 
-O4-A may propose research candidates for a downstream `MARKET_IMPLIED` source. Document 2 owns formal parameter mapping. Later workflows own event-level expectation gaps and market absorption.
+C5 may propose research candidates for a downstream `MARKET_IMPLIED` source. Document 2 owns formal parameter mapping. Later workflows own event-level expectation gaps and market absorption.
 
 ## Inputs and research readiness
 
@@ -77,10 +77,10 @@ Reason separately about:
 
 1. observed market data;
 2. reported sell-side or actor views;
-3. O4 calculations from cited inputs;
-4. O4 conditional interpretations.
+3. C5 calculations from cited inputs;
+4. C5 conditional interpretations.
 
-Make the distinction clear in prose when confusion is possible, but do not prefix every sentence with an epistemic label. Correlation is not attribution. Management guidance is a company statement; consensus is an analyst aggregation; a market-implied condition is O4's bounded interpretation of pricing evidence.
+Make the distinction clear in prose when confusion is possible, but do not prefix every sentence with an epistemic label. Correlation is not attribution. Management guidance is a company statement; consensus is an analyst aggregation; a market-implied condition is C5's bounded interpretation of pricing evidence.
 
 ## End-to-end research method
 
@@ -169,7 +169,7 @@ Do not create an event dump or force a confounded sample into a regression. Extr
 
 ### Step 4 — Infer business, financial, and duration conditions
 
-This is the core of O4-A. For each selected Pricing Theme, distinguish:
+This is the core of C5. For each selected Pricing Theme, distinguish:
 
 1. **Current business/financial baseline** — the concise C1/C3 state plus the relevant management or sell-side baseline.
 2. **What current price requires** — the operating or financial bar broadly necessary for current valuation consistency.
@@ -258,7 +258,7 @@ Benchmark, sector, peer, rates, FX, commodity, volatility, liquidity, index, or 
 
 A Market Anchor Candidate needs a recognizable parameter or Pricing Theme, a current implied state, a time scope, and a concise basis. It may be conditional. Overall price appreciation, generic optimism, or driver attention without a state is not an anchor.
 
-Document 2 decides whether to construct a formal `MARKET_IMPLIED StateValue`. O4-A only indicates one of two downstream uses:
+Document 2 decides whether to construct a formal `MARKET_IMPLIED StateValue`. C5 only indicates one of two downstream uses:
 
 - **MARKET_IMPLIED candidate** — sufficiently specific for formal consideration;
 - **Conditional anchor** — economically useful but dependent on an explicit condition or bounded scenario set.
@@ -352,7 +352,7 @@ Include only decision-changing Unknowns. Do not include handoffs, owning nodes, 
 Before submitting, assume a fresh downstream Agent sees only this report. Verify:
 
 - the report contains exactly the five required Chinese top-level sections and all table headers are Chinese;
-- O4-A stands independently and neither cites nor summarizes O4-B;
+- C5 stands independently and does not read or summarize the Market Situation O4 report;
 - C1/C3 are used as economic starting points rather than repeated as research reports;
 - the current baseline distinguishes price/relative performance, valuation, earnings revisions, and earnings-versus-multiple contribution where evidence allows;
 - Repricing Phases begin from observed pricing change, do not require a discrete event, rank drivers, and state how pricing belief changed;

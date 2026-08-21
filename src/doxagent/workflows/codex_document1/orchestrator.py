@@ -6,24 +6,28 @@ import asyncio
 import hashlib
 import json
 import re
+from datetime import datetime
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal, Protocol
 from uuid import uuid4
 
 from doxagent.codex_runtime.client import CodexWorkerClient, WorkspaceClient
 from doxagent.codex_runtime.published_storage import PublishedDocumentStorage
 from doxagent.codex_runtime.repository import CodexRuntimeRepository
 from doxagent.codex_runtime.schema import (
+    CODEX_D1_WORKFLOW_VERSION,
     ArtifactKind,
     ArtifactRef,
     AttemptStatus,
     CitationManifest,
     CodexAgentRole,
     CodexD1Node,
+    CodexWorkflowVersion,
     Document1HandoffV1,
     Document1V2Bundle,
     NormalizedAgentObservation,
     PublishedDocument,
+    ResearchLane,
     WorkflowCheckpoint,
     WorkflowEvent,
     utc_now,
@@ -58,15 +62,24 @@ _ROLE_BY_NODE = {
     CodexD1Node.C4_FINALIZATION: CodexAgentRole.C4,
     CodexD1Node.O4_B: CodexAgentRole.O4,
     CodexD1Node.O4_A: CodexAgentRole.O4,
+    CodexD1Node.C5: CodexAgentRole.C5,
+    CodexD1Node.O4: CodexAgentRole.O4,
 }
 
-_PUBLISHED_ARTIFACT_KINDS: dict[
-    ArtifactKind, Literal["report", "bundle", "manifest"]
-] = {
+_PUBLISHED_ARTIFACT_KINDS: dict[ArtifactKind, Literal["report", "bundle", "manifest"]] = {
     ArtifactKind.REPORT: "report",
     ArtifactKind.BUNDLE: "bundle",
     ArtifactKind.MANIFEST: "manifest",
 }
+
+
+class _ResearchRunRequest(Protocol):
+    run_id: str
+    ticker: str
+    company_name: str | None
+    research_brief: str
+    base_context: dict[str, Any]
+    cutoff_at: datetime
 
 
 class CodexDocument1Orchestrator:
@@ -87,6 +100,8 @@ class CodexDocument1Orchestrator:
         max_subagents: int = 2,
         published_storage: PublishedDocumentStorage | None = None,
         usage_repository: ModelUsageRepository | None = None,
+        workflow_version: CodexWorkflowVersion = CODEX_D1_WORKFLOW_VERSION,
+        research_lane: ResearchLane = ResearchLane.LEGACY_DOCUMENT1,
     ) -> None:
         self._workspace = workspace
         self._repository = repository
@@ -95,6 +110,8 @@ class CodexDocument1Orchestrator:
         self._citations = CitationPromotionService(repository)
         self._max_attempts = max_attempts
         self._published_storage = published_storage
+        self._workflow_version = workflow_version
+        self._research_lane = research_lane
         self._node_runner = CodexD1NodeRunner(
             worker=worker,
             workspace=workspace,
@@ -107,6 +124,8 @@ class CodexDocument1Orchestrator:
             max_subagents=max_subagents,
             usage_repository=usage_repository,
             event_sink=self._event,
+            workflow_version=workflow_version,
+            research_lane=research_lane,
         )
         # Preserve the existing internal test/diagnostic access point while the
         # lifecycle implementation is shared through CodexD1NodeRunner.
@@ -114,7 +133,7 @@ class CodexDocument1Orchestrator:
 
     async def run(self, request: Document1V2RunRequest) -> Document1V2Bundle:
         existing = self._repository.get_bundle(request.run_id)
-        if existing is not None and existing.status == "published":
+        if isinstance(existing, Document1V2Bundle) and existing.status == "published":
             return existing
         checkpoint = self._repository.get_checkpoint(request.run_id) or WorkflowCheckpoint(
             ticker=request.ticker,
@@ -231,11 +250,7 @@ class CodexDocument1Orchestrator:
                 "c1": self._handoff_output(outputs[CodexD1Node.C1], reports.get("c1")),
                 "c3": self._handoff_output(outputs[CodexD1Node.C3], reports.get("c3")),
                 "agent_observations": self._observation_handoffs(
-                    [
-                        item
-                        for item in normalized
-                        if item.node in {CodexD1Node.C1, CodexD1Node.C3}
-                    ]
+                    [item for item in normalized if item.node in {CodexD1Node.C1, CodexD1Node.C3}]
                 ),
             },
             checkpoint,
@@ -356,7 +371,7 @@ class CodexDocument1Orchestrator:
 
     async def _execute_or_partial(
         self,
-        request: Document1V2RunRequest,
+        request: _ResearchRunRequest,
         node: CodexD1Node,
         payload: dict[str, object],
         checkpoint: WorkflowCheckpoint,
@@ -385,7 +400,7 @@ class CodexDocument1Orchestrator:
 
     async def _execute_node(
         self,
-        request: Document1V2RunRequest,
+        request: _ResearchRunRequest,
         node: CodexD1Node,
         payload: dict[str, object],
         checkpoint: WorkflowCheckpoint,
@@ -536,12 +551,19 @@ class CodexDocument1Orchestrator:
         outputs: dict[CodexD1Node, NodeOutput],
         reports: dict[str, ArtifactRef],
         horizontal: HorizontalCollectionBundle,
+        *,
+        nodes: tuple[CodexD1Node, ...] | None = None,
     ) -> list[NormalizedAgentObservation]:
         registry = default_metric_registry()
         known_metrics = {item.metric_id: item for item in registry.all()}
         governed_metrics = {item.metric_id for item in horizontal.state_values}
         deduplicated: dict[tuple[str, str, str | None], NormalizedAgentObservation] = {}
-        for node in (CodexD1Node.C1, CodexD1Node.C2, CodexD1Node.C3, CodexD1Node.O4_B):
+        for node in nodes or (
+            CodexD1Node.C1,
+            CodexD1Node.C2,
+            CodexD1Node.C3,
+            CodexD1Node.O4_B,
+        ):
             reference = reports.get(node.value)
             if reference is None:
                 continue
@@ -641,7 +663,7 @@ class CodexDocument1Orchestrator:
 
     async def _collect_or_restore_horizontal(
         self,
-        request: Document1V2RunRequest,
+        request: _ResearchRunRequest,
         checkpoint: WorkflowCheckpoint,
     ) -> HorizontalCollectionBundle:
         if CodexD1Node.PROGRAM_COLLECTION in checkpoint.completed_nodes:
@@ -790,6 +812,8 @@ class CodexDocument1Orchestrator:
     ) -> ArtifactRef:
         metadata = await self._workspace.write_text(run_id, relative_path, content)
         artifact = ArtifactRef(
+            workflow_version=self._workflow_version,
+            research_lane=self._research_lane,
             artifact_id=uuid4().hex,
             run_id=run_id,
             node=node,
@@ -803,12 +827,18 @@ class CodexDocument1Orchestrator:
         self._repository.save_artifact(artifact)
         return artifact
 
-    async def _write_final_document(self, run_id: str, document: str) -> ArtifactRef:
+    async def _write_final_document(
+        self,
+        run_id: str,
+        document: str,
+        *,
+        relative_path: str = "artifacts/document1/document1_v2.md",
+    ) -> ArtifactRef:
         attempt_id = f"assemble-1-{uuid4().hex[:10]}"
-        metadata = await self._workspace.write_text(
-            run_id, "artifacts/document1/document1_v2.md", document
-        )
+        metadata = await self._workspace.write_text(run_id, relative_path, document)
         artifact = ArtifactRef(
+            workflow_version=self._workflow_version,
+            research_lane=self._research_lane,
             artifact_id=uuid4().hex,
             run_id=run_id,
             node=CodexD1Node.ASSEMBLE,
@@ -821,6 +851,56 @@ class CodexDocument1Orchestrator:
         )
         self._repository.save_artifact(artifact)
         return artifact
+
+    async def _publish_references(
+        self,
+        run_id: str,
+        references: list[ArtifactRef],
+    ) -> tuple[datetime, list[ArtifactRef]]:
+        """Publish and persist checksum-verified document bodies for any research lane."""
+
+        await self._workspace.publish(
+            run_id,
+            [reference.relative_path for reference in references],
+        )
+        published_at = utc_now()
+        published = [reference.model_copy(update={"published": True}) for reference in references]
+        for reference in published:
+            file = await self._workspace.read_text(run_id, reference.relative_path)
+            if file.content is None:
+                raise RuntimeError(f"published artifact content missing: {reference.artifact_id}")
+            content_bytes = file.content.encode("utf-8")
+            digest = hashlib.sha256(content_bytes).hexdigest()
+            if digest != reference.sha256 or len(content_bytes) != reference.size_bytes:
+                raise RuntimeError(f"published artifact checksum mismatch: {reference.artifact_id}")
+            storage_path = None
+            content_text: str | None = file.content
+            if len(content_bytes) > 2 * 1024 * 1024:
+                if self._published_storage is None:
+                    raise RuntimeError(
+                        "PUBLISHED_DOCUMENT_STORAGE_REQUIRED: configure private Supabase "
+                        f"Storage for {reference.artifact_id}"
+                    )
+                storage_path = f"{run_id}/{reference.artifact_id}"
+                await self._published_storage.put(
+                    storage_path, content_bytes, reference.content_type
+                )
+                content_text = None
+            self._repository.save_published_document(
+                PublishedDocument(
+                    artifact_id=reference.artifact_id,
+                    run_id=run_id,
+                    artifact_kind=_PUBLISHED_ARTIFACT_KINDS[reference.kind],
+                    sha256=reference.sha256,
+                    size_bytes=reference.size_bytes,
+                    content_type=reference.content_type,
+                    content_text=content_text,
+                    storage_path=storage_path,
+                    published_at=published_at,
+                )
+            )
+            self._repository.save_artifact(reference)
+        return published_at, published
 
     def _complete_checkpoint(self, checkpoint: WorkflowCheckpoint, node: CodexD1Node) -> None:
         completed = list(dict.fromkeys([*checkpoint.completed_nodes, node]))
@@ -851,6 +931,8 @@ class CodexDocument1Orchestrator:
     async def _event(self, run_id: str, event_type: str, payload: dict[str, object]) -> None:
         self._repository.append_event(
             WorkflowEvent(
+                workflow_version=self._workflow_version,
+                research_lane=self._research_lane,
                 event_id=uuid4().hex,
                 run_id=run_id,
                 event_type=event_type,

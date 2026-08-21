@@ -10,7 +10,13 @@ import pytest
 from cdecr.atomic_exact_recall import ExactCosineRecallIndex
 from cdecr.bulk_epoch.atomic_late_stage import _merge_source_mentions_for_single_save
 from cdecr.bulk_epoch.embedding import EmbeddingBatchExecutor, EmbeddingWorkItem
-from cdecr.bulk_epoch.engine import _recover_atomic_late_state
+from cdecr.bulk_epoch.engine import (
+    _n9_completed_task_state,
+    _n9_degraded_decision_ref,
+    _n9_fail_open_cap,
+    _recover_atomic_late_state,
+    _run_n9_deferred_retry_wave,
+)
 from cdecr.bulk_epoch.task_ledger import BulkTaskLedger
 from cdecr.bulk_epoch.writer import BulkWriter
 from cdecr.canonical_field_resolution import (
@@ -21,18 +27,20 @@ from cdecr.contracts import AtomicAction
 from cdecr.coreference_rules import add_mention_to_atomic, singleton_atomic_event
 from cdecr.cross_document import (
     CrossDocumentPipelineError,
+    N9TaskFailure,
     _active_atomic_target,
     _cosine,
     _pack_mentions_by_candidate_overlap,
     is_content_repairable,
 )
-from cdecr.cross_document_contracts import AtomicAssignmentRecord
+from cdecr.cross_document_contracts import AtomicAssignmentDecision, AtomicAssignmentRecord
 from cdecr.field_coreference_contracts import (
     FieldCoreferenceHints,
     FieldCoreferenceInput,
     FieldNamespace,
 )
 from cdecr.ports import DecisionAuditRecord, EmbeddingResult
+from cdecr.provider_resilience import ModelFailureClass
 from cdecr.registry import ImmutableRecordConflict, SQLiteCDECRRegistry
 from tests.cdecr.test_cross_document import add, metric_mention, source
 
@@ -158,6 +166,140 @@ def test_retryable_task_attempt_is_closed_and_resume_increments_attempt(tmp_path
     resumed = value.list_bulk_epoch_tasks("epoch-retryable", stage="N9")[0]
     assert resumed["status"] == "RUNNING"
     assert resumed["attempt_count"] == 2
+
+
+def _provider_failure() -> N9TaskFailure:
+    return N9TaskFailure(
+        error_code="provider_error",
+        retryable=True,
+        failure_class=ModelFailureClass.UNKNOWN_PROVIDER_FAILURE,
+        deferred_retry=True,
+    )
+
+
+def _create_new_decision(mention_id: str) -> AtomicAssignmentDecision:
+    return AtomicAssignmentDecision(
+        mention_id=mention_id,
+        action="CREATE_NEW",
+        merge_target_event_id=None,
+        candidate_assessments=[],
+        related_candidate_event_ids=[],
+        possible_duplicate_atomic_ids=[],
+    )
+
+
+def test_n9_deferred_retry_wave_only_reinvokes_three_failed_mentions() -> None:
+    mentions = cast(
+        list[Any],
+        [SimpleNamespace(mention_id=f"mention-{index}") for index in range(898)],
+    )
+    failed_ids = {"mention-101", "mention-501", "mention-897"}
+    failures = {mention_id: _provider_failure() for mention_id in failed_ids}
+    invoked: list[list[str]] = []
+
+    def invoke(
+        retry_mentions: list[Any],
+    ) -> tuple[dict[str, AtomicAssignmentDecision], dict[str, N9TaskFailure]]:
+        ids = [item.mention_id for item in retry_mentions]
+        invoked.append(ids)
+        return ({mention_id: _create_new_decision(mention_id) for mention_id in ids}, {})
+
+    outcome = _run_n9_deferred_retry_wave(mentions, failures, invoke)
+    assert invoked == [sorted(failed_ids)]
+    assert outcome.attempted_ids == failed_ids
+    assert outcome.recovered_ids == failed_ids
+    assert not outcome.failures
+    assert set(outcome.decisions) == failed_ids
+
+
+def test_n9_small_residual_failure_closes_as_audited_degraded_success(
+    tmp_path: Path,
+) -> None:
+    value = registry(tmp_path / "n9-degraded.sqlite3")
+    value.start_bulk_epoch(
+        epoch_id="epoch-degraded",
+        manifest_hash="manifest",
+        orchestrator_version="test",
+        message_ids=[],
+    )
+    ledger = BulkTaskLedger(registry=value, epoch_id="epoch-degraded")
+    tasks = [
+        {
+            "stage": "N9",
+            "task_id": f"mention-{index}",
+            "input_hash": f"input-{index}",
+            "snapshot_hash": "snapshot",
+        }
+        for index in range(898)
+    ]
+    failed = tasks[-3:]
+    ledger.start_many(tasks)
+    ledger.finish_many(
+        [
+            {**task, "decision_ref": {"decision": {"mention_id": task["task_id"]}}}
+            for task in tasks[:-3]
+        ]
+    )
+    ledger.fail_many(
+        [{**task, "error_code": "provider_error"} for task in failed],
+        status="FAILED_RETRYABLE",
+    )
+    ledger.start_many(failed)
+    failure = _provider_failure()
+    ledger.finish_many(
+        [
+            {
+                **task,
+                "decision_ref": _n9_degraded_decision_ref(failure, attempt_count=2),
+            }
+            for task in failed
+        ]
+    )
+
+    rows = value.list_bulk_epoch_tasks("epoch-degraded", stage="N9")
+    assert len(rows) == 898
+    assert {row["status"] for row in rows} == {"SUCCEEDED"}
+    assert sum(row["attempt_count"] == 2 for row in rows) == 3
+    degraded = [row for row in rows if row["decision_ref"].get("degraded_action")]
+    assert len(degraded) == 3
+    assert all(
+        row["decision_ref"]["reason"] == "N9_PROVIDER_FAILED_SINGLETON"
+        for row in degraded
+    )
+    assert all(
+        row["decision_ref"]["failure_class"] == "UNKNOWN_PROVIDER_FAILURE"
+        for row in degraded
+    )
+
+
+def test_n9_fail_open_cap_blocks_abnormal_failure_volume() -> None:
+    assert _n9_fail_open_cap(1) == 3
+    assert _n9_fail_open_cap(898) == 9
+    assert _n9_fail_open_cap(5_000) == 10
+    assert 3 <= _n9_fail_open_cap(898)
+    assert 10 > _n9_fail_open_cap(898)
+
+
+def test_n9_completed_degraded_task_is_not_requested_after_resume() -> None:
+    failure = _provider_failure()
+    completed = {
+        "input_hash": "input",
+        "snapshot_hash": "snapshot",
+        "decision_ref": _n9_degraded_decision_ref(failure, attempt_count=2),
+    }
+    decision, reusable = _n9_completed_task_state(
+        completed,
+        input_hash="input",
+        snapshot_hash="snapshot",
+    )
+    assert decision is None
+    assert reusable is True
+    _, stale_reusable = _n9_completed_task_state(
+        completed,
+        input_hash="changed",
+        snapshot_hash="snapshot",
+    )
+    assert stale_reusable is False
 
 
 def test_provider_failures_are_not_content_repairable() -> None:

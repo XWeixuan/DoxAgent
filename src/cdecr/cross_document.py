@@ -135,7 +135,12 @@ from cdecr.ports import (
     StructuredModelRequest,
     StructuredModelResult,
 )
-from cdecr.provider_resilience import classify_provider_error, is_provider_failure
+from cdecr.provider_resilience import (
+    ModelFailureClass,
+    classify_provider_error,
+    is_deferred_retry_provider_failure,
+    is_provider_failure,
+)
 from cdecr.scheduler import take_scheduled_call_metrics
 from cdecr.single_document_contracts import ModelCallSummary
 from cdecr.wire import compact_json, wire_ref_metadata
@@ -152,6 +157,8 @@ N9_BATCH_PACKING_VERSION = "n9-candidate-overlap-packing-v1"
 class N9TaskFailure:
     error_code: str
     retryable: bool
+    failure_class: ModelFailureClass
+    deferred_retry: bool
 
 
 @dataclass(frozen=True)
@@ -3570,7 +3577,12 @@ class CrossDocumentEngine:
                 output = invoke(ModelTier.M2, "atomic_coreference")
             except CrossDocumentPipelineError as exc:
                 if is_provider_failure(exc):
-                    failure = N9TaskFailure(error_code=exc.code, retryable=True)
+                    failure = N9TaskFailure(
+                        error_code=exc.code,
+                        retryable=True,
+                        failure_class=classify_provider_error(exc),
+                        deferred_retry=is_deferred_retry_provider_failure(exc),
+                    )
                     return N9BatchOutcome(
                         batch_index=batch_index,
                         decisions=(),
@@ -3667,7 +3679,12 @@ class CrossDocumentEngine:
                             else type(exc).__name__
                         )
                         task_failure = (
-                            N9TaskFailure(error_code=error_code, retryable=True)
+                            N9TaskFailure(
+                                error_code=error_code,
+                                retryable=True,
+                                failure_class=classify_provider_error(exc),
+                                deferred_retry=is_deferred_retry_provider_failure(exc),
+                            )
                             if isinstance(exc, CrossDocumentPipelineError)
                             and is_provider_failure(exc)
                             else None

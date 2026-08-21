@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
+from doxagent.codex_runtime.schema import ResearchLane
 from doxagent.horizontal_collection.generated_metric_catalog import GENERATED_METRIC_IDS
 from doxagent.horizontal_collection.schema import (
     CollectionMode,
@@ -19,6 +20,8 @@ from doxagent.horizontal_collection.schema import (
 
 METRIC_REGISTRY_VERSION = "d1-horizontal-metrics-v1"
 TARGET_REGISTRY_VERSION = "d1-horizontal-targets-v1"
+GLOBAL_TARGET_REGISTRY_VERSION = "global-research-horizontal-targets-v1"
+MARKET_TARGET_REGISTRY_VERSION = "market-situation-horizontal-targets-v1"
 
 REQUIRED_METRIC_IDS = frozenset(
     {
@@ -213,6 +216,33 @@ def default_metric_registry() -> MetricRegistry:
 
 def default_collection_target_registry() -> CollectionTargetRegistry:
     return CollectionTargetRegistry(_fixed_targets())
+
+
+def collection_target_registry_for_lane(lane: ResearchLane) -> CollectionTargetRegistry:
+    """Build a lane-local registry without changing historical D1 target identities."""
+
+    if lane is ResearchLane.LEGACY_DOCUMENT1:
+        return default_collection_target_registry()
+    fixed = _fixed_targets()
+    if lane is ResearchLane.GLOBAL_RESEARCH:
+        selected = [item for item in fixed if item.collection_target_id.startswith("c1_")]
+        selected.extend(
+            item.model_copy(
+                update={"collection_target_id": item.collection_target_id.replace("o4_", "c5_", 1)}
+            )
+            for item in fixed
+            if item.collection_target_id.startswith("o4_")
+        )
+        registry = CollectionTargetRegistry(selected)
+        registry.version = GLOBAL_TARGET_REGISTRY_VERSION
+        return registry
+    if lane is ResearchLane.MARKET_SITUATION_RESEARCH:
+        selected = [item for item in fixed if item.collection_target_id.startswith("c2_")]
+        selected.extend(item for item in fixed if item.collection_target_id == "o4_price_snapshot")
+        registry = CollectionTargetRegistry(selected)
+        registry.version = MARKET_TARGET_REGISTRY_VERSION
+        return registry
+    raise ValueError(f"unsupported horizontal research lane: {lane}")
 
 
 def _definition(metric_id: str) -> MetricDefinition:

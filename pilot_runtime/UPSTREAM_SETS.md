@@ -1,44 +1,48 @@
-# Pilot manual upstream sets
+# 双 Research Lane Pilot 人工上游说明
 
-Create one directory per reusable input set under `D:\DoxAgentPilot\upstream_sets`.
-Paste UTF-8 Markdown reports or complete C4 `NodeOutput` JSON files using only
-these fixed names. The same C4 file is intentionally reusable across all C4
-turns and downstream nodes:
+每个 Pilot case 都是不可变输入。更换上游文件后必须生成新 case ID，不能覆盖旧 case。
+上游中的原 attempt `【cite:O#】` 只作为线索，进入当前产物前必须重新核验并使用当前
+attempt 的引用。
 
-| Target node | Recognized files |
+## Global Research 顺序
+
+`C4 pre-scan -> C1/C3 并行 -> C5 -> C4 enrichment`
+
+| 节点 | `--upstream-dir` 可识别文件 |
 | --- | --- |
-| `c1` | `c4_finalization.json.json` |
-| `c3` | `c4_finalization.json.json` |
-| `c4_pre_scan` | `c4_finalization.json.json` |
-| `c4_enrichment` | `c4_finalization.json.json`, `c1.md`, `c3.md` |
-| `c4_finalization` | `c4_finalization.json.json` |
-| `o4_a` | `c4_finalization.json.json`, `c1.md`, `c3.md` |
+| `c4_pre_scan` | 无 |
+| `c1` | `c4_pre_scan.json` |
+| `c3` | `c4_pre_scan.json` |
+| `c5` | `c1.md`, `c3.md` |
+| `c4_enrichment` | `c4_pre_scan.json`, `c1.md`, `c3.md`, `c5.md` |
 
-Example:
+C1/C3 只会收到 `c4_pre_scan.json` 中的 entity relations；future nodes 不会投影给它们。
+C4 enrichment 是最终 C4 turn，输出必须是完整合并快照，不再存在 finalization Pilot。
+
+示例：
 
 ```powershell
 python D:\DoxAgentPilot\runtime\prepare_case.py `
+  --lane global_research `
   --source-run <run-id> `
-  --node o4_a `
+  --node c5 `
   --case-id <new-case-id> `
   --profile quality `
   --upstream-dir D:\DoxAgentPilot\upstream_sets\<set-id>
 ```
 
-New cases receive a 10-year Data MCP capability by default. To rotate an
-existing case without changing its sealed inputs, run
-`python D:\DoxAgentPilot\runtime\refresh_capability.py --case <case-root>`.
+## Market Situation Research
 
-Rules:
+C2 与 O4 独立并行，不接收 Global Research 上游，也互不依赖：
 
-- Paste upstream material before generating the case. Never edit a generated
-  case's `attempts/<attempt-id>/input/` directory.
-- Markdown files are contextual reports. C4 JSON files must validate as the
-  current `NodeOutput` schema.
-- Old `【cite:O#】` aliases are downgraded during import. The downstream node
-  must reverify any fact it uses through evidence available to its own attempt.
-- Only files recognized for the selected node are injected. Other files in the
-  shared set remain available for later downstream cases but are not exposed.
-- Empty, non-UTF-8, invalid JSON, or files larger than 2 MiB are rejected.
-- Imported contents and hashes become immutable attempt inputs and are included
-  in `input_sha256`, `bundle.json`, and `case_manifest.json`.
+```powershell
+python D:\DoxAgentPilot\runtime\prepare_case.py `
+  --lane market_situation_research `
+  --source-run <run-id> `
+  --node o4 `
+  --case-id <new-case-id> `
+  --profile quality
+```
+
+历史 `codex_d1_v2` case 仍可用 `--lane legacy_document1` 复现，但不得把历史
+任何 legacy 节点文件改名后冒充新 lane 产物。

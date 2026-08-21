@@ -236,6 +236,7 @@ def default_agent_definitions() -> list[AgentDefinition]:
             role=AgentRole.OPERATOR,
             task_types=[
                 TaskType.GENERATE_GLOBAL_RESEARCH,
+                TaskType.GENERATE_MARKET_SITUATION_RESEARCH,
                 TaskType.REVIEW_EXPECTATION_FIELD,
                 TaskType.GENERATE_MONITORING_POLICY,
                 TaskType.RESOLVE_MONITORING_POLICY,
@@ -245,7 +246,6 @@ def default_agent_definitions() -> list[AgentDefinition]:
                 default_internal_task_skill_ids=[
                     "doxagent-source-discipline",
                     "ticker_price_tracking",
-                    "market-implied-expectations",
                     "monitoring-policy",
                 ],
                 default_external_skill_package_ids=[
@@ -257,6 +257,7 @@ def default_agent_definitions() -> list[AgentDefinition]:
                 ],
                 readable_context_scopes=[
                     DocumentType.GLOBAL_RESEARCH.value,
+                    DocumentType.MARKET_SITUATION_RESEARCH.value,
                     DocumentType.EXPECTATION_UNIT.value,
                     DocumentType.KNOWN_EVENTS.value,
                     DocumentType.MONITORING_CONFIG.value,
@@ -265,8 +266,41 @@ def default_agent_definitions() -> list[AgentDefinition]:
                 ],
                 writable_targets=[
                     DocumentType.GLOBAL_RESEARCH.value,
+                    DocumentType.MARKET_SITUATION_RESEARCH.value,
                     DocumentType.MONITORING_POLICY.value,
                 ],
+                allowed_tools=[
+                    "market.daily_ohlcv",
+                    "market.quote_snapshot",
+                    "market.trade_tape",
+                    "market.relative_performance",
+                    "ibkr.historical_ticks",
+                    "ibkr.shortability_snapshot",
+                    "benzinga.market_signals",
+                    "finnhub.company_news_events",
+                    "yfinance.short_interest",
+                    "yfinance.adjusted_ohlcv",
+                    "tavily.search",
+                    "tavily.extract",
+                ],
+                output_schema="ResearchSection|MonitoringPolicyDocument",
+                can_raise_objection=True,
+                can_propose_patch=True,
+            ),
+        ),
+        AgentDefinition(
+            agent_name=AgentName.C5_MARKET_IMPLIED_EXPECTATIONS,
+            role=AgentRole.CONSULTANT,
+            task_types=[TaskType.GENERATE_GLOBAL_RESEARCH],
+            runtime=AgentRuntimeConfig(
+                prompt_block_ids=["agent.c5"],
+                default_internal_task_skill_ids=[
+                    "doxagent-source-discipline",
+                    "market-implied-expectations",
+                ],
+                default_external_skill_package_ids=[],
+                readable_context_scopes=[DocumentType.GLOBAL_RESEARCH.value, "working_memory"],
+                writable_targets=[DocumentType.GLOBAL_RESEARCH.value],
                 allowed_tools=[
                     "market.daily_ohlcv",
                     "market.quote_snapshot",
@@ -306,8 +340,9 @@ def default_agent_definitions() -> list[AgentDefinition]:
                     "tavily.search",
                     "tavily.extract",
                 ],
-                output_schema="ResearchSection|MonitoringPolicyDocument",
+                output_schema="ResearchSection",
                 can_raise_objection=True,
+                can_delegate=True,
                 can_propose_patch=True,
             ),
         ),
@@ -420,7 +455,10 @@ def default_agent_definitions() -> list[AgentDefinition]:
         AgentDefinition(
             agent_name=AgentName.C2_MACRO_RESEARCH,
             role=AgentRole.CONSULTANT,
-            task_types=[TaskType.GENERATE_GLOBAL_RESEARCH],
+            task_types=[
+                TaskType.GENERATE_GLOBAL_RESEARCH,
+                TaskType.GENERATE_MARKET_SITUATION_RESEARCH,
+            ],
             runtime=AgentRuntimeConfig(
                 prompt_block_ids=["agent.c2"],
                 default_internal_task_skill_ids=["doxagent-source-discipline"],
@@ -428,7 +466,10 @@ def default_agent_definitions() -> list[AgentDefinition]:
                     "macro-analysis",
                 ],
                 readable_context_scopes=["working_memory"],
-                writable_targets=[DocumentType.GLOBAL_RESEARCH.value],
+                writable_targets=[
+                    DocumentType.GLOBAL_RESEARCH.value,
+                    DocumentType.MARKET_SITUATION_RESEARCH.value,
+                ],
                 allowed_tools=[
                     "fred.series_observations",
                     "fred.activity_demand",

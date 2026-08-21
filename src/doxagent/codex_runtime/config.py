@@ -54,18 +54,14 @@ class CodexRuntimeConfig(BaseModel):
                 raise ValueError(
                     f"{self.storage_mode} Codex runtime storage requires DOXAGENT_DATABASE_URL"
                 )
-        if (self.published_storage_url is None) != (
-            self.published_storage_secret_key is None
-        ):
-            raise ValueError(
-                "published Storage URL and secret key must be configured together"
-            )
+        if (self.published_storage_url is None) != (self.published_storage_secret_key is None):
+            raise ValueError("published Storage URL and secret key must be configured together")
         return self
 
     @classmethod
     def from_settings(cls, settings: DoxAgentSettings) -> CodexRuntimeConfig:
         return cls(
-            enabled=settings.codex_d1_v2_enabled,
+            enabled=(settings.codex_d1_v2_enabled or settings.codex_research_lanes_enabled),
             worker_base_url=TypeAdapter(HttpUrl).validate_python(settings.codex_worker_base_url),
             worker_bearer_token=settings.codex_worker_bearer_token,
             capability_secret=settings.codex_capability_secret,

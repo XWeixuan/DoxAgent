@@ -119,6 +119,8 @@ class OpenAICodexRuntime:
         )
         allowed_data_tools = self._data_policy.allowed_tools(request.node, request.agent_role)
         capability = self._data_capabilities.issue(
+            workflow_version=request.workflow_version,
+            research_lane=request.research_lane,
             run_id=request.run_id,
             node_id=request.node,
             node_attempt_id=request.attempt_id,

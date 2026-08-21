@@ -15,10 +15,18 @@ from copy import deepcopy
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path, PurePosixPath
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 from doxagent.codex_runtime.client import HttpCodexWorkerClient
-from doxagent.codex_runtime.schema import CodexD1Node, utc_now
+from doxagent.codex_runtime.schema import (
+    CODEX_D1_WORKFLOW_VERSION,
+    CODEX_GLOBAL_RESEARCH_WORKFLOW_VERSION,
+    CODEX_MARKET_SITUATION_WORKFLOW_VERSION,
+    CodexD1Node,
+    CodexWorkflowVersion,
+    ResearchLane,
+    utc_now,
+)
 from doxagent.codex_worker.schema import WorkerJob
 from doxagent.data_runtime.contracts import build_data_tool_contracts
 from doxagent.data_runtime.policy import DataCapabilityCodec, DataToolPolicyRegistry
@@ -40,17 +48,27 @@ _MANUAL_CITATION_REPLACEMENT = "[上游引用需在当前 attempt 重新核验]"
 _MAX_MANUAL_UPSTREAM_BYTES = 2 * 1024 * 1024
 DEFAULT_PILOT_CAPABILITY_HOURS = 24 * 365 * 10
 MAX_PILOT_CAPABILITY_HOURS = DEFAULT_PILOT_CAPABILITY_HOURS
+C4_PRE_SCAN_UPSTREAM_FILE = "c4_pre_scan.json"
+# Deprecated historical filename retained only for reproducible legacy cases.
+# New lane cases never request or emit this ambiguous double-extension name.
 UNIFIED_C4_UPSTREAM_FILE = "c4_finalization.json.json"
-MANUAL_UPSTREAM_FILES: dict[CodexD1Node, tuple[str, ...]] = {
+LEGACY_MANUAL_UPSTREAM_FILES: dict[CodexD1Node, tuple[str, ...]] = {
     CodexD1Node.C1: (UNIFIED_C4_UPSTREAM_FILE,),
     CodexD1Node.C3: (UNIFIED_C4_UPSTREAM_FILE,),
     CodexD1Node.C4_PRE_SCAN: (UNIFIED_C4_UPSTREAM_FILE,),
     CodexD1Node.C4_ENRICHMENT: (UNIFIED_C4_UPSTREAM_FILE, "c1.md", "c3.md"),
     CodexD1Node.C4_FINALIZATION: (UNIFIED_C4_UPSTREAM_FILE,),
-    CodexD1Node.O4_A: (
-        UNIFIED_C4_UPSTREAM_FILE,
+    CodexD1Node.O4_A: (UNIFIED_C4_UPSTREAM_FILE, "c1.md", "c3.md"),
+}
+GLOBAL_RESEARCH_MANUAL_UPSTREAM_FILES: dict[CodexD1Node, tuple[str, ...]] = {
+    CodexD1Node.C1: (C4_PRE_SCAN_UPSTREAM_FILE,),
+    CodexD1Node.C3: (C4_PRE_SCAN_UPSTREAM_FILE,),
+    CodexD1Node.C5: ("c1.md", "c3.md"),
+    CodexD1Node.C4_ENRICHMENT: (
+        C4_PRE_SCAN_UPSTREAM_FILE,
         "c1.md",
         "c3.md",
+        "c5.md",
     ),
 }
 
@@ -63,6 +81,7 @@ class PilotCaseRequest:
     capability_hours: int = DEFAULT_PILOT_CAPABILITY_HOURS
     profile: Literal["functional", "quality"] = "functional"
     upstream_dir: Path | None = None
+    research_lane: ResearchLane = ResearchLane.LEGACY_DOCUMENT1
 
 
 @dataclass(frozen=True)
@@ -126,15 +145,15 @@ class PilotCaseBuilder:
         _validate_identifier(request.source_run, "source_run")
         _validate_identifier(request.case_id, "case_id")
         if not 1 <= request.capability_hours <= MAX_PILOT_CAPABILITY_HOURS:
-            raise ValueError(
-                "capability_hours must be between 1 and "
-                f"{MAX_PILOT_CAPABILITY_HOURS}"
-            )
+            raise ValueError(f"capability_hours must be between 1 and {MAX_PILOT_CAPABILITY_HOURS}")
         if request.profile == "quality" and request.node not in QUALITY_PILOT_NODES:
-            raise ValueError(
-                "the quality Pilot profile supports C1, C3, O4-A and the three C4 turns"
-            )
-        case_root = self.cases_root / request.node.value / request.case_id
+            raise ValueError("the quality Pilot profile does not support this research node")
+        case_parent = (
+            self.cases_root / request.node.value
+            if request.research_lane is ResearchLane.LEGACY_DOCUMENT1
+            else self.cases_root / request.research_lane.value / request.node.value
+        )
+        case_root = case_parent / request.case_id
         if case_root.exists():
             raise FileExistsError(f"Pilot case already exists: {case_root}")
         case_root.parent.mkdir(parents=True, exist_ok=True)
@@ -193,13 +212,22 @@ class PilotCaseBuilder:
         if not isinstance(payload, dict):
             raise ValueError("source attempt context payload is invalid")
         payload = deepcopy(payload)
-        if request.node is CodexD1Node.O4_A:
-            payload = _isolate_o4_a_payload(payload)
+        workflow_version, research_lane, asset_root = _pilot_identity(request)
+        context_lane = context_outer.get("research_lane")
+        if context_lane is not None and context_lane != research_lane.value:
+            raise ValueError("source attempt research lane does not match requested lane")
         if request.profile == "quality":
-            payload = _quality_payload(request.node, payload)
-        manual_upstream = _load_manual_upstream(request.node, request.upstream_dir)
+            payload = _quality_payload(request.node, payload, request.research_lane)
+        manual_upstream = _load_manual_upstream(
+            request.node, request.upstream_dir, request.research_lane
+        )
         if manual_upstream is not None:
-            payload = _apply_manual_upstream(request.node, payload, manual_upstream.files)
+            payload = _apply_manual_upstream(
+                request.node,
+                payload,
+                manual_upstream.files,
+                request.research_lane,
+            )
         horizontal_path = attempt_root / "input" / "horizontal.json"
         horizontal: dict[str, object] | None = None
         if horizontal_path.is_file():
@@ -220,7 +248,7 @@ class PilotCaseBuilder:
         workspace = PilotCaseWorkspace(staging)
         seeder = AttemptBundleSeeder(
             workspace,
-            self.repo_root / "codex_assets" / "document1_v2",
+            self.repo_root / asset_root,
         )
         seeded = await seeder.seed(
             run_id=request.source_run,
@@ -229,12 +257,12 @@ class PilotCaseBuilder:
             context_payload=payload,
             horizontal=horizontal,
             manual_upstream=(manual_upstream.files if manual_upstream is not None else None),
+            workflow_version=workflow_version,
+            research_lane=research_lane,
         )
         role = role_for_node(request.node)
         policy = DataToolPolicyRegistry()
-        canonical_tools = sorted(
-            policy.allowed_tools_for_ticker(request.node, role, ticker)
-        )
+        canonical_tools = sorted(policy.allowed_tools_for_ticker(request.node, role, ticker))
         contracts = build_data_tool_contracts(default_real_tool_registry(self.settings))
         enabled_tools = [GUIDE_TOOL_NAME, READ_TOOL_NAME, VALIDATE_CITATIONS_TOOL_NAME]
         enabled_tools.extend(
@@ -244,6 +272,8 @@ class PilotCaseBuilder:
         )
         codec = DataCapabilityCodec(self.settings.codex_capability_secret or "")
         capability = codec.issue(
+            workflow_version=workflow_version,
+            research_lane=research_lane,
             run_id=request.source_run,
             node_id=request.node,
             node_attempt_id=attempt.attempt_id,
@@ -256,12 +286,14 @@ class PilotCaseBuilder:
         )
         probe_name, probe_args = _probe_for_node(request.node, enabled_tools)
         manifest = {
-            "schema_version": "codex-d1-pilot-case-v1",
+            "schema_version": "codex-research-pilot-case-v2",
             "case_id": request.case_id,
             "profile": request.profile,
             "source_run_id": request.source_run,
             "run_id": request.source_run,
             "node": request.node.value,
+            "workflow_version": workflow_version,
+            "research_lane": research_lane.value,
             "agent_role": role.value,
             "node_attempt_id": attempt.attempt_id,
             # Compatibility alias for storage/runtime DTOs that have not yet
@@ -313,6 +345,7 @@ class PilotCaseBuilder:
             render_task(
                 case_root=installed_case_root,
                 node=request.node.value,
+                research_lane=research_lane.value,
                 run_id=request.source_run,
                 attempt_id=attempt.attempt_id,
                 profile=request.profile,
@@ -339,6 +372,40 @@ def prepare_case_sync(builder: PilotCaseBuilder, request: PilotCaseRequest) -> P
             await builder.aclose()
 
     return asyncio.run(execute())
+
+
+def _pilot_identity(
+    request: PilotCaseRequest,
+) -> tuple[CodexWorkflowVersion, ResearchLane, Path]:
+    lane = request.research_lane
+    if lane is ResearchLane.LEGACY_DOCUMENT1:
+        if request.node in {CodexD1Node.C5, CodexD1Node.O4}:
+            raise ValueError("C5/O4 require an explicit new research lane")
+        return CODEX_D1_WORKFLOW_VERSION, lane, Path("codex_assets/document1_v2")
+    if lane is ResearchLane.GLOBAL_RESEARCH:
+        allowed = {
+            CodexD1Node.C4_PRE_SCAN,
+            CodexD1Node.C1,
+            CodexD1Node.C3,
+            CodexD1Node.C5,
+            CodexD1Node.C4_ENRICHMENT,
+        }
+        if request.node not in allowed:
+            raise ValueError("node does not belong to the Global Research lane")
+        return (
+            CODEX_GLOBAL_RESEARCH_WORKFLOW_VERSION,
+            lane,
+            Path("codex_assets/global_research_v1"),
+        )
+    if lane is ResearchLane.MARKET_SITUATION_RESEARCH:
+        if request.node not in {CodexD1Node.C2, CodexD1Node.O4}:
+            raise ValueError("node does not belong to the Market Situation lane")
+        return (
+            CODEX_MARKET_SITUATION_WORKFLOW_VERSION,
+            lane,
+            Path("codex_assets/market_situation_v1"),
+        )
+    raise ValueError(f"unsupported Pilot research lane: {lane}")
 
 
 def _safe_extract(raw: bytes, destination: Path) -> None:
@@ -434,7 +501,7 @@ def _make_inputs_read_only(root: Path, attempt_id: str) -> None:
 def _find_value(value: object, key: str) -> object | None:
     if isinstance(value, dict):
         if key in value:
-            return value[key]
+            return cast(object, value[key])
         for child in value.values():
             found = _find_value(child, key)
             if found is not None:
@@ -480,16 +547,23 @@ QUALITY_PILOT_NODES = frozenset(
     {
         CodexD1Node.C1,
         CodexD1Node.C3,
-        CodexD1Node.O4_A,
+        CodexD1Node.C2,
+        CodexD1Node.C5,
+        CodexD1Node.O4,
         CodexD1Node.C4_PRE_SCAN,
         CodexD1Node.C4_ENRICHMENT,
+        # Historical profiles remain callable only with lane=legacy_document1.
+        CodexD1Node.O4_A,
+        CodexD1Node.O4_B,
         CodexD1Node.C4_FINALIZATION,
     }
 )
 
 
 def _quality_payload(
-    node: CodexD1Node, payload: dict[str, object]
+    node: CodexD1Node,
+    payload: dict[str, object],
+    research_lane: ResearchLane = ResearchLane.LEGACY_DOCUMENT1,
 ) -> dict[str, object]:
     if node is CodexD1Node.C1:
         return _c1_quality_payload(payload)
@@ -502,14 +576,23 @@ def _quality_payload(
             "actor words against actions and constraints, reconstruct allocation and "
             "target transmission, and preserve milestone proof boundaries and Unknowns."
         ),
-        CodexD1Node.O4_A: (
-            "O4-A research-quality Pilot. Produce the five-section market-implied "
+        CodexD1Node.C5: (
+            "C5 research-quality Pilot. Produce the five-section market-implied "
             "expectations report under the market-implied-expectations skill, using Chinese "
             "section titles and table headers. Use frozen C1/C3 inputs as economic starting "
-            "points without redoing them; do not read or inherit O4-B. Concentrate on recent "
+            "points without redoing them; do not read or inherit Market Situation O4. "
+            "Concentrate on recent "
             "repricing drivers and the business, financial, and duration conditions current "
             "price requires. When evidence is sparse, prefer a shorter conditional judgment "
             "to availability, provider, confidence, or identifiability audits."
+        ),
+        CodexD1Node.O4_A: (
+            "O4-A legacy research-quality Pilot. Produce the full market-implied "
+            "expectations report under the injected skill without functional-smoke limits."
+        ),
+        CodexD1Node.O4_B: (
+            "O4-B legacy research-quality Pilot. Produce the full price and market-trace "
+            "report under the injected legacy contract without functional-smoke limits."
         ),
         CodexD1Node.C4_PRE_SCAN: (
             "C4 quality Pilot, pre-scan turn. Fully execute the entity-map refresh and "
@@ -518,17 +601,33 @@ def _quality_payload(
             "valid five-field public artifacts; it does not mean producing a long report."
         ),
         CodexD1Node.C4_ENRICHMENT: (
-            "C4 quality Pilot, enrichment turn. Use the frozen pre-scan and C1/C3 research "
+            "C4 quality Pilot, enrichment turn. Use the frozen pre-scan and C1/C3/C5 research "
             "only to narrow searches, then validate, update, add and deduplicate directly "
-            "observable future matters under the injected skill and five-field contract."
+            "observable future matters under the injected skill and five-field contract. "
+            "Return the complete merged C4 snapshot; no later finalization turn exists."
         ),
         CodexD1Node.C4_FINALIZATION: (
-            "C4 quality Pilot, finalization turn. Finalize the frozen enriched entity map "
-            "and future nodes without semantic expansion: preserve distinct milestones, "
-            "deduplicate only identical event identities, and emit only the governed "
-            "five-field public artifacts required by the injected skill."
+            "C4 legacy quality Pilot, finalization turn. Validate and return the complete "
+            "five-field entity-relation and future-node snapshot required by the injected "
+            "legacy Document 1 contract."
+        ),
+        CodexD1Node.C2: (
+            "C2 research-quality Pilot. Produce a current, evidence-led Market Situation "
+            "macro report covering growth, inflation, policy, rates, credit, liquidity, "
+            "currency, broad-market transmission, and material uncertainty."
+        ),
+        CodexD1Node.O4: (
+            "O4 research-quality Pilot. Produce an evidence-led Market Situation price report "
+            "covering current snapshot, multi-window returns, repricing intervals, relative "
+            "performance, volatility, volume, liquidity, positioning and data-quality limits."
         ),
     }
+    if node is CodexD1Node.C4_ENRICHMENT and research_lane is ResearchLane.LEGACY_DOCUMENT1:
+        briefs[node] = (
+            "C4 legacy quality Pilot, enrichment turn. Use the frozen pre-scan and C1/C3 "
+            "research to add supported future matters under the injected legacy contract; "
+            "return the structured enrichment expected by its later legacy merge turn."
+        )
     payload["research_brief"] = briefs[node]
     base = payload.get("base_context")
     quality_context = dict(base) if isinstance(base, dict) else {}
@@ -541,7 +640,9 @@ def _quality_payload(
 
 
 def _load_manual_upstream(
-    node: CodexD1Node, upstream_dir: Path | None
+    node: CodexD1Node,
+    upstream_dir: Path | None,
+    research_lane: ResearchLane = ResearchLane.LEGACY_DOCUMENT1,
 ) -> ManualUpstreamImport | None:
     if upstream_dir is None:
         return None
@@ -551,7 +652,12 @@ def _load_manual_upstream(
     files: dict[str, str] = {}
     source_hashes: dict[str, str] = {}
     injected_hashes: dict[str, str] = {}
-    for name in MANUAL_UPSTREAM_FILES.get(node, ()):
+    upstream_files = (
+        LEGACY_MANUAL_UPSTREAM_FILES
+        if research_lane is ResearchLane.LEGACY_DOCUMENT1
+        else GLOBAL_RESEARCH_MANUAL_UPSTREAM_FILES
+    )
+    for name in upstream_files.get(node, ()):
         path = source_dir / name
         if not path.is_file():
             continue
@@ -567,18 +673,14 @@ def _load_manual_upstream(
         if name.endswith(".json"):
             try:
                 parsed = json.loads(text)
-                validated = NodeOutput.model_validate(parsed).model_dump(
-                    mode="json", by_alias=True
-                )
+                validated = NodeOutput.model_validate(parsed).model_dump(mode="json", by_alias=True)
             except (json.JSONDecodeError, ValueError) as exc:
                 raise ValueError(f"manual upstream NodeOutput JSON is invalid: {name}") from exc
             validated["observation_candidates"] = []
             warnings = list(validated.get("warnings") or [])
             warnings.append("manual_pilot_override_no_evidence_rebind")
             validated["warnings"] = list(dict.fromkeys(warnings))
-            injected = json.dumps(
-                _sanitize_manual_value(validated), ensure_ascii=False, indent=2
-            )
+            injected = json.dumps(_sanitize_manual_value(validated), ensure_ascii=False, indent=2)
         else:
             injected = _MANUAL_CITATION.sub(_MANUAL_CITATION_REPLACEMENT, text)
         files[name] = injected
@@ -598,12 +700,16 @@ def _apply_manual_upstream(
     node: CodexD1Node,
     payload: dict[str, object],
     files: dict[str, str],
+    research_lane: ResearchLane = ResearchLane.LEGACY_DOCUMENT1,
 ) -> dict[str, object]:
-    if node is CodexD1Node.O4_A:
+    if research_lane is ResearchLane.LEGACY_DOCUMENT1 and node is CodexD1Node.O4_A:
         payload = _isolate_o4_a_payload(payload)
 
     def structured(name: str) -> dict[str, Any]:
-        return json.loads(files[name])
+        parsed = json.loads(files[name])
+        if not isinstance(parsed, dict):
+            raise ValueError(f"manual upstream structured output is not an object: {name}")
+        return cast(dict[str, Any], parsed)
 
     def report(name: str) -> dict[str, object]:
         return {
@@ -617,7 +723,7 @@ def _apply_manual_upstream(
             "metadata": {},
         }
 
-    if UNIFIED_C4_UPSTREAM_FILE in files:
+    if research_lane is ResearchLane.LEGACY_DOCUMENT1 and UNIFIED_C4_UPSTREAM_FILE in files:
         c4_output = structured(UNIFIED_C4_UPSTREAM_FILE)
         if node is CodexD1Node.C4_FINALIZATION:
             payload["enriched_c4"] = c4_output
@@ -625,12 +731,19 @@ def _apply_manual_upstream(
             payload["known_future_nodes"] = list(c4_output.get("future_nodes") or [])
         else:
             payload["c4_pre_scan"] = c4_output
+    elif C4_PRE_SCAN_UPSTREAM_FILE in files:
+        c4_output = structured(C4_PRE_SCAN_UPSTREAM_FILE)
+        if node in {CodexD1Node.C1, CodexD1Node.C3}:
+            c4_output["future_nodes"] = []
+        payload["c4_pre_scan"] = c4_output
     if node is CodexD1Node.C4_ENRICHMENT:
         if "c1.md" in files:
             payload["c1_report"] = report("c1.md")
         if "c3.md" in files:
             payload["c3_report"] = report("c3.md")
-    elif node is CodexD1Node.O4_A:
+        if "c5.md" in files:
+            payload["c5_report"] = report("c5.md")
+    elif node in {CodexD1Node.C5, CodexD1Node.O4_A}:
         for key in ("c1", "c3"):
             name = f"{key}.md"
             if name in files:
@@ -718,9 +831,10 @@ def _probe_for_node(node: CodexD1Node, enabled: list[str]) -> tuple[str, dict[st
         CodexD1Node.C3: ("sec_issuer_filings", {"forms": ["10-K"], "limit": 1}),
         CodexD1Node.C4_PRE_SCAN: ("sec_issuer_filings", {"forms": ["10-K"], "limit": 1}),
         CodexD1Node.C4_ENRICHMENT: ("sec_issuer_filings", {"forms": ["10-K"], "limit": 1}),
-        CodexD1Node.C4_FINALIZATION: ("sec_issuer_filings", {"forms": ["10-K"], "limit": 1}),
         CodexD1Node.O4_B: ("market_quote_snapshot", {}),
         CodexD1Node.O4_A: ("market_quote_snapshot", {}),
+        CodexD1Node.C5: ("market_quote_snapshot", {}),
+        CodexD1Node.O4: ("market_quote_snapshot", {}),
     }
     preferred = preferences.get(node)
     if preferred is not None and preferred[0] in enabled:

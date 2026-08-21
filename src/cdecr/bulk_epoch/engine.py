@@ -4,9 +4,12 @@ from __future__ import annotations
 
 import subprocess
 import uuid
-from collections.abc import Sequence
+from collections import Counter
+from collections.abc import Callable, Mapping, Sequence
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass
 from datetime import UTC, datetime
+from math import ceil
 from time import perf_counter
 from typing import Literal
 
@@ -29,6 +32,7 @@ from cdecr.cross_document import (
     ENGINE_VERSION,
     PROMPT_VERSION,
     CrossDocumentEngine,
+    N9TaskFailure,
     _AuditedModels,
 )
 from cdecr.cross_document_contracts import (
@@ -51,6 +55,101 @@ BULK_STAGE_GRAPH_VERSION = "cdecr-bulk-epoch-v12-token-quality-recovery"
 FIELD_EPOCH_POLICY_VERSION = "field-epoch-planned-batching-v2-pure-prepare"
 FIELD_PLAN_ARTIFACT_KIND = "field_plan_v2"
 FIELD_OVERLAY_ARTIFACT_KIND = "field_overlay_v2"
+
+
+def _n9_fail_open_cap(task_count: int) -> int:
+    return min(10, max(3, ceil(max(0, task_count) * 0.01)))
+
+
+def _n9_failure_class_counts(
+    failures: dict[str, N9TaskFailure],
+) -> dict[str, int]:
+    return dict(
+        sorted(Counter(item.failure_class.value for item in failures.values()).items())
+    )
+
+
+@dataclass(frozen=True)
+class _N9DeferredRetryResult:
+    decisions: Mapping[str, AtomicAssignmentDecision]
+    failures: Mapping[str, N9TaskFailure]
+    attempted_ids: frozenset[str]
+    recovered_ids: frozenset[str]
+
+
+def _run_n9_deferred_retry_wave(
+    mentions: Sequence[EventMention],
+    failures: Mapping[str, N9TaskFailure],
+    invoke: Callable[
+        [list[EventMention]],
+        tuple[dict[str, AtomicAssignmentDecision], dict[str, N9TaskFailure]],
+    ],
+) -> _N9DeferredRetryResult:
+    retry_mentions = [
+        mention
+        for mention in mentions
+        if (
+            (failure := failures.get(mention.mention_id)) is not None
+            and failure.deferred_retry
+        )
+    ]
+    attempted_ids = frozenset(mention.mention_id for mention in retry_mentions)
+    if not retry_mentions:
+        return _N9DeferredRetryResult({}, dict(failures), attempted_ids, frozenset())
+    retry_decisions, retry_failures = invoke(retry_mentions)
+    recovered_ids = frozenset(attempted_ids.intersection(retry_decisions))
+    remaining = {
+        mention_id: failure
+        for mention_id, failure in failures.items()
+        if mention_id not in recovered_ids
+    }
+    for mention_id in attempted_ids.difference(recovered_ids):
+        remaining[mention_id] = retry_failures.get(mention_id, failures[mention_id])
+    return _N9DeferredRetryResult(
+        decisions=retry_decisions,
+        failures=remaining,
+        attempted_ids=attempted_ids,
+        recovered_ids=recovered_ids,
+    )
+
+
+def _n9_degraded_decision_ref(
+    failure: N9TaskFailure,
+    *,
+    attempt_count: int,
+) -> dict[str, object]:
+    return {
+        "degraded_action": "CREATE_NEW",
+        "reason": "N9_PROVIDER_FAILED_SINGLETON",
+        "attempt_count": attempt_count,
+        "original_error_code": failure.error_code,
+        "failure_class": failure.failure_class.value,
+    }
+
+
+def _n9_completed_task_state(
+    completed_task: Mapping[str, object] | None,
+    *,
+    input_hash: str,
+    snapshot_hash: str,
+) -> tuple[AtomicAssignmentDecision | None, bool]:
+    if (
+        completed_task is None
+        or completed_task.get("input_hash") != input_hash
+        or completed_task.get("snapshot_hash") != snapshot_hash
+    ):
+        return None, False
+    decision_ref = completed_task.get("decision_ref")
+    if not isinstance(decision_ref, Mapping):
+        return None, False
+    decision_payload = decision_ref.get("decision")
+    if isinstance(decision_payload, dict) and "mention_id" in decision_payload:
+        return AtomicAssignmentDecision.model_validate(decision_payload), True
+    completed_without_decision = decision_ref.get("degraded_action") == "CREATE_NEW" or (
+        isinstance(decision_payload, dict)
+        and decision_payload.get("deterministic") == "NO_CANDIDATE"
+    )
+    return None, completed_without_decision
 
 
 def _git_commit() -> str | None:
@@ -179,6 +278,12 @@ class BulkEpochEngine:
         self.batch_task_ledger = batch_task_ledger
         self.embedding_batch_executor = embedding_batch_executor
         self.core._bulk_batch_audit_write = batch_audit_write
+        self._last_n9_failure_recovery: dict[str, object] = {}
+
+    def n9_failure_recovery_telemetry(self) -> dict[str, object]:
+        """Return the latest epoch's orchestration-only N9 recovery counters."""
+
+        return dict(self._last_n9_failure_recovery)
 
     def _writer(self) -> BulkWriter:
         return BulkWriter(
@@ -245,6 +350,18 @@ class BulkEpochEngine:
             message_ids=ordered_ids,
         )
         if epoch["status"] == "FINALIZED":
+            result = epoch.get("result")
+            deterministic_runtime = (
+                result.get("deterministic_runtime") if isinstance(result, Mapping) else None
+            )
+            recovery = (
+                deterministic_runtime.get("n9_failure_recovery")
+                if isinstance(deterministic_runtime, Mapping)
+                else None
+            )
+            self._last_n9_failure_recovery = (
+                dict(recovery) if isinstance(recovery, Mapping) else {}
+            )
             return self._results_from_registry(
                 epoch_id=epoch_id,
                 message_ids=ordered_ids,
@@ -591,8 +708,10 @@ class BulkEpochEngine:
                 )
                 completed_n9 = ledger.completed("N9")
                 cached_decisions: dict[str, AtomicAssignmentDecision] = {}
-                pending_mentions = []
+                completed_without_decision: set[str] = set()
+                pending_mentions: list[EventMention] = []
                 pending_task_rows: list[dict[str, object]] = []
+                task_rows_by_mention: dict[str, dict[str, object]] = {}
                 for mention in eligible_mentions:
                     task_payload = {
                         "mention_id": mention.mention_id,
@@ -602,54 +721,45 @@ class BulkEpochEngine:
                     }
                     task_hash = canonical_hash(task_payload)
                     completed_task = completed_n9.get(mention.mention_id)
-                    decision_payload = (
-                        completed_task.get("decision_ref", {}).get("decision")
-                        if completed_task is not None
-                        and completed_task.get("input_hash") == task_hash
-                        and completed_task.get("snapshot_hash") == base_atomic.snapshot_hash
-                        else None
+                    cached_decision, completed = _n9_completed_task_state(
+                        completed_task,
+                        input_hash=task_hash,
+                        snapshot_hash=base_atomic.snapshot_hash,
                     )
-                    if isinstance(decision_payload, dict) and "mention_id" in decision_payload:
-                        cached_decisions[mention.mention_id] = (
-                            AtomicAssignmentDecision.model_validate(decision_payload)
-                        )
+                    if cached_decision is not None:
+                        cached_decisions[mention.mention_id] = cached_decision
+                    elif completed:
+                        completed_without_decision.add(mention.mention_id)
                     else:
                         pending_mentions.append(mention)
-                        pending_task_rows.append(
-                            {
-                                "stage": "N9",
-                                "task_id": mention.mention_id,
-                                "input_hash": task_hash,
-                                "snapshot_hash": base_atomic.snapshot_hash,
-                            }
-                        )
+                        task_row: dict[str, object] = {
+                            "stage": "N9",
+                            "task_id": mention.mention_id,
+                            "input_hash": task_hash,
+                            "snapshot_hash": base_atomic.snapshot_hash,
+                        }
+                        pending_task_rows.append(task_row)
+                        task_rows_by_mention[mention.mention_id] = task_row
                 if pending_task_rows:
                     ledger.start_many(pending_task_rows)
                 decisions = {
                     **cached_decisions,
                     **self.core._atomic_decisions(pending_mentions, candidates, compiled, models),
                 }
-                n9_failures = dict(getattr(self.core, "_last_n9_task_failures", {}))
+                first_wave_failures = dict(
+                    getattr(self.core, "_last_n9_task_failures", {})
+                )
                 deterministic_telemetry["n9_batch_packing"] = getattr(
                     self.core, "_last_n9_packing_telemetry", {}
                 )
                 finished_task_rows: list[dict[str, object]] = []
                 failed_task_rows: list[dict[str, object]] = []
+                failure_by_mention: dict[str, N9TaskFailure] = {}
                 for mention in pending_mentions:
-                    task_payload = {
-                        "mention_id": mention.mention_id,
-                        "candidate_ids": [
-                            item.event.event_id for item in candidates[mention.mention_id]
-                        ],
-                    }
-                    task_hash = canonical_hash(task_payload)
                     if mention.mention_id in decisions or not candidates[mention.mention_id]:
                         finished_task_rows.append(
                             {
-                                "stage": "N9",
-                                "task_id": mention.mention_id,
-                                "input_hash": task_hash,
-                                "snapshot_hash": base_atomic.snapshot_hash,
+                                **task_rows_by_mention[mention.mention_id],
                                 "decision_ref": {
                                     "decision": (
                                         decisions[mention.mention_id].model_dump(mode="json")
@@ -660,13 +770,12 @@ class BulkEpochEngine:
                             }
                         )
                     else:
-                        failure = n9_failures.get(mention.mention_id)
+                        failure = first_wave_failures.get(mention.mention_id)
+                        if failure is not None:
+                            failure_by_mention[mention.mention_id] = failure
                         failed_task_rows.append(
                             {
-                                "stage": "N9",
-                                "task_id": mention.mention_id,
-                                "input_hash": task_hash,
-                                "snapshot_hash": base_atomic.snapshot_hash,
+                                **task_rows_by_mention[mention.mention_id],
                                 "error_code": (
                                     failure.error_code
                                     if failure is not None
@@ -694,14 +803,143 @@ class BulkEpochEngine:
                         ledger.fail_many(retryable_rows, status="FAILED_RETRYABLE")
                     if terminal_rows:
                         ledger.fail_many(terminal_rows, status="FAILED_TERMINAL")
-                if any(row["retryable"] for row in failed_task_rows):
-                    retryable_count = sum(bool(row["retryable"]) for row in failed_task_rows)
+
+                def invoke_deferred_retry(
+                    retry_mentions: list[EventMention],
+                ) -> tuple[
+                    dict[str, AtomicAssignmentDecision],
+                    dict[str, N9TaskFailure],
+                ]:
+                    ledger.start_many(
+                        [task_rows_by_mention[mention.mention_id] for mention in retry_mentions]
+                    )
+                    retry_decisions = self.core._atomic_decisions(
+                        retry_mentions,
+                        candidates,
+                        compiled,
+                        models,
+                    )
+                    retry_failures = dict(
+                        getattr(self.core, "_last_n9_task_failures", {})
+                    )
+                    return retry_decisions, retry_failures
+
+                deferred = _run_n9_deferred_retry_wave(
+                    pending_mentions,
+                    failure_by_mention,
+                    invoke_deferred_retry,
+                )
+                deferred_ids = set(deferred.attempted_ids)
+                recovered_ids = set(deferred.recovered_ids)
+                if deferred_ids:
+                    failure_by_mention = dict(deferred.failures)
+                    retry_finished_rows: list[dict[str, object]] = []
+                    retry_failed_rows: list[dict[str, object]] = []
+                    for mention_id in sorted(deferred_ids):
+                        if mention_id in deferred.decisions:
+                            decisions[mention_id] = deferred.decisions[mention_id]
+                            retry_finished_rows.append(
+                                {
+                                    **task_rows_by_mention[mention_id],
+                                    "decision_ref": {
+                                        "decision": deferred.decisions[mention_id].model_dump(
+                                            mode="json"
+                                        )
+                                    },
+                                }
+                            )
+                            continue
+                        failure = failure_by_mention[mention_id]
+                        retry_failed_rows.append(
+                            {
+                                **task_rows_by_mention[mention_id],
+                                "error_code": failure.error_code,
+                                "retryable": failure.retryable,
+                            }
+                        )
+                    if retry_finished_rows:
+                        ledger.finish_many(retry_finished_rows)
+                    if retry_failed_rows:
+                        retryable_rows = [
+                            {key: value for key, value in row.items() if key != "retryable"}
+                            for row in retry_failed_rows
+                            if row["retryable"]
+                        ]
+                        terminal_rows = [
+                            {key: value for key, value in row.items() if key != "retryable"}
+                            for row in retry_failed_rows
+                            if not row["retryable"]
+                        ]
+                        if retryable_rows:
+                            ledger.fail_many(retryable_rows, status="FAILED_RETRYABLE")
+                        if terminal_rows:
+                            ledger.fail_many(terminal_rows, status="FAILED_TERMINAL")
+
+                residual_failures = {
+                    mention_id: failure
+                    for mention_id, failure in failure_by_mention.items()
+                    if mention_id not in decisions
+                }
+                fail_open_cap = _n9_fail_open_cap(len(eligible_mentions))
+                degraded_ids: set[str] = set()
+                finalize_blocked = len(residual_failures) > fail_open_cap
+                if residual_failures and not finalize_blocked:
+                    task_state = {
+                        str(row["task_id"]): row
+                        for row in self.registry.list_bulk_epoch_tasks(epoch_id, stage="N9")
+                    }
+                    degraded_rows: list[dict[str, object]] = []
+                    for mention_id, failure in sorted(residual_failures.items()):
+                        degraded_ids.add(mention_id)
+                        degraded_rows.append(
+                            {
+                                **task_rows_by_mention[mention_id],
+                                "decision_ref": {
+                                    **_n9_degraded_decision_ref(
+                                        failure,
+                                        attempt_count=int(
+                                            task_state.get(mention_id, {}).get(
+                                                "attempt_count", 1
+                                            )
+                                        ),
+                                    ),
+                                },
+                            }
+                        )
+                    ledger.finish_many(degraded_rows)
+
+                n9_recovery_telemetry = {
+                    "n9_first_wave_failed_count": len(failure_by_mention)
+                    + len(recovered_ids),
+                    "n9_deferred_retry_attempted": len(deferred_ids),
+                    "n9_deferred_retry_recovered": len(recovered_ids),
+                    "n9_deferred_retry_still_failed": len(
+                        deferred_ids.difference(recovered_ids)
+                    ),
+                    "n9_provider_failed_singleton_count": len(degraded_ids),
+                    "n9_fail_open_cap": fail_open_cap,
+                    "n9_finalize_blocked_by_failure_threshold": finalize_blocked,
+                    "n9_first_wave_failure_class_counts": _n9_failure_class_counts(
+                        first_wave_failures
+                    ),
+                    "n9_residual_failure_class_counts": _n9_failure_class_counts(
+                        residual_failures
+                    ),
+                }
+                deterministic_telemetry["n9_failure_recovery"] = n9_recovery_telemetry
+                self._last_n9_failure_recovery = dict(n9_recovery_telemetry)
+                if finalize_blocked:
                     partial_payload = {
                         "single_document_succeeded": len(ordered_ids),
                         "atomic_decide_succeeded_tasks": len(finished_task_rows)
-                        + len(cached_decisions),
-                        "atomic_decide_retryable_tasks": retryable_count,
+                        + len(cached_decisions)
+                        + len(completed_without_decision)
+                        + len(recovered_ids),
+                        "atomic_decide_retryable_tasks": sum(
+                            failure.retryable for failure in residual_failures.values()
+                        ),
                         "atomic_apply_completed": False,
+                        **n9_recovery_telemetry,
                         "stage_timings": timings,
                         "wall_clock_ms": round((perf_counter() - wall_started) * 1000),
                     }

@@ -41,6 +41,36 @@ def test_scheduler_shared_circuit_allows_two_retries_without_local_sleep() -> No
     assert metrics.circuit_wait_ms >= 0
 
 
+def test_unknown_provider_failure_waits_for_n9_deferred_wave_not_request_retry() -> None:
+    scheduler = CDECRScheduler(
+        m2_limit=1,
+        structured_provider_target=1,
+        structured_provider_hard_limit=1,
+        structured_provider_start_rate=1000,
+        structured_provider_initial_burst=4,
+        max_retries=2,
+    )
+    attempts = 0
+
+    class UnknownProviderFailure(RuntimeError):
+        code = "provider_error"
+
+    def operation() -> int:
+        nonlocal attempts
+        attempts += 1
+        raise UnknownProviderFailure()
+
+    try:
+        scheduler.run(ModelTier.M2, operation)
+    except UnknownProviderFailure:
+        pass
+    else:  # pragma: no cover
+        raise AssertionError("unknown provider failure should propagate to the N9 wave")
+
+    assert attempts == 1
+    assert scheduler.provider_gate.circuit_state == "CLOSED"
+
+
 def test_concurrency_lane_enforces_limit_and_records_queue_wait() -> None:
     lane = ConcurrencyLane("m2", 2)
     release = Event()

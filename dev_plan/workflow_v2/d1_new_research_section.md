@@ -1,5 +1,9 @@
 # 新引入实体地图与事件预告模块重构架构
 
+> **2026-08-20 当前执行口径：** C4 只在 Global Research 内运行 pre-scan 与
+> enrichment 两个 turn；enrichment 读取 C1/C3/C5 并直接返回完整最终快照，不再存在
+> C4 finalization。C4 自产 future nodes 不等同于外部事件库。
+
 ## 一、模块定位
 
 该模块包含两个部分：

@@ -7,13 +7,29 @@ from uuid import uuid4
 
 from doxagent.codex_runtime.client import WorkspaceClient
 from doxagent.codex_runtime.repository import CodexRuntimeRepository
-from doxagent.codex_runtime.schema import ArtifactKind, ArtifactRef, CodexD1Node
+from doxagent.codex_runtime.schema import (
+    CODEX_D1_WORKFLOW_VERSION,
+    ArtifactKind,
+    ArtifactRef,
+    CodexD1Node,
+    CodexWorkflowVersion,
+    ResearchLane,
+)
 
 
 class CodexD1ContextCompiler:
-    def __init__(self, workspace: WorkspaceClient, repository: CodexRuntimeRepository) -> None:
+    def __init__(
+        self,
+        workspace: WorkspaceClient,
+        repository: CodexRuntimeRepository,
+        *,
+        workflow_version: CodexWorkflowVersion = CODEX_D1_WORKFLOW_VERSION,
+        research_lane: ResearchLane = ResearchLane.LEGACY_DOCUMENT1,
+    ) -> None:
         self._workspace = workspace
         self._repository = repository
+        self._workflow_version = workflow_version
+        self._research_lane = research_lane
 
     async def write_context(
         self,
@@ -36,6 +52,8 @@ class CodexD1ContextCompiler:
         )
         metadata = await self._workspace.write_text(run_id, relative_path, body)
         artifact = ArtifactRef(
+            workflow_version=self._workflow_version,
+            research_lane=self._research_lane,
             artifact_id=uuid4().hex,
             run_id=run_id,
             node=node,
@@ -65,6 +83,8 @@ class CodexD1ContextCompiler:
         report_meta = await self._workspace.write_text(run_id, report_path, report_markdown)
         completion_meta = await self._workspace.write_text(run_id, completion_path, completion_json)
         report_ref = ArtifactRef(
+            workflow_version=self._workflow_version,
+            research_lane=self._research_lane,
             artifact_id=uuid4().hex,
             run_id=run_id,
             node=node,
@@ -76,6 +96,8 @@ class CodexD1ContextCompiler:
             content_type="text/markdown",
         )
         completion_ref = ArtifactRef(
+            workflow_version=self._workflow_version,
+            research_lane=self._research_lane,
             artifact_id=uuid4().hex,
             run_id=run_id,
             node=node,

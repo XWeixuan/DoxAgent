@@ -31,6 +31,7 @@ _AGENT_BY_ROLE = {
     CodexAgentRole.C3: AgentName.C3_INDUSTRY_RESEARCH,
     CodexAgentRole.C4: AgentName.SYSTEM,
     CodexAgentRole.O4: AgentName.O4_MARKET_TRACE,
+    CodexAgentRole.C5: AgentName.C5_MARKET_IMPLIED_EXPECTATIONS,
 }
 
 _UNAVAILABLE_ERROR_CODES = {
@@ -171,9 +172,7 @@ class DataExecutionCore:
             execution_status=ResultStatus.FAILED,
             availability=availability,
             summary=_safe_message(message),
-            delivery=DataDelivery(
-                mode="inline", observations=[], total_blocks=0, inline_chars=0
-            ),
+            delivery=DataDelivery(mode="inline", observations=[], total_blocks=0, inline_chars=0),
             provenance=DataProvenance(
                 provider=contract.source_name,
                 retrieved_at=datetime.now(UTC),

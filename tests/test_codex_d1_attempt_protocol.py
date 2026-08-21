@@ -122,15 +122,10 @@ async def test_c1_bundle_injects_complete_fundamental_research_contract(tmp_path
 
     skill_path = "attempts/c1-1/input/skills/fundamental-research.md"
     injected = (await workspace.read_text("run-c1-skill", skill_path)).content or ""
-    canonical = Path("prompts/internal_task_skills/fundamental-research.md").read_text(
-        encoding="utf-8"
-    ).replace(
-        "For BuildGlobalResearch / Document 1, research the current and forward company "
-        "fundamentals of `{target}` in the `{market}` market.",
-        "For BuildGlobalResearch / Document 1, research the current and forward company "
-        "fundamentals of the issuer identified by `ticker` and `company_name` in `context.json`.",
-    )
-    assert injected == canonical
+    legacy_snapshot = Path(
+        "codex_assets/document1_v2/skills/fundamental-research.md"
+    ).read_text(encoding="utf-8")
+    assert injected == legacy_snapshot
     assert "## Final quality gates" in injected
     assert "### 综合判断" in injected
     assert "| ID | 上游业务变量" in injected

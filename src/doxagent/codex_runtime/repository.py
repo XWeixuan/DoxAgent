@@ -15,7 +15,7 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Protocol, TypeVar
+from typing import Any, Literal, Protocol, TypeVar, cast
 
 from pydantic import BaseModel
 
@@ -23,10 +23,17 @@ from doxagent.codex_runtime.schema import (
     ArtifactRef,
     CitationManifest,
     CodexRunSummary,
+    CodexWorkflowVersion,
     Document1HandoffV1,
     Document1V2Bundle,
+    GlobalResearchBundle,
+    GlobalResearchHandoffV1,
+    MarketSituationBundle,
+    MarketSituationHandoffV1,
     NodeAttempt,
     PublishedDocument,
+    ResearchBundle,
+    ResearchLane,
     SourceRecord,
     ThreadRecord,
     WorkflowCheckpoint,
@@ -35,7 +42,7 @@ from doxagent.codex_runtime.schema import (
 from doxagent.postgres import connect_postgres, record_postgres_failure, record_postgres_payload
 
 ModelT = TypeVar("ModelT", bound=BaseModel)
-CODEX_RUNTIME_SQLITE_SCHEMA_VERSION = 2
+CODEX_RUNTIME_SQLITE_SCHEMA_VERSION = 3
 
 _WARN_BYTES = {
     "thread": 2 * 1024,
@@ -90,11 +97,15 @@ class CodexRuntimeRepository(Protocol):
     def list_sources(self, run_id: str, limit: int = 500) -> list[SourceRecord]: ...
     def save_citation_manifest(self, manifest: CitationManifest) -> None: ...
     def get_citation_manifest(self, run_id: str, artifact_id: str) -> CitationManifest | None: ...
-    def save_bundle(self, bundle: Document1V2Bundle) -> None: ...
-    def get_bundle(self, run_id: str) -> Document1V2Bundle | None: ...
+    def save_bundle(self, bundle: ResearchBundle) -> None: ...
+    def get_bundle(self, run_id: str) -> ResearchBundle | None: ...
     def mark_run_published(self, run_id: str, published_at: datetime) -> None: ...
     def list_run_summaries(
-        self, ticker: str | None, cursor: str | None = None, limit: int = 20
+        self,
+        ticker: str | None,
+        cursor: str | None = None,
+        limit: int = 20,
+        research_lane: ResearchLane | None = None,
     ) -> list[CodexRunSummary]: ...
     def append_event(self, event: WorkflowEvent) -> None: ...
     def list_events(
@@ -113,7 +124,7 @@ class InMemoryCodexRuntimeRepository:
         self._artifacts: dict[str, dict[str, ArtifactRef]] = defaultdict(dict)
         self._sources: dict[str, dict[str, SourceRecord]] = defaultdict(dict)
         self._citations: dict[tuple[str, str], CitationManifest] = {}
-        self._bundles: dict[str, Document1V2Bundle] = {}
+        self._bundles: dict[str, ResearchBundle] = {}
         self._events: dict[str, dict[str, WorkflowEvent]] = defaultdict(dict)
         self._documents: dict[tuple[str, str], PublishedDocument] = {}
 
@@ -190,11 +201,11 @@ class InMemoryCodexRuntimeRepository:
             item = self._citations.get((run_id, artifact_id))
             return item.model_copy(deep=True) if item else None
 
-    def save_bundle(self, bundle: Document1V2Bundle) -> None:
+    def save_bundle(self, bundle: ResearchBundle) -> None:
         with self._lock:
             self._bundles[bundle.run_id] = bundle.model_copy(deep=True)
 
-    def get_bundle(self, run_id: str) -> Document1V2Bundle | None:
+    def get_bundle(self, run_id: str) -> ResearchBundle | None:
         with self._lock:
             item = self._bundles.get(run_id)
             return item.model_copy(deep=True) if item else None
@@ -203,7 +214,11 @@ class InMemoryCodexRuntimeRepository:
         return None
 
     def list_run_summaries(
-        self, ticker: str | None, cursor: str | None = None, limit: int = 20
+        self,
+        ticker: str | None,
+        cursor: str | None = None,
+        limit: int = 20,
+        research_lane: ResearchLane | None = None,
     ) -> list[CodexRunSummary]:
         limit = _bounded_limit(limit, default=20, maximum=100)
         cursor_pair = _decode_cursor(cursor)
@@ -213,6 +228,9 @@ class InMemoryCodexRuntimeRepository:
                     item
                     for item in self._bundles.values()
                     if ticker is None or item.ticker.upper() == ticker.upper()
+                    if research_lane is None
+                    or getattr(item, "research_lane", ResearchLane.LEGACY_DOCUMENT1)
+                    is research_lane
                 ),
                 key=lambda item: (item.created_at, item.run_id),
                 reverse=True,
@@ -294,6 +312,8 @@ class SQLiteCodexRuntimeRepository:
                     record_type TEXT NOT NULL,
                     record_key TEXT NOT NULL,
                     run_id TEXT NOT NULL,
+                    workflow_version TEXT NOT NULL DEFAULT 'codex_d1_v2',
+                    research_lane TEXT NOT NULL DEFAULT 'legacy_document1',
                     sort_order INTEGER NOT NULL DEFAULT 0,
                     payload_json TEXT NOT NULL,
                     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -330,6 +350,29 @@ class SQLiteCodexRuntimeRepository:
             if version < 2:
                 self._copy_legacy_evidence(connection)
                 connection.execute("PRAGMA user_version = 2")
+            if version < 3:
+                columns = {
+                    str(row[1])
+                    for row in connection.execute(
+                        "PRAGMA table_info(codex_runtime_records)"
+                    ).fetchall()
+                }
+                if "workflow_version" not in columns:
+                    connection.execute(
+                        "ALTER TABLE codex_runtime_records ADD COLUMN workflow_version "
+                        "TEXT NOT NULL DEFAULT 'codex_d1_v2'"
+                    )
+                if "research_lane" not in columns:
+                    connection.execute(
+                        "ALTER TABLE codex_runtime_records ADD COLUMN research_lane "
+                        "TEXT NOT NULL DEFAULT 'legacy_document1'"
+                    )
+                connection.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_codex_runtime_lane_run "
+                    "ON codex_runtime_records "
+                    "(research_lane, workflow_version, run_id, record_type, sort_order)"
+                )
+                connection.execute("PRAGMA user_version = 3")
             connection.commit()
 
     @staticmethod
@@ -413,15 +456,30 @@ class SQLiteCodexRuntimeRepository:
         self, record_type: str, key: str, run_id: str, value: BaseModel, order: int = 0
     ) -> None:
         payload = value.model_dump_json(by_alias=True)
+        workflow_version = str(getattr(value, "workflow_version", "codex_d1_v2"))
+        research_lane_value = getattr(value, "research_lane", ResearchLane.LEGACY_DOCUMENT1)
+        research_lane = str(getattr(research_lane_value, "value", research_lane_value))
         with self._lock, self._connect() as connection:
             connection.execute(
                 """INSERT INTO codex_runtime_records
-                   (record_type, record_key, run_id, sort_order, payload_json)
-                   VALUES (?, ?, ?, ?, ?)
+                   (record_type, record_key, run_id, workflow_version, research_lane,
+                    sort_order, payload_json)
+                   VALUES (?, ?, ?, ?, ?, ?, ?)
                    ON CONFLICT(record_type, record_key) DO UPDATE SET
-                     run_id=excluded.run_id, sort_order=excluded.sort_order,
+                     run_id=excluded.run_id,
+                     workflow_version=excluded.workflow_version,
+                     research_lane=excluded.research_lane,
+                     sort_order=excluded.sort_order,
                      payload_json=excluded.payload_json, updated_at=CURRENT_TIMESTAMP""",
-                (record_type, key, run_id, order, payload),
+                (
+                    record_type,
+                    key,
+                    run_id,
+                    workflow_version,
+                    research_lane,
+                    order,
+                    payload,
+                ),
             )
 
     def _one(self, record_type: str, key: str, model: type[ModelT]) -> ModelT | None:
@@ -547,17 +605,27 @@ class SQLiteCodexRuntimeRepository:
             ).fetchone()
         return CitationManifest.model_validate_json(row["manifest_json"]) if row else None
 
-    def save_bundle(self, bundle: Document1V2Bundle) -> None:
+    def save_bundle(self, bundle: ResearchBundle) -> None:
         self._upsert("bundles", bundle.run_id, bundle.run_id, bundle)
 
-    def get_bundle(self, run_id: str) -> Document1V2Bundle | None:
-        return self._one("bundles", run_id, Document1V2Bundle)
+    def get_bundle(self, run_id: str) -> ResearchBundle | None:
+        with self._lock, self._connect() as connection:
+            row = connection.execute(
+                "SELECT payload_json FROM codex_runtime_records "
+                "WHERE record_type='bundles' AND record_key=?",
+                (run_id,),
+            ).fetchone()
+        return _parse_bundle_json(row["payload_json"]) if row else None
 
     def mark_run_published(self, run_id: str, published_at: datetime) -> None:
         return None
 
     def list_run_summaries(
-        self, ticker: str | None, cursor: str | None = None, limit: int = 20
+        self,
+        ticker: str | None,
+        cursor: str | None = None,
+        limit: int = 20,
+        research_lane: ResearchLane | None = None,
     ) -> list[CodexRunSummary]:
         limit = _bounded_limit(limit, 20, 100)
         cursor_pair = _decode_cursor(cursor)
@@ -567,9 +635,13 @@ class SQLiteCodexRuntimeRepository:
                    WHERE record_type='bundles' ORDER BY updated_at DESC LIMIT ?""",
                 (limit * 4,),
             ).fetchall()
-        bundles = [Document1V2Bundle.model_validate_json(row["payload_json"]) for row in rows]
+        bundles = [_parse_bundle_json(row["payload_json"]) for row in rows]
         values = [
-            item for item in bundles if ticker is None or item.ticker.upper() == ticker.upper()
+            item
+            for item in bundles
+            if ticker is None or item.ticker.upper() == ticker.upper()
+            if research_lane is None
+            or getattr(item, "research_lane", ResearchLane.LEGACY_DOCUMENT1) is research_lane
         ]
         if cursor_pair:
             values = [item for item in values if (item.created_at, item.run_id) < cursor_pair]
@@ -590,11 +662,14 @@ class SQLiteCodexRuntimeRepository:
             persisted = event.model_copy(update={"sequence": int(row[0]) + 1})
             connection.execute(
                 """INSERT INTO codex_runtime_records
-                   (record_type, record_key, run_id, sort_order, payload_json)
-                   VALUES ('events', ?, ?, ?, ?)""",
+                   (record_type, record_key, run_id, workflow_version, research_lane,
+                    sort_order, payload_json)
+                   VALUES ('events', ?, ?, ?, ?, ?, ?)""",
                 (
                     persisted.event_id,
                     persisted.run_id,
+                    persisted.workflow_version,
+                    persisted.research_lane.value,
                     persisted.sequence,
                     persisted.model_dump_json(),
                 ),
@@ -723,10 +798,13 @@ class PostgresCodexRuntimeRepository:
         self._audit_read(
             "codex.thread.get", "codex_thread_registry", run_id, row, int(row is not None)
         )
+        ticker, workflow_version, research_lane = self._run_identity(run_id)
         return (
             ThreadRecord(
+                workflow_version=workflow_version,
+                research_lane=research_lane,
                 run_id=row[0],
-                ticker=self._ticker(run_id),
+                ticker=ticker,
                 agent_role=row[1],
                 thread_id=row[2],
                 model=row[3],
@@ -791,9 +869,11 @@ class PostgresCodexRuntimeRepository:
 
         rows = self._execute("codex.attempt.list", "codex_node_attempts", op)
         self._audit_read("codex.attempt.list", "codex_node_attempts", run_id, rows, len(rows))
-        ticker = self._ticker(run_id)
+        ticker, workflow_version, research_lane = self._run_identity(run_id)
         return [
             NodeAttempt(
+                workflow_version=workflow_version,
+                research_lane=research_lane,
                 attempt_id=row[0],
                 run_id=row[1],
                 ticker=ticker,
@@ -832,9 +912,9 @@ class PostgresCodexRuntimeRepository:
         def op(_connection: Any, cursor: Any) -> None:
             cursor.execute(
                 """INSERT INTO doxagent.codex_run_registry
-                   (run_id,ticker,workflow_version,status,current_node,completed_node_count,
+                   (run_id,ticker,workflow_version,research_lane,status,current_node,completed_node_count,
                     failed_node_count,latest_event_sequence,created_at,updated_at)
-                   VALUES (%s,%s,%s,%s,%s,%s,%s,-1,%s,%s)
+                   VALUES (%s,%s,%s,%s,%s,%s,%s,%s,-1,%s,%s)
                    ON CONFLICT (run_id) DO UPDATE SET
                      ticker=excluded.ticker,
                      status=CASE WHEN doxagent.codex_run_registry.status='published'
@@ -847,6 +927,7 @@ class PostgresCodexRuntimeRepository:
                     checkpoint.run_id,
                     checkpoint.ticker,
                     checkpoint.workflow_version,
+                    checkpoint.research_lane.value,
                     status,
                     current[0] if current else None,
                     len(completed),
@@ -857,9 +938,9 @@ class PostgresCodexRuntimeRepository:
             )
             cursor.execute(
                 """INSERT INTO doxagent.codex_workflow_checkpoints
-                   (run_id, ticker, workflow_version, completed_nodes, current_nodes,
+                   (run_id, ticker, workflow_version, research_lane, completed_nodes, current_nodes,
                     failed_nodes, cancelled, updated_at)
-                   VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
+                   VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
                    ON CONFLICT (run_id) DO UPDATE SET
                      ticker=excluded.ticker, completed_nodes=excluded.completed_nodes,
                      current_nodes=excluded.current_nodes, failed_nodes=excluded.failed_nodes,
@@ -868,6 +949,7 @@ class PostgresCodexRuntimeRepository:
                     checkpoint.run_id,
                     checkpoint.ticker,
                     checkpoint.workflow_version,
+                    checkpoint.research_lane.value,
                     completed,
                     current,
                     failed,
@@ -881,7 +963,8 @@ class PostgresCodexRuntimeRepository:
     def get_checkpoint(self, run_id: str) -> WorkflowCheckpoint | None:
         def op(_connection: Any, cursor: Any) -> Any:
             cursor.execute(
-                """SELECT run_id,ticker,workflow_version,completed_nodes,current_nodes,
+                """SELECT run_id,ticker,workflow_version,research_lane,
+                          completed_nodes,current_nodes,
                           failed_nodes,cancelled,updated_at
                    FROM doxagent.codex_workflow_checkpoints WHERE run_id=%s""",
                 (run_id,),
@@ -897,11 +980,12 @@ class PostgresCodexRuntimeRepository:
                 run_id=row[0],
                 ticker=row[1],
                 workflow_version=row[2],
-                completed_nodes=row[3],
-                current_nodes=row[4],
-                failed_nodes=row[5],
-                cancelled=row[6],
-                updated_at=row[7],
+                research_lane=row[3],
+                completed_nodes=row[4],
+                current_nodes=row[5],
+                failed_nodes=row[6],
+                cancelled=row[7],
+                updated_at=row[8],
             )
             if row
             else None
@@ -942,9 +1026,11 @@ class PostgresCodexRuntimeRepository:
 
         self._execute("codex.artifact.save", "codex_artifacts", op)
 
-    @staticmethod
-    def _artifact_from_row(row: Any) -> ArtifactRef:
+    def _artifact_from_row(self, row: Any) -> ArtifactRef:
+        _, workflow_version, research_lane = self._run_identity(str(row[1]))
         return ArtifactRef(
+            workflow_version=workflow_version,
+            research_lane=research_lane,
             artifact_id=row[0],
             run_id=row[1],
             node=row[2],
@@ -1001,7 +1087,10 @@ class PostgresCodexRuntimeRepository:
     def get_citation_manifest(self, run_id: str, artifact_id: str) -> CitationManifest | None:
         return self._evidence.get_citation_manifest(run_id, artifact_id)
 
-    def save_bundle(self, bundle: Document1V2Bundle) -> None:
+    def save_bundle(self, bundle: ResearchBundle) -> None:
+        if isinstance(bundle, (GlobalResearchBundle, MarketSituationBundle)):
+            self._save_lane_bundle(bundle)
+            return
         report_index = {key: value.model_dump(mode="json") for key, value in bundle.reports.items()}
         relations = [
             item.model_dump(mode="json", by_alias=True) for item in bundle.entity_relations
@@ -1047,6 +1136,87 @@ class PostgresCodexRuntimeRepository:
 
         self._execute("codex.bundle.save", "codex_document1_bundles", op)
 
+    def _save_lane_bundle(self, bundle: GlobalResearchBundle | MarketSituationBundle) -> None:
+        report_index = {key: value.model_dump(mode="json") for key, value in bundle.reports.items()}
+        manifest_id = bundle.handoff.citation_manifest_artifact_id if bundle.handoff else None
+        document_id = bundle.handoff.document_artifact_id if bundle.handoff else None
+        if isinstance(bundle, GlobalResearchBundle):
+            table = "codex_global_research_bundles"
+            relations = [
+                item.model_dump(mode="json", by_alias=True) for item in bundle.entity_relations
+            ]
+            future = [item.model_dump(mode="json", by_alias=True) for item in bundle.future_nodes]
+            detail = {
+                "report_index": report_index,
+                "entity_relations": relations,
+                "future_nodes": future,
+            }
+        else:
+            table = "codex_market_situation_bundles"
+            relations = []
+            future = []
+            detail = {"report_index": report_index}
+        _guard_payload("bundle", detail, table=table, run_id=bundle.run_id)
+
+        def op(_connection: Any, cursor: Any) -> None:
+            if isinstance(bundle, GlobalResearchBundle):
+                cursor.execute(
+                    """INSERT INTO doxagent.codex_global_research_bundles
+                       (run_id,ticker,workflow_version,research_lane,status,report_index,
+                        entity_relations,future_nodes,citation_manifest_artifact_id,
+                        document_artifact_id,created_at,published_at)
+                       VALUES (%s,%s,%s,%s,%s,%s::jsonb,%s::jsonb,%s::jsonb,%s,%s,%s,%s)
+                       ON CONFLICT (run_id) DO UPDATE SET
+                         ticker=excluded.ticker,status=excluded.status,
+                         report_index=excluded.report_index,
+                         entity_relations=excluded.entity_relations,
+                         future_nodes=excluded.future_nodes,
+                         citation_manifest_artifact_id=excluded.citation_manifest_artifact_id,
+                         document_artifact_id=excluded.document_artifact_id,
+                         published_at=excluded.published_at""",
+                    (
+                        bundle.run_id,
+                        bundle.ticker,
+                        bundle.workflow_version,
+                        bundle.research_lane.value,
+                        bundle.status,
+                        json.dumps(report_index, ensure_ascii=False, default=str),
+                        json.dumps(relations, ensure_ascii=False, default=str),
+                        json.dumps(future, ensure_ascii=False, default=str),
+                        manifest_id,
+                        document_id,
+                        bundle.created_at,
+                        bundle.published_at,
+                    ),
+                )
+            else:
+                cursor.execute(
+                    """INSERT INTO doxagent.codex_market_situation_bundles
+                       (run_id,ticker,workflow_version,research_lane,status,report_index,
+                        citation_manifest_artifact_id,document_artifact_id,created_at,published_at)
+                       VALUES (%s,%s,%s,%s,%s,%s::jsonb,%s,%s,%s,%s)
+                       ON CONFLICT (run_id) DO UPDATE SET
+                         ticker=excluded.ticker,status=excluded.status,
+                         report_index=excluded.report_index,
+                         citation_manifest_artifact_id=excluded.citation_manifest_artifact_id,
+                         document_artifact_id=excluded.document_artifact_id,
+                         published_at=excluded.published_at""",
+                    (
+                        bundle.run_id,
+                        bundle.ticker,
+                        bundle.workflow_version,
+                        bundle.research_lane.value,
+                        bundle.status,
+                        json.dumps(report_index, ensure_ascii=False, default=str),
+                        manifest_id,
+                        document_id,
+                        bundle.created_at,
+                        bundle.published_at,
+                    ),
+                )
+
+        self._execute("codex.bundle.save", table, op)
+
     def mark_run_published(self, run_id: str, published_at: datetime) -> None:
         def op(_connection: Any, cursor: Any) -> None:
             cursor.execute(
@@ -1060,7 +1230,17 @@ class PostgresCodexRuntimeRepository:
 
         self._execute("codex.run.publish", "codex_run_registry", op)
 
-    def get_bundle(self, run_id: str) -> Document1V2Bundle | None:
+    def get_bundle(self, run_id: str) -> ResearchBundle | None:
+        try:
+            _, workflow_version, _ = self._run_identity(run_id)
+        except RuntimeError:
+            return None
+        if workflow_version in {
+            "codex_global_research_v1",
+            "codex_market_situation_v1",
+        }:
+            return self._get_lane_bundle(run_id, workflow_version)
+
         def op(_connection: Any, cursor: Any) -> Any:
             cursor.execute(
                 """SELECT run_id,ticker,workflow_version,status,report_index,entity_relations,
@@ -1099,8 +1279,83 @@ class PostgresCodexRuntimeRepository:
             published_at=row[10],
         )
 
+    def _get_lane_bundle(self, run_id: str, workflow_version: str) -> ResearchBundle | None:
+        global_lane = workflow_version == "codex_global_research_v1"
+        table = "codex_global_research_bundles" if global_lane else "codex_market_situation_bundles"
+
+        def op(_connection: Any, cursor: Any) -> Any:
+            if global_lane:
+                cursor.execute(
+                    """SELECT run_id,ticker,workflow_version,research_lane,status,report_index,
+                              entity_relations,future_nodes,citation_manifest_artifact_id,
+                              document_artifact_id,created_at,published_at
+                       FROM doxagent.codex_global_research_bundles WHERE run_id=%s""",
+                    (run_id,),
+                )
+            else:
+                cursor.execute(
+                    """SELECT run_id,ticker,workflow_version,research_lane,status,report_index,
+                              citation_manifest_artifact_id,document_artifact_id,
+                              created_at,published_at
+                       FROM doxagent.codex_market_situation_bundles WHERE run_id=%s""",
+                    (run_id,),
+                )
+            return cursor.fetchone()
+
+        row = self._execute("codex.bundle.get", table, op)
+        self._audit_read("codex.bundle.get", table, run_id, row, int(row is not None))
+        if not row:
+            return None
+        if global_lane:
+            global_handoff = (
+                GlobalResearchHandoffV1(
+                    run_id=row[0],
+                    ticker=row[1],
+                    document_artifact_id=row[9],
+                    citation_manifest_artifact_id=row[8],
+                    published_at=row[11],
+                )
+                if row[9] and row[11]
+                else None
+            )
+            return GlobalResearchBundle(
+                run_id=row[0],
+                ticker=row[1],
+                status=row[4],
+                reports={key: ArtifactRef.model_validate(value) for key, value in row[5].items()},
+                entity_relations=row[6],
+                future_nodes=row[7],
+                handoff=global_handoff,
+                created_at=row[10],
+                published_at=row[11],
+            )
+        market_handoff = (
+            MarketSituationHandoffV1(
+                run_id=row[0],
+                ticker=row[1],
+                document_artifact_id=row[7],
+                citation_manifest_artifact_id=row[6],
+                published_at=row[9],
+            )
+            if row[7] and row[9]
+            else None
+        )
+        return MarketSituationBundle(
+            run_id=row[0],
+            ticker=row[1],
+            status=row[4],
+            reports={key: ArtifactRef.model_validate(value) for key, value in row[5].items()},
+            handoff=market_handoff,
+            created_at=row[8],
+            published_at=row[9],
+        )
+
     def list_run_summaries(
-        self, ticker: str | None, cursor: str | None = None, limit: int = 20
+        self,
+        ticker: str | None,
+        cursor: str | None = None,
+        limit: int = 20,
+        research_lane: ResearchLane | None = None,
     ) -> list[CodexRunSummary]:
         limit = _bounded_limit(limit, 20, 100)
         cursor_pair = _decode_cursor(cursor)
@@ -1111,13 +1366,16 @@ class PostgresCodexRuntimeRepository:
             if ticker:
                 conditions.append("ticker=upper(%s)")
                 params.append(ticker)
+            if research_lane is not None:
+                conditions.append("research_lane=%s")
+                params.append(research_lane.value)
             if cursor_pair:
                 conditions.append("(created_at,run_id)<(%s,%s)")
                 params.extend(cursor_pair)
             where = " WHERE " + " AND ".join(conditions) if conditions else ""
             params.append(limit)
             db_cursor.execute(
-                """SELECT run_id,ticker,workflow_version,status,current_node,
+                """SELECT run_id,ticker,workflow_version,research_lane,status,current_node,
                           completed_node_count,failed_node_count,latest_event_sequence,
                           created_at,updated_at,published_at
                    FROM doxagent.codex_run_registry"""
@@ -1136,14 +1394,15 @@ class PostgresCodexRuntimeRepository:
                 run_id=row[0],
                 ticker=row[1],
                 workflow_version=row[2],
-                status=row[3],
-                current_node=row[4],
-                completed_node_count=row[5],
-                failed_node_count=row[6],
-                latest_event_sequence=row[7],
-                created_at=row[8],
-                updated_at=row[9],
-                published_at=row[10],
+                research_lane=row[3],
+                status=row[4],
+                current_node=row[5],
+                completed_node_count=row[6],
+                failed_node_count=row[7],
+                latest_event_sequence=row[8],
+                created_at=row[9],
+                updated_at=row[10],
+                published_at=row[11],
             )
             for row in rows
         ]
@@ -1290,16 +1549,25 @@ class PostgresCodexRuntimeRepository:
         )
 
     def _ticker(self, run_id: str) -> str:
+        return self._run_identity(run_id)[0]
+
+    def _run_identity(self, run_id: str) -> tuple[str, CodexWorkflowVersion, ResearchLane]:
         def op(_connection: Any, cursor: Any) -> Any:
             cursor.execute(
-                "SELECT ticker FROM doxagent.codex_run_registry WHERE run_id=%s", (run_id,)
+                "SELECT ticker,workflow_version,research_lane "
+                "FROM doxagent.codex_run_registry WHERE run_id=%s",
+                (run_id,),
             )
             return cursor.fetchone()
 
-        row = self._execute("codex.run.ticker", "codex_run_registry", op)
+        row = self._execute("codex.run.identity", "codex_run_registry", op)
         if row is None:
             raise RuntimeError(f"run registry missing for {run_id}")
-        return str(row[0])
+        return (
+            str(row[0]),
+            cast(CodexWorkflowVersion, str(row[1])),
+            ResearchLane(str(row[2])),
+        )
 
 
 class HybridCodexRuntimeRepository:
@@ -1360,15 +1628,18 @@ class HybridCodexRuntimeRepository:
     def get_citation_manifest(self, run_id: str, artifact_id: str) -> CitationManifest | None:
         return self.local.get_citation_manifest(run_id, artifact_id)
 
-    def save_bundle(self, bundle: Document1V2Bundle) -> None:
+    def save_bundle(self, bundle: ResearchBundle) -> None:
         self._remote_then_mirror("save_bundle", bundle)
 
-    def get_bundle(self, run_id: str) -> Document1V2Bundle | None:
+    def get_bundle(self, run_id: str) -> ResearchBundle | None:
         bundle = self.remote.get_bundle(run_id)
         if bundle and bundle.handoff and bundle.handoff.citation_manifest_artifact_id:
-            manifest = self.local.get_citation_manifest(
-                run_id, bundle.handoff.document1_artifact_id
+            document_artifact_id = getattr(
+                bundle.handoff,
+                "document1_artifact_id",
+                getattr(bundle.handoff, "document_artifact_id", None),
             )
+            manifest = self.local.get_citation_manifest(run_id, document_artifact_id or "")
             if manifest is not None:
                 bundle = bundle.model_copy(update={"citation_manifest": manifest})
         return bundle
@@ -1377,9 +1648,13 @@ class HybridCodexRuntimeRepository:
         self.remote.mark_run_published(run_id, published_at)
 
     def list_run_summaries(
-        self, ticker: str | None, cursor: str | None = None, limit: int = 20
+        self,
+        ticker: str | None,
+        cursor: str | None = None,
+        limit: int = 20,
+        research_lane: ResearchLane | None = None,
     ) -> list[CodexRunSummary]:
-        return self.remote.list_run_summaries(ticker, cursor, limit)
+        return self.remote.list_run_summaries(ticker, cursor, limit, research_lane)
 
     def append_event(self, event: WorkflowEvent) -> None:
         self._remote_then_mirror("append_event", event)
@@ -1418,8 +1693,22 @@ def _decode_cursor(cursor: str | None) -> tuple[datetime, str] | None:
         raise ValueError("invalid run cursor") from exc
 
 
-def _summary_from_bundle(bundle: Document1V2Bundle) -> CodexRunSummary:
-    status = (
+def _bundle_model_for_version(workflow_version: str) -> type[ResearchBundle]:
+    if workflow_version == "codex_global_research_v1":
+        return GlobalResearchBundle
+    if workflow_version == "codex_market_situation_v1":
+        return MarketSituationBundle
+    return Document1V2Bundle
+
+
+def _parse_bundle_json(payload: str) -> ResearchBundle:
+    parsed = json.loads(payload)
+    model = _bundle_model_for_version(str(parsed.get("workflow_version", "codex_d1_v2")))
+    return model.model_validate(parsed)
+
+
+def _summary_from_bundle(bundle: ResearchBundle) -> CodexRunSummary:
+    status: Literal["queued", "running", "failed", "cancelled", "published"] = (
         "published"
         if bundle.status == "published"
         else "failed"
@@ -1429,6 +1718,8 @@ def _summary_from_bundle(bundle: Document1V2Bundle) -> CodexRunSummary:
     return CodexRunSummary(
         run_id=bundle.run_id,
         ticker=bundle.ticker,
+        workflow_version=bundle.workflow_version,
+        research_lane=getattr(bundle, "research_lane", ResearchLane.LEGACY_DOCUMENT1),
         status=status,
         created_at=bundle.created_at,
         updated_at=bundle.published_at or bundle.created_at,
@@ -1440,9 +1731,7 @@ def _validate_published_document_artifact(
     document: PublishedDocument, artifact: ArtifactRef | None
 ) -> None:
     if artifact is None:
-        raise ValueError(
-            f"published document artifact metadata is missing: {document.artifact_id}"
-        )
+        raise ValueError(f"published document artifact metadata is missing: {document.artifact_id}")
     if artifact.run_id != document.run_id or artifact.kind.value != document.artifact_kind:
         raise ValueError(
             f"published document does not match artifact metadata: {document.artifact_id}"

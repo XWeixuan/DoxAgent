@@ -10,13 +10,28 @@ from typing import Any
 
 from doxagent.codex_runtime.client import WorkspaceClient
 from doxagent.codex_runtime.errors import StructuredOutputInvalid
-from doxagent.codex_runtime.schema import CodexD1Node
+from doxagent.codex_runtime.schema import CodexD1Node, CodexWorkflowVersion, ResearchLane
 from doxagent.workflows.codex_document1.schema import NodeOutput
 
 BUNDLE_VERSION = "codex-d1-agent-bundle-v2"
+SUPPORTED_BUNDLE_VERSIONS = frozenset(
+    {
+        BUNDLE_VERSION,
+        "codex-global-research-agent-bundle-v1",
+        "codex-market-situation-agent-bundle-v1",
+    }
+)
 ATTEMPT_TASK_SCHEMA_VERSION = "codex-d1-attempt-task-v4"
 PROGRESSIVE_NODES = frozenset(
-    {CodexD1Node.C1, CodexD1Node.C2, CodexD1Node.C3, CodexD1Node.O4_B, CodexD1Node.O4_A}
+    {
+        CodexD1Node.C1,
+        CodexD1Node.C2,
+        CodexD1Node.C3,
+        CodexD1Node.O4_B,
+        CodexD1Node.O4_A,
+        CodexD1Node.C5,
+        CodexD1Node.O4,
+    }
 )
 
 
@@ -42,7 +57,7 @@ class AttemptBundleSeeder:
         self._repo_root = self._root.resolve().parents[1]
         self._manifest_text = (self._root / "bundle_manifest.json").read_text(encoding="utf-8")
         self._manifest = json.loads(self._manifest_text)
-        if self._manifest.get("bundle_version") != BUNDLE_VERSION:
+        if self._manifest.get("bundle_version") not in SUPPORTED_BUNDLE_VERSIONS:
             raise ValueError(f"unsupported Codex D1 bundle: {self._manifest.get('bundle_version')}")
 
     def node_definition(self, node: CodexD1Node) -> dict[str, Any]:
@@ -58,20 +73,23 @@ class AttemptBundleSeeder:
         context_payload: dict[str, object],
         horizontal: dict[str, object] | None,
         manual_upstream: dict[str, str] | None = None,
+        workflow_version: CodexWorkflowVersion = "codex_d1_v2",
+        research_lane: ResearchLane = ResearchLane.LEGACY_DOCUMENT1,
     ) -> str:
         definition = self.node_definition(node)
         resources = self._resource_contents(definition)
         canonical = {
-            "bundle_version": BUNDLE_VERSION,
+            "bundle_version": self._manifest["bundle_version"],
             "task_contract_version": ATTEMPT_TASK_SCHEMA_VERSION,
             "bundle_manifest_sha256": _sha256(self._manifest_text),
             "node": node.value,
+            "workflow_version": workflow_version,
+            "research_lane": research_lane.value,
             "node_definition": definition,
             "context_payload": context_payload,
             "horizontal": horizontal,
             "manual_upstream": {
-                name: _sha256(content)
-                for name, content in sorted((manual_upstream or {}).items())
+                name: _sha256(content) for name, content in sorted((manual_upstream or {}).items())
             },
             "resources": {name: _sha256(text) for name, text in sorted(resources.items())},
         }
@@ -87,6 +105,8 @@ class AttemptBundleSeeder:
         horizontal: dict[str, object] | None,
         previous_failure: str | None = None,
         manual_upstream: dict[str, str] | None = None,
+        workflow_version: CodexWorkflowVersion = "codex_d1_v2",
+        research_lane: ResearchLane = ResearchLane.LEGACY_DOCUMENT1,
     ) -> SeededAttemptBundle:
         definition = self.node_definition(node)
         resources = self._resource_contents(definition)
@@ -100,17 +120,16 @@ class AttemptBundleSeeder:
         report_path = f"{output_base}/report_draft.md" if progressive else None
         progress_path = f"{output_base}/progress.json" if progressive else None
         candidates_path = f"{output_base}/observation_candidates.json" if progressive else None
-        structured_output_path = (
-            None if progressive else f"{output_base}/completion.json"
-        )
+        structured_output_path = None if progressive else f"{output_base}/completion.json"
         required_skill_paths = tuple(f"{input_base}/{item}" for item in skills)
         manual_upstream_paths = tuple(
-            f"{input_base}/manual_upstream/{name}"
-            for name in sorted(manual_upstream or {})
+            f"{input_base}/manual_upstream/{name}" for name in sorted(manual_upstream or {})
         )
         task = {
             "schema_version": ATTEMPT_TASK_SCHEMA_VERSION,
-            "bundle_version": BUNDLE_VERSION,
+            "bundle_version": self._manifest["bundle_version"],
+            "workflow_version": workflow_version,
+            "research_lane": research_lane.value,
             "node": node.value,
             "required_sections": list(sections),
             "required_skills": list(required_skill_paths),
@@ -143,7 +162,9 @@ class AttemptBundleSeeder:
             ),
         }
         context = {
-            "schema_version": "codex-d1-node-context-v2",
+            "schema_version": "codex-research-node-context-v1",
+            "workflow_version": workflow_version,
+            "research_lane": research_lane.value,
             "run_id": run_id,
             "node": node.value,
             "payload": context_payload,
@@ -153,6 +174,8 @@ class AttemptBundleSeeder:
             context_payload=context_payload,
             horizontal=horizontal,
             manual_upstream=manual_upstream,
+            workflow_version=workflow_version,
+            research_lane=research_lane,
         )
         writes = {
             f"{input_base}/AGENTS.md": resources["AGENTS.md"],
@@ -172,7 +195,7 @@ class AttemptBundleSeeder:
             await self._workspace.write_text(run_id, path, content)
         audit = {
             "schema_version": "codex-d1-attempt-bundle-audit-v1",
-            "bundle_version": BUNDLE_VERSION,
+            "bundle_version": self._manifest["bundle_version"],
             "input_sha256": input_hash,
             "files": {path: _sha256(content) for path, content in sorted(writes.items())},
         }
@@ -215,7 +238,10 @@ class AttemptBundleSeeder:
         ]
         values: dict[str, str] = {}
         for relative in paths:
-            source_overrides = definition.get("resource_sources", {})
+            source_overrides = {
+                **self._manifest.get("resource_sources", {}),
+                **definition.get("resource_sources", {}),
+            }
             source = source_overrides.get(relative) if isinstance(source_overrides, dict) else None
             if source is not None:
                 path = (self._repo_root / str(source)).resolve()

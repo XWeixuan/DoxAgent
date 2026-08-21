@@ -74,6 +74,8 @@ A valid future node should answer:
 
 **Who will do, announce, decide, launch, deliver, validate, deploy, or report what, and when?**
 
+Use the compact check: `who -> will do/decide/receive what -> when`.
+
 Do not set a fixed time horizon.
 
 Include both:
@@ -100,6 +102,11 @@ Examples that are NOT future nodes:
 - supply may remain tight;
 - a company may gain customers;
 - technology will continue improving.
+
+For milestone chains, One step does not prove the next.
+
+Do not infer fiscal from calendar quarter labels; preserve the issuer's own fiscal
+period and the source date separately.
 
 ---
 
@@ -174,12 +181,13 @@ The goal is to create a broad initial future timeline, not only an issuer calend
 
 # ENRICH_FUTURE_NODES
 
-After C1/C3 research:
+After C1/C3/C5 research:
 
 Use:
 - core business drivers;
 - important external actors;
 - industry milestones;
+- market-implied information questions from C5;
 - unresolved research questions;
 
 as additional search directions.
@@ -189,15 +197,22 @@ First perform a broad discovery pass to find missing future nodes.
 Then add research-specific nodes that can help observe or validate those research areas.
 
 Do not:
-- only search existing C1/C3 conclusions;
+- only search existing C1/C3/C5 conclusions;
 - turn every driver into an event;
 - create hypothetical future events.
+
+This is the final C4 turn. Return one complete merged snapshot: retain and deduplicate
+the pre-scan entity relations, retain and deduplicate valid pre-scan future nodes, and
+append the newly supported future nodes. Do not return a delta or expect a later
+merge turn.
 
 ---
 
 # Source Handling
 
 Sources are used to support the existence of a future node.
+
+Judge source reliability, not outcome probability.
 
 Record:
 - source name;

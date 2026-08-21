@@ -10,7 +10,7 @@ import tempfile
 import tomllib
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, TextIO, cast
 
 from mcp import ClientSession
 from mcp.client.stdio import StdioServerParameters, stdio_client
@@ -34,6 +34,7 @@ async def run_doctor(case_root: str | Path) -> DoctorResult:
     run_id = str(manifest["run_id"])
     attempt_id = canonical_node_attempt_id(manifest)
     node = str(manifest["node"])
+    research_lane = str(manifest.get("research_lane", "legacy_document1"))
     validate_pilot_case_root(
         run_root=root,
         pilot_case_id=str(manifest["case_id"]),
@@ -48,10 +49,7 @@ async def run_doctor(case_root: str | Path) -> DoctorResult:
         [
             python,
             "-c",
-            (
-                "import doxagent.mcp.data_server, doxagent.mcp.source_capture_server; "
-                "print('ok')"
-            ),
+            ("import doxagent.mcp.data_server, doxagent.mcp.source_capture_server; print('ok')"),
         ],
         cwd=root,
         capture_output=True,
@@ -72,7 +70,7 @@ async def run_doctor(case_root: str | Path) -> DoctorResult:
         env=environment,
         cwd=Path(str(data_config["cwd"])),
     )
-    errlog = tempfile.TemporaryFile(mode="w+", encoding="utf-8")
+    errlog = cast(TextIO, tempfile.TemporaryFile(mode="w+", encoding="utf-8"))
     try:
         async with stdio_client(parameters, errlog=errlog) as streams:
             async with ClientSession(*streams) as session:
@@ -98,7 +96,7 @@ async def run_doctor(case_root: str | Path) -> DoctorResult:
                 guide = await asyncio.wait_for(
                     session.call_tool(
                         "data_tool_guide",
-                        arguments={"task": f"Pilot doctor for Document 1 {node}"},
+                        arguments={"task": f"Pilot doctor for {research_lane} node {node}"},
                     ),
                     timeout=120,
                 )
@@ -129,18 +127,15 @@ async def run_doctor(case_root: str | Path) -> DoctorResult:
         }
     finally:
         errlog.close()
-    passed = all(
-        bool(value.get("passed"))
-        for value in checks.values()
-        if isinstance(value, dict)
-    )
+    passed = all(bool(value.get("passed")) for value in checks.values() if isinstance(value, dict))
     report = {
-        "schema_version": "codex-d1-pilot-doctor-v1",
+        "schema_version": "codex-research-pilot-doctor-v2",
         "passed": passed,
         "case_id": manifest["case_id"],
         "run_id": run_id,
         "attempt_id": attempt_id,
         "node": node,
+        "research_lane": research_lane,
         "checks": checks,
     }
     report_path = root / "attempts" / attempt_id / "audit" / "doctor_report.json"
@@ -176,7 +171,7 @@ def _semantic_tool_succeeded(result: Any) -> bool:
         return False
     structured = getattr(result, "structured_content", None)
     if isinstance(structured, dict) and "execution_status" in structured:
-        return structured["execution_status"] == "succeeded"
+        return bool(structured["execution_status"] == "succeeded")
     return True
 
 

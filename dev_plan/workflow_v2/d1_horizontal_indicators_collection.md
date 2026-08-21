@@ -1,5 +1,11 @@
 # 基础预期指标采集重构方案
 
+> **2026-08-20 当前执行口径：** 下文较早的单一 Document 1 collection 顺序仅作设计历史。
+> 运行时现按 lane 拆分 registry：Global 只采集 C1/C5 所需 program targets，Market
+> Situation 只采集 C2/O4 targets；新命名中旧 O4-A 为 C5，旧 O4-B 为 O4，Global 不再
+> 执行 C4 finalization。以 [`global_market_research_lane_rearchitecture_plan_20260820.md`](./global_market_research_lane_rearchitecture_plan_20260820.md)
+> 为准。
+
 ## 一、板块定位
 
 基础预期指标采集不负责生成 `Expectation Unit`，也不负责提前构造完整的 `Expectation State`。

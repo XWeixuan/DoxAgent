@@ -1,5 +1,9 @@
 # DoxAgent 当前状态同步：Document 1 v2 与 Codex SDK
 
+> **已于 2026-08-20 被取代。** 本文保留为 `codex_d1_v2` 历史状态快照。当前 Global
+> Research 只包含 C1/C3/C5 与 C4 两阶段，C2/O4 已进入可独立启动的 Market Situation
+> lane；详情见 [`global_market_research_lane_rearchitecture_plan_20260820.md`](./global_market_research_lane_rearchitecture_plan_20260820.md)。
+
 **日期：** 2026-08-18  
 **当前版本：** `workflow_version=codex_d1_v2`
 

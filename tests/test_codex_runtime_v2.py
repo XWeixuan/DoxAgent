@@ -72,7 +72,7 @@ def test_sqlite_repository_round_trips_thread_without_legacy_state(tmp_path: Pat
     repository.save_thread(record)
     assert repository.get_thread("run-1", CodexAgentRole.O4.value) == record
     with sqlite3.connect(database) as connection:
-        assert connection.execute("PRAGMA user_version").fetchone()[0] == 2
+        assert connection.execute("PRAGMA user_version").fetchone()[0] == 3
 
 
 def test_postgres_runtime_storage_requires_explicit_remote_opt_in(tmp_path: Path) -> None:

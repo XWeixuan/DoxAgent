@@ -1,5 +1,10 @@
 # Document2｜Expectation Shell / Unit 重构方案与 Schema
 
+> **上游来源冻结说明（2026-08-20）：** 本文尚未实施 D2 runtime 重构。后续适配时必须
+> 显式区分 Global Research handoff（C1/C3/C5 + C4 结构化快照）与独立 Market
+> Situation handoff（C2/O4），不得把历史 `codex_d1_v2` 的 O4-A/O4-B 名称或混合 bundle
+> 静默映射为新来源。
+
 ## 一、目标与整体结构
 
 Document2 的目标不是生成一份完整的“市场预期报告”，而是建立一套能够被后续事件持续读取、修正和用于预期差判断的有状态认知结构。

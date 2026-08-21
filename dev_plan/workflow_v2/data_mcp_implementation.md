@@ -1,5 +1,8 @@
 # Data MCP 实现与验收记录
 
+> **2026-08-20 增量实现：** 新增 C5/O4 与双 lane capability discriminator；本文后续
+> 的 `codex_d1_v2` 验收结论仍作为历史兼容证据，不代表新 lane 的研究质量验收。
+
 日期：2026-08-09  
 适用工作流：`codex_d1_v2`  
 设计基线：`data_mcp_development.md`

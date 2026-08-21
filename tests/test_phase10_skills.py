@@ -488,20 +488,19 @@ def test_c4_manual_resources_follow_external_sdk_contract_and_size() -> None:
     ):
         assert mode in prompt.body
         assert mode in skill.body
-    for artifact in (
-        "entity_exposure_map",
-        "future_nodes_pre_scan",
-        "future_nodes_final",
-    ):
-        assert artifact in prompt.body
-        assert artifact in skill.body
+    assert "complete merged snapshot" in prompt.body
+    assert "complete merged snapshot" in skill.body
+    assert "governed five public" in prompt.body
 
     assert "who -> will do/decide/receive what -> when" in skill.body
     assert "source reliability, not outcome probability" in skill.body
     assert "fiscal from calendar quarter" in skill.body
     assert "One step does not prove the next" in skill.body
     assert "load_skill(" not in skill.body
-    assert len((PROMPT_ROOT / "agents" / "c4.md").read_text(encoding="utf-8")) <= 2000
+    c4_prompt_length = len(
+        (PROMPT_ROOT / "agents" / "c4.md").read_text(encoding="utf-8")
+    )
+    assert 5000 <= c4_prompt_length <= 8000
     assert len(
         (
             PROMPT_ROOT
@@ -739,13 +738,27 @@ def test_prompt_injector_selects_global_research_internal_skills_for_c1_c3() -> 
     )
     o4_injected = PromptInjector().inject(o4_task, o4_definition)
     assert "ticker_price_tracking" in o4_injected.prompt_bundle.internal_task_skill_ids
-    assert "market-implied-expectations" in (
+    assert "market-implied-expectations" not in (
         o4_injected.prompt_bundle.internal_task_skill_ids
+    )
+
+    c5_definition = agent_registry.get(AgentName.C5_MARKET_IMPLIED_EXPECTATIONS)
+    c5_task = c1_task.model_copy(
+        update={
+            "agent_name": AgentName.C5_MARKET_IMPLIED_EXPECTATIONS,
+            "permissions": c5_definition.runtime.to_permissions(),
+        },
+        deep=True,
+    )
+    c5_injected = PromptInjector().inject(c5_task, c5_definition)
+    assert "market-implied-expectations" in (
+        c5_injected.prompt_bundle.internal_task_skill_ids
     )
     assert o4_injected.prompt_bundle.external_skill_package_ids == []
     ticker_skill = default_prompt_registry().get("ticker_price_tracking")
     implied_skill = default_prompt_registry().get("market-implied-expectations")
     o4_prompt = default_prompt_registry().get("agent.o4")
+    c5_prompt = default_prompt_registry().get("agent.c5")
     assert "recent price and flow reaction first" in ticker_skill.body
     assert "一、当前市场定价基线" in implied_skill.body
     assert "三、市场隐含的业务、财务与持续期条件" in implied_skill.body
@@ -754,9 +767,9 @@ def test_prompt_injector_selects_global_research_internal_skills_for_c1_c3() -> 
     assert "All final report section titles and table headers must be Chinese" in (
         implied_skill.body
     )
-    assert "O4-B Macro Market Research" in o4_prompt.body
-    assert "O4-A Market-Implied Expectations Research" in o4_prompt.body
-    assert "neither track depends on the other's report" in o4_prompt.body
+    assert "Market Situation Research price agent" in o4_prompt.body
+    assert "independent from Global Research" in o4_prompt.body
+    assert "Global Research market-implied-expectations agent" in c5_prompt.body
 
 
 def test_c2_exposes_macro_analysis_not_global_macro() -> None:

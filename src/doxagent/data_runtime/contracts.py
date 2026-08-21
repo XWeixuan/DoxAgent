@@ -14,6 +14,8 @@ from doxagent.codex_runtime.schema import (
     CODEX_D1_WORKFLOW_VERSION,
     CodexAgentRole,
     CodexD1Node,
+    CodexWorkflowVersion,
+    ResearchLane,
 )
 from doxagent.models import ResultStatus
 from doxagent.tools.registry import ToolDescriptor, ToolRegistry
@@ -126,7 +128,8 @@ class DataToolContractRegistry:
 
 class DataMcpLaunchSpec(DataRuntimeModel):
     schema_version: Literal["data_mcp_launch/1.0"] = "data_mcp_launch/1.0"
-    workflow_version: Literal["codex_d1_v2"] = CODEX_D1_WORKFLOW_VERSION
+    workflow_version: CodexWorkflowVersion = CODEX_D1_WORKFLOW_VERSION
+    research_lane: ResearchLane = ResearchLane.LEGACY_DOCUMENT1
     run_id: str
     node_id: CodexD1Node
     node_attempt_id: str
@@ -138,7 +141,8 @@ class DataMcpLaunchSpec(DataRuntimeModel):
 
 
 class DataExecutionContext(DataRuntimeModel):
-    workflow_version: Literal["codex_d1_v2"] = CODEX_D1_WORKFLOW_VERSION
+    workflow_version: CodexWorkflowVersion = CODEX_D1_WORKFLOW_VERSION
+    research_lane: ResearchLane = ResearchLane.LEGACY_DOCUMENT1
     run_id: str
     node_id: CodexD1Node
     node_attempt_id: str

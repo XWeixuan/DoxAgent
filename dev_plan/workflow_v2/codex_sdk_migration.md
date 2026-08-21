@@ -1,5 +1,11 @@
 # DoxAgent Codex SDK Agent Framework 与 Document 1 v2 重构开发方案
 
+> **历史基线提醒（2026-08-20）：** 本文记录 `codex_d1_v2` 的原始迁移设计，继续用于
+> legacy reader、历史 run 与兼容测试，不再是新研究编排的命名/DAG 权威入口。当前新架构
+> 见 [`global_market_research_lane_rearchitecture_plan_20260820.md`](./global_market_research_lane_rearchitecture_plan_20260820.md)：
+> Global Research 为 `C4 pre-scan → C1/C3 → C5 → C4 enrichment`；独立 Market
+> Situation 为 `C2/O4`。事件库强隔离本轮明确延期。
+
 > 状态：需求确认后的可执行开发方案  
 > 日期：2026-08-08  
 > 目标版本：`workflow_version=codex_d1_v2`  

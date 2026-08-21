@@ -65,14 +65,14 @@ from doxagent.tools.providers.market import (
     ibkr_quote_input,
     passthrough_input,
 )
-from doxagent.tools.providers.monitoring import MONITORING_TOOL_NAMES, MonitoringToolClient
-from doxagent.tools.providers.o4_market import (
-    AlphaVantageO4Client,
+from doxagent.tools.providers.market_evidence import (
+    AlphaVantageMarketEvidenceClient,
     MarketRelativePerformanceClient,
     MarketSellSideConsensusClient,
     YFinancePeerRelativeValuationClient,
     YFinanceShortInterestClient,
 )
+from doxagent.tools.providers.monitoring import MONITORING_TOOL_NAMES, MonitoringToolClient
 from doxagent.tools.providers.polymarket import PolymarketMarketProbabilityClient
 from doxagent.tools.providers.public_records import (
     CongressLegislativeActionsClient,
@@ -1265,16 +1265,21 @@ def default_real_tool_registry(settings: DoxAgentSettings | None = None) -> Tool
     )
     alpha_earnings = AlphaVantageEarningsClient(resolved, cache)
     register("alpha.earnings_events", alpha_earnings)
-    register("alpha.valuation_snapshot", AlphaVantageO4Client(resolved, cache, "valuation"))
+    register(
+        "alpha.valuation_snapshot",
+        AlphaVantageMarketEvidenceClient(resolved, cache, "valuation"),
+    )
     register(
         "alpha.institutional_holdings",
-        AlphaVantageO4Client(resolved, cache, "institutional_holdings"),
+        AlphaVantageMarketEvidenceClient(resolved, cache, "institutional_holdings"),
     )
     register(
-        "alpha.insider_transactions", AlphaVantageO4Client(resolved, cache, "insider_transactions")
+        "alpha.insider_transactions",
+        AlphaVantageMarketEvidenceClient(resolved, cache, "insider_transactions"),
     )
     register(
-        "alpha.historical_options", AlphaVantageO4Client(resolved, cache, "historical_options")
+        "alpha.historical_options",
+        AlphaVantageMarketEvidenceClient(resolved, cache, "historical_options"),
     )
     register("twelvedata.daily_ohlcv", twelve_daily)
     register("fred.series_observations", FredSeriesObservationsClient(resolved, cache))

@@ -89,6 +89,8 @@ class DataMcpApplication:
             tools=tools,
             contracts=contracts,
             context=DataExecutionContext(
+                workflow_version=claims.workflow_version,
+                research_lane=claims.research_lane,
                 run_id=claims.run_id,
                 node_id=claims.node_id,
                 node_attempt_id=claims.node_attempt_id,
