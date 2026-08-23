@@ -34,6 +34,13 @@ from doxagent.horizontal_collection.registry import (
 from doxagent.model_usage.repository import SQLiteModelUsageRepository
 from doxagent.settings import DoxAgentSettings
 from doxagent.tools.factory import default_real_tool_registry
+from doxagent.workflows.codex_document2.inputs import DoxAtlasNarrativeReportProvider
+from doxagent.workflows.codex_document2.orchestrator import CodexDocument2Orchestrator
+from doxagent.workflows.codex_document2.schema import (
+    Document2Bundle,
+    Document2RunRequest,
+    StartDocument2Request,
+)
 from doxagent.workflows.codex_global_research import (
     CodexGlobalResearchOrchestrator,
     GlobalResearchRunRequest,
@@ -43,7 +50,7 @@ from doxagent.workflows.codex_market_situation import (
     MarketSituationRunRequest,
 )
 
-ResearchRunRequest = GlobalResearchRunRequest | MarketSituationRunRequest
+ResearchRunRequest = GlobalResearchRunRequest | MarketSituationRunRequest | Document2RunRequest
 
 
 class CodexResearchLaneService:
@@ -52,12 +59,14 @@ class CodexResearchLaneService:
         *,
         global_orchestrator: CodexGlobalResearchOrchestrator,
         market_orchestrator: CodexMarketSituationOrchestrator,
+        document2_orchestrator: CodexDocument2Orchestrator | None = None,
         repository: CodexRuntimeRepository,
         workspace: WorkspaceClient,
         published_storage: PublishedDocumentStorage | None = None,
     ) -> None:
         self._global = global_orchestrator
         self._market = market_orchestrator
+        self._document2 = document2_orchestrator
         self._repository = repository
         self._workspace = workspace
         self._published_storage = published_storage
@@ -88,9 +97,20 @@ class CodexResearchLaneService:
     async def _run(self, request: ResearchRunRequest) -> None:
         try:
             if isinstance(request, GlobalResearchRunRequest):
-                await self._global.run(request)
-            else:
+                bundle = await self._global.run(request)
+                if self._document2 is not None:
+                    await self.start_document2(
+                        StartDocument2Request(
+                            source_global_run_id=bundle.run_id,
+                            as_of=bundle.published_at,
+                        )
+                    )
+            elif isinstance(request, MarketSituationRunRequest):
                 await self._market.run(request)
+            elif self._document2 is not None:
+                await self._document2.run(request)
+            else:
+                raise RuntimeError("Document2 orchestrator is unavailable")
         except asyncio.CancelledError:
             checkpoint = self._repository.get_checkpoint(request.run_id)
             if checkpoint:
@@ -100,6 +120,55 @@ class CodexResearchLaneService:
             raise
         except Exception as exc:
             self._errors[request.run_id] = str(exc)
+
+    async def start_document2(
+        self, request: StartDocument2Request
+    ) -> dict[str, object]:
+        if self._document2 is None:
+            raise ValueError("Document2 runtime is unavailable")
+        source = self._repository.get_bundle(request.source_global_run_id)
+        if source is None or source.workflow_version != "codex_global_research_v1":
+            raise ValueError("source_global_run_id must reference Global Research")
+        if source.status != "published" or source.published_at is None:
+            raise ValueError("source Global Research run is not published")
+        run_id = request.run_id or _document2_run_id(
+            request.source_global_run_id,
+            force_new=request.force_new,
+        )
+        existing = self._repository.get_bundle(run_id)
+        if (
+            isinstance(existing, Document2Bundle)
+            and existing.status == "published"
+            and existing.publication_state == "COMPLETE"
+        ):
+            return {
+                "run_id": run_id,
+                "ticker": existing.ticker,
+                "research_lane": ResearchLane.DOCUMENT2.value,
+                "workflow_version": existing.workflow_version,
+                "status": "published",
+                "source_global_run_id": existing.source_global_run_id,
+            }
+        active = self._tasks.get(run_id)
+        if active is not None and not active.done():
+            return {
+                "run_id": run_id,
+                "ticker": source.ticker,
+                "research_lane": ResearchLane.DOCUMENT2.value,
+                "workflow_version": "codex_document2_v1",
+                "status": "running",
+                "source_global_run_id": request.source_global_run_id,
+            }
+        payload = Document2RunRequest(
+            run_id=run_id,
+            source_global_run_id=request.source_global_run_id,
+            ticker=source.ticker,
+            as_of=request.as_of or source.published_at,
+            force_new=request.force_new,
+        )
+        result = await self.start(payload)
+        result["source_global_run_id"] = request.source_global_run_id
+        return result
 
     def list_runs(
         self,
@@ -197,14 +266,12 @@ def build_codex_research_lane_service(settings: DoxAgentSettings) -> CodexResear
         remote = PostgresCodexRuntimeRepository(
             config.database_url or "", evidence_repository=local
         )
-        repository: CodexRuntimeRepository = (
-            HybridCodexRuntimeRepository(
-                local=local,
-                remote=remote,
-                mirror_remote_runtime_locally=config.hybrid_local_mirror_enabled,
-            )
-            if config.storage_mode == "hybrid"
-            else remote
+        repository: CodexRuntimeRepository = HybridCodexRuntimeRepository(
+            local=local,
+            remote=remote,
+            mirror_remote_runtime_locally=(
+                config.storage_mode == "hybrid" and config.hybrid_local_mirror_enabled
+            ),
         )
     elif config.storage_mode == "sqlite":
         repository = local
@@ -252,6 +319,20 @@ def build_codex_research_lane_service(settings: DoxAgentSettings) -> CodexResear
         market_orchestrator=CodexMarketSituationOrchestrator(
             **common(ResearchLane.MARKET_SITUATION_RESEARCH)
         ),
+        document2_orchestrator=CodexDocument2Orchestrator(
+            worker=worker,
+            workspace=worker,
+            repository=repository,
+            narrative_provider=DoxAtlasNarrativeReportProvider(tools),
+            model=config.model,
+            model_provider=config.model_provider,
+            effort=config.reasoning_effort,
+            timeout_seconds=config.node_timeout_seconds,
+            max_attempts=config.node_max_attempts,
+            max_subagents=config.max_subagents,
+            published_storage=published_storage,
+            usage_repository=usage,
+        ),
         repository=repository,
         workspace=worker,
         published_storage=published_storage,
@@ -276,6 +357,16 @@ def create_codex_research_lane_router(service: CodexResearchLaneService) -> APIR
         request: Request, payload: MarketSituationRunRequest
     ) -> dict[str, object]:
         return _ok(request, await _start(service, payload))
+
+    @router.post("/document2")
+    async def start_document2(
+        request: Request, payload: StartDocument2Request
+    ) -> dict[str, object]:
+        try:
+            data = await service.start_document2(payload)
+        except ValueError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+        return _ok(request, data)
 
     @router.get("")
     async def list_runs(
@@ -359,3 +450,9 @@ def _ok(request: Request, data: object) -> dict[str, object]:
             "source": "codex_research_lanes_v1",
         },
     }
+
+
+def _document2_run_id(source_global_run_id: str, *, force_new: bool) -> str:
+    digest = hashlib.sha256(source_global_run_id.encode("utf-8")).hexdigest()[:24]
+    suffix = f"-{uuid4().hex[:10]}" if force_new else ""
+    return f"d2-{digest}{suffix}"

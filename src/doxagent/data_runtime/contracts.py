@@ -12,8 +12,8 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from doxagent.codex_runtime.schema import (
     CODEX_D1_WORKFLOW_VERSION,
-    CodexAgentRole,
-    CodexD1Node,
+    CodexResearchAgentRole,
+    CodexResearchNode,
     CodexWorkflowVersion,
     ResearchLane,
 )
@@ -131,9 +131,9 @@ class DataMcpLaunchSpec(DataRuntimeModel):
     workflow_version: CodexWorkflowVersion = CODEX_D1_WORKFLOW_VERSION
     research_lane: ResearchLane = ResearchLane.LEGACY_DOCUMENT1
     run_id: str
-    node_id: CodexD1Node
+    node_id: CodexResearchNode
     node_attempt_id: str
-    agent_role: CodexAgentRole
+    agent_role: CodexResearchAgentRole
     ticker: str
     cutoff_at: datetime
     enabled_tool_ids: list[str]
@@ -144,9 +144,9 @@ class DataExecutionContext(DataRuntimeModel):
     workflow_version: CodexWorkflowVersion = CODEX_D1_WORKFLOW_VERSION
     research_lane: ResearchLane = ResearchLane.LEGACY_DOCUMENT1
     run_id: str
-    node_id: CodexD1Node
+    node_id: CodexResearchNode
     node_attempt_id: str
-    agent_role: CodexAgentRole
+    agent_role: CodexResearchAgentRole
     ticker: str
     cutoff_at: datetime
     enabled_tool_ids: frozenset[str]

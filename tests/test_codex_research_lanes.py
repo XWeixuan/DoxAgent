@@ -48,6 +48,16 @@ class _FakeResearchLaneService:
             "status": "queued",
         }
 
+    async def start_document2(self, request: Any) -> dict[str, object]:
+        self.requests.append(request)
+        return {
+            "run_id": "d2-deterministic",
+            "research_lane": "document2",
+            "workflow_version": "codex_document2_v1",
+            "source_global_run_id": request.source_global_run_id,
+            "status": "queued",
+        }
+
     def list_runs(self, **_: object) -> list[dict[str, object]]:
         return []
 
@@ -301,9 +311,16 @@ def test_research_lane_api_has_independent_authenticated_start_routes() -> None:
         headers=headers,
         json=market_payload,
     )
+    document2_started = client.post(
+        "/api/dashboard/v1/research-runs/document2",
+        headers=headers,
+        json={"source_global_run_id": "global-api"},
+    )
     assert global_started.json()["data"]["research_lane"] == "global_research"
     assert market_started.json()["data"]["research_lane"] == "market_situation_research"
-    assert len(service.requests) == 2
+    assert document2_started.json()["data"]["research_lane"] == "document2"
+    assert document2_started.json()["data"]["source_global_run_id"] == "global-api"
+    assert len(service.requests) == 3
     assert (
         client.post(
             "/api/dashboard/v1/research-runs/global-api/retry",

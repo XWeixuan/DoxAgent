@@ -1,8 +1,4 @@
-"""Bounded persistence for the additive Codex Document 1 v2 runtime.
-
-Hybrid mode deliberately keeps evidence text in SQLite while putting only
-structured runtime state and explicitly published documents in PostgreSQL.
-"""
+"""Bounded persistence for the versioned Codex research runtimes."""
 
 from __future__ import annotations
 
@@ -22,6 +18,8 @@ from pydantic import BaseModel
 from doxagent.codex_runtime.schema import (
     ArtifactRef,
     CitationManifest,
+    CodexD2Node,
+    CodexResearchNode,
     CodexRunSummary,
     CodexWorkflowVersion,
     Document1HandoffV1,
@@ -38,11 +36,17 @@ from doxagent.codex_runtime.schema import (
     ThreadRecord,
     WorkflowCheckpoint,
     WorkflowEvent,
+    utc_now,
 )
 from doxagent.postgres import connect_postgres, record_postgres_failure, record_postgres_payload
+from doxagent.workflows.codex_document2.schema import (
+    Document2Bundle,
+    Document2HandoffV1,
+)
 
 ModelT = TypeVar("ModelT", bound=BaseModel)
-CODEX_RUNTIME_SQLITE_SCHEMA_VERSION = 3
+StoredResearchBundle = ResearchBundle | Document2Bundle
+CODEX_RUNTIME_SQLITE_SCHEMA_VERSION = 4
 
 _WARN_BYTES = {
     "thread": 2 * 1024,
@@ -88,17 +92,19 @@ class CodexRuntimeRepository(Protocol):
     def get_thread(self, run_id: str, agent_role: str) -> ThreadRecord | None: ...
     def save_attempt(self, attempt: NodeAttempt) -> None: ...
     def list_attempts(self, run_id: str, limit: int = 100) -> list[NodeAttempt]: ...
+    def next_attempt_number(self, run_id: str, node: CodexResearchNode) -> int: ...
     def save_checkpoint(self, checkpoint: WorkflowCheckpoint) -> None: ...
     def get_checkpoint(self, run_id: str) -> WorkflowCheckpoint | None: ...
     def save_artifact(self, artifact: ArtifactRef) -> None: ...
     def get_artifact(self, run_id: str, artifact_id: str) -> ArtifactRef | None: ...
+    def get_artifact_by_path(self, run_id: str, relative_path: str) -> ArtifactRef | None: ...
     def list_artifacts(self, run_id: str, limit: int = 500) -> list[ArtifactRef]: ...
     def save_source(self, source: SourceRecord) -> None: ...
     def list_sources(self, run_id: str, limit: int = 500) -> list[SourceRecord]: ...
     def save_citation_manifest(self, manifest: CitationManifest) -> None: ...
     def get_citation_manifest(self, run_id: str, artifact_id: str) -> CitationManifest | None: ...
-    def save_bundle(self, bundle: ResearchBundle) -> None: ...
-    def get_bundle(self, run_id: str) -> ResearchBundle | None: ...
+    def save_bundle(self, bundle: StoredResearchBundle) -> None: ...
+    def get_bundle(self, run_id: str) -> StoredResearchBundle | None: ...
     def mark_run_published(self, run_id: str, published_at: datetime) -> None: ...
     def list_run_summaries(
         self,
@@ -124,7 +130,7 @@ class InMemoryCodexRuntimeRepository:
         self._artifacts: dict[str, dict[str, ArtifactRef]] = defaultdict(dict)
         self._sources: dict[str, dict[str, SourceRecord]] = defaultdict(dict)
         self._citations: dict[tuple[str, str], CitationManifest] = {}
-        self._bundles: dict[str, ResearchBundle] = {}
+        self._bundles: dict[str, StoredResearchBundle] = {}
         self._events: dict[str, dict[str, WorkflowEvent]] = defaultdict(dict)
         self._documents: dict[tuple[str, str], PublishedDocument] = {}
 
@@ -150,6 +156,20 @@ class InMemoryCodexRuntimeRepository:
             )
             return values[:limit]
 
+    def next_attempt_number(self, run_id: str, node: CodexResearchNode) -> int:
+        with self._lock:
+            return (
+                max(
+                    (
+                        item.attempt_number
+                        for item in self._attempts[run_id].values()
+                        if item.node is node
+                    ),
+                    default=0,
+                )
+                + 1
+            )
+
     def save_checkpoint(self, checkpoint: WorkflowCheckpoint) -> None:
         with self._lock:
             self._checkpoints[checkpoint.run_id] = checkpoint.model_copy(deep=True)
@@ -166,6 +186,18 @@ class InMemoryCodexRuntimeRepository:
     def get_artifact(self, run_id: str, artifact_id: str) -> ArtifactRef | None:
         with self._lock:
             item = self._artifacts[run_id].get(artifact_id)
+            return item.model_copy(deep=True) if item else None
+
+    def get_artifact_by_path(self, run_id: str, relative_path: str) -> ArtifactRef | None:
+        with self._lock:
+            item = next(
+                (
+                    value
+                    for value in self._artifacts[run_id].values()
+                    if value.relative_path == relative_path
+                ),
+                None,
+            )
             return item.model_copy(deep=True) if item else None
 
     def list_artifacts(self, run_id: str, limit: int = 500) -> list[ArtifactRef]:
@@ -201,11 +233,20 @@ class InMemoryCodexRuntimeRepository:
             item = self._citations.get((run_id, artifact_id))
             return item.model_copy(deep=True) if item else None
 
-    def save_bundle(self, bundle: ResearchBundle) -> None:
+    def save_bundle(self, bundle: StoredResearchBundle) -> None:
         with self._lock:
+            if isinstance(bundle, Document2Bundle) and bundle.current:
+                for run_id, item in list(self._bundles.items()):
+                    if (
+                        isinstance(item, Document2Bundle)
+                        and item.ticker == bundle.ticker
+                        and item.current
+                        and run_id != bundle.run_id
+                    ):
+                        self._bundles[run_id] = item.model_copy(update={"current": False})
             self._bundles[bundle.run_id] = bundle.model_copy(deep=True)
 
-    def get_bundle(self, run_id: str) -> ResearchBundle | None:
+    def get_bundle(self, run_id: str) -> StoredResearchBundle | None:
         with self._lock:
             item = self._bundles.get(run_id)
             return item.model_copy(deep=True) if item else None
@@ -373,6 +414,20 @@ class SQLiteCodexRuntimeRepository:
                     "(research_lane, workflow_version, run_id, record_type, sort_order)"
                 )
                 connection.execute("PRAGMA user_version = 3")
+            if version < 4:
+                connection.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_codex_runtime_attempt_node_order "
+                    "ON codex_runtime_records "
+                    "(run_id, json_extract(payload_json, '$.node'), sort_order DESC) "
+                    "WHERE record_type='attempts'"
+                )
+                connection.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_codex_runtime_artifact_path "
+                    "ON codex_runtime_records "
+                    "(run_id, json_extract(payload_json, '$.relative_path')) "
+                    "WHERE record_type='artifacts'"
+                )
+                connection.execute("PRAGMA user_version = 4")
             connection.commit()
 
     @staticmethod
@@ -517,6 +572,17 @@ class SQLiteCodexRuntimeRepository:
     def list_attempts(self, run_id: str, limit: int = 100) -> list[NodeAttempt]:
         return self._many("attempts", run_id, NodeAttempt, limit=_bounded_limit(limit, 100, 500))
 
+    def next_attempt_number(self, run_id: str, node: CodexResearchNode) -> int:
+        with self._lock, self._connect() as connection:
+            row = connection.execute(
+                """SELECT coalesce(max(sort_order), 0) + 1
+                   FROM codex_runtime_records
+                   WHERE record_type='attempts' AND run_id=?
+                     AND json_extract(payload_json, '$.node')=?""",
+                (run_id, node.value),
+            ).fetchone()
+        return int(row[0])
+
     def save_checkpoint(self, checkpoint: WorkflowCheckpoint) -> None:
         self._upsert("checkpoints", checkpoint.run_id, checkpoint.run_id, checkpoint)
 
@@ -529,6 +595,17 @@ class SQLiteCodexRuntimeRepository:
     def get_artifact(self, run_id: str, artifact_id: str) -> ArtifactRef | None:
         item = self._one("artifacts", artifact_id, ArtifactRef)
         return item if item is not None and item.run_id == run_id else None
+
+    def get_artifact_by_path(self, run_id: str, relative_path: str) -> ArtifactRef | None:
+        with self._lock, self._connect() as connection:
+            row = connection.execute(
+                """SELECT payload_json FROM codex_runtime_records
+                   WHERE record_type='artifacts' AND run_id=?
+                     AND json_extract(payload_json, '$.relative_path')=?
+                   LIMIT 1""",
+                (run_id, relative_path),
+            ).fetchone()
+        return ArtifactRef.model_validate_json(row["payload_json"]) if row else None
 
     def list_artifacts(self, run_id: str, limit: int = 500) -> list[ArtifactRef]:
         return self._many("artifacts", run_id, ArtifactRef, limit=_bounded_limit(limit, 500, 500))
@@ -605,10 +682,29 @@ class SQLiteCodexRuntimeRepository:
             ).fetchone()
         return CitationManifest.model_validate_json(row["manifest_json"]) if row else None
 
-    def save_bundle(self, bundle: ResearchBundle) -> None:
+    def save_bundle(self, bundle: StoredResearchBundle) -> None:
+        if isinstance(bundle, Document2Bundle) and bundle.current:
+            with self._lock, self._connect() as connection:
+                rows = connection.execute(
+                    "SELECT payload_json FROM codex_runtime_records WHERE record_type='bundles'"
+                ).fetchall()
+            for row in rows:
+                existing = _parse_bundle_json(str(row["payload_json"]))
+                if (
+                    isinstance(existing, Document2Bundle)
+                    and existing.ticker == bundle.ticker
+                    and existing.current
+                    and existing.run_id != bundle.run_id
+                ):
+                    self._upsert(
+                        "bundles",
+                        existing.run_id,
+                        existing.run_id,
+                        existing.model_copy(update={"current": False}),
+                    )
         self._upsert("bundles", bundle.run_id, bundle.run_id, bundle)
 
-    def get_bundle(self, run_id: str) -> ResearchBundle | None:
+    def get_bundle(self, run_id: str) -> StoredResearchBundle | None:
         with self._lock, self._connect() as connection:
             row = connection.execute(
                 "SELECT payload_json FROM codex_runtime_records "
@@ -891,6 +987,19 @@ class PostgresCodexRuntimeRepository:
             for row in rows
         ]
 
+    def next_attempt_number(self, run_id: str, node: CodexResearchNode) -> int:
+        def op(_connection: Any, cursor: Any) -> Any:
+            cursor.execute(
+                """SELECT coalesce(max(attempt_number), 0) + 1
+                   FROM doxagent.codex_node_attempts
+                   WHERE run_id=%s AND node=%s""",
+                (run_id, node.value),
+            )
+            return cursor.fetchone()
+
+        row = self._execute("codex.attempt.next", "codex_node_attempts", op)
+        return int(row[0])
+
     def save_checkpoint(self, checkpoint: WorkflowCheckpoint) -> None:
         _guard_payload(
             "checkpoint",
@@ -1026,11 +1135,11 @@ class PostgresCodexRuntimeRepository:
 
         self._execute("codex.artifact.save", "codex_artifacts", op)
 
-    def _artifact_from_row(self, row: Any) -> ArtifactRef:
-        _, workflow_version, research_lane = self._run_identity(str(row[1]))
+    @staticmethod
+    def _artifact_from_row(row: Any) -> ArtifactRef:
         return ArtifactRef(
-            workflow_version=workflow_version,
-            research_lane=research_lane,
+            workflow_version=row[11],
+            research_lane=row[12],
             artifact_id=row[0],
             run_id=row[1],
             node=row[2],
@@ -1047,9 +1156,12 @@ class PostgresCodexRuntimeRepository:
     def get_artifact(self, run_id: str, artifact_id: str) -> ArtifactRef | None:
         def op(_connection: Any, cursor: Any) -> Any:
             cursor.execute(
-                """SELECT artifact_id,run_id,node,attempt_id,kind,relative_path,sha256,
-                          size_bytes,content_type,published,created_at
-                   FROM doxagent.codex_artifacts WHERE run_id=%s AND artifact_id=%s""",
+                """SELECT a.artifact_id,a.run_id,a.node,a.attempt_id,a.kind,a.relative_path,
+                          a.sha256,a.size_bytes,a.content_type,a.published,a.created_at,
+                          r.workflow_version,r.research_lane
+                   FROM doxagent.codex_artifacts a
+                   JOIN doxagent.codex_run_registry r ON r.run_id=a.run_id
+                   WHERE a.run_id=%s AND a.artifact_id=%s""",
                 (run_id, artifact_id),
             )
             return cursor.fetchone()
@@ -1058,15 +1170,42 @@ class PostgresCodexRuntimeRepository:
         self._audit_read("codex.artifact.get", "codex_artifacts", run_id, row, int(row is not None))
         return self._artifact_from_row(row) if row else None
 
+    def get_artifact_by_path(self, run_id: str, relative_path: str) -> ArtifactRef | None:
+        def op(_connection: Any, cursor: Any) -> Any:
+            cursor.execute(
+                """SELECT a.artifact_id,a.run_id,a.node,a.attempt_id,a.kind,a.relative_path,
+                          a.sha256,a.size_bytes,a.content_type,a.published,a.created_at,
+                          r.workflow_version,r.research_lane
+                   FROM doxagent.codex_artifacts a
+                   JOIN doxagent.codex_run_registry r ON r.run_id=a.run_id
+                   WHERE a.run_id=%s AND a.relative_path=%s
+                   ORDER BY a.created_at DESC,a.artifact_id DESC LIMIT 1""",
+                (run_id, relative_path),
+            )
+            return cursor.fetchone()
+
+        row = self._execute("codex.artifact.get_by_path", "codex_artifacts", op)
+        self._audit_read(
+            "codex.artifact.get_by_path",
+            "codex_artifacts",
+            run_id,
+            row,
+            int(row is not None),
+        )
+        return self._artifact_from_row(row) if row else None
+
     def list_artifacts(self, run_id: str, limit: int = 500) -> list[ArtifactRef]:
         limit = _bounded_limit(limit, 500, 500)
 
         def op(_connection: Any, cursor: Any) -> Any:
             cursor.execute(
-                """SELECT artifact_id,run_id,node,attempt_id,kind,relative_path,sha256,
-                          size_bytes,content_type,published,created_at
-                   FROM doxagent.codex_artifacts WHERE run_id=%s
-                   ORDER BY created_at,artifact_id LIMIT %s""",
+                """SELECT a.artifact_id,a.run_id,a.node,a.attempt_id,a.kind,a.relative_path,
+                          a.sha256,a.size_bytes,a.content_type,a.published,a.created_at,
+                          r.workflow_version,r.research_lane
+                   FROM doxagent.codex_artifacts a
+                   JOIN doxagent.codex_run_registry r ON r.run_id=a.run_id
+                   WHERE a.run_id=%s
+                   ORDER BY a.created_at,a.artifact_id LIMIT %s""",
                 (run_id, limit),
             )
             return cursor.fetchall()
@@ -1087,7 +1226,10 @@ class PostgresCodexRuntimeRepository:
     def get_citation_manifest(self, run_id: str, artifact_id: str) -> CitationManifest | None:
         return self._evidence.get_citation_manifest(run_id, artifact_id)
 
-    def save_bundle(self, bundle: ResearchBundle) -> None:
+    def save_bundle(self, bundle: StoredResearchBundle) -> None:
+        if isinstance(bundle, Document2Bundle):
+            self._save_document2_bundle(bundle)
+            return
         if isinstance(bundle, (GlobalResearchBundle, MarketSituationBundle)):
             self._save_lane_bundle(bundle)
             return
@@ -1217,6 +1359,85 @@ class PostgresCodexRuntimeRepository:
 
         self._execute("codex.bundle.save", table, op)
 
+    def _save_document2_bundle(self, bundle: Document2Bundle) -> None:
+        manifest_id = bundle.handoff.citation_manifest_artifact_id if bundle.handoff else None
+        document_id = bundle.handoff.document2_artifact_id if bundle.handoff else None
+        updated_at = bundle.published_at or utc_now()
+        registry_status = (
+            "published"
+            if bundle.status == "published"
+            else "failed"
+            if bundle.status == "failed"
+            else "running"
+        )
+
+        def op(_connection: Any, cursor: Any) -> None:
+            cursor.execute(
+                """INSERT INTO doxagent.codex_run_registry
+                   (run_id,ticker,workflow_version,research_lane,status,current_node,
+                    completed_node_count,failed_node_count,latest_event_sequence,
+                    created_at,updated_at,published_at)
+                   VALUES (%s,%s,%s,%s,%s,NULL,0,0,-1,%s,%s,%s)
+                   ON CONFLICT (run_id) DO UPDATE SET
+                     ticker=excluded.ticker,status=excluded.status,current_node=NULL,
+                     updated_at=excluded.updated_at,published_at=excluded.published_at
+                   WHERE doxagent.codex_run_registry.workflow_version=excluded.workflow_version
+                     AND doxagent.codex_run_registry.research_lane=excluded.research_lane
+                   RETURNING workflow_version,research_lane""",
+                (
+                    bundle.run_id,
+                    bundle.ticker,
+                    bundle.workflow_version,
+                    bundle.research_lane.value,
+                    registry_status,
+                    bundle.created_at,
+                    updated_at,
+                    bundle.published_at,
+                ),
+            )
+            identity = cursor.fetchone()
+            if identity is None:
+                raise ValueError(f"run_id belongs to another research lane: {bundle.run_id}")
+            if bundle.current:
+                cursor.execute(
+                    """UPDATE doxagent.codex_document2_bundles SET is_current=false
+                       WHERE ticker=%s AND run_id<>%s AND is_current=true""",
+                    (bundle.ticker, bundle.run_id),
+                )
+            cursor.execute(
+                """INSERT INTO doxagent.codex_document2_bundles
+                   (run_id,ticker,source_global_run_id,workflow_version,research_lane,status,
+                    publication_state,citation_status,citation_manifest_artifact_id,
+                    document2_artifact_id,is_current,created_at,updated_at,published_at)
+                   VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                   ON CONFLICT (run_id) DO UPDATE SET
+                     ticker=excluded.ticker,source_global_run_id=excluded.source_global_run_id,
+                     status=excluded.status,publication_state=excluded.publication_state,
+                     citation_status=excluded.citation_status,
+                     citation_manifest_artifact_id=excluded.citation_manifest_artifact_id,
+                     document2_artifact_id=excluded.document2_artifact_id,
+                     is_current=excluded.is_current,updated_at=excluded.updated_at,
+                     published_at=excluded.published_at""",
+                (
+                    bundle.run_id,
+                    bundle.ticker,
+                    bundle.source_global_run_id,
+                    bundle.workflow_version,
+                    bundle.research_lane.value,
+                    bundle.status,
+                    bundle.publication_state,
+                    bundle.citation_status.value,
+                    manifest_id,
+                    document_id,
+                    bundle.current,
+                    bundle.created_at,
+                    updated_at,
+                    bundle.published_at,
+                ),
+            )
+
+        self._execute("codex.bundle.save", "codex_document2_bundles", op)
+
     def mark_run_published(self, run_id: str, published_at: datetime) -> None:
         def op(_connection: Any, cursor: Any) -> None:
             cursor.execute(
@@ -1230,7 +1451,7 @@ class PostgresCodexRuntimeRepository:
 
         self._execute("codex.run.publish", "codex_run_registry", op)
 
-    def get_bundle(self, run_id: str) -> ResearchBundle | None:
+    def get_bundle(self, run_id: str) -> StoredResearchBundle | None:
         try:
             _, workflow_version, _ = self._run_identity(run_id)
         except RuntimeError:
@@ -1240,6 +1461,8 @@ class PostgresCodexRuntimeRepository:
             "codex_market_situation_v1",
         }:
             return self._get_lane_bundle(run_id, workflow_version)
+        if workflow_version == "codex_document2_v1":
+            return self._get_document2_bundle(run_id)
 
         def op(_connection: Any, cursor: Any) -> Any:
             cursor.execute(
@@ -1348,6 +1571,52 @@ class PostgresCodexRuntimeRepository:
             handoff=market_handoff,
             created_at=row[8],
             published_at=row[9],
+        )
+
+    def _get_document2_bundle(self, run_id: str) -> Document2Bundle | None:
+        def op(_connection: Any, cursor: Any) -> Any:
+            cursor.execute(
+                """SELECT run_id,ticker,source_global_run_id,status,publication_state,
+                          citation_status,citation_manifest_artifact_id,
+                          document2_artifact_id,is_current,created_at,published_at
+                   FROM doxagent.codex_document2_bundles WHERE run_id=%s""",
+                (run_id,),
+            )
+            return cursor.fetchone()
+
+        row = self._execute("codex.bundle.get", "codex_document2_bundles", op)
+        self._audit_read(
+            "codex.bundle.get",
+            "codex_document2_bundles",
+            run_id,
+            row,
+            int(row is not None),
+        )
+        if not row:
+            return None
+        handoff = None
+        if row[7] and row[10]:
+            handoff = Document2HandoffV1(
+                run_id=row[0],
+                ticker=row[1],
+                source_global_run_id=row[2],
+                document2_artifact_id=row[7],
+                citation_manifest_artifact_id=row[6],
+                publication_state=row[4],
+                citation_status=row[5],
+                published_at=row[10],
+            )
+        return Document2Bundle(
+            run_id=row[0],
+            ticker=row[1],
+            source_global_run_id=row[2],
+            status=row[3],
+            publication_state=row[4],
+            citation_status=row[5],
+            handoff=handoff,
+            current=row[8],
+            created_at=row[9],
+            published_at=row[10],
         )
 
     def list_run_summaries(
@@ -1571,13 +1840,13 @@ class PostgresCodexRuntimeRepository:
 
 
 class HybridCodexRuntimeRepository:
-    """Routes evidence locally and runtime state remotely without silent failover."""
+    """Keeps Document2 recovery state local and syncs only compact remote projections."""
 
     def __init__(
         self,
         *,
         local: SQLiteCodexRuntimeRepository,
-        remote: PostgresCodexRuntimeRepository,
+        remote: CodexRuntimeRepository,
         mirror_remote_runtime_locally: bool = True,
     ) -> None:
         self.local = local
@@ -1590,30 +1859,91 @@ class HybridCodexRuntimeRepository:
             getattr(self.local, method)(value)
 
     def save_thread(self, record: ThreadRecord) -> None:
+        if record.research_lane is ResearchLane.DOCUMENT2:
+            previous = self.local.get_thread(record.run_id, record.agent_role.value)
+            self.local.save_thread(record)
+            if (
+                previous is None
+                or previous.thread_id != record.thread_id
+                or previous.model != record.model
+                or previous.model_provider != record.model_provider
+            ):
+                self.remote.save_thread(record)
+            return
         self._remote_then_mirror("save_thread", record)
 
     def get_thread(self, run_id: str, agent_role: str) -> ThreadRecord | None:
-        return self.remote.get_thread(run_id, agent_role)
+        local = self.local.get_thread(run_id, agent_role)
+        if local is not None:
+            return local
+        remote = self.remote.get_thread(run_id, agent_role)
+        if remote is not None:
+            self.local.save_thread(remote)
+        return remote
 
     def save_attempt(self, attempt: NodeAttempt) -> None:
+        if attempt.research_lane is ResearchLane.DOCUMENT2:
+            self.local.save_attempt(attempt)
+            return
         self._remote_then_mirror("save_attempt", attempt)
 
     def list_attempts(self, run_id: str, limit: int = 100) -> list[NodeAttempt]:
+        local = self.local.list_attempts(run_id, limit)
+        if local:
+            return local
         return self.remote.list_attempts(run_id, limit)
 
+    def next_attempt_number(self, run_id: str, node: CodexResearchNode) -> int:
+        if isinstance(node, CodexD2Node):
+            return self.local.next_attempt_number(run_id, node)
+        local = self.local.next_attempt_number(run_id, node)
+        return local if local > 1 else self.remote.next_attempt_number(run_id, node)
+
     def save_checkpoint(self, checkpoint: WorkflowCheckpoint) -> None:
+        if checkpoint.research_lane is ResearchLane.DOCUMENT2:
+            self.local.save_checkpoint(checkpoint)
+            return
         self._remote_then_mirror("save_checkpoint", checkpoint)
 
     def get_checkpoint(self, run_id: str) -> WorkflowCheckpoint | None:
-        return self.remote.get_checkpoint(run_id)
+        local = self.local.get_checkpoint(run_id)
+        if local is not None:
+            return local
+        remote = self.remote.get_checkpoint(run_id)
+        if remote is not None:
+            self.local.save_checkpoint(remote)
+        return remote
 
     def save_artifact(self, artifact: ArtifactRef) -> None:
+        if artifact.research_lane is ResearchLane.DOCUMENT2:
+            self.local.save_artifact(artifact)
+            if artifact.published:
+                self.remote.save_artifact(artifact)
+            return
         self._remote_then_mirror("save_artifact", artifact)
 
     def get_artifact(self, run_id: str, artifact_id: str) -> ArtifactRef | None:
-        return self.remote.get_artifact(run_id, artifact_id)
+        local = self.local.get_artifact(run_id, artifact_id)
+        if local is not None:
+            return local
+        remote = self.remote.get_artifact(run_id, artifact_id)
+        if remote is not None:
+            self.local.save_artifact(remote)
+        return remote
+
+    def get_artifact_by_path(self, run_id: str, relative_path: str) -> ArtifactRef | None:
+        local = self.local.get_artifact_by_path(run_id, relative_path)
+        if local is not None:
+            return local
+        remote = self.remote.get_artifact_by_path(run_id, relative_path)
+        if remote is not None:
+            self.local.save_artifact(remote)
+        return remote
 
     def list_artifacts(self, run_id: str, limit: int = 500) -> list[ArtifactRef]:
+        local = self.local.list_artifacts(run_id, limit)
+        if local:
+            return local
         return self.remote.list_artifacts(run_id, limit)
 
     def save_source(self, source: SourceRecord) -> None:
@@ -1628,11 +1958,24 @@ class HybridCodexRuntimeRepository:
     def get_citation_manifest(self, run_id: str, artifact_id: str) -> CitationManifest | None:
         return self.local.get_citation_manifest(run_id, artifact_id)
 
-    def save_bundle(self, bundle: ResearchBundle) -> None:
+    def save_bundle(self, bundle: StoredResearchBundle) -> None:
+        if isinstance(bundle, Document2Bundle):
+            previous = self.local.get_bundle(bundle.run_id)
+            self.local.save_bundle(bundle)
+            if not isinstance(previous, Document2Bundle) or (
+                _document2_projection(previous) != _document2_projection(bundle)
+            ):
+                self.remote.save_bundle(bundle)
+            return
         self._remote_then_mirror("save_bundle", bundle)
 
-    def get_bundle(self, run_id: str) -> ResearchBundle | None:
+    def get_bundle(self, run_id: str) -> StoredResearchBundle | None:
+        local = self.local.get_bundle(run_id)
+        if isinstance(local, Document2Bundle):
+            return local
         bundle = self.remote.get_bundle(run_id)
+        if isinstance(bundle, Document2Bundle):
+            return bundle
         if bundle and bundle.handoff and bundle.handoff.citation_manifest_artifact_id:
             document_artifact_id = getattr(
                 bundle.handoff,
@@ -1657,18 +2000,48 @@ class HybridCodexRuntimeRepository:
         return self.remote.list_run_summaries(ticker, cursor, limit, research_lane)
 
     def append_event(self, event: WorkflowEvent) -> None:
+        if event.research_lane is ResearchLane.DOCUMENT2:
+            self.local.append_event(event)
+            return
         self._remote_then_mirror("append_event", event)
 
     def list_events(
         self, run_id: str, after_sequence: int = -1, limit: int = 100
     ) -> list[WorkflowEvent]:
+        local = self.local.list_events(run_id, after_sequence, limit)
+        if local:
+            return local
         return self.remote.list_events(run_id, after_sequence, limit)
 
     def save_published_document(self, document: PublishedDocument) -> None:
+        artifact = self.local.get_artifact(document.run_id, document.artifact_id)
+        if artifact is not None and artifact.research_lane is ResearchLane.DOCUMENT2:
+            self.local.save_published_document(document)
+            if document.storage_path is not None:
+                self.remote.save_published_document(document)
+            return
         self.remote.save_published_document(document)
 
     def get_published_document(self, run_id: str, artifact_id: str) -> PublishedDocument | None:
+        local = self.local.get_published_document(run_id, artifact_id)
+        if local is not None:
+            return local
         return self.remote.get_published_document(run_id, artifact_id)
+
+
+def _document2_projection(bundle: Document2Bundle) -> tuple[object, ...]:
+    handoff = bundle.handoff
+    return (
+        bundle.ticker,
+        bundle.source_global_run_id,
+        bundle.status,
+        bundle.publication_state,
+        bundle.citation_status,
+        handoff.document2_artifact_id if handoff else None,
+        handoff.citation_manifest_artifact_id if handoff else None,
+        bundle.current,
+        bundle.published_at,
+    )
 
 
 def _bounded_limit(value: int | None, default: int, maximum: int) -> int:
@@ -1693,7 +2066,9 @@ def _decode_cursor(cursor: str | None) -> tuple[datetime, str] | None:
         raise ValueError("invalid run cursor") from exc
 
 
-def _bundle_model_for_version(workflow_version: str) -> type[ResearchBundle]:
+def _bundle_model_for_version(workflow_version: str) -> type[BaseModel]:
+    if workflow_version == "codex_document2_v1":
+        return Document2Bundle
     if workflow_version == "codex_global_research_v1":
         return GlobalResearchBundle
     if workflow_version == "codex_market_situation_v1":
@@ -1701,13 +2076,13 @@ def _bundle_model_for_version(workflow_version: str) -> type[ResearchBundle]:
     return Document1V2Bundle
 
 
-def _parse_bundle_json(payload: str) -> ResearchBundle:
+def _parse_bundle_json(payload: str) -> StoredResearchBundle:
     parsed = json.loads(payload)
     model = _bundle_model_for_version(str(parsed.get("workflow_version", "codex_d1_v2")))
-    return model.model_validate(parsed)
+    return cast(StoredResearchBundle, model.model_validate(parsed))
 
 
-def _summary_from_bundle(bundle: ResearchBundle) -> CodexRunSummary:
+def _summary_from_bundle(bundle: StoredResearchBundle) -> CodexRunSummary:
     status: Literal["queued", "running", "failed", "cancelled", "published"] = (
         "published"
         if bundle.status == "published"

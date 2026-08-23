@@ -15,10 +15,14 @@ CODEX_GLOBAL_RESEARCH_WORKFLOW_VERSION: Final[Literal["codex_global_research_v1"
 CODEX_MARKET_SITUATION_WORKFLOW_VERSION: Final[Literal["codex_market_situation_v1"]] = (
     "codex_market_situation_v1"
 )
+CODEX_DOCUMENT2_WORKFLOW_VERSION: Final[Literal["codex_document2_v1"]] = (
+    "codex_document2_v1"
+)
 CodexWorkflowVersion: TypeAlias = Literal[
     "codex_d1_v2",
     "codex_global_research_v1",
     "codex_market_situation_v1",
+    "codex_document2_v1",
 ]
 
 
@@ -47,13 +51,33 @@ class CodexD1Node(StrEnum):
     PUBLISH = "publish"
 
 
-CodexResearchNode = CodexD1Node
+class CodexD2Node(StrEnum):
+    INPUT_PREPARATION = "d2_input_preparation"
+    O0_CANDIDATE_C1 = "d2_o0_candidate_c1"
+    O0_CANDIDATE_C3 = "d2_o0_candidate_c3"
+    O0_CANDIDATE_C5 = "d2_o0_candidate_c5"
+    O0_CANDIDATE_NARRATIVE = "d2_o0_candidate_narrative"
+    O0_SYNTHESIS = "d2_o0_synthesis"
+    O0_REVIEW_C1 = "d2_o0_review_c1"
+    O0_REVIEW_C3 = "d2_o0_review_c3"
+    O0_REVIEW_C5 = "d2_o0_review_c5"
+    O0_FINALIZATION = "d2_o0_finalization"
+    O1_STATE = "d2_o1_state"
+    O1_REALIZATION = "d2_o1_realization"
+    O1_GAPS = "d2_o1_gaps"
+    O1_FINALIZATION = "d2_o1_finalization"
+    ASSEMBLE = "d2_assemble"
+    PUBLISH = "d2_publish"
+
+
+CodexResearchNode: TypeAlias = CodexD1Node | CodexD2Node
 
 
 class ResearchLane(StrEnum):
     LEGACY_DOCUMENT1 = "legacy_document1"
     GLOBAL_RESEARCH = "global_research"
     MARKET_SITUATION_RESEARCH = "market_situation_research"
+    DOCUMENT2 = "document2"
 
 
 class CodexAgentRole(StrEnum):
@@ -65,10 +89,19 @@ class CodexAgentRole(StrEnum):
     O4 = "o4_researcher"
 
 
+class CodexD2AgentRole(StrEnum):
+    O0 = "o0_expectation_architect"
+    O1 = "o1_expectation_owner"
+
+
+CodexResearchAgentRole: TypeAlias = CodexAgentRole | CodexD2AgentRole
+
+
 _LANE_BY_WORKFLOW: dict[str, ResearchLane] = {
     CODEX_D1_WORKFLOW_VERSION: ResearchLane.LEGACY_DOCUMENT1,
     CODEX_GLOBAL_RESEARCH_WORKFLOW_VERSION: ResearchLane.GLOBAL_RESEARCH,
     CODEX_MARKET_SITUATION_WORKFLOW_VERSION: ResearchLane.MARKET_SITUATION_RESEARCH,
+    CODEX_DOCUMENT2_WORKFLOW_VERSION: ResearchLane.DOCUMENT2,
 }
 
 
@@ -107,7 +140,7 @@ class ArtifactRef(StrictModel):
     research_lane: ResearchLane = ResearchLane.LEGACY_DOCUMENT1
     artifact_id: str
     run_id: str
-    node: CodexD1Node
+    node: CodexResearchNode
     attempt_id: str
     kind: ArtifactKind
     relative_path: str
@@ -130,7 +163,7 @@ class ThreadRecord(StrictModel):
     research_lane: ResearchLane = ResearchLane.LEGACY_DOCUMENT1
     ticker: str
     run_id: str
-    agent_role: CodexAgentRole
+    agent_role: CodexResearchAgentRole
     thread_id: str
     model: str
     model_provider: str | None = None
@@ -152,7 +185,7 @@ class NodeAttempt(StrictModel):
     cutoff_at: datetime = Field(default_factory=utc_now)
     ticker: str
     run_id: str
-    node: CodexD1Node
+    node: CodexResearchNode
     status: AttemptStatus = AttemptStatus.PENDING
     attempt_number: int = Field(default=1, ge=1)
     thread_id: str | None = None
@@ -183,15 +216,17 @@ class WorkflowCheckpoint(StrictModel):
     research_lane: ResearchLane = ResearchLane.LEGACY_DOCUMENT1
     ticker: str
     run_id: str
-    completed_nodes: list[CodexD1Node] = Field(default_factory=list)
-    current_nodes: list[CodexD1Node] = Field(default_factory=list)
-    failed_nodes: list[CodexD1Node] = Field(default_factory=list)
+    completed_nodes: list[CodexResearchNode] = Field(default_factory=list)
+    current_nodes: list[CodexResearchNode] = Field(default_factory=list)
+    failed_nodes: list[CodexResearchNode] = Field(default_factory=list)
     cancelled: bool = False
     updated_at: datetime = Field(default_factory=utc_now)
 
     @field_validator("completed_nodes", "current_nodes", "failed_nodes")
     @classmethod
-    def node_arrays_are_bounded(cls, value: list[CodexD1Node]) -> list[CodexD1Node]:
+    def node_arrays_are_bounded(
+        cls, value: list[CodexResearchNode]
+    ) -> list[CodexResearchNode]:
         if len(value) > 64:
             raise ValueError("checkpoint node arrays are limited to 64 items")
         return value

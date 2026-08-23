@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import cast
 
-from doxagent.codex_runtime.schema import CodexD1Node
+from doxagent.codex_runtime.schema import CodexResearchNode
 
 
 def canonical_node_attempt_id(payload: dict[str, object]) -> str:
@@ -27,7 +28,7 @@ def validate_pilot_case_root(
     pilot_case_id: str,
     run_id: str,
     attempt_id: str,
-    node: CodexD1Node | None = None,
+    node: CodexResearchNode | None = None,
 ) -> dict[str, object]:
     resolved = run_root.resolve()
     if resolved.name != pilot_case_id:
@@ -37,7 +38,10 @@ def validate_pilot_case_root(
         payload = json.loads(manifest_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         raise ValueError("Pilot case manifest is missing or invalid") from exc
-    if payload.get("schema_version") != "codex-d1-pilot-case-v1":
+    if payload.get("schema_version") not in {
+        "codex-d1-pilot-case-v1",
+        "codex-research-pilot-case-v2",
+    }:
         raise ValueError("unsupported Pilot case manifest")
     if payload.get("case_id") != pilot_case_id or payload.get("run_id") != run_id:
         raise ValueError("Pilot case manifest scope mismatch")
@@ -45,4 +49,4 @@ def validate_pilot_case_root(
         raise ValueError("Pilot case attempt scope mismatch")
     if node is not None and payload.get("node") != node.value:
         raise ValueError("Pilot case node scope mismatch")
-    return payload
+    return cast(dict[str, object], payload)

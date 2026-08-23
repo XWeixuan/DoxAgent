@@ -10,7 +10,7 @@ from uuid import uuid4
 
 from jsonschema import Draft202012Validator, ValidationError
 
-from doxagent.codex_runtime.schema import CodexAgentRole
+from doxagent.codex_runtime.schema import CodexAgentRole, CodexD2AgentRole
 from doxagent.data_runtime.contracts import (
     DataAvailability,
     DataDelivery,
@@ -32,6 +32,8 @@ _AGENT_BY_ROLE = {
     CodexAgentRole.C4: AgentName.SYSTEM,
     CodexAgentRole.O4: AgentName.O4_MARKET_TRACE,
     CodexAgentRole.C5: AgentName.C5_MARKET_IMPLIED_EXPECTATIONS,
+    CodexD2AgentRole.O0: AgentName.O1_EXPECTATION_OWNER,
+    CodexD2AgentRole.O1: AgentName.O1_EXPECTATION_OWNER,
 }
 
 _UNAVAILABLE_ERROR_CODES = {

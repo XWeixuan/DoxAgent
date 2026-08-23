@@ -252,6 +252,47 @@ blocker/major/minor 数量及是否建议进入第二阶段。现在开始，不
 """
 
 
+def render_document2_task(
+    *,
+    case_root: Path,
+    node: str,
+    run_id: str,
+    attempt_id: str,
+) -> str:
+    return f"""# Document2 v2 Formal Pilot Task
+
+## 项目根硬检查
+
+开始任何读取或写入前，确认当前 Codex 项目根和工作目录**恰好是**：
+`{case_root}`
+
+如果不完全一致，立即停止并要求用户以该 case 目录重新打开可信项目。
+
+## 正式目标
+
+完整重跑 Document2 节点 `{node}`；这不是 smoke test。按顺序完整读取：
+
+1. `attempts/{attempt_id}/input/AGENTS.md`
+2. `attempts/{attempt_id}/input/agent.md`
+3. `attempts/{attempt_id}/input/skill.md`
+4. `attempts/{attempt_id}/input/task.json`
+5. `attempts/{attempt_id}/input/context.json`
+6. `attempts/{attempt_id}/input/output_schema.json`
+
+严格遵循 attempt-local prompt/skill 与三份 Document2 v2 方案所形成的节点合同。允许 Agent
+按当前节点合同使用已签名 Data MCP；引用失败或未解析只能作为 warning，不得阻止正式产物。
+
+将唯一完整 JSON 结果写入：
+`attempts/{attempt_id}/output/completion.json`
+
+该 JSON 必须匹配 `output_schema.json`。最终回复必须与文件内容一致。Pilot 过程中发现的问题
+仅追加记录到：
+`attempts/{attempt_id}/audit/pilot_issues.md`
+
+不得修改 input、context、上游 artifact 或其他 attempt。当前 workspace run id 为 `{run_id}`。
+"""
+
+
 def _toml(value: str) -> str:
     return json.dumps(value, ensure_ascii=False)
 

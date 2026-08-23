@@ -72,7 +72,39 @@ def test_sqlite_repository_round_trips_thread_without_legacy_state(tmp_path: Pat
     repository.save_thread(record)
     assert repository.get_thread("run-1", CodexAgentRole.O4.value) == record
     with sqlite3.connect(database) as connection:
-        assert connection.execute("PRAGMA user_version").fetchone()[0] == 3
+        assert connection.execute("PRAGMA user_version").fetchone()[0] == 4
+
+
+def test_sqlite_v3_upgrades_document2_lookup_indexes(tmp_path: Path) -> None:
+    database = tmp_path / "runtime-v3.sqlite3"
+    with sqlite3.connect(database) as connection:
+        connection.executescript(
+            """
+            CREATE TABLE codex_runtime_records (
+                record_type TEXT NOT NULL,
+                record_key TEXT NOT NULL,
+                run_id TEXT NOT NULL,
+                workflow_version TEXT NOT NULL DEFAULT 'codex_d1_v2',
+                research_lane TEXT NOT NULL DEFAULT 'legacy_document1',
+                sort_order INTEGER NOT NULL DEFAULT 0,
+                payload_json TEXT NOT NULL,
+                updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (record_type, record_key)
+            );
+            PRAGMA user_version = 3;
+            """
+        )
+    SQLiteCodexRuntimeRepository(database)
+    with sqlite3.connect(database) as connection:
+        assert connection.execute("PRAGMA user_version").fetchone()[0] == 4
+        indexes = {
+            str(row[0])
+            for row in connection.execute(
+                "SELECT name FROM sqlite_master WHERE type='index'"
+            ).fetchall()
+        }
+    assert "idx_codex_runtime_attempt_node_order" in indexes
+    assert "idx_codex_runtime_artifact_path" in indexes
 
 
 def test_postgres_runtime_storage_requires_explicit_remote_opt_in(tmp_path: Path) -> None:

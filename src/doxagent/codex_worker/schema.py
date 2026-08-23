@@ -9,8 +9,8 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from doxagent.codex_runtime.schema import (
     CODEX_D1_WORKFLOW_VERSION,
-    CodexAgentRole,
-    CodexD1Node,
+    CodexResearchAgentRole,
+    CodexResearchNode,
     CodexWorkflowVersion,
     ResearchLane,
     utc_now,
@@ -45,8 +45,8 @@ class WorkerRunRequest(WorkerModel):
     research_lane: ResearchLane = ResearchLane.LEGACY_DOCUMENT1
     run_id: str
     ticker: str
-    node: CodexD1Node
-    agent_role: CodexAgentRole
+    node: CodexResearchNode
+    agent_role: CodexResearchAgentRole
     attempt_id: str
     cutoff_at: datetime = Field(default_factory=utc_now)
     prompt: str

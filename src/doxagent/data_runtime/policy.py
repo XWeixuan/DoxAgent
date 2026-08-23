@@ -21,6 +21,10 @@ from doxagent.codex_runtime.schema import (
     CODEX_D1_WORKFLOW_VERSION,
     CodexAgentRole,
     CodexD1Node,
+    CodexD2AgentRole,
+    CodexD2Node,
+    CodexResearchAgentRole,
+    CodexResearchNode,
     CodexWorkflowVersion,
     ResearchLane,
     lane_for_workflow,
@@ -33,9 +37,9 @@ class DataCapabilityClaims(DataRuntimeModel):
     workflow_version: CodexWorkflowVersion = CODEX_D1_WORKFLOW_VERSION
     research_lane: ResearchLane = ResearchLane.LEGACY_DOCUMENT1
     run_id: str
-    node_id: CodexD1Node
+    node_id: CodexResearchNode
     node_attempt_id: str
-    agent_role: CodexAgentRole
+    agent_role: CodexResearchAgentRole
     ticker: str
     cutoff_at: datetime
     enabled_tool_ids: list[str]
@@ -58,6 +62,19 @@ _ROLE_BY_NODE = {
     CodexD1Node.O4_A: CodexAgentRole.O4,
     CodexD1Node.C5: CodexAgentRole.C5,
     CodexD1Node.O4: CodexAgentRole.O4,
+    CodexD2Node.O0_CANDIDATE_C1: CodexD2AgentRole.O0,
+    CodexD2Node.O0_CANDIDATE_C3: CodexD2AgentRole.O0,
+    CodexD2Node.O0_CANDIDATE_C5: CodexD2AgentRole.O0,
+    CodexD2Node.O0_CANDIDATE_NARRATIVE: CodexD2AgentRole.O0,
+    CodexD2Node.O0_SYNTHESIS: CodexD2AgentRole.O0,
+    CodexD2Node.O0_REVIEW_C1: CodexAgentRole.C1,
+    CodexD2Node.O0_REVIEW_C3: CodexAgentRole.C3,
+    CodexD2Node.O0_REVIEW_C5: CodexAgentRole.C5,
+    CodexD2Node.O0_FINALIZATION: CodexD2AgentRole.O0,
+    CodexD2Node.O1_STATE: CodexD2AgentRole.O1,
+    CodexD2Node.O1_REALIZATION: CodexD2AgentRole.O1,
+    CodexD2Node.O1_GAPS: CodexD2AgentRole.O1,
+    CodexD2Node.O1_FINALIZATION: CodexD2AgentRole.O1,
 }
 
 _LEGACY_AGENT_BY_ROLE = {
@@ -103,7 +120,7 @@ _MARKET_IMPLIED_TOOL_EXCLUSIONS = frozenset(
     }
 )
 
-_NODE_TOOL_EXCLUSIONS: dict[CodexD1Node, frozenset[str]] = {
+_NODE_TOOL_EXCLUSIONS: dict[CodexResearchNode, frozenset[str]] = {
     CodexD1Node.O4_A: _MARKET_IMPLIED_TOOL_EXCLUSIONS,
     CodexD1Node.C5: _MARKET_IMPLIED_TOOL_EXCLUSIONS,
 }
@@ -114,7 +131,7 @@ class DataToolPolicyRegistry:
 
     def __init__(self) -> None:
         agents = default_agent_registry()
-        self._by_role: dict[CodexAgentRole, frozenset[str]] = {
+        self._by_role: dict[CodexResearchAgentRole, frozenset[str]] = {
             role: frozenset(
                 tool_id
                 for tool_id in agents.get(agent_name).runtime.allowed_tools
@@ -125,13 +142,22 @@ class DataToolPolicyRegistry:
         self._by_role[CodexAgentRole.C4] = frozenset(
             tool_id for tool_id in _C4_TOOLS if not is_data_mcp_excluded_tool(tool_id)
         )
+        self._by_role[CodexD2AgentRole.O0] = frozenset()
+        self._by_role[CodexD2AgentRole.O1] = frozenset().union(
+            self._by_role[CodexAgentRole.C1],
+            self._by_role[CodexAgentRole.C3],
+            self._by_role[CodexAgentRole.C4],
+            self._by_role[CodexAgentRole.C5],
+        )
         legacy_o4_tools = self._by_role[CodexAgentRole.C5]
-        self._by_node: dict[CodexD1Node, frozenset[str]] = {
+        self._by_node: dict[CodexResearchNode, frozenset[str]] = {
             CodexD1Node.O4_A: legacy_o4_tools,
             CodexD1Node.O4_B: legacy_o4_tools,
         }
 
-    def allowed_tools(self, node: CodexD1Node, role: CodexAgentRole) -> frozenset[str]:
+    def allowed_tools(
+        self, node: CodexResearchNode, role: CodexResearchAgentRole
+    ) -> frozenset[str]:
         expected = _ROLE_BY_NODE.get(node)
         if expected is None or expected is not role:
             return frozenset()
@@ -142,8 +168,8 @@ class DataToolPolicyRegistry:
 
     def allowed_tools_for_ticker(
         self,
-        node: CodexD1Node,
-        role: CodexAgentRole,
+        node: CodexResearchNode,
+        role: CodexResearchAgentRole,
         ticker: str,
     ) -> frozenset[str]:
         """Return the maximum allowlist after deterministic market scoping."""
@@ -179,9 +205,9 @@ class DataCapabilityCodec:
         self,
         *,
         run_id: str,
-        node_id: CodexD1Node,
+        node_id: CodexResearchNode,
         node_attempt_id: str,
-        agent_role: CodexAgentRole,
+        agent_role: CodexResearchAgentRole,
         ticker: str,
         cutoff_at: datetime,
         enabled_tool_ids: Iterable[str],
