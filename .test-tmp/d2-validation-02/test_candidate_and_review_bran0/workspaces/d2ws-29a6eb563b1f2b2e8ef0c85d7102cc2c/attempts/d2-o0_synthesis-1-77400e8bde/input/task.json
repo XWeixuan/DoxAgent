@@ -1,0 +1,12 @@
+{
+  "schema_version": "document2-task-v1",
+  "node": "d2_o0_synthesis",
+  "required_files": [
+    "attempts/d2-o0_synthesis-1-77400e8bde/input/AGENTS.md",
+    "attempts/d2-o0_synthesis-1-77400e8bde/input/agent.md",
+    "attempts/d2-o0_synthesis-1-77400e8bde/input/skill.md",
+    "attempts/d2-o0_synthesis-1-77400e8bde/input/context.json",
+    "attempts/d2-o0_synthesis-1-77400e8bde/input/output_schema.json"
+  ],
+  "previous_failure": null
+}

@@ -90,7 +90,14 @@ async def _run(args: argparse.Namespace) -> dict[str, object]:
             worker=worker,
             workspace=workspace,
             repository=repository,
-            prompt_root=Path(manifest["repo_root"]) / "codex_assets" / "document1_v2",
+            prompt_root=(
+                Path(manifest["repo_root"])
+                / "prompts"
+                / "codex_v2"
+                / "document1"
+                / "compatibility"
+                / "legacy_document1"
+            ),
             model=args.model,
             effort=args.effort,
             timeout_seconds=args.timeout_seconds,

@@ -38,7 +38,6 @@ RUN apt-get update \
 COPY pyproject.toml uv.lock README.md ./
 COPY src ./src
 COPY prompts ./prompts
-COPY codex_assets ./codex_assets
 
 RUN uv sync --frozen
 

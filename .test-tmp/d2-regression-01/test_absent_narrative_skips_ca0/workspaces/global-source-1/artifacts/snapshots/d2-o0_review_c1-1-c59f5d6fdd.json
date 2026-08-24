@@ -1,0 +1,17 @@
+{
+  "reviewer_role": "C1",
+  "overall_assessment": "Structure is workable with one boundary clarification.",
+  "targeted_feedback": [
+    {
+      "feedback_id": "C1-R1",
+      "target": "S1 / U-C1",
+      "issue": "Horizon needs an explicit boundary.",
+      "reasoning": "The domain report separates near and long-term transmission.",
+      "references": [
+        "D1-O1"
+      ],
+      "recommendation": "Keep the Unit and clarify its horizon."
+    }
+  ],
+  "warnings": []
+}

@@ -1,0 +1,45 @@
+{
+  "schema_version": "document2-citation-manifest-v1",
+  "run_id": "document2-branch-degrade",
+  "artifact_id": "f1aee0d8124b45ad94ad0a3e2891be75",
+  "entries": [
+    {
+      "alias": "O1",
+      "status": "UNRESOLVED",
+      "origin_run_id": null,
+      "origin_attempt_id": "d2-o1_state-1-e41efe966b",
+      "origin_alias": "O9",
+      "source_id": null,
+      "url": null,
+      "title": null,
+      "warning": "unresolved source for D2REF:d2-o1_state-1-e41efe966b:O9"
+    },
+    {
+      "alias": "O2",
+      "status": "RESOLVED",
+      "origin_run_id": null,
+      "origin_attempt_id": null,
+      "origin_alias": "https://example.com/procurement",
+      "source_id": null,
+      "url": "https://example.com/procurement",
+      "title": null,
+      "warning": null
+    },
+    {
+      "alias": "O3",
+      "status": "INVALID",
+      "origin_run_id": null,
+      "origin_attempt_id": null,
+      "origin_alias": "unknown-alias",
+      "source_id": null,
+      "url": null,
+      "title": null,
+      "warning": "citation string does not identify a known D1, D2 attempt, DoxAtlas, or URL source"
+    }
+  ],
+  "warnings": [
+    "O1: unresolved source for D2REF:d2-o1_state-1-e41efe966b:O9",
+    "O3: citation string does not identify a known D1, D2 attempt, DoxAtlas, or URL source"
+  ],
+  "created_at": "2026-08-23T20:46:11.997007Z"
+}

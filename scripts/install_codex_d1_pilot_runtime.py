@@ -29,6 +29,8 @@ def main() -> int:
         "config.template.toml",
         ".env.local.example",
         "UPSTREAM_SETS.md",
+        "document2_coordinator.py",
+        "DOCUMENT2_COORDINATOR.md",
     ):
         shutil.copy2(repo_root / "pilot_runtime" / name, runtime / name)
 

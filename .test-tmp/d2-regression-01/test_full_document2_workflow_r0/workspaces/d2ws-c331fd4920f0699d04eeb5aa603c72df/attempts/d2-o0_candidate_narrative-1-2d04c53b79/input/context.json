@@ -1,0 +1,24 @@
+{
+  "source_role": "narrative",
+  "primary_source": "{\"run_ref\": {\"run_id\": \"narrative-run-1\"}, \"report\": \"narrative\"}",
+  "narrative_run_id": "narrative-run-1",
+  "ticker": "NVDA",
+  "as_of": "2026-08-20T12:00:00+00:00",
+  "future_nodes": [],
+  "event_library": {
+    "status": "NOT_CONFIGURED",
+    "payload": null,
+    "source_run_id": null,
+    "as_of": null,
+    "warning": "Event Library integration is reserved but not configured.",
+    "metadata": {
+      "interface_version": "event-library-read-v1",
+      "read_only": true
+    }
+  },
+  "horizontal_indicators": {
+    "metrics": {
+      "revenue": 100
+    }
+  }
+}

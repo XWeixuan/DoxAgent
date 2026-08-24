@@ -15,6 +15,7 @@ from doxagent.workflows.codex_document2.schema import (
     Document2Document,
     Document2InputManifest,
     ExpectationShell,
+    ShellOutcome,
 )
 
 _D2_REF = re.compile(r"^D2REF:([^:]+):(O[1-9]\d*)$")
@@ -37,6 +38,7 @@ def assemble_document2(
     source_global_run_id: str,
     input_manifest: Document2InputManifest,
     shells: list[ExpectationShell],
+    shell_outcomes: list[ShellOutcome],
     document_artifact_id: str,
     d1_manifest: CitationManifest | None,
     local_manifests: dict[str, CitationManifest],
@@ -56,6 +58,7 @@ def assemble_document2(
         source_global_run_id=source_global_run_id,
         input_manifest=input_manifest,
         shells=rewritten,
+        shell_outcomes=shell_outcomes,
     )
     manifest = Document2CitationManifest(
         run_id=run_id,
@@ -113,6 +116,18 @@ def render_document2_markdown(document: Document2Document) -> str:
                     "",
                 ]
             )
+    failed = [item for item in document.shell_outcomes if item.status == "failed"]
+    if failed:
+        lines.extend(["## Incomplete shells", ""])
+        for outcome in failed:
+            stage = outcome.failed_stage.value if outcome.failed_stage else "UNKNOWN"
+            lines.extend(
+                [
+                    f"- `{outcome.shell_id}` stopped at `{stage}`: "
+                    f"{outcome.error or 'no error detail'}",
+                ]
+            )
+        lines.append("")
     return "\n".join(lines).rstrip() + "\n"
 
 

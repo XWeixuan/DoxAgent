@@ -59,7 +59,10 @@ async def _run(args: argparse.Namespace) -> dict[str, object]:
             "freeform_metrics_allowed": True,
             "instructions": ["This is a functional file-protocol probe."],
         }
-        seeder = AttemptBundleSeeder(client, Path("codex_assets/document1_v2"))
+        seeder = AttemptBundleSeeder(
+            client,
+            Path("prompts/codex_v2/document1/compatibility/legacy_document1"),
+        )
         seeded = await seeder.seed(
             run_id=run_id,
             node=CodexD1Node.C2,

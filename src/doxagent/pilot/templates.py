@@ -258,7 +258,19 @@ def render_document2_task(
     node: str,
     run_id: str,
     attempt_id: str,
+    has_pilot_upstream: bool = False,
 ) -> str:
+    upstream_contract = ""
+    if has_pilot_upstream:
+        upstream_contract = """
+## Pilot 上游覆盖
+
+本 case 由 D2 Pilot coordinator 生成。开始执行节点合同前，必须读取
+`context/pilot_upstream/manifest.json` 以及 manifest 列出的全部文件。这里封存的是本轮
+Pilot 直接依赖节点的完整 `output/`，对 `context.json` 中同类的 source-runtime 上游结果
+具有优先权。它们是只读上下文，不得修改，也不得把其中旧 attempt 的 O# 当作当前 attempt
+引用；需要引用的事实仍按当前节点合同重新核验。
+"""
     return f"""# Document2 v2 Formal Pilot Task
 
 ## 项目根硬检查
@@ -278,6 +290,8 @@ def render_document2_task(
 4. `attempts/{attempt_id}/input/task.json`
 5. `attempts/{attempt_id}/input/context.json`
 6. `attempts/{attempt_id}/input/output_schema.json`
+
+{upstream_contract}
 
 严格遵循 attempt-local prompt/skill 与三份 Document2 v2 方案所形成的节点合同。允许 Agent
 按当前节点合同使用已签名 Data MCP；引用失败或未解析只能作为 warning，不得阻止正式产物。

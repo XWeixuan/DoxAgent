@@ -25,7 +25,7 @@ class CodexGlobalResearchOrchestrator(CodexDocument1Orchestrator):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(
             **kwargs,
-            prompt_root="codex_assets/global_research_v1",
+            prompt_root="prompts/codex_v2/document1/global_research",
             workflow_version="codex_global_research_v1",
             research_lane=ResearchLane.GLOBAL_RESEARCH,
         )

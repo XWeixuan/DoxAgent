@@ -496,7 +496,7 @@ async def test_full_d1_dag_preserves_c4_thread_and_isolates_o4_tracks(tmp_path: 
         repository=repository,
         horizontal_collector=collector,
         horizontal_compiler=compiler,
-        prompt_root=Path("codex_assets/document1_v2"),
+        prompt_root=Path("prompts/codex_v2/document1/compatibility/legacy_document1"),
         model="test-model",
         max_attempts=1,
     )
@@ -603,7 +603,7 @@ async def test_validation_retry_uses_fresh_thread_and_failure_feedback(tmp_path:
         repository=repository,
         horizontal_collector=collector,
         horizontal_compiler=compiler,
-        prompt_root=Path("codex_assets/document1_v2"),
+        prompt_root=Path("prompts/codex_v2/document1/compatibility/legacy_document1"),
         model="test-model",
         max_attempts=2,
     )
@@ -631,7 +631,7 @@ async def test_worker_transport_failure_is_persisted_and_retried(tmp_path: Path)
         repository=repository,
         horizontal_collector=collector,
         horizontal_compiler=compiler,
-        prompt_root=Path("codex_assets/document1_v2"),
+        prompt_root=Path("prompts/codex_v2/document1/compatibility/legacy_document1"),
         model="test-model",
         max_attempts=2,
     )
@@ -659,7 +659,7 @@ async def test_failed_node_blocks_publish(tmp_path: Path) -> None:
         repository=repository,
         horizontal_collector=collector,
         horizontal_compiler=compiler,
-        prompt_root=Path("codex_assets/document1_v2"),
+        prompt_root=Path("prompts/codex_v2/document1/compatibility/legacy_document1"),
         model="test-model",
         max_attempts=2,
     )

@@ -1,0 +1,18 @@
+{
+  "shell_id": "AI需求向盈利兑现",
+  "core_question": "AI demand can become durable earnings?",
+  "boundary_rule": "Keep only the shared demand-to-earnings system.",
+  "units": [
+    {
+      "expectation_id": "AI需求形成持续盈利贡献",
+      "proposition": "AI demand produces durable earnings contribution.",
+      "horizon": "next four quarters",
+      "state": {
+        "parameters": [],
+        "values": []
+      },
+      "realization_factors": [],
+      "potential_gaps": []
+    }
+  ]
+}

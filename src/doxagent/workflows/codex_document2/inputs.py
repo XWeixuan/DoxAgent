@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import re
 from datetime import UTC, datetime, timedelta
-from typing import Any, Protocol
+from typing import Any, Protocol, cast
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -252,12 +252,20 @@ class Document2InputLoader:
             reports=reports,
             report_artifact_ids=report_ids,
             entity_relations=[
-                item.model_dump(mode="json", by_alias=True) for item in bundle.entity_relations
+                cast(
+                    dict[str, Any],
+                    _qualify_d1_context(item.model_dump(mode="json", by_alias=True)),
+                )
+                for item in bundle.entity_relations
             ],
             future_nodes=[
-                item.model_dump(mode="json", by_alias=True) for item in bundle.future_nodes
+                cast(
+                    dict[str, Any],
+                    _qualify_d1_context(item.model_dump(mode="json", by_alias=True)),
+                )
+                for item in bundle.future_nodes
             ],
-            horizontal_collection=horizontal,
+            horizontal_collection=cast(dict[str, Any], _qualify_d1_context(horizontal)),
             horizontal_artifact_id=horizontal_id,
             document_artifact_id=bundle.handoff.document_artifact_id,
             citation_manifest_artifact_id=bundle.handoff.citation_manifest_artifact_id,
@@ -299,6 +307,17 @@ def _manifest_entry(value: OptionalInput) -> InputManifestEntry:
 
 def _qualify_d1_aliases(value: str) -> str:
     return re.sub(r"【cite:(O[1-9]\d*)】", r"【cite:D1-\1】", value)
+
+
+def _qualify_d1_context(value: Any) -> Any:
+    """Qualify legacy aliases throughout pinned Document1 structured context."""
+    if isinstance(value, str):
+        return _qualify_d1_aliases(value)
+    if isinstance(value, list):
+        return [_qualify_d1_context(item) for item in value]
+    if isinstance(value, dict):
+        return {key: _qualify_d1_context(item) for key, item in value.items()}
+    return value
 
 
 def _parse_datetime(value: object) -> datetime | None:

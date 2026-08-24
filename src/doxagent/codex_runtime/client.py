@@ -105,6 +105,7 @@ class HttpCodexWorkerClient:
             f"/v1/workspaces/{run_id}/files/{relative_path}",
             run_id=run_id,
             operation="read",
+            missing_path=relative_path,
         )
         return WorkspaceFileResponse.model_validate(response.json())
 
@@ -179,6 +180,7 @@ class HttpCodexWorkerClient:
         *,
         run_id: str,
         operation: str,
+        missing_path: str | None = None,
         **kwargs: Any,
     ) -> httpx.Response:
         if self._capabilities is None:
@@ -191,6 +193,8 @@ class HttpCodexWorkerClient:
                 headers={"X-Workspace-Capability": token},
                 **kwargs,
             )
+            if response.status_code == 404 and missing_path is not None:
+                raise FileNotFoundError(missing_path)
             response.raise_for_status()
             return response
         except httpx.HTTPError as exc:

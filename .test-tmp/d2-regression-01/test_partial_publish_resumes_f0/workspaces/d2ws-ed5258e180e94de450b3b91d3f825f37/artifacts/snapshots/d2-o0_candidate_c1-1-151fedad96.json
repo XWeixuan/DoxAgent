@@ -1,0 +1,13 @@
+{
+  "candidates": [
+    {
+      "candidate_id": "U-C1",
+      "candidate": "C1 middle-level expectation",
+      "reason": "independently updated and material",
+      "references": [
+        "D1-O1"
+      ]
+    }
+  ],
+  "warnings": []
+}

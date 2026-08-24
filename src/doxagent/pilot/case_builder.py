@@ -381,7 +381,11 @@ def _pilot_identity(
     if lane is ResearchLane.LEGACY_DOCUMENT1:
         if request.node in {CodexD1Node.C5, CodexD1Node.O4}:
             raise ValueError("C5/O4 require an explicit new research lane")
-        return CODEX_D1_WORKFLOW_VERSION, lane, Path("codex_assets/document1_v2")
+        return (
+            CODEX_D1_WORKFLOW_VERSION,
+            lane,
+            Path("prompts/codex_v2/document1/compatibility/legacy_document1"),
+        )
     if lane is ResearchLane.GLOBAL_RESEARCH:
         allowed = {
             CodexD1Node.C4_PRE_SCAN,
@@ -395,7 +399,7 @@ def _pilot_identity(
         return (
             CODEX_GLOBAL_RESEARCH_WORKFLOW_VERSION,
             lane,
-            Path("codex_assets/global_research_v1"),
+            Path("prompts/codex_v2/document1/global_research"),
         )
     if lane is ResearchLane.MARKET_SITUATION_RESEARCH:
         if request.node not in {CodexD1Node.C2, CodexD1Node.O4}:
@@ -403,7 +407,7 @@ def _pilot_identity(
         return (
             CODEX_MARKET_SITUATION_WORKFLOW_VERSION,
             lane,
-            Path("codex_assets/market_situation_v1"),
+            Path("prompts/codex_v2/document1/market_situation"),
         )
     raise ValueError(f"unsupported Pilot research lane: {lane}")
 

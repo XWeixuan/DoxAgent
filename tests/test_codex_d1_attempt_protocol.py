@@ -57,7 +57,10 @@ from doxagent.workflows.codex_document1.upstream_rebinder import (
 @pytest.mark.asyncio
 async def test_attempt_bundle_is_role_scoped_and_hash_stable(tmp_path: Path) -> None:
     workspace = LocalWorkspaceClient(LocalWorkspaceStore(tmp_path / "workspaces"))
-    seeder = AttemptBundleSeeder(workspace, Path("codex_assets/document1_v2"))
+    seeder = AttemptBundleSeeder(
+        workspace,
+        Path("prompts/codex_v2/document1/compatibility/legacy_document1"),
+    )
     horizontal = {
         "schema_version": "d1-horizontal-agent-input-v1",
         "program_values": [],
@@ -101,7 +104,8 @@ async def test_attempt_bundle_is_role_scoped_and_hash_stable(tmp_path: Path) -> 
 async def test_c1_bundle_injects_complete_fundamental_research_contract(tmp_path: Path) -> None:
     workspace = LocalWorkspaceClient(LocalWorkspaceStore(tmp_path / "workspaces"))
     seeded = await AttemptBundleSeeder(
-        workspace, Path("codex_assets/document1_v2")
+        workspace,
+        Path("prompts/codex_v2/document1/compatibility/legacy_document1"),
     ).seed(
         run_id="run-c1-skill",
         node=CodexD1Node.C1,
@@ -123,7 +127,7 @@ async def test_c1_bundle_injects_complete_fundamental_research_contract(tmp_path
     skill_path = "attempts/c1-1/input/skills/fundamental-research.md"
     injected = (await workspace.read_text("run-c1-skill", skill_path)).content or ""
     legacy_snapshot = Path(
-        "codex_assets/document1_v2/skills/fundamental-research.md"
+        "prompts/codex_v2/document1/compatibility/legacy_document1/skills/fundamental-research.md"
     ).read_text(encoding="utf-8")
     assert injected == legacy_snapshot
     assert "## Final quality gates" in injected
@@ -140,36 +144,36 @@ async def test_c1_bundle_injects_complete_fundamental_research_contract(tmp_path
         (
             CodexD1Node.C3,
             "industry-research.md",
-            "prompts/internal_task_skills/industry-research.md",
-            "prompts/agents/c3.md",
+            "prompts/codex_v2/document1/skills/industry-research.md",
+            "prompts/codex_v2/document1/agents/c3.md",
             18_000,
         ),
         (
             CodexD1Node.O4_A,
             "market-implied-expectations.md",
-            "prompts/internal_task_skills/market-implied-expectations.md",
-            "codex_assets/document1_v2/agents/o4_a.md",
+            "prompts/codex_v2/document1/skills/market-implied-expectations.md",
+            "prompts/codex_v2/document1/compatibility/legacy_document1/agents/o4_a.md",
             25_000,
         ),
         (
             CodexD1Node.C4_PRE_SCAN,
             "entity-map-and-future-nodes.md",
-            "prompts/internal_task_skills/entity-map-and-future-nodes.md",
-            "prompts/agents/c4.md",
+            "prompts/codex_v2/document1/skills/entity-map-and-future-nodes.md",
+            "prompts/codex_v2/document1/agents/c4.md",
             3_000,
         ),
         (
             CodexD1Node.C4_ENRICHMENT,
             "entity-map-and-future-nodes.md",
-            "prompts/internal_task_skills/entity-map-and-future-nodes.md",
-            "prompts/agents/c4.md",
+            "prompts/codex_v2/document1/skills/entity-map-and-future-nodes.md",
+            "prompts/codex_v2/document1/agents/c4.md",
             3_000,
         ),
         (
             CodexD1Node.C4_FINALIZATION,
             "entity-map-and-future-nodes.md",
-            "prompts/internal_task_skills/entity-map-and-future-nodes.md",
-            "prompts/agents/c4.md",
+            "prompts/codex_v2/document1/skills/entity-map-and-future-nodes.md",
+            "prompts/codex_v2/document1/agents/c4.md",
             3_000,
         ),
     ],
@@ -184,7 +188,8 @@ async def test_bundle_injects_canonical_agent_and_skill_sources(
 ) -> None:
     workspace = LocalWorkspaceClient(LocalWorkspaceStore(tmp_path / "workspaces"))
     seeded = await AttemptBundleSeeder(
-        workspace, Path("codex_assets/document1_v2")
+        workspace,
+        Path("prompts/codex_v2/document1/compatibility/legacy_document1"),
     ).seed(
         run_id=f"run-{node.value}-skill",
         node=node,
@@ -206,7 +211,10 @@ async def test_bundle_injects_canonical_agent_and_skill_sources(
 @pytest.mark.asyncio
 async def test_c3_and_o4_a_bundle_sections_follow_canonical_skills(tmp_path: Path) -> None:
     workspace = LocalWorkspaceClient(LocalWorkspaceStore(tmp_path / "workspaces"))
-    seeder = AttemptBundleSeeder(workspace, Path("codex_assets/document1_v2"))
+    seeder = AttemptBundleSeeder(
+        workspace,
+        Path("prompts/codex_v2/document1/compatibility/legacy_document1"),
+    )
     c3 = await seeder.seed(
         run_id="run-sections",
         node=CodexD1Node.C3,
@@ -242,7 +250,8 @@ async def test_c3_and_o4_a_bundle_sections_follow_canonical_skills(tmp_path: Pat
 async def test_c4_bundle_declares_and_seeds_structured_output_path(tmp_path: Path) -> None:
     workspace = LocalWorkspaceClient(LocalWorkspaceStore(tmp_path / "workspaces"))
     seeded = await AttemptBundleSeeder(
-        workspace, Path("codex_assets/document1_v2")
+        workspace,
+        Path("prompts/codex_v2/document1/compatibility/legacy_document1"),
     ).seed(
         run_id="run-c4-output",
         node=CodexD1Node.C4_PRE_SCAN,
@@ -267,7 +276,10 @@ async def test_c4_bundle_declares_and_seeds_structured_output_path(tmp_path: Pat
 @pytest.mark.asyncio
 async def test_attempt_bundle_hashes_and_seals_manual_upstream(tmp_path: Path) -> None:
     workspace = LocalWorkspaceClient(LocalWorkspaceStore(tmp_path / "workspaces"))
-    seeder = AttemptBundleSeeder(workspace, Path("codex_assets/document1_v2"))
+    seeder = AttemptBundleSeeder(
+        workspace,
+        Path("prompts/codex_v2/document1/compatibility/legacy_document1"),
+    )
     first = await seeder.seed(
         run_id="run-manual-upstream",
         node=CodexD1Node.O4_A,
@@ -314,7 +326,8 @@ async def test_attempt_bundle_hashes_and_seals_manual_upstream(tmp_path: Path) -
 async def test_progressive_validator_accepts_windows_utf8_bom(tmp_path: Path) -> None:
     workspace = LocalWorkspaceClient(LocalWorkspaceStore(tmp_path / "workspaces"))
     seeded = await AttemptBundleSeeder(
-        workspace, Path("codex_assets/document1_v2")
+        workspace,
+        Path("prompts/codex_v2/document1/compatibility/legacy_document1"),
     ).seed(
         run_id="run-bom",
         node=CodexD1Node.C1,
@@ -541,7 +554,7 @@ async def test_program_collection_recovers_checksum_bundle_without_provider_reru
         repository=repository,
         horizontal_collector=collector,
         horizontal_compiler=HorizontalStateCompiler(metrics=metrics, targets=targets),
-        prompt_root=Path("codex_assets/document1_v2"),
+        prompt_root=Path("prompts/codex_v2/document1/compatibility/legacy_document1"),
     )
     request = Document1V2RunRequest(
         run_id="run-program-recovery", ticker="NVDA", research_brief="test"
@@ -579,7 +592,7 @@ async def test_matching_input_hash_restores_completion_without_worker(tmp_path: 
             tools=ToolRegistry(), metrics=metrics, targets=targets
         ),
         horizontal_compiler=HorizontalStateCompiler(metrics=metrics, targets=targets),
-        prompt_root=Path("codex_assets/document1_v2"),
+        prompt_root=Path("prompts/codex_v2/document1/compatibility/legacy_document1"),
         max_attempts=1,
     )
     request = Document1V2RunRequest(run_id="run-restore", ticker="NVDA", research_brief="restore")
@@ -634,7 +647,7 @@ def test_stale_current_node_marks_running_attempt_failed(tmp_path: Path) -> None
             tools=ToolRegistry(), metrics=metrics, targets=targets
         ),
         horizontal_compiler=HorizontalStateCompiler(metrics=metrics, targets=targets),
-        prompt_root=Path("codex_assets/document1_v2"),
+        prompt_root=Path("prompts/codex_v2/document1/compatibility/legacy_document1"),
     )
     attempt = NodeAttempt(
         attempt_id="c1-stale",

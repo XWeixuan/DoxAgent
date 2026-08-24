@@ -186,7 +186,12 @@ class CodexResearchLaneService:
     def get(self, run_id: str) -> dict[str, object] | None:
         bundle = self._repository.get_bundle(run_id)
         if bundle:
-            return bundle.model_dump(mode="json", by_alias=True)
+            data = bundle.model_dump(mode="json", by_alias=True)
+            error = self._errors.get(run_id)
+            if error is not None:
+                data["status"] = "failed"
+                data["error"] = error
+            return data
         checkpoint = self._repository.get_checkpoint(run_id)
         if checkpoint:
             return {

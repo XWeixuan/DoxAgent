@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Literal, TypeVar
 from uuid import uuid4
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 from doxagent.codex_runtime.client import CodexWorkerClient, WorkspaceClient
 from doxagent.codex_runtime.repository import CodexRuntimeRepository
@@ -31,6 +31,12 @@ from doxagent.codex_worker.schema import WorkerJob, WorkerRunRequest
 from doxagent.model_usage.repository import ModelUsageRepository
 from doxagent.model_usage.schema import ModelUsageEvent
 from doxagent.observations.promotion import CitationPromotionService
+from doxagent.workflows.codex_document2.errors import (
+    format_execution_error,
+    raised_worker_error,
+    worker_execution_error,
+)
+from doxagent.workflows.codex_document2.schema import strict_json_schema
 
 OutputT = TypeVar("OutputT", bound=BaseModel)
 _BARE_ALIAS = re.compile(r"^(?:【cite:)?(O[1-9]\d*)(?:】)?$")
@@ -75,7 +81,12 @@ class Document2TurnRunner:
         self._assets = (
             Path(asset_root)
             if asset_root is not None
-            else Path(__file__).resolve().parents[4] / "codex_assets" / "document2_v1"
+            else (
+                Path(__file__).resolve().parents[4]
+                / "prompts"
+                / "codex_v2"
+                / "document2"
+            )
         )
 
     async def run(
@@ -117,6 +128,7 @@ class Document2TurnRunner:
         self._repository.save_attempt(attempt)
         job: WorkerJob | None = None
         try:
+            output_schema = strict_json_schema(output_model.model_json_schema())
             await self._seed_attempt(
                 workspace_run_id=workspace_run_id,
                 attempt_id=attempt_id,
@@ -124,7 +136,7 @@ class Document2TurnRunner:
                 context_text=context_text,
                 agent_asset=agent_asset,
                 skill_asset=skill_asset,
-                output_schema=output_model.model_json_schema(),
+                output_schema=output_schema,
                 previous_failure=previous_failure,
             )
             prompt = (
@@ -143,7 +155,7 @@ class Document2TurnRunner:
                 attempt_id=attempt_id,
                 cutoff_at=cutoff_at,
                 prompt=prompt,
-                output_schema=output_model.model_json_schema(),
+                output_schema=output_schema,
                 thread_id=thread_id,
                 model=self._model,
                 model_provider=self._model_provider,
@@ -152,19 +164,28 @@ class Document2TurnRunner:
                 allow_subagents=allow_subagents,
                 max_subagents=self._max_subagents if allow_subagents else 0,
             )
-            job = await self._worker.run(request)
+            try:
+                job = await self._worker.run(request)
+            except Exception as exc:
+                raise raised_worker_error(exc, node) from exc
             if job.status != "succeeded" or not job.final_response:
-                raise ValueError(job.error_message or "Codex worker returned no structured output")
-            parsed = output_model.model_validate_json(job.final_response)
+                raise worker_execution_error(job, node)
+            try:
+                parsed = output_model.model_validate_json(job.final_response)
+            except ValidationError as exc:
+                raise format_execution_error(exc, node) from exc
             output_json = parsed.model_dump_json(indent=2)
             local_manifest = await self._promote_citations(
                 workspace_run_id=workspace_run_id,
                 attempt_id=attempt_id,
                 output_json=output_json,
             )
-            qualified = output_model.model_validate(
-                _qualify_local_aliases(parsed.model_dump(mode="json"), attempt_id)
-            )
+            try:
+                qualified = output_model.model_validate(
+                    _qualify_local_aliases(parsed.model_dump(mode="json"), attempt_id)
+                )
+            except ValidationError as exc:
+                raise format_execution_error(exc, node) from exc
             qualified_json = qualified.model_dump_json(indent=2)
             child_path = f"artifacts/snapshots/{attempt_id}.json"
             await self._workspace.write_text(workspace_run_id, child_path, qualified_json)

@@ -1,0 +1,142 @@
+{
+  "schema_version": "document2.v2",
+  "workflow_version": "codex_document2_v1",
+  "document2_run_id": "document2-storage",
+  "ticker": "NVDA",
+  "as_of": "2026-08-20T12:00:00Z",
+  "source_global_run_id": "global-source-1",
+  "input_manifest": {
+    "global_research": {
+      "status": "AVAILABLE",
+      "artifact_ids": [
+        "c1-artifact",
+        "c3-artifact",
+        "c5-artifact",
+        "horizontal-artifact",
+        "global-document"
+      ],
+      "workspace_paths": [
+        "artifacts/global/c1.md",
+        "artifacts/global/c3.md",
+        "artifacts/global/c5.md",
+        "artifacts/global/horizontal.json"
+      ],
+      "source_run_id": "global-source-1",
+      "as_of": "2026-08-20T12:00:00Z",
+      "warning": null,
+      "metadata": {}
+    },
+    "narrative_research": {
+      "status": "ABSENT",
+      "artifact_ids": [],
+      "workspace_paths": [],
+      "source_run_id": null,
+      "as_of": null,
+      "warning": null,
+      "metadata": {}
+    },
+    "event_library": {
+      "status": "NOT_CONFIGURED",
+      "artifact_ids": [],
+      "workspace_paths": [],
+      "source_run_id": null,
+      "as_of": null,
+      "warning": "Event Library integration is reserved but not configured.",
+      "metadata": {
+        "interface_version": "event-library-read-v1",
+        "read_only": true
+      }
+    }
+  },
+  "shells": [
+    {
+      "shell_id": "AI需求向盈利兑现",
+      "core_question": "Can durable AI demand convert into cash earnings?",
+      "boundary_rule": "Keep only the shared demand-to-earnings system.",
+      "units": [
+        {
+          "expectation_id": "AI需求形成持续盈利贡献",
+          "proposition": "AI demand produces durable earnings contribution.",
+          "horizon": "next four quarters",
+          "state": {
+            "parameters": [
+              {
+                "parameter_id": "FY27收入预期",
+                "definition": "Consensus FY27 revenue",
+                "value_type": "NUMBER"
+              }
+            ],
+            "values": [
+              {
+                "state_value_id": "FY27收入预期-卖方-当前",
+                "parameter_id": "FY27收入预期",
+                "source_role": "SELL_SIDE",
+                "value": {
+                  "number": 100.0,
+                  "unit": "USD billion"
+                },
+                "previous_value": null,
+                "time_scope": "FY27",
+                "as_of": "2026-08-20",
+                "citation": [
+                  "【cite:O1】"
+                ],
+                "validity_state": "CURRENT"
+              }
+            ]
+          },
+          "realization_factors": [
+            {
+              "factor_id": "客户采购持续性",
+              "condition": "Customers continue scaled procurement.",
+              "structural_role": "REQUIRED",
+              "current_status": "Procurement remains active.",
+              "impact": "Determines conversion into earnings.",
+              "citation": [
+                "【cite:O2】"
+              ],
+              "observability": {
+                "match_condition": "New customer procurement disclosure"
+              }
+            }
+          ],
+          "potential_gaps": [
+            {
+              "gap_id": "主要客户下调AI资本开支",
+              "possible_occurrence": "A major customer cuts annual AI capex guidance.",
+              "derivation": "The current expectation depends on procurement continuity.",
+              "citation": [
+                "【cite:O3】"
+              ],
+              "expected_revision": "Demand and earnings expectations would be revised down.",
+              "recognition_criteria": null
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "shell_outcomes": [
+    {
+      "shell_id": "AI需求向盈利兑现",
+      "status": "completed",
+      "artifact_id": "8aa3a05f1fec4ca585c2de1276ef94f9",
+      "failed_stage": null,
+      "failure_kind": null,
+      "error_code": null,
+      "error": null,
+      "seed": {
+        "shell_id": "AI需求向盈利兑现",
+        "core_question": "AI demand can become durable earnings?",
+        "boundary_rule": "Keep only the shared demand-to-earnings system.",
+        "units": [
+          {
+            "expectation_id": "AI需求形成持续盈利贡献",
+            "proposition": "AI demand produces durable earnings contribution.",
+            "horizon": "next four quarters"
+          }
+        ]
+      }
+    }
+  ]
+}

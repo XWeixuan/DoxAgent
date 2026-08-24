@@ -473,8 +473,8 @@ def test_full_compaction_uses_manual_registry_prompt_and_preserves_user_payload(
 
 
 def test_evidence_ref_usage_file_is_the_only_prompt_source_for_citation_syntax() -> None:
-    evidence = ROOT / "prompts/workflows/evidence_ref_usage.md"
-    memory = ROOT / "prompts/workflows/memory.md"
+    evidence = ROOT / "prompts/v1/workflows/evidence_ref_usage.md"
+    memory = ROOT / "prompts/v1/workflows/memory.md"
     prompt_sources = [
         *ROOT.joinpath("prompts").rglob("*.md"),
         *ROOT.joinpath("src/doxagent/prompts").rglob("*.py"),

@@ -91,7 +91,9 @@ class CodexDocument1Orchestrator:
         repository: CodexRuntimeRepository,
         horizontal_collector: HorizontalCollector,
         horizontal_compiler: HorizontalStateCompiler,
-        prompt_root: str | Path = "codex_assets/document1_v2",
+        prompt_root: str | Path = (
+            "prompts/codex_v2/document1/compatibility/legacy_document1"
+        ),
         model: str = "gpt-5.6-luna",
         model_provider: str | None = None,
         effort: Literal["low", "medium", "high", "xhigh", "max"] = "max",

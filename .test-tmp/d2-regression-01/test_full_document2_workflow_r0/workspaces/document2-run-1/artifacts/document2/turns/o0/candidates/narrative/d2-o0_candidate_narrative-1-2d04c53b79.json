@@ -1,0 +1,13 @@
+{
+  "candidates": [
+    {
+      "candidate_id": "U-NARRATIVE",
+      "candidate": "NARRATIVE middle-level expectation",
+      "reason": "independently updated and material",
+      "references": [
+        "D1-O1"
+      ]
+    }
+  ],
+  "warnings": []
+}

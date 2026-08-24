@@ -1,0 +1,66 @@
+{
+  "shell_id": "AI需求向盈利兑现",
+  "core_question": "Can durable AI demand convert into cash earnings?",
+  "boundary_rule": "Keep only the shared demand-to-earnings system.",
+  "units": [
+    {
+      "expectation_id": "AI需求形成持续盈利贡献",
+      "proposition": "AI demand produces durable earnings contribution.",
+      "horizon": "next four quarters",
+      "state": {
+        "parameters": [
+          {
+            "parameter_id": "FY27收入预期",
+            "definition": "Consensus FY27 revenue",
+            "value_type": "NUMBER"
+          }
+        ],
+        "values": [
+          {
+            "state_value_id": "FY27收入预期-卖方-当前",
+            "parameter_id": "FY27收入预期",
+            "source_role": "SELL_SIDE",
+            "value": {
+              "number": 100.0,
+              "unit": "USD billion"
+            },
+            "previous_value": null,
+            "time_scope": "FY27",
+            "as_of": "2026-08-20",
+            "citation": [
+              "D2REF:d2-o1_state-1-6af54796ae:O9"
+            ],
+            "validity_state": "CURRENT"
+          }
+        ]
+      },
+      "realization_factors": [
+        {
+          "factor_id": "客户采购持续性",
+          "condition": "Customers continue scaled procurement.",
+          "structural_role": "REQUIRED",
+          "current_status": "Procurement remains active.",
+          "impact": "Determines conversion into earnings.",
+          "citation": [
+            "https://example.com/procurement"
+          ],
+          "observability": {
+            "match_condition": "New customer procurement disclosure"
+          }
+        }
+      ],
+      "potential_gaps": [
+        {
+          "gap_id": "主要客户下调AI资本开支",
+          "possible_occurrence": "A major customer cuts annual AI capex guidance.",
+          "derivation": "The current expectation depends on procurement continuity.",
+          "citation": [
+            "unknown-alias"
+          ],
+          "expected_revision": "Demand and earnings expectations would be revised down.",
+          "recognition_criteria": null
+        }
+      ]
+    }
+  ]
+}

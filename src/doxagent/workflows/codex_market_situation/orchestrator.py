@@ -25,7 +25,7 @@ class CodexMarketSituationOrchestrator(CodexDocument1Orchestrator):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(
             **kwargs,
-            prompt_root="codex_assets/market_situation_v1",
+            prompt_root="prompts/codex_v2/document1/market_situation",
             workflow_version="codex_market_situation_v1",
             research_lane=ResearchLane.MARKET_SITUATION_RESEARCH,
         )

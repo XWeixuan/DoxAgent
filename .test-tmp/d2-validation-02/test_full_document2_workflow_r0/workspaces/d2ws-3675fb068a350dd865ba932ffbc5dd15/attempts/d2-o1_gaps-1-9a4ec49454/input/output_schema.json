@@ -1,0 +1,512 @@
+{
+  "$defs": {
+    "DirectionValue": {
+      "properties": {
+        "direction": {
+          "title": "Direction",
+          "type": "string"
+        }
+      },
+      "required": [
+        "direction"
+      ],
+      "title": "DirectionValue",
+      "type": "object",
+      "additionalProperties": false
+    },
+    "EvidenceValue": {
+      "properties": {
+        "stance": {
+          "title": "Stance",
+          "type": "string"
+        },
+        "strength": {
+          "title": "Strength",
+          "type": "string"
+        }
+      },
+      "required": [
+        "stance",
+        "strength"
+      ],
+      "title": "EvidenceValue",
+      "type": "object",
+      "additionalProperties": false
+    },
+    "ExpectationState": {
+      "properties": {
+        "parameters": {
+          "items": {
+            "$ref": "#/$defs/StateParameter"
+          },
+          "title": "Parameters",
+          "type": "array"
+        },
+        "values": {
+          "items": {
+            "$ref": "#/$defs/StateValue"
+          },
+          "title": "Values",
+          "type": "array"
+        }
+      },
+      "title": "ExpectationState",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "parameters",
+        "values"
+      ]
+    },
+    "ExpectationUnit": {
+      "properties": {
+        "expectation_id": {
+          "title": "Expectation Id",
+          "type": "string"
+        },
+        "proposition": {
+          "title": "Proposition",
+          "type": "string"
+        },
+        "horizon": {
+          "title": "Horizon",
+          "type": "string"
+        },
+        "state": {
+          "$ref": "#/$defs/ExpectationState"
+        },
+        "realization_factors": {
+          "items": {
+            "$ref": "#/$defs/RealizationFactor"
+          },
+          "title": "Realization Factors",
+          "type": "array"
+        },
+        "potential_gaps": {
+          "items": {
+            "$ref": "#/$defs/PotentialGap"
+          },
+          "title": "Potential Gaps",
+          "type": "array"
+        }
+      },
+      "required": [
+        "expectation_id",
+        "proposition",
+        "horizon",
+        "state",
+        "realization_factors",
+        "potential_gaps"
+      ],
+      "title": "ExpectationUnit",
+      "type": "object",
+      "additionalProperties": false
+    },
+    "NumberValue": {
+      "properties": {
+        "number": {
+          "title": "Number",
+          "type": "number"
+        },
+        "unit": {
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "number",
+        "unit"
+      ],
+      "title": "NumberValue",
+      "type": "object",
+      "additionalProperties": false
+    },
+    "Observability": {
+      "properties": {
+        "match_condition": {
+          "title": "Match Condition",
+          "type": "string"
+        }
+      },
+      "required": [
+        "match_condition"
+      ],
+      "title": "Observability",
+      "type": "object",
+      "additionalProperties": false
+    },
+    "ParameterValueType": {
+      "enum": [
+        "NUMBER",
+        "RANGE",
+        "TIME",
+        "STAGE",
+        "DIRECTION",
+        "EVIDENCE"
+      ],
+      "title": "ParameterValueType",
+      "type": "string"
+    },
+    "PotentialGap": {
+      "properties": {
+        "gap_id": {
+          "title": "Gap Id",
+          "type": "string"
+        },
+        "possible_occurrence": {
+          "title": "Possible Occurrence",
+          "type": "string"
+        },
+        "derivation": {
+          "title": "Derivation",
+          "type": "string"
+        },
+        "citation": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Citation",
+          "type": "array"
+        },
+        "expected_revision": {
+          "title": "Expected Revision",
+          "type": "string"
+        },
+        "recognition_criteria": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Recognition Criteria"
+        }
+      },
+      "required": [
+        "gap_id",
+        "possible_occurrence",
+        "derivation",
+        "citation",
+        "expected_revision",
+        "recognition_criteria"
+      ],
+      "title": "PotentialGap",
+      "type": "object",
+      "additionalProperties": false
+    },
+    "RangeValue": {
+      "properties": {
+        "lower": {
+          "title": "Lower",
+          "type": "number"
+        },
+        "upper": {
+          "title": "Upper",
+          "type": "number"
+        },
+        "unit": {
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "lower",
+        "upper",
+        "unit"
+      ],
+      "title": "RangeValue",
+      "type": "object",
+      "additionalProperties": false
+    },
+    "RealizationFactor": {
+      "properties": {
+        "factor_id": {
+          "title": "Factor Id",
+          "type": "string"
+        },
+        "condition": {
+          "title": "Condition",
+          "type": "string"
+        },
+        "structural_role": {
+          "$ref": "#/$defs/StructuralRole"
+        },
+        "current_status": {
+          "title": "Current Status",
+          "type": "string"
+        },
+        "impact": {
+          "title": "Impact",
+          "type": "string"
+        },
+        "citation": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Citation",
+          "type": "array"
+        },
+        "observability": {
+          "$ref": "#/$defs/Observability"
+        }
+      },
+      "required": [
+        "factor_id",
+        "condition",
+        "structural_role",
+        "current_status",
+        "impact",
+        "citation",
+        "observability"
+      ],
+      "title": "RealizationFactor",
+      "type": "object",
+      "additionalProperties": false
+    },
+    "SourceRole": {
+      "enum": [
+        "ACTUAL",
+        "MANAGEMENT",
+        "SELL_SIDE",
+        "INDUSTRY_CHAIN",
+        "MARKET_IMPLIED"
+      ],
+      "title": "SourceRole",
+      "type": "string"
+    },
+    "StageValue": {
+      "properties": {
+        "stage": {
+          "title": "Stage",
+          "type": "string"
+        }
+      },
+      "required": [
+        "stage"
+      ],
+      "title": "StageValue",
+      "type": "object",
+      "additionalProperties": false
+    },
+    "StateParameter": {
+      "properties": {
+        "parameter_id": {
+          "title": "Parameter Id",
+          "type": "string"
+        },
+        "definition": {
+          "title": "Definition",
+          "type": "string"
+        },
+        "value_type": {
+          "$ref": "#/$defs/ParameterValueType"
+        }
+      },
+      "required": [
+        "parameter_id",
+        "definition",
+        "value_type"
+      ],
+      "title": "StateParameter",
+      "type": "object",
+      "additionalProperties": false
+    },
+    "StateValue": {
+      "properties": {
+        "state_value_id": {
+          "title": "State Value Id",
+          "type": "string"
+        },
+        "parameter_id": {
+          "title": "Parameter Id",
+          "type": "string"
+        },
+        "source_role": {
+          "$ref": "#/$defs/SourceRole"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NumberValue"
+            },
+            {
+              "$ref": "#/$defs/RangeValue"
+            },
+            {
+              "$ref": "#/$defs/TimeValue"
+            },
+            {
+              "$ref": "#/$defs/StageValue"
+            },
+            {
+              "$ref": "#/$defs/DirectionValue"
+            },
+            {
+              "$ref": "#/$defs/EvidenceValue"
+            }
+          ],
+          "title": "Value"
+        },
+        "previous_value": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NumberValue"
+            },
+            {
+              "$ref": "#/$defs/RangeValue"
+            },
+            {
+              "$ref": "#/$defs/TimeValue"
+            },
+            {
+              "$ref": "#/$defs/StageValue"
+            },
+            {
+              "$ref": "#/$defs/DirectionValue"
+            },
+            {
+              "$ref": "#/$defs/EvidenceValue"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Previous Value"
+        },
+        "time_scope": {
+          "title": "Time Scope",
+          "type": "string"
+        },
+        "as_of": {
+          "title": "As Of",
+          "type": "string"
+        },
+        "citation": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Citation",
+          "type": "array"
+        },
+        "validity_state": {
+          "$ref": "#/$defs/ValidityState"
+        }
+      },
+      "required": [
+        "state_value_id",
+        "parameter_id",
+        "source_role",
+        "value",
+        "previous_value",
+        "time_scope",
+        "as_of",
+        "citation",
+        "validity_state"
+      ],
+      "title": "StateValue",
+      "type": "object",
+      "additionalProperties": false
+    },
+    "StructuralRole": {
+      "enum": [
+        "REQUIRED",
+        "BLOCKER",
+        "MODIFIER"
+      ],
+      "title": "StructuralRole",
+      "type": "string"
+    },
+    "TimeValue": {
+      "properties": {
+        "point": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Point"
+        },
+        "start": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Start"
+        },
+        "end": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "End"
+        },
+        "precision": {
+          "title": "Precision",
+          "type": "string"
+        }
+      },
+      "required": [
+        "point",
+        "start",
+        "end",
+        "precision"
+      ],
+      "title": "TimeValue",
+      "type": "object",
+      "additionalProperties": false
+    },
+    "ValidityState": {
+      "enum": [
+        "CURRENT",
+        "SUPERSEDED",
+        "DISPUTED",
+        "RETRACTED"
+      ],
+      "title": "ValidityState",
+      "type": "string"
+    }
+  },
+  "properties": {
+    "shell_id": {
+      "title": "Shell Id",
+      "type": "string"
+    },
+    "core_question": {
+      "title": "Core Question",
+      "type": "string"
+    },
+    "boundary_rule": {
+      "title": "Boundary Rule",
+      "type": "string"
+    },
+    "units": {
+      "items": {
+        "$ref": "#/$defs/ExpectationUnit"
+      },
+      "title": "Units",
+      "type": "array"
+    }
+  },
+  "required": [
+    "shell_id",
+    "core_question",
+    "boundary_rule",
+    "units"
+  ],
+  "title": "ExpectationShell",
+  "type": "object",
+  "additionalProperties": false
+}

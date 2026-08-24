@@ -237,21 +237,21 @@ Global/Market 组合应被拒绝。工具 registry 和 provider 实现已将市�
 
 ## 7. Prompt、Skill、Codex Asset 与 Pilot
 
-新 lane 不再使用混合的 `codex_assets/document1_v2` bundle：
+新 lane 不再使用混合的 `prompts/codex_v2/document1/compatibility/legacy_document1` bundle：
 
 ```text
-codex_assets/global_research_v1/
+prompts/codex_v2/document1/global_research/
   bundle_manifest.json
   -> c1, c3, c4_pre_scan, c5, c4_enrichment
 
-codex_assets/market_situation_v1/
+prompts/codex_v2/document1/market_situation/
   bundle_manifest.json
   -> c2, o4
 ```
 
 两个 manifest 的 `resource_sources` 直接指向当前 canonical workspace：
-`prompts/agents/{c1,c2,c3,c4,c5,o4}.md` 与
-`prompts/internal_task_skills/` 下的对应 skill。这样更新 prompt/skill 后，新的 attempt
+`prompts/codex_v2/document1/agents/{c1,c2,c3,c4,c5,o4}.md` 与
+`prompts/codex_v2/document1/skills/` 下的对应 skill。这样更新 prompt/skill 后，新的 attempt
 会在 bundle seed 阶段读取当前文件并纳入 input hash，不需要手工维护过时的静态副本。
 
 当前新 lane Pilot 身份和人工上游白名单为：
@@ -386,8 +386,8 @@ Observation；它没有突破远端 payload 边界，但应在高频生产前做
 - Runtime repository：`src/doxagent/codex_runtime/repository.py`
 - Lane API/service：`src/doxagent/dashboard_api/research_lanes.py`
 - SDK worker：`src/doxagent/codex_worker/sdk_runtime.py`
-- Canonical bundle manifests：`codex_assets/global_research_v1/`、
-  `codex_assets/market_situation_v1/`
+- Canonical bundle manifests：`prompts/codex_v2/document1/global_research/`、
+  `prompts/codex_v2/document1/market_situation/`
 - Pilot lane builder：`src/doxagent/pilot/case_builder.py`
 - Supabase migration：`supabase/migrations/202608200001_codex_research_lanes.sql`
 - Lane regression tests：`tests/test_codex_research_lanes.py`、

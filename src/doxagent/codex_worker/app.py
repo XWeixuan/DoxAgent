@@ -171,7 +171,10 @@ def create_worker_app(
         x_workspace_capability: str | None = Header(default=None),
     ) -> WorkspaceFileResponse:
         require_capability(run_id, "read", x_workspace_capability)
-        return workspaces.read_text(run_id, relative_path)
+        try:
+            return workspaces.read_text(run_id, relative_path)
+        except FileNotFoundError as exc:
+            raise HTTPException(status_code=404, detail="workspace file not found") from exc
 
     @app.get(
         "/v1/workspaces/{run_id}",

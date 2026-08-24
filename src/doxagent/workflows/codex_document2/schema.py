@@ -246,6 +246,27 @@ class Document2InputManifest(ContractModel):
     event_library: InputManifestEntry
 
 
+class ShellResearchStage(StrEnum):
+    PENDING = "PENDING"
+    STATE = "STATE"
+    REALIZATION = "REALIZATION"
+    GAPS = "GAPS"
+    FINALIZATION = "FINALIZATION"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+
+
+class ShellOutcome(ContractModel):
+    shell_id: str
+    status: Literal["completed", "failed"]
+    artifact_id: str | None = None
+    failed_stage: ShellResearchStage | None = None
+    failure_kind: Literal["SYSTEM", "TRANSIENT", "FORMAT", "SHELL"] | None = None
+    error_code: str | None = None
+    error: str | None = None
+    seed: ExpectationShellSeed | None = None
+
+
 class Document2Document(ContractModel):
     schema_version: Literal["document2.v2"] = "document2.v2"
     workflow_version: Literal["codex_document2_v1"] = CODEX_DOCUMENT2_WORKFLOW_VERSION
@@ -255,6 +276,7 @@ class Document2Document(ContractModel):
     source_global_run_id: str
     input_manifest: Document2InputManifest
     shells: list[ExpectationShell] = Field(default_factory=list)
+    shell_outcomes: list[ShellOutcome] = Field(default_factory=list)
 
 
 class CitationResolutionState(StrEnum):
@@ -292,16 +314,6 @@ class CitationStatus(StrEnum):
     UNAVAILABLE = "UNAVAILABLE"
 
 
-class ShellResearchStage(StrEnum):
-    PENDING = "PENDING"
-    STATE = "STATE"
-    REALIZATION = "REALIZATION"
-    GAPS = "GAPS"
-    FINALIZATION = "FINALIZATION"
-    COMPLETED = "COMPLETED"
-    FAILED = "FAILED"
-
-
 class ShellRunState(ContractModel):
     shell_id: str
     workspace_run_id: str
@@ -325,13 +337,6 @@ class Document2Checkpoint(ContractModel):
     shell_runs: dict[str, ShellRunState] = Field(default_factory=dict)
     warnings: list[str] = Field(default_factory=list)
     updated_at: datetime = Field(default_factory=utc_now)
-
-
-class ShellOutcome(ContractModel):
-    shell_id: str
-    status: Literal["completed", "failed"]
-    artifact_id: str | None = None
-    error: str | None = None
 
 
 class Document2HandoffV1(ContractModel):
@@ -381,8 +386,27 @@ class StartDocument2Request(ContractModel):
     force_new: bool = False
 
 
-CANDIDATE_DISCOVERY_SCHEMA = CandidateDiscoveryResult.model_json_schema()
-SHELL_SYNTHESIS_SCHEMA = ShellSynthesisResult.model_json_schema()
-DOMAIN_REVIEW_SCHEMA = DomainReviewResult.model_json_schema()
-SHELL_FINALIZATION_SCHEMA = ShellFinalizationResult.model_json_schema()
-EXPECTATION_SHELL_SCHEMA = ExpectationShell.model_json_schema()
+def strict_json_schema(value: Any) -> Any:
+    """Convert a Pydantic schema to the closed shape required by Responses."""
+
+    if isinstance(value, list):
+        return [strict_json_schema(item) for item in value]
+    if not isinstance(value, dict):
+        return value
+    strict = {
+        key: strict_json_schema(item)
+        for key, item in value.items()
+        if key != "default"
+    }
+    properties = strict.get("properties")
+    if isinstance(properties, dict):
+        strict["additionalProperties"] = False
+        strict["required"] = list(properties)
+    return strict
+
+
+CANDIDATE_DISCOVERY_SCHEMA = strict_json_schema(CandidateDiscoveryResult.model_json_schema())
+SHELL_SYNTHESIS_SCHEMA = strict_json_schema(ShellSynthesisResult.model_json_schema())
+DOMAIN_REVIEW_SCHEMA = strict_json_schema(DomainReviewResult.model_json_schema())
+SHELL_FINALIZATION_SCHEMA = strict_json_schema(ShellFinalizationResult.model_json_schema())
+EXPECTATION_SHELL_SCHEMA = strict_json_schema(ExpectationShell.model_json_schema())

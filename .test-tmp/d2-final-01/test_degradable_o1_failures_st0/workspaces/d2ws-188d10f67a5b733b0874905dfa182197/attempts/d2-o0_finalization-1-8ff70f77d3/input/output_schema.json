@@ -1,0 +1,91 @@
+{
+  "$defs": {
+    "ExpectationShellSeed": {
+      "properties": {
+        "shell_id": {
+          "title": "Shell Id",
+          "type": "string"
+        },
+        "core_question": {
+          "title": "Core Question",
+          "type": "string"
+        },
+        "boundary_rule": {
+          "title": "Boundary Rule",
+          "type": "string"
+        },
+        "units": {
+          "items": {
+            "$ref": "#/$defs/ExpectationUnitSeed"
+          },
+          "title": "Units",
+          "type": "array"
+        }
+      },
+      "required": [
+        "shell_id",
+        "core_question",
+        "boundary_rule",
+        "units"
+      ],
+      "title": "ExpectationShellSeed",
+      "type": "object",
+      "additionalProperties": false
+    },
+    "ExpectationUnitSeed": {
+      "properties": {
+        "expectation_id": {
+          "title": "Expectation Id",
+          "type": "string"
+        },
+        "proposition": {
+          "title": "Proposition",
+          "type": "string"
+        },
+        "horizon": {
+          "title": "Horizon",
+          "type": "string"
+        }
+      },
+      "required": [
+        "expectation_id",
+        "proposition",
+        "horizon"
+      ],
+      "title": "ExpectationUnitSeed",
+      "type": "object",
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "shells": {
+      "items": {
+        "$ref": "#/$defs/ExpectationShellSeed"
+      },
+      "title": "Shells",
+      "type": "array"
+    },
+    "finalization_note": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Finalization Note",
+      "type": "array"
+    },
+    "warnings": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Warnings",
+      "type": "array"
+    }
+  },
+  "title": "ShellFinalizationResult",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "shells",
+    "finalization_note",
+    "warnings"
+  ]
+}

@@ -117,7 +117,7 @@ def default_prompt_registry(root: Path | None = None) -> PromptRegistry:
 
 
 def default_prompt_root() -> Path:
-    return Path(__file__).resolve().parents[3] / "prompts"
+    return Path(__file__).resolve().parents[3] / "prompts" / "v1"
 
 
 def load_prompt_definitions(root: Path) -> list[PromptDefinition]:

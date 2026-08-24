@@ -1,0 +1,27 @@
+{
+  "provisional_shells": [
+    {
+      "shell_temp_id": "S1",
+      "core_question": "Can demand become durable earnings?",
+      "boundary_reasoning": "Candidates share one demand-to-earnings system.",
+      "candidate_units": [
+        {
+          "candidate_id": "U-C1",
+          "candidate": "C1 expectation"
+        },
+        {
+          "candidate_id": "U-C3",
+          "candidate": "C3 expectation"
+        }
+      ]
+    }
+  ],
+  "unassigned_candidates": [
+    {
+      "candidate_id": "U-C5",
+      "candidate": "C5 expectation",
+      "reason": "Retained as market-implied State rather than an independent Unit."
+    }
+  ],
+  "warnings": []
+}

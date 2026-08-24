@@ -403,6 +403,12 @@ def test_worker_api_requires_bearer_and_workspace_capability(tmp_path: Path) -> 
         json={"content": "{}"},
     )
     assert response.status_code == 200
+    read_token = CapabilityTokenCodec(secret).issue(run_id="run-1", operations={"read"})
+    missing = client.get(
+        "/v1/workspaces/run-1/files/context/missing.json",
+        headers={**headers, "X-Workspace-Capability": read_token},
+    )
+    assert missing.status_code == 404
 
 
 def test_worker_job_normalizes_numeric_json_rpc_error_code() -> None:

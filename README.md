@@ -351,16 +351,17 @@ DoxAtlas, LLM providers, Supabase, or broker services.
 
 ## Prompt And Skill Separation
 
-Prompt resources live under `prompts/` as Markdown files with TOML front matter.
-They are split into three categories so users can review and edit behavior
-without touching Python code:
+Prompt resources are isolated by workflow runtime:
 
-- `prompts/system`, `prompts/agents`, and `prompts/workflows` contain system,
-  role, and workflow prompt blocks.
-- `prompts/internal_task_skills` contains DoxAgent-owned SOPs such as O1
-  expectation construction, A1 DoxAtlas audit, and A2 Tavily retrieval.
-- `prompts/external_skill_packages` contains optional migrated packages from
-  Vibe-Trading, financial-services, and Hermes/O4.
+- `prompts/v1/` contains the legacy self-built ReAct framework resources loaded
+  through `PromptRegistry`, including its agents, internal task skills, external
+  skill packages, runtime, system, and workflow prompts.
+- `prompts/codex_v2/document1/` contains only the Codex SDK Document1 agents,
+  skills, schemas, common instructions, lane manifests, and compatibility bundle.
+- `prompts/codex_v2/document2/` contains only the Codex SDK Document2 common
+  instructions, agents, and skills.
+
+Codex SDK v2 does not use the legacy PromptRegistry or external skill packages.
 
 `PromptRegistry` and `PromptInjector` select these resources into
 `AgentTask.prompt_bundle`. `PromptAssembler` builds the final runtime prompt.
@@ -372,6 +373,10 @@ external skills.
 
 ```text
 prompts/
+  codex_v2/
+    document1/
+    document2/
+  v1/
 src/doxagent/
   adapters/
   audit/

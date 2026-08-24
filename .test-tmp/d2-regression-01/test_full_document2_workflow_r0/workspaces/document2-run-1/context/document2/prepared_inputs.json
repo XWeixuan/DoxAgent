@@ -1,0 +1,96 @@
+{
+  "ticker": "NVDA",
+  "as_of": "2026-08-20T12:00:00Z",
+  "global_research": {
+    "run_id": "global-source-1",
+    "ticker": "NVDA",
+    "published_at": "2026-08-20T12:00:00Z",
+    "reports": {
+      "c1": "c1 report【cite:D1-O1】",
+      "c3": "c3 report【cite:D1-O1】",
+      "c5": "c5 report【cite:D1-O1】"
+    },
+    "report_artifact_ids": {
+      "c1": "c1-artifact",
+      "c3": "c3-artifact",
+      "c5": "c5-artifact"
+    },
+    "entity_relations": [],
+    "future_nodes": [],
+    "horizontal_collection": {
+      "metrics": {
+        "revenue": 100
+      }
+    },
+    "horizontal_artifact_id": "horizontal-artifact",
+    "document_artifact_id": "global-document",
+    "citation_manifest_artifact_id": "global-citations"
+  },
+  "narrative_research": {
+    "status": "AVAILABLE",
+    "payload": {
+      "run_ref": {
+        "run_id": "narrative-run-1"
+      },
+      "report": "narrative"
+    },
+    "source_run_id": "narrative-run-1",
+    "as_of": "2026-08-20T12:00:00Z",
+    "warning": null,
+    "metadata": {}
+  },
+  "event_library": {
+    "status": "NOT_CONFIGURED",
+    "payload": null,
+    "source_run_id": null,
+    "as_of": null,
+    "warning": "Event Library integration is reserved but not configured.",
+    "metadata": {
+      "interface_version": "event-library-read-v1",
+      "read_only": true
+    }
+  },
+  "manifest": {
+    "global_research": {
+      "status": "AVAILABLE",
+      "artifact_ids": [
+        "c1-artifact",
+        "c3-artifact",
+        "c5-artifact",
+        "horizontal-artifact",
+        "global-document"
+      ],
+      "workspace_paths": [
+        "artifacts/global/c1.md",
+        "artifacts/global/c3.md",
+        "artifacts/global/c5.md",
+        "artifacts/global/horizontal.json"
+      ],
+      "source_run_id": "global-source-1",
+      "as_of": "2026-08-20T12:00:00Z",
+      "warning": null,
+      "metadata": {}
+    },
+    "narrative_research": {
+      "status": "AVAILABLE",
+      "artifact_ids": [],
+      "workspace_paths": [],
+      "source_run_id": "narrative-run-1",
+      "as_of": "2026-08-20T12:00:00Z",
+      "warning": null,
+      "metadata": {}
+    },
+    "event_library": {
+      "status": "NOT_CONFIGURED",
+      "artifact_ids": [],
+      "workspace_paths": [],
+      "source_run_id": null,
+      "as_of": null,
+      "warning": "Event Library integration is reserved but not configured.",
+      "metadata": {
+        "interface_version": "event-library-read-v1",
+        "read_only": true
+      }
+    }
+  }
+}

@@ -33,6 +33,7 @@ from doxagent.workflows.codex_document2.assembler import (
     assemble_document2,
     render_document2_markdown,
 )
+from doxagent.workflows.codex_document2.errors import Document2ExecutionError
 from doxagent.workflows.codex_document2.inputs import (
     Document2InputLoader,
     EventLibraryProvider,
@@ -110,6 +111,16 @@ class CodexDocument2Orchestrator:
         self._checkpoint_lock = asyncio.Lock()
 
     async def run(self, request: Document2RunRequest) -> Document2Bundle:
+        prior = self._repository.get_bundle(request.run_id)
+        try:
+            return await self._run(request)
+        except asyncio.CancelledError:
+            raise
+        except Exception as exc:
+            self._record_run_failure(request, prior, exc)
+            raise
+
+    async def _run(self, request: Document2RunRequest) -> Document2Bundle:
         existing = self._repository.get_bundle(request.run_id)
         if (
             isinstance(existing, Document2Bundle)
@@ -199,7 +210,15 @@ class CodexDocument2Orchestrator:
                     ShellOutcome(
                         shell_id=seed.shell_id,
                         status="failed",
+                        failed_stage=_failed_stage(result),
+                        failure_kind=(
+                            result.kind.value
+                            if isinstance(result, Document2ExecutionError)
+                            else "SHELL"
+                        ),
+                        error_code=str(getattr(result, "code", type(result).__name__)),
                         error=_bounded(str(result)),
+                        seed=seed,
                     )
                 )
                 continue
@@ -211,11 +230,20 @@ class CodexDocument2Orchestrator:
                     shell_id=shell.shell_id,
                     status="completed",
                     artifact_id=artifact.artifact_id,
+                    seed=seed,
                 )
             )
             bundle.artifacts[f"shell:{seed.shell_id}"] = artifact
         bundle.shell_outcomes = outcomes
-        self._complete_workflow_node(workflow_checkpoint, CodexD2Node.O1_FINALIZATION)
+        all_shells_completed = bool(outcomes) and all(
+            item.status == "completed" for item in outcomes
+        )
+        if all_shells_completed:
+            self._complete_workflow_node(workflow_checkpoint, CodexD2Node.O1_FINALIZATION)
+        else:
+            self._uncomplete_workflow_node(workflow_checkpoint, CodexD2Node.O1_FINALIZATION)
+        if not outcomes:
+            _append_warning(checkpoint, "O1 produced no shell outcomes; publication is PARTIAL.")
 
         document_artifact_id = uuid4().hex
         source_bundle = self._repository.get_bundle(request.source_global_run_id)
@@ -245,6 +273,7 @@ class CodexDocument2Orchestrator:
             source_global_run_id=request.source_global_run_id,
             input_manifest=prepared.manifest,
             shells=successful_shells,
+            shell_outcomes=outcomes,
             document_artifact_id=document_artifact_id,
             d1_manifest=d1_manifest,
             local_manifests=local_manifests,
@@ -284,7 +313,7 @@ class CodexDocument2Orchestrator:
         self._complete_workflow_node(workflow_checkpoint, CodexD2Node.ASSEMBLE)
 
         publication_state: Literal["COMPLETE", "PARTIAL"] = (
-            "COMPLETE" if all(item.status == "completed" for item in outcomes) else "PARTIAL"
+            "COMPLETE" if all_shells_completed else "PARTIAL"
         )
         publish_refs = [
             document_ref,
@@ -448,8 +477,15 @@ class CodexDocument2Orchestrator:
             checkpoint.o0_thread_ids[f"candidate:{key}"] = result.thread_id or ""
             self._remember_attempt(checkpoint, result)
         await self._save_progress(bundle, checkpoint)
+        for error in candidate_errors:
+            if not _allows_branch_degradation(error):
+                raise error
+            _append_warning(
+                checkpoint,
+                f"O0 candidate branch unavailable: {_bounded(str(error))}",
+            )
         if candidate_errors:
-            raise candidate_errors[0]
+            await self._save_progress(bundle, checkpoint)
 
         restored_synthesis = await self._restore_stage(
             request.run_id, checkpoint, "o0:synthesis", ShellSynthesisResult
@@ -532,8 +568,15 @@ class CodexDocument2Orchestrator:
             checkpoint.stage_artifacts[f"o0:review:{label.lower()}"] = result.artifact.relative_path
             self._remember_attempt(checkpoint, result)
         await self._save_progress(bundle, checkpoint)
+        for error in review_errors:
+            if not _allows_branch_degradation(error):
+                raise error
+            _append_warning(
+                checkpoint,
+                f"O0 domain review unavailable: {_bounded(str(error))}",
+            )
         if review_errors:
-            raise review_errors[0]
+            await self._save_progress(bundle, checkpoint)
 
         finalization = await self._run_with_retry(
             persistence_run_id=request.run_id,
@@ -657,7 +700,7 @@ class CodexDocument2Orchestrator:
     ) -> tuple[ExpectationShell, ArtifactRef] | Exception:
         async with self._shell_semaphore:
             try:
-                key = hashlib.sha256(seed.shell_id.encode("utf-8")).hexdigest()[:16]
+                key = _shell_key(seed.shell_id)
                 state = checkpoint.shell_runs.get(key) or ShellRunState(
                     shell_id=seed.shell_id,
                     workspace_run_id=logical_workspace_id(request.run_id, f"shell-{key}"),
@@ -748,7 +791,9 @@ class CodexDocument2Orchestrator:
                 )
                 await self._save_progress(bundle, checkpoint)
                 return shell, final_ref
-            except Exception as exc:
+            except Document2ExecutionError as exc:
+                if not exc.allows_partial:
+                    raise
                 if "state" in locals():
                     state.error = _bounded(str(exc))
                     checkpoint.shell_runs[key] = state
@@ -825,8 +870,10 @@ class CodexDocument2Orchestrator:
                     previous_failure=previous_failure,
                     artifact_key=artifact_key,
                 )
-            except Exception as exc:
+            except Document2ExecutionError as exc:
                 previous_failure = _bounded(str(exc))
+                if not exc.retryable:
+                    raise
                 if attempt_index + 1 >= self._max_attempts:
                     raise
                 if fresh_on_retry:
@@ -967,6 +1014,61 @@ class CodexDocument2Orchestrator:
         checkpoint.updated_at = utc_now()
         self._repository.save_checkpoint(checkpoint)
 
+    def _uncomplete_workflow_node(self, checkpoint: WorkflowCheckpoint, node: CodexD2Node) -> None:
+        checkpoint.completed_nodes = [item for item in checkpoint.completed_nodes if item != node]
+        checkpoint.current_nodes = [item for item in checkpoint.current_nodes if item != node]
+        checkpoint.failed_nodes = [item for item in checkpoint.failed_nodes if item != node]
+        checkpoint.updated_at = utc_now()
+        self._repository.save_checkpoint(checkpoint)
+
+    def _record_run_failure(
+        self,
+        request: Document2RunRequest,
+        prior: object,
+        error: Exception,
+    ) -> None:
+        current = self._repository.get_bundle(request.run_id)
+        workflow_checkpoint = self._repository.get_checkpoint(request.run_id)
+        if isinstance(error, Document2ExecutionError) and workflow_checkpoint is not None:
+            workflow_checkpoint.failed_nodes = list(
+                dict.fromkeys([*workflow_checkpoint.failed_nodes, error.node])
+            )
+            workflow_checkpoint.current_nodes = [
+                item for item in workflow_checkpoint.current_nodes if item != error.node
+            ]
+            workflow_checkpoint.updated_at = utc_now()
+            self._repository.save_checkpoint(workflow_checkpoint)
+        if isinstance(prior, Document2Bundle) and prior.status == "published":
+            restored = prior.model_copy(
+                update={
+                    "checkpoint": (
+                        current.checkpoint
+                        if isinstance(current, Document2Bundle)
+                        else prior.checkpoint
+                    )
+                }
+            )
+            self._repository.save_bundle(restored)
+            return
+        if isinstance(current, Document2Bundle):
+            failed = current.model_copy(
+                update={
+                    "status": "failed",
+                    "publication_state": None,
+                    "current": False,
+                    "handoff": None,
+                    "published_at": None,
+                }
+            )
+        else:
+            failed = Document2Bundle(
+                run_id=request.run_id,
+                ticker=(request.ticker or "UNKNOWN").upper(),
+                source_global_run_id=request.source_global_run_id,
+                status="failed",
+            )
+        self._repository.save_bundle(failed)
+
     async def _event(
         self, run_id: str, event_type: str, payload: dict[str, object]
     ) -> None:
@@ -986,3 +1088,27 @@ class CodexDocument2Orchestrator:
 
 def _bounded(value: str, limit: int = 2_000) -> str:
     return value if len(value) <= limit else value[: limit - 3] + "..."
+
+
+def _shell_key(shell_id: str) -> str:
+    return hashlib.sha256(shell_id.encode("utf-8")).hexdigest()[:16]
+
+
+def _allows_branch_degradation(error: BaseException) -> bool:
+    return isinstance(error, Document2ExecutionError) and error.allows_partial
+
+
+def _append_warning(checkpoint: Document2Checkpoint, warning: str) -> None:
+    if warning not in checkpoint.warnings:
+        checkpoint.warnings.append(warning)
+
+
+def _failed_stage(error: Exception) -> ShellResearchStage | None:
+    if not isinstance(error, Document2ExecutionError):
+        return None
+    return {
+        CodexD2Node.O1_STATE: ShellResearchStage.STATE,
+        CodexD2Node.O1_REALIZATION: ShellResearchStage.REALIZATION,
+        CodexD2Node.O1_GAPS: ShellResearchStage.GAPS,
+        CodexD2Node.O1_FINALIZATION: ShellResearchStage.FINALIZATION,
+    }.get(error.node)

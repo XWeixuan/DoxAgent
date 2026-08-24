@@ -1,0 +1,12 @@
+{
+  "schema_version": "document2-task-v1",
+  "node": "d2_o1_realization",
+  "required_files": [
+    "attempts/d2-o1_realization-1-ea48fe984f/input/AGENTS.md",
+    "attempts/d2-o1_realization-1-ea48fe984f/input/agent.md",
+    "attempts/d2-o1_realization-1-ea48fe984f/input/skill.md",
+    "attempts/d2-o1_realization-1-ea48fe984f/input/context.json",
+    "attempts/d2-o1_realization-1-ea48fe984f/input/output_schema.json"
+  ],
+  "previous_failure": null
+}

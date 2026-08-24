@@ -1,0 +1,41 @@
+{
+  "shell_id": "AI需求向盈利兑现",
+  "core_question": "AI demand can become durable earnings?",
+  "boundary_rule": "Keep only the shared demand-to-earnings system.",
+  "units": [
+    {
+      "expectation_id": "AI需求形成持续盈利贡献",
+      "proposition": "AI demand produces durable earnings contribution.",
+      "horizon": "next four quarters",
+      "state": {
+        "parameters": [
+          {
+            "parameter_id": "FY27收入预期",
+            "definition": "Consensus FY27 revenue",
+            "value_type": "NUMBER"
+          }
+        ],
+        "values": [
+          {
+            "state_value_id": "FY27收入预期-卖方-当前",
+            "parameter_id": "FY27收入预期",
+            "source_role": "SELL_SIDE",
+            "value": {
+              "number": 100.0,
+              "unit": "USD billion"
+            },
+            "previous_value": null,
+            "time_scope": "FY27",
+            "as_of": "2026-08-20",
+            "citation": [
+              "D2REF:d2-o1_state-1-ec8b7a82e3:O9"
+            ],
+            "validity_state": "CURRENT"
+          }
+        ]
+      },
+      "realization_factors": [],
+      "potential_gaps": []
+    }
+  ]
+}

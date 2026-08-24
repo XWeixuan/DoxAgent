@@ -1,0 +1,110 @@
+{
+  "$defs": {
+    "ProvisionalCandidateUnit": {
+      "properties": {
+        "candidate_id": {
+          "title": "Candidate Id",
+          "type": "string"
+        },
+        "candidate": {
+          "title": "Candidate",
+          "type": "string"
+        }
+      },
+      "required": [
+        "candidate_id",
+        "candidate"
+      ],
+      "title": "ProvisionalCandidateUnit",
+      "type": "object",
+      "additionalProperties": false
+    },
+    "ProvisionalShellDraft": {
+      "properties": {
+        "shell_temp_id": {
+          "title": "Shell Temp Id",
+          "type": "string"
+        },
+        "core_question": {
+          "title": "Core Question",
+          "type": "string"
+        },
+        "boundary_reasoning": {
+          "title": "Boundary Reasoning",
+          "type": "string"
+        },
+        "candidate_units": {
+          "items": {
+            "$ref": "#/$defs/ProvisionalCandidateUnit"
+          },
+          "title": "Candidate Units",
+          "type": "array"
+        }
+      },
+      "required": [
+        "shell_temp_id",
+        "core_question",
+        "boundary_reasoning",
+        "candidate_units"
+      ],
+      "title": "ProvisionalShellDraft",
+      "type": "object",
+      "additionalProperties": false
+    },
+    "UnassignedCandidate": {
+      "properties": {
+        "candidate_id": {
+          "title": "Candidate Id",
+          "type": "string"
+        },
+        "candidate": {
+          "title": "Candidate",
+          "type": "string"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "candidate_id",
+        "candidate",
+        "reason"
+      ],
+      "title": "UnassignedCandidate",
+      "type": "object",
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "provisional_shells": {
+      "items": {
+        "$ref": "#/$defs/ProvisionalShellDraft"
+      },
+      "title": "Provisional Shells",
+      "type": "array"
+    },
+    "unassigned_candidates": {
+      "items": {
+        "$ref": "#/$defs/UnassignedCandidate"
+      },
+      "title": "Unassigned Candidates",
+      "type": "array"
+    },
+    "warnings": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Warnings",
+      "type": "array"
+    }
+  },
+  "title": "ShellSynthesisResult",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "provisional_shells",
+    "unassigned_candidates",
+    "warnings"
+  ]
+}

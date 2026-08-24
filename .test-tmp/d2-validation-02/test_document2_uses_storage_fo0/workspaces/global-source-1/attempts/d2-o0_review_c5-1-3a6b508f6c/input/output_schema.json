@@ -1,0 +1,84 @@
+{
+  "$defs": {
+    "DomainReviewFeedback": {
+      "properties": {
+        "feedback_id": {
+          "title": "Feedback Id",
+          "type": "string"
+        },
+        "target": {
+          "title": "Target",
+          "type": "string"
+        },
+        "issue": {
+          "title": "Issue",
+          "type": "string"
+        },
+        "reasoning": {
+          "title": "Reasoning",
+          "type": "string"
+        },
+        "references": {
+          "items": {
+            "type": "string"
+          },
+          "title": "References",
+          "type": "array"
+        },
+        "recommendation": {
+          "title": "Recommendation",
+          "type": "string"
+        }
+      },
+      "required": [
+        "feedback_id",
+        "target",
+        "issue",
+        "reasoning",
+        "references",
+        "recommendation"
+      ],
+      "title": "DomainReviewFeedback",
+      "type": "object",
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "reviewer_role": {
+      "enum": [
+        "C1",
+        "C3",
+        "C5"
+      ],
+      "title": "Reviewer Role",
+      "type": "string"
+    },
+    "overall_assessment": {
+      "title": "Overall Assessment",
+      "type": "string"
+    },
+    "targeted_feedback": {
+      "items": {
+        "$ref": "#/$defs/DomainReviewFeedback"
+      },
+      "title": "Targeted Feedback",
+      "type": "array"
+    },
+    "warnings": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Warnings",
+      "type": "array"
+    }
+  },
+  "required": [
+    "reviewer_role",
+    "overall_assessment",
+    "targeted_feedback",
+    "warnings"
+  ],
+  "title": "DomainReviewResult",
+  "type": "object",
+  "additionalProperties": false
+}

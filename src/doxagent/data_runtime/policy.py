@@ -123,6 +123,7 @@ _MARKET_IMPLIED_TOOL_EXCLUSIONS = frozenset(
 _NODE_TOOL_EXCLUSIONS: dict[CodexResearchNode, frozenset[str]] = {
     CodexD1Node.O4_A: _MARKET_IMPLIED_TOOL_EXCLUSIONS,
     CodexD1Node.C5: _MARKET_IMPLIED_TOOL_EXCLUSIONS,
+    CodexD2Node.O0_CANDIDATE_C5: _MARKET_IMPLIED_TOOL_EXCLUSIONS,
 }
 
 
@@ -153,6 +154,13 @@ class DataToolPolicyRegistry:
         self._by_node: dict[CodexResearchNode, frozenset[str]] = {
             CodexD1Node.O4_A: legacy_o4_tools,
             CodexD1Node.O4_B: legacy_o4_tools,
+            # Candidate discovery runs under the shared O0 role, but each
+            # branch researches one pinned Document1 domain. Give it the same
+            # read-only Data MCP ceiling as that source domain instead of the
+            # empty O0 synthesis/finalization ceiling.
+            CodexD2Node.O0_CANDIDATE_C1: self._by_role[CodexAgentRole.C1],
+            CodexD2Node.O0_CANDIDATE_C3: self._by_role[CodexAgentRole.C3],
+            CodexD2Node.O0_CANDIDATE_C5: self._by_role[CodexAgentRole.C5],
         }
 
     def allowed_tools(
@@ -162,9 +170,7 @@ class DataToolPolicyRegistry:
         if expected is None or expected is not role:
             return frozenset()
         maximum = self._by_node.get(node, self._by_role.get(role, frozenset()))
-        return maximum.difference(
-            _NODE_TOOL_EXCLUSIONS.get(node, frozenset())
-        )
+        return maximum.difference(_NODE_TOOL_EXCLUSIONS.get(node, frozenset()))
 
     def allowed_tools_for_ticker(
         self,

@@ -21,7 +21,7 @@ COPY pyproject.toml uv.lock README.md ./
 COPY src ./src
 RUN uv sync --frozen --no-group dev
 
-COPY codex_assets/document1_v2 ./codex_assets/document1_v2
+COPY prompts/codex_v2 ./prompts/codex_v2
 RUN mkdir -p /var/lib/doxagent/workspaces /var/lib/codex \
     && chown -R codexworker:codexworker /var/lib/doxagent /var/lib/codex
 

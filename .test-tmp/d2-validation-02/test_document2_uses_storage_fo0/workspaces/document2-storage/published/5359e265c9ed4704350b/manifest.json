@@ -1,0 +1,30 @@
+{
+  "release_id": "5359e265c9ed4704350b",
+  "artifacts": [
+    {
+      "relative_path": "artifacts/document2/document2.json",
+      "sha256": "3e009481eacefc9c141f6bde7e65cfd26dd82b3bb3f7bac413c40106d972402c",
+      "size_bytes": 4473
+    },
+    {
+      "relative_path": "artifacts/document2/document2_citation_manifest.json",
+      "sha256": "f85972dba1c6c9503a4452a0cd75cfcd9eefadf7e67d8bd864786b8c4af774d6",
+      "size_bytes": 1329
+    },
+    {
+      "relative_path": "artifacts/document2/document2.md",
+      "sha256": "9b843cb6c129ae83a80b484a00c62c953b0deb767f0f7800727b07a4a3a5bbe9",
+      "size_bytes": 479
+    },
+    {
+      "relative_path": "artifacts/document2/shells/5252261700206703/shell.json",
+      "sha256": "ddb3c60377eb1e446057df87448d1eccd819b61520ff6347974c39f8f50c1523",
+      "size_bytes": 2155
+    },
+    {
+      "relative_path": "artifacts/document2/o0/final_shell_seeds.json",
+      "sha256": "8455e23c43960206b13dd023867e965accbad97c2c597e220becd1e554de0a53",
+      "size_bytes": 547
+    }
+  ]
+}

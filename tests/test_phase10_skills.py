@@ -31,7 +31,7 @@ from tests.fixtures.phase1_contracts import (
     monitoring_policy_document,
 )
 
-PROMPT_ROOT = Path(__file__).resolve().parents[1] / "prompts"
+PROMPT_ROOT = Path(__file__).resolve().parents[1] / "prompts" / "v1"
 
 
 def test_default_skill_registry_contains_migrated_external_skills() -> None:

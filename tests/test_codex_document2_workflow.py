@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from datetime import UTC, datetime
 from pathlib import Path
@@ -35,22 +36,36 @@ from doxagent.codex_runtime.schema import (
     WorkflowCheckpoint,
 )
 from doxagent.codex_worker.local_client import LocalWorkspaceClient
-from doxagent.codex_worker.schema import WorkerJob, WorkerRunRequest
+from doxagent.codex_worker.schema import (
+    WorkerJob,
+    WorkerRunRequest,
+    WorkspaceFileResponse,
+)
 from doxagent.codex_worker.workspace_store import LocalWorkspaceStore
 from doxagent.dashboard_api.research_lanes import CodexResearchLaneService
 from doxagent.data_runtime.policy import DataToolPolicyRegistry
 from doxagent.models import ResultStatus
-from doxagent.pilot.document2_case_builder import _role_for_node
+from doxagent.pilot.document2_case_builder import (
+    Document2PilotCaseBuilder,
+    _role_for_node,
+)
 from doxagent.pilot.templates import render_document2_task
 from doxagent.tools.registry import ToolRegistry
 from doxagent.tools.schema import ToolRequest, ToolResult
+from doxagent.workflows.codex_document2.errors import Document2ExecutionError
 from doxagent.workflows.codex_document2.inputs import (
     DoxAtlasNarrativeReportProvider,
     OptionalInput,
+    _qualify_d1_context,
     _safe_optional_load,
 )
 from doxagent.workflows.codex_document2.orchestrator import CodexDocument2Orchestrator
 from doxagent.workflows.codex_document2.schema import (
+    CANDIDATE_DISCOVERY_SCHEMA,
+    DOMAIN_REVIEW_SCHEMA,
+    EXPECTATION_SHELL_SCHEMA,
+    SHELL_FINALIZATION_SCHEMA,
+    SHELL_SYNTHESIS_SCHEMA,
     CitationStatus,
     Document2Bundle,
     Document2Checkpoint,
@@ -61,6 +76,44 @@ from doxagent.workflows.codex_document2.schema import (
 from doxagent.workflows.codex_global_research import GlobalResearchRunRequest
 
 AS_OF = datetime(2026, 8, 20, 12, tzinfo=UTC)
+
+
+def test_document2_shared_agent_contract_recovers_from_command_mistakes() -> None:
+    contract = (
+        Path(__file__).parents[1] / "prompts" / "codex_v2" / "document2" / "AGENTS.md"
+    ).read_text(encoding="utf-8")
+    normalized = " ".join(contract.split())
+
+    assert "Recoverable operational mistakes are not workflow blockers" in normalized
+    assert "correct the command or use an equivalent safe method and continue" in normalized
+    assert "Do not stop the workflow or request user assistance solely" in normalized
+
+
+def test_document2_agent_output_schemas_are_strict_at_every_object_boundary() -> None:
+    def assert_strict(value: object) -> None:
+        if isinstance(value, list):
+            for item in value:
+                assert_strict(item)
+            return
+        if not isinstance(value, dict):
+            return
+        if "$ref" in value:
+            assert set(value) == {"$ref"}
+        properties = value.get("properties")
+        if isinstance(properties, dict):
+            assert value.get("additionalProperties") is False
+            assert value.get("required") == list(properties)
+        for item in value.values():
+            assert_strict(item)
+
+    for schema in (
+        CANDIDATE_DISCOVERY_SCHEMA,
+        SHELL_SYNTHESIS_SCHEMA,
+        DOMAIN_REVIEW_SCHEMA,
+        SHELL_FINALIZATION_SCHEMA,
+        EXPECTATION_SHELL_SCHEMA,
+    ):
+        assert_strict(schema)
 
 
 class _CountingRemoteRepository(InMemoryCodexRuntimeRepository):
@@ -315,6 +368,69 @@ class _FailGapOnceWorker(_Document2Worker):
         return await super().run(request)
 
 
+class _FailSelectedBranchesWorker(_Document2Worker):
+    async def run(self, request: WorkerRunRequest) -> WorkerJob:
+        if request.node in {CodexD2Node.O0_CANDIDATE_C3, CodexD2Node.O0_REVIEW_C5}:
+            self.requests.append(request)
+            return WorkerJob(
+                job_id=uuid4().hex,
+                run_id=request.run_id,
+                attempt_id=request.attempt_id,
+                status="failed",
+                thread_id=request.thread_id,
+                error_code="TEST_BRANCH_FAILURE",
+                error_message=f"temporary {request.node.value} failure",
+            )
+        return await super().run(request)
+
+
+class _EmptyFinalShellWorker(_Document2Worker):
+    async def _output(self, request: WorkerRunRequest) -> dict[str, object]:
+        if request.node is CodexD2Node.O0_FINALIZATION:
+            return {"shells": [], "finalization_note": [], "warnings": []}
+        return await super()._output(request)
+
+
+class _FailO1ByKindWorker(_Document2Worker):
+    def __init__(self, workspace: LocalWorkspaceClient, kind: str) -> None:
+        super().__init__(workspace)
+        self.kind = kind
+
+    async def run(self, request: WorkerRunRequest) -> WorkerJob:
+        if request.node is not CodexD2Node.O1_STATE:
+            return await super().run(request)
+        self.requests.append(request)
+        if self.kind == "format":
+            return WorkerJob(
+                job_id=uuid4().hex,
+                run_id=request.run_id,
+                attempt_id=request.attempt_id,
+                status="succeeded",
+                thread_id=request.thread_id,
+                turn_id=uuid4().hex,
+                final_response="{not-json",
+            )
+        if self.kind == "transient":
+            return WorkerJob(
+                job_id=uuid4().hex,
+                run_id=request.run_id,
+                attempt_id=request.attempt_id,
+                status="failed",
+                thread_id=request.thread_id,
+                error_code="CODEX_TURN_TIMEOUT",
+                error_message="temporary worker timeout",
+            )
+        return WorkerJob(
+            job_id=uuid4().hex,
+            run_id=request.run_id,
+            attempt_id=request.attempt_id,
+            status="failed",
+            thread_id=request.thread_id,
+            error_code="invalid_json_schema",
+            error_message="output_schema is invalid",
+        )
+
+
 class _NarrativeTool:
     def __init__(self, completed_at: str) -> None:
         self.completed_at = completed_at
@@ -363,6 +479,34 @@ class _Document2OrchestratorStub:
 class _MarketOrchestratorStub:
     async def run(self, request: object) -> None:
         return None
+
+
+def test_service_get_surfaces_background_error_over_draft_bundle(tmp_path: Path) -> None:
+    repository = InMemoryCodexRuntimeRepository()
+    repository.save_bundle(
+        Document2Bundle(
+            run_id="d2-background-failure",
+            ticker="MU",
+            source_global_run_id="global-1",
+            status="draft",
+        )
+    )
+    service = CodexResearchLaneService(
+        global_orchestrator=_GlobalOrchestratorStub(  # type: ignore[arg-type]
+            GlobalResearchBundle(run_id="unused", ticker="MU", status="draft")
+        ),
+        market_orchestrator=_MarketOrchestratorStub(),  # type: ignore[arg-type]
+        document2_orchestrator=_Document2OrchestratorStub(),  # type: ignore[arg-type]
+        repository=repository,
+        workspace=LocalWorkspaceClient(LocalWorkspaceStore(tmp_path / "service-workspaces")),
+    )
+    service._errors["d2-background-failure"] = "schema rejected"  # noqa: SLF001
+
+    result = service.get("d2-background-failure")
+
+    assert result is not None
+    assert result["status"] == "failed"
+    assert result["error"] == "schema rejected"
 
 
 async def _global_fixture(
@@ -510,9 +654,7 @@ async def test_full_document2_workflow_resumes_d1_and_publishes_with_unresolved_
     assert payload["shells"][0]["core_question"] == (
         "Can durable AI demand convert into cash earnings?"
     )
-    assert payload["shells"][0]["units"][0]["state"]["values"][0]["citation"] == [
-        "【cite:O1】"
-    ]
+    assert payload["shells"][0]["units"][0]["state"]["values"][0]["citation"] == ["【cite:O1】"]
     manifest = repository.get_published_document(
         bundle.run_id, bundle.handoff.citation_manifest_artifact_id or ""
     )
@@ -581,6 +723,38 @@ async def test_partial_publish_resumes_from_last_successful_shell_turn(tmp_path:
     assert first.status == "published"
     assert first.publication_state == "PARTIAL"
     assert first.current is False
+    workflow_checkpoint = repository.get_checkpoint(request.run_id)
+    assert workflow_checkpoint is not None
+    assert CodexD2Node.O1_FINALIZATION not in workflow_checkpoint.completed_nodes
+    assert first.handoff is not None
+    first_document = repository.get_published_document(
+        first.run_id, first.handoff.document2_artifact_id
+    )
+    assert first_document is not None and first_document.content_text is not None
+    first_payload = json.loads(first_document.content_text)
+    assert first_payload["shell_outcomes"] == [
+        {
+            "shell_id": "AI需求向盈利兑现",
+            "status": "failed",
+            "artifact_id": None,
+            "failed_stage": "GAPS",
+            "failure_kind": "SHELL",
+            "error_code": "TEST_GAP_FAILURE",
+            "error": "temporary gap failure",
+            "seed": {
+                "shell_id": "AI需求向盈利兑现",
+                "core_question": "AI demand can become durable earnings?",
+                "boundary_rule": "Keep only the shared demand-to-earnings system.",
+                "units": [
+                    {
+                        "expectation_id": "AI需求形成持续盈利贡献",
+                        "proposition": "AI demand produces durable earnings contribution.",
+                        "horizon": "next four quarters",
+                    }
+                ],
+            },
+        }
+    ]
     first_o1 = [item.node for item in worker.requests if item.agent_role.value.startswith("o1_")]
     assert first_o1 == [
         CodexD2Node.O1_STATE,
@@ -591,6 +765,9 @@ async def test_partial_publish_resumes_from_last_successful_shell_turn(tmp_path:
     second = await orchestrator.run(request)
     assert second.publication_state == "COMPLETE"
     assert second.current is True
+    workflow_checkpoint = repository.get_checkpoint(request.run_id)
+    assert workflow_checkpoint is not None
+    assert CodexD2Node.O1_FINALIZATION in workflow_checkpoint.completed_nodes
     all_o1 = [item.node for item in worker.requests if item.agent_role.value.startswith("o1_")]
     assert all_o1 == [
         *first_o1,
@@ -600,24 +777,115 @@ async def test_partial_publish_resumes_from_last_successful_shell_turn(tmp_path:
 
 
 @pytest.mark.asyncio
+async def test_candidate_and_review_branch_failures_remain_non_blocking(tmp_path: Path) -> None:
+    repository, workspace, source_run_id = await _global_fixture(tmp_path)
+    bundle = await CodexDocument2Orchestrator(
+        worker=_FailSelectedBranchesWorker(workspace),
+        workspace=workspace,
+        repository=repository,
+        narrative_provider=_NarrativeProvider(InputAvailability.ABSENT),
+        max_attempts=1,
+    ).run(
+        Document2RunRequest(
+            run_id="document2-branch-degrade",
+            source_global_run_id=source_run_id,
+        )
+    )
+
+    assert bundle.publication_state == "COMPLETE"
+    assert bundle.checkpoint is not None
+    assert any("candidate branch unavailable" in item for item in bundle.checkpoint.warnings)
+    assert any("domain review unavailable" in item for item in bundle.checkpoint.warnings)
+
+
+@pytest.mark.asyncio
+async def test_zero_final_shells_publish_partial_instead_of_vacuous_complete(
+    tmp_path: Path,
+) -> None:
+    repository, workspace, source_run_id = await _global_fixture(tmp_path)
+    bundle = await CodexDocument2Orchestrator(
+        worker=_EmptyFinalShellWorker(workspace),
+        workspace=workspace,
+        repository=repository,
+        narrative_provider=_NarrativeProvider(InputAvailability.ABSENT),
+        max_attempts=1,
+    ).run(
+        Document2RunRequest(
+            run_id="document2-empty-shells",
+            source_global_run_id=source_run_id,
+        )
+    )
+
+    assert bundle.publication_state == "PARTIAL"
+    assert bundle.current is False
+    assert bundle.shell_outcomes == []
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("failure_kind", ["format", "transient"])
+async def test_degradable_o1_failures_still_publish_partial(
+    tmp_path: Path, failure_kind: str
+) -> None:
+    repository, workspace, source_run_id = await _global_fixture(tmp_path)
+    bundle = await CodexDocument2Orchestrator(
+        worker=_FailO1ByKindWorker(workspace, failure_kind),
+        workspace=workspace,
+        repository=repository,
+        narrative_provider=_NarrativeProvider(InputAvailability.ABSENT),
+        max_attempts=1,
+    ).run(
+        Document2RunRequest(
+            run_id=f"document2-{failure_kind}-partial",
+            source_global_run_id=source_run_id,
+        )
+    )
+
+    assert bundle.publication_state == "PARTIAL"
+    assert bundle.shell_outcomes[0].failure_kind == failure_kind.upper()
+
+
+@pytest.mark.asyncio
+async def test_invalid_request_schema_is_not_misreported_as_shell_partial(tmp_path: Path) -> None:
+    repository, workspace, source_run_id = await _global_fixture(tmp_path)
+    worker = _FailO1ByKindWorker(workspace, "system")
+    orchestrator = CodexDocument2Orchestrator(
+        worker=worker,
+        workspace=workspace,
+        repository=repository,
+        narrative_provider=_NarrativeProvider(InputAvailability.ABSENT),
+        max_attempts=2,
+    )
+
+    with pytest.raises(Document2ExecutionError) as captured:
+        await orchestrator.run(
+            Document2RunRequest(
+                run_id="document2-system-failure",
+                source_global_run_id=source_run_id,
+            )
+        )
+
+    assert captured.value.code == "invalid_json_schema"
+    assert len([item for item in worker.requests if item.node is CodexD2Node.O1_STATE]) == 1
+    bundle = repository.get_bundle("document2-system-failure")
+    assert isinstance(bundle, Document2Bundle)
+    assert bundle.status == "failed"
+    assert bundle.publication_state is None
+    workflow_checkpoint = repository.get_checkpoint("document2-system-failure")
+    assert workflow_checkpoint is not None
+    assert CodexD2Node.O1_STATE in workflow_checkpoint.failed_nodes
+
+
+@pytest.mark.asyncio
 async def test_doxatlas_narrative_provider_enforces_seven_day_window() -> None:
     recent_tools = ToolRegistry()
-    recent_tools.register(
-        "doxa_get_narrative_report", _NarrativeTool("2026-08-16T12:00:00Z")
-    )
-    recent = await DoxAtlasNarrativeReportProvider(recent_tools).load(
-        ticker="NVDA", as_of=AS_OF
-    )
+    recent_tools.register("doxa_get_narrative_report", _NarrativeTool("2026-08-16T12:00:00Z"))
+    recent = await DoxAtlasNarrativeReportProvider(recent_tools).load(ticker="NVDA", as_of=AS_OF)
     assert recent.status is InputAvailability.AVAILABLE
     assert recent.source_run_id == "narrative-tool-run"
 
     stale_tools = ToolRegistry()
-    stale_tools.register(
-        "doxa_get_narrative_report", _NarrativeTool("2026-08-10T11:59:59Z")
-    )
-    stale = await DoxAtlasNarrativeReportProvider(stale_tools).load(
-        ticker="NVDA", as_of=AS_OF
-    )
+    stale_tools.register("doxa_get_narrative_report", _NarrativeTool("2026-08-10T11:59:59Z"))
+    stale = await DoxAtlasNarrativeReportProvider(stale_tools).load(ticker="NVDA", as_of=AS_OF)
     assert stale.status is InputAvailability.ABSENT
 
     unavailable = await _safe_optional_load(
@@ -646,17 +914,107 @@ def test_document2_pilot_contract_preserves_roles_and_formal_output(tmp_path: Pa
 
 def test_document2_data_policy_preserves_review_tools_and_gives_o1_research_union() -> None:
     policy = DataToolPolicyRegistry()
-    assert policy.allowed_tools(
-        CodexD2Node.O0_SYNTHESIS,
-        _role_for_node(CodexD2Node.O0_SYNTHESIS),
-    ) == frozenset()
+    assert (
+        policy.allowed_tools(
+            CodexD2Node.O0_SYNTHESIS,
+            _role_for_node(CodexD2Node.O0_SYNTHESIS),
+        )
+        == frozenset()
+    )
     assert policy.allowed_tools(CodexD2Node.O0_REVIEW_C1, CodexAgentRole.C1) == (
         policy.allowed_tools(CodexD1Node.C1, CodexAgentRole.C1)
     )
+    for candidate, source_node, source_role in (
+        (CodexD2Node.O0_CANDIDATE_C1, CodexD1Node.C1, CodexAgentRole.C1),
+        (CodexD2Node.O0_CANDIDATE_C3, CodexD1Node.C3, CodexAgentRole.C3),
+        (CodexD2Node.O0_CANDIDATE_C5, CodexD1Node.C5, CodexAgentRole.C5),
+    ):
+        assert policy.allowed_tools(candidate, _role_for_node(candidate)) == (
+            policy.allowed_tools(source_node, source_role)
+        )
     o1 = policy.allowed_tools(CodexD2Node.O1_STATE, _role_for_node(CodexD2Node.O1_STATE))
     assert policy.allowed_tools(CodexD1Node.C1, CodexAgentRole.C1).issubset(o1)
     assert policy.allowed_tools(CodexD1Node.C3, CodexAgentRole.C3).issubset(o1)
     assert policy.allowed_tools(CodexD1Node.C5, CodexAgentRole.C5).issubset(o1)
+
+
+def test_document2_qualifies_nested_document1_context_citations() -> None:
+    source = {
+        "future_nodes": [
+            {
+                "event": "capacity milestone 【cite:O688】",
+                "references": ["【cite:O691】", "D1-O7", "O9"],
+            }
+        ]
+    }
+
+    qualified = _qualify_d1_context(source)
+
+    assert qualified["future_nodes"][0]["event"] == ("capacity milestone 【cite:D1-O688】")
+    assert qualified["future_nodes"][0]["references"] == [
+        "【cite:D1-O691】",
+        "D1-O7",
+        "O9",
+    ]
+
+
+@pytest.mark.asyncio
+async def test_document2_pilot_bootstrap_reads_and_caches_horizontal_bundle(
+    tmp_path: Path,
+) -> None:
+    content = '{"metric":{"note":"source 【cite:O7】"}}'
+    raw = content.encode("utf-8")
+    digest = hashlib.sha256(raw).hexdigest()
+    repository = InMemoryCodexRuntimeRepository()
+    repository.save_artifact(
+        ArtifactRef(
+            workflow_version=CODEX_GLOBAL_RESEARCH_WORKFLOW_VERSION,
+            research_lane=ResearchLane.GLOBAL_RESEARCH,
+            artifact_id="horizontal-artifact",
+            run_id="global-horizontal",
+            node=CodexD1Node.PROGRAM_COLLECTION,
+            attempt_id="horizontal-attempt",
+            kind=ArtifactKind.BUNDLE,
+            relative_path="context/horizontal.json",
+            sha256=digest,
+            size_bytes=len(raw),
+            content_type="application/json",
+            published=True,
+        )
+    )
+
+    class _HorizontalClient:
+        calls = 0
+
+        async def read_text(self, run_id: str, relative_path: str) -> WorkspaceFileResponse:
+            assert run_id == "global-horizontal"
+            assert relative_path == "context/horizontal.json"
+            self.calls += 1
+            return WorkspaceFileResponse(
+                relative_path=relative_path,
+                sha256=digest,
+                size_bytes=len(raw),
+                content_type="application/json",
+                content=content,
+            )
+
+    client = _HorizontalClient()
+    builder = object.__new__(Document2PilotCaseBuilder)
+    builder._repository = repository  # noqa: SLF001
+    builder._source_cache_root = tmp_path / "sources"  # noqa: SLF001
+    builder._client = client  # type: ignore[assignment]  # noqa: SLF001
+    bundle = GlobalResearchBundle(
+        run_id="global-horizontal",
+        ticker="MU",
+        status="draft",
+    )
+
+    first, first_id = await builder._bootstrap_horizontal(bundle)  # noqa: SLF001
+    second, second_id = await builder._bootstrap_horizontal(bundle)  # noqa: SLF001
+
+    assert first_id == second_id == "horizontal-artifact"
+    assert first == second == {"metric": {"note": "source 【cite:D1-O7】"}}
+    assert client.calls == 1
 
 
 @pytest.mark.asyncio

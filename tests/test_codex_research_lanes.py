@@ -211,10 +211,10 @@ def test_horizontal_target_registries_are_lane_local() -> None:
 def test_new_bundle_manifests_have_exact_lane_nodes_and_canonical_resources() -> None:
     root = Path(__file__).resolve().parents[1]
     global_manifest = json.loads(
-        (root / "codex_assets/global_research_v1/bundle_manifest.json").read_text(encoding="utf-8")
+        (root / "prompts/codex_v2/document1/global_research/bundle_manifest.json").read_text(encoding="utf-8")
     )
     market_manifest = json.loads(
-        (root / "codex_assets/market_situation_v1/bundle_manifest.json").read_text(encoding="utf-8")
+        (root / "prompts/codex_v2/document1/market_situation/bundle_manifest.json").read_text(encoding="utf-8")
     )
     assert list(global_manifest["nodes"]) == [
         "c4_pre_scan",
@@ -241,7 +241,7 @@ def test_pilot_lane_identity_and_manual_upstream_contracts_are_persistent() -> N
     )
     assert workflow == "codex_global_research_v1"
     assert lane is ResearchLane.GLOBAL_RESEARCH
-    assert root.as_posix() == "codex_assets/global_research_v1"
+    assert root.as_posix() == "prompts/codex_v2/document1/global_research"
     assert GLOBAL_RESEARCH_MANUAL_UPSTREAM_FILES[CodexD1Node.C1] == (C4_PRE_SCAN_UPSTREAM_FILE,)
     assert GLOBAL_RESEARCH_MANUAL_UPSTREAM_FILES[CodexD1Node.C5] == ("c1.md", "c3.md")
     assert CodexD1Node.C2 not in GLOBAL_RESEARCH_MANUAL_UPSTREAM_FILES

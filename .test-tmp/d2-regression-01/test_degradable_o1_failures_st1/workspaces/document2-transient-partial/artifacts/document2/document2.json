@@ -1,0 +1,75 @@
+{
+  "schema_version": "document2.v2",
+  "workflow_version": "codex_document2_v1",
+  "document2_run_id": "document2-transient-partial",
+  "ticker": "NVDA",
+  "as_of": "2026-08-20T12:00:00Z",
+  "source_global_run_id": "global-source-1",
+  "input_manifest": {
+    "global_research": {
+      "status": "AVAILABLE",
+      "artifact_ids": [
+        "c1-artifact",
+        "c3-artifact",
+        "c5-artifact",
+        "horizontal-artifact",
+        "global-document"
+      ],
+      "workspace_paths": [
+        "artifacts/global/c1.md",
+        "artifacts/global/c3.md",
+        "artifacts/global/c5.md",
+        "artifacts/global/horizontal.json"
+      ],
+      "source_run_id": "global-source-1",
+      "as_of": "2026-08-20T12:00:00Z",
+      "warning": null,
+      "metadata": {}
+    },
+    "narrative_research": {
+      "status": "ABSENT",
+      "artifact_ids": [],
+      "workspace_paths": [],
+      "source_run_id": null,
+      "as_of": null,
+      "warning": null,
+      "metadata": {}
+    },
+    "event_library": {
+      "status": "NOT_CONFIGURED",
+      "artifact_ids": [],
+      "workspace_paths": [],
+      "source_run_id": null,
+      "as_of": null,
+      "warning": "Event Library integration is reserved but not configured.",
+      "metadata": {
+        "interface_version": "event-library-read-v1",
+        "read_only": true
+      }
+    }
+  },
+  "shells": [],
+  "shell_outcomes": [
+    {
+      "shell_id": "AI需求向盈利兑现",
+      "status": "failed",
+      "artifact_id": null,
+      "failed_stage": "STATE",
+      "failure_kind": "TRANSIENT",
+      "error_code": "CODEX_TURN_TIMEOUT",
+      "error": "temporary worker timeout",
+      "seed": {
+        "shell_id": "AI需求向盈利兑现",
+        "core_question": "AI demand can become durable earnings?",
+        "boundary_rule": "Keep only the shared demand-to-earnings system.",
+        "units": [
+          {
+            "expectation_id": "AI需求形成持续盈利贡献",
+            "proposition": "AI demand produces durable earnings contribution.",
+            "horizon": "next four quarters"
+          }
+        ]
+      }
+    }
+  ]
+}

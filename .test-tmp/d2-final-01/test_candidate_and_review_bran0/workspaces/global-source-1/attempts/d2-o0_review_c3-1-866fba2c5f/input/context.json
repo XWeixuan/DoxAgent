@@ -1,0 +1,50 @@
+{
+  "reviewer_role": "C3",
+  "original_domain_report": "c3 report【cite:D1-O1】",
+  "provisional_shells": {
+    "provisional_shells": [
+      {
+        "shell_temp_id": "S1",
+        "core_question": "Can demand become durable earnings?",
+        "boundary_reasoning": "Candidates share one demand-to-earnings system.",
+        "candidate_units": [
+          {
+            "candidate_id": "U-C1",
+            "candidate": "C1 expectation"
+          },
+          {
+            "candidate_id": "U-C3",
+            "candidate": "C3 expectation"
+          }
+        ]
+      }
+    ],
+    "unassigned_candidates": [
+      {
+        "candidate_id": "U-C5",
+        "candidate": "C5 expectation",
+        "reason": "Retained as market-implied State rather than an independent Unit."
+      }
+    ],
+    "warnings": []
+  },
+  "ticker": "NVDA",
+  "as_of": "2026-08-20T12:00:00+00:00",
+  "future_nodes": [],
+  "event_library": {
+    "status": "NOT_CONFIGURED",
+    "payload": null,
+    "source_run_id": null,
+    "as_of": null,
+    "warning": "Event Library integration is reserved but not configured.",
+    "metadata": {
+      "interface_version": "event-library-read-v1",
+      "read_only": true
+    }
+  },
+  "horizontal_indicators": {
+    "metrics": {
+      "revenue": 100
+    }
+  }
+}

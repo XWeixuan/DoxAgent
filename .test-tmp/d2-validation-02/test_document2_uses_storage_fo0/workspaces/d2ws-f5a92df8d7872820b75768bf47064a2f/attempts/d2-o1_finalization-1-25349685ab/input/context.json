@@ -1,0 +1,113 @@
+{
+  "canonical_shell": {
+    "shell_id": "AI需求向盈利兑现",
+    "core_question": "AI demand can become durable earnings?",
+    "boundary_rule": "Keep only the shared demand-to-earnings system.",
+    "units": [
+      {
+        "expectation_id": "AI需求形成持续盈利贡献",
+        "proposition": "AI demand produces durable earnings contribution.",
+        "horizon": "next four quarters",
+        "state": {
+          "parameters": [
+            {
+              "parameter_id": "FY27收入预期",
+              "definition": "Consensus FY27 revenue",
+              "value_type": "NUMBER"
+            }
+          ],
+          "values": [
+            {
+              "state_value_id": "FY27收入预期-卖方-当前",
+              "parameter_id": "FY27收入预期",
+              "source_role": "SELL_SIDE",
+              "value": {
+                "number": 100.0,
+                "unit": "USD billion"
+              },
+              "previous_value": null,
+              "time_scope": "FY27",
+              "as_of": "2026-08-20",
+              "citation": [
+                "D2REF:d2-o1_state-1-b71bbe39c4:O9"
+              ],
+              "validity_state": "CURRENT"
+            }
+          ]
+        },
+        "realization_factors": [
+          {
+            "factor_id": "客户采购持续性",
+            "condition": "Customers continue scaled procurement.",
+            "structural_role": "REQUIRED",
+            "current_status": "Procurement remains active.",
+            "impact": "Determines conversion into earnings.",
+            "citation": [
+              "https://example.com/procurement"
+            ],
+            "observability": {
+              "match_condition": "New customer procurement disclosure"
+            }
+          }
+        ],
+        "potential_gaps": [
+          {
+            "gap_id": "主要客户下调AI资本开支",
+            "possible_occurrence": "A major customer cuts annual AI capex guidance.",
+            "derivation": "The current expectation depends on procurement continuity.",
+            "citation": [
+              "unknown-alias"
+            ],
+            "expected_revision": "Demand and earnings expectations would be revised down.",
+            "recognition_criteria": null
+          }
+        ]
+      }
+    ]
+  },
+  "global_research": {
+    "run_id": "global-source-1",
+    "ticker": "NVDA",
+    "published_at": "2026-08-20T12:00:00Z",
+    "reports": {
+      "c1": "c1 report【cite:D1-O1】",
+      "c3": "c3 report【cite:D1-O1】",
+      "c5": "c5 report【cite:D1-O1】"
+    },
+    "report_artifact_ids": {
+      "c1": "c1-artifact",
+      "c3": "c3-artifact",
+      "c5": "c5-artifact"
+    },
+    "entity_relations": [],
+    "future_nodes": [],
+    "horizontal_collection": {
+      "metrics": {
+        "revenue": 100
+      }
+    },
+    "horizontal_artifact_id": "horizontal-artifact",
+    "document_artifact_id": "global-document",
+    "citation_manifest_artifact_id": "global-citations"
+  },
+  "narrative_research": {
+    "status": "ABSENT",
+    "payload": null,
+    "source_run_id": null,
+    "as_of": null,
+    "warning": null,
+    "metadata": {}
+  },
+  "event_library": {
+    "status": "NOT_CONFIGURED",
+    "payload": null,
+    "source_run_id": null,
+    "as_of": null,
+    "warning": "Event Library integration is reserved but not configured.",
+    "metadata": {
+      "interface_version": "event-library-read-v1",
+      "read_only": true
+    }
+  },
+  "turn": "FINALIZATION"
+}

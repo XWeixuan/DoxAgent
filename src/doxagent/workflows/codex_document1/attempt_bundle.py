@@ -54,7 +54,7 @@ class AttemptBundleSeeder:
     def __init__(self, workspace: WorkspaceClient, root: str | Path) -> None:
         self._workspace = workspace
         self._root = Path(root)
-        self._repo_root = self._root.resolve().parents[1]
+        self._repo_root = Path(__file__).resolve().parents[4]
         self._manifest_text = (self._root / "bundle_manifest.json").read_text(encoding="utf-8")
         self._manifest = json.loads(self._manifest_text)
         if self._manifest.get("bundle_version") not in SUPPORTED_BUNDLE_VERSIONS:

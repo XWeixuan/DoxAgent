@@ -1,0 +1,59 @@
+{
+  "$defs": {
+    "CandidateUnit": {
+      "properties": {
+        "candidate_id": {
+          "title": "Candidate Id",
+          "type": "string"
+        },
+        "candidate": {
+          "title": "Candidate",
+          "type": "string"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        },
+        "references": {
+          "items": {
+            "type": "string"
+          },
+          "title": "References",
+          "type": "array"
+        }
+      },
+      "required": [
+        "candidate_id",
+        "candidate",
+        "reason",
+        "references"
+      ],
+      "title": "CandidateUnit",
+      "type": "object",
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "candidates": {
+      "items": {
+        "$ref": "#/$defs/CandidateUnit"
+      },
+      "title": "Candidates",
+      "type": "array"
+    },
+    "warnings": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Warnings",
+      "type": "array"
+    }
+  },
+  "title": "CandidateDiscoveryResult",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "candidates",
+    "warnings"
+  ]
+}
