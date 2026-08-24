@@ -1,0 +1,21 @@
+{
+  "event_id": "T2",
+  "ticker": "MU",
+  "title": "Micron KeyBanc forum business update",
+  "event_type": "INVESTOR_CONFERENCE_UPDATE",
+  "occurred_at": "2026-08-10",
+  "occurrence_time_precision": "DAY",
+  "status": "ACTIVE",
+  "canonical_summary": "Micron updated supply constraints and raised its US investment commitment at the KeyBanc forum.",
+  "known_event_summary": "On Aug. 10, Micron said 2027 supply would be tighter than 2026, data-center customers were receiving about half their requested supply, and its US investment commitment had risen from $200B to $250B.",
+  "is_important": true,
+  "include_in_reference_view": true,
+  "related_event_ids": ["T1"],
+  "supersedes_event_id": null,
+  "derived_from_event_ids": [],
+  "facts": [
+    {"fact_id": "TF5", "proposition": "At the KeyBanc forum, Micron said 2027 supply would be tighter than 2026 and data-center customers were receiving about half of requested supply.", "assertion_state": "FORECAST", "subject_time": "2027", "entities": ["Micron", "KeyBanc"], "consumes_delta_ids": ["D6"]},
+    {"fact_id": "TF6", "proposition": "At the KeyBanc forum, Micron increased its US investment commitment from $200 billion to $250 billion.", "assertion_state": "PLAN", "subject_time": null, "entities": ["Micron", "KeyBanc"], "consumes_delta_ids": ["D7"]}
+  ],
+  "price_analysis": null
+}

@@ -25,6 +25,7 @@ from doxagent.codex_runtime.repository import (
 from doxagent.codex_runtime.schema import ResearchLane, utc_now
 from doxagent.dashboard_api.auth import require_dashboard_auth
 from doxagent.dashboard_api.mock_router import DASHBOARD_API_PREFIX
+from doxagent.event_library.provider import PublishedEventLibraryReader
 from doxagent.horizontal_collection.collector import HorizontalCollector
 from doxagent.horizontal_collection.compiler import HorizontalStateCompiler
 from doxagent.horizontal_collection.registry import (
@@ -34,7 +35,10 @@ from doxagent.horizontal_collection.registry import (
 from doxagent.model_usage.repository import SQLiteModelUsageRepository
 from doxagent.settings import DoxAgentSettings
 from doxagent.tools.factory import default_real_tool_registry
-from doxagent.workflows.codex_document2.inputs import DoxAtlasNarrativeReportProvider
+from doxagent.workflows.codex_document2.inputs import (
+    DoxAtlasNarrativeReportProvider,
+    PublishedEventLibraryProvider,
+)
 from doxagent.workflows.codex_document2.orchestrator import CodexDocument2Orchestrator
 from doxagent.workflows.codex_document2.schema import (
     Document2Bundle,
@@ -319,6 +323,16 @@ def build_codex_research_lane_service(settings: DoxAgentSettings) -> CodexResear
             "usage_repository": usage,
         }
 
+    event_provider = (
+        PublishedEventLibraryProvider(
+            PublishedEventLibraryReader(
+                settings.event_library_root,
+                market=settings.event_library_market,
+            )
+        )
+        if settings.event_library_root
+        else None
+    )
     return CodexResearchLaneService(
         global_orchestrator=CodexGlobalResearchOrchestrator(**common(ResearchLane.GLOBAL_RESEARCH)),
         market_orchestrator=CodexMarketSituationOrchestrator(
@@ -329,6 +343,7 @@ def build_codex_research_lane_service(settings: DoxAgentSettings) -> CodexResear
             workspace=worker,
             repository=repository,
             narrative_provider=DoxAtlasNarrativeReportProvider(tools),
+            event_library_provider=event_provider,
             model=config.model,
             model_provider=config.model_provider,
             effort=config.reasoning_effort,

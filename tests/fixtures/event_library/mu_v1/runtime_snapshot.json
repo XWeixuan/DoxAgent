@@ -1,0 +1,100 @@
+{
+  "snapshot_id": "mu-frozen-runtime-v1",
+  "runtime_scope": "cdecr:US:MU",
+  "epoch_id": "bulk-epoch:mu-gold-v1",
+  "epoch_status": "FINALIZED",
+  "market": "US",
+  "ticker": "MU",
+  "as_of": "2026-08-24T00:00:00Z",
+  "atomics": [
+    {
+      "runtime_atomic_id": "a01-earnings-revenue",
+      "version": 1,
+      "proposition": "Micron reported FY2026 Q3 revenue of $41.46 billion.",
+      "time": "2026-06-24 | FY2026-Q3",
+      "assertion_state": "ACTUAL",
+      "entities": ["Micron"],
+      "runtime_package_ids": ["p01-earnings"]
+    },
+    {
+      "runtime_atomic_id": "a02-earnings-guide",
+      "version": 1,
+      "proposition": "Micron guided FY2026 Q4 revenue to approximately $50 billion.",
+      "time": "2026-06-24 | FY2026-Q4",
+      "assertion_state": "GUIDANCE",
+      "entities": ["Micron"],
+      "runtime_package_ids": ["p01-earnings"]
+    },
+    {
+      "runtime_atomic_id": "a03-supply-outlook",
+      "version": 1,
+      "proposition": "Micron said memory supply would remain tight beyond 2027.",
+      "time": "2026-06-24 | beyond 2027",
+      "assertion_state": "FORECAST",
+      "entities": ["Micron"],
+      "runtime_package_ids": ["p01-earnings"]
+    },
+    {
+      "runtime_atomic_id": "a04-customer-agreements",
+      "version": 1,
+      "proposition": "Micron disclosed 16 strategic customer agreements with $22 billion of projected deposits and related commitments.",
+      "time": "2026-06-24",
+      "assertion_state": "ACTUAL",
+      "entities": ["Micron"],
+      "runtime_package_ids": ["p02-agreements"]
+    },
+    {
+      "runtime_atomic_id": "a05-revenue-duplicate",
+      "version": 1,
+      "proposition": "Micron generated $41.46 billion in quarterly revenue.",
+      "time": "2026-06-24 | FY2026-Q3",
+      "assertion_state": "ACTUAL",
+      "entities": ["Micron"],
+      "runtime_package_ids": ["p03-market"]
+    },
+    {
+      "runtime_atomic_id": "a06-forum-supply-update",
+      "version": 1,
+      "proposition": "At the KeyBanc forum, Micron said 2027 supply would be tighter than 2026 and data-center customers were receiving about half of requested supply.",
+      "time": "2026-08-10",
+      "assertion_state": "FORECAST",
+      "entities": ["Micron", "KeyBanc"],
+      "runtime_package_ids": ["p04-forum"]
+    },
+    {
+      "runtime_atomic_id": "a07-forum-investment-update",
+      "version": 1,
+      "proposition": "At the KeyBanc forum, Micron increased its US investment commitment from $200 billion to $250 billion.",
+      "time": "2026-08-10",
+      "assertion_state": "PLAN",
+      "entities": ["Micron", "KeyBanc"],
+      "runtime_package_ids": ["p04-forum"]
+    },
+    {
+      "runtime_atomic_id": "a08-time-conflict",
+      "version": 1,
+      "proposition": "A report described a Micron capacity milestone but gave conflicting occurrence dates.",
+      "time": "UNKNOWN",
+      "assertion_state": "UNKNOWN",
+      "entities": ["Micron"],
+      "runtime_package_ids": ["p05-ambiguous"]
+    },
+    {
+      "runtime_atomic_id": "a09-invalid-noise",
+      "version": 1,
+      "proposition": "Template technical indicator snapshot with no business occurrence.",
+      "time": "2026-08-23",
+      "assertion_state": "ACTUAL",
+      "entities": ["Micron"],
+      "runtime_package_ids": ["p06-invalid"]
+    }
+  ],
+  "packages": [
+    {"runtime_package_id": "p01-earnings", "version": 1, "title": "Micron Q3 FY2026 earnings release", "member_runtime_atomic_ids": ["a01-earnings-revenue", "a02-earnings-guide", "a03-supply-outlook"]},
+    {"runtime_package_id": "p02-agreements", "version": 1, "title": "Micron long-term customer agreements", "member_runtime_atomic_ids": ["a04-customer-agreements"]},
+    {"runtime_package_id": "p03-market", "version": 1, "title": "Micron quarterly market statistics", "member_runtime_atomic_ids": ["a05-revenue-duplicate"]},
+    {"runtime_package_id": "p04-forum", "version": 1, "title": "Micron KeyBanc Technology Leadership Forum", "member_runtime_atomic_ids": ["a06-forum-supply-update", "a07-forum-investment-update"]},
+    {"runtime_package_id": "p05-ambiguous", "version": 1, "title": "Micron capacity milestone", "member_runtime_atomic_ids": ["a08-time-conflict"]},
+    {"runtime_package_id": "p06-invalid", "version": 1, "title": "Micron technical snapshot", "member_runtime_atomic_ids": ["a09-invalid-noise"]}
+  ]
+}

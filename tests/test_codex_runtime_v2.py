@@ -13,6 +13,7 @@ from fastapi.testclient import TestClient
 from openai_codex import Sandbox
 
 from doxagent.codex_runtime.capabilities import CapabilityTokenCodec
+from doxagent.codex_runtime.client import _is_loopback_url
 from doxagent.codex_runtime.config import CodexRuntimeConfig
 from doxagent.codex_runtime.errors import (
     CapabilityDenied,
@@ -40,6 +41,13 @@ from doxagent.mcp.source_capture import (
     SourceCaptureService,
     _extract_payload_text,
 )
+
+
+def test_worker_client_bypasses_environment_proxy_only_for_loopback_urls() -> None:
+    assert _is_loopback_url("http://127.0.0.1:8791") is True
+    assert _is_loopback_url("http://[::1]:8791") is True
+    assert _is_loopback_url("http://localhost:8791") is True
+    assert _is_loopback_url("https://worker.example.com") is False
 
 
 def test_capability_tokens_are_run_operation_and_expiry_scoped(

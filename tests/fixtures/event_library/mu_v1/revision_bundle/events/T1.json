@@ -1,0 +1,23 @@
+{
+  "event_id": "T1",
+  "ticker": "MU",
+  "title": "Micron FY2026 Q3 earnings release",
+  "event_type": "EARNINGS_RELEASE",
+  "occurred_at": "2026-06-24",
+  "occurrence_time_precision": "DAY",
+  "status": "ACTIVE",
+  "canonical_summary": "Micron reported record FY2026 Q3 revenue and issued higher FY2026 Q4 guidance amid tight memory supply.",
+  "known_event_summary": "On Jun. 24, Micron reported FY2026 Q3 revenue of $41.46B; guided FY2026 Q4 revenue to about $50B; said memory supply would remain tight beyond 2027; and disclosed 16 strategic customer agreements with $22B of projected deposits and related commitments.",
+  "is_important": true,
+  "include_in_reference_view": true,
+  "related_event_ids": ["T2"],
+  "supersedes_event_id": null,
+  "derived_from_event_ids": [],
+  "facts": [
+    {"fact_id": "TF1", "proposition": "Micron reported FY2026 Q3 revenue of $41.46 billion.", "assertion_state": "ACTUAL", "subject_time": "FY2026-Q3", "entities": ["Micron"], "consumes_delta_ids": ["D1", "D5"]},
+    {"fact_id": "TF2", "proposition": "Micron guided FY2026 Q4 revenue to approximately $50 billion.", "assertion_state": "GUIDANCE", "subject_time": "FY2026-Q4", "entities": ["Micron"], "consumes_delta_ids": ["D2"]},
+    {"fact_id": "TF3", "proposition": "Micron said memory supply would remain tight beyond 2027.", "assertion_state": "FORECAST", "subject_time": "beyond 2027", "entities": ["Micron"], "consumes_delta_ids": ["D3"]},
+    {"fact_id": "TF4", "proposition": "Micron disclosed 16 strategic customer agreements with $22 billion of projected deposits and related commitments.", "assertion_state": "ACTUAL", "subject_time": null, "entities": ["Micron"], "consumes_delta_ids": ["D4"]}
+  ],
+  "price_analysis": null
+}

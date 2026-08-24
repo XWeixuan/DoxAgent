@@ -18,11 +18,15 @@ CODEX_MARKET_SITUATION_WORKFLOW_VERSION: Final[Literal["codex_market_situation_v
 CODEX_DOCUMENT2_WORKFLOW_VERSION: Final[Literal["codex_document2_v1"]] = (
     "codex_document2_v1"
 )
+CODEX_EVENT_LIBRARY_WORKFLOW_VERSION: Final[Literal["codex_event_library_v1"]] = (
+    "codex_event_library_v1"
+)
 CodexWorkflowVersion: TypeAlias = Literal[
     "codex_d1_v2",
     "codex_global_research_v1",
     "codex_market_situation_v1",
     "codex_document2_v1",
+    "codex_event_library_v1",
 ]
 
 
@@ -70,7 +74,11 @@ class CodexD2Node(StrEnum):
     PUBLISH = "d2_publish"
 
 
-CodexResearchNode: TypeAlias = CodexD1Node | CodexD2Node
+class CodexEventLibraryNode(StrEnum):
+    O2_MAINTAIN = "event_library_o2_maintain"
+
+
+CodexResearchNode: TypeAlias = CodexD1Node | CodexD2Node | CodexEventLibraryNode
 
 
 class ResearchLane(StrEnum):
@@ -78,6 +86,7 @@ class ResearchLane(StrEnum):
     GLOBAL_RESEARCH = "global_research"
     MARKET_SITUATION_RESEARCH = "market_situation_research"
     DOCUMENT2 = "document2"
+    EVENT_LIBRARY = "event_library"
 
 
 class CodexAgentRole(StrEnum):
@@ -94,7 +103,13 @@ class CodexD2AgentRole(StrEnum):
     O1 = "o1_expectation_owner"
 
 
-CodexResearchAgentRole: TypeAlias = CodexAgentRole | CodexD2AgentRole
+class CodexEventLibraryAgentRole(StrEnum):
+    O2 = "o2_event_library_maintainer"
+
+
+CodexResearchAgentRole: TypeAlias = (
+    CodexAgentRole | CodexD2AgentRole | CodexEventLibraryAgentRole
+)
 
 
 _LANE_BY_WORKFLOW: dict[str, ResearchLane] = {
@@ -102,6 +117,7 @@ _LANE_BY_WORKFLOW: dict[str, ResearchLane] = {
     CODEX_GLOBAL_RESEARCH_WORKFLOW_VERSION: ResearchLane.GLOBAL_RESEARCH,
     CODEX_MARKET_SITUATION_WORKFLOW_VERSION: ResearchLane.MARKET_SITUATION_RESEARCH,
     CODEX_DOCUMENT2_WORKFLOW_VERSION: ResearchLane.DOCUMENT2,
+    CODEX_EVENT_LIBRARY_WORKFLOW_VERSION: ResearchLane.EVENT_LIBRARY,
 }
 
 

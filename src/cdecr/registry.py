@@ -1369,6 +1369,14 @@ class SQLiteCDECRRegistry:
             ).fetchone()
         return None if row is None else str(row["fingerprint"])
 
+    def has_source_fingerprint(self, fingerprint: str) -> bool:
+        with self._read_connection() as connection:
+            row = connection.execute(
+                "SELECT 1 FROM source_messages WHERE fingerprint=? LIMIT 1",
+                (fingerprint,),
+            ).fetchone()
+        return row is not None
+
     def get_mention(self, mention_id: str) -> EventMention | None:
         with self._read_connection() as connection:
             row = connection.execute(

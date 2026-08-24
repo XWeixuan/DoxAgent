@@ -51,6 +51,7 @@ from doxagent.persistent_runtime.schema import (
     runtime_duplicate_keys,
 )
 from doxagent.persistent_runtime.workers import (
+    EventLibraryAwareW1Worker,
     LazyAgentRunnerA2Worker,
     LazyAgentRunnerO3Worker,
     LazyAgentRunnerW1Worker,
@@ -158,10 +159,21 @@ class PersistentRuntimeExecutionService:
             repository: PersistentRuntimeRepository = InMemoryPersistentRuntimeRepository()
         else:
             repository = SQLitePersistentRuntimeRepository(resolved.persistent_runtime_sqlite_path)
+        resolved_w1 = w1_worker or LazyAgentRunnerW1Worker(resolved)
+        if w1_worker is None and resolved.event_library_root:
+            from doxagent.event_library.provider import PublishedEventLibraryReader
+
+            resolved_w1 = EventLibraryAwareW1Worker(
+                resolved_w1,
+                PublishedEventLibraryReader(
+                    resolved.event_library_root,
+                    market=resolved.event_library_market,
+                ),
+            )
         return cls(
             repository,
             route_engine=route_engine,
-            w1_worker=w1_worker or LazyAgentRunnerW1Worker(resolved),
+            w1_worker=resolved_w1,
             w2_worker=w2_worker or LazyAgentRunnerW2Worker(resolved),
             a2_worker=a2_worker or LazyAgentRunnerA2Worker(resolved),
             o3_worker=o3_worker or LazyAgentRunnerO3Worker(resolved),

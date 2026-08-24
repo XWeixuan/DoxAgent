@@ -90,6 +90,16 @@ class Document2PilotSourceAttemptUnavailable(ValueError):
     pass
 
 
+class Document2PilotShellSelectionRequired(ValueError):
+    def __init__(self, available_shell_ids: list[str]) -> None:
+        self.available_shell_ids = tuple(available_shell_ids)
+        available = ", ".join(self.available_shell_ids)
+        super().__init__(
+            "multiple Pilot shells are available; rerun advance with --shell. "
+            f"available: {available}"
+        )
+
+
 @dataclass(frozen=True)
 class Document2PilotCaseRequest:
     source_workspace_run: str
@@ -159,9 +169,9 @@ class Document2PilotCaseBuilder:
         case_root = self.cases_root / "document2" / request.node.value / request.case_id
         if case_root.exists():
             raise FileExistsError(f"Pilot case already exists: {case_root}")
-        case_root.parent.mkdir(parents=True, exist_ok=True)
         if request.source_global_run_id is not None:
             return await self._prepare_bootstrap(request, case_root)
+        case_root.parent.mkdir(parents=True, exist_ok=True)
         with tempfile.TemporaryDirectory(
             prefix=f".{request.case_id}-", dir=case_root.parent
         ) as tmp:
@@ -201,6 +211,7 @@ class Document2PilotCaseBuilder:
         reports = await self._bootstrap_reports(bundle)
         context = await self._bootstrap_context(request, bundle, reports)
         attempt_id = f"d2-pilot-{request.node.value.removeprefix('d2_')[:36]}-{uuid4().hex[:10]}"
+        case_root.parent.mkdir(parents=True, exist_ok=True)
         with tempfile.TemporaryDirectory(
             prefix=f".{request.case_id}-", dir=case_root.parent
         ) as tmp:
@@ -764,10 +775,7 @@ def _select_bootstrap_shell(
         )
     if len(shells) == 1:
         return shells[0]
-    available = ", ".join(str(item.get("shell_id") or "") for item in shells)
-    raise ValueError(
-        f"multiple Pilot shells are available; rerun advance with --shell. available: {available}"
-    )
+    raise Document2PilotShellSelectionRequired([str(item.get("shell_id") or "") for item in shells])
 
 
 def _role_for_node(node: CodexD2Node) -> CodexResearchAgentRole:

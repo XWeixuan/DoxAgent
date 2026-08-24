@@ -40,10 +40,20 @@ case root 和 `PILOT_TASK.md` 路径。把打印出的精确 case root 作为 Co
 任务即可。当前 Codex App 接口不支持该脚本代替用户创建 App 会话。
 
 bootstrap 启动时 Shell 尚未产生，因此无需预先指定。O0 Finalization 产生多个 Shell 时，使用
-其 `shell_id` 选择本次 13 节点 Pilot 的 Shell 后继续：
+coordinator 会返回 `selection_required` 并列出可选 `shell_id`，保持 O1 State 为 pending，
+不会留下空 case 或让 watcher 异常退出。使用其中一个 `shell_id` 选择本次 13 节点 Pilot 的
+Shell 后继续：
 
 ```powershell
 python document2_coordinator.py advance --coordinator-id <pilot_id> --shell <shell_id>
+```
+
+如果人工重编排后的 `ShellFinalizationResult` 需要替代原 O0 handoff，可在 O1 State
+创建前显式传入该 JSON。coordinator 会校验并保存一份带 SHA-256 来源记录的替代输入，
+不会覆盖原 O0 Pilot 产物：
+
+```powershell
+python document2_coordinator.py advance --coordinator-id <pilot_id> --finalized-shells <json_path> --shell <shell_id>
 ```
 
 状态与当前 case 指针位于：

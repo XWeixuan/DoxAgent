@@ -279,6 +279,13 @@ class BulkEpochEngine:
         self.embedding_batch_executor = embedding_batch_executor
         self.core._bulk_batch_audit_write = batch_audit_write
         self._last_n9_failure_recovery: dict[str, object] = {}
+        self._last_epoch_id: str | None = None
+
+    @property
+    def last_epoch_id(self) -> str | None:
+        """Expose the deterministic epoch identity to orchestration callers."""
+
+        return self._last_epoch_id
 
     def n9_failure_recovery_telemetry(self) -> dict[str, object]:
         """Return the latest epoch's orchestration-only N9 recovery counters."""
@@ -296,6 +303,7 @@ class BulkEpochEngine:
         self.executor.close()
 
     def process_batch(self, message_ids: list[str]) -> list[CrossDocumentResult]:
+        self._last_epoch_id = None
         def source_order(message_id: str) -> tuple[datetime, str]:
             source = self.registry.get_source(message_id)
             if source is None:
@@ -343,6 +351,7 @@ class BulkEpochEngine:
         )
         manifest_hash = canonical_hash(manifest)
         epoch_id = f"bulk-epoch:{manifest_hash[:24]}"
+        self._last_epoch_id = epoch_id
         epoch = self.registry.start_bulk_epoch(
             epoch_id=epoch_id,
             manifest_hash=manifest_hash,

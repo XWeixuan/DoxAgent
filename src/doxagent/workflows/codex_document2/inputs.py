@@ -16,6 +16,7 @@ from doxagent.codex_runtime.schema import (
     CodexD1Node,
     GlobalResearchBundle,
 )
+from doxagent.event_library.provider import PublishedEventLibraryReader
 from doxagent.models import AgentName, AgentPermissions
 from doxagent.tools.registry import ToolRegistry
 from doxagent.tools.schema import ToolRequest
@@ -60,6 +61,51 @@ class UnconfiguredEventLibraryProvider:
             metadata={
                 "interface_version": self.interface_version,
                 "read_only": self.read_only,
+            },
+        )
+
+
+class PublishedEventLibraryProvider:
+    """D2 reserved read-only port backed only by the Published Reference View."""
+
+    interface_version = EVENT_LIBRARY_PORT_VERSION
+    read_only = True
+
+    def __init__(self, reader: PublishedEventLibraryReader) -> None:
+        self._reader = reader
+
+    async def load(self, *, ticker: str, as_of: datetime) -> OptionalInput:
+        snapshot = self._reader.reference_view(ticker)
+        if snapshot is None:
+            return OptionalInput(
+                status=InputAvailability.ABSENT,
+                warning="No Published Event Library version exists for this ticker.",
+                metadata={
+                    "interface_version": self.interface_version,
+                    "read_only": self.read_only,
+                },
+            )
+        if snapshot.published_at is not None and snapshot.published_at > as_of:
+            return OptionalInput(
+                status=InputAvailability.ABSENT,
+                warning="Published Event Library head is newer than the Document2 cutoff.",
+                metadata={
+                    "interface_version": self.interface_version,
+                    "read_only": self.read_only,
+                    "version": snapshot.version,
+                },
+            )
+        return OptionalInput(
+            status=InputAvailability.AVAILABLE,
+            payload=snapshot.reference_view,
+            source_run_id=f"event-library:{ticker.upper()}:v{snapshot.version}",
+            as_of=snapshot.published_at,
+            metadata={
+                "interface_version": self.interface_version,
+                "read_only": self.read_only,
+                "version": snapshot.version,
+                "sha256": snapshot.sha256,
+                "view": "REFERENCE_VIEW",
             },
         )
 

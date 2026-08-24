@@ -753,7 +753,9 @@ class CodexDocument2Orchestrator:
                             "narrative_research": prepared.narrative_research.model_dump(
                                 mode="json"
                             ),
-                            "event_library": prepared.event_library.model_dump(mode="json"),
+                            "event_library": self._event_library_turn_context(
+                                prepared, state
+                            ),
                             "turn": stage.value,
                         },
                         output_model=ExpectationShell,
@@ -765,6 +767,8 @@ class CodexDocument2Orchestrator:
                     )
                     shell = cast(ExpectationShell, turn.output)
                     state.thread_id = turn.thread_id
+                    if prepared.event_library.status is InputAvailability.AVAILABLE:
+                        state.event_library_injected = True
                     state.stage = stage
                     state.error = None
                     state.snapshot_paths.append(turn.artifact.relative_path)
@@ -885,8 +889,24 @@ class CodexDocument2Orchestrator:
             "ticker": prepared.ticker,
             "as_of": prepared.as_of.isoformat(),
             "future_nodes": prepared.global_research.future_nodes,
-            "event_library": prepared.event_library.model_dump(mode="json"),
             "horizontal_indicators": prepared.global_research.horizontal_collection,
+        }
+
+    def _event_library_turn_context(
+        self,
+        prepared: PreparedDocument2Inputs,
+        state: ShellRunState,
+    ) -> dict[str, object]:
+        value = prepared.event_library
+        if value.status is InputAvailability.AVAILABLE and not state.event_library_injected:
+            return value.model_dump(mode="json")
+        return {
+            "status": value.status.value,
+            "source_run_id": value.source_run_id,
+            "as_of": None if value.as_of is None else value.as_of.isoformat(),
+            "metadata": value.metadata,
+            "payload_injected_earlier_in_thread": state.event_library_injected,
+            "warning": value.warning,
         }
 
     async def _save_progress(

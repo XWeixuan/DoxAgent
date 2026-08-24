@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import asyncio
+import ipaddress
 from typing import Any, Protocol
+from urllib.parse import urlsplit
 
 import httpx
 
@@ -51,6 +53,9 @@ class HttpCodexWorkerClient:
             base_url=base_url,
             headers={"Authorization": f"Bearer {bearer_token}"},
             timeout=httpx.Timeout(30, read=60),
+            # Local worker traffic must never be diverted through an inherited
+            # HTTP(S)_PROXY. Remote worker URLs retain the normal proxy policy.
+            trust_env=not _is_loopback_url(base_url),
         )
         self._capabilities = CapabilityTokenCodec(capability_secret) if capability_secret else None
         self._poll_seconds = poll_seconds
@@ -202,3 +207,15 @@ class HttpCodexWorkerClient:
 
     async def aclose(self) -> None:
         await self._client.aclose()
+
+
+def _is_loopback_url(value: str) -> bool:
+    host = urlsplit(value).hostname
+    if host is None:
+        return False
+    if host.casefold() == "localhost":
+        return True
+    try:
+        return ipaddress.ip_address(host).is_loopback
+    except ValueError:
+        return False

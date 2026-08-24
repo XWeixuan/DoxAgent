@@ -1,0 +1,7 @@
+{
+  "run_id": "mu-event-library-foundation-v1",
+  "ticker": "MU",
+  "base_library_version": 0,
+  "delta_batch_ids": ["__DELTA_BATCH_ID__"],
+  "event_revisions": ["events/T1.json", "events/T2.json"]
+}

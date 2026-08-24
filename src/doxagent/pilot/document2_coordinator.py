@@ -5,6 +5,8 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import json
+import os
+import tempfile
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -14,11 +16,15 @@ from doxagent.codex_runtime.schema import CodexD2Node
 from doxagent.pilot.document2_case_builder import (
     Document2PilotCaseBuilder,
     Document2PilotCaseRequest,
+    Document2PilotShellSelectionRequired,
     Document2PilotSourceAttemptUnavailable,
     Document2PilotUpstreamCase,
 )
 from doxagent.workflows.codex_document2.runner import logical_workspace_id
-from doxagent.workflows.codex_document2.schema import Document2Checkpoint
+from doxagent.workflows.codex_document2.schema import (
+    Document2Checkpoint,
+    ShellFinalizationResult,
+)
 
 _STATE_SCHEMA = "d2-pilot-coordinator-v1"
 StageStatus = Literal["pending", "active", "completed", "skipped"]
@@ -36,11 +42,13 @@ class Document2PilotCoordinatorRequest:
 
 @dataclass(frozen=True)
 class Document2PilotCoordinatorEvent:
-    status: Literal["created", "waiting", "completed"]
+    status: Literal["created", "waiting", "selection_required", "completed"]
     coordinator_root: Path
     node: CodexD2Node | None = None
     case_root: Path | None = None
     task_path: Path | None = None
+    available_shell_ids: tuple[str, ...] = ()
+    message: str | None = None
 
 
 class Document2PilotCoordinator:
@@ -96,12 +104,32 @@ class Document2PilotCoordinator:
         return await self.advance(request.coordinator_id)
 
     async def advance(
-        self, coordinator_id: str, *, shell_key: str | None = None
+        self,
+        coordinator_id: str,
+        *,
+        shell_key: str | None = None,
+        finalized_shells_path: str | Path | None = None,
     ) -> Document2PilotCoordinatorEvent:
         root, state = self._load(coordinator_id)
+        if finalized_shells_path is not None:
+            stages = _stages(state)
+            active = next((stage for stage in stages if stage["status"] == "active"), None)
+            pending = next((stage for stage in stages if stage["status"] == "pending"), None)
+            if (
+                active is not None
+                or pending is None
+                or pending["node"] != CodexD2Node.O1_STATE.value
+            ):
+                raise ValueError(
+                    "finalized_shells_path may only replace the O0 handoff before O1 State starts"
+                )
+            state["o0_finalization_override"] = _materialize_finalization_override(
+                root, Path(finalized_shells_path)
+            )
         if shell_key is not None:
             _identifier(shell_key, "shell_key")
             state["shell_key"] = shell_key
+            state.pop("selection_required", None)
             state["updated_at"] = _now()
             _write_state(root, state)
         stages = _stages(state)
@@ -121,10 +149,12 @@ class Document2PilotCoordinator:
                 state["status"] = "completed"
                 state["updated_at"] = _now()
                 _write_state(root, state)
-                return Document2PilotCoordinatorEvent(
-                    status="completed", coordinator_root=root
-                )
-            dependencies = _dependency_cases(stages, pending)
+                return Document2PilotCoordinatorEvent(status="completed", coordinator_root=root)
+            dependencies = _dependency_cases(
+                stages,
+                pending,
+                finalization_override=_finalization_override_case(state),
+            )
             request = Document2PilotCaseRequest(
                 source_workspace_run=str(pending["source_workspace_run"]),
                 node=CodexD2Node(str(pending["node"])),
@@ -136,14 +166,26 @@ class Document2PilotCoordinator:
                     if bool(state.get("bootstrap_from_global_research"))
                     else None
                 ),
-                shell_key=(
-                    str(state["shell_key"])
-                    if state.get("shell_key") is not None
-                    else None
-                ),
+                shell_key=(str(state["shell_key"]) if state.get("shell_key") is not None else None),
             )
             try:
                 prepared = await self._builder.prepare(request)
+            except Document2PilotShellSelectionRequired as exc:
+                state["selection_required"] = {
+                    "node": pending["node"],
+                    "available_shell_ids": list(exc.available_shell_ids),
+                    "message": str(exc),
+                }
+                state["updated_at"] = _now()
+                _write_state(root, state)
+                _write_selection_required(root, pending, exc)
+                return Document2PilotCoordinatorEvent(
+                    status="selection_required",
+                    coordinator_root=root,
+                    node=CodexD2Node(str(pending["node"])),
+                    available_shell_ids=exc.available_shell_ids,
+                    message=str(exc),
+                )
             except Document2PilotSourceAttemptUnavailable as exc:
                 if bool(pending["optional"]):
                     pending["status"] = "skipped"
@@ -173,7 +215,7 @@ class Document2PilotCoordinator:
             raise ValueError("poll_seconds must be at least 0.5")
         while True:
             event = await self.advance(coordinator_id)
-            if event.status in {"created", "completed"}:
+            if event.status in {"created", "selection_required", "completed"}:
                 return event
             await asyncio.sleep(poll_seconds)
 
@@ -457,7 +499,10 @@ def _output_root(stage: dict[str, object]) -> Path:
 
 
 def _dependency_cases(
-    stages: list[dict[str, object]], pending: dict[str, object]
+    stages: list[dict[str, object]],
+    pending: dict[str, object],
+    *,
+    finalization_override: Document2PilotUpstreamCase | None = None,
 ) -> tuple[Document2PilotUpstreamCase, ...]:
     raw_dependencies = pending.get("dependencies")
     if not isinstance(raw_dependencies, list):
@@ -469,13 +514,74 @@ def _dependency_cases(
             continue
         if stage["status"] != "completed":
             raise RuntimeError(f"Pilot dependency is not completed: {stage['node']}")
+        node = CodexD2Node(str(stage["node"]))
         dependencies.append(
-            Document2PilotUpstreamCase(
-                node=CodexD2Node(str(stage["node"])),
+            finalization_override
+            if node is CodexD2Node.O0_FINALIZATION and finalization_override is not None
+            else Document2PilotUpstreamCase(
+                node=node,
                 case_root=Path(str(stage["case_root"])),
             )
         )
     return tuple(dependencies)
+
+
+def _materialize_finalization_override(root: Path, source_path: Path) -> dict[str, object]:
+    source = source_path.resolve()
+    try:
+        raw = source.read_bytes()
+        result = ShellFinalizationResult.model_validate_json(raw)
+    except (OSError, ValueError) as exc:
+        raise ValueError(f"invalid replacement O0 Finalization result: {source}") from exc
+    if not result.shells:
+        raise ValueError("replacement O0 Finalization result has no shells")
+
+    source_sha256 = hashlib.sha256(raw).hexdigest()
+    case_id = f"{root.name}-o0-finalization-override-{source_sha256[:12]}"
+    attempt_id = f"override-{source_sha256[:16]}"
+    case_root = root / "overrides" / CodexD2Node.O0_FINALIZATION.value / source_sha256[:16]
+    manifest = {
+        "case_id": case_id,
+        "node": CodexD2Node.O0_FINALIZATION.value,
+        "node_attempt_id": attempt_id,
+        "override_source_path": str(source),
+        "override_source_sha256": source_sha256,
+        "shell_ids": [item.shell_id for item in result.shells],
+    }
+    if case_root.exists():
+        existing = json.loads((case_root / "case_manifest.json").read_text(encoding="utf-8"))
+        if existing.get("override_source_sha256") != source_sha256:
+            raise ValueError(f"conflicting O0 Finalization override: {case_root}")
+    else:
+        case_root.parent.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory(prefix=".override-", dir=case_root.parent) as tmp:
+            staging = Path(tmp) / case_root.name
+            output = staging / "attempts" / attempt_id / "output"
+            output.mkdir(parents=True)
+            (output / "completion.json").write_bytes(raw)
+            (staging / "case_manifest.json").write_text(
+                json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8"
+            )
+            os.replace(staging, case_root)
+    return {
+        "case_root": str(case_root),
+        "source_path": str(source),
+        "source_sha256": source_sha256,
+        "shell_ids": [item.shell_id for item in result.shells],
+        "configured_at": _now(),
+    }
+
+
+def _finalization_override_case(
+    state: dict[str, object],
+) -> Document2PilotUpstreamCase | None:
+    raw = state.get("o0_finalization_override")
+    if not isinstance(raw, dict) or not raw.get("case_root"):
+        return None
+    return Document2PilotUpstreamCase(
+        node=CodexD2Node.O0_FINALIZATION,
+        case_root=Path(str(raw["case_root"])),
+    )
 
 
 def _event(
@@ -506,6 +612,28 @@ def _write_next_case(root: Path, stage: dict[str, object]) -> None:
                 "node": stage["node"],
                 "case_root": stage["case_root"],
                 "task_path": stage["task_path"],
+            },
+            ensure_ascii=False,
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+
+
+def _write_selection_required(
+    root: Path,
+    stage: dict[str, object],
+    exc: Document2PilotShellSelectionRequired,
+) -> None:
+    (root / "NEXT_CASE.json").write_text(
+        json.dumps(
+            {
+                "status": "selection_required",
+                "node": stage["node"],
+                "case_root": None,
+                "task_path": None,
+                "available_shell_ids": list(exc.available_shell_ids),
+                "message": str(exc),
             },
             ensure_ascii=False,
             indent=2,

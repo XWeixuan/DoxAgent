@@ -321,6 +321,7 @@ class ShellRunState(ContractModel):
     stage: ShellResearchStage = ShellResearchStage.PENDING
     canonical_path: str | None = None
     snapshot_paths: list[str] = Field(default_factory=list)
+    event_library_injected: bool = False
     error: str | None = None
 
 

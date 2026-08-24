@@ -57,6 +57,11 @@ async def _main(repo_root: Path) -> int:
                 "--shell",
                 help="Select a shell_id after bootstrap finalization produced many shells",
             )
+            child.add_argument(
+                "--finalized-shells",
+                type=Path,
+                help="Validated ShellFinalizationResult JSON replacing the O0 handoff for O1",
+            )
         if command == "watch":
             child.add_argument("--poll-seconds", type=float, default=5.0)
     args = parser.parse_args()
@@ -108,10 +113,13 @@ async def _main(repo_root: Path) -> int:
                 return 0
             return await _watch_all(coordinator, args.coordinator_id, args.poll_seconds)
         if args.command == "advance":
-            _print_event(
-                await coordinator.advance(args.coordinator_id, shell_key=args.shell)
+            event = await coordinator.advance(
+                args.coordinator_id,
+                shell_key=args.shell,
+                finalized_shells_path=args.finalized_shells,
             )
-            return 0
+            _print_event(event)
+            return 2 if event.status == "selection_required" else 0
         return await _watch_all(coordinator, args.coordinator_id, args.poll_seconds)
     finally:
         await coordinator.aclose()
@@ -121,6 +129,8 @@ async def _watch_all(coordinator: object, coordinator_id: str, poll_seconds: flo
     while True:
         event = await coordinator.watch(coordinator_id, poll_seconds=poll_seconds)  # type: ignore[attr-defined]
         _print_event(event)
+        if event.status == "selection_required":
+            return 2
         if event.status == "completed":
             return 0
 
@@ -134,6 +144,8 @@ def _print_event(event: object) -> None:
                 "node": event.node.value if event.node is not None else None,  # type: ignore[attr-defined]
                 "case_root": str(event.case_root) if event.case_root is not None else None,  # type: ignore[attr-defined]
                 "task_path": str(event.task_path) if event.task_path is not None else None,  # type: ignore[attr-defined]
+                "available_shell_ids": list(event.available_shell_ids),  # type: ignore[attr-defined]
+                "message": event.message,  # type: ignore[attr-defined]
             },
             ensure_ascii=False,
             indent=2,

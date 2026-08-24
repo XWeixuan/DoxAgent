@@ -1,0 +1,12 @@
+{
+  "contract_version": "mu-event-library-gold-v1",
+  "runtime_snapshot_path": "runtime_snapshot.json",
+  "revision_bundle_path": "revision_bundle",
+  "expectation": {
+    "expected_event_count": 2,
+    "expected_fact_count": 6,
+    "expected_pending_delta_ids": ["D8"],
+    "expected_dropped_delta_ids": ["D9"],
+    "expected_occurrence_delta_groups": [["D1", "D2", "D3", "D4", "D5"], ["D6", "D7"]]
+  }
+}

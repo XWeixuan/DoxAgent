@@ -107,6 +107,14 @@ class DoxAgentSettings(BaseSettings):
         le=2,
         validation_alias="DOXAGENT_CODEX_MAX_SUBAGENTS",
     )
+    event_library_root: str | None = Field(
+        default=None,
+        validation_alias="DOXAGENT_EVENT_LIBRARY_ROOT",
+    )
+    event_library_market: str = Field(
+        default="US",
+        validation_alias="DOXAGENT_EVENT_LIBRARY_MARKET",
+    )
 
     dashscope_api_key: str | None = Field(default=None, validation_alias="DASHSCOPE_API_KEY")
     dashscope_fallback_api_key: str | None = Field(

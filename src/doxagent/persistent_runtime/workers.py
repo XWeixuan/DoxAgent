@@ -4,10 +4,11 @@ from __future__ import annotations
 
 import re
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Protocol
 from zoneinfo import ZoneInfo
 
 from doxagent.agents.runner import AgentRunner
+from doxagent.event_library.provider import PublishedEventLibraryReader
 from doxagent.models import (
     AgentName,
     AgentPermissions,
@@ -65,6 +66,10 @@ class AgentRunnerW1Worker:
         return W1Result.model_validate(_w1_structured_payload(result.payload))
 
 
+class _W1Delegate(Protocol):
+    def classify(self, message: RuntimeSourceMessage, context: JsonObject) -> W1Result: ...
+
+
 class LazyAgentRunnerW1Worker:
     """Create the production W1 AgentRunner only when W1 classification is reached."""
 
@@ -78,6 +83,46 @@ class LazyAgentRunnerW1Worker:
 
             self._delegate = AgentRunnerW1Worker(default_real_agent_runner(settings=self.settings))
         return self._delegate.classify(message, context)
+
+
+class EventLibraryAwareW1Worker:
+    """Two-round, read-only Published Index -> selected Detail W1 adapter."""
+
+    def __init__(
+        self, delegate: _W1Delegate, reader: PublishedEventLibraryReader
+    ) -> None:
+        self._delegate = delegate
+        self._reader = reader
+
+    def classify(self, message: RuntimeSourceMessage, context: JsonObject) -> W1Result:
+        index = self._reader.known_index(message.ticker)
+        if index is None:
+            return self._delegate.classify(message, context)
+        first_context = dict(context)
+        first_context["canonical_event_library"] = {
+            "mode": "KNOWN_INDEX",
+            "version": index.version,
+            "sha256": index.sha256,
+            "known_event_index": index.known_event_index,
+        }
+        first = self._delegate.classify(message, first_context)
+        if first.confidence is not W1Confidence.LOW or not first.matched_known_event_ids:
+            return first
+        details = self._reader.event_details(
+            message.ticker,
+            first.matched_known_event_ids,
+            version=index.version,
+        )
+        if details is None or not details.events:
+            return first
+        second_context = dict(context)
+        second_context["canonical_event_library"] = {
+            "mode": "EVENT_DETAILS",
+            "version": details.version,
+            "requested_event_ids": first.matched_known_event_ids,
+            "events": [event.model_dump(mode="json") for event in details.events],
+        }
+        return self._delegate.classify(message, second_context)
 
 
 class AgentRunnerW2Worker:
