@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import inspect
 import json
 import sqlite3
 from collections.abc import Callable, Sequence
@@ -32,6 +33,7 @@ from doxagent.cdecr_integration.job_repository import TickerJobRepository
 from doxagent.cdecr_integration.novel_batch import validate_runtime_novel_batch
 from doxagent.cdecr_integration.registry_resolver import PerTickerRegistryResolver
 from doxagent.cdecr_integration.workflow_runner import CDECRWorkflowRunner
+from doxagent.event_library.contracts import FrozenRuntimeSnapshot
 from doxagent.event_library.repository import EventLibraryRepository
 from doxagent.event_library.service import EventLibraryService
 from doxagent.workflows.codex_event_library.remote_runner import (
@@ -76,6 +78,7 @@ class TickerCDECRPipelineCoordinator:
         as_of: datetime,
         export_dir: str | Path,
         run_o2: bool = True,
+        resume_finalized_only: bool = False,
     ) -> TickerPipelineResult:
         if as_of.tzinfo is None or as_of.utcoffset() is None:
             raise ValueError("as_of must be timezone-aware")
@@ -86,6 +89,16 @@ class TickerCDECRPipelineCoordinator:
             self.event_library_root / binding.market / binding.ticker / "event_library.sqlite3"
         )
         state = self.jobs.get(job_id)
+        if resume_finalized_only:
+            if state is None or not state.epoch_id:
+                raise RuntimeError(
+                    "resume-finalized-only requires an existing job with a CDECR epoch"
+                )
+            if _epoch_status(Path(binding.registry_path), state.epoch_id) != "FINALIZED":
+                raise RuntimeError(
+                    "resume-finalized-only refused to invoke CDECR because the saved epoch "
+                    "is not FINALIZED"
+                )
         if state is None:
             state = TickerJobState(
                 job_id=job_id,
@@ -173,7 +186,7 @@ class TickerCDECRPipelineCoordinator:
                 )
             else:
                 state = self._advance(state, TickerJobStage.CDECR_RUNNING)
-                cdecr_result = cdecr_runner.run(message_ids)
+                cdecr_result = _run_cdecr(cdecr_runner, message_ids, as_of)
             if cdecr_result.status == "FINALIZED_NOOP":
                 state = self._advance(state, TickerJobStage.FINALIZED_NOOP)
                 return TickerPipelineResult(
@@ -261,6 +274,105 @@ class TickerCDECRPipelineCoordinator:
     def status(self, *, market: str, ticker: str) -> TickerJobState | None:
         return self.jobs.latest(market=market.upper(), ticker=ticker.upper())
 
+    async def prepare_runtime_through_delta(
+        self,
+        *,
+        market: str,
+        ticker: str,
+        as_of: datetime,
+        export_dir: str | Path,
+        resume_finalized_only: bool = False,
+    ) -> TickerPipelineResult:
+        """Durable first half used by the total initialization orchestrator."""
+
+        return await self.initialize(
+            market=market,
+            ticker=ticker,
+            as_of=as_of,
+            export_dir=export_dir,
+            run_o2=False,
+            resume_finalized_only=resume_finalized_only,
+        )
+
+    async def run_o2_with_upstream_context(
+        self,
+        *,
+        market: str,
+        ticker: str,
+        as_of: datetime,
+        export_dir: str | Path,
+        upstream_context_manifest: dict[str, Any],
+        resume_finalized_only: bool = False,
+    ) -> TickerPipelineResult:
+        """Run only O2 from an already prepared FINALIZED Runtime snapshot."""
+
+        prepared = await self.prepare_runtime_through_delta(
+            market=market,
+            ticker=ticker,
+            as_of=as_of,
+            export_dir=export_dir,
+            resume_finalized_only=resume_finalized_only,
+        )
+        state = prepared.job
+        if not state.epoch_id or not state.o2_run_id:
+            raise RuntimeError("O2 continuation requires a FINALIZED epoch and prepared run ID")
+        o2_run_id = state.o2_run_id
+        binding = self.registry_resolver.bind(market=market, ticker=ticker)
+        if _epoch_status(Path(binding.registry_path), state.epoch_id) != "FINALIZED":
+            raise RuntimeError("O2 continuation refused because CDECR epoch is not FINALIZED")
+        with self.jobs.ticker_lock(
+            market=binding.market, ticker=binding.ticker, owner=state.job_id
+        ):
+            registry, cdecr_runner = self.runtime_factory(binding)
+            activity = project_runtime_activity(
+                registry=registry,
+                runtime_scope=binding.runtime_scope,
+                as_of=as_of,
+            )
+            snapshot = cdecr_runner.freeze_finalized_snapshot(
+                epoch_id=state.epoch_id,
+                as_of=as_of,
+                eligible_atomic_ids=activity.eligible_atomic_ids,
+            )
+            service = EventLibraryService(EventLibraryRepository(state.event_library_path))
+            batch = service.delta_compiler.compile(snapshot)
+            if self.o2_factory is None:
+                raise RuntimeError("O2 real-model initializer is not configured")
+            state = self._advance(state, TickerJobStage.O2_RUNNING)
+            initializer = self.o2_factory(service)
+            _, publication, _, _ = await initializer.run(
+                snapshot=snapshot,
+                run_id=o2_run_id,
+                cutoff_at=as_of,
+                export_dir=export_dir,
+                upstream_context_manifest=upstream_context_manifest,
+            )
+            if publication is None:
+                state = self._advance(state, TickerJobStage.FINALIZED_NOOP)
+                return TickerPipelineResult(
+                    job=state, activity=activity, delta_batch_id=batch.batch_id
+                )
+            maintenance = service.repository.get_maintenance_run(o2_run_id) or {}
+            state = self._advance(
+                state,
+                TickerJobStage.PUBLISHED,
+                thread_id=(
+                    str(maintenance["thread_id"]) if maintenance.get("thread_id") else None
+                ),
+                published_library_version=publication.published_library_version,
+            )
+            return TickerPipelineResult(
+                job=state,
+                activity=activity,
+                delta_batch_id=batch.batch_id,
+                frozen_view_id=(
+                    str(maintenance["frozen_view_id"])
+                    if maintenance.get("frozen_view_id")
+                    else None
+                ),
+                published_library_version=publication.published_library_version,
+            )
+
     async def update(
         self,
         *,
@@ -311,12 +423,74 @@ class TickerCDECRPipelineCoordinator:
             registry, cdecr_runner = self.runtime_factory(binding)
             message_ids = validate_runtime_novel_batch(batch, registry=registry)
             if not message_ids:
+                service = EventLibraryService(EventLibraryRepository(event_library_path))
+                candidates = service.repository.due_reference_review_candidates(
+                    ticker=binding.ticker, as_of=as_of
+                )
+                if not candidates:
+                    state = self._advance(
+                        state,
+                        TickerJobStage.FINALIZED_NOOP,
+                        message_ids=[],
+                    )
+                    return TickerPipelineResult(job=state)
+                identity = hashlib.sha256(
+                    f"{binding.runtime_scope}|{as_of.isoformat()}|REFERENCE_REVIEW".encode()
+                ).hexdigest()
+                snapshot = FrozenRuntimeSnapshot(
+                    snapshot_id=f"runtime-review:{identity[:24]}",
+                    runtime_scope=binding.runtime_scope,
+                    epoch_id=f"review-only:{identity[:24]}",
+                    market=binding.market,
+                    ticker=binding.ticker,
+                    as_of=as_of,
+                    atomics=[],
+                    packages=[],
+                )
+                delta = service.delta_compiler.compile(snapshot)
+                o2_run_id = state.o2_run_id or (
+                    f"o2-review-{binding.ticker.lower()}-{job_id[-16:]}"
+                )
                 state = self._advance(
                     state,
-                    TickerJobStage.FINALIZED_NOOP,
+                    TickerJobStage.DELTA_READY,
                     message_ids=[],
+                    runtime_snapshot_id=snapshot.snapshot_id,
+                    delta_batch_id=delta.batch_id,
+                    o2_run_id=o2_run_id,
                 )
-                return TickerPipelineResult(job=state)
+                if not run_o2:
+                    return TickerPipelineResult(job=state, delta_batch_id=delta.batch_id)
+                if self.o2_factory is None:
+                    raise RuntimeError("O2 real-model maintainer is not configured")
+                state = self._advance(state, TickerJobStage.O2_RUNNING)
+                maintainer = self.o2_factory(service)
+                _, publication, _, _ = await maintainer.run(
+                    snapshot=snapshot,
+                    run_id=o2_run_id,
+                    cutoff_at=as_of,
+                    export_dir=export_dir,
+                    mode="INCREMENTAL",
+                )
+                if publication is None:
+                    state = self._advance(state, TickerJobStage.FINALIZED_NOOP)
+                    return TickerPipelineResult(job=state, delta_batch_id=delta.batch_id)
+                maintenance = service.repository.get_maintenance_run(o2_run_id) or {}
+                state = self._advance(
+                    state,
+                    TickerJobStage.PUBLISHED,
+                    thread_id=(
+                        str(maintenance["thread_id"])
+                        if maintenance.get("thread_id")
+                        else None
+                    ),
+                    published_library_version=publication.published_library_version,
+                )
+                return TickerPipelineResult(
+                    job=state,
+                    delta_batch_id=delta.batch_id,
+                    published_library_version=publication.published_library_version,
+                )
             if state.stage is TickerJobStage.CREATED:
                 state = self._advance(
                     state,
@@ -338,7 +512,7 @@ class TickerCDECRPipelineCoordinator:
                 )
             else:
                 state = self._advance(state, TickerJobStage.CDECR_RUNNING)
-                cdecr_result = cdecr_runner.run(message_ids)
+                cdecr_result = _run_cdecr(cdecr_runner, message_ids, as_of)
             if cdecr_result.status == "FINALIZED_NOOP":
                 state = self._advance(state, TickerJobStage.FINALIZED_NOOP)
                 return TickerPipelineResult(job=state, cdecr=cdecr_result)
@@ -480,3 +654,22 @@ def _unfinished_epoch(path: Path) -> dict[str, object] | None:
         "status": str(row["status"]),
         "message_ids": json.loads(str(row["message_ids_json"])),
     }
+
+
+def _epoch_status(path: Path, epoch_id: str) -> str | None:
+    if not path.is_file():
+        return None
+    with sqlite3.connect(path) as connection:
+        row = connection.execute(
+            "SELECT status FROM bulk_epochs WHERE epoch_id=?", (epoch_id,)
+        ).fetchone()
+    return None if row is None else str(row[0])
+
+
+def _run_cdecr(
+    runner: CDECRWorkflowRunner, message_ids: list[str], as_of: datetime
+) -> CDECRWorkflowResult:
+    if "as_of" in inspect.signature(runner.run).parameters:
+        return runner.run(message_ids, as_of=as_of)
+    # Compatibility for deterministic test/extension adapters built against v1.
+    return runner.run(message_ids)

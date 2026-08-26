@@ -46,10 +46,20 @@ assets and retain conflicts that may require separate source-role Values.
 
 Only after this upstream research is understood should `proposition`, `horizon`, and adjacent Unit
 boundaries determine which findings belong to each Unit and which stable observation targets are
-needed. The Unit Seed scopes and organizes the research; it does not supply the State by itself. A
-Future Node may reveal a Parameter, time scope, or future Value source, but it is a research lead
-rather than an automatic State object. A data point becomes a Value only after its stable Parameter
-is clear.
+needed. For each Unit, work backward from its proposition and horizon: which stable dimensions show
+where that expectation stands today—what has been realized, where relevant actors place the future,
+what can repeatedly change the judgment, and which major dimension remains unresolved? Use this
+coverage reasoning to guide Parameter selection, then use upstream findings and focused research to
+populate it. The Unit Seed organizes the research; it does not supply the State by itself. A Future
+Node may reveal a Parameter, time scope, or future Value source, but it is a research lead rather
+than an automatic State object. A data point becomes a Value only after its stable Parameter is
+clear.
+
+A Parameter is a continuing observation dimension that locates the proposition's current
+realization state, expectation position, or stable premise. It may maintain an actual result,
+management or sell-side expectation, industry condition, timing, stage, or market-implied underlying
+expectation. Its role is to show where the proposition currently stands, rather than compress the
+overall credibility of the proposition into one second-order judgment.
 
 A candidate Parameter is suitable when:
 
@@ -93,9 +103,11 @@ Use the narrowest supported representation that preserves the source meaning:
   over time.
 
 `STAGE` should reflect a real progression rather than an invented maturity scale. `DIRECTION` does
-not substitute for an obtainable number. `EVIDENCE` is useful for a defined evidence-state Parameter,
-not as a container for every qualitative fact. Context-dependent mechanisms whose current meaning
-cannot survive this normalization belong in Realization Research.
+not substitute for an obtainable number. `EVIDENCE` fits a stable observation target whose support
+state can be updated directly when new information arrives. If each update instead requires renewed
+interpretation of how a mechanism is progressing, which dependencies hold, and why the condition
+changes the Unit, maintain that richer reality in a Realization Factor's `current_status`.
+`EVIDENCE` is a Value representation, not a general compression of complex mechanisms.
 
 Express `DIRECTION` as `IMPROVING`, `STABLE`, or `WEAKENING`. For `EVIDENCE`, use `SUPPORTING`,
 `OPPOSING`, or `MIXED` as stance and `WEAK`, `MODERATE`, or `STRONG` as strength. These labels
@@ -120,6 +132,13 @@ An issuer's report of an accomplished result is `ACTUAL`, while its claim about 
 `MANAGEMENT`; classification follows the economic meaning, not the publisher. A broad share-price
 move alone does not define a `MARKET_IMPLIED` Value for a specific Parameter.
 
+For `MARKET_IMPLIED`, first infer the underlying expectation the market anchor is pricing, then use
+that expectation's natural Value Type: for example, `NUMBER` or `RANGE` for an earnings level,
+`TIME` for normalization timing, `STAGE` for a commercial state, or `DIRECTION` for a maintainable
+direction. Limited inference precision should first widen the range, coarsen the time window, or
+reduce numerical precision rather than automatically turn the object into a generic `EVIDENCE`
+stance. Leave the role absent when focused research still cannot support an interpretable Value.
+
 Use all four primary Document1 assets and their citations to discover and support the Parameters and
 Values implied by the upstream research, then identify what remains unresolved at the Unit's
 required granularity. For every admitted Parameter, actively examine all five source roles and try
@@ -127,6 +146,12 @@ to complete each Value that can genuinely express the same defined object. Use f
 research for an applicable role that still lacks a current anchor, comparable earlier Value, clear
 scope, resolution of a material conflict, or relevant later information. State the missing research
 question first and seek evidence closest to that role and object.
+
+When an important current Value has a readily obtainable prior observation that is economically
+comparable under the Parameter's update logic, actively retrieve it. Prior actuals, guidance,
+sell-side or industry snapshots, and market-implied snapshots are useful when they reveal change;
+historical backfill follows comparison value rather than a requirement that every Value have a
+previous observation.
 
 Source roles remain different evidence layers rather than mandatory cells. When a focused,
 reasonable attempt does not find a reliable and comparable Value for a role, leave that role absent
@@ -148,10 +173,14 @@ Time scope and `as_of` are different. A forecast for FY2028 uses FY2028 as its t
 dated forecast snapshot as its `as_of`. A source that does not support an exact number should
 produce a supported range, direction, stage, or no Value rather than borrowed precision.
 
-Use `previous_value` only when the earlier observation has the same Parameter, source role,
-definition, time scope, and measurement basis, with an earlier `as_of`. A rolled forecast year,
-changed product perimeter, revised accounting basis, or order-to-shipment change is a different
-comparison. Include evidence sufficient to support both sides of a claimed change.
+Use `previous_value` for a comparable prior observation under the Parameter's own update semantics,
+with the same Parameter meaning, source role, and measurement basis. For a rolling realized
+Parameter, the preceding business period may be the correct comparison; for a fixed forecast target,
+use an earlier snapshot of that same target; for an explicitly rolling forward Parameter, compare
+the prior rolling snapshot when the definition makes that economically meaningful. Ask how this
+Parameter normally updates and which earlier state is its true comparison. A changed perimeter,
+accounting basis, or operating concept still breaks comparability. Include evidence sufficient to
+support both sides of a claimed change.
 
 `CURRENT` is the normal validity state for a presently usable Value. `DISPUTED` preserves a live
 conflict that the available evidence does not resolve. `RETRACTED` reflects an explicit withdrawal,
@@ -182,8 +211,10 @@ State Research is complete when each Unit has enough maintainable State to locat
 expectation; retained Parameters have stable identities and update paths; every Parameter has been
 considered across all source roles, with focused research attempted for applicable missing Values;
 unsupported roles have been deliberately left absent; and retained Values preserve role, scope,
-time, evidence, and supported precision. Important reality mechanisms that resist stable
-parameterization remain available for the next turn.
+time, evidence, and supported precision. Review whether the complete State Set locates the
+proposition across its major realization and expectation dimensions, and whether meaningful,
+readily obtainable prior observations were considered for key current Values. Important reality
+mechanisms that resist stable parameterization remain available for the next turn.
 
 Return the complete `ExpectationShell`. Update each Unit's `state` and carry the other canonical
 fields and existing later-stage objects through unchanged, apart from justified semantic refinement

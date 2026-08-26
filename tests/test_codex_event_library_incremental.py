@@ -76,7 +76,6 @@ class IncrementalWorker:
                     "proposition": "Micron added an incremental operating update.",
                     "assertion_state": "ACTUAL",
                     "subject_time": "2026-08-24",
-                    "entities": ["Micron"],
                     "consumes_delta_ids": ["D1"],
                 }
             ]

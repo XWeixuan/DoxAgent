@@ -13,6 +13,10 @@ A Candidate Unit is a question that will require continuing judgment, whose outc
 materially change company earnings, cash flow, risk, valuation, or expectations about the company,
 and that may become an independently updateable middle-level proposition.
 
+Independent updateability is necessary but not sufficient for Candidate status. The question must
+itself be a continuing investment expectation worth maintaining, rather than a lower-level object
+made broader only because it is important.
+
 For each forward-looking conclusion, tension, or unresolved issue in the primary source, ask:
 
 1. What future judgment remains open?
@@ -23,8 +27,11 @@ For each forward-looking conclusion, tension, or unresolved issue in the primary
 
 The extraction target is the continuing question supported by the research. An already reported
 result is evidence about a question; a raw metric or operating condition may later become State or
-a Realization Factor. Promote the wider question when it has its own material outcome and future
-update path.
+a Realization Factor. Promote a wider question when it already exists in the research as a
+continuing investment problem with its own material outcome, maintainable State, several possible
+realization mechanisms, and continuing independent revision path. The importance of an underlying
+metric, resource constraint, operating condition, technical factor, or mechanism alone does not
+create that wider proposition.
 
 For example, “the latest quarter beat expectations” is a reported result. “Whether the new product
 cycle can produce a financially material and durable contribution” is a Candidate Unit. A yield
@@ -44,6 +51,11 @@ own independent Candidate branch. An unavailable Event Library or an empty horiz
 is an input status, not by itself a Candidate failure. Supplementary Data MCP research should stay
 within the assigned source domain; a candidate's eventual valuation impact does not by itself turn
 the research request into a valuation-data task.
+
+For the C5 branch, use price, valuation, multiple, relative-performance, and market-implied evidence
+to identify the underlying business, financial, industry, or duration expectation being priced. A
+question about whether market data can reveal another expectation is a measurement or inference
+task for later `MARKET_IMPLIED` State or runtime absorption analysis, rather than a Unit Candidate.
 
 Narrative Research is useful for identifying what the market discusses or disputes; the same
 materiality, middle-level, and independent-update tests determine whether its question enters the

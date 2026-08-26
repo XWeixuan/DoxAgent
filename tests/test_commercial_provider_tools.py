@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import UTC, datetime
+
 import httpx
 
 from doxagent.models import AgentName, ResultStatus
@@ -325,8 +327,7 @@ def test_provider_neutral_trade_route_rejects_empty_partial_payloads() -> None:
     assert result.status is ResultStatus.FAILED
     assert result.output["provider_routing"]["selected_tool"] is None
     assert all(
-        attempt["usable"] is False
-        for attempt in result.output["provider_routing"]["attempts"]
+        attempt["usable"] is False for attempt in result.output["provider_routing"]["attempts"]
     )
 
 
@@ -435,3 +436,47 @@ def test_twelve_data_estimates_and_finnhub_composites_have_bounded_endpoint_sets
     earnings_record = news.output["company_news_events"]["earnings"]["records"][0]
     assert set(news_record) == {"related", "headline"}
     assert set(earnings_record) == {"period", "actual"}
+
+
+def test_finnhub_company_news_soft_clamps_and_filters_cutoff() -> None:
+    seen_to: list[str] = []
+    before = int(datetime(2026, 8, 20, 10, tzinfo=UTC).timestamp())
+    after = int(datetime(2026, 8, 21, 10, tzinfo=UTC).timestamp())
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen_to.append(request.url.params["to"])
+        return httpx.Response(
+            200,
+            json=[
+                {
+                    "related": "AAPL",
+                    "headline": "AAPL earnings update",
+                    "datetime": after,
+                    "url": "https://example.com/after",
+                },
+                {
+                    "related": "AAPL",
+                    "headline": "AAPL earnings update before cutoff",
+                    "datetime": before,
+                    "url": "https://example.com/before",
+                },
+            ],
+        )
+
+    request = _request(
+        "finnhub.company_news_events",
+        {
+            "date_from": "2026-08-01",
+            "date_to": "2026-08-31",
+            "include_earnings": False,
+        },
+    ).model_copy(update={"metadata": {"cutoff_at": "2026-08-20T12:00:00Z"}})
+    result = FinnhubCompanyNewsEventsClient(_settings(), TTLCache(), client=_client(handler)).call(
+        request
+    )
+
+    assert result.status is ResultStatus.PARTIAL
+    assert seen_to == ["2026-08-20"]
+    records = result.output["company_news_events"]["company_news"]["records"]
+    assert [item["url"] for item in records] == ["https://example.com/before"]
+    assert result.output["cutoff_filter"]["filtered_record_count"] == 1

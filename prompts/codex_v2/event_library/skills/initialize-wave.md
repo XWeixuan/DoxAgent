@@ -1,19 +1,26 @@
-# INITIALIZE LOCAL RECONSTRUCTION WAVE
+# Initialize: Local Reconstruction
 
-Outcome: reconstruct only the assigned Delta IDs into reviewable Event drafts while preserving
-cross-wave collision signals.
+Reconstruct the assigned wave into provisional Event Occurrence drafts. Survey keys guide attention; the assigned Delta and runtime context determine the judgment.
 
-1. Read the survey ledger/catalog and every assigned Delta from the Frozen View. You may inspect
-   unassigned Delta only to decide a boundary; do not claim their final coverage in this wave.
-2. Group by occurrence anchor, not Runtime Package. Split different dates, disclosures, stages, or
-   independent analyst reports. Merge cross-Package Atomics only when they describe the same bounded
-   occurrence. Collapse true paraphrases but retain every complementary business Fact.
-3. Write Event-per-file drafts below `output/work/drafts/` using provisional `T#/TF#` IDs scoped to
-   this attempt. Each draft must record `consumes_delta_ids` for its Facts.
-4. Write `output/work/wave_index.json` with assigned Delta coverage, occurrence candidate keys, and
-   links to draft files. Mark unresolved assigned Delta as proposed `KEEP_PENDING` or `DROP_INVALID`.
-5. Do not write a formal Bundle. Return `PENDING`, stage `LOCAL_RECONSTRUCTION`, base version, and
-   assigned-wave coverage counts.
+## Work
 
-Draft IDs may collide with other waves; GLOBAL_RECONCILIATION must renumber them. A wave never
-publishes or determines the final Event count.
+1. Read the Survey ledger and catalog, then examine every assigned Delta in its package context. Reconsider relevance, occurrence boundary, time, and assertion state where the evidence warrants it.
+2. Group by occurrence identity: actor, concrete action or disclosure, object or stage, and occurrence time. Combine facts produced by one disclosure. Split different dates, analyst institutions, transaction stages, or separately issued disclosures.
+3. Apply the relevance screen at both Event and Fact level. A Fact belongs when this occurrence produced, disclosed, confirmed, or materially changed the proposition. Clear non-events and unrelated material receive `KEEP_PENDING`; clear extraction failures or content without a usable business proposition receive `DROP_INVALID`.
+4. Resolve occurrence time to the precision expected for its type. For a date-specific public occurrence with broad or `UNKNOWN` time, use Web Search when the date is reasonably traceable.
+5. Express each retained proposition as one minimal independent Fact. Consolidate semantic duplicates into one Fact and place all supporting Delta IDs in its `consumes_delta_ids`.
+6. Set `assertion_state` from the proposition. Use `subject_time: SAME` when the Fact shares the Event time and has no distinct subject period; retain an explicit reporting period or forecast horizon when that period is part of the proposition.
+7. Write provisional Event drafts with exactly the fields supplied by the current schema. Use wave-local `T#` and `TF#` IDs; Reconciliation owns global identity, final wording, flags, and Event count.
+
+## Artifacts
+
+Write:
+
+- `output/work/drafts/T#.json`: one provisional Event per file, with every retained Delta bound through a Fact's `consumes_delta_ids`.
+- `output/work/wave_index.json`: follow the current artifact contract and account for each assigned Delta once through its occurrence candidate, draft path, or unresolved recommendation.
+
+Wave creates no revision bundle.
+
+## Completion
+
+Return the current `O2RunResult` with `status: PENDING`, `stage: LOCAL_RECONSTRUCTION`, `bundle_path: null`, the supplied base version, wave coverage, and `validation: NOT_RUN`.

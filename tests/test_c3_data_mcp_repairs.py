@@ -77,6 +77,16 @@ def test_c3_guide_uses_actor_supply_and_export_control_routes() -> None:
             _contract("federal_register.documents", "Federal Register", ["regulatory"]),
             _contract("regulations.rulemaking_records", "Regulations.gov", ["regulatory"]),
             _contract("eia.energy_prices", "U.S. Energy Information Administration", ["industry"]),
+            _contract(
+                "bls.industry_producer_prices",
+                "U.S. Bureau of Labor Statistics",
+                ["industry"],
+            ),
+            _contract(
+                "census.manufacturing_orders",
+                "U.S. Census Bureau",
+                ["industry"],
+            ),
             _contract("openfda.safety_actions", "openFDA", ["regulatory"]),
             _contract("congress.legislative_actions", "Congress.gov", ["regulatory"]),
         ]
@@ -101,9 +111,82 @@ def test_c3_guide_uses_actor_supply_and_export_control_routes() -> None:
     assert all(not item["canonical_tool_id"].startswith("eia.") for item in supply["candidates"])
     assert export["candidates"][0]["canonical_tool_id"] == "federal_register.documents"
     assert all(
-        not item["canonical_tool_id"].startswith("openfda.")
-        for item in export["candidates"]
+        not item["canonical_tool_id"].startswith("openfda.") for item in export["candidates"]
     )
+
+
+def test_c3_guide_preserves_explicit_price_and_orders_intents_with_supply_context() -> None:
+    contracts = DataToolContractRegistry(
+        [
+            _contract("sec.issuer_filings", "SEC EDGAR", ["company_filing"]),
+            _contract("ir.official_updates", "Official issuer IR", ["company_events"]),
+            _contract(
+                "bls.industry_producer_prices",
+                "U.S. Bureau of Labor Statistics",
+                ["industry"],
+            ),
+            _contract(
+                "census.manufacturing_orders",
+                "U.S. Census Bureau",
+                ["industry"],
+            ),
+        ]
+    )
+    allowed = [item.canonical_tool_id for item in contracts.all()]
+
+    result = DataToolGuide(contracts).recommend(
+        task=(
+            "HBM supply capacity plus semiconductor producer-price direction "
+            "and manufacturing orders"
+        ),
+        effective_tool_ids=allowed,
+        business_category="industry",
+    )
+
+    candidate_ids = {item["canonical_tool_id"] for item in result["candidates"]}
+    assert {
+        "bls.industry_producer_prices",
+        "census.manufacturing_orders",
+    }.issubset(candidate_ids)
+    coverage = {item["intent"]: item for item in result["intent_coverage"]}
+    assert coverage["industry_producer_prices"]["status"] == "covered"
+    assert coverage["manufacturing_orders"]["status"] == "covered"
+    assert coverage["supply_chain_capacity"]["status"] == "covered"
+
+
+def test_guide_does_not_relabel_aggregate_tools_as_memory_product_coverage() -> None:
+    contracts = DataToolContractRegistry(
+        [
+            _contract("sec.issuer_filings", "SEC EDGAR", ["company_filing"]),
+            _contract("ir.official_updates", "Official issuer IR", ["company_events"]),
+            _contract(
+                "bls.industry_producer_prices",
+                "U.S. Bureau of Labor Statistics",
+                ["industry"],
+            ),
+            _contract(
+                "census.manufacturing_orders",
+                "U.S. Census Bureau",
+                ["industry"],
+            ),
+        ]
+    )
+
+    result = DataToolGuide(contracts).recommend(
+        task=(
+            "Research DRAM contract price, NAND contract price, bit shipments, memory inventory, "
+            "PC/mobile absorption, and enterprise SSD demand."
+        ),
+        effective_tool_ids=[item.canonical_tool_id for item in contracts.all()],
+        business_category="industry",
+    )
+
+    candidate_ids = {item["canonical_tool_id"] for item in result["candidates"]}
+    assert "bls.industry_producer_prices" not in candidate_ids
+    assert "census.manufacturing_orders" not in candidate_ids
+    coverage = {item["intent"]: item for item in result["intent_coverage"]}
+    assert coverage["memory_product_metrics"]["status"] == "unsupported"
+    assert "product-level memory route" in coverage["memory_product_metrics"]["discovery_fallback"]
 
 
 def test_census_fine_naics_is_explicit_aggregate_partial() -> None:
@@ -220,17 +303,13 @@ def test_tavily_rejects_error_page_and_keeps_urls_as_independent_records() -> No
                     {
                         "url": "https://good.example",
                         "title": "Capacity update",
-                        "raw_content": (
-                            "Substantive capacity and allocation evidence. " * 50
-                        ),
+                        "raw_content": ("Substantive capacity and allocation evidence. " * 50),
                     },
                 ],
                 "failed_results": [],
             }
         ),
-    ).call(
-        _request("tavily.extract", {"urls": ["https://bad.example", "https://good.example"]})
-    )
+    ).call(_request("tavily.extract", {"urls": ["https://bad.example", "https://good.example"]}))
 
     assert result.status is ResultStatus.PARTIAL
     assert [item["url"] for item in result.output["results"]] == ["https://good.example"]

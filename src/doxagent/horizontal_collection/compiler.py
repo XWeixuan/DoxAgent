@@ -50,7 +50,19 @@ class HorizontalStateCompiler:
                     as_of=observation.as_of,
                     source_refs=observation.source_refs,
                     collection_target_id=target.collection_target_id,
+                    source_concept=observation.source_concept,
+                    period_start=observation.period_start,
+                    period_end=observation.period_end,
+                    filed_at=observation.filed_at,
+                    accession=observation.accession,
+                    form=observation.form,
+                    fiscal_year=observation.fiscal_year,
+                    fiscal_period=observation.fiscal_period,
+                    frame=observation.frame,
+                    published_at=observation.published_at,
+                    retrieved_at=observation.retrieved_at,
                     quality_flags=observation.quality_flags,
+                    observation_metadata=observation.observation_metadata,
                 )
             )
         return HorizontalCollectionBundle(

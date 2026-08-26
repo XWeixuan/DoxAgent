@@ -190,7 +190,10 @@ async def test_document2_provider_is_published_read_only_and_cutoff_safe(
     )
     assert available.status is InputAvailability.AVAILABLE
     assert available.metadata["read_only"] is True
-    assert available.payload is not None and available.payload["version"] == 1
+    assert isinstance(available.payload, str)
+    assert available.payload.startswith("fields: event_id | occurred_at | title\n\n")
+    assert available.metadata["contract_version"] == "reference-view-md-v3"
+    assert available.metadata["content_type"] == "text/markdown; charset=utf-8"
     absent = await PublishedEventLibraryProvider(
         PublishedEventLibraryReader(tmp_path / "missing")
     ).load(ticker="MU", as_of=datetime(2030, 1, 1, tzinfo=UTC))

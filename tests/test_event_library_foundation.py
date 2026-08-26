@@ -231,6 +231,9 @@ def test_mu_gold_frozen_snapshot_to_published_v1_without_model(tmp_path: Path) -
     assert "mention" not in pending_wire.lower()
     assert "source" not in pending_wire.lower()
     assert (frozen_root / "known_event_index.md").read_text(encoding="utf-8") == ""
+    assert (frozen_root / "delta" / "runtime_packages.json").is_file()
+    assert (frozen_root / "delta" / "package_index.md").is_file()
+    assert manifest.runtime_packages_path == "delta/runtime_packages.json"
 
     request = runner.build_worker_request(
         prepared=runner.prepare_attempt(
@@ -275,10 +278,25 @@ def test_mu_gold_frozen_snapshot_to_published_v1_without_model(tmp_path: Path) -
     assert len(index.splitlines()) == 2
     assert index.splitlines()[0].startswith("E2 | 2026-08-10 |")
     assert "event_type" not in index
-    assert len(service.views.reference_view("MU")["events"]) == 2
+    reference = service.views.reference_view("MU")
+    assert reference.startswith("fields: event_id | occurred_at | title\n\n")
+    assert reference.count("\nevent_type:") == 2
+    assert "ticker:" not in reference and "version:" not in reference
+    assert "importance" not in reference
+    assert "- [FY2026-Q3] Micron reported FY2026 Q3 revenue" in reference
+    assert "- [null] Micron disclosed 16 strategic customer agreements" in reference
     assert exports["json"].is_file() and exports["markdown"].is_file()
+    assert exports["reference_view_agent"].read_bytes() == exports[
+        "reference_view_human"
+    ].read_bytes()
+    assert exports["known_event_index"].read_text(encoding="utf-8") == index
 
     loaded = RevisionBundleIO.load(bundle_path)
+    assert all(
+        "entities" not in fact.model_dump()
+        for event in loaded.event_revisions
+        for fact in event.facts
+    )
     repeated, repeated_outcome = service.importer.import_and_publish(loaded)
     assert repeated_outcome.status is ValidationStatus.PASS
     assert repeated.published_library_version == 1
@@ -317,7 +335,6 @@ def test_mu_gold_frozen_snapshot_to_published_v1_without_model(tmp_path: Path) -
             "proposition": "Micron added a new detail to the earnings occurrence.",
             "assertion_state": "ACTUAL",
             "subject_time": None,
-            "entities": ["Micron"],
             "consumes_delta_ids": ["D1"],
         }
     ]

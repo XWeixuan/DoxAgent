@@ -141,6 +141,7 @@ class OpenAICodexRuntime:
         multi_agent_enabled = request.allow_subagents and request.max_subagents > 0
         sdk_config: dict[str, Any] = {
             "features.multi_agent": multi_agent_enabled,
+            "web_search": "live",
             "mcp_servers.data.command": sys.executable,
             "mcp_servers.data.args": ["-m", "doxagent.mcp.data_server"],
             "mcp_servers.data.cwd": str(cwd),

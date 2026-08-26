@@ -179,12 +179,13 @@ class CodexDocument2Orchestrator:
         )
         self._repository.save_bundle(bundle)
 
-        final_seeds, o0_artifacts = await self._construct_shells(
+        o0_finalization, o0_artifacts = await self._construct_shells(
             request=request,
             prepared=prepared,
             checkpoint=checkpoint,
             bundle=bundle,
         )
+        final_seeds = o0_finalization.shells
         self._complete_workflow_node(workflow_checkpoint, CodexD2Node.O0_FINALIZATION)
         bundle.artifacts.update(o0_artifacts)
         self._repository.save_bundle(bundle)
@@ -195,6 +196,7 @@ class CodexDocument2Orchestrator:
                     request=request,
                     prepared=prepared,
                     seed=seed,
+                    o0_finalization=o0_finalization,
                     checkpoint=checkpoint,
                     bundle=bundle,
                 )
@@ -404,7 +406,7 @@ class CodexDocument2Orchestrator:
         prepared: PreparedDocument2Inputs,
         checkpoint: Document2Checkpoint,
         bundle: Document2Bundle,
-    ) -> tuple[list[ExpectationShellSeed], dict[str, ArtifactRef]]:
+    ) -> tuple[ShellFinalizationResult, dict[str, ArtifactRef]]:
         artifacts: dict[str, ArtifactRef] = {}
         if checkpoint.final_shell_seed_path:
             restored_final = await self._restore_stage(
@@ -415,7 +417,7 @@ class CodexDocument2Orchestrator:
             )
             if restored_final is not None:
                 finalized, reference = restored_final
-                return finalized.shells, {"final_shell_seeds": reference}
+                return finalized, {"final_shell_seeds": reference}
         common = self._common_context(prepared)
         specs: list[tuple[str, CodexD2Node, str, object]] = [
             ("c1", CodexD2Node.O0_CANDIDATE_C1, prepared.global_research.reports["c1"], None),
@@ -499,9 +501,7 @@ class CodexDocument2Orchestrator:
                 node=CodexD2Node.O0_SYNTHESIS,
                 role=CodexD2AgentRole.O0,
                 context={
-                    "candidate_sets": {
-                        key: value.model_dump(mode="json") for key, value in candidates.items()
-                    },
+                    "candidate_sets": _candidate_sets_context(candidates),
                     **common,
                 },
                 output_model=ShellSynthesisResult,
@@ -616,7 +616,7 @@ class CodexDocument2Orchestrator:
         bundle.checkpoint = checkpoint
         bundle.artifacts.update(artifacts)
         self._repository.save_bundle(bundle)
-        return finalized.shells, artifacts
+        return finalized, artifacts
 
     async def _run_candidate(
         self,
@@ -695,6 +695,7 @@ class CodexDocument2Orchestrator:
         request: Document2RunRequest,
         prepared: PreparedDocument2Inputs,
         seed: ExpectationShellSeed,
+        o0_finalization: ShellFinalizationResult,
         checkpoint: Document2Checkpoint,
         bundle: Document2Bundle,
     ) -> tuple[ExpectationShell, ArtifactRef] | Exception:
@@ -749,13 +750,16 @@ class CodexDocument2Orchestrator:
                         role=CodexD2AgentRole.O1,
                         context={
                             "canonical_shell": shell.model_dump(mode="json"),
+                            "o0_finalization": o0_finalization.model_dump(mode="json"),
+                            "research_cutoff_at": prepared.as_of.isoformat(),
+                            "source_global_research_published_at": (
+                                prepared.global_research.published_at.isoformat()
+                            ),
                             "global_research": prepared.global_research.model_dump(mode="json"),
                             "narrative_research": prepared.narrative_research.model_dump(
                                 mode="json"
                             ),
-                            "event_library": self._event_library_turn_context(
-                                prepared, state
-                            ),
+                            "event_library": self._event_library_turn_context(prepared, state),
                             "turn": stage.value,
                         },
                         output_model=ExpectationShell,
@@ -809,9 +813,7 @@ class CodexDocument2Orchestrator:
     ) -> ExpectationShell:
         if state.canonical_path:
             try:
-                file = await self._workspace.read_text(
-                    state.workspace_run_id, state.canonical_path
-                )
+                file = await self._workspace.read_text(state.workspace_run_id, state.canonical_path)
                 if file.content:
                     return ExpectationShell.model_validate_json(file.content)
             except (OSError, ValueError):
@@ -939,9 +941,7 @@ class CodexDocument2Orchestrator:
             return None
 
     @staticmethod
-    def _remember_attempt(
-        checkpoint: Document2Checkpoint, result: Document2TurnResult
-    ) -> None:
+    def _remember_attempt(checkpoint: Document2Checkpoint, result: Document2TurnResult) -> None:
         checkpoint.attempt_workspaces[result.attempt.attempt_id] = result.workspace_run_id
 
     async def _write_artifact(
@@ -984,8 +984,7 @@ class CodexDocument2Orchestrator:
             file = await self._workspace.read_text(run_id, reference.relative_path)
             if file.content is None:
                 raise RuntimeError(
-                    "published Document2 artifact body missing: "
-                    f"{reference.artifact_id}"
+                    f"published Document2 artifact body missing: {reference.artifact_id}"
                 )
             raw = file.content.encode("utf-8")
             checksum_mismatch = hashlib.sha256(raw).hexdigest() != reference.sha256
@@ -1025,9 +1024,7 @@ class CodexDocument2Orchestrator:
             published.append(published_ref)
         return published_at, published
 
-    def _complete_workflow_node(
-        self, checkpoint: WorkflowCheckpoint, node: CodexD2Node
-    ) -> None:
+    def _complete_workflow_node(self, checkpoint: WorkflowCheckpoint, node: CodexD2Node) -> None:
         checkpoint.completed_nodes = list(dict.fromkeys([*checkpoint.completed_nodes, node]))
         checkpoint.current_nodes = [item for item in checkpoint.current_nodes if item != node]
         checkpoint.failed_nodes = [item for item in checkpoint.failed_nodes if item != node]
@@ -1089,9 +1086,7 @@ class CodexDocument2Orchestrator:
             )
         self._repository.save_bundle(failed)
 
-    async def _event(
-        self, run_id: str, event_type: str, payload: dict[str, object]
-    ) -> None:
+    async def _event(self, run_id: str, event_type: str, payload: dict[str, object]) -> None:
         self._repository.append_event(
             WorkflowEvent(
                 workflow_version=CODEX_DOCUMENT2_WORKFLOW_VERSION,
@@ -1108,6 +1103,25 @@ class CodexDocument2Orchestrator:
 
 def _bounded(value: str, limit: int = 2_000) -> str:
     return value if len(value) <= limit else value[: limit - 3] + "..."
+
+
+def _candidate_sets_context(
+    candidates: dict[str, CandidateDiscoveryResult],
+) -> dict[str, dict[str, object]]:
+    """Add a deterministic cross-source handle without changing branch-local U# ids."""
+
+    contextualized: dict[str, dict[str, object]] = {}
+    for source_role, result in candidates.items():
+        payload = result.model_dump(mode="json")
+        payload["candidates"] = [
+            {
+                **candidate.model_dump(mode="json"),
+                "candidate_ref": f"{source_role.upper()}:{candidate.candidate_id}",
+            }
+            for candidate in result.candidates
+        ]
+        contextualized[source_role] = payload
+    return contextualized
 
 
 def _shell_key(shell_id: str) -> str:

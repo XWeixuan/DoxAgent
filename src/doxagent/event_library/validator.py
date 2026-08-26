@@ -54,8 +54,14 @@ class RevisionBundleValidator:
     def __init__(self, repository: EventLibraryRepository) -> None:
         self._repository = repository
 
-    def validate(self, bundle: CanonicalRevisionBundle) -> BundleValidationOutcome:
-        issues: list[ValidationIssue] = []
+    def validate(
+        self,
+        bundle: CanonicalRevisionBundle,
+        *,
+        initial_issues: list[ValidationIssue] | None = None,
+        force_pending_delta_ids: list[str] | None = None,
+    ) -> BundleValidationOutcome:
+        issues: list[ValidationIssue] = list(initial_issues or [])
         prior = self._repository.prior_publication(bundle)
         if prior is not None:
             total = sum(
@@ -115,6 +121,8 @@ class RevisionBundleValidator:
             },
             deep=True,
         )
+        if force_pending_delta_ids:
+            normalized = self._force_pending(normalized, force_pending_delta_ids)
         normalized = self._normalize_delta_coverage(normalized, expected_delta_ids, issues)
         normalized = self._filter_invalid_duplicate_targets(normalized, issues)
         cycle = self._relation_cycle(normalized)

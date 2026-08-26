@@ -19,7 +19,7 @@ from doxagent.codex_runtime.schema import (
     ResearchLane,
 )
 from doxagent.codex_worker.schema import WorkerRunRequest
-from doxagent.event_library.bundle_io import RevisionBundleIO
+from doxagent.event_library.bundle_io import RevisionBundleIO, TolerantBundleLoadResult
 from doxagent.event_library.contracts import (
     DeltaBatch,
     FrozenRuntimeSnapshot,
@@ -27,7 +27,11 @@ from doxagent.event_library.contracts import (
     PublicationResult,
 )
 from doxagent.event_library.service import EventLibraryService
-from doxagent.event_library.validator import BundleValidationOutcome
+from doxagent.event_library.validator import (
+    BundleValidationOutcome,
+    ValidationIssue,
+    ValidationSeverity,
+)
 from doxagent.workflows.codex_event_library.schema import (
     O2_RUN_RESULT_SCHEMA,
     EventLibraryRunStage,
@@ -58,7 +62,8 @@ class RemoteEventLibraryInitializer:
         model_provider: str | None = None,
         effort: Literal["low", "medium", "high", "xhigh", "max"] = "max",
         timeout_seconds: int = 3600,
-        wave_size: int = 30,
+        wave_size: int = 100,
+        wave_token_budget: int = 18_000,
         max_repairs: int = 2,
     ) -> None:
         if wave_size < 1:
@@ -73,6 +78,7 @@ class RemoteEventLibraryInitializer:
         self.effort = effort
         self.timeout_seconds = timeout_seconds
         self.wave_size = wave_size
+        self.wave_token_budget = wave_token_budget
         self.max_repairs = max_repairs
 
     async def run(
@@ -83,6 +89,7 @@ class RemoteEventLibraryInitializer:
         cutoff_at: datetime,
         export_dir: str | Path,
         mode: Literal["INITIALIZE", "INCREMENTAL"] = "INITIALIZE",
+        upstream_context_manifest: dict[str, Any] | None = None,
     ) -> tuple[
         DeltaBatch,
         PublicationResult | None,
@@ -90,7 +97,10 @@ class RemoteEventLibraryInitializer:
         dict[str, Path],
     ]:
         batch = self.service.delta_compiler.compile(snapshot)
-        if not batch.items:
+        review_candidates = self.service.repository.due_reference_review_candidates(
+            ticker=snapshot.ticker, as_of=snapshot.as_of
+        )
+        if not batch.items and not review_candidates:
             return batch, None, None, {}
         local_run_root = self.local_workspace_root / run_id
         local_run_root.mkdir(parents=True, exist_ok=True)
@@ -100,6 +110,8 @@ class RemoteEventLibraryInitializer:
             mode=mode,
             batches=[batch],
             as_of=snapshot.as_of,
+            reference_review_candidates=review_candidates,
+            upstream_context_manifest=upstream_context_manifest,
         )
         await self._upload_tree(run_id, frozen_root, frozen_root.relative_to(local_run_root))
         existing = self.service.repository.get_maintenance_run(run_id)
@@ -111,7 +123,14 @@ class RemoteEventLibraryInitializer:
                 str(existing["frozen_view_id"]) != manifest.frozen_view_id
                 or int(existing["base_version"]) != manifest.base_library_version
             ):
-                raise ValueError("resume state does not match the frozen maintenance input")
+                metadata = dict(existing.get("metadata_json") or {})
+                can_reseed_before_model_content = (
+                    not existing.get("thread_id")
+                    and not existing.get("bundle_path")
+                    and not metadata.get("completed_attempt_ids")
+                )
+                if not can_reseed_before_model_content:
+                    raise ValueError("resume state does not match the frozen maintenance input")
             metadata = dict(existing.get("metadata_json") or {})
             completed = [str(item) for item in metadata.get("completed_attempt_ids", [])]
             failed_attempt_id = (
@@ -146,13 +165,23 @@ class RemoteEventLibraryInitializer:
             ),
             thread_id=thread_id,
             completed=completed,
-            wave_count=_wave_count(len(batch.items), self.wave_size),
+            wave_count=len(self._plan_waves(batch)),
         )
 
         phases = _resolve_phase_attempts(
-            self._phases(batch, mode=mode),
+            self._phases(
+                batch,
+                mode=mode,
+                review_only=not batch.items and bool(review_candidates),
+            ),
             completed=completed,
-            failed_attempt_id=failed_attempt_id,
+            failed_attempt_id=(
+                failed_attempt_id
+                or _infer_unfinished_attempt(
+                    [item.relative_path for item in (await self.workspace.inventory(run_id)).files],
+                    completed=completed,
+                )
+            ),
         )
         completed_phase_ids = {_base_attempt_id(item) for item in completed}
         latest_bundle_prefix: str | None = None
@@ -176,7 +205,7 @@ class RemoteEventLibraryInitializer:
                         stage=pre_stage,
                         thread_id=thread_id,
                         completed=completed,
-                        wave_count=_wave_count(len(batch.items), self.wave_size),
+                        wave_count=len(self._plan_waves(batch)),
                     )
             await self._seed_attempt(
                 run_id=run_id,
@@ -205,7 +234,7 @@ class RemoteEventLibraryInitializer:
                     stage=phase["stage"],
                     thread_id=thread_id,
                     completed=completed,
-                    wave_count=_wave_count(len(batch.items), self.wave_size),
+                    wave_count=len(self._plan_waves(batch)),
                     metadata={
                         "error_code": job.error_code,
                         "error_message": job.error_message,
@@ -229,7 +258,7 @@ class RemoteEventLibraryInitializer:
                 stage=phase["stage"],
                 thread_id=thread_id,
                 completed=completed,
-                wave_count=_wave_count(len(batch.items), self.wave_size),
+                wave_count=len(self._plan_waves(batch)),
             )
 
         if latest_bundle_prefix is None:
@@ -247,7 +276,7 @@ class RemoteEventLibraryInitializer:
             stage=EventLibraryRunStage.BUNDLE_VALIDATE,
             thread_id=thread_id,
             completed=completed,
-            wave_count=_wave_count(len(batch.items), self.wave_size),
+            wave_count=len(self._plan_waves(batch)),
         )
         bundle_dir, outcome, thread_id = await self._validate_with_repairs(
             run_id=run_id,
@@ -268,7 +297,7 @@ class RemoteEventLibraryInitializer:
             stage=EventLibraryRunStage.ARTIFACT_PROMOTED,
             thread_id=thread_id,
             completed=completed,
-            wave_count=_wave_count(len(batch.items), self.wave_size),
+            wave_count=len(self._plan_waves(batch)),
             bundle_path=promoted_prefix,
             bundle_hash=digest,
             validator_status=outcome.status.value,
@@ -289,7 +318,18 @@ class RemoteEventLibraryInitializer:
         batch: DeltaBatch,
         *,
         mode: Literal["INITIALIZE", "INCREMENTAL"] = "INITIALIZE",
+        review_only: bool = False,
     ) -> list[_O2Phase]:
+        if review_only:
+            return [
+                {
+                    "attempt_id": "o2-reference-review",
+                    "stage": EventLibraryRunStage.REFERENCE_REVIEW,
+                    "skill_asset": "skills/incremental-reference-review.md",
+                    "delta_ids": [],
+                    "prior_attempt_paths": [],
+                }
+            ]
         if mode == "INCREMENTAL":
             delta_ids = [item.delta_id for item in batch.items]
             return [
@@ -330,16 +370,14 @@ class RemoteEventLibraryInitializer:
             }
         ]
         prior = ["attempts/o2-survey/output/work"]
-        for index, start in enumerate(range(0, len(batch.items), self.wave_size), start=1):
+        for index, wave in enumerate(self._plan_waves(batch), start=1):
             attempt_id = f"o2-wave-{index:03d}"
             phases.append(
                 {
                     "attempt_id": attempt_id,
                     "stage": EventLibraryRunStage.LOCAL_RECONSTRUCTION,
                     "skill_asset": "skills/initialize-wave.md",
-                    "delta_ids": [
-                        item.delta_id for item in batch.items[start : start + self.wave_size]
-                    ],
+                    "delta_ids": [item.delta_id for item in wave],
                     "prior_attempt_paths": list(prior),
                 }
             )
@@ -354,6 +392,71 @@ class RemoteEventLibraryInitializer:
             }
         )
         return phases
+
+    def _plan_waves(self, batch: DeltaBatch) -> list[list[Any]]:
+        """Assign every Atomic Delta once, keeping its primary Package together."""
+
+        items_by_id = {item.delta_id: item for item in batch.items}
+        package_members: dict[str, list[Any]] = {}
+        if batch.runtime_packages:
+            for package in sorted(batch.runtime_packages, key=lambda item: item.runtime_hint_id):
+                package_members[package.runtime_hint_id] = [
+                    items_by_id[item]
+                    for item in package.member_delta_ids
+                    if item in items_by_id
+                ]
+        else:
+            # Legacy v1 batches are upgraded in-memory without mutating their immutable DB row.
+            for hint in sorted(batch.runtime_hints, key=lambda item: item.runtime_hint_id):
+                package_members[hint.runtime_hint_id] = [
+                    item for item in batch.items if hint.runtime_hint_id in item.runtime_hint_ids
+                ]
+        assigned: set[str] = set()
+        groups: list[list[Any]] = []
+        for _hint_id, members in package_members.items():
+            primary = [item for item in members if item.delta_id not in assigned]
+            if primary:
+                groups.append(primary)
+                assigned.update(item.delta_id for item in primary)
+        ungrouped = [item for item in batch.items if item.delta_id not in assigned]
+        if ungrouped:
+            groups.append(ungrouped)
+        chunks: list[list[Any]] = []
+        for group in groups:
+            ordered = sorted(
+                group,
+                key=lambda item: (item.time, tuple(item.entities), int(item.delta_id[1:])),
+            )
+            current: list[Any] = []
+            estimated_tokens = 0
+            for item in ordered:
+                item_tokens = max(1, len(item.model_dump_json()) // 4)
+                if current and (
+                    len(current) >= self.wave_size
+                    or estimated_tokens + item_tokens > self.wave_token_budget
+                ):
+                    chunks.append(current)
+                    current = []
+                    estimated_tokens = 0
+                current.append(item)
+                estimated_tokens += item_tokens
+            if current:
+                chunks.append(current)
+        waves: list[list[Any]] = []
+        for chunk in chunks:
+            chunk_tokens = sum(max(1, len(item.model_dump_json()) // 4) for item in chunk)
+            if waves:
+                last_tokens = sum(
+                    max(1, len(item.model_dump_json()) // 4) for item in waves[-1]
+                )
+                if (
+                    len(waves[-1]) + len(chunk) <= self.wave_size
+                    and last_tokens + chunk_tokens <= self.wave_token_budget
+                ):
+                    waves[-1].extend(chunk)
+                    continue
+            waves.append(list(chunk))
+        return waves
 
     async def _seed_attempt(
         self,
@@ -467,7 +570,8 @@ class RemoteEventLibraryInitializer:
         completed: list[str],
         mode: Literal["INITIALIZE", "INCREMENTAL"],
     ) -> tuple[Path, BundleValidationOutcome, str | None]:
-        outcome = self.service.validator.validate(RevisionBundleIO.load(bundle_dir))
+        loaded = RevisionBundleIO.load_tolerant(bundle_dir)
+        outcome = self._validate_loaded(loaded)
         for repair_number in range(1, self.max_repairs + 1):
             if outcome.publishable:
                 return bundle_dir, outcome, thread_id
@@ -516,7 +620,8 @@ class RemoteEventLibraryInitializer:
                     self.local_workspace_root / run_id / "downloads" / f"repair-{repair_number}"
                 ),
             )
-            outcome = self.service.validator.validate(RevisionBundleIO.load(bundle_dir))
+            loaded = RevisionBundleIO.load_tolerant(bundle_dir)
+            outcome = self._validate_loaded(loaded)
         if not outcome.publishable:
             raise ValueError("O2 Revision Bundle failed deterministic validation after repairs")
         return bundle_dir, outcome, thread_id
@@ -538,16 +643,16 @@ class RemoteEventLibraryInitializer:
         BundleValidationOutcome,
         dict[str, Path],
     ]:
-        source_bundle = RevisionBundleIO.load(bundle_dir)
+        loaded = RevisionBundleIO.load_tolerant(bundle_dir)
         self._save_run(
             run_id=run_id,
             manifest=manifest,
             stage=EventLibraryRunStage.IMPORT_WORKING,
             thread_id=thread_id,
             completed=completed,
-            wave_count=_wave_count(len(batch.items), self.wave_size),
+            wave_count=len(self._plan_waves(batch)),
         )
-        result, outcome = self.service.importer.import_and_publish(source_bundle)
+        result, outcome = self.service.importer.import_tolerant_and_publish(loaded)
         if existing_outcome is not None and outcome.status != existing_outcome.status:
             raise RuntimeError("Bundle validation changed between promotion and import")
         self._save_run(
@@ -556,7 +661,7 @@ class RemoteEventLibraryInitializer:
             stage=EventLibraryRunStage.PUBLISH_VN,
             thread_id=thread_id,
             completed=completed,
-            wave_count=_wave_count(len(batch.items), self.wave_size),
+            wave_count=len(self._plan_waves(batch)),
             validator_status=outcome.status.value,
             metadata={"published_library_version": result.published_library_version},
         )
@@ -578,11 +683,27 @@ class RemoteEventLibraryInitializer:
             stage=EventLibraryRunStage.PUBLISHED,
             thread_id=thread_id,
             completed=completed,
-            wave_count=_wave_count(len(batch.items), self.wave_size),
+            wave_count=len(self._plan_waves(batch)),
             validator_status=outcome.status.value,
             metadata={"published_library_version": result.published_library_version},
         )
         return batch, result, outcome, exports
+
+    def _validate_loaded(self, loaded: TolerantBundleLoadResult) -> BundleValidationOutcome:
+        issues = [
+            ValidationIssue(
+                code=item.code,
+                severity=ValidationSeverity.WARNING,
+                message=item.message,
+                item_id=item.item_id,
+            )
+            for item in loaded.issues
+        ]
+        return self.service.validator.validate(
+            loaded.bundle,
+            initial_issues=issues,
+            force_pending_delta_ids=loaded.invalid_delta_ids,
+        )
 
     async def _upload_tree(
         self, run_id: str, local_root: Path, remote_root: Path
@@ -659,7 +780,7 @@ class RemoteEventLibraryInitializer:
         )
 
 
-_RETRY_ATTEMPT = re.compile(r"^(?P<base>.+)-retry-(?P<number>[1-9]\d*)$")
+_RETRY_ATTEMPT = re.compile(r"^(?P<base>.+)-retry-(?P<number>0*[1-9]\d*)$")
 
 
 def _base_attempt_id(attempt_id: str) -> str:
@@ -702,6 +823,35 @@ def _resolve_phase_attempts(
             }
         )
     return resolved
+
+
+def _infer_unfinished_attempt(paths: list[str], *, completed: list[str]) -> str | None:
+    """Recover a lost failed-attempt pointer without mutating immutable inputs."""
+
+    completed_set = set(completed)
+    attempts = {
+        parts[1]
+        for path in paths
+        if len(parts := path.replace("\\", "/").split("/")) >= 4
+        and parts[0] == "attempts"
+        and parts[2] == "input"
+        and parts[3] == "task.json"
+        and parts[1] not in completed_set
+    }
+    if not attempts:
+        return None
+
+    def order(attempt_id: str) -> tuple[str, int]:
+        match = _RETRY_ATTEMPT.fullmatch(attempt_id)
+        return (
+            _base_attempt_id(attempt_id),
+            int(match.group("number")) if match is not None else 0,
+        )
+
+    # Earliest unfinished phase is the only safe continuation point; within that
+    # phase use its highest immutable retry number.
+    first_base = sorted({_base_attempt_id(item) for item in attempts})[0]
+    return max((item for item in attempts if _base_attempt_id(item) == first_base), key=order)
 
 
 def _wave_count(item_count: int, wave_size: int) -> int:

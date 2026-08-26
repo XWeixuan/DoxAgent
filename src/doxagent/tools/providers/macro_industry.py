@@ -7,8 +7,10 @@ API into an unbounded, poorly documented data-exfiltration surface.
 
 from __future__ import annotations
 
+import re
 from collections.abc import Mapping
 from datetime import UTC, datetime
+from typing import Any
 
 from doxagent.tools.providers.base import (
     BaseRealToolClient,
@@ -261,6 +263,7 @@ class _BlsSemanticClient(BaseRealToolClient):
                 "seriesid": [registry[key] for key in keys],
                 "registrationkey": api_key,
             }
+            cutoff = _metadata_cutoff(request)
             for input_key, provider_key in (
                 ("start_year", "startyear"),
                 ("end_year", "endyear"),
@@ -269,6 +272,13 @@ class _BlsSemanticClient(BaseRealToolClient):
             ):
                 if input_key in request.input:
                     body[provider_key] = request.input[input_key]
+            if cutoff is not None:
+                requested_end_year = body.get("endyear")
+                try:
+                    end_year = int(str(requested_end_year))
+                except (TypeError, ValueError):
+                    end_year = cutoff.year
+                body["endyear"] = str(min(end_year, cutoff.year))
             raw = self._post_json(
                 self.settings.bls_base_url.rstrip("/") + "/publicAPI/v2/timeseries/data/",
                 json_body=body,
@@ -301,26 +311,34 @@ class _BlsSemanticClient(BaseRealToolClient):
                     message="BLS returned no governed observations.",
                     details={"provider_messages": messages},
                 )
-            projected_series = []
+            projected_series: list[JsonObject] = []
             missing_series: list[JsonObject] = []
+            filtered_observations = 0
             metric_by_series = {series_id: key for key, series_id in registry.items()}
             for row in rows:
                 if not isinstance(row, dict):
                     continue
                 series_id = str(row.get("seriesID") or "")
-                projected = {
-                        "metric_key": metric_by_series.get(series_id),
-                        "series_id": series_id,
-                        "observations": [
-                            {
-                                key: item.get(key)
-                                for key in ("year", "period", "periodName", "value", "footnotes")
-                                if item.get(key) not in (None, "", [], {})
-                            }
-                            for item in row.get("data", [])
-                            if isinstance(item, dict)
-                        ],
+                observations: list[JsonObject] = [
+                    {
+                        key: item.get(key)
+                        for key in ("year", "period", "periodName", "value", "footnotes")
+                        if item.get(key) not in (None, "", [], {})
                     }
+                    for item in row.get("data", [])
+                    if isinstance(item, dict)
+                ]
+                if cutoff is not None:
+                    eligible = [
+                        item for item in observations if _bls_observation_at_or_before(item, cutoff)
+                    ]
+                    filtered_observations += len(observations) - len(eligible)
+                    observations = eligible
+                projected: JsonObject = {
+                    "metric_key": metric_by_series.get(series_id),
+                    "series_id": series_id,
+                    "observations": observations,
+                }
                 projected_series.append(projected)
                 if not projected["observations"]:
                     missing_series.append(
@@ -343,8 +361,13 @@ class _BlsSemanticClient(BaseRealToolClient):
                     }
                     for item in projected_series
                 ],
+                "cutoff_filter": {
+                    "cutoff_at": cutoff.isoformat() if cutoff is not None else None,
+                    "filtered_observation_count": filtered_observations,
+                    "historical_vintage_verified": False,
+                },
             }
-            kwargs = dict(
+            kwargs: dict[str, Any] = dict(
                 output=output,
                 raw=raw,
                 source_kind="external_report",
@@ -359,12 +382,25 @@ class _BlsSemanticClient(BaseRealToolClient):
                     "series_ids": [registry[key] for key in keys],
                 },
             )
-            if missing_series:
+            if missing_series or filtered_observations:
+                code = (
+                    "bls_partial_series_empty"
+                    if missing_series
+                    else "post_cutoff_observations_filtered"
+                )
+                message = (
+                    "One or more requested BLS series contained no eligible observations."
+                    if missing_series
+                    else "BLS observations after the research cutoff were removed."
+                )
                 return self._partial(
                     request,
-                    code="bls_partial_series_empty",
-                    message="One or more requested BLS series contained no observations.",
-                    details={"missing_series": missing_series},
+                    code=code,
+                    message=message,
+                    details={
+                        "missing_series": missing_series,
+                        "filtered_observation_count": filtered_observations,
+                    },
                     **kwargs,
                 )
             return self._success(
@@ -373,6 +409,30 @@ class _BlsSemanticClient(BaseRealToolClient):
             )
         except Exception as exc:
             return self._handle_exception(request, exc)
+
+
+def _metadata_cutoff(request: ToolRequest) -> datetime | None:
+    raw = request.metadata.get("cutoff_at")
+    if not isinstance(raw, str):
+        return None
+    try:
+        parsed = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return parsed if parsed.tzinfo is not None else parsed.replace(tzinfo=UTC)
+
+
+def _bls_observation_at_or_before(observation: JsonObject, cutoff: datetime) -> bool:
+    try:
+        year = int(str(observation.get("year")))
+    except (TypeError, ValueError):
+        return True
+    if year != cutoff.year:
+        return year < cutoff.year
+    period = str(observation.get("period") or "")
+    if not re.fullmatch(r"M(?:0[1-9]|1[0-2])", period):
+        return False
+    return int(period[1:]) <= cutoff.month
 
 
 class BlsLaborInflationClient(_BlsSemanticClient):
@@ -591,20 +651,20 @@ class CensusManufacturingOrdersClient(BaseRealToolClient):
                 reverse=True,
             )
             output = {
-                    "provider": "census_m3",
-                    "measure": measure,
-                    "requested_naics": naics,
-                    "resolved_naics_aggregate": resolved_naics,
-                    "category_code": category_code,
-                    "aggregation_notice": (
-                        None
-                        if naics == resolved_naics
-                        else f"Census M3 has no {naics} series; values are for NAICS "
-                        f"{resolved_naics} aggregate."
-                    ),
-                    "seasonally_adjusted": seasonally_adjusted,
-                    "rows": projected_rows,
-                }
+                "provider": "census_m3",
+                "measure": measure,
+                "requested_naics": naics,
+                "resolved_naics_aggregate": resolved_naics,
+                "category_code": category_code,
+                "aggregation_notice": (
+                    None
+                    if naics == resolved_naics
+                    else f"Census M3 has no {naics} series; values are for NAICS "
+                    f"{resolved_naics} aggregate."
+                ),
+                "seasonally_adjusted": seasonally_adjusted,
+                "rows": projected_rows,
+            }
             kwargs = dict(
                 output=output,
                 raw=raw,

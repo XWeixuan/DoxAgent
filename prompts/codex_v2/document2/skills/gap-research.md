@@ -30,6 +30,11 @@ boundary of the event space. They describe what upstream research already knew t
 turn must also imagine events that are not named, implied, scheduled, or currently emphasized by
 any upstream object.
 
+Before diverging, use the current `boundary_rule` and supplied final Shell map to understand adjacent
+expectation systems. A future event centered in another Shell can still matter here; develop the
+revision specific to the current Unit while treating the adjacent Shell's full event system as its
+own depth scope.
+
 ## Establish the current world, then move beyond it
 
 Before generating events, recall the Shell's current world model:
@@ -116,28 +121,30 @@ mentioned upstream, has no close precedent, appears unlikely, or does not yet ha
 questions belong to the later reality test. If nearly every candidate is a paraphrase of a State,
 Factor, or Future Node, the event space has not been explored far enough.
 
-## Reverse-test the expanded event space
+## Evaluate and develop the expanded event space
 
-After broad generation, test candidates against reality rather than asking whether the evidence
-originally suggested them. For each candidate, ask:
+After broad generation, identify the future revision space each candidate is trying to cover, then
+test and improve its current occurrence expression. For each candidate, ask:
 
 - Is the event physically, economically, institutionally, and temporally possible in the relevant
   system?
 - Can an actor, mechanism, interaction, or external shock provide a coherent route to it?
-- Would the occurrence materially change the Unit rather than merely add information?
-- Could a future agent recognize one coherent occurrence or result?
-- Does it add a distinct revision path rather than duplicate another candidate?
+- Which current expectation judgment would be formed differently if it occurred?
+- Does it add a distinct revision path rather than another story for an existing one?
+- Is this the most useful recognizable occurrence for that revision space?
 
-Remove a candidate when research shows it is already realized, genuinely impossible, internally
-incoherent, economically irrelevant to the Unit, incapable of meaningful revision, or duplicative.
-Low estimated probability, novelty, lack of explicit upstream support, and weak direct evidence are
-not reasons to remove an otherwise possible and consequential event.
+When a revision space is valuable but the occurrence is abstract, implausibly framed, or weakly
+recognizable, research the actors and mechanisms, then refine, reframe, or replace it with a better
+adjacent occurrence. A candidate loses value only when reasonable development still leaves it
+already realized, impossible, incoherent, immaterial, unrecognizable, or duplicative. Low estimated
+probability, novelty, lack of upstream support, and weak direct evidence do not disqualify an
+otherwise possible and consequential event.
 
-This reverse test is a plausibility floor, not a probability ranking. The final Gap Set may include
-unlikely events when they are possible, observable, materially revisionary, and distinct. Coverage
-of the future matters more than consensus comfort.
+Reality evaluation improves the future map rather than ranking candidates by probability. The final
+Gap Set may include unlikely events when they are possible, recognizable, materially revisionary,
+and distinct.
 
-## Research surviving possibilities
+## Research and improve promising possibilities
 
 Use targeted research to turn imaginative candidates into usable event objects. Research should
 clarify:
@@ -155,6 +162,10 @@ a source that predicts the exact event. Direct precedents are helpful but not re
 can be derived from established capabilities, incentives, dependencies, industry structure, or
 historical patterns combined in a new way.
 
+Research may confirm the original candidate or reveal a more realistic occurrence that expresses
+the same revision space. Use that discovery to improve the Gap rather than treating a weak initial
+formulation as evidence that the underlying possibility lacks value.
+
 `citation` anchors the current premises used in that derivation. It does not certify that the future
 event is likely or already anticipated. The inferential step from those premises to the possible
 occurrence belongs explicitly in `derivation`.
@@ -170,12 +181,13 @@ Also explore what could occur between, before, after, or entirely outside known 
 Unknown future events do not announce themselves through the existing calendar, and the Gap Set
 should remain useful when the decisive event was absent from upstream planning.
 
-## Define one occurrence at useful atomicity
+## Define one coherent recognizable development
 
-A Potential Gap represents one coherent runtime recognition and one coherent revision logic. Split
-components that can happen independently or would produce materially different revisions. Keep one
-observable decision or result together when separating its related consequences would merely
-duplicate the recognition event.
+A Potential Gap represents one coherent recognition thesis and one coherent revision thesis. It may
+be a decision, result, development, or meaningful bounded sequence. Keep a sequence together when
+its elements jointly form one recognizable future cognition change; split components that can occur
+independently and imply materially different revisions. Executable event decomposition belongs to
+later monitoring design.
 
 An occurrence may be instantaneous or bounded over time. For trend-like events, make the actor,
 scope, window, threshold, stage, or evidence source precise enough for recognition without inventing
@@ -204,7 +216,8 @@ probability, price target, or trading action.
 Use only the supplied `PotentialGap` fields:
 
 - `gap_id` gives the occurrence a concise natural-language semantic identity;
-- `possible_occurrence` states the future event or result without embedding its impact story;
+- `possible_occurrence` states the future occurrence or bounded development without embedding its
+  impact story;
 - `derivation` records why the occurrence is possible and worth monitoring from today's reality;
 - `citation` provides the principal evidence for the derivation's current premises;
 - `expected_revision` states the Unit-level revision and its boundary; and
@@ -221,12 +234,12 @@ the same recognition event, split compound events with independent revision logi
 shared occurrences across Units. Retain materially distinct paths even when one is less likely or
 less directly evidenced than the others.
 
-Judge the set by event-space coverage rather than count. Ask whether it spans the consequential
+Judge the set by revision-space coverage rather than count. Ask whether it spans the consequential
 ways the Unit could be revised: continuation and reversal, success and failure, earlier and later,
 scale and non-scalability, beneficiary reallocation, competitive or substitute action, policy or
 regulatory change, external discontinuity, transmission failure, interaction effects, and events
-that challenge the current model itself. These are coverage lenses, not requirements to manufacture
-one Gap of every kind or balance positive and negative sentiment.
+that challenge the current model itself. These lenses open exploration beyond the first reaction;
+they do not define required categories for the final Gap Set.
 
 The best Gap Set combines recognizable events near the current research frontier with less obvious
 but plausible events beyond it. A narrow set of obvious milestones may be precise yet still fail its
@@ -249,10 +262,11 @@ or the most visible narrative. It is also incomplete when candidates were reject
 generation because they lacked direct support or appeared unlikely.
 
 Complete the turn after the Shell has received deliberate evidence-led, adjacent, and outside-model
-exploration; materially different internal, external, and model-breaking event paths have been
-considered; and each retained Gap is future, observable, possible, consequential, and paired with a
-clear expected revision. Continue expanding until additional outside-model passes mainly repeat an
-existing revision path or produce events that cannot materially revise the Unit.
+exploration and the major known-system, adjacent, and model-breaking revision spaces are represented
+by researched, improved Gaps that explain both a realistic occurrence path and the Unit revision.
+Keep developing the map while new exploration reveals a distinct revision path or a promising space
+still has only a weak expression. It is mature when further work mainly supplies alternate stories
+for revision paths already understood rather than new ways the expectation could change.
 
 Return the complete `ExpectationShell`. Preserve the researched State and Realization Factors,
 update each Unit's `potential_gaps`, carry all canonical fields through unchanged, and include only

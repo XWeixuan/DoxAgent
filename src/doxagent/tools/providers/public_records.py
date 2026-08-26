@@ -12,8 +12,11 @@ import re
 from datetime import datetime, timedelta
 from email.utils import parsedate_to_datetime
 from html.parser import HTMLParser
+from typing import Any
 from urllib.parse import urljoin, urlparse
 from xml.etree import ElementTree
+
+import httpx
 
 from doxagent.models import ResultStatus
 from doxagent.tools.providers.base import (
@@ -188,12 +191,12 @@ class UsaSpendingAwardSearchClient(_PublicJsonClient):
             )
             records = _project_public_records(self.provider, "award_search", _records(raw))
             output = {
-                    "provider": self.provider,
-                    "record_type": "award_search",
-                    "records": records,
-                    "page_metadata": raw.get("page_metadata", {}),
-                    "applied_filters": filters,
-                }
+                "provider": self.provider,
+                "record_type": "award_search",
+                "records": records,
+                "page_metadata": raw.get("page_metadata", {}),
+                "applied_filters": filters,
+            }
             kwargs = dict(
                 output=output,
                 raw={"records": records},
@@ -236,8 +239,7 @@ class UsaSpendingAwardDetailClient(_PublicJsonClient):
                 request,
                 code="invalid_input",
                 message=(
-                    "generated_internal_id is required "
-                    "(award_id remains a compatibility alias)."
+                    "generated_internal_id is required (award_id remains a compatibility alias)."
                 ),
             )
         return self._read(
@@ -486,6 +488,10 @@ class IrOfficialFeedDiscoveryClient(BaseRealToolClient):
     """Read only an explicitly allowlisted issuer domain; no crawler state is persisted."""
 
     def call(self, request: ToolRequest) -> ToolResult:
+        result, _ = self._discover(request, accept="text/html,application/xhtml+xml")
+        return result
+
+    def _discover(self, request: ToolRequest, *, accept: str) -> tuple[ToolResult, str | None]:
         try:
             url = _input_str(request, "url", "")
             allowed = _input_list(request, "official_domains")
@@ -497,26 +503,20 @@ class IrOfficialFeedDiscoveryClient(BaseRealToolClient):
                     host == item.lower() or host.endswith("." + item.lower()) for item in allowed
                 )
             ):
-                return self._failure(
-                    request,
-                    code="invalid_official_domain",
-                    message=(
-                        "url must be HTTPS and match an explicitly supplied "
-                        "official_domains allowlist."
+                return (
+                    self._failure(
+                        request,
+                        code="invalid_official_domain",
+                        message=(
+                            "url must be HTTPS and match an explicitly supplied "
+                            "official_domains allowlist."
+                        ),
                     ),
+                    None,
                 )
-            text = self._get_text(
-                url,
-                headers={
-                    "User-Agent": (
-                        "Mozilla/5.0 (compatible; DoxAgent/0.1; +https://example.com/contact)"
-                    ),
-                    "Accept": "text/html,application/xhtml+xml",
-                },
-                cache_ttl=int(getattr(self.settings, "sec_cache_ttl_seconds", 900)),
-            )
+            text = self._read_official_text(url, accept=accept)
             candidate_urls = _official_candidate_links(text, url)
-            kwargs = dict(
+            kwargs: dict[str, Any] = dict(
                 output={
                     "provider": "issuer_ir",
                     "official_domain": host,
@@ -534,42 +534,55 @@ class IrOfficialFeedDiscoveryClient(BaseRealToolClient):
                 metadata={"url": url, "allowlist_size": len(allowed), "state_written": False},
             )
             if not candidate_urls:
-                return self._partial(
-                    request,
-                    code="ir_no_feed_candidates",
-                    message=(
-                        "The official page was reachable but exposed no feed or release "
-                        "candidates."
+                return (
+                    self._partial(
+                        request,
+                        code="ir_no_feed_candidates",
+                        message=(
+                            "The official page was reachable but exposed no feed or release "
+                            "candidates."
+                        ),
+                        retryable=False,
+                        details={"url": url},
+                        **kwargs,
                     ),
-                    retryable=False,
-                    details={"url": url},
-                    **kwargs,
+                    text,
                 )
-            return self._success(
-                request,
-                **kwargs,
-            )
+            return self._success(request, **kwargs), text
         except Exception as exc:
-            return self._handle_exception(request, exc)
+            return self._handle_exception(request, exc), None
+
+    def _read_official_text(self, url: str, *, accept: str) -> str:
+        for attempt in range(2):
+            try:
+                return self._get_text(
+                    url,
+                    headers={
+                        "User-Agent": (
+                            "Mozilla/5.0 (compatible; DoxAgent/0.1; +https://example.com/contact)"
+                        ),
+                        "Accept": accept,
+                    },
+                    cache_ttl=int(getattr(self.settings, "sec_cache_ttl_seconds", 900)),
+                )
+            except (httpx.RequestError, ProviderHttpError) as exc:
+                retryable = isinstance(exc, httpx.RequestError) or exc.retryable
+                if not retryable or attempt == 1:
+                    raise
+        raise AssertionError("unreachable IR retry loop")
 
 
 class IrOfficialUpdatesClient(IrOfficialFeedDiscoveryClient):
     def call(self, request: ToolRequest) -> ToolResult:
-        result = super().call(request)
-        if result.output:
+        result, text = self._discover(
+            request,
+            accept="application/rss+xml,application/atom+xml,text/html,*/*",
+        )
+        if result.output and text is not None:
             url = _input_str(request, "url", "")
-            text = self._get_text(
-                url,
-                headers={
-                    "User-Agent": (
-                        "Mozilla/5.0 (compatible; DoxAgent/0.1; +https://example.com/contact)"
-                    ),
-                    "Accept": "application/rss+xml,application/atom+xml,text/html,*/*",
-                },
-                cache_ttl=int(getattr(self.settings, "sec_cache_ttl_seconds", 900)),
-            )
             updates = _parse_official_feed(text, url)
             resolved_feed_url: str | None = url if updates else None
+            candidate_errors: list[JsonObject] = []
             allowed = _input_list(request, "official_domains")
             queue = [
                 (str(item.get("url") or ""), 1)
@@ -590,16 +603,24 @@ class IrOfficialUpdatesClient(IrOfficialFeedDiscoveryClient):
                 ):
                     continue
                 seen.add(candidate_url)
-                candidate_text = self._get_text(
-                    candidate_url,
-                    headers={
-                        "User-Agent": (
-                            "Mozilla/5.0 (compatible; DoxAgent/0.1; +https://example.com/contact)"
-                        ),
-                        "Accept": "application/rss+xml,application/atom+xml,text/html,*/*",
-                    },
-                    cache_ttl=int(getattr(self.settings, "sec_cache_ttl_seconds", 900)),
-                )
+                try:
+                    candidate_text = self._read_official_text(
+                        candidate_url,
+                        accept="application/rss+xml,application/atom+xml,text/html,*/*",
+                    )
+                except Exception as exc:
+                    handled = self._handle_exception(request, exc)
+                    candidate_errors.append(
+                        {
+                            "url": candidate_url,
+                            "code": handled.error.code
+                            if handled.error
+                            else "tool_execution_failed",
+                            "message": handled.error.message if handled.error else str(exc),
+                            "retryable": handled.error.retryable if handled.error else False,
+                        }
+                    )
+                    continue
                 updates = _parse_official_feed(candidate_text, candidate_url)
                 candidate_links = _official_candidate_links(candidate_text, candidate_url)
                 if not updates:
@@ -612,9 +633,7 @@ class IrOfficialUpdatesClient(IrOfficialFeedDiscoveryClient):
                         queue = discovered_feeds + queue
                         continue
                     updates = [
-                        item
-                        for item in candidate_links
-                        if item.get("kind") == "official_update"
+                        item for item in candidate_links if item.get("kind") == "official_update"
                     ][:25]
                 if updates:
                     resolved_feed_url = candidate_url
@@ -637,6 +656,7 @@ class IrOfficialUpdatesClient(IrOfficialFeedDiscoveryClient):
             result.output["published_at"] = published
             result.output["as_of"] = published
             result.output["resolved_feed_url"] = resolved_feed_url
+            result.output["provider_errors"] = candidate_errors
             result.output["source_coordinates"]["source_scope"] = "ir_official_updates"
             if not updates:
                 return result.model_copy(
@@ -649,6 +669,7 @@ class IrOfficialUpdatesClient(IrOfficialFeedDiscoveryClient):
                                 "entries or specific release links."
                             ),
                             retryable=False,
+                            details={"provider_errors": candidate_errors},
                         ),
                         "output_summary": (
                             "Official IR page was reachable, but navigation links were excluded "
@@ -656,6 +677,25 @@ class IrOfficialUpdatesClient(IrOfficialFeedDiscoveryClient):
                         ),
                     }
                 )
+            if candidate_errors:
+                return result.model_copy(
+                    update={
+                        "status": ResultStatus.PARTIAL,
+                        "error": ToolError(
+                            code="ir_partial_candidate_failure",
+                            message=(
+                                "Some official IR candidate URLs failed, but usable updates "
+                                "were retained."
+                            ),
+                            retryable=any(bool(item.get("retryable")) for item in candidate_errors),
+                            details={"provider_errors": candidate_errors},
+                        ),
+                        "output_summary": (
+                            "Retrieved official issuer updates after skipping failed candidates."
+                        ),
+                    }
+                )
+            return result.model_copy(update={"status": ResultStatus.SUCCEEDED, "error": None})
         return result
 
 
@@ -885,10 +925,15 @@ class _OfficialLinkParser(HTMLParser):
             rel = str(attributes.get("rel") or "").lower()
             mime = str(attributes.get("type") or "").lower()
             href = attributes.get("href")
-            if href and "alternate" in rel and mime in {
-                "application/rss+xml",
-                "application/atom+xml",
-            }:
+            if (
+                href
+                and "alternate" in rel
+                and mime
+                in {
+                    "application/rss+xml",
+                    "application/atom+xml",
+                }
+            ):
                 self.feeds.append(
                     {"href": href, "mime_type": mime, "title": attributes.get("title") or ""}
                 )
@@ -972,11 +1017,7 @@ def _official_candidate_links(html_text: str, page_url: str) -> list[JsonObject]
                 "url": absolute,
                 "label": normalized_label[:300] or None,
                 "kind": (
-                    "feed"
-                    if is_feed
-                    else "landing"
-                    if is_landing_redirect
-                    else "official_update"
+                    "feed" if is_feed else "landing" if is_landing_redirect else "official_update"
                 ),
                 "confidence": 0.9 if is_feed else 0.8 if is_landing_redirect else 0.72,
             }

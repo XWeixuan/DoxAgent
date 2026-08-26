@@ -178,6 +178,7 @@ class CandidateDiscoveryResult(AgentModel):
 
 
 class ProvisionalCandidateUnit(AgentModel):
+    candidate_ref: str
     candidate_id: str
     candidate: str
 
@@ -190,6 +191,7 @@ class ProvisionalShellDraft(AgentModel):
 
 
 class UnassignedCandidate(AgentModel):
+    candidate_ref: str
     candidate_id: str
     candidate: str
     reason: str

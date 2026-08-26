@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Sequence
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from enum import StrEnum
 from typing import Any, Literal
 
@@ -17,6 +17,7 @@ _TEMP_FACT_ID = re.compile(r"^TF[1-9]\d*$")
 _DELTA_ID = re.compile(r"^D[1-9]\d*$")
 _RUNTIME_HINT_ID = re.compile(r"^R[1-9]\d*$")
 EVENT_LIBRARY_CONTRACT_VERSION = "event-library-foundation-v1"
+EVENT_LIBRARY_WIRE_VERSION = "event-library-maintenance-v2"
 
 
 def utc_now() -> datetime:
@@ -54,6 +55,12 @@ class CanonicalAssertionState(StrEnum):
     UNKNOWN = "UNKNOWN"
 
 
+class CanonicalSubjectTimeMarker(StrEnum):
+    """Reserved subject-time markers alongside free-form object periods."""
+
+    SAME = "SAME"
+
+
 class CanonicalObjectStatus(StrEnum):
     ACTIVE = "ACTIVE"
     SUPPRESSED = "SUPPRESSED"
@@ -78,12 +85,25 @@ class LibraryVersionStatus(StrEnum):
     PUBLISHED = "PUBLISHED"
 
 
+class ReferenceReviewMode(StrEnum):
+    IMPLICIT = "IMPLICIT"
+    EXPLICIT = "EXPLICIT"
+
+
+class ReferenceReviewReason(StrEnum):
+    NEW_OR_MODIFIED = "NEW_OR_MODIFIED"
+    SUPERSEDED_TARGET = "SUPERSEDED_TARGET"
+    PERIODIC_10D = "PERIODIC_10D"
+    EXPIRED_30D = "EXPIRED_30D"
+    INCLUDED_RECHECK_7D = "INCLUDED_RECHECK_7D"
+    TIME_UNRESOLVED = "TIME_UNRESOLVED"
+
+
 class CanonicalFact(StrictModel):
     fact_id: str
     proposition: str = Field(min_length=1)
     assertion_state: CanonicalAssertionState
-    subject_time: str | None = None
-    entities: list[str] = Field(default_factory=list)
+    subject_time: CanonicalSubjectTimeMarker | str | None = None
 
     @field_validator("fact_id")
     @classmethod
@@ -91,15 +111,6 @@ class CanonicalFact(StrictModel):
         if not (_FACT_ID.fullmatch(value) or _TEMP_FACT_ID.fullmatch(value)):
             raise ValueError("fact_id must be a stable F# or temporary TF# ID")
         return value
-
-    @field_validator("entities")
-    @classmethod
-    def unique_entities(cls, value: list[str]) -> list[str]:
-        cleaned = [item.strip() for item in value if item.strip()]
-        if len(cleaned) != len(set(cleaned)):
-            raise ValueError("fact entities must be unique")
-        return cleaned
-
 
 class CanonicalFactRevision(CanonicalFact):
     consumes_delta_ids: list[str] = Field(default_factory=list)
@@ -236,10 +247,14 @@ class CanonicalRevisionBundle(StrictModel):
     run_id: str = Field(min_length=1)
     ticker: str = Field(min_length=1)
     base_library_version: int = Field(ge=0)
-    delta_batch_ids: list[str] = Field(min_length=1)
+    # Review-only runs intentionally carry no Delta and must not mint an empty V+1.
+    delta_batch_ids: list[str] = Field(default_factory=list)
     event_revisions: list[CanonicalEventRevision] = Field(default_factory=list)
     event_retirements: list[EventRetirement] = Field(default_factory=list)
     residual_delta_resolutions: list[ResidualDeltaResolution] = Field(default_factory=list)
+    reference_review_decisions: list[ReferenceReviewDecision] = Field(
+        default_factory=list
+    )
 
     @field_validator("ticker")
     @classmethod
@@ -268,7 +283,7 @@ class CanonicalRevisionBundleManifest(StrictModel):
     run_id: str = Field(min_length=1)
     ticker: str = Field(min_length=1)
     base_library_version: int = Field(ge=0)
-    delta_batch_ids: list[str] = Field(min_length=1)
+    delta_batch_ids: list[str] = Field(default_factory=list)
     event_revisions: list[str] = Field(default_factory=list)
 
     @field_validator("ticker")
@@ -380,10 +395,64 @@ class RuntimeHint(StrictModel):
         return value
 
 
+class RuntimePackageDelta(StrictModel):
+    """Package context over Atomic Delta members; never a disposition unit."""
+
+    runtime_hint_id: str
+    title: str = Field(min_length=1)
+    runtime_package_version: int = Field(ge=1)
+    member_delta_ids: list[str] = Field(min_length=1)
+    time_anchors: list[str] = Field(default_factory=list)
+    entity_anchors: list[str] = Field(default_factory=list)
+
+    @field_validator("runtime_hint_id")
+    @classmethod
+    def package_hint_id(cls, value: str) -> str:
+        if not _RUNTIME_HINT_ID.fullmatch(value):
+            raise ValueError("runtime_hint_id must be an R# ID")
+        return value
+
+    @field_validator("member_delta_ids")
+    @classmethod
+    def package_delta_ids(cls, value: list[str]) -> list[str]:
+        if len(value) != len(set(value)) or any(
+            not _DELTA_ID.fullmatch(item) for item in value
+        ):
+            raise ValueError("member_delta_ids must contain unique D# IDs")
+        return value
+
+
+class ReferenceReviewCandidate(StrictModel):
+    event_id: str
+    occurred_at: str
+    occurrence_anchor: date | None = None
+    title: str
+    known_event_summary: str
+    is_important: bool
+    include_in_reference_view: bool
+    related_event_ids: list[str] = Field(default_factory=list)
+    supersedes_event_id: str | None = None
+    last_reviewed_at: datetime | None = None
+    next_review_at: datetime | None = None
+    review_mode: ReferenceReviewMode
+    candidate_reason: ReferenceReviewReason
+
+
+class ReferenceReviewDecision(StrictModel):
+    event_id: str
+    reviewed_at: datetime
+    review_mode: ReferenceReviewMode
+    candidate_reason: ReferenceReviewReason
+    changed: bool = False
+    include_in_reference_view: bool
+    next_review_at: datetime | None = None
+    note: str | None = None
+
+
 class DeltaBatch(StrictModel):
-    contract_version: Literal["event-library-foundation-v1"] = (
-        "event-library-foundation-v1"
-    )
+    contract_version: Literal[
+        "event-library-foundation-v1", "event-library-maintenance-v2"
+    ] = "event-library-maintenance-v2"
     batch_id: str = Field(min_length=1)
     ticker: str = Field(min_length=1)
     runtime_scope: str = Field(min_length=1)
@@ -393,23 +462,41 @@ class DeltaBatch(StrictModel):
     status: DeltaBatchStatus = DeltaBatchStatus.PENDING
     items: list[DeltaItem]
     runtime_hints: list[RuntimeHint] = Field(default_factory=list)
+    runtime_packages: list[RuntimePackageDelta] = Field(default_factory=list)
     created_at: datetime = Field(default_factory=utc_now)
 
     @model_validator(mode="after")
     def unique_short_ids(self) -> DeltaBatch:
         delta_ids = [item.delta_id for item in self.items]
         hint_ids = [item.runtime_hint_id for item in self.runtime_hints]
+        package_hint_ids = [item.runtime_hint_id for item in self.runtime_packages]
         if len(delta_ids) != len(set(delta_ids)):
             raise ValueError("Delta item IDs must be unique within a batch")
         if len(hint_ids) != len(set(hint_ids)):
             raise ValueError("Runtime hint IDs must be unique within a batch")
+        if len(package_hint_ids) != len(set(package_hint_ids)):
+            raise ValueError("Runtime package hint IDs must be unique within a batch")
+        known_delta_ids = set(delta_ids)
+        package_members = {
+            item.runtime_hint_id: set(item.member_delta_ids)
+            for item in self.runtime_packages
+        }
+        if any(not members.issubset(known_delta_ids) for members in package_members.values()):
+            raise ValueError("Runtime package contains an unknown Delta ID")
+        for item in self.items:
+            for hint_id in item.runtime_hint_ids:
+                if hint_id in package_members and item.delta_id not in package_members[hint_id]:
+                    raise ValueError("Delta/Runtime Package membership is not bidirectional")
+        for hint_id, members in package_members.items():
+            for delta_id in members:
+                delta = next(item for item in self.items if item.delta_id == delta_id)
+                if hint_id not in delta.runtime_hint_ids:
+                    raise ValueError("Runtime Package/Delta membership is not bidirectional")
         return self
 
 
 class FrozenViewManifest(StrictModel):
-    contract_version: Literal["event-library-foundation-v1"] = (
-        "event-library-foundation-v1"
-    )
+    contract_version: Literal["event-library-maintenance-v2"] = "event-library-maintenance-v2"
     frozen_view_id: str
     run_id: str
     mode: Literal["INITIALIZE", "INCREMENTAL"]
@@ -419,11 +506,15 @@ class FrozenViewManifest(StrictModel):
     delta_batch_ids: list[str]
     published_event_count: int = Field(ge=0)
     pending_delta_count: int = Field(ge=0)
+    known_event_index_contract_version: str = "known-event-index-v2"
     known_event_index_path: str
     event_details_path: str
     pending_atomics_path: str
     runtime_hints_path: str
+    runtime_packages_path: str = "delta/runtime_packages.json"
+    package_index_path: str = "delta/package_index.md"
     reference_review_candidates_path: str
+    upstream_context_manifest_path: str | None = None
     canonical_event_schema_path: str
     revision_bundle_schema_path: str
 

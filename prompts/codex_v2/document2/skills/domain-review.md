@@ -11,7 +11,8 @@ owns the final structure.
 After Final Apply, each final Shell receives one O1 research thread. O1 researches every Unit in
 that Shell with the shared context, then completes the State, Realization Factors, and Potential
 Gaps inside each Unit. A structural error now therefore changes what O1 researches, which context
-it retains, and how future events can update Document2.
+it retains, and how future events can update Document2. Treat each Shell boundary as the topology of
+an independent, long-lived O1 research context when reviewing the draft.
 
 ## What Shells and Units are for
 
@@ -56,15 +57,22 @@ For each relevant Candidate, reason through three layers:
 
 1. **Unit integrity:** Does it express one material middle-level proposition with an independent
    future update path? Check whether distinct questions were merged, the same question was
-   duplicated, or a broad theme, raw variable, realization condition, reported event, or generic
-   risk was treated as a Unit.
+   duplicated, or a broad theme, raw variable, realization condition, reported event, generic risk,
+   or market measurement and inference task was treated as a Unit.
 2. **Shell context:** Which other Units must share the same business and industry background,
    external actors, expectation state, realization mechanisms, event space, and value-transmission
-   path for this Unit to be researched correctly? Independent updateability keeps Units distinct;
-   substantially independent economic and event systems justify separate Shells.
+   path for this Unit to be researched correctly? Check both over-merge and unnecessary separation:
+   separate update paths keep Units distinct, while separate Shells require genuinely independent
+   long-lived research contexts. Re-examine single-Unit Shells and any `core_question` nearly
+   repeated by one Unit.
 3. **Downstream consequence:** If the draft remains unchanged, would O1 research the wrong question,
    lose context that should be shared, mix independent systems, or build State, Factors, and Gaps
    around an unstable Unit boundary?
+
+A recommendation to split or create a Shell should explain why continued shared O1 context would
+materially reduce research accuracy or mix two largely independent systems. Different event paths
+or immediate outcomes already justify separate Units and do not alone establish that stronger
+context boundary.
 
 Raise feedback when the correction would materially improve one of these layers. Current
 uncertainty about a Unit's answer is part of expectation research; evidence in this review supports
@@ -81,7 +89,8 @@ broadly workable and, when present, the most important structural concern.
 Each `targeted_feedback` item contains:
 
 - `feedback_id`: a stable review handle;
-- `target`: `S#`, `S# / U#`, or `Missing Candidate`;
+- `target`: `S#`, `S# / <candidate_ref>` (for example `S1 / C3:U2`), or
+  `Missing Candidate`; never target a retained Candidate by its branch-local `U#` alone;
 - `issue`: the specific structural problem;
 - `reasoning`: the domain facts that change the structural judgment and the downstream consequence;
 - `references`: the principal citations supporting those facts;

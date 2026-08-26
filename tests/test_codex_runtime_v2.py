@@ -25,8 +25,18 @@ from doxagent.codex_runtime.repository import (
     SQLiteCodexRuntimeRepository,
 )
 from doxagent.codex_runtime.schema import (
+    CODEX_DOCUMENT2_WORKFLOW_VERSION,
+    CODEX_EVENT_LIBRARY_WORKFLOW_VERSION,
     CodexAgentRole,
     CodexD1Node,
+    CodexD2AgentRole,
+    CodexD2Node,
+    CodexEventLibraryAgentRole,
+    CodexEventLibraryNode,
+    CodexResearchAgentRole,
+    CodexResearchNode,
+    CodexWorkflowVersion,
+    ResearchLane,
     SourceRecord,
     ThreadRecord,
 )
@@ -317,9 +327,16 @@ class _AsyncSdkClient:
     def __init__(self, *args, **kwargs) -> None:
         self.thread = _AsyncSdkTurn()
         self.thread_start_kwargs: dict[str, object] | None = None
+        self.thread_resume_id: str | None = None
+        self.thread_resume_kwargs: dict[str, object] | None = None
 
     async def thread_start(self, **kwargs):
         self.thread_start_kwargs = kwargs
+        return self.thread
+
+    async def thread_resume(self, thread_id: str, **kwargs):
+        self.thread_resume_id = thread_id
+        self.thread_resume_kwargs = kwargs
         return self.thread
 
 
@@ -360,6 +377,7 @@ async def test_sdk_runtime_awaits_async_thread_turn(
     sdk_config = sdk.thread_start_kwargs["config"]
     assert isinstance(sdk_config, dict)
     assert sdk_config["features.multi_agent"] is True
+    assert sdk_config["web_search"] == "live"
     assert "Never spawn more than 2 subagents" in str(sdk.thread_start_kwargs["base_instructions"])
     assert await handle.run() == WorkerTurnResult(
         thread_id="thread-sdk-1",
@@ -417,6 +435,133 @@ def test_worker_api_requires_bearer_and_workspace_capability(tmp_path: Path) -> 
         headers={**headers, "X-Workspace-Capability": read_token},
     )
     assert missing.status_code == 404
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("workflow_version", "research_lane", "node", "agent_role", "expected_mode"),
+    [
+        ("codex_d1_v2", ResearchLane.LEGACY_DOCUMENT1, CodexD1Node.C1, CodexAgentRole.C1, "live"),
+        ("codex_d1_v2", ResearchLane.LEGACY_DOCUMENT1, CodexD1Node.C3, CodexAgentRole.C3, "live"),
+        (
+            "codex_d1_v2",
+            ResearchLane.LEGACY_DOCUMENT1,
+            CodexD1Node.C4_PRE_SCAN,
+            CodexAgentRole.C4,
+            "live",
+        ),
+        ("codex_d1_v2", ResearchLane.LEGACY_DOCUMENT1, CodexD1Node.C5, CodexAgentRole.C5, "live"),
+        (
+            CODEX_DOCUMENT2_WORKFLOW_VERSION,
+            ResearchLane.DOCUMENT2,
+            CodexD2Node.O0_SYNTHESIS,
+            CodexD2AgentRole.O0,
+            "live",
+        ),
+        (
+            CODEX_DOCUMENT2_WORKFLOW_VERSION,
+            ResearchLane.DOCUMENT2,
+            CodexD2Node.O1_STATE,
+            CodexD2AgentRole.O1,
+            "live",
+        ),
+        (
+            CODEX_EVENT_LIBRARY_WORKFLOW_VERSION,
+            ResearchLane.EVENT_LIBRARY,
+            CodexEventLibraryNode.O2_MAINTAIN,
+            CodexEventLibraryAgentRole.O2,
+            "live",
+        ),
+        (
+            "codex_d1_v2",
+            ResearchLane.LEGACY_DOCUMENT1,
+            CodexD1Node.C2,
+            CodexAgentRole.C2,
+            "live",
+        ),
+        (
+            "codex_d1_v2",
+            ResearchLane.LEGACY_DOCUMENT1,
+            CodexD1Node.O4,
+            CodexAgentRole.O4,
+            "live",
+        ),
+    ],
+)
+async def test_sdk_runtime_explicitly_enables_native_web_search_for_all_roles(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    workflow_version: CodexWorkflowVersion,
+    research_lane: ResearchLane,
+    node: CodexResearchNode,
+    agent_role: CodexResearchAgentRole,
+    expected_mode: str,
+) -> None:
+    sdk = _AsyncSdkClient()
+    monkeypatch.setattr(
+        "doxagent.codex_worker.sdk_runtime.AsyncCodex",
+        lambda *args, **kwargs: sdk,
+    )
+    runtime = OpenAICodexRuntime(capability_secret="s" * 32, container_isolated=True)
+    run_root = tmp_path / f"run-{expected_mode}"
+    run_root.mkdir()
+    await runtime.start(
+        WorkerRunRequest(
+            workflow_version=workflow_version,
+            research_lane=research_lane,
+            run_id="run-1",
+            ticker="NVDA",
+            node=node,
+            agent_role=agent_role,
+            attempt_id="attempt-1",
+            cutoff_at=datetime.now(UTC),
+            prompt="Return a structured response.",
+            output_schema={"type": "object"},
+            model="test-model",
+        ),
+        run_root,
+    )
+    assert sdk.thread_start_kwargs is not None
+    sdk_config = sdk.thread_start_kwargs["config"]
+    assert isinstance(sdk_config, dict)
+    assert sdk_config["web_search"] == expected_mode
+
+
+@pytest.mark.asyncio
+async def test_sdk_runtime_reapplies_native_web_search_when_resuming_o2_thread(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    sdk = _AsyncSdkClient()
+    monkeypatch.setattr(
+        "doxagent.codex_worker.sdk_runtime.AsyncCodex",
+        lambda *args, **kwargs: sdk,
+    )
+    runtime = OpenAICodexRuntime(capability_secret="s" * 32, container_isolated=True)
+    run_root = tmp_path / "run-o2-resume"
+    run_root.mkdir()
+    await runtime.start(
+        WorkerRunRequest(
+            workflow_version=CODEX_EVENT_LIBRARY_WORKFLOW_VERSION,
+            research_lane=ResearchLane.EVENT_LIBRARY,
+            run_id="run-1",
+            ticker="MU",
+            node=CodexEventLibraryNode.O2_MAINTAIN,
+            agent_role=CodexEventLibraryAgentRole.O2,
+            attempt_id="attempt-1",
+            cutoff_at=datetime.now(UTC),
+            prompt="Continue the O2 workflow.",
+            output_schema={"type": "object"},
+            thread_id="thread-existing",
+            model="test-model",
+        ),
+        run_root,
+    )
+    assert sdk.thread_resume_id == "thread-existing"
+    assert sdk.thread_resume_kwargs is not None
+    sdk_config = sdk.thread_resume_kwargs["config"]
+    assert isinstance(sdk_config, dict)
+    assert sdk_config["web_search"] == "live"
 
 
 def test_worker_job_normalizes_numeric_json_rpc_error_code() -> None:

@@ -339,19 +339,19 @@ def _build_stages(request: Document2PilotCoordinatorRequest) -> list[dict[str, o
         (
             CodexD2Node.O1_REALIZATION,
             o1_workspace,
-            (CodexD2Node.O1_STATE,),
+            (CodexD2Node.O0_FINALIZATION, CodexD2Node.O1_STATE),
             False,
         ),
         (
             CodexD2Node.O1_GAPS,
             o1_workspace,
-            (CodexD2Node.O1_REALIZATION,),
+            (CodexD2Node.O0_FINALIZATION, CodexD2Node.O1_REALIZATION),
             False,
         ),
         (
             CodexD2Node.O1_FINALIZATION,
             o1_workspace,
-            (CodexD2Node.O1_GAPS,),
+            (CodexD2Node.O0_FINALIZATION, CodexD2Node.O1_GAPS),
             False,
         ),
     ]
@@ -438,19 +438,19 @@ def _build_bootstrap_stages(
         (
             CodexD2Node.O1_REALIZATION,
             o1_workspace,
-            (CodexD2Node.O1_STATE,),
+            (CodexD2Node.O0_FINALIZATION, CodexD2Node.O1_STATE),
             False,
         ),
         (
             CodexD2Node.O1_GAPS,
             o1_workspace,
-            (CodexD2Node.O1_REALIZATION,),
+            (CodexD2Node.O0_FINALIZATION, CodexD2Node.O1_REALIZATION),
             False,
         ),
         (
             CodexD2Node.O1_FINALIZATION,
             o1_workspace,
-            (CodexD2Node.O1_GAPS,),
+            (CodexD2Node.O0_FINALIZATION, CodexD2Node.O1_GAPS),
             False,
         ),
     ]

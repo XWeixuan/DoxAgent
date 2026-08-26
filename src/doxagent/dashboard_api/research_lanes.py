@@ -101,14 +101,9 @@ class CodexResearchLaneService:
     async def _run(self, request: ResearchRunRequest) -> None:
         try:
             if isinstance(request, GlobalResearchRunRequest):
-                bundle = await self._global.run(request)
-                if self._document2 is not None:
-                    await self.start_document2(
-                        StartDocument2Request(
-                            source_global_run_id=bundle.run_id,
-                            as_of=bundle.published_at,
-                        )
-                    )
+                # D2 is launched by the total initialization coordinator only after
+                # O2 has published and pinned an Event Library version/hash/timestamp.
+                await self._global.run(request)
             elif isinstance(request, MarketSituationRunRequest):
                 await self._market.run(request)
             elif self._document2 is not None:

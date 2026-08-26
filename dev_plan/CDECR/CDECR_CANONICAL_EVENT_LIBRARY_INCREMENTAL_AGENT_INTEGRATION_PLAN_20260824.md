@@ -1,9 +1,43 @@
 # CDECR Canonical Event Library 增量维护与 Agent 接入方案
 
 > 日期：2026-08-24  
-> 状态：可执行设计方案，尚未实施  
+> 状态：三阶段已实施并完成 2026-08-25 修复；ADI O2→Published V1 真实续跑通过
 > 范围：ticker 级 CDECR 启动脚本、初始化新闻准备、历史 Runtime 状态复用，以及 Runtime Registry 之后的事件库持久化、增量整理、发布、导出和 Agent 读取
 > 不在本方案范围：修改 CDECR Mention/Atomic/Package 生成业务逻辑、把 CDECR 接入当前主工作流或定时器、同步 API 化 CDECR 全流程、在 Persistent Runtime 重构完成前定稿每日增量交付表/API、最终 SQL DDL、Prompt 逐字稿和 UI 定稿
+
+## 2026-08-25 契约修复与实现状态
+
+以下实现口径覆盖本文后续与之冲突的旧状态描述：
+
+1. Canonical Event/Fact 合同继续使用 `event-library-foundation-v1`；Delta/Frozen View 维护线
+   使用兼容读取 V1 的 `event-library-maintenance-v2`。`runtime_packages[]` 只表达 Package→
+   Atomic Delta 组织，Atomic `D#` 仍是唯一 disposition 单位。
+2. Frozen View 固定输出 `pending_atomics.json`、`runtime_packages.json`、`package_index.md`、
+   Reference Review index 和可选 `O2UpstreamContextManifest`。Package/Delta membership 双向
+   校验；初始化默认每波最多 100 条并带 token guard。
+3. Source `published_at` 的 60 天集合在 N9、N9 late、Parent Occurrence、Package V3 和 O2
+   之间保持一致，保存不可变 `runtime_activity_v1`；超窗对象只退出活动路径，不删除。
+4. Reference Review 已实现 10/30/7 天边界、`TIME_UNRESOLVED`、index→detail、review-only
+   原子记录和 schedule。只有成功 import 后推进 schedule，review-only 不创建空版本。
+5. Bundle 采用严格全局身份 + Event-per-file 局部降级。坏 manifest、路径逃逸、ticker/base/
+   stale、未知 batch 和业务 identity 仍是硬失败；单个坏 Event 只局部 Pending。原 Bundle
+   原样提升和 hash 留存。
+6. 新增 durable Blackboard 初始化总编排：D1 与 CDECR/Delta 并行；两者成功后 O2 才读取
+   D1 C1/C3/C5 artifact/hash、entity relations、future nodes、citation manifest 和统一 as_of；
+   O2 Published 后才启动固定 Event Library version/hash/timestamp 的 D2。独立 D2 仍可
+   fail-open，但初始化总链路为 hard gate。
+7. `prepare_runtime_through_delta()` 与 `run_o2_with_upstream_context()` 已拆分；CLI 增加
+   `--resume-finalized-only`。恢复会复用已完成 CDECR epoch、Delta、O2 thread、成功波次和
+   已生成 Bundle，不覆盖旧 attempt 输入。
+8. W1/D2 只读 Published；Reader 支持显式 version，D2 provider 可钉住 version/hash/
+   published_at。D3、正式 Scheduler 和生产增量 adapter 继续暂缓。
+
+实现验收：Ruff 与严格 mypy 通过；聚焦测试覆盖 60/61 日、29/30 日、10/7 日、346 Delta
+四波唯一覆盖、局部坏 Event、review-only 幂等、stale base、事务回滚和停电恢复。真实 ADI
+续跑复用了旧 FINALIZED epoch/346 Delta，只运行 O2，发布 V1（28 Event、193 Fact、257
+resolved、89 Pending），随后幂等复跑未新增版本或 attempt。该 ADI 历史目录没有 D1
+Published 产物，因此它证明的是“新闻/CDECR 既有断点→O2→V1”；完整 D1∥CDECR→O2→固定
+D2 的真实模型验收需在下一次全新 ticker 初始化中单独执行，不能把本次续跑冒充为该证据。
 
 ## 1. 结论
 
@@ -246,7 +280,7 @@ canonical_facts
 
 canonical_fact_revisions
   fact_no / revision / library_version
-  proposition / assertion_state / subject_time / entities
+  proposition / assertion_state / subject_time (`SAME` 表示与 Event occurrence 时间完全对等)
 
 event_fact_memberships
   event_no / fact_no / valid_from_version / valid_to_version
@@ -270,7 +304,7 @@ delta_items
 
 - `event_no` 和 `fact_no` 是 Canonical DB 内部稳定整数号，对 O2/导出显示为 `E13/F77`，不重复暴露 Runtime UUID。
 - `delta_no` 只在本 Delta batch内显示为 `D1/D2`；Runtime Package hint 同理使用请求内 `R1/R2`。
-- `entities` 只保留对于跨主体/产品/机构边界有用的紧凑 Canonical 实体，不复制完整 identity profile。
+- Canonical Fact 不保存 `entities`；实体提示只允许存在于上游 Delta/Runtime Package 匹配输入，不能进入 Published Canonical schema。
 - `known_event_summary` 服务 W1；`canonical_summary` 和 `include_in_reference_view` 服务计划中的 D2/D3 紧凑导出。
 - `price_analysis` 由未来独立 Agent 填充；O2 阶段保持空值或保留已有值。
 - Event/Fact 的删除都是 `suppressed/merged + redirect`，不物理删除。
@@ -543,13 +577,13 @@ context/event_library/<frozen_view_id>/
     reference_review_candidates.json
 ```
 
-`manifest.json` 只保存 `frozen_view_id/ticker/base_library_version/as_of/delta_batch_ids` 以及上述相对路径和数量。Known Event Index 是无表头 Markdown，每个 active Event 严格占一行，固定列为：
+`manifest.json` 只保存 `frozen_view_id/ticker/base_library_version/as_of/delta_batch_ids` 以及上述相对路径、数量和视图契约版本。Known Event Index 是无表头 Markdown，每个 active Event 严格占一行，固定前三列为：
 
 ```text
-event_id | occurred_at_or_range | title | known_event_summary
+event_id | occurred_at_or_range | title [| known_event_summary]
 ```
 
-行内换行折叠为空格，字段中的 `|` 转义为 `\|`，并按 `occurred_at DESC, event_id ASC` 确定性排序。`event_type`、`entities` 和 `status` 不进入 Index，但保留在完整 Event Detail 和 Canonical 数据模型中。
+摘要与标题标准化后相同，或仅多出末尾 `event/occurrence` 时省略可选第四列。行内换行折叠为空格，字段中的 `|` 转义为 `\|`，并按 `occurred_at DESC, event_id ASC` 确定性排序。明确带时区的时间转换为 `America/New_York` 日期；无时区值不平移。`event_type` 和 `status` 不进入 Index。
 
 Event Detail 提供完整 Event Occurrence：
 
@@ -560,14 +594,13 @@ is_important / include_in_reference_view / price_analysis
 related_event_ids / supersedes_event_id / facts[]
 ```
 
-Published Fact/Delta Atomic 的通用高价值字段：
+Published Fact 的高价值字段：
 
 ```text
 id
 proposition
 time
 assertion_state
-entities
 ```
 
 其中：
@@ -575,7 +608,7 @@ entities
 - `id`：Published 对象使用稳定 `E13/F77`；Delta 使用本批 `D1/D2`；Runtime hint 使用请求内 `R1/R2`。
 - `time`：压缩为 `YYYY-MM-DD`、`start..end`、`FY2026-Q3`、`date | period` 或 `UNKNOWN`，不向 O2 展开冗长 Time DTO。
 - `assertion_state`：保留 ACTUAL/GUIDANCE/FORECAST/RUMOR/DENIED 等对合并有实质影响的状态。
-- `entities`：最多保留对于主体、产品、交易对手方或分析机构边界有用的少量高置信实体；不放入完整 identity profile。
+- `entities` 不进入 Published Fact；Delta Atomic 可继续携带该上游提示用于 occurrence 候选匹配。
 - `price_analysis`：O2 阶段保持空值或保留已有值，不由 O2 填充。
 
 Delta Atomic 额外只能带：
@@ -809,7 +842,7 @@ Known Event Index 服务 W1 第一轮新旧判断，也供 O2 日增量扫描全
 E001 | 2026-06-24 | MU FY26 Q3 results/Q4 guide | Revenue 41.46B; op margin 81.2%; Q4 revenue ~50B; GM ~86%; DC revenue >25B; supply tight beyond 2027; 16 strategic agreements.
 ```
 
-固定列为 `event_id | occurred_at_or_range | title | known_event_summary`，不导出 `event_type/entities/status`。
+固定前三列为 `event_id | occurred_at_or_range | title`，第四列 `known_event_summary` 可选；不导出 `event_type/status`。
 
 它必须包含全部 active Event，不使用 Top-K。`known_event_summary` 比普通摘要更充分，应保留日期、主体、动作、阶段、关键数字、期限和其他区分 occurrence 的细节。W1 通过 Responses API 首轮读取 Index；无法确定时返回 Event IDs，服务再提供完整 Event Detail。
 
@@ -817,12 +850,18 @@ E001 | 2026-06-24 | MU FY26 Q3 results/Q4 guide | Revenue 41.46B; op margin 81.2
 
 Reference Event View 面向计划中的 Blackboard 初始化 D2 预期研究和 D3 交易策略，只导出 `include_in_reference_view=true` 的 Event。当前 Codex SDK V2 中，D2 只预留了默认 `NOT_CONFIGURED` 的只读 Event Library port，D3 消费路径尚未实现；两者必须在后续阶段分别接入和验收，不能写成 O2 首版已存在消费者：
 
-```text
-ticker / version / as_of
-events[]
-  event_id / occurred_at / event_type / title
-  canonical_summary / is_important
+```markdown
+fields: event_id | occurred_at | title
+
+E26 | 2026-08-19 | Analog Devices Q3 FY2026 earnings release and Q4 guidance
+event_type: Earnings release and guidance
+canonical_summary: Analog Devices reported strong fiscal Q3 2026 results and issued outlook commentary.
+facts:
+
+- [fiscal Q4 2026] Analog Devices guided fiscal Q4 adjusted gross margin to approximately 74%.
 ```
+
+机器与人使用完全相同的 Markdown。正文不输出 ticker、Library version 或 importance；控制信息只保留在 provider metadata。只有一个 active Fact 的 singleton Event 不输出 `facts:` 段。其余 Event 输出全部 active Fact；普通对象期使用 `- [subject_time] proposition`，`subject_time=SAME` 时省略方括号时间，仅输出 `- proposition`。Canonical Fact 不包含 `entities`。
 
 O2 维护 `is_important` 和 `include_in_reference_view`。重要事件、近期新信息或仍会影响未来预期的事件可以进入该视图；退出 Reference View 不会从完整 Canonical Library 删除 Event。
 
@@ -1129,7 +1168,7 @@ tests/
 
 ### 15.5 Agent payload验收
 
-- 完整Known Event Index在一个维护batch中只物化一次为无表头`known_event_index.md`；每行严格为`event_id | occurred_at_or_range | title | known_event_summary`，不含`event_type/entities/status`。
+- 完整Known Event Index在一个维护batch中只物化一次为无表头`known_event_index.md`；每行前三列严格为`event_id | occurred_at_or_range | title`，第四列`known_event_summary`可选，不含`event_type/status`。
 - Published使用稳定`E/F`短ID，Delta/Runtime hint使用请求内`D/R`短ID，无Runtime长UUID重复扩散。
 - 不包含Mention、Evidence、Runtime audit和reasoning。
 - O2 Frozen View不包含`sources/review/family/seen/issue`，完整Event Detail可按ID读取。

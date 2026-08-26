@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Iterable
+from typing import NotRequired, TypedDict
 
 from doxagent.data_runtime.contracts import (
     DataAvailability,
@@ -46,7 +47,16 @@ _SOURCE_PRIORITY = {
     "Twelve Data": 4,
 }
 
-_INTENT_PROFILES: tuple[dict[str, object], ...] = (
+
+class _IntentProfile(TypedDict):
+    id: str
+    hints: tuple[str, ...]
+    preferred: tuple[str, ...]
+    excluded: tuple[str, ...]
+    discovery_fallback: NotRequired[str]
+
+
+_INTENT_PROFILES: tuple[_IntentProfile, ...] = (
     {
         "id": "company_actor_commitments",
         "hints": (
@@ -94,6 +104,59 @@ _INTENT_PROFILES: tuple[dict[str, object], ...] = (
         "excluded": ("openfda.", "eia.", "bls.", "bea.", "congress."),
         "discovery_fallback": (
             "Use native web search for official supplier/IR sources, then capture URLs one by one."
+        ),
+    },
+    {
+        "id": "industry_producer_prices",
+        "hints": (
+            "producer price",
+            "producer-price",
+            "ppi",
+            "semiconductor price index",
+            "生产者价格",
+            "出厂价格",
+        ),
+        "preferred": ("bls.industry_producer_prices",),
+        "excluded": (),
+    },
+    {
+        "id": "manufacturing_orders",
+        "hints": (
+            "manufacturing orders",
+            "new orders",
+            "unfilled orders",
+            "manufacturing shipments",
+            "制造业订单",
+            "新订单",
+            "未完成订单",
+        ),
+        "preferred": ("census.manufacturing_orders",),
+        "excluded": (),
+    },
+    {
+        "id": "memory_product_metrics",
+        "hints": (
+            "dram contract price",
+            "nand contract price",
+            "memory contract price",
+            "bit shipments",
+            "bit shipment",
+            "bit supply",
+            "memory inventory",
+            "memory sell-through",
+            "pc absorption",
+            "mobile absorption",
+            "enterprise ssd demand",
+            "dram合约价",
+            "nand合约价",
+            "位元出货",
+            "内存库存",
+        ),
+        "preferred": (),
+        "excluded": ("bls.", "bea.", "census.", "eia."),
+        "discovery_fallback": (
+            "No governed product-level memory route is configured; use pinned issuer/industry "
+            "evidence or authorized primary-source research without relabeling aggregate data."
         ),
     },
     {
@@ -227,7 +290,9 @@ class DataToolGuide:
         for contract in self._contracts.all():
             if contract.canonical_tool_id not in allowed:
                 continue
-            if any(contract.canonical_tool_id.startswith(prefix) for prefix in excluded_prefixes):
+            if contract.canonical_tool_id not in preferred_ids and any(
+                contract.canonical_tool_id.startswith(prefix) for prefix in excluded_prefixes
+            ):
                 continue
             intent_match = contract.canonical_tool_id in preferred_ids
             capability_match = contract.canonical_tool_id in requested_tool_ids
@@ -288,7 +353,12 @@ class DataToolGuide:
             "as_of": as_of,
             "candidates": candidates,
             "unavailable_gaps": gaps[:5],
-            "intent_coverage": _intent_coverage(intents, candidates),
+            "intent_coverage": _intent_coverage(
+                intents,
+                candidates,
+                allowed=allowed,
+                contracts=self._contracts,
+            ),
             "capability_gaps": _capability_gaps(task, candidates),
             "capability_coverage": _capability_coverage(task, candidates, allowed),
             "guidance": (
@@ -400,7 +470,7 @@ def _recommended_inputs(tool_id: str) -> list[str]:
     }.get(tool_id, [])
 
 
-def _detect_intents(task: str) -> list[dict[str, object]]:
+def _detect_intents(task: str) -> list[_IntentProfile]:
     lowered = task.lower()
     return [
         profile
@@ -410,23 +480,53 @@ def _detect_intents(task: str) -> list[dict[str, object]]:
 
 
 def _intent_coverage(
-    intents: list[dict[str, object]], candidates: list[dict[str, object]]
+    intents: list[_IntentProfile],
+    candidates: list[dict[str, object]],
+    *,
+    allowed: set[str],
+    contracts: DataToolContractRegistry,
 ) -> list[dict[str, object]]:
     candidate_ids = {str(item["canonical_tool_id"]) for item in candidates}
-    return [
-        {
-            "intent": str(intent["id"]),
-            "status": "covered" if candidate_ids.intersection(intent["preferred"]) else "gap",
-            "candidate_tool_ids": sorted(candidate_ids.intersection(intent["preferred"])),
-            "discovery_fallback": intent.get("discovery_fallback"),
-        }
-        for intent in intents
-    ]
+    coverage: list[dict[str, object]] = []
+    for intent in intents:
+        preferred = {str(item) for item in intent["preferred"]}
+        selected = sorted(candidate_ids.intersection(preferred))
+        permitted = sorted(allowed.intersection(preferred))
+        unavailable = sorted(
+            tool_id
+            for tool_id in permitted
+            if (
+                (contract := contracts.get(tool_id)) is not None
+                and contract.availability is DataAvailability.UNAVAILABLE
+            )
+        )
+        status = (
+            "covered"
+            if selected
+            else "unsupported"
+            if not preferred
+            else "not_permitted"
+            if not permitted
+            else "unavailable"
+            if unavailable == permitted
+            else "permitted_not_selected"
+        )
+        coverage.append(
+            {
+                "intent": str(intent["id"]),
+                "status": status,
+                "candidate_tool_ids": selected,
+                "permitted_tool_ids": permitted,
+                "unavailable_tool_ids": unavailable,
+                "discovery_fallback": intent.get("discovery_fallback"),
+            }
+        )
+    return coverage
 
 
 def _capability_gaps(task: str, candidates: list[dict[str, object]]) -> list[dict[str, object]]:
     candidate_ids = {str(item["canonical_tool_id"]) for item in candidates}
-    gaps = []
+    gaps: list[dict[str, object]] = []
     for capability in _requested_capabilities(task):
         configured = set(_CAPABILITY_TOOLS.get(capability, ()))
         if configured.intersection(candidate_ids):

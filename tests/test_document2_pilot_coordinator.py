@@ -243,6 +243,19 @@ async def test_coordinator_bootstraps_first_case_from_global_research(
     state = coordinator.status("mu-d2-bootstrap")
     assert state["bootstrap_from_global_research"] is True
     assert state["source_global_run_id"] == "mu-global-formal"
+    stages = {item["node"]: item for item in state["stages"]}  # type: ignore[union-attr]
+    assert stages[CodexD2Node.O1_REALIZATION.value]["dependencies"] == [
+        CodexD2Node.O0_FINALIZATION.value,
+        CodexD2Node.O1_STATE.value,
+    ]
+    assert stages[CodexD2Node.O1_GAPS.value]["dependencies"] == [
+        CodexD2Node.O0_FINALIZATION.value,
+        CodexD2Node.O1_REALIZATION.value,
+    ]
+    assert stages[CodexD2Node.O1_FINALIZATION.value]["dependencies"] == [
+        CodexD2Node.O0_FINALIZATION.value,
+        CodexD2Node.O1_GAPS.value,
+    ]
 
 
 def test_upstream_materialization_copies_every_output_file(tmp_path: Path) -> None:

@@ -24,12 +24,15 @@ detail or later evidence.
 
 ## Research the realization model before selecting Factors
 
-First read and synthesize the four primary Document1 assets for the complete Shell. Reconstruct the
-company-side drivers and constraints identified by C1, the external mechanisms and value allocation
-identified by C3, the market baseline and contested realization assumptions identified by C5, and
-the known future variables and evidence windows identified by Future Nodes. Compare their findings,
-follow their citations, preserve material conflicts, and identify the mechanism questions that the
-published research has already opened but not fully resolved.
+Start from the integrated Shell understanding and researched State developed in Turn 1. Use the
+retained C1, C3, C5, and Future Node understanding as trusted prior research; revisit the relevant
+asset or conduct focused research when a mechanism needs a specific actor, process, contract,
+conflict, or additional evidence.
+
+Before decomposing mechanisms, use the current `boundary_rule` and supplied final Shell map to
+understand which expectation systems adjacent Shells model in depth. Dependencies may cross Shells.
+Use that map to represent the transmission needed for the current Unit's realization while treating
+the dependency's full State, mechanism, and event system as the adjacent Shell's depth scope.
 
 Then use each Unit's `proposition` and `horizon` to define the outcome whose realization is being
 studied, and use the current State to locate the measurable anchors already established. These
@@ -144,11 +147,13 @@ rather than repeatedly searching the same unsupported possibility.
 ## Reconcile State, Factor, and Gap boundaries
 
 Turn 2 may make a local State correction when mechanism research reveals an object-level error. If
-a candidate Factor can be maintained through a stable Parameter with recurring `NUMBER`, `RANGE`,
-`TIME`, `STAGE`, `DIRECTION`, or `EVIDENCE` Values, represent it in State. If an existing Parameter
-requires its full context to interpret every update and cannot sustain comparable Values, move the
-affected object into the Realization Model. Preserve valid State work and revise only the objects
-whose boundary has become clear.
+future information normally updates or replaces the Value of one stable observation target without
+reinterpreting the target, represent the object in State. If each update requires explaining how a
+mechanism has progressed, what has been validated, which dependency remains, why reality changed,
+and how that status affects the Unit, maintain it as a Realization Factor. Value Type describes
+representation form; update behavior distinguishes State from Factor, so an `EVIDENCE` stance does
+not by itself turn a complex mechanism into State. Preserve valid State work and revise only the
+objects whose boundary has become clear.
 
 Factor and Gap classification depends on the research function, not solely on whether the real-world
 item is discrete. A launch or other milestone can appear in the Realization Model as a critical
@@ -181,7 +186,8 @@ and important result modifiers have been actively considered; State/Factor bound
 and each retained Factor has a specific condition, causally correct role, evidence-based current
 status, bounded impact, principal citation, and usable observation interface. Further research
 should mainly produce duplicate, low-impact, or unobservable mechanisms rather than change this
-model materially.
+model materially. The Factor Set should explain the current Unit's reality mechanisms while keeping
+its research depth consistent with the dependency systems assigned to adjacent Shells.
 
 Return the complete `ExpectationShell`. Preserve the researched State, update each Unit's
 `realization_factors`, carry existing `potential_gaps` and other canonical fields through unchanged,

@@ -36,6 +36,7 @@ from doxagent.codex_runtime.schema import (
     CodexD2Node,
     CodexResearchAgentRole,
     GlobalResearchBundle,
+    GlobalResearchHandoffV1,
     ResearchLane,
     utc_now,
 )
@@ -373,7 +374,7 @@ class Document2PilotCaseBuilder:
             status=InputAvailability.NOT_CONFIGURED,
             warning="Event Library integration is reserved but not configured.",
             metadata={
-                "interface_version": "event-library-read-v1",
+                "interface_version": "event-library-read-v2",
                 "read_only": True,
             },
         )
@@ -426,9 +427,7 @@ class Document2PilotCaseBuilder:
                 CodexD2Node.O0_CANDIDATE_NARRATIVE: "narrative",
             }
             return {
-                "candidate_sets": {
-                    labels[source]: value for source, value in upstream.items() if source in labels
-                },
+                "candidate_sets": _pilot_candidate_sets_context(upstream, labels),
                 **common,
             }
         review_roles = {
@@ -461,6 +460,7 @@ class Document2PilotCaseBuilder:
             }
 
         narrative = await self._bootstrap_narrative(bundle)
+        handoff = cast(GlobalResearchHandoffV1, bundle.handoff)
         global_research = {
             "run_id": bundle.run_id,
             "ticker": bundle.ticker,
@@ -479,15 +479,21 @@ class Document2PilotCaseBuilder:
             "future_nodes": common["future_nodes"],
             "horizontal_collection": horizontal,
             "horizontal_artifact_id": horizontal_artifact_id,
-            "document_artifact_id": bundle.handoff.document_artifact_id,
-            "citation_manifest_artifact_id": (bundle.handoff.citation_manifest_artifact_id),
+            "document_artifact_id": handoff.document_artifact_id,
+            "citation_manifest_artifact_id": handoff.citation_manifest_artifact_id,
         }
+        o0_finalization = upstream.get(CodexD2Node.O0_FINALIZATION, {})
         if node is CodexD2Node.O1_STATE:
             canonical_shell = _select_bootstrap_shell(
-                upstream.get(CodexD2Node.O0_FINALIZATION, {}), request.shell_key
+                o0_finalization, request.shell_key
             )
         else:
-            canonical_shell = next(iter(upstream.values()), {})
+            previous_o1_nodes = {
+                CodexD2Node.O1_REALIZATION: CodexD2Node.O1_STATE,
+                CodexD2Node.O1_GAPS: CodexD2Node.O1_REALIZATION,
+                CodexD2Node.O1_FINALIZATION: CodexD2Node.O1_GAPS,
+            }
+            canonical_shell = upstream.get(previous_o1_nodes[node], {})
         turns = {
             CodexD2Node.O1_STATE: "STATE",
             CodexD2Node.O1_REALIZATION: "REALIZATION",
@@ -498,6 +504,7 @@ class Document2PilotCaseBuilder:
             raise ValueError(f"unsupported Document2 Pilot bootstrap node: {node.value}")
         return {
             "canonical_shell": canonical_shell,
+            "o0_finalization": o0_finalization,
             "global_research": global_research,
             "narrative_research": narrative.model_dump(mode="json"),
             "event_library": event_library.model_dump(mode="json"),
@@ -748,6 +755,32 @@ def _upstream_completions(
             )
         completions[upstream.node] = cast(dict[str, object], raw)
     return completions
+
+
+def _pilot_candidate_sets_context(
+    upstream: dict[CodexD2Node, dict[str, object]],
+    labels: dict[CodexD2Node, str],
+) -> dict[str, dict[str, object]]:
+    contextualized: dict[str, dict[str, object]] = {}
+    for source, payload in upstream.items():
+        source_role = labels.get(source)
+        if source_role is None:
+            continue
+        copied = dict(payload)
+        raw_candidates = payload.get("candidates")
+        if isinstance(raw_candidates, list):
+            copied["candidates"] = [
+                {
+                    **candidate,
+                    "candidate_ref": (
+                        f"{source_role.upper()}:{candidate.get('candidate_id')}"
+                    ),
+                }
+                for candidate in raw_candidates
+                if isinstance(candidate, dict)
+            ]
+        contextualized[source_role] = copied
+    return contextualized
 
 
 def _select_bootstrap_shell(

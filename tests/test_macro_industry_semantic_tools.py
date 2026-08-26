@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from types import SimpleNamespace
 
 import httpx
@@ -185,17 +186,51 @@ def test_remaining_bls_semantic_tools_have_governed_mock_transport(
     assert result.output["series"][0]["observations"][0]["year"] == "2026"
 
 
+def test_bls_semantic_tool_soft_filters_observations_after_cutoff() -> None:
+    posted: dict[str, object] = {}
+    payload = {
+        "status": "REQUEST_SUCCEEDED",
+        "Results": {
+            "series": [
+                {
+                    "seriesID": "WPUFD4",
+                    "data": [
+                        {"year": "2026", "period": "M09", "value": "120"},
+                        {"year": "2026", "period": "M08", "value": "118"},
+                        {"year": "2025", "period": "M12", "value": "110"},
+                    ],
+                }
+            ]
+        },
+    }
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        posted.update(json.loads(request.content))
+        return httpx.Response(200, json=payload)
+
+    request = _request(
+        "bls.industry_producer_prices",
+        {"metric_keys": ["final_demand_ppi"], "end_year": "2030"},
+    ).model_copy(update={"metadata": {"cutoff_at": "2026-08-20T12:00:00Z"}})
+    result = BlsIndustryProducerPricesClient(_settings(), client=_client(handler)).call(request)
+
+    assert result.status is ResultStatus.PARTIAL
+    assert posted["endyear"] == "2026"
+    observations = result.output["series"][0]["observations"]
+    assert [(item["year"], item["period"]) for item in observations] == [
+        ("2026", "M08"),
+        ("2025", "M12"),
+    ]
+    assert result.output["cutoff_filter"]["filtered_observation_count"] == 1
+
+
 def test_bea_national_and_eia_supply_semantic_tools_have_governed_mock_transport() -> None:
     bea = BeaNationalAccountsClient(
         _settings(),
         client=_client(
             lambda _: httpx.Response(
                 200,
-                json={
-                    "BEAAPI": {
-                        "Results": {"Data": [{"LineNumber": "1", "DataValue": "1"}]}
-                    }
-                },
+                json={"BEAAPI": {"Results": {"Data": [{"LineNumber": "1", "DataValue": "1"}]}}},
             )
         ),
     ).call(_request("bea.national_accounts"))

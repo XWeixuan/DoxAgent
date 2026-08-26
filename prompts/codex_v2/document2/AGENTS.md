@@ -9,6 +9,12 @@ boundaries, and uncertainty. Never invent a value merely to fill a field. Citati
 non-blocking: retain the citation text or record an empty citation list instead of refusing the
 business output.
 
+When `research_cutoff_at` is present, treat it as the information-availability boundary for the
+turn. Do not use a later observation as cutoff evidence. Retrieval-time data that cannot establish
+the requested historical vintage may still be inspected, but must be excluded from the dated claim
+or described only as unavailable/non-equivalent. Temporal mismatch remains non-blocking and must
+not prevent the best supported Shell from being returned.
+
 Recoverable operational mistakes are not workflow blockers. If a PowerShell, shell, Python,
 validation, or file-inspection command fails because of syntax, quoting, piping, parsing, path, or
 invocation mistakes, correct the command or use an equivalent safe method and continue. Do not

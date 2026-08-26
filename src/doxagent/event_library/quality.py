@@ -29,6 +29,9 @@ class EventLibraryQualityReport(StrictModel):
     pending_delta_ratio: float = Field(ge=0, le=1)
     o2_invalid_bundle_ratio: float = Field(ge=0, le=1)
     o2_repair_run_ratio: float = Field(ge=0, le=1)
+    o2_partial_bundle_ratio: float = Field(ge=0, le=1)
+    reference_review_scheduled: int = Field(ge=0)
+    reference_review_history: int = Field(ge=0)
 
 
 def compile_quality_report(
@@ -55,9 +58,9 @@ def compile_quality_report(
         if (detail := compiler.event_detail(ticker, event_id, selected)) is not None
     )
     fact_count = sum(len(event.facts) for event in events)
+    reference_events = compiler.reference_events(ticker, selected)
+    reference_ids = [event.event_id for event in reference_events]
     reference = compiler.reference_view(ticker, selected)
-    reference_events = list(reference["events"])
-    reference_ids = [str(item["event_id"]) for item in reference_events]
     important_ids = {event.event_id for event in events if event.is_important}
     reference_important = important_ids & set(reference_ids)
     full_bytes = len(
@@ -67,9 +70,7 @@ def compile_quality_report(
             sort_keys=True,
         ).encode("utf-8")
     )
-    reference_bytes = len(
-        json.dumps(reference, ensure_ascii=False, sort_keys=True).encode("utf-8")
-    )
+    reference_bytes = len(reference.encode("utf-8"))
     operations = repository.operational_quality_counts(ticker)
     delta_total = operations["delta_total"]
     delta_pending = operations["delta_pending"]
@@ -96,4 +97,9 @@ def compile_quality_report(
             operations["o2_invalid_bundle_runs"] / o2_runs if o2_runs else 0.0
         ),
         o2_repair_run_ratio=(operations["o2_repair_runs"] / o2_runs if o2_runs else 0.0),
+        o2_partial_bundle_ratio=(
+            operations["o2_partial_bundle_runs"] / o2_runs if o2_runs else 0.0
+        ),
+        reference_review_scheduled=operations["reference_review_scheduled"],
+        reference_review_history=operations["reference_review_history"],
     )

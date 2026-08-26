@@ -189,9 +189,19 @@ class CollectionObservation(HorizontalCollectionModel):
     as_of: datetime
     source_refs: tuple[ObjectRef, ...]
     unit: NonEmptyStr | None = None
+    source_concept: NonEmptyStr | None = None
+    period_start: datetime | None = None
+    period_end: datetime | None = None
+    filed_at: datetime | None = None
+    accession: NonEmptyStr | None = None
+    form: NonEmptyStr | None = None
+    fiscal_year: NonEmptyStr | None = None
+    fiscal_period: NonEmptyStr | None = None
+    frame: NonEmptyStr | None = None
     published_at: datetime | None = None
     retrieved_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     quality_flags: tuple[NonEmptyStr, ...] = ()
+    observation_metadata: dict[str, Any] = Field(default_factory=dict)
     method_id: NonEmptyStr | None = None
     method_version: NonEmptyStr | None = None
     input_refs: tuple[ObjectRef, ...] = ()
@@ -290,7 +300,19 @@ class PromotedStateValue(HorizontalCollectionModel):
     as_of: datetime
     source_refs: tuple[ObjectRef, ...]
     collection_target_id: NonEmptyStr
+    source_concept: NonEmptyStr | None = None
+    period_start: datetime | None = None
+    period_end: datetime | None = None
+    filed_at: datetime | None = None
+    accession: NonEmptyStr | None = None
+    form: NonEmptyStr | None = None
+    fiscal_year: NonEmptyStr | None = None
+    fiscal_period: NonEmptyStr | None = None
+    frame: NonEmptyStr | None = None
+    published_at: datetime | None = None
+    retrieved_at: datetime | None = None
     quality_flags: tuple[NonEmptyStr, ...] = ()
+    observation_metadata: dict[str, Any] = Field(default_factory=dict)
 
     @model_validator(mode="after")
     def reject_placeholders(self) -> PromotedStateValue:

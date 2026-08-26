@@ -12,6 +12,7 @@ from doxagent.event_library.contracts import (
     FrozenRuntimeAtomic,
     FrozenRuntimeSnapshot,
     RuntimeHint,
+    RuntimePackageDelta,
 )
 from doxagent.event_library.repository import EventLibraryRepository
 
@@ -101,6 +102,41 @@ class DeltaCompiler:
                     target_suggestion_ids=[] if target_event is None else [target_event],
                 )
             )
+        delta_by_atomic = {
+            item.runtime_atomic_id: item.delta_id for item in items
+        }
+        package_deltas = [
+            RuntimePackageDelta(
+                runtime_hint_id=hint_by_package[package.runtime_package_id],
+                title=package.title,
+                runtime_package_version=package.version,
+                member_delta_ids=[
+                    delta_by_atomic[atomic_id]
+                    for atomic_id in package.member_runtime_atomic_ids
+                    if atomic_id in delta_by_atomic
+                ],
+                time_anchors=sorted(
+                    {
+                        atomic.time
+                        for atomic, _signature in candidates
+                        if atomic.runtime_atomic_id in package.member_runtime_atomic_ids
+                    }
+                ),
+                entity_anchors=sorted(
+                    {
+                        entity
+                        for atomic, _signature in candidates
+                        if atomic.runtime_atomic_id in package.member_runtime_atomic_ids
+                        for entity in atomic.entities
+                    }
+                ),
+            )
+            for package in packages
+            if any(
+                atomic_id in delta_by_atomic
+                for atomic_id in package.member_runtime_atomic_ids
+            )
+        ]
         identity = _canonical_hash(
             {
                 "runtime_scope": snapshot.runtime_scope,
@@ -108,6 +144,9 @@ class DeltaCompiler:
                 "epoch_id": snapshot.epoch_id,
                 "base_library_version": base_version,
                 "items": [item.model_dump(mode="json") for item in items],
+                "runtime_packages": [
+                    item.model_dump(mode="json") for item in package_deltas
+                ],
             }
         )
         batch = DeltaBatch(
@@ -120,6 +159,7 @@ class DeltaCompiler:
             status=(DeltaBatchStatus.PENDING if items else DeltaBatchStatus.FINALIZED_NOOP),
             items=items,
             runtime_hints=hints,
+            runtime_packages=package_deltas,
         )
         self._repository.save_delta_batch(batch)
         return batch

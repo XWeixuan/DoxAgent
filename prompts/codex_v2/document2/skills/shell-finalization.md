@@ -48,6 +48,10 @@ Ordinary uncertainty, missing Detail, and finer evidence qualification can be re
 inside a sound Unit. When more than one structure is plausible, choose the one that gives O1 the
 clearest questions and the right shared context, then resolve the structural choice.
 
+Use each provisional Candidate's source-qualified `candidate_ref` when reconciling reviews and
+dispositions. Branch-local `U#` values are not globally unique and must never be used alone to join
+Candidate Sets, provisional Units, or targeted feedback.
+
 ## Apply local decisions globally
 
 After resolving the targeted feedback, rebuild the affected parts as one coherent final structure.
@@ -60,11 +64,31 @@ silently lose an object because its temporary handle disappeared.
 This pass closes the structure produced by Discovery and Synthesis. It does not repeat broad
 Candidate Discovery or require every unaffected choice to be re-justified.
 
+## Final research-context boundary review
+
+After applying local decisions, review the resulting topology once as a whole. This is a structural
+validation of O1 context boundaries, not a drive toward fewer Shells.
+
+- **Shell context coherence:** Units inside each Shell should benefit from one long-lived, complete
+  research context while retaining independent update paths.
+- **Adjacent Shell separation:** confirm that separate O1 threads are required because the research
+  systems are largely independent or shared context would materially confuse them, rather than
+  because products, end markets, policies, events, or immediate outcomes differ.
+- **Single-Unit Shell necessity:** confirm that no natural adjacent Shell supplies useful shared
+  context while preserving the Unit's independence.
+- **Shell and Unit distinctness:** a `core_question` should not be almost fully answered by one Unit;
+  normally it requires the combined propositions in that Shell.
+- **Object-level integrity:** confirm that State-like variables, Realization Factors, occurred
+  events, Future Nodes, and market measurement or inference tasks have not survived as Units.
+
+Apply any correction through the existing Shell and Unit fields; this review adds no output field.
+
 ## Write the final seeds
 
 Replace every temporary `S#` and `U#` handle with stable natural-language semantic IDs suitable for
 future event updates. IDs should name the continuing subject rather than a current value, dated
-event, or directional conclusion.
+event, or directional conclusion. Agent-facing IDs are human-readable natural-language names, not
+kebab-case, snake_case, coded IDs, or machine-style slugs; runtime UUIDs belong to the storage layer.
 
 Each final Shell contains:
 
@@ -82,6 +106,10 @@ Each Unit seed contains only:
 - `horizon`: the business or time horizon over which the proposition is researched and can be
   tested, without inventing a forecast value or false precision.
 
+Candidate Discovery may phrase its object as a question. The final `proposition` is a declarative
+expectation for the Blackboard to maintain; `core_question` remains the question jointly researched
+by the Shell.
+
 Use `finalization_note` only for major structural decisions that help explain the final result,
 such as an important split, merge, addition, removal, or rejection of a consequential review
 recommendation. Keep each note brief and outcome-focused.
@@ -90,5 +118,6 @@ recommendation. Keep each note brief and outcome-focused.
 
 Finalization is complete when all three reviews have informed one unified decision, material
 feedback and unassigned Candidates have a deliberate disposition, retained Units have distinct
-update paths, each Shell has a coherent shared-context boundary, and no temporary handles remain.
-Return one `ShellFinalizationResult` with the final `shells` and brief `finalization_note`.
+update paths, each Shell corresponds to a coherent and genuinely independent long-lived O1 research
+context, and no temporary handles remain. Return one `ShellFinalizationResult` with the final
+`shells` and brief `finalization_note`.

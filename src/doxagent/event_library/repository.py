@@ -22,9 +22,14 @@ from doxagent.event_library.contracts import (
     DeltaResolution,
     LibraryVersionStatus,
     PublicationResult,
+    ReferenceReviewCandidate,
+    ReferenceReviewDecision,
+    ReferenceReviewMode,
+    ReferenceReviewReason,
 )
+from doxagent.event_library.reference_review import classify_review, occurrence_anchor
 
-EVENT_LIBRARY_SCHEMA_VERSION = 1
+EVENT_LIBRARY_SCHEMA_VERSION = 2
 
 
 class EventLibraryError(RuntimeError):
@@ -263,6 +268,29 @@ class EventLibraryRepository:
                     metadata_json TEXT NOT NULL,
                     updated_at TEXT NOT NULL
                 );
+                CREATE TABLE IF NOT EXISTS reference_review_schedule (
+                    ticker TEXT NOT NULL,
+                    event_no INTEGER NOT NULL,
+                    occurrence_anchor TEXT,
+                    last_reviewed_at TEXT,
+                    next_review_at TEXT,
+                    review_mode TEXT NOT NULL,
+                    candidate_reason TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    PRIMARY KEY (ticker,event_no)
+                );
+                CREATE TABLE IF NOT EXISTS reference_review_history (
+                    ticker TEXT NOT NULL,
+                    review_run_id TEXT NOT NULL,
+                    event_no INTEGER NOT NULL,
+                    reviewed_at TEXT NOT NULL,
+                    review_mode TEXT NOT NULL,
+                    candidate_reason TEXT NOT NULL,
+                    changed INTEGER NOT NULL,
+                    include_in_reference_view INTEGER NOT NULL,
+                    decision_json TEXT NOT NULL,
+                    PRIMARY KEY (ticker,review_run_id,event_no)
+                );
                 CREATE INDEX IF NOT EXISTS idx_event_revision_version
                     ON canonical_event_revisions (ticker, library_version, event_no);
                 CREATE INDEX IF NOT EXISTS idx_fact_revision_version
@@ -271,6 +299,8 @@ class EventLibraryRepository:
                     ON event_fact_memberships (
                         ticker, valid_from_version, valid_to_version, event_no, fact_no
                     );
+                CREATE INDEX IF NOT EXISTS idx_reference_review_due
+                    ON reference_review_schedule (ticker,next_review_at,event_no);
                 """
             )
             connection.execute(f"PRAGMA user_version={EVENT_LIBRARY_SCHEMA_VERSION}")
@@ -298,20 +328,22 @@ class EventLibraryRepository:
             ).fetchone()
         return 0 if row is None else int(row["published_version"])
 
-    def published_metadata(self, ticker: str) -> tuple[int, datetime | None]:
+    def published_metadata(
+        self, ticker: str, version: int | None = None
+    ) -> tuple[int, datetime | None]:
         normalized = self._ticker(ticker)
-        version = self.published_version(normalized)
-        if version == 0:
+        selected = self.published_version(normalized) if version is None else version
+        if selected == 0:
             return 0, None
         with self._read() as connection:
             row = connection.execute(
                 "SELECT published_at FROM library_versions "
                 "WHERE ticker=? AND version=? AND status='PUBLISHED'",
-                (normalized, version),
+                (normalized, selected),
             ).fetchone()
         if row is None or row["published_at"] is None:
-            return version, None
-        return version, datetime.fromisoformat(str(row["published_at"]))
+            return selected, None
+        return selected, datetime.fromisoformat(str(row["published_at"]))
 
     def operational_quality_counts(self, ticker: str) -> dict[str, int]:
         """Return deterministic Delta/O2 counters without exposing row payloads."""
@@ -332,6 +364,15 @@ class EventLibraryRepository:
                 "SELECT validator_status,metadata_json FROM maintenance_runs WHERE ticker=?",
                 (normalized,),
             ).fetchall()
+            review_due = connection.execute(
+                "SELECT COUNT(*) AS count FROM reference_review_schedule "
+                "WHERE ticker=? AND next_review_at IS NOT NULL",
+                (normalized,),
+            ).fetchone()
+            review_history = connection.execute(
+                "SELECT COUNT(*) AS count FROM reference_review_history WHERE ticker=?",
+                (normalized,),
+            ).fetchone()
         repair_runs = 0
         for row in runs:
             metadata = json.loads(str(row["metadata_json"]))
@@ -344,10 +385,13 @@ class EventLibraryRepository:
             "delta_total": int(delta["total"] or 0),
             "delta_pending": int(delta["pending"] or 0),
             "o2_run_total": len(runs),
-            "o2_invalid_bundle_runs": sum(
-                str(row["validator_status"]) == "FAIL" for row in runs
-            ),
+            "o2_invalid_bundle_runs": sum(str(row["validator_status"]) == "FAIL" for row in runs),
             "o2_repair_runs": repair_runs,
+            "o2_partial_bundle_runs": sum(
+                str(row["validator_status"]) == "PARTIAL" for row in runs
+            ),
+            "reference_review_scheduled": int(review_due["count"] or 0),
+            "reference_review_history": int(review_history["count"] or 0),
         }
 
     def save_delta_batch(self, batch: DeltaBatch) -> bool:
@@ -544,9 +588,7 @@ class EventLibraryRepository:
 
     def active_fact_ids(self, ticker: str, version: int | None = None) -> set[str]:
         return {
-            fact.fact_id
-            for event in self.published_events(ticker, version)
-            for fact in event.facts
+            fact.fact_id for event in self.published_events(ticker, version) for fact in event.facts
         }
 
     def fact_status(
@@ -617,7 +659,12 @@ class EventLibraryRepository:
             ).fetchone()
             if fact_row is None:
                 raise EventLibraryError(f"Fact F{fact_no} is missing its active revision")
-            facts.append(json.loads(str(fact_row["payload_json"])))
+            fact_payload = json.loads(str(fact_row["payload_json"]))
+            # V1 persisted Fact revisions may contain the retired, ineffective
+            # Canonical `entities` field. Read them through the current schema
+            # without mutating immutable historical rows.
+            fact_payload.pop("entities", None)
+            facts.append(fact_payload)
         payload = json.loads(str(event_row["payload_json"]))
         payload["status"] = str(state_row["status"])
         payload["facts"] = facts
@@ -646,6 +693,8 @@ class EventLibraryRepository:
                 ) VALUES (?,?,?,?,?,?,?,?,?,?,?)
                 ON CONFLICT(run_id) DO UPDATE SET
                     stage=excluded.stage,thread_id=COALESCE(excluded.thread_id,thread_id),
+                    frozen_view_id=excluded.frozen_view_id,
+                    base_version=excluded.base_version,
                     bundle_path=COALESCE(excluded.bundle_path,bundle_path),
                     bundle_hash=COALESCE(excluded.bundle_hash,bundle_hash),
                     validator_status=COALESCE(excluded.validator_status,validator_status),
@@ -677,6 +726,64 @@ class EventLibraryRepository:
             key: (json.loads(str(row[key])) if key == "metadata_json" else row[key])
             for key in row.keys()
         }
+
+    def due_reference_review_candidates(
+        self, *, ticker: str, as_of: datetime
+    ) -> list[ReferenceReviewCandidate]:
+        """Return the durable due set against one frozen as_of clock."""
+
+        normalized = self._ticker(ticker)
+        events = {item.event_id: item for item in self.published_events(normalized)}
+        with self._read() as connection:
+            rows = connection.execute(
+                """
+                SELECT * FROM reference_review_schedule
+                WHERE ticker=? AND next_review_at IS NOT NULL AND next_review_at<=?
+                ORDER BY next_review_at,event_no
+                """,
+                (normalized, as_of.astimezone(UTC).isoformat()),
+            ).fetchall()
+        candidates: list[ReferenceReviewCandidate] = []
+        for row in rows:
+            event_id = f"E{int(row['event_no'])}"
+            event = events.get(event_id)
+            if event is None:
+                continue
+            candidates.append(
+                ReferenceReviewCandidate(
+                    event_id=event_id,
+                    occurred_at=event.occurred_at,
+                    occurrence_anchor=(
+                        None
+                        if row["occurrence_anchor"] is None
+                        else datetime.fromisoformat(str(row["occurrence_anchor"])).date()
+                    ),
+                    title=event.title,
+                    known_event_summary=event.known_event_summary,
+                    is_important=event.is_important,
+                    include_in_reference_view=event.include_in_reference_view,
+                    related_event_ids=event.related_event_ids,
+                    supersedes_event_id=event.supersedes_event_id,
+                    last_reviewed_at=(
+                        None
+                        if row["last_reviewed_at"] is None
+                        else datetime.fromisoformat(str(row["last_reviewed_at"]))
+                    ),
+                    next_review_at=datetime.fromisoformat(str(row["next_review_at"])),
+                    review_mode=ReferenceReviewMode(str(row["review_mode"])),
+                    candidate_reason=ReferenceReviewReason(str(row["candidate_reason"])),
+                )
+            )
+        return candidates
+
+    def reference_review_history_count(self, *, ticker: str, run_id: str) -> int:
+        with self._read() as connection:
+            row = connection.execute(
+                "SELECT COUNT(*) AS count FROM reference_review_history "
+                "WHERE ticker=? AND review_run_id=?",
+                (self._ticker(ticker), run_id),
+            ).fetchone()
+        return int(row["count"] if row is not None else 0)
 
     def publish_bundle(
         self,
@@ -729,9 +836,7 @@ class EventLibraryRepository:
                     event_id_map,
                     fact_id_map,
                 )
-                self._write_retirements(
-                    connection, ticker, next_version, bundle, event_id_map
-                )
+                self._write_retirements(connection, ticker, next_version, bundle, event_id_map)
                 self._suppress_orphaned_facts(connection, ticker, next_version)
             counts = self._write_delta_dispositions(
                 connection,
@@ -740,6 +845,14 @@ class EventLibraryRepository:
                 event_id_map,
                 fact_id_map,
                 published_version,
+            )
+            self._write_reference_reviews(
+                connection,
+                ticker=ticker,
+                run_id=bundle.run_id,
+                decisions=bundle.reference_review_decisions,
+                event_id_map=event_id_map,
+                revised_events=bundle.event_revisions,
             )
             if has_library_changes:
                 now = _now()
@@ -796,10 +909,138 @@ class EventLibraryRepository:
                 )
             return result
 
+    def _write_reference_reviews(
+        self,
+        connection: sqlite3.Connection,
+        *,
+        ticker: str,
+        run_id: str,
+        decisions: Sequence[ReferenceReviewDecision],
+        event_id_map: dict[str, str],
+        revised_events: Sequence[CanonicalEventRevision],
+    ) -> None:
+        decisions_by_event = {
+            event_id_map.get(item.event_id, item.event_id): item for item in decisions
+        }
+        # Event fields written in this Bundle are the initial/current judgment. They are
+        # scheduled once here and are not emitted as same-run review candidates.
+        for revision in revised_events:
+            stable_id = event_id_map.get(revision.event_id, revision.event_id)
+            decision = decisions_by_event.get(stable_id)
+            reviewed_at = decision.reviewed_at if decision is not None else datetime.now(UTC)
+            included = (
+                decision.include_in_reference_view
+                if decision is not None
+                else revision.include_in_reference_view
+            )
+            anchor = occurrence_anchor(revision.occurred_at)
+            mode, reason, next_at = classify_review(
+                anchor=anchor,
+                as_of=reviewed_at,
+                include_in_reference_view=included,
+            )
+            self._upsert_review_schedule(
+                connection,
+                ticker=ticker,
+                event_no=_numeric_id(stable_id),
+                anchor=anchor,
+                reviewed_at=reviewed_at,
+                next_at=(decision.next_review_at if decision is not None else next_at),
+                mode=(decision.review_mode if decision is not None else mode),
+                reason=(decision.candidate_reason if decision is not None else reason),
+            )
+        for stable_id, decision in decisions_by_event.items():
+            if any(
+                event_id_map.get(item.event_id, item.event_id) == stable_id
+                for item in revised_events
+            ):
+                continue
+            event = self._event_from_connection(
+                connection,
+                ticker,
+                _numeric_id(stable_id),
+                self._head_in_connection(connection, ticker),
+            )
+            anchor = occurrence_anchor(event.occurred_at)
+            mode, reason, computed_next = classify_review(
+                anchor=anchor,
+                as_of=decision.reviewed_at,
+                include_in_reference_view=decision.include_in_reference_view,
+            )
+            connection.execute(
+                """
+                INSERT OR IGNORE INTO reference_review_history(
+                    ticker,review_run_id,event_no,reviewed_at,review_mode,
+                    candidate_reason,changed,include_in_reference_view,decision_json
+                ) VALUES (?,?,?,?,?,?,?,?,?)
+                """,
+                (
+                    ticker,
+                    run_id,
+                    _numeric_id(stable_id),
+                    decision.reviewed_at.isoformat(),
+                    decision.review_mode.value,
+                    decision.candidate_reason.value,
+                    int(decision.changed),
+                    int(decision.include_in_reference_view),
+                    _json(decision.model_dump(mode="json")),
+                ),
+            )
+            self._upsert_review_schedule(
+                connection,
+                ticker=ticker,
+                event_no=_numeric_id(stable_id),
+                anchor=anchor,
+                reviewed_at=decision.reviewed_at,
+                next_at=(
+                    decision.next_review_at
+                    if decision.next_review_at is not None
+                    else computed_next
+                ),
+                mode=decision.review_mode if decision.review_mode else mode,
+                reason=decision.candidate_reason if decision.candidate_reason else reason,
+            )
+
     @staticmethod
-    def _batch_rows(
-        connection: sqlite3.Connection, batch_ids: Sequence[str]
-    ) -> list[sqlite3.Row]:
+    def _upsert_review_schedule(
+        connection: sqlite3.Connection,
+        *,
+        ticker: str,
+        event_no: int,
+        anchor: Any,
+        reviewed_at: datetime,
+        next_at: datetime | None,
+        mode: ReferenceReviewMode,
+        reason: ReferenceReviewReason,
+    ) -> None:
+        connection.execute(
+            """
+            INSERT INTO reference_review_schedule(
+                ticker,event_no,occurrence_anchor,last_reviewed_at,next_review_at,
+                review_mode,candidate_reason,updated_at
+            ) VALUES (?,?,?,?,?,?,?,?)
+            ON CONFLICT(ticker,event_no) DO UPDATE SET
+                occurrence_anchor=excluded.occurrence_anchor,
+                last_reviewed_at=excluded.last_reviewed_at,
+                next_review_at=excluded.next_review_at,
+                review_mode=excluded.review_mode,
+                candidate_reason=excluded.candidate_reason,
+                updated_at=excluded.updated_at
+            """,
+            (
+                ticker,
+                event_no,
+                None if anchor is None else anchor.isoformat(),
+                reviewed_at.astimezone(UTC).isoformat(),
+                None if next_at is None else next_at.astimezone(UTC).isoformat(),
+                mode.value,
+                reason.value,
+                _now(),
+            ),
+        )
+
+    @staticmethod
+    def _batch_rows(connection: sqlite3.Connection, batch_ids: Sequence[str]) -> list[sqlite3.Row]:
         return [
             row
             for batch_id in batch_ids
@@ -1066,9 +1307,7 @@ class EventLibraryRepository:
             )
 
     @staticmethod
-    def _suppress_orphaned_facts(
-        connection: sqlite3.Connection, ticker: str, version: int
-    ) -> None:
+    def _suppress_orphaned_facts(connection: sqlite3.Connection, ticker: str, version: int) -> None:
         rows = connection.execute(
             """
             SELECT facts.fact_no
@@ -1139,9 +1378,7 @@ class EventLibraryRepository:
                 delta_id = str(row["delta_id"])
                 resolution, target_event, target_fact = dispositions[delta_id]
                 status = (
-                    "PENDING"
-                    if resolution == DeltaResolution.KEEP_PENDING.value
-                    else "RESOLVED"
+                    "PENDING" if resolution == DeltaResolution.KEEP_PENDING.value else "RESOLVED"
                 )
                 if resolution == DeltaResolution.KEEP_PENDING.value:
                     counts["pending"] += 1

@@ -26,7 +26,7 @@ from doxagent.workflows.codex_document2.schema import (
     InputManifestEntry,
 )
 
-EVENT_LIBRARY_PORT_VERSION = "event-library-read-v1"
+EVENT_LIBRARY_PORT_VERSION = "event-library-read-v2"
 
 
 class PreparedModel(BaseModel):
@@ -35,7 +35,7 @@ class PreparedModel(BaseModel):
 
 class OptionalInput(PreparedModel):
     status: InputAvailability
-    payload: dict[str, Any] | None = None
+    payload: dict[str, Any] | str | None = None
     source_run_id: str | None = None
     as_of: datetime | None = None
     warning: str | None = None
@@ -71,11 +71,21 @@ class PublishedEventLibraryProvider:
     interface_version = EVENT_LIBRARY_PORT_VERSION
     read_only = True
 
-    def __init__(self, reader: PublishedEventLibraryReader) -> None:
+    def __init__(
+        self,
+        reader: PublishedEventLibraryReader,
+        *,
+        pinned_version: int | None = None,
+        pinned_sha256: str | None = None,
+        pinned_published_at: datetime | None = None,
+    ) -> None:
         self._reader = reader
+        self._pinned_version = pinned_version
+        self._pinned_sha256 = pinned_sha256
+        self._pinned_published_at = pinned_published_at
 
     async def load(self, *, ticker: str, as_of: datetime) -> OptionalInput:
-        snapshot = self._reader.reference_view(ticker)
+        snapshot = self._reader.reference_view(ticker, version=self._pinned_version)
         if snapshot is None:
             return OptionalInput(
                 status=InputAvailability.ABSENT,
@@ -95,6 +105,13 @@ class PublishedEventLibraryProvider:
                     "version": snapshot.version,
                 },
             )
+        if self._pinned_sha256 is not None and snapshot.sha256 != self._pinned_sha256:
+            raise ValueError("Pinned Event Library reference view hash mismatch")
+        if (
+            self._pinned_published_at is not None
+            and snapshot.published_at != self._pinned_published_at
+        ):
+            raise ValueError("Pinned Event Library published timestamp mismatch")
         return OptionalInput(
             status=InputAvailability.AVAILABLE,
             payload=snapshot.reference_view,
@@ -106,6 +123,8 @@ class PublishedEventLibraryProvider:
                 "version": snapshot.version,
                 "sha256": snapshot.sha256,
                 "view": "REFERENCE_VIEW",
+                "content_type": "text/markdown; charset=utf-8",
+                "contract_version": snapshot.contract_version,
             },
         )
 
@@ -237,9 +256,20 @@ class Document2InputLoader:
             raise ValueError("Document2 ticker does not match the source Global Research run")
         if bundle.handoff is None or bundle.published_at is None:
             raise ValueError("published Global Research bundle is missing its handoff")
-        as_of = requested_as_of or bundle.published_at
+        source_published_at = bundle.published_at
+        if source_published_at.tzinfo is None:
+            source_published_at = source_published_at.replace(tzinfo=UTC)
+        requested_cutoff = requested_as_of
+        as_of = requested_cutoff or source_published_at
         if as_of.tzinfo is None:
             as_of = as_of.replace(tzinfo=UTC)
+        cutoff_warning: str | None = None
+        if as_of < source_published_at:
+            cutoff_warning = (
+                "requested Document2 as_of preceded the pinned Global Research publication; "
+                "the effective research cutoff was raised to the source publication time"
+            )
+            as_of = source_published_at
         reports: dict[str, str] = {}
         report_ids: dict[str, str] = {}
         paths: list[str] = []
@@ -326,6 +356,13 @@ class Document2InputLoader:
             workspace_paths=[*paths, *horizontal_paths],
             source_run_id=bundle.run_id,
             as_of=bundle.published_at,
+            warning=cutoff_warning,
+            metadata={
+                "requested_as_of": (
+                    requested_cutoff.isoformat() if requested_cutoff is not None else None
+                ),
+                "effective_research_cutoff_at": as_of.isoformat(),
+            },
         )
         return PreparedDocument2Inputs(
             ticker=bundle.ticker,

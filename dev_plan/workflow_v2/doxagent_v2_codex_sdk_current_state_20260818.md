@@ -1,6 +1,6 @@
-# DoxAgent 当前实现同步：Document 1 v2 与 Codex Research Lanes
+# DoxAgent 当前实现同步：Document 1、Document 2、事件库与 Codex Research Lanes
 
-> **更新时间：2026-08-21**
+> **更新时间：2026-08-25**
 >
 > 本文已从 2026-08-18 的旧版 current-state 快照更新为当前实现说明。旧版
 > `codex_d1_v2` 的节点值、运行记录和读取路径仍然保留；本文不改写历史
@@ -11,6 +11,12 @@
 > API 或数据库时，以本文和
 > [`global_market_research_lane_rearchitecture_plan_20260820.md`](./global_market_research_lane_rearchitecture_plan_20260820.md)
 > 的已实现部分为准；该方案文档中“待迁移/未验收”的历史表述不代表当前运行状态。
+>
+> Document 2 Expectation workflow 与 Event Library/O2 是独立的 Codex SDK 工作流；它们以
+> 显式发布边界或冻结视图作为业务输入。Document 2 的 O0 domain review 另有意恢复对应的
+> Document 1 role thread，以保留 review 所需的上游隐藏上下文；该 thread 仍是审查执行句柄，
+> 不是替代已发布 artifact 的事实边界。本文以下部分同时记录这两条工作流的当前实现和与
+> Document 1 的接入边界。
 
 ## 1. 当前版本与边界
 
@@ -19,6 +25,8 @@
 | Legacy Document 1 | `codex_d1_v2` | `legacy_document1` | 读取和复现历史 D1 v2 路径 | 保留旧 DAG、旧 node 值、旧 bundle/API reader，不原地重命名 |
 | Global Research | `codex_global_research_v1` | `global_research` | 目标公司的基本面、行业/价值链、核心驱动与市场隐含预期 | 当前 Document 1 新研究入口 |
 | Market Situation Research | `codex_market_situation_v1` | `market_situation_research` | 当日及长周期的大盘/宏观环境、个股价格面、相对表现、波动与流动性 | 与 Global Research 平行、可独立启动和发布 |
+| Document 2 Expectation Research | `codex_document2_v1` | `document2` | 将已发布 Global Research 转换为 Expectation Shell、Unit、State、Realization Factor 与 Potential Gap | 只消费显式 `GlobalResearchHandoffV1`；每个 Shell 有独立 O1 工作区和可恢复 thread |
+| Event Library / O2 | `codex_event_library_v1` | `event_library` | 从 CDECR Delta 维护 ticker 级 Canonical Event/Fact Library，并发布版本化只读视图 | 独立维护工作流；D1 不直接调用，D2 仅通过可选只读 provider 接入 |
 
 新旧路径共享 Codex worker、Workspace API、Data MCP、Source Capture MCP、Observation
 Kernel、provider client 和 repository 基础设施，但不共享同一次 run 的 checkpoint、thread、
@@ -104,9 +112,108 @@ Agent observation normalization
 - 当前还没有盘前/盘中/盘后持续监测、增量 watch loop 或独立 reviewer DAG；这些属于后续
   Market lane 方案，不应写入当前实现状态。
 
+### 2.3 Document 2 / Expectation Research
+
+Document 2 当前使用 `codex_document2_v1`、`document2` lane。输入必须来自已发布的
+`GlobalResearchBundle` 与 `GlobalResearchHandoffV1`，并通过 checksum 校验读取 C1、C3、C5
+报告、entity relations、Future Nodes、horizontal collection 和 D1 citation manifest。O0 的
+C1/C3/C5 domain review 会恢复对应的 Global Research role thread，保留 D1 review 所需的
+隐藏上下文；除此之外，Document 2 不以任意 thread history 或未发布 artifact 替代显式
+handoff，也不读取 Market Situation bundle。
+
+Document 2 的完整编排为：
+
+```text
+Input Preparation
+        |
+        +--> O0 Candidate Discovery（C1 / C3 / C5；Narrative 可选并行）
+        |
+        +--> O0 Shell Synthesis
+        |
+        +--> C1 / C3 / C5 Domain Review（恢复对应 D1 role thread）
+        |
+        +--> O0 Shell Finalization
+                     |
+          +----------+----------+
+          |                     |
+     Shell A / O1          Shell B / O1 ...
+          |                     |
+   STATE -> REALIZATION -> GAPS -> FINALIZATION
+          +----------+----------+
+                     |
+          deterministic assembly / citation manifest
+                     |
+                 publish Document2
+```
+
+O0 先从各研究域发现候选，再进行 Shell/Unit 结构综合、领域 review 和全局 finalization；最终
+只向 O1 交付已 review 的 Shell topology 与 Unit seeds。每个最终 Shell 都对应独立的 O1
+workspace/run 和可恢复 thread，Shell 之间可并行研究，但同一 Shell 的四个 turn 始终按同一
+thread 顺序执行：
+
+- `STATE`：为每个 Unit 建立可持续更新的 Parameter、Source-role Value、`time_scope`、
+  `as_of` 与 validity state；
+- `REALIZATION`：拆解影响 Unit 能否实现、何时实现、由谁获得价值以及如何转化为财务结果的
+  Realization Factors；
+- `GAPS`：开放未来事件空间，记录一旦发生就会迫使当前 Unit 修订的 Potential Gaps；
+- `FINALIZATION`：统一 State、Factor、Gap 的边界、语义、时间和引用，返回完整 canonical
+  `ExpectationShell`。
+
+O1 返回的是可持续维护的结构化 expectation model，不是从 D1 报告复制出的叙述性章节。每
+个 turn 都刷新 `artifacts/shell.json` 和 checkpoint；最终由确定性 assembler 生成
+`document2.json`、Markdown、citation manifest 和 `Document2HandoffV1`。引用解析和单个
+Shell 失败不应阻止其他合法 Shell 产物发布；所有 Shell 失败时仍可发布 `PARTIAL`，同时在
+outcome/checkpoint 中保留失败边界。
+
+Narrative Research 仍读取 DoxAtlas 已完成的旧 narrative report；运行时只在 ticker 存在
+七日内完成报告时注入。Event Library 也是可选输入，当前默认 provider 为 `NOT_CONFIGURED`；
+这两类可选输入缺失都不改变 O1 的基本编排。
+
+### 2.4 Event Library / O2 维护工作流
+
+Event Library 使用独立的 `codex_event_library_v1`、`event_library` lane 和 `O2_MAINTAIN`
+节点。它不把 CDECR Runtime Registry 当作 Canonical Event Library，也不让 O2 直接写 SQLite。
+业务边界为：
+
+```text
+Ticker CDECR Pipeline
+    -> FINALIZED Runtime epoch
+    -> Atomic Delta Compiler
+    -> O2 Frozen View
+    -> O2 Event Library Maintainer
+    -> Revision Bundle validation
+    -> Working Revision import
+    -> Published version / exported views
+```
+
+Canonical Event Library 是 ticker 级独立 SQLite，内部区分 `Pending Delta`、`Working Revision`
+和 `Published Revision`。CDECR Runtime Package 只提供 occurrence 候选提示，不能直接决定
+Canonical Event 的合并、拆分或去重；Atomic Delta `D#` 才是 O2 的 disposition 单位。
+
+O2 的冻结输入是一次运行内不变的 `Frozen View`，包括完整 `Known Event Index`、本轮 Pending
+Delta、Runtime Package/Delta 的精简匹配提示、可按稳定 Event ID 展开的 Event Detail，以及
+需要复审的 Reference candidates。O2 在 Codex workspace 的 `output/work/` 中起草，在
+`output/revision_bundle/` 中提交 Event-per-file 的完整目标修订；模型只返回小型
+`O2RunResult`，不拥有任意 SQL、Published head 切换或物理删除权限。
+
+初始化模式按 `SURVEY -> LOCAL_RECONSTRUCTION` waves -> `GLOBAL_RECONCILIATION` 完成全量
+occurrence 重建；增量模式按 `READ_FULL_INDEX -> BUILD_CANDIDATE_MAP -> LOAD_EVENT_DETAILS
+-> RECONSTRUCT_AND_EDIT -> REFERENCE_REVIEW` 处理新 Delta 和到期复审。随后 Dedicated O2
+Runner 做确定性 Bundle 校验、copy-on-write 导入和整数 `published_version` 切换，导出
+`Known Event Index` 与 `Reference Event View`。局部事件问题可以转为 Pending 或跳过；只有
+版本冲突、SQLite 事务失败等会阻止尚未发布的 Working Revision，上一版 Published Revision
+保持可读。
+
+Event Library 的消息新旧判定由 Persistent Runtime 负责，CDECR 不另建 Message Bus consumer
+或重复判定；CDECR 只接收已经确认的新非社媒消息批次。事件库工作流目前独立于主 D1 DAG 和
+定时器。D2 只允许通过 `PublishedEventLibraryReader`/`EventLibraryProvider` 读取已发布、
+版本化的只读视图，不能读取 Pending/Working 状态；当前 D2 默认仍为 `NOT_CONFIGURED`，因此
+事件库尚未成为每次 D2 运行的必需输入。D3 消费路径不属于本文范围。
+
 ## 3. Context、handoff 与事件库边界
 
-当前采用显式 payload handoff，而不是依赖 thread 的隐式记忆：
+主编排采用显式 payload handoff；只有 Document 2 的 O0 domain-review 阶段按合同恢复对应的
+Document 1 role thread，以保留 review 所需的隐藏上下文。thread 不是跨 lane 的通用事实源：
 
 - C1/C3 的 payload 含 `c4_pre_scan`，但运行时会剔除 `future_nodes`，只保留关系投影。
 - C5 的 payload 含 C1、C3 结构化/报告 handoff 和规范化观察；不由 orchestrator 注入 C4
@@ -117,13 +224,18 @@ Agent observation normalization
   `WorkerRunRequest` 和 Data capability 都带 `workflow_version`/`research_lane`，用于防止
   跨 lane、跨角色或跨 run 使用。
 
-**尚未完成的边界：** Global request 当前仍保留 `base_context: dict[str, Any]`，没有完成
+**Document 1 尚未完成的边界：** Global request 当前仍保留 `base_context: dict[str, Any]`，没有完成
 方案中要求的 request schema allowlist/负向隔离。因此“事件库不注入 Document 1”目前是
 编排约束和 Prompt/asset 约束，不是完整的代码级输入拒绝合同。`known_events`、
-`event_library`、`event_registry` 等字段隔离仍是明确延期项；后续实现不能把当前状态描述
+ `event_library`、`event_registry` 等字段隔离仍是明确延期项；后续实现不能把当前状态描述
 为已完成的事件库隔离。
 
-D2 继续只消费显式发布边界。新 lane 提供：
+这段 Document 1 的延期边界不等于 Event Library/O2 自身未实现：O2 已有独立的 Frozen View、
+Revision Bundle、validator、import/publish 和 Published reader；未完成的是 Document 1 的
+request 级负向隔离，以及 D2/D3 的业务消费者接入。
+
+D2 的业务事实输入只消费显式发布边界。当前 Document 1 lane 的 handoff 形态如下；其中
+MarketSituationHandoffV1 仅供 Market Situation lane，不能作为 Document 2 输入：
 
 ```text
 GlobalResearchHandoffV1:
@@ -135,9 +247,10 @@ MarketSituationHandoffV1:
   citation_manifest_artifact_id, published_at
 ```
 
-D2 尚未迁移到 Codex SDK；不得从 thread history、未发布 artifact 或模型上下文直接读取
-D1 结论，也不得把 C1/C3/C5 的 Markdown 自动当作已验证的 Expectation Unit、Gap 或
-realization 对象。
+Document 2 当前已经使用 `codex_document2_v1` Codex SDK workflow。除 O0 domain review 按合同
+恢复对应的 D1 role thread 外，它不得从任意 thread history、未发布 artifact 或模型上下文
+直接读取 D1 结论，也不得把 C1/C3/C5 的 Markdown 自动当作已验证的 Expectation Unit、Gap
+或 realization 对象；这些对象必须由 O0/O1 按 Document2 schema 重新构建。
 
 ## 4. Codex SDK 服务拓扑与节点生命周期
 
@@ -149,9 +262,11 @@ CodexResearchLaneService
     |
     +--> CodexGlobalResearchOrchestrator
     +--> CodexMarketSituationOrchestrator
+    +--> CodexDocument2Orchestrator
+    +--> EventLibraryFoundationOrchestrator / Dedicated O2 Runner
               |
               v
-       shared CodexD1NodeRunner
+       lane-specific Codex SDK runner
               |
               v
        independent codex-worker HTTP service
@@ -164,13 +279,15 @@ CodexResearchLaneService
               +--> run-scoped Workspace volume
 ```
 
-`CodexGlobalResearchOrchestrator` 和 `CodexMarketSituationOrchestrator` 是两个 lane-specific
-orchestrator，底层执行生命周期复用 `CodexDocument1Orchestrator` 和
-`CodexD1NodeRunner`。Dashboard 侧以 asyncio task 启动 lane run；模型 turn 在独立
-`codex-worker` HTTP 服务中执行。当前 Docker 服务为 dashboard `8780`、worker `8791`；
-本地最终镜像已经构建并健康运行，远端应用服务器尚未同步。
+`CodexGlobalResearchOrchestrator`、`CodexMarketSituationOrchestrator`、
+`CodexDocument2Orchestrator` 和 Event Library runner 共享 Codex worker、Workspace、repository
+和 provider 基础设施，但各自拥有独立 workflow version、lane、node/role、attempt、checkpoint
+和输入合同。Dashboard 侧以 asyncio task 启动已接入的 research run；Document2 与 Event Library
+也可由各自 coordinator/runner 启动。模型 turn 在独立 `codex-worker` HTTP 服务中执行。当前
+Docker 服务为 dashboard `8780`、worker `8791`；本地最终镜像已经构建并健康运行，远端应用
+服务器尚未同步。
 
-一个节点 attempt 的真实流程：
+Global/Market/Document2 的一个节点 attempt 的真实流程：
 
 1. 生成带 lane/version 的 `NodeAttempt`，重绑定显式上游 payload。
 2. 从对应 lane 的 bundle manifest 读取 agent prompt、internal skill、AGENTS 和 schema，
@@ -200,8 +317,11 @@ C1、C3、C5 允许最多 2 个 subagent；C2、O4 和 C4 不开放 subagent。O
 
 Thread identity 的业务键是 `workflow_version + ticker + run_id + agent_role`。同一 run 内
 C4 的两个新 Global turn 共享 C4 role identity；C5 使用自己的 C5 role；新 Market O4
-使用 O4 role，不与 C5 混用。Thread 只是可恢复执行句柄，业务事实仍以 artifact、bundle、
-checkpoint 和 citation manifest 为准。
+使用 O4 role，不与 C5 混用；Document2 的 O0 C1/C3/C5 domain review 恢复对应的 Global
+Research role thread，而每个 Shell 的 O1 research 使用独立 workspace/role thread；Event
+Library 的一个 O2 run 在所有维护阶段恢复同一 O2 thread。Thread 只是可恢复执行句柄，业务
+事实仍以 artifact、bundle、Frozen View、Published Revision、checkpoint 和 citation
+manifest 为准。
 
 ## 5. Workspace、MCP 与安全边界
 
@@ -321,6 +441,9 @@ worker bearer 和 capability secret 只进入本地/容器环境，不写入文�
   访问；
 - `GlobalResearchBundle` 和 `MarketSituationBundle` 分开保存，不能回填进旧
   `codex_document1_bundles`。
+- Event Library 的 Canonical 业务状态保留在 ticker 级独立 SQLite（Pending Delta、Working
+  Revision、Published Revision）；CDECR Runtime Registry 与 Canonical Event Library 分离。
+  O2 通过冻结视图和 Revision Bundle 工作，不直接执行任意 SQL 或切换 Published head。
 
 报告正文不作为高频、大 payload 的 bundle 行写入；发布服务仍通过 checksum 校验，必要时
 使用私有 Supabase Storage。远端应用服务器代码/镜像本轮没有同步，当前验证范围是本地
@@ -341,6 +464,9 @@ status       = published
 五个研究节点均首轮成功，无 C2/O4、C4 finalization 或事件库节点。最终报告约 89 KB，
 包含 25 条 entity relations 和 26 个 future nodes。完整记录见
 [`eval/codex_global_research_mu_formal_run_20260821.md`](../../eval/codex_global_research_mu_formal_run_20260821.md)。
+
+这里的“无事件库节点”只描述该次 Global Research run 的观测 DAG；Event Library 当前由
+独立的 O2 workflow 维护，未被这次 Global Research run 调用。
 
 真实运行终检暴露了旧聚合路径的 citation 问题：历史产物中一个 C3 alias `O660` 未解析，
 并且旧 assembler 允许不同 node attempt 复用裸 `O#`。当前代码已修复新 lane：
@@ -364,6 +490,10 @@ Observation；它没有突破远端 payload 边界，但应在高频生产前做
 - Global 与 Market 独立 orchestrator、horizontal profile、bundle、API 和 Dashboard 分支；
 - C5/O4 语义拆分及 canonical prompt/skill/asset；
 - C4 enrichment 完整快照和新 lane citation 聚合门禁；
+- Document 2 `codex_document2_v1` 的 O0 Shell Construction、领域 review、per-Shell O1
+  四阶段 research、确定性 assembly/publish 与非阻塞 citation manifest；
+- Event Library `codex_event_library_v1` 的 Frozen View、O2 initial/incremental runner、
+  Revision Bundle validator、SQLite import/publish 和 Published reader；
 - Pilot lane identity、人工上游注入、当前日期注入和持久化 case 兼容；
 - SQLite v3、Supabase lane/bundle migration、hybrid repository；
 - Docker 独立 worker、Workspace API、Data MCP/Source Capture MCP 和真实 MU 功能 run。
@@ -372,7 +502,8 @@ Observation；它没有突破远端 payload 边界，但应在高频生产前做
 
 1. Global request 的事件库字段 allowlist/负向隔离（当前 `base_context` 仍为开放 dict）。
 2. Market Situation 的持续监测、盘前/盘中/盘后编排和独立 reviewer。
-3. Document 2 Codex runtime、Expectation Unit/Gap/realization 的迁移和质量验收。
+3. Document 2 的生产质量/真实运行验收、结果深度优化，以及与 Dashboard/Document 3 的后续
+   消费者接入；当前 `codex_document2_v1` runtime、O0/O1 schema 与编排已经实现。
 4. 研究质量优化、模型上限建立以及独立性能评测。
 5. 远端应用服务器的代码、镜像和 Docker volume 同步。
 
@@ -380,6 +511,13 @@ Observation；它没有突破远端 payload 边界，但应在高频生产前做
 
 - Global DAG：`src/doxagent/workflows/codex_global_research/orchestrator.py`
 - Market DAG：`src/doxagent/workflows/codex_market_situation/orchestrator.py`
+- Document 2 DAG：`src/doxagent/workflows/codex_document2/orchestrator.py`
+- Document 2 input/assembly/schema：`src/doxagent/workflows/codex_document2/inputs.py`、
+  `src/doxagent/workflows/codex_document2/assembler.py`、
+  `src/doxagent/workflows/codex_document2/schema.py`
+- Event Library/O2 runner：`src/doxagent/workflows/codex_event_library/remote_runner.py`、
+  `src/doxagent/workflows/codex_event_library/orchestrator.py`
+- Event Library published reader：`src/doxagent/event_library/provider.py`
 - Legacy/D1 shared lifecycle：`src/doxagent/workflows/codex_document1/orchestrator.py`
 - Shared node execution：`src/doxagent/workflows/codex_document1/node_runner.py`
 - Version/lane/schema：`src/doxagent/codex_runtime/schema.py`
@@ -388,6 +526,8 @@ Observation；它没有突破远端 payload 边界，但应在高频生产前做
 - SDK worker：`src/doxagent/codex_worker/sdk_runtime.py`
 - Canonical bundle manifests：`prompts/codex_v2/document1/global_research/`、
   `prompts/codex_v2/document1/market_situation/`
+- Document 2 prompt/skill：`prompts/codex_v2/document2/`
+- Event Library/O2 prompt/skill：`prompts/codex_v2/event_library/`
 - Pilot lane builder：`src/doxagent/pilot/case_builder.py`
 - Supabase migration：`supabase/migrations/202608200001_codex_research_lanes.sql`
 - Lane regression tests：`tests/test_codex_research_lanes.py`、

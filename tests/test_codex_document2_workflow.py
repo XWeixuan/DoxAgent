@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import cast
 from uuid import uuid4
@@ -47,6 +47,7 @@ from doxagent.data_runtime.policy import DataToolPolicyRegistry
 from doxagent.models import ResultStatus
 from doxagent.pilot.document2_case_builder import (
     Document2PilotCaseBuilder,
+    _pilot_candidate_sets_context,
     _role_for_node,
 )
 from doxagent.pilot.templates import render_document2_task
@@ -87,6 +88,8 @@ def test_document2_shared_agent_contract_recovers_from_command_mistakes() -> Non
     assert "Recoverable operational mistakes are not workflow blockers" in normalized
     assert "correct the command or use an equivalent safe method and continue" in normalized
     assert "Do not stop the workflow or request user assistance solely" in normalized
+    assert "research_cutoff_at" in normalized
+    assert "Temporal mismatch remains non-blocking" in normalized
 
 
 def test_document2_agent_output_schemas_are_strict_at_every_object_boundary() -> None:
@@ -114,6 +117,46 @@ def test_document2_agent_output_schemas_are_strict_at_every_object_boundary() ->
         EXPECTATION_SHELL_SCHEMA,
     ):
         assert_strict(schema)
+
+
+def test_document2_pilot_synthesis_context_qualifies_candidate_refs() -> None:
+    context = _pilot_candidate_sets_context(
+        {
+            CodexD2Node.O0_CANDIDATE_C1: {
+                "candidates": [
+                    {
+                        "candidate_id": "U1",
+                        "candidate": "C1 candidate",
+                        "reason": "material",
+                        "references": [],
+                    }
+                ],
+                "warnings": [],
+            },
+            CodexD2Node.O0_CANDIDATE_C3: {
+                "candidates": [
+                    {
+                        "candidate_id": "U1",
+                        "candidate": "C3 candidate",
+                        "reason": "material",
+                        "references": [],
+                    }
+                ],
+                "warnings": [],
+            },
+        },
+        {
+            CodexD2Node.O0_CANDIDATE_C1: "c1",
+            CodexD2Node.O0_CANDIDATE_C3: "c3",
+        },
+    )
+
+    c1_candidates = context["c1"]["candidates"]
+    c3_candidates = context["c3"]["candidates"]
+    assert isinstance(c1_candidates, list) and isinstance(c1_candidates[0], dict)
+    assert isinstance(c3_candidates, list) and isinstance(c3_candidates[0], dict)
+    assert c1_candidates[0]["candidate_ref"] == "C1:U1"
+    assert c3_candidates[0]["candidate_ref"] == "C3:U1"
 
 
 class _CountingRemoteRepository(InMemoryCodexRuntimeRepository):
@@ -233,13 +276,22 @@ class _Document2Worker:
                         "core_question": "Can demand become durable earnings?",
                         "boundary_reasoning": "Candidates share one demand-to-earnings system.",
                         "candidate_units": [
-                            {"candidate_id": "U-C1", "candidate": "C1 expectation"},
-                            {"candidate_id": "U-C3", "candidate": "C3 expectation"},
+                            {
+                                "candidate_ref": "C1:U-C1",
+                                "candidate_id": "U-C1",
+                                "candidate": "C1 expectation",
+                            },
+                            {
+                                "candidate_ref": "C3:U-C3",
+                                "candidate_id": "U-C3",
+                                "candidate": "C3 expectation",
+                            },
                         ],
                     }
                 ],
                 "unassigned_candidates": [
                     {
+                        "candidate_ref": "C5:U-C5",
                         "candidate_id": "U-C5",
                         "candidate": "C5 expectation",
                         "reason": (
@@ -261,7 +313,7 @@ class _Document2Worker:
                 "targeted_feedback": [
                     {
                         "feedback_id": f"{role}-R1",
-                        "target": "S1 / U-C1",
+                        "target": "S1 / C1:U-C1",
                         "issue": "Horizon needs an explicit boundary.",
                         "reasoning": "The domain report separates near and long-term transmission.",
                         "references": ["D1-O1"],
@@ -345,6 +397,33 @@ class _Document2Worker:
             # A legal O1 structural refinement must flow forward without an orchestration gate.
             shell["core_question"] = "Can durable AI demand convert into cash earnings?"
         return cast(dict[str, object], shell)
+
+
+class _TwoShellDocument2Worker(_Document2Worker):
+    async def _output(self, request: WorkerRunRequest) -> dict[str, object]:
+        output = await super()._output(request)
+        if request.node is not CodexD2Node.O0_FINALIZATION:
+            return output
+        return {
+            **output,
+            "shells": [
+                *cast(list[dict[str, object]], output["shells"]),
+                {
+                    "shell_id": "供应执行与盈利边界",
+                    "core_question": "Can supply execution support the earnings path?",
+                    "boundary_rule": (
+                        "Keep manufacturing execution separate from demand conversion."
+                    ),
+                    "units": [
+                        {
+                            "expectation_id": "供应执行形成可售产出",
+                            "proposition": "Supply execution produces saleable output on schedule.",
+                            "horizon": "next six quarters",
+                        }
+                    ],
+                },
+            ],
+        }
 
 
 class _FailGapOnceWorker(_Document2Worker):
@@ -631,6 +710,22 @@ async def test_full_document2_workflow_resumes_d1_and_publishes_with_unresolved_
         "original-c5-thread",
     }
     synthesis = next(item for item in worker.requests if item.node is CodexD2Node.O0_SYNTHESIS)
+    synthesis_context_file = await workspace.read_text(
+        synthesis.run_id,
+        f"attempts/{synthesis.attempt_id}/input/context.json",
+    )
+    synthesis_context = json.loads(synthesis_context_file.content or "{}")
+    candidate_refs = {
+        candidate["candidate_ref"]
+        for candidate_set in synthesis_context["candidate_sets"].values()
+        for candidate in candidate_set["candidates"]
+    }
+    assert candidate_refs == {
+        "C1:U-C1",
+        "C3:U-C3",
+        "C5:U-C5",
+        "NARRATIVE:U-NARRATIVE",
+    }
     finalization = next(
         item for item in worker.requests if item.node is CodexD2Node.O0_FINALIZATION
     )
@@ -663,6 +758,55 @@ async def test_full_document2_workflow_resumes_d1_and_publishes_with_unresolved_
     assert checkpoint is not None
     shell_state = next(iter(checkpoint.shell_runs.values()))
     assert len(shell_state.snapshot_paths) == 4
+
+
+@pytest.mark.asyncio
+async def test_every_o1_shell_context_contains_complete_o0_finalization(
+    tmp_path: Path,
+) -> None:
+    repository, workspace, source_run_id = await _global_fixture(tmp_path)
+    worker = _TwoShellDocument2Worker(workspace)
+    await CodexDocument2Orchestrator(
+        worker=worker,
+        workspace=workspace,
+        repository=repository,
+        narrative_provider=_NarrativeProvider(InputAvailability.ABSENT),
+        max_attempts=1,
+    ).run(
+        Document2RunRequest(
+            run_id="document2-complete-o0-context",
+            source_global_run_id=source_run_id,
+            as_of=AS_OF - timedelta(days=30),
+        )
+    )
+
+    expected_shell_ids = {"AI需求向盈利兑现", "供应执行与盈利边界"}
+    assert {request.cutoff_at for request in worker.requests} == {AS_OF}
+    o1_requests = [item for item in worker.requests if item.agent_role.value.startswith("o1_")]
+    assert len(o1_requests) == 8
+    for request in o1_requests:
+        context_file = await workspace.read_text(
+            request.run_id,
+            f"attempts/{request.attempt_id}/input/context.json",
+        )
+        context = json.loads(context_file.content or "{}")
+        assert {
+            shell["shell_id"] for shell in context["o0_finalization"]["shells"]
+        } == expected_shell_ids
+        assert context["canonical_shell"]["shell_id"] in expected_shell_ids
+        assert context["research_cutoff_at"] == AS_OF.isoformat()
+        assert context["source_global_research_published_at"] == AS_OF.isoformat()
+        assert context["o0_finalization"]["finalization_note"] == [
+            "Accepted the reviewers' horizon clarification."
+        ]
+    prepared_file = await workspace.read_text(
+        "document2-complete-o0-context", "context/document2/prepared_inputs.json"
+    )
+    prepared = json.loads(prepared_file.content or "{}")
+    assert prepared["as_of"] == AS_OF.isoformat().replace("+00:00", "Z")
+    assert (
+        "effective research cutoff was raised" in prepared["manifest"]["global_research"]["warning"]
+    )
 
 
 @pytest.mark.asyncio
@@ -1018,7 +1162,9 @@ async def test_document2_pilot_bootstrap_reads_and_caches_horizontal_bundle(
 
 
 @pytest.mark.asyncio
-async def test_global_publish_automatically_queues_document2(tmp_path: Path) -> None:
+async def test_global_publish_waits_for_total_initialization_before_document2(
+    tmp_path: Path,
+) -> None:
     repository = InMemoryCodexRuntimeRepository()
     source = GlobalResearchBundle(
         run_id="global-auto",
@@ -1045,11 +1191,8 @@ async def test_global_publish_automatically_queues_document2(tmp_path: Path) -> 
         GlobalResearchRunRequest(run_id="global-auto", ticker="NVDA", research_brief="test")
     )
     await service._tasks[str(started["run_id"])]  # noqa: SLF001
-    document2_tasks = [task for key, task in service._tasks.items() if key != "global-auto"]
-    await document2_tasks[0]
-    assert len(document2.requests) == 1
-    assert document2.requests[0].source_global_run_id == "global-auto"
-    assert document2.requests[0].as_of == AS_OF
+    assert set(service._tasks) == {"global-auto"}
+    assert document2.requests == []
 
 
 def test_sqlite_round_trips_document2_bundle(tmp_path: Path) -> None:

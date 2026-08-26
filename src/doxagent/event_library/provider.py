@@ -3,19 +3,22 @@
 from __future__ import annotations
 
 import hashlib
-import json
 from datetime import datetime
 from pathlib import Path
-from typing import Any
 
 from pydantic import Field
 
-from doxagent.event_library.compiler import EventLibraryViewCompiler
+from doxagent.event_library.compiler import (
+    KNOWN_EVENT_INDEX_CONTRACT_VERSION,
+    REFERENCE_VIEW_CONTRACT_VERSION,
+    EventLibraryViewCompiler,
+)
 from doxagent.event_library.contracts import CanonicalEvent, StrictModel
 from doxagent.event_library.repository import EventLibraryRepository
 
 
 class KnownEventIndexSnapshot(StrictModel):
+    contract_version: str = KNOWN_EVENT_INDEX_CONTRACT_VERSION
     ticker: str
     version: int = Field(ge=1)
     published_at: datetime | None
@@ -30,17 +33,18 @@ class EventDetailSnapshot(StrictModel):
 
 
 class ReferenceEventViewSnapshot(StrictModel):
+    contract_version: str = REFERENCE_VIEW_CONTRACT_VERSION
     ticker: str
     version: int = Field(ge=1)
     published_at: datetime | None
-    reference_view: dict[str, Any]
+    reference_view: str
     sha256: str
 
 
 class PublishedEventLibraryReader:
     """Open only a ticker's Published SQLite view; never expose working state."""
 
-    interface_version = "event-library-read-v1"
+    interface_version = "event-library-read-v2"
     read_only = True
 
     def __init__(self, root: str | Path, *, market: str = "US") -> None:
@@ -53,17 +57,19 @@ class PublishedEventLibraryReader:
             return None
         return EventLibraryRepository(path, read_only=True)
 
-    def known_index(self, ticker: str) -> KnownEventIndexSnapshot | None:
+    def known_index(
+        self, ticker: str, *, version: int | None = None
+    ) -> KnownEventIndexSnapshot | None:
         repository = self._repository(ticker)
         if repository is None:
             return None
-        version, published_at = repository.published_metadata(ticker)
-        if version == 0:
+        selected, published_at = repository.published_metadata(ticker, version)
+        if selected == 0:
             return None
-        payload = EventLibraryViewCompiler(repository).known_event_index(ticker, version)
+        payload = EventLibraryViewCompiler(repository).known_event_index(ticker, selected)
         return KnownEventIndexSnapshot(
             ticker=ticker.upper(),
-            version=version,
+            version=selected,
             published_at=published_at,
             known_event_index=payload,
             sha256=hashlib.sha256(payload.encode("utf-8")).hexdigest(),
@@ -85,19 +91,20 @@ class PublishedEventLibraryReader:
             events=[event for event in events if event is not None],
         )
 
-    def reference_view(self, ticker: str) -> ReferenceEventViewSnapshot | None:
+    def reference_view(
+        self, ticker: str, *, version: int | None = None
+    ) -> ReferenceEventViewSnapshot | None:
         repository = self._repository(ticker)
         if repository is None:
             return None
-        version, published_at = repository.published_metadata(ticker)
-        if version == 0:
+        selected, published_at = repository.published_metadata(ticker, version)
+        if selected == 0:
             return None
-        payload = EventLibraryViewCompiler(repository).reference_view(ticker, version)
-        encoded = json.dumps(payload, ensure_ascii=False, sort_keys=True)
+        payload = EventLibraryViewCompiler(repository).reference_view(ticker, selected)
         return ReferenceEventViewSnapshot(
             ticker=ticker.upper(),
-            version=version,
+            version=selected,
             published_at=published_at,
             reference_view=payload,
-            sha256=hashlib.sha256(encoded.encode("utf-8")).hexdigest(),
+            sha256=hashlib.sha256(payload.encode("utf-8")).hexdigest(),
         )

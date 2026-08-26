@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
 
+from cdecr.registry import SQLiteCDECRRegistry
 from doxagent.cdecr_integration.activity import project_runtime_activity
+from tests.cdecr.test_registry import atomic, mention, package, source
 
 
 class ActivityRegistry:
@@ -55,3 +58,41 @@ def test_activity_uses_latest_source_published_at_and_package_active_members() -
     assert by_package["P1"].is_active is True
     assert by_package["P2"].active_atomic_count == 0
     assert by_package["P2"].is_active is False
+
+
+def test_registry_freezes_60_day_eligibility_for_atomic_and_package_views(
+    tmp_path: Path,
+) -> None:
+    registry = SQLiteCDECRRegistry(tmp_path / "runtime.sqlite3")
+    registry.initialize()
+    as_of = datetime(2026, 8, 24, 12, tzinfo=UTC)
+    registry.save_source(
+        source("S60").model_copy(update={"published_at": as_of - timedelta(days=60)}),
+        fingerprint="a" * 64,
+    )
+    registry.save_source(
+        source("S61").model_copy(update={"published_at": as_of - timedelta(days=61)}),
+        fingerprint="b" * 64,
+    )
+    registry.save_mention(mention("M60", "S60"))
+    registry.save_mention(mention("M61", "S61"))
+    registry.save_atomic_event(atomic(event_id="A60", mention_ids=["M60"]))
+    registry.save_atomic_event(atomic(event_id="A61", mention_ids=["M61"]))
+    registry.save_package(
+        package().model_copy(
+            update={"package_id": "P1", "member_event_ids": ["A60", "A61"]}
+        )
+    )
+
+    artifact = registry.activate_runtime_eligibility(as_of=as_of, days=60)
+    assert artifact["eligible_atomic_ids"] == ["A60"]
+    assert [item.event_id for item in registry.list_current_atomic_events(limit=100)] == [
+        "A60"
+    ]
+    assert registry.list_current_packages(limit=100)[0].member_event_ids == ["A60"]
+    assert registry.get_current_atomic_event("A61") is not None  # still queryable, not deleted
+    registry.deactivate_runtime_eligibility()
+    assert {item.event_id for item in registry.list_current_atomic_events(limit=100)} == {
+        "A60",
+        "A61",
+    }

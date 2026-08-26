@@ -22,6 +22,7 @@ from doxagent.event_library.repository import EventLibraryRepository
 from doxagent.event_library.service import EventLibraryService
 from doxagent.workflows.codex_event_library.remote_runner import (
     RemoteEventLibraryInitializer,
+    _infer_unfinished_attempt,
     _resolve_phase_attempts,
 )
 from doxagent.workflows.codex_event_library.schema import (
@@ -62,6 +63,16 @@ def test_failed_phase_resumes_as_new_immutable_attempt_and_repairs_dependencies(
     assert resolved[1]["prior_attempt_paths"] == [
         "attempts/o2-survey-retry-001/output/work"
     ]
+    inferred = _infer_unfinished_attempt(
+        [
+            "attempts/o2-survey/input/task.json",
+            "attempts/o2-survey-retry-001/input/task.json",
+        ],
+        completed=[],
+    )
+    assert inferred == "o2-survey-retry-001"
+    second = _resolve_phase_attempts(phases, completed=[], failed_attempt_id=inferred)
+    assert second[0]["attempt_id"] == "o2-survey-retry-002"
 
 
 class AsyncLocalWorkspace:
@@ -113,7 +124,6 @@ class FakeO2Worker:
                         "proposition": "AMD announced product A.",
                         "assertion_state": "ACTUAL",
                         "subject_time": "2026-08-23",
-                        "entities": ["AMD"],
                         "consumes_delta_ids": ["D1"],
                     },
                     {
@@ -121,7 +131,6 @@ class FakeO2Worker:
                         "proposition": "AMD announced product B.",
                         "assertion_state": "ACTUAL",
                         "subject_time": "2026-08-23",
-                        "entities": ["AMD"],
                         "consumes_delta_ids": ["D2"],
                     },
                 ],

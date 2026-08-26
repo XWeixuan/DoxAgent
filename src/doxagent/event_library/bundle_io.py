@@ -3,13 +3,31 @@
 from __future__ import annotations
 
 import json
+import re
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
 from doxagent.event_library.contracts import (
+    CanonicalEventRevision,
     CanonicalRevisionBundle,
     CanonicalRevisionBundleManifest,
 )
+
+
+@dataclass(frozen=True)
+class BundleLoadIssue:
+    code: str
+    message: str
+    item_id: str | None = None
+
+
+@dataclass(frozen=True)
+class TolerantBundleLoadResult:
+    bundle: CanonicalRevisionBundle
+    issues: list[BundleLoadIssue] = field(default_factory=list)
+    invalid_event_paths: list[str] = field(default_factory=list)
+    invalid_delta_ids: list[str] = field(default_factory=list)
 
 
 class RevisionBundleIO:
@@ -26,7 +44,11 @@ class RevisionBundleIO:
             candidate = (root / str(relative)).resolve()
             if root.resolve() not in candidate.parents:
                 raise ValueError("Bundle event path escapes the Bundle root")
-            events.append(json.loads(candidate.read_text(encoding="utf-8")))
+            events.append(
+                RevisionBundleIO._without_retired_fact_entities(
+                    json.loads(candidate.read_text(encoding="utf-8"))
+                )
+            )
         retirements_path = root / "retirements.json"
         residual_path = root / "residual_delta_resolutions.jsonl"
         retirements = (
@@ -41,11 +63,128 @@ class RevisionBundleIO:
                 for line in residual_path.read_text(encoding="utf-8").splitlines()
                 if line.strip()
             ]
+        review_decisions = RevisionBundleIO._jsonl(
+            root / "reference_review_decisions.jsonl"
+        )
         return CanonicalRevisionBundle.model_validate(
             {
                 **manifest,
                 "event_revisions": events,
                 "event_retirements": retirements,
                 "residual_delta_resolutions": residuals,
+                "reference_review_decisions": review_decisions,
             }
         )
+
+    @staticmethod
+    def load_tolerant(path: str | Path) -> TolerantBundleLoadResult:
+        """Keep a strict manifest while degrading malformed Event files locally."""
+
+        root = Path(path).resolve()
+        manifest_contract = CanonicalRevisionBundleManifest.model_validate_json(
+            (root / "manifest.json").read_text(encoding="utf-8")
+        )
+        manifest = manifest_contract.model_dump(mode="json", exclude={"event_revisions"})
+        events: list[dict[str, Any]] = []
+        issues: list[BundleLoadIssue] = []
+        invalid_paths: list[str] = []
+        invalid_delta_ids: set[str] = set()
+        for relative in manifest_contract.event_revisions:
+            candidate = (root / relative).resolve()
+            if root not in candidate.parents:
+                raise ValueError("Bundle event path escapes the Bundle root")
+            raw = candidate.read_text(encoding="utf-8")
+            try:
+                payload = RevisionBundleIO._without_retired_fact_entities(json.loads(raw))
+                event = CanonicalEventRevision.model_validate(payload)
+            except Exception as exc:
+                invalid_paths.append(relative)
+                discovered = sorted(set(re.findall(r'\bD[1-9]\d*\b', raw)))
+                invalid_delta_ids.update(discovered)
+                issues.append(
+                    BundleLoadIssue(
+                        code="EVENT_FILE_INVALID",
+                        message=f"{relative}: {type(exc).__name__}",
+                        item_id=relative,
+                    )
+                )
+                continue
+            events.append(event.model_dump(mode="json"))
+        retirements_path = root / "retirements.json"
+        retirements = (
+            json.loads(retirements_path.read_text(encoding="utf-8"))
+            if retirements_path.exists()
+            else []
+        )
+        residuals, normalized_residual_count = RevisionBundleIO._tolerant_residuals(
+            root / "residual_delta_resolutions.jsonl"
+        )
+        if normalized_residual_count:
+            issues.append(
+                BundleLoadIssue(
+                    code="RESIDUAL_WIRE_NORMALIZED",
+                    message=(
+                        f"Normalized {normalized_residual_count} residual records from the "
+                        "workspace alias to the frozen resolution contract"
+                    ),
+                )
+            )
+        review_decisions = RevisionBundleIO._jsonl(
+            root / "reference_review_decisions.jsonl"
+        )
+        bundle = CanonicalRevisionBundle.model_validate(
+            {
+                **manifest,
+                "event_revisions": events,
+                "event_retirements": retirements,
+                "residual_delta_resolutions": residuals,
+                "reference_review_decisions": review_decisions,
+            }
+        )
+        return TolerantBundleLoadResult(
+            bundle=bundle,
+            issues=issues,
+            invalid_event_paths=invalid_paths,
+            invalid_delta_ids=sorted(invalid_delta_ids),
+        )
+
+    @staticmethod
+    def _without_retired_fact_entities(payload: Any) -> Any:
+        """Normalize legacy Bundle Facts into the current Canonical contract."""
+
+        if not isinstance(payload, dict):
+            return payload
+        normalized = dict(payload)
+        facts = normalized.get("facts")
+        if isinstance(facts, list):
+            normalized["facts"] = [
+                ({key: value for key, value in fact.items() if key != "entities"})
+                if isinstance(fact, dict)
+                else fact
+                for fact in facts
+            ]
+        return normalized
+
+    @staticmethod
+    def _jsonl(path: Path) -> list[dict[str, Any]]:
+        if not path.exists():
+            return []
+        return [
+            json.loads(line)
+            for line in path.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ]
+
+    @staticmethod
+    def _tolerant_residuals(path: Path) -> tuple[list[dict[str, Any]], int]:
+        rows = RevisionBundleIO._jsonl(path)
+        output: list[dict[str, Any]] = []
+        normalized = 0
+        allowed = {"delta_id", "resolution", "target_event_id", "target_fact_id"}
+        for row in rows:
+            payload = dict(row)
+            if "resolution" not in payload and "disposition" in payload:
+                payload["resolution"] = payload["disposition"]
+                normalized += 1
+            output.append({key: value for key, value in payload.items() if key in allowed})
+        return output, normalized

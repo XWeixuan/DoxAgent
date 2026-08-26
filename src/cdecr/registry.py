@@ -12,7 +12,7 @@ import uuid
 from array import array
 from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from time import perf_counter
 from typing import Any, Literal
@@ -353,6 +353,63 @@ class SQLiteCDECRRegistry:
             "write_lock_wait_ms": 0.0,
             "write_wall_ms": 0.0,
         }
+        self._runtime_eligibility_lock = threading.RLock()
+        self._runtime_eligible_atomic_ids: set[str] | None = None
+        self._runtime_eligibility_cutoff: datetime | None = None
+
+    def activate_runtime_eligibility(
+        self, *, as_of: datetime, days: int = 60
+    ) -> dict[str, Any]:
+        """Freeze the Atomic set used by every recall/list route in one Bulk Epoch."""
+
+        if as_of.tzinfo is None or as_of.utcoffset() is None:
+            raise ValueError("as_of must be timezone-aware")
+        cutoff = as_of.astimezone(UTC) - timedelta(days=days)
+        with self._runtime_eligibility_lock:
+            self._runtime_eligible_atomic_ids = None
+            eligible: set[str] = set()
+            atomics = self.list_current_atomic_events(limit=10_000)
+            for atomic in atomics:
+                for mention_id in atomic.mention_ids:
+                    mention = self.get_mention(mention_id)
+                    source = None if mention is None else self.get_source(mention.message_id)
+                    if source is not None and source.published_at >= cutoff:
+                        eligible.add(atomic.event_id)
+                        break
+            self._runtime_eligible_atomic_ids = eligible
+            self._runtime_eligibility_cutoff = cutoff
+        return {
+            "contract_version": "runtime_activity_v1",
+            "as_of": as_of.astimezone(UTC).isoformat(),
+            "cutoff": cutoff.isoformat(),
+            "eligible_atomic_ids": sorted(eligible),
+        }
+
+    def runtime_eligibility_snapshot(self) -> dict[str, Any] | None:
+        with self._runtime_eligibility_lock:
+            if self._runtime_eligible_atomic_ids is None:
+                return None
+            return {
+                "contract_version": "runtime_activity_v1",
+                "cutoff": (
+                    None
+                    if self._runtime_eligibility_cutoff is None
+                    else self._runtime_eligibility_cutoff.isoformat()
+                ),
+                "eligible_atomic_ids": sorted(self._runtime_eligible_atomic_ids),
+            }
+
+    def deactivate_runtime_eligibility(self) -> None:
+        with self._runtime_eligibility_lock:
+            self._runtime_eligible_atomic_ids = None
+            self._runtime_eligibility_cutoff = None
+
+    def _runtime_event_is_eligible(self, event_id: str) -> bool:
+        with self._runtime_eligibility_lock:
+            return (
+                self._runtime_eligible_atomic_ids is None
+                or event_id in self._runtime_eligible_atomic_ids
+            )
 
     @contextmanager
     def _write_connection(self) -> Iterator[sqlite3.Connection]:
@@ -1442,7 +1499,13 @@ class SQLiteCDECRRegistry:
                 """,
                 (limit,),
             ).fetchall()
-        return [AtomicEvent.model_validate_json(str(row["payload_json"])) for row in rows]
+        return [
+            event
+            for row in rows
+            if self._runtime_event_is_eligible(
+                (event := AtomicEvent.model_validate_json(str(row["payload_json"]))).event_id
+            )
+        ]
 
     def get_atomic_event_for_mention(self, mention_id: str) -> AtomicEvent | None:
         with self._connection() as connection:
@@ -1527,7 +1590,17 @@ class SQLiteCDECRRegistry:
                 """,
                 (limit,),
             ).fetchall()
-        return [EventPackage.model_validate_json(str(row["payload_json"])) for row in rows]
+        packages = [EventPackage.model_validate_json(str(row["payload_json"])) for row in rows]
+        if self._runtime_eligible_atomic_ids is None:
+            return packages
+        output: list[EventPackage] = []
+        for package in packages:
+            members = [
+                item for item in package.member_event_ids if self._runtime_event_is_eligible(item)
+            ]
+            if members:
+                output.append(package.model_copy(update={"member_event_ids": members}))
+        return output
 
     def list_packages_for_event(self, event_id: str) -> list[EventPackage]:
         with self._connection() as connection:
@@ -1700,7 +1773,13 @@ class SQLiteCDECRRegistry:
                     ).fetchall(),
                     "SOURCE_FINGERPRINT",
                 )
-        return found
+        if self._runtime_eligible_atomic_ids is None:
+            return found
+        return {
+            event_id: routes
+            for event_id, routes in found.items()
+            if self._runtime_event_is_eligible(event_id)
+        }
 
     def list_sources(
         self,
@@ -1963,6 +2042,16 @@ class SQLiteCDECRRegistry:
             mention_ids=event.mention_ids,
         )
         self._refresh_atomic_recall(event)
+        with self._runtime_eligibility_lock:
+            cutoff = self._runtime_eligibility_cutoff
+            eligible = self._runtime_eligible_atomic_ids
+            if cutoff is not None and eligible is not None:
+                for mention_id in event.mention_ids:
+                    mention = self.get_mention(mention_id)
+                    source = None if mention is None else self.get_source(mention.message_id)
+                    if source is not None and source.published_at >= cutoff:
+                        eligible.add(event.event_id)
+                        break
         return saved
 
     def save_package(self, package: EventPackage) -> bool:

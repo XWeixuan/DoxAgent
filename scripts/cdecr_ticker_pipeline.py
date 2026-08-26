@@ -54,9 +54,14 @@ def _parser() -> argparse.ArgumentParser:
     initialize.add_argument("--as-of", type=_timestamp, required=True)
     initialize.add_argument("--export-dir", type=Path, required=True)
     initialize.add_argument("--prepare-only", action="store_true")
+    initialize.add_argument(
+        "--resume-finalized-only",
+        action="store_true",
+        help="Hard fail unless the saved CDECR epoch is already FINALIZED; never rerun CDECR.",
+    )
     initialize.add_argument("--max-sources", type=int, default=500)
     initialize.add_argument("--sample-seed", type=int, default=20260824)
-    initialize.add_argument("--wave-size", type=int, default=30)
+    initialize.add_argument("--wave-size", type=int, default=100)
     update = subparsers.add_parser("update")
     update.add_argument("--market", required=True)
     update.add_argument("--ticker", required=True)
@@ -70,7 +75,7 @@ def _parser() -> argparse.ArgumentParser:
         "--export-dir", type=Path, default=Path(".tmp/cdecr-tickers/published")
     )
     update.add_argument("--prepare-only", action="store_true")
-    update.add_argument("--wave-size", type=int, default=30)
+    update.add_argument("--wave-size", type=int, default=100)
     status = subparsers.add_parser("status")
     status.add_argument("--market", required=True)
     status.add_argument("--ticker", required=True)
@@ -151,6 +156,7 @@ async def _main() -> int:
             as_of=args.as_of,
             export_dir=args.export_dir,
             run_o2=not args.prepare_only,
+            resume_finalized_only=args.resume_finalized_only,
         )
         print(json.dumps(result.model_dump(mode="json"), ensure_ascii=False, indent=2, default=str))
         return 0

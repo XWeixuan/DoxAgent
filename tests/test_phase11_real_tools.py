@@ -253,26 +253,27 @@ def test_sec_company_facts_keeps_full_raw_but_exposes_compact_paged_output() -> 
     page_alias = observations.aliases.alias_for(page_block.block_id)
     assert page_alias is not None
     assert observations.read(page_alias)[0].content == result.output["fact_pages"]["page_0001"]
-    assert max(
-        len(
-            json.dumps(
-                block.content,
-                ensure_ascii=False,
-                sort_keys=True,
-                separators=(",", ":"),
+    assert (
+        max(
+            len(
+                json.dumps(
+                    block.content,
+                    ensure_ascii=False,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                )
             )
+            for block in observations.block_store.blocks_for_call("sec")
         )
-        for block in observations.block_store.blocks_for_call("sec")
-    ) <= 1_200
+        <= 1_200
+    )
     assert index.delivery_mode == "full"
     selected_paths = set(index.selected_refs)
     assert "obs_sec::/fact_directory" in selected_paths
     assert any(ref.startswith("obs_sec::/key_facts/") for ref in selected_paths)
     outline = index.outline(observations.block_store, observations.aliases)
     assert "group_catalog" not in outline
-    catalog_refs = {
-        ref for group in index.catalog_groups for ref in group.member_refs
-    }
+    catalog_refs = {ref for group in index.catalog_groups for ref in group.member_refs}
     content_refs = {
         block.ref
         for block in observations.block_store.blocks_for_call("sec")
@@ -820,6 +821,14 @@ def test_sec_10q_defaults_and_management_route_are_form_aware() -> None:
     management = SecManagementDisclosuresClient(
         _settings(), TTLCache(), client=httpx.Client(transport=transport)
     ).call(_request("sec.management_disclosures", {"cik": "1045810", "form": "10-Q"}))
+    management_alias = SecManagementDisclosuresClient(
+        _settings(), TTLCache(), client=httpx.Client(transport=transport)
+    ).call(
+        _request(
+            "sec.management_disclosures",
+            {"cik": "1045810", "form": "10-Q", "sections": ["MD&A", "Risk Factors"]},
+        )
+    )
 
     assert sections.status is ResultStatus.SUCCEEDED
     assert sections.output["form"] == "10-Q"
@@ -833,9 +842,12 @@ def test_sec_10q_defaults_and_management_route_are_form_aware() -> None:
     }
     assert management.status is ResultStatus.SUCCEEDED
     assert management.output["record_type"] == "management_discussion_and_analysis"
-    assert management.output["sections"][0]["section"] == (
-        "Management's Discussion and Analysis"
-    )
+    assert management.output["sections"][0]["section"] == ("Management's Discussion and Analysis")
+    assert management_alias.status is ResultStatus.SUCCEEDED
+    assert {item["section"] for item in management_alias.output["sections"]} == {
+        "Management's Discussion and Analysis",
+        "Risk Factors",
+    }
 
 
 def test_sec_xbrl_uses_governed_fallback_and_partial_for_missing_or_stale() -> None:
@@ -1002,11 +1014,7 @@ def test_macro_and_market_provider_clients_parse_fixture_payloads() -> None:
         client=_json_client(
             {
                 "status": "REQUEST_SUCCEEDED",
-                "Results": {
-                    "series": [
-                        {"seriesID": "CUSR0000SA0", "data": [{"year": "2026"}]}
-                    ]
-                },
+                "Results": {"series": [{"seriesID": "CUSR0000SA0", "data": [{"year": "2026"}]}]},
             }
         ),
     )
@@ -1086,9 +1094,7 @@ def test_fred_isolates_http_400_series_and_returns_partial_success() -> None:
         client=httpx.Client(transport=httpx.MockTransport(handler)),
     )
 
-    result = fred.call(
-        _request("fred.series_observations", {"series_ids": ["GDP", "DGS10"]})
-    )
+    result = fred.call(_request("fred.series_observations", {"series_ids": ["GDP", "DGS10"]}))
 
     assert result.status is ResultStatus.PARTIAL
     assert sorted(result.output["series"]) == ["DGS10"]
@@ -1133,9 +1139,7 @@ def test_twelvedata_daily_ohlcv_accepts_ticker_alias_for_symbol() -> None:
         ),
     )
 
-    result = twelvedata.call(
-        _request("twelvedata.daily_ohlcv", {"ticker": "WDC", "outputsize": 5})
-    )
+    result = twelvedata.call(_request("twelvedata.daily_ohlcv", {"ticker": "WDC", "outputsize": 5}))
 
     assert result.status is ResultStatus.SUCCEEDED
     assert result.output["symbol"] == "WDC"

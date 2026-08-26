@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import time
+from datetime import UTC, datetime
 from typing import Any, cast
 
 from doxagent.models import ResultStatus
@@ -226,8 +227,38 @@ class FinnhubCompanyNewsEventsClient(_FinnhubCompositeClient):
             api_key = _require(self.settings.finnhub_api_key, "FINNHUB_API_KEY")
             symbol = _input_str_any(request, ("symbol", "ticker"), request.ticker).upper()
             date_from = _input_str(request, "from", _input_str(request, "date_from", "2020-01-01"))
-            date_to = _input_str(request, "to", _input_str(request, "date_to", "2030-01-01"))
+            requested_to = _input_str(request, "to", _input_str(request, "date_to", "2030-01-01"))
+            cutoff_date = _metadata_cutoff_date(request)
+            date_to = min(requested_to, cutoff_date) if cutoff_date else requested_to
             row_limit = _bounded_int(request.input.get("limit", 10), 1, 50)
+            if date_from > date_to:
+                return self._partial(
+                    request,
+                    code="requested_window_after_cutoff",
+                    message="The requested Finnhub news window begins after the research cutoff.",
+                    retryable=False,
+                    details={
+                        "requested_from": date_from,
+                        "requested_to": requested_to,
+                        "cutoff_date": cutoff_date,
+                    },
+                    output={
+                        "provider": "finnhub",
+                        "symbol": symbol,
+                        "company_news_events": {},
+                        "provider_errors": [],
+                        "requested_window": {"from": date_from, "to": requested_to},
+                        "applied_window": {"from": date_from, "to": date_to},
+                    },
+                    raw=None,
+                    source_kind="external_report",
+                    source_id=f"finnhub:{self.source_scope}:{symbol}",
+                    title=self.title,
+                    summary="The requested company-news window was outside the research cutoff.",
+                    source_scope=self.source_scope,
+                    confidence=0.7,
+                    metadata={"symbol": symbol, "cutoff_date": cutoff_date},
+                )
             endpoints: dict[str, tuple[str, dict[str, object]]] = {
                 "company_news": ("/company-news", {"from": date_from, "to": date_to}),
             }
@@ -239,6 +270,18 @@ class FinnhubCompanyNewsEventsClient(_FinnhubCompositeClient):
                 endpoints,
                 row_limit=row_limit,
             )
+            filtered_count = _filter_post_cutoff_company_news(data, cutoff_date)
+            if filtered_count:
+                issues.append(
+                    {
+                        "endpoint": "company_news",
+                        "code": "post_cutoff_records_filtered",
+                        "message": (
+                            f"Removed {filtered_count} company-news record(s) after the cutoff."
+                        ),
+                        "retryable": False,
+                    }
+                )
             result = self._result(
                 request,
                 symbol=symbol,
@@ -248,7 +291,12 @@ class FinnhubCompanyNewsEventsClient(_FinnhubCompositeClient):
                 summary="Retrieved Finnhub company-news and earnings-event records.",
             )
             if result.output:
+                result.output["requested_window"] = {"from": date_from, "to": requested_to}
                 result.output["applied_window"] = {"from": date_from, "to": date_to}
+                result.output["cutoff_filter"] = {
+                    "cutoff_date": cutoff_date,
+                    "filtered_record_count": filtered_count,
+                }
                 result.output["record_limit_per_endpoint"] = row_limit
                 result.output["usage_notice"] = (
                     "Finnhub news is a bounded discovery feed, not final-state evidence; verify "
@@ -257,6 +305,43 @@ class FinnhubCompanyNewsEventsClient(_FinnhubCompositeClient):
             return result
         except Exception as exc:
             return self._handle_exception(request, exc)
+
+
+def _metadata_cutoff_date(request: ToolRequest) -> str | None:
+    raw = request.metadata.get("cutoff_at")
+    if not isinstance(raw, str):
+        return None
+    try:
+        return datetime.fromisoformat(raw.replace("Z", "+00:00")).date().isoformat()
+    except ValueError:
+        return None
+
+
+def _filter_post_cutoff_company_news(data: JsonObject, cutoff_date: str | None) -> int:
+    if cutoff_date is None:
+        return 0
+    payload = data.get("company_news")
+    if not isinstance(payload, dict):
+        return 0
+    records = payload.get("records")
+    if not isinstance(records, list):
+        return 0
+    cutoff_end = datetime.fromisoformat(cutoff_date).replace(
+        hour=23, minute=59, second=59, tzinfo=UTC
+    )
+    kept: list[object] = []
+    filtered = 0
+    for record in records:
+        timestamp = record.get("datetime") if isinstance(record, dict) else None
+        if (
+            isinstance(timestamp, (int, float))
+            and datetime.fromtimestamp(timestamp, UTC) > cutoff_end
+        ):
+            filtered += 1
+            continue
+        kept.append(record)
+    payload["records"] = kept
+    return filtered
 
 
 class FinnhubTradeStreamClient:
@@ -459,9 +544,7 @@ def _project_finnhub_payload(
     return {"symbol": raw.get("symbol") or symbol, "records": projected}
 
 
-def _select_company_news(
-    records: list[JsonObject], *, symbol: str, limit: int
-) -> list[JsonObject]:
+def _select_company_news(records: list[JsonObject], *, symbol: str, limit: int) -> list[JsonObject]:
     selected: list[JsonObject] = []
     seen: set[str] = set()
     junk_phrases = (

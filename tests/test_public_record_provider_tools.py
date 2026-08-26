@@ -148,6 +148,7 @@ def test_ir_discovery_refuses_unallowlisted_host_and_is_read_only() -> None:
         good.output["candidate_urls"][0]["url"] == "https://investor.apple.com/news/earnings.html"
     )
     assert good.output["source_coordinates"]["state_written"] is False
+    requests_before_updates = len(seen)
     updates = IrOfficialUpdatesClient(_settings(), client=client).call(
         _request(
             "ir.official_updates",
@@ -156,6 +157,7 @@ def test_ir_discovery_refuses_unallowlisted_host_and_is_read_only() -> None:
     )
     assert updates.succeeded
     assert updates.output["updates"][0]["label"] == "Earnings release"
+    assert len(seen) == requests_before_updates + 1
 
 
 def test_ir_updates_follow_bounded_official_rss_discovery_chain() -> None:
@@ -170,8 +172,7 @@ def test_ir_updates_follow_bounded_official_rss_discovery_chain() -> None:
             return httpx.Response(
                 200,
                 text=(
-                    '<a href="https://news.apple.com/press_release.xml">'
-                    "Press Release RSS Feed</a>"
+                    '<a href="https://news.apple.com/press_release.xml">Press Release RSS Feed</a>'
                 ),
             )
         return httpx.Response(
@@ -201,6 +202,51 @@ def test_ir_updates_follow_bounded_official_rss_discovery_chain() -> None:
     assert result.output["updates"][0]["title"] == "Quarterly results"
     assert result.output["updates"][0]["published_at"].startswith("Wed, 20 May 2026")
     assert result.output["resolved_feed_url"] == "https://news.apple.com/press_release.xml"
+
+
+def test_ir_updates_retry_entry_and_skip_failed_candidate() -> None:
+    calls: dict[str, int] = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        path = request.url.path
+        calls[path] = calls.get(path, 0) + 1
+        if path == "/start":
+            if calls[path] == 1:
+                raise httpx.ConnectError("temporary TLS EOF", request=request)
+            return httpx.Response(
+                200,
+                text=('<a href="/bad.xml">Press release RSS</a><a href="/good.xml">News RSS</a>'),
+            )
+        if path == "/bad.xml":
+            return httpx.Response(503, text="temporary outage")
+        return httpx.Response(
+            200,
+            text=(
+                "<rss><channel><item><title>Quarterly results</title>"
+                "<link>https://investor.apple.com/releases/q1</link>"
+                "<pubDate>Wed, 20 May 2026 20:00:00 GMT</pubDate>"
+                "</item></channel></rss>"
+            ),
+        )
+
+    result = IrOfficialUpdatesClient(
+        _settings(),
+        client=httpx.Client(transport=httpx.MockTransport(handler)),
+    ).call(
+        _request(
+            "ir.official_updates",
+            {
+                "url": "https://investor.apple.com/start",
+                "official_domains": ["apple.com"],
+            },
+        )
+    )
+
+    assert result.status is ResultStatus.PARTIAL
+    assert result.output["updates"][0]["title"] == "Quarterly results"
+    assert result.output["resolved_feed_url"] == "https://investor.apple.com/good.xml"
+    assert result.error and result.error.code == "ir_partial_candidate_failure"
+    assert calls == {"/start": 2, "/bad.xml": 2, "/good.xml": 1}
 
 
 def test_sec_issuer_filings_preserves_legacy_cik_resolution_path() -> None:

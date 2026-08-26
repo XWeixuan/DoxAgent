@@ -889,13 +889,19 @@ class SecManagementDisclosuresClient(SecFilingSectionsClient):
                 if base_form in {"10-Q", "40-F"}
                 else ["Item 7"]
             )
+            requested_sections = request.input.get("sections") or defaults
+            sections = (
+                [_normalize_management_section(str(item)) for item in requested_sections]
+                if isinstance(requested_sections, list)
+                else defaults
+            )
             copied = ToolRequest.model_validate(
                 {
                     **request.model_dump(),
                     "input": {
                         **request.input,
                         "form": requested_form,
-                        "sections": request.input.get("sections") or defaults,
+                        "sections": sections,
                     },
                 }
             )
@@ -1007,6 +1013,17 @@ class SecManagementDisclosuresClient(SecFilingSectionsClient):
                 except Exception as exc:
                     result.output["exhibit_inventory_error"] = _sec_error_payload(exc)
         return result
+
+
+def _normalize_management_section(section: str) -> str:
+    normalized = re.sub(r"[^a-z0-9]+", "", section.casefold())
+    if normalized in {
+        "mda",
+        "managementdiscussionanalysis",
+        "managementsdiscussionanalysis",
+    }:
+        return "Management's Discussion and Analysis"
+    return section
 
 
 def parse_sec_sections(raw_text: str, target_sections: Iterable[str]) -> JsonObject:

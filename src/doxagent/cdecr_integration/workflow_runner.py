@@ -46,7 +46,9 @@ class CDECRWorkflowRunner:
         self.document_processor = document_processor
         self.bulk_epoch_engine = bulk_epoch_engine
 
-    def run(self, message_ids: Sequence[str]) -> CDECRWorkflowResult:
+    def run(
+        self, message_ids: Sequence[str], *, as_of: datetime | None = None
+    ) -> CDECRWorkflowResult:
         requested = list(dict.fromkeys(message_ids))
         if not requested:
             return CDECRWorkflowResult(
@@ -81,7 +83,29 @@ class CDECRWorkflowRunner:
                 eligible_document_count=0,
                 completed_at=datetime.now(UTC),
             )
-        self.bulk_epoch_engine.process_batch(eligible)
+        activation = getattr(self.registry, "activate_runtime_eligibility", None)
+        deactivation = getattr(self.registry, "deactivate_runtime_eligibility", None)
+        activity_payload = activation(as_of=as_of, days=60) if as_of and activation else None
+        try:
+            self.bulk_epoch_engine.process_batch(eligible)
+            epoch_id = self.bulk_epoch_engine.last_epoch_id
+            if epoch_id is not None and activity_payload is not None:
+                snapshot_reader = getattr(self.registry, "runtime_eligibility_snapshot", None)
+                final_payload = (
+                    snapshot_reader() if snapshot_reader is not None else activity_payload
+                ) or activity_payload
+                final_payload = {**activity_payload, **final_payload}
+                encoded = json.dumps(final_payload, ensure_ascii=False, sort_keys=True)
+                self.registry.save_bulk_epoch_artifact(
+                    epoch_id=epoch_id,
+                    artifact_kind="runtime_activity_v1",
+                    artifact_hash=hashlib.sha256(encoded.encode("utf-8")).hexdigest(),
+                    upstream_hash=epoch_id,
+                    payload=final_payload,
+                )
+        finally:
+            if deactivation is not None:
+                deactivation()
         epoch_id = self.bulk_epoch_engine.last_epoch_id
         if epoch_id is None:
             raise RuntimeError("Bulk Epoch engine completed without exposing epoch_id")

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import date, datetime
 from enum import StrEnum
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import Field, field_validator, model_validator
 
@@ -161,3 +161,46 @@ class TickerPipelineResult(StrictModel):
     delta_batch_id: str | None = None
     frozen_view_id: str | None = None
     published_library_version: int | None = Field(default=None, ge=1)
+
+
+class O2UpstreamContextManifest(StrictModel):
+    contract_version: Literal["o2-upstream-context-v1"] = "o2-upstream-context-v1"
+    ticker: str
+    unified_as_of: datetime
+    d1_run_id: str
+    d1_published_at: datetime
+    research_artifacts: dict[str, dict[str, Any]]
+    entity_relations: list[dict[str, Any]] = Field(default_factory=list)
+    future_nodes: list[dict[str, Any]] = Field(default_factory=list)
+    citation_manifest: dict[str, Any]
+    cdecr_epoch_id: str
+    runtime_snapshot_id: str
+    delta_batch_id: str
+
+
+class InitializationOrchestrationStage(StrEnum):
+    CREATED = "CREATED"
+    UPSTREAM_RUNNING = "UPSTREAM_RUNNING"
+    UPSTREAM_READY = "UPSTREAM_READY"
+    O2_RUNNING = "O2_RUNNING"
+    O2_PUBLISHED = "O2_PUBLISHED"
+    D2_RUNNING = "D2_RUNNING"
+    PUBLISHED = "PUBLISHED"
+    FAILED = "FAILED"
+
+
+class InitializationOrchestrationState(StrictModel):
+    run_id: str
+    market: str
+    ticker: str
+    as_of: datetime
+    stage: InitializationOrchestrationStage
+    d1_run_id: str
+    cdecr_job_id: str | None = None
+    o2_run_id: str | None = None
+    d2_run_id: str | None = None
+    event_library_version: int | None = None
+    event_library_sha256: str | None = None
+    event_library_published_at: datetime | None = None
+    error: str | None = None
+    updated_at: datetime
