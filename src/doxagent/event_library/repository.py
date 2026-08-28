@@ -26,8 +26,9 @@ from doxagent.event_library.contracts import (
     ReferenceReviewDecision,
     ReferenceReviewMode,
     ReferenceReviewReason,
+    ReferenceViewBasis,
 )
-from doxagent.event_library.reference_review import classify_review, occurrence_anchor
+from doxagent.event_library.reference_review import classify_review, event_review_anchor
 
 EVENT_LIBRARY_SCHEMA_VERSION = 2
 
@@ -734,6 +735,10 @@ class EventLibraryRepository:
 
         normalized = self._ticker(ticker)
         events = {item.event_id: item for item in self.published_events(normalized)}
+        superseded_by: dict[str, list[str]] = {}
+        for item in events.values():
+            if item.supersedes_event_id is not None:
+                superseded_by.setdefault(item.supersedes_event_id, []).append(item.event_id)
         with self._read() as connection:
             rows = connection.execute(
                 """
@@ -749,29 +754,69 @@ class EventLibraryRepository:
             event = events.get(event_id)
             if event is None:
                 continue
+            with self._read() as connection:
+                prior_row = connection.execute(
+                    """
+                    SELECT decision_json FROM reference_review_history
+                    WHERE ticker=? AND event_no=? ORDER BY reviewed_at DESC LIMIT 1
+                    """,
+                    (normalized, _numeric_id(event_id)),
+                ).fetchone()
+            prior_basis: ReferenceViewBasis | None = None
+            if prior_row is not None:
+                prior_payload = json.loads(str(prior_row["decision_json"]))
+                if prior_payload.get("reference_view_basis") is not None:
+                    prior_basis = ReferenceViewBasis(str(prior_payload["reference_view_basis"]))
+            candidate_anchor = (
+                None
+                if row["occurrence_anchor"] is None
+                else datetime.fromisoformat(str(row["occurrence_anchor"])).date()
+            )
+            last_reviewed = (
+                None
+                if row["last_reviewed_at"] is None
+                else datetime.fromisoformat(str(row["last_reviewed_at"]))
+            )
+            review_mode, review_reason, _computed_next = classify_review(
+                anchor=candidate_anchor,
+                as_of=as_of,
+                include_in_reference_view=event.include_in_reference_view,
+                last_reviewed_at=last_reviewed,
+            )
             candidates.append(
                 ReferenceReviewCandidate(
                     event_id=event_id,
+                    event_type=event.event_type,
                     occurred_at=event.occurred_at,
-                    occurrence_anchor=(
-                        None
-                        if row["occurrence_anchor"] is None
-                        else datetime.fromisoformat(str(row["occurrence_anchor"])).date()
-                    ),
+                    occurrence_time_precision=event.occurrence_time_precision,
+                    occurrence_anchor=candidate_anchor,
                     title=event.title,
+                    canonical_summary=event.canonical_summary,
                     known_event_summary=event.known_event_summary,
+                    facts=list(event.facts),
+                    subject_horizons=sorted(
+                        {
+                            str(fact.subject_time)
+                            for fact in event.facts
+                            if fact.subject_time not in {None, "SAME"}
+                        }
+                    ),
                     is_important=event.is_important,
                     include_in_reference_view=event.include_in_reference_view,
+                    prior_reference_view_basis=prior_basis,
                     related_event_ids=event.related_event_ids,
                     supersedes_event_id=event.supersedes_event_id,
-                    last_reviewed_at=(
-                        None
-                        if row["last_reviewed_at"] is None
-                        else datetime.fromisoformat(str(row["last_reviewed_at"]))
+                    supersedes_event_ids=(
+                        []
+                        if event.supersedes_event_id is None
+                        else [event.supersedes_event_id]
                     ),
+                    superseded_by_event_ids=sorted(superseded_by.get(event_id, [])),
+                    frozen_as_of=as_of,
+                    last_reviewed_at=last_reviewed,
                     next_review_at=datetime.fromisoformat(str(row["next_review_at"])),
-                    review_mode=ReferenceReviewMode(str(row["review_mode"])),
-                    candidate_reason=ReferenceReviewReason(str(row["candidate_reason"])),
+                    review_mode=review_mode,
+                    candidate_reason=review_reason,
                 )
             )
         return candidates
@@ -785,11 +830,29 @@ class EventLibraryRepository:
             ).fetchone()
         return int(row["count"] if row is not None else 0)
 
+    def latest_reference_view_basis(self, *, ticker: str, event_id: str) -> str | None:
+        """Return the last auditable basis without changing the stable Event wire."""
+
+        with self._read() as connection:
+            row = connection.execute(
+                """
+                SELECT decision_json FROM reference_review_history
+                WHERE ticker=? AND event_no=? ORDER BY reviewed_at DESC LIMIT 1
+                """,
+                (self._ticker(ticker), _numeric_id(event_id)),
+            ).fetchone()
+        if row is None:
+            return None
+        payload = json.loads(str(row["decision_json"]))
+        basis = payload.get("reference_view_basis")
+        return None if basis is None else str(basis)
+
     def publish_bundle(
         self,
         bundle: CanonicalRevisionBundle,
         *,
         source_bundle: CanonicalRevisionBundle | None = None,
+        frozen_as_of: datetime | None = None,
     ) -> PublicationResult:
         """Import a validator-approved Bundle and switch the Published head in one transaction."""
 
@@ -853,6 +916,7 @@ class EventLibraryRepository:
                 decisions=bundle.reference_review_decisions,
                 event_id_map=event_id_map,
                 revised_events=bundle.event_revisions,
+                frozen_as_of=frozen_as_of,
             )
             if has_library_changes:
                 now = _now()
@@ -918,6 +982,7 @@ class EventLibraryRepository:
         decisions: Sequence[ReferenceReviewDecision],
         event_id_map: dict[str, str],
         revised_events: Sequence[CanonicalEventRevision],
+        frozen_as_of: datetime | None,
     ) -> None:
         decisions_by_event = {
             event_id_map.get(item.event_id, item.event_id): item for item in decisions
@@ -927,13 +992,17 @@ class EventLibraryRepository:
         for revision in revised_events:
             stable_id = event_id_map.get(revision.event_id, revision.event_id)
             decision = decisions_by_event.get(stable_id)
-            reviewed_at = decision.reviewed_at if decision is not None else datetime.now(UTC)
+            reviewed_at = (
+                decision.reviewed_at
+                if decision is not None
+                else (frozen_as_of or datetime.now(UTC))
+            )
             included = (
                 decision.include_in_reference_view
                 if decision is not None
                 else revision.include_in_reference_view
             )
-            anchor = occurrence_anchor(revision.occurred_at)
+            anchor = event_review_anchor(revision.published())
             mode, reason, next_at = classify_review(
                 anchor=anchor,
                 as_of=reviewed_at,
@@ -949,6 +1018,26 @@ class EventLibraryRepository:
                 mode=(decision.review_mode if decision is not None else mode),
                 reason=(decision.candidate_reason if decision is not None else reason),
             )
+            if decision is not None:
+                connection.execute(
+                    """
+                    INSERT OR IGNORE INTO reference_review_history(
+                        ticker,review_run_id,event_no,reviewed_at,review_mode,
+                        candidate_reason,changed,include_in_reference_view,decision_json
+                    ) VALUES (?,?,?,?,?,?,?,?,?)
+                    """,
+                    (
+                        ticker,
+                        run_id,
+                        _numeric_id(stable_id),
+                        decision.reviewed_at.isoformat(),
+                        decision.review_mode.value,
+                        decision.candidate_reason.value,
+                        int(decision.changed),
+                        int(decision.include_in_reference_view),
+                        _json(decision.model_dump(mode="json")),
+                    ),
+                )
         for stable_id, decision in decisions_by_event.items():
             if any(
                 event_id_map.get(item.event_id, item.event_id) == stable_id
@@ -961,7 +1050,7 @@ class EventLibraryRepository:
                 _numeric_id(stable_id),
                 self._head_in_connection(connection, ticker),
             )
-            anchor = occurrence_anchor(event.occurred_at)
+            anchor = event_review_anchor(event)
             mode, reason, computed_next = classify_review(
                 anchor=anchor,
                 as_of=decision.reviewed_at,
@@ -1138,13 +1227,14 @@ class EventLibraryRepository:
                     "INSERT INTO canonical_events(ticker,event_no,created_version) VALUES (?,?,?)",
                     (ticker, event_no, version),
                 )
+            if revision.status is CanonicalObjectStatus.ACTIVE:
                 connection.execute(
                     """
                     INSERT INTO canonical_event_states(
                         ticker,event_no,library_version,status,redirect_to_event_no
-                    ) VALUES (?,?,?,'ACTIVE',NULL)
+                    ) VALUES (?,?,?,?,NULL)
                     """,
-                    (ticker, event_no, version),
+                    (ticker, event_no, version, CanonicalObjectStatus.ACTIVE.value),
                 )
             event_payload = revision.published().model_dump(mode="json", exclude={"facts"})
             event_payload["event_id"] = stable_event_id
@@ -1189,14 +1279,15 @@ class EventLibraryRepository:
                         "VALUES (?,?,?)",
                         (ticker, fact_no, version),
                     )
-                    connection.execute(
-                        """
-                        INSERT INTO canonical_fact_states(
-                            ticker,fact_no,library_version,status,redirect_to_fact_no
-                        ) VALUES (?,?,?,'ACTIVE',NULL)
-                        """,
-                        (ticker, fact_no, version),
-                    )
+                    if revision.status is CanonicalObjectStatus.ACTIVE:
+                        connection.execute(
+                            """
+                            INSERT INTO canonical_fact_states(
+                                ticker,fact_no,library_version,status,redirect_to_fact_no
+                            ) VALUES (?,?,?,'ACTIVE',NULL)
+                            """,
+                            (ticker, fact_no, version),
+                        )
                 fact_payload = fact.published().model_dump(mode="json")
                 fact_payload["fact_id"] = stable_fact_id
                 latest = connection.execute(
@@ -1218,14 +1309,15 @@ class EventLibraryRepository:
                         """,
                         (ticker, fact_no, fact_revision_no, version, _json(fact_payload)),
                     )
-                connection.execute(
-                    """
-                    INSERT INTO event_fact_memberships(
-                        ticker,event_no,fact_no,valid_from_version,valid_to_version
-                    ) VALUES (?,?,?,?,NULL)
-                    """,
-                    (ticker, event_no, fact_no, version),
-                )
+                if revision.status is CanonicalObjectStatus.ACTIVE:
+                    connection.execute(
+                        """
+                        INSERT INTO event_fact_memberships(
+                            ticker,event_no,fact_no,valid_from_version,valid_to_version
+                        ) VALUES (?,?,?,?,NULL)
+                        """,
+                        (ticker, event_no, fact_no, version),
+                    )
             self._replace_relations(connection, ticker, event_no, version, event_payload)
 
     @staticmethod
@@ -1284,6 +1376,11 @@ class EventLibraryRepository:
         for retirement in bundle.event_retirements:
             source = event_map.get(retirement.event_id, retirement.event_id)
             target = event_map.get(retirement.redirect_to_event_id, retirement.redirect_to_event_id)
+            status = (
+                CanonicalObjectStatus.SUPPRESSED
+                if retirement.reason == "SUPPRESSED_INVALID_OCCURRENCE"
+                else CanonicalObjectStatus.MERGED
+            )
             connection.execute(
                 """
                 INSERT INTO canonical_event_states(
@@ -1294,7 +1391,7 @@ class EventLibraryRepository:
                     ticker,
                     _numeric_id(source),
                     version,
-                    CanonicalObjectStatus.MERGED.value,
+                    status.value,
                     _numeric_id(target),
                 ),
             )

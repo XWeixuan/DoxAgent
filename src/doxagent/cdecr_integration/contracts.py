@@ -185,6 +185,8 @@ class InitializationOrchestrationStage(StrEnum):
     O2_RUNNING = "O2_RUNNING"
     O2_PUBLISHED = "O2_PUBLISHED"
     D2_RUNNING = "D2_RUNNING"
+    D3_RUNNING = "D3_RUNNING"
+    D3_PUBLISHED = "D3_PUBLISHED"
     PUBLISHED = "PUBLISHED"
     FAILED = "FAILED"
 
@@ -199,6 +201,7 @@ class InitializationOrchestrationState(StrictModel):
     cdecr_job_id: str | None = None
     o2_run_id: str | None = None
     d2_run_id: str | None = None
+    d3_run_id: str | None = None
     event_library_version: int | None = None
     event_library_sha256: str | None = None
     event_library_published_at: datetime | None = None

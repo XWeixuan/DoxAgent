@@ -21,12 +21,16 @@ CODEX_DOCUMENT2_WORKFLOW_VERSION: Final[Literal["codex_document2_v1"]] = (
 CODEX_EVENT_LIBRARY_WORKFLOW_VERSION: Final[Literal["codex_event_library_v1"]] = (
     "codex_event_library_v1"
 )
+CODEX_DOCUMENT3_WORKFLOW_VERSION: Final[Literal["codex_document3_v1"]] = (
+    "codex_document3_v1"
+)
 CodexWorkflowVersion: TypeAlias = Literal[
     "codex_d1_v2",
     "codex_global_research_v1",
     "codex_market_situation_v1",
     "codex_document2_v1",
     "codex_event_library_v1",
+    "codex_document3_v1",
 ]
 
 
@@ -78,7 +82,20 @@ class CodexEventLibraryNode(StrEnum):
     O2_MAINTAIN = "event_library_o2_maintain"
 
 
-CodexResearchNode: TypeAlias = CodexD1Node | CodexD2Node | CodexEventLibraryNode
+class CodexD3Node(StrEnum):
+    INPUT_PREPARATION = "d3_input_preparation"
+    O3_INITIALIZE = "d3_o3_initialize"
+    O3_FINAL_REVIEW = "d3_o3_final_review"
+    VALIDATE = "d3_validate"
+    ASSEMBLE = "d3_assemble"
+    PUBLISH = "d3_publish"
+    O3_MAINTAIN = "d3_o3_maintain"
+    APPLY_PATCH = "d3_apply_patch"
+
+
+CodexResearchNode: TypeAlias = (
+    CodexD1Node | CodexD2Node | CodexEventLibraryNode | CodexD3Node
+)
 
 
 class ResearchLane(StrEnum):
@@ -87,6 +104,7 @@ class ResearchLane(StrEnum):
     MARKET_SITUATION_RESEARCH = "market_situation_research"
     DOCUMENT2 = "document2"
     EVENT_LIBRARY = "event_library"
+    DOCUMENT3 = "document3"
 
 
 class CodexAgentRole(StrEnum):
@@ -107,8 +125,12 @@ class CodexEventLibraryAgentRole(StrEnum):
     O2 = "o2_event_library_maintainer"
 
 
+class CodexD3AgentRole(StrEnum):
+    O3 = "o3_policy_compiler"
+
+
 CodexResearchAgentRole: TypeAlias = (
-    CodexAgentRole | CodexD2AgentRole | CodexEventLibraryAgentRole
+    CodexAgentRole | CodexD2AgentRole | CodexEventLibraryAgentRole | CodexD3AgentRole
 )
 
 
@@ -118,6 +140,7 @@ _LANE_BY_WORKFLOW: dict[str, ResearchLane] = {
     CODEX_MARKET_SITUATION_WORKFLOW_VERSION: ResearchLane.MARKET_SITUATION_RESEARCH,
     CODEX_DOCUMENT2_WORKFLOW_VERSION: ResearchLane.DOCUMENT2,
     CODEX_EVENT_LIBRARY_WORKFLOW_VERSION: ResearchLane.EVENT_LIBRARY,
+    CODEX_DOCUMENT3_WORKFLOW_VERSION: ResearchLane.DOCUMENT3,
 }
 
 

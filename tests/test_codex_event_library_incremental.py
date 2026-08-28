@@ -62,26 +62,49 @@ class IncrementalWorker:
             "o2-incremental-edit": EventLibraryRunStage.RECONSTRUCT_AND_EDIT,
             "o2-reference-review": EventLibraryRunStage.REFERENCE_REVIEW,
         }[request.attempt_id]
+        if request.attempt_id == "o2-known-index-map":
+            await self.workspace.write_text(
+                request.run_id,
+                f"attempts/{request.attempt_id}/output/work/candidate_map.json",
+                json.dumps(
+                    {
+                        "incremental-update": {
+                            "delta_ids": ["D1"],
+                            "same_occurrence_event_ids": ["E1"],
+                            "related_event_ids": [],
+                            "detail_event_ids": ["E1"],
+                        }
+                    }
+                )
+                + "\n",
+            )
         if request.attempt_id == "o2-reference-review":
             root = f"attempts/{request.attempt_id}/output/revision_bundle"
             current = self.repository.get_event("MU", "E1", 1)
             assert current is not None
             event = current.model_dump(mode="json")
             event["facts"] = [
-                {**fact.model_dump(mode="json"), "consumes_delta_ids": []}
+                {
+                    **fact.model_dump(mode="json"),
+                    "fact_occurred_at": "SAME",
+                    "fact_occurrence_time_precision": "DAY",
+                    "consumes_delta_ids": [],
+                }
                 for fact in current.facts
             ] + [
                 {
                     "fact_id": "TF1",
                     "proposition": "Micron added an incremental operating update.",
                     "assertion_state": "ACTUAL",
-                    "subject_time": "2026-08-24",
+                    "subject_time": "SAME",
+                    "fact_occurred_at": "2026-08-24",
+                    "fact_occurrence_time_precision": "DAY",
                     "consumes_delta_ids": ["D1"],
                 }
             ]
             files: dict[str, Any] = {
                 f"{root}/manifest.json": {
-                    "contract_version": "event-library-foundation-v1",
+                    "contract_version": "event-library-maintenance-v3",
                     "run_id": request.run_id,
                     "ticker": "MU",
                     "base_library_version": 1,
@@ -100,13 +123,117 @@ class IncrementalWorker:
             await self.workspace.write_text(
                 request.run_id, f"{root}/residual_delta_resolutions.jsonl", ""
             )
+            date_rows = [
+                {
+                    "delta_id": "D1",
+                    "runtime_atomic_id": "a10-incremental-update",
+                    "runtime_package_id": None,
+                    "source_message_id": None,
+                    "candidates": [],
+                    "selected_date": current.occurred_at,
+                    "selected_precision": "DAY",
+                    "semantic_role": "EVENT_OCCURRENCE",
+                    "status": "RESOLVED",
+                    "event_id": "E1",
+                    "fact_id": None,
+                    "subject_time": None,
+                    "note": None,
+                },
+                *[
+                    {
+                        "delta_id": None,
+                        "runtime_atomic_id": None,
+                        "runtime_package_id": None,
+                        "source_message_id": None,
+                        "candidates": [],
+                        "selected_date": current.occurred_at,
+                        "selected_precision": "DAY",
+                        "semantic_role": "FACT_OCCURRENCE",
+                        "status": "RESOLVED",
+                        "event_id": "E1",
+                        "fact_id": fact.fact_id,
+                        "subject_time": (
+                            None if fact.subject_time is None else str(fact.subject_time)
+                        ),
+                        "note": "Safe DAY-parent migration.",
+                    }
+                    for fact in current.facts
+                ],
+                {
+                    "delta_id": "D1",
+                    "runtime_atomic_id": "a10-incremental-update",
+                    "runtime_package_id": None,
+                    "source_message_id": None,
+                    "candidates": [],
+                    "selected_date": "2026-08-24",
+                    "selected_precision": "DAY",
+                    "semantic_role": "FACT_OCCURRENCE",
+                    "status": "RESOLVED",
+                    "event_id": "E1",
+                    "fact_id": "TF1",
+                    "subject_time": "SAME",
+                    "note": None,
+                },
+            ]
+            await self.workspace.write_text(
+                request.run_id,
+                f"{root}/date_resolution_ledger.jsonl",
+                "\n".join(json.dumps(row) for row in date_rows) + "\n",
+            )
+            await self.workspace.write_text(
+                request.run_id,
+                f"{root}/reference_review_decisions.jsonl",
+                json.dumps(
+                    {
+                        "event_id": "E1",
+                        "reviewed_at": "2026-08-24T23:59:00Z",
+                        "review_mode": "IMPLICIT",
+                        "candidate_reason": "NEW_OR_MODIFIED",
+                        "changed": False,
+                        "include_in_reference_view": current.include_in_reference_view,
+                        "is_important": current.is_important,
+                        "reference_view_basis": "CURRENT_BASELINE",
+                        "next_review_at": "2026-09-03T23:59:00Z",
+                        "note": "Still defines the current baseline.",
+                    }
+                )
+                + "\n",
+            )
+            await self.workspace.write_text(
+                request.run_id,
+                f"{root}/reference_view_decision_ledger.jsonl",
+                json.dumps(
+                    {
+                        "event_id": "E1",
+                        "is_important": current.is_important,
+                        "include_in_reference_view": current.include_in_reference_view,
+                        "reference_view_basis": "CURRENT_BASELINE",
+                        "note": "Still defines the current baseline.",
+                        "review_reason": "NEW_OR_MODIFIED",
+                        "as_of": "2026-08-24T23:59:00Z",
+                    }
+                )
+                + "\n",
+            )
+            for filename in (
+                "date_resolution_ledger.jsonl",
+                "reference_view_decision_ledger.jsonl",
+            ):
+                ledger = await self.workspace.read_text(
+                    request.run_id, f"{root}/{filename}"
+                )
+                await self.workspace.write_text(
+                    request.run_id,
+                    f"attempts/{request.attempt_id}/output/work/{filename}",
+                    ledger.content or "",
+                )
             result = O2RunResult(
                 status="BUNDLE_READY",
                 stage=stage,
                 bundle_path=root,
                 base_library_version=1,
                 delta_coverage={"total": 1, "resolved": 1, "pending": 0},
-                validation="PASS",
+                validation="NOT_RUN",
             )
         else:
             result = O2RunResult(
@@ -186,15 +313,29 @@ async def test_incremental_o2_uses_index_then_detail_and_recovers_after_promotio
     assert repository.published_version("MU") == 1
     assert len(worker.requests) == 3
     assert worker.requests[0].thread_id is None
-    assert {request.thread_id for request in worker.requests[1:]} == {
-        "o2-incremental-thread"
-    }
+    assert {request.thread_id for request in worker.requests[1:]} == {"o2-incremental-thread"}
     remote = LocalWorkspaceStore(tmp_path / "remote")
     inventory = remote.inventory("mu-incremental-v2")
     paths = {item.relative_path for item in inventory.files}
     frozen_index = next(path for path in paths if path.endswith("known_event_index.md"))
     assert "E1 |" in remote.read_text("mu-incremental-v2", frozen_index).content
-    assert any(path.endswith("events/E1.json") for path in paths)
+    assert not any(
+        "/context/event_library/" in f"/{path}" and path.endswith("/events/E1.json")
+        for path in paths
+    )
+    assert "attempts/o2-incremental-edit/input/event_details/E1.json" in paths
+    candidate_task = json.loads(
+        remote.read_text("mu-incremental-v2", "attempts/o2-known-index-map/input/task.json").content
+        or "{}"
+    )
+    edit_task = json.loads(
+        remote.read_text(
+            "mu-incremental-v2", "attempts/o2-incremental-edit/input/task.json"
+        ).content
+        or "{}"
+    )
+    assert candidate_task["allowed_event_detail_ids"] == []
+    assert edit_task["allowed_event_detail_ids"] == ["E1"]
 
     _, publication, outcome, _ = await maintainer.run(
         snapshot=snapshot,

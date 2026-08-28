@@ -1,22 +1,27 @@
 # Incremental: Reconstruct and Edit
 
-Turn the current Delta batch into complete revisions of the Events it changes. The Candidate Map selects history to inspect; the Delta and Event Details determine the final occurrence judgment.
+Turn the current Delta batch into complete revisions of the Events it changes. The Candidate Map selects history to inspect; the Delta and loaded Event Details determine the occurrence judgment.
 
-## Work
+## Occurrence decision
 
-1. Read the Candidate Map, every assigned Delta, its runtime context, and every loaded Event Detail. Reconstruct each incoming occurrence from its actor, concrete action or disclosure, object or stage, and occurrence time.
+1. Read the Candidate Map, every assigned Delta with its Runtime context, and every loaded Event Detail, including complete Facts, Event and Fact occurrence times, subject periods, and supersession relationships. Reconstruct each incoming occurrence before deciding where it belongs.
 2. Compare occurrence identity before topic similarity:
    - the same occurrence and proposition is `DUPLICATE_FACT`;
    - a complementary proposition from the same occurrence updates the existing Event;
    - a correction or clearer expression of the same Fact keeps its stable Fact ID;
-   - a different date, institution, action, disclosure, or matter stage forms a new Event.
-3. Apply a loose relevance screen. Publish discrete occurrences materially about the ticker or its business, including clearly bounded material market episodes. Use `KEEP_PENDING` for valid but unrelated content, standalone snapshots, or relevant material whose boundary remains unresolved. Use `DROP_INVALID` for clear extraction failure or content without a usable business proposition.
-4. Admit a Fact when this occurrence produced, disclosed, confirmed, or materially changed its proposition. Keep Facts minimal and consolidate semantic duplicates. Multiple current Delta supporting one new Fact belong together in `consumes_delta_ids`.
-5. Match time precision to the event type. Date-specific public occurrences normally require `DAY`; when their date is broad or `UNKNOWN` but reasonably traceable, use Web Search to resolve it. Use `subject_time: SAME` when a Fact shares the Event time without a distinct subject period, and preserve an explicit reporting period or forecast horizon when it is part of the proposition.
-6. For an existing Event, preserve its stable Event ID and every unaffected Fact, then write the complete target revision. Preserve a Fact ID when its semantic identity remains the same. Use temporary IDs only for genuinely new Events or Facts.
-7. Merge or split published Events when the affected evidence exposes an occurrence-boundary error. Keep the most appropriate stable ID for the continuing occurrence and express retirements or derived relationships through the current bundle schema.
-8. Edit the title, summaries, relationships, and current-schema fields so the Event is coherent after the change. Carry existing importance and reference values into revised Events and give new Events an initial judgment for Reference Review to finalize. Preserve existing `price_analysis`; set it to null for a new Event.
-9. Account for each assigned Delta exactly once through a Fact's `consumes_delta_ids` or one residual resolution. A duplicate of a stable Fact targets that Event and Fact; same-batch duplicates for a new Fact are consolidated in that Fact.
+   - a new action, disclosure, matter stage, catalyst, information cycle, or occurrence outside the existing episode boundary forms a new Event; a different Fact date alone does not.
+3. Resolve analyst actions through the shared-catalyst, response-pattern, and bounded-window test. Preserve institution-specific actions as Facts within a valid response episode and separate actions driven by a new catalyst or information cycle.
+4. Keep material reasonably connected to the ticker while its occurrence can be reconstructed. Use `KEEP_PENDING` for clearly out-of-scope valid content or relevant material whose boundary remains unresolved after reasonable development. Use `DROP_INVALID` for extraction failure or content without a usable proposition.
+
+## Canonical editing
+
+1. Admit a Fact when its Event produced, disclosed, confirmed, corrected, or materially changed the proposition. Keep Facts minimal, consolidate semantic duplicates, and place all same-batch support for one new Fact in `consumes_delta_ids`.
+2. Resolve Event occurrence, each Fact occurrence, and subject time separately before using time to decide identity or current state. Follow the Foundation date priority, search a traceable date-specific occurrence within the Frozen `as_of`, keep only genuinely period-wide Events broad, and leave unresolved or conflicting date-specific material Pending.
+3. Write `fact_occurred_at` and DAY precision for every Fact in a complete Event revision. Use Fact-occurrence `SAME` only under a same-day DAY Event; a broad Event requires each Fact's exact date. Preserve a distinct reporting, forecast, plan, or scheduled period in `subject_time`.
+4. For an existing Event, retain its stable Event ID, unaffected Facts and Fact IDs, relationships, and `price_analysis`, then write the complete target revision with corrected maintenance-v3 time fields. New Events and Facts use temporary IDs and new Event `price_analysis` is null.
+5. When the affected evidence exposes an occurrence-boundary error, merge or split within that affected scope, preserve the most appropriate stable ID, and express retirement and relationships through the supplied schemas. When a new Event supersedes an old Event, encode that relationship so both sides enter Reference Review.
+6. Edit the title, summaries, relationships, and other schema fields into one coherent target record. For every new or affected Event, judge `is_important`, make an initial Reference decision from its current-state effect, and record the matching basis and concise note. Reference Review rejudges the full candidate independently rather than inheriting this initial flag.
+7. Account for every assigned Delta exactly once through one Fact's `consumes_delta_ids` or one residual `resolution`. `DUPLICATE_FACT` identifies its stable Event and Fact target; same-batch duplicates for a new Fact are consolidated in that Fact. Update the Date and provisional Reference ledgers for every Event revision in the working set.
 
 ## Artifacts
 
@@ -27,9 +32,11 @@ output/work/
   events/E#.json or events/T#.json
   retirements.json
   residual_delta_resolutions.jsonl
+  date_resolution_ledger.jsonl
+  reference_view_decision_ledger.jsonl
 ```
 
-Include complete revisions only for new or affected Events. Input-only navigation and runtime fields remain outside Canonical Event and Fact files.
+Include complete revisions only for new or affected Events. Input navigation and Runtime fields remain outside Canonical Event and Fact files.
 
 ## Completion
 

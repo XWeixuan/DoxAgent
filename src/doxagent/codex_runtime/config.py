@@ -61,7 +61,11 @@ class CodexRuntimeConfig(BaseModel):
     @classmethod
     def from_settings(cls, settings: DoxAgentSettings) -> CodexRuntimeConfig:
         return cls(
-            enabled=(settings.codex_d1_v2_enabled or settings.codex_research_lanes_enabled),
+            enabled=(
+                settings.codex_d1_v2_enabled
+                or settings.codex_research_lanes_enabled
+                or settings.codex_document3_enabled
+            ),
             worker_base_url=TypeAdapter(HttpUrl).validate_python(settings.codex_worker_base_url),
             worker_bearer_token=settings.codex_worker_bearer_token,
             capability_secret=settings.codex_capability_secret,

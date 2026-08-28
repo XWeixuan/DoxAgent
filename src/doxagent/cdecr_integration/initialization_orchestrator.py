@@ -1,4 +1,4 @@
-"""Durable Blackboard initialization: D1 || CDECR -> O2 Published -> pinned D2."""
+"""Durable V2 initialization: D1 || CDECR -> O2 -> D2 -> optional D3."""
 
 from __future__ import annotations
 
@@ -34,6 +34,17 @@ class PinnedDocument2Runner(Protocol):
         event_library_version: int,
         event_library_sha256: str,
         event_library_published_at: datetime | None,
+    ) -> str: ...
+
+
+class PinnedDocument3Runner(Protocol):
+    async def run_pinned(
+        self,
+        *,
+        document2_run_id: str,
+        ticker: str,
+        as_of: datetime,
+        event_library_version: int,
     ) -> str: ...
 
 
@@ -83,11 +94,13 @@ class BlackboardInitializationOrchestrator:
         global_research: GlobalResearchRunner,
         ticker_pipeline: TickerCDECRPipelineCoordinator,
         document2: PinnedDocument2Runner,
+        document3: PinnedDocument3Runner | None = None,
     ) -> None:
         self._states = state_repository
         self._global = global_research
         self._ticker = ticker_pipeline
         self._document2 = document2
+        self._document3 = document3
 
     async def run(
         self,
@@ -195,11 +208,29 @@ class BlackboardInitializationOrchestrator:
                 event_library_sha256=reference.sha256,
                 event_library_published_at=reference.published_at,
             )
-            return self._advance(
+            if self._document3 is None:
+                return self._advance(
+                    state,
+                    InitializationOrchestrationStage.PUBLISHED,
+                    d2_run_id=d2_run_id,
+                )
+            state = self._advance(
                 state,
-                InitializationOrchestrationStage.PUBLISHED,
+                InitializationOrchestrationStage.D3_RUNNING,
                 d2_run_id=d2_run_id,
             )
+            d3_run_id = await self._document3.run_pinned(
+                document2_run_id=d2_run_id,
+                ticker=ticker,
+                as_of=as_of,
+                event_library_version=reference.version,
+            )
+            state = self._advance(
+                state,
+                InitializationOrchestrationStage.D3_PUBLISHED,
+                d3_run_id=d3_run_id,
+            )
+            return self._advance(state, InitializationOrchestrationStage.PUBLISHED)
         except Exception as exc:
             self._advance(
                 state,

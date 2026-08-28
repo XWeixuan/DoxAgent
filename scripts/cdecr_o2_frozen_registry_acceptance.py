@@ -19,7 +19,10 @@ from doxagent.cdecr_integration.contracts import RuntimeRegistryBinding
 from doxagent.cdecr_integration.workflow_runner import CDECRWorkflowRunner
 from doxagent.codex_runtime.client import HttpCodexWorkerClient
 from doxagent.codex_worker.schema import WorkerJob, WorkerRunRequest
-from doxagent.event_library.quality import compile_quality_report
+from doxagent.event_library.quality import (
+    compile_bundle_semantic_report,
+    compile_quality_report,
+)
 from doxagent.event_library.repository import EventLibraryRepository
 from doxagent.event_library.service import EventLibraryService
 from doxagent.settings import DoxAgentSettings
@@ -80,9 +83,7 @@ def _read_only_registry_facts(path: Path) -> dict[str, Any]:
                 """
             ).fetchone()[0]
         )
-        source_count = int(
-            connection.execute("SELECT COUNT(*) FROM source_messages").fetchone()[0]
-        )
+        source_count = int(connection.execute("SELECT COUNT(*) FROM source_messages").fetchone()[0])
     if quick_check != "ok":
         raise RuntimeError(f"source registry quick_check failed: {quick_check}")
     if len(epochs) != 1:
@@ -307,6 +308,11 @@ async def _run(args: argparse.Namespace) -> int:
     if publication is None or validation is None:
         raise RuntimeError("O2 acceptance finished without publication")
     quality = compile_quality_report(repository, ticker=args.ticker)
+    if validation.normalized_bundle is None:
+        raise RuntimeError("O2 acceptance has no normalized Bundle for semantic audit")
+    semantic = compile_bundle_semantic_report(validation.normalized_bundle, mode="INITIALIZE")
+    if not semantic.release_gate_passed or not quality.semantic_release_gate_passed:
+        raise RuntimeError("O2 acceptance failed the independent semantic release gate")
     source_hash_after = _sha256(source_registry)
     if source_hash_after != source_hash_before:
         raise RuntimeError("source R2 registry changed during acceptance")
@@ -341,12 +347,18 @@ async def _run(args: argparse.Namespace) -> int:
         "published_event_count": len(events),
         "published_fact_count": sum(len(item.facts) for item in events),
         "quality": quality.model_dump(mode="json"),
+        "semantic_validation": semantic.model_dump(mode="json"),
         "model_jobs": worker.jobs,
         "exports": {name: str(path) for name, path in exports.items()},
     }
-    report_path = output_root / (
-        "idempotency_report.json" if args.resume_existing else "acceptance_report.json"
-    )
+    report_name = "acceptance_report.json"
+    if args.resume_existing:
+        report_name = (
+            "resumed_acceptance_report.json"
+            if published_version_before == 0
+            else "idempotency_report.json"
+        )
+    report_path = output_root / report_name
     report_path.write_text(
         json.dumps(report, ensure_ascii=False, indent=2, default=str), encoding="utf-8"
     )
@@ -375,9 +387,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--as-of", type=_timestamp, required=True)
     parser.add_argument("--market", default="US")
     parser.add_argument("--ticker", default="MU")
-    parser.add_argument(
-        "--prompt-root", type=Path, default=Path("prompts/codex_v2/event_library")
-    )
+    parser.add_argument("--prompt-root", type=Path, default=Path("prompts/codex_v2/event_library"))
     parser.add_argument("--expected-atomics", type=int, default=742)
     parser.add_argument("--expected-packages", type=int, default=185)
     parser.add_argument("--wave-size", type=int, default=100)

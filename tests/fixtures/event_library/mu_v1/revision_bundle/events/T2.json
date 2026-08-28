@@ -2,7 +2,7 @@
   "event_id": "T2",
   "ticker": "MU",
   "title": "Micron KeyBanc forum business update",
-  "event_type": "INVESTOR_CONFERENCE_UPDATE",
+  "event_type": "INVESTOR_EVENT",
   "occurred_at": "2026-08-10",
   "occurrence_time_precision": "DAY",
   "status": "ACTIVE",

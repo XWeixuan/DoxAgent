@@ -279,12 +279,14 @@ def test_mu_gold_frozen_snapshot_to_published_v1_without_model(tmp_path: Path) -
     assert index.splitlines()[0].startswith("E2 | 2026-08-10 |")
     assert "event_type" not in index
     reference = service.views.reference_view("MU")
-    assert reference.startswith("fields: event_id | occurred_at | title\n\n")
+    assert reference.startswith("fields: event_id | event_time | precision | title\n\n")
     assert reference.count("\nevent_type:") == 2
     assert "ticker:" not in reference and "version:" not in reference
     assert "importance" not in reference
-    assert "- [FY2026-Q3] Micron reported FY2026 Q3 revenue" in reference
-    assert "- [null] Micron disclosed 16 strategic customer agreements" in reference
+    assert "Fact subject_time: FY2026-Q3" in reference
+    assert "Proposition: Micron reported FY2026 Q3 revenue" in reference
+    assert "Fact subject_time: null" in reference
+    assert "Proposition: Micron disclosed 16 strategic customer agreements" in reference
     assert exports["json"].is_file() and exports["markdown"].is_file()
     assert exports["reference_view_agent"].read_bytes() == exports[
         "reference_view_human"

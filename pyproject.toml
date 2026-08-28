@@ -33,6 +33,7 @@ dependencies = [
 
 [project.scripts]
 cdecr = "cdecr.cli:main"
+codex-document3 = "doxagent.workflows.codex_document3.cli:main"
 
 [dependency-groups]
 dev = [

@@ -1,22 +1,42 @@
 # Initialize: Global Reconciliation
 
-Produce the publishable initialization Revision Bundle. Rebuild the global judgment from the complete pending Delta; Survey and Wave artifacts are hypotheses that make this pass efficient.
+Produce the initialization Revision Bundle as the single global Canonical judgment. This stage combines occurrence reconciliation with complete Canonical editing.
 
-## Work
+## Working context
 
-1. Read the complete pending Delta, Survey ledger and catalog, and every Wave index and draft. Resolve disagreements from the original Delta and runtime context, using Web Search for targeted public-date adjudication when needed.
-2. Form the global Event set by occurrence identity rather than package, topic, wave, or wave-local ID. Merge drafts for the same action or disclosure. Split different dates, institutions, transaction stages, or separately issued disclosures.
-3. Reapply the loose relevance screen at Event and Fact level. Publish discrete occurrences materially about the ticker or its business, including clearly bounded, material market episodes. Place unrelated company events, standalone market/technical/valuation/trading snapshots, portfolio or ETF statistics, and stale company history in `KEEP_PENDING`. Preserve ticker-relevant material when a reasonable occurrence can be reconstructed; use `DROP_INVALID` for clear extraction failure or content without a usable business proposition.
-4. Finalize occurrence time with precision appropriate to the event type. Earnings releases, filings, announcements, analyst actions, transactions, and other date-specific public occurrences normally require `DAY`. If a broad or `UNKNOWN` value is traceable to a date, search and use that date. Broader precision fits genuinely period-wide occurrences or dates that remain unresolved after a reasonable search.
-5. Admit each Fact only when the occurrence produced, disclosed, confirmed, or materially changed its proposition. Keep Facts minimal, set assertion state from the proposition, merge semantic duplicates, and bind all supporting Delta IDs through `consumes_delta_ids`. Use `subject_time: SAME` for facts sharing Event time without a distinct subject period; preserve an explicit reporting period or forecast horizon when it is part of the proposition.
-6. Edit each Event as a coherent canonical record. Make the title identify the occurrence, keep `canonical_summary` compact and complete, and make `known_event_summary` detailed enough for a small W1 model to distinguish nearby known events from new information. Use `is_important` for decision-relevant materiality and `include_in_reference_view` for current reference usefulness. Keep `price_analysis` null at initialization.
-7. Assign globally unique temporary `T#` and `TF#` IDs and populate only fields present in the supplied schemas. Use current relationship fields only where the relationship is supported.
-8. Account for every pending Delta exactly once: either one Fact consumes it or one residual resolution contains it. Consolidate same-batch duplicates in the consuming Fact. Use `DUPLICATE_FACT` when a stable target Event and Fact already exist; `KEEP_PENDING` and `DROP_INVALID` carry no target.
-9. Finish with a targeted pass over ticker relevance, occurrence boundaries, time precision, Fact attribution, summary coherence, and Delta coverage.
+Read the complete pending Delta, published C1/C3/C5 reports, Future Nodes, Survey ledger and catalog, and every Wave index, draft, and provisional decision ledger. Original Delta supplies the factual basis; D1 research supplies business interpretation; Survey and Wave outputs are prior research hypotheses to refine from the global view.
+
+## Global occurrence synthesis
+
+1. Reconstruct the Event set from occurrence identity rather than Package, topic, wave, or temporary ID. Merge cross-wave drafts for the same occurrence and split drafts that combine distinct actions, disclosures, matter stages, catalysts, or information cycles. Different Fact dates remain within one Event when the shared-catalyst and bounded-window test establishes a valid theme cluster.
+2. Resolve analyst response episodes from their shared catalyst, response pattern, and information window. Preserve institution-specific actions as Facts and separate actions driven by a new catalyst, thesis, or information cycle.
+3. Distinguish the same occurrence and proposition, a complementary Fact within the same occurrence, a corrected proposition, and a genuinely new occurrence. Connect related milestones through the supplied relationship fields.
+4. Apply the loose relevance screen after reconstruction. Publish valid occurrences materially connected to the ticker or its business, including bounded material market episodes. Develop plausibly relevant but incomplete material from the full context before assigning a residual resolution. Use `KEEP_PENDING` for unresolved or clearly out-of-scope valid content and `DROP_INVALID` for extraction failure or content without a usable proposition.
+
+## Canonical finalization
+
+Finalize each Event through the following linked judgments:
+
+1. Confirm occurrence identity, global temporary ID, ticker, status, title, and canonical event type.
+2. Resolve Event occurrence, every Fact occurrence, and subject time as separate judgments using the supplied candidates and Foundation priority. Date-specific public occurrences resolve to `DAY`; focused Web Search may complete a traceable date within the Frozen `as_of`. Publish a broad Event time only for a genuinely period-wide Event, preserve an exact DAY for every Fact beneath it, and leave conflicting or unresolved date-specific material Pending.
+3. Confirm that every Fact was produced, disclosed, confirmed, corrected, or materially changed by its Event. Keep propositions minimal, preserve decision-relevant qualifiers, consolidate semantic duplicates, and set assertion state from the proposition. Write `fact_occurred_at` and DAY precision for every Fact; use Fact-occurrence `SAME` only under a same-day DAY Event, and use `subject_time: SAME` only when no distinct subject period exists.
+4. Write `canonical_summary` as the compact account of what occurred and its principal business result. Write `known_event_summary` with the date, actor, action, stage, figures, and horizon needed for W1 to distinguish nearby known Events.
+5. Rejudge `is_important` from durable decision relevance. Then apply the Foundation's six-step Reference test, omission test, and redundancy test independently to select `include_in_reference_view`, its matching `reference_view_basis`, and a concise current-state note for every Event.
+6. Finalize relationships, retirement, and `price_analysis` under the supplied schemas. Assign globally unique `T#` and `TF#` IDs and populate exactly the schema fields.
+7. Account for every pending Delta exactly once through one Fact's `consumes_delta_ids` or one residual entry. Use the schema field `resolution`; `DUPLICATE_FACT` identifies its stable target, while `KEEP_PENDING` and `DROP_INVALID` carry no target. Give every Delta at least one Date Resolution Ledger row, every Event and Fact revision its matching occurrence row, and every Event its Reference decision and ledger row.
+
+## Final quality pass
+
+Run two targeted checks before assembly:
+
+- **Time:** find subject periods or future scheduled targets used as occurrence, occurrence dates after `as_of`, broad Events whose Facts use `SAME` or lack exact dates, valid theme clusters split only by Fact date, and different cycles or themes merged too broadly.
+- **Reference:** apply omission and redundancy tests to find old-but-active omissions, recent-but-routine inclusions, superseded Events still retained, and flags copied from importance rather than judged independently.
+
+Also reconsider duplicate titles, inconsistent event types, unusually large multi-Fact Events, or missing relationships despite evident milestone sequences. All-true or all-false flag patterns are diagnostic signals only; selection quality remains an Event-by-Event judgment rather than a quota.
 
 ## Bundle
 
-Write the complete bundle at the task's `output_bundle_path` using the supplied schemas:
+Write the complete Bundle at the task's `output_bundle_path` using the supplied schemas:
 
 ```text
 revision_bundle/
@@ -24,8 +44,12 @@ revision_bundle/
   events/T#.json
   retirements.json
   residual_delta_resolutions.jsonl
-  reference_review_decisions.jsonl   # when required by the task
+  reference_review_decisions.jsonl
+  date_resolution_ledger.jsonl
+  reference_view_decision_ledger.jsonl
 ```
+
+Write the two ledgers to their task-supplied work paths and copy the same rows into the Bundle ledger paths.
 
 ## Completion
 

@@ -1,15 +1,26 @@
 # Incremental: Reference Review
 
-Finalize `is_important` and `include_in_reference_view` for affected and scheduled review Events, then assemble the incremental Revision Bundle. Event and Fact semantics come from the Incremental Edit working set.
+Finalize `is_important` and `include_in_reference_view` for affected and scheduled review Events, then assemble the incremental Revision Bundle. Incremental Edit already owns occurrence and Fact reconstruction.
 
-## Work
+## Review scope
 
-1. Review every new or materially changed Event from Incremental Edit. Read full Event Detail for explicit review candidates. For implicit candidates, begin with the review index and open Detail when the decision requires more context.
-2. Judge `is_important` from the Event's durable decision relevance: results and guidance, capital allocation, material contracts, products or capacity, financing, M&A, regulation, litigation, management changes, supply-demand shifts, or another occurrence likely to change expectations.
-3. Judge `include_in_reference_view` from present usefulness to D2/D3. Recent information, an evolving matter, or an Event that still shapes forward expectations belongs in the view; a superseded, completed, or stale routine Event can leave it. Importance and current reference usefulness are separate judgments.
-4. Apply the frozen review mode and 10/30/7-day scheduling rules supplied in the task. These rules trigger review and set the next review time; the Event's current usefulness determines inclusion. Record `TIME_UNRESOLVED` through the existing review-decision fields when the timing rule cannot be applied reliably.
-5. Update the working revision when an affected Event's flags change. For a review-only published Event, write its complete stable-ID revision only when a flag changes. Record each completed review with the current `reference_review_decisions.jsonl` schema.
-6. Carry the Incremental Edit Event revisions, retirements, and residual Delta resolutions into the final bundle, adding only review-driven Event revisions and decisions. Preserve all other Event fields and any existing `price_analysis`.
+Review every new or materially changed Event in the Incremental Edit working set. Explicit candidates use full Event Detail. Implicit candidates begin with the review index and expand Detail when the semantic decision needs it. In a review-only run, every supplied candidate is eligible for full Detail access. Use the candidate's Facts, Event and Fact dates, subject horizons, prior basis, forward and reverse supersession, review reason, and Frozen `as_of`; compare both the new controlling Event and the Event it may replace.
+
+## Semantic judgment
+
+Judge `is_important` from durable decision relevance. Then rejudge `include_in_reference_view` independently through the Foundation's ordered test: target path, current-state effect, information state, time state, omission test, and redundancy test. Prior flags and the Incremental Edit basis are comparison inputs rather than default answers.
+
+`PERIODIC_10D` and `AGE_REVIEW_DUE_30D` explain why the Event is reviewed today; neither is evidence for inclusion or exclusion. Review age triggers a new semantic judgment rather than automatic expiration, and `candidate_reason` identifies the review entry point rather than its result.
+
+Check whether the Event is the latest controlling update, remains open or effective, has been absorbed, or has been superseded. Retain an old Event that still defines current reality. Exclude a recent but routine or redundant Event when it adds no current state. When actual results or another controlling Event arrive, reassess the earlier schedule or expectation Event and exclude it when the later Event fully replaces its current information.
+
+For every candidate, the model selects exactly `is_important`, `include_in_reference_view`, the directionally consistent `reference_view_basis`, and a concise non-empty `note`. Use the task entry for the Event, select the exact deterministic outcome branch matching the chosen `include_in_reference_view`, derive `changed` only with the supplied prior flags and rule, and copy `reviewed_at`, `review_mode`, `candidate_reason`, `changed`, and `next_review_at` exactly. The deterministic program owns the review clock and scheduling result.
+
+For an affected working revision, finalize the flags in that complete revision. For a review-only stable Event, write a complete stable-ID revision when either flag changes; when both remain unchanged, record the review decision without an Event revision.
+
+## Bundle assembly
+
+Carry the Incremental Edit Event revisions, retirements, residual Delta resolutions, and Date Ledger into the final Bundle. Add only review-driven complete Event revisions and decisions, preserving every other Event field and existing `price_analysis`. Write a Reference View Decision Ledger row for every reviewed Event, including unchanged review-only candidates. When a review-only flag change creates a complete Event revision, include matching Event and Fact Date Ledger rows for that revision.
 
 ## Bundle
 
@@ -22,7 +33,11 @@ revision_bundle/
   retirements.json
   residual_delta_resolutions.jsonl
   reference_review_decisions.jsonl
+  date_resolution_ledger.jsonl
+  reference_view_decision_ledger.jsonl
 ```
+
+Write the two ledgers to their task-supplied work paths and copy the same rows into the Bundle ledger paths.
 
 A review-only run may contain decisions without an Event revision; the deterministic publication layer decides whether a new Published version is needed.
 

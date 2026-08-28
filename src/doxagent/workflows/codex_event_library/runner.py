@@ -107,8 +107,9 @@ class EventLibraryAgentRunner:
         thread_id: str | None = None,
     ) -> WorkerRunRequest:
         prompt = (
-            f"Event Library O2 attempt: {prepared.attempt_id}. Read the six files under "
-            f"attempts/{prepared.attempt_id}/input in the order declared by task.json. "
+            f"Event Library O2 attempt: {prepared.attempt_id}. Read "
+            f"attempts/{prepared.attempt_id}/input/task.json first, then read the five "
+            "content files in content_input_order. "
             "Follow them exactly and return one JSON object matching output_schema.json."
         )
         return WorkerRunRequest(
@@ -138,6 +139,47 @@ class EventLibraryAgentRunner:
         )
         self._save_state(updated)
         return updated
+
+    def validate_run_result(
+        self,
+        *,
+        run_id: str,
+        attempt_id: str,
+        result: O2RunResult,
+        expected_stage: EventLibraryRunStage,
+        assigned_delta_count: int,
+        final_or_repair: bool,
+    ) -> None:
+        """Apply the same trust boundary used by the real remote orchestrator."""
+
+        state = self.load_state(run_id)
+        errors: list[str] = []
+        if result.stage is not expected_stage:
+            errors.append("stage")
+        if result.base_library_version != state.base_library_version:
+            errors.append("base_library_version")
+        if result.delta_coverage.total != assigned_delta_count:
+            errors.append("delta_coverage.total")
+        if result.validation != "NOT_RUN":
+            errors.append("validation")
+        expected_path = f"attempts/{attempt_id}/output/revision_bundle"
+        if final_or_repair:
+            if result.status != "BUNDLE_READY":
+                errors.append("status")
+            if (result.bundle_path or "").rstrip("/") != expected_path:
+                errors.append("bundle_path")
+        elif result.status != "PENDING" or result.bundle_path is not None:
+            errors.append("intermediate_bundle")
+        if errors:
+            self._save_state(
+                state.model_copy(
+                    update={
+                        "stage": EventLibraryRunStage.FAILED,
+                        "attempt_id": attempt_id,
+                    }
+                )
+            )
+            raise ValueError(f"untrusted O2RunResult fields: {', '.join(errors)}")
 
     def validate_and_promote(
         self, *, run_id: str, bundle_path: str | Path

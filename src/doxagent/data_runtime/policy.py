@@ -23,6 +23,8 @@ from doxagent.codex_runtime.schema import (
     CodexD1Node,
     CodexD2AgentRole,
     CodexD2Node,
+    CodexD3AgentRole,
+    CodexD3Node,
     CodexEventLibraryAgentRole,
     CodexEventLibraryNode,
     CodexResearchAgentRole,
@@ -78,6 +80,9 @@ _ROLE_BY_NODE = {
     CodexD2Node.O1_GAPS: CodexD2AgentRole.O1,
     CodexD2Node.O1_FINALIZATION: CodexD2AgentRole.O1,
     CodexEventLibraryNode.O2_MAINTAIN: CodexEventLibraryAgentRole.O2,
+    CodexD3Node.O3_INITIALIZE: CodexD3AgentRole.O3,
+    CodexD3Node.O3_FINAL_REVIEW: CodexD3AgentRole.O3,
+    CodexD3Node.O3_MAINTAIN: CodexD3AgentRole.O3,
 }
 
 _LEGACY_AGENT_BY_ROLE = {
@@ -154,6 +159,7 @@ class DataToolPolicyRegistry:
             self._by_role[CodexAgentRole.C5],
         )
         self._by_role[CodexEventLibraryAgentRole.O2] = frozenset()
+        self._by_role[CodexD3AgentRole.O3] = self._by_role[CodexD2AgentRole.O1]
         legacy_o4_tools = self._by_role[CodexAgentRole.C5]
         self._by_node: dict[CodexResearchNode, frozenset[str]] = {
             CodexD1Node.O4_A: legacy_o4_tools,

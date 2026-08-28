@@ -1,13 +1,16 @@
 # Incremental: Build Candidate Map
 
-Use the complete Known Event Index to identify which published Events are worth opening for this Delta batch. This stage provides high-recall navigation, not the final new/known decision.
+Use the complete Known Event Index to build a high-recall Event Detail access plan for this Delta batch. The map guides the next stage; it does not settle the new/known decision.
 
-## Work
+## Candidate discovery
 
-1. Read every pending Delta and the complete Known Event Index.
-2. Group the Delta into provisional occurrences before matching history. Use the occurrence time or release context, actor and concrete action, object or stage, assertion state, subject period, and distinctive numbers. Treat title similarity as a retrieval clue.
-3. For each occurrence candidate, distinguish Events that may represent the same occurrence from Events that are only related milestones or subject matter. Include every stable Event ID whose Detail can materially change the next-stage decision.
-4. Use a `KEEP_PENDING_*` candidate for clear non-events such as unrelated company events, standalone market, technical, valuation or trading snapshots, portfolio or ETF statistics, and stale company history. Keep possibly ticker-relevant material in the candidate set.
+1. Read every pending Delta with its Runtime context and the complete Known Event Index. Group the incoming Delta into provisional occurrences before matching history.
+2. Compare ticker, likely event type, theme and information cycle, actor or institution, concrete action, matter stage, Event-occurrence candidates, prospective Fact occurrence, subject period, and distinctive figures or terms. Keep occurrence and subject time separate; use title similarity only as a retrieval clue.
+3. Treat `target_suggestion_ids` as candidate seeds. The Index supports high-recall discovery rather than final identity judgment, so include every stable Event ID whose full Facts, dates, or supersession context could materially change the next stage's same-occurrence, related-milestone, or new-Event decision.
+4. For analyst actions, recall both institution-specific Events and any plausible shared-catalyst response episode. A different date alone does not imply a new Event; let full Event Details determine whether the action remains inside the same catalyst, thesis, and bounded information window.
+5. Preserve ambiguity through multiple Detail candidates. When the Index has no plausible match, leave the Event ID lists empty and carry the occurrence forward for next-stage judgment.
+
+Use a loose relevance screen. Keep plausibly ticker-relevant material in an occurrence candidate while its boundary can be developed. Map clearly unrelated material, standalone market snapshots, and stale background to a `KEEP_PENDING_*` candidate; this remains a navigation category rather than a final Delta resolution or Reference View decision.
 
 ## Artifact
 

@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "doxagent://codex_document3/policy_patch.schema.json",
+  "title": "D3 Policy Patch Set V2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["base_policy_set_version", "event_library_ref", "upsert_policies", "retire_policy_ids"],
+  "properties": {
+    "base_policy_set_version": {"type": "integer", "minimum": 1},
+    "event_library_ref": {"$ref": "policy_set.schema.json#/$defs/event_library_ref"},
+    "upsert_policies": {"type": "array", "items": {"$ref": "policy_set.schema.json#/$defs/policy"}},
+    "retire_policy_ids": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+  }
+}

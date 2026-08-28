@@ -6,24 +6,34 @@ import hashlib
 import json
 import re
 import unicodedata
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, cast
 from zoneinfo import ZoneInfo
 
 from doxagent.event_library.contracts import (
+    CandidateMap,
     CanonicalEvent,
     CanonicalEventRevision,
     CanonicalRevisionBundleManifest,
-    CanonicalSubjectTimeMarker,
+    DateResolutionLedgerEntry,
     DeltaBatch,
+    EventRetirement,
     FrozenViewManifest,
     ReferenceReviewCandidate,
+    ReferenceReviewDecision,
+    ReferenceViewDecisionLedgerEntry,
+    ResidualDeltaResolution,
     RuntimePackageDelta,
+    SurveyDeltaCatalog,
+    TimeReferenceRepairReason,
+    TimeReferenceRepairWorkItem,
+    WaveIndex,
 )
+from doxagent.event_library.reference_review import occurrence_anchor, occurrence_start
 from doxagent.event_library.repository import EventLibraryRepository
 
-REFERENCE_VIEW_CONTRACT_VERSION = "reference-view-md-v3"
+REFERENCE_VIEW_CONTRACT_VERSION = "reference-view-md-v4"
 KNOWN_EVENT_INDEX_CONTRACT_VERSION = "known-event-index-v2"
 _EASTERN = ZoneInfo("America/New_York")
 _ISO_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
@@ -79,24 +89,77 @@ def _summary_duplicates_title(*, title: str, summary: str) -> bool:
 
 
 def _event_order(events: list[CanonicalEvent]) -> list[CanonicalEvent]:
-    by_id = sorted(events, key=lambda item: int(item.event_id[1:]))
-    return sorted(by_id, key=lambda item: item.occurred_at, reverse=True)
+    def order(item: CanonicalEvent) -> tuple[bool, int, int]:
+        anchor = occurrence_anchor(item.occurred_at, item.occurrence_time_precision)
+        return (
+            anchor is None,
+            -(anchor.toordinal() if anchor is not None else 0),
+            int(item.event_id[1:]),
+        )
+
+    return sorted(events, key=order)
+
+
+def _described_schema(model: Any, *, title: str, description: str) -> dict[str, Any]:
+    schema: dict[str, Any] = model.model_json_schema()
+    schema["title"] = title
+    schema["description"] = description
+    return schema
+
+
+def _new_event_revision_schema() -> dict[str, Any]:
+    schema = _described_schema(
+        CanonicalEventRevision,
+        title="Canonical Event Revision",
+        description=(
+            "A complete new or revised Event under maintenance-v3, including exact "
+            "Fact occurrence dates, full Fact membership and Delta consumption."
+        ),
+    )
+    fact_schema = (schema.get("$defs") or {}).get("CanonicalFactRevision")
+    if isinstance(fact_schema, dict):
+        required = list(fact_schema.get("required") or [])
+        for field in ("fact_occurred_at", "fact_occurrence_time_precision"):
+            if field not in required:
+                required.append(field)
+        fact_schema["required"] = required
+    return schema
+
+
+def _new_bundle_manifest_schema() -> dict[str, Any]:
+    schema = _described_schema(
+        CanonicalRevisionBundleManifest,
+        title="Revision Bundle Manifest",
+        description="maintenance-v3 manifest identity and Event-file index.",
+    )
+    contract = (schema.get("properties") or {}).get("contract_version")
+    if isinstance(contract, dict):
+        contract.pop("enum", None)
+        contract["const"] = "event-library-maintenance-v3"
+        contract["default"] = "event-library-maintenance-v3"
+    return schema
 
 
 def _reference_fact_lines(event: CanonicalEvent) -> list[str]:
-    """Render non-singleton Facts without repeating an Event-equivalent time."""
+    """Render Fact occurrence and subject time without conflating either one."""
 
-    if len(event.facts) == 1:
-        return []
     lines = ["facts:", ""]
     for fact in event.facts:
         proposition = _wire_cell(fact.proposition)
-        if fact.subject_time == CanonicalSubjectTimeMarker.SAME:
-            lines.append(f"- {proposition}")
-            continue
-        subject_time = _wire_cell(fact.subject_time or "null")
-        lines.append(f"- [{subject_time}] {proposition}")
+        occurred = _wire_cell(fact.fact_occurred_at or "LEGACY_UNAVAILABLE")
+        if fact.fact_occurred_at == "SAME":
+            occurred = _wire_cell(event.occurred_at)
+        subject = _wire_cell(fact.subject_time or "null")
+        lines.append(f"- Fact occurred_at: {occurred}")
+        lines.append(f"  Fact subject_time: {subject}")
+        lines.append(f"  Proposition: {proposition}")
     return lines
+
+
+def _fact_occurrence_display(event: CanonicalEvent, value: str | None) -> str:
+    if value == "SAME":
+        return event.occurred_at
+    return value or "LEGACY_UNAVAILABLE"
 
 
 class EventLibraryViewCompiler:
@@ -112,16 +175,12 @@ class EventLibraryViewCompiler:
                 _wire_cell(_display_occurrence_time(event.occurred_at)),
                 _wire_cell(event.title),
             ]
-            if not _summary_duplicates_title(
-                title=event.title, summary=event.known_event_summary
-            ):
+            if not _summary_duplicates_title(title=event.title, summary=event.known_event_summary):
                 cells.append(_wire_cell(event.known_event_summary))
             lines.append(" | ".join(cells))
         return "" if not lines else "\n".join(lines) + "\n"
 
-    def reference_events(
-        self, ticker: str, version: int | None = None
-    ) -> list[CanonicalEvent]:
+    def reference_events(self, ticker: str, version: int | None = None) -> list[CanonicalEvent]:
         selected = self._repository.published_version(ticker) if version is None else version
         return [
             event
@@ -129,20 +188,31 @@ class EventLibraryViewCompiler:
             if event.include_in_reference_view
         ]
 
-    def reference_view(self, ticker: str, version: int | None = None) -> str:
-        sections = ["fields: event_id | occurred_at | title", ""]
+    def reference_view(
+        self, ticker: str, version: int | None = None, *, include_basis: bool = False
+    ) -> str:
+        sections = ["fields: event_id | event_time | precision | title", ""]
         for event in self.reference_events(ticker, version):
+            basis = (
+                self._repository.latest_reference_view_basis(
+                    ticker=ticker, event_id=event.event_id
+                )
+                if include_basis
+                else None
+            )
             sections.extend(
                 [
                     " | ".join(
                         (
                             event.event_id,
                             _wire_cell(_display_occurrence_time(event.occurred_at)),
+                            event.occurrence_time_precision.value,
                             _wire_cell(event.title),
                         )
                     ),
                     f"event_type: {_wire_cell(event.event_type)}",
                     f"canonical_summary: {_wire_cell(event.canonical_summary)}",
+                    *([] if basis is None else [f"reference_view_basis: {_wire_cell(basis)}"]),
                     *_reference_fact_lines(event),
                     "",
                 ]
@@ -154,6 +224,55 @@ class EventLibraryViewCompiler:
     ) -> CanonicalEvent | None:
         return self._repository.get_event(ticker, event_id, version)
 
+    def time_reference_repair_worklist(
+        self,
+        ticker: str,
+        *,
+        as_of: datetime,
+        version: int | None = None,
+        affected_event_ids: set[str] | None = None,
+    ) -> list[TimeReferenceRepairWorkItem]:
+        """Deterministically scope V1->V2 repair without changing Published data."""
+
+        output: list[TimeReferenceRepairWorkItem] = []
+        broad = {"MONTH", "QUARTER", "YEAR", "INTERVAL", "UNKNOWN"}
+        for event in self._repository.published_events(ticker, version):
+            if affected_event_ids is not None and event.event_id not in affected_event_ids:
+                continue
+            reasons: set[TimeReferenceRepairReason] = set()
+            fact_ids: set[str] = set()
+            for fact in event.facts:
+                if fact.fact_occurred_at is None:
+                    reasons.add(TimeReferenceRepairReason.LEGACY_FACT_OCCURRENCE_MISSING)
+                    fact_ids.add(fact.fact_id)
+                if (
+                    fact.fact_occurred_at == "SAME"
+                    and event.occurrence_time_precision.value in broad
+                ):
+                    reasons.add(TimeReferenceRepairReason.BROAD_EVENT_FACT_SAME)
+                    fact_ids.add(fact.fact_id)
+            start = occurrence_start(event.occurred_at, event.occurrence_time_precision)
+            if start is not None and start > as_of.astimezone(UTC).date():
+                reasons.add(TimeReferenceRepairReason.FUTURE_OCCURRENCE_AFTER_AS_OF)
+            if (
+                self._repository.latest_reference_view_basis(
+                    ticker=ticker, event_id=event.event_id
+                )
+                is None
+            ):
+                reasons.add(TimeReferenceRepairReason.REFERENCE_BASIS_MISSING)
+            if event.supersedes_event_id is not None:
+                reasons.add(TimeReferenceRepairReason.SUPERSESSION_CONTEXT)
+            if reasons:
+                output.append(
+                    TimeReferenceRepairWorkItem(
+                        event_id=event.event_id,
+                        fact_ids=sorted(fact_ids, key=lambda item: int(item[1:])),
+                        reasons=sorted(reasons, key=lambda item: item.value),
+                    )
+                )
+        return output
+
     def materialize_frozen_view(
         self,
         *,
@@ -164,9 +283,14 @@ class EventLibraryViewCompiler:
         as_of: datetime,
         reference_review_candidates: list[ReferenceReviewCandidate] | None = None,
         upstream_context_manifest: dict[str, Any] | None = None,
+        upstream_d1_reports: dict[str, str] | None = None,
     ) -> tuple[Path, FrozenViewManifest]:
         if not batches:
             raise ValueError("at least one Delta batch is required")
+        if upstream_context_manifest is not None and upstream_d1_reports is None:
+            raise ValueError(
+                "Published D1 C1/C3/C5 report bodies are required with upstream context"
+            )
         ticker = batches[0].ticker
         base_version = batches[0].base_library_version
         if any(
@@ -194,7 +318,16 @@ class EventLibraryViewCompiler:
                             title=hint.title,
                             runtime_package_version=1,
                             member_delta_ids=[item.delta_id for item in members],
-                            time_anchors=sorted({item.time for item in members}),
+                            time_anchors=sorted(
+                                {item.time for item in members if item.time is not None}
+                            ),
+                            subject_time_anchors=sorted(
+                                {
+                                    item.subject_time
+                                    for item in members
+                                    if item.subject_time is not None
+                                }
+                            ),
                             entity_anchors=sorted(
                                 {entity for item in members for entity in item.entities}
                             ),
@@ -214,6 +347,7 @@ class EventLibraryViewCompiler:
             "published_events": [event.model_dump(mode="json") for event in events],
             "reference_review_candidates": reference_review_candidates or [],
             "upstream_context_manifest": upstream_context_manifest,
+            "upstream_d1_reports": upstream_d1_reports,
             "runtime_packages": [item.model_dump(mode="json") for item in effective_packages],
             "known_event_index_contract_version": KNOWN_EVENT_INDEX_CONTRACT_VERSION,
         }
@@ -234,6 +368,7 @@ class EventLibraryViewCompiler:
         (root / "review").mkdir()
         (root / "upstream").mkdir()
         (root / "schemas").mkdir()
+        (root / "examples" / "bundle" / "events").mkdir(parents=True)
         (root / "known_event_index.md").write_text(
             self.known_event_index(ticker, base_version), encoding="utf-8"
         )
@@ -245,7 +380,17 @@ class EventLibraryViewCompiler:
             {
                 "delta_id": item.delta_id,
                 "proposition": item.proposition,
-                "time": item.time,
+                "raw_time": item.time,
+                "subject_time": item.subject_time,
+                "occurrence_date_candidates": [
+                    candidate.model_dump(mode="json")
+                    for candidate in item.occurrence_date_candidates
+                ],
+                **(
+                    {"source_message_ids": item.source_message_ids}
+                    if item.source_message_ids
+                    else {}
+                ),
                 "assertion_state": item.assertion_state.value,
                 "entities": item.entities,
                 "runtime_hint_ids": item.runtime_hint_ids,
@@ -274,6 +419,7 @@ class EventLibraryViewCompiler:
                     _wire_cell(str(package["title"])),
                     ",".join(package["member_delta_ids"]),
                     ",".join(package["time_anchors"]),
+                    ",".join(package["subject_time_anchors"]),
                     ",".join(package["entity_anchors"]),
                 )
             )
@@ -290,17 +436,173 @@ class EventLibraryViewCompiler:
             encoding="utf-8",
         )
         upstream_path: str | None = None
+        upstream_d1_manifest_path: str | None = None
+        upstream_d1_paths: dict[str, str] = {}
         if upstream_context_manifest is not None:
             upstream_path = "upstream/o2_upstream_context_manifest.json"
-            (root / upstream_path).write_text(
-                _json_text(upstream_context_manifest), encoding="utf-8"
+            frozen_upstream = dict(upstream_context_manifest)
+            if upstream_d1_reports is not None:
+                if set(upstream_d1_reports) != {"c1", "c3", "c5"}:
+                    raise ValueError("O2 Frozen View requires exactly D1 C1/C3/C5 report bodies")
+                d1_root = root / "upstream" / "d1"
+                d1_root.mkdir()
+                artifact_rows: dict[str, dict[str, Any]] = {}
+                for role in ("c1", "c3", "c5"):
+                    content = upstream_d1_reports[role]
+                    encoded = content.encode("utf-8")
+                    relative = f"upstream/d1/{role}.md"
+                    (root / relative).write_text(content, encoding="utf-8")
+                    upstream_d1_paths[role] = relative
+                    artifact_rows[role] = {
+                        "relative_path": relative,
+                        "sha256": hashlib.sha256(encoded).hexdigest(),
+                        "size_bytes": len(encoded),
+                        "source_artifact": dict(
+                            (upstream_context_manifest.get("research_artifacts") or {}).get(role)
+                            or {}
+                        ),
+                    }
+                upstream_d1_manifest_path = "upstream/d1/artifact_manifest.json"
+                (root / upstream_d1_manifest_path).write_text(
+                    _json_text(
+                        {
+                            "d1_run_id": upstream_context_manifest.get("d1_run_id"),
+                            "published_at": upstream_context_manifest.get("d1_published_at"),
+                            "reports": artifact_rows,
+                        }
+                    ),
+                    encoding="utf-8",
+                )
+                frozen_upstream["frozen_d1_artifacts"] = artifact_rows
+            (root / upstream_path).write_text(_json_text(frozen_upstream), encoding="utf-8")
+
+        schema_specs = [
+            (
+                "canonical_event_revision.schema.json",
+                CanonicalEventRevision,
+                "Canonical Event Revision",
+                "A complete new or revised Event, including full Fact membership "
+                "and Delta consumption.",
+                "JSON",
+                True,
+            ),
+            (
+                "date_resolution_ledger.schema.json",
+                DateResolutionLedgerEntry,
+                "Date Resolution Ledger Entry",
+                "Traceable Event/Fact occurrence or subject-time resolution record.",
+                "JSONL",
+                True,
+            ),
+            (
+                "reference_view_decision_ledger.schema.json",
+                ReferenceViewDecisionLedgerEntry,
+                "Reference View Decision Ledger Entry",
+                "Auditable importance and current-state Reference decision basis.",
+                "JSONL",
+                True,
+            ),
+            (
+                "revision_bundle_manifest.schema.json",
+                CanonicalRevisionBundleManifest,
+                "Revision Bundle Manifest",
+                "Manifest-only identity and Event-file index; retirements, residuals "
+                "and review decisions use separate files.",
+                "JSON",
+                True,
+            ),
+            (
+                "event_retirement.schema.json",
+                EventRetirement,
+                "Event Retirement",
+                "Lifecycle redirect for a stable or same-Bundle temporary Event.",
+                "JSON array items",
+                False,
+            ),
+            (
+                "residual_delta_resolution.schema.json",
+                ResidualDeltaResolution,
+                "Residual Delta Resolution",
+                "One formal residual resolution. The wire field is resolution; "
+                "disposition is legacy read compatibility only.",
+                "JSONL",
+                False,
+            ),
+            (
+                "reference_review_decision.schema.json",
+                ReferenceReviewDecision,
+                "Reference Review Decision",
+                "Model-selected flags plus deterministic frozen-clock review fields.",
+                "JSONL",
+                False,
+            ),
+            (
+                "candidate_map.schema.json",
+                CandidateMap,
+                "Incremental Candidate Map",
+                "High-recall Event Detail access map; it is navigation, not an "
+                "occurrence decision.",
+                "JSON",
+                False,
+            ),
+            (
+                "survey_delta_catalog.schema.json",
+                SurveyDeltaCatalog,
+                "Survey Delta Catalog",
+                "Exactly-once assignment of each Survey D# to an occurrence or "
+                "KEEP_PENDING_* navigation key.",
+                "JSON",
+                False,
+            ),
+            (
+                "wave_index.schema.json",
+                WaveIndex,
+                "Initialization Wave Index",
+                "Exactly-once wave accounting with draft paths and unresolved "
+                "reconciliation questions.",
+                "JSON",
+                False,
+            ),
+        ]
+        schema_index: list[dict[str, Any]] = []
+        for filename, model, title, description, wire_format, required in schema_specs:
+            schema = (
+                _new_event_revision_schema()
+                if model is CanonicalEventRevision
+                else (
+                    _new_bundle_manifest_schema()
+                    if model is CanonicalRevisionBundleManifest
+                    else _described_schema(model, title=title, description=description)
+                )
             )
-        (root / "schemas" / "canonical_event.schema.json").write_text(
-            _json_text(CanonicalEventRevision.model_json_schema()), encoding="utf-8"
+            (root / "schemas" / filename).write_text(_json_text(schema), encoding="utf-8")
+            schema_index.append(
+                {
+                    "path": f"schemas/{filename}",
+                    "format": wire_format,
+                    "required": required,
+                    "applies_to": title,
+                }
+            )
+        # Compatibility path retained for old prompts, explicitly manifest-only.
+        legacy_manifest_schema = _described_schema(
+            CanonicalRevisionBundleManifest,
+            title="Revision Bundle Manifest Only (Legacy Filename)",
+            description=(
+                "Compatibility alias for revision_bundle_manifest.schema.json. "
+                "This is not a schema for the complete multi-file Revision Bundle."
+            ),
         )
         (root / "schemas" / "revision_bundle.schema.json").write_text(
-            _json_text(CanonicalRevisionBundleManifest.model_json_schema()), encoding="utf-8"
+            _json_text(legacy_manifest_schema), encoding="utf-8"
         )
+        (root / "schemas" / "schema_index.json").write_text(
+            _json_text(
+                {"contract_version": "event-library-schema-index-v1", "files": schema_index}
+            ),
+            encoding="utf-8",
+        )
+        self._write_minimal_bundle_example(root / "examples" / "bundle")
         manifest = FrozenViewManifest(
             frozen_view_id=frozen_view_id,
             run_id=run_id,
@@ -319,13 +621,248 @@ class EventLibraryViewCompiler:
             package_index_path="delta/package_index.md",
             reference_review_candidates_path="review/reference_review_candidates.json",
             upstream_context_manifest_path=upstream_path,
-            canonical_event_schema_path="schemas/canonical_event.schema.json",
-            revision_bundle_schema_path="schemas/revision_bundle.schema.json",
+            upstream_d1_artifact_manifest_path=upstream_d1_manifest_path,
+            upstream_d1_report_paths=upstream_d1_paths,
+            canonical_event_schema_path="schemas/canonical_event_revision.schema.json",
+            revision_bundle_schema_path="schemas/revision_bundle_manifest.schema.json",
         )
         (root / "manifest.json").write_text(
             _json_text(manifest.model_dump(mode="json")), encoding="utf-8"
         )
         return root, manifest
+
+    @staticmethod
+    def _write_minimal_bundle_example(root: Path) -> None:
+        """Write a generic wire example; it is documentation, never business input."""
+
+        (root / "manifest.json").write_text(
+            _json_text(
+                {
+                    "contract_version": "event-library-maintenance-v3",
+                    "run_id": "example-run",
+                    "ticker": "XYZ",
+                    "base_library_version": 3,
+                    "delta_batch_ids": ["example-delta-batch"],
+                    "event_revisions": ["events/T1.json", "events/E7.json"],
+                }
+            ),
+            encoding="utf-8",
+        )
+        event: dict[str, Any] = {
+            "event_id": "T1",
+            "ticker": "XYZ",
+            "title": "XYZ announced a product milestone",
+            "event_type": "PRODUCT_MILESTONE",
+            "occurred_at": "2026-01-15",
+            "occurrence_time_precision": "DAY",
+            "status": "ACTIVE",
+            "canonical_summary": "XYZ announced a product milestone.",
+            "known_event_summary": "On 2026-01-15, XYZ announced a product milestone.",
+            "is_important": True,
+            "include_in_reference_view": True,
+            "related_event_ids": ["E7"],
+            "supersedes_event_id": None,
+            "derived_from_event_ids": [],
+            "facts": [
+                {
+                    "fact_id": "TF1",
+                    "proposition": "XYZ announced the milestone.",
+                    "assertion_state": "ACTUAL",
+                    "subject_time": "SAME",
+                    "fact_occurred_at": "SAME",
+                    "fact_occurrence_time_precision": "DAY",
+                    "consumes_delta_ids": ["D1"],
+                }
+            ],
+            "price_analysis": None,
+        }
+        (root / "events" / "T1.json").write_text(_json_text(event), encoding="utf-8")
+        existing = dict(event)
+        existing.update(
+            {
+                "event_id": "E7",
+                "related_event_ids": ["T1"],
+                "facts": [{**event["facts"][0], "fact_id": "F9", "consumes_delta_ids": ["D2"]}],
+            }
+        )
+        (root / "events" / "E7.json").write_text(_json_text(existing), encoding="utf-8")
+        (root / "retirements.json").write_text(
+            _json_text(
+                [
+                    {
+                        "event_id": "E6",
+                        "redirect_to_event_id": "E7",
+                        "reason": "MERGED_DUPLICATE_OCCURRENCE",
+                    }
+                ]
+            ),
+            encoding="utf-8",
+        )
+        (root / "residual_delta_resolutions.jsonl").write_text(
+            "\n".join(
+                (
+                    json.dumps(
+                        {
+                            "delta_id": "D3",
+                            "resolution": "DUPLICATE_FACT",
+                            "target_event_id": "E7",
+                            "target_fact_id": "F9",
+                        }
+                    ),
+                    json.dumps(
+                        {
+                            "delta_id": "D4",
+                            "resolution": "KEEP_PENDING",
+                            "target_event_id": None,
+                            "target_fact_id": None,
+                        }
+                    ),
+                )
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        (root / "reference_review_decisions.jsonl").write_text(
+            "\n".join(
+                json.dumps(
+                    {
+                        "event_id": event_id,
+                        "reviewed_at": "2026-01-20T00:00:00Z",
+                        "review_mode": "IMPLICIT",
+                        "candidate_reason": "PERIODIC_10D",
+                        "changed": event_id == "T1",
+                        "include_in_reference_view": True,
+                        "is_important": True,
+                        "reference_view_basis": "CURRENT_BASELINE",
+                        "next_review_at": "2026-01-30T00:00:00Z",
+                        "note": "Still useful.",
+                    }
+                )
+                for event_id in ("T1", "E7")
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        (root / "date_resolution_ledger.jsonl").write_text(
+            "\n".join(
+                json.dumps(row)
+                for row in cast(
+                    tuple[dict[str, Any], ...],
+                    (
+                    {
+                        "delta_id": "D1",
+                        "runtime_atomic_id": "runtime-example-1",
+                        "runtime_package_id": None,
+                        "source_message_id": "source-example-1",
+                        "candidates": [],
+                        "selected_date": "2026-01-15",
+                        "selected_precision": "DAY",
+                        "semantic_role": "EVENT_OCCURRENCE",
+                        "status": "RESOLVED",
+                        "event_id": "T1",
+                        "fact_id": None,
+                        "subject_time": None,
+                        "note": None,
+                    },
+                    {
+                        "delta_id": "D1",
+                        "runtime_atomic_id": "runtime-example-1",
+                        "runtime_package_id": None,
+                        "source_message_id": "source-example-1",
+                        "candidates": [],
+                        "selected_date": "2026-01-15",
+                        "selected_precision": "DAY",
+                        "semantic_role": "FACT_OCCURRENCE",
+                        "status": "RESOLVED",
+                        "event_id": "T1",
+                        "fact_id": "TF1",
+                        "subject_time": "SAME",
+                        "note": None,
+                    },
+                    {
+                        "delta_id": "D2",
+                        "runtime_atomic_id": "runtime-example-2",
+                        "runtime_package_id": None,
+                        "source_message_id": "source-example-2",
+                        "candidates": [],
+                        "selected_date": "2026-01-15",
+                        "selected_precision": "DAY",
+                        "semantic_role": "EVENT_OCCURRENCE",
+                        "status": "RESOLVED",
+                        "event_id": "E7",
+                        "fact_id": None,
+                        "subject_time": None,
+                        "note": None,
+                    },
+                    {
+                        "delta_id": "D2",
+                        "runtime_atomic_id": "runtime-example-2",
+                        "runtime_package_id": None,
+                        "source_message_id": "source-example-2",
+                        "candidates": [],
+                        "selected_date": "2026-01-15",
+                        "selected_precision": "DAY",
+                        "semantic_role": "FACT_OCCURRENCE",
+                        "status": "RESOLVED",
+                        "event_id": "E7",
+                        "fact_id": "F9",
+                        "subject_time": "SAME",
+                        "note": None,
+                    },
+                    {
+                        "delta_id": "D3",
+                        "runtime_atomic_id": "runtime-example-3",
+                        "runtime_package_id": None,
+                        "source_message_id": None,
+                        "candidates": [],
+                        "selected_date": None,
+                        "selected_precision": None,
+                        "semantic_role": "EVENT_OCCURRENCE",
+                        "status": "UNRESOLVED",
+                        "event_id": None,
+                        "fact_id": None,
+                        "subject_time": None,
+                        "note": "Retained Pending.",
+                    },
+                    {
+                        "delta_id": "D4",
+                        "runtime_atomic_id": "runtime-example-4",
+                        "runtime_package_id": None,
+                        "source_message_id": None,
+                        "candidates": [],
+                        "selected_date": None,
+                        "selected_precision": None,
+                        "semantic_role": "EVENT_OCCURRENCE",
+                        "status": "UNRESOLVED",
+                        "event_id": None,
+                        "fact_id": None,
+                        "subject_time": None,
+                        "note": "Retained Pending.",
+                    },
+                    ),
+                )
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        (root / "reference_view_decision_ledger.jsonl").write_text(
+            "\n".join(
+                json.dumps(
+                    {
+                        "event_id": event_id,
+                        "is_important": True,
+                        "include_in_reference_view": True,
+                        "reference_view_basis": "CURRENT_BASELINE",
+                        "note": "Defines the current product baseline.",
+                        "review_reason": "NEW_OR_MODIFIED",
+                        "as_of": "2026-01-20T00:00:00Z",
+                    }
+                )
+                for event_id in ("T1", "E7")
+            )
+            + "\n",
+            encoding="utf-8",
+        )
 
     def export_published(
         self, *, ticker: str, output_dir: str | Path, version: int | None = None
@@ -358,21 +895,27 @@ class EventLibraryViewCompiler:
                 [
                     f"## {event.event_id} — {event.title}",
                     "",
-                    f"- Occurred: {event.occurred_at}",
+                    f"- Event time: {event.occurred_at} [{event.occurrence_time_precision.value}]",
                     f"- Type: {event.event_type}",
                     f"- Summary: {event.canonical_summary}",
                     "",
-                    *[f"- {fact.fact_id}: {fact.proposition}" for fact in event.facts],
+                    *[
+                        (
+                            f"- {fact.fact_id}: occurred_at="
+                            f"{_fact_occurrence_display(event, fact.fact_occurred_at)}; "
+                            f"subject_time={fact.subject_time or 'null'}; {fact.proposition}"
+                        )
+                        for fact in event.facts
+                    ],
                     "",
                 ]
             )
         markdown_path.write_text("\n".join(sections), encoding="utf-8")
         reference = self.reference_view(ticker, selected)
+        human_reference = self.reference_view(ticker, selected, include_basis=True)
         agent_reference_path.write_text(reference, encoding="utf-8")
-        human_reference_path.write_text(reference, encoding="utf-8")
-        known_index_path.write_text(
-            self.known_event_index(ticker, selected), encoding="utf-8"
-        )
+        human_reference_path.write_text(human_reference, encoding="utf-8")
+        known_index_path.write_text(self.known_event_index(ticker, selected), encoding="utf-8")
         return {
             "json": json_path,
             "markdown": markdown_path,

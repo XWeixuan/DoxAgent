@@ -56,13 +56,9 @@ def test_failed_phase_resumes_as_new_immutable_attempt_and_repairs_dependencies(
             "prior_attempt_paths": ["attempts/o2-survey/output/work"],
         },
     ]
-    resolved = _resolve_phase_attempts(
-        phases, completed=[], failed_attempt_id="o2-survey"
-    )
+    resolved = _resolve_phase_attempts(phases, completed=[], failed_attempt_id="o2-survey")
     assert resolved[0]["attempt_id"] == "o2-survey-retry-001"
-    assert resolved[1]["prior_attempt_paths"] == [
-        "attempts/o2-survey-retry-001/output/work"
-    ]
+    assert resolved[1]["prior_attempt_paths"] == ["attempts/o2-survey-retry-001/output/work"]
     inferred = _infer_unfinished_attempt(
         [
             "attempts/o2-survey/input/task.json",
@@ -106,7 +102,7 @@ class FakeO2Worker:
                 "event_id": "T1",
                 "ticker": "AMD",
                 "title": "AMD announced two product updates",
-                "event_type": "COMPANY_DISCLOSURE",
+                "event_type": "PRODUCT_ANNOUNCEMENT",
                 "occurred_at": "2026-08-23",
                 "occurrence_time_precision": "DAY",
                 "status": "ACTIVE",
@@ -123,21 +119,25 @@ class FakeO2Worker:
                         "fact_id": "TF1",
                         "proposition": "AMD announced product A.",
                         "assertion_state": "ACTUAL",
-                        "subject_time": "2026-08-23",
+                        "subject_time": "SAME",
+                        "fact_occurred_at": "SAME",
+                        "fact_occurrence_time_precision": "DAY",
                         "consumes_delta_ids": ["D1"],
                     },
                     {
                         "fact_id": "TF2",
                         "proposition": "AMD announced product B.",
                         "assertion_state": "ACTUAL",
-                        "subject_time": "2026-08-23",
+                        "subject_time": "SAME",
+                        "fact_occurred_at": "SAME",
+                        "fact_occurrence_time_precision": "DAY",
                         "consumes_delta_ids": ["D2"],
                     },
                 ],
             }
             files = {
                 f"{root}/manifest.json": {
-                    "contract_version": "event-library-foundation-v1",
+                    "contract_version": "event-library-maintenance-v3",
                     "run_id": request.run_id,
                     "ticker": "AMD",
                     "base_library_version": 0,
@@ -156,6 +156,106 @@ class FakeO2Worker:
             await self.workspace.write_text(
                 request.run_id, f"{root}/residual_delta_resolutions.jsonl", ""
             )
+            await self.workspace.write_text(
+                request.run_id,
+                f"{root}/date_resolution_ledger.jsonl",
+                "\n".join(
+                    json.dumps(row)
+                    for row in [
+                        {
+                            "delta_id": "D1",
+                            "runtime_atomic_id": "A1",
+                            "runtime_package_id": None,
+                            "source_message_id": None,
+                            "candidates": [],
+                            "selected_date": "2026-08-23",
+                            "selected_precision": "DAY",
+                            "semantic_role": "EVENT_OCCURRENCE",
+                            "status": "RESOLVED",
+                            "event_id": "T1",
+                            "fact_id": None,
+                            "subject_time": None,
+                            "note": None,
+                        },
+                        {
+                            "delta_id": "D1",
+                            "runtime_atomic_id": "A1",
+                            "runtime_package_id": None,
+                            "source_message_id": None,
+                            "candidates": [],
+                            "selected_date": "2026-08-23",
+                            "selected_precision": "DAY",
+                            "semantic_role": "FACT_OCCURRENCE",
+                            "status": "RESOLVED",
+                            "event_id": "T1",
+                            "fact_id": "TF1",
+                            "subject_time": "SAME",
+                            "note": None,
+                        },
+                        {
+                            "delta_id": "D2",
+                            "runtime_atomic_id": "A2",
+                            "runtime_package_id": None,
+                            "source_message_id": None,
+                            "candidates": [],
+                            "selected_date": "2026-08-23",
+                            "selected_precision": "DAY",
+                            "semantic_role": "FACT_OCCURRENCE",
+                            "status": "RESOLVED",
+                            "event_id": "T1",
+                            "fact_id": "TF2",
+                            "subject_time": "SAME",
+                            "note": None,
+                        },
+                    ]
+                )
+                + "\n",
+            )
+            decision = {
+                "event_id": "T1",
+                "reviewed_at": "2026-08-24T00:00:00Z",
+                "review_mode": "IMPLICIT",
+                "candidate_reason": "NEW_OR_MODIFIED",
+                "changed": True,
+                "include_in_reference_view": True,
+                "is_important": True,
+                "reference_view_basis": "CURRENT_BASELINE",
+                "next_review_at": "2026-09-03T00:00:00Z",
+                "note": "Current product baseline.",
+            }
+            await self.workspace.write_text(
+                request.run_id,
+                f"{root}/reference_review_decisions.jsonl",
+                json.dumps(decision) + "\n",
+            )
+            await self.workspace.write_text(
+                request.run_id,
+                f"{root}/reference_view_decision_ledger.jsonl",
+                json.dumps(
+                    {
+                        "event_id": "T1",
+                        "is_important": True,
+                        "include_in_reference_view": True,
+                        "reference_view_basis": "CURRENT_BASELINE",
+                        "note": "Current product baseline.",
+                        "review_reason": "NEW_OR_MODIFIED",
+                        "as_of": "2026-08-24T00:00:00Z",
+                    }
+                )
+                + "\n",
+            )
+            for filename in (
+                "date_resolution_ledger.jsonl",
+                "reference_view_decision_ledger.jsonl",
+            ):
+                ledger = await self.workspace.read_text(
+                    request.run_id, f"{root}/{filename}"
+                )
+                await self.workspace.write_text(
+                    request.run_id,
+                    f"attempts/{request.attempt_id}/output/work/{filename}",
+                    ledger.content or "",
+                )
             output = O2RunResult(
                 status="BUNDLE_READY",
                 stage=EventLibraryRunStage.GLOBAL_RECONCILIATION,
@@ -164,15 +264,51 @@ class FakeO2Worker:
                 delta_coverage={"total": 2, "resolved": 2, "pending": 0},
             )
         else:
+            stage = (
+                EventLibraryRunStage.SURVEY
+                if request.attempt_id == "o2-survey"
+                else EventLibraryRunStage.LOCAL_RECONSTRUCTION
+            )
+            task_response = await self.workspace.read_text(
+                request.run_id, f"attempts/{request.attempt_id}/input/task.json"
+            )
+            task = json.loads(task_response.content or "{}")
+            if stage is EventLibraryRunStage.SURVEY:
+                await self.workspace.write_text(
+                    request.run_id,
+                    f"attempts/{request.attempt_id}/output/work/delta_catalog.json",
+                    json.dumps(
+                        {item: "product-announcement" for item in task["assigned_delta_ids"]}
+                    )
+                    + "\n",
+                )
+            else:
+                await self.workspace.write_text(
+                    request.run_id,
+                    f"attempts/{request.attempt_id}/output/work/wave_index.json",
+                    json.dumps(
+                        {
+                            "entries": [
+                                {
+                                    "candidate_key": "product-announcement",
+                                    "assigned_delta_ids": task["assigned_delta_ids"],
+                                    "draft_paths": [],
+                                    "unresolved_recommendation": None,
+                                }
+                            ]
+                        }
+                    )
+                    + "\n",
+                )
             output = O2RunResult(
                 status="PENDING",
-                stage=(
-                    EventLibraryRunStage.SURVEY
-                    if request.attempt_id == "o2-survey"
-                    else EventLibraryRunStage.LOCAL_RECONSTRUCTION
-                ),
+                stage=stage,
                 base_library_version=0,
-                delta_coverage={"total": 2, "resolved": 0, "pending": 2},
+                delta_coverage=(
+                    {"total": 2, "resolved": 0, "pending": 2}
+                    if stage is EventLibraryRunStage.SURVEY
+                    else {"total": 1, "resolved": 0, "pending": 1}
+                ),
             )
         return WorkerJob(
             job_id=f"job-{request.attempt_id}",
@@ -243,6 +379,13 @@ async def test_wave_initialization_reuses_thread_publishes_and_resumes_without_m
     assert {request.thread_id for request in worker.requests[1:]} == {"o2-thread-1"}
     assert len(worker.requests) == 4
     assert all(path.exists() for path in exports.values())
+    for request in worker.requests:
+        skill = workspace.store.read_text(
+            request.run_id, f"attempts/{request.attempt_id}/input/skill.md"
+        ).content
+        assert skill is not None
+        assert "# Foundation Contract" in skill
+        assert "# Current Stage Contract" in skill
 
     _, repeated, _, _ = await initializer.run(
         snapshot=snapshot,

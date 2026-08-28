@@ -43,9 +43,10 @@ from doxagent.workflows.codex_document2.schema import (
     Document2Bundle,
     Document2HandoffV1,
 )
+from doxagent.workflows.codex_document3.schema import Document3Bundle
 
 ModelT = TypeVar("ModelT", bound=BaseModel)
-StoredResearchBundle = ResearchBundle | Document2Bundle
+StoredResearchBundle = ResearchBundle | Document2Bundle | Document3Bundle
 CODEX_RUNTIME_SQLITE_SCHEMA_VERSION = 4
 
 _WARN_BYTES = {
@@ -1227,6 +1228,9 @@ class PostgresCodexRuntimeRepository:
         return self._evidence.get_citation_manifest(run_id, artifact_id)
 
     def save_bundle(self, bundle: StoredResearchBundle) -> None:
+        if isinstance(bundle, Document3Bundle):
+            self._save_document3_bundle(bundle)
+            return
         if isinstance(bundle, Document2Bundle):
             self._save_document2_bundle(bundle)
             return
@@ -1438,6 +1442,69 @@ class PostgresCodexRuntimeRepository:
 
         self._execute("codex.bundle.save", "codex_document2_bundles", op)
 
+    def _save_document3_bundle(self, bundle: Document3Bundle) -> None:
+        updated_at = bundle.updated_at
+        published_at = bundle.published_at or (
+            bundle.handoff.published_at if bundle.handoff else None
+        )
+        registry_status = (
+            "published"
+            if bundle.status == "published"
+            else "failed"
+            if bundle.status == "failed"
+            else "running"
+        )
+
+        def op(_connection: Any, cursor: Any) -> None:
+            cursor.execute(
+                """INSERT INTO doxagent.codex_run_registry
+                   (run_id,ticker,workflow_version,research_lane,status,current_node,
+                    completed_node_count,failed_node_count,latest_event_sequence,
+                    created_at,updated_at,published_at)
+                   VALUES (%s,%s,%s,%s,%s,NULL,0,0,-1,%s,%s,%s)
+                   ON CONFLICT (run_id) DO UPDATE SET
+                     ticker=excluded.ticker,status=excluded.status,current_node=NULL,
+                     updated_at=excluded.updated_at,published_at=excluded.published_at
+                   WHERE doxagent.codex_run_registry.workflow_version=excluded.workflow_version
+                     AND doxagent.codex_run_registry.research_lane=excluded.research_lane
+                   RETURNING workflow_version,research_lane""",
+                (
+                    bundle.run_id,
+                    bundle.ticker,
+                    bundle.workflow_version,
+                    bundle.research_lane.value,
+                    registry_status,
+                    bundle.created_at,
+                    updated_at,
+                    published_at,
+                ),
+            )
+            if cursor.fetchone() is None:
+                raise ValueError(f"run_id belongs to another research lane: {bundle.run_id}")
+            cursor.execute(
+                """INSERT INTO doxagent.codex_document3_bundles
+                   (run_id,ticker,workflow_version,research_lane,status,bundle_json,
+                    created_at,updated_at,published_at)
+                   VALUES (%s,%s,%s,%s,%s,%s::jsonb,%s,%s,%s)
+                   ON CONFLICT (run_id) DO UPDATE SET
+                     ticker=excluded.ticker,status=excluded.status,
+                     bundle_json=excluded.bundle_json,updated_at=excluded.updated_at,
+                     published_at=excluded.published_at""",
+                (
+                    bundle.run_id,
+                    bundle.ticker,
+                    bundle.workflow_version,
+                    bundle.research_lane.value,
+                    bundle.status,
+                    bundle.model_dump_json(),
+                    bundle.created_at,
+                    updated_at,
+                    published_at,
+                ),
+            )
+
+        self._execute("codex.bundle.save", "codex_document3_bundles", op)
+
     def mark_run_published(self, run_id: str, published_at: datetime) -> None:
         def op(_connection: Any, cursor: Any) -> None:
             cursor.execute(
@@ -1463,6 +1530,8 @@ class PostgresCodexRuntimeRepository:
             return self._get_lane_bundle(run_id, workflow_version)
         if workflow_version == "codex_document2_v1":
             return self._get_document2_bundle(run_id)
+        if workflow_version == "codex_document3_v1":
+            return self._get_document3_bundle(run_id)
 
         def op(_connection: Any, cursor: Any) -> Any:
             cursor.execute(
@@ -1618,6 +1687,24 @@ class PostgresCodexRuntimeRepository:
             created_at=row[9],
             published_at=row[10],
         )
+
+    def _get_document3_bundle(self, run_id: str) -> Document3Bundle | None:
+        def op(_connection: Any, cursor: Any) -> Any:
+            cursor.execute(
+                "SELECT bundle_json FROM doxagent.codex_document3_bundles WHERE run_id=%s",
+                (run_id,),
+            )
+            return cursor.fetchone()
+
+        row = self._execute("codex.bundle.get", "codex_document3_bundles", op)
+        self._audit_read(
+            "codex.bundle.get",
+            "codex_document3_bundles",
+            run_id,
+            row,
+            int(row is not None),
+        )
+        return Document3Bundle.model_validate(row[0]) if row else None
 
     def list_run_summaries(
         self,
@@ -1971,12 +2058,16 @@ class HybridCodexRuntimeRepository:
 
     def get_bundle(self, run_id: str) -> StoredResearchBundle | None:
         local = self.local.get_bundle(run_id)
-        if isinstance(local, Document2Bundle):
+        if isinstance(local, (Document2Bundle, Document3Bundle)):
             return local
         bundle = self.remote.get_bundle(run_id)
         if isinstance(bundle, Document2Bundle):
             return bundle
-        if bundle and bundle.handoff and bundle.handoff.citation_manifest_artifact_id:
+        if (
+            bundle
+            and bundle.handoff
+            and getattr(bundle.handoff, "citation_manifest_artifact_id", None)
+        ):
             document_artifact_id = getattr(
                 bundle.handoff,
                 "document1_artifact_id",
@@ -2067,6 +2158,8 @@ def _decode_cursor(cursor: str | None) -> tuple[datetime, str] | None:
 
 
 def _bundle_model_for_version(workflow_version: str) -> type[BaseModel]:
+    if workflow_version == "codex_document3_v1":
+        return Document3Bundle
     if workflow_version == "codex_document2_v1":
         return Document2Bundle
     if workflow_version == "codex_global_research_v1":

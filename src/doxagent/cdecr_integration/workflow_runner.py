@@ -15,6 +15,8 @@ from doxagent.event_library.contracts import (
     CanonicalAssertionState,
     FrozenRuntimeAtomic,
     FrozenRuntimeSnapshot,
+    OccurrenceDateCandidate,
+    OccurrenceDateCandidateSource,
     RuntimePackageSnapshot,
 )
 
@@ -164,19 +166,35 @@ class CDECRWorkflowRunner:
         for package in packages:
             for atomic_id in package.member_event_ids:
                 package_ids_by_atomic.setdefault(atomic_id, []).append(package.package_id)
+        occurrence_candidates_by_atomic: dict[str, list[OccurrenceDateCandidate]] = {}
+        source_ids_by_atomic: dict[str, list[str]] = {}
+        for item in atomics:
+            candidates, source_ids = _atomic_occurrence_inputs(item, self.registry)
+            occurrence_candidates_by_atomic[item.event_id] = candidates
+            source_ids_by_atomic[item.event_id] = source_ids
         frozen_atomics = [
             FrozenRuntimeAtomic(
                 runtime_atomic_id=item.event_id,
                 version=item.version,
                 proposition=item.canonical_proposition,
                 time=_event_time(item),
+                subject_time=_subject_time(item),
+                occurrence_date_candidates=occurrence_candidates_by_atomic[item.event_id],
+                source_message_ids=source_ids_by_atomic[item.event_id],
                 assertion_state=CanonicalAssertionState(item.assertion_state.value),
                 entities=_identity_entities(item),
                 runtime_package_ids=sorted(package_ids_by_atomic.get(item.event_id, [])),
             )
             for item in atomics
         ]
-        frozen_packages = [_package_snapshot(item) for item in packages]
+        frozen_packages = [
+            _package_snapshot(
+                item,
+                candidates_by_atomic=occurrence_candidates_by_atomic,
+                source_ids_by_atomic=source_ids_by_atomic,
+            )
+            for item in packages
+        ]
         identity = {
             "runtime_scope": self.binding.runtime_scope,
             "epoch_id": epoch_id,
@@ -187,6 +205,7 @@ class CDECRWorkflowRunner:
             json.dumps(identity, ensure_ascii=False, sort_keys=True).encode("utf-8")
         ).hexdigest()
         return FrozenRuntimeSnapshot(
+            contract_version="frozen-runtime-time-v2",
             snapshot_id=f"runtime-snapshot:{digest[:24]}",
             runtime_scope=self.binding.runtime_scope,
             epoch_id=epoch_id,
@@ -222,6 +241,15 @@ def _event_time(event: AtomicEvent) -> str:
     return observed or reference or "UNKNOWN"
 
 
+def _subject_time(event: AtomicEvent) -> str | None:
+    if event.time.reference_period_id:
+        return event.time.reference_period_id
+    if event.assertion_state.value in {"PLANNED", "EXPECTED", "HYPOTHETICAL"}:
+        raw = _event_time(event)
+        return None if raw == "UNKNOWN" else raw
+    return None
+
+
 def _identity_entities(event: AtomicEvent) -> list[str]:
     payload = event.identity_profile.model_dump(mode="json")
     values: set[str] = set()
@@ -250,10 +278,106 @@ def _identity_entities(event: AtomicEvent) -> list[str]:
     return sorted(values)[:12]
 
 
-def _package_snapshot(package: EventPackage) -> RuntimePackageSnapshot:
+def _atomic_occurrence_inputs(
+    event: AtomicEvent, registry: CDECRRegistry
+) -> tuple[list[OccurrenceDateCandidate], list[str]]:
+    candidates: list[OccurrenceDateCandidate] = []
+    source_ids: set[str] = set()
+    mentions = [registry.get_mention(mention_id) for mention_id in event.mention_ids]
+    for mention in mentions:
+        if mention is None:
+            continue
+        source = registry.get_source(mention.message_id)
+        if source is None:
+            continue
+        source_ids.add(source.message_id)
+        source_kind = (
+            OccurrenceDateCandidateSource.OFFICIAL_RELEASE_DATE
+            if str(source.source_type.value) in {"FILING", "ANNOUNCEMENT"}
+            else OccurrenceDateCandidateSource.SOURCE_PUBLISHED_AT
+        )
+        candidates.append(
+            OccurrenceDateCandidate(
+                candidate_date=source.published_at.date(),
+                source_kind=source_kind,
+                source_id=source.message_id,
+                source_message_id=source.message_id,
+            )
+        )
+        mentioned = mention.time.event_start or mention.time.event_end
+        if (
+            mentioned is not None
+            and mention.time.precision.value in {"DAY", "TIMESTAMP"}
+            and mention.assertion_state.value not in {"PLANNED", "EXPECTED", "HYPOTHETICAL"}
+        ):
+            candidates.append(
+                OccurrenceDateCandidate(
+                    candidate_date=(
+                        mentioned.date() if isinstance(mentioned, datetime) else mentioned
+                    ),
+                    source_kind=OccurrenceDateCandidateSource.PROPOSITION_EVIDENCE,
+                    source_id=mention.mention_id,
+                    source_message_id=source.message_id,
+                    evidence=mention.canonical_proposition,
+                )
+            )
+    if event.assertion_state.value not in {"PLANNED", "EXPECTED", "HYPOTHETICAL"}:
+        observed = event.time.event_start or event.time.event_end
+        if observed is not None and event.time.precision.value in {"DAY", "TIMESTAMP"}:
+            candidates.append(
+                OccurrenceDateCandidate(
+                    candidate_date=observed.date() if isinstance(observed, datetime) else observed,
+                    source_kind=OccurrenceDateCandidateSource.RUNTIME_CONFIRMED_OCCURRENCE,
+                    source_id=event.event_id,
+                )
+            )
+    unique: dict[tuple[str, str, str | None], OccurrenceDateCandidate] = {}
+    for item in candidates:
+        key = (item.candidate_date.isoformat(), item.source_kind.value, item.source_message_id)
+        unique[key] = item
+    priority = {
+        OccurrenceDateCandidateSource.PROPOSITION_EVIDENCE: 1,
+        OccurrenceDateCandidateSource.OFFICIAL_RELEASE_DATE: 2,
+        OccurrenceDateCandidateSource.RUNTIME_CONFIRMED_OCCURRENCE: 3,
+        OccurrenceDateCandidateSource.SOURCE_PUBLISHED_AT: 4,
+        OccurrenceDateCandidateSource.FOCUSED_WEB_SEARCH: 5,
+    }
+    return (
+        sorted(
+            unique.values(),
+            key=lambda item: (priority[item.source_kind], item.candidate_date, item.source_id),
+        ),
+        sorted(source_ids),
+    )
+
+
+def _package_snapshot(
+    package: EventPackage,
+    *,
+    candidates_by_atomic: dict[str, list[OccurrenceDateCandidate]],
+    source_ids_by_atomic: dict[str, list[str]],
+) -> RuntimePackageSnapshot:
+    candidates = [
+        item.model_copy(update={"runtime_package_id": package.package_id})
+        for atomic_id in package.member_event_ids
+        for item in candidates_by_atomic.get(atomic_id, [])
+    ]
     return RuntimePackageSnapshot(
         runtime_package_id=package.package_id,
         version=package.version,
         title=package.canonical_title,
         member_runtime_atomic_ids=sorted(package.member_event_ids),
+        source_message_ids=sorted(
+            {
+                source_id
+                for atomic_id in package.member_event_ids
+                for source_id in source_ids_by_atomic.get(atomic_id, [])
+            }
+        ),
+        occurrence_date_candidates=sorted(
+            {
+                (item.candidate_date, item.source_kind, item.source_id): item for item in candidates
+            }.values(),
+            key=lambda item: (item.candidate_date, item.source_kind.value, item.source_id),
+        ),
     )

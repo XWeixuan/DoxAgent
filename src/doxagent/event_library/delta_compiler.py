@@ -34,7 +34,12 @@ def runtime_atomic_signature(atomic: FrozenRuntimeAtomic) -> str:
     return _canonical_hash(
         {
             "proposition": atomic.proposition,
-            "time": atomic.time,
+            "raw_time": atomic.time,
+            "subject_time": atomic.subject_time,
+            "occurrence_date_candidates": [
+                item.model_dump(mode="json") for item in atomic.occurrence_date_candidates
+            ],
+            "source_message_ids": atomic.source_message_ids,
             "assertion_state": atomic.assertion_state.value,
             "entities": atomic.entities,
         }
@@ -92,6 +97,9 @@ class DeltaCompiler:
                     runtime_signature=signature,
                     proposition=atomic.proposition,
                     time=atomic.time,
+                    subject_time=atomic.subject_time,
+                    occurrence_date_candidates=atomic.occurrence_date_candidates,
+                    source_message_ids=atomic.source_message_ids,
                     assertion_state=atomic.assertion_state,
                     entities=atomic.entities,
                     runtime_hint_ids=[
@@ -120,6 +128,15 @@ class DeltaCompiler:
                         atomic.time
                         for atomic, _signature in candidates
                         if atomic.runtime_atomic_id in package.member_runtime_atomic_ids
+                        and atomic.time is not None
+                    }
+                ),
+                subject_time_anchors=sorted(
+                    {
+                        atomic.subject_time
+                        for atomic, _signature in candidates
+                        if atomic.runtime_atomic_id in package.member_runtime_atomic_ids
+                        and atomic.subject_time is not None
                     }
                 ),
                 entity_anchors=sorted(
@@ -130,6 +147,8 @@ class DeltaCompiler:
                         for entity in atomic.entities
                     }
                 ),
+                source_message_ids=package.source_message_ids,
+                occurrence_date_candidates=package.occurrence_date_candidates,
             )
             for package in packages
             if any(

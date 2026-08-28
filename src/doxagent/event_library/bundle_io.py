@@ -66,6 +66,10 @@ class RevisionBundleIO:
         review_decisions = RevisionBundleIO._jsonl(
             root / "reference_review_decisions.jsonl"
         )
+        date_ledger = RevisionBundleIO._jsonl(root / "date_resolution_ledger.jsonl")
+        reference_ledger = RevisionBundleIO._jsonl(
+            root / "reference_view_decision_ledger.jsonl"
+        )
         return CanonicalRevisionBundle.model_validate(
             {
                 **manifest,
@@ -73,6 +77,8 @@ class RevisionBundleIO:
                 "event_retirements": retirements,
                 "residual_delta_resolutions": residuals,
                 "reference_review_decisions": review_decisions,
+                "date_resolution_ledger": date_ledger,
+                "reference_view_decision_ledger": reference_ledger,
             }
         )
 
@@ -132,6 +138,10 @@ class RevisionBundleIO:
         review_decisions = RevisionBundleIO._jsonl(
             root / "reference_review_decisions.jsonl"
         )
+        date_ledger = RevisionBundleIO._jsonl(root / "date_resolution_ledger.jsonl")
+        reference_ledger = RevisionBundleIO._jsonl(
+            root / "reference_view_decision_ledger.jsonl"
+        )
         bundle = CanonicalRevisionBundle.model_validate(
             {
                 **manifest,
@@ -139,6 +149,8 @@ class RevisionBundleIO:
                 "event_retirements": retirements,
                 "residual_delta_resolutions": residuals,
                 "reference_review_decisions": review_decisions,
+                "date_resolution_ledger": date_ledger,
+                "reference_view_decision_ledger": reference_ledger,
             }
         )
         return TolerantBundleLoadResult(

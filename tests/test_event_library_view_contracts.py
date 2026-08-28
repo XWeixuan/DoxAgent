@@ -64,7 +64,7 @@ def test_canonical_fact_schema_exposes_same_subject_time_marker() -> None:
     assert fact.model_dump(mode="json")["subject_time"] == "SAME"
 
 
-def test_reference_fact_lines_hide_singleton_and_same_time() -> None:
+def test_reference_fact_lines_show_occurrence_and_subject_separately() -> None:
     singleton = _event(
         event_id="E1",
         facts=[
@@ -76,7 +76,13 @@ def test_reference_fact_lines_hide_singleton_and_same_time() -> None:
             )
         ],
     )
-    assert _reference_fact_lines(singleton) == []
+    assert _reference_fact_lines(singleton) == [
+        "facts:",
+        "",
+        "- Fact occurred_at: LEGACY_UNAVAILABLE",
+        "  Fact subject_time: 2026-08-19",
+        "  Proposition: Analog Devices appointed a new director.",
+    ]
 
     multi = _event(
         event_id="E2",
@@ -98,12 +104,16 @@ def test_reference_fact_lines_hide_singleton_and_same_time() -> None:
     assert _reference_fact_lines(multi) == [
         "facts:",
         "",
-        "- Analog Devices reported fiscal Q3 results.",
-        "- [fiscal Q4 2026] Analog Devices guided fiscal Q4 revenue.",
+        "- Fact occurred_at: LEGACY_UNAVAILABLE",
+        "  Fact subject_time: SAME",
+        "  Proposition: Analog Devices reported fiscal Q3 results.",
+        "- Fact occurred_at: LEGACY_UNAVAILABLE",
+        "  Fact subject_time: fiscal Q4 2026",
+        "  Proposition: Analog Devices guided fiscal Q4 revenue.",
     ]
 
 
-def test_reference_view_omits_singleton_facts_section() -> None:
+def test_reference_view_displays_singleton_fact_time_semantics() -> None:
     singleton = _event(
         event_id="E1",
         facts=[
@@ -127,8 +137,10 @@ def test_reference_view_omits_singleton_facts_section() -> None:
 
     view = EventLibraryViewCompiler(Repository()).reference_view("ADI")  # type: ignore[arg-type]
     assert "canonical_summary: Analog Devices disclosed an update." in view
-    assert "facts:" not in view
-    assert singleton.facts[0].proposition not in view
+    assert "facts:" in view
+    assert "Fact occurred_at: LEGACY_UNAVAILABLE" in view
+    assert "Fact subject_time: SAME" in view
+    assert singleton.facts[0].proposition in view
 
 
 def _event(*, event_id: str, facts: list[CanonicalFact]) -> CanonicalEvent:

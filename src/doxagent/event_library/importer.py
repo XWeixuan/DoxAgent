@@ -6,6 +6,7 @@ from doxagent.event_library.bundle_io import TolerantBundleLoadResult
 from doxagent.event_library.contracts import CanonicalRevisionBundle, PublicationResult
 from doxagent.event_library.repository import EventLibraryRepository
 from doxagent.event_library.validator import (
+    BundleValidationContext,
     BundleValidationOutcome,
     RevisionBundleValidator,
     ValidationIssue,
@@ -18,24 +19,36 @@ class RevisionBundleImporter:
         self._repository = repository
         self._validator = RevisionBundleValidator(repository)
 
-    def validate(self, bundle: CanonicalRevisionBundle) -> BundleValidationOutcome:
-        return self._validator.validate(bundle)
+    def validate(
+        self,
+        bundle: CanonicalRevisionBundle,
+        *,
+        context: BundleValidationContext | None = None,
+    ) -> BundleValidationOutcome:
+        return self._validator.validate(bundle, context=context)
 
     def import_and_publish(
-        self, bundle: CanonicalRevisionBundle
+        self,
+        bundle: CanonicalRevisionBundle,
+        *,
+        context: BundleValidationContext | None = None,
     ) -> tuple[PublicationResult, BundleValidationOutcome]:
-        outcome = self._validator.validate(bundle)
+        outcome = self._validator.validate(bundle, context=context)
         if not outcome.publishable or outcome.normalized_bundle is None:
             codes = ", ".join(issue.code for issue in outcome.issues) or "UNKNOWN"
             raise ValueError(f"Revision Bundle is not publishable: {codes}")
         result = self._repository.publish_bundle(
             outcome.normalized_bundle,
             source_bundle=bundle,
+            frozen_as_of=(None if context is None else context.frozen_as_of),
         )
         return result, outcome
 
     def import_tolerant_and_publish(
-        self, loaded: TolerantBundleLoadResult
+        self,
+        loaded: TolerantBundleLoadResult,
+        *,
+        context: BundleValidationContext | None = None,
     ) -> tuple[PublicationResult, BundleValidationOutcome]:
         initial = [
             ValidationIssue(
@@ -50,6 +63,7 @@ class RevisionBundleImporter:
             loaded.bundle,
             initial_issues=initial,
             force_pending_delta_ids=loaded.invalid_delta_ids,
+            context=context,
         )
         if not outcome.publishable or outcome.normalized_bundle is None:
             codes = ", ".join(issue.code for issue in outcome.issues) or "UNKNOWN"
@@ -57,5 +71,6 @@ class RevisionBundleImporter:
         result = self._repository.publish_bundle(
             outcome.normalized_bundle,
             source_bundle=loaded.bundle,
+            frozen_as_of=(None if context is None else context.frozen_as_of),
         )
         return result, outcome
