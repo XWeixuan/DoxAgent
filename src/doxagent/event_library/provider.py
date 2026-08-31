@@ -13,7 +13,11 @@ from doxagent.event_library.compiler import (
     REFERENCE_VIEW_CONTRACT_VERSION,
     EventLibraryViewCompiler,
 )
-from doxagent.event_library.contracts import CanonicalEvent, StrictModel
+from doxagent.event_library.contracts import (
+    CanonicalEvent,
+    ReferenceViewDeltaSnapshot,
+    StrictModel,
+)
 from doxagent.event_library.repository import EventLibraryRepository
 
 
@@ -29,7 +33,9 @@ class KnownEventIndexSnapshot(StrictModel):
 class EventDetailSnapshot(StrictModel):
     ticker: str
     version: int = Field(ge=1)
+    requested_event_ids: list[str] = Field(default_factory=list)
     events: list[CanonicalEvent]
+    missing_event_ids: list[str] = Field(default_factory=list)
 
 
 class ReferenceEventViewSnapshot(StrictModel):
@@ -84,12 +90,27 @@ class PublishedEventLibraryReader:
         selected = repository.published_version(ticker) if version is None else version
         if selected == 0:
             return None
-        events = [repository.get_event(ticker, event_id, selected) for event_id in event_ids]
+        requested = list(dict.fromkeys(event_ids))
+        events = [repository.get_event(ticker, event_id, selected) for event_id in requested]
         return EventDetailSnapshot(
             ticker=ticker.upper(),
             version=selected,
+            requested_event_ids=requested,
             events=[event for event in events if event is not None],
+            missing_event_ids=[
+                event_id for event_id, event in zip(requested, events, strict=True)
+                if event is None
+            ],
         )
+
+    def max_event_numeric_id(self, ticker: str, *, version: int | None = None) -> int | None:
+        repository = self._repository(ticker)
+        if repository is None:
+            return None
+        selected = repository.published_version(ticker) if version is None else version
+        if selected == 0:
+            return None
+        return repository.max_published_event_numeric_id(ticker, selected)
 
     def reference_view(
         self, ticker: str, *, version: int | None = None
@@ -107,4 +128,24 @@ class PublishedEventLibraryReader:
             published_at=published_at,
             reference_view=payload,
             sha256=hashlib.sha256(payload.encode("utf-8")).hexdigest(),
+        )
+
+    def reference_view_delta(
+        self,
+        ticker: str,
+        *,
+        from_version: int,
+        to_version: int,
+    ) -> ReferenceViewDeltaSnapshot | None:
+        repository = self._repository(ticker)
+        if repository is None:
+            return None
+        cached = repository.get_reference_view_delta(ticker, from_version, to_version)
+        if cached is not None:
+            return ReferenceViewDeltaSnapshot.model_validate(cached)
+        return EventLibraryViewCompiler(repository).reference_view_delta(
+            ticker,
+            from_version=from_version,
+            to_version=to_version,
+            persist=False,
         )

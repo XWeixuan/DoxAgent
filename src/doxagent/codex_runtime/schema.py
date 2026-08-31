@@ -84,7 +84,10 @@ class CodexEventLibraryNode(StrEnum):
 
 class CodexD3Node(StrEnum):
     INPUT_PREPARATION = "d3_input_preparation"
+    # Retained only so historical attempt/checkpoint rows remain decodable.
     O3_INITIALIZE = "d3_o3_initialize"
+    O3_TRIGGER_CALIBRATION = "d3_o3_trigger_calibration"
+    O3_POLICY_COMPILE = "d3_o3_policy_compile"
     O3_FINAL_REVIEW = "d3_o3_final_review"
     VALIDATE = "d3_validate"
     ASSEMBLE = "d3_assemble"

@@ -51,6 +51,16 @@ class PathStatus(StrEnum):
     UNRESOLVED = "UNRESOLVED"
 
 
+class TriggerDisposition(StrEnum):
+    TRIGGER_READY = "TRIGGER_READY"
+    TRIGGER_UNRESOLVED = "TRIGGER_UNRESOLVED"
+
+
+class TriggerCalibrationStageStatus(StrEnum):
+    IN_PROGRESS = "IN_PROGRESS"
+    COMPLETED = "COMPLETED"
+
+
 class O3RunStatus(StrEnum):
     COMPLETED = "COMPLETED"
     PARTIAL = "PARTIAL"
@@ -172,6 +182,15 @@ class O3RunResult(ContractModel):
     policy_set_version: int | None = Field(default=None, ge=1)
 
 
+class TriggerCalibrationRunResult(ContractModel):
+    """Small Node-A response; durable research remains in workspace artifacts."""
+
+    status: Literal["COMPLETED", "FAILED"]
+    processed_gap_count: int = Field(default=0, ge=0)
+    processed_path_count: int = Field(default=0, ge=0)
+    unprocessed_path_count: int = Field(default=0, ge=0)
+
+
 class WorklistEntry(AgentModel):
     shell_id: str
     expectation_id: str
@@ -194,11 +213,136 @@ class CalibrationLogEntry(AgentModel):
     resolved: bool
 
 
+class TriggerCalibrationRecord(ContractModel):
+    """Strict Stage-A research record keyed to one immutable D2-derived path."""
+
+    shell_id: str = Field(min_length=1)
+    expectation_id: str = Field(min_length=1)
+    gap_id: str = Field(min_length=1)
+    path_id: str = Field(min_length=1)
+    trigger_bearing_actor: str = Field(min_length=1)
+    trigger_bearing_object: str = Field(min_length=1)
+    current_state: str = Field(min_length=1)
+    candidate_trigger: str = Field(min_length=1)
+    trade_sufficiency: str = Field(min_length=1)
+    minimality: str = Field(min_length=1)
+    disclosure_route: str = Field(min_length=1)
+    judgeability: str = Field(min_length=1)
+    source_basis: list[str] = Field(min_length=1)
+    disposition: TriggerDisposition
+    unresolved_reason: str | None = None
+
+    @field_validator("source_basis")
+    @classmethod
+    def source_basis_is_unique(cls, value: list[str]) -> list[str]:
+        cleaned = [item.strip() for item in value if item.strip()]
+        if not cleaned:
+            raise ValueError("source_basis must contain at least one source reference")
+        if len(cleaned) != len(set(cleaned)):
+            raise ValueError("source_basis entries must be unique")
+        return cleaned
+
+    @model_validator(mode="after")
+    def unresolved_disposition_has_reason(self) -> TriggerCalibrationRecord:
+        if (
+            self.disposition is TriggerDisposition.TRIGGER_UNRESOLVED
+            and not self.unresolved_reason
+        ):
+            raise ValueError("TRIGGER_UNRESOLVED record requires unresolved_reason")
+        return self
+
+
+class TriggerPathDisposition(ContractModel):
+    shell_id: str = Field(min_length=1)
+    expectation_id: str = Field(min_length=1)
+    gap_id: str = Field(min_length=1)
+    path_id: str = Field(min_length=1)
+    disposition: TriggerDisposition
+    unresolved_reason: str | None = None
+
+    @model_validator(mode="after")
+    def unresolved_disposition_has_reason(self) -> TriggerPathDisposition:
+        if (
+            self.disposition is TriggerDisposition.TRIGGER_UNRESOLVED
+            and not self.unresolved_reason
+        ):
+            raise ValueError("TRIGGER_UNRESOLVED disposition requires unresolved_reason")
+        return self
+
+
+class TriggerCalibrationState(ContractModel):
+    stage_status: TriggerCalibrationStageStatus = TriggerCalibrationStageStatus.IN_PROGRESS
+    completed_shell_ids: list[str] = Field(default_factory=list)
+    current_shell_id: str | None = None
+    path_dispositions: list[TriggerPathDisposition] = Field(default_factory=list)
+    unprocessed_path_count: int = Field(default=0, ge=0)
+    updated_at: datetime = Field(default_factory=utc_now)
+
+    @field_validator("completed_shell_ids")
+    @classmethod
+    def completed_shell_ids_are_unique(cls, value: list[str]) -> list[str]:
+        if len(value) != len(set(value)):
+            raise ValueError("completed_shell_ids must be unique")
+        return value
+
+    @field_validator("path_dispositions")
+    @classmethod
+    def disposition_path_ids_are_unique(
+        cls, value: list[TriggerPathDisposition]
+    ) -> list[TriggerPathDisposition]:
+        path_ids = [item.path_id for item in value]
+        if len(path_ids) != len(set(path_ids)):
+            raise ValueError("path_dispositions must contain one row per path_id")
+        return value
+
+    @model_validator(mode="after")
+    def completed_stage_is_closed(self) -> TriggerCalibrationState:
+        if self.stage_status is TriggerCalibrationStageStatus.COMPLETED:
+            if self.current_shell_id is not None:
+                raise ValueError("completed Trigger Calibration cannot have current_shell_id")
+            if self.unprocessed_path_count:
+                raise ValueError("completed Trigger Calibration cannot have unprocessed paths")
+        return self
+
+
 class WaveState(AgentModel):
     completed_shell_ids: list[str] = Field(default_factory=list)
     current_shell_id: str | None = None
     completed_path_ids: list[str] = Field(default_factory=list)
     updated_at: datetime = Field(default_factory=utc_now)
+
+
+class FrozenInputFile(ContractModel):
+    relative_path: str = Field(min_length=1)
+    size_bytes: int = Field(ge=0)
+    sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+
+
+class Document3InputManifest(ContractModel):
+    schema_version: Literal["document3.input_manifest.v1"] = (
+        "document3.input_manifest.v1"
+    )
+    files: list[FrozenInputFile] = Field(min_length=4)
+
+    @field_validator("files")
+    @classmethod
+    def paths_are_unique(cls, value: list[FrozenInputFile]) -> list[FrozenInputFile]:
+        paths = [item.relative_path for item in value]
+        if len(paths) != len(set(paths)):
+            raise ValueError("input manifest paths must be unique")
+        return value
+
+
+class Document3InitializeTask(ContractModel):
+    mode: Literal["O3_INITIALIZE"] = "O3_INITIALIZE"
+    ticker: str = Field(min_length=1)
+    run_id: str = Field(min_length=1)
+    cutoff_at: datetime
+    document2_ref: Document2Ref
+    requested_event_library_version: int | None = Field(default=None, ge=1)
+    event_library_ref: EventLibraryRef | None = None
+    failed_shells: list[FailedShellCoverage] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
 
 
 class MaintenanceCandidate(AgentModel):
@@ -265,6 +409,8 @@ class ValidationReport(ContractModel):
 
 
 class RuntimeConditionProjection(ContractModel):
+    """Legacy v1 row retained only for decoding historical projections."""
+
     policy_id: str
     title: str
     decision: PolicyDecision
@@ -274,12 +420,59 @@ class RuntimeConditionProjection(ContractModel):
     activation_summary: str
 
 
-class RuntimePolicyProjection(ContractModel):
+class LegacyRuntimePolicyProjection(ContractModel):
     schema_version: Literal["document3.runtime_projection.v1"] = "document3.runtime_projection.v1"
     ticker: str
     policy_set_version: int = Field(ge=1)
     policy_set_published_at: datetime
     conditions: list[RuntimeConditionProjection] = Field(default_factory=list)
+
+
+class RuntimePolicyRecord(ContractModel):
+    policy_id: str = Field(min_length=1)
+    match_scope: str = Field(min_length=1)
+    criterion: list[str] = Field(min_length=1)
+    activation_summary: str = Field(min_length=1)
+
+    @field_validator("criterion")
+    @classmethod
+    def criterion_is_unique(cls, value: list[str]) -> list[str]:
+        cleaned = [item.strip() for item in value if item.strip()]
+        if not cleaned:
+            raise ValueError("criterion must contain at least one condition")
+        if len(cleaned) != len(set(cleaned)):
+            raise ValueError("criterion entries must be unique within a policy")
+        return cleaned
+
+
+class RuntimePolicyProjection(ContractModel):
+    schema_version: Literal["document3.runtime_projection.v2"] = (
+        "document3.runtime_projection.v2"
+    )
+    ticker: str
+    policy_set_version: int = Field(ge=1)
+    policy_set_published_at: datetime
+    policies: list[RuntimePolicyRecord] = Field(default_factory=list)
+
+    @field_validator("policies")
+    @classmethod
+    def projected_policy_ids_are_unique(
+        cls, value: list[RuntimePolicyRecord]
+    ) -> list[RuntimePolicyRecord]:
+        ids = [item.policy_id for item in value]
+        if len(ids) != len(set(ids)):
+            raise ValueError("Runtime projection must contain one row per policy")
+        return value
+
+
+class PolicyDetailSnapshot(ContractModel):
+    """Version-pinned canonical Policy details requested by Runtime W2."""
+
+    ticker: str
+    policy_set_version: int = Field(ge=1)
+    requested_policy_ids: list[str]
+    policies: list[Policy] = Field(default_factory=list)
+    missing_policy_ids: list[str] = Field(default_factory=list)
 
 
 class PolicySetVersionMetadata(ContractModel):

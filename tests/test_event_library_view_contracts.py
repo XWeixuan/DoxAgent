@@ -143,6 +143,46 @@ def test_reference_view_displays_singleton_fact_time_semantics() -> None:
     assert singleton.facts[0].proposition in view
 
 
+def test_reference_view_delta_contains_only_changed_and_removed_events() -> None:
+    prior_changed = _event(
+        event_id="E1",
+        facts=[CanonicalFact(fact_id="F1", proposition="Old fact.", assertion_state="ACTUAL")],
+    )
+    removed = _event(
+        event_id="E2",
+        facts=[CanonicalFact(fact_id="F2", proposition="Removed fact.", assertion_state="ACTUAL")],
+    )
+    changed = prior_changed.model_copy(
+        update={"canonical_summary": "Analog Devices disclosed a changed update."}
+    )
+
+    class Repository:
+        read_only = False
+
+        def __init__(self) -> None:
+            self.saved = None
+
+        def published_version(self, ticker: str) -> int:
+            return 2
+
+        def published_events(
+            self, ticker: str, version: int | None = None
+        ) -> list[CanonicalEvent]:
+            return [prior_changed, removed] if version == 1 else [changed]
+
+        def save_reference_view_delta(self, value: object) -> None:
+            self.saved = value
+
+    repository = Repository()
+    delta = EventLibraryViewCompiler(repository).reference_view_delta(  # type: ignore[arg-type]
+        "ADI", from_version=1, to_version=2
+    )
+    assert "E1" in delta.reference_view_delta
+    assert "E2" not in delta.reference_view_delta
+    assert delta.removed_event_ids == ["E2"]
+    assert repository.saved == delta
+
+
 def _event(*, event_id: str, facts: list[CanonicalFact]) -> CanonicalEvent:
     return CanonicalEvent(
         event_id=event_id,

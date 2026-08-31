@@ -11,7 +11,12 @@ from typing import Any, Protocol
 
 from doxagent.postgres import connect_postgres, record_postgres_failure
 
-from .schema import PolicySet, PolicySetVersionMetadata, RuntimePolicyProjection
+from .schema import (
+    PolicyDetailSnapshot,
+    PolicySet,
+    PolicySetVersionMetadata,
+    RuntimePolicyProjection,
+)
 
 
 class StalePolicySetBaseError(RuntimeError):
@@ -30,6 +35,10 @@ class Document3PolicyRepository(Protocol):
     def get_projection(
         self, ticker: str, version: int
     ) -> RuntimePolicyProjection | None: ...
+
+    def get_policy_details(
+        self, ticker: str, version: int, policy_ids: list[str]
+    ) -> PolicyDetailSnapshot: ...
 
     def list_version_metadata(
         self, ticker: str, *, limit: int = 20
@@ -72,6 +81,40 @@ def _metadata(policy_set: PolicySet, *, is_current: bool) -> PolicySetVersionMet
     )
 
 
+def _policy_details(
+    policy_set: PolicySet | None,
+    *,
+    ticker: str,
+    version: int,
+    policy_ids: list[str],
+) -> PolicyDetailSnapshot:
+    requested = list(dict.fromkeys(item.strip() for item in policy_ids if item.strip()))
+    by_id = {policy.policy_id: policy for policy in policy_set.policies} if policy_set else {}
+    return PolicyDetailSnapshot(
+        ticker=ticker.upper(),
+        policy_set_version=version,
+        requested_policy_ids=requested,
+        policies=[by_id[item] for item in requested if item in by_id],
+        missing_policy_ids=[item for item in requested if item not in by_id],
+    )
+
+
+def _decode_projection(policy_set_payload: Any, projection_payload: Any) -> RuntimePolicyProjection:
+    raw_projection = (
+        projection_payload
+        if isinstance(projection_payload, dict)
+        else __import__("json").loads(str(projection_payload))
+    )
+    if raw_projection.get("schema_version") == "document3.runtime_projection.v2":
+        return RuntimePolicyProjection.model_validate(raw_projection)
+    policy_set = (
+        PolicySet.model_validate(policy_set_payload)
+        if isinstance(policy_set_payload, dict)
+        else PolicySet.model_validate_json(str(policy_set_payload))
+    )
+    return _project(policy_set)
+
+
 class InMemoryDocument3PolicyRepository:
     def __init__(self) -> None:
         self._items: dict[str, dict[int, PolicySet]] = {}
@@ -101,6 +144,16 @@ class InMemoryDocument3PolicyRepository:
     ) -> RuntimePolicyProjection | None:
         policy_set = self.get_version(ticker, version)
         return _project(policy_set) if policy_set else None
+
+    def get_policy_details(
+        self, ticker: str, version: int, policy_ids: list[str]
+    ) -> PolicyDetailSnapshot:
+        return _policy_details(
+            self.get_version(ticker, version),
+            ticker=ticker,
+            version=version,
+            policy_ids=policy_ids,
+        )
 
     def list_version_metadata(
         self, ticker: str, *, limit: int = 20
@@ -228,11 +281,11 @@ class SQLiteDocument3PolicyRepository:
     ) -> RuntimePolicyProjection | None:
         with self._connect() as connection:
             row = connection.execute(query, args).fetchone()
-        return RuntimePolicyProjection.model_validate_json(row[0]) if row else None
+        return _decode_projection(row[0], row[1]) if row else None
 
     def get_current_projection(self, ticker: str) -> RuntimePolicyProjection | None:
         return self._read_projection(
-            "SELECT runtime_projection_json FROM codex_document3_policy_sets "
+            "SELECT policy_set_json, runtime_projection_json FROM codex_document3_policy_sets "
             "WHERE ticker = ? AND is_current = 1",
             (ticker.upper(),),
         )
@@ -241,9 +294,19 @@ class SQLiteDocument3PolicyRepository:
         self, ticker: str, version: int
     ) -> RuntimePolicyProjection | None:
         return self._read_projection(
-            "SELECT runtime_projection_json FROM codex_document3_policy_sets "
+            "SELECT policy_set_json, runtime_projection_json FROM codex_document3_policy_sets "
             "WHERE ticker = ? AND policy_set_version = ?",
             (ticker.upper(), version),
+        )
+
+    def get_policy_details(
+        self, ticker: str, version: int, policy_ids: list[str]
+    ) -> PolicyDetailSnapshot:
+        return _policy_details(
+            self.get_version(ticker, version),
+            ticker=ticker,
+            version=version,
+            policy_ids=policy_ids,
         )
 
     def list_version_metadata(
@@ -361,12 +424,13 @@ class PostgresDocument3PolicyRepository:
     def _decode_projection(row: Any | None) -> RuntimePolicyProjection | None:
         if row is None:
             return None
-        return RuntimePolicyProjection.model_validate(row[0])
+        return _decode_projection(row[0], row[1])
 
     def get_current_projection(self, ticker: str) -> RuntimePolicyProjection | None:
         with self._connect() as connection, connection.cursor() as cursor:
             cursor.execute(
-                "SELECT runtime_projection_json FROM codex_document3_policy_sets "
+                "SELECT policy_set_json, runtime_projection_json "
+                "FROM codex_document3_policy_sets "
                 "WHERE ticker = %s AND is_current = true",
                 (ticker.upper(),),
             )
@@ -377,11 +441,22 @@ class PostgresDocument3PolicyRepository:
     ) -> RuntimePolicyProjection | None:
         with self._connect() as connection, connection.cursor() as cursor:
             cursor.execute(
-                "SELECT runtime_projection_json FROM codex_document3_policy_sets "
+                "SELECT policy_set_json, runtime_projection_json "
+                "FROM codex_document3_policy_sets "
                 "WHERE ticker = %s AND policy_set_version = %s",
                 (ticker.upper(), version),
             )
             return self._decode_projection(cursor.fetchone())
+
+    def get_policy_details(
+        self, ticker: str, version: int, policy_ids: list[str]
+    ) -> PolicyDetailSnapshot:
+        return _policy_details(
+            self.get_version(ticker, version),
+            ticker=ticker,
+            version=version,
+            policy_ids=policy_ids,
+        )
 
     def list_version_metadata(
         self, ticker: str, *, limit: int = 20
@@ -512,6 +587,17 @@ class HybridDocument3PolicyRepository:
             return self.primary.get_projection(ticker, version)
         except Exception:
             return None
+
+    def get_policy_details(
+        self, ticker: str, version: int, policy_ids: list[str]
+    ) -> PolicyDetailSnapshot:
+        policy_set = self.get_version(ticker, version)
+        return _policy_details(
+            policy_set,
+            ticker=ticker,
+            version=version,
+            policy_ids=policy_ids,
+        )
 
     def list_version_metadata(
         self, ticker: str, *, limit: int = 20

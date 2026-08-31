@@ -493,6 +493,67 @@ class DoxAgentSettings(BaseSettings):
         le=5,
         validation_alias="DOXAGENT_PERSISTENT_RUNTIME_WORKER_RETRY_ATTEMPTS",
     )
+    persistent_runtime_v2_enabled: bool = Field(
+        default=False,
+        validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_ENABLED",
+    )
+    persistent_runtime_v2_social_enabled: bool = Field(
+        default=False,
+        validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_SOCIAL_ENABLED",
+    )
+    persistent_runtime_v2_storage_mode: Literal["memory", "sqlite", "hybrid"] = Field(
+        default="hybrid",
+        validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_STORAGE_MODE",
+    )
+    persistent_runtime_v2_sqlite_path: str = Field(
+        default=".tmp/persistent_runtime_v2.sqlite3",
+        validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_SQLITE_PATH",
+    )
+    persistent_runtime_v2_remote_projection_enabled: bool = Field(
+        default=True,
+        validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_REMOTE_PROJECTION_ENABLED",
+    )
+    persistent_runtime_v2_model: str = Field(
+        default="qwen3.8-flash",
+        validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_MODEL",
+    )
+    persistent_runtime_v2_reasoning_effort: Literal["medium"] = Field(
+        default="medium",
+        validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_REASONING_EFFORT",
+    )
+    persistent_runtime_v2_strict_mode: bool = Field(
+        default=True,
+        validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_STRICT_MODE",
+    )
+    persistent_runtime_v2_session_cache_enabled: bool = Field(
+        default=True,
+        validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_SESSION_CACHE_ENABLED",
+    )
+    persistent_runtime_v2_timeout_seconds: float = Field(
+        default=60.0,
+        gt=0,
+        validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_TIMEOUT_SECONDS",
+    )
+    persistent_runtime_v2_retry_attempts: int = Field(
+        default=2,
+        ge=0,
+        le=2,
+        validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_RETRY_ATTEMPTS",
+    )
+    persistent_runtime_v2_first_retry_delay_seconds: float = Field(
+        default=5.0,
+        ge=0,
+        validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_FIRST_RETRY_DELAY_SECONDS",
+    )
+    persistent_runtime_v2_second_retry_delay_seconds: float = Field(
+        default=10.0,
+        ge=0,
+        validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_SECOND_RETRY_DELAY_SECONDS",
+    )
+    persistent_runtime_v2_prompt_root: str = Field(
+        default="prompts/persistent_runtime_v2",
+        validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_PROMPT_ROOT",
+    )
     revenue_audit_storage_mode: Literal["memory", "sqlite"] = Field(
         default="sqlite",
         validation_alias="DOXAGENT_REVENUE_AUDIT_STORAGE_MODE",

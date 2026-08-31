@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from doxagent.event_library.bundle_io import TolerantBundleLoadResult
+from doxagent.event_library.compiler import EventLibraryViewCompiler
 from doxagent.event_library.contracts import CanonicalRevisionBundle, PublicationResult
 from doxagent.event_library.repository import EventLibraryRepository
 from doxagent.event_library.validator import (
@@ -42,6 +43,7 @@ class RevisionBundleImporter:
             source_bundle=bundle,
             frozen_as_of=(None if context is None else context.frozen_as_of),
         )
+        self._persist_reference_delta(result)
         return result, outcome
 
     def import_tolerant_and_publish(
@@ -73,4 +75,15 @@ class RevisionBundleImporter:
             source_bundle=loaded.bundle,
             frozen_as_of=(None if context is None else context.frozen_as_of),
         )
+        self._persist_reference_delta(result)
         return result, outcome
+
+    def _persist_reference_delta(self, result: PublicationResult) -> None:
+        if result.published_library_version <= result.base_library_version:
+            return
+        EventLibraryViewCompiler(self._repository).reference_view_delta(
+            result.ticker,
+            from_version=result.base_library_version,
+            to_version=result.published_library_version,
+            persist=True,
+        )

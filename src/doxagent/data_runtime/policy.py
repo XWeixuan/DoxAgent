@@ -80,7 +80,8 @@ _ROLE_BY_NODE = {
     CodexD2Node.O1_GAPS: CodexD2AgentRole.O1,
     CodexD2Node.O1_FINALIZATION: CodexD2AgentRole.O1,
     CodexEventLibraryNode.O2_MAINTAIN: CodexEventLibraryAgentRole.O2,
-    CodexD3Node.O3_INITIALIZE: CodexD3AgentRole.O3,
+    CodexD3Node.O3_TRIGGER_CALIBRATION: CodexD3AgentRole.O3,
+    CodexD3Node.O3_POLICY_COMPILE: CodexD3AgentRole.O3,
     CodexD3Node.O3_FINAL_REVIEW: CodexD3AgentRole.O3,
     CodexD3Node.O3_MAINTAIN: CodexD3AgentRole.O3,
 }
@@ -171,6 +172,9 @@ class DataToolPolicyRegistry:
             CodexD2Node.O0_CANDIDATE_C1: self._by_role[CodexAgentRole.C1],
             CodexD2Node.O0_CANDIDATE_C3: self._by_role[CodexAgentRole.C3],
             CodexD2Node.O0_CANDIDATE_C5: self._by_role[CodexAgentRole.C5],
+            # Compile consumes the frozen Stage-A trigger surface. It does not
+            # receive a routine Data MCP research budget.
+            CodexD3Node.O3_POLICY_COMPILE: frozenset(),
         }
 
     def allowed_tools(

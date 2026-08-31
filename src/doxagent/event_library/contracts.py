@@ -886,6 +886,27 @@ class DeltaBatch(StrictModel):
         return self
 
 
+class ReferenceViewDeltaSnapshot(StrictModel):
+    contract_version: Literal["event-library-reference-view-delta-v1"] = (
+        "event-library-reference-view-delta-v1"
+    )
+    ticker: str = Field(min_length=1)
+    from_library_version: int = Field(ge=0)
+    to_library_version: int = Field(ge=1)
+    reference_view_delta: str
+    removed_event_ids: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def increasing_versions(self) -> ReferenceViewDeltaSnapshot:
+        if self.to_library_version < self.from_library_version:
+            raise ValueError("Reference View Delta versions must not go backwards")
+        if self.to_library_version == self.from_library_version and (
+            self.removed_event_ids or self.reference_view_delta.strip()
+        ):
+            raise ValueError("Equal-version Reference View Delta must be empty")
+        return self
+
+
 class FrozenViewManifest(StrictModel):
     contract_version: Literal[
         "event-library-maintenance-v2", "event-library-maintenance-v3"

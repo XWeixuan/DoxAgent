@@ -5,20 +5,52 @@ from __future__ import annotations
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, Protocol
 
 from pydantic import BaseModel, ValidationError
 
 from doxagent.codex_runtime.client import CodexWorkerClient, WorkspaceClient
 from doxagent.codex_runtime.schema import (
     CODEX_DOCUMENT3_WORKFLOW_VERSION,
+    AttemptStatus,
     CodexD3AgentRole,
     CodexD3Node,
+    CodexResearchNode,
+    NodeAttempt,
     ResearchLane,
+    ThreadRecord,
+    utc_now,
 )
 from doxagent.codex_worker.schema import WorkerJob, WorkerRunRequest
 
-from .schema import O3RunResult, ReviewResult, strict_json_schema
+from .schema import (
+    Document3InitializeTask,
+    O3RunResult,
+    ReviewResult,
+    TriggerCalibrationRecord,
+    TriggerCalibrationRunResult,
+    TriggerCalibrationStageStatus,
+    TriggerCalibrationState,
+    strict_json_schema,
+)
+
+INITIALIZE_BUSINESS_INPUT_PATHS = (
+    "context/document3/document2.json",
+    "context/document3/reference_event_view.md",
+    "context/document3/previous_policy_set.json",
+    "context/document3/task.json",
+)
+INPUT_MANIFEST_PATH = "context/document3/input_manifest.json"
+
+
+class O3ExecutionStateRepository(Protocol):
+    def next_attempt_number(self, run_id: str, node: CodexResearchNode) -> int: ...
+
+    def save_attempt(self, attempt: NodeAttempt) -> None: ...
+
+    def save_thread(self, record: ThreadRecord) -> None: ...
+
+    def get_thread(self, run_id: str, agent_role: str) -> ThreadRecord | None: ...
 
 
 class O3TurnError(RuntimeError):
@@ -38,6 +70,7 @@ class Document3AgentRunner:
         model_provider: str | None,
         effort: Literal["low", "medium", "high", "xhigh", "max"] = "max",
         timeout_seconds: int = 1800,
+        runtime_repository: O3ExecutionStateRepository | None = None,
     ) -> None:
         self._worker = worker
         self.workspace = workspace
@@ -50,6 +83,7 @@ class Document3AgentRunner:
         self._model_provider = model_provider
         self._effort = effort
         self._timeout_seconds = timeout_seconds
+        self._runtime_repository = runtime_repository
 
     async def seed_initialize(
         self,
@@ -58,28 +92,64 @@ class Document3AgentRunner:
         document2_json: str,
         reference_view: str,
         previous_policy_set_json: str | None,
-        metadata: dict[str, Any],
+        task: Document3InitializeTask,
     ) -> None:
-        await self._seed_shared(run_id)
-        files = {
-            "context/document3/document2.json": document2_json,
-            "context/document3/reference_event_view.md": reference_view,
-            "context/document3/previous_policy_set.json": previous_policy_set_json or "null\n",
-            "context/document3/task.json": json.dumps(
-                metadata, ensure_ascii=False, indent=2, default=str
-            ),
-            "output/work/worklist.jsonl": "",
-            "output/work/calibration_log.jsonl": "",
-            "output/work/wave_state.json": json.dumps(
-                {
-                    "completed_shell_ids": [],
-                    "current_shell_id": None,
-                    "completed_path_ids": [],
-                },
-                ensure_ascii=False,
-                indent=2,
-            ),
-        }
+        files = self._load_prompt_assets(
+            {
+                "context/document3/AGENTS.md": "AGENTS.md",
+                "context/document3/agent.md": "agents/o3.md",
+                "context/document3/foundation.md": "skills/foundation.md",
+                "context/document3/initialize_trigger_calibration.md": (
+                    "skills/initialize_trigger_calibration.md"
+                ),
+                "context/document3/initialize_policy_compile.md": (
+                    "skills/initialize_policy_compile.md"
+                ),
+                "context/document3/initialize_final_review.md": (
+                    "skills/initialize_final_review.md"
+                ),
+                "context/document3/policy_set.schema.json": (
+                    "schemas/policy_set.schema.json"
+                ),
+            }
+        )
+        files.update(
+            {
+                "context/document3/document2.json": document2_json,
+                "context/document3/reference_event_view.md": reference_view,
+                "context/document3/previous_policy_set.json": (
+                    previous_policy_set_json or "null\n"
+                ),
+                "context/document3/task.json": task.model_dump_json(indent=2),
+                "context/document3/trigger_calibration_record.schema.json": json.dumps(
+                    strict_json_schema(TriggerCalibrationRecord.model_json_schema()),
+                    ensure_ascii=False,
+                    indent=2,
+                ),
+                "context/document3/trigger_calibration_state.schema.json": json.dumps(
+                    strict_json_schema(TriggerCalibrationState.model_json_schema()),
+                    ensure_ascii=False,
+                    indent=2,
+                ),
+                "output/work/worklist.jsonl": "",
+                "output/work/calibration_log.jsonl": "",
+                "output/work/trigger_calibrations.jsonl": "",
+                "output/work/trigger_calibration_state.json": (
+                    TriggerCalibrationState(
+                        stage_status=TriggerCalibrationStageStatus.IN_PROGRESS
+                    ).model_dump_json(indent=2)
+                ),
+                "output/work/wave_state.json": json.dumps(
+                    {
+                        "completed_shell_ids": [],
+                        "current_shell_id": None,
+                        "completed_path_ids": [],
+                    },
+                    ensure_ascii=False,
+                    indent=2,
+                ),
+            }
+        )
         for path, content in files.items():
             await self.workspace.write_text(run_id, path, content)
 
@@ -90,49 +160,124 @@ class Document3AgentRunner:
         policy_set_json: str,
         reference_view: str,
         metadata: dict[str, Any],
+        maintenance_feed_json: str | None = None,
     ) -> None:
-        await self._seed_shared(run_id)
-        files = {
-            "context/document3/current_policy_set.json": policy_set_json,
-            "context/document3/reference_event_view.md": reference_view,
-            "context/document3/task.json": json.dumps(
-                metadata, ensure_ascii=False, indent=2, default=str
-            ),
-            "output/work/maintenance_candidates.jsonl": "",
-        }
+        files = self._load_prompt_assets(
+            {
+                "context/document3/AGENTS.md": "AGENTS.md",
+                "context/document3/agent.md": "agents/o3.md",
+                "context/document3/foundation.md": "skills/foundation.md",
+                "context/document3/maintain.md": "skills/maintain.md",
+                "context/document3/policy_set.schema.json": (
+                    "schemas/policy_set.schema.json"
+                ),
+                "context/document3/policy_patch.schema.json": (
+                    "schemas/policy_patch.schema.json"
+                ),
+            }
+        )
+        files.update(
+            {
+                "context/document3/current_policy_set.json": policy_set_json,
+                "context/document3/reference_event_view.md": reference_view,
+                "context/document3/task.json": json.dumps(
+                    metadata, ensure_ascii=False, indent=2, default=str
+                ),
+                "output/work/maintenance_candidates.jsonl": "",
+            }
+        )
+        if maintenance_feed_json is not None:
+            files["context/document3/runtime_maintenance_feed.json"] = (
+                maintenance_feed_json
+            )
         for path, content in files.items():
             await self.workspace.write_text(run_id, path, content)
 
-    async def _seed_shared(self, run_id: str) -> None:
-        assets = {
-            "context/document3/AGENTS.md": "AGENTS.md",
-            "context/document3/agent.md": "agents/o3.md",
-            "context/document3/foundation.md": "skills/foundation.md",
-            "context/document3/initialize.md": "skills/initialize.md",
-            "context/document3/initialize_final_review.md": "skills/initialize_final_review.md",
-            "context/document3/maintain.md": "skills/maintain.md",
-            "context/document3/policy_set.schema.json": "schemas/policy_set.schema.json",
-            "context/document3/policy_patch.schema.json": "schemas/policy_patch.schema.json",
-        }
+    def _load_prompt_assets(self, assets: dict[str, str]) -> dict[str, str]:
+        loaded: dict[str, str] = {}
         for target, source in assets.items():
-            await self.workspace.write_text(
-                run_id, target, (self._prompt_root / source).read_text(encoding="utf-8")
-            )
+            source_path = self._prompt_root / source
+            if not source_path.is_file():
+                raise FileNotFoundError(
+                    "D3 prompt/skill layer is not installed for the refactored "
+                    f"orchestration: {source_path}"
+                )
+            loaded[target] = source_path.read_text(encoding="utf-8")
+        return loaded
 
-    async def run_initialize(
-        self, *, run_id: str, ticker: str, cutoff_at: datetime
+    async def run_trigger_calibration(
+        self,
+        *,
+        run_id: str,
+        ticker: str,
+        cutoff_at: datetime,
+        thread_id: str | None = None,
+    ) -> tuple[TriggerCalibrationRunResult, str | None]:
+        return await self._run_with_resume(
+            run_id=run_id,
+            ticker=ticker,
+            cutoff_at=cutoff_at,
+            node=CodexD3Node.O3_TRIGGER_CALIBRATION,
+            output_model=TriggerCalibrationRunResult,
+            max_attempts=2,
+            thread_id=thread_id,
+            required_context_paths=(
+                "context/document3/AGENTS.md",
+                "context/document3/agent.md",
+                "context/document3/foundation.md",
+                "context/document3/initialize_trigger_calibration.md",
+                "context/document3/task.json",
+                "context/document3/document2.json",
+                "context/document3/reference_event_view.md",
+                "context/document3/previous_policy_set.json",
+                "context/document3/trigger_calibration_record.schema.json",
+                "context/document3/trigger_calibration_state.schema.json",
+                "output/work/worklist.jsonl",
+                "output/work/trigger_calibrations.jsonl",
+                "output/work/trigger_calibration_state.json",
+            ),
+            instruction=(
+                "Complete every Shell Trigger Calibration wave before any Policy drafting. "
+                "Keep Worklist status PENDING; persist all dispositions and Stage-A progress."
+            ),
+        )
+
+    async def run_policy_compile(
+        self,
+        *,
+        run_id: str,
+        ticker: str,
+        cutoff_at: datetime,
+        thread_id: str | None,
     ) -> tuple[O3RunResult, str | None]:
         return await self._run_with_resume(
             run_id=run_id,
             ticker=ticker,
             cutoff_at=cutoff_at,
-            node=CodexD3Node.O3_INITIALIZE,
-            skill_path="skills/initialize.md",
+            node=CodexD3Node.O3_POLICY_COMPILE,
             output_model=O3RunResult,
             max_attempts=2,
+            thread_id=thread_id,
+            required_context_paths=(
+                "context/document3/AGENTS.md",
+                "context/document3/agent.md",
+                "context/document3/foundation.md",
+                "context/document3/initialize_policy_compile.md",
+                "context/document3/task.json",
+                "context/document3/document2.json",
+                "context/document3/previous_policy_set.json",
+                "context/document3/policy_set.schema.json",
+                "output/work/trigger_calibrations.jsonl",
+                "output/work/trigger_calibration_state.json",
+                "output/work/worklist.jsonl",
+                "output/work/calibration_log.jsonl",
+                "output/work/wave_state.json",
+                "output/work/policies/",
+            ),
             instruction=(
-                "Build worklist/calibration/wave checkpoints and progressive Policy draft "
-                "files. Resume from wave_state when prior work exists."
+                "Compile the frozen Stage-A Trigger surface in Shell waves. Do not rebuild "
+                "the path surface. Update final Worklist statuses, Policy drafts, calibration "
+                "compatibility log, and wave_state. Resume existing compile checkpoints."
             ),
         )
 
@@ -149,14 +294,31 @@ class Document3AgentRunner:
             ticker=ticker,
             cutoff_at=cutoff_at,
             node=CodexD3Node.O3_FINAL_REVIEW,
-            skill_path="skills/initialize_final_review.md",
             output_model=ReviewResult,
             max_attempts=2,
             thread_id=thread_id,
+            required_context_paths=(
+                "context/document3/AGENTS.md",
+                "context/document3/agent.md",
+                "context/document3/foundation.md",
+                "context/document3/initialize_final_review.md",
+                "context/document3/task.json",
+                "context/document3/document2.json",
+                "context/document3/reference_event_view.md",
+                "context/document3/previous_policy_set.json",
+                "context/document3/policy_set.schema.json",
+                "output/work/worklist.jsonl",
+                "output/work/trigger_calibrations.jsonl",
+                "output/work/trigger_calibration_state.json",
+                "output/work/calibration_log.jsonl",
+                "output/work/wave_state.json",
+                "output/work/coverage_map.json",
+                "output/work/policies/",
+            ),
             instruction=(
-                "Perform the Final Global Pass. You may directly edit Policy drafts and "
-                "related worklist, calibration, wave, and coverage files. Research only "
-                "when needed, then leave all files mutually consistent."
+                "Perform the Final Global Pass. You may directly edit Policy drafts and all "
+                "related work files. If Trigger semantics change, synchronize the strict "
+                "Trigger Calibration artifact/state before returning."
             ),
         )
 
@@ -168,10 +330,23 @@ class Document3AgentRunner:
             ticker=ticker,
             cutoff_at=cutoff_at,
             node=CodexD3Node.O3_MAINTAIN,
-            skill_path="skills/maintain.md",
             output_model=O3RunResult,
             max_attempts=2,
-            instruction="Scan for possible changes and write output/work/policy_patch.json.",
+            required_context_paths=(
+                "context/document3/AGENTS.md",
+                "context/document3/agent.md",
+                "context/document3/foundation.md",
+                "context/document3/maintain.md",
+                "context/document3/task.json",
+                "context/document3/current_policy_set.json",
+                "context/document3/reference_event_view.md",
+                "context/document3/policy_patch.schema.json",
+            ),
+            instruction=(
+                "Scan the Reference View Delta and, when present, the complete local "
+                "runtime_maintenance_feed.json (Trade and BADCASE records). Write "
+                "output/work/policy_patch.json."
+            ),
         )
 
     async def _run_with_resume(
@@ -181,35 +356,53 @@ class Document3AgentRunner:
         ticker: str,
         cutoff_at: datetime,
         node: CodexD3Node,
-        skill_path: str,
         output_model: type[BaseModel],
         max_attempts: int,
+        required_context_paths: tuple[str, ...],
         instruction: str,
         thread_id: str | None = None,
     ) -> tuple[Any, str | None]:
         schema = strict_json_schema(output_model.model_json_schema())
         schema_path = f"context/document3/{node.value}.output_schema.json"
-        skill_context_path = f"context/document3/{Path(skill_path).name}"
         await self.workspace.write_text(
             run_id,
             schema_path,
             json.dumps(schema, ensure_ascii=False, indent=2),
         )
         last_job: WorkerJob | None = None
-        current_thread = thread_id
-        for attempt_number in range(1, max_attempts + 1):
+        current_thread = thread_id or self._load_saved_thread(run_id)
+        first_attempt = (
+            self._runtime_repository.next_attempt_number(run_id, node)
+            if self._runtime_repository is not None
+            else 1
+        )
+        for offset in range(max_attempts):
+            attempt_number = first_attempt + offset
             attempt_id = f"{node.value}-{attempt_number:02d}"
             prompt = (
-                f"D3 node {node.value}; attempt {attempt_id}. Read "
-                "context/document3/AGENTS.md, agent.md, foundation.md, "
-                f"{skill_context_path}, task.json, and {schema_path}. {instruction} "
-                "Return only the small JSON result."
+                f"D3 node {node.value}; attempt {attempt_id}. Read these frozen/local "
+                f"workspace paths in order: {', '.join(required_context_paths)}, and "
+                f"{schema_path}. {instruction} Return only the small JSON result."
             )
-            if attempt_number > 1:
+            if offset > 0 or attempt_number > 1:
                 prompt += (
-                    " The previous turn was interrupted or invalid; resume existing "
-                    "files without rerunning completed waves."
+                    " This is a resume attempt: preserve completed waves and continue from "
+                    "the existing node checkpoint without clearing workspace artifacts."
                 )
+            attempt = NodeAttempt(
+                attempt_id=attempt_id,
+                workflow_version=CODEX_DOCUMENT3_WORKFLOW_VERSION,
+                research_lane=ResearchLane.DOCUMENT3,
+                cutoff_at=cutoff_at,
+                ticker=ticker.upper(),
+                run_id=run_id,
+                node=node,
+                status=AttemptStatus.RUNNING,
+                attempt_number=attempt_number,
+                thread_id=current_thread,
+                started_at=utc_now(),
+            )
+            self._save_attempt(attempt)
             request = WorkerRunRequest(
                 workflow_version=CODEX_DOCUMENT3_WORKFLOW_VERSION,
                 research_lane=ResearchLane.DOCUMENT3,
@@ -229,12 +422,94 @@ class Document3AgentRunner:
                 allow_subagents=False,
                 max_subagents=0,
             )
-            last_job = await self._worker.run(request)
+            try:
+                last_job = await self._worker.run(request)
+            except Exception as exc:
+                self._save_attempt(
+                    attempt.model_copy(
+                        update={
+                            "status": AttemptStatus.FAILED,
+                            "error_code": "WORKER_ERROR",
+                            "error_message": str(exc)[:4000],
+                            "completed_at": utc_now(),
+                        }
+                    )
+                )
+                continue
             current_thread = last_job.thread_id or current_thread
+            self._save_thread(run_id, ticker, current_thread)
             if last_job.status != "succeeded" or not last_job.final_response:
+                status = (
+                    AttemptStatus.CANCELLED
+                    if last_job.status == "cancelled"
+                    else AttemptStatus.FAILED
+                )
+                self._save_attempt(
+                    attempt.model_copy(
+                        update={
+                            "status": status,
+                            "thread_id": current_thread,
+                            "error_code": "WORKER_TURN_FAILED",
+                            "error_message": (
+                                last_job.error_message or last_job.status
+                            )[:4000],
+                            "completed_at": utc_now(),
+                        }
+                    )
+                )
                 continue
             try:
-                return output_model.model_validate_json(last_job.final_response), current_thread
-            except ValidationError:
+                result = output_model.model_validate_json(last_job.final_response)
+            except ValidationError as exc:
+                self._save_attempt(
+                    attempt.model_copy(
+                        update={
+                            "status": AttemptStatus.FAILED,
+                            "thread_id": current_thread,
+                            "error_code": "INVALID_STRUCTURED_OUTPUT",
+                            "error_message": str(exc)[:4000],
+                            "completed_at": utc_now(),
+                        }
+                    )
+                )
                 continue
+            self._save_attempt(
+                attempt.model_copy(
+                    update={
+                        "status": AttemptStatus.SUCCEEDED,
+                        "thread_id": current_thread,
+                        "completed_at": utc_now(),
+                    }
+                )
+            )
+            return result, current_thread
         raise O3TurnError(f"{node.value} failed after {max_attempts} attempts", job=last_job)
+
+    def _load_saved_thread(self, run_id: str) -> str | None:
+        if self._runtime_repository is None:
+            return None
+        record = self._runtime_repository.get_thread(run_id, CodexD3AgentRole.O3.value)
+        return record.thread_id if record is not None else None
+
+    def _save_thread(self, run_id: str, ticker: str, thread_id: str | None) -> None:
+        if self._runtime_repository is None or thread_id is None:
+            return
+        prior = self._runtime_repository.get_thread(run_id, CodexD3AgentRole.O3.value)
+        self._runtime_repository.save_thread(
+            ThreadRecord(
+                workflow_version=CODEX_DOCUMENT3_WORKFLOW_VERSION,
+                research_lane=ResearchLane.DOCUMENT3,
+                ticker=ticker.upper(),
+                run_id=run_id,
+                agent_role=CodexD3AgentRole.O3,
+                thread_id=thread_id,
+                model=self._model,
+                model_provider=self._model_provider,
+                created_at=prior.created_at if prior is not None else utc_now(),
+                updated_at=utc_now(),
+            )
+        )
+
+    def _save_attempt(self, attempt: NodeAttempt) -> None:
+        if self._runtime_repository is not None:
+            self._runtime_repository.save_attempt(attempt)

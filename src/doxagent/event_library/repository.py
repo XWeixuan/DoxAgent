@@ -27,10 +27,11 @@ from doxagent.event_library.contracts import (
     ReferenceReviewMode,
     ReferenceReviewReason,
     ReferenceViewBasis,
+    ReferenceViewDeltaSnapshot,
 )
 from doxagent.event_library.reference_review import classify_review, event_review_anchor
 
-EVENT_LIBRARY_SCHEMA_VERSION = 2
+EVENT_LIBRARY_SCHEMA_VERSION = 3
 
 
 class EventLibraryError(RuntimeError):
@@ -292,6 +293,14 @@ class EventLibraryRepository:
                     decision_json TEXT NOT NULL,
                     PRIMARY KEY (ticker,review_run_id,event_no)
                 );
+                CREATE TABLE IF NOT EXISTS reference_view_deltas (
+                    ticker TEXT NOT NULL,
+                    from_library_version INTEGER NOT NULL,
+                    to_library_version INTEGER NOT NULL,
+                    payload_json TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    PRIMARY KEY (ticker,from_library_version,to_library_version)
+                );
                 CREATE INDEX IF NOT EXISTS idx_event_revision_version
                     ON canonical_event_revisions (ticker, library_version, event_no);
                 CREATE INDEX IF NOT EXISTS idx_fact_revision_version
@@ -305,6 +314,43 @@ class EventLibraryRepository:
                 """
             )
             connection.execute(f"PRAGMA user_version={EVENT_LIBRARY_SCHEMA_VERSION}")
+
+    def save_reference_view_delta(self, payload: ReferenceViewDeltaSnapshot) -> None:
+        snapshot = ReferenceViewDeltaSnapshot.model_validate(payload)
+        with self._write() as connection:
+            connection.execute(
+                """
+                INSERT INTO reference_view_deltas(
+                    ticker,from_library_version,to_library_version,payload_json,created_at
+                ) VALUES (?,?,?,?,?)
+                ON CONFLICT(ticker,from_library_version,to_library_version)
+                DO UPDATE SET payload_json=excluded.payload_json
+                """,
+                (
+                    self._ticker(snapshot.ticker),
+                    snapshot.from_library_version,
+                    snapshot.to_library_version,
+                    _json(snapshot.model_dump(mode="json")),
+                    _now(),
+                ),
+            )
+
+    def get_reference_view_delta(
+        self, ticker: str, from_version: int, to_version: int
+    ) -> ReferenceViewDeltaSnapshot | None:
+        with self._read() as connection:
+            row = connection.execute(
+                """
+                SELECT payload_json FROM reference_view_deltas
+                WHERE ticker=? AND from_library_version=? AND to_library_version=?
+                """,
+                (self._ticker(ticker), from_version, to_version),
+            ).fetchone()
+        return (
+            None
+            if row is None
+            else ReferenceViewDeltaSnapshot.model_validate_json(row["payload_json"])
+        )
 
     def pragma_state(self) -> dict[str, int | str]:
         with self._read() as connection:
@@ -328,6 +374,36 @@ class EventLibraryRepository:
                 "SELECT published_version FROM library_heads WHERE ticker=?", (normalized,)
             ).fetchone()
         return 0 if row is None else int(row["published_version"])
+
+    def library_base_version(self, ticker: str, version: int) -> int | None:
+        with self._read() as connection:
+            row = connection.execute(
+                "SELECT base_version FROM library_versions WHERE ticker=? AND version=?",
+                (self._ticker(ticker), version),
+            ).fetchone()
+        return None if row is None else int(row["base_version"])
+
+    def max_published_event_numeric_id(
+        self, ticker: str, version: int | None = None
+    ) -> int:
+        """Return the highest stable Event number allocated by a Published version."""
+
+        normalized = self._ticker(ticker)
+        current = self.published_version(normalized)
+        selected = current if version is None else version
+        if selected < 0 or selected > current:
+            raise UnknownLibraryObjectError(
+                f"library version {selected} is not Published for {normalized}"
+            )
+        if selected == 0:
+            return 0
+        with self._read() as connection:
+            row = connection.execute(
+                "SELECT MAX(event_no) AS max_event_no FROM canonical_events "
+                "WHERE ticker=? AND created_version<=?",
+                (normalized, selected),
+            ).fetchone()
+        return int(row["max_event_no"] or 0)
 
     def published_metadata(
         self, ticker: str, version: int | None = None

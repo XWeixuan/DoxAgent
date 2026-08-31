@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import shutil
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -55,17 +56,25 @@ from doxagent.workflows.codex_document3.schema import (
     CalibrationSourceKind,
     Document2Ref,
     EventLibraryRef,
+    O3RunStatus,
     PathStatus,
     Policy,
     PolicyDecision,
     PolicyPatchSet,
     PolicySet,
     PublicationState,
+    TriggerCalibrationRecord,
+    TriggerCalibrationStageStatus,
+    TriggerCalibrationState,
+    TriggerDisposition,
+    TriggerPathDisposition,
+    WaveState,
     WorklistEntry,
 )
 from doxagent.workflows.codex_document3.validator import (
     validate_initial_artifacts,
     validate_patch,
+    validate_trigger_calibration_stage,
 )
 
 NOW = datetime(2026, 8, 26, tzinfo=UTC)
@@ -122,13 +131,104 @@ def _policy_set(version: int = 1, *, policies: list[Policy] | None = None) -> Po
 
 def test_document3_runtime_identity_is_separate_and_o3_is_read_only() -> None:
     assert lane_for_workflow(CODEX_DOCUMENT3_WORKFLOW_VERSION) is ResearchLane.DOCUMENT3
-    tools = DataToolPolicyRegistry().allowed_tools(CodexD3Node.O3_INITIALIZE, CodexD3AgentRole.O3)
+    tools = DataToolPolicyRegistry().allowed_tools(
+        CodexD3Node.O3_TRIGGER_CALIBRATION, CodexD3AgentRole.O3
+    )
     assert tools
+    assert not DataToolPolicyRegistry().allowed_tools(
+        CodexD3Node.O3_POLICY_COMPILE, CodexD3AgentRole.O3
+    )
+    assert not DataToolPolicyRegistry().allowed_tools(
+        CodexD3Node.O3_INITIALIZE, CodexD3AgentRole.O3
+    )
     assert not {"ibkr.place_order", "broker.submit_order", "trade.execute"}.intersection(tools)
     assert not DataToolPolicyRegistry().allowed_tools(
-        CodexD3Node.O3_INITIALIZE,
+        CodexD3Node.O3_TRIGGER_CALIBRATION,
         CodexD3AgentRole.O3.value,  # type: ignore[arg-type]
     )
+
+
+def _trigger_record() -> TriggerCalibrationRecord:
+    return TriggerCalibrationRecord(
+        shell_id="S1",
+        expectation_id="E1",
+        gap_id="G1",
+        path_id="P1",
+        trigger_bearing_actor="公司",
+        trigger_bearing_object="量产项目",
+        current_state="当前仅处于验证阶段",
+        candidate_trigger="公司确认进入持续商业量产",
+        trade_sufficiency="该变化可直接改变收入兑现概率",
+        minimality="不等待收入或利润兑现",
+        disclosure_route="公司公告或客户正式确认",
+        judgeability="同一消息可判断是否进入持续商业量产",
+        source_basis=["D2:S1/E1/G1"],
+        disposition=TriggerDisposition.TRIGGER_READY,
+    )
+
+
+def _trigger_state() -> TriggerCalibrationState:
+    return TriggerCalibrationState(
+        stage_status=TriggerCalibrationStageStatus.COMPLETED,
+        completed_shell_ids=["S1"],
+        path_dispositions=[
+            TriggerPathDisposition(
+                shell_id="S1",
+                expectation_id="E1",
+                gap_id="G1",
+                path_id="P1",
+                disposition=TriggerDisposition.TRIGGER_READY,
+            )
+        ],
+        unprocessed_path_count=0,
+    )
+
+
+def test_trigger_stage_gate_is_structural_and_allows_unresolved_research() -> None:
+    work = WorklistEntry(
+        shell_id="S1",
+        expectation_id="E1",
+        gap_id="G1",
+        path_id="P1",
+        direction=PolicyDecision.LONG,
+        path_summary="量产推进",
+        d2_boundary_sufficient=False,
+        status=PathStatus.PENDING,
+    )
+    unresolved_state = TriggerCalibrationState(
+        stage_status=TriggerCalibrationStageStatus.COMPLETED,
+        completed_shell_ids=["S1"],
+        path_dispositions=[
+            TriggerPathDisposition(
+                shell_id="S1",
+                expectation_id="E1",
+                gap_id="G1",
+                path_id="P1",
+                disposition=TriggerDisposition.TRIGGER_UNRESOLVED,
+                unresolved_reason="公开信息暂不足",
+            )
+        ],
+    )
+
+    unresolved = validate_trigger_calibration_stage(
+        expected_gap_refs=[("S1", "E1", "G1")],
+        worklist=[work],
+        trigger_calibrations=[],
+        trigger_state=unresolved_state,
+    )
+    missing_ready_record = validate_trigger_calibration_stage(
+        expected_gap_refs=[("S1", "E1", "G1")],
+        worklist=[work],
+        trigger_calibrations=[],
+        trigger_state=_trigger_state(),
+    )
+
+    assert unresolved.valid is True
+    assert unresolved.findings == []
+    assert missing_ready_record.valid is False
+    assert {item.code for item in missing_ready_record.blocking_findings} == {
+        "STAGE_A_READY_WITHOUT_RECORD"
+    }
 
 
 def test_stable_identity_preserves_policy_and_condition_without_renumbering() -> None:
@@ -250,8 +350,10 @@ def test_runtime_projection_is_deterministic_and_excludes_calibration() -> None:
     payload = projection.model_dump(mode="json")
 
     assert projection.policy_set_version == 1
-    assert payload["conditions"][0]["policy_id"] == "pol_existing"
-    assert "calibration" not in payload["conditions"][0]
+    assert payload["schema_version"] == "document3.runtime_projection.v2"
+    assert payload["policies"][0]["policy_id"] == "pol_existing"
+    assert len(payload["policies"][0]["criterion"]) == 1
+    assert "calibration" not in payload["policies"][0]
     repository = InMemoryDocument3PolicyRepository()
     repository.publish(policy_set, expected_base_version=None)
     assert Document3RuntimeProjectionConsumer(repository).current("mu") == projection
@@ -336,7 +438,39 @@ class _O3WorkerStub:
         self.requests.append(request)
         assert request.allow_subagents is False
         assert request.max_subagents == 0
-        if request.node is CodexD3Node.O3_INITIALIZE:
+        if request.node is CodexD3Node.O3_TRIGGER_CALIBRATION:
+            await self.workspace.write_text(
+                request.run_id,
+                "output/work/worklist.jsonl",
+                WorklistEntry(
+                    shell_id="S1",
+                    expectation_id="E1",
+                    gap_id="G1",
+                    path_id="P1",
+                    direction=PolicyDecision.LONG,
+                    path_summary="量产推进",
+                    d2_boundary_sufficient=True,
+                    status=PathStatus.PENDING,
+                ).model_dump_json()
+                + "\n",
+            )
+            await self.workspace.write_text(
+                request.run_id,
+                "output/work/trigger_calibrations.jsonl",
+                _trigger_record().model_dump_json() + "\n",
+            )
+            await self.workspace.write_text(
+                request.run_id,
+                "output/work/trigger_calibration_state.json",
+                _trigger_state().model_dump_json(indent=2),
+            )
+            response = {
+                "status": "COMPLETED",
+                "processed_gap_count": 1,
+                "processed_path_count": 1,
+                "unprocessed_path_count": 0,
+            }
+        elif request.node is CodexD3Node.O3_POLICY_COMPILE:
             await self.workspace.write_text(
                 request.run_id,
                 "output/work/worklist.jsonl",
@@ -357,6 +491,14 @@ class _O3WorkerStub:
                 request.run_id,
                 "output/work/policies/tmp_1.json",
                 _policy().model_dump_json(indent=2),
+            )
+            await self.workspace.write_text(
+                request.run_id,
+                "output/work/wave_state.json",
+                WaveState(
+                    completed_shell_ids=["S1"],
+                    completed_path_ids=["P1"],
+                ).model_dump_json(indent=2),
             )
             response = {
                 "status": "COMPLETED",
@@ -412,6 +554,42 @@ class _O3WorkerStub:
 
     async def cancel(self, job_id: str):
         return None
+
+
+class _CompileRetryWorker(_O3WorkerStub):
+    def __init__(self, workspace: _AsyncWorkspace) -> None:
+        super().__init__(workspace)
+        self.compile_failures_remaining = 2
+
+    async def run(self, request):
+        if (
+            request.node is CodexD3Node.O3_POLICY_COMPILE
+            and self.compile_failures_remaining
+        ):
+            self.compile_failures_remaining -= 1
+            self.requests.append(request)
+            return WorkerJob(
+                job_id=f"job-{len(self.requests)}",
+                run_id=request.run_id,
+                attempt_id=request.attempt_id,
+                status="failed",
+                thread_id="thread-o3",
+                error_code="TEST_INTERRUPT",
+                error_message="compile interrupted",
+            )
+        return await super().run(request)
+
+
+def _refactored_prompt_root(tmp_path: Path) -> Path:
+    source = Path(__file__).resolve().parents[1] / "prompts" / "codex_v2" / "document3"
+    target = tmp_path / "document3-prompts"
+    shutil.copytree(source, target)
+    for name in ("initialize_trigger_calibration.md", "initialize_policy_compile.md"):
+        (target / "skills" / name).write_text(
+            "# Test-only orchestration fixture\n",
+            encoding="utf-8",
+        )
+    return target
 
 
 def _seed_published_d2(
@@ -549,8 +727,10 @@ async def test_initialize_runs_single_o3_thread_and_publishes_canonical_artifact
     runner = Document3AgentRunner(
         worker=worker,
         workspace=workspace,
+        prompt_root=_refactored_prompt_root(tmp_path),
         model="test-model",
         model_provider=None,
+        runtime_repository=runtime,
     )
     preparer = Document3InputPreparer(
         runtime_repository=runtime,
@@ -572,7 +752,16 @@ async def test_initialize_runs_single_o3_thread_and_publishes_canonical_artifact
     current = policy_repository.get_current("MU")
     assert current is not None
     assert current.policies[0].policy_id.startswith("pol_")
-    assert [request.thread_id for request in worker.requests] == [None, "thread-o3"]
+    assert [request.node for request in worker.requests] == [
+        CodexD3Node.O3_TRIGGER_CALIBRATION,
+        CodexD3Node.O3_POLICY_COMPILE,
+        CodexD3Node.O3_FINAL_REVIEW,
+    ]
+    assert [request.thread_id for request in worker.requests] == [
+        None,
+        "thread-o3",
+        "thread-o3",
+    ]
     bundle = runtime.get_bundle("d3-mu-test")
     assert bundle is not None and bundle.status == "published"
     assert (
@@ -580,6 +769,96 @@ async def test_initialize_runs_single_o3_thread_and_publishes_canonical_artifact
         == "d3-mu-test"
     )
     assert workspace.local.read_text("d3-mu-test", "output/final/runtime_projection.json").content
+
+
+@pytest.mark.asyncio
+async def test_initialize_resume_skips_completed_trigger_stage_and_preserves_inputs(
+    tmp_path: Path,
+) -> None:
+    runtime = InMemoryCodexRuntimeRepository()
+    policy_repository = InMemoryDocument3PolicyRepository()
+    _seed_published_d2(runtime)
+    workspace = _AsyncWorkspace(tmp_path / "resume-workspace")
+    worker = _CompileRetryWorker(workspace)
+    runner = Document3AgentRunner(
+        worker=worker,
+        workspace=workspace,
+        prompt_root=_refactored_prompt_root(tmp_path),
+        model="test-model",
+        model_provider=None,
+        runtime_repository=runtime,
+    )
+    orchestrator = Document3Orchestrator(
+        input_preparer=Document3InputPreparer(
+            runtime_repository=runtime,
+            policy_repository=policy_repository,
+        ),
+        agent_runner=runner,
+        policy_repository=policy_repository,
+        runtime_repository=runtime,
+    )
+
+    with pytest.raises(Exception, match="d3_o3_policy_compile failed"):
+        await orchestrator.initialize(
+            ticker="MU",
+            document2_run_id="d2-mu",
+            run_id="d3-mu-resume",
+            cutoff_at=NOW,
+        )
+    before = workspace.local.read_text(
+        "d3-mu-resume", "context/document3/input_manifest.json"
+    ).sha256
+
+    result = await orchestrator.initialize(
+        ticker="MU",
+        document2_run_id="d2-mu",
+        run_id="d3-mu-resume",
+        cutoff_at=NOW,
+    )
+    after = workspace.local.read_text(
+        "d3-mu-resume", "context/document3/input_manifest.json"
+    ).sha256
+
+    assert result.status is O3RunStatus.COMPLETED
+    assert before == after
+    assert [item.node for item in worker.requests].count(
+        CodexD3Node.O3_TRIGGER_CALIBRATION
+    ) == 1
+    assert [item.node for item in worker.requests].count(
+        CodexD3Node.O3_POLICY_COMPILE
+    ) == 3
+    checkpoint = runtime.get_checkpoint("d3-mu-resume")
+    assert checkpoint is not None
+    assert CodexD3Node.O3_TRIGGER_CALIBRATION in checkpoint.completed_nodes
+    assert CodexD3Node.O3_POLICY_COMPILE in checkpoint.completed_nodes
+
+
+@pytest.mark.asyncio
+async def test_write_boundary_allows_runtime_data_mcp_catalog_only(tmp_path: Path) -> None:
+    workspace = _AsyncWorkspace(tmp_path / "boundary-workspace")
+
+    class _Agent:
+        def __init__(self) -> None:
+            self.workspace = workspace
+
+    orchestrator = Document3Orchestrator(
+        input_preparer=object(),
+        agent_runner=_Agent(),
+        policy_repository=object(),
+        runtime_repository=object(),
+    )
+    run_id = "d3-boundary"
+    await workspace.write_text(
+        run_id,
+        "context/data_tool_catalog/d3_o3_trigger_calibration-01.md",
+        "# Authorized Data MCP catalog\n",
+    )
+
+    await orchestrator._assert_agent_write_boundary(run_id, initialize=True)
+
+    await workspace.write_text(run_id, "context/unexpected.md", "not authorized\n")
+    with pytest.raises(ValueError, match="outside its boundary"):
+        await orchestrator._assert_agent_write_boundary(run_id, initialize=True)
 
 
 class _EventReaderStub:

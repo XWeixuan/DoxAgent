@@ -21,6 +21,17 @@ from doxagent.monitoring.schema import (
 )
 from doxagent.monitoring.service import MonitoringBusService
 from doxagent.persistent_runtime.service import PersistentRuntimeExecutionService
+from doxagent.persistent_runtime_v2.factory import build_persistent_runtime_v2_service
+from doxagent.persistent_runtime_v2.schema import (
+    RuntimeCaseStatus as RuntimeV2CaseStatus,
+)
+from doxagent.persistent_runtime_v2.schema import (
+    RuntimePrimaryRoute as RuntimeV2PrimaryRoute,
+)
+from doxagent.persistent_runtime_v2.schema import (
+    SourceMessageEnvelope,
+)
+from doxagent.persistent_runtime_v2.service import PersistentRuntimeV2Service
 from doxagent.runtime_scheduler.documents import RuntimeDocumentProvider, WorkflowDocumentProvider
 from doxagent.runtime_scheduler.repository import (
     InMemoryRuntimeSchedulerRepository,
@@ -120,6 +131,7 @@ class UnifiedRuntimeSchedulerService:
         document_provider: RuntimeDocumentProvider,
         monitoring_service: MonitoringBusService,
         runtime_service: PersistentRuntimeExecutionService,
+        runtime_v2_service: PersistentRuntimeV2Service | None = None,
         low_frequency_source_ids: set[str] | None = None,
         auto_media_enrichment_enabled: bool = True,
         auto_media_enrichment_limit: int = 5,
@@ -129,6 +141,7 @@ class UnifiedRuntimeSchedulerService:
         self.document_provider = document_provider
         self.monitoring_service = monitoring_service
         self.runtime_service = runtime_service
+        self.runtime_v2_service = runtime_v2_service
         self.low_frequency_source_ids = {
             source_id.strip().lower()
             for source_id in (low_frequency_source_ids or set(LOW_FREQUENCY_SOURCE_IDS))
@@ -156,6 +169,11 @@ class UnifiedRuntimeSchedulerService:
             document_provider=WorkflowDocumentProvider(settings=resolved),
             monitoring_service=MonitoringBusService.from_settings(resolved),
             runtime_service=PersistentRuntimeExecutionService.from_settings(resolved),
+            runtime_v2_service=(
+                build_persistent_runtime_v2_service(resolved)
+                if resolved.persistent_runtime_v2_enabled
+                else None
+            ),
             auto_media_enrichment_enabled=(resolved.monitoring_auto_media_enrichment_enabled),
             auto_media_enrichment_limit=resolved.monitoring_auto_media_enrichment_limit,
             auto_media_enrichment_concurrency=(
@@ -670,21 +688,43 @@ class UnifiedRuntimeSchedulerService:
                 pending = self._exclude_runtime_ineligible_events(normalized, pending)
                 pending = _runtime_eligible_events(state, pending)
                 pending_count_before_runtime = len(pending)
-                context = self._runtime_context(state, bundle=runtime_context_bundle)
-                before_trade_count = len(
-                    self.runtime_service.repository.list_trading_records(ticker=normalized)
-                )
-                records = self.runtime_service.execute_events(
-                    pending,
-                    context=context,
-                    mark_consumed=self.monitoring_service.mark_event_consumed,
-                )
-                after_trade_count = len(
-                    self.runtime_service.repository.list_trading_records(ticker=normalized)
-                )
-                runtime_count = len(records)
-                consumed_count = len(pending)
-                trade_intent_count = max(0, after_trade_count - before_trade_count)
+                if self.runtime_v2_service is not None:
+                    self.runtime_v2_service.process_pending_effects(limit=20)
+                    for event in pending:
+                        case = self.runtime_v2_service.execute_message(
+                            SourceMessageEnvelope.from_event(event)
+                        )
+                        if case.status not in {
+                            RuntimeV2CaseStatus.ADJUDICATED,
+                            RuntimeV2CaseStatus.COMPLETED,
+                            RuntimeV2CaseStatus.PENDING_W3,
+                        }:
+                            raise RuntimeError(
+                                f"Runtime V2 case {case.case_id} did not reach adjudication"
+                            )
+                        self.monitoring_service.mark_event_consumed(event.event_id)
+                        runtime_count += 1
+                        consumed_count += 1
+                        trade_intent_count += int(
+                            case.route is not None
+                            and case.route.primary_route is RuntimeV2PrimaryRoute.TRADE
+                        )
+                else:
+                    context = self._runtime_context(state, bundle=runtime_context_bundle)
+                    before_trade_count = len(
+                        self.runtime_service.repository.list_trading_records(ticker=normalized)
+                    )
+                    records = self.runtime_service.execute_events(
+                        pending,
+                        context=context,
+                        mark_consumed=self.monitoring_service.mark_event_consumed,
+                    )
+                    after_trade_count = len(
+                        self.runtime_service.repository.list_trading_records(ticker=normalized)
+                    )
+                    runtime_count = len(records)
+                    consumed_count = len(pending)
+                    trade_intent_count = max(0, after_trade_count - before_trade_count)
                 if consumed_count:
                     self._audit(
                         normalized,
@@ -698,7 +738,9 @@ class UnifiedRuntimeSchedulerService:
                     )
             except Exception as exc:
                 runtime_failed = True
-                failed_event_count = pending_count_before_runtime
+                failed_event_count = max(
+                    0, pending_count_before_runtime - consumed_count
+                )
                 self._audit(
                     normalized,
                     "runtime_event_consumption_failed",
@@ -1147,6 +1189,8 @@ class UnifiedRuntimeSchedulerService:
             loader = getattr(self.document_provider, "by_run_id", None)
             if callable(loader):
                 bundle = loader(state.ticker, state.document_run_id)
+                if not isinstance(bundle, DocumentBundle):
+                    raise TypeError("Runtime document provider returned an invalid bundle")
                 self._runtime_bundle_cache[cache_key] = bundle.model_copy(deep=True)
                 return bundle
         bundle = self.document_provider.latest(state.ticker)
@@ -1270,6 +1314,8 @@ class UnifiedRuntimeSchedulerService:
         return eligible
 
     def _is_social_runtime_excluded_event(self, event: EventStreamItem) -> bool:
+        if self.runtime_v2_service is not None and self.runtime_v2_service.social_enabled:
+            return False
         if event.source_id.strip().lower() in SOCIAL_RUNTIME_EXCLUDED_SOURCE_IDS:
             return True
         payload_source_type = str(event.payload.get("source_type") or "").lower()
@@ -1391,7 +1437,12 @@ class UnifiedRuntimeSchedulerService:
             loader = getattr(self.document_provider, "by_run_id", None)
             if callable(loader):
                 try:
-                    return loader(state.ticker, state.document_run_id, now=now).status
+                    bundle = loader(state.ticker, state.document_run_id, now=now)
+                    if not isinstance(bundle, DocumentBundle):
+                        raise TypeError(
+                            "Runtime document provider returned an invalid bundle"
+                        )
+                    return bundle.status
                 except RunNotFoundError:
                     pass
         return self.document_provider.latest(state.ticker, now=now).status

@@ -23,6 +23,7 @@ from doxagent.event_library.contracts import (
     ReferenceReviewCandidate,
     ReferenceReviewDecision,
     ReferenceViewDecisionLedgerEntry,
+    ReferenceViewDeltaSnapshot,
     ResidualDeltaResolution,
     RuntimePackageDelta,
     SurveyDeltaCatalog,
@@ -191,8 +192,21 @@ class EventLibraryViewCompiler:
     def reference_view(
         self, ticker: str, version: int | None = None, *, include_basis: bool = False
     ) -> str:
+        return self._render_reference_events(
+            ticker,
+            self.reference_events(ticker, version),
+            include_basis=include_basis,
+        )
+
+    def _render_reference_events(
+        self,
+        ticker: str,
+        events: list[CanonicalEvent],
+        *,
+        include_basis: bool = False,
+    ) -> str:
         sections = ["fields: event_id | event_time | precision | title", ""]
-        for event in self.reference_events(ticker, version):
+        for event in events:
             basis = (
                 self._repository.latest_reference_view_basis(
                     ticker=ticker, event_id=event.event_id
@@ -218,6 +232,48 @@ class EventLibraryViewCompiler:
                 ]
             )
         return "\n".join(sections).rstrip() + "\n"
+
+    def reference_view_delta(
+        self,
+        ticker: str,
+        *,
+        from_version: int,
+        to_version: int,
+        persist: bool = True,
+    ) -> ReferenceViewDeltaSnapshot:
+        if to_version <= from_version:
+            raise ValueError("Reference View Delta requires an increasing version range")
+        current_version = self._repository.published_version(ticker)
+        if to_version > current_version:
+            raise ValueError("Reference View Delta target is not Published")
+        previous = (
+            {}
+            if from_version == 0
+            else {
+                event.event_id: event
+                for event in self.reference_events(ticker, from_version)
+            }
+        )
+        current = {
+            event.event_id: event for event in self.reference_events(ticker, to_version)
+        }
+        changed = [
+            event
+            for event_id, event in current.items()
+            if event_id not in previous
+            or self._render_reference_events(ticker, [event])
+            != self._render_reference_events(ticker, [previous[event_id]])
+        ]
+        snapshot = ReferenceViewDeltaSnapshot(
+            ticker=ticker.upper(),
+            from_library_version=from_version,
+            to_library_version=to_version,
+            reference_view_delta=self._render_reference_events(ticker, changed),
+            removed_event_ids=sorted(set(previous) - set(current)),
+        )
+        if persist:
+            self._repository.save_reference_view_delta(snapshot)
+        return snapshot
 
     def event_detail(
         self, ticker: str, event_id: str, version: int | None = None
@@ -876,6 +932,7 @@ class EventLibraryViewCompiler:
         agent_reference_path = target / f"reference_view_agent_v{selected}.md"
         human_reference_path = target / f"reference_view_human_v{selected}.md"
         known_index_path = target / f"known_event_index_v{selected}.md"
+        reference_delta_path = target / f"reference_view_delta_v{selected}.json"
         json_path.write_text(
             _json_text(
                 {
@@ -916,10 +973,21 @@ class EventLibraryViewCompiler:
         agent_reference_path.write_text(reference, encoding="utf-8")
         human_reference_path.write_text(human_reference, encoding="utf-8")
         known_index_path.write_text(self.known_event_index(ticker, selected), encoding="utf-8")
-        return {
+        exports = {
             "json": json_path,
             "markdown": markdown_path,
             "reference_view_agent": agent_reference_path,
             "reference_view_human": human_reference_path,
             "known_event_index": known_index_path,
         }
+        base_version = self._repository.library_base_version(ticker, selected)
+        if base_version is not None and selected > base_version:
+            delta = self.reference_view_delta(
+                ticker,
+                from_version=base_version,
+                to_version=selected,
+                persist=not self._repository.read_only,
+            )
+            reference_delta_path.write_text(delta.model_dump_json(indent=2), encoding="utf-8")
+            exports["reference_view_delta"] = reference_delta_path
+        return exports

@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from time import monotonic
 from typing import Protocol
 
-from .schema import PolicySet, RuntimeConditionProjection, RuntimePolicyProjection
+from .schema import PolicySet, RuntimePolicyProjection, RuntimePolicyRecord
 
 
 class PolicySetReader(Protocol):
@@ -23,24 +23,20 @@ class PolicySetReader(Protocol):
 
 
 def project_policy_set(policy_set: PolicySet) -> RuntimePolicyProjection:
-    conditions = [
-        RuntimeConditionProjection(
+    policies = [
+        RuntimePolicyRecord(
             policy_id=policy.policy_id,
-            title=policy.title,
-            decision=policy.decision,
             match_scope=policy.match_scope,
-            condition_id=condition.condition_id,
-            criterion=condition.criterion,
+            criterion=[condition.criterion for condition in policy.activation_conditions],
             activation_summary=policy.activation_summary,
         )
         for policy in policy_set.policies
-        for condition in policy.activation_conditions
     ]
     return RuntimePolicyProjection(
         ticker=policy_set.ticker,
         policy_set_version=policy_set.policy_set_version,
         policy_set_published_at=policy_set.published_at,
-        conditions=conditions,
+        policies=policies,
     )
 
 

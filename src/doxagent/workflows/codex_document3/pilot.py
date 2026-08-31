@@ -14,6 +14,9 @@ from .schema import (
     MaintenanceCandidate,
     PathStatus,
     Policy,
+    TriggerCalibrationRecord,
+    TriggerCalibrationState,
+    TriggerDisposition,
     WaveState,
     WorklistEntry,
 )
@@ -35,6 +38,9 @@ class Document3PilotReport(ContractModel):
     single_condition_policy_ratio: float = Field(ge=0, le=1)
     max_condition_count: int = Field(ge=0)
     completed_shell_count: int = Field(ge=0)
+    trigger_ready_path_count: int = Field(default=0, ge=0)
+    trigger_unresolved_path_count: int = Field(default=0, ge=0)
+    trigger_calibration_completed_shell_count: int = Field(default=0, ge=0)
     maintenance_candidate_count: int = Field(ge=0)
     warnings: list[str] = Field(default_factory=list)
 
@@ -54,6 +60,24 @@ class Document3PilotEvaluator:
         worklist = await self._jsonl(run_id, "output/work/worklist.jsonl", WorklistEntry)
         calibration = await self._jsonl(
             run_id, "output/work/calibration_log.jsonl", CalibrationLogEntry
+        )
+        trigger_calibrations = (
+            await self._jsonl(
+                run_id,
+                "output/work/trigger_calibrations.jsonl",
+                TriggerCalibrationRecord,
+            )
+            if "output/work/trigger_calibrations.jsonl" in paths
+            else []
+        )
+        trigger_state = (
+            await self._json(
+                run_id,
+                "output/work/trigger_calibration_state.json",
+                TriggerCalibrationState,
+            )
+            if "output/work/trigger_calibration_state.json" in paths
+            else TriggerCalibrationState()
         )
         policy_paths = sorted(
             path
@@ -76,6 +100,14 @@ class Document3PilotEvaluator:
             warnings.append("Agent did not establish a Worklist")
         if calibration_required - calibration_paths:
             warnings.append("Some explicit calibration gaps have no calibration log entry")
+        trigger_record_paths = {item.path_id for item in trigger_calibrations}
+        ready_paths = {
+            item.path_id
+            for item in trigger_state.path_dispositions
+            if item.disposition is TriggerDisposition.TRIGGER_READY
+        }
+        if ready_paths - trigger_record_paths:
+            warnings.append("Some TRIGGER_READY paths have no strict Trigger record")
         if any(count > 4 for count in counts):
             warnings.append("Some Policies may be over-multiconditioned")
         return Document3PilotReport(
@@ -94,6 +126,17 @@ class Document3PilotEvaluator:
             ),
             max_condition_count=max(counts, default=0),
             completed_shell_count=len(wave.completed_shell_ids),
+            trigger_ready_path_count=sum(
+                item.disposition is TriggerDisposition.TRIGGER_READY
+                for item in trigger_state.path_dispositions
+            ),
+            trigger_unresolved_path_count=sum(
+                item.disposition is TriggerDisposition.TRIGGER_UNRESOLVED
+                for item in trigger_state.path_dispositions
+            ),
+            trigger_calibration_completed_shell_count=len(
+                trigger_state.completed_shell_ids
+            ),
             maintenance_candidate_count=0,
             warnings=warnings,
         )

@@ -99,6 +99,7 @@ def build_document3_orchestrator(settings: DoxAgentSettings) -> Document3Orchest
         model_provider=config.model_provider,
         effort=config.reasoning_effort,
         timeout_seconds=config.node_timeout_seconds,
+        runtime_repository=runtime_repository,
     )
     return Document3Orchestrator(
         input_preparer=input_preparer,
