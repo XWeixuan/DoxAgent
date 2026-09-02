@@ -65,6 +65,7 @@ class CodexRuntimeConfig(BaseModel):
                 settings.codex_d1_v2_enabled
                 or settings.codex_research_lanes_enabled
                 or settings.codex_document3_enabled
+                or settings.codex_monitoring_o4_enabled
             ),
             worker_base_url=TypeAdapter(HttpUrl).validate_python(settings.codex_worker_base_url),
             worker_bearer_token=settings.codex_worker_bearer_token,

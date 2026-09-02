@@ -18,6 +18,10 @@ from doxagent.tools.providers.benzinga import (
     BenzingaMarketSignalsClient,
 )
 from doxagent.tools.providers.bls import BlsTimeseriesClient
+from doxagent.tools.providers.crawler_plane import (
+    CRAWLER_PLANE_TOOL_NAMES,
+    CrawlerPlaneToolClient,
+)
 from doxagent.tools.providers.doxatlas import DOXATLAS_TOOL_SPECS, DoxAtlasToolClient
 from doxagent.tools.providers.fed import FedFomcCalendarMaterialsClient
 from doxagent.tools.providers.finnhub import (
@@ -687,6 +691,26 @@ for _sec_tool_id in (
 _DESCRIPTORS: dict[str, ToolDescriptor] = {
     **_DOXATLAS_DESCRIPTORS,
     **_HORIZONTAL_DESCRIPTORS,
+    **{
+        name: _descriptor(
+            name,
+            description="Manage and operate Message Bus v2 crawler code through the Crawler Plane.",
+            input_fields=[
+                "crawler_id",
+                "version",
+                "entrypoint",
+                "parameter_schema",
+                "checkpoint_schema_version",
+                "parameters",
+                "checkpoint_action",
+            ],
+            business_purpose=(
+                "Give O4 the full create, certify, release, execute, register, and health workflow."
+            ),
+            concurrent_safe=False,
+        ).model_copy(update={"read_only": False})
+        for name in CRAWLER_PLANE_TOOL_NAMES
+    },
     "sec.company_facts_and_filings": _descriptor(
         "sec.company_facts_and_filings",
         description="Read SEC submissions and companyfacts for a US issuer.",
@@ -1061,14 +1085,25 @@ _DESCRIPTORS: dict[str, ToolDescriptor] = {
             "observation_adapter": "json",
         }
     ),
+    "monitoring.list_sources": _descriptor(
+        "monitoring.list_sources",
+        description="List registered Message Bus v2 SourceDefinition records and schemas.",
+        input_fields=["include_disabled"],
+        business_purpose="Discover reusable monitoring sources before changing a ticker.",
+    ),
+    "monitoring.get_source": _descriptor(
+        "monitoring.get_source",
+        description="Read one Message Bus v2 source and its immutable revision history.",
+        input_fields=["source_id"],
+        business_purpose="Inspect adapter, parameter schema, defaults, and scheduler safety.",
+    ),
     "monitoring.get_ticker_config": _descriptor(
         "monitoring.get_ticker_config",
-        description="Read a ticker's full Monitoring Message Bus source configuration.",
+        description="Read a ticker's Message Bus v2 source bindings and poll state.",
         input_fields=["ticker"],
-        business_purpose=("Let O2 inspect enabled by-ticker and by-parameter monitoring coverage."),
+        business_purpose="Let O4 inspect the complete ticker-local monitoring configuration.",
         contract_brief=(
-            "Returns source dimensions, editable strategy fields, user-only poll intervals, "
-            "bindings, and recent poll state."
+            "Returns ticker state, source-agnostic bindings, and recent poll runtime state."
         ),
     ),
     "monitoring.update_ticker_config": _descriptor(
@@ -1078,20 +1113,15 @@ _DESCRIPTORS: dict[str, ToolDescriptor] = {
             "ticker",
             "source_id",
             "enabled",
-            "keywords",
-            "usernames",
-            "search_terms",
-            "rss_urls",
-            "source_filters",
-            "mode",
+            "source_parameters",
+            "polling",
+            "streaming",
             "reason",
         ],
-        business_purpose=(
-            "Let O2 tune monitoring coverage without changing user-owned polling cadence."
-        ),
+        business_purpose="Let O4 configure every ticker/source binding parameter.",
         contract_brief=(
-            "Agent may edit ticker binding parameters and enabled state. "
-            "poll_interval_seconds is rejected because only users can change cadence."
+            "Agent and human API use the same application service and may edit source parameters, "
+            "polling, streaming, and enabled state."
         ),
         concurrent_safe=False,
     ),
@@ -1112,7 +1142,129 @@ _DESCRIPTORS: dict[str, ToolDescriptor] = {
         business_purpose="Provide future Trigger Engine and Agent Worker input preview.",
         contract_brief="Read-only event-stream replay preview; does not call external APIs.",
     ),
+    "monitoring.list_failures": _descriptor(
+        "monitoring.list_failures",
+        description="Read recent Message Bus v2 acquisition failures.",
+        input_fields=["ticker", "source_id", "limit"],
+        business_purpose="Diagnose source polling and materialization failures.",
+    ),
+    "monitoring.register_source": _descriptor(
+        "monitoring.register_source",
+        description="Register an API or crawler SourceDefinition in Message Bus v2.",
+        input_fields=[
+            "source_id",
+            "display_name",
+            "kind",
+            "adapter_ref",
+            "parameter_schema",
+            "default_parameters",
+            "default_polling_config",
+            "default_streaming_config",
+            "scheduler_group",
+            "scheduler_constraints",
+        ],
+        business_purpose="Let O4 register a newly implemented adapter as a monitoring source.",
+        contract_brief="Validates and revisions the complete source definition.",
+        concurrent_safe=False,
+    ),
+    "monitoring.update_source": _descriptor(
+        "monitoring.update_source",
+        description="Update any mutable Message Bus v2 source definition field.",
+        input_fields=["source_id", "patch", "binding_patches", "reason"],
+        business_purpose=(
+            "Let O4 maintain adapters, schemas, scheduler groups, and provider safety constraints."
+        ),
+        contract_brief=(
+            "Source and affected binding validation is atomic; changes create an audit revision."
+        ),
+        concurrent_safe=False,
+    ),
+    "monitoring.hard_delete_source": _descriptor(
+        "monitoring.hard_delete_source",
+        description="Hard-delete a source from the Message Bus v2 control plane.",
+        input_fields=["source_id", "reason"],
+        business_purpose="Let O4 remove an obsolete or invalid registered source.",
+        contract_brief=(
+            "Flushes pending buffers and removes active source/profile/binding control records; "
+            "immutable raw, standard, stream, revision, and audit history remains queryable."
+        ),
+        concurrent_safe=False,
+    ),
+    "monitoring.get_default_profile": _descriptor(
+        "monitoring.get_default_profile",
+        description="Read a versioned Message Bus v2 default monitoring profile.",
+        input_fields=["profile_id"],
+        business_purpose="Let O4 inspect the template materialized for newly started tickers.",
+        contract_brief="Read-only; existing ticker bindings never dynamically inherit changes.",
+    ),
+    "monitoring.update_default_profile": _descriptor(
+        "monitoring.update_default_profile",
+        description="Create or replace a versioned Message Bus v2 default profile.",
+        input_fields=["profile_id", "display_name", "entries", "reason"],
+        business_purpose="Let O4 maintain the source template for future ticker starts.",
+        contract_brief="Validates all entries through the shared application service.",
+        concurrent_safe=False,
+    ),
 }
+
+_CRAWLER_INPUT_FIELDS: dict[str, list[str]] = {
+    "crawler_plane.list": [],
+    "crawler_plane.get": ["crawler_id"],
+    "crawler_plane.create_version": [
+        "crawler_id", "version", "base_version", "entrypoint", "parameter_schema",
+        "checkpoint_schema_version",
+    ],
+    "crawler_plane.certify": ["crawler_id", "version"],
+    "crawler_plane.promote": ["crawler_id", "version", "checkpoint_action"],
+    "crawler_plane.rollback": ["crawler_id", "version"],
+    "crawler_plane.execute": [
+        "crawler_id", "ticker", "binding_id", "source_id", "source_parameters",
+        "poll_run_id", "network_mode", "cassette_ref", "version", "commit_checkpoint",
+        "checkpoint_override", "preserve_response_bodies",
+    ],
+    "crawler_plane.live_probe": [
+        "crawler_id", "version", "ticker", "parameters", "baseline_cassette_ref",
+    ],
+    "crawler_plane.get_execution": ["execution_id"],
+    "crawler_plane.get_cassette": ["cassette_id", "cassette_ref"],
+    "crawler_plane.list_alerts": ["crawler_id", "open_only"],
+    "crawler_plane.update_alert_policy": [
+        "crawler_id", "source_id", "alert_type", "enabled", "threshold", "window",
+    ],
+    "crawler_plane.resolve_alert": ["alert_id"],
+    "crawler_plane.register_source": [
+        "source_id", "display_name", "crawler_id", "parameter_schema",
+        "default_parameters", "default_polling_config", "default_streaming_config",
+        "scheduler_group", "scheduler_constraints",
+    ],
+    "crawler_plane.add_regression": ["execution_id"],
+}
+_CRAWLER_READ_ONLY = {
+    "crawler_plane.list",
+    "crawler_plane.get",
+    "crawler_plane.get_execution",
+    "crawler_plane.get_cassette",
+    "crawler_plane.list_alerts",
+}
+for _crawler_name, _crawler_fields in _CRAWLER_INPUT_FIELDS.items():
+    _DESCRIPTORS[_crawler_name] = _descriptor(
+        _crawler_name,
+        description=f"Crawler Plane operation: {_crawler_name.rsplit('.', 1)[-1]}.",
+        input_fields=_crawler_fields,
+        business_purpose="Develop, certify, publish, operate, or repair crawler capabilities.",
+        concurrent_safe=_crawler_name in _CRAWLER_READ_ONLY,
+    ).model_copy(update={"read_only": _crawler_name in _CRAWLER_READ_ONLY})
+
+for _monitoring_mutation in (
+    "monitoring.update_ticker_config",
+    "monitoring.register_source",
+    "monitoring.update_source",
+    "monitoring.hard_delete_source",
+    "monitoring.update_default_profile",
+):
+    _DESCRIPTORS[_monitoring_mutation] = _DESCRIPTORS[_monitoring_mutation].model_copy(
+        update={"read_only": False}
+    )
 
 
 def default_real_tool_registry(settings: DoxAgentSettings | None = None) -> ToolRegistry:
@@ -1150,6 +1302,10 @@ def default_real_tool_registry(settings: DoxAgentSettings | None = None) -> Tool
     monitoring = MonitoringToolClient(settings=resolved)
     for name in MONITORING_TOOL_NAMES:
         register(name, monitoring.for_tool(name))
+
+    crawler_plane = CrawlerPlaneToolClient(settings=resolved)
+    for name in CRAWLER_PLANE_TOOL_NAMES:
+        register(name, crawler_plane.for_tool(name))
 
     register(
         "sec.company_facts_and_filings",

@@ -1,35 +1,70 @@
 name: doxagent
 
 services:
-  monitoring-poller:
-    profiles:
-      - legacy-debug
+  message-bus-v2-worker:
     build:
       context: .
       dockerfile: Dockerfile
     image: doxagent:latest
-    container_name: doxagent-monitoring-poller
+    container_name: doxagent-message-bus-v2-worker
     restart: unless-stopped
     env_file:
       - .env
     environment:
       PYTHONPATH: /app
       DOXAGENT_STORAGE_MODE: ${DOXAGENT_STORAGE_MODE:-memory}
-      DOXAGENT_MONITORING_POLLER_SLEEP_SECONDS: ${DOXAGENT_MONITORING_POLLER_SLEEP_SECONDS:-15}
-      DOXAGENT_STOCKTWITS_STORAGE_MODE: sqlite
-      DOXAGENT_STOCKTWITS_SQLITE_PATH: /app/.tmp/stocktwits_polling.sqlite3
+      DOXAGENT_MESSAGE_BUS_V2_ENABLED: ${DOXAGENT_MESSAGE_BUS_V2_ENABLED:-false}
+      DOXAGENT_MESSAGE_BUS_V2_SQLITE_PATH: /app/.tmp/message_bus_v2.sqlite3
+      DOXAGENT_MESSAGE_BUS_V2_WORKER_SLEEP_SECONDS: ${DOXAGENT_MESSAGE_BUS_V2_WORKER_SLEEP_SECONDS:-1}
+      DOXAGENT_MESSAGE_BUS_V2_ADAPTER_ROOT: /app/.tmp/message_bus_v2_adapters
+      DOXAGENT_CRAWLER_PLANE_ROOT: /var/lib/doxagent/workspaces/crawler-plane
+      DOXAGENT_CRAWLER_PLANE_SQLITE_PATH: /var/lib/doxagent/workspaces/crawler-plane/crawler_plane.sqlite3
+      DOXAGENT_CRAWLER_PLANE_WORKER_PROCESSES: ${DOXAGENT_CRAWLER_PLANE_WORKER_PROCESSES:-4}
     command:
       [
         "python",
         "-m",
-        "doxagent.monitoring.cli",
-        "poll-forever",
-        "--sleep-seconds",
-        "${DOXAGENT_MONITORING_POLLER_SLEEP_SECONDS:-15}",
+        "doxagent.message_bus_v2.cli",
+        "run-worker",
       ]
     volumes:
       - doxagent-cache:/root/.cache
       - doxagent-tmp:/app/.tmp
+      - crawler-plane:/var/lib/doxagent/workspaces/crawler-plane
+
+  monitoring-o4-worker:
+    profiles:
+      - codex-v2
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: doxagent:latest
+    container_name: doxagent-monitoring-o4-worker
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: true
+    environment:
+      PYTHONPATH: /app
+      DOXAGENT_CODEX_MONITORING_O4_ENABLED: ${DOXAGENT_CODEX_MONITORING_O4_ENABLED:-false}
+      DOXAGENT_CODEX_MONITORING_O4_SQLITE_PATH: /app/.tmp/codex-monitoring-o4.sqlite3
+      DOXAGENT_CODEX_MONITORING_O4_MODEL: ${DOXAGENT_CODEX_MONITORING_O4_MODEL:-gpt-5.6-sol}
+      DOXAGENT_CODEX_WORKER_BASE_URL: http://codex-worker:8791
+      DOXAGENT_CODEX_WORKER_BEARER_TOKEN: ${DOXAGENT_CODEX_WORKER_BEARER_TOKEN:-}
+      DOXAGENT_CODEX_CAPABILITY_SECRET: ${DOXAGENT_CODEX_CAPABILITY_SECRET:-}
+      DOXAGENT_MESSAGE_BUS_V2_ENABLED: ${DOXAGENT_MESSAGE_BUS_V2_ENABLED:-false}
+      DOXAGENT_MESSAGE_BUS_V2_SQLITE_PATH: /app/.tmp/message_bus_v2.sqlite3
+      DOXAGENT_MESSAGE_BUS_V2_ADAPTER_ROOT: /app/.tmp/message_bus_v2_adapters
+      DOXAGENT_CRAWLER_PLANE_ROOT: /var/lib/doxagent/workspaces/crawler-plane
+      DOXAGENT_CRAWLER_PLANE_SQLITE_PATH: /var/lib/doxagent/workspaces/crawler-plane/crawler_plane.sqlite3
+      DOXAGENT_CRAWLER_PLANE_WORKER_PROCESSES: ${DOXAGENT_CRAWLER_PLANE_WORKER_PROCESSES:-4}
+    command: ["python", "-m", "doxagent.workflows.codex_monitoring_o4.worker"]
+    depends_on:
+      codex-worker:
+        condition: service_healthy
+    volumes:
+      - doxagent-tmp:/app/.tmp
+      - crawler-plane:/var/lib/doxagent/workspaces/crawler-plane
 
   runtime-scheduler:
     build:
@@ -51,12 +86,15 @@ services:
       DOXAGENT_DASHBOARD_API_MODE: real
       DOXAGENT_STORAGE_MODE: ${DOXAGENT_STORAGE_MODE:-memory}
       DOXAGENT_RUNTIME_SCHEDULER_LOOP_SLEEP_SECONDS: ${DOXAGENT_RUNTIME_SCHEDULER_LOOP_SLEEP_SECONDS:-15}
+      DOXAGENT_MESSAGE_BUS_V2_ENABLED: ${DOXAGENT_MESSAGE_BUS_V2_ENABLED:-false}
+      DOXAGENT_MESSAGE_BUS_V2_SQLITE_PATH: /app/.tmp/message_bus_v2.sqlite3
+      DOXAGENT_CRAWLER_PLANE_ROOT: /var/lib/doxagent/workspaces/crawler-plane
+      DOXAGENT_CRAWLER_PLANE_SQLITE_PATH: /var/lib/doxagent/workspaces/crawler-plane/crawler_plane.sqlite3
+      DOXAGENT_CRAWLER_PLANE_WORKER_PROCESSES: ${DOXAGENT_CRAWLER_PLANE_WORKER_PROCESSES:-4}
       DOXAGENT_MODEL_USAGE_STORAGE_MODE: postgres
       DOXAGENT_MODEL_PRICING_CONFIG_PATH: ${DOXAGENT_MODEL_PRICING_CONFIG_PATH:-}
       DOXAGENT_MODEL_PRICING_DISCOUNT_RATE: ${DOXAGENT_MODEL_PRICING_DISCOUNT_RATE:-0.45}
       DOXAGENT_MODEL_PRICING_CNY_USD_RATE: ${DOXAGENT_MODEL_PRICING_CNY_USD_RATE:-6.8}
-      DOXAGENT_STOCKTWITS_STORAGE_MODE: sqlite
-      DOXAGENT_STOCKTWITS_SQLITE_PATH: /app/.tmp/stocktwits_polling.sqlite3
     command:
       [
         "python",
@@ -69,6 +107,7 @@ services:
     volumes:
       - doxagent-cache:/root/.cache
       - doxagent-tmp:/app/.tmp
+      - crawler-plane:/var/lib/doxagent/workspaces/crawler-plane
     healthcheck:
       test:
         [
@@ -140,14 +179,19 @@ services:
       DOXAGENT_REVENUE_AUDIT_STORAGE_MODE: sqlite
       DOXAGENT_REVENUE_AUDIT_SQLITE_PATH: /app/.tmp/revenue_audit.sqlite3
       DOXAGENT_REVENUE_AUDIT_MARKET_DATA_PROVIDER: ${DOXAGENT_REVENUE_AUDIT_MARKET_DATA_PROVIDER:-twelvedata}
+      DOXAGENT_MESSAGE_BUS_V2_ENABLED: ${DOXAGENT_MESSAGE_BUS_V2_ENABLED:-false}
+      DOXAGENT_MESSAGE_BUS_V2_SQLITE_PATH: /app/.tmp/message_bus_v2.sqlite3
+      DOXAGENT_CRAWLER_PLANE_ROOT: /var/lib/doxagent/workspaces/crawler-plane
+      DOXAGENT_CRAWLER_PLANE_SQLITE_PATH: /var/lib/doxagent/workspaces/crawler-plane/crawler_plane.sqlite3
+      DOXAGENT_CRAWLER_PLANE_WORKER_PROCESSES: ${DOXAGENT_CRAWLER_PLANE_WORKER_PROCESSES:-4}
       DOXAGENT_MODEL_USAGE_STORAGE_MODE: postgres
       DOXAGENT_MODEL_PRICING_CONFIG_PATH: ${DOXAGENT_MODEL_PRICING_CONFIG_PATH:-}
       DOXAGENT_MODEL_PRICING_DISCOUNT_RATE: ${DOXAGENT_MODEL_PRICING_DISCOUNT_RATE:-0.45}
       DOXAGENT_MODEL_PRICING_CNY_USD_RATE: ${DOXAGENT_MODEL_PRICING_CNY_USD_RATE:-6.8}
-      DOXAGENT_STOCKTWITS_STORAGE_MODE: sqlite
-      DOXAGENT_STOCKTWITS_SQLITE_PATH: /app/.tmp/stocktwits_polling.sqlite3
       DOXAGENT_CODEX_D1_V2_ENABLED: ${DOXAGENT_CODEX_D1_V2_ENABLED:-false}
       DOXAGENT_CODEX_RESEARCH_LANES_ENABLED: ${DOXAGENT_CODEX_RESEARCH_LANES_ENABLED:-false}
+      DOXAGENT_CODEX_MONITORING_O4_ENABLED: ${DOXAGENT_CODEX_MONITORING_O4_ENABLED:-false}
+      DOXAGENT_CODEX_MONITORING_O4_SQLITE_PATH: /app/.tmp/codex-monitoring-o4.sqlite3
       DOXAGENT_CODEX_WORKER_BASE_URL: ${DOXAGENT_CODEX_WORKER_BASE_URL:-http://codex-worker:8791}
       DOXAGENT_CODEX_WORKER_BEARER_TOKEN: ${DOXAGENT_CODEX_WORKER_BEARER_TOKEN:-}
       DOXAGENT_CODEX_CAPABILITY_SECRET: ${DOXAGENT_CODEX_CAPABILITY_SECRET:-}
@@ -163,6 +207,7 @@ services:
     volumes:
       - doxagent-cache:/root/.cache
       - doxagent-tmp:/app/.tmp
+      - crawler-plane:/var/lib/doxagent/workspaces/crawler-plane
     healthcheck:
       test:
         [
@@ -195,11 +240,19 @@ services:
       DOXAGENT_CODEX_WORKSPACE_ROOT: /var/lib/doxagent/workspaces
       DOXAGENT_CODEX_WORKER_BEARER_TOKEN: ${DOXAGENT_CODEX_WORKER_BEARER_TOKEN:-}
       DOXAGENT_CODEX_CAPABILITY_SECRET: ${DOXAGENT_CODEX_CAPABILITY_SECRET:-}
+      DOXAGENT_CRAWLER_PLANE_ROOT: /var/lib/doxagent/workspaces/crawler-plane
+      DOXAGENT_CRAWLER_PLANE_SQLITE_PATH: /var/lib/doxagent/workspaces/crawler-plane/crawler_plane.sqlite3
+      DOXAGENT_CRAWLER_PLANE_WORKER_PROCESSES: ${DOXAGENT_CRAWLER_PLANE_WORKER_PROCESSES:-4}
+      DOXAGENT_MESSAGE_BUS_V2_ENABLED: ${DOXAGENT_MESSAGE_BUS_V2_ENABLED:-false}
+      DOXAGENT_MESSAGE_BUS_V2_SQLITE_PATH: /app/.tmp/message_bus_v2.sqlite3
+      DOXAGENT_MESSAGE_BUS_V2_ADAPTER_ROOT: /app/.tmp/message_bus_v2_adapters
     ports:
       - "127.0.0.1:8791:8791"
     volumes:
       - codex-worker-workspaces:/var/lib/doxagent/workspaces
       - codex-worker-home:/var/lib/codex
+      - crawler-plane:/var/lib/doxagent/workspaces/crawler-plane
+      - doxagent-tmp:/app/.tmp
     read_only: true
     tmpfs:
       - /tmp:size=512m,mode=1777
@@ -225,3 +278,4 @@ volumes:
   doxagent-tmp:
   codex-worker-workspaces:
   codex-worker-home:
+  crawler-plane:

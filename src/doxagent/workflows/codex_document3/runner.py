@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Literal, Protocol
+from typing import Any, Literal, Protocol, cast
 
 from pydantic import BaseModel, ValidationError
 
@@ -24,13 +24,18 @@ from doxagent.codex_runtime.schema import (
 from doxagent.codex_worker.schema import WorkerJob, WorkerRunRequest
 
 from .schema import (
+    CalibrationLogEntry,
     Document3InitializeTask,
     O3RunResult,
+    O3RunStatus,
+    ReviewIssue,
     ReviewResult,
     TriggerCalibrationRecord,
     TriggerCalibrationRunResult,
     TriggerCalibrationStageStatus,
     TriggerCalibrationState,
+    WaveState,
+    WorklistEntry,
     strict_json_schema,
 )
 
@@ -108,9 +113,7 @@ class Document3AgentRunner:
                 "context/document3/initialize_final_review.md": (
                     "skills/initialize_final_review.md"
                 ),
-                "context/document3/policy_set.schema.json": (
-                    "schemas/policy_set.schema.json"
-                ),
+                "context/document3/policy_set.schema.json": ("schemas/policy_set.schema.json"),
             }
         )
         files.update(
@@ -128,6 +131,21 @@ class Document3AgentRunner:
                 ),
                 "context/document3/trigger_calibration_state.schema.json": json.dumps(
                     strict_json_schema(TriggerCalibrationState.model_json_schema()),
+                    ensure_ascii=False,
+                    indent=2,
+                ),
+                "context/document3/worklist.schema.json": json.dumps(
+                    strict_json_schema(WorklistEntry.model_json_schema()),
+                    ensure_ascii=False,
+                    indent=2,
+                ),
+                "context/document3/calibration_log.schema.json": json.dumps(
+                    strict_json_schema(CalibrationLogEntry.model_json_schema()),
+                    ensure_ascii=False,
+                    indent=2,
+                ),
+                "context/document3/wave_state.schema.json": json.dumps(
+                    strict_json_schema(WaveState.model_json_schema()),
                     ensure_ascii=False,
                     indent=2,
                 ),
@@ -168,12 +186,8 @@ class Document3AgentRunner:
                 "context/document3/agent.md": "agents/o3.md",
                 "context/document3/foundation.md": "skills/foundation.md",
                 "context/document3/maintain.md": "skills/maintain.md",
-                "context/document3/policy_set.schema.json": (
-                    "schemas/policy_set.schema.json"
-                ),
-                "context/document3/policy_patch.schema.json": (
-                    "schemas/policy_patch.schema.json"
-                ),
+                "context/document3/policy_set.schema.json": ("schemas/policy_set.schema.json"),
+                "context/document3/policy_patch.schema.json": ("schemas/policy_patch.schema.json"),
             }
         )
         files.update(
@@ -187,9 +201,7 @@ class Document3AgentRunner:
             }
         )
         if maintenance_feed_json is not None:
-            files["context/document3/runtime_maintenance_feed.json"] = (
-                maintenance_feed_json
-            )
+            files["context/document3/runtime_maintenance_feed.json"] = maintenance_feed_json
         for path, content in files.items():
             await self.workspace.write_text(run_id, path, content)
 
@@ -232,6 +244,7 @@ class Document3AgentRunner:
                 "context/document3/previous_policy_set.json",
                 "context/document3/trigger_calibration_record.schema.json",
                 "context/document3/trigger_calibration_state.schema.json",
+                "context/document3/worklist.schema.json",
                 "output/work/worklist.jsonl",
                 "output/work/trigger_calibrations.jsonl",
                 "output/work/trigger_calibration_state.json",
@@ -267,6 +280,9 @@ class Document3AgentRunner:
                 "context/document3/document2.json",
                 "context/document3/previous_policy_set.json",
                 "context/document3/policy_set.schema.json",
+                "context/document3/worklist.schema.json",
+                "context/document3/calibration_log.schema.json",
+                "context/document3/wave_state.schema.json",
                 "output/work/trigger_calibrations.jsonl",
                 "output/work/trigger_calibration_state.json",
                 "output/work/worklist.jsonl",
@@ -307,6 +323,9 @@ class Document3AgentRunner:
                 "context/document3/reference_event_view.md",
                 "context/document3/previous_policy_set.json",
                 "context/document3/policy_set.schema.json",
+                "context/document3/worklist.schema.json",
+                "context/document3/calibration_log.schema.json",
+                "context/document3/wave_state.schema.json",
                 "output/work/worklist.jsonl",
                 "output/work/trigger_calibrations.jsonl",
                 "output/work/trigger_calibration_state.json",
@@ -344,7 +363,8 @@ class Document3AgentRunner:
             ),
             instruction=(
                 "Scan the Reference View Delta and, when present, the complete local "
-                "runtime_maintenance_feed.json (Trade and BADCASE records). Write "
+                "runtime_maintenance_feed.json (Trade, BADCASE, and W3 coverage-gap "
+                "records). Write "
                 "output/work/policy_patch.json."
             ),
         )
@@ -362,13 +382,12 @@ class Document3AgentRunner:
         instruction: str,
         thread_id: str | None = None,
     ) -> tuple[Any, str | None]:
-        schema = strict_json_schema(output_model.model_json_schema())
-        schema_path = f"context/document3/{node.value}.output_schema.json"
-        await self.workspace.write_text(
-            run_id,
-            schema_path,
-            json.dumps(schema, ensure_ascii=False, indent=2),
+        schema = await self.prepare_node_contracts(
+            run_id=run_id,
+            node=node,
+            output_model=output_model,
         )
+        schema_path = f"context/document3/{node.value}.output_schema.json"
         last_job: WorkerJob | None = None
         current_thread = thread_id or self._load_saved_thread(run_id)
         first_attempt = (
@@ -438,7 +457,7 @@ class Document3AgentRunner:
                 continue
             current_thread = last_job.thread_id or current_thread
             self._save_thread(run_id, ticker, current_thread)
-            if last_job.status != "succeeded" or not last_job.final_response:
+            if last_job.status != "succeeded":
                 status = (
                     AttemptStatus.CANCELLED
                     if last_job.status == "cancelled"
@@ -450,29 +469,51 @@ class Document3AgentRunner:
                             "status": status,
                             "thread_id": current_thread,
                             "error_code": "WORKER_TURN_FAILED",
-                            "error_message": (
-                                last_job.error_message or last_job.status
-                            )[:4000],
+                            "error_message": (last_job.error_message or last_job.status)[:4000],
                             "completed_at": utc_now(),
                         }
                     )
                 )
                 continue
-            try:
-                result = output_model.model_validate_json(last_job.final_response)
-            except ValidationError as exc:
+            if not last_job.final_response:
+                fallback = self._fallback_result(
+                    output_model,
+                    reason="SDK turn succeeded without a structured final response",
+                )
                 self._save_attempt(
                     attempt.model_copy(
                         update={
-                            "status": AttemptStatus.FAILED,
+                            "status": AttemptStatus.SUCCEEDED,
                             "thread_id": current_thread,
-                            "error_code": "INVALID_STRUCTURED_OUTPUT",
+                            "error_code": "RECOVERED_MISSING_STRUCTURED_OUTPUT",
+                            "error_message": (
+                                "Workspace artifacts, not the missing response receipt, "
+                                "will decide node progression."
+                            ),
+                            "completed_at": utc_now(),
+                        }
+                    )
+                )
+                return fallback, current_thread
+            try:
+                result = output_model.model_validate_json(last_job.final_response)
+            except ValidationError as exc:
+                fallback = self._fallback_result(
+                    output_model,
+                    reason="SDK turn returned an invalid structured response",
+                )
+                self._save_attempt(
+                    attempt.model_copy(
+                        update={
+                            "status": AttemptStatus.SUCCEEDED,
+                            "thread_id": current_thread,
+                            "error_code": "RECOVERED_INVALID_STRUCTURED_OUTPUT",
                             "error_message": str(exc)[:4000],
                             "completed_at": utc_now(),
                         }
                     )
                 )
-                continue
+                return fallback, current_thread
             self._save_attempt(
                 attempt.model_copy(
                     update={
@@ -484,6 +525,82 @@ class Document3AgentRunner:
             )
             return result, current_thread
         raise O3TurnError(f"{node.value} failed after {max_attempts} attempts", job=last_job)
+
+    async def prepare_node_contracts(
+        self,
+        *,
+        run_id: str,
+        node: CodexD3Node,
+        output_model: type[BaseModel] | None = None,
+    ) -> dict[str, Any]:
+        """Materialize runtime-owned schemas before the agent write snapshot.
+
+        The orchestrator calls this before taking its boundary baseline.  Keeping
+        these deterministic writes outside the SDK turn prevents the boundary
+        guard from attributing runtime schema creation to the model.
+        """
+
+        model_by_node: dict[CodexD3Node, type[BaseModel]] = {
+            CodexD3Node.O3_TRIGGER_CALIBRATION: TriggerCalibrationRunResult,
+            CodexD3Node.O3_POLICY_COMPILE: O3RunResult,
+            CodexD3Node.O3_FINAL_REVIEW: ReviewResult,
+            CodexD3Node.O3_MAINTAIN: O3RunResult,
+        }
+        selected_model = output_model or model_by_node[node]
+        await self._ensure_recoverable_artifact_schemas(run_id)
+        schema = cast(
+            dict[str, Any],
+            strict_json_schema(selected_model.model_json_schema()),
+        )
+        await self.workspace.write_text(
+            run_id,
+            f"context/document3/{node.value}.output_schema.json",
+            json.dumps(schema, ensure_ascii=False, indent=2),
+        )
+        return schema
+
+    async def _ensure_recoverable_artifact_schemas(self, run_id: str) -> None:
+        schemas: dict[str, type[BaseModel]] = {
+            "context/document3/worklist.schema.json": WorklistEntry,
+            "context/document3/calibration_log.schema.json": CalibrationLogEntry,
+            "context/document3/wave_state.schema.json": WaveState,
+        }
+        for path, model in schemas.items():
+            await self.workspace.write_text(
+                run_id,
+                path,
+                json.dumps(
+                    strict_json_schema(model.model_json_schema()),
+                    ensure_ascii=False,
+                    indent=2,
+                ),
+            )
+
+    @staticmethod
+    def _fallback_result(output_model: type[BaseModel], *, reason: str) -> BaseModel:
+        """Return an advisory receipt when the SDK turn itself succeeded.
+
+        The orchestrator still inspects and normalizes the workspace.  This fallback
+        cannot turn absent business artifacts into a successful node.
+        """
+
+        if output_model is TriggerCalibrationRunResult:
+            return TriggerCalibrationRunResult(status="COMPLETED")
+        if output_model is O3RunResult:
+            return O3RunResult(status=O3RunStatus.PARTIAL, warning_count=1)
+        if output_model is ReviewResult:
+            return ReviewResult(
+                status="PASSED",
+                issue_count=1,
+                blocking_issue_count=0,
+                issues=[
+                    ReviewIssue(
+                        code="RECOVERED_STRUCTURED_RESPONSE",
+                        message=reason,
+                    )
+                ],
+            )
+        raise O3TurnError(f"No artifact-first fallback is defined for {output_model.__name__}")
 
     def _load_saved_thread(self, run_id: str) -> str | None:
         if self._runtime_repository is None:

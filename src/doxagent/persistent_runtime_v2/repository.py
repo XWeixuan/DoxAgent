@@ -10,7 +10,7 @@ import json
 import sqlite3
 import threading
 from collections.abc import Iterable
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any, Literal, Protocol, TypeVar
 
@@ -28,12 +28,15 @@ from .schema import (
     RuntimeFactCandidate,
     RuntimeModelTurn,
     TradeRecord,
+    W3CoverageGapRecord,
     W3RouteCase,
+    W3ThreadKind,
+    W3ThreadSlot,
     utc_now,
 )
 
 T = TypeVar("T", bound=BaseModel)
-DailyT = TypeVar("DailyT", TradeRecord, BadcaseRecord)
+DailyT = TypeVar("DailyT", TradeRecord, BadcaseRecord, W3CoverageGapRecord)
 
 
 class _ClosingSQLiteConnection(sqlite3.Connection):
@@ -54,6 +57,13 @@ class _ClosingSQLiteConnection(sqlite3.Connection):
 
 class PersistentRuntimeV2Repository(Protocol):
     def save_case(self, case: RuntimeCase) -> RuntimeCase: ...
+
+    def save_case_with_effects(
+        self,
+        case: RuntimeCase,
+        effects: list[RuntimeEffect],
+        w3_case: W3RouteCase | None = None,
+    ) -> RuntimeCase: ...
 
     def get_case(self, case_id: str) -> RuntimeCase | None: ...
 
@@ -100,6 +110,27 @@ class PersistentRuntimeV2Repository(Protocol):
 
     def save_w3_case(self, value: W3RouteCase) -> W3RouteCase: ...
 
+    def get_w3_case(self, case_id: str) -> W3RouteCase | None: ...
+
+    def acquire_w3_slot(
+        self,
+        *,
+        ticker: str,
+        case_id: str,
+        max_concurrency: int = 5,
+        lease_seconds: int = 1200,
+    ) -> W3ThreadSlot | None: ...
+
+    def release_w3_slot(
+        self,
+        slot: W3ThreadSlot,
+        *,
+        thread_id: str | None = None,
+        clear_main_thread: bool = False,
+    ) -> None: ...
+
+    def save_w3_coverage_gap(self, value: W3CoverageGapRecord) -> W3CoverageGapRecord: ...
+
     def list_daily_candidates(
         self, ticker: str, trading_date: date
     ) -> list[ProvisionalFactDetail]: ...
@@ -107,6 +138,10 @@ class PersistentRuntimeV2Repository(Protocol):
     def list_daily_trades(self, ticker: str, trading_date: date) -> list[TradeRecord]: ...
 
     def list_daily_badcases(self, ticker: str, trading_date: date) -> list[BadcaseRecord]: ...
+
+    def list_daily_w3_coverage_gaps(
+        self, ticker: str, trading_date: date
+    ) -> list[W3CoverageGapRecord]: ...
 
     def get_daily_close(self, ticker: str, trading_date: date) -> DailyCloseRun | None: ...
 
@@ -118,6 +153,7 @@ class PersistentRuntimeV2Repository(Protocol):
         candidate_keys: list[str],
         trade_record_ids: list[str],
         badcase_ids: list[str],
+        w3_coverage_gap_ids: list[str],
     ) -> None: ...
 
 
@@ -135,6 +171,10 @@ class InMemoryPersistentRuntimeV2Repository:
         self._trades: dict[str, TradeRecord] = {}
         self._badcases: dict[str, BadcaseRecord] = {}
         self._w3_cases: dict[str, W3RouteCase] = {}
+        self._w3_main_threads: dict[str, str] = {}
+        self._w3_main_cases: dict[str, str] = {}
+        self._w3_slots: dict[str, W3ThreadSlot] = {}
+        self._w3_coverage_gaps: dict[str, W3CoverageGapRecord] = {}
         self._daily_closes: dict[tuple[str, date], DailyCloseRun] = {}
         self._processed_candidate_keys: set[str] = set()
         self._lock = threading.RLock()
@@ -147,6 +187,20 @@ class InMemoryPersistentRuntimeV2Repository:
             self._cases[case.case_id] = case
             self._source_cases[case.source.source_message_id] = case.case_id
             return case
+
+    def save_case_with_effects(
+        self,
+        case: RuntimeCase,
+        effects: list[RuntimeEffect],
+        w3_case: W3RouteCase | None = None,
+    ) -> RuntimeCase:
+        with self._lock:
+            saved = self.save_case(case)
+            for effect in effects:
+                self.enqueue_effect(effect)
+            if w3_case is not None:
+                self.save_w3_case(w3_case)
+            return saved
 
     def get_case(self, case_id: str) -> RuntimeCase | None:
         with self._lock:
@@ -272,7 +326,65 @@ class InMemoryPersistentRuntimeV2Repository:
 
     def save_w3_case(self, value: W3RouteCase) -> W3RouteCase:
         with self._lock:
-            return self._w3_cases.setdefault(value.case_id, value)
+            self._w3_cases[value.case_id] = value
+            return value
+
+    def get_w3_case(self, case_id: str) -> W3RouteCase | None:
+        with self._lock:
+            return self._w3_cases.get(case_id)
+
+    def acquire_w3_slot(
+        self,
+        *,
+        ticker: str,
+        case_id: str,
+        max_concurrency: int = 5,
+        lease_seconds: int = 1200,
+    ) -> W3ThreadSlot | None:
+        del lease_seconds
+        normalized = ticker.upper()
+        with self._lock:
+            existing = self._w3_slots.get(case_id)
+            if existing is not None:
+                return existing
+            active = [slot for slot in self._w3_slots.values() if slot.ticker == normalized]
+            if len(active) >= max_concurrency:
+                return None
+            if normalized not in self._w3_main_cases:
+                kind = W3ThreadKind.MAIN
+                self._w3_main_cases[normalized] = case_id
+                thread_id = self._w3_main_threads.get(normalized)
+            else:
+                kind = W3ThreadKind.FALLBACK
+                thread_id = None
+            slot = W3ThreadSlot(
+                ticker=normalized,
+                case_id=case_id,
+                kind=kind,
+                thread_id=thread_id,
+            )
+            self._w3_slots[case_id] = slot
+            return slot
+
+    def release_w3_slot(
+        self,
+        slot: W3ThreadSlot,
+        *,
+        thread_id: str | None = None,
+        clear_main_thread: bool = False,
+    ) -> None:
+        with self._lock:
+            self._w3_slots.pop(slot.case_id, None)
+            if slot.kind is W3ThreadKind.MAIN:
+                self._w3_main_cases.pop(slot.ticker, None)
+                if clear_main_thread:
+                    self._w3_main_threads.pop(slot.ticker, None)
+                elif thread_id:
+                    self._w3_main_threads[slot.ticker] = thread_id
+
+    def save_w3_coverage_gap(self, value: W3CoverageGapRecord) -> W3CoverageGapRecord:
+        with self._lock:
+            return self._w3_coverage_gaps.setdefault(value.case_id, value)
 
     def list_daily_candidates(
         self, ticker: str, trading_date: date
@@ -300,6 +412,16 @@ class InMemoryPersistentRuntimeV2Repository:
             and item.daily_status is DailyRecordStatus.PENDING
         ]
 
+    def list_daily_w3_coverage_gaps(
+        self, ticker: str, trading_date: date
+    ) -> list[W3CoverageGapRecord]:
+        return [
+            item for item in self._w3_coverage_gaps.values()
+            if item.ticker == ticker.upper()
+            and item.trading_date == trading_date
+            and item.daily_status is DailyRecordStatus.PENDING
+        ]
+
     def get_daily_close(self, ticker: str, trading_date: date) -> DailyCloseRun | None:
         with self._lock:
             return self._daily_closes.get((ticker.upper(), trading_date))
@@ -315,6 +437,7 @@ class InMemoryPersistentRuntimeV2Repository:
         candidate_keys: list[str],
         trade_record_ids: list[str],
         badcase_ids: list[str],
+        w3_coverage_gap_ids: list[str],
     ) -> None:
         with self._lock:
             self._processed_candidate_keys.update(candidate_keys)
@@ -335,6 +458,15 @@ class InMemoryPersistentRuntimeV2Repository:
                     else value
                 )
                 for key, value in self._badcases.items()
+            }
+            gap_ids = set(w3_coverage_gap_ids)
+            self._w3_coverage_gaps = {
+                key: (
+                    value.model_copy(update={"daily_status": DailyRecordStatus.PROCESSED})
+                    if value.coverage_gap_id in gap_ids
+                    else value
+                )
+                for key, value in self._w3_coverage_gaps.items()
             }
 
 
@@ -461,8 +593,37 @@ class SQLitePersistentRuntimeV2Repository:
                     ticker TEXT NOT NULL,
                     status TEXT NOT NULL,
                     payload_json TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT
+                );
+                CREATE INDEX IF NOT EXISTS idx_runtime_v2_w3_cases_status
+                    ON runtime_v2_w3_cases(ticker, status, created_at);
+                CREATE TABLE IF NOT EXISTS runtime_v2_w3_thread_bindings (
+                    ticker TEXT PRIMARY KEY,
+                    main_thread_id TEXT,
+                    main_case_id TEXT,
+                    updated_at TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS runtime_v2_w3_thread_slots (
+                    case_id TEXT PRIMARY KEY REFERENCES runtime_v2_cases(case_id),
+                    ticker TEXT NOT NULL,
+                    slot_kind TEXT NOT NULL,
+                    acquired_at TEXT NOT NULL
+                );
+                CREATE INDEX IF NOT EXISTS idx_runtime_v2_w3_slots_ticker
+                    ON runtime_v2_w3_thread_slots(ticker, acquired_at);
+                CREATE TABLE IF NOT EXISTS runtime_v2_w3_coverage_gaps (
+                    case_id TEXT PRIMARY KEY REFERENCES runtime_v2_cases(case_id),
+                    ticker TEXT NOT NULL,
+                    trading_date TEXT NOT NULL,
+                    daily_status TEXT NOT NULL,
+                    payload_json TEXT NOT NULL,
                     created_at TEXT NOT NULL
                 );
+                CREATE INDEX IF NOT EXISTS idx_runtime_v2_w3_gap_daily
+                    ON runtime_v2_w3_coverage_gaps(
+                        ticker, trading_date, daily_status, created_at
+                    );
                 CREATE TABLE IF NOT EXISTS runtime_v2_daily_close_runs (
                     ticker TEXT NOT NULL,
                     trading_date TEXT NOT NULL,
@@ -473,6 +634,14 @@ class SQLitePersistentRuntimeV2Repository:
                 );
                 """
             )
+            columns = {
+                str(row[1])
+                for row in connection.execute("PRAGMA table_info(runtime_v2_w3_cases)")
+            }
+            if "updated_at" not in columns:
+                connection.execute(
+                    "ALTER TABLE runtime_v2_w3_cases ADD COLUMN updated_at TEXT"
+                )
 
     def save_case(self, case: RuntimeCase) -> RuntimeCase:
         payload = case.model_dump_json()
@@ -509,6 +678,78 @@ class SQLitePersistentRuntimeV2Repository:
                     case.updated_at.isoformat(),
                 ),
             )
+        return case
+
+    def save_case_with_effects(
+        self,
+        case: RuntimeCase,
+        effects: list[RuntimeEffect],
+        w3_case: W3RouteCase | None = None,
+    ) -> RuntimeCase:
+        payload = case.model_dump_json()
+        with self._lock, self._connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            connection.execute(
+                """
+                INSERT INTO runtime_v2_cases
+                    (case_id,source_message_id,ticker,trading_date,status,technical_status,
+                     payload_json,created_at,updated_at)
+                VALUES (?,?,?,?,?,?,?,?,?)
+                ON CONFLICT(case_id) DO UPDATE SET
+                    status=excluded.status,
+                    technical_status=excluded.technical_status,
+                    payload_json=excluded.payload_json,
+                    updated_at=excluded.updated_at
+                """,
+                (
+                    case.case_id,
+                    case.source.source_message_id,
+                    case.ticker,
+                    case.trading_date.isoformat(),
+                    case.status.value,
+                    case.technical_status.value,
+                    payload,
+                    case.created_at.isoformat(),
+                    case.updated_at.isoformat(),
+                ),
+            )
+            for effect in effects:
+                connection.execute(
+                    """
+                    INSERT OR IGNORE INTO runtime_v2_effects
+                        (effect_id,case_id,effect_type,idempotency_key,status,attempt_count,
+                         available_at,payload_json,updated_at)
+                    VALUES (?,?,?,?,?,?,?,?,?)
+                    """,
+                    (
+                        effect.effect_id,
+                        effect.case_id,
+                        effect.effect_type.value,
+                        effect.idempotency_key,
+                        effect.status.value,
+                        effect.attempt_count,
+                        effect.available_at.isoformat(),
+                        effect.model_dump_json(),
+                        effect.updated_at.isoformat(),
+                    ),
+                )
+            if w3_case is not None:
+                connection.execute(
+                    """
+                    INSERT INTO runtime_v2_w3_cases
+                        (case_id,ticker,status,payload_json,created_at,updated_at)
+                    VALUES (?,?,?,?,?,?)
+                    ON CONFLICT(case_id) DO NOTHING
+                    """,
+                    (
+                        w3_case.case_id,
+                        w3_case.ticker,
+                        w3_case.status.value,
+                        w3_case.model_dump_json(),
+                        w3_case.created_at.isoformat(),
+                        w3_case.updated_at.isoformat(),
+                    ),
+                )
         return case
 
     def get_case(self, case_id: str) -> RuntimeCase | None:
@@ -767,25 +1008,157 @@ class SQLitePersistentRuntimeV2Repository:
         return self._insert_daily_record("runtime_v2_badcases", value)
 
     def save_w3_case(self, value: W3RouteCase) -> W3RouteCase:
-        with self._connect() as connection:
-            row = connection.execute(
-                "SELECT payload_json FROM runtime_v2_w3_cases WHERE case_id=?",
-                (value.case_id,),
-            ).fetchone()
-            if row:
-                return W3RouteCase.model_validate_json(row[0])
+        with self._lock, self._connect() as connection:
             connection.execute(
-                "INSERT INTO runtime_v2_w3_cases "
-                "(case_id, ticker, status, payload_json, created_at) VALUES (?, ?, ?, ?, ?)",
+                """
+                INSERT INTO runtime_v2_w3_cases
+                    (case_id,ticker,status,payload_json,created_at,updated_at)
+                VALUES (?,?,?,?,?,?)
+                ON CONFLICT(case_id) DO UPDATE SET
+                    status=excluded.status,
+                    payload_json=excluded.payload_json,
+                    updated_at=excluded.updated_at
+                """,
                 (
                     value.case_id,
                     value.ticker,
-                    value.status,
+                    value.status.value,
                     value.model_dump_json(),
                     value.created_at.isoformat(),
+                    value.updated_at.isoformat(),
                 ),
             )
         return value
+
+    def get_w3_case(self, case_id: str) -> W3RouteCase | None:
+        return self._read_model(
+            W3RouteCase,
+            "SELECT payload_json FROM runtime_v2_w3_cases WHERE case_id=?",
+            (case_id,),
+        )
+
+    def acquire_w3_slot(
+        self,
+        *,
+        ticker: str,
+        case_id: str,
+        max_concurrency: int = 5,
+        lease_seconds: int = 1200,
+    ) -> W3ThreadSlot | None:
+        normalized = ticker.upper()
+        cutoff = utc_now() - timedelta(seconds=lease_seconds)
+        with self._lock, self._connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            stale = connection.execute(
+                "SELECT case_id FROM runtime_v2_w3_thread_slots WHERE acquired_at < ?",
+                (cutoff.isoformat(),),
+            ).fetchall()
+            stale_ids = {str(row[0]) for row in stale}
+            if stale_ids:
+                connection.execute(
+                    "DELETE FROM runtime_v2_w3_thread_slots WHERE acquired_at < ?",
+                    (cutoff.isoformat(),),
+                )
+                row = connection.execute(
+                    "SELECT main_case_id FROM runtime_v2_w3_thread_bindings WHERE ticker=?",
+                    (normalized,),
+                ).fetchone()
+                if row and row[0] in stale_ids:
+                    connection.execute(
+                        "UPDATE runtime_v2_w3_thread_bindings "
+                        "SET main_case_id=NULL,updated_at=? WHERE ticker=?",
+                        (utc_now().isoformat(), normalized),
+                    )
+            existing = connection.execute(
+                "SELECT slot_kind,acquired_at FROM runtime_v2_w3_thread_slots "
+                "WHERE case_id=?",
+                (case_id,),
+            ).fetchone()
+            binding = connection.execute(
+                "SELECT main_thread_id,main_case_id FROM runtime_v2_w3_thread_bindings "
+                "WHERE ticker=?",
+                (normalized,),
+            ).fetchone()
+            if existing is not None:
+                return W3ThreadSlot(
+                    ticker=normalized,
+                    case_id=case_id,
+                    kind=W3ThreadKind(str(existing[0])),
+                    thread_id=(str(binding[0]) if binding and binding[0] else None),
+                    acquired_at=datetime.fromisoformat(str(existing[1])),
+                )
+            active = int(
+                connection.execute(
+                    "SELECT COUNT(*) FROM runtime_v2_w3_thread_slots WHERE ticker=?",
+                    (normalized,),
+                ).fetchone()[0]
+            )
+            if active >= max_concurrency:
+                return None
+            now = utc_now()
+            if binding is None:
+                connection.execute(
+                    "INSERT INTO runtime_v2_w3_thread_bindings"
+                    "(ticker,main_thread_id,main_case_id,updated_at) VALUES (?,?,?,?)",
+                    (normalized, None, case_id, now.isoformat()),
+                )
+                kind = W3ThreadKind.MAIN
+                thread_id = None
+            elif binding[1] is None:
+                connection.execute(
+                    "UPDATE runtime_v2_w3_thread_bindings "
+                    "SET main_case_id=?,updated_at=? WHERE ticker=?",
+                    (case_id, now.isoformat(), normalized),
+                )
+                kind = W3ThreadKind.MAIN
+                thread_id = str(binding[0]) if binding[0] else None
+            else:
+                kind = W3ThreadKind.FALLBACK
+                thread_id = None
+            connection.execute(
+                "INSERT INTO runtime_v2_w3_thread_slots"
+                "(case_id,ticker,slot_kind,acquired_at) VALUES (?,?,?,?)",
+                (case_id, normalized, kind.value, now.isoformat()),
+            )
+            return W3ThreadSlot(
+                ticker=normalized,
+                case_id=case_id,
+                kind=kind,
+                thread_id=thread_id,
+                acquired_at=now,
+            )
+
+    def release_w3_slot(
+        self,
+        slot: W3ThreadSlot,
+        *,
+        thread_id: str | None = None,
+        clear_main_thread: bool = False,
+    ) -> None:
+        with self._lock, self._connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            connection.execute(
+                "DELETE FROM runtime_v2_w3_thread_slots WHERE case_id=?",
+                (slot.case_id,),
+            )
+            if slot.kind is not W3ThreadKind.MAIN:
+                return
+            if clear_main_thread:
+                connection.execute(
+                    "UPDATE runtime_v2_w3_thread_bindings "
+                    "SET main_thread_id=NULL,main_case_id=NULL,updated_at=? WHERE ticker=?",
+                    (utc_now().isoformat(), slot.ticker),
+                )
+            else:
+                connection.execute(
+                    "UPDATE runtime_v2_w3_thread_bindings "
+                    "SET main_thread_id=COALESCE(?,main_thread_id),main_case_id=NULL,updated_at=? "
+                    "WHERE ticker=?",
+                    (thread_id, utc_now().isoformat(), slot.ticker),
+                )
+
+    def save_w3_coverage_gap(self, value: W3CoverageGapRecord) -> W3CoverageGapRecord:
+        return self._insert_daily_record("runtime_v2_w3_coverage_gaps", value)
 
     def list_daily_candidates(
         self, ticker: str, trading_date: date
@@ -810,6 +1183,16 @@ class SQLitePersistentRuntimeV2Repository:
         return self._read_models(
             BadcaseRecord,
             "SELECT payload_json FROM runtime_v2_badcases "
+            "WHERE ticker=? AND trading_date=? AND daily_status='PENDING' ORDER BY created_at",
+            (ticker.upper(), trading_date.isoformat()),
+        )
+
+    def list_daily_w3_coverage_gaps(
+        self, ticker: str, trading_date: date
+    ) -> list[W3CoverageGapRecord]:
+        return self._read_models(
+            W3CoverageGapRecord,
+            "SELECT payload_json FROM runtime_v2_w3_coverage_gaps "
             "WHERE ticker=? AND trading_date=? AND daily_status='PENDING' ORDER BY created_at",
             (ticker.upper(), trading_date.isoformat()),
         )
@@ -851,6 +1234,7 @@ class SQLitePersistentRuntimeV2Repository:
         candidate_keys: list[str],
         trade_record_ids: list[str],
         badcase_ids: list[str],
+        w3_coverage_gap_ids: list[str],
     ) -> None:
         with self._lock, self._connect() as connection:
             for key in candidate_keys:
@@ -872,6 +1256,13 @@ class SQLitePersistentRuntimeV2Repository:
                 "badcase_id",
                 badcase_ids,
                 BadcaseRecord,
+            )
+            self._mark_daily_payloads(
+                connection,
+                "runtime_v2_w3_coverage_gaps",
+                "coverage_gap_id",
+                w3_coverage_gap_ids,
+                W3CoverageGapRecord,
             )
 
     @staticmethod

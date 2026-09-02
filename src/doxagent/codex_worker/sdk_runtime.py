@@ -19,6 +19,10 @@ from doxagent.data_runtime.policy import DataCapabilityCodec, DataToolPolicyRegi
 from doxagent.mcp.data_server import GUIDE_TOOL_NAME, READ_TOOL_NAME
 from doxagent.settings import DoxAgentSettings
 from doxagent.tools.factory import default_real_tool_registry
+from doxagent.workflows.codex_monitoring_o4.capability import (
+    TOOLS_BY_NODE,
+    O4OperationCapabilityCodec,
+)
 
 
 @dataclass(frozen=True)
@@ -87,6 +91,7 @@ class OpenAICodexRuntime:
         if not secret:
             raise ValueError("Codex worker Data MCP requires a capability secret")
         self._data_capabilities = DataCapabilityCodec(secret)
+        self._o4_capabilities = O4OperationCapabilityCodec(secret)
         self._data_policy = DataToolPolicyRegistry()
         self._data_contracts = build_data_tool_contracts(default_real_tool_registry(self._settings))
         self._container_isolated = (
@@ -110,6 +115,10 @@ class OpenAICodexRuntime:
         }
 
     async def start(self, request: WorkerRunRequest, cwd: Path) -> TurnHandle:
+        if request.o4_operations_enabled and not self._container_isolated:
+            raise ValueError(
+                "O4 operational turns require DOXAGENT_CODEX_CONTAINER_ISOLATION=true"
+            )
         # Docker supplies the outer isolation boundary. Nested bubblewrap cannot create
         # a user namespace under the hardened container security profile.
         sandbox = (
@@ -117,53 +126,12 @@ class OpenAICodexRuntime:
             if self._container_isolated
             else (Sandbox.read_only if request.read_only else Sandbox.workspace_write)
         )
-        allowed_data_tools = self._data_policy.allowed_tools(request.node, request.agent_role)
-        capability = self._data_capabilities.issue(
-            workflow_version=request.workflow_version,
-            research_lane=request.research_lane,
-            run_id=request.run_id,
-            node_id=request.node,
-            node_attempt_id=request.attempt_id,
-            agent_role=request.agent_role,
-            ticker=request.ticker,
-            cutoff_at=request.cutoff_at,
-            enabled_tool_ids=allowed_data_tools,
-            ttl_seconds=request.timeout_seconds + 300,
-        )
-        enabled_mcp_tools = [GUIDE_TOOL_NAME, READ_TOOL_NAME]
-        enabled_mcp_tools.extend(
-            contract.mcp_name
-            for tool_id in sorted(allowed_data_tools)
-            if (contract := self._data_contracts.get(tool_id)) is not None and contract.exposed
-        )
         control_root = (cwd.parent / ".control" / request.run_id / request.attempt_id).resolve()
         control_root.mkdir(parents=True, exist_ok=True)
         multi_agent_enabled = request.allow_subagents and request.max_subagents > 0
         sdk_config: dict[str, Any] = {
             "features.multi_agent": multi_agent_enabled,
             "web_search": "live",
-            "mcp_servers.data.command": sys.executable,
-            "mcp_servers.data.args": ["-m", "doxagent.mcp.data_server"],
-            "mcp_servers.data.cwd": str(cwd),
-            "mcp_servers.data.env.DOXAGENT_DATA_MCP_CAPABILITY": capability,
-            "mcp_servers.data.env.DOXAGENT_DATA_MCP_PUBLIC_KEY": (
-                self._data_capabilities.public_key
-            ),
-            "mcp_servers.data.env.DOXAGENT_OBSERVATION_CONTROL_ROOT": str(control_root),
-            "mcp_servers.data.env.IBKR_TWS_ENABLED": str(self._settings.ibkr_tws_enabled).lower(),
-            "mcp_servers.data.env.IBKR_TWS_HOST": self._settings.ibkr_tws_host,
-            "mcp_servers.data.env.IBKR_TWS_PORT": str(self._settings.ibkr_tws_port),
-            "mcp_servers.data.env.IBKR_TWS_CLIENT_ID": str(self._settings.ibkr_tws_client_id),
-            "mcp_servers.data.env.IBKR_TWS_TIMEOUT_SECONDS": str(
-                self._settings.ibkr_tws_timeout_seconds
-            ),
-            "mcp_servers.data.env.IBKR_TWS_MARKET_DATA_TYPE": str(
-                self._settings.ibkr_tws_market_data_type
-            ),
-            "mcp_servers.data.enabled_tools": enabled_mcp_tools,
-            "mcp_servers.data.required": True,
-            "mcp_servers.data.startup_timeout_sec": 20,
-            "mcp_servers.data.tool_timeout_sec": 120,
             "mcp_servers.source_capture.command": sys.executable,
             "mcp_servers.source_capture.args": [
                 "-m",
@@ -178,6 +146,110 @@ class OpenAICodexRuntime:
             "mcp_servers.source_capture.startup_timeout_sec": 10,
             "mcp_servers.source_capture.tool_timeout_sec": 30,
         }
+        if request.data_mcp_enabled:
+            allowed_data_tools = self._data_policy.allowed_tools(
+                request.node, request.agent_role
+            )
+            capability = self._data_capabilities.issue(
+                workflow_version=request.workflow_version,
+                research_lane=request.research_lane,
+                run_id=request.run_id,
+                node_id=request.node,
+                node_attempt_id=request.attempt_id,
+                agent_role=request.agent_role,
+                ticker=request.ticker,
+                cutoff_at=request.cutoff_at,
+                enabled_tool_ids=allowed_data_tools,
+                ttl_seconds=request.timeout_seconds + 300,
+            )
+            enabled_mcp_tools = [GUIDE_TOOL_NAME, READ_TOOL_NAME]
+            enabled_mcp_tools.extend(
+                contract.mcp_name
+                for tool_id in sorted(allowed_data_tools)
+                if (contract := self._data_contracts.get(tool_id)) is not None
+                and contract.exposed
+            )
+            sdk_config.update(
+                {
+                    "mcp_servers.data.command": sys.executable,
+                    "mcp_servers.data.args": ["-m", "doxagent.mcp.data_server"],
+                    "mcp_servers.data.cwd": str(cwd),
+                    "mcp_servers.data.env.DOXAGENT_DATA_MCP_CAPABILITY": capability,
+                    "mcp_servers.data.env.DOXAGENT_DATA_MCP_PUBLIC_KEY": (
+                        self._data_capabilities.public_key
+                    ),
+                    "mcp_servers.data.env.DOXAGENT_OBSERVATION_CONTROL_ROOT": str(
+                        control_root
+                    ),
+                    "mcp_servers.data.env.IBKR_TWS_ENABLED": str(
+                        self._settings.ibkr_tws_enabled
+                    ).lower(),
+                    "mcp_servers.data.env.IBKR_TWS_HOST": self._settings.ibkr_tws_host,
+                    "mcp_servers.data.env.IBKR_TWS_PORT": str(
+                        self._settings.ibkr_tws_port
+                    ),
+                    "mcp_servers.data.env.IBKR_TWS_CLIENT_ID": str(
+                        self._settings.ibkr_tws_client_id
+                    ),
+                    "mcp_servers.data.env.IBKR_TWS_TIMEOUT_SECONDS": str(
+                        self._settings.ibkr_tws_timeout_seconds
+                    ),
+                    "mcp_servers.data.env.IBKR_TWS_MARKET_DATA_TYPE": str(
+                        self._settings.ibkr_tws_market_data_type
+                    ),
+                    "mcp_servers.data.enabled_tools": enabled_mcp_tools,
+                    "mcp_servers.data.required": True,
+                    "mcp_servers.data.startup_timeout_sec": 20,
+                    "mcp_servers.data.tool_timeout_sec": 120,
+                }
+            )
+        if request.o4_operations_enabled:
+            allowed_o4_tools = TOOLS_BY_NODE.get(request.node)
+            if allowed_o4_tools is None:
+                raise ValueError("O4 operations are available only to O4 workflow nodes")
+            capability = self._o4_capabilities.issue(
+                run_id=request.run_id,
+                request_id=request.attempt_id,
+                ticker=request.ticker,
+                node=request.node,
+                enabled_tool_ids=allowed_o4_tools,
+                ttl_seconds=request.timeout_seconds + 300,
+            )
+            sdk_config.update(
+                {
+                    "mcp_servers.o4_operations.command": sys.executable,
+                    "mcp_servers.o4_operations.args": [
+                        "-m",
+                        "doxagent.mcp.o4_operations_server",
+                    ],
+                    "mcp_servers.o4_operations.cwd": str(cwd),
+                    "mcp_servers.o4_operations.env.DOXAGENT_O4_OPERATIONS_CAPABILITY": capability,
+                    "mcp_servers.o4_operations.env.DOXAGENT_O4_OPERATIONS_PUBLIC_KEY": (
+                        self._o4_capabilities.public_key
+                    ),
+                    "mcp_servers.o4_operations.env.DOXAGENT_MESSAGE_BUS_V2_ENABLED": str(
+                        self._settings.message_bus_v2_enabled
+                    ).lower(),
+                    "mcp_servers.o4_operations.env.DOXAGENT_MESSAGE_BUS_V2_SQLITE_PATH": (
+                        self._settings.message_bus_v2_sqlite_path
+                    ),
+                    "mcp_servers.o4_operations.env.DOXAGENT_MESSAGE_BUS_V2_ADAPTER_ROOT": (
+                        self._settings.message_bus_v2_adapter_root
+                    ),
+                    "mcp_servers.o4_operations.env.DOXAGENT_CRAWLER_PLANE_ROOT": (
+                        self._settings.crawler_plane_root
+                    ),
+                    "mcp_servers.o4_operations.env.DOXAGENT_CRAWLER_PLANE_SQLITE_PATH": (
+                        self._settings.crawler_plane_sqlite_path
+                    ),
+                    "mcp_servers.o4_operations.enabled_tools": [
+                        tool_id.replace(".", "_") for tool_id in sorted(allowed_o4_tools)
+                    ],
+                    "mcp_servers.o4_operations.required": True,
+                    "mcp_servers.o4_operations.startup_timeout_sec": 20,
+                    "mcp_servers.o4_operations.tool_timeout_sec": 7_200,
+                }
+            )
         if request.thread_id:
             thread = await self._client.thread_resume(
                 request.thread_id,
@@ -197,10 +269,18 @@ class OpenAICodexRuntime:
                 approval_mode=ApprovalMode.deny_all,
                 config=sdk_config,
                 base_instructions=(
-                    "Work only inside the current run workspace and preserve workspace audit "
-                    "boundaries. Read the attempt-local AGENTS.md and task.json named in the turn "
-                    "before acting, then follow their file paths. Use configured MCP tools only "
-                    "within their granted capability. "
+                    (
+                        "Work inside the current run workspace. For O4 operational turns, direct "
+                        "file writes are additionally allowed only below "
+                        f"{self._settings.crawler_plane_root}/working; never write releases or "
+                        "control-plane databases directly. "
+                        if request.o4_operations_enabled
+                        else "Work only inside the current run workspace and preserve workspace "
+                        "audit boundaries. "
+                    )
+                    + "Read the attempt-local AGENTS.md and task.json named in the turn before "
+                    "acting, then follow their file paths. Use configured MCP tools only within "
+                    "their granted capability. "
                     f"Never spawn more than {request.max_subagents} subagents."
                 ),
             )

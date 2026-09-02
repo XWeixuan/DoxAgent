@@ -157,6 +157,7 @@ export function monitorModeLabel(mode: string | null | undefined) {
   }
   const labels: Record<string, string> = {
     message_monitoring: "消息监测",
+    trading: "交易",
     paper_trading: "模拟交易",
     broker_trading: "真实 Broker",
   }

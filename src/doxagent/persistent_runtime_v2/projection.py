@@ -26,6 +26,9 @@ class RuntimeTerminalProjection(RuntimeV2Model):
     case_status: str
     technical_status: str
     primary_route: str | None
+    initial_route: str | None = None
+    resolved_route: str | None = None
+    w3_resolved: bool = False
     event_library_version: int = Field(ge=1)
     policy_set_version: int = Field(ge=1)
     hot_path_latency_ms: int | None = Field(default=None, ge=0)
@@ -40,7 +43,18 @@ class RuntimeTerminalProjection(RuntimeV2Model):
             trading_date=case.trading_date,
             case_status=case.status.value,
             technical_status=case.technical_status.value,
-            primary_route=(case.route.primary_route.value if case.route else None),
+            primary_route=(
+                case.resolved_route.primary_route.value
+                if case.resolved_route
+                else case.route.primary_route.value
+                if case.route
+                else None
+            ),
+            initial_route=(case.route.primary_route.value if case.route else None),
+            resolved_route=(
+                case.resolved_route.primary_route.value if case.resolved_route else None
+            ),
+            w3_resolved=case.w3_result is not None,
             event_library_version=case.version_pin.event_library_version,
             policy_set_version=case.version_pin.policy_set_version,
             hot_path_latency_ms=case.hot_path_latency_ms,
@@ -62,6 +76,7 @@ class RuntimeDailyProjection(RuntimeV2Model):
     candidate_count: int = Field(ge=0)
     trade_record_count: int = Field(ge=0)
     badcase_count: int = Field(ge=0)
+    w3_coverage_gap_count: int = Field(ge=0)
     updated_at: datetime
 
     @classmethod
@@ -76,6 +91,7 @@ class RuntimeDailyProjection(RuntimeV2Model):
             candidate_count=len(run.candidate_keys),
             trade_record_count=len(run.trade_record_ids),
             badcase_count=len(run.badcase_ids),
+            w3_coverage_gap_count=len(run.w3_coverage_gap_ids),
             updated_at=run.updated_at,
         )
 
@@ -95,13 +111,17 @@ class PostgresRuntimeV2ProjectionSink:
                         """
                         insert into doxagent.persistent_runtime_v2_terminal_cases(
                           case_id,ticker,trading_date,case_status,technical_status,
-                          primary_route,event_library_version,policy_set_version,
+                          primary_route,initial_route,resolved_route,w3_resolved,
+                          event_library_version,policy_set_version,
                           hot_path_latency_ms,model_turn_count,projection_json,updated_at
-                        ) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s::jsonb,%s)
+                        ) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s::jsonb,%s)
                         on conflict(case_id) do update set
                           case_status=excluded.case_status,
                           technical_status=excluded.technical_status,
                           primary_route=excluded.primary_route,
+                          initial_route=excluded.initial_route,
+                          resolved_route=excluded.resolved_route,
+                          w3_resolved=excluded.w3_resolved,
                           hot_path_latency_ms=excluded.hot_path_latency_ms,
                           model_turn_count=excluded.model_turn_count,
                           projection_json=excluded.projection_json,
@@ -114,6 +134,9 @@ class PostgresRuntimeV2ProjectionSink:
                             terminal.case_status,
                             terminal.technical_status,
                             terminal.primary_route,
+                            terminal.initial_route,
+                            terminal.resolved_route,
+                            terminal.w3_resolved,
                             terminal.event_library_version,
                             terminal.policy_set_version,
                             terminal.hot_path_latency_ms,
@@ -129,14 +152,15 @@ class PostgresRuntimeV2ProjectionSink:
                         insert into doxagent.persistent_runtime_v2_daily_closes(
                           run_id,ticker,trading_date,stage,base_library_version,
                           published_library_version,candidate_count,trade_record_count,
-                          badcase_count,projection_json,updated_at
-                        ) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s::jsonb,%s)
+                          badcase_count,w3_coverage_gap_count,projection_json,updated_at
+                        ) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s::jsonb,%s)
                         on conflict(run_id) do update set
                           stage=excluded.stage,
                           published_library_version=excluded.published_library_version,
                           candidate_count=excluded.candidate_count,
                           trade_record_count=excluded.trade_record_count,
                           badcase_count=excluded.badcase_count,
+                          w3_coverage_gap_count=excluded.w3_coverage_gap_count,
                           projection_json=excluded.projection_json,
                           updated_at=excluded.updated_at
                         """,
@@ -150,6 +174,7 @@ class PostgresRuntimeV2ProjectionSink:
                             daily.candidate_count,
                             daily.trade_record_count,
                             daily.badcase_count,
+                            daily.w3_coverage_gap_count,
                             daily.model_dump_json(),
                             daily.updated_at,
                         ),

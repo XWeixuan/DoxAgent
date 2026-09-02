@@ -80,11 +80,9 @@ def test_dashboard_real_message_bus_overview_messages_and_config() -> None:
         == "Hyperscaler order update mentions NVDA AI server demand."
     )
 
-    social_messages = client.get(
-        "/api/dashboard/v1/tickers/NVDA/message-bus/messages?source_type=social"
-    )
-    assert social_messages.status_code == 200
-    assert social_messages.json()["data"]["items"] == []
+    untyped_messages = client.get("/api/dashboard/v1/tickers/NVDA/message-bus/messages")
+    assert untyped_messages.status_code == 200
+    assert len(untyped_messages.json()["data"]["items"]) == 1
 
     config = client.get("/api/dashboard/v1/tickers/NVDA/message-bus/config")
 

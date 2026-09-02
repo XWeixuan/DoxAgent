@@ -7,6 +7,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy \
     UV_PROJECT_ENVIRONMENT=/app/.venv \
+    PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
     PATH="/app/.venv/bin:$PATH"
 
 WORKDIR /app
@@ -19,6 +20,8 @@ COPY pyproject.toml uv.lock README.md ./
 COPY src ./src
 
 RUN uv sync --frozen --group dev
+RUN playwright install --with-deps chromium \
+    && chmod -R a+rX /ms-playwright
 
 COPY prompts ./prompts
 COPY eval ./eval

@@ -24,6 +24,12 @@ CODEX_EVENT_LIBRARY_WORKFLOW_VERSION: Final[Literal["codex_event_library_v1"]] =
 CODEX_DOCUMENT3_WORKFLOW_VERSION: Final[Literal["codex_document3_v1"]] = (
     "codex_document3_v1"
 )
+CODEX_PERSISTENT_RUNTIME_W3_WORKFLOW_VERSION: Final[
+    Literal["persistent_runtime_w3_v1"]
+] = "persistent_runtime_w3_v1"
+CODEX_MONITORING_O4_WORKFLOW_VERSION: Final[
+    Literal["codex_monitoring_o4_v1"]
+] = "codex_monitoring_o4_v1"
 CodexWorkflowVersion: TypeAlias = Literal[
     "codex_d1_v2",
     "codex_global_research_v1",
@@ -31,6 +37,8 @@ CodexWorkflowVersion: TypeAlias = Literal[
     "codex_document2_v1",
     "codex_event_library_v1",
     "codex_document3_v1",
+    "persistent_runtime_w3_v1",
+    "codex_monitoring_o4_v1",
 ]
 
 
@@ -96,8 +104,23 @@ class CodexD3Node(StrEnum):
     APPLY_PATCH = "d3_apply_patch"
 
 
+class CodexPersistentRuntimeNode(StrEnum):
+    W3 = "persistent_runtime_w3"
+
+
+class CodexMonitoringO4Node(StrEnum):
+    CONFIGURE = "o4_configure"
+    DELIVER = "o4_deliver"
+    REPAIR = "o4_repair"
+
+
 CodexResearchNode: TypeAlias = (
-    CodexD1Node | CodexD2Node | CodexEventLibraryNode | CodexD3Node
+    CodexD1Node
+    | CodexD2Node
+    | CodexEventLibraryNode
+    | CodexD3Node
+    | CodexPersistentRuntimeNode
+    | CodexMonitoringO4Node
 )
 
 
@@ -108,6 +131,8 @@ class ResearchLane(StrEnum):
     DOCUMENT2 = "document2"
     EVENT_LIBRARY = "event_library"
     DOCUMENT3 = "document3"
+    PERSISTENT_RUNTIME = "persistent_runtime"
+    MONITORING_CONFIGURATION = "monitoring_configuration"
 
 
 class CodexAgentRole(StrEnum):
@@ -132,8 +157,21 @@ class CodexD3AgentRole(StrEnum):
     O3 = "o3_policy_compiler"
 
 
+class CodexPersistentRuntimeAgentRole(StrEnum):
+    W3 = "w3_duty_trading_expert"
+
+
+class CodexMonitoringO4AgentRole(StrEnum):
+    O4 = "o4_monitoring_configurator"
+
+
 CodexResearchAgentRole: TypeAlias = (
-    CodexAgentRole | CodexD2AgentRole | CodexEventLibraryAgentRole | CodexD3AgentRole
+    CodexAgentRole
+    | CodexD2AgentRole
+    | CodexEventLibraryAgentRole
+    | CodexD3AgentRole
+    | CodexPersistentRuntimeAgentRole
+    | CodexMonitoringO4AgentRole
 )
 
 
@@ -144,6 +182,8 @@ _LANE_BY_WORKFLOW: dict[str, ResearchLane] = {
     CODEX_DOCUMENT2_WORKFLOW_VERSION: ResearchLane.DOCUMENT2,
     CODEX_EVENT_LIBRARY_WORKFLOW_VERSION: ResearchLane.EVENT_LIBRARY,
     CODEX_DOCUMENT3_WORKFLOW_VERSION: ResearchLane.DOCUMENT3,
+    CODEX_PERSISTENT_RUNTIME_W3_WORKFLOW_VERSION: ResearchLane.PERSISTENT_RUNTIME,
+    CODEX_MONITORING_O4_WORKFLOW_VERSION: ResearchLane.MONITORING_CONFIGURATION,
 }
 
 

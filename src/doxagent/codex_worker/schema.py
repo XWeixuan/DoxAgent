@@ -56,6 +56,8 @@ class WorkerRunRequest(WorkerModel):
     model_provider: str | None = None
     effort: Literal["low", "medium", "high", "xhigh", "max"] = "max"
     read_only: bool = False
+    data_mcp_enabled: bool = True
+    o4_operations_enabled: bool = False
     allow_subagents: bool = False
     max_subagents: int = Field(default=2, ge=0, le=2)
     timeout_seconds: int = Field(default=1800, ge=30, le=7200)

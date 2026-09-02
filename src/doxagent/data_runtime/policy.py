@@ -27,6 +27,8 @@ from doxagent.codex_runtime.schema import (
     CodexD3Node,
     CodexEventLibraryAgentRole,
     CodexEventLibraryNode,
+    CodexPersistentRuntimeAgentRole,
+    CodexPersistentRuntimeNode,
     CodexResearchAgentRole,
     CodexResearchNode,
     CodexWorkflowVersion,
@@ -84,6 +86,7 @@ _ROLE_BY_NODE = {
     CodexD3Node.O3_POLICY_COMPILE: CodexD3AgentRole.O3,
     CodexD3Node.O3_FINAL_REVIEW: CodexD3AgentRole.O3,
     CodexD3Node.O3_MAINTAIN: CodexD3AgentRole.O3,
+    CodexPersistentRuntimeNode.W3: CodexPersistentRuntimeAgentRole.W3,
 }
 
 _LEGACY_AGENT_BY_ROLE = {
@@ -161,6 +164,8 @@ class DataToolPolicyRegistry:
         )
         self._by_role[CodexEventLibraryAgentRole.O2] = frozenset()
         self._by_role[CodexD3AgentRole.O3] = self._by_role[CodexD2AgentRole.O1]
+        # W3 uses live Web Search under its own skill contract. It has no Data MCP budget.
+        self._by_role[CodexPersistentRuntimeAgentRole.W3] = frozenset()
         legacy_o4_tools = self._by_role[CodexAgentRole.C5]
         self._by_node: dict[CodexResearchNode, frozenset[str]] = {
             CodexD1Node.O4_A: legacy_o4_tools,

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import shutil
 from datetime import UTC, datetime
 from pathlib import Path
@@ -38,6 +39,7 @@ from doxagent.workflows.codex_document3.assembler import apply_patch
 from doxagent.workflows.codex_document3.identity import allocate_stable_policy_ids
 from doxagent.workflows.codex_document3.inputs import Document3InputPreparer
 from doxagent.workflows.codex_document3.orchestrator import Document3Orchestrator
+from doxagent.workflows.codex_document3.recovery import parse_jsonl
 from doxagent.workflows.codex_document3.repository import (
     HybridDocument3PolicyRepository,
     InMemoryDocument3PolicyRepository,
@@ -225,9 +227,44 @@ def test_trigger_stage_gate_is_structural_and_allows_unresolved_research() -> No
 
     assert unresolved.valid is True
     assert unresolved.findings == []
-    assert missing_ready_record.valid is False
-    assert {item.code for item in missing_ready_record.blocking_findings} == {
-        "STAGE_A_READY_WITHOUT_RECORD"
+    assert missing_ready_record.valid is True
+    assert missing_ready_record.publication_state is PublicationState.PARTIAL
+    assert missing_ready_record.blocking_findings == []
+    assert {item.code for item in missing_ready_record.findings} == {"STAGE_A_READY_WITHOUT_RECORD"}
+
+
+def test_recoverable_jsonl_normalizes_null_and_quarantines_only_bad_rows() -> None:
+    valid_with_null = {
+        "shell_id": "S1",
+        "expectation_id": "E1",
+        "gap_id": "G1",
+        "path_id": "P1",
+        "direction": "LONG",
+        "path_summary": "usable row",
+        "d2_boundary_sufficient": False,
+        "missing_calibration": None,
+        "status": "PENDING",
+    }
+    content = "\n".join(
+        [
+            json.dumps(valid_with_null),
+            "{not-json",
+            json.dumps({**valid_with_null, "path_id": "P2"}),
+        ]
+    )
+
+    recovered = parse_jsonl(
+        content,
+        path="output/work/worklist.jsonl",
+        model=WorklistEntry,
+    )
+
+    assert [item.path_id for item in recovered.values] == ["P1", "P2"]
+    assert all(item.missing_calibration == "" for item in recovered.values)
+    assert recovered.changed is True
+    assert {item.code for item in recovered.findings} == {
+        "ARTIFACT_JSONL_LINE_SKIPPED",
+        "ARTIFACT_RECORD_NORMALIZED",
     }
 
 
@@ -383,9 +420,7 @@ def test_runtime_projection_cache_uses_scalar_head_and_never_reads_full_policy()
     repository = _CountingPolicyRepository()
     repository.publish(_policy_set(), expected_base_version=None)
     now = [100.0]
-    consumer = Document3RuntimeProjectionConsumer(
-        repository, ttl_seconds=300, clock=lambda: now[0]
-    )
+    consumer = Document3RuntimeProjectionConsumer(repository, ttl_seconds=300, clock=lambda: now[0])
 
     first = consumer.current("mu")
     second = consumer.current("MU")
@@ -562,10 +597,7 @@ class _CompileRetryWorker(_O3WorkerStub):
         self.compile_failures_remaining = 2
 
     async def run(self, request):
-        if (
-            request.node is CodexD3Node.O3_POLICY_COMPILE
-            and self.compile_failures_remaining
-        ):
+        if request.node is CodexD3Node.O3_POLICY_COMPILE and self.compile_failures_remaining:
             self.compile_failures_remaining -= 1
             self.requests.append(request)
             return WorkerJob(
@@ -821,12 +853,8 @@ async def test_initialize_resume_skips_completed_trigger_stage_and_preserves_inp
 
     assert result.status is O3RunStatus.COMPLETED
     assert before == after
-    assert [item.node for item in worker.requests].count(
-        CodexD3Node.O3_TRIGGER_CALIBRATION
-    ) == 1
-    assert [item.node for item in worker.requests].count(
-        CodexD3Node.O3_POLICY_COMPILE
-    ) == 3
+    assert [item.node for item in worker.requests].count(CodexD3Node.O3_TRIGGER_CALIBRATION) == 1
+    assert [item.node for item in worker.requests].count(CodexD3Node.O3_POLICY_COMPILE) == 3
     checkpoint = runtime.get_checkpoint("d3-mu-resume")
     assert checkpoint is not None
     assert CodexD3Node.O3_TRIGGER_CALIBRATION in checkpoint.completed_nodes

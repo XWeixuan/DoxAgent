@@ -1,8 +1,8 @@
 """Lenient deterministic validation for D3 artifacts.
 
-Only malformed core contracts, invalid write boundaries and stale-base conflicts are
-publication blockers. Coverage and semantic heuristics are explicit warnings that
-produce a PARTIAL set instead of turning D3 into an audit gate.
+Record-, file-, and stage-local defects are recoverable findings that produce a
+PARTIAL set.  Only the explicit global-fatal allowlist may block publication; Agent
+output never promotes itself into that allowlist.
 """
 
 from __future__ import annotations
@@ -23,13 +23,39 @@ from .schema import (
     TriggerDisposition,
     ValidationFinding,
     ValidationReport,
+    ValidationScope,
+    ValidationSeverity,
     WaveState,
     WorklistEntry,
 )
 
+_GLOBAL_FATAL_CODES = {"STALE_BASE"}
+
 
 def _finding(code: str, message: str, *, blocking: bool = False) -> ValidationFinding:
-    return ValidationFinding(code=code, message=message, blocking=blocking)
+    """Create a finding under the narrow global-fatal policy.
+
+    Historical call sites used ``blocking=True`` for every structural discrepancy.
+    Retain the argument while deliberately downgrading everything not present in the
+    audited fatal allowlist.  This makes old/new findings safe while callers migrate
+    to explicit recovery actions.
+    """
+
+    fatal = blocking and code in _GLOBAL_FATAL_CODES
+    return ValidationFinding(
+        code=code,
+        message=message,
+        severity=(
+            ValidationSeverity.FATAL
+            if fatal
+            else ValidationSeverity.RECOVERABLE
+            if blocking
+            else ValidationSeverity.WARNING
+        ),
+        scope=ValidationScope.GLOBAL if fatal else ValidationScope.RECORD,
+        recovery_action=None if fatal else "continue_partial",
+        blocking=fatal,
+    )
 
 
 def _chinese_ratio(value: str) -> float:
@@ -161,10 +187,7 @@ def validate_trigger_calibration_stage(
                 )
             )
     for path_id, disposition in dispositions.items():
-        if (
-            disposition.disposition is TriggerDisposition.TRIGGER_READY
-            and path_id not in records
-        ):
+        if disposition.disposition is TriggerDisposition.TRIGGER_READY and path_id not in records:
             findings.append(
                 _finding(
                     "STAGE_A_READY_WITHOUT_RECORD",
@@ -264,8 +287,7 @@ def validate_initial_artifacts(
                 )
             if trigger_calibrations is not None and trigger_state is not None:
                 if (
-                    disposition_by_path.get(item.path_id)
-                    is not TriggerDisposition.TRIGGER_READY
+                    disposition_by_path.get(item.path_id) is not TriggerDisposition.TRIGGER_READY
                     or item.path_id not in ready_records
                 ):
                     findings.append(

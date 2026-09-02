@@ -20,7 +20,7 @@ export type DocumentReasonLabel =
   | "monitoring_policy_reviewed"
   | "unknown"
 export type ActionType = "DTC" | "EBA" | "NULL" | "Irrelevant"
-export type MonitorMode = "message_monitoring" | "paper_trading" | "broker_trading"
+export type MonitorMode = "message_monitoring" | "trading"
 export type BacktestPeriod = "7d" | "15d" | "30d"
 export type BacktestRunStatus =
   | "queued"
@@ -397,7 +397,6 @@ export interface MessageItem {
   ticker: string
   source_id: string
   source_label: string
-  source_type: string
   collected_at: string | null
   published_at: string | null
   title: string
@@ -406,30 +405,46 @@ export interface MessageItem {
   url: string | null
   processing_status: string
   runtime_execution_id: string | null
+  revision: number
+  source_item_key: string
 }
 
 export interface MessageSourceConfig {
   source_id: string
   display_name: string
-  source_type: string
-  interface_type: string
+  source_kind: "api" | "crawler"
+  adapter_ref: string
   enabled: boolean
-  poll_interval_seconds: number
-  binding: {
+  registered: boolean
+  scheduler_group: string
+  scheduler_constraints: {
+    minimum_request_gap_seconds: number
+    max_concurrency: number
+  }
+  parameter_schema: Record<string, JsonValue>
+  binding: null | {
     binding_id: string
     ticker: string
     source_id: string
     enabled: boolean
-    parameters: Record<string, JsonValue>
+    source_parameters: Record<string, JsonValue>
+    polling: {
+      enabled: boolean
+      target_interval_seconds: number
+      tolerance_ratio: number
+      alert_after_seconds: number
+      active_windows: JsonValue[]
+    }
+    streaming: Record<string, JsonValue>
   }
   poll_state: {
     status: string
     last_success_at: string | null
     last_error_message: string | null
-    last_poll_new_message_count?: number | null
-    last_latency_ms?: number | null
+    collected_count?: number
+    published_count?: number
   }
-  user_only_fields: string[]
+  health: string
   agent_mutable_fields: string[]
 }
 

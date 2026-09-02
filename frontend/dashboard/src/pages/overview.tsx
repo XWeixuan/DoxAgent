@@ -111,8 +111,7 @@ const healthOptions = [
 
 const monitorModeOptions: Array<{ value: MonitorMode; label: string; disabled?: boolean }> = [
   { value: "message_monitoring", label: "消息监测" },
-  { value: "paper_trading", label: "模拟交易" },
-  { value: "broker_trading", label: "真实 Broker", disabled: true },
+  { value: "trading", label: "交易" },
 ]
 
 const backtestPeriodOptions: Array<{ value: BacktestPeriod; label: string }> = [
@@ -248,10 +247,6 @@ export function OverviewPage() {
   }
 
   const changeMonitorMode = async (item: TickerCard, value: MonitorMode) => {
-    if (value === "broker_trading") {
-      toast.error("真实 Broker 本阶段暂未开放。")
-      return
-    }
     if ((item.monitor_mode ?? "message_monitoring") === value) {
       return
     }
@@ -428,11 +423,8 @@ export function OverviewPage() {
                       onValueChange={(value) => value && setStartupMode(value as StartupMode)}
                     >
                       <ToggleGroupItem value="message_monitoring">消息监测</ToggleGroupItem>
-                      <ToggleGroupItem value="paper_trading">模拟交易</ToggleGroupItem>
+                      <ToggleGroupItem value="trading">交易</ToggleGroupItem>
                       <ToggleGroupItem value="backtest">回测</ToggleGroupItem>
-                      <ToggleGroupItem value="broker_trading" disabled>
-                        真实 Broker
-                      </ToggleGroupItem>
                     </ToggleGroup>
                   </Field>
 

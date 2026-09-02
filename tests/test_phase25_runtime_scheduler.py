@@ -379,7 +379,7 @@ def test_paper_trading_runtime_continues_while_weekly_update_is_running() -> Non
     assert "weekly_document_update_completed" in [item.event_type for item in switched.audit_events]
 
 
-def test_paper_trading_excludes_social_events_from_runtime_consumption() -> None:
+def test_trading_has_no_legacy_social_source_gate() -> None:
     scheduler, _provider, monitoring_service, runtime_service = _scheduler(_usable_bundle())
     scheduler.start_ticker(
         "NVDA",
@@ -409,12 +409,14 @@ def test_paper_trading_excludes_social_events_from_runtime_consumption() -> None
     assert persisted_event.event_id == event.event_id
     assert persisted_event.consumed is True
     assert detail.event_processing_status.pending_event_count == 0
-    assert detail.event_processing_status.runtime_execution_count == 0
-    assert detail.state.counters.events_consumed == 0
-    assert detail.state.counters.processed_event_count == 0
+    assert detail.event_processing_status.runtime_execution_count == 1
+    assert detail.state.counters.events_consumed == 1
+    assert detail.state.counters.processed_event_count == 1
     assert detail.state.counters.trade_intents_generated == 0
     assert runtime_service.repository.list_trading_records(ticker="NVDA") == []
-    assert "runtime_social_events_excluded" in [item.event_type for item in detail.audit_events]
+    assert "runtime_social_events_excluded" not in [
+        item.event_type for item in detail.audit_events
+    ]
 
 
 def test_switch_to_paper_trading_does_not_replay_existing_pending_events() -> None:
@@ -436,7 +438,7 @@ def test_switch_to_paper_trading_does_not_replay_existing_pending_events() -> No
 
     persisted_event = monitoring_service.recent_events(ticker="NVDA")[0]
     assert switched.state.monitor_mode is MonitorMode.PAPER_TRADING
-    assert switched.state.metadata["paper_trading_replays_historical_pending_events"] is False
+    assert switched.state.metadata["trading_replays_historical_pending_stream"] is False
     assert persisted_event.consumed is False
     assert detail.runtime_status.pending_event_count == 1
     assert detail.state.counters.events_consumed == 0

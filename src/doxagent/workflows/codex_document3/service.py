@@ -17,6 +17,8 @@ from doxagent.codex_runtime.repository import (
 )
 from doxagent.event_library.provider import PublishedEventLibraryReader
 from doxagent.settings import DoxAgentSettings
+from doxagent.workflows.codex_monitoring_o4.integration import Document3MonitoringO4Trigger
+from doxagent.workflows.codex_monitoring_o4.repository import MonitoringO4Repository
 
 from .inputs import Document3InputPreparer
 from .orchestrator import Document3Orchestrator
@@ -101,10 +103,18 @@ def build_document3_orchestrator(settings: DoxAgentSettings) -> Document3Orchest
         timeout_seconds=config.node_timeout_seconds,
         runtime_repository=runtime_repository,
     )
+    monitoring_o4_trigger = (
+        Document3MonitoringO4Trigger(
+            MonitoringO4Repository(settings.codex_monitoring_o4_sqlite_path)
+        )
+        if settings.codex_monitoring_o4_enabled
+        else None
+    )
     return Document3Orchestrator(
         input_preparer=input_preparer,
         agent_runner=runner,
         policy_repository=policy_repository,
         runtime_repository=runtime_repository,
         published_storage=published_storage,
+        monitoring_o4_trigger=monitoring_o4_trigger,
     )

@@ -491,7 +491,6 @@ def create_real_router(service: RealDashboardOverviewService | None = None) -> A
         request: Request,
         ticker: str,
         source_id: str | None = None,
-        source_type: str | None = None,
         processing_status: str | None = None,
         q: str | None = None,
         sort: str | None = None,
@@ -502,7 +501,6 @@ def create_real_router(service: RealDashboardOverviewService | None = None) -> A
             resolved.message_bus_messages,
             ticker,
             source_id=source_id,
-            source_type=source_type,
             processing_status=processing_status,
             q=q,
             sort=sort,
@@ -572,6 +570,300 @@ def create_real_router(service: RealDashboardOverviewService | None = None) -> A
             )
         except UnsupportedMessageSource as exc:
             raise _unsupported_message_source(exc) from exc
+        return _ok(request, data)
+
+    @router.get("/message-bus/sources")
+    async def list_message_bus_sources(request: Request) -> JsonObject:
+        data = await run_in_threadpool(resolved.list_message_bus_sources)
+        return _ok(request, data)
+
+    @router.post("/message-bus/sources")
+    async def register_message_bus_source(
+        request: Request,
+        payload: JsonObject,
+    ) -> JsonObject:
+        try:
+            data = await run_in_threadpool(resolved.register_message_bus_source, payload)
+        except (ValueError, KeyError) as exc:
+            raise _message_bus_v2_control_error(exc) from exc
+        return _ok(request, data)
+
+    @router.patch("/message-bus/sources/{source_id}")
+    async def update_message_bus_source(
+        request: Request,
+        source_id: str,
+        payload: JsonObject,
+    ) -> JsonObject:
+        try:
+            data = await run_in_threadpool(resolved.update_message_bus_source, source_id, payload)
+        except (ValueError, KeyError) as exc:
+            raise _message_bus_v2_control_error(exc) from exc
+        return _ok(request, data)
+
+    @router.get("/message-bus/sources/{source_id}/revisions")
+    async def message_bus_source_revisions(
+        request: Request,
+        source_id: str,
+    ) -> JsonObject:
+        try:
+            data = await run_in_threadpool(resolved.message_bus_source_revisions, source_id)
+        except (ValueError, KeyError, UnsupportedMessageSource) as exc:
+            raise _message_bus_v2_control_error(exc) from exc
+        return _ok(request, data)
+
+    @router.post("/message-bus/sources/{source_id}/rollback")
+    async def rollback_message_bus_source(
+        request: Request,
+        source_id: str,
+        payload: JsonObject,
+    ) -> JsonObject:
+        try:
+            data = await run_in_threadpool(resolved.rollback_message_bus_source, source_id, payload)
+        except (ValueError, KeyError) as exc:
+            raise _message_bus_v2_control_error(exc) from exc
+        return _ok(request, data)
+
+    @router.delete("/message-bus/sources/{source_id}")
+    async def hard_delete_message_bus_source(
+        request: Request,
+        source_id: str,
+        payload: JsonObject | None = OPTIONAL_JSON_BODY,
+    ) -> JsonObject:
+        try:
+            data = await run_in_threadpool(
+                resolved.hard_delete_message_bus_source,
+                source_id,
+                payload or {},
+            )
+        except (ValueError, KeyError) as exc:
+            raise _message_bus_v2_control_error(exc) from exc
+        return _ok(request, data)
+
+    @router.get("/message-bus/default-profiles/{profile_id}")
+    async def get_message_bus_profile(
+        request: Request,
+        profile_id: str,
+    ) -> JsonObject:
+        try:
+            data = await run_in_threadpool(resolved.get_message_bus_profile, profile_id)
+        except KeyError as exc:
+            raise _message_bus_v2_control_error(exc) from exc
+        return _ok(request, data)
+
+    @router.put("/message-bus/default-profiles/{profile_id}")
+    async def save_message_bus_profile(
+        request: Request,
+        profile_id: str,
+        payload: JsonObject,
+    ) -> JsonObject:
+        try:
+            data = await run_in_threadpool(resolved.save_message_bus_profile, profile_id, payload)
+        except (ValueError, KeyError) as exc:
+            raise _message_bus_v2_control_error(exc) from exc
+        return _ok(request, data)
+
+    @router.get("/message-bus/default-profiles/{profile_id}/revisions")
+    async def message_bus_profile_revisions(
+        request: Request,
+        profile_id: str,
+    ) -> JsonObject:
+        data = await run_in_threadpool(resolved.message_bus_profile_revisions, profile_id)
+        return _ok(request, data)
+
+    @router.post("/message-bus/default-profiles/{profile_id}/rollback")
+    async def rollback_message_bus_profile(
+        request: Request,
+        profile_id: str,
+        payload: JsonObject,
+    ) -> JsonObject:
+        try:
+            data = await run_in_threadpool(
+                resolved.rollback_message_bus_profile,
+                profile_id,
+                payload,
+            )
+        except (ValueError, KeyError) as exc:
+            raise _message_bus_v2_control_error(exc) from exc
+        return _ok(request, data)
+
+    @router.get("/crawler-plane/crawlers")
+    async def list_crawlers(request: Request) -> JsonObject:
+        return _ok(request, await run_in_threadpool(resolved.list_crawlers))
+
+    @router.get("/crawler-plane/crawlers/{crawler_id}")
+    async def get_crawler(request: Request, crawler_id: str) -> JsonObject:
+        try:
+            data = await run_in_threadpool(resolved.get_crawler, crawler_id)
+        except (ValueError, KeyError) as exc:
+            raise _message_bus_v2_control_error(exc) from exc
+        return _ok(request, data)
+
+    @router.post("/crawler-plane/crawlers/{crawler_id}/versions")
+    async def create_crawler_version(
+        request: Request, crawler_id: str, payload: JsonObject
+    ) -> JsonObject:
+        try:
+            data = await run_in_threadpool(resolved.create_crawler_version, crawler_id, payload)
+        except (ValueError, KeyError, FileExistsError) as exc:
+            raise _message_bus_v2_control_error(exc) from exc
+        return _ok(request, data)
+
+    @router.get("/crawler-plane/crawlers/{crawler_id}/versions/{version}")
+    async def get_crawler_version(request: Request, crawler_id: str, version: int) -> JsonObject:
+        try:
+            data = await run_in_threadpool(resolved.get_crawler_version, crawler_id, version)
+        except (ValueError, KeyError) as exc:
+            raise _message_bus_v2_control_error(exc) from exc
+        return _ok(request, data)
+
+    @router.post("/crawler-plane/crawlers/{crawler_id}/versions/{version}/certify")
+    async def certify_crawler_version(
+        request: Request, crawler_id: str, version: int
+    ) -> JsonObject:
+        try:
+            data = await resolved.certify_crawler_version(crawler_id, version)
+        except (ValueError, KeyError, RuntimeError) as exc:
+            raise _message_bus_v2_control_error(exc) from exc
+        return _ok(request, data)
+
+    @router.post("/crawler-plane/crawlers/{crawler_id}/versions/{version}/promote")
+    async def promote_crawler_version(
+        request: Request,
+        crawler_id: str,
+        version: int,
+        payload: JsonObject | None = OPTIONAL_JSON_BODY,
+    ) -> JsonObject:
+        try:
+            data = await run_in_threadpool(
+                resolved.promote_crawler_version,
+                crawler_id,
+                version,
+                payload or {},
+            )
+        except (ValueError, KeyError, RuntimeError) as exc:
+            raise _message_bus_v2_control_error(exc) from exc
+        return _ok(request, data)
+
+    @router.post("/crawler-plane/crawlers/{crawler_id}/versions/{version}/rollback")
+    async def rollback_crawler_version(
+        request: Request, crawler_id: str, version: int
+    ) -> JsonObject:
+        try:
+            data = await run_in_threadpool(resolved.rollback_crawler_version, crawler_id, version)
+        except (ValueError, KeyError, RuntimeError) as exc:
+            raise _message_bus_v2_control_error(exc) from exc
+        return _ok(request, data)
+
+    @router.get("/crawler-plane/certifications/{run_id}")
+    async def get_crawler_certification(request: Request, run_id: str) -> JsonObject:
+        try:
+            data = await run_in_threadpool(resolved.get_crawler_certification, run_id)
+        except KeyError as exc:
+            raise _message_bus_v2_control_error(exc) from exc
+        return _ok(request, data)
+
+    @router.post("/crawler-plane/executions")
+    async def execute_crawler(request: Request, payload: JsonObject) -> JsonObject:
+        try:
+            data = await resolved.execute_crawler(payload)
+        except (ValueError, KeyError, RuntimeError) as exc:
+            raise _message_bus_v2_control_error(exc) from exc
+        return _ok(request, data)
+
+    @router.post("/crawler-plane/live-probes")
+    async def live_probe_crawler(request: Request, payload: JsonObject) -> JsonObject:
+        try:
+            data = await resolved.live_probe_crawler(payload)
+        except (ValueError, KeyError, RuntimeError) as exc:
+            raise _message_bus_v2_control_error(exc) from exc
+        return _ok(request, data)
+
+    @router.get("/crawler-plane/executions/{execution_id}")
+    async def get_crawler_execution(request: Request, execution_id: str) -> JsonObject:
+        try:
+            data = await run_in_threadpool(resolved.get_crawler_execution, execution_id)
+        except KeyError as exc:
+            raise _message_bus_v2_control_error(exc) from exc
+        return _ok(request, data)
+
+    @router.get("/crawler-plane/executions/{execution_id}/artifacts")
+    async def get_crawler_execution_artifacts(request: Request, execution_id: str) -> JsonObject:
+        try:
+            data = await run_in_threadpool(resolved.get_crawler_execution_artifacts, execution_id)
+        except KeyError as exc:
+            raise _message_bus_v2_control_error(exc) from exc
+        return _ok(request, data)
+
+    @router.get("/crawler-plane/alert-policies/{policy_key}")
+    async def get_crawler_alert_policy(request: Request, policy_key: str) -> JsonObject:
+        try:
+            data = await run_in_threadpool(resolved.get_crawler_alert_policy, policy_key)
+        except KeyError as exc:
+            raise _message_bus_v2_control_error(exc) from exc
+        return _ok(request, data)
+
+    @router.put("/crawler-plane/alert-policies/{policy_key}")
+    async def update_crawler_alert_policy(
+        request: Request, policy_key: str, payload: JsonObject
+    ) -> JsonObject:
+        value = dict(payload)
+        supplied_key = value.pop("policy_key", None)
+        if supplied_key is not None and supplied_key != policy_key:
+            raise _message_bus_v2_control_error(ValueError("policy_key mismatch"))
+        computed_key = (
+            f"{str(value.get('crawler_id', '')).strip().lower()}:"
+            f"{str(value.get('source_id') or '*').strip().lower()}:"
+            f"{str(value.get('alert_type', '')).strip()}"
+        )
+        if computed_key != policy_key:
+            raise _message_bus_v2_control_error(ValueError("policy_key mismatch"))
+        try:
+            data = await run_in_threadpool(resolved.update_crawler_alert_policy, value)
+        except (ValueError, KeyError) as exc:
+            raise _message_bus_v2_control_error(exc) from exc
+        return _ok(request, data)
+
+    @router.get("/crawler-plane/alerts")
+    async def list_crawler_alerts(
+        request: Request, crawler_id: str | None = None, open_only: bool = False
+    ) -> JsonObject:
+        data = await run_in_threadpool(
+            resolved.list_crawler_alerts,
+            crawler_id=crawler_id,
+            open_only=open_only,
+        )
+        return _ok(request, data)
+
+    @router.get("/crawler-plane/alerts/{alert_id}")
+    async def get_crawler_alert(request: Request, alert_id: str) -> JsonObject:
+        try:
+            data = await run_in_threadpool(resolved.get_crawler_alert, alert_id)
+        except KeyError as exc:
+            raise _message_bus_v2_control_error(exc) from exc
+        return _ok(request, data)
+
+    @router.post("/crawler-plane/alerts/{alert_id}/resolve")
+    async def resolve_crawler_alert(request: Request, alert_id: str) -> JsonObject:
+        try:
+            data = await run_in_threadpool(resolved.resolve_crawler_alert, alert_id)
+        except KeyError as exc:
+            raise _message_bus_v2_control_error(exc) from exc
+        return _ok(request, data)
+
+    @router.post("/crawler-plane/sources")
+    async def register_crawler_source(request: Request, payload: JsonObject) -> JsonObject:
+        try:
+            data = await run_in_threadpool(resolved.register_crawler_source, payload)
+        except (ValueError, KeyError, RuntimeError) as exc:
+            raise _message_bus_v2_control_error(exc) from exc
+        return _ok(request, data)
+
+    @router.post("/crawler-plane/executions/{execution_id}/regressions")
+    async def add_crawler_regression(request: Request, execution_id: str) -> JsonObject:
+        try:
+            data = await run_in_threadpool(resolved.add_crawler_regression, execution_id)
+        except (ValueError, KeyError) as exc:
+            raise _message_bus_v2_control_error(exc) from exc
         return _ok(request, data)
 
     @router.get("/tickers/{ticker}/runtime/overview")
@@ -951,6 +1243,17 @@ def _invalid_message_bus_patch(exc: InvalidMessageBusPatch) -> DashboardMockErro
     )
 
 
+def _message_bus_v2_control_error(exc: Exception) -> DashboardMockError:
+    missing = isinstance(exc, (KeyError, UnsupportedMessageSource))
+    return DashboardMockError(
+        code="NOT_FOUND" if missing else "INVALID_PARAMS",
+        message=str(exc).strip("'") or "Invalid Message Bus v2 control request.",
+        status_code=(HTTPStatus.NOT_FOUND if missing else HTTPStatus.UNPROCESSABLE_ENTITY),
+        retryable=False,
+        details={"error_type": type(exc).__name__},
+    )
+
+
 def _unsupported_runtime_node(exc: UnsupportedRuntimeNode) -> DashboardMockError:
     return DashboardMockError(
         code="NOT_FOUND",
@@ -1026,8 +1329,4 @@ async def _sse_event_generator(events: list[JsonObject], *, once: bool) -> Async
 def _format_sse_event(event: JsonObject) -> str:
     event_name = str(event["event_type"])
     event_id = str(event["event_id"])
-    return (
-        f"id: {event_id}\n"
-        f"event: {event_name}\n"
-        f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
-    )
+    return f"id: {event_id}\nevent: {event_name}\ndata: {json.dumps(event, ensure_ascii=False)}\n\n"

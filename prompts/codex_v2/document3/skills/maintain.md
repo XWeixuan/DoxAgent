@@ -6,9 +6,9 @@ MAINTAIN 的目标是保持现有 Policy 的交易含义与 D2-provenanced Trada
 
 ## 1. Working Baseline
 
-读取 `task.json`、`current_policy_set.json`、`reference_event_view.md` 和已有 `maintenance_candidates.jsonl`；如果存在 `runtime_maintenance_feed.json`，必须完整读取其中的 Reference View Delta、Trade Records 与 BADCASE Records；retry 时同时读取已经存在的 `policy_patch.json`。Current Policy Set 提供当前 Policy 逻辑、Calibration、稳定身份和 D2 provenance，workspace 中的候选与 Patch 表示本次运行已经完成的工作。
+读取 `task.json`、`current_policy_set.json`、`reference_event_view.md` 和已有 `maintenance_candidates.jsonl`；如果存在 `runtime_maintenance_feed.json`，必须完整读取其中的 Reference View Delta、Trade Records、BADCASE Records 与 W3 Coverage Gaps；retry 时同时读取已经存在的 `policy_patch.json`。Current Policy Set 提供当前 Policy 逻辑、Calibration、稳定身份和 D2 provenance，workspace 中的候选与 Patch 表示本次运行已经完成的工作。
 
-Runtime feedback 仅用于维护现有 D2-provenanced Policy：Trade Record 表示当日实际命中的完整消息与判定上下文，BADCASE 表示事实已知但 Policy 仍命中的漏维护信号。不得把 Runtime feedback 直接解释为成交订单，也不得脱离现有 D2 Path 新造经济逻辑。Reference View Delta 为空时，仍须处理 Trade/BADCASE；三者均为空时才可 NOOP。
+Runtime feedback 仅用于维护现有 D2-provenanced Policy：Trade Record 表示当日实际命中的完整消息与判定上下文，BADCASE 表示事实已知但 Policy 仍命中的漏维护信号，W3 Coverage Gap 表示 W3 最终确认 NEW 且当前 PolicySet 未覆盖的现实，包括直接交易与 NO_TRADE。不得把 Runtime feedback 直接解释为成交订单，也不得脱离现有 D2 Path 新造经济逻辑；W3 Gap 如果暴露了当前 D2 Path 的持续监测缺口，可用于补建或修改 Policy，若需要全新的经济传导逻辑则留给下一次 D2/D3 INITIALIZE。Reference View Delta 为空时，仍须处理这些 Runtime feedback；全部为空时才可 NOOP。
 
 Reference View 是现实变化入口，而不是全部世界状态。结合 Policy Set 的 `published_at`、既有 `event_library_ref`、事件时间和当前 Calibration，区分本轮可能的新进展与视图中原本存在的历史事实；较早事实如果明确与当前 Policy 状态冲突，同样构成需要处理的变化线索。
 

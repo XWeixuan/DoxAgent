@@ -395,7 +395,7 @@ class PostgresDocument3PolicyRepository:
     def get_current(self, ticker: str) -> PolicySet | None:
         with self._connect() as connection, connection.cursor() as cursor:
             cursor.execute(
-                "SELECT policy_set_json FROM codex_document3_policy_sets "
+                "SELECT policy_set_json FROM doxagent.codex_document3_policy_sets "
                 "WHERE ticker = %s AND is_current = true",
                 (ticker.upper(),),
             )
@@ -404,7 +404,7 @@ class PostgresDocument3PolicyRepository:
     def get_current_version(self, ticker: str) -> int | None:
         with self._connect() as connection, connection.cursor() as cursor:
             cursor.execute(
-                "SELECT policy_set_version FROM codex_document3_policy_sets "
+                "SELECT policy_set_version FROM doxagent.codex_document3_policy_sets "
                 "WHERE ticker = %s AND is_current = true",
                 (ticker.upper(),),
             )
@@ -414,7 +414,7 @@ class PostgresDocument3PolicyRepository:
     def get_version(self, ticker: str, version: int) -> PolicySet | None:
         with self._connect() as connection, connection.cursor() as cursor:
             cursor.execute(
-                "SELECT policy_set_json FROM codex_document3_policy_sets "
+                "SELECT policy_set_json FROM doxagent.codex_document3_policy_sets "
                 "WHERE ticker = %s AND policy_set_version = %s",
                 (ticker.upper(), version),
             )
@@ -430,7 +430,7 @@ class PostgresDocument3PolicyRepository:
         with self._connect() as connection, connection.cursor() as cursor:
             cursor.execute(
                 "SELECT policy_set_json, runtime_projection_json "
-                "FROM codex_document3_policy_sets "
+                "FROM doxagent.codex_document3_policy_sets "
                 "WHERE ticker = %s AND is_current = true",
                 (ticker.upper(),),
             )
@@ -442,7 +442,7 @@ class PostgresDocument3PolicyRepository:
         with self._connect() as connection, connection.cursor() as cursor:
             cursor.execute(
                 "SELECT policy_set_json, runtime_projection_json "
-                "FROM codex_document3_policy_sets "
+                "FROM doxagent.codex_document3_policy_sets "
                 "WHERE ticker = %s AND policy_set_version = %s",
                 (ticker.upper(), version),
             )
@@ -465,7 +465,7 @@ class PostgresDocument3PolicyRepository:
         with self._connect() as connection, connection.cursor() as cursor:
             cursor.execute(
                 "SELECT ticker, policy_set_version, is_current, publication_state, "
-                "policy_count, published_at FROM codex_document3_policy_sets "
+                "policy_count, published_at FROM doxagent.codex_document3_policy_sets "
                 "WHERE ticker = %s ORDER BY policy_set_version DESC LIMIT %s",
                 (ticker.upper(), bounded_limit),
             )
@@ -480,7 +480,7 @@ class PostgresDocument3PolicyRepository:
         with self._connect() as connection, connection.cursor() as cursor:
             cursor.execute("SELECT pg_advisory_xact_lock(hashtext(%s))", (f"d3:{key}",))
             cursor.execute(
-                "SELECT policy_set_version FROM codex_document3_policy_sets "
+                "SELECT policy_set_version FROM doxagent.codex_document3_policy_sets "
                 "WHERE ticker = %s AND is_current = true FOR UPDATE",
                 (key,),
             )
@@ -497,12 +497,12 @@ class PostgresDocument3PolicyRepository:
                     f"D3 version must be {expected_version}, got {policy_set.policy_set_version}"
                 )
             cursor.execute(
-                "UPDATE codex_document3_policy_sets SET is_current = false "
+                "UPDATE doxagent.codex_document3_policy_sets SET is_current = false "
                 "WHERE ticker = %s AND is_current = true",
                 (key,),
             )
             cursor.execute(
-                "INSERT INTO codex_document3_policy_sets "
+                "INSERT INTO doxagent.codex_document3_policy_sets "
                 "(ticker, policy_set_version, is_current, publication_state, "
                 "document2_run_id, event_library_version, policy_count, policy_set_json, "
                 "runtime_projection_json, published_at) "

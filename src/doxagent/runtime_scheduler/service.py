@@ -2,22 +2,33 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from copy import deepcopy
 from dataclasses import dataclass
 from datetime import UTC, datetime, time
 from threading import Lock, Thread
+from typing import cast
 from zoneinfo import ZoneInfo
 
 from doxagent.blackboard.errors import RunNotFoundError
+from doxagent.crawler_plane.factory import build_crawler_plane_service
+from doxagent.crawler_plane.service import CrawlerPlaneService
+from doxagent.message_bus_v2.factory import build_message_bus_v2_service
+from doxagent.message_bus_v2.schema import (
+    TickerMonitoringStatus as MessageBusV2TickerStatus,
+)
+from doxagent.message_bus_v2.schema import UpdateActor as MessageBusV2UpdateActor
+from doxagent.message_bus_v2.service import MessageBusV2Service
 from doxagent.monitoring.schema import (
     EventStreamItem,
     IngestBatchResult,
     MonitoringParameters,
-    SourceType,
     TickerSourceBinding,
     UpdateActor,
     parameter_schema_for_source,
+)
+from doxagent.monitoring.schema import (
+    StandardMessage as LegacyStandardMessage,
 )
 from doxagent.monitoring.service import MonitoringBusService
 from doxagent.persistent_runtime.service import PersistentRuntimeExecutionService
@@ -30,6 +41,7 @@ from doxagent.persistent_runtime_v2.schema import (
 )
 from doxagent.persistent_runtime_v2.schema import (
     SourceMessageEnvelope,
+    SourceMessageSnapshot,
 )
 from doxagent.persistent_runtime_v2.service import PersistentRuntimeV2Service
 from doxagent.runtime_scheduler.documents import RuntimeDocumentProvider, WorkflowDocumentProvider
@@ -62,13 +74,6 @@ from doxagent.settings import DoxAgentSettings
 
 ET = ZoneInfo("America/New_York")
 LOW_FREQUENCY_SOURCE_IDS = frozenset({"stocktwits_messages"})
-SOCIAL_RUNTIME_EXCLUDED_SOURCE_IDS = frozenset(
-    {
-        "stocktwits_messages",
-        "tikhub_x_search",
-        "tikhub_x_user_posts",
-    }
-)
 RUNNABLE_STATUSES = {
     TickerRunStatus.RUNNING,
     TickerRunStatus.DEGRADED,
@@ -82,8 +87,9 @@ STARTUP_STEP_DEFINITIONS = (
 )
 ENABLED_MONITOR_MODES = {
     MonitorMode.MESSAGE_MONITORING,
-    MonitorMode.PAPER_TRADING,
+    MonitorMode.TRADING,
 }
+RUNTIME_V2_CONSUMER_ID = "persistent_runtime_v2"
 
 
 @dataclass
@@ -102,6 +108,10 @@ class UnsupportedMonitorMode(ValueError):
     def __init__(self, monitor_mode: str) -> None:
         super().__init__(monitor_mode)
         self.monitor_mode = monitor_mode
+
+
+class RuntimeModeUnavailable(RuntimeError):
+    pass
 
 
 class DocumentRunActivationError(ValueError):
@@ -129,9 +139,12 @@ class UnifiedRuntimeSchedulerService:
         repository: RuntimeSchedulerRepository,
         *,
         document_provider: RuntimeDocumentProvider,
-        monitoring_service: MonitoringBusService,
+        monitoring_service: MonitoringBusService | None,
         runtime_service: PersistentRuntimeExecutionService,
         runtime_v2_service: PersistentRuntimeV2Service | None = None,
+        message_bus_v2_service: MessageBusV2Service | None = None,
+        crawler_plane_service: CrawlerPlaneService | None = None,
+        message_bus_v2_enabled: bool = False,
         low_frequency_source_ids: set[str] | None = None,
         auto_media_enrichment_enabled: bool = True,
         auto_media_enrichment_limit: int = 5,
@@ -139,7 +152,11 @@ class UnifiedRuntimeSchedulerService:
     ) -> None:
         self.repository = repository
         self.document_provider = document_provider
-        self.monitoring_service = monitoring_service
+        self.monitoring_service = cast(MonitoringBusService, monitoring_service)
+        self._legacy_monitoring_service_enabled = monitoring_service is not None
+        self.message_bus_v2_service = message_bus_v2_service
+        self.crawler_plane_service = crawler_plane_service
+        self.message_bus_v2_enabled = message_bus_v2_enabled
         self.runtime_service = runtime_service
         self.runtime_v2_service = runtime_v2_service
         self.low_frequency_source_ids = {
@@ -164,16 +181,27 @@ class UnifiedRuntimeSchedulerService:
             repository: RuntimeSchedulerRepository = InMemoryRuntimeSchedulerRepository()
         else:
             repository = SQLiteRuntimeSchedulerRepository(resolved.runtime_scheduler_sqlite_path)
+        message_bus_v2_service = None
+        crawler_plane_service = None
+        if resolved.message_bus_v2_enabled:
+            _, message_bus_v2_service = build_message_bus_v2_service(resolved)
+            crawler_plane_service = build_crawler_plane_service(
+                resolved,
+                message_bus=message_bus_v2_service,
+            )
         return cls(
             repository,
             document_provider=WorkflowDocumentProvider(settings=resolved),
-            monitoring_service=MonitoringBusService.from_settings(resolved),
+            monitoring_service=None,
             runtime_service=PersistentRuntimeExecutionService.from_settings(resolved),
             runtime_v2_service=(
                 build_persistent_runtime_v2_service(resolved)
                 if resolved.persistent_runtime_v2_enabled
                 else None
             ),
+            message_bus_v2_service=message_bus_v2_service,
+            crawler_plane_service=crawler_plane_service,
+            message_bus_v2_enabled=resolved.message_bus_v2_enabled,
             auto_media_enrichment_enabled=(resolved.monitoring_auto_media_enrichment_enabled),
             auto_media_enrichment_limit=resolved.monitoring_auto_media_enrichment_limit,
             auto_media_enrichment_concurrency=(
@@ -200,6 +228,8 @@ class UnifiedRuntimeSchedulerService:
             monitor_mode,
             default=_state_monitor_mode(existing) if existing is not None else None,
         )
+        if self.message_bus_v2_enabled and resolved_mode is MonitorMode.TRADING:
+            self._require_runtime_v2_for_trading()
         if existing is not None and existing.status in RUNNABLE_STATUSES and not force_initialize:
             self._audit(
                 normalized,
@@ -325,8 +355,25 @@ class UnifiedRuntimeSchedulerService:
             deep=True,
         )
         self.repository.upsert_state(state)
-        applied_bindings = self._apply_monitoring_config(normalized, bundle)
-        if bundle.monitoring_config is not None and not applied_bindings:
+        applied_bindings: Sequence[object]
+        if self.message_bus_v2_enabled:
+            bus = self._require_message_bus_v2()
+            bus.start_ticker(normalized, actor=MessageBusV2UpdateActor.SYSTEM)
+            applied_bindings = bus.repository.list_bindings(ticker=normalized)
+            if resolved_mode is MonitorMode.TRADING:
+                self._require_runtime_v2_for_trading()
+                bus.initialize_runtime_cursor(RUNTIME_V2_CONSUMER_ID, normalized)
+        elif self._legacy_monitoring_service_enabled:
+            # Compatibility-only path for explicitly injected test harnesses. Formal
+            # from_settings construction never attaches or writes the v1 bus.
+            applied_bindings = self._apply_monitoring_config(normalized, bundle)
+        else:
+            applied_bindings = []
+        if (
+            self._legacy_monitoring_service_enabled
+            and bundle.monitoring_config is not None
+            and not applied_bindings
+        ):
             metadata = _startup_progress_metadata(
                 state.metadata,
                 status="blocked",
@@ -414,12 +461,18 @@ class UnifiedRuntimeSchedulerService:
         current_time = _utc(now)
         previous_mode = _state_monitor_mode(state)
         resolved_mode = _resolve_monitor_mode(monitor_mode)
+        if self.message_bus_v2_enabled and resolved_mode is MonitorMode.TRADING:
+            self._require_runtime_v2_for_trading()
+            bus = self._require_message_bus_v2()
+            bus.start_ticker(normalized, actor=MessageBusV2UpdateActor.SYSTEM)
+            bus.initialize_runtime_cursor(RUNTIME_V2_CONSUMER_ID, normalized)
         metadata = _monitor_mode_metadata(
             state,
             resolved_mode,
             now=current_time,
-            reset_paper_window=previous_mode is not resolved_mode
-            and resolved_mode is MonitorMode.PAPER_TRADING,
+            reset_paper_window=(
+                previous_mode is not resolved_mode and resolved_mode is MonitorMode.TRADING
+            ),
         )
         state = state.model_copy(
             update={
@@ -437,7 +490,7 @@ class UnifiedRuntimeSchedulerService:
             payload={
                 "previous_monitor_mode": previous_mode.value,
                 "monitor_mode": resolved_mode.value,
-                "paper_trading_replays_historical_pending_events": False,
+                "trading_replays_historical_pending_stream": False,
             },
         )
         return self.detail(normalized, now=current_time)
@@ -489,7 +542,15 @@ class UnifiedRuntimeSchedulerService:
                 },
             )
         state = self._state_or_default(normalized, now=current_time)
-        bindings = self._apply_monitoring_config(normalized, bundle)
+        bindings: Sequence[object]
+        if self.message_bus_v2_enabled:
+            bus = self._require_message_bus_v2()
+            bus.start_ticker(normalized, actor=MessageBusV2UpdateActor.SYSTEM)
+            bindings = bus.repository.list_bindings(ticker=normalized)
+        elif self._legacy_monitoring_service_enabled:
+            bindings = self._apply_monitoring_config(normalized, bundle)
+        else:
+            bindings = []
         metadata = dict(state.metadata)
         metadata["document_activation"] = {
             "activated_at": current_time.isoformat(),
@@ -548,6 +609,13 @@ class UnifiedRuntimeSchedulerService:
     ) -> TickerRunDetail:
         state = self._state_or_default(ticker, now=now)
         current_time = _utc(now)
+        if self.message_bus_v2_enabled:
+            self._require_message_bus_v2().set_ticker_status(
+                state.ticker,
+                MessageBusV2TickerStatus.PAUSED,
+                actor=MessageBusV2UpdateActor.SYSTEM,
+                reason=reason,
+            )
         state = state.model_copy(
             update={
                 "status": TickerRunStatus.PAUSED,
@@ -574,7 +642,18 @@ class UnifiedRuntimeSchedulerService:
     ) -> TickerRunDetail:
         state = self._state_or_default(ticker, now=now)
         current_time = _utc(now)
-        disabled_count = self._disable_bindings(state.ticker) if disable_bindings else 0
+        if self.message_bus_v2_enabled:
+            self._require_message_bus_v2().set_ticker_status(
+                state.ticker,
+                MessageBusV2TickerStatus.STOPPED,
+                actor=MessageBusV2UpdateActor.SYSTEM,
+                reason=reason,
+            )
+            disabled_count = 0
+        elif self._legacy_monitoring_service_enabled:
+            disabled_count = self._disable_bindings(state.ticker) if disable_bindings else 0
+        else:
+            disabled_count = 0
         state = state.model_copy(
             update={
                 "status": TickerRunStatus.STOPPED,
@@ -634,10 +713,14 @@ class UnifiedRuntimeSchedulerService:
         )
         state = self._apply_completed_weekly_update_job(state, now=current_time)
         monitor_mode = _state_monitor_mode(state)
-        should_run_runtime = monitor_mode is MonitorMode.PAPER_TRADING and phase in {
-            MarketSessionPhase.PRE_MARKET_DIGEST,
-            MarketSessionPhase.FORMAL_MONITORING,
-        }
+        should_run_runtime = monitor_mode is MonitorMode.TRADING and (
+            self.message_bus_v2_enabled
+            or phase
+            in {
+                MarketSessionPhase.PRE_MARKET_DIGEST,
+                MarketSessionPhase.FORMAL_MONITORING,
+            }
+        )
         runtime_context_bundle = (
             self._runtime_bundle_for_tick(state) if should_run_runtime else None
         )
@@ -651,48 +734,91 @@ class UnifiedRuntimeSchedulerService:
         poll_messages = 0
         poll_events = 0
         poll_results: list[IngestBatchResult] = []
-        for binding in self._due_bindings_for_phase(normalized, phase, now=current_time):
-            try:
-                result = self.monitoring_service.poll_binding(binding.ticker, binding.source_id)
-                poll_results.append(result)
-                poll_messages += result.collected_count
-                poll_events += result.event_count
-                self._audit(
-                    normalized,
-                    "message_poll_completed",
-                    "Monitoring source poll completed.",
-                    payload=result.model_dump(mode="json"),
-                )
-            except Exception as exc:
-                poll_failures += 1
-                self._audit(
-                    normalized,
-                    "message_poll_failed",
-                    str(exc),
-                    severity=AuditSeverity.WARNING,
-                    payload={"source_id": binding.source_id},
-                )
-        self._maybe_enrich_polled_media(normalized, poll_results)
+        if self._legacy_monitoring_service_enabled and not self.message_bus_v2_enabled:
+            for binding in self._due_bindings_for_phase(normalized, phase, now=current_time):
+                try:
+                    result = self.monitoring_service.poll_binding(binding.ticker, binding.source_id)
+                    poll_results.append(result)
+                    poll_messages += result.collected_count
+                    poll_events += result.event_count
+                    self._audit(
+                        normalized,
+                        "message_poll_completed",
+                        "Monitoring source poll completed.",
+                        payload=result.model_dump(mode="json"),
+                    )
+                except Exception as exc:
+                    poll_failures += 1
+                    self._audit(
+                        normalized,
+                        "message_poll_failed",
+                        str(exc),
+                        severity=AuditSeverity.WARNING,
+                        payload={"source_id": binding.source_id},
+                    )
+            self._maybe_enrich_polled_media(normalized, poll_results)
         pending_count_before_runtime = 0
         consumed_count = 0
         runtime_count = 0
         trade_intent_count = 0
         failed_event_count = 0
         runtime_failed = False
-        if should_run_runtime:
+        if should_run_runtime and self.message_bus_v2_enabled:
+            try:
+                bus = self._require_message_bus_v2()
+                runtime = self._require_runtime_v2_for_trading()
+                pending_stream = bus.pending_stream(
+                    RUNTIME_V2_CONSUMER_ID,
+                    normalized,
+                    limit=event_limit,
+                )
+                pending_count_before_runtime = len(pending_stream)
+                runtime.process_pending_effects(limit=20)
+                for stream_item in pending_stream:
+                    case = runtime.execute_message(
+                        SourceMessageEnvelope.from_stream_item(stream_item)
+                    )
+                    if case.status not in {
+                        RuntimeV2CaseStatus.ADJUDICATED,
+                        RuntimeV2CaseStatus.COMPLETED,
+                        RuntimeV2CaseStatus.PENDING_W3,
+                    }:
+                        raise RuntimeError(
+                            f"Runtime V2 case {case.case_id} did not reach adjudication"
+                        )
+                    bus.commit_stream(RUNTIME_V2_CONSUMER_ID, stream_item)
+                    runtime_count += 1
+                    consumed_count += 1
+                    trade_intent_count += int(
+                        case.route is not None
+                        and case.route.primary_route is RuntimeV2PrimaryRoute.TRADE
+                    )
+            except Exception as exc:
+                runtime_failed = True
+                failed_event_count = max(0, pending_count_before_runtime - consumed_count)
+                self._audit(
+                    normalized,
+                    "runtime_stream_consumption_failed",
+                    str(exc),
+                    severity=AuditSeverity.ERROR,
+                )
+        if (
+            should_run_runtime
+            and not self.message_bus_v2_enabled
+            and self._legacy_monitoring_service_enabled
+        ):
             try:
                 pending = self.monitoring_service.pending_events(
                     ticker=normalized,
                     limit=event_limit,
                 )
-                pending = self._exclude_runtime_ineligible_events(normalized, pending)
                 pending = _runtime_eligible_events(state, pending)
                 pending_count_before_runtime = len(pending)
                 if self.runtime_v2_service is not None:
                     self.runtime_v2_service.process_pending_effects(limit=20)
                     for event in pending:
                         case = self.runtime_v2_service.execute_message(
-                            SourceMessageEnvelope.from_event(event)
+                            _legacy_event_envelope(event)
                         )
                         if case.status not in {
                             RuntimeV2CaseStatus.ADJUDICATED,
@@ -738,25 +864,35 @@ class UnifiedRuntimeSchedulerService:
                     )
             except Exception as exc:
                 runtime_failed = True
-                failed_event_count = max(
-                    0, pending_count_before_runtime - consumed_count
-                )
+                failed_event_count = max(0, pending_count_before_runtime - consumed_count)
                 self._audit(
                     normalized,
                     "runtime_event_consumption_failed",
                     str(exc),
                     severity=AuditSeverity.ERROR,
                 )
-        pending_count_after_runtime = len(
-            self.monitoring_service.pending_events(
-                ticker=normalized,
-                limit=event_limit,
+        if self.message_bus_v2_enabled:
+            pending_count_after_runtime = len(
+                self._require_message_bus_v2().pending_stream(
+                    RUNTIME_V2_CONSUMER_ID,
+                    normalized,
+                    limit=event_limit,
+                )
             )
-        )
+        elif self._legacy_monitoring_service_enabled:
+            pending_count_after_runtime = len(
+                self.monitoring_service.pending_events(
+                    ticker=normalized,
+                    limit=event_limit,
+                )
+            )
+        else:
+            pending_count_after_runtime = 0
         state = self._apply_completed_weekly_update_job(state, now=current_time)
         counters = state.counters.model_copy(
             update={
-                "poll_cycles": state.counters.poll_cycles + 1,
+                "poll_cycles": state.counters.poll_cycles
+                + int(self._legacy_monitoring_service_enabled and not self.message_bus_v2_enabled),
                 "messages_collected": state.counters.messages_collected + poll_messages,
                 "events_created": state.counters.events_created + poll_events,
                 "events_consumed": state.counters.events_consumed + consumed_count,
@@ -859,6 +995,50 @@ class UnifiedRuntimeSchedulerService:
         limit: int = 50,
     ) -> MonitoringRunStatus:
         normalized = _ticker(ticker)
+        if self.message_bus_v2_enabled:
+            bus = self._require_message_bus_v2()
+            bindings = bus.repository.list_bindings(ticker=normalized)
+            poll_values = bus.repository.list_poll_states(ticker=normalized)
+            v2_poll_states = {value.binding_id: value for value in poll_values}
+            pending = bus.pending_stream(RUNTIME_V2_CONSUMER_ID, normalized, limit=limit)
+            recent_stream = bus.repository.read_stream(normalized, after_offset=0, limit=limit)
+            recent_messages = bus.repository.list_standard(ticker=normalized, limit=limit)
+            active_states = [
+                v2_poll_states[binding.binding_id]
+                for binding in bindings
+                if binding.enabled and binding.binding_id in v2_poll_states
+            ]
+            last_error_state = max(
+                (value for value in active_states if value.last_failure_at),
+                key=lambda value: value.last_failure_at or datetime.min.replace(tzinfo=UTC),
+                default=None,
+            )
+            return MonitoringRunStatus(
+                ticker=normalized,
+                session_phase=market_session_phase(_utc(now)),
+                configured_sources=[
+                    MonitoringBindingStatus(
+                        binding=binding,
+                        poll_state=v2_poll_states.get(binding.binding_id),
+                    )
+                    for binding in bindings
+                ],
+                pending_event_count=len(pending),
+                recent_event_count=len(recent_stream),
+                recent_message_count=len(recent_messages),
+                last_success_at=_latest(value.last_success_at for value in active_states),
+                last_error_at=(
+                    last_error_state.last_failure_at if last_error_state else None
+                ),
+                last_error_message=(
+                    last_error_state.last_error_message if last_error_state else None
+                ),
+            )
+        if not self._legacy_monitoring_service_enabled:
+            return MonitoringRunStatus(
+                ticker=normalized,
+                session_phase=market_session_phase(_utc(now)),
+            )
         snapshot = self.monitoring_service.status_snapshot(ticker=normalized, limit=limit)
         poll_states = {state.binding_id: state for state in snapshot.poll_states}
         sources = {source.source_id: source for source in snapshot.sources}
@@ -915,6 +1095,23 @@ class UnifiedRuntimeSchedulerService:
         limit: int = 50,
     ) -> EventProcessingStatus:
         normalized = _ticker(ticker)
+        if self.message_bus_v2_enabled:
+            bus = self._require_message_bus_v2()
+            pending = bus.pending_stream(RUNTIME_V2_CONSUMER_ID, normalized, limit=limit)
+            offset = bus.repository.get_consumer_offset(RUNTIME_V2_CONSUMER_ID, normalized)
+            state = self.repository.get_state(normalized)
+            return EventProcessingStatus(
+                ticker=normalized,
+                pending_event_count=len(pending),
+                consumed_event_count=offset.stream_offset,
+                runtime_execution_count=(
+                    state.counters.runtime_executions if state is not None else 0
+                ),
+                exception_count=0,
+                last_execution_at=(state.last_event_consumed_at if state is not None else None),
+            )
+        if not self._legacy_monitoring_service_enabled:
+            return EventProcessingStatus(ticker=normalized)
         pending_events = self.monitoring_service.pending_events(ticker=normalized, limit=limit)
         recent_events = self.monitoring_service.recent_events(ticker=normalized, limit=limit)
         observations = self.runtime_service.runtime_observations(ticker=normalized)
@@ -960,6 +1157,23 @@ class UnifiedRuntimeSchedulerService:
             payload=saved.model_dump(mode="json"),
         )
         return saved
+
+    def _require_message_bus_v2(self) -> MessageBusV2Service:
+        if not self.message_bus_v2_enabled or self.message_bus_v2_service is None:
+            raise RuntimeError("Message Bus v2 is not enabled or configured")
+        return self.message_bus_v2_service
+
+    def _require_crawler_plane(self) -> CrawlerPlaneService:
+        if not self.message_bus_v2_enabled or self.crawler_plane_service is None:
+            raise RuntimeError("Crawler Plane requires Message Bus v2")
+        return self.crawler_plane_service
+
+    def _require_runtime_v2_for_trading(self) -> PersistentRuntimeV2Service:
+        if self.runtime_v2_service is None:
+            raise RuntimeModeUnavailable(
+                "monitor mode 'trading' requires DOXAGENT_PERSISTENT_RUNTIME_V2_ENABLED"
+            )
+        return self.runtime_v2_service
 
     def _ensure_documents(
         self,
@@ -1038,6 +1252,17 @@ class UnifiedRuntimeSchedulerService:
         )
         return bindings
 
+    def _bindings_after_document_update(
+        self,
+        ticker: str,
+        bundle: DocumentBundle,
+    ) -> list[object]:
+        if self.message_bus_v2_enabled:
+            return list(self._require_message_bus_v2().repository.list_bindings(ticker=ticker))
+        if self._legacy_monitoring_service_enabled:
+            return list(self._apply_monitoring_config(ticker, bundle))
+        return []
+
     def _due_bindings_for_phase(
         self,
         ticker: str,
@@ -1097,7 +1322,7 @@ class UnifiedRuntimeSchedulerService:
             if result.event_count <= 0:
                 continue
             source = self.monitoring_service.repository.get_source(result.source_id)
-            if source is not None and source.source_type is SourceType.MEDIA:
+            if source is not None and source.source_type.value == "media":
                 return True
         return False
 
@@ -1258,7 +1483,7 @@ class UnifiedRuntimeSchedulerService:
                 },
                 deep=True,
             )
-        bindings = self._apply_monitoring_config(state.ticker, bundle)
+        bindings = self._bindings_after_document_update(state.ticker, bundle)
         self._clear_runtime_context_cache(state.ticker)
         self._audit(
             state.ticker,
@@ -1282,47 +1507,6 @@ class UnifiedRuntimeSchedulerService:
             },
             deep=True,
         )
-
-    def _exclude_runtime_ineligible_events(
-        self,
-        ticker: str,
-        events: list[EventStreamItem],
-    ) -> list[EventStreamItem]:
-        eligible: list[EventStreamItem] = []
-        excluded: list[EventStreamItem] = []
-        for event in events:
-            if self._is_social_runtime_excluded_event(event):
-                excluded.append(event)
-            else:
-                eligible.append(event)
-        if not excluded:
-            return eligible
-        for event in excluded:
-            self.monitoring_service.mark_event_consumed(event.event_id)
-        self._audit(
-            ticker,
-            "runtime_social_events_excluded",
-            "Social source events were excluded from Persistent Runtime consumption.",
-            payload={
-                "reason": "social_sources_temporarily_message_bus_only",
-                "event_count": len(excluded),
-                "source_ids": sorted({event.source_id for event in excluded}),
-                "event_ids": [event.event_id for event in excluded[:20]],
-                "standard_message_ids": [event.standard_message_id for event in excluded[:20]],
-            },
-        )
-        return eligible
-
-    def _is_social_runtime_excluded_event(self, event: EventStreamItem) -> bool:
-        if self.runtime_v2_service is not None and self.runtime_v2_service.social_enabled:
-            return False
-        if event.source_id.strip().lower() in SOCIAL_RUNTIME_EXCLUDED_SOURCE_IDS:
-            return True
-        payload_source_type = str(event.payload.get("source_type") or "").lower()
-        if payload_source_type == SourceType.SOCIAL.value:
-            return True
-        source = self.monitoring_service.repository.get_source(event.source_id)
-        return source is not None and source.source_type is SourceType.SOCIAL
 
     def _maybe_run_weekly_update(self, state: TickerRunState, *, now: datetime) -> TickerRunState:
         if not _weekly_update_due(state, now):
@@ -1351,7 +1535,7 @@ class UnifiedRuntimeSchedulerService:
                     },
                     deep=True,
                 )
-            bindings = self._apply_monitoring_config(state.ticker, bundle)
+            bindings = self._bindings_after_document_update(state.ticker, bundle)
             self._clear_runtime_context_cache(state.ticker)
             self._audit(
                 state.ticker,
@@ -1439,9 +1623,7 @@ class UnifiedRuntimeSchedulerService:
                 try:
                     bundle = loader(state.ticker, state.document_run_id, now=now)
                     if not isinstance(bundle, DocumentBundle):
-                        raise TypeError(
-                            "Runtime document provider returned an invalid bundle"
-                        )
+                        raise TypeError("Runtime document provider returned an invalid bundle")
                     return bundle.status
                 except RunNotFoundError:
                     pass
@@ -1590,8 +1772,11 @@ def _resolve_monitor_mode(
     if isinstance(value, MonitorMode):
         resolved = value
     else:
+        normalized = value.strip().lower()
+        if normalized in {"paper_trading", "broker_trading"}:
+            normalized = MonitorMode.TRADING.value
         try:
-            resolved = MonitorMode(value.strip())
+            resolved = MonitorMode(normalized)
         except ValueError as exc:
             raise UnsupportedMonitorMode(str(value)) from exc
     if resolved not in ENABLED_MONITOR_MODES:
@@ -1605,7 +1790,7 @@ def _state_monitor_mode(state: TickerRunState | None) -> MonitorMode:
     metadata_value = state.metadata.get("monitor_mode")
     if isinstance(metadata_value, str):
         try:
-            return MonitorMode(metadata_value)
+            return _resolve_monitor_mode(metadata_value)
         except ValueError:
             pass
     return state.monitor_mode
@@ -1620,13 +1805,11 @@ def _monitor_mode_metadata(
 ) -> dict[str, object]:
     metadata = dict(state.metadata)
     metadata["monitor_mode"] = monitor_mode.value
-    if monitor_mode is MonitorMode.PAPER_TRADING and (
-        reset_paper_window or not metadata.get("paper_trading_enabled_at")
+    if monitor_mode is MonitorMode.TRADING and (
+        reset_paper_window or not metadata.get("trading_enabled_at")
     ):
-        metadata["paper_trading_enabled_at"] = (
-            now.astimezone(UTC).isoformat().replace("+00:00", "Z")
-        )
-        metadata["paper_trading_replays_historical_pending_events"] = False
+        metadata["trading_enabled_at"] = now.astimezone(UTC).isoformat().replace("+00:00", "Z")
+        metadata["trading_replays_historical_pending_stream"] = False
     return metadata
 
 
@@ -1634,10 +1817,37 @@ def _runtime_eligible_events(
     state: TickerRunState,
     events: list[EventStreamItem],
 ) -> list[EventStreamItem]:
-    enabled_at = _metadata_datetime(state.metadata.get("paper_trading_enabled_at"))
+    enabled_at = _metadata_datetime(
+        state.metadata.get("trading_enabled_at") or state.metadata.get("paper_trading_enabled_at")
+    )
     if enabled_at is None:
         return events
     return [event for event in events if event.event_time.astimezone(UTC) >= enabled_at]
+
+
+def _legacy_event_envelope(event: EventStreamItem) -> SourceMessageEnvelope:
+    """Compatibility adapter for explicitly injected legacy unit-test buses."""
+
+    message = LegacyStandardMessage.model_validate(event.payload)
+    if message.url is None or message.published_at is None:
+        raise ValueError("legacy event lacks the URL/published_at required by Runtime v2")
+    return SourceMessageEnvelope(
+        source_message_id=message.standard_message_id,
+        source_id=message.source_id,
+        binding_id=message.binding_id,
+        url=message.url,
+        published_at=message.published_at,
+        collected_at=message.collected_at,
+        normalized_at=message.normalized_at,
+        message_bus_event_time=event.event_time,
+        stream_item_id=f"legacy:{event.event_id}",
+        member_count=1,
+        snapshot=SourceMessageSnapshot(
+            ticker=message.ticker,
+            title=message.title,
+            body=message.body,
+        ),
+    )
 
 
 def _metadata_datetime(value: object) -> datetime | None:

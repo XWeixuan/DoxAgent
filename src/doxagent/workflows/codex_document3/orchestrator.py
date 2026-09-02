@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import re
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Literal, Protocol, TypeVar
@@ -28,6 +29,7 @@ if TYPE_CHECKING:
 from .assembler import apply_patch, assemble_initial_policy_set, build_coverage_map
 from .identity import allocate_stable_policy_ids
 from .inputs import Document3InputPreparer, PreparedDocument3Inputs
+from .recovery import RecoveryResult, parse_json, parse_jsonl
 from .repository import Document3PolicyRepository
 from .runner import (
     INITIALIZE_BUSINESS_INPUT_PATHS,
@@ -45,13 +47,20 @@ from .schema import (
     FrozenInputFile,
     O3RunResult,
     O3RunStatus,
+    PathStatus,
     Policy,
     PolicyPatchSet,
     PolicySet,
     PublicationState,
     ReviewResult,
     TriggerCalibrationRecord,
+    TriggerCalibrationStageStatus,
     TriggerCalibrationState,
+    TriggerDisposition,
+    TriggerPathDisposition,
+    ValidationFinding,
+    ValidationScope,
+    ValidationSeverity,
     WaveState,
     WorklistEntry,
 )
@@ -62,6 +71,7 @@ from .validator import (
 )
 
 ModelT = TypeVar("ModelT", bound=BaseModel)
+logger = logging.getLogger(__name__)
 
 
 class Document3RuntimeRepository(Protocol):
@@ -78,6 +88,12 @@ class Document3RuntimeRepository(Protocol):
     def get_checkpoint(self, run_id: str) -> WorkflowCheckpoint | None: ...
 
 
+class MonitoringO4PublicationTrigger(Protocol):
+    def on_policy_published(
+        self, *, policy_set: PolicySet, document2: Document2Document
+    ) -> None: ...
+
+
 class Document3Orchestrator:
     def __init__(
         self,
@@ -87,12 +103,14 @@ class Document3Orchestrator:
         policy_repository: Document3PolicyRepository,
         runtime_repository: Document3RuntimeRepository,
         published_storage: PublishedDocumentStorage | None = None,
+        monitoring_o4_trigger: MonitoringO4PublicationTrigger | None = None,
     ) -> None:
         self._inputs = input_preparer
         self._agent = agent_runner
         self._policy_repository = policy_repository
         self._runtime_repository = runtime_repository
         self._published_storage = published_storage
+        self._monitoring_o4_trigger = monitoring_o4_trigger
 
     async def initialize(
         self,
@@ -114,6 +132,7 @@ class Document3Orchestrator:
             )
             if published is None:
                 raise ValueError("Published D3 bundle has no canonical Policy Set")
+            await self._enqueue_monitoring_o4(published)
             return O3RunResult(
                 status=(
                     O3RunStatus.COMPLETED
@@ -147,6 +166,7 @@ class Document3Orchestrator:
             )
         )
         active_node: CodexD3Node | None = None
+        recovery_findings: list[ValidationFinding] = []
         try:
             inventory = await self._agent.workspace.inventory(selected_run_id)
             workspace_paths = {item.relative_path for item in inventory.files}
@@ -201,22 +221,64 @@ class Document3Orchestrator:
             thread_id: str | None = None
 
             if CodexD3Node.O3_TRIGGER_CALIBRATION in checkpoint.completed_nodes:
-                await self._assert_agent_write_boundary(
-                    selected_run_id, initialize=True
+                recovery_findings.extend(
+                    await self._assert_agent_write_boundary(selected_run_id, initialize=True)
                 )
                 await self._verify_input_manifest(selected_run_id)
                 try:
-                    await self._validate_stage_a_checkpoint(
-                        selected_run_id,
-                        prepared,
-                        require_pending_worklist=False,
+                    recovery_findings.extend(
+                        await self._validate_stage_a_checkpoint(
+                            selected_run_id,
+                            prepared,
+                            require_pending_worklist=False,
+                        )
                     )
                 except (FileNotFoundError, ValueError):
                     self._reset_from_stage_a(checkpoint)
 
+            # A prior process may have failed after a successful SDK turn but before
+            # the old strict checkpoint parser completed. Recover usable Stage-A
+            # artifacts before spending another model turn or clearing progress.
+            if CodexD3Node.O3_TRIGGER_CALIBRATION not in checkpoint.completed_nodes:
+                current_inventory = await self._agent.workspace.inventory(selected_run_id)
+                worklist_file = next(
+                    (
+                        item
+                        for item in current_inventory.files
+                        if item.relative_path == "output/work/worklist.jsonl"
+                    ),
+                    None,
+                )
+                if worklist_file is not None and worklist_file.size_bytes > 0:
+                    try:
+                        recovered = await self._validate_stage_a_checkpoint(
+                            selected_run_id,
+                            prepared,
+                            require_pending_worklist=True,
+                        )
+                    except ValueError:
+                        pass
+                    else:
+                        recovery_findings.extend(recovered)
+                        recovery_findings.append(
+                            self._recovery_finding(
+                                "STAGE_A_CHECKPOINT_RECOVERED",
+                                "Existing Stage-A artifacts were recovered without "
+                                "rerunning Node A.",
+                                scope=ValidationScope.STAGE,
+                                action="resume_from_policy_compile",
+                            )
+                        )
+                        self._complete_node(checkpoint, CodexD3Node.O3_TRIGGER_CALIBRATION)
+
             if CodexD3Node.O3_TRIGGER_CALIBRATION not in checkpoint.completed_nodes:
                 active_node = CodexD3Node.O3_TRIGGER_CALIBRATION
                 self._start_node(checkpoint, active_node)
+                await self._agent.prepare_node_contracts(
+                    run_id=selected_run_id,
+                    node=active_node,
+                )
+                boundary_before = await self._workspace_snapshot(selected_run_id)
                 stage_a_result, thread_id = await self._agent.run_trigger_calibration(
                     run_id=selected_run_id,
                     ticker=normalized_ticker,
@@ -224,30 +286,53 @@ class Document3Orchestrator:
                     thread_id=thread_id,
                 )
                 if stage_a_result.status != "COMPLETED":
-                    raise ValueError("O3 Trigger Calibration declared a failed turn")
-                await self._assert_agent_write_boundary(selected_run_id, initialize=True)
+                    recovery_findings.append(
+                        self._recovery_finding(
+                            "STAGE_A_AGENT_DECLARED_FAILURE",
+                            "O3 Trigger Calibration declared failure; workspace "
+                            "artifacts decide progression.",
+                            scope=ValidationScope.STAGE,
+                            action="inspect_workspace_artifacts",
+                        )
+                    )
+                recovery_findings.extend(
+                    await self._assert_agent_write_boundary(
+                        selected_run_id,
+                        initialize=True,
+                        baseline=boundary_before,
+                    )
+                )
                 await self._verify_input_manifest(selected_run_id)
-                await self._validate_stage_a_checkpoint(
-                    selected_run_id,
-                    prepared,
-                    require_pending_worklist=True,
+                recovery_findings.extend(
+                    await self._validate_stage_a_checkpoint(
+                        selected_run_id,
+                        prepared,
+                        require_pending_worklist=True,
+                    )
                 )
                 self._complete_node(checkpoint, active_node)
                 active_node = None
 
             if CodexD3Node.O3_POLICY_COMPILE in checkpoint.completed_nodes:
-                await self._assert_agent_write_boundary(
-                    selected_run_id, initialize=True
+                recovery_findings.extend(
+                    await self._assert_agent_write_boundary(selected_run_id, initialize=True)
                 )
                 await self._verify_input_manifest(selected_run_id)
                 try:
-                    await self._validate_compile_checkpoint(selected_run_id, prepared)
+                    recovery_findings.extend(
+                        await self._validate_compile_checkpoint(selected_run_id, prepared)
+                    )
                 except (FileNotFoundError, ValueError):
                     self._reset_from_compile(checkpoint)
 
             if CodexD3Node.O3_POLICY_COMPILE not in checkpoint.completed_nodes:
                 active_node = CodexD3Node.O3_POLICY_COMPILE
                 self._start_node(checkpoint, active_node)
+                await self._agent.prepare_node_contracts(
+                    run_id=selected_run_id,
+                    node=active_node,
+                )
+                boundary_before = await self._workspace_snapshot(selected_run_id)
                 compile_result, thread_id = await self._agent.run_policy_compile(
                     run_id=selected_run_id,
                     ticker=normalized_ticker,
@@ -258,29 +343,55 @@ class Document3Orchestrator:
                     O3RunStatus.COMPLETED,
                     O3RunStatus.PARTIAL,
                 }:
-                    raise ValueError("O3 Policy Compile did not complete its lifecycle")
-                await self._assert_agent_write_boundary(selected_run_id, initialize=True)
+                    recovery_findings.append(
+                        self._recovery_finding(
+                            "COMPILE_AGENT_DECLARED_NONTERMINAL",
+                            "O3 Policy Compile returned a nonterminal status; "
+                            "artifacts decide progression.",
+                            scope=ValidationScope.STAGE,
+                            action="continue_to_final_review",
+                        )
+                    )
+                recovery_findings.extend(
+                    await self._assert_agent_write_boundary(
+                        selected_run_id,
+                        initialize=True,
+                        baseline=boundary_before,
+                    )
+                )
                 await self._verify_input_manifest(selected_run_id)
-                await self._validate_compile_checkpoint(selected_run_id, prepared)
+                recovery_findings.extend(
+                    await self._validate_compile_checkpoint(selected_run_id, prepared)
+                )
                 self._complete_node(checkpoint, active_node)
                 active_node = None
 
-            await self._assert_agent_write_boundary(selected_run_id, initialize=True)
+            recovery_findings.extend(
+                await self._assert_agent_write_boundary(selected_run_id, initialize=True)
+            )
             await self._verify_input_manifest(selected_run_id)
             review: ReviewResult
             if CodexD3Node.O3_FINAL_REVIEW in checkpoint.completed_nodes:
-                try:
-                    review = await self._read_json(
-                        selected_run_id,
-                        "output/work/final_review_result.json",
-                        ReviewResult,
-                    )
-                except (FileNotFoundError, ValueError):
+                review_result = await self._read_json_recoverable(
+                    selected_run_id,
+                    "output/work/final_review_result.json",
+                    ReviewResult,
+                )
+                recovery_findings.extend(review_result.findings)
+                if review_result.values:
+                    review = review_result.values[0]
+                else:
                     self._reset_final_review(checkpoint)
             if CodexD3Node.O3_FINAL_REVIEW not in checkpoint.completed_nodes:
-                worklist = await self._read_jsonl(
+                work_result = await self._read_jsonl_recoverable(
                     selected_run_id, "output/work/worklist.jsonl", WorklistEntry
                 )
+                recovery_findings.extend(work_result.findings)
+                worklist = work_result.values
+                if prepared.expected_gap_refs and not worklist:
+                    raise ValueError(
+                        "D3 Final Review has no usable Worklist after bounded recovery"
+                    )
                 provisional = build_coverage_map(
                     ticker=normalized_ticker,
                     worklist=worklist,
@@ -295,6 +406,11 @@ class Document3Orchestrator:
                 )
                 active_node = CodexD3Node.O3_FINAL_REVIEW
                 self._start_node(checkpoint, active_node)
+                await self._agent.prepare_node_contracts(
+                    run_id=selected_run_id,
+                    node=active_node,
+                )
+                boundary_before = await self._workspace_snapshot(selected_run_id)
                 review, thread_id = await self._agent.run_final_review(
                     run_id=selected_run_id,
                     ticker=normalized_ticker,
@@ -302,51 +418,109 @@ class Document3Orchestrator:
                     thread_id=thread_id,
                 )
                 if review.status == "REVIEW_BLOCKED" and review.blocking_issue_count:
-                    raise ValueError(
-                        "O3 Final Global Pass reported a structural blocking issue"
+                    recovery_findings.append(
+                        self._recovery_finding(
+                            "FINAL_REVIEW_AGENT_BLOCK_REQUEST",
+                            "Final Review requested blocking; the request is advisory "
+                            "and the runtime continued PARTIAL.",
+                            scope=ValidationScope.STAGE,
+                            affected_ids=[
+                                policy_id
+                                for issue in review.issues
+                                for policy_id in issue.affected_policy_ids
+                            ],
+                            action="continue_partial",
+                        )
                     )
+                recovery_findings.extend(
+                    ValidationFinding(
+                        code=issue.code or "FINAL_REVIEW_ISSUE",
+                        message=issue.message,
+                        severity=ValidationSeverity.RECOVERABLE,
+                        scope=ValidationScope.RECORD,
+                        recovery_action="continue_partial",
+                        affected_ids=issue.affected_policy_ids,
+                    )
+                    for issue in review.issues
+                )
                 await self._agent.workspace.write_text(
                     selected_run_id,
                     "output/work/final_review_result.json",
                     review.model_dump_json(indent=2),
                 )
-                await self._assert_agent_write_boundary(selected_run_id, initialize=True)
+                recovery_findings.extend(
+                    await self._assert_agent_write_boundary(
+                        selected_run_id,
+                        initialize=True,
+                        baseline=boundary_before,
+                    )
+                )
                 await self._verify_input_manifest(selected_run_id)
                 self._complete_node(checkpoint, active_node)
                 active_node = None
 
             # Final Review may edit every mutable initialize artifact, so the
             # frozen inputs and write boundary are checked again before reread.
-            await self._assert_agent_write_boundary(selected_run_id, initialize=True)
+            recovery_findings.extend(
+                await self._assert_agent_write_boundary(selected_run_id, initialize=True)
+            )
             await self._verify_input_manifest(selected_run_id)
             active_node = CodexD3Node.VALIDATE
             self._start_node(checkpoint, active_node)
-            worklist = await self._read_jsonl(
-                selected_run_id, "output/work/worklist.jsonl", WorklistEntry
+            (
+                usable_stage,
+                worklist,
+                trigger_calibrations,
+                trigger_state,
+                stage_findings,
+            ) = await self._recover_stage_a_artifacts(
+                selected_run_id,
+                prepared,
+                require_pending_worklist=False,
             )
-            calibration_log = await self._read_jsonl(
+            recovery_findings.extend(stage_findings)
+            if not usable_stage:
+                raise ValueError("D3 final assembly has no usable Stage-A Worklist")
+            calibration_result = await self._read_jsonl_recoverable(
                 selected_run_id,
                 "output/work/calibration_log.jsonl",
                 CalibrationLogEntry,
             )
-            trigger_calibrations = await self._read_jsonl(
-                selected_run_id,
-                "output/work/trigger_calibrations.jsonl",
-                TriggerCalibrationRecord,
-            )
-            trigger_state = await self._read_json(
-                selected_run_id,
-                "output/work/trigger_calibration_state.json",
-                TriggerCalibrationState,
-            )
-            wave_state = await self._read_json(
+            recovery_findings.extend(calibration_result.findings)
+            wave_result = await self._read_json_recoverable(
                 selected_run_id, "output/work/wave_state.json", WaveState
             )
-            reviewed_coverage = await self._read_json(
+            recovery_findings.extend(wave_result.findings)
+            reviewed_coverage_result = await self._read_json_recoverable(
                 selected_run_id, "output/work/coverage_map.json", CoverageMap
             )
+            recovery_findings.extend(reviewed_coverage_result.findings)
+            if reviewed_coverage_result.values:
+                reviewed_coverage = reviewed_coverage_result.values[0]
+            else:
+                reviewed_coverage = build_coverage_map(
+                    ticker=normalized_ticker,
+                    worklist=worklist,
+                    expected_gap_refs=prepared.expected_gap_refs,
+                    failed_shells=prepared.failed_shells,
+                    warnings=["Final Review coverage_map was rebuilt deterministically."],
+                )
             if reviewed_coverage.ticker.upper() != normalized_ticker:
-                raise ValueError("Final Review coverage_map ticker mismatch")
+                recovery_findings.append(
+                    self._recovery_finding(
+                        "COVERAGE_TICKER_REBUILT",
+                        "Final Review coverage_map ticker mismatch was rebuilt deterministically.",
+                        scope=ValidationScope.FILE,
+                        action="rebuild_coverage_map",
+                    )
+                )
+                reviewed_coverage = build_coverage_map(
+                    ticker=normalized_ticker,
+                    worklist=worklist,
+                    expected_gap_refs=prepared.expected_gap_refs,
+                    failed_shells=prepared.failed_shells,
+                    warnings=reviewed_coverage.warnings,
+                )
             reviewed_coverage_paths = {
                 (
                     gap.shell_id,
@@ -378,21 +552,78 @@ class Document3Orchestrator:
                     "rebuilt deterministically."
                 ]
             )
-            policies = await self._read_policy_drafts(selected_run_id)
+            policies, policy_findings = await self._read_policy_drafts_recoverable(selected_run_id)
+            recovery_findings.extend(policy_findings)
+            known_policy_ids = {item.policy_id for item in policies}
+            reconciled_worklist: list[WorklistEntry] = []
+            for item in worklist:
+                valid_policy_ids = [
+                    policy_id for policy_id in item.policy_ids if policy_id in known_policy_ids
+                ]
+                if item.status is PathStatus.COMPILED and not valid_policy_ids:
+                    recovery_findings.append(
+                        self._recovery_finding(
+                            "COMPILED_PATH_DEMOTED_UNRESOLVED",
+                            f"compiled path had no usable Policy and was demoted: {item.path_id}",
+                            affected_ids=[item.path_id, *item.policy_ids],
+                            action="demote_path_unresolved",
+                        )
+                    )
+                    item = item.model_copy(
+                        update={
+                            "status": PathStatus.UNRESOLVED,
+                            "policy_ids": [],
+                            "unresolved_reason": (
+                                item.unresolved_reason
+                                or "No canonicalizable Policy draft remained after recovery."
+                            ),
+                        }
+                    )
+                elif valid_policy_ids != item.policy_ids:
+                    item = item.model_copy(update={"policy_ids": valid_policy_ids})
+                reconciled_worklist.append(item)
+            worklist = reconciled_worklist
+            await self._agent.workspace.write_text(
+                selected_run_id,
+                "output/work/worklist.jsonl",
+                "".join(item.model_dump_json() + "\n" for item in worklist),
+            )
+            wave_state = WaveState(
+                completed_shell_ids=sorted({item[0] for item in prepared.expected_gap_refs}),
+                current_shell_id=None,
+                completed_path_ids=[
+                    item.path_id for item in worklist if item.status is not PathStatus.PENDING
+                ],
+            )
+            await self._agent.workspace.write_text(
+                selected_run_id,
+                "output/work/wave_state.json",
+                wave_state.model_dump_json(indent=2),
+            )
             validation = validate_initial_artifacts(
                 expected_gap_refs=prepared.expected_gap_refs,
                 worklist=worklist,
-                calibration_log=calibration_log,
+                calibration_log=calibration_result.values,
                 policies=policies,
                 trigger_calibrations=trigger_calibrations,
                 trigger_state=trigger_state,
                 wave_state=wave_state,
             )
-            if not validation.valid:
+            if validation.blocking_findings:
                 raise ValueError(
                     "D3 deterministic structural validation failed: "
                     + "; ".join(item.message for item in validation.blocking_findings)
                 )
+            validation = validation.model_copy(
+                update={
+                    "findings": [*recovery_findings, *validation.findings],
+                    "publication_state": (
+                        PublicationState.PARTIAL
+                        if recovery_findings or validation.findings
+                        else validation.publication_state
+                    ),
+                }
+            )
             if (
                 prepared.document2_ref.publication_state is PublicationState.PARTIAL
                 or prepared.warnings
@@ -465,6 +696,7 @@ class Document3Orchestrator:
                     published_at=handoff.published_at,
                 )
             )
+            await self._enqueue_monitoring_o4(policy_set, prepared.document2)
             unresolved = sum(item.status.value == "UNRESOLVED" for item in canonical_worklist)
             return O3RunResult(
                 status=(
@@ -544,6 +776,7 @@ class Document3Orchestrator:
                         "trading_date": maintenance_feed.trading_date.isoformat(),
                         "trade_record_count": len(maintenance_feed.trade_records),
                         "badcase_record_count": len(maintenance_feed.badcase_records),
+                        "w3_coverage_gap_count": len(maintenance_feed.w3_coverage_gaps),
                         "reference_from_version": (
                             maintenance_feed.reference_view_delta.from_library_version
                         ),
@@ -554,20 +787,33 @@ class Document3Orchestrator:
                 ),
             },
             maintenance_feed_json=(
-                maintenance_feed.model_dump_json(indent=2)
-                if maintenance_feed is not None
-                else None
+                maintenance_feed.model_dump_json(indent=2) if maintenance_feed is not None else None
             ),
         )
+        await self._agent.prepare_node_contracts(
+            run_id=selected_run_id,
+            node=CodexD3Node.O3_MAINTAIN,
+        )
+        boundary_before = await self._workspace_snapshot(selected_run_id)
         await self._agent.run_maintain(
             run_id=selected_run_id,
             ticker=normalized_ticker,
             cutoff_at=cutoff_at or utc_now(),
         )
-        await self._assert_agent_write_boundary(selected_run_id)
-        patch = await self._read_json(
+        boundary_findings = await self._assert_agent_write_boundary(
+            selected_run_id, baseline=boundary_before
+        )
+        patch_result = await self._read_json_recoverable(
             selected_run_id, "output/work/policy_patch.json", PolicyPatchSet
         )
+        if not patch_result.values:
+            return O3RunResult(
+                status=O3RunStatus.DEGRADED,
+                policy_count=len(current.policies),
+                warning_count=max(1, len(boundary_findings) + len(patch_result.findings)),
+                policy_set_version=current.policy_set_version,
+            )
+        patch = patch_result.values[0]
         stable_upserts, _ = allocate_stable_policy_ids(
             ticker=normalized_ticker,
             drafts=patch.upsert_policies,
@@ -588,11 +834,18 @@ class Document3Orchestrator:
                 policy_count=len(current.policies),
                 policy_set_version=current.policy_set_version,
             )
-        if validation.findings:
+        if validation.findings or boundary_findings or patch_result.findings:
             updated = updated.model_copy(update={"publication_state": PublicationState.PARTIAL})
         coverage = CoverageMap(
             ticker=normalized_ticker,
-            warnings=[item.message for item in validation.findings],
+            warnings=[
+                item.message
+                for item in [
+                    *boundary_findings,
+                    *patch_result.findings,
+                    *validation.findings,
+                ]
+            ],
         )
         self._runtime_repository.save_bundle(
             Document3Bundle(
@@ -633,6 +886,7 @@ class Document3Orchestrator:
                 published_at=handoff.published_at,
             )
         )
+        await self._enqueue_monitoring_o4(updated)
         return O3RunResult(
             status=(
                 O3RunStatus.PARTIAL
@@ -643,6 +897,34 @@ class Document3Orchestrator:
             warning_count=len(validation.findings),
             policy_set_version=updated.policy_set_version,
         )
+
+    async def _enqueue_monitoring_o4(
+        self,
+        policy_set: PolicySet,
+        document2: Document2Document | None = None,
+    ) -> None:
+        """Best-effort durable enqueue; O4 work never extends D3's critical path."""
+
+        if self._monitoring_o4_trigger is None:
+            return
+        try:
+            if document2 is None:
+                prepared = await self._inputs.prepare_initialize(
+                    ticker=policy_set.ticker,
+                    document2_run_id=policy_set.document2_ref.run_id,
+                )
+                document2 = prepared.document2
+            self._monitoring_o4_trigger.on_policy_published(
+                policy_set=policy_set,
+                document2=document2,
+            )
+        except Exception:
+            # Publication is authoritative and must not roll back because a downstream
+            # background enqueue failed. Operators can replay the idempotent enqueue.
+            logger.exception(
+                "failed to enqueue O4 after D3 publication",
+                extra={"ticker": policy_set.ticker},
+            )
 
     async def _create_input_manifest(self, run_id: str) -> Document3InputManifest:
         inventory = await self._agent.workspace.inventory(run_id)
@@ -666,9 +948,7 @@ class Document3Orchestrator:
         return manifest
 
     async def _verify_input_manifest(self, run_id: str) -> Document3InputManifest:
-        manifest = await self._read_json(
-            run_id, INPUT_MANIFEST_PATH, Document3InputManifest
-        )
+        manifest = await self._read_json(run_id, INPUT_MANIFEST_PATH, Document3InputManifest)
         expected_paths = set(INITIALIZE_BUSINESS_INPUT_PATHS)
         manifest_paths = {item.relative_path for item in manifest.files}
         if manifest_paths != expected_paths:
@@ -692,21 +972,16 @@ class Document3Orchestrator:
         requested_event_library_version: int | None,
     ) -> tuple[PreparedDocument3Inputs, Document3InitializeTask]:
         await self._verify_input_manifest(run_id)
-        task = await self._read_json(
-            run_id, "context/document3/task.json", Document3InitializeTask
-        )
+        task = await self._read_json(run_id, "context/document3/task.json", Document3InitializeTask)
         if task.run_id != run_id or task.ticker.upper() != ticker.upper():
             raise ValueError("Frozen D3 task does not match the requested run/ticker")
         if task.document2_ref.run_id != document2_run_id:
             raise ValueError("resume document2_run_id differs from frozen task context")
         if (
             requested_event_library_version is not None
-            and requested_event_library_version
-            != task.requested_event_library_version
+            and requested_event_library_version != task.requested_event_library_version
         ):
-            raise ValueError(
-                "resume event_library_version differs from frozen task context"
-            )
+            raise ValueError("resume event_library_version differs from frozen task context")
         document2 = await self._read_json(
             run_id, "context/document3/document2.json", Document2Document
         )
@@ -717,9 +992,7 @@ class Document3Orchestrator:
         )
         previous_content = (previous_response.content or "").strip()
         previous = (
-            None
-            if previous_content == "null"
-            else PolicySet.model_validate_json(previous_content)
+            None if previous_content == "null" else PolicySet.model_validate_json(previous_content)
         )
         if previous is not None and previous.ticker.upper() != ticker.upper():
             raise ValueError("Frozen Previous Policy Set ticker does not match D3 task")
@@ -747,76 +1020,343 @@ class Document3Orchestrator:
             task,
         )
 
+    @staticmethod
+    def _recovery_finding(
+        code: str,
+        message: str,
+        *,
+        scope: ValidationScope = ValidationScope.RECORD,
+        affected_ids: list[str] | None = None,
+        action: str = "continue_partial",
+    ) -> ValidationFinding:
+        return ValidationFinding(
+            code=code,
+            message=message,
+            severity=ValidationSeverity.RECOVERABLE,
+            scope=scope,
+            recovery_action=action,
+            affected_ids=affected_ids or [],
+        )
+
+    async def _read_jsonl_recoverable(
+        self, run_id: str, path: str, model: type[ModelT]
+    ) -> RecoveryResult[ModelT]:
+        try:
+            response = await self._agent.workspace.read_text(run_id, path)
+        except FileNotFoundError:
+            return RecoveryResult(
+                values=[],
+                findings=[
+                    self._recovery_finding(
+                        "ARTIFACT_FILE_MISSING",
+                        f"recoverable Agent artifact is missing: {path}",
+                        scope=ValidationScope.FILE,
+                        action="rebuild_or_continue_partial",
+                    )
+                ],
+            )
+        result = parse_jsonl(response.content or "", path=path, model=model)
+        if result.changed:
+            content = "".join(item.model_dump_json() + "\n" for item in result.values)
+            await self._agent.workspace.write_text(run_id, path, content)
+        return result
+
+    async def _read_json_recoverable(
+        self, run_id: str, path: str, model: type[ModelT]
+    ) -> RecoveryResult[ModelT]:
+        try:
+            response = await self._agent.workspace.read_text(run_id, path)
+        except FileNotFoundError:
+            return RecoveryResult(
+                values=[],
+                findings=[
+                    self._recovery_finding(
+                        "ARTIFACT_FILE_MISSING",
+                        f"recoverable Agent artifact is missing: {path}",
+                        scope=ValidationScope.FILE,
+                        action="rebuild_or_continue_partial",
+                    )
+                ],
+            )
+        result = parse_json(response.content or "", path=path, model=model)
+        if result.changed and result.values:
+            await self._agent.workspace.write_text(
+                run_id, path, result.values[0].model_dump_json(indent=2)
+            )
+        return result
+
+    async def _recover_stage_a_artifacts(
+        self,
+        run_id: str,
+        prepared: PreparedDocument3Inputs,
+        *,
+        require_pending_worklist: bool,
+    ) -> tuple[
+        bool,
+        list[WorklistEntry],
+        list[TriggerCalibrationRecord],
+        TriggerCalibrationState,
+        list[ValidationFinding],
+    ]:
+        work_result = await self._read_jsonl_recoverable(
+            run_id, "output/work/worklist.jsonl", WorklistEntry
+        )
+        trigger_result = await self._read_jsonl_recoverable(
+            run_id, "output/work/trigger_calibrations.jsonl", TriggerCalibrationRecord
+        )
+        state_result = await self._read_json_recoverable(
+            run_id, "output/work/trigger_calibration_state.json", TriggerCalibrationState
+        )
+        findings = [
+            *work_result.findings,
+            *trigger_result.findings,
+            *state_result.findings,
+        ]
+        expected = set(prepared.expected_gap_refs)
+        expected_shells = sorted({item[0] for item in expected})
+
+        work_by_path: dict[str, WorklistEntry] = {}
+        for item in work_result.values:
+            ref = (item.shell_id, item.expectation_id, item.gap_id)
+            if ref not in expected:
+                findings.append(
+                    self._recovery_finding(
+                        "STAGE_A_UNKNOWN_D2_REF_QUARANTINED",
+                        f"Stage-A path was quarantined because its D2 reference is unknown: {ref}",
+                        affected_ids=[item.path_id],
+                        action="quarantine_record",
+                    )
+                )
+                continue
+            if not item.path_id:
+                findings.append(
+                    self._recovery_finding(
+                        "STAGE_A_PATH_WITHOUT_ID_QUARANTINED",
+                        f"Stage-A path for {ref} has no path_id",
+                        action="quarantine_record",
+                    )
+                )
+                continue
+            if item.path_id in work_by_path:
+                findings.append(
+                    self._recovery_finding(
+                        "STAGE_A_DUPLICATE_PATH_RECOVERED",
+                        f"duplicate Stage-A path_id kept its latest record: {item.path_id}",
+                        affected_ids=[item.path_id],
+                        action="keep_latest_record",
+                    )
+                )
+            if require_pending_worklist and (
+                item.status is not PathStatus.PENDING or item.policy_ids
+            ):
+                item = item.model_copy(
+                    update={
+                        "status": PathStatus.PENDING,
+                        "policy_ids": [],
+                        "unresolved_reason": None,
+                    }
+                )
+                findings.append(
+                    self._recovery_finding(
+                        "STAGE_A_WORKLIST_STATUS_RECOVERED",
+                        f"Node-A Worklist status was restored to PENDING: {item.path_id}",
+                        affected_ids=[item.path_id],
+                        action="restore_pending_status",
+                    )
+                )
+            work_by_path[item.path_id] = item
+
+        usable = bool(work_by_path) or not expected
+        worklist = list(work_by_path.values())
+        if not usable:
+            fallback_state = TriggerCalibrationState()
+            return False, [], [], fallback_state, findings
+
+        records_by_path: dict[str, TriggerCalibrationRecord] = {}
+        for record in trigger_result.values:
+            work = work_by_path.get(record.path_id)
+            record_ref = (record.shell_id, record.expectation_id, record.gap_id)
+            if work is None or record_ref != (
+                work.shell_id,
+                work.expectation_id,
+                work.gap_id,
+            ):
+                findings.append(
+                    self._recovery_finding(
+                        "STAGE_A_TRIGGER_RECORD_QUARANTINED",
+                        f"Trigger record has no matching Worklist path: {record.path_id}",
+                        affected_ids=[record.path_id],
+                        action="quarantine_record",
+                    )
+                )
+                continue
+            if record.path_id in records_by_path:
+                findings.append(
+                    self._recovery_finding(
+                        "STAGE_A_DUPLICATE_TRIGGER_RECORD_RECOVERED",
+                        f"duplicate Trigger record kept its latest row: {record.path_id}",
+                        affected_ids=[record.path_id],
+                        action="keep_latest_record",
+                    )
+                )
+            records_by_path[record.path_id] = record
+
+        existing_dispositions = {
+            item.path_id: item
+            for item in (state_result.values[0].path_dispositions if state_result.values else [])
+        }
+        dispositions: list[TriggerPathDisposition] = []
+        for path_id, work in work_by_path.items():
+            current_record = records_by_path.get(path_id)
+            existing = existing_dispositions.get(path_id)
+            if current_record is not None:
+                disposition = current_record.disposition
+                reason = current_record.unresolved_reason
+            elif (
+                existing is not None
+                and existing.disposition is TriggerDisposition.TRIGGER_UNRESOLVED
+            ):
+                disposition = TriggerDisposition.TRIGGER_UNRESOLVED
+                reason = existing.unresolved_reason or "Trigger record is unavailable."
+            else:
+                disposition = TriggerDisposition.TRIGGER_UNRESOLVED
+                reason = "No usable Trigger Calibration record was available."
+                findings.append(
+                    self._recovery_finding(
+                        "STAGE_A_READY_PATH_DEMOTED",
+                        f"path was demoted to TRIGGER_UNRESOLVED: {path_id}",
+                        affected_ids=[path_id],
+                        action="demote_trigger_unresolved",
+                    )
+                )
+            dispositions.append(
+                TriggerPathDisposition(
+                    shell_id=work.shell_id,
+                    expectation_id=work.expectation_id,
+                    gap_id=work.gap_id,
+                    path_id=path_id,
+                    disposition=disposition,
+                    unresolved_reason=reason,
+                )
+            )
+
+        trigger_state = TriggerCalibrationState(
+            stage_status=TriggerCalibrationStageStatus.COMPLETED,
+            completed_shell_ids=expected_shells,
+            current_shell_id=None,
+            path_dispositions=dispositions,
+            unprocessed_path_count=0,
+        )
+        records = list(records_by_path.values())
+        await self._agent.workspace.write_text(
+            run_id,
+            "output/work/worklist.jsonl",
+            "".join(item.model_dump_json() + "\n" for item in worklist),
+        )
+        await self._agent.workspace.write_text(
+            run_id,
+            "output/work/trigger_calibrations.jsonl",
+            "".join(item.model_dump_json() + "\n" for item in records),
+        )
+        await self._agent.workspace.write_text(
+            run_id,
+            "output/work/trigger_calibration_state.json",
+            trigger_state.model_dump_json(indent=2),
+        )
+        report = validate_trigger_calibration_stage(
+            expected_gap_refs=prepared.expected_gap_refs,
+            worklist=worklist,
+            trigger_calibrations=records,
+            trigger_state=trigger_state,
+            require_pending_worklist=require_pending_worklist,
+        )
+        findings.extend(report.findings)
+        return True, worklist, records, trigger_state, findings
+
     async def _validate_stage_a_checkpoint(
         self,
         run_id: str,
         prepared: PreparedDocument3Inputs,
         *,
         require_pending_worklist: bool,
-    ) -> None:
-        worklist = await self._read_jsonl(
-            run_id, "output/work/worklist.jsonl", WorklistEntry
-        )
-        trigger_calibrations = await self._read_jsonl(
+    ) -> list[ValidationFinding]:
+        usable, _, _, _, findings = await self._recover_stage_a_artifacts(
             run_id,
-            "output/work/trigger_calibrations.jsonl",
-            TriggerCalibrationRecord,
-        )
-        trigger_state = await self._read_json(
-            run_id,
-            "output/work/trigger_calibration_state.json",
-            TriggerCalibrationState,
-        )
-        report = validate_trigger_calibration_stage(
-            expected_gap_refs=prepared.expected_gap_refs,
-            worklist=worklist,
-            trigger_calibrations=trigger_calibrations,
-            trigger_state=trigger_state,
+            prepared,
             require_pending_worklist=require_pending_worklist,
         )
-        if not report.valid:
-            raise ValueError(
-                "D3 Trigger Calibration Stage Gate failed: "
-                + "; ".join(item.message for item in report.blocking_findings)
-            )
+        if not usable:
+            raise ValueError("D3 Trigger Calibration has no usable Worklist after bounded recovery")
+        return findings
+
+    async def _read_policy_drafts_recoverable(
+        self, run_id: str
+    ) -> tuple[list[Policy], list[ValidationFinding]]:
+        inventory = await self._agent.workspace.inventory(run_id)
+        paths = sorted(
+            item.relative_path
+            for item in inventory.files
+            if item.relative_path.startswith("output/work/policies/")
+            and item.relative_path.endswith(".json")
+        )
+        policies: list[Policy] = []
+        findings: list[ValidationFinding] = []
+        for path in paths:
+            result = await self._read_json_recoverable(run_id, path, Policy)
+            findings.extend(result.findings)
+            if result.values:
+                policies.append(result.values[0])
+        return policies, findings
 
     async def _validate_compile_checkpoint(
         self, run_id: str, prepared: PreparedDocument3Inputs
-    ) -> None:
-        worklist = await self._read_jsonl(
-            run_id, "output/work/worklist.jsonl", WorklistEntry
+    ) -> list[ValidationFinding]:
+        (
+            usable,
+            worklist,
+            trigger_calibrations,
+            trigger_state,
+            findings,
+        ) = await self._recover_stage_a_artifacts(
+            run_id,
+            prepared,
+            require_pending_worklist=False,
         )
-        calibration_log = await self._read_jsonl(
+        if not usable:
+            raise ValueError("D3 Policy Compile has no usable Stage-A Worklist")
+        calibration_result = await self._read_jsonl_recoverable(
             run_id, "output/work/calibration_log.jsonl", CalibrationLogEntry
         )
-        trigger_calibrations = await self._read_jsonl(
-            run_id,
-            "output/work/trigger_calibrations.jsonl",
-            TriggerCalibrationRecord,
-        )
-        trigger_state = await self._read_json(
-            run_id,
-            "output/work/trigger_calibration_state.json",
-            TriggerCalibrationState,
-        )
-        wave_state = await self._read_json(
+        wave_result = await self._read_json_recoverable(
             run_id, "output/work/wave_state.json", WaveState
         )
-        policies = await self._read_policy_drafts(run_id)
+        policies, policy_findings = await self._read_policy_drafts_recoverable(run_id)
+        findings.extend(calibration_result.findings)
+        findings.extend(wave_result.findings)
+        findings.extend(policy_findings)
+        expected_shells = sorted({item[0] for item in prepared.expected_gap_refs})
+        terminal_paths = [
+            item.path_id for item in worklist if item.status is not PathStatus.PENDING
+        ]
+        wave_state = WaveState(
+            completed_shell_ids=expected_shells,
+            current_shell_id=None,
+            completed_path_ids=list(dict.fromkeys(terminal_paths)),
+        )
+        await self._agent.workspace.write_text(
+            run_id, "output/work/wave_state.json", wave_state.model_dump_json(indent=2)
+        )
         report = validate_initial_artifacts(
             expected_gap_refs=prepared.expected_gap_refs,
             worklist=worklist,
-            calibration_log=calibration_log,
+            calibration_log=calibration_result.values,
             policies=policies,
             trigger_calibrations=trigger_calibrations,
             trigger_state=trigger_state,
             wave_state=wave_state,
         )
-        if not report.valid:
-            raise ValueError(
-                "D3 Policy Compile checkpoint failed: "
-                + "; ".join(item.message for item in report.blocking_findings)
-            )
+        findings.extend(report.findings)
+        return findings
 
     def _start_node(self, checkpoint: WorkflowCheckpoint, node: CodexD3Node) -> None:
         checkpoint.current_nodes = list(dict.fromkeys([*checkpoint.current_nodes, node]))
@@ -825,9 +1365,7 @@ class Document3Orchestrator:
         self._runtime_repository.save_checkpoint(checkpoint)
 
     def _complete_node(self, checkpoint: WorkflowCheckpoint, node: CodexD3Node) -> None:
-        checkpoint.completed_nodes = list(
-            dict.fromkeys([*checkpoint.completed_nodes, node])
-        )
+        checkpoint.completed_nodes = list(dict.fromkeys([*checkpoint.completed_nodes, node]))
         checkpoint.current_nodes = [item for item in checkpoint.current_nodes if item != node]
         checkpoint.failed_nodes = [item for item in checkpoint.failed_nodes if item != node]
         checkpoint.updated_at = utc_now()
@@ -873,28 +1411,14 @@ class Document3Orchestrator:
             },
         )
 
-    def _reset_nodes(
-        self, checkpoint: WorkflowCheckpoint, nodes: set[CodexD3Node]
-    ) -> None:
+    def _reset_nodes(self, checkpoint: WorkflowCheckpoint, nodes: set[CodexD3Node]) -> None:
         checkpoint.completed_nodes = [
             item for item in checkpoint.completed_nodes if item not in nodes
         ]
-        checkpoint.current_nodes = [
-            item for item in checkpoint.current_nodes if item not in nodes
-        ]
-        checkpoint.failed_nodes = [
-            item for item in checkpoint.failed_nodes if item not in nodes
-        ]
+        checkpoint.current_nodes = [item for item in checkpoint.current_nodes if item not in nodes]
+        checkpoint.failed_nodes = [item for item in checkpoint.failed_nodes if item not in nodes]
         checkpoint.updated_at = utc_now()
         self._runtime_repository.save_checkpoint(checkpoint)
-
-    async def _read_jsonl(self, run_id: str, path: str, model: type[ModelT]) -> list[ModelT]:
-        response = await self._agent.workspace.read_text(run_id, path)
-        return [
-            model.model_validate_json(line)
-            for line in (response.content or "").splitlines()
-            if line.strip()
-        ]
 
     async def _read_json(self, run_id: str, path: str, model: type[ModelT]) -> ModelT:
         response = await self._agent.workspace.read_text(run_id, path)
@@ -902,20 +1426,15 @@ class Document3Orchestrator:
             raise ValueError(f"workspace file has no text content: {path}")
         return model.model_validate_json(response.content)
 
-    async def _read_policy_drafts(self, run_id: str) -> list[Policy]:
-        inventory = await self._agent.workspace.inventory(run_id)
-        paths = sorted(
-            item.relative_path
-            for item in inventory.files
-            if item.relative_path.startswith("output/work/policies/")
-            and item.relative_path.endswith(".json")
-        )
-        return [await self._read_json(run_id, path, Policy) for path in paths]
-
     async def _assert_agent_write_boundary(
-        self, run_id: str, *, initialize: bool = False
-    ) -> None:
+        self,
+        run_id: str,
+        *,
+        initialize: bool = False,
+        baseline: dict[str, str] | None = None,
+    ) -> list[ValidationFinding]:
         inventory = await self._agent.workspace.inventory(run_id)
+        current = {item.relative_path: item.sha256 for item in inventory.files}
         allowed_initialize_context = {
             *INITIALIZE_BUSINESS_INPUT_PATHS,
             INPUT_MANIFEST_PATH,
@@ -928,6 +1447,9 @@ class Document3Orchestrator:
             "context/document3/policy_set.schema.json",
             "context/document3/trigger_calibration_record.schema.json",
             "context/document3/trigger_calibration_state.schema.json",
+            "context/document3/worklist.schema.json",
+            "context/document3/calibration_log.schema.json",
+            "context/document3/wave_state.schema.json",
             f"context/document3/{CodexD3Node.O3_TRIGGER_CALIBRATION.value}.output_schema.json",
             f"context/document3/{CodexD3Node.O3_POLICY_COMPILE.value}.output_schema.json",
             f"context/document3/{CodexD3Node.O3_FINAL_REVIEW.value}.output_schema.json",
@@ -942,6 +1464,29 @@ class Document3Orchestrator:
             "artifacts/document3/runtime_projection.json",
             "artifacts/document3/document3.md",
         }
+        changed_paths = (
+            {path for path, sha256 in current.items() if baseline.get(path) != sha256}
+            if baseline is not None
+            else set()
+        )
+        protected_agent_paths = sorted(
+            path
+            for path in changed_paths
+            if (
+                path.startswith("output/final/")
+                or path.startswith("artifacts/")
+                or path.startswith("published/")
+                or (
+                    path.startswith("context/")
+                    and not path.startswith("context/data_tool_catalog/")
+                )
+            )
+        )
+        if protected_agent_paths:
+            raise ValueError(
+                f"D3 agent modified a runtime-owned or frozen path: {protected_agent_paths[:10]}"
+            )
+
         unauthorized = [
             item.relative_path
             for item in inventory.files
@@ -956,16 +1501,36 @@ class Document3Orchestrator:
             and not item.relative_path.startswith("context/data_tool_catalog/")
             and item.relative_path not in deterministic_release_paths
             and not item.relative_path.startswith("published/")
-            and not (
-                initialize and item.relative_path in allowed_initialize_context
-            )
-            and not (
-                not initialize
-                and item.relative_path.startswith("context/document3/")
-            )
+            and not (initialize and item.relative_path in allowed_initialize_context)
+            and not (not initialize and item.relative_path.startswith("context/document3/"))
         ]
-        if unauthorized:
-            raise ValueError(f"D3 agent wrote outside its boundary: {unauthorized[:10]}")
+        sensitive_unauthorized = [
+            path
+            for path in unauthorized
+            if path.startswith("context/")
+            or path.startswith("output/final/")
+            or path.startswith("artifacts/")
+            or path.startswith("published/")
+        ]
+        if sensitive_unauthorized:
+            raise ValueError(
+                "D3 agent wrote outside its boundary (protected path): "
+                f"{sensitive_unauthorized[:10]}"
+            )
+        return [
+            self._recovery_finding(
+                "AGENT_SCRATCH_PATH_IGNORED",
+                f"Agent-created nonbusiness scratch path was ignored: {path}",
+                scope=ValidationScope.FILE,
+                affected_ids=[path],
+                action="ignore_scratch_path",
+            )
+            for path in unauthorized
+        ]
+
+    async def _workspace_snapshot(self, run_id: str) -> dict[str, str]:
+        inventory = await self._agent.workspace.inventory(run_id)
+        return {item.relative_path: item.sha256 for item in inventory.files}
 
     @staticmethod
     def _reference_view_has_content(value: str) -> bool:

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from collections import defaultdict
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, replace
 from datetime import UTC, date, datetime, time, timedelta
 from importlib import import_module
@@ -17,7 +17,31 @@ from pydantic import ValidationError
 from doxagent.blackboard import BlackboardService
 from doxagent.blackboard.errors import RunNotFoundError
 from doxagent.blackboard.state import BlackboardRun
+from doxagent.crawler_plane.schema import (
+    CrawlerAlertPolicy,
+    CrawlerExecutionRequest,
+    CrawlerSourceRegistration,
+    CrawlerVersionSpec,
+)
 from doxagent.dashboard_api.backtest import DashboardBacktestService
+from doxagent.message_bus_v2.schema import (
+    DefaultMonitoringProfile as MessageBusV2DefaultProfile,
+)
+from doxagent.message_bus_v2.schema import (
+    PollState as MessageBusV2PollState,
+)
+from doxagent.message_bus_v2.schema import (
+    SourceDefinition as MessageBusV2SourceDefinition,
+)
+from doxagent.message_bus_v2.schema import (
+    StandardMessage as MessageBusV2StandardMessage,
+)
+from doxagent.message_bus_v2.schema import (
+    TickerSourceBinding as MessageBusV2TickerSourceBinding,
+)
+from doxagent.message_bus_v2.schema import (
+    UpdateActor as MessageBusV2UpdateActor,
+)
 from doxagent.model_usage import ModelUsageCostService
 from doxagent.models import DocumentType
 from doxagent.models.documents import (
@@ -34,7 +58,6 @@ from doxagent.monitoring.schema import (
     EventStreamItem,
     MonitoringParameters,
     PollState,
-    RawExternalMessage,
     StandardMessage,
     TickerSourceBinding,
     UpdateActor,
@@ -176,6 +199,7 @@ class DashboardDocumentRevisionRecord:
     known_events_updated_at: str | None
     policies_updated_at: str | None
 
+
 RUNNING_STATUSES = {TickerRunStatus.RUNNING, TickerRunStatus.DEGRADED}
 FRONTEND_DOCUMENT_TYPES = ("document1", "document2", "document3")
 DOCUMENT_TYPE_LABELS = {
@@ -216,14 +240,10 @@ class RealDashboardOverviewService:
         self.model_usage_service = model_usage_service or ModelUsageCostService.from_settings()
         self.revenue_audit_service = revenue_audit_service or RevenueAuditService.from_settings(
             DoxAgentSettings(),
-            repository=(
-                InMemoryRevenueAuditRepository() if dashboard_api is not None else None
-            ),
+            repository=(InMemoryRevenueAuditRepository() if dashboard_api is not None else None),
             trading_repository=self.dashboard_api.scheduler.runtime_service.repository,
         )
-        self._today_cost_cache: dict[
-            tuple[str, date, str], tuple[float, float | None]
-        ] = {}
+        self._today_cost_cache: dict[tuple[str, date, str], tuple[float, float | None]] = {}
 
     def overview(self, *, date_text: str | None = None, tz: str | None = None) -> JsonObject:
         zone = _zone(tz)
@@ -242,9 +262,7 @@ class RealDashboardOverviewService:
                 ),
                 "today_message_count": message_count,
                 "today_dtc_count": sum(int(card["today_dtc_count"]) for card in cards),
-                "today_token_cost_usd": _sum_optional(
-                    card.get("today_cost_usd") for card in cards
-                ),
+                "today_token_cost_usd": _sum_optional(card.get("today_cost_usd") for card in cards),
                 "exception_count": _count_on_day(
                     (item.created_at for item in exceptions),
                     target_date=target_date,
@@ -268,8 +286,7 @@ class RealDashboardOverviewService:
         zone = _zone(tz)
         target_date = _target_date(date_text, zone)
         cards = [
-            self._ticker_card(state, target_date=target_date, zone=zone)
-            for state in self._states()
+            self._ticker_card(state, target_date=target_date, zone=zone) for state in self._states()
         ]
         for card in cards:
             card.pop("_today_message_count", None)
@@ -342,19 +359,39 @@ class RealDashboardOverviewService:
         if delete_history:
             raise UnsupportedHistoryDelete(_ticker(ticker))
         normalized = _ticker(ticker)
-        binding_count_before = len(
-            self.dashboard_api.scheduler.monitoring_service.repository.list_bindings(
-                ticker=normalized
+        if self.dashboard_api.scheduler.message_bus_v2_enabled:
+            bus = self.dashboard_api.scheduler._require_message_bus_v2()
+            bindings = bus.repository.list_bindings(ticker=normalized)
+            binding_count_before = len(bindings)
+        elif self.dashboard_api.scheduler._legacy_monitoring_service_enabled:
+            bindings = []
+            binding_count_before = len(
+                self.dashboard_api.scheduler.monitoring_service.repository.list_bindings(
+                    ticker=normalized
+                )
             )
-        )
+        else:
+            bindings = []
+            binding_count_before = 0
         self.dashboard_api.stop_ticker(
             normalized,
             reason=reason,
-            disable_bindings=True,
+            disable_bindings=False,
         )
-        deleted_count = self.dashboard_api.scheduler.monitoring_service.delete_ticker_config(
-            normalized
-        )
+        if self.dashboard_api.scheduler.message_bus_v2_enabled:
+            for binding in bindings:
+                bus.delete_binding(
+                    binding.binding_id,
+                    actor=MessageBusV2UpdateActor.USER,
+                    reason=reason or "Dashboard ticker delete",
+                )
+            deleted_count = len(bindings)
+        elif self.dashboard_api.scheduler._legacy_monitoring_service_enabled:
+            deleted_count = self.dashboard_api.scheduler.monitoring_service.delete_ticker_config(
+                normalized
+            )
+        else:
+            deleted_count = 0
         return {
             "operation": "delete",
             "status": "accepted",
@@ -545,9 +582,7 @@ class RealDashboardOverviewService:
         items = self._known_event_items(normalized)
         if expectation_id:
             items = [
-                item
-                for item in items
-                if expectation_id in item.get("related_expectation_ids", [])
+                item for item in items if expectation_id in item.get("related_expectation_ids", [])
             ]
         if q:
             items = _search_items(items, q, fields=("event_name", "description"))
@@ -585,9 +620,57 @@ class RealDashboardOverviewService:
         normalized = _ticker(ticker)
         zone = _zone(tz)
         target_date = _target_date(date_text, zone)
-        raw_messages = self._raw_messages(normalized)
-        messages = self._messages(normalized)
-        events = self._events(normalized)
+        if self.dashboard_api.scheduler.message_bus_v2_enabled:
+            bus = self.dashboard_api.scheduler._require_message_bus_v2()
+            v2_raw_messages = bus.repository.list_raw(
+                ticker=normalized, limit=READ_AGGREGATION_LIMIT
+            )
+            v2_messages = bus.repository.list_standard(
+                ticker=normalized, limit=READ_AGGREGATION_LIMIT
+            )
+            v2_events = bus.repository.read_stream(
+                normalized, after_offset=0, limit=READ_AGGREGATION_LIMIT
+            )
+            v2_config = self.message_bus_config(normalized)
+            v2_sources = v2_config["sources"]
+            healthy = [
+                source
+                for source in v2_sources
+                if source["health"] in {"normal", "disabled", "never_polled"}
+            ]
+            last_error = next(
+                (
+                    source["poll_state"].get("last_error_message")
+                    for source in v2_sources
+                    if source["health"] not in {"disabled", "never_polled"}
+                    and source.get("poll_state")
+                    and source["poll_state"].get("last_error_message")
+                ),
+                None,
+            )
+            return {
+                "ticker": normalized,
+                "uptime_seconds": _ticker_uptime_seconds(
+                    self.dashboard_api.scheduler.repository.get_state(normalized)
+                ),
+                "today_raw_message_count": _count_on_day(
+                    (message.collected_at for message in v2_raw_messages),
+                    target_date=target_date,
+                    zone=zone,
+                ),
+                "today_event_count": _count_on_day(
+                    (event.item.published_at for event in v2_events),
+                    target_date=target_date,
+                    zone=zone,
+                ),
+                "media_enrichment_success_rate": _media_enrichment_success_rate(v2_messages),
+                "healthy_channel_count": len(healthy),
+                "total_channel_count": len(v2_sources),
+                "last_error_message": last_error,
+            }
+        legacy_raw_messages = self._raw_messages(normalized)
+        legacy_messages = self._messages(normalized)
+        legacy_events = self._events(normalized)
         config = self.message_bus_config(normalized)
         sources = config["sources"]
         healthy_sources = [
@@ -609,16 +692,16 @@ class RealDashboardOverviewService:
                 self.dashboard_api.scheduler.repository.get_state(normalized)
             ),
             "today_raw_message_count": _count_on_day(
-                (message.collected_at for message in raw_messages),
+                (message.collected_at for message in legacy_raw_messages),
                 target_date=target_date,
                 zone=zone,
             ),
             "today_event_count": _count_on_day(
-                (event.event_time for event in events),
+                (event.event_time for event in legacy_events),
                 target_date=target_date,
                 zone=zone,
             ),
-            "media_enrichment_success_rate": _media_enrichment_success_rate(messages),
+            "media_enrichment_success_rate": _media_enrichment_success_rate(legacy_messages),
             "healthy_channel_count": len(healthy_sources),
             "total_channel_count": len(sources),
             "last_error_message": last_error_message,
@@ -629,7 +712,6 @@ class RealDashboardOverviewService:
         ticker: str,
         *,
         source_id: str | None = None,
-        source_type: str | None = None,
         processing_status: str | None = None,
         q: str | None = None,
         sort: str | None = None,
@@ -637,10 +719,43 @@ class RealDashboardOverviewService:
         cursor: str | None = None,
     ) -> JsonObject:
         normalized = _ticker(ticker)
+        if self.dashboard_api.scheduler.message_bus_v2_enabled:
+            bus = self.dashboard_api.scheduler._require_message_bus_v2()
+            source_labels = {
+                source.source_id: source.display_name for source in bus.repository.list_sources()
+            }
+            values = bus.repository.list_standard(ticker=normalized, limit=READ_AGGREGATION_LIMIT)
+            if source_id:
+                values = [value for value in values if value.source_id == source_id]
+            if q:
+                query = q.strip().lower()
+                values = [
+                    value
+                    for value in values
+                    if query
+                    in " ".join((value.title or "", value.body, value.source, value.url)).lower()
+                ]
+            items = [
+                _message_bus_v2_item(
+                    value,
+                    source_label=source_labels.get(value.source_id),
+                    include_body=False,
+                )
+                for value in values
+            ]
+            if processing_status:
+                items = [
+                    item
+                    for item in items
+                    if item["processing_status"] == processing_status.strip().lower()
+                ]
+            items = _sort_messages(items, sort)
+            return _paginate(items, limit=limit, cursor=cursor)
+        if not self.dashboard_api.scheduler._legacy_monitoring_service_enabled:
+            return _paginate([], limit=limit, cursor=cursor)
         repository = self.dashboard_api.scheduler.monitoring_service.repository
         source_labels = {
-            source.source_id: source.display_name
-            for source in repository.list_sources()
+            source.source_id: source.display_name for source in repository.list_sources()
         }
         resolved_limit = _limit(limit)
         offset = _parse_cursor(cursor)
@@ -648,7 +763,7 @@ class RealDashboardOverviewService:
             messages, _total_count = repository.query_standard_messages(
                 ticker=normalized,
                 source_id=source_id,
-                source_type=source_type,
+                source_type=None,
                 q=q,
                 sort=sort,
                 limit=READ_AGGREGATION_LIMIT,
@@ -663,16 +778,14 @@ class RealDashboardOverviewService:
                 for message in messages
             ]
             items = [
-                item
-                for item in items
-                if item["processing_status"] == processing_status.strip()
+                item for item in items if item["processing_status"] == processing_status.strip()
             ]
             items = _sort_messages(items, sort)
             return _paginate(items, limit=limit, cursor=cursor)
         messages, total_count = repository.query_standard_messages(
             ticker=normalized,
             source_id=source_id,
-            source_type=source_type,
+            source_type=None,
             q=q,
             sort=sort,
             limit=resolved_limit,
@@ -690,35 +803,75 @@ class RealDashboardOverviewService:
 
     def message_bus_message_detail(self, ticker: str, message_id: str) -> JsonObject:
         normalized = _ticker(ticker)
-        message = self.dashboard_api.scheduler.monitoring_service.repository.get_standard_message(
-            message_id.strip()
-        )
-        if message is None or message.ticker != normalized:
+        if self.dashboard_api.scheduler.message_bus_v2_enabled:
+            bus = self.dashboard_api.scheduler._require_message_bus_v2()
+            message = bus.repository.get_standard(message_id.strip())
+            if message is None or message.ticker != normalized:
+                raise MessageBusMessageNotFound(normalized, message_id)
+            source = bus.repository.get_source(message.source_id)
+            return _message_bus_v2_item(
+                message,
+                source_label=source.display_name if source else None,
+                include_body=True,
+            )
+        if not self.dashboard_api.scheduler._legacy_monitoring_service_enabled:
             raise MessageBusMessageNotFound(normalized, message_id)
-        source = self.dashboard_api.scheduler.monitoring_service.repository.get_source(
-            message.source_id
+        legacy_message = (
+            self.dashboard_api.scheduler.monitoring_service.repository.get_standard_message(
+                message_id.strip()
+            )
+        )
+        if legacy_message is None or legacy_message.ticker != normalized:
+            raise MessageBusMessageNotFound(normalized, message_id)
+        legacy_source = self.dashboard_api.scheduler.monitoring_service.repository.get_source(
+            legacy_message.source_id
         )
         return self._message_item_for_response(
-            message,
-            source_label=source.display_name if source is not None else None,
+            legacy_message,
+            source_label=legacy_source.display_name if legacy_source is not None else None,
             include_body=True,
         )
 
     def message_bus_config(self, ticker: str) -> JsonObject:
         normalized = _ticker(ticker)
+        if self.dashboard_api.scheduler.message_bus_v2_enabled:
+            bus = self.dashboard_api.scheduler._require_message_bus_v2()
+            v2_sources = bus.repository.list_sources()
+            v2_bindings = {
+                binding.source_id: binding
+                for binding in bus.repository.list_bindings(ticker=normalized)
+            }
+            v2_poll_states = {
+                state.binding_id: state
+                for state in bus.repository.list_poll_states(ticker=normalized)
+            }
+            return {
+                "ticker": normalized,
+                "sources": [
+                    _message_bus_v2_source_config(
+                        source,
+                        binding=v2_bindings.get(source.source_id),
+                        poll_state=v2_poll_states.get(f"{normalized}:{source.source_id}"),
+                    )
+                    for source in v2_sources
+                ],
+                "missing_source_ids": [
+                    source.source_id for source in v2_sources if source.source_id not in v2_bindings
+                ],
+            }
+        if not self.dashboard_api.scheduler._legacy_monitoring_service_enabled:
+            return {"ticker": normalized, "sources": [], "missing_source_ids": []}
         repository = self.dashboard_api.scheduler.monitoring_service.repository
-        sources = {
+        legacy_sources = {
             source.source_id: source
             for source in repository.list_sources()
             if source.source_id in MESSAGE_BUS_CONFIG_SOURCES
         }
-        bindings = {
-            binding.source_id: binding
-            for binding in repository.list_bindings(ticker=normalized)
+        legacy_bindings = {
+            binding.source_id: binding for binding in repository.list_bindings(ticker=normalized)
         }
-        poll_states = {
-            state.binding_id: state
-            for state in repository.list_poll_states(ticker=normalized)
+        legacy_poll_states = {
+            state.binding_id: state for state in repository.list_poll_states(ticker=normalized)
         }
         return {
             "ticker": normalized,
@@ -726,17 +879,17 @@ class RealDashboardOverviewService:
                 _message_source_config(
                     normalized,
                     source_id,
-                    source=sources[source_id],
-                    binding=bindings.get(source_id),
-                    poll_state=poll_states.get(binding_id_for(normalized, source_id)),
+                    source=legacy_sources[source_id],
+                    binding=legacy_bindings.get(source_id),
+                    poll_state=legacy_poll_states.get(binding_id_for(normalized, source_id)),
                 )
                 for source_id in MESSAGE_BUS_CONFIG_SOURCES
-                if source_id in sources
+                if source_id in legacy_sources
             ],
             "missing_source_ids": [
                 source_id
                 for source_id in MESSAGE_BUS_CONFIG_SOURCES
-                if source_id not in bindings
+                if source_id not in legacy_bindings
             ],
         }
 
@@ -748,27 +901,99 @@ class RealDashboardOverviewService:
     ) -> JsonObject:
         normalized = _ticker(ticker)
         normalized_source = _source_id(source_id)
-        source = self.dashboard_api.scheduler.monitoring_service.repository.get_source(
+        if self.dashboard_api.scheduler.message_bus_v2_enabled:
+            bus = self.dashboard_api.scheduler._require_message_bus_v2()
+            source = bus.repository.get_source(normalized_source)
+            if source is None:
+                raise UnsupportedMessageSource(normalized_source)
+            v2_existing = bus.repository.get_binding(f"{normalized}:{normalized_source}")
+            permitted = {
+                "enabled",
+                "source_parameters",
+                "polling",
+                "streaming",
+                "reason",
+                *source.parameter_schema.get("properties", {}).keys(),
+            }
+            unsupported = sorted(set(payload) - permitted)
+            if unsupported:
+                raise InvalidMessageBusPatch(
+                    f"Unsupported Message Bus v2 field(s): {', '.join(unsupported)}"
+                )
+            parameters = dict(v2_existing.source_parameters) if v2_existing else {}
+            supplied = payload.get("source_parameters")
+            if supplied is not None:
+                if not isinstance(supplied, dict):
+                    raise InvalidMessageBusPatch("source_parameters must be an object")
+                parameters = dict(supplied)
+            for key in source.parameter_schema.get("properties", {}):
+                if key in payload:
+                    parameters[key] = payload[key]
+            reason = _optional_text_value(payload.get("reason"))
+            if v2_existing is None:
+                v2_binding = bus.configure_binding(
+                    ticker=normalized,
+                    source_id=normalized_source,
+                    source_parameters=parameters,
+                    polling=(
+                        payload.get("polling") if isinstance(payload.get("polling"), dict) else None
+                    ),
+                    streaming=(
+                        payload.get("streaming")
+                        if isinstance(payload.get("streaming"), dict)
+                        else None
+                    ),
+                    enabled=bool(payload.get("enabled", True)),
+                    actor=MessageBusV2UpdateActor.USER,
+                    reason=reason,
+                )
+            else:
+                patch: JsonObject = {"source_parameters": parameters}
+                for key in ("enabled", "polling", "streaming"):
+                    if key in payload:
+                        patch[key] = payload[key]
+                v2_binding = bus.update_binding(
+                    v2_existing.binding_id,
+                    patch,
+                    actor=MessageBusV2UpdateActor.USER,
+                    reason=reason,
+                )
+            config = self.message_bus_config(normalized)
+            return {
+                **config,
+                "source_id": normalized_source,
+                "binding": v2_binding.model_dump(mode="json"),
+                "config": config,
+            }
+        if not self.dashboard_api.scheduler._legacy_monitoring_service_enabled:
+            raise UnsupportedMessageSource(normalized_source)
+        legacy_source = self.dashboard_api.scheduler.monitoring_service.repository.get_source(
             normalized_source
         )
-        if source is None:
+        if legacy_source is None:
             raise UnsupportedMessageSource(normalized_source)
-        parameters, touched_parameters = _message_bus_parameters(normalized_source, payload)
+        legacy_parameters, touched_parameters = _message_bus_parameters(normalized_source, payload)
         enabled = _optional_bool(payload.get("enabled"))
-        existing = self.dashboard_api.scheduler.monitoring_service.repository.get_binding(
+        legacy_existing = self.dashboard_api.scheduler.monitoring_service.repository.get_binding(
             normalized,
             normalized_source,
         )
         resolved_parameters = (
-            parameters
-            if touched_parameters or existing is None
-            else existing.parameters
+            legacy_parameters
+            if touched_parameters or legacy_existing is None
+            else legacy_existing.parameters
         )
-        binding = self.dashboard_api.scheduler.monitoring_service.configure_ticker_source(
+        legacy_binding = self.dashboard_api.scheduler.monitoring_service.configure_ticker_source(
             normalized,
             normalized_source,
             parameters=resolved_parameters,
-            enabled=enabled if enabled is not None else existing.enabled if existing else True,
+            enabled=(
+                enabled
+                if enabled is not None
+                else legacy_existing.enabled
+                if legacy_existing
+                else True
+            ),
             updated_by=UpdateActor.USER,
             updated_reason=_optional_text_value(payload.get("reason")),
             merge=False,
@@ -777,16 +1002,35 @@ class RealDashboardOverviewService:
         return {
             **config,
             "source_id": normalized_source,
-            "binding": binding.model_dump(mode="json"),
+            "binding": legacy_binding.model_dump(mode="json"),
             "config": config,
         }
 
     def delete_message_source(self, ticker: str, source_id: str) -> JsonObject:
         normalized = _ticker(ticker)
         normalized_source = _source_id(source_id)
-        if self.dashboard_api.scheduler.monitoring_service.repository.get_source(
-            normalized_source
-        ) is None:
+        if self.dashboard_api.scheduler.message_bus_v2_enabled:
+            bus = self.dashboard_api.scheduler._require_message_bus_v2()
+            if bus.repository.get_source(normalized_source) is None:
+                raise UnsupportedMessageSource(normalized_source)
+            binding = bus.repository.get_binding(f"{normalized}:{normalized_source}")
+            if binding is not None:
+                bus.delete_binding(
+                    binding.binding_id,
+                    actor=MessageBusV2UpdateActor.USER,
+                    reason="Dashboard binding delete",
+                )
+            return {
+                "ticker": normalized,
+                "source_id": normalized_source,
+                "removed": binding is not None,
+            }
+        if not self.dashboard_api.scheduler._legacy_monitoring_service_enabled:
+            raise UnsupportedMessageSource(normalized_source)
+        if (
+            self.dashboard_api.scheduler.monitoring_service.repository.get_source(normalized_source)
+            is None
+        ):
             raise UnsupportedMessageSource(normalized_source)
         removed = self.dashboard_api.scheduler.monitoring_service.delete_ticker_source(
             normalized,
@@ -797,6 +1041,247 @@ class RealDashboardOverviewService:
             "source_id": normalized_source,
             "removed": removed,
         }
+
+    def list_message_bus_sources(self) -> JsonObject:
+        bus = self.dashboard_api.scheduler._require_message_bus_v2()
+        return {
+            "sources": [source.model_dump(mode="json") for source in bus.repository.list_sources()]
+        }
+
+    def register_message_bus_source(self, payload: JsonObject) -> JsonObject:
+        bus = self.dashboard_api.scheduler._require_message_bus_v2()
+        value = dict(payload)
+        value["updated_by"] = MessageBusV2UpdateActor.USER
+        source = bus.register_source(MessageBusV2SourceDefinition.model_validate(value))
+        return source.model_dump(mode="json")
+
+    def update_message_bus_source(self, source_id: str, payload: JsonObject) -> JsonObject:
+        bus = self.dashboard_api.scheduler._require_message_bus_v2()
+        value = dict(payload)
+        reason = _optional_text_value(value.pop("reason", None))
+        binding_patches = value.pop("binding_patches", None)
+        if binding_patches is not None and not isinstance(binding_patches, dict):
+            raise InvalidMessageBusPatch("binding_patches must be an object")
+        source = bus.update_source(
+            source_id,
+            value,
+            actor=MessageBusV2UpdateActor.USER,
+            reason=reason,
+            binding_patches=cast(Any, binding_patches),
+        )
+        return source.model_dump(mode="json")
+
+    def message_bus_source_revisions(self, source_id: str) -> JsonObject:
+        bus = self.dashboard_api.scheduler._require_message_bus_v2()
+        if bus.repository.get_source(source_id) is None:
+            raise UnsupportedMessageSource(source_id)
+        return {
+            "source_id": source_id,
+            "revisions": [
+                source.model_dump(mode="json")
+                for source in bus.repository.list_source_revisions(source_id)
+            ],
+        }
+
+    def rollback_message_bus_source(self, source_id: str, payload: JsonObject) -> JsonObject:
+        bus = self.dashboard_api.scheduler._require_message_bus_v2()
+        version = int(payload.get("version", 0))
+        source = bus.rollback_source(
+            source_id,
+            version,
+            actor=MessageBusV2UpdateActor.USER,
+            reason=_optional_text_value(payload.get("reason")),
+        )
+        return source.model_dump(mode="json")
+
+    def hard_delete_message_bus_source(
+        self, source_id: str, payload: JsonObject | None = None
+    ) -> JsonObject:
+        bus = self.dashboard_api.scheduler._require_message_bus_v2()
+        result = bus.hard_delete_source(
+            source_id,
+            actor=MessageBusV2UpdateActor.USER,
+            reason=_optional_text_value((payload or {}).get("reason")),
+        )
+        return result.model_dump(mode="json")
+
+    def get_message_bus_profile(self, profile_id: str) -> JsonObject:
+        bus = self.dashboard_api.scheduler._require_message_bus_v2()
+        profile = bus.repository.get_default_profile(profile_id)
+        if profile is None:
+            raise KeyError(profile_id)
+        return profile.model_dump(mode="json")
+
+    def save_message_bus_profile(self, profile_id: str, payload: JsonObject) -> JsonObject:
+        bus = self.dashboard_api.scheduler._require_message_bus_v2()
+        value = dict(payload)
+        reason = value.pop("reason", None)
+        value["profile_id"] = profile_id
+        value["updated_by"] = MessageBusV2UpdateActor.USER
+        value["updated_reason"] = _optional_text_value(reason)
+        profile = bus.save_default_profile(MessageBusV2DefaultProfile.model_validate(value))
+        return profile.model_dump(mode="json")
+
+    def message_bus_profile_revisions(self, profile_id: str) -> JsonObject:
+        bus = self.dashboard_api.scheduler._require_message_bus_v2()
+        return {
+            "profile_id": profile_id,
+            "revisions": [
+                profile.model_dump(mode="json")
+                for profile in bus.repository.list_profile_revisions(profile_id)
+            ],
+        }
+
+    def rollback_message_bus_profile(self, profile_id: str, payload: JsonObject) -> JsonObject:
+        bus = self.dashboard_api.scheduler._require_message_bus_v2()
+        profile = bus.rollback_default_profile(
+            profile_id,
+            int(payload.get("version", 0)),
+            actor=MessageBusV2UpdateActor.USER,
+            reason=_optional_text_value(payload.get("reason")),
+        )
+        return profile.model_dump(mode="json")
+
+    def list_crawlers(self) -> JsonObject:
+        crawler_plane = self.dashboard_api.scheduler._require_crawler_plane()
+        return {
+            "crawlers": [item.model_dump(mode="json") for item in crawler_plane.list_crawlers()]
+        }
+
+    def get_crawler(self, crawler_id: str) -> JsonObject:
+        crawler_plane = self.dashboard_api.scheduler._require_crawler_plane()
+        package = crawler_plane.get_crawler(crawler_id)
+        return {
+            **package.model_dump(mode="json"),
+            "versions": [
+                item.model_dump(mode="json")
+                for item in crawler_plane.repository.list_versions(crawler_id)
+            ],
+        }
+
+    def create_crawler_version(self, crawler_id: str, payload: JsonObject) -> JsonObject:
+        crawler_plane = self.dashboard_api.scheduler._require_crawler_plane()
+        value = dict(payload)
+        value["crawler_id"] = crawler_id
+        base_version = value.pop("base_version", None)
+        created = crawler_plane.create_version(
+            CrawlerVersionSpec.model_validate(value),
+            base_version=int(base_version) if base_version is not None else None,
+        )
+        return created.model_dump(mode="json")
+
+    def get_crawler_version(self, crawler_id: str, version: int) -> JsonObject:
+        value = self.dashboard_api.scheduler._require_crawler_plane().get_version(
+            crawler_id, version
+        )
+        return value.model_dump(mode="json")
+
+    async def certify_crawler_version(self, crawler_id: str, version: int) -> JsonObject:
+        value = await self.dashboard_api.scheduler._require_crawler_plane().certify_version(
+            crawler_id, version
+        )
+        return value.model_dump(mode="json")
+
+    def get_crawler_certification(self, run_id: str) -> JsonObject:
+        value = self.dashboard_api.scheduler._require_crawler_plane().get_certification_result(
+            run_id
+        )
+        return value.model_dump(mode="json")
+
+    def promote_crawler_version(
+        self, crawler_id: str, version: int, payload: JsonObject
+    ) -> JsonObject:
+        value = self.dashboard_api.scheduler._require_crawler_plane().promote_version(
+            crawler_id,
+            version,
+            checkpoint_action=str(payload.get("checkpoint_action", "reject")),
+        )
+        return value.model_dump(mode="json")
+
+    def rollback_crawler_version(self, crawler_id: str, version: int) -> JsonObject:
+        value = self.dashboard_api.scheduler._require_crawler_plane().rollback_version(
+            crawler_id, version
+        )
+        return value.model_dump(mode="json")
+
+    async def execute_crawler(self, payload: JsonObject) -> JsonObject:
+        value = await self.dashboard_api.scheduler._require_crawler_plane().execute(
+            CrawlerExecutionRequest.model_validate(payload)
+        )
+        return value.model_dump(mode="json")
+
+    async def live_probe_crawler(self, payload: JsonObject) -> JsonObject:
+        crawler_plane = self.dashboard_api.scheduler._require_crawler_plane()
+        value = await crawler_plane.live_probe(
+            str(payload["crawler_id"]),
+            int(payload["version"]),
+            ticker=str(payload.get("ticker", "PROBE")),
+            parameters=cast(JsonObject, payload.get("parameters", {})),
+            baseline_cassette_ref=(
+                str(payload["baseline_cassette_ref"])
+                if payload.get("baseline_cassette_ref")
+                else None
+            ),
+        )
+        return value.model_dump(mode="json")
+
+    def get_crawler_execution(self, execution_id: str) -> JsonObject:
+        value = self.dashboard_api.scheduler._require_crawler_plane().get_execution(execution_id)
+        return value.model_dump(mode="json")
+
+    def get_crawler_execution_artifacts(self, execution_id: str) -> JsonObject:
+        crawler_plane = self.dashboard_api.scheduler._require_crawler_plane()
+        return {
+            "execution_id": execution_id,
+            "artifacts": [
+                item.model_dump(mode="json")
+                for item in crawler_plane.get_execution_artifacts(execution_id)
+            ],
+        }
+
+    def get_crawler_alert_policy(self, policy_key: str) -> JsonObject:
+        value = self.dashboard_api.scheduler._require_crawler_plane().get_alert_policy(policy_key)
+        return value.model_dump(mode="json")
+
+    def update_crawler_alert_policy(self, payload: JsonObject) -> JsonObject:
+        value = self.dashboard_api.scheduler._require_crawler_plane().update_alert_policy(
+            CrawlerAlertPolicy.model_validate(payload)
+        )
+        return value.model_dump(mode="json")
+
+    def list_crawler_alerts(
+        self, *, crawler_id: str | None = None, open_only: bool = False
+    ) -> JsonObject:
+        crawler_plane = self.dashboard_api.scheduler._require_crawler_plane()
+        return {
+            "alerts": [
+                item.model_dump(mode="json")
+                for item in crawler_plane.list_alerts(
+                    crawler_id=crawler_id,
+                    open_only=open_only,
+                )
+            ]
+        }
+
+    def get_crawler_alert(self, alert_id: str) -> JsonObject:
+        value = self.dashboard_api.scheduler._require_crawler_plane().get_alert(alert_id)
+        return value.model_dump(mode="json")
+
+    def resolve_crawler_alert(self, alert_id: str) -> JsonObject:
+        value = self.dashboard_api.scheduler._require_crawler_plane().resolve_alert(alert_id)
+        return value.model_dump(mode="json")
+
+    def register_crawler_source(self, payload: JsonObject) -> JsonObject:
+        value = self.dashboard_api.scheduler._require_crawler_plane().register_crawler_source(
+            CrawlerSourceRegistration.model_validate(payload)
+        )
+        return value.model_dump(mode="json")
+
+    def add_crawler_regression(self, execution_id: str) -> JsonObject:
+        value = self.dashboard_api.scheduler._require_crawler_plane().add_failure_to_regression(
+            execution_id
+        )
+        return value.model_dump(mode="json")
 
     def runtime_overview(
         self,
@@ -825,13 +1310,26 @@ class RealDashboardOverviewService:
             for execution in today_executions
             if _runtime_execution_status(execution, context) == "failed"
         }
-        pending_events = self.dashboard_api.scheduler.monitoring_service.pending_events(
-            ticker=normalized,
-            limit=READ_AGGREGATION_LIMIT,
-        )
+        if self.dashboard_api.scheduler.message_bus_v2_enabled:
+            queue_message_count = len(
+                self.dashboard_api.scheduler._require_message_bus_v2().pending_stream(
+                    "persistent_runtime_v2",
+                    normalized,
+                    limit=READ_AGGREGATION_LIMIT,
+                )
+            )
+        elif self.dashboard_api.scheduler._legacy_monitoring_service_enabled:
+            queue_message_count = len(
+                self.dashboard_api.scheduler.monitoring_service.pending_events(
+                    ticker=normalized,
+                    limit=READ_AGGREGATION_LIMIT,
+                )
+            )
+        else:
+            queue_message_count = 0
         return {
             "ticker": normalized,
-            "queue_message_count": len(pending_events),
+            "queue_message_count": queue_message_count,
             "w1_today_count": _runtime_node_count(
                 today_executions,
                 "w1",
@@ -1079,11 +1577,7 @@ class RealDashboardOverviewService:
         event = RuntimeAuditEvent(
             ticker=normalized,
             event_type=REVENUE_AUDIT_EVENT_TYPE,
-            severity=(
-                AuditSeverity.ERROR
-                if run.status.value == "failed"
-                else AuditSeverity.INFO
-            ),
+            severity=(AuditSeverity.ERROR if run.status.value == "failed" else AuditSeverity.INFO),
             message=f"Revenue audit {run.status.value} for {target_date.isoformat()}.",
             payload={
                 "audit_run_id": run.run_id,
@@ -1273,16 +1767,12 @@ class RealDashboardOverviewService:
                 )
             ]
         if node_filter:
-            items = [
-                item for item in items if str(item.get("node") or "").lower() == node_filter
-            ]
+            items = [item for item in items if str(item.get("node") or "").lower() == node_filter]
         if model_filter:
             items = [item for item in items if item.get("model") == model_filter]
         if status_filter:
             items = [
-                item
-                for item in items
-                if str(item.get("status") or "").lower() == status_filter
+                item for item in items if str(item.get("status") or "").lower() == status_filter
             ]
         items.sort(key=lambda item: str(item.get("time") or ""), reverse=True)
         return _paginate(items, limit=limit, cursor=cursor)
@@ -1297,25 +1787,57 @@ class RealDashboardOverviewService:
         normalized = _ticker(ticker) if ticker else None
         requested_types = _csv_set(event_types)
         events: list[JsonObject] = []
-        for event in self._events(normalized):
-            events.append(
-                {
-                    "event_id": f"mb_{event.event_id}",
-                    "event_type": "message_bus.message.created",
-                    "ticker": event.ticker,
-                    "occurred_at": _dt(event.event_time),
-                    "payload": {
-                        "source_id": event.source_id,
-                        "standard_message_id": event.standard_message_id,
-                        "stream_offset": event.stream_offset,
-                    },
-                }
+        poll_states: list[Any] = []
+        if self.dashboard_api.scheduler.message_bus_v2_enabled:
+            v2_repository = self.dashboard_api.scheduler._require_message_bus_v2().repository
+            tickers = (
+                [normalized]
+                if normalized
+                else [state.ticker for state in v2_repository.list_ticker_states()]
             )
-        repository = self.dashboard_api.scheduler.monitoring_service.repository
-        for state in repository.list_poll_states(ticker=normalized):
-            if str(state.status) != "failed":
+            for stream_ticker in tickers:
+                for value in v2_repository.read_stream(
+                    stream_ticker, after_offset=0, limit=READ_AGGREGATION_LIMIT
+                ):
+                    events.append(
+                        {
+                            "event_id": value.item.stream_item_id,
+                            "event_type": value.item.event_type,
+                            "ticker": value.item.ticker,
+                            "occurred_at": _dt(value.item.published_at),
+                            "payload": {
+                                "stream_offset": value.item.stream_offset,
+                                "member_count": value.item.member_count,
+                            },
+                        }
+                    )
+            poll_states = list(v2_repository.list_poll_states(ticker=normalized))
+        elif self.dashboard_api.scheduler._legacy_monitoring_service_enabled:
+            for event in self._events(normalized):
+                events.append(
+                    {
+                        "event_id": f"mb_{event.event_id}",
+                        "event_type": "message_bus.message.created",
+                        "ticker": event.ticker,
+                        "occurred_at": _dt(event.event_time),
+                        "payload": {
+                            "source_id": event.source_id,
+                            "standard_message_id": event.standard_message_id,
+                            "stream_offset": event.stream_offset,
+                        },
+                    }
+                )
+            legacy_repository = self.dashboard_api.scheduler.monitoring_service.repository
+            poll_states = list(legacy_repository.list_poll_states(ticker=normalized))
+        for state in poll_states:
+            status = state.status.value if hasattr(state.status, "value") else str(state.status)
+            if status != "failed":
                 continue
-            occurred_at = state.last_error_at or state.updated_at
+            occurred_at = (
+                getattr(state, "last_failure_at", None)
+                or getattr(state, "last_error_at", None)
+                or state.updated_at
+            )
             events.append(
                 {
                     "event_id": f"mb_poll_failed_{state.binding_id}_{int(occurred_at.timestamp())}",
@@ -1345,9 +1867,7 @@ class RealDashboardOverviewService:
                 runtime_contexts[execution_ticker] = context
             status = _runtime_execution_status(execution, context)
             occurred_at = execution.updated_at or execution.created_at
-            event_id = (
-                f"rt_{execution.execution_id}_{int(_aware(occurred_at).timestamp())}"
-            )
+            event_id = f"rt_{execution.execution_id}_{int(_aware(occurred_at).timestamp())}"
             events.append(
                 {
                     "event_id": event_id,
@@ -1551,16 +2071,18 @@ class RealDashboardOverviewService:
     ) -> tuple[DashboardDocumentRunRecord, list[JsonObject]] | None:
         internal_types = _internal_document_types_for_frontend_types(document_types)
         scheduler_run_id = self._scheduler_document_run_id(ticker)
-        records = self._document_records(
-            ticker,
-            internal_types,
-            run_id=scheduler_run_id,
-            limit=1,
-        ) if scheduler_run_id else self._document_records(ticker, internal_types)
+        records = (
+            self._document_records(
+                ticker,
+                internal_types,
+                run_id=scheduler_run_id,
+                limit=1,
+            )
+            if scheduler_run_id
+            else self._document_records(ticker, internal_types)
+        )
         if scheduler_run_id:
-            records = [
-                record for record in records if record.run_id == scheduler_run_id
-            ]
+            records = [record for record in records if record.run_id == scheduler_run_id]
         for record in records:
             documents = [
                 document
@@ -1571,9 +2093,7 @@ class RealDashboardOverviewService:
                         document_type,
                         version_status="current",
                         include_raw=True,
-                        include_cards=(
-                            document_type != "document3" or include_cards_for_document3
-                        ),
+                        include_cards=(document_type != "document3" or include_cards_for_document3),
                     )
                 )
                 is not None
@@ -1672,14 +2192,11 @@ class RealDashboardOverviewService:
             DocumentType.MONITORING_POLICY,
             MonitoringPolicyDocument,
         ):
-            policies = (
-                document.policies
-                or [
-                    *document.direct_trade_rules,
-                    *document.push_to_agent_rules,
-                    *document.cache_rules,
-                ]
-            )
+            policies = document.policies or [
+                *document.direct_trade_rules,
+                *document.push_to_agent_rules,
+                *document.cache_rules,
+            ]
             for policy in policies:
                 items.append(_policy_item(policy, document=document))
         return items
@@ -1692,14 +2209,23 @@ class RealDashboardOverviewService:
         zone: ZoneInfo,
     ) -> JsonObject:
         messages = self._messages(state.ticker)
-        events = self._events(state.ticker)
+        events = (
+            self.dashboard_api.scheduler._require_message_bus_v2().repository.read_stream(
+                state.ticker, after_offset=0, limit=READ_AGGREGATION_LIMIT
+            )
+            if self.dashboard_api.scheduler.message_bus_v2_enabled
+            else self._events(state.ticker)
+        )
         executions = self._executions(state.ticker)
         trades = self._trading_records(state.ticker)
         exceptions = self._exceptions(state.ticker)
         last_message_at = _latest_dt(
             [
                 *(message.normalized_at for message in messages),
-                *(event.event_time for event in events),
+                *(
+                    event.item.published_at if hasattr(event, "item") else event.event_time
+                    for event in events
+                ),
             ]
         )
         last_worker_processed_at = _latest_dt(execution.created_at for execution in executions)
@@ -1831,9 +2357,7 @@ class RealDashboardOverviewService:
             message_bus_status = RuntimeHealth.UNKNOWN
         elif any(state.health is RuntimeHealth.BLOCKED for state in states):
             message_bus_status = RuntimeHealth.BLOCKED
-        elif any(
-            state.health is RuntimeHealth.DEGRADED or state.last_error for state in states
-        ):
+        elif any(state.health is RuntimeHealth.DEGRADED or state.last_error for state in states):
             message_bus_status = RuntimeHealth.DEGRADED
         else:
             message_bus_status = RuntimeHealth.NORMAL
@@ -1846,7 +2370,16 @@ class RealDashboardOverviewService:
             "status_color": _status_color(message_bus_status),
         }
 
-    def _messages(self, ticker: str | None = None) -> list[StandardMessage]:
+    def _messages(self, ticker: str | None = None) -> list[Any]:
+        if self.dashboard_api.scheduler.message_bus_v2_enabled:
+            return list(
+                self.dashboard_api.scheduler._require_message_bus_v2().repository.list_standard(
+                    ticker=ticker,
+                    limit=READ_AGGREGATION_LIMIT,
+                )
+            )
+        if not self.dashboard_api.scheduler._legacy_monitoring_service_enabled:
+            return []
         return self.dashboard_api.scheduler.monitoring_service.recent_messages(
             ticker=ticker,
             limit=READ_AGGREGATION_LIMIT,
@@ -1872,13 +2405,24 @@ class RealDashboardOverviewService:
             include_body=include_body,
         )
 
-    def _raw_messages(self, ticker: str | None = None) -> list[RawExternalMessage]:
+    def _raw_messages(self, ticker: str | None = None) -> list[Any]:
+        if self.dashboard_api.scheduler.message_bus_v2_enabled:
+            return list(
+                self.dashboard_api.scheduler._require_message_bus_v2().repository.list_raw(
+                    ticker=ticker,
+                    limit=READ_AGGREGATION_LIMIT,
+                )
+            )
+        if not self.dashboard_api.scheduler._legacy_monitoring_service_enabled:
+            return []
         return self.dashboard_api.scheduler.monitoring_service.repository.recent_raw_messages(
             ticker=ticker,
             limit=READ_AGGREGATION_LIMIT,
         )
 
     def _events(self, ticker: str | None = None) -> list[EventStreamItem]:
+        if not self.dashboard_api.scheduler._legacy_monitoring_service_enabled:
+            return []
         return self.dashboard_api.scheduler.monitoring_service.recent_events(
             ticker=ticker,
             limit=READ_AGGREGATION_LIMIT,
@@ -1934,10 +2478,7 @@ class RealDashboardOverviewService:
                 and (end_time is None or _record_at_or_before(record, end_time))
                 and (node is None or str(record.get("node") or "").lower() == node.lower())
                 and (model is None or record.get("model") == model)
-                and (
-                    status is None
-                    or str(record.get("status") or "").lower() == status.lower()
-                )
+                and (status is None or str(record.get("status") or "").lower() == status.lower())
             )
         ]
         records.sort(key=lambda item: str(item.get("time") or ""), reverse=True)
@@ -2154,6 +2695,8 @@ def _ticker(value: str) -> str:
 
 def _monitor_mode(value: str | None) -> str:
     resolved = (value or DEFAULT_MONITOR_MODE).strip()
+    if resolved in {"paper_trading", "broker_trading"}:
+        resolved = MonitorMode.TRADING.value
     if resolved not in ENABLED_MONITOR_MODES:
         raise UnsupportedMonitorMode(resolved)
     return resolved
@@ -2242,6 +2785,82 @@ def _message_item(
     }
 
 
+def _message_bus_v2_item(
+    message: MessageBusV2StandardMessage,
+    *,
+    source_label: str | None,
+    include_body: bool,
+) -> JsonObject:
+    return {
+        "message_id": message.standard_message_id,
+        "raw_message_id": message.raw_message_id,
+        "ticker": message.ticker,
+        "source_id": message.source_id,
+        "source_label": source_label or message.source,
+        "collected_at": _dt(message.collected_at),
+        "published_at": _dt(message.published_at),
+        "title": message.title or _truncate(message.body, 120),
+        "summary": _truncate(message.body, 240),
+        "body": message.body if include_body else None,
+        "url": message.url,
+        "processing_status": "completed",
+        "revision": message.revision,
+        "source_item_key": message.source_item_key,
+        "runtime_execution_id": None,
+    }
+
+
+def _message_bus_v2_source_config(
+    source: MessageBusV2SourceDefinition,
+    *,
+    binding: MessageBusV2TickerSourceBinding | None,
+    poll_state: MessageBusV2PollState | None,
+) -> JsonObject:
+    if not source.enabled or binding is None or not binding.enabled:
+        health = "disabled"
+    elif poll_state is None:
+        health = "never_polled"
+    elif poll_state.status.value == "succeeded":
+        health = "normal"
+    else:
+        health = poll_state.status.value
+    return {
+        "source_id": source.source_id,
+        "display_name": source.display_name,
+        "source_kind": source.kind.value,
+        "adapter_ref": source.adapter_ref,
+        "enabled": bool(source.enabled and binding is not None and binding.enabled),
+        "registered": True,
+        "source_definition": source.model_dump(mode="json"),
+        "parameter_schema": source.parameter_schema,
+        "scheduler_group": source.scheduler_group,
+        "scheduler_constraints": source.scheduler_constraints.model_dump(mode="json"),
+        "binding": binding.model_dump(mode="json") if binding else None,
+        "poll_state": (
+            poll_state.model_dump(mode="json")
+            if poll_state
+            else {
+                "binding_id": binding.binding_id if binding else None,
+                "source_id": source.source_id,
+                "status": "never_polled" if binding else "disabled",
+                "last_error_message": None,
+            }
+        ),
+        "health": health,
+        "agent_mutable_fields": [
+            "source_definition",
+            "adapter_ref",
+            "parameter_schema",
+            "scheduler_group",
+            "scheduler_constraints",
+            "enabled",
+            "source_parameters",
+            "polling",
+            "streaming",
+        ],
+    }
+
+
 def _message_summary(message: StandardMessage) -> str | None:
     for key in ("summary", "description", "excerpt"):
         value = message.metadata.get(key)
@@ -2287,9 +2906,7 @@ def _message_source_config(
         "parameter_schema": _parameter_schema(source_id),
         "binding": {
             "binding_id": (
-                binding.binding_id
-                if binding is not None
-                else binding_id_for(ticker, source_id)
+                binding.binding_id if binding is not None else binding_id_for(ticker, source_id)
             ),
             "ticker": ticker,
             "source_id": source_id,
@@ -2324,9 +2941,7 @@ def _poll_state_payload(
         status = str(state.status)
     return {
         "binding_id": (
-            binding.binding_id
-            if binding is not None
-            else binding_id_for(ticker, source_id)
+            binding.binding_id if binding is not None else binding_id_for(ticker, source_id)
         ),
         "source_id": source_id,
         "ticker": ticker,
@@ -2454,10 +3069,11 @@ def _ticker_uptime_seconds(state: TickerRunState | None) -> int:
     return max(0, int((datetime.now(UTC) - _aware(state.started_at)).total_seconds()))
 
 
-def _media_enrichment_success_rate(messages: list[StandardMessage]) -> float | None:
+def _media_enrichment_success_rate(messages: Sequence[Any]) -> float | None:
     records: list[JsonObject] = []
     for message in messages:
-        value = message.metadata.get("media_enrichment")
+        metadata = getattr(message, "metadata", {})
+        value = metadata.get("media_enrichment") if isinstance(metadata, dict) else None
         if isinstance(value, dict):
             records.append(value)
     if not records:
@@ -2555,9 +3171,7 @@ def _runtime_graph_node(
 
 def _runtime_graph_edges(context: RuntimeDashboardContext) -> list[JsonObject]:
     direct_trading = sum(
-        1
-        for execution in context.executions
-        if _runtime_route_value(execution) == "trading_record"
+        1 for execution in context.executions if _runtime_route_value(execution) == "trading_record"
     )
     route_to_o3 = sum(
         1
@@ -2838,8 +3452,7 @@ def _runtime_node_records(
                         status="failed",
                         input_summary=f"{exception.node} runtime exception.",
                         output_summary=(
-                            f"{exception.exception_type}: "
-                            f"{_truncate(exception.message, 120)}"
+                            f"{exception.exception_type}: {_truncate(exception.message, 120)}"
                         ),
                         created_at=exception.created_at,
                     )
@@ -3059,25 +3672,19 @@ def _runtime_result_records_by_type(
         for items in context.trading_records_by_source.values():
             for item in items:
                 records.append(
-                    _runtime_result_record_from_trading_record(
-                        context, item, executions_by_source
-                    )
+                    _runtime_result_record_from_trading_record(context, item, executions_by_source)
                 )
     elif result_type == "exception_queue":
         for items in context.exceptions_by_source.values():
             for item in items:
                 records.append(
-                    _runtime_result_record_from_exception(
-                        context, item, executions_by_source
-                    )
+                    _runtime_result_record_from_exception(context, item, executions_by_source)
                 )
     elif result_type == "objection":
         for items in context.objections_by_source.values():
             for item in items:
                 records.append(
-                    _runtime_result_record_from_objection(
-                        context, item, executions_by_source
-                    )
+                    _runtime_result_record_from_objection(context, item, executions_by_source)
                 )
     elif result_type == "known_event_patch":
         for items in context.known_event_patch_by_source.values():
@@ -3091,17 +3698,13 @@ def _runtime_result_records_by_type(
         for items in context.archive_by_source.values():
             for item in items:
                 records.append(
-                    _runtime_result_record_from_archive(
-                        context, item, executions_by_source
-                    )
+                    _runtime_result_record_from_archive(context, item, executions_by_source)
                 )
     elif result_type == "ingest_queue":
         for items in context.ingest_queue_by_source.values():
             for item in items:
                 records.append(
-                    _runtime_result_record_from_ingest_queue(
-                        context, item, executions_by_source
-                    )
+                    _runtime_result_record_from_ingest_queue(context, item, executions_by_source)
                 )
     return records
 
@@ -3441,17 +4044,13 @@ def _runtime_node_count(
     context: RuntimeDashboardContext,
 ) -> int:
     return sum(
-        1
-        for execution in executions
-        if _runtime_execution_in_node(execution, node_id, context)
+        1 for execution in executions if _runtime_execution_in_node(execution, node_id, context)
     )
 
 
 def _runtime_route_count(context: RuntimeDashboardContext, route: str) -> int:
     return sum(
-        1
-        for execution in context.executions
-        if _runtime_final_route(execution, context) == route
+        1 for execution in context.executions if _runtime_final_route(execution, context) == route
     )
 
 
@@ -3519,8 +4118,7 @@ def _runtime_exception_types(
 ) -> list[str]:
     source_id = execution.source_message.source_message_id
     types = [
-        exception.exception_type
-        for exception in context.exceptions_by_source.get(source_id, [])
+        exception.exception_type for exception in context.exceptions_by_source.get(source_id, [])
     ]
     if types:
         return types
@@ -3789,10 +4387,7 @@ def _cost_records_from_execution(execution: RuntimeExecutionRecord) -> list[Json
             or audit.get("output_tokens")
             or audit.get("completion_tokens")
         )
-        total_tokens = _int_value(
-            usage.get("total_tokens")
-            or audit.get("total_tokens")
-        )
+        total_tokens = _int_value(usage.get("total_tokens") or audit.get("total_tokens"))
         resolved_input = input_tokens or 0
         resolved_output = output_tokens or 0
         resolved_total = (
@@ -3968,9 +4563,7 @@ def _cost_audit_payload(
             "today_input_tokens": _sum_int(record.get("input_tokens") for record in records),
             "today_output_tokens": _sum_int(record.get("output_tokens") for record in records),
             "today_total_tokens": _sum_int(record.get("total_tokens") for record in records),
-            "today_total_cost_usd": _sum_optional(
-                record.get("cost_usd") for record in records
-            ),
+            "today_total_cost_usd": _sum_optional(record.get("cost_usd") for record in records),
             "highest_cost_node": _highest_cost_node(records),
             "retry_cost_usd": _sum_optional(
                 record.get("cost_usd") for record in records if record.get("is_retry") is True
@@ -4272,10 +4865,7 @@ def _runtime_node_output_summary(
     if node_id == "w2":
         if execution.w2_result is None:
             return None
-        return (
-            f"type={execution.w2_result.type}, "
-            f"policy={execution.w2_result.matched_policy_code}"
-        )
+        return f"type={execution.w2_result.type}, policy={execution.w2_result.matched_policy_code}"
     if node_id == "route_engine":
         return f"route={_runtime_final_route(execution, context)}"
     if node_id == "a2":
@@ -4323,8 +4913,7 @@ def _runtime_executions_by_source(
     context: RuntimeDashboardContext,
 ) -> dict[str, RuntimeExecutionRecord]:
     return {
-        execution.source_message.source_message_id: execution
-        for execution in context.executions
+        execution.source_message.source_message_id: execution for execution in context.executions
     }
 
 
@@ -4750,8 +5339,7 @@ def _runtime_strategy_cards(
                         "key": "policies",
                         "label": "Policies",
                         "value": [
-                            _policy_item(policy, document=policies)
-                            for policy in policy_items
+                            _policy_item(policy, document=policies) for policy in policy_items
                         ],
                     },
                     {
@@ -4851,9 +5439,13 @@ def _blackboard_document_records(
             and any(_document_bucket(run, internal_type) for internal_type in internal_types)
         ]
     try:
-        runs = [blackboard.get_run(run_id)] if run_id else blackboard.list_runs_by_ticker(
-            ticker,
-            limit=limit,
+        runs = (
+            [blackboard.get_run(run_id)]
+            if run_id
+            else blackboard.list_runs_by_ticker(
+                ticker,
+                limit=limit,
+            )
         )
     except RunNotFoundError:
         return []
@@ -5379,9 +5971,7 @@ def _latest_document_commit_summary(
 ) -> DashboardDocumentCommitSummary | None:
     target_types = _internal_document_types_for_frontend(document_type)
     candidates = [
-        commit
-        for commit in record.commit_summaries
-        if commit.document_type in target_types
+        commit for commit in record.commit_summaries if commit.document_type in target_types
     ]
     if not candidates and record.commit_summaries:
         candidates = list(record.commit_summaries)

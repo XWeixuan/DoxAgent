@@ -38,6 +38,27 @@ class PublicationState(StrEnum):
     PARTIAL = "PARTIAL"
 
 
+class ValidationSeverity(StrEnum):
+    """Runtime disposition for deterministic findings.
+
+    Record/file defects are recoverable by default.  ``FATAL`` is reserved for
+    global integrity failures such as frozen-input mutation or stale publication
+    state; it must never be selected by an Agent-authored severity flag.
+    """
+
+    INFO = "INFO"
+    WARNING = "WARNING"
+    RECOVERABLE = "RECOVERABLE"
+    FATAL = "FATAL"
+
+
+class ValidationScope(StrEnum):
+    RECORD = "RECORD"
+    FILE = "FILE"
+    STAGE = "STAGE"
+    GLOBAL = "GLOBAL"
+
+
 class CalibrationSourceKind(StrEnum):
     D2 = "D2"
     REFERENCE_VIEW = "REFERENCE_VIEW"
@@ -244,10 +265,7 @@ class TriggerCalibrationRecord(ContractModel):
 
     @model_validator(mode="after")
     def unresolved_disposition_has_reason(self) -> TriggerCalibrationRecord:
-        if (
-            self.disposition is TriggerDisposition.TRIGGER_UNRESOLVED
-            and not self.unresolved_reason
-        ):
+        if self.disposition is TriggerDisposition.TRIGGER_UNRESOLVED and not self.unresolved_reason:
             raise ValueError("TRIGGER_UNRESOLVED record requires unresolved_reason")
         return self
 
@@ -262,10 +280,7 @@ class TriggerPathDisposition(ContractModel):
 
     @model_validator(mode="after")
     def unresolved_disposition_has_reason(self) -> TriggerPathDisposition:
-        if (
-            self.disposition is TriggerDisposition.TRIGGER_UNRESOLVED
-            and not self.unresolved_reason
-        ):
+        if self.disposition is TriggerDisposition.TRIGGER_UNRESOLVED and not self.unresolved_reason:
             raise ValueError("TRIGGER_UNRESOLVED disposition requires unresolved_reason")
         return self
 
@@ -319,9 +334,7 @@ class FrozenInputFile(ContractModel):
 
 
 class Document3InputManifest(ContractModel):
-    schema_version: Literal["document3.input_manifest.v1"] = (
-        "document3.input_manifest.v1"
-    )
+    schema_version: Literal["document3.input_manifest.v1"] = "document3.input_manifest.v1"
     files: list[FrozenInputFile] = Field(min_length=4)
 
     @field_validator("files")
@@ -395,6 +408,12 @@ class ReviewResult(AgentModel):
 class ValidationFinding(ContractModel):
     code: str
     message: str
+    severity: ValidationSeverity = ValidationSeverity.WARNING
+    scope: ValidationScope = ValidationScope.RECORD
+    recovery_action: str | None = None
+    affected_ids: list[str] = Field(default_factory=list)
+    # Compatibility field for already persisted reports. New code derives hard
+    # blocking from ``severity == FATAL`` and never from Agent-authored content.
     blocking: bool = False
 
 
@@ -405,7 +424,11 @@ class ValidationReport(ContractModel):
 
     @property
     def blocking_findings(self) -> list[ValidationFinding]:
-        return [finding for finding in self.findings if finding.blocking]
+        return [
+            finding
+            for finding in self.findings
+            if finding.blocking or finding.severity is ValidationSeverity.FATAL
+        ]
 
 
 class RuntimeConditionProjection(ContractModel):
@@ -446,9 +469,7 @@ class RuntimePolicyRecord(ContractModel):
 
 
 class RuntimePolicyProjection(ContractModel):
-    schema_version: Literal["document3.runtime_projection.v2"] = (
-        "document3.runtime_projection.v2"
-    )
+    schema_version: Literal["document3.runtime_projection.v2"] = "document3.runtime_projection.v2"
     ticker: str
     policy_set_version: int = Field(ge=1)
     policy_set_published_at: datetime

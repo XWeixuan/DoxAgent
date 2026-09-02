@@ -36,6 +36,8 @@ from doxagent.persistent_runtime_v2.schema import (
     W1NoveltyVerdict,
     W1Round1Result,
     W2PolicyResult,
+    W3CaseResult,
+    W3ContextVersionPin,
 )
 from doxagent.persistent_runtime_v2.service import PersistentRuntimeV2Service
 from doxagent.persistent_runtime_v2.transport import (
@@ -61,15 +63,15 @@ from doxagent.workflows.codex_document3.schema import (
         ("NEW", False, False, True, "W3"),
         ("NEW", True, True, False, "W3"),
         ("NEW", False, True, False, "TRADE"),
-        ("NEW", True, False, False, "ADD_TO_DELTA"),
-        ("NEW", False, False, False, "ADD_TO_DELTA"),
+        ("NEW", True, False, False, "W3"),
+        ("NEW", False, False, False, "W3"),
         ("OLD", True, True, True, "W3"),
-        ("OLD", False, True, True, "ARCHIVE"),
+        ("OLD", False, True, True, "W3"),
         ("OLD", True, False, True, "W3"),
-        ("OLD", False, False, True, "ARCHIVE"),
+        ("OLD", False, False, True, "W3"),
         ("OLD", True, True, False, "W3"),
         ("OLD", False, True, False, "ARCHIVE"),
-        ("OLD", True, False, False, "ADD_TO_DELTA"),
+        ("OLD", True, False, False, "W3"),
         ("OLD", False, False, False, "ARCHIVE"),
     ],
 )
@@ -93,7 +95,7 @@ def test_router_matches_frozen_sixteen_row_matrix(
     )
     decision = route_runtime_case(w1, w2)
     assert decision.primary_route is RuntimePrimaryRoute(expected)
-    if novelty == "OLD" and not w1_low and policy_hit:
+    if expected == "ARCHIVE" and novelty == "OLD" and policy_hit:
         assert "mark_badcase" in decision.side_effects
 
 
@@ -245,19 +247,61 @@ def _source() -> SourceMessageEnvelope:
     return SourceMessageEnvelope(
         source_message_id="msg-1",
         source_id="benzinga",
+        binding_id="MU:benzinga",
+        url="https://example.test/msg-1",
+        published_at=timestamp,
         collected_at=timestamp,
         message_bus_event_time=timestamp,
+        stream_item_id="stream-msg-1",
+        member_count=1,
         snapshot=SourceMessageSnapshot(
             ticker="MU",
-            source_type="media",
-            interface_type="polling",
             title="Customer completed qualification",
             body="Micron confirmed that the customer completed qualification.",
         ),
     )
 
 
-def test_service_runs_parallel_hot_path_then_async_r3(tmp_path: Path) -> None:
+class _FakeW3:
+    closed = False
+
+    def run(self, **_kwargs: Any) -> tuple[W3CaseResult, str, W3ContextVersionPin]:
+        return (
+            W3CaseResult(
+                w3_case_id=_kwargs["w3_case"].w3_case_id,
+                novelty={"result": "NEW", "reference_ids": [], "reason": "new fact"},
+                policy={"policy_ids": [], "reason": "not covered"},
+                expert_trade={
+                    "evaluated": True,
+                    "trade": False,
+                    "direction": None,
+                    "prior_expectation": "Qualification remained pending.",
+                    "expectation_delta": "Qualification completed.",
+                    "reason": "Important but timing transmission is not directional.",
+                },
+                delta_candidates=[
+                    RuntimeFactCandidate(
+                        proposition="Customer completed qualification.",
+                        assertion_state="ACTUAL",
+                        occurrence_date=date(2026, 8, 29),
+                        entities=["MU"],
+                    )
+                ],
+            ),
+            "thread-main-mu",
+            W3ContextVersionPin(
+                document1_run_id="d1-mu",
+                document2_run_id="d2-mu",
+                event_library_version=7,
+                policy_set_version=3,
+            ),
+        )
+
+    def close(self) -> None:
+        self.closed = True
+
+
+def test_service_runs_parallel_hot_path_then_w3_owned_delta(tmp_path: Path) -> None:
     repository = SQLitePersistentRuntimeV2Repository(tmp_path / "runtime-v2.sqlite3")
     responses = _FakeResponses()
     service = PersistentRuntimeV2Service(
@@ -268,18 +312,21 @@ def test_service_runs_parallel_hot_path_then_async_r3(tmp_path: Path) -> None:
         retry_delays_seconds=(0, 0),
         sleep=lambda _seconds: None,
         dispatch_effects=False,
+        w3_agent=_FakeW3(),
     )
     adjudicated = service.execute_message(_source())
-    assert adjudicated.status == "ADJUDICATED"
+    assert adjudicated.status == "PENDING_W3"
     assert adjudicated.route is not None
-    assert adjudicated.route.primary_route == "ADD_TO_DELTA"
+    assert adjudicated.route.primary_route == "W3"
     assert adjudicated.w1_extraction is None
 
     assert service.process_pending_effects() == 1
     completed = repository.get_case(adjudicated.case_id)
     assert completed is not None
     assert completed.status == "COMPLETED"
-    assert completed.w1_extraction is not None
+    assert completed.w1_extraction is None
+    assert completed.resolved_route is not None
+    assert completed.resolved_route.primary_route == "ADD_TO_DELTA"
     provisional = repository.list_provisional("MU", date(2026, 8, 29))
     assert [item.provisional_event_id for item in provisional] == ["E185"]
     frozen = RuntimeDeltaBatchAdapter(repository).freeze(

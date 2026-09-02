@@ -7,6 +7,8 @@ from typing import Any, cast
 import httpx
 
 from doxagent.agents import default_agent_registry
+from doxagent.message_bus_v2.repository import MessageBusV2Repository
+from doxagent.message_bus_v2.service import MessageBusV2Service
 from doxagent.models import AgentName, ResultStatus
 from doxagent.monitoring.collectors import MonitoringCollectorRegistry
 from doxagent.monitoring.repository import InMemoryMonitoringRepository, SQLiteMonitoringRepository
@@ -1292,8 +1294,10 @@ def test_stocktwits_persistence_config_is_user_side_and_visible() -> None:
     assert "hot_message_threshold" in stocktwits_item["user_only_fields"]
 
 
-def test_agent_tools_can_update_parameters_but_not_poll_interval() -> None:
-    service = MonitoringBusService(InMemoryMonitoringRepository())
+def test_agent_tools_can_update_parameters_and_polling(tmp_path: Path) -> None:
+    service = MessageBusV2Service(MessageBusV2Repository(tmp_path / "message-bus-v2.sqlite3"))
+    service.bootstrap()
+    service.start_ticker("AAPL")
     tools = MonitoringToolClient(settings=_settings(), service=service)
 
     update = tools.for_tool("monitoring.update_ticker_config").call(
@@ -1306,10 +1310,13 @@ def test_agent_tools_can_update_parameters_but_not_poll_interval() -> None:
             },
         )
     )
-    denied = tools.for_tool("monitoring.update_ticker_config").call(
+    polling = tools.for_tool("monitoring.update_ticker_config").call(
         _request(
             "monitoring.update_ticker_config",
-            {"source_id": "benzinga_news", "poll_interval_seconds": 30},
+            {
+                "source_id": "benzinga_news",
+                "polling": {"target_interval_seconds": 30},
+            },
         )
     )
     config = tools.for_tool("monitoring.get_ticker_config").call(
@@ -1317,18 +1324,13 @@ def test_agent_tools_can_update_parameters_but_not_poll_interval() -> None:
     )
 
     assert update.status is ResultStatus.SUCCEEDED
-    assert denied.status is ResultStatus.FAILED
-    assert denied.error is not None
-    assert denied.error.code == "monitoring_permission_denied"
+    assert polling.status is ResultStatus.SUCCEEDED
     assert config.status is ResultStatus.SUCCEEDED
-    by_parameter = config.output["by_parameter_sources"]
-    assert by_parameter[0]["binding"]["parameters"]["search_terms"] == [
+    bindings = {item["source_id"]: item for item in config.output["bindings"]}
+    assert bindings["tikhub_x_search"]["source_parameters"]["search_terms"] == [
         "Apple product event"
     ]
-    assert by_parameter[0]["user_only_fields"] == [
-        "poll_interval_seconds",
-        "global_source_enabled",
-    ]
+    assert bindings["benzinga_news"]["polling"]["target_interval_seconds"] == 30
 
 
 def test_source_specific_parameter_schema_rejects_unsupported_fields() -> None:

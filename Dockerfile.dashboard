@@ -24,6 +24,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy \
     UV_PROJECT_ENVIRONMENT=/app/.venv \
+    PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
     PATH="/app/.venv/bin:$PATH" \
     DOXAGENT_DASHBOARD_API_MODE=real \
     DOXAGENT_DASHBOARD_AUTH_MODE=supabase \
@@ -40,6 +41,8 @@ COPY src ./src
 COPY prompts ./prompts
 
 RUN uv sync --frozen
+RUN playwright install --with-deps chromium \
+    && chmod -R a+rX /ms-playwright
 
 COPY --from=dashboard-frontend /app/frontend/dashboard/dist /app/frontend/dashboard/dist
 

@@ -7,6 +7,7 @@ from collections.abc import Callable
 from concurrent.futures import Future, ThreadPoolExecutor
 from datetime import timedelta
 from pathlib import Path
+from threading import Lock, Thread, current_thread
 from time import perf_counter
 from typing import TYPE_CHECKING, Any, TypeVar
 from zoneinfo import ZoneInfo
@@ -14,13 +15,12 @@ from zoneinfo import ZoneInfo
 from pydantic import BaseModel
 
 from doxagent.event_library.provider import KnownEventIndexSnapshot
-from doxagent.monitoring.schema import SourceType
 from doxagent.workflows.codex_document3.schema import RuntimePolicyProjection
 
 from .prompts import RuntimeV2PromptSet
 from .providers import RuntimeKnownEventProvider, RuntimePolicyProvider
 from .repository import PersistentRuntimeV2Repository
-from .router import route_runtime_case
+from .router import route_runtime_case, route_w3_result
 from .schema import (
     ArchiveRecord,
     BadcaseRecord,
@@ -35,6 +35,7 @@ from .schema import (
     RuntimeTechnicalStatus,
     RuntimeVersionPin,
     SourceMessageEnvelope,
+    TradeDecisionOrigin,
     TradeRecord,
     W1CaptureMode,
     W1FactExtractionResult,
@@ -42,7 +43,12 @@ from .schema import (
     W1NoveltyVerdict,
     W1Round1Result,
     W2PolicyResult,
+    W3CaseResult,
+    W3CaseStatus,
+    W3CoverageGapRecord,
+    W3Mode,
     W3RouteCase,
+    W3ThreadKind,
     new_runtime_v2_id,
     utc_now,
 )
@@ -52,6 +58,7 @@ from .transport import (
     RuntimeResponsesRequest,
     RuntimeResponsesResult,
 )
+from .w3 import W3Agent, W3Error
 
 if TYPE_CHECKING:
     from .projection import RuntimeV2ProjectionOutbox
@@ -80,28 +87,34 @@ class PersistentRuntimeV2Service:
         policies: RuntimePolicyProvider,
         prompts: RuntimeV2PromptSet | None = None,
         prompt_root: Path | None = None,
-        social_enabled: bool = False,
         retry_delays_seconds: tuple[float, float] = (5.0, 10.0),
         sleep: Callable[[float], None] = time.sleep,
         dispatch_effects: bool = True,
         projection_outbox: RuntimeV2ProjectionOutbox | None = None,
+        w3_agent: W3Agent | None = None,
+        w3_max_ticker_concurrency: int = 5,
+        w3_lease_seconds: int = 1200,
     ) -> None:
         self.repository = repository
         self.responses = responses
         self.known_events = known_events
         self.policies = policies
         self.prompts = prompts or RuntimeV2PromptSet.load(prompt_root)
-        self.social_enabled = social_enabled
         self.retry_delays_seconds = retry_delays_seconds
         self._sleep = sleep
         self._dispatch_effects = dispatch_effects
         self._projection_outbox = projection_outbox
+        self._w3_agent = w3_agent
+        self._w3_max_ticker_concurrency = w3_max_ticker_concurrency
+        self._w3_lease_seconds = w3_lease_seconds
         self._hot_executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="prv2-hot")
         self._effect_executor = ThreadPoolExecutor(
             max_workers=2,
             thread_name_prefix="prv2-effect",
         )
         self._closed = False
+        self._w3_threads: set[Thread] = set()
+        self._w3_threads_lock = Lock()
 
     def __enter__(self) -> PersistentRuntimeV2Service:
         return self
@@ -117,6 +130,15 @@ class PersistentRuntimeV2Service:
         self._closed = True
         self._hot_executor.shutdown(wait=True, cancel_futures=False)
         self._effect_executor.shutdown(wait=True, cancel_futures=False)
+        while True:
+            with self._w3_threads_lock:
+                threads = list(self._w3_threads)
+            if not threads:
+                break
+            for thread in threads:
+                thread.join()
+        if self._w3_agent is not None:
+            self._w3_agent.close()
 
     def execute_message(self, source: SourceMessageEnvelope) -> RuntimeCase:
         if self._closed:
@@ -124,12 +146,6 @@ class PersistentRuntimeV2Service:
         existing = self.repository.get_case_by_source(source.source_message_id)
         if existing is not None:
             return existing
-        if source.snapshot.source_type is SourceType.SOCIAL and not self.social_enabled:
-            raise RuntimeInputUnavailable(
-                "social_disabled",
-                "Social messages are disabled for Persistent Runtime V2",
-            )
-
         trading_date = source.occurrence_source_time.astimezone(_EASTERN).date()
         index = self.known_events.current_index(source.snapshot.ticker)
         projection = self.policies.current_projection(source.snapshot.ticker)
@@ -164,11 +180,11 @@ class PersistentRuntimeV2Service:
             return case
 
         started = perf_counter()
-        w1_future: Future[tuple[W1Round1Result, W1NoveltyResult, str]] = (
-            self._hot_executor.submit(self._run_w1_hot, case, index)
+        w1_future: Future[tuple[W1Round1Result, W1NoveltyResult, str]] = self._hot_executor.submit(
+            self._run_w1_hot, case, index
         )
-        w2_future: Future[tuple[W2PolicyResult, W2PolicyResult, str]] = (
-            self._hot_executor.submit(self._run_w2_hot, case, projection)
+        w2_future: Future[tuple[W2PolicyResult, W2PolicyResult, str]] = self._hot_executor.submit(
+            self._run_w2_hot, case, projection
         )
         try:
             w1_r1, w1_final, w1_response_id = w1_future.result()
@@ -195,10 +211,9 @@ class PersistentRuntimeV2Service:
                 "updated_at": utc_now(),
             }
         )
-        self.repository.save_case(adjudicated)
         self._enqueue_route_effects(adjudicated, w1_response_id)
         if self._dispatch_effects:
-            self._effect_executor.submit(self.process_pending_effects, limit=20)
+            self._effect_executor.submit(self.dispatch_pending_effects, limit=20)
         return adjudicated
 
     def _run_w1_hot(
@@ -458,11 +473,12 @@ class PersistentRuntimeV2Service:
     def _enqueue_route_effects(self, case: RuntimeCase, w1_response_id: str) -> None:
         if case.route is None:
             raise ValueError("Cannot enqueue effects before routing")
+        effects: list[RuntimeEffect] = []
         for effect_type in case.route.side_effects:
             payload: dict[str, Any] = {}
             if effect_type is RuntimeSideEffect.EMIT_DELTA:
                 payload["previous_response_id"] = w1_response_id
-            self.repository.enqueue_effect(
+            effects.append(
                 RuntimeEffect(
                     case_id=case.case_id,
                     effect_type=effect_type,
@@ -470,52 +486,105 @@ class PersistentRuntimeV2Service:
                     payload=payload,
                 )
             )
+        w3_case = None
+        if case.route.primary_route.value == "W3":
+            w3_case = W3RouteCase(
+                case_id=case.case_id,
+                ticker=case.ticker,
+                source=case.source,
+                w1_final=case.w1_final,  # type: ignore[arg-type]
+                w2_final=case.w2_final,  # type: ignore[arg-type]
+                event_library_version=case.version_pin.event_library_version,
+                policy_set_version=case.version_pin.policy_set_version,
+                route_reason=case.route.reason,
+                mode=self._w3_mode(case),
+            )
+        self.repository.save_case_with_effects(case, effects, w3_case)
+
+    @staticmethod
+    def _w3_mode(case: RuntimeCase) -> W3Mode:
+        if (
+            case.w1_final is not None
+            and case.w1_final.result is W1NoveltyVerdict.NEW
+            and case.w1_final.confidence is RuntimeConfidence.NORMAL
+            and case.w2_final is not None
+            and not case.w2_final.policy_ids
+            and case.w2_final.confidence is RuntimeConfidence.NORMAL
+        ):
+            return W3Mode.UNCOVERED_NEW
+        return W3Mode.REVALIDATE_THEN_EVALUATE
 
     def process_pending_effects(self, *, limit: int = 20) -> int:
-        completed = 0
+        return sum(
+            self._process_claimed_effect(effect)
+            for effect in self.repository.claim_effects(limit=limit)
+        )
+
+    def dispatch_pending_effects(self, *, limit: int = 20) -> int:
+        """Dispatch W3 without a global pool; ticker slots provide the sole cap."""
+
+        dispatched = 0
         for effect in self.repository.claim_effects(limit=limit):
-            try:
-                self._execute_effect(effect)
-            except Exception as exc:
-                next_attempt = effect.attempt_count + 1
-                retryable = (
-                    not isinstance(exc, RuntimeResponsesError)
-                    and next_attempt < 3
+            if effect.effect_type is RuntimeSideEffect.ROUTE_TO_W3:
+                thread = Thread(
+                    target=self._run_w3_effect_thread,
+                    args=(effect,),
+                    name=f"prv2-w3-{effect.case_id[-8:]}",
+                    daemon=False,
                 )
-                failed = effect.model_copy(
-                    update={
-                        "status": (
-                            RuntimeEffectStatus.PENDING_RETRY
-                            if retryable
-                            else RuntimeEffectStatus.FAILED
-                        ),
-                        "attempt_count": next_attempt,
-                        "available_at": (
-                            utc_now()
-                            + timedelta(
-                                seconds=self.retry_delays_seconds[next_attempt - 1]
-                            )
-                            if retryable
-                            else utc_now()
-                        ),
-                        "last_error": f"{type(exc).__name__}: {str(exc)[:500]}",
-                        "updated_at": utc_now(),
-                    }
-                )
-                self.repository.save_effect(failed)
-                self._refresh_case_completion(effect.case_id)
-                continue
-            done = effect.model_copy(
+                with self._w3_threads_lock:
+                    self._w3_threads.add(thread)
+                thread.start()
+                dispatched += 1
+            else:
+                dispatched += self._process_claimed_effect(effect)
+        return dispatched
+
+    def _run_w3_effect_thread(self, effect: RuntimeEffect) -> None:
+        try:
+            self._process_claimed_effect(effect)
+        finally:
+            with self._w3_threads_lock:
+                self._w3_threads.discard(current_thread())
+
+    def _process_claimed_effect(self, effect: RuntimeEffect) -> int:
+        try:
+            self._execute_effect(effect)
+        except Exception as exc:
+            next_attempt = effect.attempt_count + 1
+            retryable = not isinstance(exc, RuntimeResponsesError) and next_attempt < 3
+            failed = effect.model_copy(
                 update={
-                    "status": RuntimeEffectStatus.COMPLETED,
-                    "attempt_count": effect.attempt_count + 1,
+                    "status": (
+                        RuntimeEffectStatus.PENDING_RETRY
+                        if retryable
+                        else RuntimeEffectStatus.FAILED
+                    ),
+                    "attempt_count": next_attempt,
+                    "available_at": (
+                        utc_now() + timedelta(seconds=self.retry_delays_seconds[next_attempt - 1])
+                        if retryable
+                        else utc_now()
+                    ),
+                    "last_error": f"{type(exc).__name__}: {str(exc)[:500]}",
                     "updated_at": utc_now(),
                 }
             )
-            self.repository.save_effect(done)
+            self.repository.save_effect(failed)
+            if effect.effect_type is RuntimeSideEffect.ROUTE_TO_W3:
+                self._record_w3_failure(effect.case_id, exc, retryable=retryable)
             self._refresh_case_completion(effect.case_id)
-            completed += 1
-        return completed
+            return 0
+        done = effect.model_copy(
+            update={
+                "status": RuntimeEffectStatus.COMPLETED,
+                "attempt_count": effect.attempt_count + 1,
+                "updated_at": utc_now(),
+            }
+        )
+        self.repository.save_effect(done)
+        self._refresh_case_completion(effect.case_id)
+        return 1
 
     def _execute_effect(self, effect: RuntimeEffect) -> None:
         case = self.repository.get_case(effect.case_id)
@@ -580,20 +649,222 @@ class PersistentRuntimeV2Service:
             )
             return
         if effect.effect_type is RuntimeSideEffect.ROUTE_TO_W3:
+            self._execute_w3(case)
+            return
+        raise ValueError(f"Unsupported Runtime V2 effect: {effect.effect_type}")
+
+    def _execute_w3(self, case: RuntimeCase) -> None:
+        if self._w3_agent is None:
+            raise RuntimeInputUnavailable(
+                "w3_agent_unavailable",
+                "W3 route requires a configured Codex W3 Agent",
+            )
+        existing = self.repository.get_w3_case(case.case_id)
+        mode = self._w3_mode(case)
+        w3_case = existing or W3RouteCase(
+            case_id=case.case_id,
+            ticker=case.ticker,
+            source=case.source,
+            w1_final=case.w1_final,  # type: ignore[arg-type]
+            w2_final=case.w2_final,  # type: ignore[arg-type]
+            event_library_version=case.version_pin.event_library_version,
+            policy_set_version=case.version_pin.policy_set_version,
+            route_reason=case.route.reason,  # type: ignore[union-attr]
+            mode=mode,
+        )
+        running = w3_case.model_copy(
+            update={
+                "status": W3CaseStatus.RUNNING,
+                "attempt_count": w3_case.attempt_count + 1,
+                "error_code": None,
+                "error_message": None,
+                "updated_at": utc_now(),
+            }
+        )
+        self.repository.save_w3_case(running)
+        slot = self.repository.acquire_w3_slot(
+            ticker=case.ticker,
+            case_id=case.case_id,
+            max_concurrency=self._w3_max_ticker_concurrency,
+            lease_seconds=self._w3_lease_seconds,
+        )
+        if slot is None:
+            raise W3Error(
+                "w3_ticker_concurrency_busy",
+                f"{case.ticker} already has five active W3 turns",
+            )
+        returned_thread: str | None = None
+        clear_main = False
+        try:
+            result, returned_thread, context_pin = self._w3_agent.run(
+                case=case,
+                w3_case=running,
+                slot=slot,
+            )
+            resolved = route_w3_result(result)
+            self._apply_w3_result(case, running, result)
             self.repository.save_w3_case(
-                W3RouteCase(
+                running.model_copy(
+                    update={
+                        "status": W3CaseStatus.RESOLVED,
+                        "context_version_pin": context_pin,
+                        "result": result,
+                        "resolved_route": resolved,
+                        "thread_kind": slot.kind,
+                        "thread_id": returned_thread,
+                        "updated_at": utc_now(),
+                    }
+                )
+            )
+            self.repository.save_case(
+                case.model_copy(
+                    update={
+                        "w3_result": result,
+                        "resolved_route": resolved,
+                        "updated_at": utc_now(),
+                    }
+                )
+            )
+        except W3Error as exc:
+            clear_main = slot.kind is W3ThreadKind.MAIN and exc.invalid_thread
+            raise
+        finally:
+            self.repository.release_w3_slot(
+                slot,
+                thread_id=(returned_thread if slot.kind is W3ThreadKind.MAIN else None),
+                clear_main_thread=clear_main,
+            )
+
+    def _apply_w3_result(
+        self,
+        case: RuntimeCase,
+        w3_case: W3RouteCase,
+        result: W3CaseResult,
+    ) -> None:
+        if result.novelty.result is W1NoveltyVerdict.NEW:
+            maximum = self.known_events.max_event_numeric_id(
+                case.ticker,
+                case.version_pin.event_library_version,
+            )
+            if maximum is None:
+                raise RuntimeInputUnavailable(
+                    "event_library_max_id_unavailable",
+                    "Published Event maximum ID is unavailable",
+                )
+            for index, candidate in enumerate(result.delta_candidates):
+                self.repository.allocate_provisional(
+                    ticker=case.ticker,
+                    trading_date=case.trading_date,
+                    source_message_id=case.source.source_message_id,
+                    candidate_index=index,
+                    candidate=candidate,
+                    published_max_event_numeric_id=maximum,
+                )
+        if result.novelty.result is W1NoveltyVerdict.OLD:
+            self.repository.save_archive(
+                ArchiveRecord(
                     case_id=case.case_id,
                     ticker=case.ticker,
+                    source_message_id=case.source.source_message_id,
+                    reason=result.novelty.reason,
+                )
+            )
+            if result.policy.policy_ids:
+                self.repository.save_badcase(
+                    BadcaseRecord(
+                        case_id=case.case_id,
+                        ticker=case.ticker,
+                        trading_date=case.trading_date,
+                        source=case.source,
+                        matched_known_event_ids=result.novelty.reference_ids,
+                        hit_policy_ids=result.policy.policy_ids,
+                        event_library_version=case.version_pin.event_library_version,
+                        policy_set_version=case.version_pin.policy_set_version,
+                        w1_reason=result.novelty.reason,
+                        w2_reason=result.policy.reason,
+                    )
+                )
+            return
+        if result.policy.policy_ids:
+            executed = result.policy.policy_ids[0]
+            decision = self.policies.decision(
+                case.ticker,
+                case.version_pin.policy_set_version,
+                executed,
+            )
+            if decision is None:
+                raise RuntimeInputUnavailable(
+                    "executed_policy_unavailable",
+                    "W3-selected Policy is unavailable in the pinned PolicySet",
+                )
+            self.repository.save_trade(
+                TradeRecord(
+                    case_id=case.case_id,
+                    ticker=case.ticker,
+                    trading_date=case.trading_date,
                     source=case.source,
-                    w1_final=case.w1_final,
-                    w2_final=case.w2_final,
-                    event_library_version=case.version_pin.event_library_version,
+                    decision_origin=TradeDecisionOrigin.POLICY,
+                    executed_policy_id=executed,
+                    candidate_policy_ids=result.policy.policy_ids,
                     policy_set_version=case.version_pin.policy_set_version,
-                    route_reason=case.route.reason,
+                    decision=decision,
+                    w1_result=case.w1_final,  # type: ignore[arg-type]
+                    w2_result=case.w2_final,  # type: ignore[arg-type]
+                    w3_result=result,
                 )
             )
             return
-        raise ValueError(f"Unsupported Runtime V2 effect: {effect.effect_type}")
+        self.repository.save_w3_coverage_gap(
+            W3CoverageGapRecord(
+                case_id=case.case_id,
+                w3_case_id=w3_case.w3_case_id,
+                ticker=case.ticker,
+                trading_date=case.trading_date,
+                source=case.source,
+                policy_set_version=case.version_pin.policy_set_version,
+                result=result,
+            )
+        )
+        if result.expert_trade.trade:
+            if result.expert_trade.direction is None:
+                raise RuntimeSemanticOutputError("W3 direct trade is missing direction")
+            self.repository.save_trade(
+                TradeRecord(
+                    case_id=case.case_id,
+                    ticker=case.ticker,
+                    trading_date=case.trading_date,
+                    source=case.source,
+                    decision_origin=TradeDecisionOrigin.W3,
+                    w3_case_id=w3_case.w3_case_id,
+                    candidate_policy_ids=[],
+                    policy_set_version=case.version_pin.policy_set_version,
+                    decision=result.expert_trade.direction,
+                    w1_result=case.w1_final,  # type: ignore[arg-type]
+                    w2_result=case.w2_final,  # type: ignore[arg-type]
+                    w3_result=result,
+                )
+            )
+
+    def _record_w3_failure(
+        self,
+        case_id: str,
+        exc: Exception,
+        *,
+        retryable: bool,
+    ) -> None:
+        value = self.repository.get_w3_case(case_id)
+        if value is None:
+            return
+        self.repository.save_w3_case(
+            value.model_copy(
+                update={
+                    "status": (W3CaseStatus.FAILED_RETRYABLE if retryable else W3CaseStatus.FAILED),
+                    "error_code": getattr(exc, "code", type(exc).__name__),
+                    "error_message": str(exc)[:1000],
+                    "updated_at": utc_now(),
+                }
+            )
+        )
 
     def _execute_r3(self, case: RuntimeCase, effect: RuntimeEffect) -> None:
         mode = (
@@ -655,7 +926,7 @@ class PersistentRuntimeV2Service:
             for effect in effects
         ):
             return
-        elif case.route and case.route.primary_route.value == "W3":
+        elif case.route and case.route.primary_route.value == "W3" and case.resolved_route is None:
             status = RuntimeCaseStatus.PENDING_W3
             technical = RuntimeTechnicalStatus.OK
         else:

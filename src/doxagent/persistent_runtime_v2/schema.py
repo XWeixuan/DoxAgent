@@ -16,13 +16,12 @@ from doxagent.event_library.contracts import (
     CanonicalEvent,
     ReferenceViewDeltaSnapshot,
 )
-from doxagent.monitoring.schema import EventStreamItem, SourceType, StandardMessage
+from doxagent.message_bus_v2.compiler import compile_stream_item
+from doxagent.message_bus_v2.schema import MaterializedStreamItem, PublicationMode
 from doxagent.workflows.codex_document3.schema import PolicyDecision
 
 JsonObject = dict[str, Any]
-RUNTIME_V2_CONTRACT_VERSION: Final[Literal["persistent-runtime.v2"]] = (
-    "persistent-runtime.v2"
-)
+RUNTIME_V2_CONTRACT_VERSION: Final[Literal["persistent-runtime.v2"]] = "persistent-runtime.v2"
 
 
 def utc_now() -> datetime:
@@ -56,6 +55,29 @@ class RuntimePrimaryRoute(StrEnum):
     ARCHIVE = "ARCHIVE"
     TRADE = "TRADE"
     ADD_TO_DELTA = "ADD_TO_DELTA"
+    W3 = "W3"
+
+
+class W3Mode(StrEnum):
+    UNCOVERED_NEW = "UNCOVERED_NEW"
+    REVALIDATE_THEN_EVALUATE = "REVALIDATE_THEN_EVALUATE"
+
+
+class W3CaseStatus(StrEnum):
+    PENDING = "PENDING"
+    RUNNING = "RUNNING"
+    RESOLVED = "RESOLVED"
+    FAILED_RETRYABLE = "FAILED_RETRYABLE"
+    FAILED = "FAILED"
+
+
+class W3ThreadKind(StrEnum):
+    MAIN = "MAIN"
+    FALLBACK = "FALLBACK"
+
+
+class TradeDecisionOrigin(StrEnum):
+    POLICY = "POLICY"
     W3 = "W3"
 
 
@@ -118,24 +140,13 @@ class SourceMessageSnapshot(RuntimeV2Model):
     """
 
     ticker: str = Field(min_length=1)
-    source_type: SourceType
-    interface_type: str = Field(min_length=1)
     title: str | None = None
     body: str | None = None
-    author: str | None = None
-    username: str | None = None
-    symbols: list[str] = Field(default_factory=list)
-    keywords: list[str] = Field(default_factory=list)
 
     @field_validator("ticker")
     @classmethod
     def normalize_ticker(cls, value: str) -> str:
         return value.strip().upper()
-
-    @field_validator("symbols", "keywords")
-    @classmethod
-    def unique_nonempty_values(cls, value: list[str]) -> list[str]:
-        return list(dict.fromkeys(item.strip() for item in value if item.strip()))
 
     @model_validator(mode="after")
     def has_business_content(self) -> SourceMessageSnapshot:
@@ -148,58 +159,42 @@ class SourceMessageEnvelope(RuntimeV2Model):
     """Operational/audit fields kept outside the model-visible snapshot."""
 
     source_message_id: str = Field(min_length=1)
-    raw_message_id: str | None = None
     source_id: str = Field(min_length=1)
-    binding_id: str | None = None
-    url: str | None = None
-    published_at: datetime | None = None
+    binding_id: str = Field(min_length=1)
+    url: str = Field(min_length=1)
+    published_at: datetime
     collected_at: datetime
     normalized_at: datetime | None = None
     message_bus_event_time: datetime
-    provider_message_id: str | None = None
-    metadata: JsonObject = Field(default_factory=dict)
+    stream_item_id: str = Field(min_length=1)
+    member_count: int = Field(ge=1)
     snapshot: SourceMessageSnapshot
 
     @classmethod
-    def from_standard_message(
-        cls,
-        message: StandardMessage,
-        *,
-        message_bus_event_time: datetime | None = None,
-    ) -> SourceMessageEnvelope:
+    def from_stream_item(cls, value: MaterializedStreamItem) -> SourceMessageEnvelope:
+        compiled = compile_stream_item(value)
+        latest = compiled.latest
+        is_buffered = value.item.publication_mode is PublicationMode.BUFFERED
         return cls(
-            source_message_id=message.standard_message_id,
-            raw_message_id=message.raw_message_id,
-            source_id=message.source_id,
-            binding_id=message.binding_id,
-            url=message.url,
-            published_at=message.published_at,
-            collected_at=message.collected_at,
-            normalized_at=message.normalized_at,
-            message_bus_event_time=message_bus_event_time or message.collected_at,
-            provider_message_id=message.provider_message_id,
-            metadata=dict(message.metadata),
+            source_message_id=latest.standard_message_id,
+            source_id=latest.source_id,
+            binding_id=latest.binding_id,
+            url=latest.url,
+            published_at=latest.published_at,
+            collected_at=value.item.published_at,
+            message_bus_event_time=value.item.published_at,
+            stream_item_id=value.item.stream_item_id,
+            member_count=value.item.member_count,
             snapshot=SourceMessageSnapshot(
-                ticker=message.ticker,
-                source_type=message.source_type,
-                interface_type=message.interface_type.value,
-                title=message.title,
-                body=message.body,
-                author=message.author,
-                username=message.username,
-                symbols=list(message.symbols),
-                keywords=list(message.keywords),
+                ticker=value.item.ticker,
+                title=latest.title if not is_buffered else None,
+                body=compiled.body if is_buffered else latest.body,
             ),
         )
 
-    @classmethod
-    def from_event(cls, event: EventStreamItem) -> SourceMessageEnvelope:
-        payload = StandardMessage.model_validate(event.payload)
-        return cls.from_standard_message(payload, message_bus_event_time=event.event_time)
-
     @property
     def occurrence_source_time(self) -> datetime:
-        return self.published_at or self.message_bus_event_time or self.collected_at
+        return self.published_at
 
 
 class RuntimeVersionPin(RuntimeV2Model):
@@ -367,6 +362,8 @@ class RuntimeCase(RuntimeV2Model):
     w2_round1: W2PolicyResult | None = None
     w2_final: W2PolicyResult | None = None
     route: RuntimeRouteDecision | None = None
+    resolved_route: RuntimeRouteDecision | None = None
+    w3_result: W3CaseResult | None = None
     hot_path_latency_ms: int | None = Field(default=None, ge=0)
     error_code: str | None = None
     error_message: str | None = None
@@ -384,14 +381,26 @@ class TradeRecord(RuntimeV2Model):
     ticker: str
     trading_date: date
     source: SourceMessageEnvelope
-    executed_policy_id: str
-    candidate_policy_ids: list[str]
+    decision_origin: TradeDecisionOrigin = TradeDecisionOrigin.POLICY
+    executed_policy_id: str | None = None
+    w3_case_id: str | None = None
+    candidate_policy_ids: list[str] = Field(default_factory=list)
     policy_set_version: int = Field(ge=1)
     decision: PolicyDecision
     w1_result: W1NoveltyResult
     w2_result: W2PolicyResult
+    w3_result: W3CaseResult | None = None
     daily_status: DailyRecordStatus = DailyRecordStatus.PENDING
     created_at: datetime = Field(default_factory=utc_now)
+
+    @model_validator(mode="after")
+    def origin_reference_is_consistent(self) -> TradeRecord:
+        if self.decision_origin is TradeDecisionOrigin.POLICY:
+            if not self.executed_policy_id or self.w3_case_id is not None:
+                raise ValueError("POLICY trade requires policy_id and forbids w3_case_id")
+        elif self.executed_policy_id is not None or not self.w3_case_id:
+            raise ValueError("W3 trade requires w3_case_id and forbids policy_id")
+        return self
 
 
 class BadcaseRecord(RuntimeV2Model):
@@ -419,6 +428,7 @@ class O3MaintenanceFeed(RuntimeV2Model):
     reference_view_delta: ReferenceViewDeltaSnapshot
     trade_records: list[TradeRecord] = Field(default_factory=list)
     badcase_records: list[BadcaseRecord] = Field(default_factory=list)
+    w3_coverage_gaps: list[W3CoverageGapRecord] = Field(default_factory=list)
 
 
 class DailyCloseRun(RuntimeV2Model):
@@ -434,6 +444,7 @@ class DailyCloseRun(RuntimeV2Model):
     candidate_keys: list[str] = Field(default_factory=list)
     trade_record_ids: list[str] = Field(default_factory=list)
     badcase_ids: list[str] = Field(default_factory=list)
+    w3_coverage_gap_ids: list[str] = Field(default_factory=list)
     delta_batch_id: str | None = None
     o2_run_id: str
     o3_run_id: str
@@ -441,6 +452,94 @@ class DailyCloseRun(RuntimeV2Model):
     error: str | None = None
     created_at: datetime = Field(default_factory=utc_now)
     updated_at: datetime = Field(default_factory=utc_now)
+
+
+class W3NoveltyResult(RuntimeV2Model):
+    result: W1NoveltyVerdict
+    reference_ids: list[str] = Field(default_factory=list)
+    reason: str = Field(min_length=1, max_length=4000)
+
+    @field_validator("reference_ids")
+    @classmethod
+    def normalized_reference_ids(cls, value: list[str]) -> list[str]:
+        normalized = [item.strip().upper() for item in value if item.strip()]
+        if any(not item.startswith("E") or not item[1:].isdigit() for item in normalized):
+            raise ValueError("reference_ids must contain E# identifiers")
+        return list(dict.fromkeys(normalized))
+
+    @model_validator(mode="after")
+    def old_requires_reference(self) -> W3NoveltyResult:
+        if self.result is W1NoveltyVerdict.OLD and not self.reference_ids:
+            raise ValueError("OLD requires at least one Reference View event ID")
+        return self
+
+
+class W3PolicyResult(RuntimeV2Model):
+    policy_ids: list[str] = Field(default_factory=list)
+    reason: str = Field(min_length=1, max_length=4000)
+
+    @field_validator("policy_ids")
+    @classmethod
+    def unique_policy_ids(cls, value: list[str]) -> list[str]:
+        return list(dict.fromkeys(item.strip() for item in value if item.strip()))
+
+
+class W3ExpertTradeResult(RuntimeV2Model):
+    evaluated: bool
+    trade: bool
+    direction: PolicyDecision | None = None
+    prior_expectation: str | None = Field(default=None, max_length=4000)
+    expectation_delta: str | None = Field(default=None, max_length=4000)
+    reason: str = Field(min_length=1, max_length=4000)
+
+    @model_validator(mode="after")
+    def evaluation_shape_is_consistent(self) -> W3ExpertTradeResult:
+        if not self.evaluated:
+            if self.trade or self.direction is not None:
+                raise ValueError("non-evaluated expert_trade cannot trade or set direction")
+            return self
+        if not self.prior_expectation or not self.expectation_delta:
+            raise ValueError("evaluated expert_trade requires prior expectation and delta")
+        if self.trade != (self.direction is not None):
+            raise ValueError("trade=true requires direction; trade=false forbids direction")
+        return self
+
+
+class W3CaseResult(RuntimeV2Model):
+    w3_case_id: str = Field(min_length=1, max_length=160)
+    novelty: W3NoveltyResult
+    policy: W3PolicyResult
+    expert_trade: W3ExpertTradeResult
+    delta_candidates: list[RuntimeFactCandidate] = Field(default_factory=list, max_length=12)
+
+    @model_validator(mode="after")
+    def final_route_shape_is_consistent(self) -> W3CaseResult:
+        if self.novelty.result is W1NoveltyVerdict.OLD:
+            if self.delta_candidates or self.expert_trade.evaluated:
+                raise ValueError("OLD result forbids delta and expert trade evaluation")
+        elif self.policy.policy_ids:
+            if self.expert_trade.evaluated:
+                raise ValueError("existing Policy hit forbids expert trade evaluation")
+        elif not self.expert_trade.evaluated:
+            raise ValueError("NEW without Policy requires expert trade evaluation")
+        if self.novelty.result is W1NoveltyVerdict.NEW and not self.delta_candidates:
+            raise ValueError("NEW result requires at least one RuntimeFactCandidate")
+        return self
+
+
+class W3ContextVersionPin(RuntimeV2Model):
+    document1_run_id: str
+    document2_run_id: str
+    event_library_version: int = Field(ge=1)
+    policy_set_version: int = Field(ge=1)
+
+
+class W3ThreadSlot(RuntimeV2Model):
+    ticker: str
+    case_id: str
+    kind: W3ThreadKind
+    thread_id: str | None = None
+    acquired_at: datetime = Field(default_factory=utc_now)
 
 
 class W3RouteCase(RuntimeV2Model):
@@ -453,7 +552,30 @@ class W3RouteCase(RuntimeV2Model):
     event_library_version: int = Field(ge=1)
     policy_set_version: int = Field(ge=1)
     route_reason: str
-    status: Literal["PENDING_W3"] = "PENDING_W3"
+    mode: W3Mode
+    status: W3CaseStatus = W3CaseStatus.PENDING
+    context_version_pin: W3ContextVersionPin | None = None
+    result: W3CaseResult | None = None
+    resolved_route: RuntimeRouteDecision | None = None
+    thread_kind: W3ThreadKind | None = None
+    thread_id: str | None = None
+    attempt_count: int = Field(default=0, ge=0)
+    error_code: str | None = None
+    error_message: str | None = None
+    created_at: datetime = Field(default_factory=utc_now)
+    updated_at: datetime = Field(default_factory=utc_now)
+
+
+class W3CoverageGapRecord(RuntimeV2Model):
+    coverage_gap_id: str = Field(default_factory=lambda: new_runtime_v2_id("w3gap"))
+    case_id: str
+    w3_case_id: str
+    ticker: str
+    trading_date: date
+    source: SourceMessageEnvelope
+    policy_set_version: int = Field(ge=1)
+    result: W3CaseResult
+    daily_status: DailyRecordStatus = DailyRecordStatus.PENDING
     created_at: datetime = Field(default_factory=utc_now)
 
 
@@ -464,6 +586,11 @@ class ArchiveRecord(RuntimeV2Model):
     source_message_id: str
     reason: str
     created_at: datetime = Field(default_factory=utc_now)
+
+
+RuntimeCase.model_rebuild()
+TradeRecord.model_rebuild()
+O3MaintenanceFeed.model_rebuild()
 
 
 def strict_json_schema(value: Any) -> Any:

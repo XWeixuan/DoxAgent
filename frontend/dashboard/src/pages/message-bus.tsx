@@ -45,14 +45,11 @@ import type {
 import {
   formatDateTime,
   formatDuration,
-  formatLatency,
   formatNumber,
   formatPercent,
   formatTime,
-  interfaceTypeLabel,
   pollStatusLabel,
   processingStatusLabel,
-  sourceTypeLabel,
 } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import { useDashboardEvents } from "@/hooks/use-dashboard-events"
@@ -73,11 +70,6 @@ import {
 } from "@/components/dashboard/shared"
 
 const messageLimit = 10
-const messageTypeOptions = [
-  { value: "all", label: "全部类型" },
-  { value: "social", label: "社媒消息" },
-  { value: "media", label: "机构媒体消息" },
-]
 const parameterSchemaBySource: Record<
   string,
   Array<{ key: string; label: string; max: number; placeholder: string }>
@@ -121,7 +113,6 @@ const parameterSchemaBySource: Record<
 export function MessageBusPage() {
   const ticker = useParams().ticker?.toUpperCase() ?? "MU"
   const [view, setView] = useState<"stream" | "config">("stream")
-  const [messageTypeFilter, setMessageTypeFilter] = useState("all")
   const [sourceFilter, setSourceFilter] = useState("all")
   const [statusFilter, setStatusFilter] = useState("all")
   const [query, setQuery] = useState("")
@@ -136,13 +127,12 @@ export function MessageBusPage() {
     () =>
       dashboardApi.messages(ticker, {
         limit: messageLimit,
-        source_type: messageTypeFilter === "all" ? undefined : messageTypeFilter,
         source_id: sourceFilter === "all" ? undefined : sourceFilter,
         processing_status: statusFilter === "all" ? undefined : statusFilter,
         q: appliedQuery || undefined,
         sort: "-collected_at",
       }),
-    [appliedQuery, messageTypeFilter, sourceFilter, statusFilter, ticker]
+    [appliedQuery, sourceFilter, statusFilter, ticker]
   )
 
   const overview = useDashboardQuery(overviewLoader, { intervalMs: 8000 })
@@ -152,7 +142,6 @@ export function MessageBusPage() {
   const reloadMessages = messages.reload
 
   useEffect(() => {
-    setMessageTypeFilter("all")
     setSourceFilter("all")
     setStatusFilter("all")
     setQuery("")
@@ -168,7 +157,7 @@ export function MessageBusPage() {
   const handleEvent = useCallback(
     (event: DashboardEvent) => {
       if (
-        event.event_type === "message_bus.message.created" ||
+        event.event_type === "message_bus_v2.stream_item.published" ||
         event.event_type === "message_bus.poll.failed"
       ) {
         void reloadMessages()
@@ -180,7 +169,7 @@ export function MessageBusPage() {
 
   const events = useDashboardEvents({
     ticker,
-    eventTypes: ["message_bus.message.created", "message_bus.poll.failed"],
+    eventTypes: ["message_bus_v2.stream_item.published", "message_bus.poll.failed"],
     onEvent: handleEvent,
   })
 
@@ -202,17 +191,6 @@ export function MessageBusPage() {
       ...Array.from(values).map((value) => ({ value, label: processingStatusLabel(value) })),
     ]
   }, [messagePage])
-  const averageChannelLatency = useMemo(() => {
-    const values =
-      config.data?.sources
-        .map((source) => source.poll_state.last_latency_ms)
-        .filter((value): value is number => typeof value === "number") ?? []
-    if (!values.length) {
-      return null
-    }
-    return Math.round(values.reduce((total, value) => total + value, 0) / values.length)
-  }, [config.data])
-
   const search = (event: FormEvent) => {
     event.preventDefault()
     setAppliedQuery(query.trim())
@@ -227,7 +205,6 @@ export function MessageBusPage() {
       const next = await dashboardApi.messages(ticker, {
         limit: messageLimit,
         cursor: messagePage.page.next_cursor,
-        source_type: messageTypeFilter === "all" ? undefined : messageTypeFilter,
         source_id: sourceFilter === "all" ? undefined : sourceFilter,
         processing_status: statusFilter === "all" ? undefined : statusFilter,
         q: appliedQuery || undefined,
@@ -344,9 +321,9 @@ export function MessageBusPage() {
             }
           />
           <MetricCell
-            title="平均轮询延迟"
-            value={formatLatency(averageChannelLatency)}
-            status={averageChannelLatency && averageChannelLatency > 30000 ? "degraded" : "normal"}
+            title="持久流"
+            value={formatNumber(overview.data.today_event_count)}
+            status="normal"
           />
         </MetricStrip>
       ) : overview.isLoading ? (
@@ -360,13 +337,6 @@ export function MessageBusPage() {
             description="新消息通过 SSE 触发刷新，列表按抓取时间倒序分页加载。"
             actions={
               <form className="message-stream-toolbar" onSubmit={search}>
-                <FilterSelect
-                  value={messageTypeFilter}
-                  placeholder="消息类型"
-                  options={messageTypeOptions}
-                  onChange={setMessageTypeFilter}
-                  className="message-stream-filter sm:w-full"
-                />
                 <FilterSelect
                   value={sourceFilter}
                   placeholder="来源"
@@ -502,7 +472,7 @@ function SourceHealthRow({
 }) {
   const status = sourceConfigStatus(source)
   const tone = sourceStatusTone(status)
-  const newCount = source.poll_state.last_poll_new_message_count ?? 0
+  const newCount = source.poll_state.published_count ?? 0
   const ringSyncKey = sourceHealthRingSyncKey(source, configReloadedAt)
   const ringStyle = {
     "--source-health-duration": `${sourceHealthRingDuration(source)}s`,
@@ -521,8 +491,7 @@ function SourceHealthRow({
           <div className="truncate text-sm font-semibold">{source.display_name}</div>
         </div>
         <div className="mt-1 truncate text-xs text-muted-foreground">
-          {source.binding.ticker} | {interfaceTypeLabel(source.interface_type)} |{" "}
-          {sourceTypeLabel(source.source_type)} | 延迟 {formatLatency(source.poll_state.last_latency_ms)}
+          {source.binding?.ticker ?? "未绑定"} | {source.source_kind} | group {source.scheduler_group}
         </div>
       </div>
       <div className="ml-auto flex shrink-0 items-center gap-2">
@@ -552,22 +521,20 @@ function sourceHealthRingSyncKey(
   const pollState = source.poll_state
   const hasPollAnchor = Boolean(
     pollState.last_success_at ||
-      pollState.last_error_message ||
-      pollState.last_latency_ms != null
+      pollState.last_error_message
   )
   return [
     source.source_id,
     pollState.status,
     pollState.last_success_at ?? "",
     pollState.last_error_message ?? "",
-    pollState.last_poll_new_message_count ?? "",
-    pollState.last_latency_ms ?? "",
+    pollState.published_count ?? "",
     hasPollAnchor ? "" : configReloadedAt?.getTime() ?? "",
   ].join("|")
 }
 
 function sourceHealthRingDuration(source: MessageSourceConfig) {
-  const seconds = Number(source.poll_interval_seconds)
+  const seconds = Number(source.binding?.polling.target_interval_seconds ?? 60)
   if (!Number.isFinite(seconds) || seconds <= 0) {
     return 60
   }
@@ -588,7 +555,7 @@ function sourceStatusTone(status: string | null | undefined) {
 }
 
 function sourceConfigStatus(source: MessageSourceConfig) {
-  if (!source.enabled || !source.binding.enabled || source.poll_state.status === "disabled") {
+  if (!source.enabled || !source.binding?.enabled || source.poll_state.status === "disabled") {
     return "disabled"
   }
   if (source.poll_state.status === "succeeded") {
@@ -638,8 +605,7 @@ function SourceConfigCard({
           <div>
             <CardTitle className="text-lg font-light">{source.display_name}</CardTitle>
             <CardDescription>
-              {source.source_id} · {sourceTypeLabel(source.source_type)} ·{" "}
-              {interfaceTypeLabel(source.interface_type)}
+              {source.source_id} · {source.source_kind} · {source.scheduler_group}
             </CardDescription>
           </div>
           <div className="flex shrink-0 items-center gap-2">
@@ -674,10 +640,13 @@ function SourceConfigCard({
           </div>
           <KeyValueList
             items={[
-              { label: "Binding", value: source.binding.binding_id },
-              { label: "轮询间隔", value: `${source.poll_interval_seconds}s` },
+              { label: "Binding", value: source.binding?.binding_id ?? "未绑定" },
+              {
+                label: "轮询间隔",
+                value: `${source.binding?.polling.target_interval_seconds ?? "-"}s`,
+              },
               { label: "最近成功", value: formatDateTime(source.poll_state.last_success_at) },
-              { label: "上次延迟", value: formatLatency(source.poll_state.last_latency_ms) },
+              { label: "Adapter", value: source.adapter_ref },
             ]}
           />
         </div>
@@ -688,7 +657,7 @@ function SourceConfigCard({
           </div>
           {parameterView === "json" ? (
             <pre className="max-h-56 overflow-auto whitespace-pre-wrap break-words rounded-[4px] border bg-white/60 p-3 text-xs biome-scrollbar">
-              {JSON.stringify(source.binding.parameters, null, 2)}
+              {JSON.stringify(source.binding?.source_parameters ?? {}, null, 2)}
             </pre>
           ) : (
             <div className="flex flex-col gap-3">
@@ -751,7 +720,7 @@ function SourceConfigCard({
 function createParameterDraft(source: MessageSourceConfig) {
   const draft: Record<string, string> = {}
   for (const field of parameterSchemaBySource[source.source_id] ?? []) {
-    const rawValue = source.binding.parameters[field.key]
+    const rawValue = source.binding?.source_parameters[field.key]
     draft[field.key] = Array.isArray(rawValue) ? rawValue.map(String).join("\n") : ""
   }
   return draft
@@ -804,9 +773,6 @@ function MessageCard({ ticker, message }: { ticker: string; message: MessageItem
       return next
     })
   }
-  const isSocialMessage = currentMessage.source_type === "social"
-  const socialText =
-    currentMessage.body || currentMessage.summary || currentMessage.title || "暂无数据"
   return (
     <Card
       role="button"
@@ -830,11 +796,9 @@ function MessageCard({ ticker, message }: { ticker: string; message: MessageItem
                 label={processingStatusLabel(currentMessage.processing_status)}
               />
             </div>
-            {!isSocialMessage ? (
-              <div className="flex flex-wrap items-center gap-2">
-                <CardTitle className="text-xl font-medium">{currentMessage.title}</CardTitle>
-              </div>
-            ) : null}
+            <div className="flex flex-wrap items-center gap-2">
+              <CardTitle className="text-xl font-medium">{currentMessage.title}</CardTitle>
+            </div>
           </div>
           <div className="flex shrink-0 flex-col items-end gap-2">
             <div className="flex items-start gap-3">
@@ -872,26 +836,18 @@ function MessageCard({ ticker, message }: { ticker: string; message: MessageItem
         </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        {isSocialMessage ? (
-          <p className="whitespace-pre-wrap break-words text-base font-normal leading-7 text-foreground">
-            {socialText}
+        <p className="border-t pt-3 text-sm font-normal leading-6 text-foreground">
+          {currentMessage.summary || "暂无摘要"}
+        </p>
+        {open ? (
+          <p className="border-t pt-3 font-mono text-xs leading-6 text-muted-foreground">
+            {loadingDetail
+              ? "正在加载..."
+              : detailError
+                ? detailError
+                : currentMessage.body || "暂无数据"}
           </p>
-        ) : (
-          <>
-            <p className="border-t pt-3 text-sm font-normal leading-6 text-foreground">
-              {currentMessage.summary || "暂无摘要"}
-            </p>
-            {open ? (
-              <p className="border-t pt-3 font-mono text-xs leading-6 text-muted-foreground">
-                {loadingDetail
-                  ? "正在加载..."
-                  : detailError
-                    ? detailError
-                    : currentMessage.body || "暂无数据"}
-              </p>
-            ) : null}
-          </>
-        )}
+        ) : null}
       </CardContent>
     </Card>
   )

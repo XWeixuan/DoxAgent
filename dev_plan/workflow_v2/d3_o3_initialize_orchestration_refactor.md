@@ -1159,16 +1159,18 @@ PENDING
 
 ## 注释 5：Stage Gate 保持宽松、结构性、非研究型
 
-Stage Gate 只负责确认 Stage A 已形成完整、可解析、可继续消费的工作状态。允许阻塞的条件限定为：
+Stage Gate 只负责确认 Stage A 是否还存在可继续消费的工作状态。确定性读取必须先做逐行、逐记录、逐文件的有损最小恢复；单条记录解析失败、可归一化的类型/形状差异、局部引用不闭合、progress 不一致或单个 `TRIGGER_READY` Path 缺 record，均不得阻断整个 ticker。运行时应隔离坏行、规范化可恢复字段，必要时只将受影响 Path 降级为 `TRIGGER_UNRESOLVED` / 最终 `UNRESOLVED`，并以 warning 或 `PARTIAL` 继续。
 
-- 必需过程文件缺失或无法解析；
-- 成功 D2 Gaps 未进入 Worklist；
-- Path 缺少 Stage-A disposition；
-- `TRIGGER_READY` Path 缺少对应的严格类型化 Trigger Calibration record；
-- Path 与 D2 的 `shell_id + expectation_id + gap_id` 引用不闭合；
-- Stage-A progress 与实际工作文件明显不一致或仍存在未处理项；
-- input manifest 校验失败；
-- Agent 写入越界或核心合同无法恢复。
+硬阻断采用显式全局 allowlist，仅限继续执行会破坏全局可信度或使关键组件整体缺失的情况：
+
+- frozen input manifest 缺失、被篡改或 resume 身份不一致；
+- Agent 确实修改 frozen context、确定性发布目录或 canonical artifacts；普通非业务 scratch 文件仅记录 finding；
+- 有成功 D2 Gaps，但经过有界恢复后整个 Stage-A Worklist 仍不存在任何可用记录；
+- Codex SDK turn 自身连续失败且达到有界重试上限；缺失/无效的小型 structured response 不构成失败，只要 workspace 业务 artifacts 可恢复；
+- Maintenance 的 optimistic concurrency base 已过期；
+- canonical publish/storage 原子提交失败。
+
+Agent 自报 `FAILED`、非终态或 `REVIEW_BLOCKED` 只作为 advisory receipt，不能把自身意见提升为 deterministic blocker。Compile/Final Review 的局部文件缺失或格式问题应优先重建派生文件、隔离坏记录、修复 mapping 或将受影响 Path 降级；只有上述全局 allowlist 可以导致 hard fail。
 
 下列内容不得成为 deterministic blocker：
 
@@ -1180,4 +1182,3 @@ Stage Gate 只负责确认 Stage A 已形成完整、可解析、可继续消费
 - 需要业务判断或实质研究才能确定的语义质量问题。
 
 语义质量继续由 Stage-A skill、Node B compile checks 和 Final Review 负责。可解析但研究证据有限、Trigger 暂时无法收敛或个别 Path 无法形成 Policy时，应通过 `TRIGGER_UNRESOLVED`、最终 `UNRESOLVED`、warning 或 `PARTIAL` 表达，不得把宽松 validator 演化为过度审计的发布阻塞器。
-

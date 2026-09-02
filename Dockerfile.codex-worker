@@ -8,6 +8,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     UV_LINK_MODE=copy \
     UV_PROJECT_ENVIRONMENT=/app/.venv \
     PATH="/app/.venv/bin:$PATH" \
+    PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
     CODEX_HOME=/var/lib/codex
 
 WORKDIR /app
@@ -20,6 +21,8 @@ RUN apt-get update \
 COPY pyproject.toml uv.lock README.md ./
 COPY src ./src
 RUN uv sync --frozen --no-group dev
+RUN playwright install --with-deps chromium \
+    && chmod -R a+rX /ms-playwright
 
 COPY prompts/codex_v2 ./prompts/codex_v2
 RUN mkdir -p /var/lib/doxagent/workspaces /var/lib/codex \

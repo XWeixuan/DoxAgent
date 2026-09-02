@@ -15,6 +15,9 @@ from .schema import (
     W1NoveltyResult,
     W1Round1Result,
     W2PolicyResult,
+    W3CaseResult,
+    W3Mode,
+    W3RouteCase,
 )
 
 __all__ = [
@@ -28,4 +31,7 @@ __all__ = [
     "W1NoveltyResult",
     "W1Round1Result",
     "W2PolicyResult",
+    "W3CaseResult",
+    "W3Mode",
+    "W3RouteCase",
 ]

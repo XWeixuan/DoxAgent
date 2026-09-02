@@ -38,6 +38,29 @@ class DoxAgentSettings(BaseSettings):
         default=False,
         validation_alias="DOXAGENT_CODEX_DOCUMENT3_ENABLED",
     )
+    codex_monitoring_o4_enabled: bool = Field(
+        default=False,
+        validation_alias="DOXAGENT_CODEX_MONITORING_O4_ENABLED",
+    )
+    codex_monitoring_o4_sqlite_path: str = Field(
+        default=".tmp/codex-monitoring-o4.sqlite3",
+        validation_alias="DOXAGENT_CODEX_MONITORING_O4_SQLITE_PATH",
+    )
+    codex_monitoring_o4_model: str = Field(
+        default="gpt-5.6-sol",
+        validation_alias="DOXAGENT_CODEX_MONITORING_O4_MODEL",
+    )
+    codex_monitoring_o4_timeout_seconds: int = Field(
+        default=7200,
+        ge=30,
+        le=7200,
+        validation_alias="DOXAGENT_CODEX_MONITORING_O4_TIMEOUT_SECONDS",
+    )
+    codex_monitoring_o4_worker_sleep_seconds: float = Field(
+        default=1.0,
+        ge=0.05,
+        validation_alias="DOXAGENT_CODEX_MONITORING_O4_WORKER_SLEEP_SECONDS",
+    )
     codex_worker_base_url: str = Field(
         default="http://127.0.0.1:8791",
         validation_alias="DOXAGENT_CODEX_WORKER_BASE_URL",
@@ -474,6 +497,51 @@ class DoxAgentSettings(BaseSettings):
         ge=1,
         validation_alias="DOXAGENT_MONITORING_REMOTE_TIMEOUT_SECONDS",
     )
+    message_bus_v2_enabled: bool = Field(
+        default=False,
+        validation_alias="DOXAGENT_MESSAGE_BUS_V2_ENABLED",
+    )
+    message_bus_v2_sqlite_path: str = Field(
+        default=".tmp/message_bus_v2.sqlite3",
+        validation_alias="DOXAGENT_MESSAGE_BUS_V2_SQLITE_PATH",
+    )
+    message_bus_v2_worker_sleep_seconds: float = Field(
+        default=1.0,
+        ge=0.05,
+        validation_alias="DOXAGENT_MESSAGE_BUS_V2_WORKER_SLEEP_SECONDS",
+    )
+    message_bus_v2_adapter_root: str = Field(
+        default=".tmp/message_bus_v2_adapters",
+        validation_alias="DOXAGENT_MESSAGE_BUS_V2_ADAPTER_ROOT",
+    )
+    message_bus_v2_content_enrichment_enabled: bool = Field(
+        default=True,
+        validation_alias="DOXAGENT_MESSAGE_BUS_V2_CONTENT_ENRICHMENT_ENABLED",
+    )
+    crawler_plane_root: str = Field(
+        default=".tmp/crawler-plane",
+        validation_alias="DOXAGENT_CRAWLER_PLANE_ROOT",
+    )
+    crawler_plane_sqlite_path: str = Field(
+        default=".tmp/crawler-plane/crawler_plane.sqlite3",
+        validation_alias="DOXAGENT_CRAWLER_PLANE_SQLITE_PATH",
+    )
+    crawler_plane_worker_processes: int = Field(
+        default=4,
+        ge=4,
+        le=8,
+        validation_alias="DOXAGENT_CRAWLER_PLANE_WORKER_PROCESSES",
+    )
+    crawler_plane_execution_timeout_seconds: float = Field(
+        default=120.0,
+        gt=0,
+        validation_alias="DOXAGENT_CRAWLER_PLANE_EXECUTION_TIMEOUT_SECONDS",
+    )
+    crawler_plane_max_response_bytes: int = Field(
+        default=10_000_000,
+        ge=1,
+        validation_alias="DOXAGENT_CRAWLER_PLANE_MAX_RESPONSE_BYTES",
+    )
     persistent_runtime_storage_mode: Literal["memory", "sqlite"] = Field(
         default="sqlite",
         validation_alias="DOXAGENT_PERSISTENT_RUNTIME_STORAGE_MODE",
@@ -496,10 +564,6 @@ class DoxAgentSettings(BaseSettings):
     persistent_runtime_v2_enabled: bool = Field(
         default=False,
         validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_ENABLED",
-    )
-    persistent_runtime_v2_social_enabled: bool = Field(
-        default=False,
-        validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_SOCIAL_ENABLED",
     )
     persistent_runtime_v2_storage_mode: Literal["memory", "sqlite", "hybrid"] = Field(
         default="hybrid",
@@ -553,6 +617,39 @@ class DoxAgentSettings(BaseSettings):
     persistent_runtime_v2_prompt_root: str = Field(
         default="prompts/persistent_runtime_v2",
         validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_PROMPT_ROOT",
+    )
+    persistent_runtime_v2_w3_enabled: bool = Field(
+        default=True,
+        validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_W3_ENABLED",
+    )
+    persistent_runtime_v2_w3_model: str = Field(
+        default="gpt-5.6-luna",
+        validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_W3_MODEL",
+    )
+    persistent_runtime_v2_w3_reasoning_effort: Literal["low", "medium", "high", "xhigh", "max"] = (
+        Field(
+            default="max",
+            validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_W3_REASONING_EFFORT",
+        )
+    )
+    persistent_runtime_v2_w3_timeout_seconds: int = Field(
+        default=600,
+        ge=30,
+        le=7200,
+        validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_W3_TIMEOUT_SECONDS",
+    )
+    persistent_runtime_v2_w3_max_ticker_concurrency: Literal[5] = Field(
+        default=5,
+        validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_W3_MAX_TICKER_CONCURRENCY",
+    )
+    persistent_runtime_v2_w3_lease_seconds: int = Field(
+        default=1200,
+        ge=60,
+        validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_W3_LEASE_SECONDS",
+    )
+    persistent_runtime_v2_w3_prompt_root: str = Field(
+        default="prompts/persistent_runtime_v2/w3",
+        validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_W3_PROMPT_ROOT",
     )
     revenue_audit_storage_mode: Literal["memory", "sqlite"] = Field(
         default="sqlite",

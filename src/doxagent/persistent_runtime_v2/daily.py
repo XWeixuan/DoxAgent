@@ -184,6 +184,9 @@ class PersistentRuntimeV2DailyCloseService:
             candidates = self.repository.list_daily_candidates(normalized, trading_date)
             trades = self.repository.list_daily_trades(normalized, trading_date)
             badcases = self.repository.list_daily_badcases(normalized, trading_date)
+            w3_gaps = self.repository.list_daily_w3_coverage_gaps(
+                normalized, trading_date
+            )
             slug = f"{normalized.lower()}-{trading_date.isoformat()}"
             run = DailyCloseRun(
                 run_id=f"runtime-v2-close-{slug}",
@@ -194,6 +197,7 @@ class PersistentRuntimeV2DailyCloseService:
                 candidate_keys=[_candidate_key(item) for item in candidates],
                 trade_record_ids=[item.trade_record_id for item in trades],
                 badcase_ids=[item.badcase_id for item in badcases],
+                w3_coverage_gap_ids=[item.coverage_gap_id for item in w3_gaps],
                 o2_run_id=f"runtime-v2-o2-{slug}",
                 o3_run_id=f"runtime-v2-o3-{slug}",
             )
@@ -239,6 +243,7 @@ class PersistentRuntimeV2DailyCloseService:
                     and not feed.reference_view_delta.removed_event_ids
                     and not feed.trade_records
                     and not feed.badcase_records
+                    and not feed.w3_coverage_gaps
                 ):
                     result_payload = {"status": "NOOP", "reason": "empty_daily_feed"}
                 else:
@@ -264,6 +269,7 @@ class PersistentRuntimeV2DailyCloseService:
                     candidate_keys=run.candidate_keys,
                     trade_record_ids=run.trade_record_ids,
                     badcase_ids=run.badcase_ids,
+                    w3_coverage_gap_ids=run.w3_coverage_gap_ids,
                 )
                 run = self._save(run, stage=DailyCloseStage.COMPLETED)
                 if self.projection_outbox is not None:
@@ -315,6 +321,7 @@ class PersistentRuntimeV2DailyCloseService:
             )
         trade_ids = set(run.trade_record_ids)
         badcase_ids = set(run.badcase_ids)
+        gap_ids = set(run.w3_coverage_gap_ids)
         return O3MaintenanceFeed(
             ticker=run.ticker,
             trading_date=run.trading_date,
@@ -332,6 +339,13 @@ class PersistentRuntimeV2DailyCloseService:
                     run.ticker, run.trading_date
                 )
                 if item.badcase_id in badcase_ids
+            ],
+            w3_coverage_gaps=[
+                item
+                for item in self.repository.list_daily_w3_coverage_gaps(
+                    run.ticker, run.trading_date
+                )
+                if item.coverage_gap_id in gap_ids
             ],
         )
 

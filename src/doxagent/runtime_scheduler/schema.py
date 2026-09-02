@@ -9,13 +9,18 @@ from uuid import uuid4
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from doxagent.message_bus_v2.schema import PollState as MessageBusV2PollState
+from doxagent.message_bus_v2.schema import (
+    TickerSourceBinding as MessageBusV2TickerSourceBinding,
+)
 from doxagent.models import DocumentType
 from doxagent.models.documents import (
     KnownEventsDocument,
     MonitoringConfigDocument,
     MonitoringPolicyDocument,
 )
-from doxagent.monitoring.schema import PollState, TickerSourceBinding
+from doxagent.monitoring.schema import PollState as LegacyPollState
+from doxagent.monitoring.schema import TickerSourceBinding as LegacyTickerSourceBinding
 from doxagent.persistent_runtime.schema import (
     ExecutionExceptionLog,
     RuntimeExecutionObservation,
@@ -53,8 +58,9 @@ class MarketSessionPhase(StrEnum):
 
 class MonitorMode(StrEnum):
     MESSAGE_MONITORING = "message_monitoring"
-    PAPER_TRADING = "paper_trading"
-    BROKER_TRADING = "broker_trading"
+    TRADING = "trading"
+    PAPER_TRADING = "trading"
+    BROKER_TRADING = "trading"
 
 
 class DocumentAvailability(StrEnum):
@@ -200,8 +206,8 @@ class DocumentRefreshRequest(RuntimeSchedulerModel):
 
 
 class MonitoringBindingStatus(RuntimeSchedulerModel):
-    binding: TickerSourceBinding
-    poll_state: PollState | None = None
+    binding: MessageBusV2TickerSourceBinding | LegacyTickerSourceBinding
+    poll_state: MessageBusV2PollState | LegacyPollState | None = None
 
 
 class MonitoringRunStatus(RuntimeSchedulerModel):

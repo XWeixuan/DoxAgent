@@ -1,8 +1,18 @@
 # O3 Trigger Calibration
 
-本 Turn 完成 O3 INITIALIZE 的研究阶段：从完整 D2 Potential Gap surface 中，研究出当前现实里最早、最小充分、可由自然消息披露且可被 W2 判断的 Candidate Trading Triggers。所有成功 Shell 完成本阶段后，编排才进入 Policy Compile。
+本 Turn 完成 O3 INITIALIZE 的研究阶段：从完整 D2 Potential Gap surface 中，研究出现实世界下一项能够制造边际 expectation update、具有正常消息生成路径且可由 W2 判断的 Candidate Trading Triggers。所有成功 Shell 完成本阶段后，编排才进入 Policy Compile。
 
-本阶段的价值是先回答“什么消息第一次值得交易”，让后续节点只负责编译表达。优化目标不是尽可能多地产生 `TRIGGER_READY`，而是为每条能够形成真实 Direct Trading Policy 的 Path 找到可信、足够早且现实可披露的 Trigger。合理剩余不确定性不妨碍 Trigger 成立；极晚、极难发生或只能由合成消息确认的 Trigger 也不比诚实的 `TRIGGER_UNRESOLVED` 更好。
+本阶段优化的是 Trigger 质量，而不是 `TRIGGER_READY` 数量或确认程度。可靠性主要来自正确的现实状态、expectation transmission、可观察比较基准和消息确认方式，不来自继续等待更多后续经营结果。优先顺序是：
+
+```text
+忠实于 D2 revision space 与 ticker transmission
+→ Trigger 存在于真实消息流
+→ 在可观察候选中选择最早的交易充分边界
+→ 提高 W2 judgeability
+→ 最后优化表达与数量
+```
+
+正常的后续不确定性可以保留；只有在完成针对性研究后仍无法建立上述边界时，才使用 `TRIGGER_UNRESOLVED`。
 
 ## 1. Working Contract
 
@@ -23,11 +33,11 @@ Trigger Calibration record/state schemas
 
 - D2 是 expectation、经济传导、Gap 和 provenance 的研究基线；
 - Reference View 是同一次 run 冻结的后续现实补充，不是完整世界状态；
-- Previous Policy Set 提供已有 actor、边界和语义连续性的参考，本轮完整 Gap surface 仍由当前 D2 决定；
+- Previous Policy Set 提供已有主体、边界和语义连续性的参考，本轮完整 Gap surface 仍由当前 D2 决定；
 - Worklist 是 Stage A 建立的完整 Tradable Path surface；
 - Trigger records 保存每条 ready Path 的研究结论；Trigger state 保存 Shell 进度和全部 Path dispositions。
 
-本阶段更新 `output/work/worklist.jsonl`、`trigger_calibrations.jsonl` 和 `trigger_calibration_state.json`。Worklist 的 `status` 保持 `PENDING`，`policy_ids` 保持空列表；最终 `COMPILED / UNRESOLVED`、Policy drafts、`calibration_log.jsonl` 和 `wave_state.json` 由 Policy Compile 处理。
+本阶段更新 `output/work/worklist.jsonl`、`trigger_calibrations.jsonl` 和 `trigger_calibration_state.json`。Worklist 的 `status` 保持 `PENDING`，`policy_ids` 保持空列表；最终 `COMPILED / UNRESOLVED`、Policy drafts、`calibration_log.jsonl` 和 `wave_state.json` 由 Policy Compile 处理。只使用 supplied schema 中已有字段。
 
 ## 2. 恢复与冻结状态
 
@@ -48,31 +58,46 @@ Realization Factors
 Potential Gaps
 ```
 
-回答：这个 Shell 描述怎样的一组 expectation uncertainties，各 Gap 从什么现实状态产生，哪些 actors、约束和传导彼此关联？保持完整 Shell 上下文有助于发现共享 current-state research、同一 Gap 的相反方向，以及看似同主题但由不同现实主体承载的 Paths。
+回答：这个 Shell 描述怎样的一组 expectation uncertainties，各 Gap 从什么现实状态产生，哪些主体、约束和传导彼此关联？保持完整 Shell 上下文，用于复用 current-state 与消息生成研究，并区分同一主题下真正不同的状态路径。
 
 进入新 Shell 时将其写入 `current_shell_id`。本 Shell 全部 Paths 形成 disposition 后，再加入 `completed_shell_ids` 并进入下一 Shell。
 
-## 4. Worklist Gate：先展开完整 Path Surface
+## 4. Worklist Gate：先解析 Actor-State，再确定 Path Surface
 
-在本 Shell 的外部研究前，先处理全部 Potential Gaps。对每个 Gap 建立以下链条：
+对本 Shell 的全部 Potential Gaps 先做 Actor-State Resolution，再决定 Path 拆分。不要从 D2 列出的实体名称或“多个客户”“主要 OEM”等集合表述直接枚举 Paths。
+
+对可能承载 Gap 的主体或对象，在内部形成以下认知表；这是分析方法，不是新增输出字段：
+
+```text
+Actor / Object
+Current State
+Already in Reality or Expectation Baseline
+Next Plausible State
+Expectation Effect on the ticker
+Normal Message Route
+```
+
+先利用 D2、Reference View 和 Previous Policy Set 解析已知状态。若主体当前状态会改变 Path 设计但输入不足，先把问题压缩成 Trigger-selection question，并做必要的定向研究，再完成拆分。问题应能改变 `actor / current_state / candidate_trigger / comparator / disclosure_route` 中至少一项，例如：
+
+> 当前相关客户分别处于 qualification、production adoption 还是 recurring shipment；哪一主体的下一项变化会成为相对于现有 baseline 的第一项新 expectation delta？
+
+拆分依据是现实状态和交易语义，而不是主体数量：
+
+- 当前状态、下一边界、披露结构或 ticker 方向不同，形成不同 Paths；
+- 同一 Gap 的正反落点或彼此独立的 `A OR B` 事件形成不同 Paths；
+- 多个主体当前状态、下一状态、消息结构和 ticker transmission 实质对称，而且未来每条消息只判断其中一个主体时，可以保留通用的单主体事件 Path；
+- “一名可识别的客户/供应商”本身不是 Actor-State Resolution 的结果。若边界依赖具体主体的当前状态，应研究到该现实主体；若不依赖，应明确通用事件成立的对称性依据。
+
+每条 Path 保持单一现实含义和方向，并表达：
 
 ```text
 现实主体或对象
 → 当前状态
-→ 可能的新状态
+→ 下一项可能状态
 → D2 expected_revision
 → 目标 ticker 的净影响
 → LONG / SHORT
 ```
-
-一条 Path 保持单一现实含义和方向。以下情况展开为不同 Paths：
-
-- 不同 actors 可以独立变化；
-- 同一 Gap 存在不同现实落点；
-- 同一变化经不同传导形成相反方向；
-- 存在彼此独立的 `A OR B` 触发路径。
-
-D2 中的“多个客户”“多个 OEM”“竞争者供给”等集合表述不是默认 Trigger 单位。若具体 actors 能够独立发生、独立披露并各自形成预期差，先拆成 actor-specific Paths。每条 ready Path 最终只对应一项规范化 Candidate Trigger record；多个独立 Trigger 候选应先拆 Path，而不是并入同一 record。
 
 使用现有 Worklist 字段写入全部 Paths：
 
@@ -90,88 +115,106 @@ policy_ids
 unresolved_reason
 ```
 
-`path_summary` 紧凑表达具体 actor/object、状态变化和 ticker 方向。`d2_boundary_sufficient=false` 时，将 `missing_calibration` 写成一个会改变 Trigger 选择的具体可回答问题，例如“该客户目前仍处验证，还是已进入具有约束力的商业采购”，而不是“研究客户进展”。完整 Worklist 落盘后再开始本 Shell 的 Trigger Research。
+`path_summary` 使用真实业务语言紧凑表达主体/对象、状态变化和 ticker 方向。`d2_boundary_sufficient=false` 时，`missing_calibration` 写成能够决定 Trigger 选择的具体问题，而不是宽泛研究主题。完整 Path surface 落盘后再进行本 Shell 其余 Trigger Research；后续研究若证明 actor-state 假设有误，应在 disposition 前修正 Worklist。
 
 ## 5. `d2_boundary_sufficient`
 
-D2 只有已经直接提供一项同时满足以下要求的 Trigger Boundary 时才为 `true`：
+D2 只有已经直接回答以下问题、无需外部研究即可完成 Trigger Selection 时才为 `true`：
 
 ```text
-相对于最新现实仍面向未来
-+ 最小交易充分
-+ actor granularity 合理
-+ 有现实消息的自然披露可能
-+ W2 可直接判断
+谁承载变化，当前处于什么状态？
+哪项仍面向未来的新事实会更新 expectation？
+该事实怎样经 D2 transmission 形成明确 ticker 方向？
+哪些事实真正必要，哪些只是后续兑现？
+现实信息生产机制通常怎样让它成为消息？
+W2 从哪里获得必要 comparator？
 ```
 
-D2 `recognition_criteria` 是寻找边界的重要研究依据，不是默认 Activation Condition。它为了完整确认 Gap 可能列出资格、量产、shipment、收入或利润等多个阶段；完整确认 Gap 与第一次形成可交易预期差是不同问题。
+D2 `recognition_criteria` 是寻找边界的研究线索，不是默认 Candidate Trigger。它可能为了完整确认 Gap 同时列出资格、量产、shipment、收入或利润；完整确认 Gap 与第一次形成可交易预期差是不同问题。
 
-`d2_boundary_sufficient=true` 只表示不需要额外外部 Calibration；该 Path 仍需完成本阶段六项 Trigger 测试并写入严格 Trigger record。
+`d2_boundary_sufficient=true` 只表示上述关键不确定性已经由冻结输入解决，不表示可以跳过本阶段分析。该 Path 仍需完成下面的 Trigger Selection，并写入严格 record。
 
-## 6. 建立 Trigger Surface
+## 6. Trigger Selection Analysis
 
-对每条 Path，先识别哪些具体 actors 或 objects 能承载下一项 expectation-changing event，再研究：
+### 6.1 Current State 与 Marginal Expectation Update
+
+D2 定义 expectation prior、revision space 与经济传导；Reference View 和必要的当前研究确定现实已经推进到哪里。Reference View 已确认的 D2 Future Gap 应吸收到 `current_state`，再沿同一 Path 寻找下一项仍面向未来的边界。Reference View 未记录某项变化，不证明它尚未发生。
+
+对每个 candidate fact / candidate fact set 按以下链条判断：
 
 ```text
-谁现在处于什么状态？
-哪些变化已经成为现实或进入 baseline？
-基于当前状态，下一项合理可能的状态有哪些？
-谁的哪项下一变化最早能够制造新的预期差？
+D2 expectation prior
++ 最新确认的 current state
++ candidate fact / fact set
+→ probability / timing / scale / economic path / risk 的更新
+→ D2 expected_revision
+→ ticker 的 LONG / SHORT transmission
 ```
 
-Current State 应尽可能贴近 Trigger-bearing object：客户采用阶段、binding commitment、产品资格、商业部署、产能实际投放、合同状态、监管适用状态或可比指标，而不是宽泛行业背景。
+候选事实或事实集合整体成立后，只要某个重要 expectation lever 已产生明确、具有交易意义的方向更新，而且 ticker transmission 不需要再假设集合之外另一项尚未出现的关键事实，该集合就可能构成充分 Trigger。shipment、revenue、margin、份额或最终结果仍未知，不会自动使更早事实不充分。若候选仍只是普通进展，或方向必须依赖集合之外另一关键未知事实，继续寻找真正承担边界的状态变化。
 
-D2 定义 expectation 与 revision space；Reference View 和必要的当前研究确定现实已经推进到哪里。Reference View 已确认的 D2 Future Gap 应吸收到 `current_state`，再沿原 Path 寻找下一项仍面向未来的 marginal boundary。Reference View 未记录某项变化，不证明它尚未发生。
+### 6.2 Causal Layer Analysis
 
-## 7. Candidate Trigger 的六项测试
-
-对每个候选 Trigger 依次完成以下思考；结论体现在 record 的具体内容中，而不是只写“已通过”。
-
-### 7.1 Marginality Test
-
-问：相对于最新确认现实和当前 expectation baseline，这项状态真的是新信息吗？已发生或已进入 baseline 的事实进入 `current_state`，不继续充当未来 Trigger。
-
-### 7.2 Counterfactual Trade Test
-
-假设这条消息现在真实出现，而后续 shipment、revenue、margin 或份额兑现仍未知：
-
-> 按照 D2 已建立的研究，这项信息是否已经把相关 expectation 推过一个可以预先规定直接交易判断的边际边界？
-
-观察它是否已经实质改变发生概率、实现时点、潜在规模、经济路径或关键风险中的核心维度。普通进展若仍依赖另一项关键事实才能形成明确方向，就继续寻找真正承担交易边界的变化；已经形成有方向且有经济意义的预期差，则接受正常的剩余不确定性。
-
-### 7.3 Minimality / Deletion Test
-
-如果候选实际包含 `A + B + C`，逐项删除：没有 C 时，A+B 是否仍支持同样的直接交易判断？如果是，删除 C 并继续，直到再删除任何必要事实都会使候选退回普通进展。
-
-这里寻找的是最小交易充分集合，不是完整 thesis 的最小证明集合。资格、binding order 或正式规则变化已经足够交易时，后续 shipment、revenue、margin 或市场反应属于 realization evidence，不再追加到 Trigger。
-
-### 7.4 Actor Granularity Test
-
-检查候选是否把多个可以独立变化的客户、供应商、平台或竞争者聚成集合事实。进一步判断哪些 actors 当前真正 relevant、各自位于什么状态、哪一个 actor 的独立下一变化已经足以形成预期差。不同 actor 的 Trigger 分别评估和记录。
-
-### 7.5 Disclosure Plausibility Test
-
-明确回答：
+在判断最小性前，把候选中的每项事实分到事件链的相应层级：
 
 ```text
-谁最可能发布？
-是什么类型的消息？
-发布者是否掌握必要事实？
-候选中的事实是否通常在同一时点披露？
-基于当前状态，该事件本身是否具有合理发生可能？
+Precursor
+→ Trigger Candidate
+→ Transmission Evidence
+→ Realization Evidence
 ```
 
-评估的是真实信息生产过程，不是能否把若干事实写进同一句话。若没有与具体 actor、状态变化和消息类型相匹配的自然披露路径，调整 Trigger granularity 或寻找新的候选。
+- Precursor 只提高关注度，尚未跨过交易边界；
+- Trigger Candidate 是第一次产生上述 expectation update 的状态变化；
+- Transmission Evidence 解释变化为何影响 ticker；
+- Realization Evidence 说明 Trigger 后来转化为 shipment、revenue、margin、份额或其他经营结果。
 
-### 7.6 W2 Judgeability / Comparator Test
+Condition 通常应停在 Trigger Candidate。后两层用于证明研究逻辑，不因提高确定性就自动成为 Candidate Trigger 的组成部分。若某项 shipment 或商业结果实际上定义事件本身，而非仅证明后续兑现，应结合该 Path 的业务机制说明其不可替代作用。
 
-假设 W2 只有未来消息和 Runtime Policy：它是否可以直接判断 Trigger 成立或不成立？涉及“明显、重大、大幅、广泛、持续、高位、健康、实质”以及“进一步、相对此前”等判断时，必须形成可供后续 Criterion 使用的显式 comparator。
+### 6.3 Minimal Sufficient Fact Set
 
-优先把程度词翻译成业务状态，例如客户 qualification 暂停、deployment freeze、binding commitment 下调或订单削减。无法完全消除时，明确与当前状态、正式 guidance、commitment、timeline、具体数值或有依据的历史区间相比发生了什么变化。
+Candidate Trigger 可以包含一个或多个事实，但只保留完成本次 expectation update 所需的最小事实集合。逐项判断：
 
-## 8. Targeted Research
+> 删除事实 C 后，D2 中目标 expectation lever 的更新是否仍然成立且方向不变？
 
-围绕已经明确的 actor、current state 和 Candidate Trigger 问题选择信息来源：
+若仍成立，C 没有必要的信息贡献，应从 Trigger 中删除，即使它能增加信心。若删除后必须再假设一项关键事实才能建立 transmission，C 才可能必要。
+
+这不是“删掉后我是否仍足够确信最终 thesis”的测试。资格、binding commitment、production adoption 或正式规则变化已经产生充分 expectation delta 时，后续重复 shipment、收入增长、利润改善或市场反应属于 realization。对每个最终保留事实说明其独立信息贡献，并说明排除了哪些前兆、传导说明或跟随结果。
+
+### 6.4 Message Production Analysis
+
+对最小事实集合建立现实信息生产链：
+
+```text
+event owner
+→ information holder
+→ likely publisher / reporter
+→ normal message type
+→ normal content boundary
+```
+
+核心问题不是“能否想象一篇综合文章把这些事实写在一起”，而是：现实中哪个信息持有者会在该时点掌握必要事实，谁有义务、动机或习惯披露，正常消息通常能披露到什么粒度？
+
+分别检查候选事实是否属于同一信息生产链。平台 BOM、供应商 allocation、客户订单和目标公司的财务结果即使经济上相关，也可能由不同主体、不同载体和不同时点产生；综合报道能够事后汇总，不等于一条未来消息会自然生成全部必要事实。
+
+当披露方式并不明显时，定向查看同一主体、同类事件或同行历史上的 Disclosure Analogy：谁最先公开、通过何种载体、通常披露哪些内容、哪些事实需要另一主体或更晚消息确认。研究结论写入 `disclosure_route`，包括具体信息持有者/发布者、消息类型、正常内容边界，以及 Candidate 必要事实为何属于该边界；泛写 `company filing`、`credible report` 或“同一自然披露”不足以表达研究结果。
+
+一条 Candidate Trading Trigger record 表达一个 message-level trading event，不预设 Policy Compile 最终产生一个还是多个 Conditions。同一消息中若存在多个各自可判断、且都不可缺少的事实，Stage B 可以拆成多个 Conditions；彼此独立发生或来自不同消息生产链的 `A OR B` 应在 Stage A 调整 Trigger granularity 或拆为不同 Paths。
+
+### 6.5 Observable Comparator 与 W2 Judgeability
+
+假设 W2 只有未来消息和 Runtime Policy，问：它从哪里取得判断所需的比较对象？可用 comparator 至少属于以下一类：
+
+- Candidate/后续 Criterion 中明确给出的当前值或状态；
+- 公开且确定的 current commitment、guidance 或 timeline；
+- 未来消息自身明确给出的 before/after；
+- Runtime 能直接获得的明确历史状态。
+
+“明显、重大、大幅、广泛、持续、高位、健康、实质”等程度词应优先翻译成可观察业务状态。若必须保留相对判断，明确 comparison baseline 及其来源。需要 W2 自行估算“无保护基线”“无上限情景”“正常库存”或其他反事实模型的比较对象，不是可观察 comparator，应重新校准边界。数值阈值来自研究和经济含义，而不是为了形式精确而任意设置。
+
+## 7. Targeted Research
+
+研究始终服务于 Trigger Selection，按问题选择：
 
 ```text
 D2
@@ -180,32 +223,45 @@ D2
 → 必要时只读 Data MCP
 ```
 
-- 公开事实、商业阶段、客户采用、合同、监管、生产状态和 disclosure pattern 通常适合定向 Web Search；一手或官方资料能回答时即可形成结论，否则使用可靠行业或二手来源。
+- 公开事实、主体当前状态、商业阶段、客户采用、合同、监管、生产状态和历史 disclosure pattern 通常适合定向 Web Search；一手资料能回答时即可形成结论，一手不存在或不披露该类事实时使用可靠行业或二手来源。
 - 历史序列、可比区间、provider-specific consensus 或结构化市场指标适合 Data MCP；只有 D2 未提供当前 Trigger 所需的可比信息，或该数据在 D2 后确有现实可能更新时才重新查询。
 - 同一 actor-level finding 可以支持多个 Paths，但每条 Path 保留自己的 Trigger 结论和来源映射。
 
-Research 在已经能够形成可辩护的 `current_state + candidate_trigger + trade_sufficiency + disclosure_route + judgeability` 时结束。目标是解决当前 Trigger 问题，不是穷尽主题或重新形成完整行业报告。经过针对性研究仍无法找到现实可披露且足以形成直接交易判断的 Future Trigger 时，使用 `TRIGGER_UNRESOLVED`；一般的信息不完整本身不等于 unresolved。
+Research 在以下关键问题已有明确答案时结束：
 
-## 9. Trigger Calibration Record
+```text
+谁或什么对象承载 Trigger？
+现实现在在哪里？
+哪项下一事实第一次更新重要 expectation lever？
+哪些事实对该更新真正必要？
+这项变化在现实中怎样成为消息？
+W2 依据什么可观察状态和 comparator 判断？
+```
 
-每个 `TRIGGER_READY` Path 写一条且仅一条符合 supplied schema 的 record：
+目标是解决这些不确定性，不是写完整行业报告或搜集更完美的证明。经过针对性研究仍无法找到现实可披露、仍面向未来且能够建立明确 expectation transmission 的 Trigger 时，使用 `TRIGGER_UNRESOLVED`；一般的信息不完整本身不等于 unresolved。
 
-- `trigger_bearing_actor`：谁发生变化；
-- `trigger_bearing_object`：产品、合同、客户关系、工厂、产能、采购或指标等具体对象；
-- `current_state`：最新确认现实和已进入 baseline 的状态；
-- `candidate_trigger`：仍面向未来的最小充分状态命题；
-- `trade_sufficiency`：为何它本身已足以修改 expectation 和支持 Path 方向，即使后续兑现未知；
-- `minimality`：哪些跟随事实被排除，保留事实为何不可再减；
-- `disclosure_route`：自然发布者、消息类型以及同消息可行性；
-- `judgeability`：未来消息中的真值边界和必要 comparator；
-- `source_basis`：实际支持上述结论的 D2、Reference View、Web 或 Data MCP 来源标识；
+## 8. Trigger Calibration Record
+
+每个 `TRIGGER_READY` Path 写一条且仅一条符合 supplied schema 的 record。字段承担以下职责：
+
+- `trigger_bearing_actor`：Actor-State Resolution 确定的现实主体，或经研究证明 current state 与下一边界对称的通用单一事件主体；
+- `trigger_bearing_object`：产品、合同、客户关系、工厂、产能、采购、规则或指标等具体对象；
+- `current_state`：最新确认现实、已进入 expectation baseline 的状态及必要可观察锚点；
+- `candidate_trigger`：使用真实领域语言表达仍面向未来的 Minimal Sufficient Fact Set，不写内部测试口号；
+- `trade_sufficiency`：哪一个 expectation lever 怎样更新，以及该更新如何经 D2 transmission 支持 Path 方向；
+- `minimality`：保留事实的必要信息贡献，以及已排除的 precursor、transmission 或 realization facts；
+- `disclosure_route`：信息持有者/发布者、正常消息载体、内容边界及必要事实的同消息可行性；
+- `judgeability`：W2 判断的真值边界、可观察 comparator 及其可获得位置；
+- `source_basis`：实际支持 actor state、Trigger、披露路径和 comparator 的 D2、Reference View、Web 或 Data MCP 来源标识；
 - `disposition`：`TRIGGER_READY`。
+
+`TRIGGER_READY` 表示研究已经具体解决 Actor-State、Marginal Expectation Update、Causal Layer、Minimal Fact Set、Message Production 和 Observable Comparator，而不是每个字段都有一句自洽文字。以下均不足以达到 ready：需要具体主体时只写“一名可识别的……”；披露结构未知时只写“可能由综合报道披露”；comparator 不可见时只给反事实基线名称。
 
 每个 Path 同时在 `trigger_calibration_state.path_dispositions` 保留精确的 `shell_id + expectation_id + gap_id + path_id` 与 disposition。`TRIGGER_UNRESOLVED` 在 state 中写明具体 `unresolved_reason`；若已有 unresolved strict record 需要保留，其引用、disposition 和 reason 与 state 保持一致。
 
-每完成一项工作就更新 state 的 `current_shell_id`、dispositions、`unprocessed_path_count` 和 `updated_at`，使 retry 可以从未闭合处继续。Trigger record、state disposition 和 Worklist 必须使用同一个 `path_id` 与 D2 引用。
+每完成一项工作就更新 state 的 `current_shell_id`、dispositions、`unprocessed_path_count` 和 `updated_at`，使 retry 可以从未闭合处继续。Trigger record、state disposition 和 Worklist 使用同一个 `path_id` 与 D2 引用。
 
-## 10. Stage Completion
+## 9. Stage Completion
 
 一个 Shell 在全部 Gaps 已进入 Worklist、全部 Paths 已形成 Stage-A disposition 后完成。所有成功 Shell 完成后：
 
@@ -221,7 +277,8 @@ completed_shell_ids = 全部成功 D2 Shell
 - Worklist 覆盖全部成功 D2 Gaps，且全部 status 仍为 `PENDING`；
 - 每个 Path 有且只有一个 disposition；
 - 每个 `TRIGGER_READY` Path 有一条匹配的严格 record；
+- 每条 ready record 实际解决了 Actor-State、expectation update、causal layer、minimality、message production 和 observable comparator；
 - record、state 与 Worklist 的 D2 refs 完全一致；
 - 冻结输入未被修改。
 
-最后按当前 node output schema 返回单个 `TriggerCalibrationRunResult`，其中计数与 workspace 实际状态一致。完整研究结果已经保存在过程文件中，不在最终回复重复输出。
+最后按当前 node output schema 返回单个 `TriggerCalibrationRunResult`，其中计数与 workspace 实际状态一致。完整研究结果保存在过程文件中，不在最终回复重复输出。
