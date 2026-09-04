@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 from enum import StrEnum
-from typing import Any, Literal
+from typing import Any, Literal, cast
 from uuid import uuid4
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
@@ -29,6 +29,7 @@ class O4RequestStatus(StrEnum):
     RUNNING = "RUNNING"
     SUCCEEDED = "SUCCEEDED"
     DEGRADED = "DEGRADED"
+    INTERRUPTED = "INTERRUPTED"
     FAILED = "FAILED"
     ASSOCIATED = "ASSOCIATED"
 
@@ -54,6 +55,12 @@ class DeliveryItemStatus(StrEnum):
     FAILED = "FAILED"
     REPLAN_REQUIRED = "REPLAN_REQUIRED"
     HUMAN_INTERVENTION_REQUIRED = "HUMAN_INTERVENTION_REQUIRED"
+
+
+class DeliveryProgressState(StrEnum):
+    PROGRESSING = "PROGRESSING"
+    STALLED = "STALLED"
+    INFEASIBLE = "INFEASIBLE"
 
 
 class RepairFinalStatus(StrEnum):
@@ -154,10 +161,29 @@ class DeliveryWorkItemCheckpoint(O4Model):
     crawler_id: str | None = None
     version: int | None = Field(default=None, ge=1)
     stage: str = "NOT_STARTED"
+    delivery_stage: str = "NOT_STARTED"
+    progress_state: DeliveryProgressState = DeliveryProgressState.PROGRESSING
+    consecutive_stalled_cycles: int = Field(default=0, ge=0)
+    latest_execution_id: str | None = None
+    latest_evidence_refs: list[str] = Field(default_factory=list)
+    previous_blocker: str | None = None
+    latest_blocker: str | None = None
+    next_hypothesis: str | None = None
+    exhausted_candidate_ids: list[str] = Field(default_factory=list)
+    # Deprecated compatibility field. It is persisted and parsed but never
+    # controls delivery effort or candidate exhaustion.
     cycles_used: int = Field(default=0, ge=0)
     last_failure: str | None = None
     status: DeliveryItemStatus = DeliveryItemStatus.PENDING
     updated_at: datetime = Field(default_factory=utc_now)
+
+    @model_validator(mode="after")
+    def synchronize_stage_compatibility(self) -> DeliveryWorkItemCheckpoint:
+        if self.delivery_stage == "NOT_STARTED" and self.stage != "NOT_STARTED":
+            self.delivery_stage = self.stage
+        elif self.stage == "NOT_STARTED" and self.delivery_stage != "NOT_STARTED":
+            self.stage = self.delivery_stage
+        return self
 
 
 class DeliveryCheckpoint(O4Model):
@@ -240,6 +266,8 @@ class O4Request(O4Model):
     node: CodexMonitoringO4Node
     payload: dict[str, Any]
     dedupe_key: str
+    logical_request_id: str = Field(default_factory=lambda: new_id("o4_logical"))
+    continuation_seq: int = Field(default=0, ge=0)
     status: O4RequestStatus = O4RequestStatus.PENDING
     associated_request_id: str | None = None
     error: str | None = None
@@ -295,7 +323,7 @@ def strict_json_schema(schema: dict[str, Any]) -> dict[str, Any]:
                 result["required"] = list(properties)
         return result
 
-    return walk(schema)
+    return cast(dict[str, Any], walk(schema))
 
 
 __all__ = [name for name in globals() if not name.startswith("_")]

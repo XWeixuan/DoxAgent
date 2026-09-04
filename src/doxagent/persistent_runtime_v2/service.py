@@ -14,8 +14,17 @@ from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel
 
+from doxagent.event_library.contracts import CanonicalEvent
 from doxagent.event_library.provider import KnownEventIndexSnapshot
-from doxagent.workflows.codex_document3.schema import RuntimePolicyProjection
+from doxagent.workflows.codex_document3.runtime_projection import (
+    assert_runtime_projection_compatible,
+)
+from doxagent.workflows.codex_document3.schema import (
+    PolicyDecision,
+    PolicyDetailSnapshot,
+    RuntimePolicyProjection,
+    RuntimePolicyRecord,
+)
 
 from .prompts import RuntimeV2PromptSet
 from .providers import RuntimeKnownEventProvider, RuntimePolicyProvider
@@ -24,13 +33,16 @@ from .router import route_runtime_case, route_w3_result
 from .schema import (
     ArchiveRecord,
     BadcaseRecord,
+    PolicyActivationRecord,
+    ProvisionalFactDetail,
     RuntimeCase,
     RuntimeCaseStatus,
     RuntimeConfidence,
     RuntimeEffect,
     RuntimeEffectStatus,
-    RuntimeEventDetailEnvelope,
     RuntimeModelTurn,
+    RuntimePrimaryRoute,
+    RuntimeRouteDecision,
     RuntimeSideEffect,
     RuntimeTechnicalStatus,
     RuntimeVersionPin,
@@ -47,6 +59,7 @@ from .schema import (
     W3CaseStatus,
     W3CoverageGapRecord,
     W3Mode,
+    W3PolicyResult,
     W3RouteCase,
     W3ThreadKind,
     new_runtime_v2_id,
@@ -65,6 +78,71 @@ if TYPE_CHECKING:
 
 T = TypeVar("T", bound=BaseModel)
 _EASTERN = ZoneInfo("America/New_York")
+
+
+def _w2_projection_business_payload(
+    projection: RuntimePolicyProjection,
+) -> dict[str, Any]:
+    """Project only W2 matching semantics; keep protocol/audit state local."""
+
+    return {
+        "activation_semantics": "OR",
+        "policies": [
+            policy.model_dump(mode="json", exclude={"activation_revision"})
+            for policy in projection.policies
+        ]
+    }
+
+
+def _w2_detail_business_payload(details: PolicyDetailSnapshot) -> dict[str, Any]:
+    """Expose canonical Policy bodies without the versioned retrieval envelope."""
+
+    return {
+        "activation_semantics": "OR",
+        "policies": [policy.model_dump(mode="json") for policy in details.policies]
+    }
+
+
+def _w1_provisional_business_payload(value: ProvisionalFactDetail) -> dict[str, Any]:
+    """Expose the provisional identity and fact semantics, not its journal envelope."""
+
+    return {
+        "provisional_event_id": value.provisional_event_id,
+        "candidate": value.candidate.model_dump(mode="json"),
+    }
+
+
+def _w1_canonical_event_business_payload(value: CanonicalEvent) -> dict[str, Any]:
+    """Project fields needed for novelty comparison and temporal/relationship semantics."""
+
+    return value.model_dump(
+        mode="json",
+        include={
+            "event_id",
+            "title",
+            "event_type",
+            "occurred_at",
+            "occurrence_time_precision",
+            "status",
+            "canonical_summary",
+            "known_event_summary",
+            "related_event_ids",
+            "supersedes_event_id",
+            "derived_from_event_ids",
+            "facts",
+        },
+    )
+
+
+def _w1_final_business_payload(value: W1NoveltyResult | None) -> dict[str, Any] | None:
+    """Carry the adjudicated novelty semantics into R3 without confidence metadata."""
+
+    if value is None:
+        return None
+    return value.model_dump(
+        mode="json",
+        include={"result", "reference_ids", "reason"},
+    )
 
 
 class RuntimeInputUnavailable(RuntimeError):
@@ -159,6 +237,8 @@ class PersistentRuntimeV2Service:
                 "policy_projection_unavailable",
                 "Published Runtime Policy Projection is unavailable",
             )
+        assert_runtime_projection_compatible(projection)
+        projection = self._without_consumed_policies(projection)
         provisional_version = self.repository.provisional_snapshot_version(
             source.snapshot.ticker,
             trading_date,
@@ -195,6 +275,19 @@ class PersistentRuntimeV2Service:
             return self._fail_case(case, exc)
 
         route = route_runtime_case(w1_final, w2_final)
+        if route.primary_route is RuntimePrimaryRoute.TRADE:
+            # Claim before effects are enqueued so another dispatcher cannot
+            # run the Delta side effect for a Policy boundary this case lost.
+            try:
+                claimed_policy = self._claim_first_policy(case, w2_final)
+            except Exception as exc:
+                return self._fail_case(case, exc)
+            if claimed_policy is None:
+                route = RuntimeRouteDecision(
+                    primary_route=RuntimePrimaryRoute.ARCHIVE,
+                    side_effects=[RuntimeSideEffect.ARCHIVE_MESSAGE],
+                    reason="policy_activation_already_consumed",
+                )
         adjudicated = case.model_copy(
             update={
                 "status": (
@@ -224,9 +317,10 @@ class PersistentRuntimeV2Service:
         provisional = self.repository.list_provisional(case.ticker, case.trading_date)
         r1_payload = {
             "source_message": case.source.snapshot.model_dump(mode="json"),
-            "version_pin": case.version_pin.model_dump(mode="json"),
             "published_known_event_index": index.known_event_index,
-            "today_provisional_facts": [item.model_dump(mode="json") for item in provisional],
+            "today_provisional_facts": [
+                _w1_provisional_business_payload(item) for item in provisional
+            ],
         }
         r1, r1_response_id = self._call_with_retry(
             case=case,
@@ -267,13 +361,6 @@ class PersistentRuntimeV2Service:
                 "event_detail_missing",
                 f"Version-pinned Event Detail is missing {len(missing)} requested IDs",
             )
-        envelope = RuntimeEventDetailEnvelope(
-            event_library_version=case.version_pin.event_library_version,
-            requested_event_ids=selected_ids,
-            canonical_events=details.events,
-            provisional_events=provisional_details,
-            missing_event_ids=[],
-        )
         loaded_ids = {
             *[event.event_id for event in details.events],
             *[item.provisional_event_id for item in provisional_details],
@@ -292,7 +379,16 @@ class PersistentRuntimeV2Service:
             round_prompt=self.prompts.w1_r2,
             payload={
                 "source_message": case.source.snapshot.model_dump(mode="json"),
-                "event_details": envelope.model_dump(mode="json"),
+                "event_details": {
+                    "canonical_events": [
+                        _w1_canonical_event_business_payload(event)
+                        for event in details.events
+                    ],
+                    "provisional_events": [
+                        _w1_provisional_business_payload(item)
+                        for item in provisional_details
+                    ],
+                },
             },
             output_model=W1NoveltyResult,
             schema_name="w1_novelty_result",
@@ -321,13 +417,13 @@ class PersistentRuntimeV2Service:
             round_prompt=self.prompts.w2_r1,
             payload={
                 "source_message": case.source.snapshot.model_dump(mode="json"),
-                "version_pin": case.version_pin.model_dump(mode="json"),
-                "runtime_policy_projection": projection.model_dump(mode="json"),
+                "runtime_policy_projection": _w2_projection_business_payload(projection),
             },
             output_model=W2PolicyResult,
             schema_name="w2_policy_result",
             validate=validate_r1,
         )
+        r1 = self._sanitize_condition_attribution(r1, projection)
         if not r1.policy_ids or r1.confidence is not RuntimeConfidence.LOW:
             return r1, r1, r1_response_id
         details = self.policies.details(
@@ -355,14 +451,57 @@ class PersistentRuntimeV2Service:
             round_prompt=self.prompts.w2_r2,
             payload={
                 "source_message": case.source.snapshot.model_dump(mode="json"),
-                "policy_details": details.model_dump(mode="json"),
+                "policy_details": _w2_detail_business_payload(details),
             },
             output_model=W2PolicyResult,
             schema_name="w2_policy_result",
             previous_response_id=r1_response_id,
             validate=validate_r2,
         )
+        current_projection = self._without_consumed_policies(projection)
+        active_ids = {item.policy_id for item in current_projection.policies}
+        r2 = r2.model_copy(
+            update={"policy_ids": [item for item in r2.policy_ids if item in active_ids]}
+        )
+        r2 = self._sanitize_condition_attribution(r2, current_projection)
         return r1, r2, r2_response_id
+
+    def _without_consumed_policies(
+        self, projection: RuntimePolicyProjection
+    ) -> RuntimePolicyProjection:
+        consumed = self.repository.list_consumed_policy_revisions(projection.ticker)
+        return projection.model_copy(
+            update={
+                "policies": [
+                    item
+                    for item in projection.policies
+                    if (item.policy_id, item.activation_revision) not in consumed
+                ]
+            }
+        )
+
+    @staticmethod
+    def _sanitize_condition_attribution(
+        result: W2PolicyResult, projection: RuntimePolicyProjection
+    ) -> W2PolicyResult:
+        by_policy = {item.policy_id: set(item.condition_ids) for item in projection.policies}
+        cleaned = []
+        for item in result.matched_condition_ids:
+            valid = by_policy.get(item.policy_id)
+            if valid is None:
+                continue
+            cleaned.append(
+                item.model_copy(
+                    update={
+                        "condition_ids": [
+                            condition_id
+                            for condition_id in item.condition_ids
+                            if condition_id in valid
+                        ]
+                    }
+                )
+            )
+        return result.model_copy(update={"matched_condition_ids": cleaned})
 
     def _call_with_retry(
         self,
@@ -606,17 +745,11 @@ class PersistentRuntimeV2Service:
         if effect.effect_type is RuntimeSideEffect.CREATE_TRADE_RECORD:
             if not case.w2_final.policy_ids:
                 raise RuntimeSemanticOutputError("TRADE effect requires a Policy hit")
-            executed = case.w2_final.policy_ids[0]
-            decision = self.policies.decision(
-                case.ticker,
-                case.version_pin.policy_set_version,
-                executed,
-            )
-            if decision is None:
-                raise RuntimeInputUnavailable(
-                    "executed_policy_unavailable",
-                    "Executed Policy is unavailable in the pinned PolicySet",
-                )
+            claimed = self._claim_first_policy(case, case.w2_final)
+            if claimed is None:
+                self._resolve_consumed_policy_race(case)
+                return
+            executed, activation, matched_condition_ids, decision = claimed
             self.repository.save_trade(
                 TradeRecord(
                     case_id=case.case_id,
@@ -624,6 +757,8 @@ class PersistentRuntimeV2Service:
                     trading_date=case.trading_date,
                     source=case.source,
                     executed_policy_id=executed,
+                    activation_revision=activation.activation_revision,
+                    matched_condition_ids=matched_condition_ids,
                     candidate_policy_ids=case.w2_final.policy_ids,
                     policy_set_version=case.version_pin.policy_set_version,
                     decision=decision,
@@ -702,7 +837,7 @@ class PersistentRuntimeV2Service:
                 slot=slot,
             )
             resolved = route_w3_result(result)
-            self._apply_w3_result(case, running, result)
+            resolved = self._apply_w3_result(case, running, result) or resolved
             self.repository.save_w3_case(
                 running.model_copy(
                     update={
@@ -740,26 +875,7 @@ class PersistentRuntimeV2Service:
         case: RuntimeCase,
         w3_case: W3RouteCase,
         result: W3CaseResult,
-    ) -> None:
-        if result.novelty.result is W1NoveltyVerdict.NEW:
-            maximum = self.known_events.max_event_numeric_id(
-                case.ticker,
-                case.version_pin.event_library_version,
-            )
-            if maximum is None:
-                raise RuntimeInputUnavailable(
-                    "event_library_max_id_unavailable",
-                    "Published Event maximum ID is unavailable",
-                )
-            for index, candidate in enumerate(result.delta_candidates):
-                self.repository.allocate_provisional(
-                    ticker=case.ticker,
-                    trading_date=case.trading_date,
-                    source_message_id=case.source.source_message_id,
-                    candidate_index=index,
-                    candidate=candidate,
-                    published_max_event_numeric_id=maximum,
-                )
+    ) -> RuntimeRouteDecision | None:
         if result.novelty.result is W1NoveltyVerdict.OLD:
             self.repository.save_archive(
                 ArchiveRecord(
@@ -784,19 +900,44 @@ class PersistentRuntimeV2Service:
                         w2_reason=result.policy.reason,
                     )
                 )
-            return
+            return None
+        claimed = None
         if result.policy.policy_ids:
-            executed = result.policy.policy_ids[0]
-            decision = self.policies.decision(
-                case.ticker,
-                case.version_pin.policy_set_version,
-                executed,
-            )
-            if decision is None:
-                raise RuntimeInputUnavailable(
-                    "executed_policy_unavailable",
-                    "W3-selected Policy is unavailable in the pinned PolicySet",
+            claimed = self._claim_first_policy(case, result.policy)
+            if claimed is None:
+                self.repository.save_archive(
+                    ArchiveRecord(
+                        case_id=case.case_id,
+                        ticker=case.ticker,
+                        source_message_id=case.source.source_message_id,
+                        reason="policy_activation_already_consumed",
+                    )
                 )
+                return RuntimeRouteDecision(
+                    primary_route=RuntimePrimaryRoute.ARCHIVE,
+                    side_effects=[RuntimeSideEffect.ARCHIVE_MESSAGE],
+                    reason="policy_activation_already_consumed",
+                )
+        maximum = self.known_events.max_event_numeric_id(
+            case.ticker,
+            case.version_pin.event_library_version,
+        )
+        if maximum is None:
+            raise RuntimeInputUnavailable(
+                "event_library_max_id_unavailable",
+                "Published Event maximum ID is unavailable",
+            )
+        for index, candidate in enumerate(result.delta_candidates):
+            self.repository.allocate_provisional(
+                ticker=case.ticker,
+                trading_date=case.trading_date,
+                source_message_id=case.source.source_message_id,
+                candidate_index=index,
+                candidate=candidate,
+                published_max_event_numeric_id=maximum,
+            )
+        if claimed is not None:
+            executed, activation, matched_condition_ids, decision = claimed
             self.repository.save_trade(
                 TradeRecord(
                     case_id=case.case_id,
@@ -805,6 +946,8 @@ class PersistentRuntimeV2Service:
                     source=case.source,
                     decision_origin=TradeDecisionOrigin.POLICY,
                     executed_policy_id=executed,
+                    activation_revision=activation.activation_revision,
+                    matched_condition_ids=matched_condition_ids,
                     candidate_policy_ids=result.policy.policy_ids,
                     policy_set_version=case.version_pin.policy_set_version,
                     decision=decision,
@@ -813,7 +956,7 @@ class PersistentRuntimeV2Service:
                     w3_result=result,
                 )
             )
-            return
+            return None
         self.repository.save_w3_coverage_gap(
             W3CoverageGapRecord(
                 case_id=case.case_id,
@@ -844,6 +987,64 @@ class PersistentRuntimeV2Service:
                     w3_result=result,
                 )
             )
+        return None
+
+    def _claim_first_policy(
+        self,
+        case: RuntimeCase,
+        result: W2PolicyResult | W3PolicyResult,
+    ) -> tuple[str, RuntimePolicyRecord, list[str], PolicyDecision] | None:
+        attribution = {item.policy_id: item.condition_ids for item in result.matched_condition_ids}
+        for policy_id in result.policy_ids:
+            activation = self.policies.activation(
+                case.ticker,
+                case.version_pin.policy_set_version,
+                policy_id,
+            )
+            decision = self.policies.decision(
+                case.ticker,
+                case.version_pin.policy_set_version,
+                policy_id,
+            )
+            if activation is None or decision is None:
+                raise RuntimeInputUnavailable(
+                    "executed_policy_unavailable",
+                    "Executed Policy is unavailable in the pinned PolicySet",
+                )
+            valid_condition_ids = set(activation.condition_ids)
+            matched = [
+                item for item in attribution.get(policy_id, []) if item in valid_condition_ids
+            ]
+            record = PolicyActivationRecord(
+                case_id=case.case_id,
+                source_message_id=case.source.source_message_id,
+                ticker=case.ticker,
+                policy_id=policy_id,
+                activation_revision=activation.activation_revision,
+                policy_set_version=case.version_pin.policy_set_version,
+                matched_condition_ids=matched,
+            )
+            if self.repository.claim_policy_activation(record):
+                return policy_id, activation, matched, decision
+        return None
+
+    def _resolve_consumed_policy_race(self, case: RuntimeCase) -> None:
+        resolved = RuntimeRouteDecision(
+            primary_route=RuntimePrimaryRoute.ARCHIVE,
+            side_effects=[RuntimeSideEffect.ARCHIVE_MESSAGE],
+            reason="policy_activation_already_consumed",
+        )
+        self.repository.save_archive(
+            ArchiveRecord(
+                case_id=case.case_id,
+                ticker=case.ticker,
+                source_message_id=case.source.source_message_id,
+                reason=resolved.reason,
+            )
+        )
+        self.repository.save_case(
+            case.model_copy(update={"resolved_route": resolved, "updated_at": utc_now()})
+        )
 
     def _record_w3_failure(
         self,
@@ -867,6 +1068,12 @@ class PersistentRuntimeV2Service:
         )
 
     def _execute_r3(self, case: RuntimeCase, effect: RuntimeEffect) -> None:
+        if (
+            case.resolved_route is not None
+            and case.resolved_route.primary_route.value == "ARCHIVE"
+            and "policy_activation_already_consumed" in case.resolved_route.reason
+        ):
+            return
         mode = (
             W1CaptureMode.NEW_CAPTURE
             if case.w1_final and case.w1_final.result is W1NoveltyVerdict.NEW
@@ -876,11 +1083,14 @@ class PersistentRuntimeV2Service:
             case=case,
             lane="W1",
             round_name="R3",
-            round_prompt=self.prompts.w1_r3,
+            round_prompt=(
+                f"{self.prompts.w1_r3}\n\n"
+                "## Current Capture Mode\n\n"
+                f"The runtime-selected capture mode for this turn is `{mode.value}`."
+            ),
             payload={
                 "source_message": case.source.snapshot.model_dump(mode="json"),
-                "capture_mode": mode.value,
-                "w1_final": case.w1_final.model_dump(mode="json") if case.w1_final else None,
+                "w1_final": _w1_final_business_payload(case.w1_final),
             },
             output_model=W1FactExtractionResult,
             schema_name="w1_fact_extraction_result",

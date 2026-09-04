@@ -1,0 +1,50 @@
+{
+  "run_id": "mu-w1w2-real-20260904-01",
+  "timing_method": {
+    "turn_start": "created_at minus latency_ms",
+    "turn_end": "created_at",
+    "node_window": "from earliest turn start to latest turn end within the node; includes retry backoff",
+    "case_window": "Runtime Case started_at to completed_at",
+    "wall_clock_window": "earliest Case started_at to latest Case completed_at",
+    "note": "W1 overall excludes R3; W2 overall reflects actual R1/R2 execution, where R2 had zero calls."
+  },
+  "parallelism": {
+    "max_workers": 5,
+    "case_count": 25,
+    "sum_case_seconds": 924.769,
+    "wall_clock_seconds": 226.457,
+    "serial_to_wall_speedup": 4.084,
+    "observed_max_case_overlap": 5,
+    "within_case_w1_w2_parallel": true
+  },
+  "timing_seconds": {
+    "case_overall": {"n": 25, "sum": 924.769, "mean": 36.991, "median": 31.711, "p90": 47.253, "min": 16.064, "max": 105.657},
+    "w1_r1_r2": {"n": 25, "sum": 766.695, "mean": 30.668, "median": 29.541, "p90": 38.494, "min": 16.003, "max": 65.482},
+    "w2_r1_r2": {"n": 25, "sum": 602.55, "mean": 24.102, "median": 19.031, "p90": 34.634, "min": 9.149, "max": 89.152},
+    "rounds": {
+      "w1_r1": {"n": 25, "mean": 18.072, "median": 15.884, "p90": 24.233, "min": 7.085, "max": 35.562},
+      "w1_r2": {"n": 25, "mean": 12.578, "median": 11.172, "p90": 17.37, "min": 5.631, "max": 51.543},
+      "w1_r3": {"n": 3, "mean": 20.932, "median": 16.438, "p90": 16.438, "min": 13.609, "max": 32.748},
+      "w2_r1": {"n": 25, "mean": 24.102, "median": 19.031, "p90": 34.634, "min": 9.149, "max": 89.152},
+      "w2_r2": {"n": 0}
+    }
+  },
+  "token_method": {
+    "source": "provider usage fields on successful responses",
+    "cached_input_definition": "cached_input_tokens returned by provider",
+    "cache_share_definition": "cached_input_tokens divided by input_tokens",
+    "failed_attempt_usage": "not reported by provider and excluded from token sums"
+  },
+  "tokens": {
+    "case_overall": {"attempts": 81, "successful_turns": 78, "input": 957492, "cached_input": 23519, "cache_share": 0.024563, "calls_with_cache": 2, "output": 109553, "reasoning": 101306},
+    "w1_r1_r2": {"attempts": 52, "successful_turns": 50, "input": 728730, "cached_input": 16204, "cache_share": 0.022239, "calls_with_cache": 1, "output": 52654, "reasoning": 49446},
+    "w2_r1_r2": {"attempts": 26, "successful_turns": 25, "input": 179616, "cached_input": 7315, "cache_share": 0.040726, "calls_with_cache": 1, "output": 50120, "reasoning": 46450},
+    "rounds": {
+      "w1_r1": {"attempts": 25, "successful_turns": 25, "input": 337887, "cached_input": 0, "cache_share": 0.0, "calls_with_cache": 0, "output": 31768, "reasoning": 31333},
+      "w1_r2": {"attempts": 27, "successful_turns": 25, "input": 390843, "cached_input": 16204, "cache_share": 0.041459, "calls_with_cache": 1, "output": 20886, "reasoning": 18113},
+      "w1_r3": {"attempts": 3, "successful_turns": 3, "input": 49146, "cached_input": 0, "cache_share": 0.0, "calls_with_cache": 0, "output": 6779, "reasoning": 5410},
+      "w2_r1": {"attempts": 26, "successful_turns": 25, "input": 179616, "cached_input": 7315, "cache_share": 0.040726, "calls_with_cache": 1, "output": 50120, "reasoning": 46450},
+      "w2_r2": {"attempts": 0, "successful_turns": 0, "input": 0, "cached_input": 0, "cache_share": null, "calls_with_cache": 0, "output": 0, "reasoning": 0}
+    }
+  }
+}

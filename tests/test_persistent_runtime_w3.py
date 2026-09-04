@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
 from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any, cast
@@ -8,10 +9,19 @@ from typing import Any, cast
 import pytest
 from pydantic import ValidationError
 
+from doxagent.codex_runtime.schema import (
+    GlobalResearchBundle,
+    GlobalResearchHandoffV1,
+    PublishedDocument,
+)
 from doxagent.codex_worker.schema import WorkerJob, WorkerRunRequest
 from doxagent.data_runtime.policy import DataToolPolicyRegistry
 from doxagent.event_library.contracts import CanonicalAssertionState
-from doxagent.event_library.provider import EventDetailSnapshot, KnownEventIndexSnapshot
+from doxagent.event_library.provider import (
+    EventDetailSnapshot,
+    KnownEventIndexSnapshot,
+    ReferenceEventViewSnapshot,
+)
 from doxagent.persistent_runtime_v2.daily import PersistentRuntimeV2DailyCloseService
 from doxagent.persistent_runtime_v2.providers import (
     RuntimeKnownEventProvider,
@@ -54,15 +64,25 @@ from doxagent.persistent_runtime_v2.transport import (
 )
 from doxagent.persistent_runtime_v2.w3 import (
     CodexW3AgentRunner,
+    PublishedW3ContextProvider,
     W3Error,
     W3PreparedContext,
 )
 from doxagent.workflows.codex_document2.schema import (
+    CitationStatus,
+    Document2Bundle,
     Document2Document,
+    Document2HandoffV1,
     Document2InputManifest,
+    InputAvailability,
+    InputManifestEntry,
 )
+from doxagent.workflows.codex_document3.runtime_projection import project_policy_set
 from doxagent.workflows.codex_document3.schema import (
+    ActivationCondition,
+    Calibration,
     Document2Ref,
+    Policy,
     PolicyDecision,
     PolicyDetailSnapshot,
     PolicySet,
@@ -111,13 +131,209 @@ def _runtime_case(message_id: str = "msg-w3") -> RuntimeCase:
             reference_ids=[],
             reason="new",
         ),
-        w2_round1=W2PolicyResult(
-            policy_ids=[], confidence=RuntimeConfidence.NORMAL, reason="none"
-        ),
-        w2_final=W2PolicyResult(
-            policy_ids=[], confidence=RuntimeConfidence.NORMAL, reason="none"
-        ),
+        w2_round1=W2PolicyResult(policy_ids=[], confidence=RuntimeConfidence.NORMAL, reason="none"),
+        w2_final=W2PolicyResult(policy_ids=[], confidence=RuntimeConfidence.NORMAL, reason="none"),
     )
+
+
+class _PublishedContextRuntime:
+    def __init__(self) -> None:
+        now = datetime(2026, 8, 31, 14, tzinfo=UTC)
+        available = InputManifestEntry(status=InputAvailability.AVAILABLE)
+        document2 = Document2Document(
+            document2_run_id="d2-mu",
+            ticker="MU",
+            as_of=now,
+            source_global_run_id="d1-mu",
+            input_manifest=Document2InputManifest(
+                global_research=available,
+                narrative_research=available,
+                event_library=available,
+            ),
+        )
+        d2_text = document2.model_dump_json()
+        d1_text = "# D1\nPrior expectation."
+        self.d2_bundle = Document2Bundle(
+            run_id="d2-mu",
+            ticker="MU",
+            source_global_run_id="d1-mu",
+            status="published",
+            publication_state="COMPLETE",
+            citation_status=CitationStatus.COMPLETE,
+            handoff=Document2HandoffV1(
+                run_id="d2-mu",
+                ticker="MU",
+                source_global_run_id="d1-mu",
+                document2_artifact_id="d2-doc",
+                publication_state="COMPLETE",
+                citation_status=CitationStatus.COMPLETE,
+                published_at=now,
+            ),
+            current=True,
+            published_at=now,
+        )
+        self.d1_bundle = GlobalResearchBundle(
+            run_id="d1-mu",
+            ticker="MU",
+            status="published",
+            handoff=GlobalResearchHandoffV1(
+                run_id="d1-mu",
+                ticker="MU",
+                document_artifact_id="d1-doc",
+                published_at=now,
+            ),
+            published_at=now,
+        )
+        self.documents = {
+            ("d2-mu", "d2-doc"): self._document("d2-mu", "d2-doc", d2_text, now),
+            ("d1-mu", "d1-doc"): self._document("d1-mu", "d1-doc", d1_text, now),
+        }
+        self.current_document2_reads = 0
+        self.bundle_reads = 0
+        self.document_reads = 0
+
+    @staticmethod
+    def _document(
+        run_id: str, artifact_id: str, content: str, published_at: datetime
+    ) -> PublishedDocument:
+        raw = content.encode("utf-8")
+        return PublishedDocument(
+            artifact_id=artifact_id,
+            run_id=run_id,
+            artifact_kind="report",
+            sha256=hashlib.sha256(raw).hexdigest(),
+            size_bytes=len(raw),
+            content_type="text/markdown",
+            content_text=content,
+            published_at=published_at,
+        )
+
+    def get_current_document2_bundle(self, ticker: str) -> Document2Bundle | None:
+        self.current_document2_reads += 1
+        return self.d2_bundle if ticker.upper() == "MU" else None
+
+    def get_bundle(self, run_id: str) -> GlobalResearchBundle | None:
+        self.bundle_reads += 1
+        return self.d1_bundle if run_id == self.d1_bundle.run_id else None
+
+    def get_published_document(self, run_id: str, artifact_id: str) -> PublishedDocument | None:
+        self.document_reads += 1
+        return self.documents.get((run_id, artifact_id))
+
+
+class _PublishedContextPolicies:
+    def __init__(self) -> None:
+        self.reads = 0
+        self.value = PolicySet.model_construct(
+            ticker="MU",
+            policy_set_version=3,
+            publication_state=PublicationState.COMPLETE,
+            document2_ref=Document2Ref.model_construct(
+                run_id="d2-mu",
+                artifact_id="d2-doc",
+                sha256="a" * 64,
+                published_at=datetime(2026, 8, 31, 14, tzinfo=UTC),
+                publication_state=PublicationState.COMPLETE,
+            ),
+            event_library_ref=None,
+            policies=[],
+            published_at=datetime(2026, 8, 31, 14, tzinfo=UTC),
+        )
+
+    def get_version(self, ticker: str, version: int) -> PolicySet | None:
+        self.reads += 1
+        return self.value if ticker.upper() == "MU" and version == 3 else None
+
+    def get_projection(self, ticker: str, version: int) -> RuntimePolicyProjection | None:
+        value = self.value if ticker.upper() == "MU" and version == 3 else None
+        return project_policy_set(value) if value is not None else None
+
+
+class _PublishedContextEvents:
+    def __init__(self) -> None:
+        self.reads = 0
+
+    def reference_view(
+        self, ticker: str, *, version: int | None = None
+    ) -> ReferenceEventViewSnapshot | None:
+        self.reads += 1
+        if ticker.upper() != "MU" or version != 7:
+            return None
+        body = "# Reference View\n"
+        return ReferenceEventViewSnapshot(
+            ticker="MU",
+            version=7,
+            published_at=datetime(2026, 8, 31, 14, tzinfo=UTC),
+            reference_view=body,
+            sha256=hashlib.sha256(body.encode("utf-8")).hexdigest(),
+        )
+
+
+def test_published_w3_context_reuses_version_pinned_heavy_inputs() -> None:
+    runtime = _PublishedContextRuntime()
+    policies = _PublishedContextPolicies()
+    events = _PublishedContextEvents()
+    provider = PublishedW3ContextProvider(
+        runtime_repository=cast(Any, runtime),
+        policy_repository=cast(Any, policies),
+        event_library_reader=cast(Any, events),
+        context_cache_size=2,
+    )
+
+    first = asyncio.run(provider.load(_runtime_case("context-1")))
+    second = asyncio.run(provider.load(_runtime_case("context-2")))
+
+    assert first == second
+    assert first is not second
+    assert runtime.current_document2_reads == 2
+    assert runtime.document_reads == 2
+    assert runtime.bundle_reads == 1
+    assert policies.reads == 1
+    assert events.reads == 1
+
+
+def test_published_w3_context_filters_consumed_policy_even_when_heavy_context_is_cached() -> None:
+    runtime = _PublishedContextRuntime()
+    policies = _PublishedContextPolicies()
+    policy = Policy(
+        policy_id="pol_any",
+        title="qualification boundary",
+        source_refs=[{"shell_id": "S1", "expectation_id": "E1", "gap_id": "G1"}],
+        decision=PolicyDecision.LONG,
+        match_scope="qualification",
+        activation_conditions=[
+            ActivationCondition(
+                condition_id="C1",
+                criterion="qualification completed",
+                calibration=Calibration(
+                    reference_state="qualification pending",
+                    trigger_boundary="qualification completed",
+                ),
+            )
+        ],
+    )
+    policies.value = policies.value.model_copy(update={"policies": [policy]})
+    revision = project_policy_set(policies.value).policies[0].activation_revision
+
+    class _Consumed:
+        values = {("pol_any", revision)}
+
+        def list_consumed_policy_revisions(self, ticker: str) -> set[tuple[str, str]]:
+            return set(self.values)
+
+    consumed = _Consumed()
+    provider = PublishedW3ContextProvider(
+        runtime_repository=cast(Any, runtime),
+        policy_repository=cast(Any, policies),
+        event_library_reader=cast(Any, _PublishedContextEvents()),
+        policy_consumption_reader=consumed,
+    )
+
+    first = asyncio.run(provider.load(_runtime_case("context-consumed-1")))
+    assert first.policy_set.policies == []
+    consumed.values.clear()
+    second = asyncio.run(provider.load(_runtime_case("context-consumed-2")))
+    assert [item.policy_id for item in second.policy_set.policies] == ["pol_any"]
 
 
 def _w3_result(*, trade: bool = False) -> W3CaseResult:
@@ -180,10 +396,13 @@ def test_w3_has_web_search_skill_but_no_data_mcp_budget() -> None:
         CodexPersistentRuntimeNode,
     )
 
-    assert DataToolPolicyRegistry().allowed_tools(
-        CodexPersistentRuntimeNode.W3,
-        CodexPersistentRuntimeAgentRole.W3,
-    ) == frozenset()
+    assert (
+        DataToolPolicyRegistry().allowed_tools(
+            CodexPersistentRuntimeNode.W3,
+            CodexPersistentRuntimeAgentRole.W3,
+        )
+        == frozenset()
+    )
 
 
 def test_sqlite_w3_main_and_fallback_slots_enforce_only_ticker_limit(
@@ -193,10 +412,7 @@ def test_sqlite_w3_main_and_fallback_slots_enforce_only_ticker_limit(
     cases = [_runtime_case(f"msg-{index}") for index in range(6)]
     for case in cases:
         repository.save_case(case)
-    slots = [
-        repository.acquire_w3_slot(ticker="MU", case_id=case.case_id)
-        for case in cases[:5]
-    ]
+    slots = [repository.acquire_w3_slot(ticker="MU", case_id=case.case_id) for case in cases[:5]]
     assert slots[0] is not None and slots[0].kind is W3ThreadKind.MAIN
     assert all(slot is not None and slot.kind is W3ThreadKind.FALLBACK for slot in slots[1:])
     assert repository.acquire_w3_slot(ticker="MU", case_id=cases[5].case_id) is None
@@ -239,9 +455,7 @@ class _Policies(RuntimePolicyProvider):
             policies=[],
         )
 
-    def details(
-        self, ticker: str, version: int, policy_ids: list[str]
-    ) -> PolicyDetailSnapshot:
+    def details(self, ticker: str, version: int, policy_ids: list[str]) -> PolicyDetailSnapshot:
         return PolicyDetailSnapshot(
             ticker=ticker,
             policy_set_version=version,
@@ -465,9 +679,7 @@ def test_codex_w3_runner_uses_main_thread_and_strict_isolated_request(
     prompt_root = tmp_path / "prompts"
     (prompt_root / "skills").mkdir(parents=True)
     (prompt_root / "agent.md").write_text("W3 agent", encoding="utf-8")
-    (prompt_root / "skills" / "uncovered_new.md").write_text(
-        "Mode 1 skill", encoding="utf-8"
-    )
+    (prompt_root / "skills" / "uncovered_new.md").write_text("Mode 1 skill", encoding="utf-8")
     worker = _Worker(_w3_result())
     workspace = _Workspace()
     runner = CodexW3AgentRunner(
@@ -512,10 +724,7 @@ def test_codex_w3_runner_uses_main_thread_and_strict_isolated_request(
     assert request.data_mcp_enabled is False
     assert request.allow_subagents is False and request.max_subagents == 0
     assert any(path.endswith(":cases/w3-case/task.json") for path in workspace.files)
-    assert any(
-        path.endswith(":cases/w3-case/context/policy_set.json")
-        for path in workspace.files
-    )
+    assert any(path.endswith(":cases/w3-case/context/policy_set.json") for path in workspace.files)
     assert request.run_id == "persistent-runtime-w3-mu-main"
     assert '"w3_case_id":"w3-case"' in request.prompt
     worker.result = _w3_result().model_copy(update={"w3_case_id": "stale-case"})
@@ -548,9 +757,7 @@ def test_codex_w3_mode2_injects_revalidation_and_uncovered_skills(
         "Shared Stage B",
         encoding="utf-8",
     )
-    worker = _Worker(
-        _w3_result().model_copy(update={"w3_case_id": "w3-mode2-case"})
-    )
+    worker = _Worker(_w3_result().model_copy(update={"w3_case_id": "w3-mode2-case"}))
     workspace = _Workspace()
     runner = CodexW3AgentRunner(
         worker=worker,
@@ -587,15 +794,11 @@ def test_codex_w3_mode2_injects_revalidation_and_uncovered_skills(
         ),
     )
     assert result.novelty.result is W1NoveltyVerdict.NEW
-    assert any(
-        path.endswith(":skills/revalidate_then_evaluate.md")
-        for path in workspace.files
-    )
+    assert any(path.endswith(":skills/revalidate_then_evaluate.md") for path in workspace.files)
     assert any(path.endswith(":skills/uncovered_new.md") for path in workspace.files)
     request = worker.requests[0]
     assert "Read AGENTS.md and skills/revalidate_then_evaluate.md first" in request.prompt
     assert (
-        "then read skills/uncovered_new.md and continue Stage B in this same turn"
-        in request.prompt
+        "then read skills/uncovered_new.md and continue Stage B in this same turn" in request.prompt
     )
     runner.close()

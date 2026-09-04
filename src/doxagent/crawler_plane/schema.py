@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import re
 from datetime import UTC, datetime
 from enum import StrEnum
@@ -12,6 +13,7 @@ from uuid import uuid4
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 JsonObject = dict[str, Any]
+MAX_RETRY_PAYLOAD_BYTES = 65_536
 
 
 def utc_now() -> datetime:
@@ -36,6 +38,7 @@ class CrawlerVersionStatus(StrEnum):
 class CrawlerExecutionStatus(StrEnum):
     RUNNING = "RUNNING"
     SUCCEEDED = "SUCCEEDED"
+    PARTIAL = "PARTIAL"
     FAILED = "FAILED"
     TIMED_OUT = "TIMED_OUT"
 
@@ -50,6 +53,7 @@ class CertificationCheck(StrEnum):
     REPLAY = "replay"
     TEMPORAL_REPLAY = "temporal_replay"
     SYNTHETIC_INCREMENT = "synthetic_increment"
+    PACKAGE_FAILURES = "package_failures"
     DETERMINISM = "determinism"
     FAILURE_REPLAY = "failure_replay"
 
@@ -57,6 +61,7 @@ class CertificationCheck(StrEnum):
 class CheckStatus(StrEnum):
     PASS = "PASS"
     FAIL = "FAIL"
+    NOT_APPLICABLE = "NOT_APPLICABLE"
 
 
 class CrawlerAlertStatus(StrEnum):
@@ -66,6 +71,8 @@ class CrawlerAlertStatus(StrEnum):
 
 class CrawlerAlertType(StrEnum):
     EXECUTION_FAILURE = "crawler_execution_failure"
+    ITEM_FAILURE = "crawler_item_failure"
+    RETRY_EXHAUSTED = "crawler_retry_exhausted"
     DISCOVERY_ANOMALY = "crawler_discovery_anomaly"
     CONTENT_DRIFT = "crawler_content_drift"
     TRANSPORT_ANOMALY = "crawler_transport_anomaly"
@@ -114,10 +121,60 @@ class CrawlerObservation(CrawlerModel):
         return value.astimezone(UTC)
 
 
+class CrawlerItemFailure(CrawlerModel):
+    item_key: str = Field(min_length=1, max_length=256)
+    stage: Literal["listing", "detail", "parse", "normalize"]
+    url: str
+    error_code: str = Field(min_length=1, max_length=128)
+    error_message: str = Field(min_length=1, max_length=2000)
+    retryable: bool = True
+    retry_payload: JsonObject = Field(default_factory=dict)
+    artifact_refs: list[str] = Field(default_factory=list)
+
+    @field_validator("url")
+    @classmethod
+    def _failure_url(cls, value: str) -> str:
+        result = value.strip()
+        parsed = urlsplit(result)
+        if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+            raise ValueError("item failure url must be absolute HTTP(S)")
+        return result
+
+    @field_validator("retry_payload")
+    @classmethod
+    def _bounded_retry_payload(cls, value: JsonObject) -> JsonObject:
+        size = len(
+            json.dumps(
+                value,
+                ensure_ascii=False,
+                separators=(",", ":"),
+                sort_keys=True,
+            ).encode("utf-8")
+        )
+        if size > MAX_RETRY_PAYLOAD_BYTES:
+            raise ValueError(
+                f"retry_payload exceeds {MAX_RETRY_PAYLOAD_BYTES} encoded bytes"
+            )
+        return value
+
+
 class CrawlerRunOutput(CrawlerModel):
     observations: list[CrawlerObservation] = Field(default_factory=list)
+    item_failures: list[CrawlerItemFailure] = Field(default_factory=list)
+    completed_retry_keys: list[str] = Field(default_factory=list)
     next_checkpoint: JsonObject = Field(default_factory=dict)
     diagnostics: JsonObject = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def _unique_item_keys(self) -> CrawlerRunOutput:
+        failure_keys = [item.item_key for item in self.item_failures]
+        if len(failure_keys) != len(set(failure_keys)):
+            raise ValueError("item failure keys must be unique per execution")
+        if len(self.completed_retry_keys) != len(set(self.completed_retry_keys)):
+            raise ValueError("completed retry keys must be unique per execution")
+        if set(failure_keys).intersection(self.completed_retry_keys):
+            raise ValueError("an item cannot fail and complete retry in the same execution")
+        return self
 
 
 class CrawlerVersionSpec(CrawlerModel):
@@ -163,6 +220,8 @@ class CrawlerVersion(CrawlerModel):
     content_digest: str | None = None
     certified_digest: str | None = None
     certification_run_id: str | None = None
+    live_probe_execution_id: str | None = None
+    live_probe_digest: str | None = None
     created_at: datetime = Field(default_factory=utc_now)
     updated_at: datetime = Field(default_factory=utc_now)
 
@@ -218,7 +277,11 @@ class CrawlerExecutionResult(CrawlerModel):
     ticker: str
     source_parameters: JsonObject = Field(default_factory=dict)
     status: CrawlerExecutionStatus
+    crawler_content_digest: str | None = None
     observations: list[CrawlerObservation] = Field(default_factory=list)
+    item_failures: list[CrawlerItemFailure] = Field(default_factory=list)
+    completed_retry_keys: list[str] = Field(default_factory=list)
+    retry_keys: list[str] = Field(default_factory=list)
     diagnostics: JsonObject = Field(default_factory=dict)
     artifact_refs: list[str] = Field(default_factory=list)
     cassette_ref: str | None = None
@@ -268,13 +331,39 @@ class ExecutionArtifact(CrawlerModel):
     created_at: datetime = Field(default_factory=utc_now)
 
 
+class CertificationObservationAssertion(CrawlerModel):
+    external_id: str | None = None
+    title_contains: str | None = None
+    url_prefix: str | None = None
+    published_at: datetime | None = None
+    body_contains: str | None = None
+    body_min_length: int | None = Field(default=None, ge=1)
+    body_forbidden_patterns: list[str] = Field(default_factory=list)
+
+
 class CertificationCase(CrawlerModel):
     case_id: str
-    kind: Literal["replay", "temporal", "synthetic"]
+    kind: Literal[
+        "replay",
+        "temporal",
+        "synthetic",
+        "partial",
+        "failure",
+        "malformed",
+        "duplicate_revision",
+    ]
     cassette_refs: list[str] = Field(min_length=1)
+    live_derived: bool = False
     parameters: JsonObject = Field(default_factory=dict)
     initial_checkpoint: JsonObject = Field(default_factory=dict)
+    expected_status: CrawlerExecutionStatus = CrawlerExecutionStatus.SUCCEEDED
     expected_external_ids: list[str] = Field(default_factory=list)
+    expected_item_failure_keys: list[str] = Field(default_factory=list)
+    expected_retry_keys: list[str] = Field(default_factory=list)
+    expected_checkpoint: JsonObject | None = None
+    observation_assertions: list[CertificationObservationAssertion] = Field(
+        default_factory=list
+    )
 
 
 class CertificationCheckResult(CrawlerModel):
@@ -295,6 +384,7 @@ class CertificationResult(CrawlerModel):
     content_digest: str
     overall: CheckStatus
     checks: list[CertificationCheckResult]
+    regression_count: int = Field(default=0, ge=0)
     started_at: datetime = Field(default_factory=utc_now)
     finished_at: datetime = Field(default_factory=utc_now)
 
@@ -307,6 +397,34 @@ class RegressionCase(CrawlerModel):
     checkpoint: JsonObject = Field(default_factory=dict)
     parameters: JsonObject = Field(default_factory=dict)
     created_at: datetime = Field(default_factory=utc_now)
+
+
+class CrawlerRetryStatus(StrEnum):
+    PENDING = "PENDING"
+    IN_PROGRESS = "IN_PROGRESS"
+    RESOLVED = "RESOLVED"
+    EXHAUSTED = "EXHAUSTED"
+
+
+class CrawlerRetryItem(CrawlerModel):
+    retry_id: str = Field(default_factory=lambda: new_id("crawler_retry"))
+    crawler_id: str
+    binding_id: str
+    source_id: str
+    ticker: str
+    item_key: str
+    retry_payload: JsonObject = Field(default_factory=dict)
+    status: CrawlerRetryStatus = CrawlerRetryStatus.PENDING
+    attempt_count: int = Field(default=0, ge=0)
+    next_attempt_at: datetime | None = Field(default_factory=utc_now)
+    first_execution_id: str
+    last_execution_id: str
+    first_crawler_version: int = Field(ge=1)
+    last_attempt_version: int = Field(ge=1)
+    last_error_code: str | None = None
+    last_error_message: str | None = None
+    created_at: datetime = Field(default_factory=utc_now)
+    updated_at: datetime = Field(default_factory=utc_now)
 
 
 class CrawlerAlertPolicy(CrawlerModel):
@@ -360,6 +478,7 @@ class WorkerJob(CrawlerModel):
     ticker: str
     parameters: JsonObject
     checkpoint: JsonObject
+    retry_items: list[JsonObject] = Field(default_factory=list)
 
 
 class WorkerJobResult(CrawlerModel):

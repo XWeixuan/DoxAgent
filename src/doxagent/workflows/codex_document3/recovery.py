@@ -230,19 +230,25 @@ def _policy(payload: dict[str, Any]) -> dict[str, Any]:
                 "calibration": {
                     "reference_state": _text(calibration.get("reference_state")),
                     "trigger_boundary": _text(calibration.get("trigger_boundary")),
-                    "qualifying_evidence": _text(calibration.get("qualifying_evidence")),
                 },
             }
         )
-    return {
+    normalized = {
         "policy_id": _text(payload.get("policy_id")),
         "title": _text(payload.get("title")),
         "source_refs": refs,
         "decision": _text(payload.get("decision")).upper(),
         "match_scope": _text(payload.get("match_scope")),
         "activation_conditions": conditions,
-        "activation_summary": _text(payload.get("activation_summary")),
     }
+    if (
+        _text(payload.get("activation_mode")).upper() == "ALL"
+        and len(conditions) > 1
+    ):
+        # Preserve the incompatible marker so Policy's migration guard can
+        # quarantine this row instead of silently changing ALL into fixed OR.
+        normalized["activation_mode"] = "ALL"
+    return normalized
 
 
 def _review_result(payload: dict[str, Any]) -> dict[str, Any]:
@@ -260,14 +266,16 @@ def _review_result(payload: dict[str, Any]) -> dict[str, Any]:
                 "blocking": _bool(raw.get("blocking")),
             }
         )
-    status = _text(payload.get("status") or "PASSED").upper()
-    if status not in {"PASSED", "REVIEW_BLOCKED"}:
-        status = "PASSED"
+    # Review status is derived from the recovered issue set. Residual advisory
+    # issues remain non-blocking unless their individual blocking flag is true.
+    status = "REVIEW_BLOCKED" if issues else "PASSED"
     return {
         "status": status,
         "issue_count": len(issues),
         "blocking_issue_count": sum(bool(item["blocking"]) for item in issues),
         "issues": issues,
+        "diagnostics_reviewed": _bool(payload.get("diagnostics_reviewed")),
+        "diagnostics_explanation": _text(payload.get("diagnostics_explanation")),
     }
 
 

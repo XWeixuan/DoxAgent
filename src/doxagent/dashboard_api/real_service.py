@@ -20,6 +20,7 @@ from doxagent.blackboard.state import BlackboardRun
 from doxagent.crawler_plane.schema import (
     CrawlerAlertPolicy,
     CrawlerExecutionRequest,
+    CrawlerRetryStatus,
     CrawlerSourceRegistration,
     CrawlerVersionSpec,
 )
@@ -1269,6 +1270,35 @@ class RealDashboardOverviewService:
 
     def resolve_crawler_alert(self, alert_id: str) -> JsonObject:
         value = self.dashboard_api.scheduler._require_crawler_plane().resolve_alert(alert_id)
+        return value.model_dump(mode="json")
+
+    def list_crawler_retries(
+        self,
+        *,
+        crawler_id: str | None = None,
+        binding_id: str | None = None,
+        status: str | None = None,
+        limit: int = 100,
+    ) -> JsonObject:
+        crawler_plane = self.dashboard_api.scheduler._require_crawler_plane()
+        return {
+            "retries": [
+                item.model_dump(mode="json")
+                for item in crawler_plane.list_retries(
+                    crawler_id=crawler_id,
+                    binding_id=binding_id,
+                    status=CrawlerRetryStatus(status) if status else None,
+                    limit=limit,
+                )
+            ]
+        }
+
+    def resolve_crawler_retry(self, retry_id: str) -> JsonObject:
+        value = self.dashboard_api.scheduler._require_crawler_plane().resolve_retry(retry_id)
+        return value.model_dump(mode="json")
+
+    def reactivate_crawler_retry(self, retry_id: str) -> JsonObject:
+        value = self.dashboard_api.scheduler._require_crawler_plane().reactivate_retry(retry_id)
         return value.model_dump(mode="json")
 
     def register_crawler_source(self, payload: JsonObject) -> JsonObject:

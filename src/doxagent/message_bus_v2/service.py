@@ -477,15 +477,21 @@ class MessageBusV2Service:
             output = output.model_copy(update=updates)
         saved_state = state.model_copy(
             update={
-                "status": PollStatus.SUCCEEDED,
+                "status": (
+                    PollStatus.PARTIAL if result.failures else PollStatus.SUCCEEDED
+                ),
                 "checkpoint": ({} if source.kind is SourceKind.CRAWLER else result.next_checkpoint),
                 "bootstrap_complete": True,
                 "last_attempt_at": now,
                 "last_success_at": now,
-                "last_failure_at": None,
+                "last_failure_at": now if result.failures else None,
                 "failure_since": None,
-                "last_error_code": None,
-                "last_error_message": None,
+                "last_error_code": (
+                    result.failures[0].error_code if result.failures else None
+                ),
+                "last_error_message": (
+                    result.failures[0].error_message[:1000] if result.failures else None
+                ),
                 "consecutive_failures": 0,
                 "collected_count": state.collected_count + output.collected_count,
                 "published_count": state.published_count + output.published_count,

@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from doxagent.crawler_plane.assets import CrawlerAssetStore
 from doxagent.crawler_plane.certification import CrawlerCertificationService
-from doxagent.crawler_plane.reference import bootstrap_reference_working_copies
 from doxagent.crawler_plane.repository import CrawlerPlaneRepository
 from doxagent.crawler_plane.runtime import CrawlerWorkerPool
 from doxagent.crawler_plane.service import CrawlerPlaneService
@@ -16,7 +15,6 @@ def build_crawler_plane_service(
     settings: DoxAgentSettings,
     *,
     message_bus: MessageBusV2Service | None = None,
-    bootstrap_references: bool = True,
 ) -> CrawlerPlaneService:
     """Build one application service shared by O4 tools and human APIs."""
 
@@ -32,8 +30,6 @@ def build_crawler_plane_service(
         message_bus=message_bus,
     )
     service.attach_certification_service(CrawlerCertificationService(service, repository))
-    if bootstrap_references:
-        bootstrap_reference_working_copies(service)
     return service
 
 

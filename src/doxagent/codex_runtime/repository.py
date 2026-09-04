@@ -106,6 +106,7 @@ class CodexRuntimeRepository(Protocol):
     def get_citation_manifest(self, run_id: str, artifact_id: str) -> CitationManifest | None: ...
     def save_bundle(self, bundle: StoredResearchBundle) -> None: ...
     def get_bundle(self, run_id: str) -> StoredResearchBundle | None: ...
+    def get_current_document2_bundle(self, ticker: str) -> Document2Bundle | None: ...
     def mark_run_published(self, run_id: str, published_at: datetime) -> None: ...
     def list_run_summaries(
         self,
@@ -251,6 +252,25 @@ class InMemoryCodexRuntimeRepository:
         with self._lock:
             item = self._bundles.get(run_id)
             return item.model_copy(deep=True) if item else None
+
+    def get_current_document2_bundle(self, ticker: str) -> Document2Bundle | None:
+        key = ticker.upper()
+        with self._lock:
+            candidates = [
+                item
+                for item in self._bundles.values()
+                if isinstance(item, Document2Bundle)
+                and item.ticker.upper() == key
+                and item.current
+                and item.status == "published"
+            ]
+            if not candidates:
+                return None
+            current = max(
+                candidates,
+                key=lambda item: (item.published_at or item.created_at, item.run_id),
+            )
+            return current.model_copy(deep=True)
 
     def mark_run_published(self, run_id: str, published_at: datetime) -> None:
         return None
@@ -713,6 +733,25 @@ class SQLiteCodexRuntimeRepository:
                 (run_id,),
             ).fetchone()
         return _parse_bundle_json(row["payload_json"]) if row else None
+
+    def get_current_document2_bundle(self, ticker: str) -> Document2Bundle | None:
+        with self._lock, self._connect() as connection:
+            rows = connection.execute(
+                """SELECT payload_json FROM codex_runtime_records
+                   WHERE record_type='bundles' AND workflow_version='codex_document2_v1'
+                   ORDER BY updated_at DESC"""
+            ).fetchall()
+        key = ticker.upper()
+        for row in rows:
+            bundle = _parse_bundle_json(row["payload_json"])
+            if (
+                isinstance(bundle, Document2Bundle)
+                and bundle.ticker.upper() == key
+                and bundle.current
+                and bundle.status == "published"
+            ):
+                return bundle
+        return None
 
     def mark_run_published(self, run_id: str, published_at: datetime) -> None:
         return None
@@ -1661,32 +1700,30 @@ class PostgresCodexRuntimeRepository:
             row,
             int(row is not None),
         )
-        if not row:
-            return None
-        handoff = None
-        if row[7] and row[10]:
-            handoff = Document2HandoffV1(
-                run_id=row[0],
-                ticker=row[1],
-                source_global_run_id=row[2],
-                document2_artifact_id=row[7],
-                citation_manifest_artifact_id=row[6],
-                publication_state=row[4],
-                citation_status=row[5],
-                published_at=row[10],
+        return _document2_bundle_from_row(row) if row else None
+
+    def get_current_document2_bundle(self, ticker: str) -> Document2Bundle | None:
+        def op(_connection: Any, cursor: Any) -> Any:
+            cursor.execute(
+                """SELECT run_id,ticker,source_global_run_id,status,publication_state,
+                          citation_status,citation_manifest_artifact_id,
+                          document2_artifact_id,is_current,created_at,published_at
+                   FROM doxagent.codex_document2_bundles
+                   WHERE ticker=upper(%s) AND is_current=true AND status='published'
+                   ORDER BY published_at DESC,run_id DESC LIMIT 1""",
+                (ticker,),
             )
-        return Document2Bundle(
-            run_id=row[0],
-            ticker=row[1],
-            source_global_run_id=row[2],
-            status=row[3],
-            publication_state=row[4],
-            citation_status=row[5],
-            handoff=handoff,
-            current=row[8],
-            created_at=row[9],
-            published_at=row[10],
+            return cursor.fetchone()
+
+        row = self._execute("codex.bundle.current_document2", "codex_document2_bundles", op)
+        self._audit_read(
+            "codex.bundle.current_document2",
+            "codex_document2_bundles",
+            None,
+            row,
+            int(row is not None),
         )
+        return _document2_bundle_from_row(row) if row else None
 
     def _get_document3_bundle(self, run_id: str) -> Document3Bundle | None:
         def op(_connection: Any, cursor: Any) -> Any:
@@ -2078,6 +2115,23 @@ class HybridCodexRuntimeRepository:
                 bundle = bundle.model_copy(update={"citation_manifest": manifest})
         return bundle
 
+    def get_current_document2_bundle(self, ticker: str) -> Document2Bundle | None:
+        try:
+            remote = self.remote.get_current_document2_bundle(ticker)
+        except Exception:
+            return self.local.get_current_document2_bundle(ticker)
+        if remote is None:
+            return self.local.get_current_document2_bundle(ticker)
+        local = self.local.get_bundle(remote.run_id)
+        if not isinstance(local, Document2Bundle) or _document2_projection(
+            local
+        ) != _document2_projection(remote):
+            try:
+                self.local.save_bundle(remote)
+            except Exception:
+                pass
+        return remote
+
     def mark_run_published(self, run_id: str, published_at: datetime) -> None:
         self.remote.mark_run_published(run_id, published_at)
 
@@ -2132,6 +2186,33 @@ def _document2_projection(bundle: Document2Bundle) -> tuple[object, ...]:
         handoff.citation_manifest_artifact_id if handoff else None,
         bundle.current,
         bundle.published_at,
+    )
+
+
+def _document2_bundle_from_row(row: Any) -> Document2Bundle:
+    handoff = None
+    if row[7] and row[10]:
+        handoff = Document2HandoffV1(
+            run_id=row[0],
+            ticker=row[1],
+            source_global_run_id=row[2],
+            document2_artifact_id=row[7],
+            citation_manifest_artifact_id=row[6],
+            publication_state=row[4],
+            citation_status=row[5],
+            published_at=row[10],
+        )
+    return Document2Bundle(
+        run_id=row[0],
+        ticker=row[1],
+        source_global_run_id=row[2],
+        status=row[3],
+        publication_state=row[4],
+        citation_status=row[5],
+        handoff=handoff,
+        current=row[8],
+        created_at=row[9],
+        published_at=row[10],
     )
 
 

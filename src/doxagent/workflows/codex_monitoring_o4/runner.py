@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Protocol
+from typing import Protocol, cast
 
 from pydantic import BaseModel, ValidationError
 
@@ -17,10 +17,13 @@ from doxagent.codex_runtime.schema import (
 )
 from doxagent.codex_worker.schema import WorkerRunRequest
 
+from .policy import DeliveryProgressCoordinator
 from .repository import MonitoringO4Repository
 from .schema import (
     ConfigureCompletion,
+    DeliveryCheckpoint,
     DeliverySettlement,
+    MonitoringConfigurationPlan,
     O4Request,
     O4ThreadSlot,
     RepairSettlement,
@@ -30,6 +33,12 @@ from .schema import (
 
 class O4TurnError(RuntimeError):
     pass
+
+
+class O4TurnInterrupted(O4TurnError):
+    def __init__(self, message: str, *, checkpoint_committed: bool) -> None:
+        super().__init__(message)
+        self.checkpoint_committed = checkpoint_committed
 
 
 class O4Runner(Protocol):
@@ -54,21 +63,17 @@ class MonitoringO4AgentRunner:
         self._model = model
         self._model_provider = model_provider
         self._timeout_seconds = timeout_seconds
+        self._progress = DeliveryProgressCoordinator()
         self._prompt_root = (
             Path(prompt_root)
             if prompt_root is not None
-            else Path(__file__).resolve().parents[4]
-            / "prompts"
-            / "codex_v2"
-            / "monitoring_o4"
+            else Path(__file__).resolve().parents[4] / "prompts" / "codex_v2" / "monitoring_o4"
         )
 
     @staticmethod
     def run_id_for(ticker: str) -> str:
         safe = "".join(
-            character.lower()
-            for character in ticker
-            if character.isalnum() or character in "-_."
+            character.lower() for character in ticker if character.isalnum() or character in "-_."
         )
         return f"monitoring-o4-{safe}-main"
 
@@ -97,9 +102,7 @@ class MonitoringO4AgentRunner:
                 content = json.dumps(value, ensure_ascii=False, indent=2)
                 await self._workspace.write_text(run_id, path, content)
         if request.node is CodexMonitoringO4Node.CONFIGURE:
-            await self._write_if_missing(
-                run_id, f"{request_root}/source_need_worklist.jsonl", ""
-            )
+            await self._write_if_missing(run_id, f"{request_root}/source_need_worklist.jsonl", "")
         elif request.node is CodexMonitoringO4Node.DELIVER:
             plan = request.payload.get("plan_json", {})
             checkpoint = self._repository.get_delivery_checkpoint(
@@ -141,41 +144,89 @@ class MonitoringO4AgentRunner:
             "never edit their SQLite databases or release directories directly. Return only JSON "
             "matching the attempt output schema."
         )
-        job = await self._worker.run(
-            WorkerRunRequest(
-                workflow_version=CODEX_MONITORING_O4_WORKFLOW_VERSION,
-                research_lane=ResearchLane.MONITORING_CONFIGURATION,
-                run_id=run_id,
-                ticker=request.ticker,
-                node=request.node,
-                agent_role=CodexMonitoringO4AgentRole.O4,
-                attempt_id=request.request_id,
-                prompt=prompt,
-                output_schema=strict_json_schema(output_model.model_json_schema()),
-                thread_id=thread.thread_id if thread else None,
-                model=self._model,
-                model_provider=self._model_provider,
-                effort="high",
-                read_only=False,
-                data_mcp_enabled=False,
-                o4_operations_enabled=True,
-                allow_subagents=False,
-                max_subagents=0,
-                timeout_seconds=self._timeout_seconds,
+        try:
+            job = await self._worker.run(
+                WorkerRunRequest(
+                    workflow_version=CODEX_MONITORING_O4_WORKFLOW_VERSION,
+                    research_lane=ResearchLane.MONITORING_CONFIGURATION,
+                    run_id=run_id,
+                    ticker=request.ticker,
+                    node=request.node,
+                    agent_role=CodexMonitoringO4AgentRole.O4,
+                    attempt_id=request.request_id,
+                    prompt=prompt,
+                    output_schema=strict_json_schema(output_model.model_json_schema()),
+                    thread_id=thread.thread_id if thread else None,
+                    model=self._model,
+                    model_provider=self._model_provider,
+                    effort="high",
+                    read_only=False,
+                    data_mcp_enabled=False,
+                    o4_operations_enabled=True,
+                    allow_subagents=False,
+                    max_subagents=0,
+                    timeout_seconds=self._timeout_seconds,
+                )
             )
-        )
+        except Exception as exc:
+            committed, commit_error = await self.commit_progressive_checkpoint(
+                request, run_id=run_id
+            )
+            detail = f"; checkpoint commit failed: {commit_error}" if commit_error else ""
+            raise O4TurnInterrupted(
+                f"O4 worker turn interrupted: {exc}{detail}",
+                checkpoint_committed=committed,
+            ) from exc
+        committed, commit_error = await self.commit_progressive_checkpoint(request, run_id=run_id)
         if job.thread_id:
             self._repository.save_thread(
                 O4ThreadSlot(ticker=request.ticker, thread_id=job.thread_id, model=self._model)
             )
         if job.status != "succeeded" or not job.final_response:
-            raise O4TurnError(job.error_message or f"worker ended with {job.status}")
+            detail = f"; checkpoint commit failed: {commit_error}" if commit_error else ""
+            raise O4TurnInterrupted(
+                (job.error_message or f"worker ended with {job.status}") + detail,
+                checkpoint_committed=committed,
+            )
+        if commit_error is not None:
+            raise O4TurnError(f"delivery checkpoint commit failed: {commit_error}")
         try:
             result = output_model.model_validate_json(job.final_response)
         except ValidationError as exc:
             raise O4TurnError(f"invalid O4 structured response: {exc}") from exc
         self._validate_correlation(request, result)
         return result
+
+    async def commit_progressive_checkpoint(
+        self,
+        request: O4Request,
+        *,
+        run_id: str | None = None,
+    ) -> tuple[bool, str | None]:
+        """Commit a DELIVER workspace checkpoint at the bounded turn boundary."""
+
+        if request.node is not CodexMonitoringO4Node.DELIVER:
+            return False, None
+        plan = MonitoringConfigurationPlan.model_validate(request.payload["plan_json"])
+        try:
+            response = await self._workspace.read_text(
+                run_id or self.run_id_for(request.ticker),
+                f"requests/{request.request_id}/delivery_checkpoint.json",
+            )
+            content = getattr(response, "content", None)
+            if not isinstance(content, str):
+                raise ValueError("workspace checkpoint response has no text content")
+            submitted = DeliveryCheckpoint.model_validate_json(content)
+            previous = self._repository.get_delivery_checkpoint(plan.plan_id, plan.plan_version)
+            committed = self._progress.commit(
+                plan=plan,
+                previous=previous,
+                submitted=submitted,
+            )
+            self._repository.save_delivery_checkpoint(committed)
+        except Exception as exc:
+            return False, str(exc)
+        return True, None
 
     async def _seed_shared_assets(self, run_id: str) -> None:
         mapping = {
@@ -199,11 +250,14 @@ class MonitoringO4AgentRunner:
 
     @staticmethod
     def _output_model(node: CodexMonitoringO4Node) -> type[BaseModel]:
-        return {
-            CodexMonitoringO4Node.CONFIGURE: ConfigureCompletion,
-            CodexMonitoringO4Node.DELIVER: DeliverySettlement,
-            CodexMonitoringO4Node.REPAIR: RepairSettlement,
-        }[node]
+        return cast(
+            type[BaseModel],
+            {
+                CodexMonitoringO4Node.CONFIGURE: ConfigureCompletion,
+                CodexMonitoringO4Node.DELIVER: DeliverySettlement,
+                CodexMonitoringO4Node.REPAIR: RepairSettlement,
+            }[node],
+        )
 
     @staticmethod
     def _validate_correlation(request: O4Request, result: BaseModel) -> None:
@@ -211,12 +265,15 @@ class MonitoringO4AgentRunner:
             raise O4TurnError("O4 response request_id mismatch")
         plan = getattr(result, "plan", None)
         ticker = (
-            getattr(plan, "ticker", None)
-            if plan is not None
-            else getattr(result, "ticker", None)
+            getattr(plan, "ticker", None) if plan is not None else getattr(result, "ticker", None)
         )
         if ticker != request.ticker:
             raise O4TurnError("O4 response ticker mismatch")
 
 
-__all__ = ["MonitoringO4AgentRunner", "O4Runner", "O4TurnError"]
+__all__ = [
+    "MonitoringO4AgentRunner",
+    "O4Runner",
+    "O4TurnError",
+    "O4TurnInterrupted",
+]

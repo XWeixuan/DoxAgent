@@ -1,0 +1,126 @@
+{
+  "dataset_id": "mu-w1-w2-future-v1",
+  "ticker": "MU",
+  "language": "en",
+  "simulation_window": {
+    "after": "2026-09-03T15:18:39.758709Z",
+    "through": "2027-08-31T23:59:59Z"
+  },
+  "baseline_summary": {
+    "policy_set_version": 1,
+    "policy_set_publication_state": "PARTIAL",
+    "policy_count": 42,
+    "activation_condition_count": 45,
+    "reference_view_version": 1,
+    "reference_view_event_count": 80,
+    "full_event_library_active_event_count": 185,
+    "policy_selection_note": "The corpus intentionally uses only Policies judged plausible as future observed events; it is not a 42-Policy coverage suite."
+  },
+  "model_visible_source_message_fields": [
+    "ticker",
+    "title",
+    "body"
+  ],
+  "evaluation_profiles": {
+    "w1_w2_round_isolated": {
+      "canonical": true,
+      "description": "Evaluate W1/W2 rounds against the pinned inputs with a fresh Policy activation ledger for each case."
+    },
+    "ordered_provisional_replay": {
+      "canonical": true,
+      "description": "Process in file order (published_at, then case_id); seed the actual provisional E# allocated by 013 before 024 and by 018 before 019, while evaluating W1/W2 independently of Policy activation consumption."
+    },
+    "full_runtime_sequential": {
+      "canonical": false,
+      "description": "End-to-end Runtime policy-consumption semantics differ for 019: after 018 consumes the same Policy revision, 019 receives a projection without that Policy and must not be compared with the isolated W2 Gold."
+    }
+  },
+  "frozen_inputs": [
+    {
+      "path": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\codex-workspaces-o3-acceptance\\d3-mu-real-acceptance-2026090301-sol-high-or-v2\\output\\final\\document3.json",
+      "sha256": "0189c52a9dcf7a7173f29163cf9be0de16e48421d61c9783f10aab2ed0604a09",
+      "purpose": "PolicySet source"
+    },
+    {
+      "path": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\codex-workspaces-o3-acceptance\\d3-mu-real-acceptance-2026090301-sol-high-or-v2\\output\\final\\document3.md",
+      "sha256": "c2d3244896009d32fa91e1f8cc07294da4553fc9fa2d6f397c0d1606bba9ba4c",
+      "purpose": "human-readable D3 companion"
+    },
+    {
+      "path": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\o2-mu-r2-deterministic-alignment-20260827-real-01\\published\\reference_view_agent_v1.md",
+      "sha256": "5f8da26d09f9436c4ee0d284aff675c84f7e93d22d63b1337bb08732bde463da",
+      "purpose": "latest MU Event Library Reference View"
+    },
+    {
+      "path": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\o2-mu-r2-deterministic-alignment-20260827-real-01\\published\\known_event_index_v1.md",
+      "sha256": "4aa9ec8dfc722696ca2ac4013a0da232ed74d6c1d13384d25694af5a5a07ba94",
+      "purpose": "W1 candidate-recall index"
+    },
+    {
+      "path": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\o2-mu-r2-deterministic-alignment-20260827-real-01\\event-library.sqlite3",
+      "sha256": "87d1f6004d60603182f32ebffb16d929cb4bfbe76e761cc8b85d477bb494c60c",
+      "purpose": "W1 canonical Event Detail store"
+    },
+    {
+      "path": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\prompts\\persistent_runtime_v2\\w1_r1.md",
+      "sha256": "c4025db076c25495c53bf3f889392fdd05826c35208c331f20402e246629463b",
+      "purpose": "prompt w1_r1.md"
+    },
+    {
+      "path": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\prompts\\persistent_runtime_v2\\w1_r2.md",
+      "sha256": "d35947fa9e5eff1734dbada549c503309f582f73b20f3cd00b8bc17e9576f8d3",
+      "purpose": "prompt w1_r2.md"
+    },
+    {
+      "path": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\prompts\\persistent_runtime_v2\\w1_r3.md",
+      "sha256": "7e7bffb6240f0c819d3dd57c45b30990ef3bb6a332188cac2b4df77991bfbaa2",
+      "purpose": "prompt w1_r3.md"
+    },
+    {
+      "path": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\prompts\\persistent_runtime_v2\\w2_r1.md",
+      "sha256": "53b9993af253c07696f356de241bcb05f43223083516a9721a6c5ed4e870a3d2",
+      "purpose": "prompt w2_r1.md"
+    },
+    {
+      "path": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\prompts\\persistent_runtime_v2\\w2_r2.md",
+      "sha256": "4a0e63a246461b16d709a1f892762a5204d4a13653234789f7352e3302a118b2",
+      "purpose": "prompt w2_r2.md"
+    }
+  ],
+  "artifacts": {
+    "messages.jsonl": {
+      "sha256": "98efd72f4a00298a2f177d4f5b226f71c0be227d8160437801c97daaa9515bec",
+      "records": 25
+    },
+    "gold.jsonl": {
+      "sha256": "17e8130778abb295949ff86038f1c9e18d08301838e4731d969705f9324e8c72",
+      "records": 25
+    }
+  },
+  "expected_distribution": {
+    "messages": 25,
+    "new": 13,
+    "old": 12,
+    "policy_non_empty": 4,
+    "news": 20,
+    "official": 4,
+    "government": 1,
+    "minimum_body_words": 500
+  },
+  "source_length_reference": {
+    "corpus_records": 162,
+    "minimum_words": 128,
+    "median_words": 505,
+    "mean_words": 577.6,
+    "p75_words": 660,
+    "maximum_words": 3542
+  },
+  "scope_exclusions": [
+    "earnings releases",
+    "earnings calls",
+    "quarterly financial results",
+    "earnings previews",
+    "revenue, EPS, or gross-margin guidance stories"
+  ],
+  "disclaimer": "All 25 messages are fictional future test fixtures and must never be represented as real reporting outside controlled evaluation."
+}

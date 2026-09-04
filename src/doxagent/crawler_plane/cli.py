@@ -11,7 +11,12 @@ from typing import Any
 from pydantic import BaseModel
 
 from doxagent.crawler_plane.factory import build_crawler_plane_service
-from doxagent.crawler_plane.schema import CrawlerExecutionRequest, CrawlerVersionSpec, new_id
+from doxagent.crawler_plane.schema import (
+    CrawlerExecutionRequest,
+    CrawlerRetryStatus,
+    CrawlerVersionSpec,
+    new_id,
+)
 from doxagent.settings import DoxAgentSettings
 
 
@@ -47,6 +52,14 @@ def _parser() -> argparse.ArgumentParser:
     run.add_argument("binding_id")
     run.add_argument("--parameters", type=_json_object, default={})
     run.add_argument("--version", type=int)
+    retries = commands.add_parser("list-retries")
+    retries.add_argument("--crawler-id")
+    retries.add_argument("--binding-id")
+    retries.add_argument("--status", choices=[item.value for item in CrawlerRetryStatus])
+    retries.add_argument("--limit", type=int, default=100)
+    for name in ("resolve-retry", "reactivate-retry"):
+        command = commands.add_parser(name)
+        command.add_argument("retry_id")
     return parser
 
 
@@ -76,7 +89,7 @@ async def _main() -> int:
             value = service.promote_version(args.crawler_id, args.version)
         elif args.command == "rollback":
             value = service.rollback_version(args.crawler_id, args.version)
-        else:
+        elif args.command == "run":
             value = await service.execute(
                 CrawlerExecutionRequest(
                     crawler_id=args.crawler_id,
@@ -89,6 +102,17 @@ async def _main() -> int:
                     commit_checkpoint=False,
                 )
             )
+        elif args.command == "list-retries":
+            value = service.list_retries(
+                crawler_id=args.crawler_id,
+                binding_id=args.binding_id,
+                status=CrawlerRetryStatus(args.status) if args.status else None,
+                limit=args.limit,
+            )
+        elif args.command == "resolve-retry":
+            value = service.resolve_retry(args.retry_id)
+        else:
+            value = service.reactivate_retry(args.retry_id)
         payload: object
         if isinstance(value, BaseModel):
             payload = value.model_dump(mode="json")

@@ -19,12 +19,21 @@ def _source_key(policy: Policy) -> tuple[tuple[str, str, str], ...]:
     )
 
 
-def _continuity_key(policy: Policy) -> tuple[str, tuple[tuple[str, str, str], ...]]:
-    return policy.decision.value, _source_key(policy)
+def _continuity_key(
+    policy: Policy,
+) -> tuple[str, str, tuple[tuple[str, str, str], ...]]:
+    return (
+        policy.decision.value,
+        _normalize(policy.title),
+        _source_key(policy),
+    )
 
 
 def _new_policy_id(ticker: str, policy: Policy, occupied: set[str]) -> str:
-    payload = f"{ticker.upper()}|{policy.decision.value}|{_source_key(policy)!r}"
+    payload = (
+        f"{ticker.upper()}|{policy.decision.value}|{_normalize(policy.title)}|"
+        f"{_source_key(policy)!r}"
+    )
     digest = hashlib.sha256(payload.encode("utf-8")).hexdigest()
     for length in range(20, len(digest) + 1, 4):
         candidate = f"pol_{digest[:length]}"
@@ -74,12 +83,16 @@ def allocate_stable_policy_ids(
     """Return canonical policies and a temporary-to-stable id mapping.
 
     Continuity is deliberately narrow: an exact prior id wins, otherwise a unique
-    `(decision, source_refs)` match wins. Ambiguous matches receive a new id.
+    `(decision, stable title, source_refs)` match wins. Ambiguous matches receive
+    a new id. OR semantics are fixed by the current Policy schema rather than
+    participating in per-Policy identity.
     """
 
     previous_items = list(previous)
     previous_by_id = {item.policy_id: item for item in previous_items}
-    previous_by_key: dict[tuple[str, tuple[tuple[str, str, str], ...]], list[Policy]] = {}
+    previous_by_key: dict[
+        tuple[str, str, tuple[tuple[str, str, str], ...]], list[Policy]
+    ] = {}
     for item in previous_items:
         previous_by_key.setdefault(_continuity_key(item), []).append(item)
 

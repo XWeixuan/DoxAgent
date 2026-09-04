@@ -27,12 +27,15 @@ from doxagent.codex_runtime.repository import (
 from doxagent.codex_runtime.schema import (
     CODEX_DOCUMENT2_WORKFLOW_VERSION,
     CODEX_EVENT_LIBRARY_WORKFLOW_VERSION,
+    CODEX_MONITORING_O4_WORKFLOW_VERSION,
     CodexAgentRole,
     CodexD1Node,
     CodexD2AgentRole,
     CodexD2Node,
     CodexEventLibraryAgentRole,
     CodexEventLibraryNode,
+    CodexMonitoringO4AgentRole,
+    CodexMonitoringO4Node,
     CodexResearchAgentRole,
     CodexResearchNode,
     CodexWorkflowVersion,
@@ -50,6 +53,11 @@ from doxagent.mcp.source_capture import (
     CitationManifestBuilder,
     SourceCaptureService,
     _extract_payload_text,
+)
+from doxagent.workflows.codex_monitoring_o4.capability import (
+    ALL_O4_TOOLS,
+    TOOLS_BY_NODE,
+    O4OperationCapabilityCodec,
 )
 
 
@@ -562,6 +570,90 @@ async def test_sdk_runtime_reapplies_native_web_search_when_resuming_o2_thread(
     sdk_config = sdk.thread_resume_kwargs["config"]
     assert isinstance(sdk_config, dict)
     assert sdk_config["web_search"] == "live"
+
+
+@pytest.mark.asyncio
+async def test_sdk_runtime_refreshes_o4_deliver_capability_on_same_ticker_thread(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    sdk = _AsyncSdkClient()
+    monkeypatch.setattr(
+        "doxagent.codex_worker.sdk_runtime.AsyncCodex",
+        lambda *args, **kwargs: sdk,
+    )
+    runtime = OpenAICodexRuntime(capability_secret="s" * 32, container_isolated=True)
+    run_root = tmp_path / "monitoring-o4-mu-main"
+    run_root.mkdir()
+
+    common = {
+        "workflow_version": CODEX_MONITORING_O4_WORKFLOW_VERSION,
+        "research_lane": ResearchLane.MONITORING_CONFIGURATION,
+        "run_id": run_root.name,
+        "ticker": "MU",
+        "agent_role": CodexMonitoringO4AgentRole.O4,
+        "cutoff_at": datetime.now(UTC),
+        "prompt": "Continue the O4 workflow.",
+        "output_schema": {"type": "object"},
+        "model": "test-model",
+        "data_mcp_enabled": False,
+        "o4_operations_enabled": True,
+        "allow_subagents": False,
+        "max_subagents": 0,
+        "timeout_seconds": 30,
+    }
+    await runtime.start(
+        WorkerRunRequest(
+            **common,
+            node=CodexMonitoringO4Node.CONFIGURE,
+            attempt_id="configure-1",
+        ),
+        run_root,
+    )
+    assert sdk.thread_start_kwargs is not None
+    configure_config = sdk.thread_start_kwargs["config"]
+    assert isinstance(configure_config, dict)
+    configure_mcp_tools = configure_config["mcp_servers.o4_operations.enabled_tools"]
+    assert set(configure_mcp_tools) == {
+        tool_id.replace(".", "_") for tool_id in ALL_O4_TOOLS
+    }
+    capability_file = Path(
+        configure_config["mcp_servers.o4_operations.env.DOXAGENT_O4_OPERATIONS_CAPABILITY_FILE"]
+    )
+    codec = O4OperationCapabilityCodec("s" * 32)
+    configure_claims = codec.verify(
+        configure_config["mcp_servers.o4_operations.env.DOXAGENT_O4_OPERATIONS_CAPABILITY"],
+        public_key=codec.public_key,
+    )
+    assert configure_claims.node is CodexMonitoringO4Node.CONFIGURE
+    assert capability_file.is_file()
+
+    await runtime.start(
+        WorkerRunRequest(
+            **common,
+            node=CodexMonitoringO4Node.DELIVER,
+            attempt_id="deliver-1",
+            thread_id="thread-sdk-1",
+        ),
+        run_root,
+    )
+    assert sdk.thread_resume_kwargs is not None
+    deliver_config = sdk.thread_resume_kwargs["config"]
+    assert isinstance(deliver_config, dict)
+    deliver_claims = codec.verify(
+        deliver_config["mcp_servers.o4_operations.env.DOXAGENT_O4_OPERATIONS_CAPABILITY"],
+        public_key=codec.public_key,
+    )
+    assert deliver_claims.node is CodexMonitoringO4Node.DELIVER
+    assert set(deliver_claims.enabled_tool_ids) == TOOLS_BY_NODE[CodexMonitoringO4Node.DELIVER]
+    assert Path(
+        deliver_config["mcp_servers.o4_operations.env.DOXAGENT_O4_OPERATIONS_CAPABILITY_FILE"]
+    ) == capability_file
+    refreshed_claims = codec.verify(
+        capability_file.read_text(encoding="utf-8"),
+        public_key=codec.public_key,
+    )
+    assert refreshed_claims.node is CodexMonitoringO4Node.DELIVER
 
 
 def test_worker_job_normalizes_numeric_json_rpc_error_code() -> None:

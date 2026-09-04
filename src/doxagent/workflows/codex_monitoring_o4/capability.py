@@ -52,6 +52,7 @@ DELIVER_TOOLS = frozenset(
         "crawler_plane.live_probe",
         "crawler_plane.get_execution",
         "crawler_plane.get_cassette",
+        "crawler_plane.add_regression",
         "crawler_plane.certify",
         "crawler_plane.promote",
         "crawler_plane.register_source",
@@ -77,6 +78,9 @@ REPAIR_TOOLS = frozenset(
         "crawler_plane.list_alerts",
         "crawler_plane.update_alert_policy",
         "crawler_plane.resolve_alert",
+        "crawler_plane.list_retries",
+        "crawler_plane.resolve_retry",
+        "crawler_plane.reactivate_retry",
         "crawler_plane.add_regression",
         "crawler_plane.certify",
         "crawler_plane.promote",
@@ -87,6 +91,10 @@ TOOLS_BY_NODE = {
     CodexMonitoringO4Node.DELIVER: DELIVER_TOOLS,
     CodexMonitoringO4Node.REPAIR: REPAIR_TOOLS,
 }
+# The Codex client-side allow-list must remain stable while one persistent ticker
+# thread moves between nodes.  This is only a discovery/filtering superset; the
+# signed node capability and the server-side intersection remain the authority.
+ALL_O4_TOOLS = frozenset().union(*TOOLS_BY_NODE.values())
 
 
 class O4OperationClaims(O4Model):
@@ -180,6 +188,7 @@ def _b64decode(value: str) -> bytes:
 
 
 __all__ = [
+    "ALL_O4_TOOLS",
     "CONFIGURE_TOOLS",
     "DELIVER_TOOLS",
     "O4OperationCapabilityCodec",

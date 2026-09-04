@@ -17,6 +17,7 @@ from doxagent.workflows.codex_document3.schema import (
     PolicyDecision,
     PolicyDetailSnapshot,
     RuntimePolicyProjection,
+    RuntimePolicyRecord,
 )
 
 
@@ -33,11 +34,13 @@ class RuntimeKnownEventProvider(Protocol):
 class RuntimePolicyProvider(Protocol):
     def current_projection(self, ticker: str) -> RuntimePolicyProjection | None: ...
 
-    def details(
-        self, ticker: str, version: int, policy_ids: list[str]
-    ) -> PolicyDetailSnapshot: ...
+    def details(self, ticker: str, version: int, policy_ids: list[str]) -> PolicyDetailSnapshot: ...
 
     def decision(self, ticker: str, version: int, policy_id: str) -> PolicyDecision | None: ...
+
+    def activation(
+        self, ticker: str, version: int, policy_id: str
+    ) -> RuntimePolicyRecord | None: ...
 
 
 class PublishedEventLibraryRuntimeProvider:
@@ -72,9 +75,7 @@ class Document3RuntimePolicyProvider:
     def current_projection(self, ticker: str) -> RuntimePolicyProjection | None:
         return self.consumer.current(ticker)
 
-    def details(
-        self, ticker: str, version: int, policy_ids: list[str]
-    ) -> PolicyDetailSnapshot:
+    def details(self, ticker: str, version: int, policy_ids: list[str]) -> PolicyDetailSnapshot:
         return self.repository.get_policy_details(ticker, version, policy_ids)
 
     def decision(self, ticker: str, version: int, policy_id: str) -> PolicyDecision | None:
@@ -86,3 +87,8 @@ class Document3RuntimePolicyProvider:
             None,
         )
 
+    def activation(self, ticker: str, version: int, policy_id: str) -> RuntimePolicyRecord | None:
+        projection = self.consumer.version(ticker, version)
+        if projection is None:
+            return None
+        return next((item for item in projection.policies if item.policy_id == policy_id), None)

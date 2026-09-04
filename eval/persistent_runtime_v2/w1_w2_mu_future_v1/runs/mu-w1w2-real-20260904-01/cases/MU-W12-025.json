@@ -1,0 +1,121 @@
+{
+  "case_id": "MU-W12-025",
+  "status": "COMPLETED",
+  "started_at": "2026-09-04T01:55:54.044372+08:00",
+  "completed_at": "2026-09-04T01:56:21.932907+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": []
+    },
+    "w1_final": {
+      "result": "NEW",
+      "confidence": "normal",
+      "reference_ids": [],
+      "reason": "No loaded events describe a firmware correction resolved during pre-production sample validation of Micron's 245TB QLC enterprise SSD configuration with a cloud customer. This is a distinct engineering milestone not covered by any known fact."
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息明确说明245TB QLC SSD的固件问题发现于pre-production sample validation阶段，在客户进入生产决策之前完成修正，属于正常工程验证流程。最相关的pol_07c01cd6da0c52f29fe6要求量产阶段缺陷导致客户暂停生产部署或撤回资格并削减订单/出货，消息未涉及任何量产产品、客户停收、资格撤回或订单削减，不满足触发条件。"
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息明确说明245TB QLC SSD的固件问题发现于pre-production sample validation阶段，在客户进入生产决策之前完成修正，属于正常工程验证流程。最相关的pol_07c01cd6da0c52f29fe6要求量产阶段缺陷导致客户暂停生产部署或撤回资格并削减订单/出货，消息未涉及任何量产产品、客户停收、资格撤回或订单削减，不满足触发条件。"
+    },
+    "route": {
+      "primary_route": "W3",
+      "side_effects": [
+        "route_to_w3"
+      ],
+      "reason": "w1=NEW/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_1e85a9ee0e9a487194aece84f2c9489c",
+      "case_id": "case_d3170a03bb4147f8ab29d50104a0eff9",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_261f6b31-a443-96bb-a4c4-e50c23f402b3",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 7039,
+      "output_tokens": 889,
+      "reasoning_tokens": 772,
+      "cached_input_tokens": 0,
+      "latency_ms": 12618,
+      "output": {
+        "policy_ids": [],
+        "matched_condition_ids": [],
+        "confidence": "normal",
+        "reason": "消息明确说明245TB QLC SSD的固件问题发现于pre-production sample validation阶段，在客户进入生产决策之前完成修正，属于正常工程验证流程。最相关的pol_07c01cd6da0c52f29fe6要求量产阶段缺陷导致客户暂停生产部署或撤回资格并削减订单/出货，消息未涉及任何量产产品、客户停收、资格撤回或订单削减，不满足触发条件。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:56:06.733617Z"
+    },
+    {
+      "turn_id": "turn_44c89692012c4f8c84848b8a85f53111",
+      "case_id": "case_d3170a03bb4147f8ab29d50104a0eff9",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_86167ae1-cc14-91c8-9538-6f430f058db9",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13352,
+      "output_tokens": 1561,
+      "reasoning_tokens": 1553,
+      "cached_input_tokens": 0,
+      "latency_ms": 21909,
+      "output": {
+        "event_ids": []
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:56:16.022046Z"
+    },
+    {
+      "turn_id": "turn_b6a6d33a46d946508b7bfdcb38fa16ab",
+      "case_id": "case_d3170a03bb4147f8ab29d50104a0eff9",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_7b654107-dec7-9abd-8df6-c194bfdbd301",
+      "previous_response_id": "resp_86167ae1-cc14-91c8-9538-6f430f058db9",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 14548,
+      "output_tokens": 440,
+      "reasoning_tokens": 377,
+      "cached_input_tokens": 0,
+      "latency_ms": 5910,
+      "output": {
+        "result": "NEW",
+        "confidence": "normal",
+        "reference_ids": [],
+        "reason": "No loaded events describe a firmware correction resolved during pre-production sample validation of Micron's 245TB QLC enterprise SSD configuration with a cloud customer. This is a distinct engineering milestone not covered by any known fact."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:56:21.932907Z"
+    }
+  ]
+}

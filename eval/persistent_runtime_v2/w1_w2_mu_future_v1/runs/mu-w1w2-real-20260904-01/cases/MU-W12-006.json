@@ -1,0 +1,133 @@
+{
+  "case_id": "MU-W12-006",
+  "status": "COMPLETED",
+  "started_at": "2026-09-04T01:54:01.511462+08:00",
+  "completed_at": "2026-09-04T01:54:28.291072+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E12",
+        "E117"
+      ]
+    },
+    "w1_final": {
+      "result": "OLD",
+      "confidence": "normal",
+      "reference_ids": [
+        "E12",
+        "E117"
+      ],
+      "reason": "All core facts in the message are already covered: the $6.1B CHIPS subsidy with buyback restriction expiring Dec 9, 2026 (E12 F79/F80/F81), U.S. opposition to Apple sourcing from CXMT/YMTC (E117 F361), and export controls on technology transfers to CXMT (E117 F362). The remainder is analytical commentary and contextual framing."
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息为政策背景综述，描述CHIPS回购限制到期日、美国政府'表达对Apple采购CXMT/YMTC内存的反对'及既有技术出口管制。最接近候选pol_57a710424ce10ddd34db要求'实施对主要OEM具有约束力的采购限制并由受影响OEM把可识别量产订单转向Micron'，但消息仅述政治立场('expressed opposition')而非已生效的约束性规则，且未提及任何OEM订单转向Micron，不满足触发条件。"
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息为政策背景综述，描述CHIPS回购限制到期日、美国政府'表达对Apple采购CXMT/YMTC内存的反对'及既有技术出口管制。最接近候选pol_57a710424ce10ddd34db要求'实施对主要OEM具有约束力的采购限制并由受影响OEM把可识别量产订单转向Micron'，但消息仅述政治立场('expressed opposition')而非已生效的约束性规则，且未提及任何OEM订单转向Micron，不满足触发条件。"
+    },
+    "route": {
+      "primary_route": "ARCHIVE",
+      "side_effects": [
+        "archive_message"
+      ],
+      "reason": "w1=OLD/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_f79cd17cc0724cb88e2a0a3c4fef89c5",
+      "case_id": "case_3cf42827e0854d2b89018e29a780bc83",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_07ef2be0-cfe9-9b3f-baba-692797b1d1db",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13414,
+      "output_tokens": 1121,
+      "reasoning_tokens": 1105,
+      "cached_input_tokens": 0,
+      "latency_ms": 15507,
+      "output": {
+        "event_ids": [
+          "E12",
+          "E117"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:54:17.091262Z"
+    },
+    {
+      "turn_id": "turn_56978bed4a274588a60fa86ef874f9ee",
+      "case_id": "case_3cf42827e0854d2b89018e29a780bc83",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_4ce38aa8-ea35-9a73-b54f-5e93f1ea91e1",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 7101,
+      "output_tokens": 2713,
+      "reasoning_tokens": 2577,
+      "cached_input_tokens": 0,
+      "latency_ms": 22667,
+      "output": {
+        "policy_ids": [],
+        "matched_condition_ids": [],
+        "confidence": "normal",
+        "reason": "消息为政策背景综述，描述CHIPS回购限制到期日、美国政府'表达对Apple采购CXMT/YMTC内存的反对'及既有技术出口管制。最接近候选pol_57a710424ce10ddd34db要求'实施对主要OEM具有约束力的采购限制并由受影响OEM把可识别量产订单转向Micron'，但消息仅述政治立场('expressed opposition')而非已生效的约束性规则，且未提及任何OEM订单转向Micron，不满足触发条件。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:54:24.253505Z"
+    },
+    {
+      "turn_id": "turn_28e57efa4f5c4e2193d48fac7f241424",
+      "case_id": "case_3cf42827e0854d2b89018e29a780bc83",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_99a81e12-c5b9-9139-bf12-c4b052c0988d",
+      "previous_response_id": "resp_07ef2be0-cfe9-9b3f-baba-692797b1d1db",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 15380,
+      "output_tokens": 718,
+      "reasoning_tokens": 593,
+      "cached_input_tokens": 0,
+      "latency_ms": 11172,
+      "output": {
+        "result": "OLD",
+        "confidence": "normal",
+        "reference_ids": [
+          "E12",
+          "E117"
+        ],
+        "reason": "All core facts in the message are already covered: the $6.1B CHIPS subsidy with buyback restriction expiring Dec 9, 2026 (E12 F79/F80/F81), U.S. opposition to Apple sourcing from CXMT/YMTC (E117 F361), and export controls on technology transfers to CXMT (E117 F362). The remainder is analytical commentary and contextual framing."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:54:28.291072Z"
+    }
+  ]
+}

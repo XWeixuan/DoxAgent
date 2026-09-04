@@ -1232,6 +1232,9 @@ _CRAWLER_INPUT_FIELDS: dict[str, list[str]] = {
         "crawler_id", "source_id", "alert_type", "enabled", "threshold", "window",
     ],
     "crawler_plane.resolve_alert": ["alert_id"],
+    "crawler_plane.list_retries": ["crawler_id", "binding_id", "status", "limit"],
+    "crawler_plane.resolve_retry": ["retry_id"],
+    "crawler_plane.reactivate_retry": ["retry_id"],
     "crawler_plane.register_source": [
         "source_id", "display_name", "crawler_id", "parameter_schema",
         "default_parameters", "default_polling_config", "default_streaming_config",
@@ -1245,6 +1248,7 @@ _CRAWLER_READ_ONLY = {
     "crawler_plane.get_execution",
     "crawler_plane.get_cassette",
     "crawler_plane.list_alerts",
+    "crawler_plane.list_retries",
 }
 for _crawler_name, _crawler_fields in _CRAWLER_INPUT_FIELDS.items():
     _DESCRIPTORS[_crawler_name] = _descriptor(

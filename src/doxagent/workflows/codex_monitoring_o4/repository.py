@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import sqlite3
 import threading
-from datetime import timedelta
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -347,9 +347,7 @@ class MonitoringO4Repository:
         self._connection.close()
 
 
-def datetime_from_sql(value: str):
-    from datetime import datetime
-
+def datetime_from_sql(value: str) -> datetime:
     parsed = datetime.fromisoformat(value)
     if parsed.tzinfo is None:
         raise ValueError("stored lease timestamp must be timezone-aware")

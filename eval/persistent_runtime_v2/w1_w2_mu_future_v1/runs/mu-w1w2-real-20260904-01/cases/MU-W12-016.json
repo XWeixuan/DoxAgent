@@ -1,0 +1,121 @@
+{
+  "case_id": "MU-W12-016",
+  "status": "COMPLETED",
+  "started_at": "2026-09-04T01:54:51.868081+08:00",
+  "completed_at": "2026-09-04T01:55:24.531430+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": []
+    },
+    "w1_final": {
+      "result": "NEW",
+      "confidence": "normal",
+      "reference_ids": [],
+      "reason": "Aster Cloud starting a production deployment of CXL memory pooling with Micron confirmed as a qualified CXL module supplier is a new occurrence not covered by any loaded event. The event_details are empty; no known fact records Aster Cloud, CXL pooling production use, or this supplier relationship."
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "Aster Cloud确认生产部署CXL内存池并将Micron列为合格供应商，落入pol_ba44e8df4267758d9039和pol_3b1b86a10edc1c1b864b的match_scope，但两条criterion均要求明确的容量对比（新增池容量超过被替代主机DRAM / 总DRAM容量采购下降）及采购量变化数据。消息明确指出未披露模块数量、未给出单位数字，且部署仅服务窄范围分析负载，上述关键量化事实缺失，两条CXL policy均未命中。"
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "Aster Cloud确认生产部署CXL内存池并将Micron列为合格供应商，落入pol_ba44e8df4267758d9039和pol_3b1b86a10edc1c1b864b的match_scope，但两条criterion均要求明确的容量对比（新增池容量超过被替代主机DRAM / 总DRAM容量采购下降）及采购量变化数据。消息明确指出未披露模块数量、未给出单位数字，且部署仅服务窄范围分析负载，上述关键量化事实缺失，两条CXL policy均未命中。"
+    },
+    "route": {
+      "primary_route": "W3",
+      "side_effects": [
+        "route_to_w3"
+      ],
+      "reason": "w1=NEW/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_8ab3efdded9c4e689cc3cb0070350e48",
+      "case_id": "case_aec44ccd1de74de09d4a8e44a4d475e4",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_86c780ad-249f-9014-93f5-1aea215571ea",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 7075,
+      "output_tokens": 1340,
+      "reasoning_tokens": 1190,
+      "cached_input_tokens": 0,
+      "latency_ms": 12871,
+      "output": {
+        "policy_ids": [],
+        "matched_condition_ids": [],
+        "confidence": "normal",
+        "reason": "Aster Cloud确认生产部署CXL内存池并将Micron列为合格供应商，落入pol_ba44e8df4267758d9039和pol_3b1b86a10edc1c1b864b的match_scope，但两条criterion均要求明确的容量对比（新增池容量超过被替代主机DRAM / 总DRAM容量采购下降）及采购量变化数据。消息明确指出未披露模块数量、未给出单位数字，且部署仅服务窄范围分析负载，上述关键量化事实缺失，两条CXL policy均未命中。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:55:04.800805Z"
+    },
+    {
+      "turn_id": "turn_1007bc10503244d2be21fc17d023d282",
+      "case_id": "case_aec44ccd1de74de09d4a8e44a4d475e4",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_a400c5f7-4776-9eed-83ae-6c772f45af87",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13388,
+      "output_tokens": 1070,
+      "reasoning_tokens": 1062,
+      "cached_input_tokens": 0,
+      "latency_ms": 25675,
+      "output": {
+        "event_ids": []
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:55:17.603151Z"
+    },
+    {
+      "turn_id": "turn_bba264f1b1b746adb41c09d12938ea61",
+      "case_id": "case_aec44ccd1de74de09d4a8e44a4d475e4",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_041c7507-84a0-9e8a-8bb6-9755e05863b4",
+      "previous_response_id": "resp_a400c5f7-4776-9eed-83ae-6c772f45af87",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 14620,
+      "output_tokens": 558,
+      "reasoning_tokens": 482,
+      "cached_input_tokens": 0,
+      "latency_ms": 6927,
+      "output": {
+        "result": "NEW",
+        "confidence": "normal",
+        "reference_ids": [],
+        "reason": "Aster Cloud starting a production deployment of CXL memory pooling with Micron confirmed as a qualified CXL module supplier is a new occurrence not covered by any loaded event. The event_details are empty; no known fact records Aster Cloud, CXL pooling production use, or this supplier relationship."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:55:24.530435Z"
+    }
+  ]
+}

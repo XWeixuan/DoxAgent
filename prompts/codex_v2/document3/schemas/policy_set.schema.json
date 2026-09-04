@@ -6,7 +6,7 @@
   "additionalProperties": false,
   "required": ["schema_version", "ticker", "policy_set_version", "publication_state", "document2_ref", "event_library_ref", "policies", "published_at"],
   "properties": {
-    "schema_version": {"const": "document3.v2"},
+    "schema_version": {"const": "document3.v2.2"},
     "ticker": {"type": "string", "minLength": 1},
     "policy_set_version": {"type": "integer", "minimum": 1},
     "publication_state": {"enum": ["COMPLETE", "PARTIAL"]},
@@ -43,25 +43,44 @@
       "type": "object", "additionalProperties": false,
       "required": ["condition_id", "criterion", "calibration"],
       "properties": {
-        "condition_id": {"type": "string", "minLength": 1}, "criterion": {"type": "string", "minLength": 1},
+        "condition_id": {"type": "string", "minLength": 1},
+        "criterion": {
+          "type": "string",
+          "minLength": 1,
+          "description": "A stable natural-business description of the future reality change monitored by Runtime. It states the actor/object, change type and necessary scope, but does not repeat the current reference value or point-in-time market calibration."
+        },
         "calibration": {
           "type": "object", "additionalProperties": false,
-          "required": ["reference_state", "trigger_boundary", "qualifying_evidence"],
+          "required": ["reference_state", "trigger_boundary"],
           "properties": {
-            "reference_state": {"type": "string", "minLength": 1}, "trigger_boundary": {"type": "string", "minLength": 1}, "qualifying_evidence": {"type": "string", "minLength": 1}
+            "reference_state": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The condition-specific reality anchor confirmed at the cutoff; not a Unit/Shell summary or a restatement of criterion."
+            },
+            "trigger_boundary": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The minimum observable surprise beyond the current market-expectation baseline that independently creates the Policy's directional revision."
+            }
           }
         }
       }
     },
     "policy": {
       "type": "object", "additionalProperties": false,
-      "required": ["policy_id", "title", "source_refs", "decision", "match_scope", "activation_conditions", "activation_summary"],
+      "description": "A one-time decision boundary. activation_conditions have schema-fixed OR semantics: any one independently sufficient Condition confirmed by the same message activates the Policy.",
+      "required": ["policy_id", "title", "source_refs", "decision", "match_scope", "activation_conditions"],
       "properties": {
         "policy_id": {"type": "string", "minLength": 1}, "title": {"type": "string", "minLength": 1},
         "source_refs": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/source_ref"}},
         "decision": {"enum": ["LONG", "SHORT"]}, "match_scope": {"type": "string", "minLength": 1},
-        "activation_conditions": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/condition"}},
-        "activation_summary": {"type": "string", "minLength": 1}
+        "activation_conditions": {
+          "type": "array",
+          "minItems": 1,
+          "description": "OR alternatives. Every member is a complete natural occurrence that is independently sufficient for the same one-time Policy decision.",
+          "items": {"$ref": "#/$defs/condition"}
+        }
       }
     }
   }

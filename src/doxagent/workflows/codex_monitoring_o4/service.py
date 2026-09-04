@@ -14,6 +14,7 @@ from doxagent.settings import DoxAgentSettings
 
 from .dispatcher import O4AlertDispatcher
 from .orchestrator import MonitoringO4Orchestrator, O4ConfigurationContextProvider
+from .policy import O4MutationPolicy
 from .repository import MonitoringO4Repository
 from .runner import MonitoringO4AgentRunner
 
@@ -74,6 +75,11 @@ def build_monitoring_o4_runtime(
         message_bus=message_bus,
         message_bus_enabled=settings.message_bus_v2_enabled,
         context_provider=context_provider,
+        mutation_policy=O4MutationPolicy(
+            standard_poll_seconds=settings.o4_standard_poll_seconds,
+            tikhub_poll_seconds=settings.o4_tikhub_poll_seconds,
+            alert_after_seconds=settings.o4_alert_after_seconds,
+        ),
     )
     if message_bus is not None and crawler_plane is not None:
         dispatcher = O4AlertDispatcher(

@@ -21,6 +21,7 @@ from .schema import (
     BadcaseRecord,
     DailyCloseRun,
     DailyRecordStatus,
+    PolicyActivationRecord,
     ProvisionalFactDetail,
     RuntimeCase,
     RuntimeEffect,
@@ -94,9 +95,7 @@ class PersistentRuntimeV2Repository(Protocol):
 
     def provisional_snapshot_version(self, ticker: str, trading_date: date) -> int: ...
 
-    def list_provisional(
-        self, ticker: str, trading_date: date
-    ) -> list[ProvisionalFactDetail]: ...
+    def list_provisional(self, ticker: str, trading_date: date) -> list[ProvisionalFactDetail]: ...
 
     def get_provisional(
         self, ticker: str, trading_date: date, event_ids: list[str]
@@ -105,6 +104,10 @@ class PersistentRuntimeV2Repository(Protocol):
     def save_archive(self, value: ArchiveRecord) -> ArchiveRecord: ...
 
     def save_trade(self, value: TradeRecord) -> TradeRecord: ...
+
+    def claim_policy_activation(self, value: PolicyActivationRecord) -> bool: ...
+
+    def list_consumed_policy_revisions(self, ticker: str) -> set[tuple[str, str]]: ...
 
     def save_badcase(self, value: BadcaseRecord) -> BadcaseRecord: ...
 
@@ -169,6 +172,7 @@ class InMemoryPersistentRuntimeV2Repository:
         self._counters: dict[tuple[str, date], tuple[int, int]] = {}
         self._archives: dict[str, ArchiveRecord] = {}
         self._trades: dict[str, TradeRecord] = {}
+        self._policy_activations: dict[tuple[str, str, str], PolicyActivationRecord] = {}
         self._badcases: dict[str, BadcaseRecord] = {}
         self._w3_cases: dict[str, W3RouteCase] = {}
         self._w3_main_threads: dict[str, str] = {}
@@ -236,10 +240,14 @@ class InMemoryPersistentRuntimeV2Repository:
             for effect in sorted(self._effects.values(), key=lambda item: item.created_at):
                 if len(claimed) >= limit:
                     break
-                if effect.status not in {
-                    RuntimeEffectStatus.PENDING,
-                    RuntimeEffectStatus.PENDING_RETRY,
-                } or effect.available_at > now:
+                if (
+                    effect.status
+                    not in {
+                        RuntimeEffectStatus.PENDING,
+                        RuntimeEffectStatus.PENDING_RETRY,
+                    }
+                    or effect.available_at > now
+                ):
                     continue
                 running = effect.model_copy(
                     update={"status": RuntimeEffectStatus.RUNNING, "updated_at": now}
@@ -297,9 +305,7 @@ class InMemoryPersistentRuntimeV2Repository:
         with self._lock:
             return self._counters.get((ticker.upper(), trading_date), (0, 0))[1]
 
-    def list_provisional(
-        self, ticker: str, trading_date: date
-    ) -> list[ProvisionalFactDetail]:
+    def list_provisional(self, ticker: str, trading_date: date) -> list[ProvisionalFactDetail]:
         with self._lock:
             return list(self._provisional.get((ticker.upper(), trading_date), []))
 
@@ -308,7 +314,8 @@ class InMemoryPersistentRuntimeV2Repository:
     ) -> list[ProvisionalFactDetail]:
         wanted = set(event_ids)
         return [
-            item for item in self.list_provisional(ticker, trading_date)
+            item
+            for item in self.list_provisional(ticker, trading_date)
             if item.provisional_event_id in wanted
         ]
 
@@ -319,6 +326,24 @@ class InMemoryPersistentRuntimeV2Repository:
     def save_trade(self, value: TradeRecord) -> TradeRecord:
         with self._lock:
             return self._trades.setdefault(value.case_id, value)
+
+    def claim_policy_activation(self, value: PolicyActivationRecord) -> bool:
+        key = (value.ticker.upper(), value.policy_id, value.activation_revision)
+        with self._lock:
+            existing = self._policy_activations.get(key)
+            if existing is not None:
+                return existing.case_id == value.case_id
+            self._policy_activations[key] = value
+            return True
+
+    def list_consumed_policy_revisions(self, ticker: str) -> set[tuple[str, str]]:
+        key = ticker.upper()
+        with self._lock:
+            return {
+                (policy_id, revision)
+                for (record_ticker, policy_id, revision) in self._policy_activations
+                if record_ticker == key
+            }
 
     def save_badcase(self, value: BadcaseRecord) -> BadcaseRecord:
         with self._lock:
@@ -386,9 +411,7 @@ class InMemoryPersistentRuntimeV2Repository:
         with self._lock:
             return self._w3_coverage_gaps.setdefault(value.case_id, value)
 
-    def list_daily_candidates(
-        self, ticker: str, trading_date: date
-    ) -> list[ProvisionalFactDetail]:
+    def list_daily_candidates(self, ticker: str, trading_date: date) -> list[ProvisionalFactDetail]:
         return [
             item
             for item in self.list_provisional(ticker, trading_date)
@@ -398,7 +421,8 @@ class InMemoryPersistentRuntimeV2Repository:
 
     def list_daily_trades(self, ticker: str, trading_date: date) -> list[TradeRecord]:
         return [
-            item for item in self._trades.values()
+            item
+            for item in self._trades.values()
             if item.ticker == ticker.upper()
             and item.trading_date == trading_date
             and item.daily_status is DailyRecordStatus.PENDING
@@ -406,7 +430,8 @@ class InMemoryPersistentRuntimeV2Repository:
 
     def list_daily_badcases(self, ticker: str, trading_date: date) -> list[BadcaseRecord]:
         return [
-            item for item in self._badcases.values()
+            item
+            for item in self._badcases.values()
             if item.ticker == ticker.upper()
             and item.trading_date == trading_date
             and item.daily_status is DailyRecordStatus.PENDING
@@ -416,7 +441,8 @@ class InMemoryPersistentRuntimeV2Repository:
         self, ticker: str, trading_date: date
     ) -> list[W3CoverageGapRecord]:
         return [
-            item for item in self._w3_coverage_gaps.values()
+            item
+            for item in self._w3_coverage_gaps.values()
             if item.ticker == ticker.upper()
             and item.trading_date == trading_date
             and item.daily_status is DailyRecordStatus.PENDING
@@ -578,6 +604,19 @@ class SQLitePersistentRuntimeV2Repository:
                 );
                 CREATE INDEX IF NOT EXISTS idx_runtime_v2_trade_daily
                     ON runtime_v2_trade_records(ticker, trading_date, daily_status, created_at);
+                CREATE TABLE IF NOT EXISTS runtime_v2_policy_activations (
+                    ticker TEXT NOT NULL,
+                    policy_id TEXT NOT NULL,
+                    activation_revision TEXT NOT NULL,
+                    case_id TEXT NOT NULL UNIQUE REFERENCES runtime_v2_cases(case_id),
+                    source_message_id TEXT NOT NULL,
+                    policy_set_version INTEGER NOT NULL,
+                    payload_json TEXT NOT NULL,
+                    activated_at TEXT NOT NULL,
+                    PRIMARY KEY(ticker, policy_id, activation_revision)
+                );
+                CREATE INDEX IF NOT EXISTS idx_runtime_v2_policy_activation_case
+                    ON runtime_v2_policy_activations(case_id);
                 CREATE TABLE IF NOT EXISTS runtime_v2_badcases (
                     case_id TEXT PRIMARY KEY REFERENCES runtime_v2_cases(case_id),
                     ticker TEXT NOT NULL,
@@ -635,13 +674,10 @@ class SQLitePersistentRuntimeV2Repository:
                 """
             )
             columns = {
-                str(row[1])
-                for row in connection.execute("PRAGMA table_info(runtime_v2_w3_cases)")
+                str(row[1]) for row in connection.execute("PRAGMA table_info(runtime_v2_w3_cases)")
             }
             if "updated_at" not in columns:
-                connection.execute(
-                    "ALTER TABLE runtime_v2_w3_cases ADD COLUMN updated_at TEXT"
-                )
+                connection.execute("ALTER TABLE runtime_v2_w3_cases ADD COLUMN updated_at TEXT")
 
     def save_case(self, case: RuntimeCase) -> RuntimeCase:
         payload = case.model_dump_json()
@@ -978,9 +1014,7 @@ class SQLitePersistentRuntimeV2Repository:
             ).fetchone()
         return int(row[0]) if row else 0
 
-    def list_provisional(
-        self, ticker: str, trading_date: date
-    ) -> list[ProvisionalFactDetail]:
+    def list_provisional(self, ticker: str, trading_date: date) -> list[ProvisionalFactDetail]:
         return self._read_models(
             ProvisionalFactDetail,
             "SELECT payload_json FROM runtime_v2_candidates "
@@ -994,7 +1028,8 @@ class SQLitePersistentRuntimeV2Repository:
     ) -> list[ProvisionalFactDetail]:
         wanted = set(event_ids)
         return [
-            item for item in self.list_provisional(ticker, trading_date)
+            item
+            for item in self.list_provisional(ticker, trading_date)
             if item.provisional_event_id in wanted
         ]
 
@@ -1003,6 +1038,44 @@ class SQLitePersistentRuntimeV2Repository:
 
     def save_trade(self, value: TradeRecord) -> TradeRecord:
         return self._insert_daily_record("runtime_v2_trade_records", value)
+
+    def claim_policy_activation(self, value: PolicyActivationRecord) -> bool:
+        with self._lock, self._connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            connection.execute(
+                """
+                INSERT OR IGNORE INTO runtime_v2_policy_activations(
+                    ticker,policy_id,activation_revision,case_id,source_message_id,
+                    policy_set_version,payload_json,activated_at
+                ) VALUES (?,?,?,?,?,?,?,?)
+                """,
+                (
+                    value.ticker.upper(),
+                    value.policy_id,
+                    value.activation_revision,
+                    value.case_id,
+                    value.source_message_id,
+                    value.policy_set_version,
+                    value.model_dump_json(),
+                    value.activated_at.isoformat(),
+                ),
+            )
+            row = connection.execute(
+                "SELECT case_id FROM runtime_v2_policy_activations "
+                "WHERE ticker=? AND policy_id=? AND activation_revision=?",
+                (value.ticker.upper(), value.policy_id, value.activation_revision),
+            ).fetchone()
+            connection.commit()
+        return row is not None and str(row[0]) == value.case_id
+
+    def list_consumed_policy_revisions(self, ticker: str) -> set[tuple[str, str]]:
+        with self._connect() as connection:
+            rows = connection.execute(
+                "SELECT policy_id,activation_revision FROM runtime_v2_policy_activations "
+                "WHERE ticker=?",
+                (ticker.upper(),),
+            ).fetchall()
+        return {(str(row[0]), str(row[1])) for row in rows}
 
     def save_badcase(self, value: BadcaseRecord) -> BadcaseRecord:
         return self._insert_daily_record("runtime_v2_badcases", value)
@@ -1070,8 +1143,7 @@ class SQLitePersistentRuntimeV2Repository:
                         (utc_now().isoformat(), normalized),
                     )
             existing = connection.execute(
-                "SELECT slot_kind,acquired_at FROM runtime_v2_w3_thread_slots "
-                "WHERE case_id=?",
+                "SELECT slot_kind,acquired_at FROM runtime_v2_w3_thread_slots WHERE case_id=?",
                 (case_id,),
             ).fetchone()
             binding = connection.execute(
@@ -1160,9 +1232,7 @@ class SQLitePersistentRuntimeV2Repository:
     def save_w3_coverage_gap(self, value: W3CoverageGapRecord) -> W3CoverageGapRecord:
         return self._insert_daily_record("runtime_v2_w3_coverage_gaps", value)
 
-    def list_daily_candidates(
-        self, ticker: str, trading_date: date
-    ) -> list[ProvisionalFactDetail]:
+    def list_daily_candidates(self, ticker: str, trading_date: date) -> list[ProvisionalFactDetail]:
         return self._read_models(
             ProvisionalFactDetail,
             "SELECT payload_json FROM runtime_v2_candidates "

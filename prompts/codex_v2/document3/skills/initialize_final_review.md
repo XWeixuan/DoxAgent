@@ -1,161 +1,295 @@
 # O3 Final Global Pass
 
-本 Turn 承接同一线程的 Trigger Calibration 与 Policy Compile，把各 Shell wave 形成的局部结果收敛为一套全局一致、可执行的 Policy drafts。Stage A 已研究完整 Trigger surface，Stage B 已将 ready Triggers 渐进编译为 drafts；本阶段从完整集合判断覆盖、Trigger 质量、重复、冲突和交易边界，并直接修复能够解决的问题。
+本 Turn 是 INITIALIZE 生命周期最后的全局语义复核与有界修复。Trigger Calibration 已展开并校准 Candidate surface，Policy Compile 已把 ready Candidates 编译为 drafts；Final Review 从 workspace 的全部冻结输入和工作工件重建完整状态，处理只有跨 wave、跨 Gap、跨 Path 或跨 Policy 比较才能发现的问题。
 
-Final Review 是初始化生命周期的最后一次研究与编辑，不是只读审计。它有权修改 Policy drafts、worklist、Trigger Calibration records/state、calibration log、wave state 和 coverage map，也可以为明确的全局问题开展必要研究。目标是留下相互一致的最终工作文件，以及只描述修复后仍然存在问题的 ReviewResult。
+Stage-A `TRIGGER_READY`、Worklist `COMPILED` 和前序研究结论本身都不是质量证据。把当前 Policy Set 当成待证伪对象，从最终 Runtime 只能依据未来消息应用既定标准的视角，重新检查前两阶段是否真正满足 Foundation、当前 stage contracts 与 supplied schema。
 
-Final Global Pass 要在保持 D2 Potential Gap 覆盖的前提下，使最终 Policies 全局一致，并分别表达仍面向未来、能够产生边际 expectation revision、尽可能早但可靠、可由未来消息低自由度判定的交易状态。优化对象是这些 Policy 品质，而不是最高确定性、最少 Policy 或最少 issue。
+Foundation 定义共享业务 invariant，前两个 stage skills 定义研究与编译方法，supplied schema 定义最终字段。Final Review 验证并修复这些合同的实际执行结果，不另建字段 ontology、充分性标准或研究 surface。
 
-## 1. 重建全局工作状态
-
-读取 `task.json`、完整 Published D2、可选 Reference View、Previous Policy Set，以及当前 attempt 的完整 `worklist.jsonl`、`trigger_calibrations.jsonl`、`trigger_calibration_state.json`、`calibration_log.jsonl`、`wave_state.json`、`policies/` 和 `coverage_map.json`。
-
-D2、worklist 和 Policy drafts 是 coverage 关系的业务源；Trigger records/state 是 Candidate Trigger 语义和 Stage-A disposition 的业务源；calibration log 保留兼容的边界研究结论。`coverage_map.json` 是 Final Review 维护的派生工作视图：先修正 Gap / Path / Policy 源对象，再同步 coverage map，使其反映最终状态；单独修改派生视图不改变业务关系。Previous Policy Set 用于判断语义与身份连续性。
-
-D2 定义 expectation、经济传导和 revision space；Reference View 及必要的当前研究确定现实已经推进到哪里。若后续事实已确认 D2 中的未来状态发生，将其吸收到新的 `reference_state`，再沿原 D2 Path 寻找下一项仍面向未来的边界，而不是继续以 D2 publication 时点作为现实起点。
-
-先形成三个全局视图：
+最终集合应满足三个总合同：
 
 ```text
-D2 coverage view
-→ 每个成功 Shell 的全部 Gap、展开的 Paths、状态和 Policy 映射
-
-Policy semantic view
-→ 每条 Policy 的现实对象、状态跃迁、Activation Boundary、decision 和来源 Gaps
-
-Trigger quality view
-→ 每条 Path 的 actor、current state、Candidate Trigger、交易充分性、最小性、披露路径和可判定性
+每个 Active Condition 相对于当前现实与当前市场 expectation 均独立产生显著、定向的 expectation update
++
+同一 Policy 的 Conditions 是同一次决策边界的替代触发，任一成立即激活
++
+任一 Condition 已成为现实，原 Policy 相对于旧 baseline 的边界即已被消费
 ```
 
-这些视图用于发现 Shell 内局部处理无法看见的遗漏、重复、方向冲突和 Trigger 失真；它们是思考框架，不新增工作产物或字段。
+Final Review 在冻结证据足以唯一决定修改时直接修复并同步全部相关工件；需要新事实、新阈值、新 actor 或新传导机制的问题进入 ReviewResult。目标是得到覆盖闭合、语义一致、仍面向未来且可由 Runtime 低自由度判定的 Policy drafts，而不是重跑前两阶段或追求更少的 Policy、Condition 或 issue。
 
-## 2. 覆盖与引用闭合
+## 1. 重建全局状态
 
-按 D2 的成功 Shell 逐项核对：
+按当前 node prompt 读取 `task.json`、完整 Published D2、可选 Reference View、Previous Policy Set、supplied schemas，以及当前 attempt 的完整：
 
-- 每个 Potential Gap 均有对应 Worklist entry，且 `shell_id + expectation_id + gap_id` 精确指向 D2；
-- 每条 Tradable Path 已收敛为 `COMPILED` 或 `UNRESOLVED`；
-- 每条 Path 有一致的 Stage-A disposition，`COMPILED` Path 对应 `TRIGGER_READY` 且有严格 Trigger record；
-- `COMPILED` Path 的每个 `policy_ids` 都指向实际存在的 draft，`UNRESOLVED` Path 有具体 `unresolved_reason`；
-- 每条 Policy 的 `source_refs` 只包含真实支持其交易含义的 D2 Gaps，并完整使用 `shell_id + expectation_id + gap_id`；
-- 多个 Paths 可以指向同一 Policy，同一 Gap 也可以展开多个方向或现实落点；
-- `completed_path_ids`、`completed_shell_ids`、`current_shell_id` 与实际完成状态一致；
-- failed shells 继续作为已知输入边界保留在 coverage，不为其构造缺失的 Gap 或 Policy。
+```text
+worklist.jsonl
+trigger_calibrations.jsonl
+trigger_calibration_state.json
+calibration_log.jsonl
+wave_state.json
+policies/
+coverage_map.json
+```
 
-发现映射问题时先还原真实语义，再修改 Worklist、Policy 引用或状态。覆盖完整并不要求每条 Path 都产生 Policy。`UNRESOLVED` 表示当前 Path 无法对应一条仍有效的 Direct Trading Policy：可能是处理后仍无法建立可靠边界，也可能是未来交易空间已经兑现或耗尽；`unresolved_reason` 应准确区分原因，一般的信息不完整本身不足以成立。
+这些工件而非会话记忆构成本 Turn 的完整上下文。D2 定义 expectation、经济传导和 revision space；Reference View 表示冻结时点可用的现实补充；Trigger records/state 保存 Candidate 语义与 disposition；Worklist 和 Policy drafts 保存编译结果。D2、Worklist 与 Policy drafts 是 coverage 关系的业务源，`coverage_map.json` 是 Final Review 需要与修复后源对象保持同步的派生视图。Previous Policy Set 仅用于语义与身份连续性比较。
+
+先在内部建立四个视图；它们是复核框架，不新增文件或字段。
+
+### D2 Coverage View
+
+```text
+Expectation / Unit
+→ Gap
+→ Path
+→ disposition
+→ Trigger record
+→ Policy / Condition 或 unresolved
+```
+
+### Candidate-to-Condition Trace View
+
+对每个 Candidate 明确其最终去向：独立 Condition、同一 occurrence 的 supporting evidence、被 canonicalized 到哪一 Condition，或具体为何 unresolved。
+
+### OR Policy Semantic View
+
+对每条 Policy 明确 principal expectation revision、`decision`、各 Condition 的独立经济含义、Condition 之间的替代关系，以及任一成立后被消费的共同决策边界。
+
+### Current-Reality View
+
+仅依据冻结的 D2 baseline、Reference View、Trigger `current_state` 和 Calibration `reference_state`，将各 Condition 判断为 `STILL_FUTURE`、`ALREADY_REAL`、`DISPROVED_OR_NO_LONGER_POSSIBLE` 或 `UNCERTAIN`。以上只是内部审查分类，不新增 schema 枚举。
+
+### Fresh Semantic Recheck
+
+在接受任何前序 disposition 或表达前，逐 Condition 回到 D2 revision、Trigger research 与当前现实，重新回答：
+
+1. `criterion` 是否是自然、稳定的业务 occurrence，而非 D2 研究结论或 transmission？
+2. `reference_state` 是否只包含该 Condition 直接相关的当前现实锚，而非 Unit/Shell 背景复制？
+3. `trigger_boundary` 是否表达相对于当前市场 expectation 的最低 tradable surprise，而非 `criterion` 的复制？
+4. 三个字段是否针对同一 actor/object/variable，scope、时间方向和经济方向是否一致？
+5. Criterion 是否等待了本应属于后续 realization 的 shipment、revenue、margin、share 等完整确认？
+6. 现实中是否存在一条正常消息可以直接确认整个 Criterion，还是暗含多个独立 information holders、时点或阶段？
+7. 决定充分性的程度是否已有可靠 numeric threshold 或 categorical business boundary？
+8. Criterion 内是否隐藏多个彼此可独立发生、应拆成 OR Conditions 或不同 Policies 的替代分支？
+
+### Semantic Diagnostics
+
+必须读取 `context/document3/semantic_diagnostics.json`，并从现有工件复核其中的 non-blocking findings：`criterion` 与 `trigger_boundary` 大面积相同、`reference_state` 高重复、Criterion 直接复制 D2 `possible_occurrence`、`d2_boundary_sufficient=true` 异常集中、零 unresolved、临时语义批量生成脚本、hidden OR、无 comparator 的程度词，以及异常大的 OR groups。
+
+这些模式是抽查入口，不自动判错，也不以降低 warning 数量为目标。对异常样本回到具体 D2/Path/Trigger/Policy 判断；只有实际语义缺陷才直接修复或形成 residual issue。大面积字段相同、全部 boundary sufficient、零 unresolved 或高 reference duplication 等形态，只有在抽查证明其逐项依据成立，并在 ReviewResult 中留下实质说明后才可 `PASSED / issue_count=0`。
+
+进入下一节前，应能说明 Gap、Path、ready/unresolved Candidate、Policy 和 Condition 的数量及完整映射。
+
+## 2. Coverage 与引用闭环
+
+按 D2 的成功 Shell 逐级检查：
+
+1. 每个 Potential Gap 至少有一条 Worklist Path，且 `shell_id + expectation_id + gap_id` 精确存在于 D2；failed shells 只作为已知输入边界保留。
+2. 每条 Path 已使用现有状态收敛为 `COMPILED` 或 `UNRESOLVED`，并与 Trigger disposition 一致。
+3. 每个 ready Candidate 已成为独立 Condition，或明确 canonicalized 到同一 occurrence 的 Condition；同一 occurrence 的证据路线仍保留在 Stage A 研究工件中，其他 supporting information 已正确归位而没有伪装成 Condition；无法形成有效未来边界的对象有具体 `unresolved_reason`。
+4. 每条 `COMPILED` Path 的 `policy_ids` 指向真实 draft；每条 Condition 可反向追溯到已处理的 Path/Candidate。
+5. 每条 Policy 的 `source_refs` 只包含真实支持其交易含义的 D2 refs，并保留合并前全部有效 provenance。
+6. Worklist、Trigger state、Policy drafts、WaveState 与 CoverageMap 对同一关系给出一致结果。
+
+若成功 Shell 的整个 Gap 缺失，现有工件不足以在 Final Review 中补造其 Path 和 Candidate：记录需要返回前序阶段处理的 residual issue。Coverage 完整不等于每条 Path 都生成 Policy；当前 schema 中不能发布的历史、耗尽或无法校准路径统一使用 `UNRESOLVED` 和准确原因表达。
 
 ## 3. 全局 Canonicalization
 
-跨全部 Shell、Units 和 waves 比较 Policy 的底层含义，而不是标题或措辞。依次判断：
+Canonicalization 先处理 Condition，再处理 Policy。
+
+### 3.1 Condition 级
+
+比较 occurrence、actor/object、现实边界、principal revision 和方向：
+
+| 实质关系 | 处理 |
+| --- | --- |
+| 同一 occurrence、不同披露或证明形式 | 保留一个 Condition，将证据路线留在 Stage A 研究工件，并合并真实 source refs |
+| 同一现实边界的语义重复 | 保留最清楚、可判定的 canonical 表达 |
+| 一个状态包含另一个，较低边界已独立充分 | 保留较低的充分边界；较强状态只有产生新的独立 expectation delta 时才另行表达 |
+| 只提高置信度、解释后果或帮助召回 | 归入 evidence、`match_scope` 或支持性研究，不作为 Condition |
+| 多项属性共同定义一次自然合同、规则、产品或生产状态 | 在单条自然消息可判断整体 occurrence 时保留为一个完整 Condition |
+
+Condition 的单位是自然完整 occurrence，不是语法上最小的 Boolean 片段。同一 occurrence 的 actor、object、范围、数量、期间、承诺强度或商业阶段可以共同定义它；需要不同未来消息分别确认的不足事实不能通过拼接获得表面上的充分性。
+
+### 3.2 Policy 级
+
+多条 Conditions 只有同时满足以下关系才属于同一 Policy：
 
 ```text
-trigger-bearing actor / object 是否相同
-→ 状态跃迁是否相同
-→ Activation Boundary 是否实质相同
-→ decision 是否相同
+同一个 principal expectation component 与 revision type
++ 同一个 LONG / SHORT decision
++ 同一个 current-baseline execution meaning
++ 任一 Condition 成立都会消费同一次决策边界
++ title 与 decision 对任一 Condition 单独成立都准确
 ```
 
-四者相同通常是一条共享 Policy。选择表达最清晰、边界最可靠的 draft 作为主体，合并去重后的 `source_refs`，将全部相关 Paths 的 `policy_ids` 指向它，并移除冗余 draft file。具体 actors 能够独立发生、独立披露并各自形成足够 expectation delta 时保持独立；主体、时间范围、现实边界、方向或目标 ticker 的经济含义不同，也保持独立。
+对每条 multi-condition Policy 再逐项验证：每个 Ci 是否单独充分；所有 Ci 是否修改同一 principal revision；若 C1 今天触发并更新 baseline，C2 明天发生是否仍会产生新的独立交易机会；aggregate state 与促成它的 specific mechanism/actor realization 是否重复；任一 Ci 成立时 `title` 与 `decision` 是否都准确。C2 仍产生新 delta 表示两者不属于同一个 one-time Policy boundary。
 
-看似相反的 Policies 应重新走一遍传导链：
+Occurrences、actors 或证据渠道可以不同；分组依据是 expectation revision 与一次性决策含义。方向相同但机制、时间维度、revision 类型或增量决策不同的对象保持不同 Policies。相反方向沿 D2 transmission 重新核对并分别表达；若冲突来自编译错误且冻结依据唯一，直接修正。
+
+合并、拆分或删除后，同步更新 Policy drafts、`source_refs`、Condition IDs、title/match scope、相关 Path 的 status 与 `policy_ids`、Trigger records/state、CoverageMap，以及受影响的 WaveState 进度。冗余 draft file 应从工作集合移除，避免后续 assembly 再次读取。
+
+## 4. 交易逻辑与 Activation 质量
+
+### 4.1 Standalone Sufficiency
+
+对每条 Condition 使用固定反事实：
 
 ```text
-现实变化
-→ D2 所描述的 expectation revision
-→ 对目标 ticker 的净经营、风险或估值影响
-→ LONG / SHORT
+只知道当前现实与当前市场 expectation
++ 只知道该 Condition 已成立
++ 其他 Conditions 全部未知
 ```
 
-如果相反方向来自不同现实状态或不同 Paths，分别保留；如果源于传导遗漏或消息表面措辞，修正 `decision`、Path 表达或 Policy 边界。不要用形式上的“正面/负面”替代目标 ticker 层面的净经济判断。
+该事实必须足以使相关 expectation 发生显著边际变化，方向明确，并支持 Policy 的 `LONG` 或 `SHORT`。时间早晚只用于判断相对 baseline 是否仍有信息增量，不决定 Condition 的结构优先级。
 
-## 4. 交易逻辑与 Activation Boundary
+未通过时按真实作用归位：同一 occurrence 的证明路线保留在 Stage A 研究工件，仅用于召回的内容进入 `match_scope`，仅增强信心的内容不进入 Policy；若多个属性共同定义一次自然且可判断的充分 occurrence，可在冻结语义完整时合成一个 Condition；仍依赖另一项未来事实或新研究才能获得交易充分性，则隔离为 unresolved。
 
-逐条检查 Policy 是否把一项未来消息转化为低自由度、可执行的判断：
+### 4.2 Recall 与 Activation
 
-### 4.1 边际信息
+`match_scope` 高召回地覆盖整条 Policy 的 change surface，以及所有 OR Conditions 相关消息范围的合理并集；Activation Conditions 窄而明确地规定真实触发边界。相关、接近边界、确认或否定消息均可被召回，而 Conditions 仍可全部为 false。只有事件的成立本身依赖法定或正式状态时，证据范围才自然收敛到对应正式渠道。
 
-`reference_state` 应准确说明当前已经成立、并已进入 expectation baseline 的状态；`trigger_boundary` 是下一项足以迫使 expectation 修订的现实跃迁。已经发生、已被普遍预期或只是现状的事实应被吸收到 reference state，而不是继续作为未来触发。
+### 4.3 固定 OR 合同与自然 occurrence
 
-边界应位于“普通进展”与“结果完全兑现”之间的最早可靠位置：过早会把噪音当成 thesis-changing information，过晚会失去合理 alpha。审查其是否达到足够的商业、法律、产能、采用、供需或财务意义，而不是机械追求更晚或更确定的证明。
+```text
+Policy Activated = C1 OR C2 OR ... OR Cn
+```
 
-### 4.2 召回与触发
+任一 Condition 被一条新消息确认，Policy 即激活；同一消息确认多个 Conditions 时仍只激活一次。每个 Condition 是独立决策理由，而不是共同完成证明链的证据碎片。
 
-`match_scope` 负责高召回地描述哪些新消息值得交给该 Policy 判断；Activation Conditions 负责窄而明确地决定是否触发。相关消息可以进入 match scope，但只有跨过现实边界的证据才进入 Conditions。
-
-### 4.3 条件结构
-
-Single Condition 应是一个完整、单义、可独立判断真假的世界状态命题。先把 Criterion 拆成能够单独发生、单独为假或通常由不同主体、时点和消息披露的事实；将 `A AND B AND C` 写进一个字符串仍是 hidden conjunction。
-
-多项独立事实各自都通过 Minimality Test、且同一种自然消息确实会同时确认时，使用多条件 Policy；全部 Conditions 具有当前同一条消息同时满足的 `AND` 语义。检查谁会发布、消息类型是什么、发布者是否掌握全部事实，以及这些事实是否通常同时披露，而不是只判断理论上能否写进一篇文章。
-
-跨不同消息或阶段逐步成立的事实，先检查其中是否已有一项更早达到 Direct Trading Sufficiency；彼此独立的 `A OR B` 触发方式形成不同 Paths 或 Policies。没有自然消息级充分边界时保留 `UNRESOLVED`，而不是制造 Synthetic Message。条件结构服务于清晰且足够早的边界，不以条件数量本身为优化目标。
+一个 Condition 可以包含定义同一次 occurrence 所必需的多项业务属性。只有这些属性共同描述一个自然状态，且正常消息能够判断整体状态时，复合表达才成立。Condition 数量由真实存在的独立充分替代触发面决定，不以单条件或多条件比例为目标。
 
 ## 5. Calibration 质量
 
-对每个 Activation Condition 分别回答四个问题：
+对每条 OR Condition 独立检查以下链条：
 
-1. `reference_state`：当前已经成立到哪里？
-2. `trigger_boundary`：还需要跨过哪条具有经济意义的边界？
-3. `qualifying_evidence`：什么可观察事实足以确认已经跨过？
-4. `criterion`：实时系统最终需要判断的清晰命题是什么？
+### `criterion`
 
-四者应构成从现实起点到执行判断的连续链，而不是相互改写同一句话。`criterion` 需要对 Runtime Round 1 自足：实际判断所需的 actor、状态变化、必要 scope 和 comparator 不能只藏在 Calibration。重点修复循环定义、任意精确阈值、没有比较锚的“重大/明显”表述、只确认计划或小样本的过早证据，以及等到最终业绩完全兑现的过晚标准。
+- 描述可由单条运行消息判断的现实状态或变化，而非研究结论；
+- 脱离其他 Conditions 后语义仍完整；
+- actor、object、scope、period、quantity 或 stage 达到独立充分所需的最低业务边界；
+- 程度词有 Runtime 可见的现实状态或 comparator。
 
-有效边界不必总是数值化。客户验证转为重复采购、试生产转为合格商业产出、提案转为生效规则、单点任务或发射达到新的执行阶段，都可以比武断数值更准确。Calibration 的精度应服从对应现实机制和消息可观察性。
+### `reference_state`
 
-## 6. 已成为现实的触发条件
+- 准确描述当前已经成立并进入 baseline 的状态；
+- 与该 Condition 使用同一对象、口径和阶段；
+- 足以解释 Condition 相对什么形成新增量；
+- 只陈述当前现实，不借用另一未来 Condition 补足起点。
 
-结合 D2、Reference View 和必要的当前研究，判断每项触发是否已经成为现实：
+### `trigger_boundary`
 
-- 若尚未跨过边界，保留未来条件并校正当前 reference state；
-- 若边界已经跨过，且同一 D2 Path 存在自然的下一项可交易阶段，将已发生进展吸收到 reference state，推进 `trigger_boundary`、`qualifying_evidence`、`criterion` 和相关 Worklist / Calibration 表达；
-- 若该 Path 的可交易变化已经耗尽，移除对应 Policy 或无效映射，将相关 Path 设为 `UNRESOLVED`，并在 `unresolved_reason` 说明当前已无待触发的有效边界。
+- 明确现实相对于当前市场 expectation 跨过哪一最低 surprise boundary；
+- 给出该 Condition 独立支持 decision 的最低充分经济边界；
+- 数值、时间、范围、合同强度或商业阶段均有冻结依据；
+- corroboration 与证明偏好不被写成额外经济条件。
 
-推进边界时仍以原 Gap 的 `expected_revision` 和目标 ticker 传导为范围。研究发现的新事实用于校准既有 Path，而不是脱离 D2 Gap surface 新建 thesis。Trigger actor、current state、candidate trigger、disclosure route 或 disposition 发生变化时，同步更新严格 Trigger record/state。
-
-## 7. 必要研究与直接修复
-
-研究从一个明确问题开始，例如“两个 Policies 是否实际指向同一商业状态”“当前 trigger 是否已经发生”“哪个阶段才足以改变目标 ticker expectation”。先使用完整 D2 和现有过程产物，再查看 Reference View；仍缺现实锚点时，按问题形态选择定向 Web Search 或只读 Data MCP，并遵守 `task.json` 的 cutoff。
-
-Final Review 可以进行实质研究，只要它服务于已识别的覆盖、Trigger 质量、Canonicalization、方向或 Calibration 问题。当新增证据已足以决定保留、合并或拆分、修正方向、推进边界或标记 `UNRESOLVED` 时，本次研究完成并回到编辑。Trigger 语义变化写回严格 Trigger record/state；涉及兼容 Calibration Log 的新增结论继续使用现有五字段：`path_id`、`calibration_need`、`source_kind`、`finding`、`resolved`。共享结论按相关 `path_id` 分别保留。
-
-按问题所在层级直接修复：
+### Internal Consistency Check
 
 ```text
-Path 拆分、方向或状态问题
-→ 更新 worklist 和 Trigger record/state
-
-现实起点或触发边界问题
-→ 更新 Trigger record/state、calibration log、Condition 与 Policy
-
-重复、冲突或来源问题
-→ 更新 Policy drafts 与相关 Path 映射
-
-进度与派生覆盖问题
-→ 最后同步 wave state 与 coverage map
+reference_state → 当前现实
+trigger_boundary → 相对当前市场 expectation 的最低 surprise boundary
+criterion → 对该 boundary 的稳定 Runtime 表达
 ```
 
-合并后移除冗余 draft file，避免确定性 assembly 再次读取；修改临时 Policy ID 后同步所有 `policy_ids`。每次修复都保持现有 schema 字段和枚举。
+三者应描述同一 actor/object/variable，使用一致的 scope、时间基准、方向和程度门槛。任何字段都不应把 Activation 改写成另一项更严格、更晚的条件。
 
-## 8. 最终一致性 Pass
+最后检查 Policy 层一致性：每条 `criterion` 与自己的 Calibration 对齐；所有 Conditions 支持同一 `decision`；title 对任一 Condition 单独成立均准确；`match_scope` 宽于 Activation 且不改变边界。
 
-所有直接修复完成后，重新读取完整 Worklist、Trigger Calibration records/state、Calibration Log 和 Policy drafts，再执行一次全局复核：
+## 6. 已成为现实的 Trigger
 
-- Gap→Path→Policy / `UNRESOLVED` 是否闭合；
-- Stage-A disposition、Trigger record、Worklist status 与最终 Policy 是否一致；
-- draft files、`policy_ids` 与 `source_refs` 是否互相一致；
-- 重复或方向冲突是否已经解决；
-- 每个 Condition 是否相对于当前 State、最小交易充分、没有 hidden conjunction，并有现实披露路径；
-- 多条件是否能由同一条自然消息全部满足；
-- Criterion 的程度或相对判断是否向 Runtime Round 1 提供明确 comparator；
-- wave state 与 coverage map 是否反映最终源文件；
-- Policy drafts 是否符合 supplied schema，所有自然语言是否以中文为主体。
+在 Current-Reality View 中处理四类结果：
 
-这一步检验修复后的完整集合，不把已经解决的问题继续带入发布状态。
+### 仍面向未来
+
+保留 Condition，并确保 `reference_state` 已吸收冻结输入确认的当前进展。
+
+### 已经成为现实
+
+任一 OR Condition 已成为现实，表示原 Policy 相对于旧 baseline 的决策边界已经被消费。此时重新评估整条 Policy，而不是删除该 Condition 后继续等待其他替代触发：
+
+- 其余 Conditions 只是在同一 revision 下的替代实现方式：原 Policy 不进入新的 Active draft 集合；相关 Path 使用 `UNRESOLVED`、Trigger disposition 使用 `TRIGGER_UNRESOLVED`，并在现有 reason 字段说明边界已进入 baseline 或被消费，再同步 CoverageMap。
+- 其余 Condition 相对于新 baseline 仍产生新的独立显著增量：只有冻结工件已经明确定义新 baseline、边界、revision 和方向时，才重校准为新的 Policy，并按经济含义变化维护 temporary identity。
+- 下一项边界需要新事实或实质研究：隔离受影响 Policy，将相关 Path 设为 unresolved，并在 ReviewResult 标记 `requires_research`。
+
+### 已被证伪或失去可能性
+
+若 Policy 尚未被激活，移除该替代 Condition 并复核剩余 OR group；没有剩余有效 Condition 时移除 Policy draft，并同步所有映射和状态。
+
+### 现有证据无法确定
+
+Reference View 的空白不是尚未发生的证明。将不确定性作为 residual issue；若它可能使已经发生的 Condition 被当作未来 Trigger 发布，且无法完整隔离，计为 blocking。
+
+本节只保证初始化发布时的 Policy 面向未来，不设计激活后的持仓、重复交易或日常维护逻辑。
+
+## 7. 有界修复与问题升级
+
+使用以下顺序决定处理方式：
+
+```text
+仅涉及引用、格式、重复或冻结语义的表达
+→ 直接修复并同步
+
+全部冻结工件共同指向唯一业务结论
+→ 直接修复并全局复读
+
+不能唯一决定，但受影响对象可完整隔离
+→ unresolved / 移出 Active drafts + residual issue
+
+不能隔离而会污染最终集合
+→ blocking issue
+```
+
+冻结证据充分时，可直接修正引用与 Coverage、合并同一 occurrence、移除 supporting 或 nested Condition、修复 OR 分组、对齐唯一明确的方向/标题/Calibration、重写 summary/scope、处理已成现实 Condition、同步状态以及修复 schema/语言问题。
+
+Condition 数量或时间窗口、actor materiality、复合 occurrence、Policy 拆分、已消费边界后的新 Policy、`decision` 等实质判断，只有冻结工件共同指向唯一答案时才直接修改。需要新增事实、阈值、actor、Path、thesis 或 transmission 才能决定的问题保留原始依据，识别受影响的 Gap/Path/Trigger/Policy/Condition，并在 ReviewResult 中准确说明缺口；Final Review 不在本 Turn 获取新证据或现场补造 Candidate。
+
+一次直接修复完成意味着：业务工件已经修改、所有引用工件已经同步、受影响 Policy group 已重新复核、问题不再存在于最终集合。每次修改后重新读取受影响的全部 Policy drafts、Worklist Paths、Trigger records/state 和 CoverageMap；发生 Policy 合并或拆分时，再比较同一 revision 和 direction 下的相关 Policies。
+
+## 8. 最终一致性检查
+
+所有修复完成后重新读取完整工作工件，并按以下顺序检查最终状态。
+
+### Coverage 与 Completion
+
+- 每个成功 Shell 的 D2 Gap 至少有一条 Path；每条 Path 有合法终态和具体去向；
+- 每个 ready Candidate 已成为 Condition 或有明确 canonicalization 终点；每个 unresolved 对象有具体原因；
+- 没有孤立 Policy、Condition、Path mapping 或无来源 `source_ref`。
+
+### Condition 独立充分性
+
+- 其他 Conditions 未知时，每条 Condition 仍足以支持 `decision`；
+- supporting signal 与 Evidence 没有被伪装为独立触发；
+- 多个不足事实没有被写成 OR Conditions；一次自然 occurrence 的必要属性没有被错误拆分；
+- nested Conditions 已保留最低且独立充分的有效边界。
+
+### OR Policy 一致性
+
+- `activation_conditions` 由当前 schema/version 固定按 OR 解释；
+- 同一 Policy 的所有 Conditions 共享 principal revision、direction 和一次性 execution meaning；
+- 任一 Condition 首次满足都会消费同一次决策边界；
+- 后续仍有独立新增决策价值的事件没有被混入原 Policy；
+- 不同 revisions 没有仅因方向相同而合并。
+
+### Occurrence、Calibration 与 Runtime
+
+- 同一 occurrence 的不同 Evidence routes 只形成一个 Condition；
+- `criterion`、`reference_state` 与 `trigger_boundary` 相互一致；
+- 比较对象、口径、方向、时间或阶段明确，没有无冻结依据的伪精确阈值；
+- 一条现实消息可以依据 Condition 和 Calibration 判断 true/false；
+- title 对任一 OR Condition 成立，`match_scope` 覆盖全部 Conditions 且宽于 Activation。
+
+### Current Reality 与工件
+
+- 所有 Active Conditions 仍面向未来；已成现实边界已按整条 Policy 被消费处理；
+- Reference View 空白没有被当作未发生证明；需要新研究的后续边界没有被猜测写入；
+- Policy drafts、Worklist、Trigger records/state、Calibration Log、WaveState 与 CoverageMap 一致；
+- Policy/Condition temporary identity 与经济语义变化相符，supplied schemas 可解析全部工件；
+- 自然语言以中文为主体，字段名、ticker、专有名词和缩写除外。
 
 ## 9. ReviewResult
 
-ReviewResult 是最终残留问题清单，不是审计轨迹或修改日志。只使用以下字段：
+ReviewResult 只记录全部直接修复后仍存在的问题，不是修改日志。使用 supplied schema 的既有字段：
 
 ```text
 status
@@ -167,10 +301,28 @@ issues[]:
   affected_policy_ids
   requires_research
   blocking
+diagnostics_reviewed
+diagnostics_explanation
 ```
 
-已直接修复的问题不进入 `issues`。修复后仍存在、但不妨碍结构化发布的研究边界，保留相关 Path 为 `UNRESOLVED`，在 `issues` 中准确说明；此时 `status` 为 `PASSED`、`blocking` 为 `false`。Review status 与 publication state 是残留事实的确定性结果，不是 Final Review 的优化目标。由于任何最终 `issue_count` 都会使 publication state 降为 `PARTIAL`，只记录直接修复后仍真实存在且值得下游理解其边界的问题。
+在 `message` 中说明受影响的 Gap、Path、Trigger 或 Condition ID；`affected_policy_ids` 只填写真实 Policy IDs。已经修复的 Coverage、重复、supporting Condition、引用、状态、格式或语言问题不再计入 issues。
 
-只有核心工作文件无法解析且不能恢复、冻结输入已被修改、写边界无法恢复，或 workspace 的核心合同无法重新建立一致性时，使用 `REVIEW_BLOCKED` 和 blocking issue。语义疑问、研究证据有限或部分 Path 无法收敛，使用 `UNRESOLVED` 与非阻塞 issue 表达。
+`diagnostics_reviewed` 必须为 `true`；`diagnostics_explanation` 简要说明 diagnostics 中的主要异常如何被抽查、修复或判定为有依据。存在显著 finding 时，不得用空泛措辞绕过，也不得无解释返回 `PASSED / issue_count=0`。
 
-使 `issue_count` 等于 `issues` 数量，`blocking_issue_count` 等于其中 `blocking: true` 的数量。将完整结果写入 `output/work/final_review_result.json`，并返回完全相同的 ReviewResult 作为本 Turn 输出。
+`PASSED / REVIEW_BLOCKED` 是残留事实的结果，不是优化目标；Semantic Diagnostics 本身不是 issue，只有抽查后仍真实存在的缺陷进入 ReviewResult。
+
+当不合格对象可完整隔离时，将 Path 设为 `UNRESOLVED`、从 Active drafts 移除受影响 Policy，并以 `blocking: false` 记录仍值得下游理解的边界；其他合格 Policies 继续保留。以下问题在无法修复或隔离时属于 blocking：
+
+- 无法确认拟发布 Condition 是否独立充分；
+- 同一 Policy 混入不同 principal revisions，且冻结证据不足以拆分；
+- `decision` 与 D2 `expected_revision` 冲突或不明确；
+- Trigger 可能已经成为现实，却无法确认或重新校准；
+- 成功 Shell 的整个 Gap 缺失，需要重新生成 Candidate；
+- 关键阈值需要新数据；
+- 核心工件损坏或引用无法恢复；
+- 无法保证 Active Policy 按 OR 合同被 Runtime 正确判定；
+- 受影响对象无法从其他合格 Policy 中隔离。
+
+`PASSED` 只用于 `issue_count = 0` 且 `blocking_issue_count = 0` 的完全闭合结果。当前 schema 只有两个 status，因此存在任何 residual issue 时返回 `REVIEW_BLOCKED`；每项 `blocking` 与 `blocking_issue_count` 再区分问题是否阻止安全发布。使 `issue_count` 等于 `issues` 数量，`blocking_issue_count` 等于其中 `blocking: true` 的数量。
+
+将完整结果写入 `output/work/final_review_result.json`，最终回复只返回与之完全相同、符合当前 `*.output_schema.json` 的单个 ReviewResult。

@@ -70,9 +70,16 @@ class CrawlerHttpClient:
         params: dict[str, object] | None = None,
         headers: dict[str, str] | None = None,
     ) -> CrawlerResponse:
+        payload: dict[str, Any] = {
+            "method": "GET",
+            "url": url,
+            "headers": headers or {},
+        }
+        if params is not None:
+            payload["params"] = params
         value = await self._broker.request(
             "http",
-            {"method": "GET", "url": url, "params": params or {}, "headers": headers or {}},
+            payload,
         )
         return CrawlerResponse(value)
 
@@ -107,6 +114,7 @@ class CrawlerContext:
         self.ticker = job.ticker
         self.parameters = dict(job.parameters)
         self.checkpoint = dict(job.checkpoint)
+        self.retry_items = [dict(item) for item in job.retry_items]
         self.http = CrawlerHttpClient(broker)
         self.browser = CrawlerBrowserClient(broker)
         self.artifacts = CrawlerArtifactClient(broker)

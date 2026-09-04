@@ -8,10 +8,12 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Protocol
+from uuid import uuid4
 
 from openai_codex import ApprovalMode, AsyncCodex, CodexConfig, Sandbox
 from openai_codex.types import ReasoningEffort
 
+from doxagent.codex_runtime.schema import CodexMonitoringO4Node
 from doxagent.codex_worker.schema import WorkerRunRequest, WorkerTurnTelemetry
 from doxagent.codex_worker.telemetry import project_turn_telemetry
 from doxagent.data_runtime.contracts import build_data_tool_contracts
@@ -20,6 +22,7 @@ from doxagent.mcp.data_server import GUIDE_TOOL_NAME, READ_TOOL_NAME
 from doxagent.settings import DoxAgentSettings
 from doxagent.tools.factory import default_real_tool_registry
 from doxagent.workflows.codex_monitoring_o4.capability import (
+    ALL_O4_TOOLS,
     TOOLS_BY_NODE,
     O4OperationCapabilityCodec,
 )
@@ -204,6 +207,8 @@ class OpenAICodexRuntime:
                 }
             )
         if request.o4_operations_enabled:
+            if not isinstance(request.node, CodexMonitoringO4Node):
+                raise ValueError("O4 operations are available only to O4 workflow nodes")
             allowed_o4_tools = TOOLS_BY_NODE.get(request.node)
             if allowed_o4_tools is None:
                 raise ValueError("O4 operations are available only to O4 workflow nodes")
@@ -215,6 +220,12 @@ class OpenAICodexRuntime:
                 enabled_tool_ids=allowed_o4_tools,
                 ttl_seconds=request.timeout_seconds + 300,
             )
+            # Keep one controller-owned capability file for the ticker thread.
+            # A persistent Codex thread may keep its MCP subprocess alive when
+            # thread_resume changes config; the server rereads this file on
+            # every list/call and therefore observes the new node capability.
+            o4_capability_file = control_root.parent / "o4_operations_capability.token"
+            _write_atomic_text(o4_capability_file, capability)
             sdk_config.update(
                 {
                     "mcp_servers.o4_operations.command": sys.executable,
@@ -224,6 +235,9 @@ class OpenAICodexRuntime:
                     ],
                     "mcp_servers.o4_operations.cwd": str(cwd),
                     "mcp_servers.o4_operations.env.DOXAGENT_O4_OPERATIONS_CAPABILITY": capability,
+                    "mcp_servers.o4_operations.env.DOXAGENT_O4_OPERATIONS_CAPABILITY_FILE": str(
+                        o4_capability_file
+                    ),
                     "mcp_servers.o4_operations.env.DOXAGENT_O4_OPERATIONS_PUBLIC_KEY": (
                         self._o4_capabilities.public_key
                     ),
@@ -243,7 +257,7 @@ class OpenAICodexRuntime:
                         self._settings.crawler_plane_sqlite_path
                     ),
                     "mcp_servers.o4_operations.enabled_tools": [
-                        tool_id.replace(".", "_") for tool_id in sorted(allowed_o4_tools)
+                        tool_id.replace(".", "_") for tool_id in sorted(ALL_O4_TOOLS)
                     ],
                     "mcp_servers.o4_operations.required": True,
                     "mcp_servers.o4_operations.startup_timeout_sec": 20,
@@ -295,3 +309,14 @@ class OpenAICodexRuntime:
         )
         await asyncio.sleep(0)
         return _SdkTurnHandle(thread_id=thread.id, handle=handle)
+
+
+def _write_atomic_text(path: Path, content: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(f".{path.name}.{uuid4().hex}.tmp")
+    try:
+        temporary.write_text(content, encoding="utf-8")
+        temporary.replace(path)
+    finally:
+        if temporary.exists():
+            temporary.unlink()

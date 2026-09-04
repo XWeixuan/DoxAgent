@@ -14,7 +14,7 @@ Reference View 是现实变化入口，而不是全部世界状态。结合 Poli
 
 ## 2. Possible Change Gate
 
-先轻量扫描全部 Active Policies。对每条 Policy，联合查看 `title`、`match_scope`、`activation_summary`、`activation_conditions` 及其 `reference_state`，只问：
+先轻量扫描全部 Active Policies。对每条 Policy，联合查看 `title`、`match_scope`、`activation_conditions` 及其 `reference_state`，只问：
 
 > Reference View 或明确的时间推进，是否提供了理由相信这条 Policy 的现实起点、待满足条件、Calibration 或适用状态可能已经变化？
 
@@ -36,14 +36,14 @@ Reference View 是现实变化入口，而不是全部世界状态。结合 Poli
 
 - **Keep**：进一步确认后，现实没有改变 Policy；不产生 Patch。
 - **Absorb established reality**：某个 Condition 已成为持续现实，而同一 Path 仍有剩余交易意义。将该现实吸收到剩余 Condition 的 `reference_state`，移除已经成为历史的 Condition，并重新表达剩余未来边界。这样未来同一条消息只需满足仍待发生的 Conditions。
-- **Recalibrate**：Trigger 尚未发生，但现实起点、时间基准或阶段已经推进。联动检查 `reference_state`、`trigger_boundary`、`qualifying_evidence`、`criterion`、`activation_summary`，并在召回范围实际变化时更新 `match_scope`。
+- **Recalibrate**：Trigger 尚未发生，但现实起点、时间基准或阶段已经推进。联动检查 `reference_state`、`trigger_boundary` 与 `criterion`，并在召回范围实际变化时更新 `match_scope`。
 - **Advance or Retire**：原 Trigger 已经成为历史时，判断同一 Tradable Path 是否仍存在自然延续且具有直接交易意义。现实对象、原 expectation transmission 和 `decision` 不变，只是沿既有状态链继续推进，才属于同一路径；存在时推进到下一现实状态，路径已经走完或失效时 retire。
 
 缺少完美数值不妨碍依据清晰的商业阶段或法律状态维护 Policy；变化结论应来自现实含义，而不是措辞优化。
 
 ## 4. Policy Continuity
 
-同一 Tradable Path、同一 `decision`，仅现实基线、Condition 或 Calibration 推进时，保持原 `policy_id`；语义未改变的 Condition 保持原 `condition_id`。一旦修改 Policy，使 Condition、Calibration、`activation_summary` 和必要的 `match_scope` 重新保持一致。
+同一 Tradable Path、同一 `decision`，仅现实基线、Condition 或 Calibration 推进时，保持原 `policy_id`；语义未改变的 Condition 保持原 `condition_id`。一旦修改 Policy，使 Condition、Calibration、`title` 和必要的 `match_scope` 重新保持一致。
 
 Daily Maintenance 围绕现有 Policies 的同一现实路径推进。只有当现有 Policy 必须被重新拆分才能准确表达同一 D2-provenanced Path 时，才建立新 Policy，并沿用现有 Policy 中精确的 `shell_id + expectation_id + gap_id`；需要新的经济传导逻辑时留给下一次 D2/D3 INITIALIZE。
 

@@ -1,0 +1,172 @@
+{
+  "case_id": "MU-W12-019",
+  "status": "COMPLETED",
+  "started_at": "2026-09-04T01:54:39.254444+08:00",
+  "completed_at": "2026-09-04T01:55:09.182830+08:00",
+  "seeded_provisional_event_ids": [
+    "E186",
+    "E187",
+    "E188",
+    "E189"
+  ],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E186",
+        "E187",
+        "E188",
+        "E189"
+      ]
+    },
+    "w1_final": {
+      "result": "OLD",
+      "confidence": "normal",
+      "reference_ids": [
+        "E186",
+        "E187",
+        "E188"
+      ],
+      "reason": "消息的全部核心事实（11月12日冷却水中断事件、降低可售产出、修订客户交付日期、恢复期至2027年1月31日）均已由E186-E189完整覆盖。"
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "policy_ids": [
+        "pol_a2fb4594422ae0c078a2"
+      ],
+      "matched_condition_ids": [
+        {
+          "policy_id": "pol_a2fb4594422ae0c078a2",
+          "condition_ids": [
+            "C1"
+          ]
+        }
+      ],
+      "confidence": "normal",
+      "reason": "Micron明确确认关键先进封装节点发生非计划中断（cooling-water failure），下调可售bit产量并推迟客户交付，且恢复期（至2027年1月31日）跨越正常维护窗口（原维护为hours/days），C1三要素均直接满足。"
+    },
+    "w2_final": {
+      "policy_ids": [
+        "pol_a2fb4594422ae0c078a2"
+      ],
+      "matched_condition_ids": [
+        {
+          "policy_id": "pol_a2fb4594422ae0c078a2",
+          "condition_ids": [
+            "C1"
+          ]
+        }
+      ],
+      "confidence": "normal",
+      "reason": "Micron明确确认关键先进封装节点发生非计划中断（cooling-water failure），下调可售bit产量并推迟客户交付，且恢复期（至2027年1月31日）跨越正常维护窗口（原维护为hours/days），C1三要素均直接满足。"
+    },
+    "route": {
+      "primary_route": "ARCHIVE",
+      "side_effects": [
+        "archive_message",
+        "mark_badcase"
+      ],
+      "reason": "w1=OLD/normal;policy_hit=true;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_3aa7db75959e43a2a9cf7ed610162e6b",
+      "case_id": "case_45e8f680c9d344bb91a93445a701451a",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_79db9253-a364-9b0f-ab98-db3948a8adee",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 7065,
+      "output_tokens": 1069,
+      "reasoning_tokens": 938,
+      "cached_input_tokens": 0,
+      "latency_ms": 16418,
+      "output": {
+        "policy_ids": [
+          "pol_a2fb4594422ae0c078a2"
+        ],
+        "matched_condition_ids": [
+          {
+            "policy_id": "pol_a2fb4594422ae0c078a2",
+            "condition_ids": [
+              "C1"
+            ]
+          }
+        ],
+        "confidence": "normal",
+        "reason": "Micron明确确认关键先进封装节点发生非计划中断（cooling-water failure），下调可售bit产量并推迟客户交付，且恢复期（至2027年1月31日）跨越正常维护窗口（原维护为hours/days），C1三要素均直接满足。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:54:55.738037Z"
+    },
+    {
+      "turn_id": "turn_40540d15cc9342d5986f3d7c4b52cb77",
+      "case_id": "case_45e8f680c9d344bb91a93445a701451a",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_dae522ad-2759-9651-b6c2-a715a6759627",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13669,
+      "output_tokens": 1770,
+      "reasoning_tokens": 1743,
+      "cached_input_tokens": 0,
+      "latency_ms": 24233,
+      "output": {
+        "event_ids": [
+          "E186",
+          "E187",
+          "E188",
+          "E189"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:55:03.551461Z"
+    },
+    {
+      "turn_id": "turn_c66a1890b4e642c4994b9562554433b6",
+      "case_id": "case_45e8f680c9d344bb91a93445a701451a",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_a4beea2a-8af8-91bf-81ef-b38b3f7b94b6",
+      "previous_response_id": "resp_dae522ad-2759-9651-b6c2-a715a6759627",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 15201,
+      "output_tokens": 466,
+      "reasoning_tokens": 381,
+      "cached_input_tokens": 0,
+      "latency_ms": 5631,
+      "output": {
+        "result": "OLD",
+        "confidence": "normal",
+        "reference_ids": [
+          "E186",
+          "E187",
+          "E188"
+        ],
+        "reason": "消息的全部核心事实（11月12日冷却水中断事件、降低可售产出、修订客户交付日期、恢复期至2027年1月31日）均已由E186-E189完整覆盖。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:55:09.182830Z"
+    }
+  ]
+}

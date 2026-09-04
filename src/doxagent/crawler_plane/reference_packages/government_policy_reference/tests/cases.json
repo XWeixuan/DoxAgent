@@ -1,5 +1,0 @@
-[
-  {"case_id":"government-replay","kind":"replay","cassette_refs":["tests/replay.json"],"parameters":{"listing_url":"https://gov.example.test/actions","source_name":"Example Government"},"initial_checkpoint":{},"expected_external_ids":["POL-A:1"]},
-  {"case_id":"government-temporal","kind":"temporal","cassette_refs":["tests/temporal_t0.json","tests/temporal_t1.json"],"parameters":{"listing_url":"https://gov.example.test/actions","source_name":"Example Government"},"initial_checkpoint":{},"expected_external_ids":["POL-A:2"]},
-  {"case_id":"government-synthetic","kind":"synthetic","cassette_refs":["tests/synthetic.json"],"parameters":{"listing_url":"https://gov.example.test/actions","source_name":"Example Government"},"initial_checkpoint":{"seen_revisions":["POL-A:1"]},"expected_external_ids":["SYNTHETIC-POLICY:1"]}
-]

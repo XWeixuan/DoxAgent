@@ -1,0 +1,135 @@
+{
+  "case_id": "MU-W12-007",
+  "status": "COMPLETED",
+  "started_at": "2026-09-04T01:54:06.468660+08:00",
+  "completed_at": "2026-09-04T01:54:31.879094+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E121",
+        "E122",
+        "E123"
+      ]
+    },
+    "w1_final": {
+      "result": "OLD",
+      "confidence": "normal",
+      "reference_ids": [
+        "E121",
+        "E122"
+      ],
+      "reason": "All core facts — Netlist's four-patent complaint in the Central District of California against Micron over overseas-manufactured memory, the ITC exclusion/cease-and-desist proceeding naming Micron, Super Micro, HPE and Lenovo, and the potential for licensing/settlement — are already covered by E121 (F369-F371) and E122 (F372-F373). The message adds only explanatory commentary on the dual-forum structure and general legal context, not new core factual developments."
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息为Netlist对Micron的专利侵权诉讼及ITC排除令申请，处于初始起诉/请求阶段，仅为指控与待审救济，无任何确认的经营、财务、供应链或协议影响事实。所有Policy的match_scope均涉及已确认的业绩、指引、协议变动、供应中断、库存/订单变化或共识调整等实质经营事实，本条消息不落入任何候选范围。"
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息为Netlist对Micron的专利侵权诉讼及ITC排除令申请，处于初始起诉/请求阶段，仅为指控与待审救济，无任何确认的经营、财务、供应链或协议影响事实。所有Policy的match_scope均涉及已确认的业绩、指引、协议变动、供应中断、库存/订单变化或共识调整等实质经营事实，本条消息不落入任何候选范围。"
+    },
+    "route": {
+      "primary_route": "ARCHIVE",
+      "side_effects": [
+        "archive_message"
+      ],
+      "reason": "w1=OLD/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_55c36953449c4aa48af6e55c6b717d3b",
+      "case_id": "case_df3d399ada4b415f81fd9994621dd66d",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_bc4dde1d-5034-98d5-acb2-80d9c4387643",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13423,
+      "output_tokens": 781,
+      "reasoning_tokens": 759,
+      "cached_input_tokens": 0,
+      "latency_ms": 11527,
+      "output": {
+        "event_ids": [
+          "E121",
+          "E122",
+          "E123"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:54:18.142885Z"
+    },
+    {
+      "turn_id": "turn_afb2de65d5024cf7ba22b2aae8616b80",
+      "case_id": "case_df3d399ada4b415f81fd9994621dd66d",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_cb529cc3-f4ca-96e9-90d3-03ab232bca78",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 7110,
+      "output_tokens": 2041,
+      "reasoning_tokens": 1936,
+      "cached_input_tokens": 0,
+      "latency_ms": 17500,
+      "output": {
+        "policy_ids": [],
+        "matched_condition_ids": [],
+        "confidence": "normal",
+        "reason": "消息为Netlist对Micron的专利侵权诉讼及ITC排除令申请，处于初始起诉/请求阶段，仅为指控与待审救济，无任何确认的经营、财务、供应链或协议影响事实。所有Policy的match_scope均涉及已确认的业绩、指引、协议变动、供应中断、库存/订单变化或共识调整等实质经营事实，本条消息不落入任何候选范围。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:54:24.118288Z"
+    },
+    {
+      "turn_id": "turn_4c9fd836583e4df8a3ca831d8bde92c7",
+      "case_id": "case_df3d399ada4b415f81fd9994621dd66d",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_4be4ee83-0896-98e2-986d-db4a7e65c6ea",
+      "previous_response_id": "resp_bc4dde1d-5034-98d5-acb2-80d9c4387643",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 15516,
+      "output_tokens": 887,
+      "reasoning_tokens": 745,
+      "cached_input_tokens": 0,
+      "latency_ms": 13714,
+      "output": {
+        "result": "OLD",
+        "confidence": "normal",
+        "reference_ids": [
+          "E121",
+          "E122"
+        ],
+        "reason": "All core facts — Netlist's four-patent complaint in the Central District of California against Micron over overseas-manufactured memory, the ITC exclusion/cease-and-desist proceeding naming Micron, Super Micro, HPE and Lenovo, and the potential for licensing/settlement — are already covered by E121 (F369-F371) and E122 (F372-F373). The message adds only explanatory commentary on the dual-forum structure and general legal context, not new core factual developments."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:54:31.879094Z"
+    }
+  ]
+}

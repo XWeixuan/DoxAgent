@@ -1,0 +1,23 @@
+{
+  "run_id": "mu-w1w2-real-probe-20260904-03",
+  "dataset_id": "mu-w1-w2-future-v1",
+  "evaluation_profile": "w1_w2_round_isolated",
+  "started_at": "2026-09-04T01:40:03.566102+08:00",
+  "model": "qwen3.8-flash",
+  "provider": "bailian",
+  "reasoning_effort": "medium",
+  "strict_json_schema": true,
+  "session_cache": true,
+  "max_workers": 1,
+  "case_ids": [
+    "MU-W12-001"
+  ],
+  "dataset_manifest_sha256": "d4b9a525defc57cd97c2de0d94c1a52e4f68d643b21c020cfd05ba87f4b89a4c",
+  "messages_sha256": "98efd72f4a00298a2f177d4f5b226f71c0be227d8160437801c97daaa9515bec",
+  "gold_sha256": "17e8130778abb295949ff86038f1c9e18d08301838e4731d969705f9324e8c72",
+  "frozen_event_library_sha256": "87d1f6004d60603182f32ebffb16d929cb4bfbe76e761cc8b85d477bb494c60c",
+  "policy_set_sha256": "0189c52a9dcf7a7173f29163cf9be0de16e48421d61c9783f10aab2ed0604a09",
+  "completed_at": "2026-09-04T01:40:03.571447+08:00",
+  "predictions_sha256": "01fa03631c924c9d952cd70f16bcea166329db1a8ed6d6f724537c449cfd71e0",
+  "metrics_sha256": "504ceafc78ff1a00d85a15ccf7574f697c2d783c9496842fa670c5a3c1f8ed64"
+}

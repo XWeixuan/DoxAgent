@@ -30,6 +30,7 @@ from .schema import (
     O3RunStatus,
     ReviewIssue,
     ReviewResult,
+    SemanticDiagnostics,
     TriggerCalibrationRecord,
     TriggerCalibrationRunResult,
     TriggerCalibrationStageStatus,
@@ -234,17 +235,17 @@ class Document3AgentRunner:
             max_attempts=2,
             thread_id=thread_id,
             required_context_paths=(
+                "context/document3/task.json",
                 "context/document3/AGENTS.md",
                 "context/document3/agent.md",
                 "context/document3/foundation.md",
                 "context/document3/initialize_trigger_calibration.md",
-                "context/document3/task.json",
-                "context/document3/document2.json",
-                "context/document3/reference_event_view.md",
-                "context/document3/previous_policy_set.json",
                 "context/document3/trigger_calibration_record.schema.json",
                 "context/document3/trigger_calibration_state.schema.json",
                 "context/document3/worklist.schema.json",
+                "context/document3/document2.json",
+                "context/document3/reference_event_view.md",
+                "context/document3/previous_policy_set.json",
                 "output/work/worklist.jsonl",
                 "output/work/trigger_calibrations.jsonl",
                 "output/work/trigger_calibration_state.json",
@@ -272,17 +273,17 @@ class Document3AgentRunner:
             max_attempts=2,
             thread_id=thread_id,
             required_context_paths=(
+                "context/document3/task.json",
                 "context/document3/AGENTS.md",
                 "context/document3/agent.md",
                 "context/document3/foundation.md",
                 "context/document3/initialize_policy_compile.md",
-                "context/document3/task.json",
-                "context/document3/document2.json",
-                "context/document3/previous_policy_set.json",
                 "context/document3/policy_set.schema.json",
                 "context/document3/worklist.schema.json",
                 "context/document3/calibration_log.schema.json",
                 "context/document3/wave_state.schema.json",
+                "context/document3/document2.json",
+                "context/document3/previous_policy_set.json",
                 "output/work/trigger_calibrations.jsonl",
                 "output/work/trigger_calibration_state.json",
                 "output/work/worklist.jsonl",
@@ -314,18 +315,20 @@ class Document3AgentRunner:
             max_attempts=2,
             thread_id=thread_id,
             required_context_paths=(
+                "context/document3/task.json",
                 "context/document3/AGENTS.md",
                 "context/document3/agent.md",
                 "context/document3/foundation.md",
                 "context/document3/initialize_final_review.md",
-                "context/document3/task.json",
-                "context/document3/document2.json",
-                "context/document3/reference_event_view.md",
-                "context/document3/previous_policy_set.json",
+                "context/document3/semantic_diagnostics.json",
+                "context/document3/semantic_diagnostics.schema.json",
                 "context/document3/policy_set.schema.json",
                 "context/document3/worklist.schema.json",
                 "context/document3/calibration_log.schema.json",
                 "context/document3/wave_state.schema.json",
+                "context/document3/document2.json",
+                "context/document3/reference_event_view.md",
+                "context/document3/previous_policy_set.json",
                 "output/work/worklist.jsonl",
                 "output/work/trigger_calibrations.jsonl",
                 "output/work/trigger_calibration_state.json",
@@ -337,7 +340,10 @@ class Document3AgentRunner:
             instruction=(
                 "Perform the Final Global Pass. You may directly edit Policy drafts and all "
                 "related work files. If Trigger semantics change, synchronize the strict "
-                "Trigger Calibration artifact/state before returning."
+                "Trigger Calibration artifact/state before returning. Read semantic_diagnostics "
+                "and explicitly report diagnostics_reviewed plus a substantive "
+                "diagnostics_explanation; significant patterns require repair, explanation, "
+                "or a retained issue."
             ),
         )
 
@@ -352,14 +358,14 @@ class Document3AgentRunner:
             output_model=O3RunResult,
             max_attempts=2,
             required_context_paths=(
+                "context/document3/task.json",
                 "context/document3/AGENTS.md",
                 "context/document3/agent.md",
                 "context/document3/foundation.md",
                 "context/document3/maintain.md",
-                "context/document3/task.json",
+                "context/document3/policy_patch.schema.json",
                 "context/document3/current_policy_set.json",
                 "context/document3/reference_event_view.md",
-                "context/document3/policy_patch.schema.json",
             ),
             instruction=(
                 "Scan the Reference View Delta and, when present, the complete local "
@@ -564,6 +570,7 @@ class Document3AgentRunner:
             "context/document3/worklist.schema.json": WorklistEntry,
             "context/document3/calibration_log.schema.json": CalibrationLogEntry,
             "context/document3/wave_state.schema.json": WaveState,
+            "context/document3/semantic_diagnostics.schema.json": SemanticDiagnostics,
         }
         for path, model in schemas.items():
             await self.workspace.write_text(
@@ -599,6 +606,8 @@ class Document3AgentRunner:
                         message=reason,
                     )
                 ],
+                diagnostics_reviewed=False,
+                diagnostics_explanation=reason,
             )
         raise O3TurnError(f"No artifact-first fallback is defined for {output_model.__name__}")
 

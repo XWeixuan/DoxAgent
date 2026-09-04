@@ -7,6 +7,7 @@ import hashlib
 import json
 import re
 import threading
+from collections import OrderedDict
 from pathlib import Path
 from typing import Literal, Protocol
 
@@ -65,6 +66,10 @@ class W3ContextProvider(Protocol):
     async def load(self, case: RuntimeCase) -> W3PreparedContext: ...
 
 
+class PolicyConsumptionReader(Protocol):
+    def list_consumed_policy_revisions(self, ticker: str) -> set[tuple[str, str]]: ...
+
+
 class W3Agent(Protocol):
     def run(
         self,
@@ -86,17 +91,37 @@ class PublishedW3ContextProvider:
         runtime_repository: CodexRuntimeRepository,
         policy_repository: Document3PolicyRepository,
         event_library_reader: PublishedEventLibraryReader,
+        policy_consumption_reader: PolicyConsumptionReader | None = None,
         published_storage: PublishedDocumentStorage | None = None,
+        context_cache_size: int = 16,
     ) -> None:
+        if context_cache_size < 1:
+            raise ValueError("W3 context cache size must be positive")
         self._runtime = runtime_repository
         self._policies = policy_repository
         self._events = event_library_reader
+        self._policy_consumption = policy_consumption_reader
         self._storage = published_storage
+        self._context_cache_size = context_cache_size
+        self._context_cache: OrderedDict[tuple[str, str, str, int, int], W3PreparedContext] = (
+            OrderedDict()
+        )
+        self._context_cache_lock = threading.RLock()
 
     async def load(self, case: RuntimeCase) -> W3PreparedContext:
         d2_bundle = self._current_document2(case.ticker)
         if d2_bundle.handoff is None:
             raise W3Error("w3_document2_unavailable", "Current Published D2 has no handoff")
+        cache_key = (
+            case.ticker,
+            d2_bundle.run_id,
+            d2_bundle.source_global_run_id,
+            case.version_pin.event_library_version,
+            case.version_pin.policy_set_version,
+        )
+        cached = self._cached_context(cache_key)
+        if cached is not None:
+            return self._without_consumed_policies(cached)
         d2_published = self._runtime.get_published_document(
             d2_bundle.run_id,
             d2_bundle.handoff.document2_artifact_id,
@@ -144,7 +169,7 @@ class PublishedW3ContextProvider:
                 "Version-pinned Reference View is unavailable",
             )
 
-        return W3PreparedContext(
+        prepared = W3PreparedContext(
             version_pin=W3ContextVersionPin(
                 document1_run_id=d1_bundle.run_id,
                 document2_run_id=d2_bundle.run_id,
@@ -157,22 +182,61 @@ class PublishedW3ContextProvider:
             reference_view=reference.reference_view,
             document2_publication_state=str(d2_bundle.publication_state or "COMPLETE"),
         )
+        self._cache_context(cache_key, prepared)
+        return self._without_consumed_policies(prepared)
+
+    def _without_consumed_policies(self, context: W3PreparedContext) -> W3PreparedContext:
+        if self._policy_consumption is None:
+            return context.model_copy(deep=True)
+        projection = self._policies.get_projection(
+            context.policy_set.ticker,
+            context.policy_set.policy_set_version,
+        )
+        if projection is None:
+            raise W3Error(
+                "w3_policy_projection_unavailable",
+                "Version-pinned Runtime Policy Projection is unavailable",
+            )
+        consumed = self._policy_consumption.list_consumed_policy_revisions(
+            context.policy_set.ticker
+        )
+        revision_by_policy = {
+            item.policy_id: item.activation_revision for item in projection.policies
+        }
+        active = [
+            policy
+            for policy in context.policy_set.policies
+            if (policy.policy_id, revision_by_policy.get(policy.policy_id, "")) not in consumed
+        ]
+        return context.model_copy(
+            deep=True,
+            update={"policy_set": context.policy_set.model_copy(update={"policies": active})},
+        )
 
     def _current_document2(self, ticker: str) -> Document2Bundle:
-        summaries = self._runtime.list_run_summaries(
-            ticker,
-            limit=100,
-            research_lane=ResearchLane.DOCUMENT2,
-        )
-        for summary in summaries:
-            bundle = self._runtime.get_bundle(summary.run_id)
-            if (
-                isinstance(bundle, Document2Bundle)
-                and bundle.current
-                and bundle.status == "published"
-            ):
-                return bundle
+        bundle = self._runtime.get_current_document2_bundle(ticker)
+        if bundle is not None:
+            return bundle
         raise W3Error("w3_document2_unavailable", "No current Published D2 is available")
+
+    def _cached_context(self, key: tuple[str, str, str, int, int]) -> W3PreparedContext | None:
+        with self._context_cache_lock:
+            value = self._context_cache.get(key)
+            if value is None:
+                return None
+            self._context_cache.move_to_end(key)
+            return value.model_copy(deep=True)
+
+    def _cache_context(
+        self,
+        key: tuple[str, str, str, int, int],
+        value: W3PreparedContext,
+    ) -> None:
+        with self._context_cache_lock:
+            self._context_cache[key] = value.model_copy(deep=True)
+            self._context_cache.move_to_end(key)
+            while len(self._context_cache) > self._context_cache_size:
+                self._context_cache.popitem(last=False)
 
     async def _read_published(self, value: PublishedDocument) -> bytes:
         if value.content_text is not None:
@@ -273,9 +337,7 @@ class CodexW3AgentRunner:
             else "revalidate_then_evaluate.md"
         )
         skill_files = {
-            skill_name: (self._prompt_root / "skills" / skill_name).read_text(
-                encoding="utf-8"
-            )
+            skill_name: (self._prompt_root / "skills" / skill_name).read_text(encoding="utf-8")
         }
         if w3_case.mode is W3Mode.REVALIDATE_THEN_EVALUATE:
             skill_files["uncovered_new.md"] = (
@@ -306,12 +368,8 @@ class CodexW3AgentRunner:
             "AGENTS.md": agent,
             f"{case_root}/task.json": json.dumps(task, ensure_ascii=False, indent=2),
             f"{case_root}/context/document1.md": context.document1,
-            f"{case_root}/context/document2.json": context.document2.model_dump_json(
-                indent=2
-            ),
-            f"{case_root}/context/policy_set.json": context.policy_set.model_dump_json(
-                indent=2
-            ),
+            f"{case_root}/context/document2.json": context.document2.model_dump_json(indent=2),
+            f"{case_root}/context/policy_set.json": context.policy_set.model_dump_json(indent=2),
             f"{case_root}/context/reference_view.md": context.reference_view,
             f"{case_root}/context/output_schema.json": json.dumps(
                 schema,

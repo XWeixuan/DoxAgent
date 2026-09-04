@@ -13,6 +13,7 @@ from doxagent.crawler_plane.factory import build_crawler_plane_service
 from doxagent.crawler_plane.schema import (
     CrawlerAlertPolicy,
     CrawlerExecutionRequest,
+    CrawlerRetryStatus,
     CrawlerSourceRegistration,
     CrawlerVersionSpec,
     new_id,
@@ -38,6 +39,9 @@ CRAWLER_PLANE_TOOL_NAMES = (
     "crawler_plane.list_alerts",
     "crawler_plane.update_alert_policy",
     "crawler_plane.resolve_alert",
+    "crawler_plane.list_retries",
+    "crawler_plane.resolve_retry",
+    "crawler_plane.reactivate_retry",
     "crawler_plane.register_source",
     "crawler_plane.add_regression",
 )
@@ -228,6 +232,25 @@ class _CrawlerPlaneToolCallClient:
             return _dump(service.update_alert_policy(CrawlerAlertPolicy.model_validate(value)))
         if self.tool_name == "crawler_plane.resolve_alert":
             return _dump(service.resolve_alert(str(value["alert_id"])))
+        if self.tool_name == "crawler_plane.list_retries":
+            status = value.get("status")
+            return {
+                "retries": [
+                    _dump(item)
+                    for item in service.list_retries(
+                        crawler_id=crawler_id or None,
+                        binding_id=(
+                            str(value["binding_id"]) if value.get("binding_id") else None
+                        ),
+                        status=CrawlerRetryStatus(str(status)) if status else None,
+                        limit=int(value.get("limit", 100)),
+                    )
+                ]
+            }
+        if self.tool_name == "crawler_plane.resolve_retry":
+            return _dump(service.resolve_retry(str(value["retry_id"])))
+        if self.tool_name == "crawler_plane.reactivate_retry":
+            return _dump(service.reactivate_retry(str(value["retry_id"])))
         if self.tool_name == "crawler_plane.register_source":
             return _dump(
                 service.register_crawler_source(CrawlerSourceRegistration.model_validate(value))

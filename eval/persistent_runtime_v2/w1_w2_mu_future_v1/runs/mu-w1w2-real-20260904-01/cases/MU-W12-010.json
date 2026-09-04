@@ -1,0 +1,139 @@
+{
+  "case_id": "MU-W12-010",
+  "status": "COMPLETED",
+  "started_at": "2026-09-04T01:54:28.298961+08:00",
+  "completed_at": "2026-09-04T01:55:00.688301+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E17",
+        "E14",
+        "E171",
+        "E79",
+        "E16"
+      ]
+    },
+    "w1_final": {
+      "result": "NEW",
+      "confidence": "normal",
+      "reference_ids": [
+        "E17",
+        "E14"
+      ],
+      "reason": "No existing fact records NVIDIA completing production qualification of Micron's HBM4E. E17 covers HBM4E development status (ongoing, HVM 2027) but not customer-specific qualification completion; E14 covers an HBM4 (not HBM4E) design win with NVIDIA. The message's core new fact is that HBM4E has passed a defined NVIDIA production-qualification gate for one accelerator program, a distinct engineering milestone from mere ongoing development."
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息仅描述NVIDIA对Micron HBM4E在单一加速器项目的生产资格认证完成（approved-source list进入），明确为工程验证里程碑，未涉及最终量产BOM容量上调、绑定订单、晶圆/封装分配增加、部署量上调或重复出货。所有候选Policy的criterion均要求订单/出货/分配/收入等商业或量产确认事实，本消息未提供这些要素，因此无Policy命中。"
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息仅描述NVIDIA对Micron HBM4E在单一加速器项目的生产资格认证完成（approved-source list进入），明确为工程验证里程碑，未涉及最终量产BOM容量上调、绑定订单、晶圆/封装分配增加、部署量上调或重复出货。所有候选Policy的criterion均要求订单/出货/分配/收入等商业或量产确认事实，本消息未提供这些要素，因此无Policy命中。"
+    },
+    "route": {
+      "primary_route": "W3",
+      "side_effects": [
+        "route_to_w3"
+      ],
+      "reason": "w1=NEW/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_b2555d7027ae4dcc98d125ff140d0f5b",
+      "case_id": "case_2a7067bd373f4b0b90e575cb84d32847",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_0fb3f94e-69d1-9535-a44c-9159056c4100",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 7124,
+      "output_tokens": 1533,
+      "reasoning_tokens": 1422,
+      "cached_input_tokens": 0,
+      "latency_ms": 14441,
+      "output": {
+        "policy_ids": [],
+        "matched_condition_ids": [],
+        "confidence": "normal",
+        "reason": "消息仅描述NVIDIA对Micron HBM4E在单一加速器项目的生产资格认证完成（approved-source list进入），明确为工程验证里程碑，未涉及最终量产BOM容量上调、绑定订单、晶圆/封装分配增加、部署量上调或重复出货。所有候选Policy的criterion均要求订单/出货/分配/收入等商业或量产确认事实，本消息未提供这些要素，因此无Policy命中。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:54:42.785181Z"
+    },
+    {
+      "turn_id": "turn_2e0f9f19076e4e5ea94368cdf22bbbb0",
+      "case_id": "case_2a7067bd373f4b0b90e575cb84d32847",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_e22afcec-9ad3-9ad4-abeb-6b274b831ec1",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13437,
+      "output_tokens": 1052,
+      "reasoning_tokens": 1024,
+      "cached_input_tokens": 0,
+      "latency_ms": 14580,
+      "output": {
+        "event_ids": [
+          "E17",
+          "E14",
+          "E171",
+          "E79",
+          "E16"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:54:42.923136Z"
+    },
+    {
+      "turn_id": "turn_1c64f252de414931892df0d9327410d5",
+      "case_id": "case_2a7067bd373f4b0b90e575cb84d32847",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_26196fae-49ee-9253-8409-8fe88132bd8a",
+      "previous_response_id": "resp_e22afcec-9ad3-9ad4-abeb-6b274b831ec1",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 16142,
+      "output_tokens": 1292,
+      "reasoning_tokens": 1165,
+      "cached_input_tokens": 0,
+      "latency_ms": 17733,
+      "output": {
+        "result": "NEW",
+        "confidence": "normal",
+        "reference_ids": [
+          "E17",
+          "E14"
+        ],
+        "reason": "No existing fact records NVIDIA completing production qualification of Micron's HBM4E. E17 covers HBM4E development status (ongoing, HVM 2027) but not customer-specific qualification completion; E14 covers an HBM4 (not HBM4E) design win with NVIDIA. The message's core new fact is that HBM4E has passed a defined NVIDIA production-qualification gate for one accelerator program, a distinct engineering milestone from mere ongoing development."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:55:00.688301Z"
+    }
+  ]
+}

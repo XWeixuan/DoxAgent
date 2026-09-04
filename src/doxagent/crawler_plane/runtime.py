@@ -134,10 +134,17 @@ class ParentNetworkSession:
     async def _http(self, payload: dict[str, Any]) -> dict[str, Any]:
         method = str(payload.get("method", "GET")).upper()
         url = str(payload["url"])
-        params = dict(payload.get("params", {}))
         headers = {str(k): str(v) for k, v in dict(payload.get("headers", {})).items()}
         async with self.request_permit():
-            response = await self.client.request(method, url, params=params, headers=headers)
+            if "params" in payload:
+                response = await self.client.request(
+                    method,
+                    url,
+                    params=dict(payload["params"]),
+                    headers=headers,
+                )
+            else:
+                response = await self.client.request(method, url, headers=headers)
         body = response.content
         if len(body) > self.max_response_bytes:
             raise RuntimeError("crawler response exceeds global max_response_bytes")

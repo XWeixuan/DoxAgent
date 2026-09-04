@@ -1,0 +1,137 @@
+{
+  "case_id": "MU-W12-008",
+  "status": "COMPLETED",
+  "started_at": "2026-09-04T01:54:12.298920+08:00",
+  "completed_at": "2026-09-04T01:54:41.906044+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E2",
+        "E3",
+        "E157",
+        "E28"
+      ]
+    },
+    "w1_final": {
+      "result": "OLD",
+      "confidence": "normal",
+      "reference_ids": [
+        "E2",
+        "E3"
+      ],
+      "reason": "All core facts in the message are already covered by E2: 16 multiyear agreements (F27), ~$100 billion cumulative contractual sales through 2030 (F27), ~$22 billion customer deposits (F26, F32), binding take-or-pay and purchase commitments (F31), and price floors/ceilings on existing products (F25). The qualitative framing about reducing spot-market reliance and AI-driven planning is covered in E3 (F38) and E157 (F462). The message title itself states Micron is 'reiterating' the framework, introducing no new state change or fact."
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息为Micron重新阐述其战略客户协议框架（16份协议、约1000亿美元合同销售额、220亿美元订金），属结构性描述而非确认新事实。最接近的pol_aa7a5be0213e21347434要求'首次'在正式财报中确认至少两个连续季度的重复交付及订金/收入实际入账；本消息标题为'Reiterates'，未提及实际交付、收入认列或订金到账确认，且非财报载体，criterion未满足。其余Policy的match_scope不涵盖本协议框架重述内容，无命中。"
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息为Micron重新阐述其战略客户协议框架（16份协议、约1000亿美元合同销售额、220亿美元订金），属结构性描述而非确认新事实。最接近的pol_aa7a5be0213e21347434要求'首次'在正式财报中确认至少两个连续季度的重复交付及订金/收入实际入账；本消息标题为'Reiterates'，未提及实际交付、收入认列或订金到账确认，且非财报载体，criterion未满足。其余Policy的match_scope不涵盖本协议框架重述内容，无命中。"
+    },
+    "route": {
+      "primary_route": "ARCHIVE",
+      "side_effects": [
+        "archive_message"
+      ],
+      "reason": "w1=OLD/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_c9d0ecd05e464ae1b2535d0634c61000",
+      "case_id": "case_fef3adf37bfa4139839daf4ab17150ac",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_84339565-791f-99c3-b4ec-effb6d1caa01",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 7091,
+      "output_tokens": 1449,
+      "reasoning_tokens": 1294,
+      "cached_input_tokens": 0,
+      "latency_ms": 15053,
+      "output": {
+        "policy_ids": [],
+        "matched_condition_ids": [],
+        "confidence": "normal",
+        "reason": "消息为Micron重新阐述其战略客户协议框架（16份协议、约1000亿美元合同销售额、220亿美元订金），属结构性描述而非确认新事实。最接近的pol_aa7a5be0213e21347434要求'首次'在正式财报中确认至少两个连续季度的重复交付及订金/收入实际入账；本消息标题为'Reiterates'，未提及实际交付、收入认列或订金到账确认，且非财报载体，criterion未满足。其余Policy的match_scope不涵盖本协议框架重述内容，无命中。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:54:27.419918Z"
+    },
+    {
+      "turn_id": "turn_1115343623c04a289d6d8b6e6939cf81",
+      "case_id": "case_fef3adf37bfa4139839daf4ab17150ac",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_ce251bfc-6b60-9ccc-a0d1-662256ff200e",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13404,
+      "output_tokens": 1486,
+      "reasoning_tokens": 1464,
+      "cached_input_tokens": 0,
+      "latency_ms": 17302,
+      "output": {
+        "event_ids": [
+          "E2",
+          "E3",
+          "E157",
+          "E28"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:54:29.666055Z"
+    },
+    {
+      "turn_id": "turn_f89747de611743ac8cf4a47885f436ec",
+      "case_id": "case_fef3adf37bfa4139839daf4ab17150ac",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_87dad49b-3eea-969b-81e9-fe3c6f99606f",
+      "previous_response_id": "resp_ce251bfc-6b60-9ccc-a0d1-662256ff200e",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 17134,
+      "output_tokens": 1207,
+      "reasoning_tokens": 1041,
+      "cached_input_tokens": 0,
+      "latency_ms": 12206,
+      "output": {
+        "result": "OLD",
+        "confidence": "normal",
+        "reference_ids": [
+          "E2",
+          "E3"
+        ],
+        "reason": "All core facts in the message are already covered by E2: 16 multiyear agreements (F27), ~$100 billion cumulative contractual sales through 2030 (F27), ~$22 billion customer deposits (F26, F32), binding take-or-pay and purchase commitments (F31), and price floors/ceilings on existing products (F25). The qualitative framing about reducing spot-market reliance and AI-driven planning is covered in E3 (F38) and E157 (F462). The message title itself states Micron is 'reiterating' the framework, introducing no new state change or fact."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:54:41.905044Z"
+    }
+  ]
+}

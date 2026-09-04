@@ -20,10 +20,13 @@ from doxagent.crawler_plane.schema import (
     CrawlerCheckpoint,
     CrawlerExecutionResult,
     CrawlerPackage,
+    CrawlerRetryItem,
+    CrawlerRetryStatus,
     CrawlerVersion,
     ExecutionArtifact,
     NetworkCassette,
     RegressionCase,
+    new_id,
     utc_now,
 )
 
@@ -160,6 +163,21 @@ class CrawlerPlaneRepository:
                     cassette_ref text not null,
                     data_json text not null
                 );
+                create table if not exists crawler_retry_items (
+                    retry_id text primary key,
+                    crawler_id text not null,
+                    binding_id text not null,
+                    source_id text not null,
+                    ticker text not null,
+                    item_key text not null,
+                    status text not null,
+                    attempt_count integer not null,
+                    next_attempt_at text,
+                    data_json text not null,
+                    unique(crawler_id,binding_id,item_key)
+                );
+                create index if not exists idx_crawler_retry_due
+                    on crawler_retry_items(crawler_id,binding_id,status,next_attempt_at);
                 create table if not exists crawler_alert_policies (
                     policy_key text primary key,
                     crawler_id text not null,
@@ -287,24 +305,299 @@ class CrawlerPlaneRepository:
 
     def save_execution(self, value: CrawlerExecutionResult) -> None:
         with self.transaction() as connection:
-            connection.execute(
-                """insert into crawler_executions(
-                     execution_id,poll_run_id,crawler_id,crawler_version,source_id,
-                     binding_id,status,started_at,data_json) values(?,?,?,?,?,?,?,?,?)
-                   on conflict(execution_id) do update set
-                   status=excluded.status,data_json=excluded.data_json""",
+            self._save_execution(connection, value)
+
+    def finalize_execution(
+        self,
+        value: CrawlerExecutionResult,
+        *,
+        checkpoint: CrawlerCheckpoint | None,
+        claimed_retry_keys: Sequence[str] = (),
+        max_attempts: int = 3,
+    ) -> list[CrawlerRetryItem]:
+        """Atomically persist execution, checkpoint, and all retry transitions."""
+
+        if max_attempts < 1:
+            raise ValueError("max_attempts must be positive")
+        now = utc_now()
+        touched: list[CrawlerRetryItem] = []
+        failures = {item.item_key: item for item in value.item_failures}
+        completed = set(value.completed_retry_keys)
+        with self.transaction() as connection:
+            self._save_execution(connection, value)
+            if checkpoint is not None:
+                connection.execute(
+                    """insert into crawler_checkpoints(
+                         crawler_id,binding_id,schema_version,data_json) values(?,?,?,?)
+                       on conflict(crawler_id,binding_id) do update set
+                       schema_version=excluded.schema_version,data_json=excluded.data_json""",
+                    (
+                        checkpoint.crawler_id,
+                        checkpoint.binding_id,
+                        checkpoint.schema_version,
+                        self._json(checkpoint),
+                    ),
+                )
+            for item_key in sorted(completed):
+                current = self._retry_by_key(
+                    connection, value.crawler_id, value.binding_id, item_key
+                )
+                if current is None:
+                    continue
+                resolved = current.model_copy(
+                    update={
+                        "status": CrawlerRetryStatus.RESOLVED,
+                        "next_attempt_at": None,
+                        "last_execution_id": value.execution_id,
+                        "last_attempt_version": value.crawler_version,
+                        "updated_at": now,
+                    }
+                )
+                self._save_retry(connection, resolved)
+                touched.append(resolved)
+            for item_key, failure in failures.items():
+                current = self._retry_by_key(
+                    connection, value.crawler_id, value.binding_id, item_key
+                )
+                attempts = (
+                    current.attempt_count
+                    if current is not None and current.status is CrawlerRetryStatus.IN_PROGRESS
+                    else (current.attempt_count + 1 if current is not None else 1)
+                )
+                status = (
+                    CrawlerRetryStatus.PENDING
+                    if failure.retryable and attempts < max_attempts
+                    else CrawlerRetryStatus.EXHAUSTED
+                )
+                retry = CrawlerRetryItem(
+                    retry_id=current.retry_id if current is not None else new_id("crawler_retry"),
+                    crawler_id=value.crawler_id,
+                    binding_id=value.binding_id,
+                    source_id=value.source_id,
+                    ticker=value.ticker,
+                    item_key=item_key,
+                    retry_payload=failure.retry_payload,
+                    status=status,
+                    attempt_count=attempts,
+                    next_attempt_at=now if status is CrawlerRetryStatus.PENDING else None,
+                    first_execution_id=(
+                        current.first_execution_id if current is not None else value.execution_id
+                    ),
+                    last_execution_id=value.execution_id,
+                    first_crawler_version=(
+                        current.first_crawler_version
+                        if current is not None
+                        else value.crawler_version
+                    ),
+                    last_attempt_version=value.crawler_version,
+                    last_error_code=failure.error_code,
+                    last_error_message=failure.error_message[:2000],
+                    created_at=current.created_at if current is not None else now,
+                    updated_at=now,
+                )
+                self._save_retry(connection, retry)
+                touched.append(retry)
+            unsettled = set(claimed_retry_keys) - completed - set(failures)
+            for item_key in sorted(unsettled):
+                current = self._retry_by_key(
+                    connection, value.crawler_id, value.binding_id, item_key
+                )
+                if current is None:
+                    continue
+                status = (
+                    CrawlerRetryStatus.PENDING
+                    if current.attempt_count < max_attempts
+                    else CrawlerRetryStatus.EXHAUSTED
+                )
+                returned = current.model_copy(
+                    update={
+                        "status": status,
+                        "next_attempt_at": (
+                            now if status is CrawlerRetryStatus.PENDING else None
+                        ),
+                        "last_execution_id": value.execution_id,
+                        "last_attempt_version": value.crawler_version,
+                        "updated_at": now,
+                    }
+                )
+                self._save_retry(connection, returned)
+                touched.append(returned)
+        return touched
+
+    def claim_due_retries(
+        self,
+        *,
+        crawler_id: str,
+        binding_id: str,
+        execution_id: str,
+        crawler_version: int,
+        limit: int = 100,
+    ) -> list[CrawlerRetryItem]:
+        now = utc_now()
+        claimed: list[CrawlerRetryItem] = []
+        with self.transaction() as connection:
+            rows = connection.execute(
+                """select data_json from crawler_retry_items
+                   where crawler_id=? and binding_id=? and status=?
+                     and (next_attempt_at is null or next_attempt_at<=?)
+                   order by rowid limit ?""",
                 (
-                    value.execution_id,
-                    value.poll_run_id,
-                    value.crawler_id,
-                    value.crawler_version,
-                    value.source_id,
-                    value.binding_id,
-                    value.status.value,
-                    value.started_at.isoformat(),
-                    self._json(value),
+                    crawler_id.strip().lower(),
+                    binding_id,
+                    CrawlerRetryStatus.PENDING.value,
+                    now.isoformat(),
+                    limit,
                 ),
+            ).fetchall()
+            for row in rows:
+                current = CrawlerRetryItem.model_validate_json(row["data_json"])
+                item = current.model_copy(
+                    update={
+                        "status": CrawlerRetryStatus.IN_PROGRESS,
+                        "attempt_count": current.attempt_count + 1,
+                        "next_attempt_at": None,
+                        "last_execution_id": execution_id,
+                        "last_attempt_version": crawler_version,
+                        "updated_at": now,
+                    }
+                )
+                self._save_retry(connection, item)
+                claimed.append(item)
+        return claimed
+
+    def list_retries(
+        self,
+        *,
+        crawler_id: str | None = None,
+        binding_id: str | None = None,
+        status: CrawlerRetryStatus | None = None,
+        limit: int = 100,
+    ) -> list[CrawlerRetryItem]:
+        clauses: list[str] = []
+        parameters: list[object] = []
+        if crawler_id:
+            clauses.append("crawler_id=?")
+            parameters.append(crawler_id.strip().lower())
+        if binding_id:
+            clauses.append("binding_id=?")
+            parameters.append(binding_id)
+        if status is not None:
+            clauses.append("status=?")
+            parameters.append(status.value)
+        where = f"where {' and '.join(clauses)}" if clauses else ""
+        parameters.append(limit)
+        with self._connect() as connection:
+            rows = connection.execute(
+                f"""select data_json from crawler_retry_items {where}
+                    order by rowid desc limit ?""",
+                parameters,
+            ).fetchall()
+        return self._models(CrawlerRetryItem, rows)
+
+    def get_retry(self, retry_id: str) -> CrawlerRetryItem | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                "select data_json from crawler_retry_items where retry_id=?", (retry_id,)
+            ).fetchone()
+        return self._model(CrawlerRetryItem, row)
+
+    def resolve_retry(self, retry_id: str) -> CrawlerRetryItem | None:
+        return self._set_retry_state(retry_id, CrawlerRetryStatus.RESOLVED, reset=False)
+
+    def reactivate_retry(self, retry_id: str) -> CrawlerRetryItem | None:
+        return self._set_retry_state(retry_id, CrawlerRetryStatus.PENDING, reset=True)
+
+    @classmethod
+    def _save_execution(
+        cls, connection: sqlite3.Connection, value: CrawlerExecutionResult
+    ) -> None:
+        connection.execute(
+            """insert into crawler_executions(
+                 execution_id,poll_run_id,crawler_id,crawler_version,source_id,
+                 binding_id,status,started_at,data_json) values(?,?,?,?,?,?,?,?,?)
+               on conflict(execution_id) do update set
+               status=excluded.status,data_json=excluded.data_json""",
+            (
+                value.execution_id,
+                value.poll_run_id,
+                value.crawler_id,
+                value.crawler_version,
+                value.source_id,
+                value.binding_id,
+                value.status.value,
+                value.started_at.isoformat(),
+                cls._json(value),
+            ),
+        )
+
+    @classmethod
+    def _save_retry(cls, connection: sqlite3.Connection, value: CrawlerRetryItem) -> None:
+        connection.execute(
+            """insert into crawler_retry_items(
+                 retry_id,crawler_id,binding_id,source_id,ticker,item_key,status,
+                 attempt_count,next_attempt_at,data_json) values(?,?,?,?,?,?,?,?,?,?)
+               on conflict(crawler_id,binding_id,item_key) do update set
+                 source_id=excluded.source_id,ticker=excluded.ticker,status=excluded.status,
+                 attempt_count=excluded.attempt_count,next_attempt_at=excluded.next_attempt_at,
+                 data_json=excluded.data_json""",
+            (
+                value.retry_id,
+                value.crawler_id,
+                value.binding_id,
+                value.source_id,
+                value.ticker,
+                value.item_key,
+                value.status.value,
+                value.attempt_count,
+                value.next_attempt_at.isoformat() if value.next_attempt_at else None,
+                cls._json(value),
+            ),
+        )
+
+    @staticmethod
+    def _retry_by_key(
+        connection: sqlite3.Connection,
+        crawler_id: str,
+        binding_id: str,
+        item_key: str,
+    ) -> CrawlerRetryItem | None:
+        row = connection.execute(
+            """select data_json from crawler_retry_items
+               where crawler_id=? and binding_id=? and item_key=?""",
+            (crawler_id.strip().lower(), binding_id, item_key),
+        ).fetchone()
+        return (
+            CrawlerRetryItem.model_validate_json(row["data_json"])
+            if row is not None
+            else None
+        )
+
+    def _set_retry_state(
+        self,
+        retry_id: str,
+        status: CrawlerRetryStatus,
+        *,
+        reset: bool,
+    ) -> CrawlerRetryItem | None:
+        with self.transaction() as connection:
+            row = connection.execute(
+                "select data_json from crawler_retry_items where retry_id=?", (retry_id,)
+            ).fetchone()
+            if row is None:
+                return None
+            current = CrawlerRetryItem.model_validate_json(row["data_json"])
+            updated = current.model_copy(
+                update={
+                    "status": status,
+                    "attempt_count": 0 if reset else current.attempt_count,
+                    "next_attempt_at": (
+                        utc_now() if status is CrawlerRetryStatus.PENDING else None
+                    ),
+                    "updated_at": utc_now(),
+                }
             )
+            self._save_retry(connection, updated)
+            return updated
 
     def get_execution(self, execution_id: str) -> CrawlerExecutionResult | None:
         with self._connect() as connection:
@@ -553,6 +846,7 @@ class CrawlerPlaneRepository:
             "network_cassettes",
             "certification_runs",
             "crawler_regression_cases",
+            "crawler_retry_items",
             "crawler_alerts",
         )
         with self._connect() as connection:

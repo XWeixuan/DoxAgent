@@ -165,7 +165,10 @@ class CrawlerSourceAdapter:
             ),
             request_permit=context.request_permit,
         )
-        if execution.status is not CrawlerExecutionStatus.SUCCEEDED:
+        if execution.status not in {
+            CrawlerExecutionStatus.SUCCEEDED,
+            CrawlerExecutionStatus.PARTIAL,
+        }:
             raise CrawlerAdapterExecutionError(
                 execution.execution_id,
                 f"Crawler Plane execution {execution.execution_id} failed: "
@@ -192,8 +195,42 @@ class CrawlerSourceAdapter:
             )
             for item in execution.observations
         ]
+        failures = [
+            AcquisitionFailure(
+                source_id=context.source.source_id,
+                binding_id=context.binding.binding_id,
+                ticker=context.ticker,
+                error_code=f"crawler_item_{item.error_code}",
+                error_message=item.error_message,
+                raw_hash=sha256_text(
+                    canonical_json(
+                        {
+                            "crawler_id": execution.crawler_id,
+                            "item_key": item.item_key,
+                            "stage": item.stage,
+                            "url": item.url,
+                            "error_code": item.error_code,
+                            "retry_payload": item.retry_payload,
+                        }
+                    )
+                ),
+                original_payload={
+                    "crawler_execution_id": execution.execution_id,
+                    "crawler_id": execution.crawler_id,
+                    "crawler_version": execution.crawler_version,
+                    "item_key": item.item_key,
+                    "stage": item.stage,
+                    "url": item.url,
+                    "retryable": item.retryable,
+                    "retry_payload": item.retry_payload,
+                    "artifact_refs": item.artifact_refs,
+                },
+            )
+            for item in execution.item_failures
+        ]
         return PollResult(
             messages=messages,
+            failures=failures,
             next_checkpoint=context.checkpoint,
             acquisition_metadata={
                 "poll_run_id": execution.poll_run_id,
@@ -201,6 +238,9 @@ class CrawlerSourceAdapter:
                 "crawler_id": execution.crawler_id,
                 "crawler_version": execution.crawler_version,
                 "crawler_artifact_refs": execution.artifact_refs,
+                "crawler_status": execution.status.value,
+                "crawler_content_digest": execution.crawler_content_digest,
+                "crawler_retry_keys": execution.retry_keys,
             },
         )
 

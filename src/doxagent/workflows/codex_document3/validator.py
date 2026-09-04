@@ -377,21 +377,12 @@ def validate_initial_artifacts(
             )
 
     for policy in policies:
-        fields = [policy.title, policy.match_scope, policy.activation_summary]
+        fields = [policy.title, policy.match_scope]
         fields.extend(item.criterion for item in policy.activation_conditions)
         if _chinese_ratio("".join(fields)) < 0.25:
             findings.append(
                 _finding("LOW_CHINESE_RATIO", f"Policy {policy.policy_id} 中文占比偏低")
             )
-        if len(policy.activation_conditions) > 4:
-            findings.append(
-                _finding(
-                    "MANY_CONDITIONS",
-                    f"Policy {policy.policy_id} 含 "
-                    f"{len(policy.activation_conditions)} 个条件，请语义复核",
-                )
-            )
-
     publication_state = PublicationState.PARTIAL if findings else PublicationState.COMPLETE
     return ValidationReport(
         valid=not any(item.blocking for item in findings),

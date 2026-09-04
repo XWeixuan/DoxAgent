@@ -1,0 +1,127 @@
+{
+  "case_id": "MU-W12-015",
+  "status": "COMPLETED",
+  "started_at": "2026-09-04T01:54:41.907238+08:00",
+  "completed_at": "2026-09-04T01:55:13.617749+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E13",
+        "E7"
+      ]
+    },
+    "w1_final": {
+      "result": "NEW",
+      "confidence": "normal",
+      "reference_ids": [],
+      "reason": "The core fact — ApexChem and Micron signed a multi-year supply agreement for ultra-pure process chemicals with a dedicated Mesa, Arizona purification line and Micron as anchor customer — is not covered by any loaded Event. E13 mentions a generic '$3 billion supply-chain investment effort' without naming ApexChem, describing a chemicals supply agreement, or referencing the Mesa facility. E7 covers Micron's own fab investment plans, not a bilateral supplier contract for process chemicals."
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息描述Micron与ApexChem签署新的超纯化学品多年期供应协议，属于正常供应链扩展与未来产能建设。最接近的match_scope为pol_c8b3001cc1fac69def5e（化学品供应中断/配给/涨价），但该criterion要求确认发生配给、中断或不可转嫁涨价并导致Micron下调产量/利用率、上调单位成本或下调毛利率指引。消息实际描述的是新增合格供应源、专用产线建设和量承诺，无任何中断、涨价或成本/产量/毛利负面变化，不满足任何Policy的触发条件。"
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息描述Micron与ApexChem签署新的超纯化学品多年期供应协议，属于正常供应链扩展与未来产能建设。最接近的match_scope为pol_c8b3001cc1fac69def5e（化学品供应中断/配给/涨价），但该criterion要求确认发生配给、中断或不可转嫁涨价并导致Micron下调产量/利用率、上调单位成本或下调毛利率指引。消息实际描述的是新增合格供应源、专用产线建设和量承诺，无任何中断、涨价或成本/产量/毛利负面变化，不满足任何Policy的触发条件。"
+    },
+    "route": {
+      "primary_route": "W3",
+      "side_effects": [
+        "route_to_w3"
+      ],
+      "reason": "w1=NEW/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_b4edabab5f6444ee9ce4333ace67b1bc",
+      "case_id": "case_3937046d478740688171f19041fd1482",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_4fae0764-9da5-944f-ac60-3727dae4816e",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13400,
+      "output_tokens": 1464,
+      "reasoning_tokens": 1450,
+      "cached_input_tokens": 0,
+      "latency_ms": 19831,
+      "output": {
+        "event_ids": [
+          "E13",
+          "E7"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:55:01.784842Z"
+    },
+    {
+      "turn_id": "turn_ee699ad86a894a4caa1c50fa48e57d26",
+      "case_id": "case_3937046d478740688171f19041fd1482",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_1819f661-b1c6-96f8-a073-5b3f6d435436",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 7087,
+      "output_tokens": 2438,
+      "reasoning_tokens": 2290,
+      "cached_input_tokens": 0,
+      "latency_ms": 20044,
+      "output": {
+        "policy_ids": [],
+        "matched_condition_ids": [],
+        "confidence": "normal",
+        "reason": "消息描述Micron与ApexChem签署新的超纯化学品多年期供应协议，属于正常供应链扩展与未来产能建设。最接近的match_scope为pol_c8b3001cc1fac69def5e（化学品供应中断/配给/涨价），但该criterion要求确认发生配给、中断或不可转嫁涨价并导致Micron下调产量/利用率、上调单位成本或下调毛利率指引。消息实际描述的是新增合格供应源、专用产线建设和量承诺，无任何中断、涨价或成本/产量/毛利负面变化，不满足任何Policy的触发条件。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:55:01.998705Z"
+    },
+    {
+      "turn_id": "turn_afb3c659a9f6422bb2634b0f547693cc",
+      "case_id": "case_3937046d478740688171f19041fd1482",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_3e8ca591-2c2b-99dd-839c-38357aa94b2b",
+      "previous_response_id": "resp_4fae0764-9da5-944f-ac60-3727dae4816e",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 15177,
+      "output_tokens": 1044,
+      "reasoning_tokens": 931,
+      "cached_input_tokens": 0,
+      "latency_ms": 11814,
+      "output": {
+        "result": "NEW",
+        "confidence": "normal",
+        "reference_ids": [],
+        "reason": "The core fact — ApexChem and Micron signed a multi-year supply agreement for ultra-pure process chemicals with a dedicated Mesa, Arizona purification line and Micron as anchor customer — is not covered by any loaded Event. E13 mentions a generic '$3 billion supply-chain investment effort' without naming ApexChem, describing a chemicals supply agreement, or referencing the Mesa facility. E7 covers Micron's own fab investment plans, not a bilateral supplier contract for process chemicals."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:55:13.616750Z"
+    }
+  ]
+}

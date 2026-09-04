@@ -12,6 +12,7 @@ from typing import Any, Protocol
 from doxagent.postgres import connect_postgres, record_postgres_failure
 
 from .schema import (
+    RUNTIME_POLICY_PROJECTION_VERSION,
     PolicyDetailSnapshot,
     PolicySet,
     PolicySetVersionMetadata,
@@ -32,9 +33,7 @@ class Document3PolicyRepository(Protocol):
 
     def get_current_projection(self, ticker: str) -> RuntimePolicyProjection | None: ...
 
-    def get_projection(
-        self, ticker: str, version: int
-    ) -> RuntimePolicyProjection | None: ...
+    def get_projection(self, ticker: str, version: int) -> RuntimePolicyProjection | None: ...
 
     def get_policy_details(
         self, ticker: str, version: int, policy_ids: list[str]
@@ -100,19 +99,25 @@ def _policy_details(
 
 
 def _decode_projection(policy_set_payload: Any, projection_payload: Any) -> RuntimePolicyProjection:
+    from .runtime_projection import upgrade_runtime_projection
+
     raw_projection = (
         projection_payload
         if isinstance(projection_payload, dict)
         else __import__("json").loads(str(projection_payload))
     )
-    if raw_projection.get("schema_version") == "document3.runtime_projection.v2":
-        return RuntimePolicyProjection.model_validate(raw_projection)
-    policy_set = (
-        PolicySet.model_validate(policy_set_payload)
-        if isinstance(policy_set_payload, dict)
-        else PolicySet.model_validate_json(str(policy_set_payload))
+    if raw_projection.get("schema_version") in {
+        "document3.runtime_projection.v1",
+        "document3.runtime_projection.v2",
+        "document3.runtime_projection.v3",
+        RUNTIME_POLICY_PROJECTION_VERSION,
+    }:
+        return upgrade_runtime_projection(raw_projection)
+    from .runtime_projection import RuntimeProjectionCompatibilityError
+
+    raise RuntimeProjectionCompatibilityError(
+        f"unsupported stored Runtime Policy Projection: {raw_projection.get('schema_version')!r}"
     )
-    return _project(policy_set)
 
 
 class InMemoryDocument3PolicyRepository:
@@ -139,9 +144,7 @@ class InMemoryDocument3PolicyRepository:
         policy_set = self.get_current(ticker)
         return _project(policy_set) if policy_set else None
 
-    def get_projection(
-        self, ticker: str, version: int
-    ) -> RuntimePolicyProjection | None:
+    def get_projection(self, ticker: str, version: int) -> RuntimePolicyProjection | None:
         policy_set = self.get_version(ticker, version)
         return _project(policy_set) if policy_set else None
 
@@ -216,8 +219,7 @@ class SQLiteDocument3PolicyRepository:
             }
             if "policy_count" not in columns:
                 connection.execute(
-                    "ALTER TABLE codex_document3_policy_sets "
-                    "ADD COLUMN policy_count INTEGER"
+                    "ALTER TABLE codex_document3_policy_sets ADD COLUMN policy_count INTEGER"
                 )
             if "runtime_projection_json" not in columns:
                 connection.execute(
@@ -276,9 +278,7 @@ class SQLiteDocument3PolicyRepository:
             (ticker.upper(), version),
         )
 
-    def _read_projection(
-        self, query: str, args: tuple[Any, ...]
-    ) -> RuntimePolicyProjection | None:
+    def _read_projection(self, query: str, args: tuple[Any, ...]) -> RuntimePolicyProjection | None:
         with self._connect() as connection:
             row = connection.execute(query, args).fetchone()
         return _decode_projection(row[0], row[1]) if row else None
@@ -290,9 +290,7 @@ class SQLiteDocument3PolicyRepository:
             (ticker.upper(),),
         )
 
-    def get_projection(
-        self, ticker: str, version: int
-    ) -> RuntimePolicyProjection | None:
+    def get_projection(self, ticker: str, version: int) -> RuntimePolicyProjection | None:
         return self._read_projection(
             "SELECT policy_set_json, runtime_projection_json FROM codex_document3_policy_sets "
             "WHERE ticker = ? AND policy_set_version = ?",
@@ -424,24 +422,24 @@ class PostgresDocument3PolicyRepository:
     def _decode_projection(row: Any | None) -> RuntimePolicyProjection | None:
         if row is None:
             return None
-        return _decode_projection(row[0], row[1])
+        from .runtime_projection import upgrade_runtime_projection
+
+        return upgrade_runtime_projection(row[0])
 
     def get_current_projection(self, ticker: str) -> RuntimePolicyProjection | None:
         with self._connect() as connection, connection.cursor() as cursor:
             cursor.execute(
-                "SELECT policy_set_json, runtime_projection_json "
+                "SELECT runtime_projection_json "
                 "FROM doxagent.codex_document3_policy_sets "
                 "WHERE ticker = %s AND is_current = true",
                 (ticker.upper(),),
             )
             return self._decode_projection(cursor.fetchone())
 
-    def get_projection(
-        self, ticker: str, version: int
-    ) -> RuntimePolicyProjection | None:
+    def get_projection(self, ticker: str, version: int) -> RuntimePolicyProjection | None:
         with self._connect() as connection, connection.cursor() as cursor:
             cursor.execute(
-                "SELECT policy_set_json, runtime_projection_json "
+                "SELECT runtime_projection_json "
                 "FROM doxagent.codex_document3_policy_sets "
                 "WHERE ticker = %s AND policy_set_version = %s",
                 (ticker.upper(), version),
@@ -543,10 +541,7 @@ class HybridDocument3PolicyRepository:
             local_current = self.local.get_current(ticker)
             if primary_version is None:
                 return local_current
-            if (
-                local_current is not None
-                and local_current.policy_set_version == primary_version
-            ):
+            if local_current is not None and local_current.policy_set_version == primary_version:
                 return local_current
             return self.primary.get_version(ticker, primary_version)
         except Exception:
@@ -577,9 +572,7 @@ class HybridDocument3PolicyRepository:
         except Exception:
             return self.local.get_current_projection(ticker)
 
-    def get_projection(
-        self, ticker: str, version: int
-    ) -> RuntimePolicyProjection | None:
+    def get_projection(self, ticker: str, version: int) -> RuntimePolicyProjection | None:
         local_value = self.local.get_projection(ticker, version)
         if local_value is not None:
             return local_value

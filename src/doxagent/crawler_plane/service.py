@@ -29,6 +29,8 @@ from doxagent.crawler_plane.schema import (
     CrawlerExecutionResult,
     CrawlerExecutionStatus,
     CrawlerPackage,
+    CrawlerRetryItem,
+    CrawlerRetryStatus,
     CrawlerSourceRegistration,
     CrawlerVersion,
     CrawlerVersionSpec,
@@ -44,7 +46,9 @@ from doxagent.crawler_plane.schema import (
 
 if TYPE_CHECKING:
     from doxagent.message_bus_v2.schema import SourceDefinition
-    from doxagent.message_bus_v2.service import MessageBusV2Service
+from doxagent.message_bus_v2.service import MessageBusV2Service
+
+from .quality import quality_summary, quality_warnings
 
 
 class CertificationService(Protocol):
@@ -180,6 +184,10 @@ class CrawlerPlaneService:
         digest = self.assets.digest(candidate.working_path)
         if digest != candidate.certified_digest:
             raise ValueError("working copy changed after certification")
+        if candidate.live_probe_execution_id is None or candidate.live_probe_digest != digest:
+            raise ValueError(
+                "promotion requires a successful live probe of the certified content digest"
+            )
         package = self.get_crawler(crawler_id)
         active = (
             self.require_version(crawler_id, package.active_version)
@@ -283,6 +291,14 @@ class CrawlerPlaneService:
             actual_digest = self.assets.digest(package_path)
             if actual_digest != version.content_digest:
                 raise RuntimeError("immutable crawler release digest mismatch")
+        crawler_content_digest = self.assets.digest(package_path)
+        replay = (
+            self._load_cassette(request.cassette_ref, package_path)
+            if request.cassette_ref
+            else None
+        )
+        if replay is not None and replay.crawler_id != request.crawler_id:
+            raise ValueError("network cassette crawler_id does not match the requested crawler")
         from doxagent.message_bus_v2.schema import validate_parameter_schema
 
         validate_parameter_schema(version.spec.parameter_schema, request.source_parameters)
@@ -309,14 +325,20 @@ class CrawlerPlaneService:
             ticker=request.ticker,
             source_parameters=request.source_parameters,
             status=CrawlerExecutionStatus.RUNNING,
+            crawler_content_digest=crawler_content_digest,
             checkpoint_before=checkpoint_before,
             started_at=started,
         )
         self.repository.save_execution(running)
-        replay = (
-            self._load_cassette(request.cassette_ref, package_path)
-            if request.cassette_ref
-            else None
+        due_retries = (
+            self.repository.claim_due_retries(
+                crawler_id=request.crawler_id,
+                binding_id=request.binding_id,
+                execution_id=execution_id,
+                crawler_version=version_number,
+            )
+            if request.commit_checkpoint
+            else []
         )
         session = ParentNetworkSession(
             execution_id=execution_id,
@@ -338,6 +360,7 @@ class CrawlerPlaneService:
             ticker=request.ticker,
             parameters=request.source_parameters,
             checkpoint=checkpoint_before,
+            retry_items=[item.model_dump(mode="json") for item in due_retries],
         )
         start_clock = time.monotonic()
         try:
@@ -350,13 +373,25 @@ class CrawlerPlaneService:
 
             output = CrawlerRunOutput.model_validate(child.output)
             finished = utc_now()
+            execution_status = (
+                CrawlerExecutionStatus.PARTIAL
+                if output.item_failures
+                else CrawlerExecutionStatus.SUCCEEDED
+            )
+            body_quality = quality_summary(output.observations)
+            quality_alerts = quality_warnings(body_quality)
             result = running.model_copy(
                 update={
-                    "status": CrawlerExecutionStatus.SUCCEEDED,
+                    "status": execution_status,
                     "observations": output.observations,
+                    "item_failures": output.item_failures,
+                    "completed_retry_keys": output.completed_retry_keys,
+                    "retry_keys": [item.item_key for item in output.item_failures],
                     "diagnostics": {
                         **output.diagnostics,
                         **self._transport_diagnostics(session),
+                        "quality_summary": body_quality,
+                        **({"quality_warnings": quality_alerts} if quality_alerts else {}),
                     },
                     "checkpoint_after": output.next_checkpoint,
                     "finished_at": finished,
@@ -365,20 +400,14 @@ class CrawlerPlaneService:
                     "response_bytes": session.response_bytes,
                 }
             )
-            if request.commit_checkpoint:
-                self.repository.save_checkpoint(
-                    CrawlerCheckpoint(
-                        crawler_id=request.crawler_id,
-                        binding_id=request.binding_id,
-                        schema_version=version.spec.checkpoint_schema_version,
-                        value=output.next_checkpoint,
-                    )
-                )
             if request.network_mode is NetworkMode.RECORD:
                 result = self._persist_success_lineage(
                     result,
                     session,
-                    preserve_bodies=request.preserve_response_bodies,
+                    preserve_bodies=(
+                        request.preserve_response_bodies
+                        or execution_status is CrawlerExecutionStatus.PARTIAL
+                    ),
                 )
             else:
                 result = result.model_copy(
@@ -407,10 +436,29 @@ class CrawlerPlaneService:
                 str(exc),
                 request,
             )
-        self.repository.save_execution(result)
+        checkpoint = (
+            CrawlerCheckpoint(
+                crawler_id=request.crawler_id,
+                binding_id=request.binding_id,
+                schema_version=version.spec.checkpoint_schema_version,
+                value=result.checkpoint_after,
+            )
+            if request.commit_checkpoint
+            and result.status
+            in {
+                CrawlerExecutionStatus.SUCCEEDED,
+                CrawlerExecutionStatus.PARTIAL,
+            }
+            else None
+        )
+        touched_retries = self.repository.finalize_execution(
+            result,
+            checkpoint=checkpoint,
+            claimed_retry_keys=[item.item_key for item in due_retries],
+        )
         for artifact in session.artifacts:
             self.repository.save_artifact(artifact)
-        self.health.evaluate(result)
+        self.health.evaluate(result, retry_items=touched_retries)
         return result
 
     async def live_probe(
@@ -471,6 +519,21 @@ class CrawlerPlaneService:
             }
         )
         self.repository.save_execution(updated)
+        if (
+            updated.status is CrawlerExecutionStatus.SUCCEEDED
+            and updated.observations
+            and updated.crawler_content_digest is not None
+        ):
+            current = self.require_version(crawler_id, version)
+            self.repository.save_version(
+                current.model_copy(
+                    update={
+                        "live_probe_execution_id": updated.execution_id,
+                        "live_probe_digest": updated.crawler_content_digest,
+                        "updated_at": utc_now(),
+                    }
+                )
+            )
         return updated
 
     def get_execution(self, execution_id: str) -> CrawlerExecutionResult:
@@ -509,6 +572,35 @@ class CrawlerPlaneService:
         value = self.repository.resolve_alert(alert_id)
         if value is None:
             raise KeyError(f"crawler alert not found: {alert_id}")
+        return value
+
+    def list_retries(
+        self,
+        *,
+        crawler_id: str | None = None,
+        binding_id: str | None = None,
+        status: CrawlerRetryStatus | None = None,
+        limit: int = 100,
+    ) -> list[CrawlerRetryItem]:
+        if limit < 1 or limit > 1000:
+            raise ValueError("retry query limit must be between 1 and 1000")
+        return self.repository.list_retries(
+            crawler_id=crawler_id,
+            binding_id=binding_id,
+            status=status,
+            limit=limit,
+        )
+
+    def resolve_retry(self, retry_id: str) -> CrawlerRetryItem:
+        value = self.repository.resolve_retry(retry_id)
+        if value is None:
+            raise KeyError(f"crawler retry not found: {retry_id}")
+        return value
+
+    def reactivate_retry(self, retry_id: str) -> CrawlerRetryItem:
+        value = self.repository.reactivate_retry(retry_id)
+        if value is None:
+            raise KeyError(f"crawler retry not found: {retry_id}")
         return value
 
     def register_crawler_source(self, value: CrawlerSourceRegistration) -> SourceDefinition:
@@ -568,7 +660,14 @@ class CrawlerPlaneService:
 
     def add_failure_to_regression(self, execution_id: str) -> RegressionCase:
         execution = self.get_execution(execution_id)
-        if execution.status is CrawlerExecutionStatus.SUCCEEDED or not execution.cassette_ref:
+        if (
+            execution.status
+            not in {
+                CrawlerExecutionStatus.FAILED,
+                CrawlerExecutionStatus.TIMED_OUT,
+            }
+            or not execution.cassette_ref
+        ):
             raise ValueError("only a failed execution with a cassette can become a regression case")
         value = RegressionCase(
             crawler_id=execution.crawler_id,
@@ -652,7 +751,10 @@ class CrawlerPlaneService:
         return running.model_copy(
             update={
                 "status": status,
-                "diagnostics": self._transport_diagnostics(session),
+                "diagnostics": {
+                    **self._transport_diagnostics(session),
+                    "quality_summary": quality_summary([]),
+                },
                 "finished_at": utc_now(),
                 "latency_ms": max(0, int((time.monotonic() - start_clock) * 1000)),
                 "request_count": len(session.exchanges),

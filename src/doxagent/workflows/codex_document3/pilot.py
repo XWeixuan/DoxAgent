@@ -108,8 +108,6 @@ class Document3PilotEvaluator:
         }
         if ready_paths - trigger_record_paths:
             warnings.append("Some TRIGGER_READY paths have no strict Trigger record")
-        if any(count > 4 for count in counts):
-            warnings.append("Some Policies may be over-multiconditioned")
         return Document3PilotReport(
             run_id=run_id,
             mode="O3_INITIALIZE",
@@ -134,9 +132,7 @@ class Document3PilotEvaluator:
                 item.disposition is TriggerDisposition.TRIGGER_UNRESOLVED
                 for item in trigger_state.path_dispositions
             ),
-            trigger_calibration_completed_shell_count=len(
-                trigger_state.completed_shell_ids
-            ),
+            trigger_calibration_completed_shell_count=len(trigger_state.completed_shell_ids),
             maintenance_candidate_count=0,
             warnings=warnings,
         )

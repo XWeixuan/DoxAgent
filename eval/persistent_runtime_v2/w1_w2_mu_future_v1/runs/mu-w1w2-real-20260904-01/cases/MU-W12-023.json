@@ -1,0 +1,135 @@
+{
+  "case_id": "MU-W12-023",
+  "status": "COMPLETED",
+  "started_at": "2026-09-04T01:55:40.602719+08:00",
+  "completed_at": "2026-09-04T01:56:19.859490+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E43",
+        "E44",
+        "E42"
+      ]
+    },
+    "w1_final": {
+      "result": "OLD",
+      "confidence": "normal",
+      "reference_ids": [
+        "E43",
+        "E44"
+      ],
+      "reason": "Core fact (HBM4 in commercial delivery) is already covered by E43 (began mass production and commercial shipments, Feb 2026) and reinforced by E44 (plans for tripling HBM4 revenue in 2026-H2). The June 2027 message itself explicitly frames the update as a 'current status of the same product family' and a reaffirmation of commercial delivery, with no new product milestone, customer win, or change in factual stage."
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息为三星对已公告HBM4量产/出货的后续产品状态更新（'broad commercial delivery'），最相关候选pol_83c565b3ca305ee04c41虽落入match_scope（主要DRAM供应商、先进封装、客户交付），但该criterion要求同时满足'达到量产良率确认+多个重要客户重复交付合格DRAM+DRAM市场交期缩短或合同价下降'。消息明确说明量产与商业出货在earlier announcements中已首次沟通，本次仅为status update而非新确认；且全文未涉及任何DRAM市场交期缩短或合同价格下降信息，criterion中硬性AND条件未完整成立。其余Policy均针对Micron财报、协议变更、OEM削减、CXL、中国监管等完全不相关主题，无命中。"
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息为三星对已公告HBM4量产/出货的后续产品状态更新（'broad commercial delivery'），最相关候选pol_83c565b3ca305ee04c41虽落入match_scope（主要DRAM供应商、先进封装、客户交付），但该criterion要求同时满足'达到量产良率确认+多个重要客户重复交付合格DRAM+DRAM市场交期缩短或合同价下降'。消息明确说明量产与商业出货在earlier announcements中已首次沟通，本次仅为status update而非新确认；且全文未涉及任何DRAM市场交期缩短或合同价格下降信息，criterion中硬性AND条件未完整成立。其余Policy均针对Micron财报、协议变更、OEM削减、CXL、中国监管等完全不相关主题，无命中。"
+    },
+    "route": {
+      "primary_route": "ARCHIVE",
+      "side_effects": [
+        "archive_message"
+      ],
+      "reason": "w1=OLD/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_73964f3281eb471c922e9adfc20d4cfc",
+      "case_id": "case_1e440242fd2449b493bb01fa47fef68b",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_b37265d6-5650-9c1a-8133-e83323a4aed8",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13391,
+      "output_tokens": 1109,
+      "reasoning_tokens": 1090,
+      "cached_input_tokens": 0,
+      "latency_ms": 15073,
+      "output": {
+        "event_ids": [
+          "E43",
+          "E44",
+          "E42"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:55:55.735650Z"
+    },
+    {
+      "turn_id": "turn_cfb664b8a26342eaa22d20b2505493ca",
+      "case_id": "case_1e440242fd2449b493bb01fa47fef68b",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_3cfbf4e6-2262-9084-95f2-818fc99ffa04",
+      "previous_response_id": "resp_b37265d6-5650-9c1a-8133-e83323a4aed8",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 15459,
+      "output_tokens": 1472,
+      "reasoning_tokens": 1341,
+      "cached_input_tokens": 0,
+      "latency_ms": 15074,
+      "output": {
+        "result": "OLD",
+        "confidence": "normal",
+        "reference_ids": [
+          "E43",
+          "E44"
+        ],
+        "reason": "Core fact (HBM4 in commercial delivery) is already covered by E43 (began mass production and commercial shipments, Feb 2026) and reinforced by E44 (plans for tripling HBM4 revenue in 2026-H2). The June 2027 message itself explicitly frames the update as a 'current status of the same product family' and a reaffirmation of commercial delivery, with no new product milestone, customer win, or change in factual stage."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:56:10.835386Z"
+    },
+    {
+      "turn_id": "turn_b01f8f2ad6f94babba11b92c0a25c14c",
+      "case_id": "case_1e440242fd2449b493bb01fa47fef68b",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_34ad3b17-1827-94d9-a728-4b1925bc65d9",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 7078,
+      "output_tokens": 3278,
+      "reasoning_tokens": 3087,
+      "cached_input_tokens": 0,
+      "latency_ms": 39194,
+      "output": {
+        "policy_ids": [],
+        "matched_condition_ids": [],
+        "confidence": "normal",
+        "reason": "消息为三星对已公告HBM4量产/出货的后续产品状态更新（'broad commercial delivery'），最相关候选pol_83c565b3ca305ee04c41虽落入match_scope（主要DRAM供应商、先进封装、客户交付），但该criterion要求同时满足'达到量产良率确认+多个重要客户重复交付合格DRAM+DRAM市场交期缩短或合同价下降'。消息明确说明量产与商业出货在earlier announcements中已首次沟通，本次仅为status update而非新确认；且全文未涉及任何DRAM市场交期缩短或合同价格下降信息，criterion中硬性AND条件未完整成立。其余Policy均针对Micron财报、协议变更、OEM削减、CXL、中国监管等完全不相关主题，无命中。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:56:19.859490Z"
+    }
+  ]
+}

@@ -10,11 +10,17 @@ from doxagent.codex_runtime.schema import CodexMonitoringO4Node
 from doxagent.message_bus_v2.schema import UpdateActor
 from doxagent.message_bus_v2.service import MessageBusV2Service
 
+from .policy import (
+    TERMINAL_DELIVERY_STATUSES,
+    O4MutationPolicy,
+    O4PlanFinalizer,
+)
 from .repository import MonitoringO4Repository
-from .runner import O4Runner
+from .runner import O4Runner, O4TurnInterrupted
 from .schema import (
     ConfigureCompletion,
     DeliveryCheckpoint,
+    DeliveryItemStatus,
     DeliverySettlement,
     DeliveryWorkItemCheckpoint,
     MonitoringConfigurationPlan,
@@ -41,12 +47,15 @@ class MonitoringO4Orchestrator:
         message_bus: MessageBusV2Service | None,
         message_bus_enabled: bool,
         context_provider: O4ConfigurationContextProvider | None = None,
+        mutation_policy: O4MutationPolicy | None = None,
     ) -> None:
         self.repository = repository
         self.runner = runner
         self.message_bus = message_bus
         self.message_bus_enabled = message_bus_enabled
         self.context_provider = context_provider
+        self.mutation_policy = mutation_policy or O4MutationPolicy()
+        self.plan_finalizer = O4PlanFinalizer(self.mutation_policy)
 
     def submit_configure(
         self,
@@ -129,18 +138,34 @@ class MonitoringO4Orchestrator:
 
     async def _configure(self, request: O4Request) -> O4RunResult:
         result = cast(ConfigureCompletion, await self.runner.run(request))
-        self._validate_plan_against_input(result.plan, request.payload)
-        self.repository.save_plan(result.plan)
+        message_bus = self.message_bus
+
+        def load_binding(source_id: str) -> dict[str, Any] | None:
+            if message_bus is None:
+                return None
+            binding = message_bus.repository.get_binding(f"{request.ticker}:{source_id}")
+            return binding.model_dump(mode="json") if binding is not None else None
+
+        plan = self.plan_finalizer.finalize(
+            result.plan,
+            source_loader=(
+                None
+                if message_bus is None
+                else lambda source_id: message_bus.require_source(source_id).model_dump(mode="json")
+            ),
+            binding_loader=None if message_bus is None else load_binding,
+        )
+        result = result.model_copy(update={"plan": plan})
+        self._validate_plan_against_input(plan, request.payload)
+        self.repository.save_plan(plan)
         new_items = [
             item
-            for item in result.plan.source_needs
+            for item in plan.source_needs
             if item.resolution is SourceNeedResolution.NEW_CRAWLER_REQUIRED
         ]
         if not new_items:
             started, reason = self._start_monitoring(request.ticker)
-            request.status = (
-                O4RequestStatus.SUCCEEDED if started else O4RequestStatus.DEGRADED
-            )
+            request.status = O4RequestStatus.SUCCEEDED if started else O4RequestStatus.DEGRADED
             self.repository.save_request(request)
             return O4RunResult(
                 request=request,
@@ -162,7 +187,15 @@ class MonitoringO4Orchestrator:
                 plan_version=result.plan.plan_version,
                 ticker=result.plan.ticker,
                 items=[
-                    DeliveryWorkItemCheckpoint(source_need_id=item.source_need_id)
+                    DeliveryWorkItemCheckpoint(
+                        source_need_id=item.source_need_id,
+                        candidate_id=(
+                            item.primary_candidate.candidate_id
+                            if item.primary_candidate is not None
+                            else None
+                        ),
+                        status=DeliveryItemStatus.IN_PROGRESS,
+                    )
                     for item in new_items
                 ],
             )
@@ -180,7 +213,8 @@ class MonitoringO4Orchestrator:
         reasons: list[str] = []
         try:
             settlement = cast(DeliverySettlement, await self.runner.run(request))
-            self._validate_delivery(plan, settlement)
+            checkpoint = self.repository.get_delivery_checkpoint(plan.plan_id, plan.plan_version)
+            self._validate_delivery(plan, settlement, checkpoint=checkpoint)
             self.repository.save_delivery_settlement(settlement)
             self.repository.save_delivery_checkpoint(
                 DeliveryCheckpoint(
@@ -194,6 +228,7 @@ class MonitoringO4Orchestrator:
                             crawler_id=item.crawler_id,
                             version=item.crawler_version,
                             stage="SETTLED",
+                            delivery_stage="SETTLED",
                             status=item.status,
                             last_failure="; ".join(item.constraints) or None,
                         )
@@ -206,15 +241,26 @@ class MonitoringO4Orchestrator:
                 reasons.append("one or more crawler Source Needs were not delivered")
             else:
                 request.status = O4RequestStatus.SUCCEEDED
+        except O4TurnInterrupted as exc:
+            request.status = O4RequestStatus.INTERRUPTED
+            request.error = str(exc)[:4000]
+            reasons.append(str(exc))
+            checkpoint = self.repository.get_delivery_checkpoint(plan.plan_id, plan.plan_version)
+            if exc.checkpoint_committed and self._has_nonterminal_items(checkpoint):
+                continuation = self._enqueue_delivery_continuation(request, plan)
+                reasons.append(
+                    f"delivery continuation queued: {continuation.request_id} "
+                    f"(seq={continuation.continuation_seq})"
+                )
+            elif not exc.checkpoint_committed:
+                reasons.append("delivery continuation not queued: no valid committed checkpoint")
         except Exception as exc:
             request.status = O4RequestStatus.DEGRADED
             request.error = str(exc)[:4000]
             reasons.append(str(exc))
         finally:
             started, start_reason = (
-                self._start_monitoring(request.ticker)
-                if start_monitoring
-                else (False, None)
+                self._start_monitoring(request.ticker) if start_monitoring else (False, None)
             )
             if start_reason:
                 reasons.append(start_reason)
@@ -290,14 +336,18 @@ class MonitoringO4Orchestrator:
         expected = {str(item["policy_id"]) for item in policy_set.get("policies", [])}
         covered = {policy_id for item in plan.source_needs for policy_id in item.policy_ids}
         if covered != expected:
+            missing = sorted(expected - covered)
+            unknown = sorted(covered - expected)
             raise ValueError(
-                f"configuration plan policy coverage mismatch: missing={sorted(expected-covered)}, "
-                f"unknown={sorted(covered-expected)}"
+                f"configuration plan policy coverage mismatch: missing={missing}, unknown={unknown}"
             )
 
     @staticmethod
     def _validate_delivery(
-        plan: MonitoringConfigurationPlan, settlement: DeliverySettlement
+        plan: MonitoringConfigurationPlan,
+        settlement: DeliverySettlement,
+        *,
+        checkpoint: DeliveryCheckpoint | None = None,
     ) -> None:
         if (settlement.plan_id, settlement.plan_version, settlement.ticker) != (
             plan.plan_id,
@@ -313,6 +363,53 @@ class MonitoringO4Orchestrator:
         actual = {item.source_need_id for item in settlement.items}
         if expected != actual:
             raise ValueError("delivery settlement must settle every new crawler Source Need")
+        if checkpoint is None:
+            return
+        checkpoint_by_need = {item.source_need_id: item for item in checkpoint.items}
+        plan_by_need = {item.source_need_id: item for item in plan.source_needs}
+        for item in settlement.items:
+            if item.status is not DeliveryItemStatus.FAILED:
+                continue
+            plan_item = plan_by_need[item.source_need_id]
+            approved = {
+                candidate.candidate_id
+                for candidate in [
+                    plan_item.primary_candidate,
+                    *plan_item.alternative_candidates,
+                ]
+                if candidate is not None
+            }
+            progress = checkpoint_by_need.get(item.source_need_id)
+            exhausted = set(progress.exhausted_candidate_ids) if progress else set()
+            if not approved or not approved.issubset(exhausted):
+                raise ValueError(
+                    "delivery FAILED requires every approved candidate to be INFEASIBLE "
+                    "or exhausted after four consecutive STALLED cycles"
+                )
+
+    @staticmethod
+    def _has_nonterminal_items(checkpoint: DeliveryCheckpoint | None) -> bool:
+        return bool(
+            checkpoint
+            and any(item.status not in TERMINAL_DELIVERY_STATUSES for item in checkpoint.items)
+        )
+
+    def _enqueue_delivery_continuation(
+        self,
+        request: O4Request,
+        plan: MonitoringConfigurationPlan,
+    ) -> O4Request:
+        next_seq = request.continuation_seq + 1
+        return self.repository.enqueue(
+            O4Request(
+                ticker=request.ticker,
+                node=CodexMonitoringO4Node.DELIVER,
+                payload={"plan_json": plan.model_dump(mode="json")},
+                dedupe_key=f"deliver-continuation:{request.logical_request_id}:{next_seq}",
+                logical_request_id=request.logical_request_id,
+                continuation_seq=next_seq,
+            )
+        )
 
 
 __all__ = ["MonitoringO4Orchestrator", "O4ConfigurationContextProvider"]

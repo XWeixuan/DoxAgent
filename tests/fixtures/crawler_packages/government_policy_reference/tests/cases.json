@@ -1,0 +1,63 @@
+[
+  {
+    "case_id": "government-replay",
+    "kind": "replay",
+    "live_derived": true,
+    "cassette_refs": ["$live_probe"],
+    "parameters": {"listing_url": "https://gov.example.test/actions", "source_name": "Example Government"},
+    "initial_checkpoint": {},
+    "expected_external_ids": ["POL-A:1"],
+    "expected_checkpoint": {"seen_revisions": ["POL-A:1"]},
+    "observation_assertions": [{"external_id": "POL-A:1", "title_contains": "Policy A", "url_prefix": "https://gov.example.test/actions/", "body_min_length": 5}]
+  },
+  {
+    "case_id": "government-temporal",
+    "kind": "temporal",
+    "cassette_refs": ["tests/temporal_t0.json", "tests/temporal_t1.json"],
+    "parameters": {"listing_url": "https://gov.example.test/actions", "source_name": "Example Government"},
+    "initial_checkpoint": {},
+    "expected_external_ids": ["POL-A:2"],
+    "expected_checkpoint": {"seen_revisions": ["POL-A:2", "POL-A:1"]}
+  },
+  {
+    "case_id": "government-synthetic",
+    "kind": "synthetic",
+    "cassette_refs": ["tests/synthetic.json"],
+    "parameters": {"listing_url": "https://gov.example.test/actions", "source_name": "Example Government"},
+    "initial_checkpoint": {"seen_revisions": ["POL-A:1"]},
+    "expected_external_ids": ["SYNTHETIC-POLICY:1"],
+    "expected_checkpoint": {"seen_revisions": ["POL-A:1", "SYNTHETIC-POLICY:1"]}
+  },
+  {
+    "case_id": "government-partial",
+    "kind": "partial",
+    "cassette_refs": ["tests/partial.json"],
+    "parameters": {"listing_url": "https://gov.example.test/actions", "source_name": "Example Government"},
+    "initial_checkpoint": {},
+    "expected_status": "PARTIAL",
+    "expected_external_ids": ["POL-A:1"],
+    "expected_item_failure_keys": ["POL-B:1"],
+    "expected_retry_keys": ["POL-B:1"],
+    "expected_checkpoint": {"seen_revisions": ["POL-A:1", "POL-B:1"]}
+  },
+  {
+    "case_id": "government-malformed",
+    "kind": "malformed",
+    "cassette_refs": ["tests/malformed.json"],
+    "parameters": {"listing_url": "https://gov.example.test/actions", "source_name": "Example Government"},
+    "initial_checkpoint": {},
+    "expected_status": "PARTIAL",
+    "expected_item_failure_keys": ["POL-BAD:1"],
+    "expected_retry_keys": ["POL-BAD:1"],
+    "expected_checkpoint": {"seen_revisions": ["POL-BAD:1"]}
+  },
+  {
+    "case_id": "government-duplicate",
+    "kind": "duplicate_revision",
+    "cassette_refs": ["tests/duplicate.json"],
+    "parameters": {"listing_url": "https://gov.example.test/actions", "source_name": "Example Government"},
+    "initial_checkpoint": {},
+    "expected_external_ids": ["POL-DUP:2"],
+    "expected_checkpoint": {"seen_revisions": ["POL-DUP:2"]}
+  }
+]

@@ -1,0 +1,133 @@
+{
+  "case_id": "MU-W12-009",
+  "status": "COMPLETED",
+  "started_at": "2026-09-04T01:54:17.161012+08:00",
+  "completed_at": "2026-09-04T01:54:51.862875+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E43",
+        "E42",
+        "E41"
+      ]
+    },
+    "w1_final": {
+      "result": "OLD",
+      "confidence": "normal",
+      "reference_ids": [
+        "E43"
+      ],
+      "reason": "The core fact — Samsung began mass production and commercial shipments of HBM4 in February 2026 — is already covered by E43's F175. The remainder of the message provides analytical context and references to prior events (HBM4E sampling, yield improvements) without introducing new factual developments."
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息落入pol_83c565b3ca305ee04c41的match_scope（三星作为主要DRAM供应商的HBM4先进封装量产），但criterion要求三项同时成立：(1)新节点/先进封装达到量产良率、(2)向多个重要客户重复交付合格DRAM、(3)DRAM市场交期缩短或合同价开始下降。消息仅提及三星2026年2月开始量产和商业出货，未确认多个重要客户的重复交付，也完全未涉及行业交期缩短或合同价格下降，criterion未满足。"
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息落入pol_83c565b3ca305ee04c41的match_scope（三星作为主要DRAM供应商的HBM4先进封装量产），但criterion要求三项同时成立：(1)新节点/先进封装达到量产良率、(2)向多个重要客户重复交付合格DRAM、(3)DRAM市场交期缩短或合同价开始下降。消息仅提及三星2026年2月开始量产和商业出货，未确认多个重要客户的重复交付，也完全未涉及行业交期缩短或合同价格下降，criterion未满足。"
+    },
+    "route": {
+      "primary_route": "ARCHIVE",
+      "side_effects": [
+        "archive_message"
+      ],
+      "reason": "w1=OLD/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_733e8754a5d84027b22d2e85ce593279",
+      "case_id": "case_7543c84ca9a74498bb4820bf22c4af81",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_f9e5c59f-3751-985a-a893-135c22eb72cd",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13405,
+      "output_tokens": 897,
+      "reasoning_tokens": 878,
+      "cached_input_tokens": 0,
+      "latency_ms": 12347,
+      "output": {
+        "event_ids": [
+          "E43",
+          "E42",
+          "E41"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:54:29.573436Z"
+    },
+    {
+      "turn_id": "turn_cc07d96b2d7348aa8ed852b24fed4436",
+      "case_id": "case_7543c84ca9a74498bb4820bf22c4af81",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_5c5fb7e9-f1b8-9215-92f3-8bc962930289",
+      "previous_response_id": "resp_f9e5c59f-3751-985a-a893-135c22eb72cd",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 15231,
+      "output_tokens": 517,
+      "reasoning_tokens": 431,
+      "cached_input_tokens": 0,
+      "latency_ms": 9000,
+      "output": {
+        "result": "OLD",
+        "confidence": "normal",
+        "reference_ids": [
+          "E43"
+        ],
+        "reason": "The core fact — Samsung began mass production and commercial shipments of HBM4 in February 2026 — is already covered by E43's F175. The remainder of the message provides analytical context and references to prior events (HBM4E sampling, yield improvements) without introducing new factual developments."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:54:38.599890Z"
+    },
+    {
+      "turn_id": "turn_02e122d9c8fe485286cb3ec0f867180b",
+      "case_id": "case_7543c84ca9a74498bb4820bf22c4af81",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_7ab5678c-2e50-9281-90f9-0e40559fdc7b",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 7092,
+      "output_tokens": 2770,
+      "reasoning_tokens": 2625,
+      "cached_input_tokens": 0,
+      "latency_ms": 34634,
+      "output": {
+        "policy_ids": [],
+        "matched_condition_ids": [],
+        "confidence": "normal",
+        "reason": "消息落入pol_83c565b3ca305ee04c41的match_scope（三星作为主要DRAM供应商的HBM4先进封装量产），但criterion要求三项同时成立：(1)新节点/先进封装达到量产良率、(2)向多个重要客户重复交付合格DRAM、(3)DRAM市场交期缩短或合同价开始下降。消息仅提及三星2026年2月开始量产和商业出货，未确认多个重要客户的重复交付，也完全未涉及行业交期缩短或合同价格下降，criterion未满足。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:54:51.862875Z"
+    }
+  ]
+}

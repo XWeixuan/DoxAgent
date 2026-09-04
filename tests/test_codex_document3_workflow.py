@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import shutil
+from contextlib import contextmanager
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -35,27 +36,35 @@ from doxagent.workflows.codex_document2.schema import (
     ShellOutcome,
     ShellResearchStage,
 )
-from doxagent.workflows.codex_document3.assembler import apply_patch
+from doxagent.workflows.codex_document3.assembler import apply_patch, assemble_initial_policy_set
+from doxagent.workflows.codex_document3.diagnostics import (
+    build_semantic_diagnostics,
+    reconcile_review_with_diagnostics,
+)
 from doxagent.workflows.codex_document3.identity import allocate_stable_policy_ids
 from doxagent.workflows.codex_document3.inputs import Document3InputPreparer
 from doxagent.workflows.codex_document3.orchestrator import Document3Orchestrator
-from doxagent.workflows.codex_document3.recovery import parse_jsonl
+from doxagent.workflows.codex_document3.recovery import normalize_payload, parse_jsonl
 from doxagent.workflows.codex_document3.repository import (
     HybridDocument3PolicyRepository,
     InMemoryDocument3PolicyRepository,
+    PostgresDocument3PolicyRepository,
     SQLiteDocument3PolicyRepository,
     StalePolicySetBaseError,
 )
 from doxagent.workflows.codex_document3.runner import Document3AgentRunner
 from doxagent.workflows.codex_document3.runtime_projection import (
     Document3RuntimeProjectionConsumer,
+    RuntimeProjectionCompatibilityError,
     project_policy_set,
+    upgrade_runtime_projection,
 )
 from doxagent.workflows.codex_document3.schema import (
     ActivationCondition,
     Calibration,
     CalibrationLogEntry,
     CalibrationSourceKind,
+    CoverageMap,
     Document2Ref,
     EventLibraryRef,
     O3RunStatus,
@@ -65,6 +74,7 @@ from doxagent.workflows.codex_document3.schema import (
     PolicyPatchSet,
     PolicySet,
     PublicationState,
+    ReviewResult,
     TriggerCalibrationRecord,
     TriggerCalibrationStageStatus,
     TriggerCalibrationState,
@@ -100,11 +110,9 @@ def _policy(policy_id: str = "tmp_1", *, criterion: str = "公司正式确认量
                 calibration=Calibration(
                     reference_state="当前仅处于验证阶段",
                     trigger_boundary="进入持续商业量产",
-                    qualifying_evidence="公司或客户正式确认重复量产供货",
                 ),
             )
         ],
-        activation_summary="同一消息确认已进入持续商业量产",
     )
 
 
@@ -268,7 +276,7 @@ def test_recoverable_jsonl_normalizes_null_and_quarantines_only_bad_rows() -> No
     }
 
 
-def test_stable_identity_preserves_policy_and_condition_without_renumbering() -> None:
+def test_stable_identity_reuses_policy_when_title_decision_and_provenance_are_stable() -> None:
     previous = _policy("pol_stable", criterion="公司正式确认量产")
     previous = previous.model_copy(
         update={
@@ -291,8 +299,24 @@ def test_stable_identity_preserves_policy_and_condition_without_renumbering() ->
 
     policies, mapping = allocate_stable_policy_ids(ticker="MU", drafts=[draft], previous=[previous])
 
-    assert mapping == {"tmp_new": "pol_stable"}
+    assert mapping["tmp_new"] == "pol_stable"
     assert [item.condition_id for item in policies[0].activation_conditions] == ["C4", "C5"]
+
+
+def test_stable_identity_preserves_single_condition_across_safe_legacy_migration() -> None:
+    previous = Policy.model_validate(
+        {
+            **_policy("pol_stable").model_dump(mode="json"),
+            "activation_mode": "ALL",
+            "activation_summary": "legacy summary",
+        }
+    )
+    draft = _policy("tmp_new")
+
+    policies, mapping = allocate_stable_policy_ids(ticker="MU", drafts=[draft], previous=[previous])
+
+    assert mapping == {"tmp_new": "pol_stable"}
+    assert policies[0].policy_id == "pol_stable"
 
 
 def test_validator_is_lenient_and_marks_coverage_problems_partial() -> None:
@@ -328,6 +352,157 @@ def test_validator_is_lenient_and_marks_coverage_problems_partial() -> None:
     assert report.publication_state is PublicationState.PARTIAL
     assert {item.code for item in report.findings} >= {"UNCOVERED_GAP"}
     assert not report.blocking_findings
+
+
+def test_many_independent_conditions_are_neutral_for_publication() -> None:
+    base = _policy()
+    policy = base.model_copy(
+        update={
+            "activation_conditions": [
+                base.activation_conditions[0].model_copy(
+                    update={"condition_id": f"C{index}", "criterion": f"公司确认独立事件{index}"}
+                )
+                for index in range(1, 7)
+            ],
+        }
+    )
+    report = validate_initial_artifacts(
+        expected_gap_refs=[("S1", "E1", "G1")],
+        worklist=[
+            WorklistEntry(
+                shell_id="S1",
+                expectation_id="E1",
+                gap_id="G1",
+                path_id="P1",
+                direction=PolicyDecision.LONG,
+                path_summary="多个替代触发面",
+                d2_boundary_sufficient=True,
+                status=PathStatus.COMPILED,
+                policy_ids=[policy.policy_id],
+            )
+        ],
+        calibration_log=[],
+        policies=[policy],
+    )
+
+    assert report.publication_state is PublicationState.COMPLETE
+    assert "MANY_CONDITIONS" not in {item.code for item in report.findings}
+
+
+def test_semantic_diagnostics_are_nonblocking_but_require_review_explanation() -> None:
+    policies = [
+        _policy(f"tmp_{index}", criterion="进入商业量产或大规模放量").model_copy(
+            update={
+                "activation_conditions": [
+                    _policy().activation_conditions[0].model_copy(
+                        update={
+                            "condition_id": f"C{index}",
+                            "criterion": "进入商业量产或大规模放量",
+                            "calibration": Calibration(
+                                reference_state="当前仍处验证阶段",
+                                trigger_boundary="进入商业量产或大规模放量",
+                            ),
+                        }
+                    )
+                ]
+            }
+        )
+        for index in range(1, 4)
+    ]
+    worklist = [
+        WorklistEntry(
+            shell_id="S1",
+            expectation_id="E1",
+            gap_id="G1",
+            path_id=f"P{index}",
+            direction=PolicyDecision.LONG,
+            path_summary="量产推进",
+            d2_boundary_sufficient=True,
+            status=PathStatus.COMPILED,
+            policy_ids=[f"tmp_{index}"],
+        )
+        for index in range(1, 4)
+    ]
+    diagnostics = build_semantic_diagnostics(
+        document2_payload={"possible_occurrence": "进入商业量产或大规模放量"},
+        worklist=worklist,
+        policies=policies,
+        workspace_paths=["output/work/_compile_policies.js"],
+    )
+
+    codes = {item.code for item in diagnostics.findings}
+    assert diagnostics.criterion_equals_trigger_boundary_ratio == 1
+    assert diagnostics.duplicate_reference_state_ratio == pytest.approx(2 / 3)
+    assert diagnostics.d2_possible_occurrence_exact_copy_ratio == 1
+    assert diagnostics.d2_boundary_sufficient_true_ratio == 1
+    assert diagnostics.unresolved_path_count == 0
+    assert diagnostics.semantic_batch_generation_detected is True
+    assert {
+        "CRITERION_BOUNDARY_EXACT_COPY_HIGH",
+        "REFERENCE_STATE_DUPLICATION_HIGH",
+        "D2_POSSIBLE_OCCURRENCE_EXACT_COPY_HIGH",
+        "D2_BOUNDARY_SUFFICIENT_NEAR_ALL",
+        "HIDDEN_OR_CANDIDATES",
+        "UNANCHORED_DEGREE_TERMS",
+        "SEMANTIC_BATCH_GENERATION_DETECTED",
+        "ZERO_UNRESOLVED_WITH_SYSTEMIC_ANOMALIES",
+    } <= codes
+
+    review = reconcile_review_with_diagnostics(
+        ReviewResult(
+            status="PASSED",
+            issue_count=0,
+            blocking_issue_count=0,
+            issues=[],
+        ),
+        diagnostics,
+    )
+    assert review.status == "REVIEW_BLOCKED"
+    assert review.issue_count == 2
+    assert review.blocking_issue_count == 0
+
+
+def test_coverage_warning_categories_are_deduplicated_with_semantic_priority() -> None:
+    coverage = CoverageMap(
+        ticker="MU",
+        provenance_warnings=["frozen input warning", "frozen input warning"],
+        workflow_warnings=["review warning", "workflow warning", "workflow warning"],
+        semantic_warnings=["review warning", "semantic warning", "semantic warning"],
+        warnings=["legacy warning", "semantic warning"],
+    )
+
+    assert coverage.provenance_warnings == ["frozen input warning"]
+    assert coverage.semantic_warnings == ["review warning", "semantic warning"]
+    assert coverage.workflow_warnings == ["workflow warning", "legacy warning"]
+    assert coverage.warnings == [
+        "frozen input warning",
+        "workflow warning",
+        "legacy warning",
+        "review warning",
+        "semantic warning",
+    ]
+
+
+def test_review_recovery_derives_status_from_residual_issues_without_overblocking() -> None:
+    normalized = normalize_payload(
+        ReviewResult,
+        {
+            "status": "PASSED",
+            "issue_count": 0,
+            "blocking_issue_count": 0,
+            "issues": [
+                {
+                    "code": "ADVISORY",
+                    "message": "wording can improve",
+                    "blocking": False,
+                }
+            ],
+        },
+    )
+
+    assert normalized["status"] == "REVIEW_BLOCKED"
+    assert normalized["issue_count"] == 1
+    assert normalized["blocking_issue_count"] == 0
 
 
 @pytest.mark.parametrize("repository_kind", ["memory", "sqlite"])
@@ -381,19 +556,105 @@ def test_empty_patch_is_noop_and_nonempty_patch_increments_once() -> None:
     assert updated.policies == [changed]
 
 
+def test_initialize_assembly_uses_fixed_or_policy_contract() -> None:
+    assembled, _ = assemble_initial_policy_set(
+        ticker="MU",
+        document2_ref=_policy_set().document2_ref,
+        event_library_ref=_policy_set().event_library_ref,
+        drafts=[_policy("tmp_any")],
+        previous=None,
+        validation=validate_initial_artifacts(
+            expected_gap_refs=[], worklist=[], calibration_log=[], policies=[]
+        ),
+        published_at=NOW,
+    )
+
+    assert assembled.schema_version == "document3.v2.2"
+    policy_payload = assembled.policies[0].model_dump(mode="json")
+    assert "activation_mode" not in policy_payload
+    assert "activation_summary" not in policy_payload
+    assert "qualifying_evidence" not in policy_payload["activation_conditions"][0]["calibration"]
+
+
 def test_runtime_projection_is_deterministic_and_excludes_calibration() -> None:
     policy_set = _policy_set()
     projection = project_policy_set(policy_set)
     payload = projection.model_dump(mode="json")
 
     assert projection.policy_set_version == 1
-    assert payload["schema_version"] == "document3.runtime_projection.v2"
+    assert payload["schema_version"] == "document3.runtime_projection.v4"
+    assert payload["consumer_contract"] == "persistent-runtime.v2.or-policy.v1"
     assert payload["policies"][0]["policy_id"] == "pol_existing"
+    assert "activation_mode" not in payload["policies"][0]
+    assert "activation_summary" not in payload["policies"][0]
+    assert payload["policies"][0]["condition_ids"] == ["C1"]
+    assert payload["policies"][0]["activation_revision"].startswith("ar_")
     assert len(payload["policies"][0]["criterion"]) == 1
     assert "calibration" not in payload["policies"][0]
     repository = InMemoryDocument3PolicyRepository()
     repository.publish(policy_set, expected_base_version=None)
     assert Document3RuntimeProjectionConsumer(repository).current("mu") == projection
+
+
+def test_legacy_multi_condition_all_projection_is_not_silently_changed_to_or() -> None:
+    with pytest.raises(RuntimeProjectionCompatibilityError, match="legacy ALL"):
+        upgrade_runtime_projection(
+            {
+                "schema_version": "document3.runtime_projection.v2",
+                "ticker": "MU",
+                "policy_set_version": 2,
+                "policy_set_published_at": NOW.isoformat(),
+                "policies": [
+                    {
+                        "policy_id": "pol_legacy",
+                        "match_scope": "qualification",
+                        "criterion": ["qualification complete", "volume production started"],
+                        "activation_summary": "both facts confirmed",
+                    }
+                ],
+            }
+        )
+
+    upgraded = upgrade_runtime_projection(
+        {
+            "schema_version": "document3.runtime_projection.v3",
+            "consumer_contract": "persistent-runtime.v2.any-policy.v1",
+            "ticker": "MU",
+            "policy_set_version": 2,
+            "policy_set_published_at": NOW.isoformat(),
+            "policies": [
+                {
+                    "policy_id": "pol_legacy_any",
+                    "match_scope": "qualification",
+                    "activation_mode": "ANY",
+                    "condition_ids": ["C1", "C2"],
+                    "criterion": ["qualification complete", "volume production started"],
+                    "activation_summary": "either fact is sufficient",
+                    "activation_revision": "ar_legacy",
+                }
+            ],
+        }
+    )
+    assert upgraded.schema_version == "document3.runtime_projection.v4"
+    assert upgraded.consumer_contract == "persistent-runtime.v2.or-policy.v1"
+    assert upgraded.policies[0].condition_ids == ["C1", "C2"]
+
+    with pytest.raises(RuntimeProjectionCompatibilityError):
+        upgrade_runtime_projection({"schema_version": "document3.runtime_projection.v999"})
+
+
+def test_activation_revision_ignores_policy_set_version_but_changes_on_rebaseline() -> None:
+    first = project_policy_set(_policy_set(version=1)).policies[0].activation_revision
+    unchanged = project_policy_set(_policy_set(version=2)).policies[0].activation_revision
+    recalibrated_policy = _policy("pol_existing", criterion="公司正式确认规模量产")
+    recalibrated = (
+        project_policy_set(_policy_set(version=3, policies=[recalibrated_policy]))
+        .policies[0]
+        .activation_revision
+    )
+
+    assert unchanged == first
+    assert recalibrated != first
 
 
 class _CountingPolicyRepository(InMemoryDocument3PolicyRepository):
@@ -445,6 +706,50 @@ def test_hybrid_current_uses_local_full_payload_when_remote_head_matches() -> No
     assert hybrid.get_current("MU") == policy_set
     assert primary.current_version_reads == 1
     assert primary.full_version_reads == 0
+
+
+def test_postgres_runtime_projection_reads_only_compact_column(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    projection = project_policy_set(_policy_set())
+
+    class _Cursor:
+        def __init__(self) -> None:
+            self.queries: list[str] = []
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return None
+
+        def execute(self, query: str, _params: tuple[object, ...]) -> None:
+            self.queries.append(query)
+
+        def fetchone(self):
+            return (projection.model_dump(mode="json"),)
+
+    class _Connection:
+        def __init__(self, cursor: _Cursor) -> None:
+            self._cursor = cursor
+
+        def cursor(self) -> _Cursor:
+            return self._cursor
+
+    cursor = _Cursor()
+
+    @contextmanager
+    def _connect():
+        yield _Connection(cursor)
+
+    repository = PostgresDocument3PolicyRepository("postgresql://unused")
+    monkeypatch.setattr(repository, "_connect", _connect)
+
+    assert repository.get_current_projection("MU") == projection
+    assert repository.get_projection("MU", projection.policy_set_version) == projection
+    assert len(cursor.queries) == 2
+    assert all("runtime_projection_json" in query for query in cursor.queries)
+    assert all("policy_set_json" not in query for query in cursor.queries)
 
 
 class _AsyncWorkspace:
@@ -577,6 +882,11 @@ class _O3WorkerStub:
                 "issue_count": 0,
                 "blocking_issue_count": 0,
                 "issues": [],
+                "diagnostics_reviewed": True,
+                "diagnostics_explanation": (
+                    "Reviewed the supplied metrics and confirmed the single fixture policy "
+                    "has one independently sufficient condition."
+                ),
             }
         return WorkerJob(
             job_id=f"job-{len(self.requests)}",

@@ -78,7 +78,7 @@ Tool 的统一请求/返回外壳：
 | `tikhub_x_user_posts` | `api` / `builtin:tikhub_x_user_posts` | 必填 `usernames: string[]`，1..2 项 | X 用户帖子 |
 | `newswire_rss` | `api` / `builtin:newswire_rss` | 必填 `rss_urls: string[]`，1..3 项 | RSS 拉取 |
 
-初始 `default` profile **只有** `benzinga_news` 和 `finnhub_company_news`，两者工作日纽约时间 07:00–18:00、60 秒轮询、10% tolerance、持续失败 1800 秒后产生 binding poll alert。两个 reference crawler package 会自动建立 working copy，但不会自动成为 Message Bus source。
+初始 `default` profile **只有** `benzinga_news` 和 `finnhub_company_news`，两者工作日纽约时间 07:00–18:00、60 秒轮询、10% tolerance、持续失败 1800 秒后产生 binding poll alert。Crawler registry 初始为空；测试 fixture 不会自动建立 working copy。
 
 `adapter_ref` 的真实形式有三种：`builtin:<source_id>`、`crawler:<crawler_id>`、`file:<relative.py>:<factory>`。`file:` 路径必须位于 `DOXAGENT_MESSAGE_BUS_V2_ADAPTER_ROOT`，factory 返回实现 `async poll(PollContext)` 的对象，并按 `(adapter_ref, source_version)` 缓存。Source 注册阶段只校验 `kind=crawler` 必须配 `crawler:`、API source 不能配 `crawler:`；builtin/file 是否真实存在要到 poll resolve 时才会发现。因此新采集网页优先使用可 certification 的 Crawler Plane，不要把注册成功当成 adapter 可执行证明。
 
@@ -344,7 +344,7 @@ Runtime envelope 的 `source_message_id/source_id/binding_id/url/published_at` �
 
 `create_version` 创建 `WORKING` 目录。可用 `base_version` 从已有 working/release 复制；版本必须从 1 开始并严格等于 `latest_version + 1`。`promote` 是 move，不是 copy：working 目录消失，release 目录变成只读。
 
-Crawler Plane SQLite 持久化 package/version、每 crawler+binding checkpoint、execution、artifact metadata、cassette metadata、certification、regression 和 alert/policy。不要直接修改这些表。
+Crawler Plane SQLite 持久化 package/version、每 crawler+binding checkpoint、execution、service-owned item retry、artifact metadata、cassette metadata、certification、regression 和 alert/policy。不要直接修改这些表。Retry 唯一键为 `crawler_id + binding_id + item_key`；下一次正常 production poll 会把 due items 作为 `ctx.retry_items` 注入当前 ACTIVE version。
 
 实现：[`crawler_plane/assets.py`](../src/doxagent/crawler_plane/assets.py)、[`crawler_plane/repository.py`](../src/doxagent/crawler_plane/repository.py)、[`crawler_plane/schema.py`](../src/doxagent/crawler_plane/schema.py)。
 
@@ -356,6 +356,7 @@ Crawler Plane SQLite 持久化 package/version、每 crawler+binding checkpoint�
 ctx.ticker: str
 ctx.parameters: dict
 ctx.checkpoint: dict
+ctx.retry_items: list[dict]
 await ctx.http.get(url, params={}, headers={})
 await ctx.browser.get(url)
 await ctx.artifacts.save(name, content, kind="crawler")
@@ -395,7 +396,7 @@ async def crawl(ctx: CrawlerContext) -> CrawlerRunOutput:
 
 `CrawlerObservation` 要求非空 body/source、绝对 HTTP(S) URL、带 timezone 的 `published_at`。建议提供稳定 `external_id`，否则 Message Bus bridge 会以 URL 形成身份。
 
-可复用确定性 helper：`html_text`、`article_text`、`parse_datetime`、`canonical_url`、`json_value`、`xml_root`、`sha256`、`unseen_ids`、`advance_seen_ids`，见 [`toolkit.py`](../src/doxagent/crawler_plane/toolkit.py)。完整参考 crawler 见 [`company_ir_reference/crawler.py`](../src/doxagent/crawler_plane/reference_packages/company_ir_reference/crawler.py)。
+可复用确定性 helper：`html_text`、`article_text`、`parse_datetime`、`canonical_url`、`json_value`、`xml_root`、`sha256`、`unseen_ids`、`advance_seen_ids`，见 [`toolkit.py`](../src/doxagent/crawler_plane/toolkit.py)。仅供测试说明的完整 fixture 见 [`company_ir_reference/crawler.py`](../tests/fixtures/crawler_packages/company_ir_reference/crawler.py)；它不会进入生产 registry，也不能作为真实来源能力复用。
 
 实际安全边界：子进程是受信 O4 代码执行环境，不是 OS sandbox。框架提供父进程网络 broker，但当前没有从操作系统层阻止 crawler 自己 import socket/http client 或访问文件。Agent 必须只使用 `ctx.http` / `ctx.browser`，不要把“parent-owned capability”误解为强隔离。
 
@@ -412,9 +413,13 @@ async def crawl(ctx: CrawlerContext) -> CrawlerRunOutput:
 | `crawler_plane.execute` | 完整 `CrawlerExecutionRequest` | CrawlerExecutionResult |
 | `crawler_plane.live_probe` | `crawler_id,version,ticker,parameters`；可选 `baseline_cassette_ref` | CrawlerExecutionResult |
 | `crawler_plane.get_execution` | `execution_id` | `{execution,artifacts[]}` |
+| `crawler_plane.get_cassette` | `cassette_id` 或 `cassette_ref` | `{cassette}` |
 | `crawler_plane.list_alerts` | 可选 `crawler_id,open_only` | `{alerts[]}` |
 | `crawler_plane.update_alert_policy` | 完整 CrawlerAlertPolicy | policy |
 | `crawler_plane.resolve_alert` | `alert_id` | resolved alert |
+| `crawler_plane.list_retries` | 可选 `crawler_id,binding_id,status,limit` | `{retries:[CrawlerRetryItem]}` |
+| `crawler_plane.resolve_retry` | `retry_id` | resolved retry item |
+| `crawler_plane.reactivate_retry` | `retry_id` | reset PENDING retry item |
 | `crawler_plane.register_source` | 完整 CrawlerSourceRegistration | SourceDefinition |
 | `crawler_plane.add_regression` | `execution_id` | RegressionCase |
 
@@ -445,11 +450,11 @@ async def crawl(ctx: CrawlerContext) -> CrawlerRunOutput:
 }
 ```
 
-`CrawlerExecutionResult` 返回并持久化：`execution_id,poll_run_id,crawler_id,crawler_version,source_id,binding_id,ticker,source_parameters,status` (`RUNNING|SUCCEEDED|FAILED|TIMED_OUT`)、`observations[]`、`diagnostics`、`artifact_refs[]`、`cassette_ref`、`checkpoint_before/checkpoint_after`、开始/结束时间、latency/request_count/response_bytes、error code/message 和 `message_bus_telemetry`。Tool 返回该 model；`get_execution` 额外附带已解析的 artifact metadata。
+`CrawlerExecutionResult` 返回并持久化：`execution_id,poll_run_id,crawler_id,crawler_version,source_id,binding_id,ticker,source_parameters,status` (`RUNNING|SUCCEEDED|PARTIAL|FAILED|TIMED_OUT`)、`crawler_content_digest`、`observations[]`、`item_failures[]`、`completed_retry_keys[]`、`retry_keys[]`、`diagnostics`、`artifact_refs[]`、`cassette_ref`、`checkpoint_before/checkpoint_after`、开始/结束时间、latency/request_count/response_bytes、error code/message 和 `message_bus_telemetry`。Tool 返回该 model；`get_execution` 额外附带已解析的 artifact metadata。
 
 ### 5.4 HTTP API
 
-Crawler Plane application service 的受支持入口为：`list_crawlers()`、`get_crawler()`、`create_version()`、`get_version()`、`certify_version()`、`get_certification_result()`、`promote_version()`、`rollback_version()`、`execute()`、`live_probe()`、`get_execution()`、`get_execution_artifacts()`、`get_alert_policy()`、`update_alert_policy()`、`list_alerts()`、`get_alert()`、`resolve_alert()`、`register_crawler_source()`、`add_failure_to_regression()`。内部诊断还可只读调用 repository 的 `list_executions()`、`get_cassette()`、`get_checkpoint()` 和 `list_regressions()`；不要用 repository 执行状态修改。
+Crawler Plane application service 的受支持入口为：`list_crawlers()`、`get_crawler()`、`create_version()`、`get_version()`、`certify_version()`、`get_certification_result()`、`promote_version()`、`rollback_version()`、`execute()`、`live_probe()`、`get_execution()`、`get_execution_artifacts()`、`get_alert_policy()`、`update_alert_policy()`、`list_alerts()`、`get_alert()`、`resolve_alert()`、`list_retries()`、`resolve_retry()`、`reactivate_retry()`、`register_crawler_source()`、`add_failure_to_regression()`。内部诊断还可只读调用 repository 的 `list_executions()`、`get_cassette()`、`get_checkpoint()` 和 `list_regressions()`；不要用 repository 执行状态修改。
 
 ```text
 GET  /api/dashboard/v1/crawler-plane/crawlers
@@ -468,6 +473,10 @@ GET  /api/dashboard/v1/crawler-plane/alert-policies/{policy_key}
 PUT  /api/dashboard/v1/crawler-plane/alert-policies/{policy_key}
 GET  /api/dashboard/v1/crawler-plane/alerts?crawler_id=...&open_only=true
 GET  /api/dashboard/v1/crawler-plane/alerts/{alert_id}
+POST /api/dashboard/v1/crawler-plane/alerts/{alert_id}/resolve
+GET  /api/dashboard/v1/crawler-plane/retries?crawler_id=...&binding_id=...&status=...&limit=...
+POST /api/dashboard/v1/crawler-plane/retries/{retry_id}/resolve
+POST /api/dashboard/v1/crawler-plane/retries/{retry_id}/reactivate
 POST /api/dashboard/v1/crawler-plane/alerts/{alert_id}/resolve
 POST /api/dashboard/v1/crawler-plane/sources
 POST /api/dashboard/v1/crawler-plane/executions/{execution_id}/regressions
@@ -577,7 +586,7 @@ Crawler version 的 `parameter_schema` 与 Message Bus source 的 `parameter_sch
 
 ```json
 [
-  {"case_id":"replay","kind":"replay","cassette_refs":["tests/replay.json"],"parameters":{},"initial_checkpoint":{},"expected_external_ids":["A"]},
+  {"case_id":"replay","kind":"replay","live_derived":true,"cassette_refs":["$live_probe"],"parameters":{},"initial_checkpoint":{},"expected_status":"SUCCEEDED","expected_external_ids":["A"],"expected_checkpoint":{"seen_ids":["A"]},"observation_assertions":[{"external_id":"A","url_prefix":"https://example.test/","body_min_length":20}]},
   {"case_id":"temporal","kind":"temporal","cassette_refs":["tests/t0.json","tests/t1.json"],"parameters":{},"initial_checkpoint":{},"expected_external_ids":["B"]},
   {"case_id":"synthetic","kind":"synthetic","cassette_refs":["tests/synthetic.json"],"parameters":{},"initial_checkpoint":{"seen_ids":["A"]},"expected_external_ids":["SYNTHETIC_D"]}
 ]
@@ -595,25 +604,27 @@ CertificationResult：
   "checks":[
     {"check":"contract","status":"PASS","test_case":null,"expected":{},"actual":{},"cassette_ref":null,"artifact_ref":null,"diagnostic":null}
   ],
+  "regression_count":0,
   "started_at":"...",
   "finished_at":"..."
 }
 ```
 
-六项真实检查：
+七项真实检查：
 
 | check | 实际行为 |
 | --- | --- |
-| `contract` | 要求版本处于 WORKING/CERTIFIED、有 working path、entrypoint 文件存在、`tests/cases.json` 是可校验 array |
+| `contract` | 要求版本处于 WORKING/CERTIFIED、有 working path、entrypoint 存在，并具备 live-derived replay、temporal、synthetic、malformed、duplicate/revision 及 partial/failure cases |
 | `replay` | 至少一个 replay case；逐 case replay，按 observation 顺序精确比较 `external_id or url` |
 | `temporal_replay` | case 必须恰有 T0/T1；T1 输出等于 expected；用推进后 checkpoint 再跑 T1 必须零输出 |
 | `synthetic_increment` | 至少一个 synthetic case；行为与 replay 对比相同 |
+| `package_failures` | 校验 partial/failure、malformed、duplicate/revision 的 status、IDs、item/retry keys、checkpoint 和 observation assertions |
 | `determinism` | 选择第一个 replay 或 synthetic，用相同 cassette/checkpoint 跑两次，observations 和 checkpoint 必须完全一致 |
-| `failure_replay` | 逐个运行已加入该 crawler 的 regression；所有历史失败必须在候选版成功。没有 regression 时通过 |
+| `failure_replay` | 逐个运行已加入该 crawler 的 regression；所有历史失败必须在候选版成功。没有 regression 时为 `NOT_APPLICABLE`，`regression_count=0` |
 
-Certification 不运行 package 自带 pytest，不做 live probe，也不验证真实站点。Temporal 的 T0 observations 当前不与 expected 对比；expected 对应 T1 增量。
+Certification 不运行 package 自带 pytest，不访问真实站点。Temporal 的 T0 observations 不与 expected 对比；expected 对应 T1 增量。Promotion 额外要求成功且有 observation 的 live probe digest、certification digest 与待发布 release digest 完全一致。
 
-实现：[`certification.py`](../src/doxagent/crawler_plane/certification.py)、参考 [`cases.json`](../src/doxagent/crawler_plane/reference_packages/company_ir_reference/tests/cases.json)。
+实现：[`certification.py`](../src/doxagent/crawler_plane/certification.py)、测试 fixture：[`cases.json`](../tests/fixtures/crawler_packages/company_ir_reference/tests/cases.json)。
 
 ## 7. Cassette、Raw Artifact 与 Failure Artifact
 
@@ -622,12 +633,12 @@ Certification 不运行 package 自带 pytest，不做 live probe，也不验证
 每个 exchange 保存：sequence、`http|browser`、method、request URL/headers、status、response URL/headers、可选 response body/ref、observed_at。
 
 - 普通 RECORD 成功 execution 会保存 cassette，但默认移除 `response_body`，所以它保留 lineage/shape，不能保证可用于内容 replay。
-- `live_probe` 强制 `preserve_response_bodies=true`，保存完整 response body。
+- `live_probe` 与 PARTIAL execution 保存完整 response body。
 - FAILED/TIMED_OUT 总是保存带当前已录 exchanges 和 body 的 cassette。
 - REPLAY 按顺序消费 exchange；不足时报 `network cassette exhausted`，transport/URL 不匹配时报 `cassette mismatch`。
 - `cassette_ref` 可以是 DB cassette id，也可以是 package 内相对 JSON path。全局文件路径为 `cassettes/<crawler_id>/<cassette_id>.json`。
 
-当前没有 O4 tool 或 HTTP cassette GET。已知 cassette id 时，内部代码用 `crawler_plane.repository.get_cassette(id)`；Agent 若有 workspace 文件权限，可读取上述 service-generated 文件，但不要修改它。
+O4 使用 `crawler_plane.get_cassette` 按 id/ref 查询；当前 HTTP API 没有 cassette GET。内部代码也可只读调用 `crawler_plane.repository.get_cassette(id)`。不要修改受管 cassette 文件。
 
 安全注意：当前 cassette 不做 header/body secret redaction。request/response headers 会持久化，failure/live probe 还会持久化 body。不要在 crawler 源码、parameters、headers 或 artifacts 中写长期密钥；当前实现也没有专用 secret injection/redaction 接口。
 
@@ -756,7 +767,7 @@ CrawlerAlert：`{alert_id,alert_key,crawler_id,source_id,binding_id,execution_id
 
 - v1 DB 历史不会迁移；正式 v2 不双 poll、不双写。
 - O4 tools 不能枚举 SourceDefinition；需 HTTP/application service。
-- tools/API 没有 cassette GET、checkpoint GET/reset、execution list、Message Bus AcquisitionFailure 查询、Message Bus OperationalAlert resolve。
+- HTTP API 没有 cassette GET；tools/API 没有 checkpoint GET、execution list、Message Bus AcquisitionFailure 查询、Message Bus OperationalAlert resolve。
 - O4 tool 没有 certification-result-by-id 或 get-alert-policy；HTTP/application service 有。
 - 没有 crawler package manifest、bundle upload、requirements 安装、依赖锁定或 per-package virtualenv。
 - 没有 checkpoint migration；只有保持 schema version 或全 crawler reset。

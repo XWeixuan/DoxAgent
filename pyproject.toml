@@ -37,6 +37,7 @@ cdecr = "cdecr.cli:main"
 codex-document3 = "doxagent.workflows.codex_document3.cli:main"
 doxagent-crawler-plane = "doxagent.crawler_plane.cli:main"
 doxagent-monitoring-o4 = "doxagent.workflows.codex_monitoring_o4.cli:main"
+doxagent-monitoring-o4-pilot = "doxagent.workflows.codex_monitoring_o4.pilot_cli:main"
 
 [dependency-groups]
 dev = [

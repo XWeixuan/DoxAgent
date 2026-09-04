@@ -1,0 +1,139 @@
+{
+  "case_id": "MU-W12-002",
+  "status": "COMPLETED",
+  "started_at": "2026-09-04T01:53:33.555970+08:00",
+  "completed_at": "2026-09-04T01:54:06.466315+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E20",
+        "E15",
+        "E25",
+        "E3",
+        "E23"
+      ]
+    },
+    "w1_final": {
+      "result": "OLD",
+      "confidence": "normal",
+      "reference_ids": [
+        "E20",
+        "E15"
+      ],
+      "reason": "Core facts covered: the ~3:1 HBM-to-DRAM wafer-start ratio matches E20 F93; Micron HBM sold out through 2027 under multiyear arrangements matches E15 F87/F88 and E3 F39; HBM pressuring conventional DRAM supply matches E20 F94. Remaining content is analytical commentary and process explanation, not new factual developments."
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息为一篇关于HBM晶圆消耗的行业分析/评论文章，提及Micron HBM'已售罄至2027年'仅作为讨论制造资源分配的上下文，未包含任何季度业绩、指引、战略协议收入认列、ASP/出货量变动、客户取消/削减、产能中断、共识修订等正式运营事件。所有policy的criterion均未达到触发条件。"
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息为一篇关于HBM晶圆消耗的行业分析/评论文章，提及Micron HBM'已售罄至2027年'仅作为讨论制造资源分配的上下文，未包含任何季度业绩、指引、战略协议收入认列、ASP/出货量变动、客户取消/削减、产能中断、共识修订等正式运营事件。所有policy的criterion均未达到触发条件。"
+    },
+    "route": {
+      "primary_route": "ARCHIVE",
+      "side_effects": [
+        "archive_message"
+      ],
+      "reason": "w1=OLD/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_e18fce3442f042328c2754c8b914fedb",
+      "case_id": "case_4d133ae43d7e4f1c9226d7370db303aa",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_49a6a099-ff17-959f-bcaa-34cf1bfd7973",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13406,
+      "output_tokens": 801,
+      "reasoning_tokens": 775,
+      "cached_input_tokens": 0,
+      "latency_ms": 11392,
+      "output": {
+        "event_ids": [
+          "E20",
+          "E15",
+          "E25",
+          "E3",
+          "E23"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:53:45.141600Z"
+    },
+    {
+      "turn_id": "turn_c1e48b4765ae4101a0ecfde169c7047f",
+      "case_id": "case_4d133ae43d7e4f1c9226d7370db303aa",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_c952a3f7-1794-986d-a35a-02e2c6c35f43",
+      "previous_response_id": "resp_49a6a099-ff17-959f-bcaa-34cf1bfd7973",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 16517,
+      "output_tokens": 1046,
+      "reasoning_tokens": 932,
+      "cached_input_tokens": 0,
+      "latency_ms": 17370,
+      "output": {
+        "result": "OLD",
+        "confidence": "normal",
+        "reference_ids": [
+          "E20",
+          "E15"
+        ],
+        "reason": "Core facts covered: the ~3:1 HBM-to-DRAM wafer-start ratio matches E20 F93; Micron HBM sold out through 2027 under multiyear arrangements matches E15 F87/F88 and E3 F39; HBM pressuring conventional DRAM supply matches E20 F94. Remaining content is analytical commentary and process explanation, not new factual developments."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:54:02.543490Z"
+    },
+    {
+      "turn_id": "turn_054d17603e154826a262432b47e11eac",
+      "case_id": "case_4d133ae43d7e4f1c9226d7370db303aa",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_59969af1-3573-9989-b9ff-498c1468ef9f",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 7093,
+      "output_tokens": 2636,
+      "reasoning_tokens": 2535,
+      "cached_input_tokens": 0,
+      "latency_ms": 32715,
+      "output": {
+        "policy_ids": [],
+        "matched_condition_ids": [],
+        "confidence": "normal",
+        "reason": "消息为一篇关于HBM晶圆消耗的行业分析/评论文章，提及Micron HBM'已售罄至2027年'仅作为讨论制造资源分配的上下文，未包含任何季度业绩、指引、战略协议收入认列、ASP/出货量变动、客户取消/削减、产能中断、共识修订等正式运营事件。所有policy的criterion均未达到触发条件。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:54:06.465766Z"
+    }
+  ]
+}

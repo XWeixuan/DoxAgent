@@ -146,6 +146,7 @@ def build_persistent_runtime_v2_service(
                 runtime_repository=codex_repository,
                 policy_repository=policy_repository,
                 event_library_reader=event_reader,
+                policy_consumption_reader=runtime_repository,
                 published_storage=published_storage,
             ),
             prompt_root=Path(settings.persistent_runtime_v2_w3_prompt_root),

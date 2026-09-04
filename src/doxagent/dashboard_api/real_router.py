@@ -850,6 +850,42 @@ def create_real_router(service: RealDashboardOverviewService | None = None) -> A
             raise _message_bus_v2_control_error(exc) from exc
         return _ok(request, data)
 
+    @router.get("/crawler-plane/retries")
+    async def list_crawler_retries(
+        request: Request,
+        crawler_id: str | None = None,
+        binding_id: str | None = None,
+        status: str | None = None,
+        limit: int = 100,
+    ) -> JsonObject:
+        try:
+            data = await run_in_threadpool(
+                resolved.list_crawler_retries,
+                crawler_id=crawler_id,
+                binding_id=binding_id,
+                status=status,
+                limit=limit,
+            )
+        except ValueError as exc:
+            raise _message_bus_v2_control_error(exc) from exc
+        return _ok(request, data)
+
+    @router.post("/crawler-plane/retries/{retry_id}/resolve")
+    async def resolve_crawler_retry(request: Request, retry_id: str) -> JsonObject:
+        try:
+            data = await run_in_threadpool(resolved.resolve_crawler_retry, retry_id)
+        except KeyError as exc:
+            raise _message_bus_v2_control_error(exc) from exc
+        return _ok(request, data)
+
+    @router.post("/crawler-plane/retries/{retry_id}/reactivate")
+    async def reactivate_crawler_retry(request: Request, retry_id: str) -> JsonObject:
+        try:
+            data = await run_in_threadpool(resolved.reactivate_crawler_retry, retry_id)
+        except KeyError as exc:
+            raise _message_bus_v2_control_error(exc) from exc
+        return _ok(request, data)
+
     @router.post("/crawler-plane/sources")
     async def register_crawler_source(request: Request, payload: JsonObject) -> JsonObject:
         try:

@@ -1,0 +1,127 @@
+{
+  "case_id": "MU-W12-020",
+  "status": "COMPLETED",
+  "started_at": "2026-09-04T01:55:00.691305+08:00",
+  "completed_at": "2026-09-04T01:55:31.968850+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E125",
+        "E24"
+      ]
+    },
+    "w1_final": {
+      "result": "NEW",
+      "confidence": "normal",
+      "reference_ids": [],
+      "reason": "The core fact—Kioxia moving its Northern Japan 3D flash customer-qualified output milestone from Q2 CY2027 to Q3 CY2027—is not covered by either loaded event. E125 records a product announcement (9th-gen QLC) and E24 notes SanDisk/Micron capacity building; neither addresses a Kioxia qualification-schedule change."
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "Kioxia宣布北日本3D闪存客户合格产出里程碑从2027年Q2推迟至Q3，即仅推迟一个季度。最相关的Policy pol_8ae20cddcbcd95e5df29要求'正式推迟至少两个季度'，消息明确说明'moves the milestone by one quarter'，未达到触发门槛，判为未命中。"
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "Kioxia宣布北日本3D闪存客户合格产出里程碑从2027年Q2推迟至Q3，即仅推迟一个季度。最相关的Policy pol_8ae20cddcbcd95e5df29要求'正式推迟至少两个季度'，消息明确说明'moves the milestone by one quarter'，未达到触发门槛，判为未命中。"
+    },
+    "route": {
+      "primary_route": "W3",
+      "side_effects": [
+        "route_to_w3"
+      ],
+      "reason": "w1=NEW/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_487d674a2b4d4e1e9558740d034871b6",
+      "case_id": "case_091fb4b0836f4952baa69a8df2a4f5c6",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_b79cbfad-2421-9a40-a5fa-93c034ab0d3a",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 7117,
+      "output_tokens": 899,
+      "reasoning_tokens": 797,
+      "cached_input_tokens": 0,
+      "latency_ms": 9149,
+      "output": {
+        "policy_ids": [],
+        "matched_condition_ids": [],
+        "confidence": "normal",
+        "reason": "Kioxia宣布北日本3D闪存客户合格产出里程碑从2027年Q2推迟至Q3，即仅推迟一个季度。最相关的Policy pol_8ae20cddcbcd95e5df29要求'正式推迟至少两个季度'，消息明确说明'moves the milestone by one quarter'，未达到触发门槛，判为未命中。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:55:09.903712Z"
+    },
+    {
+      "turn_id": "turn_6779fb014d264fb29f1d25ec019b33e3",
+      "case_id": "case_091fb4b0836f4952baa69a8df2a4f5c6",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_65afc81b-bd88-9dba-babe-e8a0f9aac194",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13430,
+      "output_tokens": 1693,
+      "reasoning_tokens": 1677,
+      "cached_input_tokens": 0,
+      "latency_ms": 22118,
+      "output": {
+        "event_ids": [
+          "E125",
+          "E24"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:55:22.869926Z"
+    },
+    {
+      "turn_id": "turn_e0a804fbb91445398f697528e5f2e2ce",
+      "case_id": "case_091fb4b0836f4952baa69a8df2a4f5c6",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_4fd91ac8-06b0-9df6-820c-0b312587a69b",
+      "previous_response_id": "resp_65afc81b-bd88-9dba-babe-e8a0f9aac194",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 15097,
+      "output_tokens": 553,
+      "reasoning_tokens": 452,
+      "cached_input_tokens": 0,
+      "latency_ms": 9082,
+      "output": {
+        "result": "NEW",
+        "confidence": "normal",
+        "reference_ids": [],
+        "reason": "The core fact—Kioxia moving its Northern Japan 3D flash customer-qualified output milestone from Q2 CY2027 to Q3 CY2027—is not covered by either loaded event. E125 records a product announcement (9th-gen QLC) and E24 notes SanDisk/Micron capacity building; neither addresses a Kioxia qualification-schedule change."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:55:31.967854Z"
+    }
+  ]
+}

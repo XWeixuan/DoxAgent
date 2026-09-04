@@ -9,7 +9,11 @@ from typing import Any, cast
 
 import pytest
 
-from doxagent.event_library.contracts import CanonicalAssertionState
+from doxagent.event_library.contracts import (
+    CanonicalAssertionState,
+    CanonicalEvent,
+    CanonicalFact,
+)
 from doxagent.event_library.provider import EventDetailSnapshot, KnownEventIndexSnapshot
 from doxagent.persistent_runtime_v2.daily import (
     PersistentRuntimeV2DailyCloseService,
@@ -26,20 +30,32 @@ from doxagent.persistent_runtime_v2.repository import (
 from doxagent.persistent_runtime_v2.router import route_runtime_case
 from doxagent.persistent_runtime_v2.schema import (
     DailyCloseStage,
+    PolicyActivationRecord,
+    ProvisionalFactDetail,
+    RuntimeCase,
     RuntimeConfidence,
     RuntimeFactCandidate,
     RuntimePrimaryRoute,
+    RuntimeVersionPin,
     SourceMessageEnvelope,
     SourceMessageSnapshot,
     W1FactExtractionResult,
     W1NoveltyResult,
     W1NoveltyVerdict,
     W1Round1Result,
+    W2MatchedConditions,
     W2PolicyResult,
     W3CaseResult,
     W3ContextVersionPin,
 )
-from doxagent.persistent_runtime_v2.service import PersistentRuntimeV2Service
+from doxagent.persistent_runtime_v2.service import (
+    PersistentRuntimeV2Service,
+    _w1_canonical_event_business_payload,
+    _w1_final_business_payload,
+    _w1_provisional_business_payload,
+    _w2_detail_business_payload,
+    _w2_projection_business_payload,
+)
 from doxagent.persistent_runtime_v2.transport import (
     BailianRuntimeResponsesClient,
     RuntimeResponsesError,
@@ -51,6 +67,7 @@ from doxagent.workflows.codex_document3.schema import (
     PolicyDecision,
     PolicyDetailSnapshot,
     RuntimePolicyProjection,
+    RuntimePolicyRecord,
 )
 
 
@@ -155,9 +172,7 @@ class _FakeKnownEvents(RuntimeKnownEventProvider):
             sha256="a" * 64,
         )
 
-    def details(
-        self, ticker: str, version: int, event_ids: list[str]
-    ) -> EventDetailSnapshot:
+    def details(self, ticker: str, version: int, event_ids: list[str]) -> EventDetailSnapshot:
         return EventDetailSnapshot(
             ticker=ticker,
             version=version,
@@ -179,9 +194,7 @@ class _FakePolicies(RuntimePolicyProvider):
             policies=[],
         )
 
-    def details(
-        self, ticker: str, version: int, policy_ids: list[str]
-    ) -> PolicyDetailSnapshot:
+    def details(self, ticker: str, version: int, policy_ids: list[str]) -> PolicyDetailSnapshot:
         return PolicyDetailSnapshot(
             ticker=ticker,
             policy_set_version=version,
@@ -319,6 +332,33 @@ def test_service_runs_parallel_hot_path_then_w3_owned_delta(tmp_path: Path) -> N
     assert adjudicated.route is not None
     assert adjudicated.route.primary_route == "W3"
     assert adjudicated.w1_extraction is None
+    w2_request = next(
+        request for request in responses.calls if request.output_model is W2PolicyResult
+    )
+    assert set(w2_request.payload) == {
+        "source_message",
+        "runtime_policy_projection",
+    }
+    assert w2_request.payload["runtime_policy_projection"] == {
+        "activation_semantics": "OR",
+        "policies": [],
+    }
+    w1_r1_request = next(
+        request for request in responses.calls if request.output_model is W1Round1Result
+    )
+    assert set(w1_r1_request.payload) == {
+        "source_message",
+        "published_known_event_index",
+        "today_provisional_facts",
+    }
+    assert w1_r1_request.payload["today_provisional_facts"] == []
+    w1_r2_request = next(
+        request for request in responses.calls if request.output_model is W1NoveltyResult
+    )
+    assert w1_r2_request.payload["event_details"] == {
+        "canonical_events": [],
+        "provisional_events": [],
+    }
 
     assert service.process_pending_effects() == 1
     completed = repository.get_case(adjudicated.case_id)
@@ -343,6 +383,258 @@ def test_service_runs_parallel_hot_path_then_w3_owned_delta(tmp_path: Path) -> N
     service.close()
     with pytest.raises(RuntimeError, match="service is closed"):
         service.execute_message(_source())
+
+
+class _AnyPolicies(_FakePolicies):
+    record = RuntimePolicyRecord(
+        policy_id="pol_any",
+        match_scope="customer qualification",
+        activation_revision="ar_1234567890abcdef12345678",
+        condition_ids=["C1", "C2"],
+        criterion=["qualification completed", "volume production started"],
+    )
+
+    def current_projection(self, ticker: str) -> RuntimePolicyProjection:
+        return RuntimePolicyProjection(
+            ticker=ticker,
+            policy_set_version=3,
+            policy_set_published_at=datetime(2026, 8, 29, tzinfo=UTC),
+            policies=[self.record],
+        )
+
+    def decision(self, ticker: str, version: int, policy_id: str) -> PolicyDecision | None:
+        return PolicyDecision.LONG if policy_id == self.record.policy_id else None
+
+    def activation(self, ticker: str, version: int, policy_id: str) -> RuntimePolicyRecord | None:
+        return self.record if policy_id == self.record.policy_id else None
+
+
+class _AnyResponses(_FakeResponses):
+    def complete(self, request: RuntimeResponsesRequest[Any]) -> RuntimeResponsesResult[Any]:
+        if request.output_model is W2PolicyResult:
+            policies = request.payload["runtime_policy_projection"]["policies"]
+            value = W2PolicyResult(
+                policy_ids=["pol_any"] if policies else [],
+                matched_condition_ids=(
+                    [W2MatchedConditions(policy_id="pol_any", condition_ids=["C1", "C2"])]
+                    if policies
+                    else []
+                ),
+                confidence="normal",
+                reason="one ANY condition confirmed" if policies else "policy already consumed",
+            )
+            return RuntimeResponsesResult(
+                value=value,
+                response_id="resp-w2",
+                latency_ms=1,
+                input_tokens=10,
+                output_tokens=5,
+                reasoning_tokens=1,
+                cached_input_tokens=0,
+            )
+        return super().complete(request)
+
+
+def test_w2_model_payload_contains_only_business_policy_content() -> None:
+    projection_payload = _w2_projection_business_payload(
+        _AnyPolicies().current_projection("MU")
+    )
+    assert set(projection_payload) == {"activation_semantics", "policies"}
+    assert projection_payload["activation_semantics"] == "OR"
+    assert projection_payload["policies"] == [
+        {
+            "policy_id": "pol_any",
+            "match_scope": "customer qualification",
+            "condition_ids": ["C1", "C2"],
+            "criterion": ["qualification completed", "volume production started"],
+        }
+    ]
+    detail_payload = _w2_detail_business_payload(
+        _FakePolicies().details("MU", 3, [])
+    )
+    assert detail_payload == {"activation_semantics": "OR", "policies": []}
+
+
+def test_w1_model_views_exclude_runtime_and_event_library_audit_fields() -> None:
+    candidate = RuntimeFactCandidate(
+        proposition="Customer completed qualification.",
+        assertion_state="ACTUAL",
+        subject_time="2026 H2",
+        occurrence_date=date(2026, 8, 29),
+        entities=["MU", "Customer"],
+    )
+    provisional = ProvisionalFactDetail(
+        provisional_event_id="E185",
+        ticker="MU",
+        trading_date=date(2026, 8, 29),
+        source_message_id="msg-audit",
+        candidate_index=2,
+        candidate=candidate,
+        runtime_signature="a" * 64,
+        snapshot_version=4,
+        created_at=datetime(2026, 8, 29, 15, tzinfo=UTC),
+    )
+    assert _w1_provisional_business_payload(provisional) == {
+        "provisional_event_id": "E185",
+        "candidate": candidate.model_dump(mode="json"),
+    }
+
+    event = CanonicalEvent(
+        event_id="E1",
+        ticker="MU",
+        title="Customer qualification completed",
+        event_type="CUSTOMER_MILESTONE",
+        occurred_at="2026-08-29",
+        occurrence_time_precision="DAY",
+        status="ACTIVE",
+        canonical_summary="A customer completed qualification.",
+        known_event_summary="2026-08-29 customer qualification completed.",
+        is_important=True,
+        include_in_reference_view=True,
+        related_event_ids=[],
+        supersedes_event_id=None,
+        derived_from_event_ids=[],
+        facts=[
+            CanonicalFact(
+                fact_id="F1",
+                proposition="A customer completed qualification.",
+                assertion_state="ACTUAL",
+                subject_time="2026 H2",
+                fact_occurred_at="2026-08-29",
+                fact_occurrence_time_precision="DAY",
+            )
+        ],
+        price_analysis={"return_1d": 0.01},
+    )
+    event_payload = _w1_canonical_event_business_payload(event)
+    assert set(event_payload) == {
+        "event_id",
+        "title",
+        "event_type",
+        "occurred_at",
+        "occurrence_time_precision",
+        "status",
+        "canonical_summary",
+        "known_event_summary",
+        "related_event_ids",
+        "supersedes_event_id",
+        "derived_from_event_ids",
+        "facts",
+    }
+    assert not {
+        "ticker",
+        "is_important",
+        "include_in_reference_view",
+        "price_analysis",
+    }.intersection(event_payload)
+
+    final = W1NoveltyResult(
+        result="NEW",
+        confidence="low",
+        reference_ids=["E1"],
+        reason="The timing changed.",
+    )
+    assert _w1_final_business_payload(final) == {
+        "result": "NEW",
+        "reference_ids": ["E1"],
+        "reason": "The timing changed.",
+    }
+
+
+def test_any_policy_is_consumed_once_and_removed_from_next_w2_input(tmp_path: Path) -> None:
+    repository = SQLitePersistentRuntimeV2Repository(tmp_path / "runtime-v2-consumption.sqlite3")
+    responses = _AnyResponses()
+    service = PersistentRuntimeV2Service(
+        repository=repository,
+        responses=responses,
+        known_events=_FakeKnownEvents(),
+        policies=_AnyPolicies(),
+        retry_delays_seconds=(0, 0),
+        sleep=lambda _seconds: None,
+        dispatch_effects=False,
+    )
+
+    first = service.execute_message(_source())
+    assert first.route is not None and first.route.primary_route is RuntimePrimaryRoute.TRADE
+    assert service.process_pending_effects() == 2
+    trades = repository.list_daily_trades("MU", date(2026, 8, 29))
+    assert len(trades) == 1
+    assert trades[0].activation_revision == _AnyPolicies.record.activation_revision
+    assert trades[0].matched_condition_ids == ["C1", "C2"]
+    r3_request = next(
+        request for request in responses.calls if request.output_model is W1FactExtractionResult
+    )
+    assert set(r3_request.payload) == {"source_message", "w1_final"}
+    assert r3_request.payload["w1_final"] == {
+        "result": "NEW",
+        "reference_ids": [],
+        "reason": "new qualification fact",
+    }
+    assert "Current Capture Mode" in r3_request.instructions
+    assert "`NEW_CAPTURE`" in r3_request.instructions
+
+    second_source = _source().model_copy(
+        update={"source_message_id": "msg-2", "stream_item_id": "stream-msg-2"}
+    )
+    second = service.execute_message(second_source)
+    assert second.w2_final is not None and second.w2_final.policy_ids == []
+    assert second.route is not None and second.route.primary_route is RuntimePrimaryRoute.W3
+    assert len(repository.list_daily_trades("MU", date(2026, 8, 29))) == 1
+    service.close()
+
+
+@pytest.mark.parametrize("repository_kind", ["memory", "sqlite"])
+def test_policy_activation_claim_is_atomic_and_idempotent(
+    tmp_path: Path, repository_kind: str
+) -> None:
+    repository = (
+        InMemoryPersistentRuntimeV2Repository()
+        if repository_kind == "memory"
+        else SQLitePersistentRuntimeV2Repository(tmp_path / "runtime-v2-claim.sqlite3")
+    )
+    source1 = _source()
+    source2 = source1.model_copy(
+        update={"source_message_id": "msg-race-2", "stream_item_id": "stream-race-2"}
+    )
+    cases = [
+        RuntimeCase(
+            case_id=f"case-race-{index}",
+            trading_date=date(2026, 8, 29),
+            source=source,
+            version_pin=RuntimeVersionPin(
+                event_library_version=7,
+                provisional_snapshot_version=0,
+                policy_set_version=3,
+                runtime_projection_version=3,
+            ),
+        )
+        for index, source in enumerate((source1, source2), start=1)
+    ]
+    for case in cases:
+        repository.save_case(case)
+    records = [
+        PolicyActivationRecord(
+            case_id=case.case_id,
+            source_message_id=case.source.source_message_id,
+            ticker="MU",
+            policy_id="pol_any",
+            activation_revision="ar_1234567890abcdef12345678",
+            policy_set_version=3,
+        )
+        for case in cases
+    ]
+
+    from concurrent.futures import ThreadPoolExecutor
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        claimed = list(executor.map(repository.claim_policy_activation, records))
+
+    assert sum(claimed) == 1
+    winner = records[claimed.index(True)]
+    assert repository.claim_policy_activation(winner) is True
+    assert repository.list_consumed_policy_revisions("mu") == {
+        ("pol_any", "ar_1234567890abcdef12345678")
+    }
 
 
 class _NoopO2:
@@ -377,12 +669,8 @@ def test_empty_daily_close_is_checkpointed_noop_and_idempotent(tmp_path: Path) -
         o3_maintainer=cast(Any, o3),
         export_root=tmp_path,
     )
-    first = asyncio.run(
-        service.close(ticker="MU", trading_date=date(2026, 8, 29))
-    )
-    replay = asyncio.run(
-        service.close(ticker="MU", trading_date=date(2026, 8, 29))
-    )
+    first = asyncio.run(service.close(ticker="MU", trading_date=date(2026, 8, 29)))
+    replay = asyncio.run(service.close(ticker="MU", trading_date=date(2026, 8, 29)))
     assert first.stage is DailyCloseStage.COMPLETED
     assert replay == first
     assert first.o3_result == {"status": "NOOP", "reason": "empty_daily_feed"}
@@ -436,9 +724,7 @@ class _InvalidOpenAIClient:
             (),
             {
                 "id": "resp-invalid",
-                "output_text": (
-                    '{"result":"OLD","confidence":"normal","reason":"x"}'
-                ),
+                "output_text": ('{"result":"OLD","confidence":"normal","reason":"x"}'),
                 "usage": _Usage(),
             },
         )()
@@ -463,9 +749,7 @@ def test_bailian_transport_forces_strict_responses_medium_and_store() -> None:
     assert fake.responses.kwargs["store"] is True
     assert fake.responses.kwargs["reasoning"] == {"effort": "medium"}
     assert fake.responses.kwargs["text"]["format"]["strict"] is True
-    assert fake.responses.kwargs["extra_headers"] == {
-        "x-dashscope-session-cache": "enable"
-    }
+    assert fake.responses.kwargs["extra_headers"] == {"x-dashscope-session-cache": "enable"}
     instructions = fake.responses.kwargs["instructions"]
     assert "# Exact Output Contract" in instructions
     assert "Never rename a key" in instructions

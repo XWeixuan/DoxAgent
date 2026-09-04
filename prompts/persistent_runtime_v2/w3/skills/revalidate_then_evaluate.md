@@ -75,17 +75,17 @@ Reference View 中哪个 E# 覆盖它？
 match_scope
 → 召回可能相关的 Policy
 
-activation_conditions / criterion
-→ 当前消息是否使各 Boolean predicates 成立
+schema-fixed OR activation_conditions / criterion
+→ 当前消息是否确认一个完整的自然 occurrence
 
 calibration
 → 当前现实是否真正跨过 reference_state
    与 trigger_boundary
 ```
 
-主题相关只产生 Candidate；当前消息满足 Activation Conditions 才形成 Policy hit。对于多条件 Policy，现行语义要求同一条消息同时满足全部 Conditions；只满足部分条件时，当前 Policy 尚未激活。
+主题相关只产生 Candidate；当前消息跨过 Activation boundary 才形成 Policy hit。当前合同固定为 OR：任一独立充分的 Condition 被当前消息确认即激活，且同一消息命中多个 Conditions 仍只形成一次 Policy activation。Runtime 不跨消息累计 Condition 进度。
 
-最终 `policy_ids` 只使用当前 PolicySet 中真实存在且已被消息触发的 ID。多个 Policy 均成立时，将最直接覆盖当前 Core Fact Set 的 Policy 排在第一。Policy 的既定交易方向由 Runtime 使用，W3 在此不重新决定方向。
+最终 `policy_ids` 只使用当前 PolicySet 中真实存在且已被消息触发的 ID，并用 `matched_condition_ids` 的 `{policy_id, condition_ids}` 行记录当前消息实际确认且能够可靠归因的 Conditions；不能可靠归因时留空，不得虚构。多个 Policy 均成立时，将最直接覆盖当前 Core Fact Set 的 Policy 排在第一。Policy 的既定交易方向由 Runtime 使用，W3 在此不重新决定方向。
 
 ## 4. Resolve the Final Case State
 
@@ -143,7 +143,7 @@ Core Fact Set 已明确
 原 W1/W2 结果被作为 hypothesis 复核
 每个 OLD core fact 都有 E# 覆盖
 Policy hit 基于 Conditions，而不是主题相关
-多条件按 same-message AND 判断
+多条件严格按当前合同固定 OR 判断：same-message 任一完整 Condition 即可激活
 Case State 已收敛到四种之一
 NEW + Policy 已产生 Delta Candidate
 NEW + no Policy 已执行 uncovered_new.md

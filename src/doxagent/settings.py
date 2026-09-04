@@ -61,6 +61,21 @@ class DoxAgentSettings(BaseSettings):
         ge=0.05,
         validation_alias="DOXAGENT_CODEX_MONITORING_O4_WORKER_SLEEP_SECONDS",
     )
+    o4_standard_poll_seconds: int = Field(
+        default=60,
+        ge=1,
+        validation_alias="DOXAGENT_O4_STANDARD_POLL_SECONDS",
+    )
+    o4_tikhub_poll_seconds: int = Field(
+        default=600,
+        ge=1,
+        validation_alias="DOXAGENT_O4_TIKHUB_POLL_SECONDS",
+    )
+    o4_alert_after_seconds: int = Field(
+        default=1800,
+        ge=1,
+        validation_alias="DOXAGENT_O4_ALERT_AFTER_SECONDS",
+    )
     codex_worker_base_url: str = Field(
         default="http://127.0.0.1:8791",
         validation_alias="DOXAGENT_CODEX_WORKER_BASE_URL",

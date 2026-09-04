@@ -1,0 +1,82 @@
+{
+  "profile": "post_run_counterfactual_diagnostics",
+  "excluded_from_primary_metrics": true,
+  "model": "qwen3.8-flash",
+  "provider": "bailian",
+  "reasoning_effort": "medium",
+  "cases": [
+    {
+      "case_id": "MU-W12-017",
+      "diagnostic": "forced_w2_r2",
+      "response_id": "resp_68271f71-7e82-9e12-9c6d-8c2716af30d9",
+      "output": {
+        "policy_ids": [],
+        "matched_condition_ids": [],
+        "confidence": "normal"
+      },
+      "gold_match": true,
+      "attribution": "R1 escalation miss only; full calibration yields the correct final no-hit."
+    },
+    {
+      "case_id": "MU-W12-021",
+      "diagnostic": "forced_w2_r2",
+      "response_id": "resp_36e51d4b-8982-9e20-bec7-d0bda538e530",
+      "output": {
+        "policy_ids": [
+          "pol_4fbb78816d7863893f09",
+          "pol_df1332e7ce712ae0dc0c"
+        ],
+        "matched_condition_ids": [
+          {
+            "policy_id": "pol_4fbb78816d7863893f09",
+            "condition_ids": ["C1"]
+          },
+          {
+            "policy_id": "pol_df1332e7ce712ae0dc0c",
+            "condition_ids": ["C1"]
+          }
+        ],
+        "confidence": "normal"
+      },
+      "gold_match": true,
+      "attribution": "R1 confidence mismatch only; the main-run final activation was already correct."
+    },
+    {
+      "case_id": "MU-W12-022",
+      "diagnostic": "forced_w2_r2",
+      "response_id": "resp_72e9a27d-7f0b-9dd4-b486-ee3268c9ea3a",
+      "output": {
+        "policy_ids": ["pol_e28a1b1e8eedc9bf53f5"],
+        "matched_condition_ids": [
+          {
+            "policy_id": "pol_e28a1b1e8eedc9bf53f5",
+            "condition_ids": ["C1"]
+          }
+        ],
+        "confidence": "normal"
+      },
+      "gold_match": false,
+      "attribution": "Full calibration does not repair the false activation; W2 infers prior serviceability without the crosswalk required by the Policy criterion."
+    },
+    {
+      "case_id": "MU-W12-024",
+      "diagnostic": "w1_r2_prior_status_oracle",
+      "response_id": "resp_3b0d49a8-9743-96b5-a9c9-c16ff943e48a",
+      "output": {
+        "result": "OLD",
+        "confidence": "normal",
+        "reference_ids": ["E186", "E187"]
+      },
+      "gold_match": true,
+      "attribution": "Adding an explicit business-semantic prior-message marker repairs the only W1 novelty error."
+    }
+  ],
+  "usage": {
+    "calls": 4,
+    "input_tokens": 40056,
+    "cached_input_tokens": 0,
+    "output_tokens": 3490,
+    "reasoning_tokens": 2806,
+    "latency_ms_sum": 54134
+  }
+}

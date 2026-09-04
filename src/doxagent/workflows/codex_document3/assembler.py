@@ -27,7 +27,9 @@ def build_coverage_map(
     worklist: list[WorklistEntry],
     expected_gap_refs: list[tuple[str, str, str]],
     failed_shells: list[FailedShellCoverage] | None = None,
-    warnings: list[str] | None = None,
+    provenance_warnings: list[str] | None = None,
+    workflow_warnings: list[str] | None = None,
+    semantic_warnings: list[str] | None = None,
 ) -> CoverageMap:
     by_ref: dict[tuple[str, str, str], list[WorklistEntry]] = {}
     for item in worklist:
@@ -54,7 +56,9 @@ def build_coverage_map(
         ticker=ticker,
         gaps=gaps,
         failed_shells=failed_shells or [],
-        warnings=warnings or [],
+        provenance_warnings=provenance_warnings or [],
+        workflow_warnings=workflow_warnings or [],
+        semantic_warnings=semantic_warnings or [],
     )
 
 

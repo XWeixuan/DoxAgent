@@ -1,0 +1,386 @@
+{
+  "case_id": "MU-W12-021",
+  "status": "COMPLETED",
+  "started_at": "2026-09-04T01:55:34.356075+08:00",
+  "completed_at": "2026-09-04T01:57:20.013057+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E171",
+        "E71",
+        "E80",
+        "E14"
+      ]
+    },
+    "w1_final": {
+      "result": "NEW",
+      "confidence": "normal",
+      "reference_ids": [
+        "E171"
+      ],
+      "reason": "E171 records a prior plan of 512GB HBM4E per VR300 GPU; the message reports the final production BOM raised to 640GB and confirmed as full production configuration—a clear state reversal. The binding incremental Micron purchase order for the 640GB config and the designation of Micron 245TB QLC as the standard production data tier for VR300 clusters (with repeat purchasing) are new procurement facts not covered by E14 (design-win/revenue milestone) or E80 (broad storage vendor partnership)."
+    },
+    "w1_r3": {
+      "candidates": [
+        {
+          "proposition": "NVIDIA's final production bill of materials for the VR300 platform set HBM4E capacity at 640GB per accelerator, superseding the prior 512GB production plan.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "NVIDIA",
+            "Micron",
+            "VR300"
+          ]
+        },
+        {
+          "proposition": "NVIDIA's 640GB HBM4E VR300 configuration is tied to the first full production build rather than an engineering option.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "NVIDIA",
+            "VR300"
+          ]
+        },
+        {
+          "proposition": "NVIDIA issued an incremental binding purchase order to Micron for additional qualified HBM4E packages needed for the 640GB VR300 configuration, separate from the existing supply baseline.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "NVIDIA",
+            "Micron",
+            "VR300"
+          ]
+        },
+        {
+          "proposition": "Micron and the NVIDIA VR300 supply group raised the allocation of HBM wafer starts and advanced-packaging slots for the VR300 program beyond the prior plan.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "Micron",
+            "NVIDIA",
+            "VR300"
+          ]
+        },
+        {
+          "proposition": "NVIDIA's VR300 production architecture designated Micron 245TB QLC SSDs as the standard high-capacity data tier for its inference clusters.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "NVIDIA",
+            "Micron",
+            "VR300"
+          ]
+        },
+        {
+          "proposition": "The VR300 storage design increased deployed storage per standard cluster from 20.4PB to 27.2PB.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "NVIDIA",
+            "VR300"
+          ]
+        },
+        {
+          "proposition": "Micron was confirmed as a qualified supplier for the 245TB QLC VR300 tier and moved into repeat purchasing, with two scheduled production purchase releases for the standard cluster design.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "Micron",
+            "NVIDIA",
+            "VR300"
+          ]
+        }
+      ]
+    },
+    "w2_r1": {
+      "policy_ids": [
+        "pol_4fbb78816d7863893f09",
+        "pol_df1332e7ce712ae0dc0c"
+      ],
+      "matched_condition_ids": [
+        {
+          "policy_id": "pol_4fbb78816d7863893f09",
+          "condition_ids": [
+            "C1"
+          ]
+        },
+        {
+          "policy_id": "pol_df1332e7ce712ae0dc0c",
+          "condition_ids": [
+            "C1"
+          ]
+        }
+      ],
+      "confidence": "normal",
+      "reason": "消息明确陈述NVIDIA VR300最终量产BOM将每加速器HBM4E容量从已知512GB计划提高到640GB，附带超出既有基线的Micron绑定采购订单及HBM晶圆/先进封装分配上调，直接满足pol_4fbb78816d7863893f09 C1的全部要素。同一消息还确认NVIDIA将245TB QLC纳入VR300量产标准数据层、每集群部署容量从20.4PB升至27.2PB、Micron为合格供应商并完成两次重复采购释放，满足pol_df1332e7ce712ae0dc0c C1。pol_17b9ee999d1e3ca3ab45要求至少两个独立客户平台，消息明确声明仅涉及VR300单一平台，不满足。"
+    },
+    "w2_final": {
+      "policy_ids": [
+        "pol_4fbb78816d7863893f09",
+        "pol_df1332e7ce712ae0dc0c"
+      ],
+      "matched_condition_ids": [
+        {
+          "policy_id": "pol_4fbb78816d7863893f09",
+          "condition_ids": [
+            "C1"
+          ]
+        },
+        {
+          "policy_id": "pol_df1332e7ce712ae0dc0c",
+          "condition_ids": [
+            "C1"
+          ]
+        }
+      ],
+      "confidence": "normal",
+      "reason": "消息明确陈述NVIDIA VR300最终量产BOM将每加速器HBM4E容量从已知512GB计划提高到640GB，附带超出既有基线的Micron绑定采购订单及HBM晶圆/先进封装分配上调，直接满足pol_4fbb78816d7863893f09 C1的全部要素。同一消息还确认NVIDIA将245TB QLC纳入VR300量产标准数据层、每集群部署容量从20.4PB升至27.2PB、Micron为合格供应商并完成两次重复采购释放，满足pol_df1332e7ce712ae0dc0c C1。pol_17b9ee999d1e3ca3ab45要求至少两个独立客户平台，消息明确声明仅涉及VR300单一平台，不满足。"
+    },
+    "route": {
+      "primary_route": "TRADE",
+      "side_effects": [
+        "create_trade_record",
+        "emit_delta"
+      ],
+      "reason": "w1=NEW/normal;policy_hit=true;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_ebb0b4f30c8f4af3862a074b7fb928da",
+      "case_id": "case_6f46c4b6f0aa45178e65036ee118737d",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_7c058785-c116-9363-9efe-a6e0dc8eff1e",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13634,
+      "output_tokens": 1612,
+      "reasoning_tokens": 1588,
+      "cached_input_tokens": 0,
+      "latency_ms": 23136,
+      "output": {
+        "event_ids": [
+          "E171",
+          "E71",
+          "E80",
+          "E14"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:55:57.542405Z"
+    },
+    {
+      "turn_id": "turn_8e5f8a3e23de4da197e7c973d51516a8",
+      "case_id": "case_6f46c4b6f0aa45178e65036ee118737d",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_491ae8b5-758f-92e9-afaa-a3a4ae70016f",
+      "previous_response_id": "resp_7c058785-c116-9363-9efe-a6e0dc8eff1e",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 16240,
+      "output_tokens": 1213,
+      "reasoning_tokens": 1066,
+      "cached_input_tokens": 0,
+      "latency_ms": 12020,
+      "output": {
+        "result": "NEW",
+        "confidence": "normal",
+        "reference_ids": [
+          "E171"
+        ],
+        "reason": "E171 records a prior plan of 512GB HBM4E per VR300 GPU; the message reports the final production BOM raised to 640GB and confirmed as full production configuration—a clear state reversal. The binding incremental Micron purchase order for the 640GB config and the designation of Micron 245TB QLC as the standard production data tier for VR300 clusters (with repeat purchasing) are new procurement facts not covered by E14 (design-win/revenue milestone) or E80 (broad storage vendor partnership)."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:56:09.592472Z"
+    },
+    {
+      "turn_id": "turn_cf5bb79b3941420e84b0b8eb63243f3b",
+      "case_id": "case_6f46c4b6f0aa45178e65036ee118737d",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "PENDING_RETRY",
+      "response_id": null,
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": null,
+      "output_tokens": null,
+      "reasoning_tokens": null,
+      "cached_input_tokens": null,
+      "latency_ms": 60008,
+      "output": null,
+      "error_code": "provider_timeout",
+      "error_message": "Bailian request timed out",
+      "created_at": "2026-09-03T17:56:34.416701Z"
+    },
+    {
+      "turn_id": "turn_32737cfcb9b84657a77d57449cd2f920",
+      "case_id": "case_6f46c4b6f0aa45178e65036ee118737d",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 2,
+      "status": "OK",
+      "response_id": "resp_5a943d16-9e5f-9fa8-991c-550036a12fb1",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 7321,
+      "output_tokens": 2913,
+      "reasoning_tokens": 2601,
+      "cached_input_tokens": 7315,
+      "latency_ms": 24144,
+      "output": {
+        "policy_ids": [
+          "pol_4fbb78816d7863893f09",
+          "pol_df1332e7ce712ae0dc0c"
+        ],
+        "matched_condition_ids": [
+          {
+            "policy_id": "pol_4fbb78816d7863893f09",
+            "condition_ids": [
+              "C1"
+            ]
+          },
+          {
+            "policy_id": "pol_df1332e7ce712ae0dc0c",
+            "condition_ids": [
+              "C1"
+            ]
+          }
+        ],
+        "confidence": "normal",
+        "reason": "消息明确陈述NVIDIA VR300最终量产BOM将每加速器HBM4E容量从已知512GB计划提高到640GB，附带超出既有基线的Micron绑定采购订单及HBM晶圆/先进封装分配上调，直接满足pol_4fbb78816d7863893f09 C1的全部要素。同一消息还确认NVIDIA将245TB QLC纳入VR300量产标准数据层、每集群部署容量从20.4PB升至27.2PB、Micron为合格供应商并完成两次重复采购释放，满足pol_df1332e7ce712ae0dc0c C1。pol_17b9ee999d1e3ca3ab45要求至少两个独立客户平台，消息明确声明仅涉及VR300单一平台，不满足。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:57:03.561130Z"
+    },
+    {
+      "turn_id": "turn_5b84d2d7502f4231b1893d46e2c41dce",
+      "case_id": "case_6f46c4b6f0aa45178e65036ee118737d",
+      "lane": "W1",
+      "round_name": "R3",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_6d50f8f5-679e-93cd-a6e8-5c13a01efefd",
+      "previous_response_id": "resp_491ae8b5-758f-92e9-afaa-a3a4ae70016f",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 17475,
+      "output_tokens": 1711,
+      "reasoning_tokens": 1291,
+      "cached_input_tokens": 0,
+      "latency_ms": 16438,
+      "output": {
+        "candidates": [
+          {
+            "proposition": "NVIDIA's final production bill of materials for the VR300 platform set HBM4E capacity at 640GB per accelerator, superseding the prior 512GB production plan.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "NVIDIA",
+              "Micron",
+              "VR300"
+            ]
+          },
+          {
+            "proposition": "NVIDIA's 640GB HBM4E VR300 configuration is tied to the first full production build rather than an engineering option.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "NVIDIA",
+              "VR300"
+            ]
+          },
+          {
+            "proposition": "NVIDIA issued an incremental binding purchase order to Micron for additional qualified HBM4E packages needed for the 640GB VR300 configuration, separate from the existing supply baseline.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "NVIDIA",
+              "Micron",
+              "VR300"
+            ]
+          },
+          {
+            "proposition": "Micron and the NVIDIA VR300 supply group raised the allocation of HBM wafer starts and advanced-packaging slots for the VR300 program beyond the prior plan.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "Micron",
+              "NVIDIA",
+              "VR300"
+            ]
+          },
+          {
+            "proposition": "NVIDIA's VR300 production architecture designated Micron 245TB QLC SSDs as the standard high-capacity data tier for its inference clusters.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "NVIDIA",
+              "Micron",
+              "VR300"
+            ]
+          },
+          {
+            "proposition": "The VR300 storage design increased deployed storage per standard cluster from 20.4PB to 27.2PB.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "NVIDIA",
+              "VR300"
+            ]
+          },
+          {
+            "proposition": "Micron was confirmed as a qualified supplier for the 245TB QLC VR300 tier and moved into repeat purchasing, with two scheduled production purchase releases for the standard cluster design.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "Micron",
+              "NVIDIA",
+              "VR300"
+            ]
+          }
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:57:20.001548Z"
+    }
+  ]
+}

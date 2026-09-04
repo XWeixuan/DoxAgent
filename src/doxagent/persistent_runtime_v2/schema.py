@@ -268,8 +268,19 @@ class W1FactExtractionResult(RuntimeV2Model):
     candidates: list[RuntimeFactCandidate] = Field(min_length=1, max_length=12)
 
 
+class W2MatchedConditions(RuntimeV2Model):
+    policy_id: str = Field(min_length=1)
+    condition_ids: list[str] = Field(default_factory=list)
+
+    @field_validator("condition_ids")
+    @classmethod
+    def unique_condition_ids(cls, value: list[str]) -> list[str]:
+        return list(dict.fromkeys(item.strip() for item in value if item.strip()))
+
+
 class W2PolicyResult(RuntimeV2Model):
     policy_ids: list[str] = Field(default_factory=list, max_length=3)
+    matched_condition_ids: list[W2MatchedConditions] = Field(default_factory=list)
     confidence: RuntimeConfidence
     reason: str = Field(min_length=1, max_length=1000)
 
@@ -277,6 +288,18 @@ class W2PolicyResult(RuntimeV2Model):
     @classmethod
     def unique_policy_ids(cls, value: list[str]) -> list[str]:
         return list(dict.fromkeys(item.strip() for item in value if item.strip()))
+
+    @model_validator(mode="after")
+    def condition_attribution_is_advisory(self) -> W2PolicyResult:
+        selected = set(self.policy_ids)
+        # Condition-level attribution improves auditability but malformed or
+        # surplus attribution must never block the Runtime decision.
+        by_policy: dict[str, W2MatchedConditions] = {}
+        for item in self.matched_condition_ids:
+            if item.policy_id in selected:
+                by_policy[item.policy_id] = item
+        self.matched_condition_ids = list(by_policy.values())
+        return self
 
 
 class ProvisionalFactDetail(RuntimeV2Model):
@@ -375,6 +398,28 @@ class RuntimeCase(RuntimeV2Model):
         return self.source.snapshot.ticker
 
 
+class PolicyActivationRecord(RuntimeV2Model):
+    activation_record_id: str = Field(default_factory=lambda: new_runtime_v2_id("activation"))
+    case_id: str
+    source_message_id: str
+    ticker: str
+    policy_id: str
+    activation_revision: str = Field(pattern=r"^ar_[0-9a-f]{24}$")
+    policy_set_version: int = Field(ge=1)
+    matched_condition_ids: list[str] = Field(default_factory=list)
+    activated_at: datetime = Field(default_factory=utc_now)
+
+    @field_validator("ticker")
+    @classmethod
+    def normalize_activation_ticker(cls, value: str) -> str:
+        return value.strip().upper()
+
+    @field_validator("matched_condition_ids")
+    @classmethod
+    def unique_activation_condition_ids(cls, value: list[str]) -> list[str]:
+        return list(dict.fromkeys(item.strip() for item in value if item.strip()))
+
+
 class TradeRecord(RuntimeV2Model):
     trade_record_id: str = Field(default_factory=lambda: new_runtime_v2_id("trade"))
     case_id: str
@@ -383,6 +428,8 @@ class TradeRecord(RuntimeV2Model):
     source: SourceMessageEnvelope
     decision_origin: TradeDecisionOrigin = TradeDecisionOrigin.POLICY
     executed_policy_id: str | None = None
+    activation_revision: str | None = Field(default=None, pattern=r"^ar_[0-9a-f]{24}$")
+    matched_condition_ids: list[str] = Field(default_factory=list)
     w3_case_id: str | None = None
     candidate_policy_ids: list[str] = Field(default_factory=list)
     policy_set_version: int = Field(ge=1)
@@ -476,12 +523,23 @@ class W3NoveltyResult(RuntimeV2Model):
 
 class W3PolicyResult(RuntimeV2Model):
     policy_ids: list[str] = Field(default_factory=list)
+    matched_condition_ids: list[W2MatchedConditions] = Field(default_factory=list)
     reason: str = Field(min_length=1, max_length=4000)
 
     @field_validator("policy_ids")
     @classmethod
     def unique_policy_ids(cls, value: list[str]) -> list[str]:
         return list(dict.fromkeys(item.strip() for item in value if item.strip()))
+
+    @model_validator(mode="after")
+    def condition_attribution_is_advisory(self) -> W3PolicyResult:
+        selected = set(self.policy_ids)
+        by_policy: dict[str, W2MatchedConditions] = {}
+        for item in self.matched_condition_ids:
+            if item.policy_id in selected:
+                by_policy[item.policy_id] = item
+        self.matched_condition_ids = list(by_policy.values())
+        return self
 
 
 class W3ExpertTradeResult(RuntimeV2Model):

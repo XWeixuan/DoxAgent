@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import logging
 import re
 from datetime import datetime
@@ -27,6 +28,7 @@ if TYPE_CHECKING:
     from doxagent.persistent_runtime_v2.schema import O3MaintenanceFeed
 
 from .assembler import apply_patch, assemble_initial_policy_set, build_coverage_map
+from .diagnostics import build_semantic_diagnostics, reconcile_review_with_diagnostics
 from .identity import allocate_stable_policy_ids
 from .inputs import Document3InputPreparer, PreparedDocument3Inputs
 from .recovery import RecoveryResult, parse_json, parse_jsonl
@@ -36,7 +38,7 @@ from .runner import (
     INPUT_MANIFEST_PATH,
     Document3AgentRunner,
 )
-from .runtime_projection import project_policy_set
+from .runtime_projection import assert_runtime_projection_compatible, project_policy_set
 from .schema import (
     CalibrationLogEntry,
     CoverageMap,
@@ -53,6 +55,7 @@ from .schema import (
     PolicySet,
     PublicationState,
     ReviewResult,
+    SemanticDiagnostics,
     TriggerCalibrationRecord,
     TriggerCalibrationStageStatus,
     TriggerCalibrationState,
@@ -397,12 +400,26 @@ class Document3Orchestrator:
                     worklist=worklist,
                     expected_gap_refs=prepared.expected_gap_refs,
                     failed_shells=prepared.failed_shells,
-                    warnings=prepared.warnings,
+                    provenance_warnings=prepared.warnings,
                 )
                 await self._agent.workspace.write_text(
                     selected_run_id,
                     "output/work/coverage_map.json",
                     provisional.model_dump_json(indent=2),
+                )
+                diagnostic_policies, _ = await self._read_policy_drafts_recoverable(
+                    selected_run_id
+                )
+                diagnostics = await self._build_semantic_diagnostics(
+                    run_id=selected_run_id,
+                    prepared=prepared,
+                    worklist=worklist,
+                    policies=diagnostic_policies,
+                )
+                await self._agent.workspace.write_text(
+                    selected_run_id,
+                    "context/document3/semantic_diagnostics.json",
+                    diagnostics.model_dump_json(indent=2),
                 )
                 active_node = CodexD3Node.O3_FINAL_REVIEW
                 self._start_node(checkpoint, active_node)
@@ -417,6 +434,7 @@ class Document3Orchestrator:
                     cutoff_at=cutoff,
                     thread_id=thread_id,
                 )
+                review = reconcile_review_with_diagnostics(review, diagnostics)
                 if review.status == "REVIEW_BLOCKED" and review.blocking_issue_count:
                     recovery_findings.append(
                         self._recovery_finding(
@@ -503,7 +521,9 @@ class Document3Orchestrator:
                     worklist=worklist,
                     expected_gap_refs=prepared.expected_gap_refs,
                     failed_shells=prepared.failed_shells,
-                    warnings=["Final Review coverage_map was rebuilt deterministically."],
+                    workflow_warnings=[
+                        "Final Review coverage_map was rebuilt deterministically."
+                    ],
                 )
             if reviewed_coverage.ticker.upper() != normalized_ticker:
                 recovery_findings.append(
@@ -519,7 +539,9 @@ class Document3Orchestrator:
                     worklist=worklist,
                     expected_gap_refs=prepared.expected_gap_refs,
                     failed_shells=prepared.failed_shells,
-                    warnings=reviewed_coverage.warnings,
+                    provenance_warnings=reviewed_coverage.provenance_warnings,
+                    workflow_warnings=reviewed_coverage.workflow_warnings,
+                    semantic_warnings=reviewed_coverage.semantic_warnings,
                 )
             reviewed_coverage_paths = {
                 (
@@ -614,25 +636,24 @@ class Document3Orchestrator:
                     "D3 deterministic structural validation failed: "
                     + "; ".join(item.message for item in validation.blocking_findings)
                 )
+            artifact_findings = list(validation.findings)
             validation = validation.model_copy(
                 update={
                     "findings": [*recovery_findings, *validation.findings],
                     "publication_state": (
                         PublicationState.PARTIAL
-                        if recovery_findings or validation.findings
+                        if (
+                            recovery_findings
+                            or validation.findings
+                            or prepared.failed_shells
+                            or review.issue_count
+                            or coverage_consistency_warnings
+                            or any(item.status is PathStatus.UNRESOLVED for item in worklist)
+                        )
                         else validation.publication_state
                     ),
                 }
             )
-            if (
-                prepared.document2_ref.publication_state is PublicationState.PARTIAL
-                or prepared.warnings
-                or review.issue_count
-                or coverage_consistency_warnings
-            ):
-                validation = validation.model_copy(
-                    update={"publication_state": PublicationState.PARTIAL}
-                )
             self._complete_node(checkpoint, active_node)
             active_node = CodexD3Node.ASSEMBLE
             self._start_node(checkpoint, active_node)
@@ -661,11 +682,15 @@ class Document3Orchestrator:
                 worklist=canonical_worklist,
                 expected_gap_refs=prepared.expected_gap_refs,
                 failed_shells=prepared.failed_shells,
-                warnings=[
-                    *prepared.warnings,
-                    *reviewed_coverage.warnings,
+                provenance_warnings=prepared.warnings,
+                workflow_warnings=[
+                    *reviewed_coverage.workflow_warnings,
                     *coverage_consistency_warnings,
-                    *(item.message for item in validation.findings),
+                    *(item.message for item in recovery_findings),
+                ],
+                semantic_warnings=[
+                    *reviewed_coverage.semantic_warnings,
+                    *(item.message for item in artifact_findings),
                     *(item.message for item in review.issues),
                 ],
             )
@@ -1450,6 +1475,8 @@ class Document3Orchestrator:
             "context/document3/worklist.schema.json",
             "context/document3/calibration_log.schema.json",
             "context/document3/wave_state.schema.json",
+            "context/document3/semantic_diagnostics.json",
+            "context/document3/semantic_diagnostics.schema.json",
             f"context/document3/{CodexD3Node.O3_TRIGGER_CALIBRATION.value}.output_schema.json",
             f"context/document3/{CodexD3Node.O3_POLICY_COMPILE.value}.output_schema.json",
             f"context/document3/{CodexD3Node.O3_FINAL_REVIEW.value}.output_schema.json",
@@ -1528,6 +1555,46 @@ class Document3Orchestrator:
             for path in unauthorized
         ]
 
+    async def _build_semantic_diagnostics(
+        self,
+        *,
+        run_id: str,
+        prepared: PreparedDocument3Inputs,
+        worklist: list[WorklistEntry],
+        policies: list[Policy],
+    ) -> SemanticDiagnostics:
+        inventory = await self._agent.workspace.inventory(run_id)
+        workspace_paths = [item.relative_path for item in inventory.files]
+        command_summaries: list[str] = []
+        audit_paths = [
+            path
+            for path in workspace_paths
+            if path.endswith("/audit/agent_loop.jsonl")
+            and (
+                CodexD3Node.O3_TRIGGER_CALIBRATION.value in path
+                or CodexD3Node.O3_POLICY_COMPILE.value in path
+            )
+        ]
+        for path in audit_paths:
+            try:
+                response = await self._agent.workspace.read_text(run_id, path)
+            except Exception:  # diagnostics are deliberately non-blocking
+                continue
+            for line in (response.content or "").splitlines():
+                try:
+                    event = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if isinstance(event, dict) and event.get("item_type") == "command":
+                    command_summaries.append(str(event.get("summary") or ""))
+        return build_semantic_diagnostics(
+            document2_payload=prepared.document2.model_dump(mode="json"),
+            worklist=worklist,
+            policies=policies,
+            workspace_paths=workspace_paths,
+            command_summaries=command_summaries,
+        )
+
     async def _workspace_snapshot(self, run_id: str) -> dict[str, str]:
         inventory = await self._agent.workspace.inventory(run_id)
         return {item.relative_path: item.sha256 for item in inventory.files}
@@ -1546,6 +1613,9 @@ class Document3Orchestrator:
         expected_base_version: int | None,
     ) -> Document3Handoff:
         projection = project_policy_set(policy_set)
+        # Publishing the fixed-OR contract to an older implicit-AND consumer would
+        # change trading semantics, so this is an intentional global safety gate.
+        assert_runtime_projection_compatible(projection)
         payloads = {
             "output/final/document3.json": policy_set.model_dump_json(indent=2) + "\n",
             "output/final/coverage_map.json": coverage.model_dump_json(indent=2) + "\n",
@@ -1656,7 +1726,7 @@ class Document3Orchestrator:
                     "",
                     f"- Direction: {policy.decision.value}",
                     f"- Match scope: {policy.match_scope}",
-                    f"- Activation: {policy.activation_summary}",
+                    "- Activation semantics: OR (any one complete Condition)",
                     "",
                 ]
             )

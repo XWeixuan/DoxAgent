@@ -1,0 +1,70 @@
+[
+  {
+    "case_id": "company-ir-replay",
+    "kind": "replay",
+    "live_derived": true,
+    "cassette_refs": ["$live_probe"],
+    "parameters": {"listing_url": "https://ir.example.test/news", "source_name": "Example IR"},
+    "initial_checkpoint": {},
+    "expected_external_ids": ["A"],
+    "expected_checkpoint": {"seen_ids": ["A"]},
+    "observation_assertions": [{
+      "external_id": "A",
+      "title_contains": "Release A",
+      "url_prefix": "https://ir.example.test/news/",
+      "published_at": "2026-09-01T12:00:00Z",
+      "body_contains": "Release A body",
+      "body_forbidden_patterns": ["access denied"]
+    }]
+  },
+  {
+    "case_id": "company-ir-temporal",
+    "kind": "temporal",
+    "cassette_refs": ["tests/temporal_t0.json", "tests/temporal_t1.json"],
+    "parameters": {"listing_url": "https://ir.example.test/news", "source_name": "Example IR"},
+    "initial_checkpoint": {},
+    "expected_external_ids": ["B"],
+    "expected_checkpoint": {"seen_ids": ["A", "B"]}
+  },
+  {
+    "case_id": "company-ir-synthetic",
+    "kind": "synthetic",
+    "cassette_refs": ["tests/synthetic.json"],
+    "parameters": {"listing_url": "https://ir.example.test/news", "source_name": "Example IR"},
+    "initial_checkpoint": {"seen_ids": ["A"]},
+    "expected_external_ids": ["SYNTHETIC_D"],
+    "expected_checkpoint": {"seen_ids": ["A", "SYNTHETIC_D"]}
+  },
+  {
+    "case_id": "company-ir-partial",
+    "kind": "partial",
+    "cassette_refs": ["tests/partial.json"],
+    "parameters": {"listing_url": "https://ir.example.test/news", "source_name": "Example IR"},
+    "initial_checkpoint": {},
+    "expected_status": "PARTIAL",
+    "expected_external_ids": ["A"],
+    "expected_item_failure_keys": ["B"],
+    "expected_retry_keys": ["B"],
+    "expected_checkpoint": {"seen_ids": ["A", "B"]}
+  },
+  {
+    "case_id": "company-ir-malformed",
+    "kind": "malformed",
+    "cassette_refs": ["tests/malformed.json"],
+    "parameters": {"listing_url": "https://ir.example.test/news", "source_name": "Example IR"},
+    "initial_checkpoint": {},
+    "expected_status": "PARTIAL",
+    "expected_item_failure_keys": ["BAD-DATE"],
+    "expected_retry_keys": ["BAD-DATE"],
+    "expected_checkpoint": {"seen_ids": ["BAD-DATE"]}
+  },
+  {
+    "case_id": "company-ir-duplicate",
+    "kind": "duplicate_revision",
+    "cassette_refs": ["tests/duplicate.json"],
+    "parameters": {"listing_url": "https://ir.example.test/news", "source_name": "Example IR"},
+    "initial_checkpoint": {},
+    "expected_external_ids": ["DUP"],
+    "expected_checkpoint": {"seen_ids": ["DUP"]}
+  }
+]

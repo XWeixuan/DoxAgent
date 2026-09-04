@@ -15,7 +15,13 @@ from doxagent.codex_runtime.schema import (
     utc_now,
 )
 
-DOCUMENT3_SCHEMA_VERSION: Final[Literal["document3.v2"]] = "document3.v2"
+DOCUMENT3_SCHEMA_VERSION: Final[Literal["document3.v2.2"]] = "document3.v2.2"
+RUNTIME_POLICY_PROJECTION_VERSION: Final[Literal["document3.runtime_projection.v4"]] = (
+    "document3.runtime_projection.v4"
+)
+RUNTIME_POLICY_CONSUMER_CONTRACT: Final[Literal["persistent-runtime.v2.or-policy.v1"]] = (
+    "persistent-runtime.v2.or-policy.v1"
+)
 
 
 class ContractModel(BaseModel):
@@ -113,25 +119,82 @@ class PolicySourceRef(ContractModel):
 
 
 class Calibration(ContractModel):
-    reference_state: str = Field(min_length=1)
-    trigger_boundary: str = Field(min_length=1)
-    qualifying_evidence: str = Field(min_length=1)
+    reference_state: str = Field(
+        min_length=1,
+        description=(
+            "The condition-specific reality anchor confirmed at the policy cutoff; "
+            "not a Unit/Shell summary or a restatement of the criterion."
+        ),
+    )
+    trigger_boundary: str = Field(
+        min_length=1,
+        description=(
+            "The minimum observable surprise beyond the market-expectation baseline "
+            "that independently creates the Policy's directional revision."
+        ),
+    )
 
 
 class ActivationCondition(ContractModel):
     condition_id: str = Field(min_length=1)
-    criterion: str = Field(min_length=1)
+    criterion: str = Field(
+        min_length=1,
+        description=(
+            "A stable natural-business description of the future reality change monitored "
+            "by Runtime; it excludes the current reference value and point-in-time market "
+            "calibration."
+        ),
+    )
     calibration: Calibration
 
 
 class Policy(ContractModel):
+    """One-time decision boundary activated by any one complete Condition (fixed OR)."""
+
     policy_id: str = Field(min_length=1)
     title: str = Field(min_length=1)
     source_refs: list[PolicySourceRef] = Field(min_length=1)
     decision: PolicyDecision
     match_scope: str = Field(min_length=1)
-    activation_conditions: list[ActivationCondition] = Field(min_length=1)
-    activation_summary: str = Field(min_length=1)
+    activation_conditions: list[ActivationCondition] = Field(
+        min_length=1,
+        description=(
+            "Independently sufficient natural occurrences combined with fixed OR semantics; "
+            "one Condition confirmed by the same message activates the Policy."
+        ),
+    )
+
+    @model_validator(mode="before")
+    @classmethod
+    def migrate_safe_legacy_shape(cls, value: Any) -> Any:
+        """Drop retired prose/mode fields without changing historical ALL semantics."""
+
+        if not isinstance(value, dict):
+            return value
+        payload = dict(value)
+        legacy_mode = str(payload.pop("activation_mode", "ANY")).upper()
+        conditions = payload.get("activation_conditions")
+        condition_count = len(conditions) if isinstance(conditions, list) else 0
+        if legacy_mode == "ALL" and condition_count > 1:
+            raise ValueError(
+                "multi-condition legacy ALL Policy cannot be migrated to fixed OR semantics"
+            )
+        payload.pop("activation_summary", None)
+        if isinstance(conditions, list):
+            migrated_conditions: list[Any] = []
+            for condition in conditions:
+                if not isinstance(condition, dict):
+                    migrated_conditions.append(condition)
+                    continue
+                migrated = dict(condition)
+                calibration = migrated.get("calibration")
+                if isinstance(calibration, dict):
+                    migrated_calibration = dict(calibration)
+                    migrated_calibration.pop("qualifying_evidence", None)
+                    migrated["calibration"] = migrated_calibration
+                migrated_conditions.append(migrated)
+            payload["activation_conditions"] = migrated_conditions
+        return payload
 
     @field_validator("source_refs")
     @classmethod
@@ -153,7 +216,7 @@ class Policy(ContractModel):
 
 
 class PolicySet(ContractModel):
-    schema_version: Literal["document3.v2"] = DOCUMENT3_SCHEMA_VERSION
+    schema_version: Literal["document3.v2.2"] = DOCUMENT3_SCHEMA_VERSION
     ticker: str
     policy_set_version: int = Field(ge=1)
     publication_state: PublicationState = PublicationState.COMPLETE
@@ -161,6 +224,16 @@ class PolicySet(ContractModel):
     event_library_ref: EventLibraryRef | None = None
     policies: list[Policy] = Field(default_factory=list)
     published_at: datetime = Field(default_factory=utc_now)
+
+    @model_validator(mode="before")
+    @classmethod
+    def migrate_safe_legacy_version(cls, value: Any) -> Any:
+        if not isinstance(value, dict):
+            return value
+        payload = dict(value)
+        if payload.get("schema_version") in {"document3.v2", "document3.v2.1"}:
+            payload["schema_version"] = DOCUMENT3_SCHEMA_VERSION
+        return payload
 
     @field_validator("policies")
     @classmethod
@@ -387,7 +460,75 @@ class CoverageMap(ContractModel):
     ticker: str
     gaps: list[CoverageGap] = Field(default_factory=list)
     failed_shells: list[FailedShellCoverage] = Field(default_factory=list)
+    provenance_warnings: list[str] = Field(default_factory=list)
+    workflow_warnings: list[str] = Field(default_factory=list)
+    semantic_warnings: list[str] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def warnings_are_deduplicated_and_classified(self) -> CoverageMap:
+        self.provenance_warnings = list(dict.fromkeys(self.provenance_warnings))
+        provenance = set(self.provenance_warnings)
+        self.semantic_warnings = [
+            item
+            for item in dict.fromkeys(self.semantic_warnings)
+            if item not in provenance
+        ]
+        classified_preworkflow = provenance | set(self.semantic_warnings)
+        self.workflow_warnings = [
+            item
+            for item in dict.fromkeys(self.workflow_warnings)
+            if item not in classified_preworkflow
+        ]
+        classified = {
+            *self.provenance_warnings,
+            *self.workflow_warnings,
+            *self.semantic_warnings,
+        }
+        legacy = [item for item in self.warnings if item not in classified]
+        self.workflow_warnings.extend(item for item in legacy if item not in self.workflow_warnings)
+        self.warnings = list(
+            dict.fromkeys(
+                [
+                    *self.provenance_warnings,
+                    *self.workflow_warnings,
+                    *self.semantic_warnings,
+                ]
+            )
+        )
+        return self
+
+
+class SemanticDiagnosticFinding(ContractModel):
+    code: str = Field(min_length=1)
+    message: str = Field(min_length=1)
+    affected_ids: list[str] = Field(default_factory=list)
+
+
+class SemanticDiagnostics(ContractModel):
+    schema_version: Literal["document3.semantic_diagnostics.v1"] = (
+        "document3.semantic_diagnostics.v1"
+    )
+    generated_at: datetime = Field(default_factory=utc_now)
+    condition_count: int = Field(ge=0)
+    path_count: int = Field(ge=0)
+    criterion_equals_trigger_boundary_count: int = Field(ge=0)
+    criterion_equals_trigger_boundary_ratio: float = Field(ge=0, le=1)
+    duplicate_reference_state_count: int = Field(ge=0)
+    duplicate_reference_state_ratio: float = Field(ge=0, le=1)
+    d2_possible_occurrence_exact_copy_count: int = Field(ge=0)
+    d2_possible_occurrence_exact_copy_ratio: float = Field(ge=0, le=1)
+    d2_boundary_sufficient_true_count: int = Field(ge=0)
+    d2_boundary_sufficient_true_ratio: float = Field(ge=0, le=1)
+    unresolved_path_count: int = Field(ge=0)
+    hidden_or_condition_ids: list[str] = Field(default_factory=list)
+    unanchored_degree_condition_ids: list[str] = Field(default_factory=list)
+    or_group_sizes: dict[str, int] = Field(default_factory=dict)
+    max_or_group_size: int = Field(ge=0)
+    semantic_batch_generation_detected: bool = False
+    semantic_batch_generation_evidence: list[str] = Field(default_factory=list)
+    requires_explanation: bool = False
+    findings: list[SemanticDiagnosticFinding] = Field(default_factory=list)
 
 
 class ReviewIssue(ContractModel):
@@ -403,6 +544,14 @@ class ReviewResult(AgentModel):
     issue_count: int = Field(ge=0)
     blocking_issue_count: int = Field(ge=0)
     issues: list[ReviewIssue] = Field(default_factory=list)
+    diagnostics_reviewed: bool = False
+    diagnostics_explanation: str = ""
+
+    @model_validator(mode="after")
+    def counters_match_issues(self) -> ReviewResult:
+        self.issue_count = len(self.issues)
+        self.blocking_issue_count = sum(item.blocking for item in self.issues)
+        return self
 
 
 class ValidationFinding(ContractModel):
@@ -431,31 +580,14 @@ class ValidationReport(ContractModel):
         ]
 
 
-class RuntimeConditionProjection(ContractModel):
-    """Legacy v1 row retained only for decoding historical projections."""
-
-    policy_id: str
-    title: str
-    decision: PolicyDecision
-    match_scope: str
-    condition_id: str
-    criterion: str
-    activation_summary: str
-
-
-class LegacyRuntimePolicyProjection(ContractModel):
-    schema_version: Literal["document3.runtime_projection.v1"] = "document3.runtime_projection.v1"
-    ticker: str
-    policy_set_version: int = Field(ge=1)
-    policy_set_published_at: datetime
-    conditions: list[RuntimeConditionProjection] = Field(default_factory=list)
-
-
 class RuntimePolicyRecord(ContractModel):
+    """Compact W2 projection; its enclosing v4 contract defines fixed OR semantics."""
+
     policy_id: str = Field(min_length=1)
     match_scope: str = Field(min_length=1)
+    activation_revision: str = Field(pattern=r"^ar_[0-9a-f]{24}$")
+    condition_ids: list[str] = Field(min_length=1)
     criterion: list[str] = Field(min_length=1)
-    activation_summary: str = Field(min_length=1)
 
     @field_validator("criterion")
     @classmethod
@@ -467,9 +599,20 @@ class RuntimePolicyRecord(ContractModel):
             raise ValueError("criterion entries must be unique within a policy")
         return cleaned
 
+    @model_validator(mode="after")
+    def condition_ids_align_with_criteria(self) -> RuntimePolicyRecord:
+        if len(self.condition_ids) != len(self.criterion):
+            raise ValueError("condition_ids and criterion must have the same length")
+        if len(self.condition_ids) != len(set(self.condition_ids)):
+            raise ValueError("condition_ids must be unique within a projected policy")
+        return self
+
 
 class RuntimePolicyProjection(ContractModel):
-    schema_version: Literal["document3.runtime_projection.v2"] = "document3.runtime_projection.v2"
+    schema_version: Literal["document3.runtime_projection.v4"] = RUNTIME_POLICY_PROJECTION_VERSION
+    consumer_contract: Literal["persistent-runtime.v2.or-policy.v1"] = (
+        RUNTIME_POLICY_CONSUMER_CONTRACT
+    )
     ticker: str
     policy_set_version: int = Field(ge=1)
     policy_set_published_at: datetime

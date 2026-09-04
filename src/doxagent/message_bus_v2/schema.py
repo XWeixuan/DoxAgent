@@ -80,6 +80,7 @@ class RawProcessingStatus(StrEnum):
 class PollStatus(StrEnum):
     NEVER_POLLED = "never_polled"
     SUCCEEDED = "succeeded"
+    PARTIAL = "partial"
     FAILED = "failed"
     DISABLED = "disabled"
 

@@ -1,0 +1,121 @@
+{
+  "case_id": "MU-W12-017",
+  "status": "COMPLETED",
+  "started_at": "2026-09-04T01:55:31.022555+08:00",
+  "completed_at": "2026-09-04T01:55:54.040168+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": []
+    },
+    "w1_final": {
+      "result": "NEW",
+      "confidence": "normal",
+      "reference_ids": [],
+      "reason": "No previously loaded events cover Redwood Systems' deployment of a second lot of Micron Gen6 QLC enterprise SSDs within a production-qualification program; this is a new customer-specific production-stage fact."
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息描述的是Redwood Systems单一客户在同一production-qualification program内交付第二批货，仍属资格验证阶段而非量产后的重复采购或生产部署。最接近的候选pol_17b9ee999d1e3ca3ab45要求至少两个独立主要客户平台完成量产资格并进入两个交付期的重复采购/生产部署，当前仅涉及一个客户且处于同一资格程序内，未满足criterion任一条件。"
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息描述的是Redwood Systems单一客户在同一production-qualification program内交付第二批货，仍属资格验证阶段而非量产后的重复采购或生产部署。最接近的候选pol_17b9ee999d1e3ca3ab45要求至少两个独立主要客户平台完成量产资格并进入两个交付期的重复采购/生产部署，当前仅涉及一个客户且处于同一资格程序内，未满足criterion任一条件。"
+    },
+    "route": {
+      "primary_route": "W3",
+      "side_effects": [
+        "route_to_w3"
+      ],
+      "reason": "w1=NEW/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_14a0bc93a0d044458c897c5572be58ba",
+      "case_id": "case_ea03e6d5e58c4e2eaff75319e139376b",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_020ea0ef-026d-94c8-a3c8-0a70cdf0f989",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13370,
+      "output_tokens": 1217,
+      "reasoning_tokens": 1209,
+      "cached_input_tokens": 0,
+      "latency_ms": 15814,
+      "output": {
+        "event_ids": []
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:55:46.879574Z"
+    },
+    {
+      "turn_id": "turn_80b7a6cd4392475a868af83ea7347d52",
+      "case_id": "case_ea03e6d5e58c4e2eaff75319e139376b",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_42c72e13-56c2-9d4a-9b67-e04ac692ca64",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 7057,
+      "output_tokens": 2005,
+      "reasoning_tokens": 1890,
+      "cached_input_tokens": 0,
+      "latency_ms": 18537,
+      "output": {
+        "policy_ids": [],
+        "matched_condition_ids": [],
+        "confidence": "normal",
+        "reason": "消息描述的是Redwood Systems单一客户在同一production-qualification program内交付第二批货，仍属资格验证阶段而非量产后的重复采购或生产部署。最接近的候选pol_17b9ee999d1e3ca3ab45要求至少两个独立主要客户平台完成量产资格并进入两个交付期的重复采购/生产部署，当前仅涉及一个客户且处于同一资格程序内，未满足criterion任一条件。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:55:49.604751Z"
+    },
+    {
+      "turn_id": "turn_43374c1143934509869c71ce71f14eb5",
+      "case_id": "case_ea03e6d5e58c4e2eaff75319e139376b",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_85b5c2fa-2a5d-9f99-8840-c849c6caaafe",
+      "previous_response_id": "resp_020ea0ef-026d-94c8-a3c8-0a70cdf0f989",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 14584,
+      "output_tokens": 486,
+      "reasoning_tokens": 427,
+      "cached_input_tokens": 0,
+      "latency_ms": 7160,
+      "output": {
+        "result": "NEW",
+        "confidence": "normal",
+        "reference_ids": [],
+        "reason": "No previously loaded events cover Redwood Systems' deployment of a second lot of Micron Gen6 QLC enterprise SSDs within a production-qualification program; this is a new customer-specific production-stage fact."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-03T17:55:54.040168Z"
+    }
+  ]
+}
