@@ -1,0 +1,125 @@
+{
+  "case_id": "MU-W12-020",
+  "status": "COMPLETED",
+  "started_at": "2026-09-06T02:09:09.386256+08:00",
+  "completed_at": "2026-09-06T02:09:32.834423+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E125"
+      ]
+    },
+    "w1_final": {
+      "result": "NEW",
+      "confidence": "normal",
+      "reference_ids": [],
+      "reason": "The core fact is Kioxia revising the customer-qualified output milestone for its Northern Japan 3D flash program from Q2 2027 to Q3 2027. The only loaded event (E125) covers a 9th-gen QLC 3D flash product announcement by SanDisk/Kioxia on 2026-08-12, which is a different factual proposition (product introduction vs. program qualification schedule change)."
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "最接近的候选为pol_8ae20cddcbcd95e5df29（重要NAND供应商将2027年客户合格产出里程碑推迟至少两个季度且行业库存仍低）。Kioxia确为重要NAND供应商，且提到企业flash库存仍lean，但消息明确声明延期仅为一个季度（Q2→Q3 2027，'moves the milestone by one quarter'），未达到criterion要求的'至少两个季度'。其余Policy均无相关事实匹配。未命中。"
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "最接近的候选为pol_8ae20cddcbcd95e5df29（重要NAND供应商将2027年客户合格产出里程碑推迟至少两个季度且行业库存仍低）。Kioxia确为重要NAND供应商，且提到企业flash库存仍lean，但消息明确声明延期仅为一个季度（Q2→Q3 2027，'moves the milestone by one quarter'），未达到criterion要求的'至少两个季度'。其余Policy均无相关事实匹配。未命中。"
+    },
+    "route": {
+      "primary_route": "W3",
+      "side_effects": [
+        "route_to_w3"
+      ],
+      "reason": "w1=NEW/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_409cb297df95414fb644e73a3bfb3e13",
+      "case_id": "case_7a78a4113c4245e2bfae42e86b1f920a",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_d6616468-1d3d-9ce7-96d1-e8d0f63417ed",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 7117,
+      "output_tokens": 1232,
+      "reasoning_tokens": 1097,
+      "cached_input_tokens": 0,
+      "latency_ms": 11529,
+      "output": {
+        "policy_ids": [],
+        "matched_condition_ids": [],
+        "confidence": "normal",
+        "reason": "最接近的候选为pol_8ae20cddcbcd95e5df29（重要NAND供应商将2027年客户合格产出里程碑推迟至少两个季度且行业库存仍低）。Kioxia确为重要NAND供应商，且提到企业flash库存仍lean，但消息明确声明延期仅为一个季度（Q2→Q3 2027，'moves the milestone by one quarter'），未达到criterion要求的'至少两个季度'。其余Policy均无相关事实匹配。未命中。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:09:20.982711Z"
+    },
+    {
+      "turn_id": "turn_6e96d5fa739c4310a092ccff8dc415e9",
+      "case_id": "case_7a78a4113c4245e2bfae42e86b1f920a",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_4680ca62-fb57-9e02-9c54-3001f03a510d",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13430,
+      "output_tokens": 1626,
+      "reasoning_tokens": 1614,
+      "cached_input_tokens": 0,
+      "latency_ms": 15995,
+      "output": {
+        "event_ids": [
+          "E125"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:09:25.445127Z"
+    },
+    {
+      "turn_id": "turn_90b241ce6d7843b1937ff284f368860f",
+      "case_id": "case_7a78a4113c4245e2bfae42e86b1f920a",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_cb57e7df-5129-9938-a7ec-d50f9d49b510",
+      "previous_response_id": "resp_4680ca62-fb57-9e02-9c54-3001f03a510d",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 14916,
+      "output_tokens": 661,
+      "reasoning_tokens": 542,
+      "cached_input_tokens": 0,
+      "latency_ms": 7371,
+      "output": {
+        "result": "NEW",
+        "confidence": "normal",
+        "reference_ids": [],
+        "reason": "The core fact is Kioxia revising the customer-qualified output milestone for its Northern Japan 3D flash program from Q2 2027 to Q3 2027. The only loaded event (E125) covers a 9th-gen QLC 3D flash product announcement by SanDisk/Kioxia on 2026-08-12, which is a different factual proposition (product introduction vs. program qualification schedule change)."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:09:32.834423Z"
+    }
+  ]
+}

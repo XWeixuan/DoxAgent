@@ -10,6 +10,7 @@ readme = "README.md"
 requires-python = ">=3.11,<3.14"
 license = "MIT"
 dependencies = [
+    "exchange-calendars>=4.11,<5",
     "agent-framework-core>=1.6,<2",
     "anthropic>=0.71,<1",
     "httpx>=0.28,<1",
@@ -33,6 +34,7 @@ dependencies = [
 ]
 
 [project.scripts]
+doxagent-ticker-init = "doxagent.ticker_initialization.cli:main"
 cdecr = "cdecr.cli:main"
 codex-document3 = "doxagent.workflows.codex_document3.cli:main"
 doxagent-crawler-plane = "doxagent.crawler_plane.cli:main"

@@ -984,6 +984,52 @@ class MessageBusV2Repository:
             consumer_id=consumer_id, ticker=normalized
         )
 
+    def initialize_runtime_cursor(self, consumer_id: str, ticker: str) -> int:
+        """Commit the initial tail and initialization marker in one transaction.
+
+        An existing consumer row is also a durable receipt from older releases;
+        never seek it forward after a crash between their two separate writes.
+        """
+        ticker = ticker.strip().upper()
+        with self.transaction() as connection:
+            row = connection.execute(
+                "SELECT data_json FROM ticker_monitoring_states WHERE ticker=?", (ticker,)
+            ).fetchone()
+            if row is None:
+                raise KeyError(f"ticker monitoring state not found: {ticker}")
+            state = TickerMonitoringState.model_validate_json(row[0])
+            existing = connection.execute(
+                "SELECT stream_offset FROM consumer_offsets WHERE consumer_id=? AND ticker=?",
+                (consumer_id, ticker),
+            ).fetchone()
+            if existing:
+                offset = int(existing[0])
+            elif state.runtime_cursor_initialized:
+                offset = 0
+            else:
+                offset = int(connection.execute(
+                    "SELECT coalesce(max(stream_offset),0) FROM stream_items WHERE ticker=?",
+                    (ticker,),
+                ).fetchone()[0])
+            if existing is None:
+                cursor = ConsumerOffset(
+                    consumer_id=consumer_id, ticker=ticker, stream_offset=offset
+                )
+                connection.execute("""INSERT INTO consumer_offsets
+                    (consumer_id,ticker,stream_offset,committed_at,data_json) VALUES(?,?,?,?,?)""",
+                    (
+                        consumer_id, ticker, offset,
+                        cursor.committed_at.isoformat(), self._json(cursor),
+                    ),
+                )
+            if not state.runtime_cursor_initialized:
+                state = state.model_copy(update={
+                    "runtime_cursor_initialized": True, "updated_at": utc_now(),
+                })
+                connection.execute("UPDATE ticker_monitoring_states SET data_json=? WHERE ticker=?",
+                                   (self._json(state), ticker))
+            return offset
+
     def commit_consumer_offset(
         self, consumer_id: str, ticker: str, stream_offset: int
     ) -> ConsumerOffset:

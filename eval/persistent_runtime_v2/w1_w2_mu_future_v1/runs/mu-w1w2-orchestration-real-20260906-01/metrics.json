@@ -1,0 +1,115 @@
+{
+  "cases": 25,
+  "runtime_completed": 25,
+  "completed": 24,
+  "failed": 1,
+  "strict_output_cases": 24,
+  "rounds": {
+    "w1_r1_event_recall": {
+      "tp": 32,
+      "fp": 27,
+      "fn": 3,
+      "precision": 0.542373,
+      "recall": 0.914286,
+      "exact_cases": 8,
+      "cases": 24
+    },
+    "w1_r2": {
+      "novelty": {
+        "NEW": {
+          "tp": 13,
+          "fp": 1,
+          "fn": 0,
+          "precision": 0.928571,
+          "recall": 1.0
+        },
+        "OLD": {
+          "tp": 10,
+          "fp": 0,
+          "fn": 1,
+          "precision": 1.0,
+          "recall": 0.909091
+        }
+      },
+      "verdict_accuracy": 0.958333,
+      "confidence_accuracy": 0.958333,
+      "reference": {
+        "tp": 23,
+        "fp": 4,
+        "fn": 9,
+        "precision": 0.851852,
+        "recall": 0.71875,
+        "exact_cases": 14,
+        "cases": 24
+      },
+      "exact_cases": 13
+    },
+    "w1_r3": {
+      "expected_invocations": 2,
+      "actual_invocations": 3,
+      "invocation_exact_cases": 23,
+      "semantic_review_pending": 3
+    },
+    "w2_r1": {
+      "policy": {
+        "tp": 5,
+        "fp": 0,
+        "fn": 1,
+        "precision": 1.0,
+        "recall": 0.833333,
+        "exact_cases": 23,
+        "cases": 24
+      },
+      "confidence_accuracy": 0.875,
+      "exact_cases": 21
+    },
+    "w2_r2": {
+      "expected_invocations": 3,
+      "actual_invocations": 0,
+      "invocation_exact_cases": 21,
+      "output_exact_expected_cases": 0
+    },
+    "w2_final": {
+      "candidate_policy": {
+        "tp": 5,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "exact_cases": 24,
+        "cases": 24
+      },
+      "activation_policy": {
+        "tp": 4,
+        "fp": 1,
+        "fn": 0,
+        "precision": 0.8,
+        "recall": 1.0,
+        "exact_cases": 23,
+        "cases": 24
+      },
+      "confidence_accuracy": 0.958333,
+      "condition_accuracy": 0.958333,
+      "exact_cases": 23
+    },
+    "route": {
+      "exact_cases": 21,
+      "cases": 24
+    }
+  },
+  "usage": {
+    "turns": 83,
+    "retry_turns": 5,
+    "input_tokens": 952476,
+    "cached_input_tokens": 59057,
+    "output_tokens": 111337,
+    "reasoning_tokens": 103444,
+    "latency_ms_sum": 1249870
+  },
+  "run_id": "mu-w1w2-orchestration-real-20260906-01",
+  "model": "qwen3.8-flash",
+  "provider": "bailian",
+  "reasoning_effort": "medium",
+  "completed_at": "2026-09-06T02:10:51.813676+08:00",
+  "predictions_sha256": "0aa0292fe273d34222e705bb9710ef4c558032bf92606d2df33a74472ab2c2f4"
+}

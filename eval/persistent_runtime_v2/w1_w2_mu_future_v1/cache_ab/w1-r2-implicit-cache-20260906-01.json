@@ -1,0 +1,42 @@
+{
+  "run_id": "w1-r2-implicit-cache-20260906-01",
+  "round": "W1_R2",
+  "transport": "responses_json_schema",
+  "session_cache": false,
+  "case_ids": [
+    "MU-W12-001",
+    "MU-W12-002",
+    "MU-W12-003"
+  ],
+  "records": [
+    {
+      "case_id": "MU-W12-001",
+      "response_id": "resp_36d848c1-8e0f-9b89-a50b-660de873b3ea",
+      "input_tokens": 2814,
+      "cached_input_tokens": 1664,
+      "latency_ms": 6575,
+      "prefix_fingerprint": "ffe335fb0f421ce0b3e656f27df947d34a6aaf21d77a2dce5e93b725d1a3b3e7"
+    },
+    {
+      "case_id": "MU-W12-002",
+      "response_id": "resp_17700602-2f3e-92e6-bada-ff9ae7a46282",
+      "input_tokens": 2754,
+      "cached_input_tokens": 2048,
+      "latency_ms": 14859,
+      "prefix_fingerprint": "ffe335fb0f421ce0b3e656f27df947d34a6aaf21d77a2dce5e93b725d1a3b3e7"
+    },
+    {
+      "case_id": "MU-W12-003",
+      "response_id": "resp_6c965c8a-3694-93de-99a6-d49609ec0476",
+      "input_tokens": 2741,
+      "cached_input_tokens": 2048,
+      "latency_ms": 14856,
+      "prefix_fingerprint": "ffe335fb0f421ce0b3e656f27df947d34a6aaf21d77a2dce5e93b725d1a3b3e7"
+    }
+  ],
+  "totals": {
+    "input_tokens": 8309,
+    "cached_input_tokens": 5760,
+    "cache_share": 0.6932242147069443
+  }
+}

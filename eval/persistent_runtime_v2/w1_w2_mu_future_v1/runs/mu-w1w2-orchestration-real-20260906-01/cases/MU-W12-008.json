@@ -1,0 +1,133 @@
+{
+  "case_id": "MU-W12-008",
+  "status": "COMPLETED",
+  "started_at": "2026-09-06T02:08:17.986204+08:00",
+  "completed_at": "2026-09-06T02:08:45.544308+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E2",
+        "E3",
+        "E157"
+      ]
+    },
+    "w1_final": {
+      "result": "OLD",
+      "confidence": "normal",
+      "reference_ids": [
+        "E2"
+      ],
+      "reason": "The message is a September 11 reiteration of the same strategic-agreement framework already captured in E2: 16 multiyear agreements (F27), ~$100B cumulative sales through 2030 (F27), ~$22B customer deposits (F26), binding take-or-pay provisions (F31), and price floors/ceilings on existing products (F25). No new core fact is present."
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息为Micron重申（reiterate）既有战略客户协议框架的概述性发布，非首次连接重复交付、非正式财报确认收入认列或订金入账，也未披露任何新增经营事实（ASP变动、指引调整、交付事件、价格边界触发等）。所有Policy criterion所要求的具体触发状态均未在消息中实际陈述。"
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息为Micron重申（reiterate）既有战略客户协议框架的概述性发布，非首次连接重复交付、非正式财报确认收入认列或订金入账，也未披露任何新增经营事实（ASP变动、指引调整、交付事件、价格边界触发等）。所有Policy criterion所要求的具体触发状态均未在消息中实际陈述。"
+    },
+    "route": {
+      "primary_route": "ARCHIVE",
+      "side_effects": [
+        "archive_message"
+      ],
+      "reason": "w1=OLD/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_5b973258ec614ce58b5255d6b83dea26",
+      "case_id": "case_f747c5ca1e42495ab9183e5bfd0593a0",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_774a9a9b-b0fe-9be6-bee2-38ce260f2701",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13404,
+      "output_tokens": 1278,
+      "reasoning_tokens": 1260,
+      "cached_input_tokens": 0,
+      "latency_ms": 13116,
+      "output": {
+        "event_ids": [
+          "E2",
+          "E3",
+          "E157"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:08:31.159355Z"
+    },
+    {
+      "turn_id": "turn_c2e2cba736be46f592ce99965ce8d3a2",
+      "case_id": "case_f747c5ca1e42495ab9183e5bfd0593a0",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_d9c6710b-bcd5-960d-8ee6-5778a9c8c875",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 7091,
+      "output_tokens": 1249,
+      "reasoning_tokens": 1156,
+      "cached_input_tokens": 0,
+      "latency_ms": 13773,
+      "output": {
+        "policy_ids": [],
+        "matched_condition_ids": [],
+        "confidence": "normal",
+        "reason": "消息为Micron重申（reiterate）既有战略客户协议框架的概述性发布，非首次连接重复交付、非正式财报确认收入认列或订金入账，也未披露任何新增经营事实（ASP变动、指引调整、交付事件、价格边界触发等）。所有Policy criterion所要求的具体触发状态均未在消息中实际陈述。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:08:31.819640Z"
+    },
+    {
+      "turn_id": "turn_a080b81b22e94053b7ad9ac5e1066a81",
+      "case_id": "case_f747c5ca1e42495ab9183e5bfd0593a0",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_3eefdde5-4373-9af5-a136-5dea6b8ce1c8",
+      "previous_response_id": "resp_774a9a9b-b0fe-9be6-bee2-38ce260f2701",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 16607,
+      "output_tokens": 955,
+      "reasoning_tokens": 839,
+      "cached_input_tokens": 0,
+      "latency_ms": 14348,
+      "output": {
+        "result": "OLD",
+        "confidence": "normal",
+        "reference_ids": [
+          "E2"
+        ],
+        "reason": "The message is a September 11 reiteration of the same strategic-agreement framework already captured in E2: 16 multiyear agreements (F27), ~$100B cumulative sales through 2030 (F27), ~$22B customer deposits (F26), binding take-or-pay provisions (F31), and price floors/ceilings on existing products (F25). No new core fact is present."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:08:45.543304Z"
+    }
+  ]
+}

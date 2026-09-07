@@ -1,0 +1,52 @@
+# Opt-in overlay; writing this file does not deploy or start a real ticker.
+x-ticker-init-environment: &ticker-init-environment
+  DOXAGENT_TICKER_INITIALIZATION_CONTROL_PATH: /app/.tmp/ticker_initialization/control.sqlite3
+  DOXAGENT_CODEX_RUNTIME_STORAGE_MODE: sqlite
+  DOXAGENT_CODEX_RUNTIME_SQLITE_PATH: /app/.tmp/codex-runtime.sqlite3
+  DOXAGENT_EVENT_LIBRARY_ROOT: /app/.tmp/event-library
+  DOXAGENT_EVENT_LIBRARY_MARKET: US
+  DOXAGENT_MESSAGE_BUS_V2_ENABLED: "true"
+  DOXAGENT_MESSAGE_BUS_V2_SQLITE_PATH: /app/.tmp/message_bus_v2.sqlite3
+  DOXAGENT_PERSISTENT_RUNTIME_V2_ENABLED: "true"
+  DOXAGENT_PERSISTENT_RUNTIME_V2_SQLITE_PATH: /app/.tmp/persistent_runtime_v2.sqlite3
+  DOXAGENT_RUNTIME_SCHEDULER_STORAGE_MODE: sqlite
+  DOXAGENT_RUNTIME_SCHEDULER_SQLITE_PATH: /app/.tmp/runtime_scheduler.sqlite3
+  DOXAGENT_MODEL_USAGE_STORAGE_MODE: sqlite
+  DOXAGENT_CODEX_DOCUMENT3_ENABLED: "true"
+  DOXAGENT_CODEX_MONITORING_O4_ENABLED: "true"
+  DOXAGENT_CODEX_RESEARCH_LANES_ENABLED: "true"
+  DOXAGENT_CODEX_WORKER_BASE_URL: http://codex-worker:8791
+
+services:
+  ticker-initialization-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: doxagent:latest
+    restart: unless-stopped
+    env_file: [.env]
+    environment:
+      <<: *ticker-init-environment
+      DOXAGENT_CRAWLER_PLANE_ROOT: /var/lib/doxagent/workspaces/crawler-plane
+      DOXAGENT_CRAWLER_PLANE_SQLITE_PATH: /var/lib/doxagent/workspaces/crawler-plane/crawler_plane.sqlite3
+      DOXAGENT_MESSAGE_BUS_V2_ADAPTER_ROOT: /app/.tmp/message_bus_v2_adapters
+    command: [python, -m, doxagent.ticker_initialization.cli, worker]
+    volumes:
+      - doxagent-tmp:/app/.tmp
+      - crawler-plane:/var/lib/doxagent/workspaces/crawler-plane
+    depends_on:
+      codex-worker:
+        condition: service_healthy
+    stop_grace_period: 30s
+  message-bus-v2-worker:
+    environment:
+      <<: *ticker-init-environment
+  runtime-scheduler:
+    environment:
+      <<: *ticker-init-environment
+  codex-worker:
+    environment:
+      <<: *ticker-init-environment
+  monitoring-o4-worker:
+    environment:
+      <<: *ticker-init-environment

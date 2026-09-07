@@ -1,0 +1,144 @@
+{
+  "case_id": "MU-W12-017",
+  "status": "COMPLETED",
+  "started_at": "2026-09-06T02:09:32.837226+08:00",
+  "completed_at": "2026-09-06T02:10:14.610289+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": []
+    },
+    "w1_final": {
+      "result": "NEW",
+      "confidence": "normal",
+      "reference_ids": [],
+      "reason": "The core fact—Redwood Systems beginning a repeat production deployment (second lot) of Micron Gen6 QLC SSDs within its ongoing production-qualification program—does not match any canonical or provisional fact provided. No loaded event records this specific customer engagement milestone."
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息仅描述Redwood Systems（单一客户）在同一生产资格认证程序中接收第二批Micron Gen6 QLC SSD，仍处于qualifying阶段而非独立重复商业采购。最接近的pol_17b9ee999d1e3ca3ab45要求'至少两个独立主要客户平台完成量产系统资格并在至少两个交付期进入重复采购'，本消息既无第二个客户，也无跨周期重复采购确认；pol_df1332e7ce712ae0dc0c要求主要CSP/OEM将QLC SSD纳入量产标准数据层并进入重复采购，本消息中的'重复'仅指同一资格程序内的第二批硬件接收，尚未脱离qualification流程。均未满足触发条件。"
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息仅描述Redwood Systems（单一客户）在同一生产资格认证程序中接收第二批Micron Gen6 QLC SSD，仍处于qualifying阶段而非独立重复商业采购。最接近的pol_17b9ee999d1e3ca3ab45要求'至少两个独立主要客户平台完成量产系统资格并在至少两个交付期进入重复采购'，本消息既无第二个客户，也无跨周期重复采购确认；pol_df1332e7ce712ae0dc0c要求主要CSP/OEM将QLC SSD纳入量产标准数据层并进入重复采购，本消息中的'重复'仅指同一资格程序内的第二批硬件接收，尚未脱离qualification流程。均未满足触发条件。"
+    },
+    "route": {
+      "primary_route": "W3",
+      "side_effects": [
+        "route_to_w3"
+      ],
+      "reason": "w1=NEW/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_8dc81ed4557e47ec8752b0616fef9e58",
+      "case_id": "case_b4746c0facc647138c2c416924ebd2e0",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "PENDING_RETRY",
+      "response_id": null,
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": null,
+      "output_tokens": null,
+      "reasoning_tokens": null,
+      "cached_input_tokens": null,
+      "latency_ms": 19272,
+      "output": null,
+      "error_code": "structured_output_validation_failed",
+      "error_message": "Strict structured output validation failed: ValidationError [{\"loc\":\"\",\"type\":\"json_invalid\",\"msg\":\"Invalid JSON: expected `,` or `}` at line 1 column 250\"}]",
+      "created_at": "2026-09-05T18:09:52.163029Z"
+    },
+    {
+      "turn_id": "turn_55ca553c465346e1bef140c218d8fdf7",
+      "case_id": "case_b4746c0facc647138c2c416924ebd2e0",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_f8036a0d-2387-9fa1-8d42-c5bb56dfc739",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13370,
+      "output_tokens": 3063,
+      "reasoning_tokens": 3055,
+      "cached_input_tokens": 0,
+      "latency_ms": 25634,
+      "output": {
+        "event_ids": []
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:09:58.522822Z"
+    },
+    {
+      "turn_id": "turn_9af6bccd9e9642939a6f6c990209ce25",
+      "case_id": "case_b4746c0facc647138c2c416924ebd2e0",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_b03f83a2-2a52-9bd5-bbe4-d13f326d5891",
+      "previous_response_id": "resp_f8036a0d-2387-9fa1-8d42-c5bb56dfc739",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 14584,
+      "output_tokens": 488,
+      "reasoning_tokens": 417,
+      "cached_input_tokens": 0,
+      "latency_ms": 6268,
+      "output": {
+        "result": "NEW",
+        "confidence": "normal",
+        "reference_ids": [],
+        "reason": "The core fact—Redwood Systems beginning a repeat production deployment (second lot) of Micron Gen6 QLC SSDs within its ongoing production-qualification program—does not match any canonical or provisional fact provided. No loaded event records this specific customer engagement milestone."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:10:04.791354Z"
+    },
+    {
+      "turn_id": "turn_f4caf106843d4b57bb11a0913a456f7d",
+      "case_id": "case_b4746c0facc647138c2c416924ebd2e0",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 2,
+      "status": "OK",
+      "response_id": "resp_03f0491c-6466-9ef9-9118-82ac91612220",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 7057,
+      "output_tokens": 1572,
+      "reasoning_tokens": 1396,
+      "cached_input_tokens": 7051,
+      "latency_ms": 17447,
+      "output": {
+        "policy_ids": [],
+        "matched_condition_ids": [],
+        "confidence": "normal",
+        "reason": "消息仅描述Redwood Systems（单一客户）在同一生产资格认证程序中接收第二批Micron Gen6 QLC SSD，仍处于qualifying阶段而非独立重复商业采购。最接近的pol_17b9ee999d1e3ca3ab45要求'至少两个独立主要客户平台完成量产系统资格并在至少两个交付期进入重复采购'，本消息既无第二个客户，也无跨周期重复采购确认；pol_df1332e7ce712ae0dc0c要求主要CSP/OEM将QLC SSD纳入量产标准数据层并进入重复采购，本消息中的'重复'仅指同一资格程序内的第二批硬件接收，尚未脱离qualification流程。均未满足触发条件。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:10:14.610289Z"
+    }
+  ]
+}

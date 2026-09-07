@@ -29,6 +29,9 @@ def _parser() -> argparse.ArgumentParser:
     close.add_argument("--trading-date", required=True, type=date.fromisoformat)
     close.add_argument("--cutoff-at", type=datetime.fromisoformat)
     close.add_argument("--export-root", default=".tmp/persistent-runtime-v2-daily")
+    from .operations import add_commands
+
+    add_commands(sub)
     return parser
 
 
@@ -46,6 +49,18 @@ def _event_repository(settings: DoxAgentSettings, ticker: str) -> EventLibraryRe
 
 async def _run(args: argparse.Namespace) -> int:
     settings = DoxAgentSettings()
+    if args.command != "daily-close":
+        import json
+
+        from .operations import run_command
+
+        print(json.dumps(run_command(args, settings), ensure_ascii=False, indent=2, default=str))
+        return 0
+    if settings.ticker_initialization_control_path:
+        raise ValueError(
+            "managed runtime uses durable MAINTENANCE tasks; "
+            "use reconcile instead of legacy daily-close"
+        )
     runtime = build_persistent_runtime_v2_service(settings)
     if not settings.codex_worker_bearer_token or not settings.codex_capability_secret:
         raise ValueError("Daily Close requires the configured Codex worker credentials")

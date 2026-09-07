@@ -218,6 +218,7 @@ class OpenAICodexRuntime:
                 ticker=request.ticker,
                 node=request.node,
                 enabled_tool_ids=allowed_o4_tools,
+                initialization_id=request.initialization_id,
                 ttl_seconds=request.timeout_seconds + 300,
             )
             # Keep one controller-owned capability file for the ticker thread.

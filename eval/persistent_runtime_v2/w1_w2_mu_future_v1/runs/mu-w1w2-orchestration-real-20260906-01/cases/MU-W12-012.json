@@ -1,0 +1,133 @@
+{
+  "case_id": "MU-W12-012",
+  "status": "COMPLETED",
+  "started_at": "2026-09-06T02:09:29.764564+08:00",
+  "completed_at": "2026-09-06T02:09:49.091388+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E42",
+        "E43",
+        "E44"
+      ]
+    },
+    "w1_final": {
+      "result": "NEW",
+      "confidence": "normal",
+      "reference_ids": [
+        "E42"
+      ],
+      "reason": "E42 records Samsung's ~80% HBM4 yield as a RUMOR (F174, assertion_state=RUMOR). The current message reports Samsung formally and officially disclosed the ~80% yield on the record at a Seoul technology briefing, transitioning the fact from unattributed industry rumor to company-confirmed statement. Per the rule that rumors and formally confirmed facts are different fact states, this status change is an uncovered core fact."
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息核心事实是三星正式披露HBM4制造良率约80%，属于工艺进展说明。最接近的候选pol_83c565b3ca305ee04c41要求同时满足量产良率确认、向多个重要客户重复交付合格DRAM、以及行业交期缩短或合同价下降；但消息明确声明客户名称、出货量和商业日程保密，无任何重复交付、交期或价格变化信息，criterion未完整成立。pol_ff3a0a91823cdc8ed4eb要求制造中断加Micron替代分配，本消息非中断事件且未涉及Micron。其余政策均不适用。无命中。"
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息核心事实是三星正式披露HBM4制造良率约80%，属于工艺进展说明。最接近的候选pol_83c565b3ca305ee04c41要求同时满足量产良率确认、向多个重要客户重复交付合格DRAM、以及行业交期缩短或合同价下降；但消息明确声明客户名称、出货量和商业日程保密，无任何重复交付、交期或价格变化信息，criterion未完整成立。pol_ff3a0a91823cdc8ed4eb要求制造中断加Micron替代分配，本消息非中断事件且未涉及Micron。其余政策均不适用。无命中。"
+    },
+    "route": {
+      "primary_route": "W3",
+      "side_effects": [
+        "route_to_w3"
+      ],
+      "reason": "w1=NEW/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_995c93c36997453c91003d780dd77408",
+      "case_id": "case_e695fc1b1be145d68bf0da8cb6fc3450",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_55716dd1-c6f6-996d-a828-23f32cda8495",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13365,
+      "output_tokens": 790,
+      "reasoning_tokens": 771,
+      "cached_input_tokens": 0,
+      "latency_ms": 9288,
+      "output": {
+        "event_ids": [
+          "E42",
+          "E43",
+          "E44"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:09:39.122102Z"
+    },
+    {
+      "turn_id": "turn_8dc2aca1fcc0407a9c08650b79fd0776",
+      "case_id": "case_e695fc1b1be145d68bf0da8cb6fc3450",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_4537734a-b7d5-93c6-bdc3-e7a0d866d90d",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 7052,
+      "output_tokens": 1518,
+      "reasoning_tokens": 1353,
+      "cached_input_tokens": 0,
+      "latency_ms": 14805,
+      "output": {
+        "policy_ids": [],
+        "matched_condition_ids": [],
+        "confidence": "normal",
+        "reason": "消息核心事实是三星正式披露HBM4制造良率约80%，属于工艺进展说明。最接近的候选pol_83c565b3ca305ee04c41要求同时满足量产良率确认、向多个重要客户重复交付合格DRAM、以及行业交期缩短或合同价下降；但消息明确声明客户名称、出货量和商业日程保密，无任何重复交付、交期或价格变化信息，criterion未完整成立。pol_ff3a0a91823cdc8ed4eb要求制造中断加Micron替代分配，本消息非中断事件且未涉及Micron。其余政策均不适用。无命中。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:09:44.641618Z"
+    },
+    {
+      "turn_id": "turn_ef5c7840f00d404cb2cfde3e4c3f7811",
+      "case_id": "case_e695fc1b1be145d68bf0da8cb6fc3450",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_72f61857-0ad0-9b1d-a63e-342637a67959",
+      "previous_response_id": "resp_55716dd1-c6f6-996d-a828-23f32cda8495",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 15407,
+      "output_tokens": 880,
+      "reasoning_tokens": 766,
+      "cached_input_tokens": 0,
+      "latency_ms": 9947,
+      "output": {
+        "result": "NEW",
+        "confidence": "normal",
+        "reference_ids": [
+          "E42"
+        ],
+        "reason": "E42 records Samsung's ~80% HBM4 yield as a RUMOR (F174, assertion_state=RUMOR). The current message reports Samsung formally and officially disclosed the ~80% yield on the record at a Seoul technology briefing, transitioning the fact from unattributed industry rumor to company-confirmed statement. Per the rule that rumors and formally confirmed facts are different fact states, this status change is an uncovered core fact."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:09:49.091388Z"
+    }
+  ]
+}

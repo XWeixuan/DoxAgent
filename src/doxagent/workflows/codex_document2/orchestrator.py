@@ -125,7 +125,7 @@ class CodexDocument2Orchestrator:
         if (
             isinstance(existing, Document2Bundle)
             and existing.status == "published"
-            and existing.publication_state == "COMPLETE"
+            and (existing.publication_state == "COMPLETE" or request.reuse_published_partial)
         ):
             return existing
         workflow_checkpoint = self._repository.get_checkpoint(request.run_id) or WorkflowCheckpoint(
@@ -452,18 +452,29 @@ class CodexDocument2Orchestrator:
             else:
                 candidates[key], reference = restored_candidate
                 artifacts[f"candidate:{key}"] = reference
+
+        async def candidate_checkpointed(
+            key: str, node: CodexD2Node, primary: str, source_id: object
+        ) -> Document2TurnResult:
+            result = await self._run_candidate(
+                request=request,
+                prepared=prepared,
+                checkpoint=checkpoint,
+                key=key,
+                node=node,
+                primary_source=primary,
+                narrative_run_id=source_id,
+                common=common,
+            )
+            checkpoint.stage_artifacts[f"o0:candidate:{key}"] = result.artifact.relative_path
+            checkpoint.o0_thread_ids[f"candidate:{key}"] = result.thread_id or ""
+            self._remember_attempt(checkpoint, result)
+            await self._save_progress(bundle, checkpoint)
+            return result
+
         missing_results = await asyncio.gather(
             *(
-                self._run_candidate(
-                    request=request,
-                    prepared=prepared,
-                    checkpoint=checkpoint,
-                    key=key,
-                    node=node,
-                    primary_source=primary,
-                    narrative_run_id=source_id,
-                    common=common,
-                )
+                candidate_checkpointed(key, node, primary, source_id)
                 for key, node, primary, source_id in missing_specs
             ),
             return_exceptions=True,
@@ -541,19 +552,29 @@ class CodexDocument2Orchestrator:
                 review, reference = restored_review
                 review_payload[label] = review.model_dump(mode="json")
                 artifacts[f"review:{label.lower()}"] = reference
+
+        async def review_checkpointed(
+            label: str, node: CodexD2Node, role: CodexAgentRole, report_key: str
+        ) -> Document2TurnResult:
+            result = await self._run_domain_review(
+                request=request,
+                prepared=prepared,
+                checkpoint=checkpoint,
+                provisional=provisional,
+                reviewer_label=label,
+                node=node,
+                role=role,
+                report_key=report_key,
+                common=common,
+            )
+            checkpoint.stage_artifacts[f"o0:review:{label.lower()}"] = result.artifact.relative_path
+            self._remember_attempt(checkpoint, result)
+            await self._save_progress(bundle, checkpoint)
+            return result
+
         review_results = await asyncio.gather(
             *(
-                self._run_domain_review(
-                    request=request,
-                    prepared=prepared,
-                    checkpoint=checkpoint,
-                    provisional=provisional,
-                    reviewer_label=label,
-                    node=node,
-                    role=role,
-                    report_key=report_key,
-                    common=common,
-                )
+                review_checkpointed(label, node, role, report_key)
                 for label, node, role, report_key in missing_reviews
             ),
             return_exceptions=True,
@@ -999,7 +1020,10 @@ class CodexDocument2Orchestrator:
                 await self._published_storage.put(storage_path, raw, reference.content_type)
                 content_text = None
             elif len(raw) > 2 * 1024 * 1024:
-                raise RuntimeError("PUBLISHED_DOCUMENT_STORAGE_REQUIRED for Document2 artifact")
+                from doxagent.ticker_initialization.substeps import managed
+
+                if not managed():
+                    raise RuntimeError("PUBLISHED_DOCUMENT_STORAGE_REQUIRED for Document2 artifact")
             published_ref = reference.model_copy(update={"published": True})
             self._repository.save_artifact(published_ref)
             self._repository.save_published_document(

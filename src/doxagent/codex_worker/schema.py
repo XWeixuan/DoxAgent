@@ -58,6 +58,8 @@ class WorkerRunRequest(WorkerModel):
     read_only: bool = False
     data_mcp_enabled: bool = True
     o4_operations_enabled: bool = False
+    initialization_id: str | None = None
+    idempotency_key: str | None = Field(default=None, min_length=1, max_length=512)
     allow_subagents: bool = False
     max_subagents: int = Field(default=2, ge=0, le=2)
     timeout_seconds: int = Field(default=1800, ge=30, le=7200)
@@ -98,6 +100,7 @@ class WorkerJob(WorkerModel):
     job_id: str
     run_id: str
     attempt_id: str
+    request_sha256: str | None = None
     status: Literal["queued", "running", "succeeded", "failed", "cancelled"]
     thread_id: str | None = None
     turn_id: str | None = None

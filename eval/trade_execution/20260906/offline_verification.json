@@ -1,0 +1,95 @@
+{
+  "source_sha256": {
+    "scripts/validate_trade_executor_weekend.py": "b2cbd5802f7f55760ce6238a5d2aa910f1c7bfcf286145be2786aad4062a6369",
+    "src/doxagent/persistent_runtime_v2/calendar.py": "da2a24949963bca1001107010a1b6cb294ed156d79c9e2ca6ec2166b1cfc5541",
+    "src/doxagent/persistent_runtime_v2/coordinator.py": "7cdec56443ccd653db76f4a59d42ed69ec09a1eba5e9cd7f17bb93b897228e00",
+    "src/doxagent/persistent_runtime_v2/trade_output.py": "56f76c3e504072d28179731be632ce87dcd2ea7f320105569e0ec22bded50584",
+    "src/doxagent/trade_execution/__init__.py": "503107d2c968da35c2c7f20d9e8378d8c0c90e7121cb32d6fde3f97cbbee3315",
+    "src/doxagent/trade_execution/acceptance.py": "b970896f6f44f993bce67baa5010cba38c4c8b01b192f8e5310d7960b8399491",
+    "src/doxagent/trade_execution/cli.py": "c840f58c9eb6a7e92d26e8b627157d07297eeb6cbe40a385d1fbba11c06c70d6",
+    "src/doxagent/trade_execution/discovery.py": "892653161c79d0937d176c5ddaaf75ac0326272dfb029a0292d5f4fc35ade549",
+    "src/doxagent/trade_execution/executor.py": "6db104c7510fbf4739e1ac6e8ad62c46555312b4a5cf3b0c4a09b36a9f1e436d",
+    "src/doxagent/trade_execution/ibkr_session.py": "098b97fc5de8d7198fb6f5b4044a6b244da212d02268b7f7f7b92f78c056819f",
+    "src/doxagent/trade_execution/intake.py": "9fc5c75eb7d1606c36dfd6ff253a75ada28b7c4dd2b1e1d892e0d7fadf2c3709",
+    "src/doxagent/trade_execution/metrics.py": "5edd828fe3c56417cbe8c238efffb3873829089638c44cc5ca9edd91740d1bfe",
+    "src/doxagent/trade_execution/operations.py": "100c64d8deb0b5be589346806fd8e5c8dac0013a122976301031be53ca481c47",
+    "src/doxagent/trade_execution/repository.py": "7cd324635ebc51d831332072d2d87e866e62d29a706726aedc3da435c93a3370",
+    "src/doxagent/trade_execution/schema.py": "80f960067ea059b3c1ba0dc0dc3ab6e533e3ab8376c1335a28124519a480ce9d",
+    "src/doxagent/trade_execution/sessions.py": "038054fb1160e4e7534fea80ddf96120185f02fec98ffc615ccd514c267efc0d",
+    "src/doxagent/trade_execution/strategy.py": "b1b277e4c2f5f412dc23ad298e654e552c3635110faa12ffb4b0e932c0d07740",
+    "src/doxagent/trade_execution/worker.py": "44f6b7b4abd88d43056b65eb5a294283ae4ea5de085a8868adf68f5a61bbfedb",
+    "tests/test_trade_execution.py": "caeb07837a786910e060db0ce8fab3843170660023f098991792d3a84dabc3ab",
+    "tests/test_trade_execution_adapter.py": "fbf6b0913dd32e9e7ad0d38213a5608f58e464cca9b6ef3dbc5457e03cc6d7b7",
+    "tests/test_trade_execution_recovery.py": "3d433281377d247d34f840c3c087abf9bcee327ad3f0898b829e7c680618fdc1"
+  },
+  "source_unchanged": true,
+  "checks": [
+    {
+      "name": "pytest",
+      "command": [
+        "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "tests/test_trade_execution.py",
+        "tests/test_trade_execution_recovery.py",
+        "tests/test_trade_execution_adapter.py",
+        "tests/test_runtime_orchestration_foundation.py",
+        "tests/test_runtime_orchestration_execution.py",
+        "tests/test_runtime_orchestration_recovery.py",
+        "tests/test_runtime_orchestration_bus.py",
+        "tests/test_runtime_orchestration_process.py",
+        "tests/test_ibkr_tws_bottom_layer.py",
+        "--offline",
+        "-q"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "ruff",
+      "command": [
+        "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.venv\\Scripts\\python.exe",
+        "-m",
+        "ruff",
+        "check",
+        "src/doxagent/trade_execution",
+        "tests/test_trade_execution.py",
+        "tests/test_trade_execution_recovery.py",
+        "tests/test_trade_execution_adapter.py",
+        "scripts/validate_trade_executor_weekend.py"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "mypy",
+      "command": [
+        "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.venv\\Scripts\\python.exe",
+        "-m",
+        "mypy",
+        "src/doxagent/trade_execution",
+        "--follow-imports=silent"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "compile",
+      "command": [
+        "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.venv\\Scripts\\python.exe",
+        "-m",
+        "compileall",
+        "-q",
+        "src/doxagent/trade_execution"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "cli_help",
+      "command": [
+        "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.venv\\Scripts\\python.exe",
+        "-m",
+        "doxagent.trade_execution.cli",
+        "--help"
+      ],
+      "returncode": 0
+    }
+  ]
+}

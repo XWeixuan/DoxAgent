@@ -576,6 +576,19 @@ class DoxAgentSettings(BaseSettings):
         le=5,
         validation_alias="DOXAGENT_PERSISTENT_RUNTIME_WORKER_RETRY_ATTEMPTS",
     )
+    ticker_initialization_control_path: str | None = Field(
+        default=None,
+        validation_alias="DOXAGENT_TICKER_INITIALIZATION_CONTROL_PATH",
+        description="Local initialization control SQLite; enables activation-pinned runtime reads",
+    )
+    ticker_initialization_summary_url: str | None = Field(
+        default=None,
+        validation_alias="DOXAGENT_TICKER_INITIALIZATION_SUMMARY_URL",
+    )
+    ticker_initialization_summary_key: str | None = Field(
+        default=None,
+        validation_alias="DOXAGENT_TICKER_INITIALIZATION_SUMMARY_KEY",
+    )
     persistent_runtime_v2_enabled: bool = Field(
         default=False,
         validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_ENABLED",
@@ -605,7 +618,7 @@ class DoxAgentSettings(BaseSettings):
         validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_STRICT_MODE",
     )
     persistent_runtime_v2_session_cache_enabled: bool = Field(
-        default=True,
+        default=False,
         validation_alias="DOXAGENT_PERSISTENT_RUNTIME_V2_SESSION_CACHE_ENABLED",
     )
     persistent_runtime_v2_timeout_seconds: float = Field(

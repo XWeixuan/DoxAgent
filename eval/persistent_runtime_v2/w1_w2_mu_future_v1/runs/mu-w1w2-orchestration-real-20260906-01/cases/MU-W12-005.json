@@ -1,0 +1,164 @@
+{
+  "case_id": "MU-W12-005",
+  "status": "COMPLETED",
+  "started_at": "2026-09-06T02:07:53.498775+08:00",
+  "completed_at": "2026-09-06T02:08:27.708663+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E14",
+        "E39",
+        "E41",
+        "E17",
+        "E36"
+      ]
+    },
+    "w1_final": {
+      "result": "OLD",
+      "confidence": "normal",
+      "reference_ids": [
+        "E14",
+        "E39",
+        "E41"
+      ],
+      "reason": "The message is a retrospective comparative snapshot recapping known HBM positions: SK hynix supplying HBM4 to NVIDIA (E39/F169), Samsung HBM4E in sampling (E41/F173), Micron's NVIDIA HBM4 design win and Vera Rubin volume shipments (E14/F86, F85), and Micron HBM4E development toward 2027 HVP (E17/F90). All core facts are already covered by existing events; the article adds no new state change or milestone."
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息为HBM4/HBM4E行业格局综述，仅描述SK hynix供货、Samsung进入采样、Micron持有NVIDIA HBM4设计赢单并开发HBM4E面向2027量产等已有定位，未包含任何新业绩/指引变化、ASP/bit shipment数据、合同变更、订单增减、可靠性事故或市场定价变动，不满足任何一条criterion。"
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息为HBM4/HBM4E行业格局综述，仅描述SK hynix供货、Samsung进入采样、Micron持有NVIDIA HBM4设计赢单并开发HBM4E面向2027量产等已有定位，未包含任何新业绩/指引变化、ASP/bit shipment数据、合同变更、订单增减、可靠性事故或市场定价变动，不满足任何一条criterion。"
+    },
+    "route": {
+      "primary_route": "ARCHIVE",
+      "side_effects": [
+        "archive_message"
+      ],
+      "reason": "w1=OLD/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_2326aea464dc45a7bb474928610e96ca",
+      "case_id": "case_36fed381ec2240fbaff79eea781ad888",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_28da2693-3fa6-9ab3-af08-ad644689b4c6",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13417,
+      "output_tokens": 1237,
+      "reasoning_tokens": 1210,
+      "cached_input_tokens": 0,
+      "latency_ms": 13879,
+      "output": {
+        "event_ids": [
+          "E14",
+          "E39",
+          "E41",
+          "E17",
+          "E36"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:08:07.617573Z"
+    },
+    {
+      "turn_id": "turn_988f4b25bd0746aa92c3d30662c0d53b",
+      "case_id": "case_36fed381ec2240fbaff79eea781ad888",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "PENDING_RETRY",
+      "response_id": null,
+      "previous_response_id": "resp_28da2693-3fa6-9ab3-af08-ad644689b4c6",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": null,
+      "output_tokens": null,
+      "reasoning_tokens": null,
+      "cached_input_tokens": null,
+      "latency_ms": 7495,
+      "output": null,
+      "error_code": "structured_output_validation_failed",
+      "error_message": "Strict structured output validation failed: ValidationError [{\"loc\":\"reference_ids\",\"type\":\"too_long\",\"msg\":\"List should have at most 3 items after validation, not 4\"}]",
+      "created_at": "2026-09-05T18:08:15.143420Z"
+    },
+    {
+      "turn_id": "turn_d05a1581bf9545d19b1eddc99415e9b6",
+      "case_id": "case_36fed381ec2240fbaff79eea781ad888",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_5db1e1e1-5f20-9616-80cf-6a32fc7727d7",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 7104,
+      "output_tokens": 2869,
+      "reasoning_tokens": 2763,
+      "cached_input_tokens": 0,
+      "latency_ms": 28608,
+      "output": {
+        "policy_ids": [],
+        "matched_condition_ids": [],
+        "confidence": "normal",
+        "reason": "消息为HBM4/HBM4E行业格局综述，仅描述SK hynix供货、Samsung进入采样、Micron持有NVIDIA HBM4设计赢单并开发HBM4E面向2027量产等已有定位，未包含任何新业绩/指引变化、ASP/bit shipment数据、合同变更、订单增减、可靠性事故或市场定价变动，不满足任何一条criterion。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:08:22.346366Z"
+    },
+    {
+      "turn_id": "turn_fbef88dec8744796b5166d6397fcc9ab",
+      "case_id": "case_36fed381ec2240fbaff79eea781ad888",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 2,
+      "status": "OK",
+      "response_id": "resp_0bde5563-7f90-9d8c-9654-c3260d8e6cd8",
+      "previous_response_id": "resp_28da2693-3fa6-9ab3-af08-ad644689b4c6",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 16210,
+      "output_tokens": 719,
+      "reasoning_tokens": 571,
+      "cached_input_tokens": 16204,
+      "latency_ms": 7565,
+      "output": {
+        "result": "OLD",
+        "confidence": "normal",
+        "reference_ids": [
+          "E14",
+          "E39",
+          "E41"
+        ],
+        "reason": "The message is a retrospective comparative snapshot recapping known HBM positions: SK hynix supplying HBM4 to NVIDIA (E39/F169), Samsung HBM4E in sampling (E41/F173), Micron's NVIDIA HBM4 design win and Vera Rubin volume shipments (E14/F86, F85), and Micron HBM4E development toward 2027 HVP (E17/F90). All core facts are already covered by existing events; the article adds no new state change or milestone."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:08:27.708663Z"
+    }
+  ]
+}

@@ -8,6 +8,8 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
+from doxagent.codex_worker.schema import WorkerRunRequest
+
 from .schema import (
     DeliveryCheckpoint,
     DeliverySettlement,
@@ -75,6 +77,9 @@ class MonitoringO4Repository:
                     ticker TEXT PRIMARY KEY,
                     payload_json TEXT NOT NULL
                 );
+                CREATE TABLE IF NOT EXISTS o4_worker_dispatches (
+                    request_id TEXT PRIMARY KEY, payload_json TEXT NOT NULL
+                );
                 CREATE TABLE IF NOT EXISTS o4_ticker_leases (
                     ticker TEXT PRIMARY KEY,
                     owner_request_id TEXT NOT NULL,
@@ -91,9 +96,12 @@ class MonitoringO4Repository:
         """Requeue RUNNING rows when the singleton O4 worker starts."""
 
         with self._lock, self._connection:
-            self._connection.execute("DELETE FROM o4_ticker_leases")
+            self._connection.execute("""DELETE FROM o4_ticker_leases WHERE owner_request_id NOT IN (
+                SELECT request_id FROM o4_requests
+                WHERE json_extract(payload_json, '$.initialization_id') IS NOT NULL)""")
             rows = self._connection.execute(
-                "SELECT request_id, payload_json FROM o4_requests WHERE status = ?",
+                """SELECT request_id, payload_json FROM o4_requests WHERE status = ?
+                AND json_extract(payload_json, '$.initialization_id') IS NULL""",
                 (O4RequestStatus.RUNNING.value,),
             ).fetchall()
             for row in rows:
@@ -130,6 +138,19 @@ class MonitoringO4Repository:
             )
         return request
 
+    def freeze_worker_dispatch(self, request: WorkerRunRequest) -> WorkerRunRequest:
+        """Save exact dispatch input before HTTP; restart must reattach the same job."""
+        with self._lock, self._connection:
+            self._connection.execute(
+                "INSERT OR IGNORE INTO o4_worker_dispatches VALUES(?,?)",
+                (request.attempt_id, request.model_dump_json()),
+            )
+            row = self._connection.execute(
+                "SELECT payload_json FROM o4_worker_dispatches WHERE request_id=?",
+                (request.attempt_id,),
+            ).fetchone()
+        return WorkerRunRequest.model_validate_json(row[0])
+
     def save_request(self, request: O4Request) -> None:
         request.updated_at = utc_now()
         with self._lock, self._connection:
@@ -145,11 +166,12 @@ class MonitoringO4Repository:
         ).fetchone()
         return O4Request.model_validate_json(row["payload_json"]) if row else None
 
-    def next_pending(self) -> O4Request | None:
+    def next_pending(self, *, initialization_id: str | None = None) -> O4Request | None:
         row = self._connection.execute(
             """SELECT payload_json FROM o4_requests
-               WHERE status = ? ORDER BY rowid LIMIT 1""",
-            (O4RequestStatus.PENDING.value,),
+               WHERE status = ? AND json_extract(payload_json, '$.initialization_id') IS ?
+               ORDER BY rowid LIMIT 1""",
+            (O4RequestStatus.PENDING.value, initialization_id),
         ).fetchone()
         return O4Request.model_validate_json(row["payload_json"]) if row else None
 
@@ -220,9 +242,7 @@ class MonitoringO4Repository:
                 (value.plan_id, value.plan_version, value.model_dump_json()),
             )
 
-    def get_delivery_checkpoint(
-        self, plan_id: str, plan_version: int
-    ) -> DeliveryCheckpoint | None:
+    def get_delivery_checkpoint(self, plan_id: str, plan_version: int) -> DeliveryCheckpoint | None:
         row = self._connection.execute(
             """SELECT payload_json FROM o4_delivery_checkpoints
                WHERE plan_id = ? AND plan_version = ?""",
@@ -237,6 +257,12 @@ class MonitoringO4Repository:
                    ON CONFLICT(request_id) DO UPDATE SET payload_json=excluded.payload_json""",
                 (value.request_id, value.model_dump_json()),
             )
+
+    def get_delivery_settlement(self, request_id: str) -> DeliverySettlement | None:
+        row = self._connection.execute(
+            "SELECT payload_json FROM o4_delivery_settlements WHERE request_id=?", (request_id,)
+        ).fetchone()
+        return DeliverySettlement.model_validate_json(row[0]) if row else None
 
     def save_repair_settlement(self, value: RepairSettlement) -> None:
         with self._lock, self._connection:

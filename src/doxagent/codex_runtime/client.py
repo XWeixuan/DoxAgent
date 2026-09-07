@@ -73,7 +73,7 @@ class HttpCodexWorkerClient:
                 job = WorkerJob.model_validate(response.json())
             return job
         except asyncio.CancelledError:
-            if job is not None:
+            if job is not None and request.idempotency_key is None:
                 await asyncio.shield(self.cancel(job.job_id))
             raise
         except httpx.HTTPError as exc:
@@ -120,6 +120,30 @@ class HttpCodexWorkerClient:
         )
         return WorkspaceInventory.model_validate(response.json())
 
+    async def snapshot(self, run_id: str, snapshot_id: str) -> None:
+        await self._request(
+            "POST",
+            f"/v1/workspaces/{run_id}/snapshots/{snapshot_id}",
+            run_id=run_id,
+            operation="snapshot",
+        )
+
+    async def fork_snapshot(self, run_id: str, snapshot_id: str, destination_run_id: str) -> None:
+        if self._capabilities is None:
+            raise WorkerUnavailable("workspace capability secret is not configured")
+        response = await self._client.post(
+            f"/v1/workspaces/{run_id}/snapshots/{snapshot_id}/fork/{destination_run_id}",
+            headers={
+                "X-Workspace-Capability": self._capabilities.issue(
+                    run_id=run_id, operations={"snapshot"}
+                ),
+                "X-Destination-Capability": self._capabilities.issue(
+                    run_id=destination_run_id, operations={"write"}
+                ),
+            },
+        )
+        response.raise_for_status()
+
     async def read_attempt_observations(
         self,
         run_id: str,
@@ -165,9 +189,7 @@ class HttpCodexWorkerClient:
         control_attempt_id: str | None = None,
     ) -> bytes:
         params = (
-            {"control_attempt_id": control_attempt_id}
-            if control_attempt_id is not None
-            else None
+            {"control_attempt_id": control_attempt_id} if control_attempt_id is not None else None
         )
         response = await self._request(
             "GET",

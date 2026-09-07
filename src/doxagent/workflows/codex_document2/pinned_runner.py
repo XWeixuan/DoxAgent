@@ -56,6 +56,7 @@ class PinnedDocument2Runner:
                 source_global_run_id=source_global_run_id,
                 ticker=ticker,
                 as_of=as_of,
+                reuse_published_partial=True,
             )
         )
         if bundle.status != "published":

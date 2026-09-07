@@ -44,6 +44,7 @@ from doxagent.horizontal_collection.schema import (
 )
 from doxagent.model_usage.repository import ModelUsageRepository
 from doxagent.observations.promotion import CitationPromotionService
+from doxagent.ticker_initialization.substeps import attempt_identity, durable, managed
 from doxagent.workflows.codex_document1.assembler import assemble_document1
 from doxagent.workflows.codex_document1.node_runner import (
     CodexD1NodeRunner,
@@ -319,7 +320,7 @@ class CodexDocument1Orchestrator:
                 raise RuntimeError(f"published artifact checksum mismatch: {reference.artifact_id}")
             storage_path = None
             content_text: str | None = file.content
-            if len(content_bytes) > 2 * 1024 * 1024:
+            if len(content_bytes) > 2 * 1024 * 1024 and not managed():
                 if self._published_storage is None:
                     raise RuntimeError(
                         "PUBLISHED_DOCUMENT_STORAGE_REQUIRED: configure private Supabase "
@@ -400,6 +401,7 @@ class CodexDocument1Orchestrator:
                 None,
             )
 
+    @durable("d1")
     async def _execute_node(
         self,
         request: _ResearchRunRequest,
@@ -426,9 +428,9 @@ class CodexDocument1Orchestrator:
         first_attempt_number = (
             max((item.attempt_number for item in previous_attempts), default=0) + 1
         )
-        for attempt_offset in range(self._max_attempts):
+        for attempt_offset in range(1 if managed() else self._max_attempts):
             attempt_number = first_attempt_number + attempt_offset
-            attempt_id = f"{node.value}-{attempt_number}-{uuid4().hex[:10]}"
+            attempt_id = attempt_identity(f"{node.value}-{attempt_number}-{uuid4().hex[:10]}")
             request_thread_id = (
                 thread.thread_id if thread is not None and attempt_offset == 0 else None
             )
@@ -877,7 +879,7 @@ class CodexDocument1Orchestrator:
                 raise RuntimeError(f"published artifact checksum mismatch: {reference.artifact_id}")
             storage_path = None
             content_text: str | None = file.content
-            if len(content_bytes) > 2 * 1024 * 1024:
+            if len(content_bytes) > 2 * 1024 * 1024 and not managed():
                 if self._published_storage is None:
                     raise RuntimeError(
                         "PUBLISHED_DOCUMENT_STORAGE_REQUIRED: configure private Supabase "

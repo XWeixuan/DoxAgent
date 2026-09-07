@@ -1,0 +1,195 @@
+{
+  "case_id": "MU-W12-019",
+  "status": "COMPLETED",
+  "started_at": "2026-09-06T02:08:45.546310+08:00",
+  "completed_at": "2026-09-06T02:09:29.761048+08:00",
+  "seeded_provisional_event_ids": [
+    "E186",
+    "E187",
+    "E188",
+    "E189"
+  ],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E186",
+        "E187",
+        "E188",
+        "E189"
+      ]
+    },
+    "w1_final": {
+      "result": "OLD",
+      "confidence": "normal",
+      "reference_ids": [
+        "E186",
+        "E187",
+        "E188"
+      ],
+      "reason": "All core facts (unplanned cooling-water interruption on Nov 12, 2026; reduced saleable-bit output; revised delivery dates; recovery through Jan 31, 2027) are already captured by provisional events E186–E189. The message adds operational-process detail (phased restart, team coordination, material controls) but no new core factual state change."
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "policy_ids": [
+        "pol_a2fb4594422ae0c078a2"
+      ],
+      "matched_condition_ids": [
+        {
+          "policy_id": "pol_a2fb4594422ae0c078a2",
+          "condition_ids": [
+            "C1"
+          ]
+        }
+      ],
+      "confidence": "normal",
+      "reason": "消息明确确认三要素：(1)先进封装关键节点发生非计划中断（cooling-water interruption，Micron自身描述为unplanned并区别于ordinary maintenance）；(2)下调可售bit产量并修改客户交付日期；(3)恢复期至2027年1月31日，跨越正常维护窗口（原为hours/days而非multiple production weeks）。C1完整满足，直接触发。"
+    },
+    "w2_final": {
+      "policy_ids": [
+        "pol_a2fb4594422ae0c078a2"
+      ],
+      "matched_condition_ids": [
+        {
+          "policy_id": "pol_a2fb4594422ae0c078a2",
+          "condition_ids": [
+            "C1"
+          ]
+        }
+      ],
+      "confidence": "normal",
+      "reason": "消息明确确认三要素：(1)先进封装关键节点发生非计划中断（cooling-water interruption，Micron自身描述为unplanned并区别于ordinary maintenance）；(2)下调可售bit产量并修改客户交付日期；(3)恢复期至2027年1月31日，跨越正常维护窗口（原为hours/days而非multiple production weeks）。C1完整满足，直接触发。"
+    },
+    "route": {
+      "primary_route": "ARCHIVE",
+      "side_effects": [
+        "archive_message",
+        "mark_badcase"
+      ],
+      "reason": "w1=OLD/normal;policy_hit=true;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_eb64e5503e0b44e3b5997140ea1e91cf",
+      "case_id": "case_0fcaa031b9e643759e9b8a135b9e1023",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_ee6fc7df-c72f-9eae-bcc5-45ffc863755a",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 7065,
+      "output_tokens": 1225,
+      "reasoning_tokens": 1067,
+      "cached_input_tokens": 0,
+      "latency_ms": 11531,
+      "output": {
+        "policy_ids": [
+          "pol_a2fb4594422ae0c078a2"
+        ],
+        "matched_condition_ids": [
+          {
+            "policy_id": "pol_a2fb4594422ae0c078a2",
+            "condition_ids": [
+              "C1"
+            ]
+          }
+        ],
+        "confidence": "normal",
+        "reason": "消息明确确认三要素：(1)先进封装关键节点发生非计划中断（cooling-water interruption，Micron自身描述为unplanned并区别于ordinary maintenance）；(2)下调可售bit产量并修改客户交付日期；(3)恢复期至2027年1月31日，跨越正常维护窗口（原为hours/days而非multiple production weeks）。C1完整满足，直接触发。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:08:57.131017Z"
+    },
+    {
+      "turn_id": "turn_8af9f100423f4358ae919ad879ac1ddc",
+      "case_id": "case_0fcaa031b9e643759e9b8a135b9e1023",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_02cdb3e6-0de1-9bc0-bf3e-1f626b131579",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13669,
+      "output_tokens": 2398,
+      "reasoning_tokens": 2371,
+      "cached_input_tokens": 0,
+      "latency_ms": 23185,
+      "output": {
+        "event_ids": [
+          "E186",
+          "E187",
+          "E188",
+          "E189"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:09:08.781998Z"
+    },
+    {
+      "turn_id": "turn_d2bd7c0f7cc94d549fb1e745e4831af0",
+      "case_id": "case_0fcaa031b9e643759e9b8a135b9e1023",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "PENDING_RETRY",
+      "response_id": null,
+      "previous_response_id": "resp_02cdb3e6-0de1-9bc0-bf3e-1f626b131579",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": null,
+      "output_tokens": null,
+      "reasoning_tokens": null,
+      "cached_input_tokens": null,
+      "latency_ms": 6582,
+      "output": null,
+      "error_code": "structured_output_validation_failed",
+      "error_message": "Strict structured output validation failed: ValidationError [{\"loc\":\"reference_ids\",\"type\":\"too_long\",\"msg\":\"List should have at most 3 items after validation, not 4\"}]",
+      "created_at": "2026-09-05T18:09:15.363916Z"
+    },
+    {
+      "turn_id": "turn_5e105147e9514430ad3acf5300bdff21",
+      "case_id": "case_0fcaa031b9e643759e9b8a135b9e1023",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 2,
+      "status": "OK",
+      "response_id": "resp_26f41f9a-6542-9443-8cb6-727c4cef4a2c",
+      "previous_response_id": "resp_02cdb3e6-0de1-9bc0-bf3e-1f626b131579",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 15201,
+      "output_tokens": 896,
+      "reasoning_tokens": 778,
+      "cached_input_tokens": 15195,
+      "latency_ms": 9395,
+      "output": {
+        "result": "OLD",
+        "confidence": "normal",
+        "reference_ids": [
+          "E186",
+          "E187",
+          "E188"
+        ],
+        "reason": "All core facts (unplanned cooling-water interruption on Nov 12, 2026; reduced saleable-bit output; revised delivery dates; recovery through Jan 31, 2027) are already captured by provisional events E186–E189. The message adds operational-process detail (phased restart, team coordination, material controls) but no new core factual state change."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:09:29.760041Z"
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "scope": "isolated acceptance DB only",
+  "worker_started": false,
+  "orders_submitted": 0,
+  "steps": [
+    {
+      "revision": "ep_b8478abd6c59a5d2bd5e1dca",
+      "returncode": 0,
+      "output": {
+        "accounts": [
+          "DU***665"
+        ],
+        "active_revision": "ep_b8478abd6c59a5d2bd5e1dca"
+      }
+    },
+    {
+      "revision": "ep_9ec324c69a0a7cc945755d09",
+      "returncode": 0,
+      "output": {
+        "accounts": [
+          "U1***370"
+        ],
+        "active_revision": "ep_9ec324c69a0a7cc945755d09"
+      }
+    },
+    {
+      "revision": "ep_b8478abd6c59a5d2bd5e1dca",
+      "returncode": 0,
+      "output": {
+        "accounts": [
+          "DU***665"
+        ],
+        "active_revision": "ep_b8478abd6c59a5d2bd5e1dca"
+      }
+    }
+  ]
+}

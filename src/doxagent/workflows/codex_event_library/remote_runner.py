@@ -41,6 +41,7 @@ from doxagent.event_library.validator import (
     ValidationIssue,
     ValidationSeverity,
 )
+from doxagent.ticker_initialization.substeps import DurableWorker, durable
 from doxagent.workflows.codex_event_library.context import build_attempt_assets
 from doxagent.workflows.codex_event_library.schema import (
     O2_RUN_RESULT_SCHEMA,
@@ -78,7 +79,7 @@ class RemoteEventLibraryInitializer:
     ) -> None:
         if wave_size < 1:
             raise ValueError("wave_size must be positive")
-        self.worker = worker
+        self.worker = DurableWorker(worker)
         self.workspace = workspace
         self.service = service
         self.local_workspace_root = Path(local_workspace_root).resolve()
@@ -235,54 +236,20 @@ class RemoteEventLibraryInitializer:
                 else []
             )
             allowed_detail_ids = sorted(set(candidate_detail_ids) | set(review_ids))
-            await self._seed_attempt(
-                run_id=run_id,
-                manifest=manifest,
-                attempt_id=attempt_id,
-                stage=phase["stage"],
-                skill_asset=phase["skill_asset"],
-                assigned_delta_ids=phase["delta_ids"],
-                prior_attempt_paths=phase["prior_attempt_paths"],
-                mode=mode,
-                frozen_root=frozen_root,
-                allowed_event_detail_ids=allowed_detail_ids,
-                review_candidates=review_candidates,
-            )
-            request = self._worker_request(
-                run_id=run_id,
-                ticker=manifest.ticker,
-                attempt_id=attempt_id,
-                cutoff_at=cutoff_at,
-                thread_id=thread_id,
-            )
-            job = await self.worker.run(request)
-            if job.thread_id:
-                thread_id = job.thread_id
-            if job.status != "succeeded" or not job.final_response:
-                self._save_run(
-                    run_id=run_id,
-                    manifest=manifest,
-                    stage=EventLibraryRunStage.FAILED,
-                    thread_id=thread_id,
-                    completed=completed,
-                    wave_count=len(self._plan_waves(batch)),
-                    metadata={
-                        "error_code": job.error_code,
-                        "error_message": job.error_message,
-                        "failed_attempt_id": attempt_id,
-                    },
-                )
-                raise StructuredOutputInvalid(job.error_message or "O2 worker failed")
             expected_final = phase is phases[-1]
             try:
-                result = O2RunResult.model_validate_json(job.final_response)
-                self._validate_phase_result(
-                    result=result,
+                result, thread_id = await self._execute_phase(
+                    run_id=run_id,
                     phase=phase,
                     manifest=manifest,
+                    cutoff_at=cutoff_at,
+                    thread_id=thread_id,
+                    mode=mode,
+                    frozen_root=frozen_root,
+                    allowed_detail_ids=allowed_detail_ids,
+                    review_candidates=review_candidates,
                     expected_final=expected_final,
                 )
-                await self._validate_phase_artifacts(run_id=run_id, phase=phase)
             except Exception as exc:
                 self._save_run(
                     run_id=run_id,
@@ -516,6 +483,54 @@ class RemoteEventLibraryInitializer:
             waves.append(list(chunk))
         return waves
 
+    @durable("o2")
+    async def _execute_phase(
+        self,
+        *,
+        run_id: str,
+        phase: _O2Phase,
+        manifest: FrozenViewManifest,
+        cutoff_at: datetime,
+        thread_id: str | None,
+        mode: Literal["INITIALIZE", "INCREMENTAL"],
+        frozen_root: Path,
+        allowed_detail_ids: list[str],
+        review_candidates: list[ReferenceReviewCandidate],
+        expected_final: bool,
+    ) -> tuple[O2RunResult, str | None]:
+        await self._seed_attempt(
+            run_id=run_id,
+            manifest=manifest,
+            attempt_id=phase["attempt_id"],
+            stage=phase["stage"],
+            skill_asset=phase["skill_asset"],
+            assigned_delta_ids=phase["delta_ids"],
+            prior_attempt_paths=phase["prior_attempt_paths"],
+            mode=mode,
+            frozen_root=frozen_root,
+            allowed_event_detail_ids=allowed_detail_ids,
+            review_candidates=review_candidates,
+        )
+        request = self._worker_request(
+            run_id=run_id,
+            ticker=manifest.ticker,
+            attempt_id=phase["attempt_id"],
+            cutoff_at=cutoff_at,
+            thread_id=thread_id,
+        )
+        job = await self.worker.run(request)
+        if job.status != "succeeded" or not job.final_response:
+            raise StructuredOutputInvalid(job.error_message or "O2 worker failed")
+        result = O2RunResult.model_validate_json(job.final_response)
+        self._validate_phase_result(
+            result=result,
+            phase=phase,
+            manifest=manifest,
+            expected_final=expected_final,
+        )
+        await self._validate_phase_artifacts(run_id=run_id, phase=phase)
+        return result, job.thread_id or thread_id
+
     async def _seed_attempt(
         self,
         *,
@@ -695,9 +710,7 @@ class RemoteEventLibraryInitializer:
                     ReferenceViewDecisionLedgerEntry,
                 ),
             ):
-                work = await self.workspace.read_text(
-                    run_id, f"{attempt_root}/work/{filename}"
-                )
+                work = await self.workspace.read_text(run_id, f"{attempt_root}/work/{filename}")
                 bundled = await self.workspace.read_text(
                     run_id, f"{attempt_root}/revision_bundle/{filename}"
                 )
@@ -983,50 +996,17 @@ class RemoteEventLibraryInitializer:
                 return bundle_dir, outcome, thread_id
             attempt_id = f"o2-repair-{repair_number:03d}"
             error = "; ".join(f"{item.code}: {item.message}" for item in outcome.issues)
-            await self._seed_attempt(
+            result, thread_id = await self._execute_repair(
                 run_id=run_id,
                 manifest=manifest,
                 attempt_id=attempt_id,
-                stage=EventLibraryRunStage.BUNDLE_VALIDATE,
-                skill_asset="skills/revision-bundle.md",
-                assigned_delta_ids=[],
-                prior_attempt_paths=[
-                    bundle_remote_prefix,
-                    (
-                        "attempts/o2-global-reconciliation/output"
-                        if mode == "INITIALIZE"
-                        else "attempts/o2-reference-review/output"
-                    ),
-                ],
-                previous_failure=error,
+                bundle_remote_prefix=bundle_remote_prefix,
+                error=error,
                 mode=mode,
+                cutoff_at=cutoff_at,
+                thread_id=thread_id,
+                final_repair=repair_number == self.max_repairs,
             )
-            job = await self.worker.run(
-                self._worker_request(
-                    run_id=run_id,
-                    ticker=manifest.ticker,
-                    attempt_id=attempt_id,
-                    cutoff_at=cutoff_at,
-                    thread_id=thread_id,
-                )
-            )
-            if job.thread_id:
-                thread_id = job.thread_id
-            if job.status != "succeeded" or not job.final_response:
-                raise StructuredOutputInvalid(job.error_message or "O2 repair failed")
-            result = O2RunResult.model_validate_json(job.final_response)
-            expected_path = f"attempts/{attempt_id}/output/revision_bundle"
-            if (
-                result.status != "BUNDLE_READY"
-                or result.stage is not EventLibraryRunStage.BUNDLE_VALIDATE
-                or result.base_library_version != manifest.base_library_version
-                or result.validation != "NOT_RUN"
-                or (result.bundle_path or "").rstrip("/") != expected_path
-            ):
-                raise StructuredOutputInvalid(
-                    "O2 repair result must identify the current repair Bundle, Frozen base, "
-                    "BUNDLE_VALIDATE stage, and validation=NOT_RUN"
-                )
             completed.append(attempt_id)
             assert result.bundle_path is not None
             bundle_remote_prefix = result.bundle_path.rstrip("/")
@@ -1045,6 +1025,79 @@ class RemoteEventLibraryInitializer:
         if not outcome.publishable:
             raise ValueError("O2 Revision Bundle failed deterministic validation after repairs")
         return bundle_dir, outcome, thread_id
+
+    @durable("o2_repair")
+    async def _execute_repair(
+        self,
+        *,
+        run_id: str,
+        manifest: FrozenViewManifest,
+        attempt_id: str,
+        bundle_remote_prefix: str,
+        error: str,
+        mode: Literal["INITIALIZE", "INCREMENTAL"],
+        cutoff_at: datetime,
+        thread_id: str | None,
+        final_repair: bool,
+    ) -> tuple[O2RunResult, str | None]:
+        await self._seed_attempt(
+            run_id=run_id,
+            manifest=manifest,
+            attempt_id=attempt_id,
+            stage=EventLibraryRunStage.BUNDLE_VALIDATE,
+            skill_asset="skills/revision-bundle.md",
+            assigned_delta_ids=[],
+            prior_attempt_paths=[
+                bundle_remote_prefix,
+                (
+                    "attempts/o2-global-reconciliation/output"
+                    if mode == "INITIALIZE"
+                    else "attempts/o2-reference-review/output"
+                ),
+            ],
+            previous_failure=error,
+            mode=mode,
+        )
+        job = await self.worker.run(
+            self._worker_request(
+                run_id=run_id,
+                ticker=manifest.ticker,
+                attempt_id=attempt_id,
+                cutoff_at=cutoff_at,
+                thread_id=thread_id,
+            )
+        )
+        if job.thread_id:
+            thread_id = job.thread_id
+        if job.status != "succeeded" or not job.final_response:
+            raise StructuredOutputInvalid(job.error_message or "O2 repair failed")
+        result = O2RunResult.model_validate_json(job.final_response)
+        expected_path = f"attempts/{attempt_id}/output/revision_bundle"
+        if (
+            result.status != "BUNDLE_READY"
+            or result.stage is not EventLibraryRunStage.BUNDLE_VALIDATE
+            or result.base_library_version != manifest.base_library_version
+            or result.validation != "NOT_RUN"
+            or (result.bundle_path or "").rstrip("/") != expected_path
+        ):
+            raise StructuredOutputInvalid(
+                "O2 repair result must identify the current repair Bundle, Frozen base, "
+                "BUNDLE_VALIDATE stage, and validation=NOT_RUN"
+            )
+        assert result.bundle_path is not None
+        bundle_remote_prefix = result.bundle_path.rstrip("/")
+        bundle_dir = await self._download_tree(
+            run_id=run_id,
+            remote_prefix=bundle_remote_prefix,
+            local_root=(self.local_workspace_root / run_id / "downloads" / attempt_id),
+        )
+        loaded = RevisionBundleIO.load_tolerant(bundle_dir)
+        outcome = self._validate_loaded(loaded, manifest=manifest)
+        if outcome.publishable:
+            self._require_exact_bundle_coverage(result, outcome)
+        elif final_repair:
+            raise ValueError("O2 final repair has no publishable bundle")
+        return result, thread_id
 
     @staticmethod
     def _require_exact_bundle_coverage(

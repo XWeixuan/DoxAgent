@@ -30,6 +30,12 @@ class LocalWorkspaceClient:
     async def inventory(self, run_id: str) -> WorkspaceInventory:
         return self.store.inventory(run_id)
 
+    async def snapshot(self, run_id: str, snapshot_id: str) -> None:
+        self.store.snapshot(run_id, snapshot_id)
+
+    async def fork_snapshot(self, run_id: str, snapshot_id: str, destination_run_id: str) -> None:
+        self.store.fork_snapshot(run_id, snapshot_id, destination_run_id)
+
     async def read_attempt_observations(
         self,
         run_id: str,

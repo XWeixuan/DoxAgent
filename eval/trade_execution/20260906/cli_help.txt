@@ -1,0 +1,15 @@
+usage: cli.py [-h] [--db DB]
+              {bootstrap-profile,import-profile,activate-profile,discover-accounts,probe,run-worker,status,inspect,reconcile,resume-exit,migrate,validate-paper,arm-suite,import-fills,retry-event,set-endpoint,rebase-position,adjust-lot,set-session,replan-exit}
+              ...
+
+Local deterministic executor operations. All commands default to the Runtime
+DB.
+
+positional arguments:
+  {bootstrap-profile,import-profile,activate-profile,discover-accounts,probe,run-worker,status,inspect,reconcile,resume-exit,migrate,validate-paper,arm-suite,import-fills,retry-event,set-endpoint,rebase-position,adjust-lot,set-session,replan-exit}
+
+options:
+  -h, --help            show this help message and exit
+  --db DB
+C:\Users\WEIXUANXIE\Desktop\DoxAgent\.venv\Lib\site-packages\agent_framework\_skills.py:116: ExperimentalWarning: [SKILLS] SkillResource is experimental and may change or be removed in future versions without notice.
+C:\Users\WEIXUANXIE\Desktop\DoxAgent\.venv\Lib\site-packages\agent_framework\_harness\_memory.py:651: ExperimentalWarning: [HARNESS] MemoryStore is experimental and may change or be removed in future versions without notice.

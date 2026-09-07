@@ -1,0 +1,13 @@
+{
+  "mode": "READ_ONLY",
+  "profile_id": "live-local",
+  "environment": "LIVE",
+  "port": 7496,
+  "orders_submitted": 0,
+  "handshake": {
+    "server_version": 225,
+    "account": "U1***370"
+  },
+  "result": "FAILED",
+  "error": "BROKER_ORDER_SYNC_INCOMPLETE"
+}

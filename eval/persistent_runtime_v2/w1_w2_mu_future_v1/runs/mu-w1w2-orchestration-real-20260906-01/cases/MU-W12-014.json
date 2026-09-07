@@ -1,0 +1,121 @@
+{
+  "case_id": "MU-W12-014",
+  "status": "COMPLETED",
+  "started_at": "2026-09-06T02:09:49.095389+08:00",
+  "completed_at": "2026-09-06T02:10:21.567762+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": []
+    },
+    "w1_final": {
+      "result": "NEW",
+      "confidence": "normal",
+      "reference_ids": [],
+      "reason": "The core fact is Samsung's Galaxy S28 launch specifying 16GB base DRAM (up from 12GB). No loaded event or fact covers this specific product announcement or memory configuration change."
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "最接近的候选为pol_89acbb844ab129e28c32（头部手机平台提高基础DRAM配置+首个完整销售期激活与采购同步增长）。消息确认三星S28基础机型从12GB提升至16GB（一个商业配置档位），但该产品尚未进入零售期（retail availability 'later in the spring'），无激活/零售数据，无移动DRAM采购增长确认，且三星未披露供应商。criterion要求'首个完整销售期实现激活或零售与移动DRAM采购同步增长'，这些事实均未发生，不构成命中。其余策略与本消息无实质关联。"
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "最接近的候选为pol_89acbb844ab129e28c32（头部手机平台提高基础DRAM配置+首个完整销售期激活与采购同步增长）。消息确认三星S28基础机型从12GB提升至16GB（一个商业配置档位），但该产品尚未进入零售期（retail availability 'later in the spring'），无激活/零售数据，无移动DRAM采购增长确认，且三星未披露供应商。criterion要求'首个完整销售期实现激活或零售与移动DRAM采购同步增长'，这些事实均未发生，不构成命中。其余策略与本消息无实质关联。"
+    },
+    "route": {
+      "primary_route": "W3",
+      "side_effects": [
+        "route_to_w3"
+      ],
+      "reason": "w1=NEW/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_5cf1b8c4961e48ab90867b01a8c67f00",
+      "case_id": "case_54a9335f55824abbba9eb687db2f8b3d",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_d1c89f8b-4445-9189-b090-bdcf2487b9bd",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 7965,
+      "output_tokens": 2372,
+      "reasoning_tokens": 2215,
+      "cached_input_tokens": 0,
+      "latency_ms": 22739,
+      "output": {
+        "policy_ids": [],
+        "matched_condition_ids": [],
+        "confidence": "normal",
+        "reason": "最接近的候选为pol_89acbb844ab129e28c32（头部手机平台提高基础DRAM配置+首个完整销售期激活与采购同步增长）。消息确认三星S28基础机型从12GB提升至16GB（一个商业配置档位），但该产品尚未进入零售期（retail availability 'later in the spring'），无激活/零售数据，无移动DRAM采购增长确认，且三星未披露供应商。criterion要求'首个完整销售期实现激活或零售与移动DRAM采购同步增长'，这些事实均未发生，不构成命中。其余策略与本消息无实质关联。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:10:11.879534Z"
+    },
+    {
+      "turn_id": "turn_9dd4be9260394337a3680e386702eb88",
+      "case_id": "case_54a9335f55824abbba9eb687db2f8b3d",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_da03d0fa-ede8-90a4-98a1-9e91b87b0fc9",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 14278,
+      "output_tokens": 2472,
+      "reasoning_tokens": 2464,
+      "cached_input_tokens": 0,
+      "latency_ms": 24882,
+      "output": {
+        "event_ids": []
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:10:14.018655Z"
+    },
+    {
+      "turn_id": "turn_ff2242df921f4c66920a3b04a815e1c0",
+      "case_id": "case_54a9335f55824abbba9eb687db2f8b3d",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_904979c7-a8bd-9453-ad8a-784451aa298b",
+      "previous_response_id": "resp_da03d0fa-ede8-90a4-98a1-9e91b87b0fc9",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 16400,
+      "output_tokens": 539,
+      "reasoning_tokens": 479,
+      "cached_input_tokens": 0,
+      "latency_ms": 7548,
+      "output": {
+        "result": "NEW",
+        "confidence": "normal",
+        "reference_ids": [],
+        "reason": "The core fact is Samsung's Galaxy S28 launch specifying 16GB base DRAM (up from 12GB). No loaded event or fact covers this specific product announcement or memory configuration change."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:10:21.567762Z"
+    }
+  ]
+}

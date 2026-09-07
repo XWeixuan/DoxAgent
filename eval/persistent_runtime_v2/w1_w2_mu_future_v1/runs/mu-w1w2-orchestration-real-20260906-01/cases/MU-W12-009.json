@@ -1,0 +1,131 @@
+{
+  "case_id": "MU-W12-009",
+  "status": "COMPLETED",
+  "started_at": "2026-09-06T02:08:24.982754+08:00",
+  "completed_at": "2026-09-06T02:08:48.352751+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E43",
+        "E41"
+      ]
+    },
+    "w1_final": {
+      "result": "OLD",
+      "confidence": "normal",
+      "reference_ids": [
+        "E43"
+      ],
+      "reason": "消息核心事实——Samsung于2026年2月开始HBM4量产及商业出货——已被E43的Fact F175完整覆盖。其余内容为背景解读、历史评论和行业分析，不构成新核心事实。"
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息为Samsung HBM4于2026年2月开始量产和出货的回顾性报道，落入pol_83c565b3ca305ee04c41的match_scope，但其criterion要求三项事实同时成立：量产良率确认、向多个重要客户重复交付合格DRAM、以及DRAM市场交期缩短或合同价下降。消息仅陈述量产启动，未确认良率达标，未列出多个重要客户的重复交付，也未涉及常规DRAM市场交期或合同价变化，criterion未满足，不构成命中。"
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息为Samsung HBM4于2026年2月开始量产和出货的回顾性报道，落入pol_83c565b3ca305ee04c41的match_scope，但其criterion要求三项事实同时成立：量产良率确认、向多个重要客户重复交付合格DRAM、以及DRAM市场交期缩短或合同价下降。消息仅陈述量产启动，未确认良率达标，未列出多个重要客户的重复交付，也未涉及常规DRAM市场交期或合同价变化，criterion未满足，不构成命中。"
+    },
+    "route": {
+      "primary_route": "ARCHIVE",
+      "side_effects": [
+        "archive_message"
+      ],
+      "reason": "w1=OLD/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_e49a394afc73442c81664bbcf36d6b7b",
+      "case_id": "case_1edb9ace23304d84b5722b9c8ee35622",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_640a41e8-ee2d-9b70-9806-440a2b5884c5",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13405,
+      "output_tokens": 1012,
+      "reasoning_tokens": 997,
+      "cached_input_tokens": 0,
+      "latency_ms": 11430,
+      "output": {
+        "event_ids": [
+          "E43",
+          "E41"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:08:36.477287Z"
+    },
+    {
+      "turn_id": "turn_16b2ecf63e5b43ee8039bc501f36d25a",
+      "case_id": "case_1edb9ace23304d84b5722b9c8ee35622",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_64e1a1f2-8f21-9d96-85fb-9219d20b38fa",
+      "previous_response_id": "resp_640a41e8-ee2d-9b70-9806-440a2b5884c5",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 14996,
+      "output_tokens": 555,
+      "reasoning_tokens": 484,
+      "cached_input_tokens": 0,
+      "latency_ms": 6902,
+      "output": {
+        "result": "OLD",
+        "confidence": "normal",
+        "reference_ids": [
+          "E43"
+        ],
+        "reason": "消息核心事实——Samsung于2026年2月开始HBM4量产及商业出货——已被E43的Fact F175完整覆盖。其余内容为背景解读、历史评论和行业分析，不构成新核心事实。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:08:43.390381Z"
+    },
+    {
+      "turn_id": "turn_c1b0aa90f96449df9cc76a2254382da3",
+      "case_id": "case_1edb9ace23304d84b5722b9c8ee35622",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_68000b69-ddc6-96ba-9b84-71ca1957b8f0",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 7092,
+      "output_tokens": 2515,
+      "reasoning_tokens": 2376,
+      "cached_input_tokens": 0,
+      "latency_ms": 23303,
+      "output": {
+        "policy_ids": [],
+        "matched_condition_ids": [],
+        "confidence": "normal",
+        "reason": "消息为Samsung HBM4于2026年2月开始量产和出货的回顾性报道，落入pol_83c565b3ca305ee04c41的match_scope，但其criterion要求三项事实同时成立：量产良率确认、向多个重要客户重复交付合格DRAM、以及DRAM市场交期缩短或合同价下降。消息仅陈述量产启动，未确认良率达标，未列出多个重要客户的重复交付，也未涉及常规DRAM市场交期或合同价变化，criterion未满足，不构成命中。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:08:48.352751Z"
+    }
+  ]
+}

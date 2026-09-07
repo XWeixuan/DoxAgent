@@ -209,6 +209,10 @@ class SQLiteDocument3PolicyRepository:
                 );
                 CREATE UNIQUE INDEX IF NOT EXISTS codex_document3_one_current
                     ON codex_document3_policy_sets (ticker) WHERE is_current = 1;
+                CREATE TABLE IF NOT EXISTS codex_document3_version_reservations (
+                    run_id TEXT PRIMARY KEY, ticker TEXT NOT NULL, version INTEGER NOT NULL,
+                    UNIQUE(ticker, version)
+                );
                 """
             )
             columns = {
@@ -320,6 +324,70 @@ class SQLiteDocument3PolicyRepository:
             ).fetchall()
         return [PolicySetVersionMetadata.model_validate(dict(row)) for row in rows]
 
+    def reserve_version(self, ticker: str, run_id: str) -> int:
+        with self._lock, self._connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            existing = connection.execute(
+                "SELECT ticker, version FROM codex_document3_version_reservations WHERE run_id=?",
+                (run_id,),
+            ).fetchone()
+            if existing:
+                if existing["ticker"] != ticker.upper():
+                    raise ValueError("D3 version reservation ticker mismatch")
+                return int(existing["version"])
+            maximum = connection.execute(
+                "SELECT max(version) FROM ("
+                "SELECT policy_set_version AS version FROM codex_document3_policy_sets "
+                "WHERE ticker=? UNION ALL SELECT version "
+                "FROM codex_document3_version_reservations WHERE ticker=?)",
+                (ticker.upper(), ticker.upper()),
+            ).fetchone()[0]
+            version = int(maximum or 0) + 1
+            connection.execute(
+                "INSERT INTO codex_document3_version_reservations VALUES(?,?,?)",
+                (run_id, ticker.upper(), version),
+            )
+            return version
+
+    def reserved_policy(self, ticker: str, run_id: str) -> PolicySet | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                "SELECT version FROM codex_document3_version_reservations "
+                "WHERE run_id=? AND ticker=?",
+                (run_id, ticker.upper()),
+            ).fetchone()
+        return self.get_version(ticker, int(row[0])) if row else None
+
+    def publish_candidate(self, policy_set: PolicySet, *, run_id: str) -> None:
+        version = self.reserve_version(policy_set.ticker, run_id)
+        if version != policy_set.policy_set_version:
+            raise ValueError("candidate policy does not match its reserved version")
+        with self._lock, self._connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            existing = connection.execute(
+                "SELECT policy_set_json FROM codex_document3_policy_sets "
+                "WHERE ticker=? AND policy_set_version=?",
+                (policy_set.ticker.upper(), version),
+            ).fetchone()
+            if existing:
+                if PolicySet.model_validate_json(existing[0]) != policy_set:
+                    raise ValueError("immutable candidate Policy Set conflict")
+                return
+            connection.execute(
+                "INSERT INTO codex_document3_policy_sets "
+                "(ticker, policy_set_version, is_current, publication_state, policy_count, "
+                "policy_set_json, runtime_projection_json, published_at) VALUES(?,?,0,?,?,?,?,?)",
+                (
+                    policy_set.ticker.upper(),
+                    version,
+                    policy_set.publication_state.value,
+                    len(policy_set.policies),
+                    policy_set.model_dump_json(),
+                    _project(policy_set).model_dump_json(),
+                    policy_set.published_at.isoformat(),
+                ),
+            )
+
     def publish(self, policy_set: PolicySet, *, expected_base_version: int | None) -> None:
         key = policy_set.ticker.upper()
         with self._lock, self._connect() as connection:
@@ -336,7 +404,13 @@ class SQLiteDocument3PolicyRepository:
                 expected_base_version=expected_base_version,
             )
             expected_version = 1 if current is None else current + 1
-            if policy_set.policy_set_version != expected_version:
+            if policy_set.policy_set_version < expected_version:
+                raise ValueError("normal D3 publication cannot regress the current version")
+            reserved = connection.execute(
+                "SELECT 1 FROM codex_document3_version_reservations WHERE ticker=? AND version=?",
+                (key, policy_set.policy_set_version),
+            ).fetchone()
+            if policy_set.policy_set_version != expected_version and not reserved:
                 raise ValueError(
                     f"D3 version must be {expected_version}, got {policy_set.policy_set_version}"
                 )

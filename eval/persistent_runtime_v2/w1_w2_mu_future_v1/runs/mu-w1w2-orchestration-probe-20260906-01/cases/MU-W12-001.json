@@ -1,0 +1,133 @@
+{
+  "case_id": "MU-W12-001",
+  "status": "COMPLETED",
+  "started_at": "2026-09-06T02:05:51.599110+08:00",
+  "completed_at": "2026-09-06T02:06:17.352914+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E14",
+        "E15",
+        "E16"
+      ]
+    },
+    "w1_final": {
+      "result": "OLD",
+      "confidence": "normal",
+      "reference_ids": [
+        "E14"
+      ],
+      "reason": "All core facts in the message — Micron's HBM4 design win with NVIDIA (F86), beginning volume shipments of HBM4 for Vera Rubin earlier this year (F85), and exceeding $1 billion in HBM4 sales (F84) — are already captured in E14's canonical facts. The spokesperson quotes and background discussion reiterate these same propositions without adding a new factual state change."
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息为描述性报道，说明Micron HBM4在NVIDIA Vera Rubin平台已获design win、今年早些时候开始批量出货并累计超$1B营收。最接近的pol_4fbb78816d7863893f09要求确认BOM容量高于已知计划、新增绑定订单及进一步提高晶圆/封装分配；pol_aa7a5be0213e21347434要求在正式财报中首次将一组战略客户协议连接至至少两个连续季度重复交付并确认收入/订金入账。本文均为新闻叙述而非正式披露，未确认容量超出已知计划、新增绑定订单超越合同基线、封装分配提升，也非财报中首次连接多客户重复交付，不满足任何一条criterion。"
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息为描述性报道，说明Micron HBM4在NVIDIA Vera Rubin平台已获design win、今年早些时候开始批量出货并累计超$1B营收。最接近的pol_4fbb78816d7863893f09要求确认BOM容量高于已知计划、新增绑定订单及进一步提高晶圆/封装分配；pol_aa7a5be0213e21347434要求在正式财报中首次将一组战略客户协议连接至至少两个连续季度重复交付并确认收入/订金入账。本文均为新闻叙述而非正式披露，未确认容量超出已知计划、新增绑定订单超越合同基线、封装分配提升，也非财报中首次连接多客户重复交付，不满足任何一条criterion。"
+    },
+    "route": {
+      "primary_route": "ARCHIVE",
+      "side_effects": [
+        "archive_message"
+      ],
+      "reason": "w1=OLD/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_64f4fc6369194d7c91a762b9514ed38b",
+      "case_id": "case_a825ebec98644620b3d11aba1535c84d",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_2b4b7210-5d40-9338-be8a-e0811c103f09",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13466,
+      "output_tokens": 959,
+      "reasoning_tokens": 940,
+      "cached_input_tokens": 0,
+      "latency_ms": 11741,
+      "output": {
+        "event_ids": [
+          "E14",
+          "E15",
+          "E16"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:06:03.378286Z"
+    },
+    {
+      "turn_id": "turn_fe6ac8859eb549fe9e47682ae220f258",
+      "case_id": "case_a825ebec98644620b3d11aba1535c84d",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_9690d797-ba90-9206-bb21-fdc823d6f81d",
+      "previous_response_id": "resp_2b4b7210-5d40-9338-be8a-e0811c103f09",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 15606,
+      "output_tokens": 874,
+      "reasoning_tokens": 767,
+      "cached_input_tokens": 0,
+      "latency_ms": 11308,
+      "output": {
+        "result": "OLD",
+        "confidence": "normal",
+        "reference_ids": [
+          "E14"
+        ],
+        "reason": "All core facts in the message — Micron's HBM4 design win with NVIDIA (F86), beginning volume shipments of HBM4 for Vera Rubin earlier this year (F85), and exceeding $1 billion in HBM4 sales (F84) — are already captured in E14's canonical facts. The spokesperson quotes and background discussion reiterate these same propositions without adding a new factual state change."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:06:14.706671Z"
+    },
+    {
+      "turn_id": "turn_03e8fe2458f04191b5745d477f35f809",
+      "case_id": "case_a825ebec98644620b3d11aba1535c84d",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_0e8b4f9d-26cb-94fb-8937-58dd2ef10364",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 7153,
+      "output_tokens": 2666,
+      "reasoning_tokens": 2476,
+      "cached_input_tokens": 0,
+      "latency_ms": 25715,
+      "output": {
+        "policy_ids": [],
+        "matched_condition_ids": [],
+        "confidence": "normal",
+        "reason": "消息为描述性报道，说明Micron HBM4在NVIDIA Vera Rubin平台已获design win、今年早些时候开始批量出货并累计超$1B营收。最接近的pol_4fbb78816d7863893f09要求确认BOM容量高于已知计划、新增绑定订单及进一步提高晶圆/封装分配；pol_aa7a5be0213e21347434要求在正式财报中首次将一组战略客户协议连接至至少两个连续季度重复交付并确认收入/订金入账。本文均为新闻叙述而非正式披露，未确认容量超出已知计划、新增绑定订单超越合同基线、封装分配提升，也非财报中首次连接多客户重复交付，不满足任何一条criterion。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:06:17.352914Z"
+    }
+  ]
+}

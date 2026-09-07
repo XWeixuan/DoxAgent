@@ -22,14 +22,16 @@ def route_runtime_case(
     w2_low = w2.confidence is RuntimeConfidence.LOW
     policy_hit = bool(w2.policy_ids)
 
-    if w1_low or w2_low:
+    # presistent_runtime_v2.md §45: OLD/normal is authoritative even
+    # when W2 is low; otherwise W2 uncertainty requires W3 revalidation.
+    if w1.result is W1NoveltyVerdict.OLD and not w1_low:
+        primary = RuntimePrimaryRoute.ARCHIVE
+    elif w2_low:
         primary = RuntimePrimaryRoute.W3
-    elif w1.result is W1NoveltyVerdict.NEW:
-        primary = RuntimePrimaryRoute.TRADE if policy_hit else RuntimePrimaryRoute.W3
     elif policy_hit:
-        primary = RuntimePrimaryRoute.ARCHIVE
+        primary = RuntimePrimaryRoute.W3 if w1_low else RuntimePrimaryRoute.TRADE
     else:
-        primary = RuntimePrimaryRoute.ARCHIVE
+        primary = RuntimePrimaryRoute.ADD_TO_DELTA
 
     effects: list[RuntimeSideEffect] = []
     if primary is RuntimePrimaryRoute.ARCHIVE:
@@ -48,8 +50,7 @@ def route_runtime_case(
     # BADCASE is not a primary route: it is the OLD/normal + policy-hit side effect.
     if (
         primary is RuntimePrimaryRoute.ARCHIVE
-        and
-        w1.result is W1NoveltyVerdict.OLD
+        and w1.result is W1NoveltyVerdict.OLD
         and not w1_low
         and policy_hit
     ):

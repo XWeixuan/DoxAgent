@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import json
 import time
 from collections import defaultdict
@@ -33,15 +34,29 @@ class WorkerJobManager:
         self._recover_snapshots()
 
     async def submit(self, request: WorkerRunRequest) -> WorkerJob:
+        request_sha256 = hashlib.sha256(
+            json.dumps(request.model_dump(mode="json"), sort_keys=True).encode()
+        ).hexdigest()
+        job_id = (
+            hashlib.sha256(f"{request.run_id}:{request.idempotency_key}".encode()).hexdigest()
+            if request.idempotency_key else uuid4().hex
+        )
+        existing = self._jobs.get(job_id)
+        if existing is not None:
+            if existing.request_sha256 != request_sha256:
+                raise ValueError("idempotency key reused for a different worker request")
+            return existing.model_copy(deep=True)
         job = WorkerJob(
-            job_id=uuid4().hex,
+            job_id=job_id,
             run_id=request.run_id,
             attempt_id=request.attempt_id,
+            request_sha256=request_sha256,
             status="queued",
         )
+        # Persist before the first await: duplicate HTTP submissions cannot dispatch twice.
+        self._persist(job)
         self._jobs[job.job_id] = job
         await self._emit(job.job_id, "job.queued", {"node": request.node.value})
-        self._persist(job)
         self._tasks[job.job_id] = asyncio.create_task(self._run(job.job_id, request))
         return job.model_copy(deep=True)
 
@@ -157,8 +172,8 @@ class WorkerJobManager:
     async def _update(self, job_id: str, **updates: object) -> None:
         job = self._jobs[job_id].model_copy(update={**updates, "updated_at": utc_now()})
         self._jobs[job_id] = job
-        await self._emit(job_id, f"job.{job.status}", job.model_dump(mode="json"))
         self._persist(job)
+        await self._emit(job_id, f"job.{job.status}", job.model_dump(mode="json"))
 
     async def _finish(self, job_id: str, **updates: object) -> None:
         await self._update(job_id, **updates)

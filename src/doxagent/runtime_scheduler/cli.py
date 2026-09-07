@@ -63,12 +63,17 @@ def main(argv: list[str] | None = None) -> int:
             event_limit=args.event_limit,
             stop_event=stop_event,
         )
-        summary = loop.run(
-            immediate=not args.no_immediate,
-            max_iterations=args.max_iterations,
-            now_fn=(lambda: now) if now is not None else None,
-            on_cycle=None if args.quiet else _print_loop_cycle,
-        )
+        try:
+            summary = loop.run(
+                immediate=not args.no_immediate,
+                max_iterations=args.max_iterations,
+                now_fn=(lambda: now) if now is not None else None,
+                on_cycle=None if args.quiet else _print_loop_cycle,
+            )
+        finally:
+            runtime = getattr(api.scheduler, "runtime_v2_service", None)
+            if runtime is not None:
+                runtime.close()
         _print_json(
             {
                 "ok": summary.failure_count == 0,

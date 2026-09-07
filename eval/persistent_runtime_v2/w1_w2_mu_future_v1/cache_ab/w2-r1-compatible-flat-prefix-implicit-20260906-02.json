@@ -1,0 +1,74 @@
+{
+  "run_id": "w2-r1-compatible-flat-prefix-implicit-20260906-02",
+  "created_at": "2026-09-06T02:56:33.392273+08:00",
+  "lane": "W2",
+  "variant": "flat_prefix",
+  "model": "qwen3.8-flash",
+  "reasoning_effort": "medium",
+  "transport": "responses_json_schema",
+  "endpoint": "compatible",
+  "session_cache_header": "disable",
+  "reference_key": "runtime_policy_projection",
+  "reference_fingerprint": "65839217465b84825c9384cc12024e1d14cec4e73161a14e0e2cb8361b5ca556",
+  "prefix_fingerprint": "d04393a50bdaaed3efcbe33ab9f666631a2c072917100260d96baa380a5154ae",
+  "case_ids": [
+    "MU-W12-021",
+    "MU-W12-022",
+    "MU-W12-023",
+    "MU-W12-024",
+    "MU-W12-025"
+  ],
+  "records": [
+    {
+      "case_id": "MU-W12-021",
+      "response_id": "resp_d3e51b12-8339-9b64-a0c7-db75d54c3f9e",
+      "latency_ms": 26745,
+      "input_tokens": 7364,
+      "cached_tokens": 7168,
+      "cache_creation_input_tokens": null,
+      "output_validation_error": null
+    },
+    {
+      "case_id": "MU-W12-022",
+      "response_id": "resp_757771eb-a0e5-94eb-adbc-42f0479be8fb",
+      "latency_ms": 20909,
+      "input_tokens": 7195,
+      "cached_tokens": 6144,
+      "cache_creation_input_tokens": null,
+      "output_validation_error": null
+    },
+    {
+      "case_id": "MU-W12-023",
+      "response_id": "resp_8cefe682-695d-96f9-b0bd-db3f719542ca",
+      "latency_ms": 17497,
+      "input_tokens": 7121,
+      "cached_tokens": 6144,
+      "cache_creation_input_tokens": null,
+      "output_validation_error": null
+    },
+    {
+      "case_id": "MU-W12-024",
+      "response_id": "resp_190a6270-1547-9489-80a8-3eed8a10ac03",
+      "latency_ms": 13448,
+      "input_tokens": 7102,
+      "cached_tokens": 6144,
+      "cache_creation_input_tokens": null,
+      "output_validation_error": null
+    },
+    {
+      "case_id": "MU-W12-025",
+      "response_id": "resp_46a575ee-6c87-9673-8f43-dcb2a764f18e",
+      "latency_ms": 18083,
+      "input_tokens": 7082,
+      "cached_tokens": 6144,
+      "cache_creation_input_tokens": null,
+      "output_validation_error": null
+    }
+  ],
+  "totals": {
+    "input_tokens": 35864,
+    "cached_tokens": 31744,
+    "cache_share": 0.8851215703769797,
+    "latency_ms": 96682
+  }
+}

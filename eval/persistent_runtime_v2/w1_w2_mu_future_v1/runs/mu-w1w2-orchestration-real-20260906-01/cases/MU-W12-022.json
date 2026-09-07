@@ -1,0 +1,302 @@
+{
+  "case_id": "MU-W12-022",
+  "status": "COMPLETED",
+  "started_at": "2026-09-06T02:09:51.805198+08:00",
+  "completed_at": "2026-09-06T02:10:41.469403+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E117",
+        "E28",
+        "E30",
+        "E111",
+        "E115"
+      ]
+    },
+    "w1_final": {
+      "result": "NEW",
+      "confidence": "normal",
+      "reference_ids": [],
+      "reason": "消息核心事实为中国国家采购管理局发布新的采购资格审查要求，并确认已有多笔涉及Micron的内存组件待交付采购订单被取消并转移至替代供应安排。已加载事件覆盖的是美国限制中国存储供应商(E117)、AI供需紧张(E28/E30)、中国产能上升作为长期风险的分析(E111/E115)，均未表达此条中国政府采购资格审查新规及Micron订单实际被取消这一新进展。"
+    },
+    "w1_r3": {
+      "candidates": [
+        {
+          "proposition": "The National Public Procurement Administration issued a notice requiring purchasing entities to conduct an eligibility/security review of memory components used in designated data-infrastructure projects before placing, renewing, or releasing purchase orders for those components.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "National Public Procurement Administration"
+          ]
+        },
+        {
+          "proposition": "Items determined not to meet the applicable security-review requirement will not receive new purchase releases, with supply continuity arranged per an approved implementation plan.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "National Public Procurement Administration"
+          ]
+        },
+        {
+          "proposition": "The procurement-eligibility-review notice takes effect on May 21, 2027.",
+          "assertion_state": "SCHEDULED",
+          "subject_time": "2027-05-21",
+          "occurrence_date": null,
+          "entities": [
+            "National Public Procurement Administration"
+          ]
+        },
+        {
+          "proposition": "Implementation reports received by the Administration identified cancellations of pending Micron memory-component releases associated with designated data-infrastructure projects.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "National Public Procurement Administration",
+            "Micron Technology"
+          ]
+        },
+        {
+          "proposition": "The memory-component requirements cancelled for Micron were moved to alternative approved supply arrangements.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "National Public Procurement Administration",
+            "Micron Technology"
+          ]
+        },
+        {
+          "proposition": "The notice does not direct operators to halt operating systems or remove installed equipment.",
+          "assertion_state": "ACTUAL",
+          "subject_time": null,
+          "occurrence_date": null,
+          "entities": [
+            "National Public Procurement Administration"
+          ]
+        }
+      ]
+    },
+    "w2_r1": {
+      "policy_ids": [
+        "pol_e28a1b1e8eedc9bf53f5"
+      ],
+      "matched_condition_ids": [
+        {
+          "policy_id": "pol_e28a1b1e8eedc9bf53f5",
+          "condition_ids": [
+            "C1"
+          ]
+        }
+      ],
+      "confidence": "normal",
+      "reason": "中国采购局发布Notice No.18 of 2027，对指定数据基础设施项目引入合格性审查，未通过者不得发放新采购释放；公告已生效（2027-05-21）。实施报告确认多个待定Micron内存组件采购释放被取消，需求转移至替代合格供应安排，中央采购主体须保留取消、替代和库存转移记录。这构成中国正式将Micron采购限制扩大至此前可服务的指定数据基础设施项目类别并生效，导致可识别订单取消与份额向替代供应商转移，完整满足pol_e28a1b1e8eedc9bf53f5 C1。"
+    },
+    "w2_final": {
+      "policy_ids": [
+        "pol_e28a1b1e8eedc9bf53f5"
+      ],
+      "matched_condition_ids": [
+        {
+          "policy_id": "pol_e28a1b1e8eedc9bf53f5",
+          "condition_ids": [
+            "C1"
+          ]
+        }
+      ],
+      "confidence": "normal",
+      "reason": "中国采购局发布Notice No.18 of 2027，对指定数据基础设施项目引入合格性审查，未通过者不得发放新采购释放；公告已生效（2027-05-21）。实施报告确认多个待定Micron内存组件采购释放被取消，需求转移至替代合格供应安排，中央采购主体须保留取消、替代和库存转移记录。这构成中国正式将Micron采购限制扩大至此前可服务的指定数据基础设施项目类别并生效，导致可识别订单取消与份额向替代供应商转移，完整满足pol_e28a1b1e8eedc9bf53f5 C1。"
+    },
+    "route": {
+      "primary_route": "TRADE",
+      "side_effects": [
+        "create_trade_record",
+        "emit_delta"
+      ],
+      "reason": "w1=NEW/normal;policy_hit=true;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_460f4fdd29144e96bad7305dee8c0fc4",
+      "case_id": "case_9416c2f547f548a89919eeaf25aecdbd",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_4fbd815e-164a-9154-bbe6-5134371c7854",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 7152,
+      "output_tokens": 2493,
+      "reasoning_tokens": 2285,
+      "cached_input_tokens": 0,
+      "latency_ms": 23818,
+      "output": {
+        "policy_ids": [
+          "pol_e28a1b1e8eedc9bf53f5"
+        ],
+        "matched_condition_ids": [
+          {
+            "policy_id": "pol_e28a1b1e8eedc9bf53f5",
+            "condition_ids": [
+              "C1"
+            ]
+          }
+        ],
+        "confidence": "normal",
+        "reason": "中国采购局发布Notice No.18 of 2027，对指定数据基础设施项目引入合格性审查，未通过者不得发放新采购释放；公告已生效（2027-05-21）。实施报告确认多个待定Micron内存组件采购释放被取消，需求转移至替代合格供应安排，中央采购主体须保留取消、替代和库存转移记录。这构成中国正式将Micron采购限制扩大至此前可服务的指定数据基础设施项目类别并生效，导致可识别订单取消与份额向替代供应商转移，完整满足pol_e28a1b1e8eedc9bf53f5 C1。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:10:15.687172Z"
+    },
+    {
+      "turn_id": "turn_7f22db0aaaa747019eb5175f75135680",
+      "case_id": "case_9416c2f547f548a89919eeaf25aecdbd",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_d5e2dfae-8164-995c-a542-65555758281f",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13465,
+      "output_tokens": 2356,
+      "reasoning_tokens": 2326,
+      "cached_input_tokens": 0,
+      "latency_ms": 25671,
+      "output": {
+        "event_ids": [
+          "E117",
+          "E28",
+          "E30",
+          "E111",
+          "E115"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:10:17.537952Z"
+    },
+    {
+      "turn_id": "turn_e81b2fd0a3104e87bb875bbb43d572b4",
+      "case_id": "case_9416c2f547f548a89919eeaf25aecdbd",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_dd256640-b82b-9289-ac67-f75a864b3222",
+      "previous_response_id": "resp_d5e2dfae-8164-995c-a542-65555758281f",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 17040,
+      "output_tokens": 789,
+      "reasoning_tokens": 673,
+      "cached_input_tokens": 0,
+      "latency_ms": 9548,
+      "output": {
+        "result": "NEW",
+        "confidence": "normal",
+        "reference_ids": [],
+        "reason": "消息核心事实为中国国家采购管理局发布新的采购资格审查要求，并确认已有多笔涉及Micron的内存组件待交付采购订单被取消并转移至替代供应安排。已加载事件覆盖的是美国限制中国存储供应商(E117)、AI供需紧张(E28/E30)、中国产能上升作为长期风险的分析(E111/E115)，均未表达此条中国政府采购资格审查新规及Micron订单实际被取消这一新进展。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:10:27.112380Z"
+    },
+    {
+      "turn_id": "turn_b295dce2074545119aa4aba7e0f5efc9",
+      "case_id": "case_9416c2f547f548a89919eeaf25aecdbd",
+      "lane": "W1",
+      "round_name": "R3",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_8b019c2c-e1a8-962f-9507-0eaf721e5d07",
+      "previous_response_id": "resp_dd256640-b82b-9289-ac67-f75a864b3222",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 18044,
+      "output_tokens": 1151,
+      "reasoning_tokens": 807,
+      "cached_input_tokens": 0,
+      "latency_ms": 14341,
+      "output": {
+        "candidates": [
+          {
+            "proposition": "The National Public Procurement Administration issued a notice requiring purchasing entities to conduct an eligibility/security review of memory components used in designated data-infrastructure projects before placing, renewing, or releasing purchase orders for those components.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "National Public Procurement Administration"
+            ]
+          },
+          {
+            "proposition": "Items determined not to meet the applicable security-review requirement will not receive new purchase releases, with supply continuity arranged per an approved implementation plan.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "National Public Procurement Administration"
+            ]
+          },
+          {
+            "proposition": "The procurement-eligibility-review notice takes effect on May 21, 2027.",
+            "assertion_state": "SCHEDULED",
+            "subject_time": "2027-05-21",
+            "occurrence_date": null,
+            "entities": [
+              "National Public Procurement Administration"
+            ]
+          },
+          {
+            "proposition": "Implementation reports received by the Administration identified cancellations of pending Micron memory-component releases associated with designated data-infrastructure projects.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "National Public Procurement Administration",
+              "Micron Technology"
+            ]
+          },
+          {
+            "proposition": "The memory-component requirements cancelled for Micron were moved to alternative approved supply arrangements.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "National Public Procurement Administration",
+              "Micron Technology"
+            ]
+          },
+          {
+            "proposition": "The notice does not direct operators to halt operating systems or remove installed equipment.",
+            "assertion_state": "ACTUAL",
+            "subject_time": null,
+            "occurrence_date": null,
+            "entities": [
+              "National Public Procurement Administration"
+            ]
+          }
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:10:41.456042Z"
+    }
+  ]
+}

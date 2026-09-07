@@ -27,9 +27,11 @@ from doxagent.monitoring.schema import (
 )
 from doxagent.monitoring.service import MonitoringBusService
 from doxagent.persistent_runtime import (
+    A2Result,
     HeuristicW1Worker,
     HeuristicW2Worker,
     InMemoryPersistentRuntimeRepository,
+    O3Result,
     PersistentRuntimeExecutionService,
     RuntimeExecutionRecord,
     SQLitePersistentRuntimeRepository,
@@ -330,9 +332,12 @@ def test_paper_trading_runtime_continues_while_weekly_update_is_running() -> Non
     )
     provider = BlockingDocumentProvider(old_bundle, initialized_bundle=new_bundle)
     monitoring_service = MonitoringBusService(InMemoryMonitoringRepository())
-    runtime_service = PersistentRuntimeExecutionService.from_settings(
+    runtime_service = PersistentRuntimeExecutionService(
+        InMemoryPersistentRuntimeRepository(),
         w1_worker=HeuristicW1Worker(),
         w2_worker=HeuristicW2Worker(),
+        a2_worker=OfflineA2Worker(),
+        o3_worker=OfflineO3Worker(),
     )
     runtime_service.repository = InMemoryPersistentRuntimeRepository()
     scheduler = UnifiedRuntimeSchedulerService(
@@ -700,9 +705,12 @@ def _scheduler(
 ]:
     provider = FakeDocumentProvider(bundle, initialized_bundle)
     monitoring_service = MonitoringBusService(InMemoryMonitoringRepository())
-    runtime_service = PersistentRuntimeExecutionService.from_settings(
+    runtime_service = PersistentRuntimeExecutionService(
+        InMemoryPersistentRuntimeRepository(),
         w1_worker=HeuristicW1Worker(),
         w2_worker=HeuristicW2Worker(),
+        a2_worker=OfflineA2Worker(),
+        o3_worker=OfflineO3Worker(),
     )
     runtime_service.repository = InMemoryPersistentRuntimeRepository()
     scheduler = UnifiedRuntimeSchedulerService(
@@ -948,9 +956,21 @@ def _disable_due_polling(monitoring_service: MonitoringBusService) -> None:
 
 
 def _sqlite_runtime_service(path: Path) -> PersistentRuntimeExecutionService:
-    service = PersistentRuntimeExecutionService.from_settings(
+    service = PersistentRuntimeExecutionService(
+        SQLitePersistentRuntimeRepository(path),
         w1_worker=HeuristicW1Worker(),
         w2_worker=HeuristicW2Worker(),
+        a2_worker=OfflineA2Worker(),
+        o3_worker=OfflineO3Worker(),
     )
-    service.repository = SQLitePersistentRuntimeRepository(path)
     return service
+
+
+class OfflineA2Worker:
+    def verify(self, message, context) -> A2Result:
+        return A2Result(is_new=True, verification_status="verified", reasoning="Offline fixture")
+
+
+class OfflineO3Worker:
+    def judge(self, message, context, budget) -> O3Result:
+        return O3Result(primary_action="archive", reasoning="Offline fixture")

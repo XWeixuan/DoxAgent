@@ -1112,6 +1112,18 @@ async def test_initialize_runs_single_o3_thread_and_publishes_canonical_artifact
     )
     assert workspace.local.read_text("d3-mu-test", "output/final/runtime_projection.json").content
 
+    from unittest.mock import AsyncMock, patch
+
+    with patch.object(orchestrator, "_enqueue_monitoring_o4", new_callable=AsyncMock) as enqueue:
+        await orchestrator.initialize(
+            ticker="MU", document2_run_id="d2-mu", run_id="d3-mu-test", enqueue_o4=False,
+        )
+        enqueue.assert_not_awaited()
+        await orchestrator.initialize(
+            ticker="MU", document2_run_id="d2-mu", run_id="d3-mu-test",
+        )
+        enqueue.assert_awaited_once()
+
 
 @pytest.mark.asyncio
 async def test_initialize_resume_skips_completed_trigger_stage_and_preserves_inputs(

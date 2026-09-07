@@ -162,7 +162,8 @@ def _run_case(
     case_id = message["case_id"]
     repository = InMemoryPersistentRuntimeV2Repository()
     source = _make_source(message)
-    trading_date = source.published_at.astimezone(EASTERN).date()
+    from doxagent.semantic_clock import semantic_day
+    trading_date = semantic_day(source.message_bus_event_time)
     seeded_ids: list[str] = []
     dependency = gold["w1"]["r1"]["provisional_dependency"]
     if dependency is not None:
@@ -189,7 +190,7 @@ def _run_case(
     )
     started = datetime.now().astimezone()
     try:
-        case = service.execute_message(source)
+        case = service.execute_message(source, admitted_at=source.message_bus_event_time)
         if case.route and RuntimeSideEffect.EMIT_DELTA in case.route.side_effects:
             effect = next(
                 item
@@ -559,6 +560,11 @@ def _aggregate(records: list[dict[str, Any]]) -> dict[str, Any]:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--run-id", required=True)
+    parser.add_argument(
+        "--prompt-root",
+        type=Path,
+        help="Explicit prompt revision override; input corpus stays frozen",
+    )
     parser.add_argument("--max-workers", type=int, default=5)
     parser.add_argument("--case-id", action="append", default=[])
     args = parser.parse_args()
@@ -584,6 +590,8 @@ def main() -> int:
     frozen_db.parent.mkdir(parents=True, exist_ok=True)
     inputs = {item["purpose"]: item for item in manifest["frozen_inputs"]}
     for item in manifest["frozen_inputs"]:
+        if args.prompt_root and item["purpose"].startswith("prompt "):
+            continue
         source_path = Path(item["path"])
         if not source_path.is_file() or _sha256(source_path) != item["sha256"]:
             raise ValueError(f"Frozen input hash mismatch: {item['purpose']}")
@@ -611,13 +619,20 @@ def main() -> int:
     settings = DoxAgentSettings()
     responses = BailianRuntimeResponsesClient(
         api_key=settings.require_dashscope_api_key(),
-        base_url=settings.dashscope_base_url,
+        base_url=settings.dashscope_chat_base_url,
         model=settings.persistent_runtime_v2_model,
         reasoning_effort=settings.persistent_runtime_v2_reasoning_effort,
         timeout_seconds=settings.persistent_runtime_v2_timeout_seconds,
         session_cache=settings.persistent_runtime_v2_session_cache_enabled,
     )
-    prompts = RuntimeV2PromptSet.load(PROJECT / "prompts" / "persistent_runtime_v2")
+    prompt_root = args.prompt_root or PROJECT / "prompts" / "persistent_runtime_v2"
+    prompts = RuntimeV2PromptSet.load(prompt_root)
+    prompt_hashes = {name: _sha256(prompt_root / f"{name}.md") for name in vars(prompts)}
+    prior_manifest = run_dir / "run_manifest.json"
+    if prior_manifest.exists():
+        prior = json.loads(prior_manifest.read_text(encoding="utf-8"))
+        if prior.get("prompt_hashes") != prompt_hashes:
+            raise ValueError("existing evaluation prompt revision differs; use a new run ID")
     saved_case_starts = [
         json.loads(path.read_text(encoding="utf-8"))["started_at"]
         for case_id in (item["case_id"] for item in messages)
@@ -626,6 +641,8 @@ def main() -> int:
     run_manifest = {
         "run_id": args.run_id,
         "dataset_id": manifest["dataset_id"],
+        "prompt_hashes": prompt_hashes,
+        "prompt_override": str(args.prompt_root) if args.prompt_root else None,
         "evaluation_profile": "w1_w2_round_isolated",
         "started_at": min(saved_case_starts, default=datetime.now().astimezone().isoformat()),
         "model": responses.model,
@@ -633,6 +650,9 @@ def main() -> int:
         "reasoning_effort": responses.reasoning_effort,
         "strict_json_schema": True,
         "session_cache": responses.session_cache,
+        "cache_mode": "implicit_prefix" if not responses.session_cache else "session",
+        "cache_layout": "readonly_business_reference_then_dynamic_case",
+        "responses_endpoint_profile": "compatible",
         "max_workers": args.max_workers,
         "case_ids": [item["case_id"] for item in messages],
         "dataset_manifest_sha256": _sha256(manifest_path),

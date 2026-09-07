@@ -1,0 +1,24 @@
+{
+  "profile_id": "paper-local",
+  "environment": "PAPER",
+  "account_mode": "PAPER",
+  "host": "127.0.0.1",
+  "port": 7497,
+  "client_id": 82,
+  "expected_account_id": "DU_REPLACE_WITH_DISCOVERED_ACCOUNT",
+  "long_enabled": true,
+  "short_enabled": true,
+  "quote_profile_revision": null,
+  "strategy": {
+    "target_notional_usd": "20000",
+    "initial_tolerance": "0.01",
+    "non_rth_retry_tolerance": "0.02",
+    "order_wait_seconds": 5.0,
+    "rth_max_retries": 1,
+    "non_rth_max_retries": 2,
+    "exit_offset_minutes": 30,
+    "fractional_shares": false,
+    "quote_max_age_seconds": 5.0,
+    "request_timeout_seconds": 5.0
+  }
+}

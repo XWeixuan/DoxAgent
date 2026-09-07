@@ -1,0 +1,133 @@
+{
+  "case_id": "MU-W12-011",
+  "status": "COMPLETED",
+  "started_at": "2026-09-06T02:09:23.909761+08:00",
+  "completed_at": "2026-09-06T02:09:51.790316+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E8",
+        "E24",
+        "E7"
+      ]
+    },
+    "w1_final": {
+      "result": "NEW",
+      "confidence": "normal",
+      "reference_ids": [
+        "E8"
+      ],
+      "reason": "Known facts (E8 F67, E7 F65, E24 F104) establish only that Micron is 'developing' or 'building' a New York facility. The current message introduces a new milestone not previously covered: receipt of the final local construction permit from the Town of Clay and a dated groundbreaking ceremony, marking the transition from planning/development to actual construction phase at the specific Clay, NY site."
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息描述Micron纽约Clay厂址获得地方施工许可并举行动工仪式，当前阶段为土方、道路、管线等场地准备，远未达到任何Policy criterion要求的'客户合格产出'、量产良率、财务指引、ASP/订单变化或中断事实。最接近的pol_1090d9ad1d4a1e31e622要求新厂已形成客户合格产出后因订单不足下调利用率，而本消息仅涉及开工前基建，该事实前提完全不存在，判定未命中。"
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息描述Micron纽约Clay厂址获得地方施工许可并举行动工仪式，当前阶段为土方、道路、管线等场地准备，远未达到任何Policy criterion要求的'客户合格产出'、量产良率、财务指引、ASP/订单变化或中断事实。最接近的pol_1090d9ad1d4a1e31e622要求新厂已形成客户合格产出后因订单不足下调利用率，而本消息仅涉及开工前基建，该事实前提完全不存在，判定未命中。"
+    },
+    "route": {
+      "primary_route": "W3",
+      "side_effects": [
+        "route_to_w3"
+      ],
+      "reason": "w1=NEW/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_92a72089a989409cb050f1338ae24584",
+      "case_id": "case_69d9a8f1036c46f6a72676791f1765f0",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_b31ff3ca-8031-954a-8e7c-ef138e889a01",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 7060,
+      "output_tokens": 916,
+      "reasoning_tokens": 783,
+      "cached_input_tokens": 0,
+      "latency_ms": 10400,
+      "output": {
+        "policy_ids": [],
+        "matched_condition_ids": [],
+        "confidence": "normal",
+        "reason": "消息描述Micron纽约Clay厂址获得地方施工许可并举行动工仪式，当前阶段为土方、道路、管线等场地准备，远未达到任何Policy criterion要求的'客户合格产出'、量产良率、财务指引、ASP/订单变化或中断事实。最接近的pol_1090d9ad1d4a1e31e622要求新厂已形成客户合格产出后因订单不足下调利用率，而本消息仅涉及开工前基建，该事实前提完全不存在，判定未命中。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:09:34.354558Z"
+    },
+    {
+      "turn_id": "turn_9187683565e8410d971009c5b91eed12",
+      "case_id": "case_69d9a8f1036c46f6a72676791f1765f0",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_c6e356ea-8fda-9180-a286-d532d2518138",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13373,
+      "output_tokens": 1502,
+      "reasoning_tokens": 1485,
+      "cached_input_tokens": 0,
+      "latency_ms": 17396,
+      "output": {
+        "event_ids": [
+          "E8",
+          "E24",
+          "E7"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:09:41.348866Z"
+    },
+    {
+      "turn_id": "turn_376af9f670244ef3a3d57fa63fd94757",
+      "case_id": "case_69d9a8f1036c46f6a72676791f1765f0",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_d75304f0-5243-9d0b-a30c-d611c8645b5a",
+      "previous_response_id": "resp_c6e356ea-8fda-9180-a286-d532d2518138",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 15304,
+      "output_tokens": 816,
+      "reasoning_tokens": 706,
+      "cached_input_tokens": 0,
+      "latency_ms": 10415,
+      "output": {
+        "result": "NEW",
+        "confidence": "normal",
+        "reference_ids": [
+          "E8"
+        ],
+        "reason": "Known facts (E8 F67, E7 F65, E24 F104) establish only that Micron is 'developing' or 'building' a New York facility. The current message introduces a new milestone not previously covered: receipt of the final local construction permit from the Town of Clay and a dated groundbreaking ceremony, marking the transition from planning/development to actual construction phase at the specific Clay, NY site."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:09:51.789315Z"
+    }
+  ]
+}

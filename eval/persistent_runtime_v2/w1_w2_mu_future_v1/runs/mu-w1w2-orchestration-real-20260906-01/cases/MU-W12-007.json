@@ -1,0 +1,135 @@
+{
+  "case_id": "MU-W12-007",
+  "status": "COMPLETED",
+  "started_at": "2026-09-06T02:08:17.576498+08:00",
+  "completed_at": "2026-09-06T02:08:38.577519+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E121",
+        "E122",
+        "E123"
+      ]
+    },
+    "w1_final": {
+      "result": "OLD",
+      "confidence": "normal",
+      "reference_ids": [
+        "E121",
+        "E122"
+      ],
+      "reason": "The message's core facts—Netlist's district court complaint alleging four patents infringed by overseas-manufactured Micron memory products (E121 F369/F370/F371), the ITC proceeding for exclusion and cease-and-desist orders against Micron, Super Micro, HPE, and Lenovo (E122 F372), and the possibility of licensing/settlement discussions (E122 F373)—are all already recorded. Remaining content is legal commentary, general explanation of forum roles, and contextual analysis of the supply chain, none of which introduce a new factual state."
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息仅报告Netlist对Micron提起专利侵权诉讼及ITC申请，属于指控和请求救济阶段，未产生任何运营、财务或供应链实际变化。所有Policy的match_scope覆盖的是Micron业绩/指引、DRAM/NAND供需、客户协议、产能中断、竞争格局、监管限制或产品可靠性等经营事实维度，无一涉及IP诉讼或贸易救济申请。当前消息不落入任何候选Policy。"
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息仅报告Netlist对Micron提起专利侵权诉讼及ITC申请，属于指控和请求救济阶段，未产生任何运营、财务或供应链实际变化。所有Policy的match_scope覆盖的是Micron业绩/指引、DRAM/NAND供需、客户协议、产能中断、竞争格局、监管限制或产品可靠性等经营事实维度，无一涉及IP诉讼或贸易救济申请。当前消息不落入任何候选Policy。"
+    },
+    "route": {
+      "primary_route": "ARCHIVE",
+      "side_effects": [
+        "archive_message"
+      ],
+      "reason": "w1=OLD/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_80acb9de639147cd95677eea830e9a69",
+      "case_id": "case_15a4347e1edd465babe390ae7700395d",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_ea41e5d3-1d73-9a9b-b089-4821b93c0a16",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13423,
+      "output_tokens": 531,
+      "reasoning_tokens": 506,
+      "cached_input_tokens": 0,
+      "latency_ms": 6449,
+      "output": {
+        "event_ids": [
+          "E121",
+          "E122",
+          "E123"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:08:24.070174Z"
+    },
+    {
+      "turn_id": "turn_9173365f9d3b4df6b9110f8bc9b9ee1d",
+      "case_id": "case_15a4347e1edd465babe390ae7700395d",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_dc085033-5410-9b27-a93a-63f2525cd8f5",
+      "previous_response_id": "resp_ea41e5d3-1d73-9a9b-b089-4821b93c0a16",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 15519,
+      "output_tokens": 701,
+      "reasoning_tokens": 544,
+      "cached_input_tokens": 0,
+      "latency_ms": 8412,
+      "output": {
+        "result": "OLD",
+        "confidence": "normal",
+        "reference_ids": [
+          "E121",
+          "E122"
+        ],
+        "reason": "The message's core facts—Netlist's district court complaint alleging four patents infringed by overseas-manufactured Micron memory products (E121 F369/F370/F371), the ITC proceeding for exclusion and cease-and-desist orders against Micron, Super Micro, HPE, and Lenovo (E122 F372), and the possibility of licensing/settlement discussions (E122 F373)—are all already recorded. Remaining content is legal commentary, general explanation of forum roles, and contextual analysis of the supply chain, none of which introduce a new factual state."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:08:32.497146Z"
+    },
+    {
+      "turn_id": "turn_8632f0cdb92c435181d42bf910f53dae",
+      "case_id": "case_15a4347e1edd465babe390ae7700395d",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_e432250c-7713-930d-b95d-fbb777d185f0",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 7110,
+      "output_tokens": 2282,
+      "reasoning_tokens": 2173,
+      "cached_input_tokens": 0,
+      "latency_ms": 20954,
+      "output": {
+        "policy_ids": [],
+        "matched_condition_ids": [],
+        "confidence": "normal",
+        "reason": "消息仅报告Netlist对Micron提起专利侵权诉讼及ITC申请，属于指控和请求救济阶段，未产生任何运营、财务或供应链实际变化。所有Policy的match_scope覆盖的是Micron业绩/指引、DRAM/NAND供需、客户协议、产能中断、竞争格局、监管限制或产品可靠性等经营事实维度，无一涉及IP诉讼或贸易救济申请。当前消息不落入任何候选Policy。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:08:38.576514Z"
+    }
+  ]
+}

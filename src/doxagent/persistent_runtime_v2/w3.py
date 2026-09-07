@@ -9,7 +9,7 @@ import re
 import threading
 from collections import OrderedDict
 from pathlib import Path
-from typing import Literal, Protocol
+from typing import Any, Literal, Protocol
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
@@ -109,13 +109,21 @@ class PublishedW3ContextProvider:
         self._context_cache_lock = threading.RLock()
 
     async def load(self, case: RuntimeCase) -> W3PreparedContext:
-        d2_bundle = self._current_document2(case.ticker)
+        if case.version_pin.document2_run_id:
+            pinned = self._runtime.get_bundle(case.version_pin.document2_run_id)
+            if not isinstance(pinned, Document2Bundle) or pinned.ticker.upper() != case.ticker:
+                raise W3Error("w3_document2_unavailable", "Pinned Published D2 is unavailable")
+            d2_bundle = pinned
+        else:
+            d2_bundle = self._current_document2(case.ticker)
         if d2_bundle.handoff is None:
             raise W3Error("w3_document2_unavailable", "Current Published D2 has no handoff")
         cache_key = (
             case.ticker,
             d2_bundle.run_id,
-            d2_bundle.source_global_run_id,
+            (case.version_pin.document1_run_id or d2_bundle.source_global_run_id)
+            + ":"
+            + (case.version_pin.event_library_root or ""),
             case.version_pin.event_library_version,
             case.version_pin.policy_set_version,
         )
@@ -136,12 +144,16 @@ class PublishedW3ContextProvider:
         if document2.ticker.upper() != case.ticker:
             raise W3Error("w3_document2_ticker_mismatch", "Published D2 ticker mismatch")
 
-        d1_bundle = self._runtime.get_bundle(document2.source_global_run_id)
+        d1_bundle = self._runtime.get_bundle(
+            case.version_pin.document1_run_id or document2.source_global_run_id
+        )
         if not isinstance(d1_bundle, GlobalResearchBundle) or d1_bundle.handoff is None:
             raise W3Error(
                 "w3_document1_unavailable",
                 "D2 source_global_run_id does not resolve to Published Global Research",
             )
+        if d1_bundle.ticker.upper() != case.ticker:
+            raise W3Error("w3_document1_ticker_mismatch", "Pinned D1 ticker mismatch")
         d1_published = self._runtime.get_published_document(
             d1_bundle.run_id,
             d1_bundle.handoff.document_artifact_id,
@@ -159,7 +171,12 @@ class PublishedW3ContextProvider:
                 "w3_policy_set_unavailable",
                 "Version-pinned full PolicySet is unavailable",
             )
-        reference = self._events.reference_view(
+        events = (
+            PublishedEventLibraryReader(case.version_pin.event_library_root)
+            if case.version_pin.event_library_root
+            else self._events
+        )
+        reference = events.reference_view(
             case.ticker,
             version=case.version_pin.event_library_version,
         )
@@ -270,8 +287,10 @@ class CodexW3AgentRunner:
         effort: Literal["low", "medium", "high", "xhigh", "max"] = "max",
         timeout_seconds: int = 600,
         workspace_namespace: str = "persistent-runtime-w3",
+        journal: Any = None,
     ) -> None:
         self._worker = worker
+        self._journal = journal
         self._workspace = workspace
         self._context = context_provider
         self._prompt_root = Path(prompt_root)
@@ -322,6 +341,20 @@ class CodexW3AgentRunner:
         slot: W3ThreadSlot,
     ) -> tuple[W3CaseResult, str | None, W3ContextVersionPin]:
         context = await self._context.load(case)
+        provisional = case.frozen_inputs.get("provisional", [])
+        if provisional:
+            reference = context.reference_view + "\n\n## Prior known Runtime provisional facts\n"
+            reference += (
+                "These facts were known before this Case. "
+                "Their original semantic day is preserved.\n"
+            )
+            for item in provisional:
+                reference += (
+                    f"\n### {item['provisional_event_id']} (semantic day {item['trading_date']})\n"
+                    + json.dumps(item["candidate"], ensure_ascii=False)
+                    + "\n"
+                )
+            context = context.model_copy(update={"reference_view": reference})
         if slot.kind is W3ThreadKind.MAIN:
             run_id = f"{self._workspace_namespace}-{case.ticker.lower()}-main"
         else:
@@ -329,20 +362,25 @@ class CodexW3AgentRunner:
                 f"{self._workspace_namespace}-{case.ticker.lower()}-"
                 f"fallback-{w3_case.w3_case_id[-24:]}"
             )
+        if case.execution_bundle_id:
+            run_id += "-" + case.execution_bundle_id[:16]
         attempt_id = f"w3-{w3_case.attempt_count:02d}"
-        agent = (self._prompt_root / "agent.md").read_text(encoding="utf-8")
+        assets = case.frozen_inputs.get("w3_assets", {})
+
+        def read_asset(name: str) -> str:
+            if assets:
+                return str(assets[f"w3/{name}"])
+            return (self._prompt_root / name).read_text(encoding="utf-8")
+
+        agent = read_asset("agent.md")
         skill_name = (
             "uncovered_new.md"
             if w3_case.mode is W3Mode.UNCOVERED_NEW
             else "revalidate_then_evaluate.md"
         )
-        skill_files = {
-            skill_name: (self._prompt_root / "skills" / skill_name).read_text(encoding="utf-8")
-        }
+        skill_files = {skill_name: read_asset("skills/" + skill_name)}
         if w3_case.mode is W3Mode.REVALIDATE_THEN_EVALUATE:
-            skill_files["uncovered_new.md"] = (
-                self._prompt_root / "skills" / "uncovered_new.md"
-            ).read_text(encoding="utf-8")
+            skill_files["uncovered_new.md"] = read_asset("skills/uncovered_new.md")
         schema = strict_json_schema(W3CaseResult.model_json_schema())
         event_boundary = (
             case.source.published_at
@@ -399,7 +437,12 @@ class CodexW3AgentRunner:
             f"{w3_case.w3_case_id!r}. The authoritative current Case task payload is:\n"
             f"{json.dumps(task, ensure_ascii=False, separators=(',', ':'))}"
         )
-        job = await self._worker.run(
+        worker: Any = self._worker
+        if self._journal:
+            from .worker_receipts import ReceiptWorker
+
+            worker = ReceiptWorker(worker, self._journal, w3_case.w3_case_id)
+        job = await worker.run(
             WorkerRunRequest(
                 workflow_version=CODEX_PERSISTENT_RUNTIME_W3_WORKFLOW_VERSION,
                 research_lane=ResearchLane.PERSISTENT_RUNTIME,
@@ -412,9 +455,9 @@ class CodexW3AgentRunner:
                 prompt=prompt,
                 output_schema=schema,
                 thread_id=slot.thread_id,
-                model=self._model,
+                model=case.frozen_inputs.get("models", {}).get("w3_model", self._model),
                 model_provider=self._model_provider,
-                effort=self._effort,
+                effort=case.frozen_inputs.get("models", {}).get("w3_effort", self._effort),
                 read_only=True,
                 data_mcp_enabled=False,
                 allow_subagents=False,
@@ -436,13 +479,22 @@ class CodexW3AgentRunner:
         try:
             result = W3CaseResult.model_validate_json(job.final_response)
         except ValidationError as exc:
+            if self._journal:
+                worker.reject_output("invalid structured output")
             raise W3Error("w3_invalid_structured_output", str(exc)[:4000]) from exc
         if result.w3_case_id != w3_case.w3_case_id:
+            if self._journal:
+                worker.reject_output("case correlation mismatch")
             raise W3Error(
                 "w3_case_correlation_mismatch",
                 "W3 output belongs to a different Case",
             )
-        self._validate_semantics(w3_case.mode, result, context)
+        try:
+            self._validate_semantics(w3_case.mode, result, context)
+        except W3Error:
+            if self._journal:
+                worker.reject_output("semantic output rejected")
+            raise
         return result, job.thread_id, context.version_pin
 
     @staticmethod

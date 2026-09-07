@@ -31,6 +31,7 @@ from doxagent.codex_worker.schema import WorkerJob, WorkerRunRequest
 from doxagent.model_usage.repository import ModelUsageRepository
 from doxagent.model_usage.schema import ModelUsageEvent
 from doxagent.observations.promotion import CitationPromotionService
+from doxagent.ticker_initialization.substeps import attempt_identity, durable
 from doxagent.workflows.codex_document2.errors import (
     format_execution_error,
     raised_worker_error,
@@ -68,7 +69,9 @@ class Document2TurnRunner:
         usage_repository: ModelUsageRepository | None = None,
         asset_root: str | Path | None = None,
     ) -> None:
-        self._worker = worker
+        from doxagent.ticker_initialization.substeps import DurableWorker
+
+        self._worker = DurableWorker(worker)
         self._workspace = workspace
         self._repository = repository
         self._model = model
@@ -89,6 +92,7 @@ class Document2TurnRunner:
             )
         )
 
+    @durable("d2")
     async def run(
         self,
         *,
@@ -108,7 +112,7 @@ class Document2TurnRunner:
         artifact_key: str | None = None,
     ) -> Document2TurnResult:
         attempt_number = self._next_attempt_number(persistence_run_id, node)
-        attempt_id = self._attempt_id(node, attempt_number)
+        attempt_id = attempt_identity(self._attempt_id(node, attempt_number))
         context_text = json.dumps(context, ensure_ascii=False, indent=2, default=str)
         input_hash = hashlib.sha256(context_text.encode("utf-8")).hexdigest()
         attempt = NodeAttempt(

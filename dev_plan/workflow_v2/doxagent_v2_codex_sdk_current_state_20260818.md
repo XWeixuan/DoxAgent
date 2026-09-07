@@ -85,32 +85,6 @@ Global assembler 的固定正文顺序是：
 C1 基本面研究 -> C3 行业与价值链研究 -> C5 市场隐含预期研究
 ```
 
-### 2.2 Market Situation Research
-
-当前首版只实现物理分离和独立运行：
-
-```text
-Market horizontal collection（c2/o4 targets）
-        |
-   +----+----+
-   |         |
-  C2        O4       （并行）
-   +----+----+
-        |
-Agent observation normalization
-        |
- deterministic citation aggregation
-        |
-  assemble / publish
-```
-
-- C2 负责宏观、大盘、增长/就业、通胀/政策、利率/信用/流动性/汇率及其传导。
-- O4 负责个股价格快照、多窗口收益、重定价区间、相对表现、波动、定位/流动性和未知项。
-- C2 与 O4 首版互不读取对方报告，也不读取 Global Research bundle。
-- Global Research 的失败不影响 Market Situation；Market Situation 的失败也不影响 Global。
-- Market assembler 只拼接 `C2 大盘与宏观环境` 和 `O4 个股价格面与走势`。
-- 当前还没有盘前/盘中/盘后持续监测、增量 watch loop 或独立 reviewer DAG；这些属于后续
-  Market lane 方案，不应写入当前实现状态。
 
 ### 2.3 Document 2 / Expectation Research
 

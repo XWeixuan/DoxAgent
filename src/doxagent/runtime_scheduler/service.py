@@ -7,7 +7,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 from datetime import UTC, datetime, time
 from threading import Lock, Thread
-from typing import cast
+from typing import Any, cast
 from zoneinfo import ZoneInfo
 
 from doxagent.blackboard.errors import RunNotFoundError
@@ -170,6 +170,7 @@ class UnifiedRuntimeSchedulerService:
         self._weekly_update_lock = Lock()
         self._runtime_bundle_cache: dict[tuple[str, str], DocumentBundle] = {}
         self._runtime_context_cache: dict[tuple[str, str], dict[str, object]] = {}
+        self.initialization_control_path: str | None = None
 
     @classmethod
     def from_settings(
@@ -189,7 +190,7 @@ class UnifiedRuntimeSchedulerService:
                 resolved,
                 message_bus=message_bus_v2_service,
             )
-        return cls(
+        service = cls(
             repository,
             document_provider=WorkflowDocumentProvider(settings=resolved),
             monitoring_service=None,
@@ -208,9 +209,55 @@ class UnifiedRuntimeSchedulerService:
                 resolved.monitoring_auto_media_enrichment_concurrency
             ),
         )
+        service.initialization_control_path = resolved.ticker_initialization_control_path
+        return service
 
     def overview(self) -> DashboardOverview:
         return DashboardOverview(tickers=self.repository.list_states())
+
+    def admit_activation(
+        self, ticker: str, revision_id: str, *, now: datetime | None = None
+    ) -> TickerRunState:
+        """Admit a published V2 activation without invoking legacy document workflows."""
+        normalized = _ticker(ticker)
+        runtime = self._require_runtime_v2_for_trading()
+        bus = self._require_message_bus_v2()
+        loader = runtime.input_snapshot_loader
+        snapshot = loader(normalized) if loader else None
+        if snapshot is None or snapshot.activation_revision_id != revision_id:
+            raise ValueError("Runtime has not loaded the requested activation revision")
+        if snapshot.index is None or snapshot.projection is None:
+            raise ValueError("Activated Runtime Index/Projection is unavailable")
+        if bus.repository.get_ticker_state(normalized) is None:
+            raise ValueError("Message Bus must admit the ticker before Runtime")
+        initial_offset = bus.initialize_runtime_cursor(RUNTIME_V2_CONSUMER_ID, normalized)
+        current_time = _utc(now)
+        state = self.repository.get_state(normalized) or TickerRunState(
+            ticker=normalized, started_at=current_time
+        )
+        state = state.model_copy(
+            update={
+                "status": TickerRunStatus.RUNNING,
+                "health": RuntimeHealth.NORMAL,
+                "monitor_mode": MonitorMode.TRADING,
+                "session_phase": market_session_phase(current_time),
+                "updated_at": current_time,
+                "stopped_at": None,
+                "last_error": None,
+                "document_status": DocumentSetStatus(
+                    ticker=normalized, usable=True, checked_at=current_time
+                ),
+                "metadata": {
+                    **state.metadata,
+                    "activation_revision_id": revision_id,
+                    "workflow_version": "V2",
+                    "initial_offset": initial_offset,
+                },
+            },
+            deep=True,
+        )
+        self.repository.upsert_state(state)
+        return state
 
     def start_ticker(
         self,
@@ -679,8 +726,39 @@ class UnifiedRuntimeSchedulerService:
         now: datetime | None = None,
         event_limit: int = 100,
     ) -> list[TickerRunDetail]:
+        control_path = getattr(self, "initialization_control_path", None)
+        admitted: set[str] | None = None
+        if control_path:
+            from doxagent.ticker_initialization.consumers import admit_runtime_revisions
+            from doxagent.ticker_initialization.repository import InitializationRepository
+
+            admitted = admit_runtime_revisions(InitializationRepository(control_path), self)
+        from doxagent.ticker_initialization.consumers import consumer_heartbeat
+
+        def usable(revision: dict[str, Any]) -> bool:
+            state = self.repository.get_state(revision["ticker"])
+            return bool(
+                state
+                and state.status in RUNNABLE_STATUSES
+                and state.metadata.get("activation_revision_id") == revision["revision_id"]
+            )
+
+        with consumer_heartbeat(
+            InitializationRepository(control_path) if control_path else None, "runtime", usable
+        ):
+            return self._run_admitted_once(admitted, now=now, event_limit=event_limit)
+
+    def _run_admitted_once(
+        self, admitted: set[str] | None, *, now: datetime | None, event_limit: int
+    ) -> list[TickerRunDetail]:
         details: list[TickerRunDetail] = []
         for state in self.repository.list_states():
+            if (
+                admitted is not None
+                and state.metadata.get("activation_revision_id")
+                and state.ticker not in admitted
+            ):
+                continue
             if state.status not in RUNNABLE_STATUSES:
                 continue
             details.append(self.tick_ticker(state.ticker, now=now, event_limit=event_limit))
@@ -722,7 +800,9 @@ class UnifiedRuntimeSchedulerService:
             }
         )
         runtime_context_bundle = (
-            self._runtime_bundle_for_tick(state) if should_run_runtime else None
+            self._runtime_bundle_for_tick(state)
+            if should_run_runtime and not state.metadata.get("activation_revision_id")
+            else None
         )
         self._ensure_weekly_update_job(
             state,
@@ -773,8 +853,27 @@ class UnifiedRuntimeSchedulerService:
                     limit=event_limit,
                 )
                 pending_count_before_runtime = len(pending_stream)
-                runtime.process_pending_effects(limit=20)
+                coordinator = getattr(runtime, "coordinator", None)
+                from doxagent.persistent_runtime_v2.coordinator import RuntimeCoordinator
+
+                if not isinstance(coordinator, RuntimeCoordinator):
+                    coordinator = None
+                if coordinator is not None:
+                    coordinator.reconcile(normalized)
+                if coordinator is None:
+                    runtime.process_pending_effects(limit=20)
                 for stream_item in pending_stream:
+                    if coordinator is not None:
+                        coordinator.accept(
+                            SourceMessageEnvelope.from_stream_item(stream_item),
+                            stream_offset=stream_item.item.stream_offset,
+                        )
+                        coordinator.journal.set(
+                            "inbox_highwater", normalized, stream_item.item.stream_offset
+                        )
+                        bus.commit_stream(RUNTIME_V2_CONSUMER_ID, stream_item)
+                        consumed_count += 1
+                        continue
                     case = runtime.execute_message(
                         SourceMessageEnvelope.from_stream_item(stream_item)
                     )
@@ -793,6 +892,8 @@ class UnifiedRuntimeSchedulerService:
                         case.route is not None
                         and case.route.primary_route is RuntimeV2PrimaryRoute.TRADE
                     )
+                if coordinator is not None:
+                    coordinator.tick(normalized)
             except Exception as exc:
                 runtime_failed = True
                 failed_event_count = max(0, pending_count_before_runtime - consumed_count)
@@ -1027,9 +1128,7 @@ class UnifiedRuntimeSchedulerService:
                 recent_event_count=len(recent_stream),
                 recent_message_count=len(recent_messages),
                 last_success_at=_latest(value.last_success_at for value in active_states),
-                last_error_at=(
-                    last_error_state.last_failure_at if last_error_state else None
-                ),
+                last_error_at=(last_error_state.last_failure_at if last_error_state else None),
                 last_error_message=(
                     last_error_state.last_error_message if last_error_state else None
                 ),
@@ -1351,7 +1450,7 @@ class UnifiedRuntimeSchedulerService:
         runtime_continues: bool,
         current_bundle: DocumentBundle | None = None,
     ) -> None:
-        if not _weekly_update_due(state, now):
+        if state.metadata.get("activation_revision_id") or not _weekly_update_due(state, now):
             return
         started = False
         audit_runtime_continue = False
@@ -1443,6 +1542,8 @@ class UnifiedRuntimeSchedulerService:
         *,
         now: datetime,
     ) -> TickerRunState:
+        if state.metadata.get("activation_revision_id"):
+            return state
         with self._weekly_update_lock:
             job = self._weekly_update_jobs.get(state.ticker)
             if job is None or job.completed_at is None:

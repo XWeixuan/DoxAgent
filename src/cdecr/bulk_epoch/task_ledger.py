@@ -25,6 +25,7 @@ class BulkTaskLedger:
         snapshot_hash: str,
         component_id: str | None = None,
     ) -> None:
+        self._observe("RUNNING", [{"stage": stage, "task_id": task_id}])
         self.registry.upsert_bulk_epoch_task(
             epoch_id=self.epoch_id,
             stage=stage,
@@ -36,14 +37,23 @@ class BulkTaskLedger:
         )
 
     def _write_many(self, records: Sequence[dict[str, Any]]) -> dict[str, int]:
+        self._observe("RUNNING", [record for record in records if record["status"] == "RUNNING"])
         if not self.batch_enabled:
             for record in records:
                 self.registry.upsert_bulk_epoch_task(epoch_id=self.epoch_id, **record)
-            return {"rows": len(records), "transactions": len(records)}
-        return self.registry.upsert_bulk_epoch_tasks(
-            [{"epoch_id": self.epoch_id, **record} for record in records],
-            chunk_size=512,
-        )
+            result = {"rows": len(records), "transactions": len(records)}
+        else:
+            result = self.registry.upsert_bulk_epoch_tasks(
+                [{"epoch_id": self.epoch_id, **record} for record in records], chunk_size=512
+            )
+        for status in {str(record["status"]) for record in records} - {"RUNNING"}:
+            self._observe(status, [record for record in records if record["status"] == status])
+        return result
+
+    def _observe(self, status: str, records: Sequence[dict[str, Any]]) -> None:
+        observer = getattr(self.registry, "initialization_task_observer", None)
+        if observer is not None:
+            observer(self.epoch_id, status, records)
 
     def start_many(self, tasks: Sequence[dict[str, Any]]) -> dict[str, int]:
         return self._write_many([{**task, "status": "RUNNING"} for task in tasks])
@@ -81,6 +91,7 @@ class BulkTaskLedger:
             status="SUCCEEDED",
             decision_ref=decision_ref,
         )
+        self._observe("SUCCEEDED", [{"stage": stage, "task_id": task_id}])
 
     def fail(
         self,
@@ -103,6 +114,7 @@ class BulkTaskLedger:
             status=status,
             error_code=error_code,
         )
+        self._observe(status, [{"stage": stage, "task_id": task_id}])
 
     def completed(self, stage: str) -> dict[str, dict[str, Any]]:
         return {

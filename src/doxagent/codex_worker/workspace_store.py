@@ -51,6 +51,55 @@ class LocalWorkspaceStore:
                 (run_root / name).mkdir(parents=True, exist_ok=True)
         return run_root
 
+    def snapshot(self, run_id: str, snapshot_id: str) -> None:
+        """Immutable pre-node copy, outside the agent-visible workspace."""
+        self._validate_identifier(snapshot_id, "snapshot_id")
+        source = self.ensure_run(run_id)
+        destination = self._snapshot_root(run_id, snapshot_id)
+        with self._lock:
+            if destination.is_dir():
+                return
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            self._copy_atomic(source, destination)
+
+    def fork_snapshot(self, run_id: str, snapshot_id: str, destination_run_id: str) -> None:
+        self._validate_identifier(snapshot_id, "snapshot_id")
+        self._validate_identifier(run_id, "run_id")
+        destination = self._run_root(destination_run_id)
+        source = self._snapshot_root(run_id, snapshot_id)
+        with self._lock:
+            marker = destination / "audit" / "initialization-fork.json"
+            identity = {"source_run_id": run_id, "snapshot_id": snapshot_id}
+            if marker.is_file() and json.loads(marker.read_text(encoding="utf-8")) == identity:
+                return
+            if destination.exists():
+                raise AttemptConflict("snapshot fork destination already exists")
+            if not source.is_dir():
+                raise FileNotFoundError("initialization snapshot not found")
+            self._copy_atomic(source, destination, identity=identity)
+
+    def _snapshot_root(self, run_id: str, snapshot_id: str) -> Path:
+        # Avoid repeating long run/attempt IDs in Windows workspace paths.
+        identity = hashlib.sha256(f"{run_id}:{snapshot_id}".encode()).hexdigest()[:32]
+        return self.root / ".init" / identity
+
+    def _copy_atomic(
+        self, source: Path, destination: Path, *, identity: dict[str, str] | None = None
+    ) -> None:
+        if source.is_symlink() or any(
+            item.is_symlink() or not self._is_contained(item, source) for item in source.rglob("*")
+        ):
+            raise InvalidWorkspacePath("snapshot cannot include symlinks or escaping paths")
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory(prefix=".s-", dir=destination.parent) as temporary:
+            staging = Path(temporary) / "workspace"
+            shutil.copytree(source, staging)
+            if identity is not None:
+                marker = staging / "audit" / "initialization-fork.json"
+                marker.parent.mkdir(parents=True, exist_ok=True)
+                marker.write_text(json.dumps(identity, sort_keys=True), encoding="utf-8")
+            os.replace(staging, destination)
+
     def ensure_attempt(self, run_id: str, attempt_id: str) -> Path:
         self._validate_identifier(attempt_id, "attempt_id")
         attempt = self.ensure_run(run_id) / "attempts" / attempt_id
@@ -192,9 +241,7 @@ class LocalWorkspaceStore:
                             with closing(sqlite3.connect(database, timeout=10)) as source:
                                 with closing(sqlite3.connect(snapshot)) as destination:
                                     source.backup(destination)
-                            arcname = (
-                                f".control/{run_id}/{control_attempt_id}/observations.sqlite3"
-                            )
+                            arcname = f".control/{run_id}/{control_attempt_id}/observations.sqlite3"
                             archive.write(snapshot, arcname=arcname)
                             exported.append(
                                 {
@@ -203,9 +250,7 @@ class LocalWorkspaceStore:
                                     "size_bytes": snapshot.stat().st_size,
                                 }
                             )
-        return hashlib.sha256(
-            json.dumps(exported, sort_keys=True).encode()
-        ).hexdigest()
+        return hashlib.sha256(json.dumps(exported, sort_keys=True).encode()).hexdigest()
 
     def delete_attempt(self, run_id: str, attempt_id: str) -> None:
         self._validate_identifier(run_id, "run_id")

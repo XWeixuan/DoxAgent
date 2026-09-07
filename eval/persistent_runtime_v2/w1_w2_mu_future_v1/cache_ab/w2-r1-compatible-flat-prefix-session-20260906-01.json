@@ -1,0 +1,54 @@
+{
+  "run_id": "w2-r1-compatible-flat-prefix-session-20260906-01",
+  "created_at": "2026-09-06T02:57:53.536637+08:00",
+  "lane": "W2",
+  "variant": "flat_prefix",
+  "model": "qwen3.8-flash",
+  "reasoning_effort": "medium",
+  "transport": "responses_json_schema",
+  "endpoint": "compatible",
+  "session_cache_header": "enable",
+  "reference_key": "runtime_policy_projection",
+  "reference_fingerprint": "65839217465b84825c9384cc12024e1d14cec4e73161a14e0e2cb8361b5ca556",
+  "prefix_fingerprint": "d04393a50bdaaed3efcbe33ab9f666631a2c072917100260d96baa380a5154ae",
+  "case_ids": [
+    "MU-W12-006",
+    "MU-W12-007",
+    "MU-W12-008"
+  ],
+  "records": [
+    {
+      "case_id": "MU-W12-006",
+      "response_id": "resp_8747c235-f042-9dba-b907-91c28ffb1c7d",
+      "latency_ms": 14980,
+      "input_tokens": 7144,
+      "cached_tokens": 0,
+      "cache_creation_input_tokens": null,
+      "output_validation_error": null
+    },
+    {
+      "case_id": "MU-W12-007",
+      "response_id": "resp_2203b364-8a61-9488-9ada-0cef7fd61a35",
+      "latency_ms": 20619,
+      "input_tokens": 7153,
+      "cached_tokens": 0,
+      "cache_creation_input_tokens": null,
+      "output_validation_error": null
+    },
+    {
+      "case_id": "MU-W12-008",
+      "response_id": "resp_e3e7b330-5336-9b6d-bbe7-c46e0bfde528",
+      "latency_ms": 28538,
+      "input_tokens": 7134,
+      "cached_tokens": 0,
+      "cache_creation_input_tokens": null,
+      "output_validation_error": null
+    }
+  ],
+  "totals": {
+    "input_tokens": 21431,
+    "cached_tokens": 0,
+    "cache_share": 0.0,
+    "latency_ms": 64137
+  }
+}

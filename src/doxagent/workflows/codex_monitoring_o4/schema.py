@@ -25,6 +25,7 @@ class O4Model(BaseModel):
 
 
 class O4RequestStatus(StrEnum):
+    HELD = "HELD"
     PENDING = "PENDING"
     RUNNING = "RUNNING"
     SUCCEEDED = "SUCCEEDED"
@@ -268,6 +269,7 @@ class O4Request(O4Model):
     dedupe_key: str
     logical_request_id: str = Field(default_factory=lambda: new_id("o4_logical"))
     continuation_seq: int = Field(default=0, ge=0)
+    initialization_id: str | None = None
     status: O4RequestStatus = O4RequestStatus.PENDING
     associated_request_id: str | None = None
     error: str | None = None

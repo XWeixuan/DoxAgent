@@ -1,0 +1,35 @@
+{
+  "run_id": "mu-w1w2-implicit-cache-final-balanced-20260906",
+  "dataset_id": "mu-w1-w2-future-v1",
+  "prompt_hashes": {
+    "core": "6a12f3868190d2a880a8cd01fd27ba74673e7d973a4b39809c0dd62c08fabbda",
+    "w1_r1": "c4025db076c25495c53bf3f889392fdd05826c35208c331f20402e246629463b",
+    "w1_r2": "bddfde7e58639249295c060b0f3985fb8a7ae50866b30147da2f536e07ffb532",
+    "w1_r3": "7e7bffb6240f0c819d3dd57c45b30990ef3bb6a332188cac2b4df77991bfbaa2",
+    "w2_r1": "53b9993af253c07696f356de241bcb05f43223083516a9721a6c5ed4e870a3d2",
+    "w2_r2": "4a0e63a246461b16d709a1f892762a5204d4a13653234789f7352e3302a118b2"
+  },
+  "prompt_override": "prompts\\persistent_runtime_v2",
+  "evaluation_profile": "w1_w2_round_isolated",
+  "started_at": "2026-09-06T03:17:35.723322+08:00",
+  "model": "qwen3.8-flash",
+  "provider": "bailian",
+  "reasoning_effort": "medium",
+  "strict_json_schema": true,
+  "session_cache": false,
+  "cache_mode": "implicit_prefix",
+  "cache_layout": "readonly_business_reference_then_dynamic_case",
+  "responses_endpoint_profile": "compatible",
+  "max_workers": 1,
+  "case_ids": [
+    "MU-W12-018"
+  ],
+  "dataset_manifest_sha256": "d4b9a525defc57cd97c2de0d94c1a52e4f68d643b21c020cfd05ba87f4b89a4c",
+  "messages_sha256": "98efd72f4a00298a2f177d4f5b226f71c0be227d8160437801c97daaa9515bec",
+  "gold_sha256": "17e8130778abb295949ff86038f1c9e18d08301838e4731d969705f9324e8c72",
+  "frozen_event_library_sha256": "87d1f6004d60603182f32ebffb16d929cb4bfbe76e761cc8b85d477bb494c60c",
+  "policy_set_sha256": "0189c52a9dcf7a7173f29163cf9be0de16e48421d61c9783f10aab2ed0604a09",
+  "completed_at": "2026-09-06T03:18:40.740512+08:00",
+  "predictions_sha256": "2df388beba67e75216294faaf0aa3fc56afa16b45ecbc04ea663c2afd52d69f8",
+  "metrics_sha256": "b20a1ce5bf8f9506a7ccd612f23718273e72d5bae1767eec71024e0ebf745be1"
+}

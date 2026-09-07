@@ -1,0 +1,87 @@
+{
+  "databases": [
+    {
+      "path": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\persistent_runtime_v2.sqlite3",
+      "integrity": "ok",
+      "write_rollback": "PASS",
+      "tables": [
+        "orchestration_meta",
+        "runtime_gaps",
+        "runtime_snapshots",
+        "runtime_tasks",
+        "runtime_v2_archives",
+        "runtime_v2_badcases",
+        "runtime_v2_candidates",
+        "runtime_v2_cases",
+        "runtime_v2_daily_close_runs",
+        "runtime_v2_effects",
+        "runtime_v2_policy_activations",
+        "runtime_v2_provisional_counters",
+        "runtime_v2_trade_records",
+        "runtime_v2_turns",
+        "runtime_v2_w3_cases",
+        "runtime_v2_w3_coverage_gaps",
+        "runtime_v2_w3_thread_bindings",
+        "runtime_v2_w3_thread_slots",
+        "runtime_values",
+        "sqlite_sequence",
+        "te_acceptance_runs",
+        "te_allocations",
+        "te_attempts",
+        "te_events",
+        "te_executions",
+        "te_fills",
+        "te_jobs",
+        "te_lot_adjustments",
+        "te_lots",
+        "te_meta",
+        "te_profiles",
+        "te_sync_state"
+      ]
+    },
+    {
+      "path": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\message_bus_v2.sqlite3",
+      "integrity": "ok",
+      "write_rollback": "PASS",
+      "tables": [
+        "acquisition_failures",
+        "audit_log",
+        "buffer_entries",
+        "consumer_offsets",
+        "default_profile_revisions",
+        "default_profiles",
+        "operational_alerts",
+        "poll_states",
+        "raw_messages",
+        "scheduler_group_states",
+        "source_definition_revisions",
+        "source_definitions",
+        "source_item_baselines",
+        "standard_messages",
+        "stream_items",
+        "stream_members",
+        "ticker_monitoring_states",
+        "ticker_source_binding_revisions",
+        "ticker_source_bindings"
+      ]
+    },
+    {
+      "path": "C:\\Users\\WEIXUANXIE\\Desktop\\DoxAgent\\.tmp\\ticker_initialization\\control.sqlite3",
+      "integrity": "ok",
+      "write_rollback": "PASS",
+      "tables": [
+        "activation_revisions",
+        "activation_worker_ack",
+        "initialization_attempts",
+        "initialization_events",
+        "initialization_nodes",
+        "initialization_outbox",
+        "initialization_runs",
+        "sqlite_sequence",
+        "ticker_active_revision",
+        "ticker_operations"
+      ]
+    }
+  ],
+  "backups": {}
+}

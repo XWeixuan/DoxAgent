@@ -100,6 +100,7 @@ ALL_O4_TOOLS = frozenset().union(*TOOLS_BY_NODE.values())
 class O4OperationClaims(O4Model):
     run_id: str
     request_id: str
+    initialization_id: str | None = None
     ticker: str
     node: CodexMonitoringO4Node
     enabled_tool_ids: list[str]
@@ -130,6 +131,7 @@ class O4OperationCapabilityCodec:
         node: CodexMonitoringO4Node,
         enabled_tool_ids: Iterable[str] | None = None,
         ttl_seconds: int = 7_500,
+        initialization_id: str | None = None,
     ) -> str:
         maximum = TOOLS_BY_NODE[node]
         requested = maximum if enabled_tool_ids is None else set(enabled_tool_ids)
@@ -138,6 +140,7 @@ class O4OperationCapabilityCodec:
         claims = O4OperationClaims(
             run_id=run_id,
             request_id=request_id,
+            initialization_id=initialization_id,
             ticker=ticker.upper(),
             node=node,
             enabled_tool_ids=sorted(requested),

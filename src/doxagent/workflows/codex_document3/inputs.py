@@ -149,9 +149,17 @@ class Document3InputPreparer:
         )
 
     def prepare_maintenance_reference(
-        self, *, ticker: str, event_library_version: int | None = None
+        self,
+        *,
+        ticker: str,
+        event_library_version: int | None = None,
+        base_policy_version: int | None = None,
     ) -> tuple[PolicySet, EventLibraryRef | None, str]:
-        current = self._policy_repository.get_current(ticker.upper())
+        current = (
+            self._policy_repository.get_version(ticker.upper(), base_policy_version)
+            if base_policy_version is not None
+            else self._policy_repository.get_current(ticker.upper())
+        )
         if current is None:
             raise ValueError(f"No current D3 Policy Set for {ticker.upper()}")
         if self._event_library_reader is None:

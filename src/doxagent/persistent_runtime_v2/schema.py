@@ -198,6 +198,10 @@ class SourceMessageEnvelope(RuntimeV2Model):
 
 
 class RuntimeVersionPin(RuntimeV2Model):
+    event_library_root: str | None = None
+    activation_revision_id: str | None = None
+    document1_run_id: str | None = None
+    document2_run_id: str | None = None
     event_library_version: int = Field(ge=1)
     provisional_snapshot_version: int = Field(ge=0)
     policy_set_version: int = Field(ge=1)
@@ -350,6 +354,7 @@ class RuntimeModelTurn(RuntimeV2Model):
     output_tokens: int | None = Field(default=None, ge=0)
     reasoning_tokens: int | None = Field(default=None, ge=0)
     cached_input_tokens: int | None = Field(default=None, ge=0)
+    prefix_fingerprint: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
     latency_ms: int = Field(ge=0)
     output: JsonObject | None = None
     error_code: str | None = None
@@ -358,6 +363,8 @@ class RuntimeModelTurn(RuntimeV2Model):
 
 
 class RuntimeEffect(RuntimeV2Model):
+    lease_token: int = 0
+    lease_until: datetime | None = None
     effect_id: str = Field(default_factory=lambda: new_runtime_v2_id("effect"))
     case_id: str
     effect_type: RuntimeSideEffect
@@ -372,6 +379,14 @@ class RuntimeEffect(RuntimeV2Model):
 
 
 class RuntimeCase(RuntimeV2Model):
+    time_semantics_version: int = 1
+    runtime_mode: Literal["REALTIME", "CLOSED"] = "REALTIME"
+    sweep_id: str | None = None
+    closed_cycle_id: str | None = None
+    execution_bundle_id: str | None = None
+    frozen_inputs: JsonObject = Field(default_factory=dict)
+    trade_expired: bool = False
+    w2_skipped: bool = False
     contract_version: Literal["persistent-runtime.v2"] = RUNTIME_V2_CONTRACT_VERSION
     case_id: str = Field(default_factory=lambda: new_runtime_v2_id("case"))
     trading_date: date
@@ -467,6 +482,7 @@ class BadcaseRecord(RuntimeV2Model):
 
 
 class O3MaintenanceFeed(RuntimeV2Model):
+    trade_candidates: list[JsonObject] = Field(default_factory=list)
     contract_version: Literal["persistent-runtime.o3-maintenance-feed.v1"] = (
         "persistent-runtime.o3-maintenance-feed.v1"
     )

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Protocol
 
 from doxagent.event_library.provider import (
@@ -19,6 +20,17 @@ from doxagent.workflows.codex_document3.schema import (
     RuntimePolicyProjection,
     RuntimePolicyRecord,
 )
+
+
+@dataclass(frozen=True)
+class RuntimeInputSnapshot:
+    index: KnownEventIndexSnapshot | None
+    projection: RuntimePolicyProjection | None
+    activation_revision_id: str | None = None
+    document1_run_id: str | None = None
+    document2_run_id: str | None = None
+    event_library_root: str | None = None
+    visibility_day: str | None = None
 
 
 class RuntimeKnownEventProvider(Protocol):

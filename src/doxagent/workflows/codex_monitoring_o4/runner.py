@@ -71,14 +71,25 @@ class MonitoringO4AgentRunner:
         )
 
     @staticmethod
-    def run_id_for(ticker: str) -> str:
+    def run_id_for(ticker: str, initialization_id: str | None = None) -> str:
         safe = "".join(
             character.lower() for character in ticker if character.isalnum() or character in "-_."
         )
+        if initialization_id:
+            from doxagent.ticker_initialization.configuration import candidate_bus_path
+
+            # The same identity validation governs filesystem and signed MCP scope.
+            candidate_bus_path("message_bus.sqlite3", initialization_id)
+            return f"monitoring-o4-{safe}-init-{initialization_id}"
         return f"monitoring-o4-{safe}-main"
 
     async def run(self, request: O4Request) -> BaseModel:
-        run_id = self.run_id_for(request.ticker)
+        run_id = self.run_id_for(request.ticker, request.initialization_id)
+        thread_slot = (
+            f"{request.ticker}:{request.initialization_id}"
+            if request.initialization_id
+            else request.ticker
+        )
         output_model = self._output_model(request.node)
         await self._seed_shared_assets(run_id)
         request_root = f"requests/{request.request_id}"
@@ -119,7 +130,7 @@ class MonitoringO4AgentRunner:
             )
         else:
             await self._write_if_missing(run_id, f"{request_root}/repair_notes.jsonl", "")
-        thread = self._repository.get_thread(request.ticker)
+        thread = self._repository.get_thread(thread_slot)
         required = [
             "AGENTS.md",
             "agents/o4.md",
@@ -145,29 +156,33 @@ class MonitoringO4AgentRunner:
             "matching the attempt output schema."
         )
         try:
-            job = await self._worker.run(
-                WorkerRunRequest(
-                    workflow_version=CODEX_MONITORING_O4_WORKFLOW_VERSION,
-                    research_lane=ResearchLane.MONITORING_CONFIGURATION,
-                    run_id=run_id,
-                    ticker=request.ticker,
-                    node=request.node,
-                    agent_role=CodexMonitoringO4AgentRole.O4,
-                    attempt_id=request.request_id,
-                    prompt=prompt,
-                    output_schema=strict_json_schema(output_model.model_json_schema()),
-                    thread_id=thread.thread_id if thread else None,
-                    model=self._model,
-                    model_provider=self._model_provider,
-                    effort="high",
-                    read_only=False,
-                    data_mcp_enabled=False,
-                    o4_operations_enabled=True,
-                    allow_subagents=False,
-                    max_subagents=0,
-                    timeout_seconds=self._timeout_seconds,
-                )
+            worker_request = WorkerRunRequest(
+                workflow_version=CODEX_MONITORING_O4_WORKFLOW_VERSION,
+                research_lane=ResearchLane.MONITORING_CONFIGURATION,
+                run_id=run_id,
+                ticker=request.ticker,
+                node=request.node,
+                agent_role=CodexMonitoringO4AgentRole.O4,
+                attempt_id=request.request_id,
+                cutoff_at=request.created_at,
+                idempotency_key=request.request_id if request.initialization_id else None,
+                prompt=prompt,
+                output_schema=strict_json_schema(output_model.model_json_schema()),
+                thread_id=thread.thread_id if thread else None,
+                model=self._model,
+                model_provider=self._model_provider,
+                effort="high",
+                read_only=False,
+                data_mcp_enabled=False,
+                o4_operations_enabled=True,
+                initialization_id=request.initialization_id,
+                allow_subagents=False,
+                max_subagents=0,
+                timeout_seconds=self._timeout_seconds,
             )
+            if request.initialization_id:
+                worker_request = self._repository.freeze_worker_dispatch(worker_request)
+            job = await self._worker.run(worker_request)
         except Exception as exc:
             committed, commit_error = await self.commit_progressive_checkpoint(
                 request, run_id=run_id
@@ -180,7 +195,7 @@ class MonitoringO4AgentRunner:
         committed, commit_error = await self.commit_progressive_checkpoint(request, run_id=run_id)
         if job.thread_id:
             self._repository.save_thread(
-                O4ThreadSlot(ticker=request.ticker, thread_id=job.thread_id, model=self._model)
+                O4ThreadSlot(ticker=thread_slot, thread_id=job.thread_id, model=self._model)
             )
         if job.status != "succeeded" or not job.final_response:
             detail = f"; checkpoint commit failed: {commit_error}" if commit_error else ""
@@ -210,7 +225,7 @@ class MonitoringO4AgentRunner:
         plan = MonitoringConfigurationPlan.model_validate(request.payload["plan_json"])
         try:
             response = await self._workspace.read_text(
-                run_id or self.run_id_for(request.ticker),
+                run_id or self.run_id_for(request.ticker, request.initialization_id),
                 f"requests/{request.request_id}/delivery_checkpoint.json",
             )
             content = getattr(response, "content", None)

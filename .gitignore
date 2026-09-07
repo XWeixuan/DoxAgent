@@ -17,6 +17,7 @@ htmlcov/
 .uv-cache/
 
 # Local environment
+/supabase/.temp/
 .env
 .env.*
 !.env.example

@@ -22,6 +22,7 @@ from doxagent.codex_runtime.schema import (
     utc_now,
 )
 from doxagent.codex_worker.schema import WorkerJob, WorkerRunRequest
+from doxagent.ticker_initialization.substeps import attempt_identity, durable
 
 from .schema import (
     CalibrationLogEntry,
@@ -78,7 +79,9 @@ class Document3AgentRunner:
         timeout_seconds: int = 1800,
         runtime_repository: O3ExecutionStateRepository | None = None,
     ) -> None:
-        self._worker = worker
+        from doxagent.ticker_initialization.substeps import DurableWorker
+
+        self._worker = DurableWorker(worker)
         self.workspace = workspace
         self._prompt_root = (
             Path(prompt_root)
@@ -198,7 +201,6 @@ class Document3AgentRunner:
                 "context/document3/task.json": json.dumps(
                     metadata, ensure_ascii=False, indent=2, default=str
                 ),
-                "output/work/maintenance_candidates.jsonl": "",
             }
         )
         if maintenance_feed_json is not None:
@@ -375,6 +377,7 @@ class Document3AgentRunner:
             ),
         )
 
+    @durable("d3")
     async def _run_with_resume(
         self,
         *,
@@ -403,7 +406,7 @@ class Document3AgentRunner:
         )
         for offset in range(max_attempts):
             attempt_number = first_attempt + offset
-            attempt_id = f"{node.value}-{attempt_number:02d}"
+            attempt_id = attempt_identity(f"{node.value}-{attempt_number:02d}")
             prompt = (
                 f"D3 node {node.value}; attempt {attempt_id}. Read these frozen/local "
                 f"workspace paths in order: {', '.join(required_context_paths)}, and "

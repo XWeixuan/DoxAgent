@@ -4,18 +4,20 @@ from __future__ import annotations
 
 import time
 from collections.abc import Callable
-from concurrent.futures import Future, ThreadPoolExecutor
-from datetime import timedelta
+from concurrent.futures import ThreadPoolExecutor
+from dataclasses import asdict
+from datetime import datetime, timedelta
 from pathlib import Path
 from threading import Lock, Thread, current_thread
 from time import perf_counter
-from typing import TYPE_CHECKING, Any, TypeVar
+from typing import TYPE_CHECKING, Any, Literal, TypeVar
 from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel
 
 from doxagent.event_library.contracts import CanonicalEvent
 from doxagent.event_library.provider import KnownEventIndexSnapshot
+from doxagent.semantic_clock import semantic_day
 from doxagent.workflows.codex_document3.runtime_projection import (
     assert_runtime_projection_compatible,
 )
@@ -26,8 +28,10 @@ from doxagent.workflows.codex_document3.schema import (
     RuntimePolicyRecord,
 )
 
+from .execution_bundle import ExecutionBundles
+from .journal import RuntimeJournal, digest
 from .prompts import RuntimeV2PromptSet
-from .providers import RuntimeKnownEventProvider, RuntimePolicyProvider
+from .providers import RuntimeInputSnapshot, RuntimeKnownEventProvider, RuntimePolicyProvider
 from .repository import PersistentRuntimeV2Repository
 from .router import route_runtime_case, route_w3_result
 from .schema import (
@@ -90,7 +94,7 @@ def _w2_projection_business_payload(
         "policies": [
             policy.model_dump(mode="json", exclude={"activation_revision"})
             for policy in projection.policies
-        ]
+        ],
     }
 
 
@@ -99,7 +103,7 @@ def _w2_detail_business_payload(details: PolicyDetailSnapshot) -> dict[str, Any]
 
     return {
         "activation_semantics": "OR",
-        "policies": [policy.model_dump(mode="json") for policy in details.policies]
+        "policies": [policy.model_dump(mode="json") for policy in details.policies],
     }
 
 
@@ -108,6 +112,8 @@ def _w1_provisional_business_payload(value: ProvisionalFactDetail) -> dict[str, 
 
     return {
         "provisional_event_id": value.provisional_event_id,
+        "known_before_current_message": True,
+        "semantic_day": value.trading_date.isoformat(),
         "candidate": value.candidate.model_dump(mode="json"),
     }
 
@@ -172,12 +178,20 @@ class PersistentRuntimeV2Service:
         w3_agent: W3Agent | None = None,
         w3_max_ticker_concurrency: int = 5,
         w3_lease_seconds: int = 1200,
+        input_snapshot_loader: Callable[[str], RuntimeInputSnapshot | None] | None = None,
+        journal: RuntimeJournal | None = None,
     ) -> None:
         self.repository = repository
         self.responses = responses
         self.known_events = known_events
         self.policies = policies
+        self.input_snapshot_loader = input_snapshot_loader
         self.prompts = prompts or RuntimeV2PromptSet.load(prompt_root)
+        self.journal = journal
+        self.coordinator: Any = None
+        self.execution_bundles = ExecutionBundles(journal) if journal else None
+        if self.execution_bundles and journal and not journal.get("execution", "active"):
+            self.execution_bundles.publish(self.prompts)
         self.retry_delays_seconds = retry_delays_seconds
         self._sleep = sleep
         self._dispatch_effects = dispatch_effects
@@ -206,6 +220,8 @@ class PersistentRuntimeV2Service:
         if self._closed:
             return
         self._closed = True
+        if self.coordinator:
+            self.coordinator.close()
         self._hot_executor.shutdown(wait=True, cancel_futures=False)
         self._effect_executor.shutdown(wait=True, cancel_futures=False)
         while True:
@@ -218,15 +234,41 @@ class PersistentRuntimeV2Service:
         if self._w3_agent is not None:
             self._w3_agent.close()
 
-    def execute_message(self, source: SourceMessageEnvelope) -> RuntimeCase:
+    def execute_message(
+        self,
+        source: SourceMessageEnvelope,
+        *,
+        mode: Literal["REALTIME", "CLOSED"] = "REALTIME",
+        sweep_id: str | None = None,
+        closed_cycle_id: str | None = None,
+        phase: str = "ALL",
+        admitted_at: datetime | None = None,
+        input_snapshot: RuntimeInputSnapshot | None = None,
+        execution_bundle_id: str | None = None,
+        trade_expired: bool = False,
+    ) -> RuntimeCase:
         if self._closed:
             raise RuntimeError("Persistent Runtime V2 service is closed")
         existing = self.repository.get_case_by_source(source.source_message_id)
         if existing is not None:
-            return existing
-        trading_date = source.occurrence_source_time.astimezone(_EASTERN).date()
-        index = self.known_events.current_index(source.snapshot.ticker)
-        projection = self.policies.current_projection(source.snapshot.ticker)
+            if existing.status != RuntimeCaseStatus.RUNNING:
+                return existing
+            return self._resume_hot(existing, phase=phase)
+        created = admitted_at or (self.journal.clock() if self.journal else utc_now())
+        trading_date = semantic_day(created)
+        snapshot = (
+            input_snapshot or self.input_snapshot_loader(source.snapshot.ticker)
+            if self.input_snapshot_loader
+            else input_snapshot
+        )
+        index = (
+            snapshot.index if snapshot else self.known_events.current_index(source.snapshot.ticker)
+        )
+        projection = (
+            snapshot.projection
+            if snapshot
+            else self.policies.current_projection(source.snapshot.ticker)
+        )
         if index is None:
             raise RuntimeInputUnavailable(
                 "event_library_unavailable",
@@ -238,16 +280,29 @@ class PersistentRuntimeV2Service:
                 "Published Runtime Policy Projection is unavailable",
             )
         assert_runtime_projection_compatible(projection)
-        projection = self._without_consumed_policies(projection)
+        if mode != "CLOSED":
+            projection = self._without_consumed_policies(projection)
         provisional_version = self.repository.provisional_snapshot_version(
             source.snapshot.ticker,
             trading_date,
         )
         case = RuntimeCase(
+            time_semantics_version=2,
+            runtime_mode=mode,
+            sweep_id=sweep_id,
+            closed_cycle_id=closed_cycle_id,
+            created_at=created,
+            trade_expired=trade_expired,
+            execution_bundle_id=execution_bundle_id
+            or (self.journal.get("execution", "active") if self.journal else None),
             case_id=new_runtime_v2_id("case"),
             trading_date=trading_date,
             source=source,
             version_pin=RuntimeVersionPin(
+                event_library_root=snapshot.event_library_root if snapshot else None,
+                activation_revision_id=snapshot.activation_revision_id if snapshot else None,
+                document1_run_id=snapshot.document1_run_id if snapshot else None,
+                document2_run_id=snapshot.document2_run_id if snapshot else None,
                 event_library_version=index.version,
                 provisional_snapshot_version=provisional_version,
                 policy_set_version=projection.policy_set_version,
@@ -255,29 +310,116 @@ class PersistentRuntimeV2Service:
             ),
             status=RuntimeCaseStatus.RUNNING,
         )
+        provisional = self._visible_provisional(
+            case, visibility_day=snapshot.visibility_day if snapshot else None
+        )
+        case.frozen_inputs = {
+            "index": index.model_dump(mode="json"),
+            "projection": projection.model_dump(mode="json"),
+            "provisional": [item.model_dump(mode="json") for item in provisional],
+            "prompts": asdict(self.prompts),
+        }
+        if case.execution_bundle_id and self.execution_bundles:
+            bundle = self.execution_bundles.get(case.execution_bundle_id)
+            case.frozen_inputs["prompts"] = bundle["prompts"]
+            case.frozen_inputs["w3_assets"] = bundle["assets"]
+        models = case.frozen_inputs.get("w3_assets", {}).get("runtime_models.json")
+        if models:
+            import json
+
+            case.frozen_inputs["models"] = json.loads(models)
+        else:
+            case.frozen_inputs["models"] = {
+                "w12_model": self.responses.model,
+                "w12_effort": getattr(self.responses, "reasoning_effort", "medium"),
+            }
         case = self.repository.save_case(case)
         if case.status is not RuntimeCaseStatus.RUNNING:
             return case
+        return self._resume_hot(case, phase=phase)
+
+    def _visible_provisional(
+        self, case: RuntimeCase, *, visibility_day: str | None = None
+    ) -> list[ProvisionalFactDetail]:
+        reader = getattr(self.repository, "visible_provisional", None)
+        if reader is None:
+            return self.repository.list_provisional(case.ticker, case.trading_date)
+        visibility = self.journal.get("visibility", case.ticker, {}) if self.journal else {}
+        current_only = (visibility_day or visibility.get("day")) == case.trading_date.isoformat()
+        values = reader(case.ticker, case.trading_date, current_only=current_only)
+        maximum = (
+            self._known_for_case(case).max_event_numeric_id(
+                case.ticker, case.version_pin.event_library_version
+            )
+            or 0
+        )
+        return [
+            item.model_copy(update={"provisional_event_id": f"E{maximum + offset}"})
+            for offset, item in enumerate(values, 1)
+        ]
+
+    def _known_for_case(self, case: RuntimeCase) -> RuntimeKnownEventProvider:
+        if case.version_pin.event_library_root:
+            from doxagent.event_library.provider import PublishedEventLibraryReader
+
+            from .providers import PublishedEventLibraryRuntimeProvider
+
+            return PublishedEventLibraryRuntimeProvider(
+                PublishedEventLibraryReader(case.version_pin.event_library_root)
+            )
+        return self.known_events
+
+    def _resume_hot(self, case: RuntimeCase, *, phase: str = "ALL") -> RuntimeCase:
+        if not case.frozen_inputs:
+            return self._fail_case(
+                case,
+                RuntimeInputUnavailable(
+                    "legacy_snapshot_missing", "Cannot reconstruct an immutable legacy Case"
+                ),
+            )
+        index = KnownEventIndexSnapshot.model_validate(case.frozen_inputs["index"])
+        projection = RuntimePolicyProjection.model_validate(case.frozen_inputs["projection"])
 
         started = perf_counter()
-        w1_future: Future[tuple[W1Round1Result, W1NoveltyResult, str]] = self._hot_executor.submit(
-            self._run_w1_hot, case, index
-        )
-        w2_future: Future[tuple[W2PolicyResult, W2PolicyResult, str]] = self._hot_executor.submit(
-            self._run_w2_hot, case, projection
-        )
         try:
-            w1_r1, w1_final, w1_response_id = w1_future.result()
-            w2_r1, w2_final, _w2_response_id = w2_future.result()
+            if case.runtime_mode == "CLOSED":
+                w1_r1, w1_final, w1_response_id = self._run_w1_hot(case, index)
+                case.w1_round1, case.w1_final = w1_r1, w1_final
+                self.repository.save_case(case)
+                if phase == "W1":
+                    if w1_final.result is W1NoveltyVerdict.NEW:
+                        self._execute_r3(
+                            case,
+                            RuntimeEffect(
+                                case_id=case.case_id,
+                                effect_type=RuntimeSideEffect.EMIT_DELTA,
+                                idempotency_key=f"{case.case_id}:emit_delta",
+                                payload={"previous_response_id": w1_response_id},
+                            ),
+                        )
+                    return self.repository.get_case(case.case_id) or case
+                if (
+                    w1_final.result is W1NoveltyVerdict.OLD
+                    and w1_final.confidence is RuntimeConfidence.NORMAL
+                ):
+                    w2_r1 = w2_final = W2PolicyResult(
+                        confidence=RuntimeConfidence.NORMAL, reason="closed_old_normal_gate"
+                    )
+                    case.w2_skipped = True
+                else:
+                    w2_r1, w2_final, _ = self._run_w2_hot(case, projection)
+            else:
+                w1_future = self._hot_executor.submit(self._run_w1_hot, case, index)
+                w2_future = self._hot_executor.submit(self._run_w2_hot, case, projection)
+                w1_r1, w1_final, w1_response_id = w1_future.result()
+                w2_r1, w2_final, _ = w2_future.result()
         except Exception as exc:
-            w1_future.cancel()
-            w2_future.cancel()
             return self._fail_case(case, exc)
 
         route = route_runtime_case(w1_final, w2_final)
-        if route.primary_route is RuntimePrimaryRoute.TRADE:
-            # Claim before effects are enqueued so another dispatcher cannot
-            # run the Delta side effect for a Policy boundary this case lost.
+        if route.primary_route is RuntimePrimaryRoute.TRADE and self.journal is None:
+            # Claim before enqueueing trade effects. Losing the activation
+            # suppresses trading, but NEW facts still require their Delta.
             try:
                 claimed_policy = self._claim_first_policy(case, w2_final)
             except Exception as exc:
@@ -285,7 +427,14 @@ class PersistentRuntimeV2Service:
             if claimed_policy is None:
                 route = RuntimeRouteDecision(
                     primary_route=RuntimePrimaryRoute.ARCHIVE,
-                    side_effects=[RuntimeSideEffect.ARCHIVE_MESSAGE],
+                    side_effects=[
+                        RuntimeSideEffect.ARCHIVE_MESSAGE,
+                        *(
+                            [RuntimeSideEffect.EMIT_DELTA]
+                            if RuntimeSideEffect.EMIT_DELTA in route.side_effects
+                            else []
+                        ),
+                    ],
                     reason="policy_activation_already_consumed",
                 )
         adjudicated = case.model_copy(
@@ -314,7 +463,10 @@ class PersistentRuntimeV2Service:
         case: RuntimeCase,
         index: KnownEventIndexSnapshot,
     ) -> tuple[W1Round1Result, W1NoveltyResult, str]:
-        provisional = self.repository.list_provisional(case.ticker, case.trading_date)
+        provisional = [
+            ProvisionalFactDetail.model_validate(item)
+            for item in case.frozen_inputs.get("provisional", [])
+        ]
         r1_payload = {
             "source_message": case.source.snapshot.model_dump(mode="json"),
             "published_known_event_index": index.known_event_index,
@@ -330,13 +482,14 @@ class PersistentRuntimeV2Service:
             payload=r1_payload,
             output_model=W1Round1Result,
             schema_name="w1_round1_result",
+            cache_context_keys=("published_known_event_index",),
         )
         selected_ids = r1.event_ids[:5]
         r1 = r1.model_copy(update={"event_ids": selected_ids})
         provisional_ids = {item.provisional_event_id for item in provisional}
         requested_provisional = [item for item in selected_ids if item in provisional_ids]
         requested_canonical = [item for item in selected_ids if item not in provisional_ids]
-        details = self.known_events.details(
+        details = self._known_for_case(case).details(
             case.ticker,
             case.version_pin.event_library_version,
             requested_canonical,
@@ -346,11 +499,9 @@ class PersistentRuntimeV2Service:
                 "event_detail_unavailable",
                 "Version-pinned Event Detail is unavailable",
             )
-        provisional_details = self.repository.get_provisional(
-            case.ticker,
-            case.trading_date,
-            requested_provisional,
-        )
+        provisional_details = [
+            item for item in provisional if item.provisional_event_id in requested_provisional
+        ]
         found_provisional = {item.provisional_event_id for item in provisional_details}
         missing = [
             *details.missing_event_ids,
@@ -381,17 +532,16 @@ class PersistentRuntimeV2Service:
                 "source_message": case.source.snapshot.model_dump(mode="json"),
                 "event_details": {
                     "canonical_events": [
-                        _w1_canonical_event_business_payload(event)
-                        for event in details.events
+                        _w1_canonical_event_business_payload(event) for event in details.events
                     ],
                     "provisional_events": [
-                        _w1_provisional_business_payload(item)
-                        for item in provisional_details
+                        _w1_provisional_business_payload(item) for item in provisional_details
                     ],
                 },
             },
             output_model=W1NoveltyResult,
             schema_name="w1_novelty_result",
+            cache_context_keys=("event_details",),
             previous_response_id=r1_response_id,
             validate=validate,
         )
@@ -421,6 +571,7 @@ class PersistentRuntimeV2Service:
             },
             output_model=W2PolicyResult,
             schema_name="w2_policy_result",
+            cache_context_keys=("runtime_policy_projection",),
             validate=validate_r1,
         )
         r1 = self._sanitize_condition_attribution(r1, projection)
@@ -455,6 +606,7 @@ class PersistentRuntimeV2Service:
             },
             output_model=W2PolicyResult,
             schema_name="w2_policy_result",
+            cache_context_keys=("policy_details",),
             previous_response_id=r1_response_id,
             validate=validate_r2,
         )
@@ -513,19 +665,68 @@ class PersistentRuntimeV2Service:
         payload: dict[str, Any],
         output_model: type[T],
         schema_name: str,
+        cache_context_keys: tuple[str, ...] = (),
         previous_response_id: str | None = None,
         validate: Callable[[T], None] | None = None,
     ) -> tuple[T, str]:
+        turns = [
+            turn
+            for turn in self.repository.list_turns(case.case_id)
+            if turn.lane == lane and turn.round_name == round_name
+        ]
+        for turn in reversed(turns):
+            if turn.status is RuntimeTechnicalStatus.OK and turn.output is not None:
+                return output_model.model_validate(turn.output), turn.response_id or ""
+        prompt_set = RuntimeV2PromptSet(**case.frozen_inputs.get("prompts", asdict(self.prompts)))
+        frozen_round_prompt = getattr(prompt_set, f"{lane.lower()}_{round_name.lower()}")
+        if round_name == "R3":
+            frozen_round_prompt += round_prompt[len(self.prompts.w1_r3) :]
+        round_key = f"{case.case_id}:{lane}:{round_name}"
+        if self.journal:
+            frozen = self.journal.get("round_inputs", round_key)
+            if frozen is None:
+                frozen = {
+                    "payload": payload,
+                    "previous_response_id": previous_response_id,
+                    "instructions": prompt_set.instructions(frozen_round_prompt),
+                    "cache_context_keys": list(cache_context_keys),
+                    "schema_hash": digest(output_model.model_json_schema()),
+                }
+                self.journal.set("round_inputs", round_key, frozen)
+            if frozen.get("schema_hash", digest(output_model.model_json_schema())) != digest(
+                output_model.model_json_schema()
+            ):
+                raise RuntimeResponsesError(
+                    "round_schema_incompatible", "Frozen round schema changed", retryable=False
+                )
+            payload = frozen["payload"]
+            previous_response_id = frozen["previous_response_id"]
+            cache_context_keys = tuple(frozen.get("cache_context_keys", cache_context_keys))
+        else:
+            frozen = {"instructions": prompt_set.instructions(frozen_round_prompt)}
         last_error: Exception | None = None
-        for attempt in range(1, 4):
+        budget = 3
+        if self.journal:
+            generation = self.journal.get("round_resume", case.case_id, 0)
+            if generation:
+                key = f"{case.case_id}:{lane}:{round_name}:{generation}"
+                baseline = self.journal.get("round_budget", key)
+                if baseline is None:
+                    baseline = len(turns)
+                    self.journal.set("round_budget", key, baseline)
+                budget = baseline + 3
+        for attempt in range(len(turns) + 1, budget + 1):
             started = perf_counter()
             try:
                 result: RuntimeResponsesResult[T] = self.responses.complete(
                     RuntimeResponsesRequest(
-                        instructions=self.prompts.instructions(round_prompt),
+                        model=case.frozen_inputs.get("models", {}).get("w12_model"),
+                        reasoning_effort=case.frozen_inputs.get("models", {}).get("w12_effort"),
+                        instructions=frozen["instructions"],
                         payload=payload,
                         output_model=output_model,
                         schema_name=schema_name,
+                        cache_context_keys=cache_context_keys,
                         previous_response_id=previous_response_id,
                         metadata={
                             "runtime": "persistent_v2",
@@ -563,21 +764,25 @@ class PersistentRuntimeV2Service:
                     attempt_number=attempt,
                     status=(
                         RuntimeTechnicalStatus.PENDING_RETRY
-                        if error.retryable and attempt < 3
+                        if error.retryable and attempt < budget
                         else RuntimeTechnicalStatus.UNAVAILABLE
                         if not error.retryable
                         else RuntimeTechnicalStatus.FAILED
                     ),
                     previous_response_id=previous_response_id,
-                    model=self.responses.model,
+                    model=case.frozen_inputs.get("models", {}).get(
+                        "w12_model", self.responses.model
+                    ),
                     latency_ms=round((perf_counter() - started) * 1000),
                     error_code=error.code,
                     error_message=str(error),
                 )
             )
-            if not error.retryable or attempt >= 3:
+            if not error.retryable or attempt >= budget:
                 raise error
-            self._sleep(self.retry_delays_seconds[attempt - 1])
+            self._sleep(
+                self.retry_delays_seconds[min(attempt - 1, len(self.retry_delays_seconds) - 1)]
+            )
         raise RuntimeError("Runtime model retry loop ended unexpectedly") from last_error
 
     def _record_success_turn(
@@ -599,11 +804,12 @@ class PersistentRuntimeV2Service:
                 status=RuntimeTechnicalStatus.OK,
                 response_id=result.response_id,
                 previous_response_id=previous_response_id,
-                model=self.responses.model,
+                model=case.frozen_inputs.get("models", {}).get("w12_model", self.responses.model),
                 input_tokens=result.input_tokens,
                 output_tokens=result.output_tokens,
                 reasoning_tokens=result.reasoning_tokens,
                 cached_input_tokens=result.cached_input_tokens,
+                prefix_fingerprint=result.prefix_fingerprint,
                 latency_ms=result.latency_ms,
                 output=result.value.model_dump(mode="json"),
             )
@@ -687,9 +893,45 @@ class PersistentRuntimeV2Service:
                 self._w3_threads.discard(current_thread())
 
     def _process_claimed_effect(self, effect: RuntimeEffect) -> int:
+        if self.journal and effect.effect_type is RuntimeSideEffect.ROUTE_TO_W3:
+            case = self.repository.get_case(effect.case_id)
+            if (
+                case
+                and case.sweep_id
+                and self.journal.get_task(case.sweep_id)
+                and not self.journal.get("w3_batch", case.sweep_id)
+            ):
+                self.repository.save_effect(
+                    effect.model_copy(
+                        update={
+                            "status": RuntimeEffectStatus.PENDING_RETRY,
+                            "available_at": utc_now() + timedelta(seconds=5),
+                        }
+                    )
+                )
+                return 0
         try:
-            self._execute_effect(effect)
+            from .fencing import write_scope
+            from .heartbeat import heartbeat
+
+            renew = getattr(self.repository, "renew_effect", lambda value: None)
+            with heartbeat(lambda: renew(effect)), write_scope("effect", effect, utc_now):
+                self._execute_effect(effect)
         except Exception as exc:
+            from .journal import LeaseLost
+
+            if isinstance(exc, LeaseLost):
+                return 0
+            if isinstance(exc, W3Error) and exc.code == "w3_ticker_concurrency_busy":
+                self.repository.save_effect(
+                    effect.model_copy(
+                        update={
+                            "status": RuntimeEffectStatus.PENDING_RETRY,
+                            "available_at": utc_now() + timedelta(seconds=5),
+                        }
+                    )
+                )
+                return 0
             next_attempt = effect.attempt_count + 1
             retryable = not isinstance(exc, RuntimeResponsesError) and next_attempt < 3
             failed = effect.model_copy(
@@ -750,7 +992,8 @@ class PersistentRuntimeV2Service:
                 self._resolve_consumed_policy_race(case)
                 return
             executed, activation, matched_condition_ids, decision = claimed
-            self.repository.save_trade(
+            self._save_trade(
+                case,
                 TradeRecord(
                     case_id=case.case_id,
                     ticker=case.ticker,
@@ -764,7 +1007,7 @@ class PersistentRuntimeV2Service:
                     decision=decision,
                     w1_result=case.w1_final,
                     w2_result=case.w2_final,
-                )
+                ),
             )
             return
         if effect.effect_type is RuntimeSideEffect.MARK_BADCASE:
@@ -816,9 +1059,12 @@ class PersistentRuntimeV2Service:
                 "updated_at": utc_now(),
             }
         )
-        self.repository.save_w3_case(running)
         slot = self.repository.acquire_w3_slot(
-            ticker=case.ticker,
+            ticker=(
+                case.ticker + "@" + case.execution_bundle_id[:16]
+                if case.execution_bundle_id
+                else case.ticker
+            ),
             case_id=case.case_id,
             max_concurrency=self._w3_max_ticker_concurrency,
             lease_seconds=self._w3_lease_seconds,
@@ -828,6 +1074,7 @@ class PersistentRuntimeV2Service:
                 "w3_ticker_concurrency_busy",
                 f"{case.ticker} already has five active W3 turns",
             )
+        self.repository.save_w3_case(running)
         returned_thread: str | None = None
         clear_main = False
         try:
@@ -918,7 +1165,7 @@ class PersistentRuntimeV2Service:
                     side_effects=[RuntimeSideEffect.ARCHIVE_MESSAGE],
                     reason="policy_activation_already_consumed",
                 )
-        maximum = self.known_events.max_event_numeric_id(
+        maximum = self._known_for_case(case).max_event_numeric_id(
             case.ticker,
             case.version_pin.event_library_version,
         )
@@ -938,7 +1185,8 @@ class PersistentRuntimeV2Service:
             )
         if claimed is not None:
             executed, activation, matched_condition_ids, decision = claimed
-            self.repository.save_trade(
+            self._save_trade(
+                case,
                 TradeRecord(
                     case_id=case.case_id,
                     ticker=case.ticker,
@@ -954,7 +1202,7 @@ class PersistentRuntimeV2Service:
                     w1_result=case.w1_final,  # type: ignore[arg-type]
                     w2_result=case.w2_final,  # type: ignore[arg-type]
                     w3_result=result,
-                )
+                ),
             )
             return None
         self.repository.save_w3_coverage_gap(
@@ -971,7 +1219,8 @@ class PersistentRuntimeV2Service:
         if result.expert_trade.trade:
             if result.expert_trade.direction is None:
                 raise RuntimeSemanticOutputError("W3 direct trade is missing direction")
-            self.repository.save_trade(
+            self._save_trade(
+                case,
                 TradeRecord(
                     case_id=case.case_id,
                     ticker=case.ticker,
@@ -985,7 +1234,7 @@ class PersistentRuntimeV2Service:
                     w1_result=case.w1_final,  # type: ignore[arg-type]
                     w2_result=case.w2_final,  # type: ignore[arg-type]
                     w3_result=result,
-                )
+                ),
             )
         return None
 
@@ -1024,9 +1273,26 @@ class PersistentRuntimeV2Service:
                 policy_set_version=case.version_pin.policy_set_version,
                 matched_condition_ids=matched,
             )
-            if self.repository.claim_policy_activation(record):
+            if self.journal is not None or self.repository.claim_policy_activation(record):
                 return policy_id, activation, matched, decision
         return None
+
+    def _save_trade(self, case: RuntimeCase, value: TradeRecord) -> None:
+        if self.journal is None:
+            self.repository.save_trade(value)
+            return
+        from .trade_output import TradeOutputService
+
+        outcome = TradeOutputService(self.journal).record(case, value)
+        if outcome in {"DUPLICATE_POLICY", "EXPIRED_SEMANTIC_DAY"}:
+            self.repository.save_archive(
+                ArchiveRecord(
+                    case_id=case.case_id,
+                    ticker=case.ticker,
+                    source_message_id=case.source.source_message_id,
+                    reason=outcome,
+                )
+            )
 
     def _resolve_consumed_policy_race(self, case: RuntimeCase) -> None:
         resolved = RuntimeRouteDecision(
@@ -1094,9 +1360,10 @@ class PersistentRuntimeV2Service:
             },
             output_model=W1FactExtractionResult,
             schema_name="w1_fact_extraction_result",
+            cache_context_keys=("source_message",),
             previous_response_id=str(effect.payload.get("previous_response_id") or "") or None,
         )
-        maximum = self.known_events.max_event_numeric_id(
+        maximum = self._known_for_case(case).max_event_numeric_id(
             case.ticker,
             case.version_pin.event_library_version,
         )

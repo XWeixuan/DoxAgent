@@ -31,6 +31,7 @@ from .schema import (
     RepairSettlement,
     RepairTrigger,
     SourceNeedResolution,
+    new_id,
 )
 
 
@@ -48,8 +49,10 @@ class MonitoringO4Orchestrator:
         message_bus_enabled: bool,
         context_provider: O4ConfigurationContextProvider | None = None,
         mutation_policy: O4MutationPolicy | None = None,
+        initialization_only: bool = False,
     ) -> None:
         self.repository = repository
+        self.initialization_only = initialization_only
         self.runner = runner
         self.message_bus = message_bus
         self.message_bus_enabled = message_bus_enabled
@@ -64,7 +67,11 @@ class MonitoringO4Orchestrator:
         policy_set: dict[str, Any],
         document2: dict[str, Any],
         reason: str = "document3_published",
+        initialization_id: str | None = None,
+        execution_id: str | None = None,
     ) -> O4Request:
+        if self.initialization_only and not initialization_id:
+            raise ValueError("O4 tasks require a ticker initialization operation")
         normalized = ticker.upper()
         version = int(policy_set["policy_set_version"])
         digest = hashlib.sha256(
@@ -74,6 +81,7 @@ class MonitoringO4Orchestrator:
         ).hexdigest()
         return self.repository.enqueue(
             O4Request(
+                request_id=f"init-o4-{execution_id}" if execution_id else new_id("o4_request"),
                 ticker=normalized,
                 node=CodexMonitoringO4Node.CONFIGURE,
                 payload={
@@ -82,11 +90,18 @@ class MonitoringO4Orchestrator:
                     "policy_set_sha256": digest,
                     "reason": reason,
                 },
-                dedupe_key=f"configure:{normalized}:{version}:{digest}",
+                dedupe_key=(
+                    f"configure:{normalized}:{version}:{digest}"
+                    + (f":init:{initialization_id}" if initialization_id else "")
+                    + (f":execution:{execution_id}" if execution_id else "")
+                ),
+                initialization_id=initialization_id,
             )
         )
 
     def submit_repair(self, *, ticker: str, trigger: RepairTrigger) -> O4Request:
+        if self.initialization_only:
+            raise ValueError("Runtime O4 REPAIR is disabled")
         return self.repository.enqueue(
             O4Request(
                 ticker=ticker,
@@ -103,6 +118,12 @@ class MonitoringO4Orchestrator:
         return await self.process(request) if request is not None else None
 
     async def process(self, request: O4Request) -> O4RunResult:
+        if self.initialization_only and not request.initialization_id:
+            request = request.model_copy(update={"status": O4RequestStatus.HELD})
+            self.repository.save_request(request)
+            return O4RunResult(request=request, degraded_reasons=["initialization_only"])
+        if request.initialization_id and request.node is CodexMonitoringO4Node.REPAIR:
+            raise ValueError("initialization cannot execute O4 REPAIR")
         if not self.repository.acquire_ticker_lease(request.ticker, request.request_id):
             return O4RunResult(
                 request=request,
@@ -114,11 +135,16 @@ class MonitoringO4Orchestrator:
             if request.node is CodexMonitoringO4Node.CONFIGURE:
                 return await self._configure(request)
             if request.node is CodexMonitoringO4Node.DELIVER:
-                return await self._deliver(request, start_monitoring=True)
+                return await self._deliver(
+                    request, start_monitoring=request.initialization_id is None
+                )
             return await self._repair(request)
         except Exception as exc:
             request.status = O4RequestStatus.FAILED
             request.error = str(exc)[:4000]
+            if request.initialization_id:
+                self.repository.save_request(request)
+                return O4RunResult(request=request, degraded_reasons=[str(exc)])
             if request.node in {
                 CodexMonitoringO4Node.CONFIGURE,
                 CodexMonitoringO4Node.DELIVER,
@@ -158,12 +184,21 @@ class MonitoringO4Orchestrator:
         result = result.model_copy(update={"plan": plan})
         self._validate_plan_against_input(plan, request.payload)
         self.repository.save_plan(plan)
+        request.payload["configuration_plan_ref"] = {
+            "plan_id": plan.plan_id,
+            "plan_version": plan.plan_version,
+        }
+        self.repository.save_request(request)
         new_items = [
             item
             for item in plan.source_needs
             if item.resolution is SourceNeedResolution.NEW_CRAWLER_REQUIRED
         ]
         if not new_items:
+            if request.initialization_id:
+                request.status = O4RequestStatus.SUCCEEDED
+                self.repository.save_request(request)
+                return O4RunResult(request=request, plan=result.plan)
             started, reason = self._start_monitoring(request.ticker)
             request.status = O4RequestStatus.SUCCEEDED if started else O4RequestStatus.DEGRADED
             self.repository.save_request(request)
@@ -178,31 +213,43 @@ class MonitoringO4Orchestrator:
                 ticker=request.ticker,
                 node=CodexMonitoringO4Node.DELIVER,
                 payload={"plan_json": result.plan.model_dump(mode="json")},
-                dedupe_key=f"deliver:{result.plan.plan_id}:{result.plan.plan_version}",
+                dedupe_key=(
+                    f"deliver:{result.plan.plan_id}:{result.plan.plan_version}"
+                    + (f":init:{request.initialization_id}" if request.initialization_id else "")
+                ),
+                initialization_id=request.initialization_id,
             )
         )
-        self.repository.save_delivery_checkpoint(
-            DeliveryCheckpoint(
-                plan_id=result.plan.plan_id,
-                plan_version=result.plan.plan_version,
-                ticker=result.plan.ticker,
-                items=[
-                    DeliveryWorkItemCheckpoint(
-                        source_need_id=item.source_need_id,
-                        candidate_id=(
-                            item.primary_candidate.candidate_id
-                            if item.primary_candidate is not None
-                            else None
-                        ),
-                        status=DeliveryItemStatus.IN_PROGRESS,
-                    )
-                    for item in new_items
-                ],
-            )
+        existing_checkpoint = self.repository.get_delivery_checkpoint(
+            plan.plan_id, plan.plan_version
         )
+        if existing_checkpoint is None:
+            self.repository.save_delivery_checkpoint(
+                DeliveryCheckpoint(
+                    plan_id=result.plan.plan_id,
+                    plan_version=result.plan.plan_version,
+                    ticker=result.plan.ticker,
+                    items=[
+                        DeliveryWorkItemCheckpoint(
+                            source_need_id=item.source_need_id,
+                            candidate_id=(
+                                item.primary_candidate.candidate_id
+                                if item.primary_candidate is not None
+                                else None
+                            ),
+                            status=DeliveryItemStatus.IN_PROGRESS,
+                        )
+                        for item in new_items
+                    ],
+                )
+            )
         request.status = O4RequestStatus.SUCCEEDED
         self.repository.save_request(request)
-        delivery_result = await self._deliver(delivery_request, start_monitoring=True)
+        if request.initialization_id:
+            return O4RunResult(request=request, plan=result.plan)
+        delivery_result = await self._deliver(
+            delivery_request, start_monitoring=request.initialization_id is None
+        )
         return delivery_result.model_copy(update={"plan": result.plan})
 
     async def _deliver(self, request: O4Request, *, start_monitoring: bool) -> O4RunResult:
@@ -255,7 +302,9 @@ class MonitoringO4Orchestrator:
             elif not exc.checkpoint_committed:
                 reasons.append("delivery continuation not queued: no valid committed checkpoint")
         except Exception as exc:
-            request.status = O4RequestStatus.DEGRADED
+            request.status = (
+                O4RequestStatus.FAILED if request.initialization_id else O4RequestStatus.DEGRADED
+            )
             request.error = str(exc)[:4000]
             reasons.append(str(exc))
         finally:
@@ -361,6 +410,10 @@ class MonitoringO4Orchestrator:
             if item.resolution is SourceNeedResolution.NEW_CRAWLER_REQUIRED
         }
         actual = {item.source_need_id for item in settlement.items}
+        if any(item.status not in TERMINAL_DELIVERY_STATUSES for item in settlement.items):
+            raise ValueError("delivery settlement contains unfinished Source Needs")
+        if len(actual) != len(settlement.items):
+            raise ValueError("delivery settlement contains duplicate Source Needs")
         if expected != actual:
             raise ValueError("delivery settlement must settle every new crawler Source Need")
         if checkpoint is None:
@@ -408,6 +461,7 @@ class MonitoringO4Orchestrator:
                 dedupe_key=f"deliver-continuation:{request.logical_request_id}:{next_seq}",
                 logical_request_id=request.logical_request_id,
                 continuation_seq=next_seq,
+                initialization_id=request.initialization_id,
             )
         )
 

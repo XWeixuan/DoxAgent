@@ -375,6 +375,28 @@ class EventLibraryRepository:
             ).fetchone()
         return 0 if row is None else int(row["published_version"])
 
+    def ensure_empty_publication(self, ticker: str) -> int:
+        """Give an initialization NOOP a real, readable empty V1; never reset a head."""
+        ticker = self._ticker(ticker)
+        with self._write() as connection:
+            head = self._head_in_connection(connection, ticker)
+            if head:
+                return head
+            now = _now()
+            connection.execute(
+                "INSERT INTO library_versions(ticker,version,base_version,"
+                "source_delta_batches_json,status,created_at,published_at) "
+                "VALUES(?,1,0,'[]',?,?,?)",
+                (ticker, LibraryVersionStatus.PUBLISHED.value, now, now),
+            )
+            connection.execute(
+                "INSERT INTO library_heads(ticker,published_version,updated_at) VALUES(?,1,?) "
+                "ON CONFLICT(ticker) DO UPDATE SET published_version=1,"
+                "updated_at=excluded.updated_at",
+                (ticker, now),
+            )
+            return 1
+
     def library_base_version(self, ticker: str, version: int) -> int | None:
         with self._read() as connection:
             row = connection.execute(
@@ -418,7 +440,9 @@ class EventLibraryRepository:
                 "WHERE ticker=? AND version=? AND status='PUBLISHED'",
                 (normalized, selected),
             ).fetchone()
-        if row is None or row["published_at"] is None:
+        if row is None:
+            return 0, None
+        if row["published_at"] is None:
             return selected, None
         return selected, datetime.fromisoformat(str(row["published_at"]))
 

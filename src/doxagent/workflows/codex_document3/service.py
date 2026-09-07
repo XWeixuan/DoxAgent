@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from doxagent.codex_runtime.client import HttpCodexWorkerClient
 from doxagent.codex_runtime.config import CodexRuntimeConfig
 from doxagent.codex_runtime.published_storage import (
@@ -17,8 +19,6 @@ from doxagent.codex_runtime.repository import (
 )
 from doxagent.event_library.provider import PublishedEventLibraryReader
 from doxagent.settings import DoxAgentSettings
-from doxagent.workflows.codex_monitoring_o4.integration import Document3MonitoringO4Trigger
-from doxagent.workflows.codex_monitoring_o4.repository import MonitoringO4Repository
 
 from .inputs import Document3InputPreparer
 from .orchestrator import Document3Orchestrator
@@ -32,7 +32,11 @@ from .repository import (
 from .runner import Document3AgentRunner
 
 
-def build_document3_orchestrator(settings: DoxAgentSettings) -> Document3Orchestrator:
+def build_document3_orchestrator(
+    settings: DoxAgentSettings,
+    *,
+    worker: Any = None,
+) -> Document3Orchestrator:
     config = CodexRuntimeConfig.from_settings(settings)
     if not settings.codex_document3_enabled:
         raise ValueError("D3 is disabled; set DOXAGENT_CODEX_DOCUMENT3_ENABLED=true")
@@ -68,7 +72,7 @@ def build_document3_orchestrator(settings: DoxAgentSettings) -> Document3Orchest
             runtime_repository = remote_runtime
             policy_repository = remote_policy
 
-    worker = HttpCodexWorkerClient(
+    worker = worker or HttpCodexWorkerClient(
         str(config.worker_base_url),
         config.worker_bearer_token,
         capability_secret=config.capability_secret,
@@ -103,13 +107,7 @@ def build_document3_orchestrator(settings: DoxAgentSettings) -> Document3Orchest
         timeout_seconds=config.node_timeout_seconds,
         runtime_repository=runtime_repository,
     )
-    monitoring_o4_trigger = (
-        Document3MonitoringO4Trigger(
-            MonitoringO4Repository(settings.codex_monitoring_o4_sqlite_path)
-        )
-        if settings.codex_monitoring_o4_enabled
-        else None
-    )
+    monitoring_o4_trigger = None
     return Document3Orchestrator(
         input_preparer=input_preparer,
         agent_runner=runner,

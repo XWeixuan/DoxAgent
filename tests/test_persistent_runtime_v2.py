@@ -20,6 +20,7 @@ from doxagent.persistent_runtime_v2.daily import (
     RuntimeDeltaBatchAdapter,
 )
 from doxagent.persistent_runtime_v2.providers import (
+    RuntimeInputSnapshot,
     RuntimeKnownEventProvider,
     RuntimePolicyProvider,
 )
@@ -326,8 +327,18 @@ def test_service_runs_parallel_hot_path_then_w3_owned_delta(tmp_path: Path) -> N
         sleep=lambda _seconds: None,
         dispatch_effects=False,
         w3_agent=_FakeW3(),
+        input_snapshot_loader=lambda ticker: RuntimeInputSnapshot(
+            index=_FakeKnownEvents().current_index(ticker),
+            projection=_FakePolicies().current_projection(ticker),
+            activation_revision_id="revision-1",
+            document1_run_id="d1-pinned",
+            document2_run_id="d2-pinned",
+        ),
     )
     adjudicated = service.execute_message(_source())
+    assert adjudicated.version_pin.activation_revision_id == "revision-1"
+    assert adjudicated.version_pin.document1_run_id == "d1-pinned"
+    assert adjudicated.version_pin.document2_run_id == "d2-pinned"
     assert adjudicated.status == "PENDING_W3"
     assert adjudicated.route is not None
     assert adjudicated.route.primary_route == "W3"
@@ -343,6 +354,7 @@ def test_service_runs_parallel_hot_path_then_w3_owned_delta(tmp_path: Path) -> N
         "activation_semantics": "OR",
         "policies": [],
     }
+    assert w2_request.cache_context_keys == ("runtime_policy_projection",)
     w1_r1_request = next(
         request for request in responses.calls if request.output_model is W1Round1Result
     )
@@ -352,6 +364,7 @@ def test_service_runs_parallel_hot_path_then_w3_owned_delta(tmp_path: Path) -> N
         "today_provisional_facts",
     }
     assert w1_r1_request.payload["today_provisional_facts"] == []
+    assert w1_r1_request.cache_context_keys == ("published_known_event_index",)
     w1_r2_request = next(
         request for request in responses.calls if request.output_model is W1NoveltyResult
     )
@@ -359,6 +372,7 @@ def test_service_runs_parallel_hot_path_then_w3_owned_delta(tmp_path: Path) -> N
         "canonical_events": [],
         "provisional_events": [],
     }
+    assert w1_r2_request.cache_context_keys == ("event_details",)
 
     assert service.process_pending_effects() == 1
     completed = repository.get_case(adjudicated.case_id)
@@ -367,7 +381,7 @@ def test_service_runs_parallel_hot_path_then_w3_owned_delta(tmp_path: Path) -> N
     assert completed.w1_extraction is None
     assert completed.resolved_route is not None
     assert completed.resolved_route.primary_route == "ADD_TO_DELTA"
-    provisional = repository.list_provisional("MU", date(2026, 8, 29))
+    provisional = repository.list_provisional("MU", adjudicated.trading_date)
     assert [item.provisional_event_id for item in provisional] == ["E185"]
     frozen = RuntimeDeltaBatchAdapter(repository).freeze(
         ticker="MU",
@@ -436,9 +450,7 @@ class _AnyResponses(_FakeResponses):
 
 
 def test_w2_model_payload_contains_only_business_policy_content() -> None:
-    projection_payload = _w2_projection_business_payload(
-        _AnyPolicies().current_projection("MU")
-    )
+    projection_payload = _w2_projection_business_payload(_AnyPolicies().current_projection("MU"))
     assert set(projection_payload) == {"activation_semantics", "policies"}
     assert projection_payload["activation_semantics"] == "OR"
     assert projection_payload["policies"] == [
@@ -449,9 +461,7 @@ def test_w2_model_payload_contains_only_business_policy_content() -> None:
             "criterion": ["qualification completed", "volume production started"],
         }
     ]
-    detail_payload = _w2_detail_business_payload(
-        _FakePolicies().details("MU", 3, [])
-    )
+    detail_payload = _w2_detail_business_payload(_FakePolicies().details("MU", 3, []))
     assert detail_payload == {"activation_semantics": "OR", "policies": []}
 
 
@@ -476,6 +486,8 @@ def test_w1_model_views_exclude_runtime_and_event_library_audit_fields() -> None
     )
     assert _w1_provisional_business_payload(provisional) == {
         "provisional_event_id": "E185",
+        "known_before_current_message": True,
+        "semantic_day": "2026-08-29",
         "candidate": candidate.model_dump(mode="json"),
     }
 
@@ -557,7 +569,7 @@ def test_any_policy_is_consumed_once_and_removed_from_next_w2_input(tmp_path: Pa
     first = service.execute_message(_source())
     assert first.route is not None and first.route.primary_route is RuntimePrimaryRoute.TRADE
     assert service.process_pending_effects() == 2
-    trades = repository.list_daily_trades("MU", date(2026, 8, 29))
+    trades = repository.list_daily_trades("MU", first.trading_date)
     assert len(trades) == 1
     assert trades[0].activation_revision == _AnyPolicies.record.activation_revision
     assert trades[0].matched_condition_ids == ["C1", "C2"]
@@ -579,7 +591,7 @@ def test_any_policy_is_consumed_once_and_removed_from_next_w2_input(tmp_path: Pa
     second = service.execute_message(second_source)
     assert second.w2_final is not None and second.w2_final.policy_ids == []
     assert second.route is not None and second.route.primary_route is RuntimePrimaryRoute.W3
-    assert len(repository.list_daily_trades("MU", date(2026, 8, 29))) == 1
+    assert len(repository.list_daily_trades("MU", first.trading_date)) == 1
     service.close()
 
 
@@ -730,7 +742,7 @@ class _InvalidOpenAIClient:
         )()
 
 
-def test_bailian_transport_forces_strict_responses_medium_and_store() -> None:
+def test_bailian_transport_uses_readonly_prefix_and_implicit_cache() -> None:
     fake = _OpenAIClient()
     client = BailianRuntimeResponsesClient(
         api_key="",
@@ -740,20 +752,53 @@ def test_bailian_transport_forces_strict_responses_medium_and_store() -> None:
     result = client.complete(
         RuntimeResponsesRequest(
             instructions="core + W1 R1",
-            payload={"source_message": {"title": "x"}},
+            payload={
+                "published_known_event_index": "E1 known event",
+                "source_message": {"title": "x"},
+            },
             output_model=W1Round1Result,
             schema_name="w1_round1_result",
+            cache_context_keys=("published_known_event_index",),
+            previous_response_id="resp-prior-for-audit-only",
         )
     )
     assert result.value.event_ids == []
     assert fake.responses.kwargs["store"] is True
     assert fake.responses.kwargs["reasoning"] == {"effort": "medium"}
     assert fake.responses.kwargs["text"]["format"]["strict"] is True
-    assert fake.responses.kwargs["extra_headers"] == {"x-dashscope-session-cache": "enable"}
+    assert "extra_headers" not in fake.responses.kwargs
+    assert "previous_response_id" not in fake.responses.kwargs
+    input_text = fake.responses.kwargs["input"]
+    assert input_text.startswith("# Read-Only Business Reference Data")
+    assert input_text.index("E1 known event") < input_text.index("# Current Case Input")
+    assert input_text.index("# Current Case Input") < input_text.index('"title":"x"')
+    assert result.prefix_fingerprint is not None
+    assert len(result.prefix_fingerprint) == 64
     instructions = fake.responses.kwargs["instructions"]
     assert "# Exact Output Contract" in instructions
     assert "Never rename a key" in instructions
     assert '"event_ids"' in instructions
+
+
+def test_bailian_transport_can_still_enable_session_cache_explicitly() -> None:
+    fake = _OpenAIClient()
+    client = BailianRuntimeResponsesClient(
+        api_key="",
+        base_url="https://example.invalid/compatible-mode/v1",
+        session_cache=True,
+        client=cast(Any, fake),
+    )
+    client.complete(
+        RuntimeResponsesRequest(
+            instructions="test",
+            payload={},
+            output_model=W1Round1Result,
+            schema_name="w1_round1_result",
+        )
+    )
+    assert fake.responses.kwargs["extra_headers"] == {
+        "x-dashscope-session-cache": "enable"
+    }
 
 
 def test_bailian_arrearage_is_non_retryable_and_secret_safe() -> None:

@@ -196,6 +196,66 @@ async def test_failed_crawler_delivery_is_degraded_but_never_blocks_bus_start(
     bus_repository.close()
 
 
+@pytest.mark.asyncio
+@pytest.mark.parametrize("new_crawler", [False, True])
+async def test_initialization_configure_and_deliver_never_start_bus(
+    tmp_path: Path,
+    new_crawler: bool,
+) -> None:
+    runner = _FakeRunner(new_crawler=new_crawler, delivery_status=DeliveryItemStatus.FAILED)
+    orchestrator, repository, bus_repository = _orchestrator(tmp_path, runner)
+    try:
+        request = orchestrator.submit_configure(
+            ticker="MU",
+            policy_set=_policy(),
+            document2={"shells": []},
+            initialization_id="init-test",
+        )
+        result = await orchestrator.process(request)
+        assert not result.monitoring_started
+        assert bus_repository.get_ticker_state("MU") is None
+        assert all(r.initialization_id == "init-test" for r in runner.requests)
+        if new_crawler:
+            assert result.delivery is None
+            assert len(runner.requests) == 1
+            assert repository.next_pending() is None
+            delivery = repository.next_pending(initialization_id="init-test")
+            assert delivery is not None
+            result = await orchestrator.process(delivery)
+            assert result.delivery is not None
+            assert not result.monitoring_started
+            assert bus_repository.get_ticker_state("MU") is None
+            continuation = orchestrator._enqueue_delivery_continuation(result.request, result.plan)
+            assert continuation.initialization_id == "init-test"
+    finally:
+        repository.close()
+        bus_repository.close()
+
+
+@pytest.mark.asyncio
+async def test_initialization_configure_exception_never_starts_bus(tmp_path: Path) -> None:
+    class FailingRunner(_FakeRunner):
+        async def run(self, request: O4Request) -> BaseModel:
+            raise RuntimeError("injected interruption")
+
+    runner = FailingRunner(new_crawler=False, delivery_status=DeliveryItemStatus.FAILED)
+    orchestrator, repository, bus_repository = _orchestrator(tmp_path, runner)
+    try:
+        request = orchestrator.submit_configure(
+            ticker="MU",
+            policy_set=_policy(),
+            document2={},
+            initialization_id="init-test",
+        )
+        result = await orchestrator.process(request)
+        assert result.request.status == O4RequestStatus.FAILED
+        assert not result.monitoring_started
+        assert bus_repository.get_ticker_state("MU") is None
+    finally:
+        repository.close()
+        bus_repository.close()
+
+
 def test_repository_keeps_plan_immutable_and_deduplicates_global_repair(tmp_path: Path) -> None:
     repository = MonitoringO4Repository(tmp_path / "o4.sqlite3")
     first = repository.claim_repair("crawler:v1:transport", "request-a")
@@ -436,6 +496,78 @@ def test_o4_operations_mcp_rejects_cross_ticker_input(tmp_path: Path) -> None:
     assert result["ok"] is False
     assert result["error"]["code"] == "ticker_scope_violation"
     assert "crawler_plane_execute" not in application.by_mcp_name
+
+
+def test_initialization_mcp_scope_is_signed_and_cannot_change_in_same_session(
+    tmp_path: Path,
+) -> None:
+    from doxagent.codex_runtime.errors import CapabilityDenied
+    from doxagent.ticker_initialization.configuration import candidate_bus_path
+
+    codec = O4OperationCapabilityCodec("x" * 40)
+    root = tmp_path / "o4-init-a"
+    root.mkdir()
+    claims = codec.verify(
+        codec.issue(
+            run_id=root.name,
+            request_id="request",
+            ticker="MU",
+            node=CodexMonitoringO4Node.CONFIGURE,
+            initialization_id="init-a",
+        ),
+        public_key=codec.public_key,
+    )
+    box = [claims]
+    live = tmp_path / "bus.db"
+    application = O4OperationsApplication(
+        claims=claims,
+        cwd=root,
+        capability_loader=lambda: box[0],
+        settings=DoxAgentSettings(
+            DOXAGENT_MESSAGE_BUS_V2_SQLITE_PATH=str(live),
+            DOXAGENT_CRAWLER_PLANE_ROOT=str(tmp_path / "crawlers"),
+            DOXAGENT_CRAWLER_PLANE_SQLITE_PATH=str(tmp_path / "crawler.db"),
+        ),
+    )
+    assert Path(application._settings.message_bus_v2_sqlite_path) == candidate_bus_path(
+        live, "init-a"
+    )
+    box[0] = codec.verify(
+        codec.issue(
+            run_id=root.name,
+            request_id="request-2",
+            ticker="MU",
+            node=CodexMonitoringO4Node.DELIVER,
+            initialization_id="init-b",
+        ),
+        public_key=codec.public_key,
+    )
+    with pytest.raises(CapabilityDenied, match="scope changed"):
+        _ = application.tool_ids
+
+
+def test_generic_o4_restart_does_not_recover_initialization_owned_turn(tmp_path: Path) -> None:
+    repository = MonitoringO4Repository(tmp_path / "o4.db")
+    try:
+        request = repository.enqueue(
+            O4Request(
+                ticker="MU",
+                node=CodexMonitoringO4Node.CONFIGURE,
+                initialization_id="init-a",
+                dedupe_key="init-config",
+                payload={},
+            )
+        )
+        assert repository.next_pending() is None
+        assert repository.next_pending(initialization_id="init-a") == request
+        request.status = O4RequestStatus.RUNNING
+        repository.save_request(request)
+        assert repository.acquire_ticker_lease("MU", request.request_id)
+        assert repository.recover_interrupted_requests() == 0
+        assert repository.get_request(request.request_id).status == O4RequestStatus.RUNNING
+        assert not repository.acquire_ticker_lease("MU", "other")
+    finally:
+        repository.close()
 
 
 def test_o4_operations_mcp_refreshes_node_capability_on_a_persistent_server(

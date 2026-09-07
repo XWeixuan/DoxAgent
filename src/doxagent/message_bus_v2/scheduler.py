@@ -8,6 +8,10 @@ from collections import defaultdict
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from doxagent.ticker_initialization.repository import InitializationRepository
 
 from doxagent.message_bus_v2.adapters import AdapterRegistry
 from doxagent.message_bus_v2.repository import MessageBusV2Repository
@@ -83,8 +87,26 @@ class GlobalPollScheduler:
         self._clock = clock
         self._sleep = sleep
         self._limiters: dict[str, tuple[SchedulerConstraints, SchedulerGroupLimiter]] = {}
+        self.activation_admission: Callable[[], None] | None = None
+        self.initialization_control: InitializationRepository | None = None
 
     async def run_once(self) -> list[PollExecutionResult]:
+        admission = getattr(self, "activation_admission", None)
+        if admission is not None:
+            admission()
+        from doxagent.ticker_initialization.consumers import bus_revision_usable, consumer_heartbeat
+
+        with consumer_heartbeat(
+            getattr(self, "initialization_control", None),
+            "bus",
+            lambda revision: bus_revision_usable(self.service, revision),
+        ):
+            return await self._run_admitted_once()
+
+    async def _run_admitted_once(self) -> list[PollExecutionResult]:
+        orchestration = getattr(self, "runtime_orchestration", None)
+        if orchestration is not None:
+            return await orchestration.run_once(self)
         now = utc_now()
         eligible = self._eligible_bindings(now)
         self._initialize_due_slots(eligible, now)
@@ -109,7 +131,7 @@ class GlobalPollScheduler:
                 pass
 
     def _eligible_bindings(
-        self, now: datetime
+        self, now: datetime, *, include_inactive_hours: bool = False
     ) -> list[tuple[SourceDefinition, TickerSourceBinding]]:
         instant = now
         states = {state.ticker: state for state in self.repository.list_ticker_states()}
@@ -126,7 +148,7 @@ class GlobalPollScheduler:
             ):
                 self._mark_disabled(binding)
                 continue
-            if not binding.polling.active_at(instant):
+            if not include_inactive_hours and not binding.polling.active_at(instant):
                 continue
             result.append((source, binding))
         return result

@@ -1,0 +1,33 @@
+{
+  "run_id": "w2-r1-compatible-probe-20260906-01",
+  "created_at": "2026-09-06T02:49:30.910295+08:00",
+  "lane": "W2",
+  "variant": "message_prefix",
+  "model": "qwen3.8-flash",
+  "reasoning_effort": "medium",
+  "transport": "responses_json_schema",
+  "endpoint": "compatible",
+  "session_cache_header": "enable",
+  "reference_key": "runtime_policy_projection",
+  "reference_fingerprint": "65839217465b84825c9384cc12024e1d14cec4e73161a14e0e2cb8361b5ca556",
+  "prefix_fingerprint": "d04393a50bdaaed3efcbe33ab9f666631a2c072917100260d96baa380a5154ae",
+  "case_ids": [
+    "MU-W12-013"
+  ],
+  "records": [
+    {
+      "case_id": "MU-W12-013",
+      "response_id": "resp_efb02c6b-3749-9fd7-a134-3a786e2cba4a",
+      "latency_ms": 12275,
+      "input_tokens": 7117,
+      "cached_tokens": 0,
+      "cache_creation_input_tokens": null
+    }
+  ],
+  "totals": {
+    "input_tokens": 7117,
+    "cached_tokens": 0,
+    "cache_share": 0.0,
+    "latency_ms": 12275
+  }
+}

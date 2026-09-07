@@ -276,10 +276,30 @@ class MessageBusV2Service:
             )
             self.repository.save_ticker_state(resumed)
             return resumed
+        profile = self.materialize_default_bindings(normalized, profile_id=profile_id, actor=actor)
+        state = TickerMonitoringState(
+            ticker=normalized,
+            profile_id=profile.profile_id,
+            profile_version=profile.version,
+            updated_by=actor,
+        )
+        self.repository.save_ticker_state(state)
+        self._audit("ticker", normalized, "start", actor, None, profile.version, state)
+        return state
+
+    def materialize_default_bindings(
+        self, ticker: str, *, profile_id: str = "default", actor: UpdateActor = UpdateActor.SYSTEM
+    ) -> DefaultMonitoringProfile:
+        """Prepare missing defaults without making a candidate ticker pollable."""
+        normalized = ticker.strip().upper()
         profile = self.repository.get_default_profile(profile_id)
         if profile is None:
             raise KeyError(f"default profile not found: {profile_id}")
         for entry in profile.entries:
+            if self.repository.get_binding(
+                f"{normalized}:{entry.source_id}", include_tombstoned=True
+            ) is not None:
+                continue
             source = self.require_source(entry.source_id)
             self.configure_binding(
                 ticker=normalized,
@@ -291,15 +311,7 @@ class MessageBusV2Service:
                 reason=f"materialized from {profile.profile_id}@{profile.version}",
                 source_version=source.version,
             )
-        state = TickerMonitoringState(
-            ticker=normalized,
-            profile_id=profile.profile_id,
-            profile_version=profile.version,
-            updated_by=actor,
-        )
-        self.repository.save_ticker_state(state)
-        self._audit("ticker", normalized, "start", actor, None, profile.version, state)
-        return state
+        return profile
 
     def set_ticker_status(
         self,
@@ -692,16 +704,7 @@ class MessageBusV2Service:
         return offset
 
     def initialize_runtime_cursor(self, consumer_id: str, ticker: str) -> int:
-        state = self.repository.get_ticker_state(ticker)
-        if state is None:
-            raise KeyError(f"ticker monitoring state not found: {ticker}")
-        if state.runtime_cursor_initialized:
-            return self.repository.get_consumer_offset(consumer_id, ticker).stream_offset
-        offset = self.seek_consumer_to_tail(consumer_id, ticker)
-        self.repository.save_ticker_state(
-            state.model_copy(update={"runtime_cursor_initialized": True, "updated_at": utc_now()})
-        )
-        return offset
+        return self.repository.initialize_runtime_cursor(consumer_id, ticker)
 
     # -- helpers ---------------------------------------------------------------------
 

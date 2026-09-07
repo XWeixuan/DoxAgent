@@ -22,6 +22,41 @@
 | W2 final | true activation precision / recall | 80% / 100% | 4 TP、1 FP、0 FN；FP 为 022 |
 | Router | exact | 22/25（88%） | Router 本身按上游结果确定性工作 |
 
+## Confidence 与 Round 2 进入情况
+
+W1-R1 只有候选 Event ID 输出，没有 confidence 字段，因此不把该轮计入
+`normal/low` 比例。W1 的 confidence 由 R2 novelty 结果承载：25/25 为
+`normal`（100%），0/25 为 `low`。其中 023 是 Gold 要求 `low`、模型输出
+`normal` 的唯一分歧。
+
+W2 的实际 confidence 分布如下：
+
+| 位置 | normal | low | low 比例 | 备注 |
+|---|---:|---:|---:|---|
+| W2-R1 | 25 | 0 | 0% | Gold 预期 3 条 low（017/021/022），实际均为 normal |
+| W2-R2 | 0 | 0 | 不适用 | 实际 0 个 Case 进入 R2；没有模型输出 |
+| W2-final | 25 | 0 | 0% | 包括 022 的错误 normal activation |
+
+因此，W2-R2 的实际进入数是 **0/25**；测试 Gold 原本设计为 **3/25**。
+强制对照表明 017、021 的完整 R2 结果正确，022 在完整 R2 后仍错误命中。
+
+## 每个 Case 的召回数量分布
+
+以下是模型实际返回的候选数量，不是把数量本身当作准召率；严格 Event/Policy
+准召结果仍见上表。
+
+| 召回位置 | 0 个 | 1 个 | 2 个 | 3 个 | 4 个 | 5 个 | 平均 / 中位数 | 多于 1 个 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| W1-R1 Event candidates | 5 | 2 | 5 | 6 | 3 | 4 | 2.48 / 3 | 18/25（72%）|
+| W1-final reference Event | 9 | 5 | 7 | 4 | — | — | 1.24 / 1 | 11/25（44%）|
+| W2-R1 Policy candidates | 21 | 3 | 1 | — | — | — | 0.20 / 0 | 1/25（4%）|
+| W2-final Policy candidates | 21 | 3 | 1 | — | — | — | 0.20 / 0 | 1/25（4%）|
+
+也就是说：W1 通常会召回多个候选 Event（最高 5 个，达到上限的 4 条）；
+W1 最终引用通常收敛到 0–2 个 Event。W2 则高度稀疏，84% 的 Case 不召回
+任何 Policy，只有 4 条 Case 出现非空候选，其中 021 同时召回 2 条。由于本轮
+没有任何实际 W2-R2，W2-final 的数量分布与 W2-R1 完全相同。
+
 ## 逐轮归因
 
 ### W1 R1：原始 precision 偏低，但 Gold 候选集合明显过窄

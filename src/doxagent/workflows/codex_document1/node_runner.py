@@ -94,7 +94,9 @@ class CodexD1NodeRunner:
         workflow_version: CodexWorkflowVersion = CODEX_D1_WORKFLOW_VERSION,
         research_lane: ResearchLane = ResearchLane.LEGACY_DOCUMENT1,
     ) -> None:
-        self._worker = worker
+        from doxagent.ticker_initialization.substeps import DurableWorker
+
+        self._worker = DurableWorker(worker)
         self._workspace = workspace
         self._repository = repository
         self._contexts = CodexD1ContextCompiler(

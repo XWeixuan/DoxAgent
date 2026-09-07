@@ -1,0 +1,121 @@
+{
+  "case_id": "MU-W12-025",
+  "status": "COMPLETED",
+  "started_at": "2026-09-06T02:10:14.614282+08:00",
+  "completed_at": "2026-09-06T02:10:39.811574+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": []
+    },
+    "w1_final": {
+      "result": "NEW",
+      "confidence": "normal",
+      "reference_ids": [],
+      "reason": "The message describes a specific completed firmware correction during pre-production sample validation of a 245TB QLC enterprise SSD configuration with a named cloud-infrastructure customer. No loaded events cover this product, this validation milestone, or this engineering resolution."
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息描述的是245TB QLC企业SSD在pre-production样品验证阶段发现并修复的固件问题，明确发生在量产决策之前，客户未暂停生产部署、未撤回资格、未削减订单或出货，配置仍留在联合评估序列中。最相关的pol_07c01cd6da0c52f29fe6要求'量产'级别缺陷导致客户暂停生产部署或撤回资格并削减订单/出货，该消息的实际事实状态未达到这些触发条件。无Policy命中。"
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息描述的是245TB QLC企业SSD在pre-production样品验证阶段发现并修复的固件问题，明确发生在量产决策之前，客户未暂停生产部署、未撤回资格、未削减订单或出货，配置仍留在联合评估序列中。最相关的pol_07c01cd6da0c52f29fe6要求'量产'级别缺陷导致客户暂停生产部署或撤回资格并削减订单/出货，该消息的实际事实状态未达到这些触发条件。无Policy命中。"
+    },
+    "route": {
+      "primary_route": "W3",
+      "side_effects": [
+        "route_to_w3"
+      ],
+      "reason": "w1=NEW/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_61d0673901f7452c990a5f7ac144f450",
+      "case_id": "case_eb8357ddb14945efa97c0b9c77514a47",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_57fbffde-f633-9a82-b569-4fda3820fbaa",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 7039,
+      "output_tokens": 1284,
+      "reasoning_tokens": 1154,
+      "cached_input_tokens": 0,
+      "latency_ms": 14006,
+      "output": {
+        "policy_ids": [],
+        "matched_condition_ids": [],
+        "confidence": "normal",
+        "reason": "消息描述的是245TB QLC企业SSD在pre-production样品验证阶段发现并修复的固件问题，明确发生在量产决策之前，客户未暂停生产部署、未撤回资格、未削减订单或出货，配置仍留在联合评估序列中。最相关的pol_07c01cd6da0c52f29fe6要求'量产'级别缺陷导致客户暂停生产部署或撤回资格并削减订单/出货，该消息的实际事实状态未达到这些触发条件。无Policy命中。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:10:28.683468Z"
+    },
+    {
+      "turn_id": "turn_af142442d6b0466fb5faccde33eb25b6",
+      "case_id": "case_eb8357ddb14945efa97c0b9c77514a47",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_5ea53133-b48b-9ba9-b7a4-6ff4ebacd0ee",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13352,
+      "output_tokens": 1878,
+      "reasoning_tokens": 1870,
+      "cached_input_tokens": 0,
+      "latency_ms": 17195,
+      "output": {
+        "event_ids": []
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:10:31.869543Z"
+    },
+    {
+      "turn_id": "turn_e5a3ed500abb41a9a7457988a2640a32",
+      "case_id": "case_eb8357ddb14945efa97c0b9c77514a47",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_a7abd8f3-9c18-9ee6-a1d9-5ae4d95cc0e1",
+      "previous_response_id": "resp_5ea53133-b48b-9ba9-b7a4-6ff4ebacd0ee",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 14548,
+      "output_tokens": 542,
+      "reasoning_tokens": 475,
+      "cached_input_tokens": 0,
+      "latency_ms": 7940,
+      "output": {
+        "result": "NEW",
+        "confidence": "normal",
+        "reference_ids": [],
+        "reason": "The message describes a specific completed firmware correction during pre-production sample validation of a 245TB QLC enterprise SSD configuration with a named cloud-infrastructure customer. No loaded events cover this product, this validation milestone, or this engineering resolution."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:10:39.811059Z"
+    }
+  ]
+}

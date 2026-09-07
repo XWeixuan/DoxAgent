@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import json
 from datetime import UTC, datetime, timedelta
@@ -761,6 +762,52 @@ async def test_full_document2_workflow_resumes_d1_and_publishes_with_unresolved_
 
 
 @pytest.mark.asyncio
+async def test_candidate_success_is_saved_before_parallel_sibling_finishes(tmp_path: Path) -> None:
+    repository, workspace, source_run_id = await _global_fixture(tmp_path)
+    worker = _Document2Worker(workspace)
+    orchestrator = CodexDocument2Orchestrator(
+        worker=worker,
+        workspace=workspace,
+        repository=repository,
+        narrative_provider=_NarrativeProvider(InputAvailability.ABSENT),
+        max_attempts=1,
+    )
+    original_candidate = orchestrator._run_candidate
+    original_save = orchestrator._save_progress
+    saved = asyncio.Event()
+    blocked = asyncio.Event()
+
+    async def candidate(**kwargs):
+        if kwargs["key"] != "c1":
+            await blocked.wait()
+        return await original_candidate(**kwargs)
+
+    async def save(bundle, checkpoint):
+        await original_save(bundle, checkpoint)
+        if "o0:candidate:c1" in checkpoint.stage_artifacts:
+            saved.set()
+
+    orchestrator._run_candidate = candidate
+    orchestrator._save_progress = save
+    request = Document2RunRequest(
+        run_id="d2-parallel-crash", source_global_run_id=source_run_id, as_of=AS_OF
+    )
+    task = asyncio.create_task(orchestrator.run(request))
+    try:
+        await asyncio.wait_for(saved.wait(), timeout=10)
+    finally:
+        task.cancel()
+        await asyncio.gather(task, return_exceptions=True)
+    checkpoint = repository.get_bundle(request.run_id).checkpoint
+    assert "o0:candidate:c1" in checkpoint.stage_artifacts
+    assert "o0:candidate:c3" not in checkpoint.stage_artifacts
+    orchestrator._run_candidate = original_candidate
+    orchestrator._save_progress = original_save
+    await orchestrator.run(request)
+    assert sum(r.node == CodexD2Node.O0_CANDIDATE_C1 for r in worker.requests) == 1
+
+
+@pytest.mark.asyncio
 async def test_every_o1_shell_context_contains_complete_o0_finalization(
     tmp_path: Path,
 ) -> None:
@@ -781,7 +828,7 @@ async def test_every_o1_shell_context_contains_complete_o0_finalization(
     )
 
     expected_shell_ids = {"AI需求向盈利兑现", "供应执行与盈利边界"}
-    assert {request.cutoff_at for request in worker.requests} == {AS_OF}
+    assert {request.cutoff_at for request in worker.requests} == {AS_OF - timedelta(days=30)}
     o1_requests = [item for item in worker.requests if item.agent_role.value.startswith("o1_")]
     assert len(o1_requests) == 8
     for request in o1_requests:
@@ -794,7 +841,7 @@ async def test_every_o1_shell_context_contains_complete_o0_finalization(
             shell["shell_id"] for shell in context["o0_finalization"]["shells"]
         } == expected_shell_ids
         assert context["canonical_shell"]["shell_id"] in expected_shell_ids
-        assert context["research_cutoff_at"] == AS_OF.isoformat()
+        assert context["research_cutoff_at"] == (AS_OF - timedelta(days=30)).isoformat()
         assert context["source_global_research_published_at"] == AS_OF.isoformat()
         assert context["o0_finalization"]["finalization_note"] == [
             "Accepted the reviewers' horizon clarification."
@@ -803,9 +850,10 @@ async def test_every_o1_shell_context_contains_complete_o0_finalization(
         "document2-complete-o0-context", "context/document2/prepared_inputs.json"
     )
     prepared = json.loads(prepared_file.content or "{}")
-    assert prepared["as_of"] == AS_OF.isoformat().replace("+00:00", "Z")
+    assert prepared["as_of"] == (AS_OF - timedelta(days=30)).isoformat().replace("+00:00", "Z")
     assert (
-        "effective research cutoff was raised" in prepared["manifest"]["global_research"]["warning"]
+        "requested research cutoff is preserved"
+        in prepared["manifest"]["global_research"]["warning"]
     )
 
 
@@ -905,6 +953,14 @@ async def test_partial_publish_resumes_from_last_successful_shell_turn(tmp_path:
         CodexD2Node.O1_REALIZATION,
         CodexD2Node.O1_GAPS,
     ]
+
+    # Parent initialization recovery adopts an already-published PARTIAL result;
+    # explicit standalone shell repair below retains its original behavior.
+    calls_before_recovery = len(worker.requests)
+    adopted = await orchestrator.run(request.model_copy(update={"reuse_published_partial": True}))
+    assert adopted.publication_state == "PARTIAL"
+    assert adopted.handoff == first.handoff
+    assert len(worker.requests) == calls_before_recovery
 
     second = await orchestrator.run(request)
     assert second.publication_state == "COMPLETE"

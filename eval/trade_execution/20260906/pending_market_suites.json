@@ -1,0 +1,101 @@
+{
+  "worker_started": false,
+  "suites": [
+    {
+      "id": "mu-rth-long-20260906",
+      "revision": "ep_b8478abd6c59a5d2bd5e1dca",
+      "ticker": "MU",
+      "session": "RTH",
+      "side": "LONG",
+      "armed": false,
+      "state": "WAIT_MARKET",
+      "execution_id": null,
+      "due_at": "2026-09-06T12:31:14.081254+00:00",
+      "evidence": {},
+      "strategy": {
+        "target_notional_usd": "20000",
+        "initial_tolerance": "0.01",
+        "non_rth_retry_tolerance": "0.02",
+        "order_wait_seconds": 5.0,
+        "rth_max_retries": 1,
+        "non_rth_max_retries": 2,
+        "exit_offset_minutes": 30,
+        "fractional_shares": false,
+        "quote_max_age_seconds": 5.0,
+        "request_timeout_seconds": 5.0
+      }
+    },
+    {
+      "id": "mu-rth-short-20260906",
+      "revision": "ep_b8478abd6c59a5d2bd5e1dca",
+      "ticker": "MU",
+      "session": "RTH",
+      "side": "SHORT",
+      "armed": false,
+      "state": "WAIT_MARKET",
+      "execution_id": null,
+      "due_at": "2026-09-06T12:31:14.094270+00:00",
+      "evidence": {},
+      "strategy": {
+        "target_notional_usd": "20000",
+        "initial_tolerance": "0.01",
+        "non_rth_retry_tolerance": "0.02",
+        "order_wait_seconds": 5.0,
+        "rth_max_retries": 1,
+        "non_rth_max_retries": 2,
+        "exit_offset_minutes": 30,
+        "fractional_shares": false,
+        "quote_max_age_seconds": 5.0,
+        "request_timeout_seconds": 5.0
+      }
+    },
+    {
+      "id": "mu-extended-long-20260906",
+      "revision": "ep_b8478abd6c59a5d2bd5e1dca",
+      "ticker": "MU",
+      "session": "EXTENDED",
+      "side": "LONG",
+      "armed": false,
+      "state": "WAIT_MARKET",
+      "execution_id": null,
+      "due_at": "2026-09-06T12:31:14.106743+00:00",
+      "evidence": {},
+      "strategy": {
+        "target_notional_usd": "20000",
+        "initial_tolerance": "0.01",
+        "non_rth_retry_tolerance": "0.02",
+        "order_wait_seconds": 5.0,
+        "rth_max_retries": 1,
+        "non_rth_max_retries": 2,
+        "exit_offset_minutes": 30,
+        "fractional_shares": false,
+        "quote_max_age_seconds": 5.0,
+        "request_timeout_seconds": 5.0
+      }
+    },
+    {
+      "id": "mu-overnight-long-20260906",
+      "revision": "ep_b8478abd6c59a5d2bd5e1dca",
+      "ticker": "MU",
+      "session": "OVERNIGHT",
+      "side": "LONG",
+      "armed": false,
+      "state": "WAIT_MARKET",
+      "execution_id": null,
+      "due_at": "2026-09-06T12:31:14.120747+00:00",
+      "evidence": {},
+      "strategy": {
+        "target_notional_usd": "20000",
+        "initial_tolerance": "0.01",
+        "non_rth_retry_tolerance": "0.02",
+        "order_wait_seconds": 5.0,
+        "rth_max_retries": 1,
+        "non_rth_max_retries": 2,
+        "exit_offset_minutes": 30,
+        "fractional_shares": false,
+        "quote_max_age_seconds": 5.0,
+        "request_timeout_seconds": 5.0
+      }
+    }
+  ]
+}

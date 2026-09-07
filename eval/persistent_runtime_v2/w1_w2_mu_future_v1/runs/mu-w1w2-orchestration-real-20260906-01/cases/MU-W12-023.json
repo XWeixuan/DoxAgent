@@ -1,0 +1,133 @@
+{
+  "case_id": "MU-W12-023",
+  "status": "COMPLETED",
+  "started_at": "2026-09-06T02:09:56.493370+08:00",
+  "completed_at": "2026-09-06T02:10:24.756621+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E43",
+        "E44",
+        "E42"
+      ]
+    },
+    "w1_final": {
+      "result": "OLD",
+      "confidence": "normal",
+      "reference_ids": [
+        "E43"
+      ],
+      "reason": "The core fact—Samsung HBM4 is in commercial delivery—is already captured by E43 (F175: Samsung began mass production and commercial shipments of HBM4 in Feb 2026). The message explicitly self-identifies as a current status update, stating it 'first communicated HBM4 mass production and commercial shipments in earlier product announcements' and presenting 'the current status of the same product family.' No new phase transition, milestone, customer, or numerical fact is introduced."
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息为三星HBM4产品现状更新，明确表述为'current product-status update'而非新里程碑确认。最相关候选pol_83c565b3ca305ee04c41要求量产良率确认+多个重要客户重复交付+DRAM市场交期缩短或合同价下降三者同时成立；消息未提供任何良率数据、未点名具体客户或重复交付周期，且完全缺失市场交期/合同价格信息，criterion各组成部分均不满足。其余Policy均不相关。"
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息为三星HBM4产品现状更新，明确表述为'current product-status update'而非新里程碑确认。最相关候选pol_83c565b3ca305ee04c41要求量产良率确认+多个重要客户重复交付+DRAM市场交期缩短或合同价下降三者同时成立；消息未提供任何良率数据、未点名具体客户或重复交付周期，且完全缺失市场交期/合同价格信息，criterion各组成部分均不满足。其余Policy均不相关。"
+    },
+    "route": {
+      "primary_route": "ARCHIVE",
+      "side_effects": [
+        "archive_message"
+      ],
+      "reason": "w1=OLD/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_fd9501514fd14909b0031394f1fc7dfd",
+      "case_id": "case_6d17aca5a5994be1bda817737d91c0dc",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_2221f05b-aaa2-99a4-a130-2f3e6e88b149",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13391,
+      "output_tokens": 1250,
+      "reasoning_tokens": 1231,
+      "cached_input_tokens": 0,
+      "latency_ms": 13317,
+      "output": {
+        "event_ids": [
+          "E43",
+          "E44",
+          "E42"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:10:09.851712Z"
+    },
+    {
+      "turn_id": "turn_f411b5fea10d42928caf5d7fed1ec4f0",
+      "case_id": "case_6d17aca5a5994be1bda817737d91c0dc",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_76579d01-5a69-96cc-9ff4-ce64e77cdc52",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 7078,
+      "output_tokens": 1484,
+      "reasoning_tokens": 1353,
+      "cached_input_tokens": 0,
+      "latency_ms": 15640,
+      "output": {
+        "policy_ids": [],
+        "matched_condition_ids": [],
+        "confidence": "normal",
+        "reason": "消息为三星HBM4产品现状更新，明确表述为'current product-status update'而非新里程碑确认。最相关候选pol_83c565b3ca305ee04c41要求量产良率确认+多个重要客户重复交付+DRAM市场交期缩短或合同价下降三者同时成立；消息未提供任何良率数据、未点名具体客户或重复交付周期，且完全缺失市场交期/合同价格信息，criterion各组成部分均不满足。其余Policy均不相关。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:10:12.175277Z"
+    },
+    {
+      "turn_id": "turn_4315389423234747a4f49afb45be3b07",
+      "case_id": "case_6d17aca5a5994be1bda817737d91c0dc",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_26af240c-af1d-9617-8683-4cf18c33da80",
+      "previous_response_id": "resp_2221f05b-aaa2-99a4-a130-2f3e6e88b149",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 15459,
+      "output_tokens": 1297,
+      "reasoning_tokens": 1174,
+      "cached_input_tokens": 0,
+      "latency_ms": 14877,
+      "output": {
+        "result": "OLD",
+        "confidence": "normal",
+        "reference_ids": [
+          "E43"
+        ],
+        "reason": "The core fact—Samsung HBM4 is in commercial delivery—is already captured by E43 (F175: Samsung began mass production and commercial shipments of HBM4 in Feb 2026). The message explicitly self-identifies as a current status update, stating it 'first communicated HBM4 mass production and commercial shipments in earlier product announcements' and presenting 'the current status of the same product family.' No new phase transition, milestone, customer, or numerical fact is introduced."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:10:24.755622Z"
+    }
+  ]
+}

@@ -6,7 +6,7 @@ import hashlib
 import inspect
 import json
 import sqlite3
-from collections.abc import Callable, Sequence
+from collections.abc import Awaitable, Callable, Sequence
 from datetime import UTC, datetime, time
 from pathlib import Path
 from typing import Any
@@ -40,9 +40,7 @@ from doxagent.workflows.codex_event_library.remote_runner import (
     RemoteEventLibraryInitializer,
 )
 
-RuntimeFactory = Callable[
-    [RuntimeRegistryBinding], tuple[CDECRRegistry, CDECRWorkflowRunner]
-]
+RuntimeFactory = Callable[[RuntimeRegistryBinding], tuple[CDECRRegistry, CDECRWorkflowRunner]]
 
 
 class TickerCDECRPipelineCoordinator:
@@ -57,6 +55,11 @@ class TickerCDECRPipelineCoordinator:
         o2_factory: Callable[[EventLibraryService], RemoteEventLibraryInitializer] | None = None,
         sample_seed: int = 20260824,
         max_sources: int = 500,
+        run_namespace: str = "",
+        cdecr_executor: Callable[
+            [RuntimeRegistryBinding, list[str], datetime], Awaitable[CDECRWorkflowResult]
+        ]
+        | None = None,
     ) -> None:
         self.registry_resolver = PerTickerRegistryResolver(registry_root)
         self.state_root = Path(state_root).resolve()
@@ -69,6 +72,8 @@ class TickerCDECRPipelineCoordinator:
         self.o2_factory = o2_factory
         self.sample_seed = sample_seed
         self.max_sources = max_sources
+        self.run_namespace = run_namespace
+        self.cdecr_executor = cdecr_executor
 
     async def initialize(
         self,
@@ -114,7 +119,7 @@ class TickerCDECRPipelineCoordinator:
                 updated_at=datetime.now(UTC),
             )
             self.jobs.save(state)
-        if state.stage is TickerJobStage.PUBLISHED:
+        if state.stage in {TickerJobStage.PUBLISHED, TickerJobStage.FINALIZED_NOOP}:
             return TickerPipelineResult(
                 job=state,
                 delta_batch_id=state.delta_batch_id,
@@ -144,6 +149,8 @@ class TickerCDECRPipelineCoordinator:
                 for source in sources:
                     fingerprint = document_fingerprint(source.title, source.text)
                     if registry.has_source_fingerprint(fingerprint):
+                        if registry.get_source(source.message_id) is not None:
+                            selected_message_ids.append(source.message_id)
                         continue
                     registry.save_source(source, fingerprint=fingerprint)
                     selected_message_ids.append(source.message_id)
@@ -186,7 +193,11 @@ class TickerCDECRPipelineCoordinator:
                 )
             else:
                 state = self._advance(state, TickerJobStage.CDECR_RUNNING)
-                cdecr_result = _run_cdecr(cdecr_runner, message_ids, as_of)
+                cdecr_result = (
+                    await self.cdecr_executor(binding, message_ids, as_of)
+                    if self.cdecr_executor is not None
+                    else _run_cdecr(cdecr_runner, message_ids, as_of)
+                )
             if cdecr_result.status == "FINALIZED_NOOP":
                 state = self._advance(state, TickerJobStage.FINALIZED_NOOP)
                 return TickerPipelineResult(
@@ -213,7 +224,9 @@ class TickerCDECRPipelineCoordinator:
             )
             service = EventLibraryService(EventLibraryRepository(event_library_path))
             batch = service.delta_compiler.compile(snapshot)
-            o2_run_id = state.o2_run_id or f"o2-{binding.ticker.lower()}-{job_id[-16:]}"
+            o2_run_id = (
+                state.o2_run_id or f"{self.run_namespace}o2-{binding.ticker.lower()}-{job_id[-16:]}"
+            )
             state = self._advance(
                 state,
                 TickerJobStage.DELTA_READY,
@@ -252,9 +265,7 @@ class TickerCDECRPipelineCoordinator:
             state = self._advance(
                 state,
                 TickerJobStage.PUBLISHED,
-                thread_id=(
-                    str(maintenance["thread_id"]) if maintenance.get("thread_id") else None
-                ),
+                thread_id=(str(maintenance["thread_id"]) if maintenance.get("thread_id") else None),
                 published_library_version=publication.published_library_version,
             )
             return TickerPipelineResult(
@@ -303,10 +314,11 @@ class TickerCDECRPipelineCoordinator:
         export_dir: str | Path,
         upstream_context_manifest: dict[str, Any],
         resume_finalized_only: bool = False,
+        prepared_pipeline: TickerPipelineResult | None = None,
     ) -> TickerPipelineResult:
         """Run only O2 from an already prepared FINALIZED Runtime snapshot."""
 
-        prepared = await self.prepare_runtime_through_delta(
+        prepared = prepared_pipeline or await self.prepare_runtime_through_delta(
             market=market,
             ticker=ticker,
             as_of=as_of,
@@ -356,9 +368,7 @@ class TickerCDECRPipelineCoordinator:
             state = self._advance(
                 state,
                 TickerJobStage.PUBLISHED,
-                thread_id=(
-                    str(maintenance["thread_id"]) if maintenance.get("thread_id") else None
-                ),
+                thread_id=(str(maintenance["thread_id"]) if maintenance.get("thread_id") else None),
                 published_library_version=publication.published_library_version,
             )
             return TickerPipelineResult(
@@ -480,9 +490,7 @@ class TickerCDECRPipelineCoordinator:
                     state,
                     TickerJobStage.PUBLISHED,
                     thread_id=(
-                        str(maintenance["thread_id"])
-                        if maintenance.get("thread_id")
-                        else None
+                        str(maintenance["thread_id"]) if maintenance.get("thread_id") else None
                     ),
                     published_library_version=publication.published_library_version,
                 )
@@ -576,9 +584,7 @@ class TickerCDECRPipelineCoordinator:
             state = self._advance(
                 state,
                 TickerJobStage.PUBLISHED,
-                thread_id=(
-                    str(maintenance["thread_id"]) if maintenance.get("thread_id") else None
-                ),
+                thread_id=(str(maintenance["thread_id"]) if maintenance.get("thread_id") else None),
                 published_library_version=publication.published_library_version,
             )
             return TickerPipelineResult(

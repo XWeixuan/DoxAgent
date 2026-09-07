@@ -43,15 +43,33 @@ def build_monitoring_o4_runtime(
     settings: DoxAgentSettings,
     *,
     context_provider: O4ConfigurationContextProvider | None = None,
+    initialization_id: str | None = None,
+    ticker: str | None = None,
 ) -> MonitoringO4Runtime:
     if not settings.codex_monitoring_o4_enabled:
         raise RuntimeError("DOXAGENT_CODEX_MONITORING_O4_ENABLED is false")
-    if not settings.codex_worker_bearer_token or not settings.codex_capability_secret:
+    bearer_token = settings.codex_worker_bearer_token
+    if not bearer_token or not settings.codex_capability_secret:
         raise ValueError("O4 requires Codex worker bearer token and capability secret")
+    if initialization_id:
+        from doxagent.ticker_initialization.configuration import CandidateConfiguration
+
+        if not ticker:
+            raise ValueError("initialization O4 runtime requires ticker")
+        candidate = CandidateConfiguration(
+            settings.message_bus_v2_sqlite_path, initialization_id, ticker
+        )
+        candidate_path = candidate.prepare()
+        settings = settings.model_copy(
+            update={
+                "message_bus_v2_sqlite_path": str(candidate_path),
+                "codex_monitoring_o4_sqlite_path": str(candidate_path.with_name("o4.sqlite3")),
+            }
+        )
     repository = MonitoringO4Repository(settings.codex_monitoring_o4_sqlite_path)
     worker = HttpCodexWorkerClient(
         settings.codex_worker_base_url,
-        settings.codex_worker_bearer_token,
+        bearer_token,
         capability_secret=settings.codex_capability_secret,
     )
     message_bus_repository: MessageBusV2Repository | None = None
@@ -70,6 +88,7 @@ def build_monitoring_o4_runtime(
         timeout_seconds=settings.codex_monitoring_o4_timeout_seconds,
     )
     orchestrator = MonitoringO4Orchestrator(
+        initialization_only=True,
         repository=repository,
         runner=runner,
         message_bus=message_bus,
@@ -81,12 +100,6 @@ def build_monitoring_o4_runtime(
             alert_after_seconds=settings.o4_alert_after_seconds,
         ),
     )
-    if message_bus is not None and crawler_plane is not None:
-        dispatcher = O4AlertDispatcher(
-            orchestrator=orchestrator,
-            message_bus=message_bus,
-            crawler_plane=crawler_plane,
-        )
     return MonitoringO4Runtime(
         repository=repository,
         orchestrator=orchestrator,

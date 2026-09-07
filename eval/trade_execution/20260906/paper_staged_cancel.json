@@ -1,0 +1,8 @@
+{
+  "test": "local_staged_order_cancel",
+  "transmit": false,
+  "broker_orders": 0,
+  "staged_status": null,
+  "cancel_status": "Cancelled",
+  "result": "PASS"
+}

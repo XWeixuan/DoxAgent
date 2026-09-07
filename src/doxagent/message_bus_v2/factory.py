@@ -36,11 +36,26 @@ def build_message_bus_v2_runtime(settings: DoxAgentSettings) -> MessageBusV2Runt
         adapter_root=settings.message_bus_v2_adapter_root,
         crawler_plane=crawler_plane,
     )
+    scheduler = GlobalPollScheduler(repository, service, adapters)
+    if settings.ticker_initialization_control_path:
+        from doxagent.persistent_runtime_v2.bus_orchestration import BusOrchestration
+        from doxagent.persistent_runtime_v2.journal import RuntimeJournal
+
+        scheduler.runtime_orchestration = BusOrchestration(
+            RuntimeJournal(settings.persistent_runtime_v2_sqlite_path)
+        )
+    if settings.ticker_initialization_control_path:
+        from doxagent.ticker_initialization.consumers import admit_bus_revisions
+        from doxagent.ticker_initialization.repository import InitializationRepository
+
+        control = InitializationRepository(settings.ticker_initialization_control_path)
+        scheduler.activation_admission = lambda: admit_bus_revisions(control, service)
+        scheduler.initialization_control = control
     return MessageBusV2Runtime(
         repository=repository,
         service=service,
         adapters=adapters,
-        scheduler=GlobalPollScheduler(repository, service, adapters),
+        scheduler=scheduler,
         crawler_plane=crawler_plane,
     )
 

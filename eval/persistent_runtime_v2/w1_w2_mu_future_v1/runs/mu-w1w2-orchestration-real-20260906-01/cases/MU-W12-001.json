@@ -1,0 +1,131 @@
+{
+  "case_id": "MU-W12-001",
+  "status": "COMPLETED",
+  "started_at": "2026-09-06T02:07:53.496775+08:00",
+  "completed_at": "2026-09-06T02:08:14.567283+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E14",
+        "E79"
+      ]
+    },
+    "w1_final": {
+      "result": "OLD",
+      "confidence": "normal",
+      "reference_ids": [
+        "E14"
+      ],
+      "reason": "消息的核心事实——Micron获得NVIDIA HBM4设计订单、对Vera Rubin开始批量出货、HBM4销售突破10亿美元——均已被E14的F84、F85、F86完全覆盖。其余内容为背景评论和发言人引述，未构成新的核心进展。"
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息确认Micron HBM4在NVIDIA Vera Rubin上获得design win、已开始批量出货并突破10亿美元销售额，但未提供主要AI平台最终量产BOM将每加速器HBM容量提高到已知计划之上、系统部署量上调、Micron获得超出当前合同基线的新增绑定订单或进一步提高晶圆/封装分配等关键事实，无法完整满足pol_4fbb78816d7863893f09或pol_82f070e721f50f0bd599的任一criterion。"
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息确认Micron HBM4在NVIDIA Vera Rubin上获得design win、已开始批量出货并突破10亿美元销售额，但未提供主要AI平台最终量产BOM将每加速器HBM容量提高到已知计划之上、系统部署量上调、Micron获得超出当前合同基线的新增绑定订单或进一步提高晶圆/封装分配等关键事实，无法完整满足pol_4fbb78816d7863893f09或pol_82f070e721f50f0bd599的任一criterion。"
+    },
+    "route": {
+      "primary_route": "ARCHIVE",
+      "side_effects": [
+        "archive_message"
+      ],
+      "reason": "w1=OLD/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_6d4e38f5d6bd4de4a637f2fdd2650ae4",
+      "case_id": "case_7223fde5978244d3a2646f140cf2435e",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_ca447ddc-bc76-933a-b534-d8ac5ae43c77",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13466,
+      "output_tokens": 1253,
+      "reasoning_tokens": 1238,
+      "cached_input_tokens": 13460,
+      "latency_ms": 13308,
+      "output": {
+        "event_ids": [
+          "E14",
+          "E79"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:08:06.930176Z"
+    },
+    {
+      "turn_id": "turn_ed4459af00d148b29498619b43cce7f5",
+      "case_id": "case_7223fde5978244d3a2646f140cf2435e",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_1288022f-021f-9266-ac67-1223e45166a4",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 7153,
+      "output_tokens": 1646,
+      "reasoning_tokens": 1501,
+      "cached_input_tokens": 7147,
+      "latency_ms": 17412,
+      "output": {
+        "policy_ids": [],
+        "matched_condition_ids": [],
+        "confidence": "normal",
+        "reason": "消息确认Micron HBM4在NVIDIA Vera Rubin上获得design win、已开始批量出货并突破10亿美元销售额，但未提供主要AI平台最终量产BOM将每加速器HBM容量提高到已知计划之上、系统部署量上调、Micron获得超出当前合同基线的新增绑定订单或进一步提高晶圆/封装分配等关键事实，无法完整满足pol_4fbb78816d7863893f09或pol_82f070e721f50f0bd599的任一criterion。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:08:11.035545Z"
+    },
+    {
+      "turn_id": "turn_24998b7bfe8e4a57b88a9ca0337fa339",
+      "case_id": "case_7223fde5978244d3a2646f140cf2435e",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_d6dba857-451a-9eed-941a-71ed99618461",
+      "previous_response_id": "resp_ca447ddc-bc76-933a-b534-d8ac5ae43c77",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 15570,
+      "output_tokens": 650,
+      "reasoning_tokens": 562,
+      "cached_input_tokens": 0,
+      "latency_ms": 7619,
+      "output": {
+        "result": "OLD",
+        "confidence": "normal",
+        "reference_ids": [
+          "E14"
+        ],
+        "reason": "消息的核心事实——Micron获得NVIDIA HBM4设计订单、对Vera Rubin开始批量出货、HBM4销售突破10亿美元——均已被E14的F84、F85、F86完全覆盖。其余内容为背景评论和发言人引述，未构成新的核心进展。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:08:14.567283Z"
+    }
+  ]
+}

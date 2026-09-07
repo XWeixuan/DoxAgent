@@ -123,6 +123,8 @@ class Document3Orchestrator:
         event_library_version: int | None = None,
         run_id: str | None = None,
         cutoff_at: datetime | None = None,
+        enqueue_o4: bool = True,
+        candidate_publication: bool = False,
     ) -> O3RunResult:
         normalized_ticker = ticker.upper()
         selected_run_id = run_id or f"d3-{normalized_ticker.lower()}-{uuid4().hex[:20]}"
@@ -135,7 +137,8 @@ class Document3Orchestrator:
             )
             if published is None:
                 raise ValueError("Published D3 bundle has no canonical Policy Set")
-            await self._enqueue_monitoring_o4(published)
+            if enqueue_o4:
+                await self._enqueue_monitoring_o4(published)
             return O3RunResult(
                 status=(
                     O3RunStatus.COMPLETED
@@ -407,9 +410,7 @@ class Document3Orchestrator:
                     "output/work/coverage_map.json",
                     provisional.model_dump_json(indent=2),
                 )
-                diagnostic_policies, _ = await self._read_policy_drafts_recoverable(
-                    selected_run_id
-                )
+                diagnostic_policies, _ = await self._read_policy_drafts_recoverable(selected_run_id)
                 diagnostics = await self._build_semantic_diagnostics(
                     run_id=selected_run_id,
                     prepared=prepared,
@@ -521,9 +522,7 @@ class Document3Orchestrator:
                     worklist=worklist,
                     expected_gap_refs=prepared.expected_gap_refs,
                     failed_shells=prepared.failed_shells,
-                    workflow_warnings=[
-                        "Final Review coverage_map was rebuilt deterministically."
-                    ],
+                    workflow_warnings=["Final Review coverage_map was rebuilt deterministically."],
                 )
             if reviewed_coverage.ticker.upper() != normalized_ticker:
                 recovery_findings.append(
@@ -667,6 +666,11 @@ class Document3Orchestrator:
                 validation=validation,
                 published_at=utc_now(),
             )
+            allocator = getattr(self._policy_repository, "reserve_version", None)
+            if allocator is not None:
+                policy_set = policy_set.model_copy(
+                    update={"policy_set_version": allocator(normalized_ticker, selected_run_id)}
+                )
             canonical_worklist = [
                 item.model_copy(
                     update={
@@ -703,6 +707,7 @@ class Document3Orchestrator:
                 policy_set=policy_set,
                 coverage=coverage,
                 expected_base_version=expected_base,
+                candidate=candidate_publication,
             )
             self._complete_node(checkpoint, active_node)
             active_node = None
@@ -721,7 +726,8 @@ class Document3Orchestrator:
                     published_at=handoff.published_at,
                 )
             )
-            await self._enqueue_monitoring_o4(policy_set, prepared.document2)
+            if enqueue_o4:
+                await self._enqueue_monitoring_o4(policy_set, prepared.document2)
             unresolved = sum(item.status.value == "UNRESOLVED" for item in canonical_worklist)
             return O3RunResult(
                 status=(
@@ -756,11 +762,14 @@ class Document3Orchestrator:
         run_id: str | None = None,
         cutoff_at: datetime | None = None,
         maintenance_feed: O3MaintenanceFeed | None = None,
+        base_policy_version: int | None = None,
+        candidate_publication: bool = False,
     ) -> O3RunResult:
         normalized_ticker = ticker.upper()
         current, event_ref, reference_view = self._inputs.prepare_maintenance_reference(
             ticker=normalized_ticker,
             event_library_version=event_library_version,
+            base_policy_version=base_policy_version,
         )
         if event_ref is None or (
             maintenance_feed is None
@@ -783,6 +792,19 @@ class Document3Orchestrator:
             )
 
         selected_run_id = run_id or f"d3m-{normalized_ticker.lower()}-{uuid4().hex[:20]}"
+        recover = getattr(self._policy_repository, "reserved_policy", None)
+        if candidate_publication and recover is not None:
+            published = recover(normalized_ticker, selected_run_id)
+            if published is not None:
+                return O3RunResult(
+                    status=(
+                        O3RunStatus.COMPLETED
+                        if published.publication_state is PublicationState.COMPLETE
+                        else O3RunStatus.PARTIAL
+                    ),
+                    policy_count=len(published.policies),
+                    policy_set_version=published.policy_set_version,
+                )
         await self._agent.seed_maintenance(
             run_id=selected_run_id,
             policy_set_json=current.model_dump_json(indent=2),
@@ -859,6 +881,11 @@ class Document3Orchestrator:
                 policy_count=len(current.policies),
                 policy_set_version=current.policy_set_version,
             )
+        allocator = getattr(self._policy_repository, "reserve_version", None)
+        if allocator is not None:
+            updated = updated.model_copy(
+                update={"policy_set_version": allocator(normalized_ticker, selected_run_id)}
+            )
         if validation.findings or boundary_findings or patch_result.findings:
             updated = updated.model_copy(update={"publication_state": PublicationState.PARTIAL})
         coverage = CoverageMap(
@@ -885,6 +912,7 @@ class Document3Orchestrator:
                 policy_set=updated,
                 coverage=coverage,
                 expected_base_version=current.policy_set_version,
+                candidate=candidate_publication,
             )
         except Exception as exc:
             self._runtime_repository.save_bundle(
@@ -911,7 +939,7 @@ class Document3Orchestrator:
                 published_at=handoff.published_at,
             )
         )
-        await self._enqueue_monitoring_o4(updated)
+        # Runtime maintenance never creates O4 tasks; initialization owns O4.
         return O3RunResult(
             status=(
                 O3RunStatus.PARTIAL
@@ -1390,6 +1418,9 @@ class Document3Orchestrator:
         self._runtime_repository.save_checkpoint(checkpoint)
 
     def _complete_node(self, checkpoint: WorkflowCheckpoint, node: CodexD3Node) -> None:
+        from doxagent.ticker_initialization.substeps import settle_stage
+
+        settle_stage(node.value)
         checkpoint.completed_nodes = list(dict.fromkeys([*checkpoint.completed_nodes, node]))
         checkpoint.current_nodes = [item for item in checkpoint.current_nodes if item != node]
         checkpoint.failed_nodes = [item for item in checkpoint.failed_nodes if item != node]
@@ -1397,6 +1428,9 @@ class Document3Orchestrator:
         self._runtime_repository.save_checkpoint(checkpoint)
 
     def _fail_node(self, checkpoint: WorkflowCheckpoint, node: CodexD3Node) -> None:
+        from doxagent.ticker_initialization.substeps import settle_stage
+
+        settle_stage(node.value, error="stage did not produce usable workspace artifacts")
         checkpoint.failed_nodes = list(dict.fromkeys([*checkpoint.failed_nodes, node]))
         checkpoint.current_nodes = [item for item in checkpoint.current_nodes if item != node]
         checkpoint.updated_at = utc_now()
@@ -1611,6 +1645,7 @@ class Document3Orchestrator:
         policy_set: PolicySet,
         coverage: CoverageMap,
         expected_base_version: int | None,
+        candidate: bool = False,
     ) -> Document3Handoff:
         projection = project_policy_set(policy_set)
         # Publishing the fixed-OR contract to an older implicit-AND consumer would
@@ -1663,7 +1698,13 @@ class Document3Orchestrator:
             await self._save_published_content(artifact, release_payloads[path])
             artifacts[path] = artifact
 
-        self._policy_repository.publish(policy_set, expected_base_version=expected_base_version)
+        if candidate:
+            publisher = getattr(self._policy_repository, "publish_candidate", None)
+            if publisher is None:
+                raise ValueError("candidate publication requires a local candidate repository")
+            publisher(policy_set, run_id=run_id)
+        else:
+            self._policy_repository.publish(policy_set, expected_base_version=expected_base_version)
         return Document3Handoff(
             ticker=policy_set.ticker,
             run_id=run_id,
@@ -1676,11 +1717,13 @@ class Document3Orchestrator:
         )
 
     async def _save_published_content(self, artifact: ArtifactRef, content: str) -> None:
+        from doxagent.ticker_initialization.substeps import managed
+
         encoded = content.encode("utf-8")
         artifact_kind: Literal["report", "bundle", "manifest"] = (
             "bundle" if artifact.kind is ArtifactKind.BUNDLE else "report"
         )
-        if len(encoded) <= 2 * 1024 * 1024:
+        if len(encoded) <= 2 * 1024 * 1024 or managed():
             document = PublishedDocument(
                 artifact_id=artifact.artifact_id,
                 run_id=artifact.run_id,

@@ -1,0 +1,50 @@
+{
+  "run_id": "w2-r1-stable-instructions-20260906-01",
+  "created_at": "2026-09-06T02:41:04.107123+08:00",
+  "lane": "W2",
+  "variant": "stable_instructions",
+  "model": "qwen3.8-flash",
+  "reasoning_effort": "medium",
+  "transport": "responses_json_schema",
+  "session_cache_header": "enable",
+  "reference_key": "runtime_policy_projection",
+  "reference_fingerprint": "65839217465b84825c9384cc12024e1d14cec4e73161a14e0e2cb8361b5ca556",
+  "prefix_fingerprint": "1c4407c4ecc846d529859ed343e65ee082dd6bfacd8932b6a8683ed3aff15150",
+  "case_ids": [
+    "MU-W12-006",
+    "MU-W12-007",
+    "MU-W12-008"
+  ],
+  "records": [
+    {
+      "case_id": "MU-W12-006",
+      "response_id": "resp_99ede4a6-2e80-93d7-ad09-7ff876696620",
+      "latency_ms": 28255,
+      "input_tokens": 7140,
+      "cached_tokens": 0,
+      "cache_creation_input_tokens": null
+    },
+    {
+      "case_id": "MU-W12-007",
+      "response_id": "resp_efddbe30-8f6b-9506-8573-e136588f55bc",
+      "latency_ms": 21536,
+      "input_tokens": 7149,
+      "cached_tokens": 0,
+      "cache_creation_input_tokens": null
+    },
+    {
+      "case_id": "MU-W12-008",
+      "response_id": "resp_7702790b-bc20-96c5-9e1f-c3109b38cecb",
+      "latency_ms": 14505,
+      "input_tokens": 7130,
+      "cached_tokens": 0,
+      "cache_creation_input_tokens": null
+    }
+  ],
+  "totals": {
+    "input_tokens": 21419,
+    "cached_tokens": 0,
+    "cache_share": 0.0,
+    "latency_ms": 64296
+  }
+}

@@ -1,0 +1,121 @@
+{
+  "case_id": "MU-W12-013",
+  "status": "COMPLETED",
+  "started_at": "2026-09-06T02:09:30.193198+08:00",
+  "completed_at": "2026-09-06T02:09:56.482071+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": []
+    },
+    "w1_final": {
+      "result": "NEW",
+      "confidence": "normal",
+      "reference_ids": [],
+      "reason": "The core fact is Orion Cloud completing production qualification and accepting the first commercial batch of Micron's 245TB QLC SSD. No canonical or provisional events with active facts were loaded for comparison, so this customer-specific qualification milestone is not represented in the known reality."
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息仅确认Orion Cloud一家客户完成245TB QLC SSD量产资格并接受首批商业出货，明确描述为运营阶段起点。最相关的pol_17b9ee999d1e3ca3ab45要求至少两个独立客户平台且至少两个交付期重复采购/生产部署；pol_df1332e7ce712ae0dc0c要求纳入量产标准数据层、提高每集群容量并进入重复采购。当前消息均不满足：仅一家客户、仅首批、未发布fleetwide架构或采购计划。"
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息仅确认Orion Cloud一家客户完成245TB QLC SSD量产资格并接受首批商业出货，明确描述为运营阶段起点。最相关的pol_17b9ee999d1e3ca3ab45要求至少两个独立客户平台且至少两个交付期重复采购/生产部署；pol_df1332e7ce712ae0dc0c要求纳入量产标准数据层、提高每集群容量并进入重复采购。当前消息均不满足：仅一家客户、仅首批、未发布fleetwide架构或采购计划。"
+    },
+    "route": {
+      "primary_route": "W3",
+      "side_effects": [
+        "route_to_w3"
+      ],
+      "reason": "w1=NEW/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_3af24c85d181430889e60fe902b979f4",
+      "case_id": "case_c8dd7f5720ef4835951c0bdc29448f3f",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_94852d28-6c52-95c0-adaf-ed397b72a951",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 7079,
+      "output_tokens": 1966,
+      "reasoning_tokens": 1823,
+      "cached_input_tokens": 0,
+      "latency_ms": 17638,
+      "output": {
+        "policy_ids": [],
+        "matched_condition_ids": [],
+        "confidence": "normal",
+        "reason": "消息仅确认Orion Cloud一家客户完成245TB QLC SSD量产资格并接受首批商业出货，明确描述为运营阶段起点。最相关的pol_17b9ee999d1e3ca3ab45要求至少两个独立客户平台且至少两个交付期重复采购/生产部署；pol_df1332e7ce712ae0dc0c要求纳入量产标准数据层、提高每集群容量并进入重复采购。当前消息均不满足：仅一家客户、仅首批、未发布fleetwide架构或采购计划。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:09:47.887357Z"
+    },
+    {
+      "turn_id": "turn_539e95d263a6469a8a8d933846a1146c",
+      "case_id": "case_c8dd7f5720ef4835951c0bdc29448f3f",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_2e84f3ec-f4aa-9038-862f-15f1cbb73629",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13392,
+      "output_tokens": 2089,
+      "reasoning_tokens": 2081,
+      "cached_input_tokens": 0,
+      "latency_ms": 21333,
+      "output": {
+        "event_ids": []
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:09:51.580614Z"
+    },
+    {
+      "turn_id": "turn_2db638fdc3c842b186dc2b77c69ce267",
+      "case_id": "case_c8dd7f5720ef4835951c0bdc29448f3f",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_63e2291e-6024-9365-a087-13d3683fdd29",
+      "previous_response_id": "resp_2e84f3ec-f4aa-9038-862f-15f1cbb73629",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 14628,
+      "output_tokens": 342,
+      "reasoning_tokens": 269,
+      "cached_input_tokens": 0,
+      "latency_ms": 4901,
+      "output": {
+        "result": "NEW",
+        "confidence": "normal",
+        "reference_ids": [],
+        "reason": "The core fact is Orion Cloud completing production qualification and accepting the first commercial batch of Micron's 245TB QLC SSD. No canonical or provisional events with active facts were loaded for comparison, so this customer-specific qualification milestone is not represented in the known reality."
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:09:56.482071Z"
+    }
+  ]
+}

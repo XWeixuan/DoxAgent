@@ -292,6 +292,38 @@ def test_published_w3_context_reuses_version_pinned_heavy_inputs() -> None:
     assert events.reads == 1
 
 
+def test_w3_uses_explicit_activation_d1_d2_without_following_current_or_lineage() -> None:
+    runtime = _PublishedContextRuntime()
+    old_d1 = runtime.d1_bundle
+    replacement = old_d1.model_copy(update={"run_id": "replacement-d1"})
+    runtime.documents[("replacement-d1", "d1-doc")] = runtime._document(
+        "replacement-d1",
+        "d1-doc",
+        "Replacement D1",
+        old_d1.published_at,
+    )
+    bundles = {"replacement-d1": replacement, "d2-mu": runtime.d2_bundle}
+    runtime.get_bundle = bundles.get
+    provider = PublishedW3ContextProvider(
+        runtime_repository=cast(Any, runtime),
+        policy_repository=cast(Any, _PublishedContextPolicies()),
+        event_library_reader=cast(Any, _PublishedContextEvents()),
+    )
+    case = _runtime_case("explicit-pins")
+    case.version_pin = case.version_pin.model_copy(
+        update={
+            "activation_revision_id": "revision-2",
+            "document1_run_id": "replacement-d1",
+            "document2_run_id": "d2-mu",
+        }
+    )
+    context = asyncio.run(provider.load(case))
+    assert context.document1 == "Replacement D1"
+    assert context.version_pin.document1_run_id == "replacement-d1"
+    assert context.version_pin.document2_run_id == "d2-mu"
+    assert runtime.current_document2_reads == 0
+
+
 def test_published_w3_context_filters_consumed_policy_even_when_heavy_context_is_cached() -> None:
     runtime = _PublishedContextRuntime()
     policies = _PublishedContextPolicies()
@@ -544,13 +576,13 @@ def test_w3_retries_twice_then_persists_direct_trade_delta_and_o3_gap() -> None:
     assert resolved is not None and resolved.status is RuntimeCaseStatus.COMPLETED
     assert resolved.resolved_route is not None
     assert resolved.resolved_route.primary_route == "TRADE"
-    trades = repository.list_daily_trades("MU", date(2026, 8, 31))
+    trades = repository.list_daily_trades("MU", case.trading_date)
     assert len(trades) == 1
     assert trades[0].decision_origin is TradeDecisionOrigin.W3
     assert trades[0].executed_policy_id is None
     assert trades[0].w3_case_id
-    assert len(repository.list_daily_w3_coverage_gaps("MU", date(2026, 8, 31))) == 1
-    assert len(repository.list_daily_candidates("MU", date(2026, 8, 31))) == 1
+    assert len(repository.list_daily_w3_coverage_gaps("MU", case.trading_date)) == 1
+    assert len(repository.list_daily_candidates("MU", case.trading_date)) == 1
     service.close()
 
 

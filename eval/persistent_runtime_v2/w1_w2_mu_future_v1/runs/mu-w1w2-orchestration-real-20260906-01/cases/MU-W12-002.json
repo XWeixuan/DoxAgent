@@ -1,0 +1,141 @@
+{
+  "case_id": "MU-W12-002",
+  "status": "COMPLETED",
+  "started_at": "2026-09-06T02:07:53.497775+08:00",
+  "completed_at": "2026-09-06T02:08:17.969910+08:00",
+  "seeded_provisional_event_ids": [],
+  "prediction": {
+    "w1_r1": {
+      "event_ids": [
+        "E15",
+        "E20",
+        "E3",
+        "E28",
+        "E25"
+      ]
+    },
+    "w1_final": {
+      "result": "OLD",
+      "confidence": "normal",
+      "reference_ids": [
+        "E15",
+        "E20",
+        "E3"
+      ],
+      "reason": "消息核心事实均已被覆盖：(1) HBM售罄至2027年且通过多年期协议安排 → F88(E15)和F39/E3多年期战略协议；(2) HBM晶圆启动需求约为常规DRAM的三倍 → F93(E20)；(3) HBM对非HBM供应的压力 → F94(E20)。消息为基于已知事实的分析评论，未引入新的状态变化或事实进展。"
+    },
+    "w1_r3": null,
+    "w2_r1": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息为行业分析评论文章，仅将Micron HBM 2027年售罄及三年期安排作为已有背景提及，未在任何正式财报或官方披露中确认新增收入认列、客户订金入账、新绑定订单超出合同基线、或任何criterion所要求的具体运营事实变更，所有候选Policy的criterion均未被满足。"
+    },
+    "w2_final": {
+      "policy_ids": [],
+      "matched_condition_ids": [],
+      "confidence": "normal",
+      "reason": "消息为行业分析评论文章，仅将Micron HBM 2027年售罄及三年期安排作为已有背景提及，未在任何正式财报或官方披露中确认新增收入认列、客户订金入账、新绑定订单超出合同基线、或任何criterion所要求的具体运营事实变更，所有候选Policy的criterion均未被满足。"
+    },
+    "route": {
+      "primary_route": "ARCHIVE",
+      "side_effects": [
+        "archive_message"
+      ],
+      "reason": "w1=OLD/normal;policy_hit=false;w2=normal"
+    }
+  },
+  "turns": [
+    {
+      "turn_id": "turn_075ed36c2c88431fae6f160cac9bbd61",
+      "case_id": "case_9d70078902e346c492963a41a171c1bf",
+      "lane": "W1",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_3214aabb-2bad-9d38-a423-92f797494f14",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 13406,
+      "output_tokens": 920,
+      "reasoning_tokens": 894,
+      "cached_input_tokens": 0,
+      "latency_ms": 9810,
+      "output": {
+        "event_ids": [
+          "E15",
+          "E20",
+          "E3",
+          "E28",
+          "E25"
+        ]
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:08:03.559300Z"
+    },
+    {
+      "turn_id": "turn_4485428f92494776806e3cad79af593b",
+      "case_id": "case_9d70078902e346c492963a41a171c1bf",
+      "lane": "W2",
+      "round_name": "R1",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_49a16fbb-b921-97a2-94d5-1072ad971f9b",
+      "previous_response_id": null,
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 7093,
+      "output_tokens": 2506,
+      "reasoning_tokens": 2409,
+      "cached_input_tokens": 0,
+      "latency_ms": 23592,
+      "output": {
+        "policy_ids": [],
+        "matched_condition_ids": [],
+        "confidence": "normal",
+        "reason": "消息为行业分析评论文章，仅将Micron HBM 2027年售罄及三年期安排作为已有背景提及，未在任何正式财报或官方披露中确认新增收入认列、客户订金入账、新绑定订单超出合同基线、或任何criterion所要求的具体运营事实变更，所有候选Policy的criterion均未被满足。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:08:17.341831Z"
+    },
+    {
+      "turn_id": "turn_54520c40f57f4bc08790d93a9ea0c58a",
+      "case_id": "case_9d70078902e346c492963a41a171c1bf",
+      "lane": "W1",
+      "round_name": "R2",
+      "attempt_number": 1,
+      "status": "OK",
+      "response_id": "resp_3453ebc6-af45-91fa-bc1d-23924ffd75d2",
+      "previous_response_id": "resp_3214aabb-2bad-9d38-a423-92f797494f14",
+      "model": "qwen3.8-flash",
+      "provider": "bailian",
+      "reasoning_effort": "medium",
+      "transport": "responses_json_schema",
+      "input_tokens": 16623,
+      "output_tokens": 1394,
+      "reasoning_tokens": 1263,
+      "cached_input_tokens": 0,
+      "latency_ms": 14381,
+      "output": {
+        "result": "OLD",
+        "confidence": "normal",
+        "reference_ids": [
+          "E15",
+          "E20",
+          "E3"
+        ],
+        "reason": "消息核心事实均已被覆盖：(1) HBM售罄至2027年且通过多年期协议安排 → F88(E15)和F39/E3多年期战略协议；(2) HBM晶圆启动需求约为常规DRAM的三倍 → F93(E20)；(3) HBM对非HBM供应的压力 → F94(E20)。消息为基于已知事实的分析评论，未引入新的状态变化或事实进展。"
+      },
+      "error_code": null,
+      "error_message": null,
+      "created_at": "2026-09-05T18:08:17.969910Z"
+    }
+  ]
+}

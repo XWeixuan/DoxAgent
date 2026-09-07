@@ -16,6 +16,7 @@ from typing import Any, Literal, Protocol, TypeVar
 
 from pydantic import BaseModel
 
+from .fencing import FencedConnection
 from .schema import (
     ArchiveRecord,
     BadcaseRecord,
@@ -40,7 +41,7 @@ T = TypeVar("T", bound=BaseModel)
 DailyT = TypeVar("DailyT", TradeRecord, BadcaseRecord, W3CoverageGapRecord)
 
 
-class _ClosingSQLiteConnection(sqlite3.Connection):
+class _ClosingSQLiteConnection(FencedConnection):
     """Commit or roll back a context, then release the Windows file handle."""
 
     def __exit__(
@@ -57,6 +58,8 @@ class _ClosingSQLiteConnection(sqlite3.Connection):
 
 
 class PersistentRuntimeV2Repository(Protocol):
+    def list_cases(self, ticker: str) -> list[RuntimeCase]: ...
+
     def save_case(self, case: RuntimeCase) -> RuntimeCase: ...
 
     def save_case_with_effects(
@@ -182,6 +185,9 @@ class InMemoryPersistentRuntimeV2Repository:
         self._daily_closes: dict[tuple[str, date], DailyCloseRun] = {}
         self._processed_candidate_keys: set[str] = set()
         self._lock = threading.RLock()
+
+    def list_cases(self, ticker: str) -> list[RuntimeCase]:
+        return [case for case in self._cases.values() if case.ticker == ticker]
 
     def save_case(self, case: RuntimeCase) -> RuntimeCase:
         with self._lock:
@@ -497,6 +503,35 @@ class InMemoryPersistentRuntimeV2Repository:
 
 
 class SQLitePersistentRuntimeV2Repository:
+    def visible_provisional(
+        self, ticker: str, trading_date: date, *, current_only: bool = False
+    ) -> list[ProvisionalFactDetail]:
+        items = self._read_models(
+            ProvisionalFactDetail,
+            "SELECT payload_json FROM runtime_v2_candidates WHERE ticker=? "
+            "AND (trading_date=? OR (?=0 AND trading_date<? AND daily_status!='PROCESSED')) "
+            "ORDER BY trading_date,created_at,candidate_identity",
+            (ticker.upper(), trading_date.isoformat(), int(current_only), trading_date.isoformat()),
+        )
+        maximum = max((int(item.provisional_event_id[1:]) for item in items), default=0)
+        seen: set[str] = set()
+        result = []
+        for item in items:
+            alias = item.provisional_event_id
+            if alias in seen:
+                maximum += 1
+                alias = f"E{maximum}"
+            seen.add(alias)
+            result.append(item.model_copy(update={"provisional_event_id": alias}))
+        return result
+
+    def list_cases(self, ticker: str) -> list[RuntimeCase]:
+        return self._read_models(
+            RuntimeCase,
+            "SELECT payload_json FROM runtime_v2_cases WHERE ticker=? ORDER BY created_at",
+            (ticker.upper(),),
+        )
+
     def __init__(self, path: str | Path) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -875,16 +910,22 @@ class SQLitePersistentRuntimeV2Repository:
             rows = connection.execute(
                 """
                 SELECT effect_id, payload_json FROM runtime_v2_effects
-                WHERE status IN ('PENDING', 'PENDING_RETRY') AND available_at <= ?
+                WHERE (status IN ('PENDING', 'PENDING_RETRY') AND available_at <= ?)
+                   OR (status='RUNNING' AND updated_at <= ?)
                 ORDER BY available_at, rowid LIMIT ?
                 """,
-                (now.isoformat(), limit),
+                (now.isoformat(), (now - timedelta(seconds=120)).isoformat(), limit),
             ).fetchall()
             claimed: list[RuntimeEffect] = []
             for row in rows:
                 effect = RuntimeEffect.model_validate_json(row["payload_json"])
                 running = effect.model_copy(
-                    update={"status": RuntimeEffectStatus.RUNNING, "updated_at": now}
+                    update={
+                        "status": RuntimeEffectStatus.RUNNING,
+                        "updated_at": now,
+                        "lease_token": effect.lease_token + 1,
+                        "lease_until": now + timedelta(seconds=120),
+                    }
                 )
                 connection.execute(
                     "UPDATE runtime_v2_effects SET status=?, payload_json=?, updated_at=? "
@@ -900,8 +941,35 @@ class SQLitePersistentRuntimeV2Repository:
             connection.commit()
             return claimed
 
+    def renew_effect(self, effect: RuntimeEffect) -> None:
+        with self._connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            row = db.execute(
+                "SELECT payload_json FROM runtime_v2_effects WHERE effect_id=?", (effect.effect_id,)
+            ).fetchone()
+            current = RuntimeEffect.model_validate_json(row[0])
+            if (
+                current.lease_token != effect.lease_token
+                or current.status is not RuntimeEffectStatus.RUNNING
+                or current.lease_until is None
+                or current.lease_until <= utc_now()
+            ):
+                raise RuntimeError("effect lease lost")
+            current.lease_until = utc_now() + timedelta(seconds=120)
+            current.updated_at = utc_now()
+            db.execute(
+                "UPDATE runtime_v2_effects SET payload_json=?,updated_at=? WHERE effect_id=?",
+                (current.model_dump_json(), current.updated_at.isoformat(), effect.effect_id),
+            )
+
     def save_effect(self, effect: RuntimeEffect) -> RuntimeEffect:
         with self._connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            old = connection.execute(
+                "SELECT payload_json FROM runtime_v2_effects WHERE effect_id=?", (effect.effect_id,)
+            ).fetchone()
+            if old and RuntimeEffect.model_validate_json(old[0]).lease_token != effect.lease_token:
+                raise RuntimeError("effect lease lost")
             connection.execute(
                 """
                 UPDATE runtime_v2_effects SET
@@ -917,6 +985,30 @@ class SQLitePersistentRuntimeV2Repository:
                     effect.effect_id,
                 ),
             )
+            if (
+                effect.status in {RuntimeEffectStatus.COMPLETED, RuntimeEffectStatus.FAILED}
+                and connection.execute(
+                    "SELECT 1 FROM sqlite_master WHERE name='runtime_values'"
+                ).fetchone()
+            ):
+                from .journal import encode
+
+                row = connection.execute(
+                    "SELECT ticker FROM runtime_v2_cases WHERE case_id=?", (effect.case_id,)
+                ).fetchone()
+                if row:
+                    value = {
+                        "case_id": effect.case_id,
+                        "ticker": row[0],
+                        "effect_id": effect.effect_id,
+                        "attempt": effect.attempt_count,
+                        "at": effect.updated_at.isoformat(),
+                    }
+                    connection.execute(
+                        "INSERT INTO runtime_values VALUES('dirty_case',?,?) "
+                        "ON CONFLICT(namespace,key) DO UPDATE SET payload=excluded.payload",
+                        (effect.case_id, encode(value)),
+                    )
         return effect
 
     def list_effects(self, case_id: str) -> list[RuntimeEffect]:
@@ -1161,8 +1253,9 @@ class SQLitePersistentRuntimeV2Repository:
                 )
             active = int(
                 connection.execute(
-                    "SELECT COUNT(*) FROM runtime_v2_w3_thread_slots WHERE ticker=?",
-                    (normalized,),
+                    "SELECT COUNT(*) FROM runtime_v2_w3_thread_slots "
+                    "WHERE ticker=? OR ticker LIKE ?",
+                    (normalized.split("@", 1)[0], normalized.split("@", 1)[0] + "@%"),
                 ).fetchone()[0]
             )
             if active >= max_concurrency:

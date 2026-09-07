@@ -61,6 +61,35 @@ def create_worker_app(
                 status_code=403, detail={"code": exc.code, "message": str(exc)}
             ) from exc
 
+    @app.post(
+        "/v1/workspaces/{run_id}/snapshots/{snapshot_id}",
+        dependencies=[Depends(require_service_auth)],
+    )
+    async def snapshot_workspace(
+        run_id: str,
+        snapshot_id: str,
+        x_workspace_capability: str | None = Header(default=None),
+    ) -> dict[str, bool]:
+        require_capability(run_id, "snapshot", x_workspace_capability)
+        workspaces.snapshot(run_id, snapshot_id)
+        return {"ready": True}
+
+    @app.post(
+        "/v1/workspaces/{run_id}/snapshots/{snapshot_id}/fork/{destination_run_id}",
+        dependencies=[Depends(require_service_auth)],
+    )
+    async def fork_workspace(
+        run_id: str,
+        snapshot_id: str,
+        destination_run_id: str,
+        x_workspace_capability: str | None = Header(default=None),
+        x_destination_capability: str | None = Header(default=None),
+    ) -> dict[str, bool]:
+        require_capability(run_id, "snapshot", x_workspace_capability)
+        require_capability(destination_run_id, "write", x_destination_capability)
+        workspaces.fork_snapshot(run_id, snapshot_id, destination_run_id)
+        return {"ready": True}
+
     @app.get("/healthz")
     async def healthz() -> dict[str, object]:
         return {"ok": True, "service": "codex-worker", "data_mcp_enabled": True}
@@ -78,13 +107,19 @@ def create_worker_app(
                 "publish",
                 "export",
                 "delete",
+                "snapshot",
             ],
             "source_capture_mcp": True,
             "data_mcp": True,
         }
 
     @app.get("/v1/readiness", dependencies=[Depends(require_service_auth)])
-    async def readiness() -> JSONResponse:
+    async def readiness(
+        model: str | None = None,
+        x_workspace_capability: str | None = Header(default=None),
+    ) -> JSONResponse:
+        if x_workspace_capability is not None:
+            require_capability("readiness", "readiness", x_workspace_capability)
         probe = getattr(resolved_runtime, "probe", None)
         if probe is None:
             return JSONResponse(
@@ -94,7 +129,9 @@ def create_worker_app(
         try:
             payload = await probe()
             models = payload.get("models", [])
-            ready = bool(payload.get("authenticated")) and "gpt-5.6-luna" in models
+            ready = bool(payload.get("authenticated")) and (
+                model in models if model else bool(models)
+            )
             return JSONResponse(
                 status_code=200 if ready else 503,
                 content={"ready": ready, **payload},
@@ -107,7 +144,10 @@ def create_worker_app(
 
     @app.post("/v1/jobs", response_model=WorkerJob, dependencies=[Depends(require_service_auth)])
     async def submit_job(request: WorkerRunRequest) -> WorkerJob:
-        return await jobs.submit(request)
+        try:
+            return await jobs.submit(request)
+        except ValueError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
 
     @app.get(
         "/v1/jobs/{job_id}", response_model=WorkerJob, dependencies=[Depends(require_service_auth)]

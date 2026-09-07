@@ -103,6 +103,19 @@ class O4OperationsApplication:
         self._capability_loader = capability_loader
         self._cwd = cwd.resolve()
         self._settings = settings or DoxAgentSettings()
+        self._configuration_scope = claims.initialization_id
+        if claims.initialization_id:
+            from doxagent.ticker_initialization.configuration import candidate_bus_path
+
+            self._settings = self._settings.model_copy(
+                update={
+                    "message_bus_v2_sqlite_path": str(
+                        candidate_bus_path(
+                            self._settings.message_bus_v2_sqlite_path, claims.initialization_id
+                        )
+                    ),
+                }
+            )
         self.registry = default_real_tool_registry(self._settings)
         self._mutation_policy = O4MutationPolicy(
             standard_poll_seconds=self._settings.o4_standard_poll_seconds,
@@ -141,6 +154,10 @@ class O4OperationsApplication:
         )
         if self._cwd.name != claims.run_id:
             raise CapabilityDenied("O4 operations MCP run scope changed")
+        if claims.initialization_id != self._configuration_scope:
+            raise CapabilityDenied(
+                "O4 candidate configuration scope changed; reopen the MCP session"
+            )
         maximum = TOOLS_BY_NODE[claims.node]
         tool_ids = frozenset(claims.enabled_tool_ids).intersection(maximum, self.registry.names())
         permissions = AgentPermissions(allowed_tools=sorted(tool_ids))

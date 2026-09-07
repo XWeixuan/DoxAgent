@@ -95,7 +95,11 @@ class PublishedEventLibraryProvider:
                     "read_only": self.read_only,
                 },
             )
-        if snapshot.published_at is not None and snapshot.published_at > as_of:
+        if (
+            self._pinned_version is None
+            and snapshot.published_at is not None
+            and snapshot.published_at > as_of
+        ):
             return OptionalInput(
                 status=InputAvailability.ABSENT,
                 warning="Published Event Library head is newer than the Document2 cutoff.",
@@ -267,9 +271,8 @@ class Document2InputLoader:
         if as_of < source_published_at:
             cutoff_warning = (
                 "requested Document2 as_of preceded the pinned Global Research publication; "
-                "the effective research cutoff was raised to the source publication time"
+                "publication is not evidence time; the requested research cutoff is preserved"
             )
-            as_of = source_published_at
         reports: dict[str, str] = {}
         report_ids: dict[str, str] = {}
         paths: list[str] = []

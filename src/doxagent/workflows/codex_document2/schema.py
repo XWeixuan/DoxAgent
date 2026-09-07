@@ -380,6 +380,7 @@ class Document2RunRequest(ContractModel):
     ticker: str | None = None
     as_of: datetime | None = None
     force_new: bool = False
+    reuse_published_partial: bool = False
 
 
 class StartDocument2Request(ContractModel):
